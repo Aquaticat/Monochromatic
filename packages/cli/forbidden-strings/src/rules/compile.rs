@@ -4,7 +4,6 @@
 //           go through the `regex` crate via `CompiledRegex::Plain`.
 // Why:      Hybrid engine dispatch: this module owns the per-rule
 //           routing decision via `requires_resharp`.
-// TS map:   `import { Regex } from "resharp";`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -38,7 +37,6 @@ use resharp::Regex;
 //           returns a normal `Err(String)` that the loader bubbles
 //           up to the user with the same `rule on line N (resharp): ...`
 //           prefix as every other compile failure.
-// TS map:   `try { ... } catch (e) { ... }`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -54,7 +52,6 @@ use std::panic::{catch_unwind, AssertUnwindSafe};
 //           structural pre-validator before constructing a regex, and
 //           importing through `super` keeps the parent public surface
 //           marked as used in normal builds.
-// TS map:   `import { requiresResharp, stackedQuantifier } from "./rules";`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -102,7 +99,6 @@ use super::{
 //           wall-time regression). Source-level expansion keeps every
 //           rule on the `unicode(false)` fast path while widening the
 //           class to cover the Unicode whitespace bytes.
-// TS map:   `const UNICODE_WS_ALT = "\\xc2\\xa0|...";`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -127,8 +123,6 @@ const UNICODE_WS_ALT: &str = r"\xc2\xa0|\xe1\x9a\x80|\xe1\xa0\x8e|\xe2\x80[\x80-
 //           Returns `None` for an unterminated class -- the caller
 //           treats this as "do not rewrite; let the regex compiler
 //           emit its own parse error."
-// TS map:   `function scanClass(bytes: Uint8Array, start: number)
-//                              : { close: number; containsS: boolean } | null`.
 fn scan_class(bytes: &[u8], start: usize) -> Option<(usize, bool)> {
     let mut j = start + 1;
     if j < bytes.len() && bytes[j] == b'^' {
@@ -167,7 +161,6 @@ fn scan_class(bytes: &[u8], start: usize) -> Option<(usize, bool)> {
 //           verbatim. A bare `bytes[i] as char` cast would mojibake
 //           non-ASCII bytes; using `&src[i..i+width]` preserves the
 //           UTF-8 encoding.
-// TS map:   `function utf8Width(b: number): number`.
 fn utf8_width(leading: u8) -> usize {
     if leading < 0xc0 {
         1
@@ -213,7 +206,6 @@ fn utf8_width(leading: u8) -> usize {
 //           sequences from a negated byte class, which has no clean
 //           source representation. Rules using `\S` keep ASCII-only
 //           semantics; document in PERF.md.
-// TS map:   `function expandUnicodeWhitespace(src: string): string`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -301,7 +293,6 @@ fn expand_unicode_whitespace(src: &str) -> String {
 //           exercises identical behaviour. Splitting into a thin
 //           "wrap with idx" outer layer + a `compile_rule_src`
 //           core gives both call sites that property.
-// TS map:   `function compileRuleSrc(src: string): CompiledRegex`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -341,7 +332,6 @@ pub fn compile_rule_src(src: &str) -> Result<CompiledRegex, String> {
     //           error namespace reads as "the source shape is
     //           structurally bad", not "the plain path specifically
     //           dislikes it".
-    // TS map:   `const reason = stackedQuantifier(src); if (reason) throw new Error(`(regex): ${reason}`);`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -370,7 +360,6 @@ pub fn compile_rule_src(src: &str) -> Result<CompiledRegex, String> {
     //           generator actually produces. Both are needed because
     //           the regex-source-shape space is wider than either
     //           detector alone covers.
-    // TS map:   `const reason = nestedGroupedQuantifier(src); if (reason) throw new Error(`(regex): ${reason}`);`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -393,7 +382,6 @@ pub fn compile_rule_src(src: &str) -> Result<CompiledRegex, String> {
     // Why:      Match the production dispatch decision exactly --
     //           fuzz targets that compile a generated source must
     //           hit the same branch the user would.
-    // TS map:   `if (requiresResharp(src)) ... else ...`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -418,7 +406,6 @@ pub fn compile_rule_src(src: &str) -> Result<CompiledRegex, String> {
         //           pre-validator still rejects on the source shape before
         //           any other check or `Regex::new` as belt-and-suspenders:
         //           catch_unwind cannot intercept a stack-overflow SIGABRT.
-        // TS map:   `const reason = nestingDepth(src); if (reason) throw new Error(`(resharp): ${reason}`);`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -444,7 +431,6 @@ pub fn compile_rule_src(src: &str) -> Result<CompiledRegex, String> {
         // Why:      Identical pre-flight to production. The fuzzer
         //           must trip exactly the same guard the user would
         //           when authoring a complement-body lookaround.
-        // TS map:   `const reason = lookaroundInComplement(src); if (reason) throw new Error(...);`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -482,7 +468,6 @@ pub fn compile_rule_src(src: &str) -> Result<CompiledRegex, String> {
         //           rule into a supported form. See
         //           docs/troubleshooting/resharp.md for the bisection
         //           record and rewrite recipes.
-        // TS map:   `for (const check of [intersectionWithLookbehind, intersectionWithWordEndAlternation]) { const r = check(src); if (r) throw new Error(`(resharp): ${r}`); }`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -525,7 +510,6 @@ pub fn compile_rule_src(src: &str) -> Result<CompiledRegex, String> {
         //           handles the original `&`+lookahead case
         //           defensively; this new pre-validator handles the
         //           shape actually appearing in the fuzz corpus.
-        // TS map:   `const reason = lookaroundInAlternationWithSibling(src); if (reason) throw new Error(`(resharp): ${reason}`);`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -554,7 +538,6 @@ pub fn compile_rule_src(src: &str) -> Result<CompiledRegex, String> {
         //           is virtually never authored by humans (no rule
         //           in the production corpus combines `&` and `~(`),
         //           so the false-positive risk is theoretical only.
-        // TS map:   `const reason = complementIntersectionQuantifiedGroup(src); if (reason) throw new Error(`(resharp): ${reason}`);`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -585,7 +568,6 @@ pub fn compile_rule_src(src: &str) -> Result<CompiledRegex, String> {
         //           (debug-assertions OFF) the same shape silently wraps
         //           to 0 and likely produces wrong matches -- another
         //           reason to reject at the boundary.
-        // TS map:   `const reason = nestedLookaheadInQuantifiedGroup(src); if (reason) throw new Error(`(resharp): ${reason}`);`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -621,7 +603,6 @@ pub fn compile_rule_src(src: &str) -> Result<CompiledRegex, String> {
         //           11 fuzz run halts on the trailing-content Bug F
         //           shape before reaching the (?u)-Unicode case-fold
         //           soundness panic the target was built to catch.
-        // TS map:   `const reason = quantifiedLookaheadWithSiblingContent(src); if (reason) throw new Error(`(resharp): ${reason}`);`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -649,7 +630,6 @@ pub fn compile_rule_src(src: &str) -> Result<CompiledRegex, String> {
         //           the corpus and replays them, halving exec/s
         //           throughput. Catching at the source-shape level
         //           rejects the rule in microseconds.
-        // TS map:   `const reason = nestedQuantifierAfterWildcard(src); if (reason) throw new Error(`(resharp): ${reason}`);`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -677,7 +657,6 @@ pub fn compile_rule_src(src: &str) -> Result<CompiledRegex, String> {
         //           slow-unit threshold even though the eventual
         //           outcome is `Err`. Source-shape rejection avoids
         //           the wall-clock burn.
-        // TS map:   `const reason = nestedChainInLookaroundBody(src); if (reason) throw new Error(`(resharp): ${reason}`);`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -708,7 +687,6 @@ pub fn compile_rule_src(src: &str) -> Result<CompiledRegex, String> {
         //           Sibling complements `~(...)&~(...)` (production
         //           shape) are NOT caught -- the inner complement is
         //           detected only when an outer one is open.
-        // TS map:   `const reason = nestedComplement(src); if (reason) throw new Error(`(resharp): ${reason}`);`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -732,7 +710,6 @@ pub fn compile_rule_src(src: &str) -> Result<CompiledRegex, String> {
         //           channel, prefixed with `(resharp):` so the
         //           outer caller can prepend `rule on line N`.
         // Why:      Produce a `CompiledRegex` ready to consume.
-        // TS map:   `try { return { kind: "resharp", re: new Regex(src) }; } catch (e) { throw new Error(`(resharp): ${e}`); }`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -776,7 +753,6 @@ pub fn compile_rule_src(src: &str) -> Result<CompiledRegex, String> {
         //           crashes the whole scanner; with it, the rule's
         //           line is named in the error and every other rule
         //           continues to compile.
-        // TS map:   `try { return new Regex(src); } catch (e) { throw new Error(`(resharp): ${e}`); }`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -806,7 +782,6 @@ pub fn compile_rule_src(src: &str) -> Result<CompiledRegex, String> {
 //           in one place. `compile_plain_rule` is now a thin
 //           wrapper that calls this and decorates the error
 //           with `rule on line N` for diagnostics.
-// TS map:   `function compilePlainToCompiled(src: string): CompiledRegex`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -840,7 +815,6 @@ fn compile_plain_rule_to_compiled(src: &str) -> Result<CompiledRegex, String> {
     // Why:      Try the fast path first; if the rule needs unicode
     //           features the build fails fast (parse error, no DFA built)
     //           and we fall through to the unicode-on retry below.
-    // TS map:   `try { return new Regex(src, { unicode: false, ... }); } catch { /* fall through */ }`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -864,8 +838,6 @@ fn compile_plain_rule_to_compiled(src: &str) -> Result<CompiledRegex, String> {
         //           enum, wrapping the just-compiled `regex::bytes::Regex`.
         // Why:      Hand the freshly compiled rule back to the caller as
         //           a success result.
-        // TS map:   `return { idx, re: { kind: "plain", re } };` (with
-        //           throwing-style errors instead of `Result`).
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -884,7 +856,6 @@ fn compile_plain_rule_to_compiled(src: &str) -> Result<CompiledRegex, String> {
     //           line number.
     // Why:      Some rules need unicode-aware semantics (`(?u)`, certain
     //           class shorthands); they fall through here.
-    // TS map:   `try { return { kind: "plain", re: build(src, { unicode: true }) }; } catch (e) { throw new Error(`(regex): ${e}`); }`.
     //
     // In TS you'd write (pseudocode):
     // ```ts

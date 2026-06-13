@@ -3,7 +3,6 @@
 // What:     `use i_slint_backend_winit::winit::platform::wayland::WindowAttributesExtWayland;`
 //           imports the trait that adds `with_name` to winit window attributes.
 // Why:      Slint's default backend selector has no hook for Wayland app id.
-// TS map:   No direct TS equivalent; imagine importing a builder extension.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -14,7 +13,6 @@ use i_slint_backend_winit::winit::platform::wayland::WindowAttributesExtWayland;
 // What:     `use i_slint_backend_winit::winit::window::WindowAttributes;` imports
 //           the creation-time window settings record.
 // Why:      The app-id hook receives and returns this exact type.
-// TS map:   `type WindowAttributes = WindowCreateOptions`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -25,7 +23,6 @@ use i_slint_backend_winit::winit::window::WindowAttributes;
 // What:     `pub const APP_ID: &str = "monochromatic.terminal";` declares a public
 //           borrowed string constant. Sibling `String` would allocate at runtime.
 // Why:      Wayland app id and `.desktop` StartupWMClass must stay identical.
-// TS map:   `export const APP_ID = "monochromatic.terminal"`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -36,7 +33,6 @@ pub const APP_ID: &str = "monochromatic.terminal";
 // What:     `pub fn set_window_app_id(...) -> WindowAttributes` declares a public
 //           hook function used by Slint's winit backend builder.
 // Why:      KDE and other shells associate windows with desktop files by app id.
-// TS map:   `function setWindowAppId(attributes): WindowAttributes`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -48,7 +44,6 @@ pub fn set_window_app_id(attributes: WindowAttributes) -> WindowAttributes {
     // What:     `attributes.with_name(APP_ID, APP_ID)` sets Wayland app id and X11
     //           WM_CLASS name pair, then returns the modified builder value.
     // Why:      The id must be present before the native window is created.
-    // TS map:   `return attributes.withName(APP_ID, APP_ID)`.
     //
     // In TS you'd write (pseudocode):
     // ```ts

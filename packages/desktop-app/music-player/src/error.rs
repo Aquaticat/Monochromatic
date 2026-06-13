@@ -4,7 +4,6 @@
 // What:     `use std::fmt;` imports the formatting module (it defines `Display`,
 //           `Formatter`, and the `write!` macro target).
 // Why:      We implement human-readable error messages via `fmt::Display`.
-// TS map:   no import needed; `toString()` is built in.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -16,7 +15,6 @@ use std::fmt;
 //           on the next line. Errors must be `Debug` to flow through `?`/`Result`
 //           and to be unwrapped/printed.
 // Why:      Logging and the `std::error::Error` bound both want `Debug`.
-// TS map:   no annotation; JS objects print themselves.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -28,7 +26,6 @@ use std::fmt;
 //           tuple-style variant `Name(InnerType)`).
 // Why:      A single error type lets `?` convert any sub-error into this and
 //           propagate it up without bespoke conversions at every call site.
-// TS map:   a tagged union of error shapes, or distinct `Error` subclasses.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -44,7 +41,6 @@ pub enum PlayerError {
     //           error value (`std::io::Error`; sibling here: the `symphonia`/`opus`
     //           error types the other variants wrap).
     // Why:      Opening or reading a file can fail.
-    // TS map:   `{ kind: "io"; cause: Error }` (a wrapped Node fs `Error`).
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -53,7 +49,6 @@ pub enum PlayerError {
     Io(std::io::Error),
     // What:     `Decode(symphonia::core::errors::Error)` wraps a symphonia error.
     // Why:      Probing/demuxing/decoding a container can fail.
-    // TS map:   `{ kind: "decode"; cause: Error }` (a wrapped decoder error).
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -62,7 +57,6 @@ pub enum PlayerError {
     Decode(symphonia::core::errors::Error),
     // What:     `Opus(opus::Error)` wraps a libopus error.
     // Why:      Opus packet decoding can fail.
-    // TS map:   `{ kind: "opus"; cause: Error }` (a wrapped opus error).
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -74,7 +68,6 @@ pub enum PlayerError {
     //           not `&str` (a borrowed view) because the error outlives the call
     //           that made it.
     // Why:      Report "no audio track" / ">2 Opus channels" cleanly.
-    // TS map:   `{ kind: "unsupported"; message: string }`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -85,7 +78,6 @@ pub enum PlayerError {
     //           whose native error types we flatten to text. `String` over `&str`
     //           for the same outlive reason as `Unsupported`.
     // Why:      PipeWire errors come in several types; one string is enough here.
-    // TS map:   `{ kind: "audio"; message: string }`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -99,7 +91,6 @@ pub enum PlayerError {
 //           developer view). Implementing a trait `for` a type adds that trait's
 //           methods to it.
 // Why:      We print these errors to stderr and into other messages.
-// TS map:   overriding `toString()`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -112,7 +103,6 @@ impl fmt::Display for PlayerError {
     //           inferred lifetime placeholder; the return `fmt::Result` is an alias
     //           for `Result<(), fmt::Error>`.
     // Why:      The single method `Display` requires.
-    // TS map:   `toString(): string` (here we write into a buffer instead).
     // Gotcha:   `&mut f` means we are LENT the buffer to write into; the function
     //           does not own or free it, and no other code may touch it meanwhile.
     //
@@ -125,7 +115,6 @@ impl fmt::Display for PlayerError {
         //           arm binds the inner value by reference (`e`/`m`) because `self`
         //           is borrowed, not owned.
         // Why:      Produce a message tailored to the case.
-        // TS map:   `switch (this.kind) { ... }`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -137,7 +126,6 @@ impl fmt::Display for PlayerError {
             //           error's OWN `Display`. The arm's value is the macro's
             //           `fmt::Result`, returned from `fmt`.
             // Why:      Prefix the category, then defer to the inner message.
-            // TS map:   `return "i/o error: " + e;`
             // Gotcha:   `write!(f, ...)` appends to a buffer and returns a `Result`;
             //           it is NOT `console.log`. The trailing arm value IS the return.
             //
@@ -150,7 +138,6 @@ impl fmt::Display for PlayerError {
             //           Same shape: bind the inner symphonia error `e`, write a
             //           prefixed message.
             // Why:      Surface decode failures with their own detail.
-            // TS map:   `return "decode error: " + e;`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -160,7 +147,6 @@ impl fmt::Display for PlayerError {
             // What:     `PlayerError::Opus(e) => write!(f, "opus error: {e}")`. Bind
             //           the inner opus error `e` and write a prefixed message.
             // Why:      Surface opus failures with their own detail.
-            // TS map:   `return "opus error: " + e;`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -170,7 +156,6 @@ impl fmt::Display for PlayerError {
             // What:     `PlayerError::Unsupported(m) => write!(f, "unsupported: {m}")`.
             //           `m` is the `&String` message borrowed from the variant.
             // Why:      Surface the explanation we built when constructing the error.
-            // TS map:   `return "unsupported: " + m;`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -180,7 +165,6 @@ impl fmt::Display for PlayerError {
             // What:     `PlayerError::Audio(m) => write!(f, "audio error: {m}")`. `m`
             //           is the borrowed audio message.
             // Why:      Surface the flattened audio-output explanation.
-            // TS map:   `return "audio error: " + m;`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -196,7 +180,6 @@ impl fmt::Display for PlayerError {
 //           `source()` / cause chain).
 // Why:      Lets `PlayerError` interoperate with `Box<dyn Error>` and `?` in callers
 //           that want a generic error.
-// TS map:   making the type `extends Error` conceptually.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -209,7 +192,6 @@ impl std::error::Error for PlayerError {}
 //           automatic error conversion.
 // Why:      So `let f = File::open(p)?;` turns an io error into a `PlayerError`
 //           automatically at the `?`.
-// TS map:   no analogue; `?` + `From` is Rust's typed error-propagation glue.
 // Gotcha:   implementing `From<X>` is what makes `?` silently convert an `X` error
 //           into a `PlayerError`; there is no TS equivalent (a `throw` just rethrows).
 //
@@ -221,7 +203,6 @@ impl From<std::io::Error> for PlayerError {
     // What:     `fn from(e: std::io::Error) -> PlayerError` takes OWNERSHIP of the io
     //           error (by value) and returns it wrapped.
     // Why:      Build the `Io` variant from the raw error.
-    // TS map:   `static from(e: Error): PlayerError`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -231,7 +212,6 @@ impl From<std::io::Error> for PlayerError {
         // What:     `PlayerError::Io(e)` constructs the `Io` variant wrapping `e`.
         //           Tail expression -> return value.
         // Why:      Wrap and return as our error.
-        // TS map:   `return { kind: "io", cause: e };`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -244,7 +224,6 @@ impl From<std::io::Error> for PlayerError {
 // What:     `impl From<symphonia::core::errors::Error> for PlayerError { ... }` the
 //           `From` conversion for symphonia errors.
 // Why:      Enables `?` on symphonia calls to produce a `PlayerError`.
-// TS map:   rethrow, but typed.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -254,7 +233,6 @@ impl From<symphonia::core::errors::Error> for PlayerError {
     // What:     `fn from(e: symphonia::core::errors::Error) -> PlayerError` takes the
     //           symphonia error by value.
     // Why:      Build the `Decode` variant.
-    // TS map:   `static from(e: Error): PlayerError`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -264,7 +242,6 @@ impl From<symphonia::core::errors::Error> for PlayerError {
         // What:     `PlayerError::Decode(e)` wraps into the `Decode` variant. Tail
         //           expression -> return value.
         // Why:      Return as our error.
-        // TS map:   `return { kind: "decode", cause: e };`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -277,7 +254,6 @@ impl From<symphonia::core::errors::Error> for PlayerError {
 // What:     `impl From<opus::Error> for PlayerError { ... }` the `From` conversion
 //           for opus errors.
 // Why:      Enables `?` on opus calls to produce a `PlayerError`.
-// TS map:   rethrow, but typed.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -286,7 +262,6 @@ impl From<symphonia::core::errors::Error> for PlayerError {
 impl From<opus::Error> for PlayerError {
     // What:     `fn from(e: opus::Error) -> PlayerError` takes the opus error by value.
     // Why:      Build the `Opus` variant.
-    // TS map:   `static from(e: Error): PlayerError`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -296,7 +271,6 @@ impl From<opus::Error> for PlayerError {
         // What:     `PlayerError::Opus(e)` wraps into the `Opus` variant. Tail
         //           expression -> return value.
         // Why:      Return as our error.
-        // TS map:   `return { kind: "opus", cause: e };`
         //
         // In TS you'd write (pseudocode):
         // ```ts

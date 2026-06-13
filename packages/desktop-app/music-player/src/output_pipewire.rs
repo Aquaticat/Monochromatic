@@ -19,7 +19,6 @@
 // What:     `use std::io::Cursor;`. `Cursor` wraps an in-memory `Vec<u8>` and gives it
 //           the `Read`/`Write` interface a serializer expects.
 // Why:      The SPA pod serializer writes bytes into a `Cursor<Vec<u8>>`.
-// TS map:   like wrapping a growing `Uint8Array` in a stream-ish writer.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -31,7 +30,6 @@ use std::io::Cursor;
 //           compile time (a `usize`).
 // Why:      One `f32` sample is 4 bytes; we compute strides from this rather than
 //           hard-coding `4`.
-// TS map:   no equivalent; JS numbers have no fixed byte width you query.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -48,9 +46,6 @@ use std::mem::size_of;
 // Why:      The engine thread flips a "playing" flag and the realtime audio callback
 //           reads it; a plain `bool` shared across threads is undefined behaviour, so it
 //           must be atomic.
-// TS map:   no real equivalent; JS is single-threaded. Mentally: a one-slot shared cell
-//           both threads can poke safely, like a `SharedArrayBuffer` `Int32Array` flag
-//           read with `Atomics.load`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -66,8 +61,6 @@ use std::sync::atomic::{AtomicBool, Ordering};
 //           engine thread and the `ProcessData` on the audio thread); `Arc` lets both
 //           hold a clone of one shared cell. `Rc` would not compile here because the cell
 //           crosses a thread boundary.
-// TS map:   no equivalent; GC makes every object implicitly shared, so you would just
-//           close over the same variable.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -81,7 +74,6 @@ use std::sync::Arc;
 //           it; `Thread` is just a wake-able reference.
 // Why:      The realtime audio callback holds one so it can wake (`unpark`) the engine
 //           worker after it drains the ring buffer, telling it to decode more.
-// TS map:   `type Thread = WorkerRef;` (a reference you can post "wake up" to)
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -91,7 +83,6 @@ use std::thread::Thread;
 
 // What:     `use pipewire as pw;`. Import the crate and rename it `pw` for short.
 // Why:      Every PipeWire call below is `pw::...`.
-// TS map:   `import * as pw from "pipewire";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -103,7 +94,6 @@ use pipewire as pw;
 //           (builds a key/value dictionary) and the `spa` submodule (the lower-level
 //           "Simple Plugin API" types: audio formats, pods) into scope.
 // Why:      Stream creation needs properties; format negotiation needs spa.
-// TS map:   `import { properties, spa } from "pipewire";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -114,7 +104,6 @@ use pw::{properties::properties, spa};
 // What:     `use pw::context::ContextRc;`. The PipeWire "context" object: the root handle
 //           from which you connect to the server.
 // Why:      We create one context and keep it alive for the program.
-// TS map:   `import { Context } from "pipewire";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -125,7 +114,6 @@ use pw::context::ContextRc;
 // What:     `use pw::core::CoreRc;`. The connected "core": your session with the PipeWire
 //           server, created from a context.
 // Why:      Streams are created from a `Core`.
-// TS map:   `import { Core } from "pipewire";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -137,7 +125,6 @@ use pw::core::CoreRc;
 //           audio stream; `StreamFlags` are connect-time options; a `StreamListener` is
 //           the live registration of our callbacks (dropping it unregisters them).
 // Why:      We create a stream, register a process callback, and connect it.
-// TS map:   `import { Stream, StreamFlags, StreamListener } from "pipewire";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -148,7 +135,6 @@ use pw::stream::{StreamFlags, StreamListener, StreamRc};
 // What:     `use pw::thread_loop::ThreadLoopRc;`. A loop that runs on its OWN OS thread,
 //           spawned and driven by PipeWire's C code.
 // Why:      Audio must run independently of our decode/command loop.
-// TS map:   closest is a Web Worker that owns its own event loop; here C owns it.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -161,7 +147,6 @@ use pw::thread_loop::ThreadLoopRc;
 //           is a small struct describing format + rate + channels that we turn into a
 //           "pod".
 // Why:      To tell PipeWire we will feed interleaved f32 at a given rate/channels.
-// TS map:   `import { AudioFormat, AudioInfoRaw } from "pipewire/spa";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -174,7 +159,6 @@ use spa::param::audio::{AudioFormat, AudioInfoRaw};
 //           turns a `Value` into bytes; `Object`/`Value` build the structured value; `Pod`
 //           is a borrowed view over the bytes.
 // Why:      Stream format parameters are passed to PipeWire as a serialized pod.
-// TS map:   no equivalent; think "encode a tagged struct into a byte buffer".
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -185,7 +169,6 @@ use spa::pod::{serialize::PodSerializer, Object, Pod, Value};
 // What:     `use spa::utils::Direction;`. Enum: is this stream `Output` (we produce audio)
 //           or `Input` (we capture)? Sibling: `Input`.
 // Why:      A music player produces audio, so `Output`.
-// TS map:   `type Direction = "input" | "output";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -197,7 +180,6 @@ use spa::utils::Direction;
 //           scope: `Split::split` (cut a ring buffer into a producer and a consumer half)
 //           and `Consumer::pop_slice` (drain samples out).
 // Why:      We split the buffer and the callback pops from the consumer half.
-// TS map:   importing interfaces whose methods we then call.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -211,8 +193,6 @@ use ringbuf::traits::{Consumer, Split};
 //           single-consumer).
 // Why:      A lock-free hand-off of samples from the decode thread to the realtime audio
 //           thread.
-// TS map:   no direct equivalent; imagine a fixed-size, lock-free `Array` queue split into
-//           a writer object and a reader object.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -222,7 +202,6 @@ use ringbuf::{HeapCons, HeapProd, HeapRb};
 
 // What:     `use crate::error::PlayerError;`. Our one app-wide error type.
 // Why:      Fallible methods here return `PlayerError`.
-// TS map:   `import { PlayerError } from "@/error";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -233,7 +212,6 @@ use crate::error::PlayerError;
 // What:     `const F32_BYTES: usize = size_of::<f32>();`. Bytes in one `f32` sample (4).
 //           `usize` because it measures memory and feeds stride math.
 // Why:      Stride = bytes per audio frame = `F32_BYTES * channels`.
-// TS map:   `const F32_BYTES = 4;`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -246,7 +224,6 @@ const F32_BYTES: usize = size_of::<f32>();
 //           `&mut ProcessData` on every call.
 // Why:      The callback must not allocate or lock; it keeps its consumer and a reusable
 //           scratch buffer here.
-// TS map:   `type ProcessData = { consumer: Consumer; channels: number; scratch: Float32Array };`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -255,7 +232,6 @@ const F32_BYTES: usize = size_of::<f32>();
 struct ProcessData {
     // What:     `consumer: HeapCons<f32>`. The READ half of the ring buffer.
     // Why:      The callback pops decoded samples from it.
-    // TS map:   `consumer: RingConsumer<number>;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -265,7 +241,6 @@ struct ProcessData {
     // What:     `channels: usize`. Channel count of the current track (1 or 2...). `usize`
     //           for index/stride arithmetic without casts.
     // Why:      Needed to compute the per-frame stride and how many samples fill a buffer.
-    // TS map:   `channels: number;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -276,7 +251,6 @@ struct ProcessData {
     //           converting to little-endian bytes.
     // Why:      Avoid allocating inside the realtime callback (grows at most once when the
     //           buffer size first stabilises).
-    // TS map:   `scratch: Float32Array;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -289,7 +263,6 @@ struct ProcessData {
     // Why:      Lets pause take effect instantly: the moment the engine flips the flag, the
     //           very next realtime callback stops draining the ring buffer and emits
     //           silence, instead of playing the ~1 second of audio already buffered.
-    // TS map:   `playing: { value: boolean };` (a shared mutable box)
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -301,7 +274,6 @@ struct ProcessData {
     // Why:      Popping frees space in the ring buffer; waking the worker lets it decode
     //           more right away instead of waiting for a timeout. This is what replaces the
     //           old busy-poll without re-introducing audio gaps.
-    // TS map:   `worker: WorkerRef;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -316,7 +288,6 @@ struct ProcessData {
 //           core/context/loop.
 // Why:      Keeps all the `!Send` PipeWire objects alive together and tears them down in a
 //           safe order.
-// TS map:   `class Output { listener; stream; core; context; threadLoop; }`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -327,7 +298,6 @@ pub struct Output {
     //           registration, or `None` before the first stream. Dropping it unregisters
     //           the callback.
     // Why:      Must outlive nothing and be dropped first (it points into stream).
-    // TS map:   `listener: StreamListener | null;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -336,7 +306,6 @@ pub struct Output {
     listener: Option<StreamListener<ProcessData>>,
     // What:     `stream: Option<StreamRc>`. The current output stream, or `None`.
     // Why:      Recreated per track at that track's native rate/channels.
-    // TS map:   `stream: Stream | null;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -345,7 +314,6 @@ pub struct Output {
     stream: Option<StreamRc>,
     // What:     `core: CoreRc`. The connected session. Held for the program's life.
     // Why:      Needed to create streams.
-    // TS map:   `core: Core;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -355,7 +323,6 @@ pub struct Output {
     // What:     `_context: ContextRc`. The context the core came from. The leading `_` says
     //           "kept only to stay alive, not otherwise used".
     // Why:      The core depends on the context outliving it.
-    // TS map:   `private context: Context;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -364,7 +331,6 @@ pub struct Output {
     _context: ContextRc,
     // What:     `thread_loop: ThreadLoopRc`. The background audio loop.
     // Why:      Drives the realtime callback; dropped last.
-    // TS map:   `threadLoop: ThreadLoop;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -376,7 +342,6 @@ pub struct Output {
     //           flag survives track changes.
     // Why:      `set_playing` writes it from the engine thread; the realtime callback reads
     //           its clone. One shared cell keeps them in sync.
-    // TS map:   `playing: { value: boolean };`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -387,7 +352,6 @@ pub struct Output {
     //           stream's callback (built in `reconfigure`) can be handed a clone.
     // Why:      The callback needs it to `unpark()` the worker when the ring buffer drains;
     //           storing it here lets it survive across per-track reconfigures.
-    // TS map:   `worker: WorkerRef;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -398,7 +362,6 @@ pub struct Output {
 
 // What:     `impl Output { ... }`. Methods for the output pipeline.
 // Why:      Construction and per-track reconfiguration.
-// TS map:   the class body.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -411,7 +374,6 @@ impl Output {
     //           its own clone).
     // Why:      One-time setup of the audio pipeline; we keep `worker` so per-track
     //           callbacks can wake the worker on drain.
-    // TS map:   `static async create(worker: WorkerRef): Promise<Output>`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -421,7 +383,6 @@ impl Output {
         // What:     `pw::init();`. Initialises the PipeWire library (global C setup). Safe
         //           to call; idempotent in practice.
         // Why:      Required before any other PipeWire call.
-        // TS map:   `pw.init();`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -436,7 +397,6 @@ impl Output {
         //           properties. `.map_err` converts a `pw::Error` into our `PlayerError`;
         //           `?` returns early.
         // Why:      Create the background audio loop.
-        // TS map:   `const threadLoop = new ThreadLoop("music-player-audio");`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -447,7 +407,6 @@ impl Output {
             //           `|e| ...` is a closure; `format!` builds an owned `String`; `{e:?}`
             //           uses the error's Debug formatting.
             // Why:      Wrap the low-level error in our `Audio` variant.
-            // TS map:   `.catch(e => { throw new PlayerError.Audio(`thread loop: ${e}`); })`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -460,7 +419,6 @@ impl Output {
         //           (`&thread_loop` lends it) plus optional properties (`None`). Builds the
         //           refcounted context.
         // Why:      The root from which we connect to the server.
-        // TS map:   `const context = new Context(threadLoop);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -472,7 +430,6 @@ impl Output {
         // What:     `let core = context.connect_rc(None).map_err(...)?`. `connect_rc` opens
         //           the session; `None` = default connection properties.
         // Why:      We need a `Core` to make streams.
-        // TS map:   `const core = context.connect();`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -485,7 +442,6 @@ impl Output {
         // What:     `thread_loop.start();`. Spawns the loop's OS thread and begins
         //           processing. After this, callbacks can fire on that thread.
         // Why:      Bring the audio pipeline to life.
-        // TS map:   `threadLoop.start();`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -498,7 +454,6 @@ impl Output {
         //           the cell and starts its reference count at 1; `AtomicBool::new(false)`
         //           is the initial value.
         // Why:      A brand-new output is silent until the engine says play.
-        // TS map:   `const playing = { value: false };`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -510,7 +465,6 @@ impl Output {
         //           Build the struct (no stream yet) and wrap in `Ok`. Field shorthand for
         //           `core`/`thread_loop`/`playing`/`worker`. Tail -> return.
         // Why:      Hand back the ready (but silent) output.
-        // TS map:   `return new Output(null, null, core, context, threadLoop, playing, worker);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -533,7 +487,6 @@ impl Output {
     //           frames. Returns the WRITE half of that buffer.
     // Why:      Per-track native rate: each new track gets a stream at its own rate, and a
     //           fresh empty buffer so no stale audio leaks across.
-    // TS map:   `reconfigure(rate: number, channels: number, capacityFrames: number): RingProducer`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -548,7 +501,6 @@ impl Output {
         // What:     `let channels_usize = channels as usize;`. Widen `u16` to `usize` for
         //           buffer arithmetic.
         // Why:      Sample counts and strides are `usize`.
-        // TS map:   `const channels = channelsU16;` (TS numbers don't distinguish)
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -559,7 +511,6 @@ impl Output {
         // What:     `let capacity_samples = capacity_frames * channels_usize;`. Ring-buffer
         //           capacity is in INTERLEAVED SAMPLES, so frames times channels.
         // Why:      Size the buffer to hold `capacity_frames` frames of audio.
-        // TS map:   `const capacitySamples = capacityFrames * channels;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -571,7 +522,6 @@ impl Output {
         //           of that many `f32` slots. `::<f32>` is the turbofish that pins the
         //           element type.
         // Why:      The shared queue between decode thread and audio thread.
-        // TS map:   `const rb = new RingBuffer<number>(capacitySamples);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -583,7 +533,6 @@ impl Output {
         //           and returns its two halves; destructured into the write end `producer`
         //           and the read end `consumer`.
         // Why:      Producer goes to the engine; consumer goes into the callback.
-        // TS map:   `const { producer, consumer } = rb.split();`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -601,7 +550,6 @@ impl Output {
         //           cloned flag lets the callback see pause/play decisions made by the
         //           engine on the other thread, and the cloned worker lets it `unpark()` on
         //           drain.
-        // TS map:   `const processData = { consumer, channels, scratch: new Float32Array(0), playing, worker };`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -621,7 +569,6 @@ impl Output {
         //           it goes out of scope (even on an early `?` return).
         // Why:      PipeWire requires the loop locked when mutating its objects from another
         //           thread.
-        // TS map:   no equivalent; think "acquire a mutex; auto-released at block end".
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -632,7 +579,6 @@ impl Output {
         // What:     `self.listener = None;`. Drop the previous callback registration FIRST
         //           (it holds a raw pointer into the old stream).
         // Why:      Unregister before destroying the stream it points at.
-        // TS map:   `this.listener?.unregister(); this.listener = null;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -643,7 +589,6 @@ impl Output {
         // What:     `self.stream = None;`. Drop the previous stream (destroys the C object),
         //           now that no listener references it.
         // Why:      Replace it with a fresh stream below.
-        // TS map:   `this.stream = null;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -656,7 +601,6 @@ impl Output {
         //           metadata. `properties! { *KEY => "val" }` builds the dictionary; the `*`
         //           dereferences each key constant.
         // Why:      A fresh stream to negotiate this track's format.
-        // TS map:   `const stream = new Stream(core, "music-player", { mediaType: "Audio", ... });`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -678,7 +622,6 @@ impl Output {
         //           callback, and register it (returns an owned `StreamListener`). The
         //           closure receives `&StreamRef` and `&mut ProcessData`.
         // Why:      This callback is how PipeWire pulls samples from us in realtime.
-        // TS map:   `const listener = stream.onProcess(processData, (stream, pd) => { ... });`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -690,7 +633,6 @@ impl Output {
             //           `|stream, pd|` is the closure's parameter list. This runs on
             //           PipeWire's thread; it must not block/allocate.
             // Why:      Feed the hardware buffer from our ring buffer.
-            // TS map:   `(stream, pd) => { ... }`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -701,7 +643,6 @@ impl Output {
                 //           buffer to fill. Returns `Option<Buffer>`: `Some(buffer)` if one
                 //           is available, else `None`.
                 // Why:      We can only write when PipeWire gives us a buffer.
-                // TS map:   `const buffer = stream.dequeueBuffer(); if (!buffer) return;`
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -710,7 +651,6 @@ impl Output {
                 match stream.dequeue_buffer() {
                     // What:     `None => {}`. No buffer right now: do nothing.
                     // Why:      Skip this cycle.
-                    // TS map:   `if (!buffer) return;`
                     //
                     // In TS you'd write (pseudocode):
                     // ```ts
@@ -720,7 +660,6 @@ impl Output {
                     // What:     `Some(mut buffer) => { ... }`. We got a buffer; `mut` because
                     //           we write into it.
                     // Why:      Fill it with samples.
-                    // TS map:   `else { ... }`
                     //
                     // In TS you'd write (pseudocode):
                     // ```ts
@@ -731,7 +670,6 @@ impl Output {
                         //           several data planes; `datas_mut()` borrows them mutably
                         //           as a slice.
                         // Why:      Interleaved audio uses plane 0.
-                        // TS map:   `const datas = buffer.datas;`
                         //
                         // In TS you'd write (pseudocode):
                         // ```ts
@@ -743,7 +681,6 @@ impl Output {
                         //           means nothing to fill. `return` exits the closure (the
                         //           buffer is queued back on drop).
                         // Why:      Avoid indexing an empty slice.
-                        // TS map:   `if (datas.length === 0) return;`
                         //
                         // In TS you'd write (pseudocode):
                         // ```ts
@@ -756,7 +693,6 @@ impl Output {
                         // What:     `let bdata = &mut datas[0];`. Mutable reference to the
                         //           first data plane.
                         // Why:      The interleaved samples go here.
-                        // TS map:   `const bdata = datas[0];`
                         //
                         // In TS you'd write (pseudocode):
                         // ```ts
@@ -767,7 +703,6 @@ impl Output {
                         // What:     `let stride = F32_BYTES * pd.channels;`. Bytes per audio
                         //           frame (one sample per channel).
                         // Why:      Used to size and tag the chunk.
-                        // TS map:   `const stride = 4 * pd.channels;`
                         //
                         // In TS you'd write (pseudocode):
                         // ```ts
@@ -779,7 +714,6 @@ impl Output {
                         //           `bdata.data()` returns `Option<&mut [u8]>`: the mapped
                         //           byte buffer to write, or `None`.
                         // Why:      Fill the bytes and report how many frames we wrote.
-                        // TS map:   `const slice = bdata.data; const nFrames = slice ? fill(slice) : 0;`
                         //
                         // In TS you'd write (pseudocode):
                         // ```ts
@@ -789,7 +723,6 @@ impl Output {
                             // What:     `Some(slice) => { ... }`. `slice: &mut [u8]` is the
                             //           writable hardware buffer bytes.
                             // Why:      Copy decoded samples into it.
-                            // TS map:   `if (slice) { ... }`
                             //
                             // In TS you'd write (pseudocode):
                             // ```ts
@@ -799,7 +732,6 @@ impl Output {
                                 // What:     `let avail_frames = slice.len() / stride;`. How
                                 //           many whole frames fit in this buffer.
                                 // Why:      We fill exactly that many frames.
-                                // TS map:   `const availFrames = (slice.length / stride) | 0;`
                                 //
                                 // In TS you'd write (pseudocode):
                                 // ```ts
@@ -810,7 +742,6 @@ impl Output {
                                 // What:     `let want = avail_frames * pd.channels;`.
                                 //           Interleaved sample count to produce.
                                 // Why:      Total f32 values to pop/convert.
-                                // TS map:   `const want = availFrames * pd.channels;`
                                 //
                                 // In TS you'd write (pseudocode):
                                 // ```ts
@@ -823,7 +754,6 @@ impl Output {
                                 //           slots with `0.0`.
                                 // Why:      Have room to pop `want` samples (grows at most
                                 //           once after sizes stabilise).
-                                // TS map:   `if (pd.scratch.length < want) pd.scratch = new Float32Array(want);`
                                 //
                                 // In TS you'd write (pseudocode):
                                 // ```ts
@@ -842,7 +772,6 @@ impl Output {
                                 //           flag).
                                 // Why:      Decide, on the realtime thread, whether to feed
                                 //           real audio or silence this cycle.
-                                // TS map:   `const playing = Atomics.load(playingFlag, 0) !== 0;`
                                 //
                                 // In TS you'd write (pseudocode):
                                 // ```ts
@@ -859,7 +788,6 @@ impl Output {
                                 // Why:      Pausing must stop draining the buffer at once;
                                 //           otherwise the ~1 second already queued keeps
                                 //           playing (the pause-delay bug).
-                                // TS map:   `const got = playing ? pd.consumer.popSlice(pd.scratch.subarray(0, want)) : 0;`
                                 //
                                 // In TS you'd write (pseudocode):
                                 // ```ts
@@ -882,7 +810,6 @@ impl Output {
                                 //           plus a futex wake on Linux): no lock, no
                                 //           allocation, so it is safe to call from this
                                 //           realtime callback.
-                                // TS map:   `if (got > 0) worker.postWakeUp();`
                                 //
                                 // In TS you'd write (pseudocode):
                                 // ```ts
@@ -900,7 +827,6 @@ impl Output {
                                 //           emits pure silence.
                                 // Why:      Output silence on underrun (and while paused)
                                 //           instead of stale/garbage data.
-                                // TS map:   `for (let i = got; i < want; i++) pd.scratch[i] = 0;`
                                 //
                                 // In TS you'd write (pseudocode):
                                 // ```ts
@@ -916,7 +842,6 @@ impl Output {
                                 //           pairs each with its index.
                                 // Why:      Write each f32 as 4 little-endian bytes into the
                                 //           hardware buffer.
-                                // TS map:   `pd.scratch.slice(0, want).forEach((sample, i) => { ... });`
                                 //
                                 // In TS you'd write (pseudocode):
                                 // ```ts
@@ -927,7 +852,6 @@ impl Output {
                                     //           `to_le_bytes()` converts the `f32` into a
                                     //           `[u8; 4]` in little-endian order.
                                     // Why:      The buffer format is F32LE bytes.
-                                    // TS map:   `dataView.setFloat32(off, sample, true);`
                                     //
                                     // In TS you'd write (pseudocode):
                                     // ```ts
@@ -938,7 +862,6 @@ impl Output {
                                     // What:     `let off = i * F32_BYTES;`. Byte offset of
                                     //           this sample in the buffer.
                                     // Why:      Where to write the 4 bytes.
-                                    // TS map:   `const off = i * 4;`
                                     //
                                     // In TS you'd write (pseudocode):
                                     // ```ts
@@ -950,7 +873,6 @@ impl Output {
                                     //           Copy the 4 bytes into the buffer at `off`.
                                     //           `&bytes` lends the array.
                                     // Why:      Place the sample.
-                                    // TS map:   `slice.set(bytes, off);`
                                     //
                                     // In TS you'd write (pseudocode):
                                     // ```ts
@@ -962,7 +884,6 @@ impl Output {
                                 // What:     `avail_frames`. Tail of the arm: the number of
                                 //           frames we filled becomes `n_frames`.
                                 // Why:      Report the frame count.
-                                // TS map:   `return availFrames;`
                                 //
                                 // In TS you'd write (pseudocode):
                                 // ```ts
@@ -972,7 +893,6 @@ impl Output {
                             }
                             // What:     `None => 0`. No mapped buffer: zero frames.
                             // Why:      Nothing written.
-                            // TS map:   `else nFrames = 0;`
                             //
                             // In TS you'd write (pseudocode):
                             // ```ts
@@ -985,7 +905,6 @@ impl Output {
                         //           metadata describing the valid region of the buffer;
                         //           `chunk_mut()` borrows it mutably.
                         // Why:      We must tell PipeWire how much we wrote.
-                        // TS map:   `const chunk = bdata.chunk;`
                         //
                         // In TS you'd write (pseudocode):
                         // ```ts
@@ -997,7 +916,6 @@ impl Output {
                         //           mutable reference to the offset field; `*... =` writes
                         //           through it. Data starts at byte 0.
                         // Why:      No leading padding.
-                        // TS map:   `chunk.offset = 0;`
                         //
                         // In TS you'd write (pseudocode):
                         // ```ts
@@ -1009,7 +927,6 @@ impl Output {
                         //           byte stride. `as _` lets the compiler infer the exact
                         //           integer type the field needs.
                         // Why:      PipeWire needs the frame size.
-                        // TS map:   `chunk.stride = stride;`
                         //
                         // In TS you'd write (pseudocode):
                         // ```ts
@@ -1020,7 +937,6 @@ impl Output {
                         // What:     `*chunk.size_mut() = (stride * n_frames) as _;`. Total
                         //           valid bytes = stride times frames written.
                         // Why:      Tells PipeWire how many bytes to play.
-                        // TS map:   `chunk.size = stride * nFrames;`
                         //
                         // In TS you'd write (pseudocode):
                         // ```ts
@@ -1033,7 +949,6 @@ impl Output {
             // What:     `.register()`. Finish building and register the listener; returns
             //           `Result<StreamListener<ProcessData>, pw::Error>`.
             // Why:      Activate the callbacks on the stream.
-            // TS map:   `.register()`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -1045,7 +960,6 @@ impl Output {
         // What:     `let mut info = AudioInfoRaw::new();`. Build the format descriptor. `mut`
         //           because we set fields next.
         // Why:      Describe the audio we will send.
-        // TS map:   `const info = new AudioInfoRaw();`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1056,7 +970,6 @@ impl Output {
         // What:     `info.set_format(AudioFormat::F32LE);`. Interleaved 32-bit little-endian
         //           float samples. Sibling formats: `S16LE`, etc.
         // Why:      Our decoders output `f32`.
-        // TS map:   `info.format = "F32LE";`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1066,7 +979,6 @@ impl Output {
 
         // What:     `info.set_rate(rate);`. Samples per second for THIS track.
         // Why:      Per-track native rate; PipeWire resamples to the device.
-        // TS map:   `info.rate = rate;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1077,7 +989,6 @@ impl Output {
         // What:     `info.set_channels(channels as u32);`. Channel count; the API wants
         //           `u32`, so widen our `u16`.
         // Why:      Stereo/mono layout.
-        // TS map:   `info.channels = channels;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1092,7 +1003,6 @@ impl Output {
         //           property list. `serialize(...)` returns `Result<(Cursor, ...)>`; `?`
         //           unwraps; `.0` takes the cursor; `.into_inner()` extracts the `Vec<u8>`.
         // Why:      Stream parameters must be passed as serialized pod bytes.
-        // TS map:   no equivalent; `const values = encodeFormatPod(info);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1105,7 +1015,6 @@ impl Output {
                 //           constant marking this object as a "Format" object. `pw::spa::sys`
                 //           is the raw C-binding submodule.
                 // Why:      PipeWire identifies the object kind by this tag.
-                // TS map:   `type: SPA_TYPE_OBJECT_Format,`
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -1115,7 +1024,6 @@ impl Output {
                 // What:     `id: pw::spa::sys::SPA_PARAM_EnumFormat`. Marks the parameter as
                 //           the set of formats we can accept.
                 // Why:      Stream negotiation reads `EnumFormat`.
-                // TS map:   `id: SPA_PARAM_EnumFormat,`
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -1125,7 +1033,6 @@ impl Output {
                 // What:     `properties: info.into()`. `.into()` converts the `AudioInfoRaw`
                 //           into the `Vec<Property>` the object wants.
                 // Why:      The format fields become the object's properties.
-                // TS map:   `properties: infoToProps(info),`
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -1142,7 +1049,6 @@ impl Output {
         //           `Pod::from_bytes` returns `Option<&Pod>` (a borrowed view over `values`);
         //           `.ok_or_else(...)` turns `None` into an error; `?` unwraps the `&Pod`.
         // Why:      `connect` takes pod references, not raw bytes.
-        // TS map:   `const pod = Pod.fromBytes(values); if (!pod) throw ...;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1154,7 +1060,6 @@ impl Output {
         // What:     `let mut params = [pod];`. A fixed array of one pod reference; `mut`
         //           because `connect` takes `&mut [&Pod]`.
         // Why:      The parameter list for stream negotiation.
-        // TS map:   `const params = [pod];`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1169,7 +1074,6 @@ impl Output {
         //           `process` on the realtime thread). `|` combines the bit flags.
         //           `&mut params` lends the param list.
         // Why:      Start streaming audio at the negotiated format.
-        // TS map:   `stream.connect("output", null, AUTOCONNECT | MAP_BUFFERS | RT_PROCESS, params);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1188,7 +1092,6 @@ impl Output {
         //           struct; the C object it points to stays put, so the listener's pointer
         //           remains valid).
         // Why:      Keep it alive while playing this track.
-        // TS map:   `this.stream = stream;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1199,7 +1102,6 @@ impl Output {
         // What:     `self.listener = Some(listener);`. Store the registration so the
         //           callbacks stay active.
         // Why:      Dropping it would unregister the callback.
-        // TS map:   `this.listener = listener;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1210,7 +1112,6 @@ impl Output {
         // What:     `drop(guard);`. Explicitly release the loop lock now (it would also
         //           release at end of scope; doing it here is clearer).
         // Why:      Let the audio loop resume processing.
-        // TS map:   `guard.unlock();`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1220,7 +1121,6 @@ impl Output {
 
         // What:     `Ok(producer)`. Return the WRITE half of the ring buffer. Tail -> return.
         // Why:      The engine pushes decoded samples into it.
-        // TS map:   `return producer;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1234,7 +1134,6 @@ impl Output {
     //           exclusive access; the cell handles concurrent writes.
     // Why:      The engine calls this on pause/play so the realtime callback can react
     //           immediately.
-    // TS map:   `setPlaying(on: boolean): void`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1245,7 +1144,6 @@ impl Output {
         //           `on` into the shared flag. `Relaxed` matches the loose ordering used by
         //           the callback's `.load` (a lone flag needs no stronger guarantee).
         // Why:      Make the new state visible to the audio thread.
-        // TS map:   `Atomics.store(playingFlag, 0, on ? 1 : 0);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1259,7 +1157,6 @@ impl Output {
 //           (goes out of scope). `Drop` is the destructor trait.
 // Why:      Stop the loop thread BEFORE the fields (stream/core/...) are destroyed, so no
 //           realtime callback runs during teardown.
-// TS map:   no exact equivalent; like a `Symbol.dispose`/`finally` cleanup.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -1268,7 +1165,6 @@ impl Output {
 impl Drop for Output {
     // What:     `fn drop(&mut self)`. Runs once, automatically, at end of life.
     // Why:      Stop the audio loop first.
-    // TS map:   `[Symbol.dispose]() { ... }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1278,7 +1174,6 @@ impl Drop for Output {
         // What:     `self.thread_loop.stop();`. Stops the loop and joins its OS thread.
         //           After this no callbacks fire.
         // Why:      Make destroying the stream/core safe (no concurrent access).
-        // TS map:   `this.threadLoop.stop();`
         //
         // In TS you'd write (pseudocode):
         // ```ts

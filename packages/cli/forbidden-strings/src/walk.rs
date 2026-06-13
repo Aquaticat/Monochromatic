@@ -5,9 +5,6 @@
 // Why:      `--all` mode walks the working tree to enumerate every file
 //           we should scan; `WalkBuilder` does this in parallel and
 //           respects `.gitignore` semantics (including `!` negations).
-// TS map:   `import { WalkBuilder } from "<some npm package>"`; there
-//           is no direct TS analogue; closest is `globby` or
-//           `fast-glob` with `gitignore: true`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -20,8 +17,6 @@ use ignore::WalkBuilder;
 //           keep walking, skip the current subtree, or quit entirely.
 // Why:      The parallel walker wants the callback to say
 //           `WalkState::Continue` after handling each entry.
-// TS map:   No equivalent; closest mental model is "return a status
-//           code from the callback to steer the iterator."
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -42,9 +37,6 @@ use ignore::WalkState;
 //           threads into a shared `Vec`, we wrap the `Vec` in
 //           `Arc<Mutex<...>>`: `Arc` to share across threads, `Mutex`
 //           to serialize push operations.
-// TS map:   No 1:1 equivalent. Mentally: a JS `Array` shared between
-//           workers via SharedArrayBuffer + an Atomics lock, except
-//           the Rust version is type-checked end to end.
 // Gotcha:   `Arc::clone(&x)` is cheap (atomic increment), NOT a deep
 //           copy. The pointee is the same `Mutex<Vec>`.
 //
@@ -69,7 +61,6 @@ use std::sync::{Arc, Mutex};
 //           Configurations using SHA-256 are still rare today, but
 //           Git's SHA-256 transition is moving forward; supporting
 //           the case keeps BUG 3's fix sound across object formats.
-// TS map:   `function detectIndexHashKind(repoRoot: string): "sha1" | "sha256"`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -146,9 +137,6 @@ fn detect_index_hash_kind(repo_root: &std::path::Path) -> gix_hash::Kind {
 // Why:      `--all` mode calls this once to get every scannable file.
 //           The `Result` shape lets us propagate walk errors as
 //           strings, matching the rest of the binary's error style.
-// TS map:   `export function listFiles(root: string): string[]`, with
-//           Rust's `Result<T, String>` standing in for "throw a string
-//           message instead of returning."
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -169,7 +157,6 @@ pub fn list_files(root: &str) -> Result<Vec<String>, String> {
     //           closure so every thread can lock-and-push.
     // Why:      Need a shared collection for the parallel walker to
     //           write into.
-    // TS map:   `const files = new SharedCollection<string>();`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -201,9 +188,6 @@ pub fn list_files(root: &str) -> Result<Vec<String>, String> {
     //           an in-process walk. On this repo the parallel walker
     //           is ~9x faster than the subprocess; the walker also
     //           drops the runtime dependency on `git` being on PATH.
-    // TS map:   The whole block is a builder chain; closest TS analogue
-    //           is fast-glob/globby with options object, then a
-    //           `forEach` over results.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -223,7 +207,6 @@ pub fn list_files(root: &str) -> Result<Vec<String>, String> {
             //           literal `".git"` works because `OsStr` impls
             //           `PartialEq<str>` for ASCII names.
             // Why:      Skip the entire `.git/` and `.jj/` subtrees.
-            // TS map:   `path.basename(p) !== ".git"` and `!== ".jj"`.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -247,9 +230,6 @@ pub fn list_files(root: &str) -> Result<Vec<String>, String> {
     //               or quitting; we don't need them.)
     // Why:      Kicks off the parallel walk and accumulates file
     //           paths into the shared `Vec`.
-    // TS map:   `walker.run((entry) => { handle(entry); })`,
-    //           closest mental model is a worker pool's per-worker
-    //           handler factory.
     // Gotcha:   The OUTER closure is called once PER WORKER THREAD
     //           (NOT once per entry). The INNER closure is called
     //           once per entry. Mixing these up leads to allocating
@@ -270,9 +250,6 @@ pub fn list_files(root: &str) -> Result<Vec<String>, String> {
         // Why:      Each worker thread needs its own `Arc` handle.
         //           The `move` below transfers this clone into the
         //           inner closure.
-        // TS map:   `const filesRef = files;` (TS shares references
-        //           naturally; Rust requires explicit refcounting to
-        //           share ownership across threads).
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -293,7 +270,6 @@ pub fn list_files(root: &str) -> Result<Vec<String>, String> {
             // Why:      The walker reports per-entry I/O errors via
             //           `Result`; we need the `Ok` value to look at
             //           the file.
-            // TS map:   `if (!entry.ok) return; const e = entry.value;`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -313,7 +289,6 @@ pub fn list_files(root: &str) -> Result<Vec<String>, String> {
             //           file type is unknown).
             // Why:      We only want files in the output, not
             //           directories or special entries.
-            // TS map:   `e.fileType?.isFile ?? false`.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -332,8 +307,6 @@ pub fn list_files(root: &str) -> Result<Vec<String>, String> {
             // Why:      Every consumer downstream takes `&str`; non-
             //           UTF-8 paths would force an `OsString` plumbing
             //           overhaul for vanishingly rare cases.
-            // TS map:   `e.path` (TS strings are always UTF-16; the
-            //           equivalent decision happens implicitly).
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -349,8 +322,6 @@ pub fn list_files(root: &str) -> Result<Vec<String>, String> {
                 //           end of statement, releasing the lock.
                 // Why:      Serialize the per-thread push into the
                 //           shared `Vec`.
-                // TS map:   `files.push(s);`; TS doesn't have to
-                //           lock because Node is single-threaded.
                 // Gotcha:   `unwrap()` on `lock()` panics if a prior
                 //           holder panicked while holding the lock
                 //           (poisoned mutex). Acceptable here: a
@@ -378,8 +349,6 @@ pub fn list_files(root: &str) -> Result<Vec<String>, String> {
     // Why:      Returning the inner `Vec` by value is cheaper than
     //           cloning; we only fall back when the optimization
     //           is unavailable.
-    // TS map:   No 1:1; mentally: "if I'm the only owner, take the
-    //           array out without copying; otherwise copy."
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -421,7 +390,6 @@ pub fn list_files(root: &str) -> Result<Vec<String>, String> {
     //           the call returns `Err` and we silently fall back to
     //           walker-only output, matching the previous subprocess
     //           behaviour.
-    // TS map:   `const idx = await openIndex(repoRoot); for (const e of idx.entries) { ... }`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -458,7 +426,6 @@ pub fn list_files(root: &str) -> Result<Vec<String>, String> {
         //           comparing the remainder.
         // Why:      Without deduplication tracked-non-ignored files
         //           would scan twice (once via walker, once via index).
-        // TS map:   `const seen = new Set(files.map(p => p.replace(/^\.\//, "")));`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -489,7 +456,6 @@ pub fn list_files(root: &str) -> Result<Vec<String>, String> {
             //           excluded them. The in-process replacement
             //           reads ALL index entries, so we must mode-filter
             //           explicitly.
-            // TS map:   `if (entry.mode !== FILE && entry.mode !== FILE_EXECUTABLE) continue;`.
             let mode = entry.mode;
             if !mode.contains(gix_index::entry::Mode::FILE)
                 && !mode.contains(gix_index::entry::Mode::FILE_EXECUTABLE)
@@ -504,7 +470,6 @@ pub fn list_files(root: &str) -> Result<Vec<String>, String> {
             // Why:      The repo-relative path is what we want to feed
             //           downstream scanning; index entries do not carry
             //           the leading `./` walker convention.
-            // TS map:   `entry.path` (a string/bytes).
             let path_bytes: &[u8] = entry.path(&index);
             // What:     `std::str::from_utf8(path_bytes)` validates that
             //           the path is UTF-8. Non-UTF-8 paths are silently
@@ -542,8 +507,6 @@ pub fn list_files(root: &str) -> Result<Vec<String>, String> {
 //           git-fixture tests live beside it without inflating this file or
 //           consuming its max-lines budget (sibling `*_tests.rs` files are
 //           exempt from the linter).
-// TS map:   the `walk.unit.test.ts` file beside `walk.ts`, excluded from
-//           the production bundle.
 //
 // In TS you'd write (pseudocode):
 // ```ts

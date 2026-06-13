@@ -27,9 +27,6 @@
 //           (`dev/monochromatic/musicplayer/`).
 // Why:      Gives this code a stable, collision-free home so two different `LibraryRoot` objects in
 //           different packages never clash.
-// TS map:   There is no exact analogue. The closest mental model is the directory path of a module
-//           plus a one-time `// @namespace dev.monochromatic.musicplayer` banner. TS has no
-//           `package` keyword; module identity comes from the file path you `import` from.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -44,8 +41,6 @@ package dev.monochromatic.musicplayer
 //           settings store and the content resolver.
 // Why:      Several functions below take a `Context` parameter; without this import the name would be
 //           unresolved.
-// TS map:   A named import. `import { Context } from "android/content";` — except Android's import
-//           names a single class out of a package, not a module file.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -57,8 +52,6 @@ import android.content.Context
 //           URI string (here a `content://...` SAF tree URI). It is an object, not a bare string.
 // Why:      `save` accepts a `Uri`, and `heldRoot` returns one; we compare `Uri` objects for
 //           equality below.
-// TS map:   `import { Uri } from "android/net";` — think of `Uri` as the built-in `URL` class, a
-//           parsed wrapper around a URL string.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -71,8 +64,6 @@ import android.net.Uri
 //           stream you read with `adb logcat`.
 // Why:      We log when we save a root and when we discover a remembered root has gone stale, so the
 //           on-device verification can trace what happened.
-// TS map:   `import { Log } from "android/util";` — `Log.i` ~ `console.info`, `Log.w` ~
-//           `console.warn`, but the first argument is a TAG string used for filtering.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -86,8 +77,6 @@ import android.util.Log
 //           base Android class has no `edit { }` method of its own.
 // Why:      It gives us the clean `edit { putString(...) }` block form (begin-edit, mutate,
 //           auto-commit) instead of the verbose `.edit()` + `.apply()` dance.
-// TS map:   TS has no extension methods. Mentally this is a free function you'd call as
-//           `edit(prefs, callback)`, but Kotlin's import wiring makes it LOOK like `prefs.edit(cb)`.
 // Gotcha:   This import is what makes the bare token `edit` resolve to a method on a settings object.
 //           Importing a *function* (not a type) is unusual to a TS reader; here it's mandatory.
 //
@@ -102,8 +91,6 @@ import androidx.core.content.edit
 //           the remembered string back into a structured URI.
 // Why:      We persist the root as a string but need a `Uri` object to compare against the live
 //           permission list.
-// TS map:   `import { toUri } from "androidx/core/net";` — but in TS you'd just call
-//           `new URL(saved)`. Here it reads as `saved.toUri()` because of the extension trick.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -120,8 +107,6 @@ import androidx.core.net.toUri
 //           top-level, app-wide, stateless namespace, so the plain `object` is right.
 // Why:      All the root-remembering logic is pure functions over a settings file; there is no
 //           per-instance state, so one shared namespace is exactly what we want.
-// TS map:   `export const LibraryRoot = { save, heldRoot, clear };` — a module-level object literal
-//           holding the functions. Or: a class with only `static` methods.
 // Gotcha:   `object` here is NOT JavaScript's `{}` object literal. It is the Kotlin keyword for a
 //           singleton constructed on first access (lazy, thread-safe), more like a `namespace` that
 //           can hold state.
@@ -141,7 +126,6 @@ object LibraryRoot {
     //           text interface; we want the concrete `String`).
     // Why:      A single source of truth for the logcat tag string so every `Log.i`/`Log.w` call in
     //           this file files its lines under the same searchable label.
-    // TS map:   `const ROOT_TAG: string = "LibraryRoot";` at module scope, not exported.
     // Gotcha:   `const val` is more than TS `const`: it must be a compile-time literal and gets
     //           inlined. A runtime-computed read-only value would be a plain `val`, not `const val`.
     //
@@ -157,8 +141,6 @@ object LibraryRoot {
     //           `String`.
     // Why:      `getSharedPreferences(PREFS_NAME, ...)` needs a stable name so writes and reads hit
     //           the same on-disk file across the Activity and the background service.
-    // TS map:   `const PREFS_NAME: string = "library_root";` — picture it as the key prefix or
-    //           filename you'd hand a `localStorage`-like store.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -171,8 +153,6 @@ object LibraryRoot {
     //           key/value store; this is the key.
     // Why:      `putString(KEY_TREE_URI, ...)` and `getString(KEY_TREE_URI, ...)` must agree on one
     //           key, or a save and a read would touch different slots.
-    // TS map:   `const KEY_TREE_URI: string = "tree_uri";` — the string key you'd pass to
-    //           `localStorage.setItem(KEY_TREE_URI, ...)`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -188,7 +168,6 @@ object LibraryRoot {
     //           always `val`-like; you cannot reassign them).
     // Why:      This is the public "write" entry point: persist the user's chosen folder so a later
     //           launch can find it.
-    // TS map:   `function save(context: Context, treeUri: Uri): void { ... }`.
     // Gotcha:   Kotlin function params are immutable; there is no implicit `let` reassignment of
     //           `context` or `treeUri` inside the body.
     //
@@ -210,8 +189,6 @@ object LibraryRoot {
         //             for storage (the store only holds strings).
         // Why:      Write the chosen URI string into the persistent settings file under our key so it
         //           outlives this process.
-        // TS map:   `prefs(context).edit((editor) => { editor.putString(KEY_TREE_URI,
-        //           treeUri.toString()); });` — and `treeUri.toString()` is just `String(treeUri)`.
         // Gotcha:   The `{ ... }` after `edit` is NOT an object literal; it's a lambda body where
         //           `this` is silently rebound to the preferences editor. That implicit-receiver
         //           rebinding has no TS equivalent.
@@ -230,8 +207,6 @@ object LibraryRoot {
         //           short form; `${expr}` is the long form for full expressions.
         // Why:      Leave a breadcrumb so on-device tracing can confirm the save happened and with
         //           what URI.
-        // TS map:   `Log.i(ROOT_TAG, `saved library root ${treeUri}`);` — `$treeUri` is exactly a
-        //           template-literal `${treeUri}` interpolation.
         // Gotcha:   `$treeUri` inside a double-quoted Kotlin string is interpolation, not a literal
         //           dollar sign. To print a real `$`, you escape it as `\$`.
         //
@@ -250,8 +225,6 @@ object LibraryRoot {
     // Why:      This is the public "read" entry point. It must be able to answer "no remembered,
     //           still-readable root" with `null`, so callers can fall back to the device-wide
     //           MediaStore source instead of scanning a folder they cannot open.
-    // TS map:   `function heldRoot(context: Context): Uri | null { ... }`. Kotlin's `Uri?` is exactly
-    //           TS's `Uri | null` union.
     // Gotcha:   Unlike TS (where any object can be `null` at runtime regardless of its type), Kotlin
     //           ENFORCES the `?`: you literally cannot dereference a `Uri?` without handling the null
     //           case first.
@@ -273,10 +246,6 @@ object LibraryRoot {
         //             `String` (the sibling `String?` is what `getString` actually returned).
         // Why:      If no root was ever saved, there is nothing to validate; short-circuit out with
         //           "no root" rather than parsing a null.
-        // TS map:   `const saved: string = prefs(context).getString(KEY_TREE_URI, null) ?? returnNull
-        //           ();` — but `??` in TS can't embed a `return`. Really:
-        //           `const maybe = prefs(context).getString(KEY_TREE_URI, null); if (maybe == null)
-        //           return null; const saved: string = maybe;`
         // Gotcha:   `?:` is Kotlin's Elvis (null-coalescing), close to TS `??`, NOT a ternary. The
         //           magic part is that its right side can be a `return`, which TS `??` cannot do.
         //
@@ -294,8 +263,6 @@ object LibraryRoot {
         //           a real object).
         // Why:      We need a structured `Uri` (not a raw string) to compare against the OS's list of
         //           live permissions on the next line.
-        // TS map:   `const uri: Uri = new URL(saved);` — `.toUri()` is the parse step, like
-        //           `new URL(...)`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -323,10 +290,6 @@ object LibraryRoot {
         //             always returns a real `true`/`false`, so non-null is correct).
         // Why:      The saved string alone proves nothing; the folder is only usable if a live read
         //           grant still backs it. This line is the drift check at the heart of the file.
-        // TS map:   `const held: boolean = context.contentResolver.persistedUriPermissions.some(
-        //           (permission) => permission.uri.equals(uri) && permission.isReadPermission);` —
-        //           `.any` is Array `.some`, the lambda is an arrow function, and `==` is `.equals()`
-        //           (value equality), NOT JS `===` reference equality.
         // Gotcha:   Kotlin `==` is VALUE equality (it calls `.equals()`), unlike JS `==`/`===` which
         //           on objects is reference identity. Comparing two `Uri` objects with `==` here
         //           correctly compares their string contents.
@@ -345,7 +308,6 @@ object LibraryRoot {
         //           ordinary `if` with a braced body.
         // Why:      A remembered URI with no backing grant is a dead pointer; we must not return it.
         //           This branch handles the "stale root" case.
-        // TS map:   `if (!held) { ... }` — character-identical thinking.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -358,8 +320,6 @@ object LibraryRoot {
             //           `.toString()` is called automatically).
             // Why:      Record WHY we are about to forget a remembered root, so the on-device trace
             //           explains the fallback to the device-wide source.
-            // TS map:   `Log.w(ROOT_TAG, `remembered root ${uri} has no live read grant; forgetting
-            //           it`);` — `Log.w` ~ `console.warn`, `$uri` ~ `${uri}`.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -371,7 +331,6 @@ object LibraryRoot {
             // Why:      Forget the dead pointer so future reads short-circuit at the very first step
             //           (the `?: return null` above) instead of re-failing this grant check every
             //           time.
-            // TS map:   `clear(context);` — identical.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -383,7 +342,6 @@ object LibraryRoot {
             //           nullable `Uri?` return type.
             // Why:      Tell the caller there is nothing live to scan, so it can fall back to the
             //           device-wide MediaStore source.
-            // TS map:   `return null;` — identical; `Uri?` is `Uri | null`.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -397,7 +355,6 @@ object LibraryRoot {
         //           spelled out). The value `uri` is a non-null `Uri`, which fits the `Uri?` return
         //           type (a non-null value is always a valid nullable value).
         // Why:      Give the caller the validated, still-openable library root.
-        // TS map:   `return uri;` — identical.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -412,7 +369,6 @@ object LibraryRoot {
     // Why:      Public "forget" entry point: drop the remembered root so the next load falls back to
     //           the device-wide source. Also called internally by `heldRoot` when it detects a stale
     //           grant.
-    // TS map:   `function clear(context: Context): void { ... }`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -427,7 +383,6 @@ object LibraryRoot {
         //           string.
         // Why:      Physically remove the dead/unwanted entry so subsequent reads find nothing and
         //           short-circuit to the fallback source.
-        // TS map:   `prefs(context).edit((editor) => { editor.remove(KEY_TREE_URI); });`.
         // Gotcha:   Same implicit-receiver rebinding as in `save`: the `{ ... }` is a lambda where
         //           `this` is the editor, not an object literal.
         //
@@ -449,9 +404,6 @@ object LibraryRoot {
     // Why:      One place that knows the file name and access mode, so `save`, `heldRoot`, and
     //           `clear` all agree on which file they touch. The settings file is process-wide, so the
     //           Activity's write is visible to the background service's read.
-    // TS map:   `function prefs(context: Context) { return context.getSharedPreferences(PREFS_NAME,
-    //           Context.MODE_PRIVATE); }` — the `=` expression-body form is just an arrow-style
-    //           one-liner: `const prefs = (context: Context) => context.getSharedPreferences(...)`.
     // Gotcha:   The `=` (instead of `{ return ... }`) is Kotlin's single-expression function form;
     //           the return type is inferred, not written. A TS reader should not look for an explicit
     //           return type here.

@@ -35,9 +35,6 @@
 // Why:      The engine thread flips a "playing" flag and the realtime audio callback
 //           reads it; a plain `bool` shared across threads is undefined behaviour, so it
 //           must be atomic.
-// TS map:   no real equivalent (JS is single-threaded). Mentally: a one-slot shared cell
-//           both threads poke safely, like a `SharedArrayBuffer` `Int32Array` flag read
-//           with `Atomics.load`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -53,8 +50,6 @@ use std::sync::atomic::{AtomicBool, Ordering};
 //           thread and the realtime callback on cpal's thread); `Arc` lets both hold a
 //           clone of one shared cell. `Rc` would not compile because the cell crosses a
 //           thread boundary.
-// TS map:   no equivalent; GC makes every object implicitly shared, so you would just
-//           close over the same variable.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -68,7 +63,6 @@ use std::sync::Arc;
 //           wait for it; `Thread` is just a wake-able handle.
 // Why:      The realtime audio callback holds one so it can wake (`unpark`) the engine
 //           worker after it drains the ring buffer, telling it to decode more.
-// TS map:   `type Thread = WorkerRef;` (a reference you can post "wake up" to)
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -83,8 +77,6 @@ use std::thread::Thread;
 //           the trait is in scope.
 // Why:      We call all three method families below, so all three traits must be imported
 //           even though we never name the trait types directly.
-// TS map:   like importing interfaces whose methods you then call; TS has no "import the
-//           interface to unlock the method" rule, so this is extra.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -100,7 +92,6 @@ use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
 //           wrapped anymore.
 // Why:      We build one `StreamConfig` per track to open the output stream at that
 //           track's native rate and channel count.
-// TS map:   `import { BufferSize, StreamConfig } from "cpal";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -112,7 +103,6 @@ use cpal::{BufferSize, StreamConfig};
 //           scope: `Split::split` (cut a ring buffer into a producer and a consumer half)
 //           and `Consumer::pop_slice` (drain samples out).
 // Why:      We split the buffer and the callback pops from the consumer half.
-// TS map:   importing interfaces whose methods we then call.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -127,8 +117,6 @@ use ringbuf::traits::{Consumer, Split};
 //           different threads (single-producer, single-consumer).
 // Why:      A lock-free hand-off of samples from the decode thread to the realtime audio
 //           thread.
-// TS map:   no direct equivalent; imagine a fixed-size, lock-free `Array` queue split
-//           into a writer object and a reader object.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -138,7 +126,6 @@ use ringbuf::{HeapProd, HeapRb};
 
 // What:     `use crate::error::PlayerError;`. Our one app-wide error type.
 // Why:      Fallible methods here return `PlayerError`.
-// TS map:   `import { PlayerError } from "@/error";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -159,7 +146,6 @@ use crate::error::PlayerError;
 // Why:      Mirrors the PipeWire `Output` field-for-field in PURPOSE so the engine sees
 //           one identical type. `cpal::Device`/`Stream` replace the PipeWire
 //           core/context/loop because cpal manages those internally.
-// TS map:   `class Output { device; stream: Stream | null; playing; worker; }`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -171,7 +157,6 @@ pub struct Output {
     //           it so it outlives every stream we build.
     // Why:      `build_output_stream` is a method on the device; keeping it lets per-track
     //           `reconfigure` reopen a stream without re-querying.
-    // TS map:   `device: AudioDevice;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -182,7 +167,6 @@ pub struct Output {
     //           `Stream` stops audio, so replacing this field is how we tear a track's
     //           stream down.
     // Why:      Recreated per track at that track's native rate/channels.
-    // TS map:   `stream: AudioStream | null;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -193,7 +177,6 @@ pub struct Output {
     //           `set_playing` writes it from the engine thread; each callback reads a
     //           clone.
     // Why:      One shared cell keeps engine and audio thread in sync across track changes.
-    // TS map:   `playing: { value: boolean };`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -204,7 +187,6 @@ pub struct Output {
     //           stream's callback (built in `reconfigure`) gets a clone.
     // Why:      The callback uses it to `unpark()` the worker when the ring buffer drains,
     //           so the worker refills the freed space.
-    // TS map:   `worker: WorkerRef;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -215,7 +197,6 @@ pub struct Output {
 
 // What:     `impl Output { ... }`. The methods for the cpal output.
 // Why:      Construction and per-track reconfiguration, same surface as PipeWire.
-// TS map:   the class body.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -229,7 +210,6 @@ impl Output {
     //           exceptions); siblings `Ok(T)` and `Err(E)`.
     // Why:      One-time setup; we keep `worker` so per-track callbacks can wake the
     //           worker on drain. Matches the PipeWire `new` signature exactly.
-    // TS map:   `static create(worker: WorkerRef): Output` (throwing on failure)
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -240,7 +220,6 @@ impl Output {
         //           backend; cpal exposes one default per OS (CoreAudio on macOS, WASAPI
         //           on Windows).
         // Why:      Devices are enumerated through a host.
-        // TS map:   `const host = cpal.defaultHost();`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -257,7 +236,6 @@ impl Output {
         //           literal because `PlayerError::Audio` holds an owned `String`, not a
         //           borrowed `&str` (the error outlives this call).
         // Why:      No output device means we cannot play; surface it as our error.
-        // TS map:   `const device = host.defaultOutputDevice(); if (!device) throw new PlayerError("no default output device");`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -273,7 +251,6 @@ impl Output {
         //           the cell and starts its reference count at 1; `AtomicBool::new(false)`
         //           is the initial value.
         // Why:      A brand-new output is silent until the engine says play.
-        // TS map:   `const playing = { value: false };`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -287,7 +264,6 @@ impl Output {
         //           for `device`/`playing`/`worker`. No trailing `;`, so this is the tail
         //           expression that the function returns.
         // Why:      Hand back the ready (but silent) output.
-        // TS map:   `return new Output(device, null, playing, worker);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -311,7 +287,6 @@ impl Output {
     // Why:      Per-track native rate: each track gets its own stream and a fresh empty
     //           buffer so no stale audio leaks across. Identical signature to the PipeWire
     //           backend.
-    // TS map:   `reconfigure(rate: number, channels: number, capacityFrames: number): RingProducer`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -326,7 +301,6 @@ impl Output {
         // What:     `let channels_usize = channels as usize;`. `as` is a primitive numeric
         //           cast widening the `u16` channel count to `usize` for buffer arithmetic.
         // Why:      Sample counts and strides are `usize`.
-        // TS map:   `const channelsUsize = channels;` (TS numbers don't distinguish)
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -337,7 +311,6 @@ impl Output {
         // What:     `let capacity_samples = capacity_frames * channels_usize;`. Ring-buffer
         //           capacity is in INTERLEAVED SAMPLES, so frames times channels.
         // Why:      Size the buffer to hold `capacity_frames` frames of audio.
-        // TS map:   `const capacitySamples = capacityFrames * channels;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -349,7 +322,6 @@ impl Output {
         //           buffer of that many `f32` slots. `::<f32>` is the "turbofish" that
         //           pins the element type.
         // Why:      The shared queue between decode thread and audio thread.
-        // TS map:   `const rb = new RingBuffer<number>(capacitySamples);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -362,7 +334,6 @@ impl Output {
         //           `producer` and the read end `consumer`. `mut consumer` because the
         //           callback will mutate it (popping advances its read cursor).
         // Why:      Producer goes to the engine; consumer is moved into the callback below.
-        // TS map:   `const { producer, consumer } = rb.split();`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -376,7 +347,6 @@ impl Output {
         // Why:      Stop the old track's audio before opening the new stream, and free its
         //           callback (which holds the OLD consumer) so the new buffer is the only
         //           one feeding the device.
-        // TS map:   `this.stream?.stop(); this.stream = null;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -395,7 +365,6 @@ impl Output {
         //           engine (CoreAudio on macOS, WASAPI on Windows) sample-rate-converts to
         //           the hardware clock, so the engine never resamples (mirrors PipeWire's
         //           transparent resampling).
-        // TS map:   `const config = { channels, sampleRate: rate, bufferSize: "default" };`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -412,7 +381,6 @@ impl Output {
         //           flag (bumps the reference count, does not copy the bool).
         // Why:      The callback (next) reads pause/play decisions the engine makes on the
         //           other thread through this clone.
-        // TS map:   `const playing = this.playing;` (same shared box)
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -424,7 +392,6 @@ impl Output {
         //           reference-count bump, not a new thread).
         // Why:      The callback uses it to `unpark()` the worker after draining, so the
         //           worker refills the freed buffer space.
-        // TS map:   `const worker = this.worker;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -446,7 +413,6 @@ impl Output {
         // Why:      This stream + its realtime callback are how the OS audio engine
         //           (CoreAudio/WASAPI) pulls samples from us, exactly like PipeWire's
         //           `process` callback.
-        // TS map:   `const stream = device.buildOutputStream(config, (data) => {...}, (err) => {...});`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -468,7 +434,6 @@ impl Output {
                 //           allocate, lock, or block.
                 // Why:      Copy decoded samples from the ring buffer into the speaker
                 //           buffer (or silence when paused/underrun).
-                // TS map:   `(data, _info) => { ...fill data... }`
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -482,7 +447,6 @@ impl Output {
                     //           is correct for a lone flag).
                     // Why:      Decide, on the realtime thread, whether to feed real audio
                     //           or silence this cycle.
-                    // TS map:   `const isPlaying = Atomics.load(playingFlag, 0) !== 0;`
                     //
                     // In TS you'd write (pseudocode):
                     // ```ts
@@ -499,7 +463,6 @@ impl Output {
                     // Why:      Pausing must stop draining the buffer at once; otherwise the
                     //           ~1 second already queued keeps playing (the pause-delay bug
                     //           the PipeWire path also guards).
-                    // TS map:   `const got = isPlaying ? consumer.popSlice(data) : 0;`
                     //
                     // In TS you'd write (pseudocode):
                     // ```ts
@@ -519,7 +482,6 @@ impl Output {
                     //           realtime callback.
                     // Why:      Backpressure signal that lets the worker BLOCK when the
                     //           buffer is full instead of busy-looping.
-                    // TS map:   `if (got > 0) worker.postWakeUp();`
                     //
                     // In TS you'd write (pseudocode):
                     // ```ts
@@ -536,7 +498,6 @@ impl Output {
                     //           `got` is `0`, so this zeroes the WHOLE buffer: pure silence.
                     // Why:      Output silence for the unfilled tail (underrun) and while
                     //           paused, instead of stale/garbage samples.
-                    // TS map:   `for (let i = got; i < data.length; i++) data[i] = 0;`
                     //
                     // In TS you'd write (pseudocode):
                     // ```ts
@@ -553,7 +514,6 @@ impl Output {
                 // Why:      Surface device-loss / overrun errors without crashing playback.
                 //           Fires only on rare stream errors, never in the hot path, so the
                 //           stderr write is acceptable here.
-                // TS map:   `(err) => { console.error(`cpal stream error: ${err}`); }`
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -565,7 +525,6 @@ impl Output {
                 // What:     `None`. The optional stream timeout; `None` means "no timeout"
                 //           (sibling `Some(Duration::from_millis(n))`).
                 // Why:      We want the stream to wait indefinitely for buffers.
-                // TS map:   `undefined` (no timeout)
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -579,7 +538,6 @@ impl Output {
             //           builds an owned `String`; `{e:?}` uses the error's Debug
             //           formatting. `Ok` values pass through untouched.
             // Why:      Flatten cpal's error type into our one app-wide error.
-            // TS map:   `.catch(e => { throw new PlayerError(`build stream: ${e}`); })`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -592,7 +550,6 @@ impl Output {
         //           `.map_err` wraps any failure as our error and `?` returns it early.
         //           `()` is the empty "unit" value (like `void`).
         // Why:      Begin pulling samples; without this the callback never fires.
-        // TS map:   `await stream.play();`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -606,7 +563,6 @@ impl Output {
         //           wrapping it in `Some` (the "has a value" case of `Option`). Moving it
         //           in keeps it alive while this track plays.
         // Why:      Dropping the stream would stop audio; the struct must own it.
-        // TS map:   `this.stream = stream;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -618,7 +574,6 @@ impl Output {
         //           variant. No trailing `;`, so this is the tail expression the function
         //           returns.
         // Why:      The engine pushes decoded samples into it.
-        // TS map:   `return producer;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -632,7 +587,6 @@ impl Output {
     //           exclusive access; the cell handles concurrent writes.
     // Why:      The engine calls this on pause/play so the realtime callback reacts
     //           immediately. Identical to the PipeWire backend's method.
-    // TS map:   `setPlaying(on: boolean): void`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -643,7 +597,6 @@ impl Output {
         //           `on` into the shared flag. `Relaxed` matches the loose ordering used by
         //           the callback's `.load` (a lone flag needs no stronger guarantee).
         // Why:      Make the new state visible to the audio thread.
-        // TS map:   `Atomics.store(playingFlag, 0, on ? 1 : 0);`
         //
         // In TS you'd write (pseudocode):
         // ```ts

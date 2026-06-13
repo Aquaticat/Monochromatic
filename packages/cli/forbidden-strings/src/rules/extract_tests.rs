@@ -7,8 +7,6 @@
 // Why:      A unit test on `walk_literal_bytes` alone can pass while
 //           the end-to-end pipeline still has a different soundness
 //           gap. This file plugs that hole.
-// TS map:   `import { extractGatingSubstrings } from "./extract";
-//           import AhoCorasick from "ahocorasick"; describe(...)`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -20,7 +18,6 @@
 // What:     `use super::extract::extract_gating_substrings;` -- the
 //           function under test, exposed `pub` from `extract.rs`.
 // Why:      Avoid full-path noise.
-// TS map:   `import { extractGatingSubstrings } from "./extract";`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -33,7 +30,6 @@ use super::extract::extract_gating_substrings;
 // Why:      Build an AC from the extracted substrings and search
 //           content; this is exactly what `rules.rs` does in the
 //           real loader.
-// TS map:   `import AhoCorasick from "ahocorasick";`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -47,7 +43,6 @@ use aho_corasick::AhoCorasick;
 //           returned `Some(vec)` containing a 6-byte mojibake
 //           string. Post-fix it must contain the original 3 bytes
 //           of the em-dash followed by `password`.
-// TS map:   `test("em-dash prefix extracts correctly", () => { ... });`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -62,8 +57,6 @@ fn em_dash_prefix_extracts_correctly() {
     //           gated.
     // Why:      We expect `Some` here -- the pattern is a plain
     //           literal, no alternation or short-prefix issues.
-    // TS map:   `const result = extractGatingSubstrings("—password");`
-    //           returning `Array<{ sub: string; ci: boolean }> | null`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -78,8 +71,6 @@ fn em_dash_prefix_extracts_correctly() {
     // Why:      Convert the `Option` into a hard assertion so the
     //           remaining checks don't have to nest inside an
     //           `if let Some(...)`.
-    // TS map:   `const subs = result!;` (non-null assertion) plus
-    //           `if (subs === null) throw new Error(...)`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -92,7 +83,6 @@ fn em_dash_prefix_extracts_correctly() {
     //           the vec. We expect exactly one (no top-level
     //           alternation in this pattern).
     // Why:      Establishes the shape before indexing into `subs[0]`.
-    // TS map:   `expect(subs.length).toBe(1);`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -105,7 +95,6 @@ fn em_dash_prefix_extracts_correctly() {
     //           it out of the `Vec`. `substring` is `&String`, `ci`
     //           is `&bool`.
     // Why:      Pull both fields out by name for the asserts below.
-    // TS map:   `const { sub: substring, ci } = subs[0];`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -118,7 +107,6 @@ fn em_dash_prefix_extracts_correctly() {
     // Why:      Byte-level assertion is the whole point: this check
     //           would fail loudly if the walker mojibake'd the
     //           em-dash into 6 wrong bytes.
-    // TS map:   `expect([...new TextEncoder().encode(substring)]).toEqual([...]);`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -135,7 +123,6 @@ fn em_dash_prefix_extracts_correctly() {
     //           `&bool`) and negates it; macro panics if false.
     // Why:      Pattern had no `(?i)` prefix, so the ci flag must
     //           be false.
-    // TS map:   `expect(ci).toBe(false);`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -149,7 +136,6 @@ fn em_dash_prefix_round_trips_through_aho_corasick() {
     // What:     Same `extract_gating_substrings` call as before;
     //           same `.expect()` unwrap.
     // Why:      Reproduce the same fixture state for the AC test.
-    // TS map:   same as above.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -172,7 +158,6 @@ fn em_dash_prefix_round_trips_through_aho_corasick() {
     // Why:      `AhoCorasick::new` wants something iterable of
     //           string-like items; we materialise into a `Vec<&str>`
     //           for clarity.
-    // TS map:   `const patterns: string[] = subs.map(([s, _]) => s);`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -185,8 +170,6 @@ fn em_dash_prefix_round_trips_through_aho_corasick() {
     //           with the message if `Err`.
     // Why:      Build the same AC the production loader builds, so we
     //           test the actual matching behaviour the gate uses.
-    // TS map:   `const ac = new AhoCorasick(patterns);` (TS lib usually
-    //           throws synchronously on bad input).
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -198,7 +181,6 @@ fn em_dash_prefix_round_trips_through_aho_corasick() {
     //           original 3 UTF-8 bytes `\xe2\x80\x94`, since Rust
     //           string literals preserve source bytes.
     // Why:      Simulate a file containing the forbidden phrase.
-    // TS map:   `const content = "prefix —password suffix";`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -212,7 +194,6 @@ fn em_dash_prefix_round_trips_through_aho_corasick() {
     //             infer the element type (`aho_corasick::Match`).
     // Why:      We want to know that AT LEAST ONE match was
     //           reported, AND its byte offset is what we expect.
-    // TS map:   `const matches = [...ac.search(content)];`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -228,7 +209,6 @@ fn em_dash_prefix_round_trips_through_aho_corasick() {
     //           and never matched the file's 3-byte em-dash, so
     //           `matches` was empty and the rule was silently
     //           disabled.
-    // TS map:   `expect(matches.length).toBeGreaterThan(0);`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -243,7 +223,6 @@ fn em_dash_prefix_round_trips_through_aho_corasick() {
     //           offset (a `usize`) where the match begins.
     // Why:      Verify the match landed at the expected position
     //           (byte 7: after `"prefix "` = 7 ASCII bytes).
-    // TS map:   `expect(matches[0].start).toBe(7);`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -267,7 +246,6 @@ fn case_insensitive_em_dash_prefix_extracts_correctly() {
     // Why:      Cover the case-insensitive code path: the (?i)
     //           strip happens BEFORE the walker runs, so a buggy
     //           walker would still produce mojibake here.
-    // TS map:   `extractGatingSubstrings("(?i)—Password")`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -297,7 +275,6 @@ fn case_insensitive_em_dash_prefix_extracts_correctly() {
     //           ASCII fold table. That's a separate design issue,
     //           tracked as a followup; not introduced or fixed by
     //           the UTF-8 walker fix.
-    // TS map:   `expect(ci).toBe(true);`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -317,8 +294,6 @@ fn emoji_prefix_round_trips_through_aho_corasick() {
     //           registered 8 mojibake bytes and never matched the
     //           file's original 4 bytes. The advisor flagged this
     //           gap during review.
-    // TS map:   end-to-end pipeline assertion in TS would be the
-    //           same shape with `🔑` instead of `—`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -361,7 +336,6 @@ fn two_byte_utf8_prefix_round_trips_through_aho_corasick() {
     //           way for a Latin-script writer to introduce a
     //           non-ASCII rule; broken extraction here would be a
     //           common foot-gun.
-    // TS map:   same shape as above with `étudiant`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -400,7 +374,6 @@ fn anchor_prefix_extracts_after_strip() {
     // Why:      Cover the anchor-strip code path with a non-ASCII
     //           literal. Confirms the strip-then-walk pipeline
     //           preserves UTF-8 bytes through both stages.
-    // TS map:   `const subs = extractGatingSubstrings("^—password")!;`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -434,7 +407,6 @@ fn short_non_ascii_prefix_rejected_by_min_prefix_len() {
     //           was upstream of this filter; once UTF-8 is correct,
     //           `MIN_PREFIX_LEN` operates on real bytes as
     //           intended.)
-    // TS map:   `const subs = extractGatingSubstrings("—.*")!;`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -453,7 +425,6 @@ fn short_non_ascii_prefix_rejected_by_min_prefix_len() {
     //           MIN_PREFIX_LEN (3). `assert!(result.is_none())`
     //           checks the `Option` is `None`.
     // Why:      Pin the byte-length semantic from the other side.
-    // TS map:   `expect(extractGatingSubstrings("é.*")).toBeNull();`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -479,7 +450,6 @@ fn alternation_with_non_ascii_extracts_both_branches() {
     //           non-ASCII literals. AC fires the rule if EITHER
     //           branch matches. Pre-fix, both branches would have
     //           mojibake'd, so AC would never fire.
-    // TS map:   `const subs = extractGatingSubstrings("(?:—password|—token)")!;`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -510,7 +480,6 @@ fn alternation_with_non_ascii_extracts_both_branches() {
     // Why:      End-to-end soundness: registering BOTH branches
     //           means a file with only one of them still gates
     //           correctly.
-    // TS map:   `const ac = new AhoCorasick(subs.map(([s, _]) => s));`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -536,7 +505,6 @@ fn alternation_with_non_ascii_extracts_both_branches() {
 //           the residual bucket. Post-fix the lookaround is treated
 //           as a transparent zero-width atom and the walker
 //           continues.
-// TS map:   `test("positive lookahead at start extracts after body", () => { ... });`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -568,7 +536,6 @@ fn negative_lookahead_at_start_extracts_after_body() {
     //           (`foo`) as a required AC literal -- that would be
     //           UNSOUND because a real match guarantees `foo` is
     //           NOT at that position.
-    // TS map:   same shape as the positive case.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -588,7 +555,6 @@ fn positive_lookbehind_at_start_extracts_after_body() {
     //           discriminated from `(?<name>` named-capture by the
     //           detector: bytes after `(?<` must be `=` or `!` to
     //           qualify as lookbehind.
-    // TS map:   same shape as the positive lookahead case.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -607,7 +573,6 @@ fn negative_lookbehind_at_start_extracts_after_body() {
     // Why:      Cover the fourth lookaround flavour. Same soundness
     //           note as negative lookahead: never extract the
     //           negative-lookaround body itself.
-    // TS map:   `const subs = extractGatingSubstrings("(?<!foo)bar")!;`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -631,7 +596,6 @@ fn lookahead_at_end_extracts_before_body() {
     //           bailed when `skip_atom_with_extract` returned None,
     //           but `best` was already set. Post-fix the bail
     //           becomes a clean skip; behaviour shouldn't regress.
-    // TS map:   `const subs = extractGatingSubstrings("foobar(?=baz)")!;`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -655,7 +619,6 @@ fn lookahead_in_middle_extracts_best_literal() {
     //           soundness invariant is that one required substring
     //           per branch suffices, and longest wins for
     //           selectivity.
-    // TS map:   `const subs = extractGatingSubstrings("foofoo(?=x)bar")!;`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -682,7 +645,6 @@ fn lookahead_in_middle_picks_longer_after_skip() {
     //           as the gate. Post-fix it skips the lookahead and
     //           replaces `foo` with the longer trailing literal --
     //           the whole point of the perf gap this commit closes.
-    // TS map:   `const subs = extractGatingSubstrings("foo(?=x)barbaz")!;`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -711,7 +673,6 @@ fn prose_em_dash_pattern_extracts_middle_literal() {
     //           gate and ran as a residual per-rule resharp scan.
     //           Post-fix it must extract ` -- ` and route to the
     //           AC prefix bucket.
-    // TS map:   `const subs = extractGatingSubstrings("(?<=[a-z]) -- (?=[a-z])")!;`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -741,7 +702,6 @@ fn nested_lookaround_extracts_after_outer() {
     // Why:      Confirm depth tracking works through the nested
     //           group, so the walker resumes correctly at `baz`
     //           after the outer `)`.
-    // TS map:   `const subs = extractGatingSubstrings("(?=(?:foo|bar))baz")!;`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -766,7 +726,6 @@ fn lookahead_does_not_break_named_capture_path() {
     //           every named-capture rule by skipping its body
     //           instead of recursing into it. This test pins the
     //           discriminator.
-    // TS map:   `const subs = extractGatingSubstrings("(?<name>foo)bar")!;`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -784,7 +743,6 @@ fn lookahead_does_not_break_named_capture_path() {
     // Why:      The test isn't about which literal wins; it's
     //           about ensuring named captures are NOT misrouted to
     //           the lookaround skip path.
-    // TS map:   `expect(["foo", "foobar"]).toContain(subs[0].sub);`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -807,8 +765,6 @@ fn prose_em_dash_pattern_round_trips_through_aho_corasick() {
     //           appear in any string the regex matches. ` -- ` is
     //           a strict subset of the regex's required bytes, so
     //           AC must fire on it.
-    // TS map:   end-to-end pipeline test in TS would be the same
-    //           shape with a JS AC port.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -846,7 +802,6 @@ fn prose_em_dash_pattern_round_trips_through_aho_corasick() {
 //           case-insensitively but the AC gate did not, and the rule
 //           silently missed. Post-fix the inline-flag arm bubbles the
 //           updated ci to the caller, and `keyword-suffix` is tagged ci=true.
-// TS map:   `test("inline (?i) propagates ci to subsequent literal", () => { ... })`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -866,7 +821,6 @@ fn inline_flag_propagates_ci_to_subsequent_literal() {
     //           walker picks it as the best candidate. The bug shape: its
     //           ci tag must reflect the (?i) flag set by the inline group
     //           BEFORE it appeared in source order.
-    // TS map:   `extractGatingSubstrings("literalA(?i)keyword-suffix")`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -899,7 +853,6 @@ fn inline_flag_propagates_ci_to_subsequent_literal() {
 //           returns None when the leading flag set contains `u`, and the
 //           rule falls back to the residual resharp scan which handles
 //           Unicode case-folding correctly.
-// TS map:   `test("(?u) or (?iu) leading flag disables extraction", () => { ... })`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -916,7 +869,6 @@ fn unicode_flag_disables_extraction() {
     //           which only folds ASCII letters; non-ASCII case-folded
     //           variants (É <-> é, Á <-> á, etc.) would be missed,
     //           making the gate unsound for the (?iu)/(?ui)/(?u) rules.
-    // TS map:   `expect(extractGatingSubstrings("(?iu)cafésecret")).toBeNull();`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -944,7 +896,6 @@ fn unicode_flag_disables_extraction() {
     // Why:      Regression guard. Without this assertion a future
     //           change that disabled extraction on ANY `i` flag would
     //           pass the negative tests but blow up perf on the corpus.
-    // TS map:   `expect(extractGatingSubstrings("(?i)keyword-suffix")).not.toBeNull();`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -966,7 +917,6 @@ fn inline_negated_flag_clears_ci_for_subsequent_literal() {
     //           wins as the longer literal; it should be tagged ci=false.
     // Why:      Symmetric coverage for the (?-i) variant of the inline
     //           flag. Same bubble-up requirement, opposite direction.
-    // TS map:   `extractGatingSubstrings("(?i)shorty(?-i)keyword-suffix")`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1004,7 +954,6 @@ fn inline_negated_flag_clears_ci_for_subsequent_literal() {
 //           rewrite of the extractor, so the safe thing is to
 //           extract NOTHING from such a body and let the rule
 //           fall through to residual scanning.
-// TS map:   `test("(?x:body) disables body extraction", () => { ... })`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -1027,7 +976,6 @@ fn scoped_extended_flag_disables_body_extraction() {
     //           None so the rule routes to residual.
     // Why:      Forces residual fall-through; AC gate cannot soundly
     //           represent the body.
-    // TS map:   `expect(extractGatingSubstrings("(?x:foo bar)")).toBeNull();`.
     assert!(
         extract_gating_substrings("(?x:foo bar)").is_none(),
         "BUG 9: scoped (?x:body) must not extract any substring"
@@ -1048,7 +996,6 @@ fn scoped_extended_flag_disables_body_extraction() {
     //           rule on seeing `(?x:` would lose the outer-prefix
     //           extraction. We want the outer literal to keep its
     //           AC slot, only the body to be suppressed.
-    // TS map:   `expect(extractGatingSubstrings(String.raw\`required\\_(?x:foo bar)\`)?.[0].sub).toBe("required_");`.
     let subs = extract_gating_substrings(r"required\_(?x:foo bar)")
         .expect("outer literal must still extract even with (?x:body) after");
     assert_eq!(subs.len(), 1, "expected exactly one substring (outer literal)");
@@ -1072,7 +1019,6 @@ fn scoped_extended_flag_disables_body_extraction() {
 //           rule routes correctly to resharp but never gets a chance
 //           to run because the AC gate is registered against the
 //           wrong literal.
-// TS map:   `test("bare _ wildcard skipped by extractor", () => { ... })`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -1094,7 +1040,6 @@ fn bare_underscore_wildcard_does_not_appear_in_gate() {
     // Why:      The literal `_` is wildcard in resharp; including it
     //           in the AC pattern makes the gate look for a byte that
     //           the rule does not actually require.
-    // TS map:   `expect(subs[0].sub).not.toContain("_");`.
     let subs = extract_gating_substrings("pre_post")
         .expect("expected Some -- some literal side of the wildcard must extract");
     for (sub, _ci) in &subs {
@@ -1112,7 +1057,6 @@ fn bare_underscore_wildcard_does_not_appear_in_gate() {
     // Why:      Hundreds of betterleaks GitHub PAT rules use `ghp\_`
     //           shapes; they must keep extracting `ghp_` (with the
     //           literal underscore) as their gate.
-    // TS map:   `expect(extractGatingSubstrings(String.raw\`pre\\_post\`)?.[0].sub).toContain("_");`.
     let subs = extract_gating_substrings(r"pre\_post")
         .expect("expected Some for escaped-underscore literal");
     assert_eq!(subs.len(), 1, "expected one substring (the full literal)");

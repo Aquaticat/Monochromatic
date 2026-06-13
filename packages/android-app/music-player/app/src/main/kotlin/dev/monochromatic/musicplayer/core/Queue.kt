@@ -8,10 +8,6 @@
 //           `Page`, and `paginate` do).
 // Why:      Without a package line everything would land in the unnamed "root"
 //           package, which Kotlin discourages and which collides as the app grows.
-// TS map:   No direct equivalent. TS has no `package` keyword; a module's identity
-//           IS its file path, and you `import { Queue } from "./core/Queue"`.
-//           Mentally, this line is the compiler-enforced version of "this file is
-//           the `core/Queue` module".
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -28,9 +24,6 @@ package dev.monochromatic.musicplayer.core
 //           can be constructed from a fixed `Long` seed, which is exactly what makes
 //           the shuffle deterministic (same seed -> same order) for the tests and
 //           for session restore.
-// TS map:   `import { Random } from "...";` — except JS/TS has no built-in seedable
-//           RNG; `Math.random()` cannot be seeded, so the TS analogue would be a
-//           small seedable-PRNG class you import.
 // Gotcha:   This is NOT the desktop port's xorshift64 PRNG. The desktop (`queue.rs`)
 //           hand-rolls a 64-bit xorshift with `^=`/`<<`; this Kotlin port instead
 //           leans on the platform's seeded `Random`. The two produce DIFFERENT
@@ -93,10 +86,6 @@ import kotlin.random.Random
 //           forces construction through the factories so every queue gets a
 //           properly seeded `Random`. Storing `rng` as a field lets `shuffleSlice`
 //           draw repeatable random numbers across many calls.
-// TS map:   A class with a private constructor and a private readonly field:
-//           `class Queue { private constructor(private readonly rng: Random) {} }`.
-//           Kotlin's "param with `val` becomes a field" is TS's
-//           `constructor(private readonly rng: Random)` parameter-property sugar.
 // Gotcha:   The constructor being `private` means `new Queue(rng)` is unreachable
 //           from outside; the only doors in are `Queue.new()` and
 //           `Queue.withRngSeed(seed)`. (Replaces the old `@constructor`/`@param rng`
@@ -126,9 +115,6 @@ class Queue private constructor(private val rng: Random) {
     //             read-only list (see the `emptyList()` note below).
     // Why:      Holds the tracks in the order the user loaded them; the displayed
     //           queue list uses this order.
-    // TS map:   `private tracks: readonly string[] = [];` — TS's `readonly string[]`
-    //           is the `List<String>` analogue; a plain `string[]` would be the
-    //           `MutableList` analogue.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -150,8 +136,6 @@ class Queue private constructor(private val rng: Random) {
     //           shuffled. Storing indices (not paths) lets the same scope reference
     //           tracks cheaply and keep the `tracks` list as the single source of
     //           truth for the strings.
-    // TS map:   `private order: readonly number[] = [];` — TS has only `number`, so
-    //           the `Int` vs `Long` distinction collapses.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -167,8 +151,6 @@ class Queue private constructor(private val rng: Random) {
     // Why:      The cursor's POSITION WITHIN `order` (not within `tracks`). `null`
     //           means the queue is empty / nothing is selected. The nullability is
     //           how "no current track" is modelled without a sentinel like `-1`.
-    // TS map:   `private pos: number | null = null;`. Kotlin's `Int?` is exactly TS's
-    //           `number | null`; the `?` suffix replaces the `| null` union.
     // Gotcha:   `Int?` forces every read to handle the `null` case (via `?.`, `?:`,
     //           or a null check) — the compiler will not let you index `order[pos]`
     //           until you have proven `pos` is non-null. This is Kotlin's
@@ -189,9 +171,6 @@ class Queue private constructor(private val rng: Random) {
     //           (page vs whole queue) and the ordering (sequential vs shuffled).
     //           Defaulting to `OFF` means a fresh queue plays the current page in
     //           load order.
-    // TS map:   `private shuffle: ShuffleMode = "off";` if `ShuffleMode` were a string
-    //           union, or `ShuffleMode.OFF` if it were a TS enum. A Kotlin `enum`
-    //           constant is closest to a TS string-literal-union member.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -206,7 +185,6 @@ class Queue private constructor(private val rng: Random) {
     // Why:      When true, a track that ends naturally replays itself; this is the
     //           "repeat track" checkbox state. It is independent of the shuffle
     //           scope, which is why it lives in its own field.
-    // TS map:   `private repeatTrackFlag = false;` — `Boolean` is TS's `boolean`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -225,7 +203,6 @@ class Queue private constructor(private val rng: Random) {
     //           pick begins a fresh cycle. Under `ShuffleMode.OFF` it is unused
     //           (sequential order needs no play history). Mirrors the desktop
     //           `queue.rs` `cycle_start`. See `docs/decisions/music-player-jit-shuffle.md`.
-    // TS map:   `private cycleStart: number = 0;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -245,10 +222,6 @@ class Queue private constructor(private val rng: Random) {
     //           `new` / `with_rng_seed` constructors. Because the primary
     //           constructor is private, these factories are the only way to build a
     //           `Queue`; they live here so they can reach the private constructor.
-    // TS map:   TS has no `companion object`; you would use `static` methods on the
-    //           class: `class Queue { static new() {...} static withRngSeed(s) {...} }`.
-    //           Mentally, "everything inside `companion object` is a `static` member
-    //           of `Queue`".
     // Gotcha:   The companion is itself an object instance (you could name it), but
     //           here it is anonymous and used purely as a static-method bag. Calling
     //           `Queue.new()` does NOT create the companion each time; there is
@@ -274,10 +247,6 @@ class Queue private constructor(private val rng: Random) {
         // Why:      Creates an empty queue seeded from the wall clock so first-run
         //           shuffles differ between launches (each launch's `nanoTime` is
         //           different). Mirrors the Rust `Queue::new`.
-        // TS map:   `static new(): Queue { return Queue.withRngSeed(BigInt(performance.now())); }`
-        //           — `System.nanoTime()` is roughly `performance.now()` but returns
-        //           a `Long`, not a float; the expression-body `=` is TS's
-        //           single-`return` arrow.
         // Gotcha:   `System.nanoTime()` returns a `Long`, NOT an `Int`; it is a
         //           nanosecond counter that easily exceeds 32 bits. Feeding it
         //           straight into `withRngSeed(seed: Long)` is why that parameter is
@@ -308,8 +277,6 @@ class Queue private constructor(private val rng: Random) {
         // Why:      Creates an empty queue with a CALLER-CHOSEN PRNG seed, mirroring
         //           the Rust `Queue::with_rng_seed`; tests pass a fixed seed to get a
         //           deterministic shuffle (same seed -> same order).
-        // TS map:   `static withRngSeed(seed: bigint): Queue { return new Queue(new Random(seed)); }`
-        //           — but TS would need `new` for both constructions; Kotlin omits it.
         // Gotcha:   No `new` keyword anywhere: `Random(seed)` constructs a `Random`,
         //           and `Queue(...)` constructs a `Queue`. A TS reader expects `new`;
         //           Kotlin constructor calls look identical to function calls.
@@ -331,8 +298,6 @@ class Queue private constructor(private val rng: Random) {
     //           the `List<String>` field (its element count, an `Int`); that value
     //           IS the return.
     // Why:      Callers ask how many tracks are in the queue.
-    // TS map:   `len(): number { return this.tracks.length; }` — Kotlin's `.size`
-    //           on a `List` is TS's `.length` on an array.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -348,8 +313,6 @@ class Queue private constructor(private val rng: Random) {
     // Why:      Exposes the tracks in load order (as opened), regardless of shuffle;
     //           the session save persists these. Returning the read-only `List`
     //           interface hands out a view callers cannot mutate.
-    // TS map:   `tracks(): readonly string[] { return this.tracks; }` — the
-    //           read-only `List<String>` maps to `readonly string[]`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -362,8 +325,6 @@ class Queue private constructor(private val rng: Random) {
     //           stdlib `List` method returning `true` when the list has zero
     //           elements; that boolean is the return.
     // Why:      Convenience predicate for "the queue has no tracks".
-    // TS map:   `isEmpty(): boolean { return this.tracks.length === 0; }` — TS arrays
-    //           have no `.isEmpty()`, so you compare `.length` to 0.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -376,7 +337,6 @@ class Queue private constructor(private val rng: Random) {
     //           `repeatTrackFlag` field and returns it.
     // Why:      Whether "repeat track" is on; the engine mirrors this flag to the UI
     //           checkbox.
-    // TS map:   `repeatTrack(): boolean { return this.repeatTrackFlag; }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -389,7 +349,6 @@ class Queue private constructor(private val rng: Random) {
     //           It reads and returns the `shuffle` field.
     // Why:      The current shuffle mode; the engine mirrors it to the UI radio
     //           group.
-    // TS map:   `shuffleMode(): ShuffleMode { return this.shuffle; }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -407,7 +366,6 @@ class Queue private constructor(private val rng: Random) {
     //           track lives in and pagination can group by folder. Delegating to the
     //           shared helper keeps one source of truth for the common-prefix
     //           stripping (unit-tested in `RelPath.kt`).
-    // TS map:   `displayPaths(): string[] { return relativeDisplayPaths(this.tracks); }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -431,9 +389,6 @@ class Queue private constructor(private val rng: Random) {
     // Why:      Translates the cursor's position-within-`order` into the load-order
     //           index of the current track (into `tracks`), or `null` when nothing
     //           is selected; the UI highlights this row.
-    // TS map:   `currentIndex(): number | null { return this.pos === null ? null : this.order[this.pos]; }`
-    //           — `pos?.let { order[it] }` is exactly "if pos is null return null,
-    //           else compute `order[pos]`".
     // Gotcha:   `?.let { order[it] }` is the idiomatic Kotlin way to "map over a
     //           nullable". The `it` is auto-named; it is the non-null `pos`. This is
     //           NOT a loop — `.let` runs the block at most once.
@@ -458,7 +413,6 @@ class Queue private constructor(private val rng: Random) {
     // Why:      The path of the current track, or `null`; the engine needs it to open
     //           the file. Chaining off `currentIndex()` reuses the cursor->index
     //           translation rather than duplicating it.
-    // TS map:   `currentPath(): string | null { const i = this.currentIndex(); return i === null ? null : this.tracks[i]; }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -478,7 +432,6 @@ class Queue private constructor(private val rng: Random) {
     //           navigation matches this queue; position `i` in the result is timeline
     //           window index `i`. (No `queue.rs` twin: this method is
     //           MediaSession-oriented, specific to the Android port.)
-    // TS map:   `playbackOrder(): readonly number[] { return this.order; }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -494,7 +447,6 @@ class Queue private constructor(private val rng: Random) {
     //           window index), or `null` when the queue is empty; the MediaSession
     //           reports this as the current media-item index. (Also no `queue.rs`
     //           twin: MediaSession-specific.)
-    // TS map:   `cursorPosition(): number | null { return this.pos; }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -509,7 +461,6 @@ class Queue private constructor(private val rng: Random) {
     //           type annotation means the return type is `Unit`, Kotlin's "void").
     //           This uses a BLOCK body `{ ... }`, not an expression body.
     // Why:      Toggle "repeat track"; `advance` reads the flag on a natural end.
-    // TS map:   `setRepeatTrack(on: boolean): void { ... }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -519,7 +470,6 @@ class Queue private constructor(private val rng: Random) {
         // What:     `repeatTrackFlag = on` is a plain field assignment: store the
         //           parameter into the `var` field. No Kotlin-specific punctuation.
         // Why:      Record the new flag so `advance` can honour it.
-        // TS map:   `this.repeatTrackFlag = on;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -534,7 +484,6 @@ class Queue private constructor(private val rng: Random) {
     //           track list in load order.
     // Why:      Replace the queue when the user opens new files, anchoring playback on
     //           the first track (or leaving it empty when there are no tracks).
-    // TS map:   `setTracks(newTracks: readonly string[]): void { ... }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -547,7 +496,6 @@ class Queue private constructor(private val rng: Random) {
         // What:     `tracks = newTracks` reassigns the `var` field to the new list.
         //           Plain assignment; no special punctuation.
         // Why:      Adopt the new track list.
-        // TS map:   `this.tracks = newTracks;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -560,7 +508,6 @@ class Queue private constructor(private val rng: Random) {
         //           valid `Int?`). The helper itself handles the empty-queue case.
         // Why:      Build the scope order around the first track so playback starts
         //           at the first track's page (or whole queue).
-        // TS map:   `this.rebuildScopeOrder(0);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -574,7 +521,6 @@ class Queue private constructor(private val rng: Random) {
     // Why:      Drop the current-track selection so no track is current and there is no
     //           playback scope until the user taps one. `PlayerController.openLibrary` calls
     //           this after `setTracks` so a freshly opened library auto-selects NOTHING.
-    // TS map:   `clearSelection(): void { ... }`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -586,7 +532,6 @@ class Queue private constructor(private val rng: Random) {
         //           the absent value of the `Int?` parameter.
         // Why:      Reuse the single method that owns the scope/cursor invariant instead of
         //           poking the fields here.
-        // TS map:   `this.rebuildScopeOrder(null);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -601,7 +546,6 @@ class Queue private constructor(private val rng: Random) {
     // Why:      Change the shuffle/scope mode while keeping the currently-playing
     //           track current, so switching shuffle does not interrupt the current
     //           song. A no-op change is ignored so the cursor never jumps needlessly.
-    // TS map:   `setShuffle(mode: ShuffleMode): void { ... }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -619,7 +563,6 @@ class Queue private constructor(private val rng: Random) {
         //           mode equals the current `shuffle`, `return` exits immediately
         //           (returning `Unit`).
         // Why:      Avoid reshuffling and moving the cursor on a no-op mode change.
-        // TS map:   `if (mode === this.shuffle) return;`
         // Gotcha:   Kotlin's `==` calls structural equality (`.equals`), but for an
         //           `enum` it behaves exactly like reference equality / TS `===`,
         //           because each enum constant is a unique singleton.
@@ -635,7 +578,6 @@ class Queue private constructor(private val rng: Random) {
         //           `currentIndex()` (the current track's load-order index, or null).
         // Why:      Remember the playing track BEFORE we change the mode and rebuild,
         //           so the rebuild can keep the cursor on the same track.
-        // TS map:   `const current: number | null = this.currentIndex();`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -644,7 +586,6 @@ class Queue private constructor(private val rng: Random) {
         val current: Int? = currentIndex()
         // What:     `shuffle = mode` reassigns the `var` field to the new mode.
         // Why:      Record the new mode so `rebuildScopeOrder`/`scopeIndices` read it.
-        // TS map:   `this.shuffle = mode;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -658,7 +599,6 @@ class Queue private constructor(private val rng: Random) {
         // Why:      Apply the new mode by recomputing the scope order, anchored on the
         //           previously playing track so it stays current; with no current track,
         //           toggling shuffle must keep nothing selected.
-        // TS map:   `this.rebuildScopeOrder(current);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -674,7 +614,6 @@ class Queue private constructor(private val rng: Random) {
     //           the track is on another page; the user clicked a row in the queue
     //           list. Returns the now-current track index, or `null` for an
     //           out-of-range click (which moves nothing).
-    // TS map:   `playIndex(track: number): number | null { ... }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -697,7 +636,6 @@ class Queue private constructor(private val rng: Random) {
         //           variant of the `Int?` return type.
         // Why:      Ignore an out-of-range click (clicking past the last track moves
         //           nothing).
-        // TS map:   `if (track >= this.tracks.length) return null;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -712,7 +650,6 @@ class Queue private constructor(private val rng: Random) {
         //           the way the deterministic `OFF` order can; it must restart the
         //           cycle at the chosen track. So `OFF` reuses its scope order when it
         //           can, while shuffle always rebuilds.
-        // TS map:   `if (this.shuffle === ShuffleMode.OFF) { ... } else { ... }`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -726,7 +663,6 @@ class Queue private constructor(private val rng: Random) {
             // Why:      Under `OFF` the scope order is the deterministic page sequence,
             //           so if the clicked track is already in it we can keep that order
             //           and only move the cursor.
-            // TS map:   `const position: number = this.order.indexOf(track);`
             // Gotcha:   `.indexOf` returns `-1` for "not found" (not `null`); the test
             //           below is `position >= 0`, not a null check.
             //
@@ -740,7 +676,6 @@ class Queue private constructor(private val rng: Random) {
             //           order"; the `then` moves the cursor, the `else` rebuilds the
             //           scope around the clicked track (it is on another page).
             // Why:      Stay in the same page when possible; switch pages otherwise.
-            // TS map:   `if (position >= 0) this.pos = position; else this.rebuildScopeOrder(track);`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -759,7 +694,6 @@ class Queue private constructor(private val rng: Random) {
             // Why:      A deliberate jump under shuffle restarts the without-replacement
             //           cycle from the chosen track (the accepted cycle reset; see
             //           `docs/decisions/music-player-jit-shuffle.md`).
-            // TS map:   `this.rebuildScopeOrder(track);`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -771,7 +705,6 @@ class Queue private constructor(private val rng: Random) {
         //           `return`, the non-null `Int` wrapped as the `Int?` result).
         // Why:      Tell the caller which track is now current so it can load that
         //           index.
-        // TS map:   `return track;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -789,7 +722,6 @@ class Queue private constructor(private val rng: Random) {
     //           itself instead. Only a natural end honours "repeat track". Returns the
     //           load-order index of the track to play next, or `null` when the queue
     //           is empty.
-    // TS map:   `advance(natural: boolean): number | null { ... }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -817,7 +749,6 @@ class Queue private constructor(private val rng: Random) {
         //           a plain `Int` below. (Named `position`, not `current`, so it does
         //           not clash with the TRACK index `order[position]` used in the
         //           shuffle branch.)
-        // TS map:   `if (this.pos === null) return null; const position = this.pos;`
         // Gotcha:   `?: return null` is Kotlin's "unwrap-or-bail"; the right side of
         //           Elvis can be any expression, including `return` (type `Nothing`),
         //           the close analogue of Rust's `?` on an `Option`.
@@ -835,7 +766,6 @@ class Queue private constructor(private val rng: Random) {
         // Why:      A track that ends on its own under "repeat track" replays itself (a
         //           manual Next must NOT, which is why `natural` gates it). This is
         //           independent of shuffle, so it is checked first.
-        // TS map:   `if (natural && this.repeatTrackFlag) return this.order[position];`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -851,7 +781,6 @@ class Queue private constructor(private val rng: Random) {
         //           as you go. So advancing either retraces forward through history (if
         //           you previously stepped back) or draws a fresh without-replacement
         //           pick and appends it.
-        // TS map:   `if (this.shuffle !== ShuffleMode.OFF) { ... }`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -864,7 +793,6 @@ class Queue private constructor(private val rng: Random) {
             //           the already-drawn history rather than drawing anew.
             // Why:      `prev`/`next` act as a back/forward cursor over the shuffle
             //           history; re-drawing here would lose the forward path.
-            // TS map:   `if (position + 1 < this.order.length) { this.pos = position + 1; return this.order[position + 1]; }`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -878,7 +806,6 @@ class Queue private constructor(private val rng: Random) {
             //           of the track currently at the cursor (the end of history).
             // Why:      The new pick must avoid an immediate repeat of THIS track when a
             //           fresh cycle starts; `pickNextShuffle` takes it to exclude it.
-            // TS map:   `const current = this.order[position];`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -890,7 +817,6 @@ class Queue private constructor(private val rng: Random) {
             //           new cycle if the current one is exhausted.
             // Why:      This is the just-in-time draw: one random scope track not yet
             //           played this cycle.
-            // TS map:   `const pick = this.pickNextShuffle(current);`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -903,7 +829,6 @@ class Queue private constructor(private val rng: Random) {
             //           untouched. (The desktop twin mutates a `Vec` via `.push`; the
             //           Kotlin `order` field is an immutable `List`, so it is replaced.)
             // Why:      Grow the play history by the new pick.
-            // TS map:   `this.order = [...this.order, pick];`
             // Gotcha:   `order + pick` does NOT mutate; it allocates a new list and
             //           rebinds the field. With one append per user-paced advance this
             //           is fine (not a tight inner loop).
@@ -916,7 +841,6 @@ class Queue private constructor(private val rng: Random) {
             // What:     `pos = order.size - 1` moves the cursor to the just-appended
             //           last slot.
             // Why:      The newly drawn pick is now current.
-            // TS map:   `this.pos = this.order.length - 1;`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -926,7 +850,6 @@ class Queue private constructor(private val rng: Random) {
             // What:     `return pick` returns the drawn load-order index (the `Int?`
             //           result).
             // Why:      Hand back the track to play next.
-            // TS map:   `return pick;`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -937,7 +860,6 @@ class Queue private constructor(private val rng: Random) {
         // What:     `val next: Int = position + 1` is the position after the current one
         //           in the (sequential, `OFF`) scope order.
         // Why:      Try to step forward within the page.
-        // TS map:   `const next: number = position + 1;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -947,7 +869,6 @@ class Queue private constructor(private val rng: Random) {
         // What:     `if (next < order.size) { pos = next; return order[next] }` is the
         //           normal forward step when there is a track after the current one.
         // Why:      A plain forward move without looping.
-        // TS map:   `if (next < this.order.length) { this.pos = next; return this.order[next]; }`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -961,7 +882,6 @@ class Queue private constructor(private val rng: Random) {
         //           start. Reached only past the end of the `OFF` scope.
         // Why:      `OFF`/`WITHIN_PAGE` loop the page (there is no "stop at end" mode
         //           other than repeat-track), so the end wraps to the start.
-        // TS map:   `this.pos = 0; return this.order[0];`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -981,7 +901,6 @@ class Queue private constructor(private val rng: Random) {
     //           indices move nothing, matching the framework's `C.INDEX_UNSET` no-op.
     //           (No `queue.rs` twin: this is MediaSession-specific to the Android
     //           port.)
-    // TS map:   `moveCursorTo(scopeIndex: number): number | null { ... }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -998,7 +917,6 @@ class Queue private constructor(private val rng: Random) {
         //           `return null` exits with the `null` variant.
         // Why:      An out-of-range target moves nothing (the `C.INDEX_UNSET` no-op
         //           the framework uses).
-        // TS map:   `if (scopeIndex < 0 || scopeIndex >= this.order.length) return null;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1011,7 +929,6 @@ class Queue private constructor(private val rng: Random) {
         //           into the `Int?` cursor field.
         // Why:      Move the cursor directly to the framework-chosen position without
         //           recomputing the scope.
-        // TS map:   `this.pos = scopeIndex;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1021,7 +938,6 @@ class Queue private constructor(private val rng: Random) {
         // What:     `return order[scopeIndex]` indexes `order` at the new position and
         //           returns that load-order index (the `Int?` result).
         // Why:      Tell the caller which track is now current.
-        // TS map:   `return this.order[scopeIndex];`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1035,7 +951,6 @@ class Queue private constructor(private val rng: Random) {
     // Why:      Move to the previous track within the scope, wrapping to the scope's
     //           end at the start; the user pressed Previous. Returns the load-order
     //           index of the previous track, or `null` when the queue is empty.
-    // TS map:   `prev(): number | null { ... }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1058,7 +973,6 @@ class Queue private constructor(private val rng: Random) {
         //           `return null` from `prev` immediately.
         // Why:      Nothing to go back to when there is no cursor; bail out early and
         //           smart-cast away the nullability.
-        // TS map:   `if (this.pos === null) return null; const position = this.pos;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1071,7 +985,6 @@ class Queue private constructor(private val rng: Random) {
         // Why:      Under shuffle, `order` is the play HISTORY; `prev` steps back
         //           through it but, unlike `OFF`, does NOT wrap to the end (there is no
         //           "last" of a history; the start is the oldest played track).
-        // TS map:   `if (this.shuffle !== ShuffleMode.OFF) { ... }`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1082,7 +995,6 @@ class Queue private constructor(private val rng: Random) {
             //           When there is older history, step the cursor back one slot.
             // Why:      Retrace the shuffle history backward (the back half of the
             //           back/forward cursor `advance` retraces forward).
-            // TS map:   `if (position > 0) { this.pos = position - 1; return this.order[position - 1]; }`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -1096,7 +1008,6 @@ class Queue private constructor(private val rng: Random) {
             //           moving the cursor (reached only when `position == 0`).
             // Why:      At the oldest played track, `prev` stays put rather than wrapping
             //           (the desktop shuffle `prev` does the same).
-            // TS map:   `return this.order[position];`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -1107,7 +1018,6 @@ class Queue private constructor(private val rng: Random) {
         // What:     `if (position > 0) { pos = position - 1; return order[position - 1] }`
             //           is the normal `OFF` backward step within the page.
         // Why:      A plain backward move without wrapping.
-        // TS map:   `if (position > 0) { this.pos = position - 1; return this.order[position - 1]; }`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1122,7 +1032,6 @@ class Queue private constructor(private val rng: Random) {
         //           to the page's last track.
         // Why:      `OFF`/`WITHIN_PAGE` always loop the page, so Previous from the start
         //           jumps to the end. (Shuffle returned above, so this wrap is `OFF`-only.)
-        // TS map:   `const last = this.order.length - 1; this.pos = last; return this.order[last];`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1144,7 +1053,6 @@ class Queue private constructor(private val rng: Random) {
     //           `ShuffleMode.ALL`, otherwise the anchor's page. Falls back to the
     //           whole queue when the anchor belongs to no page (an empty/invalid
     //           anchor), never producing an empty scope for a real track.
-    // TS map:   `private scopeIndices(anchor: number): number[] { ... }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1165,7 +1073,6 @@ class Queue private constructor(private val rng: Random) {
         //           `==` compares the `shuffle` field against the `ShuffleMode.ALL`
         //           enum constant (enum value equality, like TS `===`).
         // Why:      `ALL` ignores pages entirely: the scope is every track.
-        // TS map:   `if (this.shuffle === ShuffleMode.ALL) { ... }`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1179,9 +1086,6 @@ class Queue private constructor(private val rng: Random) {
             //           - `.toList()` is a type-CONVERSION call: it materialises that
             //             range into a concrete `List<Int>` (the declared return type).
             // Why:      Every load-order index, ascending — the whole-queue scope.
-            // TS map:   `return [...Array(this.tracks.length).keys()];` (or
-            //           `[...this.tracks.keys()]`). Kotlin's `range.toList()` is the
-            //           "spread a range into an array" step TS does with `keys()`.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -1193,7 +1097,6 @@ class Queue private constructor(private val rng: Random) {
         //           `List<String>` local `names`, the relative display strings (one
         //           per track, in load order) from `displayPaths()`.
         // Why:      Pagination groups these display strings into pages.
-        // TS map:   `const names: string[] = this.displayPaths();`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1208,7 +1111,6 @@ class Queue private constructor(private val rng: Random) {
         // Why:      We need the set of indices sharing the anchor's page. Using the
         //           SAME `paginate` the UI tab bar uses means the playback scope and
         //           the visible page can never drift apart.
-        // TS map:   `const pages: Page[] = paginate(names);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1221,7 +1123,6 @@ class Queue private constructor(private val rng: Random) {
         //           of the page holding `anchor`, or `null` when no page holds it.
         // Why:      That page IS the confined scope; `null` signals "anchor not on any
         //           page" (only for an empty/invalid anchor).
-        // TS map:   `const page: number | null = pageOfIndex(pages, anchor);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1235,7 +1136,6 @@ class Queue private constructor(private val rng: Random) {
         //           non-null `Int` inside the `then` branch.
         // Why:      If the anchor is on a page, that page's indices are the scope;
         //           otherwise fall back to the whole queue.
-        // TS map:   `return page !== null ? pages[page].entries.map(e => e.index) : [...this.tracks.keys()];`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1257,9 +1157,6 @@ class Queue private constructor(private val rng: Random) {
             //             pagination preserves order. This is the branch's value and
             //             thus part of the returned expression.
             // Why:      The page's track indices form the confined scope.
-            // TS map:   `pages[page].entries.map((entry) => entry.index)` — Kotlin's
-            //           `{ it.index }` trailing lambda is TS's `(entry) => entry.index`;
-            //           the implicit `it` replaces the named arrow parameter.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -1273,7 +1170,6 @@ class Queue private constructor(private val rng: Random) {
             //           materialises it into a `List<Int>`).
             // Why:      Defensive fallback: never produce an empty scope for a real
             //           track when the anchor matched no page.
-            // TS map:   `[...Array(this.tracks.length).keys()]`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -1293,7 +1189,6 @@ class Queue private constructor(private val rng: Random) {
     //           starts a fresh cycle (advancing `cycleStart`) that avoids an immediate
     //           repeat of `current`. Mirrors desktop `queue.rs` `pick_next_shuffle`.
     //           See `docs/decisions/music-player-jit-shuffle.md`.
-    // TS map:   `private pickNextShuffle(current: number): number { ... }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1314,7 +1209,6 @@ class Queue private constructor(private val rng: Random) {
         //           `List<Int>` of the load-order indices eligible this cycle (the
         //           anchor's page for `WITHIN_PAGE`, the whole queue for `ALL`).
         // Why:      The pool the pick is drawn from.
-        // TS map:   `const scope = this.scopeIndices(current);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1331,7 +1225,6 @@ class Queue private constructor(private val rng: Random) {
         //             membership tests below.
         // Why:      "Without replacement" means excluding everything already played this
         //           cycle; a set makes the exclusion test cheap.
-        // TS map:   `const played = new Set(this.order.slice(this.cycleStart));`
         // Gotcha:   `subList(from, to)` is a half-open range like TS `slice(from, to)`;
         //           `to = order.size` takes through the last element.
         //
@@ -1349,7 +1242,6 @@ class Queue private constructor(private val rng: Random) {
         //             `!played.contains(it)`).
         //           `var` (not `val`) because the empty-cycle branch below reassigns it.
         // Why:      The eligible picks: scope minus this cycle's history.
-        // TS map:   `let remaining = scope.filter((i) => !played.has(i));`
         // Gotcha:   Kotlin's `in`/`!in` is MEMBERSHIP (`.contains`), NOT JS `in`
         //           (property-key); translate to `.has(...)`/`!.has(...)`.
         //
@@ -1361,7 +1253,6 @@ class Queue private constructor(private val rng: Random) {
         // What:     `if (remaining.isEmpty()) { ... }` runs when every scope track has
         //           been played this cycle (the cycle is exhausted).
         // Why:      Start a FRESH cycle: mark the boundary and reseed the eligible pool.
-        // TS map:   `if (remaining.length === 0) { ... }`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1373,7 +1264,6 @@ class Queue private constructor(private val rng: Random) {
             //           empty (the next `subList(cycleStart, order.size)` is empty until
             //           picks are appended).
             // Why:      Begin counting a new without-replacement cycle from here.
-            // TS map:   `this.cycleStart = this.order.length;`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -1384,7 +1274,6 @@ class Queue private constructor(private val rng: Random) {
             //           the whole scope EXCEPT the current track, so the fresh cycle does
             //           not immediately replay the track that just ended.
             // Why:      Avoid a jarring back-to-back repeat across the cycle boundary.
-            // TS map:   `remaining = scope.filter((i) => i !== current);`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -1395,7 +1284,6 @@ class Queue private constructor(private val rng: Random) {
             //           single-track scope, where excluding `current` leaves nothing; in
             //           that case the only option is to replay `current`.
             // Why:      A one-track scope must still yield a pick.
-            // TS map:   `if (remaining.length === 0) remaining = scope;`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -1410,7 +1298,6 @@ class Queue private constructor(private val rng: Random) {
         //           an `Int` in `0 until remaining.size`; indexing yields the chosen
         //           load-order index, which is returned.
         // Why:      The actual random pick from the eligible pool.
-        // TS map:   `return remaining[this.rng.nextInt(remaining.length)];`
         // Gotcha:   This is the KOTLIN seeded RNG (`kotlin.random.Random.nextInt`), NOT
         //           the desktop's xorshift64; only within-Kotlin determinism is shared.
         //
@@ -1429,7 +1316,6 @@ class Queue private constructor(private val rng: Random) {
     //           `setShuffle`, `playIndex` to another page). A `null` anchor defaults
     //           to the first track; a stale index past the end is clamped into range;
     //           an empty queue clears the order and cursor.
-    // TS map:   `private rebuildScopeOrder(anchor: number | null): void { ... }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1452,7 +1338,6 @@ class Queue private constructor(private val rng: Random) {
         //           `List.isEmpty()` predicate (true when there are zero tracks).
         // Why:      An empty queue has no order and no cursor; guard the index math
         //           below.
-        // TS map:   `if (this.tracks.length === 0) { ... }`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1462,7 +1347,6 @@ class Queue private constructor(private val rng: Random) {
             // What:     `order = emptyList()` assigns the shared zero-length read-only
             //           list (see the `emptyList()` note) to the `order` field.
             // Why:      No tracks means no playback order.
-            // TS map:   `this.order = [];`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -1472,7 +1356,6 @@ class Queue private constructor(private val rng: Random) {
             // What:     `pos = null` clears the cursor field (assigning the `null`
             //           variant to the `Int?` field).
             // Why:      Nothing is selected in an empty queue.
-            // TS map:   `this.pos = null;`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -1482,7 +1365,6 @@ class Queue private constructor(private val rng: Random) {
             // What:     `return` exits the method early (returning `Unit`/void). Bare
             //           `return` with no value, legal because the method returns `Unit`.
             // Why:      The empty-queue case is fully handled; skip the rest.
-            // TS map:   `return;`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -1497,7 +1379,6 @@ class Queue private constructor(private val rng: Random) {
         // Why:      `setTracks` anchors `0`, but `clearSelection` (and toggling shuffle while
         //           nothing is selected) passes `null` to DESELECT, so a freshly opened library
         //           highlights nothing until the user taps a track.
-        // TS map:   `if (anchor === null) { this.order = []; this.pos = null; return; }`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1514,8 +1395,6 @@ class Queue private constructor(private val rng: Random) {
         //           two values, CLAMPING the anchor to at most `tracks.size - 1` (the last
         //           valid index).
         // Why:      Defensive: a stale index must not point past the end of the queue.
-        // TS map:   `const clamped: number = Math.min(anchor, this.tracks.length - 1);`
-        //           — `minOf` is `Math.min`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1529,7 +1408,6 @@ class Queue private constructor(private val rng: Random) {
         //           permutation: `order` starts as just the anchor and grows as
         //           just-in-time picks are drawn (see `advance`), so the rebuild only
         //           seeds the single anchor and resets the cycle.
-        // TS map:   `if (this.shuffle === ShuffleMode.OFF) { ... } else { ... }`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1539,7 +1417,6 @@ class Queue private constructor(private val rng: Random) {
             // What:     `val scope: List<Int> = scopeIndices(clamped)` is the page's
             //           indices in ascending load order (the whole sequential scope).
             // Why:      `OFF` plays the page in load order, so the scope IS the order.
-            // TS map:   `const scope = this.scopeIndices(clamped);`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -1549,7 +1426,6 @@ class Queue private constructor(private val rng: Random) {
             // What:     `val found: Int = scope.indexOf(clamped)` locates the anchor's
             //           position within the scope, or `-1` if absent.
             // Why:      The cursor must point at the anchor after the rebuild.
-            // TS map:   `const found = scope.indexOf(clamped);`
             // Gotcha:   `.indexOf` returns `-1` (not `null`) when not found; the test
             //           below is `found < 0`, not a null check.
             //
@@ -1560,7 +1436,6 @@ class Queue private constructor(private val rng: Random) {
             val found: Int = scope.indexOf(clamped)
             // What:     `order = scope` adopts the sequential scope as the playback order.
             // Why:      Under `OFF` the order is the load-order page.
-            // TS map:   `this.order = scope;`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -1572,7 +1447,6 @@ class Queue private constructor(private val rng: Random) {
             //           cannot happen for a real track). The non-null `Int` is stored
             //           into the `Int?` field.
             // Why:      Keep the anchor current after the rebuild.
-            // TS map:   `this.pos = found < 0 ? 0 : found;`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -1584,7 +1458,6 @@ class Queue private constructor(private val rng: Random) {
             //           anchor. `listOf(x)` builds a one-element read-only `List<Int>`.
             // Why:      Just-in-time shuffle does not precompute a permutation; the
             //           history starts at the anchor and grows via `advance`.
-            // TS map:   `this.order = [clamped];`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -1593,7 +1466,6 @@ class Queue private constructor(private val rng: Random) {
             order = listOf(clamped)
             // What:     `pos = 0` points the cursor at that single seeded entry.
             // Why:      The anchor is the current track.
-            // TS map:   `this.pos = 0;`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -1606,7 +1478,6 @@ class Queue private constructor(private val rng: Random) {
             // Why:      A rebuild (open, restore, shuffle toggle, jump) begins a new
             //           without-replacement cycle at the anchor (the accepted cycle
             //           reset; see `docs/decisions/music-player-jit-shuffle.md`).
-            // TS map:   `this.cycleStart = 0;`
             //
             // In TS you'd write (pseudocode):
             // ```ts

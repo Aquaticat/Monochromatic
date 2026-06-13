@@ -3,7 +3,6 @@
 //           the shared `main` source set for the full-Rust build variant.
 // Why:      Keeps `measureTrackPeak` in the same package as the shared sweep code that calls it
 //           and the `NativeBridge` it decodes through.
-// TS map:   No `package` keyword in TS; the file path is the module identity.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -14,7 +13,6 @@ package dev.monochromatic.musicplayer
 // What:     `import android.content.Context` brings in Android's `Context` (app-environment
 //           handle) by short name.
 // Why:      Both functions take a `Context` to resolve the URI's provider.
-// TS map:   `import type { Context } from "android-framework";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -24,7 +22,6 @@ import android.content.Context
 
 // What:     `import android.net.Uri` brings in Android's parsed `Uri` type.
 // Why:      Both functions take a track `Uri`.
-// TS map:   `import type { Uri } from "android-framework";` — mentally a `URL`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -37,8 +34,6 @@ import android.net.Uri
 //           `use {}`) and exposes the raw integer fd via `.fd`.
 // Why:      The decoder needs an open descriptor to hand the native side; this is how a
 //           `content://` URI becomes a readable fd.
-// TS map:   No direct equivalent. Mentally a file handle object with a numeric `.fd` and a
-//           `.close()`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -49,7 +44,6 @@ import android.os.ParcelFileDescriptor
 // What:     `import android.os.Process` brings in Android's `Process` class, whose
 //           `setThreadPriority` / `THREAD_PRIORITY_LOWEST` set the calling thread's niceness.
 // Why:      The sweep thread sets itself to the lowest priority so it yields to playback.
-// TS map:   No equivalent — JS has no per-thread scheduling priority.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -60,7 +54,6 @@ import android.os.Process
 // What:     `import java.io.FileNotFoundException` brings in the JDK exception thrown when a file
 //           or provider stream cannot be opened.
 // Why:      `measureTruePeakBlocking` throws it when the content resolver returns no descriptor.
-// TS map:   `import { FileNotFoundException } from "...";` — an `Error` subclass.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -71,7 +64,6 @@ import java.io.FileNotFoundException
 // What:     `import java.util.concurrent.Executors` brings in the JDK `Executors` factory;
 //           `newSingleThreadExecutor(threadFactory)` builds a one-worker-thread executor.
 // Why:      The sweep needs a single dedicated low-priority worker thread.
-// TS map:   No equivalent; mentally a single dedicated Web Worker.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -82,7 +74,6 @@ import java.util.concurrent.Executors
 // What:     `import kotlinx.coroutines.CoroutineDispatcher` brings in the type naming which
 //           thread(s) a coroutine runs on.
 // Why:      `sweepDecodeDispatcher`'s declared type is `CoroutineDispatcher`.
-// TS map:   No equivalent (single-threaded JS).
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -93,7 +84,6 @@ import kotlinx.coroutines.CoroutineDispatcher
 // What:     `import kotlinx.coroutines.asCoroutineDispatcher` brings in the EXTENSION that adapts
 //           a JDK `Executor` into a coroutine `CoroutineDispatcher`.
 // Why:      We build a single-thread executor, then `.asCoroutineDispatcher()` it for coroutines.
-// TS map:   No equivalent — adapt a raw worker into something the async scheduler accepts.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -106,7 +96,6 @@ import kotlinx.coroutines.asCoroutineDispatcher
 //           returning the block's value (await-style, unlike fire-and-forget `launch`).
 // Why:      `measureTrackPeak` wraps the blocking native measure in
 //           `withContext(sweepDecodeDispatcher) { ... }` so it runs on the low-priority thread.
-// TS map:   Loosely `await runOn(pool, async () => { ... })` (the thread move has no TS analogue).
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -141,8 +130,6 @@ import kotlinx.coroutines.withContext
 //           built by making a one-thread executor (with a custom thread factory) and adapting it
 //           into a coroutine dispatcher. The pieces are commented line by line below.
 // Why:      Provide the single low-priority worker thread the sweep decodes on.
-// TS map:   No clean equivalent (JS has no threads). Mentally: one dedicated low-priority worker,
-//           exposed for the async runtime to schedule onto.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -155,7 +142,6 @@ private val sweepDecodeDispatcher: CoroutineDispatcher =
     //           the lambda must build and return a `Thread` that runs it.
     // Why:      The one worker thread must be low-priority and a daemon, so we supply a custom
     //           factory instead of the default.
-    // TS map:   `Executors.newSingleThreadExecutor((runnable) => { ... return thread; })`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -167,7 +153,6 @@ private val sweepDecodeDispatcher: CoroutineDispatcher =
         //           `.apply { isDaemon = true }` marks it a daemon and returns it.
         // Why:      Build the worker: lower its priority, then run the task; the name aids debugging;
         //           daemon means it does not keep the process alive.
-        // TS map:   `const t = new Thread(() => { ... }, "peak-sweep-decode"); t.isDaemon = true; return t;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -179,7 +164,6 @@ private val sweepDecodeDispatcher: CoroutineDispatcher =
             // What:     `{ ... }` is the thread's RUNNABLE body (SAM lambda passed as the `Thread`
             //           constructor's first argument); it runs ON the new thread when started.
             // Why:      Define the worker's work: drop priority, then run the task.
-            // TS map:   `() => { Process.setThreadPriority(...); runnable.run(); }`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -189,7 +173,6 @@ private val sweepDecodeDispatcher: CoroutineDispatcher =
                 // What:     `Process.setThreadPriority(Process.THREAD_PRIORITY_LOWEST)` lowers THIS
                 //           thread's scheduling priority to the platform minimum (nice 19).
                 // Why:      So the CPU-heavy native decode yields to playback and the UI.
-                // TS map:   No equivalent — JS cannot set a thread's scheduler priority.
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -198,7 +181,6 @@ private val sweepDecodeDispatcher: CoroutineDispatcher =
                 Process.setThreadPriority(Process.THREAD_PRIORITY_LOWEST)
                 // What:     `runnable.run()` runs the executor's task on this thread via its `run()`.
                 // Why:      After lowering priority, actually perform the queued work.
-                // TS map:   `runnable.run();`
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -217,7 +199,6 @@ private val sweepDecodeDispatcher: CoroutineDispatcher =
 // Why:      The sweep's entry point; it always routes the (blocking) native measure onto
 //           `sweepDecodeDispatcher`. Returns the measured true peak (linear), `0.0` for a
 //           zero-channel stream.
-// TS map:   `async function measureTrackPeak(context, uri): Promise<number> { return await runOn(sweepDecodeDispatcher, () => measureTruePeakBlocking(context, uri)); }`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -238,9 +219,6 @@ suspend fun measureTrackPeak(context: Context, uri: Uri): Float =
 //           dispatcher choice lives with each caller. THROWS `FileNotFoundException` when the
 //           provider cannot open the URI; `IllegalStateException` when the native measure returns
 //           an error code.
-// TS map:   `export function measureTruePeakBlocking(context: Context, uri: Uri): number { ... }`
-//           — `internal` has no exact TS analogue; mentally "exported within this package/module
-//           only", a synchronous (non-async) function.
 // Gotcha:   `internal` is MODULE-scoped visibility, between `private` (file) and `public`
 //           (everywhere); TS has no direct equivalent.
 //
@@ -256,7 +234,6 @@ internal fun measureTruePeakBlocking(context: Context, uri: Uri): Float {
     //           is the ELVIS operator that THROWS a `FileNotFoundException` when it is `null`.
     // Why:      Get an open, readable descriptor for the track; a `null` means the provider could
     //           not open it, which is a hard error.
-    // TS map:   `const d = context.contentResolver.openFileDescriptor(uri, "r"); if (d === null) throw new FileNotFoundException(`could not open ${uri} for true-peak measure`); const descriptor = d;`
     // Gotcha:   `"r"` is the open-mode string (read-only); `?: throw ...` both null-checks and
     //           throws in one line.
     //
@@ -278,8 +255,6 @@ internal fun measureTruePeakBlocking(context: Context, uri: Uri): Float {
     // Why:      Pass the BORROWED fd to the native side INSIDE `use {}`, so the native code dups it
     //           synchronously while the descriptor is still open, then the descriptor is closed
     //           exactly once (the dup-ownership protocol that avoids an fdsan double-close).
-    // TS map:   `let peak: number; { using d = descriptor; peak = NativeBridge.nativeMeasureTruePeak(d.fd); }`
-    //           — Kotlin's `use {}` is TS 5.2's `using` (or a `try { } finally { descriptor.close(); }`).
     // Gotcha:   `use {}` CLOSES the descriptor when the block ends; do not keep using `it`/the fd
     //           afterward. The native side must finish (dup) before the block returns.
     //
@@ -295,7 +270,6 @@ internal fun measureTruePeakBlocking(context: Context, uri: Uri): Float {
     // What:     `if (peak < 0.0f) { ... }` checks for a negative native result. `0.0f` is a `Float`
     //           literal (the `f` suffix; a negative `peak` is the native error-code convention).
     // Why:      The native measure returns a negative value to signal failure; surface it.
-    // TS map:   `if (peak < 0.0) { ... }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -306,7 +280,6 @@ internal fun measureTruePeakBlocking(context: Context, uri: Uri): Float {
         //           constructs (no `new`) and throws an `IllegalStateException` naming the error
         //           code and URI (string-template interpolation).
         // Why:      A native failure must propagate as an error, not be mistaken for a real peak.
-        // TS map:   `throw new IllegalStateException(`native true-peak measure failed (code ${peak}) for ${uri}`);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -316,7 +289,6 @@ internal fun measureTruePeakBlocking(context: Context, uri: Uri): Float {
     }
     // What:     `return peak` returns the measured (non-negative) true peak.
     // Why:      Hand the peak back to the caller.
-    // TS map:   `return peak;`
     //
     // In TS you'd write (pseudocode):
     // ```ts

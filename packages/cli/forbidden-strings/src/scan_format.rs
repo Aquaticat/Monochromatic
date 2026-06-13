@@ -7,8 +7,6 @@
 //           with AVX2/NEON (when available) instead of byte-at-a-time
 //           scalar code, so a 1M-line file builds the index in
 //           milliseconds instead of tens of milliseconds.
-// TS map:   No 1:1 equivalent. Closest is `String.prototype.matchAll`
-//           with a `/\n/g` regex, but that is slower than SIMD memchr.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -39,7 +37,6 @@ use memchr::memchr_iter;
 //           average length n/2 collapse to one O(n) build plus 2M
 //           binary searches. Building only happens lazily on the
 //           first hit, so 99%-clean files never pay this cost.
-// TS map:   `function buildLineIndex(content: Uint8Array): number[]`.
 // Gotcha:   The returned vec's length is `1 + count(\\n in content)`,
 //           NOT the visible line count when the file ends without a
 //           trailing newline. The last entry can equal `content.len()`
@@ -60,7 +57,6 @@ pub fn build_line_index(content: &[u8]) -> Vec<usize> {
     //           does not have to grow the buffer for the first n
     //           entries. We estimate n from average line length ~32.
     // Why:      Avoid quadratic copy cost on grow for very long files.
-    // TS map:   No equivalent; JS arrays auto-grow with amortised O(1).
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -72,7 +68,6 @@ pub fn build_line_index(content: &[u8]) -> Vec<usize> {
     //           iterator over every byte position of `\n` in `content`.
     //           `b'\n'` is a byte literal (`u8` value 10).
     // Why:      Hot loop; SIMD beats scalar by 4-8x on long inputs.
-    // TS map:   No 1:1; mentally `[...content].flatMap((b, i) => b===10 ? [i] : [])`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -92,7 +87,6 @@ pub fn build_line_index(content: &[u8]) -> Vec<usize> {
 //           walk to find which line owns `offset`.
 // Why:      Same `(line, col)` output as before; faster when called
 //           many times on one file because the index is shared.
-// TS map:   `function lineAndColIndexed(lineStarts: number[], offset: number): [number, number]`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -118,8 +112,6 @@ pub fn line_and_col_indexed(line_starts: &[usize], offset: usize) -> (usize, usi
     //           false at index 0 the result is 0 instead of wrapping.
     // Why:      Find the largest line-start that is <= offset; that
     //           line owns the byte at `offset`.
-    // TS map:   See pseudocode above; TS has no `partition_point`,
-    //           hand-rolled binary search needed.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -140,7 +132,6 @@ pub fn line_and_col_indexed(line_starts: &[usize], offset: usize) -> (usize, usi
 // Why:      Same semantics as before -- clamping multi-line matches
 //           to one line for the report. Now O(log L) instead of
 //           O(end - start).
-// TS map:   `function endInLineIndexed(lineStarts: number[], start: number, end: number): number`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -173,7 +164,6 @@ pub fn end_in_line_indexed(line_starts: &[usize], start: usize, end: usize) -> u
 //           the failing CI log itself is a leak surface. Centralizing
 //           the format string here ensures every hit is redacted the
 //           same way.
-// TS map:   `function formatHit(path: string, line: number, colStart: number, colEnd: number, ruleIdx: number): string`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -212,7 +202,6 @@ pub fn format_hit(
 //           from one consumer, LTO already inlines tiny crate-internal
 //           helpers, but the attribute removes any doubt on the hot
 //           path).
-// TS map:   `function emitHit(li: number[], path: string, start: number, end: number, ruleIdx: number): string`.
 // Gotcha:   This helper does NOT skip empty-span matches (`start ==
 //           end`). The three regex-result emission sites in scan.rs
 //           guard that with `if m.start == m.end { continue; }` before
@@ -257,8 +246,6 @@ pub fn emit_hit(
 // Why:      Keep `scan_format.rs` to its production helpers; the
 //           invariant-pinning tests live beside it without inflating this
 //           file or its max-lines budget (sibling `*_tests.rs` are exempt).
-// TS map:   the `scan_format.unit.test.ts` file beside `scan_format.ts`,
-//           excluded from the production bundle.
 //
 // In TS you'd write (pseudocode):
 // ```ts

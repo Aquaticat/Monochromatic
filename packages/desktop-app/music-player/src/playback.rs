@@ -6,7 +6,6 @@
 // What:     `use std::path::{Path, PathBuf};`. `Path` is a borrowed path view;
 //           `PathBuf` is the owned, growable version (like `&str` vs `String`).
 // Why:      The helpers take borrowed paths and return owned ones.
-// TS map:   both are just `string` in TS.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -23,7 +22,6 @@ use std::path::{Path, PathBuf};
 // Why:      A folder holds more than music (cover art, playlists, and system files
 //           like `.DS_Store` / `.nomedia` / `.database_uuid`); this allowlist is the
 //           single rule deciding what a scan enqueues, so junk never reaches the queue.
-// TS map:   `const AUDIO_EXTENSIONS: readonly string[] = [ ... ];`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -41,7 +39,6 @@ const AUDIO_EXTENSIONS: &[&str] = &[
 //           the same rule (visible inside this crate but not outside it).
 // Why:      One predicate decides "does this belong in a music queue", shared by the
 //           folder scan and the session restore so they cannot disagree.
-// TS map:   `function isAudioFile(path: string): boolean`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -56,7 +53,6 @@ pub(crate) fn is_audio_file(path: &Path) -> bool {
     //           is none. A dotfile like `.DS_Store` has NO extension in Rust (the
     //           leading dot is not a separator), so it lands in the `None` arm.
     // Why:      Without an extension there is nothing to match against the allowlist.
-    // TS map:   `const ext = extname(path); // "" when none`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -69,7 +65,6 @@ pub(crate) fn is_audio_file(path: &Path) -> bool {
         //           `.as_str()` borrows it as `&str`; the leading `&` makes the `&&str`
         //           that `slice.contains` compares against each entry.
         // Why:      Case-insensitive membership test, so `.FLAC` matches `flac`.
-        // TS map:   `return AUDIO_EXTENSIONS.includes(ext.toLowerCase());`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -79,7 +74,6 @@ pub(crate) fn is_audio_file(path: &Path) -> bool {
         // What:     `None => false`. No extension (extensionless name or a dotfile):
         //           not recognised as audio.
         // Why:      Skip extensionless and hidden files.
-        // TS map:   `return false;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -98,7 +92,6 @@ pub(crate) fn is_audio_file(path: &Path) -> bool {
 //           cannot be skipped and its behaviour can be tested directly. Headroom now
 //           comes from per-track true-peak normalization folded into `gain` (see the
 //           `truepeak` and `measure` modules), not a fixed factor here.
-// TS map:   `function processSample(sample: number, gain: number): number`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -115,7 +108,6 @@ pub(crate) fn process_sample(sample: f32, gain: f32) -> f32 {
     // Why:      Final guard against any sample leaving the legal range; with true-peak
     //           normalization the clamp rarely fires, but it backstops measurement
     //           error and any residual decoder overshoot.
-    // TS map:   `return Math.max(-1, Math.min(1, sample * gain));`
     // Gotcha:   `clamp` PANICS only if a BOUND is NaN; ours are constants, so it never
     //           panics. A NaN product passes through as NaN; decoders do not emit NaN.
     //
@@ -132,7 +124,6 @@ pub(crate) fn process_sample(sample: f32, gain: f32) -> f32 {
 //           contract shared across threads; `u64`/`u32` are unsigned counts.
 // Why:      Both the session snapshot and the position throttle need frames -> secs;
 //           one helper keeps the divide-by-zero guard in a single place.
-// TS map:   `function framesToSecs(frames: number, rate: number): number`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -144,7 +135,6 @@ pub(crate) fn process_sample(sample: f32, gain: f32) -> f32 {
 pub(crate) fn frames_to_secs(frames: u64, rate: u32) -> f64 {
     // What:     `if rate == 0 { return 0.0; }`. Early return guarding the divide.
     // Why:      An unknown rate has no meaningful position; avoid dividing by zero.
-    // TS map:   `if (rate === 0) return 0;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -156,7 +146,6 @@ pub(crate) fn frames_to_secs(frames: u64, rate: u32) -> f64 {
     // What:     `frames as f64 / rate as f64`. `as f64` widens both integers to float,
     //           then divide. Tail expression -> return.
     // Why:      seconds = frames / rate.
-    // TS map:   `return frames / rate;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -172,7 +161,6 @@ pub(crate) fn frames_to_secs(frames: u64, rate: u32) -> f64 {
 //           `pub(crate)` so the controller can call it.
 // Why:      The queue holds files, but the UI opens a folder, which should enqueue all
 //           of its tracks.
-// TS map:   `function expandPaths(paths: string[]): string[]`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -186,7 +174,6 @@ pub(crate) fn expand_paths(paths: Vec<PathBuf>) -> Vec<PathBuf> {
     // What:     `let mut out: Vec<PathBuf> = Vec::new();`. The accumulating result.
     //           `mut` because we push into it; explicit type because it starts empty.
     // Why:      Collect the expanded files.
-    // TS map:   `const out: string[] = [];`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -197,7 +184,6 @@ pub(crate) fn expand_paths(paths: Vec<PathBuf>) -> Vec<PathBuf> {
     // What:     `for path in paths { ... }`. Consume each opened path BY VALUE (the
     //           loop takes ownership of each element out of `paths`).
     // Why:      Classify file vs directory.
-    // TS map:   `for (const path of paths) { ... }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -207,7 +193,6 @@ pub(crate) fn expand_paths(paths: Vec<PathBuf>) -> Vec<PathBuf> {
         // What:     `if path.is_dir() { ... } else { ... }`. `is_dir()` checks the
         //           filesystem (following symlinks).
         // Why:      Directories need recursive expansion.
-        // TS map:   `if (isDir(path)) { ... } else { ... }`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -218,7 +203,6 @@ pub(crate) fn expand_paths(paths: Vec<PathBuf>) -> Vec<PathBuf> {
             //           directory; `collect_dir_files` returns its files; `.extend(...)`
             //           MOVES each returned path into `out`.
             // Why:      Recursively enqueue the folder's tracks.
-            // TS map:   `out.push(...collectDirFiles(path));`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -229,7 +213,6 @@ pub(crate) fn expand_paths(paths: Vec<PathBuf>) -> Vec<PathBuf> {
             // What:     `out.push(path);`. A plain path: keep it as-is (MOVES it into
             //           `out`).
             // Why:      Could be a file (or non-existent; the decoder will report).
-            // TS map:   `out.push(path);`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -241,7 +224,6 @@ pub(crate) fn expand_paths(paths: Vec<PathBuf>) -> Vec<PathBuf> {
 
     // What:     `out`. Tail expression -> the expanded list is returned.
     // Why:      Hand back the flat file list.
-    // TS map:   `return out;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -255,7 +237,6 @@ pub(crate) fn expand_paths(paths: Vec<PathBuf>) -> Vec<PathBuf> {
 //           own files listed before its subfolders' files. `&Path` is a borrowed path
 //           (we only read it). Private: only `expand_paths` calls it.
 // Why:      Opening a folder should enqueue all its tracks, including nested ones.
-// TS map:   `function collectDirFiles(root: string): string[]`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -268,7 +249,6 @@ pub(crate) fn expand_paths(paths: Vec<PathBuf>) -> Vec<PathBuf> {
 fn collect_dir_files(root: &Path) -> Vec<PathBuf> {
     // What:     `let mut out: Vec<PathBuf> = Vec::new();`. The collected files.
     // Why:      Accumulate across the whole walk.
-    // TS map:   `const out: string[] = [];`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -282,7 +262,6 @@ fn collect_dir_files(root: &Path) -> Vec<PathBuf> {
     //           borrowed `&Path` into an OWNED `PathBuf` we can store.
     // Why:      An explicit stack walks the tree ITERATIVELY (no recursion), so a deeply
     //           nested folder cannot overflow the call stack.
-    // TS map:   `const stack: string[] = [root];`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -294,7 +273,6 @@ fn collect_dir_files(root: &Path) -> Vec<PathBuf> {
     //           work-list is empty. `stack.pop()` returns `Option<PathBuf>`: `Some(dir)`
     //           while items remain, `None` when done (ends the loop).
     // Why:      Process every pending directory.
-    // TS map:   `while (stack.length) { const dir = stack.pop()!; ... }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -305,7 +283,6 @@ fn collect_dir_files(root: &Path) -> Vec<PathBuf> {
         //           directory; `read_dir` returns `Result<ReadDir>` (an iterator of
         //           entries). `&dir` lends the path.
         // Why:      Gather this folder's children, robust to unreadable folders.
-        // TS map:   `let entries; try { entries = readdir(dir); } catch (e) { ... }`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -314,7 +291,6 @@ fn collect_dir_files(root: &Path) -> Vec<PathBuf> {
         let entries = match std::fs::read_dir(&dir) {
             // What:     `Ok(e) => e`. The directory iterator.
             // Why:      Walk its entries.
-            // TS map:   `entries = e;`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -324,7 +300,6 @@ fn collect_dir_files(root: &Path) -> Vec<PathBuf> {
             // What:     `Err(e) => { eprintln!(...); continue; }`. `eprintln!` writes a
             //           line to stderr; `continue` skips to the next work-list item.
             // Why:      One bad folder should not abort the whole walk.
-            // TS map:   `catch (e) { console.error(e); continue; }`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -339,7 +314,6 @@ fn collect_dir_files(root: &Path) -> Vec<PathBuf> {
         // What:     `let mut files: Vec<PathBuf> = Vec::new();`. Files directly in this
         //           folder.
         // Why:      Collected, sorted, then appended.
-        // TS map:   `const files: string[] = [];`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -349,7 +323,6 @@ fn collect_dir_files(root: &Path) -> Vec<PathBuf> {
         // What:     `let mut subdirs: Vec<PathBuf> = Vec::new();`. Subfolders found in
         //           this folder.
         // Why:      Pushed onto the work-stack after sorting.
-        // TS map:   `const subdirs: string[] = [];`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -361,7 +334,6 @@ fn collect_dir_files(root: &Path) -> Vec<PathBuf> {
         //           `Result<DirEntry>`; `.flatten()` yields only the `Ok` values,
         //           silently dropping unreadable entries. So `entry` is a `DirEntry`.
         // Why:      Iterate readable entries; skip broken ones robustly.
-        // TS map:   `for (const entry of entries.filter(e => e.ok).map(e => e.value)) { ... }`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -373,7 +345,6 @@ fn collect_dir_files(root: &Path) -> Vec<PathBuf> {
             //           symlinks (returns `Result<FileType>`); on error skip it.
             // Why:      The non-following check lets us refuse to descend into symlinked
             //           directories, avoiding infinite loops on a symlink cycle.
-            // TS map:   `let ft; try { ft = entry.fileType(); } catch { continue; }`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -382,7 +353,6 @@ fn collect_dir_files(root: &Path) -> Vec<PathBuf> {
             let file_type = match entry.file_type() {
                 // What:     `Ok(ft) => ft`. The entry's type.
                 // Why:      Classify below.
-                // TS map:   `ft = ...;`
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -392,7 +362,6 @@ fn collect_dir_files(root: &Path) -> Vec<PathBuf> {
                 // What:     `Err(_) => continue`. Unreadable type: skip this entry. `_`
                 //           ignores the error value.
                 // Why:      Be robust.
-                // TS map:   `catch { continue; }`
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -402,7 +371,6 @@ fn collect_dir_files(root: &Path) -> Vec<PathBuf> {
             };
             // What:     `let p = entry.path();`. The entry's full path.
             // Why:      Stored in one of the two buckets.
-            // TS map:   `const p = entry.path;`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -419,7 +387,6 @@ fn collect_dir_files(root: &Path) -> Vec<PathBuf> {
             // Why:      Recurse into real folders; enqueue only audio files, so cover
             //           art, playlists, and system files (`.DS_Store`, `.nomedia`,
             //           `.database_uuid`, ...) never enter the queue.
-            // TS map:   `if (ft.isDirectory()) subdirs.push(p); else if (isFile(p) && isAudioFile(p)) files.push(p);`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -436,7 +403,6 @@ fn collect_dir_files(root: &Path) -> Vec<PathBuf> {
         // What:     `files.sort();`. Sort this folder's files alphabetically IN PLACE
         //           (mutates `files`).
         // Why:      Deterministic queue order.
-        // TS map:   `files.sort();`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -445,7 +411,6 @@ fn collect_dir_files(root: &Path) -> Vec<PathBuf> {
         files.sort();
         // What:     `subdirs.sort();`. Sort subfolders alphabetically in place.
         // Why:      Deterministic descent order.
-        // TS map:   `subdirs.sort();`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -456,7 +421,6 @@ fn collect_dir_files(root: &Path) -> Vec<PathBuf> {
         // What:     `out.extend(files);`. Append this folder's files (a parent's files
         //           precede its children's), MOVING them into `out`.
         // Why:      Add the folder's tracks to the result.
-        // TS map:   `out.push(...files);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -469,7 +433,6 @@ fn collect_dir_files(root: &Path) -> Vec<PathBuf> {
         //           by value; `.rev()` reverses the iteration.
         // Why:      The stack pops last-in-first-out, so reversing here makes the
         //           subfolders pop back out in sorted (ascending) order.
-        // TS map:   `for (const dir of [...subdirs].reverse()) stack.push(dir);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -482,7 +445,6 @@ fn collect_dir_files(root: &Path) -> Vec<PathBuf> {
 
     // What:     `out`. Tail expression -> the recursively collected files.
     // Why:      Hand back every file under `root`.
-    // TS map:   `return out;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -495,7 +457,6 @@ fn collect_dir_files(root: &Path) -> Vec<PathBuf> {
 //           of a path (final component), or the whole path if it has none. `pub(crate)`
 //           so the controller can call it.
 // Why:      Filename-only metadata policy for the UI.
-// TS map:   `function fileNameOf(path: string): string`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -505,7 +466,6 @@ pub(crate) fn file_name_of(path: &Path) -> String {
     // What:     `match path.file_name() { ... }`. `file_name()` returns `Option<&OsStr>`
     //           (the last component), or `None` (e.g. `/`).
     // Why:      Extract the filename.
-    // TS map:   `const name = basename(path);`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -516,7 +476,6 @@ pub(crate) fn file_name_of(path: &Path) -> String {
         //           `to_string_lossy()` converts the OS string to a `Cow<str>`
         //           (replacing invalid bytes); `.into_owned()` makes an owned `String`.
         // Why:      Need an owned UTF-8 string for the UI.
-        // TS map:   `return basename;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -526,7 +485,6 @@ pub(crate) fn file_name_of(path: &Path) -> String {
         // What:     `None => path.display().to_string()`. Fall back to the full path
         //           text. `display()` formats the path; `.to_string()` owns it.
         // Why:      Always show something.
-        // TS map:   `return String(path);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -546,8 +504,6 @@ pub(crate) fn file_name_of(path: &Path) -> String {
 // Why:      Keep `playback.rs` to production code; the tests live beside it without
 //           inflating this file or its max-lines budget (sibling `*_tests.rs` files
 //           are exempt from the linter).
-// TS map:   the `playback.unit.test.ts` file beside `playback.ts`, excluded from the
-//           production bundle.
 //
 // In TS you'd write (pseudocode):
 // ```ts

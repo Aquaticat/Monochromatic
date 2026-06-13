@@ -15,9 +15,6 @@
 // Why:      We split the binary into four files so each unit is
 //           focused: `walk.rs` for the working-tree walker that
 //           respects `.gitignore`.
-// TS map:   Closer to a tsconfig file's "include" entry than to an
-//           `import`. The actual `import` happens via the `use` lines
-//           below.
 // Gotcha:   `mod foo;` without a body is NOT an import; it's a
 //           registration. Forgetting to write `mod` for a sibling file
 //           silently excludes it from the build.
@@ -41,9 +38,6 @@ mod walk;
 // Why:      Keep the production public surface unchanged while
 //           letting fuzz targets reach the internal helpers they
 //           need.
-// TS map:   `if (process.env.FUZZING) { export * as fuzzApi from "./fuzz_api"; }`
-//           in spirit; no clean 1:1 equivalent because TS has no
-//           compile-time feature gates.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -55,7 +49,6 @@ pub mod fuzz_api;
 // What:     `use std::env;` imports the std `env` module so we can
 //           reference `env::args` / `env::var`.
 // Why:      Reading argv and environment variables.
-// TS map:   `import { argv, env } from "node:process";`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -82,15 +75,12 @@ use std::env;
 //           triggering a `RefCell already borrowed` panic. The
 //           per-file alloc cost is dwarfed by the unicode-mode
 //           speedup; not worth the re-entrancy hazard.
-// TS map:   N/A (no import line; `std::fs::canonicalize` is fully
-//           qualified at use sites).
 
 // What:     `use std::io::Write;` imports the `Write` TRAIT (interface-
 //           like). Methods declared by a trait are only callable when
 //           the trait is in scope, even when used via macros like
 //           `writeln!`.
 // Why:      We use `writeln!(handle, ...)` to emit hits.
-// TS map:   No 1:1 equivalent; in TS, methods are always callable.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -103,7 +93,6 @@ use std::io::Write;
 //           etc.).
 // Why:      The two-phase main loop uses `par_iter` for both the
 //           parallel-read phase and the parallel-scan phase.
-// TS map:   No equivalent.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -116,7 +105,6 @@ use rayon::prelude::*;
 //           `crate::` is the absolute root of this crate.
 // Why:      We call `list_files(".")` once when `--all` mode is
 //           selected to enumerate every scannable file.
-// TS map:   `import { listFiles } from "./walk";`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -157,7 +145,6 @@ use crate::walk::list_files;
 //           The caller separately decides WHEN to apply the skip:
 //           explicit positional args are NEVER skipped (the user asked
 //           for them); only walker output in --all mode is filtered.
-// TS map:   `function buildSkipSet(rulesPath: string): Set<string>`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -174,7 +161,6 @@ fn build_skip_set(rules_path: &str) -> std::collections::HashSet<std::path::Path
     // What:     `let mut set: HashSet<PathBuf> = HashSet::new();` -- the
     //           usual mutable-empty-collection pattern.
     // Why:      Accumulate canonical-form paths we want to skip.
-    // TS map:   `const set = new Set<string>();`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -192,7 +178,6 @@ fn build_skip_set(rules_path: &str) -> std::collections::HashSet<std::path::Path
     //           `load_ruleset`, so we silently skip the insertion here.
     // Why:      Anchor the skip on the actual filesystem identity of
     //           the rules file rather than its basename.
-    // TS map:   `try { set.add(fs.realpathSync(rulesPath)); } catch {}`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -215,7 +200,6 @@ fn build_skip_set(rules_path: &str) -> std::collections::HashSet<std::path::Path
     //           -- still no false negative because the file does not
     //           exist at the expected location, so the walker would
     //           not encounter it either.
-    // TS map:   constant string array of canonical paths.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -244,7 +228,6 @@ fn build_skip_set(rules_path: &str) -> std::collections::HashSet<std::path::Path
 //           findings on `sub/forbidden-strings.local.txt`-style explicit
 //           args. The path-anchored form here is consulted only when
 //           the caller knows the path came from the walker.
-// TS map:   `function isWalkerSkipped(path: string, skipSet: Set<string>): boolean`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -267,7 +250,6 @@ fn is_walker_skipped(
     // Why:      Per-file canonicalize is one stat syscall; with the
     //           ~2700-file walked corpus, that's a few ms total --
     //           well under the scan cost itself.
-    // TS map:   try/catch around realpathSync.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -301,7 +283,6 @@ fn is_walker_skipped(
 //           The cwd anchor keeps BUG 6 / BUG 11 closed: a file like
 //           `sub/forbidden-strings.local.txt` (different parent) still scans,
 //           because only a config file at the cwd root is skipped.
-// TS map:   `function isConfigFileAtCwd(path: string, cwdCanonical?: string): boolean`.
 fn is_config_file_at_cwd(
     path: &str,
     cwd_canonical: Option<&std::path::Path>,
@@ -359,7 +340,6 @@ const BIN_PROBE_SIZE: usize = 8192;
 //           "binary blob with bytes that happen to spell a secret"
 //           case, and the secret-leak risk is dominated by source
 //           files and small lock files which still scan in full.
-// TS map:   `function readWithBinaryCheck(path: string): Buffer`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -414,11 +394,6 @@ fn read_with_binary_check(path: &str) -> Result<Vec<u8>, std::io::Error> {
 //           target's `main` is now a five-line wrapper that turns the
 //           returned code into an `ExitCode` and prints `Err` to
 //           stderr with a fixed prefix.
-// TS map:   No entry-point function in TS; Node scripts just run top-
-//           to-bottom. Mentally picture an
-//           `async function runCliFromEnv(): Promise<number>` that
-//           the bin's tiny wrapper awaits and passes to
-//           `process.exit`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -441,7 +416,6 @@ pub fn run_cli_from_env() -> Result<i32, String> {
     //           `String`s -- borrowing is not an option here.
     // Why:      We need the user's actual flags/files; the program name
     //           is irrelevant.
-    // TS map:   `const args = process.argv.slice(2);`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -459,7 +433,6 @@ pub fn run_cli_from_env() -> Result<i32, String> {
     //           owned so it can outlive any function call.
     // Why:      Initial source for the rules-file path; `--rules` flag
     //           takes precedence and overwrites this.
-    // TS map:   `let rulesPath: string | undefined = process.env.FORBIDDEN_STRINGS_RULES;`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -471,7 +444,6 @@ pub fn run_cli_from_env() -> Result<i32, String> {
     //           type annotation needed -- the literal `false` infers `bool`.
     // Why:      Tracks whether `--all` was passed; we toggle it to true
     //           when we encounter the flag.
-    // TS map:   `let all = false;`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -486,7 +458,6 @@ pub fn run_cli_from_env() -> Result<i32, String> {
     //           constructor cannot infer it. Sibling: `Vec<&str>` cannot
     //           hold values that outlive the source; we want owned data.
     // Why:      Accumulates positional file arguments as we parse argv.
-    // TS map:   `const files: string[] = [];`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -503,7 +474,6 @@ pub fn run_cli_from_env() -> Result<i32, String> {
     //           mixing widths forces casts.
     // Why:      Manual index lets us advance by 2 (consume `--rules` plus
     //           its value) inside the loop body.
-    // TS map:   `let i = 0;` (TS has only one number type).
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -518,7 +488,6 @@ pub fn run_cli_from_env() -> Result<i32, String> {
     // Why:      We need manual index control to consume `--rules` plus
     //           its argument together; a `for arg in &args` loop cannot
     //           skip ahead.
-    // TS map:   `while (i < args.length) { ... }`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -534,8 +503,6 @@ pub fn run_cli_from_env() -> Result<i32, String> {
         //           support hole-poking moves.
         // Why:      We want to inspect the arg's contents (compare to
         //           "--rules", etc.) without consuming it.
-        // TS map:   `const a = args[i];` -- TS has no ownership system,
-        //           so reading is always implicitly "borrowing".
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -554,7 +521,6 @@ pub fn run_cli_from_env() -> Result<i32, String> {
                 // Why:      Convention: 0 = success, 1 = violation,
                 //           2 = usage / config error. The usage message
                 //           was already printed on the previous line.
-                // TS map:   `return 2;`.
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -571,8 +537,6 @@ pub fn run_cli_from_env() -> Result<i32, String> {
             //           to `args`'s lifetime).
             // Why:      Capture the argument that follows `--rules` as
             //           our authoritative rules path.
-            // TS map:   `rulesPath = args[i];` -- TS strings are GC'd, no
-            //           clone needed.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -590,11 +554,6 @@ pub fn run_cli_from_env() -> Result<i32, String> {
             //           string literal.
             // Why:      Print a single static help string with the version
             //           baked in, no runtime allocation, no formatter.
-            // TS map:   The TS analogue is template-literal concatenation
-            //           plus `process.env.npm_package_version` (read at
-            //           build time via a bundler define), but TS has no
-            //           macro system -- the closest mental model is
-            //           "compiled-in string template".
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -663,7 +622,6 @@ pub fn run_cli_from_env() -> Result<i32, String> {
             //           impossible inside a Cargo build.
             // Why:      Match `cargo`/`rustc` convention -- `--version`
             //           prints `<name> <semver>` on stdout.
-            // TS map:   `console.log(`forbidden-strings ${VERSION}`)`.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -683,7 +641,6 @@ pub fn run_cli_from_env() -> Result<i32, String> {
             //           borrow's lifetime would not outlive `args`.
             // Why:      Stash the positional file argument for later
             //           scanning.
-            // TS map:   `files.push(a);` -- TS strings are GC'd; no clone.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -694,7 +651,6 @@ pub fn run_cli_from_env() -> Result<i32, String> {
         // What:     `i += 1;` advances to the next argv slot. Plain
         //           integer increment; no Rust-specific magic.
         // Why:      Move past the just-consumed flag/value.
-        // TS map:   `i += 1;`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -711,7 +667,6 @@ pub fn run_cli_from_env() -> Result<i32, String> {
     //           is set, matching the conventional filename. The loader
     //           emits a clear "file not found" error if the default
     //           doesn't exist; we don't pre-check and shadow that error.
-    // TS map:   `rulesPath ?? "forbidden-strings.local.txt"`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -732,7 +687,6 @@ pub fn run_cli_from_env() -> Result<i32, String> {
     //           but the empty closure adds negligible cost.
     // Why:      Rules load is ~12ms for a 1k-rule ruleset; file walk
     //           is ~7ms on this repo. Sequential = 19ms; parallel = 12ms.
-    // TS map:   `await Promise.all([loadRuleset(rulesPath), listFiles(".")])`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -757,7 +711,6 @@ pub fn run_cli_from_env() -> Result<i32, String> {
     //           a plain `RuleSet` to use below (no more wrapper).
     // Why:      Unwrap the `Result` while presenting a friendly error to
     //           the user instead of a panic.
-    // TS map:   `try { ruleset = await loadRuleset(...); } catch (e) { console.error(...); process.exit(2); }`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -810,7 +763,6 @@ pub fn run_cli_from_env() -> Result<i32, String> {
     // Why:      `listed_result` is `Some(...)` only when `--all` was
     //           passed; otherwise `None` and we skip silently, leaving
     //           `files` set to whatever came from positional args.
-    // TS map:   `if (listedResult) { try { files = listedResult; } catch (e) { ... } }`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -849,7 +801,6 @@ pub fn run_cli_from_env() -> Result<i32, String> {
     //           readahead-pipeline files. Fallback to `fs::read`
     //           handles the cases mmap can't (empty files, /proc
     //           entries, character devices).
-    // TS map:   `(await Promise.all(files.map(async (p) => scanContent(p, await readFileFastest(p), rs)))).flat()`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -867,7 +818,6 @@ pub fn run_cli_from_env() -> Result<i32, String> {
     //           is path-anchored (not basename-anchored), so
     //           `sub/forbidden-strings.local.txt` no longer collides
     //           with the actual rules file path.
-    // TS map:   `const skipSet = buildSkipSet(rulesPath);`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -908,7 +858,6 @@ pub fn run_cli_from_env() -> Result<i32, String> {
             //           the pre-built skip set. Path-anchored matching
             //           also closes BUG 11 (Windows backslash basename)
             //           by routing through `std::fs::canonicalize`.
-            // TS map:   `if (all && isWalkerSkipped(p, skipSet)) return [];`.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -931,7 +880,6 @@ pub fn run_cli_from_env() -> Result<i32, String> {
             //           etc.) becomes "empty content" and the scan
             //           pass produces zero hits for it. Crashing the
             //           whole walk on one unreadable file is worse.
-            // TS map:   `try { content = await readFile(p); } catch { content = new Uint8Array(); }`.
             // Gotcha:   `.unwrap_or_default()` SILENTLY discards the
             //           `io::Error`. We accept that here because the
             //           per-file scan is best-effort.
@@ -957,7 +905,6 @@ pub fn run_cli_from_env() -> Result<i32, String> {
             //           the run exited 0. A secret-scanning CI control
             //           must NOT silently pass on unreadable files; the
             //           operator needs to know they had no signal.
-            // TS map:   `try { ... } catch (e) { return [makeError(p, e)] }`.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -979,7 +926,6 @@ pub fn run_cli_from_env() -> Result<i32, String> {
             // Why:      Hand the just-read bytes to the scanner; the
             //           returned hits become this closure's contribution
             //           to the parallel-flat_map output.
-            // TS map:   `return scanContent(p, content, ruleset);`.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -993,7 +939,6 @@ pub fn run_cli_from_env() -> Result<i32, String> {
     //           RAII handle holding the stderr mutex. Held writes
     //           don't interleave with other threads.
     // Why:      Print all hits in one batch.
-    // TS map:   No equivalent; Node has no stderr lock concept.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1013,7 +958,6 @@ pub fn run_cli_from_env() -> Result<i32, String> {
     //           bin wrapper converts to `ExitCode` for the actual exit.
     // Why:      No hits = clean exit; one or more hits = "violation"
     //           exit so CI marks the run as failed.
-    // TS map:   `return hits.length === 0 ? 0 : 1;`.
     //
     // In TS you'd write (pseudocode):
     // ```ts

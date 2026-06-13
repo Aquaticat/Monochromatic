@@ -2,7 +2,6 @@
 //           troubleshooting-doc suffix from the parent engine module.
 // Why:      Every rejection message should point at the same long-form
 //           resharp workaround document without duplicating the path.
-// TS map:   `import { TROUBLESHOOT_REF } from "./constants";`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -36,7 +35,6 @@ use super::constants::TROUBLESHOOT_REF;
 //           ("unsupported lookaround pattern" or
 //           "UnsupportedResharpRegex"), which the user must reverse-
 //           engineer back to their own input.
-// TS map:   `function lookaroundInComplement(src: string): string | null`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -64,7 +62,6 @@ pub fn lookaround_in_complement(src: &str) -> Option<String> {
     // Why:      Without per-open kind tracking we cannot tell whether
     //           a `)` closes a complement or a regular group, so we
     //           cannot bound the complement body.
-    // TS map:   `const parenStack: boolean[] = [];`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -82,7 +79,6 @@ pub fn lookaround_in_complement(src: &str) -> Option<String> {
         // Why:      The trigger is the escape sequence itself, not the
         //           backslash. Treating `\\` as "skip 2" would let us
         //           miss `\b` and `\B` entirely.
-        // TS map:   `if (c === 0x5c) { ... }` (0x5c = `\`).
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -139,7 +135,6 @@ pub fn lookaround_in_complement(src: &str) -> Option<String> {
             //           "inside the complement" for resharp's purposes;
             //           the rewrite happens regardless of intermediate
             //           non-complement parens.
-            // TS map:   `const inComplement = parenStack.some(Boolean);`.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -184,7 +179,6 @@ pub fn lookaround_in_complement(src: &str) -> Option<String> {
             //           would miscount.
             // Why:      Maintain accurate complement-depth tracking
             //           across nested groups.
-            // TS map:   The same push/pop pattern in JS.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -292,7 +286,6 @@ pub fn lookaround_in_complement(src: &str) -> Option<String> {
 //           Upstream fix would be adding `redundant.insert(node);`
 //           on each loop iteration in `calc_prefix_sets_inner`
 //           so the visited-set actually accumulates across the walk.
-// TS map:   `function complementIntersectionQuantifiedGroup(src: string): string | null`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -407,7 +400,6 @@ pub fn complement_intersection_quantified_group(src: &str) -> Option<String> {
 //           `~(` is itself a `requires_resharp` trigger, so the
 //           validator only fires for rules that would route to
 //           resharp anyway.
-// TS map:   `function nestedComplement(src: string): string | null`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -451,7 +443,6 @@ pub fn nested_complement(src: &str) -> Option<String> {
         //           walks both derivative chains and takes
         //           hundreds of milliseconds; under ASAN that
         //           amplifies past libFuzzer's timeout.
-        // TS map:   `if (c === 0x7e && bytes[i+1] === 0x28) { if (stack.some(b => b)) return reason; stack.push(true); i += 2; continue; }`.
         if c == b'~' && bytes.get(i + 1).copied() == Some(b'(') {
             if stack.iter().any(|&b| b) {
                 return Some(format!(

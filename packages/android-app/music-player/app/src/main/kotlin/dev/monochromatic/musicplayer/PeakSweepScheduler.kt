@@ -36,10 +36,6 @@
 // Why:      So sibling files (e.g. `PeakSweepWorker`, `LibrarySource`) in the same package
 //           can see `PeakSweepScheduler` without importing it, and so other packages can
 //           reach it by its fully-qualified name.
-// TS map:   TS has no `package` keyword. The closest equivalent is the file's location plus
-//           its `export`s: code in the same folder/barrel "just sees" each other much like
-//           same-package Kotlin code. Mentally: `// (this file lives in the
-//           dev/monochromatic/musicplayer module)`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -53,8 +49,6 @@ package dev.monochromatic.musicplayer
 //           the fully-qualified name (package path + type name).
 // Why:      `enqueue` below takes a `Context` and passes it to `WorkManager.getInstance`,
 //           so we must name the type to use it.
-// TS map:   A named import: `import { Context } from "android/content";`. Unlike TS, Kotlin
-//           imports name a TYPE here, not a JS value/binding from a module file.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -67,7 +61,6 @@ import android.content.Context
 //           a background job is allowed to run (charging, network, idle, etc.).
 // Why:      We build a `Constraints` value below that says "only run while charging" and
 //           attach it to the work request.
-// TS map:   `import { Constraints } from "androidx/work";` — a plain named import of a class.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -80,8 +73,6 @@ import androidx.work.Constraints
 //           you enqueue periodic work under a name that already has work scheduled.
 // Why:      We pass `ExistingPeriodicWorkPolicy.KEEP` so a second `enqueue` call from another
 //           entry point becomes a no-op instead of stacking a duplicate sweep.
-// TS map:   `import { ExistingPeriodicWorkPolicy } from "androidx/work";` — picture it as a
-//           string-union/enum you reference like `ExistingPeriodicWorkPolicy.KEEP`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -95,8 +86,6 @@ import androidx.work.ExistingPeriodicWorkPolicy
 //           `PeriodicWorkRequestBuilder<PeakSweepWorker>(...)`.
 // Why:      We use it to build the periodic request object that names which Worker class to
 //           run and how often.
-// TS map:   `import { PeriodicWorkRequestBuilder } from "androidx/work";` — a factory
-//           function that returns a builder object you chain `.set...().build()` on.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -109,8 +98,6 @@ import androidx.work.PeriodicWorkRequestBuilder
 //           singleton via `WorkManager.getInstance(context)`.
 // Why:      We call `WorkManager.getInstance(context).enqueueUniquePeriodicWork(...)` to
 //           actually register the sweep.
-// TS map:   `import { WorkManager } from "androidx/work";` — think "the OS-level job queue
-//           you submit tasks to".
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -123,9 +110,6 @@ import androidx.work.WorkManager
 //           a number like `15` can be tagged with the unit it is measured in.
 // Why:      The periodic request below says `(SWEEP_INTERVAL_MINUTES, TimeUnit.MINUTES)`, so
 //           WorkManager knows the `15` means fifteen minutes, not seconds or hours.
-// TS map:   `import { TimeUnit } from "java/util/concurrent";` — TS has no built-in unit
-//           enum; you would normally just pass milliseconds. Mentally: `TimeUnit.MINUTES`
-//           is "the label that turns 15 into 15 minutes".
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -145,11 +129,6 @@ import java.util.concurrent.TimeUnit
 // Why:      The scheduler holds no per-call state and is called from several entry points;
 //           a single shared instance with namespaced helpers is exactly what we want, and it
 //           also gives the two private constants below a home.
-// TS map:   The cleanest TS analog is a module-level object literal exported once, or a class
-//           with only static members:
-//             `export const PeakSweepScheduler = { /* methods + consts */ };`
-//           TS has no `object` keyword; you fake the "exactly one instance" by exporting a
-//           plain object.
 // Gotcha:   Despite the keyword `object`, this is NOT a JS object literal — its members are
 //           resolved at compile time and the constants below are truly constant. Do not read
 //           `object` as TS's `object` type.
@@ -172,8 +151,6 @@ object PeakSweepScheduler {
     // Why:      WorkManager keys "unique periodic work" by a name string. Using one fixed
     //           name means repeated `enqueue` calls all refer to the SAME scheduled job, so
     //           the `KEEP` policy can collapse them into a single sweep.
-    // TS map:   `const UNIQUE_WORK_NAME: string = "peak-sweep";` — Kotlin's `const val` and
-    //           TS's `const` line up almost exactly here. `String` ↔ `string`.
     // Gotcha:   Kotlin `const val` must be a compile-time constant (a literal); it is
     //           stronger than `val`, which only forbids reassignment. There is no TS
     //           distinction — both map to `const`.
@@ -198,9 +175,6 @@ object PeakSweepScheduler {
     //           runs, not a guarantee; the charging constraint decides when a run actually
     //           fires, so "15" really means "as often as charging allows, but no tighter
     //           than the platform's 15-minute floor".
-    // TS map:   `const SWEEP_INTERVAL_MINUTES = 15;` — TS has a single `number` type, so the
-    //           `Int`-vs-`Long` choice simply does not exist there; you'd never write the
-    //           `L` suffix.
     // Gotcha:   In Kotlin `15` and `15L` are DIFFERENT types (`Int` vs `Long`) and passing an
     //           `Int` where a `Long` is required is a compile error — there is no silent
     //           widening like JS number coercion. The `L` suffix is mandatory here.
@@ -223,8 +197,6 @@ object PeakSweepScheduler {
     // Why:      This is the one public entry point. It (idempotently) schedules the recurring
     //           peak sweep. It's safe to call from every place a library becomes available,
     //           because the `KEEP` policy makes the second-and-later calls no-ops.
-    // TS map:   `enqueue(context: Context): void { ... }` as a method on the exported object.
-    //           Kotlin's implicit `Unit` return ↔ TS's `void`.
     // Gotcha:   No explicit return type means `Unit` (void-like), NOT "infer some value". If
     //           you wanted it to return something you'd have to write `: SomeType`.
     //
@@ -245,11 +217,6 @@ object PeakSweepScheduler {
         // Why:      Charging is the single condition we attach to the job: a full first sweep
         //           is hours of decode, so it must not drain the battery. This object encodes
         //           exactly that one rule, ready to hand to the work request.
-        // TS map:   A builder chain like:
-        //             `const constraints = new Constraints.Builder()
-        //                .setRequiresCharging(true).build();`
-        //           Each `.setX()` mutates-then-returns-`this`, and `.build()` returns the
-        //           finished immutable object — a pattern TS devs see in libraries too.
         // Gotcha:   `Constraints.Builder()` is a constructor call WITHOUT a `new` keyword;
         //           Kotlin omits `new`. Read `Constraints.Builder()` as `new
         //           Constraints.Builder()` in TS terms.
@@ -274,11 +241,6 @@ object PeakSweepScheduler {
         //           built above; `.build()` finalizes an immutable periodic work request.
         // Why:      This is the actual description of the recurring job: which Worker, how
         //           often, under what constraints. We need it to pass to WorkManager.
-        // TS map:   `const request = PeriodicWorkRequestBuilder<PeakSweepWorker>(
-        //              SWEEP_INTERVAL_MINUTES, TimeUnit.MINUTES)
-        //              .setConstraints(constraints).build();`
-        //           The `<PeakSweepWorker>` angle-bracket type argument is identical syntax to
-        //           TS generics.
         // Gotcha:   `<PeakSweepWorker>` is a TYPE passed at compile time (a `reified` generic),
         //           not a runtime value/argument. Do not confuse it with a normal function
         //           argument; it sits in angle brackets exactly like a TS generic parameter.
@@ -309,11 +271,6 @@ object PeakSweepScheduler {
         //           `enqueue` idempotent: the first caller wins and every later caller from a
         //           different entry point becomes a harmless no-op, so we never stack duplicate
         //           sweeps.
-        // TS map:   `WorkManager.getInstance(context).enqueueUniquePeriodicWork(
-        //              UNIQUE_WORK_NAME, ExistingPeriodicWorkPolicy.KEEP, request);`
-        //           Reads exactly like TS: a static `getInstance` returning a singleton, then a
-        //           method call with an enum-ish argument. `ExistingPeriodicWorkPolicy.KEEP` ↔
-        //           a member of a string-union/enum.
         // Gotcha:   Picking `REPLACE` or `UPDATE` instead of `KEEP` here would tear down and
         //           reschedule the sweep on every call — the opposite of the idempotency we
         //           rely on. The dedup behavior lives entirely in this one argument.

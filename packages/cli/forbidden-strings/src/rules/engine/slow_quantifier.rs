@@ -50,7 +50,6 @@
 //           to resharp anyway. The plain-regex path never sees the
 //           `_` wildcard triad and the validator would be dead code
 //           on that branch.
-// TS map:   `function nestedQuantifierAfterWildcard(src: string): string | null`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -70,7 +69,6 @@ pub fn nested_quantifier_after_wildcard(src: &str) -> Option<String> {
         // Why:      `\_` is an escaped underscore literal, not the
         //           wildcard triad; `\(` / `\)` would corrupt the
         //           class-tracking state.
-        // TS map:   `if (c === 0x5c) { i += 2; continue; }`.
         if c == b'\\' {
             i += 2;
             continue;
@@ -81,7 +79,6 @@ pub fn nested_quantifier_after_wildcard(src: &str) -> Option<String> {
         // Why:      `[_]` matches the single byte `_`; only bare `_`
         //           outside a class expands to wildcard in this
         //           scanner's dispatch.
-        // TS map:   `if (!inClass && c === 0x5b) { inClass = true; i++; continue; }`.
         if !in_class && c == b'[' {
             in_class = true;
             i += 1;
@@ -100,7 +97,6 @@ pub fn nested_quantifier_after_wildcard(src: &str) -> Option<String> {
         // Why:      The 8c41 / 709c slow-unit shape is exactly this:
         //           a `_` followed by three or more close+quantifier
         //           adjacencies.
-        // TS map:   `if (c === 0x5f) { const chain = countCloseQuantChain(bytes, i+1); if (chain >= 3) return reason; }`.
         if c == b'_' {
             let chain = count_close_quant_chain_after(bytes, i + 1);
             if chain >= 3 {
@@ -161,7 +157,6 @@ pub fn nested_quantifier_after_wildcard(src: &str) -> Option<String> {
 //           lookarounds are `requires_resharp` triggers, so the
 //           validator only fires for rules that would route to
 //           resharp anyway.
-// TS map:   `function nestedChainInLookaroundBody(src: string): string | null`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -195,7 +190,6 @@ pub fn nested_chain_in_lookaround_body(src: &str) -> Option<String> {
         //           pending close+quant chain.
         // Why:      `\)` would mis-pop a frame; `\(` would push a
         //           bogus frame.
-        // TS map:   `if (c === 0x5c) { i += 2; chain = 0; continue; }`.
         if c == b'\\' {
             i += 2;
             chain = 0;
@@ -205,7 +199,6 @@ pub fn nested_chain_in_lookaround_body(src: &str) -> Option<String> {
         //           parens / quantifiers / `|` are literal bytes.
         // Why:      `[)]` shouldn't pop a frame; `[*]` shouldn't be
         //           read as a quantifier.
-        // TS map:   `if (!inClass && c === 0x5b) { inClass = true; chain = 0; i++; continue; }`.
         if !in_class && c == b'[' {
             in_class = true;
             chain = 0;
@@ -226,7 +219,6 @@ pub fn nested_chain_in_lookaround_body(src: &str) -> Option<String> {
         //           `(?<=`. Detecting at open time means the inner
         //           body walk can check `stack.iter().any(|&b| b)`
         //           in O(depth) without re-parsing.
-        // TS map:   `if (c === 0x28) { stack.push(isLookaroundOpen(bytes, i)); chain = 0; i++; if (bytes[i] === 0x3f) i++; continue; }`.
         if c == b'(' {
             let is_lookaround = is_lookaround_opener(bytes, i);
             stack.push(is_lookaround);
@@ -245,7 +237,6 @@ pub fn nested_chain_in_lookaround_body(src: &str) -> Option<String> {
         //           lookaround that wraps the chain must remain on
         //           the stack at trigger time. The wrap is OUTER, so
         //           it stays open until its own matching `)`.
-        // TS map:   `if (c === 0x29) { stack.pop(); ...quant consume...; chain++; if (chain >= 3 && stack.some(b => b)) return reason; }`.
         if c == b')' {
             stack.pop();
             i += 1;
@@ -296,7 +287,6 @@ pub fn nested_chain_in_lookaround_body(src: &str) -> Option<String> {
 // Why:      Sharing the chain-counting logic via a helper avoids
 //           duplicating the quantifier-parsing rules across the two
 //           detectors.
-// TS map:   `function countCloseQuantChainAfter(bytes: Uint8Array, start: number): number`.
 fn count_close_quant_chain_after(bytes: &[u8], start: usize) -> usize {
     let mut i = start;
     let mut chain = 0usize;
@@ -333,7 +323,6 @@ fn count_close_quant_chain_after(bytes: &[u8], start: usize) -> usize {
 //           `(?<!`/`(?<=`.
 // Why:      Detect lookaround openers without committing to a full
 //           regex parser. Used by `nested_chain_in_lookaround_body`.
-// TS map:   `function isLookaroundOpener(bytes: Uint8Array, i: number): boolean`.
 fn is_lookaround_opener(bytes: &[u8], i: usize) -> bool {
     if bytes.get(i).copied() != Some(b'(') {
         return false;

@@ -35,11 +35,6 @@
 //           `Page.kt`) are visible with no import line.
 // Why:      We need it so `Page`/`PageEntry` resolve without imports and so
 //           other packages can address these functions by their full path.
-// TS map:   There is no `package` statement in TS; the closest mental model is
-//           "every file in this directory shares one barrel/namespace, and
-//           same-folder exports are visible to each other". It is NOT an
-//           `import` (no symbol is pulled in here) and NOT an `export` (it
-//           does not list what leaves); it only NAMES where these symbols sit.
 // Gotcha:   Unlike a TS module, the package line does not export or import
 //           anything by itself. Visibility is controlled per-declaration by
 //           the `private` / `internal` / (default) `public` keyword instead.
@@ -63,7 +58,6 @@ package dev.monochromatic.musicplayer.core
 // Why:      The display strings join path segments with `/`; we split on the
 //           same character to find a track's parent folder. One named constant
 //           keeps the join char and the split char from drifting apart.
-// TS map:   `const PAGE_SEPARATOR = "/";` at module scope (not exported).
 // Gotcha:   Kotlin `String` is a GC'd reference type exactly like TS `string`.
 //           There is NO owned-vs-borrowed distinction (that is a Rust concept);
 //           do not read anything into "is it a copy".
@@ -81,7 +75,6 @@ private const val PAGE_SEPARATOR: String = "/"
 //           tag for folder pages.
 // Why:      The page sort key pairs this tag with a label so folder pages sort
 //           BEFORE letter pages regardless of how the label texts compare.
-// TS map:   `const FOLDER_GROUP = 0;`
 // Gotcha:   `Int` is NOT TS's `number`. It is a fixed-width 32-bit integer; it
 //           does not auto-widen to a float or bigint, and overflow wraps
 //           silently. We pick `Int` (not `Long`) because these are tiny tags
@@ -99,7 +92,6 @@ private const val FOLDER_GROUP: Int = 0
 //           A-Z letter pages.
 // Why:      Letter pages must sort AFTER folder pages but BEFORE the catch-all;
 //           the tag value `1` sits between `0` and `2` to encode that order.
-// TS map:   `const LETTER_GROUP = 1;`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -111,7 +103,6 @@ private const val LETTER_GROUP: Int = 1
 //           signed 32-bit; siblings `Long`/`Short`/`Byte`) for the `#` page.
 // Why:      The catch-all must sort LAST, after every A-Z letter page; `2` is
 //           the largest of the three group tags.
-// TS map:   `const CATCH_ALL_GROUP = 2;`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -125,7 +116,6 @@ private const val CATCH_ALL_GROUP: Int = 2
 //           with the other `String` labels without conversion.
 // Why:      One spot defines the catch-all caption, shared by the bucket key
 //           and any test, so it cannot diverge.
-// TS map:   `const CATCH_ALL_LABEL = "#";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -146,8 +136,6 @@ private const val CATCH_ALL_LABEL: String = "#"
 //           with no folder) using its first letter, with fixed A-Z buckets
 //           plus a `#` catch-all, so a flat folder browses by first letter
 //           without exploding into one page per distinct character.
-// TS map:   `function letterKey(name: string): [number, string]` — TS uses a
-//           positional tuple type where Kotlin uses the `Pair` class.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -164,9 +152,6 @@ private fun letterKey(name: String): Pair<Int, String> {
     //           Kotlin's "return null instead of throwing on absence" convention).
     // Why:      The first character decides the letter bucket; an empty name
     //           must not crash, so we need the nullable-on-empty variant.
-    // TS map:   `const first: string | undefined = name[0];` — TS has no `Char`
-    //           type, so a single character is just a length-1 `string`, and
-    //           absence is `undefined` rather than `null`.
     // Gotcha:   `Char?` is plain nullability (the `?` on the TYPE), the closest
     //           analogue to an `Option<char>` but it is NOT a wrapper object you
     //           unwrap; you compare it against `null` directly (see next line).
@@ -186,7 +171,6 @@ private fun letterKey(name: String): Pair<Int, String> {
     // Why:      A first character that is one of the 26 English letters (either
     //           case) goes to its letter bucket; anything else falls to the
     //           catch-all. This is the branch decision that splits the two arms.
-    // TS map:   `return (first !== undefined && /[a-zA-Z]/.test(first)) ? ... : ...;`
     // Gotcha:   Inside this `if` arm Kotlin SMART-CASTS `first` from `Char?` to
     //           non-null `Char`, so the body may use `first.uppercaseChar()`
     //           with no `!!`/`?.` — the compiler already proved it is non-null.
@@ -211,8 +195,6 @@ private fun letterKey(name: String): Pair<Int, String> {
         //           `if` arm, so its value becomes the `return`ed value.
         // Why:      Case-fold so `a` and `A` share the `A` page, and tag it
         //           `LETTER_GROUP` so it sorts among the letter pages.
-        // TS map:   `return [LETTER_GROUP, first.toUpperCase()];` — TS chars are
-        //           already strings, so no `.toString()` conversion is needed.
         // Gotcha:   `uppercaseChar()` is ASCII-simple here (it acts on one
         //           `Char`); the broader-Unicode uppercasing lives in `sortKey`
         //           below. `.toString()` on a `Char` is a TYPE CONVERSION (Char
@@ -232,7 +214,6 @@ private fun letterKey(name: String): Pair<Int, String> {
         //           or the name was empty (`first` was `null`).
         // Why:      Everything that is not a plain English letter lands on `#`,
         //           so a flat folder does not sprout one page per odd character.
-        // TS map:   `return [CATCH_ALL_GROUP, CATCH_ALL_LABEL];`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -249,7 +230,6 @@ private fun letterKey(name: String): Pair<Int, String> {
 //           Parameter `name: String` is the track's display string.
 // Why:      ONE spot decides a track's page (folder vs first-letter), so the
 //           bucket key and the displayed label can never drift apart.
-// TS map:   `function pageKey(name: string): [number, string]`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -262,8 +242,6 @@ private fun pageKey(name: String): Pair<Int, String> {
     //           the SENTINEL `-1` when the string contains no `/`.
     // Why:      A `/` means the track lives in a subfolder; the segment before
     //           the first `/` is its top-level folder. `-1` means root-level.
-    // TS map:   `const slash = name.indexOf("/");` — identical API and identical
-    //           `-1`-means-absent sentinel.
     // Gotcha:   This is the `-1` SENTINEL convention, NOT a null/Option. The
     //           next line tests `slash >= 0`, not `slash != null`. (Rust's twin
     //           used `Option<usize>`/`None` here; Kotlin uses the C-style `-1`.)
@@ -278,7 +256,6 @@ private fun pageKey(name: String): Pair<Int, String> {
     //           `-1` sentinel: a real index means "found a `/`".
     // Why:      Branch on whether the track has a folder: with a `/` we group
     //           by the top folder, without one we fall back to letter bucketing.
-    // TS map:   `return slash >= 0 ? ... : ...;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -297,8 +274,6 @@ private fun pageKey(name: String): Pair<Int, String> {
         // Why:      Group by ONE folder level only (the top folder under the
         //           loaded root); deeper nesting shows in the row path, not the
         //           tab label.
-        // TS map:   `return [FOLDER_GROUP, name.slice(0, slash)];` — TS `slice`
-        //           is the equivalent of Kotlin `substring(start, endExclusive)`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -310,7 +285,6 @@ private fun pageKey(name: String): Pair<Int, String> {
         //           first-letter bucket. Tail expression of the `else` arm, so
         //           its returned `Pair` becomes this function's return value.
         // Why:      Root-level tracks (no `/`) paginate by their first letter.
-        // TS map:   `return letterKey(name);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -334,8 +308,6 @@ private fun pageKey(name: String): Pair<Int, String> {
 //           order (which would put every uppercase letter before every
 //           lowercase one). A-Z letter pages and `#` are already uppercase, so
 //           this is the identity for them.
-// TS map:   `function sortKey(label: string): string { return label.toUpperCase(); }`
-//           — TS has no expression-body sugar, so it spells out the `return`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -357,9 +329,6 @@ private fun sortKey(label: String): String = label.uppercase()
 //           folder name, not just the ASCII test vectors. `internal` (not
 //           `private`) so the test module in the same compilation unit can call
 //           it directly.
-// TS map:   `export function compareByCodePoint(left: string, right: string): number`
-//           — TS has no `internal`; the closest intent is "exported within the
-//           package but treated as not-public API".
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -372,8 +341,6 @@ internal fun compareByCodePoint(left: String, right: String): Int {
     // Why:      We walk both strings code point by code point; this counter
     //           tracks how far into `left` we are. It must be `var` because the
     //           loop advances it.
-    // TS map:   `let leftOffset = 0;` — TS `let` is the mutable binding, `const`
-    //           the immutable one, mirroring Kotlin `var` vs `val`.
     // Gotcha:   This and `rightOffset` are the ONLY mutable bindings in the file;
     //           everything else is `val`. Mutability here is deliberate cursor
     //           state for the manual surrogate-aware walk.
@@ -388,7 +355,6 @@ internal fun compareByCodePoint(left: String, right: String): Int {
     // Why:      We advance the two strings INDEPENDENTLY because a code point
     //           may occupy one or two UTF-16 units, so the offsets do not move
     //           in lockstep.
-    // TS map:   `let rightOffset = 0;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -401,8 +367,6 @@ internal fun compareByCodePoint(left: String, right: String): Int {
     //           cursors are still inside their strings.
     // Why:      Compare the strings position by position until one runs out or
     //           a differing code point is found.
-    // TS map:   `while (leftOffset < left.length && rightOffset < right.length) { ... }`
-    //           — identical; `.length` in TS is also UTF-16 code units.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -418,9 +382,6 @@ internal fun compareByCodePoint(left: String, right: String): Int {
         //           interop.
         // Why:      We must compare by code point, not by code unit, to match
         //           the desktop ordering for supplementary characters.
-        // TS map:   `const leftCodePoint = left.codePointAt(leftOffset)!;` — JS
-        //           strings have the same `codePointAt`; the `!` asserts it is
-        //           defined since we already bounds-checked.
         // Gotcha:   `codePointAt` returns a CODE POINT, not the `.charCodeAt`
         //           code UNIT. For surrogate pairs the two differ; that gap is
         //           exactly why this manual walk exists.
@@ -435,7 +396,6 @@ internal fun compareByCodePoint(left: String, right: String): Int {
         //           for the `right` string at its own cursor.
         // Why:      We need the matching code point on the right side to compare
         //           against the left one.
-        // TS map:   `const rightCodePoint = right.codePointAt(rightOffset)!;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -446,7 +406,6 @@ internal fun compareByCodePoint(left: String, right: String): Int {
         //           equality branch on two `Int`s.
         // Why:      The first position where the code points differ decides the
         //           whole comparison; we can stop and return there.
-        // TS map:   `if (leftCodePoint !== rightCodePoint) { ... }`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -461,9 +420,6 @@ internal fun compareByCodePoint(left: String, right: String): Int {
             // Why:      At the first differing code point, the smaller code
             //           point sorts first; `compareTo` yields exactly the
             //           negative/zero/positive contract a comparator owes.
-            // TS map:   `return leftCodePoint - rightCodePoint;` — for `Int`s
-            //           that fit, plain subtraction gives the same sign; Kotlin
-            //           spells the contract out with `compareTo`.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -479,9 +435,6 @@ internal fun compareByCodePoint(left: String, right: String): Int {
         // Why:      We must skip the WHOLE character we just read, which may be
         //           one or two UTF-16 units, so the next read lands on the next
         //           real code point rather than on the trailing surrogate half.
-        // TS map:   `leftOffset += leftCodePoint > 0xffff ? 2 : 1;` — JS has no
-        //           `charCount`; you encode "supplementary chars take two units"
-        //           by hand.
         // Gotcha:   Advancing by a fixed `1` here (the naive approach) would
         //           split surrogate pairs and corrupt the comparison for emoji /
         //           CJK extension characters. `charCount` is what makes the walk
@@ -496,7 +449,6 @@ internal fun compareByCodePoint(left: String, right: String): Int {
         //           same surrogate-aware cursor advance for the `right` string.
         // Why:      Keep the right cursor on real code-point boundaries too, for
         //           the same reason as the left one.
-        // TS map:   `rightOffset += rightCodePoint > 0xffff ? 2 : 1;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -513,7 +465,6 @@ internal fun compareByCodePoint(left: String, right: String): Int {
     // Why:      When one string is a prefix of the other, the SHORTER one sorts
     //           first; comparing leftover lengths encodes "shorter prefix wins,
     //           equal length means equal strings".
-    // TS map:   `return (left.length - leftOffset) - (right.length - rightOffset);`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -534,10 +485,6 @@ internal fun compareByCodePoint(left: String, right: String): Int {
 //           buckets, ordered deterministically. Mirrors the desktop Rust
 //           `BTreeMap` key tuple `(u8, String, String)`. A `data class` gives
 //           the structural equality/hashing a map key needs for free.
-// TS map:   `type PageSortKey = { group: number; fold: string; label: string };`
-//           plus a hand-written compare; TS objects already compare structurally
-//           only via `===` on identity, so a real Map keyed by this needs a
-//           string key, which is why the implementation differs (see paginate).
 // Gotcha:   Unlike a plain class, a `data class` gives value-style `equals`/
 //           `hashCode` over its constructor properties; that is what lets it act
 //           as a map key by VALUE rather than by object identity.
@@ -555,7 +502,6 @@ private data class PageSortKey(
     //           next property.
     // Why:      Primary ordering axis: folder pages (0) before letter pages (1)
     //           before the catch-all (2), independent of any label text.
-    // TS map:   `group: number;` (a field on the `PageSortKey` object type).
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -568,7 +514,6 @@ private data class PageSortKey(
     // Why:      Ordering by the folded form gives the "ignore case" tab order;
     //           keeping it as a separate field avoids re-folding on every
     //           comparison.
-    // TS map:   `fold: string;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -581,7 +526,6 @@ private data class PageSortKey(
     // Why:      Two folders that fold identically (`Reol`/`REOL`) must remain
     //           distinct buckets; the raw label breaks the tie deterministically
     //           and is also what the tab actually shows.
-    // TS map:   `label: string;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -597,8 +541,6 @@ private data class PageSortKey(
 // Why:      `paginate` sorts the page keys; making the key `Comparable<Self>`
 //           lets `sortedBy { it.key }` order pages with no separate comparator
 //           argument.
-// TS map:   In TS there is no `Comparable`; you pass a compare callback to
-//           `Array.prototype.sort((a, b) => a.compareTo(b))` instead.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -614,8 +556,6 @@ private data class PageSortKey(
     // Why:      Provide the lexicographic order the Rust tuple sort used: group,
     //           then case-folded label, then original label, with code-point
     //           string ordering to mirror Rust's `String: Ord`.
-    // TS map:   `compareTo(other: PageSortKey): number { ... }` — a method you
-    //           hand to `.sort()` as the callback body.
     // Gotcha:   `override` is a real keyword carrying meaning (the method must
     //           match an inherited/interface signature), not a doc annotation.
     //
@@ -629,7 +569,6 @@ private data class PageSortKey(
         //           two `Int` group tags (negative/zero/positive). `other` is the
         //           other key; `group` (no receiver) is THIS key's property.
         // Why:      The group is the primary ordering axis; compute it first.
-        // TS map:   `const byGroup = this.group - other.group;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -642,7 +581,6 @@ private data class PageSortKey(
         //           return-early style.)
         // Why:      Short-circuit: no need to compare labels once the groups
         //           differ.
-        // TS map:   `if (byGroup !== 0) return byGroup;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -654,7 +592,6 @@ private data class PageSortKey(
         //           case-folded labels (this key's `fold` vs `other.fold`).
         // Why:      Same group: order by the case-folded label using the
         //           code-point comparison that mirrors Rust's `String` ordering.
-        // TS map:   `const byFold = compareByCodePoint(this.fold, other.fold);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -664,7 +601,6 @@ private data class PageSortKey(
         // What:     `if (byFold != 0) return byFold`. Early-return guard: when
         //           the folded labels differ, return that ordering.
         // Why:      Short-circuit before the final tiebreaker.
-        // TS map:   `if (byFold !== 0) return byFold;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -678,7 +614,6 @@ private data class PageSortKey(
         // Why:      Equal group and equal fold means two case-variant folders
         //           (`Reol`/`REOL`); the raw label breaks the tie so they stay
         //           distinct and deterministically ordered.
-        // TS map:   `return compareByCodePoint(this.label, other.label);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -699,8 +634,6 @@ private data class PageSortKey(
 //           within each page stay in load order. `Queue` calls this whenever the
 //           queue changes to rebuild the tabs and the visible page. An empty
 //           input yields an empty list, not one empty page.
-// TS map:   `function paginate(names: readonly string[]): Page[]` — Kotlin's
-//           `List<T>` read-only view maps to TS `readonly T[]`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -727,9 +660,6 @@ fun paginate(names: List<String>): List<Page> {
     // Why:      Accumulate entries per page key as we scan the names; we need a
     //           map we can grow (hence `MutableMap`) and per-bucket lists we can
     //           append to (hence `MutableList`).
-    // TS map:   `const groups = new Map<string, PageEntry[]>();` — `val` (the
-    //           binding never reassigned) maps to `const`; the map's CONTENTS
-    //           still mutate.
     // Gotcha:   `val` makes only the BINDING immutable, NOT the map; we still
     //           insert into it below. This is `mutableMapOf` (a plain hash map),
     //           NOT a sorted map like Rust's `BTreeMap` — the ordering is added
@@ -749,9 +679,6 @@ fun paginate(names: List<String>): List<Page> {
     //           parameter list from the body.
     // Why:      We need both the load-order index (for `PageEntry.index`) and the
     //           name itself for every track.
-    // TS map:   `names.forEach((name, index) => { ... });` — note TS's `forEach`
-    //           order is `(element, index)`, the REVERSE of Kotlin's `(index,
-    //           element)`.
     // Gotcha:   Argument order is FLIPPED versus TS: Kotlin gives `(index, name)`,
     //           TS gives `(name, index)`. Easy to transpose.
     //
@@ -767,8 +694,6 @@ fun paginate(names: List<String>): List<Page> {
         //           `component2()` operators.
         // Why:      Decide which page this name belongs to and unpack the tag and
         //           label in one line.
-        // TS map:   `const [group, label] = pageKey(name);` — TS array
-        //           destructuring is the direct equivalent.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -784,9 +709,6 @@ fun paginate(names: List<String>): List<Page> {
         // Why:      A key whose natural order is (group, folded label, raw label)
         //           gives case-insensitive page order without losing the display
         //           label or merging case-variant folders.
-        // TS map:   `const key = serialize({ group, fold: sortKey(label), label });`
-        //           — TS would serialize the key to a string so a `Map` can use
-        //           it, since TS Maps key objects by identity, not by value.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -804,9 +726,6 @@ fun paginate(names: List<String>): List<Page> {
         // Why:      Bucket the entry under its page key, creating the bucket on
         //           demand; named args make it obvious which value is the index
         //           and which is the display name.
-        // TS map:   `(groups.get(key) ?? groups.set(key, []).get(key)!).push({ index, name });`
-        //           — `getOrPut` is "get, or insert-default-then-get"; named args
-        //           map to a plain object literal `{ index, name }`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -821,8 +740,6 @@ fun paginate(names: List<String>): List<Page> {
     // Why:      We materialize the accumulated buckets into the ordered list of
     //           pages by iterating the map entries, sorting them, and mapping
     //           each to a `Page`.
-    // TS map:   `return [...groups.entries()]` — TS's `Map.entries()` yields the
-    //           same `[key, value]` pairs.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -838,9 +755,6 @@ fun paginate(names: List<String>): List<Page> {
         // Why:      This is the EXPLICIT sort step (Kotlin's plain map did not
         //           sort for us): it produces the folder-then-letter-then-`#`,
         //           case-insensitive page order.
-        // TS map:   `.sort((a, b) => a[0].compareTo(b[0]))` — TS sorts in place
-        //           with a compare callback; `it.key` corresponds to the entry's
-        //           `[0]` (the key half of the `[key, value]` pair).
         // Gotcha:   `it` is the auto-named lambda parameter (no `->` needed for a
         //           single argument). It is NOT a keyword; it just defaults to
         //           "the one argument".
@@ -863,9 +777,6 @@ fun paginate(names: List<String>): List<Page> {
         //           display label and whose entries are a read-only copy (so the
         //           returned page cannot be mutated through the internal mutable
         //           list).
-        // TS map:   `.map(([key, entries]) => ({ label: key.label, entries: [...entries] }))`
-        //           — `.toList()` on a mutable list maps to a defensive
-        //           `[...entries]` copy in TS.
         // Gotcha:   `.toList()` here is a read-only-COPY conversion (mutable ->
         //           immutable view), the Kotlin analogue of `[...entries]`; it is
         //           not the Rust ownership move the desktop twin described.
@@ -886,8 +797,6 @@ fun paginate(names: List<String>): List<Page> {
 // Why:      Find which page holds a given load-order track index, for
 //           auto-following the now-playing track to its tab. The nullable
 //           return reports "no page holds it" as `null`.
-// TS map:   `function pageOfIndex(pages: readonly Page[], index: number): number | null`
-//           — `Int?` maps to `number | null`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -904,9 +813,6 @@ fun pageOfIndex(pages: List<Page>, index: Int): Int? {
     //           inner `any { }` lambda uses the implicit `it` for each entry.
     // Why:      Scan the pages once to find the first page containing the wanted
     //           index; `any` short-circuits on the first matching entry.
-    // TS map:   `const position = pages.findIndex(page => page.entries.some(e => e.index === index));`
-    //           — `indexOfFirst` is `findIndex` (both return `-1` when nothing
-    //           matches); `any` is `some`.
     // Gotcha:   `indexOfFirst` returns the `-1` SENTINEL on no match, NOT null;
     //           the next line converts that sentinel to `null`. The inner `it`
     //           (the entry) is a DIFFERENT implicit parameter from any outer one;
@@ -926,7 +832,6 @@ fun pageOfIndex(pages: List<Page>, index: Int): Int? {
     //           `Int?`, returning `null` here is legal.
     // Why:      Convert the `-1`-means-absent sentinel into the nullable result
     //           the caller expects (`null` for "no page holds it").
-    // TS map:   `return position < 0 ? null : position;`
     // Gotcha:   This is the sentinel-to-null bridge that the desktop Rust did NOT
     //           need (its `.position()` already returned `Option`/`None`); Kotlin
     //           gets a `-1` from `indexOfFirst` and maps it to `null` by hand.
@@ -948,7 +853,6 @@ fun pageOfIndex(pages: List<Page>, index: Int): Int? {
 //           or `#` tab groups loose root-level files with no folder segment, so their names
 //           stay whole. A pure helper keeps this identical to the desktop's
 //           `pagination::row_display` and unit-testable.
-// TS map:   `function rowDisplay(label: string, name: string): string { ... }`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -964,7 +868,6 @@ fun rowDisplay(label: String, name: String): String {
     //           matches the split char elsewhere in this file.
     // Why:      A folder-page name is exactly `<label>/...`, so we test for that whole prefix
     //           (the trailing `/` is what stops a letter label `A` from matching `Apple.flac`).
-    // TS map:   `const prefix = label + "/";`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -978,7 +881,6 @@ fun rowDisplay(label: String, name: String): String {
     // Why:      Strip the folder prefix on folder pages (`Ado/B/C.opus` -> `B/C.opus`); leave
     //           letter / `#` page names untouched, since a root file like `Apple.flac` never
     //           starts with `A/`.
-    // TS map:   `return name.startsWith(prefix) ? name.slice(prefix.length) : name;`
     //
     // In TS you'd write (pseudocode):
     // ```ts

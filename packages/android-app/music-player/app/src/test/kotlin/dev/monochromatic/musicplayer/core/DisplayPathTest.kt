@@ -6,9 +6,6 @@
 // Why:      Sharing the package is how the tests reach the package-level (top-level)
 //           functions without importing them; test and main source sets merge into one
 //           package at compile time.
-// TS map:   No `package` keyword in TS; a file's path IS its module. The equivalent would be
-//           `import { sanitizeComponent, joinDisplayPath } from ".../core/DisplayPath"` —
-//           Kotlin's same-package rule makes those imports implicit.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -21,7 +18,6 @@ package dev.monochromatic.musicplayer.core
 //           a static member by its fully-qualified name is Kotlin's way of getting Java
 //           statics unqualified.
 // Why:      The value-equality assertions below (`assertEquals(expected, actual)`) need it.
-// TS map:   `import { assertEquals } from "...";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -32,7 +28,6 @@ import org.junit.Assert.assertEquals
 // What:     `import org.junit.Assert.assertFalse` imports the static `assertFalse` function
 //           (asserts a `Boolean` is `false`) from `org.junit.Assert`.
 // Why:      The negative assertions below (`assertFalse("...", got.contains('/'))`) need it.
-// TS map:   `import { assertFalse } from "...";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -43,7 +38,6 @@ import org.junit.Assert.assertFalse
 // What:     `import org.junit.Assert.assertTrue` imports the static `assertTrue` function
 //           (asserts a `Boolean` is `true`) from `org.junit.Assert`.
 // Why:      The positive assertions below (`assertTrue(got.startsWith("Rock/"))`) need it.
-// TS map:   `import { assertTrue } from "...";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -55,8 +49,6 @@ import org.junit.Assert.assertTrue
 //           not a function). It is used as the marker `@Test` on each test method; the runner
 //           discovers and runs every method tagged with it.
 // Why:      Without it we could not write `@Test`, and the runner would find no tests here.
-// TS map:   No JUnit-style annotation in TS; mentally each `@Test fun foo()` is a
-//           `test("foo", () => { ... })` registration.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -86,8 +78,6 @@ import org.junit.Test
 //           the runner instantiates to invoke each `@Test`-marked method. No constructor, no
 //           state, no inheritance; just a bag of test methods in the `{ ... }` body.
 // Why:      Groups every test for the `DisplayPath.kt` functions.
-// TS map:   Most TS frameworks use `describe("DisplayPath", () => { ... })`; mentally this
-//           class IS that `describe(...)` group.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -100,7 +90,6 @@ class DisplayPathTest {
     //           method below is a test to run and report. The `@` prefix marks an annotation
     //           usage.
     // Why:      Marks `joinsUnderAPrefixWithASingleSeparator` as a runnable test.
-    // TS map:   The `test("...", () => {` wrapper.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -113,7 +102,6 @@ class DisplayPathTest {
     // Why:      Pins that a normal child name appended under a multi-level prefix
     //           (`Artist/Album`) produces the prefix, ONE added `/`, then the segment. The
     //           prefix's own internal `/` (already sanitised in real use) passes through.
-    // TS map:   `() => { ... }`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -128,9 +116,6 @@ class DisplayPathTest {
         //             which sanitises only the child `name` and glues it under `prefix` with one
         //             `/`.
         // Why:      A clean child under a clean prefix gains exactly one separator level.
-        // TS map:   `expect(joinDisplayPath("Artist/Album", "01 song.flac")).toEqual("Artist/Album/01 song.flac");`
-        //           — but JUnit puts the EXPECTED value FIRST, the opposite of
-        //           `expect(actual).toEqual(expected)`.
         // Gotcha:   Argument order: `assertEquals(expected, actual)` is backwards from
         //           `expect(actual)`. On `String` it is a value compare (like TS `toEqual`),
         //           not reference identity.
@@ -144,7 +129,6 @@ class DisplayPathTest {
 
     // What:     `@Test` annotation marking the next method as a JUnit test (metadata only).
     // Why:      Registers `rootFileHasNoSeparator` with the runner.
-    // TS map:   The `test("...", () => {` wrapper.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -156,7 +140,6 @@ class DisplayPathTest {
     // Why:      Pins the empty-prefix case: a file directly in the chosen tree root yields just
     //           the bare sanitised segment with NO leading separator. This matters because the
     //           join must not emit a stray `/` for root-level files.
-    // TS map:   `() => { ... }`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -167,7 +150,6 @@ class DisplayPathTest {
         //           binding `got` (`val` = cannot be reassigned; type `String` inferred) holding
         //           the result of joining the child `"loose.flac"` under an EMPTY prefix `""`.
         // Why:      Capture the output once so both assertions below can inspect it.
-        // TS map:   `const got = joinDisplayPath("", "loose.flac");`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -177,7 +159,6 @@ class DisplayPathTest {
         // What:     `assertEquals("loose.flac", got)` is `assertEquals(expected, actual)`:
         //           EXPECTED `"loose.flac"`, ACTUAL `got`.
         // Why:      With an empty prefix the result is exactly the sanitised name, nothing added.
-        // TS map:   `expect(got).toEqual("loose.flac");` (expected-first in JUnit).
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -195,8 +176,6 @@ class DisplayPathTest {
         //             length-1 `String`, and `.contains` has both a `Char` and a `String`
         //             overload.
         // Why:      Assert the root-level result holds NO real separator, labelling any failure.
-        // TS map:   `expect(got.includes("/")).toBe(false);` — TS has no `char`, so `'/'` becomes
-        //           the length-1 string `"/"`, and the message arg has no `expect()` analogue.
         // Gotcha:   Two traps. (1) `assertFalse(message, cond)` is message-FIRST, backwards from
         //           `expect(cond)`. (2) `'/'` is a `Char` (single quotes) here; a TS reader
         //           must not read it as a string literal.
@@ -210,7 +189,6 @@ class DisplayPathTest {
 
     // What:     `@Test` annotation marking the next method as a JUnit test (metadata only).
     // Why:      Registers `separatorInsideANameCannotWidenDepth` with the runner.
-    // TS map:   The `test("...", () => {` wrapper.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -224,7 +202,6 @@ class DisplayPathTest {
     //           `∕` (U+2215) so depth accounting (pagination counts separators) is not fooled
     //           into inventing an extra directory. (Folds in the original inline note: a
     //           provider name "AC/DC" must become one segment, not two folder levels.)
-    // TS map:   `() => { ... }`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -236,7 +213,6 @@ class DisplayPathTest {
         //           `/`, which sanitisation turns into `∕`, so `got` is `"Rock/AC∕DC - song.flac"`
         //           with exactly ONE real separator (between `Rock` and the segment).
         // Why:      Capture the adversarial result once for the three assertions below.
-        // TS map:   `const got = joinDisplayPath("Rock", "AC/DC - song.flac");`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -252,9 +228,6 @@ class DisplayPathTest {
         //             `it == '/'` compares it to the `Char` literal `'/'` (single quotes).
         // Why:      Prove only ONE real separator survives, i.e. the embedded slash did not add a
         //           second level.
-        // TS map:   `expect([...got].filter((c) => c === "/").length).toEqual(1);` — TS strings
-        //           have no `.count`, so spread + `filter` + `.length`; Kotlin's `it` is the
-        //           implicit arrow parameter `(c) =>`.
         // Gotcha:   `it` is the auto-named lambda parameter (one `Char`), and `'/'` is a `Char`
         //           literal; this counts a CHARACTER, not a substring.
         //
@@ -270,7 +243,6 @@ class DisplayPathTest {
         //           (with a real slash) appears.
         // Why:      Assert the original `AC/DC` substring is GONE (it became `AC∕DC`), confirming
         //           the real slash was replaced rather than preserved.
-        // TS map:   `expect(got.includes("AC/DC")).toBe(false);` (message arg has no analogue).
         // Gotcha:   This `.contains` takes a `String` (substring), unlike the `.contains('/')`
         //           above which took a `Char`. Same method name, two overloads.
         //
@@ -285,8 +257,6 @@ class DisplayPathTest {
         //           returning `Boolean`: true when `got` begins with the given prefix string.
         // Why:      Confirm the prefix and its single real separator lead the result, so the one
         //           surviving `/` is the legitimate prefix join.
-        // TS map:   `expect(got.startsWith("Rock/")).toBe(true);` — Kotlin and TS `startsWith`
-        //           behave the same.
         // Gotcha:   Contrast the `assertFalse(message, cond)` two-arg call above: this
         //           `assertTrue(cond)` is the one-arg form. The overload count differs per call.
         //
@@ -299,7 +269,6 @@ class DisplayPathTest {
 
     // What:     `@Test` annotation marking the next method as a JUnit test (metadata only).
     // Why:      Registers `controlCharactersCollapseToSpaces` with the runner.
-    // TS map:   The `test("...", () => {` wrapper.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -310,7 +279,6 @@ class DisplayPathTest {
     //           `Unit`-returning test method, block body.
     // Why:      Pins that control characters embedded in a name (newline, tab, carriage return)
     //           each become a single SPACE, so the result stays renderable on one line.
-    // TS map:   `() => { ... }`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -323,8 +291,6 @@ class DisplayPathTest {
         //           inside the string literal. Each control character sanitises to a space, so
         //           the expected result is `"a b c"`.
         // Why:      Prove newline and tab both collapse to spaces (single-line safety).
-        // TS map:   `expect(joinDisplayPath("", "a\nb\tc")).toEqual("a b c");` — `\n`/`\t` escapes
-        //           are identical in TS strings.
         // Gotcha:   `\n` and `\t` are ONE control character each (not two literal characters); the
         //           expected `"a b c"` has single spaces where they were.
         //
@@ -338,7 +304,6 @@ class DisplayPathTest {
         //           CARRIAGE-RETURN escape, which sanitises to a space, giving `"side a side b"`.
         // Why:      Carriage return is also a control character and must collapse to a space, not
         //           split the visible title.
-        // TS map:   `expect(joinDisplayPath("", "side a\rside b")).toEqual("side a side b");`
         // Gotcha:   `\r` is one control character; do not read it as the two characters `\` and
         //           `r`.
         //
@@ -351,7 +316,6 @@ class DisplayPathTest {
 
     // What:     `@Test` annotation marking the next method as a JUnit test (metadata only).
     // Why:      Registers `dotDotPassesThroughUnchanged` with the runner.
-    // TS map:   The `test("...", () => {` wrapper.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -364,7 +328,6 @@ class DisplayPathTest {
     //           an opaque document ID, never from this display path, so `..` is harmless and
     //           must round-trip verbatim. (Folds in the original inline note: ".." is harmless;
     //           the playable URI is built from a document id, never from this path.)
-    // TS map:   `() => { ... }`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -377,7 +340,6 @@ class DisplayPathTest {
         //           character, so sanitisation leaves it untouched.
         // Why:      Confirm `..` passes through unchanged (no path-traversal defence applied
         //           here, by design).
-        // TS map:   `expect(joinDisplayPath("Music", "..")).toEqual("Music/..");`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -388,7 +350,6 @@ class DisplayPathTest {
 
     // What:     `@Test` annotation marking the next method as a JUnit test (metadata only).
     // Why:      Registers `ordinaryNamesAreUnchanged` with the runner.
-    // TS map:   The `test("...", () => {` wrapper.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -400,7 +361,6 @@ class DisplayPathTest {
     // Why:      Pins that `sanitizeComponent` leaves ordinary names (including non-ASCII Unicode
     //           like `é`, and bracket characters) completely untouched, so the sanitiser only
     //           ever touches separators and control characters, nothing else.
-    // TS map:   `() => { ... }`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -413,7 +373,6 @@ class DisplayPathTest {
         //           character `é`. Expected equals input: nothing is changed.
         // Why:      Prove non-ASCII letters survive sanitisation unmodified (only separators and
         //           control characters are replaced).
-        // TS map:   `expect(sanitizeComponent("Café del Mar")).toEqual("Café del Mar");`
         // Gotcha:   `é` is a normal printable character, not a control character, so
         //           `isISOControl` is false for it and it passes through.
         //
@@ -427,7 +386,6 @@ class DisplayPathTest {
         //           none are separators or control characters, so `sanitizeComponent` returns it
         //           verbatim.
         // Why:      Prove ordinary punctuation (brackets, dots, spaces) is also left untouched.
-        // TS map:   `expect(sanitizeComponent("track [01].opus")).toEqual("track [01].opus");`
         //
         // In TS you'd write (pseudocode):
         // ```ts

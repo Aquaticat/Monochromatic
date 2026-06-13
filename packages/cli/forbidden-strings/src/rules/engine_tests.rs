@@ -9,9 +9,6 @@
 //           A separate file (rather than inline `mod tests` inside
 //           `engine.rs`) keeps the production source small and lets
 //           the test file carry its own dum-dum-non-ts comment density.
-// TS map:   `import { requiresResharp } from "./engine";
-//           describe("requiresResharp", () => { ... })` in a
-//           `*.test.ts` file with Vitest/Jest.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -23,7 +20,6 @@
 //           under test into scope. `super` refers to the parent module
 //           (`crate::rules`); `engine` is its sibling submodule.
 // Why:      Avoid writing the full path at every call site.
-// TS map:   `import { requiresResharp } from "./engine";`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -41,7 +37,6 @@ use super::engine::requires_resharp;
 // Why:      Group the two fixture values per case so the table stays
 //           one-row-per-case. Naming over a tuple because positional
 //           bools next to strings are easy to misread.
-// TS map:   `type Case = { pattern: string; expected: boolean };`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -57,7 +52,6 @@ struct Case {
 //           from it.
 // Why:      Factor out the call-and-assert boilerplate so each
 //           `#[test]` function is one line.
-// TS map:   `function runCase(c: Case): void { ... }`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -70,7 +64,6 @@ fn run_case(case: &Case) {
     //           narrows automatically (`&'static str` -> `&'_ str`).
     // Why:      Capture the routing decision in a binding so the assert
     //           message can quote it.
-    // TS map:   `const actual = requiresResharp(case.pattern);`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -84,7 +77,6 @@ fn run_case(case: &Case) {
     // Why:      Pinpoint the failing pattern in the panic output;
     //           collected into a table the bare actual/expected pair
     //           would not say which row broke.
-    // TS map:   `expect(actual).toBe(case.expected); // with a message`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -103,7 +95,6 @@ fn run_case(case: &Case) {
 // Why:      Per-case `#[test]` functions (rather than one mega-test
 //           that loops the whole table) so a failure pinpoints the
 //           specific rule shape that broke.
-// TS map:   `test("set algebra amp triggers", () => { runCase(...); });`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -181,7 +172,6 @@ fn escaped_lookahead_does_not_trigger() {
     // Why:      Confirms the escape walker (advance-by-2 on `\\`) skips
     //           the paren so the lookaround detector never sees a
     //           bare `(?=` here.
-    // TS map:   `runCase({ pattern: String.raw\`\(?=foo\)\`, expected: false });`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -198,7 +188,6 @@ fn in_class_lookalike_does_not_trigger() {
     //           the resemblance to `(?=` is coincidental.
     // Why:      Confirms the in-class skip prevents the lookaround
     //           detector from misfiring on literal characters.
-    // TS map:   `runCase({ pattern: "[(?=]", expected: false });`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -216,7 +205,6 @@ fn prose_em_dash_pattern_triggers() {
     // Why:      Headline regression: pre-fix this routed to the
     //           `regex` crate which rejects lookarounds; post-fix it
     //           must route to resharp.
-    // TS map:   `runCase({ pattern: "(?<=[a-z]) -- (?=[a-z])", expected: true });`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -249,7 +237,6 @@ fn bare_underscore_wildcard_triggers() {
     //           silently corrupting the rule's meaning. Post-fix the
     //           function detects bare `_` and routes to resharp where
     //           the wildcard semantics are preserved.
-    // TS map:   `runCase({ pattern: "pre_post", expected: true });`.
     run_case(&Case { pattern: "pre_post", expected: true });
 }
 
@@ -263,7 +250,6 @@ fn escaped_underscore_does_not_trigger() {
     //           in the betterleaks corpus use `ghp\_[0-9a-zA-Z]{36}` --
     //           with the underscore explicitly escaped. Those must stay
     //           on the `regex` crate fast path.
-    // TS map:   `runCase({ pattern: String.raw\`pre\\_post\`, expected: false });`.
     run_case(&Case { pattern: r"pre\_post", expected: false });
 }
 
@@ -277,7 +263,6 @@ fn in_class_underscore_does_not_trigger() {
     // Why:      Regression guard against future changes that would
     //           drop the in_class tracking and false-positive on
     //           every `[A-Z_]`-shaped class.
-    // TS map:   `runCase({ pattern: "[A-Z_]+", expected: false });`.
     run_case(&Case { pattern: "[A-Z_]+", expected: false });
 }
 
@@ -293,7 +278,6 @@ fn in_class_underscore_does_not_trigger() {
 //           a category fails loudly. Positive (rejected) and negative
 //           (accepted) tests live next to each other so reading the
 //           file gives a sense of the function's contract.
-// TS map:   `describe("lookaroundInComplement", () => { ... })`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -309,7 +293,6 @@ use super::engine::lookaround_in_complement;
 //           still verifying the trigger name reaches the user.
 // Why:      Catch both regressions: missing the rejection entirely,
 //           and rejecting with a wrong trigger name.
-// TS map:   `function assertRejected(pattern: string, substr: string)`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -389,7 +372,6 @@ fn second_of_two_complements_rejected() {
     //           trigger. The guard must still flag the rule.
     // Why:      Confirms the paren-stack tracking pops correctly so the
     //           second complement's depth is recognised.
-    // TS map:   `assertRejected("em&~(.*foo.*)&~(.*\\bword\\b.*)", "\\b");`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -405,7 +387,6 @@ fn nested_group_inside_complement_with_boundary_rejected() {
     //           resharp's purposes.
     // Why:      Confirms `in_complement` reflects "any `true` in the
     //           paren stack" rather than just "topmost".
-    // TS map:   `assertRejected("em&~((?:foo|\\bword\\b).*)", "\\b");`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -426,7 +407,6 @@ fn text_anchors_inside_complement_accepted() {
     //           Inside a complement, they compile cleanly.
     // Why:      Guard must NOT reject these; otherwise we mask the only
     //           workaround the doc recommends for whole-content anchors.
-    // TS map:   `assertAccepted("em&~(\\Afoo\\z)");`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -442,7 +422,6 @@ fn caret_in_class_inside_complement_accepted() {
     //           does not rewrite it to a lookaround.
     // Why:      Guard must skip class interiors so it does not misfire
     //           on every negated class inside any complement.
-    // TS map:   `assertAccepted("em&~([^abc].*)");`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -468,7 +447,6 @@ fn escaped_backslash_b_inside_complement_accepted() {
     // Why:      Guard must distinguish "the regex source contains \b"
     //           from "the regex source contains a literal backslash
     //           followed by b".
-    // TS map:   `assertAccepted("em&~(\\\\b.*)");`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -489,7 +467,6 @@ fn rule_without_complement_accepted_even_with_lookaround() {
     //           complement-of-lookaround specifically.
     // Why:      Guard must not reject the prose-em-dash pattern
     //           verified in `prose_em_dash_pattern_triggers`.
-    // TS map:   `assertAccepted("(?<=[a-z]) -- (?=[a-z])");`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -508,7 +485,6 @@ fn plain_literal_accepted() {
 //           call inherent methods on it.
 // Why:      The BUG 7 regression tests below need to assert the new
 //           `is_match` shape (`Result<bool, ()>` rather than `bool`).
-// TS map:   `import { CompiledRegex } from "./engine";`.
 use super::engine::CompiledRegex;
 use regex::bytes::Regex as PlainRegex;
 
@@ -533,7 +509,6 @@ use regex::bytes::Regex as PlainRegex;
 //           the same reason; the signature-level test still catches
 //           any future change that silently re-folds errors into
 //           `false`.
-// TS map:   `test("is_match returns Result shape", () => { ... });`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -590,7 +565,6 @@ fn is_match_returns_result_ok_for_match_resharp() {
 //           negative cases that look superficially similar (escaped
 //           `&`, intersection-in-class, lookbehind alone) to make
 //           sure we are not over-rejecting working rules.
-// TS map:   `describe("intersection_with_lookbehind", () => { ... })`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -608,7 +582,6 @@ use super::engine::{
 //           pinpoints which case regressed.
 // Why:      Positive triggers: every minimal panic-shape bisected
 //           in docs/troubleshooting/resharp.md must keep firing.
-// TS map:   `expect(intersectionWithLookbehind(src)).not.toBeNull();`.
 #[test]
 fn intersection_with_lookbehind_fires_on_minimal_shape() {
     let cases = [
@@ -618,7 +591,6 @@ fn intersection_with_lookbehind_fires_on_minimal_shape() {
         // Why:      Anchor the detector on the exact shape we
         //           bisected; if anyone simplifies the walker and
         //           drops this, the test fails.
-        // TS map:   The bare strings; same as the original.
         "(?:(?=a)&(?<=_))",
         "(?:(?=a)&(?<!b))",
         "(?:(?<=a)&(?=b))",
@@ -649,7 +621,6 @@ fn intersection_with_lookbehind_fires_on_minimal_shape() {
 // Why:      Conservative over-rejection still costs the user a
 //           working rule; pin the false-negative behaviour we
 //           rely on for the rest of the corpus.
-// TS map:   `expect(intersectionWithLookbehind(src)).toBeNull();`.
 #[test]
 fn intersection_with_lookbehind_skips_safe_shapes() {
     let cases = [
@@ -685,7 +656,6 @@ fn intersection_with_word_end_alternation_fires_on_minimal_shape() {
         //           details in docs/troubleshooting/resharp.md.
         // Why:      Anchor the detector on the trigger combination
         //           `& + \w + $`.
-        // TS map:   The bare strings.
         "(?:\\w|$)(?:(?![1g]\\_X)& a)",
         "(?:\\w|$)& a",
         "(?u:(?:\\w|$)(?:(?![1g]\\_X)& a))",
@@ -742,7 +712,6 @@ fn intersection_with_word_end_alternation_skips_safe_shapes() {
 //           propagates past the engine boundary". This test
 //           exercises that property end-to-end through the
 //           production API, not just the unit-level pre-validator.
-// TS map:   `it("compile_rule_src does not panic on known-bad shapes")`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -761,7 +730,6 @@ fn compile_rule_src_does_not_panic_on_known_bad_shapes() {
     //           exercise the production code path the fix is for.
     // Why:      Drive the actual API so the assertion proves what
     //           we care about: end users do not see panics.
-    // TS map:   `import { compileRuleSrc } from "..";`.
     use crate::rules::compile_rule_src;
     let cases = [
         // Crash 1: runtime intersection-with-lookbehind shape.
@@ -797,7 +765,6 @@ fn compile_rule_src_does_not_panic_on_known_bad_shapes() {
 //           the wrapper, even if the pre-validator catches all
 //           currently-known shapes -- the wrapper must keep working
 //           for FUTURE upstream regressions.
-// TS map:   `it("find_all returns Err on engine panic", () => { ... })`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -827,8 +794,6 @@ fn find_all_catches_runtime_panic_via_catch_unwind() {
     //           as a hedge for unknown future shapes (see
     //           docs/troubleshooting/resharp.md, "Fixed upstream, now
     //           spent").
-    // TS map:   `new Regex(shape).findAll(longContent);` then
-    //           assert no throw.
     if let Ok(re) = resharp::Regex::new("(?:(?=a)&(?<=_))") {
         let cr = CompiledRegex::Resharp(re);
         // Long content so any latent runtime panic would fire. The
@@ -851,7 +816,6 @@ use super::engine::stacked_quantifier;
 // Why:      Each case is a compile-blowup shape the fuzz target
 //           previously wall-clocked on. Regression-test that the
 //           detector stays sensitive as the algorithm evolves.
-// TS map:   `it("stackedQuantifier fires on minimal shapes", ...)`.
 #[test]
 fn stacked_quantifier_fires_on_minimal_shapes() {
     let cases = [
@@ -912,7 +876,6 @@ fn stacked_quantifier_fires_on_minimal_shapes() {
 //           compile time. Each case here is a real or plausible
 //           secret-detection rule shape; the detector must let
 //           them through.
-// TS map:   `it("stackedQuantifier does not fire on safe shapes", ...)`.
 #[test]
 fn stacked_quantifier_skips_safe_shapes() {
     let cases = [
@@ -971,7 +934,6 @@ fn stacked_quantifier_skips_safe_shapes() {
 //           stacked-quantifier shapes fast". A regression that
 //           routed the same shape through the regex crate again
 //           would put the call back at 1.4-1.5s.
-// TS map:   `it("compile_rule_src rejects fuzz slow-unit fast", ...)`.
 #[test]
 fn compile_rule_src_rejects_fuzz_slow_unit_fast() {
     use std::time::Instant;
@@ -1013,7 +975,6 @@ use super::engine::nested_grouped_quantifier;
 //           adjacency detection. This sibling pre-validator covers
 //           the grouped form. Each case is a shape the fuzz target
 //           would wall-clock the regex crate on.
-// TS map:   `it("nestedGroupedQuantifier fires on minimal shapes", ...)`.
 #[test]
 fn nested_grouped_quantifier_fires_on_minimal_shapes() {
     let cases: &[&str] = &[
@@ -1057,7 +1018,6 @@ fn nested_grouped_quantifier_fires_on_minimal_shapes() {
 //           rules. Real secret-detection patterns rarely nest beyond
 //           2 quantifier levels; the depth-3 case is the boundary
 //           case the detector must NOT trip.
-// TS map:   `it("nestedGroupedQuantifier does not fire on safe shapes", ...)`.
 #[test]
 fn nested_grouped_quantifier_skips_safe_shapes() {
     let cases: &[&str] = &[
@@ -1120,7 +1080,6 @@ use super::engine::complement_intersection_quantified_group;
 //           pre-validator targets. Without these tests, a future
 //           refactor could drop one of the three trigger conditions
 //           and break the protection silently.
-// TS map:   `it("complementIntersectionQuantifiedGroup fires", ...)`.
 #[test]
 fn complement_intersection_quantified_group_fires() {
     let cases = [
@@ -1162,7 +1121,6 @@ fn complement_intersection_quantified_group_fires() {
 // Why:      Avoid false positives on real authored rules. The
 //           production corpus has zero rules with all three; the
 //           detector should not creep onto the rest.
-// TS map:   `it("complementIntersectionQuantifiedGroup skips", ...)`.
 #[test]
 fn complement_intersection_quantified_group_skips_safe_shapes() {
     let cases = [
@@ -1213,7 +1171,6 @@ use super::engine::lookaround_in_alternation_with_sibling;
 //           intercept; the pre-validator rejects at compile time
 //           with a friendly error so the fuzz target can skip the
 //           input and continue exploring.
-// TS map:   `it("lookaroundInAlternationWithSibling fires", ...)`.
 #[test]
 fn lookaround_in_alternation_with_sibling_fires() {
     let cases = [
@@ -1262,7 +1219,6 @@ fn lookaround_in_alternation_with_sibling_fires() {
 //           and various separators that should not trigger.
 // Why:      Conservative over-rejection still costs production rules.
 //           Each case here is a real or plausible authored shape.
-// TS map:   `it("lookaroundInAlternationWithSibling skips", ...)`.
 #[test]
 fn lookaround_in_alternation_with_sibling_skips_safe_shapes() {
     let cases = [
@@ -1307,7 +1263,6 @@ fn lookaround_in_alternation_with_sibling_skips_safe_shapes() {
 //           as a resharp shape rejection (not a generic compile
 //           failure). Without this, the fuzz target on this input
 //           still reaches resharp's `find_all` and panics.
-// TS map:   `it("compile_rule_src rejects alt+la+la shape", ...)`.
 #[test]
 fn compile_rule_src_rejects_alt_lookaround_sibling_shape() {
     use std::time::Instant;
@@ -1341,7 +1296,6 @@ fn compile_rule_src_rejects_alt_lookaround_sibling_shape() {
 //           the grouped shape. Probe at /tmp/probe-slow-unit showed
 //           that the artifact decodes to exactly this source and that
 //           compile_rule_src previously took ~3.26s on it.
-// TS map:   `it("compile_rule_src rejects grouped fuzz slow-unit fast", ...)`.
 #[test]
 fn compile_rule_src_rejects_grouped_fuzz_slow_unit_fast() {
     use std::time::Instant;
@@ -1381,7 +1335,6 @@ use super::engine::nested_lookahead_in_quantified_group;
 //           libfuzzer-sys's panic hook calls abort before our handler.
 //           A pre-validator is the only way to keep the fuzz target on
 //           the soundness path.
-// TS map:   `it("nestedLookaheadInQuantifiedGroup fires", ...)`.
 #[test]
 fn nested_lookahead_in_quantified_group_fires() {
     let cases = [
@@ -1422,7 +1375,6 @@ fn nested_lookahead_in_quantified_group_fires() {
 //           the specific structure that overflows the rel counter.
 //           The check is narrower than `complement_intersection_...`
 //           because Bug F is more structurally constrained.
-// TS map:   `it("nestedLookaheadInQuantifiedGroup skips", ...)`.
 #[test]
 fn nested_lookahead_in_quantified_group_skips_safe_shapes() {
     let cases = [
@@ -1467,7 +1419,6 @@ fn nested_lookahead_in_quantified_group_skips_safe_shapes() {
 // Why:      The fuzz target relies on this pre-validator to keep
 //           moving past Bug F shapes; the soundness-by-revert phase
 //           cannot fire if the run halts on every Bug F crash.
-// TS map:   `it("compile_rule_src rejects bug-f shape fast", ...)`.
 #[test]
 fn compile_rule_src_rejects_bug_f_shape_fast() {
     use std::time::Instant;
@@ -1500,7 +1451,6 @@ use super::engine::quantified_lookahead_with_sibling_content;
 //           `resharp-algebra/src/lib.rs:2470` through a different
 //           upstream path than the nested-quant shape; the narrower
 //           `nested_lookahead_in_quantified_group` doesn't catch it.
-// TS map:   `it("quantifiedLookaheadWithSiblingContent fires", ...)`.
 #[test]
 fn quantified_lookahead_with_sibling_content_fires() {
     let cases = [
@@ -1549,7 +1499,6 @@ fn quantified_lookahead_with_sibling_content_fires() {
 //           content at parent depth.
 // Why:      Avoid catastrophic false positives that would reject every
 //           reasonable lookahead pattern.
-// TS map:   `it("quantifiedLookaheadWithSiblingContent skips", ...)`.
 #[test]
 fn quantified_lookahead_with_sibling_content_skips_safe_shapes() {
     let cases = [
@@ -1595,7 +1544,6 @@ fn quantified_lookahead_with_sibling_content_skips_safe_shapes() {
 //           trailing-content Bug F shape with a `(resharp):` error.
 // Why:      Same as the nested-quant variant: pre-validator must beat
 //           resharp to the punch so libfuzzer never sees the abort.
-// TS map:   `it("compile_rule_src rejects bug-f trailing shape fast", ...)`.
 #[test]
 fn compile_rule_src_rejects_bug_f_trailing_shape_fast() {
     use std::time::Instant;
@@ -1623,7 +1571,6 @@ use super::engine::nested_quantifier_after_wildcard;
 //           Each shape was decoded from a fuzz slow-unit artifact.
 // Why:      The detector must fire on chain >= 3 immediately
 //           following a bare `_` outside a class.
-// TS map:   `it("nestedQuantifierAfterWildcard fires", ...)`.
 #[test]
 fn nested_quantifier_after_wildcard_fires() {
     let cases: &[&str] = &[
@@ -1661,7 +1608,6 @@ fn nested_quantifier_after_wildcard_fires() {
 // Why:      A false positive here would reject legitimate authored
 //           rules. The `_` triad is the scanner's wildcard syntax;
 //           bare `_` outside chain-3 must compile through.
-// TS map:   `it("nestedQuantifierAfterWildcard skips safe shapes", ...)`.
 #[test]
 fn nested_quantifier_after_wildcard_skips_safe_shapes() {
     let cases: &[&str] = &[
@@ -1705,7 +1651,6 @@ fn nested_quantifier_after_wildcard_skips_safe_shapes() {
 // Why:      The pre-validator must beat resharp's slow compile path
 //           so the fuzz target's throughput is not halved by
 //           replaying these slow units.
-// TS map:   `it("compile_rule_src rejects wildcard-chain slow shape fast", ...)`.
 #[test]
 fn compile_rule_src_rejects_wildcard_chain_slow_shape_fast() {
     use std::time::Instant;
@@ -1734,7 +1679,6 @@ use super::engine::nested_chain_in_lookaround_body;
 //           constructed to expose the trigger.
 // Why:      The detector must fire on chain >= 3 anywhere inside an
 //           open lookaround body (any of `(?!`/`(?=`/`(?<!`/`(?<=`).
-// TS map:   `it("nestedChainInLookaroundBody fires", ...)`.
 #[test]
 fn nested_chain_in_lookaround_body_fires() {
     let cases: &[&str] = &[
@@ -1769,7 +1713,6 @@ fn nested_chain_in_lookaround_body_fires() {
 //           Shapes that must NOT trip the detector.
 // Why:      A false positive here would reject legitimate authored
 //           rules that use lookarounds without slow-compile shapes.
-// TS map:   `it("nestedChainInLookaroundBody skips safe shapes", ...)`.
 #[test]
 fn nested_chain_in_lookaround_body_skips_safe_shapes() {
     let cases: &[&str] = &[
@@ -1813,7 +1756,6 @@ fn nested_chain_in_lookaround_body_skips_safe_shapes() {
 //           lookaround-chain shape with a `(resharp):` error.
 // Why:      Mirror of the wildcard-chain test for the second
 //           slow-unit family.
-// TS map:   `it("compile_rule_src rejects lookaround-chain slow shape fast", ...)`.
 #[test]
 fn compile_rule_src_rejects_lookaround_chain_slow_shape_fast() {
     use std::time::Instant;
@@ -1846,7 +1788,6 @@ use super::engine::nested_complement;
 // Why:      The detector must fire on any inner complement that
 //           sits inside an open outer complement's body, regardless
 //           of intermediate `(?:`/`(?i:`/etc. group wrappers.
-// TS map:   `it("nestedComplement fires", ...)`.
 #[test]
 fn nested_complement_fires() {
     let cases: &[&str] = &[
@@ -1876,7 +1817,6 @@ fn nested_complement_fires() {
 // Why:      Sibling complements `~(...)&~(...)` are the production
 //           shape (`forbidden-strings.local.txt` line 5); rejecting
 //           them would break the RELEASE_TAG rule.
-// TS map:   `it("nestedComplement skips safe shapes", ...)`.
 #[test]
 fn nested_complement_skips_safe_shapes() {
     let cases: &[&str] = &[
@@ -1912,7 +1852,6 @@ fn nested_complement_skips_safe_shapes() {
 // Why:      The pre-validator must beat resharp's ~900ms compile so
 //           the fuzz target's timeout budget is not consumed by the
 //           ASAN-amplified shape.
-// TS map:   `it("compile_rule_src rejects nested-complement timeout shape fast", ...)`.
 #[test]
 fn compile_rule_src_rejects_nested_complement_timeout_shape_fast() {
     use std::time::Instant;

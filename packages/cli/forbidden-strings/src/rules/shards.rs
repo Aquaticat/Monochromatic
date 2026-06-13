@@ -13,7 +13,6 @@ use super::types::ResidualShard;
 //           `load_ruleset`'s overall Result.
 // Why:      Wrapping the infallible inner work in an outer `Result` keeps
 //           `rules.rs::load_ruleset` unchanged.
-// TS map:   `function buildResidualShards(positions, regexSpecs): ResidualShard[]`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -95,7 +94,6 @@ pub fn build_residual_shards(
 //           Singles path while admitting Combined for larger residual
 //           buckets where the trade flips. See the comment block on
 //           `build_residual_shards` for the bench data.
-// TS map:   `const GREEDY_COMBINE_THRESHOLD = 16;`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -128,7 +126,6 @@ const GREEDY_COMBINE_THRESHOLD: usize = 16;
 //           invisible. For workloads where many combines succeed, greedy
 //           wins by reducing per-file scan to one gate.is_match per
 //           shard instead of one find_all per rule.
-// TS map:   `function greedyCombine(positions, regexSpecs): ResidualShard[]`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -168,7 +165,6 @@ fn greedy_combine(
     //           slices, disjoint regex_specs reads), so rayon::join is
     //           the natural fit. Each level of the recursion can
     //           parallelize across cores instead of serializing.
-    // TS map:   `await Promise.all([recurse(left), recurse(right)])`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -197,7 +193,6 @@ fn greedy_combine(
 //           bisect-derived 1722 rule cliff for synthetic `_RESID_`
 //           shapes). A `None` return signals the caller to recurse with
 //           a smaller slice rather than aborting the whole load.
-// TS map:   `function tryCompileCombined(chunk, regexSpecs): Regex | null`.
 //
 // In TS you'd write (pseudocode):
 // ```ts

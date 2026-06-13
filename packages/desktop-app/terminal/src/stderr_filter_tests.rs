@@ -7,12 +7,10 @@
 // Why:      Keep the tests beside the code without inflating
 //           `stderr_filter.rs` or its max-lines budget (sibling
 //           `*_tests.rs` files are exempt from the linter).
-// TS map:   `stderr_filter.unit.test.ts` beside `stderr_filter.ts`.
 
 // What:     `use super::should_suppress_stderr_line;` imports the private predicate
 //           from the parent module.
 // Why:      Tests should check the rule directly.
-// TS map:   `import { shouldSuppressStderrLine } from "./stderr_filter"`.
 use super::should_suppress_stderr_line;
 
 #[test]

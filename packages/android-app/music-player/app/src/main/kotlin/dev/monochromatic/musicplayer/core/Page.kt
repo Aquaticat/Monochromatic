@@ -38,11 +38,6 @@
 //           name (`dev.monochromatic.musicplayer.core.PageEntry`) that the
 //           rest of the app can import; without a package line the types land
 //           in an unnamed default package that is awkward to import from.
-// TS map:   No direct equivalent. TS has no `package` keyword; a module's
-//           identity IS its file path, and you expose names with `export`.
-//           Mentally: this line is like the implicit "this file is the module
-//           at src/core/Page.ts" plus "its public names are reachable via
-//           that path".
 // Gotcha:   Unlike a TS `import`, this line imports NOTHING and runs no code.
 //           It only NAMES the current file's namespace. It must be the first
 //           non-comment line in the file.
@@ -71,11 +66,6 @@ package dev.monochromatic.musicplayer.core
 //           entries are equal by their fields (not by object identity). The
 //           generated `equals`/`hashCode`/`toString` give us exactly that for
 //           free.
-// TS map:   In TS you'd just write a `type` alias for an object shape; TS
-//           object literals already compare structurally in tests via deep-
-//           equal helpers, and there is no identity-vs-value distinction to
-//           opt into. This `data class` is the Rust desktop's
-//           `#[derive(Debug, Clone, PartialEq, Eq)] struct PageEntry`.
 // Gotcha:   Two `PageEntry` instances with equal fields are `==` (Kotlin's
 //           structural-equality operator), which is NOT how a plain Kotlin
 //           class behaves and NOT how TS object references compare with
@@ -105,9 +95,6 @@ data class PageEntry(
     //           APIs (`List.size`, `list[i]`, `get(index: Int)`) are all
     //           Int-typed, so storing the index as `Long` would force a
     //           `.toInt()` conversion at every queue lookup.
-    // TS map:   `index: number` on a `readonly` field. TS has a single
-    //           `number` type (IEEE-754 double), so the 32-bit-vs-64-bit
-    //           choice simply does not exist there.
     // Gotcha:   `Int` is a fixed-width 32-bit integer, NOT TS's arbitrary
     //           `number`; it can overflow (wrap around) past ~2.1 billion,
     //           whereas TS `number` would keep widening to a float.
@@ -129,10 +116,6 @@ data class PageEntry(
     //           reader might wonder about) is an abstract read-only view used
     //           for accepting many text-like types, not for STORING a concrete
     //           string, so a field uses `String`.
-    // TS map:   `name: string` on a `readonly` field. Kotlin `String` and TS
-    //           `string` line up cleanly: both are immutable and garbage-
-    //           collected, so the Rust desktop's owned-`String`-vs-borrowed-
-    //           `&str` distinction has no analogue here and no choice to make.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -151,9 +134,6 @@ data class PageEntry(
 //           page (using its label) and list that page's tracks, and so tests
 //           can compare whole `Page` values by their contents. This is the
 //           desktop's `#[derive(Debug, Clone, PartialEq, Eq)] struct Page`.
-// TS map:   `type Page = { label: string; entries: PageEntry[] };`. Same
-//           structural-equality and no identity distinction as in the
-//           `PageEntry` block above.
 // Gotcha:   Same as `PageEntry`: `==` on two `Page` values compares their
 //           fields (structural), unlike a plain class or a TS `===` reference
 //           check. Because `entries` is itself compared field-by-field, two
@@ -177,7 +157,6 @@ data class Page(
     // Why:      `val` because a page's label is fixed once the page is built.
     //           `String` because the label is plain text built fresh while
     //           grouping (sliced from a path or chosen as a letter/`#`).
-    // TS map:   `label: string` on a `readonly` field; clean 1:1 with TS.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -200,9 +179,6 @@ data class Page(
     //           read-only `List` interface documents that and blocks
     //           accidental mutation. (`val` freezes the REFERENCE; `List` as
     //           the type freezes the CONTENTS' mutating API; both are wanted.)
-    // TS map:   `entries: PageEntry[]`, or more precisely
-    //           `readonly entries: readonly PageEntry[]` to mirror the
-    //           no-mutating-methods intent of Kotlin's `List`.
     // Gotcha:   Kotlin's `List` is a read-only VIEW/interface, not a deep-
     //           immutable guarantee: the same underlying object could be held
     //           elsewhere as a `MutableList` and changed behind your back.

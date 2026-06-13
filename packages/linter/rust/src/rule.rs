@@ -2,7 +2,6 @@
 //           crate. `crate::` means "from the root of this same crate" (not an
 //           external dependency).
 // Why:      Rules receive the config so they can read knobs like the budget.
-// TS map:   `import { Config } from "./config";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -12,7 +11,6 @@ use crate::config::Config;
 
 // What:     `use crate::context::LintContext;` imports the per-file bundle.
 // Why:      Rules read the file's code lines, path, and source from it.
-// TS map:   `import { LintContext } from "./context";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -22,7 +20,6 @@ use crate::context::LintContext;
 
 // What:     `use crate::diagnostic::Diagnostic;` imports the finding record.
 // Why:      Rules push findings into a list of these.
-// TS map:   `import { Diagnostic } from "./diagnostic";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -34,7 +31,6 @@ use crate::diagnostic::Diagnostic;
 //           provide; it is Rust's version of a TypeScript `interface`.
 // Why:      Every lint rule implements this shared shape so the runner can treat
 //           them uniformly and the set is easy to grow.
-// TS map:   `interface Rule { id(): string; check(ctx, cfg, out): void; }`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -46,7 +42,6 @@ pub trait Rule {
     //           `&'static str` is a program-lifetime borrowed string (the rule's
     //           fixed name). Sibling return type: owned `String`.
     // Why:      Name the rule for diagnostics and config.
-    // TS map:   `id(): string;`
     fn id(&self) -> &'static str;
 
     // What:     `fn check(&self, context: &LintContext, config: &Config, out: &mut
@@ -55,7 +50,6 @@ pub trait Rule {
     //           caller's vector: the rule appends findings into it rather than
     //           returning a new list, so all rules share one growing buffer.
     // Why:      Give the rule everything to inspect and a place to report into.
-    // TS map:   `check(ctx: LintContext, cfg: Config, out: Diagnostic[]): void;`
     // Gotcha:   `&mut` means exclusive borrow: while a rule holds it, nothing else
     //           may touch `out`. The runner calls rules one at a time, so this is
     //           fine.
@@ -74,8 +68,6 @@ pub trait Rule {
 //           `Rc<dyn Rule>` / `Arc<dyn Rule>` (shared instead of single-owner).
 // Why:      Different rule types have different sizes, so we box them to store
 //           them together in one `Vec`; the runner iterates and calls `check`.
-// TS map:   `function allRules(): Rule[] { return [new MaxLines()]; }` — TS hides
-//           the boxing because every object is already a heap reference.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -89,7 +81,6 @@ pub fn all_rules() -> Vec<Box<dyn Rule>> {
     //           expression, so it is returned.
     // Why:      Today there is exactly one rule; adding more is just more boxed
     //           entries here.
-    // TS map:   `return [new MaxLines()];`
     //
     // In TS you'd write (pseudocode):
     // ```ts

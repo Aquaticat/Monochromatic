@@ -9,7 +9,6 @@
 //           every file under ~500 lines and makes the dependency
 //           graph between sections explicit (each `use super::xxx`
 //           line names a real boundary).
-// TS map:   `import { ... } from "./rules/foo";` per submodule.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -38,8 +37,6 @@ mod walker;
 //           inside `atom.rs`) keeps the production source small and
 //           lets the test files use their own dum-dum-non-ts comment
 //           density without bloating the production file.
-// TS map:   `if (process.env.NODE_ENV === 'test') { require("./atom_tests"); }`
-//           in spirit, but Rust handles it at compile time.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -61,7 +58,6 @@ mod nesting_tests;
 //           knowing which submodule actually defines `Foo`.
 // Why:      Preserves the existing `crate::rules::*` API. Renaming
 //           call sites would have been a massive diff for no benefit.
-// TS map:   `export { Foo } from "./rules/foo";`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -101,7 +97,6 @@ pub use types::{is_word_byte, AcMeta, RegexRule, ResidualShard, RuleSet, SUBSTRI
 //           fuzz_api can reach two atom helpers and five regex-
 //           syntax walkers. The cfg gate keeps the re-export
 //           invisible outside the fuzzing build.
-// TS map:   `export { walkLiteralBytes, skipAtomWithExtract } from "./rules/atom";`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -125,7 +120,6 @@ pub use regex_syntax::{
 // What:     `use std::fs;` brings the filesystem module into scope. We
 //           use `fs::read_to_string` to slurp the rules file.
 // Why:      Reading rules is sync and tiny; no need for streaming.
-// TS map:   `import * as fs from "node:fs";`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -143,9 +137,6 @@ use std::fs;
 //           scans a haystack for thousands of patterns in linear time.
 //           Critically, sharing one `&AhoCorasick` across rayon threads
 //           does NOT serialize through a mutex, unlike `resharp::Regex`.
-// TS map:   `import { AhoCorasick } from "aho-corasick";` -- though TS
-//           has no equivalent first-class library; the closest is hand-
-//           rolling a trie or using `RegExp` with one giant alternation.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -159,9 +150,6 @@ use aho_corasick::AhoCorasick;
 //           with `*` are unusual in TS but typical for Rust preludes.
 // Why:      Without this, `.par_iter()` and friends do not exist as
 //           method calls.
-// TS map:   No equivalent. TS has no work-stealing thread-pool built in;
-//           closest is `Promise.all` over async tasks, which is not the
-//           same model.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -180,7 +168,6 @@ use rayon::prelude::*;
 // Why:      Keep the file-read split out from the loader proper so
 //           it can be exercised from fuzz tests without writing a
 //           tempfile per iteration.
-// TS map:   `async function loadRuleset(path: string): Promise<RuleSet>`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -196,7 +183,6 @@ pub fn load_ruleset(path: &str) -> Result<RuleSet, String> {
     //           "read rules PATH: ERROR" message instead of an opaque
     //           `io::Error`.
     // Why:      Centralise file-read error formatting in one place.
-    // TS map:   `const content = await readFile(path, "utf8");`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -225,7 +211,6 @@ pub fn load_ruleset(path: &str) -> Result<RuleSet, String> {
 //           the filesystem. Splitting the file-read out of the
 //           pipeline gives them an entry point that takes a
 //           generated source directly.
-// TS map:   `function loadRulesetFromSource(content: string, label: string): RuleSet`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -243,7 +228,6 @@ pub fn load_ruleset_from_source(content: &str, _label: &str) -> Result<RuleSet, 
     //           Without it, "startup is 3 s" tells us nothing about
     //           which phase to attack. Env-gated so the production
     //           hot path pays nothing.
-    // TS map:   `const timing = !!process.env.FORBIDDEN_STRINGS_DEBUG_TIMING;`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -276,7 +260,6 @@ pub fn load_ruleset_from_source(content: &str, _label: &str) -> Result<RuleSet, 
     //           accessed together and never need named accessors.
     // Why:      Pair each rule's line index with its literal text for
     //           later AC building; line index is needed for diagnostics.
-    // TS map:   `const literalSpecs: Array<[number, string]> = [];`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -294,7 +277,6 @@ pub fn load_ruleset_from_source(content: &str, _label: &str) -> Result<RuleSet, 
     // Why:      Process the rules file one line at a time, classifying
     //           each into the literal bucket, the regex bucket, or
     //           ignored (blank/comment).
-    // TS map:   `for (const line of content.split("\n")) { ... }`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -318,7 +300,6 @@ pub fn load_ruleset_from_source(content: &str, _label: &str) -> Result<RuleSet, 
         //           block).
         // Why:      Route each parsed line to its destination bucket;
         //           drop unparseable / blank / comment lines silently.
-        // TS map:   `if (parsed?.kind === "literal") ...; else if (parsed?.kind === "regex") ...;`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -344,7 +325,6 @@ pub fn load_ruleset_from_source(content: &str, _label: &str) -> Result<RuleSet, 
         //           caller may keep the error past our stack frame.
         // Why:      Empty rules file is a configuration error; surface
         //           it instead of silently scanning nothing.
-        // TS map:   `throw new Error("no rules loaded");`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -388,7 +368,6 @@ pub fn load_ruleset_from_source(content: &str, _label: &str) -> Result<RuleSet, 
     //           - The trailing `?` unwraps `Ok` or propagates `Err`.
     // Why:      Compile every regex rule in parallel and bubble up the
     //           first compile failure as a single error.
-    // TS map:   `const regexRules = await Promise.all(regexSpecs.map(([idx, src]) => requires_resharp(src) ? Regex.new(src) : compilePlainRule(src, idx)));`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -414,7 +393,6 @@ pub fn load_ruleset_from_source(content: &str, _label: &str) -> Result<RuleSet, 
     //           identical compile path. Routing both through
     //           `compile_rule_src` makes that property structural,
     //           not a documented invariant.
-    // TS map:   `regexRules = await Promise.all(regexSpecs.map(([idx, src]) => compileRuleSrc(src).then(re => ({ idx, re })).catch(e => { throw new Error(`rule on line ${idx} ${e.message}`); })));`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -508,7 +486,6 @@ pub fn load_ruleset_from_source(content: &str, _label: &str) -> Result<RuleSet, 
     //           rule whose text ALSO starts with a regex rule's prefix
     //           would only fire the literal -- the regex rule's full
     //           `find_all` would never be triggered.
-    // TS map:   `new AhoCorasick(acPatterns)`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -529,7 +506,6 @@ pub fn load_ruleset_from_source(content: &str, _label: &str) -> Result<RuleSet, 
     // Why:      The case-insensitive AC handles `(?i)` regex rules
     //           cheaply on the hot path: one extra `find_overlapping_iter`
     //           per file scan, no per-rule resharp work.
-    // TS map:   `new AhoCorasick(acPatternsCi, { caseInsensitive: true })`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -568,7 +544,6 @@ pub fn load_ruleset_from_source(content: &str, _label: &str) -> Result<RuleSet, 
     // Why:      We need a list of regex_rules indices whose required
     //           prefix could not be extracted; those become residual
     //           shards.
-    // TS map:   `const residualPositions = regexPrefixes.flatMap((p, pos) => p === null ? [pos] : []);`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -599,7 +574,6 @@ pub fn load_ruleset_from_source(content: &str, _label: &str) -> Result<RuleSet, 
     // Why:      Compute the sharded residual gates from the positions
     //           that didn't make it onto the AC fast path; surface any
     //           shard-build failure to the caller.
-    // TS map:   `const residualShards = await buildResidualShards(residualPositions, regexSpecs);`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -616,7 +590,6 @@ pub fn load_ruleset_from_source(content: &str, _label: &str) -> Result<RuleSet, 
     //           `ac: ac`. No trailing `;` -- this is the function's
     //           tail expression, so its value becomes the return.
     // Why:      Hand the assembled ruleset back to the caller.
-    // TS map:   `return { ac, acMeta, acCi, acMetaCi, regexRules, residualShards };`.
     //
     // In TS you'd write (pseudocode):
     // ```ts

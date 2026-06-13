@@ -2,7 +2,6 @@
 //           troubleshooting-doc suffix from the parent engine module.
 // Why:      Every rejection message should point at the same long-form
 //           resharp workaround document without duplicating the path.
-// TS map:   `import { TROUBLESHOOT_REF } from "./constants";`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -43,7 +42,6 @@ use super::constants::TROUBLESHOOT_REF;
 //           intersecting a lookbehind" message instead of the
 //           opaque assertion) in exchange for not having to walk
 //           operand boundaries.
-// TS map:   `function intersectionWithLookbehind(src: string): string | null`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -67,7 +65,6 @@ pub fn intersection_with_lookbehind(src: &str) -> Option<String> {
     //           detection symmetric across lookaround direction.
     //           Avoid the cost of a second pass; rule sources are
     //           short and a single linear scan is plenty.
-    // TS map:   Same shape; one for-loop with two booleans.
     let bytes = src.as_bytes();
     let mut i = 0usize;
     let mut in_class = false;
@@ -82,7 +79,6 @@ pub fn intersection_with_lookbehind(src: &str) -> Option<String> {
     //           generic and the rule author has to scan the source
     //           to find which lookaround direction caused the
     //           rejection.
-    // TS map:   `let lookaroundKind = "";`.
     let mut lookaround_kind: &'static str = "";
     while i < bytes.len() {
         let c = bytes[i];
@@ -92,7 +88,6 @@ pub fn intersection_with_lookbehind(src: &str) -> Option<String> {
         // Why:      `\&` and `\(` inside the source are literal
         //           bytes the regex parser treats as the actual
         //           character, not as the metacharacter.
-        // TS map:   `if (c === 0x5c) { i += 2; continue; }`.
         if c == b'\\' {
             i += 2;
             continue;
@@ -128,7 +123,6 @@ pub fn intersection_with_lookbehind(src: &str) -> Option<String> {
             //           debug_assert at `engine.rs:1020` fires for
             //           intersection involving any lookaround, not
             //           just lookbehind specifically.
-            // TS map:   `if (c === '(' && b[i+1] === '?' && (b[i+2] === '=' || b[i+2] === '!' || (b[i+2] === '<' && (b[i+3] === '=' || b[i+3] === '!'))))`.
             if c == b'(' && i + 2 < bytes.len() && bytes[i + 1] == b'?' {
                 let after = bytes[i + 2];
                 if after == b'=' || after == b'!' {
@@ -216,7 +210,6 @@ pub fn intersection_with_lookbehind(src: &str) -> Option<String> {
 //           intentionally; rule authors writing intersection-of-
 //           lookaround patterns are rare, and the alternative is
 //           a fuzz crash on every iteration.
-// TS map:   `function lookaroundInAlternationWithSibling(src: string): string | null`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -240,7 +233,6 @@ pub fn lookaround_in_alternation_with_sibling(src: &str) -> Option<String> {
     //           counters would confuse "alternation in group A,
     //           lookaround in group B" with the real pattern
     //           "alternation AND lookaround both in group A".
-    // TS map:   `const parenStack: Array<[boolean, boolean]> = [];`.
     let mut paren_stack: Vec<(bool, bool)> = Vec::new();
     // What:     `total_lookarounds: usize` counts every lookaround
     //           opening in the source, regardless of depth or
@@ -250,7 +242,6 @@ pub fn lookaround_in_alternation_with_sibling(src: &str) -> Option<String> {
     // Why:      The panicking shape always has TWO or more
     //           lookarounds in the source; one alone (even inside
     //           alternation) doesn't trigger.
-    // TS map:   `let totalLookarounds = 0;`.
     let mut total_lookarounds: usize = 0;
     // What:     `found_alt_la_group: bool` is set when ANY closed
     //           group's body had both alternation and at least one
@@ -261,7 +252,6 @@ pub fn lookaround_in_alternation_with_sibling(src: &str) -> Option<String> {
     //           know about future siblings. Tracking the flag and
     //           checking at the end of the walk handles both
     //           "sibling before" and "sibling after" symmetrically.
-    // TS map:   `let foundAltLaGroup = false;`.
     let mut found_alt_la_group = false;
     while i < bytes.len() {
         let c = bytes[i];
@@ -404,7 +394,6 @@ pub fn lookaround_in_alternation_with_sibling(src: &str) -> Option<String> {
 //           wrap in `compile_rule_src` is the load-bearing
 //           safety net; this pre-validator turns the panic into
 //           an actionable message for the common shape.
-// TS map:   `function intersectionWithWordEndAlternation(src: string): string | null`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -431,7 +420,6 @@ pub fn intersection_with_word_end_alternation(src: &str) -> Option<String> {
             //           outside a class, so we gate on
             //           `!in_class`.
             // Why:      Match the shape we bisected to a panic.
-            // TS map:   `if (b[i+1] === 'w' || b[i+1] === 'W')`.
             if !in_class && (bytes[i + 1] == b'w' || bytes[i + 1] == b'W') {
                 has_word_shorthand = true;
             }

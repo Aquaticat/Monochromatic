@@ -7,12 +7,10 @@
 // Why:      Keep the tests beside the code without inflating
 //           `input.rs` or its max-lines budget (sibling
 //           `*_tests.rs` files are exempt from the linter).
-// TS map:   `input.unit.test.ts` beside `input.ts`.
 
 // What:     `use super::encode_terminal_key;` imports the function under test from
 //           the parent module.
 // Why:      Test code can call it without repeating the module path.
-// TS map:   `import { encodeTerminalKey } from "./input"`.
 use super::encode_terminal_key;
 
 #[test]

@@ -4,7 +4,6 @@
 // Why:      The max-lines Rust linter budgets code lines per file, so
 //           engine dispatch, routing, and pre-validators live in
 //           smaller topical files while callers keep the same paths.
-// TS map:   `export { ... } from "./engine/foo";` from an `index.ts`.
 //
 // In TS you'd write (pseudocode):
 // ```ts

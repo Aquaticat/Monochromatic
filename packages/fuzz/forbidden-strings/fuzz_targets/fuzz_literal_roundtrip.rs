@@ -9,7 +9,6 @@
 //           `\X` punctuation correctly; a regression there
 //           (treating `\.` as the metachar `.` again) would let
 //           literal bytes leak out of the recovered output.
-// TS map:   `fuzzTarget((bytes: Uint8Array) => { ... });`.
 
 #![no_main]
 

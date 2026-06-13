@@ -4,7 +4,6 @@
 //           complement bodies are excluded languages, not required
 //           bytes, so extracting from `~(...)` silently disables real
 //           matches when only placeholders contain the gate.
-// TS map:   `describe("algebra extraction", () => { ... })`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -14,7 +13,6 @@
 // What:     Import the literal walker under test.
 // Why:      Algebra operators must stop literal accumulation before
 //           branch extraction can skip or traverse them correctly.
-// TS map:   `import { walkLiteralBytes } from "./atom";`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -25,7 +23,6 @@ use super::atom::walk_literal_bytes;
 // What:     Import the public extraction wrapper.
 // Why:      These tests pin the externally used gate set, not only
 //           the lower-level walker details.
-// TS map:   `import { extractGatingSubstrings } from "./extract";`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -36,7 +33,6 @@ use super::extract::extract_gating_substrings;
 // What:     Import Aho-Corasick for round-trip gate checks.
 // Why:      The production scanner feeds extracted gates into this
 //           matcher, so the extracted bytes must find matching input.
-// TS map:   `import AhoCorasick from "aho-corasick";`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -48,7 +44,6 @@ use aho_corasick::AhoCorasick;
 //           strings for easy assertions.
 // Why:      The walker writes into out-parameters; tests read better
 //           when the plumbing is centralised.
-// TS map:   `function walk(input: string): { out: string; rest: string }`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -64,7 +59,6 @@ fn walk(input: &'static str) -> (String, String) {
 // What:     Helper that unwraps extraction output for patterns that
 //           must have sound gates.
 // Why:      Keeps each regression test focused on expected gate bytes.
-// TS map:   `function extract(pattern: string): Array<[string, boolean]>`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -116,8 +110,8 @@ fn build_placeholder_complement_does_not_supply_gate() {
     //           gating substring -- and that contract still holds.
     // Why:      Closes the AC-gate-soundness arm of BUG 10. The
     //           pre-fix gate `BUILD_` failed to fire on legitimate
-    //           matches like `BUILDX123456` (where `X` is any
-    //           non-underscore byte) because AC searched for the
+    //           matches when `BUILD` is followed by a non-underscore
+    //           byte because AC searched for the
     //           literal `_` while the rule matched a wildcard.
     let subs = extract(r"BUILD_[0-9]{6}&~(BUILD_000000)");
     assert_eq!(subs.len(), 1);

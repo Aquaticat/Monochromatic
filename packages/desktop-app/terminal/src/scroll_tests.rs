@@ -7,12 +7,10 @@
 // Why:      Keep the tests beside the code without inflating
 //           `scroll.rs` or its max-lines budget (sibling
 //           `*_tests.rs` files are exempt from the linter).
-// TS map:   `scroll.unit.test.ts` beside `scroll.ts`.
 
 // What:     `use super::*;` imports every public item from the parent module.
 //           The `*` glob is local to tests, not production API.
 // Why:      Test names can call `map_pixel_scroll` directly.
-// TS map:   `import { mapPixelScroll } from "./scroll"`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -22,7 +20,6 @@ use super::*;
 
 // What:     `#[test]` marks this function as a unit test.
 // Why:      Cargo runs it under the package `test` mise task.
-// TS map:   `test("keeps fractional pixels", () => { ... })`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -32,7 +29,6 @@ use super::*;
 fn keeps_fractional_pixels() {
     // What:     `let mapping = ...` stores the returned struct.
     // Why:      The assertions inspect every field.
-    // TS map:   `const mapping = mapPixelScroll(47, 18, 20)`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -45,7 +41,6 @@ fn keeps_fractional_pixels() {
 
 // What:     `#[test]` marks another unit test.
 // Why:      Top overscroll must clamp to the first scrollback row.
-// TS map:   `test("clamps negative pixels", () => { ... })`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -55,7 +50,6 @@ fn keeps_fractional_pixels() {
 fn clamps_negative_pixels() {
     // What:     `let mapping = ...` stores the clamped result.
     // Why:      Negative Slint offsets can appear during overscroll.
-    // TS map:   `const mapping = mapPixelScroll(-5, 18, 20)`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -68,7 +62,6 @@ fn clamps_negative_pixels() {
 
 // What:     `#[test]` marks the bottom-clamp unit test.
 // Why:      Resize can leave Slint's old pixel offset beyond the new content.
-// TS map:   `test("clamps past bottom", () => { ... })`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -78,7 +71,6 @@ fn clamps_negative_pixels() {
 fn clamps_past_bottom() {
     // What:     `let mapping = ...` stores a result clamped to five rows.
     // Why:      The maximum row offset is authoritative over raw pixels.
-    // TS map:   `const mapping = mapPixelScroll(500, 18, 5)`.
     //
     // In TS you'd write (pseudocode):
     // ```ts

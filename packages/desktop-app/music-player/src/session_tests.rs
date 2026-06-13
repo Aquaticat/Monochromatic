@@ -5,22 +5,18 @@
 //           `tests` CHILD of session.
 // Why:      Keep the tests beside the code without inflating `session.rs` or its
 //           max-lines budget (sibling `*_tests.rs` files are exempt from the linter).
-// TS map:   `session.unit.test.ts` beside `session.ts`.
 
 // What:     `use super::*;` bring the module's items into the test scope.
 // Why:      Tests need `Session`, `ShuffleMode`, `PathBuf`.
-// TS map:   `import * as parent from "./session";`
 use super::*;
 
 // What:     `#[test] fn json_round_trip_preserves_fields()`. Serialize a fully-populated
 //           session and parse it back.
 // Why:      Every field (source root, selection, settings) must survive the wire form.
-// TS map:   `test("json round trip preserves fields", () => { ... })`
 #[test]
 fn json_round_trip_preserves_fields() {
     // What:     build a non-default session literal with a root and a selection.
     // Why:      Exercise serialization of every field.
-    // TS map:   `const original = { ... };`
     let original = Session {
         source_root: Some(PathBuf::from("/music/Artist")),
         selected: Some(PathBuf::from("/music/Artist/01.flac")),
@@ -32,35 +28,28 @@ fn json_round_trip_preserves_fields() {
     // What:     `serde_json::to_string(&original).unwrap()` serializes to JSON; `.unwrap()`
     //           panics on error (fine in a test).
     // Why:      Produce the wire form.
-    // TS map:   `const json = JSON.stringify(original);`
     let json = serde_json::to_string(&original).unwrap();
     // What:     `serde_json::from_str::<Session>(&json).unwrap()` parses it back.
     // Why:      Round-trip the value.
-    // TS map:   `const back = JSON.parse(json) as Session;`
     let back = serde_json::from_str::<Session>(&json).unwrap();
     // What:     `assert_eq!(original, back)` via the derived `PartialEq`.
     // Why:      No field is lost or altered by the round-trip.
-    // TS map:   `expect(back).toEqual(original);`
     assert_eq!(original, back);
 }
 
 // What:     `#[test] fn none_root_and_selection_round_trip()`. A default session (no root,
 //           nothing cued) must serialize and parse back unchanged.
 // Why:      The first-run / nothing-loaded state is the common case and must round-trip.
-// TS map:   `test("none root and selection round trip", () => { ... })`
 #[test]
 fn none_root_and_selection_round_trip() {
     // What:     `Session::default()` the empty starting state.
     // Why:      Exercise the `None` source root and selection.
-    // TS map:   `const original = defaultSession();`
     let original = Session::default();
     // What:     serialize then parse back.
     // Why:      Confirm `None` fields survive.
-    // TS map:   `const back = JSON.parse(JSON.stringify(original));`
     let back = serde_json::from_str::<Session>(&serde_json::to_string(&original).unwrap()).unwrap();
     // What:     equal to the original, with both optionals `None`.
     // Why:      No drift on the empty state.
-    // TS map:   `expect(back).toEqual(original);`
     assert_eq!(back, original);
     assert_eq!(back.source_root, None);
     assert_eq!(back.selected, None);
@@ -70,16 +59,13 @@ fn none_root_and_selection_round_trip() {
 //           default session.
 // Why:      `#[serde(default)]` fills every missing field, so a truncated/empty file is
 //           tolerated rather than failing the restore.
-// TS map:   `test("empty json object yields defaults", () => { ... })`
 #[test]
 fn empty_json_object_yields_defaults() {
     // What:     parse an empty JSON object.
     // Why:      Every field is absent, so all default.
-    // TS map:   `const parsed = JSON.parse("{}") as Session;`
     let parsed = serde_json::from_str::<Session>("{}").unwrap();
     // What:     equals the default session.
     // Why:      Confirms the `#[serde(default)]` fallback.
-    // TS map:   `expect(parsed).toEqual(defaultSession());`
     assert_eq!(parsed, Session::default());
 }
 
@@ -88,31 +74,25 @@ fn empty_json_object_yields_defaults() {
 // Why:      Those obsolete fields must be ignored, the absent `source_root`/`selected`
 //           default to `None` (so launch falls through to the music directory), and the
 //           saved settings must still be read.
-// TS map:   `test("old track-list format degrades but keeps settings", () => { ... })`
 #[test]
 fn old_track_list_format_degrades_to_no_root_but_keeps_settings() {
     // What:     a hand-written old-format JSON (shuffle omitted so the test does not depend
     //           on the enum's serialized spelling; it defaults to `Off`).
     // Why:      Reproduce a session file from the previous schema.
-    // TS map:   `const old = '{"tracks":[...],"current":1,"position_secs":5,"volume":0.5,"repeat_track":true}';`
     let old = r#"{"tracks":["/a.flac","/b.opus"],"current":1,"position_secs":5.0,"volume":0.5,"repeat_track":true}"#;
     // What:     parse it as the new `Session`.
     // Why:      Confirm graceful degradation.
-    // TS map:   `const parsed = JSON.parse(old) as Session;`
     let parsed = serde_json::from_str::<Session>(old).unwrap();
     // What:     no usable root and no selection survive the old format.
     // Why:      The obsolete `tracks`/`current` cannot become a root; launch must fall back.
-    // TS map:   `expect(parsed.sourceRoot).toBeNull(); expect(parsed.selected).toBeNull();`
     assert_eq!(parsed.source_root, None);
     assert_eq!(parsed.selected, None);
     // What:     the saved settings are still read.
     // Why:      Volume/position/repeat persistence must not regress for old files.
-    // TS map:   `expect(parsed.positionSecs).toBe(5); expect(parsed.volume).toBe(0.5); expect(parsed.repeatTrack).toBe(true);`
     assert_eq!(parsed.position_secs, 5.0);
     assert_eq!(parsed.volume, 0.5);
     assert!(parsed.repeat_track);
     // What:     omitted shuffle defaults to `Off`.
     // Why:      Confirms missing fields fall back rather than failing the parse.
-    // TS map:   `expect(parsed.shuffle).toBe("Off");`
     assert_eq!(parsed.shuffle, ShuffleMode::Off);
 }

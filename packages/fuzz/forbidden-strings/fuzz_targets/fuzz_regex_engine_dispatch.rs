@@ -15,7 +15,6 @@
 //           failure -- bare `_` routed to regex -- silently
 //           changes meaning (wildcard becomes literal underscore)
 //           and was the bug class commit 9b41fca0 closed.
-// TS map:   `fuzzTarget((input: RuleAndContent) => { ... });`.
 
 #![no_main]
 
@@ -87,7 +86,6 @@ fuzz_target!(|input: RuleAndContent| {
     //           (it counts `&`/`|` even inside classes); over-skipping is
     //           safe here because it only drops the dispatch comparison
     //           for some `&`+`|` rules, never the soundness assert above.
-    // TS map:   `if (src.includes("&") && src.includes("|")) return;`.
     //
     // In TS you'd write (pseudocode):
     // ```ts

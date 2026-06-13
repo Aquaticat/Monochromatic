@@ -17,7 +17,6 @@ use super::atom::{skip_atom_with_extract, walk_literal_bytes};
 //           alternation; calling `extract_scope` on it splits "foo|bar"
 //           and returns [("foo", ci), ("bar", ci)] inheriting the
 //           caller's ci context.
-// TS map:   `function extractScope(s: string, ci: boolean): Array<{ sub: string; ci: boolean }> | null`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -62,7 +61,6 @@ pub(super) fn extract_scope(s: &str, ci: bool) -> Option<Vec<(String, bool)>> {
 //           to minimise spurious AC fires. Choosing the longest single
 //           literal beats a low-min alternation; choosing a long-min
 //           alternation beats a short literal.
-// TS map:   `function extractBranch(s: string, ci: boolean): Array<{ sub: string; ci: boolean }> | null`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -86,8 +84,6 @@ fn extract_branch(s: &str, ci: bool) -> Option<Vec<(String, bool)>> {
     //           without changing the underlying borrow.
     // Why:      The walker repeatedly trims the head of `s` as it
     //           consumes atoms; we need to be able to write `s = rest;`.
-    // TS map:   `let s = sParam;` (TS lets us reassign function args
-    //           directly; Rust requires explicit re-binding).
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -103,8 +99,6 @@ fn extract_branch(s: &str, ci: bool) -> Option<Vec<(String, bool)>> {
     //           used unchanged through the loop, so inline-flag changes
     //           did not propagate forward. Subsequent literals walked
     //           after an inline `(?i)` were tagged with the original ci.
-    // TS map:   `let ci = ciParam;` -- TS allows direct mutation of
-    //           function parameters, no rebinding needed.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -120,7 +114,6 @@ fn extract_branch(s: &str, ci: bool) -> Option<Vec<(String, bool)>> {
     //           the first push).
     // Why:      Buffer for the run of literal characters at the
     //           current walker position.
-    // TS map:   `let currentLit = "";`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -138,9 +131,6 @@ fn extract_branch(s: &str, ci: bool) -> Option<Vec<(String, bool)>> {
         //           the `&str` (cheap; `&str` is `Copy`).
         // Why:      Have the walker append literal bytes into our
         //           buffer and advance `s` past them in one call.
-        // TS map:   `walkLiteralBytes(s, currentLit, sRef);` -- TS
-        //           passes objects by reference naturally; Rust
-        //           requires explicit `&mut`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -169,7 +159,6 @@ fn extract_branch(s: &str, ci: bool) -> Option<Vec<(String, bool)>> {
                 //           AND hand the just-collected literal into
                 //           the new `best` vector in one move,
                 //           without an extra allocation.
-                // TS map:   `best = [[currentLit, ci]]; currentLit = "";`.
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -193,7 +182,6 @@ fn extract_branch(s: &str, ci: bool) -> Option<Vec<(String, bool)>> {
         // Why:      Don't consume across the `|` -- doing so would
         //           splice two branches' content into one fake "best",
         //           breaking soundness on patterns like `foobar|barfoo`.
-        // TS map:   `if (s[0] === "|") break;`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -211,7 +199,6 @@ fn extract_branch(s: &str, ci: bool) -> Option<Vec<(String, bool)>> {
         //           fragment containing `&`. Skipping `&` also lets
         //           extraction continue to later positive operands
         //           when earlier operands have no useful literal.
-        // TS map:   `if (s.startsWith("&")) { s = s.slice(1); continue; }`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -234,7 +221,6 @@ fn extract_branch(s: &str, ci: bool) -> Option<Vec<(String, bool)>> {
             //           which then becomes `(_, ci)` -- the ci tag
             //           reflects what's been declared at this point
             //           in source order, including inline flag changes.
-            // TS map:   `if (ciUpdate !== null) ci = ciUpdate;`.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -270,7 +256,6 @@ fn extract_branch(s: &str, ci: bool) -> Option<Vec<(String, bool)>> {
 //           - `|` inside `(foo|bar)` is alternation at depth 1, which
 //             is the GROUP's responsibility, not the outer scope's.
 //           - `\|` is an escaped pipe (literal `|`).
-// TS map:   `function splitTopLevelAlternations(s: string): string[]`.
 //
 // In TS you'd write (pseudocode):
 // ```ts

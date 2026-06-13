@@ -7,8 +7,6 @@
 //           its bytes (like `&str` is to `String`).
 // Why:      Commands carry file paths the user opened; the engine keeps them after
 //           the UI call returns, so they must be owned, not borrowed.
-// TS map:   There is no owned/borrowed split in TS; mentally this is just `string`
-//           used as a path.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -22,8 +20,6 @@ use std::path::PathBuf;
 //           `Deserialize` generates "build this from JSON".
 // Why:      `ShuffleMode` is saved to the session file on disk, so it needs both
 //           directions of conversion.
-// TS map:   No direct equivalent; imagine importing a decorator that makes a class
-//           JSON-roundtrippable, e.g. `import { Serializable } from ...`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -46,8 +42,6 @@ use serde::{Deserialize, Serialize};
 //           here (instead of a hand-written `impl Default`) and reads the `#[default]`
 //           marker on the `Off` variant; clippy flags a manual `impl` that just
 //           returns one variant.
-// TS map:   TS gives `==`, structural equality, and JSON for free on a string union,
-//           so no annotation is needed there.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -60,7 +54,6 @@ use serde::{Deserialize, Serialize};
 // Why:      Encodes the three shuffle behaviours. Shuffle now also chooses the SCOPE
 //           that playback loops over, so it subsumes what a separate repeat-all/off
 //           setting used to do (see the design note below).
-// TS map:   A string-literal union type.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -82,7 +75,6 @@ pub enum ShuffleMode {
     //           code.
     // Why:      A brand-new session with no saved file should start unshuffled; the
     //           derive then writes the `Default` impl for us.
-    // TS map:   `const DEFAULT_SHUFFLE: ShuffleMode = "off";`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -91,7 +83,6 @@ pub enum ShuffleMode {
     #[default]
     // What:     `Off` a fieldless enum variant.
     // Why:      Play the current page in load order, looping within the page.
-    // TS map:   `"off"`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -100,7 +91,6 @@ pub enum ShuffleMode {
     Off,
     // What:     `WithinPage` a fieldless enum variant.
     // Why:      Shuffle the current page, looping within the page once all are played.
-    // TS map:   `"withinPage"`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -109,7 +99,6 @@ pub enum ShuffleMode {
     WithinPage,
     // What:     `All` a fieldless enum variant.
     // Why:      Shuffle the whole queue, looping the queue once all are played.
-    // TS map:   `"all"`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -123,7 +112,6 @@ pub enum ShuffleMode {
 //           tuple variant), e.g. `Seek(f64)`.
 // Why:      A single message type lets the UI talk to the engine over one channel;
 //           the engine matches on the variant to decide what to do.
-// TS map:   A discriminated union of action objects.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -148,7 +136,6 @@ pub enum Command {
     //           command-line launch with `--start-playing` sets `play: true`; the folder
     //           picker and the music-directory auto-load pass `false` (load paused) so
     //           the app never blasts audio just from being opened.
-    // TS map:   `{ kind: "openRoot"; root: string; select: string | null; play: boolean }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -157,7 +144,6 @@ pub enum Command {
     OpenRoot {
         // What:     `root: PathBuf` the directory to scan into the queue (owned path).
         // Why:      The Source Root whose scan IS the queue.
-        // TS map:   `root: string`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -168,7 +154,6 @@ pub enum Command {
         //           open with nothing selected.
         // Why:      A single-file launch names its parent as the root and preselects the
         //           file; a folder open selects nothing.
-        // TS map:   `select: string | null`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -178,7 +163,6 @@ pub enum Command {
         // What:     `play: bool` whether to start playing once loaded.
         // Why:      Set only by a `--start-playing` command-line launch; the folder
         //           picker and auto-load pass `false` (load paused).
-        // TS map:   `play: boolean`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -188,7 +172,6 @@ pub enum Command {
     },
     // What:     `TogglePlay` a fieldless variant.
     // Why:      Flip between playing and paused.
-    // TS map:   `{ kind: "togglePlay" }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -197,7 +180,6 @@ pub enum Command {
     TogglePlay,
     // What:     `Play` a fieldless variant.
     // Why:      Resume playback.
-    // TS map:   `{ kind: "play" }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -206,7 +188,6 @@ pub enum Command {
     Play,
     // What:     `Pause` a fieldless variant.
     // Why:      Pause playback (keep position).
-    // TS map:   `{ kind: "pause" }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -215,7 +196,6 @@ pub enum Command {
     Pause,
     // What:     `Next` a fieldless variant.
     // Why:      Skip to the next track.
-    // TS map:   `{ kind: "next" }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -224,7 +204,6 @@ pub enum Command {
     Next,
     // What:     `Prev` a fieldless variant.
     // Why:      Skip to the previous track.
-    // TS map:   `{ kind: "prev" }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -240,7 +219,6 @@ pub enum Command {
     // Why:      Selecting and playing are distinct user intents: a click highlights and
     //           loads a track (pausing whatever was playing), and only a click on the
     //           already-selected row begins playback.
-    // TS map:   `{ kind: "selectIndex"; index: number }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -254,7 +232,6 @@ pub enum Command {
     //           `f32` (too coarse for long tracks), not `u64` frames (UI does not know
     //           the per-track rate), not `Duration` (awkward fractional value from a
     //           slider drag).
-    // TS map:   `{ kind: "seek"; secs: number }`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -264,7 +241,6 @@ pub enum Command {
     // What:     `SetVolume(f32)` is a gain in 0.0..=1.0 as an `f32`. Sibling: `f64`.
     // Why:      `f32` matches PipeWire's f32 samples and Slint's `float`, and a 0..1
     //           gain gains nothing from `f64` precision.
-    // TS map:   `{ kind: "setVolume"; volume: number }`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -273,7 +249,6 @@ pub enum Command {
     SetVolume(f32),
     // What:     `SetShuffle(ShuffleMode)` a tuple variant carrying the chosen mode.
     // Why:      Set the shuffle mode (off / within-page / all).
-    // TS map:   `{ kind: "setShuffle"; mode: ShuffleMode }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -283,7 +258,6 @@ pub enum Command {
     // What:     `SetRepeatTrack(bool)` a tuple variant carrying the desired flag.
     // Why:      Turn "repeat track" (replay the current track on its natural end) on
     //           or off.
-    // TS map:   `{ kind: "setRepeatTrack"; on: boolean }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -297,8 +271,6 @@ pub enum Command {
     //           and loads it PAUSED at the saved position.
     // Why:      Sent once on startup to resume where the user left off, without coupling
     //           this enum to the persistence `Session` type.
-    // TS map:   `{ kind: "restore"; root: string; selected: string | null;
-    //             position: number; volume: number; shuffle: ShuffleMode; repeatTrack: boolean }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -308,7 +280,6 @@ pub enum Command {
     Restore {
         // What:     `root: PathBuf` the saved Source Root to re-scan into the queue.
         // Why:      The queue is re-derived from disk, not from a saved track list.
-        // TS map:   `root: string`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -319,7 +290,6 @@ pub enum Command {
         //           `Option<T>` is `Some(value)` or `None` (Rust's no-`null` "maybe").
         // Why:      Re-select this track if the fresh scan still contains it; otherwise the
         //           selection is cleared.
-        // TS map:   `selected: string | null`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -329,7 +299,6 @@ pub enum Command {
         // What:     `position: f64` saved playback position in seconds (same
         //           seconds-as-f64 unit as `Seek`/`Position`).
         // Why:      Resume mid-track.
-        // TS map:   `position: number`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -338,7 +307,6 @@ pub enum Command {
         position: f64,
         // What:     `volume: f32` saved gain (32-bit float; sibling `f64`).
         // Why:      Restore the last volume.
-        // TS map:   `volume: number`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -347,7 +315,6 @@ pub enum Command {
         volume: f32,
         // What:     `shuffle: ShuffleMode` saved shuffle mode.
         // Why:      Restore shuffle.
-        // TS map:   `shuffle: ShuffleMode`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -356,7 +323,6 @@ pub enum Command {
         shuffle: ShuffleMode,
         // What:     `repeat_track: bool` saved "repeat track" flag.
         // Why:      Restore whether the current track replays on its natural end.
-        // TS map:   `repeatTrack: boolean`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -370,7 +336,6 @@ pub enum Command {
     //           path (or, if its file left the root while playing, playback stops and the
     //           selection clears). Sent by the file watcher on a debounced change, and on
     //           any "rescan required" signal.
-    // TS map:   `{ kind: "rescan" }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -379,7 +344,6 @@ pub enum Command {
     Rescan,
     // What:     `Quit` a fieldless variant.
     // Why:      Shut the engine thread down.
-    // TS map:   `{ kind: "quit" }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -394,7 +358,6 @@ pub enum Command {
 //           slots.
 // Why:      The engine owns the real playback state; the UI only mirrors it, and
 //           these updates are how the mirror is refreshed.
-// TS map:   Another discriminated union.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -412,7 +375,6 @@ pub enum Update {
     //           display paths, each relative to the queue's common root (e.g.
     //           `Artist/Album/01.flac`, or a bare filename for a single-folder queue).
     // Why:      The UI rebuilds its list from this whenever the queue changes.
-    // TS map:   `{ kind: "queue"; names: string[] }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -423,7 +385,6 @@ pub enum Update {
     //           track changed. `index` is its position in the queue, or `None` when
     //           nothing is loaded.
     // Why:      Refresh the now-playing label, row highlight, and seek-bar maximum.
-    // TS map:   `{ kind: "nowPlaying"; index: number | null; name: string; duration: number }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -436,7 +397,6 @@ pub enum Update {
         //           `u64`).
         // Why:      There may be no current track (empty queue), so the index is
         //           optional.
-        // TS map:   `index: number | null`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -449,7 +409,6 @@ pub enum Update {
         //           the bare filename if the index is absent. `String` is owned (sibling
         //           `&str`).
         // Why:      The UI keeps this string past the call, so it must be owned.
-        // TS map:   `name: string`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -467,7 +426,6 @@ pub enum Update {
         //           clumsy for a fractional seek-bar value. The value is narrowed to
         //           Slint's `float` (f32) only at the property edge, where display
         //           coarseness is harmless.
-        // TS map:   `duration: number` (JS `number` is already f64).
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -480,7 +438,6 @@ pub enum Update {
     //           field above for why f64 wins).
     // Why:      Same time unit as `duration` so the seek bar can compare them directly;
     //           the engine derives it from an exact frame count.
-    // TS map:   `{ kind: "position"; secs: number }`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -489,7 +446,6 @@ pub enum Update {
     Position(f64),
     // What:     `Playing(bool)` a tuple variant carrying the play/pause state.
     // Why:      Whether audio is currently playing (true) or paused (false).
-    // TS map:   `{ kind: "playing"; on: boolean }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -501,7 +457,6 @@ pub enum Update {
     // Why:      `f32` not `f64` because a 0..1 gain needs no double precision and it
     //           matches BOTH PipeWire's f32 PCM samples and Slint's `float` (also
     //           f32), so no conversion happens at either edge.
-    // TS map:   `{ kind: "volume"; volume: number }`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -510,7 +465,6 @@ pub enum Update {
     Volume(f32),
     // What:     `Shuffle(ShuffleMode)` a tuple variant carrying the current mode.
     // Why:      Current shuffle mode (off / within-page / all).
-    // TS map:   `{ kind: "shuffle"; mode: ShuffleMode }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -519,7 +473,6 @@ pub enum Update {
     Shuffle(ShuffleMode),
     // What:     `RepeatTrack(bool)` a tuple variant carrying the flag state.
     // Why:      Whether "repeat track" is on.
-    // TS map:   `{ kind: "repeatTrack"; on: boolean }`
     //
     // In TS you'd write (pseudocode):
     // ```ts

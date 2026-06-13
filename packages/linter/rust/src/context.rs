@@ -11,8 +11,6 @@
 //               look at `COMMENT` and `WHITESPACE`.
 // Why:      These are the exact pieces needed to turn source text into a token
 //           stream and ask each token "are you a comment, whitespace, or code?".
-// TS map:   like `import { Parser, SyntaxKind } from "some-rust-parser";` — there
-//           is no real TS equivalent because TS cannot parse Rust natively.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -25,7 +23,6 @@ use ra_ap_syntax::{Edition, NodeOrToken, SourceFile, SyntaxKind};
 //           set of line numbers that contain real code.
 // Why:      Rules should not re-read or re-parse the file; the runner builds this
 //           once per file and lends it to each rule.
-// TS map:   `type LintContext = { path: string; source: string; codeLines: number[] };`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -35,13 +32,11 @@ pub struct LintContext {
     // What:     `pub path: String`. OWNED string of the file path. Sibling: `&str`.
     // Why:      Diagnostics print it; owning it frees the context from the
     //           lifetime of whoever discovered the path.
-    // TS map:   `path: string`.
     pub path: String,
 
     // What:     `pub source: String`. OWNED full file contents.
     // Why:      Kept so future rules can inspect raw text; also the basis of the
     //           line computations below.
-    // TS map:   `source: string`.
     pub source: String,
 
     // What:     `code_lines: Vec<usize>`. `Vec<usize>` is a heap-allocated,
@@ -52,13 +47,11 @@ pub struct LintContext {
     //           token.
     // Why:      This is exactly oxlint's "lines after skipping blanks and
     //           comments"; computing it once lets max-lines just read its length.
-    // TS map:   `private codeLines: number[]`.
     code_lines: Vec<usize>,
 }
 
 // What:     `impl LintContext { ... }` attaches the constructor and accessors.
 // Why:      Group the per-file behaviour with the per-file data.
-// TS map:   methods of a `LintContext` class.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -69,7 +62,6 @@ impl LintContext {
     //           OWNERSHIP of both strings (no `&`), parses, and returns a new
     //           `Self` (shorthand for `LintContext`).
     // Why:      One place builds the context; the heavy parse happens here, once.
-    // TS map:   `static create(path: string, source: string): LintContext`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -81,7 +73,6 @@ impl LintContext {
         //           the helper ownership; we still need `source` afterwards).
         //           `line_starts` is a `Vec<usize>` of byte offsets.
         // Why:      Map a byte offset to a line number later.
-        // TS map:   `const lineStarts = computeLineStarts(source);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -92,7 +83,6 @@ impl LintContext {
         // What:     `let code_lines = compute_code_lines(&source, &line_starts);`.
         //           Again `&` lends both values read-only to the helper.
         // Why:      Do the parse-and-classify work and keep only the result.
-        // TS map:   `const codeLines = computeCodeLines(source, lineStarts);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -106,7 +96,6 @@ impl LintContext {
         //           and becomes the returned value. `path` and `source` are moved
         //           into the struct here.
         // Why:      Hand back the fully built context.
-        // TS map:   `return { path, source, codeLines };`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -122,7 +111,6 @@ impl LintContext {
     // What:     `pub fn code_line_count(&self) -> usize`. Borrows self read-only,
     //           returns how many code lines there are.
     // Why:      max-lines compares this against its budget.
-    // TS map:   `get codeLineCount(): number { return this.codeLines.length; }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -132,7 +120,6 @@ impl LintContext {
         // What:     `self.code_lines.len()`. `.len()` returns the element count as
         //           `usize`. Tail expression, so it is returned.
         // Why:      The count IS the post-skip line total.
-        // TS map:   `return this.codeLines.length;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -148,7 +135,6 @@ impl LintContext {
     //           and `None`), used instead of `null`.
     // Why:      max-lines wants the location of the FIRST over-budget code line so
     //           the diagnostic points somewhere useful.
-    // TS map:   `codeLineAt(i: number): number | undefined { return this.codeLines[i]; }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -162,8 +148,6 @@ impl LintContext {
         //           small integer out. Tail expression, so it is returned.
         // Why:      Safe lookup that yields `None` instead of crashing when the
         //           index is past the end.
-        // TS map:   `return this.codeLines[i];` (TS array indexing yields
-        //           `undefined` past the end, the same shape as `None`).
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -177,7 +161,6 @@ impl LintContext {
 //           (no `pub`). `&str` is a borrowed string slice (it does NOT own its
 //           bytes; sibling: owned `String`). Returns an owned `Vec<usize>`.
 // Why:      Build the lookup table that turns a byte offset into a line number.
-// TS map:   `function computeLineStarts(source: string): number[]`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -189,7 +172,6 @@ fn compute_line_starts(source: &str) -> Vec<usize> {
     //           it). `0usize` is the literal `0` typed as `usize`. Line 0 starts
     //           at byte offset 0.
     // Why:      Every file has a first line beginning at offset 0.
-    // TS map:   `const starts: number[] = [0];` (then we push, so really `let`).
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -203,7 +185,6 @@ fn compute_line_starts(source: &str) -> Vec<usize> {
     //           `offset` and `byte`.
     // Why:      We scan bytes (not chars) because byte offsets are what the
     //           parser's token ranges use.
-    // TS map:   `for (let offset = 0; offset < bytes.length; offset++) { const byte = bytes[offset]; ... }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -214,7 +195,6 @@ fn compute_line_starts(source: &str) -> Vec<usize> {
         //           newline byte (value 10), not a string. We compare the current
         //           byte to it.
         // Why:      A line begins right after each newline.
-        // TS map:   `if (byte === 0x0a /* '\n' */)`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -224,7 +204,6 @@ fn compute_line_starts(source: &str) -> Vec<usize> {
             // What:     `starts.push(offset + 1);`. Append the offset just past
             //           the newline as the next line's start.
             // Why:      Record where the following line begins.
-            // TS map:   `starts.push(offset + 1);`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -236,7 +215,6 @@ fn compute_line_starts(source: &str) -> Vec<usize> {
 
     // What:     `starts`. Bare variable as the tail expression: it is returned.
     // Why:      Hand the table back to the caller.
-    // TS map:   `return starts;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -249,7 +227,6 @@ fn compute_line_starts(source: &str) -> Vec<usize> {
 //           byte offset to a 0-based line index. `&[usize]` is a borrowed slice
 //           view over the `Vec<usize>` (sibling: owned `Vec<usize>`).
 // Why:      Token ranges are byte offsets; we need their line numbers.
-// TS map:   `function lineIndex(offset: number, lineStarts: number[]): number`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -264,8 +241,6 @@ fn line_index(offset: usize, line_starts: &[usize]) -> usize {
     //           Subtracting 1 converts "how many starts are <= offset" into the
     //           0-based index of the line containing `offset`. Tail expression.
     // Why:      Fast, allocation-free offset-to-line lookup.
-    // TS map:   a binary search; conceptually
-    //           `return lineStarts.filter(s => s <= offset).length - 1;`
     // Gotcha:   `|&s|` is a closure parameter pattern, not a bitwise-and; it means
     //           "bind `s` to the value the reference points at".
     //
@@ -282,7 +257,6 @@ fn line_index(offset: usize, line_starts: &[usize]) -> usize {
 //           1-based line numbers that contain at least one non-trivia token.
 // Why:      This is the whole point: code lines = total minus blank minus comment,
 //           computed via the real Rust lexer so `//` inside a string never counts.
-// TS map:   `function computeCodeLines(source: string, lineStarts: number[]): number[]`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -294,7 +268,6 @@ fn compute_code_lines(source: &str, line_starts: &[usize]) -> Vec<usize> {
     //           grammar; comment and whitespace tokenization is edition-
     //           independent, so this choice does not affect the count.
     // Why:      Turn text into a lossless token tree.
-    // TS map:   `const parse = parser.parse(source);`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -305,7 +278,6 @@ fn compute_code_lines(source: &str, line_starts: &[usize]) -> Vec<usize> {
     // What:     `let node = parse.syntax_node();`. Pulls the root `SyntaxNode` out
     //           of the parse result so we can walk it.
     // Why:      The walk below starts from this root.
-    // TS map:   `const node = parse.rootNode;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -317,7 +289,6 @@ fn compute_code_lines(source: &str, line_starts: &[usize]) -> Vec<usize> {
     //           growable boolean array, one slot per line, all initially false.
     //           `mut` because we flip slots to true below.
     // Why:      Mark which lines hold code; we count the trues at the end.
-    // TS map:   `const isCode = new Array(lineStarts.length).fill(false);`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -331,7 +302,6 @@ fn compute_code_lines(source: &str, line_starts: &[usize]) -> Vec<usize> {
     //           `NodeOrToken` (node-or-token enum).
     // Why:      We must see tokens (comments, whitespace, identifiers, literals)
     //           to classify lines.
-    // TS map:   `for (const element of node.descendantsWithTokens())`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -343,7 +313,6 @@ fn compute_code_lines(source: &str, line_starts: &[usize]) -> Vec<usize> {
         //           bind its inner `SyntaxToken` to `token` and run the block;
         //           otherwise skip (it was an inner `Node`).
         // Why:      Only leaf tokens carry the kind/text we classify on.
-        // TS map:   `if (element.kind === "token") { const token = element.token; ... }`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -353,7 +322,6 @@ fn compute_code_lines(source: &str, line_starts: &[usize]) -> Vec<usize> {
             // What:     `let kind = token.kind();`. Returns the `SyntaxKind` of
             //           this leaf (e.g. COMMENT, WHITESPACE, IDENT, STRING).
             // Why:      We branch on whether it is trivia.
-            // TS map:   `const kind = token.kind;`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -369,7 +337,6 @@ fn compute_code_lines(source: &str, line_starts: &[usize]) -> Vec<usize> {
             //           a `//` or `/* */` appearing inside a string literal is NOT
             //           a COMMENT token (it is part of a STRING token), so such
             //           lines correctly stay code.
-            // TS map:   `if (kind === "comment" || kind === "whitespace") continue;`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -382,7 +349,6 @@ fn compute_code_lines(source: &str, line_starts: &[usize]) -> Vec<usize> {
             // What:     `let range = token.text_range();`. Returns a `TextRange`,
             //           the half-open byte span `[start, end)` the token occupies.
             // Why:      We need its start/end to find which lines it touches.
-            // TS map:   `const range = token.range; // { start, end }`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -395,7 +361,6 @@ fn compute_code_lines(source: &str, line_starts: &[usize]) -> Vec<usize> {
             //           around a 32-bit offset); `usize::from(...)` converts it to
             //           a plain `usize` we can use as an index.
             // Why:      Get the first byte offset of the token as a number.
-            // TS map:   `const start = range.start;`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -406,7 +371,6 @@ fn compute_code_lines(source: &str, line_starts: &[usize]) -> Vec<usize> {
             // What:     `let end: usize = usize::from(range.end());`. The
             //           exclusive end offset, converted the same way.
             // Why:      Bound the line range the token spans.
-            // TS map:   `const end = range.end;`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -417,7 +381,6 @@ fn compute_code_lines(source: &str, line_starts: &[usize]) -> Vec<usize> {
             // What:     `if end <= start { continue; }`. Guard against an empty
             //           token range before subtracting below.
             // Why:      `end - 1` would underflow on a zero-width token; skip it.
-            // TS map:   `if (end <= start) continue;`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -434,7 +397,6 @@ fn compute_code_lines(source: &str, line_starts: &[usize]) -> Vec<usize> {
             //           multi-line string literal therefore marks every line it
             //           spans.
             // Why:      A token can straddle several lines; all of them are code.
-            // TS map:   `const first = lineIndex(start, lineStarts); const last = lineIndex(end - 1, lineStarts);`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -452,7 +414,6 @@ fn compute_code_lines(source: &str, line_starts: &[usize]) -> Vec<usize> {
             // Why:      Mark every line the token touches as code; a multi-line
             //           token (such as a multi-line string literal) marks all the
             //           lines it spans.
-            // TS map:   `for (let line = first; line <= last; line++) isCode[line] = true;`
             // Gotcha:   `slice[a..=b]` yields a sub-slice VIEW, not one element;
             //           out-of-range bounds would panic, but `first`/`last` always
             //           come from real byte offsets within this file.
@@ -469,7 +430,6 @@ fn compute_code_lines(source: &str, line_starts: &[usize]) -> Vec<usize> {
     //           that will collect the 1-based code line numbers. The explicit
     //           `: Vec<usize>` annotation states the element type.
     // Why:      Gather the marked lines into the return value.
-    // TS map:   `const result: number[] = [];`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -481,7 +441,6 @@ fn compute_code_lines(source: &str, line_starts: &[usize]) -> Vec<usize> {
     //           borrows each element; `.enumerate()` pairs it with its 0-based
     //           index. `marked` is a `&bool` (a borrowed reference to the slot).
     // Why:      Walk every line slot and keep the ones marked as code.
-    // TS map:   `for (let index = 0; index < isCode.length; index++) { const marked = isCode[index]; ... }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -493,7 +452,6 @@ fn compute_code_lines(source: &str, line_starts: &[usize]) -> Vec<usize> {
         //           converts the 0-based line index to a 1-based line number
         //           (what editors and humans use).
         // Why:      Collect human-facing line numbers of code lines.
-        // TS map:   `if (marked) result.push(index + 1);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -507,7 +465,6 @@ fn compute_code_lines(source: &str, line_starts: &[usize]) -> Vec<usize> {
     // What:     `result`. Tail expression: the collected vector is returned. It is
     //           already ascending because we built it by ascending index.
     // Why:      Hand back the sorted, distinct code line numbers.
-    // TS map:   `return result;`
     //
     // In TS you'd write (pseudocode):
     // ```ts

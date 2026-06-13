@@ -13,9 +13,6 @@ fn main() {
     // Why:      Embedding an icon resource into an executable is a Windows-only
     //           concept. The macOS icon lives in the .app bundle and Linux uses
     //           the .desktop file's `Icon=` name, so neither needs this.
-    // TS map:   No direct TS analogue. Mentally: `if (process.platform ===
-    //           "win32") embedWindowsIcon();`, except the decision is made at
-    //           compile time and the non-Windows branch is absent from the binary.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -33,7 +30,6 @@ fn main() {
 //           cfg(windows) in Cargo.toml).
 // Why:      Keeps the Windows-only logic out of `main` and out of every other
 //           platform's compile entirely.
-// TS map:   `function embedWindowsIcon(): void { ... }`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -50,8 +46,6 @@ fn embed_windows_icon() {
     // Why:      The builder accumulates what to embed (here, the icon) and then
     //           compiles it into a `.res` object file the linker bakes into the
     //           .exe.
-    // TS map:   `const resource = new WindowsResource();` (TS has no `mut`; its
-    //           objects are always internally mutable).
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -64,7 +58,6 @@ fn embed_windows_icon() {
     //           the `gen:icons` mise task.
     // Why:      Tells winresource which icon the .exe should carry, shown by
     //           Explorer, the taskbar, and Alt-Tab on Windows.
-    // TS map:   `resource.setIcon("assets/music-player.ico");`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -80,8 +73,6 @@ fn embed_windows_icon() {
     //           is an error, failing the build loudly.
     // Why:      A missing or broken resource compiler should stop the build with a
     //           clear message rather than silently shipping an icon-less .exe.
-    // TS map:   `try { resource.compile(); } catch (e) { throw new Error(
-    //           "embedding the Windows icon failed: " + e); }`.
     // Gotcha:   `.expect` on an error aborts the whole build script; there is no
     //           silent fallback.
     //

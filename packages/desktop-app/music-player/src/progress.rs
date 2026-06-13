@@ -11,7 +11,6 @@
 //           point) and a raw integer count of milliseconds.
 // Why:      Debouncing compares elapsed spans; `Duration` keeps the unit explicit
 //           and avoids mixing seconds with milliseconds.
-// TS map:   `type Duration = number; // milliseconds`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -25,7 +24,6 @@ use std::time::Duration;
 //           millisecond count, evaluated at compile time.
 // Why:      A quarter-second cap is fast enough for a seek bar but slow enough to
 //           prevent sub-second tracks from flashing the UI and taskbar.
-// TS map:   `export const PROGRESS_UPDATE_DEBOUNCE_INTERVAL = 250;`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -40,7 +38,6 @@ pub const PROGRESS_UPDATE_DEBOUNCE_INTERVAL: Duration = Duration::from_millis(25
 //           `should_surface`).
 // Why:      The kind is compared with `==` and copied freely; deriving these makes
 //           it behave like a plain enum value rather than something you must clone.
-// TS map:   no annotation; a string-union value is already comparable and copyable.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -52,7 +49,6 @@ pub const PROGRESS_UPDATE_DEBOUNCE_INTERVAL: Duration = Duration::from_millis(25
 //           before asking the debouncer.
 // Why:      Position ticks can wait; play/pause visibility changes must surface
 //           immediately.
-// TS map:   `type ProgressUpdateKind = "debounced" | "immediate";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -62,7 +58,6 @@ pub enum ProgressUpdateKind {
     // What:     `Debounced` a fieldless enum variant (carries no data).
     // Why:      Ordinary progress movement or track-reset progress that may be
     //           rate-limited.
-    // TS map:   `"debounced"`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -71,7 +66,6 @@ pub enum ProgressUpdateKind {
     Debounced,
     // What:     `Immediate` a fieldless enum variant.
     // Why:      State transitions that must update visible/hidden taskbar state now.
-    // TS map:   `"immediate"`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -85,7 +79,6 @@ pub enum ProgressUpdateKind {
 //           own default, here `None`) for the struct below.
 // Why:      `Default` gives the empty-state constructor `new()` reuses, and `Debug`
 //           helps test failure output.
-// TS map:   no annotation; a class would write its own constructor.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -96,7 +89,6 @@ pub enum ProgressUpdateKind {
 //           surface was allowed to repaint.
 // Why:      One small state object gates both the Slint seek bar and taskbar
 //           progress through the same timing rule.
-// TS map:   `class ProgressDebouncer { lastSurfaceAt: number | null }`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -108,7 +100,6 @@ pub struct ProgressDebouncer {
     //           `Some(duration)` or `None`; `None` means no update has surfaced yet
     //           (Rust has no `null`, so absence is an `Option`).
     // Why:      The next debounced update compares against this baseline.
-    // TS map:   `lastSurfaceAt: number | null;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -120,7 +111,6 @@ pub struct ProgressDebouncer {
 // What:     `impl ProgressDebouncer { ... }` defines methods on the debounce state
 //           object (an `impl` block is where a type's methods live).
 // Why:      Keep the timing rule next to the state it mutates.
-// TS map:   `class ProgressDebouncer { ...methods... }`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -130,7 +120,6 @@ impl ProgressDebouncer {
     // What:     `pub fn new() -> Self`. Build a fresh debouncer. `Self` is an alias
     //           for `ProgressDebouncer` inside this impl block.
     // Why:      Callers should not construct the internal field directly.
-    // TS map:   `constructor()`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -141,7 +130,6 @@ impl ProgressDebouncer {
         //           `last_surface_at` to `None`. Tail expression -> return value.
         // Why:      Reuse the generated empty-state constructor instead of repeating
         //           the field.
-        // TS map:   `return new ProgressDebouncer();`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -155,7 +143,6 @@ impl ProgressDebouncer {
     //           stored baseline); `now` is the current elapsed span; `kind` is the
     //           update classification; returns a `bool` decision.
     // Why:      This is the single debounce decision used by UI and taskbar code.
-    // TS map:   `shouldSurface(now: number, kind: ProgressUpdateKind): boolean`
     // Gotcha:   `&mut self` means only one caller may hold this borrow at a time;
     //           there is no shared-mutable aliasing like a plain JS method has.
     //
@@ -168,7 +155,6 @@ impl ProgressDebouncer {
         //           passed kind against the immediate variant with `==` (available
         //           because the enum derives `PartialEq`).
         // Why:      Play/pause visibility changes should never be held back.
-        // TS map:   `if (kind === "immediate") { ... }`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -178,7 +164,6 @@ impl ProgressDebouncer {
             // What:     `self.last_surface_at = Some(now);`. Store this accepted update
             //           time, wrapped in `Some` (the present case of `Option`).
             // Why:      A following position reset still waits for the debounce gap.
-            // TS map:   `this.lastSurfaceAt = now;`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -187,7 +172,6 @@ impl ProgressDebouncer {
             self.last_surface_at = Some(now);
             // What:     `return true;`. Early return leaving the function immediately.
             // Why:      The caller should repaint now.
-            // TS map:   `return true;`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -199,7 +183,6 @@ impl ProgressDebouncer {
         // What:     `let interval_elapsed = match self.last_surface_at { ... };`. A
         //           `match` EXPRESSION over the `Option` baseline, assigned to a bool.
         // Why:      The first debounced update should surface; later ones must wait.
-        // TS map:   `const intervalElapsed = this.lastSurfaceAt === null ? true : ...;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -214,7 +197,6 @@ impl ProgressDebouncer {
             //           to or earlier than the baseline (e.g. a clock reset); compare
             //           the gap against the interval.
             // Why:      Compare elapsed time safely without panicking on underflow.
-            // TS map:   `now - lastSurfaceAt >= PROGRESS_UPDATE_DEBOUNCE_INTERVAL`
             // Gotcha:   `saturating_sub` clamps at zero; a plain `-` on `Duration`
             //           would PANIC on underflow, unlike TS numbers going negative.
             //
@@ -227,7 +209,6 @@ impl ProgressDebouncer {
             }
             // What:     `None => true`. No previous progress update existed.
             // Why:      The first progress value must be visible.
-            // TS map:   `true`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -240,7 +221,6 @@ impl ProgressDebouncer {
         //           stored baseline.
         // Why:      Suppressed rapid updates should not push the window forward (else
         //           a flood of resets would forever postpone the next repaint).
-        // TS map:   `if (intervalElapsed) { this.lastSurfaceAt = now; }`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -250,7 +230,6 @@ impl ProgressDebouncer {
             // What:     `self.last_surface_at = Some(now);`. Record this accepted
             //           repaint time, wrapped in `Some`.
             // Why:      Start a new debounce interval from here.
-            // TS map:   `this.lastSurfaceAt = now;`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -262,7 +241,6 @@ impl ProgressDebouncer {
         // What:     `interval_elapsed`. The bare bool is the tail expression, so it is
         //           returned.
         // Why:      The caller receives the decision.
-        // TS map:   `return intervalElapsed;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -282,8 +260,6 @@ impl ProgressDebouncer {
 // Why:      Keep `progress.rs` to production code; the tests live beside it without
 //           inflating this file or its max-lines budget (sibling `*_tests.rs` files
 //           are exempt from the linter).
-// TS map:   the `progress.unit.test.ts` file beside `progress.ts`, excluded from the
-//           production bundle.
 //
 // In TS you'd write (pseudocode):
 // ```ts

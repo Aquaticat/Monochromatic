@@ -30,7 +30,6 @@
 //           lives in, reachable elsewhere as
 //           `dev.monochromatic.musicplayer.TrackFingerprint`.
 // Why:      So the peak cache and sweep code can call `TrackFingerprint.of(...)`.
-// TS map:   No 1:1 equivalent — TS module identity is the file path; no `package`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -42,7 +41,6 @@ package dev.monochromatic.musicplayer
 //           to the app environment; its `contentResolver` is how we query the
 //           document/MediaStore provider.
 // Why:      Both query helpers take a `Context` to reach `context.contentResolver`.
-// TS map:   `import { Context } from "android/content";`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -54,7 +52,6 @@ import android.content.Context
 //           uniform-resource-identifier type (e.g. a `content://...` URI).
 // Why:      `of` and the helpers take the track's `Uri` to query and to stringify
 //           into the fingerprint.
-// TS map:   `import { Uri } from "android/net";` — think a parsed-URL object.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -66,8 +63,6 @@ import android.net.Uri
 //           `DocumentsContract`, the Storage Access Framework's contract class.
 //           We read its `Document.COLUMN_LAST_MODIFIED` column-name constant.
 // Why:      `queryLastModifiedMs` asks the provider for that column.
-// TS map:   `import { DocumentsContract } from "android/provider";` — a namespace
-//           of column-name string constants.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -79,7 +74,6 @@ import android.provider.DocumentsContract
 //           whose `SIZE` constant is the column name for a file's byte size,
 //           exposed by both SAF and MediaStore providers.
 // Why:      `querySize` requests the `OpenableColumns.SIZE` column.
-// TS map:   `import { OpenableColumns } from "android/provider";`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -93,8 +87,6 @@ import android.provider.OpenableColumns
 //           `ULong`, the unsigned 64-bit integer) and returns the hashed `String`
 //           cache key.
 // Why:      `of` calls it to produce the opaque key once it has read size/mtime.
-// TS map:   `import { fingerprint } from "./core/peak-cache";` — a plain function
-//           import; the `ULong` params become `bigint`/`number` in TS thinking.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -106,8 +98,6 @@ import dev.monochromatic.musicplayer.core.fingerprint
 //           coroutines object naming the thread pools. We use `Dispatchers.IO`,
 //           the pool for blocking input/output (file/provider reads).
 // Why:      `of` runs its provider queries on `Dispatchers.IO`, off the UI thread.
-// TS map:   No real TS equivalent — JS has one event loop, not labelled pools.
-//           Mentally: "run this on a background worker named IO."
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -121,8 +111,6 @@ import kotlinx.coroutines.Dispatchers
 //           value.
 // Why:      `of` uses `withContext(Dispatchers.IO) { ... }` to do its reads on the
 //           IO pool while still returning a value to the caller.
-// TS map:   Closest is `await runOnWorker(() => { ... })`; the language hides the
-//           Promise.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -138,8 +126,6 @@ import kotlinx.coroutines.withContext
 // Why:      This holds no per-instance state; it is a namespaced bag of one public
 //           function plus two private helpers and two constants, so a single
 //           shared instance is exactly right.
-// TS map:   Like exporting a plain object of functions, or a class with only
-//           `static` members: `export const TrackFingerprint = { of() {...} };`.
 // Gotcha:   `object` here is NOT TS's structural `object` type; it is Kotlin's
 //           keyword for a compiler-managed singleton.
 //
@@ -161,9 +147,6 @@ object TrackFingerprint {
     //           an `Int`).
     // Why:      The provider reports the modified time in milliseconds, but the
     //           core key wants nanoseconds; this is the multiplier between them.
-    // TS map:   `const NANOS_PER_MILLI = 1_000_000;` — TS also allows `_` digit
-    //           separators, but has no `Long`/`Int` split and no `L` suffix (one
-    //           `number` type).
     // Gotcha:   `Long` is fixed-width 64-bit; the `L` suffix is load-bearing here
     //           because `modifiedMs * NANOS_PER_MILLI` must stay 64-bit to avoid
     //           overflow.
@@ -181,7 +164,6 @@ object TrackFingerprint {
     // Why:      The fallback last-modified value when the provider does not expose
     //           the column (for example MediaStore), so a missing mtime becomes a
     //           stable zero rather than an error.
-    // TS map:   `const UNKNOWN_MODIFIED_MS = 0;`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -202,10 +184,6 @@ object TrackFingerprint {
     //           get back the opaque cache key, or `null` when the size can't be read
     //           (so the caller skips caching and plays at unity gain). `suspend`
     //           lets it do the provider I/O without blocking the UI thread.
-    // TS map:   `async function of(context: Context, uri: Uri): Promise<string | null> {`
-    //           `  return await runOnWorker(() => { ... }); }` (on the IO pool) — `suspend`
-    //           is `async`; `String?` is `string | null`; `withContext` is the
-    //           run-on-worker wrapper.
     // Gotcha:   A `suspend` function looks synchronous but can only be called from a
     //           coroutine. `String?` forces the caller to handle the null case.
     //
@@ -229,9 +207,6 @@ object TrackFingerprint {
         //           `withContext` (and thus `of`) evaluate to `null`.
         // Why:      With no readable size there is nothing to fingerprint, so we bail
         //           out early and report `null` to the caller.
-        // TS map:   `const maybeSize = querySize(context, uri); if (maybeSize === null) return null; const size = maybeSize;`
-        //           — TS has no `?: return` form, so the null-check and early return
-        //           are written out.
         // Gotcha:   The `@withContext` label is REQUIRED: a bare `return` inside this
         //           lambda would be a compile error (this is an expression-bodied
         //           function with no statement-block to return from); the label says
@@ -251,7 +226,6 @@ object TrackFingerprint {
         //           when the provider lacks the column).
         // Why:      The last-modified time in milliseconds, the second platform input
         //           to the fingerprint.
-        // TS map:   `const modifiedMs: number = queryLastModifiedMs(context, uri);`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -274,10 +248,6 @@ object TrackFingerprint {
         //             key `String`.
         // Why:      Produce the opaque, hashed cache key from the URI plus the two read
         //           file attributes, matching the desktop's `path + size + mtime` key.
-        // TS map:   `return fingerprint(uri.toString(), BigInt(size), BigInt(modifiedMs * NANOS_PER_MILLI));`
-        //           — `.toULong()` is "treat as unsigned 64-bit"; in TS you'd reach for
-        //           `BigInt`. There is no `;`/`return` in Kotlin: the trailing
-        //           expression IS the return.
         // Gotcha:   `Long * Long` is 64-bit integer multiply that WRAPS silently on
         //           overflow (no auto-widening like JS numbers); using `Long` for the
         //           constant is what keeps it 64-bit. `ULong` is a SEPARATE type from
@@ -302,7 +272,6 @@ object TrackFingerprint {
     // Why:      Read the file's byte size from `OpenableColumns.SIZE`, or `null` when
     //           the provider does not report it (the signal that lets `of` skip
     //           caching).
-    // TS map:   `function querySize(context: Context, uri: Uri): number | null { ... }`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -323,7 +292,6 @@ object TrackFingerprint {
         //           continue it with `.query(...)` and `?.use { ... }`).
         // Why:      It is the entry point for querying the document/MediaStore provider
         //           for this URI's size.
-        // TS map:   `context.contentResolver` — a property access starting the chain.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -338,8 +306,6 @@ object TrackFingerprint {
             //           are the unused `selection`, `selectionArgs`, and `sortOrder`
             //           query arguments.
             // Why:      Ask the provider for just the size column of this one URI.
-            // TS map:   `.query(uri, [OpenableColumns.SIZE], null, null, null)` — Kotlin's
-            //           `arrayOf(x)` is TS's array literal `[x]`.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -355,8 +321,6 @@ object TrackFingerprint {
             //           non-null cursor.
             // Why:      Read the row safely while making sure the native cursor handle is
             //           always released; a null cursor becomes a harmless no-op.
-            // TS map:   `?.use((cursor) => { ... })` where `use` is a try/finally-close
-            //           helper. Mentally: `if (c) { try { ... } finally { c.close(); } }`.
             // Gotcha:   `?.` short-circuits the ENTIRE chained call on null (like TS
             //           optional chaining); `use {}` is Kotlin's resource-closing helper
             //           (a `using`/`try-with-resources` block), not a plain method.
@@ -374,7 +338,6 @@ object TrackFingerprint {
                 //           column index (we requested only the size column).
                 // Why:      Only read the size when there is a first row AND its size
                 //           column actually holds a value.
-                // TS map:   `if (cursor.moveToFirst() && !cursor.isNull(0)) { ... }`.
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -389,10 +352,6 @@ object TrackFingerprint {
                     //           lambda.
                     // Why:      We have the size; hand it straight back as the function's
                     //           result.
-                    // TS map:   `return cursor.getLong(0);` — but note in TS a `return`
-                    //           inside an arrow callback returns from the ARROW, not the
-                    //           outer function; Kotlin's inline `use` makes this `return`
-                    //           leave `querySize` instead (see Gotcha).
                     // Gotcha:   This `return` exits `querySize`, not just the `use` lambda.
                     //           That is only legal because `use` is `inline`; a non-inline
                     //           lambda would forbid a non-local `return`.
@@ -408,7 +367,6 @@ object TrackFingerprint {
         //           null, had no first row, or its size column was null. It hands back
         //           the `null` variant of the `Long?` return type.
         // Why:      Signal "size unavailable" so `of` skips caching this track.
-        // TS map:   `return null;`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -426,7 +384,6 @@ object TrackFingerprint {
     //           `UNKNOWN_MODIFIED_MS` when the provider lacks that column (MediaStore
     //           uses a different one and the query throws, which is treated as
     //           "unknown" rather than an error).
-    // TS map:   `function queryLastModifiedMs(context: Context, uri: Uri): number { ... }`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -453,8 +410,6 @@ object TrackFingerprint {
         // Why:      Some providers (MediaStore) lack the `COLUMN_LAST_MODIFIED` column,
         //           so the query THROWS; wrapping it in `runCatching` lets us turn that
         //           throw into a quiet fallback instead of crashing.
-        // TS map:   A `try { ... } catch { ... }` whose result is a tagged
-        //           success/failure object: `const r = runCatching(() => { ... });`.
         // Gotcha:   `runCatching` swallows the exception into a `Result`; you MUST then
         //           unwrap it (here with `.getOrDefault` below), or the failure is lost.
         //
@@ -467,7 +422,6 @@ object TrackFingerprint {
             //           context, beginning the same kind of multi-line query chain as in
             //           `querySize` (continued by `.query(...)` and `?.use { ... }`).
             // Why:      Entry point for querying the provider for this URI's mtime.
-            // TS map:   `context.contentResolver`.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -482,7 +436,6 @@ object TrackFingerprint {
                 // Why:      Ask for this URI's last-modified column specifically. On a
                 //           provider lacking it, this is the call that THROWS (caught by
                 //           the surrounding `runCatching`).
-                // TS map:   `.query(uri, [DocumentsContract.Document.COLUMN_LAST_MODIFIED], null, null, null)`.
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -495,7 +448,6 @@ object TrackFingerprint {
                 //           non-null cursor parameter. Unlike `querySize`, here the lambda
                 //           is used as an EXPRESSION (its value flows out, see below).
                 // Why:      Read the row safely and always release the cursor handle.
-                // TS map:   `?.use((cursor) => { ... })` — a try/finally-close helper.
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -508,7 +460,6 @@ object TrackFingerprint {
                     //           lambda's value). The condition is "there is a first row AND
                     //           column 0 is not null" (`!` negates `isNull`).
                     // Why:      Yield the real mtime when present, otherwise the fallback.
-                    // TS map:   `(cursor.moveToFirst() && !cursor.isNull(0)) ? A : B`.
                     // Gotcha:   This `if` PRODUCES a value (Kotlin), unlike TS where `if`
                     //           is a statement; that value is what the lambda returns.
                     //
@@ -524,7 +475,6 @@ object TrackFingerprint {
                         //           expression body, so values flow out, they are not
                         //           `return`ed mid-lambda).
                         // Why:      The actual last-modified time in milliseconds.
-                        // TS map:   `cursor.getLong(0)` (the ternary's true arm).
                         //
                         // In TS you'd write (pseudocode):
                         // ```ts
@@ -536,7 +486,6 @@ object TrackFingerprint {
                         //           `else`-branch's value: used when there is no row or the
                         //           column is null.
                         // Why:      Fall back to a stable zero mtime rather than failing.
-                        // TS map:   `UNKNOWN_MODIFIED_MS` (the ternary's false arm).
                         //
                         // In TS you'd write (pseudocode):
                         // ```ts
@@ -552,7 +501,6 @@ object TrackFingerprint {
                 //           lambda produces on success.
                 // Why:      A null cursor (provider returned nothing) must still yield a
                 //           `Long`, so we coalesce it to the unknown-mtime fallback.
-                // TS map:   `... ?? UNKNOWN_MODIFIED_MS` — Kotlin's `?:` is TS's `??`.
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -567,8 +515,6 @@ object TrackFingerprint {
         //           value, hence `queryLastModifiedMs`'s return.
         // Why:      Turn a thrown "no such column" (MediaStore) into the quiet fallback,
         //           so a missing mtime never propagates as an error.
-        // TS map:   `result.getOrDefault(UNKNOWN_MODIFIED_MS)` ~ the `catch { return UNKNOWN_MODIFIED_MS; }`
-        //           arm of a try/catch; the success arm returns the read value.
         // Gotcha:   `.getOrDefault(x)` SILENTLY discards the captured exception; use it
         //           only when "no info, fall back" is genuinely correct (it is here:
         //           size still guards the cache entry).

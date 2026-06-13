@@ -4,7 +4,6 @@
 //           with underscores) and this binary (`src/main.rs`). All real logic
 //           lives in the library so tests can call it directly.
 // Why:      So `main` below can call it; `main` itself stays a tiny shell.
-// TS map:   `import { runCliFromEnv } from "./lib";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -16,7 +15,6 @@ use monochromatic_rust_linter::run_cli_from_env;
 //           process exit status. Returning it from `main` is the idiomatic way
 //           to set the exit code.
 // Why:      We translate the library's numeric return into this type.
-// TS map:   No direct type; Node uses `process.exit(n)` / `process.exitCode = n`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -28,9 +26,6 @@ use std::process::ExitCode;
 //           means it hands an exit status back to the operating system.
 // Why:      Keep `main` to a few lines: call the library, convert its result
 //           into an exit code.
-// TS map:   TS has no entry function; imagine the whole file wrapped in
-//           `async function main(): Promise<number> { ... }` that the runtime
-//           auto-calls and whose return becomes `process.exit(n)`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -44,8 +39,6 @@ fn main() -> ExitCode {
     //           `match` inspects which variant came back and binds its payload.
     // Why:      Rust has no exceptions; functions report failure by returning
     //           `Result`. We branch on the two cases here.
-    // TS map:   `try { const code = runCliFromEnv(); ... } catch (e) { ... }` —
-    //           the `Ok` arm is the try body, the `Err` arm is the catch.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -58,7 +51,6 @@ fn main() -> ExitCode {
         //           `ExitCode::from(...)` builds the typed exit status.
         // Why:      Every value the library returns is 0, 1, or 2, all inside a
         //           byte, so the narrowing cast is safe in practice.
-        // TS map:   `return code;` (Node clamps the number into a byte itself).
         // Gotcha:   `as u8` is a silent truncating cast in Rust; it does not
         //           throw on out-of-range like nothing in TS does either, but
         //           here the range is already guaranteed small.
@@ -76,7 +68,6 @@ fn main() -> ExitCode {
         //           `ExitCode::from(2)` becomes the arm's result.
         // Why:      Surface a catastrophic failure to stderr and exit with code
         //           2, distinct from "lint violations found" (1).
-        // TS map:   `console.error(`rust-linter: ${e}`); return 2;`
         //
         // In TS you'd write (pseudocode):
         // ```ts

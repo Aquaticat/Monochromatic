@@ -4,7 +4,6 @@
 //           the function. No runtime cost; a name-resolution directive.
 // Why:      The tests below call `nesting_depth` directly to exercise the
 //           depth scan without going through the whole compile pipeline.
-// TS map:   `import { nestingDepth } from "./nesting";`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -18,7 +17,6 @@ use super::nesting::nesting_depth;
 // Why:      The 1,001-deep shape is one past the 1,000 cap, the smallest
 //           input that must be rejected; below the resharp overflow floor
 //           but the case Bug G's defense exists for.
-// TS map:   `it("nesting_depth fires above the cap", () => { ... })`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -35,7 +33,6 @@ fn nesting_depth_fires_above_cap() {
     //           The `&` is a read-only borrow, not a move.
     // Why:      Construct a balanced 1,001-deep nesting so `max_depth`
     //           reaches 1,001, one over the cap.
-    // TS map:   `const src = "(".repeat(1001) + "a" + ")".repeat(1001);`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -46,7 +43,6 @@ fn nesting_depth_fires_above_cap() {
     //           present (`Some`) variant. `assert!(cond, msg)` panics
     //           (fails the test) when `cond` is false.
     // Why:      A rule deeper than the cap must produce a rejection reason.
-    // TS map:   `expect(nestingDepth(src)).not.toBeNull();`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -62,7 +58,6 @@ fn nesting_depth_fires_above_cap() {
 //           exactly 1,000 deep and asserts the validator does NOT fire.
 // Why:      The cap is inclusive on the passing side (`> cap` fires), so
 //           1,000 must be accepted; this pins the exact boundary.
-// TS map:   `it("nesting_depth passes at the cap", () => { ... })`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -76,7 +71,6 @@ fn nesting_depth_passes_at_cap() {
     let src = "(".repeat(1000) + "a" + &")".repeat(1000);
     // What:     `.is_none()` is `true` for the absent (`None`) variant.
     // Why:      Exactly-at-cap nesting is within the limit and must pass.
-    // TS map:   `expect(nestingDepth(src)).toBeNull();`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -93,7 +87,6 @@ fn nesting_depth_passes_at_cap() {
 //           actually uses.
 // Why:      Over-rejection is safe but pointless if it hits production
 //           rules; these must stay accepted.
-// TS map:   `it("nesting_depth skips shallow real rules", () => { ... })`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -107,7 +100,6 @@ fn nesting_depth_skips_shallow_real_rules() {
     //           `&str` is a borrowed view; sibling `String` would own.
     // Why:      Representative production-shaped rules: a complement, a
     //           lookahead, and the literal-whitespace exclusion workaround.
-    // TS map:   `const cases = ["~(.*foo.*)", "(?=bar)baz", "em&~(.* (npm|git) .*)"];`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -117,7 +109,6 @@ fn nesting_depth_skips_shallow_real_rules() {
     // What:     `for case in cases` iterates the array by value (each
     //           `case` is a `&str`). `case` is the loop binding.
     // Why:      Check every representative rule passes the validator.
-    // TS map:   `for (const case of cases) { ... }`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -136,7 +127,6 @@ fn nesting_depth_skips_shallow_real_rules() {
 //           NOT count toward depth.
 // Why:      Those parens are literal content, not groups; counting them
 //           would over-reject ordinary literal rules.
-// TS map:   `it("nesting_depth ignores escaped and class parens", () => { ... })`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -152,7 +142,6 @@ fn nesting_depth_ignores_escaped_and_class_parens() {
     //           open-paren. `.repeat(2000)` builds 2,000 escaped parens.
     // Why:      2,000 escaped `\(` would exceed the cap if miscounted;
     //           since each is escaped, depth must stay 0.
-    // TS map:   `const escaped = "\\(".repeat(2000);`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -167,7 +156,6 @@ fn nesting_depth_ignores_escaped_and_class_parens() {
     //           body is parens. `+ &"...".repeat(...)` borrows the repeated
     //           string to append it.
     // Why:      Parens inside a class are literal members; depth must stay 0.
-    // TS map:   `const inClass = "[" + "(".repeat(2000) + "]";`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -186,7 +174,6 @@ fn nesting_depth_ignores_escaped_and_class_parens() {
 // Why:      End-to-end proof that the pre-validator is wired into
 //           `compile_rule_src` on the resharp path, so the production
 //           scanner never hands the overflowing shape to resharp.
-// TS map:   `it("compile_rule_src rejects deeply nested complement", () => { ... })`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -203,7 +190,6 @@ fn compile_rule_src_rejects_deeply_nested_complement() {
     //           the crate root).
     // Why:      Exercise the real routing: `~(` makes the rule require
     //           resharp, so it enters the branch the validator guards.
-    // TS map:   `import { compileRuleSrc } from "../rules";`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -214,7 +200,6 @@ fn compile_rule_src_rejects_deeply_nested_complement() {
     //           (`~(`), each contributing one `(`, so depth reaches 1,001.
     // Why:      A complement-nested shape both requires resharp and exceeds
     //           the cap, the exact Bug G danger case.
-    // TS map:   `const src = "~(".repeat(1001) + "a" + ")".repeat(1001);`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -226,7 +211,6 @@ fn compile_rule_src_rejects_deeply_nested_complement() {
     //           (must not happen here), `Err(reason)` is the rejection.
     // Why:      Assert the pipeline rejects with a `(resharp):`-prefixed
     //           reason rather than compiling and risking the abort.
-    // TS map:   `try { compileRuleSrc(src); fail(); } catch (e) { expect(e.message).toContain("(resharp):"); }`.
     //
     // In TS you'd write (pseudocode):
     // ```ts

@@ -31,8 +31,6 @@
 // Why:      AAudio's data callback hands us the speaker buffer as a raw `*mut c_void`
 //           (a bare memory address with no type), which we later reinterpret as `f32`
 //           samples; this import names that pointer's element type.
-// TS map:   no equivalent; the closest mental picture is an untyped `ArrayBuffer`
-//           handed to you by a native API, that you then view as a `Float32Array`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -50,8 +48,6 @@ use std::os::raw::c_void;
 // Why:      Every read/write of the shared `Control` atomics below must pass an
 //           `Ordering`; we pass `Acquire`/`Release` to safely hand data between the
 //           worker thread and the realtime callback, and `AcqRel` for read-modify-write.
-// TS map:   no real equivalent (JS is single-threaded). Mentally: the `order` argument
-//           you'd pass to `Atomics.*` if JS exposed memory-ordering choices.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -69,8 +65,6 @@ use std::sync::atomic::Ordering;
 // Why:      The worker pulls playback commands (load/seek/quit) from the `Receiver`,
 //           and distinguishes "nothing queued yet" from "the engine handle was dropped"
 //           via the two `TryRecvError` cases.
-// TS map:   `import { Receiver, TryRecvError } from "std/sync/mpsc";` — closest picture
-//           is the read side of a cross-thread message queue.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -85,8 +79,6 @@ use std::sync::mpsc::{Receiver, TryRecvError};
 // Why:      The shared `Control` block must live in two threads at once (this worker
 //           and the realtime callback); `Arc` lets both hold a clone of one block.
 //           `Rc` would not compile because the block crosses a thread boundary.
-// TS map:   no equivalent; GC makes every object implicitly shared, so you would just
-//           close over the same variable.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -99,8 +91,6 @@ use std::sync::Arc;
 //           write `thread::sleep` below), not a specific item.
 // Why:      The worker naps with `thread::sleep` when there is no work, to top the ring
 //           up without burning a CPU core.
-// TS map:   `import * as thread from "std/thread";` — but the only thing we use is a
-//           blocking sleep, which TS lacks (TS has only async `setTimeout`).
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -113,7 +103,6 @@ use std::thread;
 //           wall-clock instant; sibling you might expect: `Instant`, a point in time.
 // Why:      We build a fixed 5-millisecond `Duration` (the idle nap) as a named const
 //           below and pass it to `thread::sleep`.
-// TS map:   no dedicated type; TS just uses a `number` of milliseconds.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -130,7 +119,6 @@ use std::time::Duration;
 //           builder used to configure and open a stream).
 // Why:      We build, configure, open, and run an AAudio output stream below, which
 //           needs all of these types.
-// TS map:   `import { AudioCallbackResult, AudioDirection, AudioFormat, AudioPerformanceMode, AudioStream, AudioStreamBuilder } from "ndk/audio";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -150,8 +138,6 @@ use ndk::audio::{
 // Why:      We split the ring buffer, push from the producer on this thread, and pop
 //           from the consumer in the callback; all three method families need their
 //           trait imported.
-// TS map:   like importing interfaces whose methods you then call; TS has no "import the
-//           interface to unlock the method" rule, so this is extra.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -167,8 +153,6 @@ use ringbuf::traits::{Consumer, Producer, Split};
 //           (single-producer, single-consumer).
 // Why:      A lock-free hand-off of `f32` audio samples from the decode thread to the
 //           realtime audio thread.
-// TS map:   no direct equivalent; imagine a fixed-size, lock-free `Float32Array` queue
-//           split into a writer object and a reader object.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -183,7 +167,6 @@ use ringbuf::{HeapCons, HeapProd, HeapRb};
 //           a module path into the crate.
 // Why:      `decode::open_media_source` takes a `Hint`; we hand it a fresh, empty hint
 //           and let symphonia probe the actual bytes.
-// TS map:   `import { Hint } from "symphonia";` — an optional format hint object.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -198,7 +181,6 @@ use symphonia::core::formats::probe::Hint;
 //           with `spec()`/`next_chunk()`/`seek()`) from inside it.
 // Why:      We open a decoder via `decode::open_media_source` and store it behind the
 //           `Source` interface so the worker is decoder-agnostic.
-// TS map:   `import { Source } from "./decode"; import * as decode from "./decode";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -214,7 +196,6 @@ use crate::decode::{self, Source};
 //           `1000.0` for the duration unit.
 // Why:      The worker receives `Command`s, reads and writes `Control`'s atomics, and
 //           converts seconds to milliseconds with `MILLIS_PER_SEC`.
-// TS map:   `import { Command, Control, MILLIS_PER_SEC } from "./engine";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -226,7 +207,6 @@ use crate::engine::{Command, Control, MILLIS_PER_SEC};
 //           union of failure cases) from this crate's `error` module.
 // Why:      `reconfigure_output` and the AAudio helpers return `PlayerError` so the
 //           `?` operator can propagate any failure uniformly.
-// TS map:   `import { PlayerError } from "./error";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -243,7 +223,6 @@ use crate::error::PlayerError;
 //           every std collection sizing API wants `usize`; mixing widths forces casts.
 //           A floor keeps the ring big enough to ride out scheduling jitter even for a
 //           degenerate low-rate/mono track.
-// TS map:   `const MIN_RING = 8192;` — TS numbers don't distinguish width.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -257,7 +236,6 @@ const MIN_RING: usize = 8192;
 //           type, reached with `::`) that builds a 5-millisecond span.
 // Why:      The nap length when the ring is full or nothing is loaded: short enough to
 //           keep the ~1s buffer topped up, long enough not to spin a CPU core.
-// TS map:   `const IDLE_SLEEP = 5; // milliseconds` — TS would store a plain number.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -283,7 +261,6 @@ const IDLE_SLEEP: Duration = Duration::from_millis(5);
 //           (not `Rc`/`Arc`) because only this thread ever touches the source. `Vec`
 //           (not `&[f32]`) because the carryover must outlive the decode call that
 //           produced it.
-// TS map:   `class WorkerState { source: Source | null; stream: AudioStream | null; prod: RingProducer | null; pending: number[]; pendingPos: number; }`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -304,7 +281,6 @@ struct WorkerState {
     //           it so it lives as long as the track is loaded.
     // Why:      The worker pulls chunks from this each pump; wrapping in `Option` lets
     //           "nothing loaded" be a first-class state rather than a null pointer.
-    // TS map:   `source: Source | null;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -316,7 +292,6 @@ struct WorkerState {
     //           the stream and stops the realtime callback firing.
     // Why:      We rebuild this per track (load/seek), and storing it in `Option` lets us
     //           set it to `None` to tear the old one down before opening a new one.
-    // TS map:   `stream: AudioStream | null;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -327,7 +302,6 @@ struct WorkerState {
     //           samples, owned, or `None`. The decode pump pushes into this.
     // Why:      Recreated per track alongside the stream; `Option` models the "no ring
     //           yet" state.
-    // TS map:   `prod: RingProducer | null;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -340,7 +314,6 @@ struct WorkerState {
     //           varies and the worker owns these bytes until they are pushed.
     // Why:      When the ring is full mid-chunk, we stash the unpushed tail here and
     //           retry next pump instead of dropping or re-decoding audio.
-    // TS map:   `pending: number[];`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -352,7 +325,6 @@ struct WorkerState {
     //           an array index (siblings `u32`/`u64`/`i32`; std indexing wants `usize`).
     // Why:      Lets us resume pushing the carryover from where we left off without
     //           reallocating or shifting the `Vec`.
-    // TS map:   `pendingPos: number;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -364,7 +336,6 @@ struct WorkerState {
 // What:     `impl WorkerState { ... }`. An `impl` block attaches methods/associated
 //           functions to the `WorkerState` type. Here it holds just the constructor.
 // Why:      Group the "how to build a fresh WorkerState" function with the type.
-// TS map:   the class body (the place where `WorkerState`'s methods live).
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -375,7 +346,6 @@ impl WorkerState {
     //           so it is called as `WorkerState::new()`, like a static factory) that
     //           returns a fresh, empty `WorkerState`.
     // Why:      One place that defines the "nothing loaded" starting state.
-    // TS map:   `static create(): WorkerState` (or a no-arg constructor).
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -390,7 +360,6 @@ impl WorkerState {
         //           `;`, so this struct literal is the function's TAIL EXPRESSION and
         //           therefore its return value.
         // Why:      Hand back a worker state with nothing loaded and an empty carryover.
-        // TS map:   `return { source: null, stream: null, prod: null, pending: [], pendingPos: 0 };`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -416,7 +385,6 @@ impl WorkerState {
 // Why:      This runs on the dedicated worker thread: it drains commands, decodes audio
 //           into the ring, and naps when idle. Returning ends the thread and drops the
 //           AAudio stream (stopping audio).
-// TS map:   `function workerRun(rx: Receiver<Command>, control: Control): void { ... }`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -428,7 +396,6 @@ pub(crate) fn worker_run(rx: Receiver<Command>, control: Arc<Control>) {
     //           marks it MUTABLE (Rust variables are read-only by default); we need it
     //           because every command/pump mutates `state`'s fields.
     // Why:      Hold the worker's owned playback state for the whole thread lifetime.
-    // TS map:   `let state = WorkerState.create();`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -439,7 +406,6 @@ pub(crate) fn worker_run(rx: Receiver<Command>, control: Arc<Control>) {
     //           runs until something inside `return`s out of the function.
     // Why:      The worker runs forever, one iteration per "drain commands, pump, maybe
     //           nap" cycle, until told to quit or the channel dies.
-    // TS map:   `while (true) { ... }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -451,7 +417,6 @@ pub(crate) fn worker_run(rx: Receiver<Command>, control: Arc<Control>) {
         //           (out of this inner loop only) or `return` (out of the whole function).
         // Why:      Process every pending command in one batch so state is up to date
         //           before we pump audio.
-        // TS map:   `while (true) { ... }` (drain loop)
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -466,8 +431,6 @@ pub(crate) fn worker_run(rx: Receiver<Command>, control: Arc<Control>) {
             //           without exceptions.
             // Why:      Pull the next command if there is one, otherwise decide whether to
             //           stop draining (empty) or end the thread (disconnected).
-            // TS map:   a `try { const cmd = rx.tryRecv(); ... } catch (e) { switch (e.kind) ... }`
-            //           or a tagged-result switch.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -484,7 +447,6 @@ pub(crate) fn worker_run(rx: Receiver<Command>, control: Arc<Control>) {
                 //           SHARED read-only borrow).
                 // Why:      A `Load` command means "open this file and (maybe) start
                 //           playing"; we delegate to `handle_load`.
-                // TS map:   `if (res.ok && res.value.kind === "load") handleLoad(state, control, res.value.file, res.value.play);`
                 // Gotcha:   `&mut state` lends `state` to `handle_load` mutably; while that
                 //           borrow is active no other code may touch `state`. `file` is
                 //           MOVED into `handle_load` (the channel no longer owns it).
@@ -501,7 +463,6 @@ pub(crate) fn worker_run(rx: Receiver<Command>, control: Arc<Control>) {
                 //           use `f64` for a precise seek position. Calls `handle_seek` with
                 //           the same `&mut state` / `&control` borrows.
                 // Why:      A `Seek` command repositions the loaded track.
-                // TS map:   `if (cmd.kind === "seek") handleSeek(state, control, cmd.positionSec);`
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -513,7 +474,6 @@ pub(crate) fn worker_run(rx: Receiver<Command>, control: Arc<Control>) {
                 //           which exits `worker_run` entirely (and thus ends the thread).
                 // Why:      A `Quit` command stops the worker; returning drops `state`,
                 //           which drops the `AudioStream`, which stops audio.
-                // TS map:   `if (cmd.kind === "quit") return;`
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -526,7 +486,6 @@ pub(crate) fn worker_run(rx: Receiver<Command>, control: Arc<Control>) {
                 //           loop only, not the outer worker loop.
                 // Why:      No more commands queued right now, so stop draining and go pump
                 //           audio.
-                // TS map:   `if (!res.ok && res.error === "empty") break;`
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -538,7 +497,6 @@ pub(crate) fn worker_run(rx: Receiver<Command>, control: Arc<Control>) {
                 //           dropped, so no command can ever arrive again). The arm
                 //           `return`s out of the whole function.
                 // Why:      The engine handle is gone; shut the worker down (and its stream).
-                // TS map:   `if (!res.ok && res.error === "disconnected") return;`
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -556,7 +514,6 @@ pub(crate) fn worker_run(rx: Receiver<Command>, control: Arc<Control>) {
         //           `false`. Both arms must yield the same type (`bool`).
         // Why:      Only decode when something is loaded; otherwise there is no work, so
         //           we will nap.
-        // TS map:   `const didWork = state.source !== null ? pump(state, control) : false;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -572,7 +529,6 @@ pub(crate) fn worker_run(rx: Receiver<Command>, control: Arc<Control>) {
         //           `thread::sleep(IDLE_SLEEP)` to block this thread for the 5ms `Duration`.
         // Why:      Avoid busy-looping a CPU core when the ring is full or nothing is
         //           loaded; nap briefly, then re-check.
-        // TS map:   `if (!didWork) await sleep(IDLE_SLEEP);` (TS sleep is async).
         // Gotcha:   `thread::sleep` BLOCKS the whole thread synchronously; it is NOT TS's
         //           async `setTimeout`. Nothing else runs on this thread during the nap.
         //
@@ -594,7 +550,6 @@ pub(crate) fn worker_run(rx: Receiver<Command>, control: Arc<Control>) {
 //           to start playing once loaded.
 // Why:      Open the file, reset telemetry, build the output, and set the play gate. Any
 //           failure leaves the engine idle (no source, silent).
-// TS map:   `function handleLoad(state: WorkerState, control: Control, file: File, play: boolean): void`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -605,7 +560,6 @@ fn handle_load(state: &mut WorkerState, control: &Arc<Control>, file: std::fs::F
     //           Assigning `None` DROPS the previous `AudioStream`, which closes it and
     //           stops its callback.
     // Why:      Tear down any prior track's output before building a new one.
-    // TS map:   `state.stream = null;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -615,7 +569,6 @@ fn handle_load(state: &mut WorkerState, control: &Arc<Control>, file: std::fs::F
     // What:     `state.prod = None;`. Drop the previous ring producer by setting the field
     //           to the empty `Option`.
     // Why:      Discard the old ring's WRITE end so the next reconfigure installs a fresh one.
-    // TS map:   `state.prod = null;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -625,7 +578,6 @@ fn handle_load(state: &mut WorkerState, control: &Arc<Control>, file: std::fs::F
     // What:     `state.source = None;`. Drop the previous decoder by setting the field to
     //           the empty `Option`.
     // Why:      Forget any previously loaded track before opening the new one.
-    // TS map:   `state.source = null;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -635,7 +587,6 @@ fn handle_load(state: &mut WorkerState, control: &Arc<Control>, file: std::fs::F
     // What:     `state.pending.clear();`. `.clear()` empties the `Vec<f32>` in place
     //           (length to 0, keeping its allocation).
     // Why:      Drop any leftover carryover samples from the previous track.
-    // TS map:   `state.pending.length = 0;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -645,7 +596,6 @@ fn handle_load(state: &mut WorkerState, control: &Arc<Control>, file: std::fs::F
     // What:     `state.pending_pos = 0;`. Reset the carryover read cursor to the front.
     //           This is a plain integer assignment with a direct TS analogue.
     // Why:      With `pending` emptied, the cursor must start at 0.
-    // TS map:   `state.pendingPos = 0;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -660,7 +610,6 @@ fn handle_load(state: &mut WorkerState, control: &Arc<Control>, file: std::fs::F
     //           `Result` into either the opened source or an early return.
     // Why:      Try to open a decoder for the file; on success keep the source, on failure
     //           bail out leaving the engine idle.
-    // TS map:   `let source; try { source = decode.openMediaSource(file, new Hint()); } catch { return; }`
     // Gotcha:   `Box::new(file)` MOVES `file` onto the heap; the local `file` is consumed.
     //
     // In TS you'd write (pseudocode):
@@ -673,7 +622,6 @@ fn handle_load(state: &mut WorkerState, control: &Arc<Control>, file: std::fs::F
         //           inner `Box<dyn Source>` to `source`. The bare `source` is the arm's
         //           value, which (assigned by the surrounding `let`) becomes the decoder.
         // Why:      Use the opened decoder.
-        // TS map:   `// the resolved value of the try`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -684,7 +632,6 @@ fn handle_load(state: &mut WorkerState, control: &Arc<Control>, file: std::fs::F
         //           `_` is a wildcard that DISCARDS the error value (we don't inspect it).
         //           `return` exits `handle_load` early, leaving the engine idle.
         // Why:      If the file cannot be decoded, abandon the load silently.
-        // TS map:   `catch { return; }`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -697,7 +644,6 @@ fn handle_load(state: &mut WorkerState, control: &Arc<Control>, file: std::fs::F
     //           `channels: u16`, `duration_secs: f64`).
     // Why:      We need the track's sample rate, channel count, and duration to size the
     //           ring and publish telemetry.
-    // TS map:   `const spec = source.spec();`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -709,7 +655,6 @@ fn handle_load(state: &mut WorkerState, control: &Arc<Control>, file: std::fs::F
     //           or empty track), `return` early. These comparisons and `||` are
     //           character-identical to TS.
     // Why:      A zero rate or zero channels is unplayable; bail before building output.
-    // TS map:   `if (spec.rate === 0 || spec.channels === 0) return;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -723,7 +668,6 @@ fn handle_load(state: &mut WorkerState, control: &Arc<Control>, file: std::fs::F
     //           means "make this write (and everything before it) visible to a thread that
     //           later reads with `Acquire`"; it publishes the value to the realtime callback.
     // Why:      Tell readers (Kotlin via JNI, and the callback) the new track's sample rate.
-    // TS map:   `Atomics.store(control.rate, 0, spec.rate);`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -735,7 +679,6 @@ fn handle_load(state: &mut WorkerState, control: &Arc<Control>, file: std::fs::F
     //           channel count to `u32` (the atomic's element type). `.store(...)` then
     //           atomically writes it with `Release` ordering.
     // Why:      Publish the channel count to readers; the `as u32` matches the atomic's width.
-    // TS map:   `Atomics.store(control.channels, 0, spec.channels);`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -746,7 +689,6 @@ fn handle_load(state: &mut WorkerState, control: &Arc<Control>, file: std::fs::F
     //           into the `start_frame` telemetry (the frame the current stream begins at),
     //           with `Release` ordering.
     // Why:      A fresh load starts at frame 0 (no seek offset yet).
-    // TS map:   `Atomics.store(control.startFrame, 0, 0);`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -756,7 +698,6 @@ fn handle_load(state: &mut WorkerState, control: &Arc<Control>, file: std::fs::F
     // What:     `control.frames_played.store(0, Ordering::Release);`. Atomically reset the
     //           played-frame counter to `0` with `Release` ordering.
     // Why:      A new track has played nothing yet; the position should read 0.
-    // TS map:   `Atomics.store(control.framesPlayed, 0, 0);`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -770,7 +711,6 @@ fn handle_load(state: &mut WorkerState, control: &Arc<Control>, file: std::fs::F
     //           `Release`. The multi-line `.store(...)` call is split across lines purely
     //           for width.
     // Why:      Publish the track length in the integer-millisecond unit Kotlin reads.
-    // TS map:   `Atomics.store(control.durationMs, 0, Math.trunc(spec.durationSecs * MILLIS_PER_SEC));`
     // Gotcha:   `as u64` on a float TRUNCATES toward zero (no rounding) and saturates at the
     //           integer bounds; it is not TS's `Number()` behaviour.
     //
@@ -784,7 +724,6 @@ fn handle_load(state: &mut WorkerState, control: &Arc<Control>, file: std::fs::F
     // What:     `control.decode_done.store(false, Ordering::Release);`. Atomically write
     //           `false` into the `decode_done` flag (an atomic bool) with `Release` ordering.
     // Why:      The new track has not finished decoding; clear any leftover "done" flag.
-    // TS map:   `Atomics.store(control.decodeDone, 0, 0);`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -794,7 +733,6 @@ fn handle_load(state: &mut WorkerState, control: &Arc<Control>, file: std::fs::F
     // What:     `control.ended.store(false, Ordering::Release);`. Atomically write `false`
     //           into the `ended` flag with `Release` ordering.
     // Why:      The new track has not ended; clear any leftover "ended" flag.
-    // TS map:   `Atomics.store(control.ended, 0, 0);`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -808,7 +746,6 @@ fn handle_load(state: &mut WorkerState, control: &Arc<Control>, file: std::fs::F
     //           stream is built below.
     // Why:      So the new stream's very first callback observes the intended play/pause
     //           state and a load-paused track does not briefly sound.
-    // TS map:   `Atomics.store(control.playing, 0, play ? 1 : 0);`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -819,7 +756,6 @@ fn handle_load(state: &mut WorkerState, control: &Arc<Control>, file: std::fs::F
     //           wrapping it in `Some` (the "has a value" case of `Option`). Moving it in
     //           transfers ownership to `state`.
     // Why:      Mark the track loaded so the pump can decode from it.
-    // TS map:   `state.source = source;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -832,7 +768,6 @@ fn handle_load(state: &mut WorkerState, control: &Arc<Control>, file: std::fs::F
     //           `spec.rate`/`spec.channels` pass the track's native format. When it failed,
     //           run the recovery block below.
     // Why:      Build the ring + AAudio stream; if that fails, undo the load so we stay idle.
-    // TS map:   `try { reconfigureOutput(state, control, spec.rate, spec.channels); } catch { ... }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -843,7 +778,6 @@ fn handle_load(state: &mut WorkerState, control: &Arc<Control>, file: std::fs::F
         // What:     `control.playing.store(false, Ordering::Release);`. On output-build
         //           failure, atomically force the play gate to `false` with `Release`.
         // Why:      Nothing can play if the output failed; ensure we are paused/silent.
-        // TS map:   `Atomics.store(control.playing, 0, 0);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -854,7 +788,6 @@ fn handle_load(state: &mut WorkerState, control: &Arc<Control>, file: std::fs::F
         //           field back to the empty `Option`.
         // Why:      Undo the load so the engine is fully idle (no source, silent) after the
         //           output failure.
-        // TS map:   `state.source = null;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -870,7 +803,6 @@ fn handle_load(state: &mut WorkerState, control: &Arc<Control>, file: std::fs::F
 //           position in seconds (a 64-bit float; sibling `f32` would lose seek precision).
 // Why:      Reposition the loaded source and rebuild the output (which flushes the ring).
 //           The play gate is left untouched.
-// TS map:   `function handleSeek(state: WorkerState, control: Control, positionSec: number): void`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -885,7 +817,6 @@ fn handle_seek(state: &mut WorkerState, control: &Arc<Control>, position_sec: f6
     //           call mutating methods on the decoder while it stays in `state`.
     // Why:      Get a mutable handle to the decoder if one is loaded, and read back its
     //           post-seek rate/channels; if nothing is loaded, return early.
-    // TS map:   `let rate, channels; if (state.source !== null) { ... } else return;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -897,7 +828,6 @@ fn handle_seek(state: &mut WorkerState, control: &Arc<Control>, position_sec: f6
         //           bind the inner `&mut Box<dyn Source>` to `source`. The block then
         //           seeks and reads the spec, and its final expression is the arm's value.
         // Why:      We have a loaded decoder; seek it and compute the pair to return.
-        // TS map:   `if (state.source !== null) { const source = state.source; ... }`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -910,7 +840,6 @@ fn handle_seek(state: &mut WorkerState, control: &Arc<Control>, position_sec: f6
             //           "unused Result" warning) without inspecting success or failure.
             // Why:      Attempt the seek but tolerate a failure (we will rebuild output from
             //           the current position regardless).
-            // TS map:   `try { source.seek(positionSec); } catch { /* ignore */ }`
             // Gotcha:   `let _ = expr;` intentionally throws the value away; here it also
             //           silences Rust's must-use warning on the ignored `Result`.
             //
@@ -923,7 +852,6 @@ fn handle_seek(state: &mut WorkerState, control: &Arc<Control>, position_sec: f6
             //           with `rate`/`channels`/`duration_secs`) AFTER seeking.
             // Why:      The seek may have re-derived the format; we need the current
             //           rate/channels to rebuild the ring.
-            // TS map:   `const spec = source.spec();`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -935,7 +863,6 @@ fn handle_seek(state: &mut WorkerState, control: &Arc<Control>, position_sec: f6
             //           block's TAIL EXPRESSION, hence this arm's value, hence what the
             //           outer `(rate, channels)` destructures.
             // Why:      Hand the post-seek format back out of the `match`.
-            // TS map:   `return [spec.rate, spec.channels];` (as the matched value)
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -946,7 +873,6 @@ fn handle_seek(state: &mut WorkerState, control: &Arc<Control>, position_sec: f6
         // What:     `None => return`. The empty arm: when no source is loaded, `return`
         //           exits `handle_seek` entirely (there is nothing to seek).
         // Why:      A seek with nothing loaded is a no-op.
-        // TS map:   `else return;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -958,7 +884,6 @@ fn handle_seek(state: &mut WorkerState, control: &Arc<Control>, position_sec: f6
     //           post-seek format (zero rate or zero channels). `||` is logical OR; both
     //           comparisons mirror TS exactly.
     // Why:      An unplayable format after seeking should abort the rebuild.
-    // TS map:   `if (rate === 0 || channels === 0) return;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -969,7 +894,6 @@ fn handle_seek(state: &mut WorkerState, control: &Arc<Control>, position_sec: f6
     }
     // What:     `state.pending.clear();`. Empty the carryover `Vec<f32>` in place.
     // Why:      Pre-seek leftover samples are stale; drop them so only post-seek audio plays.
-    // TS map:   `state.pending.length = 0;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -979,7 +903,6 @@ fn handle_seek(state: &mut WorkerState, control: &Arc<Control>, position_sec: f6
     // What:     `state.pending_pos = 0;`. Reset the carryover cursor to the front (plain
     //           integer assignment).
     // Why:      With `pending` cleared, the cursor must restart at 0.
-    // TS map:   `state.pendingPos = 0;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -989,7 +912,6 @@ fn handle_seek(state: &mut WorkerState, control: &Arc<Control>, position_sec: f6
     // What:     `control.decode_done.store(false, Ordering::Release);`. Atomically clear the
     //           `decode_done` flag with `Release` ordering.
     // Why:      After seeking there is more to decode, even if we had hit EOF before.
-    // TS map:   `Atomics.store(control.decodeDone, 0, 0);`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -999,7 +921,6 @@ fn handle_seek(state: &mut WorkerState, control: &Arc<Control>, position_sec: f6
     // What:     `control.ended.store(false, Ordering::Release);`. Atomically clear the
     //           `ended` flag with `Release` ordering.
     // Why:      A seek un-ends a track that had finished.
-    // TS map:   `Atomics.store(control.ended, 0, 0);`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1010,7 +931,6 @@ fn handle_seek(state: &mut WorkerState, control: &Arc<Control>, position_sec: f6
     //           `if`/`else` used as an expression: when the requested position is positive,
     //           use it; otherwise use `0.0`. `0.0` is an `f64` literal. Both arms yield `f64`.
     // Why:      Never store a negative start position; clamp it up to zero.
-    // TS map:   `const clamped = positionSec > 0 ? positionSec : 0;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1024,7 +944,6 @@ fn handle_seek(state: &mut WorkerState, control: &Arc<Control>, position_sec: f6
     //           64-bit unsigned integer. `.store(...)` writes it atomically with `Release`.
     // Why:      The position counter is in frames; publish where the new stream begins so
     //           the reported position includes the seek offset.
-    // TS map:   `Atomics.store(control.startFrame, 0, Math.round(clamped * rate));`
     // Gotcha:   `.round()` here is float rounding (nearest, ties away from zero), THEN
     //           `as u64` truncates/saturates; chain order matters.
     //
@@ -1039,7 +958,6 @@ fn handle_seek(state: &mut WorkerState, control: &Arc<Control>, position_sec: f6
     //           played-frame counter to `0` with `Release`.
     // Why:      The new (post-seek) stream has played nothing yet; the offset lives in
     //           `start_frame`, so this counts only frames since the seek.
-    // TS map:   `Atomics.store(control.framesPlayed, 0, 0);`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1052,7 +970,6 @@ fn handle_seek(state: &mut WorkerState, control: &Arc<Control>, position_sec: f6
     //           must-use warning) because a seek failure simply leaves playback where it was.
     // Why:      Flush the ring and reopen output so post-seek audio plays; tolerate failure
     //           without tearing the track down.
-    // TS map:   `try { reconfigureOutput(state, control, rate, channels); } catch { /* ignore */ }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1069,7 +986,6 @@ fn handle_seek(state: &mut WorkerState, control: &Arc<Control>, position_sec: f6
 //           `void`), failure carries our error. The signature is split across lines for width.
 // Why:      Drop the old output and build a fresh ring + AAudio stream at the track's rate,
 //           moving the new consumer into the stream's data callback.
-// TS map:   `function reconfigureOutput(state: WorkerState, control: Control, rate: number, channels: number): void`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -1085,7 +1001,6 @@ fn reconfigure_output(
     //           empty `Option`. Dropping the stream closes it and stops its callback.
     // Why:      Stop the old track's output before opening the new stream, freeing the old
     //           consumer the callback held.
-    // TS map:   `state.stream = null;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1094,7 +1009,6 @@ fn reconfigure_output(
     state.stream = None;
     // What:     `state.prod = None;`. Drop the previous ring producer (the old WRITE end).
     // Why:      We are about to build a brand-new ring; discard the stale producer first.
-    // TS map:   `state.prod = null;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1107,7 +1021,6 @@ fn reconfigure_output(
     //           returns whichever is larger, the product or the 8192-sample floor.
     // Why:      Size the ring to about one second of interleaved audio (rate times
     //           channels), but never below `MIN_RING` for degenerate low-rate/mono tracks.
-    // TS map:   `const capacity = Math.max(rate * channels, MIN_RING);`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1118,7 +1031,6 @@ fn reconfigure_output(
     //           `capacity` `f32` slots. `::<f32>` is the "turbofish" syntax that pins the
     //           element type, and `::new(...)` is the associated constructor.
     // Why:      The shared lock-free queue between this decode thread and the audio thread.
-    // TS map:   `const ring = new RingBuffer<number>(capacity);`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1131,7 +1043,6 @@ fn reconfigure_output(
     //           callback will mutate it (popping advances its read cursor).
     // Why:      `prod` stays with the worker to push samples; `cons` is moved into the
     //           callback below to pop them.
-    // TS map:   `const { prod, cons } = ring.split();`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1141,7 +1052,6 @@ fn reconfigure_output(
     // What:     `state.prod = Some(prod);`. Store the WRITE end in the field, wrapped in
     //           `Some`. Moving it in transfers ownership to `state`.
     // Why:      The pump pushes decoded samples through `state.prod`.
-    // TS map:   `state.prod = prod;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1154,7 +1064,6 @@ fn reconfigure_output(
     //           `&Arc<Control>`, so this clones through the borrow.
     // Why:      The realtime callback (built next) must read/write the control atomics, so
     //           it needs its own owned handle that it can keep after this function returns.
-    // TS map:   `const callbackControl = control;` (same shared object)
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1165,7 +1074,6 @@ fn reconfigure_output(
     //           to `usize` for use as a multiplier/length inside the callback.
     // Why:      The callback computes `frames * channels` as a `usize` sample count; pre-cast
     //           so it is the right width.
-    // TS map:   `const callbackChannels = channels;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1182,7 +1090,6 @@ fn reconfigure_output(
     //           bound to `stream`. Each call is annotated on its own line below.
     // Why:      Configure and open the output stream at this track's rate/format with our
     //           realtime data callback.
-    // TS map:   `const stream = new AudioStreamBuilder().direction(...).format(...)...openStream();`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1198,7 +1105,6 @@ fn reconfigure_output(
         //           (named function used as a value). The trailing `?` then unwraps the `Ok`
         //           builder or RETURNS the `Err` from `reconfigure_output` early.
         // Why:      Creating the builder can fail (no AAudio support); convert and propagate.
-        // TS map:   `// throws (converted to PlayerError) if the builder can't be created`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1208,7 +1114,6 @@ fn reconfigure_output(
         // What:     `.direction(AudioDirection::Output)`. Set the stream direction to the
         //           `Output` variant of the `AudioDirection` enum (sibling: `Input`).
         // Why:      We are playing audio, so the stream must be an output stream.
-        // TS map:   `.direction("output")`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1220,7 +1125,6 @@ fn reconfigure_output(
         //           might expect: `PCM_I16` (16-bit integer), etc.
         // Why:      Our ring holds `f32` samples, so the stream must expect float samples;
         //           this keeps the callback a straight memory copy with no format conversion.
-        // TS map:   `.format("pcmFloat")`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1232,7 +1136,6 @@ fn reconfigure_output(
         //           unsigned) because AAudio's binding takes an `i32` here.
         // Why:      Open the device at this track's native rate; AAudio resamples to the
         //           hardware clock, so the engine never resamples.
-        // TS map:   `.sampleRate(rate)`
         // Gotcha:   `as i32` is a width/signedness cast; an enormous `u32` would wrap to a
         //           negative `i32`, but real sample rates are tiny so it is safe here.
         //
@@ -1244,7 +1147,6 @@ fn reconfigure_output(
         // What:     `.channel_count(channels as i32)`. Set the channel count. `channels as i32`
         //           CASTS the `u16` count to the `i32` the AAudio binding wants.
         // Why:      Open the stream with the track's channel count (mono/stereo/etc.).
-        // TS map:   `.channelCount(channels)`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1256,7 +1158,6 @@ fn reconfigure_output(
         //           (siblings: `None` (default) and `PowerSaving`).
         // Why:      A music player wants small, snappy buffers (low latency) over maximum
         //           power saving.
-        // TS map:   `.performanceMode("lowLatency")`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1275,7 +1176,6 @@ fn reconfigure_output(
         //           just delegates to `audio_callback`.
         // Why:      AAudio invokes this on its realtime thread whenever the speakers need
         //           more samples; it is where we copy audio out of the ring.
-        // TS map:   `.dataCallback((stream, data, frames) => audioCallback(cons, data, frames, callbackControl, callbackChannels))`
         // Gotcha:   `data: *mut c_void` is a RAW POINTER (a bare address with no type or
         //           bounds), nothing like a JS array; we reinterpret it inside `audio_callback`
         //           under `unsafe`. `move` means the closure now OWNS `cons` and the cloned
@@ -1293,7 +1193,6 @@ fn reconfigure_output(
             //           is a shared borrow of the stream (we don't use it, hence `_stream`).
             //           `*mut c_void` is the raw writable speaker buffer; `i32` the frame count.
             // Why:      Bridge AAudio's C-style callback signature to our `audio_callback`.
-            // TS map:   `(_stream, data, frames) => { ... }`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -1310,7 +1209,6 @@ fn reconfigure_output(
                 //           receives (telling it to continue or stop).
                 // Why:      Do the actual pop/gate/scale/advance work in a named function the
                 //           closure forwards to.
-                // TS map:   `return audioCallback(cons, data, frames, callbackControl, callbackChannels);`
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -1322,7 +1220,6 @@ fn reconfigure_output(
         // What:     `.open_stream()`. Finalize the builder and actually OPEN the configured
         //           AAudio stream. Returns `Result<AudioStream, _>`.
         // Why:      Turn the accumulated configuration into a live stream we can start.
-        // TS map:   `.openStream()`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1333,7 +1230,6 @@ fn reconfigure_output(
         //           `PlayerError` via the `audio_error` helper, then `?` unwraps the `Ok`
         //           stream or returns the `Err` from `reconfigure_output` early.
         // Why:      Opening can fail (device busy, bad config); surface it as our error.
-        // TS map:   `// throws a PlayerError if the stream can't be opened`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1345,7 +1241,6 @@ fn reconfigure_output(
     //           converts a failure into our `PlayerError`, and `?` propagates it early.
     // Why:      The callback only fires once the stream is started; start it now. The play
     //           GATE (the `playing` atomic) decides whether the callback actually sounds.
-    // TS map:   `stream.requestStart(); // throws PlayerError on failure`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1356,7 +1251,6 @@ fn reconfigure_output(
     //           wrapped in `Some`. Moving it in keeps it alive (and playing) while this
     //           track plays.
     // Why:      Dropping the stream would close it; the worker state must own it.
-    // TS map:   `state.stream = stream;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1367,7 +1261,6 @@ fn reconfigure_output(
     //           unit value `()` (Rust's "nothing meaningful", like `void`). No trailing
     //           `;`, so this is the function's TAIL EXPRESSION and its return value.
     // Why:      Signal "output rebuilt successfully" with no payload.
-    // TS map:   `return; // success, no value`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1383,7 +1276,6 @@ fn reconfigure_output(
 //           reference). Returns a `bool`: did any samples get accepted this call?
 // Why:      Push one unit of decoded audio (carryover first, then a fresh chunk) and report
 //           whether work happened, so the caller knows whether to nap.
-// TS map:   `function pump(state: WorkerState, control: Control): boolean`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -1393,7 +1285,6 @@ fn pump(state: &mut WorkerState, control: &Control) -> bool {
     // What:     `let mut did_work = false;`. A MUTABLE local boolean, initially `false`.
     //           `mut` because we OR new progress into it below.
     // Why:      Accumulate whether any samples were pushed during this pump.
-    // TS map:   `let didWork = false;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1406,7 +1297,6 @@ fn pump(state: &mut WorkerState, control: &Control) -> bool {
     //           TS-identical.
     // Why:      Drain the backpressure carryover before decoding anything new, so samples
     //           stay in order.
-    // TS map:   `if (state.pendingPos < state.pending.length) { ... }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1419,7 +1309,6 @@ fn pump(state: &mut WorkerState, control: &Control) -> bool {
         //           unpacks it: a producer exists or it does not.
         // Why:      Get a mutable handle to the ring's write end to push carryover, or bail
         //           if there is no ring.
-        // TS map:   `let pushed; if (state.prod !== null) { ... } else return false;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1435,7 +1324,6 @@ fn pump(state: &mut WorkerState, control: &Control) -> bool {
             //           fit and returns the count pushed (a `usize`). That count is the arm's
             //           value, assigned to `pushed`.
             // Why:      Push the not-yet-accepted carryover into the freed ring space.
-            // TS map:   `pushed = prod.pushSlice(state.pending.slice(state.pendingPos));`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -1445,7 +1333,6 @@ fn pump(state: &mut WorkerState, control: &Control) -> bool {
             // What:     `None => return false`. No ring producer exists; `return false` exits
             //           `pump` reporting "no work" (false).
             // Why:      Without a ring there is nowhere to push; report idle.
-            // TS map:   `else return false;`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -1456,7 +1343,6 @@ fn pump(state: &mut WorkerState, control: &Control) -> bool {
         // What:     `state.pending_pos += pushed;`. Advance the carryover cursor by the
         //           number of samples just pushed. `+=` is TS-identical integer increment.
         // Why:      Record how much of the carryover the ring accepted.
-        // TS map:   `state.pendingPos += pushed;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1467,7 +1353,6 @@ fn pump(state: &mut WorkerState, control: &Control) -> bool {
         //           anything?). `|=` is the OR-assign operator: set `did_work` to true if it
         //           or the right side is true. Both operators exist in TS.
         // Why:      Mark that work happened if at least one sample went in.
-        // TS map:   `didWork ||= pushed > 0;` (or `didWork = didWork || pushed > 0;`)
         // Gotcha:   `|=` on a `bool` here is logical-or-assign; on integers `|=` would be
         //           BITWISE or, but both operands are `bool` so it behaves like `||=`.
         //
@@ -1480,7 +1365,6 @@ fn pump(state: &mut WorkerState, control: &Control) -> bool {
         //           cursor still has not reached the end, the ring filled up mid-carryover;
         //           `return did_work` exits early (more carryover remains for next pump).
         // Why:      The ring is full, so stop here; do not decode a fresh chunk on top.
-        // TS map:   `if (state.pendingPos < state.pending.length) return didWork;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1491,7 +1375,6 @@ fn pump(state: &mut WorkerState, control: &Control) -> bool {
         }
         // What:     `state.pending.clear();`. The carryover was fully pushed; empty the `Vec`.
         // Why:      Free the carryover buffer so the next chunk can reuse `pending`.
-        // TS map:   `state.pending.length = 0;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1500,7 +1383,6 @@ fn pump(state: &mut WorkerState, control: &Control) -> bool {
         state.pending.clear();
         // What:     `state.pending_pos = 0;`. Reset the now-empty carryover cursor to 0.
         // Why:      Keep the cursor consistent with the emptied `pending`.
-        // TS map:   `state.pendingPos = 0;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1515,7 +1397,6 @@ fn pump(state: &mut WorkerState, control: &Control) -> bool {
     //           track is fully decoded, `return did_work`.
     // Why:      Once decoding is finished there is nothing more to read from the source;
     //           skip the decode step.
-    // TS map:   `if (Atomics.load(control.decodeDone, 0) !== 0) return didWork;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1530,7 +1411,6 @@ fn pump(state: &mut WorkerState, control: &Control) -> bool {
     //           source.
     // Why:      Pull the next block of decoded samples, handling EOF/errors and the
     //           no-source case.
-    // TS map:   `let chunk; if (state.source !== null) { ... } else return false;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1543,7 +1423,6 @@ fn pump(state: &mut WorkerState, control: &Control) -> bool {
         //           `source.next_chunk()`, which returns `Result<Vec<f32>, PlayerError>` (a
         //           fresh owned sample buffer or an error).
         // Why:      Ask the decoder for more audio and branch on success vs failure.
-        // TS map:   `try { chunk = source.nextChunk(); } catch { ... }`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1554,7 +1433,6 @@ fn pump(state: &mut WorkerState, control: &Control) -> bool {
             //           `Vec<f32>` to `chunk`; the bare `chunk` is the arm's value (the
             //           samples we will push).
             // Why:      Use the freshly decoded samples.
-            // TS map:   `// chunk = the decoded samples`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -1567,7 +1445,6 @@ fn pump(state: &mut WorkerState, control: &Control) -> bool {
             //           `return did_work`.
             // Why:      A decode error (including EOF surfaced as an error) means no more
             //           audio; flag done so the callback can later mark the track ended.
-            // TS map:   `catch { Atomics.store(control.decodeDone, 0, 1); return didWork; }`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -1580,7 +1457,6 @@ fn pump(state: &mut WorkerState, control: &Control) -> bool {
         },
         // What:     `None => return false`. No source loaded; `return false` reports idle.
         // Why:      Nothing to decode without a source.
-        // TS map:   `else return false;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1591,7 +1467,6 @@ fn pump(state: &mut WorkerState, control: &Control) -> bool {
     // What:     `if chunk.is_empty() { ... }`. `.is_empty()` returns `true` when the `Vec`
     //           has zero elements.
     // Why:      An empty chunk signals end-of-stream (the decoder produced no more samples).
-    // TS map:   `if (chunk.length === 0) { ... }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1601,7 +1476,6 @@ fn pump(state: &mut WorkerState, control: &Control) -> bool {
         // What:     `control.decode_done.store(true, Ordering::Release);`. Atomically flag
         //           decoding finished, with `Release` ordering so the callback observes it.
         // Why:      Tell the rest of the engine the track is fully decoded.
-        // TS map:   `Atomics.store(control.decodeDone, 0, 1);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1611,7 +1485,6 @@ fn pump(state: &mut WorkerState, control: &Control) -> bool {
         // What:     `return did_work;`. Exit `pump`, reporting whatever progress the
         //           carryover push made earlier.
         // Why:      Nothing decoded this call; hand back the accumulated `did_work`.
-        // TS map:   `return didWork;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1623,7 +1496,6 @@ fn pump(state: &mut WorkerState, control: &Control) -> bool {
     //           gives `Option<&mut HeapProd<f32>>`; `match` pushes the fresh chunk if a
     //           producer exists, else bails.
     // Why:      Push the just-decoded chunk into the ring.
-    // TS map:   `let pushed; if (state.prod !== null) { ... } else return false;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1636,7 +1508,6 @@ fn pump(state: &mut WorkerState, control: &Control) -> bool {
         //           fit, returning the count pushed. `&chunk` lends the whole `Vec` read-only
         //           as a slice.
         // Why:      Move the fresh samples into the ring for the callback to play.
-        // TS map:   `pushed = prod.pushSlice(chunk);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1645,7 +1516,6 @@ fn pump(state: &mut WorkerState, control: &Control) -> bool {
         Some(prod) => prod.push_slice(&chunk),
         // What:     `None => return false`. No producer; `return false` reports idle.
         // Why:      Nowhere to push without a ring.
-        // TS map:   `else return false;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1656,7 +1526,6 @@ fn pump(state: &mut WorkerState, control: &Control) -> bool {
     // What:     `did_work |= pushed > 0;`. OR into `did_work` whether this push moved any
     //           samples (`pushed > 0`). `|=` on bools is logical-or-assign.
     // Why:      Mark progress if the fresh chunk was at least partly accepted.
-    // TS map:   `didWork ||= pushed > 0;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1666,7 +1535,6 @@ fn pump(state: &mut WorkerState, control: &Control) -> bool {
     // What:     `if pushed < chunk.len() { ... }`. Compare how many samples were accepted to
     //           the chunk's length. If fewer than all fit, the ring filled mid-chunk.
     // Why:      Stash the unaccepted tail as carryover instead of dropping or re-decoding it.
-    // TS map:   `if (pushed < chunk.length) { ... }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1677,7 +1545,6 @@ fn pump(state: &mut WorkerState, control: &Control) -> bool {
         //           field (ownership transfers; `chunk` is consumed). The unpushed tail lives
         //           on as carryover.
         // Why:      Keep the leftover samples so the next pump resumes from `pending_pos`.
-        // TS map:   `state.pending = chunk;`
         // Gotcha:   This MOVES `chunk` (no copy); `chunk` is unusable afterward in Rust.
         //
         // In TS you'd write (pseudocode):
@@ -1689,7 +1556,6 @@ fn pump(state: &mut WorkerState, control: &Control) -> bool {
         //           count already accepted, so the next pump starts at the first unpushed
         //           sample.
         // Why:      Resume pushing exactly where the ring stopped accepting.
-        // TS map:   `state.pendingPos = pushed;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1701,7 +1567,6 @@ fn pump(state: &mut WorkerState, control: &Control) -> bool {
     //           `;`), so its `bool` value is what `pump` returns.
     // Why:      Report to `worker_run` whether any samples were accepted this call (false
     //           means "nap").
-    // TS map:   `return didWork;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1720,7 +1585,6 @@ fn pump(state: &mut WorkerState, control: &Control) -> bool {
 //           signature is split across lines for width.
 // Why:      Fill `data` with the next frames: silence when paused, otherwise pop from the
 //           ring, apply volume, zero-fill underrun, flag end-of-track, advance the counter.
-// TS map:   `function audioCallback(cons: RingConsumer, data: ArrayBuffer, frames: number, control: Control, channels: number): "continue" | "stop"`
 // Gotcha:   This runs on a HARD-REALTIME thread: it must never allocate, lock, or block, or
 //           the audio glitches. That constraint shapes every line below.
 //
@@ -1741,7 +1605,6 @@ fn audio_callback(
     //           INTERLEAVED samples (frames times channels).
     // Why:      We need the total `f32` slot count to view the raw buffer and to size the
     //           silence/copy operations.
-    // TS map:   `const total = Math.max(frames, 0) * channels;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1757,7 +1620,6 @@ fn audio_callback(
     //           builds a safe mutable slice `&mut [f32]` of length `total` over that memory.
     // Why:      Turn AAudio's bare buffer pointer into a bounds-checked `f32` slice we can
     //           fill safely from here on.
-    // TS map:   `const out = new Float32Array(data, 0, total); // a typed view over the buffer`
     // Gotcha:   `unsafe` does NOT disable checks for fun; it asserts the `SAFETY` comment's
     //           promise (`data` really points to `total` writable `f32`s) holds. A wrong
     //           length here is undefined behaviour, not a thrown error.
@@ -1772,7 +1634,6 @@ fn audio_callback(
     //           writes. `!` negates it: the block runs when we are PAUSED.
     // Why:      When paused we must output silence and NOT drain the ring, so the buffered
     //           audio survives for a seamless resume.
-    // TS map:   `if (Atomics.load(control.playing, 0) === 0) { ... }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1782,7 +1643,6 @@ fn audio_callback(
         // What:     `out.fill(0.0);`. `.fill(0.0)` writes the `f32` value `0.0` into every
         //           slot of the `out` slice (the speaker buffer).
         // Why:      Output pure silence this cycle while paused.
-        // TS map:   `out.fill(0);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1793,7 +1653,6 @@ fn audio_callback(
         //           `AudioCallbackResult` (sibling: `Stop`, which would end the stream). This
         //           exits the callback early, telling AAudio to keep calling us.
         // Why:      We handled this cycle (silence); keep the stream alive for the next one.
-        // TS map:   `return "continue";`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1807,7 +1666,6 @@ fn audio_callback(
     //           the popper to write into.
     // Why:      Copy decoded audio from the ring into the speaker buffer in one move (no
     //           allocation, realtime-safe).
-    // TS map:   `const popped = cons.popSlice(out);`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1822,7 +1680,6 @@ fn audio_callback(
     //           `f32` gain.
     // Why:      Apply both the user's volume and loudness normalization in a single scale
     //           factor per sample.
-    // TS map:   `const gain = control.volume() * control.normGain();`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1833,7 +1690,6 @@ fn audio_callback(
     //           (unity gain). The block runs only when the gain actually changes the samples.
     // Why:      Skip the per-sample multiply entirely at unity gain (the common case), saving
     //           work in the hot realtime path.
-    // TS map:   `if (gain !== 1) { ... }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1846,7 +1702,6 @@ fn audio_callback(
         //           so iterating yields mutable references `sample` (each a `&mut f32`).
         // Why:      Scale only the samples we actually popped (the filled portion), leaving the
         //           rest for the underrun zero-fill below.
-        // TS map:   `for (let i = 0; i < popped; i++) { ... out[i] ... }`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1860,7 +1715,6 @@ fn audio_callback(
             //           reference.
             // Why:      Apply the combined gain and hard-limit so a clipped master can't push
             //           samples past +/-1.0 (which would distort).
-            // TS map:   `out[i] = Math.max(-1, Math.min(1, out[i] * gain));`
             // Gotcha:   `*sample` is pointer DEREFERENCE (read/write through the borrow), not
             //           multiplication; the `*` in `*sample * gain` is the dereference followed
             //           by an ordinary multiply.
@@ -1875,7 +1729,6 @@ fn audio_callback(
     // What:     `if popped < total { ... }`. Compare popped samples to the total requested.
     //           Fewer popped than requested means the ring under-ran (not enough decoded yet).
     // Why:      Detect underrun so we can zero the tail and possibly flag end-of-track.
-    // TS map:   `if (popped < total) { ... }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1886,7 +1739,6 @@ fn audio_callback(
         //           `popped` to the end (range syntax). `.fill(0.0)` writes `0.0` into every
         //           slot of that tail.
         // Why:      Output silence for the unfilled tail instead of leaving stale/garbage data.
-        // TS map:   `for (let i = popped; i < total; i++) out[i] = 0;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1897,7 +1749,6 @@ fn audio_callback(
         //           the `decode_done` flag with `Acquire`. True means the decoder is finished.
         // Why:      An underrun WHILE decoding is done means the track has fully drained, i.e.
         //           it ended.
-        // TS map:   `if (Atomics.load(control.decodeDone, 0) !== 0) { ... }`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1908,7 +1759,6 @@ fn audio_callback(
             //           `ended` flag to `true` with `Release`, publishing it to Kotlin's
             //           pollers.
             // Why:      Signal "track ended" so the controller can advance to the next track.
-            // TS map:   `Atomics.store(control.ended, 0, 1);`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -1921,7 +1771,6 @@ fn audio_callback(
     //           make the division below divide by zero). Plain integer comparison.
     // Why:      Only advance the played-frame counter when channels is valid; protects the
     //           `popped / channels` divide below.
-    // TS map:   `if (channels > 0) { ... }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1937,7 +1786,6 @@ fn audio_callback(
         //           observes and publishes. The call is split across lines for width.
         // Why:      Advance the position counter by the frames we just played, so Kotlin's
         //           polled position moves forward.
-        // TS map:   `Atomics.add(control.framesPlayed, 0, Math.floor(popped / channels));`
         // Gotcha:   `fetch_add` is an ATOMIC increment (not a plain `+=`); it returns the OLD
         //           value, which we ignore here.
         //
@@ -1953,7 +1801,6 @@ fn audio_callback(
     //           TAIL EXPRESSION (no trailing `;`), so it is what the callback returns,
     //           telling AAudio to keep calling us. Sibling: `Stop`.
     // Why:      We finished this cycle successfully; keep the stream running.
-    // TS map:   `return "continue";`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1969,8 +1816,6 @@ fn audio_callback(
 //           VALUE; it returns a `PlayerError`.
 // Why:      AAudio builder/stream calls return DIFFERENT error types; one generic helper
 //           turns any of them into our single `PlayerError` so callers can `?` them.
-// TS map:   `function audioError(error: unknown): PlayerError` — TS uses `unknown` instead
-//           of a Debug-bounded generic.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -1984,7 +1829,6 @@ fn audio_error<E: std::fmt::Debug>(error: E) -> PlayerError {
     //           the TAIL EXPRESSION the function returns.
     // Why:      Flatten the opaque AAudio error to readable text and hand it back as our
     //           `Audio` error case.
-    // TS map:   `return new PlayerError({ kind: "audio", message: String(error) });`
     // Gotcha:   `format!` ALLOCATES a `String`; that is fine here because `audio_error` runs
     //           on the worker thread (during setup), never inside the realtime callback.
     //

@@ -6,7 +6,6 @@
 
 // What:     `use std::path::{Path, PathBuf};`. Borrowed path view and owned path buffer.
 // Why:      `watch` takes a borrowed `&Path`; the currently-watched root is stored owned.
-// TS map:   paths are plain `string` values in TypeScript.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -16,7 +15,6 @@ use std::path::{Path, PathBuf};
 
 // What:     `use std::time::Duration;`. A span of time.
 // Why:      The debounce window is a `Duration`.
-// TS map:   a millisecond count.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -27,7 +25,6 @@ use std::time::Duration;
 // What:     `use notify_debouncer_mini::{new_debouncer, DebounceEventResult, Debouncer};`.
 //           The constructor, the handler's argument type, and the guard type.
 // Why:      Build a debounced recursive watcher whose handler we drive.
-// TS map:   `import { newDebouncer, DebounceEventResult, Debouncer } from "notify-debouncer-mini";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -41,7 +38,6 @@ use notify_debouncer_mini::{new_debouncer, DebounceEventResult, Debouncer};
 //           importing the `Watcher` trait here.
 // Why:      `RecommendedWatcher` is the `Debouncer`'s type parameter; `RecursiveMode`
 //           selects a deep watch.
-// TS map:   `import { RecommendedWatcher, RecursiveMode } from "notify";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -53,7 +49,6 @@ use notify_debouncer_mini::notify::{RecommendedWatcher, RecursiveMode};
 // Why:      Coalesce bursts (copying an album, an editor's atomic-rename temp files) into
 //           one rescan instead of one per raw event. Named (not an inline literal) per the
 //           magic-number rule.
-// TS map:   `const DEBOUNCE_MS = 500;`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -65,7 +60,6 @@ const DEBOUNCE_MS: u64 = 500;
 //           stops its background thread on drop) and remembers which root is watched.
 // Why:      The controller holds one of these and re-points it whenever the Source Root
 //           changes; dropping it (on quit) tears the watcher down.
-// TS map:   `class SourceWatcher { debouncer: Debouncer; watched: string | null; }`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -75,7 +69,6 @@ pub(crate) struct SourceWatcher {
     // What:     `debouncer: Debouncer<RecommendedWatcher>`. The debounced watcher guard.
     // Why:      Kept alive so its background thread keeps delivering events; dropping it
     //           stops the watch.
-    // TS map:   `debouncer: Debouncer;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -85,7 +78,6 @@ pub(crate) struct SourceWatcher {
     // What:     `watched: Option<PathBuf>`. The currently-watched root (`Some`), or `None`.
     // Why:      `watch` unwatches this before watching a new root, so only one root is ever
     //           watched at a time.
-    // TS map:   `watched: string | null;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -96,7 +88,6 @@ pub(crate) struct SourceWatcher {
 
 // What:     `impl SourceWatcher { ... }`. The constructor and the re-point method.
 // Why:      Two operations: create the debouncer, and watch a given root.
-// TS map:   methods on `SourceWatcher`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -110,7 +101,6 @@ impl SourceWatcher {
     //           in the app enqueues `Command::Rescan` and wakes the worker), keeping this
     //           module dependency-free and unit-testable. The app must still run (without live
     //           updates) if the watcher fails to start.
-    // TS map:   `static new(onChange: () => void): SourceWatcher | null`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -125,7 +115,6 @@ impl SourceWatcher {
         //           `on_change`. `.ok()?` turns a creation error into `None` (early return).
         // Why:      The handler runs on the watcher's own thread, so the captured closure must
         //           be `Send + 'static`; any event batch triggers `on_change`.
-        // TS map:   `const debouncer = newDebouncer(DEBOUNCE_MS, (result) => { ... });`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -139,7 +128,6 @@ impl SourceWatcher {
                 //           (which may mean events were dropped) calls `on_change`.
                 // Why:      We do not interpret the events; the callback reconciles the queue
                 //           with whatever is on disk now.
-                // TS map:   `if (!result.ok || result.events.length) onChange();`
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -155,7 +143,6 @@ impl SourceWatcher {
         // What:     `Some(SourceWatcher { debouncer, watched: None })`. Wrap the new watcher;
         //           nothing is watched yet.
         // Why:      The controller calls `watch` once a Source Root is known.
-        // TS map:   `return { debouncer, watched: null };`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -170,7 +157,6 @@ impl SourceWatcher {
     // What:     `pub(crate) fn watch(&mut self, root: &Path)`. Watch `root` recursively,
     //           after unwatching any previously-watched root.
     // Why:      Re-point the single watch when the Source Root changes (open, restore).
-    // TS map:   `watch(root: string): void`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -181,7 +167,6 @@ impl SourceWatcher {
         //           `take()` removes and yields the previous root; `unwatch` stops watching
         //           it (errors are ignored: the path may already be gone).
         // Why:      Only the current root should be watched.
-        // TS map:   `if (this.watched) { this.debouncer.watcher().unwatch(this.watched); this.watched = null; }`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -194,7 +179,6 @@ impl SourceWatcher {
         //           Start a deep watch; on success remember the root, on failure log it.
         // Why:      Record the watched root so the next `watch` can unwatch it; a failed
         //           watch must not pretend it succeeded.
-        // TS map:   `try { this.debouncer.watcher().watch(root, "recursive"); this.watched = root; } catch (e) { console.error(e); }`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -204,7 +188,6 @@ impl SourceWatcher {
         match self.debouncer.watcher().watch(root, RecursiveMode::Recursive) {
             // What:     `Ok(()) => self.watched = Some(root.to_path_buf())`. Remember it.
             // Why:      So a later re-point unwatches this exact root.
-            // TS map:   `this.watched = root;`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -213,7 +196,6 @@ impl SourceWatcher {
             Ok(()) => self.watched = Some(root.to_path_buf()),
             // What:     `Err(e) => eprintln!(...)`. Log and leave `watched` as `None`.
             // Why:      Live updates silently degrade if the OS watch cannot start.
-            // TS map:   `console.error(...);`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -227,7 +209,6 @@ impl SourceWatcher {
 // What:     `#[cfg(test)] #[path = "watch_tests.rs"] mod tests;`. Pull the integration test
 //           in from the sibling file `watch_tests.rs`; test builds only.
 // Why:      Keep `watch.rs` to production code; the test lives beside it.
-// TS map:   `watch.unit.test.ts` beside `watch.ts`.
 //
 // In TS you'd write (pseudocode):
 // ```ts

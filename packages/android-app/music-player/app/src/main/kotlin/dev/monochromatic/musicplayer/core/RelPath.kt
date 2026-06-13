@@ -13,9 +13,6 @@
 //           package without an import, and from other packages by importing this name.
 // Why:      We need the namespace so the rest of the app (the queue, the pagination code) can refer to
 //           `relativeDisplayPaths` as a member of `dev.monochromatic.musicplayer.core`.
-// TS map:   Closest equivalent is the folder/module a `.ts` file lives in plus its barrel re-exports.
-//           TS has no `package` keyword; the module path comes from the file path and `import`
-//           specifiers, not a line of code.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -36,8 +33,6 @@ package dev.monochromatic.musicplayer.core
 //           - The type is inferred as `String` from the `"/"` literal; we did not write `: String`.
 // Why:      The queue is path-based and the UI/pagination expect a single `/` separator; naming it
 //           once avoids a bare `"/"` literal scattered through the split and the re-join below.
-// TS map:   `const SEPARATOR = "/";` — a module-scoped `const`. TS `const` already implies "do not
-//           reassign", so the `const val` vs `val` vs `var` distinction collapses to just `const`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -58,8 +53,6 @@ private const val SEPARATOR = "/"
 //             We return the read-only `List` interface so callers cannot mutate what we hand back.
 // Why:      We need to split a path into just its named folder/file segments, dropping the root and
 //           any `.`/`..` markers, so the prefix comparison and re-joining below are clean.
-// TS map:   `function normalComponents(path: string): string[]` — TS `string[]` is the everyday
-//           array; it is always mutable, so TS has no read-only-`List` vs `MutableList` split.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -84,8 +77,6 @@ private fun normalComponents(path: String): List<String> =
     //             drops empty pieces; `it != "."` and `it != ".."` drop the relative-path markers.
     // Why:      Dropping empties and `.`/`..` leaves just the real folder and file names, so two paths
     //           can be compared segment-by-segment and rejoined consistently.
-    // TS map:   `return path.split("/").filter((seg) => seg !== "" && seg !== "." && seg !== "..");`
-    //           — `it` becomes a named arrow parameter `seg`, and `.isNotEmpty()` becomes `!== ""`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -104,8 +95,6 @@ private fun normalComponents(path: String): List<String> =
 //             for in-memory list lengths.
 // Why:      We need to know how many LEADING segments every track shares (capped so the filename
 //           always survives); that shared run is the "loaded root" we strip off.
-// TS map:   `function commonPrefixLen(lists: string[][]): number` — TS has only `number`, so the
-//           `Int` vs `Long` choice does not arise.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -124,9 +113,6 @@ private fun commonPrefixLen(lists: List<List<String>>): Int {
     //             `shortest` ends up a plain non-null `Int`.
     // Why:      The common prefix can never be longer than the shortest path's segment count; and an
     //           empty queue must fall back to `0` rather than crash on a `null`.
-    // TS map:   `const shortest = lists.length ? Math.min(...lists.map((l) => l.length)) : 0;`
-    //           The Elvis `?: 0` is TS's `?? 0` (nullish-coalescing): supply a default when the left is
-    //           null/undefined.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -141,8 +127,6 @@ private fun commonPrefixLen(lists: List<List<String>>): Int {
     //           the loop bounds would be nonsense. (In the Rust twin this also avoids unsigned
     //           underflow; in Kotlin `Int` is signed so it would not panic, but the early return is the
     //           same clean guard.)
-    // TS map:   `if (shortest === 0) return 0;` — note Kotlin's `==` maps to TS's `===` for these
-    //           value comparisons, because Kotlin `==` does not do JS-style loose coercion.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -153,7 +137,6 @@ private fun commonPrefixLen(lists: List<List<String>>): Int {
     //           strip, leaving at least the final one (the filename) on every track. `- 1` is ordinary
     //           integer subtraction, identical to TS.
     // Why:      A UI row must never collapse to an empty label, so we always keep at least one segment.
-    // TS map:   `const cap = shortest - 1;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -163,7 +146,6 @@ private fun commonPrefixLen(lists: List<List<String>>): Int {
     // What:     `var run = 0`. A MUTABLE local `Int`, the counter for how many leading segments match
     //           so far. We use `var` (not `val`) precisely because the loop below reassigns it.
     // Why:      We need a running count we can increment as we confirm each shared segment.
-    // TS map:   `let run = 0;` — Kotlin `var` is TS `let`; Kotlin `val` is TS `const`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -180,8 +162,6 @@ private fun commonPrefixLen(lists: List<List<String>>): Int {
     //             is its segment at position `run`. `==` is structural string equality.
     // Why:      One linear scan finds the longest shared leading run without recursion: as soon as any
     //           track disagrees at position `run`, `.all` is `false` and we stop.
-    // TS map:   `while (run < cap && lists.every((l) => l[run] === lists[0][run])) { ... }`
-    //           — Kotlin `.all { }` is TS `.every(() => ...)`; the implicit `it` becomes a named `l`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -194,7 +174,6 @@ private fun commonPrefixLen(lists: List<List<String>>): Int {
         //           This is the one mutation that justifies `run` being a `var`. Character-identical to
         //           TS.
         // Why:      Move on to compare the next position.
-        // TS map:   `run++;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -205,7 +184,6 @@ private fun commonPrefixLen(lists: List<List<String>>): Int {
     // What:     `return run`. Hand back the shared-prefix length. Because this function has a `{ }`
     //           block body (not the expression-body `=` form used above), the return is EXPLICIT.
     // Why:      The caller needs to know how many leading segments to drop from every track.
-    // TS map:   `return run;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -223,7 +201,6 @@ private fun commonPrefixLen(lists: List<List<String>>): Int {
 //           - `: List<String>` returns one relative display string per track, in the same order.
 // Why:      The UI shows folders, not just bare filenames, but the shared absolute prefix (e.g. a long
 //           music-library root) is noise; this strips it once per queue.
-// TS map:   `function relativeDisplayPaths(tracks: string[]): string[]`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -248,7 +225,6 @@ fun relativeDisplayPaths(tracks: List<String>): List<String> {
     //             We use `emptyList()` because we are returning, not building up, and it avoids an
     //             allocation (the empty list is a singleton).
     // Why:      Nothing to relativize, and `commonPrefixLen` of nothing has no meaningful prefix.
-    // TS map:   `if (tracks.length === 0) return [];` — `emptyList()` is just the literal `[]`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -262,9 +238,6 @@ fun relativeDisplayPaths(tracks: List<String>): List<String> {
     //             string, and we pass it to `normalComponents` to get that track's segment list.
     // Why:      Compute each path's named segments ONCE here, then reuse them both for the shared
     //           prefix and for each track's remainder below.
-    // TS map:   `const componentLists = tracks.map(normalComponents);` — Kotlin's `it` is the arrow
-    //           parameter; here we could even write `tracks.map(::normalComponents)`, the function
-    //           reference, mirroring TS passing the function directly.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -275,7 +248,6 @@ fun relativeDisplayPaths(tracks: List<String>): List<String> {
     //           segments are the shared root. Plain function call, no special syntax; Kotlin passes the
     //           list by reference (there is no borrow annotation as in Rust).
     // Why:      Decide how many leading segments to strip from every track.
-    // TS map:   `const prefixLen = commonPrefixLen(componentLists);`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -293,9 +265,6 @@ fun relativeDisplayPaths(tracks: List<String>): List<String> {
     //             `Pair` into two named locals (`list` = the segment list, `path` = the original full
     //             path) instead of using the implicit single `it`.
     // Why:      Produce one relative display string per track while preserving load order.
-    // TS map:   `return componentLists.map((list, i) => { ... using tracks[i] ... });` — TS has no
-    //           `zip`, so you carry the index `i` and read `tracks[i]`; Kotlin's `zip` + destructuring
-    //           gives you both halves directly.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -313,8 +282,6 @@ fun relativeDisplayPaths(tracks: List<String>): List<String> {
         //           - `.joinToString(SEPARATOR)` glues the remaining segments back together with `/`
         //             between them, yielding a single `String`.
         // Why:      The segments past the common root ARE the relative path we want to show.
-        // TS map:   `const relative = list.slice(prefixLen).join("/");` — Kotlin's `drop(n)` is TS's
-        //           `slice(n)` (drop the first `n`); `joinToString(sep)` is TS's `join(sep)`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -332,8 +299,6 @@ fun relativeDisplayPaths(tracks: List<String>): List<String> {
         // Why:      Defensive fallback: a pathological path with no named segments would relativize to
         //           the empty string, which would render as a blank UI row; show its full original text
         //           instead.
-        // TS map:   `return relative === "" ? path : relative;` — Kotlin's value-producing `if/else`
-        //           is TS's `cond ? a : b`.
         //
         // In TS you'd write (pseudocode):
         // ```ts

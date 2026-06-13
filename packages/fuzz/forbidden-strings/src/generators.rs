@@ -15,9 +15,6 @@
 //           coverage in the scan path. The bounds turn the byte
 //           stream into a deterministic AST whose small mutations
 //           libFuzzer can still propagate through to scan coverage.
-// TS map:   Equivalent in spirit to a hand-written PBT generator;
-//           no clean 1:1 because TS has no `Arbitrary` derive crate
-//           with this shape.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -37,7 +34,6 @@
 // Why:      Every type with `impl<'a> Arbitrary<'a> for T` needs
 //           these three names in scope; `derive(Arbitrary)` does too
 //           via macro expansion.
-// TS map:   `import type { Arbitrary, Result, Unstructured } from "arbitrary";`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -55,7 +51,6 @@ use arbitrary::{Arbitrary, Result, Unstructured};
 // Why:      Plan §6 sets the depth cap at 6. Past this depth the
 //           generator returns only leaf nodes so byte budget gets
 //           spent on construct variety, not tree depth.
-// TS map:   `export const MAX_DEPTH = 6;`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -68,7 +63,6 @@ pub const MAX_DEPTH: u8 = 6;
 //           lengths (siblings: `u32`, `u64`); `Vec::len` returns
 //           `usize`.
 // Why:      Plan §6: concatenations capped at 4 elements.
-// TS map:   `export const MAX_CONCAT = 4;`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -80,7 +74,6 @@ pub const MAX_CONCAT: usize = 4;
 //           cap. `|` separates branches in regex; 3 branches means
 //           up to 2 `|` characters at one level.
 // Why:      Plan §6 caps alternation breadth at 3.
-// TS map:   `export const MAX_ALT = 3;`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -93,7 +86,6 @@ pub const MAX_ALT: usize = 3;
 //           rule. Tracked separately from depth because algebra
 //           costs more parser work per node.
 // Why:      Plan §6 caps set-algebra nodes at 2.
-// TS map:   `export const MAX_ALGEBRA_NODES = 2;`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -106,7 +98,6 @@ pub const MAX_ALGEBRA_NODES: u8 = 2;
 //           rendering.
 // Why:      Plan §6: literal atoms ≤16 B. Keeps short patterns
 //           short so the byte budget reaches more constructs.
-// TS map:   `export const MAX_LITERAL_BYTES = 16;`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -119,7 +110,6 @@ pub const MAX_LITERAL_BYTES: usize = 16;
 //           regex matchers / AC gates.
 // Why:      Plan §6: content capped at 4 KiB so scans stay fast
 //           enough for libFuzzer's tight iteration loop.
-// TS map:   `export const MAX_CONTENT_BYTES = 4096;`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -144,7 +134,6 @@ pub const MAX_CONTENT_BYTES: usize = 4096;
 //           pattern. Coupling rule and content during generation
 //           guarantees most inputs are "match-able", so the gate
 //           soundness check runs on every iteration.
-// TS map:   `type RuleAndContent = { rule: RuleSrc; content: Uint8Array };`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -166,7 +155,6 @@ pub struct RuleAndContent {
 // Why:      Manual impl (not derive) so the content can be built
 //           AFTER the rule renders, biased toward the rule's
 //           literal bytes.
-// TS map:   `class RuleAndContent { static arbitrary(u: Unstructured): RuleAndContent { ... } }`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -189,8 +177,6 @@ impl<'a> Arbitrary<'a> for RuleAndContent {
         //           rule contains. Generating the rule first lets
         //           us extract its rendered literals and weave them
         //           through the content.
-        // TS map:   `const rule = RuleSrc.arbitrary(u);` (TS would
-        //           let it throw on failure).
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -204,7 +190,6 @@ impl<'a> Arbitrary<'a> for RuleAndContent {
         // Why:      Content is bytes that try to MATCH the rule
         //           (and sometimes diverge by one byte to exercise
         //           AC-gate edge cases).
-        // TS map:   `const content = synthContent(rule, u);`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -218,7 +203,6 @@ impl<'a> Arbitrary<'a> for RuleAndContent {
         //           init shorthand (`rule` and `content` already
         //           match the field names).
         // Why:      Hand the bundle back to libFuzzer.
-        // TS map:   `return { rule, content };`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -237,7 +221,6 @@ impl<'a> Arbitrary<'a> for RuleAndContent {
 // Why:      Plan §7.2 / §7.6 use a "bounded ruleset". 8 rules is
 //           plenty to exercise rule-order invariance without
 //           blowing libFuzzer's byte budget per iteration.
-// TS map:   `export const MAX_RULES = 8;`.
 pub const MAX_RULES: usize = 8;
 
 // What:     `#[derive(Debug)] pub struct RulesetAndContent { ... }`.
@@ -248,7 +231,6 @@ pub const MAX_RULES: usize = 8;
 //           need many rules at once; one-shot
 //           `load_ruleset_from_source` makes the input shape match
 //           production.
-// TS map:   `type RulesetAndContent = { rules: RuleSrc[]; content: Uint8Array };`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -268,7 +250,6 @@ impl<'a> Arbitrary<'a> for RulesetAndContent {
         //           ruleset shape stable.
         // Why:      Empty rulesets are uninteresting (no scan work);
         //           start at 1.
-        // TS map:   `const n = u.intInRange(1, MAX_RULES);`.
         let n = u.int_in_range(1usize..=MAX_RULES)?;
         let mut rules: Vec<RuleSrc> = Vec::with_capacity(n);
         for _ in 0..n {
@@ -345,7 +326,6 @@ fn synth_content_from_literals(
 // Why:      Drop-not-error keeps the fuzz iteration alive even when
 //           a particular rule shape isn't expressible in file form;
 //           we still get useful coverage on the surviving rules.
-// TS map:   `function fileSource(rs: RulesetAndContent): string`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -379,7 +359,6 @@ impl RulesetAndContent {
 //           `(?flags)body` (compiled by `compile_rule_src`). Fuzz
 //           targets call `compile_rule_src` directly, so we render
 //           internal form.
-// TS map:   `type RuleSrc = { flags: FlagSet | null; body: Node };`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -404,7 +383,6 @@ pub struct RuleSrc {
 //           groups" requirement. The combination matrix is small
 //           enough that fixed booleans + derive suffices; no need
 //           for `int_in_range` here.
-// TS map:   `type FlagSet = { i: boolean; u: boolean; negateI: boolean };`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -431,7 +409,6 @@ pub struct FlagSet {
 //           assertion. Biasing flag generation is the cheapest
 //           lever (no body/content changes needed) to concentrate
 //           fuzz cycles on the bug class.
-// TS map:   `class FlagSet { static arbitrary(u: Unstructured): FlagSet { ... } }`.
 impl<'a> Arbitrary<'a> for FlagSet {
     fn arbitrary(u: &mut Unstructured<'a>) -> Result<Self> {
         // What:     `u.int_in_range(0u8..=3)?`. Two-bit tag picks
@@ -471,7 +448,6 @@ impl<'a> Arbitrary<'a> for FlagSet {
 //           set. Pushes onto a borrowed `&mut String` buffer.
 // Why:      Building the source via `push_str` avoids intermediate
 //           allocations; the caller owns the output `String`.
-// TS map:   `function renderFlags(flags: FlagSet, out: string[])`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -490,7 +466,6 @@ impl FlagSet {
         //           we knew the size up front; here we don't).
         // Why:      Concatenate the user's chosen positive flags
         //           into one string segment.
-        // TS map:   `const adds = "" + (i ? "i" : "") + (u ? "u" : "");`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -508,7 +483,6 @@ impl FlagSet {
         // What:     `let has_neg = self.negate_i;`. Plain `bool`
         //           copy; no concept-introducing punctuation.
         // Why:      Renaming for readability below.
-        // TS map:   `const hasNeg = this.negate_i;`.
         let has_neg = self.negate_i;
         if adds.is_empty() && !has_neg {
             // Empty flag prefix means we render nothing. The body
@@ -520,7 +494,6 @@ impl FlagSet {
             //       the buffer if needed (no overflow path); sibling
             //       `push(c)` appends a single `char`.
         // Why:      Begin the inline-flag group syntax.
-        // TS map:   `out += "(?";`.
         out.push_str("(?");
         out.push_str(&adds);
         if has_neg {
@@ -539,7 +512,6 @@ impl FlagSet {
 //           read a fresh variant choice for every recursive payload,
 //           so the tree depth is bounded only by remaining bytes --
 //           plenty for a stack overflow.
-// TS map:   `class RuleSrc { static arbitrary(u): RuleSrc }`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -555,7 +527,6 @@ impl<'a> Arbitrary<'a> for RuleSrc {
         //           infer it. `?` propagates `Err` (out-of-bytes).
         // Why:      Half the rules carry inline flags, half don't.
         //           One byte of decision is cheap.
-        // TS map:   `const flags = Math.random() < 0.5 ? FlagSet.arbitrary(u) : null;`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -571,7 +542,6 @@ impl<'a> Arbitrary<'a> for RuleSrc {
         // Why:      Plan §6 caps algebra-node count at 2 across
         //           the whole tree; we must thread a counter
         //           through nested calls.
-        // TS map:   `const budgets = { algebra: 0 };`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -584,7 +554,6 @@ impl<'a> Arbitrary<'a> for RuleSrc {
         //           counter struct exclusively to the recursive
         //           helper for the duration of the call.
         // Why:      Generate a bounded `Node` tree.
-        // TS map:   `const body = genNode(u, 0, budgets);`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -595,7 +564,6 @@ impl<'a> Arbitrary<'a> for RuleSrc {
         // What:     `Ok(RuleSrc { flags, body })`. Tail expression
         //           wrapping the struct in the success variant.
         // Why:      Hand back the assembled rule.
-        // TS map:   `return { flags, body };`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -612,7 +580,6 @@ impl<'a> Arbitrary<'a> for RuleSrc {
 // Why:      Fuzz targets pass the result straight to
 //           `compile_rule_src`. Keeping the render close to the
 //           struct lets every target produce the same shape.
-// TS map:   `function renderRule(rule: RuleSrc): string`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -627,7 +594,6 @@ impl RuleSrc {
         //           is the borrowed field; we don't move out of the
         //           struct.
         // Why:      Only emit a flag group when one is set.
-        // TS map:   `if (this.flags) this.flags.render(out);`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -639,7 +605,6 @@ impl RuleSrc {
         // What:     `self.body.render(&mut out);`. Method call on
         //           the owned `Node`, passing the buffer through.
         // Why:      Append the pattern body after the flag prefix.
-        // TS map:   `this.body.render(out);`.
         self.body.render(&mut out);
         out
     }
@@ -657,7 +622,6 @@ impl RuleSrc {
     //           multi-line file-form source. Internal form
     //           `(?flags)body` isn't accepted by
     //           `parse_rule_source`.
-    // TS map:   `function fileFormLine(rule: RuleSrc): string | null`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -701,7 +665,6 @@ impl RuleSrc {
         out.push_str(&flag_str);
         // What:     `Some(out)`. Wrap the assembled line in Some.
         // Why:      Hand the caller a usable rules-file line.
-        // TS map:   `return out;` (TS null-vs-Some convention).
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -721,7 +684,6 @@ impl RuleSrc {
 // Why:      Separate counter from depth lets a deep but
 //           algebra-free tree explore freely while bounding
 //           algebra to two nodes.
-// TS map:   `type Budgets = { algebra: number };`.
 struct Budgets {
     algebra: u8,
 }
@@ -752,8 +714,6 @@ impl Budgets {
 //           when the generator produces well-formed groups by
 //           construction rather than raw `(?=` bytes the parser
 //           rejects 99% of the time.
-// TS map:   Tagged union:
-//           `type Node = { kind: "literal"; bytes: number[] } | ...`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -808,7 +768,6 @@ pub enum Node {
 // Why:      Plan §6 calls out scoped flags explicitly.
 //           `derive(Arbitrary)` works because the type is finite
 //           and non-recursive.
-// TS map:   `type ScopedFlagKind = "i" | "u" | "x";`.
 #[derive(Debug, Arbitrary)]
 pub enum ScopedFlagKind {
     I,
@@ -830,7 +789,6 @@ impl ScopedFlagKind {
 //           The four lookaround variants exposed in `requires_resharp`
 //           (`(?=`, `(?!`, `(?<=`, `(?<!`).
 // Why:      Plan §6 requires all four reachable.
-// TS map:   `type LookaroundKind = "ahead" | "notAhead" | "behind" | "notBehind";`.
 #[derive(Debug, Arbitrary)]
 pub enum LookaroundKind {
     Ahead,
@@ -856,7 +814,6 @@ impl LookaroundKind {
 //           bytes; we cap the upper at u8::MAX // 4 to keep
 //           generated patterns short.
 // Why:      Plan §6 lists "quantifiers including bounded `{n,m}`".
-// TS map:   `type QuantKind = "star" | "plus" | "question" | { kind: "bounded"; lo: number; hi: number };`.
 #[derive(Debug)]
 pub enum QuantKind {
     Star,
@@ -889,7 +846,6 @@ impl QuantKind {
 //           boundary `\b`.
 // Why:      Anchors influence the leading-literal extractor's
 //           bypass logic.
-// TS map:   `type AnchorKind = "start" | "end" | "wordB";`.
 #[derive(Debug, Arbitrary)]
 pub enum AnchorKind {
     Start,
@@ -901,7 +857,6 @@ pub enum AnchorKind {
 //           `\s`, `\w`, `\d` shorthands. The Unicode-mode rewriter
 //           (commits 0479371a, 4289cdb3) lives behind this surface.
 // Why:      Plan §6: exercise unicode-shorthand handling.
-// TS map:   `type ShorthandKind = "s" | "w" | "d";`.
 #[derive(Debug, Arbitrary)]
 pub enum ShorthandKind {
     S,
@@ -916,7 +871,6 @@ pub enum ShorthandKind {
 //           literal bytes after the backslash; the extractor must
 //           survive any of them appearing in the pattern.
 // Why:      Plan §6: escaped lookalikes inside and outside classes.
-// TS map:   `type LookalikeByte = "dot" | "star" | "plus" | ... ;`.
 #[derive(Debug, Arbitrary)]
 pub enum LookalikeByte {
     Dot,
@@ -955,7 +909,6 @@ impl LookalikeByte {
 //           via `\s` already, not via literal byte handling.
 // Why:      Plan §6: emit Unicode whitespace bytes literally so the
 //           rewrite branches all fire.
-// TS map:   `type UnicodeWsByte = "nbsp" | "emSpace" | "idSpace";`.
 #[derive(Debug, Arbitrary)]
 pub enum UnicodeWsByte {
     Nbsp,
@@ -985,7 +938,6 @@ impl UnicodeWsByte {
 // Why:      Random binary bytes inside a class produce parse errors
 //           99% of the time; printable ASCII + the wildcard tokens
 //           gives the extractor real work without burning budget.
-// TS map:   `type ClassNode = { bytes: Uint8Array };`.
 #[derive(Debug)]
 pub struct ClassNode {
     pub bytes: Vec<u8>,
@@ -999,7 +951,6 @@ impl<'a> Arbitrary<'a> for ClassNode {
         //           range `1..=6` is inclusive on both ends.
         // Why:      Keep class body short so quantifier / nesting
         //           coverage gets more of the budget.
-        // TS map:   `const n = u.intInRange(1, 6);`.
         let n = u.int_in_range(1usize..=6)?;
         // What:     `let mut bytes: Vec<u8> = Vec::with_capacity(n);`.
         //           Pre-allocates `n` bytes' worth of capacity in
@@ -1007,14 +958,11 @@ impl<'a> Arbitrary<'a> for ClassNode {
         //           up-front capacity).
         // Why:      We know how many bytes we want; avoid the
         //           grow-and-reallocate cycle.
-        // TS map:   `const bytes: number[] = [];` (no capacity
-        //           tuning in TS arrays).
         let mut bytes: Vec<u8> = Vec::with_capacity(n);
         // What:     `for _ in 0..n { ... }`. Counted loop using a
         //           range expression. The `_` ignores the iteration
         //           variable.
         // Why:      Build `n` printable bytes for the class body.
-        // TS map:   `for (let loopIndex = 0; loopIndex < n; loopIndex++) { ... }`.
         for _ in 0..n {
             // What:     `let pick = u.int_in_range(0u8..=4)?;`. Five
             //           variant choices: lowercase letter, digit,
@@ -1022,7 +970,6 @@ impl<'a> Arbitrary<'a> for ClassNode {
             //           literal.
             // Why:      Bias toward the byte families the extractor
             //           cares about.
-            // TS map:   `const pick = u.intInRange(0, 4);`.
             let pick = u.int_in_range(0u8..=4)?;
             match pick {
                 0 => bytes.push(b'a' + u.int_in_range(0u8..=25)?),
@@ -1040,7 +987,6 @@ impl<'a> Arbitrary<'a> for ClassNode {
         }
         // What:     `Ok(ClassNode { bytes })`. Tail expression.
         // Why:      Hand the class back to the caller.
-        // TS map:   `return { bytes };`.
         Ok(ClassNode { bytes })
     }
 }
@@ -1055,7 +1001,6 @@ impl<'a> Arbitrary<'a> for ClassNode {
 //           mutations land on variant choices, not payloads. At max
 //           depth only leaf variants are reachable.
 // Why:      Bounded recursion; libFuzzer mutation stability.
-// TS map:   `function genNode(u: Unstructured, depth: number, budgets: Budgets): Node`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -1073,7 +1018,6 @@ fn gen_node(u: &mut Unstructured<'_>, depth: u8, budgets: &mut Budgets) -> Resul
     //           in the choice space below; one byte picks among
     //           them.
     // Why:      Stable byte->AST mapping.
-    // TS map:   `const tag = u.intInRange(0, 15);`.
     let tag = u.int_in_range(0u8..=15)?;
     let next_depth = depth + 1;
     match tag {
@@ -1137,7 +1081,6 @@ fn gen_node(u: &mut Unstructured<'_>, depth: u8, budgets: &mut Budgets) -> Resul
 // Why:      Called both at max depth and as part of `gen_node`'s
 //           variant space; centralising leaf selection keeps both
 //           paths consistent.
-// TS map:   `function genLeaf(u): Node`.
 fn gen_leaf(u: &mut Unstructured<'_>) -> Result<Node> {
     let tag = u.int_in_range(0u8..=10)?;
     match tag {
@@ -1181,7 +1124,6 @@ fn gen_leaf(u: &mut Unstructured<'_>) -> Result<Node> {
 //           providing enough variety for the dictionary plus
 //           CrossOver mutations to reach the case-flipped
 //           content shape `synth_content` produces.
-// TS map:   `function genLiteralBytes(u): Uint8Array`.
 fn gen_literal_bytes(u: &mut Unstructured<'_>) -> Result<Vec<u8>> {
     // What:     UTF-8 byte pairs for five Unicode lowercase Latin
     //           letters with distinct uppercase forms under
@@ -1198,7 +1140,6 @@ fn gen_literal_bytes(u: &mut Unstructured<'_>) -> Result<Vec<u8>> {
     //             ü  -> U+00FC -> 0xC3 0xBC (uppercase Ü 0xC3 0x9C)
     //             ö  -> U+00F6 -> 0xC3 0xB6 (uppercase Ö 0xC3 0x96)
     //             ç  -> U+00E7 -> 0xC3 0xA7 (uppercase Ç 0xC3 0x87)
-    // TS map:   `const UNICODE_LETTERS: ReadonlyArray<Uint8Array> = [...];`.
     const UNICODE_LETTERS: &[&[u8]] = &[
         b"\xC3\xA9", // é
         b"\xC3\xB1", // ñ
@@ -1289,7 +1230,6 @@ fn gen_literal_bytes(u: &mut Unstructured<'_>) -> Result<Vec<u8>> {
 //           two extra bytes.
 // Why:      `QuantKind` doesn't `derive(Arbitrary)` because the
 //           bounded variant needs custom byte-range clamping.
-// TS map:   `function genQuant(u): QuantKind`.
 fn gen_quant(u: &mut Unstructured<'_>) -> Result<QuantKind> {
     let tag = u.int_in_range(0u8..=3)?;
     match tag {
@@ -1310,7 +1250,6 @@ fn gen_quant(u: &mut Unstructured<'_>) -> Result<QuantKind> {
 // Why:      Building output via a single shared buffer avoids
 //           intermediate allocations; the buffer ends up holding
 //           the complete `(?flags)body` source.
-// TS map:   `function renderNode(node: Node, out: string[])`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -1345,7 +1284,6 @@ fn gen_quant(u: &mut Unstructured<'_>) -> Result<QuantKind> {
 //           fall back to lossy replacement so the renderer never
 //           panics; lossy substitution preserves the round-trip
 //           when the input is already valid UTF-8.
-// TS map:   `function appendBytesAsUtf8(out: string[], bytes: Uint8Array): void`.
 fn append_bytes_as_utf8(out: &mut String, bytes: &[u8]) {
     match std::str::from_utf8(bytes) {
         Ok(s) => out.push_str(s),
@@ -1436,7 +1374,6 @@ impl Node {
                 //           the inputs in `UnicodeWsByte::utf8`.
                 // Why:      Append the multibyte WS character into
                 //           the source.
-                // TS map:   `out += new TextDecoder().decode(ws.utf8());`.
                 out.push_str(std::str::from_utf8(ws.utf8()).expect("ws bytes are valid utf-8"));
             }
             Node::Shorthand(s) => match s {
@@ -1462,7 +1399,6 @@ impl Node {
     //           decision against the AST-level truth. AST is the
     //           ground truth here: WE choose to emit `&`, we KNOW
     //           the source has algebra.
-    // TS map:   `function hasResharpFeatures(node: Node): boolean`.
     pub fn has_resharp_features(&self) -> bool {
         match self {
             Node::Intersect(_, _)
@@ -1493,7 +1429,6 @@ impl Node {
     //           output bucket.
     // Why:      `synth_content` uses these to bias content toward
     //           bytes that will actually match the rule.
-    // TS map:   `function collectLiterals(node, out: Uint8Array[])`.
     pub fn collect_literals(&self, out: &mut Vec<Vec<u8>>) {
         match self {
             Node::Literal(bytes) => {
@@ -1542,7 +1477,6 @@ impl Node {
 //           never; coupling content to rule literals makes the
 //           extract-gate soundness target productive on every
 //           iteration.
-// TS map:   `function synthContent(rule, u): Uint8Array`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -1564,7 +1498,6 @@ fn synth_content(rule: &RuleSrc, u: &mut Unstructured<'_>) -> Result<Vec<u8>> {
     // Why:      Forces the AC gate / regex to walk past content
     //           before finding the literal -- not all matches
     //           start at byte 0.
-    // TS map:   `const prefixLen = u.intInRange(0, 64);`.
     let prefix_len = u.int_in_range(0usize..=64)?;
     for _ in 0..prefix_len {
         out.push(u.int_in_range(b'a'..=b'z')?);
@@ -1692,7 +1625,6 @@ fn synth_content(rule: &RuleSrc, u: &mut Unstructured<'_>) -> Result<Vec<u8>> {
 // Why:      Keep `generators.rs` to the generator itself; the renderer
 //           regression tests live beside it. The `test` mise task runs them
 //           via `cargo nextest run --lib`.
-// TS map:   the `generators.unit.test.ts` file beside `generators.ts`.
 //
 // In TS you'd write (pseudocode):
 // ```ts

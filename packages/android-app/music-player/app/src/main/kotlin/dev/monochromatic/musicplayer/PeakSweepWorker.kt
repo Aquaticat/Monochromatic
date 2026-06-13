@@ -38,7 +38,6 @@
 //           worker lives in, reachable elsewhere as
 //           `dev.monochromatic.musicplayer.PeakSweepWorker`.
 // Why:      So WorkManager and `PeakSweepScheduler` can refer to the worker class.
-// TS map:   No 1:1 equivalent — TS module identity is the file path; no `package`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -49,7 +48,6 @@ package dev.monochromatic.musicplayer
 // What:     `import android.content.Context` pulls in `Context`, Android's app
 //           environment handle. WorkManager passes one to the worker's constructor.
 // Why:      The primary constructor takes a `Context` to forward to the base class.
-// TS map:   `import { Context } from "android/content";`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -60,8 +58,6 @@ import android.content.Context
 // What:     `import android.util.Log` pulls in `Log`, Android's logger.
 //           `Log.i(tag, message)` writes an info line to logcat.
 // Why:      We log the empty-library case and the final per-run summary counts.
-// TS map:   `import { Log } from "android/util";` — `Log.i` ~ `console.info`, but
-//           the first arg is a category "tag", not part of the message.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -77,10 +73,6 @@ import android.util.Log
 //           `.toUri()` call resolve.
 // Why:      Each `track.uri` is a `String`; `measureAndCache` wants a `Uri`, so we
 //           call `track.uri.toUri()` to parse it, which needs this import.
-// TS map:   TS has no extension functions; the closest is a free function you'd
-//           call as `toUri(track.uri)`. Import it like
-//           `import { toUri } from "androidx/core/net";` and mentally rewrite
-//           `x.toUri()` as `toUri(x)`.
 // Gotcha:   Importing a bare FUNCTION (not a class/type) is what enables the
 //           `.toUri()` dot-call below; without the import the method appears not to
 //           exist on `String`.
@@ -96,8 +88,6 @@ import androidx.core.net.toUri
 //           function (so it can do coroutine-style async work).
 // Why:      `PeakSweepWorker` EXTENDS `CoroutineWorker` and overrides its
 //           `doWork()`.
-// TS map:   `import { CoroutineWorker } from "androidx/work";` — an abstract base
-//           class with one async hook to implement.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -110,7 +100,6 @@ import androidx.work.CoroutineWorker
 //           input-data key/value pairs).
 // Why:      The constructor takes one to forward to the base class; `inputData`
 //           (read in `doWork`) comes from it.
-// TS map:   `import { WorkerParameters } from "androidx/work";`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -129,9 +118,6 @@ import androidx.work.WorkerParameters
 // Why:      Subclassing `CoroutineWorker` is what makes this a WorkManager job;
 //           forwarding `context`/`parameters` hands the base class what it needs
 //           (and exposes `applicationContext`, `inputData`, `isStopped` to us).
-// TS map:   `class PeakSweepWorker extends CoroutineWorker { constructor(context: Context, parameters: WorkerParameters) { super(context, parameters); } }`
-//           — Kotlin folds the constructor and the `super(...)` call into the class
-//           header.
 // Gotcha:   Because the params lack `val`/`var` they are NOT fields; we never refer
 //           to `context`/`parameters` again, only to the base class's
 //           `applicationContext`/`inputData`/`isStopped`.
@@ -152,7 +138,6 @@ class PeakSweepWorker(
     // Why:      It is forwarded straight to `CoroutineWorker(context, parameters)`;
     //           we never need it again afterward (we use `applicationContext` from
     //           the base class instead).
-    // TS map:   `context: Context` — a normal (non-property) constructor parameter.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -164,7 +149,6 @@ class PeakSweepWorker(
     //           `KEY_MAX_TRACKS` bound used by tests.
     // Why:      Forwarded to the base constructor; `inputData` (read later) is
     //           derived from it by the base class.
-    // TS map:   `parameters: WorkerParameters` — a non-property constructor param.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -181,8 +165,6 @@ class PeakSweepWorker(
     // Why:      This is the worker's body: sweep the library once, bounded by the
     //           idle window, and report success so periodic scheduling continues
     //           without backoff.
-    // TS map:   `override async doWork(): Promise<Result> { ... }` — `suspend` is
-    //           `async`; `Result` is WorkManager's tagged outcome.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -196,7 +178,6 @@ class PeakSweepWorker(
         //           that returns the active library; `applicationContext` is the base
         //           class's app-wide context property.
         // Why:      We need the full track list to sweep over.
-        // TS map:   `const tracks: readonly Track[] = await LibrarySource.load(this.applicationContext);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -206,7 +187,6 @@ class PeakSweepWorker(
         // What:     `if (tracks.isEmpty()) { ... }` is a control-flow check using the
         //           `List.isEmpty()` predicate (true when there are zero tracks).
         // Why:      A missing/empty library has nothing to sweep; bail out early.
-        // TS map:   `if (tracks.length === 0) { ... }`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -216,7 +196,6 @@ class PeakSweepWorker(
             // What:     `Log.i(WORKER_TAG, "PeakSweepWorker found no library to sweep")`
             //           writes an info log line under the worker's tag.
             // Why:      Record that the run found nothing, for on-device verification.
-            // TS map:   `console.info(`[${WORKER_TAG}] PeakSweepWorker found no library to sweep`);`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -228,7 +207,6 @@ class PeakSweepWorker(
             //           outcome value (no `new` keyword in Kotlin).
             // Why:      An empty library is a successful no-op run; returning success
             //           (not retry) avoids backoff so the next period just retries.
-            // TS map:   `return Result.success();` — a tagged outcome value.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -244,7 +222,6 @@ class PeakSweepWorker(
         // Why:      A test sets `KEY_MAX_TRACKS` small so one instrumented run stays
         //           short; production leaves it unset, so `limit` defaults to
         //           `Int.MAX_VALUE` (effectively no cap).
-        // TS map:   `const limit: number = inputData.getInt(KEY_MAX_TRACKS) ?? DEFAULT_MAX_TRACKS;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -256,7 +233,6 @@ class PeakSweepWorker(
         //           written; Kotlin INFERS `Int` from the literal `0`.
         // Why:      Counts how many tracks this run has handled (used for the limit
         //           check and the summary log).
-        // TS map:   `let processed = 0;` — `var` is TS's `let`; inferred `number`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -266,7 +242,6 @@ class PeakSweepWorker(
         // What:     `var measured = 0` declares a reassignable `Int` counter (type
         //           inferred from `0`) for tracks freshly measured this run.
         // Why:      Tallied in the summary log and used to decide when to flush.
-        // TS map:   `let measured = 0;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -276,7 +251,6 @@ class PeakSweepWorker(
         // What:     `var cached = 0` declares a reassignable `Int` counter (inferred)
         //           for tracks already in the cache (a skip).
         // Why:      Tallied in the summary log.
-        // TS map:   `let cached = 0;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -286,7 +260,6 @@ class PeakSweepWorker(
         // What:     `var skipped = 0` declares a reassignable `Int` counter (inferred)
         //           for tracks that could not be fingerprinted.
         // Why:      Tallied in the summary log.
-        // TS map:   `let skipped = 0;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -296,7 +269,6 @@ class PeakSweepWorker(
         // What:     `var failed = 0` declares a reassignable `Int` counter (inferred)
         //           for tracks whose measurement threw.
         // Why:      Tallied in the summary log; per-track failures never fail the run.
-        // TS map:   `let failed = 0;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -307,7 +279,6 @@ class PeakSweepWorker(
         //           (inferred) for fresh measurements not yet written to disk.
         // Why:      When it reaches `FLUSH_BATCH` we flush, bounding how many
         //           measurements an abrupt stop can lose.
-        // TS map:   `let pendingFlush = 0;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -318,8 +289,6 @@ class PeakSweepWorker(
         //           bound to each element of `tracks` in turn. Kotlin's `for (x in xs)`
         //           always iterates the elements (there is no C-style index `for`).
         // Why:      We process every track once.
-        // TS map:   `for (const track of tracks) { ... }` — Kotlin's `in` here is TS's
-        //           `of` (element iteration), NOT TS's `in` (which iterates keys).
         // Gotcha:   `for (x in xs)` iterates VALUES, unlike JS's `for...in` which
         //           iterates KEYS/indices; the Kotlin equivalent of `for...in` is
         //           `for (i in xs.indices)`.
@@ -335,7 +304,6 @@ class PeakSweepWorker(
             //           run. `break` exits the `for` loop.
             // Why:      Stop cooperatively at a track boundary when the platform asks, or
             //           when the (test) cap is hit.
-            // TS map:   `if (this.isStopped || processed >= limit) break;`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -344,7 +312,6 @@ class PeakSweepWorker(
             if (isStopped || processed >= limit) {
                 // What:     `break` immediately ends the enclosing `for` loop.
                 // Why:      Leave the sweep loop; the post-loop flush + success follow.
-                // TS map:   `break;`
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -361,8 +328,6 @@ class PeakSweepWorker(
             //           the `Uri` the function wants.
             // Why:      Do the actual measure-and-cache for this track and record what
             //           happened so the counters and flush logic can react.
-            // TS map:   `const outcome: SweepOutcome = await measureAndCache(this.applicationContext, toUri(track.uri));`
-            //           — `x.toUri()` is the extension call; in TS it'd be `toUri(x)`.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -375,7 +340,6 @@ class PeakSweepWorker(
             // What:     `processed += 1` is a compound assignment (`processed = processed + 1`),
             //           plain integer arithmetic identical to TS.
             // Why:      Count this track as handled.
-            // TS map:   `processed += 1;`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -388,11 +352,6 @@ class PeakSweepWorker(
             //           constant is covered, so no `else` branch is needed. Each
             //           `SweepOutcome.X -> ...` is one branch.
             // Why:      Tally the right counter for whichever outcome this track produced.
-            // TS map:   `switch (outcome) { case SweepOutcome.MEASURED: ...; }` — but
-            //           Kotlin's `when` over an enum is compiler-checked exhaustive (a
-            //           missing case is an error), unlike a TS `switch` which needs a
-            //           `never` trick to get the same guarantee. There is also NO
-            //           fall-through: each branch is self-contained (no `break` needed).
             // Gotcha:   No `break`/fall-through, and exhaustiveness is enforced; treat it
             //           as a checked `switch`, not a loop or an `if`-chain.
             //
@@ -411,7 +370,6 @@ class PeakSweepWorker(
                 //           statements.
                 // Why:      A fresh measurement bumps both the `measured` tally and the
                 //           `pendingFlush` count (it is new, unwritten data).
-                // TS map:   `case SweepOutcome.MEASURED: { measured += 1; pendingFlush += 1; break; }`
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -420,7 +378,6 @@ class PeakSweepWorker(
                 SweepOutcome.MEASURED -> {
                     // What:     `measured += 1` increments the freshly-measured tally.
                     // Why:      Count this measurement for the summary.
-                    // TS map:   `measured += 1;`
                     //
                     // In TS you'd write (pseudocode):
                     // ```ts
@@ -431,7 +388,6 @@ class PeakSweepWorker(
                     //           measurements awaiting a disk flush.
                     // Why:      This new data must eventually be flushed; track it toward
                     //           the `FLUSH_BATCH` threshold.
-                    // TS map:   `pendingFlush += 1;`
                     //
                     // In TS you'd write (pseudocode):
                     // ```ts
@@ -443,7 +399,6 @@ class PeakSweepWorker(
                 //           branch (no `{ }`): when the track was already cached, bump the
                 //           `cached` tally. The `-> expr` form runs one expression.
                 // Why:      Count an already-cached track (a cheap skip).
-                // TS map:   `case SweepOutcome.CACHED: cached += 1; break;`
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -454,7 +409,6 @@ class PeakSweepWorker(
                 //           single-expression branch for tracks whose fingerprint could
                 //           not be computed (so they were skipped).
                 // Why:      Count an unfingerprintable track.
-                // TS map:   `case SweepOutcome.UNFINGERPRINTABLE: skipped += 1; break;`
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -464,7 +418,6 @@ class PeakSweepWorker(
                 // What:     `SweepOutcome.FAILED -> failed += 1` is a single-expression
                 //           branch for tracks whose measurement threw.
                 // Why:      Count a failure; it never fails the whole run.
-                // TS map:   `case SweepOutcome.FAILED: failed += 1; break;`
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -476,7 +429,6 @@ class PeakSweepWorker(
             //           fresh measurements have accumulated to write them out.
             // Why:      Flush in batches: frequent enough to bound loss on an abrupt
             //           stop, rare enough to keep disk writes infrequent.
-            // TS map:   `if (pendingFlush >= FLUSH_BATCH) { ... }`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -487,7 +439,6 @@ class PeakSweepWorker(
                 //           accumulated peak cache to disk (it rewrites the whole
                 //           `peaks.json`).
                 // Why:      Persist the batch of fresh measurements.
-                // TS map:   `await PeakCacheStore.flush(this.applicationContext);`
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -497,7 +448,6 @@ class PeakSweepWorker(
                 // What:     `pendingFlush = 0` resets the unwritten-measurement counter
                 //           after a flush.
                 // Why:      The pending data is now on disk; start counting again.
-                // TS map:   `pendingFlush = 0;`
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -509,7 +459,6 @@ class PeakSweepWorker(
         // What:     `if (pendingFlush > 0) { ... }` is the post-loop check for any fresh
         //           measurements not yet written by the in-loop batch flush.
         // Why:      Make sure a final partial batch is persisted before we return.
-        // TS map:   `if (pendingFlush > 0) { ... }`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -519,7 +468,6 @@ class PeakSweepWorker(
             // What:     `PeakCacheStore.flush(applicationContext)` writes the final
             //           leftover measurements to disk.
             // Why:      Don't lose the last sub-`FLUSH_BATCH` measurements on a clean end.
-            // TS map:   `await PeakCacheStore.flush(this.applicationContext);`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -535,9 +483,6 @@ class PeakSweepWorker(
         //           `.length`).
         // Why:      Emit one line with the per-outcome tallies and whether we were
         //           stopped, for on-device verification.
-        // TS map:   `console.info(`[${WORKER_TAG}] PeakSweepWorker swept ${processed}/${tracks.length} tracks ` + `(measured=${measured} ... stopped=${this.isStopped})`);`
-        //           — Kotlin's `$x`/`${x}` are TS's `${x}`; `Log.i` takes the tag
-        //           separately.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -555,7 +500,6 @@ class PeakSweepWorker(
         //           from the normal end of the sweep.
         // Why:      Returning success (never retry) keeps the attempt count at zero so the
         //           next period continues the backlog without exponential backoff.
-        // TS map:   `return Result.success();`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -571,9 +515,6 @@ class PeakSweepWorker(
     //           `PeakSweepWorker.KEY_MAX_TRACKS`.
     // Why:      It holds the constants (log tag, flush batch size, the test cap key,
     //           and its default) that belong to the worker type as a whole.
-    // TS map:   TS has no `companion object`; use `static` members:
-    //           `class PeakSweepWorker { static readonly KEY_MAX_TRACKS = "max_tracks"; }`.
-    //           Mentally, "everything inside `companion object` is a `static` member."
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -587,8 +528,6 @@ class PeakSweepWorker(
         //           time and inlined; `val` = never reassigned).
         // Why:      The logcat tag shared with `measureAndCache`, so verification can
         //           grep just this work's output.
-        // TS map:   `private static readonly WORKER_TAG = "PeakSweep";` — Kotlin's
-        //           `const` is stricter than TS `const` (must be a compile-time literal).
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -602,7 +541,6 @@ class PeakSweepWorker(
         //           at-most-this-many measurements an abrupt stop can lose (re-measured
         //           next pass, idempotently), large enough to keep writes infrequent
         //           (each flush rewrites the whole `peaks.json`).
-        // TS map:   `private static readonly FLUSH_BATCH = 16;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -618,8 +556,6 @@ class PeakSweepWorker(
         //           production; a test sets it small so a single instrumented run stays
         //           short instead of decoding the whole device library. `internal` so the
         //           test (same module) can reference the key.
-        // TS map:   `static readonly KEY_MAX_TRACKS = "max_tracks";` (module-internal; no
-        //           exact TS visibility twin).
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -632,9 +568,6 @@ class PeakSweepWorker(
         //           `Int.MAX_VALUE`, the largest 32-bit signed integer (2,147,483,647).
         // Why:      No cap: a production run processes the whole backlog until the
         //           platform stops it, so the default limit is effectively unbounded.
-        // TS map:   `static readonly DEFAULT_MAX_TRACKS = 2147483647;` — `Int.MAX_VALUE`
-        //           is the 32-bit ceiling; TS has no fixed-width int, so you'd inline the
-        //           number (or use `Number.MAX_SAFE_INTEGER` conceptually).
         // Gotcha:   `Int.MAX_VALUE` is the 32-bit ceiling specifically; one past it WRAPS
         //           to the negative minimum (no auto-widening like a JS number).
         //

@@ -19,9 +19,6 @@
 //           belongs to; the dotted path mirrors the directory layout.
 // Why:      So other Kotlin files (and the JNI loader) can refer to this test's
 //           class and to `NativeBridge` by a stable fully-qualified name.
-// TS map:   No statement equivalent. The closest mental model is a TS file that
-//           is implicitly part of a module folder; the package line is like the
-//           folder path encoded into the file itself.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -35,7 +32,6 @@ package dev.monochromatic.musicplayer
 //           full dotted path.
 // Why:      We need it later to build a `content://` URI for one specific audio
 //           row by appending its numeric id (see `withAppendedId`).
-// TS map:   `import { ContentUris } from "android/content";` — a named import.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -46,7 +42,6 @@ import android.content.ContentUris
 // What:     `import android.net.Uri` pulls in Android's `Uri` type, the parsed
 //           representation of a URI such as `content://media/external/...`.
 // Why:      We collect and pass `Uri` values that point at indexed music tracks.
-// TS map:   `import { Uri } from "android/net";`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -59,7 +54,6 @@ import android.net.Uri
 //           device. We read its `Audio.Media` table to find real music files.
 // Why:      The device tests decode actual library tracks, so we must query
 //           MediaStore for their ids and column metadata.
-// TS map:   `import { MediaStore } from "android/provider";`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -71,8 +65,6 @@ import android.provider.MediaStore
 //           etc. write tagged lines visible via `adb logcat`.
 // Why:      The benchmarks emit their timing/peak numbers to logcat under the
 //           tag `NativeBench` so a human can read them off the device.
-// TS map:   `import { Log } from "android/util";` — think of it as a `console`
-//           that writes to the device's system log instead of a terminal.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -85,7 +77,6 @@ import android.util.Log
 //           the Android runtime (the app `Context`, the target package, etc.).
 // Why:      We need the app `Context` to reach the content resolver and the
 //           app's external files directory.
-// TS map:   `import { InstrumentationRegistry } from "androidx/test/...";`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -98,8 +89,6 @@ import androidx.test.platform.app.InstrumentationRegistry
 //           Kotlin lets you import an individual member function this way.
 // Why:      So we can call `assertEquals(expected, actual)` bare to assert two
 //           values match, failing the test if they don't.
-// TS map:   `import { assertEquals } from "junit/Assert";` — a named import of a
-//           single function. Mentally it is `expect(actual).toBe(expected)`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -111,8 +100,6 @@ import org.junit.Assert.assertEquals
 //           static method. It fails the test unless the boolean argument is true;
 //           an optional first `String` becomes the failure message.
 // Why:      The benchmarks assert their numeric results are positive/sane.
-// TS map:   `import { assertTrue } from "junit/Assert";` — like
-//           `expect(cond).toBe(true)`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -126,8 +113,6 @@ import org.junit.Assert.assertTrue
 //           skip reason.
 // Why:      Device tests that need a fixture file or an indexed library should
 //           skip (not fail) when that precondition is absent on this phone.
-// TS map:   No direct Jest equivalent; closest is calling `test.skip()` at
-//           runtime. Mentally: `if (!cond) return; // skipped, not failed`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -139,9 +124,6 @@ import org.junit.Assume.assumeTrue
 //           method tagged `@Test` is discovered and run by the JUnit runner.
 // Why:      Every test method below carries `@Test`; without this import the
 //           annotation would not resolve.
-// TS map:   `import { Test } from "junit";` — like importing the `it`/`test`
-//           function, except in Kotlin you ATTACH it as `@Test` above the method
-//           rather than wrapping the body in a call.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -153,8 +135,6 @@ import org.junit.Test
 //           pathname (it represents a path; it does not hold open file content).
 // Why:      One benchmark builds a `File` for a pushed fixture and checks whether
 //           it exists on disk before decoding it.
-// TS map:   `import { File } from "java/io";` — roughly Node's path/fs handle
-//           rolled into one object that you query with `.exists()`, `.absolutePath`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -167,9 +147,6 @@ import java.io.File
 //           its `@Test` methods. No constructor parameters, no inheritance.
 // Why:      JUnit groups tests by class; this class is the suite that proves the
 //           native engine works on device.
-// TS map:   `class NativeBridgeTest { ... }` — but in TS you'd more likely write
-//           `describe("NativeBridgeTest", () => { ... })`. Picture each method
-//           below as an `it(...)` inside that describe block.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -180,7 +157,6 @@ class NativeBridgeTest {
     //           declaration) telling the JUnit runner "this method is a test".
     //           It is NOT a function call; it decorates the method below it.
     // Why:      Marks `nativePingCrossesJniBoundary` as a runnable test case.
-    // TS map:   Equivalent to wrapping the body in `it("...", () => { ... })`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -193,7 +169,6 @@ class NativeBridgeTest {
     //           Kotlin's keyword for "function".
     // Why:      Cheapest possible smoke test: call the native `nativePing` and
     //           confirm the JNI call round-trips a value back into Kotlin.
-    // TS map:   `function nativePingCrossesJniBoundary(): void { ... }`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -208,8 +183,6 @@ class NativeBridgeTest {
         //           is the ACTUAL.
         // Why:      `nativePing` is hard-coded native-side to return 42; getting
         //           42 back proves the .so loaded and the JNI call path works.
-        // TS map:   `assertEquals(42, NativeBridge.nativePing());` ≈
-        //           `expect(nativeAddon.nativePing()).toBe(42);`.
         // Gotcha:   `Int` is a fixed-width 32-bit signed integer here, not TS's
         //           floating `number`; the comparison is integer-exact.
         //
@@ -222,7 +195,6 @@ class NativeBridgeTest {
 
     // What:     `@Test` annotation marking the next method as a JUnit test case.
     // Why:      Registers `opusDecoderConstructsOnDevice` with the runner.
-    // TS map:   `it("opusDecoderConstructsOnDevice", () => { ... })`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -236,7 +208,6 @@ class NativeBridgeTest {
     //           decoder via `opus_decoder_create` and returns 1 on success.
     // Why:      Linking a C library is one thing; constructing a decoder at
     //           runtime on this CPU is the real proof.
-    // TS map:   `function opusDecoderConstructsOnDevice(): void { ... }`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -247,7 +218,6 @@ class NativeBridgeTest {
         //           `external` native `nativeOpusSelfTest` and asserts its `Int`
         //           return equals `1` (the native success sentinel).
         // Why:      `1` means the opus decoder was created successfully on device.
-        // TS map:   `expect(nativeAddon.nativeOpusSelfTest()).toBe(1);`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -258,7 +228,6 @@ class NativeBridgeTest {
 
     // What:     `@Test` annotation marking the next method as a test case.
     // Why:      Registers `symphoniaRegistryInitializesOnDevice`.
-    // TS map:   `it("symphoniaRegistryInitializesOnDevice", () => { ... })`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -271,7 +240,6 @@ class NativeBridgeTest {
     //           (`nativeSymphoniaSelfTest`) initializes symphonia's format prober
     //           plus codec registry and returns 1.
     // Why:      Confirms the Rust audio stack is present and self-initializes.
-    // TS map:   `function symphoniaRegistryInitializesOnDevice(): void { ... }`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -281,7 +249,6 @@ class NativeBridgeTest {
         // What:     `assertEquals(1, NativeBridge.nativeSymphoniaSelfTest())`
         //           calls the native self-test and asserts `Int` `1`.
         // Why:      `1` means symphonia's prober + codec registry initialized.
-        // TS map:   `expect(nativeAddon.nativeSymphoniaSelfTest()).toBe(1);`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -292,7 +259,6 @@ class NativeBridgeTest {
 
     // What:     `@Test` annotation marking the next method as a test case.
     // Why:      Registers `benchmarkNativeDecode`.
-    // TS map:   `it("benchmarkNativeDecode", () => { ... })`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -307,7 +273,6 @@ class NativeBridgeTest {
     //           app's external files dir as `bench.opus` / `bench.flac` first. A
     //           negative native result is an error code.
     // Why:      Measures whether the Rust decode path is fast enough on hardware.
-    // TS map:   `function benchmarkNativeDecode(): void { ... }`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -321,7 +286,6 @@ class NativeBridgeTest {
         //           `Context` under test (gives access to app dirs, resolvers).
         // Why:      We need the app `Context` to find the external files directory
         //           where fixtures were pushed.
-        // TS map:   `const context = getInstrumentation().targetContext;`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -335,8 +299,6 @@ class NativeBridgeTest {
         //           storage is unavailable).
         // Why:      Fixtures (`bench.opus`, `bench.flac`) are pushed into this dir;
         //           we build paths under it.
-        // TS map:   `const dir = context.getExternalFilesDir(null);` — note `dir`
-        //           is `File | null` here.
         // Gotcha:   `null` is a real argument value here, not absence; the API
         //           overload uses it to mean "no type subdirectory".
         //
@@ -350,7 +312,6 @@ class NativeBridgeTest {
         //           filenames. `for (name in <list>)` iterates each element,
         //           binding it to the immutable loop variable `name`.
         // Why:      We run the same benchmark routine once per fixture filename.
-        // TS map:   `for (const name of ["bench.opus", "bench.flac"]) { ... }`.
         // Gotcha:   Kotlin's `for (x in xs)` is value iteration (TS `for...of`),
         //           NOT index iteration like a JS `for (x in obj)` (which walks
         //           keys). Easy to misread.
@@ -366,8 +327,6 @@ class NativeBridgeTest {
             //           just joins the path, it does not open or read anything.
             // Why:      Gives a concrete path we can existence-check and pass to
             //           the native decoder by absolute path.
-            // TS map:   `const fixture = new File(dir, name);` — purely a path
-            //           join, like `path.join(dir, name)` wrapped in an object.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -381,7 +340,6 @@ class NativeBridgeTest {
             //           not fail) the test when `cond` is false, recording `msg`.
             // Why:      If the fixture was never pushed, skip this iteration's
             //           benchmark instead of failing the suite.
-            // TS map:   `if (!fixture.exists()) return; // skip, not fail`.
             // Gotcha:   `assumeTrue` is SKIP-on-false, unlike `assertTrue` which is
             //           FAIL-on-false. The distinction is the whole point here.
             //
@@ -397,8 +355,6 @@ class NativeBridgeTest {
             //           which returns a `Double` (microseconds per decoded sample;
             //           negative encodes a native error code).
             // Why:      Captures the throughput number for logging and asserting.
-            // TS map:   `const usPerSample =`
-            //           `  nativeAddon.nativeDecodeBenchmark(fixture.absolutePath);`.
             // Gotcha:   `Double` (64-bit float) is chosen over `Float` (32-bit)
             //           because microsecond timings want the extra precision; both
             //           collapse to TS `number`.
@@ -414,8 +370,6 @@ class NativeBridgeTest {
             //           `$usPerSample` are string-template interpolations.
             // Why:      Emits the timing to logcat so a human can read off the
             //           benchmark result under the `NativeBench` tag.
-            // TS map:   `console.info("NativeBench",`
-            //           `  `${name} -> ${usPerSample} us/sample (...)`);`.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -429,7 +383,6 @@ class NativeBridgeTest {
             //           is a `Double` literal.
             // Why:      A non-positive result means the native decoder failed (it
             //           returns negative error codes); assert it actually decoded.
-            // TS map:   `expect(usPerSample > 0).toBe(true);` with a message.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -441,7 +394,6 @@ class NativeBridgeTest {
 
     // What:     `@Test` annotation marking the next method as a test case.
     // Why:      Registers `aaudioOutputLatencyOnDevice`.
-    // TS map:   `it("aaudioOutputLatencyOnDevice", () => { ... })`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -454,7 +406,6 @@ class NativeBridgeTest {
     //           AAudio output path opens and runs on this GrapheneOS device. It is
     //           inaudible (writes zeros), so the resident-noise rule isn't engaged.
     // Why:      Confirms the native audio OUTPUT path works, not just decode.
-    // TS map:   `function aaudioOutputLatencyOnDevice(): void { ... }`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -466,7 +417,6 @@ class NativeBridgeTest {
         //           stream and returns its latency in milliseconds as a `Double`
         //           (negative encodes a native error code).
         // Why:      Captures the measured latency for logging and assertion.
-        // TS map:   `const latencyMs = nativeAddon.nativeOutputLatencyProbe();`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -477,8 +427,6 @@ class NativeBridgeTest {
         //           `(ndk::audio, silent)")`. Info-level logcat line; `$latencyMs`
         //           is interpolated.
         // Why:      Surfaces the latency number to a human reading logcat.
-        // TS map:   `console.info("NativeBench",`
-        //           `  `AAudio output latency = ${latencyMs} ms (ndk::audio, silent)`);`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -490,7 +438,6 @@ class NativeBridgeTest {
         //           positive; `0.0` is a `Double` literal.
         // Why:      A non-positive value is the native error sentinel; assert the
         //           probe actually opened the stream.
-        // TS map:   `expect(latencyMs > 0).toBe(true);` with a message.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -501,7 +448,6 @@ class NativeBridgeTest {
 
     // What:     `@Test` annotation marking the next method as a test case.
     // Why:      Registers `measureTruePeakOnDevice`.
-    // TS map:   `it("measureTruePeakOnDevice", () => { ... })`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -518,7 +464,6 @@ class NativeBridgeTest {
     //           sane positive peak. Skips when no library is indexed; silent
     //           (decode-only).
     // Why:      Proves the Rust true-peak measurement works on real device files.
-    // TS map:   `function measureTruePeakOnDevice(): void { ... }`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -528,7 +473,6 @@ class NativeBridgeTest {
         // What:     `val context = ...targetContext` — the app `Context` under
         //           test (same as earlier).
         // Why:      Needed to reach the content resolver that queries MediaStore.
-        // TS map:   `const context = getInstrumentation().targetContext;`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -539,7 +483,6 @@ class NativeBridgeTest {
         //           `ContentResolver`, the object you use to query/open content
         //           providers like MediaStore.
         // Why:      We query it for audio rows and open `content://` fds through it.
-        // TS map:   `const resolver = context.contentResolver;`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -550,7 +493,6 @@ class NativeBridgeTest {
         //           `MediaStore.VOLUME_EXTERNAL)`. Builds the `content://` URI for
         //           the audio table on the external storage volume.
         // Why:      This URI is the table we query for music rows.
-        // TS map:   `const collection = MediaStore.Audio.Media.getContentUri("external");`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -563,7 +505,6 @@ class NativeBridgeTest {
         //           `listOf<Uri>()` would be READ-ONLY (no `.add`); we need the
         //           mutable one to append inside the loop.
         // Why:      We collect up to 8 track URIs to measure.
-        // TS map:   `const uris: Uri[] = [];` — a plain mutable array.
         // Gotcha:   Kotlin distinguishes read-only `List` from `MutableList`;
         //           picking `mutableListOf` is what makes `.add(...)` legal.
         //
@@ -591,9 +532,6 @@ class NativeBridgeTest {
         //             lambda whose single parameter is named `cursor`.
         // Why:      Open a cursor over music rows, do the work, and guarantee the
         //           cursor is closed afterward without a manual finally.
-        // TS map:   no exact match; mentally:
-        //           `const cursor = resolver.query(...); if (cursor) { try { ...`
-        //           `} finally { cursor.close(); } }`.
         // Gotcha:   `.use { }` is Kotlin's deterministic resource cleanup (like
         //           `using`/`with`); it ALWAYS closes the resource. TS has no
         //           built-in equivalent beyond a manual `try/finally`.
@@ -610,7 +548,6 @@ class NativeBridgeTest {
             //           variant throws if the column is missing rather than
             //           returning -1.
             // Why:      We read each row's id by index; we need that index first.
-            // TS map:   `const idColumn = cursor.getColumnIndexOrThrow(_ID);`.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -623,7 +560,6 @@ class NativeBridgeTest {
             //           length. The loop runs while there's a next row AND we have
             //           fewer than 8 URIs.
             // Why:      Walk rows, capping the sample at 8 tracks.
-            // TS map:   `while (cursor.moveToNext() && uris.length < 8) { ... }`.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -642,8 +578,6 @@ class NativeBridgeTest {
                 //           - `uris.add(...)` appends that `Uri` to our list.
                 // Why:      Build a per-track URI we can later open as a file
                 //           descriptor and decode.
-                // TS map:   `uris.push(ContentUris.withAppendedId(collection,`
-                //           `cursor.getLong(idColumn)));`.
                 // Gotcha:   `getLong` (64-bit) not `getInt` (32-bit) on purpose;
                 //           both are plain TS `number`, but the width matters
                 //           native-side.
@@ -660,7 +594,6 @@ class NativeBridgeTest {
         //           returns a `Boolean`. `assumeTrue` SKIPS the test (does not
         //           fail) when the list is empty.
         // Why:      Without an indexed library there's nothing to measure, so skip.
-        // TS map:   `if (uris.length === 0) return; // skip, not fail`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -673,7 +606,6 @@ class NativeBridgeTest {
         //           amplitude of the -1 dBTP loudness ceiling (10^(-1/20)).
         // Why:      `Float` matches the 32-bit PCM sample/peak type the native
         //           true-peak path returns, avoiding a precision mismatch.
-        // TS map:   `const ceiling = 0.8912509; // -1 dBTP, TS has only number`.
         // Gotcha:   The `f` suffix is significant: `0.8912509` (Double) vs
         //           `0.8912509f` (Float) are different types in Kotlin, even
         //           though both are `number` in TS.
@@ -686,7 +618,6 @@ class NativeBridgeTest {
         // What:     `var maxPeak = 0.0f`. `var` (NOT `val`) declares a MUTABLE
         //           local, reassignable later. `0.0f` is a `Float` zero.
         // Why:      Running maximum of every measured peak, updated in the loop.
-        // TS map:   `let maxPeak = 0; // mutable`.
         // Gotcha:   `var` = TS `let` (reassignable); `val` = TS `const`. Picking
         //           `var` here is deliberate because we mutate it.
         //
@@ -699,7 +630,6 @@ class NativeBridgeTest {
         //           suffix) accumulator starting at zero. Sibling `Float` would
         //           lose precision summing many elapsed-time readings.
         // Why:      Sums per-track elapsed milliseconds for a total at the end.
-        // TS map:   `let totalMs = 0;`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -709,7 +639,6 @@ class NativeBridgeTest {
         // What:     `for (uri in uris) { ... }`. Value iteration over the `uris`
         //           list, binding each `Uri` to the immutable loop variable `uri`.
         // Why:      Measure the true peak of each collected track in turn.
-        // TS map:   `for (const uri of uris) { ... }`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -720,7 +649,6 @@ class NativeBridgeTest {
             //           nanosecond timestamp as a `Long`. Not wall-clock time; only
             //           valid for measuring elapsed intervals.
             // Why:      Marks the start so we can compute decode elapsed time.
-            // TS map:   `const start = performance.now() * 1e6; // ns-ish`.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -741,11 +669,6 @@ class NativeBridgeTest {
             //             (open failed), use the right side `-100.0f` instead.
             // Why:      Measure the track's true peak over a borrowed fd, falling
             //           back to a clearly-bad sentinel (-100) if the open failed.
-            // TS map:   no exact match; mentally:
-            //           `const pfd = resolver.openFileDescriptor(uri, "r");`
-            //           `let peak: number;`
-            //           `if (pfd) { try { peak = nativeMeasureTruePeak(pfd.fd); }`
-            //           `  finally { pfd.close(); } } else { peak = -100; }`.
             // Gotcha:   `?:` is Kotlin's null-coalescing (TS `??`), NOT a ternary;
             //           there is no condition, only "left, or else right if null".
             //           The fd is BORROWED: the native side dups it before this
@@ -767,7 +690,6 @@ class NativeBridgeTest {
             //           million), purely cosmetic. Dividing a `Long` by a `Double`
             //           promotes the result to `Double` milliseconds.
             // Why:      Convert the elapsed nanoseconds to milliseconds for logging.
-            // TS map:   `const elapsedMs = Number(end - start) / 1_000_000;`.
             // Gotcha:   The `_` separators (`1_000_000.0`) are ignored by the
             //           compiler; they don't change the value, just readability.
             //
@@ -779,7 +701,6 @@ class NativeBridgeTest {
             // What:     `totalMs += elapsedMs`. Plain compound assignment adding
             //           this track's elapsed ms into the running total.
             // Why:      Accumulate total measurement time across all tracks.
-            // TS map:   `totalMs += elapsedMs;` (identical).
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -798,7 +719,6 @@ class NativeBridgeTest {
             //           - `: Float` is an explicit type annotation on `gain`.
             // Why:      Compute the exact normalization gain the core would apply,
             //           purely for logging here so a human can sanity-check it.
-            // TS map:   `const gain = peak > 0 ? Math.min(ceiling / peak, 1) : 1;`.
             // Gotcha:   Kotlin's `if/else` returns a value (used like a ternary
             //           here); `minOf` is the two-arg `Math.min`.
             //
@@ -815,9 +735,6 @@ class NativeBridgeTest {
             //           `elapsedMs)}` formats `elapsedMs` to one decimal place by
             //           calling `.format(...)` on the format-string `"%.1f"`.
             // Why:      Log this track's peak, derived gain, and timing for a human.
-            // TS map:   `console.info("NativeBench",`
-            //           `  `rust-measure (${uri.lastPathSegment}) -> peak=${peak}`
-            //           `  gain=${gain} elapsedMs=${elapsedMs.toFixed(1)}`);`.
             // Gotcha:   `"%.1f".format(x)` is Kotlin's printf-style formatting
             //           (method ON the string), equivalent to `x.toFixed(1)`.
             //
@@ -833,7 +750,6 @@ class NativeBridgeTest {
             //           `Float` literals.
             // Why:      A valid true peak is positive and not absurdly large; both
             //           bounds catch a broken measurement or sentinel value.
-            // TS map:   `expect(peak > 0 && peak < 8).toBe(true);` with a message.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -843,7 +759,6 @@ class NativeBridgeTest {
             // What:     `maxPeak = maxOf(maxPeak, peak)`. `maxOf(a, b)` returns the
             //           larger of two `Float`s. Reassigns the mutable `maxPeak`.
             // Why:      Track the loudest peak seen across the sampled tracks.
-            // TS map:   `maxPeak = Math.max(maxPeak, peak);`.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -857,9 +772,6 @@ class NativeBridgeTest {
         //           the count; `${"%.1f".format(totalMs)}` formats the total ms to
         //           one decimal.
         // Why:      Logs the aggregate measurement time across all sampled tracks.
-        // TS map:   `console.info("NativeBench",`
-        //           `  `rust-measure TOTAL ${uris.length} tracks =`
-        //           `  ${totalMs.toFixed(1)} ms (...)`);`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -873,7 +785,6 @@ class NativeBridgeTest {
         //           Fails unless the loudest measured peak exceeds `0.1f`.
         // Why:      If even the loudest track is near-silent, the measurement is
         //           systematically wrong (a scaling bug), not real quiet music.
-        // TS map:   `expect(maxPeak > 0.1).toBe(true);` with a message.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -884,7 +795,6 @@ class NativeBridgeTest {
 
     // What:     `@Test` annotation marking the next method as a test case.
     // Why:      Registers `decodeFromContentFd`.
-    // TS map:   `it("decodeFromContentFd", () => { ... })`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -904,7 +814,6 @@ class NativeBridgeTest {
     //           `adb shell pm grant` before the run); skips (not fails) when the
     //           permission or indexed library is absent. Silent (decode-only).
     // Why:      Final proof the engine's real input path (content fd) works.
-    // TS map:   `function decodeFromContentFd(): void { ... }`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -914,7 +823,6 @@ class NativeBridgeTest {
         // What:     `val context = ...targetContext` — the app `Context` (same as
         //           earlier methods).
         // Why:      Needed to reach the content resolver.
-        // TS map:   `const context = getInstrumentation().targetContext;`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -924,7 +832,6 @@ class NativeBridgeTest {
         // What:     `val resolver = context.contentResolver` — the content
         //           resolver (same as earlier).
         // Why:      We query MediaStore and open content fds through it.
-        // TS map:   `const resolver = context.contentResolver;`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -935,7 +842,6 @@ class NativeBridgeTest {
         //           `MediaStore.VOLUME_EXTERNAL)` — the external audio table URI
         //           (same as earlier).
         // Why:      The table we query for music rows.
-        // TS map:   `const collection = MediaStore.Audio.Media.getContentUri("external");`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -948,8 +854,6 @@ class NativeBridgeTest {
         //           and the display filename.
         // Why:      We need both the id (to build a URI) and the name (to pick the
         //           file extension) for each row.
-        // TS map:   `const projection = [MediaStore.Audio.Media._ID,`
-        //           `MediaStore.Audio.Media.DISPLAY_NAME];`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -961,8 +865,6 @@ class NativeBridgeTest {
         //           file extensions we want one sample of each. Sibling
         //           `mutableListOf` would allow `.add`; we don't need that here.
         // Why:      We pick the first track matching each of these extensions.
-        // TS map:   `const wantedExtensions = [".flac", ".opus", ".mp3"];` (treat
-        //           as readonly).
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -975,7 +877,6 @@ class NativeBridgeTest {
         //           `<String, Uri>` are explicit generic type arguments. Sibling
         //           `mapOf` would be read-only; we need mutable to insert.
         // Why:      Records the first track URI found per extension, deduplicating.
-        // TS map:   `const firstByExtension = new Map<string, Uri>();`.
         // Gotcha:   Like lists, Kotlin separates read-only `Map` from
         //           `MutableMap`; `mutableMapOf` is what makes index-set legal.
         //
@@ -991,8 +892,6 @@ class NativeBridgeTest {
         //           safe-calls `.use` to run the lambda and auto-close the cursor.
         //           The WHERE clause `${...IS_MUSIC} != 0` filters to music rows.
         // Why:      Open a cursor over music rows and guarantee it closes after.
-        // TS map:   `const cursor = resolver.query(...);`
-        //           `if (cursor) { try { ... } finally { cursor.close(); } }`.
         // Gotcha:   `?.` safe-call + `.use {}` auto-close, same as before; no TS
         //           one-liner equivalent.
         //
@@ -1006,7 +905,6 @@ class NativeBridgeTest {
             //           `MediaStore.Audio.Media._ID)` — index of the `_ID` column,
             //           throwing if absent.
             // Why:      Needed to read each row's id.
-            // TS map:   `const idColumn = cursor.getColumnIndexOrThrow(_ID);`.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -1017,7 +915,6 @@ class NativeBridgeTest {
             //           `MediaStore.Audio.Media.DISPLAY_NAME)` — index of the
             //           display-name column, throwing if absent.
             // Why:      Needed to read each row's filename to pick its extension.
-            // TS map:   `const nameColumn = cursor.getColumnIndexOrThrow(DISPLAY_NAME);`.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -1029,8 +926,6 @@ class NativeBridgeTest {
             //           (`moveToNext()` returns `Boolean`) while we still have fewer
             //           collected extensions than we want.
             // Why:      Stop scanning once we've found one track per wanted ext.
-            // TS map:   `while (cursor.moveToNext() && firstByExtension.size <`
-            //           `wantedExtensions.length) { ... }`.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -1050,9 +945,6 @@ class NativeBridgeTest {
                 //             whole expression's value-position fallback.
                 // Why:      Get a normalized lowercase filename, or skip this row if
                 //           it has no name.
-                // TS map:   `const raw = cursor.getString(nameColumn);`
-                //           `if (raw == null) continue;`
-                //           `const name = raw.toLowerCase();`.
                 // Gotcha:   `?:` Elvis with `continue` on the right is idiomatic
                 //           Kotlin for "default-or-bail"; there's no single TS
                 //           operator that branches control flow this way.
@@ -1075,9 +967,6 @@ class NativeBridgeTest {
                 //             skip to the next row.
                 // Why:      Find which wanted extension this filename ends with, or
                 //           skip the row if it's none of them.
-                // TS map:   `const extension = wantedExtensions.find((it) =>`
-                //           `name.endsWith(it));`
-                //           `if (extension == null) continue;`.
                 // Gotcha:   `it` is Kotlin's auto-named single lambda parameter
                 //           (no `(it) =>` needed); `firstOrNull` is `Array.find`.
                 //
@@ -1093,7 +982,6 @@ class NativeBridgeTest {
                 //           `in`/`!in` test the KEYS.)
                 // Why:      Only record the FIRST track per extension; ignore later
                 //           duplicates of an extension we already have.
-                // TS map:   `if (!firstByExtension.has(extension)) { ... }`.
                 // Gotcha:   `in`/`!in` on a map check keys (like `Map.has`), not
                 //           values; on a list/range they check membership.
                 //
@@ -1112,9 +1000,6 @@ class NativeBridgeTest {
                     //           - `ContentUris.withAppendedId(collection, id)` builds
                     //             the per-row `Uri`.
                     // Why:      Remember this track's URI under its extension key.
-                    // TS map:   `firstByExtension.set(extension,`
-                    //           `ContentUris.withAppendedId(collection,`
-                    //           `cursor.getLong(idColumn)));`.
                     //
                     // In TS you'd write (pseudocode):
                     // ```ts
@@ -1128,7 +1013,6 @@ class NativeBridgeTest {
         //           `READ_MEDIA_AUDIO)", firstByExtension.isNotEmpty())`. SKIPS the
         //           test (does not fail) when the map is empty.
         // Why:      Nothing to decode without an indexed library, so skip.
-        // TS map:   `if (firstByExtension.size === 0) return; // skip, not fail`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1140,7 +1024,6 @@ class NativeBridgeTest {
         //           `extension` (the key) and `uri` (the value). `(a, b)` on the
         //           left of `in` is Kotlin component-destructuring.
         // Why:      Decode each collected track, labeled by its extension.
-        // TS map:   `for (const [extension, uri] of firstByExtension) { ... }`.
         // Gotcha:   `(extension, uri)` is destructuring of a Map.Entry, equivalent
         //           to TS's `[key, value]` array destructuring in `for...of`.
         //
@@ -1163,11 +1046,6 @@ class NativeBridgeTest {
             // Why:      Decode straight from the borrowed content fd and capture the
             //           throughput, falling back to a clearly-bad sentinel on open
             //           failure.
-            // TS map:   `const pfd = resolver.openFileDescriptor(uri, "r");`
-            //           `let usPerSample: number;`
-            //           `if (pfd) { try { usPerSample =`
-            //           `  nativeDecodeFdBenchmark(pfd.fd); }`
-            //           `  finally { pfd.close(); } } else { usPerSample = -100; }`.
             // Gotcha:   Borrowed fd: native side dups it before this `.use` closes
             //           the original (the dup-based fd-ownership protocol that
             //           avoids a double-close fdsan SIGABRT).
@@ -1187,9 +1065,6 @@ class NativeBridgeTest {
             //           `decode-only)")`. Info logcat line; `$extension`, `$uri`,
             //           `$usPerSample` interpolated.
             // Why:      Logs which extension/track decoded and how fast.
-            // TS map:   `console.info("NativeBench",`
-            //           `  `content-fd ${extension} (${uri}) -> ${usPerSample}`
-            //           `  us/sample (...)`);`.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -1202,7 +1077,6 @@ class NativeBridgeTest {
             //           literal.
             // Why:      A non-positive value is the native error sentinel; assert
             //           the content-fd decode actually succeeded.
-            // TS map:   `expect(usPerSample > 0).toBe(true);` with a message.
             //
             // In TS you'd write (pseudocode):
             // ```ts

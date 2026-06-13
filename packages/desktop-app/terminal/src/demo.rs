@@ -4,7 +4,6 @@
 //           growable byte array; siblings are borrowed slices `&[u8]` and fixed
 //           arrays `[u8; N]`.
 // Why:      The prototype feeds deterministic VT content until PTY I/O is added.
-// TS map:   `export function demoVt(): Uint8Array`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -17,7 +16,6 @@ pub fn demo_vt() -> Vec<u8> {
     //           `Vec` is chosen over `String` because VT streams are bytes, not
     //           guaranteed UTF-8 text.
     // Why:      Escape sequences and future PTY chunks are byte-oriented.
-    // TS map:   `const bytes = []`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -27,7 +25,6 @@ pub fn demo_vt() -> Vec<u8> {
     // What:     `for index in 0..160` loops over a half-open integer range.
     //           `0..160` yields 0 through 159.
     // Why:      Enough rows are generated to make scrollback visible immediately.
-    // TS map:   `for (let index = 0; index < 160; index += 1)`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -37,7 +34,6 @@ pub fn demo_vt() -> Vec<u8> {
         // What:     `let color = ...` chooses an ANSI color number as a string slice.
         //           `&str` is a borrowed string view; `String` would allocate.
         // Why:      Reusing static color snippets keeps demo generation cheap.
-        // TS map:   `const color = palette[index % palette.length]`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -54,7 +50,6 @@ pub fn demo_vt() -> Vec<u8> {
         // What:     `format!(...)` builds one owned `String` from literals and
         //           values. The `\x1b` bytes are ANSI escape introducers.
         // Why:      Each line demonstrates colors, bold text, wrapping, and scrollback.
-        // TS map:   Template string with ANSI escape sequences.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -66,7 +61,6 @@ pub fn demo_vt() -> Vec<u8> {
         // What:     `bytes.extend_from_slice(line.as_bytes())` appends borrowed bytes
         //           from the owned `String`. `.as_bytes()` borrows UTF-8 storage.
         // Why:      The terminal engine accepts bytes, not Rust strings.
-        // TS map:   `bytes.push(...encoder.encode(line))`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -76,7 +70,6 @@ pub fn demo_vt() -> Vec<u8> {
     }
     // What:     `bytes` without a trailing semicolon is the function's return value.
     // Why:      Hand the complete VT stream to the caller.
-    // TS map:   `return encoder.encode(chunks.join(""))`.
     //
     // In TS you'd write (pseudocode):
     // ```ts

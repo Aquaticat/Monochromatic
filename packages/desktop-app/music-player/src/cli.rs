@@ -9,7 +9,6 @@
 //           for paths).
 // Why:      Each positional argument is parsed straight into an owned `PathBuf`
 //           that the caller can hand to the engine, outliving this scope.
-// TS map:   just a `string` path in TS.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -23,8 +22,6 @@ use std::path::PathBuf;
 //           trait's implementation for our struct.
 // Why:      The derive macro reads the struct below and writes the whole argv
 //           scanner for us, and the trait gives `Cli::parse()` to the binary.
-// TS map:   `import { Command } from "commander";` (a CLI-parsing library) plus a
-//           decorator that wires a class's fields to flags.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -44,8 +41,6 @@ use clap::Parser;
 // Why:      Declaring the CLI as data on a struct, then deriving the parser, is the
 //           whole point of adopting clap: it replaces hand-rolled argv scanning with
 //           a single source of truth that also generates `--help` / `--version`.
-// TS map:   like decorating a class so a CLI library builds the parser from its
-//           fields: `@cli({ name: "music-player", about: "..." }) class Cli { ... }`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -66,7 +61,6 @@ pub struct Cli {
     //           the field to the binary and the tests.
     // Why:      This flag is the ONLY way to ask a command-line launch to begin
     //           playing immediately; without it, opened paths load paused.
-    // TS map:   `start_playing: boolean // from a `--start-playing` flag`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -85,7 +79,6 @@ pub struct Cli {
     // Why:      Exactly one Source Root is loaded, so the CLI takes at most one path: a
     //           folder, or a single file whose parent folder becomes the root. The old
     //           multi-path form is deliberately removed; passing two paths now errors.
-    // TS map:   `path?: string // an optional single positional argument`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -103,7 +96,6 @@ pub struct Cli {
 // Why:      Keep the tests next to the code without inflating this file or its
 //           max-lines budget (sibling `*_tests.rs` files are linter-exempt), and let
 //           them reach private items via `use super::*`.
-// TS map:   `// cli_tests.rs is cli.unit.test.ts beside cli.ts`
 //
 // In TS you'd write (pseudocode):
 // ```ts

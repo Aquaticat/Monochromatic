@@ -7,9 +7,6 @@
 // Why:      Without it the `Session` type would land in the unnamed default package
 //           and collide with everything else; the build expects this file's package
 //           to match its directory path (`.../core/`).
-// TS map:   There is no per-file `package` keyword in TS. The closest mental model
-//           is "this whole file is a module, and its directory `core/` is the
-//           namespace." Importers write `import { Session } from ".../core/..."`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -82,9 +79,6 @@ package dev.monochromatic.musicplayer.core
 // Why:      One serializable-shaped record describing "where the user left off",
 //           with cheap value-equality (used in tests) and a `copy()` for building a
 //           tweaked session without mutating the old one.
-// TS map:   `data class` has no single TS keyword. Mentally it is an `interface` for
-//           the shape PLUS a constructor that fills defaults PLUS free structural
-//           equality:
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -123,8 +117,6 @@ data class Session(
     //           after a rescan.
     // Why:      Restore the selected track by stable identity after re-scanning the
     //           source; `null` when nothing was selected.
-    // TS map:   `selected: string | null` with a default of `null`. Kotlin's
-    //           `String?` is exactly TS's `string | null` union.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -143,8 +135,6 @@ data class Session(
     //           - `= 0.0` is the DEFAULT: start of the track. The `.0` makes the
     //             literal a floating-point `Double`, not an `Int`.
     // Why:      Resume the selected track where it left off; default `0.0` is "start".
-    // TS map:   `positionSecs: number` with a default of `0`. TS has only one number
-    //           type, so the `Double`-vs-`Float` distinction vanishes there.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -165,8 +155,6 @@ data class Session(
     //             `Float` field, so `1.0f` explicitly types the literal as a 32-bit
     //             `Float`.
     // Why:      Restore the user's last volume; default `1.0f` is "full gain".
-    // TS map:   `volume: number` with a default of `1`. TS has no `Float`/`Double`
-    //           split and no `f` suffix — every numeric literal is just `number`.
     // Gotcha:   The `f` in `1.0f` is NOT a TS thing. In TS you would write plain `1`.
     //           Forgetting the `f` in Kotlin is a compile error here, not a no-op.
     //
@@ -190,8 +178,6 @@ data class Session(
     //             enum (the `EnumName.MEMBER` form), here the "no shuffle" mode that
     //             matches the desktop default `ShuffleMode::Off`.
     // Why:      Restore the user's shuffle choice; default `OFF` is "not shuffling".
-    // TS map:   `shuffle: ShuffleMode` with a default of `ShuffleMode.OFF`. If
-    //           `ShuffleMode` were a TS string union, the default would be `"off"`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -204,7 +190,6 @@ data class Session(
     //             `boolean` (no sibling-type subtlety here).
     //           - `= false` is the DEFAULT: repeat off, matching the desktop default.
     // Why:      Restore the repeat-track flag; default `false` is "do not repeat".
-    // TS map:   `repeatTrack: boolean` with a default of `false`.
     //
     // In TS you'd write (pseudocode):
     // ```ts

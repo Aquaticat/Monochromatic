@@ -53,7 +53,6 @@
 //           reject the shape outright (resharp) or wall-clock on it
 //           (regex crate); the structural rejection is the honest
 //           framing.
-// TS map:   `function stackedQuantifier(src: string): string | null`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -79,7 +78,6 @@ pub fn stacked_quantifier(src: &str) -> Option<String> {
     // Why:      The stacked-quantifier failure is exactly two
     //           quantifier suffixes back-to-back; the state-machine
     //           pinpoints that adjacency without parsing the regex.
-    // TS map:   `let justConsumedQuant = false;`.
     let mut just_consumed_quant = false;
     while i < bytes.len() {
         let c = bytes[i];
@@ -93,7 +91,6 @@ pub fn stacked_quantifier(src: &str) -> Option<String> {
         // Why:      Without this skip, `\{` would be mis-detected as a
         //           bounded-quantifier start and the algorithm would
         //           walk past the `}` of a literal byte sequence.
-        // TS map:   `if (c === 0x5c) { i += 2; justConsumedQuant = false; continue; }`.
         if c == b'\\' {
             i += 2;
             just_consumed_quant = false;
@@ -104,7 +101,6 @@ pub fn stacked_quantifier(src: &str) -> Option<String> {
         //           reason about quantifiers there.
         // Why:      `[*+?{]` is a five-byte literal class, not five
         //           stacked quantifiers.
-        // TS map:   `if (!inClass && c === 0x5b) { inClass = true; ... }`.
         if !in_class && c == b'[' {
             in_class = true;
             just_consumed_quant = false;
@@ -131,7 +127,6 @@ pub fn stacked_quantifier(src: &str) -> Option<String> {
         //           "open-paren, lazy-quantifier-on-open-paren, ..."
         //           which is structurally wrong and would falsely flag
         //           any `(?:...){...}` shape as stacked.
-        // TS map:   `if (c === 0x28 && b[i+1] === 0x3f) { i += 2; ... }`.
         if c == b'(' && i + 1 < bytes.len() && bytes[i + 1] == b'?' {
             i += 2;
             just_consumed_quant = false;
@@ -148,7 +143,6 @@ pub fn stacked_quantifier(src: &str) -> Option<String> {
         //           shaped literals like `{"key":`). Requiring the
         //           digit lookahead keeps the algorithm well-defined
         //           on real inputs.
-        // TS map:   `const isQuant = c === 0x2a || c === 0x2b || c === 0x3f || (c === 0x7b && isDigit(b[i+1]));`.
         let is_quant_start = matches!(c, b'*' | b'+' | b'?')
             || (c == b'{'
                 && i + 1 < bytes.len()
@@ -170,7 +164,6 @@ pub fn stacked_quantifier(src: &str) -> Option<String> {
             //           same quantifier in regex syntax. Treating it
             //           as a separate quantifier would false-positive
             //           every lazy quantifier in the corpus.
-            // TS map:   `if (c === 0x7b) { while (i < len && b[i] !== 0x7d) i++; if (i < len) i++; } else { i++; }`.
             if c == b'{' {
                 while i < bytes.len() && bytes[i] != b'}' {
                     i += 1;
@@ -281,7 +274,6 @@ pub fn stacked_quantifier(src: &str) -> Option<String> {
 //           structurally bad" rather than "the plain path
 //           specifically dislikes it". Either engine would either
 //           reject the shape outright or wall-clock on it.
-// TS map:   `function nestedGroupedQuantifier(src: string): string | null`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -306,7 +298,6 @@ pub fn nested_grouped_quantifier(src: &str) -> Option<String> {
     //           tracking. We don't need to know HOW deep the groups
     //           nest, only that there are CHAIN consecutive
     //           close+quantifier pairs back-to-back.
-    // TS map:   `let chain = 0;`.
     let mut chain: usize = 0;
     // What:     `const THRESHOLD: usize = 4;` is the flag-at chain
     //           length. Empirically 3 still compiles in milliseconds
@@ -318,7 +309,6 @@ pub fn nested_grouped_quantifier(src: &str) -> Option<String> {
     //           authored rules (real secret-detection patterns rarely
     //           nest beyond 2 quantifier levels). Tune downward only
     //           if production rules trip it.
-    // TS map:   `const THRESHOLD = 4;`.
     const THRESHOLD: usize = 4;
     while i < bytes.len() {
         let c = bytes[i];
@@ -329,7 +319,6 @@ pub fn nested_grouped_quantifier(src: &str) -> Option<String> {
         // Why:      Without skipping, `\)` would be mis-detected as a
         //           group close, and `\{` would be mis-detected as a
         //           quantifier start.
-        // TS map:   `if (c === 0x5c) { i += 2; chain = 0; continue; }`.
         if c == b'\\' {
             i += 2;
             chain = 0;
@@ -341,7 +330,6 @@ pub fn nested_grouped_quantifier(src: &str) -> Option<String> {
         //           The class itself is an atom so entry resets chain.
         // Why:      `[)]*` is a one-byte class then a quantifier on
         //           that atom, NOT a `)`+quantifier chain link.
-        // TS map:   `if (!inClass && c === 0x5b) { inClass = true; chain = 0; ... }`.
         if !in_class && c == b'[' {
             in_class = true;
             chain = 0;
@@ -367,7 +355,6 @@ pub fn nested_grouped_quantifier(src: &str) -> Option<String> {
         //           after the open and may misinterpret subsequent
         //           parsing. The skip keeps the walker structurally
         //           agnostic to group flavor.
-        // TS map:   `if (c === 0x28) { chain = 0; i += 1; if (b[i] === 0x3f) i += 1; continue; }`.
         if c == b'(' {
             chain = 0;
             i += 1;
@@ -392,7 +379,6 @@ pub fn nested_grouped_quantifier(src: &str) -> Option<String> {
         //           the blowup shape. Every chain increment requires a
         //           `)` IMMEDIATELY followed by a `*`/`+`/`?`/`{N`;
         //           any deviation resets the chain.
-        // TS map:   `if (c === 0x29) { i += 1; const isQuant = ...; if (isQuant) { ...consume...; chain += 1; if (chain >= THRESHOLD) return reason; } else { chain = 0; } continue; }`.
         if c == b')' {
             i += 1;
             let is_quant = i < bytes.len()

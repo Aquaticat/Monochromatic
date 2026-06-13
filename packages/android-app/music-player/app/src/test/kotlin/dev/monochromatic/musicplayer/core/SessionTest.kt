@@ -5,9 +5,6 @@
 // Why:      Sharing the package lets the tests reach the `Session` data class and the
 //           `ShuffleMode` enum without importing them; test and main source sets merge into
 //           one package at compile time.
-// TS map:   No `package` keyword; a file's path IS its module. Equivalent would be
-//           `import { Session, ShuffleMode } from ".../core/..."`, made implicit by the
-//           same-package rule.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -18,7 +15,6 @@ package dev.monochromatic.musicplayer.core
 // What:     `import org.junit.Assert.assertEquals` imports the static `assertEquals` function
 //           from JUnit 4's `org.junit.Assert` class, callable unqualified.
 // Why:      The field and structural equality assertions below need it.
-// TS map:   `import { assertEquals } from "...";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -30,7 +26,6 @@ import org.junit.Assert.assertEquals
 //           which FAILS unless its argument is `null`.
 // Why:      The default and null-selected assertions below check the nullable `selected`
 //           field is `null`.
-// TS map:   `import { assertNull } from "...";` — equivalently `expect(x).toBeNull()`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -41,8 +36,6 @@ import org.junit.Assert.assertNull
 // What:     `import org.junit.Test` imports the `Test` ANNOTATION class (a type) used as the
 //           `@Test` marker on each test method; the runner runs every method tagged with it.
 // Why:      Without it we could not write `@Test`, and the runner would find no tests.
-// TS map:   No JUnit-style annotation; mentally each `@Test fun foo()` is a
-//           `test("foo", () => { ... })`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -66,7 +59,6 @@ import org.junit.Test
 // What:     `class SessionTest { ... }` declares a JUnit 4 test class the runner instantiates
 //           to invoke each `@Test`-marked method.
 // Why:      Groups every session test.
-// TS map:   `describe("Session", () => { ... })`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -76,7 +68,6 @@ class SessionTest {
     // What:     `@Test` is an ANNOTATION (metadata, no code) marking the method below as a
     //           test the JUnit runner executes and reports.
     // Why:      Registers `defaultsMatchDesktop` with the runner.
-    // TS map:   The `test("...", () => {` wrapper.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -87,7 +78,6 @@ class SessionTest {
     //           returning `Unit` (Kotlin's "void"), block body.
     // Why:      Pins the `impl Default for Session` values: nothing selected, zero position,
     //           full volume, shuffle off, no repeat-track. A blank install must restore these.
-    // TS map:   `() => { ... }`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -98,7 +88,6 @@ class SessionTest {
         //           field takes its declared default. No `new` keyword; `Session()` IS the
         //           constructor call.
         // Why:      Observe the defaults directly.
-        // TS map:   `const session = makeSession();`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -108,7 +97,6 @@ class SessionTest {
         // What:     `assertNull(session.selected)` asserts the nullable `selected` field is
         //           `null`.
         // Why:      The default is "nothing selected".
-        // TS map:   `expect(session.selected).toBeNull();`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -120,7 +108,6 @@ class SessionTest {
         //           the position, `delta` `0.0` (exact). The trailing `0.0` is a TOLERANCE, not a
         //           third value.
         // Why:      The default position is the start of the track.
-        // TS map:   `expect(session.positionSecs).toBe(0.0);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -131,7 +118,6 @@ class SessionTest {
         //           (note the `0.0f` `Float` delta matching the `Float` field): EXPECTED full
         //           gain `1.0f`, exact tolerance.
         // Why:      The default volume is full gain.
-        // TS map:   `expect(session.volume).toBe(1.0);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -141,7 +127,6 @@ class SessionTest {
         // What:     `assertEquals(ShuffleMode.OFF, session.shuffle)` compares the `ShuffleMode`
         //           enum field against the `OFF` constant (`assertEquals(expected, actual)`).
         // Why:      The default shuffle mode is off.
-        // TS map:   `expect(session.shuffle).toEqual(ShuffleMode.OFF);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -151,7 +136,6 @@ class SessionTest {
         // What:     `assertEquals(false, session.repeatTrack)` compares the `Boolean` field
         //           against `false`.
         // Why:      The default repeat-track flag is off.
-        // TS map:   `expect(session.repeatTrack).toBe(false);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -162,7 +146,6 @@ class SessionTest {
 
     // What:     `@Test` annotation marking the next method as a JUnit test (metadata only).
     // Why:      Registers `roundTripPreservesFields` with the runner.
-    // TS map:   The `test("...", () => {` wrapper.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -174,7 +157,6 @@ class SessionTest {
     // Why:      Pins that a fully-populated `Session` survives a copy unchanged, field by field
     //           AND as a whole value. This stands in for the desktop's JSON save/reload round
     //           trip, which this pure core has no serializer for.
-    // TS map:   `() => { ... }`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -187,7 +169,6 @@ class SessionTest {
         //           values: a content-URI-shaped `selected` string, a `Double` position, a
         //           `Float` volume (the `f` suffix), an enum mode, and a `Boolean`.
         // Why:      A fully-populated session to copy and compare, so every field is exercised.
-        // TS map:   `const original = makeSession({ selected: "...", positionSecs: 12.5, volume: 0.7, shuffle: ShuffleMode.WITHIN_PAGE, repeatTrack: true });`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -208,8 +189,6 @@ class SessionTest {
         //           fields copied (none overridden here).
         // Why:      Produce a structural duplicate to compare against, standing in for the
         //           deserialized session in the desktop round trip.
-        // TS map:   `const back = { ...original };` — a shallow spread copy; all `Session` fields
-        //           are immutable, so it behaves as a value clone.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -219,7 +198,6 @@ class SessionTest {
         // What:     `assertEquals(original.selected, back.selected)` compares the two nullable
         //           `String?` identity fields by value.
         // Why:      The selected-track identity must survive the copy.
-        // TS map:   `expect(back.selected).toEqual(original.selected);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -229,7 +207,6 @@ class SessionTest {
         // What:     `assertEquals(original.positionSecs, back.positionSecs, 0.0)` is the 3-arg
         //           `Double` overload with an exact `0.0` tolerance.
         // Why:      The saved position must survive the copy bit-for-bit.
-        // TS map:   `expect(back.positionSecs).toBe(original.positionSecs);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -239,7 +216,6 @@ class SessionTest {
         // What:     `assertEquals(original.volume, back.volume, 0.0f)` is the 3-arg `Float`
         //           overload (the `0.0f` `Float` delta) with exact tolerance.
         // Why:      The saved volume must survive the copy exactly.
-        // TS map:   `expect(back.volume).toBe(original.volume);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -249,7 +225,6 @@ class SessionTest {
         // What:     `assertEquals(original.shuffle, back.shuffle)` compares the two `ShuffleMode`
         //           enum fields; equal enum constants compare equal.
         // Why:      The shuffle mode must survive the copy.
-        // TS map:   `expect(back.shuffle).toEqual(original.shuffle);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -259,7 +234,6 @@ class SessionTest {
         // What:     `assertEquals(original.repeatTrack, back.repeatTrack)` compares the two
         //           `Boolean` fields.
         // Why:      The repeat-track flag must survive the copy.
-        // TS map:   `expect(back.repeatTrack).toEqual(original.repeatTrack);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -271,7 +245,6 @@ class SessionTest {
         //           entire object is preserved.
         // Why:      Beyond per-field checks, confirm the objects are equal as values (the
         //           structural-equality stand-in for a JSON round trip).
-        // TS map:   `expect(back).toEqual(original);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -282,7 +255,6 @@ class SessionTest {
 
     // What:     `@Test` annotation marking the next method as a JUnit test (metadata only).
     // Why:      Registers `nullSelectedRoundTrips` with the runner.
-    // TS map:   The `test("...", () => {` wrapper.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -295,7 +267,6 @@ class SessionTest {
     //           with `selected` staying `null`. This mirrors the desktop's
     //           `none_root_and_selection_round_trip`: a restored library with no chosen track
     //           still carries the user's volume/shuffle/repeat.
-    // TS map:   `() => { ... }`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -306,7 +277,6 @@ class SessionTest {
         //           selected track but a non-default volume, shuffle mode, and repeat flag.
         // Why:      Exercise the "settings without a selection" shape, the common restore case
         //           after a folder change clears the selection but keeps the user's settings.
-        // TS map:   `const original = makeSession({ selected: null, positionSecs: 0.0, volume: 0.4, shuffle: ShuffleMode.ALL, repeatTrack: true });`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -325,7 +295,6 @@ class SessionTest {
         // What:     `val back = original.copy()` makes the structural duplicate (see the
         //           round-trip block).
         // Why:      Compare the no-selection session against its copy.
-        // TS map:   `const back = { ...original };`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -334,7 +303,6 @@ class SessionTest {
         val back = original.copy()
         // What:     `assertNull(back.selected)` asserts the copied `selected` is still `null`.
         // Why:      A null identity must survive the copy as null, not become an empty string.
-        // TS map:   `expect(back.selected).toBeNull();`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -344,7 +312,6 @@ class SessionTest {
         // What:     `assertEquals(original, back)` compares the whole values, confirming the
         //           non-default settings carried over alongside the null selection.
         // Why:      The settings must round-trip even when nothing is selected.
-        // TS map:   `expect(back).toEqual(original);`
         //
         // In TS you'd write (pseudocode):
         // ```ts

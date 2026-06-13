@@ -32,7 +32,6 @@
 //           disagree. Declared on every platform (only Linux reads it); a `pub`
 //           constant unused inside this library is NOT dead code, so non-Linux
 //           builds stay warning-clean without a `#[cfg]`.
-// TS map:   `export const APP_ID = "monochromatic.music-player";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -46,7 +45,6 @@ pub const APP_ID: &str = "monochromatic.music-player";
 // Why:      The macOS `CFBundleIdentifier` is authored in `macos/Info.plist`, but
 //           recording it here gives the value a single documented home and lets a
 //           unit test assert the plist still contains it, catching silent drift.
-// TS map:   `export const MACOS_BUNDLE_IDENTIFIER = "dev.monochromatic.musicplayer";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -59,7 +57,6 @@ pub const MACOS_BUNDLE_IDENTIFIER: &str = "dev.monochromatic.musicplayer";
 //           takes (qualifier, organization, application).
 // Why:      Pulling the literal out of session.rs means the config-dir identity
 //           is named in one place next to the other identifiers.
-// TS map:   `export const CONFIG_QUALIFIER = "dev";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -70,7 +67,6 @@ pub const CONFIG_QUALIFIER: &str = "dev";
 // What:     `pub const CONFIG_ORGANIZATION: &str = "monochromatic";`. The second
 //           `ProjectDirs::from` part (the organization name).
 // Why:      Same single-source-of-truth reason as `CONFIG_QUALIFIER`.
-// TS map:   `export const CONFIG_ORGANIZATION = "monochromatic";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -82,7 +78,6 @@ pub const CONFIG_ORGANIZATION: &str = "monochromatic";
 //           `ProjectDirs::from` part (the application name); also the last
 //           segment of the config directory path.
 // Why:      Same single-source-of-truth reason as `CONFIG_QUALIFIER`.
-// TS map:   `export const CONFIG_APPLICATION = "musicplayer";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -98,7 +93,6 @@ pub const CONFIG_APPLICATION: &str = "musicplayer";
 // Why:      Keep this file to the constants while the drift-guard tests live beside
 //           it (sibling `*_tests.rs` files are exempt from the max-lines linter),
 //           matching the convention in session.rs / peakcache.rs / etc.
-// TS map:   the `identity.unit.test.ts` file beside `identity.ts`.
 //
 // In TS you'd write (pseudocode):
 // ```ts

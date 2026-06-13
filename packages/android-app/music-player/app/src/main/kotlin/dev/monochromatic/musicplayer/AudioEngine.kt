@@ -18,9 +18,6 @@
 // Why:      We need this so the names defined here (the `AudioEngine` interface) live under a stable,
 //           fully-qualified path `dev.monochromatic.musicplayer.AudioEngine`, and so siblings like
 //           PlayerController can use `AudioEngine` directly without importing it.
-// TS map:   TypeScript has no `package` keyword. The closest mental model is "this whole file is a
-//           module, and its directory under `src/` plays the role of the namespace". There is no
-//           separate statement; in TS the file's path IS its identity.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -43,10 +40,6 @@ package dev.monochromatic.musicplayer
 //           ONE shared shape. PlayerController can then hold an `AudioEngine` reference and call
 //           `load`/`play`/`pause` without knowing or caring which concrete engine is behind it. This
 //           is the "single seam" the file summary mentions.
-// TS map:   Almost 1:1 with a TypeScript `interface` — a structural contract with method signatures
-//           and no bodies. The one difference: in Kotlin a class must EXPLICITLY write `: AudioEngine`
-//           to implement it (nominal typing), whereas TS interfaces are satisfied structurally just by
-//           having matching members.
 // Gotcha:   This is a NOMINAL interface, not structural. A Kotlin class that happens to have all these
 //           methods but does not write `: AudioEngine` is NOT an `AudioEngine`. TS would accept it on
 //           shape alone; Kotlin will not.
@@ -76,8 +69,6 @@ interface AudioEngine {
     // Why:      We need this so a caller can hand the engine a track location (`uri`) and say whether to
     //           start playing immediately (`play = true`) or just load it paused (`play = false`). It
     //           is the entry point that puts a track into the engine.
-    // TS map:   `load(uri: string, play: boolean): void;` — note TS lowercases `string`/`boolean`, and
-    //           you must write `: void` explicitly, whereas Kotlin infers `Unit` from its absence.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -92,8 +83,6 @@ interface AudioEngine {
     //           because this is an interface.
     // Why:      We need this so a caller can resume playback of an already-loaded track after a pause,
     //           without re-`load`-ing it (the position and decoded track are kept).
-    // TS map:   `play(): void;` — identical shape; TS just spells the empty return as `void` instead of
-    //           leaving it implicit.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -105,7 +94,6 @@ interface AudioEngine {
     //           body (interface). It is the counterpart to `play()` above.
     // Why:      We need this so a caller can stop the sound while KEEPING the loaded track and its
     //           current position, so a later `play()` resumes from the same spot.
-    // TS map:   `pause(): void;` — same shape as `play`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -125,9 +113,6 @@ interface AudioEngine {
     //           `Int`/`Long` because positions are fractional.
     // Why:      We need this so the seek bar (or a "skip 10s" gesture) can jump playback to an exact
     //           time offset within the current track.
-    // TS map:   `seekTo(positionSec: number): void;` — TS's single `number` type IS a 64-bit double, so
-    //           Kotlin's `Double` maps to it exactly; there is no `Float`/`Int` distinction to worry
-    //           about on the TS side.
     // Gotcha:   In Kotlin, `Double` and `Float` are DIFFERENT types and do not auto-convert; you cannot
     //           pass a `Float` where a `Double` is wanted without `.toDouble()`. TS collapses both into
     //           one `number`, so this distinction is invisible there.
@@ -152,8 +137,6 @@ interface AudioEngine {
     //           because the gain is a fraction in `0.0..1.0`.
     // Why:      We need this so the caller can set the output loudness as a linear gain between `0.0`
     //           (silent) and `1.0` (full), e.g. to honor a volume slider or duck during a notification.
-    // TS map:   `setVolume(volume: number): void;` — TS has only `number` (a double), so the 32-bit
-    //           `Float` precision/range detail simply disappears on the TS side.
     // Gotcha:   The value is a LINEAR gain in `0.0..1.0`, not decibels and not a 0..100 percentage.
     //           Passing `100` here would be wildly out of range, not "100%".
     //
@@ -174,7 +157,6 @@ interface AudioEngine {
     // Why:      We need this so the UI can poll "where are we now?" each frame/tick and draw the seek
     //           bar's thumb at the right place. The contract says it returns `0.0` when nothing is
     //           loaded (a safe default, not an error).
-    // TS map:   `positionSec(): number;` — Kotlin's `Double` return is exactly TS's `number`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -191,7 +173,6 @@ interface AudioEngine {
     // Why:      We need this so the UI can draw the seek bar's TOTAL width / end label. The contract
     //           says it returns `0.0` when the duration is still unknown (e.g. while a stream is
     //           probing its length), which the UI treats as "not ready yet" rather than an error.
-    // TS map:   `durationSec(): number;` — `Double` maps to TS `number`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -210,7 +191,6 @@ interface AudioEngine {
     //           focus). A MediaSession reports THIS value so the notification's play/pause icon does not
     //           flicker during the buffering window. The truly-producing-sound state is a separate
     //           signal delivered through `setOnPlayingChanged` (declared just below).
-    // TS map:   `playWhenReady(): boolean;` — TS lowercases the type to `boolean`; otherwise identical.
     // Gotcha:   Do NOT read this as "is audio playing right now". It is INTENT (play-requested), so it
     //           can be `true` while the engine is still buffering and emitting no sound.
     //
@@ -236,9 +216,6 @@ interface AudioEngine {
     //           every time the actual play/pause sound state flips, passing `true` when playback is
     //           genuinely running and `false` when paused or stopped. This is the "real sound" signal
     //           that complements the intent-only `playWhenReady()` above.
-    // TS map:   `setOnPlayingChanged(callback: (isPlaying: boolean) => void): void;` — Kotlin's
-    //           `(Boolean) -> Unit` is exactly TS's `(b: boolean) => void` arrow-function type; `-> Unit`
-    //           becomes `=> void`.
     // Gotcha:   Naming is "set...", singular: this stores ONE callback. Calling it again replaces the
     //           previous callback rather than adding a second subscriber; it is not an event-emitter
     //           with multiple listeners.
@@ -261,8 +238,6 @@ interface AudioEngine {
     // Why:      We need this so the queue/transport layer (PlayerController) can be told the instant a
     //           track plays through to its natural end, which is its cue to advance to the next track
     //           (or stop, or repeat, depending on mode).
-    // TS map:   `setOnTrackEnded(callback: () => void): void;` — Kotlin's `() -> Unit` is exactly TS's
-    //           `() => void`.
     // Gotcha:   Same single-callback semantics as `setOnPlayingChanged`: this stores ONE handler;
     //           calling it again replaces, it does not subscribe an additional listener.
     //
@@ -280,9 +255,6 @@ interface AudioEngine {
     //           the engine object is spent and must not be used again; the caller drops its reference.
     //           Android/native resources are not reclaimed by garbage collection alone, so an explicit
     //           teardown hook is required.
-    // TS map:   `release(): void;` — there is no exact TS analogue because JS/TS relies on garbage
-    //           collection and has no manual "free native handles" step. Mentally, picture an explicit
-    //           `dispose()` / `close()` method you must remember to call, like closing a file handle.
     // Gotcha:   This is a ONE-WAY, terminal operation. Unlike `pause()`, you cannot `play()` again after
     //           `release()`; the object is dead. Forgetting to call it leaks native resources because GC
     //           will not free them for you.

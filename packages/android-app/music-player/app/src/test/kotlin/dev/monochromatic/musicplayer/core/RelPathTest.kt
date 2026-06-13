@@ -5,9 +5,6 @@
 // Why:      Sharing the package lets the tests reach the package-level `relativeDisplayPaths`
 //           function without importing it; test and main source sets merge into one package at
 //           compile time.
-// TS map:   No `package` keyword; a file's path IS its module. Equivalent would be
-//           `import { relativeDisplayPaths } from ".../core/RelPath"`, made implicit by the
-//           same-package rule.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -18,7 +15,6 @@ package dev.monochromatic.musicplayer.core
 // What:     `import org.junit.Assert.assertEquals` imports the static `assertEquals` function
 //           from JUnit 4's `org.junit.Assert` class, callable unqualified.
 // Why:      The value-equality assertions below need it.
-// TS map:   `import { assertEquals } from "...";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -30,7 +26,6 @@ import org.junit.Assert.assertEquals
 //           (asserts a `Boolean` is `true`).
 // Why:      The emptiness assertion below (`assertTrue(relativeDisplayPaths(...).isEmpty())`)
 //           needs it.
-// TS map:   `import { assertTrue } from "...";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -41,8 +36,6 @@ import org.junit.Assert.assertTrue
 // What:     `import org.junit.Test` imports the `Test` ANNOTATION class (a type) used as the
 //           `@Test` marker on each test method; the runner runs every method tagged with it.
 // Why:      Without it we could not write `@Test`, and the runner would find no tests.
-// TS map:   No JUnit-style annotation; mentally each `@Test fun foo()` is a
-//           `test("foo", () => { ... })`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -64,7 +57,6 @@ import org.junit.Test
 // What:     `class RelPathTest { ... }` declares a JUnit 4 test class the runner instantiates to
 //           invoke each `@Test`-marked method.
 // Why:      Groups every test for the `RelPath.kt` `relativeDisplayPaths` function.
-// TS map:   `describe("RelPath", () => { ... })`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -76,7 +68,6 @@ class RelPathTest {
     // What:     `@Test` is an ANNOTATION (metadata, no code) marking the method below as a test
     //           the JUnit runner executes and reports.
     // Why:      Registers `emptyInputYieldsEmpty` with the runner.
-    // TS map:   The `test("...", () => {` wrapper.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -87,7 +78,6 @@ class RelPathTest {
     //           returning `Unit` (Kotlin's "void"), block body.
     // Why:      Pins that an empty input list yields an empty output list (no common-prefix math
     //           on zero paths, no crash).
-    // TS map:   `() => { ... }`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -102,8 +92,6 @@ class RelPathTest {
         //             `List<String>`.
         //           - `.isEmpty()` — a `List` predicate, true when there are zero elements.
         // Why:      Assert an empty input produces an empty result.
-        // TS map:   `expect(relativeDisplayPaths([]).length === 0).toBe(true);` — TS arrays have no
-        //           `.isEmpty()`, so compare `.length` to 0; `emptyList()` is `[]`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -114,7 +102,6 @@ class RelPathTest {
 
     // What:     `@Test` annotation marking the next method as a JUnit test (metadata only).
     // Why:      Registers `singleTrackKeepsOnlyFilename` with the runner.
-    // TS map:   The `test("...", () => {` wrapper.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -125,7 +112,6 @@ class RelPathTest {
     //           test method, block body.
     // Why:      Pins that with one track, the WHOLE directory prefix is the common prefix, so only
     //           the bare filename remains. A single-track queue shows just the file.
-    // TS map:   `() => { ... }`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -140,8 +126,6 @@ class RelPathTest {
         //             the common prefix from a single absolute path, leaving the filename.
         // Why:      With one path, everything up to the filename is "shared", so only `01.flac`
         //           survives.
-        // TS map:   `expect(relativeDisplayPaths(["/music/Artist/Album/01.flac"])).toEqual(["01.flac"]);`
-        //           — JUnit puts EXPECTED first, opposite of `expect(actual)`.
         // Gotcha:   Argument order: `assertEquals(expected, actual)` is backwards from
         //           `expect(actual)`; list equality is structural.
         //
@@ -157,7 +141,6 @@ class RelPathTest {
 
     // What:     `@Test` annotation marking the next method as a JUnit test (metadata only).
     // Why:      Registers `distinctAlbumsKeepRelativeFolders` with the runner.
-    // TS map:   The `test("...", () => {` wrapper.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -169,7 +152,6 @@ class RelPathTest {
     // Why:      Pins that when two paths share only `/music/`, the part AFTER that shared root
     //           (the differing `A/Alb/...` vs `B/Alb/...`) is kept, so the UI shows each track's
     //           folder.
-    // TS map:   `() => { ... }`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -181,7 +163,6 @@ class RelPathTest {
         //           the relative paths; ACTUAL strips the shared `/music/` from both absolute paths
         //           (the input is an immutable `listOf(...)`).
         // Why:      The common prefix is only `/music/`, so the differing folder tails are kept.
-        // TS map:   `expect(relativeDisplayPaths(["/music/A/Alb/01.flac", "/music/B/Alb/01.flac"])).toEqual(["A/Alb/01.flac", "B/Alb/01.flac"]);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -195,7 +176,6 @@ class RelPathTest {
 
     // What:     `@Test` annotation marking the next method as a JUnit test (metadata only).
     // Why:      Registers `singleFolderYieldsBareFilenames` with the runner.
-    // TS map:   The `test("...", () => {` wrapper.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -206,7 +186,6 @@ class RelPathTest {
     //           test method, block body.
     // Why:      Pins that when ALL tracks share the same folder (`/m/A/Alb/`), the whole folder is
     //           the common prefix, so only the filenames remain.
-    // TS map:   `() => { ... }`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -217,7 +196,6 @@ class RelPathTest {
         //           is `assertEquals(expected, actual)`. EXPECTED is an immutable `List<String>`;
         //           ACTUAL strips the fully-shared `/m/A/Alb/` folder, leaving bare filenames.
         // Why:      Both paths share the entire folder, so only `01.flac` and `02.flac` remain.
-        // TS map:   `expect(relativeDisplayPaths(["/m/A/Alb/01.flac", "/m/A/Alb/02.flac"])).toEqual(["01.flac", "02.flac"]);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -231,7 +209,6 @@ class RelPathTest {
 
     // What:     `@Test` annotation marking the next method as a JUnit test (metadata only).
     // Why:      Registers `mixedDepthStripsOnlySharedTop` with the runner.
-    // TS map:   The `test("...", () => {` wrapper.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -243,7 +220,6 @@ class RelPathTest {
     // Why:      Pins that paths of DIFFERENT depths strip only the shared TOP folder (`/m/`): a
     //           root-level `loose.flac` keeps its bare name while a nested track keeps its folder
     //           tail. The common prefix never eats past where the paths diverge.
-    // TS map:   `() => { ... }`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -255,7 +231,6 @@ class RelPathTest {
         //           ACTUAL strips only the shared `/m/` from both differing-depth paths.
         // Why:      The shared prefix is just `/m/`, so `loose.flac` (root) and `A/Alb/01.flac`
         //           (nested) keep everything after it.
-        // TS map:   `expect(relativeDisplayPaths(["/m/loose.flac", "/m/A/Alb/01.flac"])).toEqual(["loose.flac", "A/Alb/01.flac"]);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -269,7 +244,6 @@ class RelPathTest {
 
     // What:     `@Test` annotation marking the next method as a JUnit test (metadata only).
     // Why:      Registers `duplicatePathsKeepFilename` with the runner.
-    // TS map:   The `test("...", () => {` wrapper.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -280,7 +254,6 @@ class RelPathTest {
     //           method, block body.
     // Why:      Pins that two IDENTICAL paths each keep their filename (the common prefix is the
     //           whole folder), proving duplicates are not deduped or mishandled.
-    // TS map:   `() => { ... }`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -293,7 +266,6 @@ class RelPathTest {
         //           paths.
         // Why:      Two copies of the same path both reduce to `x.flac`; duplicates survive as two
         //           entries.
-        // TS map:   `expect(relativeDisplayPaths(["/m/A/x.flac", "/m/A/x.flac"])).toEqual(["x.flac", "x.flac"]);`
         //
         // In TS you'd write (pseudocode):
         // ```ts

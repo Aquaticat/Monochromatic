@@ -8,7 +8,6 @@
 //           re-encodes bytes as Latin-1 chars produces mojibake source that
 //           silently stops matching its own content, blinding the
 //           soundness-by-revert fuzz harness.
-// TS map:   `generators.unit.test.ts` covering the renderer's byte fidelity.
 
 use super::*;
 

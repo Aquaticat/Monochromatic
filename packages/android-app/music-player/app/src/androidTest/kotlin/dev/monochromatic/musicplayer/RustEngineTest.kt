@@ -28,9 +28,6 @@
 // Why:      Other files in the same package can refer to this test's class and to siblings like
 //           `RustEngine`, `PlayerController`, and `Track` without an explicit `import`; tooling also uses
 //           the package to place the compiled class.
-// TS map:   Loosely like the folder-based module path of a file in a TS project, but Kotlin's package is
-//           a declared namespace inside the file rather than implied purely by file location. There is no
-//           runtime `import`/`export` statement here; it just names the bucket this class lives in.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -44,7 +41,6 @@ package dev.monochromatic.musicplayer
 //           below without writing its full `android.app.Instrumentation` path.
 // Why:      Several functions below take an `Instrumentation` parameter; the import lets us write the
 //           short name `Instrumentation`.
-// TS map:   Like `import { Instrumentation } from "android/app";` — a named import of a single type.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -56,7 +52,6 @@ import android.app.Instrumentation
 //           static-style utility functions for building `content://` URIs that point at a row by id).
 // Why:      `audioUris` below calls `ContentUris.withAppendedId(...)` to turn a numeric MediaStore id
 //           into a full content URI.
-// TS map:   Like `import { ContentUris } from "android/content";`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -67,7 +62,6 @@ import android.content.ContentUris
 // What:     `import android.net.Uri` pulls in the `Uri` type (Android's parsed representation of a URI
 //           string such as `content://media/external/audio/media/42`).
 // Why:      The track locations we load are `Uri` values; `audioUris` returns a list of them.
-// TS map:   Like `import { Uri } from "android/net";`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -78,7 +72,6 @@ import android.net.Uri
 // What:     `import android.provider.MediaStore` pulls in `MediaStore`, the Android system database of
 //           indexed media (the on-device catalog of audio/video/images the OS has scanned).
 // Why:      `audioUris` queries `MediaStore.Audio.Media` to find playable music tracks.
-// TS map:   Like `import { MediaStore } from "android/provider";`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -89,7 +82,6 @@ import android.provider.MediaStore
 // What:     `import android.util.Log` pulls in `Log`, Android's logcat logging facility (writes lines to
 //           the device's system log, viewable with `adb logcat`).
 // Why:      The tests log measured positions/durations under a tag so a human can read them after the run.
-// TS map:   Like `import { Log } from "android/util";` — think of it as the platform's `console`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -100,7 +92,6 @@ import android.util.Log
 // What:     `import androidx.test.platform.app.InstrumentationRegistry` pulls in `InstrumentationRegistry`,
 //           a registry object the test framework populates with the running `Instrumentation` instance.
 // Why:      Each test calls `InstrumentationRegistry.getInstrumentation()` to obtain the harness it needs.
-// TS map:   Like `import { InstrumentationRegistry } from "androidx/test/platform/app";`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -113,8 +104,6 @@ import androidx.test.platform.app.InstrumentationRegistry
 //           `assertTrue` fails the test if the boolean argument is false.
 // Why:      The first test asserts several boolean conditions; importing the function lets us write
 //           `assertTrue(...)` without the `Assert.` prefix.
-// TS map:   Like `import { assertTrue } from "org/junit/Assert";` — a named import of a function-like
-//           static member rather than a type.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -126,8 +115,6 @@ import org.junit.Assert.assertTrue
 //           `Assume` class. `assumeTrue` does NOT fail the test when its condition is false; it marks the
 //           test as skipped (assumption-not-met) so an environment that can't run it is not a failure.
 // Why:      The tests skip themselves when the device has no indexed music; `assumeTrue` expresses that.
-// TS map:   Like `import { assumeTrue } from "org/junit/Assume";`. There is no exact TS-test analogue;
-//           mentally it's "if condition false, return early and mark this case as skipped, not failed".
 // Gotcha:   `assumeTrue` and `assertTrue` look almost identical but behave oppositely on false: assume =
 //           skip, assert = fail. Don't confuse them.
 //
@@ -140,8 +127,6 @@ import org.junit.Assume.assumeTrue
 // What:     `import org.junit.Test` imports the `Test` annotation type (a marker you attach with `@Test`
 //           to tell the test runner "this method is a test case to execute").
 // Why:      The two test methods below are tagged `@Test`; the import lets us write `@Test`.
-// TS map:   Like `import { Test } from "org/junit";`, where `Test` is a decorator. TS decorators (`@Test`)
-//           are the closest concept.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -155,8 +140,6 @@ import org.junit.Test
 // Why:      Engine objects are created on the main thread but read from the test thread; an
 //           `AtomicReference` is a safe hand-off box between those two threads. It is also used inside
 //           `onMain` to ferry a block's result back across the thread boundary.
-// TS map:   Like `import { AtomicReference } from "java/util/concurrent/atomic";`. JS is single-threaded,
-//           so there is no real equivalent; mentally it's a `{ value: T }` box that's safe across threads.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -169,8 +152,6 @@ import java.util.concurrent.atomic.AtomicReference
 //           class is a plain container; the runner instantiates it and calls each method tagged `@Test`.
 // Why:      Groups the two on-device test methods plus the private helpers and shared constants they use.
 //           This is the entry point the Android instrumentation runner discovers and runs on the device.
-// TS map:   `class RustEngineTest { ... }` — same keyword, same idea. Picture each `@Test` method as a
-//           case the runner calls; the class itself holds no state worth noting.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -182,7 +163,6 @@ class RustEngineTest {
     // What:     `@Test` is an annotation (a compile-time marker attached to the next declaration) telling
     //           the JUnit runner "treat the following method as a test case to execute".
     // Why:      Without `@Test` the runner would ignore `playsPausesSeeksThroughRustEngine` entirely.
-    // TS map:   A decorator: `@Test` above a method, exactly as in TS's experimental decorators.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -194,7 +174,6 @@ class RustEngineTest {
     //           returning nothing (`Unit`, Kotlin's "no meaningful value" type, is implied).
     // Why:      This is the first test body: load a track into a bare `RustEngine`, play/pause/seek it, and
     //           assert position behaves correctly.
-    // TS map:   `playsPausesSeeksThroughRustEngine(): void { ... }` — a zero-arg method returning void.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -209,8 +188,6 @@ class RustEngineTest {
         //           `Instrumentation`.
         // Why:      Everything below (the content resolver, running code on the main thread) flows through
         //           this `Instrumentation` handle.
-        // TS map:   `const instrumentation = InstrumentationRegistry.getInstrumentation();` — `val` is
-        //           `const`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -221,7 +198,6 @@ class RustEngineTest {
         //           Android `Context` of the app under test (the object you ask for system services, the
         //           content resolver, resources, etc.). Immutable local, inferred type `Context`.
         // Why:      We need the app's context to reach its content resolver and to construct a `RustEngine`.
-        // TS map:   `const context = instrumentation.targetContext;` — plain property read.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -235,8 +211,6 @@ class RustEngineTest {
         //           `null` if the list is empty (rather than throwing on an empty list).
         // Why:      Grab one playable track; if the library is empty, `firstOrNull()` yields `null` and the
         //           next line skips the test instead of crashing.
-        // TS map:   `const uri: Uri | null = audioUris(instrumentation, 1)[0] ?? null;` — Kotlin's `Uri?`
-        //           is TS's `Uri | null`, and `firstOrNull()` is "first element or null".
         // Gotcha:   `Uri?` is enforced by the compiler: you cannot call most methods on `uri` until you've
         //           proven it's non-null (the `assumeTrue` below does that proof).
         //
@@ -250,7 +224,6 @@ class RustEngineTest {
         //           than failing it. After this line the compiler also knows `uri` is non-null below.
         // Why:      A device with no indexed music can't run this test; skipping (not failing) is correct.
         //           It also smart-casts `uri` from `Uri?` to `Uri` for the rest of the method.
-        // TS map:   No exact analogue. Mentally: `if (uri == null) { markSkippedAndReturn("..."); }`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -263,8 +236,6 @@ class RustEngineTest {
         //           `()` calls its no-arg constructor, producing an empty box (its slot starts as `null`).
         // Why:      The `RustEngine` is built on the main thread but read on the test thread; this thread-
         //           safe box hands it across that boundary.
-        // TS map:   `const engineRef = new AtomicReference<RustEngine>();` — `<RustEngine>` is the generic
-        //           type argument, `()` is `new ...()`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -277,8 +248,6 @@ class RustEngineTest {
         //           the parentheses as a trailing block.
         // Why:      The native engine must be created and touched on one thread; the main thread is that
         //           thread, so we build and prime the engine there.
-        // TS map:   `runOnMainSync(() => { ... })` — the trailing `{ ... }` is just an arrow callback passed
-        //           as the last argument.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -290,7 +259,6 @@ class RustEngineTest {
             // What:     `val engine = RustEngine(context)` constructs a `RustEngine`, passing the app
             //           `context`. In Kotlin you call a constructor like a plain function (no `new`).
             // Why:      This is the object under test; it owns the native playback handle.
-            // TS map:   `const engine = new RustEngine(context);` — Kotlin just omits `new`.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -303,8 +271,6 @@ class RustEngineTest {
             // Why:      Set volume to zero so the output runs silently (the resident-noise rule). `Float`
             //           (not `Double`) because the engine's volume API takes a 32-bit `Float`, matching the
             //           native/AAudio side; passing a `Double` would not type-check.
-            // TS map:   `engine.setVolume(0.0);` — TS has only one `number`, so the `f`/precision suffix
-            //           vanishes and the float-vs-double distinction does not exist.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -316,7 +282,6 @@ class RustEngineTest {
             //           literal (here meaning "play when ready", i.e. start playback once loaded).
             // Why:      The native loader takes a string URL plus a "begin playing immediately" flag; we
             //           hand it the track and tell it to play.
-            // TS map:   `engine.load(uri.toString(), true);` — `.toString()` exists in TS too.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -327,8 +292,6 @@ class RustEngineTest {
             //           `.set(...)` is the box's write method.
             // Why:      Publish the just-built engine so the test thread can later read it back out of the
             //           box.
-            // TS map:   `engineRef.set(engine);` — or, picturing the box as `{ value }`, `engineRef.value =
-            //           engine;`.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -342,8 +305,6 @@ class RustEngineTest {
         //           companion object below.
         // Why:      Give the worker time to open the file, start AAudio, and let the position counter move,
         //           while the main looper keeps ticking on its own thread.
-        // TS map:   No blocking sleep in JS; the moral equivalent is `await wait(SETTLE_MS)` with a
-        //           promise-based timer. Here it genuinely halts this thread.
         // Gotcha:   This is a real blocking sleep, not a non-blocking `await`; it freezes only the test
         //           thread, which is why the engine's own thread must be separate.
         //
@@ -361,8 +322,6 @@ class RustEngineTest {
         // Why:      Read the playback position while playing, on the main thread (the thread that owns the
         //           native handle). `Double` (not `Float`) because `positionSec()` returns a `Double`; using
         //           the wider type keeps seconds-with-fractions precise and matches the engine API.
-        // TS map:   `const positionPlaying: number = onMain(instrumentation, () => engineRef.get().positionSec());`
-        //           — `Double` and `Float` both collapse to TS `number`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -375,7 +334,6 @@ class RustEngineTest {
         //           total length in seconds.
         // Why:      Capture the track duration (used later to compute a mid-point seek target and to assert
         //           duration was read). `Double` to match the engine's `durationSec()` return type.
-        // TS map:   `const duration: number = onMain(instrumentation, () => engineRef.get().durationSec());`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -387,7 +345,6 @@ class RustEngineTest {
         //           `engineRef.get()` reads the engine; `.playWhenReady()` returns whether the engine is set
         //           to play as soon as it's ready.
         // Why:      Confirm the engine actually entered the "play when ready" state after `load(..., true)`.
-        // TS map:   `const playWhenReady: boolean = onMain(instrumentation, () => engineRef.get().playWhenReady());`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -399,8 +356,6 @@ class RustEngineTest {
         //           template: `$positionPlaying`, `$duration`, `$playWhenReady` splice each variable's value
         //           into the text (the `$name` form, with no braces for a simple identifier).
         // Why:      Record the measured numbers so a human reading logcat can see what the device produced.
-        // TS map:   ``Log.i(BENCH_TAG, `RustEngine playing: pos=${positionPlaying} dur=${duration} playWhenReady=${playWhenReady}`);``
-        //           — Kotlin's `$name` is TS's `${name}` inside a template literal.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -412,7 +367,6 @@ class RustEngineTest {
         //           the main thread and blocks until done. Inside, `engineRef.get()` reads the engine from
         //           the box and `.pause()` pauses playback.
         // Why:      Pause on the engine-owning thread so the next position samples should stay frozen.
-        // TS map:   `instrumentation.runOnMainSync(() => engineRef.get().pause());`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -422,7 +376,6 @@ class RustEngineTest {
         // What:     `Thread.sleep(STEP_MS)` blocks the test thread for `STEP_MS` milliseconds (a short
         //           dwell). `STEP_MS` is a `Long` constant in the companion object.
         // Why:      Wait a beat between the two paused samples so any unwanted drift would have time to show.
-        // TS map:   `await wait(STEP_MS);` — non-blocking in TS; blocking here.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -433,7 +386,6 @@ class RustEngineTest {
         //           `Double` 64-bit float; `onMain` runs on the main thread; `engineRef.get()` reads the
         //           engine; `.positionSec()` returns the current position.
         // Why:      First paused-position sample; compared with the second to prove playback didn't advance.
-        // TS map:   `const pausedA: number = onMain(instrumentation, () => engineRef.get().positionSec());`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -442,7 +394,6 @@ class RustEngineTest {
         val pausedA: Double = onMain(instrumentation) { engineRef.get().positionSec() }
         // What:     `Thread.sleep(STEP_MS)` blocks the test thread again for the same short dwell.
         // Why:      Let real time pass between the two paused samples; a still-advancing position would grow.
-        // TS map:   `await wait(STEP_MS);`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -453,7 +404,6 @@ class RustEngineTest {
         //           Second paused sample, same shape as `pausedA`: `Double`; `onMain` on the main thread;
         //           `engineRef.get().positionSec()` reads position.
         // Why:      Second paused-position sample; `pausedB - pausedA` should be ~0 while truly paused.
-        // TS map:   `const pausedB: number = onMain(instrumentation, () => engineRef.get().positionSec());`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -463,7 +413,6 @@ class RustEngineTest {
         // What:     `Log.i(BENCH_TAG, "RustEngine paused: a=$pausedA b=$pausedB")` logs the two paused
         //           samples; `$pausedA` / `$pausedB` splice their values into the string template.
         // Why:      Make the paused samples visible in logcat for after-the-fact inspection.
-        // TS map:   ``Log.i(BENCH_TAG, `RustEngine paused: a=${pausedA} b=${pausedB}`);``.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -476,7 +425,6 @@ class RustEngineTest {
         //           midpoint of the track in seconds.
         // Why:      We seek to the middle so the post-seek position is clearly distinguishable from the
         //           starting position. `Double` to match `duration`'s type and keep fractional seconds.
-        // TS map:   `const seekTarget: number = duration / 2.0;` — identical arithmetic in TS.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -487,7 +435,6 @@ class RustEngineTest {
         //           compares the track's `duration` against the `MIN_SEEKABLE_SECONDS` `Double` constant.
         // Why:      Only seek-test tracks long enough that a mid-point seek is meaningful; very short tracks
         //           are skipped for the seek portion.
-        // TS map:   `const seekable: boolean = duration > MIN_SEEKABLE_SECONDS;`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -497,7 +444,6 @@ class RustEngineTest {
         // What:     `if (seekable) { ... }` is a plain conditional: run the block only when `seekable` is
         //           true.
         // Why:      Guard the seek/resume steps behind the "this track is long enough" check.
-        // TS map:   `if (seekable) { ... }` — identical.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -507,7 +453,6 @@ class RustEngineTest {
             // What:     `instrumentation.runOnMainSync { ... }` runs the trailing lambda on the main thread,
             //           blocking until it finishes.
             // Why:      The seek and resume must happen on the engine-owning main thread.
-            // TS map:   `instrumentation.runOnMainSync(() => { ... });`.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -517,7 +462,6 @@ class RustEngineTest {
                 // What:     `engineRef.get().seekTo(seekTarget)`. `engineRef.get()` reads the engine from
                 //           the box; `.seekTo(seekTarget)` jumps playback to `seekTarget` seconds.
                 // Why:      Move the playhead to the track midpoint so we can later confirm the jump landed.
-                // TS map:   `engineRef.get().seekTo(seekTarget);`.
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -528,7 +472,6 @@ class RustEngineTest {
                 //           playback (the engine was paused earlier).
                 // Why:      Resume after seeking so the position counter advances from the new spot, proving
                 //           the seek took effect.
-                // TS map:   `engineRef.get().play();`.
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -538,7 +481,6 @@ class RustEngineTest {
             }
             // What:     `Thread.sleep(SETTLE_MS)` blocks the test thread for the settle interval again.
             // Why:      Let AAudio resume and the position advance past the seek point before we sample it.
-            // TS map:   `await wait(SETTLE_MS);`.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -551,7 +493,6 @@ class RustEngineTest {
         //           reads the current position.
         // Why:      Sample where the playhead ended up after the seek (or, for short tracks that skipped the
         //           seek, just wherever it is); asserted later against the seek target.
-        // TS map:   `const positionSeek: number = onMain(instrumentation, () => engineRef.get().positionSec());`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -562,7 +503,6 @@ class RustEngineTest {
         //           logs the seek target, whether the track was seekable, and the resulting position; the
         //           `$seekTarget` / `$seekable` / `$positionSeek` placeholders splice in those values.
         // Why:      Record the seek outcome in logcat.
-        // TS map:   ``Log.i(BENCH_TAG, `RustEngine after seek to ${seekTarget} (seekable=${seekable}): pos=${positionSeek}`);``.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -573,7 +513,6 @@ class RustEngineTest {
         // What:     `instrumentation.runOnMainSync { ... }` runs the trailing lambda on the main thread,
         //           blocking until done.
         // Why:      Tear-down (pause then release) must run on the engine-owning thread.
-        // TS map:   `instrumentation.runOnMainSync(() => { ... });`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -583,7 +522,6 @@ class RustEngineTest {
             // What:     `engineRef.get().pause()`. `engineRef.get()` reads the engine; `.pause()` halts
             //           playback before releasing.
             // Why:      Stop audio cleanly before freeing native resources.
-            // TS map:   `engineRef.get().pause();`.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -593,8 +531,6 @@ class RustEngineTest {
             // What:     `engineRef.get().release()`. `engineRef.get()` reads the engine; `.release()` frees
             //           the native handle/resources the engine holds.
             // Why:      Avoid leaking the native engine; on-device resources must be returned.
-            // TS map:   `engineRef.get().release();` — like a manual `dispose()` since there's no GC for the
-            //           native side.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -606,7 +542,6 @@ class RustEngineTest {
         // What:     `assertTrue("...", positionPlaying > 0.0)` fails the test (with the message) unless
         //           `positionPlaying > 0.0`. `0.0` is a `Double` literal.
         // Why:      Prove playback genuinely advanced while playing: a position greater than zero seconds.
-        // TS map:   `assertTrue("position did not advance while playing (pos=" + positionPlaying + ")", positionPlaying > 0.0);`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -615,7 +550,6 @@ class RustEngineTest {
         assertTrue("position did not advance while playing (pos=$positionPlaying)", positionPlaying > 0.0)
         // What:     `assertTrue("...", duration > 0.0)` fails unless `duration` is positive.
         // Why:      Prove the engine actually read a real (positive) track duration.
-        // TS map:   `assertTrue(`duration not positive (dur=${duration})`, duration > 0.0);`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -624,7 +558,6 @@ class RustEngineTest {
         assertTrue("duration not positive (dur=$duration)", duration > 0.0)
         // What:     `assertTrue("...", playWhenReady)` fails unless the boolean `playWhenReady` is true.
         // Why:      Prove the engine entered the "play when ready" state after being told to play on load.
-        // TS map:   `assertTrue("playWhenReady should be true after play", playWhenReady);`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -634,7 +567,6 @@ class RustEngineTest {
         // What:     `assertTrue("...", pausedB - pausedA < PAUSE_TOLERANCE)` fails unless the difference
         //           between the two paused samples is below `PAUSE_TOLERANCE` (a `Double` constant).
         // Why:      Prove the position did NOT advance while paused (small slop is allowed for scheduling).
-        // TS map:   `assertTrue(`position advanced while paused (a=${pausedA} b=${pausedB})`, pausedB - pausedA < PAUSE_TOLERANCE);`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -644,7 +576,6 @@ class RustEngineTest {
         // What:     `if (seekable) { ... }` runs the seek assertion only when the track was long enough to
         //           have been seeked above.
         // Why:      Skip asserting on the seek for short tracks where no seek happened.
-        // TS map:   `if (seekable) { ... }`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -655,7 +586,6 @@ class RustEngineTest {
             //           post-seek position is at or above `seekTarget` minus a tolerance (`SEEK_TOLERANCE`
             //           is a `Double` constant; subtraction yields the lower bound we accept).
             // Why:      Prove the seek landed near the requested midpoint, allowing a small undershoot.
-            // TS map:   `assertTrue(`seek did not reach near ${seekTarget} (pos=${positionSeek})`, positionSeek >= seekTarget - SEEK_TOLERANCE);`.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -667,7 +597,6 @@ class RustEngineTest {
 
     // What:     `@Test` annotation marks the next method as a JUnit test case to run.
     // Why:      Register `autoAdvancesOnceOnNaturalEnd` with the runner.
-    // TS map:   `@Test` decorator above the method.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -680,7 +609,6 @@ class RustEngineTest {
     //           advances to exactly the next track once when a track ends naturally (the pull-based
     //           adaptation: the poller turns native `ended` into `onTrackEnded`, and the controller loads
     //           the next track). A direct-engine test can't reach this controller-level path.
-    // TS map:   `autoAdvancesOnceOnNaturalEnd(): void { ... }`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -690,7 +618,6 @@ class RustEngineTest {
         // What:     `val instrumentation = InstrumentationRegistry.getInstrumentation()` fetches the running
         //           test harness, same as in the first test.
         // Why:      Need it for the content resolver and for running code on the main thread.
-        // TS map:   `const instrumentation = InstrumentationRegistry.getInstrumentation();`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -699,7 +626,6 @@ class RustEngineTest {
         val instrumentation = InstrumentationRegistry.getInstrumentation()
         // What:     `val context = instrumentation.targetContext` reads the app-under-test `Context`.
         // Why:      Needed to construct the `RustEngine` and to reach MediaStore via the resolver.
-        // TS map:   `const context = instrumentation.targetContext;`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -710,7 +636,6 @@ class RustEngineTest {
         //           `ADVANCE_TRACK_COUNT` (an `Int` constant) track URIs; inferred type `List<Uri>`.
         // Why:      We need several tracks so a natural end can advance through a page and a double-advance
         //           bug would overshoot.
-        // TS map:   `const uris = audioUris(instrumentation, ADVANCE_TRACK_COUNT);` // `Uri[]`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -721,7 +646,6 @@ class RustEngineTest {
         //           the device returned at least `ADVANCE_TRACK_COUNT` tracks. `uris.size` is the list's
         //           length property.
         // Why:      The auto-advance test needs enough tracks; on a device with too few, skip cleanly.
-        // TS map:   `if (uris.length < ADVANCE_TRACK_COUNT) return markSkipped(`need >= ${ADVANCE_TRACK_COUNT} indexed tracks`);`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -740,8 +664,6 @@ class RustEngineTest {
         //           `"probe/track$index.flac"` is a template string with `$index` spliced in.
         // Why:      Build the controller's playlist: one `Track` per URI, each with a fake same-folder
         //           display path so all three land in one page (so a natural end advances within the page).
-        // TS map:   `const tracks = uris.map((uri, index) => ({ uri: uri.toString(), displayPath: `probe/track${index}.flac` }));`
-        //           — note TS `map` passes `(element, index)`, the reverse order of Kotlin's `index, uri`.
         // Gotcha:   Kotlin's `mapIndexed` lambda receives `(index, element)`; TS's `Array.map` callback
         //           receives `(element, index)`. The order is flipped.
         //
@@ -756,7 +678,6 @@ class RustEngineTest {
         //           that will hold the controller.
         // Why:      The controller is built on the main thread and read on the test thread; the box hands it
         //           across safely.
-        // TS map:   `const controllerRef = new AtomicReference<PlayerController>();`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -766,7 +687,6 @@ class RustEngineTest {
         // What:     `instrumentation.runOnMainSync { ... }` runs the trailing lambda on the main thread,
         //           blocking until it finishes.
         // Why:      Build and start the controller on the engine-owning thread.
-        // TS map:   `instrumentation.runOnMainSync(() => { ... });`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -778,7 +698,6 @@ class RustEngineTest {
             //           engine (both are constructor calls, written without `new`).
             // Why:      The controller is the production layer above the raw engine; we test that layer's
             //           auto-advance behavior over a real native engine.
-            // TS map:   `const controller = new PlayerController(new RustEngine(context));`.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -789,7 +708,6 @@ class RustEngineTest {
             //           suffix = 32-bit single precision; sibling `0.0` would be a 64-bit `Double`).
             // Why:      Silence again (resident-noise rule). `Float` because the volume API takes a 32-bit
             //           `Float` to match the native side.
-            // TS map:   `controller.setVolume(0.0);`.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -799,7 +717,6 @@ class RustEngineTest {
             // What:     `controller.openLibrary(tracks)` hands the controller the `List<Track>` playlist
             //           built above.
             // Why:      Load the playlist so the controller has a page to advance through.
-            // TS map:   `controller.openLibrary(tracks);`.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -809,7 +726,6 @@ class RustEngineTest {
             // What:     `controller.playIndex(0)` tells the controller to start playing the track at index
             //           `0` (the first track).
             // Why:      Begin playback at the start so we can later seek near its end and watch the advance.
-            // TS map:   `controller.playIndex(0);`.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -819,7 +735,6 @@ class RustEngineTest {
             // What:     `controllerRef.set(controller)` writes the controller into the thread-safe box's
             //           slot via `.set(...)`.
             // Why:      Publish the controller so the test thread can read it back out.
-            // TS map:   `controllerRef.set(controller);`.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -830,7 +745,6 @@ class RustEngineTest {
 
         // What:     `Thread.sleep(SETTLE_MS)` blocks the test thread for the settle interval.
         // Why:      Let the first track open and start so its duration becomes known.
-        // TS map:   `await wait(SETTLE_MS);`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -841,7 +755,6 @@ class RustEngineTest {
         //           `Double` 64-bit float; `onMain` runs the lambda on the main thread; `controllerRef.get()`
         //           reads the controller from the box; `.durationSec()` returns the current track's length.
         // Why:      We need track 0's duration to compute a seek that lands just before its end.
-        // TS map:   `const firstDuration: number = onMain(instrumentation, () => controllerRef.get().durationSec());`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -851,7 +764,6 @@ class RustEngineTest {
         // What:     `Log.i(BENCH_TAG, "auto-advance: track0 dur=$firstDuration")` logs track 0's duration;
         //           `$firstDuration` splices the value into the template.
         // Why:      Record the measured first-track duration in logcat.
-        // TS map:   ``Log.i(BENCH_TAG, `auto-advance: track0 dur=${firstDuration}`);``.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -863,7 +775,6 @@ class RustEngineTest {
         //           seek near its end meaningfully.
         // Why:      If the first track is too short (or duration unknown), the near-end seek isn't sensible,
         //           so skip rather than fail.
-        // TS map:   `if (!(firstDuration > MIN_SEEKABLE_SECONDS)) return markSkipped("track0 duration unknown");`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -877,7 +788,6 @@ class RustEngineTest {
         //           constant) before the track's end (plain double subtraction).
         // Why:      Position playback just before the end so the track finishes within a couple of poll
         //           cycles, triggering the natural-end auto-advance quickly.
-        // TS map:   `instrumentation.runOnMainSync(() => controllerRef.get().seek(firstDuration - NEAR_END_SECONDS));`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -888,7 +798,6 @@ class RustEngineTest {
         //           milliseconds (a `Long` constant), covering several poll cycles.
         // Why:      Give the poller time to detect the natural end and the controller time to land the
         //           advance to the next track.
-        // TS map:   `await wait(ADVANCE_WAIT_MS);`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -904,8 +813,6 @@ class RustEngineTest {
         // Why:      After the natural end, we read which scope slot is current; `1` means it advanced once.
         //           `Int?` because the controller legitimately reports "no current index" as `null`, which
         //           must be representable.
-        // TS map:   `const scopeIndex: number | null = onMain(instrumentation, () => controllerRef.get().currentScopeIndex());`
-        //           — Kotlin's `Int?` is TS's `number | null`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -915,7 +822,6 @@ class RustEngineTest {
         // What:     `Log.i(BENCH_TAG, "auto-advance: after natural end scopeIndex=$scopeIndex")` logs the
         //           observed scope index; `$scopeIndex` splices the (possibly null) value into the template.
         // Why:      Record the post-advance scope index in logcat for inspection.
-        // TS map:   ``Log.i(BENCH_TAG, `auto-advance: after natural end scopeIndex=${scopeIndex}`);``.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -926,7 +832,6 @@ class RustEngineTest {
         //           main thread; `controllerRef.get()` reads the controller and `.release()` frees its
         //           native resources.
         // Why:      Clean up the controller (and its engine) on the owning thread before the test ends.
-        // TS map:   `instrumentation.runOnMainSync(() => controllerRef.get().release());`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -939,7 +844,6 @@ class RustEngineTest {
         //           `null`, the equality is simply false, so a null result fails the assertion as intended.
         // Why:      Prove the controller advanced EXACTLY once (to scope index 1), not zero times and not
         //           twice (a double-advance would land on a higher index).
-        // TS map:   `assertTrue(`expected a single advance to scope index 1, got ${scopeIndex}`, scopeIndex === 1);`.
         // Gotcha:   In Kotlin `==` on a nullable handles `null` safely (no exception); in TS use `=== 1`,
         //           where `null === 1` is likewise just `false`.
         //
@@ -961,8 +865,6 @@ class RustEngineTest {
     //           same way. `Int` (not `Long`) because a small in-memory count never approaches the 2-billion
     //           `Int` ceiling and `count` is compared against list sizes, which are `Int`. Return type
     //           `List<Uri>` (read-only, not `MutableList`) because callers only iterate it.
-    // TS map:   `private audioUris(instrumentation: Instrumentation, count: number): Uri[] { ... }` — `Int`
-    //           and `Long` both collapse to `number`; `List<Uri>` is `readonly Uri[]`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -972,7 +874,6 @@ class RustEngineTest {
         // What:     `val resolver = instrumentation.targetContext.contentResolver` reads the app's
         //           `ContentResolver` (the object you use to query content providers like MediaStore).
         // Why:      We query MediaStore through the resolver to enumerate audio rows.
-        // TS map:   `const resolver = instrumentation.targetContext.contentResolver;`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -983,7 +884,6 @@ class RustEngineTest {
         //           a static-style helper to get the base content URI for audio on the external storage
         //           volume; `MediaStore.VOLUME_EXTERNAL` is a constant naming that volume.
         // Why:      This base URI is both what we query and the prefix we append each row id to.
-        // TS map:   `const collection = MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL);`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -994,7 +894,6 @@ class RustEngineTest {
         //           `arrayOf(...)` builder makes a fixed-size array) containing one column name, `_ID` (the
         //           row's numeric primary key). A "projection" is the list of columns a query should return.
         // Why:      We only need each row's id to construct its URI, so we ask for just the `_ID` column.
-        // TS map:   `const projection = [MediaStore.Audio.Media._ID];` — `arrayOf(x)` is `[x]`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1005,7 +904,6 @@ class RustEngineTest {
         //           (`mutableListOf<Uri>()` is the builder; `<Uri>` is the element type). `MutableList<Uri>`
         //           allows `add`; sibling `listOf<Uri>()` would be read-only and could not be appended to.
         // Why:      We accumulate result URIs as we walk the cursor, so we need an appendable list.
-        // TS map:   `const uris: Uri[] = [];` — TS arrays are always mutable, so there's no separate type.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1023,8 +921,6 @@ class RustEngineTest {
         //           trailing `null`s are "no selection args" and "default sort order".
         // Why:      Enumerate only music rows and ensure the cursor (a native-backed result set) is always
         //           released. The `?.` guards against a failed query returning `null`.
-        // TS map:   No exact `use`/`?.` combo. Mentally:
-        //           `const cursor = resolver.query(...); if (cursor != null) { try { ...body... } finally { cursor.close(); } }`.
         // Gotcha:   `?.` here is Kotlin's null-safe call (like TS optional chaining `?.`), and `use {}` is
         //           an auto-close construct (like a TS `using` declaration or a `try/finally` that closes).
         //
@@ -1046,7 +942,6 @@ class RustEngineTest {
             //           sentinel like -1").
             // Why:      Reading a value from a cursor needs the column's numeric index; we resolve it once,
             //           up front, and let a missing column be a hard error.
-            // TS map:   `const idColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID);`.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -1058,7 +953,6 @@ class RustEngineTest {
             //           none left, and `uris.size < count` stops once we've collected `count` URIs.
             // Why:      Walk rows one at a time, collecting URIs until we either run out of rows or reach the
             //           requested maximum.
-            // TS map:   `while (cursor.moveToNext() && uris.length < count) { ... }` — identical loop shape.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -1074,8 +968,6 @@ class RustEngineTest {
                 // Why:      Turn each numeric row id into a playable `content://` URI and collect it. `getLong`
                 //           (not `getInt`) because MediaStore ids are 64-bit and `withAppendedId` expects a
                 //           `Long`.
-                // TS map:   `uris.push(ContentUris.withAppendedId(collection, cursor.getLong(idColumn)));` —
-                //           `Long`/`Int` both become `number`; `.add` is `.push`.
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -1088,8 +980,6 @@ class RustEngineTest {
         //           `List<Uri>` return type because a mutable list IS-A read-only list (the read-only type is
         //           a supertype); callers just see the read-only view.
         // Why:      Hand the collected URIs back to the caller.
-        // TS map:   `return uris;` — TS has no read-only/mutable list split at runtime, so it's a plain
-        //           `return`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1105,8 +995,6 @@ class RustEngineTest {
     //           returning a `T`, i.e. a callback). The return type is `T`: whatever the block produced.
     // Why:      Run an engine read on the main thread (the thread that owns the native handle) and ferry its
     //           result back to the calling thread, generically for any return type.
-    // TS map:   `private onMain<T>(instrumentation: Instrumentation, block: () => T): T { ... }` — `<T>` is a
-    //           TS generic and `() -> T` is `() => T`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1118,7 +1006,6 @@ class RustEngineTest {
         //           type `T` across the thread boundary.
         // Why:      The block runs on the main thread, but we must return its value to THIS thread; the box
         //           is the safe hand-off.
-        // TS map:   `const holder = new AtomicReference<T>();`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1129,7 +1016,6 @@ class RustEngineTest {
         //           main thread and blocks until done. Inside, `block()` invokes the caller's callback and
         //           `holder.set(...)` stores its result into the box.
         // Why:      Execute the engine read on the correct thread and publish its result for retrieval below.
-        // TS map:   `instrumentation.runOnMainSync(() => holder.set(block()));`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1139,7 +1025,6 @@ class RustEngineTest {
         // What:     `return holder.get()` reads the stored value out of the box (`.get()` is the box's read
         //           method) and returns it as the method's `T` result.
         // Why:      Hand the main-thread-produced value back to the test thread that called `onMain`.
-        // TS map:   `return holder.get();`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1153,7 +1038,6 @@ class RustEngineTest {
     //           express "static" members that don't belong to any instance.
     // Why:      Hold the shared constants (timings and tolerances) used by both tests, in one place, without
     //           tying them to a particular test instance.
-    // TS map:   Like a block of `static readonly` fields on the class: `static SETTLE_MS = 600; ...`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1169,7 +1053,6 @@ class RustEngineTest {
         //           of characters, not used here).
         // Why:      Shared logcat tag for all of this file's native on-device checks; one place to change it.
         //           `String` (not `CharArray`) because logging APIs take a `String` tag.
-        // TS map:   `private static readonly BENCH_TAG: string = "NativeBench";`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1183,8 +1066,6 @@ class RustEngineTest {
         // Why:      Settle time (in milliseconds) for the worker to open the file, start AAudio, and let
         //           position advance. `Long` (not `Int`) because `Thread.sleep` takes a `Long` argument;
         //           matching the parameter type avoids a widening conversion at each call.
-        // TS map:   `private static readonly SETTLE_MS: number = 600;` — `Long`/`Int` both collapse to
-        //           `number`, so the `L` suffix disappears.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1196,7 +1077,6 @@ class RustEngineTest {
         //           `200L` is a `Long` literal (the `L` suffix; sibling `Int` would be `200`).
         // Why:      Short dwell (milliseconds) between the two paused-position samples. `Long` to match
         //           `Thread.sleep`'s parameter type.
-        // TS map:   `private static readonly STEP_MS: number = 200;`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1210,7 +1090,6 @@ class RustEngineTest {
         // Why:      Maximum position drift (seconds) tolerated while paused (should be exactly zero, but a
         //           little scheduling slop is allowed). `Double` (not `Float`) because it's compared against
         //           `Double` positions; mixing `Float` would force a conversion.
-        // TS map:   `private static readonly PAUSE_TOLERANCE: number = 0.1;` — float/double distinction gone.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1222,7 +1101,6 @@ class RustEngineTest {
         //           `SEEK_TOLERANCE`; `1.5` is a `Double` literal (sibling `Float` would be `1.5f`).
         // Why:      How far below the seek target the post-seek position may land and still pass (seconds).
         //           `Double` to match the `Double` seek/position math.
-        // TS map:   `private static readonly SEEK_TOLERANCE: number = 1.5;`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1234,7 +1112,6 @@ class RustEngineTest {
         //           `MIN_SEEKABLE_SECONDS`; `4.0` is a `Double` literal (sibling `Float` would be `4.0f`).
         // Why:      Only seek-test tracks at least this long (seconds), so a mid-point seek is meaningful.
         //           `Double` to compare against `Double` durations without conversion.
-        // TS map:   `private static readonly MIN_SEEKABLE_SECONDS: number = 4.0;`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1248,7 +1125,6 @@ class RustEngineTest {
         // Why:      Number of tracks the auto-advance test loads; at least 3 so a double-advance bug would
         //           overshoot index 1. `Int` (not `Long`) because it's compared against `List.size`, which
         //           is an `Int`, and a small count never nears the `Int` ceiling.
-        // TS map:   `private static readonly ADVANCE_TRACK_COUNT: number = 3;`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1260,7 +1136,6 @@ class RustEngineTest {
         //           `NEAR_END_SECONDS`; `0.4` is a `Double` literal (sibling `Float` would be `0.4f`).
         // Why:      How far before the end (seconds) to seek so the track finishes within a couple of poll
         //           cycles. `Double` to match the `Double` duration arithmetic it's subtracted from.
-        // TS map:   `private static readonly NEAR_END_SECONDS: number = 0.4;`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1273,7 +1148,6 @@ class RustEngineTest {
         //           `2500`).
         // Why:      How long (milliseconds) to wait for the natural end to be detected and the advance to
         //           land (several ~200 ms polls). `Long` to match `Thread.sleep`'s parameter type.
-        // TS map:   `private static readonly ADVANCE_WAIT_MS: number = 2500;`.
         //
         // In TS you'd write (pseudocode):
         // ```ts

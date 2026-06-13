@@ -6,7 +6,6 @@
 //           `parse_rule_source`'s return type.
 // Why:      The classifier output of `parse_rule_source`. Downstream
 //           code splits these into the AC bucket vs the regex bucket.
-// TS map:   `type ParsedRule = { kind: "literal"; text: string } | { kind: "regex"; src: string };`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -26,7 +25,6 @@ pub enum ParsedRule {
 // Why:      Single source of truth for rule syntax. Comments use `#`,
 //           blanks are ignored; `/PATTERN/FLAGS` is a regex; everything
 //           else is a literal.
-// TS map:   `function parseRuleSource(line: string): ParsedRule | null`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -55,7 +53,6 @@ pub fn parse_rule_source(line: &str) -> Option<ParsedRule> {
     //           with adjusted start/length.
     // Why:      Whitespace-only lines and indentation should not
     //           influence rule parsing.
-    // TS map:   `const trimmed = line.trim();`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -67,7 +64,6 @@ pub fn parse_rule_source(line: &str) -> Option<ParsedRule> {
         //           `Option`. As an early-return statement (with `;`),
         //           it ends the function with the `None` value.
         // Why:      Skip blank lines.
-        // TS map:   `return null;`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -86,9 +82,6 @@ pub fn parse_rule_source(line: &str) -> Option<ParsedRule> {
     //           level comparisons.
     // Why:      Byte indexing is faster than char iteration for the
     //           ASCII-only sentinel checks below (`b'/'`, `b'#'`).
-    // TS map:   `const bytes = new TextEncoder().encode(trimmed);` (close
-    //           in spirit; TS strings don't expose the underlying buffer
-    //           directly).
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -102,7 +95,6 @@ pub fn parse_rule_source(line: &str) -> Option<ParsedRule> {
         //           inner offset to `last`.
         // Why:      Anchor on the LAST `/` so the regex body itself can
         //           contain escaped slashes.
-        // TS map:   `const last = trimmed.lastIndexOf("/"); if (last !== -1) { ... }`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -120,7 +112,6 @@ pub fn parse_rule_source(line: &str) -> Option<ParsedRule> {
                 //           don't need ownership, so a borrow is cheaper.
                 // Why:      Extract the regex body between the leading
                 //           and trailing `/`.
-                // TS map:   `const pattern = trimmed.slice(1, last);`.
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -141,7 +132,6 @@ pub fn parse_rule_source(line: &str) -> Option<ParsedRule> {
                 //           is exactly `[a-z]*` -- anything else means
                 //           this isn't a regex rule and should fall
                 //           through to literal handling.
-                // TS map:   `const flagsOk = /^[a-z]*$/.test(flags);`.
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -159,7 +149,6 @@ pub fn parse_rule_source(line: &str) -> Option<ParsedRule> {
                     //           string capacity.
                     // Why:      We need a fresh string to assemble the
                     //           regex source `(?flags)pattern`.
-                    // TS map:   `let out = "";`.
                     //
                     // In TS you'd write (pseudocode):
                     // ```ts
@@ -175,7 +164,6 @@ pub fn parse_rule_source(line: &str) -> Option<ParsedRule> {
                         // Why:      Build the resharp inline-flags
                         //           prefix `(?flags)` followed by the
                         //           pattern body.
-                        // TS map:   `out += "(?" + flags + ")";`.
                         //
                         // In TS you'd write (pseudocode):
                         // ```ts
@@ -195,7 +183,6 @@ pub fn parse_rule_source(line: &str) -> Option<ParsedRule> {
                     //           access to `out` after this).
                     // Why:      Hand the parsed regex source back as
                     //           "yes, this line is a regex rule".
-                    // TS map:   `return { kind: "regex", src: out };`.
                     //
                     // In TS you'd write (pseudocode):
                     // ```ts
@@ -216,7 +203,6 @@ pub fn parse_rule_source(line: &str) -> Option<ParsedRule> {
     //           alive).
     // Why:      Default classification: any non-blank, non-comment
     //           line that isn't a regex pattern is a literal substring.
-    // TS map:   `return { kind: "literal", text: trimmed };`.
     //
     // In TS you'd write (pseudocode):
     // ```ts

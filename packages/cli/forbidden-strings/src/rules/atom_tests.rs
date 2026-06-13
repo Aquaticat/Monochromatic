@@ -7,8 +7,6 @@
 //           release binary. Keeping tests in a separate file (rather
 //           than inline `mod tests` in `atom.rs`) preserves the
 //           production file's focus.
-// TS map:   `import { walkLiteralBytes } from "./atom"; describe(...)`
-//           in a `*.test.ts` file with Vitest/Jest.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -21,7 +19,6 @@
 //           parent module (`crate::rules`); `atom` is its sibling
 //           submodule.
 // Why:      Avoid writing the full path at every call site.
-// TS map:   `import { walkLiteralBytes } from "./atom";`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -45,8 +42,6 @@ use super::atom::walk_literal_bytes;
 // Why:      Group the four fixture values per case so the table
 //           below stays one-row-per-case. Naming over a tuple
 //           because four positional fields would be illegible.
-// TS map:   `type Case = { input: string; expectedOut: string;
-//           expectedRemainder: string; expectedOutBytes: Uint8Array; };`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -65,7 +60,6 @@ struct Case {
 //           from it.
 // Why:      Factor out the arrange-act-assert boilerplate so each
 //           `#[test]` function is one line.
-// TS map:   `function runCase(case: Case): void { ... }`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -79,7 +73,6 @@ fn run_case(case: &Case) {
     //           without UTF-8 invariant). `mut` because
     //           `walk_literal_bytes` will push into it.
     // Why:      Output sink for the walker.
-    // TS map:   `let out = "";`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -94,8 +87,6 @@ fn run_case(case: &Case) {
     //           inspect it.
     // Why:      The walker writes the un-walked tail into this
     //           binding via the `&mut &str` out-parameter.
-    // TS map:   `let remainder = "";` plus a wrapper object to hand
-    //           a mutable reference to the function.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -109,7 +100,6 @@ fn run_case(case: &Case) {
     //           write access to this binding for the duration of
     //           the call." The walker may modify both.
     // Why:      Exercise the unit under test.
-    // TS map:   `walkLiteralBytes(case.input, outRef, remainderRef);`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -124,7 +114,6 @@ fn run_case(case: &Case) {
     //           between `String` and `&str`.
     // Why:      String-equality check; the format message identifies
     //           which case failed when run as part of the table.
-    // TS map:   `expect(out).toBe(case.expectedOut);`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -144,7 +133,6 @@ fn run_case(case: &Case) {
     //           that re-introduces it would fail this assertion
     //           even if some `==`-equivalent representation
     //           accidentally compared equal.
-    // TS map:   `[...new TextEncoder().encode(out)]`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -161,7 +149,6 @@ fn run_case(case: &Case) {
     // What:     Same `assert_eq!` macro; checks the un-walked tail.
     // Why:      Confirms the walker stopped at the expected
     //           position (start of metacharacter, or end of input).
-    // TS map:   `expect(remainder).toBe(case.expectedRemainder);`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -181,7 +168,6 @@ fn run_case(case: &Case) {
 //           that loops the whole table) so a failure pinpoints the
 //           specific bug-shape that broke. The `Case` struct + `run_case`
 //           helper keeps each function to one line.
-// TS map:   `test("walks em-dash leading", () => { runCase(...); });`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -202,8 +188,6 @@ fn walks_em_dash_leading() {
     //           (U+2014, encoded as 3 UTF-8 bytes `\xe2\x80\x94`).
     //           The pre-fix code would have emitted 6 mojibake
     //           bytes here.
-    // TS map:   `runCase({ input: "—password", expectedOut: "—password",
-    //           expectedRemainder: "", expectedOutBytes: new Uint8Array([0xe2, 0x80, 0x94, ...]) });`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -233,8 +217,6 @@ fn walks_escaped_em_dash() {
     //           where `next` was a `u8`: the byte after `\` could
     //           itself be a high byte of a multi-byte sequence,
     //           triggering the same mojibake bug.
-    // TS map:   `runCase({ input: "\\—rest", expectedOut: "—rest",
-    //           expectedRemainder: "", expectedOutBytes: <em-dash + "rest"> });`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -259,7 +241,6 @@ fn walks_pure_ascii_regression() {
     //           (chars iteration instead of byte indexing); a
     //           plain-ASCII regression would be the first thing
     //           we'd want to know about.
-    // TS map:   `runCase({ input: "hello world", ... });`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -284,8 +265,6 @@ fn walks_pipe_breaks_at_alternation() {
     //           without it, `extract_required_prefix` would extract
     //           `foo` from `foo|bar` and AC-gate on it, missing
     //           files that contain only `bar`.
-    // TS map:   `runCase({ input: "foo|bar", expectedOut: "foo",
-    //           expectedRemainder: "|bar", ... });`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -308,8 +287,6 @@ fn walks_metacharacter_breaks() {
     // Why:      Confirm metacharacter detection still works after
     //           switching from byte-literals (`b'.'`) to char-literals
     //           (`'.'`).
-    // TS map:   `runCase({ input: "foo.*bar", expectedOut: "foo",
-    //           expectedRemainder: ".*bar", ... });`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -333,8 +310,6 @@ fn walks_escape_underscore_regression() {
     //           the function's `Why` comment) is a known important
     //           case for betterleaks-shape rules. Make sure the
     //           rewrite didn't break it.
-    // TS map:   `runCase({ input: "\\_foo", expectedOut: "_foo",
-    //           expectedRemainder: "", ... });`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -359,8 +334,6 @@ fn walks_alphanumeric_escape_breaks() {
     //           works (pre-fix it broke on `next.is_ascii_alphanumeric()`
     //           where `next` was `u8`; post-fix it breaks on
     //           `char::is_ascii_alphanumeric`, same behaviour).
-    // TS map:   `runCase({ input: "foo\\dbar", expectedOut: "foo",
-    //           expectedRemainder: "\\dbar", ... });`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -385,8 +358,6 @@ fn walks_em_dash_then_metacharacter() {
     //           em-dash before evaluating the next char as a
     //           potential metacharacter. A naive `tail = &tail[1..]`
     //           after `—` would slice mid-character and panic.
-    // TS map:   `runCase({ input: "—.*", expectedOut: "—",
-    //           expectedRemainder: ".*", ... });`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -412,7 +383,6 @@ fn walks_two_byte_utf8_leading() {
     //           would have produced U+00A9 (`(c)`-symbol). Two
     //           wrong codepoints re-encoding to 4 mojibake bytes
     //           instead of the original 2.
-    // TS map:   `runCase({ input: "écret", expectedOut: "écret", ... });`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -440,7 +410,6 @@ fn walks_four_byte_utf8_leading() {
     //           U+0080..U+00FF codepoint, each re-encoding to 2 UTF-8
     //           bytes). Confirms `next.len_utf8()` advance handles
     //           4 correctly.
-    // TS map:   `runCase({ input: "🔑secret", ... });`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -468,7 +437,6 @@ fn walks_escaped_emoji() {
     //           `next`) would underadvance by 3 bytes here and the
     //           next iteration's `chars.next()` would panic on a
     //           non-char-boundary slice.
-    // TS map:   `runCase({ input: "\\🔑rest", expectedOut: "🔑rest", ... });`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -492,7 +460,6 @@ fn walks_empty_input() {
     // Why:      Edge case: callers may pass empty `&str` after
     //           consuming an entire prior atom. Walker must not
     //           panic and must leave `out` and `remainder` empty.
-    // TS map:   `runCase({ input: "", expectedOut: "", ... });`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -518,8 +485,6 @@ fn walks_trailing_backslash() {
     //           `if i + 1 >= bytes.len() { break; }` check.
     //           Without this branch the let-else would silently
     //           consume the `\` and produce wrong output.
-    // TS map:   `runCase({ input: "\\", expectedOut: "",
-    //           expectedRemainder: "\\", ... });`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -547,7 +512,6 @@ fn walks_mixed_widths_consecutive() {
     //           char's width. A regression where the byte-offset
     //           accounting drifts after one width would produce
     //           panics or mojibake on the next char.
-    // TS map:   `runCase({ input: "a—é🔑z", expectedOut: "a—é🔑z", ... });`.
     //
     // In TS you'd write (pseudocode):
     // ```ts

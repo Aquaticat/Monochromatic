@@ -7,7 +7,6 @@ use super::walker::extract_scope;
 // Why:      The AC gate is meant to skip work on no-match files. A
 //           1-byte "prefix" matches almost everywhere, queueing the
 //           full regex `find_all` for nothing.
-// TS map:   `const MIN_PREFIX_LEN = 3;`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -49,7 +48,6 @@ pub const MIN_PREFIX_LEN: usize = 3;
 //           fires if any AC pattern in its set matches" semantics
 //           drains alternation-shape rules out of the residual gate
 //           and onto the AC fast path. PERF.md "Open opportunities".
-// TS map:   `function extractGatingSubstrings(src: string): Array<{ sub: string; ci: boolean }> | null`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -93,7 +91,6 @@ pub fn extract_gating_substrings(src: &str) -> Option<Vec<(String, bool)>> {
     //           normal pattern; the flag is returned as a tuple field
     //           so the loader can route this rule's substring onto the
     //           case-insensitive AC bucket.
-    // TS map:   `const m = s.match(/^\(\?([a-zA-Z\-]*)\)/);`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -139,7 +136,6 @@ pub fn extract_gating_substrings(src: &str) -> Option<Vec<(String, bool)>> {
                 //           never fired the gate, the regex's find_all
                 //           was never invoked, and the rule silently
                 //           missed.
-                // TS map:   `if (flags.includes('u')) return null;`.
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -164,7 +160,6 @@ pub fn extract_gating_substrings(src: &str) -> Option<Vec<(String, bool)>> {
     //           We accept rare false-positive AC hits where `prefix`
     //           appears mid-line; the regex's own anchors will reject
     //           those when `find_all` runs.
-    // TS map:   `while (s.startsWith("^") || s.startsWith("\\b") || s.startsWith("\\A")) s = s.slice(...);`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -193,7 +188,6 @@ pub fn extract_gating_substrings(src: &str) -> Option<Vec<(String, bool)>> {
     //           The actual walk lives in `extract_scope` so it can
     //           recurse from inside a group body without re-stripping
     //           outer-only constructs.
-    // TS map:   `const subs = extractScope(s); if (!subs) return null;`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -218,7 +212,6 @@ pub fn extract_gating_substrings(src: &str) -> Option<Vec<(String, bool)>> {
     // Why:      Better to let resharp handle the whole rule than to
     //           emit an AC pattern that fires constantly while still
     //           missing matches.
-    // TS map:   `if (subs.some((p) => p.sub.length < MIN_PREFIX_LEN)) return null;`.
     //
     // In TS you'd write (pseudocode):
     // ```ts

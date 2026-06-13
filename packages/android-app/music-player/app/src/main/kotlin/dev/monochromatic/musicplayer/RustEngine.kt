@@ -3,7 +3,6 @@
 //           the shared `main` source set for the full-Rust build variant.
 // Why:      Keeps `RustEngine` in the same package as the shared `AudioEngine` interface it
 //           implements and the `NativeBridge` it calls into.
-// TS map:   No `package` keyword in TS; the file path is the module identity.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -14,7 +13,6 @@ package dev.monochromatic.musicplayer
 // What:     `import android.content.BroadcastReceiver` brings in `BroadcastReceiver`, the base
 //           class for objects that receive system broadcasts (here, the headphone-unplug event).
 // Why:      The engine subclasses it (anonymously) to react to "audio becoming noisy".
-// TS map:   `import { BroadcastReceiver } from "android-framework";` — a base class to extend.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -26,7 +24,6 @@ import android.content.BroadcastReceiver
 //           handle), with constants like `Context.AUDIO_SERVICE` and `Context.RECEIVER_NOT_EXPORTED`.
 // Why:      The constructor takes a `Context`; the engine also looks up system services and
 //           registers a receiver through it.
-// TS map:   `import { Context } from "android-framework";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -37,7 +34,6 @@ import android.content.Context
 // What:     `import android.content.Intent` brings in `Intent`, Android's "something happened /
 //           please do something" message object; a received broadcast arrives as an `Intent`.
 // Why:      `onReceive(context, intent)` inspects the `Intent`'s action.
-// TS map:   `import type { Intent } from "android-framework";` — mentally an event object.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -48,7 +44,6 @@ import android.content.Intent
 // What:     `import android.content.IntentFilter` brings in `IntentFilter`, which declares WHICH
 //           broadcast actions a receiver wants.
 // Why:      The engine registers `noisyReceiver` with a filter for the becoming-noisy action.
-// TS map:   `import { IntentFilter } from "android-framework";` — mentally an event-name filter.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -59,7 +54,6 @@ import android.content.IntentFilter
 // What:     `import android.media.AudioAttributes` brings in `AudioAttributes` (usage/content-type
 //           metadata) and its nested `AudioAttributes.Builder`.
 // Why:      The focus request is built with media-usage attributes.
-// TS map:   `import { AudioAttributes } from "android-framework";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -70,7 +64,6 @@ import android.media.AudioAttributes
 // What:     `import android.media.AudioFocusRequest` brings in `AudioFocusRequest` and its nested
 //           `AudioFocusRequest.Builder`: the object describing a request to OWN audio focus.
 // Why:      The engine builds one persistent `focusRequest` and reuses it for every play.
-// TS map:   `import { AudioFocusRequest } from "android-framework";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -82,7 +75,6 @@ import android.media.AudioFocusRequest
 //           with focus methods and constants (`AUDIOFOCUS_GAIN`, `AUDIOFOCUS_LOSS`,
 //           `ACTION_AUDIO_BECOMING_NOISY`, ...).
 // Why:      The engine requests/abandons focus and reacts to focus changes through it.
-// TS map:   `import { AudioManager } from "android-framework";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -92,7 +84,6 @@ import android.media.AudioManager
 
 // What:     `import android.net.Uri` brings in Android's parsed `Uri`, with `Uri.parse(string)`.
 // Why:      `openDescriptor`/`resolveNormalizationGain` parse the string URI.
-// TS map:   `import { Uri } from "android-framework";` — mentally `URL`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -104,8 +95,6 @@ import android.net.Uri
 //           a specific thread's message loop (looper).
 // Why:      The engine uses a main-looper `Handler` as its poller and to marshal callbacks onto the
 //           main thread.
-// TS map:   No exact equivalent. Mentally a `setTimeout`/`queueMicrotask` bound to one thread's
-//           event loop.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -116,7 +105,6 @@ import android.os.Handler
 // What:     `import android.os.Looper` brings in `Looper`; `Looper.getMainLooper()` is the main
 //           (UI) thread's message loop.
 // Why:      The poller `Handler` is bound to the main looper so callbacks land on the UI thread.
-// TS map:   No equivalent (JS has one implicit event loop).
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -127,7 +115,6 @@ import android.os.Looper
 // What:     `import android.os.ParcelFileDescriptor` brings in `ParcelFileDescriptor` (a `Closeable`
 //           open-file-descriptor wrapper exposing `.fd`).
 // Why:      The engine opens a descriptor for the track and hands its fd to the native loader.
-// TS map:   Mentally a file handle with a numeric `.fd` and a `.close()`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -137,7 +124,6 @@ import android.os.ParcelFileDescriptor
 
 // What:     `import android.util.Log` brings in Android's tagged logging (`Log.i`, `Log.w`).
 // Why:      The engine logs load events and warnings.
-// TS map:   Mentally a tagged `console`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -152,7 +138,6 @@ import android.util.Log
 //           on new devices and falls back to plain registration on API 26-32, so the becoming-noisy
 //           receiver needs no hand-written `Build.VERSION.SDK_INT` branch and the app's true floor
 //           stays at the native AAudio API-26 minimum instead of being pushed up to 33.
-// TS map:   `import { ContextCompat } from "androidx-core-content";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -164,7 +149,6 @@ import androidx.core.content.ContextCompat
 //           function `normalizationGain(peak)` from the `main` core package: maps a measured peak to
 //           an attenuate-only gain in `0.0..1.0`.
 // Why:      `resolveNormalizationGain` converts a cached/measured peak into the gain it applies.
-// TS map:   `import { normalizationGain } from "../core/normalization";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -174,7 +158,6 @@ import dev.monochromatic.musicplayer.core.normalizationGain
 
 // What:     `import java.io.File` brings in the JDK `File` type (a path on the local filesystem).
 // Why:      `openDescriptor` wraps a bare absolute path in a `File` to open it directly.
-// TS map:   No direct type; mentally a path string you open. `new File(path)` ~ just the path.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -185,7 +168,6 @@ import java.io.File
 // What:     `import kotlinx.coroutines.CancellationException` brings in the exception coroutines
 //           throw on cancellation (rethrow it, do not swallow it).
 // Why:      `resolveNormalizationGain` rethrows it so a cancelled resolution unwinds cleanly.
-// TS map:   Loosely the `AbortError` of a cancelled async op.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -196,7 +178,6 @@ import kotlinx.coroutines.CancellationException
 // What:     `import kotlinx.coroutines.CoroutineScope` brings in `CoroutineScope`, the owner of a
 //           set of coroutines that can all be cancelled together.
 // Why:      `resolveScope` owns the per-track gain resolution so `release()` can cancel it.
-// TS map:   Mentally an `AbortController` that owns its async tasks.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -207,7 +188,6 @@ import kotlinx.coroutines.CoroutineScope
 // What:     `import kotlinx.coroutines.Dispatchers` brings in the named thread pools
 //           (`Dispatchers.Default` for CPU work).
 // Why:      `resolveScope` runs on `Dispatchers.Default`.
-// TS map:   No equivalent (single-threaded JS).
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -218,7 +198,6 @@ import kotlinx.coroutines.Dispatchers
 // What:     `import kotlinx.coroutines.SupervisorJob` brings in `SupervisorJob()`, a job whose
 //           children fail INDEPENDENTLY (one failure does not cancel siblings or the scope).
 // Why:      The resolve scope uses it so one failed measure does not kill later ones.
-// TS map:   Mentally `allSettled` semantics baked into the task owner.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -228,7 +207,6 @@ import kotlinx.coroutines.SupervisorJob
 
 // What:     `import kotlinx.coroutines.cancel` brings in the `cancel()` extension on `CoroutineScope`.
 // Why:      `release()` cancels `resolveScope`.
-// TS map:   Mentally `abortController.abort()`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -239,7 +217,6 @@ import kotlinx.coroutines.cancel
 // What:     `import kotlinx.coroutines.launch` brings in `launch { ... }`, which starts a coroutine
 //           that runs concurrently and returns immediately (fire-and-forget).
 // Why:      `load` launches the off-thread gain resolution.
-// TS map:   Loosely `void (async () => { ... })();` (also scope-bound).
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -279,7 +256,6 @@ import kotlinx.coroutines.launch
 //           IMPLEMENTS the `AudioEngine` interface (the `: AudioEngine` has no `()` because an
 //           interface is implemented, not constructed).
 // Why:      Provide the full-Rust implementation of the backend-agnostic `AudioEngine` contract.
-// TS map:   `class RustEngine implements AudioEngine { constructor(context: Context) { ... } }`
 // Gotcha:   `: AudioEngine` WITHOUT `()` = implements an interface; a supertype WITH `()` would be
 //           a superclass constructor call.
 //
@@ -293,7 +269,6 @@ class RustEngine(context: Context) : AudioEngine {
     // What:     `private val appContext: Context = context.applicationContext` declares a private
     //           read-only `Context` holding the long-lived application context.
     // Why:      For the content resolver, held without leaking the (short-lived) activity.
-    // TS map:   `private readonly appContext: Context = context.applicationContext;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -306,7 +281,6 @@ class RustEngine(context: Context) : AudioEngine {
     //           creating the native engine. Sibling `Int` (32-bit) is declined: a native pointer
     //           needs 64 bits. It is `var` because `release()` later resets it to `0`.
     // Why:      Opaque native engine handle; `0` only if the worker thread could not be spawned.
-    // TS map:   `private handle: bigint = NativeBridge.nativeEngineCreate();` — an opaque 64-bit token.
     // Gotcha:   `handle` is an opaque pointer, not a number for math; only `== 0L` (invalid) is a
     //           meaningful test.
     //
@@ -320,7 +294,6 @@ class RustEngine(context: Context) : AudioEngine {
     //           reassignable NULLABLE function-type field (`(Boolean) -> Unit` = takes a boolean,
     //           returns void; trailing `?` = nullable), initial `null`.
     // Why:      Play/pause-state callback, fired by the poller on a transition.
-    // TS map:   `private onPlayingChanged: ((playing: boolean) => void) | null = null;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -331,7 +304,6 @@ class RustEngine(context: Context) : AudioEngine {
     // What:     `private var onTrackEnded: (() -> Unit)? = null` declares a private, reassignable
     //           nullable no-arg void callback, initial `null`.
     // Why:      Natural-end callback, fired by the poller once per ended track.
-    // TS map:   `private onTrackEnded: (() => void) | null = null;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -345,8 +317,6 @@ class RustEngine(context: Context) : AudioEngine {
     //           the job with `Dispatchers.Default`; `CoroutineScope(...)` wraps it.
     // Why:      Off-thread scope for resolving the per-track normalization gain (cache hit or native
     //           measure); cancelled in `release` so a pending measure cannot outlive the engine.
-    // TS map:   Mentally `const resolveScope = new AbortController();` plus "run on a background pool;
-    //           siblings fail independently".
     // Gotcha:   `+` on coroutine contexts is OVERLOADED (context merge), not numeric addition.
     //
     // In TS you'd write (pseudocode):
@@ -360,7 +330,6 @@ class RustEngine(context: Context) : AudioEngine {
     // Why:      Bumped each load; a resolved gain is applied only when its load is still current, so a
     //           measure that finishes after the user skipped ahead cannot retag the new track.
     //           Main-thread only (so, unlike the Media3 engine's, it needs no `@Volatile`).
-    // TS map:   `private loadGeneration = 0;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -372,7 +341,6 @@ class RustEngine(context: Context) : AudioEngine {
     //           initial `false`.
     // Why:      Last play state the poller reported, to EDGE-TRIGGER `onPlayingChanged` (fire only on
     //           a change).
-    // TS map:   `private lastPlaying = false;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -384,7 +352,6 @@ class RustEngine(context: Context) : AudioEngine {
     //           initial `false`.
     // Why:      Whether the current ended state has already fired `onTrackEnded`; rearms when native
     //           clears it (so a track that ends fires exactly once).
-    // TS map:   `private endedHandled = false;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -397,8 +364,6 @@ class RustEngine(context: Context) : AudioEngine {
     //           with no `new`.
     // Why:      Main-looper poller that turns the native pull-state into the engine's push callbacks
     //           (and marshals work onto the main thread).
-    // TS map:   `const poller = new Handler(mainEventLoop);` — mentally a scheduler bound to the UI
-    //           thread.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -411,7 +376,6 @@ class RustEngine(context: Context) : AudioEngine {
     //           EXPRESSION: an anonymous one-off instance implementing the `Runnable` interface
     //           inline (no `()` after `Runnable` because it is an interface). `run()` is its body.
     // Why:      A SELF-RESCHEDULING poll task: each run polls, then re-posts itself after `POLL_MS`.
-    // TS map:   `const pollTask = { run: () => { this.poll(); this.poller.postDelayed(pollTask, POLL_MS); } };`
     // Gotcha:   `object : Runnable {}` is an anonymous instance created right here, not a type.
     //
     // In TS you'd write (pseudocode):
@@ -424,7 +388,6 @@ class RustEngine(context: Context) : AudioEngine {
         // What:     `override fun run() { ... }` overrides the `Runnable.run` method (the work the
         //           handler executes).
         // Why:      Define one poll cycle plus its self-reschedule.
-        // TS map:   `run() { ... }`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -434,7 +397,6 @@ class RustEngine(context: Context) : AudioEngine {
             // What:     `poll()` calls the engine's private `poll` method (sample native state, fire
             //           callbacks on transitions).
             // Why:      Perform one poll of the native engine.
-            // TS map:   `this.poll();`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -445,8 +407,6 @@ class RustEngine(context: Context) : AudioEngine {
             //           again after `POLL_MS` milliseconds. `this` here refers to the anonymous
             //           `Runnable` itself.
             // Why:      Keep the poll loop going on a fixed cadence.
-            // TS map:   `this.poller.postDelayed(this, POLL_MS);` — `this` is the runnable; like
-            //           `setTimeout(() => this.run(), POLL_MS)`.
             // Gotcha:   `this` is the anonymous `Runnable`, NOT the enclosing `RustEngine`; that is how
             //           the task reschedules itself.
             //
@@ -464,8 +424,6 @@ class RustEngine(context: Context) : AudioEngine {
     //           to `AudioManager` (it throws `ClassCastException` if the runtime type is wrong, which
     //           it never is for this well-known service).
     // Why:      System audio service, for focus and the music-stream becoming-noisy broadcast.
-    // TS map:   `const audioManager = appContext.getSystemService(Context.AUDIO_SERVICE) as AudioManager;`
-    //           — Kotlin's `as` is TS's `as` cast (but Kotlin's is checked at runtime; TS's is not).
     // Gotcha:   `as` here is a RUNTIME-CHECKED cast (unlike TS's compile-only `as`); a wrong type
     //           throws rather than silently mis-typing.
     //
@@ -480,7 +438,6 @@ class RustEngine(context: Context) : AudioEngine {
     //           (commented step by step below). `AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)`
     //           starts a request for permanent ("gain") focus.
     // Why:      Persistent media focus request (gain, usage=media), reused for every play.
-    // TS map:   `const focusRequest = new AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)....build();`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -497,7 +454,6 @@ class RustEngine(context: Context) : AudioEngine {
             //           `AudioAttributes.Builder()` -> `.setUsage(AudioAttributes.USAGE_MEDIA)` ->
             //           `.setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)` -> `.build()`.
             // Why:      Declare this as MEDIA/MUSIC audio so the focus system treats it correctly.
-            // TS map:   `.setAudioAttributes(new AudioAttributes.Builder().setUsage(USAGE_MEDIA).setContentType(CONTENT_TYPE_MUSIC).build())`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -517,7 +473,6 @@ class RustEngine(context: Context) : AudioEngine {
             //           engine's `onFocusChange`); the SECOND argument `poller` is the `Handler` on
             //           which the listener is invoked (so it runs on the main thread).
             // Why:      Route focus changes (loss/gain) to `onFocusChange`, delivered on the main thread.
-            // TS map:   `.setOnAudioFocusChangeListener((change) => this.onFocusChange(change), this.poller)`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -527,7 +482,6 @@ class RustEngine(context: Context) : AudioEngine {
             // What:     `.setWillPauseWhenDucked(true)` tells the framework this app would rather be
             //           PAUSED than ducked (volume-lowered) on a transient-duck focus loss.
             // Why:      A music player prefers a clean pause over playing quietly under, say, a nav prompt.
-            // TS map:   `.setWillPauseWhenDucked(true)`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -536,7 +490,6 @@ class RustEngine(context: Context) : AudioEngine {
             .setWillPauseWhenDucked(true)
             // What:     `.build()` finalises the builder and returns the `AudioFocusRequest`.
             // Why:      Produce the reusable request object.
-            // TS map:   `.build()`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -548,7 +501,6 @@ class RustEngine(context: Context) : AudioEngine {
     //           boolean, initial `false`.
     // Why:      Set when a transient focus loss paused mid-play, so a later focus GAIN resumes; a
     //           permanent loss or a user pause clears it.
-    // TS map:   `private resumeOnFocusGain = false;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -562,7 +514,6 @@ class RustEngine(context: Context) : AudioEngine {
     //           constructor call, since it is a class, not an interface). `onReceive` is overridden.
     // Why:      Pauses on a headphone unplug (`ACTION_AUDIO_BECOMING_NOISY`) so audio never jumps to
     //           the speaker.
-    // TS map:   `const noisyReceiver = new (class extends BroadcastReceiver { onReceive(context, intent) { ... } })();`
     // Gotcha:   `object : BroadcastReceiver()` (WITH `()`) extends a CLASS; contrast `object : Runnable`
     //           (no `()`) which implements an INTERFACE.
     //
@@ -577,7 +528,6 @@ class RustEngine(context: Context) : AudioEngine {
         //           receiver callback. Both params are NULLABLE (`Context?`, `Intent?`) because the
         //           framework may pass `null`.
         // Why:      Handle the incoming broadcast and pause when it is the becoming-noisy action.
-        // TS map:   `onReceive(context: Context | null, intent: Intent | null) { ... }`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -590,7 +540,6 @@ class RustEngine(context: Context) : AudioEngine {
             //           becoming-noisy action constant (`null` never equals the constant, so a null
             //           intent is safely ignored).
             // Why:      Only react to the headphone-unplug broadcast, not any other delivery.
-            // TS map:   `if (intent?.action === AudioManager.ACTION_AUDIO_BECOMING_NOISY) { ... }`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -599,7 +548,6 @@ class RustEngine(context: Context) : AudioEngine {
             if (intent?.action == AudioManager.ACTION_AUDIO_BECOMING_NOISY) {
                 // What:     `resumeOnFocusGain = false` clears the resume flag.
                 // Why:      A deliberate unplug-pause should NOT auto-resume on a later focus gain.
-                // TS map:   `this.resumeOnFocusGain = false;`
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -609,7 +557,6 @@ class RustEngine(context: Context) : AudioEngine {
                 // What:     `NativeBridge.nativeEnginePause(handle)` calls the native pause via the JNI
                 //           bridge, passing the opaque `handle`.
                 // Why:      Pause playback so audio does not blast from the phone speaker.
-                // TS map:   `NativeBridge.nativeEnginePause(this.handle);`
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -624,7 +571,6 @@ class RustEngine(context: Context) : AudioEngine {
     //           initialisers above).
     // Why:      Validate the native engine spawned, register the becoming-noisy receiver, and start the
     //           poll loop.
-    // TS map:   The body of the TS `constructor(...)` after the field initialisers.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -635,7 +581,6 @@ class RustEngine(context: Context) : AudioEngine {
         //           checks the handle against `0L` (a `Long` zero) and throws if the native engine
         //           could not be created.
         // Why:      A zero handle means the native worker thread failed to spawn; fail construction loudly.
-        // TS map:   `if (this.handle === 0n) throw new IllegalStateException("native engine worker could not be spawned");`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -654,7 +599,6 @@ class RustEngine(context: Context) : AudioEngine {
         //           it directly would force minSdk 33, whereas `ContextCompat` carries the constant at all
         //           levels and applies the export flag only on API 33+ (a no-op on 26-32, where this
         //           system-protected broadcast registers fine without it).
-        // TS map:   `ContextCompat.registerReceiver(appContext, noisyReceiver, new IntentFilter(ACTION_AUDIO_BECOMING_NOISY), ContextCompat.RECEIVER_NOT_EXPORTED);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -674,7 +618,6 @@ class RustEngine(context: Context) : AudioEngine {
         // What:     `poller.postDelayed(pollTask, POLL_MS)` schedules the first poll after `POLL_MS`
         //           milliseconds, kicking off the self-rescheduling loop.
         // Why:      Begin polling the native pull-state to drive the push callbacks.
-        // TS map:   `this.poller.postDelayed(pollTask, POLL_MS);` ~ `setTimeout(() => pollTask.run(), POLL_MS)`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -691,7 +634,6 @@ class RustEngine(context: Context) : AudioEngine {
     //           `endedHandled=false` and fire `onTrackEnded` a second time (a skipped track). The
     //           falling-edge rearm in `poll()` (where `endedHandled` clears only when native `ended`
     //           actually clears) is the correct place.
-    // TS map:   `load(uri: string, play: boolean): void { ... }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -702,7 +644,6 @@ class RustEngine(context: Context) : AudioEngine {
         //           the load. `uri.substringAfterLast('/')` is the filename (text after the last `'/'`
         //           CHAR literal); `$play` interpolates the boolean.
         // Why:      Record which track is loading and whether it auto-plays.
-        // TS map:   ``console.info(LOG_TAG, `RustEngine.load ${uri.split("/").at(-1)} play=${play}`);``
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -712,7 +653,6 @@ class RustEngine(context: Context) : AudioEngine {
         // What:     `NativeBridge.nativeEngineSetNormalizationGain(handle, UNITY_GAIN)` calls the native
         //           setter with the companion constant `UNITY_GAIN` (1.0) via JNI.
         // Why:      Reset to unity so the new track never plays at the previous track's normalization gain.
-        // TS map:   `NativeBridge.nativeEngineSetNormalizationGain(this.handle, UNITY_GAIN);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -723,7 +663,6 @@ class RustEngine(context: Context) : AudioEngine {
         //           `++loadGeneration` is PRE-INCREMENT: it adds 1 to the field and evaluates to the NEW
         //           value, captured in `generation`.
         // Why:      Tag this load so the background resolver can tell whether its result is still current.
-        // TS map:   `const generation = ++this.loadGeneration;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -734,7 +673,6 @@ class RustEngine(context: Context) : AudioEngine {
         //           NULLABLE `ParcelFileDescriptor?` from the private `openDescriptor` helper (which
         //           returns `null` when the URI cannot be opened).
         // Why:      Get a borrowed descriptor to hand the native loader; `null` means we cannot load.
-        // TS map:   `const descriptor = this.openDescriptor(uri); // ParcelFileDescriptor | null`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -744,7 +682,6 @@ class RustEngine(context: Context) : AudioEngine {
         // What:     `if (descriptor == null) { Log.w(...); return }` is an early-return guard on the
         //           nullable descriptor (`== null` is the null check).
         // Why:      Cannot load without a descriptor; log and bail.
-        // TS map:   `if (descriptor === null) { console.warn(...); return; }`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -753,7 +690,6 @@ class RustEngine(context: Context) : AudioEngine {
         if (descriptor == null) {
             // What:     `Log.w(LOG_TAG, "could not open a descriptor for $uri")` logs the failure at WARN.
             // Why:      Make the open failure visible.
-            // TS map:   ``console.warn(LOG_TAG, `could not open a descriptor for ${uri}`);``
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -762,7 +698,6 @@ class RustEngine(context: Context) : AudioEngine {
             Log.w(LOG_TAG, "could not open a descriptor for $uri")
             // What:     `return` exits `load` early (returns `Unit`/void).
             // Why:      Nothing more to do without a descriptor.
-            // TS map:   `return;`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -775,7 +710,6 @@ class RustEngine(context: Context) : AudioEngine {
         //           focus, a side effect) runs ONLY when `play` is `true`. So `startPlaying` is true only
         //           when the caller wants playback AND focus was granted.
         // Why:      Only start playing if audio focus is granted (a phone call or another player can deny it).
-        // TS map:   `const startPlaying = play && this.requestFocus();`
         // Gotcha:   `requestFocus()` has a side effect (it requests focus); `&&` short-circuits, so it is
         //           NOT called when `play` is false.
         //
@@ -790,7 +724,6 @@ class RustEngine(context: Context) : AudioEngine {
         //           `it.fd` is its raw fd, handed to the native loader; the native return code becomes `result`.
         // Why:      Pass the BORROWED fd; native dups it synchronously, so `use {}` closes the original after
         //           (the dup-ownership protocol avoiding an fdsan double-close).
-        // TS map:   `let result: number; { using d = descriptor; result = NativeBridge.nativeEngineLoad(this.handle, d.fd, startPlaying); }`
         // Gotcha:   `use {}` closes the descriptor at block end; the native dup must complete before then
         //           (it does, synchronously).
         //
@@ -803,7 +736,6 @@ class RustEngine(context: Context) : AudioEngine {
         // What:     `if (result != 0) { Log.w(...); return }` checks the native return code (`0` = success;
         //           `!= 0` = failure) and bails on failure.
         // Why:      A non-zero native load result means the track failed to load.
-        // TS map:   `if (result !== 0) { console.warn(...); return; }`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -812,7 +744,6 @@ class RustEngine(context: Context) : AudioEngine {
         if (result != 0) {
             // What:     `Log.w(LOG_TAG, "native load failed (code $result) for $uri")` logs the failure code.
             // Why:      Make the native failure visible.
-            // TS map:   ``console.warn(LOG_TAG, `native load failed (code ${result}) for ${uri}`);``
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -821,7 +752,6 @@ class RustEngine(context: Context) : AudioEngine {
             Log.w(LOG_TAG, "native load failed (code $result) for $uri")
             // What:     `return` exits `load` early.
             // Why:      Nothing more to do after a failed native load.
-            // TS map:   `return;`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -836,7 +766,6 @@ class RustEngine(context: Context) : AudioEngine {
         //           finishes after the user skipped ahead cannot retag the newer track. The track plays at
         //           unity until the gain lands (a cache hit lands almost immediately; a miss after a brief
         //           level correction).
-        // TS map:   `void (async () => { ... })();`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -853,7 +782,6 @@ class RustEngine(context: Context) : AudioEngine {
             // What:     `val gain: Float = resolveNormalizationGain(uri)` calls the SUSPEND resolver and
             //           awaits its `Float` result (a suspend call suspends like `await`).
             // Why:      Get this track's gain (cache hit or fresh native measure).
-            // TS map:   `const gain = await this.resolveNormalizationGain(uri);`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -863,7 +791,6 @@ class RustEngine(context: Context) : AudioEngine {
             // What:     `poller.post { ... }` posts the trailing-lambda block onto the MAIN looper to run
             //           there (marshalling back to the main thread from the background coroutine).
             // Why:      The native handle is touched only from the main thread; apply the gain there.
-            // TS map:   `this.poller.post(() => { ... });` ~ schedule a microtask on the UI thread.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -874,7 +801,6 @@ class RustEngine(context: Context) : AudioEngine {
                 //           only when this load is still the current one (`generation == loadGeneration`)
                 //           AND the engine is still alive (`handle != 0L`, not released).
                 // Why:      Avoid retagging a newer track or calling into a released engine.
-                // TS map:   `if (generation === this.loadGeneration && this.handle !== 0n) { ... }`
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -884,7 +810,6 @@ class RustEngine(context: Context) : AudioEngine {
                     // What:     `NativeBridge.nativeEngineSetNormalizationGain(handle, gain)` applies the
                     //           resolved gain to the native engine via JNI.
                     // Why:      Apply this track's normalization.
-                    // TS map:   `NativeBridge.nativeEngineSetNormalizationGain(this.handle, gain);`
                     //
                     // In TS you'd write (pseudocode):
                     // ```ts
@@ -903,7 +828,6 @@ class RustEngine(context: Context) : AudioEngine {
     //           `measureTruePeakBlocking`), caches the peak, and returns the gain. A track that cannot be
     //           fingerprinted or whose decode fails plays at unity (the callback's clamp still guards
     //           against clipping). Cancellation of a superseded load propagates.
-    // TS map:   `private async resolveNormalizationGain(uri: string): Promise<number> { ... }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -913,7 +837,6 @@ class RustEngine(context: Context) : AudioEngine {
         // What:     `val parsed: Uri = Uri.parse(uri)` declares a read-only `Uri` by parsing the string
         //           via the static `Uri.parse`.
         // Why:      The fingerprint and measure need a parsed `Uri`.
-        // TS map:   `const parsed = Uri.parse(uri);` (or `new URL(uri)`).
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -925,7 +848,6 @@ class RustEngine(context: Context) : AudioEngine {
         //           returns a nullable `String?`; `?:` (Elvis) returns `UNITY_GAIN` from the whole function
         //           when it is `null`.
         // Why:      Without a fingerprint we cannot cache or look up a peak, so fall back to unity gain.
-        // TS map:   `const fp = TrackFingerprint.of(this.appContext, parsed); if (fp === null) return UNITY_GAIN; const key = fp;`
         // Gotcha:   `?: return X` is "unwrap-or-bail": null-checks and early-returns in one line.
         //
         // In TS you'd write (pseudocode):
@@ -940,7 +862,6 @@ class RustEngine(context: Context) : AudioEngine {
         //           scope function), with `cachedPeak` the named non-null value. The `return` inside the
         //           lambda is a NON-LOCAL return from the whole function (legal because `let` is inline).
         // Why:      A cache hit short-circuits: convert the cached peak to a gain and return it.
-        // TS map:   `const cachedPeak = PeakCacheStore.get(this.appContext, key); if (cachedPeak !== null) return normalizationGain(cachedPeak);`
         // Gotcha:   The `return` exits `resolveNormalizationGain`, not just the lambda (non-local return).
         //
         // In TS you'd write (pseudocode):
@@ -956,7 +877,6 @@ class RustEngine(context: Context) : AudioEngine {
         //           `try` body's value on success, while the catches rethrow or early-return.
         // Why:      Measure the track now, but treat cancellation as cancellation (rethrow) and any other
         //           failure as "use unity gain".
-        // TS map:   `let peak: number; try { peak = measureTruePeakBlocking(...); } catch (e) { if (e is CancellationException) throw e; log; return UNITY_GAIN; }`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -974,7 +894,6 @@ class RustEngine(context: Context) : AudioEngine {
             //           measure (defined in this flavor's `PeakMeasurer.kt`); its `Float` result is the
             //           `try` block's value.
             // Why:      Perform the actual native decode + measurement on a cache miss.
-            // TS map:   `peak = measureTruePeakBlocking(this.appContext, parsed);`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -984,7 +903,6 @@ class RustEngine(context: Context) : AudioEngine {
         } catch (cancellation: CancellationException) {
             // What:     `throw cancellation` rethrows the caught `CancellationException` unchanged.
             // Why:      A cancelled measurement must propagate as cancellation, not be swallowed.
-            // TS map:   `if (e instanceof CancellationException) throw e;`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -995,7 +913,6 @@ class RustEngine(context: Context) : AudioEngine {
             // What:     `Log.w(LOG_TAG, "true-peak measure failed for $uri; using unity gain", failure)`
             //           logs any non-cancellation failure with the throwable.
             // Why:      A genuine decode failure should not crash; fall back to unity gain.
-            // TS map:   ``console.warn(LOG_TAG, `true-peak measure failed for ${uri}; using unity gain`, e);``
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -1004,7 +921,6 @@ class RustEngine(context: Context) : AudioEngine {
             Log.w(LOG_TAG, "true-peak measure failed for $uri; using unity gain", failure)
             // What:     `return UNITY_GAIN` returns unity from the whole function (the catch's escape).
             // Why:      Play the track unprocessed rather than failing the load.
-            // TS map:   `return UNITY_GAIN;`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -1014,7 +930,6 @@ class RustEngine(context: Context) : AudioEngine {
         }
         // What:     `PeakCacheStore.put(appContext, key, peak)` stores the freshly measured peak.
         // Why:      Cache the measurement so future loads skip the decode.
-        // TS map:   `PeakCacheStore.put(this.appContext, key, peak);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1023,7 +938,6 @@ class RustEngine(context: Context) : AudioEngine {
         PeakCacheStore.put(appContext, key, peak)
         // What:     `PeakCacheStore.flush(appContext)` persists the cache to disk.
         // Why:      Make the new entry durable across restarts.
-        // TS map:   `PeakCacheStore.flush(this.appContext);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1032,7 +946,6 @@ class RustEngine(context: Context) : AudioEngine {
         PeakCacheStore.flush(appContext)
         // What:     `return normalizationGain(peak)` converts the measured peak into a gain and returns it.
         // Why:      Hand back the gain for this track.
-        // TS map:   `return normalizationGain(peak);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1047,7 +960,6 @@ class RustEngine(context: Context) : AudioEngine {
     // Why:      Open a read-only descriptor for the track: a bare absolute path via
     //           `ParcelFileDescriptor.open`, everything else (the `content://` URIs the library actually
     //           yields) via the content resolver. Returns `null` when it cannot be opened.
-    // TS map:   `private openDescriptor(uri: string): ParcelFileDescriptor | null { try { ... } catch { return null; } }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1068,7 +980,6 @@ class RustEngine(context: Context) : AudioEngine {
             //           one of the two branch values (which becomes the `try`'s value). `uri.startsWith("/")`
             //           tests whether the URI is a bare absolute filesystem path.
             // Why:      An absolute path is opened directly as a file; anything else is a provider URI.
-            // TS map:   `uri.startsWith("/") ? ... : ...`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -1079,7 +990,6 @@ class RustEngine(context: Context) : AudioEngine {
                 //           opens a `File(uri)` (constructed from the path, no `new`) in read-only mode and
                 //           returns a `ParcelFileDescriptor`. This is the `then`-branch value.
                 // Why:      Open a bare absolute path directly.
-                // TS map:   `ParcelFileDescriptor.open(new File(uri), ParcelFileDescriptor.MODE_READ_ONLY)`
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -1091,7 +1001,6 @@ class RustEngine(context: Context) : AudioEngine {
                 //           string to a `Uri` and opens it read-only (`"r"`) through the content resolver,
                 //           returning a nullable `ParcelFileDescriptor?`. This is the `else`-branch value.
                 // Why:      Open a `content://` (provider) URI via the resolver.
-                // TS map:   `this.appContext.contentResolver.openFileDescriptor(Uri.parse(uri), "r")`
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -1103,7 +1012,6 @@ class RustEngine(context: Context) : AudioEngine {
             // What:     `Log.w(LOG_TAG, "openDescriptor failed for $uri", failure)` logs the open failure
             //           with the throwable.
             // Why:      Make the failure visible before falling back to `null`.
-            // TS map:   ``console.warn(LOG_TAG, `openDescriptor failed for ${uri}`, e);``
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -1113,7 +1021,6 @@ class RustEngine(context: Context) : AudioEngine {
             // What:     `null` is the catch block's value (and thus the function's return on failure): the
             //           NULL variant of the `ParcelFileDescriptor?` return type.
             // Why:      Signal "could not open" to the caller without throwing.
-            // TS map:   `return null;`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -1124,7 +1031,6 @@ class RustEngine(context: Context) : AudioEngine {
 
     // What:     `override fun play() { ... }` implements `AudioEngine.play`.
     // Why:      Resume playback, but only if audio focus is granted.
-    // TS map:   `play(): void { ... }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1134,7 +1040,6 @@ class RustEngine(context: Context) : AudioEngine {
         // What:     `if (requestFocus()) { NativeBridge.nativeEnginePlay(handle) }` requests focus (a side
         //           effect) and plays only if it was granted.
         // Why:      Do not play over another app that holds focus.
-        // TS map:   `if (this.requestFocus()) NativeBridge.nativeEnginePlay(this.handle);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1143,7 +1048,6 @@ class RustEngine(context: Context) : AudioEngine {
         if (requestFocus()) {
             // What:     `NativeBridge.nativeEnginePlay(handle)` calls the native play via JNI.
             // Why:      Begin/resume native playback.
-            // TS map:   `NativeBridge.nativeEnginePlay(this.handle);`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -1155,7 +1059,6 @@ class RustEngine(context: Context) : AudioEngine {
 
     // What:     `override fun pause() { ... }` implements `AudioEngine.pause`.
     // Why:      Pause playback.
-    // TS map:   `pause(): void { NativeBridge.nativeEnginePause(this.handle); }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1164,7 +1067,6 @@ class RustEngine(context: Context) : AudioEngine {
     override fun pause() {
         // What:     `NativeBridge.nativeEnginePause(handle)` calls the native pause via JNI.
         // Why:      Pause native playback.
-        // TS map:   `NativeBridge.nativeEnginePause(this.handle);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1176,7 +1078,6 @@ class RustEngine(context: Context) : AudioEngine {
     // What:     `override fun seekTo(positionSec: Double) { ... }` implements `AudioEngine.seekTo`, taking
     //           a `Double` (64-bit) seconds position (sibling `Float` declined: seconds want the wider type).
     // Why:      Seek the native engine.
-    // TS map:   `seekTo(positionSec: number): void { NativeBridge.nativeEngineSeek(this.handle, positionSec); }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1186,7 +1087,6 @@ class RustEngine(context: Context) : AudioEngine {
         // What:     `NativeBridge.nativeEngineSeek(handle, positionSec)` calls the native seek via JNI,
         //           passing seconds directly (the native side handles the unit).
         // Why:      Move playback to `positionSec`.
-        // TS map:   `NativeBridge.nativeEngineSeek(this.handle, positionSec);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1198,7 +1098,6 @@ class RustEngine(context: Context) : AudioEngine {
     // What:     `override fun setVolume(volume: Float) { ... }` implements `AudioEngine.setVolume`, taking
     //           a `Float` (32-bit) `0.0..1.0` volume.
     // Why:      Set the user volume on the native engine.
-    // TS map:   `setVolume(volume: number): void { NativeBridge.nativeEngineSetVolume(this.handle, volume); }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1207,7 +1106,6 @@ class RustEngine(context: Context) : AudioEngine {
     override fun setVolume(volume: Float) {
         // What:     `NativeBridge.nativeEngineSetVolume(handle, volume)` calls the native volume setter via JNI.
         // Why:      Apply the user volume natively.
-        // TS map:   `NativeBridge.nativeEngineSetVolume(this.handle, volume);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1219,7 +1117,6 @@ class RustEngine(context: Context) : AudioEngine {
     // What:     `override fun positionSec(): Double = NativeBridge.nativeEnginePositionSec(handle)` implements
     //           `AudioEngine.positionSec` as an EXPRESSION BODY delegating straight to the native getter.
     // Why:      Report the current position (seconds) from the native engine.
-    // TS map:   `positionSec(): number { return NativeBridge.nativeEnginePositionSec(this.handle); }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1230,7 +1127,6 @@ class RustEngine(context: Context) : AudioEngine {
     // What:     `override fun durationSec(): Double = NativeBridge.nativeEngineDurationSec(handle)`
     //           implements `AudioEngine.durationSec` as an expression body delegating to the native getter.
     // Why:      Report the track duration (seconds) from the native engine.
-    // TS map:   `durationSec(): number { return NativeBridge.nativeEngineDurationSec(this.handle); }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1241,7 +1137,6 @@ class RustEngine(context: Context) : AudioEngine {
     // What:     `override fun playWhenReady(): Boolean = NativeBridge.nativeEnginePlayWhenReady(handle)`
     //           implements `AudioEngine.playWhenReady` as an expression body delegating to the native getter.
     // Why:      Report the intended play state ("should play once ready") from the native engine.
-    // TS map:   `playWhenReady(): boolean { return NativeBridge.nativeEnginePlayWhenReady(this.handle); }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1252,7 +1147,6 @@ class RustEngine(context: Context) : AudioEngine {
     // What:     `override fun setOnPlayingChanged(callback: (Boolean) -> Unit) { ... }` implements the setter
     //           for the play-state callback (`callback: (Boolean) -> Unit` is a non-nullable function-type param).
     // Why:      Let the controller register its play-state handler.
-    // TS map:   `setOnPlayingChanged(callback: (playing: boolean) => void): void { this.onPlayingChanged = callback; }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1261,7 +1155,6 @@ class RustEngine(context: Context) : AudioEngine {
     override fun setOnPlayingChanged(callback: (Boolean) -> Unit) {
         // What:     `onPlayingChanged = callback` stores the callback in the nullable field.
         // Why:      Remember it so the poller can invoke it on state changes.
-        // TS map:   `this.onPlayingChanged = callback;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1273,7 +1166,6 @@ class RustEngine(context: Context) : AudioEngine {
     // What:     `override fun setOnTrackEnded(callback: () -> Unit) { ... }` implements the setter for the
     //           natural-end callback (`callback: () -> Unit` is a no-arg void function param).
     // Why:      Let the controller register its track-ended handler.
-    // TS map:   `setOnTrackEnded(callback: () => void): void { this.onTrackEnded = callback; }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1282,7 +1174,6 @@ class RustEngine(context: Context) : AudioEngine {
     override fun setOnTrackEnded(callback: () -> Unit) {
         // What:     `onTrackEnded = callback` stores the callback in the nullable field.
         // Why:      Remember it so the poller can invoke it on a natural end.
-        // TS map:   `this.onTrackEnded = callback;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1294,7 +1185,6 @@ class RustEngine(context: Context) : AudioEngine {
     // What:     `override fun release() { ... }` implements `AudioEngine.release`: tear the engine down.
     // Why:      Stop the poller, cancel the gain scope, abandon focus, unregister the receiver, and release
     //           the native engine.
-    // TS map:   `release(): void { ... }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1304,7 +1194,6 @@ class RustEngine(context: Context) : AudioEngine {
         // What:     `poller.removeCallbacks(pollTask)` cancels any scheduled runs of the self-rescheduling
         //           poll task.
         // Why:      Stop the poll loop so it does not run after release.
-        // TS map:   `this.poller.removeCallbacks(pollTask);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1313,7 +1202,6 @@ class RustEngine(context: Context) : AudioEngine {
         poller.removeCallbacks(pollTask)
         // What:     `resolveScope.cancel()` cancels the coroutine scope and any pending gain resolution.
         // Why:      So a pending measure cannot outlive the engine.
-        // TS map:   `this.resolveScope.cancel();` ~ `abortController.abort();`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1322,7 +1210,6 @@ class RustEngine(context: Context) : AudioEngine {
         resolveScope.cancel()
         // What:     `resumeOnFocusGain = false` clears the resume flag.
         // Why:      No resume should happen during/after teardown.
-        // TS map:   `this.resumeOnFocusGain = false;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1332,7 +1219,6 @@ class RustEngine(context: Context) : AudioEngine {
         // What:     `audioManager.abandonAudioFocusRequest(focusRequest)` gives up the audio focus the
         //           engine held.
         // Why:      Release focus back to the system on teardown.
-        // TS map:   `this.audioManager.abandonAudioFocusRequest(focusRequest);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1343,7 +1229,6 @@ class RustEngine(context: Context) : AudioEngine {
         //           unregisters the becoming-noisy receiver, catching the `IllegalArgumentException` Android
         //           throws when it was never registered (or already unregistered).
         // Why:      Stop listening for headphone-unplug; tolerate a double-release.
-        // TS map:   `try { appContext.unregisterReceiver(noisyReceiver); } catch (e) { /* IllegalArgumentException */ console.warn(...); }`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1359,7 +1244,6 @@ class RustEngine(context: Context) : AudioEngine {
             // What:     `Log.w(LOG_TAG, "noisy receiver already unregistered", alreadyUnregistered)` logs the
             //           benign double-unregister at WARN with the exception.
             // Why:      Benign: `release()` ran twice, or the receiver was never registered; nothing to undo.
-            // TS map:   `console.warn(LOG_TAG, "noisy receiver already unregistered", e);`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -1370,7 +1254,6 @@ class RustEngine(context: Context) : AudioEngine {
         // What:     `NativeBridge.nativeEngineRelease(handle)` releases the native engine (stops its worker,
         //           frees resources) via JNI.
         // Why:      Free native resources.
-        // TS map:   `NativeBridge.nativeEngineRelease(this.handle);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1380,7 +1263,6 @@ class RustEngine(context: Context) : AudioEngine {
         // What:     `handle = 0L` resets the stored handle to `0` (a `Long` zero), marking it invalid.
         // Why:      So later calls (e.g. a stray poll or gain-apply) see `handle == 0L` and skip touching the
         //           freed native engine.
-        // TS map:   `this.handle = 0n;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1393,7 +1275,6 @@ class RustEngine(context: Context) : AudioEngine {
     //           declares a private function returning `Boolean` as an EXPRESSION BODY: it requests focus and
     //           compares the result against the "granted" constant with `==`.
     // Why:      Request media audio focus; returns `true` when focus was granted (so playback may start).
-    // TS map:   `private requestFocus(): boolean { return this.audioManager.requestAudioFocus(focusRequest) === AudioManager.AUDIOFOCUS_REQUEST_GRANTED; }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1410,7 +1291,6 @@ class RustEngine(context: Context) : AudioEngine {
     //           pauses (and a transient interruption resumes) this engine, the behavior ExoPlayer gives the
     //           Media3 flavor for free. A permanent loss pauses and abandons focus; a transient loss pauses and
     //           arms resume-on-gain; a gain resumes only if a transient loss had paused us.
-    // TS map:   `private onFocusChange(change: number): void { ... }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1422,8 +1302,6 @@ class RustEngine(context: Context) : AudioEngine {
         //           comma-separated label list (`A, B -> ...`) matches ANY of them. There is no `else` arm, so
         //           unlisted focus codes are ignored.
         // Why:      Dispatch on the specific focus-change kind (permanent loss, transient loss, gain).
-        // TS map:   A `switch (change) { case A: ...; break; ... }` or an if/else chain; the comma label is two
-        //           `case` labels sharing a body.
         // Gotcha:   `when` arms do NOT fall through (no `break` needed), unlike a C/TS `switch`; each arm is
         //           self-contained.
         //
@@ -1439,7 +1317,6 @@ class RustEngine(context: Context) : AudioEngine {
         when (change) {
             // What:     `AudioManager.AUDIOFOCUS_LOSS -> { ... }` is the arm for a PERMANENT focus loss.
             // Why:      Another app took focus for good (e.g. a different media app); stop and let go of focus.
-            // TS map:   `case AudioManager.AUDIOFOCUS_LOSS: { ...; break; }`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -1448,7 +1325,6 @@ class RustEngine(context: Context) : AudioEngine {
             AudioManager.AUDIOFOCUS_LOSS -> {
                 // What:     `resumeOnFocusGain = false` clears the resume flag.
                 // Why:      A permanent loss should not auto-resume later.
-                // TS map:   `this.resumeOnFocusGain = false;`
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -1457,7 +1333,6 @@ class RustEngine(context: Context) : AudioEngine {
                 resumeOnFocusGain = false
                 // What:     `NativeBridge.nativeEnginePause(handle)` pauses native playback via JNI.
                 // Why:      Stop playing on the permanent loss.
-                // TS map:   `NativeBridge.nativeEnginePause(this.handle);`
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -1466,7 +1341,6 @@ class RustEngine(context: Context) : AudioEngine {
                 NativeBridge.nativeEnginePause(handle)
                 // What:     `audioManager.abandonAudioFocusRequest(focusRequest)` gives up focus.
                 // Why:      We are not resuming, so release focus to the system.
-                // TS map:   `this.audioManager.abandonAudioFocusRequest(focusRequest);`
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -1479,7 +1353,6 @@ class RustEngine(context: Context) : AudioEngine {
             //           (the comma means "or").
             // Why:      A brief interruption (a notification ping, a nav prompt): pause now and remember to
             //           resume if we were playing.
-            // TS map:   Two `case` labels sharing one body.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -1490,7 +1363,6 @@ class RustEngine(context: Context) : AudioEngine {
                 // What:     `resumeOnFocusGain = NativeBridge.nativeEngineIsPlaying(handle)` records whether we
                 //           are currently playing (so we know whether to resume on a later gain).
                 // Why:      Only resume after a transient loss if we were actually playing when it hit.
-                // TS map:   `this.resumeOnFocusGain = NativeBridge.nativeEngineIsPlaying(this.handle);`
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -1499,7 +1371,6 @@ class RustEngine(context: Context) : AudioEngine {
                 resumeOnFocusGain = NativeBridge.nativeEngineIsPlaying(handle)
                 // What:     `NativeBridge.nativeEnginePause(handle)` pauses native playback via JNI.
                 // Why:      Pause for the duration of the transient interruption.
-                // TS map:   `NativeBridge.nativeEnginePause(this.handle);`
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -1509,7 +1380,6 @@ class RustEngine(context: Context) : AudioEngine {
             }
             // What:     `AudioManager.AUDIOFOCUS_GAIN -> { ... }` is the arm for (re)gaining focus.
             // Why:      The interruption ended; resume only if a transient loss had paused us.
-            // TS map:   `case AudioManager.AUDIOFOCUS_GAIN: { ...; break; }`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -1518,7 +1388,6 @@ class RustEngine(context: Context) : AudioEngine {
             AudioManager.AUDIOFOCUS_GAIN -> {
                 // What:     `if (resumeOnFocusGain) { ... }` resumes only when the resume flag is set.
                 // Why:      Do not auto-start playback the user never had going.
-                // TS map:   `if (this.resumeOnFocusGain) { ... }`
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -1527,7 +1396,6 @@ class RustEngine(context: Context) : AudioEngine {
                 if (resumeOnFocusGain) {
                     // What:     `resumeOnFocusGain = false` clears the flag now that we are resuming.
                     // Why:      One-shot: do not resume again on a later gain.
-                    // TS map:   `this.resumeOnFocusGain = false;`
                     //
                     // In TS you'd write (pseudocode):
                     // ```ts
@@ -1536,7 +1404,6 @@ class RustEngine(context: Context) : AudioEngine {
                     resumeOnFocusGain = false
                     // What:     `NativeBridge.nativeEnginePlay(handle)` resumes native playback via JNI.
                     // Why:      Continue the track that the transient loss paused.
-                    // TS map:   `NativeBridge.nativeEnginePlay(this.handle);`
                     //
                     // In TS you'd write (pseudocode):
                     // ```ts
@@ -1553,7 +1420,6 @@ class RustEngine(context: Context) : AudioEngine {
     //           EDGE-TRIGGERED on the play state; `onTrackEnded` fires once on the RISING EDGE of `ended` and
     //           rearms when the native side clears `ended` (the worker resets it when the next track loads), so
     //           a track-change handoff cannot double-fire.
-    // TS map:   `private poll(): void { ... }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1562,7 +1428,6 @@ class RustEngine(context: Context) : AudioEngine {
     private fun poll() {
         // What:     `if (handle == 0L) { return }` early-returns when the engine is released (`handle == 0L`).
         // Why:      Do not call into a freed native engine.
-        // TS map:   `if (this.handle === 0n) return;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1574,7 +1439,6 @@ class RustEngine(context: Context) : AudioEngine {
         // What:     `val playing: Boolean = NativeBridge.nativeEngineIsPlaying(handle)` reads the native
         //           play state via JNI into a read-only `Boolean`.
         // Why:      Compare against the last reported state to detect a transition.
-        // TS map:   `const playing = NativeBridge.nativeEngineIsPlaying(this.handle);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1584,7 +1448,6 @@ class RustEngine(context: Context) : AudioEngine {
         // What:     `if (playing != lastPlaying) { ... }` fires only when the play state CHANGED since the
         //           last poll (`!=`).
         // Why:      Edge-trigger: notify only on a real transition, not every poll.
-        // TS map:   `if (playing !== this.lastPlaying) { ... }`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1593,7 +1456,6 @@ class RustEngine(context: Context) : AudioEngine {
         if (playing != lastPlaying) {
             // What:     `lastPlaying = playing` records the new state.
             // Why:      So the next poll compares against it.
-            // TS map:   `this.lastPlaying = playing;`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -1602,7 +1464,6 @@ class RustEngine(context: Context) : AudioEngine {
             lastPlaying = playing
             // What:     `onPlayingChanged?.invoke(playing)` safe-calls the nullable callback: invoke only if set.
             // Why:      Notify the controller of the play-state change.
-            // TS map:   `this.onPlayingChanged?.(playing);`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -1613,7 +1474,6 @@ class RustEngine(context: Context) : AudioEngine {
         // What:     `val ended: Boolean = NativeBridge.nativeEngineIsEnded(handle)` reads the native
         //           track-ended flag via JNI.
         // Why:      Detect the rising edge of "track ended".
-        // TS map:   `const ended = NativeBridge.nativeEngineIsEnded(this.handle);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1626,7 +1486,6 @@ class RustEngine(context: Context) : AudioEngine {
         // Why:      Fire `onTrackEnded` exactly once per ended track, rearming only when the native flag
         //           actually clears (the worker clears it when the next track loads), so a track-change handoff
         //           cannot double-fire.
-        // TS map:   `if (ended && !this.endedHandled) { ... } else if (!ended) { this.endedHandled = false; }`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1636,7 +1495,6 @@ class RustEngine(context: Context) : AudioEngine {
         if (ended && !endedHandled) {
             // What:     `endedHandled = true` marks this ended state as handled.
             // Why:      Prevent re-firing on subsequent polls while `ended` stays true.
-            // TS map:   `this.endedHandled = true;`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -1645,7 +1503,6 @@ class RustEngine(context: Context) : AudioEngine {
             endedHandled = true
             // What:     `onTrackEnded?.invoke()` safe-calls the nullable no-arg callback: invoke only if set.
             // Why:      Tell the controller the track ended so it can advance.
-            // TS map:   `this.onTrackEnded?.();`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -1655,7 +1512,6 @@ class RustEngine(context: Context) : AudioEngine {
         } else if (!ended) {
             // What:     `endedHandled = false` rearms the one-shot for the next track.
             // Why:      Once native `ended` clears (next track loaded), allow the next end to fire again.
-            // TS map:   `this.endedHandled = false;`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -1667,7 +1523,6 @@ class RustEngine(context: Context) : AudioEngine {
 
     // What:     `companion object { ... }` declares the class's static-like member bag.
     // Why:      Hosts the log tag, poll cadence, and unity-gain constants shared by all instances.
-    // TS map:   `static` members on the class.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1678,7 +1533,6 @@ class RustEngine(context: Context) : AudioEngine {
         //           `String` constant.
         // Why:      Logcat tag for this engine's lines. (Unlike the Media3 flavor, this flavor defines its
         //           own `LOG_TAG` here.)
-        // TS map:   `private static readonly LOG_TAG = "RustEngine";`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1690,7 +1544,6 @@ class RustEngine(context: Context) : AudioEngine {
         //           constant `200` (the `L` suffix makes it `Long`, the unit `Handler.postDelayed` expects).
         //           Sibling `Int` is declined because the delay API takes a `Long`.
         // Why:      Poll cadence (milliseconds) for the play/ended state, matching the UI's position poll.
-        // TS map:   `private static readonly POLL_MS = 200;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1701,7 +1554,6 @@ class RustEngine(context: Context) : AudioEngine {
         // What:     `private const val UNITY_GAIN: Float = 1.0f` declares a private compile-time `Float`
         //           (32-bit; the `f` suffix) constant `1.0`.
         // Why:      Unity (passthrough) normalization gain, applied until a track's gain is resolved.
-        // TS map:   `private static readonly UNITY_GAIN = 1.0;`
         //
         // In TS you'd write (pseudocode):
         // ```ts

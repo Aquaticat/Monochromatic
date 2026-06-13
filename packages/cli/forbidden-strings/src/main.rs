@@ -11,7 +11,6 @@
 //           can now exercise `run_cli_from_env` (and the helpers it
 //           re-exports through the `fuzzing` Cargo feature) without
 //           spawning a child process.
-// TS map:   `import { runCliFromEnv } from "./lib";`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -24,8 +23,6 @@ use forbidden_strings::run_cli_from_env;
 //           the idiomatic way to set the exit status from Rust.
 // Why:      We need it to translate `run_cli_from_env`'s `i32`
 //           into the typed value `main` returns.
-// TS map:   No direct equivalent; Node uses `process.exit(N)` or
-//           `process.exitCode = N`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -45,8 +42,6 @@ use std::process::ExitCode;
 // Why:      Keep `main` to a five-line wrapper so the lib is the
 //           sole carrier of business logic, and tests can drive
 //           every code path without spawning a subprocess.
-// TS map:   `process.exit(await runCliFromEnv());` plus a top-level
-//           `try { ... } catch (e) { console.error(...); process.exit(2); }`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -64,7 +59,6 @@ fn main() -> ExitCode {
     //           stderr with the conventional prefix, and exits 2.
     // Why:      Bridge the lib's testable return shape to the OS-
     //           expected `ExitCode`.
-    // TS map:   `try { process.exit(code); } catch (e) { ... }`.
     //
     // In TS you'd write (pseudocode):
     // ```ts

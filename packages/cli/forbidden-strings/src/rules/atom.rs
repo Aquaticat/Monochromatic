@@ -22,7 +22,6 @@ use super::walker::extract_scope;
 //           `\xe2\x80\x94` became 6 mojibake bytes), producing AC
 //           gating patterns that never matched the file's original
 //           bytes and silently disabling the rule.
-// TS map:   `function walkLiteralBytes(input: string, out: string[]): { remainder: string }`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -59,8 +58,6 @@ pub fn walk_literal_bytes<'a>(
     //           UTF-8 correct: `chars.as_str()` always returns a
     //           valid char-boundary slice, so `out` only ever
     //           receives whole UTF-8 characters.
-    // TS map:   `let tail: string = input;` -- "the rest of the
-    //           string we haven't consumed yet."
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -75,10 +72,6 @@ pub fn walk_literal_bytes<'a>(
         //           `.next()` advances internal state.
         // Why:      Iterating by `char` (not `u8`) is the whole
         //           soundness fix; see function-level comment above.
-        // TS map:   `for (const c of tail) { ... }` -- TS strings
-        //           iterate by code point with the iterator
-        //           protocol. UTF-16 internally, but the mental
-        //           model matches.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -94,8 +87,6 @@ pub fn walk_literal_bytes<'a>(
         //           guarantees at least one `char` remains.
         //           `expect` (rather than `unwrap`) leaves an audit
         //           trail explaining why this can't be `None`.
-        // TS map:   `const c = tail[0]!;` -- the `!` non-null
-        //           assertion is the analogue.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -113,7 +104,6 @@ pub fn walk_literal_bytes<'a>(
             // Why:      Without this, `/foobar|barfoo/` would extract
             //           "foobar" and AC-gate on it, missing files that
             //           contain only "barfoo". Soundness bug.
-            // TS map:   `if (c === "|") break;`.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -130,7 +120,6 @@ pub fn walk_literal_bytes<'a>(
             //           follows the backslash.
             // Why:      Peek the char after `\` without re-decoding
             //           from the front of `tail`.
-            // TS map:   `const afterBs = tail.slice(1);`.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -147,7 +136,6 @@ pub fn walk_literal_bytes<'a>(
             // Why:      A backslash at end-of-input is not a complete
             //           escape; matches the original byte-walker's
             //           "`i + 1 >= bytes.len()` -> break" check.
-            // TS map:   `const next = afterBs[0]; if (next === undefined) break;`.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -170,7 +158,6 @@ pub fn walk_literal_bytes<'a>(
             //           missed `\_` -- common in betterleaks-shape
             //           rules. The non-ASCII case (`\—`) was also
             //           silently broken under the byte-cast bug.
-            // TS map:   `if (/[A-Za-z0-9]/.test(next)) break;`.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -190,7 +177,6 @@ pub fn walk_literal_bytes<'a>(
             // Why:      Punctuation escape `\X` contributes literal
             //           `X` to the prefix. Pushing the whole `char`
             //           preserves original UTF-8 bytes.
-            // TS map:   `out += next;`.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -212,7 +198,6 @@ pub fn walk_literal_bytes<'a>(
             //           is 3 bytes wide, so `tail` would be sliced
             //           mid-character, panicking on the next
             //           iteration's `chars.next()`.
-            // TS map:   `tail = afterBs.slice(next.length);`.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -229,7 +214,6 @@ pub fn walk_literal_bytes<'a>(
         //           constructs the walker is not equipped to handle
         //           inline; the outer `extract_required_prefix` loop
         //           may resume after them via `skip_atom_with_extract`.
-        // TS map:   `if ('.*+?()[]{}$^&~'.includes(c)) break;`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -261,7 +245,6 @@ pub fn walk_literal_bytes<'a>(
         //           where `c` was a `u8`, producing mojibake for
         //           non-ASCII bytes.
         // Why:      Push the literal character and keep walking.
-        // TS map:   `out += c;`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -275,7 +258,6 @@ pub fn walk_literal_bytes<'a>(
         // Why:      Cheap advance; equivalent to
         //           `&tail[c.len_utf8()..]` but the iterator
         //           already tracks the offset.
-        // TS map:   `tail = tail.slice(c.length);`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -291,8 +273,6 @@ pub fn walk_literal_bytes<'a>(
     //           valid.
     // Why:      Return the un-walked remainder via the out-param,
     //           same contract as before.
-    // TS map:   `remainderRef.value = tail;` -- TS has no native
-    //           out-params; model with a wrapper object.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -356,7 +336,6 @@ pub fn walk_literal_bytes<'a>(
 //           unchanged so subsequent literals at the same scope were
 //           tagged with the original ci, breaking AC routing for rules
 //           shaped like `/literalA(?i)keyword-suffix/`.
-// TS map:   `function skipAtomWithExtract(s: string, ci: boolean): { remainder: string; extracted: Array<{sub:string; ci:boolean}> | null; ciUpdate: boolean | null } | null`.
 //
 // Clippy lint suppressed: the return tuple's three-level Option/Vec/tuple
 // is the natural shape (remainder slice + optional list of (substring, ci)
@@ -404,7 +383,6 @@ pub fn skip_atom_with_extract(
     //           contribute a longer gating substring. With this
     //           branch, `pre_post` extracts `post` (the longer side)
     //           and `pre_post_suffix` extracts `suffix`.
-    // TS map:   `if (s.startsWith("_")) return { remainder: skipAnyQuantifier(s.slice(1)), extracted: null };`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -425,7 +403,6 @@ pub fn skip_atom_with_extract(
     //           placeholder exclusions disable real matches. Example:
     //           `ghp\_...&~(ghp\_0{36})` must gate on `ghp_`, not on
     //           the all-zero placeholder body.
-    // TS map:   `if (s.startsWith("~(")) return { remainder: after, extracted: null };`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -452,7 +429,6 @@ pub fn skip_atom_with_extract(
     //           `[\w.-]{0,50}` (already an optional class) and pulling
     //           the keyword out of the next `(?:adafruit)` group on
     //           the betterleaks shape.
-    // TS map:   no equivalent.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -472,7 +448,6 @@ pub fn skip_atom_with_extract(
             // Why:      Discriminate inline-flag from scoped-flag from
             //           regular group without false-matching `(?:body)`
             //           which has `:` immediately after `?`.
-            // TS map:   `let j = 2; while (...) j++;`.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -496,7 +471,6 @@ pub fn skip_atom_with_extract(
                 //           and `)`. May include a `-` separator.
                 // Why:      We need to inspect each flag byte to compute
                 //           the updated ci context.
-                // TS map:   `const flags = s.slice(2, j);`.
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -510,7 +484,6 @@ pub fn skip_atom_with_extract(
                 //           inline-flag semantics.
                 // Why:      Mirror the scoped-flag arm below; only the
                 //           bubble-up direction differs.
-                // TS map:   `let newCi = ci; let afterDash = false;`.
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -546,7 +519,6 @@ pub fn skip_atom_with_extract(
                 //           tagged `keyword-suffix` with the original
                 //           ci=false instead of ci=true, mis-routing it
                 //           to the case-sensitive AC bucket.
-                // TS map:   `return { remainder: rest, extracted: null, ciUpdate: newCi };`.
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -656,8 +628,6 @@ pub fn skip_atom_with_extract(
             //           simple and remains sound; the outer literal
             //           between or after the lookaround is what gates
             //           the rule onto the AC fast path.
-            // TS map:   `if (s.startsWith("(?=") || s.startsWith("(?!") ||
-            //              s.startsWith("(?<=") || s.startsWith("(?<!")) { skip }`.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -692,8 +662,6 @@ pub fn skip_atom_with_extract(
                 // Why:      We need to know how far past the lookaround
                 //           to advance the walker; without the close
                 //           paren we cannot continue.
-                // TS map:   `const closeIdx = findMatchingCloseParen(s);
-                //           if (closeIdx === null) return null;`.
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -709,7 +677,6 @@ pub fn skip_atom_with_extract(
                 // Why:      Drop the lookaround group entirely (opener
                 //           `(?=`/`(?!`/`(?<=`/`(?<!`, body, closing
                 //           `)`); the walker resumes at the byte after.
-                // TS map:   `const after = s.slice(closeIdx + 1);`.
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -725,7 +692,6 @@ pub fn skip_atom_with_extract(
                 //           PCRE/resharp accept them syntactically.
                 //           Skip whatever's there so the walker doesn't
                 //           re-encounter it as a stray metacharacter.
-                // TS map:   `const afterQuant = skipAnyQuantifier(after);`.
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -744,7 +710,6 @@ pub fn skip_atom_with_extract(
                 //           nothing to add to the gating set." Same
                 //           shape as the character-class and
                 //           perl-class arms above.
-                // TS map:   `return { remainder: afterQuant, extracted: null };`.
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -771,7 +736,6 @@ pub fn skip_atom_with_extract(
         //           wrong: the body's flags belong to its OWN scope and
         //           are already in effect for the body's content. The
         //           outer wrapper only runs once per rule, at the top.
-        // TS map:   `extracted = quantRequired ? extractScope(body) : null;`.
         //
         // In TS you'd write (pseudocode):
         // ```ts

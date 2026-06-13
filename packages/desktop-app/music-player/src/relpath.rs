@@ -12,8 +12,6 @@
 //           normal name segment, etc.).
 // Why:      We borrow each track path (`&Path`), split it into `Component`s, and
 //           keep only the named segments; the input list is owned `PathBuf`s.
-// TS map:   all three are just `string` (a path) in TS; `Component` ~ one element
-//           of `path.split("/")`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -25,7 +23,6 @@ use std::path::{Component, Path, PathBuf};
 //           (sibling: the owned `String`); the separator we re-join segments with.
 // Why:      The queue is Linux-only and the UI/pagination expect a single `/`
 //           separator; naming it avoids a bare `"/"` literal scattered around.
-// TS map:   `const SEPARATOR = "/";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -40,7 +37,6 @@ const SEPARATOR: &str = "/";
 // Why:      Dropping the root (`/`) and any `.`/`..` leaves just the folder and file
 //           names, so prefix comparison and re-joining are clean and behave the same
 //           for absolute and relative inputs.
-// TS map:   `function normalComponents(path: string): string[]`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -53,7 +49,6 @@ fn normal_components(path: &Path) -> Vec<String> {
     //           empty owned array. `mut` marks it mutable (bindings are read-only by
     //           default); the explicit type is needed because it starts empty.
     // Why:      Accumulate the named segments.
-    // TS map:   `const out: string[] = [];`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -64,7 +59,6 @@ fn normal_components(path: &Path) -> Vec<String> {
     //           iterator over the path's pieces as `Component` values; `for ... in`
     //           consumes it one piece at a time.
     // Why:      Inspect each piece and keep only the named ones.
-    // TS map:   `for (const component of path.split("/")) { ... }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -76,7 +70,6 @@ fn normal_components(path: &Path) -> Vec<String> {
         //           variant (a real name segment, not `/`, `.`, or `..`), binding its
         //           inner `&OsStr` (an OS string slice) to `part`.
         // Why:      Skip the root and relative markers; keep only folder/file names.
-        // TS map:   `if (segment !== "" && segment !== "." && segment !== "..") { ... }`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -88,7 +81,6 @@ fn normal_components(path: &Path) -> Vec<String> {
             //           replacing invalid UTF-8 bytes); `.into_owned()` forces an owned
             //           `String`; `.push(...)` appends it (MOVING it into the vector).
             // Why:      Store an owned copy that outlives the borrowed path.
-            // TS map:   `out.push(segment);`
             // Gotcha:   `to_string_lossy` may REPLACE invalid bytes with U+FFFD rather
             //           than fail; an OS path is not guaranteed valid UTF-8.
             //
@@ -101,7 +93,6 @@ fn normal_components(path: &Path) -> Vec<String> {
     }
     // What:     `out`. Tail expression (no trailing `;`) -> the function's return.
     // Why:      Hand back the named segments.
-    // TS map:   `return out;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -117,7 +108,6 @@ fn normal_components(path: &Path) -> Vec<String> {
 //           lengths/indices (siblings: `u32`, `u64`, `i32`). Private helper.
 // Why:      That shared prefix is the "loaded root"; stripping it turns absolute
 //           paths into the relative paths the UI shows.
-// TS map:   `function commonPrefixLen(lists: string[][]): number`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -130,7 +120,6 @@ fn common_prefix_len(lists: &[Vec<String>]) -> usize {
     //           for no lists); `.unwrap_or(0)` extracts it or substitutes 0. `|list|
     //           ...` is a closure taking a borrowed list.
     // Why:      The common prefix cannot be longer than the shortest path.
-    // TS map:   `const shortest = Math.min(...lists.map(l => l.length), Infinity) || 0;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -141,7 +130,6 @@ fn common_prefix_len(lists: &[Vec<String>]) -> usize {
     //           named segments (nothing to strip).
     // Why:      Avoid the `shortest - 1` underflow below (`usize` is unsigned, so
     //           `0 - 1` would panic in debug builds).
-    // TS map:   `if (shortest === 0) return 0;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -153,7 +141,6 @@ fn common_prefix_len(lists: &[Vec<String>]) -> usize {
     // What:     `let cap = shortest - 1;`. The most segments we may strip, leaving at
     //           least the final one (the filename) on every track.
     // Why:      A row must never collapse to an empty label.
-    // TS map:   `const cap = shortest - 1;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -163,7 +150,6 @@ fn common_prefix_len(lists: &[Vec<String>]) -> usize {
     // What:     `let mut run: usize = 0;`. A counter for how many leading segments
     //           match so far. `mut` because the loop increments it.
     // Why:      Count the shared run.
-    // TS map:   `let run = 0;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -177,7 +163,6 @@ fn common_prefix_len(lists: &[Vec<String>]) -> usize {
     //           `run < cap < shortest <= every length`). `lists[0]` is the reference
     //           list. `&&` short-circuits, so `.all` runs only while under the cap.
     // Why:      One linear scan finds the longest shared leading run, no recursion.
-    // TS map:   `while (run < cap && lists.every(l => l[run] === lists[0][run])) run++;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -186,7 +171,6 @@ fn common_prefix_len(lists: &[Vec<String>]) -> usize {
     while run < cap && lists.iter().all(|list| list[run] == lists[0][run]) {
         // What:     `run += 1;`. Advance past a matching segment.
         // Why:      Move to the next position.
-        // TS map:   `run++;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -196,7 +180,6 @@ fn common_prefix_len(lists: &[Vec<String>]) -> usize {
     }
     // What:     `run`. Tail expression -> the shared-prefix length.
     // Why:      Hand back how many leading segments to strip.
-    // TS map:   `return run;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -211,7 +194,6 @@ fn common_prefix_len(lists: &[Vec<String>]) -> usize {
 //           result is one owned relative string per track, in order.
 // Why:      The UI shows folders, not just filenames, but the absolute prefix (e.g.
 //           `/home/user/Music`) is noise; this strips it once per queue.
-// TS map:   `function relativeDisplayPaths(tracks: string[]): string[]`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -229,7 +211,6 @@ pub fn relative_display_paths(tracks: &[PathBuf]) -> Vec<String> {
     // What:     `if tracks.is_empty() { return Vec::new(); }`. Early return for an
     //           empty queue. `Vec::new()` builds an empty owned array.
     // Why:      Nothing to relativize; `common_prefix_len` of nothing is undefined.
-    // TS map:   `if (tracks.length === 0) return [];`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -244,7 +225,6 @@ pub fn relative_display_paths(tracks: &[PathBuf]) -> Vec<String> {
     //           `.collect()` the per-track lists into one vector of lists.
     // Why:      Compute every path's segments once, reused for the prefix and the
     //           per-track remainder.
-    // TS map:   `const componentLists = tracks.map(normalComponents);`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -254,7 +234,6 @@ pub fn relative_display_paths(tracks: &[PathBuf]) -> Vec<String> {
     // What:     `let prefix_len = common_prefix_len(&component_lists);`. `&...` lends
     //           the lists read-only to the helper.
     // Why:      Decide how many leading segments are the shared root.
-    // TS map:   `const prefixLen = commonPrefixLen(componentLists);`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -268,7 +247,6 @@ pub fn relative_display_paths(tracks: &[PathBuf]) -> Vec<String> {
     //           `.collect()` gathers them into the returned `Vec<String>`. Tail
     //           expression -> return.
     // Why:      Produce one relative path per track, preserving load order.
-    // TS map:   `return componentLists.map((list, i) => ...);`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -283,7 +261,6 @@ pub fn relative_display_paths(tracks: &[PathBuf]) -> Vec<String> {
             //           shared prefix (a RANGE index; `..` means "to the end");
             //           `.join(SEPARATOR)` glues them with `/` into an owned `String`.
             // Why:      The segments past the common root ARE the relative path.
-            // TS map:   `const relative = list.slice(prefixLen).join("/");`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -296,7 +273,6 @@ pub fn relative_display_paths(tracks: &[PathBuf]) -> Vec<String> {
             //           full-path fallback (lossy UTF-8, then owned).
             // Why:      Defensive: a pathological path with no named segments would
             //           join to "", so show its full text instead of nothing.
-            // TS map:   `return relative === "" ? path : relative;`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -321,8 +297,6 @@ pub fn relative_display_paths(tracks: &[PathBuf]) -> Vec<String> {
 // Why:      Keep `relpath.rs` to production code; the tests live beside it without
 //           inflating this file or its max-lines budget (sibling `*_tests.rs` files
 //           are exempt from the linter).
-// TS map:   the `relpath.unit.test.ts` file beside `relpath.ts`, excluded from the
-//           production bundle.
 //
 // In TS you'd write (pseudocode):
 // ```ts

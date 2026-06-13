@@ -30,8 +30,6 @@
 // Why:      The AAudio data callback (below) receives the output buffer as a
 //           `*mut c_void`, mirroring the C signature, so we must name this type
 //           to write that signature.
-// TS map:   no real equivalent; the closest mental picture is an untyped
-//           `ArrayBuffer` whose contents you reinterpret yourself.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -45,8 +43,6 @@ use std::os::raw::c_void;
 //           `Duration` is a LENGTH.
 // Why:      We sleep for a fixed `Duration` after starting the stream so audio
 //           is actually flowing before we read the latency.
-// TS map:   `Duration` ~ a number of milliseconds you pass to `setTimeout`;
-//           there is no dedicated TS type, you just use `number`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -72,9 +68,6 @@ use std::time::Duration;
 // Why:      Every one of these names is used below to build, open, run, and
 //           query the stream; importing them brings them into scope so we can
 //           write them unqualified.
-// TS map:   `import { AudioCallbackResult, AudioDirection, AudioFormat,
-//           AudioPerformanceMode, AudioStream, AudioStreamBuilder, Clockid }
-//           from "ndk/audio";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -99,8 +92,6 @@ use ndk::audio::{
 // Why i32:  `ndk::audio`'s `.sample_rate(...)` setter takes an `i32` because the
 //           underlying AAudio C API uses C `int32_t`; using `i32` here avoids a
 //           cast at that boundary. `u32`/`usize` would force an `as` conversion.
-// TS map:   `const SAMPLE_RATE = 48000;` (TS has one numeric type, so no width
-//           or signedness choice exists).
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -116,7 +107,6 @@ const SAMPLE_RATE: i32 = 48_000;
 // Why i32:  `.channel_count(...)` on the builder takes an `i32` (the AAudio C
 //           API uses `int32_t`), so storing the constant as `i32` matches that
 //           setter with no cast; we only convert to `usize` where we index.
-// TS map:   `const CHANNELS = 2;`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -132,8 +122,6 @@ const CHANNELS: i32 = 2;
 // Why:      After starting the stream we wait this long so frames are actually
 //           flowing through the hardware before we read the timestamp; reading
 //           too early would report a meaningless latency.
-// TS map:   `const SETTLE_MS = 300;` (TS would just keep the raw millisecond
-//           number rather than wrapping it in a `Duration` object).
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -151,8 +139,6 @@ const SETTLE: Duration = Duration::from_millis(300);
 // Why f64:  We use `f64` (not `f32`) because the helper returns `f64` and
 //           Rust's default float literal is `f64`; the extra precision is free
 //           here and avoids mixing float widths in the division.
-// TS map:   `const MILLIS_PER_SEC = 1000;` (TS numbers are always 64-bit
-//           floats, so this is the same precision with no annotation).
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -168,8 +154,6 @@ const MILLIS_PER_SEC: f64 = 1000.0;
 // Why:      This is the whole probe: open a silent stream, run it, measure how
 //           far ahead of the DAC we are buffered, and hand back the number (or
 //           `None` if the device would not cooperate at any step).
-// TS map:   `function measureOutputLatencyMs(): number | null` (returns the
-//           number on success, `null` on any failure).
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -212,12 +196,6 @@ pub fn measure_output_latency_ms() -> Option<f64> {
     // Why:      One configured, opened, ready-to-start output stream. If ANY
     //           step fails we bail out of the whole probe with `None` (the
     //           function's contract is "a number, or nothing").
-    // TS map:   `const stream = new AudioStreamBuilder()
-    //              .direction("output").format("pcmFloat")
-    //              .sampleRate(SAMPLE_RATE).channelCount(CHANNELS)
-    //              .performanceMode("lowLatency").dataCallback(silentCallback)
-    //              .openStream();
-    //            if (!stream) return null;`
     // Gotcha:   each `.ok()?` SILENTLY discards the underlying error and converts
     //           failure into a plain `None`; we lose any detail about WHY a step
     //           failed. That is intentional for a best-effort probe, but it
@@ -253,7 +231,6 @@ pub fn measure_output_latency_ms() -> Option<f64> {
     //           the probe if starting failed.
     // Why:      The data callback only fires once the stream is started; without
     //           this, no frames flow and the timestamp would never advance.
-    // TS map:   `if (!stream.requestStart()) return null;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -267,8 +244,6 @@ pub fn measure_output_latency_ms() -> Option<f64> {
     // Why:      Give the hardware time to actually begin presenting frames before
     //           we read the timestamp, so the latency we compute reflects a
     //           running stream, not a just-started one.
-    // TS map:   no synchronous sleep in TS; the equivalent is
-    //           `await new Promise(r => setTimeout(r, SETTLE_MS));`.
     // Gotcha:   this is a REAL blocking sleep (it stops the calling thread). TS
     //           has nothing that blocks the event loop like this; you would use
     //           an awaited timeout instead.
@@ -285,7 +260,6 @@ pub fn measure_output_latency_ms() -> Option<f64> {
     // Why:      The latency math must divide by the rate the hardware is really
     //           running at, not the one we asked for, or the milliseconds would
     //           be wrong.
-    // TS map:   `const rate = stream.sampleRate();`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -300,8 +274,6 @@ pub fn measure_output_latency_ms() -> Option<f64> {
     //           plain `i32` passed by copy.
     // Why:      Keep the timestamp math in one small, separately testable helper
     //           rather than inlining it here.
-    // TS map:   `const latency = readLatencyMs(stream, rate);` (TS has no
-    //           borrow/own distinction, so the `&` simply vanishes).
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -316,7 +288,6 @@ pub fn measure_output_latency_ms() -> Option<f64> {
     // Why:      We are done measuring; stop the silent stream to release the
     //           device. A stop failure here cannot change the latency we already
     //           computed, so we ignore it on purpose.
-    // TS map:   `stream.requestStop();` with the return value simply unused.
     // Gotcha:   `let _ = expr;` is the explicit, lint-quiet way to say "I am
     //           deliberately ignoring this `Result`". Without it, Rust would warn
     //           about an unhandled `Result`. Do NOT "fix" this to `?`: a stop
@@ -333,7 +304,6 @@ pub fn measure_output_latency_ms() -> Option<f64> {
     //           expression: its value becomes the function's return value. Here
     //           `latency` is already an `Option<f64>` (from `read_latency_ms`).
     // Why:      Hand the measured latency (or `None`) back to the caller.
-    // TS map:   `return latency;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -362,9 +332,6 @@ pub fn measure_output_latency_ms() -> Option<f64> {
 // Why:      Our probe never plays real audio; this callback exists only to keep
 //           the stream alive and flowing by writing silence, so the presentation
 //           timestamp advances and we can measure latency.
-// TS map:   `function silentCallback(_stream: AudioStream, audioData: RawBuffer,
-//           numFrames: number): "continue" | "stop"` — except TS has no raw
-//           pointer, so `audioData` would really be a typed `Float32Array`.
 // Gotcha:   this runs on a REALTIME thread: it must not allocate, lock, block,
 //           or panic. Writing zeros with one bulk memory operation respects
 //           that.
@@ -398,8 +365,6 @@ fn silent_callback(
     //           negative `i32` cast directly to `usize` would WRAP to an enormous
     //           positive number, and we would then try to zero gigabytes. Clamp
     //           first, cast second.
-    // TS map:   `const count = Math.max(numFrames, 0) * CHANNELS;` (TS numbers
-    //           have no signedness/width, so no cast and no wrap risk).
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -425,7 +390,6 @@ fn silent_callback(
     // Why:      The buffer must be filled every callback or the speaker would get
     //           uninitialized garbage; silence (`0.0`) keeps the probe inaudible
     //           while the stream keeps running.
-    // TS map:   `audioData.fill(0);` over a `Float32Array` view of the buffer.
     // Gotcha:   `unsafe` does NOT mean "dangerous magic"; it means "the compiler
     //           trusts ME here". If the AAudio guarantee in the SAFETY comment
     //           were ever false, this would be undefined behaviour, not a
@@ -448,7 +412,6 @@ fn silent_callback(
     //           case (sibling variant: `::Stop`, which would end the stream).
     // Why:      Tell AAudio to invoke us again next cycle so the stream keeps
     //           flowing for the whole settle period.
-    // TS map:   `return "continue";` (modeling the enum as a string-union value).
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -467,7 +430,6 @@ fn silent_callback(
 //           the numbers do not make sense (bad rate, or a negative buffer).
 // Why:      Isolate the timestamp arithmetic so it can be reasoned about and
 //           tested apart from the stream lifecycle in `measure_output_latency_ms`.
-// TS map:   `function readLatencyMs(stream: AudioStream, rate: number): number | null`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -480,7 +442,6 @@ fn read_latency_ms(stream: &AudioStream, rate: i32) -> Option<f64> {
     //           the "nothing" case of `Option`.
     // Why:      Refuse to compute a latency from a nonsensical rate; the caller
     //           treats `None` as "measurement unavailable".
-    // TS map:   `if (rate <= 0) return null;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -503,7 +464,6 @@ fn read_latency_ms(stream: &AudioStream, rate: i32) -> Option<f64> {
     //             `read_latency_ms` if the timestamp was unavailable.
     // Why:      The timestamp tells us which frame the HARDWARE has actually
     //           presented, which we need to compute how far ahead we are buffered.
-    // TS map:   `const timestamp = stream.timestamp("monotonic"); if (!timestamp) return null;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -523,7 +483,6 @@ fn read_latency_ms(stream: &AudioStream, rate: i32) -> Option<f64> {
     //             integer frame delta, so it CAN be negative if the numbers race.
     // Why:      That backlog, divided by the sample rate, IS the output latency
     //           (how long until a just-written sample reaches the DAC).
-    // TS map:   `const buffered = stream.framesWritten() - timestamp.framePosition;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -536,7 +495,6 @@ fn read_latency_ms(stream: &AudioStream, rate: i32) -> Option<f64> {
     //           race) and the number is not trustworthy, so bail with `None`.
     // Why:      Better to report "no measurement" than a nonsensical negative
     //           latency.
-    // TS map:   `if (buffered < 0) return null;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -558,8 +516,6 @@ fn read_latency_ms(stream: &AudioStream, rate: i32) -> Option<f64> {
     //           - `Some(...)` wraps the resulting `f64` in the "has a value" case
     //             of `Option`, because the signature promises `Option<f64>`.
     // Why:      Hand back the computed latency in milliseconds as a present value.
-    // TS map:   `return (buffered / rate) * MILLIS_PER_SEC;` (TS numbers are
-    //           already floats, so no casts, and there is no `Option` wrapper).
     //
     // In TS you'd write (pseudocode):
     // ```ts

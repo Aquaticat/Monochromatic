@@ -13,7 +13,6 @@
 //           triaged. By re-using them we get coverage of the bug
 //           class as a starting point, not after libFuzzer
 //           rediscovers them on its own.
-// TS map:   `node scripts/seed-from-tests.ts`.
 //
 // In TS you'd write (pseudocode):
 // ```ts

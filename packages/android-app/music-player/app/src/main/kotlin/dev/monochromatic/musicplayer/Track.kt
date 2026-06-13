@@ -33,10 +33,6 @@
 // Why:      We need it so `PlayerController`, the storage sources, and the UI
 //           (which all live in this same package and so don't even need an
 //           import) can refer to `Track` by a stable, fully-qualified name.
-// TS map:   No 1:1 equivalent. In TS a module's identity IS its file path; you
-//           never write a `package` line. Mentally: "this whole file lives at
-//           src/musicplayer/Track.ts and its public names are reached via that
-//           path."
 // Gotcha:   Unlike a TS `import`, this line imports NOTHING and runs no code. It
 //           only NAMES the current file's namespace, and must be the first
 //           non-comment line in the file.
@@ -76,11 +72,6 @@ package dev.monochromatic.musicplayer
 //           richer URI/Path type) because the engine takes a string URI and the
 //           pagination takes a string display path, so storing them as plain text
 //           avoids conversions at every use.
-// TS map:   In TS you'd write a `type` alias for an object shape and create values
-//           with object literals; `equals`/`copy` have no TS counterpart (object
-//           literals compare structurally via deep-equal helpers, and there is no
-//           identity-vs-value distinction to opt into). Construction needs no `new`
-//           in Kotlin: `Track(uri, displayPath)` IS the constructor call.
 // Gotcha:   Two `Track` instances with equal fields are `==` (Kotlin's structural-
 //           equality operator), which is NOT how a plain Kotlin class behaves and
 //           NOT how TS object references compare with `===`. `data` is what flips

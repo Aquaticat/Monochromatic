@@ -12,7 +12,6 @@
 //           silently disables rules. Walker bugs caused commits
 //           e49d8694, e100659f, 1463c59b; a fuzz target on them
 //           catches the next entry in that class.
-// TS map:   `fuzzTarget((s: string) => { for each walker, check ... });`.
 
 #![no_main]
 
@@ -28,8 +27,6 @@ use forbidden_strings::fuzz_api::*;
 //           or a borrowed slice from somewhere else.
 // Why:      Plan §7.4 "returned suffixes are actual suffixes of the
 //           input".
-// TS map:   No equivalent (TS lacks pointer identity); the closest
-//           is `input.endsWith(candidate)` plus `input.length >= candidate.length`.
 fn assert_is_suffix(input: &str, candidate: &str, helper_name: &str) {
     let input_start = input.as_ptr() as usize;
     let input_end = input_start + input.len();

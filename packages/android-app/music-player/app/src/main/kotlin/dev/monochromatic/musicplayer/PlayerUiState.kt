@@ -55,11 +55,6 @@
 //           can refer to `PlayerUiState` by a stable, fully-qualified name.
 //           Omitting it would dump the name into an unnamed "default package"
 //           that other packages cannot import from cleanly.
-// TS map:   No 1:1 equivalent. In TS a module's identity IS its file path, set
-//           implicitly by where the file lives; you never write a `package`
-//           line. Mentally: "this whole file lives at
-//           src/musicplayer/PlayerUiState.kt and its public names are reached
-//           via that path."
 // Gotcha:   Unlike a TS `import`, this line imports NOTHING and runs no code.
 //           It only NAMES the current file's namespace, and must be the first
 //           non-comment line in the file.
@@ -80,10 +75,6 @@ package dev.monochromatic.musicplayer
 // Why:      We need it so the `pageItems` property can name `PageEntry` as its
 //           element type without writing the whole
 //           `dev.monochromatic.musicplayer.core.PageEntry` path every time.
-// TS map:   A named import, e.g.
-//           `import { PageEntry } from "./core/Page";` — same idea, except
-//           Kotlin resolves the name by its package path, not by a file path
-//           string.
 // Gotcha:   Importing a name in Kotlin does NOT run any module code (Kotlin
 //           has no top-level side-effecting module bodies the way a TS
 //           `import "./x"` can trigger). It is purely a compile-time "let me
@@ -104,8 +95,6 @@ import dev.monochromatic.musicplayer.core.PageEntry
 // Why:      We need it so the `shuffle` property and its default value
 //           `ShuffleMode.OFF` can be written with the short name rather than
 //           the full dotted path.
-// TS map:   A named import, e.g.
-//           `import { ShuffleMode } from "./core/ShuffleMode";`.
 // Gotcha:   Same as the import above: no module code runs; it's a compile-time
 //           name-resolution request only.
 //
@@ -135,11 +124,6 @@ import dev.monochromatic.musicplayer.core.ShuffleMode
 //           the next state by tweaking one field of the current state. The
 //           generated `equals`/`hashCode`/`copy` give us exactly that for free.
 //           The defaults give a ready-made empty starting state.
-// TS map:   In TS you'd write a `type` alias for an object shape and create
-//           values with object literals; the "default values" become a factory
-//           function or `Partial<>` merge. TS object literals already compare
-//           structurally via deep-equal helpers, and there's no identity-vs-
-//           value distinction to opt into, so `data` has no TS counterpart.
 // Gotcha:   Two `PlayerUiState` instances with equal fields are `==` (Kotlin's
 //           structural-equality operator), which is NOT how a plain Kotlin
 //           class behaves and NOT how TS object references compare with `===`.
@@ -196,9 +180,6 @@ data class PlayerUiState(
     //           interface both documents intent and blocks accidental mutation.
     //           `emptyList()` as the default so a freshly constructed
     //           `PlayerUiState()` starts with zero tabs.
-    // TS map:   `pageLabels: readonly string[]` with a default of `[]`. Kotlin's
-    //           read-only `List` maps to TS `readonly string[]`; a plain
-    //           `MutableList` would map to `string[]`.
     // Gotcha:   Kotlin's `List` is a read-only VIEW/interface, not a deep-
     //           immutable guarantee: the same underlying object could be held
     //           elsewhere as a `MutableList` and changed behind your back.
@@ -223,9 +204,6 @@ data class PlayerUiState(
     //           are all `Int`-typed, so a `Long` would force a `.toInt()`
     //           conversion at every lookup. `0` as the default so the first tab
     //           is selected initially.
-    // TS map:   `selectedPage: number` with default `0`. TS has a single
-    //           `number` type (IEEE-754 double), so the 32-bit-vs-64-bit choice
-    //           does not exist there.
     // Gotcha:   `Int` is a fixed-width 32-bit integer, NOT TS's arbitrary
     //           `number`; it can overflow (wrap around) past ~2.1 billion,
     //           whereas TS `number` would keep widening to a float.
@@ -250,7 +228,6 @@ data class PlayerUiState(
     //           display name AND the queue index the UI needs to start playback
     //           when the row is tapped. `emptyList()` as the default so a fresh
     //           state shows no rows.
-    // TS map:   `pageItems: readonly PageEntry[]` with a default of `[]`.
     // Gotcha:   Same read-only-VIEW caveat as `pageLabels`: `List` forbids
     //           mutation through THIS reference but is not a deep-frozen copy.
     //
@@ -272,9 +249,6 @@ data class PlayerUiState(
     //           directly rather than overloading a sentinel like `-1`. `null`
     //           as the default so a fresh state correctly means "no current
     //           track".
-    // TS map:   `currentIndex: number | null` with default `null`. Kotlin's
-    //           `Int?` is exactly TS's `number | null` (or `number | undefined`)
-    //           — the `?` suffix on the TYPE is the union-with-null.
     // Gotcha:   Kotlin's `?` here is on the TYPE (`Int?` = "nullable Int"), which
     //           is NOT the same as TS's `prop?:` syntax that marks a property
     //           OPTIONAL on an object. Here the property always EXISTS; its
@@ -295,8 +269,6 @@ data class PlayerUiState(
     //           is a plain yes/no flag the UI uses to pick the play vs pause
     //           icon. `false` as the default so a fresh, just-opened player is
     //           not playing.
-    // TS map:   `playing: boolean` with default `false`. Kotlin `Boolean` and
-    //           TS `boolean` line up 1:1.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -316,10 +288,6 @@ data class PlayerUiState(
     //           type-safe and the UI can branch on it exhaustively. `OFF` as the
     //           default because a fresh player starts un-shuffled, playing the
     //           current page in load order.
-    // TS map:   `shuffle: ShuffleMode` with default `"Off"` — if `ShuffleMode`
-    //           is modelled in TS as the string union `"Off" | "WithinPage" |
-    //           "All"`, the Kotlin `ShuffleMode.OFF` corresponds to the literal
-    //           `"Off"` (the desktop's serialized wire-form spelling).
     // Gotcha:   `ShuffleMode.OFF` looks like a property access on an object, but
     //           it is selecting an ENUM CONSTANT (a singleton value of the enum
     //           type), not invoking anything. There are no parentheses precisely
@@ -337,7 +305,6 @@ data class PlayerUiState(
     // Why:      `val` because the snapshot is immutable. `Boolean` because it is
     //           a plain on/off toggle independent of the `shuffle` mode. `false`
     //           as the default so a fresh player does not repeat.
-    // TS map:   `repeatTrack: boolean` with default `false`. Clean 1:1 with TS.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -358,10 +325,6 @@ data class PlayerUiState(
     //           pipeline works in 32-bit floats, so storing a `Double` here
     //           would just force a narrowing conversion downstream. `1.0f` as
     //           the default so a fresh player starts at full volume.
-    // TS map:   `volume: number` with default `1.0`. TS has a single `number`
-    //           type (always 64-bit IEEE-754 double), so the `Float` vs `Double`
-    //           choice — and the `f` suffix — simply do not exist there; you'd
-    //           write the bare literal `1.0`.
     // Gotcha:   The `f` suffix is mandatory load-bearing syntax here, not
     //           decoration: dropping it changes the literal's type to `Double`
     //           and the line would no longer compile against a `Float` field. TS
@@ -380,8 +343,6 @@ data class PlayerUiState(
     //           because it counts list elements and mirrors Kotlin's `Int`-typed
     //           `List.size`; using `Long` would force a conversion. `0` as the
     //           default so a fresh, empty-queue player reports zero tracks.
-    // TS map:   `queueSize: number` with default `0`. Single TS `number` type,
-    //           so no width choice.
     // Gotcha:   `Int` is a fixed-width 32-bit integer that can overflow past
     //           ~2.1 billion, unlike TS's auto-widening `number`.
     //
@@ -399,7 +360,6 @@ data class PlayerUiState(
     //           a slow source scan runs — so an empty queue only means "no
     //           music" once `loading` is `false`. `false` as the default so a
     //           fresh state is treated as "not currently scanning".
-    // TS map:   `loading: boolean` with default `false`. Clean 1:1 with TS.
     //
     // In TS you'd write (pseudocode):
     // ```ts

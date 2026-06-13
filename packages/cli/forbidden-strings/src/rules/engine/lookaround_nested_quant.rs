@@ -2,7 +2,6 @@
 //           troubleshooting-doc suffix from the parent engine module.
 // Why:      Every rejection message should point at the same long-form
 //           resharp workaround document without duplicating the path.
-// TS map:   `import { TROUBLESHOOT_REF } from "./constants";`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -81,7 +80,6 @@ use super::constants::TROUBLESHOOT_REF;
 //           docs/troubleshooting/resharp.md; prototyped (shared saturating_add
 //           with Bug C) and folded into the merged upstream issue
 //           (`resharp-merged-issue.local.md`), filed upstream as ieviev/resharp#5.
-// TS map:   `function nestedLookaheadInQuantifiedGroup(src: string): string | null`.
 //
 // In TS you'd write (pseudocode):
 // ```ts

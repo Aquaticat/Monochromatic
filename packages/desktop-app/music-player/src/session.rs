@@ -9,7 +9,6 @@
 // What:     `use std::path::PathBuf;` imports the OWNED path type (sibling: borrowed
 //           `&Path`).
 // Why:      The session stores the Source Root directory and the Selected Track path.
-// TS map:   `type PathBuf = string`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -20,7 +19,6 @@ use std::path::PathBuf;
 // What:     `use serde::{Deserialize, Serialize};` imports the two derive macros that
 //           generate JSON conversion code.
 // Why:      `Session` is read from and written to disk as JSON.
-// TS map:   `import { Serializable } from "some-json-lib";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -30,7 +28,6 @@ use serde::{Deserialize, Serialize};
 
 // What:     `use crate::command::ShuffleMode;` imports our shuffle enum.
 // Why:      The saved session remembers the shuffle mode.
-// TS map:   `import { ShuffleMode } from "./command";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -43,7 +40,6 @@ use crate::command::ShuffleMode;
 //           `identity::CONFIG_APPLICATION`, keeping the origin obvious).
 // Why:      `session_path` builds the config dir from the reverse-DNS triple, which now
 //           lives in one place instead of inline literals.
-// TS map:   `import * as identity from "./identity";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -56,7 +52,6 @@ use crate::identity;
 //           `PartialEq` (`==`, used in tests), and `Serialize`/`Deserialize` (JSON both
 //           ways).
 // Why:      We clone it, compare it in tests, and persist it.
-// TS map:   no annotation needed in TS for a plain object.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -70,7 +65,6 @@ use crate::identity;
 //           `source_root`/`selected` default to `None`.
 // Why:      Old sessions must degrade to "no usable root" (so launch falls through to the
 //           music directory) rather than crash the restore path.
-// TS map:   reading a partial JSON object and filling absent keys from a defaults object.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -80,7 +74,6 @@ use crate::identity;
 // What:     `pub struct Session { ... }` a public record of the saved state. Fields are
 //           `pub` so the engine can read/build them directly.
 // Why:      One serializable blob describing "where the user left off".
-// TS map:   `interface Session { ... }`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -98,7 +91,6 @@ pub struct Session {
     //           queue (`Some(dir)`), or `None` on first run / no usable root.
     // Why:      The queue is re-derived by scanning this directory on restore, so the
     //           directory is the only queue-identifying thing stored.
-    // TS map:   `sourceRoot: string | null;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -108,7 +100,6 @@ pub struct Session {
     // What:     `pub selected: Option<PathBuf>` the Selected Track's path (`Some`), or
     //           `None` when nothing was cued.
     // Why:      Re-select this track on restore if the fresh scan still contains it.
-    // TS map:   `selected: string | null;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -119,7 +110,6 @@ pub struct Session {
     //           `f32`, `u64` frames. f64 matches the `Position`/`Seek` messages
     //           (precision + seconds unit).
     // Why:      Resume the Selected Track where it left off.
-    // TS map:   `positionSecs: number`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -129,7 +119,6 @@ pub struct Session {
     // What:     `pub volume: f32` saved gain 0.0..=1.0. Sibling: `f64`. f32 matches the
     //           audio path and Slint.
     // Why:      Restore the user's last volume.
-    // TS map:   `volume: number`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -139,7 +128,6 @@ pub struct Session {
     // What:     `pub shuffle: ShuffleMode` the saved shuffle mode (off / within-page /
     //           all).
     // Why:      Restore the user's shuffle choice.
-    // TS map:   `shuffle: ShuffleMode;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -148,7 +136,6 @@ pub struct Session {
     pub shuffle: ShuffleMode,
     // What:     `pub repeat_track: bool` whether "repeat track" was on.
     // Why:      Restore the repeat-track flag.
-    // TS map:   `repeatTrack: boolean;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -160,7 +147,6 @@ pub struct Session {
 // What:     `impl Default for Session { ... }` provides the first-run / corrupt-file
 //           fallback value, and the per-field fallback for `#[serde(default)]`.
 // Why:      `load()` returns this when there is no readable session.
-// TS map:   a factory `function defaultSession(): Session`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -173,7 +159,6 @@ impl Default for Session {
     // What:     `fn default() -> Session`. The single method `Default` requires; builds
     //           the fallback value.
     // Why:      One place defines the empty starting state.
-    // TS map:   `static default(): Session`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -184,7 +169,6 @@ impl Default for Session {
         //           options; `0.0` start of track; `1.0` full volume; `ShuffleMode::Off`
         //           the default mode; `false` no repeat-track.
         // Why:      Sensible starting state with no root and nothing cued.
-        // TS map:   the object literal in `defaultSession()`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -203,7 +187,6 @@ impl Default for Session {
 
 // What:     `impl Session { ... }` the methods block.
 // Why:      `load` and `save` are the two operations the engine drives.
-// TS map:   methods on the `Session` class.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -216,7 +199,6 @@ impl Session {
     // Why:      Restore on launch without ever failing the program start. The decision of
     //           whether the saved `source_root` still exists (and what to scan) belongs to
     //           the controller, not here, so `load` no longer prunes anything.
-    // TS map:   `static load(): Session`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -231,7 +213,6 @@ impl Session {
         // What:     `let path = match session_path() { Some(p) => p, None => return ... };`
         //           obtains the file path or bails to default.
         // Why:      Without a config directory there is nothing to load.
-        // TS map:   `const path = sessionPath(); if (!path) return defaultSession();`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -240,7 +221,6 @@ impl Session {
         let path = match session_path() {
             // What:     `Some(p) => p`. Unwrap the present path.
             // Why:      Continue to reading it.
-            // TS map:   `path = p;`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -249,7 +229,6 @@ impl Session {
             Some(p) => p,
             // What:     `None => return Session::default()` early return.
             // Why:      No home/config dir.
-            // TS map:   `return defaultSession();`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -261,7 +240,6 @@ impl Session {
         //           reads the whole file to a `String`, or returns defaults on any IO error
         //           (the common "no file yet" case included).
         // Why:      A missing or unreadable session is just "no session".
-        // TS map:   `let text; try { text = readFileSync(path, "utf8"); } catch { return defaultSession(); }`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -270,7 +248,6 @@ impl Session {
         let text = match std::fs::read_to_string(&path) {
             // What:     `Ok(t) => t`. The file contents.
             // Why:      Parse them next.
-            // TS map:   `text = t;`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -279,7 +256,6 @@ impl Session {
             Ok(t) => t,
             // What:     `Err(_) => return Session::default()`. The `_` discards the error.
             // Why:      No readable file means defaults.
-            // TS map:   `return defaultSession();`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -292,7 +268,6 @@ impl Session {
         //           parsing fails. Tail expression -> return value.
         // Why:      A malformed or stale-shaped file degrades to defaults rather than
         //           aborting launch.
-        // TS map:   `try { return parse(text); } catch { return defaultSession(); }`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -304,7 +279,6 @@ impl Session {
     // What:     `pub fn save(&self) -> std::io::Result<()>` serializes `self` to JSON and
     //           writes it under the config directory, creating the directory if needed.
     // Why:      Persist "where the user left off" on quit.
-    // TS map:   `save(): void` (throwing on IO failure).
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -318,7 +292,6 @@ impl Session {
         // What:     `let path = match session_path() { Some(p) => p, None => return Ok(()) };`
         //           get the target path or quietly succeed if there is no config dir.
         // Why:      Saving is best-effort; missing config dir is not an error.
-        // TS map:   `const path = sessionPath(); if (!path) return;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -327,7 +300,6 @@ impl Session {
         let path = match session_path() {
             // What:     `Some(p) => p`. Unwrap the present path.
             // Why:      Continue to writing it.
-            // TS map:   `path = p;`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -337,7 +309,6 @@ impl Session {
             // What:     `None => return Ok(())` early success. `Ok(())` is the success
             //           variant wrapping unit.
             // Why:      Nothing to do, not a failure.
-            // TS map:   `return;`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -348,7 +319,6 @@ impl Session {
         // What:     `if let Some(parent) = path.parent() { ... }` runs only when the path
         //           has a parent directory. `path.parent()` returns `Option<&Path>`.
         // Why:      Ensure the config directory exists before writing into it.
-        // TS map:   `mkdirSync(dirname(path), { recursive: true });`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -358,7 +328,6 @@ impl Session {
             // What:     `std::fs::create_dir_all(parent)?;` creates the directory and any
             //           missing ancestors. The trailing `?` PROPAGATES an error.
             // Why:      First-ever save has no config dir yet.
-            // TS map:   `mkdirSync(parent, { recursive: true });`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -370,7 +339,6 @@ impl Session {
         //           serializes `self` to pretty JSON; `.map_err(...)` converts the serde
         //           error into a `std::io::Error` so `?` can propagate it.
         // Why:      Produce the bytes to write; unify error types for `?`.
-        // TS map:   `const json = JSON.stringify(this, null, 2);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -381,7 +349,6 @@ impl Session {
         // What:     `std::fs::write(&path, json)` writes the string to the file, replacing
         //           existing contents. Tail expression -> `save`'s result.
         // Why:      Persist the JSON.
-        // TS map:   `writeFileSync(path, json);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -394,7 +361,6 @@ impl Session {
 // What:     `fn session_path() -> Option<PathBuf>` computes the on-disk location of the
 //           session file, or `None` if no config directory is available. Module-private.
 // Why:      One place that decides where the session lives.
-// TS map:   `function sessionPath(): string | null`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -409,7 +375,6 @@ fn session_path() -> Option<PathBuf> {
     //           the shared `identity` module. Returns `Option<ProjectDirs>`.
     // Why:      Respect the platform's config-dir convention and keep identity strings in
     //           one place so the config path cannot drift.
-    // TS map:   `const dirs = projectDirs(CONFIG_QUALIFIER, CONFIG_ORGANIZATION, CONFIG_APPLICATION);`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -424,7 +389,6 @@ fn session_path() -> Option<PathBuf> {
         //           `Some`. `dirs.config_dir()` returns `&Path`; `.join(...)` appends the
         //           filename and returns an owned `PathBuf`. Tail expression -> return.
         // Why:      Turn the directory into the full file path.
-        // TS map:   `dirs ? join(dirs.configDir, "session.json") : null`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -436,7 +400,6 @@ fn session_path() -> Option<PathBuf> {
 // What:     `#[cfg(test)] #[path = "session_tests.rs"] mod tests;` declares a test-only
 //           submodule whose code lives in the sibling file `session_tests.rs`.
 // Why:      Keep `session.rs` to production code; the tests live beside it.
-// TS map:   the `session.unit.test.ts` file beside `session.ts`.
 //
 // In TS you'd write (pseudocode):
 // ```ts

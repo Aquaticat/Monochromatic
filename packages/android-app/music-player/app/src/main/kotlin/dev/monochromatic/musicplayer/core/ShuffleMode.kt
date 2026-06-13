@@ -41,9 +41,6 @@
 //           qualified name, and so the compiler groups this file with the rest of the `core`
 //           package. Omitting it would dump the name into an unnamed "default package" that
 //           other packages cannot import from cleanly.
-// TS map:   No 1:1 equivalent. In TS, a module's identity IS its file path, set implicitly by
-//           where the file lives; you never write a "package" line. The nearest mental model is
-//           "this whole file lives under the `core` folder and is imported via that path."
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -72,9 +69,6 @@ package dev.monochromatic.musicplayer.core
 //           player can branch on "which mode are we in" with full compiler-checked exhaustiveness
 //           (the compiler can warn if a `when` forgets a case). It also subsumes what a separate
 //           repeat-all/off setting would have done, since the mode itself fixes the loop scope.
-// TS map:   A string-literal union type. The three Kotlin constants map to the three desktop
-//           wire-form strings (`"Off"`, `"WithinPage"`, `"All"`); pick that wire form for the
-//           union so the TS model and the persisted JSON line up.
 // Gotcha:   `enum class ShuffleMode` is PUBLIC by default. Kotlin's default visibility is public,
 //           so the absence of any modifier here is the same as writing `public`. (Contrast the
 //           desktop Rust port, which had to write an explicit `pub` to get the same reach.) A TS
@@ -91,7 +85,6 @@ enum class ShuffleMode {
     //           trailing comma simply separates it from the next constant.
     // Why:      Represents "play the current page in load order, looping within the page." This
     //           is the un-shuffled, stay-in-this-folder behaviour.
-    // TS map:   `"Off"` (the desktop wire-form string for this variant).
     // Gotcha:   Despite being listed first, `OFF` is NOT a language-level default here. Unlike
     //           the desktop Rust enum (which tagged its `Off` variant with `#[default]`), Kotlin
     //           enums have no default variant; callers must pick a starting mode explicitly.
@@ -107,7 +100,6 @@ enum class ShuffleMode {
     //           constants; it maps to the desktop's PascalCase `"WithinPage"` at the wire boundary.
     // Why:      Represents "shuffle the current page, looping within the page once all are
     //           played." Shuffling is confined to the current folder/letter-bucket.
-    // TS map:   `"WithinPage"` (the desktop wire-form string for this variant).
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -120,7 +112,6 @@ enum class ShuffleMode {
     //           legal syntax and not an extra empty member, so it must stay exactly as written.
     // Why:      Represents "shuffle the whole queue, looping the queue once all are played." This
     //           is the only mode that crosses page/folder boundaries.
-    // TS map:   `"All"` (the desktop wire-form string for this variant).
     //
     // In TS you'd write (pseudocode):
     // ```ts

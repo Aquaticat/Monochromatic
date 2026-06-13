@@ -19,7 +19,6 @@
 //           `extract_gating_substrings` returned `Some(...)`. The
 //           soundness target catches that shape automatically: a
 //           match without any gate hit is exactly the failure mode.
-// TS map:   `fuzzTarget((input: RuleAndContent) => { ... });`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -39,8 +38,6 @@
 //           via the `LLVMFuzzerTestOneInput` symbol that the
 //           `fuzz_target!` macro emits.
 // Why:      Required boilerplate for every cargo-fuzz target.
-// TS map:   No equivalent; TS has no compiler-driven entry-point
-//           handover.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -54,7 +51,6 @@
 //           iteration.
 // Why:      Without the import the `fuzz_target!(...)` invocation
 //           below would fail to resolve.
-// TS map:   `import { fuzzTarget } from "@anthropic/libfuzzer-stub";` (no real TS equiv).
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -73,7 +69,6 @@ use libfuzzer_sys::fuzz_target;
 //           `extract_gating_substrings`, `CompiledRegex` (for its
 //           `find_all` method) without widening the production
 //           public surface.
-// TS map:   `import * as fuzzApi from "forbidden-strings/fuzzApi";`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -88,7 +83,6 @@ use forbidden_strings::fuzz_api::*;
 //           the `Arbitrary` derive turn it into a `RuleAndContent`
 //           pair so the target body works on structured data, not
 //           raw bytes.
-// TS map:   `import type { RuleAndContent } from "forbidden-strings-fuzz/generators";`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -107,7 +101,6 @@ use forbidden_strings_fuzz::generators::RuleAndContent;
 //           from a future seeded corpus). A digest gives the
 //           reader enough to reproduce locally (same bytes -> same
 //           digest) without exposing them.
-// TS map:   `import { createHash } from "node:crypto";`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -143,7 +136,6 @@ use sha2::{Digest, Sha256};
 //
 //           Installed exactly once via `Once` so repeated calls from
 //           the fuzz_target! closure are idempotent.
-// TS map:   `installResharpPanicFilter()` -- runtime hook override.
 fn install_resharp_panic_filter() {
     use std::sync::Once;
     static INIT: Once = Once::new();
@@ -198,7 +190,6 @@ fn install_resharp_panic_filter() {
 //           `RuleAndContent::arbitrary`, then invokes the closure
 //           with the result. Panic = libFuzzer crash report.
 // Why:      Structured fuzzing entry point.
-// TS map:   `fuzzTarget((input: RuleAndContent) => { ... });`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -222,7 +213,6 @@ fuzz_target!(|input: RuleAndContent| {
     //           Struct-destructuring let-binding. Moves the fields
     //           out of `input` (we no longer use `input` after this).
     // Why:      Local names for the two halves of the bundle.
-    // TS map:   `const { rule, content } = input;`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -235,7 +225,6 @@ fuzz_target!(|input: RuleAndContent| {
     //           expects.
     // Why:      We need the source both for compilation AND for
     //           the extractor (it parses the same string shape).
-    // TS map:   `const src = rule.render();`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -252,7 +241,6 @@ fuzz_target!(|input: RuleAndContent| {
     // Why:      Skip rules the loader would have rejected at runtime.
     //           Only well-compiled rules exercise the AC-gate
     //           contract.
-    // TS map:   `let compiled; try { compiled = compileRuleSrc(src); } catch { return; }`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -272,7 +260,6 @@ fuzz_target!(|input: RuleAndContent| {
     //           "uninteresting" and skip.
     // Why:      We only assert on matches the production scan path
     //           would also see.
-    // TS map:   `const matches = compiled.findAll(content);` (try/catch on Err).
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -289,7 +276,6 @@ fuzz_target!(|input: RuleAndContent| {
     // Why:      Skip uninteresting "no-match" iterations so the
     //           libFuzzer budget targets gate behaviour, not regex
     //           rejection paths.
-    // TS map:   `if (matches.length === 0) return;`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -307,7 +293,6 @@ fuzz_target!(|input: RuleAndContent| {
     //           cannot be a soundness violation on its own.
     // Why:      Only the `Some` case implies an AC gate is
     //           registered for this rule and the contract applies.
-    // TS map:   `const gates = extractGatingSubstrings(src); if (!gates) return;`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -337,7 +322,6 @@ fuzz_target!(|input: RuleAndContent| {
     //           sufficient (the AC matches per file). We are
     //           checking "is there any gate the file contains?",
     //           not "do all gates appear".
-    // TS map:   `const anyGateAppears = gates.some(({ sub, ci }) => contains(content, sub, ci));`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -359,7 +343,6 @@ fuzz_target!(|input: RuleAndContent| {
     //           failure here is the bug class the e49d8694 fix
     //           closed. Soundness-by-revert verification (phase 11)
     //           reverts that commit and expects THIS panic to fire.
-    // TS map:   `if (!anyGateAppears) throw new Error("soundness violation: ...");`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -398,7 +381,6 @@ fuzz_target!(|input: RuleAndContent| {
 //           strict byte equality, ci=true means ASCII case-fold.
 //           Unicode fold differences are outside the gate's
 //           contract.
-// TS map:   `function containsUnderCi(hay: Uint8Array, needle: Uint8Array, ci: boolean): boolean`.
 //
 // In TS you'd write (pseudocode):
 // ```ts

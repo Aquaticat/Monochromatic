@@ -7,7 +7,6 @@
 //           from each other. One library makes the byte->AST mapping
 //           identical for every target, which keeps libFuzzer's
 //           cross-corpus learning useful.
-// TS map:   `// fuzz/src/index.ts \n export * from "./generators";`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -23,8 +22,6 @@
 //           `forbidden_strings_fuzz::generators::...` directly.
 // Why:      Targets need to write `use forbidden_strings_fuzz::generators::*;`.
 //           Without `pub`, that import would fail with E0603.
-// TS map:   `export * from "./generators";` is the closest analogue;
-//           Rust requires an explicit module declaration first.
 //
 // In TS you'd write (pseudocode):
 // ```ts

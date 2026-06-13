@@ -4,8 +4,6 @@
 //           function before compiling the crate itself.
 // Why:      The app needs generated Rust types for `ui/app.slint` before
 //           `src/main.rs` can use `slint::include_modules!()`.
-// TS map:   A prebuild script that generates TypeScript declarations before
-//           the real app compile starts.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -19,8 +17,6 @@ fn main() {
     // Why:      The crates.io `libghostty-vt-sys` package links Ghostty's VT core
     //           as `libghostty-vt.so.0`, so the installed binary needs a stable
     //           relative library lookup path beside `~/.local/bin`.
-    // TS map:   No direct TS equivalent. Mentally, this is build-time metadata
-    //           saying "when bundling, load native .so files from ../lib/...".
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -33,7 +29,6 @@ fn main() {
     //           and `.expect(...)` unwraps the success value or panics with the
     //           message when the markup compiler returns an error.
     // Why:      A broken `.slint` file should stop the build immediately.
-    // TS map:   `compileSlint("ui/app.slint") ?? throw`.
     //
     // In TS you'd write (pseudocode):
     // ```ts

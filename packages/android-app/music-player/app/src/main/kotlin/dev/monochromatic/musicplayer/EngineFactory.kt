@@ -31,9 +31,6 @@
 // Why:      Kotlin requires the package line so the compiler knows the fully
 //           qualified name of `createAudioEngine` and can match it to the call
 //           site in `MainActivity`, which lives in this same package.
-// TS map:   No 1:1 equivalent. TS has no `package` keyword; a file's identity
-//           comes from its path on disk plus its `export`s. Mentally, picture a
-//           folder `dev/monochromatic/musicplayer/` that all these files sit in.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -51,9 +48,6 @@ package dev.monochromatic.musicplayer
 //           resources to the app's lifetime.
 // Why:      The function below takes a `Context` parameter and passes it into the
 //           engine; without this import the name `Context` would be unresolved.
-// TS map:   This is exactly a named import. The catch is that `Context` itself is
-//           a platform object with NO TypeScript analogue at all (it is part of
-//           Android, not the language) — treat it as an opaque "system handle".
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -89,9 +83,6 @@ import android.content.Context
 //           `createAudioEngine` returns a different concrete class. Declaring the
 //           concrete `RustEngine` as the return type would leak this flavor's
 //           implementation into the shared call site.
-// TS map:   `function createAudioEngine(context: Context): AudioEngine { return new RustEngine(context); }`.
-//           The single-expression `=` body becomes an explicit `return`, and the
-//           bare `RustEngine(context)` becomes `new RustEngine(context)`.
 // Gotcha:   Two traps for a TS reader on this line: (1) constructing an object has
 //           NO `new` keyword in Kotlin — `RustEngine(context)` looks like an
 //           ordinary function call but it builds an instance; (2) the `=` is an

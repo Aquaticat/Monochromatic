@@ -8,7 +8,6 @@
 // What:     `use symphonia::core::errors::Error;` imports symphonia's error enum.
 // Why:      We match its `ResetRequired` variant (treated as end-of-track) and propagate
 //           any other error.
-// TS map:   `import { SymphoniaError } from "symphonia/errors";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -23,7 +22,6 @@ use symphonia::core::errors::Error;
 //           `decode.rs`; this module holds the demuxer and delegates.
 // Why:      `OpusSource` stores a `Box<dyn FormatReader>` and reads channels/delay/
 //           frame-count from the owned `Track` `new` receives.
-// TS map:   `import { FormatReader, Track } from "symphonia/formats";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -39,7 +37,6 @@ use symphonia::core::formats::{FormatReader, Track};
 //           is written.
 // Why:      `OpusSource` returns an `AudioSpec`, implements `Source`, and delegates its
 //           `seek` to `seek_format` so the start-frame math lives in one place.
-// TS map:   `import { seekFormat, AudioSpec, Source } from "./decode";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -49,7 +46,6 @@ use crate::decode::{seek_format, AudioSpec, Source};
 
 // What:     `use crate::error::PlayerError;` imports our app-wide error type.
 // Why:      Every fallible method here returns `PlayerError`.
-// TS map:   `import { PlayerError } from "../error";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -64,7 +60,6 @@ use crate::error::PlayerError;
 // Why:      Opus is defined to output 48 kHz; naming it avoids a magic number. `u32` is
 //           chosen (not `i32`/`u64`) because it matches `AudioSpec.rate` and the opus
 //           crate's API, so no casts are needed when this value flows into them.
-// TS map:   `const OPUS_RATE = 48_000;`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -80,7 +75,6 @@ const OPUS_RATE: u32 = 48_000;
 // Why:      We pre-allocate a scratch buffer big enough for any packet so `decode_float`
 //           never overflows it. `usize` (not `u32`/`u64`) because it sizes and indexes a
 //           buffer, which is exactly what every std collection/slice API wants.
-// TS map:   `const MAX_FRAMES_PER_CHANNEL = 5760;`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -92,7 +86,6 @@ const MAX_FRAMES_PER_CHANNEL: usize = 5760;
 //           to branch mono vs stereo. `usize` (not `u32`/`u8`) so it compares against the
 //           `usize` channel count without a cast.
 // Why:      Avoid a bare `2` literal when classifying the layout.
-// TS map:   `const STEREO = 2;`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -104,7 +97,6 @@ const STEREO: usize = 2;
 //           (not `u32`/`u8`) so it compares against the `usize` channel count without a
 //           cast.
 // Why:      Avoid a bare `1` literal when classifying the layout.
-// TS map:   `const MONO = 1;`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -117,7 +109,6 @@ const MONO: usize = 1;
 //           Opus decode state.
 // Why:      Bundles the demuxer, libopus decoder, and reusable scratch so the `Source`
 //           methods can advance them.
-// TS map:   `class OpusSource implements Source { ... }`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -130,7 +121,6 @@ pub struct OpusSource {
     //           Siblings of `Box`: `Rc<T>` and `Arc<T>` (both shared/reference-counted).
     // Why:      Source of raw Opus packets; we own it exclusively and free it when the
     //           struct drops. `Box` (not `Rc`/`Arc`) because nothing else shares it.
-    // TS map:   `format: FormatReader;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -141,7 +131,6 @@ pub struct OpusSource {
     //           this struct, not boxed: it is a concrete type, not a trait object). The
     //           `opus::` prefix is a path into the `opus` crate's module.
     // Why:      Decodes each Opus packet to f32 PCM.
-    // TS map:   `decoder: OpusDecoder;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -151,7 +140,6 @@ pub struct OpusSource {
     // What:     `track_id: u32`. Id of the Opus track. `u32` (not `usize`/`u64`) because it
     //           matches symphonia's track-id width.
     // Why:      Skip packets from other tracks.
-    // TS map:   `trackId: number;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -162,7 +150,6 @@ pub struct OpusSource {
     //           `u16`/`u32`) so the buffer math (`frames * channels`, slice indices) needs
     //           no casts.
     // Why:      Slice the decoded output and size the scratch buffer.
-    // TS map:   `channels: number;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -172,7 +159,6 @@ pub struct OpusSource {
     // What:     `spec: AudioSpec`. Cached rate(=48000)/channels/duration record, stored by
     //           value (owned inline).
     // Why:      `spec()` returns it directly.
-    // TS map:   `spec: AudioSpec;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -185,7 +171,6 @@ pub struct OpusSource {
     //           into it each call (sized `MAX_FRAMES_PER_CHANNEL * channels`).
     // Why:      Avoid allocating a fresh buffer per packet. `Vec` (not `&[f32]`/`[f32; N]`)
     //           because it is owned, reusable, and sized at runtime from the channel count.
-    // TS map:   `scratch: Float32Array;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -196,7 +181,6 @@ pub struct OpusSource {
     //           the very start (Opus prepends silence/priming). `usize` (not `u32`) to match
     //           the frame-count arithmetic it participates in.
     // Why:      Dropping them avoids a click and aligns playback to t=0.
-    // TS map:   `preSkip: number;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -208,7 +192,6 @@ pub struct OpusSource {
 // What:     `impl OpusSource { ... }`. An inherent-impl block: it attaches methods directly
 //           to the `OpusSource` type (here just the constructor `new`), not via a trait.
 // Why:      Holds `new`.
-// TS map:   the static/non-interface methods of the class.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -222,7 +205,6 @@ impl OpusSource {
     //           `Result<T, E>` is Rust's two-variant outcome type (it has no exceptions).
     //           `Self` is an alias for `OpusSource`.
     // Why:      Set up Opus decoding for this track, rejecting >2 channels.
-    // TS map:   `static create(format, track, trackId): OpusSource` (throws on failure).
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -242,7 +224,6 @@ impl OpusSource {
         //           by the closure. The trailing `?` unwraps `Ok` or returns the `Err` from
         //           `new`.
         // Why:      The channel layout lives on the audio params.
-        // TS map:   `const audio = track.codecParams?.audio(); if (!audio) throw ...;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -261,7 +242,6 @@ impl OpusSource {
                 //           ALLOCATES a fresh owned `String` copy of it.
                 // Why:      The `Unsupported` variant holds an owned `String`, so we must
                 //           convert the borrowed literal into one the error can keep.
-                // TS map:   `new PlayerError.Unsupported("opus: no audio codec parameters")`
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -276,7 +256,6 @@ impl OpusSource {
         //           out"), so each arm sees a `&Channels`. The result of the whole `match`
         //           is assigned to `channels`.
         // Why:      We must know the layout to configure libopus.
-        // TS map:   `const channels = audio.channels?.count(); if (channels == null) throw ...;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -289,7 +268,6 @@ impl OpusSource {
             //           `c.count()` returns the channel count as a `usize`. This arm's value
             //           becomes the `match` result.
             // Why:      Real channel count.
-            // TS map:   `channels = c.count();`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -302,7 +280,6 @@ impl OpusSource {
             //           (`.to_string()` allocates it from the borrowed literal); `return`
             //           exits `new` early with that error.
             // Why:      Cannot decode without knowing channels.
-            // TS map:   `throw new PlayerError.Unsupported("opus: unknown channels");`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -319,7 +296,6 @@ impl OpusSource {
         //           `channels` (`usize`) that maps it to libopus's `Channels` enum, with a
         //           catch-all arm rejecting anything else. Result assigned to `opus_channels`.
         // Why:      libopus's API takes the enum, not a number.
-        // TS map:   `const opusChannels = channels === 1 ? Mono : channels === 2 ? Stereo : (() => { throw ... })();`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -332,7 +308,6 @@ impl OpusSource {
             //           `MONO` constant (1); yields `opus::Channels::Mono`, a unit enum
             //           variant (a variant carrying no data) reached via `::`.
             // Why:      One channel.
-            // TS map:   `case 1: return Channels.Mono;`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -342,7 +317,6 @@ impl OpusSource {
             // What:     `STEREO => opus::Channels::Stereo`. Matches when `channels` equals
             //           `STEREO` (2); yields the stereo unit variant.
             // Why:      Two channels.
-            // TS map:   `case 2: return Channels.Stereo;`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -356,7 +330,6 @@ impl OpusSource {
             //           `Err(PlayerError::Unsupported(...))` wraps it as the failure variant;
             //           `return` exits early.
             // Why:      We only support mono/stereo (no surround) in this player.
-            // TS map:   `throw new PlayerError.Unsupported(`opus: ${other} channels`);`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -376,7 +349,6 @@ impl OpusSource {
         //           trailing `?` unwraps `Ok` or, via a `From` conversion, turns an
         //           `opus::Error` into `PlayerError` and returns it from `new`.
         // Why:      The decoder we feed packets to.
-        // TS map:   `const decoder = new OpusDecoder(OPUS_RATE, opusChannels);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -389,7 +361,6 @@ impl OpusSource {
         //           `.unwrap_or(0)` returns the inner `u32` if present, else substitutes `0`.
         //           `as usize` is a numeric cast widening the `u32` to the buffer-math type.
         // Why:      Number of priming frames-per-channel to discard at the start.
-        // TS map:   `const preSkip = track.delay ?? 0;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -401,7 +372,6 @@ impl OpusSource {
         //           is an `Option<u64>` (total frames, always at 48 kHz for Opus). The
         //           `match` yields a seconds value, assigned to `duration_secs`.
         // Why:      The seek bar needs the track length.
-        // TS map:   `const durationSecs = track.numFrames != null ? track.numFrames / 48000 : 0;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -413,7 +383,6 @@ impl OpusSource {
             //           64-bit float (sibling: `f32`) BEFORE dividing, so the division is
             //           float (integer `/` would truncate). This arm's value is the result.
             // Why:      seconds = frames / 48000.
-            // TS map:   `return n / 48000;`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -423,7 +392,6 @@ impl OpusSource {
             // What:     `None => 0.0`. The absent variant yields the float literal `0.0`
             //           (the `.0` makes it an `f64`, not an integer).
             // Why:      Unknown frame count -> unknown duration; avoid guessing.
-            // TS map:   `return 0;`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -438,7 +406,6 @@ impl OpusSource {
         //           `u16` field; `duration_secs` is field shorthand (field name equals the
         //           local of the same name).
         // Why:      Report 48 kHz + layout + length to callers.
-        // TS map:   `const spec = { rate: OPUS_RATE, channels, durationSecs };`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -455,7 +422,6 @@ impl OpusSource {
         //           holding `count` copies of `0.0f32` (the `f32` suffix pins the element
         //           type to 32-bit float). The count is `MAX_FRAMES_PER_CHANNEL * channels`.
         // Why:      A buffer guaranteed large enough for one decoded Opus packet.
-        // TS map:   `const scratch = new Float32Array(MAX_FRAMES_PER_CHANNEL * channels);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -469,7 +435,6 @@ impl OpusSource {
         //           trailing `;`, so this is the function's tail expression: Rust auto-returns
         //           it from `new`.
         // Why:      Return the ready Opus source with the success channel set.
-        // TS map:   `return new OpusSource(format, decoder, trackId, channels, spec, scratch, preSkip);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -490,7 +455,6 @@ impl OpusSource {
 // What:     `impl Source for OpusSource { ... }`. A trait-impl block: it makes `OpusSource`
 //           satisfy the shared `Source` interface by providing the trait's methods.
 // Why:      So `open()` can return it as `Box<dyn Source>` (a type-erased `Source`).
-// TS map:   `class OpusSource implements Source { ... }`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -501,7 +465,6 @@ impl Source for OpusSource {
     //           immutable BORROW of the instance: read-only, no ownership taken) and
     //           returning an `AudioSpec` by value.
     // Why:      Report the stream shape.
-    // TS map:   `spec(): AudioSpec { return this.spec; }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -512,7 +475,6 @@ impl Source for OpusSource {
         //           `AudioSpec` derives `Copy`, returning it makes a bitwise COPY rather than
         //           moving the field out of `self` (which a `&self` borrow could not do).
         // Why:      Hand back the spec.
-        // TS map:   `return this.spec;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -526,7 +488,6 @@ impl Source for OpusSource {
     //           other borrow may coexist) because decoding advances the demuxer and decoder.
     //           Returns `Ok(Vec<f32>)` of interleaved samples or an `Err(PlayerError)`.
     // Why:      Produce the next PCM block (or EOF).
-    // TS map:   `nextChunk(): number[]`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -537,7 +498,6 @@ impl Source for OpusSource {
         //           Needed because some packets belong to other tracks or are fully consumed
         //           by pre-skip and yield nothing.
         // Why:      Keep going until we have audible samples or hit EOF.
-        // TS map:   `while (true) { ... }`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -550,7 +510,6 @@ impl Source for OpusSource {
             //           `Err(...)` is a demux error. The `match` destructures all three and
             //           assigns the unwrapped packet to `packet`.
             // Why:      Get a raw Opus packet, handling end-of-stream.
-            // TS map:   `const p = format.nextPacket(); if (p == null) return [];`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -561,7 +520,6 @@ impl Source for OpusSource {
                 //           `Some` (present), binding the inner `Packet` to `p`; the arm
                 //           yields `p` as the `match` result.
                 // Why:      We have something to decode.
-                // TS map:   `if (p != null) packet = p;`
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -573,7 +531,6 @@ impl Source for OpusSource {
                 //           EMPTY `Vec<f32>` (no allocation); `Ok(...)` wraps it; `return`
                 //           exits `next_chunk`. An empty Vec is our agreed EOF signal.
                 // Why:      End of file -> stop cleanly.
-                // TS map:   `return [];`
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -584,7 +541,6 @@ impl Source for OpusSource {
                 //           specific `ResetRequired` variant inside the `Err`; we treat it as
                 //           end-of-track and return the empty-Vec EOF signal.
                 // Why:      Simple player: end instead of resetting.
-                // TS map:   `if (e.kind === "ResetRequired") return [];`
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -596,7 +552,6 @@ impl Source for OpusSource {
                 //           `symphonia` `Error` into our `PlayerError`; `Err(...)` re-wraps it
                 //           and `return` propagates it.
                 // Why:      Surface genuine demux failures.
-                // TS map:   `throw toPlayerError(e);`
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -610,7 +565,6 @@ impl Source for OpusSource {
             //           skips to the next loop iteration. In symphonia 0.6 `track_id` is a
             //           public FIELD (not a getter).
             // Why:      A container can interleave multiple tracks.
-            // TS map:   `if (packet.trackId !== this.trackId) continue;`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -629,7 +583,6 @@ impl Source for OpusSource {
             //           (frames PER CHANNEL); the trailing `?` unwraps or converts the error
             //           to `PlayerError` and returns.
             // Why:      Decode one packet into the scratch buffer.
-            // TS map:   `const frames = decoder.decodeFloat(packet.data, scratch, false);`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -644,7 +597,6 @@ impl Source for OpusSource {
             //           Result is the total INTERLEAVED sample count (frames-per-channel
             //           times channels).
             // Why:      That many leading entries of `scratch` are valid this call.
-            // TS map:   `const total = frames * this.channels;`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -656,7 +608,6 @@ impl Source for OpusSource {
             //           the smaller of the remaining pre-skip and this packet's frame count
             //           (both `usize`), so we never drop more than this packet contains.
             // Why:      Discard priming frames spread across the first packet(s).
-            // TS map:   `const dropFrames = Math.min(this.preSkip, frames);`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -667,7 +618,6 @@ impl Source for OpusSource {
             // What:     `self.pre_skip -= drop_frames;`. Subtract-assign on the field through
             //           the mutable `self` borrow, reducing the remaining pre-skip counter.
             // Why:      Track how much priming is left for later packets.
-            // TS map:   `this.preSkip -= dropFrames;`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -679,7 +629,6 @@ impl Source for OpusSource {
             //           multiplication giving the interleaved offset where audible samples
             //           begin (after the dropped priming frames).
             // Why:      Slice past the priming samples.
-            // TS map:   `const start = dropFrames * this.channels;`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -692,7 +641,6 @@ impl Source for OpusSource {
             //           `Vec` with a range yields a `[f32]` slice; the leading `&` BORROWS it
             //           as `&[f32]` (a read-only view that owns nothing, not a copy).
             // Why:      The portion we actually return.
-            // TS map:   `const samples = scratch.subarray(start, total);`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -705,7 +653,6 @@ impl Source for OpusSource {
             //           iteration to fetch another packet.
             // Why:      Never return an empty Vec except at true EOF (which would be misread
             //           as end-of-stream).
-            // TS map:   `if (samples.length === 0) continue;`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -720,7 +667,6 @@ impl Source for OpusSource {
             //           keeps it past this stack frame, which a borrow could not allow);
             //           `Ok(...)` wraps it as the success variant; `return` hands it back.
             // Why:      Hand the caller owned interleaved samples.
-            // TS map:   `return Array.from(samples);`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -735,7 +681,6 @@ impl Source for OpusSource {
     //           `Result<(), PlayerError>`; `()` is the unit type (the "no value" type, like
     //           TS `void`), so success carries no payload.
     // Why:      Jump the demuxer to a time and clear decoder state.
-    // TS map:   `seek(secs: number): void`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -752,7 +697,6 @@ impl Source for OpusSource {
         //           was rejected as out-of-range whenever the bar was dragged to the
         //           beginning. The helper adds `start_ts`, so second 0 lands on the first
         //           audible frame.
-        // TS map:   `seekFormat(this.format, this.trackId, secs);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -765,7 +709,6 @@ impl Source for OpusSource {
         //           leftover from before. It returns `Result<(), opus::Error>`; the trailing
         //           `?` unwraps or converts/propagates the error as `PlayerError`.
         // Why:      Avoid stale samples / artifacts after a seek.
-        // TS map:   `this.decoder.resetState();`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -777,7 +720,6 @@ impl Source for OpusSource {
         //           `self` borrow. After seeking we are mid-stream, so there is no encoder
         //           priming left to discard.
         // Why:      Pre-skip only applies at the very start of the stream.
-        // TS map:   `this.preSkip = 0;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -789,7 +731,6 @@ impl Source for OpusSource {
         //           value, "nothing"). No trailing `;`, so this is the tail expression and is
         //           auto-returned from `seek`.
         // Why:      Signal the seek completed without error.
-        // TS map:   `return;`
         //
         // In TS you'd write (pseudocode):
         // ```ts

@@ -8,10 +8,6 @@
 //           this same package.
 // Why:      Without a package line everything would land in the unnamed "root"
 //           package, which Kotlin discourages and which collides as the app grows.
-// TS map:   No direct equivalent. TS has no `package` keyword; a module's identity
-//           IS its file path, and you `import { sanitizeComponent } from
-//           "./core/DisplayPath"`. Mentally, this line is the compiler-enforced
-//           version of "this file is the `core/DisplayPath` module".
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -58,8 +54,6 @@ package dev.monochromatic.musicplayer.core
 // Why:      The sanitizer below compares one character at a time against this value,
 //           so it must be a `Char`, not a length-1 `String`. Naming it also keeps the
 //           bare `'/'` literal from being scattered around.
-// TS map:   `const SEPARATOR = "/";` — but note TS has NO char type, so a single
-//           character is just a `string` of length 1.
 // Gotcha:   TS uses `"/"` (double quotes) for both strings and "single characters".
 //           Kotlin's single quotes `'/'` are NOT an alternate string syntax; they
 //           specifically mean `Char`, and `'/' == "/"` would not even compile.
@@ -78,8 +72,6 @@ private const val SEPARATOR: Char = '/'
 // Why:      When a name component contains a literal `/`, we swap it for this
 //           look-alike so the segment reads naturally to a human yet contributes ZERO
 //           real separators, keeping depth accounting correct.
-// TS map:   `const SEPARATOR_REPLACEMENT = "∕";` — a length-1 string holding the
-//           division-slash code point.
 // Gotcha:   The source literal `'∕'` is the U+2215 glyph itself, NOT an ASCII `/`.
 //           They are visually near-identical; do not "tidy" it into `'/'` or the
 //           whole defense collapses.
@@ -96,7 +88,6 @@ private const val SEPARATOR_REPLACEMENT: Char = '∕'
 //           constants above; sibling type `String` again declined in favor of `Char`.
 // Why:      Any control character (newline, carriage return, tab, etc.) inside a name
 //           would break single-line rendering, so each one collapses to this space.
-// TS map:   `const CONTROL_REPLACEMENT = " ";` — a length-1 string holding a space.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -119,9 +110,6 @@ private const val CONTROL_REPLACEMENT: Char = ' '
 //           path's depth) and every control character becomes a space (so it cannot
 //           break single-line display). All other characters, including `..`, pass
 //           through unchanged.
-// TS map:   `function sanitizeComponent(name: string): string { return name...; }`.
-//           Kotlin's expression-body `fun f() = expr` is exactly an arrow body
-//           `const f = (name: string): string => name...;`.
 // Gotcha:   Because there is no `return` and no braces, the LAST chained call's value
 //           silently becomes the return. A TS reader scanning for `return` will not
 //           find one; the `=` is doing that job.
@@ -139,7 +127,6 @@ fun sanitizeComponent(name: String): String =
     //           receiver that the following `.map { ... }` and `.joinToString(...)`
     //           calls are chained onto. It is the `String` parameter from above.
     // Why:      We begin from the raw name and transform it character by character.
-    // TS map:   the `name` in `[...name].map(...)` below.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -153,10 +140,6 @@ fun sanitizeComponent(name: String): String =
         //           body whose value becomes that element's replacement.
         // Why:      Inspect every character so separators and control characters can
         //           be swapped while everything else is kept.
-        // TS map:   `[...name].map((character) => { ... })`. Kotlin's `{ x -> body }`
-        //           is TS's `(x) => body`; the arrow moves from after the param to
-        //           before it, and braces wrap the whole thing instead of just the
-        //           body.
         // Gotcha:   `String.map` in Kotlin does NOT return a `String`. It returns a
         //           `List<Char>` (an array of characters). That is precisely why the
         //           next line calls `.joinToString("")` to glue the list back into a
@@ -178,9 +161,6 @@ fun sanitizeComponent(name: String): String =
             //           lambda, its value is what `.map` collects for this character.
             // Why:      Choose this character's replacement based on what kind of
             //           character it is.
-            // TS map:   an `if / else if / else` chain (or a ternary). Kotlin's
-            //           subject-less `when {}` is NOT TS's `switch`; there is no
-            //           fall-through and each arm is a full boolean test.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -198,7 +178,6 @@ fun sanitizeComponent(name: String): String =
                 //           look-alike `∕`) that the arm yields when true.
                 // Why:      A real separator inside a name would fake an extra
                 //           directory level, so swap it for the harmless look-alike.
-                // TS map:   `if (character === SEPARATOR) return SEPARATOR_REPLACEMENT;`
                 // Gotcha:   Kotlin's `==` calls structural equality (`.equals`), but on
                 //           `Char` it is a plain value compare, exactly like TS `===`
                 //           on two length-1 strings. The `->` is `when`-arm syntax, not
@@ -217,10 +196,6 @@ fun sanitizeComponent(name: String): String =
                 //           true, the arm yields `CONTROL_REPLACEMENT` (a space).
                 // Why:      Control characters break single-line rendering, so collapse
                 //           each to a space.
-                // TS map:   `if (isISOControl(character)) return CONTROL_REPLACEMENT;`
-                //           — TS has no built-in `isISOControl`; you would test the
-                //           code point ranges yourself (e.g. `cp <= 0x1f || (cp >= 0x7f
-                //           && cp <= 0x9f)`).
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -234,7 +209,6 @@ fun sanitizeComponent(name: String): String =
                 //           `.map` collects for an ordinary character.
                 // Why:      Every other character (letters, digits, `.`, `..`, spaces,
                 //           Unicode) is safe and must pass through untouched.
-                // TS map:   `return character;` (the `else` branch of the chain).
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -251,9 +225,6 @@ fun sanitizeComponent(name: String): String =
         //           return value (it is the tail of the expression body).
         // Why:      `.map` gave us a list of characters; the function must return a
         //           `String`, so we glue them together with no separator.
-        // TS map:   `.join("")`. Kotlin's `joinToString(separator = "")` is TS's
-        //           `Array.prototype.join("")`; the `separator =` is just Kotlin
-        //           named-argument syntax, not something TS has.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -274,7 +245,6 @@ fun sanitizeComponent(name: String): String =
 //           first so the join adds exactly one path level. The prefix is already the
 //           output of earlier joins (already sanitized), so only `name` needs
 //           neutralizing here.
-// TS map:   `function joinDisplayPath(prefix: string, name: string): string { ... }`.
 // Gotcha:   This is two SEPARATE positional params, not a single options object. (The
 //           house style normally prefers one destructured object parameter, but this
 //           is finished, on-device-tested code; it is being explained, not rewritten.)
@@ -293,7 +263,6 @@ fun joinDisplayPath(prefix: String, name: String): String {
     //           `String` from the function's return type.
     // Why:      Neutralize the child name once so the path-building below cannot widen
     //           depth or break single-line display.
-    // TS map:   `const segment = sanitizeComponent(name);`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -315,9 +284,6 @@ fun joinDisplayPath(prefix: String, name: String): String {
     //           return just the bare sanitized segment with no leading separator;
     //           otherwise we glue the parent path, a `/`, and the new segment into one
     //           level deeper.
-    // TS map:   `return prefix === "" ? segment : `${prefix}${SEPARATOR}${segment}`;`.
-    //           Kotlin's `$x` is TS's `${x}` inside template literals; Kotlin's
-    //           `if/else` expression is TS's `cond ? a : b`.
     // Gotcha:   `$SEPARATOR` splices a `Char` directly into a string; there is no
     //           explicit `.toString()`. In TS you would just interpolate the length-1
     //           string the same way.

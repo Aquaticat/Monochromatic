@@ -8,7 +8,6 @@
 //           makes it public to the binary.
 // Why:      Demo VT content is intentionally separate from the engine so PTY I/O
 //           can replace only the feeder later.
-// TS map:   `export * as demo from "./demo";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -18,7 +17,6 @@ pub mod demo;
 
 // What:     `pub mod engine;` exposes the libghostty-vt wrapper.
 // Why:      The binary and tests need to feed bytes, resize, scroll, and render.
-// TS map:   `export * as engine from "./engine";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -29,7 +27,6 @@ pub mod engine;
 // What:     `pub mod error;` exposes the crate error type.
 // Why:      Engine methods share one typed error instead of returning raw FFI
 //           errors directly.
-// TS map:   `export * as error from "./error";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -39,7 +36,6 @@ pub mod error;
 
 // What:     `pub mod input;` exposes keyboard-to-terminal byte encoding.
 // Why:      The binary writes Slint key events to the PTY through this pure mapper.
-// TS map:   `export * as input from "./input";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -50,7 +46,6 @@ pub mod input;
 // What:     `pub mod launcher;` exposes desktop-shell setup helpers.
 // Why:      The binary needs to stamp the Wayland app id before creating the
 //           Slint window.
-// TS map:   `export * as launcher from "./launcher";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -60,7 +55,6 @@ pub mod launcher;
 
 // What:     `pub mod pty;` exposes interactive PTY process management.
 // Why:      The binary needs shell spawning, output events, input writes, and resize.
-// TS map:   `export * as pty from "./pty";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -71,7 +65,6 @@ pub mod pty;
 // What:     `pub mod render;` exposes renderer-neutral cell and snapshot types.
 // Why:      The engine returns these plain models, and the binary converts them
 //           to Slint structs.
-// TS map:   `export * as render from "./render";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -82,7 +75,6 @@ pub mod render;
 // What:     `pub mod scroll;` exposes pixel-to-row scroll mapping.
 // Why:      The bridge from Slint pixels to libghostty-vt rows is pure logic and
 //           has unit tests.
-// TS map:   `export * as scroll from "./scroll";`
 //
 // In TS you'd write (pseudocode):
 // ```ts

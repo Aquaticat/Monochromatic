@@ -28,7 +28,6 @@
 //           lives in, reachable elsewhere as
 //           `dev.monochromatic.musicplayer.PlaybackService`.
 // Why:      So the manifest and the activity can refer to the service class.
-// TS map:   No 1:1 equivalent — TS module identity is the file path; no `package`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -40,7 +39,6 @@ package dev.monochromatic.musicplayer
 //           how I was started" message object. `onBind` receives one; `onStart`-style
 //           binds compare its action.
 // Why:      `onBind` inspects the binding `Intent`'s action.
-// TS map:   `import { Intent } from "android/content";`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -50,7 +48,6 @@ import android.content.Intent
 
 // What:     `import android.net.Uri` pulls in `Uri`, Android's parsed URI type.
 // Why:      `reloadFromRoot` takes a tree `Uri`.
-// TS map:   `import { Uri } from "android/net";`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -61,8 +58,6 @@ import android.net.Uri
 // What:     `import android.os.Binder` pulls in `Binder`, the base class for a local
 //           IPC stub. Subclassing it gives the activity a direct in-process handle.
 // Why:      The inner `LocalBinder` extends `Binder`.
-// TS map:   `import { Binder } from "android/os";` — a base class for a same-process
-//           handle object.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -73,7 +68,6 @@ import android.os.Binder
 // What:     `import android.os.IBinder` pulls in `IBinder`, the INTERFACE type a bound
 //           service returns from `onBind`.
 // Why:      `onBind`'s declared return type is `IBinder?`.
-// TS map:   `import { IBinder } from "android/os";` — an interface type.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -85,8 +79,6 @@ import android.os.IBinder
 //           message loop. `Looper.getMainLooper()` is the main/UI thread's looper.
 // Why:      `BrainPlayer` is built on the main looper so its callbacks run on the UI
 //           thread.
-// TS map:   `import { Looper } from "android/os";` — "the event loop of a thread"; JS
-//           has only one, so the per-thread part has no twin.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -97,7 +89,6 @@ import android.os.Looper
 // What:     `import android.util.Log` pulls in `Log`, Android's logger
 //           (`Log.i(tag, msg)`).
 // Why:      We log lifecycle events and load counts.
-// TS map:   `import { Log } from "android/util";` — `Log.i` ~ `console.info` with a tag.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -109,7 +100,6 @@ import android.util.Log
 //           media3 object that exposes a player to the system (notification,
 //           lockscreen, external controllers).
 // Why:      The service builds and owns one `MediaSession`.
-// TS map:   `import { MediaSession } from "media3/session";`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -121,8 +111,6 @@ import androidx.media3.session.MediaSession
 //           `MediaSessionService`, the media3 BASE CLASS for a service that hosts one
 //           or more sessions (it wires up the foreground notification machinery).
 // Why:      `PlaybackService` EXTENDS `MediaSessionService`.
-// TS map:   `import { MediaSessionService } from "media3/session";` — an abstract base
-//           service class.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -134,8 +122,6 @@ import androidx.media3.session.MediaSessionService
 //           type that bounds the lifetime of a group of coroutines (cancel the scope,
 //           cancel all its coroutines).
 // Why:      The service keeps a `scope` for its library-load coroutines.
-// TS map:   `import { CoroutineScope } from "kotlinx/coroutines";` — mentally "an
-//           AbortController-like owner for a set of async tasks."
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -146,8 +132,6 @@ import kotlinx.coroutines.CoroutineScope
 // What:     `import kotlinx.coroutines.Dispatchers` pulls in `Dispatchers`; we use
 //           `Dispatchers.Main` (the UI thread) for the scope.
 // Why:      The load coroutine touches the controller/UI state, so it runs on Main.
-// TS map:   No real TS equivalent — JS has one event loop. Mentally `Dispatchers.Main`
-//           IS that single UI event loop.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -158,8 +142,6 @@ import kotlinx.coroutines.Dispatchers
 // What:     `import kotlinx.coroutines.Job` pulls in `Job`, the cancelable HANDLE to a
 //           running coroutine (returned by `launch`).
 // Why:      `loadJob` holds the in-flight load so a newer load can cancel it.
-// TS map:   `import { Job } from "kotlinx/coroutines";` — like a cancelable task
-//           handle / an `AbortController`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -172,8 +154,6 @@ import kotlinx.coroutines.Job
 //           failure does not cancel its siblings or the scope).
 // Why:      The scope uses a `SupervisorJob` so a failed load does not tear down the
 //           scope for future loads.
-// TS map:   No TS equivalent; mentally "an error boundary where one task's failure
-//           doesn't abort the others."
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -186,9 +166,6 @@ import kotlinx.coroutines.SupervisorJob
 //           function called with dot-syntax; you must import it for `scope.cancel()`
 //           to resolve.
 // Why:      `onDestroy` calls `scope.cancel()` to stop any in-flight load.
-// TS map:   No extension functions in TS; mentally `cancel(scope)` /
-//           `abortController.abort()`. Import as
-//           `import { cancel } from "kotlinx/coroutines";`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -202,9 +179,6 @@ import kotlinx.coroutines.cancel
 //           `scope.launch { ... }` call.
 // Why:      The two load methods use `scope.launch { ... }` to do the source scan in
 //           the background.
-// TS map:   No extension functions; mentally `launch(scope, async () => { ... })` —
-//           like calling an async function WITHOUT awaiting (returns a cancelable
-//           handle). Import as `import { launch } from "kotlinx/coroutines";`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -219,8 +193,6 @@ import kotlinx.coroutines.launch
 //           Android instantiates the service for us.
 // Why:      Subclassing `MediaSessionService` is what makes this a hostable media
 //           service with the foreground-notification machinery.
-// TS map:   `class PlaybackService extends MediaSessionService { ... }` (the `()` is the
-//           implicit `super()` call).
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -239,9 +211,6 @@ class PlaybackService : MediaSessionService() {
     // Why:      The controller is created in `onCreate` (Android calls that after
     //           construction), so we cannot initialize it on the declaration line, yet
     //           we want it to stay non-null everywhere it is used.
-    // TS map:   `private controller!: PlayerController;` — TS's DEFINITE-ASSIGNMENT
-    //           assertion (the `!`) is the closest analogue: "trust me, it's assigned
-    //           before use."
     // Gotcha:   Reading a `lateinit` field BEFORE it is assigned throws
     //           `UninitializedPropertyAccessException` at runtime (it is not null; it is
     //           "not yet set"). `lateinit` only works on non-null `var`s of reference
@@ -256,7 +225,6 @@ class PlaybackService : MediaSessionService() {
     //           deferred-init non-null field (see `controller` for what `lateinit`
     //           means): the media3 projection of the brain.
     // Why:      Also built in `onCreate`, so it needs `lateinit` for the same reason.
-    // TS map:   `private brainPlayer!: BrainPlayer;`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -269,7 +237,6 @@ class PlaybackService : MediaSessionService() {
     // Why:      The session exists only between `onCreate` and `onDestroy`; modelling it
     //           as nullable lets `onDestroy` clear it and lets `onGetSession` return it
     //           (possibly null).
-    // TS map:   `private session: MediaSession | null = null;`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -281,7 +248,6 @@ class PlaybackService : MediaSessionService() {
     //           reassignable boolean field, initialised `false`.
     // Why:      Guards the one-time library load so the activity signal and the headless
     //           self-load do not double it.
-    // TS map:   `private libraryLoaded = false;`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -298,8 +264,6 @@ class PlaybackService : MediaSessionService() {
     //           `Dispatchers.Main` (run on the UI thread).
     // Why:      A main-thread scope for the cursor I/O of the initial library query; the
     //           supervisor job keeps one failed load from killing the scope.
-    // TS map:   No clean TS equivalent. Mentally: `const scope = new CoroutineScope({ job: supervisorJob(), dispatcher: MAIN })`
-    //           — an async-task owner pinned to the UI loop with an error boundary.
     // Gotcha:   The `+` is NOT numeric addition; it is operator overloading that MERGES
     //           coroutine-context elements. TS has no such operator overloading.
     //
@@ -319,7 +283,6 @@ class PlaybackService : MediaSessionService() {
     //           superseding the initial self-load) can cancel it first; without this a
     //           slow MediaStore self-load could deliver after a fast folder scan and
     //           wrongly overwrite the chosen library.
-    // TS map:   `private loadJob: Job | null = null;` — a cancelable task handle or null.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -332,7 +295,6 @@ class PlaybackService : MediaSessionService() {
     //           constructor `LocalBinder()` (no `new` keyword).
     // Why:      `onBind` hands this same instance to the activity for direct
     //           (same-process) access to the brain.
-    // TS map:   `private readonly localBinder: LocalBinder = new LocalBinder();`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -350,9 +312,6 @@ class PlaybackService : MediaSessionService() {
     //           (same process), plus a permission-gated library-load trigger; being
     //           `inner` is what lets it forward to the outer service's `controller` and
     //           methods.
-    // TS map:   TS has no `inner class`; the usual workaround is capturing the outer
-    //           `this` (e.g. `const self = this`) or using arrow methods. Picture
-    //           `class LocalBinder extends Binder { constructor(private outer: PlaybackService) {} }`.
     // Gotcha:   Inside `LocalBinder`, bare `this` is the BINDER, not the service; the
     //           service is `this@PlaybackService` (see the qualified-this lines below).
     //
@@ -372,8 +331,6 @@ class PlaybackService : MediaSessionService() {
         // Why:      It exposes the service-owned brain to the activity, always reflecting
         //           the service's current `controller` (recomputed on each access, so it
         //           is never a stale snapshot).
-        // TS map:   `get controller(): PlayerController { return this.outer.controller; }`
-        //           — a getter that delegates to the captured outer instance.
         // Gotcha:   `this@PlaybackService` is REQUIRED because bare `this` here is the
         //           `LocalBinder`; the `@Name` qualifies which `this` you mean.
         //
@@ -391,7 +348,6 @@ class PlaybackService : MediaSessionService() {
         //           via qualified `this`.
         // Why:      The activity calls this (once it has the audio grant) to ask the
         //           service to load the library; the binder just relays it inward.
-        // TS map:   `ensureLibraryLoaded(): void { return this.outer.ensureLibraryLoaded(); }`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -406,7 +362,6 @@ class PlaybackService : MediaSessionService() {
         //           `reloadFromRoot(treeUri)`.
         // Why:      The activity calls this after taking a persistable grant for a picked
         //           folder; the binder relays the chosen tree URI to the service.
-        // TS map:   `reloadFromRoot(treeUri: Uri): void { return this.outer.reloadFromRoot(treeUri); }`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -421,7 +376,6 @@ class PlaybackService : MediaSessionService() {
         // Why:      The activity calls this when it comes to the foreground (on rebind), so
         //           the service re-scans the source and reconciles the queue (live update),
         //           preserving the playing track.
-        // TS map:   `rescan(): void { return this.outer.rescan(); }`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -434,7 +388,6 @@ class PlaybackService : MediaSessionService() {
         // Why:      The activity calls this in `onStop` (before unbinding) so the live resume
         //           position is captured even when the user backgrounds mid-track while
         //           playing (no state-change event fires then, so `onPersist` would miss it).
-        // TS map:   `saveSession(): void { return this.outer.saveSession(); }`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -448,7 +401,6 @@ class PlaybackService : MediaSessionService() {
     //           when replacing a base method.
     // Why:      Build the brain, the projection, and the session, start the notification
     //           machinery, and (if a grant persists) self-load the library.
-    // TS map:   `override onCreate(): void { ... }`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -459,7 +411,6 @@ class PlaybackService : MediaSessionService() {
         //           `super` refers to `MediaSessionService`; this runs its setup before
         //           ours.
         // Why:      The framework must do its own initialization before we add a session.
-        // TS map:   `super.onCreate();`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -471,7 +422,6 @@ class PlaybackService : MediaSessionService() {
         //           `flavor=${BuildConfig.FLAVOR}` suffix: the media3/hybrid flavors are gone,
         //           so there is one engine and no FLAVOR constant.)
         // Why:      Record service creation in logcat, for verification.
-        // TS map:   `console.info(`[${LOG_TAG}] PlaybackService.onCreate`);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -484,7 +434,6 @@ class PlaybackService : MediaSessionService() {
         //           factory that builds the audio engine, passed `this` (the service as a
         //           `Context`).
         // Why:      Create the one brain, wired to the flavor's audio engine.
-        // TS map:   `this.controller = new PlayerController(createAudioEngine(this));`.
         // Gotcha:   This is the assignment the `lateinit` promised; reading `controller`
         //           before this line would throw.
         //
@@ -498,7 +447,6 @@ class PlaybackService : MediaSessionService() {
         //           brain and the MAIN looper (`Looper.getMainLooper()` returns the UI
         //           thread's looper).
         // Why:      Build the media3 projection of the brain, pinned to the UI thread.
-        // TS map:   `this.brainPlayer = new BrainPlayer(this.controller, Looper.getMainLooper());`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -511,7 +459,6 @@ class PlaybackService : MediaSessionService() {
         // Why:      Persist the session on any meaningful change so a later kill keeps the
         //           latest selection/settings. This is SEPARATE from `onStateChanged`, which
         //           `BrainPlayer` already owns for the MediaSession projection.
-        // TS map:   `this.controller.onPersist = () => this.saveSession();`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -523,7 +470,6 @@ class PlaybackService : MediaSessionService() {
         //           constructs a builder seeded with the service context and the projected
         //           player; `.build()` finalises it into the immutable `MediaSession`.
         // Why:      Create the session that exposes the brain to the system.
-        // TS map:   `const built: MediaSession = new MediaSession.Builder(this, this.brainPlayer).build();`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -533,7 +479,6 @@ class PlaybackService : MediaSessionService() {
         // What:     `session = built` stores the freshly built session into the nullable
         //           `session` field.
         // Why:      Keep the session so `onGetSession`/`onDestroy` can use it.
-        // TS map:   `this.session = built;`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -547,7 +492,6 @@ class PlaybackService : MediaSessionService() {
         //           notification manager's own player listener for this session.)
         // Why:      Make the system notification/foreground work without any app-side
         //           `MediaController`.
-        // TS map:   `this.addSession(built);`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -564,7 +508,6 @@ class PlaybackService : MediaSessionService() {
         //           up.)
         // Why:      On a headless restart (no activity yet) we can self-load the library if
         //           either grant persists.
-        // TS map:   `if (LibraryRoot.heldRoot(this) !== null || hasAudioPermission(this)) { ... }`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -576,7 +519,6 @@ class PlaybackService : MediaSessionService() {
             // What:     `ensureLibraryLoaded()` calls this service's own load method
             //           (implicit `this`).
             // Why:      Kick off the headless self-load.
-            // TS map:   `this.ensureLibraryLoaded();`.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -592,7 +534,6 @@ class PlaybackService : MediaSessionService() {
     //           caller's identity, unused here) and returns the nullable `MediaSession?`,
     //           as an EXPRESSION body returning the `session` field directly.
     // Why:      We expose our single session to any controller that connects.
-    // TS map:   `override onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession | null { return this.session; }`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -611,9 +552,6 @@ class PlaybackService : MediaSessionService() {
     //           system/media binds).
     // Why:      The in-app activity uses a private action to obtain the `LocalBinder`;
     //           every other binder request falls through to the framework.
-    // TS map:   `override onBind(intent: Intent | null): IBinder | null { return intent?.action === ACTION_LOCAL_BIND ? this.localBinder : super.onBind(intent); }`
-    //           — Kotlin's `if/else` is the ternary; `intent?.action` is TS optional
-    //           chaining.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -633,7 +571,6 @@ class PlaybackService : MediaSessionService() {
     //           `libraryLoaded` guard keeps it to a single load. A library is available at
     //           this point, so the charging-plus-idle peak sweep is enqueued here too
     //           (`PeakSweepScheduler.enqueue` is idempotent).
-    // TS map:   `ensureLibraryLoaded(): void { ... }`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -643,7 +580,6 @@ class PlaybackService : MediaSessionService() {
         // What:     `if (libraryLoaded) { return }` is an early-return guard: if the load
         //           already happened, exit (returning `Unit`).
         // Why:      Keep the load to a single run no matter how many callers ask.
-        // TS map:   `if (this.libraryLoaded) return;`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -652,7 +588,6 @@ class PlaybackService : MediaSessionService() {
         if (libraryLoaded) {
             // What:     `return` exits the method early (bare `return`, returning `Unit`).
             // Why:      Nothing more to do; the library is already (being) loaded.
-            // TS map:   `return;`.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -662,7 +597,6 @@ class PlaybackService : MediaSessionService() {
         }
         // What:     `libraryLoaded = true` flips the one-time guard before starting work.
         // Why:      Mark the load as begun so a re-entrant call bails at the guard above.
-        // TS map:   `this.libraryLoaded = true;`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -672,7 +606,6 @@ class PlaybackService : MediaSessionService() {
         // What:     `PeakSweepScheduler.enqueue(this)` schedules the background true-peak
         //           sweep (idempotent: enqueuing twice is a no-op).
         // Why:      A library exists now, so the charging-plus-idle sweep can be queued.
-        // TS map:   `PeakSweepScheduler.enqueue(this);`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -682,7 +615,6 @@ class PlaybackService : MediaSessionService() {
         // What:     `controller.beginLoad()` tells the brain a load is in progress so the
         //           screen shows a loading notice instead of the empty-library message.
         // Why:      Avoid flashing "no music" while a (possibly slow) scan runs.
-        // TS map:   `this.controller.beginLoad();`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -694,7 +626,6 @@ class PlaybackService : MediaSessionService() {
         //           is null, do nothing.
         // Why:      A newer load supersedes an older in-flight one, so we cancel the old
         //           Job first to avoid a stale result overwriting the new library.
-        // TS map:   `this.loadJob?.cancel();` (or `this.loadJob?.abort();`).
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -708,9 +639,6 @@ class PlaybackService : MediaSessionService() {
         //           `Job` (it does NOT block or await here).
         // Why:      Do the source scan in the background while keeping a handle so a later
         //           load can cancel this one.
-        // TS map:   `this.loadJob = launch(this.scope, async () => { ... });` — like
-        //           calling an async function without awaiting and keeping its cancelable
-        //           handle.
         // Gotcha:   `launch { }` returns immediately with a `Job`; the lambda runs later.
         //           It is NOT `await` (that would be `withContext`/`async { }.await()`).
         //
@@ -730,9 +658,6 @@ class PlaybackService : MediaSessionService() {
             //           inside the `launch` lambda bare `this` is the coroutine scope, so we
             //           name the service explicitly to pass it as the context.
             // Why:      Fetch the active library off the UI thread's coroutine.
-            // TS map:   `const tracks = await LibrarySource.load(this);` — Kotlin's
-            //           `this@PlaybackService` disambiguates which `this`, which TS arrow
-            //           functions avoid by capturing the lexical `this`.
             // Gotcha:   `this@PlaybackService` is needed because the lambda's bare `this` is
             //           the coroutine receiver, not the service.
             //
@@ -746,7 +671,6 @@ class PlaybackService : MediaSessionService() {
             //           model defaults when none was saved.
             // Why:      The self-load is the RESTORE path: it must reapply the saved settings
             //           and reselect the saved track, not start blank.
-            // TS map:   `const session = SessionStore.load(this);`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -760,7 +684,6 @@ class PlaybackService : MediaSessionService() {
             //           auto-correction.
             // Why:      Resume where the user left off, self-correcting for files added,
             //           removed, or renamed since the last run.
-            // TS map:   `this.controller.restoreLibrary(tracks, session);`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -770,7 +693,6 @@ class PlaybackService : MediaSessionService() {
             // What:     `Log.i(LOG_TAG, "PlaybackService restored ${tracks.size} tracks")` logs
             //           the load count (`${tracks.size}` is the list length).
             // Why:      Record how many tracks loaded, for verification.
-            // TS map:   `console.info(`[${LOG_TAG}] PlaybackService restored ${tracks.length} tracks`);`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -785,7 +707,6 @@ class PlaybackService : MediaSessionService() {
     // Why:      Replace the library with a just-picked folder's contents, OVERRIDING the
     //           one-shot `libraryLoaded` guard because an explicit re-pick is meant to
     //           supersede whatever loaded first.
-    // TS map:   `reloadFromRoot(treeUri: Uri): void { ... }`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -796,7 +717,6 @@ class PlaybackService : MediaSessionService() {
         //           "load has happened").
         // Why:      Mark a load as active; unlike `ensureLibraryLoaded` there is no early
         //           guard here because a re-pick intentionally supersedes.
-        // TS map:   `this.libraryLoaded = true;`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -806,7 +726,6 @@ class PlaybackService : MediaSessionService() {
         // What:     `PeakSweepScheduler.enqueue(this)` schedules the background peak sweep
         //           (idempotent).
         // Why:      A new library exists, so re-ensure the sweep is queued.
-        // TS map:   `PeakSweepScheduler.enqueue(this);`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -815,7 +734,6 @@ class PlaybackService : MediaSessionService() {
         PeakSweepScheduler.enqueue(this)
         // What:     `controller.beginLoad()` marks the load in-progress for the UI.
         // Why:      Show the loading notice while the folder scan runs.
-        // TS map:   `this.controller.beginLoad();`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -825,7 +743,6 @@ class PlaybackService : MediaSessionService() {
         // What:     `loadJob?.cancel()` safe-calls cancel on any in-flight load Job.
         // Why:      The re-pick supersedes any running load; cancel it so its result cannot
         //           overwrite the chosen folder.
-        // TS map:   `this.loadJob?.cancel();`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -835,7 +752,6 @@ class PlaybackService : MediaSessionService() {
         // What:     `loadJob = scope.launch { ... }` starts a new background coroutine and
         //           stores its `Job` (see the same pattern in `ensureLibraryLoaded`).
         // Why:      Scan the picked folder off the UI thread, with a cancelable handle.
-        // TS map:   `this.loadJob = launch(this.scope, async () => { ... });`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -851,7 +767,6 @@ class PlaybackService : MediaSessionService() {
             //           `scanRoot`, scanning the picked tree. `this@PlaybackService` is
             //           qualified `this` (the service, not the coroutine receiver).
             // Why:      Fetch the chosen folder's tracks off the UI thread.
-            // TS map:   `const tracks = await LibrarySource.scanRoot(this, treeUri);`.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -861,7 +776,6 @@ class PlaybackService : MediaSessionService() {
             // What:     `controller.openLibrary(tracks)` hands the picked folder's tracks to
             //           the brain.
             // Why:      Deliver the re-pick result to the brain/UI.
-            // TS map:   `this.controller.openLibrary(tracks);`.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -871,7 +785,6 @@ class PlaybackService : MediaSessionService() {
             // What:     `Log.i(LOG_TAG, "PlaybackService loaded ${tracks.size} tracks from picked folder")`
             //           logs the picked-folder load count.
             // Why:      Record the re-pick load for verification.
-            // TS map:   `console.info(`[${LOG_TAG}] PlaybackService loaded ${tracks.length} tracks from picked folder`);`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -888,7 +801,6 @@ class PlaybackService : MediaSessionService() {
     //           safe: it does nothing before the first load, and it does NOTHING WHILE A LOAD
     //           IS IN FLIGHT, so a foreground arriving during the cold-start restore does not
     //           cancel that restore (the in-flight load already yields fresh state).
-    // TS map:   `rescan(): void { ... }`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -904,7 +816,6 @@ class PlaybackService : MediaSessionService() {
         // What:     `if (!libraryLoaded) return` bails before the first load.
         // Why:      Nothing to reconcile until a library has been loaded; the first load is
         //           `ensureLibraryLoaded`'s job, not a rescan's.
-        // TS map:   `if (!this.libraryLoaded) return;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -919,7 +830,6 @@ class PlaybackService : MediaSessionService() {
         //           restore mid-scan and reconcile with `loadedUri == null`, clearing the
         //           restored selection. The in-flight load already produces fresh state, so
         //           skipping is correct (also de-dupes rapid double-foregrounds).
-        // TS map:   `if (this.loadJob?.isActive) return;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -929,7 +839,6 @@ class PlaybackService : MediaSessionService() {
         // What:     `loadJob = scope.launch { ... }` runs the reconcile off the UI thread,
         //           keeping the `Job` handle. Inside: scan the source, then reconcile.
         // Why:      Re-derive the queue from disk now and reconcile it, preserving playback.
-        // TS map:   `this.loadJob = launch(this.scope, async () => { ... });`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -939,7 +848,6 @@ class PlaybackService : MediaSessionService() {
             // What:     `val tracks = LibrarySource.load(this@PlaybackService)` re-resolves the
             //           CURRENT source (held SAF root, else MediaStore) and scans it.
             // Why:      The live state of the source on this foreground.
-            // TS map:   `const tracks = await LibrarySource.load(this);`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -950,7 +858,6 @@ class PlaybackService : MediaSessionService() {
             //           scan, preserving the playing track by URI WITHOUT restarting playback.
             // Why:      The live update: added/removed/renamed files show up, the current track
             //           keeps playing if it survives.
-            // TS map:   `this.controller.reconcileLibrary(tracks);`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -959,7 +866,6 @@ class PlaybackService : MediaSessionService() {
             controller.reconcileLibrary(tracks)
             // What:     `Log.i(...)` records the reconcile count for verification.
             // Why:      Trace the live-update path.
-            // TS map:   `console.info(...);`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -976,7 +882,6 @@ class PlaybackService : MediaSessionService() {
     //           the activity's `onStop` (to capture a mid-track-background position), and from
     //           `onDestroy` (final save). No-op before a library is loaded so it cannot
     //           overwrite a good saved session with an empty one during startup.
-    // TS map:   `saveSession(): void { ... }`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -990,7 +895,6 @@ class PlaybackService : MediaSessionService() {
         //           loaded.
         // Why:      During startup the controller has no real selection yet; saving then would
         //           clobber the persisted session with defaults.
-        // TS map:   `if (!this.libraryLoaded) return;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1001,7 +905,6 @@ class PlaybackService : MediaSessionService() {
         //           `controller.currentSession()` builds a `core.Session` from the live queue +
         //           engine; `this` is the service `Context`.
         // Why:      Durably record where the user is, for the next launch's restore.
-        // TS map:   `SessionStore.save(this, this.controller.currentSession());`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1014,7 +917,6 @@ class PlaybackService : MediaSessionService() {
     //           calls when the service is being destroyed.
     // Why:      Release the session and its player, clear state, and cancel the load
     //           scope so nothing leaks.
-    // TS map:   `override onDestroy(): void { ... }`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1026,7 +928,6 @@ class PlaybackService : MediaSessionService() {
         //           engine are still alive (`currentSession()` reads `engine.positionSec()`);
         //           the releases below tear the engine down, so this must run first. No-op if
         //           the library never loaded.
-        // TS map:   `this.saveSession();`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1040,8 +941,6 @@ class PlaybackService : MediaSessionService() {
         //           against the session. When `session` is null the whole thing is skipped.
         // Why:      Release the session's player and then the session itself, but only if a
         //           session exists.
-        // TS map:   `if (this.session) { this.session.player.release(); this.session.release(); }`
-        //           — `?.run { }` is "if non-null, run this block with the value as `this`."
         // Gotcha:   Inside `run { }` the receiver is `session`, so bare `player`/`release()`
         //           are `session.player`/`session.release()`; this is Kotlin's
         //           receiver-scoped block, with no TS equivalent beyond an explicit `if`.
@@ -1058,7 +957,6 @@ class PlaybackService : MediaSessionService() {
             //           audio focus, buffers, file handles). `player` resolves against the
             //           `run` receiver (`session`).
             // Why:      Free the engine the session was driving.
-            // TS map:   `this.session.player.release();`.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -1067,7 +965,6 @@ class PlaybackService : MediaSessionService() {
             player.release()
             // What:     `release()` releases the session itself (the receiver `session`).
             // Why:      Tear down the media session.
-            // TS map:   `this.session.release();`.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -1077,7 +974,6 @@ class PlaybackService : MediaSessionService() {
         }
         // What:     `session = null` clears the nullable `session` field.
         // Why:      The session is gone; null it so nothing uses a released session.
-        // TS map:   `this.session = null;`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1087,7 +983,6 @@ class PlaybackService : MediaSessionService() {
         // What:     `scope.cancel()` cancels the coroutine scope, stopping any in-flight
         //           library load (`cancel` is the imported extension function).
         // Why:      Don't leave a load coroutine running after the service is destroyed.
-        // TS map:   `this.scope.cancel();` (or `abortController.abort();`).
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1098,7 +993,6 @@ class PlaybackService : MediaSessionService() {
         //           cleanup.
         // Why:      Let `MediaSessionService` finish its destruction once we have released
         //           our resources.
-        // TS map:   `super.onDestroy();`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1112,7 +1006,6 @@ class PlaybackService : MediaSessionService() {
     //           `PlaybackService.ACTION_LOCAL_BIND`.
     // Why:      Hold the private bind-action constant the activity uses to obtain the
     //           `LocalBinder`.
-    // TS map:   `class PlaybackService { static readonly ACTION_LOCAL_BIND = "..."; }`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1126,9 +1019,6 @@ class PlaybackService : MediaSessionService() {
         //           reassigned).
         // Why:      The private bind action the in-app activity uses to obtain the
         //           `LocalBinder`; public so the activity (same package) can reference it.
-        // TS map:   `static readonly ACTION_LOCAL_BIND = "dev.monochromatic.musicplayer.LOCAL_BIND";`
-        //           — Kotlin `const` must be a compile-time literal (stricter than TS
-        //           `const`).
         //
         // In TS you'd write (pseudocode):
         // ```ts

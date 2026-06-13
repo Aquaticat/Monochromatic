@@ -7,29 +7,23 @@
 // Why:      Keep the tests beside the code without inflating
 //           `pty.rs` or its max-lines budget (sibling
 //           `*_tests.rs` files are exempt from the linter).
-// TS map:   `pty.unit.test.ts` beside `pty.ts`.
 
 // What:     `use super::{...};` imports PTY items from the parent module.
 // Why:      Tests exercise the public spawn path and event enum.
-// TS map:   `import { PtyEvent, PtySession } from "./pty"`.
 use super::{PtyEvent, PtySession};
 // What:     `use crate::engine::ViewportGeometry;` imports the shared geometry type.
 // Why:      PTY tests need the same size object as the app.
-// TS map:   `import type { ViewportGeometry } from "./engine"`.
 use crate::engine::ViewportGeometry;
 // What:     `use crate::scroll::DEFAULT_CELL_WIDTH_PX;` imports the shared
 //           terminal cell width. Sibling constants include cell height and
 //           scroll mapping helpers.
 // Why:      The PTY resize fixture should stay aligned with UI and engine metrics.
-// TS map:   `import { DEFAULT_CELL_WIDTH_PX } from "./scroll"`.
 use crate::scroll::DEFAULT_CELL_WIDTH_PX;
 // What:     `use portable_pty::CommandBuilder;` imports the PTY command builder.
 // Why:      The test spawns a deterministic shell command.
-// TS map:   `import { CommandBuilder } from "portable-pty"`.
 use portable_pty::CommandBuilder;
 // What:     `use std::{...};` imports channels and timeouts for the test.
 // Why:      The test waits for output without blocking forever.
-// TS map:   `import { channel, Duration } from "std"`.
 use std::{sync::mpsc, time::Duration};
 
 #[test]

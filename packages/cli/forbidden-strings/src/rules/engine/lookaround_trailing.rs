@@ -2,7 +2,6 @@
 //           troubleshooting-doc suffix from the parent engine module.
 // Why:      Every rejection message should point at the same long-form
 //           resharp workaround document without duplicating the path.
-// TS map:   `import { TROUBLESHOOT_REF } from "./constants";`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -85,7 +84,6 @@ use super::constants::TROUBLESHOOT_REF;
 //           pre-validator the fuzz target catches the panic via
 //           `catch_unwind` only on lucky builds; libfuzzer's panic
 //           hook calls `abort` first on most, halting the run.
-// TS map:   `function quantifiedLookaheadWithSiblingContent(src: string): string | null`.
 //
 // In TS you'd write (pseudocode):
 // ```ts

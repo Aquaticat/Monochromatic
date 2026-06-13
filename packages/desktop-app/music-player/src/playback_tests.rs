@@ -7,34 +7,28 @@
 // Why:      Keep the tests beside the code without inflating
 //           `playback.rs` or its max-lines budget (sibling
 //           `*_tests.rs` files are exempt from the linter).
-// TS map:   `playback.unit.test.ts` beside `playback.ts`.
 
 // What:     `use super::*;` imports everything from the parent module into the
 //           test scope. `super` means "one level up".
 // Why:      Tests need `expand_paths`, `process_sample`, `PathBuf`, etc.
-// TS map:   `import * as parent from "./playback";`
 use super::*;
 // What:     `use std::fs;` brings the filesystem module into scope.
 // Why:      The test builds a real directory tree to walk.
-// TS map:   `import * as fs from "node:fs";`
 use std::fs;
 // What:     `use std::time::{SystemTime, UNIX_EPOCH};`. A clock reading and the
 //           1970 epoch reference point.
 // Why:      Build a unique temp-dir name so reruns do not collide.
-// TS map:   `Date.now()`.
 use std::time::{SystemTime, UNIX_EPOCH};
 
 // What:     `fn unique_temp_dir() -> PathBuf` test helper: make and return a
 //           fresh throwaway directory under the system temp dir.
 // Why:      Verify on a disposable fixture, never real state.
-// TS map:   `function uniqueTempDir(): string`.
 fn unique_temp_dir() -> PathBuf {
     // What:     `let nanos = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_nanos();`.
     //           Current time minus the epoch -> a `Duration`; `.unwrap()`
     //           extracts it (panics only if the clock predates 1970);
     //           `.as_nanos()` gives a `u128` nanosecond count.
     // Why:      A high-resolution component keeps the directory name unique.
-    // TS map:   `const nanos = BigInt(Date.now()) * 1_000_000n;`
     let nanos = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .unwrap()
@@ -44,7 +38,6 @@ fn unique_temp_dir() -> PathBuf {
     //           id and the nanosecond stamp. `std::process::id()` is this
     //           process's pid (a `u32`).
     // Why:      Unique per process and per call.
-    // TS map:   `const dir = path.join(os.tmpdir(), `music-player-expand-${pid}-${nanos}`);`
     let dir = std::env::temp_dir().join(format!(
         "music-player-expand-{}-{}",
         std::process::id(),
@@ -54,22 +47,18 @@ fn unique_temp_dir() -> PathBuf {
     //           any missing parents); `.unwrap()` fails the test on error.
     //           `&dir` lends the path.
     // Why:      The fixture root must exist before we populate it.
-    // TS map:   `fs.mkdirSync(dir, { recursive: true });`
     fs::create_dir_all(&dir).unwrap();
     // What:     `dir`. Tail expression -> return the created path.
     // Why:      Hand the fixture root to the caller.
-    // TS map:   `return dir;`
     dir
 }
 
 // What:     `#[test]` marks the next function as a test case.
 // Why:      `cargo test` discovers and runs it.
-// TS map:   `test("expand_paths ...", () => { ... })`.
 #[test]
 fn expand_paths_walks_directories_recursively_and_sorts() {
     // What:     `let root = unique_temp_dir();`. Make the throwaway fixture.
     // Why:      A real tree to expand.
-    // TS map:   `const root = uniqueTempDir();`
     let root = unique_temp_dir();
 
     // What:     `fs::write(root.join("b.flac"), b"x").unwrap();`. Create a file.
@@ -78,51 +67,41 @@ fn expand_paths_walks_directories_recursively_and_sorts() {
     //           fails the test on I/O error.
     // Why:      Two root files created out of alphabetical order, to prove the
     //           walk sorts them.
-    // TS map:   `fs.writeFileSync(path.join(root, "b.flac"), "x");`
     fs::write(root.join("b.flac"), b"x").unwrap();
     // What:     create the second root file.
     // Why:      Out-of-order sibling.
-    // TS map:   `fs.writeFileSync(path.join(root, "a.flac"), "x");`
     fs::write(root.join("a.flac"), b"x").unwrap();
 
     // What:     `let sub = root.join("sub");`. A subfolder path.
     // Why:      Prove the walk descends one level.
-    // TS map:   `const sub = path.join(root, "sub");`
     let sub = root.join("sub");
     // What:     create the subfolder.
     // Why:      It must exist before adding files.
-    // TS map:   `fs.mkdirSync(sub, { recursive: true });`
     fs::create_dir_all(&sub).unwrap();
     // What:     a file inside the subfolder.
     // Why:      Expected after the root files.
-    // TS map:   `fs.writeFileSync(path.join(sub, "c.flac"), "x");`
     fs::write(sub.join("c.flac"), b"x").unwrap();
 
     // What:     `let nested = sub.join("nested");`. A deeper folder.
     // Why:      Prove the walk descends more than one level.
-    // TS map:   `const nested = path.join(sub, "nested");`
     let nested = sub.join("nested");
     // What:     create the nested folder.
     // Why:      Needed before its file.
-    // TS map:   `fs.mkdirSync(nested, { recursive: true });`
     fs::create_dir_all(&nested).unwrap();
     // What:     a file two levels down.
     // Why:      Expected last.
-    // TS map:   `fs.writeFileSync(path.join(nested, "d.flac"), "x");`
     fs::write(nested.join("d.flac"), b"x").unwrap();
 
     // What:     `let got = expand_paths(vec![root.clone()]);`. Expand the root
     //           folder. `vec![...]` wraps it in a one-element vector;
     //           `root.clone()` copies the path (we reuse `root` afterwards).
     // Why:      Exercise the recursive walk.
-    // TS map:   `const got = expandPaths([root]);`
     let got = expand_paths(vec![root.clone()]);
 
     // What:     `let expected = vec![ ... ];`. The order the walk must produce:
     //           a folder's files (sorted) before its subfolders' files,
     //           depth-first.
     // Why:      Pin the deterministic ordering.
-    // TS map:   `const expected = [ ... ];`
     let expected = vec![
         root.join("a.flac"),
         root.join("b.flac"),
@@ -132,79 +111,64 @@ fn expand_paths_walks_directories_recursively_and_sorts() {
     // What:     `assert_eq!(got, expected);`. Panics (failing the test) unless
     //           the two vectors are equal.
     // Why:      Confirm recursive collection and ordering.
-    // TS map:   `expect(got).toEqual(expected);`
     assert_eq!(got, expected);
 
     // What:     `let single = expand_paths(vec![root.join("a.flac")]);`. Expand a
     //           plain FILE path (not a directory).
     // Why:      A file should pass through unchanged.
-    // TS map:   `const single = expandPaths([path.join(root, "a.flac")]);`
     let single = expand_paths(vec![root.join("a.flac")]);
     // What:     `assert_eq!(single, vec![root.join("a.flac")]);`. One element, the
     //           file itself.
     // Why:      Files are not expanded.
-    // TS map:   `expect(single).toEqual([path.join(root, "a.flac")]);`
     assert_eq!(single, vec![root.join("a.flac")]);
 
     // What:     `let _ = fs::remove_dir_all(&root);`. Delete the throwaway tree;
     //           `let _ =` discards the result (cleanup is best-effort).
     // Why:      Leave no fixture behind.
-    // TS map:   `fs.rmSync(root, { recursive: true, force: true });`
     let _ = fs::remove_dir_all(&root);
 }
 
 // What:     `#[test]` marks the next function as a test case.
 // Why:      Cover the audio-extension predicate directly.
-// TS map:   `test("is_audio_file ...", () => { ... })`.
 #[test]
 fn is_audio_file_matches_extensions_case_insensitively() {
     // What:     `assert!(is_audio_file(Path::new("a.flac")));`. `Path::new(s)`
     //           wraps a `&str` as a `&Path` with no allocation. A `.flac` file
     //           is audio.
     // Why:      Baseline positive.
-    // TS map:   `expect(isAudioFile("a.flac")).toBe(true);`
     assert!(is_audio_file(Path::new("a.flac")));
     // What:     uppercase extension still matches.
     // Why:      The check is case-insensitive.
-    // TS map:   `expect(isAudioFile("A.FLAC")).toBe(true);`
     assert!(is_audio_file(Path::new("A.FLAC")));
     // What:     a mixed-case extension on a nested path matches.
     // Why:      Confirm path components do not affect the extension test.
-    // TS map:   `expect(isAudioFile("/x/y/b.OpUs")).toBe(true);`
     assert!(is_audio_file(Path::new("/x/y/b.OpUs")));
     // What:     `assert!(!is_audio_file(Path::new("cover.jpg")));`. `!` negates;
     //           a non-audio extension is rejected.
     // Why:      Cover art must not enter the queue.
-    // TS map:   `expect(isAudioFile("cover.jpg")).toBe(false);`
     assert!(!is_audio_file(Path::new("cover.jpg")));
     // What:     a dotfile has no extension, so it is rejected.
     // Why:      System files like `.DS_Store` must be skipped.
-    // TS map:   `expect(isAudioFile(".DS_Store")).toBe(false);`
     assert!(!is_audio_file(Path::new(".DS_Store")));
     // What:     an extensionless name is rejected.
     // Why:      Nothing identifies it as audio.
-    // TS map:   `expect(isAudioFile("noext")).toBe(false);`
     assert!(!is_audio_file(Path::new("noext")));
 }
 
 // What:     `#[test]` marks the next function as a test case.
 // Why:      Prove a folder scan keeps only audio files and skips junk.
-// TS map:   `test("expand_paths keeps only audio ...", () => { ... })`.
 #[test]
 fn expand_paths_keeps_only_audio_files_and_skips_junk() {
     // What:     `let root = unique_temp_dir();`. A throwaway fixture directory.
     // Why:      A real folder to scan.
-    // TS map:   `const root = uniqueTempDir();`
     let root = unique_temp_dir();
 
     // What:     create two audio files, deliberately out of alphabetical order.
     // Why:      Confirm they survive and come back sorted.
-    // TS map:   `fs.writeFileSync(join(root, "song.mp3"), "x"); ...`
     fs::write(root.join("song.mp3"), b"x").unwrap();
     fs::write(root.join("tune.flac"), b"x").unwrap();
     // What:     create non-audio and hidden/system files that must be skipped.
     // Why:      These are exactly the kinds of files that leaked into the queue.
-    // TS map:   `fs.writeFileSync(join(root, "cover.jpg"), "x"); ...`
     fs::write(root.join("cover.jpg"), b"x").unwrap();
     fs::write(root.join("playlist.m3u"), b"x").unwrap();
     fs::write(root.join(".DS_Store"), b"x").unwrap();
@@ -213,21 +177,17 @@ fn expand_paths_keeps_only_audio_files_and_skips_junk() {
 
     // What:     `let got = expand_paths(vec![root.clone()]);`. Scan the folder.
     // Why:      Exercise the filtered walk.
-    // TS map:   `const got = expandPaths([root]);`
     let got = expand_paths(vec![root.clone()]);
     // What:     `let expected = vec![root.join("song.mp3"), root.join("tune.flac")];`.
     //           Only the two audio files, sorted (`s` before `t`).
     // Why:      Pin the filtered, ordered result.
-    // TS map:   `const expected = [join(root, "song.mp3"), join(root, "tune.flac")];`
     let expected = vec![root.join("song.mp3"), root.join("tune.flac")];
     // What:     `assert_eq!(got, expected);`. Fail unless equal.
     // Why:      Confirm junk is dropped and audio kept in order.
-    // TS map:   `expect(got).toEqual(expected);`
     assert_eq!(got, expected);
 
     // What:     `let _ = fs::remove_dir_all(&root);`. Best-effort cleanup.
     // Why:      Leave no fixture behind.
-    // TS map:   `fs.rmSync(root, { recursive: true, force: true });`
     let _ = fs::remove_dir_all(&root);
 }
 
@@ -235,47 +195,38 @@ fn expand_paths_keeps_only_audio_files_and_skips_junk() {
 //           floats sit within a tiny tolerance of each other.
 // Why:      Float math is not bit-exact, and a direct `==` on floats is both
 //           fragile and flagged by clippy; compare distances instead.
-// TS map:   `function approxEq(a: number, b: number): boolean`
 fn approx_eq(a: f32, b: f32) -> bool {
     // What:     `const TOLERANCE: f32 = 1e-6;`. Largest allowed difference;
     //           `1e-6` is scientific notation for 0.000001.
     // Why:      Far below any audible difference, loose enough for f32 rounding.
-    // TS map:   `const TOLERANCE = 1e-6;`
     const TOLERANCE: f32 = 1e-6;
     // What:     `(a - b).abs() < TOLERANCE`. Subtract, take the magnitude with
     //           `.abs()`, then compare with `<`. Tail expression -> return.
     // Why:      Distance-based equality avoids the float `==` trap.
-    // TS map:   `return Math.abs(a - b) < TOLERANCE;`
     (a - b).abs() < TOLERANCE
 }
 
 // What:     `#[test]` marks the next function as a test case.
 // Why:      `cargo test` discovers and runs it.
-// TS map:   `test("process_sample ...", () => { ... })`.
 #[test]
 fn process_sample_applies_gain_then_clamps() {
     // What:     `assert!(approx_eq(process_sample(0.0, 1.0), 0.0));`. `assert!(cond)`
     //           panics (failing the test) when `cond` is false.
     // Why:      Silence in must stay silence out, whatever the gain.
-    // TS map:   `expect(approxEq(processSample(0, 1), 0)).toBe(true);`
     assert!(approx_eq(process_sample(0.0, 1.0), 0.0));
 
     // What:     unity gain passes a below-range sample through unchanged.
     // Why:      No clamp when within range.
-    // TS map:   `expect(approxEq(processSample(0.5, 1), 0.5)).toBe(true);`
     assert!(approx_eq(process_sample(0.5, 1.0), 0.5));
 
     // What:     the gain multiplies the sample (0.8 * 0.5 = 0.4).
     // Why:      Prove the combined gain is applied.
-    // TS map:   `expect(approxEq(processSample(0.8, 0.5), 0.4)).toBe(true);`
     assert!(approx_eq(process_sample(0.8, 0.5), 0.4));
 
     // What:     a result above 1.0 (1.5 * 1.0) is clamped to exactly 1.0.
     // Why:      The clamp backstops anything that would exceed full scale.
-    // TS map:   `expect(approxEq(processSample(1.5, 1), 1)).toBe(true);`
     assert!(approx_eq(process_sample(1.5, 1.0), 1.0));
     // What:     a result below -1.0 (-2.0 * 1.0) is clamped to exactly -1.0.
     // Why:      Clamp is symmetric.
-    // TS map:   `expect(approxEq(processSample(-2, 1), -1)).toBe(true);`
     assert!(approx_eq(process_sample(-2.0, 1.0), -1.0));
 }

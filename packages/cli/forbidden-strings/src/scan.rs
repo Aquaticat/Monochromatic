@@ -4,7 +4,6 @@
 // Why:      Each regex rule has its own `Mutex<RegexInner>`, so
 //           parallelizing across rules (different mutexes) is genuine
 //           multi-core work, not contention.
-// TS map:   No equivalent.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -19,8 +18,6 @@ use rayon::prelude::*;
 // Why:      `BTreeSet` deduplicates rule positions encountered via
 //           multiple AC hits AND iterates in sorted order, giving
 //           deterministic per-file output ordering.
-// TS map:   `new Set<number>()` -- TS sets keep insertion order; the
-//           Rust BTreeSet equivalent in TS would sort manually.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -42,10 +39,6 @@ use std::collections::BTreeSet;
 //           all on the same file. OnceLock holds the index for the
 //           whole `scan_content` call without making any caller pay
 //           if no hit ever fires.
-// TS map:   No direct equivalent. Closest pattern in TS is a lazy
-//           getter that memoises into a closure variable -- TS has
-//           no shared-mutable-state-with-races primitive because
-//           there are no real threads.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -67,7 +60,6 @@ use std::sync::OnceLock;
 //           regex rule for full evaluation; `is_word_byte` is the
 //           file-side half of the conditional word-boundary check
 //           (literal-side half is precomputed into `AcMeta::Literal`).
-// TS map:   `import { isWordByte, AcMeta, type RuleSet } from "./rules";`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -83,7 +75,6 @@ use crate::scan_format::{build_line_index, emit_hit};
 // Why:      Pure function (no side effects, no I/O), one file in -> one
 //           Vec out. Pure shape lets callers compose it under any
 //           parallel iterator without sharing mutable state.
-// TS map:   `function scanContent(path: string, content: Uint8Array, rs: RuleSet): string[]`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -106,7 +97,6 @@ pub fn scan_content(path: &str, content: &[u8], rs: &RuleSet) -> Vec<String> {
     //           `SECRET_NEEDLE\0...` exited the scanner with zero hits
     //           even though the literal appeared BEFORE the NUL byte;
     //           the heuristic produced silent false negatives.
-    // TS map:   the removal is in-place; no remaining check.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -123,7 +113,6 @@ pub fn scan_content(path: &str, content: &[u8], rs: &RuleSet) -> Vec<String> {
     //           resharp `find_all` runs. When the AC pass DOES fire a
     //           prefix hit, we run `find_all` exactly once per matching
     //           rule -- not once per AC hit position.
-    // TS map:   `const prefixMatched = new Set<number>();`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -142,7 +131,6 @@ pub fn scan_content(path: &str, content: &[u8], rs: &RuleSet) -> Vec<String> {
     //           per file, only on the first hit, and share across the
     //           AC literal-emit path, the prefix-matched par_iter, and
     //           every residual-shard par_iter.
-    // TS map:   No 1:1; closest is a memoised lazy getter.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -166,7 +154,6 @@ pub fn scan_content(path: &str, content: &[u8], rs: &RuleSet) -> Vec<String> {
         //           `rs.ac_meta`.
         // Why:      We need both literal-rule emissions AND regex-prefix
         //           queueing to fire from the same scan pass.
-        // TS map:   `for (const m of ac.findOverlappingIter(content)) { ... }`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -210,7 +197,6 @@ pub fn scan_content(path: &str, content: &[u8], rs: &RuleSet) -> Vec<String> {
                     //           false-positived on coincidental
                     //           substrings inside base64 blobs and
                     //           similar high-entropy noise.
-                    // TS map:   `if (boundLeft && start > 0 && isWordByte(content[start - 1])) continue;` etc.
                     //
                     // In TS you'd write (pseudocode):
                     // ```ts
@@ -249,7 +235,6 @@ pub fn scan_content(path: &str, content: &[u8], rs: &RuleSet) -> Vec<String> {
     //           a shared `Mutex<RegexInner>` per shard on every file.
     //           See PERF.md: 145 leading-(?i) betterleaks rules
     //           dominate the residual cost on this corpus.
-    // TS map:   `for (const m of ac_ci.findOverlappingIter(content)) { ... }`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -287,8 +272,6 @@ pub fn scan_content(path: &str, content: &[u8], rs: &RuleSet) -> Vec<String> {
         //           which is harder to thread through closures than
         //           owned values; the materialize-and-par_iter pattern
         //           keeps the closure simple.
-        // TS map:   `[...prefixMatched]` -- arrays parallelize via
-        //           Promise.all.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -315,8 +298,6 @@ pub fn scan_content(path: &str, content: &[u8], rs: &RuleSet) -> Vec<String> {
                 //           `Err` arm, so a rule that hit a resharp
                 //           runtime limit reported zero hits -- fail-
                 //           open against a secret-scanning tool.
-                // TS map:   `const r = rr.re.findAll(content); if (r.ok)
-                //           { ... } else { local.push(...) }`.
                 match rr.re.find_all(content) {
                     Ok(matches) => {
                         let li = line_index.get_or_init(|| build_line_index(content));

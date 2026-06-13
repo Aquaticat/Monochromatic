@@ -5,7 +5,6 @@
 //           `u32`, and `usize`; `f32` matches Slint's `float`/`length` mapping.
 // Why:      Rust tests and non-UI callers need a fallback cell width; the Slint
 //           binary replaces this with renderer-measured font metrics at runtime.
-// TS map:   `export const DEFAULT_CELL_WIDTH_PX = 9`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -17,7 +16,6 @@ pub const DEFAULT_CELL_WIDTH_PX: f32 = 9.0;
 //           height in logical pixels. `f32` is chosen for Slint interop; `usize`
 //           would be awkward because Slint passes fractional lengths.
 // Why:      This is the denominator for pixel-to-row scrolling.
-// TS map:   `export const DEFAULT_CELL_HEIGHT_PX = 18`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -29,8 +27,6 @@ pub const DEFAULT_CELL_HEIGHT_PX: f32 = 18.0;
 //           copying, debug printing, and equality for the struct below. `Copy`
 //           is valid because every field is a plain number.
 // Why:      Tests compare mappings, and callers pass them around by value.
-// TS map:   Plain objects are copy-by-reference, but this behaves like a small
-//           immutable value object.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -40,7 +36,6 @@ pub const DEFAULT_CELL_HEIGHT_PX: f32 = 18.0;
 // What:     `pub struct ScrollMapping` declares a public record. Siblings include
 //           tuple structs for unnamed fields and enums for tagged unions.
 // Why:      The UI needs every part of the pixel-to-row split.
-// TS map:   `type ScrollMapping = { ... }`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -54,18 +49,15 @@ pub struct ScrollMapping {
     // What:     `pub pixel_scroll: f32` stores the clamped pixel offset. `f32`
     //           matches Slint; `f64` would add casts without useful precision.
     // Why:      The status text and tests can report the exact pixel position used.
-    // TS map:   `pixelScroll: number`.
     pub pixel_scroll: f32,
     // What:     `pub whole_row_offset: usize` stores a non-negative row count.
     //           Sibling integers include `u32`/`u64`/`i32`; `usize` matches Rust
     //           indexing and libghostty-vt scrollback row counts.
     // Why:      This is the absolute row offset sent to libghostty-vt.
-    // TS map:   `wholeRowOffset: number`.
     pub whole_row_offset: usize,
     // What:     `pub fractional_px: f32` stores the leftover pixels after taking
     //           the whole-row floor.
     // Why:      Slint keeps this fractional motion smooth between row updates.
-    // TS map:   `fractionalPx: number`.
     pub fractional_px: f32,
 }
 
@@ -73,7 +65,6 @@ pub struct ScrollMapping {
 //           pure function. Parameters use `f32` for Slint pixels and `usize` for
 //           row counts because those are the native caller types.
 // Why:      This is the required bridge: floor(pixel / cell_height) plus modulo.
-// TS map:   `export function mapPixelScroll(...): ScrollMapping`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -92,7 +83,6 @@ pub fn map_pixel_scroll(
     //           `if` expression returns one of two `f32` values.
     // Why:      A zero or negative height would divide by zero, so one pixel is
     //           the safe fallback for bad resize input.
-    // TS map:   `const safeCellHeight = cellHeight > 0 ? cellHeight : 1`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -107,7 +97,6 @@ pub fn map_pixel_scroll(
     // What:     `let max_pixel_scroll = max_row_offset as f32 * ...` casts the
     //           row count to `f32`. `usize` cannot multiply by `f32` directly.
     // Why:      Slint scrolls in pixels, but libghostty-vt clamps in rows.
-    // TS map:   `const maxPixelScroll = maxRowOffset * safeCellHeight`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -118,7 +107,6 @@ pub fn map_pixel_scroll(
     // What:     `.clamp(0.0, max_pixel_scroll)` bounds the pixel scroll between
     //           top and bottom. This method returns a new `f32`.
     // Why:      The UI can overshoot during resize or fling; the engine must not.
-    // TS map:   `Math.min(Math.max(pixelScroll, 0), maxPixelScroll)`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -130,7 +118,6 @@ pub fn map_pixel_scroll(
     //           divides pixels by row height, floors to a whole row, and casts to
     //           Rust's index type.
     // Why:      libghostty-vt scrolls in rows, not fractional pixels.
-    // TS map:   `Math.floor(clampedPixel / safeCellHeight)`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -141,7 +128,6 @@ pub fn map_pixel_scroll(
     // What:     `clamped_pixel_scroll - whole_row_offset as f32 * ...` computes
     //           the modulo without `%`, because `%` on floats is easy to misread.
     // Why:      This is the smooth sub-row translation Slint preserves.
-    // TS map:   `clampedPixel - wholeRowOffset * safeCellHeight`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -152,7 +138,6 @@ pub fn map_pixel_scroll(
     // What:     `ScrollMapping { ... }` constructs the record. No trailing `;`
     //           makes it the implicit return value.
     // Why:      Hand all mapping pieces to the engine and UI.
-    // TS map:   `return { pixelScroll, wholeRowOffset, fractionalPx }`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -176,8 +161,6 @@ pub fn map_pixel_scroll(
 // Why:      Keep `scroll.rs` to production code; the tests live
 //           beside it without inflating this file or its max-lines budget
 //           (sibling `*_tests.rs` files are exempt from the linter).
-// TS map:   the `scroll.unit.test.ts` file beside
-//           `scroll.ts`, excluded from the production bundle.
 //
 // In TS you'd write (pseudocode):
 // ```ts

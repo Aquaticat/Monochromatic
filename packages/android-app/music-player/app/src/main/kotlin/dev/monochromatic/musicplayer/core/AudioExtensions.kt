@@ -7,9 +7,6 @@
 // Why:      Without it the symbols would land in the unnamed default package and
 //           collide with everything else; the build expects this file's package
 //           to match its directory path (`.../core/`).
-// TS map:   There is no per-file `package` keyword in TS. The closest mental model
-//           is "this whole file is a module, and its directory `core/` is the
-//           namespace." Importers write `import { isAudioFile } from ".../core/..."`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -55,8 +52,6 @@ package dev.monochromatic.musicplayer.core
 // Why:      The path-splitting code below asks "where is the last `/`?" to isolate the
 //           final path component; naming the slash once keeps that intent legible and
 //           prevents a stray typo'd literal.
-// TS map:   `const SEPARATOR = "/";` — but note TS has no `char`, so the TS value is a
-//           one-character `string`, and TS `const` is closest to Kotlin `const val`.
 // Gotcha:   `'/'` (single quotes) is a `Char` in Kotlin but would be a SyntaxError in
 //           TS, where single and double quotes both make strings. Do not read `'/'` as
 //           a TS string literal.
@@ -76,7 +71,6 @@ private const val SEPARATOR: Char = '/'
 //           because the extension search works one character at a time.
 // Why:      The extension-extraction code asks "where is the last `.`?"; naming it
 //           keeps that search self-documenting and matches `SEPARATOR`'s style.
-// TS map:   `const EXTENSION_DOT = ".";` — again a one-character `string` in TS.
 // Gotcha:   Single quotes = `Char`, not a TS-style string. Same trap as `SEPARATOR`.
 //
 // In TS you'd write (pseudocode):
@@ -109,9 +103,6 @@ private const val EXTENSION_DOT: Char = '.'
 //           what a scan enqueues, so junk never reaches the playback queue. The codec
 //           set matches the desktop's documented support: FLAC, WAV/PCM, MP3, Vorbis
 //           (Ogg), Opus, AAC-LC/ALAC (MP4), and AIFF.
-// TS map:   `const AUDIO_EXTENSIONS: ReadonlySet<string> = new Set([ ... ]);` —
-//           TS's `Set` with `.has(x)` is the direct analogue of Kotlin's `Set` with
-//           the `in` operator (see `isAudioFile` below).
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -159,8 +150,6 @@ val AUDIO_EXTENSIONS: Set<String> = setOf(
 // Why:      Both a leading-dot name (`.DS_Store`) and an extensionless name (`noext`)
 //           must yield "no extension" so neither is mistaken for audio; isolating the
 //           final component first means dots inside parent directories are ignored.
-// TS map:   `function extensionOf(path: string): string | null { ... }` — Kotlin's
-//           `String?` is exactly TS's `string | null` union.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -176,8 +165,6 @@ private fun extensionOf(path: String): String? {
     //           annotation is written.
     // Why:      Isolate the final path component (the filename) so a dot inside a
     //           parent directory name cannot be misread as the extension separator.
-    // TS map:   `const component = path.slice(path.lastIndexOf("/") + 1);` — TS has no
-    //           `substringAfterLast`, so you express it with `lastIndexOf` + `slice`.
     // Gotcha:   When `path` contains NO `'/'` at all, `substringAfterLast` returns the
     //           WHOLE string (not an empty string), so a bare filename like `song.mp3`
     //           still works correctly.
@@ -196,8 +183,6 @@ private fun extensionOf(path: String): String? {
     //           characters long.)
     // Why:      We need the dot's position to (a) reject names with no dot or a leading
     //           dot, and (b) slice the extension out after it.
-    // TS map:   `const dotIndex = component.lastIndexOf(".");` — character-identical
-    //           idea; TS `lastIndexOf` also returns `-1` when absent.
     // Gotcha:   `-1` for "not found" is the load-bearing detail that the next `if`
     //           guard depends on.
     //
@@ -216,7 +201,6 @@ private fun extensionOf(path: String): String? {
     // Why:      Collapsing both rejection cases into one `<= 0` test matches the Rust
     //           `Path::extension` rule exactly: a dotfile and an extensionless file are
     //           treated the same — neither has an extension.
-    // TS map:   `if (dotIndex <= 0) { ... }` — character-identical in TS.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -230,7 +214,6 @@ private fun extensionOf(path: String): String? {
         //           Kotlin's "no value" — the same word and idea as TS `null`.
         // Why:      Signal "this path has no extension" so the caller (`isAudioFile`)
         //           can reject it without crashing.
-        // TS map:   `return null;` — identical.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -249,8 +232,6 @@ private fun extensionOf(path: String): String? {
     //           This is the function's normal return value.
     // Why:      The allowlist stores lowercased extensions, so we lowercase here once to
     //           make the membership check case-insensitive (`SONG.FLAC` matches `flac`).
-    // TS map:   `return component.slice(dotIndex + 1).toLowerCase();` — Kotlin
-    //           `.substring(i)` ↔ TS `.slice(i)`, and `.lowercase()` ↔ `.toLowerCase()`.
     // Gotcha:   `.lowercase()` allocates a fresh string; it does NOT mutate `component`.
     //           (TS `.toLowerCase()` behaves the same, so no surprise here.)
     //
@@ -272,7 +253,6 @@ private fun extensionOf(path: String): String? {
 //           belongs in a music queue. Faithful to the Rust `is_audio_file`.
 // Why:      One canonical predicate for "is this audio?" keeps every code path that
 //           builds a queue consistent.
-// TS map:   `function isAudioFile(path: string): boolean { ... }`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -293,10 +273,6 @@ fun isAudioFile(path: String): Boolean {
     //               stripped the `null` possibility away).
     // Why:      A path with no extension is not audio; bail out early with `false` and,
     //           on the happy path, get a guaranteed-non-null `extension` to test next.
-    // TS map:   TS has no Elvis-with-`return`. Write it as an explicit null check:
-    //             `const extension = extensionOf(path);`
-    //             `if (extension === null) return false;`
-    //           (TS's `??` only substitutes a value; it cannot host a `return`.)
     // Gotcha:   Putting a `return` on the RIGHT of an operator is alien to TS. Read
     //           `?: return false` as "if null, leave the function returning false",
     //           NOT as "assign the result of `return`".
@@ -314,8 +290,6 @@ fun isAudioFile(path: String): Boolean {
     //           true/false answer as the function's result.
     // Why:      This is the actual allowlist decision: lowercased extension present in
     //           the set ⇒ audio file.
-    // TS map:   `return AUDIO_EXTENSIONS.has(extension);` — Kotlin `x in set` ↔ TS
-    //           `set.has(x)`.
     // Gotcha:   Kotlin's `in` is NOT JavaScript/TypeScript's `in`. JS `"key" in obj`
     //           checks for an OBJECT PROPERTY KEY; Kotlin `x in collection` checks
     //           collection MEMBERSHIP via `.contains`. Same two letters, different
@@ -343,10 +317,6 @@ fun isAudioFile(path: String): Boolean {
 // Why:      Expose the pure per-directory rule the Rust walk uses for the files of a
 //           single folder, so the deferred recursive traversal can reuse it once per
 //           directory without re-implementing filter+sort.
-// TS map:   TS has no expression-body function syntax, so write a normal one-line
-//           function: `function audioFilesSorted(names: string[]): string[] { return ...; }`.
-//           Kotlin's read-only `List<String>` maps to TS `readonly string[]` (or just
-//           `string[]`).
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -371,11 +341,6 @@ fun audioFilesSorted(names: List<String>): List<String> =
     // Why:      Filter junk out, then put the surviving audio files in a stable,
     //           predictable order for the queue; cross-directory ordering is handled
     //           elsewhere by the (future) traversal.
-    // TS map:   `return names.filter(isAudioFile).slice().sort();` — Kotlin `.sorted()`
-    //           returns a NEW sorted list, whereas TS `.sort()` sorts IN PLACE and
-    //           returns the same array, hence the `.slice()` copy first to stay pure.
-    //           `::isAudioFile` (function reference) is just passing `isAudioFile`
-    //           by name in TS.
     // Gotcha:   `.sorted()` does NOT mutate `names` (it returns a fresh list); TS's
     //           `.sort()` WOULD mutate, so the TS translation must copy first to match
     //           this function's purity. Also: this sort is case-SENSITIVE, so `"Z.mp3"`

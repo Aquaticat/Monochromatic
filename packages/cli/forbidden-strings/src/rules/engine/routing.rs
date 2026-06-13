@@ -32,7 +32,6 @@
 //           `(?:` must NOT trigger -- the regex crate handles them --
 //           so the lookbehind discriminator is "the byte after `(?<`
 //           is `=` or `!`", not "the regex contains `(?<`".
-// TS map:   `function requiresResharp(src: string): boolean`.
 //
 // In TS you'd write (pseudocode):
 // ```ts

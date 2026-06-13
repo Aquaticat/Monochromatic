@@ -36,9 +36,6 @@
 // Why:      We need every file in this app to share one namespace so `Track`,
 //           `LibraryRoot`, `PlaybackService`, etc. can see each other without
 //           fully-qualified names.
-// TS map:   TS has no `package` keyword; the closest idea is "this file lives in a
-//           directory that forms an implicit module group", except Kotlin's
-//           package name is written explicitly and need not match the folder.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -52,9 +49,6 @@ package dev.monochromatic.musicplayer
 //           content resolver, permissions state, etc.
 // Why:      The functions below take a `Context` so they can resolve the held
 //           folder, check the audio permission, and reach the content resolver.
-// TS map:   A plain named import: `import { Context } from "android/content";`.
-//           There is no Android `Context` analogue in TS; mentally it is a
-//           god-object passed around to reach platform services.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -68,9 +62,6 @@ import android.content.Context
 //           it is a structured object with scheme/authority/path parts.
 // Why:      The library source is identified by a `Uri` (the granted folder's tree
 //           URI, or a MediaStore URI), so we need this type to talk about it.
-// TS map:   `import { Uri } from "android/net";`. Closest TS analogue is the
-//           built-in `URL` class, but Android `Uri` also models `content://`
-//           provider URIs that `URL` does not.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -82,9 +73,6 @@ import android.net.Uri
 //           that writes lines to "logcat" (the device log stream developers read).
 // Why:      The folder-scan fallback below logs a warning when an entire scan fails
 //           so the failure is visible in logcat instead of silently swallowed.
-// TS map:   `import { Log } from "android/util";` — think of it as the platform's
-//           `console`, where `Log.w(tag, msg, throwable)` is roughly
-//           `console.warn(tag, msg, error)`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -99,9 +87,6 @@ import android.util.Log
 // Why:      The scan runs inside a coroutine; we must catch real failures but
 //           RE-THROW `CancellationException` so structured cancellation (parent
 //           cancels child) keeps working. See the catch clauses below.
-// TS map:   `import { CancellationException } from "kotlinx/coroutines";`. Closest
-//           TS analogue is the `DOMException` with name `"AbortError"` produced by
-//           an aborted `AbortController` — you generally must not swallow it.
 // Gotcha:   In TS a thrown async error is just an `Error`; here cancellation is a
 //           distinct exception class you are REQUIRED to re-throw, not absorb.
 //
@@ -121,10 +106,6 @@ import kotlinx.coroutines.CancellationException
 // Why:      The library source is global, stateless app behavior shared by every
 //           caller; a singleton namespace of functions is the right shape, and it
 //           keeps `LibrarySource.load(...)` callable from anywhere with no setup.
-// TS map:   The closest TS shape is a module-level object literal of functions, or
-//           a class with only static methods:
-//           `export const LibrarySource = { load, scanRoot };`. Members are
-//           accessed as `LibrarySource.load(...)`, exactly like static methods.
 // Gotcha:   Unlike a TS `class`, you never construct this; `LibrarySource` already
 //           IS the instance. Treat it as a namespace, not a constructable type.
 //
@@ -147,9 +128,6 @@ object LibrarySource {
     //             owned distinction (unlike Rust's `String` vs `&str`).
     // Why:      A single named tag is passed to `Log.w(...)` so every log line from
     //           this file is filterable in logcat under one label.
-    // TS map:   `const SOURCE_TAG: string = "LibrarySource";` at module scope.
-    //           Kotlin `const val` is closest to a TS `const` of a primitive that
-    //           the compiler may inline.
     // Gotcha:   `const` here is a Kotlin compile-time constant, NOT TS's
     //           block-scoped `const`; `val` alone is the runtime read-only binding.
     //
@@ -173,10 +151,6 @@ object LibrarySource {
     //             `Array<T>` (fixed-size). `Track` is this app's track record type.
     // Why:      This is the single public entry point both callers use to fetch the
     //           current library, so their URIs and fingerprints stay in sync.
-    // TS map:   `suspend` maps to `async`, and a `suspend` function returning
-    //           `List<Track>` maps to an `async` function returning
-    //           `Promise<readonly Track[]>`:
-    //           `async function load(context: Context): Promise<readonly Track[]>`.
     // Gotcha:   `suspend` is NOT `async` at the type level: the return type is
     //           `List<Track>`, not `Promise<List<Track>>`. The "promise" is hidden
     //           by the compiler. You `await` implicitly just by calling it.
@@ -199,8 +173,6 @@ object LibrarySource {
         //             granted folder URI when a live grant exists, else `null`.
         // Why:      We look up the user's chosen folder first; its presence decides
         //           whether we scan that folder or fall through to MediaStore.
-        // TS map:   `const root: Uri | null = LibraryRoot.heldRoot(context);`.
-        //           Kotlin's `Uri?` is exactly TS's `Uri | null`.
         // Gotcha:   The `?` on the TYPE means nullable. It is unrelated to Rust's
         //           `?` propagation operator and unrelated to Kotlin's `?.`/`?:`
         //           operators; here it is purely "this slot may hold null".
@@ -216,8 +188,6 @@ object LibrarySource {
         //           required without any unwrap call.
         // Why:      A held folder grant always wins over the device-wide collection,
         //           so when one exists we scan it and return immediately.
-        // TS map:   `if (root !== null) { ... }`. TS narrows `Uri | null` to `Uri`
-        //           inside the block the same way (control-flow narrowing).
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -232,8 +202,6 @@ object LibrarySource {
             //           itself `suspend`, so this call is an implicit await point.
             // Why:      Delegate folder enumeration (and its failure handling) to
             //           `scanRoot`, and hand its tracks straight back.
-            // TS map:   `return await scanRoot(context, root);` — in Kotlin the
-            //           `await` is implicit because `load` is already `suspend`.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -248,8 +216,6 @@ object LibrarySource {
         // Why:      With no chosen folder, we may still read the device-wide
         //           MediaStore collection, but only if the user granted the audio
         //           read permission; this gate enforces that.
-        // TS map:   `if (hasAudioPermission(context)) { ... }`. `Boolean` is TS
-        //           `boolean`; this is a 1:1 conditional.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -267,10 +233,6 @@ object LibrarySource {
             //             `List<Track>` from the device-wide media database.
             // Why:      No folder was chosen but audio permission is held, so the
             //           whole-device collection is the active library; return it.
-            // TS map:   `return await MediaStoreSource.query(context.contentResolver);`
-            //           — `.contentResolver` is just a property access
-            //           (`context.contentResolver`), and the call is awaited
-            //           implicitly because `load` is `suspend`.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -285,8 +247,6 @@ object LibrarySource {
         // Why:      Neither a folder grant nor the audio permission is held, so
         //           there is no source yet; an empty library is the correct,
         //           non-crashing answer.
-        // TS map:   `return [];` — TS infers the element type from the function's
-        //           declared `Promise<readonly Track[]>` return.
         // Gotcha:   `emptyList()` returns a SHARED immutable instance (cheap, no
         //           allocation), not a fresh array each call as `[]` would in TS.
         //
@@ -306,8 +266,6 @@ object LibrarySource {
     //           whole-walk crash must degrade to an empty library rather than take
     //           down the cold-start service or the background worker. Isolating
     //           that in `scanRoot` keeps `load` simple.
-    // TS map:   `async function scanRoot(context: Context, treeUri: Uri):
-    //            Promise<readonly Track[]>`. Two params, awaited body.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -328,9 +286,6 @@ object LibrarySource {
         // Why:      We want a single value (the track list, or empty on failure) to
         //           fall out of the scan and be returned, with cancellation handled
         //           separately from real failures.
-        // TS map:   In TS, `try`/`catch` is a STATEMENT, not an expression, so you
-        //           cannot assign it directly; you `return` from each branch
-        //           instead. See the pseudocode on the inner lines.
         // Gotcha:   Unlike TS, Kotlin's `try`/`catch` evaluates to a value. Read
         //           this as "the function returns whichever branch ran".
         //
@@ -356,9 +311,6 @@ object LibrarySource {
             // Why:      Delegate the actual folder walk to `SafTreeSource`, which
             //           already skips individual unreadable directories; this layer
             //           only guards a failure of the ENTIRE walk.
-            // TS map:   `return await SafTreeSource.query(context.contentResolver, treeUri);`
-            //           — implicit-return tail in Kotlin becomes an explicit
-            //           `return await` in TS.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -377,9 +329,6 @@ object LibrarySource {
             //           children) work correctly. Catching it first, before the
             //           generic `Exception` clause below, is what separates "we were
             //           cancelled" from "the scan genuinely failed".
-            // TS map:   `if (e instanceof CancellationException) throw e;` — in TS
-            //           there is one `catch (e)`, so you test the type and re-throw
-            //           the abort-like error rather than having a dedicated clause.
             // Gotcha:   Order matters: `CancellationException` is itself an
             //           `Exception`, so this MORE SPECIFIC clause must come before
             //           the broad `catch (failure: Exception)` clause, or every
@@ -404,9 +353,6 @@ object LibrarySource {
             // Why:      The whole folder walk failed for some unexpected reason; we
             //           record it visibly (rather than silently swallowing) before
             //           degrading to an empty library.
-            // TS map:   `Log.w(SOURCE_TAG, \`scan of folder ${treeUri} failed; treating as empty\`, failure);`
-            //           — Kotlin's `"...$treeUri..."` template equals a TS template
-            //           literal `` `...${treeUri}...` ``.
             // Gotcha:   `$treeUri` works ONLY inside a double-quoted Kotlin string;
             //           it is interpolation, not a shell/regex variable. For an
             //           expression you would write `${treeUri.something}`.
@@ -425,8 +371,6 @@ object LibrarySource {
             // Why:      A whole-walk failure should look like "the folder has no
             //           tracks" to callers, never a crash; an empty library is the
             //           safe degraded result.
-            // TS map:   `return [];` — in TS this is the explicit return inside the
-            //           `catch` branch.
             // Gotcha:   No `return` keyword and no `;` here: this bare
             //           `emptyList()` IS the tail value of the `catch` branch, which
             //           is the tail value of the function. Easy to miss for a TS

@@ -4,7 +4,6 @@
 // Why:      Lock in the oxlint-matching semantics: blank lines and comments do
 //           not count, code-with-trailing-comment does, and `//`/`/* */` inside
 //           a string literal must NOT be mistaken for a comment.
-// TS map:   a `max-lines.test.ts` using Vitest/Jest `describe`/`it`/`expect`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -14,7 +13,6 @@
 // What:     `use std::path::Path;` imports the borrowed-path type used by the
 //           exemption tests.
 // Why:      `max_lines_exempt` takes a `&Path`.
-// TS map:   `import path from "node:path";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -27,7 +25,6 @@ use std::path::Path;
 //           `Diagnostic`/`Severity` types, the `Rule` trait, and the `MaxLines`
 //           rule itself.
 // Why:      The tests build a context, run the rule, and inspect findings.
-// TS map:   `import { ... } from "../...";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -44,7 +41,6 @@ use crate::rules::max_lines::MaxLines;
 //           `&str` borrows the literal source; `usize` is the count.
 // Why:      Most tests only care about the classifier result, so wrap the two
 //           construction lines once.
-// TS map:   `function codeLines(source: string): number { return LintContext.create("fixture.rs", source).codeLineCount(); }`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -58,7 +54,6 @@ fn code_lines(source: &str) -> usize {
     //           (the constructor takes ownership). The path text is irrelevant to
     //           counting; only the source matters.
     // Why:      Build the context the classifier runs inside.
-    // TS map:   `const context = LintContext.create("fixture.rs", source);`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -69,7 +64,6 @@ fn code_lines(source: &str) -> usize {
     // What:     `context.code_line_count()`. Tail expression: the classifier's
     //           result is returned.
     // Why:      That count is what every classifier test asserts on.
-    // TS map:   `return context.codeLineCount();`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -83,7 +77,6 @@ fn code_lines(source: &str) -> usize {
 //           `&'static str` is a program-lifetime borrowed string (all snippets
 //           are literals; sibling owned type: `String`).
 // Why:      Drive many classifier scenarios from one data table.
-// TS map:   `type Case = { source: string; expected: number };`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -98,7 +91,6 @@ struct Case {
 //           borrowed slice (`&[Case]`) of fixture rows. `&[ ... ]` borrows a
 //           fixed array literal. Each row covers one classifier behaviour.
 // Why:      One readable table of input-vs-expected; the test below loops it.
-// TS map:   `const CASES: Case[] = [ ... ];`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -128,7 +120,6 @@ const CASES: &[Case] = &[
 // What:     `#[test] fn classifier_counts_code_lines() { ... }`. The `#[test]`
 //           attribute marks this a test the runner executes.
 // Why:      Verify every row of the table.
-// TS map:   `it("counts code lines per case", () => { ... });`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -139,7 +130,6 @@ fn classifier_counts_code_lines() {
     // What:     `for case in CASES`. Iterate the borrowed slice; each `case` is a
     //           `&Case`.
     // Why:      Check each scenario.
-    // TS map:   `for (const case of CASES) { ... }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -152,7 +142,6 @@ fn classifier_counts_code_lines() {
         //           format args print the offending source. `{:?}` is the debug
         //           format (shows escapes like `\n`).
         // Why:      Pinpoint which row failed.
-        // TS map:   `expect(codeLines(case.source)).toBe(case.expected);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -166,7 +155,6 @@ fn classifier_counts_code_lines() {
 //           path-based skip predicate.
 // Why:      Tests, `*_tests.rs`, fuzz, and `build.rs` must be exempt; ordinary
 //           source must not be.
-// TS map:   `it("exempts tests/fuzz/build.rs", () => { ... });`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -178,7 +166,6 @@ fn exemptions_match_oxlint_overrides() {
     //           boolean is false. `Path::new(...)` wraps the literal as a `&Path`.
     //           Each line checks one exempt path shape.
     // Why:      Lock in every exemption category.
-    // TS map:   `expect(maxLinesExempt("a/tests/foo.rs")).toBe(true);`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -192,7 +179,6 @@ fn exemptions_match_oxlint_overrides() {
     // What:     `assert!(!max_lines_exempt(...))`. The leading `!` negates: assert
     //           the path is NOT exempt.
     // Why:      Ordinary source files must be enforced.
-    // TS map:   `expect(maxLinesExempt("src/lib.rs")).toBe(false);`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -205,7 +191,6 @@ fn exemptions_match_oxlint_overrides() {
 //           Helper that runs the `MaxLines` rule over a snippet and returns the
 //           findings vector.
 // Why:      The three rule tests below differ only in inputs; share the wiring.
-// TS map:   `function runRule(source, max, path): Diagnostic[] { ... }`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -216,7 +201,6 @@ fn run_rule(source: &str, max: usize, path: &str) -> Vec<Diagnostic> {
     //           Build the per-file context with the given path (so exemptions can
     //           apply) and source.
     // Why:      The rule reads both the code-line count and the path.
-    // TS map:   `const context = LintContext.create(path, source);`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -227,7 +211,6 @@ fn run_rule(source: &str, max: usize, path: &str) -> Vec<Diagnostic> {
     // What:     `let config = Config { max_lines: max };`. Build settings with the
     //           requested budget.
     // Why:      Each test picks a budget relative to the snippet's size.
-    // TS map:   `const config = { maxLines: max };`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -238,7 +221,6 @@ fn run_rule(source: &str, max: usize, path: &str) -> Vec<Diagnostic> {
     // What:     `let mut out: Vec<Diagnostic> = Vec::new();`. Empty mutable
     //           findings buffer the rule pushes into.
     // Why:      Capture what the rule reports.
-    // TS map:   `const out: Diagnostic[] = [];`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -250,7 +232,6 @@ fn run_rule(source: &str, max: usize, path: &str) -> Vec<Diagnostic> {
     //           trait method directly on a `MaxLines` value, lending the context
     //           and config read-only and the buffer mutably.
     // Why:      Exercise the real rule logic, not a reimplementation.
-    // TS map:   `new MaxLines().check(context, config, out);`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -260,7 +241,6 @@ fn run_rule(source: &str, max: usize, path: &str) -> Vec<Diagnostic> {
 
     // What:     `out`. Tail expression: return the collected findings.
     // Why:      Let each test assert on them.
-    // TS map:   `return out;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -272,7 +252,6 @@ fn run_rule(source: &str, max: usize, path: &str) -> Vec<Diagnostic> {
 // What:     `#[test] fn over_budget_reports_one_error() { ... }`. A snippet with 3
 //           code lines under a budget of 2 must produce exactly one error.
 // Why:      The core failing path.
-// TS map:   `it("reports an error over budget", () => { ... });`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -283,7 +262,6 @@ fn over_budget_reports_one_error() {
     // What:     `let found = run_rule("fn a() {\n    let x = 1;\n}\n", 2,
     //           "src/big.rs");`. Three code lines, budget 2, non-exempt path.
     // Why:      Trigger a violation.
-    // TS map:   `const found = runRule(src, 2, "src/big.rs");`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -293,20 +271,17 @@ fn over_budget_reports_one_error() {
 
     // What:     `assert_eq!(found.len(), 1);`. Exactly one finding expected.
     // Why:      One file over budget yields one diagnostic.
-    // TS map:   `expect(found.length).toBe(1);`
     assert_eq!(found.len(), 1, "expected exactly one finding");
 
     // What:     `assert_eq!(found[0].severity, Severity::Error);`. The finding must
     //           be error severity. `found[0]` indexes the first element.
     // Why:      max-lines fails the run, like oxlint's `error` level.
-    // TS map:   `expect(found[0].severity).toBe("error");`
     assert_eq!(found[0].severity, Severity::Error, "must be error severity");
 }
 
 // What:     `#[test] fn under_budget_is_clean() { ... }`. Same snippet under a
 //           generous budget must produce no findings.
 // Why:      The passing path.
-// TS map:   `it("is clean under budget", () => { ... });`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -317,20 +292,17 @@ fn under_budget_is_clean() {
     // What:     `let found = run_rule(..., 10, "src/small.rs");`. Budget 10 over 3
     //           code lines.
     // Why:      No violation expected.
-    // TS map:   `const found = runRule(src, 10, "src/small.rs");`
     let found = run_rule("fn a() {\n    let x = 1;\n}\n", 10, "src/small.rs");
 
     // What:     `assert!(found.is_empty());`. `.is_empty()` is true when the vector
     //           has no elements.
     // Why:      Within budget means nothing to report.
-    // TS map:   `expect(found.length).toBe(0);`
     assert!(found.is_empty(), "under budget should report nothing");
 }
 
 // What:     `#[test] fn exempt_path_is_skipped_even_over_budget() { ... }`. An
 //           over-budget snippet on an exempt path must still report nothing.
 // Why:      Exemptions win over the budget.
-// TS map:   `it("skips exempt paths", () => { ... });`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -341,11 +313,9 @@ fn exempt_path_is_skipped_even_over_budget() {
     // What:     `let found = run_rule(..., 2, "src/foo_tests.rs");`. Three code
     //           lines, tiny budget, but an exempt `*_tests.rs` path.
     // Why:      Confirm the exemption short-circuits before counting matters.
-    // TS map:   `const found = runRule(src, 2, "src/foo_tests.rs");`
     let found = run_rule("fn a() {\n    let x = 1;\n}\n", 2, "src/foo_tests.rs");
 
     // What:     `assert!(found.is_empty());`. No findings despite being over budget.
     // Why:      Exempt files are never reported.
-    // TS map:   `expect(found.length).toBe(0);`
     assert!(found.is_empty(), "exempt path must not be reported");
 }

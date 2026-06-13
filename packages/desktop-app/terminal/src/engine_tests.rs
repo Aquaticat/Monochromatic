@@ -7,7 +7,6 @@
 // Why:      Keep the tests beside the code without inflating
 //           `engine.rs` or its max-lines budget (sibling
 //           `*_tests.rs` files are exempt from the linter).
-// TS map:   `engine.unit.test.ts` beside `engine.ts`.
 
 use super::*;
 use crate::scroll::{DEFAULT_CELL_HEIGHT_PX, DEFAULT_CELL_WIDTH_PX};

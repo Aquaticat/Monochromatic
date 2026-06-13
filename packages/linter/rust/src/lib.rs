@@ -4,7 +4,6 @@
 //           into the crate at all; `pub` re-exposes it to outside consumers and
 //           to the binary half.
 // Why:      Split the linter into small, separately commentable files.
-// TS map:   like a barrel `index.ts` doing `export * from "./config"` etc.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -19,7 +18,6 @@ pub mod rules;
 // What:     `use std::fs;` imports the standard filesystem module (we call
 //           `fs::read_to_string`).
 // Why:      Read each `.rs` file's text.
-// TS map:   `import * as fs from "node:fs";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -30,7 +28,6 @@ use std::fs;
 // What:     `use std::path::Path;` imports the borrowed-path type used to test
 //           "is this a file or a directory".
 // Why:      Decide whether to read a path directly or walk it as a folder.
-// TS map:   `import path from "node:path";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -42,8 +39,6 @@ use std::path::Path;
 //           walker from the external `ignore` crate (the one ripgrep uses).
 // Why:      Enumerate `.rs` files under a directory while skipping `target/` and
 //           anything `.gitignore` excludes.
-// TS map:   `import { WalkBuilder } from "<no direct equivalent>";` (closest is
-//           `fast-glob` with `gitignore: true`).
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -55,7 +50,6 @@ use ignore::WalkBuilder;
 //           crate's own types and the rule registry.
 // Why:      The run loop builds a `Config`, makes `LintContext`s, collects
 //           `Diagnostic`s, and iterates the rules from `all_rules`.
-// TS map:   `import { Config } from "./config";` etc.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -70,7 +64,6 @@ use crate::rule::{all_rules, Rule};
 //           record holding parsed command-line options: the paths to scan and the
 //           budget. `Vec<String>` is an owned, growable array of owned strings.
 // Why:      Bundle the two parsed values so `parse_args` returns one thing.
-// TS map:   `type Parsed = { paths: string[]; maxLines: number };`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -86,7 +79,6 @@ struct Parsed {
 //           exit code) or `Err(message)` (a fatal error string).
 // Why:      Hold all CLI behaviour in one testable function; `main.rs` just maps
 //           its result to an OS exit code.
-// TS map:   `function runCliFromEnv(): number { /* throws on fatal */ }`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -99,7 +91,6 @@ pub fn run_cli_from_env() -> Result<i32, String> {
     //           gathers the rest into a `Vec<String>` (the `: Vec<String>`
     //           annotation tells `collect` what to build).
     // Why:      Get the user-supplied arguments to parse.
-    // TS map:   `const args = process.argv.slice(2);`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -112,7 +103,6 @@ pub fn run_cli_from_env() -> Result<i32, String> {
     //           `parse_args` returned `Err(e)`, return that same `Err` from here
     //           immediately; otherwise unwrap the `Ok` value into `parsed`.
     // Why:      Turn raw arguments into structured options, bailing on bad input.
-    // TS map:   `const parsed = parseArgs(args); // throws on bad input`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -123,7 +113,6 @@ pub fn run_cli_from_env() -> Result<i32, String> {
     // What:     `let config = Config { max_lines: parsed.max_lines };`. Builds the
     //           settings struct from the parsed budget.
     // Why:      Rules read the budget from here.
-    // TS map:   `const config: Config = { maxLines: parsed.maxLines };`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -136,7 +125,6 @@ pub fn run_cli_from_env() -> Result<i32, String> {
     // What:     `let files = collect_rust_files(&parsed.paths);`. Lends the paths
     //           and gets back an owned `Vec<String>` of `.rs` file paths.
     // Why:      The list of files to lint.
-    // TS map:   `const files = collectRustFiles(parsed.paths);`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -147,7 +135,6 @@ pub fn run_cli_from_env() -> Result<i32, String> {
     // What:     `let rules = all_rules();`. The enabled rule set as
     //           `Vec<Box<dyn Rule>>` (heap-boxed trait objects).
     // Why:      Iterate these for every file.
-    // TS map:   `const rules = allRules();`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -158,7 +145,6 @@ pub fn run_cli_from_env() -> Result<i32, String> {
     // What:     `let mut diagnostics: Vec<Diagnostic> = Vec::new();`. An empty,
     //           mutable, owned vector that every file's findings accumulate into.
     // Why:      One shared buffer collects all findings across files.
-    // TS map:   `const diagnostics: Diagnostic[] = [];`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -169,7 +155,6 @@ pub fn run_cli_from_env() -> Result<i32, String> {
     // What:     `for file in &files`. Iterates by BORROWING each element (`&files`),
     //           so `file` is a `&String` and `files` stays usable afterwards.
     // Why:      Lint every discovered file.
-    // TS map:   `for (const file of files) { ... }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -180,7 +165,6 @@ pub fn run_cli_from_env() -> Result<i32, String> {
         //           the file path and config read-only, the rules slice read-only,
         //           and the diagnostics vector MUTABLY so the callee can push.
         // Why:      Run all rules against this one file.
-        // TS map:   `lintFile(file, config, rules, diagnostics);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -193,7 +177,6 @@ pub fn run_cli_from_env() -> Result<i32, String> {
     //           Borrow each finding and print its rendered line to standard output.
     //           `println!` is the formatting print macro (the `!`).
     // Why:      Show the user every violation.
-    // TS map:   `for (const d of diagnostics) console.log(d.render());`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -208,7 +191,6 @@ pub fn run_cli_from_env() -> Result<i32, String> {
     //           returns true if the closure is true for at least one. `|d| ...` is
     //           the closure, `d` is a `&Diagnostic`.
     // Why:      Decide the exit code: any error-severity finding means failure.
-    // TS map:   `const anyError = diagnostics.some(d => d.severity === "error");`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -222,7 +204,6 @@ pub fn run_cli_from_env() -> Result<i32, String> {
     //           construct the success variant of `Result` carrying the exit code.
     //           The whole `if/else` is the tail expression, so it is returned.
     // Why:      1 signals "lint violations found", 0 signals "clean".
-    // TS map:   `return anyError ? 1 : 0;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -239,7 +220,6 @@ pub fn run_cli_from_env() -> Result<i32, String> {
 //           helper. `&[String]` is a borrowed slice of strings. Returns parsed
 //           options or an error message.
 // Why:      Read `--max N` / `--max=N` and treat every other argument as a path.
-// TS map:   `function parseArgs(args: string[]): Parsed`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -249,7 +229,6 @@ fn parse_args(args: &[String]) -> Result<Parsed, String> {
     // What:     `let mut paths: Vec<String> = Vec::new();`. Mutable empty vector to
     //           collect path arguments.
     // Why:      Gather everything that is not a flag.
-    // TS map:   `const paths: string[] = [];`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -261,7 +240,6 @@ fn parse_args(args: &[String]) -> Result<Parsed, String> {
     //           Builds a default `Config` and reads its budget field, so the
     //           literal `300` lives in exactly one place (the constructor).
     // Why:      Used unless `--max` overrides it; keeps one source of truth.
-    // TS map:   `let maxLines = withDefaults().maxLines;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -273,7 +251,6 @@ fn parse_args(args: &[String]) -> Result<Parsed, String> {
     //           need to consume the NEXT argument for `--max N`, so a plain
     //           `for` loop is awkward).
     // Why:      Walk arguments with lookahead.
-    // TS map:   `let index = 0;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -283,7 +260,6 @@ fn parse_args(args: &[String]) -> Result<Parsed, String> {
 
     // What:     `while index < args.len()`. Loop until the cursor passes the end.
     // Why:      Process each argument, advancing the cursor ourselves.
-    // TS map:   `while (index < args.length) { ... }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -293,7 +269,6 @@ fn parse_args(args: &[String]) -> Result<Parsed, String> {
         // What:     `let arg = &args[index];`. Borrow the current argument as a
         //           `&String`.
         // Why:      Inspect it without copying.
-        // TS map:   `const arg = args[index];`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -303,7 +278,6 @@ fn parse_args(args: &[String]) -> Result<Parsed, String> {
 
         // What:     `if arg == "--max"`. Compare the argument to the flag name.
         // Why:      The space-separated form `--max 400` needs the next argument.
-        // TS map:   `if (arg === "--max") { ... }`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -312,7 +286,6 @@ fn parse_args(args: &[String]) -> Result<Parsed, String> {
         if arg == "--max" {
             // What:     `index += 1;`. Advance to the value argument.
             // Why:      `--max` is followed by its number.
-            // TS map:   `index += 1;`
             index += 1;
 
             // What:     `let value = args.get(index).ok_or_else(|| "--max needs a
@@ -323,7 +296,6 @@ fn parse_args(args: &[String]) -> Result<Parsed, String> {
             //           error `String`. The `?` then propagates any `Err` and
             //           unwraps the `Ok` into `value`.
             // Why:      Fail cleanly if `--max` is the last argument with no number.
-            // TS map:   `const value = args[index]; if (value === undefined) throw new Error("--max needs a value");`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -341,7 +313,6 @@ fn parse_args(args: &[String]) -> Result<Parsed, String> {
             //           parser's error with our own message (the `_` ignores the
             //           original). `?` propagates failure or unwraps the number.
             // Why:      Accept only a valid non-negative integer budget.
-            // TS map:   `const n = Number(value); if (!Number.isInteger(n) || n < 0) throw new Error(...); maxLines = n;`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -358,7 +329,6 @@ fn parse_args(args: &[String]) -> Result<Parsed, String> {
             //           starts with `p`, else `None`. `if let Some(rest) = ...`
             //           runs this branch only on a match, binding the remainder.
             // Why:      Support the joined form `--max=400`.
-            // TS map:   `else if (arg.startsWith("--max=")) { const rest = arg.slice(6); ... }`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -371,7 +341,6 @@ fn parse_args(args: &[String]) -> Result<Parsed, String> {
             // What:     `paths.push(arg.clone());`. `.clone()` makes an OWNED copy
             //           of the borrowed `&String` so the vector can own it.
             // Why:      Treat any non-flag argument as a path to scan.
-            // TS map:   `paths.push(arg);`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -382,7 +351,6 @@ fn parse_args(args: &[String]) -> Result<Parsed, String> {
 
         // What:     `index += 1;`. Move to the next argument.
         // Why:      Advance the cursor each iteration.
-        // TS map:   `index += 1;`
         index += 1;
     }
 
@@ -390,7 +358,6 @@ fn parse_args(args: &[String]) -> Result<Parsed, String> {
     //           was given, default to the current directory. `".".to_string()`
     //           allocates an owned `String` from the borrowed literal.
     // Why:      Running with no arguments should lint the working tree.
-    // TS map:   `if (paths.length === 0) paths.push(".");`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -403,7 +370,6 @@ fn parse_args(args: &[String]) -> Result<Parsed, String> {
     // What:     `Ok(Parsed { paths, max_lines })`. Wrap the built options in the
     //           success variant. Tail expression, so it is returned.
     // Why:      Hand structured options back to the caller.
-    // TS map:   `return { paths, maxLines };`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -415,7 +381,6 @@ fn parse_args(args: &[String]) -> Result<Parsed, String> {
 // What:     `fn collect_rust_files(paths: &[String]) -> Vec<String>`. Borrow the
 //           requested paths; return owned paths of every `.rs` file found.
 // Why:      Expand directories into their `.rs` files; pass files through directly.
-// TS map:   `function collectRustFiles(paths: string[]): string[]`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -424,21 +389,17 @@ fn parse_args(args: &[String]) -> Result<Parsed, String> {
 fn collect_rust_files(paths: &[String]) -> Vec<String> {
     // What:     `let mut files: Vec<String> = Vec::new();`. Accumulator for results.
     // Why:      Collect every discovered file path.
-    // TS map:   `const files: string[] = [];`
     let mut files: Vec<String> = Vec::new();
 
     // What:     `for path in paths`. Iterate the requested paths (borrowed).
     // Why:      Handle each path argument.
-    // TS map:   `for (const path of paths) { ... }`
     for path in paths {
         // What:     `let start = Path::new(path);`. Wrap the string as a `&Path`.
         // Why:      Use path queries like `is_file`.
-        // TS map:   `const start = path;`
         let start = Path::new(path);
 
         // What:     `if start.is_file()`. Filesystem check: is this an existing file?
         // Why:      A directly named file is linted as-is, not walked.
-        // TS map:   `if (fs.statSync(start).isFile())`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -447,7 +408,6 @@ fn collect_rust_files(paths: &[String]) -> Vec<String> {
         if start.is_file() {
             // What:     `files.push(path.clone());`. Own a copy of the path string.
             // Why:      Keep the explicitly named file.
-            // TS map:   `files.push(path);`
             files.push(path.clone());
         } else {
             // What:     `for entry in WalkBuilder::new(start).build().flatten()`.
@@ -458,7 +418,6 @@ fn collect_rust_files(paths: &[String]) -> Vec<String> {
             //           run. `entry` is therefore a plain `DirEntry`.
             // Why:      Find files recursively while honouring `.gitignore` (so
             //           `target/` is skipped), tolerating per-entry errors.
-            // TS map:   `for (const entry of walk(start)) { /* errors skipped */ }`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -467,7 +426,6 @@ fn collect_rust_files(paths: &[String]) -> Vec<String> {
             for entry in WalkBuilder::new(start).build().flatten() {
                 // What:     `let entry_path = entry.path();`. The `&Path` of this entry.
                 // Why:      Test its kind and extension.
-                // TS map:   `const entryPath = entry.path;`
                 let entry_path = entry.path();
 
                 // What:     `let is_rs = entry_path.extension().and_then(|e|
@@ -477,7 +435,6 @@ fn collect_rust_files(paths: &[String]) -> Vec<String> {
                 //           Comparing to `Some("rs")` is true only when the extension
                 //           is exactly `rs`.
                 // Why:      Keep only Rust source files.
-                // TS map:   `const isRs = path.extname(entryPath) === ".rs";`
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -488,7 +445,6 @@ fn collect_rust_files(paths: &[String]) -> Vec<String> {
                 // What:     `if entry_path.is_file() && is_rs`. Only real files with
                 //           the `.rs` extension qualify. `&&` is logical AND.
                 // Why:      Directories named `*.rs` (rare) must not slip in.
-                // TS map:   `if (isFile(entryPath) && isRs) { ... }`
                 if entry_path.is_file() && is_rs {
                     // What:     `files.push(entry_path.to_string_lossy().into_owned());`.
                     //           `.to_string_lossy()` turns the path into a `Cow<str>`
@@ -496,7 +452,6 @@ fn collect_rust_files(paths: &[String]) -> Vec<String> {
                     //           chars otherwise); `.into_owned()` forces an owned
                     //           `String`.
                     // Why:      Store an owned path string in the results.
-                    // TS map:   `files.push(String(entryPath));`
                     //
                     // In TS you'd write (pseudocode):
                     // ```ts
@@ -510,7 +465,6 @@ fn collect_rust_files(paths: &[String]) -> Vec<String> {
 
     // What:     `files`. Tail expression: return the collected paths.
     // Why:      Hand the file list back.
-    // TS map:   `return files;`
     files
 }
 
@@ -518,7 +472,6 @@ fn collect_rust_files(paths: &[String]) -> Vec<String> {
 //           out: &mut Vec<Diagnostic>)`. Read-only borrows of the path, config,
 //           and rule slice; a mutable borrow of the findings vector.
 // Why:      Read one file, build its context once, run every rule against it.
-// TS map:   `function lintFile(path, config, rules, out): void`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -532,7 +485,6 @@ fn lint_file(path: &str, config: &Config, rules: &[Box<dyn Rule>], out: &mut Vec
     //           (skipping this file). The whole `match` is an expression assigned
     //           to `source`.
     // Why:      An unreadable file should warn and be skipped, not crash the run.
-    // TS map:   `let source; try { source = fs.readFileSync(path, "utf8"); } catch (e) { console.error(...); return; }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -552,7 +504,6 @@ fn lint_file(path: &str, config: &Config, rules: &[Box<dyn Rule>], out: &mut Vec
     //           `path.to_string()` makes an OWNED `String` from the borrowed path;
     //           `source` is moved in. The constructor parses the file once.
     // Why:      Build the shared per-file bundle every rule reads from.
-    // TS map:   `const context = LintContext.create(path, source);`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -563,7 +514,6 @@ fn lint_file(path: &str, config: &Config, rules: &[Box<dyn Rule>], out: &mut Vec
     // What:     `for rule in rules`. Iterate the boxed rules (borrowed); `rule` is
     //           a `&Box<dyn Rule>` that auto-dereferences when we call a method.
     // Why:      Apply every enabled rule to this file.
-    // TS map:   `for (const rule of rules) { rule.check(context, config, out); }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -575,7 +525,6 @@ fn lint_file(path: &str, config: &Config, rules: &[Box<dyn Rule>], out: &mut Vec
         //           findings buffer. `config` and `out` are already references
         //           here, so they pass straight through.
         // Why:      Let the rule append any findings for this file.
-        // TS map:   `rule.check(context, config, out);`
         //
         // In TS you'd write (pseudocode):
         // ```ts

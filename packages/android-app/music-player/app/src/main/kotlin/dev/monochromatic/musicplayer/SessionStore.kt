@@ -7,8 +7,6 @@
 //           `core.Session` model carries only the in-memory shape, and this object
 //           reads/writes it to device storage. Keeping it out of `core` preserves
 //           `core`'s no-Android, fully-unit-testable purity.
-// TS map:   No `package` keyword; the file path is the module. Importers write
-//           `import { SessionStore } from ".../SessionStore"`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -19,7 +17,6 @@ package dev.monochromatic.musicplayer
 // What:     `import android.content.Context` pulls in the Android `Context` type, the
 //           handle to app-global facilities (here, the SharedPreferences store).
 // Why:      `load`/`save` need a `Context` to open the preferences file.
-// TS map:   `import { Context } from "android/content";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -33,7 +30,6 @@ import android.content.Context
 // Why:      The session is a tiny flat record, so SharedPreferences (the same store
 //           `LibraryRoot` uses for the SAF tree URI) is the natural fit; no JSON
 //           serializer or database is needed.
-// TS map:   `import { SharedPreferences } from "android/content";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -46,7 +42,6 @@ import android.content.SharedPreferences
 //           lambda against it, and commits, in one call.
 // Why:      `save` batches all field writes inside one `edit { ... }` block (the same
 //           idiom `LibraryRoot` uses), rather than manually `edit()`/`apply()`.
-// TS map:   no direct analogue; mentally a helper `withEditor(prefs, (e) => { ... })`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -57,7 +52,6 @@ import androidx.core.content.edit
 // What:     `import dev.monochromatic.musicplayer.core.Session` brings the pure model
 //           type into scope.
 // Why:      `load` returns a `Session` and `save` takes one.
-// TS map:   `import { Session } from "./core/Session";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -69,7 +63,6 @@ import dev.monochromatic.musicplayer.core.Session
 //           three-state enum into scope.
 // Why:      The shuffle field is stored as its `.name` string and read back into a
 //           `ShuffleMode`.
-// TS map:   `import { ShuffleMode } from "./core/ShuffleMode";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -105,8 +98,6 @@ import dev.monochromatic.musicplayer.core.ShuffleMode
 // Why:      Session persistence is stateless (it holds no fields, only functions over
 //           a passed-in `Context`), so a singleton object is the right shape; this
 //           mirrors `LibraryRoot`.
-// TS map:   `export const SessionStore = { load(...) {}, save(...) {} };` or a class
-//           with only static methods.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -119,7 +110,6 @@ object SessionStore {
     //             or String literal), stronger than a plain `val`.
     // Why:      The XML file this object reads/writes; distinct from `LibraryRoot`'s
     //           "library_root" file so the two stores never collide.
-    // TS map:   `const PREFS_NAME = "session";`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -130,7 +120,6 @@ object SessionStore {
     // What:     `private const val KEY_SELECTED: String = "selected"` is the key for
     //           the selected-track identity (a content URI string), or absent for none.
     // Why:      A stable key for the selected track.
-    // TS map:   `const KEY_SELECTED = "selected";`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -141,7 +130,6 @@ object SessionStore {
     // What:     `private const val KEY_POSITION: String = "position_bits"` is the key
     //           for the resume position, stored as the `Double`'s raw 64-bit pattern.
     // Why:      Named "_bits" to signal it is a `Long` bit pattern, not a plain number.
-    // TS map:   `const KEY_POSITION = "position_bits";`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -152,7 +140,6 @@ object SessionStore {
     // What:     `private const val KEY_VOLUME: String = "volume"` is the key for the
     //           saved gain (`Float`).
     // Why:      A stable key for volume.
-    // TS map:   `const KEY_VOLUME = "volume";`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -163,7 +150,6 @@ object SessionStore {
     // What:     `private const val KEY_SHUFFLE: String = "shuffle"` is the key for the
     //           shuffle mode, stored as the enum's `.name`.
     // Why:      A stable key for the shuffle mode.
-    // TS map:   `const KEY_SHUFFLE = "shuffle";`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -174,7 +160,6 @@ object SessionStore {
     // What:     `private const val KEY_REPEAT: String = "repeat_track"` is the key for
     //           the repeat-track flag (`Boolean`).
     // Why:      A stable key for the repeat-track flag.
-    // TS map:   `const KEY_REPEAT = "repeat_track";`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -187,7 +172,6 @@ object SessionStore {
     // Why:      Read the persisted session at launch; a blank store yields the model's
     //           defaults (nothing selected, position 0, full volume, shuffle off, no
     //           repeat), because each `getX(key, default)` supplies that default.
-    // TS map:   `load(context: Context): Session { ... }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -205,7 +189,6 @@ object SessionStore {
     fun load(context: Context): Session {
         // What:     `val prefs: SharedPreferences = prefs(context)` opens the store.
         // Why:      One handle reused for every field read below.
-        // TS map:   `const prefs = this.prefs(context);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -216,7 +199,6 @@ object SessionStore {
         //           the stored shuffle name, or `null` when absent. `getString(key,
         //           default)` returns the stored string or the default.
         // Why:      Resolve it to an enum below without throwing on an unknown value.
-        // TS map:   `const shuffleName = prefs.getString(KEY_SHUFFLE, null);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -232,7 +214,6 @@ object SessionStore {
         //           - `?: ShuffleMode.OFF` falls back to OFF.
         // Why:      Graceful, throw-free decoding: a corrupt or older store cannot crash
         //           the launch; it just loses the shuffle setting.
-        // TS map:   `const shuffle = ShuffleMode.entries.find((m) => m.name === shuffleName) ?? ShuffleMode.OFF;`
         // Gotcha:   This avoids `ShuffleMode.valueOf(name)`, which THROWS on an unknown
         //           name; `firstOrNull` + Elvis is the non-throwing equivalent.
         //
@@ -253,7 +234,6 @@ object SessionStore {
         //           - `shuffle = shuffle` uses the resolved enum.
         //           - `repeatTrack = prefs.getBoolean(KEY_REPEAT, false)` reads the flag.
         // Why:      Produce the in-memory session the controller restores from.
-        // TS map:   `return makeSession({ ... });`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -273,7 +253,6 @@ object SessionStore {
     //           (void), block body.
     // Why:      Persist the session so the next launch can restore it; called from the
     //           service at lifecycle points (track change, pause, destroy).
-    // TS map:   `save(context: Context, session: Session): void { ... }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -292,7 +271,6 @@ object SessionStore {
         //           lambda; inside, `this` is the `SharedPreferences.Editor`, so the
         //           `putX` calls write to it, and `edit` commits at the end.
         // Why:      Write all five fields atomically in one batch.
-        // TS map:   `prefs(context).edit((e) => { ... });`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -303,7 +281,6 @@ object SessionStore {
             //           URI. A `null` value REMOVES the key, so an absent selection reads
             //           back as `null`.
             // Why:      Persist the selected track identity (or clear it).
-            // TS map:   `e.putString(KEY_SELECTED, session.selected);`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -316,7 +293,6 @@ object SessionStore {
             //           bit pattern.
             // Why:      SharedPreferences has no Double; the bit pattern preserves the
             //           value exactly (no Float-narrowing precision loss).
-            // TS map:   `e.putLong(KEY_POSITION, doubleToRawLongBits(session.positionSecs));`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -326,7 +302,6 @@ object SessionStore {
             // What:     `putFloat(KEY_VOLUME, session.volume)` stores the `Float` gain
             //           directly (SharedPreferences supports Float).
             // Why:      Persist the volume.
-            // TS map:   `e.putFloat(KEY_VOLUME, session.volume);`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -336,7 +311,6 @@ object SessionStore {
             // What:     `putString(KEY_SHUFFLE, session.shuffle.name)` stores the enum's
             //           `.name` ("OFF"/"WITHIN_PAGE"/"ALL").
             // Why:      A stable, human-readable encoding decoded by `load` above.
-            // TS map:   `e.putString(KEY_SHUFFLE, session.shuffle.name);`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -345,7 +319,6 @@ object SessionStore {
             putString(KEY_SHUFFLE, session.shuffle.name)
             // What:     `putBoolean(KEY_REPEAT, session.repeatTrack)` stores the flag.
             // Why:      Persist repeat-track.
-            // TS map:   `e.putBoolean(KEY_REPEAT, session.repeatTrack);`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -362,7 +335,6 @@ object SessionStore {
     //             named file; `Context.MODE_PRIVATE` makes it readable only by this app.
     // Why:      One place that resolves the store, shared by `load` and `save`; mirrors
     //           `LibraryRoot.prefs`.
-    // TS map:   `private prefs(context: Context): SharedPreferences { return context.getSharedPreferences(PREFS_NAME, MODE_PRIVATE); }`
     //
     // In TS you'd write (pseudocode):
     // ```ts

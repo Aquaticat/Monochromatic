@@ -31,7 +31,6 @@
 // What:     `use std::path::PathBuf;` imports the OWNED filesystem-path type
 //           (heap-allocated, growable). Sibling: `&Path`, a borrowed view.
 // Why:      The queue stores the actual file paths it will hand to the decoder.
-// TS map:   `type PathBuf = string`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -42,7 +41,6 @@ use std::path::PathBuf;
 // What:     `use std::collections::HashSet;` the hash-set type.
 // Why:      The just-in-time shuffle pick excludes tracks already played this cycle; a set
 //           gives O(1) membership over a possibly large (whole-queue) scope.
-// TS map:   `// a Set<number>`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -53,7 +51,6 @@ use std::collections::HashSet;
 // What:     `use crate::command::ShuffleMode;` imports our own enum from the sibling
 //           module. `crate::` means "from the root of this package".
 // Why:      The queue's scope and ordering depend on the shuffle mode.
-// TS map:   `import { ShuffleMode } from "./command";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -65,7 +62,6 @@ use crate::command::ShuffleMode;
 //           The fields are private (no `pub`), so only this module can touch them
 //           directly.
 // Why:      Bundles the queue's state behind methods that keep it consistent.
-// TS map:   A class with private fields.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -83,7 +79,6 @@ pub struct Queue {
     //           `&[PathBuf]`, a borrowed slice that owns nothing.
     // Why:      The tracks in the order the user loaded them; the displayed queue list
     //           uses this order.
-    // TS map:   `string[]`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -95,7 +90,6 @@ pub struct Queue {
     // Why:      The CURRENT SCOPE's playback order: the load-order indices of the tracks
     //           playback walks right now (the current page for Off/WithinPage, or the whole
     //           queue for All), sequential or shuffled.
-    // TS map:   `number[]`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -105,7 +99,6 @@ pub struct Queue {
     // What:     `pos: Option<usize>`. "maybe an index": `Some(p)` or `None`.
     // Why:      The cursor's position WITHIN `order`. `None` means the queue is empty /
     //           nothing selected.
-    // TS map:   `number | null`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -116,7 +109,6 @@ pub struct Queue {
     //           WithinPage / All). `ShuffleMode` is `Copy`.
     // Why:      Decides both the scope (page vs whole queue) and the ordering (sequential
     //           vs shuffled).
-    // TS map:   `shuffle: ShuffleMode`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -126,7 +118,6 @@ pub struct Queue {
     // What:     `repeat_track: bool`. When true, a track that ends naturally replays
     //           itself.
     // Why:      The "repeat track" checkbox; independent of the shuffle scope.
-    // TS map:   `repeatTrack: boolean`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -137,7 +128,6 @@ pub struct Queue {
     //           `i64`). Used as the running state of a tiny PRNG.
     // Why:      Shuffling needs randomness; a self-contained PRNG avoids a dependency and
     //           stays seedable for deterministic tests.
-    // TS map:   `bigint` (JS numbers cannot hold 64 unsigned bits exactly).
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -150,7 +140,6 @@ pub struct Queue {
     // Why:      The just-in-time without-replacement pick excludes tracks played since this
     //           point; when the scope is exhausted, `cycle_start` jumps forward to start a new
     //           cycle. `order[cycle_start..]` is "played this cycle".
-    // TS map:   `private cycleStart: number;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -162,7 +151,6 @@ pub struct Queue {
 // What:     `impl Queue { ... }`. The queue's methods (an `impl` block holds a type's
 //           behaviour).
 // Why:      Group the queue's operations with its state.
-// TS map:   `class Queue { ...methods... }`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -173,7 +161,6 @@ impl Queue {
     //           type.
     // Why:      Creates an empty queue seeded from the clock so first-run shuffles differ
     //           between launches.
-    // TS map:   A static factory `static new(): Queue`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -184,7 +171,6 @@ impl Queue {
         //           `SystemTime::now()` is the wall clock; the chain turns "now" into a
         //           64-bit seed (see each combinator below).
         // Why:      We derive a changing seed from the current time.
-        // TS map:   `const seed = BigInt(Date.now());`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -195,7 +181,6 @@ impl Queue {
             //           (Ok with the elapsed time since 1970, or Err if the clock is before
             //           1970).
             // Why:      Turns "now" into "nanoseconds since 1970".
-            // TS map:   `Date.now() - 0`.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -206,7 +191,6 @@ impl Queue {
             //           `|d| ...` is a closure taking the `Duration` `d`. `d.as_nanos()` is a
             //           `u128`; `as u64` truncates it to 64 bits.
             // Why:      We only need 64 bits of entropy for the PRNG seed.
-            // TS map:   `.then(d => Number(d.nanos))` — but here it's sync.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -217,7 +201,6 @@ impl Queue {
             //           substitutes this constant (a well-known mixing constant) if the
             //           clock was weird. `_or` DROPS the error.
             // Why:      A non-zero fallback seed; xorshift must never start at 0.
-            // TS map:   `?? 0x9e3779b97f4a7c15n`.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -227,7 +210,6 @@ impl Queue {
         // What:     `Queue::with_rng_seed(seed)` calls the seeded constructor. No trailing
         //           `;`, so it is the tail expression / return.
         // Why:      Share construction logic with the test constructor.
-        // TS map:   `return Queue.withRngSeed(seed);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -239,7 +221,6 @@ impl Queue {
     // What:     `pub fn with_rng_seed(seed: u64) -> Queue` builds a queue with a
     //           caller-chosen PRNG seed.
     // Why:      Tests pass a fixed seed to get a deterministic shuffle.
-    // TS map:   `static withRngSeed(seed: bigint): Queue`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -251,7 +232,6 @@ impl Queue {
         //           `ShuffleMode::Off` is the path-qualified variant. No `;`, so this is the
         //           return value.
         // Why:      Start empty, not shuffled, repeat-track off.
-        // TS map:   `return { tracks: [], order: [], pos: null, shuffle: "off", repeatTrack: false, rngState: seed === 0n ? 1n : seed };`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -267,7 +247,6 @@ impl Queue {
             // What:     `rng_state: if seed == 0 { 1 } else { seed }`. An `if/else`
             //           EXPRESSION that evaluates to one of the two branch values (no `;`).
             // Why:      xorshift gets stuck forever at state 0, so forbid it.
-            // TS map:   `seed === 0n ? 1n : seed`.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -277,7 +256,6 @@ impl Queue {
             // What:     `cycle_start: 0`. No shuffle cycle has begun yet.
             // Why:      Set properly by `rebuild_scope_order` the first time a shuffle scope is
             //           anchored.
-            // TS map:   `cycleStart: 0,`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -291,7 +269,6 @@ impl Queue {
     //           queue: the method may change `self`'s fields but does not own/consume it.
     //           Private (no `pub`).
     // Why:      Advances and returns the PRNG state (xorshift64).
-    // TS map:   `private nextRand(): bigint { ... mutates this.rngState ... }`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -301,7 +278,6 @@ impl Queue {
         // What:     `let mut x = self.rng_state;` binds a LOCAL MUTABLE copy. `mut` marks
         //           it reassignable; without it, bindings are read-only by default.
         // Why:      We mutate a local then store it back, the classic xorshift.
-        // TS map:   `let x = this.rngState;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -312,7 +288,6 @@ impl Queue {
         //           `<<` is bitwise left shift. On `u64` these are plain wrapping bit ops
         //           (no overflow concept for shifts).
         // Why:      One of the three xorshift mixing steps.
-        // TS map:   `x ^= x << 13n;` using BigInt, masked to 64 bits.
         // Gotcha:   `<<` on a 64-bit Rust int wraps within 64 bits; in TS you must mask
         //           with `BigInt.asUintN(64, ...)` to match.
         //
@@ -323,7 +298,6 @@ impl Queue {
         x ^= x << 13;
         // What:     `x ^= x >> 7;` xor-assign with a right shift.
         // Why:      Second xorshift step.
-        // TS map:   `x ^= x >> 7n;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -332,7 +306,6 @@ impl Queue {
         x ^= x >> 7;
         // What:     `x ^= x << 17;` xor-assign with a left shift.
         // Why:      Third xorshift step.
-        // TS map:   `x ^= x << 17n;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -342,7 +315,6 @@ impl Queue {
         // What:     `self.rng_state = x;` writes the new state back through the mutable
         //           borrow.
         // Why:      Persist the PRNG progress for the next call.
-        // TS map:   `this.rngState = x;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -351,7 +323,6 @@ impl Queue {
         self.rng_state = x;
         // What:     `x` alone on the last line is the tail expression: its value is returned.
         // Why:      Caller uses the fresh random number.
-        // TS map:   `return x;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -364,7 +335,6 @@ impl Queue {
     // What:     `pub fn len(&self) -> usize`. `&self` is a read-only (shared) borrow; the
     //           method cannot mutate the queue.
     // Why:      Callers ask how many tracks there are.
-    // TS map:   `get length(): number`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -374,7 +344,6 @@ impl Queue {
         // What:     `self.tracks.len()` returns the array length as `usize`. Tail expression
         //           -> return value.
         // Why:      Report the count.
-        // TS map:   `return this.tracks.length;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -388,7 +357,6 @@ impl Queue {
     //           sibling of the owned `Vec<PathBuf>`) of the load-order paths. Read-only
     //           borrow; the caller may not mutate them.
     // Why:      The session save needs the queue's file paths to persist.
-    // TS map:   `get tracks(): readonly string[]` (a read-only view of the array).
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -398,7 +366,6 @@ impl Queue {
         // What:     `&self.tracks` borrows the `Vec` as a slice (the `Vec` derefs to
         //           `&[PathBuf]`). Tail expression -> return value.
         // Why:      Hand out a read-only view of the paths.
-        // TS map:   `return this.tracks;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -410,7 +377,6 @@ impl Queue {
     /// Whether the queue has no tracks.
     // What:     `pub fn is_empty(&self) -> bool`. Read-only borrow.
     // Why:      Convenience predicate; clippy also prefers this beside `len`.
-    // TS map:   `get isEmpty(): boolean`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -419,7 +385,6 @@ impl Queue {
     pub fn is_empty(&self) -> bool {
         // What:     `self.tracks.is_empty()` -> bool. Tail expression.
         // Why:      Report emptiness.
-        // TS map:   `return this.tracks.length === 0;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -431,7 +396,6 @@ impl Queue {
     /// Whether "repeat track" is on.
     // What:     `pub fn repeat_track(&self) -> bool`. Read-only borrow.
     // Why:      The engine mirrors this flag to the UI checkbox.
-    // TS map:   `repeatTrack(): boolean`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -440,7 +404,6 @@ impl Queue {
     pub fn repeat_track(&self) -> bool {
         // What:     `self.repeat_track` reads the `Copy` bool. Tail expression.
         // Why:      Expose the flag.
-        // TS map:   `return this.repeatTrack;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -452,7 +415,6 @@ impl Queue {
     /// Current shuffle mode.
     // What:     `pub fn shuffle_mode(&self) -> ShuffleMode`. Read-only borrow.
     // Why:      The engine mirrors the mode to the UI radio group.
-    // TS map:   `shuffleMode(): ShuffleMode`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -461,7 +423,6 @@ impl Queue {
     pub fn shuffle_mode(&self) -> ShuffleMode {
         // What:     `self.shuffle` reads the `Copy` enum out. Tail expression.
         // Why:      Expose the mode.
-        // TS map:   `return this.shuffle;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -476,7 +437,6 @@ impl Queue {
     //           folder).
     // Why:      The UI shows the folder a track lives in, not just its filename, so
     //           pagination can group by folder; the absolute prefix is stripped.
-    // TS map:   `displayPaths(): string[]`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -489,7 +449,6 @@ impl Queue {
         //           helper takes) read-only. Tail expression -> return.
         // Why:      One source of truth for the common-prefix stripping, reused and
         //           unit-tested in the `relpath` module.
-        // TS map:   `return relativeDisplayPaths(this.tracks);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -501,7 +460,6 @@ impl Queue {
     // What:     `pub fn current_index(&self) -> Option<usize>` returns the LOAD-ORDER index
     //           of the current track (into `tracks`), or None.
     // Why:      The UI highlights this row; NowPlaying carries it.
-    // TS map:   `currentIndex(): number | null`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -514,7 +472,6 @@ impl Queue {
         //           `.map` runs the closure only if `Some`. `self.order[p]` indexes the
         //           scope order array. Tail -> return.
         // Why:      Translate the cursor's order-position into a track index.
-        // TS map:   `return this.pos === null ? null : this.order[this.pos];`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -527,7 +484,6 @@ impl Queue {
     //           reference to the current path, or None. `&PathBuf` is a shared borrow tied
     //           to `self`'s lifetime.
     // Why:      The engine needs the path to open the file, without copying it.
-    // TS map:   `currentPath(): string | null`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -541,7 +497,6 @@ impl Queue {
         //           gives `Option<usize>`; `.map(|i| &self.tracks[i])` borrows the element.
         //           `&` here lends the path to the caller (no ownership transfer).
         // Why:      Avoid cloning the path on every access.
-        // TS map:   `return i === null ? null : this.tracks[i];`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -552,7 +507,6 @@ impl Queue {
 
     // What:     `pub fn set_repeat_track(&mut self, on: bool)` mutates state.
     // Why:      The UI checkbox toggles "repeat track"; record the new flag.
-    // TS map:   `setRepeatTrack(on: boolean): void`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -562,7 +516,6 @@ impl Queue {
         // What:     `self.repeat_track = on;`. Plain field assignment through the mutable
         //           borrow.
         // Why:      Store it; `advance` reads it on a natural end.
-        // TS map:   `this.repeatTrack = on;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -574,7 +527,6 @@ impl Queue {
     // What:     `pub fn set_tracks(&mut self, tracks: Vec<PathBuf>)`. The parameter is taken
     //           BY VALUE (ownership moves into the queue).
     // Why:      Replacing the queue when the user opens new files.
-    // TS map:   `setTracks(tracks: string[]): void`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -587,7 +539,6 @@ impl Queue {
         // What:     `self.tracks = tracks;` moves the new vector in, dropping (freeing) the
         //           old one.
         // Why:      Adopt the new track list.
-        // TS map:   `this.tracks = tracks;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -598,7 +549,6 @@ impl Queue {
         //           first track. `Some(0)` wraps index 0; the helper handles the empty queue
         //           (order empty, cursor None).
         // Why:      Start playback at the first track's page (or whole queue).
-        // TS map:   `this.rebuildScopeOrder(0);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -613,7 +563,6 @@ impl Queue {
     // Why:      Opening a library should auto-select NOTHING. The controller calls this after
     //           `set_tracks` on a normal open, and the restore path calls it when the saved
     //           session had no current track, so a fresh queue highlights and loads nothing.
-    // TS map:   `clearSelection(): void`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -625,7 +574,6 @@ impl Queue {
         //           treats as "no current track" (empties `order`, sets `pos = None`).
         // Why:      Reuse the single method that owns the scope/cursor invariant instead of
         //           poking the fields here.
-        // TS map:   `this.rebuildScopeOrder(null);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -640,7 +588,6 @@ impl Queue {
     // Why:      `All` scopes the whole queue; `Off`/`WithinPage` scope the anchor's page
     //           (its top-level folder / letter bucket), so playback stays inside one folder
     //           unless shuffling everything.
-    // TS map:   `private scopeIndices(anchor: number): number[]`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -657,7 +604,6 @@ impl Queue {
         // What:     `if self.shuffle == ShuffleMode::All { ... }`. `==` compares the `Copy`
         //           enum (it derives `PartialEq`).
         // Why:      `All` ignores pages: the scope is every track.
-        // TS map:   `if (this.shuffle === "all") { ... }`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -668,7 +614,6 @@ impl Queue {
             //           `.collect()` gathers it into a `Vec<usize>` (the return type fixes
             //           the element type). `return` makes this the function's value.
             // Why:      Every load-order index, ascending.
-            // TS map:   `return [...Array(this.tracks.length).keys()];`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -679,7 +624,6 @@ impl Queue {
         // What:     `let names = self.display_paths();`. The relative display strings, one
         //           per track, in load order.
         // Why:      Pagination groups these into pages.
-        // TS map:   `const names = this.displayPaths();`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -690,7 +634,6 @@ impl Queue {
         //           pages (the same pure function the UI tab bar uses, so the playback scope
         //           and the visible page can never drift). `&names` lends the vector.
         // Why:      We need the set of indices sharing the anchor's page.
-        // TS map:   `const pages = paginate(names);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -700,7 +643,6 @@ impl Queue {
         // What:     `match crate::pagination::page_of_index(&pages, anchor) { ... }`. Find
         //           which page holds the anchor; returns `Option<usize>`.
         // Why:      That page IS the scope.
-        // TS map:   `const p = pageOfIndex(pages, anchor);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -713,7 +655,6 @@ impl Queue {
             //           gathers them into a `Vec<usize>`. Entries are already in ascending
             //           load order (pagination preserves order). Tail of the arm.
             // Why:      The page's track indices form the confined scope.
-            // TS map:   `return pages[p].entries.map(e => e.index);`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -724,7 +665,6 @@ impl Queue {
             //           on any page (only happens for an empty/invalid anchor); fall back to
             //           the whole queue.
             // Why:      Defensive: never produce an empty scope for a real track.
-            // TS map:   `return [...Array(this.tracks.length).keys()];`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -740,7 +680,6 @@ impl Queue {
     //           (avoiding an immediate repeat of `current` unless the scope has one track).
     // Why:      Replaces the precomputed shuffled permutation with one pick at a time, so live
     //           queue changes need no order bookkeeping.
-    // TS map:   `private pickNextShuffle(current: number): number`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -760,7 +699,6 @@ impl Queue {
         // What:     `let scope = self.scope_indices(current);`. The scope's load-order indices
         //           (the page for `WithinPage`, the whole queue for `All`).
         // Why:      The pool to pick from.
-        // TS map:   `const scope = this.scopeIndices(current);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -772,7 +710,6 @@ impl Queue {
         //           `&usize` into `usize`; `.collect()` builds an owned set (so it does not
         //           keep borrowing `self.order`).
         // Why:      Excluded from this cycle's remaining picks.
-        // TS map:   `const played = new Set(this.order.slice(this.cycleStart));`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -782,7 +719,6 @@ impl Queue {
         // What:     `let mut remaining: Vec<usize> = scope.iter().copied().filter(|i| !played.contains(i)).collect();`.
         //           Scope tracks not yet played this cycle.
         // Why:      The candidates for the next pick.
-        // TS map:   `let remaining = scope.filter((i) => !played.has(i));`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -792,7 +728,6 @@ impl Queue {
             scope.iter().copied().filter(|i| !played.contains(i)).collect();
         // What:     `if remaining.is_empty() { ... }`. Cycle exhausted: begin a new one.
         // Why:      Without replacement means a full cycle covers the whole scope; then reshuffle.
-        // TS map:   `if (!remaining.length) { ... }`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -802,7 +737,6 @@ impl Queue {
             // What:     `self.cycle_start = self.order.len();`. The new cycle starts after the
             //           history written so far.
             // Why:      Subsequent picks measure "played this cycle" from here.
-            // TS map:   `this.cycleStart = this.order.length;`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -812,7 +746,6 @@ impl Queue {
             // What:     `remaining = scope.iter().copied().filter(|&i| i != current).collect();`.
             //           All scope tracks except the one that just finished.
             // Why:      A fresh cycle should not immediately replay the current track.
-            // TS map:   `remaining = scope.filter((i) => i !== current);`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -822,7 +755,6 @@ impl Queue {
             // What:     `if remaining.is_empty() { remaining = scope; }`. A single-track scope
             //           has nothing else; replay it.
             // Why:      Avoid an empty candidate list when the scope is one track.
-            // TS map:   `if (!remaining.length) remaining = scope;`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -835,7 +767,6 @@ impl Queue {
         // What:     `let j = (self.next_rand() % remaining.len() as u64) as usize;`. A uniform
         //           index into `remaining`.
         // Why:      Random choice among the candidates.
-        // TS map:   `const j = Number(this.nextRand() % BigInt(remaining.length));`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -844,7 +775,6 @@ impl Queue {
         let j = (self.next_rand() % remaining.len() as u64) as usize;
         // What:     `remaining[j]`. The chosen load-order index. Tail -> return.
         // Why:      Hand back the next track to play.
-        // TS map:   `return remaining[j];`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -858,7 +788,6 @@ impl Queue {
     //           current. Private helper used whenever the scope might change (set_tracks,
     //           set_shuffle, play_index to another page).
     // Why:      Centralise the "what plays next, in what order" rebuild.
-    // TS map:   `private rebuildScopeOrder(anchor: number | null): void`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -876,7 +805,6 @@ impl Queue {
         // What:     `if self.tracks.is_empty() { self.order = Vec::new(); self.pos = None; return; }`.
         //           Empty queue: no order, no cursor.
         // Why:      Nothing to play; guard the index math below.
-        // TS map:   `if (!this.tracks.length) { this.order = []; this.pos = null; return; }`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -895,7 +823,6 @@ impl Queue {
         // Why:      `set_tracks` anchors `Some(0)`, but `clear_selection` (and toggling shuffle
         //           while nothing is selected) passes `None` to DESELECT, so a freshly opened
         //           library highlights and loads nothing until the user picks a track.
-        // TS map:   `if (anchor === null) { this.order = []; this.pos = null; return; } const a0 = anchor;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -905,7 +832,6 @@ impl Queue {
         let anchor = match anchor {
             // What:     `Some(a) => a`. Unwrap a present anchor to its `usize` index.
             // Why:      We have a real track to centre the scope on.
-            // TS map:   `const a0 = anchor;`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -917,7 +843,6 @@ impl Queue {
             //           `self.pos = None` nulls the cursor, and `return` exits the function.
             // Why:      Express "nothing selected" for a loaded (non-empty) queue; a later
             //           `play_index` rebuilds a real scope when the user taps a track.
-            // TS map:   `this.order = []; this.pos = null; return;`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -932,7 +857,6 @@ impl Queue {
         // What:     `let anchor = anchor.min(self.tracks.len() - 1);`. Clamp the anchor into
         //           range. `.min(x)` returns the smaller of the two. (Shadows again.)
         // Why:      Defensive: a stale index must not point past the tracks.
-        // TS map:   `const a = Math.min(a0, this.tracks.length - 1);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -943,7 +867,6 @@ impl Queue {
         //           full sequential scope order; the shuffle modes start a fresh play history.
         // Why:      Off is a deterministic in-order walk of the scope, while shuffle picks just
         //           in time, so its `order` begins as only the anchor and grows on `advance`.
-        // TS map:   `if (this.shuffle === "off") { ...sequential... } else { ...history... }`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -953,7 +876,6 @@ impl Queue {
             // What:     `let scope = self.scope_indices(anchor);`. The scope's indices in
             //           ascending load order.
             // Why:      Off plays the scope in load order.
-            // TS map:   `const scope = this.scopeIndices(anchor);`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -963,7 +885,6 @@ impl Queue {
             // What:     `let pos = scope.iter().position(|&x| x == anchor);`. The anchor's slot
             //           in the scope.
             // Why:      The cursor must point at the anchor after the rebuild.
-            // TS map:   `const p = scope.indexOf(anchor);`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -973,7 +894,6 @@ impl Queue {
             // What:     `self.order = scope; self.pos = pos.or(Some(0));`. Adopt the sequential
             //           order and point the cursor at the anchor (or the start).
             // Why:      Off's `order` is the full scope, walked sequentially with looping.
-            // TS map:   `this.order = scope; this.pos = p < 0 ? 0 : p;`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -986,7 +906,6 @@ impl Queue {
             //           Begin the play history with just the anchor and open a fresh cycle.
             // Why:      Shuffle does not precompute a permutation; `advance` appends each
             //           just-in-time pick to `order`, and the anchor is the first track played.
-            // TS map:   `this.order = [anchor]; this.pos = 0; this.cycleStart = 0;`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -1001,7 +920,6 @@ impl Queue {
     // What:     `pub fn set_shuffle(&mut self, mode: ShuffleMode)` changes the shuffle/scope
     //           mode while keeping the currently-playing track current.
     // Why:      Switching shuffle should not interrupt the current song.
-    // TS map:   `setShuffle(mode: ShuffleMode): void`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1016,7 +934,6 @@ impl Queue {
         // What:     `if mode == self.shuffle { return; }`. Early return when nothing
         //           changes. `==` compares the enum.
         // Why:      Avoid reshuffling (and moving the cursor) on a no-op.
-        // TS map:   `if (mode === this.shuffle) return;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1028,7 +945,6 @@ impl Queue {
         // What:     `let current = self.current_index();` remembers the playing track
         //           (Option<usize>) before we rebuild the scope.
         // Why:      So the rebuild can keep the cursor on the same track.
-        // TS map:   `const current = this.currentIndex();`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1037,7 +953,6 @@ impl Queue {
         let current = self.current_index();
         // What:     `self.shuffle = mode;` record the new mode.
         // Why:      `rebuild_scope_order`/`scope_indices` read it.
-        // TS map:   `this.shuffle = mode;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1047,7 +962,6 @@ impl Queue {
         // What:     `self.rebuild_scope_order(current);` rebuild the scope order anchored on
         //           the previously playing track.
         // Why:      Apply the new mode without losing the current track.
-        // TS map:   `this.rebuildScopeOrder(current);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1060,7 +974,6 @@ impl Queue {
     //           specific track (load-order index) as current, switching the playback scope
     //           if the track is on another page.
     // Why:      The user clicked a row in the queue list.
-    // TS map:   `playIndex(track: number): number | null`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1075,7 +988,6 @@ impl Queue {
     pub fn play_index(&mut self, track: usize) -> Option<usize> {
         // What:     `if track >= self.tracks.len() { return None; }` bounds check.
         // Why:      Ignore an out-of-range click.
-        // TS map:   `if (track >= this.tracks.length) return null;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1091,7 +1003,6 @@ impl Queue {
         // Why:      For `Off`, `order` is the full sequential scope, so the track's slot is a
         //           valid cursor; for shuffle, `order` is the play history, and clicking a
         //           track should begin a fresh cycle at it rather than retrace into history.
-        // TS map:   `if (this.shuffle === "off") { const p = this.order.indexOf(track); p >= 0 ? this.pos = p : this.rebuildScopeOrder(track); } else this.rebuildScopeOrder(track);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1104,7 +1015,6 @@ impl Queue {
             // What:     `match self.order.iter().position(|&x| x == track) { ... }`. Find the
             //           track's slot in the current sequential scope, if any.
             // Why:      Stay in scope when possible; rebuild only on a jump to another page.
-            // TS map:   `const p = this.order.indexOf(track);`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -1113,7 +1023,6 @@ impl Queue {
             match self.order.iter().position(|&x| x == track) {
                 // What:     `Some(p) => self.pos = Some(p)`. Already in scope: move the cursor.
                 // Why:      Clicking another track on the same page keeps the scope intact.
-                // TS map:   `if (p >= 0) this.pos = p;`
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -1123,7 +1032,6 @@ impl Queue {
                 // What:     `None => self.rebuild_scope_order(Some(track))`. Another page:
                 //           rebuild the scope around the clicked track.
                 // Why:      Switch playback to the clicked track's page.
-                // TS map:   `else this.rebuildScopeOrder(track);`
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -1136,7 +1044,6 @@ impl Queue {
             //           the clicked track (order = [track], a fresh cycle).
             // Why:      Selecting a track under shuffle should make it current and shuffle
             //           onward from there, not replay recorded history.
-            // TS map:   `this.rebuildScopeOrder(track);`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -1146,7 +1053,6 @@ impl Queue {
         }
         // What:     `Some(track)` tail expression: report the now-current track.
         // Why:      The caller loads this index.
-        // TS map:   `return track;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1158,7 +1064,6 @@ impl Queue {
     // What:     `pub fn advance(&mut self, natural: bool) -> Option<usize>`. `natural` is
     //           true when a track ended on its own, false when the user pressed Next.
     // Why:      End-of-track and Next share most logic but differ for repeat-track.
-    // TS map:   `advance(natural: boolean): number | null`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1177,7 +1082,6 @@ impl Queue {
         //           whole function immediately. (This early-return shape is why `advance`
         //           returns `Option<usize>`.)
         // Why:      No cursor means nothing to advance; bail out early.
-        // TS map:   `if (this.pos === null) return null; const pos = this.pos;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1187,7 +1091,6 @@ impl Queue {
         let pos = self.pos?;
         // What:     `if natural && self.repeat_track { ... }`. `&&` is logical AND.
         // Why:      A track that ended under "repeat track" replays itself.
-        // TS map:   `if (natural && this.repeatTrack) return order[pos];`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1197,7 +1100,6 @@ impl Queue {
             // What:     `return Some(self.order[pos]);`. Wrap the current track index as the
             //           return value (cursor unchanged).
             // Why:      Signal "play this same track again".
-            // TS map:   `return this.order[pos];`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -1209,7 +1111,6 @@ impl Queue {
         //           just-in-time path; `Off` falls through to the sequential walk below.
         // Why:      Shuffle has no precomputed order: it retraces history forward, or appends a
         //           fresh random pick when at the history end.
-        // TS map:   `if (this.shuffle !== "off") { ... }`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1219,7 +1120,6 @@ impl Queue {
             // What:     `if pos + 1 < self.order.len() { ... }`. There is forward history to
             //           retrace (the user pressed `prev` earlier, then `next`).
             // Why:      `next` after `prev` replays the recorded history before drawing anew.
-            // TS map:   `if (pos + 1 < this.order.length) { this.pos = pos + 1; return this.order[pos + 1]; }`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -1232,7 +1132,6 @@ impl Queue {
             // What:     `let current = self.order[pos];` then `let pick = self.pick_next_shuffle(current);`.
             //           At the history end: choose the next track just in time.
             // Why:      Without replacement within the cycle, reshuffling at cycle end.
-            // TS map:   `const pick = this.pickNextShuffle(this.order[pos]);`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -1243,7 +1142,6 @@ impl Queue {
             // What:     `self.order.push(pick); self.pos = Some(self.order.len() - 1);`. Append
             //           the pick to the history and point the cursor at it.
             // Why:      The history grows by one; the new track is current.
-            // TS map:   `this.order.push(pick); this.pos = this.order.length - 1;`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -1253,7 +1151,6 @@ impl Queue {
             self.pos = Some(self.order.len() - 1);
             // What:     `return Some(pick);`. The chosen track.
             // Why:      Hand back what to play next.
-            // TS map:   `return pick;`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -1263,7 +1160,6 @@ impl Queue {
         }
         // What:     `let next = pos + 1;` compute the following position (Off, sequential).
         // Why:      Try to move forward within the scope.
-        // TS map:   `const next = pos + 1;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1272,7 +1168,6 @@ impl Queue {
         let next = pos + 1;
         // What:     `if next < self.order.len() { ... }` bounds check.
         // Why:      There is a track after the current one in this scope.
-        // TS map:   `if (next < this.order.length) { ... }`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1281,7 +1176,6 @@ impl Queue {
         if next < self.order.len() {
             // What:     `self.pos = Some(next);`. Update the cursor.
             // Why:      Normal forward step.
-            // TS map:   `this.pos = next;`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -1290,7 +1184,6 @@ impl Queue {
             self.pos = Some(next);
             // What:     `return Some(self.order[next]);`. The new track index.
             // Why:      Hand back what to play next.
-            // TS map:   `return this.order[next];`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -1302,7 +1195,6 @@ impl Queue {
         //           `Some(0)` wraps index 0.
         // Why:      Off loops the page. There is no "stop at end" mode (only repeat-track
         //           changes natural-end).
-        // TS map:   `this.pos = 0;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1311,7 +1203,6 @@ impl Queue {
         self.pos = Some(0);
         // What:     `Some(self.order[0])` tail expression: the wrapped track.
         // Why:      Begin the next loop of the scope.
-        // TS map:   `return this.order[0];`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1325,7 +1216,6 @@ impl Queue {
     //           steps back through the play history and stops at its start (no wrap).
     // Why:      The user pressed Previous. A shuffle history has no meaningful "last" to wrap
     //           to, so going back past its start would invent a track.
-    // TS map:   `prev(): number | null`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1345,7 +1235,6 @@ impl Queue {
         //           unwraps `Some(p)` to `p`, or returns `None` from `prev` immediately when
         //           the cursor is `None`.
         // Why:      Nothing to go back to when there is no cursor; bail out early.
-        // TS map:   `if (this.pos === null) return null; const pos = this.pos;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1356,7 +1245,6 @@ impl Queue {
         // What:     `if self.shuffle != ShuffleMode::Off { ... }`. Shuffle steps back through
         //           the history and stops at its start; `Off` falls through to the wrap below.
         // Why:      Going back past the start of a random history would invent a track.
-        // TS map:   `if (this.shuffle !== "off") { if (pos > 0) {...} return this.order[pos]; }`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1366,7 +1254,6 @@ impl Queue {
             // What:     `if pos > 0 { self.pos = Some(pos - 1); return Some(self.order[pos - 1]); }`.
             //           Step back one in the history.
             // Why:      Replay the previously-played track.
-            // TS map:   `if (pos > 0) { this.pos = pos - 1; return this.order[pos - 1]; }`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -1378,7 +1265,6 @@ impl Queue {
             }
             // What:     `return Some(self.order[pos]);`. Already at the history start: stay put.
             // Why:      No earlier history; report the current track unchanged.
-            // TS map:   `return this.order[pos];`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -1388,7 +1274,6 @@ impl Queue {
         }
         // What:     `if pos > 0 { ... }` there is a previous slot in the scope (Off).
         // Why:      Normal backward step.
-        // TS map:   `if (pos > 0) { ... }`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1397,7 +1282,6 @@ impl Queue {
         if pos > 0 {
             // What:     `self.pos = Some(pos - 1);`. Decrement the cursor.
             // Why:      Move to the previous track.
-            // TS map:   `this.pos = pos - 1;`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -1406,7 +1290,6 @@ impl Queue {
             self.pos = Some(pos - 1);
             // What:     `return Some(self.order[pos - 1]);`. That track index.
             // Why:      Hand back the previous track.
-            // TS map:   `return this.order[pos - 1];`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -1416,7 +1299,6 @@ impl Queue {
         }
         // What:     `let last = self.order.len() - 1;` the last scope index.
         // Why:      At the start of the scope, Previous wraps to its end.
-        // TS map:   `const last = this.order.length - 1;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1425,7 +1307,6 @@ impl Queue {
         let last = self.order.len() - 1;
         // What:     `self.pos = Some(last);`. Set the cursor to the last slot.
         // Why:      Wrap behaviour (the scope always loops).
-        // TS map:   `this.pos = last;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1434,7 +1315,6 @@ impl Queue {
         self.pos = Some(last);
         // What:     `Some(self.order[last])` tail expression.
         // Why:      Play the wrapped (last) track of the scope.
-        // TS map:   `return this.order[last];`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1447,7 +1327,6 @@ impl Queue {
 // What:     `impl Default for Queue { ... }` lets `Queue::default()` work and satisfies
 //           clippy's "type with new() should impl Default" lint.
 // Why:      Idiomatic; some generic code expects `Default`.
-// TS map:   no analogue; just an extra factory delegating to `new`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -1456,7 +1335,6 @@ impl Queue {
 impl Default for Queue {
     // What:     `fn default() -> Queue`. The single method `Default` requires.
     // Why:      Provide the zero-argument construction generic code expects.
-    // TS map:   `static default(): Queue`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1465,7 +1343,6 @@ impl Default for Queue {
     fn default() -> Queue {
         // What:     `Queue::new()`. Delegate to the seeded constructor. Tail expression.
         // Why:      One source of truth for construction.
-        // TS map:   `return Queue.new();`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1484,8 +1361,6 @@ impl Default for Queue {
 // Why:      Keep `queue.rs` to production code; the tests live beside it without inflating
 //           this file or its max-lines budget (sibling `*_tests.rs` files are exempt from
 //           the linter).
-// TS map:   the `queue.unit.test.ts` file beside `queue.ts`, excluded from the production
-//           bundle.
 //
 // In TS you'd write (pseudocode):
 // ```ts

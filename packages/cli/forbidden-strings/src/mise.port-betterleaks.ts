@@ -10,7 +10,6 @@
 //           and intentional omission. Re-port by replacing
 //           `data/betterleaks-default-config.toml` with a fresh upstream
 //           dump and re-running this script.
-// TS map:   Plain Bun-runnable TS, no framework.
 //
 // Source TOML attribution:
 //   Repo:    https://github.com/betterleaks/betterleaks

@@ -34,13 +34,6 @@
 //      normal pause through the brain, which then re-pulls this state, so a
 //      focus-induced pause flips the notification icon correctly.
 //
-// TS map:   Picture a class `BrainPlayer implements Media3Player` that wraps a
-//           `controller` object. `getState()` is a pure function
-//           `() => State`; the `handle*` methods are
-//           `(args) => Promise<void>` that mutate `controller` and resolve.
-//           There is no entry point and no manual threading in the TS mental
-//           model; the threading notes below are the parts that have no TS
-//           analogue.
 
 // What:     `package dev.monochromatic.musicplayer` declares the namespace
 //           every type in this file lives under. In Kotlin the package name
@@ -49,9 +42,6 @@
 // Why:      Other files in the same package (PlayerController, PlaybackSnapshot)
 //           can refer to `BrainPlayer` without an import; cross-package code
 //           imports `dev.monochromatic.musicplayer.BrainPlayer`.
-// TS map:   No direct equivalent. Mentally it is like every file in a folder
-//           sharing one module scope so sibling files see each other's exports
-//           with no `import` line.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -64,7 +54,6 @@ package dev.monochromatic.musicplayer
 //           thread's message queue so it runs later on THAT thread.
 // Why:      We use it (see `handler` field) to defer `invalidateState()` onto
 //           the main looper instead of calling it inline.
-// TS map:   `import { Handler } from "android/os";` — same as any named import.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -78,9 +67,6 @@ import android.os.Handler
 //           one Looper; the app's main/UI thread's Looper is the "main looper".
 // Why:      The constructor receives the main `Looper` so this player runs all
 //           its work on the same thread as the wrapping MediaSession.
-// TS map:   `import { Looper } from "android/os";`. Closest mental analogue is
-//           "the event loop of a specific thread" — but JS has only one event
-//           loop, so the per-thread part has no TS twin.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -93,9 +79,6 @@ import android.os.Looper
 //           as unstable/experimental." (See the `@OptIn(...)` on the class.)
 // Why:      `SimpleBasePlayer` and friends are marked `@UnstableApi`; without
 //           opting in, the compiler refuses to let us use them.
-// TS map:   No real equivalent. Closest is a `// @ts-expect-error`-style
-//           acknowledgement, except this one is a typed, intentional opt-in
-//           rather than an error suppression.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -108,8 +91,6 @@ import androidx.annotation.OptIn
 //           "duration/position is unknown" sentinel) and `C.INDEX_UNSET`
 //           ("no specific item index") below.
 // Why:      Needed so we can compare against and emit those sentinel values.
-// TS map:   `import { C } from "media3/common";` — a namespace object of
-//           `const` numbers, like `export const C = { TIME_UNSET: ..., ... }`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -120,7 +101,6 @@ import androidx.media3.common.C
 // What:     `import ...media3.common.MediaItem`. `MediaItem` is media3's
 //           description of "one playable thing": its URI, an id, and metadata.
 // Why:      We build one `MediaItem` per track when reporting the timeline.
-// TS map:   `import { MediaItem } from "media3/common";`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -131,7 +111,6 @@ import androidx.media3.common.MediaItem
 // What:     `import ...media3.common.MediaMetadata`. Holds the human-facing
 //           details of a track (title, artist, artwork). We only set the title.
 // Why:      The notification/lockscreen read this for the displayed track name.
-// TS map:   `import { MediaMetadata } from "media3/common";`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -146,8 +125,6 @@ import androidx.media3.common.MediaMetadata
 // Why:      We reference its constants throughout and report a `Player`-shaped
 //           state. (We don't implement `Player` directly; `SimpleBasePlayer`
 //           does, and we subclass that.)
-// TS map:   `import { Player } from "media3/common";` — both an interface type
-//           and a bag of constants on the same name.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -161,8 +138,6 @@ import androidx.media3.common.Player
 //           `getState()`, and react to commands in `handle*()`.
 // Why:      Extending it is how we become a `Player` without writing hundreds
 //           of interface methods by hand.
-// TS map:   `import { SimpleBasePlayer } from "media3/common";` — think
-//           "abstract base class with template-method hooks".
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -176,8 +151,6 @@ import androidx.media3.common.SimpleBasePlayer
 //           a member access into the outer class's namespace, not a package.
 // Why:      We build a `List<MediaItemData>` to describe the current scope's
 //           tracks as the player's timeline.
-// TS map:   `import { SimpleBasePlayer } from ...;` then use
-//           `SimpleBasePlayer.MediaItemData` — a static nested type.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -191,7 +164,6 @@ import androidx.media3.common.SimpleBasePlayer.MediaItemData
 //           playlist, play/pause flag, position, volume, repeat mode, ...).
 // Why:      `getState()` must return one of these; we build it with its
 //           `State.Builder`.
-// TS map:   `type State = SimpleBasePlayer.State;` — a readonly record type.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -203,8 +175,6 @@ import androidx.media3.common.SimpleBasePlayer.State
 //           stamps on APIs it reserves the right to change. Using such an API
 //           is a compile error unless you opt in (see `@OptIn` below).
 // Why:      Needed as the argument to `@OptIn(UnstableApi::class)`.
-// TS map:   No equivalent; mentally "a marker that this symbol is experimental
-//           and you must acknowledge it".
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -219,8 +189,6 @@ import androidx.media3.common.util.UnstableApi
 //           for".
 // Why:      Every `handle*` method must return a future; this gives us a
 //           cheap already-resolved one.
-// TS map:   `import { Futures } from "guava/concurrent";`. Think
-//           `Promise.resolve()` factory helpers.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -234,8 +202,6 @@ import com.google.common.util.concurrent.Futures
 //           `ListenableFuture<*>` (any element type — see the star note).
 // Why:      The `handle*` methods are declared to return one of these so the
 //           framework can wait for the command to finish.
-// TS map:   `import { ListenableFuture } from "guava/concurrent";` — read it
-//           as `Promise<T>`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -251,9 +217,6 @@ import com.google.common.util.concurrent.ListenableFuture
 // Why:      It tells the compiler "I know `SimpleBasePlayer` and its friends
 //           are marked unstable, and I accept that"; otherwise this file would
 //           not compile.
-// TS map:   No clean equivalent. The nearest mental model is a class decorator
-//           that takes the experimental marker type as an argument:
-//           `@OptIn(UnstableApi) class BrainPlayer { ... }`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -270,9 +233,6 @@ import com.google.common.util.concurrent.ListenableFuture
 // Why:      Subclassing `SimpleBasePlayer` is what makes `BrainPlayer` usable
 //           as a media3 `Player`; passing `looper` pins the base class to the
 //           thread we were handed.
-// TS map:   `class BrainPlayer extends SimpleBasePlayer { constructor(...) { super(looper); } }`
-//           — Kotlin folds the constructor and the `super(...)` call into the
-//           class header.
 // Gotcha:   The base-constructor call `SimpleBasePlayer(looper)` happens HERE
 //           in the header, before the class body's `init {}` block runs.
 //
@@ -296,9 +256,6 @@ class BrainPlayer(
     //           this player projects and drives.
     // Why:      We keep a handle to the brain so every `handle*` method can
     //           forward commands and `getState()` can pull its snapshot.
-    // TS map:   TypeScript's parameter-property shorthand:
-    //           `private readonly controller: PlayerController` in the ctor
-    //           signature.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -312,8 +269,6 @@ class BrainPlayer(
     // Why:      It is forwarded straight to `SimpleBasePlayer(looper)` and used
     //           to build the `Handler`; we never need it again afterward, so we
     //           don't keep it as a field.
-    // TS map:   `looper: Looper` as a normal (non-property) constructor
-    //           parameter — used inside the constructor, then forgotten.
     // Gotcha:   The wrapping `MediaSession` MUST be built on this same thread.
     //
     // In TS you'd write (pseudocode):
@@ -330,7 +285,6 @@ class BrainPlayer(
     // Why:      We post `invalidateState()` through this handler so a brain
     //           change re-pulls state on the right thread without re-entering
     //           an in-flight command (see the `init` block).
-    // TS map:   `private readonly handler: Handler = new Handler(looper);`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -344,8 +298,6 @@ class BrainPlayer(
     //           block just runs once per object.
     // Why:      We use it to wire the brain's `onStateChanged` callback so that
     //           any brain mutation triggers a state re-pull.
-    // TS map:   The body of the class's `constructor(...) { ... }`, the part
-    //           after `super(...)`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -367,9 +319,6 @@ class BrainPlayer(
         //           defers it so it never runs in the middle of a `handle*`
         //           command that itself caused the brain change, which would
         //           re-enter the player.
-        // TS map:   `controller.onStateChanged = () => { handler.post(() => this.invalidateState()); };`
-        //           — assigning an arrow function whose body queues another
-        //           arrow function (a `setTimeout(fn, 0)`-style defer).
         // Gotcha:   Both `{ }` here are LAMBDAS, not object literals. In Kotlin
         //           `foo { ... }` after a function call passes a function, not
         //           a JSON object.
@@ -393,9 +342,6 @@ class BrainPlayer(
     // Why:      `SimpleBasePlayer` calls this whenever it needs the current
     //           playback picture; we answer by translating the brain's snapshot
     //           into media3's `State`.
-    // TS map:   `getState(): State { ... }` overriding the base class method
-    //           (TS has no `override` keyword required, but `override` is
-    //           allowed).
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -411,7 +357,6 @@ class BrainPlayer(
         // Why:      We read the brain ONCE into an immutable value, then build
         //           the media3 `State` purely from it, so the picture cannot
         //           shift mid-method.
-        // TS map:   `const snapshot: PlaybackSnapshot = controller.snapshot();`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -432,10 +377,6 @@ class BrainPlayer(
         //           brace; the lambda's last expression is its result.
         // Why:      We turn each track in the brain's scope into one media3
         //           timeline row, building the player's reported timeline.
-        // TS map:   `const playlist: ReadonlyArray<MediaItemData> =`
-        //           `snapshot.items.map((item, index) => { ... });` — note TS's
-        //           `.map` passes `(value, index)`; Kotlin's `mapIndexed`
-        //           passes `(index, value)`, the OTHER order.
         // Gotcha:   Argument order is flipped vs JS `.map`: here `index` comes
         //           first, then `item`.
         //
@@ -460,11 +401,6 @@ class BrainPlayer(
             //           row's duration. We choose `Long` (not `Int`) because
             //           durations in microseconds can exceed the ~2.1 billion
             //           range of a 32-bit `Int` (35 minutes already overflows).
-            // TS map:   `const durationUs: number = (cond) ? a : b;` — TS's `if`
-            //           is NOT an expression, so you'd use a ternary (or a
-            //           pre-declared `let` assigned in both branches). TS has no
-            //           64-bit int type; `number` is a float that holds these
-            //           values fine here.
             // Gotcha:   `if/else` here RETURNS a value (Kotlin), unlike TS where
             //           `if` is a statement.
             //
@@ -483,8 +419,6 @@ class BrainPlayer(
                 //           Both operands are `Long`, so the result is `Long`.
                 // Why:      Convert the brain's milliseconds to the microseconds
                 //           media3 reports.
-                // TS map:   `snapshot.durationMs * MICROS_PER_MILLI` (identical;
-                //           it is the value of the ternary's true arm).
                 // Gotcha:   `Long * Long` is 64-bit integer multiply that WRAPS
                 //           silently on overflow — there is no auto-promotion to
                 //           a bigger type, unlike JS numbers.
@@ -501,8 +435,6 @@ class BrainPlayer(
                 //           expression, so it is what the `if` yields here.
                 // Why:      For non-current tracks (or when duration isn't known
                 //           yet) we report "unknown" rather than a wrong number.
-                // TS map:   `C.TIME_UNSET` — a magic constant; in TS it'd be the
-                //           false arm of the ternary.
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -520,11 +452,6 @@ class BrainPlayer(
             //           expression, so it is the value `mapIndexed` collects for
             //           this element (an implicit "return this row").
             // Why:      Assemble one fully-described timeline row for this track.
-            // TS map:   `return new MediaItemData.Builder(item.loadIndex)`
-            //           `.setMediaItem(...).setIsSeekable(true)`
-            //           `.setDurationUs(durationUs).build();` — the
-            //           builder-pattern object construction; in Kotlin the
-            //           trailing expression IS the returned value.
             // Gotcha:   No `return` keyword: the last expression in a lambda is
             //           automatically its result.
             //
@@ -543,7 +470,6 @@ class BrainPlayer(
                 //           inner `.setUri/.setMediaId/.setMediaMetadata/.build`).
                 // Why:      Each timeline row needs the actual playable item (URI
                 //           + id + metadata) attached.
-                // TS map:   `.setMediaItem(new MediaItem.Builder()....build())`.
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -553,7 +479,6 @@ class BrainPlayer(
                     // What:     `MediaItem.Builder()` constructs an empty
                     //           `MediaItem` builder (no `new` keyword in Kotlin).
                     // Why:      Start assembling the playable item for this row.
-                    // TS map:   `new MediaItem.Builder()`.
                     //
                     // In TS you'd write (pseudocode):
                     // ```ts
@@ -565,7 +490,6 @@ class BrainPlayer(
                         //           the builder.
                         // Why:      The engine needs the URI to open and decode
                         //           the audio.
-                        // TS map:   `.setUri(item.uri)`.
                         //
                         // In TS you'd write (pseudocode):
                         // ```ts
@@ -579,9 +503,6 @@ class BrainPlayer(
                         //           (media3 wants a String id, not an int).
                         // Why:      The id must be a stable String key; we derive
                         //           it from the integer load index.
-                        // TS map:   `.setMediaId(String(item.loadIndex))` — or
-                        //           `item.loadIndex.toString()`, which in TS works
-                        //           the same on a number.
                         //
                         // In TS you'd write (pseudocode):
                         // ```ts
@@ -597,7 +518,6 @@ class BrainPlayer(
                         //           `MediaMetadata`.
                         // Why:      The notification/lockscreen read the title from
                         //           here to show the current track's name.
-                        // TS map:   `.setMediaMetadata(new MediaMetadata.Builder().setTitle(item.title).build())`.
                         //
                         // In TS you'd write (pseudocode):
                         // ```ts
@@ -610,8 +530,6 @@ class BrainPlayer(
                         //           builder into an immutable `MediaItem` value.
                         // Why:      We need the finished item to hand to
                         //           `.setMediaItem(...)` on the outer row builder.
-                        // TS map:   `.build()` — produce the immutable object from
-                        //           the builder.
                         //
                         // In TS you'd write (pseudocode):
                         // ```ts
@@ -622,7 +540,6 @@ class BrainPlayer(
                 // What:     `.setIsSeekable(true)` marks this timeline row as
                 //           seekable (the scrubber/seek-bar may move within it).
                 // Why:      We support scrubbing, so every row reports seekable.
-                // TS map:   `.setIsSeekable(true)`.
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -634,7 +551,6 @@ class BrainPlayer(
                 //           non-current tracks it is the `C.TIME_UNSET` sentinel.
                 // Why:      The framework needs a per-row duration to render the
                 //           scrubber and timeline.
-                // TS map:   `.setDurationUs(durationUs)`.
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -646,8 +562,6 @@ class BrainPlayer(
                 //           tail expression, so its value is what `mapIndexed`
                 //           collects for this element.
                 // Why:      Yield the finished row for this track into `playlist`.
-                // TS map:   `.build()` and (implicitly) `return` it from the map
-                //           callback.
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -662,7 +576,6 @@ class BrainPlayer(
         //           assembler for an immutable `State`.
         // Why:      We accumulate the full playback picture (commands, playlist,
         //           play/pause, position, volume, repeat) before building it.
-        // TS map:   `const builder: State.Builder = new State.Builder()....`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -676,7 +589,6 @@ class BrainPlayer(
             //           framework which commands this player supports (the
             //           precomputed set in the companion object below).
             // Why:      Controls which buttons/actions the notification offers.
-            // TS map:   `.setAvailableCommands(AVAILABLE_COMMANDS)`.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -687,7 +599,6 @@ class BrainPlayer(
             //           timeline rows we built above (the current scope).
             // Why:      This is the timeline the notification/Next-Previous logic
             //           operates over.
-            // TS map:   `.setPlaylist(playlist)`.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -700,7 +611,6 @@ class BrainPlayer(
             //           asked for it").
             // Why:      The notification's play/pause icon follows the intent, and
             //           the reason keeps it from flickering during buffering.
-            // TS map:   `.setPlayWhenReady(snapshot.playWhenReady, Player.PLAY_WHEN_READY_CHANGE_REASON_USER_REQUEST)`.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -718,9 +628,6 @@ class BrainPlayer(
             // Why:      The framework shows "idle" (nothing loaded) vs "ready"
             //           (a track is loaded and prepared) based on whether the
             //           scope has any tracks.
-            // TS map:   `.setPlaybackState(playlist.length === 0 ? Player.STATE_IDLE : Player.STATE_READY)`
-            //           — `if/else` becomes a ternary, `isEmpty()` becomes
-            //           `.length === 0`.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -733,7 +640,6 @@ class BrainPlayer(
             //           current playback position (in milliseconds, a `Long`) so
             //           the scrubber knows where the playhead is.
             // Why:      Drives the seek-bar position and the elapsed-time readout.
-            // TS map:   `.setContentPositionMs(snapshot.positionMs)`.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -745,8 +651,6 @@ class BrainPlayer(
             //           is 64-bit — media3's volume API wants the 32-bit `Float`).
             // Why:      This is INFORMATIONAL only (volume is an in-app control);
             //           we still report it so external surfaces can display it.
-            // TS map:   `.setVolume(snapshot.volume)` — TS has only one float
-            //           `number`, so the Float/Double distinction vanishes.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -762,7 +666,6 @@ class BrainPlayer(
             //           Per-track repeat is NOT a player mode here; the brain
             //           replays a single track itself on natural end. (See the
             //           file summary at top.)
-            // TS map:   `.setRepeatMode(Player.REPEAT_MODE_ALL)`.
             // Gotcha:   This does NOT mean "auto-repeat the playlist" in the usual
             //           sense; `SimpleBasePlayer` never auto-advances, so the only
             //           effect is making manual Next/Previous loop.
@@ -781,8 +684,6 @@ class BrainPlayer(
         // Why:      We may not have a current track (empty queue), so we model
         //           "no current index" explicitly as null rather than a magic
         //           number.
-        // TS map:   `const current: number | null = snapshot.currentIndex;` —
-        //           Kotlin's `Int?` is TS's `number | null`.
         // Gotcha:   `Int?` (nullable) vs `Int` (never null) is a COMPILE-TIME
         //           distinction Kotlin enforces; you can't use `current` as a
         //           plain `Int` until you've checked it for null (see next line).
@@ -803,9 +704,6 @@ class BrainPlayer(
         // Why:      Only set a "current item" when we actually have one AND it is
         //           a valid position in the reported timeline; otherwise we leave
         //           it unset.
-        // TS map:   `if (current !== null && current >= 0 && current < playlist.length) { ... }`
-        //           — `in playlist.indices` becomes an explicit bounds check; TS
-        //           has no `in`-range operator like this.
         // Gotcha:   `x in range` here is RANGE-MEMBERSHIP, not JS's
         //           `key in object` property check; different meaning entirely.
         //
@@ -822,7 +720,6 @@ class BrainPlayer(
             //           thanks to the smart-cast from the null check above.
             // Why:      So the notification highlights and reports the right
             //           track as "now playing".
-            // TS map:   `builder.setCurrentMediaItemIndex(current);`.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -834,7 +731,6 @@ class BrainPlayer(
         //           into the immutable `State` and RETURNS it from `getState()`.
         //           `.build()` is the builder-to-value conversion.
         // Why:      Hand the framework the finished snapshot of playback state.
-        // TS map:   `return builder.build();`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -852,8 +748,6 @@ class BrainPlayer(
     //           of Java's `<?>` wildcard.
     // Why:      The framework routes the play/pause command here; we forward it
     //           to the brain and report "done".
-    // TS map:   `override handleSetPlayWhenReady(playWhenReady: boolean): Promise<unknown> { ... }`
-    //           — `ListenableFuture<*>` reads as `Promise<unknown>`.
     // Gotcha:   `<*>` is NOT "any"; it is "some specific but unspecified type",
     //           a read-only/producer wildcard.
     //
@@ -870,7 +764,6 @@ class BrainPlayer(
         //           truth), which will start/stop the engine and re-pull state.
         // Why:      Apply the user's play/pause request through the brain rather
         //           than touching the engine directly.
-        // TS map:   `this.controller.setPlayWhenReady(playWhenReady);`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -882,7 +775,6 @@ class BrainPlayer(
         //           (Guava's "void future"). It is the method's return value.
         // Why:      The command is synchronous (we already applied it), so we
         //           hand back a future that is instantly resolved.
-        // TS map:   `return Promise.resolve();` — an already-resolved void promise.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -898,7 +790,6 @@ class BrainPlayer(
     // Why:      We must override it to satisfy the contract, but the brain
     //           already prepares the engine when it loads a track, so there's
     //           nothing extra to do.
-    // TS map:   `override handlePrepare(): Promise<unknown> { return Promise.resolve(); }`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -911,7 +802,6 @@ class BrainPlayer(
         //           resolved, value-less future from this no-op handler.
         // Why:      Signal "preparation finished" immediately, because the brain
         //           already handled it.
-        // TS map:   `return Promise.resolve();`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -929,7 +819,6 @@ class BrainPlayer(
     //           here). Returns `ListenableFuture<*>`.
     // Why:      The framework routes Next/Previous, the scrubber, and item-jumps
     //           here; we translate them into brain calls.
-    // TS map:   `override handleSeek(mediaItemIndex: number, positionMs: number, seekCommand: number): Promise<unknown> { ... }`.
     // Gotcha:   `positionMs` is `Long` (64-bit) while `mediaItemIndex` and
     //           `seekCommand` are `Int` (32-bit); the widths differ on purpose
     //           (a position in ms can be large; an index/command code is small).
@@ -949,7 +838,6 @@ class BrainPlayer(
         //           "unset" sentinel). `!=` is plain not-equal.
         // Why:      Some seeks specify a target time; others (a bare item jump)
         //           do not. We branch on that below.
-        // TS map:   `const hasPosition: boolean = positionMs !== C.TIME_UNSET;`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -967,8 +855,6 @@ class BrainPlayer(
         // Why:      The brain's seek API works in fractional SECONDS, so we
         //           convert from media3's milliseconds. We pick `Double` (not
         //           `Float`) for the extra precision the brain's API expects.
-        // TS map:   `const targetSec: number = hasPosition ? positionMs / MILLIS_PER_SEC : 0;`
-        //           — `if/else` becomes a ternary; one `number` type covers it.
         // Gotcha:   Because `MILLIS_PER_SEC` is a `Double`, `Long / Double` is
         //           floating-point division. If it were `Long / Long` (1000L),
         //           Kotlin would do INTEGER division and truncate the fraction.
@@ -989,7 +875,6 @@ class BrainPlayer(
         //           comparison handles null safely in Kotlin).
         // Why:      Distinguish an in-place seek (stay on this track, move the
         //           playhead) from a jump to a different track.
-        // TS map:   `const staysOnCurrent: boolean = mediaItemIndex === C.INDEX_UNSET || mediaItemIndex === controller.currentScopeIndex();`.
         // Gotcha:   `currentScopeIndex()` can return `null`; Kotlin's `==`
         //           compares it to the `Int` safely (yields false if null),
         //           unlike a raw pointer compare.
@@ -1005,7 +890,6 @@ class BrainPlayer(
         //           STATEMENT (used for control flow, not as a value) that
         //           branches between the in-place-seek path and the jump path.
         // Why:      Each path calls a different brain method, so we route here.
-        // TS map:   `if (staysOnCurrent) { ... } else { ... }`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1017,7 +901,6 @@ class BrainPlayer(
             //           position was given do we move the playhead.
             // Why:      A current-item seek without a position is a no-op (nothing
             //           to move to); with one, we scrub to it.
-            // TS map:   `if (hasPosition) { controller.seek(targetSec); }`.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -1029,7 +912,6 @@ class BrainPlayer(
                 //           seconds WITHOUT reloading the track.
                 // Why:      Keep playback going from the requested position
                 //           (scrubber drag, or a seek-to-current with a position).
-                // TS map:   `controller.seek(targetSec);`.
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -1044,7 +926,6 @@ class BrainPlayer(
             //           seconds (0.0 meaning from the beginning).
             // Why:      Handle Next/Previous and explicit item jumps, honoring any
             //           requested start position instead of always restarting at 0.
-            // TS map:   `controller.seekToScopeIndex(mediaItemIndex, targetSec);`.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -1055,7 +936,6 @@ class BrainPlayer(
         // What:     `return Futures.immediateVoidFuture()` returns an instantly
         //           resolved, value-less future after the seek has been applied.
         // Why:      The seek is synchronous from our side, so signal "done".
-        // TS map:   `return Promise.resolve();`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1070,7 +950,6 @@ class BrainPlayer(
     //           element type).
     // Why:      We must release the inner engine and unwire the brain callback
     //           so nothing leaks when the service is destroyed.
-    // TS map:   `override handleRelease(): Promise<unknown> { ... }`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1083,7 +962,6 @@ class BrainPlayer(
         //           the brain). It detaches this player from the brain.
         // Why:      Once we're releasing, the brain must stop posting state
         //           re-pulls to a player that is going away.
-        // TS map:   `this.controller.onStateChanged = null;`.
         // Gotcha:   Assigning `null` is only allowed because the slot is declared
         //           nullable; a non-nullable Kotlin property would reject it.
         //
@@ -1098,7 +976,6 @@ class BrainPlayer(
         // Why:      Prevent leaking the inner engine every time the service is
         //           destroyed (this is why COMMAND_RELEASE must be advertised;
         //           see the companion object).
-        // TS map:   `this.controller.release();`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1109,7 +986,6 @@ class BrainPlayer(
         //           already-resolved, value-less future to report that release
         //           finished.
         // Why:      Teardown is synchronous here, so signal completion at once.
-        // TS map:   `return Promise.resolve();`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1127,8 +1003,6 @@ class BrainPlayer(
     // Why:      We keep the shared constants (`MICROS_PER_MILLI`,
     //           `MILLIS_PER_SEC`) and the precomputed `AVAILABLE_COMMANDS` set
     //           here so they exist once, not once per player instance.
-    // TS map:   The `static` members of the class:
-    //           `class BrainPlayer { static readonly MICROS_PER_MILLI = ...; }`.
     // Gotcha:   A companion object is itself a singleton OBJECT; it is not the
     //           same as marking individual members `static`, though for a
     //           TS reader "these are the static members" is the right mental
@@ -1147,8 +1021,6 @@ class BrainPlayer(
         // Why:      Used to convert the brain's milliseconds to the microseconds
         //           media3 wants for each timeline row's duration. `Long` (not
         //           `Int`) because the multiply it feeds can exceed 32 bits.
-        // TS map:   `private static readonly MICROS_PER_MILLI = 1000;` — no
-        //           Int/Long distinction in TS.
         // Gotcha:   `const val` is stronger than `val`: it is a true compile-time
         //           constant inlined into call sites, not just a read-only field.
         //
@@ -1166,8 +1038,6 @@ class BrainPlayer(
         //           fractional SECONDS. It is a `Double` ON PURPOSE so the
         //           division `positionMs / MILLIS_PER_SEC` is floating-point and
         //           keeps the fraction (a `Long`/`Long` divide would truncate).
-        // TS map:   `private static readonly MILLIS_PER_SEC = 1000;` — one
-        //           `number` type, but in TS `/` is always float division anyway.
         // Gotcha:   The float type here is what prevents integer truncation in
         //           the `handleSeek` division; this is not just cosmetic.
         //
@@ -1188,7 +1058,6 @@ class BrainPlayer(
         // Why:      We precompute, ONCE for the whole class, the exact set of
         //           transport commands this player advertises so `getState()`
         //           can hand it to the framework cheaply on every pull.
-        // TS map:   `private static readonly AVAILABLE_COMMANDS: Player.Commands = new Player.Commands.Builder().addAll(...).build();`.
         // Gotcha:   It is `val`, not `const val`: companion-object `const` is
         //           limited to primitive/String literals, and this is a built
         //           object, so `val` (runtime-initialised once) is required.
@@ -1205,7 +1074,6 @@ class BrainPlayer(
             //           is the player's advertised command surface.
             // Why:      These determine which buttons/actions the notification,
             //           lockscreen, and external controllers expose.
-            // TS map:   `.addAll(Player.COMMAND_PLAY_PAUSE, Player.COMMAND_PREPARE, ...)`.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -1219,7 +1087,6 @@ class BrainPlayer(
                 // What:     `Player.COMMAND_PLAY_PAUSE` is the constant enabling
                 //           the play/pause toggle.
                 // Why:      So the notification shows a working play/pause button.
-                // TS map:   `Player.COMMAND_PLAY_PAUSE` (a numeric constant).
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -1230,7 +1097,6 @@ class BrainPlayer(
                 //           "prepare" command (routed to `handlePrepare`).
                 // Why:      Required for the framework's normal lifecycle even
                 //           though our prepare is a no-op.
-                // TS map:   `Player.COMMAND_PREPARE`.
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -1242,7 +1108,6 @@ class BrainPlayer(
                 // Why:      MUST be advertised, otherwise `SimpleBasePlayer.release()`
                 //           early-returns before `handleRelease()` runs, leaking
                 //           the inner ExoPlayer on every service destroy.
-                // TS map:   `Player.COMMAND_RELEASE`.
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -1252,7 +1117,6 @@ class BrainPlayer(
                 // What:     `Player.COMMAND_SEEK_TO_NEXT` enables the "skip to
                 //           next" action (framework computes the next index).
                 // Why:      So the notification's Next button works.
-                // TS map:   `Player.COMMAND_SEEK_TO_NEXT`.
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -1263,7 +1127,6 @@ class BrainPlayer(
                 //           "skip to the next media item" specifically.
                 // Why:      Pairs with the above so external controllers' Next
                 //           item-stepping works.
-                // TS map:   `Player.COMMAND_SEEK_TO_NEXT_MEDIA_ITEM`.
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -1273,7 +1136,6 @@ class BrainPlayer(
                 // What:     `Player.COMMAND_SEEK_TO_PREVIOUS` enables the "skip to
                 //           previous" action.
                 // Why:      So the notification's Previous button works.
-                // TS map:   `Player.COMMAND_SEEK_TO_PREVIOUS`.
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -1283,7 +1145,6 @@ class BrainPlayer(
                 // What:     `Player.COMMAND_SEEK_TO_PREVIOUS_MEDIA_ITEM` enables
                 //           "skip to the previous media item" specifically.
                 // Why:      Pairs with the above for Previous item-stepping.
-                // TS map:   `Player.COMMAND_SEEK_TO_PREVIOUS_MEDIA_ITEM`.
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -1293,7 +1154,6 @@ class BrainPlayer(
                 // What:     `Player.COMMAND_SEEK_IN_CURRENT_MEDIA_ITEM` enables
                 //           seeking WITHIN the current track (the scrubber).
                 // Why:      So dragging the seek-bar works.
-                // TS map:   `Player.COMMAND_SEEK_IN_CURRENT_MEDIA_ITEM`.
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -1303,7 +1163,6 @@ class BrainPlayer(
                 // What:     `Player.COMMAND_SEEK_TO_MEDIA_ITEM` enables seeking to
                 //           a specific timeline item (jump to a chosen track).
                 // Why:      So selecting a particular item in an external UI works.
-                // TS map:   `Player.COMMAND_SEEK_TO_MEDIA_ITEM`.
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -1313,7 +1172,6 @@ class BrainPlayer(
                 // What:     `Player.COMMAND_GET_CURRENT_MEDIA_ITEM` enables the
                 //           framework/clients to READ the current media item.
                 // Why:      So the notification can read which track is playing.
-                // TS map:   `Player.COMMAND_GET_CURRENT_MEDIA_ITEM`.
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -1323,7 +1181,6 @@ class BrainPlayer(
                 // What:     `Player.COMMAND_GET_TIMELINE` enables reading the full
                 //           timeline (the list of items).
                 // Why:      So clients can see the scope/queue.
-                // TS map:   `Player.COMMAND_GET_TIMELINE`.
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -1333,7 +1190,6 @@ class BrainPlayer(
                 // What:     `Player.COMMAND_GET_METADATA` enables reading track
                 //           metadata (title, etc.).
                 // Why:      So the notification can show the track title we set.
-                // TS map:   `Player.COMMAND_GET_METADATA`.
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -1346,7 +1202,6 @@ class BrainPlayer(
             //           `AVAILABLE_COMMANDS`. This builder-to-value `.build()`
             //           is the chain's tail and the field's initialiser result.
             // Why:      Produce the finished, immutable advertised-commands set.
-            // TS map:   `.build()` — turn the builder into the final object.
             //
             // In TS you'd write (pseudocode):
             // ```ts

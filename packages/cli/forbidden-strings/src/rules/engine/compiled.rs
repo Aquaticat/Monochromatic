@@ -7,7 +7,6 @@
 // Why:      We use resharp only for the (smaller) regex bucket --
 //           literals go through AC. The combined-over-regex-bucket
 //           Regex acts as a fast "any regex rule might match?" gate.
-// TS map:   `import { Regex } from "resharp";`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -68,9 +67,6 @@ use resharp::Regex;
 //           degrading gracefully to "skip this
 //           rule on this file". The scanner is a CI gate: an aborted
 //           run silently passes the gate.
-// TS map:   `try { ... } catch (e) { ... }` -- TS exceptions are
-//           always caught structurally; Rust panics require an
-//           explicit unwind barrier.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -99,9 +95,6 @@ use std::panic::{catch_unwind, AssertUnwindSafe};
 //           tens of milliseconds, putting total wall well under 1s
 //           on the current corpus and providing the 5x growth
 //           headroom the user asked for.
-// TS map:   No equivalent crate exists in TS; closest is the
-//           built-in `RegExp` which is engineered for pattern-search
-//           rather than streaming bulk-text scan.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -120,7 +113,6 @@ use regex::bytes::Regex as PlainRegex;
 //           to be `Box<dyn Trait>` -- which adds vtable indirection
 //           per call AND prevents inlining. Static dispatch via
 //           `match` lets LLVM specialize each branch.
-// TS map:   `type CompiledRegex = { kind: "resharp"; re: Regex } | { kind: "plain"; re: PlainRegex };`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -153,7 +145,6 @@ pub enum CompiledRegex {
 //           method-style accessors `.start()`/`.end()`. Translating
 //           to a common record at the dispatch boundary keeps
 //           call-sites uniform.
-// TS map:   `type ScanMatch = { start: number; end: number };`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -178,8 +169,6 @@ impl CompiledRegex {
     //           `find_all` call from `scan.rs`. The `Result<_, ()>`
     //           shape lets callers use `if let Ok(matches) = ...`
     //           without unwrapping engine-specific error types.
-    // TS map:   `findAll(content: Uint8Array): ScanMatch[]` (TS would
-    //           throw on engine error rather than return Result).
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -224,7 +213,6 @@ impl CompiledRegex {
             //           panic stays inside the engine boundary,
             //           degrades the rule on this file only, and lets
             //           the rest of the scan proceed.
-            // TS map:   `try { return { ok: true, value: this.re.findAll(content) }; } catch { return { ok: false }; }`.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -264,8 +252,6 @@ impl CompiledRegex {
     //           fix callers see the `Err` and emit a synthetic hit (or
     //           fall back to per-member evaluation when this is the gate
     //           of a multi-rule shard).
-    // TS map:   `isMatch(content: Uint8Array): Result<boolean>`. TS has
-    //           no Result; the equivalent would throw on engine error.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -294,7 +280,6 @@ impl CompiledRegex {
             // Why:      Symmetry with `find_all` -- any caller-
             //           visible engine surface must be unwind-safe
             //           or upstream panics escape the boundary.
-            // TS map:   `try { return { ok: true, value: this.re.isMatch(content) }; } catch { return { ok: false }; }`.
             //
             // In TS you'd write (pseudocode):
             // ```ts

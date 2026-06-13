@@ -8,7 +8,6 @@
 //           subtle change that lets matched bytes through (e.g.
 //           switching from offsets to substrings) would only show
 //           up in production logs, where review is harder.
-// TS map:   `fuzzTarget((input: ScanFormatInput) => { ... });`.
 
 #![no_main]
 
@@ -157,7 +156,6 @@ fuzz_target!(|input: ScanFormatInput| {
             //           interpolated content, so guard the window scan on
             //           that. The path literal must match the one passed
             //           to `emit_hit` above (`"fuzz.txt"`).
-            // TS map:   `const scaffold = new Set([..."fuzz.txt:.. rule=", ..."0123456789"].map(c => c.charCodeAt(0)));`.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -172,7 +170,6 @@ fuzz_target!(|input: ScanFormatInput| {
             //           closure. `|b| ...` is a closure taking a `&u8`.
             // Why:      Decide whether a window hit could be coincidental
             //           scaffolding overlap (skip) or a real content leak.
-            // TS map:   `const allScaffold = matched.every(b => scaffold.has(b));`.
             //
             // In TS you'd write (pseudocode):
             // ```ts

@@ -23,10 +23,6 @@
 // Why:      We need it so these classes share an identity with the rest of the
 //           app's code (`PlayerController`, `BrainPlayer`, `PlaybackService`,
 //           …) and so the build tool knows where this file's types live.
-// TS map:   Closest idea is a file living under a directory that matches a
-//           module path. TS has no `package` statement; the folder layout plus
-//           `import`/`export` plays this role. Picture every file in this
-//           directory implicitly sharing one barrel module.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -45,10 +41,6 @@ package dev.monochromatic.musicplayer
 //           `val`, become read-only public fields of the class.
 // Why:      We need one of these per track so a `PlaybackSnapshot` can hold an
 //           ordered list of them; this is the unit the system timeline shows.
-// TS map:   A `data class` with `val` fields is just an immutable plain object
-//           shape plus auto value-equality. In TS you'd write a `type` (or a
-//           tiny `class`/`readonly` object), but TS objects compare by
-//           reference, NOT by value, so the auto `equals` has no TS twin.
 // Gotcha:   "value equality" is the trap for a TS reader: two distinct
 //           `SnapshotItem` objects with identical fields are `==`/`equals` in
 //           Kotlin. In TS `{a:1} !== {a:1}`. Don't assume reference identity.
@@ -72,8 +64,6 @@ data class SnapshotItem(
     //           the value never changes and is just handed around.
     // Why:      Holds the `content://` or `file://` URI the playback engine
     //           opens to actually read this track's bytes.
-    // TS map:   `readonly uri: string`. Kotlin `val` ↔ TS `readonly`; Kotlin
-    //           `String` ↔ TS `string` (both immutable text).
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -85,7 +75,6 @@ data class SnapshotItem(
     //           `CharSequence` interface, not the mutable `StringBuilder`).
     // Why:      Holds the folder-relative display path shown as the track title
     //           on the Android notification and lock screen.
-    // TS map:   `readonly title: string`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -103,9 +92,6 @@ data class SnapshotItem(
     // Why:      The stable load-order index of this track. It doubles as the
     //           timeline-window uid, so the UI can map the system's "current
     //           media item" back to the row it came from.
-    // TS map:   `readonly loadIndex: number`. TS has only one numeric type
-    //           (`number`, a 64-bit float), so the fixed 32-bit width and the
-    //           `Int` vs `Long` choice simply vanish in TS.
     // Gotcha:   `Int` is NOT TS's `number`. It is a fixed-width 32-bit signed
     //           integer; arithmetic wraps around on overflow rather than
     //           silently widening, and there is no fractional part.
@@ -126,8 +112,6 @@ data class SnapshotItem(
 //           the `MediaSession`/`BrainPlayer` projection, so the Android system
 //           UI can be drawn from a stable copy instead of querying the live,
 //           constantly-changing player.
-// TS map:   Again just an immutable plain-object shape with value-equality.
-//           In TS it's a `type` with `readonly` fields.
 // Gotcha:   Same value-vs-reference trap as `SnapshotItem`: two snapshots with
 //           identical contents are `equals` in Kotlin but `!==` in TS.
 //
@@ -154,9 +138,6 @@ data class PlaybackSnapshot(
     //           nobody should mutate the track order after it is built.
     // Why:      Holds the current scope's tracks in playback (timeline-window)
     //           order, which is the row list the system UI renders.
-    // TS map:   `readonly items: readonly SnapshotItem[]`. Kotlin `List<T>` ↔
-    //           TS `readonly T[]`; Kotlin's `<T>` generic syntax matches TS's
-    //           `<T>` exactly.
     // Gotcha:   Kotlin's `List` is read-only by INTERFACE, but the underlying
     //           object could still be a `MutableList` someone else holds; it is
     //           a "no-write view", not a deep-frozen guarantee. Similar to a TS
@@ -176,9 +157,6 @@ data class PlaybackSnapshot(
     //           "no current track" is representable.
     // Why:      The position within `items` of the currently playing track, or
     //           `null` when the queue is empty and nothing is selected.
-    // TS map:   `readonly currentIndex: number | null`. Kotlin's `T?` ↔ TS's
-    //           `T | null`. The `?` suffix is Kotlin's whole null-safety story
-    //           compressed into one character.
     // Gotcha:   `Int?` is enforced by the compiler: you cannot read it as a
     //           plain `Int` without first handling the null case (with `?.`,
     //           `?:`, or `!!`). TS's `strictNullChecks` is the analogue, but
@@ -198,8 +176,6 @@ data class PlaybackSnapshot(
     //           so the notification's play/pause icon does not flicker while a
     //           track is still buffering (distinct from whether audio is
     //           literally coming out of the speaker right now).
-    // TS map:   `readonly playWhenReady: boolean`. Kotlin `Boolean` ↔ TS
-    //           `boolean`, identical meaning.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -214,9 +190,6 @@ data class PlaybackSnapshot(
     //           audio gain APIs take 32-bit floats, so matching the type avoids
     //           a needless widen/narrow at the boundary.
     // Why:      Holds the output gain in the range `0.0..1.0` (silent to full).
-    // TS map:   `readonly volume: number`. TS's single `number` type is a
-    //           64-bit float, so the 32-bit `Float` vs 64-bit `Double`
-    //           distinction does not exist in TS — both map to `number`.
     // Gotcha:   `Float` is LESS precise than TS's `number`. A literal like
     //           `0.1f` cannot represent the exact decimal; expect tiny rounding
     //           differences if you compare a `Float` against a TS `number`.
@@ -236,9 +209,6 @@ data class PlaybackSnapshot(
     //           API-matching choice.
     // Why:      Holds the current track's total duration in milliseconds, or
     //           `0` when the duration is not yet known (still being probed).
-    // TS map:   `readonly durationMs: number`. TS has no 64-bit integer type
-    //           (its `number` is a 64-bit float, exact only up to 2^53), so the
-    //           `Long` vs `Int` choice collapses to plain `number` in TS.
     // Gotcha:   A `Long` can hold integers larger than TS `number` can
     //           represent exactly (beyond 2^53). For millisecond durations this
     //           never matters, but don't assume every `Long` round-trips
@@ -255,8 +225,6 @@ data class PlaybackSnapshot(
     // Why:      Holds the current playback position (how far into the track we
     //           are) in milliseconds, sampled at the moment the snapshot is
     //           built; the `MediaSession` extrapolates it forward between pulls.
-    // TS map:   `readonly positionMs: number`. Same `Long` → `number` collapse
-    //           as `durationMs` above.
     // Gotcha:   Same 64-bit-vs-2^53 caveat as `durationMs`; harmless for
     //           millisecond positions but worth knowing.
     //

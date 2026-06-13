@@ -8,8 +8,6 @@
 //           handling, path skip logic, the --all walker integration --
 //           and can only be verified at the binary boundary. Unit tests
 //           on internal helpers would miss the wiring.
-// TS map:   integration tests under `__tests__/integration.test.ts`
-//           that spawn the CLI via execFile and assert on output.
 
 use std::fs;
 use std::path::PathBuf;
@@ -23,7 +21,6 @@ use std::process::Command;
 // Why:      Avoid hardcoding `target/release/forbidden-strings` -- that
 //           breaks under `cargo test` (debug profile) and on platforms
 //           where the path layout differs.
-// TS map:   `const BIN = process.env.CARGO_BIN_EXE_forbidden_strings!;`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -36,7 +33,6 @@ const BIN: &str = env!("CARGO_BIN_EXE_forbidden-strings");
 //           parallel test runs do not collide.
 // Why:      Tests create rules files and target files; sharing a dir
 //           across tests is a flake source.
-// TS map:   `path.join(os.tmpdir(), `<label>-<pid>`)`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -64,7 +60,6 @@ fn unique_tmp(label: &str) -> PathBuf {
 // Why:      Secret-scanning CI must NOT pass on files it could not
 //           inspect; a permission error is a signal, not a silent
 //           success.
-// TS map:   `test("read error surfaces as hit", () => { ... });`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -83,7 +78,6 @@ fn read_error_surfaces_as_hit_and_nonzero_exit() {
     //           with a Windows fallback because the test environment is
     //           Linux and the bug specifically targets Unix read errors.
     // Why:      Force an io::ErrorKind::PermissionDenied at read time.
-    // TS map:   `fs.chmodSync(target, 0o000);`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -135,7 +129,6 @@ fn read_error_surfaces_as_hit_and_nonzero_exit() {
 //           bundled artifact, accidentally-committed image) is exactly
 //           the kind of thing a deny-list scanner should catch. The
 //           skip-on-NUL heuristic was an unsound shortcut.
-// TS map:   `test("NUL byte does not skip scan", () => { ... });`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -155,7 +148,6 @@ fn read_error_surfaces_as_hit_and_nonzero_exit() {
 //           findings under CI invocations like
 //           `forbidden-strings <path>` for paths whose basenames
 //           happened to collide.
-// TS map:   `test("explicit args bypass skip basename heuristic", () => { ... });`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -217,7 +209,6 @@ fn explicit_arg_with_skip_basename_is_still_scanned() {
 //           commit) can swap a regular space for NBSP to hide a
 //           leak from a naive grep; the scanner had a matching
 //           blind spot pre-fix.
-// TS map:   `test("(?i)\\s+ matches NBSP between tokens", ...)`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -276,7 +267,6 @@ fn unicode_shorthand_matches_nbsp_under_ci() {
 // Why:      Document BUG 11 as a distinct test even though the fix
 //           overlaps BUG 6. Future readers grepping for "BUG 11" land
 //           on a concrete check rather than a comment-only entry.
-// TS map:   `test("Windows-style path leaf does not basename-skip", ...)`.
 #[test]
 fn windows_style_path_does_not_basename_skip() {
     let dir = unique_tmp("bug11");
@@ -324,7 +314,6 @@ fn windows_style_path_does_not_basename_skip() {
 //           false positive. The skip closes that without reintroducing BUG 6
 //           (a same-named file in a subdirectory still scans; see the
 //           BUG 6 / BUG 11 tests above).
-// TS map:   `test("config file at cwd is skipped even as explicit arg", ...)`.
 #[test]
 fn config_file_at_cwd_is_skipped_even_as_explicit_arg() {
     let dir = unique_tmp("cwd-config-skip");
@@ -410,7 +399,6 @@ fn nul_byte_in_file_does_not_skip_scan() {
 //           when the first 8 KiB has no NUL the heuristic must read
 //           the entire file. This is the row of the design table where
 //           the file is large but text, ending with the secret.
-// TS map:   `test("large text file scans past 8 KiB probe", () => ...)`.
 #[test]
 fn large_text_file_secret_after_probe_is_matched() {
     let dir = unique_tmp("bin-probe-large-text");
@@ -451,7 +439,6 @@ fn large_text_file_secret_after_probe_is_matched() {
 //           the probe window and must still match. This is the soundness
 //           guarantee that closes BUG 5 while keeping the binary-tail
 //           bound.
-// TS map:   `test("large binary file: secret in probe before NUL matches", ...)`.
 #[test]
 fn large_binary_file_secret_in_probe_before_nul_is_matched() {
     let dir = unique_tmp("bin-probe-secret-in-probe");
@@ -493,7 +480,6 @@ fn large_binary_file_secret_in_probe_before_nul_is_matched() {
 //           skip the rest. Documenting this behavior in a test prevents
 //           silent regression in either direction (re-scanning binary
 //           tails, or accidentally discarding the probe).
-// TS map:   `test("large binary file: secret after probe is missed", ...)`.
 #[test]
 fn large_binary_file_secret_after_probe_is_acceptably_missed() {
     let dir = unique_tmp("bin-probe-secret-after-probe");

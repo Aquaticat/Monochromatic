@@ -3,7 +3,6 @@
 // Why:      `RuleSet` holds two AC instances (case-sensitive and
 //           case-insensitive); they're built in `load_ruleset` and read
 //           by `scan.rs`.
-// TS map:   `import { AhoCorasick } from "aho-corasick";`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -20,7 +19,6 @@ use super::engine::CompiledRegex;
 // Why:      We keep the rule's line index (1-based) so violation output
 //           can reference `rule=N`. `re` is the compiled regex used
 //           for `find_all` on the violation path.
-// TS map:   `type RegexRule = { idx: number; re: Regex };`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -52,7 +50,6 @@ pub struct RegexRule {
 //           literals match as pure substrings (substring uniqueness
 //           grows fast enough with length that boundary protection is
 //           not needed for distinctive multi-character phrases).
-// TS map:   `type AcMeta = { kind: "literal"; idx: number; boundLeft: boolean; boundRight: boolean } | { kind: "regexPrefix"; rulePos: number };`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -73,7 +70,6 @@ pub enum AcMeta {
 //           (modeled on `grep -w`) require classifying both the
 //           literal's edge byte and the file byte adjacent to the match.
 //           Centralizing the predicate keeps the two checks consistent.
-// TS map:   `function isWordByte(b: number): boolean`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -109,7 +105,6 @@ pub fn is_word_byte(b: u8) -> bool {
 //           Below this threshold the per-edge boundary check still
 //           fires; an explicit-substring escape hatch is to write a
 //           short literal as a regex (`/foo/`).
-// TS map:   `const SUBSTRING_THRESHOLD = 7;`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -136,7 +131,6 @@ pub const SUBSTRING_THRESHOLD: usize = 7;
 //           algebra accept the combined form (which happens whenever
 //           the chunk's rules don't trigger lookaround-related
 //           UnsupportedPattern errors).
-// TS map:   `type ResidualShard = { kind: "single"; rulePos: number } | { kind: "combined"; gate: Regex; positions: number[] };`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -167,7 +161,6 @@ pub enum ResidualShard {
 // Why:      One owned bundle holds everything the scan path needs. The
 //           hot path on a clean file is now a single AC pass with no
 //           resharp work; resharp only enters when AC fires a hit.
-// TS map:   `type RuleSet = { ac: AhoCorasick | null; acMeta: AcMeta[]; regexRules: readonly RegexRule[]; residualShards: ResidualShard[] };`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -197,8 +190,6 @@ pub struct RuleSet {
     //           via case-insensitive ASCII matching, draining the
     //           residual gate and removing the per-file mutex
     //           contention on the hot path.
-    // TS map:   `ac_ci: AhoCorasick | null` (a second instance built
-    //           with the case-insensitive option flipped on).
     //
     // In TS you'd write (pseudocode):
     // ```ts

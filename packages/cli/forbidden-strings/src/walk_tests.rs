@@ -11,8 +11,6 @@
 //           gitlink, Sha256 index parsing) only reproduce against real git
 //           state; a unit test on a pure in-memory abstraction wouldn't
 //           catch them.
-// TS map:   integration test under `walk.unit.test.ts` shelling out to
-//           `git init`/`git add`/`git commit`.
 
 use super::list_files;
 use std::fs;
@@ -28,7 +26,6 @@ use std::process::Command;
 // Why:      Cargo test runs tests in parallel by default; without a
 //           per-test unique path two tests would race on the same
 //           directory.
-// TS map:   `os.tmpdir() + "/" + label + "-" + process.pid;`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -54,7 +51,6 @@ fn unique_tmp(label: &str) -> PathBuf {
 // Why:      Test setup needs deterministic git invocations; failing
 //           fast on a setup error keeps the actual assertions
 //           focused on the function under test.
-// TS map:   `execSync("git " + args.join(" "), { cwd: dir });`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -73,7 +69,6 @@ fn run_git(dir: &PathBuf, args: &[&str]) {
     //           it and fail on perfectly normal setup invocations.
     //           Probe `/usr/bin/git` first; fall back to PATH lookup
     //           if absent so the test still works on other systems.
-    // TS map:   `const gitBin = existsSync("/usr/bin/git") ? "/usr/bin/git" : "git";`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -109,7 +104,6 @@ fn list_files_includes_force_added_gitignored_file() {
     //           .gitignore and silently skipped tracked.ignored.
     //           Post-fix the `git ls-files --ignored --exclude-standard`
     //           union recovers it.
-    // TS map:   integration test as described.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -181,7 +175,6 @@ fn list_files_excludes_submodule_gitlink_entries() {
     //           surface (~12 false positives on the Linux kernel
     //           per scan). This test pins the filter against
     //           silent regression.
-    // TS map:   `test("submodule entries are filtered", () => { ... })`.
     let dir = unique_tmp("gix-mode-filter");
     run_git(&dir, &["init", "-q"]);
     run_git(&dir, &["config", "user.email", "t@t"]);

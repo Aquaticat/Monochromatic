@@ -14,8 +14,6 @@
 //           re-introduce BUG 5 shaped behaviour (wrong line/col reports) or
 //           worse, change the format string so the matched substring leaks.
 //           These tests pin both shapes.
-// TS map:   `describe("scan_format helpers", () => { ... })` in
-//           `scan_format.unit.test.ts`.
 
 use super::build_line_index;
 use super::emit_hit;

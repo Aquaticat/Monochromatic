@@ -23,7 +23,6 @@
 //           calls the trait's `.spec()` / `.next_chunk()` methods on it.
 // Why:      The function signature below names `Source`, and calling a trait's
 //           methods on a `dyn Source` value requires the trait to be in scope.
-// TS map:   `import { Source } from "./decode";` where `Source` is an interface.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -37,7 +36,6 @@ use crate::decode::Source;
 // Why:      `measure_true_peak` returns `Result<f32, PlayerError>` and
 //           propagates decode errors with the `?` operator, so the name must be
 //           in scope.
-// TS map:   `import { PlayerError } from "./error";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -53,7 +51,6 @@ use crate::error::PlayerError;
 // Why:      Used as the Catmull-Rom 1/2 scale factor and to build the
 //           sub-sample offsets below; the repo bans bare fractional literals, so
 //           it is composed from the exempt range.
-// TS map:   `const HALF = 1 / 2;`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -65,7 +62,6 @@ const HALF: f32 = 1.0 / 2.0;
 //           `HALF`. Type `f32` (sibling `f64`), same reason as `HALF`.
 // Why:      The first of three interior sample positions between two samples
 //           where we probe the reconstructed curve.
-// TS map:   `const QUARTER = HALF / 2;`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -77,7 +73,6 @@ const QUARTER: f32 = HALF / 2.0;
 //           (0.75), built from the two constants above. Type `f32` (sibling
 //           `f64`).
 // Why:      The third interior sample position between two stored samples.
-// TS map:   `const THREE_QUARTERS = HALF + QUARTER;`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -94,7 +89,6 @@ const THREE_QUARTERS: f32 = HALF + QUARTER;
 // Why:      Catmull-Rom evaluates the curve between the 2nd and 3rd of four
 //           points; we also use `WINDOW` to size and index the per-channel
 //           arrays, and indexing wants `usize`.
-// TS map:   `const WINDOW = 4;`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -112,7 +106,6 @@ const WINDOW: usize = 4;
 //           surrounding Rust style).
 // Why:      Estimates the waveform between two stored samples, which is exactly
 //           where inter-sample peaks hide.
-// TS map:   `function catmullRom(p0, p1, p2, p3, t: number): number`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -125,7 +118,6 @@ fn catmull_rom(p0: f32, p1: f32, p2: f32, p3: f32, t: f32) -> f32 {
     //           TS.
     // Why:      The cubic polynomial below is written in terms of `t`, `t^2`,
     //           and `t^3`; precomputing them keeps the formula readable.
-    // TS map:   `const t2 = t * t; const t3 = t2 * t;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -143,7 +135,6 @@ fn catmull_rom(p0: f32, p1: f32, p2: f32, p3: f32, t: f32) -> f32 {
     // Why:      Standard closed form (Catmull and Rom, 1974); it reproduces `p1`
     //           at t=0 and `p2` at t=1 with a smooth curve that also accounts
     //           for the neighbours `p0`/`p3`.
-    // TS map:   `return 0.5 * (2*p1 + (p2-p0)*t + (2*p0-5*p1+4*p2-p3)*t2 + (3*p1-3*p2+p3-p0)*t3);`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -164,7 +155,6 @@ fn catmull_rom(p0: f32, p1: f32, p2: f32, p3: f32, t: f32) -> f32 {
 // Why:      Lets us scan the file chunk by chunk without ever holding the whole
 //           track in memory; the state is just a few floats and counters per
 //           channel (constant memory regardless of track length).
-// TS map:   `class TruePeakMeter { channels; win; filled; peak; }`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -177,7 +167,6 @@ struct TruePeakMeter {
     //           wants `usize`.
     // Why:      We need it to demultiplex interleaved samples into per-channel
     //           windows.
-    // TS map:   `channels: number;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -192,7 +181,6 @@ struct TruePeakMeter {
     //           a fixed-size inner array because the window never changes size.
     // Why:      Cubic interpolation needs the latest four samples of a channel,
     //           and there is exactly one window per channel.
-    // TS map:   `win: number[][];  // each inner array has length 4`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -206,7 +194,6 @@ struct TruePeakMeter {
     //           compared against the `usize` constant `WINDOW`.
     // Why:      We only interpolate once a channel's window holds four REAL
     //           samples (not the zero-padding the window starts with).
-    // TS map:   `filled: number[];`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -217,7 +204,6 @@ struct TruePeakMeter {
     //           value seen so far. `f32` (sibling `f64`) to match the sample
     //           type.
     // Why:      When the scan ends, this field IS the measured true peak.
-    // TS map:   `peak: number;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -232,7 +218,6 @@ struct TruePeakMeter {
 //           sample-feeding methods).
 // Why:      Rust separates a type's fields (the `struct`) from its methods (the
 //           `impl`); this block is where `new`, `feed`, and `push` live.
-// TS map:   the body of the `class TruePeakMeter { ... }` holding its methods.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -245,7 +230,6 @@ impl TruePeakMeter {
     //           meter sized for `channels` channels with all windows zeroed and
     //           returns the new struct.
     // Why:      Produces the starting state for a scan.
-    // TS map:   `constructor(channels: number)` (or a static `create`).
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -262,8 +246,6 @@ impl TruePeakMeter {
         //           return value.
         // Why:      One window and one counter per channel, with the running peak
         //           starting at 0.
-        // TS map:   `return { channels, win, filled, peak: 0 };` with the arrays
-        //           pre-filled.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -288,7 +270,6 @@ impl TruePeakMeter {
     //           empty unit (like TS `void`).
     // Why:      Drives the running peak update for a whole block of audio at
     //           once.
-    // TS map:   `feed(chunk: number[]): void`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -305,7 +286,6 @@ impl TruePeakMeter {
         //           a move).
         // Why:      The position index decides which channel a sample belongs to
         //           in the interleaved layout.
-        // TS map:   `chunk.forEach((sample, index) => { ... })`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -318,7 +298,6 @@ impl TruePeakMeter {
             //           `index % channels` (positions cycle 0,1,...,channels-1,
             //           0,1,...).
             // Why:      Route each sample to the right channel's window.
-            // TS map:   `const channel = index % this.channels;`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -331,7 +310,6 @@ impl TruePeakMeter {
             //           (like TS `this.`).
             // Why:      All the per-channel windowing/interpolation logic lives in
             //           `push`; `feed` just splits the chunk per channel.
-            // TS map:   `this.push(channel, sample);`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -349,7 +327,6 @@ impl TruePeakMeter {
     //           (sibling `u32`; `usize` because it indexes the vectors);
     //           `sample: f32` is the new audio sample by value.
     // Why:      This is the core inter-sample peak step, run once per sample.
-    // TS map:   `push(channel: number, sample: number): void`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -365,7 +342,6 @@ impl TruePeakMeter {
         //           write `self.win[channel]` and `self.peak`, avoiding a
         //           borrow-checker conflict (you cannot hold a read borrow of
         //           `self` and a write borrow of `self` at the same time).
-        // TS map:   `const window = this.win[channel];`
         // Gotcha:   This is a VALUE copy of the small array, not a reference;
         //           mutating `window` would NOT touch `self.win`. In TS, arrays
         //           are reference types, so the same code would alias the stored
@@ -382,7 +358,6 @@ impl TruePeakMeter {
         //           appended at the end.
         // Why:      Keep the last four samples in arrival order so the cubic
         //           always sees the four most recent points.
-        // TS map:   `const shifted = [window[1], window[2], window[3], sample];`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -393,7 +368,6 @@ impl TruePeakMeter {
         //           into the per-channel vector at index `channel`.
         // Why:      The next call to `push` for this channel builds on this
         //           updated window.
-        // TS map:   `this.win[channel] = shifted;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -406,7 +380,6 @@ impl TruePeakMeter {
         //           integer that returns the smaller of the two values.
         // Why:      Track when four real samples are available; counting past 4 is
         //           pointless, so we cap it.
-        // TS map:   `this.filled[channel] = Math.min(this.filled[channel] + 1, WINDOW);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -420,7 +393,6 @@ impl TruePeakMeter {
         //           mutation is local to this method only.
         // Why:      The stored sample itself is the first peak candidate before we
         //           look between samples.
-        // TS map:   `let localPeak = Math.abs(sample);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -433,7 +405,6 @@ impl TruePeakMeter {
         //           equality.
         // Why:      Cubic interpolation needs all four points to be real audio,
         //           not the initial zero padding.
-        // TS map:   `if (this.filled[channel] === WINDOW) { ... }`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -448,7 +419,6 @@ impl TruePeakMeter {
             // Why:      ~4x oversampling: probe three points between the two
             //           middle stored samples to catch peaks that fall between
             //           them.
-            // TS map:   `for (const t of [QUARTER, HALF, THREE_QUARTERS]) { ... }`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -464,7 +434,6 @@ impl TruePeakMeter {
                 //           expression on the second) but is a single statement.
                 // Why:      Each interior position is a candidate inter-sample
                 //           peak; we want its magnitude.
-                // TS map:   `const interpolated = Math.abs(catmullRom(shifted[0], shifted[1], shifted[2], shifted[3], t));`
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -477,7 +446,6 @@ impl TruePeakMeter {
                 //           the new candidate. `.max(...)` is the float method
                 //           returning the bigger of two values.
                 // Why:      Keep the highest interior value seen for this sample.
-                // TS map:   `localPeak = Math.max(localPeak, interpolated);`
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -491,7 +459,6 @@ impl TruePeakMeter {
         //           the `.max(...)` float method.
         // Why:      The overall true peak is the maximum across every sample of
         //           the whole track.
-        // TS map:   `this.peak = Math.max(this.peak, localPeak);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -518,7 +485,6 @@ impl TruePeakMeter {
 // Why:      This is THE measurement the per-track normalization is based on;
 //           note the gain calculation itself lives in Kotlin, so this function
 //           returns only the raw peak.
-// TS map:   `function measureTruePeak(source: Source): number  // throws on decode error`
 // Gotcha:   The desktop sibling takes a `&Path` and opens its own decoder; this
 //           Android version receives an already-open `Box<dyn Source>` and MOVES
 //           ownership of it in, so the caller cannot use the decoder afterwards.
@@ -535,7 +501,6 @@ pub fn measure_true_peak(mut source: Box<dyn Source>) -> Result<f32, PlayerError
     //           explicit numeric cast.
     // Why:      The meter must know the interleave width (how many channels the
     //           samples are interleaved across), and it indexes with `usize`.
-    // TS map:   `const channels = source.spec().channels;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -549,7 +514,6 @@ pub fn measure_true_peak(mut source: Box<dyn Source>) -> Result<f32, PlayerError
     // Why:      Avoids a divide-by-zero in the channel routing (`index %
     //           channels`); a peak of 0 maps to a normalization gain of 1.0 on
     //           the Kotlin side anyway.
-    // TS map:   `if (channels === 0) return 0;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -563,7 +527,6 @@ pub fn measure_true_peak(mut source: Box<dyn Source>) -> Result<f32, PlayerError
     //           `Type::function` path syntax (`::`). `let mut` because we mutate
     //           the meter as we feed it.
     // Why:      The meter accumulates the peak across all chunks.
-    // TS map:   `const meter = new TruePeakMeter(channels);`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -574,7 +537,6 @@ pub fn measure_true_peak(mut source: Box<dyn Source>) -> Result<f32, PlayerError
     //           `while (true)`); it runs until an explicit `break` inside it
     //           exits.
     // Why:      Scan the entire track until the decoder signals end-of-stream.
-    // TS map:   `while (true) { ... }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -589,7 +551,6 @@ pub fn measure_true_peak(mut source: Box<dyn Source>) -> Result<f32, PlayerError
         //           immediately.
         // Why:      We need the next block to feed it to the meter, and any decode
         //           error should bubble up to the caller unchanged.
-        // TS map:   `const chunk = source.nextChunk(); // throws on failure`
         // Gotcha:   `?` is early-return-on-error, NOT TS optional chaining (`?.`).
         //
         // In TS you'd write (pseudocode):
@@ -601,7 +562,6 @@ pub fn measure_true_peak(mut source: Box<dyn Source>) -> Result<f32, PlayerError
         //           when the `Vec<f32>` has length 0, which the decoder uses to
         //           signal EOF; `break` then exits the `loop`.
         // Why:      Stop scanning at the end of the track.
-        // TS map:   `if (chunk.length === 0) break;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -616,7 +576,6 @@ pub fn measure_true_peak(mut source: Box<dyn Source>) -> Result<f32, PlayerError
         //           owned by this loop body and is freed at the end of the
         //           iteration.
         // Why:      Update the running peak with this block's samples.
-        // TS map:   `meter.feed(chunk);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -630,7 +589,6 @@ pub fn measure_true_peak(mut source: Box<dyn Source>) -> Result<f32, PlayerError
     //           value.
     // Why:      Hand the measured true peak back to the caller (ultimately the
     //           Kotlin core, which turns it into a normalization gain).
-    // TS map:   `return meter.peak;` (the success channel is implicit in TS).
     //
     // In TS you'd write (pseudocode):
     // ```ts

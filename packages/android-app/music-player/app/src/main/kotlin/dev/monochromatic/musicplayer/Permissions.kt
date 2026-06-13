@@ -24,8 +24,6 @@
 //           on-disk directory path.
 // Why:      We need it so the activity and `PlaybackService` (both in this same
 //           package, so they need no import) can call these helpers by name.
-// TS map:   No 1:1 equivalent. In TS a module's identity IS its file path; you
-//           never write a `package` line.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -38,8 +36,6 @@ package dev.monochromatic.musicplayer
 //           of every Android permission (e.g. `READ_MEDIA_AUDIO`).
 // Why:      Both branches of `audioPermission` return one of these permission
 //           name constants, so we need the class in scope.
-// TS map:   `import { Manifest } from "android";` — a namespace of string
-//           constants, like `export const Manifest = { permission: { ... } }`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -52,8 +48,6 @@ import android.Manifest
 //           and the `ContentResolver`/permission checker).
 // Why:      `hasAudioPermission` takes a `Context` parameter to check the
 //           permission against.
-// TS map:   `import { Context } from "android/content";` — a named import of an
-//           ambient "environment handle" type.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -66,7 +60,6 @@ import android.content.Context
 //           "permission is granted" status code.
 // Why:      `hasAudioPermission` compares the check result against
 //           `PackageManager.PERMISSION_GRANTED`.
-// TS map:   `import { PackageManager } from "android/content/pm";`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -80,8 +73,6 @@ import android.content.pm.PackageManager
 //           (the constant `33`, Android 13).
 // Why:      `audioPermission` branches on the API level to pick the right
 //           permission name.
-// TS map:   `import { Build } from "android/os";` — think of it as a constants
-//           object describing the runtime environment, like `process.platform`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -95,8 +86,6 @@ import android.os.Build
 //           which returns a `PERMISSION_GRANTED`/`PERMISSION_DENIED` `Int`.
 // Why:      `hasAudioPermission` uses it to read whether we currently hold the
 //           audio permission.
-// TS map:   `import { ContextCompat } from "androidx/core/content";` — a module
-//           that only exports static helper functions.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -118,10 +107,6 @@ import androidx.core.content.ContextCompat
 //           the rest of the app requests and checks, so the per-version rule
 //           lives once and both callers stay in sync. (Old `@example` usage:
 //           `permissionLauncher.launch(audioPermission())`.)
-// TS map:   `function audioPermission(): string { return <ternary>; }`. Kotlin's
-//           `internal` has no exact TS twin; the nearest idea is a symbol
-//           exported within a package but not re-exported past its public barrel.
-//           `String` is TS `string` (no `&str`-style borrowed sibling here).
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -142,8 +127,6 @@ internal fun audioPermission(): String =
     // Why:      API 33+ has the granular `READ_MEDIA_AUDIO`; older versions only
     //           have the broad `READ_EXTERNAL_STORAGE`. This picks the correct
     //           name for the running platform.
-    // TS map:   TS `if` is a statement, so you'd use a ternary:
-    //           `Build.VERSION.SDK_INT >= 33 ? A : B`.
     // Gotcha:   Unlike TS, this whole `if/else` PRODUCES a value (it is the
     //           function's return), it is not a control-flow side effect.
     //
@@ -157,7 +140,6 @@ internal fun audioPermission(): String =
         //           `then`-branch's last expression it becomes the branch's value,
         //           hence (on API 33+) the function's return.
         // Why:      The permission to request/check on Android 13 and newer.
-        // TS map:   `Manifest.permission.READ_MEDIA_AUDIO` (the ternary's true arm).
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -170,7 +152,6 @@ internal fun audioPermission(): String =
         //           `else`-branch's last expression it becomes the branch's value,
         //           hence (on API 26-32) the function's return.
         // Why:      The only audio-capable read permission before Android 13.
-        // TS map:   `Manifest.permission.READ_EXTERNAL_STORAGE` (the ternary's false arm).
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -188,8 +169,6 @@ internal fun audioPermission(): String =
 //           after a process restart (the grant persists across process death).
 //           (Old `@example` usage:
 //           `if (hasAudioPermission(context)) controller.openLibrary(...)`.)
-// TS map:   `function hasAudioPermission(context: Context): boolean { return <expr>; }`
-//           — `Boolean` is TS `boolean`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -214,9 +193,6 @@ internal fun hasAudioPermission(context: Context): Boolean =
     //             two `Int`s, identical to TS `===` on numbers).
     // Why:      Turn Android's integer permission status into a plain yes/no the
     //           rest of the app can branch on.
-    // TS map:   `ContextCompat.checkSelfPermission(context, audioPermission()) === PackageManager.PERMISSION_GRANTED`
-    //           — the API returns a number, so you compare it to the granted
-    //           constant rather than treating it as a boolean.
     // Gotcha:   The result of `checkSelfPermission` is an `Int` code, NOT a
     //           `Boolean`; forgetting the `== PERMISSION_GRANTED` would be a type
     //           error in Kotlin (and a silent bug in looser languages).

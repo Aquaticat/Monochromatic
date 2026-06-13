@@ -10,9 +10,6 @@
 //           surface every fuzz target points at; if we need to
 //           expose a new helper, it gets re-exported here once and
 //           every target picks it up.
-// TS map:   `export * from "./rules"; export * from "./scan"; export * from "./scan_format";`
-//           but only when the package is built with the `fuzzing`
-//           build tag.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -40,7 +37,6 @@
 //           a single path (`forbidden_strings::fuzz_api::*`).
 // Why:      Single import surface. If a target needs a new
 //           helper, add the name here once.
-// TS map:   `export { ... } from "./rules";`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -90,7 +86,6 @@ pub use crate::rules::{
 //           ruleset, and returns the hit-formatted `Vec<String>`.
 // Why:      Several fuzz targets exercise the full scan pipeline,
 //           not just sub-components. They need this entry point.
-// TS map:   `export { scanContent } from "./scan";`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -104,7 +99,6 @@ pub use crate::scan::scan_content;
 //           and hit redaction invariants -- it needs direct access
 //           to the four helpers and the higher-level `format_hit` /
 //           `emit_hit` entry points.
-// TS map:   `export { buildLineIndex, lineAndColIndexed, endInLineIndexed, formatHit, emitHit } from "./scan_format";`.
 //
 // In TS you'd write (pseudocode):
 // ```ts

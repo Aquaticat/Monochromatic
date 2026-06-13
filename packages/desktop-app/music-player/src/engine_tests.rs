@@ -7,24 +7,20 @@
 //           `Update::Queue`. Every other test exercises only one half of this (watch_tests
 //           proves notify->callback; controller_tests calls `handle_command` directly), so
 //           nothing else proves the parked worker actually wakes and re-derives the queue.
-// TS map:   `engine.integration.test.ts` beside `engine.ts`.
 
 // What:     `use super::*;` bring the parent `engine` module's items (Engine) and the names
 //           it imports (Command, Update) into scope.
 // Why:      The test spawns an `Engine`, sends a `Command`, and matches an `Update`.
-// TS map:   `import * as parent from "./engine";`
 use super::*;
 
 // What:     `use std::sync::mpsc;`. Channel module.
 // Why:      The update callback forwards queue lengths to the test thread over a channel.
-// TS map:   `import { makeChannel } from "node:events";`
 use std::sync::mpsc;
 
 // What:     `use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};`. A span, a
 //           monotonic clock reading, a wall clock, and the epoch reference.
 // Why:      `Duration` bounds the wait, `Instant` builds the deadline, `SystemTime`/
 //           `UNIX_EPOCH` build a unique throwaway directory name.
-// TS map:   `Date.now()` plus a millisecond budget.
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 // What:     `fn wait_for_len(rx: &mpsc::Receiver<usize>, want: usize, secs: u64) -> bool`.
@@ -34,23 +30,19 @@ use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 //           only about a `Queue` update of a specific length, and an OS filesystem event is
 //           inherently async, so a bounded wait that skips other lengths is the correct way
 //           to await it.
-// TS map:   `async function waitForLen(rx, want, secs): Promise<boolean>`
 fn wait_for_len(rx: &mpsc::Receiver<usize>, want: usize, secs: u64) -> bool {
     // What:     `let deadline = Instant::now() + Duration::from_secs(secs);`. The instant the
     //           wait gives up.
     // Why:      Bound total waiting across however many non-matching updates arrive first.
-    // TS map:   `const deadline = performance.now() + secs * 1000;`
     let deadline = Instant::now() + Duration::from_secs(secs);
     // What:     `loop { ... }`. Keep receiving until a match, the deadline, or a closed
     //           channel.
     // Why:      A `while`-style cursor over an unbounded event stream (not a structural
     //           walk), so a loop, not recursion.
-    // TS map:   `while (true) { ... }`
     loop {
         // What:     `let now = Instant::now(); if now >= deadline { return false; }`. Stop if
         //           time is up.
         // Why:      Never wait past the budget.
-        // TS map:   `if (performance.now() >= deadline) return false;`
         let now = Instant::now();
         if now >= deadline {
             return false;
@@ -59,21 +51,17 @@ fn wait_for_len(rx: &mpsc::Receiver<usize>, want: usize, secs: u64) -> bool {
         //           for the remaining budget.
         // Why:      Shrink the per-wait timeout as the deadline nears so total wait stays
         //           bounded.
-        // TS map:   `switch (await race(rx.recv(), timeout(deadline - now))) { ... }`
         match rx.recv_timeout(deadline - now) {
             // What:     `Ok(len) if len == want => return true`. The wanted queue length
             //           arrived.
             // Why:      Success: the seam delivered the expected `Update::Queue`.
-            // TS map:   `if (len === want) return true;`
             Ok(len) if len == want => return true,
             // What:     `Ok(_) => continue`. A different update (a different length): ignore
             //           and keep waiting.
             // Why:      Only the target length proves the assertion; others are noise.
-            // TS map:   `else continue;`
             Ok(_) => continue,
             // What:     `Err(_) => return false`. Timed out or the engine dropped its sender.
             // Why:      Either way the wanted update will not come.
-            // TS map:   `catch { return false; }`
             Err(_) => return false,
         }
     }
@@ -84,44 +72,36 @@ fn wait_for_len(rx: &mpsc::Receiver<usize>, want: usize, secs: u64) -> bool {
 //           and assert a `Queue` update reflecting the new file arrives.
 // Why:      Prove the live-update path end to end: the watcher actually wakes the parked
 //           worker and the worker actually re-derives and re-emits the queue.
-// TS map:   `test("watcher drives a rescan update through the engine", () => { ... })`
 #[test]
 fn watcher_drives_rescan_update_through_engine() {
     // What:     `let nanos = ...as_nanos();`. Unique suffix for the throwaway directory.
     // Why:      Isolate this run's scratch root (THR: verify on a throwaway).
-    // TS map:   `const nanos = Date.now();`
     let nanos = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_nanos();
     // What:     `let dir = std::env::temp_dir().join(format!("mp_engine_{nanos}"));`. The
     //           Source Root to open and watch.
     // Why:      A real directory the OS watcher can observe.
-    // TS map:   `const dir = join(os.tmpdir(), `mp_engine_${nanos}`);`
     let dir = std::env::temp_dir().join(format!("mp_engine_{nanos}"));
     // What:     `std::fs::create_dir_all(&dir).unwrap();`. Create it before opening.
     // Why:      The Source Root must exist to be scanned and watched.
-    // TS map:   `mkdirSync(dir, { recursive: true });`
     std::fs::create_dir_all(&dir).unwrap();
     // What:     `std::fs::write(dir.join("a.flac"), b"").unwrap();`. One zero-byte audio file
     //           present before the open. The scan filters by extension (`is_audio_file`), so
     //           an empty `.flac` counts as a track without needing real audio.
     // Why:      Give the initial scan exactly one track to report.
-    // TS map:   `writeFileSync(join(dir, "a.flac"), "");`
     std::fs::write(dir.join("a.flac"), b"").unwrap();
 
     // What:     `let (tx, rx) = mpsc::channel::<usize>();`. A channel of queue lengths.
     // Why:      The engine's update callback runs on the worker thread; it forwards each
     //           `Update::Queue`'s length so the test thread can await specific lengths.
-    // TS map:   `const { tx, rx } = makeChannel<number>();`
     let (tx, rx) = mpsc::channel::<usize>();
     // What:     `let engine = Engine::spawn(move |update| { ... });`. Start the worker with a
     //           callback that forwards only `Update::Queue` lengths and drops other updates.
     // Why:      Exercise the real `Engine` (which wires the watcher in `run`), not a stub.
-    // TS map:   `const engine = Engine.spawn((u) => { if (u.kind === "queue") tx.send(u.paths.length); });`
     let engine = Engine::spawn(move |update| {
         // What:     `if let Update::Queue(paths) = update { let _ = tx.send(paths.len()); }`.
         //           Forward the count for queue updates; ignore everything else. `let _ =`
         //           drops the send error that occurs only after the test thread is gone.
         // Why:      The test asserts on queue size, not on now-playing/position updates.
-        // TS map:   `if (update.kind === "queue") tx.send(update.paths.length);`
         if let Update::Queue(paths) = update {
             let _ = tx.send(paths.len());
         }
@@ -132,7 +112,6 @@ fn watcher_drives_rescan_update_through_engine() {
     //           `Update::Queue`) AND arms the watcher on it.
     // Why:      Establish the watched root; the resulting `Queue(1)` also confirms the watch
     //           is armed (the handler watches before it emits).
-    // TS map:   `engine.send(OpenRoot({ root: dir, select: null, play: false }));`
     engine.send(Command::OpenRoot {
         root: dir.clone(),
         select: None,
@@ -143,13 +122,11 @@ fn watcher_drives_rescan_update_through_engine() {
     //           debounce window is 500ms; ten seconds is generous slack for OS event
     //           delivery under load.
     // Why:      A fixed, comfortable upper bound keeps the test reliable without hanging.
-    // TS map:   `const WAIT_SECS = 10;`
     const WAIT_SECS: u64 = 10;
     // What:     `assert!(wait_for_len(&rx, 1, WAIT_SECS), ...)`. The open scan must report one
     //           track. Receiving it also proves the watcher is now armed on the root.
     // Why:      Gate the second phase on the watch being live, avoiding a create-before-arm
     //           race.
-    // TS map:   `expect(await waitForLen(rx, 1, WAIT_SECS)).toBe(true);`
     assert!(
         wait_for_len(&rx, 1, WAIT_SECS),
         "expected Queue(1) after opening a root with one audio file"
@@ -158,14 +135,12 @@ fn watcher_drives_rescan_update_through_engine() {
     // What:     `std::fs::write(dir.join("b.flac"), b"").unwrap();`. Add a second audio file
     //           to the watched root.
     // Why:      This on-disk change is what the watcher must turn into a live `Rescan`.
-    // TS map:   `writeFileSync(join(dir, "b.flac"), "");`
     std::fs::write(dir.join("b.flac"), b"").unwrap();
     // What:     `assert!(wait_for_len(&rx, 2, WAIT_SECS), ...)`. A `Queue(2)` update must
     //           arrive without any further command from the test: watcher -> Rescan ->
     //           re-derived queue -> emit.
     // Why:      This is the seam under test; only an end-to-end pass proves the parked worker
     //           woke and re-scanned.
-    // TS map:   `expect(await waitForLen(rx, 2, WAIT_SECS)).toBe(true);`
     assert!(
         wait_for_len(&rx, 2, WAIT_SECS),
         "expected Queue(2) after a file appeared in the watched root (live rescan seam)"
@@ -174,7 +149,6 @@ fn watcher_drives_rescan_update_through_engine() {
     // What:     `drop(engine);` then `std::fs::remove_dir_all(&dir).ok();`. Stop the worker
     //           (its `Drop` sends `Quit`, unparks, and joins) and remove the scratch root.
     // Why:      Tear down the watcher and audio output and leave no test droppings.
-    // TS map:   `engine[Symbol.dispose](); rmSync(dir, { recursive: true });`
     drop(engine);
     std::fs::remove_dir_all(&dir).ok();
 }

@@ -34,9 +34,6 @@
 //           import it as `dev.monochromatic.musicplayer.measureAndCache`.
 // Why:      Without this, the compiler would put these declarations in the
 //           anonymous default package and the worker class could not find them.
-// TS map:   No 1:1 equivalent. TS uses file paths + `import`/`export` for the
-//           same job; mentally this is like every file in a folder sharing an
-//           implicit barrel so they see each other's exports.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -50,8 +47,6 @@ package dev.monochromatic.musicplayer
 //           one type from the `android.content` package.
 // Why:      `measureAndCache` needs a `Context` to resolve the track's content
 //           URI through its provider for both fingerprinting and decoding.
-// TS map:   `import { Context } from "android/content";` — a named import of a
-//           single symbol.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -65,8 +60,6 @@ import android.content.Context
 //           string, already split into scheme/authority/path).
 // Why:      The function is asked to measure the track AT a given `Uri`; it is
 //           the address of the audio bytes.
-// TS map:   `import { Uri } from "android/net";` — closest TS analogue is the
-//           built-in `URL` object, a parsed wrapper around a string address.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -80,8 +73,6 @@ import android.net.Uri
 //           and we call `Log.w(...)` (warning level) on it below.
 // Why:      When a decode fails we want a breadcrumb in logcat naming the
 //           offending track, without crashing the sweep.
-// TS map:   `import { Log } from "android/util";` — closest behaviour is
-//           `console`, where `Log.w` ~ `console.warn`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -99,9 +90,6 @@ import android.util.Log
 //           purpose", which must be re-thrown rather than swallowed (see the
 //           catch block below). Importing the type lets us name it in a
 //           `catch (cancellation: CancellationException)`.
-// TS map:   `import { CancellationException } from "kotlinx/coroutines";` —
-//           closest TS analogue is the `AbortError` a `DOMException` carries
-//           when an `AbortController` aborts an async operation.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -123,8 +111,6 @@ import kotlinx.coroutines.CancellationException
 // Why:      `Log.w` takes a "tag" first argument to group log lines; sharing
 //           one named constant keeps every line from this sweep grep-able under
 //           the same tag, and `const` means no per-call allocation.
-// TS map:   `const SWEEP_TAG: string = "PeakSweep";` at module top level —
-//           module-level `const` is already file-private until exported.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -148,10 +134,6 @@ private const val SWEEP_TAG: String = "PeakSweep"
 // Why:      The worker counts these outcomes to decide when to flush and to log
 //           a useful summary; returning a typed value (not a bare boolean or
 //           int) makes every caller handle each case explicitly.
-// TS map:   This repo prefers string-literal UNIONS over TS `enum`s, so the
-//           mechanical translation is a union of four string literals, NOT a
-//           TS `enum SweepOutcome { ... }`. Each Kotlin member becomes one
-//           string in the union.
 // Gotcha:   A Kotlin `enum class` value is a real object (it has a `.name`,
 //           `.ordinal`, can carry methods), not just a string the way the TS
 //           union below is. Here we only ever compare identities, so the union
@@ -181,13 +163,6 @@ enum class SweepOutcome { CACHED, MEASURED, UNFINGERPRINTABLE, FAILED }
 // Why:      This is the one entry point a worker (or the foreground path) calls
 //           per track; returning the outcome lets the caller drive its
 //           accounting and flush cadence.
-// TS map:   `suspend` maps onto `async`, and a `suspend` function's result maps
-//           onto a `Promise`. Per repo rules we do NOT mention Promise wrapping
-//           for ordinary async functions, but here `suspend` is the construct
-//           being explained, so: think `async function`. The repo's two-or-more
-//           params rule would also push toward a single destructured object,
-//           but that is a TS authoring rule, not part of mechanically reading
-//           this Kotlin signature.
 // Gotcha:   Unlike TS `async`, calling a `suspend` function does NOT eagerly
 //           return a promise you can ignore; it can only run inside a coroutine
 //           scope, and cancelling that scope unwinds it via the
@@ -224,8 +199,6 @@ suspend fun measureAndCache(context: Context, uri: Uri): SweepOutcome {
     // Why:      No fingerprint means we cannot key the cache for this track, so
     //           we stop immediately and report `UNFINGERPRINTABLE` instead of
     //           pointlessly decoding something we could never cache.
-    // TS map:   TS has no Elvis-with-return in one token; you split it into a
-    //           null check and an early return.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -241,8 +214,6 @@ suspend fun measureAndCache(context: Context, uri: Uri): SweepOutcome {
     // Why:      If the peak is already cached we must not decode again; the
     //           whole point of the cache is to make a re-sweep of a known
     //           library cheap.
-    // TS map:   `if ((await PeakCacheStore.get(context, key)) != null) {` —
-    //           the cached value would be `number | null` in TS.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -254,8 +225,6 @@ suspend fun measureAndCache(context: Context, uri: Uri): SweepOutcome {
         //           member of the enum declared above.
         // Why:      Tell the caller nothing was decoded; it will not flush for
         //           this track.
-        // TS map:   `return "CACHED";` (the matching member of the string
-        //           union).
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -299,9 +268,6 @@ suspend fun measureAndCache(context: Context, uri: Uri): SweepOutcome {
         //           implicit-return tail expression), which becomes `peak`.
         // Why:      This is the expensive work we only reach on a cache miss:
         //           decode the track and get its peak.
-        // TS map:   `peak = await measureTrackPeak(context, uri);` — in TS the
-        //           tail value must be explicitly assigned, since try is a
-        //           statement.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -318,8 +284,6 @@ suspend fun measureAndCache(context: Context, uri: Uri): SweepOutcome {
         //           structured concurrency (the coroutine machinery relies on
         //           the exception propagating to actually stop), so we must let
         //           it keep unwinding.
-        // TS map:   `throw cancellation;` inside a `catch` that first checks the
-        //           error is an abort and rethrows it.
         // Gotcha:   Catch-all `catch (e: Exception)` in Kotlin would also catch
         //           cancellations; this dedicated earlier clause exists solely
         //           to rescue and rethrow them before the broad catch below
@@ -344,8 +308,6 @@ suspend fun measureAndCache(context: Context, uri: Uri): SweepOutcome {
         // Why:      Leave a breadcrumb naming the bad track without crashing the
         //           sweep, so one unsupported or corrupt file is visible but
         //           non-fatal.
-        // TS map:   `console.warn(`true-peak measure failed for ${uri}; leaving it uncached`, failure);`
-        //           — `$uri` becomes `${uri}` in a template literal.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -359,7 +321,6 @@ suspend fun measureAndCache(context: Context, uri: Uri): SweepOutcome {
         // Why:      Report the failure to the caller and, by returning instead
         //           of producing a `peak`, deliberately leave this track
         //           uncached so a later pass or a foreground play can retry it.
-        // TS map:   `return "FAILED";`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -377,7 +338,6 @@ suspend fun measureAndCache(context: Context, uri: Uri): SweepOutcome {
     //           in-memory cache and its persistence policy; flushing to disk is
     //           explicitly the CALLER's responsibility (the worker batches many
     //           of these), which is why this function does not flush here.
-    // TS map:   `await PeakCacheStore.put(context, key, peak);`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -389,7 +349,6 @@ suspend fun measureAndCache(context: Context, uri: Uri): SweepOutcome {
     // Why:      Tell the caller this track produced a new measurement (pending
     //           its flush), so it can increment its batch counter and decide
     //           when to persist.
-    // TS map:   `return "MEASURED";`
     //
     // In TS you'd write (pseudocode):
     // ```ts

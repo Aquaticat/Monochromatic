@@ -13,7 +13,6 @@
 //           implementations drift and produce false positives").
 //           Invariant-style testing is the cheaper, more durable
 //           alternative.
-// TS map:   `fuzzTarget((input: RulesetAndContent) => { ... });`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -42,7 +41,6 @@ use sha2::{Digest, Sha256};
 //           as `path:line:col_start..col_end rule=N`. The
 //           invariant target needs to extract those numbers to
 //           bound-check them; a regex would be heavier here.
-// TS map:   `function parseHit(line: string): [number, number, number, number] | null`.
 fn parse_hit(line: &str) -> Option<(usize, usize, usize, usize)> {
     // Shape: <path>:<line>:<col_start>..<col_end> rule=<N>
     let rule_idx_pos = line.rfind(" rule=")?;
@@ -73,7 +71,6 @@ fn parse_hit(line: &str) -> Option<(usize, usize, usize, usize)> {
 //           order.
 // Why:      Plan §7.2 rule-order invariant: hits without their
 //           rule= suffix must match across orderings.
-// TS map:   `function positionKey(hit: string): string | null`.
 fn position_key(hit: &str) -> Option<String> {
     hit.rfind(" rule=").map(|p| hit[..p].to_string())
 }
@@ -84,7 +81,6 @@ fuzz_target!(|input: RulesetAndContent| {
     //           that `load_ruleset_from_source` consumes.
     // Why:      Drive the production loader exactly the same way
     //           the CLI does.
-    // TS map:   `const source = fileSource(input);`.
     let source = input.file_source();
     if source.trim().is_empty() {
         return;
@@ -94,7 +90,6 @@ fuzz_target!(|input: RulesetAndContent| {
     //           Compile-failure rejection: invalid rule combinations
     //           the loader rejects don't exercise the scan path.
     // Why:      Skip uninteresting load failures.
-    // TS map:   `try { rs = loadRulesetFromSource(source, "fuzz"); } catch { return; }`.
     let rs = match load_ruleset_from_source(&source, "fuzz") {
         Ok(r) => r,
         Err(_) => return,

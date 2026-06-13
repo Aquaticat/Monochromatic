@@ -6,7 +6,6 @@
 // Why:      Centralise the doc reference so renaming or moving the
 //           file updates one site, not five. Every message returned by
 //           `lookaround_in_complement` ends with this constant.
-// TS map:   `pub(super) const TROUBLESHOOT_REF = "...";`.
 //
 // In TS you'd write (pseudocode):
 // ```ts

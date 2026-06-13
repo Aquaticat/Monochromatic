@@ -7,7 +7,6 @@
 //           that pastes in the Rust code generated from `ui/app.slint` by
 //           `build.rs`, bringing the `AppWindow` type into scope.
 // Why:      Without it the compiled-from-markup component is invisible to Rust.
-// TS map:   like an auto-generated `import { AppWindow } from "./app.slint.gen";`
 // Gotcha:   a `name!(...)` call is a macro, NOT a function: it runs at COMPILE
 //           time and can paste in whole declarations. TS has no equivalent; the
 //           closest mental model is a build-step codegen import.
@@ -22,7 +21,6 @@ slint::include_modules!();
 //           binary crate.
 // Why:      The progress debounce bridge uses generated Slint types, so it belongs
 //           beside `main.rs`, not in the reusable library crate.
-// TS map:   `import * as uiProgress from "./ui_progress";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -37,7 +35,6 @@ mod ui_progress;
 // Why:      Picked folders and the music dir become owned `PathBuf`s, and the two
 //           path helpers below return `Option<PathBuf>`; `PathBuf` (not `&Path`)
 //           because these paths outlive the calls that produce them.
-// TS map:   just a `string` path in TS.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -52,7 +49,6 @@ use std::path::PathBuf;
 // Why:      `Path::new` is used solely inside the Unix-only `xdg_user_dir_music`
 //           helper below, so importing it unconditionally would be an unused
 //           import on Windows (which trips the deny-warnings clippy gate).
-// TS map:   no equivalent; the import simply does not exist in a Windows build.
 // Gotcha:   `#[cfg(...)]` is COMPILE-time conditional compilation, not a runtime
 //           `if`: the line literally does not exist in a non-Unix build, so it
 //           cannot be an unused import there.
@@ -70,7 +66,6 @@ use std::path::Path;
 // Why:      Several UI callbacks need to share the one `Engine`; they all run on
 //           the UI thread, so non-atomic `Rc` is enough (and cheaper than `Arc`'s
 //           atomic counter), and we never need `Box`'s single-owner model.
-// TS map:   no equivalent; GC makes every JS object implicitly shared.
 // Gotcha:   `Rc` is NOT thread-safe; sending one across threads does not compile.
 //           The cross-thread sharing below uses `Arc` instead.
 //
@@ -88,7 +83,6 @@ use std::rc::Rc;
 //           cannot be an `Rc`; an `Arc<Mutex<_>>` crosses into the UI callback
 //           safely and still mutates only one small state object (no need for
 //           `RwLock`'s reader/writer split).
-// TS map:   no exact equivalent; mentally a shared object plus `lock(() => ...)`.
 // Gotcha:   a `Mutex` in Rust WRAPS the data it guards; you reach the value only
 //           by locking. There is no "forgot to lock" path like a bare JS object.
 //
@@ -103,7 +97,6 @@ use std::sync::{Arc, Mutex};
 //           `Instant::elapsed`; `SystemTime`, the wall clock that can jump.
 // Why:      Progress debounce decisions use elapsed time since startup, which needs
 //           the monotonic `Instant`, not the jumpy `SystemTime`.
-// TS map:   `const startedAt = performance.now();`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -116,7 +109,6 @@ use std::time::Instant;
 //           but a Rust crate identifier cannot contain `-`, so the lib crate is
 //           `music_player` (the hyphen becomes an underscore).
 // Why:      We build `Command`s and read `Update`s.
-// TS map:   `import { Command, ShuffleMode, Update } from "music-player/command";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -127,7 +119,6 @@ use music_player::command::{Command, ShuffleMode, Update};
 // What:     `use music_player::cli::Cli;`. The clap-derived argument-parser struct
 //           from our library crate (its fields are `start_playing` and `paths`).
 // Why:      `main` calls `Cli::parse()` to turn the command line into that struct.
-// TS map:   `import { Cli } from "music-player/cli";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -137,7 +128,6 @@ use music_player::cli::Cli;
 
 // What:     `use music_player::engine::Engine;`. The controller handle.
 // Why:      We spawn it and send commands.
-// TS map:   `import { Engine } from "music-player/engine";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -148,7 +138,6 @@ use music_player::engine::Engine;
 // What:     `use music_player::progress::ProgressDebouncer;`. The pure debounce
 //           state shared with the binary-only UI bridge.
 // Why:      The binary owns the state object; `ui_progress` owns the Slint wiring.
-// TS map:   `import { ProgressDebouncer } from "music-player/progress";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -158,7 +147,6 @@ use music_player::progress::ProgressDebouncer;
 
 // What:     `use music_player::session::Session;`. The saved-state record.
 // Why:      We load it on launch to restore the last session.
-// TS map:   `import { Session } from "music-player/session";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -172,7 +160,6 @@ use music_player::session::Session;
 // Why:      The binary groups the queue's display paths into pages: one per top-
 //           level folder for subfolder tracks, A-Z + `#` letter pages for root-
 //           level tracks.
-// TS map:   `import * as pagination from "music-player/pagination";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -186,7 +173,6 @@ use music_player::pagination;
 //           taskbar progress.
 // Why:      `main` installs the app-id hook via the module path and constructs a
 //           `Launcher`, so it needs both the module and the type in scope.
-// TS map:   `import * as launcher from "music-player/launcher"; import { Launcher } from "music-player/launcher";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -200,7 +186,6 @@ use music_player::launcher::{self, Launcher};
 //           lives beside the struct in `cli.rs`; here we import only the trait so we
 //           can CALL `Cli::parse()` (a trait method needs its trait in scope).
 // Why:      Without the trait in scope, `Cli::parse()` would not resolve.
-// TS map:   `import { parseArgs } from "some-cli-parser";`
 // Gotcha:   in Rust a method can come from a TRAIT, and the trait must be imported
 //           to call it, even though `Cli` is already in scope. There is no TS
 //           analogue: TS methods always live on the value itself.
@@ -214,7 +199,6 @@ use clap::Parser;
 // What:     `use i_slint_backend_winit::Backend;`. Slint's winit backend, built
 //           explicitly so a window-attributes hook can run.
 // Why:      The default backend selector gives no hook to set the Wayland app id.
-// TS map:   `import { Backend } from "slint-winit-backend";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -233,7 +217,6 @@ use i_slint_backend_winit::Backend;
 // Why:      Needed to drive the window, read its `queue`, and set its list props;
 //           `SharedString` over `String` because Slint clones these strings often
 //           and a refcounted clone is far cheaper than reallocating.
-// TS map:   importing the UI runtime's helpers.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -247,7 +230,6 @@ use slint::{ComponentHandle, Model, SharedString, VecModel};
 // Why:      Slint has no Rust enum; it stores the mode as an `int` (which is `i32`
 //           on the Rust side) the radio group compares against, so `i32` matches
 //           the generated property type exactly.
-// TS map:   `function shuffleToInt(mode: ShuffleMode): number`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -258,7 +240,6 @@ fn shuffle_to_int(mode: ShuffleMode) -> i32 {
     //           `match` is exhaustive: the compiler rejects it if a variant is
     //           unhandled, so adding a `ShuffleMode` later forces an update here.
     // Why:      Stable encoding shared with the .slint file.
-    // TS map:   `switch (mode) { ... }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -270,7 +251,6 @@ fn shuffle_to_int(mode: ShuffleMode) -> i32 {
         //           `0`. No trailing `;`, so the arm's value becomes the `match`'s
         //           value, which (being the function tail) is returned.
         // Why:      Off is 0.
-        // TS map:   `case "off": return 0;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -279,7 +259,6 @@ fn shuffle_to_int(mode: ShuffleMode) -> i32 {
         ShuffleMode::Off => 0,
         // What:     `ShuffleMode::WithinPage => 1`. The within-page variant -> `1`.
         // Why:      WithinPage is 1.
-        // TS map:   `case "withinPage": return 1;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -288,7 +267,6 @@ fn shuffle_to_int(mode: ShuffleMode) -> i32 {
         ShuffleMode::WithinPage => 1,
         // What:     `ShuffleMode::All => 2`. The all variant -> `2`.
         // Why:      All is 2.
-        // TS map:   `case "all": return 2;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -301,7 +279,6 @@ fn shuffle_to_int(mode: ShuffleMode) -> i32 {
 // What:     `fn int_to_shuffle(value: i32) -> ShuffleMode`. Inverse of the above:
 //           the UI radio's selected `i32` back into a `ShuffleMode` enum value.
 // Why:      Turn the radio group's selected integer back into a `ShuffleMode`.
-// TS map:   `function intToShuffle(value: number): ShuffleMode`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -312,7 +289,6 @@ fn int_to_shuffle(value: i32) -> ShuffleMode {
     //           `_` arm matches anything not matched above (including 0 and any
     //           out-of-range int) and maps it to Off.
     // Why:      Defensive default to Off for any unexpected integer.
-    // TS map:   `return value === 1 ? "withinPage" : value === 2 ? "all" : "off";`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -321,7 +297,6 @@ fn int_to_shuffle(value: i32) -> ShuffleMode {
     match value {
         // What:     `1 => ShuffleMode::WithinPage`. Integer literal arm -> variant.
         // Why:      1 is WithinPage.
-        // TS map:   `case 1: return "withinPage";`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -330,7 +305,6 @@ fn int_to_shuffle(value: i32) -> ShuffleMode {
         1 => ShuffleMode::WithinPage,
         // What:     `2 => ShuffleMode::All`. Integer literal arm -> variant.
         // Why:      2 is All.
-        // TS map:   `case 2: return "all";`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -339,7 +313,6 @@ fn int_to_shuffle(value: i32) -> ShuffleMode {
         2 => ShuffleMode::All,
         // What:     `_ => ShuffleMode::Off`. The catch-all wildcard arm.
         // Why:      Default for every other integer.
-        // TS map:   `default: return "off";`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -355,7 +328,6 @@ fn int_to_shuffle(value: i32) -> ShuffleMode {
 //           because it would point at this function's freed locals).
 // Why:      Slint number-to-string is awkward, so we format here and pass strings;
 //           the result is `String` (owned) so the caller can keep it past this call.
-// TS map:   `function formatTime(secs: number): string`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -369,7 +341,6 @@ fn format_time(secs: f64) -> String {
     //           clamps negatives and NaN to 0.
     // Why:      Avoid negative or garbage times; `u64` because a track length never
     //           needs a sign and easily fits a 64-bit count of seconds.
-    // TS map:   `const whole = secs > 0 ? Math.floor(secs) : 0;`
     // Gotcha:   `as u64` is a SATURATING/truncating cast, not TS's `Number` coercion:
     //           NaN becomes 0 and the fraction is dropped, with no exception.
     //
@@ -384,7 +355,6 @@ fn format_time(secs: f64) -> String {
     //           (`whole % 60`) zero-padded to 2 digits. No trailing `;`, so this is
     //           the function's tail expression and is returned.
     // Why:      "3:07" style display.
-    // TS map:   `return `${Math.floor(whole/60)}:${String(whole%60).padStart(2,"0")}`;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -402,7 +372,6 @@ fn format_time(secs: f64) -> String {
 //           returns `()` (the unit type, like TS `void`). Runs on the UI thread.
 // Why:      One place derives the pagination view, so the tabs, the visible rows,
 //           and the selected tab can never disagree.
-// TS map:   `function refreshPage(app: AppWindow, target: number | null): void`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -418,7 +387,6 @@ fn refresh_page(app: &AppWindow, target: Option<i32>) {
     //           heap-allocated growable array; sibling `&[String]` is a borrowed view).
     // Why:      Re-read the canonical full list to regroup it into pages; owned
     //           `String`s because `paginate` keeps them past the borrowed model.
-    // TS map:   `const names = [...app.queue];`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -431,7 +399,6 @@ fn refresh_page(app: &AppWindow, target: Option<i32>) {
     //           A-Z letter pages, then `#`).
     // Why:      The single source of the tabs and page contents; borrowing avoids
     //           copying the whole list into the callee.
-    // TS map:   `const pages = pagination.paginate(names);`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -445,7 +412,6 @@ fn refresh_page(app: &AppWindow, target: Option<i32>) {
     //           builds the Slint string the model holds. `.collect()` gathers them
     //           into a `Vec<SharedString>`.
     // Why:      The tab captions, one per page, in page order.
-    // TS map:   `const labels = pages.map(p => p.label);`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -462,7 +428,6 @@ fn refresh_page(app: &AppWindow, target: Option<i32>) {
     //           `set_page_labels` is the generated setter for the `page-labels`
     //           property.
     // Why:      Push the tab list to the UI.
-    // TS map:   `app.pageLabels = labels;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -474,7 +439,6 @@ fn refresh_page(app: &AppWindow, target: Option<i32>) {
     //           EXPRESSION assigned to `requested`. Decides which page to show: the
     //           explicit one, or the page of the current track when following.
     // Why:      `select-page` passes an explicit page; a track change passes `None`.
-    // TS map:   `const requested = target ?? pageOfCurrent();`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -485,7 +449,6 @@ fn refresh_page(app: &AppWindow, target: Option<i32>) {
         //           present `Option`, binding the inner value to `page`, and the arm
         //           yields it.
         // Why:      Honour the explicitly clicked tab.
-        // TS map:   `if (target !== null) return target;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -495,7 +458,6 @@ fn refresh_page(app: &AppWindow, target: Option<i32>) {
         // What:     `None => { ... }`. The empty-`Option` arm; its `{ ... }` block
         //           computes the page to follow the current track.
         // Why:      Keep the playing row visible after a track change.
-        // TS map:   `else { ... compute from current ... }`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -505,7 +467,6 @@ fn refresh_page(app: &AppWindow, target: Option<i32>) {
             // What:     `let index = app.get_current_index();`. The playing track's
             //           load-order index, or `-1` when nothing is playing.
             // Why:      We map it onto a page.
-            // TS map:   `const index = app.currentIndex;`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -517,7 +478,6 @@ fn refresh_page(app: &AppWindow, target: Option<i32>) {
             //           current track (-1), keep the page the user is already viewing;
             //           otherwise find the page holding that track.
             // Why:      Do not yank the view to page 0 when nothing is playing.
-            // TS map:   `index < 0 ? app.selectedPage : (pageOfIndex(...) ?? app.selectedPage)`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -532,7 +492,6 @@ fn refresh_page(app: &AppWindow, target: Option<i32>) {
                 //           `u32`/`u64`); `page_of_index` returns `Option<usize>`
                 //           (`Some(page)` or `None`).
                 // Why:      Locate the current track's page.
-                // TS map:   `pageOfIndex(pages, index) ?? app.selectedPage`
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -543,7 +502,6 @@ fn refresh_page(app: &AppWindow, target: Option<i32>) {
                     //           page index (`usize`) and `as i32` widens it back to the
                     //           property's signed type.
                     // Why:      Show that page.
-                    // TS map:   `return page;`
                     //
                     // In TS you'd write (pseudocode):
                     // ```ts
@@ -553,7 +511,6 @@ fn refresh_page(app: &AppWindow, target: Option<i32>) {
                     // What:     `None => app.get_selected_page()`. Not found (stale
                     //           index mid-update); keep the current view.
                     // Why:      Safe fallback.
-                    // TS map:   `return app.selectedPage;`
                     //
                     // In TS you'd write (pseudocode):
                     // ```ts
@@ -571,7 +528,6 @@ fn refresh_page(app: &AppWindow, target: Option<i32>) {
     //           outside `[0, len-1]`. `pages.len()` is a `usize` count, `as i32`
     //           narrows it.
     // Why:      A stale or out-of-range page index must not index past the pages.
-    // TS map:   `const clamped = pages.length ? Math.min(Math.max(requested, 0), pages.length - 1) : 0;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -589,7 +545,6 @@ fn refresh_page(app: &AppWindow, target: Option<i32>) {
     //           `pages[i]` would). A `match` builds the selected page's rows as the
     //           generated `PageItem` struct.
     // Why:      The ListView shows only this page's tracks.
-    // TS map:   `const items = (pages[clamped]?.entries ?? []).map(...);`
     // Gotcha:   `.get(i)` is the SAFE indexer returning an `Option`; `pages[i]`
     //           would panic on an out-of-range index. Prefer `.get` for fallbacks.
     //
@@ -610,7 +565,6 @@ fn refresh_page(app: &AppWindow, target: Option<i32>) {
         // Why:      Show the path BELOW the folder tab (the folder name is already the tab
         //           caption), while still carrying the real queue index so a click maps back
         //           correctly.
-        // TS map:   `page.entries.map(e => ({ name: rowDisplay(page.label, e.name), index: e.index }))`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -627,7 +581,6 @@ fn refresh_page(app: &AppWindow, target: Option<i32>) {
         // What:     `None => Vec::new()`. `Vec::new()` constructs an empty vector (no
         //           page, e.g. empty queue): no rows.
         // Why:      Show an empty list.
-        // TS map:   `[]`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -639,7 +592,6 @@ fn refresh_page(app: &AppWindow, target: Option<i32>) {
     //           `VecModel` -> `Rc` -> `.into()` -> `ModelRc` wrapping as the labels
     //           above; `set_page_items` sets the `page-items` property.
     // Why:      Render the selected page's rows.
-    // TS map:   `app.pageItems = items;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -649,7 +601,6 @@ fn refresh_page(app: &AppWindow, target: Option<i32>) {
     // What:     `app.set_selected_page(clamped);`. Set the `selected-page` property
     //           to mark which tab is active.
     // Why:      Highlight the visible tab.
-    // TS map:   `app.selectedPage = clamped;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -663,7 +614,6 @@ fn refresh_page(app: &AppWindow, target: Option<i32>) {
 //           `update` is an owned `Update` enum value taken by value (so the match
 //           below can move its payload out). Runs on the event-loop thread.
 // Why:      Keep the on-screen state mirroring the engine's state.
-// TS map:   `function applyUpdate(app: AppWindow, update: Update): void`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -673,7 +623,6 @@ fn apply_update(app: &AppWindow, update: Update) {
     // What:     `match update { ... }`. Pattern-match (and destructure) the update
     //           enum's variant; exhaustive over every `Update` case.
     // Why:      Each variant maps to one or more property setters.
-    // TS map:   `switch (update.kind) { ... }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -684,7 +633,6 @@ fn apply_update(app: &AppWindow, update: Update) {
         //           the variant's single payload (the `Vec<String>` of names) to
         //           `names`, moving it out of `update`.
         // Why:      Render the filenames.
-        // TS map:   `case "queue": { const names = update.names; ... }`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -697,7 +645,6 @@ fn apply_update(app: &AppWindow, update: Update) {
             //           by name is the closure shorthand); `.collect()` gathers a new
             //           `Vec<SharedString>`.
             // Why:      Slint models hold `SharedString`, not `String`.
-            // TS map:   `const items = names.slice();`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -708,7 +655,6 @@ fn apply_update(app: &AppWindow, update: Update) {
             //           wraps the vector as a list model; `Rc::new` puts it behind a
             //           shared-ownership pointer.
             // Why:      Slint list properties take a reference-counted model.
-            // TS map:   `const model = items;`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -721,7 +667,6 @@ fn apply_update(app: &AppWindow, update: Update) {
             //           the canonical full list; the visible rows come from the
             //           paginated `page-items` set inside `refresh_page` just below.
             // Why:      Store the full list (the pagination view is derived from it).
-            // TS map:   `app.queue = model;`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -733,7 +678,6 @@ fn apply_update(app: &AppWindow, update: Update) {
             //           the `NowPlaying` update that always follows an open/restore
             //           then jumps to the current track's page.
             // Why:      Repaginate whenever the queue changes.
-            // TS map:   `refreshPage(app, 0);`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -745,7 +689,6 @@ fn apply_update(app: &AppWindow, update: Update) {
         //           STRUCT-variant pattern: destructures the variant's named fields
         //           directly into the locals `index`, `name`, `duration`.
         // Why:      Update the now-playing label, highlight, and seek-bar max.
-        // TS map:   `case "nowPlaying": { const { index, name, duration } = update; ... }`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -759,7 +702,6 @@ fn apply_update(app: &AppWindow, update: Update) {
             // What:     `app.set_track_name(name.into());`. `name.into()` converts the
             //           owned `String` to the `SharedString` the property wants.
             // Why:      Show the filename.
-            // TS map:   `app.trackName = name;`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -769,7 +711,6 @@ fn apply_update(app: &AppWindow, update: Update) {
             // What:     `app.set_duration(duration as f32);`. `as f32` narrows our
             //           `f64` seconds to Slint's 32-bit `float` (sibling `f64`).
             // Why:      The seek slider's maximum; Slint stores it as f32.
-            // TS map:   `app.duration = duration;`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -779,7 +720,6 @@ fn apply_update(app: &AppWindow, update: Update) {
             // What:     `app.set_duration_text(format_time(duration).into());`. Format
             //           the seconds to "m:ss" then `.into()` to `SharedString`.
             // Why:      Show total time as a human-readable label.
-            // TS map:   `app.durationText = formatTime(duration);`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -790,7 +730,6 @@ fn apply_update(app: &AppWindow, update: Update) {
             //           A `match` EXPRESSION that encodes the `Option<usize>` current
             //           index as a plain `i32`, using -1 for "none".
             // Why:      Slint `int` cannot be null; -1 means "none".
-            // TS map:   `const indexI32 = index ?? -1;`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -800,7 +739,6 @@ fn apply_update(app: &AppWindow, update: Update) {
                 // What:     `Some(i) => i as i32`. Destructure the present index and
                 //           `as i32` narrows the `usize` to Slint's `int`.
                 // Why:      A real index passes straight through (narrowed).
-                // TS map:   `i;`
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -809,7 +747,6 @@ fn apply_update(app: &AppWindow, update: Update) {
                 Some(i) => i as i32,
                 // What:     `None => -1`. No current track -> the -1 sentinel.
                 // Why:      Encode "none" as -1.
-                // TS map:   `-1;`
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -820,7 +757,6 @@ fn apply_update(app: &AppWindow, update: Update) {
             // What:     `app.set_current_index(index_i32);`. Set the `current-index`
             //           property to highlight that row.
             // Why:      Mark the playing track.
-            // TS map:   `app.currentIndex = indexI32;`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -832,7 +768,6 @@ fn apply_update(app: &AppWindow, update: Update) {
             //           it so the highlighted row stays on screen after Next /
             //           auto-advance.
             // Why:      Keep the playing track visible across track changes.
-            // TS map:   `refreshPage(app, null);`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -843,7 +778,6 @@ fn apply_update(app: &AppWindow, update: Update) {
         // What:     `Update::Position(secs) => { ... }`. Tuple-variant pattern binding
         //           the live playback position (`f64` seconds) to `secs`.
         // Why:      Move the seek bar and update the elapsed label.
-        // TS map:   `case "position": { const secs = update.secs; ... }`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -853,7 +787,6 @@ fn apply_update(app: &AppWindow, update: Update) {
             // What:     `app.set_position(secs as f32);`. `as f32` narrows to Slint's
             //           float for the slider thumb position.
             // Why:      Slider thumb position.
-            // TS map:   `app.position = secs;`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -863,7 +796,6 @@ fn apply_update(app: &AppWindow, update: Update) {
             // What:     `app.set_position_text(format_time(secs).into());`. Format the
             //           elapsed seconds and `.into()` to `SharedString`.
             // Why:      Elapsed-time label.
-            // TS map:   `app.positionText = formatTime(secs);`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -874,7 +806,6 @@ fn apply_update(app: &AppWindow, update: Update) {
         // What:     `Update::Playing(on) => app.set_playing(on)`. One-line arm: bind
         //           the play/pause boolean `on` and set the `playing` property.
         // Why:      Toggle the button label.
-        // TS map:   `case "playing": app.playing = on;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -884,7 +815,6 @@ fn apply_update(app: &AppWindow, update: Update) {
         // What:     `Update::Volume(v) => app.set_volume(v)`. Bind the volume `v`
         //           (already an `f32`) and set the `volume` property.
         // Why:      Sync the slider.
-        // TS map:   `case "volume": app.volume = v;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -895,7 +825,6 @@ fn apply_update(app: &AppWindow, update: Update) {
         //           Bind the `ShuffleMode`, encode it to an int via the helper, and
         //           set the radio group's property.
         // Why:      Highlight the selected shuffle radio.
-        // TS map:   `case "shuffle": app.shuffleMode = shuffleToInt(mode);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -905,7 +834,6 @@ fn apply_update(app: &AppWindow, update: Update) {
         // What:     `Update::RepeatTrack(on) => app.set_repeat_track(on)`. Bind the
         //           repeat-track boolean and set the checkbox property.
         // Why:      Check/uncheck the repeat-track box.
-        // TS map:   `case "repeatTrack": app.repeatTrack = on;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -924,7 +852,6 @@ fn apply_update(app: &AppWindow, update: Update) {
 // Why:      Some setups (and some `directories` parsing gaps) leave the music dir
 //           discoverable only through the official `xdg-user-dir` tool; this is the
 //           fallback when the env var and the user-dirs file both come up empty.
-// TS map:   `function xdgUserDirMusic(): string | null`
 // What:     `#[cfg(unix)]` compiles this Unix version of the helper only on Unix
 //           targets (Linux/macOS/BSD); the `#[cfg(not(unix))]` stub just below
 //           replaces it on Windows. `unix` is a built-in cfg covering the whole
@@ -932,7 +859,6 @@ fn apply_update(app: &AppWindow, update: Update) {
 // Why:      `xdg-user-dir` is a freedesktop CLI tool that exists only on Unix
 //           desktops; on Windows the spawn would always fail, so gate it out and
 //           let the stub return `None` instead of wasting a process spawn.
-// TS map:   the Unix branch of a platform switch over the function.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -949,7 +875,6 @@ fn xdg_user_dir_music() -> Option<PathBuf> {
     //           could not run (e.g. the tool is not installed, as in the container).
     // Why:      Ask the OS where the music directory is; treat "could not run" as
     //           "no answer" rather than an error to propagate.
-    // TS map:   `let output; try { output = spawnSync("xdg-user-dir", ["MUSIC"]); } catch { return null; }`
     // Gotcha:   `?` here is EARLY RETURN, not optional chaining: on `None` it exits
     //           the function returning `None`. Combined with `.ok()` it also silently
     //           discards the underlying I/O error.
@@ -967,7 +892,6 @@ fn xdg_user_dir_music() -> Option<PathBuf> {
     //           `true` only on exit code 0; `!` negates it; an early `return None`
     //           constructs the empty `Option`.
     // Why:      A failed command yields no usable path.
-    // TS map:   `if (output.status !== 0) return null;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -981,7 +905,6 @@ fn xdg_user_dir_music() -> Option<PathBuf> {
     //           UTF-8 returning `Result<String, _>`; `.ok()?` yields the `String` or
     //           early-returns `None` on invalid UTF-8.
     // Why:      We need the printed path as text.
-    // TS map:   `const text = output.stdout.toString("utf8");`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -992,7 +915,6 @@ fn xdg_user_dir_music() -> Option<PathBuf> {
     //           view of `text` with leading/trailing whitespace (including the
     //           trailing newline) removed; no new allocation.
     // Why:      Command output ends in a newline we must strip.
-    // TS map:   `const trimmed = text.trim();`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1002,7 +924,6 @@ fn xdg_user_dir_music() -> Option<PathBuf> {
     // What:     `if trimmed.is_empty() { return None; }`. `.is_empty()` is `true` for
     //           a zero-length string; early-return the empty `Option`.
     // Why:      No path was printed.
-    // TS map:   `if (!trimmed) return null;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1019,7 +940,6 @@ fn xdg_user_dir_music() -> Option<PathBuf> {
     //           &Path` compares by path components. `&home` borrows the `OsString`.
     // Why:      `xdg-user-dir MUSIC` prints `$HOME` when no music dir is configured;
     //           reject that case to avoid auto-loading the entire home directory.
-    // TS map:   `if (process.env.HOME && process.env.HOME === trimmed) return null;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1034,7 +954,6 @@ fn xdg_user_dir_music() -> Option<PathBuf> {
     //           owned path from the borrowed `&str`; `Some(...)` wraps it as the
     //           present case of `Option`. Tail expression -> return value.
     // Why:      Hand back the discovered music directory.
-    // TS map:   `return trimmed;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1051,7 +970,6 @@ fn xdg_user_dir_music() -> Option<PathBuf> {
 //           the Windows Music known-folder via the `directories` crate one step
 //           earlier, so this fallback has nothing to do; keep the call site
 //           platform-agnostic by returning `None`.
-// TS map:   `function xdgUserDirMusic(): string | null { return null; }`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -1062,7 +980,6 @@ fn xdg_user_dir_music() -> Option<PathBuf> {
     // What:     `None`. The empty case of `Option<PathBuf>` (no path); sibling
     //           `Some(p)` would carry a path. Bare tail expression -> return value.
     // Why:      Signal "this source found no music dir" on Windows.
-    // TS map:   `return null;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1080,7 +997,6 @@ fn xdg_user_dir_music() -> Option<PathBuf> {
 //           such env, so we fall back to the user-dirs file and finally the
 //           `xdg-user-dir` tool. The `directories` crate reads only the file, never
 //           the env var, so the env lookup must be explicit here.
-// TS map:   `function musicDir(): string | null`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -1094,7 +1010,6 @@ fn music_dir() -> Option<PathBuf> {
     //           expression starts a method chain whose value is the function tail.
     // Why:      Paths may hold non-UTF-8 bytes, and "unset" is not an error here, so
     //           `var_os` (not `var`) is the right reader.
-    // TS map:   `process.env.XDG_MUSIC_DIR` (string | undefined)
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1106,7 +1021,6 @@ fn music_dir() -> Option<PathBuf> {
         //           into an owned `PathBuf`; passing `PathBuf::from` (the function
         //           itself) is the closure shorthand. `None` stays `None`.
         // Why:      We want a path, not a raw OS string.
-        // TS map:   `.map(s => s as path)`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1119,7 +1033,6 @@ fn music_dir() -> Option<PathBuf> {
         //           evaluate `x` eagerly).
         // Why:      A native run has no `XDG_MUSIC_DIR` env; read the user-dirs file
         //           only when needed.
-        // TS map:   `?? userDirs()?.audioDir`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1133,7 +1046,6 @@ fn music_dir() -> Option<PathBuf> {
             //           XDG user-dirs file; `.map(|p| p.to_path_buf())` turns the
             //           borrowed `&Path` into an owned `PathBuf`.
             // Why:      Standard music-dir lookup for a native (non-container) run.
-            // TS map:   `userDirs()?.audioDir`
             // Gotcha:   `.and_then` is the `Option`-flattening combinator (`flatMap`),
             //           NOT `.map`; using `.map` here would give `Option<Option<_>>`.
             //
@@ -1150,7 +1062,6 @@ fn music_dir() -> Option<PathBuf> {
         //           (its signature `() -> Option<PathBuf>` matches what `or_else`
         //           wants).
         // Why:      Final fallback for setups where only the tool knows the path.
-        // TS map:   `?? xdgUserDirMusic()`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1161,7 +1072,6 @@ fn music_dir() -> Option<PathBuf> {
         //           `true`, i.e. it exists and is a directory; otherwise the whole
         //           `Option` becomes `None`. `|p|` borrows the path.
         // Why:      Do not feed a missing or non-directory path to the engine.
-        // TS map:   `.filter(p => isDir(p))`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1177,7 +1087,6 @@ fn music_dir() -> Option<PathBuf> {
 //           the error.
 // Why:      Propagate window/backend failure (e.g. no display server) as the exit
 //           status, rather than panicking.
-// TS map:   `async function main(): Promise<void>` that may throw.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -1192,7 +1101,6 @@ fn main() -> Result<(), slint::PlatformError> {
     // Why:      Parsing up front means `--help`, `--version`, and argument errors
     //           return instantly without first constructing a Slint backend and
     //           window; the parsed `cli` is consumed near the end to seed the queue.
-    // TS map:   `const cli = parseArgs(process.argv);`
     // Gotcha:   `Cli::parse()` itself calls `process::exit` on `--help`/bad input;
     //           that is clap's library behavior, not our code, and is the standard
     //           CLI contract (so it never returns in those cases).
@@ -1211,7 +1119,6 @@ fn main() -> Result<(), slint::PlatformError> {
     // Why:      KDE attaches taskbar progress to the running window only when the
     //           window's app id matches the `.desktop` file; the default backend
     //           selector offers no hook to set it.
-    // TS map:   `slint.setPlatform(winitBackend({ windowAttributesHook: setWindowAppId }));`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1227,7 +1134,6 @@ fn main() -> Result<(), slint::PlatformError> {
         //           binding MUTABLE because a later line may reassign `builder`.
         // Why:      The hook runs for each window Slint creates (here, the one); `mut`
         //           is needed because the software-renderer branch reassigns it.
-        // TS map:   `let builder = Backend.builder().withWindowAttributesHook(setWindowAppId);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1241,7 +1147,6 @@ fn main() -> Result<(), slint::PlatformError> {
         //           `.unwrap_or(false)` extracts the `Ok(bool)` or SUBSTITUTES `false`
         //           if the var was unset/non-UTF-8 (dropping the error).
         // Why:      Honor the run task's software-renderer escape hatch.
-        // TS map:   `const forceSoftware = (process.env.SLINT_BACKEND ?? "").includes("software");`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1255,7 +1160,6 @@ fn main() -> Result<(), slint::PlatformError> {
         //           the software renderer by name (falls back to default if
         //           unrecognized, since the builder allows fallback).
         // Why:      Match the previous behaviour for headless / no-GPU runs.
-        // TS map:   `if (forceSoftware) builder = builder.withRendererName("renderer-software");`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1268,7 +1172,6 @@ fn main() -> Result<(), slint::PlatformError> {
         //           `Result<Backend, PlatformError>`; the `?` unwraps `Ok` or RETURNS
         //           the `Err` from `main` (e.g. no display server).
         // Why:      Construction can fail if `WAYLAND_DISPLAY`/`DISPLAY` is unset.
-        // TS map:   `const backend = builder.build();`
         // Gotcha:   `?` on a `Result` propagates the ERROR out of `main`; it is early
         //           return, not optional chaining.
         //
@@ -1287,7 +1190,6 @@ fn main() -> Result<(), slint::PlatformError> {
         //           this backend and its hook; `.expect` because the only failure is
         //           "a platform was already set", which cannot happen here (first
         //           Slint call).
-        // TS map:   `slint.setPlatform(backend); // assert it was not already set`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1301,7 +1203,6 @@ fn main() -> Result<(), slint::PlatformError> {
     //           `Result<AppWindow, PlatformError>`; the `?` unwraps `Ok` or returns
     //           the error from `main`.
     // Why:      We need the window before wiring anything.
-    // TS map:   `const app = new AppWindow();`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1316,7 +1217,6 @@ fn main() -> Result<(), slint::PlatformError> {
     // Why:      The engine's update callback (on another thread) needs to reach the
     //           window without owning it (which would leak or cross-thread-share the
     //           non-`Send` window).
-    // TS map:   `const weak = new WeakRef(app);`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1329,7 +1229,6 @@ fn main() -> Result<(), slint::PlatformError> {
     //           bus).
     // Why:      Each update tick clones one into the event-loop closure to push the
     //           current play position to the taskbar.
-    // TS map:   `const launcher = Launcher.connect();`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1340,7 +1239,6 @@ fn main() -> Result<(), slint::PlatformError> {
     // What:     `let progress_started_at = Instant::now();`. `Instant::now()` captures
     //           a monotonic timestamp once, before update handling begins.
     // Why:      Later update callbacks turn this into elapsed time for debouncing.
-    // TS map:   `const progressStartedAt = performance.now();`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1354,7 +1252,6 @@ fn main() -> Result<(), slint::PlatformError> {
     //           pointer (sibling `Rc` would NOT be `Send`).
     // Why:      The engine callback is cross-thread, but all progress decisions need
     //           one shared baseline; `Arc<Mutex<_>>` is the safe cross-thread shape.
-    // TS map:   `const progressDebouncer = new ProgressDebouncer();`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1368,7 +1265,6 @@ fn main() -> Result<(), slint::PlatformError> {
     //           ownership of the captures (`weak`, `launcher`, `progress_*`).
     //           `Rc::new(...)` wraps the engine so multiple UI callbacks can share it.
     // Why:      One engine, shared by all the button handlers.
-    // TS map:   `const engine = Engine.spawn(update => { ... });`
     // Gotcha:   `move` here transfers OWNERSHIP of the captured variables into the
     //           closure (they cannot be used afterward), unlike a TS arrow that
     //           merely references them.
@@ -1382,7 +1278,6 @@ fn main() -> Result<(), slint::PlatformError> {
         //           (bumps a refcount); the outer closure is called repeatedly so it
         //           cannot move `weak` out, hence a fresh clone per call.
         // Why:      Each update needs its own handle to move into the inner closure.
-        // TS map:   `const w = weak;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1393,7 +1288,6 @@ fn main() -> Result<(), slint::PlatformError> {
         //           this call (same reason as `weak`: the outer closure is `Fn` and
         //           may run many times).
         // Why:      The inner closure moves it to the UI thread to emit progress.
-        // TS map:   `const l = launcher;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1407,7 +1301,6 @@ fn main() -> Result<(), slint::PlatformError> {
         //           "this is a cheap refcount bump, not a deep copy" obvious.
         // Why:      The inner event-loop closure needs to own a handle to the same
         //           debounce state.
-        // TS map:   `const progressDebouncerForUpdate = progressDebouncer;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1418,7 +1311,6 @@ fn main() -> Result<(), slint::PlatformError> {
         //           `.elapsed()` returns a `Duration` measuring monotonic time since
         //           the captured `Instant`.
         // Why:      Debounce decisions use time between accepted progress updates.
-        // TS map:   `const progressElapsed = performance.now() - progressStartedAt;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1432,7 +1324,6 @@ fn main() -> Result<(), slint::PlatformError> {
         //           if the loop is gone, e.g. during shutdown).
         // Why:      Updates arrive on the engine thread but must be applied on the UI
         //           thread; failure during shutdown is safe to ignore.
-        // TS map:   `queueMicrotaskOnUiThread(() => { ... });`
         // Gotcha:   `let _ = expr` EXPLICITLY discards a value; for a `#[must_use]`
         //           `Result` it is how you say "I am intentionally ignoring this".
         //
@@ -1446,7 +1337,6 @@ fn main() -> Result<(), slint::PlatformError> {
             //           Some(app)` pattern runs the body only when the window still
             //           exists, binding the strong handle to `app`.
             // Why:      The window may have closed before this scheduled closure runs.
-            // TS map:   `const app = weak.deref(); if (app) { ... }`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -1459,7 +1349,6 @@ fn main() -> Result<(), slint::PlatformError> {
                 //           and `update` in by value.
                 // Why:      State updates stay immediate, while seek-bar and taskbar
                 //           progress updates are rate-limited.
-                // TS map:   `uiProgress.applyUpdateWithProgressDebounce(app, launcher, progressDebouncer, progressElapsed, update);`
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -1482,7 +1371,6 @@ fn main() -> Result<(), slint::PlatformError> {
     //           clone. `on_toggle_play` is the generated registrar for the
     //           `toggle-play` callback.
     // Why:      Button press -> engine command.
-    // TS map:   `app.onTogglePlay(() => engine.send(Command.TogglePlay));`
     // Gotcha:   the `{ let engine = ...; move || ... }` block is a common Rust idiom
     //           to clone a capture BEFORE moving it into the closure, so the original
     //           `engine` stays usable for the next handler.
@@ -1495,7 +1383,6 @@ fn main() -> Result<(), slint::PlatformError> {
         // What:     `let engine = engine.clone();`. A shared-owner clone of the `Rc`
         //           for this closure (cheap: bumps the reference count).
         // Why:      The closure must own an engine handle that outlives this scope.
-        // TS map:   `const e = engine;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1506,7 +1393,6 @@ fn main() -> Result<(), slint::PlatformError> {
         //           closure (the `|| ...` is the param list) that owns the cloned
         //           `engine` and sends the toggle command.
         // Why:      Ask the engine to toggle play/pause.
-        // TS map:   `() => engine.send(Command.TogglePlay)`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1518,7 +1404,6 @@ fn main() -> Result<(), slint::PlatformError> {
     // What:     `app.on_prev({ ... })`. Register the previous-track handler, same
     //           clone-then-move-closure idiom as `on_toggle_play`.
     // Why:      Prev button -> `Command::Prev`.
-    // TS map:   `app.onPrev(() => engine.send(Command.Prev));`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1528,7 +1413,6 @@ fn main() -> Result<(), slint::PlatformError> {
         // What:     `let engine = engine.clone();`. Clone the `Rc<Engine>` for this
         //           handler's closure (refcount bump).
         // Why:      The closure needs its own owning handle.
-        // TS map:   `const e = engine;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1538,7 +1422,6 @@ fn main() -> Result<(), slint::PlatformError> {
         // What:     `move || engine.send(Command::Prev)`. Zero-arg move closure that
         //           sends the previous-track command.
         // Why:      One Prev click -> one `Prev` command.
-        // TS map:   `() => engine.send(Command.Prev)`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1549,7 +1432,6 @@ fn main() -> Result<(), slint::PlatformError> {
 
     // What:     `app.on_next({ ... })`. Register the next-track handler.
     // Why:      Next button -> `Command::Next`.
-    // TS map:   `app.onNext(() => engine.send(Command.Next));`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1559,7 +1441,6 @@ fn main() -> Result<(), slint::PlatformError> {
         // What:     `let engine = engine.clone();`. Clone the `Rc<Engine>` for this
         //           handler's closure.
         // Why:      The closure needs its own owning handle.
-        // TS map:   `const e = engine;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1569,7 +1450,6 @@ fn main() -> Result<(), slint::PlatformError> {
         // What:     `move || engine.send(Command::Next)`. Zero-arg move closure that
         //           sends the next-track command.
         // Why:      One Next click -> one `Next` command.
-        // TS map:   `() => engine.send(Command.Next)`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1581,7 +1461,6 @@ fn main() -> Result<(), slint::PlatformError> {
     // What:     `app.on_seek({ ... })`. Register the seek handler; its closure takes
     //           the slider value `secs: f32` and forwards it as `f64` seconds.
     // Why:      Dragging the seek bar jumps playback.
-    // TS map:   `app.onSeek(secs => engine.send(Command.Seek(secs)));`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1591,7 +1470,6 @@ fn main() -> Result<(), slint::PlatformError> {
         // What:     `let engine = engine.clone();`. Clone the `Rc<Engine>` for this
         //           handler's closure.
         // Why:      The closure needs its own owning handle.
-        // TS map:   `const e = engine;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1602,7 +1480,6 @@ fn main() -> Result<(), slint::PlatformError> {
         //           closure taking one `f32` parameter `secs`; `as f64` WIDENS it to
         //           the seconds type `Command::Seek` carries.
         // Why:      One seek drag -> one `Seek` command at the dragged position.
-        // TS map:   `secs => engine.send(Command.Seek(secs))`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1614,7 +1491,6 @@ fn main() -> Result<(), slint::PlatformError> {
     // What:     `app.on_set_volume({ ... })`. Register the volume handler; its closure
     //           takes the gain `v: f32`.
     // Why:      Volume slider -> `Command::SetVolume`.
-    // TS map:   `app.onSetVolume(v => engine.send(Command.SetVolume(v)));`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1624,7 +1500,6 @@ fn main() -> Result<(), slint::PlatformError> {
         // What:     `let engine = engine.clone();`. Clone the `Rc<Engine>` for this
         //           handler's closure.
         // Why:      The closure needs its own owning handle.
-        // TS map:   `const e = engine;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1634,7 +1509,6 @@ fn main() -> Result<(), slint::PlatformError> {
         // What:     `move |v| engine.send(Command::SetVolume(v))`. A move closure
         //           taking one `f32` gain `v` and forwarding it.
         // Why:      One slider change -> one `SetVolume` command.
-        // TS map:   `v => engine.send(Command.SetVolume(v))`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1648,7 +1522,6 @@ fn main() -> Result<(), slint::PlatformError> {
     //           Map it back to the enum and send. No property read needed: the radio
     //           carries the target mode directly.
     // Why:      Selecting a shuffle radio sets that exact mode.
-    // TS map:   `app.onSetShuffleMode(m => engine.send(Command.SetShuffle(intToShuffle(m))));`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1658,7 +1531,6 @@ fn main() -> Result<(), slint::PlatformError> {
         // What:     `let engine = engine.clone();`. Clone the `Rc<Engine>` for this
         //           handler's closure.
         // Why:      The closure needs its own owning handle.
-        // TS map:   `const e = engine;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1669,7 +1541,6 @@ fn main() -> Result<(), slint::PlatformError> {
         //           move closure taking the mode int `m`, decoding it to the enum via
         //           `int_to_shuffle`, and forwarding it.
         // Why:      One radio click -> one shuffle-mode command.
-        // TS map:   `m => engine.send(Command.SetShuffle(intToShuffle(m)))`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1681,7 +1552,6 @@ fn main() -> Result<(), slint::PlatformError> {
     // What:     `app.on_set_repeat_track({ ... })`. Register the repeat-track checkbox
     //           handler; the checkbox passes the desired boolean `on: bool`.
     // Why:      Toggling the box sets the flag directly.
-    // TS map:   `app.onSetRepeatTrack(on => engine.send(Command.SetRepeatTrack(on)));`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1691,7 +1561,6 @@ fn main() -> Result<(), slint::PlatformError> {
         // What:     `let engine = engine.clone();`. Clone the `Rc<Engine>` for this
         //           handler's closure.
         // Why:      The closure needs its own owning handle.
-        // TS map:   `const e = engine;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1701,7 +1570,6 @@ fn main() -> Result<(), slint::PlatformError> {
         // What:     `move |on| engine.send(Command::SetRepeatTrack(on))`. A move
         //           closure taking the desired boolean `on` and forwarding it.
         // Why:      One checkbox toggle -> one repeat-track command.
-        // TS map:   `on => engine.send(Command.SetRepeatTrack(on))`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1715,7 +1583,6 @@ fn main() -> Result<(), slint::PlatformError> {
     // Why:      A single click on an unselected row selects it (Rust loads it
     //           paused); the UI sends `TogglePlay` instead when the clicked row is
     //           already current, so this only ever carries a select.
-    // TS map:   `app.onSelectIndex(i => engine.send(Command.SelectIndex(i)));`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1725,7 +1592,6 @@ fn main() -> Result<(), slint::PlatformError> {
         // What:     `let engine = engine.clone();`. Clone the `Rc<Engine>` for this
         //           handler's closure.
         // Why:      The closure needs its own owning handle.
-        // TS map:   `const e = engine;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1736,7 +1602,6 @@ fn main() -> Result<(), slint::PlatformError> {
         //           closure taking the row `i: i32`; `as usize` casts it to the
         //           pointer-sized index type the command carries.
         // Why:      One row click -> one `SelectIndex` command.
-        // TS map:   `i => engine.send(Command.SelectIndex(i))`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1751,7 +1616,6 @@ fn main() -> Result<(), slint::PlatformError> {
     //           chosen page from the existing `queue` property. Needs a weak handle
     //           to read/write properties.
     // Why:      Clicking a tab filters the list to that folder (or letter) page.
-    // TS map:   `app.onSelectPage(p => refreshPage(app, p));`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1762,7 +1626,6 @@ fn main() -> Result<(), slint::PlatformError> {
         //           can hold (it cannot borrow `app`, which would not live long
         //           enough).
         // Why:      `refresh_page` needs the window to read `queue` and set the page.
-        // TS map:   `const w = app;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1775,7 +1638,6 @@ fn main() -> Result<(), slint::PlatformError> {
         //           still exists, and `refresh_page(&app, Some(p))` lends the window
         //           and requests that EXACT page (not the follow-current `None` path).
         // Why:      Show the clicked tab's tracks.
-        // TS map:   `p => { if (app) refreshPage(app, p); }`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1795,7 +1657,6 @@ fn main() -> Result<(), slint::PlatformError> {
     //           treats files and folders as separate dialog modes, so this player
     //           picks a folder and scans it recursively (individual files are still
     //           openable via command-line arguments).
-    // TS map:   `app.onOpenFiles(() => { showFolderPickerAsync().then(dir => tx.send(...)); });`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1808,7 +1669,6 @@ fn main() -> Result<(), slint::PlatformError> {
         //           itself is `!Send` (single-thread only).
         // Why:      The thread cannot hold the `Rc`; it holds the sender instead, and
         //           sending through it also wakes the worker.
-        // TS map:   `const tx = engine.sender();`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1818,7 +1678,6 @@ fn main() -> Result<(), slint::PlatformError> {
         // What:     `move || { ... }`. The zero-argument move handler closure that owns
         //           `tx`.
         // Why:      Launch the picker when the Open button fires.
-        // TS map:   `() => { ... }`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1827,7 +1686,6 @@ fn main() -> Result<(), slint::PlatformError> {
         move || {
             // What:     `let tx = tx.clone();`. Clone the sender for this invocation.
             // Why:      Each open spawns a fresh thread that owns its own sender.
-            // TS map:   `const t = tx;`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -1838,7 +1696,6 @@ fn main() -> Result<(), slint::PlatformError> {
             //           a NEW OS thread running the move closure (which owns `tx`).
             // Why:      Run the blocking dialog off the UI thread so the UI stays
             //           responsive while it is open.
-            // TS map:   `runInWorker(() => { ... });`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -1851,7 +1708,6 @@ fn main() -> Result<(), slint::PlatformError> {
                 //           if the user confirmed, `None` if cancelled. The `if let
                 //           Some(dir)` runs the body only on confirm.
                 // Why:      Let the user enqueue a whole folder.
-                // TS map:   `const dir = await showOpenDialog({ directory: true }); if (dir) { ... }`
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -1867,7 +1723,6 @@ fn main() -> Result<(), slint::PlatformError> {
                     //           internally, then wakes the worker; the engine scans the root.
                     // Why:      Replace the queue with the folder's tracks without surprise
                     //           playback; the user presses play.
-                    // TS map:   `tx.send(Command.OpenRoot({ root: dir, select: null, play: false }));`
                     //
                     // In TS you'd write (pseudocode):
                     // ```ts
@@ -1887,7 +1742,6 @@ fn main() -> Result<(), slint::PlatformError> {
     //           positional path was parsed into `cli` at the top of `main`. A CLI path
     //           takes precedence over a saved session; with no path, restore the session.
     // Why:      Opening a path explicitly should override resuming.
-    // TS map:   `if (cli.path) { ... } else { ... }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1899,7 +1753,6 @@ fn main() -> Result<(), slint::PlatformError> {
         //           root with that file preselected. `path.is_dir()` tests the filesystem.
         // Why:      Exactly one directory Source Root; a single file is cued inside its
         //           folder.
-        // TS map:   `if (isDir(path)) openRoot(path, null) else openRoot(dirname(path), path)`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1918,7 +1771,6 @@ fn main() -> Result<(), slint::PlatformError> {
                 //           The file's parent directory, or the current directory when the
                 //           path has no parent (a bare filename).
                 // Why:      The parent folder is the Source Root for a single-file launch.
-                // TS map:   `const root = dirname(path) || ".";`
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -1938,7 +1790,6 @@ fn main() -> Result<(), slint::PlatformError> {
         // What:     `None => { ... }`. No CLI path: restore the saved session, falling back
         //           to the music directory.
         // Why:      Resume where the user left off when nothing was named on the CLI.
-        // TS map:   `else { /* restore or auto-load */ }`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1948,7 +1799,6 @@ fn main() -> Result<(), slint::PlatformError> {
             // What:     `let session = Session::load();`. Read the saved session (defaults
             //           if none/corrupt). It no longer prunes; the engine re-scans the root.
             // Why:      Resume where the user left off.
-            // TS map:   `const session = Session.load();`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -1959,7 +1809,6 @@ fn main() -> Result<(), slint::PlatformError> {
             //           saved Source Root, kept only if it still exists as a directory.
             // Why:      A missing root falls back to the music directory (and is replaced on
             //           the next save), so a non-directory root is treated as absent.
-            // TS map:   `const root = session.sourceRoot && isDir(session.sourceRoot) ? session.sourceRoot : null;`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -1972,7 +1821,6 @@ fn main() -> Result<(), slint::PlatformError> {
             //           selection, else leave the queue empty.
             // Why:      Keep the user's settings even when the saved root is gone, and never
             //           leave a usable launch empty when a music directory exists.
-            // TS map:   `if (root) restore(root, selected, ...) else if (musicDir) restore(musicDir, null, settings)`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -2007,7 +1855,6 @@ fn main() -> Result<(), slint::PlatformError> {
     //           `engine` drop: the engine's `Drop` sends `Quit` and joins its thread,
     //           tearing down PipeWire.
     // Why:      Hand control to Slint.
-    // TS map:   `return app.run();`
     // Gotcha:   Rust runs DESTRUCTORS (`Drop`) at end of scope deterministically;
     //           that is what cleanly stops the engine here, with no GC or manual
     //           teardown call.

@@ -29,9 +29,6 @@
 //           one of those directly here, we go through `std::fs::File` instead.
 // Why:      Kotlin passes the audio file's fd in as a plain integer over JNI; we need
 //           `RawFd` to receive it and `BorrowedFd` to wrap it safely before duplicating.
-// TS map:   No real equivalent: Node hides fds behind `fs.FileHandle`. Mentally,
-//           `RawFd` is just `number`, and `BorrowedFd` is "a number you promised not to
-//           `close()` yourself".
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -54,9 +51,6 @@ use std::os::fd::{BorrowedFd, RawFd};
 // Why:      Three threads (JNI/main, decode worker, realtime callback) share playback
 //           state with no lock so the realtime path never blocks; atomics are how they
 //           hand values across thread boundaries safely.
-// TS map:   No real equivalent: JS is single-threaded. The closest mental model is a
-//           `SharedArrayBuffer` viewed through `Atomics.load` / `Atomics.store`, which
-//           is also the rare place TS forces method calls instead of plain `=`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -73,7 +67,6 @@ use std::sync::atomic::{AtomicBool, AtomicU32, AtomicU64, Ordering};
 //           we can call `mpsc::channel()` below.
 // Why:      The JNI/main thread sends slow, owned-state `Command`s (load/seek/quit) to
 //           the worker thread through this queue.
-// TS map:   a thread-safe async queue; `Sender.send` ~ `queue.push`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -90,8 +83,6 @@ use std::sync::mpsc::{self, Sender};
 //           we cross threads); `Box<T>`, a single-owner heap pointer with no sharing.
 // Why:      The one `Control` struct must be shared by three threads at once, so we wrap
 //           it in `Arc` and hand each thread its own clone of the pointer.
-// TS map:   In TS every object is already a shared, GC'd reference, so `Arc<Control>` is
-//           just `Control` (pass the object around; the GC frees it when no one holds it).
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -104,7 +95,6 @@ use std::sync::Arc;
 //           finish (and recover its return value of type `T`). `self` imports the
 //           `thread` module itself so we can call `thread::Builder::new()`.
 // Why:      The engine runs decode/output on its own OS thread; `Drop` joins it on exit.
-// TS map:   `JoinHandle` ~ a Worker plus a promise that resolves when it exits.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -117,7 +107,6 @@ use std::thread::{self, JoinHandle};
 //           `crate::` means "from the root of this crate" (this package).
 // Why:      `new` spawns the worker by handing the channel receiver and shared control
 //           to `worker_run`.
-// TS map:   `import * as engineWorker from "./engine_worker";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -129,7 +118,6 @@ use crate::engine_worker;
 //           (defined in `error.rs`) so this file can return and construct it.
 // Why:      `load` returns `Result<(), PlayerError>` and builds a `PlayerError` when the
 //           worker has gone away.
-// TS map:   `import { PlayerError } from "./error";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -145,8 +133,6 @@ use crate::error::PlayerError;
 // Why:      We pick `f64` (not `f32`) because durations are computed and divided in
 //           seconds where the extra precision avoids drift; the constant converts the
 //           worker's millisecond duration into the seconds Kotlin reads.
-// TS map:   `const MILLIS_PER_SEC = 1000;` — TS has only one `number` (a 64-bit float),
-//           so the `f64`-vs-`f32` choice does not exist.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -162,8 +148,6 @@ pub(crate) const MILLIS_PER_SEC: f64 = 1000.0;
 //           facts, the realtime callback writes progress, the main thread writes
 //           play/volume intent, and Kotlin polls everything. One atomic-only struct keeps
 //           the realtime audio path off any lock.
-// TS map:   `class Control { playing; volumeBits; rate; ... }` — but imagine every field
-//           is a `SharedArrayBuffer` slot read/written via `Atomics`, never plain `=`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -180,7 +164,6 @@ pub(crate) struct Control {
     //           realtime callback can read it while the main thread flips it.
     // Why:      Play/pause must take effect on the very next audio buffer with no queue
     //           round trip, so it lives here as an atomic rather than as a `Command`.
-    // TS map:   `playing: SharedBool;` (read with Atomics.load, write with Atomics.store)
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -194,8 +177,6 @@ pub(crate) struct Control {
     //           `f32::from_bits` when reading.
     // Why:      The realtime callback multiplies every sample by this gain; storing it as
     //           atomic bits lets the main thread change volume mid-playback losslessly.
-    // TS map:   `volumeBits: SharedU32;` — TS has no f32-bit trick; mentally a shared
-    //           `number` updated atomically.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -208,7 +189,6 @@ pub(crate) struct Control {
     //           positive numbers like 44100 or 48000.
     // Why:      `position_sec` divides the played-frame count by this rate to get seconds,
     //           and the worker writes it on load/seek.
-    // TS map:   `rate: SharedU32;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -219,7 +199,6 @@ pub(crate) struct Control {
     //           (1 = mono, 2 = stereo, ...). Same `AtomicU32` choice and reasoning as
     //           `rate`: a small non-negative integer shared across threads.
     // Why:      The output and frame math need to know how many samples make one frame.
-    // TS map:   `channels: SharedU32;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -232,7 +211,6 @@ pub(crate) struct Control {
     //           would overflow) because frame counts on a long track can exceed 4 billion.
     // Why:      After a seek we restart the played-frame counter at zero, so we must add
     //           the seek base back to report an absolute position.
-    // TS map:   `startFrame: SharedU64;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -244,7 +222,6 @@ pub(crate) struct Control {
     //           same overflow reason as `start_frame` (a 32-bit sibling would wrap).
     // Why:      The callback bumps this each buffer; `position_sec` reads it to report how
     //           far into the track we are.
-    // TS map:   `framesPlayed: SharedU64;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -257,7 +234,6 @@ pub(crate) struct Control {
     //           ceiling.
     // Why:      Kotlin polls this (converted to seconds via `MILLIS_PER_SEC`) for the
     //           progress bar's total length.
-    // TS map:   `durationMs: SharedU64;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -269,7 +245,6 @@ pub(crate) struct Control {
     //           can observe it without a lock.
     // Why:      The callback needs to know "no more samples are coming" so it can decide
     //           the track ended once the ring buffer also drains.
-    // TS map:   `decodeDone: SharedBool;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -281,7 +256,6 @@ pub(crate) struct Control {
     //           truly finished sounding. `AtomicBool` shared with the main thread's poller.
     // Why:      Kotlin polls this to fire its one `onTrackEnded`; separating it from
     //           `decode_done` means "decoder finished" and "audio finished" are distinct.
-    // TS map:   `ended: SharedBool;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -293,7 +267,6 @@ pub(crate) struct Control {
     //           `f32` inside an `AtomicU32`, since `f32` itself has no atomic form.
     // Why:      The callback multiplies each sample by this gain alongside the user volume,
     //           so loud and quiet tracks come out at a matched loudness.
-    // TS map:   `normGainBits: SharedU32;` (raw f32 bits, applied with the volume)
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -306,7 +279,6 @@ pub(crate) struct Control {
 //           constructor and two convenience readers). An `impl` block is where Rust hangs
 //           a type's methods, separate from the field declarations above.
 // Why:      Group `Control`'s construction and its float-reading helpers with the type.
-// TS map:   the body of `class Control { ... }`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -317,7 +289,6 @@ impl Control {
     //           `self` parameter) that builds and returns a fresh `Control`. The `->
     //           Control` is the return type; `pub(crate)` keeps it crate-visible.
     // Why:      Give the engine one place to spin up the shared state with sane defaults.
-    // TS map:   `static new(): Control { return new Control(); }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -329,7 +300,6 @@ impl Control {
         //           function's TAIL EXPRESSION and becomes the return value.
         // Why:      Hand back a fully-initialized control with unity volume/gain and
         //           nothing loaded yet.
-        // TS map:   `return { playing: ..., volumeBits: ..., ... };` (object literal).
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -341,7 +311,6 @@ impl Control {
             //           `false`. The `::new` is an associated function (like a static
             //           factory), not a method on an existing value.
             // Why:      Start paused: nothing should sound until Kotlin asks to play.
-            // TS map:   `playing: makeSharedBool(false)`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -355,7 +324,6 @@ impl Control {
             //           `u32` bit-pattern (NOT the integer 1).
             // Why:      Unity gain (1.0) means "leave samples untouched"; we store its bits
             //           because the cell holds bits, not a float.
-            // TS map:   `volumeBits: makeSharedU32(f32ToBits(1.0))`
             // Gotcha:   `.to_bits()` is a REINTERPRET, not a cast: `1.0f32.to_bits()` is
             //           `0x3F800000`, not `1`. Reading it back needs `f32::from_bits`.
             //
@@ -367,7 +335,6 @@ impl Control {
             // What:     `rate: AtomicU32::new(0)`. Wrapper constructor: an `AtomicU32`
             //           starting at 0.
             // Why:      0 is the "nothing loaded" sentinel that `position_sec` checks.
-            // TS map:   `rate: makeSharedU32(0)`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -377,7 +344,6 @@ impl Control {
             // What:     `channels: AtomicU32::new(0)`. Wrapper constructor: an `AtomicU32`
             //           starting at 0.
             // Why:      No channel count is known until a track loads.
-            // TS map:   `channels: makeSharedU32(0)`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -388,7 +354,6 @@ impl Control {
             //           atomic frame counter starting at 0 (sibling `AtomicU32::new` would
             //           be the 32-bit version we deliberately avoid here).
             // Why:      No seek has happened, so the seek base is zero.
-            // TS map:   `startFrame: makeSharedU64(0)`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -398,7 +363,6 @@ impl Control {
             // What:     `frames_played: AtomicU64::new(0)`. Wrapper constructor: a 64-bit
             //           atomic counter starting at 0.
             // Why:      Nothing has played yet.
-            // TS map:   `framesPlayed: makeSharedU64(0)`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -408,7 +372,6 @@ impl Control {
             // What:     `duration_ms: AtomicU64::new(0)`. Wrapper constructor: a 64-bit
             //           atomic starting at 0.
             // Why:      Duration is unknown until a track is probed.
-            // TS map:   `durationMs: makeSharedU64(0)`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -418,7 +381,6 @@ impl Control {
             // What:     `decode_done: AtomicBool::new(false)`. Wrapper constructor: an
             //           atomic boolean starting `false`.
             // Why:      The decoder has not finished (there is nothing to decode yet).
-            // TS map:   `decodeDone: makeSharedBool(false)`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -428,7 +390,6 @@ impl Control {
             // What:     `ended: AtomicBool::new(false)`. Wrapper constructor: an atomic
             //           boolean starting `false`.
             // Why:      No track has ended yet.
-            // TS map:   `ended: makeSharedBool(false)`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -439,7 +400,6 @@ impl Control {
             //           constructor: an `AtomicU32` initialized to the raw bits of the
             //           `f32` value `1.0` (see `volume_bits` for the `.to_bits()` trick).
             // Why:      Unity normalization gain until a per-track measurement arrives.
-            // TS map:   `normGainBits: makeSharedU32(f32ToBits(1.0))`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -454,7 +414,6 @@ impl Control {
     //           without transferring ownership and without allowing mutation). Returns an
     //           `f32` (the 32-bit float; sibling `f64` is the wider double).
     // Why:      The callback wants the volume as a usable float, not raw bits.
-    // TS map:   `volume(): number { ... }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -471,7 +430,6 @@ impl Control {
         //           `f32`. No trailing `;`, so this is the function's tail expression and
         //           the return value.
         // Why:      Convert the stored bit-pattern back into the gain the callback applies.
-        // TS map:   `return bitsToF32(Atomics.load(this.volumeBits, 0));`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -483,7 +441,6 @@ impl Control {
     // What:     `pub(crate) fn norm_gain(&self) -> f32`. The same shape as `volume`: a
     //           read-only-borrow (`&self`) reader returning an `f32`.
     // Why:      Hand the callback the normalization gain as a usable float.
-    // TS map:   `normGain(): number { ... }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -495,7 +452,6 @@ impl Control {
         //           the `u32` bits, `f32::from_bits` reinterprets them as the float. Tail
         //           expression, so it is the return value.
         // Why:      Return the normalization gain as a float the callback can multiply by.
-        // TS map:   `return bitsToF32(Atomics.load(this.normGainBits, 0));`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -512,8 +468,6 @@ impl Control {
 //           play/pause/volume knobs deliberately skip this enum and write atomics instead.
 // Why:      Only commands that touch state the worker exclusively owns travel down the
 //           channel; everything cheap stays lock-free.
-// TS map:   a discriminated union: `type Command = { kind: "load"; ... } | { kind:
-//           "seek"; ... } | { kind: "quit" };`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -529,7 +483,6 @@ pub(crate) enum Command {
     //           playing immediately). `std::fs::File` owns its fd and closes it on drop.
     // Why:      Opening and building the output needs the worker's owned state, so loading
     //           is a command, not an atomic write.
-    // TS map:   `{ kind: "load"; file: FileHandle; play: boolean }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -539,7 +492,6 @@ pub(crate) enum Command {
     // What:     `Seek(f64)`. A tuple variant wrapping one `f64` (the target position in
     //           seconds; `f64` not `f32` for sub-millisecond precision over long tracks).
     // Why:      Repositioning the source and flushing the ring is worker-owned work.
-    // TS map:   `{ kind: "seek"; positionSec: number }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -549,7 +501,6 @@ pub(crate) enum Command {
     // What:     `Quit`. A UNIT variant (no payload): just a tag telling the worker to stop.
     // Why:      Dropping the worker's owned state closes the AAudio stream, so quitting is
     //           a command that lets the worker tear itself down cleanly.
-    // TS map:   `{ kind: "quit" }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -565,7 +516,6 @@ pub(crate) enum Command {
 //           because the AAudio stream lives in the WORKER, this handle contains nothing
 //           thread-bound and is therefore `Send` (movable across threads).
 // Why:      One owner object Kotlin can hold, call methods on, and drop to shut down.
-// TS map:   `class Engine { tx; worker; control; playIntent; }`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -581,7 +531,6 @@ pub struct Engine {
     //           is generic over the message type, pinned here to `Command` via the
     //           `<Command>` type argument.
     // Why:      `load`/`seek_to`/`drop` push commands to the worker through it.
-    // TS map:   `tx: Sender<Command>;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -595,7 +544,6 @@ pub struct Engine {
     //           the worker thread produces no result.
     // Why:      `Drop` calls `.take()` to MOVE the handle out (leaving `None`) so it can
     //           join the worker exactly once; `Option` models "already joined".
-    // TS map:   `worker: JoinHandle | null;` — TS uses `null` where Rust uses `None`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -607,7 +555,6 @@ pub struct Engine {
     //           owns one of the several `Arc` clones; the worker owns another.
     // Why:      The main thread reads position/duration/playing/ended off this same shared
     //           `Control` that the worker and callback write.
-    // TS map:   `control: Control;` — in TS the object is already shared by reference.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -620,7 +567,6 @@ pub struct Engine {
     //           handle reads and writes it.
     // Why:      Lets `play_when_ready` report intent even when, say, the track has ended
     //           but the user never pressed pause.
-    // TS map:   `playIntent: boolean;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -633,7 +579,6 @@ pub struct Engine {
 //           control surface (load/play/pause/seek/volume/normalization), and the pollers
 //           Kotlin reads (position/duration/is_playing/is_ended/play_when_ready).
 // Why:      Group everything Kotlin calls over JNI with the `Engine` type.
-// TS map:   the body of `class Engine { ... }`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -646,8 +591,6 @@ impl Engine {
     //           failure. The only failure is the OS refusing to create the thread.
     // Why:      Spawn the worker and hand back a ready-to-use handle, surfacing the rare
     //           thread-spawn failure instead of crashing.
-    // TS map:   `static new(): Engine` — but the failure becomes a `throw`, so think
-    //           `static new(): Engine /* throws on thread-spawn failure */`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -660,7 +603,6 @@ impl Engine {
         //           can be shared across threads. `let` binds the result to `control`.
         // Why:      We need a shareable control because the worker thread also holds a
         //           clone of it.
-        // TS map:   `const control = new Control();` (TS objects are already shared)
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -672,7 +614,6 @@ impl Engine {
         //           `Receiver`). `::<Command>` is the "turbofish" pinning the message type.
         // Why:      `tx` stays on this handle; `rx` is handed to the worker so it can pop
         //           commands.
-        // TS map:   `const [tx, rx] = makeChannel<Command>();`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -685,8 +626,6 @@ impl Engine {
         //           `Control` (it bumps the refcount, it does NOT copy the `Control`).
         // Why:      The worker thread needs its own owning handle to the shared control;
         //           cloning the `Arc` is how two threads co-own one value.
-        // TS map:   `const workerControl = control;` — in TS both names point at the one
-        //           shared object; there is no refcount to bump.
         // Gotcha:   `Arc::clone` clones the POINTER, not the data. Both handles see the
         //           same mutations through the inner atomics.
         //
@@ -708,8 +647,6 @@ impl Engine {
         //           `Err` it returns that error from `new` immediately.
         // Why:      All decode/output runs on this named worker thread; the `?` bubbles a
         //           thread-spawn failure up as `new`'s `Err`.
-        // TS map:   `const worker = startNamedWorker("mp-engine", () =>
-        //           engineWorker.workerRun(rx, workerControl)); // throws on failure`
         // Gotcha:   `?` is an early-return-on-error, not a "maybe" operator like TS's
         //           optional chaining `?.`.
         //
@@ -729,9 +666,6 @@ impl Engine {
         //           variant of `Result`. No trailing `;`, so this is the tail expression
         //           and the return value.
         // Why:      Hand back a fully-built engine on the success channel.
-        // TS map:   `return new Engine(tx, worker, control, false);` — the `Ok`/`Some`
-        //           wrappers vanish because TS success is implicit and `null` stands in for
-        //           "no value yet".
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -755,7 +689,6 @@ impl Engine {
     //           the file to the worker to open and (optionally) play. The caller guarantees
     //           `fd >= 0` and that the fd is alive for this synchronous call (Kotlin is
     //           inside the file descriptor's `use {}`).
-    // TS map:   `load(fd: number, play: boolean): void { /* throws PlayerError */ }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -772,8 +705,6 @@ impl Engine {
         //           The `unsafe` is required because the compiler cannot verify the fd is
         //           actually valid; the caller's contract (see the method's Why) provides
         //           the guarantee.
-        // TS map:   `const borrowed = fd;` — TS has no fd ownership, so "borrow" is a no-op
-        //           mental note.
         // Gotcha:   `unsafe` does NOT turn off safety everywhere; it just lets you call a
         //           few operations the compiler trusts you to use correctly.
         //
@@ -790,7 +721,6 @@ impl Engine {
         //           `std::fs::File` (an owned file handle that closes the dup on drop).
         // Why:      The worker outlives this call and Kotlin will close the original fd, so
         //           we must hand the worker its OWN duplicated, owned file, not a borrow.
-        // TS map:   `const file = await dupFd(borrowed); // throws on dup failure`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -801,7 +731,6 @@ impl Engine {
         //           borrowed engine: record whether the user wants playback.
         // Why:      So `play_when_ready` reports the latest intent even before the worker
         //           has finished loading.
-        // TS map:   `this.playIntent = play;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -819,8 +748,6 @@ impl Engine {
         //           The trailing `?` then propagates that converted error out of `load`.
         // Why:      Convert the channel's low-level send error into the engine's unified
         //           `PlayerError`, and bail out of `load` if the worker has already exited.
-        // TS map:   `try { this.tx.send({ kind: "load", file, play }); } catch { throw new
-        //           PlayerError.Unsupported("engine worker gone"); }`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -837,7 +764,6 @@ impl Engine {
         //           the unit value ("nothing"). No trailing `;`, so this is the tail
         //           expression and the function's return value.
         // Why:      Signal "loaded successfully, no payload" to the caller.
-        // TS map:   `return;` — TS success is just falling off the end (no value, no throw).
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -850,7 +776,6 @@ impl Engine {
     //           (`&mut self`) because it changes `play_intent`. No return type means it
     //           returns the unit value `()`.
     // Why:      Resume playback: the realtime callback un-gates on its next buffer.
-    // TS map:   `play(): void { ... }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -859,7 +784,6 @@ impl Engine {
     pub fn play(&mut self) {
         // What:     `self.play_intent = true;`. Plain boolean field assignment.
         // Why:      Record that the user wants sound.
-        // TS map:   `this.playIntent = true;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -874,7 +798,6 @@ impl Engine {
         // Why:      Flip the lock-free play gate the realtime callback reads; `Release`
         //           pairs with the callback's `Acquire` load so the callback sees a
         //           consistent state.
-        // TS map:   `Atomics.store(this.control.playing, 0, 1);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -887,7 +810,6 @@ impl Engine {
     //           method returning nothing.
     // Why:      Pause: the callback emits silence on its next buffer while KEEPING the
     //           audio already buffered (so resume is instant).
-    // TS map:   `pause(): void { ... }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -896,7 +818,6 @@ impl Engine {
     pub fn pause(&mut self) {
         // What:     `self.play_intent = false;`. Plain boolean field assignment.
         // Why:      Record that the user wants silence.
-        // TS map:   `this.playIntent = false;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -907,7 +828,6 @@ impl Engine {
         //           write `false` into the `playing` gate with `Release` ordering (same
         //           pairing as in `play`).
         // Why:      Tell the realtime callback to stop draining the ring on its next buffer.
-        // TS map:   `Atomics.store(this.control.playing, 0, 0);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -922,7 +842,6 @@ impl Engine {
     //           precision). Returns nothing.
     // Why:      Ask the worker to reposition the loaded track; the worker re-flushes the
     //           ring buffer.
-    // TS map:   `seekTo(positionSec: number): void { ... }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -935,7 +854,6 @@ impl Engine {
         //           `Result`; `let _ =` DISCARDS it (the `_` is the throw-away binding).
         // Why:      A seek after the worker has exited is harmless, so the send error is not
         //           worth surfacing.
-        // TS map:   `try { this.tx.send({ kind: "seek", positionSec }); } catch {}`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -948,7 +866,6 @@ impl Engine {
     //           method taking `volume: f32` (a 32-bit float linear gain; sibling `f64`
     //           would be needless precision for a volume knob). Returns nothing.
     // Why:      Set the user volume; the callback multiplies every sample by it.
-    // TS map:   `setVolume(volume: number): void { ... }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -962,7 +879,6 @@ impl Engine {
         //           volume change needs no happens-before relationship with other memory.
         // Why:      The cell stores bits, so we store the bit-pattern; `Relaxed` is the
         //           cheapest ordering and is correct for an independent scalar like volume.
-        // TS map:   `Atomics.store(this.control.volumeBits, 0, f32ToBits(volume));`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -977,7 +893,6 @@ impl Engine {
     //           `set_volume`: a read-only-borrow method taking an `f32` linear gain.
     // Why:      Set the per-track true-peak normalization gain, applied together with the
     //           user volume in the callback.
-    // TS map:   `setNormalizationGain(gain: number): void { ... }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -990,7 +905,6 @@ impl Engine {
         //           `norm_gain_bits` with the cheapest ordering.
         // Why:      Same bit-storage trick as volume; `Relaxed` is correct for an
         //           independent scalar gain.
-        // TS map:   `Atomics.store(this.control.normGainBits, 0, f32ToBits(gain));`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1005,7 +919,6 @@ impl Engine {
     //           the current playback position in seconds as an `f64` (the wide double;
     //           sibling `f32` would lose precision for long-running positions).
     // Why:      Kotlin polls this for the progress bar; 0 when nothing is loaded.
-    // TS map:   `positionSec(): number { ... }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1018,7 +931,6 @@ impl Engine {
         //           `Release`" (sibling `Relaxed` would not establish that ordering).
         // Why:      We need the rate to convert frames into seconds, and `Acquire` ensures
         //           we see a coherent set of `rate`/`start_frame`/`frames_played`.
-        // TS map:   `const rate = Atomics.load(this.control.rate, 0);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1029,7 +941,6 @@ impl Engine {
         //           (rate is the 0 sentinel), early-`return` the float `0.0`. `0.0` is an
         //           `f64` literal (a float, matching the return type, not the integer `0`).
         // Why:      Avoid dividing by zero and report "no position" cleanly.
-        // TS map:   `if (rate === 0) return 0;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1045,7 +956,6 @@ impl Engine {
         //           the worker/callback's `Release` writes.
         // Why:      Absolute position = where the stream started (the seek target) plus how
         //           many frames have played since.
-        // TS map:   `const frames = Atomics.load(startFrame,0) + Atomics.load(framesPlayed,0);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1060,7 +970,6 @@ impl Engine {
         //           trailing `;`, so this is the tail expression and the return value.
         // Why:      Cast to float so the division yields fractional seconds, not truncated
         //           integer division.
-        // TS map:   `return frames / rate;` — TS numbers are already floats, so no cast.
         // Gotcha:   `as f64` on a `u64` can lose precision for astronomically huge frame
         //           counts, but real audio never reaches that range.
         //
@@ -1074,7 +983,6 @@ impl Engine {
     // What:     `pub fn duration_sec(&self) -> f64`. A read-only-borrow poller returning the
     //           loaded track's duration in seconds as an `f64`.
     // Why:      Kotlin polls this for the progress bar's total length; 0 when unknown.
-    // TS map:   `durationSec(): number { ... }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1087,7 +995,6 @@ impl Engine {
         //           MILLIS_PER_SEC` divides by 1000.0 to get seconds. Tail expression, so
         //           it is the return value.
         // Why:      Convert the stored milliseconds into the seconds Kotlin's UI expects.
-        // TS map:   `return Atomics.load(this.control.durationMs, 0) / MILLIS_PER_SEC;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1100,7 +1007,6 @@ impl Engine {
     //           plain `bool`: whether the engine is ACTUALLY sounding (playing and not yet
     //           ended), which differs from `play_when_ready` (mere intent).
     // Why:      Kotlin polls this to know if sound is really coming out right now.
-    // TS map:   `isPlaying(): boolean { ... }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1114,7 +1020,6 @@ impl Engine {
         //           expression, so it is the return value.
         // Why:      A track that played to its end is "not playing" even though the play
         //           gate may still be set, so we AND in `!ended`.
-        // TS map:   `return Atomics.load(playing,0) && !Atomics.load(ended,0);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1128,7 +1033,6 @@ impl Engine {
     // What:     `pub fn is_ended(&self) -> bool`. A read-only-borrow poller returning a
     //           plain `bool`: whether the loaded track has played through to its end.
     // Why:      Kotlin's poller de-duplicates this into a single `onTrackEnded` callback.
-    // TS map:   `isEnded(): boolean { ... }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1139,7 +1043,6 @@ impl Engine {
         //           `.load(Ordering::Acquire)` of the `ended` flag. Tail expression, so it
         //           is the return value.
         // Why:      Report whether the callback has marked the track finished.
-        // TS map:   `return Atomics.load(this.control.ended, 0);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1153,7 +1056,6 @@ impl Engine {
     //           true from a play / load-and-play request until a pause.
     // Why:      Lets Kotlin distinguish "the user wants playback" from "audio is actually
     //           sounding" (which `is_playing` reports).
-    // TS map:   `playWhenReady(): boolean { ... }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1164,7 +1066,6 @@ impl Engine {
         //           No trailing `;`, so this bare field access is the tail expression and
         //           the return value.
         // Why:      Hand back the stored intent unchanged.
-        // TS map:   `return this.playIntent;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1179,7 +1080,6 @@ impl Engine {
 //           moment an `Engine` goes out of scope (when Kotlin's JNI glue frees the handle).
 // Why:      Tell the worker to quit and wait for it, so the AAudio stream the worker owns
 //           is closed cleanly before the process moves on.
-// TS map:   a class implementing `[Symbol.dispose]()` that stops + joins the worker.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -1190,7 +1090,6 @@ impl Drop for Engine {
     //           engine down mutates it (it `.take()`s the worker handle out). The runtime,
     //           not your code, calls this; you never call `drop` by name.
     // Why:      Run graceful shutdown at end of the engine's life.
-    // TS map:   `[Symbol.dispose]() { ... }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1201,7 +1100,6 @@ impl Drop for Engine {
         //           WRAPPER CONSTRUCTOR for the `Quit` variant. `self.tx.send(...)` returns
         //           a `Result`; `let _ =` DISCARDS it (the worker may already be gone).
         // Why:      Ask the worker to break its loop and tear down its owned state.
-        // TS map:   `try { this.tx.send({ kind: "quit" }); } catch {}`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1218,8 +1116,6 @@ impl Drop for Engine {
         // Why:      Join exactly once (the `.take()` guarantees it) and wait for the worker
         //           so its AAudio stream is fully closed before we return; a worker panic is
         //           not worth acting on during shutdown.
-        // TS map:   `const worker = this.worker; this.worker = null; if (worker) { await
-        //           worker; }`
         //
         // In TS you'd write (pseudocode):
         // ```ts

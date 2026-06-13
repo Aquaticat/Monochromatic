@@ -8,7 +8,6 @@
 //           escapes when a member would have matched (BUG 7 in
 //           `is_match`'s history); a constituent's hit must trip
 //           the shard.
-// TS map:   `fuzzTarget((input: RulesetAndContent) => { ... });`.
 
 #![no_main]
 

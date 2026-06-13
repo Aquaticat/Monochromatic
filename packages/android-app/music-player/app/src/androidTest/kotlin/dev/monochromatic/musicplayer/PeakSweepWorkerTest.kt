@@ -32,10 +32,6 @@
 // Why:      Kotlin/Java resolve types by package; the test must sit in the same package as the
 //           production classes it pokes at (`PeakSweepWorker`, `Track`, `LibrarySource`, …) so it
 //           can reach their `internal`/package-visible members without an import.
-// TS map:   There is no exact equivalent. The closest mental model is "this file is part of the
-//           `dev.monochromatic.musicplayer` module/folder", similar to how a TS file's location on
-//           disk + its `import` lines decide what names it sees. Unlike a TS `import`, this line
-//           pulls in NOTHING by itself; it only names where THIS file belongs.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -49,9 +45,6 @@ package dev.monochromatic.musicplayer
 //           the content resolver (for `content://` URIs), system services, and so on.
 // Why:      The test needs a `Context` to hand to the production code (the library scanner, the
 //           cache store, the fingerprinter), all of which need OS access.
-// TS map:   A plain named import. Picture `import { Context } from "android/content";` — except
-//           Java/Kotlin imports name a SINGLE type per line (the last dotted segment), not a set of
-//           named bindings in braces.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -62,8 +55,6 @@ import android.content.Context
 //           structured form of a string locator like `content://media/external/audio/123` or a SAF
 //           document URI. It is NOT a plain `String`; it is a parsed object.
 // Why:      The sweep identifies and opens tracks by `Uri`, so the test builds and passes `Uri`s.
-// TS map:   `import { Uri } from "android/net";`. Think of the browser's `URL` class: a parsed
-//           wrapper around a locator string, not the raw string itself.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -76,9 +67,6 @@ import android.net.Uri
 //           write `"some string".toUri()` and it returns a parsed `Uri`.
 // Why:      The library stores each track's locator as a plain `String` (see `Track.uri: String`);
 //           to open it the test must parse that string into a `Uri` via `.toUri()`.
-// TS map:   TS has no method-syntax extensions, so this is a free helper you must import and call:
-//           `import { toUri } from "androidx/core/net";` then `toUri("some string")`. Kotlin's
-//           `"x".toUri()` is sugar for `toUri("x")`.
 // Gotcha:   `someString.toUri()` LOOKS like a method that lives on the string, but `String` has no
 //           such method; the import is what makes the call resolve. Remove the import and the call
 //           fails to compile.
@@ -92,8 +80,6 @@ import androidx.core.net.toUri
 //           that can hand back the running app's `Context` during an instrumented test.
 // Why:      The test needs the real app `Context`; `ApplicationProvider.getApplicationContext()`
 //           supplies it (used below in the `context` property).
-// TS map:   `import { ApplicationProvider } from "androidx/test/core/app";` — a namespace-like
-//           object with a static method.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -105,9 +91,6 @@ import androidx.test.core.app.ApplicationProvider
 //           class (create it, invoke its `@Test` methods, report pass/fail).
 // Why:      The class below is annotated `@RunWith(AndroidJUnit4::class)` so it runs on a device
 //           with Android wiring available; this import names that runner.
-// TS map:   `import { AndroidJUnit4 } from "androidx/test/ext/junit/runners";`. There is no direct
-//           TS analogue; mentally it is "the test harness/adapter that knows how to execute these
-//           tests in an Android process", a bit like choosing a Jest environment.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -120,9 +103,6 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 //           `ListenableWorker.Result.Success`.
 // Why:      The worker test asserts the worker returned a SUCCESS result; that result type is
 //           nested under `ListenableWorker`.
-// TS map:   `import { ListenableWorker } from "androidx/work";`. Picture a type
-//           `type Result = Success | Failure | Retry` whose variants are reached as
-//           `ListenableWorker.Result.Success`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -133,9 +113,6 @@ import androidx.work.ListenableWorker
 //           that constructs a real worker instance wired to a fake/test WorkManager environment, so
 //           you can call `doWork()` directly without scheduling it on a real queue.
 // Why:      The second test builds the `PeakSweepWorker` with this and runs it inline.
-// TS map:   `import { TestListenableWorkerBuilder } from "androidx/work/testing";` — a factory you
-//           configure step by step (`.from(...).setInputData(...).build()`), i.e. the builder
-//           pattern.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -147,8 +124,6 @@ import androidx.work.testing.TestListenableWorkerBuilder
 //           `key to value` pairs.
 // Why:      The worker test passes an input bound (`KEY_MAX_TRACKS to 1`) so the worker only sweeps
 //           one track; `workDataOf` packages that pair into the worker's input `Data`.
-// TS map:   `import { workDataOf } from "androidx/work";` then `workDataOf(["max_tracks", 1])` —
-//           roughly building a small record/map: `{ max_tracks: 1 }`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -161,9 +136,6 @@ import androidx.work.workDataOf
 // Why:      The production functions under test are `suspend` (async) functions; a JUnit `@Test`
 //           method is an ordinary synchronous method, so the test uses `runBlocking { ... }` to
 //           call the async code and wait for it right here.
-// TS map:   `import { runBlocking } from "kotlinx/coroutines";`. There is no real TS equivalent —
-//           JS cannot block the thread to await a Promise. The closest mental model is an imaginary
-//           `awaitSync(promise)` that synchronously returns the resolved value (which JS forbids).
 // Gotcha:   `runBlocking` actually PARKS the thread until the async work completes. In JS you would
 //           always reach for `await` inside an `async` function instead; blocking is impossible.
 //
@@ -176,8 +148,6 @@ import kotlinx.coroutines.runBlocking
 // What:     `import org.junit.Assert.assertEquals` imports the `assertEquals` assertion (fails the
 //           test unless two values are equal). This imports a STATIC method directly by name.
 // Why:      Used to assert the second sweep pass returns exactly `SweepOutcome.CACHED`.
-// TS map:   `import { assertEquals } from "org/junit/Assert";`. Like importing `expect`'s
-//           `toEqual` as a standalone function.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -188,8 +158,6 @@ import org.junit.Assert.assertEquals
 //           test if the given value is `null`).
 // Why:      Used to assert a fingerprint key and a cached peak both exist (are non-null) after the
 //           first pass.
-// TS map:   `import { assertNotNull } from "org/junit/Assert";`. Like asserting
-//           `expect(value).not.toBeNull()`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -199,8 +167,6 @@ import org.junit.Assert.assertNotNull
 // What:     `import org.junit.Assert.assertTrue` imports the `assertTrue` assertion (fails the test
 //           unless the given boolean is `true`); it also accepts a message shown on failure.
 // Why:      Used several times to check outcomes and value ranges.
-// TS map:   `import { assertTrue } from "org/junit/Assert";`. Like `expect(cond).toBe(true)` with a
-//           custom failure message.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -212,8 +178,6 @@ import org.junit.Assert.assertTrue
 //           FAILED.
 // Why:      If the device library is empty there is nothing to sweep, so the test should be skipped
 //           rather than fail; `assumeTrue(tracksNotEmpty)` does exactly that.
-// TS map:   `import { assumeTrue } from "org/junit/Assume";`. There is no built-in Jest equivalent;
-//           closest is `test.skip(...)` chosen at runtime, e.g. `if (!cond) return; // skip`.
 // Gotcha:   `assumeTrue(false)` SKIPS the test (green-ish "ignored"); `assertTrue(false)` FAILS it
 //           (red). Same shape, opposite consequence.
 //
@@ -225,8 +189,6 @@ import org.junit.Assume.assumeTrue
 // What:     `import org.junit.Test` imports the `@Test` annotation marker. Methods tagged with it
 //           are the ones the runner executes as individual tests.
 // Why:      Both test methods below are annotated `@Test`.
-// TS map:   `import { Test } from "org/junit";`. There is no annotation system in plain TS; the
-//           closest analogue is registering a test via a function call like `test("name", fn)`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -236,8 +198,6 @@ import org.junit.Test
 // What:     `import org.junit.runner.RunWith` imports the `@RunWith` annotation, which tells JUnit
 //           WHICH runner class should drive this test class.
 // Why:      The class below uses `@RunWith(AndroidJUnit4::class)` to select the Android runner.
-// TS map:   `import { RunWith } from "org/junit/runner";`. No plain-TS analogue; think of it as
-//           "choose the test environment/adapter for this file".
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -255,13 +215,6 @@ import org.junit.runner.RunWith
 // Why:      The annotation makes these tests run inside an Android process with Android APIs
 //           available (instrumented), instead of as plain JVM unit tests. The class groups the two
 //           sweep tests and their shared helpers.
-// TS map:   The `::class` part has no direct TS equivalent; the closest is passing the CLASS ITSELF
-//           as a value, like `AndroidJUnit4` (the constructor function) rather than `new AndroidJUnit4()`.
-//           The whole construct maps to decorating a class:
-//             `@RunWith(AndroidJUnit4)`
-//             `class PeakSweepWorkerTest { ... }`
-//           or, more like real test frameworks, a `describe("PeakSweepWorkerTest", () => { ... })`
-//           block configured to use a given environment.
 // Gotcha:   `AndroidJUnit4::class` is NOT a constructor call. There is no `new`. It hands the runner
 //           the type's metadata so JUnit can instantiate it itself.
 //
@@ -284,9 +237,6 @@ class PeakSweepWorkerTest {
     //           as `Context` from the property's `: Context` annotation, so no cast is needed.
     // Why:      Each test needs the real app `Context`; exposing it as a computed property means
     //           every read fetches a fresh, valid context without storing one as a field.
-    // TS map:   A getter on the class, computed each access:
-    //             `private get context(): Context { return ApplicationProvider.getApplicationContext(); }`
-    //           `val` = no setter (like a TS getter with no matching setter).
     // Gotcha:   Because it is `get() = ...` (no backing field), reading `context` RE-CALLS
     //           `getApplicationContext()` every time; it is recomputed, not memoized. For this app
     //           helper that returns the same context, so it is harmless.
@@ -301,8 +251,6 @@ class PeakSweepWorkerTest {
 
     // What:     `@Test` marks the method below as one runnable test case.
     // Why:      Tells the runner to execute `measureAndCacheMeasuresThenCachesOneTrack` as a test.
-    // TS map:   Like `test("measureAndCacheMeasuresThenCachesOneTrack", () => { ... })` or a
-    //           `@Test`/`@test` decorator on the method.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -320,9 +268,6 @@ class PeakSweepWorkerTest {
     //           be a pure CACHE hit. It pins the seam the worker loops over: fingerprint, cache
     //           lookup, decode-on-miss, write.
     // Why:      Verifies the measure->memoize->cache-hit lifecycle end to end on a device.
-    // TS map:   `function measureAndCacheMeasuresThenCachesOneTrack(): void { ... }`. Note: in TS a
-    //           test that awaits async work would be `async () => { ... }`; here Kotlin stays sync
-    //           and uses `runBlocking` inside instead.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -340,8 +285,6 @@ class PeakSweepWorkerTest {
         //           expect: `MutableList<Track>` (read+write), or the array type `Array<Track>`.
         // Why:      The test needs the device's real library to pick a track from; `LibrarySource`
         //           is async (it touches storage), so we block until it returns the list.
-        // TS map:   `const tracks: readonly Track[] = await LibrarySource.load(context);`
-        //           inside an async test. `List<Track>` ≈ `readonly Track[]`; `val` ≈ `const`.
         // Gotcha:   `runBlocking` blocks the test thread until the Promise-like work finishes; this
         //           is the synchronous-await that JS does not allow.
         //
@@ -356,8 +299,6 @@ class PeakSweepWorkerTest {
         //           when the list has at least one element.
         // Why:      If there are no tracks on the device there is nothing to measure, so the test
         //           should be skipped rather than counted as a failure.
-        // TS map:   `if (!tracks.length) return; // skip` — or a real "assume" helper:
-        //           `assumeTrue("device library is empty; nothing to sweep", tracks.length > 0);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -370,8 +311,6 @@ class PeakSweepWorkerTest {
         //           the imported extension that PARSES that string into a `Uri` object.
         // Why:      The sweep functions operate on a parsed `Uri`, so the test turns the first
         //           track's stored string locator into one to pass them.
-        // TS map:   `const uri: Uri = toUri(tracks[0].uri);` (using the free `toUri` helper). In
-        //           Kotlin the call reads as method syntax `tracks.first().uri.toUri()`.
         // Gotcha:   `.first()` THROWS if the list is empty; this line only runs after the
         //           `assumeTrue(... isNotEmpty())` above guaranteed at least one element.
         //
@@ -390,8 +329,6 @@ class PeakSweepWorkerTest {
         //           expect from other languages is a string-union, or a numeric `enum`.
         // Why:      Run the real sweep on the chosen track and capture the outcome so we can assert
         //           it measured or was already cached.
-        // TS map:   `const first: SweepOutcome = await measureAndCache(context, uri);` where
-        //           `type SweepOutcome = "CACHED" | "MEASURED" | "UNFINGERPRINTABLE" | "FAILED";`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -407,8 +344,6 @@ class PeakSweepWorkerTest {
         //           (it calls `.equals()`), which for enum constants behaves like identity.
         // Why:      On a fresh track the first pass should MEASURE it; if a previous run already
         //           cached it, CACHED is also acceptable. Anything else (skipped/failed) is a bug.
-        // TS map:   `assertTrue(\`first pass ... was ${first}\`, first === "MEASURED" || first === "CACHED");`
-        //           `$first` ≈ template literal `${first}`.
         // Gotcha:   Kotlin `==` is `.equals()` (structural), NOT JS `===` reference identity; but for
         //           enum constants the two coincide, so reading it as `===` is fine here.
         //
@@ -432,8 +367,6 @@ class PeakSweepWorkerTest {
         //           Sibling type: the NON-nullable `String` (no trailing `?`), which can never be null.
         // Why:      The cache is keyed by a fingerprint; the test re-derives that key so it can look
         //           the cached peak up directly and confirm the sweep stored it.
-        // TS map:   `const key: string | null = await TrackFingerprint.of(context, uri);`
-        //           Kotlin's `String?` ≈ TS `string | null`.
         // Gotcha:   In Kotlin nullability is part of the TYPE. `String` can NEVER be null; only
         //           `String?` can. The compiler forces you to handle the null case (see `key!!` below).
         //
@@ -446,7 +379,6 @@ class PeakSweepWorkerTest {
         //           `key` is `null`, printing the message otherwise.
         // Why:      A real library track that we just selected must produce a fingerprint; if it does
         //           not, the cache key path is broken and the rest of the test is meaningless.
-        // TS map:   `assertNotNull("a library track must be fingerprintable", key);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -466,9 +398,6 @@ class PeakSweepWorkerTest {
         // Why:      `get` expects a non-null `String` key, but `key` is typed `String?`; we just
         //           asserted it is non-null above, so `!!` converts the type for the call. The result
         //           is the peak the sweep should have stored.
-        // TS map:   `const cachedPeak: number | null = await PeakCacheStore.get(context, key!);`
-        //           Kotlin `!!` ≈ TS non-null assertion `key!` — BUT Kotlin's `!!` actually THROWS at
-        //           runtime if null, whereas TS `!` is only a compile-time hint that erases at runtime.
         // Gotcha:   `key!!` is not free: if `key` were null this line would crash. It is safe here
         //           ONLY because `assertNotNull(..., key)` ran first. Also note `Float` ≠ JS `number`
         //           precision (JS `number` is a `Double`).
@@ -483,7 +412,6 @@ class PeakSweepWorkerTest {
         //           the test if `cachedPeak` is `null`.
         // Why:      After a MEASURED (or already-CACHED) first pass, the peak MUST be present in the
         //           cache; a null here means the sweep did not persist what it measured.
-        // TS map:   `assertNotNull("the peak must be cached after the first pass", cachedPeak);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -505,11 +433,6 @@ class PeakSweepWorkerTest {
         //           The `$cachedPeak` in the message interpolates the runtime value.
         // Why:      A real measured true-peak must be a finite, non-negative level below a physically
         //           plausible ceiling; this catches a garbage measurement (NaN/infinite/absurd).
-        // TS map:   ```ts
-        //           assertTrue(
-        //             `cached peak ${cachedPeak} should be a sane, finite level`,
-        //             Number.isFinite(cachedPeak!) && cachedPeak! >= 0.0 && cachedPeak! < SANE_PEAK_UPPER_BOUND,
-        //           );
         //           ```
         //           In TS there is no `Float` vs `Double`; `0.0f` is just `0`. `.isFinite()` ≈
         //           `Number.isFinite(...)`.
@@ -534,7 +457,6 @@ class PeakSweepWorkerTest {
         //           waits for the async result.
         // Why:      Now that the peak is cached, a second pass must NOT decode again; capturing the
         //           outcome lets us assert it short-circuited to a cache hit.
-        // TS map:   `const second: SweepOutcome = await measureAndCache(context, uri);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -547,7 +469,6 @@ class PeakSweepWorkerTest {
         //           `SweepOutcome.CACHED` is the expected, `second` is the actual.
         // Why:      The whole point of the cache is that the second measurement of an already-known
         //           track does zero decoding and reports CACHED; this asserts that contract.
-        // TS map:   `assertEquals("the second pass must be a pure cache hit", "CACHED", second);`
         // Gotcha:   Argument order is (expected, actual). It is easy to flip these; the message and
         //           the constant make the intent explicit.
         //
@@ -560,7 +481,6 @@ class PeakSweepWorkerTest {
 
     // What:     `@Test` marks the next method as a runnable test case.
     // Why:      Tells the runner to execute `workerSweepsBoundedShareAndSucceeds`.
-    // TS map:   Like `test("workerSweepsBoundedShareAndSucceeds", () => { ... })`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -576,7 +496,6 @@ class PeakSweepWorkerTest {
     //           going. Bounding to one track keeps the run short while still crossing the real
     //           enumerate -> decode -> flush -> result path.
     // Why:      Verifies the worker's success-reporting contract end to end on a device.
-    // TS map:   `function workerSweepsBoundedShareAndSucceeds(): void { ... }`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -599,11 +518,6 @@ class PeakSweepWorkerTest {
         // Why:      The test must run the real worker but bound it to ONE track so the instrumented
         //           run stays seconds long; the builder wires it to the test environment and injects
         //           that `max_tracks = 1` input.
-        // TS map:   ```ts
-        //           const worker: PeakSweepWorker = TestListenableWorkerBuilder
-        //             .from(context, PeakSweepWorker) // pass the class value, not `.class.java`
-        //             .setInputData(workDataOf([PeakSweepWorker.KEY_MAX_TRACKS, 1]))
-        //             .build();
         //           ```
         //           `a to b` ≈ a tuple/entry `[a, b]` or `{ [a]: b }`.
         // Gotcha:   `::class.java` is two conversions: Kotlin class reference -> Java `Class`. There is
@@ -628,7 +542,6 @@ class PeakSweepWorkerTest {
         //           point that performs the whole sweep and returns its `Result`.
         // Why:      We invoke the worker's real work function directly and capture what it reports so
         //           we can assert success.
-        // TS map:   `const result: ListenableWorker.Result = await worker.doWork();`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -642,8 +555,6 @@ class PeakSweepWorkerTest {
         //           it returns `true` when `result` is an instance of the `Success` subtype.
         // Why:      The worker's contract is to always report SUCCESS for a normal run (so periodic
         //           scheduling continues without backoff); this asserts that exact subtype came back.
-        // TS map:   `assertTrue(\`... was ${result}\`, result instanceof ListenableWorker.Result.Success);`
-        //           Kotlin `x is T` ≈ TS `x instanceof T`.
         // Gotcha:   `is` is a runtime type test that ALSO smart-casts `result` to `Success` in the
         //           true branch (not used here). It is the analogue of `instanceof`, not of `===`.
         //
@@ -664,9 +575,6 @@ class PeakSweepWorkerTest {
     //           class. A Kotlin class may have at most ONE companion object.
     // Why:      It is the idiomatic place to hang class-level (static) constants the test methods
     //           share, here the sanity ceiling for a measured peak.
-    // TS map:   There is no separate companion concept; static members live directly on the class:
-    //             `class PeakSweepWorkerTest { private static readonly SANE_PEAK_UPPER_BOUND = 4.0; }`
-    //           Mentally, `companion object { X }` ≈ "the `static` section of the class".
     // Gotcha:   Members here are accessed WITHOUT an instance (`PeakSweepWorkerTest.SANE_...` from
     //           outside, or just `SANE_...` from inside the class), unlike normal instance members.
     //
@@ -688,9 +596,6 @@ class PeakSweepWorkerTest {
         //           comfortable ceiling, anything beyond it signals a broken measurement.
         // Why:      Gives the range assertion a single named ceiling instead of a magic number, and
         //           documents WHY 4.0 (overshoot is expected; absurd values are not).
-        // TS map:   `private static readonly SANE_PEAK_UPPER_BOUND: number = 4.0;`
-        //           TS has no `const`-vs-`val` compile-time-inline distinction and no `Float`/`Double`
-        //           split, so the `f` suffix and `const` keyword both vanish.
         // Gotcha:   `const val` here is NOT a JS `const` local; it is a class-level (static),
         //           compile-time-inlined constant. And `4.0f` is 32-bit, narrower than JS `number`.
         //

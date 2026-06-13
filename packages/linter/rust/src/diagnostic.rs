@@ -3,7 +3,6 @@
 //           outside this file.
 // Why:      A rule needs to say whether a finding fails the run (Error) or is
 //           advisory (Warn). Only error-severity findings set a non-zero exit.
-// TS map:   `type Severity = "error" | "warn";` — a string-literal union.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -18,8 +17,6 @@ pub enum Severity {
 // What:     `impl Severity { ... }` opens a block of methods attached to the
 //           `Severity` type.
 // Why:      Give `Severity` a way to render itself as text for output.
-// TS map:   In TS you'd just write a function `severityLabel(s)` or a method on
-//           an object; Rust groups methods in an `impl` block.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -33,7 +30,6 @@ impl Severity {
     //           `String`, a heap-allocated owned string we would return if the
     //           text were computed at runtime.
     // Why:      Map each variant to the word printed in diagnostics.
-    // TS map:   `label(): string { return this === "error" ? "error" : "warn"; }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -46,7 +42,6 @@ impl Severity {
         //           tail expression, so its value is returned.
         // Why:      Pick the right label without a `match`, keeping it as a plain
         //           two-branch conditional a TS reader recognises.
-        // TS map:   `return this === "error" ? "error" : "warn";`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -65,7 +60,6 @@ impl Severity {
 //           ownership is explicit.
 // Why:      One value carries everything we print about a single finding: which
 //           rule, how severe, the human message, the file, and the 1-based line.
-// TS map:   `type Diagnostic = { ruleId: string; severity: Severity; message: string; path: string; line: number };`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -79,13 +73,11 @@ pub struct Diagnostic {
     //           whole program. Sibling: `String` (owned, heap). We use the
     //           borrowed form because rule ids are fixed literals like "max-lines".
     // Why:      Identify which rule produced the finding.
-    // TS map:   `ruleId: string`.
     pub rule_id: &'static str,
 
     // What:     `severity: Severity`. One of the two-variant enum above, stored
     //           by value (it is `Copy`, so it is duplicated cheaply, not moved).
     // Why:      Decide exit code and how to label the line.
-    // TS map:   `severity: Severity`.
     pub severity: Severity,
 
     // What:     `message: String`. An OWNED, heap-allocated, growable UTF-8
@@ -93,14 +85,12 @@ pub struct Diagnostic {
     //           message is built at runtime (it contains numbers) and must
     //           outlive the function that created it.
     // Why:      Hold the human-readable explanation.
-    // TS map:   `message: string`.
     pub message: String,
 
     // What:     `path: String`. OWNED string holding the file path as text.
     //           Sibling: `&str` or `std::path::Path`; we keep a plain owned
     //           `String` because it is only ever printed, never traversed.
     // Why:      Tell the reader which file the finding is in.
-    // TS map:   `path: string`.
     pub path: String,
 
     // What:     `line: usize`. `usize` is the unsigned integer wide enough to
@@ -108,13 +98,11 @@ pub struct Diagnostic {
     //           64-bit OS). Siblings: `u32`, `u64`, `i32`, `i64`. 1-based.
     // Why:      `usize` because line numbers are counts/indices, which every Rust
     //           collection API expresses as `usize`; mixing widths forces casts.
-    // TS map:   `line: number`.
     pub line: usize,
 }
 
 // What:     `impl Diagnostic { ... }` attaches methods to the record type.
 // Why:      Give a diagnostic a way to render itself as one output line.
-// TS map:   methods on the Diagnostic object / a free `renderDiagnostic(d)`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -124,7 +112,6 @@ impl Diagnostic {
     // What:     `pub fn render(&self) -> String`. Borrows the diagnostic
     //           read-only (`&self`) and returns a freshly built OWNED `String`.
     // Why:      Produce the single line printed per finding.
-    // TS map:   `render(): string { return `${this.path}:${this.line}: ...`; }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -139,7 +126,6 @@ impl Diagnostic {
         //           .label()` calls the method defined above.
         // Why:      Assemble `path:line: severity[rule]: message`. This is the
         //           function's tail expression, so it is the returned value.
-        // TS map:   a backtick template string.
         //
         // In TS you'd write (pseudocode):
         // ```ts

@@ -14,8 +14,6 @@
 //           `TryRecvError` reports "empty" vs "all senders gone". `self` also imports
 //           the `mpsc` module itself (for `mpsc::channel()`).
 // Why:      The UI thread sends `Command`s to this worker thread.
-// TS map:   a thread-safe async queue; `Sender.send` ~ `queue.push`, `Receiver.try_recv`
-//           ~ a non-blocking `queue.tryPop`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -30,8 +28,6 @@ use std::sync::mpsc::{self, Receiver, Sender, TryRecvError};
 //           separate "thread id" type you'd pass around; `Thread` is that handle.
 // Why:      The engine runs on its own thread, and other threads need a `Thread` handle
 //           to wake it from a park (see `park_timeout` in `run`).
-// TS map:   `JoinHandle` ~ a Worker plus a promise that resolves when it exits; `Thread`
-//           ~ a reference to that Worker you can post a "wake up" to.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -41,7 +37,6 @@ use std::thread::{self, JoinHandle, Thread};
 
 // What:     `use std::time::Duration;`. A span of time (here, a sleep interval).
 // Why:      We sleep briefly when idle to avoid busy-spinning the CPU.
-// TS map:   a number of milliseconds passed to `setTimeout`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -52,7 +47,6 @@ use std::time::Duration;
 // What:     `use crate::command::{Command, Update};`. The UI->engine and engine->UI
 //           message enums.
 // Why:      The channel carries `Command`s; the callback delivers `Update`s.
-// TS map:   `import { Command, Update } from "./command";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -62,7 +56,6 @@ use crate::command::{Command, Update};
 
 // What:     `use crate::controller::Controller;`. The playback state machine.
 // Why:      `run` builds one and forwards commands/audio pumping to it.
-// TS map:   `import { Controller } from "./controller";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -72,7 +65,6 @@ use crate::controller::Controller;
 
 // What:     `use crate::output::Output;`. The PipeWire output (FFI boundary).
 // Why:      `run` tries to create one and hands it to the controller.
-// TS map:   `import { Output } from "./output";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -92,8 +84,6 @@ use crate::output::Output;
 // Why:      Replaces the old busy-poll: the worker used to skip its sleep whenever a push
 //           accepted even one sample, so during playback it spun a whole CPU core.
 //           Parking until explicitly woken drops idle CPU to near zero.
-// TS map:   no exact equivalent; mentally `await Promise.race([wokenSignal, sleep(100)])`,
-//           where `wokenSignal` resolves the instant someone calls `unpark()`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -104,7 +94,6 @@ const IDLE_PARK_FALLBACK_MS: u64 = 100;
 // What:     `pub struct Engine { ... }`. The handle the UI keeps. It is `Send` (only a
 //           channel sender + a thread handle), unlike the controller's internal state.
 // Why:      Lets the UI send commands and stop the worker on drop.
-// TS map:   `class Engine { tx; handle; }`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -113,7 +102,6 @@ const IDLE_PARK_FALLBACK_MS: u64 = 100;
 pub struct Engine {
     // What:     `tx: Sender<Command>`. The send end of the command channel.
     // Why:      `send` pushes commands to the worker.
-    // TS map:   `tx: Sender<Command>;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -126,7 +114,6 @@ pub struct Engine {
     // Why:      After sending a command we must WAKE the worker, which is otherwise parked
     //           (blocked) when idle; without this the command would sit unhandled until
     //           the fallback timeout fires.
-    // TS map:   `worker: WorkerRef;` (a thing you can post "wake up" to)
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -136,7 +123,6 @@ pub struct Engine {
     // What:     `handle: Option<JoinHandle<()>>`. The worker's join handle, or `None`
     //           after we have joined it. `JoinHandle<()>` = the thread returns nothing.
     // Why:      `Drop` joins the thread so the output cleans up before exit.
-    // TS map:   `handle: ThreadHandle | null;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -153,7 +139,6 @@ pub struct Engine {
 // Why:      Threads other than the UI (the file-picker thread) need to send commands AND
 //           wake the worker. Handing out a bare `Sender` would let them queue a command
 //           without unparking, so it would not be acted on until the timeout.
-// TS map:   `class CommandSender { tx; worker; clone() {...} }`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -163,7 +148,6 @@ pub struct Engine {
 pub struct CommandSender {
     // What:     `tx: Sender<Command>`. The send end of the command channel.
     // Why:      The picker thread pushes `OpenPaths` through it.
-    // TS map:   `tx: Sender<Command>;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -172,7 +156,6 @@ pub struct CommandSender {
     tx: Sender<Command>,
     // What:     `worker: Thread`. The same worker handle `Engine` holds.
     // Why:      Wake the worker after queueing a command.
-    // TS map:   `worker: WorkerRef;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -183,7 +166,6 @@ pub struct CommandSender {
 
 // What:     `impl CommandSender { ... }`. Its one method.
 // Why:      Mirror `Engine::send` for off-UI threads.
-// TS map:   the class body.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -193,7 +175,6 @@ impl CommandSender {
     // What:     `pub fn send(&self, command: Command)`. Queue a command, then wake the
     //           worker. Read-only borrow of self.
     // Why:      Same contract as `Engine::send`, usable from another OS thread.
-    // TS map:   `send(command: Command): void`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -203,7 +184,6 @@ impl CommandSender {
         // What:     `let _ = self.tx.send(command);`. `send` returns a `Result` that errs
         //           only if the worker is gone; `let _ =` DISCARDS it.
         // Why:      A dead worker during shutdown is not worth surfacing.
-        // TS map:   `try { this.tx.send(command); } catch {}`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -214,7 +194,6 @@ impl CommandSender {
         //           parked yet, this leaves a one-shot "permit" so its next `park` returns
         //           immediately (so the wake is never lost).
         // Why:      Make the worker act on the command now, not after the timeout.
-        // TS map:   `this.worker.postWakeUp();`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -226,7 +205,6 @@ impl CommandSender {
 
 // What:     `impl Engine { ... }`. The handle's methods.
 // Why:      Construction and command sending.
-// TS map:   the class body.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -238,7 +216,6 @@ impl Engine {
     //           be callable repeatedly (`Fn`), movable to another thread (`Send`), and own
     //           no short-lived borrows (`'static`).
     // Why:      The UI passes a closure that forwards updates to the Slint loop.
-    // TS map:   `static spawn(onUpdate: (u: Update) => void): Engine`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -252,7 +229,6 @@ impl Engine {
         //           destructure into sender `tx` and receiver `rx`. `::<Command>` is the
         //           turbofish pinning the element type.
         // Why:      The link between UI and worker.
-        // TS map:   `const { tx, rx } = makeChannel<Command>();`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -265,7 +241,6 @@ impl Engine {
         //           (`dyn Fn(...)`), so the worker can store one fixed type regardless of
         //           the concrete `F`. Sibling: `Rc`/`Arc` would add sharing we do not need.
         // Why:      Erase `F` to a uniform callback type.
-        // TS map:   `const callback = onUpdate;` (TS functions are already boxed)
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -276,7 +251,6 @@ impl Engine {
         // What:     `let self_tx = tx.clone();`. A second sender clone moved into the worker.
         // Why:      The worker builds a `CommandSender` from it so the file watcher can inject
         //           `Command::Rescan` back into this same channel.
-        // TS map:   `const selfTx = tx; // clone of the same channel sender`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -289,7 +263,6 @@ impl Engine {
         //           `rx`, `callback`, and `self_tx` and runs `run(...)` on the new thread.
         // Why:      Decode/playback happens off the UI thread; the worker also owns the
         //           self-sender used to wire the watcher.
-        // TS map:   `const handle = startWorker(() => run(rx, callback, selfTx));`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -303,7 +276,6 @@ impl Engine {
         // Why:      Store a handle we can `unpark()` to wake the worker after sending a
         //           command. It refers to the SAME thread that `run` sees via
         //           `thread::current()`.
-        // TS map:   `const worker = handle.workerRef;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -315,7 +287,6 @@ impl Engine {
         //           shorthand for `tx`/`worker`). `Some(handle)` wraps the join handle so
         //           `Drop` can `.take()` it. Tail -> return.
         // Why:      Hand the UI its control surface.
-        // TS map:   `return new Engine(tx, worker, handle);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -336,7 +307,6 @@ impl Engine {
     //           wake the worker; it cannot hold the `!Send` `Rc<Engine>` the UI uses.
     //           Returning the bundle (not a bare `Sender`) guarantees that off-UI sends
     //           also unpark the worker.
-    // TS map:   `sender(): CommandSender` (a thread-safe queue handle that also wakes)
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -348,7 +318,6 @@ impl Engine {
         //           channel); `self.worker.clone()` duplicates the worker handle (refcount
         //           bump). Tail -> return.
         // Why:      Give the caller its own send-and-wake handle.
-        // TS map:   `return new CommandSender(this.tx.clone(), this.worker);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -363,7 +332,6 @@ impl Engine {
     // What:     `pub fn send(&self, command: Command)`. Forward a command to the worker.
     //           Read-only borrow of self.
     // Why:      The UI's only way to control playback.
-    // TS map:   `send(command: Command): void`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -373,7 +341,6 @@ impl Engine {
         // What:     `let _ = self.tx.send(command);`. `send` returns a `Result` that errs
         //           only if the worker is gone; `let _ =` DISCARDS it.
         // Why:      A dead worker during shutdown is not worth surfacing.
-        // TS map:   `try { this.tx.send(command); } catch {}`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -384,7 +351,6 @@ impl Engine {
         //           yet, this leaves a one-shot permit so its next `park` returns
         //           immediately (the wake is never lost).
         // Why:      Act on the command now instead of after the fallback timeout.
-        // TS map:   `this.worker.postWakeUp();`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -397,7 +363,6 @@ impl Engine {
 // What:     `impl Drop for Engine { ... }`. Cleanup when the UI drops the engine. `Drop`
 //           is the destructor trait; its `drop` runs at end of scope.
 // Why:      Tell the worker to quit and wait for it, so PipeWire shuts down.
-// TS map:   a `dispose()` that stops the worker.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -407,7 +372,6 @@ impl Drop for Engine {
     // What:     `fn drop(&mut self)`. Runs at end of life. `&mut self` because it tears the
     //           engine down.
     // Why:      Graceful shutdown.
-    // TS map:   `[Symbol.dispose]() { ... }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -417,7 +381,6 @@ impl Drop for Engine {
         // What:     `let _ = self.tx.send(Command::Quit);`. Ask the worker to stop; ignore
         //           the error if it already exited.
         // Why:      Break the worker's loop.
-        // TS map:   `try { this.tx.send(Command.Quit); } catch {}`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -428,7 +391,6 @@ impl Drop for Engine {
         // What:     `self.worker.unpark();`. Wake the worker if it is parked, so it sees the
         //           `Quit` immediately rather than after the timeout.
         // Why:      Make shutdown prompt.
-        // TS map:   `this.worker.postWakeUp();`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -440,7 +402,6 @@ impl Drop for Engine {
         //           `.take()` moves the handle out (leaving `None`); `join()` waits for the
         //           worker to finish; `let _ =` ignores a panic result.
         // Why:      Ensure the output (and PipeWire) is fully torn down before exit.
-        // TS map:   `if (this.handle) { await this.handle; this.handle = null; }`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -457,7 +418,6 @@ impl Drop for Engine {
 //           audio until told to quit. `Box<dyn Fn(...)>` is the heap-boxed callback trait
 //           object.
 // Why:      Everything playback-related lives on this one thread.
-// TS map:   `function run(rx: Receiver<Command>, onUpdate: (u: Update) => void): void`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -475,7 +435,6 @@ fn run(
     //           UI still works).
     // Why:      Never crash the app if audio init fails; the output keeps the handle so its
     //           realtime callback can `unpark()` us when the ring buffer drains.
-    // TS map:   `let output; try { output = Output.create(currentWorkerRef); } catch (e) { console.error(e); output = null; }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -485,7 +444,6 @@ fn run(
     let output = match Output::new(thread::current()) {
         // What:     `Ok(o) => Some(o)`. Audio is available; wrap it as present.
         // Why:      Keep the output.
-        // TS map:   `output = o;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -496,7 +454,6 @@ fn run(
         //           `{e}` uses `PlayerError`'s Display. The block's tail `None` becomes the
         //           match value (silent mode).
         // Why:      Degrade gracefully to silent mode.
-        // TS map:   `console.error(...); output = null;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -511,7 +468,6 @@ fn run(
     // What:     `let mut controller = Controller::new(on_update, output);`. Build the
     //           mutable controller state. `mut` because the loop mutates it.
     // Why:      Holds the queue, source, producer, and flags across the loop.
-    // TS map:   `const controller = new Controller(onUpdate, output);`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -524,7 +480,6 @@ fn run(
     //           on the worker thread is the same thread the run loop parks on, so a watcher
     //           send both enqueues `Rescan` and unparks us.
     // Why:      The file watcher needs a send-and-wake handle to inject `Rescan`.
-    // TS map:   `const selfSender = new CommandSender(selfTx, currentWorkerRef);`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -540,7 +495,6 @@ fn run(
     //           `self_sender`.
     // Why:      Once attached, every open/restore re-points it at the current Source Root, so
     //           on-disk changes drive live `Rescan`s; the watcher itself stays engine-agnostic.
-    // TS map:   `controller.watcher = SourceWatcher.new(() => selfSender.send(Command.Rescan));`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -551,7 +505,6 @@ fn run(
     // What:     `loop { ... }`. The main worker loop (Rust's `while (true)`); we `break` on
     //           quit.
     // Why:      Keep handling commands and feeding audio.
-    // TS map:   `while (true) { ... }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -561,7 +514,6 @@ fn run(
         // What:     `let mut quitting = false;`. Flag set when a quit/disconnect is seen
         //           while draining commands.
         // Why:      Break the outer loop after the drain.
-        // TS map:   `let quitting = false;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -572,7 +524,6 @@ fn run(
         // What:     `loop { ... }`. Inner loop: drain ALL queued commands without blocking,
         //           so the UI feels responsive.
         // Why:      Apply every pending command before decoding more audio.
-        // TS map:   `while (true) { const r = rx.tryRecv(); ... }`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -583,7 +534,6 @@ fn run(
             //           command, `Err(Empty)` nothing right now, `Err(Disconnected)` all
             //           senders dropped.
             // Why:      Pull commands until the channel is momentarily empty.
-            // TS map:   `switch (rx.tryRecv()) { ... }`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -593,7 +543,6 @@ fn run(
                 // What:     `Ok(Command::Quit) => { quitting = true; break; }`. Stop
                 //           requested: flag it and leave the drain loop.
                 // Why:      Begin shutdown.
-                // TS map:   `case Quit: quitting = true; break;`
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -606,7 +555,6 @@ fn run(
                 // What:     `Ok(command) => controller.handle_command(command)`. Any other
                 //           command: apply it.
                 // Why:      React to UI input.
-                // TS map:   `default: controller.handleCommand(command);`
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -615,7 +563,6 @@ fn run(
                 Ok(command) => controller.handle_command(command),
                 // What:     `Err(TryRecvError::Empty) => break`. No more commands now.
                 // Why:      Move on to pumping audio.
-                // TS map:   `case empty: break;`
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -625,7 +572,6 @@ fn run(
                 // What:     `Err(TryRecvError::Disconnected) => { quitting = true; break; }`.
                 //           The UI dropped the engine; shut down.
                 // Why:      Nothing left to serve.
-                // TS map:   `case disconnected: quitting = true; break;`
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -642,7 +588,6 @@ fn run(
         //           session, then leave the main loop -> `run` returns -> `controller` (and
         //           its `Output`) drops -> PipeWire stops.
         // Why:      Save where the user left off before shutting down.
-        // TS map:   `if (quitting) { controller.saveSession(); break; }`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -657,7 +602,6 @@ fn run(
         //           in-flight current-track peak measurement without blocking.
         // Why:      If a measured gain landed, apply it before decoding the next audio
         //           chunk so future samples use exact normalization.
-        // TS map:   `const appliedPeak = controller.pollPendingPeak();`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -667,7 +611,6 @@ fn run(
         // What:     `let did_work = controller.pump_audio();`. Try to push one block of
         //           audio; returns whether anything happened.
         // Why:      Decide whether to sleep.
-        // TS map:   `const didWork = controller.pumpAudio();`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -686,7 +629,6 @@ fn run(
         //           it drains the ring buffer and command senders unpark us when they queue
         //           work. Blocking instead of looping is what stops the worker from pegging
         //           a CPU core; the timeout is only a safety net.
-        // TS map:   `if (!appliedPeak && !didWork) await Promise.race([wokenSignal, sleep(100)]);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -701,7 +643,6 @@ fn run(
 // What:     `#[cfg(test)] #[path = "engine_tests.rs"] mod tests;`. Pull the end-to-end
 //           integration test in from the sibling file `engine_tests.rs`; test builds only.
 // Why:      Keep `engine.rs` to production code; the live-update seam test lives beside it.
-// TS map:   `engine.integration.test.ts` beside `engine.ts`.
 //
 // In TS you'd write (pseudocode):
 // ```ts

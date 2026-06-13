@@ -18,9 +18,6 @@
 //           the same package can refer to these symbols without importing them.
 // Why:      Android/Kotlin group code by package; this places `MediaStoreSource` in the
 //           app's main package so the rest of the app can find it.
-// TS map:   There is no exact TS equivalent. The closest mental model is the folder a
-//           module lives in plus a project-wide path alias; TS modules are file-scoped,
-//           Kotlin packages are name-scoped and can span many files.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -33,7 +30,6 @@ package dev.monochromatic.musicplayer
 //           to in order to read a content database (here, `MediaStore`).
 // Why:      The `query` function below takes a `ContentResolver` parameter and calls
 //           `.query(...)` on it; without this import the type name is unknown.
-// TS map:   A named import, exactly like `import { ContentResolver } from "android/content"`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -45,8 +41,6 @@ import android.content.ContentResolver
 //           `withAppendedId(uri, id)` builds a row-specific `content://` URI by appending
 //           a numeric row id onto a base collection URI.
 // Why:      We need it to turn each row's numeric `_ID` into the playable per-track URI.
-// TS map:   `import { ContentUris } from "android/content";` — a namespace of static
-//           helpers, like importing a module that only exports functions.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -59,8 +53,6 @@ import android.content.ContentUris
 //           and `Build.VERSION_CODES.Q` (the constant for Android 10's API level, 29).
 // Why:      Older Android versions lack the `RELATIVE_PATH` column, so we branch on the
 //           API level to pick the right columns and base URI.
-// TS map:   `import { Build } from "android/os";` — think of it as a constants object
-//           describing the runtime environment, like reading `process.platform`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -73,8 +65,6 @@ import android.os.Build
 //           `MediaStore.Audio.Media._ID`).
 // Why:      Every column name, the base collection URI, and the `IS_MUSIC` flag come from
 //           this class; it is the heart of the query.
-// TS map:   `import { MediaStore } from "android/provider";` — a deeply nested namespace
-//           of string constants and URI builders.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -86,8 +76,6 @@ import android.provider.MediaStore
 //           "info"-level line to the system log (logcat).
 // Why:      We log the final row count so an on-device verification run can read back how
 //           many music tracks the query found.
-// TS map:   `import { Log } from "android/util";` — treat `Log.i` like `console.info`,
-//           but the first argument is a category "tag", not part of the message.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -100,8 +88,6 @@ import android.util.Log
 //           if the first sorts before the second, zero if equal, positive otherwise.
 // Why:      We sort the finished track list with it so the order matches the desktop's
 //           bytewise path sort exactly.
-// TS map:   `import { compareByCodePoint } from "./core";` — a plain function import; the
-//           returned `Int` plays the role of TS's `number` comparator result (-1/0/1).
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -114,8 +100,6 @@ import dev.monochromatic.musicplayer.core.compareByCodePoint
 //           input/output work (file/network/database reads).
 // Why:      The `withContext(Dispatchers.IO)` call below moves the cursor reading off the
 //           main/UI thread so it never blocks the screen.
-// TS map:   No real TS equivalent — JS has one event loop, not labelled thread pools.
-//           Mentally: "run this on a background worker, not the main thread."
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -128,8 +112,6 @@ import kotlinx.coroutines.Dispatchers
 //           until it finishes, returning the block's value.
 // Why:      It is how `query` runs its body on `Dispatchers.IO` and still returns a value
 //           to the caller as if it were a normal function.
-// TS map:   Closest is wrapping work in a Promise that resolves off the main thread, e.g.
-//           `await runOnWorker(() => { ... })`; here the language hides the Promise.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -143,8 +125,6 @@ import kotlinx.coroutines.withContext
 //           (`MediaStoreSource.query(...)`), never with `new`.
 // Why:      This source holds no per-instance state; it is a namespaced bag of one public
 //           function plus helpers, so a single shared instance is exactly right.
-// TS map:   Like exporting a plain object literal of functions, or a class with only
-//           `static` members: `export const MediaStoreSource = { query() {...} }`.
 // Gotcha:   `object` here is NOT a generic "any object" type like TS's `object`. It is
 //           Kotlin's keyword for a compiler-managed singleton.
 //
@@ -161,9 +141,6 @@ object MediaStoreSource {
     //           never be reassigned; `: String` is the explicit type annotation.
     // Why:      It is the logcat category tag passed to `Log.i` so the verification run can
     //           grep the log for just this source's output.
-    // TS map:   `const SOURCE_TAG = "MediaStoreSource";` inside the object, kept private.
-    //           `const` in Kotlin is stricter than TS `const`: it must be a compile-time
-    //           literal, not just an unreassignable binding.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -177,9 +154,6 @@ object MediaStoreSource {
     // Why:      `query` reads the legacy `DATA` column on old Android versions; that column
     //           is deprecated under scoped storage but is the only folder-aware option pre
     //           API 29, so we deliberately silence the warning here.
-    // TS map:   Closest is a per-line lint suppression directive, e.g.
-    //           `// eslint-disable-next-line @typescript-eslint/no-deprecated` placed above
-    //           the function; the suppression travels with the declaration it annotates.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -196,9 +170,6 @@ object MediaStoreSource {
     //           `resolver: ContentResolver` is a named param; Kotlin requires the type.
     // Why:      This is the one public entry point: hand it a resolver, get back the device's
     //           music tracks. `suspend` lets it do IO without blocking the UI thread.
-    // TS map:   `async function query(resolver: ContentResolver): Promise<Track[]>`. Kotlin's
-    //           `suspend` is the analog of `async`; `List<Track>` is `readonly Track[]`. The
-    //           `= expr` body is like a one-expression arrow function with an implicit return.
     // Gotcha:   `List<Track>` is READ-ONLY (no `.add`); the mutable cousin is `MutableList`.
     //           A `suspend` function looks synchronous but can only be called from a coroutine.
     //
@@ -218,8 +189,6 @@ object MediaStoreSource {
         //           the device is API 29 or newer.
         // Why:      API 29+ has the `RELATIVE_PATH` column (a real folder path); older versions
         //           do not. This flag gates every later "new vs old" branch in one place.
-        // TS map:   `const hasRelativePath: boolean = Build.VERSION.SDK_INT >= 29;` — identical
-        //           shape; `Boolean`/`Int` map to TS `boolean`/`number`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -233,8 +202,6 @@ object MediaStoreSource {
         //           `EXTERNAL_CONTENT_URI`. No explicit type is written; Kotlin infers `Uri`.
         // Why:      The base URI we query (and later append row ids to) differs by API level;
         //           this picks the correct one once.
-        // TS map:   TS `if` is a statement, so you would use a ternary:
-        //           `const collection = hasRelativePath ? A : B;`
         // Gotcha:   Unlike TS, Kotlin's `if/else` returns a value, so this whole block is an
         //           assignment, not a control-flow side effect.
         //
@@ -261,9 +228,6 @@ object MediaStoreSource {
         //           explicit element type.
         // Why:      We build the list of column names to read, adding the path column
         //           conditionally so we never request a column the platform lacks.
-        // TS map:   `const projection: string[] = (() => { const a: string[] = []; a.push(...); return a; })();`
-        //           — `buildList {}` is an IIFE that fills and returns an array; `.toTypedArray()`
-        //           is a no-op in TS since arrays already are the array type.
         // Gotcha:   The `buildList` Gotcha (carried from the inline comment above): requesting
         //           `RELATIVE_PATH` on a pre-API-29 device throws "unknown column", which is the
         //           whole reason the `add` for the path column is wrapped in the `if` below.
@@ -284,7 +248,6 @@ object MediaStoreSource {
             //           numeric row id) to the list being built inside `buildList`. `add` is the
             //           implicit-receiver method the builder lambda exposes.
             // Why:      We need each row's id to construct its playable per-track URI later.
-            // TS map:   `cols.push(MediaStore.Audio.Media._ID);`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -295,7 +258,6 @@ object MediaStoreSource {
             //           column (the bare file name) to the builder list.
             // Why:      We need the file name both as a display fallback and to append onto a
             //           relative folder path.
-            // TS map:   `cols.push(MediaStore.Audio.Media.DISPLAY_NAME);`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -307,7 +269,6 @@ object MediaStoreSource {
             //           we add `RELATIVE_PATH`; otherwise the legacy `DATA` column.
             // Why:      Requesting a column the platform does not define throws at query time;
             //           this guards against that by only adding the column that exists.
-            // TS map:   Same `if/else` statement shape as TS; nothing exotic here.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -318,7 +279,6 @@ object MediaStoreSource {
                 // What:     `add(MediaStore.Audio.Media.RELATIVE_PATH)` appends the scoped-storage
                 //           folder-path column name (e.g. `Music/Artist/`) to the builder list.
                 // Why:      On API 29+ this is the folder-aware display source we prefer.
-                // TS map:   `cols.push(MediaStore.Audio.Media.RELATIVE_PATH);`
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -330,7 +290,6 @@ object MediaStoreSource {
                 //           filesystem-path column name to the builder list.
                 // Why:      Pre-API-29 there is no `RELATIVE_PATH`, so `DATA` is the only
                 //           folder-aware display source available.
-                // TS map:   `cols.push(MediaStore.Audio.Media.DATA);`
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -346,8 +305,6 @@ object MediaStoreSource {
         //           type is written; Kotlin infers `String`.
         // Why:      It is the query's filter so only rows flagged as music (not ringtones,
         //           alarms, or notifications) come back.
-        // TS map:   `const selection = `${MediaStore.Audio.Media.IS_MUSIC} != 0`;` — Kotlin's
-        //           `"${ }"` is exactly TS's backtick template `${ }`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -361,8 +318,6 @@ object MediaStoreSource {
         //           factory that creates an empty one.
         // Why:      We accumulate one `Track` per cursor row, which needs a list we can `.add`
         //           to as we iterate.
-        // TS map:   `const tracks: Track[] = [];` — TS arrays are always mutable, so there is
-        //           no separate read-only/mutable distinction at the value level.
         // Gotcha:   The earlier `List<Track>` is read-only; this `MutableList<Track>` is the
         //           one you can append to. Picking the wrong one is a compile error in Kotlin,
         //           unlike TS where any array can be pushed to.
@@ -383,9 +338,6 @@ object MediaStoreSource {
         // Why:      We read every matching row from the cursor; `use` ensures the native cursor
         //           handle is always released, and `?.` makes a null cursor a no-op instead of a
         //           crash.
-        // TS map:   `resolver.query(...)?.use((cursor) => { ... })` where `use` is a
-        //           try/finally-close helper. Mentally:
-        //           `const c = resolver.query(...); if (c) { try { ... } finally { c.close(); } }`.
         // Gotcha:   `?.` short-circuits the ENTIRE chained call on null (TS optional chaining works
         //           the same), and `use {}` is Kotlin's resource-closing helper (like a `using`
         //           block), not a plain method call.
@@ -407,12 +359,6 @@ object MediaStoreSource {
             //           each row, or throws if the column is missing. `: Int` is the explicit type.
             // Why:      Reading a value from a row is done by column index, not by name, so we look
             //           up each column's index once before the loop.
-            // TS map:   `const idColumn: number = cursor.getColumnIndexOrThrow(...);` — `Int` is TS
-            //           `number`. Sibling integer types you might expect (`Long`, `Short`) are NOT
-            //           used here: a column index is small, and the Cursor API takes an `Int`.
-            // Why Int (not Long): the Cursor getX(index) API signature takes a 32-bit `Int`; a
-            //           `Long` would not even compile there, and a column index never approaches the
-            //           ~2.1 billion `Int` ceiling.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -422,9 +368,6 @@ object MediaStoreSource {
             // What:     `val nameColumn: Int = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DISPLAY_NAME)`
             //           looks up the column index of the file-name column, throwing if absent.
             // Why:      We need the file-name column's position to read each row's name.
-            // TS map:   `const nameColumn: number = cursor.getColumnIndexOrThrow(...);` — again
-            //           `Int` not `Long`, because the Cursor API and small index value call for the
-            //           32-bit type.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -437,7 +380,6 @@ object MediaStoreSource {
             //           API 29+ we resolve the `RELATIVE_PATH` index; otherwise the `DATA` index.
             // Why:      The path column we request differs by API level (matching the projection
             //           branch above), so its index must be looked up under the same branch.
-            // TS map:   `const pathColumn: number = hasRelativePath ? cursor.getColumnIndexOrThrow(REL) : cursor.getColumnIndexOrThrow(DATA);`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -450,8 +392,6 @@ object MediaStoreSource {
                 //           returns the index of the relative-folder-path column, throwing if it is
                 //           missing. As the branch's last expression it becomes the branch's value.
                 // Why:      Resolve the `RELATIVE_PATH` index on API 29+ for later per-row reads.
-                // TS map:   tail expression of the `then` branch:
-                //           `cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.RELATIVE_PATH)`.
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -463,8 +403,6 @@ object MediaStoreSource {
                 //           index of the legacy absolute-path column, throwing if missing. As the
                 //           branch's last expression it becomes the branch's value.
                 // Why:      Resolve the `DATA` index pre-API-29 for later per-row reads.
-                // TS map:   tail expression of the `else` branch:
-                //           `cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA)`.
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -476,7 +414,6 @@ object MediaStoreSource {
             //           the next row and returns `true` while a row exists, `false` once exhausted.
             //           The loop body reads the current row.
             // Why:      Standard cursor iteration: process every matching row exactly once.
-            // TS map:   `while (cursor.moveToNext()) { ... }` — identical shape to a TS `while`.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -492,9 +429,6 @@ object MediaStoreSource {
                 //           which skips to the next loop iteration. So `name` is a guaranteed-non-null
                 //           `String`, or we move on.
                 // Why:      A row with no file name is unusable, so we drop it and keep scanning.
-                // TS map:   `const raw = cursor.getString(nameColumn); if (raw == null) continue; const name: string = raw;`
-                //           TS has no `?: continue` form, so the null check and `continue` are
-                //           written out explicitly.
                 // Gotcha:   `?:` is Elvis (null-coalescing-with-control-flow here), NOT the start of a
                 //           ternary; the right-hand `continue` is a statement, which Kotlin allows
                 //           because `continue` has the "never" type.
@@ -510,11 +444,6 @@ object MediaStoreSource {
                 //           `Long`, a 64-bit signed integer. `: Long` is the explicit type.
                 // Why:      MediaStore row ids are 64-bit, and the URI builder below
                 //           (`ContentUris.withAppendedId`) takes a `Long`, so we read it as one.
-                // TS map:   `const id: number = cursor.getLong(idColumn);` — TS has only `number`,
-                //           so the 64-bit-ness is invisible.
-                // Why Long (not Int): the `_ID` column is a 64-bit row id and
-                //           `ContentUris.withAppendedId(uri, id)` requires a `Long`; a 32-bit `Int`
-                //           could overflow on large libraries and would not type-check at that call.
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -527,8 +456,6 @@ object MediaStoreSource {
                 //           display-path helper below.
                 // Why:      Some rows legitimately have no folder path; we want to fall back to the
                 //           bare name, not drop the track, so we preserve the nullability.
-                // TS map:   `const rawPath: string | null = cursor.getString(pathColumn);` — Kotlin's
-                //           `String?` is TS's `string | null`.
                 // Gotcha:   The trailing `?` on the TYPE (`String?`) marks nullability; do not confuse
                 //           it with the `?.` safe-call or `?:` Elvis operators.
                 //
@@ -542,8 +469,6 @@ object MediaStoreSource {
                 //           label each argument at the call site. The result is a non-null `String`.
                 // Why:      Turn the row's raw path and name into the folder-relative display string the
                 //           UI shows and the sort uses.
-                // TS map:   TS has no named arguments, so you pass a positional list or an options
-                //           object: `const displayPath: string = displayPathOf(rawPath, name, hasRelativePath);`
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -556,8 +481,6 @@ object MediaStoreSource {
                 //           that `Uri` object into its `String` form (e.g. `content://media/...`).
                 // Why:      The player stores and opens tracks by string URI, so we materialize the
                 //           per-row `content://` URI as text here.
-                // TS map:   `const uri: string = ContentUris.withAppendedId(collection, id).toString();`
-                //           — `.toString()` is the same idea as TS `String(x)`/`x.toString()`.
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
@@ -569,8 +492,6 @@ object MediaStoreSource {
                 //           keyword); `uri = ...` / `displayPath = ...` are named constructor
                 //           arguments. `tracks.add(...)` appends the new `Track` to the mutable list.
                 // Why:      Record this row as a playable, displayable track in our accumulator.
-                // TS map:   `tracks.push({ uri, displayPath });` — TS uses `new Track(...)` or an
-                //           object literal; Kotlin constructs with just the type name and no `new`.
                 // Gotcha:   No `new` keyword: `Track(...)` IS the constructor call. The `name = value`
                 //           pairs are named args, not assignments.
                 //
@@ -587,8 +508,6 @@ object MediaStoreSource {
         //           Kotlin property; TS calls it `length`).
         // Why:      Emit the final count so an on-device verification can read back how many tracks
         //           the query produced.
-        // TS map:   `console.info(`queried ${tracks.length} music tracks from MediaStore`);` — but
-        //           note Kotlin's `Log.i` takes the tag as a separate first argument.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -603,9 +522,6 @@ object MediaStoreSource {
         //           expression is the block's value, hence the function's return value.
         // Why:      Produce the final list ordered by display path in code-point order, matching the
         //           desktop's bytewise sort, and hand it back to the caller.
-        // TS map:   `return [...tracks].sort((left, right) => compareByCodePoint(left.displayPath, right.displayPath));`
-        //           — `sortedWith` returns a fresh sorted copy, so the TS analog spreads into a new
-        //           array before `.sort` (which would otherwise mutate in place).
         // Gotcha:   This is the TAIL EXPRESSION of the `withContext` block: no `return` keyword and no
         //           `;`, yet its value is what `query` resolves to. `sortedWith` is non-mutating,
         //           unlike TS's in-place `Array.prototype.sort`.
@@ -628,8 +544,6 @@ object MediaStoreSource {
     // Why:      Centralizes the "how do we label this row" rule so the loop stays simple: relative
     //           folder + name on new APIs, the absolute path on old ones, or the bare name when there
     //           is no path at all.
-    // TS map:   `function displayPathOf(rawPath: string | null, name: string, isRelative: boolean): string { ... }`
-    //           where the `when { }` becomes an if/else-if chain returning a value.
     // Gotcha:   `when { }` (no parentheses/subject) is NOT a `switch` on a value; it is an ordered
     //           if/else-if chain. `String?` again means "string or null".
     //
@@ -648,7 +562,6 @@ object MediaStoreSource {
         //           `name`, the bare file name.
         // Why:      With no usable path, the only sensible label is the file name itself (a degenerate
         //           row).
-        // TS map:   `if (rawPath == null || rawPath === "") return name;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -661,8 +574,6 @@ object MediaStoreSource {
         //           slash and the file name. `$name` is the shorthand template form for `${name}`.
         // Why:      `RELATIVE_PATH` is a trailing-slash folder; we join it to the file name with exactly
         //           one slash to form `<folder>/<name>`.
-        // TS map:   `if (isRelative) return `${rawPath.replace(/\/$/, "")}/${name}`;` — `removeSuffix("/")`
-        //           is "strip one trailing slash"; `$name` is `${name}`.
         // Gotcha:   At this branch `rawPath` is already known non-null (the null/empty case was handled
         //           above), so calling a method on it directly is safe.
         //
@@ -676,7 +587,6 @@ object MediaStoreSource {
         //           branch value it becomes the function's return.
         // Why:      An absolute `DATA` path is already a full, usable display string, so we return it
         //           as is.
-        // TS map:   `return rawPath;` (the final fall-through of the if/else-if chain).
         //
         // In TS you'd write (pseudocode):
         // ```ts

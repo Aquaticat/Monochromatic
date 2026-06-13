@@ -5,7 +5,6 @@
 // Why:      Recursion into a group body must skip the opener itself
 //           (`(`, `(?:`, `(?P<name>`, `(?<name>`) so the recursive
 //           walker sees only the body's regex syntax.
-// TS map:   `function groupBodyStart(s: string): number | null`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -25,8 +24,6 @@ pub fn group_body_start(s: &str) -> Option<usize> {
     //           `u8` value (here 0x28, ASCII '('), not a Unicode `char`.
     // Why:      Byte indexing is cheaper than char iteration for the
     //           ASCII-only sentinel checks.
-    // TS map:   No 1:1 -- TS strings are UTF-16 with no `&[u8]` view;
-    //           the closest is `s.charCodeAt(i)`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -53,7 +50,6 @@ pub fn group_body_start(s: &str) -> Option<usize> {
         //           result was `None`.
         // Why:      Locate the closing `>` of the `(?P<name>` capture
         //           opener; absence means malformed input -> abort.
-        // TS map:   `const close = s.indexOf(">", 4); if (close === -1) return null;`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -79,7 +75,6 @@ pub fn group_body_start(s: &str) -> Option<usize> {
 //           `\X` escapes.
 // Why:      Group skipping needs the right closing paren to advance
 //           past the whole group, including any nested parens.
-// TS map:   `function findMatchingCloseParen(s: string): number | null`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -149,7 +144,6 @@ pub fn find_matching_close_paren(s: &str) -> Option<usize> {
 //           literal is contributed only when the quantifier is required,
 //           but the walker still has to skip past optional quantifiers
 //           in either case so it can keep going.
-// TS map:   `function skipAnyQuantifier(s: string): string`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -169,7 +163,6 @@ pub fn skip_any_quantifier(s: &str) -> &str {
     //           codepoints).
     // Why:      Quick membership test against the simple-quantifier
     //           characters.
-    // TS map:   `["+", "?", "*"].includes(s[0])`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -185,7 +178,6 @@ pub fn skip_any_quantifier(s: &str) -> &str {
             //           validity.
             // Why:      Hand back the tail past `++?` (two-byte
             //           lazy quantifier) to the caller.
-            // TS map:   `return s.slice(2);`.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -216,7 +208,6 @@ pub fn skip_any_quantifier(s: &str) -> &str {
 //           to appear in any match. Optional quantifiers (`?`, `*`,
 //           `{0}`, `{0,N}`, `{0,}`) make the group body matchable zero
 //           times, so its literal contributes nothing.
-// TS map:   `function quantifierIsRequired(s: string): boolean`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -259,7 +250,6 @@ pub fn quantifier_is_required(s: &str) -> bool {
             // Why:      `{N,M}` and `{N,}` and `{N}` all start with
             //           an integer; we want it parsed for the lower
             //           bound check.
-            // TS map:   `const firstNum = parseInt(inner.split(",")[0]?.trim() ?? "0", 10) || 0;`.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -289,7 +279,6 @@ pub fn quantifier_is_required(s: &str) -> bool {
 //           no nesting (regex character classes don't nest, except via
 //           the resharp set-algebra `[A&&B]` form -- which this scan
 //           handles correctly because `&&` doesn't open a new class).
-// TS map:   `function skipClassBody(s: string): string | null`.
 //
 // In TS you'd write (pseudocode):
 // ```ts

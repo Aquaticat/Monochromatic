@@ -26,9 +26,6 @@
 //           refer to these declarations without an import.
 // Why:      We need the file to belong to the `core` package so the rest of the app (the audio engine,
 //           the normalization cache) can find `measureTruePeak`, `normalizationGain`, etc.
-// TS map:   No 1:1 equivalent. TS has no `package` statement; the closest idea is "this file lives at
-//           src/core/TruePeak.ts and exports are imported by path". The package line is purely
-//           organizational, not executable.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -41,7 +38,6 @@ package dev.monochromatic.musicplayer.core
 //           not a method on a number, so you call it as `abs(x)`, not `x.abs()`.
 // Why:      The peak scan needs the magnitude (unsigned size) of signed PCM samples and interpolated
 //           values; `abs` gives that.
-// TS map:   `import { abs } from "...";` but really it's just `Math.abs` in TS, which is built in.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -52,7 +48,6 @@ import kotlin.math.abs
 // What:     `import kotlin.math.max` pulls in the standalone two-argument `max` function (returns the
 //           larger of two values) from `kotlin.math`. Also a free function: `max(a, b)`.
 // Why:      The running peak is a max-fold over candidate magnitudes, so we need `max`.
-// TS map:   Built in as `Math.max(a, b)` in TS; no import.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -64,7 +59,6 @@ import kotlin.math.max
 //           smaller of two values) from `kotlin.math`. Free function: `min(a, b)`.
 // Why:      Used to cap the per-channel filled-sample counter at WINDOW and to clamp the normalization
 //           gain so it never exceeds 1.0.
-// TS map:   Built in as `Math.min(a, b)` in TS; no import.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -83,8 +77,6 @@ import kotlin.math.min
 // Why:      The repo bans bare fractional literals like `0.5`, so one-half is composed from the
 //           always-allowed `-2..2` integer-ish range (1.0 and 2.0); HALF is reused as the Catmull-Rom
 //           1/2 scale factor and as the basis for the sample-offset constants below.
-// TS map:   `const HALF = 1 / 2;` — TS has only one number type, so there is no `f` suffix and no
-//           Float-vs-Double choice.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -98,7 +90,6 @@ internal const val HALF: Float = 1.0f / 2.0f
 //           policy. The `f` on `2.0f` keeps the divisor a Float so the result stays Float.
 // Why:      QUARTER is the first of three interior sample positions (1/4 of the way) between two
 //           stored samples where an inter-sample peak might fall.
-// TS map:   `const QUARTER = HALF / 2;`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -110,7 +101,6 @@ private const val QUARTER: Float = HALF / 2.0f
 //           constant three-quarters (0.75), composed from HALF + QUARTER so it is still built only
 //           from allowed pieces. `private`, `Float` (not `Double`): same reasons as above.
 // Why:      THREE_QUARTERS is the third interior sample position (3/4 of the way) between two samples.
-// TS map:   `const THREE_QUARTERS = HALF + QUARTER;`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -125,8 +115,6 @@ private const val THREE_QUARTERS: Float = HALF + QUARTER
 //           it cannot be computed in a `const val`. `internal` because the tests read it.
 // Why:      Normalization scales each track's measured true peak DOWN to this level; -1 dBTP is the
 //           EBU R128 / ATSC A/85 broadcast ceiling that leaves headroom for the DAC's reconstruction.
-// TS map:   `const CEILING = 10 ** (-1 / 20); // -1 dBTP, about 0.8912509` — TS can compute it inline
-//           because TS has no compile-time-const restriction.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -140,7 +128,6 @@ internal const val CEILING: Float = 0.8912509f
 //           only this file uses it.
 // Why:      The cubic interpolation needs four consecutive samples (two on each side of the interval
 //           it fills); Catmull-Rom evaluates the curve between the 2nd and 3rd of those four points.
-// TS map:   `const WINDOW = 4;` — TS numbers carry no Int-vs-Long distinction.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -154,7 +141,6 @@ private const val WINDOW: Int = 4
 // Why:      `maxInteriorAbs` below evaluates the cubic at the three fixed interior positions; their
 //           powers of t are compile-time constants, so squaring once here avoids redoing it per
 //           sample (tens of millions of samples per track).
-// TS map:   `const QUARTER_SQ = QUARTER * QUARTER;`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -165,7 +151,6 @@ private const val QUARTER_SQ: Float = QUARTER * QUARTER
 // What:     `private const val QUARTER_CUBE: Float = QUARTER_SQ * QUARTER` precomputes QUARTER cubed
 //           (the t-cubed term of the cubic at t = 1/4). `private`, `Float` (not `Double`).
 // Why:      Same optimization: the t-cubed term at this fixed position is constant, so compute it once.
-// TS map:   `const QUARTER_CUBE = QUARTER_SQ * QUARTER;`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -176,7 +161,6 @@ private const val QUARTER_CUBE: Float = QUARTER_SQ * QUARTER
 // What:     `private const val HALF_SQ: Float = HALF * HALF` precomputes HALF squared (the t-squared
 //           term of the cubic at the middle position t = 1/2). `private`, `Float` (not `Double`).
 // Why:      Constant t-squared term at the middle interior position, computed once.
-// TS map:   `const HALF_SQ = HALF * HALF;`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -187,7 +171,6 @@ private const val HALF_SQ: Float = HALF * HALF
 // What:     `private const val HALF_CUBE: Float = HALF_SQ * HALF` precomputes HALF cubed (the t-cubed
 //           term of the cubic at t = 1/2). `private`, `Float` (not `Double`).
 // Why:      Constant t-cubed term at the middle interior position, computed once.
-// TS map:   `const HALF_CUBE = HALF_SQ * HALF;`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -199,7 +182,6 @@ private const val HALF_CUBE: Float = HALF_SQ * HALF
 //           THREE_QUARTERS squared (the t-squared term of the cubic at t = 3/4). `private`, `Float`
 //           (not `Double`).
 // Why:      Constant t-squared term at the last interior position, computed once.
-// TS map:   `const THREE_QUARTERS_SQ = THREE_QUARTERS * THREE_QUARTERS;`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -211,7 +193,6 @@ private const val THREE_QUARTERS_SQ: Float = THREE_QUARTERS * THREE_QUARTERS
 //           precomputes THREE_QUARTERS cubed (the t-cubed term of the cubic at t = 3/4). `private`,
 //           `Float` (not `Double`).
 // Why:      Constant t-cubed term at the last interior position, computed once.
-// TS map:   `const THREE_QUARTERS_CUBE = THREE_QUARTERS_SQ * THREE_QUARTERS;`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -230,8 +211,6 @@ private const val THREE_QUARTERS_CUBE: Float = THREE_QUARTERS_SQ * THREE_QUARTER
 //           a fractional position `t` on the segment BETWEEN p1 and p2, which is where inter-sample
 //           peaks live. The literal coefficients (2, 3, 4, 5) inside are the standard Catmull-Rom
 //           spline matrix entries; HALF is the 1/2 normalization.
-// TS map:   `function catmullRom(p0: number, p1: number, p2: number, p3: number, t: number): number`
-//           — identical shape; TS uses `number` for every Float.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -243,7 +222,6 @@ internal fun catmullRom(p0: Float, p1: Float, p2: Float, p3: Float, t: Float): F
     //           explicit `: Float` annotation is redundant with inference but stated for clarity and
     //           to keep the type pinned to Float (not Double).
     // Why:      The cubic polynomial below uses t, t-squared, and t-cubed; compute t-squared once.
-    // TS map:   `const t2 = t * t;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -253,7 +231,6 @@ internal fun catmullRom(p0: Float, p1: Float, p2: Float, p3: Float, t: Float): F
     // What:     `val t3: Float = t2 * t` binds the read-only local `t3` to t cubed (t-squared times t).
     //           `val` immutable, `Float` (not `Double`).
     // Why:      The cubic's last term needs t-cubed; compute it once from t2.
-    // TS map:   `const t3 = t2 * t;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -268,7 +245,6 @@ internal fun catmullRom(p0: Float, p1: Float, p2: Float, p3: Float, t: Float): F
     //           float arithmetic that reads the same in TS.
     // Why:      This closed form reproduces p1 at t=0 and p2 at t=1 with a smooth curve guided by the
     //           neighbours p0/p3, giving the estimated waveform value between two stored samples.
-    // TS map:   `return 0.5 * (2*p1 + (p2-p0)*t + (2*p0-5*p1+4*p2-p3)*t2 + (3*p1-3*p2+p3-p0)*t3);`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -294,7 +270,6 @@ internal fun catmullRom(p0: Float, p1: Float, p2: Float, p3: Float, t: Float): F
 //           three window-only combinations (the linear, t-squared, and t-cubed coefficient bundles)
 //           do not depend on `t`, so they are computed once here and reused across the three positions
 //           whose powers of t are compile-time constants; `catmullRom` recomputed them on every call.
-// TS map:   `function maxInteriorAbs(p0: number, p1: number, p2: number, p3: number): number`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -305,7 +280,6 @@ internal fun maxInteriorAbs(p0: Float, p1: Float, p2: Float, p3: Float): Float {
     //           immutable, `Float` (not `Double`), `2.0f` is a Float literal.
     // Why:      `2*p1` is the constant (t-independent) term of the cubic; compute it once for reuse at
     //           all three positions.
-    // TS map:   `const twoP1 = 2 * p1;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -315,7 +289,6 @@ internal fun maxInteriorAbs(p0: Float, p1: Float, p2: Float, p3: Float): Float {
     // What:     `val a: Float = p2 - p0` binds the read-only local `a` to the linear coefficient
     //           `(p2 - p0)` of the cubic. `val` immutable, `Float` (not `Double`).
     // Why:      `a` multiplies `t` at each position; computing it once avoids redoing the subtraction.
-    // TS map:   `const a = p2 - p0;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -326,7 +299,6 @@ internal fun maxInteriorAbs(p0: Float, p1: Float, p2: Float, p3: Float): Float {
     //           to the t-squared coefficient of the cubic. `val` immutable, `Float` (not `Double`); the
     //           `f`-suffixed literals keep every term a Float.
     // Why:      `b` multiplies `t-squared` at each position; compute it once.
-    // TS map:   `const b = 2*p0 - 5*p1 + 4*p2 - p3;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -336,7 +308,6 @@ internal fun maxInteriorAbs(p0: Float, p1: Float, p2: Float, p3: Float): Float {
     // What:     `val c: Float = 3.0f * p1 - 3.0f * p2 + p3 - p0` binds the read-only local `c` to the
     //           t-cubed coefficient of the cubic. `val` immutable, `Float` (not `Double`).
     // Why:      `c` multiplies `t-cubed` at each position; compute it once.
-    // TS map:   `const c = 3*p1 - 3*p2 + p3 - p0;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -349,7 +320,6 @@ internal fun maxInteriorAbs(p0: Float, p1: Float, p2: Float, p3: Float): Float {
     //           normalization, matching `catmullRom`.
     // Why:      This is the interpolated waveform value a quarter of the way between p1 and p2, one of
     //           the three inter-sample peak candidates.
-    // TS map:   `const atQuarter = HALF * (twoP1 + a*QUARTER + b*QUARTER_SQ + c*QUARTER_CUBE);`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -359,7 +329,6 @@ internal fun maxInteriorAbs(p0: Float, p1: Float, p2: Float, p3: Float): Float {
     // What:     `val atHalf: Float = HALF * (twoP1 + a * HALF + b * HALF_SQ + c * HALF_CUBE)` evaluates
     //           the cubic at the t = 1/2 (middle) position. `val` immutable, `Float` (not `Double`).
     // Why:      The interpolated value halfway between p1 and p2, the second peak candidate.
-    // TS map:   `const atHalf = HALF * (twoP1 + a*HALF + b*HALF_SQ + c*HALF_CUBE);`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -372,7 +341,6 @@ internal fun maxInteriorAbs(p0: Float, p1: Float, p2: Float, p3: Float): Float {
     //           Kotlin allows this because the line ends with `=`, which cannot terminate a statement,
     //           so the parser keeps reading. `val` immutable, `Float` (not `Double`).
     // Why:      The interpolated value three-quarters of the way between p1 and p2, the third candidate.
-    // TS map:   `const atThreeQuarters = HALF * (twoP1 + a*THREE_QUARTERS + b*THREE_QUARTERS_SQ + c*THREE_QUARTERS_CUBE);`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -386,7 +354,6 @@ internal fun maxInteriorAbs(p0: Float, p1: Float, p2: Float, p3: Float): Float {
     //           functions, each two-argument) fold the three magnitudes into the single biggest one.
     // Why:      The inter-sample peak contributed by this window is the largest magnitude among the
     //           three interior positions; we return it to the caller to fold into the running peak.
-    // TS map:   `return Math.max(Math.abs(atQuarter), Math.max(Math.abs(atHalf), Math.abs(atThreeQuarters)));`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -405,9 +372,6 @@ internal fun maxInteriorAbs(p0: Float, p1: Float, p2: Float, p3: Float): Float {
 // Why:      We need a small stateful object that scans audio chunk by chunk in constant memory (a few
 //           floats per channel), holding a 4-sample sliding window per channel, a per-channel
 //           filled-count, and the running peak, instead of buffering the whole track.
-// TS map:   `class TruePeakMeter { constructor(private readonly channels: number) {} ... }` — TS's
-//           parameter-property shorthand (`private readonly channels` in the constructor) is the exact
-//           analogue of Kotlin's `private val` constructor parameter.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -431,8 +395,6 @@ internal class TruePeakMeter(private val channels: Int) {
     //           reference never changes (its contents do).
     // Why:      Cubic interpolation needs the latest four samples of each channel; one window per
     //           channel lets us interpolate per channel without buffering the track.
-    // TS map:   `private win: number[][] = Array.from({ length: channels }, () => [0, 0, 0, 0]);` — the
-    //           trailing-lambda `{ ... }` maps to the `() => ...` factory passed to `Array.from`.
     // Gotcha:   `FloatArray` is a mutable, fixed-length, reference object: assigning it to another
     //           variable (see `val w` in `push`) aliases the SAME array, exactly like a TS array; it
     //           is NOT a value copy.
@@ -449,7 +411,6 @@ internal class TruePeakMeter(private val channels: Int) {
     //           int array initialized to all zeros.
     // Why:      Per channel we count how many real samples have arrived (capped at WINDOW) so we only
     //           start interpolating once a channel's window holds four real samples.
-    // TS map:   `private filled: number[] = new Array(channels).fill(0);`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -466,9 +427,6 @@ internal class TruePeakMeter(private val channels: Int) {
     // Why:      `peak` is the largest absolute sample/interpolated value seen so far, which becomes the
     //           measured true peak once the scan finishes; outside code (and tests) must read it but
     //           must not be able to corrupt it mid-scan.
-    // TS map:   `private _peak = 0; get peak(): number { return this._peak; }` — TS has no built-in
-    //           "public get, private set" on one field, so you model it with a backing field plus a
-    //           getter.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -484,7 +442,6 @@ internal class TruePeakMeter(private val channels: Int) {
     //           Kotlin equivalent of `void`, inferred here). No visibility keyword means `public`.
     // Why:      Callers push one interleaved chunk of PCM samples at a time so the meter can update its
     //           running peak without ever holding the whole track.
-    // TS map:   `feed(chunk: number[]): void { ... }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -500,9 +457,6 @@ internal class TruePeakMeter(private val channels: Int) {
         //           one sample to that one channel. `%` is plain integer remainder.
         // Why:      An interleaved chunk holds [ch0, ch1, ..., ch0, ch1, ...]; we must demultiplex each
         //           sample to the right channel window before interpolating.
-        // TS map:   `chunk.forEach((s, i) => { this.push(i % this.channels, s); });` — note Kotlin's
-        //           `forEachIndexed` passes (index, value) while TS `forEach` passes (value, index), so
-        //           the parameter order flips in translation.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -523,7 +477,6 @@ internal class TruePeakMeter(private val channels: Int) {
     //           peak, and (once the window holds four real samples) sample the interpolated curve at
     //           three interior positions between the two middle window points to catch inter-sample
     //           peaks.
-    // TS map:   `private push(channel: number, s: number): void { ... }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -538,7 +491,6 @@ internal class TruePeakMeter(private val channels: Int) {
         //           boxing.
         // Why:      We want a short name for this channel's window so the next four lines can shift it
         //           and the interpolation can read it.
-        // TS map:   `const w = this.win[channel];`
         // Gotcha:   This ALIASES the stored window (Kotlin arrays are reference types, exactly like TS
         //           arrays), so writing through `w` below mutates `win[channel]` itself. That is
         //           intentional here. (The desktop Rust twin copies the small `[f32; 4]` BY VALUE and
@@ -553,7 +505,6 @@ internal class TruePeakMeter(private val channels: Int) {
         // What:     `w[0] = w[1]` overwrites slot 0 with the value currently in slot 1. Plain indexed
         //           array element assignment, identical to TS.
         // Why:      First step of an in-place left shift that drops the oldest sample.
-        // TS map:   `w[0] = w[1];`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -562,7 +513,6 @@ internal class TruePeakMeter(private val channels: Int) {
         w[0] = w[1]
         // What:     `w[1] = w[2]` copies slot 2 down into slot 1. Plain element assignment.
         // Why:      Continue the in-place left shift.
-        // TS map:   `w[1] = w[2];`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -571,7 +521,6 @@ internal class TruePeakMeter(private val channels: Int) {
         w[1] = w[2]
         // What:     `w[2] = w[3]` copies slot 3 down into slot 2. Plain element assignment.
         // Why:      Continue the in-place left shift.
-        // TS map:   `w[2] = w[3];`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -582,7 +531,6 @@ internal class TruePeakMeter(private val channels: Int) {
         //           assignment.
         // Why:      Append the newest sample, completing the slide: the window now holds the latest four
         //           samples in order, oldest at index 0.
-        // TS map:   `w[3] = s;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -595,7 +543,6 @@ internal class TruePeakMeter(private val channels: Int) {
         //           assignment writes the capped result back into the IntArray slot.
         // Why:      We need to know when a channel has accumulated four real samples (so interpolation
         //           is valid) without letting the counter grow unbounded.
-        // TS map:   `this.filled[channel] = Math.min(this.filled[channel] + 1, WINDOW);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -608,7 +555,6 @@ internal class TruePeakMeter(private val channels: Int) {
         //           (not `Double`).
         // Why:      The stored sample's own magnitude is itself a peak candidate; start from it and
         //           possibly raise it with interpolated values.
-        // TS map:   `let localPeak = Math.abs(s);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -621,7 +567,6 @@ internal class TruePeakMeter(private val channels: Int) {
         //           just numeric equality, same as TS `===`).
         // Why:      Cubic interpolation needs all four window points; skip it while the window is still
         //           partly the zeroed startup values.
-        // TS map:   `if (this.filled[channel] === WINDOW) { ... }`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -636,7 +581,6 @@ internal class TruePeakMeter(private val channels: Int) {
             //           reassignment that justified `var localPeak` above.
             // Why:      The true inter-sample peak may exceed every stored sample, so fold the
             //           interpolated magnitude into this sample's local peak candidate.
-            // TS map:   `localPeak = Math.max(localPeak, maxInteriorAbs(w[0], w[1], w[2], w[3]));`
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -650,7 +594,6 @@ internal class TruePeakMeter(private val channels: Int) {
         //           are inside the class.
         // Why:      The overall true peak is the maximum across the whole track; fold each sample's best
         //           candidate into it.
-        // TS map:   `this._peak = Math.max(this._peak, localPeak);` (the private backing field).
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -674,8 +617,6 @@ internal class TruePeakMeter(private val channels: Int) {
 //           opened a decoder here and returned a `Result`; this version takes the sequence and returns
 //           a plain `Float`, with no error channel, because decoding errors are handled by whoever
 //           builds the sequence.)
-// TS map:   `function measureTruePeak(channels: number, chunks: Iterable<number[]>): number` — TS's
-//           lazy `Iterable` (e.g. a generator) is the analogue of Kotlin's `Sequence`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -687,7 +628,6 @@ internal fun measureTruePeak(channels: Int, chunks: Sequence<FloatArray>): Float
     //           Ints.
     // Why:      Treat a zero-channel stream as silence; this also avoids a divide-by-zero in the
     //           `i % channels` channel routing, and a zero peak later maps to a gain of 1.0.
-    // TS map:   `if (channels === 0) return 0;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -701,7 +641,6 @@ internal fun measureTruePeak(channels: Int, chunks: Sequence<FloatArray>): Float
     //           just like a function, with NO `new` keyword. `val` because we never reassign `meter`
     //           (we only mutate its internal state).
     // Why:      The meter accumulates the running peak across all chunks.
-    // TS map:   `const meter = new TruePeakMeter(channels);` — TS needs the `new` keyword.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -713,8 +652,6 @@ internal fun measureTruePeak(channels: Int, chunks: Sequence<FloatArray>): Float
     //           Because `chunks` is a lazy `Sequence`, each iteration pulls (and decodes) the next
     //           chunk only when needed.
     // Why:      Walk the whole decoded stream chunk by chunk, feeding each block to the meter.
-    // TS map:   `for (const chunk of chunks) { ... }` — Kotlin's `for (x in xs)` maps to TS's
-    //           `for (const x of xs)`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -724,7 +661,6 @@ internal fun measureTruePeak(channels: Int, chunks: Sequence<FloatArray>): Float
         // What:     `if (chunk.isEmpty()) { break }` checks whether the chunk has zero elements via the
         //           standard-library `isEmpty()` method and, if so, `break`s out of the for-each loop.
         // Why:      An empty chunk is the agreed end-of-stream signal; stop scanning there.
-        // TS map:   `if (chunk.length === 0) break;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -736,7 +672,6 @@ internal fun measureTruePeak(channels: Int, chunks: Sequence<FloatArray>): Float
         // What:     `meter.feed(chunk)` passes this chunk to the meter's `feed` method, which routes
         //           each interleaved sample to its channel window and updates the running peak.
         // Why:      Fold this block of audio into the measurement.
-        // TS map:   `meter.feed(chunk);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -748,7 +683,6 @@ internal fun measureTruePeak(channels: Int, chunks: Sequence<FloatArray>): Float
     //           `Float`) as the function result. Reading `peak` is allowed from here because only its
     //           setter is `private`.
     // Why:      Hand the measured true peak across the whole stream back to the caller.
-    // TS map:   `return meter.peak;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -765,7 +699,6 @@ internal fun measureTruePeak(channels: Int, chunks: Sequence<FloatArray>): Float
 //           track (boosting could produce a sudden loud, possibly harmful level and is outside the
 //           clipping-prevention intent). A silent or invalid measurement leaves the signal unchanged,
 //           which also avoids dividing by zero.
-// TS map:   `function normalizationGain(truePeak: number): number { ... }`
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -776,7 +709,6 @@ internal fun normalizationGain(truePeak: Float): Float {
     //           meaning "leave the sample unchanged") whenever the measured peak is zero or negative.
     // Why:      A silent or invalid measurement must not be scaled; returning 1.0 both leaves the
     //           signal untouched and avoids the divide-by-zero in the gain formula below.
-    // TS map:   `if (truePeak <= 0) return 1;`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -792,7 +724,6 @@ internal fun normalizationGain(truePeak: Float): Float {
     //           boosted).
     // Why:      Louder-than-ceiling tracks get attenuated to the ceiling; quieter tracks pass through
     //           unchanged at gain 1.0.
-    // TS map:   `return Math.min(CEILING / truePeak, 1);`
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -816,9 +747,6 @@ internal fun normalizationGain(truePeak: Float): Float {
 //           applied downstream by the platform audio sink (ExoPlayer's `player.volume`), so the engine
 //           passes only the track's normalization gain here; the clamp still backstops measurement
 //           error and any source that was above full scale to begin with.
-// TS map:   `function processSample(sample: number, gain: number): number { return clamp(sample * gain,
-//           -1, 1); }` — TS has no built-in `coerceIn`, so you would write a tiny `clamp` helper or
-//           inline `Math.min(Math.max(x, -1), 1)`.
 //
 // In TS you'd write (pseudocode):
 // ```ts

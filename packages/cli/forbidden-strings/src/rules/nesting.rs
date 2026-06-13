@@ -6,9 +6,6 @@
 // Why:      `&str` (not `String`) because the text is a fixed compile-time
 //           literal that never changes and never needs to be owned or
 //           grown; appending it to error messages only borrows it.
-// TS map:   `const TROUBLESHOOT_REF = "See docs/troubleshooting/resharp.md for workarounds.";`
-//           -- TS strings are always GC'd and owned, so the
-//           borrowed-vs-owned distinction is invisible.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -30,8 +27,6 @@ const TROUBLESHOOT_REF: &str = "See docs/troubleshooting/resharp.md for workarou
 //           nesting in release, and below resharp's `expanded_ast_limit`
 //           of 50,000. A cap this low keeps even resharp's recursive
 //           `Drop` of the parsed tree shallow enough not to overflow.
-// TS map:   `const MAX_NESTING_DEPTH = 1000;` -- TS has one `number` type,
-//           so there is no width choice to make.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -62,9 +57,6 @@ const MAX_NESTING_DEPTH: usize = 1_000;
 //           belt-and-suspenders, rejecting the rule before resharp ever
 //           sees it; over-rejection is fail-closed-safe because the
 //           production corpus has no deeply nested rules.
-// TS map:   `function nestingDepth(src: string): string | null` -- the
-//           `Option<String>` return maps to `string | null`, with
-//           `Some(x)` being `x` and `None` being `null`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -83,7 +75,6 @@ pub fn nesting_depth(src: &str) -> Option<String> {
     // Why:      Byte indexing is O(1) and avoids UTF-8 decoding; multi-byte
     //           characters in the rule can only appear as opaque content,
     //           never as the structural punctuation we count.
-    // TS map:   `const bytes = src;` then index with `bytes.charCodeAt(i)`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -97,7 +88,6 @@ pub fn nesting_depth(src: &str) -> Option<String> {
     // Why:      A flat byte-scan state machine, the same shape the other
     //           pre-validators in `engine.rs` use; tracking the running
     //           max lets one pass decide acceptance at the end.
-    // TS map:   `let i = 0, inClass = false, depth = 0, maxDepth = 0;`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -116,7 +106,6 @@ pub fn nesting_depth(src: &str) -> Option<String> {
         // Why:      An escaped `\(` or `\[` is a literal paren or bracket,
         //           not structural punctuation; skipping the pair keeps the
         //           depth count accurate.
-        // TS map:   `if (c === 0x5c) { i += 2; continue; }`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -131,7 +120,6 @@ pub fn nesting_depth(src: &str) -> Option<String> {
         //           `b']'` are single-byte ASCII literals.
         // Why:      Parens inside `[...]` are literal class members, not
         //           groups; the depth counter must ignore them.
-        // TS map:   `if (!inClass && c === 0x5b) { inClass = true; ... }`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -159,8 +147,6 @@ pub fn nesting_depth(src: &str) -> Option<String> {
             //           counting `(` depth covers all of them, including the
             //           complement and lookaround nesting that overflows
             //           resharp.
-            // TS map:   `if (c === 0x28) { depth++; if (depth > maxDepth) maxDepth = depth; }
-            //            else if (c === 0x29) { depth = Math.max(0, depth - 1); }`.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -187,7 +173,6 @@ pub fn nesting_depth(src: &str) -> Option<String> {
         // Why:      Hand the caller an actionable rejection naming the
         //           measured depth, the cap, and the Bug G context, so the
         //           rule author can flatten or split the rule.
-        // TS map:   `return `rule nests ... ${maxDepth} ... ${MAX_NESTING_DEPTH} ... ${TROUBLESHOOT_REF}`;`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -202,7 +187,6 @@ pub fn nesting_depth(src: &str) -> Option<String> {
     //           expression (no trailing `;`), so it is the return value.
     // Why:      Signal "no nesting-depth problem" so `compile_rule_src`
     //           moves on to the next check.
-    // TS map:   `return null;`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
