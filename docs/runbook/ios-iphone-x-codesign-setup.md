@@ -128,8 +128,11 @@ churn-induced blocks, not every possible block.
 
 ## Black-box UI automation on the device (WebDriverAgent)
 
-Status: PARTIAL. Every step up to the XCTest session is proven on the iPhone X; the final on-device drive is
-blocked by a missing iOS 16.7 device-support image (Xcode 26 ships only up to 16.4). Full detail and evidence:
+Status: PARTIAL, not pursued further by owner decision. Every step up to the XCTest session is proven on the
+iPhone X (provision, build, sign, install, launch); the final on-device drive is blocked by a host-toolchain
+gap, not a missing image: the installed Xcode 26 cannot stand up an XCTest session against iOS 16.7 (it is four
+major versions newer than the device), and Appium's WDA v13 dropped the iOS-16 launch path. This is uniform
+across every framework. Full detail and evidence:
 `../decisions/ios-iphone-x-vet-reports/vet-ui-automation.md`. The simulator leg (next subsection) is unblocked
 and complete.
 
@@ -165,15 +168,17 @@ iproxy 8100:8100 -u $UDID            # forward WDA's port to the host
 curl -s http://127.0.0.1:8100/status # WDA serves once its XCTest session is up
 ```
 
-The blocker (owner-resolvable): on this iPhone X (16.7.16) the runner launches with the correct identity and a
-real pid, then exits without binding 8100, because Xcode 26 carries device-support images only to iOS 16.4. The
-16.4 image is enough for plain app debug (every render gate works) but not for the XCTest application-test host:
-`xcodebuild test-without-building` reports `build number "" incompatible with DVTBuildVersion` and
-`Logic Testing Unavailable`. To close it, place the iOS 16.7 device-support image (extract from an Xcode 15.x;
-the common community archive `iGhibli/iOS-DeviceSupport` stops at 16.4) under
-`~/Library/Developer/Xcode/iOS DeviceSupport/`, then re-run the launch above. Wireless works for install and
-process-launch, but `xcodebuild`/`xctrace`/`devicectl` only see the device over USB, so wire it for any
-xcodebuild-driven step.
+The blocker (host toolchain, not pursued): on this iPhone X (16.7.16) the runner launches with the correct
+identity and a real pid, then exits without binding 8100, because the installed Xcode 26 cannot stand up an
+XCTest session against iOS 16.7 (`xcodebuild test-without-building` reports `build number "" incompatible with
+DVTBuildVersion` and `Logic Testing Unavailable`). It is not a device-support image: 16.4 is the last
+per-version DeveloperDiskImage Apple ships (both Xcode 26 and Xcode 15.2 carry support only to 16.4, reused for
+all 16.x), and that image is enough for plain app debug, which is why every render gate works. Closing it would
+mean driving the device from an Xcode that natively supported iOS 16.7 (14.3.1 to 15.2): Xcode 15.2 was
+downloaded and expanded, but using it needs its platform components installed via a sudo-plus-GUI first launch
+(`iOS 17.2 is not installed`) and an iOS-16-compatible WebDriverAgent (the bundled v13 dropped iOS 16). The owner
+judged that yak-shave not worth it. Wireless works for install and process-launch, but
+`xcodebuild`/`xctrace`/`devicectl` only see the device over USB, so wire it for any xcodebuild-driven step.
 
 ### Simulator leg (unblocked, signing-free)
 

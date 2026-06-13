@@ -12,12 +12,16 @@ container (2 equivalent mutants), kotlin.test plus kotest-property pass on `iosS
 property plus shrinking pass for the JS/TS layer; the Kotlin/Native mutation gap (PITest is JVM-only) is
 recorded, Stryker is cited (owner-vetted, not re-run). On the real iPhone X, WebDriverAgent was provisioned
 (new app-id, headless, like the anchor), built, signed (vet identity), installed, and launched (go-ios and
-tidevice, wireless and wired); the only ungated step is the XCTest test-host session, blocked because Xcode 26
-ships no iOS 16.7 device-support image (only up to 16.4), an Xcode-version gap, not a signing or framework
-limit. The owner wiring the device made it visible to xcodebuild and isolated this as the sole blocker; the
-close-out is sourcing the 16.7 device-support image. Work ran serially on the one Mac (single device,
-keychain, simulator); mutation ran in the Mac's own Podman per owner directive. Runbook updated with the
-WebDriverAgent device procedure.
+tidevice, wireless and wired); the only ungated step is the XCTest test-host session, blocked because the
+installed Xcode 26 cannot stand up an XCTest session against iOS 16.7 (a host-toolchain-versus-OS-version gap,
+not a missing device-support image: 16.4 is the last DDI Apple ships and is reused for all 16.x; Appium's WDA
+v13 also dropped the iOS-16 launch path). This is uniform across every framework, so on-device black-box UI
+automation is unavailable for all 18 equally on this iPhone-X-plus-Xcode-26 setup, not a per-framework result;
+the simulator leg covers them all. Close-out (driving the device from Xcode 14.3.1 to 15.2, which natively
+supported 16.7) was attempted: Xcode 15.2 was downloaded and expanded, but it needs a sudo-plus-GUI first launch
+(`iOS 17.2 is not installed`) and an iOS-16-compatible WDA, and the owner stopped the pursuit there. Work ran
+serially on the one Mac (single device, keychain, simulator); mutation ran in the Mac's own Podman per owner
+directive. Runbook updated with the WebDriverAgent device procedure and this limitation.
 
 Status as of 2026-06-12 (fourth handover): signing path DONE; source-audit fan-out DONE (16 reports +
 synthesis); device gating COMPLETE (18 frameworks render-verified both legs, Slint disqualified and Qt

@@ -465,9 +465,11 @@ disqualified on this device), and the framework-specific in-process UI-test and 
   in a Mac Podman container (2 equivalent mutants), kotlin.test plus kotest-property pass on
   `iosSimulatorArm64`, and fast-check property plus shrinking pass for the JS/TS layer. On the real iPhone X,
   WebDriverAgent was provisioned, built, signed (vet identity), installed, and launched headlessly; the only
-  ungated step is the XCTest test-host session, blocked because Xcode 26 ships no iOS 16.7 device-support image
-  (only up to 16.4), an Xcode-version gap, not a signing or framework limit (`vet-ui-automation.md`, device
-  section). In-process UI test stays framework-specific (runComposeUiTest, `flutter_test`, `XCUIApplication`).
+  ungated step is the XCTest test-host session, blocked because the installed Xcode 26 cannot stand up an XCTest
+  session against iOS 16.7 (a host-toolchain-versus-OS-version gap that is uniform across every framework, not a
+  signing or framework limit; `vet-ui-automation.md`, device section). So on-device black-box UI automation is
+  unavailable for all 18 frameworks equally on this iPhone-X-plus-Xcode-26 setup, while the simulator leg covers
+  them all. In-process UI test stays framework-specific (runComposeUiTest, `flutter_test`, `XCUIApplication`).
 
 ## Cross-cutting iOS constraints (any framework)
 

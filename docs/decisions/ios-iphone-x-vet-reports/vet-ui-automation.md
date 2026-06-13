@@ -187,8 +187,16 @@ Eight element trees were captured (`*.sim.xml`): capgate (Capacitor), cordovagat
 ## 4. Real-device (iPhone X) validation
 
 Status: the entire device pipeline up to the XCTest session is proven on the real iPhone X; the final black-box
-drive is blocked by one environmental gap (no iOS 16.7 device-support image ships with Xcode 26), characterized
-precisely below. Deferred to the end of the vet by owner instruction.
+drive is blocked by a toolchain-versus-OS-version gap that is uniform across every framework, not a per-framework
+limitation, characterized precisely below. Pursuit was stopped by owner decision after the close-out attempt
+below also hit the gap.
+
+Which frameworks cannot do on-device UI automation: all of them equally, and none because of the framework. On
+the iOS 26.5 simulator every rendering model drives cleanly (section 3). On this iPhone X (iOS 16.7) no framework
+can be black-box driven right now, because the block is the host toolchain's inability to stand up an XCTest
+session against iOS 16.7, which is identical for Capacitor, Compose, Flutter, React Native, and every other
+survivor. So this is recorded as an environment limitation of the iPhone-X-plus-Xcode-26 setup, not as a vet
+result that separates frameworks.
 
 What is proven on the device (each over SSH, no owner GUI action):
 
@@ -217,21 +225,29 @@ away from the launcher). Appium's own paths confirm the cause from the other sid
   `DVTDeviceOperation: Encountered a build number "" that is incompatible with DVTBuildVersion` and
   `Cannot test target "WebDriverAgentRunner" on "iPhone X": Logic Testing Unavailable`.
 
-Root cause: Xcode 26 ships device-support images only up to iOS 16.4 (`15.0 15.2 15.4 15.5 16.0 16.1 16.4`),
-and this device is 16.7.16 (20H392). The codesign runbook symlinks the 16.4 image in for 16.7, which is enough
-for plain app debug and launch (so every render gate and the WDA process-launch succeed) but not for the XCTest
-application-test host: Xcode cannot version-match the device (the empty build number), so it cannot stand up the
-test session WebDriverAgent depends on. The widely-used community device-support archive
-(`iGhibli/iOS-DeviceSupport`) also tops out at 16.4, so the 16.7 image is not trivially sourced; it ships in
-Xcode 15.x.
+Root cause (a toolchain-versus-OS gap, not a missing image): the installed Xcode is 26, whose XCTest and
+testmanagerd support targets current iOS and cannot stand up a test session against the A11 device's iOS 16.7
+(the empty build number and "Logic Testing Unavailable"). It is not the device-support image: 16.4 is the last
+per-version DeveloperDiskImage Apple ships (both Xcode 26 and Xcode 15.2 carry device support only to 16.4, and
+all 16.x devices reuse the 16.4 image), and that image is enough for plain app debug, which is why every render
+gate and the WDA process-launch succeed. Appium's own `usePreinstalledWDA` confirms the other half: its WDA v13
+"no longer uses the legacy XCTest launch path that was required on iOS 16 and below", so the current Appium
+toolchain has dropped iOS 16 entirely.
 
-Close-out path (owner resource, not an autonomous step): install the iOS 16.7 device-support image (extract it
-from an Xcode 15.x, or run the black-box device drive from a Mac whose Xcode has 16.7 support). With that image
-present, the same pre-installed, vet-signed WDA launches its server and the device drive proceeds exactly as the
-simulator drive did. This is the only piece, and it is an Xcode-version/device-support gap, not a framework or a
-signing limitation; the signing, provisioning, build, install, and launch are all proven on the real device
-above. Until then, the simulator leg fully covers the addressability matrix, both external drivers, and the WDA
-substrate; the device's rendering of all 18 frameworks is already proven separately in `device-gate-results.md`.
+Close-out attempted and stopped: the standard fix is to drive the device from an Xcode that natively supported
+iOS 16.7 (Xcode 14.3.1 to 15.2). Xcode 15.2 was downloaded and expanded, but using it needs its iOS platform
+components installed through a first-launch step that requires sudo and a GUI (`xcodebuild` against it reports
+`iOS 17.2 is not installed. To use with Xcode, first download and install the platform`), and it would also need
+an iOS-16-compatible WebDriverAgent (the bundled v13 dropped iOS 16). At that point the owner judged the
+remaining yak-shave (sudo first-launch, an older WDA build, the daemon/`xcode-select` switch) not worth it and
+stopped. The signing, provisioning, build, install, and launch are all proven on the real device above; what
+remains is purely host-toolchain plumbing for a four-major-version-old OS.
+
+So the on-device black-box drive is recorded as an environment limitation, not closed. The simulator leg fully
+covers the addressability matrix, both external drivers, and the WDA substrate for every rendering model, and
+the device's rendering of all 18 frameworks is already proven separately in `device-gate-results.md`; the only
+thing not demonstrated on the physical device is the black-box automation HTTP session, blocked uniformly by the
+Xcode-26-cannot-test-iOS-16.7 gap.
 
 ## 5. Comparison and when to prefer each
 
