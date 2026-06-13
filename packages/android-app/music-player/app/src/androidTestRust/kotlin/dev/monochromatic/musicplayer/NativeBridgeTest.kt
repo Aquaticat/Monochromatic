@@ -66,6 +66,41 @@ class NativeBridgeTest {
         assertTrue("AAudio output probe failed (native code $latencyMs)", latencyMs > 0.0)
     }
 
+    // Measures a real library track's true peak natively (4x-oversampled), the
+    // loudness-normalization input the rust flavor needs (its peak cache starts empty,
+    // and Media3TruePeakDecoder is MediaCodec-bound). Reads the first MediaStore track
+    // via a content:// fd, logs the peak and the gain the core would derive
+    // (min(0.8912509/peak, 1)), and asserts a sane positive peak. Skips when no library
+    // is indexed; silent (decode-only).
+    @Test
+    fun measureTruePeakOnDevice() {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val resolver = context.contentResolver
+        val collection = MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL)
+        val uris = mutableListOf<Uri>()
+        resolver.query(collection, arrayOf(MediaStore.Audio.Media._ID), "${MediaStore.Audio.Media.IS_MUSIC} != 0", null, null)?.use { cursor ->
+            val idColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID)
+            while (cursor.moveToNext() && uris.size < 8) {
+                uris.add(ContentUris.withAppendedId(collection, cursor.getLong(idColumn)))
+            }
+        }
+        assumeTrue("no indexed MediaStore audio (grant READ_MEDIA_AUDIO)", uris.isNotEmpty())
+        val ceiling = 0.8912509f
+        var maxPeak = 0.0f
+        for (uri in uris) {
+            val peak: Float = resolver.openFileDescriptor(uri, "r")?.use { pfd ->
+                NativeBridge.nativeMeasureTruePeak(pfd.fd)
+            } ?: -100.0f
+            val gain: Float = if (peak > 0.0f) minOf(ceiling / peak, 1.0f) else 1.0f
+            Log.i("NativeBench", "true-peak (${uri.lastPathSegment}) -> peak=$peak gain=$gain")
+            assertTrue("true-peak measure failed for $uri (peak=$peak)", peak > 0.0f && peak < 8.0f)
+            maxPeak = maxOf(maxPeak, peak)
+        }
+        // A real library has at least one reasonably loud track; a uniformly tiny max
+        // across the sample would mean a systematic scaling bug, not genuinely quiet music.
+        assertTrue("all sampled tracks improbably quiet (maxPeak=$maxPeak) - possible scaling bug", maxPeak > 0.1f)
+    }
+
     // Decodes a real library track straight from a content:// file descriptor, the
     // exact path the full-Rust engine will use. Proves on this GrapheneOS device
     // that (1) MediaProvider hands back a seekable regular-file fd, (2) symphonia

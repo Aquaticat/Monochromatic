@@ -21,6 +21,8 @@ object NativeBridge {
 
     external fun nativeOutputLatencyProbe(): Double
 
+    external fun nativeMeasureTruePeak(fd: Int): Float
+
     external fun nativeEngineCreate(): Long
 
     external fun nativeEngineLoad(handle: Long, fd: Int, play: Boolean): Int

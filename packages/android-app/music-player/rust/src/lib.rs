@@ -12,6 +12,7 @@ mod engine_worker;
 mod error;
 mod opus;
 mod output;
+mod truepeak;
 
 use std::os::fd::RawFd;
 use std::path::Path;
@@ -132,6 +133,29 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeDec
         Err(_) => return -2.0,
     };
     benchmark_decode(source)
+}
+
+/// Decode the `content://` file descriptor `fd` fully and return its true peak (4x
+/// Catmull-Rom oversampled, the loudness-normalization input the Kotlin core turns into
+/// a gain). `fd` is the borrowed `ParcelFileDescriptor.getFd()`; `open_borrowed_fd` dups
+/// it synchronously. Negative returns: -1 bad fd, -2 dup/open failed, -3 decode error.
+#[no_mangle]
+pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeMeasureTruePeak<'local>(
+    _env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    fd: jint,
+) -> jfloat {
+    if fd < 0 {
+        return -1.0;
+    }
+    let source = match decode::open_borrowed_fd(fd as RawFd) {
+        Ok(source) => source,
+        Err(_) => return -2.0,
+    };
+    match truepeak::measure_true_peak(source) {
+        Ok(peak) => peak,
+        Err(_) => -3.0,
+    }
 }
 
 /// Open a silent low-latency AAudio output stream (raw ndk::audio) and return its
