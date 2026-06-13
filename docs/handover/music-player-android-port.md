@@ -43,6 +43,14 @@ handover adds the working state, measured facts, and exact next steps.
   faster at the same decode + true-peak operation on the same tracks. WINNER: the full-Rust variant.
   The queue/advance/shuffle stay in Kotlin's `PlayerController` (the native engine is only the per-track primitive).
 
+Dum-dum-non-ts pass (#14, DONE): the `dum-dum-non-ts` comment skill is now applied across the WHOLE package, 60 files
+(8 Rust + 52 Kotlin), in three batches (pilot `1c53482f`, batch 1 `be2e0d58`, batch 2 `ca6160b7`), ~40k lines of
+What/Why/TS-map/pseudocode teaching comments. Done with a mix of a Workflow fan-out and three `spawn-claude` child
+sessions (the workflow rate-limited on the last 25 Kotlin files, so those went to spawn-claude). Comments only: a
+per-file comment-stripped diff vs the pre-pass code is empty for all 60, all three flavors assemble, the unit tests
+pass, both androidTest source sets compile, and the Rust `max-lines` lint stays green (dum-dum comments are excluded
+from the budget). Only remaining task for the port is #9 (bisect minSdk to the true floor, an optimization).
+
 Metric comparison (#13, decisive): a like-for-like fresh head-to-head, the same first 8 MediaStore tracks run through
 the same operation (full decode + 4x Catmull-Rom true peak) on each engine: `NativeBridgeTest.measureTruePeakOnDevice`
 (rust, `nativeMeasureTruePeak` = symphonia/libopus) vs `Media3TruePeakDecoderTest.measureLibraryTimingForComparison`
