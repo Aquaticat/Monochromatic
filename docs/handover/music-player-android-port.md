@@ -242,8 +242,34 @@ Milestone 1, the derisk, is complete and verified at the user boundary:
   coordinate (screen is 1080x2400) and read back via logcat (`MusicPlayer:I MediaStoreSource:I SafTreeSource:I
   LibraryRoot:I PlaybackService:I Media3Engine:I Media3TruePeak:I`) and `dumpsys media_session` (shows
   `state=PLAYING`, position, and the track
-  title, the most reliable playback check). SDK is `local.properties` -> `/var/tmp/vet-jc/android-sdk`.
+  title, the most reliable playback check). SDK is now mise-provisioned via `ANDROID_HOME` (no `local.properties`);
+  see "Build environment: self-contained via mise" below.
   adb is flock-guarded on `/tmp/agent/adb-phone.lock`, serial `1C171FDF600KWW`.
+
+## Build environment: self-contained via mise (2026-06-13)
+
+The toolchain is provisioned entirely by mise; the former dependency on a machine-local Android SDK under
+`/var/tmp` (a reapable path) referenced from a gitignored `local.properties` is gone.
+
+- Root `mise.no-env.toml` `[tools]` owns the `java` (temurin-21), `android-sdk` (cmdline-tools, left at `latest`),
+  and `cargo:cargo-ndk` (4.1.2) tools. The package `mise.toml` declares no tools of its own; it inherits these.
+- The root `prepare:android` task (auto-run by the `prepare` umbrella, idempotent) installs the SDK components
+  sdkmanager owns and mise cannot: `platforms;android-37.0`, `build-tools;37.0.0`, `ndk;29.0.13846066`,
+  `platform-tools`, plus the `aarch64-linux-android` rustup target. It accepts licenses non-interactively.
+- `build:native` derives and exports `ANDROID_NDK_HOME` from `$ANDROID_HOME/ndk`. This is REQUIRED: opusic-sys
+  (bundled libopus) reads `ANDROID_NDK_HOME` to apply the cmake android toolchain; without it the libopus build
+  silently configures for the host (x86), which then fails the aarch64 compile with `-msse unsupported`. cargo-ndk
+  autodetects the NDK for its own Rust cross-toolchain but does NOT export the var to child build scripts.
+- `build:native` also self-heals a poisoned opusic-sys cmake cache: a stale build dir configured for the host
+  (cached `SSE1_SUPPORTED`) or against a different NDK is purged before building, forcing a clean reconfigure.
+  CMake never re-evaluates cached compiler checks, so without this a single host configure would wedge every later
+  aarch64 build.
+- Gradle resolves the SDK from `ANDROID_HOME` (set by the android-sdk tool), so no `local.properties` is needed.
+
+Verified host-side this session: `mise install` + `prepare:android` provision from scratch (including fresh
+license acceptance), `build:native` cross-compiles a valid aarch64 NEON `.so` (no SIMD disabled), the poison-cache
+guard purges and rebuilds clean, and `build` (assembleDebug) assembles the APK with no `local.properties`.
+On-device run was not re-verified this session (no behavioral code changed).
 
 ## Committed work (on main)
 
