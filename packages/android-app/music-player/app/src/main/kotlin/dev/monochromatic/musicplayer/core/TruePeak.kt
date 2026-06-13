@@ -41,12 +41,23 @@ internal const val CEILING: Float = 0.8912509f
  */
 private const val WINDOW: Int = 4
 
-/**
- * The three interior oversampling positions ([QUARTER], [HALF], [THREE_QUARTERS]) the meter samples
- * between the two middle window points. Hoisted to a single shared array so the per-sample scan does
- * not allocate one per sample; it is only ever read, never mutated.
- */
-private val INTERIOR_POSITIONS: FloatArray = floatArrayOf(QUARTER, HALF, THREE_QUARTERS)
+/** [QUARTER] squared, the `t²` term of the cubic at the first interior position, as a constant. */
+private const val QUARTER_SQ: Float = QUARTER * QUARTER
+
+/** [QUARTER] cubed, the `t³` term of the cubic at the first interior position, as a constant. */
+private const val QUARTER_CUBE: Float = QUARTER_SQ * QUARTER
+
+/** [HALF] squared, the `t²` term of the cubic at the middle interior position, as a constant. */
+private const val HALF_SQ: Float = HALF * HALF
+
+/** [HALF] cubed, the `t³` term of the cubic at the middle interior position, as a constant. */
+private const val HALF_CUBE: Float = HALF_SQ * HALF
+
+/** [THREE_QUARTERS] squared, the `t²` term of the cubic at the last interior position, as a constant. */
+private const val THREE_QUARTERS_SQ: Float = THREE_QUARTERS * THREE_QUARTERS
+
+/** [THREE_QUARTERS] cubed, the `t³` term of the cubic at the last interior position, as a constant. */
+private const val THREE_QUARTERS_CUBE: Float = THREE_QUARTERS_SQ * THREE_QUARTERS
 
 /**
  * Evaluate the Catmull-Rom cubic through four equally-spaced points at position [t] on the segment
@@ -69,6 +80,42 @@ internal fun catmullRom(p0: Float, p1: Float, p2: Float, p3: Float, t: Float): F
             (2.0f * p0 - 5.0f * p1 + 4.0f * p2 - p3) * t2 +
             (3.0f * p1 - 3.0f * p2 + p3 - p0) * t3
         )
+}
+
+/**
+ * Largest absolute interpolated value across the three interior oversampling positions ([QUARTER],
+ * [HALF], [THREE_QUARTERS]) of one four-point window, the per-sample core of the inter-sample peak
+ * scan. Algebraically equal to `max` of `abs(catmullRom(p0, p1, p2, p3, t))` over those three `t`
+ * (pinned by [the host test][maxInteriorAbsMatchesCatmullRom]), and computed with the identical float
+ * operations, so the measured peak is bit-for-bit the same as evaluating [catmullRom] three times.
+ *
+ * The speed-up is structural: the three window-only combinations ([linear][a], [t²][b], [t³][c] terms)
+ * do not depend on `t`, so they are computed once here and reused across the three positions, whose
+ * `t`, `t²`, `t³` are compile-time constants. [catmullRom] recomputed all of them on every call, and
+ * `push` called it three times per sample; device profiling of an opus track showed that per-sample
+ * cubic work, tens of millions of calls, dominated the scan (about seventeen seconds), so collapsing
+ * three calls and their repeated combinations into one pass is the meter's main cost lever.
+ *
+ * @param p0 Sample before the segment, the left neighbour.
+ * @param p1 Segment start; the curve passes through it at `t == 0`.
+ * @param p2 Segment end; the curve passes through it at `t == 1`.
+ * @param p3 Sample after the segment, the right neighbour.
+ * @return Largest absolute interpolated magnitude at the three interior positions.
+ * @example
+ * ```kotlin
+ * val overshoot = maxInteriorAbs(0.0f, 0.9f, -0.9f, 0.0f) // inter-sample peak between p1 and p2
+ * ```
+ */
+internal fun maxInteriorAbs(p0: Float, p1: Float, p2: Float, p3: Float): Float {
+    val twoP1: Float = 2.0f * p1
+    val a: Float = p2 - p0
+    val b: Float = 2.0f * p0 - 5.0f * p1 + 4.0f * p2 - p3
+    val c: Float = 3.0f * p1 - 3.0f * p2 + p3 - p0
+    val atQuarter: Float = HALF * (twoP1 + a * QUARTER + b * QUARTER_SQ + c * QUARTER_CUBE)
+    val atHalf: Float = HALF * (twoP1 + a * HALF + b * HALF_SQ + c * HALF_CUBE)
+    val atThreeQuarters: Float =
+        HALF * (twoP1 + a * THREE_QUARTERS + b * THREE_QUARTERS_SQ + c * THREE_QUARTERS_CUBE)
+    return max(abs(atQuarter), max(abs(atHalf), abs(atThreeQuarters)))
 }
 
 /**
@@ -123,10 +170,7 @@ internal class TruePeakMeter(private val channels: Int) {
         filled[channel] = min(filled[channel] + 1, WINDOW)
         var localPeak: Float = abs(s)
         if (filled[channel] == WINDOW) {
-            for (t in INTERIOR_POSITIONS) {
-                val v: Float = abs(catmullRom(w[0], w[1], w[2], w[3], t))
-                localPeak = max(localPeak, v)
-            }
+            localPeak = max(localPeak, maxInteriorAbs(w[0], w[1], w[2], w[3]))
         }
         peak = max(peak, localPeak)
     }

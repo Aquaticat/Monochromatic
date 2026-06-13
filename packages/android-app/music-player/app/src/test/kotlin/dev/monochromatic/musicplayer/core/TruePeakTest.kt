@@ -120,4 +120,34 @@ class TruePeakTest {
         )
         assertTrue("whole $whole and split $split should match", approxEq(whole, split))
     }
+
+    /**
+     * The optimized [maxInteriorAbs] (hoisted window combinations, one pass) must equal the reference
+     * it replaced: `max` of `abs(catmullRom(...))` over the three interior positions 0.25, 0.5, 0.75.
+     * This pins the meter's per-sample core to the tested [catmullRom] primitive, so the speed-up
+     * cannot silently change a measured true peak; several window shapes (transient, ramp, alternating,
+     * constant, mixed) exercise the cubic's full sign range.
+     */
+    @Test
+    fun maxInteriorAbsMatchesCatmullRom() {
+        val windows = arrayOf(
+            floatArrayOf(0.0f, 0.9f, -0.9f, 0.0f),
+            floatArrayOf(0.1f, 0.2f, 0.3f, 0.4f),
+            floatArrayOf(-1.0f, 1.0f, -1.0f, 1.0f),
+            floatArrayOf(0.5f, 0.5f, 0.5f, 0.5f),
+            floatArrayOf(0.3f, -0.7f, 0.8f, -0.2f),
+        )
+        for (w in windows) {
+            val reference = maxOf(
+                abs(catmullRom(w[0], w[1], w[2], w[3], 0.25f)),
+                abs(catmullRom(w[0], w[1], w[2], w[3], 0.5f)),
+                abs(catmullRom(w[0], w[1], w[2], w[3], 0.75f)),
+            )
+            val actual = maxInteriorAbs(w[0], w[1], w[2], w[3])
+            assertTrue(
+                "maxInteriorAbs $actual should match the catmullRom reference $reference",
+                approxEq(actual, reference),
+            )
+        }
+    }
 }
