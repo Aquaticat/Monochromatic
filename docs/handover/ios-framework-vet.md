@@ -384,10 +384,15 @@ After gates: stage 2 deep supporting-stack vets (the ~52-report roadmap, enumera
 `vet-*.md`). Progress so far (2026-06-12, in `device-gate-results.md` "Stage 2 supporting-stack probes" and
 the synthesis doc's "Stage 2 status"): the in-app HTTP/S3 server, cpal CoreAudio output, and ring's TLS
 crypto (X25519 + AES-GCM) are all device-proven in one linked Rust staticlib on the iPhone X (the capabilities
-that were genuinely uncertain), so the kopia and music-player cores are de-risked on every track. Still owed,
-none blocking the framework choice: kopia as a Go gomobile c-archive (integration on the proven linkage, needs
-the Go/gomobile toolchain), a live TLS handshake and pCloud transfer (need network; ring's crypto core is
-already proven offline), background `URLSession`/`BGProcessingTask` and backgrounded-audio restructuring, the per-framework FFI-marshaling and
+that were genuinely uncertain), so the kopia and music-player cores are de-risked on every track. The kopia Go
+payload was also tested: a Go `c-archive` cross-compiles to both iOS triples and its runtime runs on the
+iPhone X in a pure-Swift host ("Go: 720 RUNTIME OK"), but co-hosting it inside the .NET/Mono runtime SIGKILLs
+on the device (two managed runtimes collide; the runtime-less Rust `.a` did not), so kopia's Go payload needs
+a non-managed host, which rules the .NET trio out as the kopia host specifically (it stays valid as a
+music-player UI). Still owed, none blocking the framework choice: building actual kopia as the c-archive
+(integration on the proven mechanism), a live TLS handshake and pCloud transfer (need network; ring's crypto
+core is already proven offline), background `URLSession`/`BGProcessingTask` and backgrounded-audio
+restructuring, the per-framework FFI-marshaling and
 UI-test/e2e harnesses, and the owner-owed on-device VoiceOver fidelity sweep (the one dimension that needs
 the owner plus the GUI; crash-survival a11y is already closed for every survivor). Keep the synthesis doc
 current as these land.
