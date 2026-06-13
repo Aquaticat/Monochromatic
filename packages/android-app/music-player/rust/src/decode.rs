@@ -11,7 +11,7 @@ use symphonia::core::codecs::audio::{AudioDecoder, AudioDecoderOptions};
 use symphonia::core::errors::Error;
 use symphonia::core::formats::probe::Hint;
 use symphonia::core::formats::{FormatOptions, FormatReader, SeekMode, SeekTo, Track, TrackType};
-use symphonia::core::io::MediaSourceStream;
+use symphonia::core::io::{MediaSource, MediaSourceStream};
 use symphonia::core::meta::MetadataOptions;
 use symphonia::core::units::{Duration, Timestamp};
 
@@ -34,15 +34,27 @@ pub trait Source: Send {
     fn seek(&mut self, secs: f64) -> Result<(), PlayerError>;
 }
 
-/// Open an audio file: probe the container, find the first audio track, and
-/// return the right decoder (libopus for Opus, symphonia otherwise).
+/// Open an audio file by path: build a hint from the extension, then probe and
+/// route to the right decoder. The on-device engine loads from a `content://` fd
+/// instead (see `open_media_source`); both share the demux/route tail.
 pub fn open(path: &Path) -> Result<Box<dyn Source>, PlayerError> {
     let file = File::open(path)?;
-    let mss = MediaSourceStream::new(Box::new(file), Default::default());
     let mut hint = Hint::new();
     if let Some(ext) = path.extension().and_then(|e| e.to_str()) {
         hint.with_extension(ext);
     }
+    open_media_source(Box::new(file), hint)
+}
+
+/// Probe an already-opened media source (a file, or a `content://` fd wrapped in a
+/// `File`) and return the right decoder (libopus for Opus, symphonia otherwise).
+/// The fd path carries no filename, so its caller passes an empty `Hint` and relies
+/// on symphonia's content sniffing to identify the container.
+pub fn open_media_source(
+    source: Box<dyn MediaSource>,
+    hint: Hint,
+) -> Result<Box<dyn Source>, PlayerError> {
+    let mss = MediaSourceStream::new(source, Default::default());
     let format = symphonia::default::get_probe().probe(
         &hint,
         mss,
