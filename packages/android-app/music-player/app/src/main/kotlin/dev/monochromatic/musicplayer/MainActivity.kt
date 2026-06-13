@@ -1178,13 +1178,20 @@ class MainActivity : ComponentActivity() {
         //           `StartingGate`). Retaining the published controller across the unbind keeps
         //           the already-loaded library on screen when the app returns, so a foreground
         //           is a NON-BLOCKING live rescan (`reconcileLibrary`, no loading state) instead
-        //           of a gate flash. Safe because the controller is a single service-owned
-        //           instance built once in `PlaybackService.onCreate`; the started/foreground
-        //           service survives this unbind, so the retained reference stays valid and
-        //           `onServiceConnected` republishes that same instance on the rebind.
-        //           `StartingGate` then appears only before the very first bind (no prior state
-        //           to show); `onServiceDisconnected` still nulls it, since an unexpected service
-        //           death means the brain is genuinely gone.
+        //           of a gate flash. The controller is a single instance built once in
+        //           `PlaybackService.onCreate`. Safe in both service-lifetime cases: while
+        //           playing, the service is started/foreground (media3 foregrounds it on
+        //           playback) and survives this unbind, so `onServiceConnected` rebinds the SAME
+        //           controller. Before any playback the service is bind-only, so this unbind may
+        //           destroy it (`onDestroy` releases the engine); the retained controller then
+        //           just renders its last snapshot (stale, harmless), and its engine accessors
+        //           are hardened (every native entry guards `handle == 0` and returns 0 after
+        //           release; see `RustEngine`/`rust/src/lib.rs`), so the still-running position
+        //           poll reads 0 rather than crashing. `onServiceConnected` then republishes the
+        //           freshly-built controller and the poll (keyed on `controller`) re-targets it.
+        //           `StartingGate` appears only before the very first bind (no prior state to
+        //           show); `onServiceDisconnected` still nulls it, since an unexpected mid-bind
+        //           service death means the brain is genuinely gone.
         // Why:      The foreground rescan should be non-blocking unless there is no prior state
         //           (the live-update intent in docs/decisions/music-player-live-update-rescan.md).
     }
@@ -1570,9 +1577,14 @@ fun PlayerScreen(controller: PlayerController, onChooseFolder: () -> Unit) {
     // ```
     var duration by remember { mutableDoubleStateOf(0.0) }
 
-    // What:     `LaunchedEffect(Unit) { ... }` runs the trailing `suspend` block once on
-    //           first entry (key `Unit`).
-    // Why:      Start the position/duration polling loop.
+    // What:     `LaunchedEffect(controller) { ... }` runs the trailing `suspend` block,
+    //           restarting it whenever the `controller` instance changes (its key): Compose
+    //           cancels the old loop and launches a fresh one on a swap.
+    // Why:      Start the position/duration polling loop, and re-target it at the live brain
+    //           if the bound controller is replaced (e.g. the service was recreated on a
+    //           rebind, then republished by `onServiceConnected`). Keying on `controller`
+    //           (not `Unit`) keeps the loop from polling a stale, released controller after
+    //           such a swap, which would otherwise freeze the seek bar at 0.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1586,9 +1598,9 @@ fun PlayerScreen(controller: PlayerController, onChooseFolder: () -> Unit) {
     //     }
     //   })();
     //   return () => { alive = false; };
-    // }, []);
+    // }, [controller]);
     // ```
-    LaunchedEffect(Unit) {
+    LaunchedEffect(controller) {
         // What:     `while (true) { ... }` is an infinite loop (it runs until the effect is
         //           cancelled when the composable leaves).
         // Why:      Continuously poll the engine while the screen is shown.
