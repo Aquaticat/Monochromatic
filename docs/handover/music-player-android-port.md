@@ -27,15 +27,32 @@ handover adds the working state, measured facts, and exact next steps.
   `opus_decoder_create` and the symphonia registry initializes on the arm64 CPU). Next is the engine itself
   (Task #12); see "Next steps".
 - Full-Rust variant: the standalone primitives are de-risked on device (toolchain #10, libopus + symphonia #11,
-  native decode ~10x faster than MediaCodec #15, AAudio output 43 ms #16, `content://` fd decode #17). ONE unknown
-  remains to verify in the engine (Task #12): sample-rate matching, `output.rs` hardcodes 48k and opus is always 48k
-  so the probe matched, but FLAC/MP3 decode at the track's native rate (often 44.1k), so the engine MUST open the
-  AAudio stream at `spec.rate` or playback runs ~8.8% fast and pitched up, a correctness requirement not wiring. The
-  `content://` fd path is now RESOLVED (#17, below). The rest of #12 is integration: the decode -> output loop (decode
-  on a worker + lock-free ring, never in the AAudio callback), the Kotlin `AudioEngine` JNI seam (raw JNI, pull-based
-  callbacks), and the queue/controller port.
+  native decode ~10x faster than MediaCodec #15, AAudio output 43 ms #16, `content://` fd decode #17), and the engine
+  itself now PLAYS on device (Task #12, Milestone 1, below): the decode -> ring -> AAudio loop, the `AudioEngine` JNI
+  seam, and transport (load-fd/play/pause/seek/volume/position/duration/ended) all verified inaudibly on the Pixel 6.
+  The sample-rate unknown is RESOLVED: the engine opens AAudio at `spec.rate` and the on-device test confirmed position
+  tracks real-time (0.494 s in ~0.5 s of playback, no 8.8% drift) and an accurate mid-track seek. Remaining for the
+  full-Rust variant (Milestone 2, parity with Media3, none needed to measure decode/output perf): audio-focus handling
+  (pause on a phone call), the becoming-noisy headphone-unplug pause, and true-peak normalization gain. The
+  queue/advance/shuffle stay in Kotlin's `PlayerController` (the native engine is only the per-track primitive).
 
 ## Build progress (this session)
+
+Full-Rust engine, first playable (Task #12, Milestone 1): `bbf1b6a9` (native engine) + `8d310210` (Kotlin seam +
+test) build the per-track playback primitive behind `AudioEngine`. `engine.rs` is the main-thread handle (an mpsc
+`Sender<Command>` + `Arc<Control>` of atomics; the value behind the JNI `jlong`). `engine_worker.rs` runs the single
+worker thread that owns the decode `Source`, the SPSC ring producer, and the AAudio stream, processing Load/Seek/Quit;
+the realtime AAudio callback only pops, gates on the play flag, applies volume, zero-fills underruns, flags
+end-of-track, and advances the played-frame counter. Load and seek both rebuild the output through `reconfigure_output`
+(the desktop's ring-flush mechanism), opening AAudio at `spec.rate`. `lib.rs` adds the 12 `nativeEngine*` JNI fns;
+`RustEngine.kt` resolves the `content://` URI to a borrowed PFD and passes its fd inside `use {}` (native dups
+synchronously), with a 200 ms main-thread poller turning the pull-based native playing/ended state into
+`onPlayingChanged`/`onTrackEnded`. Two deliberate improvements over desktop: volume in the callback (instant, not
+1 s-lagged), position from frames played (accurate, not decode-ahead). Verified on the Pixel 6 via `RustEngineTest`
+(`am instrument`, volume 0, silent, no session PLAYING): after play `pos=0.494 s dur=9.929 s playWhenReady=true`; paused
+position froze exactly (`a=b=0.4965`); seek to `dur/2=4.96 s` then resumed to `5.33 s`. Real-time position (no 8.8%
+drift) confirms the stream opened at the track rate. Milestone 2 (Media3 parity, not needed to measure decode/output):
+audio focus, becoming-noisy, true-peak normalization gain.
 
 Milestone 1, the derisk, is complete and verified at the user boundary:
 
