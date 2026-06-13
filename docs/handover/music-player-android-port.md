@@ -16,7 +16,13 @@ handover adds the working state, measured facts, and exact next steps.
   `MediaSessionService` for background/lockscreen/notification, all verified on device. The SAF chosen-root source,
   the true-peak `AudioProcessor` (async measure-on-miss + shared cache), and the WorkManager charging background
   sweep (`PeakSweepWorker`, low-priority decode) have all since landed and are verified on device, so the media3
-  variant is feature-complete; next is the full-Rust variant. See "Build progress" and "Next steps".
+  variant is feature-complete; the full-Rust variant has now begun. See "Build progress" and "Next steps".
+- Full-Rust variant, step 1 (native-toolchain derisk, Task #10) is DONE and verified on device: cargo-ndk produces a
+  16KB-aligned arm64 cdylib that the GrapheneOS Pixel 6 loads via `System.loadLibrary` and JNI-calls (`OK (1 test)`).
+  GrapheneOS blocks dynamic *code* loading (which killed Slint) but a JNI `.so` from the APK is fine. The hybrid
+  variant is dropped as a deliverable (owner directive 2026-06-12): a Rust meter over Media3-decoded PCM fixes only
+  the meter, not the decode-bound cost, so it cannot move performance enough. Next is cross-compiling libopus +
+  symphonia (which compile C); see "Next steps".
 
 ## Build progress (this session)
 
@@ -176,6 +182,17 @@ Then the performance pass (see "True-peak measure performance"): `db6efc2c` bulk
 `cd64fce2` `maxInteriorAbs` window-term hoist (~20% meter). `becdcd16` had reverted the block-the-start design
 back to async and added the debug-signed release build + `build:media3:release` task.
 
+Native Rust toolchain (this session): `d97ea46e` derisks the cargo-ndk -> JNI path the full-Rust variant needs,
+proven on the GrapheneOS Pixel 6 before any engine porting. Adds the standalone `rust/` cdylib crate (`jni` 0.21,
+pure Rust, no C yet), a `NativeBridge` facade plus an `androidTestRust` instrumented test asserting a trivial
+`nativePing()` across the JNI boundary (`OK (1 test)` via `am instrument`, not `connectedAndroidTest`), and mise
+tasks (`build:rust:native` and the rust assembles that depend on it) that run cargo-ndk behind an `ANDROID_NDK_HOME`
+guard. The .so is 16KB-aligned (NDK r29 linker default) and stored uncompressed in the rust APK. `23bb5559` removes
+the over-broad root `*.lock` ignore (it swallowed Cargo.lock; the build-tool locks stay ignored via directory rules)
+and tracks the crate's `Cargo.lock` for reproducible builds. Noted to investigate during metrics (Task #13): the
+rust debug APK is ~36 MB (vs the older media3 ~15 MB figure); the 439 KB .so is not the cause, so it is likely
+accumulated shared `main` plus debug `ui-tooling`, to be confirmed.
+
 Background true-peak sweep (this session): `1867fda2` adds `PeakSweepWorker` (a WorkManager `CoroutineWorker`,
 periodic, charging-only), `PeakSweepScheduler` (unique periodic, `KEEP`-deduped, enqueued from `PlaybackService`
 when a library becomes available), the engine-agnostic `measureAndCache` + `SweepOutcome`, the shared
@@ -303,9 +320,17 @@ attempted; these `/var/tmp` paths can be reaped, so a future session may need to
   automatically; Gradle reads the SDK from `local.properties`, so no ANDROID_HOME env is needed.
 - Gradle: the committed wrapper (9.5.1) drives all builds; it was generated with the standalone
   `/var/tmp/vet-jc/gradle-9.5.1`.
-- `cargo-ndk`: installed at `/home/user/.cargo/bin/cargo-ndk` (via `cargo binstall`). NDK for the Rust flavors:
-  `/var/tmp/tauri-vet-work/android-sdk/ndk/29.0.13846066` (the vet-jc SDK has none; point `ndk.dir` at it or
-  install an NDK into the vet-jc SDK when the Rust flavors start). Rust Android targets are all installed.
+- `cargo-ndk` 4.1.2 (`/home/user/.cargo/bin/cargo-ndk`, via `cargo binstall`; invoke as `cargo ndk`, never the binary
+  directly, which refuses by design). Proven recipe this session: `export
+  ANDROID_NDK_HOME=/var/tmp/tauri-vet-work/android-sdk/ndk/29.0.13846066` (an NDK r29-beta3; the vet-jc SDK has none)
+  then `cargo ndk -t arm64-v8a --platform 35 -o <jniLibs-dir> build --release`. Gotchas, all paid for already: the
+  API-level flag is `--platform` / `-P` (capital); lowercase `-p` is cargo's `--package`, which makes cargo-ndk panic
+  with "unknown package: 35", and its panic handler DUMPS THE WHOLE ENVIRONMENT (it printed unrelated shell secrets),
+  so the `build:rust:native` mise task guards on `ANDROID_NDK_HOME` and refuses to invoke cargo-ndk without it. The
+  NDK's aarch64 clang wrappers top out at `android35` (no `android36`), so the native API floor is 35 (the .so runs
+  fine on the device's 36, and a lower floor also helps the later minSdk bisect). NDK r28+ makes 16KB page alignment
+  the linker default, so the .so is 16KB-aligned with no extra flag (verified: every LOAD segment at 0x4000); the
+  old `-Wl,-z,max-page-size=16384` is unnecessary on this NDK. Rust Android targets are all installed.
 - Build matrix in use: AGP 9.2.1, Gradle 9.5.1, Kotlin 2.2.10, Compose BOM 2026.05.01, Media3 1.10.1, compileSdk
   37, targetSdk 36, minSdk 36. Full vet recipe context in
   `docs/decisions/kotlin-android-kopia-pcloud-vet-reports/vet-jetpack-compose.md` and `vet-android-runtime.md`.
@@ -377,9 +402,17 @@ The adversarial review confirmed two more real findings, deferred deliberately (
   Those flavors were never runnable; they are throwing stubs until the NDK work (per the ADR). When picking them up,
   either return a no-op `AudioEngine` (so the cross-flavor wiring runs end to end) or gate the service on
   `BuildConfig.FLAVOR`. Only the `media3` flavor runs today.
-2. Layer the hybrid and full-Rust variants behind the `AudioEngine` interface (UniFFI + cargo-ndk; mind 16 KB page
-   alignment `-Wl,-z,max-page-size=16384`; feed `content://` fds into symphonia via
-   `ContentResolver.openFileDescriptor`).
+2. Full-Rust variant. The hybrid variant is dropped as a deliverable (owner directive 2026-06-12: a Rust meter over
+   Media3-decoded PCM fixes only the meter, not the decode-bound cost, so it would not move performance enough; the
+   decode is the lever, which only the full-Rust variant pulls). Step 1, the native toolchain, is DONE (Task #10,
+   cargo-ndk -> 16KB-aligned arm64 .so -> JNI, verified on device). Remaining: (a) cross-compile libopus (the `opus`
+   crate compiles C) and symphonia for `aarch64-linux-android`, 16KB-aligned, and prove a real decode of a
+   `content://` fd on device (Task #11, the separable C-cross-compile risk); (b) port the desktop
+   `Source`/decode/opus/truepeak/queue logic into the native crate, replace the PipeWire/cpal output with
+   AAudio/AudioTrack, and implement the Kotlin `AudioEngine` seam over JNI (Task #12); (c) feed `content://` fds via
+   `ContentResolver.openFileDescriptor`. The bridge is raw JNI today (smoke test); raw JNI vs UniFFI for the real
+   engine interface is an OPEN decision (the ADR's UniFFI predates knowing whether UniFFI's JNA dependency behaves on
+   GrapheneOS), to settle when building the real surface.
 3. Verify each variant on device; Maestro for E2E; `androidx.test` pinned `>= 3.7.0`. Compare all metrics and let
    the user pick the winner.
 4. Finalization (owner directive, 2026-06-12): once the app is genuinely finished, bisect `minSdk` downward to the
@@ -430,8 +463,11 @@ persistable grants are per-applicationId, so each flavor needs its own grant.
   kills the Slint UI, but a Rust `.so` loaded via JNI is fine). Avoid All Files Access (scoped storage only).
 - The user values faithful porting and corrected under-surveying twice. Survey the desktop source before assuming
   behavior; the MediaStore default library is the one spot that does not map 1:1 to the desktop's folder model.
-- Kotlin files do not need the Rust `dum-dum-non-ts` comment convention (that is Rust-file-specific). General repo
-  rules apply: run everything through mise tasks, commit eagerly with scoped pathspecs, no AI-attribution trailers.
+- Kotlin files DO need the `dum-dum-non-ts` comment convention (an earlier handover claim that they were exempt was
+  wrong, owner-corrected 2026-06-12): the convention applies to every non-TS source file, Kotlin and Rust alike. The
+  comment pass is deferred to finalization (Task #14, alongside the minSdk bisect) and is NOT written during
+  development, so the existing Kotlin and Rust files deliberately still lack it. General repo rules apply: run
+  everything through mise tasks, commit eagerly with scoped pathspecs, no AI-attribution trailers.
 - Instrumented tests (`mise run //packages/android-app/music-player:test:instrumented` ->
   `connectedMedia3DebugAndroidTest`) run on the connected device via gradle's own adb, so pin `ANDROID_SERIAL` and
   hold the `/tmp/agent/adb-phone.lock` flock around the run to coordinate with concurrent sessions. CAVEAT: AGP
