@@ -249,14 +249,26 @@ shared `open_media_source` tail directly with an empty `Hint`; probe never hard-
 opens one real `content://media/...` track per format via `openFileDescriptor(uri,"r").use { pfd -> ...(pfd.fd) }`, and
 decodes through the dup path: on the GrapheneOS Pixel 6 it measured opus 0.033, flac 0.015, mp3 0.022 us/sample, test
 OK, no session PLAYING. This proves MediaProvider returns a seekable fd, symphonia probes/decodes/seeks over it, and
-the dup protocol does not double-close (any double-close would have been a hard SIGABRT, not a soft failure). SAF
-caveat: this on-device test exercised the MediaStore provider; the SAF document fd path (the preferred chosen-folder
-source) runs the IDENTICAL provider-agnostic Rust `open_borrowed_fd`, and the built-in ExternalStorageProvider returns
-a seekable regular-file fd for local documents on GrapheneOS-16 (verified by source-read of its forked
-MediaProvider/ExternalStorageProvider: Storage Scopes is access-control only and never converts a granted open into a
-pipe). A SAF tree grant cannot be created headlessly (it needs the `ACTION_OPEN_DOCUMENT_TREE` picker), so the SAF fd
-will be confirmed on-device incidentally once the engine plays from a real granted folder; the Rust fd-ownership and
-decode logic is already proven and is provider-independent.
+the dup protocol does not double-close (any double-close would have been a hard SIGABRT, not a soft failure).
+
+SAF caveat (stronger than mere code-identity): for a Plain track the SAF document fd is produced by the SAME code this
+test already exercised. `FileSystemProvider.openFileForRead` on an emulated/visible path (`/storage/emulated/0/Plain`,
+exactly where the library lives) delegates via `MediaStore.scanFile` -> `openTypedAssetFileDescriptor` -> MediaProvider
+(the on-device-tested path), and the only fallback is a `ParcelFileDescriptor.open(target, MODE_READ_ONLY)` regular
+file; both are seekable. The one device-specific danger, fd ownership / double-close, is provider-independent (the PFD
+fdsan-tags its fd in its own constructor regardless of which provider produced it) and is empirically proven by this
+test. A SAF tree grant cannot be created headlessly (it needs the `ACTION_OPEN_DOCUMENT_TREE` picker; no
+`pm grant`/`content` path self-grants a tree URI), so the SAF fd is confirmed incidentally once the engine plays a
+granted folder, not skipped.
+
+Engine invariant for #12 (the one place the test and the engine diverge): the dup stays read+seek-valid AFTER the
+original PFD closes, because the two fds share one open file description, so the file stays open until both close and
+fdsan never touches the untagged dup. The test decodes while the PFD is still open; the engine will decode on a worker
+AFTER Kotlin's `use{}` closes the PFD, which is correct precisely because of the shared OFD. So #12's `load()` must
+keep the dup-backed `Source` alive and must never lazily re-dup or stash the raw borrowed fd. Also fold into #12's
+verification list: this test exercises only `seek(0.0)` (rewind), so scrub-to-arbitrary-position must be confirmed
+during engine verification (not an fd-derisk gap, since the fd is a confirmed-seekable regular file, just a checklist
+item so it does not fall off).
 
 Background true-peak sweep (this session): `1867fda2` adds `PeakSweepWorker` (a WorkManager `CoroutineWorker`,
 periodic, charging-only), `PeakSweepScheduler` (unique periodic, `KEEP`-deduped, enqueued from `PlaybackService`
