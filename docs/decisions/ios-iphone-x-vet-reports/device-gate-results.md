@@ -561,6 +561,57 @@ number proves the JS engine executed the bundle, not merely that the process lau
   hand-built pattern above. Toolchain installed: Node, `@lynx-js/rspeedy`/`create-rspeedy`, xcodegen,
   CocoaPods, xcodeproj gem.
 
+### Qt: CULLED, cannot target the arm64 iOS simulator from prebuilt binaries
+
+Status: culled 2026-06-12 at the dual-target prerequisite, before any build was attempted. Owner rule
+(2026-06-12): "if we cannot get Qt to run on the arm64 simulator, cull Qt." Prebuilt Qt cannot, and the
+only escape hatch is independently blocked by the no-hand-written-C++ rule, so Qt is out.
+
+The dual-target blocker (decisive, empirical). Qt's prebuilt iOS kit ships static libraries for two
+platform-arch slices only: device `arm64` (Mach-O `LC_BUILD_VERSION` platform 2, iphoneos) and simulator
+`x86_64` (platform 7, iphonesimulator). There is no `arm64`-iphonesimulator slice. Confirmed by `lipo`
+plus `otool -l` on `libQt6Core.a` (Qt 6.5.3) and `QtCore.framework/QtCore` (Qt 6.12.0, newest): both fat
+binaries are `[x86_64 = sim, arm64 = device]`. The gap is structural and version-independent: two `arm64`
+slices (device and simulator) cannot coexist in one fat Mach-O (identical cputype plus subtype), which is
+the exact reason xcframeworks exist, and no Qt kit ships an `.xcframework` (none found anywhere in either
+kit). aqt exposes a single `ios` arch with no simulator variant. The M1's native iOS 26.5 simulator is
+`arm64`, so it cannot link any prebuilt Qt.
+
+Official corroboration (the community does not conclude Qt is impossible on the simulator, only that the
+native arm64 simulator is). Qt's own iOS docs state it verbatim: "The architecture of the Qt for iOS
+simulator libraries is x86_64, which means the iOS Simulator must run under Rosetta on Apple Silicon
+Macs" (doc.qt.io/qt-6/ios.html). The tracking ticket QTBUG-101276 "Support arm64 target for builds for
+iOS Simulator" is Open with no fix version (created 2022, still updated 2026-02). Qt's iOS maintainer Tor
+Arne Vestbø: "we structure our iOS libraries as fat libraries ... arm64 slice for device, and x86_64
+slice for simulator ... You can't have multiple arm64 slices in a single binary ... Once we move to
+xcframeworks we can build the simulator frameworks as universal x86_64+arm64 slices." The xcframework
+migration (Gerrit qt/qtbase change 515724) is still WIP and unmerged as of 2026-02. The owner's bar is
+the arm64 simulator, which the x86_64-under-Rosetta path does not meet, and Rosetta is itself on a clock
+(general-purpose Rosetta removed in macOS 28, fall 2027).
+
+The only path to the arm64 simulator is a from-source Qt cross-compile (stated as fact, not an offer):
+build qtbase plus qtdeclarative for `iphonesimulator`/`arm64`, a multi-hour build. One dated Oct-2025
+forum account confirms a qtbase arm64-sim build on M1 / macOS 26 / Qt 6.9.3, but no confirmed
+qtdeclarative/QML arm64-sim build account exists. This is disproportionate for a gate every other
+framework cleared with prebuilt tooling, and it does not rescue Qt anyway, because of the second wall.
+
+Second independent blocker: the no-hand-written-C++ rule. The only proven iOS path for a Rust-driven Qt
+app (CXX-Qt) uses a developer-authored C++ `main.cpp`. The one working iOS project (simsapa-ng) and KDAB
+cxx-qt issue #1250 are both device-only, both ride on unmerged fork patches to `qt-build-utils` (a `.prl`
+path fix, a `parse_cflags` suffix strip, `flag_if_supported` to `flag`, lipo thinning) that no longer
+apply to current upstream, and both create `QGuiApplication`/`QQmlApplicationEngine` in C++. The
+Rust-`main` path that would satisfy the rule has zero iOS evidence and likely cannot emit a deployable
+bundle (Info.plist, signing, `UIApplicationMain` bootstrap) without Qt's CMake/Xcode integration. So Qt
+fails two of the owner's hard rules at once (arm64 simulator, and no hand-written C/C++), with the device
+leg itself unproven except via unmerged fork code.
+
+Scope note (do not overclaim). No Qt gate app was built or rendered. Qt ships an arm64-device slice
+(platform 2, deploys iOS 14+ on 6.5.3) and would plausibly render on the iPhone X device leg, but that
+was never built; Qt is culled upstream of any render, at the dual-target prerequisite. The finding is "no
+prebuilt arm64-sim slice," not "Qt fails on the device." Unlike Slint (an AMFI/iOS-17-API death), this is
+a toolchain-packaging limit. The downloaded Qt 6.5.3 device and desktop kits under
+`/Volumes/MacData/ios-vet/qt` can be removed.
+
 ## Music-player iOS port (the Slint path is blocked on iOS 16.7)
 
 The music-player is Slint, so the natural port would reuse the UI. But Slint does not run on the
@@ -601,7 +652,8 @@ Obj-C shim + dual-triple XCFramework), and NativeScript (rank 7, jitless V8 10.3
 iPhone X, render both legs, Rust crossing PASS with zero hand-written native code), and Lynx (rank 8,
 native UIKit `LynxView`, jitless PrimJS/JSC survives AMFI on the iPhone X, render both legs, Rust crossing
 PASS via a pure-ObjC `LynxModule` shim), all render-verified, above. Slint (rank 1) was gated and FAILED
-(disqualified, above).
+(disqualified, above), and Qt (rank 9) was CULLED (no prebuilt arm64-simulator slice, and the only
+arm64-sim path also breaks the no-hand-written-C++ rule, above).
 
 Dual-target status (owner directive 2026-06-12, see the gate mechanism): a PASS requires render on BOTH
 the device and the latest simulator from one codebase. The retroactive sweep is complete: Compose
@@ -644,14 +696,13 @@ no-crash runtime, not by launch success alone:
   Rust crossing renders "Rust: 720 / CROSSING OK" on both legs via a pure-Objective-C `LynxModule` `.m`
   shim (not the `.mm` originally assumed) linking the Rust staticlib through the `rust-gate` local pod.
   Toolchain installed: Node, `@lynx-js/rspeedy`/`create-rspeedy`, xcodegen, CocoaPods, xcodeproj gem.
-- Qt (rank 9, needs-device). Hard constraint: pin Qt 6.5 LTS (iOS 14+). Qt 6.11 sets minimum iOS 17;
-  the iPhone X (A11) caps at iOS 16.7, so a 6.11 binary will not install. Confirm a QML screen
-  animates (V4 bytecode interpreter, no execmem kill) and a linked Rust value prints. Toolchain: Qt
-  for iOS prebuilt static libs (qt-unified) + CMake. Owner constraint (2026-06-12): no C or C++ is to
-  be written anywhere in this vet, including throwaway experiments, so the Qt gate must drive Qt from
-  Rust bindings (CXX-Qt or qmetaobject-rs), not a hand-written C++ shell. The app entry point and any
-  QML-backing objects are Rust; the gate question becomes whether the Rust-Qt binding builds against the
-  Qt 6.5 static iOS libs and renders on 16.7.
+- Qt (rank 9, needs-device): CULLED 2026-06-12, see the "Qt: CULLED" section above. Prebuilt Qt has no
+  arm64-iphonesimulator slice in any version (device arm64 plus simulator x86_64 only; confirmed by
+  `lipo`/`otool` on 6.5.3 and 6.12.0, corroborated by QTBUG-101276 and the Qt iOS docs), so it cannot
+  render on the M1's native arm64 iOS 26.5 simulator and fails the dual-target prerequisite. The only
+  arm64-sim path is a from-source Qt build, which independently breaks the no-hand-written-C++ rule (the
+  sole proven iOS CXX-Qt path uses a developer-authored C++ `main.cpp` and unmerged fork patches). Fails
+  two owner hard rules; no gate build was attempted.
 
 Appended 2026-06-12 (owner), gated after the cross-platform set above and before the deferred web block:
 

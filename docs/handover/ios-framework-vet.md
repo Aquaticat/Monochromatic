@@ -19,8 +19,13 @@ build snags recorded in `device-gate-results.md`: per-file `-Werror` vs Xcode 26
 (Podfile `post_install` appends `-Wno-error`); xcodegen's `framework:` dependency does not link a
 static-lib xcframework through CocoaPods (link the Rust lib via the `rust-gate` pod instead); and the
 Xcode 16+ debug-dylib split means an `nm` check on a Debug build must target `*.debug.dylib`, not the thin
-launcher. Remaining native and managed gates: Qt; then the owner-appended set Dioxus, SnapKit, UIKit, SwiftUI;
-then the six WKWebView frameworks, deferred to the very end per owner. Owner constraints (2026-06-12): (a) no C or C++
+launcher. Qt CULLED 2026-06-12: no prebuilt arm64-iphonesimulator slice in any Qt version (device arm64
+plus simulator x86_64 only; `lipo`/`otool` on 6.5.3 and 6.12.0, corroborated by QTBUG-101276 Open and the
+Qt iOS docs), so it cannot render on the M1's native arm64 iOS 26.5 simulator; the only arm64-sim path is
+a from-source Qt build that independently breaks the no-hand-written-C++ rule (sole proven iOS CXX-Qt path
+uses a developer-authored C++ `main.cpp` on unmerged fork patches). Fails two owner hard rules; details in
+`device-gate-results.md`. Remaining native and managed gates: the owner-appended set Dioxus, SnapKit,
+UIKit, SwiftUI; then the six WKWebView frameworks, deferred to the very end per owner. Owner constraints (2026-06-12): (a) no C or C++
 anywhere, even experiments; Rust-crossing checks use Rust binding crates or a C-ABI/Swift boundary, and
 Qt is driven from Rust bindings (CXX-Qt/qmetaobject-rs); (b) every framework must render on BOTH the
 device and the latest iOS simulator (iOS 26.5) from one codebase. Retroactive sweep complete: Compose,
@@ -161,7 +166,9 @@ headlessly. (2) Rust-linking apps must build the Rust core for both `aarch64-app
   (Skia), removed after, the app ships Impeller. Not a Flutter limit (GUI sim and device render fine).
   Note: a plugin-less Flutter app has no Podfile, so the CocoaPods path is still unproven (prove it via
   the React Native gate).
-- Slint (rank 1): DISQUALIFIED. See next section.
+- Slint (rank 1): DISQUALIFIED (iOS-17 API death). See next section.
+- Qt (rank 9): CULLED (no prebuilt arm64-iphonesimulator slice; fails dual-target and the no-C++ rule).
+  See the "Remaining gates" list and `device-gate-results.md`.
 - .NET trio (rank 3, MAUI/Avalonia/Uno): PASS on both legs (device + sim), all four parts gated on both.
   Simulator: `dotnet build -c Debug -f net10.0-ios -p:RuntimeIdentifier=iossimulator-arm64`, run on
   iPhone 17 Pro / iOS 26.5; substrate rendered "Rust FFI returns: 720", MAUI/Avalonia/Uno drew their UIs.
@@ -259,7 +266,9 @@ Each must be render-verified (not just launched), and each adds only its own SDK
 
 .NET trio (rank 3), Compose Multiplatform (rank 5), React Native (rank 6, including its Rust crossing), and
 NativeScript (rank 7, including its Rust crossing), and Lynx (rank 8, including its Rust crossing) are all
-DONE (FULL PASS, above). The next gate is Qt (rank 9). Remaining, in order:
+DONE (FULL PASS, above). Qt (rank 9) is CULLED (no prebuilt arm64-iphonesimulator slice in any version, so
+it cannot render on the M1's native arm64 iOS 26.5 simulator, and the only arm64-sim path breaks the no-C++
+rule; see below and `device-gate-results.md`). The next gate is Dioxus. Remaining, in order:
 
 Owner constraint (2026-06-12): no C or C++ anywhere, including throwaway experiments. The Rust-crossing
 checks below that were written as C++/`.mm` glue must instead use Rust binding crates, a C-ABI boundary
@@ -305,9 +314,13 @@ Rust core for both `aarch64-apple-ios` and `aarch64-apple-ios-sim` and link by R
   `COMPILER_FLAGS`); xcodegen's `framework:` dep does not link a static-lib xcframework through CocoaPods
   (use the `rust-gate` pod + `-u _rust_gate_answer`); and the Xcode 16+ `ENABLE_DEBUG_DYLIB` split means a
   Debug-build `nm` check must target `LynxGate.debug.dylib`, not the thin launcher.
-- Qt (rank 9, needs-device): pin Qt 6.5 LTS (6.11 needs iOS 17, will not install on the iPhone X);
-  QML V4 interpreter renders; the app is driven from Rust bindings (CXX-Qt or qmetaobject-rs), not a C++
-  shell, per the no-C/C++ constraint.
+- Qt (rank 9, needs-device): CULLED 2026-06-12. No prebuilt Qt kit ships an arm64-iphonesimulator slice
+  (device arm64 plus simulator x86_64 only, confirmed by `lipo`/`otool` on 6.5.3 and 6.12.0; QTBUG-101276
+  Open; the Qt iOS docs say the simulator libs are x86_64 and must run under Rosetta on Apple Silicon), so
+  Qt cannot render on the M1's native arm64 iOS 26.5 simulator and fails the dual-target prerequisite. The
+  only arm64-sim path is a from-source Qt cross-compile, which independently breaks the no-hand-written-C++
+  rule (the sole proven iOS CXX-Qt path uses a developer-authored C++ `main.cpp` on unmerged fork patches).
+  Fails two owner hard rules; no gate build attempted. Full reasoning in `device-gate-results.md`.
 - Owner-appended set (gate after the above, before the web block): Dioxus (Rust UI; on iOS renders via
   `wry`/WKWebView driven by AOT Rust, the substantive one, needs `dx` CLI), SnapKit (UIKit Auto Layout
   DSL via SPM, trivial), UIKit (pure native, trivial), SwiftUI (already render-proven by the HelloDevice
