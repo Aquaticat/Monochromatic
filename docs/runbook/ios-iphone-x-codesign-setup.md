@@ -126,6 +126,70 @@ still expires in 7 days like any free-team build; rebuild and reinstall it with 
 keep it launchable, and if trust ever drops anyway, re-approve once in Settings. This removes the
 churn-induced blocks, not every possible block.
 
+## Black-box UI automation on the device (WebDriverAgent)
+
+Status: PARTIAL. Every step up to the XCTest session is proven on the iPhone X; the final on-device drive is
+blocked by a missing iOS 16.7 device-support image (Xcode 26 ships only up to 16.4). Full detail and evidence:
+`../decisions/ios-iphone-x-vet-reports/vet-ui-automation.md`. The simulator leg (next subsection) is unblocked
+and complete.
+
+WebDriverAgent (WDA) is the iOS black-box-automation primitive that both Appium and Maestro wrap. On the
+simulator it builds without signing; on the device it must be signed like any app, then launched as an XCTest
+runner. Build, sign, and install it with the same keychain mechanism as any vet app, plus a new provisioned
+app id (minted headlessly by `-allowProvisioningUpdates`, the same autonomous path as the anchor app):
+
+```sh
+# WDA project ships inside the appium xcuitest driver
+WDA=~/.appium/node_modules/appium-xcuitest-driver/node_modules/appium-webdriveragent
+# (pipe PW, unlock vet keychain, add to search list as in "Build and run any vet app", then:)
+xcodebuild -project "$WDA/WebDriverAgent.xcodeproj" -scheme WebDriverAgentRunner \
+  -destination 'generic/platform=iOS' -configuration Debug -derivedDataPath <dd> \
+  -allowProvisioningUpdates \
+  PRODUCT_BUNDLE_IDENTIFIER=dev.monochromatic.iosvet.wda DEVELOPMENT_TEAM=HWLVAKDV4F \
+  CODE_SIGN_STYLE=Automatic OTHER_CODE_SIGN_FLAGS="--keychain $KC" build-for-testing
+# (restore search list to login-only)
+ideviceinstaller -n install <dd>/Build/Products/Debug-iphoneos/WebDriverAgentRunner-Runner.app
+```
+
+This ends `** TEST BUILD SUCCEEDED **` and installs `dev.monochromatic.iosvet.wda.xctrunner`, signed by the vet
+identity. Launching the XCTest runner needs a tool that drives testmanagerd over usbmux, not `idevicedebug`
+(which only runs plain apps). Two work and both see the wireless device: `go-ios` (Go,
+`go install github.com/danielpaulus/go-ios@latest`) and `tidevice` (Python, `pip install tidevice`):
+
+```sh
+go-ios runwda --bundleid=dev.monochromatic.iosvet.wda.xctrunner \
+  --testrunnerbundleid=dev.monochromatic.iosvet.wda.xctrunner \
+  --xctestconfig=WebDriverAgentRunner.xctest --udid=$UDID
+# or: python3 -m tidevice -u $UDID xctest -B dev.monochromatic.iosvet.wda.xctrunner
+iproxy 8100:8100 -u $UDID            # forward WDA's port to the host
+curl -s http://127.0.0.1:8100/status # WDA serves once its XCTest session is up
+```
+
+The blocker (owner-resolvable): on this iPhone X (16.7.16) the runner launches with the correct identity and a
+real pid, then exits without binding 8100, because Xcode 26 carries device-support images only to iOS 16.4. The
+16.4 image is enough for plain app debug (every render gate works) but not for the XCTest application-test host:
+`xcodebuild test-without-building` reports `build number "" incompatible with DVTBuildVersion` and
+`Logic Testing Unavailable`. To close it, place the iOS 16.7 device-support image (extract from an Xcode 15.x;
+the common community archive `iGhibli/iOS-DeviceSupport` stops at 16.4) under
+`~/Library/Developer/Xcode/iOS DeviceSupport/`, then re-run the launch above. Wireless works for install and
+process-launch, but `xcodebuild`/`xctrace`/`devicectl` only see the device over USB, so wire it for any
+xcodebuild-driven step.
+
+### Simulator leg (unblocked, signing-free)
+
+On a booted simulator WDA builds and launches with no signing. Drive any app with Appium (XCUITest driver) or
+Maestro:
+
+```sh
+appium server -p 4723 --relaxed-security                    # first session builds WDA for the sim
+xcrun simctl install <sim-udid> <app>.app                   # gate apps share one bundle id, so install per app
+# Appium: POST /session {bundleId, forceAppLaunch:true}; GET /session/:id/source for the a11y tree
+maestro --device <sim-udid> test flow.yaml                  # declarative; matches by visible label
+```
+
+The first Appium session triggers a one-time `xcodebuild` of WDA (do not set `usePrebuiltWDA` on that run). The
+captured `/source` trees double as the headless half of the VoiceOver evidence.
+
 ## Auto-renew of the 7-day profile
 
 Status: DONE

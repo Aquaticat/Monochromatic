@@ -186,11 +186,52 @@ Eight element trees were captured (`*.sim.xml`): capgate (Capacitor), cordovagat
 
 ## 4. Real-device (iPhone X) validation
 
-Status: deferred to the end of the vet by owner instruction, then recorded here. The simulator builds WDA
-without code signing; the device requires a signed WebDriverAgent (its own provisioned bundle id), which is the
-one iOS-specific hurdle the simulator run does not exercise.
+Status: the entire device pipeline up to the XCTest session is proven on the real iPhone X; the final black-box
+drive is blocked by one environmental gap (no iOS 16.7 device-support image ships with Xcode 26), characterized
+precisely below. Deferred to the end of the vet by owner instruction.
 
-(Filled in the device pass; see the trailing device section / `device-gate-results.md`.)
+What is proven on the device (each over SSH, no owner GUI action):
+
+- WebDriverAgent app-id provisioned headlessly. A fresh bundle id `dev.monochromatic.iosvet.wda` was minted
+  with `-allowProvisioningUpdates` over SSH, the same autonomous path that minted the `anchor` app-id earlier
+  in the vet. So a new provisioned app-id is not an owner step.
+- WDA built and signed for the device. `xcodebuild ... -scheme WebDriverAgentRunner -destination
+  'generic/platform=iOS' -allowProvisioningUpdates OTHER_CODE_SIGN_FLAGS=--keychain <vet.keychain>
+  build-for-testing` ended `** TEST BUILD SUCCEEDED **`, producing `WebDriverAgentRunner-Runner.app` signed by
+  the vet identity (`Apple Development: ...`, team HWLVAKDV4F), bundle id `dev.monochromatic.iosvet.wda.xctrunner`.
+- WDA installed on the iPhone X. `ideviceinstaller -n install` over wifi completed, and the runner shows in the
+  device app list.
+- WDA process launched on the device. Both `go-ios runwda` and `tidevice xctest` launched the runner (correct
+  vet `SignIdentity`, a real pid), over wifi and again over USB. go-ios sees the wireless device over usbmux
+  (`deviceList:[...]`), so even the wireless transport reaches it.
+
+The one ungated step: the XCTest test-host (testmanagerd) session never engages, so WDA's HTTP server never
+binds 8100. The runner process launches then exits within seconds with no "ServerURLHere" line and an empty
+`/status`, identically under both go-ios and tidevice (two independent launchers failing the same way points
+away from the launcher). Appium's own paths confirm the cause from the other side:
+
+- `usePreinstalledWDA` is rejected outright: "only supported on iOS/tvOS 17.0 and newer ... WebDriverAgent v13
+  no longer uses the legacy XCTest launch path that was required on iOS 16 and below." The iPhone X is 16.7.
+- With the device wired (owner connected USB, which made it visible to `xcodebuild`/`xctrace` for the first
+  time, it is invisible to them over wifi), `xcodebuild test-without-building` failed with
+  `DVTDeviceOperation: Encountered a build number "" that is incompatible with DVTBuildVersion` and
+  `Cannot test target "WebDriverAgentRunner" on "iPhone X": Logic Testing Unavailable`.
+
+Root cause: Xcode 26 ships device-support images only up to iOS 16.4 (`15.0 15.2 15.4 15.5 16.0 16.1 16.4`),
+and this device is 16.7.16 (20H392). The codesign runbook symlinks the 16.4 image in for 16.7, which is enough
+for plain app debug and launch (so every render gate and the WDA process-launch succeed) but not for the XCTest
+application-test host: Xcode cannot version-match the device (the empty build number), so it cannot stand up the
+test session WebDriverAgent depends on. The widely-used community device-support archive
+(`iGhibli/iOS-DeviceSupport`) also tops out at 16.4, so the 16.7 image is not trivially sourced; it ships in
+Xcode 15.x.
+
+Close-out path (owner resource, not an autonomous step): install the iOS 16.7 device-support image (extract it
+from an Xcode 15.x, or run the black-box device drive from a Mac whose Xcode has 16.7 support). With that image
+present, the same pre-installed, vet-signed WDA launches its server and the device drive proceeds exactly as the
+simulator drive did. This is the only piece, and it is an Xcode-version/device-support gap, not a framework or a
+signing limitation; the signing, provisioning, build, install, and launch are all proven on the real device
+above. Until then, the simulator leg fully covers the addressability matrix, both external drivers, and the WDA
+substrate; the device's rendering of all 18 frameworks is already proven separately in `device-gate-results.md`.
 
 ## 5. Comparison and when to prefer each
 

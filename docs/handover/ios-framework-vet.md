@@ -1,5 +1,24 @@
 # iOS UI/app-shell framework vet for the iPhone X
 
+Status as of 2026-06-13 (fifth handover): the testing-infrastructure axis is now run to Android depth, not
+just enumerated, in two new reports under `../decisions/ios-iphone-x-vet-reports/`. `vet-ui-automation.md`:
+black-box e2e is XCUITest/WebDriverAgent (the iOS primitive, the UiAutomator analog) wrapped by Appium 3.5.0
+and Maestro 2.6.1; both drove a Flutter counter 0 to 2 on the iOS 26.5 simulator, and per-rendering-model
+accessibility-tree dumps were captured (WebView projects `XCUIElementTypeWebView`; native UIKit projects
+native labels; self-drawn Skia differs, Flutter exposes roles like Header/Button, Compose MP exposes text).
+`vet-test-frameworks.md`: Rust unit plus proptest pass on the `aarch64-apple-ios-sim` target (run in the sim
+via `simctl spawn`), cargo-fuzz ran 34M executions clean, cargo-mutants caught 22/24 in a bounded Mac Podman
+container (2 equivalent mutants), kotlin.test plus kotest-property pass on `iosSimulatorArm64`, and fast-check
+property plus shrinking pass for the JS/TS layer; the Kotlin/Native mutation gap (PITest is JVM-only) is
+recorded, Stryker is cited (owner-vetted, not re-run). On the real iPhone X, WebDriverAgent was provisioned
+(new app-id, headless, like the anchor), built, signed (vet identity), installed, and launched (go-ios and
+tidevice, wireless and wired); the only ungated step is the XCTest test-host session, blocked because Xcode 26
+ships no iOS 16.7 device-support image (only up to 16.4), an Xcode-version gap, not a signing or framework
+limit. The owner wiring the device made it visible to xcodebuild and isolated this as the sole blocker; the
+close-out is sourcing the 16.7 device-support image. Work ran serially on the one Mac (single device,
+keychain, simulator); mutation ran in the Mac's own Podman per owner directive. Runbook updated with the
+WebDriverAgent device procedure.
+
 Status as of 2026-06-12 (fourth handover): signing path DONE; source-audit fan-out DONE (16 reports +
 synthesis); device gating COMPLETE (18 frameworks render-verified both legs, Slint disqualified and Qt
 culled, 20 examined: the 16-framework source-audit set minus Slint and Qt, plus the 4 owner-appended gates); the stage-2 capabilities the synthesis flagged as uncertain are now device-proven framework-independently in

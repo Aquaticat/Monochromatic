@@ -463,9 +463,11 @@ disqualified on this device), and the framework-specific in-process UI-test and 
   native UIKit, self-drawn Skia). `ios-iphone-x-vet-reports/vet-test-frameworks.md`: Rust unit plus proptest
   pass on the `aarch64-apple-ios-sim` target, cargo-fuzz ran 34M executions clean, cargo-mutants caught 22/24
   in a Mac Podman container (2 equivalent mutants), kotlin.test plus kotest-property pass on
-  `iosSimulatorArm64`, and fast-check property plus shrinking pass for the JS/TS layer. Real-device WDA
-  signing is the one deferred piece. In-process UI test stays framework-specific (runComposeUiTest,
-  `flutter_test`, `XCUIApplication`).
+  `iosSimulatorArm64`, and fast-check property plus shrinking pass for the JS/TS layer. On the real iPhone X,
+  WebDriverAgent was provisioned, built, signed (vet identity), installed, and launched headlessly; the only
+  ungated step is the XCTest test-host session, blocked because Xcode 26 ships no iOS 16.7 device-support image
+  (only up to 16.4), an Xcode-version gap, not a signing or framework limit (`vet-ui-automation.md`, device
+  section). In-process UI test stays framework-specific (runComposeUiTest, `flutter_test`, `XCUIApplication`).
 
 ## Cross-cutting iOS constraints (any framework)
 
