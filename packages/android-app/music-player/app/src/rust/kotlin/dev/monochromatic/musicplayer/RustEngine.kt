@@ -69,7 +69,10 @@ class RustEngine(context: Context) : AudioEngine {
 
     override fun load(uri: String, play: Boolean) {
         Log.i(LOG_TAG, "RustEngine.load ${uri.substringAfterLast('/')} play=$play")
-        endedHandled = false
+        // Do NOT reset endedHandled here: the worker clears native `ended` asynchronously, so an
+        // eager reset would let a poll between this load and that clear see the OLD ended=true with
+        // endedHandled=false and fire onTrackEnded a second time (a skipped track). The falling-edge
+        // rearm in poll() (endedHandled clears only when native `ended` actually clears) is correct.
         val descriptor: ParcelFileDescriptor? = openDescriptor(uri)
         if (descriptor == null) {
             Log.w(LOG_TAG, "could not open a descriptor for $uri")

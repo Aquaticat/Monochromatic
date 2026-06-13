@@ -30,7 +30,7 @@ class RustEngineTest {
     fun playsPausesSeeksThroughRustEngine() {
         val instrumentation = InstrumentationRegistry.getInstrumentation()
         val context = instrumentation.targetContext
-        val uri: Uri? = firstAudioUri(instrumentation)
+        val uri: Uri? = audioUris(instrumentation, 1).firstOrNull()
         assumeTrue("no indexed MediaStore audio (grant READ_MEDIA_AUDIO)", uri != null)
 
         val engineRef = AtomicReference<RustEngine>()
@@ -81,22 +81,65 @@ class RustEngineTest {
     }
 
     /**
-     * First indexed music track as a `content://` URI, or null when nothing is indexed.
+     * Drive the production auto-advance chain on device: a [PlayerController] over a [RustEngine] plays
+     * a track, is seeked to just before its end so it finishes quickly, and must advance to exactly the
+     * next track (a single advance, not a double). This exercises the novel pull-based adaptation, the
+     * poller turning native `ended` into `onTrackEnded` and the controller loading the next track, which
+     * a direct-engine test cannot reach. Volume 0, so silent. Needs at least three indexed tracks.
+     */
+    @Test
+    fun autoAdvancesOnceOnNaturalEnd() {
+        val instrumentation = InstrumentationRegistry.getInstrumentation()
+        val context = instrumentation.targetContext
+        val uris = audioUris(instrumentation, ADVANCE_TRACK_COUNT)
+        assumeTrue("need >= $ADVANCE_TRACK_COUNT indexed tracks", uris.size >= ADVANCE_TRACK_COUNT)
+        // Same folder, so all three share one page: under ShuffleMode.OFF the playback scope is the
+        // current page, so a natural end advances through the page (a different folder per track would
+        // make three one-track pages that each loop on themselves).
+        val tracks = uris.mapIndexed { index, uri -> Track(uri = uri.toString(), displayPath = "probe/track$index.flac") }
+
+        val controllerRef = AtomicReference<PlayerController>()
+        instrumentation.runOnMainSync {
+            val controller = PlayerController(RustEngine(context))
+            controller.setVolume(0.0f)
+            controller.openLibrary(tracks)
+            controller.playIndex(0)
+            controllerRef.set(controller)
+        }
+
+        Thread.sleep(SETTLE_MS)
+        val firstDuration: Double = onMain(instrumentation) { controllerRef.get().durationSec() }
+        Log.i(BENCH_TAG, "auto-advance: track0 dur=$firstDuration")
+        assumeTrue("track0 duration unknown", firstDuration > MIN_SEEKABLE_SECONDS)
+
+        instrumentation.runOnMainSync { controllerRef.get().seek(firstDuration - NEAR_END_SECONDS) }
+        Thread.sleep(ADVANCE_WAIT_MS)
+        val scopeIndex: Int? = onMain(instrumentation) { controllerRef.get().currentScopeIndex() }
+        Log.i(BENCH_TAG, "auto-advance: after natural end scopeIndex=$scopeIndex")
+        instrumentation.runOnMainSync { controllerRef.get().release() }
+
+        assertTrue("expected a single advance to scope index 1, got $scopeIndex", scopeIndex == 1)
+    }
+
+    /**
+     * Up to [count] indexed music tracks as `content://` URIs, in MediaStore order.
      *
      * @param instrumentation Supplies the target context's content resolver.
-     * @return Playable MediaStore URI for the first track, or null.
+     * @param count Maximum number of URIs to return.
+     * @return Playable MediaStore URIs (possibly fewer than [count] when the library is small).
      */
-    private fun firstAudioUri(instrumentation: Instrumentation): Uri? {
+    private fun audioUris(instrumentation: Instrumentation, count: Int): List<Uri> {
         val resolver = instrumentation.targetContext.contentResolver
         val collection = MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL)
         val projection = arrayOf(MediaStore.Audio.Media._ID)
+        val uris = mutableListOf<Uri>()
         resolver.query(collection, projection, "${MediaStore.Audio.Media.IS_MUSIC} != 0", null, null)?.use { cursor ->
-            if (cursor.moveToFirst()) {
-                val idColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID)
-                return ContentUris.withAppendedId(collection, cursor.getLong(idColumn))
+            val idColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID)
+            while (cursor.moveToNext() && uris.size < count) {
+                uris.add(ContentUris.withAppendedId(collection, cursor.getLong(idColumn)))
             }
         }
-        return null
+        return uris
     }
 
     /**
@@ -131,5 +174,14 @@ class RustEngineTest {
 
         /** Only seek-test tracks long enough that mid-point seeking is meaningful. */
         private const val MIN_SEEKABLE_SECONDS: Double = 4.0
+
+        /** Tracks the auto-advance test loads; >= 3 so a double-advance bug would overshoot index 1. */
+        private const val ADVANCE_TRACK_COUNT: Int = 3
+
+        /** How far before the end to seek, so the track finishes within a couple of poll cycles. */
+        private const val NEAR_END_SECONDS: Double = 0.4
+
+        /** Wait for the natural end to be detected and the advance to land (several 200 ms polls). */
+        private const val ADVANCE_WAIT_MS: Long = 2500L
     }
 }

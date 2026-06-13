@@ -110,12 +110,14 @@ fn handle_load(state: &mut WorkerState, control: &Arc<Control>, file: std::fs::F
         .store((spec.duration_secs * MILLIS_PER_SEC) as u64, Ordering::Release);
     control.decode_done.store(false, Ordering::Release);
     control.ended.store(false, Ordering::Release);
+    // Set the gate before the stream opens, so the new stream's first callback reads the right play
+    // state (a load-paused track must not briefly sound at the previous track's state).
+    control.playing.store(play, Ordering::Release);
     state.source = Some(source);
     if reconfigure_output(state, control, spec.rate, spec.channels).is_err() {
+        control.playing.store(false, Ordering::Release);
         state.source = None;
-        return;
     }
-    control.playing.store(play, Ordering::Release);
 }
 
 /// Reposition the loaded source and rebuild the output, which flushes the ring (its
