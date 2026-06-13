@@ -255,11 +255,17 @@ Note: concurrent sessions (an iOS vet) interleave their own commits on `main`; t
   behavior is the exact unknown to avoid. Callbacks are kept pull-based (the UI already polls position) so no
   native->JVM callback machinery (`AttachCurrentThread`, global refs, cached method ids) is needed. Decided
   2026-06-12 (advisor-endorsed); settle the final shape when building the engine surface (Task #12).
-- Audio output (full-Rust variant): build BOTH an AAudio (native NDK) backend and a cpal backend, measure output
-  latency on device, and keep the lower-latency one (owner directive 2026-06-12, the same measure-and-pick ethos as
-  the variants themselves). The latency derisk is silent: write zero-filled buffers and read each API's reported
-  presentation latency, so it does not disturb residents and the resident-noise rule is not engaged until real audio
-  plays in the engine.
+- Audio output (full-Rust variant): raw `ndk::audio` (the `ndk` 0.9 crate, `audio` feature), pure-Rust AAudio, no
+  C/C++ build, opens a low-latency output stream (`AudioPerformanceMode::LowLatency`) with zero JNI; `libaaudio` is a
+  sysroot system lib (`#[link(name = "aaudio")]`), not bundled. Decided 2026-06-12 AFTER research found cpal and
+  AAudio are the SAME engine on this device (cpal 0.16+ wraps `ndk::audio`; Oboe also resolves to AAudio at API 27+),
+  so a latency bake-off would only show near-parity; the owner chose the thinnest pure-Rust path and dropped the cpal
+  build (the earlier build-both-and-measure directive is superseded by that finding). Latency is still measured on
+  device, silently: write zero-filled buffers and read `AAudioStream_getTimestamp`, latency = (framesWritten -
+  framePosition) / sampleRate, so the resident-noise rule is not engaged until real audio plays. Gotcha: `ndk`'s
+  `AudioStream` is neither `Send` nor `Sync`, so wrap it in `Arc<Mutex<...>>` (with a manual `unsafe impl Send`) if it
+  crosses threads, exactly as cpal does. cpal alternative (NOT chosen) would have been 0.18.1 + the `realtime` feature
+  (default cpal does not request LowLatency on Android).
 - Placement: `packages/android-app/music-player/` (new category). Identity: `dev.monochromatic.musicplayer`.
 - minSdk 36 (raised from 26 on 2026-06-12 by owner directive: single-target app for the owner's Pixel 6, so no
   older-release support and modern APIs without compat guards), compileSdk 37, targetSdk 36, JDK 21, AGP 9.x,
