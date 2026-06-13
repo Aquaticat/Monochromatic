@@ -35,6 +35,8 @@ object NativeBridge {
 
     external fun nativeEngineSetVolume(handle: Long, volume: Float)
 
+    external fun nativeEngineSetNormalizationGain(handle: Long, gain: Float)
+
     external fun nativeEnginePositionSec(handle: Long): Double
 
     external fun nativeEngineDurationSec(handle: Long): Double

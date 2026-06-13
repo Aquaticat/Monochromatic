@@ -269,6 +269,21 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEng
     engine_ref.set_volume(volume);
 }
 
+/// Set the per-track true-peak normalization gain (linear, 0.0..1.0), applied with the volume.
+#[no_mangle]
+pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEngineSetNormalizationGain<'local>(
+    _env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    handle: jlong,
+    gain: jfloat,
+) {
+    if handle == 0 {
+        return;
+    }
+    let engine_ref = unsafe { &mut *(handle as *mut engine::Engine) };
+    engine_ref.set_normalization_gain(gain);
+}
+
 /// Current playback position in seconds (0.0 when nothing is loaded).
 #[no_mangle]
 pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEnginePositionSec<'local>(

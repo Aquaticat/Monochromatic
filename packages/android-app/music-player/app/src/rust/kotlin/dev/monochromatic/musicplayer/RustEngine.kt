@@ -12,7 +12,14 @@ import android.os.Handler
 import android.os.Looper
 import android.os.ParcelFileDescriptor
 import android.util.Log
+import dev.monochromatic.musicplayer.core.normalizationGain
 import java.io.File
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 
 /**
  * The full-Rust [AudioEngine]: a thin Kotlin facade over the native engine (`engine.rs`), which
@@ -48,6 +55,14 @@ class RustEngine(context: Context) : AudioEngine {
 
     /** Natural-end callback, fired by the poller once per ended track. */
     private var onTrackEnded: (() -> Unit)? = null
+
+    /** Off-thread scope for resolving the per-track normalization gain (cache hit or native measure);
+     * cancelled in release so a pending measure cannot outlive the engine. */
+    private val resolveScope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+
+    /** Bumped each load; a resolved gain is applied only when its load is still current, so a measure
+     * that finishes after the user skipped ahead cannot retag the new track. Main-thread only. */
+    private var loadGeneration: Int = 0
 
     /** Last play state the poller reported, to edge-trigger [onPlayingChanged]. */
     private var lastPlaying: Boolean = false
@@ -110,6 +125,9 @@ class RustEngine(context: Context) : AudioEngine {
 
     override fun load(uri: String, play: Boolean) {
         Log.i(LOG_TAG, "RustEngine.load ${uri.substringAfterLast('/')} play=$play")
+        // Reset to unity so the new track never plays at the previous track's normalization gain.
+        NativeBridge.nativeEngineSetNormalizationGain(handle, UNITY_GAIN)
+        val generation: Int = ++loadGeneration
         // Do NOT reset endedHandled here: the worker clears native `ended` asynchronously, so an
         // eager reset would let a poll between this load and that clear see the OLD ended=true with
         // endedHandled=false and fire onTrackEnded a second time (a skipped track). The falling-edge
@@ -125,7 +143,48 @@ class RustEngine(context: Context) : AudioEngine {
         val result: Int = descriptor.use { NativeBridge.nativeEngineLoad(handle, it.fd, startPlaying) }
         if (result != 0) {
             Log.w(LOG_TAG, "native load failed (code $result) for $uri")
+            return
         }
+        // Resolve the normalization gain off-thread (cache hit, else native measure) and apply it back
+        // on the main thread, only when this load is still current, so a slow measure that finishes
+        // after the user skipped ahead cannot retag the newer track. The track plays at unity until the
+        // gain lands (a cache hit lands almost immediately; a miss after a brief level correction).
+        resolveScope.launch {
+            val gain: Float = resolveNormalizationGain(uri)
+            poller.post {
+                if (generation == loadGeneration && handle != 0L) {
+                    NativeBridge.nativeEngineSetNormalizationGain(handle, gain)
+                }
+            }
+        }
+    }
+
+    /**
+     * Resolve the track's true-peak normalization gain: a [PeakCacheStore] hit returns immediately, a
+     * miss measures the track now (a full native decode via [measureTruePeakBlocking]), caches the peak,
+     * and returns the gain. A track that cannot be fingerprinted or whose decode fails plays at unity
+     * (the callback's clamp still guards against clipping). Cancellation of a superseded load propagates.
+     *
+     * @param uri Track URI being loaded.
+     * @return Normalization gain in `0.0..1.0`.
+     */
+    private suspend fun resolveNormalizationGain(uri: String): Float {
+        val parsed: Uri = Uri.parse(uri)
+        val key: String = TrackFingerprint.of(appContext, parsed) ?: return UNITY_GAIN
+        PeakCacheStore.get(appContext, key)?.let { cachedPeak ->
+            return normalizationGain(cachedPeak)
+        }
+        val peak: Float = try {
+            measureTruePeakBlocking(appContext, parsed)
+        } catch (cancellation: CancellationException) {
+            throw cancellation
+        } catch (failure: Exception) {
+            Log.w(LOG_TAG, "true-peak measure failed for $uri; using unity gain", failure)
+            return UNITY_GAIN
+        }
+        PeakCacheStore.put(appContext, key, peak)
+        PeakCacheStore.flush(appContext)
+        return normalizationGain(peak)
     }
 
     /**
@@ -181,6 +240,7 @@ class RustEngine(context: Context) : AudioEngine {
 
     override fun release() {
         poller.removeCallbacks(pollTask)
+        resolveScope.cancel()
         resumeOnFocusGain = false
         audioManager.abandonAudioFocusRequest(focusRequest)
         try {
@@ -259,5 +319,8 @@ class RustEngine(context: Context) : AudioEngine {
 
         /** Poll cadence for the play/ended state, matching the UI's position poll. */
         private const val POLL_MS: Long = 200L
+
+        /** Unity (passthrough) normalization gain, applied until a track's gain is resolved. */
+        private const val UNITY_GAIN: Float = 1.0f
     }
 }

@@ -249,10 +249,12 @@ fn audio_callback(
         return AudioCallbackResult::Continue;
     }
     let popped = cons.pop_slice(out);
-    let volume = control.volume();
-    if volume != 1.0 {
+    // User volume times the per-track normalization gain (both <= 1), clamped as a final
+    // guard against a clipped master's over-unity samples.
+    let gain = control.volume() * control.norm_gain();
+    if gain != 1.0 {
         for sample in &mut out[..popped] {
-            *sample *= volume;
+            *sample = (*sample * gain).clamp(-1.0, 1.0);
         }
     }
     if popped < total {

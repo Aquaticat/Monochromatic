@@ -43,6 +43,8 @@ pub(crate) struct Control {
     pub(crate) decode_done: AtomicBool,
     /// Set by the callback when `decode_done` and the ring has drained: the track ended.
     pub(crate) ended: AtomicBool,
+    /// Per-track true-peak normalization gain as `f32` bits, applied with the volume in the callback.
+    pub(crate) norm_gain_bits: AtomicU32,
 }
 
 impl Control {
@@ -58,12 +60,18 @@ impl Control {
             duration_ms: AtomicU64::new(0),
             decode_done: AtomicBool::new(false),
             ended: AtomicBool::new(false),
+            norm_gain_bits: AtomicU32::new(1.0f32.to_bits()),
         }
     }
 
     /// Current user volume as a linear gain.
     pub(crate) fn volume(&self) -> f32 {
         f32::from_bits(self.volume_bits.load(Ordering::Relaxed))
+    }
+
+    /// Current per-track true-peak normalization gain.
+    pub(crate) fn norm_gain(&self) -> f32 {
+        f32::from_bits(self.norm_gain_bits.load(Ordering::Relaxed))
     }
 }
 
@@ -150,6 +158,13 @@ impl Engine {
         self.control
             .volume_bits
             .store(volume.to_bits(), Ordering::Relaxed);
+    }
+
+    /// Set the per-track true-peak normalization gain (linear), applied with the volume.
+    pub fn set_normalization_gain(&self, gain: f32) {
+        self.control
+            .norm_gain_bits
+            .store(gain.to_bits(), Ordering::Relaxed);
     }
 
     /// Current playback position in seconds: the seek base plus frames played, over
