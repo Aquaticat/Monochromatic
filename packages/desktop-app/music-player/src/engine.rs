@@ -273,17 +273,29 @@ impl Engine {
         // ```
         let callback: Box<dyn Fn(Update) + Send> = Box::new(on_update);
 
-        // What:     `let handle = thread::spawn(move || run(rx, callback));`. `thread::spawn`
-        //           starts the worker. `move ||` is a closure that TAKES OWNERSHIP of `rx`
-        //           and `callback` and runs `run(...)` on the new thread.
-        // Why:      Decode/playback happens off the UI thread.
-        // TS map:   `const handle = startWorker(() => run(rx, callback));`
+        // What:     `let self_tx = tx.clone();`. A second sender clone moved into the worker.
+        // Why:      The worker builds a `CommandSender` from it so the file watcher can inject
+        //           `Command::Rescan` back into this same channel.
+        // TS map:   `const selfTx = tx; // clone of the same channel sender`
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // const handle = startWorker(() => run(rx, callback));
+        // const selfTx = tx; // same channel, second handle
         // ```
-        let handle = thread::spawn(move || run(rx, callback));
+        let self_tx = tx.clone();
+
+        // What:     `let handle = thread::spawn(move || run(rx, callback, self_tx));`.
+        //           `thread::spawn` starts the worker; the `move` closure takes ownership of
+        //           `rx`, `callback`, and `self_tx` and runs `run(...)` on the new thread.
+        // Why:      Decode/playback happens off the UI thread; the worker also owns the
+        //           self-sender used to wire the watcher.
+        // TS map:   `const handle = startWorker(() => run(rx, callback, selfTx));`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const handle = startWorker(() => run(rx, callback, selfTx));
+        // ```
+        let handle = thread::spawn(move || run(rx, callback, self_tx));
 
         // What:     `let worker = handle.thread().clone();`. `handle.thread()` borrows the
         //           spawned thread's `Thread` handle (`&Thread`); `.clone()` makes an owned
@@ -451,7 +463,11 @@ impl Drop for Engine {
 // ```ts
 // function run(rx: Receiver<Command>, onUpdate: (u: Update) => void): void { ... }
 // ```
-fn run(rx: Receiver<Command>, on_update: Box<dyn Fn(Update) + Send>) {
+fn run(
+    rx: Receiver<Command>,
+    on_update: Box<dyn Fn(Update) + Send>,
+    self_tx: Sender<Command>,
+) {
     // What:     `let output = match Output::new(thread::current()) { ... };`. Try to start
     //           PipeWire, handing it a handle to THIS thread. `thread::current()` returns
     //           the running thread's `Thread` handle; it is the same thread `Engine`
@@ -502,6 +518,33 @@ fn run(rx: Receiver<Command>, on_update: Box<dyn Fn(Update) + Send>) {
     // const controller = new Controller(onUpdate, output);
     // ```
     let mut controller = Controller::new(on_update, output);
+
+    // What:     `let self_sender = CommandSender { tx: self_tx, worker: thread::current() };`.
+    //           Bundle the self-sender with THIS worker thread's handle. `thread::current()`
+    //           on the worker thread is the same thread the run loop parks on, so a watcher
+    //           send both enqueues `Rescan` and unparks us.
+    // Why:      The file watcher needs a send-and-wake handle to inject `Rescan`.
+    // TS map:   `const selfSender = new CommandSender(selfTx, currentWorkerRef);`
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const selfSender = new CommandSender(selfTx, currentWorkerRef);
+    // ```
+    let self_sender = CommandSender {
+        tx: self_tx,
+        worker: thread::current(),
+    };
+    // What:     `controller.watcher = crate::watch::SourceWatcher::new(self_sender);`. Create
+    //           the file watcher (or `None` if the OS watcher fails) and attach it.
+    // Why:      Once attached, every open/restore re-points it at the current Source Root, so
+    //           on-disk changes drive live `Rescan`s.
+    // TS map:   `controller.watcher = SourceWatcher.new(selfSender);`
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // controller.watcher = SourceWatcher.new(selfSender);
+    // ```
+    controller.watcher = crate::watch::SourceWatcher::new(self_sender);
 
     // What:     `loop { ... }`. The main worker loop (Rust's `while (true)`); we `break` on
     //           quit.

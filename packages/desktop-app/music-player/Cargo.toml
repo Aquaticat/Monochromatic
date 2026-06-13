@@ -69,6 +69,13 @@ icu_provider = { version = "2", features = ["logging"] }
 # See ../../../docs/troubleshooting/audiopus-cmake4-libopus-min-version.md.
 opus = { git = "https://github.com/SpaceManiac/opus-rs", rev = "559876660603dc8079a053e03e6438766f669e69" }
 rfd = "0.15"
+# Recursive Source Root file watcher (src/watch.rs). debouncer-mini coalesces raw
+# notify events into a debounced batch; we ignore the event details and just send
+# Command::Rescan (the queue is re-derived by scanning the root), so the mini
+# debouncer (no rename pairing / file-id cache) is sufficient. Cross-platform:
+# inotify on Linux, FSEvents on macOS, ReadDirectoryChangesW on Windows. Pulls
+# notify as a transitive dep.
+notify-debouncer-mini = "0.7"
 ringbuf = "0.4"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"

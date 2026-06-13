@@ -227,6 +227,17 @@ pub mod controller_audio;
 // ```
 pub mod engine;
 
+// What:     `pub mod watch;` the Source Root file watcher (`src/watch.rs`).
+// Why:      Watches the current Source Root and sends `Command::Rescan` on a debounced
+//           change, so the queue live-updates while the app runs.
+// TS map:   `export * as watch from "./watch";`
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// export * as watch from "./watch";
+// ```
+pub mod watch;
+
 // What:     `pub mod pagination;` the queue-pagination module (`src/pagination.rs`).
 // Why:      Pure grouping of display paths into folder pages (subfolder tracks) and
 //           A-Z + `#` letter pages (root-level tracks), unit-tested.

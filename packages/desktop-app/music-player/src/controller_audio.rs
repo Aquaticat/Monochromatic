@@ -175,6 +175,110 @@ impl Controller {
         }
     }
 
+    // What:     `pub(crate) fn emit_current_now_playing(&self)`. Re-emit the now-playing view
+    //           for the CURRENT track WITHOUT reloading it: the (possibly shifted) load-order
+    //           index, the display name at that index, and the loaded track's duration.
+    //           `pub(crate)` so the `Rescan` handler in `controller.rs` can call it.
+    // Why:      After a live rescan reorders the queue, the highlighted row's index changes
+    //           even though the same track keeps playing; this refreshes the highlight and
+    //           title without touching the decoder (so audio is not interrupted). It does NOT
+    //           emit `Position`, so the seek bar keeps its live position.
+    // TS map:   `emitCurrentNowPlaying(): void`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // emitCurrentNowPlaying(): void {
+    //   const index = this.queue.currentIndex();
+    //   const name = index != null ? this.queue.displayPaths()[index] ?? "" : "";
+    //   this.emit({ kind: "nowPlaying", index, name, duration: this.spec?.durationSecs ?? 0 });
+    // }
+    // ```
+    pub(crate) fn emit_current_now_playing(&self) {
+        // What:     `let index = self.queue.current_index();`. The current track's load-order
+        //           position (`Option<usize>`), which may have shifted after the rescan.
+        // Why:      Drives the row highlight.
+        // TS map:   `const index = this.queue.currentIndex();`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const index = this.queue.currentIndex();
+        // ```
+        let index = self.queue.current_index();
+        // What:     `let name = index.and_then(|i| self.queue.display_paths().into_iter().nth(i)).unwrap_or_default();`.
+        //           The display path at that index, or an empty string when there is none.
+        // Why:      The window title and label use this same relative-path string.
+        // TS map:   `const name = index != null ? this.queue.displayPaths()[index] ?? "" : "";`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const name = index != null ? this.queue.displayPaths()[index] ?? "" : "";
+        // ```
+        let name = index
+            .and_then(|i| self.queue.display_paths().into_iter().nth(i))
+            .unwrap_or_default();
+        // What:     `let duration = self.spec.as_ref().map_or(0.0, |s| s.duration_secs);`. The
+        //           loaded track's duration (0.0 when nothing is loaded).
+        // Why:      Keeps the seek-bar maximum correct without recomputing it.
+        // TS map:   `const duration = this.spec ? this.spec.durationSecs : 0;`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const duration = this.spec ? this.spec.durationSecs : 0;
+        // ```
+        let duration = self.spec.as_ref().map_or(0.0, |s| s.duration_secs);
+        // What:     `self.emit(Update::NowPlaying { index, name, duration });`. Push the refreshed
+        //           now-playing view (no `Position` emit, so the live seek position is kept).
+        // Why:      Update the highlight/title after a reorder without restarting playback.
+        // TS map:   `this.emit({ kind: "nowPlaying", index, name, duration });`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // this.emit({ kind: "nowPlaying", index, name, duration });
+        // ```
+        self.emit(Update::NowPlaying {
+            index,
+            name,
+            duration,
+        });
+    }
+
+    // What:     `pub(crate) fn rewatch_source_root(&mut self)`. Point the file watcher at the
+    //           current Source Root (if both a root and a watcher exist). `pub(crate)` so the
+    //           open/restore handlers in `controller.rs` can call it.
+    // Why:      Called after every open/restore so on-disk changes to the newly-loaded root
+    //           drive a `Rescan`; a no-op in tests (no watcher) and when no root is set.
+    // TS map:   `rewatchSourceRoot(): void`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // rewatchSourceRoot(): void { if (this.sourceRoot && this.watcher) this.watcher.watch(this.sourceRoot); }
+    // ```
+    pub(crate) fn rewatch_source_root(&mut self) {
+        // What:     `if let Some(root) = self.source_root.clone() { ... }`. Clone the root so
+        //           the immutable borrow ends before the mutable watcher borrow.
+        // Why:      Nothing to watch without a root.
+        // TS map:   `if (this.sourceRoot) { ... }`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // if (this.sourceRoot) { ... }
+        // ```
+        if let Some(root) = self.source_root.clone() {
+            // What:     `if let Some(watcher) = self.watcher.as_mut() { watcher.watch(&root); }`.
+            //           Mutably borrow the watcher and re-point it.
+            // Why:      Only the running app has a watcher; tests skip this.
+            // TS map:   `this.watcher?.watch(root);`
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // this.watcher?.watch(root);
+            // ```
+            if let Some(watcher) = self.watcher.as_mut() {
+                watcher.watch(&root);
+            }
+        }
+    }
+
     // What:     `pub(crate) fn load_current(&mut self) -> bool`. Open the queue's current
     //           track into a decoder + reconfigure output. Returns whether a track was
     //           loaded. Skips past files that fail to open. `pub(crate)` so the
