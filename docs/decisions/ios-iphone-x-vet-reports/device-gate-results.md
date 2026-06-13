@@ -905,6 +905,37 @@ offline tonight); the platform-sensitive crypto they depend on is confirmed. So 
 capabilities the two apps need (an in-app loopback server, CoreAudio output, and TLS crypto) now run on the
 iPhone X from one linked staticlib, with one render: "Rust FFI: 720 / S3 SERVER OK / AUDIO OK / CRYPTO OK".
 
+### Go c-archive (the kopia payload shape) on iOS: runs on device in a non-managed host
+
+Status: 2026-06-12. kopia is pure Go, so the kopia-to-pCloud app's payload is a Go c-archive. Two findings,
+one positive and one integration caveat, both device-tested:
+
+- A minimal Go c-archive (`//export GoAnswer` returning 720 through the Go runtime, `go build
+  -buildmode=c-archive`, Go 1.26.4) cross-compiles to BOTH iOS triples with correct Mach-O platform stamps:
+  device arm64 (`LC_BUILD_VERSION` platform 2, iphoneos, minos 13.0) and simulator arm64 (platform 7,
+  iossimulator, minos 14.0). Go derives the simulator platform from the CC's `-mios-simulator-version-min`
+  flag, so the dual-target slices are clean (unlike Qt's prebuilt kit). The device archive signs and links
+  into a signable app via the same `NativeReference`/`-force_load` mechanism the Rust `.a` uses.
+- In a pure-Swift, non-managed host (`gogate`, a UIKit app with no second runtime), the Go c-archive links
+  and its runtime RUNS on the iPhone X (iOS 16.7): "Go: 720 RUNTIME OK" rendered on both the device and the
+  iPhone 17 Pro / iOS 26.5 simulator. So the Go runtime initializes and a cgo-exported function returns
+  through it on the real A11 device; the kopia payload is viable on iOS.
+- Integration caveat (a real device-only finding): co-hosting the SAME Go c-archive inside the .NET/Mono
+  runtime (the `mauigate` app, alongside the Rust probes) builds and renders on the simulator ("Go: 720"),
+  but SIGKILLs at launch on the DEVICE (idevicedebug: "Exit due to signal: 9"; the app drops back to the home
+  screen). The Rust staticlib, which has no runtime, co-hosted with Mono fine; Go does not, because two
+  managed runtimes (Go's scheduler, GC, and signal handlers versus Mono's) collide in one process on the
+  device, where the simulator's looser environment tolerates it. So the kopia Go payload must NOT be
+  co-hosted inside a second managed runtime like Mono/.NET; a non-managed host (Swift/Objective-C as gomobile
+  assumes, or the WebView/React Native/Rust hosts whose native side is not a GC runtime) is required. This
+  rules the .NET trio out as the kopia host specifically (it stays render-valid as a UI framework for the
+  music-player), and is a point in favour of the WebKit/Rust/JS hosts for the kopia app.
+
+So the kopia payload-shape question is answered: a Go c-archive runs on the iPhone X, subject to the
+host-runtime constraint above. Building actual kopia (a large Go program) as the c-archive is then an
+integration task on this proven mechanism. Work dirs: `/Volumes/MacData/ios-vet/goprobe` (the Go archive)
+and `/Volumes/MacData/ios-vet/gogate` (the Swift host that proved it on device).
+
 ## Pending gates
 
 Device-verified to render so far: Capacitor (rank 2, covers the six web frameworks, which genuinely

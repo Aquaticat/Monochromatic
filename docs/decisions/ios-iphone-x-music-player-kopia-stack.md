@@ -365,11 +365,15 @@ disqualified on this device), and the framework-specific in-process UI-test and 
 - Shared Rust/Go core (identical on every track): the music-player symphonia plus cpal core (decode,
   true-peak normalization, peak cache, queue, pagination, persistence) and the kopia c-archive or Rust
   staticlib. Reused as-is; cpal already targets iOS CoreAudio, so no AVAudioEngine rewrite.
-- kopia as a linked static lib (wall 1): a Go gomobile c-archive `.xcframework` or a Rust staticlib,
-  linked and called over the C ABI. The mechanism differs per framework (Slint `build.rs` static link;
-  Flutter `dart:ffi`; Compose cinterop; RN C++ JSI/TurboModule; .NET `[DllImport("__Internal")]`;
-  WKWebView `CAPPlugin`/`CDVPlugin`; NativeScript `dlsym`/libffi; Lynx `LynxModule`; Qt `extern "C"`),
-  but the payload is the same archive.
+- kopia as a linked static lib (wall 1): a Go `c-archive` or a Rust staticlib, linked and called over the
+  C ABI. The mechanism differs per framework (Slint `build.rs` static link; Flutter `dart:ffi`; Compose
+  cinterop; RN Obj-C `.m` module; .NET `[DllImport("__Internal")]`; WKWebView `CAPPlugin`/`CDVPlugin`;
+  NativeScript `dlsym`/libffi; Lynx `LynxModule`), but the payload is the same archive. Device-proven
+  2026-06-12: a Go `c-archive` cross-compiles to both iOS triples and its runtime runs on the iPhone X in a
+  non-managed Swift host ("Go: 720 RUNTIME OK"); but co-hosting it inside the .NET/Mono runtime SIGKILLs on
+  the device (two managed runtimes collide), so the kopia Go payload needs a non-managed host, not .NET. This
+  is the kopia app's one framework-narrowing stack finding (it does not touch the music-player, whose Rust
+  core has no runtime and co-hosts cleanly anywhere).
 - In-app HTTP/S3 endpoint: was the single genuinely uncertain capability across substrates; the de-risk is
   now device-proven (2026-06-12, `device-gate-results.md`, "Stage 2 supporting-stack probes"). WKWebView's
   `URLSchemeHandler` is not a listening socket, and Compose's `embeddedServer(CIO)` on `iosArm64` is
@@ -466,10 +470,14 @@ de-risks the kopia and music-player apps on every track at once. Status by capab
   48 kHz output device, and its RemoteIO render callback fired on the iPhone X (silence only). The
   music-player's symphonia-plus-cpal core needs no AVAudioEngine rewrite, only the AVAudioSession shim and
   `AudioToolbox` linked.
-- Linked native staticlib (the kopia payload shape): PROVEN. Three Rust `.a` functions (`rust_gate_answer`,
-  the server, the audio probe) link and run via `[DllImport("__Internal")]` on the device. Packaging kopia
-  as a Go gomobile c-archive and linking it is then an integration task on a proven linkage, not a new
-  capability unknown; it is the next concrete stage-2 build (needs the Go/gomobile toolchain).
+- Linked native staticlib (the kopia payload shape): PROVEN on device, with one host caveat. Three Rust `.a`
+  functions link and run via `[DllImport("__Internal")]` on the iPhone X, and a minimal Go c-archive (`go
+  build -buildmode=c-archive`, kopia's actual shape) cross-compiles to both iOS triples (correct platform
+  stamps) and its runtime runs on the iPhone X in a pure-Swift host ("Go: 720 RUNTIME OK"). Caveat
+  (device-only, in `device-gate-results.md`): the same Go c-archive co-hosted inside the .NET/Mono runtime
+  SIGKILLs on the device (two managed runtimes collide; the Rust `.a`, having no runtime, did not), so the
+  kopia Go payload needs a non-managed host (Swift/Obj-C, or the WebView/RN/Rust hosts), not .NET/Mono.
+  Building actual kopia as the c-archive is then an integration task on this proven mechanism.
 - Outbound HTTPS to pCloud (reqwest/rustls): crypto core PROVEN on device, full path asserted. rustls's
   state machine is pure Rust; its only platform-sensitive part is ring's crypto, and a probe ran ring's
   X25519 agreement and an AES-256-GCM round-trip on the iPhone X ("CRYPTO OK", `device-gate-results.md`), with
