@@ -14,4 +14,6 @@ object NativeBridge {
     external fun nativeOpusSelfTest(): Int
 
     external fun nativeSymphoniaSelfTest(): Int
+
+    external fun nativeDecodeBenchmark(path: String): Double
 }

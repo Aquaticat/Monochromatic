@@ -1,12 +1,17 @@
 package dev.monochromatic.musicplayer
 
+import android.util.Log
+import androidx.test.platform.app.InstrumentationRegistry
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
+import org.junit.Assume.assumeTrue
 import org.junit.Test
+import java.io.File
 
-// On-device proof that cargo-ndk produced a loadable arm64 .so and that a JNI
-// call crosses the boundary on this GrapheneOS device. Run via am instrument
-// (not connectedAndroidTest, which uninstalls the app afterward and would wipe
-// the persisted SAF grant).
+// On-device proof that cargo-ndk produced a loadable arm64 .so and that the JNI
+// boundary and the native decoders work on this GrapheneOS device. Run via am
+// instrument (not connectedAndroidTest, which uninstalls and would wipe the SAF
+// grant).
 class NativeBridgeTest {
     @Test
     fun nativePingCrossesJniBoundary() {
@@ -27,5 +32,23 @@ class NativeBridgeTest {
     @Test
     fun symphoniaRegistryInitializesOnDevice() {
         assertEquals(1, NativeBridge.nativeSymphoniaSelfTest())
+    }
+
+    // Benchmarks native decode-to-PCM throughput on device for a pushed opus and
+    // flac fixture, logged (tag NativeBench) for head-to-head comparison against
+    // the Media3 MediaCodec baseline. Skips (does not fail) when a fixture is
+    // absent; push fixtures to the app's external files dir as bench.opus /
+    // bench.flac first. A negative result is a native error code.
+    @Test
+    fun benchmarkNativeDecode() {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val dir = context.getExternalFilesDir(null)
+        for (name in listOf("bench.opus", "bench.flac")) {
+            val fixture = File(dir, name)
+            assumeTrue("missing fixture $name", fixture.exists())
+            val usPerSample = NativeBridge.nativeDecodeBenchmark(fixture.absolutePath)
+            Log.i("NativeBench", "$name -> $usPerSample us/sample (native symphonia/opus, decode-only)")
+            assertTrue("decode failed for $name (native code $usPerSample)", usPerSample > 0.0)
+        }
     }
 }
