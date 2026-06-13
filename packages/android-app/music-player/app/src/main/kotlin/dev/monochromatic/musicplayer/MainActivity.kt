@@ -737,12 +737,12 @@ class MainActivity : ComponentActivity() {
     //           `{ tree -> ... }` (its parameter `tree` is the picked `Uri?`). The call
     //           returns a launcher you `launch(...)` later.
     // Why:      Activity-scoped folder picker, registered on the activity rather than
-    //           inside the composition. Stopping the activity to show the picker nulls
-    //           `boundController`, which disposes the player screen; a launcher hosted
-    //           there would be unregistered before its own result arrived, silently
-    //           dropping the pick. Registering on the activity ties the launcher to the
-    //           activity lifecycle, so it survives the screen leaving composition and still
-    //           receives the granted tree.
+    //           inside the composition. `registerForActivityResult` must be called
+    //           unconditionally while the activity is being created (the API forbids
+    //           registering once it is STARTED), so the launcher cannot live inside a
+    //           composable that may leave and re-enter composition. Registering on the
+    //           activity ties the launcher to the activity lifecycle, so it is still
+    //           registered when the picker result arrives and receives the granted tree.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1173,15 +1173,20 @@ class MainActivity : ComponentActivity() {
         // this.binder = null;
         // ```
         binder = null
-        // What:     `boundController.value = null` clears the observable brain so a later
-        //           re-show starts from the gate.
-        // Why:      No live brain while unbound.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // this.boundController.value = null;
-        // ```
-        boundController.value = null
+        // What:     We deliberately do NOT null `boundController` here (it used to be set to
+        //           `null` on every stop, which forced the next foreground back to
+        //           `StartingGate`). Retaining the published controller across the unbind keeps
+        //           the already-loaded library on screen when the app returns, so a foreground
+        //           is a NON-BLOCKING live rescan (`reconcileLibrary`, no loading state) instead
+        //           of a gate flash. Safe because the controller is a single service-owned
+        //           instance built once in `PlaybackService.onCreate`; the started/foreground
+        //           service survives this unbind, so the retained reference stays valid and
+        //           `onServiceConnected` republishes that same instance on the rebind.
+        //           `StartingGate` then appears only before the very first bind (no prior state
+        //           to show); `onServiceDisconnected` still nulls it, since an unexpected service
+        //           death means the brain is genuinely gone.
+        // Why:      The foreground rescan should be non-blocking unless there is no prior state
+        //           (the live-update intent in docs/decisions/music-player-live-update-rescan.md).
     }
 
     // What:     `private fun onFolderChosen(treeUri: Uri) { ... }` declares a private method
