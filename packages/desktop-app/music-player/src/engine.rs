@@ -697,3 +697,16 @@ fn run(
         }
     }
 }
+
+// What:     `#[cfg(test)] #[path = "engine_tests.rs"] mod tests;`. Pull the end-to-end
+//           integration test in from the sibling file `engine_tests.rs`; test builds only.
+// Why:      Keep `engine.rs` to production code; the live-update seam test lives beside it.
+// TS map:   `engine.integration.test.ts` beside `engine.ts`.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// // engine_tests.rs is engine.integration.test.ts beside engine.ts
+// ```
+#[cfg(test)]
+#[path = "engine_tests.rs"]
+mod tests;
