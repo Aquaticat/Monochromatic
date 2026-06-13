@@ -12,4 +12,20 @@ class NativeBridgeTest {
     fun nativePingCrossesJniBoundary() {
         assertEquals(42, NativeBridge.nativePing())
     }
+
+    // Proves the bundled libopus C library cross-compiled for arm64 and actually
+    // runs on this device: nativeOpusSelfTest constructs an opus decoder via
+    // opus_decoder_create and returns 1 on success.
+    @Test
+    fun opusDecoderConstructsOnDevice() {
+        assertEquals(1, NativeBridge.nativeOpusSelfTest())
+    }
+
+    // Proves symphonia (pure Rust, all codecs) cross-compiled and links into the
+    // .so: nativeSymphoniaSelfTest initializes its prober + codec registry and
+    // returns 1.
+    @Test
+    fun symphoniaRegistryInitializesOnDevice() {
+        assertEquals(1, NativeBridge.nativeSymphoniaSelfTest())
+    }
 }

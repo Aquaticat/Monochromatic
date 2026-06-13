@@ -16,6 +16,16 @@ name = "musicplayer_native"
 crate-type = ["cdylib"]
 
 [dependencies]
-# Pure-Rust JNI bindings (no C), so the smoke-test stage cross-compiles with zero
-# native-C dependencies; libopus/symphonia (which compile C) arrive in a later stage.
+# Pure-Rust JNI bindings (no C).
 jni = "0.21"
+
+# libopus via opus-rs HEAD: its opusic-sys backend bundles libopus 1.6.1 and
+# builds it from source with cmake on every platform. Pinned to the same rev as
+# the desktop crate (the CMake 4.x compatibility fix; see that crate's Cargo.toml).
+# This is the one C cross-compile the full-Rust variant must clear for arm64 Android.
+opus = { git = "https://github.com/SpaceManiac/opus-rs", rev = "559876660603dc8079a053e03e6438766f669e69" }
+
+# Pure-Rust demux + decoders for FLAC/WAV/MP3/Vorbis/AAC/ALAC (Opus is handled by
+# the opus crate above). Same version and feature set as the desktop crate; no C,
+# so it cross-compiles for Android with no extra toolchain.
+symphonia = { version = "0.6", features = ["all"] }

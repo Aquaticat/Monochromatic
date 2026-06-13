@@ -10,4 +10,8 @@ object NativeBridge {
     }
 
     external fun nativePing(): Int
+
+    external fun nativeOpusSelfTest(): Int
+
+    external fun nativeSymphoniaSelfTest(): Int
 }
