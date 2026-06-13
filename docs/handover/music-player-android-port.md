@@ -21,8 +21,11 @@ handover adds the working state, measured facts, and exact next steps.
   16KB-aligned arm64 cdylib that the GrapheneOS Pixel 6 loads via `System.loadLibrary` and JNI-calls (`OK (1 test)`).
   GrapheneOS blocks dynamic *code* loading (which killed Slint) but a JNI `.so` from the APK is fine. The hybrid
   variant is dropped as a deliverable (owner directive 2026-06-12): a Rust meter over Media3-decoded PCM fixes only
-  the meter, not the decode-bound cost, so it cannot move performance enough. Next is cross-compiling libopus +
-  symphonia (which compile C); see "Next steps".
+  the meter, not the decode-bound cost, so it cannot move performance enough. Step 2 (cross-compile, Task #11) is
+  also DONE and verified on device: libopus (opusic-sys, cmake-built from source) and symphonia 0.6 `all` both
+  cross-compile for arm64 and run on the device (`OK (3 tests)`: a libopus decoder constructs via
+  `opus_decoder_create` and the symphonia registry initializes on the arm64 CPU). Next is the engine itself
+  (Task #12); see "Next steps".
 
 ## Build progress (this session)
 
@@ -193,6 +196,15 @@ and tracks the crate's `Cargo.lock` for reproducible builds. Noted to investigat
 rust debug APK is ~36 MB (vs the older media3 ~15 MB figure); the 439 KB .so is not the cause, so it is likely
 accumulated shared `main` plus debug `ui-tooling`, to be confirmed.
 
+Native decode dependencies (this session): `256dd194` adds the full-Rust variant's decode crates and proves they
+cross-compile and run on the device (Task #11). `opus` (opus-rs HEAD, opusic-sys backend) builds libopus 1.6.1 from
+source via cmake; cargo-ndk wires the cmake cross-toolchain automatically (no manual `CMAKE_TOOLCHAIN_FILE`), and the
+linker keeps only the decoder path (`opus_decoder_create`/celt/silk symbols present, encoder dead-stripped).
+`symphonia` 0.6 `all` is pure Rust and cross-compiles with no extra toolchain. Two self-tests (`nativeOpusSelfTest`
+constructs a decoder, `nativeSymphoniaSelfTest` initializes the prober + codec registry) pass on device (`OK (3
+tests)` via `am instrument`). The .so grew to 3.9 MB with all codecs and stays 16KB-aligned; it is kept on
+symphonia `all` deliberately (see Resolved decisions).
+
 Background true-peak sweep (this session): `1867fda2` adds `PeakSweepWorker` (a WorkManager `CoroutineWorker`,
 periodic, charging-only), `PeakSweepScheduler` (unique periodic, `KEEP`-deduped, enqueued from `PlaybackService`
 when a library becomes available), the engine-agnostic `measureAndCache` + `SweepOutcome`, the shared
@@ -229,6 +241,9 @@ Note: concurrent sessions (an iOS vet) interleave their own commits on `main`; t
   thread priority (`nice 19`, the Android analog of the desktop's idle-priority worker), so the sweep yields to
   playback while still progressing whenever plugged in. The loading track is measured asynchronously on a cache miss
   (a one-time mid-song gain correction). The DSP and cache are unchanged.
+- Decode (full-Rust variant): `symphonia` stays on the `all` feature set; do NOT narrow it for size (owner directive
+  2026-06-12: APK size is not a concern for Android apps). Opus is decoded by the `opus` crate (opusic-sys/libopus),
+  the one codec symphonia's meta-crate does not wire in.
 - Placement: `packages/android-app/music-player/` (new category). Identity: `dev.monochromatic.musicplayer`.
 - minSdk 36 (raised from 26 on 2026-06-12 by owner directive: single-target app for the owner's Pixel 6, so no
   older-release support and modern APIs without compat guards), compileSdk 37, targetSdk 36, JDK 21, AGP 9.x,
@@ -404,15 +419,14 @@ The adversarial review confirmed two more real findings, deferred deliberately (
   `BuildConfig.FLAVOR`. Only the `media3` flavor runs today.
 2. Full-Rust variant. The hybrid variant is dropped as a deliverable (owner directive 2026-06-12: a Rust meter over
    Media3-decoded PCM fixes only the meter, not the decode-bound cost, so it would not move performance enough; the
-   decode is the lever, which only the full-Rust variant pulls). Step 1, the native toolchain, is DONE (Task #10,
-   cargo-ndk -> 16KB-aligned arm64 .so -> JNI, verified on device). Remaining: (a) cross-compile libopus (the `opus`
-   crate compiles C) and symphonia for `aarch64-linux-android`, 16KB-aligned, and prove a real decode of a
-   `content://` fd on device (Task #11, the separable C-cross-compile risk); (b) port the desktop
+   decode is the lever, which only the full-Rust variant pulls). Steps 1 and 2 are DONE: the native toolchain
+   (Task #10, cargo-ndk -> 16KB-aligned arm64 .so -> JNI) and the decode cross-compile (Task #11, libopus + symphonia
+   `all` both cross-compile and run on device, `OK (3 tests)`). Remaining (Task #12): (b) port the desktop
    `Source`/decode/opus/truepeak/queue logic into the native crate, replace the PipeWire/cpal output with
-   AAudio/AudioTrack, and implement the Kotlin `AudioEngine` seam over JNI (Task #12); (c) feed `content://` fds via
-   `ContentResolver.openFileDescriptor`. The bridge is raw JNI today (smoke test); raw JNI vs UniFFI for the real
-   engine interface is an OPEN decision (the ADR's UniFFI predates knowing whether UniFFI's JNA dependency behaves on
-   GrapheneOS), to settle when building the real surface.
+   AAudio/AudioTrack, and implement the Kotlin `AudioEngine` seam over JNI; (c) feed `content://` fds via
+   `ContentResolver.openFileDescriptor` (the first real end-to-end decode of a device file). The bridge is raw JNI
+   today (smoke test); raw JNI vs UniFFI for the real engine interface is an OPEN decision (the ADR's UniFFI predates
+   knowing whether UniFFI's JNA dependency behaves on GrapheneOS), to settle when building the real surface.
 3. Verify each variant on device; Maestro for E2E; `androidx.test` pinned `>= 3.7.0`. Compare all metrics and let
    the user pick the winner.
 4. Finalization (owner directive, 2026-06-12): once the app is genuinely finished, bisect `minSdk` downward to the
