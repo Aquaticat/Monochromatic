@@ -228,10 +228,10 @@ If a real file feels too verbose, the answer is to make the file smaller
 
 ## Anti-patterns drawn from real failures
 
-These four cases are taken from a real session where the skill was
-followed loosely. Each shows the **bad** output the agent produced and the
-**good** output the skill demands. Internalise the pattern, not just the
-specific construct.
+These cases are taken from a real session where the skill was followed
+loosely. Each shows the **bad** output the agent produced and the **good**
+output the skill demands. Internalise the pattern, not just the specific
+construct.
 
 ### Bare wrapper-constructor tail (the `Ok(rules)` case)
 
