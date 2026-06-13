@@ -29,9 +29,12 @@ handover adds the working state, measured facts, and exact next steps.
 - Full-Rust variant: the standalone primitives are de-risked on device (toolchain #10, libopus + symphonia #11,
   native decode ~10x faster than MediaCodec #15, AAudio output 43 ms #16, `content://` fd decode #17), and the engine
   itself now PLAYS on device (Task #12, Milestone 1, below): the decode -> ring -> AAudio loop, the `AudioEngine` JNI
-  seam, and transport (load-fd/play/pause/seek/volume/position/duration/ended) all verified inaudibly on the Pixel 6.
-  The sample-rate unknown is RESOLVED: the engine opens AAudio at `spec.rate` and the on-device test confirmed position
-  tracks real-time (0.494 s in ~0.5 s of playback, no 8.8% drift) and an accurate mid-track seek. Remaining for the
+  seam, transport (load-fd/play/pause/seek/volume/position/duration/ended), and the production auto-advance chain all
+  mechanically verified (silent) on the Pixel 6. One check is still owed before ranking variants (#13): a brief AUDIBLE
+  play through the real app (the volume-0 tests prove mechanics and real-time position proves real PCM flows, but only
+  ears confirm channel order and glitch-free output). The sample-rate unknown is RESOLVED: the engine opens AAudio at
+  `spec.rate` and the on-device test confirmed position tracks real-time (0.494 s in ~0.5 s of playback, no 8.8% drift)
+  and an accurate mid-track seek. Remaining for the
   full-Rust variant (Milestone 2, parity with Media3, none needed to measure decode/output perf): audio-focus handling
   (pause on a phone call), the becoming-noisy headphone-unplug pause, and true-peak normalization gain. The
   queue/advance/shuffle stay in Kotlin's `PlayerController` (the native engine is only the per-track primitive).
@@ -48,11 +51,17 @@ end-of-track, and advances the played-frame counter. Load and seek both rebuild 
 `RustEngine.kt` resolves the `content://` URI to a borrowed PFD and passes its fd inside `use {}` (native dups
 synchronously), with a 200 ms main-thread poller turning the pull-based native playing/ended state into
 `onPlayingChanged`/`onTrackEnded`. Two deliberate improvements over desktop: volume in the callback (instant, not
-1 s-lagged), position from frames played (accurate, not decode-ahead). Verified on the Pixel 6 via `RustEngineTest`
-(`am instrument`, volume 0, silent, no session PLAYING): after play `pos=0.494 s dur=9.929 s playWhenReady=true`; paused
-position froze exactly (`a=b=0.4965`); seek to `dur/2=4.96 s` then resumed to `5.33 s`. Real-time position (no 8.8%
-drift) confirms the stream opened at the track rate. Milestone 2 (Media3 parity, not needed to measure decode/output):
-audio focus, becoming-noisy, true-peak normalization gain.
+1 s-lagged), position from frames played (accurate, not decode-ahead). Mechanically verified on the Pixel 6 via
+`RustEngineTest` (`am instrument`, volume 0, silent, no session PLAYING): `playsPausesSeeksThroughRustEngine` got
+`pos=0.494 s dur=9.929 s playWhenReady=true` after play, position froze exactly while paused (`a=b=0.4965`), and a seek
+to `dur/2=4.96 s` resumed to `5.33 s` (real-time position, no 8.8% drift, confirms the stream opened at the track rate);
+`autoAdvancesOnceOnNaturalEnd` drives the production chain (`PlayerController` over `RustEngine`, a track seeked near its
+end) and saw a single natural-end advance from track `...852` to `...855` (scope index 1). Advisor fixes in `98fcbc70`:
+`RustEngine.load` no longer eagerly resets `endedHandled` (that reopened a double-advance window; the falling-edge rearm
+in `poll()` is correct), and `handle_load` sets the play gate before opening the stream. Verified that ndk 0.9's
+`AudioStream::Drop` calls `AAudioStream_close` (audio.rs:1413), so `reconfigure_output` dropping the stream is a clean
+stop, no leak. STILL OWED before #13 ranking: one brief AUDIBLE play through the real app (channel order, glitch-free).
+Milestone 2 (Media3 parity, not needed to measure decode/output): audio focus, becoming-noisy, true-peak normalization gain.
 
 Milestone 1, the derisk, is complete and verified at the user boundary:
 
