@@ -1,7 +1,16 @@
 # iOS UI/app-shell framework vet for the iPhone X
 
-Status as of 2026-06-12 (third handover): signing path DONE; source-audit fan-out DONE (16 reports +
-synthesis); device gating in progress. Render-verified so far: Capacitor PASS, Flutter PASS, and the
+Status as of 2026-06-12 (fourth handover): signing path DONE; source-audit fan-out DONE (16 reports +
+synthesis); device gating COMPLETE (all 16 frameworks render-verified both legs, Slint disqualified, Qt
+culled); the two stage-2 capabilities the synthesis flagged as genuinely uncertain are now device-proven
+framework-independently in a linked Rust staticlib on the iPhone X (an in-app HTTP/S3 loopback server, and
+cpal CoreAudio output, silence only), see `device-gate-results.md` "Stage 2 supporting-stack probes"; the
+second-pass language-minimization ranking (directive 4) and the accessibility-posture consolidation are
+written into the synthesis doc; the on-device VoiceOver fidelity sweep is the one vetting dimension that
+needs the owner plus the device GUI and stays owed (crash-survival a11y is already closed for every survivor
+on-device). Remaining stage-2 work is integration on proven foundations (kopia as a Go gomobile c-archive,
+the cheap loopback-TLS probe, background `URLSession`/audio restructuring), none blocking the framework
+choice. Render-verified so far: Capacitor PASS, Flutter PASS, and the
 entire .NET trio (the shared Microsoft.iOS substrate plus MAUI, Avalonia, and Uno, each gated as an
 actual framework, not just on the substrate). Slint DISQUALIFIED (decisive finding, below). The whole
 gate-and-render-verify chain also works over wireless, so no USB cable is needed. Compose Multiplatform
@@ -370,7 +379,16 @@ Rust core for both `aarch64-apple-ios` and `aarch64-apple-ios-sim` and link by R
   sim. Details in `device-gate-results.md`. This closes the initial framework vet.
 
 After gates: stage 2 deep supporting-stack vets (the ~52-report roadmap, enumerated inside each
-`vet-*.md`), then keep the synthesis doc current.
+`vet-*.md`). Progress so far (2026-06-12, in `device-gate-results.md` "Stage 2 supporting-stack probes" and
+the synthesis doc's "Stage 2 status"): the in-app HTTP/S3 server and cpal CoreAudio output are device-proven
+in a linked Rust staticlib on the iPhone X (the two capabilities that were genuinely uncertain), so the kopia
+and music-player cores are de-risked on every track. Still owed, none blocking the framework choice: kopia as
+a Go gomobile c-archive (integration on the proven linkage, needs the Go/gomobile toolchain), a cheap
+loopback-TLS handshake probe (rustls/ring offline, since the device is in airplane mode), background
+`URLSession`/`BGProcessingTask` and backgrounded-audio restructuring, the per-framework FFI-marshaling and
+UI-test/e2e harnesses, and the owner-owed on-device VoiceOver fidelity sweep (the one dimension that needs
+the owner plus the GUI; crash-survival a11y is already closed for every survivor). Keep the synthesis doc
+current as these land.
 
 ## Mac artifacts (not in the repo)
 
