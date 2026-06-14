@@ -67,6 +67,92 @@ fn wait_for_len(rx: &mpsc::Receiver<usize>, want: usize, secs: u64) -> bool {
     }
 }
 
+// What:     `#[test] fn idle_root_emits_no_extra_queue_updates()`. Open a root holding real
+//           audio fixtures, then assert that with NO filesystem change the engine emits the
+//           one open-scan `Queue` and nothing more, across several debounce windows.
+// Why:      Regression guard for the rescan feedback loop: the background peak measurement (and
+//           the decoder, during playback) reads the fixtures UNDER the watched root, and on
+//           Linux inotify reports those reads as access events. Before the empty-diff guard in
+//           the `Rescan` handler, each such event drove a `Rescan` that re-emitted `Queue`
+//           (snapping the UI back to the first page) and re-measured (re-reading the files),
+//           spinning a ~500ms loop that made every page-tab selection bounce to the first tab.
+#[test]
+fn idle_root_emits_no_extra_queue_updates() {
+    // What:     `let nanos = ...as_nanos();`. Unique suffix for the throwaway directory.
+    // Why:      Isolate this run's scratch root (THR: verify on a throwaway).
+    let nanos = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_nanos();
+    // What:     `let dir = std::env::temp_dir().join(format!("mp_idle_{nanos}"));`. The Source
+    //           Root to open and watch.
+    // Why:      A real directory the OS watcher can observe.
+    let dir = std::env::temp_dir().join(format!("mp_idle_{nanos}"));
+    // What:     `std::fs::create_dir_all(&dir).unwrap();`. Create it before opening.
+    // Why:      The Source Root must exist to be scanned and watched.
+    std::fs::create_dir_all(&dir).unwrap();
+    // What:     `for name in [...] { std::fs::copy(manifest/fixtures/name, dir/name) }`. Copy
+    //           two REAL fixtures (not empty files) into the root. `CARGO_MANIFEST_DIR` is the
+    //           package dir, so `fixtures/` resolves regardless of the test's working directory.
+    // Why:      The peak measurement must actually decode (read) the files to reproduce the
+    //           read-driven watcher events that the loop fed on; empty files decode to nothing.
+    let manifest = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
+    for name in ["tone.flac", "tone.opus"] {
+        std::fs::copy(manifest.join("fixtures").join(name), dir.join(name)).unwrap();
+    }
+
+    // What:     `let (tx, rx) = mpsc::channel::<usize>();`. A channel of `Queue` lengths.
+    // Why:      The callback forwards each `Update::Queue` length; the test counts them.
+    let (tx, rx) = mpsc::channel::<usize>();
+    // What:     `let engine = Engine::spawn(move |update| { ... });`. Start the real worker,
+    //           which wires the watcher in `run`.
+    // Why:      Exercise the whole live-update seam, not a stub.
+    let engine = Engine::spawn(move |update| {
+        // What:     `if let Update::Queue(paths) = update { let _ = tx.send(paths.len()); }`.
+        //           Forward only queue updates.
+        // Why:      The page-bounce symptom is a stream of `Queue` updates; that is what we count.
+        if let Update::Queue(paths) = update {
+            let _ = tx.send(paths.len());
+        }
+    });
+
+    // What:     `engine.send(Command::OpenRoot { ... select: None, play: false });`. Open the
+    //           root with nothing cued and paused, arming the watcher.
+    // Why:      The default UI state (no auto-selected track), under which the loop's `Queue`
+    //           updates reset the page with nothing to follow back to it.
+    engine.send(Command::OpenRoot {
+        root: dir.clone(),
+        select: None,
+        play: false,
+    });
+
+    // What:     `assert_eq!(rx.recv_timeout(Duration::from_secs(10)).ok(), Some(2), ...)`. The
+    //           open scan must report exactly one `Queue(2)`.
+    // Why:      Establish the baseline: one legitimate queue update, and the watch is now armed.
+    assert_eq!(
+        rx.recv_timeout(Duration::from_secs(10)).ok(),
+        Some(2),
+        "expected one Queue(2) from the open scan"
+    );
+
+    // What:     `let extra = rx.recv_timeout(Duration::from_secs(3));`. Wait several debounce
+    //           windows (the debounce is 500ms) for ANY further queue update, changing nothing
+    //           on disk.
+    // Why:      The peak measurement's reads fire the watcher; the empty-diff guard must turn
+    //           the resulting `Rescan` into a no-op, so this wait must TIME OUT.
+    let extra = rx.recv_timeout(Duration::from_secs(3));
+    // What:     `assert!(extra.is_err(), ...)`. A received value means a spontaneous `Queue`
+    //           update arrived (the loop resurfaced); only a timeout passes.
+    // Why:      Encode the regression: no rescan storm from the app's own reads.
+    assert!(
+        extra.is_err(),
+        "a Queue update arrived with no filesystem change ({extra:?}); the rescan feedback loop resurfaced"
+    );
+
+    // What:     `drop(engine);` then `std::fs::remove_dir_all(&dir).ok();`. Stop the worker and
+    //           remove the scratch root.
+    // Why:      Tear down cleanly and leave no test droppings.
+    drop(engine);
+    std::fs::remove_dir_all(&dir).ok();
+}
+
 // What:     `#[test] fn watcher_drives_rescan_update_through_engine()`. Open a throwaway
 //           directory as the Source Root through a real `Engine`, then create a file in it
 //           and assert a `Queue` update reflecting the new file arrives.

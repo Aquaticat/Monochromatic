@@ -1400,6 +1400,36 @@ impl Controller {
                 // if (this.sourceRoot) { ... }
                 // ```
                 if let Some(root) = self.source_root.clone() {
+                    // What:     `let fresh = expand_paths(vec![root]);`. Scan the root into its
+                    //           sorted file list WITHOUT replacing the queue yet.
+                    // Why:      Diff it against the current queue first; the projection is "scan
+                    //           DIFFED against the current Queue", and an empty diff must not act.
+                    //
+                    // In TS you'd write (pseudocode):
+                    // ```ts
+                    // const fresh = expandPaths([root]);
+                    // ```
+                    let fresh = expand_paths(vec![root]);
+                    // What:     `if fresh.as_slice() == self.queue.tracks() { return; }`. When the
+                    //           scan equals the current queue the diff is EMPTY, so bail out of
+                    //           `handle_command` doing nothing.
+                    // Why:      The watcher also fires on the app's OWN reads: on Linux, inotify
+                    //           reports access events for the peak-measurement and decoder reads
+                    //           UNDER the watched root. Re-emitting `Update::Queue` (which snaps
+                    //           the UI back to the first page) and re-running
+                    //           `start_queue_measurement` (which re-reads those files and so
+                    //           re-arms the watcher) on an empty diff spins a ~500ms feedback
+                    //           loop. A pure content modify (same paths) is likewise a no-op
+                    //           here; its peak fingerprint changes, so it self-heals as a cache
+                    //           miss on the next decode, not via a rescan sweep.
+                    //
+                    // In TS you'd write (pseudocode):
+                    // ```ts
+                    // if (arraysEqual(fresh, this.queue.tracks())) return;
+                    // ```
+                    if fresh.as_slice() == self.queue.tracks() {
+                        return;
+                    }
                     // What:     `let selected_path = self.queue.current_path().cloned();`. The
                     //           Selected Track's path BEFORE the queue is replaced.
                     // Why:      Re-select the same track by path after the rescan.
@@ -1409,15 +1439,15 @@ impl Controller {
                     // const selectedPath = this.queue.currentPath();
                     // ```
                     let selected_path = self.queue.current_path().cloned();
-                    // What:     `self.queue.set_tracks(expand_paths(vec![root]));`. Rebuild the
-                    //           queue from a fresh scan of the root.
+                    // What:     `self.queue.set_tracks(fresh);`. Replace the queue with the fresh
+                    //           scan (the diff was non-empty, so something on disk changed).
                     // Why:      Added files appear, removed files drop, all in sorted order.
                     //
                     // In TS you'd write (pseudocode):
                     // ```ts
-                    // this.queue.setTracks(expandPaths([root]));
+                    // this.queue.setTracks(fresh);
                     // ```
-                    self.queue.set_tracks(expand_paths(vec![root]));
+                    self.queue.set_tracks(fresh);
                     // What:     `match selected_path.and_then(|p| ...position(|t| *t == p)) { ... }`.
                     //           Find the previously-selected path in the fresh scan.
                     // Why:      Preserve the selection across the rescan, or detect its loss.
