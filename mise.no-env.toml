@@ -214,8 +214,18 @@ auto_install = true
 # Experimental features
 experimental = true
 
-# asdf -> Doesn't support Windows.
-disable_backends = ["asdf"]
+disable_backends = [
+  # asdf -> Doesn't support Windows.
+  "asdf",
+
+  # Weak validation
+  "forgejo",
+  "github",
+  "gitlab",
+  "http",
+  "s3",
+  "ubi",
+]
 
 # Per task timeout not implemented yet in Mise.
 # task_timeout = "5s"
