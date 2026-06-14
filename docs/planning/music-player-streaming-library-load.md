@@ -423,6 +423,15 @@ That shared `saveSession` path is why these belong in one change rather than two
   (and a mid-load volume change leaves no `onPersist` trace to detect).
   Applying them up front makes them the baseline the user can override,
   and has the side benefit that volume and shuffle look right from the first frame.
+  This early application is safe against the later track load, which is the non-obvious part:
+  volume is a persistent atomic gain on the engine's shared control block
+  (`rust/src/engine.rs:185`), not reset by `load` (only the per-track normalization gain is),
+  so an early `setVolume` survives the terminal `engine.load`;
+  and shuffle is a stored mode field that `rebuildScopeOrder` re-reads on every `setTracks` and
+  `playIndex` (`core/Queue.kt`), so setting the mode before any tracks exist still yields the
+  correct scope once tracks arrive and the saved track is reselected.
+  Without those two properties this reordering would silently drop volume or mis-scope shuffle,
+  so it was checked rather than assumed.
 
 - A count threshold, not per-file or per-folder emits.
   Per-file would repaint thousands of times;
@@ -478,6 +487,21 @@ That shared `saveSession` path is why these belong in one change rather than two
 
 - A saved track was deleted since last run:
   the existing restore auto-correction still applies (the URI lookup fails and nothing is selected).
+
+### Known limitation: mid-load setting change, no-tap path, immediate kill
+
+There is one deliberately accepted gap, called out so it is not a surprise.
+On the no-tap path the terminal step intentionally does not save
+(saving there would read the not-yet-seeked engine position and write `0.0`, the very clobber this avoids).
+So a setting changed during the load is applied live but reaches storage only at the next save trigger
+(any later refresh-firing change, or the `onStop` save when the app is backgrounded),
+not the instant the load finishes.
+A swipe-kill in the sub-second window between the load finishing and any further interaction
+would lose that one mid-load setting change and restore the previously saved value next launch.
+The tap path does not have this gap (it saves immediately, and a tapped track's position is already real).
+Closing it for settings too would mean persisting a session composed from the saved position
+rather than the engine's, which is more machinery than this edge warrants;
+it is recorded here instead.
 
 ## Tests
 
