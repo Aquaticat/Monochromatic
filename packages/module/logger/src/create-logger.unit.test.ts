@@ -367,5 +367,127 @@ await describe({
           .toEqual(['after',],);
       },
     },),
+
+    it({
+      name: 'writes a mid-init record immediately to an already-available sink and replays it once to a still-verifying sink',
+      fn: async () => {
+        const eager = recordingSink();
+        const late = recordingSink({
+          verify: async function verifyLate(): Promise<boolean> {
+            // Still parked when the record is logged, so the eager sink (whose
+            // microtask verify already resolved) takes the immediate write
+            // while this sink only receives the record via replay on verify.
+            await wait(SLOW_WRITE_MS,);
+            return true;
+          },
+        },);
+        const {
+          logger,
+          initPromise,
+        } = createLogger({ sinks: [eager.sink, late.sink,], },);
+
+        // Halfway through the late sink's verify: eager has flipped available,
+        // late has not, and `initialize()` has not yet completed.
+        await wait(SLOW_WRITE_MS / 2,);
+        logger.info('mid',);
+
+        await initPromise;
+        await logger.flush();
+
+        // Eager via the immediate mid-init write, late via replay: each exactly
+        // once. A regression that replayed startup records to already-available
+        // sinks would make `eager` ['mid', 'mid'].
+        expect(messages({ recording: eager, },),)
+          .toEqual(['mid',],);
+        expect(messages({ recording: late, },),)
+          .toEqual(['mid',],);
+      },
+    },),
+
+    it({
+      name: 'a synchronously-throwing write does not retire the sink',
+      fn: async () => {
+        /**
+         * Write-attempt counter; a retired sink would stop receiving writes, so
+         * a second attempt proves the synchronous throw left it available.
+         */
+        const counters: { attempts: number; } = { attempts: 0, };
+        const flaky: Sink = {
+          verify: function verifyAvailable(): Promise<boolean> {
+            return Promise.resolve(true,);
+          },
+          write: function write(): Promise<void> {
+            counters.attempts++;
+            // Throws synchronously, before returning a promise; the logger's
+            // try around the `write()` call swallows it without retiring the
+            // sink (distinct from a rejected promise, handled by `trackWrite`).
+            throw new Error('synchronous write failure',);
+          },
+        };
+        const on = recordingSink();
+        const {
+          logger,
+          initPromise,
+        } = createLogger({ sinks: [flaky, on.sink,], },);
+        await initPromise;
+
+        logger.info('one',);
+        await logger.flush();
+        // Still available, so this neither throws nor is skipped.
+        logger.info('two',);
+        await logger.flush();
+
+        expect(counters.attempts,)
+          .toBe(2,);
+        // The healthy sibling keeps receiving every record.
+        expect(messages({ recording: on, },),)
+          .toEqual(['one', 'two',],);
+      },
+    },),
+
+    it({
+      name: 'does not run the flush hook of a sink that failed verification',
+      fn: async () => {
+        /**
+         * Flush-hook counter; stays zero because an unavailable sink's hook
+         * must be skipped by `flushAll`.
+         */
+        const counters: { flushes: number; } = { flushes: 0, };
+        const off = recordingSink({
+          verify: function verifyUnavailable(): Promise<boolean> {
+            return Promise.resolve(false,);
+          },
+          flush: async function flushHook(): Promise<void> {
+            counters.flushes++;
+          },
+        },);
+        const on = recordingSink();
+        const {
+          logger,
+          initPromise,
+        } = createLogger({ sinks: [off.sink, on.sink,], },);
+        await initPromise;
+
+        await logger.flush();
+        expect(counters.flushes,)
+          .toBe(0,);
+      },
+    },),
+
+    it({
+      name: 'throws once initialized with an empty sink list',
+      fn: async () => {
+        const {
+          logger,
+          initPromise,
+        } = createLogger({ sinks: [], },);
+        await initPromise;
+
+        expect(function logWithNoSinks() {
+          logger.info('x',);
+        },)
+          .toThrow('No logging backends available',);
+      },
+    },),
   ],
 },);
