@@ -242,24 +242,25 @@ pub(crate) fn apply_update_with_progress_debounce(
     elapsed: Duration,
     update: Update,
 ) {
-    // What:     `match update { ... }`. Branch by update variant (exhaustive over the
-    //           ones we special-case, plus a wildcard `other`).
+    // What:     `match &update { ... }`. Branch by update variant (exhaustive over the ones
+    //           we special-case, plus a wildcard `_`). Matches by REFERENCE so the same
+    //           `update` value can be forwarded to `apply_update` without rebuilding it.
     // Why:      Position updates can be suppressed; other UI state still applies.
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // switch (update.kind) { ... }
     // ```
-    match update {
-        // What:     `Update::Position(secs) => { ... }`. Tuple-variant pattern binding the
-        //           position `secs`: a progress-position tick.
+    match &update {
+        // What:     `Update::Position(_) => { ... }`. A progress-position tick. The payload is
+        //           not bound here; `apply_update` reads it from the forwarded `&update`.
         // Why:      This is the on-screen seek-bar update that needs debouncing.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // case "position": { const { secs } = update; ... }
+        // case "position": { ... }
         // ```
-        Update::Position(secs) => {
+        Update::Position(_) => {
             // What:     `if should_surface_progress(progress_debouncer, elapsed, ProgressUpdateKind::Debounced) { ... }`.
             //           Ask the debounce helper whether enough time has passed (this update
             //           is `Debounced`, i.e. rate-limited).
@@ -271,15 +272,16 @@ pub(crate) fn apply_update_with_progress_debounce(
             // ```
             if should_surface_progress(progress_debouncer, elapsed, ProgressUpdateKind::Debounced)
             {
-                // What:     `apply_update(app, Update::Position(secs));`. Re-wrap and apply
-                //           the original position update after it passed the gate.
+                // What:     `apply_update(app, &update);`. Forward the borrowed update after it
+                //           passed the gate. Unlike NowPlaying/Playing, the position apply is
+                //           INSIDE the gate, so a suppressed tick leaves the bar in place.
                 // Why:      Move the Slint seek bar and text at the debounced cadence.
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
-                // applyUpdate(app, { kind: "position", secs });
+                // applyUpdate(app, update);
                 // ```
-                apply_update(app, Update::Position(secs));
+                apply_update(app, &update);
                 // What:     `emit_launcher_progress(app, launcher);`. Mirror the same
                 //           accepted progress state to the taskbar.
                 // Why:      The taskbar should not update more often than the seek bar.
@@ -291,20 +293,16 @@ pub(crate) fn apply_update_with_progress_debounce(
                 emit_launcher_progress(app, launcher);
             }
         }
-        // What:     `Update::NowPlaying { index, name, duration } => { ... }`. STRUCT-variant
-        //           pattern destructuring the current-track metadata.
+        // What:     `Update::NowPlaying { .. } => { ... }`. The current-track metadata. The
+        //           fields are not bound here; `apply_update` reads them from `&update`.
         // Why:      Title, duration, row highlight, and page following still update
         //           immediately; only taskbar progress emission is debounced.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // case "nowPlaying": { const { index, name, duration } = update; ... }
+        // case "nowPlaying": { ... }
         // ```
-        Update::NowPlaying {
-            index,
-            name,
-            duration,
-        } => {
+        Update::NowPlaying { .. } => {
             // What:     `let should_emit_progress = should_surface_progress(progress_debouncer, elapsed, ProgressUpdateKind::Debounced);`.
             //           Decide BEFORE applying the update; the decision depends only on
             //           elapsed time, not on the new metadata.
@@ -319,23 +317,16 @@ pub(crate) fn apply_update_with_progress_debounce(
                 elapsed,
                 ProgressUpdateKind::Debounced,
             );
-            // What:     `apply_update(app, Update::NowPlaying { index, name, duration });`.
-            //           Re-wrap the destructured fields and apply, rebuilding the Slint
-            //           state from the track metadata.
+            // What:     `apply_update(app, &update);`. Forward the borrowed update; the apply
+            //           is OUTSIDE the gate, so track identity always lands immediately and
+            //           only the taskbar emission below is debounced.
             // Why:      Track identity must never wait for progress debounce.
             //
             // In TS you'd write (pseudocode):
             // ```ts
-            // applyUpdate(app, { kind: "nowPlaying", index, name, duration });
+            // applyUpdate(app, update);
             // ```
-            apply_update(
-                app,
-                Update::NowPlaying {
-                    index,
-                    name,
-                    duration,
-                },
-            );
+            apply_update(app, &update);
             // What:     `if should_emit_progress { emit_launcher_progress(app, launcher); }`.
             //           Use the earlier decision.
             // Why:      Keep taskbar progress at the debounced cadence on track resets.
@@ -348,16 +339,16 @@ pub(crate) fn apply_update_with_progress_debounce(
                 emit_launcher_progress(app, launcher);
             }
         }
-        // What:     `Update::Playing(on) => { ... }`. Tuple-variant binding the play flag
-        //           `on`: play/pause state changed.
+        // What:     `Update::Playing(_) => { ... }`. Play/pause state changed; the flag is not
+        //           bound here, `apply_update` reads it from `&update`.
         // Why:      Taskbar visibility must hide/show immediately even while ordinary
         //           progress movement is debounced.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // case "playing": { const { on } = update; ... }
+        // case "playing": { ... }
         // ```
-        Update::Playing(on) => {
+        Update::Playing(_) => {
             // What:     `let should_emit_progress = should_surface_progress(progress_debouncer, elapsed, ProgressUpdateKind::Immediate);`.
             //           `Immediate` updates always pass and reset the debounce baseline.
             // Why:      A position reset immediately after play/pause should not flicker.
@@ -371,15 +362,15 @@ pub(crate) fn apply_update_with_progress_debounce(
                 elapsed,
                 ProgressUpdateKind::Immediate,
             );
-            // What:     `apply_update(app, Update::Playing(on));`. Re-wrap and apply: mirror
-            //           the play flag.
+            // What:     `apply_update(app, &update);`. Forward the borrowed update: mirror the
+            //           play flag immediately (the apply is outside the gate).
             // Why:      Button label and window title update immediately.
             //
             // In TS you'd write (pseudocode):
             // ```ts
-            // applyUpdate(app, { kind: "playing", on });
+            // applyUpdate(app, update);
             // ```
-            apply_update(app, Update::Playing(on));
+            apply_update(app, &update);
             // What:     `if should_emit_progress { emit_launcher_progress(app, launcher); }`.
             //           This remains true for immediate updates; the branch documents the
             //           shared path.
@@ -393,15 +384,15 @@ pub(crate) fn apply_update_with_progress_debounce(
                 emit_launcher_progress(app, launcher);
             }
         }
-        // What:     `other => apply_update(app, other)`. The wildcard arm binds any
-        //           non-progress update to `other` and applies it directly.
+        // What:     `_ => apply_update(app, &update)`. The wildcard arm forwards any
+        //           non-progress update directly (by reference).
         // Why:      Queue, volume, shuffle, and repeat state should not be debounced.
         //
         // In TS you'd write (pseudocode):
         // ```ts
         // default: applyUpdate(app, update);
         // ```
-        other => apply_update(app, other),
+        _ => apply_update(app, &update),
     }
 }
 

@@ -638,17 +638,18 @@ fn refresh_page(app: &AppWindow, target: PageNav) {
     app.set_selected_page(clamped);
 }
 
-// What:     `fn apply_update(app: &AppWindow, update: Update)`. Apply one engine
+// What:     `fn apply_update(app: &AppWindow, update: &Update)`. Apply one engine
 //           update to the window's properties. `app` is a borrowed window handle;
-//           `update` is an owned `Update` enum value taken by value (so the match
-//           below can move its payload out). Runs on the event-loop thread.
+//           `update` is BORROWED (`&Update`) so the progress-debounce wrapper can forward
+//           the very same value without rebuilding it. The match reads the payload by
+//           reference. Runs on the event-loop thread.
 // Why:      Keep the on-screen state mirroring the engine's state.
 //
 // In TS you'd write (pseudocode):
 // ```ts
 // function applyUpdate(app: AppWindow, update: Update): void { ... }
 // ```
-fn apply_update(app: &AppWindow, update: Update) {
+fn apply_update(app: &AppWindow, update: &Update) {
     // What:     `match update { ... }`. Pattern-match (and destructure) the update
     //           enum's variant; exhaustive over every `Update` case.
     // Why:      Each variant maps to one or more property setters.
@@ -711,7 +712,7 @@ fn apply_update(app: &AppWindow, update: Update) {
             // ```ts
             // setNowPlaying(app, index, name, duration);
             // ```
-            set_now_playing(app, index, name, duration);
+            set_now_playing(app, *index, name, *duration);
             // What:     `refresh_page(app, PageNav::Follow);`. FOLLOW the now-playing track:
             //           switch the visible page to the one holding it so the highlighted row
             //           stays on screen after Next / auto-advance / a row selection.
@@ -755,7 +756,7 @@ fn apply_update(app: &AppWindow, update: Update) {
             // ```ts
             // setNowPlaying(app, index, name, duration);
             // ```
-            set_now_playing(app, index, name, duration);
+            set_now_playing(app, *index, name, *duration);
             // What:     `refresh_page(app, PageNav::Keep);`. Repaginate but KEEP the current tab.
             // Why:      A reconcile must not yank the user off the page they are browsing, even
             //           when the queue or the current track's page changed.
@@ -783,7 +784,7 @@ fn apply_update(app: &AppWindow, update: Update) {
             // ```ts
             // app.position = secs;
             // ```
-            app.set_position(secs as f32);
+            app.set_position(*secs as f32);
             // What:     `app.set_position_text(format_time(secs).into());`. Format the
             //           elapsed seconds and `.into()` to `SharedString`.
             // Why:      Elapsed-time label.
@@ -792,7 +793,7 @@ fn apply_update(app: &AppWindow, update: Update) {
             // ```ts
             // app.positionText = formatTime(secs);
             // ```
-            app.set_position_text(format_time(secs).into());
+            app.set_position_text(format_time(*secs).into());
         }
         // What:     `Update::Playing(on) => app.set_playing(on)`. One-line arm: bind
         //           the play/pause boolean `on` and set the `playing` property.
@@ -802,7 +803,7 @@ fn apply_update(app: &AppWindow, update: Update) {
         // ```ts
         // case "playing": app.playing = on; break;
         // ```
-        Update::Playing(on) => app.set_playing(on),
+        Update::Playing(on) => app.set_playing(*on),
         // What:     `Update::Volume(v) => app.set_volume(v)`. Bind the volume `v`
         //           (already an `f32`) and set the `volume` property.
         // Why:      Sync the slider.
@@ -811,7 +812,7 @@ fn apply_update(app: &AppWindow, update: Update) {
         // ```ts
         // case "volume": app.volume = v; break;
         // ```
-        Update::Volume(v) => app.set_volume(v),
+        Update::Volume(v) => app.set_volume(*v),
         // What:     `Update::Shuffle(mode) => app.set_shuffle_mode(shuffle_to_int(mode))`.
         //           Bind the `ShuffleMode`, encode it to an int via the helper, and
         //           set the radio group's property.
@@ -821,7 +822,7 @@ fn apply_update(app: &AppWindow, update: Update) {
         // ```ts
         // case "shuffle": app.shuffleMode = shuffleToInt(mode); break;
         // ```
-        Update::Shuffle(mode) => app.set_shuffle_mode(shuffle_to_int(mode)),
+        Update::Shuffle(mode) => app.set_shuffle_mode(shuffle_to_int(*mode)),
         // What:     `Update::RepeatTrack(on) => app.set_repeat_track(on)`. Bind the
         //           repeat-track boolean and set the checkbox property.
         // Why:      Check/uncheck the repeat-track box.
@@ -830,7 +831,7 @@ fn apply_update(app: &AppWindow, update: Update) {
         // ```ts
         // case "repeatTrack": app.repeatTrack = on; break;
         // ```
-        Update::RepeatTrack(on) => app.set_repeat_track(on),
+        Update::RepeatTrack(on) => app.set_repeat_track(*on),
     }
 }
 

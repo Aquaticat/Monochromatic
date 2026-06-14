@@ -60,9 +60,9 @@ pub(crate) enum PageNav {
     Keep,
 }
 
-// What:     `pub(crate) fn set_queue_model(app: &AppWindow, names: Vec<String>)`. Store the full
-//           queue list into the `queue` property. `names` is consumed (each `String` becomes a
-//           `SharedString` the Slint model holds).
+// What:     `pub(crate) fn set_queue_model(app: &AppWindow, names: &[String])`. Store the full
+//           queue list into the `queue` property. Borrows the slice; each `String` is copied
+//           into a `SharedString` the Slint model holds.
 // Why:      Shared by the `Queue` (fresh) and `Reconciled` (rescan) updates, which both replace
 //           the canonical full list; the visible rows are then derived by `refresh_page`.
 //
@@ -70,16 +70,17 @@ pub(crate) enum PageNav {
 // ```ts
 // function setQueueModel(app: AppWindow, names: string[]): void { app.queue = names.slice(); }
 // ```
-pub(crate) fn set_queue_model(app: &AppWindow, names: Vec<String>) {
-    // What:     `let items: Vec<SharedString> = names.into_iter().map(SharedString::from).collect();`.
-    //           Consume the owned `String`s into the `SharedString`s the model holds.
-    // Why:      Slint models hold `SharedString`, not `String`.
+pub(crate) fn set_queue_model(app: &AppWindow, names: &[String]) {
+    // What:     `let items: Vec<SharedString> = names.iter().map(|s| SharedString::from(s.as_str())).collect();`.
+    //           Copy each borrowed `String` into the `SharedString`s the model holds.
+    // Why:      Slint models hold `SharedString`, not `String` (so building the model copies
+    //           the text whether the input is owned or borrowed).
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // const items = names.slice();
     // ```
-    let items: Vec<SharedString> = names.into_iter().map(SharedString::from).collect();
+    let items: Vec<SharedString> = names.iter().map(|s| SharedString::from(s.as_str())).collect();
     // What:     `app.set_queue(Rc::new(VecModel::from(items)).into());`. Wrap the vector as a
     //           reference-counted list model and set the `queue` property.
     // Why:      Slint list properties take a `ModelRc`.
@@ -91,7 +92,7 @@ pub(crate) fn set_queue_model(app: &AppWindow, names: Vec<String>) {
     app.set_queue(Rc::new(VecModel::from(items)).into());
 }
 
-// What:     `pub(crate) fn set_now_playing(app: &AppWindow, index: Option<usize>, name: String, duration: f64)`.
+// What:     `pub(crate) fn set_now_playing(app: &AppWindow, index: Option<usize>, name: &str, duration: f64)`.
 //           Mirror the now-playing view into the window properties: title, seek-bar maximum and
 //           total-time label, and the highlighted row index (-1 when none).
 // Why:      Shared by the `NowPlaying` (transport) and `Reconciled` (rescan) updates, which both
@@ -101,7 +102,7 @@ pub(crate) fn set_queue_model(app: &AppWindow, names: Vec<String>) {
 // ```ts
 // function setNowPlaying(app, index, name, duration) { app.trackName = name; app.duration = duration; app.durationText = formatTime(duration); app.currentIndex = index ?? -1; }
 // ```
-pub(crate) fn set_now_playing(app: &AppWindow, index: Option<usize>, name: String, duration: f64) {
+pub(crate) fn set_now_playing(app: &AppWindow, index: Option<usize>, name: &str, duration: f64) {
     // What:     `app.set_track_name(name.into());`. Convert to `SharedString` and set the title
     //           source.
     // Why:      Show the filename (empty string clears it).
