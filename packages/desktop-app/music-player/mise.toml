@@ -145,7 +145,7 @@ description = "cargo nextest run (macOS/Windows native, else Linux host if dev l
 shell = "node -e"
 run = """
 {{vars.cargo_dispatch}}
-runCargo(['nextest', 'run', '--release'])
+runCargo(['nextest', 'run'])
 """
 
 [tasks."build:container"]
