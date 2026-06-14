@@ -25,24 +25,37 @@ export type LogRecord = {
 export type SinkFlush = () => Promise<void>;
 
 /**
- * Sink that receives log records.
+ * Verification function that checks if a sink backend is available.
+ * May run setup side effects (resolving a log path, opening a writable
+ * stream) and reports whether the backend is usable. A sink whose
+ * verification resolves `false` (or throws) is dropped by the logger and
+ * receives no further records.
+ */
+export type Verify = () => Promise<boolean> | boolean;
+
+/**
+ * Sink that receives log records. A sink is a self-describing adapter: it
+ * carries everything the logger must know to use it, namely how to
+ * `verify` its backend is available, how to `write` a record, and
+ * optionally how to `flush` buffered work. Holding `verify` on the sink
+ * (rather than as a sibling export the logger pairs by hand) lets the
+ * logger treat a registry as a plain `Sink[]` and lets a test supply one
+ * self-contained fake.
+ *
  * Sinks that buffer records (e.g. microtask-batched console) may
  * expose a `flush` hook so callers can force emission on demand.
  *
  * `write` is always async: a synchronous sink does its work eagerly and
  * returns an already-resolved promise, so the logger observes a uniform
- * `Promise<void>` (and can mark a sink unavailable when one rejects). A
- * `void` arm is not used, for the reason stated on `SinkFlush`.
+ * `Promise<void>`. A rejected write is handled per sink and does not
+ * disable the backend; only a failed `verify` drops a sink. A `void` arm
+ * is not used, for the reason stated on `SinkFlush`.
  */
 export type Sink = {
   flush?: SinkFlush;
+  verify: Verify;
   write: (record: LogRecord,) => Promise<void>;
 };
-
-/**
- * Verification function that checks if a sink backend is available.
- */
-export type Verify = () => Promise<boolean> | boolean;
 
 /**
  * Logger interface with 6 log levels plus `flush` for startup and sink drains.

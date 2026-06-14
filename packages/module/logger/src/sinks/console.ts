@@ -474,5 +474,6 @@ function flush(): Promise<void> {
  */
 export const consoleSink: Sink = {
   flush,
+  verify: verifyConsole,
   write,
 };

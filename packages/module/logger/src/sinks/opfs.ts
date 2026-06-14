@@ -119,5 +119,6 @@ async function write(record: LogRecord,): Promise<void> {
  * ```
  */
 export const opfsSink: Sink = {
+  verify: verifyOpfs,
   write,
 };

@@ -37,5 +37,6 @@ function write(_record: LogRecord,): Promise<void> {
  * ```
  */
 export const noopSink: Sink = {
+  verify: verifyNoop,
   write,
 };

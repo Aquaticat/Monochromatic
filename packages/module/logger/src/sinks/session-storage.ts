@@ -108,5 +108,6 @@ function write(record: LogRecord,): Promise<void> {
  * ```
  */
 export const sessionStorageSink: Sink = {
+  verify: verifySessionStorage,
   write,
 };

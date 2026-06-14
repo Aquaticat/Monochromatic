@@ -298,5 +298,6 @@ async function write(record: LogRecord,): Promise<void> {
  * ```
  */
 export const fileSink: Sink = {
+  verify: verifyFile,
   write,
 };
