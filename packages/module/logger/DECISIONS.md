@@ -42,3 +42,38 @@ and log output would depend on the stringify implementation rather than caller i
 **It is a one-way door.**
 Once callers depend on auto-stringify behavior,
 changing how objects render becomes a breaking change across every call site.
+
+## Sinks are self-describing factory adapters; the logger owns availability (2026-06-14)
+
+A sink is one value satisfying the `Sink` interface, carrying `verify`, `write`, and an
+optional `flush`. Verification is part of the sink, not a sibling `verifyX` export the
+logger pairs by hand, so the registry is a plain `Sink[]` and a test supplies one
+self-contained fake.
+
+Sinks are built by `createXSink()` factories whose buffers, streams, counters, and
+verification memo live in the instance closure. There is no module-global sink state and
+no `__resetForTests` backdoor: independent loggers and tests get isolation for free by
+constructing fresh instances.
+
+Availability has a single owner, the logger. `createLogger({ sinks })` holds per-sink
+availability, sets it from each `verify` result at startup, buffers records emitted before
+verification, and replays them per sink as it verifies. Sinks no longer track their own
+`available`/`verified` flags. This concentrates the orchestration (replay, dropout, flush,
+throw-when-empty) behind one interface that tests cross directly, rather than spreading
+duplicated bookkeeping across the logger and every sink.
+
+The default `logger` is `createLogger` applied to the default sink set and stays
+zero-config; `createLogger` is exported so callers can build a logger over an explicit
+sink list.
+
+## Write failures do not disable a sink; only verify failure does (2026-06-14)
+
+A sink is dropped from the available set only when its `verify` reports the backend
+unavailable (resolves `false` or rejects), or when its `flush` hook rejects. An individual
+`write` rejection is the sink's own concern and leaves the backend available.
+
+Earlier the contract was "any write throw or rejection retires the sink for the rest of
+the run." That was unreachable in practice (every shipped sink swallows its own write
+errors) and a footgun if it were reachable: a momentary `ENOSPC`, an OPFS quota blip, or a
+briefly-locked file would silently kill a backend permanently. Verification is the one
+event that owns availability; transient write errors stay transient.
