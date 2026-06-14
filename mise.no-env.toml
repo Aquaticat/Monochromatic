@@ -195,7 +195,8 @@ java = "temurin-21"
 "android-sdk" = "latest"
 
 # cargo-ndk dispatches `cargo ndk` to cross-compile the music-player native engine
-# .so for arm64-v8a, autodetecting the NDK from $ANDROID_HOME/ndk for its own Rust
+# .so for both 64-bit ABIs (arm64-v8a for devices, x86_64 for emulators),
+# autodetecting the NDK from $ANDROID_HOME/ndk for its own Rust
 # cross-toolchain. (It does NOT export ANDROID_NDK_HOME to child build scripts, so
 # the build:native task derives and exports that itself for the bundled-C opusic-sys
 # libopus build; see that task.) Installed through the cargo backend, which resolves
@@ -862,7 +863,7 @@ runWorkspaceNode('packages/dev-script/task-util', 'depends', ['--sources', 'sh:e
 # Triple-SINGLE-quoted so the `\n` license-acceptance newlines reach node literally
 # (a triple-double-quoted body would have TOML pre-expand them and break the JS).
 [tasks."prepare:android"]
-description = "Install the Android SDK components packages/android-app/music-player needs (platforms;android-37.0, build-tools;37.0.0, ndk;29.0.13846066, platform-tools) into $ANDROID_HOME via sdkmanager, accept licenses, and add the aarch64-linux-android rustup target. EXPENSIVE: ~2.9 GB on disk (the NDK alone is ~2.4 GB), and the `prepare` umbrella auto-runs it for every developer, not just Android ones; this cost is intended and tolerated. Idempotent: a no-op once provisioned."
+description = "Install the Android SDK components packages/android-app/music-player needs (platforms;android-37.0, build-tools;37.0.0, ndk;29.0.13846066, platform-tools) into $ANDROID_HOME via sdkmanager, accept licenses, and add the aarch64-linux-android (devices) and x86_64-linux-android (emulators) rustup targets. EXPENSIVE: ~2.9 GB on disk (the NDK alone is ~2.4 GB), and the `prepare` umbrella auto-runs it for every developer, not just Android ones; this cost is intended and tolerated. Idempotent: a no-op once provisioned."
 shell = "node -e"
 run = '''
 const { existsSync, readdirSync } = require("node:fs");
@@ -878,8 +879,12 @@ const wantNdk = "29.0.13846066";
 const have = (sub, name) => existsSync(join(sdk, sub, name));
 let rustReady = false;
 try {
-  rustReady = execFileSync("rustup", ["target", "list", "--installed"], { encoding: "utf8" })
-    .split("\n").includes("aarch64-linux-android");
+  // Both 64-bit Android targets must be present: aarch64 for physical devices and
+  // x86_64 for emulators. Checking only aarch64 would let a machine that has aarch64
+  // but not x86_64 short-circuit as "ready", then fail build:native's x86_64 cross.
+  const installed = execFileSync("rustup", ["target", "list", "--installed"], { encoding: "utf8" })
+    .split("\n");
+  rustReady = installed.includes("aarch64-linux-android") && installed.includes("x86_64-linux-android");
 } catch (err) {
   rustReady = false;
 }
@@ -898,7 +903,9 @@ if (have("platforms", wantPlatform) && have("build-tools", wantBuildTools) && ha
   const yes = "y\n".repeat(50);
   execFileSync(sdkmanager, [sdkRootArg, "--licenses"], { input: yes, stdio: ["pipe", "inherit", "inherit"] });
   execFileSync(sdkmanager, [sdkRootArg, `platforms;${wantPlatform}`, `build-tools;${wantBuildTools}`, `ndk;${wantNdk}`, "platform-tools"], { input: yes, stdio: ["pipe", "inherit", "inherit"] });
-  execFileSync("rustup", ["target", "add", "aarch64-linux-android"], { stdio: "inherit" });
+  // rustup target add is idempotent and accepts several targets at once, so adding
+  // both unconditionally is safe even when one is already installed.
+  execFileSync("rustup", ["target", "add", "aarch64-linux-android", "x86_64-linux-android"], { stdio: "inherit" });
 }
 '''
 

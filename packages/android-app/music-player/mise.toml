@@ -22,7 +22,7 @@
 # mise.no-env.toml.
 
 [tasks."build:native"]
-description = "Cross-compile the native engine .so (arm64-v8a, 16KB-aligned, API 26 floor) into app/src/main/jniLibs. Derives and exports ANDROID_NDK_HOME from the mise-provisioned $ANDROID_HOME/ndk (run prepare:android once)."
+description = "Cross-compile the native engine .so for both 64-bit ABIs (arm64-v8a for real devices, x86_64 for emulators; 16KB-aligned via the NDK 29 linker default, API 26 floor) into app/src/main/jniLibs. Derives and exports ANDROID_NDK_HOME from the mise-provisioned $ANDROID_HOME/ndk (run prepare:android once)."
 dir = "{{config_root}}/rust"
 shell = "node -e"
 run = '''
@@ -82,9 +82,18 @@ if (existsSync(buildRoot)) {
 // build silently falls back to a HOST compile (and a /usr/local install). So set
 // it explicitly, derived from the mise SDK, keeping the build self-contained.
 const { execFileSync } = require("node:child_process");
+// Build both 64-bit ABIs in one invocation: arm64-v8a for physical devices and
+// x86_64 for emulators (which run the x86_64 system image on an x86_64 host). A
+// repeated -t makes cargo-ndk cross-compile each and drop libmusicplayer_native.so
+// into the matching jniLibs/<abi>/ dir (jniLibs/arm64-v8a, jniLibs/x86_64). Without
+// the x86_64 .so the app dies on an x86_64 emulator with UnsatisfiedLinkError
+// ("library libmusicplayer_native.so not found") the instant PlaybackService loads
+// the engine. Both ABIs inherit the NDK 29 linker's 16KB max-page-size default, so
+// neither trips the emulator's non-16KB-alignment warning. The 32-bit ABIs
+// (armeabi-v7a, x86) are intentionally omitted: no current target needs them.
 execFileSync(
   "cargo",
-  ["ndk", "-t", "arm64-v8a", "--platform", "26", "-o", "../app/src/main/jniLibs", "build", "--release"],
+  ["ndk", "-t", "arm64-v8a", "-t", "x86_64", "--platform", "26", "-o", "../app/src/main/jniLibs", "build", "--release"],
   { stdio: "inherit", env: { ...process.env, ANDROID_NDK_HOME: ndkHome } },
 );
 '''
