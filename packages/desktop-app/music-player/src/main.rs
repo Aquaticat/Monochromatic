@@ -1146,18 +1146,18 @@ fn main() -> Result<(), slint::PlatformError> {
         let force_software = std::env::var("SLINT_BACKEND")
             .map(|value| value.contains("software"))
             .unwrap_or(false);
-        // What:     `if force_software { builder = builder.with_renderer_name("renderer-software"); }`.
+        // What:     `if force_software { builder = builder.with_renderer_name("software"); }`.
         //           Reassign `builder` (allowed because it is `mut`) to one pinned to
-        //           the software renderer by name (falls back to default if
-        //           unrecognized, since the builder allows fallback).
+        //           the software renderer by Slint winit's renderer token. This is
+        //           `software`, not Cargo's `renderer-software` feature name.
         // Why:      Match the previous behaviour for headless / no-GPU runs.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // if (forceSoftware) builder = builder.withRendererName("renderer-software");
+        // if (forceSoftware) builder = builder.withRendererName("software");
         // ```
         if force_software {
-            builder = builder.with_renderer_name("renderer-software");
+            builder = builder.with_renderer_name("software");
         }
         // What:     `let backend = builder.build()?;`. `.build()` returns
         //           `Result<Backend, PlatformError>`; the `?` unwraps `Ok` or RETURNS

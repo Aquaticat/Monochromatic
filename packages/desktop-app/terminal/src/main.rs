@@ -119,9 +119,11 @@ fn install_backend() -> Result<(), slint::PlatformError> {
         .map(|value| value.contains("software"))
         .unwrap_or(false);
     // What:     `if force_software { ... }` conditionally changes the builder.
-    // Why:      Headless or no-GPU sessions can force Slint's software renderer.
+    // Why:      Headless or no-GPU sessions can force Slint's software renderer;
+    //           winit expects the renderer token `software`, not Cargo's
+    //           `renderer-software` feature name.
     if force_software {
-        builder = builder.with_renderer_name("renderer-software");
+        builder = builder.with_renderer_name("software");
     }
     // What:     `let backend = builder.build()?` finishes backend construction and
     //           propagates platform errors with `?`.
