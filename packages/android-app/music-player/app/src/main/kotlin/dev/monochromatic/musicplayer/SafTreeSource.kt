@@ -96,6 +96,31 @@ import android.provider.DocumentsContract.Document
 // ```
 import android.util.Log
 
+// What:     `import dev.monochromatic.musicplayer.core.BatchEmitGate` imports the app's
+//           own `BatchEmitGate` CLASS from the sibling `.core` package: the pure rule
+//           that decides when a streaming scan has accumulated enough new tracks to emit
+//           another sorted-so-far batch.
+// Why:      The scan creates one gate per call and asks it, after each appended track,
+//           whether to emit a batch to the screen.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { BatchEmitGate } from "./core/BatchEmitGate";
+// ```
+import dev.monochromatic.musicplayer.core.BatchEmitGate
+
+// What:     `import dev.monochromatic.musicplayer.core.LIBRARY_BATCH_SIZE` imports the
+//           app's own top-level `Int` constant (the shared streaming threshold, around
+//           128) from `.core`.
+// Why:      The gate is constructed with this threshold, so both sources stream on the
+//           same policy.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { LIBRARY_BATCH_SIZE } from "./core/BatchEmitGate";
+// ```
+import dev.monochromatic.musicplayer.core.LIBRARY_BATCH_SIZE
+
 // What:     `import dev.monochromatic.musicplayer.core.compareByCodePoint` imports the
 //           app's own `compareByCodePoint` FUNCTION from the sibling `.core` package.
 //           It compares two strings by Unicode code point and returns an `Int`
@@ -132,6 +157,22 @@ import dev.monochromatic.musicplayer.core.isAudioFile
 // import { joinDisplayPath } from "./core";
 // ```
 import dev.monochromatic.musicplayer.core.joinDisplayPath
+
+// What:     `import kotlinx.coroutines.CancellationException` pulls in the special
+//           exception a coroutine throws when it is cancelled. It is an `Exception`
+//           subtype, but a SPECIAL one: catching and swallowing it would break
+//           structured cancellation, so it must always be re-thrown.
+// Why:      When a newer load supersedes this scan, the emit hop is cancelled and this
+//           exception surfaces inside `scanDirectory`; we must rethrow it (not treat it
+//           as an unreadable-directory failure) so the cancellation propagates.
+// Gotcha:   In TS a cancelled async op is just a rejected promise; here cancellation is
+//           a distinct exception class you are REQUIRED to re-throw, not absorb.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { CancellationException } from "kotlinx/coroutines";
+// ```
+import kotlinx.coroutines.CancellationException
 
 // What:     `import kotlinx.coroutines.Dispatchers` pulls in `Dispatchers`, the
 //           coroutines object naming the thread pools. We use `Dispatchers.IO` for
@@ -251,27 +292,91 @@ object SafTreeSource {
     // ```
     private data class Frame(val documentId: String, val prefix: String)
 
-    // What:     `suspend fun query(resolver: ContentResolver, treeUri: Uri): List<Track> = withContext(Dispatchers.IO) { ... }`
+    // What:     `suspend fun query(resolver, treeUri, onBatch): List<Track> = withContext(Dispatchers.IO) { ... }`
     //           declares the one public entry point. `suspend` marks it a coroutine
-    //           function (it can await background work); two named params (`resolver`,
-    //           `treeUri`); `: List<Track>` is the read-only-list return type. The
-    //           `= withContext(Dispatchers.IO) { ... }` expression body runs the
-    //           trailing lambda on the IO pool and returns its value.
+    //           function (it can await background work); three named params (`resolver`,
+    //           `treeUri`, and the optional `onBatch`); `: List<Track>` is the
+    //           read-only-list return type. The `= withContext(Dispatchers.IO) { ... }`
+    //           expression body runs the trailing lambda on the IO pool and returns its
+    //           value.
     // Why:      Scan `treeUri` and every directory beneath it, returning its audio
     //           tracks sorted by display path. The caller must hold a read grant for
     //           `treeUri`; listing the root without one throws (which the caller treats
     //           as a fall-back signal, not a crash). `suspend` keeps the cursor I/O off
-    //           the UI thread.
+    //           the UI thread. When `onBatch` is supplied, the scan also emits growing,
+    //           already-sorted batches AS IT RUNS so the screen can fill in early; when it
+    //           is null (the default), the scan stays atomic and only the final list is
+    //           returned.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // async function query(resolver: ContentResolver, treeUri: Uri): Promise<readonly Track[]> {
+    // async function query(
+    //   resolver: ContentResolver,
+    //   treeUri: Uri,
+    //   onBatch: ((batch: readonly Track[]) => Promise<void>) | null = null,
+    // ): Promise<readonly Track[]> {
     //   return await runOnWorker(() => { // runs on the IO pool
     //     // ...body below...
     //   });
     // }
     // ```
-    suspend fun query(resolver: ContentResolver, treeUri: Uri): List<Track> = withContext(Dispatchers.IO) {
+    suspend fun query(
+        // What:     `resolver: ContentResolver` is the resolver to query through.
+        // Why:      Every directory listing goes through it.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // resolver: ContentResolver,
+        // ```
+        resolver: ContentResolver,
+        // What:     `treeUri: Uri` is the granted tree URI to scan recursively.
+        // Why:      Child documents are addressed relative to this granted tree.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // treeUri: Uri,
+        // ```
+        treeUri: Uri,
+        // What:     `onBatch: (suspend (List<Track>) -> Unit)? = null` is an OPTIONAL
+        //           callback. The type `(suspend (List<Track>) -> Unit)?` reads as "a
+        //           SUSPENDING function taking a read-only `List<Track>` and returning
+        //           `Unit` (void), OR null". `suspend` inside the type means calling it can
+        //           await (it hops to the main thread to touch the screen). `= null` is the
+        //           default, so existing callers that pass nothing get the old atomic scan.
+        // Why:      It is how the scan STREAMS: each emitted batch is handed to this
+        //           callback so the UI can repaint the partial library before the whole
+        //           scan finishes.
+        // Gotcha:   The outer `?` makes the whole FUNCTION nullable (a function or null);
+        //           `suspend` is part of the function type, meaning a call to it is itself a
+        //           suspension/await point that can throw `CancellationException`.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // onBatch: ((batch: readonly Track[]) => Promise<void>) | null = null,
+        // ```
+        onBatch: (suspend (List<Track>) -> Unit)? = null,
+    ): List<Track> = withContext(Dispatchers.IO) {
+        // What:     `val gate: BatchEmitGate<Track> = BatchEmitGate(LIBRARY_BATCH_SIZE) { left, right -> compareByCodePoint(left.displayPath, right.displayPath) }`
+        //           creates ONE gate for this scan. `BatchEmitGate(...)` is the constructor
+        //           (no `new` in Kotlin); the first argument is the threshold, and the
+        //           trailing lambda `{ left, right -> ... }` is SAM-converted to the
+        //           `Comparator<Track>` it expects (a `(left, right) => number` compare by
+        //           display path).
+        // Why:      A FRESH gate per call keeps each scan's running-total private, which
+        //           matters because two scans (foreground load and the background peak
+        //           sweep) can run at once; a shared gate would corrupt across them.
+        // Gotcha:   Declared as a `val` LOCAL, never a field on this singleton object, for
+        //           exactly that concurrency reason.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const gate = new BatchEmitGate<Track>(
+        //   LIBRARY_BATCH_SIZE,
+        //   (left, right) => compareByCodePoint(left.displayPath, right.displayPath),
+        // );
+        // ```
+        val gate: BatchEmitGate<Track> =
+            BatchEmitGate(LIBRARY_BATCH_SIZE) { left, right -> compareByCodePoint(left.displayPath, right.displayPath) }
         // What:     `val rootDocumentId: String = DocumentsContract.getTreeDocumentId(treeUri)`
         //           declares a read-only `String` local `rootDocumentId`.
         //           `getTreeDocumentId(treeUri)` extracts the granted tree's root
@@ -391,18 +496,31 @@ object SafTreeSource {
                 // ```
                 continue
             }
-            // What:     `scanDirectory(resolver = resolver, treeUri = treeUri, frame = frame, pending = pending, tracks = tracks)`
+            // What:     `scanDirectory(resolver = ..., treeUri = ..., frame = ..., pending = ..., tracks = ..., onBatch = onBatch, gate = gate)`
             //           calls the private helper with NAMED ARGUMENTS (`paramName = value`),
             //           which label each argument at the call site. It lists one directory:
-            //           pushing subdirectories onto `pending` and appending audio files to
-            //           `tracks`.
-            // Why:      Do the actual per-directory listing for this frame.
+            //           pushing subdirectories onto `pending`, appending audio files to
+            //           `tracks`, and (when `onBatch` is non-null) emitting a streamed batch
+            //           through the shared `gate` after each appended file.
+            // Why:      Do the actual per-directory listing for this frame, threading the
+            //           SAME `onBatch` and `gate` through every directory so the running
+            //           total and emit cadence span the whole scan.
+            // Gotcha:   `scanDirectory` is now a `suspend` call (it can emit, which awaits);
+            //           that is legal here because `query`'s body already runs in a coroutine.
             //
             // In TS you'd write (pseudocode):
             // ```ts
-            // scanDirectory(resolver, treeUri, frame, pending, tracks);
+            // await scanDirectory(resolver, treeUri, frame, pending, tracks, onBatch, gate);
             // ```
-            scanDirectory(resolver = resolver, treeUri = treeUri, frame = frame, pending = pending, tracks = tracks)
+            scanDirectory(
+                resolver = resolver,
+                treeUri = treeUri,
+                frame = frame,
+                pending = pending,
+                tracks = tracks,
+                onBatch = onBatch,
+                gate = gate,
+            )
         }
 
         // What:     `Log.i(SOURCE_TAG, "scanned ${tracks.size} audio files under $treeUri")`
@@ -437,26 +555,32 @@ object SafTreeSource {
         tracks.sortedWith { left, right -> compareByCodePoint(left.displayPath, right.displayPath) }
     }
 
-    // What:     `private fun scanDirectory( resolver: ContentResolver, treeUri: Uri, frame: Frame, pending: ArrayDeque<Frame>, tracks: MutableList<Track>, ) { ... }`
-    //           declares a private helper with five named parameters and a block body
+    // What:     `private suspend fun scanDirectory( resolver, treeUri, frame, pending, tracks, onBatch, gate ) { ... }`
+    //           declares a private helper with seven named parameters and a block body
     //           (no return value, so the return type is the implicit `Unit`, Kotlin's
-    //           "void").
-    // Why:      List one directory's children: push subdirectories onto `pending` and
-    //           append audio files to `tracks`. An unreadable directory is logged and
-    //           skipped so it cannot abort the rest of the walk; the root's own failure
-    //           propagates (there is nothing left to scan).
+    //           "void"). `suspend` marks it a coroutine function because it may emit a
+    //           streamed batch, which awaits.
+    // Why:      List one directory's children: push subdirectories onto `pending`, append
+    //           audio files to `tracks`, and (when streaming) emit a sorted-so-far batch
+    //           through `gate`/`onBatch` after each appended file. An unreadable directory
+    //           is logged and skipped so it cannot abort the rest of the walk; the root's
+    //           own failure propagates (there is nothing left to scan). A coroutine
+    //           cancellation (a newer load superseding this one) is RE-THROWN, not
+    //           swallowed.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // function scanDirectory(
+    // async function scanDirectory(
     //   resolver: ContentResolver,
     //   treeUri: Uri,
     //   frame: Frame,
     //   pending: Frame[],
     //   tracks: Track[],
-    // ): void { ... }
+    //   onBatch: ((batch: readonly Track[]) => Promise<void>) | null,
+    //   gate: BatchEmitGate<Track>,
+    // ): Promise<void> { ... }
     // ```
-    private fun scanDirectory(
+    private suspend fun scanDirectory(
         // What:     `resolver: ContentResolver` is the resolver to query through.
         // Why:      Each child query goes through it.
         //
@@ -501,6 +625,26 @@ object SafTreeSource {
         // tracks: Track[],
         // ```
         tracks: MutableList<Track>,
+        // What:     `onBatch: (suspend (List<Track>) -> Unit)?` is the same optional
+        //           streaming callback `query` received: a SUSPENDING function taking a
+        //           read-only `List<Track>`, or null.
+        // Why:      Threaded through so this directory's appended files can trigger a
+        //           streamed batch; null means "do not stream".
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // onBatch: ((batch: readonly Track[]) => Promise<void>) | null,
+        // ```
+        onBatch: (suspend (List<Track>) -> Unit)?,
+        // What:     `gate: BatchEmitGate<Track>` is the shared, per-scan emit gate.
+        // Why:      Using the SAME gate across every directory keeps the running total and
+        //           emit cadence consistent over the whole scan, not reset per directory.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // gate: BatchEmitGate<Track>,
+        // ```
+        gate: BatchEmitGate<Track>,
     ) {
         // What:     `val childrenUri: Uri = DocumentsContract.buildChildDocumentsUriUsingTree(treeUri, frame.documentId)`
         //           declares a read-only `Uri` local `childrenUri`. The helper builds the
@@ -513,22 +657,29 @@ object SafTreeSource {
         // const childrenUri: Uri = DocumentsContract.buildChildDocumentsUriUsingTree(treeUri, frame.documentId);
         // ```
         val childrenUri: Uri = DocumentsContract.buildChildDocumentsUriUsingTree(treeUri, frame.documentId)
-        // What:     `try { ... } catch (failure: Exception) { ... }` is a TRY/CATCH: run the
-        //           block, and if it THROWS, run the `catch` block with the thrown value
-        //           bound to `failure` (typed `Exception`). This is the same shape as TS's
-        //           `try { } catch (e) { }`, except Kotlin lets you TYPE the caught value.
+        // What:     `try { ... } catch (cancellation: CancellationException) { ... } catch (failure: Exception) { ... }`
+        //           is a TRY with TWO catch clauses, checked in order: the MORE SPECIFIC
+        //           `CancellationException` first, then the broad `Exception`. Kotlin lets
+        //           you TYPE each caught value.
         // Why:      A single unreadable directory (a transient provider error, a per-folder
         //           permission quirk) must be logged and skipped, not abort the whole walk.
-        //           (Folds in the old inline note: the cursor read holds no suspension point,
-        //           so it cannot raise a coroutine `CancellationException` here; the catch
-        //           only ever sees a real provider failure.)
+        //           BUT now the listing has a real suspension point: when streaming, the
+        //           emit hops to the main thread, and a newer load can CANCEL this scan
+        //           there, surfacing a `CancellationException`. That must be re-thrown so
+        //           the cancellation propagates; only a genuine provider failure is
+        //           swallowed-and-skipped. (This corrects the old note that claimed the
+        //           cursor read held no suspension point: the streamed emit now does.)
+        // Gotcha:   Clause ORDER matters: `CancellationException` is itself an `Exception`,
+        //           so the specific clause must precede the broad one, or every
+        //           cancellation would be wrongly absorbed as a directory failure.
         //
         // In TS you'd write (pseudocode):
         // ```ts
         // try {
-        //   // ...listing...
-        // } catch (failure) {
-        //   Log.w(SOURCE_TAG, `skipping unreadable directory ${frame.documentId}`, failure);
+        //   // ...listing, possibly awaiting onBatch...
+        // } catch (e) {
+        //   if (e instanceof CancellationException) throw e;
+        //   Log.w(SOURCE_TAG, `skipping unreadable directory ${frame.documentId}`, e);
         // }
         // ```
         try {
@@ -697,9 +848,53 @@ object SafTreeSource {
                         // tracks.push({ uri: documentUri.toString(), displayPath: childPath });
                         // ```
                         tracks.add(Track(uri = documentUri.toString(), displayPath = childPath))
+                        // What:     `if (onBatch != null) { val batch = gate.nextBatch(tracks); if (batch != null) { onBatch(batch) } }`
+                        //           streams a batch when one is requested. `gate.nextBatch(tracks)`
+                        //           returns a sorted-so-far `List<Track>?` (the batch to emit) or
+                        //           null (not yet). When non-null, `onBatch(batch)` is CALLED, and
+                        //           because `onBatch`'s type is `suspend`, this call AWAITS (it hops
+                        //           to the main thread to repaint).
+                        // Why:      Show the partial library as it grows; the gate keeps this from
+                        //           firing on every file (only once per `LIBRARY_BATCH_SIZE` new
+                        //           tracks). The check sits right after a track is appended, so the
+                        //           emit cadence tracks real discovery even inside one huge folder.
+                        // Gotcha:   This is the scan's SUSPENSION POINT. If a newer load supersedes
+                        //           this one, the await throws `CancellationException` here, which
+                        //           the outer catch RE-THROWS rather than swallowing.
+                        //
+                        // In TS you'd write (pseudocode):
+                        // ```ts
+                        // if (onBatch !== null) {
+                        //   const batch = gate.nextBatch(tracks);
+                        //   if (batch !== null) await onBatch(batch);
+                        // }
+                        // ```
+                        if (onBatch != null) {
+                            val batch: List<Track>? = gate.nextBatch(tracks)
+                            if (batch != null) {
+                                onBatch(batch)
+                            }
+                        }
                     }
                 }
             }
+        } catch (cancellation: CancellationException) {
+            // What:     `throw cancellation` re-throws the caught `CancellationException`
+            //           unchanged, propagating it to the coroutine machinery instead of
+            //           treating it as a directory failure. `cancellation` is the value bound
+            //           by the `catch (cancellation: CancellationException)` clause.
+            // Why:      A newer load (for example a folder pick during a scan) cancels this
+            //           one through the streamed emit; swallowing the cancellation would let
+            //           the superseded scan keep emitting stale batches over the new library.
+            // Gotcha:   This clause MUST come before `catch (failure: Exception)`, since
+            //           `CancellationException` is an `Exception`; otherwise the broad clause
+            //           would catch it first and wrongly skip the directory.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // if (e instanceof CancellationException) throw e;
+            // ```
+            throw cancellation
         } catch (failure: Exception) {
             // What:     `Log.w(SOURCE_TAG, "skipping unreadable directory ${frame.documentId}", failure)`
             //           writes a WARNING log line with the thrown `failure` attached (the

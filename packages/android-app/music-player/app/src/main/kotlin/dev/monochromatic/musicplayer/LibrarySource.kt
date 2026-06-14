@@ -157,11 +157,38 @@ object LibrarySource {
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // async function load(context: Context): Promise<readonly Track[]> {
+    // async function load(
+    //   context: Context,
+    //   onBatch: ((batch: readonly Track[]) => Promise<void>) | null = null,
+    // ): Promise<readonly Track[]> {
     //   // ...body...
     // }
     // ```
-    suspend fun load(context: Context): List<Track> {
+    suspend fun load(
+        // What:     `context: Context` is the app-environment handle.
+        // Why:      Used to resolve the held folder, check the audio permission, and reach the
+        //           content resolver.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // context: Context,
+        // ```
+        context: Context,
+        // What:     `onBatch: (suspend (List<Track>) -> Unit)? = null` is the OPTIONAL streaming
+        //           callback, FORWARDED unchanged to whichever source runs. Its type reads as "a
+        //           SUSPENDING function taking a read-only `List<Track>`, OR null"; `= null` is the
+        //           default.
+        // Why:      The cold-start loader passes a callback so the active source can stream its
+        //           partial library; the foreground rescan passes nothing so it stays atomic.
+        //           Forwarding here keeps the single shared seam (so SAF and MediaStore stream the
+        //           same way) without each caller knowing which source is live.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // onBatch: ((batch: readonly Track[]) => Promise<void>) | null = null,
+        // ```
+        onBatch: (suspend (List<Track>) -> Unit)? = null,
+    ): List<Track> {
         // What:     `val root: Uri? = LibraryRoot.heldRoot(context)`.
         //           - `val` is a read-only binding (cannot be reassigned).
         //           - `: Uri?` is the type, and the trailing `?` makes it NULLABLE:
@@ -196,18 +223,20 @@ object LibrarySource {
         // }
         // ```
         if (root != null) {
-            // What:     `return scanRoot(context, root)` calls the sibling function
-            //           `scanRoot` with the context and the now-non-null `root`,
-            //           and returns its `List<Track>` to the caller. `scanRoot` is
-            //           itself `suspend`, so this call is an implicit await point.
-            // Why:      Delegate folder enumeration (and its failure handling) to
-            //           `scanRoot`, and hand its tracks straight back.
+            // What:     `return scanRoot(context, root, onBatch)` calls the sibling function
+            //           `scanRoot` with the context, the now-non-null `root`, and the
+            //           forwarded `onBatch`, and returns its `List<Track>` to the caller.
+            //           `scanRoot` is itself `suspend`, so this call is an implicit await
+            //           point.
+            // Why:      Delegate folder enumeration (and its failure handling) to `scanRoot`,
+            //           threading the streaming callback through so a SAF scan can emit
+            //           partial batches.
             //
             // In TS you'd write (pseudocode):
             // ```ts
-            // return await scanRoot(context, root);
+            // return await scanRoot(context, root, onBatch);
             // ```
-            return scanRoot(context, root)
+            return scanRoot(context, root, onBatch)
         }
         // What:     `if (hasAudioPermission(context)) { ... }` calls the top-level
         //           function `hasAudioPermission` (defined in `Permissions.kt`,
@@ -236,9 +265,9 @@ object LibrarySource {
             //
             // In TS you'd write (pseudocode):
             // ```ts
-            // return await MediaStoreSource.query(context.contentResolver);
+            // return await MediaStoreSource.query(context.contentResolver, onBatch);
             // ```
-            return MediaStoreSource.query(context.contentResolver)
+            return MediaStoreSource.query(context.contentResolver, onBatch)
         }
         // What:     `return emptyList()` calls Kotlin's standard-library helper
         //           `emptyList()`, which returns a shared, immutable, zero-element
@@ -272,11 +301,39 @@ object LibrarySource {
     // async function scanRoot(
     //   context: Context,
     //   treeUri: Uri,
+    //   onBatch: ((batch: readonly Track[]) => Promise<void>) | null = null,
     // ): Promise<readonly Track[]> {
     //   // ...body...
     // }
     // ```
-    suspend fun scanRoot(context: Context, treeUri: Uri): List<Track> =
+    suspend fun scanRoot(
+        // What:     `context: Context` is the app-environment handle.
+        // Why:      Used to reach the content resolver for the SAF walk.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // context: Context,
+        // ```
+        context: Context,
+        // What:     `treeUri: Uri` is the granted folder's tree URI to scan.
+        // Why:      `SafTreeSource.query` walks this tree and every descendant.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // treeUri: Uri,
+        // ```
+        treeUri: Uri,
+        // What:     `onBatch: (suspend (List<Track>) -> Unit)? = null` is the OPTIONAL streaming
+        //           callback, forwarded to `SafTreeSource.query`. `= null` is the default.
+        // Why:      The cold-start loader streams a chosen folder's scan; the folder-pick reload
+        //           passes nothing here, so it stays atomic.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // onBatch: ((batch: readonly Track[]) => Promise<void>) | null = null,
+        // ```
+        onBatch: (suspend (List<Track>) -> Unit)? = null,
+    ): List<Track> =
         // What:     `try { ... } catch (...) { ... }` runs the folder scan and, if
         //           it throws, routes the error to a matching `catch` clause. Here
         //           the WHOLE `try`/`catch` is an EXPRESSION whose value becomes the
@@ -301,22 +358,24 @@ object LibrarySource {
         // }
         // ```
         try {
-            // What:     `SafTreeSource.query(context.contentResolver, treeUri)`
-            //           calls the singleton `SafTreeSource`'s `suspend` `query`,
-            //           passing the content resolver and the granted tree URI; it
-            //           returns `List<Track>` for every audio file under the folder.
-            //           No trailing `return` and no `;`: as the last expression in
-            //           the `try` block, its value becomes the `try` expression's
-            //           value, which (via the `=` body) becomes `scanRoot`'s return.
-            // Why:      Delegate the actual folder walk to `SafTreeSource`, which
-            //           already skips individual unreadable directories; this layer
-            //           only guards a failure of the ENTIRE walk.
+            // What:     `SafTreeSource.query(context.contentResolver, treeUri, onBatch)`
+            //           calls the singleton `SafTreeSource`'s `suspend` `query`, passing
+            //           the content resolver, the granted tree URI, and the forwarded
+            //           streaming callback; it returns `List<Track>` for every audio file
+            //           under the folder. No trailing `return` and no `;`: as the last
+            //           expression in the `try` block, its value becomes the `try`
+            //           expression's value, which (via the `=` body) becomes `scanRoot`'s
+            //           return.
+            // Why:      Delegate the actual folder walk to `SafTreeSource`, which already
+            //           skips individual unreadable directories and (when `onBatch` is set)
+            //           emits partial batches; this layer only guards a failure of the
+            //           ENTIRE walk.
             //
             // In TS you'd write (pseudocode):
             // ```ts
-            // return await SafTreeSource.query(context.contentResolver, treeUri);
+            // return await SafTreeSource.query(context.contentResolver, treeUri, onBatch);
             // ```
-            SafTreeSource.query(context.contentResolver, treeUri)
+            SafTreeSource.query(context.contentResolver, treeUri, onBatch)
         } catch (cancellation: CancellationException) {
             // What:     `throw cancellation` re-throws the caught
             //           `CancellationException` unchanged, propagating it to the

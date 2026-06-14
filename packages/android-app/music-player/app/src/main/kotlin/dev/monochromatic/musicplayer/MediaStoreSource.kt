@@ -95,6 +95,29 @@ import android.util.Log
 // ```
 import dev.monochromatic.musicplayer.core.compareByCodePoint
 
+// What:     Imports the `BatchEmitGate` class from this app's own `core` package: the pure
+//           rule that decides when a streaming scan has accumulated enough new tracks to
+//           emit another sorted-so-far batch.
+// Why:      This source creates one gate per call and asks it, after each appended track,
+//           whether to emit a batch to the screen.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { BatchEmitGate } from "./core/BatchEmitGate";
+// ```
+import dev.monochromatic.musicplayer.core.BatchEmitGate
+
+// What:     Imports the top-level `Int` constant `LIBRARY_BATCH_SIZE` (the shared streaming
+//           threshold, around 128) from `core`.
+// Why:      The gate is constructed with this threshold, so both sources stream on the same
+//           policy.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { LIBRARY_BATCH_SIZE } from "./core/BatchEmitGate";
+// ```
+import dev.monochromatic.musicplayer.core.LIBRARY_BATCH_SIZE
+
 // What:     Imports `Dispatchers`, a Kotlin coroutines object that names the thread pools
 //           coroutines can run on. We use `Dispatchers.IO`, the pool meant for blocking
 //           input/output work (file/network/database reads).
@@ -160,28 +183,78 @@ object MediaStoreSource {
     // // @ts-expect-error / eslint-disable-next-line — silence deprecated-API warning
     // ```
     @Suppress("DEPRECATION")
-    // What:     `suspend fun query(resolver: ContentResolver): List<Track> = ...` declares a
-    //           function named `query` with one parameter `resolver` of type
-    //           `ContentResolver`. `suspend` marks it a coroutine function that may pause
+    // What:     `suspend fun query(resolver, onBatch): List<Track> = ...` declares a function
+    //           named `query` with two params: `resolver` (a `ContentResolver`) and the
+    //           optional `onBatch`. `suspend` marks it a coroutine function that may pause
     //           and resume (so it can await background work); it must be called from another
     //           coroutine. `: List<Track>` is the return type, a read-only list of `Track`.
     //           The `=` form is an expression body: the function returns the value of the
     //           single expression on the right (here the `withContext { ... }` block).
-    //           `resolver: ContentResolver` is a named param; Kotlin requires the type.
     // Why:      This is the one public entry point: hand it a resolver, get back the device's
-    //           music tracks. `suspend` lets it do IO without blocking the UI thread.
+    //           music tracks. `suspend` lets it do IO without blocking the UI thread. When
+    //           `onBatch` is supplied, the scan ALSO emits growing, already-sorted batches as
+    //           it reads the cursor so the screen fills in early; when null (the default), the
+    //           scan stays atomic and only the final list returns.
     // Gotcha:   `List<Track>` is READ-ONLY (no `.add`); the mutable cousin is `MutableList`.
     //           A `suspend` function looks synchronous but can only be called from a coroutine.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // async function query(resolver: ContentResolver): Promise<readonly Track[]> {
+    // async function query(
+    //   resolver: ContentResolver,
+    //   onBatch: ((batch: readonly Track[]) => Promise<void>) | null = null,
+    // ): Promise<readonly Track[]> {
     //   return await runOnWorker(/* IO pool */ async () => {
     //     // ...body below...
     //   });
     // }
     // ```
-    suspend fun query(resolver: ContentResolver): List<Track> = withContext(Dispatchers.IO) {
+    suspend fun query(
+        // What:     `resolver: ContentResolver` is the resolver to read MediaStore through.
+        // Why:      The cursor query runs on it.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // resolver: ContentResolver,
+        // ```
+        resolver: ContentResolver,
+        // What:     `onBatch: (suspend (List<Track>) -> Unit)? = null` is an OPTIONAL streaming
+        //           callback. The type reads as "a SUSPENDING function taking a read-only
+        //           `List<Track>` and returning `Unit`, OR null"; `= null` is the default, so
+        //           existing callers that pass nothing get the old atomic scan.
+        // Why:      It is how the scan STREAMS: each emitted batch is handed to this callback so
+        //           the UI can repaint the partial library before the whole scan finishes.
+        // Gotcha:   `suspend` is part of the function type, so a call to it is itself a
+        //           suspension/await point; if a newer load cancels this scan there, a
+        //           `CancellationException` propagates straight out of `query` (there is no
+        //           catch here to swallow it).
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // onBatch: ((batch: readonly Track[]) => Promise<void>) | null = null,
+        // ```
+        onBatch: (suspend (List<Track>) -> Unit)? = null,
+    ): List<Track> = withContext(Dispatchers.IO) {
+        // What:     `val gate: BatchEmitGate<Track> = BatchEmitGate(LIBRARY_BATCH_SIZE) { left, right -> compareByCodePoint(left.displayPath, right.displayPath) }`
+        //           creates ONE gate for this scan. `BatchEmitGate(...)` is the constructor (no
+        //           `new`); the first argument is the threshold, and the trailing lambda is
+        //           SAM-converted to the `Comparator<Track>` it expects (a `(left, right) =>
+        //           number` compare by display path).
+        // Why:      A FRESH gate per call keeps each scan's running-total private, which matters
+        //           because two scans (foreground load and the background peak sweep) can run at
+        //           once; a shared gate would corrupt across them.
+        // Gotcha:   Declared as a `val` LOCAL, never a field on this singleton object, for that
+        //           concurrency reason.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const gate = new BatchEmitGate<Track>(
+        //   LIBRARY_BATCH_SIZE,
+        //   (left, right) => compareByCodePoint(left.displayPath, right.displayPath),
+        // );
+        // ```
+        val gate: BatchEmitGate<Track> =
+            BatchEmitGate(LIBRARY_BATCH_SIZE) { left, right -> compareByCodePoint(left.displayPath, right.displayPath) }
         // What:     `val hasRelativePath: Boolean = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q`
         //           declares an unreassignable local `Boolean`. `Build.VERSION.SDK_INT` is the
         //           device's Android API level as an `Int`; `Build.VERSION_CODES.Q` is the
@@ -500,6 +573,32 @@ object MediaStoreSource {
                 // tracks.push(new Track(uri, displayPath)); // or { uri, displayPath }
                 // ```
                 tracks.add(Track(uri = uri, displayPath = displayPath))
+                // What:     `if (onBatch != null) { val batch = gate.nextBatch(tracks); if (batch != null) { onBatch(batch) } }`
+                //           streams a batch when one is requested. `gate.nextBatch(tracks)` returns a
+                //           sorted-so-far `List<Track>?` (the batch to emit) or null (not yet). When
+                //           non-null, `onBatch(batch)` is CALLED, and because `onBatch`'s type is
+                //           `suspend`, this call AWAITS (it hops to the main thread to repaint).
+                // Why:      Show the partial library as it grows; the gate keeps this from firing on
+                //           every row (only once per `LIBRARY_BATCH_SIZE` new tracks). MediaStore reads
+                //           one flat cursor, so the gate inside this loop is what makes that single
+                //           large source stream at all.
+                // Gotcha:   This is the scan's SUSPENSION POINT. If a newer load supersedes this one,
+                //           the await throws `CancellationException`, which propagates straight out of
+                //           `query` (there is no catch here to swallow it).
+                //
+                // In TS you'd write (pseudocode):
+                // ```ts
+                // if (onBatch !== null) {
+                //   const batch = gate.nextBatch(tracks);
+                //   if (batch !== null) await onBatch(batch);
+                // }
+                // ```
+                if (onBatch != null) {
+                    val batch: List<Track>? = gate.nextBatch(tracks)
+                    if (batch != null) {
+                        onBatch(batch)
+                    }
+                }
             }
         }
         // What:     `Log.i(SOURCE_TAG, "queried ${tracks.size} music tracks from MediaStore")`.
