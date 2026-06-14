@@ -52,9 +52,9 @@ export type Verify = () => Promise<boolean> | boolean;
  * is not used, for the reason stated on `SinkFlush`.
  */
 export type Sink = {
-  flush?: SinkFlush;
-  verify: Verify;
-  write: (record: LogRecord,) => Promise<void>;
+  readonly flush?: SinkFlush;
+  readonly verify: Verify;
+  readonly write: (record: LogRecord,) => Promise<void>;
 };
 
 /**

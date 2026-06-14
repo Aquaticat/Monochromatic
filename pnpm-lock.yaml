@@ -1732,6 +1732,9 @@ importers:
       '@monochromatic-dev/config-typescript':
         specifier: workspace:*
         version: link:../../config/typescript
+      '@monochromatic-dev/module-async-time':
+        specifier: workspace:*
+        version: link:../async-time
       '@monochromatic-dev/module-test':
         specifier: workspace:*
         version: link:../test
