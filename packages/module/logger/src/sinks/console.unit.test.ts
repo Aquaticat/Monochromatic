@@ -43,6 +43,33 @@ function record(
   };
 }
 
+/**
+ * Appends `--verbose` to `process.argv` and removes it again when the returned
+ * value goes out of `using` scope, so a verbose-detection test cannot leak the
+ * flag into the sibling test that asserts the silenced default.
+ *
+ * @returns Disposable that restores `process.argv` on scope exit.
+ */
+function withVerboseArgv(): Disposable {
+  process.argv
+    .push('--verbose',);
+  return {
+    [Symbol.dispose](): void {
+      /**
+       * Index of the flag this helper added; `-1` means a concurrent change already removed it, so nothing is spliced.
+       */
+      const flagIndex = process.argv
+        .indexOf('--verbose',);
+      if (flagIndex !== -1)
+        process.argv
+          .splice(
+          flagIndex,
+          1,
+        );
+    },
+  };
+}
+
 await describe({
   name: 'console sink (microtask-batched)',
   // Sequential because every test spies a global (`console.*`); concurrent
@@ -349,6 +376,30 @@ await describe({
           .toBe(0,);
         expect(traceSpy.callCount,)
           .toBe(0,);
+      },
+    },),
+
+    it({
+      name: '--verbose in process.argv enables debug output without DEBUG',
+      fn: async ({ sinon, },) => {
+        delete process.env.DEBUG;
+        // A fresh sink recomputes verbose on its first write; with DEBUG unset
+        // and no browser `window`, the --verbose argv flag is the sole trigger.
+        using _restoreArgv = withVerboseArgv();
+        const sink = createConsoleSink();
+        const spy = sinon.spy(
+          console,
+          'debug',
+        );
+
+        void sink.write(record({
+          level: 'debug',
+          message: 'shown',
+        },),);
+        await waitForFlush();
+
+        expect(spy.callCount,)
+          .toBe(1,);
       },
     },),
 

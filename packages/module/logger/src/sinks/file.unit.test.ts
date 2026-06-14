@@ -121,6 +121,21 @@ await describe({
     },),
 
     it({
+      name: 'write before verify resolves without touching the filesystem',
+      fn: async () => {
+        // Verification resolves the log path and caches `appendFile`; without
+        // it both stay unset, so write takes the unset-guard early return,
+        // resolving as a silent no-op rather than throwing or writing.
+        const sink = createFileSink();
+        await expect(
+          sink.write(record({ message: 'before verify', },),),
+        )
+          .resolves
+          .toBeUndefined();
+      },
+    },),
+
+    it({
       name: 'a verified sink accepts records across levels and message shapes',
       fn: async () => {
         const sink = createFileSink();
