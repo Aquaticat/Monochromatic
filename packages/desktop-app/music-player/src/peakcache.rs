@@ -34,6 +34,17 @@ use std::path::{Path, PathBuf};
 // ```
 use std::time::UNIX_EPOCH;
 
+// What:     `use std::sync::{Arc, Mutex};`. The atomically reference-counted shared
+//           pointer and the mutual-exclusion lock.
+// Why:      `flush` below takes the cache as the same `Arc<Mutex<PeakCache>>` the
+//           worker threads share, so it must name both types.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// // no direct equivalent: a shared, lock-guarded handle
+// ```
+use std::sync::{Arc, Mutex};
+
 // What:     `use crate::identity;` imports the shared identity-strings module
 //           (importing the MODULE, so reads stay qualified as
 //           `identity::CONFIG_APPLICATION`, keeping the origin obvious).
@@ -638,6 +649,73 @@ impl PeakCache {
         // this.unsaved = Math.max(0, this.unsaved - count);
         // ```
         self.unsaved = self.unsaved.saturating_sub(count);
+    }
+}
+
+// What:     `pub(crate) fn flush(cache: &Arc<Mutex<PeakCache>>)`. Persist any unsaved
+//           cache entries to disk WITHOUT holding the lock across the file write.
+//           `&Arc<...>` borrows the shared handle (no ownership taken).
+// Why:      Both the background sweep (measure.rs) and the current-track measurement
+//           (peak_swap.rs) need this exact off-lock save dance; owning it here, next to
+//           `pending_save`/`mark_saved`/`write_atomic`, keeps the lock discipline in one
+//           place instead of two copies that could drift.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function flush(cache: SharedPeakCache): void {
+//   const snapshot = withLock(cache, (c) => c.pendingSave());
+//   if (!snapshot) return;
+//   const [path, json, count] = snapshot;
+//   if (writeAtomic(path, json)) withLock(cache, (c) => c.markSaved(count));
+// }
+// ```
+pub(crate) fn flush(cache: &Arc<Mutex<PeakCache>>) {
+    // What:     `let snapshot = { let guard = cache.lock().unwrap(); guard.pending_save() };`.
+    //           A BLOCK EXPRESSION: lock the cache, take an owned `(path, json, count)`
+    //           snapshot (or `None`), and release the lock at the end of the block (the
+    //           guard drops). `.lock()` returns a `Result` (poisoned if a holder panicked);
+    //           `.unwrap()` takes the guard or panics.
+    // Why:      Serialize while locked (fast, in-memory); write while unlocked.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const snapshot = withLock(cache, (c) => c.pendingSave());
+    // ```
+    let snapshot = {
+        let guard = cache.lock().unwrap();
+        guard.pending_save()
+    };
+    // What:     `if let Some((path, json, count)) = snapshot { ... }`. Only write when there
+    //           was something to save. Destructures the owned tuple.
+    // Why:      Skip the disk entirely when nothing changed.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // if (snapshot) { const [path, json, count] = snapshot; ... }
+    // ```
+    if let Some((path, json, count)) = snapshot {
+        // What:     `if write_atomic(&path, &json).is_ok() { ... }`. Do the file write with
+        //           NO lock held; `.is_ok()` checks the `Result` without unwrapping (an IO
+        //           error just means we retry next interval).
+        // Why:      The slow part happens off the lock; only update the counter if the write
+        //           actually landed.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // let ok = true; try { writeAtomic(path, json); } catch { ok = false; } if (ok) { ... }
+        // ```
+        if write_atomic(&path, &json).is_ok() {
+            // What:     `cache.lock().unwrap().mark_saved(count);`. Re-lock briefly and
+            //           subtract the snapshot's entry count from the unsaved counter.
+            // Why:      Record that these entries are now on disk; passing a COUNT (not a
+            //           zeroing) leaves any inserts that raced the snapshot still pending.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // withLock(cache, (c) => c.markSaved(count));
+            // ```
+            cache.lock().unwrap().mark_saved(count);
+        }
     }
 }
 

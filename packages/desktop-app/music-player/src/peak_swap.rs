@@ -628,75 +628,27 @@ fn measure_and_store_gain(
     // if (fingerprint) { ... }
     // ```
     if let Some(key) = fingerprint {
-        // What:     `let snapshot = { ... }`. Lock the shared cache, insert the new
-        //           peak, create a pending-save snapshot, and release the lock at the
-        //           end of the block.
-        // Why:      Disk I/O must happen without holding the cache mutex, otherwise the
-        //           engine can block behind a slow save.
+        // What:     `cache.lock().unwrap().insert(key, peak);`. Lock the shared cache,
+        //           insert the measured peak under the owned fingerprint key, and release
+        //           the lock at the end of the statement.
+        // Why:      Warm the cache even if this result later becomes stale for playback.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // const snapshot = withLock(cache, (c) => { c.insert(key, peak); return c.pendingSave(); });
+        // withLock(cache, (c) => c.insert(key, peak));
         // ```
-        let snapshot = {
-            // What:     `let mut guard = cache.lock().unwrap();`. Lock the shared cache
-            //           for mutation. `mut` is required because insert changes it.
-            // Why:      Store the measured peak while holding the mutex.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // const guard = lock(cache);
-            // ```
-            let mut guard = cache.lock().unwrap();
-            // What:     `guard.insert(key, peak);`. Insert the measured peak with the
-            //           owned fingerprint key.
-            // Why:      Warm the cache even if this result becomes stale for playback.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // guard.insert(key, peak);
-            // ```
-            guard.insert(key, peak);
-            // What:     `guard.pending_save()`. Serialize a save snapshot while still
-            //           under the lock. Tail expression returns it from the block.
-            // Why:      The slow write can happen after the lock is released.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // return guard.pendingSave();
-            // ```
-            guard.pending_save()
-        };
-        // What:     `if let Some((path, json, count)) = snapshot { ... }`. Continue only
-        //           when there is a path and unsaved data to write.
-        // Why:      In-memory-only caches cannot be persisted.
+        cache.lock().unwrap().insert(key, peak);
+        // What:     `peakcache::flush(cache);`. Persist the cache to disk OFF-LOCK (snapshot
+        //           under the lock, write without it, then re-lock only to mark saved).
+        // Why:      Persist this current-track measurement promptly through the same shared
+        //           helper the background sweep uses, so the snapshot-write-mark dance lives
+        //           in one place instead of a second copy here.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // if (snapshot) { const [path, json, count] = snapshot; }
+        // flush(cache);
         // ```
-        if let Some((path, json, count)) = snapshot {
-            // What:     `if peakcache::write_atomic(&path, &json).is_ok() { ... }`.
-            //           Write the JSON snapshot to disk without holding the cache lock.
-            // Why:      Persist the current-track measurement promptly while keeping the
-            //           shared cache available to the engine.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // if (writeAtomic(path, json).ok) { ... }
-            // ```
-            if peakcache::write_atomic(&path, &json).is_ok() {
-                // What:     `cache.lock().unwrap().mark_saved(count);`. Re-lock briefly
-                //           and mark the snapshot entries as saved.
-                // Why:      Preserve unsaved counts for entries inserted after the snapshot.
-                //
-                // In TS you'd write (pseudocode):
-                // ```ts
-                // withLock(cache, (c) => c.markSaved(count));
-                // ```
-                cache.lock().unwrap().mark_saved(count);
-            }
-        }
+        peakcache::flush(cache);
     }
     // What:     `Some(normalization_gain(peak))`. Convert the raw peak to gain and
     //           wrap it. Tail expression returns the worker's result.

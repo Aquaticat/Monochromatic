@@ -305,68 +305,6 @@ fn lower_current_thread_to_idle() {
 #[cfg(not(any(target_os = "linux", target_os = "macos", windows)))]
 fn lower_current_thread_to_idle() {}
 
-// What:     `fn flush_pending(cache: &Arc<Mutex<PeakCache>>)`. Persist any unsaved cache
-//           entries to disk WITHOUT holding the cache lock during the file write.
-//           `&Arc<...>` borrows the shared handle (we do not take ownership).
-//           Module-private.
-// Why:      The sweep runs at idle priority; if it held the mutex across the disk write and
-//           got starved, the engine thread (which locks the cache on track load) would
-//           block. So we snapshot under the lock, release it, write, then briefly re-lock
-//           only to update the counter.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// function flushPending(cache: SharedPeakCache): void { ... }
-// ```
-fn flush_pending(cache: &Arc<Mutex<PeakCache>>) {
-    // What:     `let snapshot = { let guard = cache.lock().unwrap(); guard.pending_save() };`.
-    //           A BLOCK EXPRESSION: lock the cache, take an owned `(path, json, count)`
-    //           snapshot (or `None`), and release the lock at the end of the block (the
-    //           guard drops). `.lock()` returns a `Result` (poisoned if a holder panicked);
-    //           `.unwrap()` takes the guard or panics.
-    // Why:      Serialize while locked (fast, in-memory); write while unlocked.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // const snapshot = withLock(cache, (c) => c.pendingSave());
-    // ```
-    let snapshot = {
-        let guard = cache.lock().unwrap();
-        guard.pending_save()
-    };
-    // What:     `if let Some((path, json, count)) = snapshot { ... }`. Only write when there
-    //           was something to save. Destructures the owned tuple.
-    // Why:      Skip the disk entirely when nothing changed.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // if (snapshot) { const [path, json, count] = snapshot; ... }
-    // ```
-    if let Some((path, json, count)) = snapshot {
-        // What:     `if peakcache::write_atomic(&path, &json).is_ok() { ... }`. Do the file
-        //           write with NO lock held; `.is_ok()` checks the `Result` without
-        //           unwrapping (an IO error just means we retry next interval).
-        // Why:      The slow part happens off the lock; only update the counter if the write
-        //           actually landed.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // let ok = true; try { writeAtomic(path, json); } catch { ok = false; } if (ok) { ... }
-        // ```
-        if peakcache::write_atomic(&path, &json).is_ok() {
-            // What:     `cache.lock().unwrap().mark_saved(count);`. Re-lock briefly and
-            //           subtract the snapshot's entry count from the unsaved counter.
-            // Why:      Record that these entries are now on disk.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // withLock(cache, (c) => c.markSaved(count));
-            // ```
-            cache.lock().unwrap().mark_saved(count);
-        }
-    }
-}
-
 // What:     `fn run_sweep(tracks: Vec<PathBuf>, cache: Arc<Mutex<PeakCache>>)`. The
 //           background body: measure each uncached track, batching saves, sleeping briefly
 //           after each real measurement. Takes ownership of both args. Module-private.
@@ -528,14 +466,14 @@ fn run_sweep(tracks: Vec<PathBuf>, cache: Arc<Mutex<PeakCache>>) {
         if unsaved >= SAVE_BATCH
             || last_save.elapsed() >= Duration::from_secs(SAVE_INTERVAL_SECS)
         {
-            // What:     `flush_pending(&cache);`. Persist out-of-lock.
+            // What:     `peakcache::flush(&cache);`. Persist out-of-lock.
             // Why:      Write the accumulated measurements without blocking the engine.
             //
             // In TS you'd write (pseudocode):
             // ```ts
-            // flushPending(cache);
+            // flush(cache);
             // ```
-            flush_pending(&cache);
+            peakcache::flush(&cache);
             // What:     `last_save = Instant::now();`. Reset the flush timer.
             // Why:      Start the next interval from now.
             //
@@ -555,15 +493,15 @@ fn run_sweep(tracks: Vec<PathBuf>, cache: Arc<Mutex<PeakCache>>) {
         // ```
         thread::sleep(Duration::from_millis(MEASURE_GAP_MS));
     }
-    // What:     `flush_pending(&cache);`. Final flush of any entries left below the batch
+    // What:     `peakcache::flush(&cache);`. Final flush of any entries left below the batch
     //           threshold, out-of-lock.
     // Why:      Do not lose the tail of the queue's measurements.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // flushPending(cache);
+    // flush(cache);
     // ```
-    flush_pending(&cache);
+    peakcache::flush(&cache);
 }
 
 // What:     `#[cfg(test)] #[path = "measure_tests.rs"] mod tests;` declares a test-only
