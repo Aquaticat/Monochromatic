@@ -28,10 +28,14 @@ export type SinkFlush = () => Promise<void>;
  * Verification function that checks if a sink backend is available.
  * May run setup side effects (resolving a log path, opening a writable
  * stream) and reports whether the backend is usable. A sink whose
- * verification resolves `false` (or throws) is dropped by the logger and
+ * verification resolves `false` (or rejects) is dropped by the logger and
  * receives no further records.
+ *
+ * Always async, matching `write` and `flush`: a synchronous check returns an
+ * already-resolved promise (`Promise.resolve(check)`) so the logger awaits
+ * verification uniformly with no sync/async branch.
  */
-export type Verify = () => Promise<boolean> | boolean;
+export type Verify = () => Promise<boolean>;
 
 /**
  * Sink that receives log records. A sink is a self-describing adapter: it

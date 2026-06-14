@@ -17,13 +17,6 @@ type SinkEntry = {
 };
 
 /**
- * Sentinel returned by {@link createLogger}'s `verifyEntry` when verification
- * completed synchronously. A unique symbol avoids `void` as an
- * optional-return escape.
- */
-const SYNC_VERIFICATION_DONE = Symbol('logger:sync-verification-done',);
-
-/**
  * Awaits one sink write so `flush()` can observe its settling. A rejected
  * write is swallowed here (the sink owns its own write-error handling) and
  * does not disable the sink: one transient failure must not retire a backend
@@ -247,93 +240,43 @@ export function createLogger(
   }
 
   /**
-   * Awaits an asynchronous sink verification and records its availability.
-   *
-   * @param entryIndex - Sink entry index being verified.
-   *
-   * @param verification - Async verification result to await.
-   */
-  async function resolveAsyncVerification(
-    {
-      entryIndex,
-      verification,
-    }: {
-      readonly entryIndex: number;
-      readonly verification: Promise<boolean>;
-    },
-  ): Promise<void> {
-    try {
-      setEntryAvailability({
-        available: await verification,
-        entryIndex,
-      },);
-    }
-    catch {
-      markEntryUnavailable({ entryIndex, },);
-    }
-  }
-
-  /**
-   * Starts verification for a sink, preserving synchronous availability for
-   * sync verifiers such as the console sink.
+   * Runs one sink's verification and records the result, replaying buffered
+   * startup records to it on success. A rejected verification (or a
+   * synchronous throw from the verifier) drops the sink.
    *
    * @param entryIndex - Sink entry index to verify.
-   *
-   * @returns Promise for async verification, or {@link SYNC_VERIFICATION_DONE}.
    */
-  function verifyEntry(
-    { entryIndex, }: { readonly entryIndex: number; },
-  ): Promise<void> | typeof SYNC_VERIFICATION_DONE {
+  async function verifyAndApply({ entryIndex, }: { readonly entryIndex: number; },): Promise<void> {
     try {
       /**
        * Sink entry whose verifier is about to run.
        */
       const entry = getSinkEntry({ entryIndex, },);
-      /**
-       * Verification return value (sync boolean or Promise); sync results are
-       * applied in the same call stack so console logging is available at import.
-       */
-      const verification = entry.sink
-        .verify();
-      if (verification instanceof Promise)
-        return resolveAsyncVerification({
-          entryIndex,
-          verification,
-        },);
-
       setEntryAvailability({
-        available: verification,
+        available: await entry.sink
+          .verify(),
         entryIndex,
       },);
     }
     catch {
       markEntryUnavailable({ entryIndex, },);
     }
-
-    return SYNC_VERIFICATION_DONE;
   }
 
   /**
    * Initializes all sink backends by verifying their availability. Runs once
    * at construction. Verification order does not affect correctness: every
    * sink that verifies available replays the full startup buffer, so no sink
-   * depends on another verifying first; the await-in-loop merely keeps a
-   * synchronous verifier's result applied before the next sink starts.
+   * depends on another verifying first. The sequential await keeps startup in
+   * a single deterministic order rather than racing all verifiers at once.
    */
   async function initialize(): Promise<void> {
     if (state.initialized)
       return;
 
-    for (const [entryIndex,] of entries.entries()) {
-      /**
-       * Optional async verification; sync verifiers have already completed by
-       * the time `verifyEntry` returns.
-       */
-      const verification = verifyEntry({ entryIndex, },);
-      if (verification !== SYNC_VERIFICATION_DONE)
-        // oxlint-disable-next-line no-await-in-loop -- Apply each verification before the next sink starts.
-        await verification;
-    }
+    for (const [entryIndex,] of entries.entries())
+      // oxlint-disable-next-line no-await-in-loop -- Verify sinks in priority order; order does not affect replay correctness.
+      await verifyAndApply({ entryIndex, },);
 
     state.initialized = true;
     startupRecords.length = 0;

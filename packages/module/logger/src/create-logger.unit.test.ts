@@ -44,8 +44,8 @@ type RecordingSink = {
  */
 function recordingSink(
   {
-    verify = function verifyAvailable(): boolean {
-      return true;
+    verify = function verifyAvailable(): Promise<boolean> {
+      return Promise.resolve(true,);
     },
     flush,
     writeDelayMs = 0,
@@ -126,8 +126,10 @@ await describe({
       name: 'buffers a pre-verify record and replays it to a late-verifying sink exactly once',
       fn: async () => {
         const late = recordingSink({
-          verify: async function verifyLater(): Promise<boolean> {
-            return true;
+          verify: function verifyLater(): Promise<boolean> {
+            // Resolves on a microtask, after the synchronous log call, so the
+            // record must buffer and replay rather than write immediately.
+            return Promise.resolve(true,);
           },
         },);
         const {
@@ -153,8 +155,10 @@ await describe({
       fn: async () => {
         const eager = recordingSink();
         const late = recordingSink({
-          verify: async function verifyLater(): Promise<boolean> {
-            return true;
+          verify: function verifyLater(): Promise<boolean> {
+            // Resolves on a microtask, after the synchronous log call, so the
+            // record must buffer and replay rather than write immediately.
+            return Promise.resolve(true,);
           },
         },);
         const {
@@ -179,8 +183,8 @@ await describe({
       name: 'drops a sink whose verify resolves false',
       fn: async () => {
         const off = recordingSink({
-          verify: function verifyUnavailable(): boolean {
-            return false;
+          verify: function verifyUnavailable(): Promise<boolean> {
+            return Promise.resolve(false,);
           },
         },);
         const on = recordingSink();
@@ -203,12 +207,17 @@ await describe({
       name: 'drops a sink whose verify throws or rejects',
       fn: async () => {
         const thrower = recordingSink({
-          verify: function verifyThrows(): boolean {
+          verify: function verifyThrows(): Promise<boolean> {
+            // Throws synchronously, before returning a promise; the logger's
+            // try around `await verify()` still catches it.
             throw new Error('sync verify failed',);
           },
         },);
         const rejecter = recordingSink({
           verify: async function verifyRejects(): Promise<boolean> {
+            // Rejects after a microtask; awaiting it in the logger rejects and
+            // is caught.
+            await Promise.resolve();
             throw new Error('async verify failed',);
           },
         },);
@@ -234,8 +243,8 @@ await describe({
       name: 'throws once initialized with no available backend',
       fn: async () => {
         const off = recordingSink({
-          verify: function verifyUnavailable(): boolean {
-            return false;
+          verify: function verifyUnavailable(): Promise<boolean> {
+            return Promise.resolve(false,);
           },
         },);
         const {
@@ -260,8 +269,8 @@ await describe({
          */
         const counters: { attempts: number; } = { attempts: 0, };
         const flaky: Sink = {
-          verify: function verifyAvailable(): boolean {
-            return true;
+          verify: function verifyAvailable(): Promise<boolean> {
+            return Promise.resolve(true,);
           },
           write: async function write(): Promise<void> {
             counters.attempts++;
