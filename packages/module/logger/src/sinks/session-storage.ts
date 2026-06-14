@@ -9,39 +9,20 @@ import type {
 const STORAGE_KEY_PREFIX = 'monochromatic.log';
 
 /**
- * Module-local mutable state grouped in a `const` container so module-root
- * state stays out of a top-level `let` (`no-module-root-let` would otherwise
- * reject it). `lineCounter` increments per write to keep keys unique;
- * `verified` short-circuits repeat verification; `available` flips false on
- * a failed verification or a runtime throw.
- */
-const state: {
-  lineCounter: number;
-  verified: boolean;
-  available: boolean;
-} = {
-  available: true,
-  lineCounter: 0,
-  verified: false,
-};
-
-/**
- * Verifies sessionStorage actually persists data.
+ * Verifies sessionStorage actually persists data. Stateless: the logger calls
+ * this once per sink at startup and owns the resulting availability, so no
+ * verified/available flag is kept here.
  *
- * @returns whether sessionStorage is available and functional
+ * @returns Whether sessionStorage is available and round-trips a probe write.
  *
  * @example
  * ```ts
- * if (verifySessionStorage()) {
- *   sessionStorageSink.write(logRecord);
+ * if (await verifySessionStorage()) {
+ *   // sessionStorage usable
  * }
  * ```
  */
-export function verifySessionStorage(): boolean {
-  if (state.verified)
-    return state.available;
-  state.verified = true;
-
+function verifySessionStorage(): Promise<boolean> {
   try {
     /**
      * Sentinel key used only for the probe write/read; removed afterward to avoid polluting real log entries.
@@ -63,51 +44,62 @@ export function verifySessionStorage(): boolean {
       .getItem(testKey,);
     globalThis.sessionStorage
       .removeItem(testKey,);
-    state.available = readBack === testValue;
+    return Promise.resolve(readBack === testValue,);
   }
   catch {
-    state.available = false;
+    return Promise.resolve(false,);
   }
-  return state.available;
 }
 
 /**
- * Persists a log record to sessionStorage under a counter-incremented key.
+ * Builds a sessionStorage sink that writes each record under a
+ * counter-incremented key. The line counter lives in this instance's closure
+ * (no module-global state), so independent loggers and tests never share keys
+ * or need a reset hook. Writes persist immediately, so no `flush` hook is
+ * exposed.
  *
- * @param record - log record to persist
- */
-function write(record: LogRecord,): Promise<void> {
-  if (!state.available)
-    return Promise.resolve();
-
-  try {
-    /**
-     * Counter-incremented storage key so each log entry occupies its own slot; the prefix namespaces them.
-     */
-    const key = `${STORAGE_KEY_PREFIX}.${state.lineCounter++}`;
-    globalThis.sessionStorage
-      .setItem(
-      key,
-      JSON.stringify(record,),
-    );
-  }
-  catch {
-    // Silently fail if storage is full or unavailable
-  }
-
-  return Promise.resolve();
-}
-
-/**
- * SessionStorage sink that writes log records to browser sessionStorage.
- * Writes persist immediately with no buffering, so no `flush` hook is needed.
+ * @returns Sink backed by browser `sessionStorage`.
  *
  * @example
  * ```ts
- * sessionStorageSink.write({ level: 'info', message: 'user signed in', timestamp: Date.now() });
+ * const { logger } = createLogger({ sinks: [createSessionStorageSink()] });
+ * logger.info('user signed in');
  * ```
  */
-export const sessionStorageSink: Sink = {
-  verify: verifySessionStorage,
-  write,
-};
+export function createSessionStorageSink(): Sink {
+  /**
+   * Instance-local key counter; increments per write to keep keys unique.
+   */
+  const state: { lineCounter: number; } = { lineCounter: 0, };
+
+  /**
+   * Persists a log record to sessionStorage under a counter-incremented key.
+   * The logger only writes to verified-available sinks, so no availability
+   * guard is needed here.
+   *
+   * @param record - Log record to persist.
+   */
+  function write(record: LogRecord,): Promise<void> {
+    try {
+      /**
+       * Counter-incremented storage key so each log entry occupies its own slot; the prefix namespaces them.
+       */
+      const key = `${STORAGE_KEY_PREFIX}.${state.lineCounter++}`;
+      globalThis.sessionStorage
+        .setItem(
+        key,
+        JSON.stringify(record,),
+      );
+    }
+    catch {
+      // Silently fail if storage is full or unavailable.
+    }
+
+    return Promise.resolve();
+  }
+
+  return {
+    verify: verifySessionStorage,
+    write,
+  };
+}

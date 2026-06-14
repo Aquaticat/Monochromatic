@@ -16,80 +16,62 @@ test.describe('sessionStorage sink', () => {
     await page.waitForFunction(() => globalThis.moduleLogger !== undefined);
   },);
 
-  test('verifySessionStorage exists and is callable', async ({ page, },) => {
+  test('createSessionStorageSink exposes a callable verify', async ({ page, },) => {
     const typeofVerify = await page.evaluate(() => {
-      const { verifySessionStorage, } = globalThis.moduleLogger.sinks;
-      return typeof verifySessionStorage;
+      const { createSessionStorageSink, } = globalThis.moduleLogger.sinks;
+      return typeof createSessionStorageSink().verify;
     },);
     expect(typeofVerify,).toBe('function',);
   });
 
-  test('verifySessionStorage returns boolean', async ({ page, },) => {
-    const resultType = await page.evaluate(() => {
-      const { verifySessionStorage, } = globalThis.moduleLogger.sinks;
-      return typeof verifySessionStorage();
+  test('verify resolves a boolean', async ({ page, },) => {
+    const resultType = await page.evaluate(async () => {
+      const { createSessionStorageSink, } = globalThis.moduleLogger.sinks;
+      return typeof (await createSessionStorageSink().verify());
     },);
     expect(resultType,).toBe('boolean',);
   });
 
-  test('verifySessionStorage detects availability', async ({ page, },) => {
-    const result = await page.evaluate(() => {
-      const { verifySessionStorage, } = globalThis.moduleLogger.sinks;
-      return verifySessionStorage();
+  test('verify detects availability', async ({ page, },) => {
+    const result = await page.evaluate(async () => {
+      const { createSessionStorageSink, } = globalThis.moduleLogger.sinks;
+      return createSessionStorageSink().verify();
     },);
     expect(result,).toBe(true,);
   });
 
   test('sink write method exists', async ({ page, },) => {
     const typeofSink = await page.evaluate(() => {
-      const { sessionStorageSink, } = globalThis.moduleLogger.sinks;
-      return typeof sessionStorageSink.write;
+      const { createSessionStorageSink, } = globalThis.moduleLogger.sinks;
+      return typeof createSessionStorageSink().write;
     },);
     expect(typeofSink,).toBe('function',);
   });
 
-  test('sink writes valid LogRecord', async ({ page, },) => {
-    const didNotThrow = await page.evaluate(() => {
-      const {
-        sessionStorageSink,
-        verifySessionStorage,
-      } = globalThis.moduleLogger.sinks;
-      verifySessionStorage();
-      const record = {
-        level: 'info' as const,
-        message: 'test message',
-        timestamp: Date.now(),
-      };
-      try {
-        void sessionStorageSink.write(record,);
-        return true;
-      }
-      catch {
-        return false;
-      }
-    },);
-    expect(didNotThrow,).toBe(true,);
-  });
-
-  test('sink handles all log levels', async ({ page, },) => {
-    const allSucceeded = await page.evaluate(() => {
-      const {
-        sessionStorageSink,
-        verifySessionStorage,
-      } = globalThis.moduleLogger.sinks;
-      verifySessionStorage();
+  test('a verified sink writes records across levels and message shapes', async ({ page, },) => {
+    const allSucceeded = await page.evaluate(async () => {
+      const { createSessionStorageSink, } = globalThis.moduleLogger.sinks;
+      const sink = createSessionStorageSink();
+      await sink.verify();
       const levels = ['trace', 'debug', 'info', 'warn', 'error', 'fatal',] as const;
+      const messages = [
+        'test message',
+        'Hello 世界 🌍',
+        '',
+        '{"key": "value", "nested": {"a": 1}}',
+      ];
       for (const level of levels) {
-        const record = {
-          level,
-          message: `test ${level} message`,
-          timestamp: Date.now(),
-        };
-        try {
-          void sessionStorageSink.write(record,);
-        }
-        catch {
-          return false;
+        for (const message of messages) {
+          try {
+            void sink.write({
+              level,
+              message,
+              timestamp: Date.now(),
+            },);
+          }
+          catch {
+            return false;
+          }
         }
       }
       return true;
@@ -97,83 +79,11 @@ test.describe('sessionStorage sink', () => {
     expect(allSucceeded,).toBe(true,);
   });
 
-  test('sink handles unicode in message', async ({ page, },) => {
-    const didNotThrow = await page.evaluate(() => {
-      const {
-        sessionStorageSink,
-        verifySessionStorage,
-      } = globalThis.moduleLogger.sinks;
-      verifySessionStorage();
-      const record = {
-        level: 'info' as const,
-        message: 'Hello 世界 🌍',
-        timestamp: Date.now(),
-      };
-      try {
-        void sessionStorageSink.write(record,);
-        return true;
-      }
-      catch {
-        return false;
-      }
-    },);
-    expect(didNotThrow,).toBe(true,);
-  });
-
-  test('sink handles empty message', async ({ page, },) => {
-    const didNotThrow = await page.evaluate(() => {
-      const {
-        sessionStorageSink,
-        verifySessionStorage,
-      } = globalThis.moduleLogger.sinks;
-      verifySessionStorage();
-      const record = {
-        level: 'info' as const,
-        message: '',
-        timestamp: Date.now(),
-      };
-      try {
-        void sessionStorageSink.write(record,);
-        return true;
-      }
-      catch {
-        return false;
-      }
-    },);
-    expect(didNotThrow,).toBe(true,);
-  });
-
-  test('sink handles JSON in message', async ({ page, },) => {
-    const didNotThrow = await page.evaluate(() => {
-      const {
-        sessionStorageSink,
-        verifySessionStorage,
-      } = globalThis.moduleLogger.sinks;
-      verifySessionStorage();
-      const record = {
-        level: 'info' as const,
-        message: '{"key": "value", "nested": {"a": 1}}',
-        timestamp: Date.now(),
-      };
-      try {
-        void sessionStorageSink.write(record,);
-        return true;
-      }
-      catch {
-        return false;
-      }
-    },);
-    expect(didNotThrow,).toBe(true,);
-  });
-
   test('written records can be retrieved from sessionStorage', async ({ page, },) => {
-    const result = await page.evaluate(() => {
-      const {
-        sessionStorageSink,
-        verifySessionStorage,
-      } = globalThis.moduleLogger.sinks;
+    const result = await page.evaluate(async () => {
+      const { createSessionStorageSink, } = globalThis.moduleLogger.sinks;
 
-      // Clear any existing logs first
+      // Clear any existing logs first.
       const keysToRemove: string[] = [];
       const storageLength = globalThis.sessionStorage.length;
       for (let storageIndex = 0; storageIndex < storageLength; storageIndex++) {
@@ -185,18 +95,17 @@ test.describe('sessionStorage sink', () => {
         globalThis.sessionStorage.removeItem(key,);
       },);
 
-      verifySessionStorage();
+      const sink = createSessionStorageSink();
+      await sink.verify();
 
       const testMessage = `unique-test-${Date.now()}`;
-      const record = {
+      void sink.write({
         level: 'info' as const,
         message: testMessage,
         timestamp: Date.now(),
-      };
+      },);
 
-      void sessionStorageSink.write(record,);
-
-      // Find the written record
+      // Find the written record.
       const currentStorageLength = globalThis.sessionStorage.length;
       for (let storageIndex = 0; storageIndex < currentStorageLength; storageIndex++) {
         const key = globalThis.sessionStorage.key(storageIndex,);

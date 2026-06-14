@@ -10,17 +10,17 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import {
-  fileSink,
+  createFileSink,
   findNodeModulesUp,
   NO_NODE_MODULES_FOUND,
-  verifyFile,
 } from './file.ts';
+import type { LogRecord, } from '../types.ts';
 
 /**
  * Mock `stat` that always throws an ENOENT-like error, so `findNodeModulesUp`
  * walks the whole tree and exhausts without matching.
  *
- * @returns never; always throws
+ * @returns Never; always throws.
  */
 function statAlwaysMissing(): never {
   const error: NodeJS.ErrnoException = Object.assign(
@@ -30,46 +30,62 @@ function statAlwaysMissing(): never {
   throw error;
 }
 
+/**
+ * Builds a LogRecord for write-path tests.
+ *
+ * @param message - Message body.
+ *
+ * @returns Record at a fixed timestamp.
+ */
+function record({ message, }: { readonly message: string; },): LogRecord {
+  return {
+    level: 'info',
+    message,
+    timestamp: 0,
+  };
+}
+
 await describe({
-  name: fileSink.constructor.name,
+  name: 'file sink',
   children: [
     it({
-      name: 'verify function exists and is callable',
+      name: 'exposes callable verify and write methods',
       fn: async () => {
-        expect(typeof verifyFile,).toBe('function',);
+        const sink = createFileSink();
+        expect(typeof sink.verify,).toBe('function',);
+        expect(typeof sink.write,).toBe('function',);
       },
     },),
 
     it({
-      name: 'verify returns boolean or promise',
+      name: 'verify resolves a boolean',
       fn: async () => {
-        const result = verifyFile();
-        const resolved = result instanceof Promise ? await result : result;
+        const resolved = await createFileSink().verify();
         expect(typeof resolved,).toBe('boolean',);
       },
     },),
 
     it({
-      name:
-        'verify reports availability when running in a package with ancestor node_modules',
+      name: 'verify reports availability when running in a package with ancestor node_modules',
       fn: async () => {
         // Tests run from within the monorepo, so an ancestor node_modules
         // always exists. Availability proves find-up located it AND that
         // mkdir/appendFile/readFile all succeeded.
-        expect(await verifyFile(),).toBe(true,);
+        expect(await createFileSink().verify(),).toBe(true,);
       },
     },),
 
     it({
-      name: 'concurrent verify calls share a single in-flight promise',
+      name: 'concurrent verify calls on one sink share a single in-flight promise',
       fn: async () => {
         // Regression guard for the race that used to return false to late
-        // callers because a synchronous `verified = true` flag was flipped
-        // at entry before the async work finished.
+        // callers. The memo now lives in the instance closure, not a module
+        // global, so a fresh sink exercises it cleanly.
+        const sink = createFileSink();
         const [a, b, c,] = await Promise.all([
-          verifyFile(),
-          verifyFile(),
-          verifyFile(),
+          sink.verify(),
+          sink.verify(),
+          sink.verify(),
         ],);
         expect(a,).toBe(b,);
         expect(b,).toBe(c,);
@@ -105,90 +121,21 @@ await describe({
     },),
 
     it({
-      name: 'sink exposes a callable write method',
+      name: 'a verified sink accepts records across levels and message shapes',
       fn: async () => {
-        expect(typeof fileSink.write,).toBe('function',);
-      },
-    },),
+        const sink = createFileSink();
+        await sink.verify();
 
-    it({
-      name: 'sink accepts valid LogRecord',
-      fn: async () => {
-        // Verify first to set up the file path
-        await verifyFile();
-
-        const record = {
-          level: 'info' as const,
-          message: 'test message',
-          timestamp: Date.now(),
-        };
-
-        // Should not throw even if file is unavailable
-        await Promise.resolve(fileSink.write(record,),);
-      },
-    },),
-
-    it({
-      name: 'sink handles all log levels',
-      fn: async () => {
-        await verifyFile();
-
-        const levels = ['trace', 'debug', 'info', 'warn', 'error', 'fatal',] as const;
-
-        for (const level of levels) {
-          const record = {
-            level,
-            message: `test ${level} message`,
-            timestamp: Date.now(),
-          };
-          // oxlint-disable-next-line no-await-in-loop -- Ensuring each level works sequentially
-          await Promise.resolve(fileSink.write(record,),);
-        }
-      },
-    },),
-
-    it({
-      name: 'sink handles unicode in message',
-      fn: async () => {
-        await verifyFile();
-
-        const record = {
-          level: 'info' as const,
-          message: 'Hello 世界 🌍',
-          timestamp: Date.now(),
-        };
-
-        await Promise.resolve(fileSink.write(record,),);
-      },
-    },),
-
-    it({
-      name: 'sink handles empty message',
-      fn: async () => {
-        await verifyFile();
-
-        const record = {
-          level: 'info' as const,
-          message: '',
-          timestamp: Date.now(),
-        };
-
-        await Promise.resolve(fileSink.write(record,),);
-      },
-    },),
-
-    it({
-      name: 'sink handles JSON in message',
-      fn: async () => {
-        await verifyFile();
-
-        const record = {
-          level: 'info' as const,
-          message: '{"key": "value", "nested": {"a": 1}}',
-          timestamp: Date.now(),
-        };
-
-        await Promise.resolve(fileSink.write(record,),);
+        const messages = [
+          'plain message',
+          'Hello 世界 🌍',
+          '',
+          '{"key": "value", "nested": {"a": 1}}',
+          'line1\nline2\nline3',
+        ];
+        for (const message of messages)
+          // oxlint-disable-next-line no-await-in-loop -- sequential appends keep file order deterministic
+          await sink.write(record({ message, },),);
       },
     },),
   ],

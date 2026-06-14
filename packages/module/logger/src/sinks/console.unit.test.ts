@@ -3,18 +3,14 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
+import { createConsoleSink, } from './console.ts';
 import type { LogRecord, } from '../types.ts';
-import {
-  __resetForTests,
-  consoleSink,
-  verifyConsole,
-} from './console.ts';
 
 /**
  * Awaits two microtask hops so any pending `queueMicrotask(flushBuffer)`
- * has definitely fired and the buffer is drained before the next test
- * begins. One hop would often be enough, but two is cheap insurance
- * against timing skew from the harness itself.
+ * has definitely fired and the buffer is drained before the next assertion.
+ * One hop would often be enough, but two is cheap insurance against timing
+ * skew from the harness itself.
  */
 async function waitForFlush(): Promise<void> {
   await Promise.resolve();
@@ -36,8 +32,8 @@ function record(
     level,
     message,
   }: {
-    level: LogRecord['level'];
-    message: string;
+    readonly level: LogRecord['level'];
+    readonly message: string;
   },
 ): LogRecord {
   return {
@@ -49,16 +45,17 @@ function record(
 
 await describe({
   name: 'console sink (microtask-batched)',
-  // Sequential because every test mutates shared module-level state
-  // (buffer, scheduled flag, verboseCache, process.env.DEBUG) and
-  // spies a global (`console`). Concurrent runs clobber each other.
+  // Sequential because every test spies a global (`console.*`); concurrent
+  // runs would clobber each other's spies. Sink state is now per-instance
+  // (each test builds its own `createConsoleSink()`), so no reset hook or
+  // shared-buffer coordination is needed.
   concurrency: 1,
   children: [
     it({
-      name: 'verify returns true in a test environment',
+      name: 'verify resolves true in a test environment',
       fn: async () => {
-        __resetForTests();
-        expect(verifyConsole(),)
+        const sink = createConsoleSink();
+        expect(await sink.verify(),)
           .toBe(true,);
       },
     },),
@@ -66,14 +63,14 @@ await describe({
     it({
       name: 'single write defers until next microtask',
       fn: async ({ sinon, },) => {
-        __resetForTests();
         process.env.DEBUG = 'true';
+        const sink = createConsoleSink();
         const spy = sinon.spy(
           console,
           'info',
         );
 
-        void consoleSink.write(record({
+        void sink.write(record({
           level: 'info',
           message: 'deferred',
         },),);
@@ -91,14 +88,14 @@ await describe({
       // (such as the toml-edit conformance codec) keep their output clean.
       name: 'WARN=false suppresses warn records',
       fn: async ({ sinon, },) => {
-        __resetForTests();
         process.env.WARN = 'false';
+        const sink = createConsoleSink();
         const spy = sinon.spy(
           console,
           'warn',
         );
 
-        void consoleSink.write(record({
+        void sink.write(record({
           level: 'warn',
           message: 'hushed',
         },),);
@@ -116,17 +113,17 @@ await describe({
     it({
       name: 'warn records emit when WARN is unset',
       fn: async ({ sinon, },) => {
-        __resetForTests();
         Reflect.deleteProperty(
           process.env,
           'WARN',
         );
+        const sink = createConsoleSink();
         const spy = sinon.spy(
           console,
           'warn',
         );
 
-        void consoleSink.write(record({
+        void sink.write(record({
           level: 'warn',
           message: 'audible',
         },),);
@@ -140,18 +137,18 @@ await describe({
     it({
       name: 'contiguous same-level runs collapse to one console call',
       fn: async ({ sinon, },) => {
-        __resetForTests();
         process.env.DEBUG = 'true';
+        const sink = createConsoleSink();
         const spy = sinon.spy(
           console,
           'info',
         );
 
-        void consoleSink.write(record({
+        void sink.write(record({
           level: 'info',
           message: 'first',
         },),);
-        void consoleSink.write(record({
+        void sink.write(record({
           level: 'info',
           message: 'second',
         },),);
@@ -172,8 +169,8 @@ await describe({
     it({
       name: 'level transitions split into separate console calls',
       fn: async ({ sinon, },) => {
-        __resetForTests();
         process.env.DEBUG = 'true';
+        const sink = createConsoleSink();
         const debugSpy = sinon.spy(
           console,
           'debug',
@@ -183,19 +180,19 @@ await describe({
           'warn',
         );
 
-        void consoleSink.write(record({
+        void sink.write(record({
           level: 'debug',
           message: 'd1',
         },),);
-        void consoleSink.write(record({
+        void sink.write(record({
           level: 'debug',
           message: 'd2',
         },),);
-        void consoleSink.write(record({
+        void sink.write(record({
           level: 'warn',
           message: 'w1',
         },),);
-        void consoleSink.write(record({
+        void sink.write(record({
           level: 'debug',
           message: 'd3',
         },),);
@@ -217,14 +214,14 @@ await describe({
     it({
       name: 'formats each record as [level] [iso] message',
       fn: async ({ sinon, },) => {
-        __resetForTests();
         process.env.DEBUG = 'true';
+        const sink = createConsoleSink();
         const spy = sinon.spy(
           console,
           'info',
         );
 
-        void consoleSink.write(record({
+        void sink.write(record({
           level: 'info',
           message: 'hi',
         },),);
@@ -239,8 +236,8 @@ await describe({
     it({
       name: 'each level routes to its mapped console method',
       fn: async ({ sinon, },) => {
-        __resetForTests();
         process.env.DEBUG = 'true';
+        const sink = createConsoleSink();
         // Stub (not spy) console.trace: Node's Console.prototype.trace
         // internally calls this.error(stack), so a spied trace would delegate
         // into the spied console.error and inflate the error count by one.
@@ -268,32 +265,32 @@ await describe({
           'error',
         );
 
-        void consoleSink.write(record({
+        void sink.write(record({
           level: 'trace',
           message: 't',
         },),);
         await waitForFlush();
-        void consoleSink.write(record({
+        void sink.write(record({
           level: 'debug',
           message: 'd',
         },),);
         await waitForFlush();
-        void consoleSink.write(record({
+        void sink.write(record({
           level: 'info',
           message: 'i',
         },),);
         await waitForFlush();
-        void consoleSink.write(record({
+        void sink.write(record({
           level: 'warn',
           message: 'w',
         },),);
         await waitForFlush();
-        void consoleSink.write(record({
+        void sink.write(record({
           level: 'error',
           message: 'e',
         },),);
         await waitForFlush();
-        void consoleSink.write(record({
+        void sink.write(record({
           level: 'fatal',
           message: 'f',
         },),);
@@ -324,14 +321,11 @@ await describe({
     it({
       name: 'silent gating drops debug when verbose is off',
       fn: async ({ sinon, },) => {
-        __resetForTests();
         delete process.env.DEBUG;
-        // Force-evaluate verbose with DEBUG cleared. Without this,
-        // an earlier test that set DEBUG=true and called getVerbose
-        // could already have poisoned the cache via __resetForTests
-        // clearing it. Here the reset plus env clear yields verbose=false
-        // on the next getVerbose call (process.argv won't contain --verbose
-        // in a normal test run, and 'window' is not in globalThis under Node).
+        // A fresh sink recomputes verbose on its first write, so clearing
+        // DEBUG here yields verbose=false (process.argv has no --verbose in a
+        // normal test run, and 'window' is not in globalThis under Node).
+        const sink = createConsoleSink();
         const debugSpy = sinon.spy(
           console,
           'debug',
@@ -341,11 +335,11 @@ await describe({
           'trace',
         );
 
-        void consoleSink.write(record({
+        void sink.write(record({
           level: 'debug',
           message: 'hidden',
         },),);
-        void consoleSink.write(record({
+        void sink.write(record({
           level: 'trace',
           message: 'hidden',
         },),);
@@ -361,19 +355,19 @@ await describe({
     it({
       name: 'cross-microtask writes produce separate console calls',
       fn: async ({ sinon, },) => {
-        __resetForTests();
         process.env.DEBUG = 'true';
+        const sink = createConsoleSink();
         const spy = sinon.spy(
           console,
           'info',
         );
 
-        void consoleSink.write(record({
+        void sink.write(record({
           level: 'info',
           message: 'first',
         },),);
         await waitForFlush();
-        void consoleSink.write(record({
+        void sink.write(record({
           level: 'info',
           message: 'second',
         },),);
@@ -387,21 +381,21 @@ await describe({
     it({
       name: 'flush() drains synchronously before the await resolves',
       fn: async ({ sinon, },) => {
-        __resetForTests();
         process.env.DEBUG = 'true';
+        const sink = createConsoleSink();
         const spy = sinon.spy(
           console,
           'info',
         );
 
-        void consoleSink.write(record({
+        void sink.write(record({
           level: 'info',
           message: 'force-drain',
         },),);
         expect(spy.callCount,)
           .toBe(0,);
 
-        await consoleSink.flush?.();
+        await sink.flush?.();
         expect(spy.callCount,)
           .toBe(1,);
       },
@@ -410,13 +404,13 @@ await describe({
     it({
       name: 'flush() on empty buffer resolves without emitting',
       fn: async ({ sinon, },) => {
-        __resetForTests();
+        const sink = createConsoleSink();
         const spy = sinon.spy(
           console,
           'info',
         );
 
-        await consoleSink.flush?.();
+        await sink.flush?.();
         expect(spy.callCount,)
           .toBe(0,);
       },

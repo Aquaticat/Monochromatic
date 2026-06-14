@@ -4,121 +4,114 @@ import type {
 } from '../types.ts';
 
 /**
- * Module-local mutable state grouped in a `const` container so module-root
- * state stays out of a top-level `let` (`no-module-root-let` would otherwise
- * reject it). `writable` is the kept-open OPFS stream reused across writes;
- * `verified` short-circuits repeat verification; `available` flips false on
- * a failed verification or a runtime throw.
- */
-const state: {
-  writable?: FileSystemWritableFileStream;
-  verified: boolean;
-  available: boolean;
-} = {
-  available: false,
-  verified: false,
-};
-
-/**
- * Verifies OPFS is available and can write/read data.
+ * Builds an OPFS sink that appends JSONL records to a per-session file in the
+ * Origin Private File System. The kept-open writable stream lives in this
+ * instance's closure (no module-global state), so independent loggers and
+ * tests never share a handle or need a reset hook. Each `write` awaits the
+ * underlying stream write, so ordering holds at the record boundary and no
+ * `flush` hook is needed.
  *
- * @returns whether OPFS logging is available
+ * @returns Sink backed by OPFS.
  *
  * @example
  * ```ts
- * if (await verifyOpfs()) {
- *   await opfsSink.write(logRecord);
- * }
+ * const { logger } = createLogger({ sinks: [createOpfsSink()] });
+ * logger.warn('quota nearing limit');
  * ```
  */
-export async function verifyOpfs(): Promise<boolean> {
-  if (state.verified)
-    return state.available;
-  state.verified = true;
+export function createOpfsSink(): Sink {
+  /**
+   * Instance-local kept-open OPFS stream, opened by `verify` and reused by
+   * every `write`. Absent until a successful verification.
+   */
+  const state: { writable?: FileSystemWritableFileStream; } = {};
 
-  try {
-    /**
-     * Origin Private File System directory handle that hosts every monochromatic log file.
-     */
-    const opfsRoot = await navigator.storage
-      .getDirectory();
-    /**
-     * ISO timestamp with colons replaced by dashes so it can be embedded in a cross-platform file name.
-     */
-    const timestamp = new Date().toISOString()
-      .replaceAll(
-      ':',
-      '-',
-    );
-    /**
-     * OPFS handle for the per-run log file, created on first verification and reused for subsequent writes.
-     */
-    const fileHandle = await opfsRoot.getFileHandle(
-      `monochromatic-${timestamp}.log.jsonl`,
-      { create: true, },
-    );
-    // Write test data and close to flush; getFile() reads stale content
-    // while a FileSystemWritableFileStream is still open
-    /**
-     * Throwaway writable used only to flush the probe so the next `getFile` returns persisted content.
-     */
-    const probeWritable = await fileHandle.createWritable({ keepExistingData: true, },);
-    /**
-     * Probe record written and read back to confirm OPFS round-trips writes.
-     */
-    const testData = `{"test":true,"timestamp":${Date.now()}}\n`;
-    await probeWritable.write(testData,);
-    await probeWritable.close();
+  /**
+   * Verifies OPFS is available and round-trips a probe write, then opens the
+   * stream reused by subsequent writes. The logger calls this once and owns
+   * the resulting availability.
+   *
+   * @returns Whether OPFS logging is available.
+   */
+  async function verify(): Promise<boolean> {
+    try {
+      /**
+       * Origin Private File System directory handle that hosts every monochromatic log file.
+       */
+      const opfsRoot = await navigator.storage
+        .getDirectory();
+      /**
+       * ISO timestamp with colons replaced by dashes so it can be embedded in a cross-platform file name.
+       */
+      const timestamp = new Date().toISOString()
+        .replaceAll(
+        ':',
+        '-',
+      );
+      /**
+       * OPFS handle for the per-run log file, created on first verification and reused for subsequent writes.
+       */
+      const fileHandle = await opfsRoot.getFileHandle(
+        `monochromatic-${timestamp}.log.jsonl`,
+        { create: true, },
+      );
+      // Write test data and close to flush; getFile() reads stale content
+      // while a FileSystemWritableFileStream is still open.
+      /**
+       * Throwaway writable used only to flush the probe so the next `getFile` returns persisted content.
+       */
+      const probeWritable = await fileHandle.createWritable({ keepExistingData: true, },);
+      /**
+       * Probe record written and read back to confirm OPFS round-trips writes.
+       */
+      const testData = `{"test":true,"timestamp":${Date.now()}}\n`;
+      await probeWritable.write(testData,);
+      await probeWritable.close();
 
-    /**
-     * File snapshot of the probe, taken after closing `probeWritable` so its bytes are flushed.
-     */
-    const file = await fileHandle.getFile();
-    /**
-     * Probe contents read back; matching the literal `"test":true` proves OPFS persisted the data.
-     */
-    const content = await file.text();
-    state.available = content.includes('"test":true',);
+      /**
+       * File snapshot of the probe, taken after closing `probeWritable` so its bytes are flushed.
+       */
+      const file = await fileHandle.getFile();
+      /**
+       * Probe contents read back; matching the literal `"test":true` proves OPFS persisted the data.
+       */
+      const content = await file.text();
+      /**
+       * Whether the probe round-tripped; only then is the reused stream opened.
+       */
+      const available = content.includes('"test":true',);
 
-    // Reopen for subsequent log writes
-    state.writable = await fileHandle.createWritable({ keepExistingData: true, },);
+      if (available)
+        // Reopen for subsequent log writes.
+        state.writable = await fileHandle.createWritable({ keepExistingData: true, },);
+
+      return available;
+    }
+    catch {
+      return false;
+    }
   }
-  catch {
-    state.available = false;
+
+  /**
+   * Writes a single record as a JSONL line to the OPFS stream.
+   *
+   * @param record - Log record to write.
+   */
+  async function write(record: LogRecord,): Promise<void> {
+    if (!state.writable)
+      return;
+
+    try {
+      await state.writable
+        .write(`${JSON.stringify(record,)}\n`,);
+    }
+    catch {
+      // Silently fail.
+    }
   }
 
-  return state.available;
+  return {
+    verify,
+    write,
+  };
 }
-
-/**
- * Writes a single record as a JSONL line to the OPFS stream.
- *
- * @param record - log record to write
- */
-async function write(record: LogRecord,): Promise<void> {
-  if ((!state.available) || (!state.writable))
-    return;
-
-  try {
-    await state.writable
-      .write(`${JSON.stringify(record,)}\n`,);
-  }
-  catch {
-    // Silently fail
-  }
-}
-
-/**
- * OPFS sink that writes log records to Origin Private File System.
- * No `flush` hook: each `write` awaits the underlying stream write, so
- * ordering is already guaranteed at the record boundary.
- *
- * @example
- * ```ts
- * await opfsSink.write({ level: 'warn', message: 'quota nearing limit', timestamp: Date.now() });
- * ```
- */
-export const opfsSink: Sink = {
-  verify: verifyOpfs,
-  write,
-};

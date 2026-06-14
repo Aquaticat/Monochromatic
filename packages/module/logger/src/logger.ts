@@ -1,8 +1,8 @@
 import { createLogger, } from './create-logger.ts';
-import { consoleSink, } from './sinks/console.ts';
-import { fileSink, } from './sinks/file.ts';
-import { opfsSink, } from './sinks/opfs.ts';
-import { sessionStorageSink, } from './sinks/session-storage.ts';
+import { createConsoleSink, } from './sinks/console.ts';
+import { createFileSink, } from './sinks/file.ts';
+import { createOpfsSink, } from './sinks/opfs.ts';
+import { createSessionStorageSink, } from './sinks/session-storage.ts';
 import type {
   Logger,
   Sink,
@@ -16,10 +16,10 @@ import type {
  * the "No logging backends available" error instead of silently discarding.
  */
 const defaultSinks: readonly Sink[] = [
-  consoleSink,
-  opfsSink,
-  sessionStorageSink,
-  fileSink,
+  createConsoleSink(),
+  createOpfsSink(),
+  createSessionStorageSink(),
+  createFileSink(),
 ];
 
 /**

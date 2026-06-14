@@ -12,27 +12,6 @@ import type {
 const VERBOSE_UNCOMPUTED = Symbol('logger:verbose-detection-uncomputed',);
 
 /**
- * Module-local mutable state grouped in a `const` container so module-root
- * state stays out of a top-level `let` (`no-module-root-let` would otherwise
- * reject it). `verified` short-circuits repeat verification; `available`
- * flips false on a failed verification or a runtime throw; `verboseCache`
- * lazily memoizes the verbose-mode detection (the `VERBOSE_UNCOMPUTED`
- * sentinel means not yet computed); `scheduled` guards against redundant
- * `queueMicrotask` calls within the same sync frame.
- */
-const state: {
-  verified: boolean;
-  available: boolean;
-  verboseCache: boolean | typeof VERBOSE_UNCOMPUTED;
-  scheduled: boolean;
-} = {
-  available: true,
-  scheduled: false,
-  verboseCache: VERBOSE_UNCOMPUTED,
-  verified: false,
-};
-
-/**
  * Levels silenced by default unless verbose mode is active.
  *
  * @example
@@ -110,29 +89,6 @@ function detectVerbose(): boolean {
 }
 
 /**
- * Reads the memoized verbose flag, evaluating on first call.
- * Lazily evaluated rather than at module load so tests (and hosts) can
- * mutate `process.env.DEBUG` between import time and first log without
- * stale cache. Cache lives on `state.verboseCache`.
- *
- * @returns Whether verbose logging is enabled for this process.
- */
-function getVerbose(): boolean {
-  /**
-   * Cached verbose flag; the sentinel means detection has not run yet.
-   */
-  const cached = state.verboseCache;
-  if (cached !== VERBOSE_UNCOMPUTED)
-    return cached;
-  /**
-   * Computed verbose flag, stored so subsequent reads skip detection.
-   */
-  const computed = detectVerbose();
-  state.verboseCache = computed;
-  return computed;
-}
-
-/**
  * Detects explicit warn suppression via the `WARN` environment variable.
  *
  * Setting `WARN=false` drops `warn`-level records, for machine-protocol
@@ -198,13 +154,6 @@ function formatRecord(record: LogRecord,): string {
 }
 
 /**
- * Buffer of records waiting for the next microtask flush. Filter at enqueue
- * keeps silenced `debug`/`trace` spam out of this array entirely so a verbose-
- * disabled process pays no per-log allocation for hidden lines.
- */
-const buffer: LogRecord[] = [];
-
-/**
  * Emits a contiguous run of same-level records as a single console call,
  * joining formatted lines with `\n`.
  *
@@ -253,7 +202,7 @@ function emitRun(
     }
   }
   catch {
-    // Silently fail if console throws
+    // Silently fail if console throws.
   }
 }
 
@@ -315,165 +264,170 @@ function groupRuns(records: readonly LogRecord[],): Run[] {
 }
 
 /**
- * Drains the buffer, collapsing contiguous same-level runs into single
- * console calls. A sequence `[debug, debug, warn, debug]` becomes three
- * calls: `console.debug` (two lines joined), `console.warn`, then
- * `console.debug`. Typical instrumented functions use a single level
- * throughout, so most flushes collapse to one call.
- *
- * @example
- * ```ts
- * flushBuffer(); // emits whatever is currently buffered
- * ```
- */
-function flushBuffer(): void {
-  state.scheduled = false;
-  if (buffer.length
-    === 0)
-    return;
-
-  /**
-   * Snapshot of buffered records drained before the loop.
-   *
-   * Using `splice(0)` empties the buffer atomically so any record enqueued
-   * during emission lands in the next flush rather than this one.
-   */
-  const records = buffer.splice(0,);
-  for (const run of groupRuns(records,)) {
-    emitRun({
-      level: run.level,
-      records: run.records,
-    },);
-  }
-}
-
-/**
  * Verifies console is available and microtask scheduling is supported.
  * `queueMicrotask` is the batching primitive; without it there is no
  * ordering guarantee that preserves "end of current sync frame" semantics,
- * so the sink marks itself unavailable instead of falling back to an
- * inferior scheduler.
+ * so the sink reports itself unavailable instead of falling back to an
+ * inferior scheduler. Stateless: the logger calls this once and owns the
+ * resulting availability.
  *
- * @returns whether console logging is available
+ * @returns Whether console logging is available.
  *
  * @example
  * ```ts
- * if (verifyConsole()) {
- *   consoleSink.write(logRecord);
+ * if (await verifyConsole()) {
+ *   // console usable
  * }
  * ```
  */
-export function verifyConsole(): boolean {
-  if (state.verified)
-    return state.available;
-  state.verified = true;
-
+function verifyConsole(): Promise<boolean> {
   try {
-    if ((typeof console) === 'undefined') {
-      state.available = false;
-      return state.available;
-    }
+    if ((typeof console) === 'undefined')
+      return Promise.resolve(false,);
 
     /**
      * Sample `console.debug` reference used only to check the method actually exists in the host; absent in some stripped runtimes.
      */
     const testFn = console.debug;
-    if ((typeof testFn) !== 'function') {
-      state.available = false;
-      return state.available;
-    }
+    if ((typeof testFn) !== 'function')
+      return Promise.resolve(false,);
 
-    if ((typeof queueMicrotask) !== 'function') {
-      state.available = false;
-      return state.available;
-    }
+    if ((typeof queueMicrotask) !== 'function')
+      return Promise.resolve(false,);
 
-    state.available = true;
+    return Promise.resolve(true,);
   }
   catch {
-    state.available = false;
+    return Promise.resolve(false,);
+  }
+}
+
+/**
+ * Builds a microtask-batched console sink. The pending buffer, schedule flag,
+ * and memoized verbose detection live in this instance's closure (no
+ * module-global state), so independent loggers and tests stay isolated with
+ * no reset hook. Collapses contiguous same-level runs into single `console.*`
+ * calls, sharply reducing console-panel overhead when an instrumented path
+ * emits many records per sync frame.
+ *
+ * @returns Sink that writes formatted lines to `console.*`.
+ *
+ * @example
+ * ```ts
+ * const { logger } = createLogger({ sinks: [createConsoleSink()] });
+ * logger.info('server started');
+ * ```
+ */
+export function createConsoleSink(): Sink {
+  /**
+   * Instance-local console-sink state. `buffer` holds records awaiting the
+   * next microtask flush; `scheduled` guards against redundant
+   * `queueMicrotask` calls within one sync frame; `verboseCache` memoizes
+   * verbose detection (the sentinel means not yet computed) so a host can
+   * mutate `process.env.DEBUG` before the first log and still be seen.
+   */
+  const state: {
+    buffer: LogRecord[];
+    scheduled: boolean;
+    verboseCache: boolean | typeof VERBOSE_UNCOMPUTED;
+  } = {
+    buffer: [],
+    scheduled: false,
+    verboseCache: VERBOSE_UNCOMPUTED,
+  };
+
+  /**
+   * Reads the memoized verbose flag, evaluating on first call. Lazy rather
+   * than at construction so tests (and hosts) can mutate `process.env.DEBUG`
+   * between construction and first log without a stale cache.
+   *
+   * @returns Whether verbose logging is enabled for this process.
+   */
+  function getVerbose(): boolean {
+    /**
+     * Cached verbose flag; the sentinel means detection has not run yet.
+     */
+    const cached = state.verboseCache;
+    if (cached !== VERBOSE_UNCOMPUTED)
+      return cached;
+    /**
+     * Computed verbose flag, stored so subsequent reads skip detection.
+     */
+    const computed = detectVerbose();
+    state.verboseCache = computed;
+    return computed;
   }
 
-  return state.available;
-}
+  /**
+   * Drains the buffer, collapsing contiguous same-level runs into single
+   * console calls. A sequence `[debug, debug, warn, debug]` becomes three
+   * calls: `console.debug` (two lines joined), `console.warn`, then
+   * `console.debug`. Typical instrumented functions use a single level
+   * throughout, so most flushes collapse to one call.
+   */
+  function flushBuffer(): void {
+    state.scheduled = false;
+    if (state.buffer
+      .length
+      === 0)
+      return;
 
-/**
- * Enqueues a record for microtask-batched emission.
- * Silently discards `debug`/`trace` unless verbose mode is active
- * (via `DEBUG=true` env var, `--verbose` argv,
- * or browser environment).
- *
- * @param record - log record to write
- *
- * @example
- * ```ts
- * consoleSink.write({ level: 'info', message: 'server started', timestamp: Date.now() });
- * ```
- */
-function write(record: LogRecord,): Promise<void> {
-  if (!state.available)
-    return Promise.resolve();
-
-  if ((!getVerbose()) && SILENT_LEVELS
-    .has(record.level,))
-    return Promise.resolve();
-
-  if ((record.level === 'warn') && isWarnSuppressed())
-    return Promise.resolve();
-
-  buffer.push(record,);
-
-  if (!state.scheduled) {
-    state.scheduled = true;
-    queueMicrotask(flushBuffer,);
+    /**
+     * Snapshot of buffered records drained before the loop.
+     *
+     * Using `splice(0)` empties the buffer atomically so any record enqueued
+     * during emission lands in the next flush rather than this one.
+     */
+    const records = state.buffer
+      .splice(0,);
+    for (const run of groupRuns(records,)) {
+      emitRun({
+        level: run.level,
+        records: run.records,
+      },);
+    }
   }
 
-  return Promise.resolve();
-}
+  /**
+   * Enqueues a record for microtask-batched emission. Silently discards
+   * `debug`/`trace` unless verbose mode is active (via `DEBUG=true` env var,
+   * `--verbose` argv, or browser environment), and drops `warn` when
+   * `WARN=false`.
+   *
+   * @param record - Log record to write.
+   */
+  function write(record: LogRecord,): Promise<void> {
+    if ((!getVerbose()) && SILENT_LEVELS
+      .has(record.level,))
+      return Promise.resolve();
 
-/**
- * Test-only hook to clear module-local buffer, schedule flag, and
- * verbose cache between cases. Production code never calls this.
- *
- * @example
- * ```ts
- * __resetForTests();
- * process.env['DEBUG'] = 'true';
- * consoleSink.write({ level: 'info', message: 'x', timestamp: 0 });
- * ```
- */
-export function __resetForTests(): void {
-  buffer.length = 0;
-  state.scheduled = false;
-  state.verboseCache = VERBOSE_UNCOMPUTED;
-  state.verified = false;
-  state.available = true;
-}
+    if ((record.level === 'warn') && isWarnSuppressed())
+      return Promise.resolve();
 
-/**
- * Forces any buffered records through to the console immediately.
- * Returns an already-resolved promise so call sites can `await $.flush()`
- * uniformly with async sink implementations. Safe to call when the
- * buffer is empty.
- *
- * @example
- * ```ts
- * consoleSink.write({ level: 'error', message: 'crash', timestamp: Date.now() });
- * await consoleSink.flush?.(); // guarantees the line is visible before next step
- * ```
- */
-function flush(): Promise<void> {
-  flushBuffer();
-  return Promise.resolve();
-}
+    state.buffer
+      .push(record,);
 
-/**
- * Microtask-batched console sink. Collapses contiguous same-level runs
- * into single `console.*` calls, sharply reducing DevTools/console-panel
- * overhead when an instrumented path emits many records per sync frame.
- */
-export const consoleSink: Sink = {
-  flush,
-  verify: verifyConsole,
-  write,
-};
+    if (!state.scheduled) {
+      state.scheduled = true;
+      queueMicrotask(flushBuffer,);
+    }
+
+    return Promise.resolve();
+  }
+
+  /**
+   * Forces any buffered records through to the console immediately. Returns an
+   * already-resolved promise so call sites await uniformly with async sinks.
+   * Safe to call when the buffer is empty.
+   */
+  function flush(): Promise<void> {
+    flushBuffer();
+    return Promise.resolve();
+  }
+
+  return {
+    flush,
+    verify: verifyConsole,
+    write,
+  };
+}

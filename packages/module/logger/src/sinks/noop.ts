@@ -4,39 +4,43 @@ import type {
 } from '../types.ts';
 
 /**
- * Noop sink is always available.
+ * Noop verification: the sink is always available, so it never throws nor
+ * needs setup.
  *
- * @returns always true
- *
- * @example
- * ```ts
- * verifyNoop(); // true
- * ```
+ * @returns Always-resolved `true`.
  */
-export function verifyNoop(): boolean {
-  return true;
+function verify(): Promise<boolean> {
+  return Promise.resolve(true,);
 }
 
 /**
  * Discards a log record. Matches the `Sink['write']` signature.
  *
- * @param _record - log record to discard
+ * @param _record - Log record to discard.
  */
 function write(_record: LogRecord,): Promise<void> {
-  // Intentionally discards all logs; resolves immediately to match the async Sink contract
+  // Intentionally discards all logs; resolves immediately to match the async Sink contract.
   return Promise.resolve();
 }
 
 /**
- * Noop sink that discards all log records. Exposes no `flush` because
- * there is nothing to drain.
+ * Builds a noop sink that discards every record and always verifies as
+ * available. Stateless, so the returned adapters share the same functions;
+ * the factory shape merely matches the other sinks. Useful as a stand-in
+ * that disables logging without removing log calls.
+ *
+ * @returns Sink that discards all records and exposes no `flush` (nothing
+ * is buffered).
  *
  * @example
  * ```ts
- * noopSink.write({ level: 'debug', message: 'discarded', timestamp: Date.now() }); // no-op
+ * const { logger } = createLogger({ sinks: [createNoopSink()] });
+ * logger.info('goes nowhere');
  * ```
  */
-export const noopSink: Sink = {
-  verify: verifyNoop,
-  write,
-};
+export function createNoopSink(): Sink {
+  return {
+    verify,
+    write,
+  };
+}
