@@ -107,20 +107,55 @@ dir = "{{config_root}}"
 depends = ["build:native"]
 run = "./gradlew :app:installDebug --no-daemon --console=plain"
 
-# Build the release APK, install it, and launch it on the connected device. adb is
-# the mise-provisioned one ($ANDROID_HOME/platform-tools, installed by
-# prepare:android) so it matches the version Gradle's installRelease uses and will
-# not bounce the adb server. The launch targets the MainActivity launcher component
-# (applicationId dev.monochromatic.musicplayer). The run steps are an array so mise
-# runs them in order and fails fast (CM2): install must finish before launch.
+# Build the release APK, install it on every attached device, and launch it on
+# each of them. Gradle's installRelease already fans out across all connected
+# devices, but a bare `adb shell am start` fails with "more than one
+# device/emulator" once more than one is attached, so the launch step enumerates
+# `adb devices` and pins -s <serial> per device. adb is the mise-provisioned one
+# ($ANDROID_HOME/platform-tools, installed by prepare:android) so it matches the
+# version Gradle's installRelease uses and will not bounce the adb server. The
+# launch targets the MainActivity launcher component (applicationId
+# dev.monochromatic.musicplayer). This is a node -e body (not an array of bare
+# commands) because the per-device fan-out is logic; execFileSync throws on a
+# non-zero exit, so a failed install still stops before any launch, preserving
+# CM2's fail-fast intent.
 [tasks."run:release"]
-description = "Build the debug-signed release APK, install it on the connected device, and launch it. Pin ANDROID_SERIAL if more than one device is attached."
+description = "Build the debug-signed release APK, install it on every attached device, and launch it on each of them."
 dir = "{{config_root}}"
 depends = ["build:release"]
-run = [
-  "./gradlew :app:installRelease --no-daemon --console=plain",
-  '"$ANDROID_HOME/platform-tools/adb" shell am start -n dev.monochromatic.musicplayer/.MainActivity',
-]
+shell = "node -e"
+run = '''
+const { execFileSync } = require("node:child_process");
+const { join } = require("node:path");
+const sdk = process.env.ANDROID_HOME;
+if (!sdk) {
+  throw new Error("ANDROID_HOME is unset; the android-sdk mise tool exports it. Run `mise install` at the repo root.");
+}
+const adb = join(sdk, "platform-tools", "adb");
+// Install the optimized release APK. Gradle's installRelease already targets every
+// attached device, so no per-device loop is needed for the install itself.
+execFileSync("./gradlew", [":app:installRelease", "--no-daemon", "--console=plain"], { stdio: "inherit" });
+// Enumerate attached devices. `adb devices` prints a header line, then one
+// "<serial>\t<state>" line per device. Keep only the entries whose state is
+// exactly `device` (drop the header and any `offline` / `unauthorized` entries).
+const serials = execFileSync(adb, ["devices"], { encoding: "utf8" })
+  .split("\n")
+  .slice(1)
+  .map((line) => line.trim())
+  .filter((line) => line.length > 0)
+  .map((line) => line.split("\t"))
+  .filter((parts) => parts[1] === "device")
+  .map((parts) => parts[0]);
+if (serials.length === 0) {
+  throw new Error("No attached device in `device` state; connect or boot one, then re-run.");
+}
+// Launch MainActivity on each device, pinning -s <serial> so a multi-device attach
+// no longer fails with "more than one device/emulator".
+for (const serial of serials) {
+  console.log(`Launching on ${serial}`);
+  execFileSync(adb, ["-s", serial, "shell", "am", "start", "-n", "dev.monochromatic.musicplayer/.MainActivity"], { stdio: "inherit" });
+}
+'''
 
 [tasks."test:unit"]
 description = "Run host JVM unit tests for the pure-logic core (no device)"
