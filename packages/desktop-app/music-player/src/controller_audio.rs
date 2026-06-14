@@ -3,15 +3,16 @@
 //! line budget. These methods open decoders, prepare each track's true-peak swap
 //! gain, push samples into the ring buffer, and report position.
 
-// What:     `use std::path::Path;`. Borrowed filesystem-path type (sibling: owned
-//           `PathBuf`). The owned form is produced by `.clone()` here but not named.
-// Why:      `install_source` borrows a `&Path` to read the current file.
+// What:     `use std::path::{Path, PathBuf};`. Borrowed (`&Path`) and owned (`PathBuf`)
+//           filesystem-path types.
+// Why:      `install_source` borrows a `&Path` to read the current file;
+//           `scan_root_into_queue` takes an owned `PathBuf` root.
 //
 // In TS you'd write (pseudocode):
 // ```ts
 // // a path is just a string in TS
 // ```
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 // What:     `use ringbuf::traits::Producer;`. Brings `push_slice` into scope for the
 //           producer half of the ring buffer.
@@ -52,16 +53,17 @@ use crate::controller::Controller;
 // ```
 use crate::decode::Source;
 
-// What:     `use crate::playback::{file_name_of, frames_to_secs, process_sample};`.
-//           Display-name extraction, frame->seconds conversion, and the per-sample
-//           gain+clamp stage.
-// Why:      Used by install_source, current_session/advance_position, and pump_audio.
+// What:     `use crate::playback::{expand_paths, file_name_of, frames_to_secs, process_sample};`.
+//           Folder-to-file expansion, display-name extraction, frame->seconds conversion,
+//           and the per-sample gain+clamp stage.
+// Why:      Used by scan_root_into_queue, install_source, current_session/advance_position,
+//           and pump_audio.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// import { fileNameOf, framesToSecs, processSample } from "./playback";
+// import { expandPaths, fileNameOf, framesToSecs, processSample } from "./playback";
 // ```
-use crate::playback::{file_name_of, frames_to_secs, process_sample};
+use crate::playback::{expand_paths, file_name_of, frames_to_secs, process_sample};
 
 // What:     `use crate::session::Session;`. The serializable saved-state record.
 // Why:      `current_session` builds one.
@@ -268,6 +270,54 @@ impl Controller {
                 watcher.watch(&root);
             }
         }
+    }
+
+    // What:     `pub(crate) fn scan_root_into_queue(&mut self, root: PathBuf)`. Adopt `root`
+    //           as the Source Root: remember it, re-point the file watcher at it, and rebuild
+    //           the queue by scanning it from disk. Consumes the owned `root`. `pub(crate)`
+    //           so the command-handling half can call it.
+    // Why:      "The Queue is the scan of the Source Root" (see CONTEXT.md). Opening a folder
+    //           and restoring a session both start with this identical projection, so it
+    //           lives in one place instead of being duplicated across the two command arms.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // scanRootIntoQueue(root: string): void {
+    //   this.sourceRoot = root;
+    //   this.rewatchSourceRoot();
+    //   this.queue.setTracks(expandPaths([root]));
+    // }
+    // ```
+    pub(crate) fn scan_root_into_queue(&mut self, root: PathBuf) {
+        // What:     `self.source_root = Some(root.clone());`. Remember the directory the queue
+        //           is scanned from. `.clone()` because `root` is moved into `expand_paths`.
+        // Why:      The session, the watcher, and any rescan need the root.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // this.sourceRoot = root;
+        // ```
+        self.source_root = Some(root.clone());
+        // What:     `self.rewatch_source_root();`. Point the file watcher at the new root so
+        //           its changes drive live `Rescan`s.
+        // Why:      Live updating follows whatever is currently open.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // this.rewatchSourceRoot();
+        // ```
+        self.rewatch_source_root();
+        // What:     `self.queue.set_tracks(expand_paths(vec![root]));`. Scan the single root
+        //           directory into its files (folders -> their files, recursively) and replace
+        //           the queue with the result (consumes the owned `root`).
+        // Why:      The queue holds files, not directories; one root is scanned into the new
+        //           playlist.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // this.queue.setTracks(expandPaths([root]));
+        // ```
+        self.queue.set_tracks(expand_paths(vec![root]));
     }
 
     // What:     `pub(crate) fn load_current(&mut self) -> bool`. Open the queue's current

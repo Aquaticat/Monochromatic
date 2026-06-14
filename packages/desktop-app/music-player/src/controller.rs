@@ -852,43 +852,17 @@ impl Controller {
             // case "openPaths": { const { paths, play } = command; ... }
             // ```
             Command::OpenRoot { root, select, play } => {
-                // What:     `self.source_root = Some(root.clone());`. Remember the directory
-                //           the queue is scanned from. `.clone()` because `root` is moved
-                //           into `expand_paths` next.
-                // Why:      The session, the watcher, and any rescan need the root.
+                // What:     `self.scan_root_into_queue(root);`. Remember `root` as the Source
+                //           Root, re-point the watcher at it, and rebuild the queue by scanning
+                //           it (defined in `controller_audio.rs`). Consumes the owned `root`.
+                // Why:      Opening a folder replaces the queue with the scan of that root; this
+                //           shared projection lives in one place so Restore stays identical.
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
-                // this.sourceRoot = root;
+                // this.scanRootIntoQueue(root);
                 // ```
-                self.source_root = Some(root.clone());
-                // What:     `self.rewatch_source_root();`. Point the file watcher at the new
-                //           root so its changes drive live `Rescan`s.
-                // Why:      Live updating follows whatever is currently open.
-                //
-                // In TS you'd write (pseudocode):
-                // ```ts
-                // this.rewatchSourceRoot();
-                // ```
-                self.rewatch_source_root();
-                // What:     `let tracks = expand_paths(vec![root]);`. Scan the single root
-                //           directory into its files (folders -> their files, recursively).
-                // Why:      The queue holds files, not directories; one root is scanned.
-                //
-                // In TS you'd write (pseudocode):
-                // ```ts
-                // const tracks = expandPaths([root]);
-                // ```
-                let tracks = expand_paths(vec![root]);
-                // What:     `self.queue.set_tracks(tracks);`. Replace the queue (consumes
-                //           the owned `tracks`).
-                // Why:      New playlist.
-                //
-                // In TS you'd write (pseudocode):
-                // ```ts
-                // this.queue.setTracks(tracks);
-                // ```
-                self.queue.set_tracks(tracks);
+                self.scan_root_into_queue(root);
                 // What:     `self.emit(Update::Queue(self.queue.display_paths()));`. Send
                 //           the relative-path list to the UI.
                 // Why:      Render the queue list (grouped by folder / first letter).
@@ -1216,30 +1190,19 @@ impl Controller {
                 // this.queue.setRepeatTrack(repeatTrack);
                 // ```
                 self.queue.set_repeat_track(repeat_track);
-                // What:     `self.source_root = Some(root.clone());` then
-                //           `self.queue.set_tracks(expand_paths(vec![root]));`. Remember the
-                //           root and rebuild the queue by SCANNING it fresh from disk, rather
-                //           than from a saved track list. `.clone()` because `root` is moved
-                //           into `expand_paths`.
+                // What:     `self.scan_root_into_queue(root);`. Remember `root` as the Source
+                //           Root, re-point the watcher at it, and rebuild the queue by SCANNING
+                //           it fresh from disk (defined in `controller_audio.rs`), not from a
+                //           saved track list. Consumes the owned `root`.
                 // Why:      The queue is a projection of the Source Root; re-scanning is the
-                //           restore auto-correction (added/removed/renamed files sort
-                //           themselves out).
+                //           restore auto-correction (added/removed/renamed files sort themselves
+                //           out), and it is the very same projection a normal open performs.
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
-                // this.sourceRoot = root; this.queue.setTracks(expandPaths([root]));
+                // this.scanRootIntoQueue(root);
                 // ```
-                self.source_root = Some(root.clone());
-                // What:     `self.rewatch_source_root();`. Point the file watcher at the
-                //           restored root so its changes drive live `Rescan`s.
-                // Why:      Live updating starts immediately after a restore.
-                //
-                // In TS you'd write (pseudocode):
-                // ```ts
-                // this.rewatchSourceRoot();
-                // ```
-                self.rewatch_source_root();
-                self.queue.set_tracks(expand_paths(vec![root]));
+                self.scan_root_into_queue(root);
                 // What:     `self.queue.set_shuffle(shuffle);`. Restore shuffle ordering.
                 // Why:      Restore shuffle state.
                 //
