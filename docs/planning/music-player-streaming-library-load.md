@@ -1,6 +1,6 @@
 # Streaming library load and a resume-persistence fix for the Android music player
 
-Status: plan, not yet implemented.
+Status: implemented (production code and host-JVM tests landed; on-device verification is the remaining step, driven by the user).
 Audience: someone seeing this product for the first time.
 It introduces the app, then proposes one focused change with two interlocking parts.
 
@@ -528,6 +528,15 @@ so it should land with regression tests at the layer each concern lives in:
   These need `Context`, `SharedPreferences`, and a content provider.
   Cases: a refresh during the load does not write while `sessionRestored` is false, and does after delivery;
   a superseded load's later emissions are ignored.
+
+Implementation status:
+the first two layers landed as host-JVM JUnit tests
+(`BatchEmitGateTest` for the emit gate; `PlayerControllerTest` plus a `FakeAudioEngine` for the
+controller logic, including the page-by-label preservation), and pass under `mise run //packages/android-app/music-player:test:unit`.
+The third layer (Robolectric persistence gating and source-walk cancellation) is deliberately deferred:
+it is the only layer needing new test infrastructure (`Context`, `SharedPreferences`, a fake content provider),
+and its core logic (the `sessionRestored` boolean gate and the `CancellationException` rethrow) is exercised
+indirectly by the controller tests and held to the on-device pass below.
 
 ## How we will verify on-device
 
