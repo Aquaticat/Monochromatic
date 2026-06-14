@@ -186,6 +186,19 @@ import kotlinx.coroutines.cancel
 // ```
 import kotlinx.coroutines.launch
 
+// What:     `import kotlinx.coroutines.withContext` imports the coroutine function
+//           `withContext(dispatcher) { ... }`, which runs a block on a given dispatcher
+//           (thread pool), suspends until it finishes, and returns the block's value.
+// Why:      The streaming batch callback runs on the background (IO) scan, so it uses
+//           `withContext(Dispatchers.Main) { ... }` to hop to the main thread before
+//           touching the controller's Compose state.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { withContext } from "kotlinx/coroutines"; // ~ await runOn(thread, fn)
+// ```
+import kotlinx.coroutines.withContext
+
 // What:     `class PlaybackService : MediaSessionService() { ... }` declares a class
 //           named `PlaybackService` that EXTENDS `MediaSessionService`. The `: Super()`
 //           after the name means "extend `MediaSessionService` and call its no-argument
@@ -254,6 +267,23 @@ class PlaybackService : MediaSessionService() {
     // private libraryLoaded: boolean = false;
     // ```
     private var libraryLoaded: Boolean = false
+
+    // What:     `private var sessionRestored: Boolean = false` declares a private,
+    //           reassignable boolean field, initialised `false`.
+    // Why:      Gates `saveSession`: it stays false until a library has actually been
+    //           DELIVERED to the controller (the saved session read and applied), then flips
+    //           true. This is the fix for the resume clobber: `beginLoad`'s repaint and every
+    //           streaming batch's repaint find it still false and skip the write, so the saved
+    //           session survives untouched until it has been read. It is SEPARATE from
+    //           `libraryLoaded`, which flips at load START (and keeps the load single + gates
+    //           the foreground rescan); gating saves on load start was the bug, because the
+    //           guard then passed too early to protect anything.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // private sessionRestored: boolean = false;
+    // ```
+    private var sessionRestored: Boolean = false
 
     // What:     `private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)`
     //           declares a private read-only `CoroutineScope` field. The value is built
@@ -612,6 +642,31 @@ class PlaybackService : MediaSessionService() {
         // PeakSweepScheduler.enqueue(this);
         // ```
         PeakSweepScheduler.enqueue(this)
+        // What:     `val session = SessionStore.load(this)` reads the persisted session (selected
+        //           track URI + settings + position), or the model defaults when none was saved.
+        //           Read UP FRONT, synchronously on the main thread, BEFORE anything could save
+        //           over it (a read never clobbers).
+        // Why:      Both the early settings application and the terminal track restore need the
+        //           saved values, and reading first guarantees we read the real saved session,
+        //           not blanks an early repaint might otherwise have written.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const session = SessionStore.load(this);
+        // ```
+        val session = SessionStore.load(this)
+        // What:     `controller.applySettings(session)` applies the saved shuffle, repeat, and
+        //           volume to the controller NOW, before the load starts.
+        // Why:      The controls are live during the streaming load, so the saved settings must
+        //           be the baseline the user can override mid-load; applying them at the end
+        //           would silently undo a mid-load change. Applying them early also makes volume
+        //           and shuffle look correct from the first frame.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // this.controller.applySettings(session);
+        // ```
+        controller.applySettings(session)
         // What:     `controller.beginLoad()` tells the brain a load is in progress so the
         //           screen shows a loading notice instead of the empty-library message.
         // Why:      Avoid flashing "no music" while a (possibly slow) scan runs.
@@ -651,54 +706,81 @@ class PlaybackService : MediaSessionService() {
         // });
         // ```
         loadJob = scope.launch {
-            // What:     `val tracks = LibrarySource.load(this@PlaybackService)` declares a
-            //           read-only local `tracks` (type INFERRED as `List<Track>`).
-            //           `LibrarySource.load(...)` is a `suspend` call (awaited implicitly
-            //           inside the coroutine). `this@PlaybackService` is QUALIFIED `this`:
-            //           inside the `launch` lambda bare `this` is the coroutine scope, so we
-            //           name the service explicitly to pass it as the context.
-            // Why:      Fetch the active library off the UI thread's coroutine.
-            // Gotcha:   `this@PlaybackService` is needed because the lambda's bare `this` is
-            //           the coroutine receiver, not the service.
+            // What:     `val tracks = LibrarySource.load(this@PlaybackService) { batch -> withContext(Dispatchers.Main) { controller.reconcileLibrary(batch) } }`
+            //           declares a read-only local `tracks` (type INFERRED as `List<Track>`) from
+            //           the `suspend` `load`, NOW passing a STREAMING callback. The trailing lambda
+            //           `{ batch -> ... }` is the `onBatch`: the scan calls it on its background
+            //           thread for each growing, sorted batch, and `withContext(Dispatchers.Main) { ... }`
+            //           hops to the main thread before `controller.reconcileLibrary(batch)` touches
+            //           the Compose state. `this@PlaybackService` is QUALIFIED `this` (the service,
+            //           not the coroutine receiver), passed as the context.
+            // Why:      Stream the cold-start load: each batch makes the queue non-empty and grows
+            //           the on-screen list, so the user sees music almost immediately. Reusing
+            //           `reconcileLibrary` adopts each batch, re-points a tapped track by URI, and
+            //           leaves settings and the loading flag alone.
+            // Gotcha:   The callback is a SUSPENSION POINT on the scan thread; cancelling this load
+            //           (a newer load supersedes it) surfaces there as a `CancellationException`,
+            //           which the SAF source re-throws so the superseded scan stops emitting.
             //
             // In TS you'd write (pseudocode):
             // ```ts
-            // const tracks = await LibrarySource.load(this);
+            // const tracks = await LibrarySource.load(this, async (batch) => {
+            //   await withContext(Dispatchers.Main, () => this.controller.reconcileLibrary(batch));
+            // });
             // ```
-            val tracks = LibrarySource.load(this@PlaybackService)
-            // What:     `val session = SessionStore.load(this@PlaybackService)` reads the
-            //           persisted session (selected track URI + settings + position), or the
-            //           model defaults when none was saved.
-            // Why:      The self-load is the RESTORE path: it must reapply the saved settings
-            //           and reselect the saved track, not start blank.
+            val tracks = LibrarySource.load(this@PlaybackService) { batch ->
+                withContext(Dispatchers.Main) { controller.reconcileLibrary(batch) }
+            }
+            // What:     `val result = controller.finishLoad(tracks, session)` declares a read-only
+            //           `FinishLoadResult` local. `finishLoad` runs the terminal step: it keeps a
+            //           mid-load tap if one happened, otherwise reselects the saved track at the
+            //           saved position, and reports WHICH path it took. `session` is the one read
+            //           up front (captured from the enclosing scope), never re-read here.
+            // Why:      Finalize the streamed load with the authoritative full list, and learn
+            //           which path ran so we can persist correctly.
             //
             // In TS you'd write (pseudocode):
             // ```ts
-            // const session = SessionStore.load(this);
+            // const result = this.controller.finishLoad(tracks, session);
             // ```
-            val session = SessionStore.load(this@PlaybackService)
-            // What:     `controller.restoreLibrary(tracks, session)` hands the freshly scanned
-            //           tracks AND the saved session to the brain, which re-derives the queue,
-            //           reapplies settings, and reselects the saved track by URI (paused at the
-            //           saved position). This re-scan-and-reselect IS the restore
-            //           auto-correction.
-            // Why:      Resume where the user left off, self-correcting for files added,
-            //           removed, or renamed since the last run.
+            val result = controller.finishLoad(tracks, session)
+            // What:     `sessionRestored = true` flips the save gate AFTER `finishLoad` returns.
+            // Why:      Until now `saveSession` was a no-op (protecting the saved session). On the
+            //           no-tap path the engine has NOT yet applied the async seek, so saving right
+            //           now would write position 0 over the real saved position; flipping the flag
+            //           here (without saving on that path) leaves the on-disk position intact and
+            //           lets the next ordinary save record the real position once the seek lands.
             //
             // In TS you'd write (pseudocode):
             // ```ts
-            // this.controller.restoreLibrary(tracks, session);
+            // this.sessionRestored = true;
             // ```
-            controller.restoreLibrary(tracks, session)
-            // What:     `Log.i(LOG_TAG, "PlaybackService restored ${tracks.size} tracks")` logs
-            //           the load count (`${tracks.size}` is the list length).
-            // Why:      Record how many tracks loaded, for verification.
+            sessionRestored = true
+            // What:     `if (result == FinishLoadResult.KeptUserSelectionDuringLoad) { saveSession() }`
+            //           saves immediately ONLY on the kept-tap path. `==` is value equality on the
+            //           enum tag; `FinishLoadResult.KeptUserSelectionDuringLoad` reads the named
+            //           enum constant.
+            // Why:      A mid-load tap has been playing for seconds, so its position is already
+            //           real and safe to persist at once; the no-tap path deliberately does NOT
+            //           save here, to avoid the not-yet-seeked position-0 clobber.
             //
             // In TS you'd write (pseudocode):
             // ```ts
-            // console.info(`[${LOG_TAG}] PlaybackService restored ${tracks.length} tracks`);
+            // if (result === "KeptUserSelectionDuringLoad") this.saveSession();
             // ```
-            Log.i(LOG_TAG, "PlaybackService restored ${tracks.size} tracks")
+            if (result == FinishLoadResult.KeptUserSelectionDuringLoad) {
+                saveSession()
+            }
+            // What:     `Log.i(LOG_TAG, "PlaybackService streamed ${tracks.size} tracks ($result)")`
+            //           logs the final count and which terminal path ran (`$result` interpolates
+            //           the enum tag's name).
+            // Why:      Record the streamed load and outcome for on-device verification.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // console.info(`[${LOG_TAG}] PlaybackService streamed ${tracks.length} tracks (${result})`);
+            // ```
+            Log.i(LOG_TAG, "PlaybackService streamed ${tracks.size} tracks ($result)")
         }
     }
 
@@ -773,6 +855,21 @@ class PlaybackService : MediaSessionService() {
             // const tracks = await LibrarySource.scanRoot(this, treeUri);
             // ```
             val tracks = LibrarySource.scanRoot(this@PlaybackService, treeUri)
+            // What:     `sessionRestored = true` flips the save gate just BEFORE delivering the
+            //           picked folder.
+            // Why:      A folder pick has no saved-position restore, so there is no async-seek
+            //           hazard to avoid here; flipping before `openLibrary` lets its repaint
+            //           persist normally, so a first-run user who picks a folder actually saves a
+            //           session (without this, `saveSession` would stay a no-op forever on the
+            //           folder-pick path). This is why it is safe here but NOT on the cold-start
+            //           path, where flipping before the restore would re-expose the position-0
+            //           clobber.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // this.sessionRestored = true;
+            // ```
+            sessionRestored = true
             // What:     `controller.openLibrary(tracks)` hands the picked folder's tracks to
             //           the brain.
             // Why:      Deliver the re-pick result to the brain/UI.
@@ -880,27 +977,30 @@ class PlaybackService : MediaSessionService() {
     // Why:      Persist the current session (selected track URI + settings + live position) via
     //           `SessionStore`. Called from the controller's `onPersist` on state changes, from
     //           the activity's `onStop` (to capture a mid-track-background position), and from
-    //           `onDestroy` (final save). No-op before a library is loaded so it cannot
-    //           overwrite a good saved session with an empty one during startup.
+    //           `onDestroy` (final save). No-op until the saved session has been READ and APPLIED
+    //           (`sessionRestored`), so the startup repaints cannot overwrite a good saved session
+    //           with an empty one before it is read back.
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // saveSession(): void {
-    //   if (!this.libraryLoaded) return;
+    //   if (!this.sessionRestored) return;
     //   SessionStore.save(this, this.controller.currentSession());
     // }
     // ```
     fun saveSession() {
-        // What:     `if (!libraryLoaded) return` guards against saving before the library has
-        //           loaded.
-        // Why:      During startup the controller has no real selection yet; saving then would
-        //           clobber the persisted session with defaults.
+        // What:     `if (!sessionRestored) return` guards against saving before the saved session
+        //           has been read and applied to the controller.
+        // Why:      During startup (`beginLoad` and every streaming batch repaint) the controller
+        //           has no real selection yet; saving then would clobber the persisted session
+        //           with defaults BEFORE it is read. Gating on delivery, not on load start, is the
+        //           resume-clobber fix.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // if (!this.libraryLoaded) return;
+        // if (!this.sessionRestored) return;
         // ```
-        if (!libraryLoaded) return
+        if (!sessionRestored) return
         // What:     `SessionStore.save(this, controller.currentSession())` writes the snapshot.
         //           `controller.currentSession()` builds a `core.Session` from the live queue +
         //           engine; `this` is the service `Context`.
