@@ -157,7 +157,7 @@ zig = "0.15.2"
 # Linux build finishes uploading, so any "latest" install run during that
 # window fails to find a ubuntu-x64 asset. Bump manually after verifying the
 # target tag has all 28 assets (including llama-bNNNN-bin-ubuntu-x64.tar.gz).
-"github:ggml-org/llama.cpp" = "b9019"
+"llama.cpp" = "b9632"
 
 opentofu = "latest"
 hcloud = "latest"
