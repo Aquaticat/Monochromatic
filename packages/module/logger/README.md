@@ -94,7 +94,7 @@ Async sinks are fire-and-forget; the log call never blocks the caller.
 Call `logger.flush()` before assertions or process shutdown to wait for startup
 verification, pending sink writes, and sink-owned flush hooks.
 A sink is dropped only when its `verify` reports the backend unavailable (resolves
-`false` or rejects); a sink whose `verify` rejects during a flush hook is also dropped.
+`false` or rejects); a sink whose `flush` hook rejects is also dropped.
 Individual `write` failures are the sink's own concern and do not disable the backend,
 so one transient I/O hiccup never silently kills a sink for the rest of the run.
 
