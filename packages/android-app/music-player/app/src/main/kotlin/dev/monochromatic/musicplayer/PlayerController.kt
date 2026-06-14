@@ -96,8 +96,8 @@ import dev.monochromatic.musicplayer.core.Queue
 
 // What:     `import dev.monochromatic.musicplayer.core.Session` imports the pure
 //           "where the user left off" model (selected track + settings + position).
-// Why:      `currentSession` returns one and `restoreLibrary` takes one, so the service
-//           can persist and restore via `SessionStore`.
+// Why:      `currentSession` returns one and `applySettings`/`finishLoad` take one, so the
+//           service can persist and restore via `SessionStore`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -539,49 +539,31 @@ class PlayerController(private val engine: AudioEngine) {
         repeatTrack = queue.repeatTrack(),
     )
 
-    // What:     `fun restoreLibrary(tracks: List<Track>, session: Session) { ... }` declares a
-    //           public method taking the freshly-scanned library and a saved session, block
-    //           body, `Unit` return.
-    // Why:      The launch self-load path (the desktop "Restore" analog): adopt the scanned
-    //           tracks, apply the saved settings, reselect the saved track BY URI if it still
-    //           exists, and load it PAUSED at the saved position. Re-scanning the source and
-    //           reselecting by identity IS the restore auto-correction: a track added, removed,
-    //           or renamed since last run self-corrects (a moved/removed saved track simply
-    //           fails the URI lookup and leaves nothing selected).
+    // What:     `fun applySettings(session: Session) { ... }` declares a public method taking a
+    //           saved session, block body, `Unit` return.
+    // Why:      The settings-only half of the old `restoreLibrary`, applied EARLY (before the
+    //           streaming load starts) so shuffle, repeat, and volume are correct from the first
+    //           frame and serve as the baseline the user can override mid-load. This is safe to
+    //           apply before any tracks exist and before the terminal track load because: volume
+    //           is a persistent gain on the engine that a later `engine.load` does not reset, and
+    //           shuffle is a stored mode field the queue re-reads on every `setTracks`/`playIndex`,
+    //           so setting the mode on an empty queue still yields the correct scope once tracks
+    //           arrive.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // restoreLibrary(tracks, session) {
-    //   this.uris = tracks.map((t) => t.uri);
-    //   this.queue.setTracks(tracks.map((t) => t.displayPath));
+    // applySettings(session) {
     //   this.queue.setRepeatTrack(session.repeatTrack);
     //   this.queue.setShuffle(session.shuffle);
     //   this.engine.setVolume(session.volume);
-    //   this.pages = paginate(this.queue.displayPaths());
-    //   this.loadedUri = null; this.isLoading = false;
-    //   const i = session.selected ? this.uris.indexOf(session.selected) : -1;
-    //   if (i >= 0) { this.queue.playIndex(i); this.loadedUri = this.uris[i]; this.engine.load(this.uris[i], false); if (session.positionSecs > 0) this.engine.seekTo(session.positionSecs); }
-    //   else this.queue.clearSelection();
     //   this.uiState = { ...this.uiState, volume: session.volume };
-    //   this.refresh(true);
     // }
     // ```
-    fun restoreLibrary(tracks: List<Track>, session: Session) {
-        // What:     `uris = tracks.map { it.uri }` and `queue.setTracks(tracks.map { it.displayPath })`
-        //           adopt the scanned tracks (same as `openLibrary`): URIs in `uris`, display
-        //           paths into the queue's pagination.
-        // Why:      Rebuild the library from the fresh scan.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // this.uris = tracks.map((t) => t.uri); this.queue.setTracks(tracks.map((t) => t.displayPath));
-        // ```
-        uris = tracks.map { it.uri }
-        queue.setTracks(tracks.map { it.displayPath })
+    fun applySettings(session: Session) {
         // What:     `queue.setRepeatTrack(session.repeatTrack)` then `queue.setShuffle(session.shuffle)`
-        //           apply the saved settings to the queue.
-        // Why:      Restore the user's shuffle/repeat choices. (Set before reselecting so the
-        //           reselect builds the correct kind of scope, sequential vs shuffled.)
+        //           store the saved settings in the queue's mode fields.
+        // Why:      Restore the user's shuffle/repeat choices up front; the queue re-reads these
+        //           when tracks later arrive, so the eventual scope is correct.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -590,17 +572,67 @@ class PlayerController(private val engine: AudioEngine) {
         queue.setRepeatTrack(session.repeatTrack)
         queue.setShuffle(session.shuffle)
         // What:     `engine.setVolume(session.volume)` applies the saved gain to the engine.
-        // Why:      Restore the user's volume.
+        // Why:      Restore the user's volume from the first frame; this persistent gain survives
+        //           the terminal `engine.load`, so applying it early is safe.
         //
         // In TS you'd write (pseudocode):
         // ```ts
         // this.engine.setVolume(session.volume);
         // ```
         engine.setVolume(session.volume)
+        // What:     `uiState = uiState.copy(volume = session.volume)` reassigns `uiState` to a copy
+        //           with the saved volume (via the data-class `copy` + the Compose delegate).
+        // Why:      Make the slider match the engine immediately; `beginLoad`'s following `refresh`
+        //           carries this volume into the loading snapshot.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // this.uiState = { ...this.uiState, volume: session.volume };
+        // ```
+        uiState = uiState.copy(volume = session.volume)
+    }
+
+    // What:     `private fun restoreSelectedTrack(tracks: List<Track>, session: Session) { ... }`
+    //           declares a PRIVATE method taking the full scanned library and the saved session,
+    //           block body, `Unit` return.
+    // Why:      The track-only half of the old `restoreLibrary`: adopt the full track set, reselect
+    //           the saved track BY URI if it still exists, and cue it PAUSED at the saved position.
+    //           It deliberately does NOT touch settings (those were applied early by `applySettings`
+    //           and the user may have changed them during the load), and it clears `isLoading`
+    //           because this is the load's terminal delivery. Re-scanning and reselecting by
+    //           identity IS the restore auto-correction: a moved/removed saved track simply fails
+    //           the URI lookup and leaves nothing selected.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // private restoreSelectedTrack(tracks, session) {
+    //   this.uris = tracks.map((t) => t.uri);
+    //   this.queue.setTracks(tracks.map((t) => t.displayPath));
+    //   this.pages = paginate(this.queue.displayPaths());
+    //   this.loadedUri = null; this.isLoading = false;
+    //   const i = session.selected ? this.uris.indexOf(session.selected) : -1;
+    //   if (i >= 0) { this.queue.playIndex(i); this.loadedUri = this.uris[i]; this.engine.load(this.uris[i], false); if (session.positionSecs > 0) this.engine.seekTo(session.positionSecs); }
+    //   else this.queue.clearSelection();
+    //   this.refresh(true);
+    // }
+    // ```
+    private fun restoreSelectedTrack(tracks: List<Track>, session: Session) {
+        // What:     `uris = tracks.map { it.uri }` and `queue.setTracks(tracks.map { it.displayPath })`
+        //           adopt the full scanned tracks: URIs in `uris`, display paths into the queue's
+        //           pagination. `setTracks` re-reads the shuffle mode set earlier, so the scope is
+        //           correct.
+        // Why:      Rebuild the library from the authoritative full list once the scan finishes.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // this.uris = tracks.map((t) => t.uri); this.queue.setTracks(tracks.map((t) => t.displayPath));
+        // ```
+        uris = tracks.map { it.uri }
+        queue.setTracks(tracks.map { it.displayPath })
         // What:     `pages = paginate(queue.displayPaths())` rebuilds the page tabs; `loadedUri = null`
-        //           and `isLoading = false` reset load state.
-        // Why:      Fresh pagination for the scanned library; nothing loaded yet; the scan is
-        //           delivered.
+        //           and `isLoading = false` reset load state and clear the loading flag.
+        // Why:      Fresh pagination for the full library; nothing loaded yet; the scan is now
+        //           delivered, so the spinner gate must release.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -610,7 +642,7 @@ class PlayerController(private val engine: AudioEngine) {
         loadedUri = null
         isLoading = false
         // What:     `val savedIndex: Int = session.selected?.let { uris.indexOf(it) } ?: -1`
-        //           locates the saved track's URI in the fresh scan, or `-1`.
+        //           locates the saved track's URI in the full scan, or `-1`.
         //           - `session.selected?.let { uris.indexOf(it) }` runs `indexOf` only when a
         //             selection was saved; `?: -1` covers both "nothing saved" and "not found".
         // Why:      Reselect by stable identity; a moved/removed track is simply not found.
@@ -622,19 +654,19 @@ class PlayerController(private val engine: AudioEngine) {
         val savedIndex: Int = session.selected?.let { uris.indexOf(it) } ?: -1
         // What:     `if (savedIndex >= 0) { ... } else { queue.clearSelection() }` branches on
         //           whether the saved track survived.
-        // Why:      Reselect and cue it paused if present; otherwise leave nothing selected
-        //           (the restore auto-correction for a vanished track).
+        // Why:      Reselect and cue it paused if present; otherwise leave nothing selected (the
+        //           restore auto-correction for a vanished track).
         //
         // In TS you'd write (pseudocode):
         // ```ts
         // if (savedIndex >= 0) { ... } else { this.queue.clearSelection(); }
         // ```
         if (savedIndex >= 0) {
-            // What:     `queue.playIndex(savedIndex)` selects the saved track (building its
-            //           scope), then `loadedUri = uris[savedIndex]` and
-            //           `engine.load(uris[savedIndex], play = false)` cue it WITHOUT playing.
-            // Why:      Resume where the user left off, paused (Android is tap-to-play; restore
-            //           must not auto-start audio).
+            // What:     `queue.playIndex(savedIndex)` selects the saved track (building its scope),
+            //           then `loadedUri = uris[savedIndex]` and `engine.load(uris[savedIndex], play = false)`
+            //           cue it WITHOUT playing.
+            // Why:      Resume where the user left off, paused (Android is tap-to-play; restore must
+            //           not auto-start audio).
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -645,7 +677,10 @@ class PlayerController(private val engine: AudioEngine) {
             engine.load(uris[savedIndex], play = false)
             // What:     `if (session.positionSecs > 0.0) { engine.seekTo(session.positionSecs) }`
             //           seeks to the saved position when it is past the start.
-            // Why:      Resume mid-track; skip a needless seek to 0.
+            // Why:      Resume mid-track; skip a needless seek to 0. (The engine applies this seek
+            //           on its worker thread shortly after; the service deliberately does not save
+            //           during this branch, so the on-disk position is not overwritten with 0 in the
+            //           meantime.)
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -664,18 +699,101 @@ class PlayerController(private val engine: AudioEngine) {
             // ```
             queue.clearSelection()
         }
-        // What:     `uiState = uiState.copy(volume = session.volume)` updates the UI volume so
-        //           the slider matches the engine; `refresh(followCurrent = true)` rebuilds the
-        //           snapshot, switching to the restored track's page. (`refresh` carries the
-        //           just-set `uiState.volume` into the new snapshot.)
-        // Why:      Reflect the restored volume and selection in the UI.
+        // What:     `refresh(followCurrent = true)` rebuilds the snapshot, switching to the restored
+        //           track's page (named arg `followCurrent = true`). Note: NO `uiState.copy(volume)`
+        //           here, because settings (including volume) were applied early and may have been
+        //           changed by the user during the load.
+        // Why:      Reflect the restored selection in the UI without re-stamping the settings.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // this.uiState = { ...this.uiState, volume: session.volume }; this.refresh(true);
+        // this.refresh(true);
         // ```
-        uiState = uiState.copy(volume = session.volume)
         refresh(followCurrent = true)
+    }
+
+    // What:     `fun finishLoad(tracks: List<Track>, session: Session): FinishLoadResult { ... }`
+    //           declares a public method taking the full scanned library and the saved session,
+    //           returning a `FinishLoadResult` tag, block body.
+    // Why:      The terminal step of a streaming cold-start load. Because the list was interactive
+    //           while it filled in, there are two outcomes: if the user tapped a track during the
+    //           load, KEEP that choice and only adopt the full list; otherwise reselect the saved
+    //           track and seek to the saved position. The returned tag tells the service which
+    //           path ran so it can persist correctly.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // finishLoad(tracks, session): FinishLoadResult {
+    //   if (this.loadedUri !== null) {
+    //     this.isLoading = false;
+    //     this.reconcileLibrary(tracks);
+    //     return "KeptUserSelectionDuringLoad";
+    //   }
+    //   this.restoreSelectedTrack(tracks, session);
+    //   return "RestoredSavedSession";
+    // }
+    // ```
+    fun finishLoad(tracks: List<Track>, session: Session): FinishLoadResult {
+        // What:     `if (loadedUri != null) { ... }` tests whether a track is loaded in the engine,
+        //           which on a cold start means "the user tapped a row while it was loading."
+        // Why:      That tap must win over the saved track; we keep it and just grow the list.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // if (this.loadedUri !== null) { ... }
+        // ```
+        if (loadedUri != null) {
+            // What:     `isLoading = false` clears the loading flag BEFORE the reconcile, because
+            //           `reconcileLibrary` does not touch it; without this an empty terminal would
+            //           stay stuck on the spinner.
+            // Why:      Release the spinner gate as part of this terminal delivery.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // this.isLoading = false;
+            // ```
+            isLoading = false
+            // What:     `reconcileLibrary(tracks)` adopts the full list while preserving the tapped
+            //           track by URI (it is present, since a tappable row was already discovered) and
+            //           leaving the engine playing.
+            // Why:      Grow to the complete library without disturbing the user's mid-load choice.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // this.reconcileLibrary(tracks);
+            // ```
+            reconcileLibrary(tracks)
+            // What:     `return FinishLoadResult.KeptUserSelectionDuringLoad` returns the kept-tap
+            //           tag. `FinishLoadResult.KeptUserSelectionDuringLoad` reads a named constant
+            //           off the enum type (the `.` selects an enum member, not a method call).
+            // Why:      Tell the service this path ran so it saves immediately (the tapped track's
+            //           position is already real).
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // return "KeptUserSelectionDuringLoad";
+            // ```
+            return FinishLoadResult.KeptUserSelectionDuringLoad
+        }
+        // What:     `restoreSelectedTrack(tracks, session)` runs the no-tap path: reselect the saved
+        //           track, seek to the saved position, and clear `isLoading`.
+        // Why:      With nothing tapped, restore where the user left off.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // this.restoreSelectedTrack(tracks, session);
+        // ```
+        restoreSelectedTrack(tracks, session)
+        // What:     `return FinishLoadResult.RestoredSavedSession` returns the no-tap tag (a named
+        //           enum constant).
+        // Why:      Tell the service this path ran so it does NOT save immediately (the engine has
+        //           not applied the async seek yet, so saving now would write position 0).
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // return "RestoredSavedSession";
+        // ```
+        return FinishLoadResult.RestoredSavedSession
     }
 
     // What:     `fun reconcileLibrary(tracks: List<Track>) { ... }` declares a public method
@@ -1477,6 +1595,80 @@ class PlayerController(private val engine: AudioEngine) {
         refresh(followCurrent = true)
     }
 
+    // What:     `private fun resolveViewedPage(): Int { ... }` declares a PRIVATE helper, block
+    //           body, returning an `Int` page index. It is declared BEFORE `refresh` (which calls
+    //           it) so the file reads top-down.
+    // Why:      When `refresh` is not following a current track, it must decide which page tab to
+    //           show. Plain index-clamping breaks during a streaming load, because newly
+    //           discovered earlier-sorting folders shift every page's index, so the tab the user
+    //           was looking at would jump. Resolving by LABEL keeps the same tab; only when that
+    //           label no longer exists do we fall back to the clamp.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // private resolveViewedPage(): number {
+    //   const previousLabel = this.uiState.pageLabels[this.uiState.selectedPage] ?? null;
+    //   const byLabel = previousLabel === null
+    //     ? -1
+    //     : this.pages.findIndex((p) => p.label === previousLabel);
+    //   return byLabel >= 0 ? byLabel : clamp(this.uiState.selectedPage, 0, Math.max(0, this.pages.length - 1));
+    // }
+    // ```
+    private fun resolveViewedPage(): Int {
+        // What:     `val previousLabel: String? = uiState.pageLabels.getOrNull(uiState.selectedPage)`
+        //           reads the label of the tab the user was on, or null. `getOrNull(i)` returns the
+        //           element or null for an out-of-range index (no throw); the result type `String?`
+        //           is "a String OR null".
+        // Why:      The label is the stable identity of the viewed tab across a re-pagination; we
+        //           need it to find where that tab moved to.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const previousLabel: string | null = this.uiState.pageLabels[this.uiState.selectedPage] ?? null;
+        // ```
+        val previousLabel: String? = uiState.pageLabels.getOrNull(uiState.selectedPage)
+        // What:     `val byLabel: Int = previousLabel?.let { label -> pages.indexOfFirst { it.label == label } } ?: -1`
+        //           finds the new index of that label, or -1.
+        //           - `previousLabel?.let { label -> ... }` runs the block only when the label is
+        //             non-null, binding it as `label`.
+        //           - `pages.indexOfFirst { it.label == label }` returns the index of the first page
+        //             whose `label` matches (`it` is the implicit single-lambda parameter, here a
+        //             `Page`), or -1 if none.
+        //           - `?: -1` covers the "no previous label at all" case.
+        // Why:      Locate where the viewed tab landed after the pages shifted.
+        // Gotcha:   `indexOfFirst` already returns -1 when nothing matches, so both "no label" and
+        //           "label vanished" collapse to the same -1 sentinel handled below.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const byLabel = previousLabel === null ? -1 : this.pages.findIndex((p) => p.label === previousLabel);
+        // ```
+        val byLabel: Int = previousLabel?.let { label -> pages.indexOfFirst { it.label == label } } ?: -1
+        // What:     `if (byLabel >= 0) { return byLabel }` returns the resolved index early when the
+        //           label was found.
+        // Why:      The viewed tab still exists; keep showing it at its new position.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // if (byLabel >= 0) return byLabel;
+        // ```
+        if (byLabel >= 0) {
+            return byLabel
+        }
+        // What:     `return uiState.selectedPage.coerceIn(0, maxOf(0, pages.size - 1))` is the
+        //           fallback. `coerceIn(min, max)` CLAMPS the old numeric index into range;
+        //           `maxOf(0, pages.size - 1)` is the last valid index but never below 0 (so an
+        //           empty `pages` clamps to 0).
+        // Why:      The viewed label is gone (or there was none), so fall back to the old
+        //           index-keeping behaviour, never out of bounds.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // return clamp(this.uiState.selectedPage, 0, Math.max(0, this.pages.length - 1));
+        // ```
+        return uiState.selectedPage.coerceIn(0, maxOf(0, pages.size - 1))
+    }
+
     // What:     `private fun refresh(followCurrent: Boolean = false) { ... }` declares a
     //           PRIVATE method with one DEFAULT-VALUED parameter (`followCurrent` defaults
     //           to `false`), block body, `Unit`.
@@ -1526,19 +1718,19 @@ class PlayerController(private val engine: AudioEngine) {
             // ```
             pageOfIndex(pages, current) ?: uiState.selectedPage
         } else {
-            // What:     `uiState.selectedPage.coerceIn(0, maxOf(0, pages.size - 1))` is the
-            //           `else` branch value. `coerceIn(min, max)` CLAMPS the current selected
-            //           page into the range; `maxOf(0, pages.size - 1)` computes the last
-            //           valid page index but never goes below 0 (so an empty `pages` clamps
-            //           to 0).
-            // Why:      Keep the user's selected page, but never out of bounds after the
-            //           pages changed.
+            // What:     `resolveViewedPage()` is the `else` branch value: the page index to keep
+            //           when we are NOT following a current track. It preserves the page the user
+            //           was viewing by its LABEL (re-resolving its index against the new pages),
+            //           falling back to a clamp when the label is gone.
+            // Why:      During a streaming load the pages shift as earlier-sorting folders are
+            //           discovered late, so a numeric index would point at a different tab; keying
+            //           on the label keeps the viewed tab stable while the list fills in.
             //
             // In TS you'd write (pseudocode):
             // ```ts
-            // clamp(this.uiState.selectedPage, 0, Math.max(0, this.pages.length - 1))
+            // this.resolveViewedPage()
             // ```
-            uiState.selectedPage.coerceIn(0, maxOf(0, pages.size - 1))
+            resolveViewedPage()
         }
         // What:     `uiState = PlayerUiState( ... )` reassigns `uiState` to a brand-new
         //           snapshot built with NAMED constructor arguments (the assignment goes
