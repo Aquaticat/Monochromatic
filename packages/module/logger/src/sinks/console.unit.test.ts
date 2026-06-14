@@ -55,17 +55,13 @@ function withVerboseArgv(): Disposable {
     .push('--verbose',);
   return {
     [Symbol.dispose](): void {
-      /**
-       * Index of the flag this helper added; `-1` means a concurrent change already removed it, so nothing is spliced.
-       */
-      const flagIndex = process.argv
-        .indexOf('--verbose',);
-      if (flagIndex !== -1)
-        process.argv
-          .splice(
-          flagIndex,
-          1,
-        );
+      // Reassign to a flag-free copy rather than splice by index: the test
+      // environment carries no `--verbose` of its own, so filtering restores
+      // the original vector and dodges the conflicting index-check lint rules.
+      process.argv = process.argv
+        .filter(function keepNonVerbose(arg,) {
+          return arg !== '--verbose';
+        },);
     },
   };
 }
