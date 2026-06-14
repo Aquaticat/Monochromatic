@@ -4,6 +4,39 @@
 version = "13.0"
 backend = "vfox:mise-plugins/vfox-android-sdk"
 
+[tools.android-sdk."platforms.linux-arm64"]
+url = "https://dl.google.com/android/repository/commandlinetools-linux-11479570_latest.zip"
+
+[tools.android-sdk."platforms.linux-arm64-musl"]
+url = "https://dl.google.com/android/repository/commandlinetools-linux-11479570_latest.zip"
+
+[tools.android-sdk."platforms.linux-x64"]
+url = "https://dl.google.com/android/repository/commandlinetools-linux-11479570_latest.zip"
+
+[tools.android-sdk."platforms.linux-x64-baseline"]
+url = "https://dl.google.com/android/repository/commandlinetools-linux-11479570_latest.zip"
+
+[tools.android-sdk."platforms.linux-x64-musl"]
+url = "https://dl.google.com/android/repository/commandlinetools-linux-11479570_latest.zip"
+
+[tools.android-sdk."platforms.linux-x64-musl-baseline"]
+url = "https://dl.google.com/android/repository/commandlinetools-linux-11479570_latest.zip"
+
+[tools.android-sdk."platforms.macos-arm64"]
+url = "https://dl.google.com/android/repository/commandlinetools-mac-11479570_latest.zip"
+
+[tools.android-sdk."platforms.macos-x64"]
+url = "https://dl.google.com/android/repository/commandlinetools-mac-11479570_latest.zip"
+
+[tools.android-sdk."platforms.macos-x64-baseline"]
+url = "https://dl.google.com/android/repository/commandlinetools-mac-11479570_latest.zip"
+
+[tools.android-sdk."platforms.windows-x64"]
+url = "https://dl.google.com/android/repository/commandlinetools-win-11479570_latest.zip"
+
+[tools.android-sdk."platforms.windows-x64-baseline"]
+url = "https://dl.google.com/android/repository/commandlinetools-win-11479570_latest.zip"
+
 [[tools."aqua:apple/pkl"]]
 version = "0.31.1"
 backend = "aqua:apple/pkl"
@@ -150,54 +183,6 @@ url = "https://github.com/jdx/hk/releases/download/v1.47.0/hk-x86_64-pc-windows-
 [tools."aqua:jdx/hk"."platforms.windows-x64-baseline"]
 checksum = "sha256:808544917b7bf3d14e049a3c672152d8d38ea116ebb04b8fd0ec1636dcf84360"
 url = "https://github.com/jdx/hk/releases/download/v1.47.0/hk-x86_64-pc-windows-msvc.zip"
-
-[[tools."aqua:nushell/nushell"]]
-version = "0.113.1"
-backend = "aqua:nushell/nushell"
-
-[tools."aqua:nushell/nushell"."platforms.linux-arm64"]
-checksum = "sha256:08b94c6fd9c66881616df4c89adc03e8a42a57fdf6876cfd1b16cec7e82348b4"
-url = "https://github.com/nushell/nushell/releases/download/0.113.1/nu-0.113.1-aarch64-unknown-linux-gnu.tar.gz"
-
-[tools."aqua:nushell/nushell"."platforms.linux-arm64-musl"]
-checksum = "sha256:7b973e826760d337e73ac6fb9c53bac15dbe66dba50ec439f02e8eaa1d1c2c77"
-url = "https://github.com/nushell/nushell/releases/download/0.113.1/nu-0.113.1-aarch64-unknown-linux-musl.tar.gz"
-
-[tools."aqua:nushell/nushell"."platforms.linux-x64"]
-checksum = "sha256:7faea21f8a49edf760c7bb9267f7702827937b19fc7dce412716b1cacbf38ae7"
-url = "https://github.com/nushell/nushell/releases/download/0.113.1/nu-0.113.1-x86_64-unknown-linux-musl.tar.gz"
-
-[tools."aqua:nushell/nushell"."platforms.linux-x64-baseline"]
-checksum = "sha256:7faea21f8a49edf760c7bb9267f7702827937b19fc7dce412716b1cacbf38ae7"
-url = "https://github.com/nushell/nushell/releases/download/0.113.1/nu-0.113.1-x86_64-unknown-linux-musl.tar.gz"
-
-[tools."aqua:nushell/nushell"."platforms.linux-x64-musl"]
-checksum = "sha256:7faea21f8a49edf760c7bb9267f7702827937b19fc7dce412716b1cacbf38ae7"
-url = "https://github.com/nushell/nushell/releases/download/0.113.1/nu-0.113.1-x86_64-unknown-linux-musl.tar.gz"
-
-[tools."aqua:nushell/nushell"."platforms.linux-x64-musl-baseline"]
-checksum = "sha256:7faea21f8a49edf760c7bb9267f7702827937b19fc7dce412716b1cacbf38ae7"
-url = "https://github.com/nushell/nushell/releases/download/0.113.1/nu-0.113.1-x86_64-unknown-linux-musl.tar.gz"
-
-[tools."aqua:nushell/nushell"."platforms.macos-arm64"]
-checksum = "sha256:458aa21674221b2e8adbd784f9ba8113288b78f3c352465cef37b114ff3dffd5"
-url = "https://github.com/nushell/nushell/releases/download/0.113.1/nu-0.113.1-aarch64-apple-darwin.tar.gz"
-
-[tools."aqua:nushell/nushell"."platforms.macos-x64"]
-checksum = "sha256:18ec6448cd8562b4f94ba24bace6164c5d8b8d634c8105751ec45e17d34549b2"
-url = "https://github.com/nushell/nushell/releases/download/0.113.1/nu-0.113.1-x86_64-apple-darwin.tar.gz"
-
-[tools."aqua:nushell/nushell"."platforms.macos-x64-baseline"]
-checksum = "sha256:18ec6448cd8562b4f94ba24bace6164c5d8b8d634c8105751ec45e17d34549b2"
-url = "https://github.com/nushell/nushell/releases/download/0.113.1/nu-0.113.1-x86_64-apple-darwin.tar.gz"
-
-[tools."aqua:nushell/nushell"."platforms.windows-x64"]
-checksum = "sha256:fd3e56dac9f866d2d3fe2fabd6580c14371afdcec9ddda54624a50986d36b3d2"
-url = "https://github.com/nushell/nushell/releases/download/0.113.1/nu-0.113.1-x86_64-pc-windows-msvc.zip"
-
-[tools."aqua:nushell/nushell"."platforms.windows-x64-baseline"]
-checksum = "sha256:fd3e56dac9f866d2d3fe2fabd6580c14371afdcec9ddda54624a50986d36b3d2"
-url = "https://github.com/nushell/nushell/releases/download/0.113.1/nu-0.113.1-x86_64-pc-windows-msvc.zip"
 
 [[tools.betterleaks]]
 version = "1.5.0"
@@ -785,6 +770,112 @@ url = "https://github.com/sharkdp/hyperfine/releases/download/v1.20.0/hyperfine-
 [[tools.java]]
 version = "temurin-21.0.11+10.0.LTS"
 backend = "core:java"
+
+[tools.java."platforms.linux-arm64"]
+checksum = "sha256:8d498ec88e1c1989fab95c6784240ab92d011e29c54d20a3f9c324b13476f9ad"
+url = "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.11%2B10/OpenJDK21U-jdk_aarch64_linux_hotspot_21.0.11_10.tar.gz"
+
+[tools.java."platforms.linux-arm64-musl"]
+checksum = "sha256:c8d63598d1dc0a656033515ed258bd6db37506a05407d9f65cd23b95c21027b5"
+url = "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.11%2B10/OpenJDK21U-jdk_aarch64_alpine-linux_hotspot_21.0.11_10.tar.gz"
+
+[tools.java."platforms.linux-x64"]
+checksum = "sha256:4b2220e232a97997b436ca6ab15cbf70171ecff52958a46159dfa5a8c44ca4de"
+url = "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.11%2B10/OpenJDK21U-jdk_x64_linux_hotspot_21.0.11_10.tar.gz"
+
+[tools.java."platforms.linux-x64-baseline"]
+checksum = "sha256:4b2220e232a97997b436ca6ab15cbf70171ecff52958a46159dfa5a8c44ca4de"
+url = "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.11%2B10/OpenJDK21U-jdk_x64_linux_hotspot_21.0.11_10.tar.gz"
+
+[tools.java."platforms.linux-x64-musl"]
+checksum = "sha256:38bfdcef1e4b45de2ec222047ac79c76bea75d4d7406a310e26cfa236763f05f"
+url = "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.11%2B10/OpenJDK21U-jdk_x64_alpine-linux_hotspot_21.0.11_10.tar.gz"
+
+[tools.java."platforms.linux-x64-musl-baseline"]
+checksum = "sha256:38bfdcef1e4b45de2ec222047ac79c76bea75d4d7406a310e26cfa236763f05f"
+url = "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.11%2B10/OpenJDK21U-jdk_x64_alpine-linux_hotspot_21.0.11_10.tar.gz"
+
+[tools.java."platforms.macos-arm64"]
+checksum = "sha256:6ebcf221c9b41507b14c098e93c6ead6440b8d9bd154f8ec666c4c73abbdb201"
+url = "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.11%2B10/OpenJDK21U-jdk_aarch64_mac_hotspot_21.0.11_10.tar.gz"
+
+[tools.java."platforms.macos-x64"]
+checksum = "sha256:34180eb03e6d207c388cce3da668f6cc7cd7508c185c24782fadac2c9c0e66f9"
+url = "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.11%2B10/OpenJDK21U-jdk_x64_mac_hotspot_21.0.11_10.tar.gz"
+
+[tools.java."platforms.macos-x64-baseline"]
+checksum = "sha256:34180eb03e6d207c388cce3da668f6cc7cd7508c185c24782fadac2c9c0e66f9"
+url = "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.11%2B10/OpenJDK21U-jdk_x64_mac_hotspot_21.0.11_10.tar.gz"
+
+[tools.java."platforms.windows-x64"]
+checksum = "sha256:d3625e7cadf23787ea540229544b6e2ab494b3b54da1801879e583e1dfee0a64"
+url = "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.11%2B10/OpenJDK21U-jdk_x64_windows_hotspot_21.0.11_10.zip"
+
+[tools.java."platforms.windows-x64-baseline"]
+checksum = "sha256:d3625e7cadf23787ea540229544b6e2ab494b3b54da1801879e583e1dfee0a64"
+url = "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.11%2B10/OpenJDK21U-jdk_x64_windows_hotspot_21.0.11_10.zip"
+
+[[tools."llama.cpp"]]
+version = "b9632"
+backend = "github:ggml-org/llama.cpp"
+
+[tools."llama.cpp".options]
+version_prefix = "b"
+
+[tools."llama.cpp"."platforms.linux-arm64"]
+checksum = "sha256:6ad93855bce7a74d701706e47f68c6edbdb35d6d74d3786ef4eea66390676106"
+url = "https://github.com/ggml-org/llama.cpp/releases/download/b9632/llama-b9632-bin-ubuntu-arm64.tar.gz"
+url_api = "https://api.github.com/repos/ggml-org/llama.cpp/releases/assets/447367793"
+
+[tools."llama.cpp"."platforms.linux-arm64-musl"]
+checksum = "sha256:6ad93855bce7a74d701706e47f68c6edbdb35d6d74d3786ef4eea66390676106"
+url = "https://github.com/ggml-org/llama.cpp/releases/download/b9632/llama-b9632-bin-ubuntu-arm64.tar.gz"
+url_api = "https://api.github.com/repos/ggml-org/llama.cpp/releases/assets/447367793"
+
+[tools."llama.cpp"."platforms.linux-x64"]
+checksum = "sha256:6453261957c3665617d4d58be4749e2e09fd1f8a5b25b497f4c9c55d273ee38c"
+url = "https://github.com/ggml-org/llama.cpp/releases/download/b9632/llama-b9632-bin-ubuntu-x64.tar.gz"
+url_api = "https://api.github.com/repos/ggml-org/llama.cpp/releases/assets/447367930"
+
+[tools."llama.cpp"."platforms.linux-x64-baseline"]
+checksum = "sha256:6453261957c3665617d4d58be4749e2e09fd1f8a5b25b497f4c9c55d273ee38c"
+url = "https://github.com/ggml-org/llama.cpp/releases/download/b9632/llama-b9632-bin-ubuntu-x64.tar.gz"
+url_api = "https://api.github.com/repos/ggml-org/llama.cpp/releases/assets/447367930"
+
+[tools."llama.cpp"."platforms.linux-x64-musl"]
+checksum = "sha256:6453261957c3665617d4d58be4749e2e09fd1f8a5b25b497f4c9c55d273ee38c"
+url = "https://github.com/ggml-org/llama.cpp/releases/download/b9632/llama-b9632-bin-ubuntu-x64.tar.gz"
+url_api = "https://api.github.com/repos/ggml-org/llama.cpp/releases/assets/447367930"
+
+[tools."llama.cpp"."platforms.linux-x64-musl-baseline"]
+checksum = "sha256:6453261957c3665617d4d58be4749e2e09fd1f8a5b25b497f4c9c55d273ee38c"
+url = "https://github.com/ggml-org/llama.cpp/releases/download/b9632/llama-b9632-bin-ubuntu-x64.tar.gz"
+url_api = "https://api.github.com/repos/ggml-org/llama.cpp/releases/assets/447367930"
+
+[tools."llama.cpp"."platforms.macos-arm64"]
+checksum = "sha256:dcdc393cb2cca4a23423f3eeed9f2dba4462c98c58191c6ce6a2c65d4bdd4d92"
+url = "https://github.com/ggml-org/llama.cpp/releases/download/b9632/llama-b9632-bin-macos-arm64.tar.gz"
+url_api = "https://api.github.com/repos/ggml-org/llama.cpp/releases/assets/447367774"
+
+[tools."llama.cpp"."platforms.macos-x64"]
+checksum = "sha256:7c40760ec7a1c9b843b2d197d60aa50a22f4826406cf6271c2cc910409856a5f"
+url = "https://github.com/ggml-org/llama.cpp/releases/download/b9632/llama-b9632-bin-macos-x64.tar.gz"
+url_api = "https://api.github.com/repos/ggml-org/llama.cpp/releases/assets/447367787"
+
+[tools."llama.cpp"."platforms.macos-x64-baseline"]
+checksum = "sha256:7c40760ec7a1c9b843b2d197d60aa50a22f4826406cf6271c2cc910409856a5f"
+url = "https://github.com/ggml-org/llama.cpp/releases/download/b9632/llama-b9632-bin-macos-x64.tar.gz"
+url_api = "https://api.github.com/repos/ggml-org/llama.cpp/releases/assets/447367787"
+
+[tools."llama.cpp"."platforms.windows-x64"]
+checksum = "sha256:b835d5c5155dd2a5ed748a0351debf2ede0dc9f808757e0429f8700a11832dcd"
+url = "https://github.com/ggml-org/llama.cpp/releases/download/b9632/llama-b9632-bin-win-cpu-x64.zip"
+url_api = "https://api.github.com/repos/ggml-org/llama.cpp/releases/assets/447367944"
+
+[tools."llama.cpp"."platforms.windows-x64-baseline"]
+checksum = "sha256:b835d5c5155dd2a5ed748a0351debf2ede0dc9f808757e0429f8700a11832dcd"
+url = "https://github.com/ggml-org/llama.cpp/releases/download/b9632/llama-b9632-bin-win-cpu-x64.zip"
+url_api = "https://api.github.com/repos/ggml-org/llama.cpp/releases/assets/447367944"
 
 [[tools.node]]
 version = "26.3.0"
