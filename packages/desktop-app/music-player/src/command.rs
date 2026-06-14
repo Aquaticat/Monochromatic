@@ -433,6 +433,37 @@ pub enum Update {
         // ```
         duration: f64,
     },
+    // What:     `Reconciled { names, index, name, duration }` a STRUCT variant: a live rescan
+    //           reconciled the queue with disk IN PLACE (files added/removed/renamed), keeping
+    //           the Selected Track by path. Carries the new list plus the re-anchored current
+    //           track (its possibly-shifted index, display name, and duration).
+    // Why:      Distinct from `Queue` (a fresh open/restore, which resets the view to the first
+    //           page) and `NowPlaying` (a transport/selection change, which follows the track to
+    //           its page): a reconcile must refresh the list and highlight WITHOUT moving the
+    //           user's selected tab or track. The UI keeps the current page.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // { kind: "reconciled"; names: string[]; index: number | null; name: string; duration: number }
+    // ```
+    Reconciled {
+        // What:     `names: Vec<String>` the reconciled queue as display paths (same shape as
+        //           `Queue`'s payload).
+        // Why:      The list may have gained or lost rows; the UI rebuilds from this.
+        names: Vec<String>,
+        // What:     `index: Option<usize>` the current track's possibly-shifted load-order index,
+        //           or `None` when nothing is selected (or the selected file left the root).
+        // Why:      Drives the row highlight after a reorder without restarting playback.
+        index: Option<usize>,
+        // What:     `name: String` the current track's display path (empty when `index` is
+        //           `None`), used for the window title.
+        // Why:      The common-root prefix can shift when files are added or removed.
+        name: String,
+        // What:     `duration: f64` the current track's length in SECONDS (0.0 when `index` is
+        //           `None`); see `NowPlaying.duration` for why f64.
+        // Why:      Keeps the seek-bar maximum correct without recomputing it.
+        duration: f64,
+    },
     // What:     `Position(f64)` carries the live playback position in SECONDS as an
     //           `f64`. Siblings: `f32`, `u64` frames, `Duration` (see the `duration`
     //           field above for why f64 wins).

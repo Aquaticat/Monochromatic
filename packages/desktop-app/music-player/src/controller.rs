@@ -1461,32 +1461,36 @@ impl Controller {
                     {
                         // What:     `Some(idx) => { ... }`. The Selected Track survived: re-anchor
                         //           the cursor at its new index (audio is decoder-owned, so it is
-                        //           NOT interrupted) and refresh the list + highlight.
-                        // Why:      A live change to other files must not disturb playback.
+                        //           NOT interrupted) and emit ONE `Reconciled` (list + highlight).
+                        // Why:      A live change to other files must not disturb playback NOR the
+                        //           user's selected tab; `Reconciled` keeps the current page,
+                        //           unlike the `Queue` + `NowPlaying` pair which reset/follow it.
                         //
                         // In TS you'd write (pseudocode):
                         // ```ts
-                        // this.queue.playIndex(idx); this.emitQueue(); this.emitCurrentNowPlaying();
+                        // this.queue.playIndex(idx); this.emitReconciled();
                         // ```
                         Some(idx) => {
                             self.queue.play_index(idx);
-                            self.emit(Update::Queue(self.queue.display_paths()));
-                            self.emit_current_now_playing();
+                            self.emit_reconciled();
                         }
                         // What:     `None => { ... }`. The Selected Track is gone (or there was
-                        //           none): clear the selection, refresh the list, and STOP if it
-                        //           was playing (its file left the root).
-                        // Why:      The "playing file gone -> stop + clear" rule.
+                        //           none): clear the selection, emit `Reconciled` (keeping the
+                        //           page), reset the seek bar, and STOP if it was playing (its file
+                        //           left the root).
+                        // Why:      The "playing file gone -> stop + clear" rule, still without
+                        //           moving the user's tab. `Reconciled` carries `index: None`, and
+                        //           a separate `Position(0)` resets the seek bar (page-safe).
                         //
                         // In TS you'd write (pseudocode):
                         // ```ts
-                        // this.queue.clearSelection(); this.emitQueue(); this.emitNoTrack();
-                        // if (this.playing) this.setPlaying(false);
+                        // this.queue.clearSelection(); this.emitReconciled();
+                        // this.emit({ kind: "position", secs: 0 }); if (this.playing) this.setPlaying(false);
                         // ```
                         None => {
                             self.queue.clear_selection();
-                            self.emit(Update::Queue(self.queue.display_paths()));
-                            self.emit_no_track();
+                            self.emit_reconciled();
+                            self.emit(Update::Position(0.0));
                             if self.playing {
                                 self.set_playing(false);
                             }

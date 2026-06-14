@@ -28,6 +28,16 @@ slint::include_modules!();
 // ```
 mod ui_progress;
 
+// What:     `mod ui_page;` loads the sibling `ui_page.rs` module into this binary crate.
+// Why:      The queue/now-playing projection helpers use generated Slint types, so they belong
+//           beside `main.rs`, not in the reusable library crate.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import * as uiPage from "./ui_page";
+// ```
+mod ui_page;
+
 // What:     `use std::path::PathBuf;`. The OWNED filesystem path type: a heap-
 //           allocated, growable path buffer. Sibling: `&Path`, a BORROWED view
 //           that does not own its bytes (the `String` vs `&str` distinction, but
@@ -224,6 +234,17 @@ use i_slint_backend_winit::Backend;
 // ```
 use slint::{ComponentHandle, Model, SharedString, VecModel};
 
+// What:     `use ui_page::{set_now_playing, set_queue_model, PageNav};`. The sibling module's
+//           page-navigation intent type and the property-setter helpers.
+// Why:      `refresh_page` and `apply_update` below project engine `Update`s onto Slint
+//           properties through these.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { setNowPlaying, setQueueModel, PageNav } from "./ui_page";
+// ```
+use ui_page::{set_now_playing, set_queue_model, PageNav};
+
 // What:     `fn shuffle_to_int(mode: ShuffleMode) -> i32`. Map the enum to the
 //           integer the UI property uses (Off=0, WithinPage=1, All=2). `i32` is a
 //           32-bit signed integer; siblings: `u32` (unsigned), `i64`/`usize`.
@@ -333,7 +354,7 @@ fn int_to_shuffle(value: i32) -> ShuffleMode {
 // ```ts
 // function formatTime(secs: number): string { ... }
 // ```
-fn format_time(secs: f64) -> String {
+pub(crate) fn format_time(secs: f64) -> String {
     // What:     `let whole = if secs > 0.0 { secs as u64 } else { 0 };`. `if/else`
     //           used as an EXPRESSION (both arms yield a value). `secs as u64` is a
     //           numeric CAST that truncates the float toward zero into a 64-bit
@@ -363,21 +384,21 @@ fn format_time(secs: f64) -> String {
     format!("{}:{:02}", whole / 60, whole % 60)
 }
 
-// What:     `fn refresh_page(app: &AppWindow, target: Option<i32>)`. Rebuild the
+// What:     `fn refresh_page(app: &AppWindow, target: PageNav)`. Rebuild the
 //           page-tab list and the visible page from the full `queue` property.
 //           `app: &AppWindow` is a BORROWED, read-only reference to the window (we
-//           only call its getters/setters, we do not own it). `target` is an
-//           `Option<i32>`: `Some(page)` to show a specific page, or `None` to follow
-//           the current track (used when the track changes). No `-> ...`, so it
-//           returns `()` (the unit type, like TS `void`). Runs on the UI thread.
+//           only call its getters/setters, we do not own it). `target` is a `PageNav`:
+//           `Show(page)` to show a specific page, `Follow` to jump to the current
+//           track's page, or `Keep` to preserve the page already shown. No `-> ...`, so
+//           it returns `()` (the unit type, like TS `void`). Runs on the UI thread.
 // Why:      One place derives the pagination view, so the tabs, the visible rows,
 //           and the selected tab can never disagree.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function refreshPage(app: AppWindow, target: number | null): void { ... }
+// function refreshPage(app: AppWindow, target: PageNav): void { ... }
 // ```
-fn refresh_page(app: &AppWindow, target: Option<i32>) {
+fn refresh_page(app: &AppWindow, target: PageNav) {
     // What:     `let names: Vec<String> = app.get_queue().iter().map(|s| s.to_string()).collect();`.
     //           `app.get_queue()` returns the full-list model (`ModelRc<SharedString>`);
     //           `.iter()` (from the `Model` trait) walks it yielding `SharedString`;
@@ -437,33 +458,41 @@ fn refresh_page(app: &AppWindow, target: Option<i32>) {
 
     // What:     `let requested: i32 = match target { ... };`. A `match` used as an
     //           EXPRESSION assigned to `requested`. Decides which page to show: the
-    //           explicit one, or the page of the current track when following.
-    // Why:      `select-page` passes an explicit page; a track change passes `None`.
+    //           explicit one, the page already shown, or the page of the current track.
+    // Why:      `Show` carries an explicit page; `Keep` preserves the current page; `Follow`
+    //           computes the current track's page.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // const requested: number = target ?? pageOfCurrent();
+    // const requested: number = target.kind === "show" ? target.page : target.kind === "keep" ? app.selectedPage : pageOfCurrent();
     // ```
     let requested: i32 = match target {
-        // What:     `Some(page) => page`. The `Some(x)` pattern destructures the
-        //           present `Option`, binding the inner value to `page`, and the arm
-        //           yields it.
-        // Why:      Honour the explicitly clicked tab.
+        // What:     `PageNav::Show(page) => page`. Destructure the explicit page and yield it.
+        // Why:      Honour the explicitly clicked tab (or page 0 on a fresh open).
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // if (target !== null) return target;
+        // if (target.kind === "show") return target.page;
         // ```
-        Some(page) => page,
-        // What:     `None => { ... }`. The empty-`Option` arm; its `{ ... }` block
-        //           computes the page to follow the current track.
+        PageNav::Show(page) => page,
+        // What:     `PageNav::Keep => app.get_selected_page()`. Yield the page already shown.
+        // Why:      A rescan reconcile must not move the user's tab; clamping below still keeps
+        //           it in range if the page count shrank.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // if (target.kind === "keep") return app.selectedPage;
+        // ```
+        PageNav::Keep => app.get_selected_page(),
+        // What:     `PageNav::Follow => { ... }`. The follow arm; its `{ ... }` block computes
+        //           the page to follow the current track.
         // Why:      Keep the playing row visible after a track change.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // else { /* compute from current track */ }
+        // /* compute from current track */
         // ```
-        None => {
+        PageNav::Follow => {
             // What:     `let index = app.get_current_index();`. The playing track's
             //           load-order index, or `-1` when nothing is playing.
             // Why:      We map it onto a page.
@@ -639,51 +668,26 @@ fn apply_update(app: &AppWindow, update: Update) {
         // case "queue": { const { names } = update; ... }
         // ```
         Update::Queue(names) => {
-            // What:     `let items: Vec<SharedString> = names.into_iter().map(SharedString::from).collect();`.
-            //           `into_iter()` CONSUMES `names`, yielding owned `String`s;
-            //           `.map(SharedString::from)` converts each (passing the function
-            //           by name is the closure shorthand); `.collect()` gathers a new
-            //           `Vec<SharedString>`.
-            // Why:      Slint models hold `SharedString`, not `String`.
+            // What:     `set_queue_model(app, names);`. Store the full list (consuming `names`).
+            // Why:      The canonical full list; the visible rows come from the paginated
+            //           `page-items` set inside `refresh_page` just below.
             //
             // In TS you'd write (pseudocode):
             // ```ts
-            // const items = names.slice();
+            // setQueueModel(app, names);
             // ```
-            let items: Vec<SharedString> = names.into_iter().map(SharedString::from).collect();
-            // What:     `let model = Rc::new(VecModel::from(items));`. `VecModel::from`
-            //           wraps the vector as a list model; `Rc::new` puts it behind a
-            //           shared-ownership pointer.
-            // Why:      Slint list properties take a reference-counted model.
+            set_queue_model(app, names);
+            // What:     `refresh_page(app, PageNav::Show(0));`. Rebuild the tabs and show the
+            //           first page. A fresh queue (open/restore) resets to page 0; the
+            //           `NowPlaying` update that follows a restore then jumps to the current
+            //           track's page.
+            // Why:      A fresh queue starts at the first tab.
             //
             // In TS you'd write (pseudocode):
             // ```ts
-            // const model = items;
+            // refreshPage(app, { kind: "show", page: 0 });
             // ```
-            let model = Rc::new(VecModel::from(items));
-            // What:     `app.set_queue(model.into());`. `model.into()` converts the
-            //           `Rc<VecModel>` into the `ModelRc` the property wants.
-            //           `set_queue` is the generated setter for the `queue` property:
-            //           the canonical full list; the visible rows come from the
-            //           paginated `page-items` set inside `refresh_page` just below.
-            // Why:      Store the full list (the pagination view is derived from it).
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // app.queue = model;
-            // ```
-            app.set_queue(model.into());
-            // What:     `refresh_page(app, Some(0));`. Pass `Some(0)` to rebuild the
-            //           tabs and show the first page. A fresh queue resets to page 0;
-            //           the `NowPlaying` update that always follows an open/restore
-            //           then jumps to the current track's page.
-            // Why:      Repaginate whenever the queue changes.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // refreshPage(app, 0);
-            // ```
-            refresh_page(app, Some(0));
+            refresh_page(app, PageNav::Show(0));
         }
         // What:     `Update::NowPlaying { index, name, duration } => { ... }`. A
         //           STRUCT-variant pattern: destructures the variant's named fields
@@ -699,81 +703,68 @@ fn apply_update(app: &AppWindow, update: Update) {
             name,
             duration,
         } => {
-            // What:     `app.set_track_name(name.into());`. `name.into()` converts the
-            //           owned `String` to the `SharedString` the property wants.
-            // Why:      Show the filename.
+            // What:     `set_now_playing(app, index, name, duration);`. Mirror the title, seek-bar
+            //           maximum and total-time label, and the highlighted row.
+            // Why:      A track change refreshes the now-playing view.
             //
             // In TS you'd write (pseudocode):
             // ```ts
-            // app.trackName = name;
+            // setNowPlaying(app, index, name, duration);
             // ```
-            app.set_track_name(name.into());
-            // What:     `app.set_duration(duration as f32);`. `as f32` narrows our
-            //           `f64` seconds to Slint's 32-bit `float` (sibling `f64`).
-            // Why:      The seek slider's maximum; Slint stores it as f32.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // app.duration = duration;
-            // ```
-            app.set_duration(duration as f32);
-            // What:     `app.set_duration_text(format_time(duration).into());`. Format
-            //           the seconds to "m:ss" then `.into()` to `SharedString`.
-            // Why:      Show total time as a human-readable label.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // app.durationText = formatTime(duration);
-            // ```
-            app.set_duration_text(format_time(duration).into());
-            // What:     `let index_i32 = match index { Some(i) => i as i32, None => -1 };`.
-            //           A `match` EXPRESSION that encodes the `Option<usize>` current
-            //           index as a plain `i32`, using -1 for "none".
-            // Why:      Slint `int` cannot be null; -1 means "none".
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // const indexI32 = index ?? -1;
-            // ```
-            let index_i32 = match index {
-                // What:     `Some(i) => i as i32`. Destructure the present index and
-                //           `as i32` narrows the `usize` to Slint's `int`.
-                // Why:      A real index passes straight through (narrowed).
-                //
-                // In TS you'd write (pseudocode):
-                // ```ts
-                // index; // the number
-                // ```
-                Some(i) => i as i32,
-                // What:     `None => -1`. No current track -> the -1 sentinel.
-                // Why:      Encode "none" as -1.
-                //
-                // In TS you'd write (pseudocode):
-                // ```ts
-                // -1;
-                // ```
-                None => -1,
-            };
-            // What:     `app.set_current_index(index_i32);`. Set the `current-index`
-            //           property to highlight that row.
-            // Why:      Mark the playing track.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // app.currentIndex = indexI32;
-            // ```
-            app.set_current_index(index_i32);
-            // What:     `refresh_page(app, None);`. Pass `None` to FOLLOW the
-            //           now-playing track: switch the visible page to the one holding
-            //           it so the highlighted row stays on screen after Next /
-            //           auto-advance.
+            set_now_playing(app, index, name, duration);
+            // What:     `refresh_page(app, PageNav::Follow);`. FOLLOW the now-playing track:
+            //           switch the visible page to the one holding it so the highlighted row
+            //           stays on screen after Next / auto-advance / a row selection.
             // Why:      Keep the playing track visible across track changes.
             //
             // In TS you'd write (pseudocode):
             // ```ts
-            // refreshPage(app, null);
+            // refreshPage(app, { kind: "follow" });
             // ```
-            refresh_page(app, None);
+            refresh_page(app, PageNav::Follow);
+        }
+        // What:     `Update::Reconciled { names, index, name, duration } => { ... }`. A live
+        //           rescan reconciled the queue with disk: refresh the list AND the now-playing
+        //           view, but keep the user's current tab.
+        // Why:      An on-disk change to other files must not move the selected tab or track.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // case "reconciled": { const { names, index, name, duration } = update; ... }
+        // ```
+        Update::Reconciled {
+            names,
+            index,
+            name,
+            duration,
+        } => {
+            // What:     `set_queue_model(app, names);`. Replace the full list with the reconciled
+            //           paths (rows may have been added or removed).
+            // Why:      The list must reflect the new on-disk contents.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // setQueueModel(app, names);
+            // ```
+            set_queue_model(app, names);
+            // What:     `set_now_playing(app, index, name, duration);`. Refresh the title and the
+            //           highlighted row (the current track's index may have shifted).
+            // Why:      The same track stays selected; only its position in the list may differ.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // setNowPlaying(app, index, name, duration);
+            // ```
+            set_now_playing(app, index, name, duration);
+            // What:     `refresh_page(app, PageNav::Keep);`. Repaginate but KEEP the current tab.
+            // Why:      A reconcile must not yank the user off the page they are browsing, even
+            //           when the queue or the current track's page changed.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // refreshPage(app, { kind: "keep" });
+            // ```
+            refresh_page(app, PageNav::Keep);
         }
         // What:     `Update::Position(secs) => { ... }`. Tuple-variant pattern binding
         //           the live playback position (`f64` seconds) to `secs`.
@@ -1632,20 +1623,20 @@ fn main() -> Result<(), slint::PlatformError> {
         // const w = app; // WeakRef so the closure does not keep the window alive
         // ```
         let weak = app.as_weak();
-        // What:     `move |p| { if let Some(app) = weak.upgrade() { refresh_page(&app, Some(p)); } }`.
+        // What:     `move |p| { if let Some(app) = weak.upgrade() { refresh_page(&app, PageNav::Show(p)); } }`.
         //           A move closure taking the page `p`; `weak.upgrade()` yields
         //           `Option<AppWindow>`, the `if let Some(app)` runs only if the window
-        //           still exists, and `refresh_page(&app, Some(p))` lends the window
-        //           and requests that EXACT page (not the follow-current `None` path).
+        //           still exists, and `refresh_page(&app, PageNav::Show(p))` lends the window
+        //           and requests that EXACT page (not the follow-current or keep paths).
         // Why:      Show the clicked tab's tracks.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // (p) => { const app = weak.deref(); if (app) refreshPage(app, p); }
+        // (p) => { const app = weak.deref(); if (app) refreshPage(app, { kind: "show", page: p }); }
         // ```
         move |p| {
             if let Some(app) = weak.upgrade() {
-                refresh_page(&app, Some(p));
+                refresh_page(&app, PageNav::Show(p));
             }
         }
     });

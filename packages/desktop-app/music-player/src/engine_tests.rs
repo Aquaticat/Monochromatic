@@ -98,18 +98,25 @@ fn idle_root_emits_no_extra_queue_updates() {
         std::fs::copy(manifest.join("fixtures").join(name), dir.join(name)).unwrap();
     }
 
-    // What:     `let (tx, rx) = mpsc::channel::<usize>();`. A channel of `Queue` lengths.
-    // Why:      The callback forwards each `Update::Queue` length; the test counts them.
+    // What:     `let (tx, rx) = mpsc::channel::<usize>();`. A channel of list-update lengths.
+    // Why:      The callback forwards each `Queue`/`Reconciled` length; the test counts them.
     let (tx, rx) = mpsc::channel::<usize>();
     // What:     `let engine = Engine::spawn(move |update| { ... });`. Start the real worker,
     //           which wires the watcher in `run`.
     // Why:      Exercise the whole live-update seam, not a stub.
     let engine = Engine::spawn(move |update| {
-        // What:     `if let Update::Queue(paths) = update { let _ = tx.send(paths.len()); }`.
-        //           Forward only queue updates.
-        // Why:      The page-bounce symptom is a stream of `Queue` updates; that is what we count.
-        if let Update::Queue(paths) = update {
-            let _ = tx.send(paths.len());
+        // What:     `match &update { Queue(p) | Reconciled { names: p, .. } => send(p.len()), _ => {} }`.
+        //           Forward the length of BOTH queue-list updates: a fresh `Queue` and a live
+        //           `Reconciled`.
+        // Why:      A resurfaced rescan loop would now show up as spontaneous `Reconciled`
+        //           updates, not `Queue`, so the guard must watch both.
+        let len = match &update {
+            Update::Queue(paths) => Some(paths.len()),
+            Update::Reconciled { names, .. } => Some(names.len()),
+            _ => None,
+        };
+        if let Some(len) = len {
+            let _ = tx.send(len);
         }
     });
 
@@ -176,20 +183,27 @@ fn watcher_drives_rescan_update_through_engine() {
     // Why:      Give the initial scan exactly one track to report.
     std::fs::write(dir.join("a.flac"), b"").unwrap();
 
-    // What:     `let (tx, rx) = mpsc::channel::<usize>();`. A channel of queue lengths.
+    // What:     `let (tx, rx) = mpsc::channel::<usize>();`. A channel of list-update lengths.
     // Why:      The engine's update callback runs on the worker thread; it forwards each
-    //           `Update::Queue`'s length so the test thread can await specific lengths.
+    //           `Queue`/`Reconciled` length so the test thread can await specific lengths.
     let (tx, rx) = mpsc::channel::<usize>();
     // What:     `let engine = Engine::spawn(move |update| { ... });`. Start the worker with a
-    //           callback that forwards only `Update::Queue` lengths and drops other updates.
-    // Why:      Exercise the real `Engine` (which wires the watcher in `run`), not a stub.
+    //           callback that forwards `Queue` AND `Reconciled` lengths and drops other updates.
+    // Why:      Exercise the real `Engine` (which wires the watcher in `run`), not a stub. The
+    //           OPEN reports a `Queue`; the live RESCAN now reports a `Reconciled`.
     let engine = Engine::spawn(move |update| {
-        // What:     `if let Update::Queue(paths) = update { let _ = tx.send(paths.len()); }`.
-        //           Forward the count for queue updates; ignore everything else. `let _ =`
+        // What:     `match &update { Queue(p) | Reconciled { names: p, .. } => send(p.len()), _ => {} }`.
+        //           Forward the count for both list updates; ignore now-playing/position. `let _`
         //           drops the send error that occurs only after the test thread is gone.
-        // Why:      The test asserts on queue size, not on now-playing/position updates.
-        if let Update::Queue(paths) = update {
-            let _ = tx.send(paths.len());
+        // Why:      The test asserts on queue size across the open (`Queue`) and the live rescan
+        //           (`Reconciled`).
+        let len = match &update {
+            Update::Queue(paths) => Some(paths.len()),
+            Update::Reconciled { names, .. } => Some(names.len()),
+            _ => None,
+        };
+        if let Some(len) = len {
+            let _ = tx.send(len);
         }
     });
 
@@ -222,14 +236,16 @@ fn watcher_drives_rescan_update_through_engine() {
     //           to the watched root.
     // Why:      This on-disk change is what the watcher must turn into a live `Rescan`.
     std::fs::write(dir.join("b.flac"), b"").unwrap();
-    // What:     `assert!(wait_for_len(&rx, 2, WAIT_SECS), ...)`. A `Queue(2)` update must
+    // What:     `assert!(wait_for_len(&rx, 2, WAIT_SECS), ...)`. A list update of length 2 must
     //           arrive without any further command from the test: watcher -> Rescan ->
-    //           re-derived queue -> emit.
+    //           re-derived queue -> `Reconciled` emit (the live rescan path no longer emits
+    //           `Queue`, which is reserved for a fresh open/restore).
     // Why:      This is the seam under test; only an end-to-end pass proves the parked worker
-    //           woke and re-scanned.
+    //           woke and re-scanned. The non-empty diff (1 -> 2 files) is what makes the rescan
+    //           emit instead of no-op'ing.
     assert!(
         wait_for_len(&rx, 2, WAIT_SECS),
-        "expected Queue(2) after a file appeared in the watched root (live rescan seam)"
+        "expected a Reconciled(2) after a file appeared in the watched root (live rescan seam)"
     );
 
     // What:     `drop(engine);` then `std::fs::remove_dir_all(&dir).ok();`. Stop the worker

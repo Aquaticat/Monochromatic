@@ -159,24 +159,34 @@ impl Controller {
         }
     }
 
-    // What:     `pub(crate) fn emit_current_now_playing(&self)`. Re-emit the now-playing view
-    //           for the CURRENT track WITHOUT reloading it: the (possibly shifted) load-order
-    //           index, the display name at that index, and the loaded track's duration.
-    //           `pub(crate)` so the `Rescan` handler in `controller.rs` can call it.
-    // Why:      After a live rescan reorders the queue, the highlighted row's index changes
-    //           even though the same track keeps playing; this refreshes the highlight and
-    //           title without touching the decoder (so audio is not interrupted). It does NOT
-    //           emit `Position`, so the seek bar keeps its live position.
+    // What:     `pub(crate) fn emit_reconciled(&self)`. Emit one `Update::Reconciled` carrying
+    //           the current queue (display paths) PLUS the re-anchored now-playing view (the
+    //           possibly-shifted index, its display name, and the loaded duration). `pub(crate)`
+    //           so the `Rescan` handler in `controller.rs` can call it.
+    // Why:      A live rescan must refresh the list and highlight together WITHOUT moving the
+    //           user's selected tab (the UI keeps its current page for `Reconciled`, unlike a
+    //           `Queue`/`NowPlaying` pair which would reset/follow the page).
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // emitCurrentNowPlaying(): void {
+    // emitReconciled(): void {
+    //   const names = this.queue.displayPaths();
     //   const index = this.queue.currentIndex();
-    //   const name = index != null ? this.queue.displayPaths()[index] ?? "" : "";
-    //   this.emit({ kind: "nowPlaying", index, name, duration: this.spec?.durationSecs ?? 0 });
+    //   const name = index != null ? names[index] ?? "" : "";
+    //   const duration = index != null ? this.spec?.durationSecs ?? 0 : 0;
+    //   this.emit({ kind: "reconciled", names, index, name, duration });
     // }
     // ```
-    pub(crate) fn emit_current_now_playing(&self) {
+    pub(crate) fn emit_reconciled(&self) {
+        // What:     `let names = self.queue.display_paths();`. The reconciled queue as display
+        //           paths, computed once and moved into the update below.
+        // Why:      The list itself may have gained or lost rows.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const names = this.queue.displayPaths();
+        // ```
+        let names = self.queue.display_paths();
         // What:     `let index = self.queue.current_index();`. The current track's load-order
         //           position (`Option<usize>`), which may have shifted after the rescan.
         // Why:      Drives the row highlight.
@@ -186,35 +196,40 @@ impl Controller {
         // const index = this.queue.currentIndex();
         // ```
         let index = self.queue.current_index();
-        // What:     `let name = index.and_then(|i| self.queue.display_paths().into_iter().nth(i)).unwrap_or_default();`.
-        //           The display path at that index, or an empty string when there is none.
+        // What:     `let name = index.and_then(|i| names.get(i).cloned()).unwrap_or_default();`.
+        //           The display path at that index (borrowing from `names`), or `""`.
         // Why:      The window title and label use this same relative-path string.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // const name = index != null ? this.queue.displayPaths()[index] ?? "" : "";
+        // const name = index != null ? names[index] ?? "" : "";
         // ```
-        let name = index
-            .and_then(|i| self.queue.display_paths().into_iter().nth(i))
-            .unwrap_or_default();
-        // What:     `let duration = self.spec.as_ref().map_or(0.0, |s| s.duration_secs);`. The
-        //           loaded track's duration (0.0 when nothing is loaded).
-        // Why:      Keeps the seek-bar maximum correct without recomputing it.
+        let name = index.and_then(|i| names.get(i).cloned()).unwrap_or_default();
+        // What:     `let duration = if index.is_some() { self.spec...duration_secs } else { 0.0 };`.
+        //           The loaded track's duration when a track stays selected, else 0.0.
+        // Why:      A cleared selection (file left the root) has no duration; otherwise the
+        //           seek-bar maximum is unchanged (same file).
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // const duration = this.spec ? this.spec.durationSecs : 0;
+        // const duration = index != null ? this.spec?.durationSecs ?? 0 : 0;
         // ```
-        let duration = self.spec.as_ref().map_or(0.0, |s| s.duration_secs);
-        // What:     `self.emit(Update::NowPlaying { index, name, duration });`. Push the refreshed
-        //           now-playing view (no `Position` emit, so the live seek position is kept).
-        // Why:      Update the highlight/title after a reorder without restarting playback.
+        let duration = if index.is_some() {
+            self.spec.as_ref().map_or(0.0, |s| s.duration_secs)
+        } else {
+            0.0
+        };
+        // What:     `self.emit(Update::Reconciled { names, index, name, duration });`. Push the
+        //           combined list-and-highlight refresh.
+        // Why:      One update so the UI keeps the page while updating both the rows and the
+        //           highlighted track.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // this.emit({ kind: "nowPlaying", index, name, duration });
+        // this.emit({ kind: "reconciled", names, index, name, duration });
         // ```
-        self.emit(Update::NowPlaying {
+        self.emit(Update::Reconciled {
+            names,
             index,
             name,
             duration,
