@@ -131,6 +131,44 @@ pub struct Engine {
     handle: Option<JoinHandle<()>>,
 }
 
+// What:     `fn send_and_wake(tx: &Sender<Command>, worker: &Thread, command: Command)`.
+//           Queue `command` on the channel, then unpark the worker. Borrows the channel and
+//           the worker handle; takes the command by value. Module-private.
+// Why:      `Engine::send` and `CommandSender::send` share this exact send-then-wake
+//           contract; defining it once keeps the "never queue a command without waking the
+//           worker" rule in one place. A free function (rather than `Engine::send`
+//           delegating through `sender()`) avoids the per-send `tx`/`worker` clones that
+//           `sender()` would add.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function sendAndWake(tx: Sender<Command>, worker: WorkerRef, command: Command): void {
+//   try { tx.send(command); } catch {}
+//   worker.postWakeUp();
+// }
+// ```
+fn send_and_wake(tx: &Sender<Command>, worker: &Thread, command: Command) {
+    // What:     `let _ = tx.send(command);`. `send` returns a `Result` that errs only if the
+    //           worker is gone; `let _ =` DISCARDS it.
+    // Why:      A dead worker during shutdown is not worth surfacing.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // try { tx.send(command); } catch {}
+    // ```
+    let _ = tx.send(command);
+    // What:     `worker.unpark();`. Wake the worker if it is parked; if it is not parked yet,
+    //           this leaves a one-shot permit so its next `park` returns immediately (so the
+    //           wake is never lost).
+    // Why:      Make the worker act on the command now, not after the fallback timeout.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // worker.postWakeUp();
+    // ```
+    worker.unpark();
+}
+
 // What:     `#[derive(Clone)] pub struct CommandSender { ... }`. A small bundle of the
 //           command channel's send end PLUS the worker's `Thread` handle.
 //           `#[derive(Clone)]` auto-generates a `.clone()` that clones both fields (both
@@ -181,25 +219,16 @@ impl CommandSender {
     // send(command: Command): void { ... }
     // ```
     pub fn send(&self, command: Command) {
-        // What:     `let _ = self.tx.send(command);`. `send` returns a `Result` that errs
-        //           only if the worker is gone; `let _ =` DISCARDS it.
-        // Why:      A dead worker during shutdown is not worth surfacing.
+        // What:     `send_and_wake(&self.tx, &self.worker, command);`. Delegate to the shared
+        //           send-then-wake helper, lending this sender's channel and worker handle.
+        // Why:      One implementation of the "queue then unpark" contract, shared with
+        //           `Engine::send`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // try { this.tx.send(command); } catch {}
+        // sendAndWake(this.tx, this.worker, command);
         // ```
-        let _ = self.tx.send(command);
-        // What:     `self.worker.unpark();`. Wake the worker if it is parked; if it is not
-        //           parked yet, this leaves a one-shot "permit" so its next `park` returns
-        //           immediately (so the wake is never lost).
-        // Why:      Make the worker act on the command now, not after the timeout.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // this.worker.postWakeUp();
-        // ```
-        self.worker.unpark();
+        send_and_wake(&self.tx, &self.worker, command);
     }
 }
 
@@ -338,25 +367,16 @@ impl Engine {
     // send(command: Command): void { ... }
     // ```
     pub fn send(&self, command: Command) {
-        // What:     `let _ = self.tx.send(command);`. `send` returns a `Result` that errs
-        //           only if the worker is gone; `let _ =` DISCARDS it.
-        // Why:      A dead worker during shutdown is not worth surfacing.
+        // What:     `send_and_wake(&self.tx, &self.worker, command);`. Delegate to the shared
+        //           send-then-wake helper, lending this engine's channel and worker handle.
+        // Why:      One implementation of the "queue then unpark" contract, shared with
+        //           `CommandSender::send` (the off-UI-thread handle).
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // try { this.tx.send(command); } catch {}
+        // sendAndWake(this.tx, this.worker, command);
         // ```
-        let _ = self.tx.send(command);
-        // What:     `self.worker.unpark();`. Wake the parked worker; if it is not parked
-        //           yet, this leaves a one-shot permit so its next `park` returns
-        //           immediately (the wake is never lost).
-        // Why:      Act on the command now instead of after the fallback timeout.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // this.worker.postWakeUp();
-        // ```
-        self.worker.unpark();
+        send_and_wake(&self.tx, &self.worker, command);
     }
 }
 
