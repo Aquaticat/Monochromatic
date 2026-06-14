@@ -23,6 +23,17 @@
 //! and KDE `WM_CLASS`, where renaming is a breaking change. Collecting them here
 //! makes that one intentional difference visible rather than looking like drift.
 
+// What:     `use std::path::PathBuf;` imports the OWNED filesystem-path type (heap-
+//           allocated, growable; sibling: the borrowed `&Path`).
+// Why:      `config_dir` below returns an owned `PathBuf` the callers extend with a
+//           filename.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// type PathBuf = string;
+// ```
+use std::path::PathBuf;
+
 // What:     `pub const APP_ID: &str = "monochromatic.music-player";`. A module-
 //           level immutable string constant. `&str` is a borrowed string slice
 //           (sibling: the owned, heap-allocated `String`); a `const` `&str`
@@ -84,6 +95,47 @@ pub const CONFIG_ORGANIZATION: &str = "monochromatic";
 // export const CONFIG_APPLICATION = "musicplayer";
 // ```
 pub const CONFIG_APPLICATION: &str = "musicplayer";
+
+// What:     `pub(crate) fn config_dir() -> Option<PathBuf>`. Resolve the per-user
+//           config DIRECTORY (no filename) from the reverse-DNS triple via the
+//           `directories` crate, or `None` when the platform exposes no config home.
+//           `pub(crate)` so session.rs and peakcache.rs share it.
+// Why:      The session file and the peak cache both live in this directory; deriving
+//           it once here keeps their parent path from drifting and removes the
+//           duplicated `ProjectDirs::from` triple from both modules.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function configDir(): string | null {
+//   const dirs = projectDirs(CONFIG_QUALIFIER, CONFIG_ORGANIZATION, CONFIG_APPLICATION);
+//   return dirs ? dirs.configDir : null;
+// }
+// ```
+pub(crate) fn config_dir() -> Option<PathBuf> {
+    // What:     `directories::ProjectDirs::from(CONFIG_QUALIFIER, CONFIG_ORGANIZATION,
+    //           CONFIG_APPLICATION)`. Ask the `directories` crate for the standard
+    //           per-app directories from this module's own reverse-DNS constants;
+    //           returns `Option<ProjectDirs>`.
+    // Why:      Respect the platform's config-dir convention from the single identity
+    //           source.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const dirs = projectDirs(CONFIG_QUALIFIER, CONFIG_ORGANIZATION, CONFIG_APPLICATION);
+    // ```
+    directories::ProjectDirs::from(CONFIG_QUALIFIER, CONFIG_ORGANIZATION, CONFIG_APPLICATION)
+        // What:     `.map(|dirs| dirs.config_dir().to_path_buf())`. Runs only on `Some`.
+        //           `dirs.config_dir()` borrows a `&Path` from the temporary `dirs`, so
+        //           `.to_path_buf()` copies it into an owned `PathBuf` before `dirs`
+        //           drops. Tail expression -> return.
+        // Why:      Hand back an owned directory the callers can `.join(<filename>)`.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // return dirs ? dirs.configDir : null;
+        // ```
+        .map(|dirs| dirs.config_dir().to_path_buf())
+}
 
 // What:     `#[cfg(test)] #[path = "identity_tests.rs"] mod tests;`. Declare the
 //           test submodule, sourced from the sibling `identity_tests.rs` file.

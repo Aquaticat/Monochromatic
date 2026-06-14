@@ -360,41 +360,29 @@ impl Session {
 
 // What:     `fn session_path() -> Option<PathBuf>` computes the on-disk location of the
 //           session file, or `None` if no config directory is available. Module-private.
-// Why:      One place that decides where the session lives.
+// Why:      One place that decides where the session lives (its directory comes from the
+//           shared `identity::config_dir`, which the peak cache uses too).
 //
 // In TS you'd write (pseudocode):
 // ```ts
 // function sessionPath(): string | null {
-//   const dirs = projectDirs(CONFIG_QUALIFIER, CONFIG_ORGANIZATION, CONFIG_APPLICATION);
-//   return dirs ? join(dirs.configDir, "session.json") : null;
+//   const dir = configDir();
+//   return dir ? join(dir, "session.json") : null;
 // }
 // ```
 fn session_path() -> Option<PathBuf> {
-    // What:     `directories::ProjectDirs::from(...)` asks the `directories` crate for the
-    //           standard per-app config location from the reverse-DNS triple sourced from
-    //           the shared `identity` module. Returns `Option<ProjectDirs>`.
-    // Why:      Respect the platform's config-dir convention and keep identity strings in
-    //           one place so the config path cannot drift.
+    // What:     `identity::config_dir().map(|dir| dir.join("session.json"))`. Take the
+    //           shared config directory (`Option<PathBuf>`) and, when present, append the
+    //           session filename; `.join(...)` returns an owned `PathBuf`. Tail -> return.
+    // Why:      Name the session file here while the directory is resolved once in
+    //           `identity`, so the session and the peak cache cannot drift apart.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // const dirs = projectDirs(CONFIG_QUALIFIER, CONFIG_ORGANIZATION, CONFIG_APPLICATION);
+    // const dir = configDir();
+    // return dir ? join(dir, "session.json") : null;
     // ```
-    directories::ProjectDirs::from(
-        identity::CONFIG_QUALIFIER,
-        identity::CONFIG_ORGANIZATION,
-        identity::CONFIG_APPLICATION,
-    )
-        // What:     `.map(|dirs| dirs.config_dir().join("session.json"))` runs only when
-        //           `Some`. `dirs.config_dir()` returns `&Path`; `.join(...)` appends the
-        //           filename and returns an owned `PathBuf`. Tail expression -> return.
-        // Why:      Turn the directory into the full file path.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // return dirs ? join(dirs.configDir, "session.json") : null;
-        // ```
-        .map(|dirs| dirs.config_dir().join("session.json"))
+    identity::config_dir().map(|dir| dir.join("session.json"))
 }
 
 // What:     `#[cfg(test)] #[path = "session_tests.rs"] mod tests;` declares a test-only

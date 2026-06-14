@@ -202,44 +202,30 @@ pub(crate) fn fingerprint(path: &Path) -> Option<String> {
 
 // What:     `fn cache_path() -> Option<PathBuf>`. The on-disk location of the peak cache
 //           file, or `None` if no config directory is available. Module-private.
-// Why:      One place decides where the cache lives (alongside the session file).
+// Why:      One place decides where the cache lives (the same `identity::config_dir` the
+//           session file uses, so they never drift apart).
 //
 // In TS you'd write (pseudocode):
 // ```ts
 // function cachePath(): string | null {
-//   const dirs = projectDirs(CONFIG_QUALIFIER, CONFIG_ORGANIZATION, CONFIG_APPLICATION);
-//   return dirs ? join(dirs.configDir, "peaks.json") : null;
+//   const dir = configDir();
+//   return dir ? join(dir, "peaks.json") : null;
 // }
 // ```
 fn cache_path() -> Option<PathBuf> {
-    // What:     `directories::ProjectDirs::from(identity::CONFIG_QUALIFIER, identity::CONFIG_ORGANIZATION, identity::CONFIG_APPLICATION)`
-    //           asks for the standard per-app config dir (Linux: `$XDG_CONFIG_HOME/
-    //           musicplayer`) from the reverse-DNS triple, sourced from the shared
-    //           `identity` module instead of inline literals so the cache directory cannot
-    //           drift from the session file's; returns `Option<ProjectDirs>`. Start of a
-    //           method chain whose value is the tail.
+    // What:     `identity::config_dir().map(|dir| dir.join("peaks.json"))`. Take the shared
+    //           config directory (`Option<PathBuf>`, Linux: `$XDG_CONFIG_HOME/musicplayer`)
+    //           and, when present, append the cache filename; `.join(...)` returns an owned
+    //           `PathBuf`. Tail -> return.
     // Why:      Same directory the session uses, so the containerized run's config volume
     //           persists it and it never pollutes the source tree.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // const dirs = projectDirs(CONFIG_QUALIFIER, CONFIG_ORGANIZATION, CONFIG_APPLICATION);
+    // const dir = configDir();
+    // return dir ? join(dir, "peaks.json") : null;
     // ```
-    directories::ProjectDirs::from(
-        identity::CONFIG_QUALIFIER,
-        identity::CONFIG_ORGANIZATION,
-        identity::CONFIG_APPLICATION,
-    )
-        // What:     `.map(|dirs| dirs.config_dir().join("peaks.json"))`. When present,
-        //           join the cache filename onto the config dir. `config_dir()` is a
-        //           `&Path`; `.join(...)` returns an owned `PathBuf`. Tail -> return.
-        // Why:      Turn the directory into the full file path.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // return dirs ? join(dirs.configDir, "peaks.json") : null;
-        // ```
-        .map(|dirs| dirs.config_dir().join("peaks.json"))
+    identity::config_dir().map(|dir| dir.join("peaks.json"))
 }
 
 // What:     `pub(crate) struct PeakCache { ... }`. The in-memory cache plus where it
