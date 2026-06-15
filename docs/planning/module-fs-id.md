@@ -116,8 +116,8 @@ before the plan's Windows claims are trusted.
 
 The module is asynchronous, because the preferred paths spawn subprocesses
 (`findmnt`, `diskutil`) and the repo's async conventions (PP1) prefer it.
-editord's one synchronous module-level callsite becomes a top-level `await`, which ESM and
-Bun support; editord is paused, so that migration is future-scoped.
+editord's one synchronous module-level callsite becomes a top-level `await`, which ESM
+supports (the repo targets node); editord is paused, so that migration is future-scoped.
 
 ```ts
 // packages/module/fs-id/src/resolve-fs-id.ts (shape, not final)
@@ -207,9 +207,10 @@ as a precondition for unpausing editord instead.
 ## Package scaffolding
 
 Mirror `packages/module/fs-path` (the closest sibling, also filesystem-domain and
-logger-dependent), with one deviation: no browser build.
-fs-id spawns OS commands through `node:child_process`, so it is Node and Bun only and has no
-browser or OPFS target.
+logger-dependent), with two deviations: no browser build, and the test layout follows
+`or-throw` rather than fs-path (see Testing).
+fs-id spawns OS commands through `node:child_process`, so it is a server-runtime module with no
+browser or OPFS target; the repo runs it on node, not bun.
 
 - `packages/module/fs-id/package.json`: name `@monochromatic-dev/module-fs-id`, `private`,
   `type: module`, exports `.` (built `dist/final/node`) and `./ts` plus `./ts/*` (source per
@@ -217,19 +218,21 @@ browser or OPFS target.
   `@monochromatic-dev/config-tsdown`, `@monochromatic-dev/config-typescript`,
   `@monochromatic-dev/module-test`, `@types/node`, `tsdown`, `typescript` (AP3, DM1, DM2).
 - `packages/module/fs-id/mise.toml`: extend the shared `build`, `build:js`, `lint`,
-  `lint:oxlint`, `lint:types` tasks like siblings do, but omit every `:browser` task (AP2).
+  `lint:oxlint`, `lint:types`, and `test:unit` tasks like siblings do (`extends = "test:unit"`),
+  but omit every `:browser` task (AP2).
   The tsdown config targets node, not neutral or browser.
 - `tsconfig.json` extending `@monochromatic-dev/config-typescript`.
 - `README.md` (PKG requires it before the package is complete).
 
 ## Testing
 
-Per-file `*.unit.test.ts` co-located with each source file, run through the
-`@monochromatic-dev/module-test` harness, following `packages/module/or-throw`.
-Do not add a `self.unit.test.ts` aggregator; that single-file self-test pattern (as in
-fs-path) is an anti-pattern and is not repeated here.
-The `mise` `test` task runs the harness, or individual files via `bun <file>` (CM4); never
-`bun test` directly (CM4) and never `node src/self.unit.test.ts`.
+Per-file `*.unit.test.ts` co-located with each source file using `@monochromatic-dev/module-test`,
+following `packages/module/or-throw`.
+The package opts into the global `test:unit` task template (`[tasks."test:unit"]` with
+`extends = "test:unit"`), which runs every `*.unit.test.ts` in parallel via node.
+Do not add a `self.unit.test.ts` aggregator (the single-file self-test pattern in fs-path is an
+anti-pattern), and do not run `bun test` or `bun <file>`: the repo is migrating off bun and the
+template already runs the suite on node.
 
 Coverage must enumerate every branch (TCV), not just the happy path:
 
