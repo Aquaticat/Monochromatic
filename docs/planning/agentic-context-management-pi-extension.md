@@ -414,8 +414,13 @@ Expected package metadata:
 - Transform only assistant `TextContent.text`.
 - Transform tool result `TextContent.text` for explicit tool-result targets,
   while preserving tool result metadata and non-text blocks.
-- Support `previous_assistant_text` first,
-  then `previous_tool_result_text` before broader recent/all-prior scopes.
+- Support all six MVP targets:
+  `previous_assistant_text`,
+  `recent_assistant_text`,
+  `all_prior_assistant_text`,
+  `previous_tool_result_text`,
+  `recent_tool_result_text`,
+  and `all_prior_tool_result_text`.
 - Exclude `acm` tool results from tool-result targets.
 - Add a terse custom renderer for `acm` tool calls and results.
 
@@ -438,11 +443,9 @@ whether `ctx.sessionManager` inside `execute()` includes the assistant message t
 Definition of done:
 a bad rule can be found and disabled without editing the session file.
 
-### Phase 3: broader targeting after grill-me decisions
+### Phase 3: hardening after all-scope MVP
 
-- Add `recent_assistant_text` with a bounded message count.
-- Add `all_prior_assistant_text` and `all_prior_tool_result_text` only after broad-target tests cover
-  `/g` all-match behavior and no-`/g` first-match behavior.
+- Tune broad-target diagnostics after the all-scope MVP has real fixtures.
 - Consider user-approved omission of user messages or ACM's own tool results as a later explicit opt-in.
 - Decide whether old `acm` tool results should themselves be compacted into a smaller custom message.
 
@@ -855,10 +858,22 @@ Explicit limits beat always-all because bounded replacement is safer than implic
 
 ### Question 8: which target scopes belong in the MVP?
 
-Recommended answer:
+Decision:
+all target scopes belong in the MVP.
+User answered this on 2026-06-15.
+
+Pros:
+most powerful first release,
+lets the model compact older scattered assistant and tool-result context immediately,
+and matches the broad goal of letting the active model manage its own context.
+
+Cons:
+widest blast radius for broad `/g` patterns and longest verification path.
+All-prior targets need strong fixtures before implementation is declared complete.
+
+Rejected alternative:
 MVP includes previous assistant text and previous non-ACM tool result text,
 then adds recent-window scopes after the first tests pass.
-All-prior scopes stay Phase 3.
 
 Pros:
 solves the example and the tool-result use case while keeping matching surfaces small.
@@ -866,27 +881,55 @@ solves the example and the tool-result use case while keeping matching surfaces 
 Cons:
 the model cannot compact older scattered context until recent/all-prior scopes land.
 
-Alternative:
+Rejected alternative:
 MVP includes previous and recent-window scopes.
 
 Pros:
 useful for context emitted a few turns back.
 
 Cons:
-requires a window definition and more branch tests immediately.
-
-Alternative:
-MVP includes all target scopes.
-
-Pros:
-most powerful first release.
-
-Cons:
-widest blast radius for broad `/g` patterns and longest verification path.
+requires a window definition and more branch tests immediately,
+without delivering the all-prior control the user wants.
 
 Ranking:
-previous-only MVP beats previous-plus-recent because it minimizes first implementation risk.
-Previous-plus-recent beats all-scopes because broad all-prior rewriting should wait for stronger tests.
+all-scopes beats previous-plus-recent because the user wants broad tool-call control over context.
+Previous-plus-recent beats previous-only because it covers more real stale-context cases.
+
+### Question 9: should ACM rules apply immediately or require preview first?
+
+Recommended answer:
+apply immediately after a successful `acm` tool call,
+while providing separate `list` and preview surfaces for diagnostics.
+
+Pros:
+matches agentic tool-call control,
+keeps the loop fast,
+and avoids turning every context rewrite into a two-step ceremony.
+
+Cons:
+a bad all-prior `/g` rule affects the next provider request before the model inspects preview output.
+
+Alternative:
+require a dry-run tool call before an apply tool call.
+
+Pros:
+forces visibility into broad rewrites.
+
+Cons:
+doubles tool calls and token noise for the common case.
+
+Alternative:
+require human approval for broad scopes.
+
+Pros:
+strongest guard for all-prior rewrites.
+
+Cons:
+breaks the core requirement that the active model can manage context agentically via tool calls.
+
+Ranking:
+immediate apply beats dry-run-first because the plugin is explicitly agentic.
+Dry-run-first beats human approval because it preserves autonomous operation.
 
 ## First implementation decision needed
 
@@ -908,7 +951,9 @@ Question 7 is resolved:
 regex `/g` rewrites all matches,
 regex without `/g` rewrites one match,
 and literal matching rewrites one span by default.
+Question 8 is resolved:
+all target scopes belong in the MVP.
 Before building past Phase 1,
-answer Question 8.
-My recommendation is previous assistant text and previous non-ACM tool result text in the MVP,
-with broader scopes deferred.
+answer Question 9.
+My recommendation is immediate application after a successful `acm` tool call,
+with separate list and preview diagnostics.
