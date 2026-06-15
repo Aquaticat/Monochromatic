@@ -601,6 +601,7 @@ They are listed here so the roadmap's short length reads as a deliberate result,
 - Git-hook installation.
   Git hooks are being deprecated in this repo, so the check mode runs in continuous integration, not on commit,
   and there is no hook to install.
+  Evidence: `docs/decisions/cli-git-policies-platform.md`.
 
 ### What file-enforcer should not absorb
 
