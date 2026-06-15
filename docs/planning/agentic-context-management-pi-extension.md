@@ -68,6 +68,10 @@ and later debugging can recover exactly what happened.
   and `timestamp`,
   which is the exact surface ACM would replay
   (`@earendil-works/pi-ai/dist/types.d.ts`).
+- Provider adapters serialize tool result `content` to provider payloads and do not serialize `details`.
+  Verified in `@earendil-works/pi-ai/dist/providers/openai-completions.js`,
+  `.../openai-responses-shared.js`,
+  and `.../anthropic.js`.
 - `prepareArguments` exists on agent tools and is invoked before schema validation,
   so a compatibility shim for older or shorthand tool-call shapes is supported by the runtime
   (`@earendil-works/pi-agent-core/dist/types.d.ts` and `.../dist/agent-loop.js`).
@@ -117,7 +121,9 @@ non-destructive,
 and aligned with Pi's request-time `context` hook.
 
 Cons:
-the `acm` tool result remains visible to the model unless the context handler also compresses old `acm` records.
+the `acm` tool result content remains visible to the model unless the context handler also compresses old `acm` records.
+Structured `details` remain available to the extension and transcript UI,
+but provider adapters do not send `details` to the model.
 The model can infer that a rewrite happened.
 That is acceptable because this feature is for context pressure,
 not secrecy.
@@ -190,7 +196,7 @@ Unsupported or duplicate flags are rejected rather than normalized silently.
 No deeper regex semantic equivalence is attempted.
 
 For `action: "list"`,
-the tool result should return compact active-rule summaries:
+the tool result content should return compact active-rule summaries:
 normalized matcher,
 description,
 source `toolCallId`,
@@ -200,6 +206,7 @@ current tool-result-text match count,
 and skip diagnostics.
 The list output must not include matched text snippets by default,
 because that can reintroduce omitted text into provider context.
+The tool result `details` should store the same structured summary for UI rendering and replay tests.
 
 Compatibility shim:
 `prepareArguments()` should accept the shorthand shown by the user as an illustrative notation.
@@ -412,7 +419,8 @@ Matching against original text prevents later rules from matching inside an earl
 Earlier rules win overlap conflicts.
 
 A skipped rule leaves the original text unchanged and never corrupts the provider request.
-Install-time diagnostics belong in the current `acm` tool result `details`.
+Install-time diagnostics belong in the current `acm` tool result `details`
+and should be summarized compactly in the current tool result `content`.
 Request-time diagnostics are recomputed by `action: "list"`
 and `/acm-list`,
 and are not written back into older tool result details.
@@ -785,7 +793,8 @@ reload-safe,
 and no hidden memory state.
 
 Cons:
-rule details are visible to the model unless separately compacted.
+rule details are visible to the extension and transcript UI,
+but model-visible diagnostics must be summarized in tool result content.
 
 Rejected alternative:
 hybrid state,
@@ -810,7 +819,7 @@ branch and ordering reconstruction becomes extension-specific.
 
 Ranking:
 tool result details beat hybrid state because one replayable source of truth is simpler and safer.
-Hybrid state beats custom entries because at least the tool result remains the visible audit trail.
+Hybrid state beats custom entries because at least the tool result remains the transcript-visible audit trail.
 
 ### Question 4: which tool results may ACM rewrite?
 
@@ -1118,7 +1127,8 @@ Required description beats structured metadata because prose is simpler and chea
 ### Question 11: where should diagnostics appear?
 
 Decision:
-install-time diagnostics live in the current `acm` tool result `details`.
+install-time diagnostics live in the current `acm` tool result `details`
+and are summarized compactly in that tool result `content`.
 Request-time diagnostics are recomputed through `action: "list"`
 and `/acm-list`,
 without injecting extra context messages or mutating older tool result details.
@@ -1127,9 +1137,12 @@ the install-time versus request-time split follows from the non-destructive `con
 
 Pros:
 keeps diagnostics auditable without adding hidden prompt tokens on every provider request.
+Tool result content carries compact model-visible summaries when needed,
+while details remain the replay source for the extension.
 
 Cons:
-the model must ask for diagnostics or inspect tool results to notice skipped or broad rewrites.
+the model must inspect tool result content or call `list` to notice skipped or broad rewrites.
+Content summaries also cost a small number of tokens.
 
 Rejected alternative:
 inject a hidden custom message with active diagnostic summaries.
@@ -1618,7 +1631,8 @@ Question 10 is resolved:
 descriptions are model-supplied strings,
 and empty strings are valid.
 Question 11 is resolved:
-install-time diagnostics live in current `acm` tool result `details`,
+install-time diagnostics live in current `acm` tool result `details`
+and compact current tool result `content`,
 and request-time diagnostics are recomputed through `list` commands.
 Question 12 is resolved:
 ACM rewrites provider context only.
