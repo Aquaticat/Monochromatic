@@ -263,10 +263,10 @@ That is both a performance risk and a denial-of-service footgun.
 Recommended MVP:
 
 - support literal matching without copying giant spans into tool arguments;
-- support the user shorthand regex path only after a safety spike proves the matching boundary is abortable;
-- until that spike passes,
-  keep regex support behind a feature flag or reject regex substitutions with a clear tool error;
-- for any enabled regex path,
+- support bounded regex for the user shorthand path;
+- run a safety spike before implementation to choose the abortable boundary or safe regex engine;
+- reject raw full-context JavaScript `RegExp` matching;
+- for the bounded regex path,
   enforce short pattern,
   short flags allowlist,
   bounded text block size,
@@ -301,7 +301,13 @@ type AcmAction =
       readonly type: "add";
       readonly id: string;
       readonly createdByToolCallId: string;
-      readonly target: "previous_assistant_text" | "recent_assistant_text" | "all_prior_assistant_text";
+      readonly target:
+        | "previous_assistant_text"
+        | "recent_assistant_text"
+        | "all_prior_assistant_text"
+        | "previous_tool_result_text"
+        | "recent_tool_result_text"
+        | "all_prior_tool_result_text";
       readonly match: AcmMatch;
       readonly description: string;
       readonly expectedMatches: number;
@@ -597,27 +603,41 @@ Assistant-only beats any-role because preserving user instructions matters more 
 
 ### Question 2: how much regex power is acceptable?
 
-Recommended answer:
-short literal matching plus bounded regex for the example path,
-with a later source-audited safe engine only if bounds are not enough.
+Decision:
+ACM should support bounded regex.
+User answered this on 2026-06-15.
 
 Pros:
-ships the requested behavior without immediately adding an unaudited dependency.
+supports the requested `/^As.+model,$/gm` shorthand path,
+keeps flexible selectors for recurring boilerplate and long tool output,
+and avoids unbounded full-context regex execution.
 
 Cons:
-some expressive regexes are rejected.
+some expressive regexes are rejected,
+and implementation must prove a safe matching boundary before enabling regex by default.
 
-Alternative:
+Rejected alternative:
+short literal matching only.
+
+Pros:
+safest and simplest MVP.
+
+Cons:
+weak for variable boilerplate,
+and literal matching can require copying text that itself costs context.
+
+Rejected alternative:
 raw JavaScript `RegExp` over full context.
 
 Pros:
-smallest implementation and most compatible with the example syntax.
+smallest implementation and most compatible with arbitrary regex syntax.
 
 Cons:
 model-generated regex can hang or over-match.
 
 Ranking:
-bounded matching beats raw regex because predictable latency matters more than unrestricted pattern syntax.
+bounded regex beats literal-only because it preserves the requested example while controlling hangs.
+Literal-only beats raw JavaScript regex because predictable safety matters more than unrestricted pattern syntax.
 
 ### Question 3: where should active rules live?
 
@@ -650,7 +670,10 @@ tool result details beat custom entries because Pi's branch context already solv
 
 Question 1 is resolved:
 assistant text and tool result text are both in scope.
+Question 2 is resolved:
+bounded regex is in scope,
+while raw JavaScript `RegExp` over full context is out of scope.
 Before building past Phase 1,
-answer Question 2.
-My recommendation is short literal matching plus bounded regex for the example path,
-with raw JavaScript `RegExp` rejected for full-context matching.
+answer Question 3.
+My recommendation is `acm` tool result `details`,
+replayed from the current branch.
