@@ -81,6 +81,8 @@ function isModelApi(
  * @param value - value to inspect
  *
  * @throws NoBudgetModelError when value is not a pi model
+ *
+ * @returns nothing when value has the required shape
  */
 function assertModelApi(
   value: unknown,
@@ -98,14 +100,16 @@ function assertModelApi(
  * @param value - value to inspect
  *
  * @throws NoBudgetModelError when value is not a pi model list
+ *
+ * @returns nothing when value has the required shape
  */
 function assertModelApiList(
   value: unknown,
 ): asserts value is readonly Model<Api>[] {
-  if (!Array.isArray(value,)
-    || !value.every(function registryModelHasShape(model,) {
+  if ((!Array.isArray(value,))
+    || (!value.every(function registryModelHasShape(model,) {
       return isModelApi(model,);
-    },)) {
+    },))) {
     throw new NoBudgetModelError(
       'budget model selection received an invalid registry model shape',
     );
@@ -185,6 +189,7 @@ async function findBudgetModel(
    */
   const rawActiveModel: unknown = ctx.model;
   assertModelApi(rawActiveModel,);
+  /** Active model after runtime shape validation. */
   const activeModel = rawActiveModel;
   /**
    * Registry models narrowed to auto-mode's pi model shape for shared selection callbacks.
@@ -192,6 +197,7 @@ async function findBudgetModel(
   const rawAllModels: unknown = ctx.modelRegistry
     .getAll();
   assertModelApiList(rawAllModels,);
+  /** Registry models after runtime shape validation. */
   const allModels = rawAllModels;
 
   return await selectBudgetModel<Model<Api>>({
