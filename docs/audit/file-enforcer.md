@@ -1,896 +1,655 @@
 # file-enforcer alternatives audit
 
-## Scope and method
+## What this audit is
 
-This audit compares `packages/dev-script/file-enforcer` against tools from `mise registry`
-that could plausibly keep derived files synchronized.
-The registry capture was produced on 2026-06-15 with:
+`file-enforcer` keeps arbitrary repo-local derived files in sync inside this monorepo's worktree.
+This document asks two questions and answers both with cited evidence:
 
-```bash
-mise registry > /tmp/agent/mise-registry-2026-06-15.txt
-```
+- Replacement question: does any existing tool do file-enforcer's whole job, so we could retire the package?
+- Absorption question: which capabilities from other tools should file-enforcer grow,
+  so it becomes the single tool for repo-local derived-file work?
 
-The capture contained 815 registry entries.
-`mise registry` provides tool names and backends,
-not descriptions.
-I screened the full list by name and backend for tools that render,
-update,
-apply,
-watch,
-validate,
-format,
-or transform files.
-General cloud CLIs,
-package managers,
-language runtimes,
-Kubernetes administration tools,
-secret managers,
-media tools,
-and unrelated developer utilities are outside the file-enforcement problem.
+The conclusion is keep and extend.
+No tool replaces file-enforcer, for a reason that survives a much wider candidate sweep than the first version of
+this audit ran.
+Two capabilities are worth absorbing, with cited reference implementations for each.
 
-This is a screened audit,
-not a claim that every one of the 815 registry entries is itself a file-enforcer alternative.
-The serious and adjacent candidates that survived the screen were cloned under
-`/tmp/agent/file-enforcer-audit-20260615/` with:
+This revision supersedes an earlier draft whose method had two defects.
+Both are corrected and documented below so future audits do not repeat them:
 
-```bash
-gh repo clone <owner/repo> /tmp/agent/file-enforcer-audit-20260615/<owner>__<repo> -- --depth 1
-```
+- it screened only `mise registry`, a binary-installer registry that structurally excludes the npm ecosystem where
+  file-enforcer's closest peers live;
+- it admitted configuration languages (`pkl`, `cue`, and similar) as candidates, when they cannot read, write, watch,
+  or reconcile files at all.
 
-SaaS vendor vetting is not applicable:
-all candidates considered as alternatives are open-source local CLIs or libraries.
-No closed-source SaaS tool is recommended.
+## The screening gate: general-target reconciliation
 
-## Incumbent shape
+A tool only counts as a file-enforcer replacement if it can manage arbitrary repo-local derived files.
+A tool that can only manage its own fixed built-in domain is not good enough, however well it manages that domain.
 
-`file-enforcer` is executable TypeScript for repo-local derived files.
-The root `file-enforcer.config.ts` currently:
+This gate is the organizing principle of the audit because it decides most cases on its own.
+It is what file-enforcer's root config actually exercises: in one run, the same tool generates
+`CLAUDE.md` from `AGENTS.md`, regenerates `mise.toml` from a base plus computed workspace bin paths,
+seeds and concatenates a forbidden-string deny list, resolves Browserslist targets through the installed package,
+patches JetBrains LSP4IJ XML settings, mirrors skill markdown to legacy agent directories,
+and asserts a forbidden root file stays absent.
+Evidence: `file-enforcer.config.ts`.
 
-- copies `AGENTS.md` into generated `CLAUDE.md` with repo-specific prefacing text;
-- generates root `mise.toml` from `mise.no-env.toml` plus computed package bin paths;
-- seeds a gitignored forbidden-string appendix and concatenates scanner rules;
-- resolves Browserslist targets through the installed `browserslist` package;
-- patches JetBrains LSP4IJ settings;
-- mirrors canonical skills to legacy agent directories;
-- rejects forbidden root `CONTEXT.md` while registering it for watch mode.
+No tool that hard-wires a single output schema can express that workload.
+A tool wired to `package.json` can keep `package.json` files consistent and nothing else.
+A tool wired to `$HOME` can deploy dotfiles and nothing else.
+A tool that evaluates one configuration document to one data blob can emit that blob and nothing else.
+Each is a non-candidate by the gate, and the gate is cited at the source level for every such tool below.
 
-Implementation evidence:
+## The capability axes: the scoring spine
 
-- `packages/dev-script/file-enforcer/src/cli.ts`:
-config discovery,
-config import,
-and `--watch` startup.
-- `packages/dev-script/file-enforcer/src/io/cat.ts`:
-tracked reads and glob expansion.
-- `packages/dev-script/file-enforcer/src/io/write.ts`:
-`overwrite`,
-`overwriteIfNotExists`,
-`overwriteEach`,
-atomic writes,
-and skip-if-identical behavior.
-- `packages/dev-script/file-enforcer/src/io/write-lazy.ts` and `src/io/staleness-*.ts`:
-persisted staleness entries for lazy builders.
-- `packages/dev-script/file-enforcer/src/watch/*.ts`:
-chokidar-backed reruns,
-protected-destination classification,
-and serial rerun queuing.
-- `packages/dev-script/file-enforcer/src/pipeline/{json,toml,xml,transform}.ts`:
-structured transforms beyond byte concatenation.
-- `packages/dev-script/file-enforcer/src/package/*.ts`:
-system package discovery
-for packages that mise cannot manage.
+Tools that pass the gate are scored against one identical checklist.
+The same checklist doubles as file-enforcer's own gap list, so the absorption roadmap falls out of it mechanically:
+the axes where a real general-target peer scores and file-enforcer does not are exactly the features to absorb.
 
-Measured on 2026-06-15,
-`packages/dev-script/file-enforcer/src` contains:
+- A1 programmable generation: derived content from arbitrary code, not a template or declarative data only.
+- A2 tracked source reads: the tool knows which inputs each derived file depends on.
+- A3 content-stable writes: it skips the write when the destination already matches, and replaces atomically.
+- A4 structured comment-preserving transforms: JSON, TOML, and XML edits that keep comments and unmutated whitespace.
+- A5 incremental fingerprinting: a persisted manifest that skips unchanged work across separate runs.
+- A6 watch with managed-destination protection: re-run on a source change, and react when a generated file is edited
+  by hand.
+- A7 check or verify mode: report drift and exit nonzero without writing, for continuous-integration gating.
+- A8 region or partial-file management: sync a marked slice of an otherwise hand-edited file.
+- A9 in-repo native integration: config is repo TypeScript calling functions directly, with no separate language and no
+  shell glue.
 
-- 71 production `.ts` files;
-- 51 `*.unit.test.ts` files;
-- seven `*.property.unit.test.ts` files;
-- one container test file.
+### How file-enforcer scores
 
-`packages/dev-script/file-enforcer/mise.toml` also defines `fuzz` and container-isolated
-`test:mutation` tasks.
-`docs/decisions/file-enforcer-fuzzing.md` records the fast-check property-test decision
-and the JSON defects those properties found.
+file-enforcer passes the gate and scores on A1 through A6 and A9.
+It does not score on A7 or A8.
+Those two absences are the roadmap.
 
-A replacement must cover all of this:
+Implementation evidence for the passing axes:
 
-- programmable local generation;
-- tracked source reads;
-- content-stable writes;
-- structured JSON,
-TOML,
-XML,
-glob,
-and platform helpers;
-- watch-mode reruns;
-- managed-destination protection;
-- low-friction use inside this monorepo without moving logic into shell glue.
+- A1: the config is plain TypeScript with top-level `await`, local imports, and direct function calls.
+  Evidence: `file-enforcer.config.ts`, `packages/dev-script/file-enforcer/src/cli.ts`.
+- A2: `cat()` records every read, glob expansions are tracked, and `addWatchedPaths()` registers extra dependencies.
+  Evidence: `src/io/cat.ts`, `src/tracker.ts`.
+- A3: `overwrite()` reads the existing destination through `readExisting()` and logs `skip (unchanged)` when content
+  already matches; writes are atomic.
+  Evidence: `src/io/write.ts`, `src/io/write-atomic.ts`.
+- A4: structured transforms for JSON, TOML, and XML beyond byte concatenation, with comment-preserving TOML splice mode
+  through `@monochromatic-dev/module-toml-edit`.
+  Evidence: `src/pipeline/json.ts`, `src/pipeline/toml.ts`, `src/pipeline/xml.ts`, `src/io/write-toml.ts`.
+- A5: a persisted staleness manifest under `node_modules/.cache/file-enforcer/` records read files, glob expansions,
+  and destination content hashes, and lazy builders skip their content callbacks when those still match.
+  Evidence: `src/io/staleness-manifest.ts`, `src/io/staleness-hash.ts`, `src/io/write-lazy.ts`.
+- A6: watch mode classifies events into source, protected, and ignore, re-runs on source changes, and fires a desktop
+  notification when a managed destination is edited externally.
+  Evidence: `src/watch/watch.ts`, `src/watch/watch-filter.ts`, `src/watch/notify.ts`.
+- A9: the config is repo TypeScript; there is no descriptor collection phase and no engine interpreter.
+  Evidence: `packages/dev-script/file-enforcer/README.md`.
 
-No registry candidate covers all of those requirements.
+The two gaps, with the package's own acknowledgement:
+
+- A7 check or verify mode: `packages/dev-script/file-enforcer/TODO.md` records "No dry-run mode" and frames it as
+  needing a descriptor pattern.
+  The roadmap section below shows why that framing overstates the cost.
+- A8 region or partial-file management: file-enforcer overwrites whole files.
+  `TODO.md` records the absence of `appendTo` and `prependTo` operations; managed regions go further than either.
+
+Measured footprint, for scale, on 2026-06-15:
+`packages/dev-script/file-enforcer/src` holds seventy-one production TypeScript files,
+fifty-one unit-test files, seven property-test files, and one container test.
+The package also defines fuzz and container-isolated mutation tasks.
+Evidence: `packages/dev-script/file-enforcer/mise.toml`, `docs/decisions/file-enforcer-fuzzing.md`.
+
+## Method
+
+The candidate sweep drew on four surfaces, not one:
+
+- the `mise registry` capture from 2026-06-15, eight hundred fifteen entries,
+  produced with `mise registry > /tmp/agent/mise-registry-2026-06-15.txt`;
+- the npm ecosystem of scaffolders, workspace-consistency tools, region embedders, watchers, and codegen;
+- general build systems that derive output files from inputs;
+- desired-state and file-sync tools, to bound the problem from the dotfile and cross-host side.
+
+Evidence tiers are stated per tool and are not uniform, by design.
+Depth is proportional to how close a tool comes to passing the gate.
+Tools that could change the conclusion were cloned and source-read to the same standard the incumbent is held to:
+shallow clone under `/tmp/agent/`, commit hash and date captured, production source spot-read with file-path citations,
+tests and continuous-integration inspected, and fuzz or mutation evidence found or reported absent.
+Tools that the gate dismisses structurally were verified against their own README or official documentation and given a
+one-line reason; cloning them would not change their classification.
+
+The registry blind spot is itself a finding, and the reason for widening the surface.
+None of file-enforcer's closest peers appears in the registry at all.
+Absent from the 2026-06-15 capture, verified by search:
+`syncpack`, `manypkg`, `sherif`, `knip`, `wireit`, `nx`, `moon`, `redo`, `tup`, `plop`, `hygen`, `cog`, `embedme`,
+`c12`, and `onchange`.
+Even the registry-present build tools `turbo` and `ninja` were never surfaced as candidates by the first screen.
+A registry of installable binaries skews toward compiled, standalone CLIs and away from the npm-resident tools that
+actually solve adjacent problems, so registry-only screening cannot find them.
+
+SaaS vendor vetting does not apply.
+Every candidate is an open-source local CLI or library.
+No closed-source or hosted tool is recommended.
+
+## Tier one: non-candidates dismissed by the gate
+
+These tools fail general-target reconciliation.
+Each entry names the single structural reason.
+None was a replacement finalist, so the evidence tier is README or documentation unless the tool also carried a
+capability worth citing later.
+
+### Configuration evaluation languages
+
+These evaluate one configuration document into one data output.
+They have no concept of reading arbitrary repo sources, choosing destinations, skipping unchanged writes, watching, or
+protecting outputs.
+The earlier draft listed them as serious candidates; that was the category error this revision corrects.
+They are not replacements.
+They are at most A4-layer components a reconciler could call to produce one structured blob,
+and even then file-enforcer already owns comment-preserving structured edits in TypeScript.
+
+- `pkl` (`apple/pkl`): evaluates Pkl to JSON, YAML, or similar.
+  Fails the gate: emits one structured output, orchestrates no files.
+- `cue` (`cue-lang/cue`): evaluates and exports CUE.
+  Fails the gate: same shape.
+- `dhall` (`dhall-lang/dhall-haskell`): evaluates Dhall to JSON, YAML, or TOML.
+  Fails the gate: same shape.
+- `jsonnet` (`google/go-jsonnet`): evaluates Jsonnet, including multi-output writing.
+  Fails the gate: multi-output is still pure evaluation with no source tracking, watch, or destination protection.
+- `ytt` (`carvel-dev/ytt`): templates and overlays YAML.
+  Fails the gate: YAML templating only, no reconcile loop.
+
+Pkl is the closest of these as a language.
+Adopting it would rewrite the root generator into Pkl and still leave every reconciliation concern, A2, A3, A5, A6,
+A7, and A8, unsolved, so it would add a language without removing the enforcement layer.
+
+### One-shot scaffolders
+
+These generate a project or a set of files once, at creation time, from templates and prompts.
+They have no reconcile loop, so they cannot keep a derived file in sync after the first write.
+
+- `cookiecutter` (`cookiecutter/cookiecutter`): project generation from templates.
+- `copier` (`copier-org/copier`): project generation with a versioned-template update path.
+  Copier is the strongest of this group because it can re-apply template updates,
+  but it is template-repository oriented and does not track arbitrary repo sources or protect destinations.
+- `boilerplate` (`gruntwork-io/boilerplate`): folder generation from templates and a manifest.
+- `plop` (`plopjs/plop`): micro-generator that creates files from Handlebars templates via prompts, then exits.
+- `hygen` (`jondot/hygen`): project-resident template code generator, one-shot per invocation.
+- `scaffdog` (`scaffdog/scaffdog`): markdown-driven multi-file scaffolder, invoked interactively.
+- `yeoman` (`yeoman/yo`): runs generators to kickstart new projects.
+
+One borderline case sits here and earns a note rather than a clean dismissal.
+`mrm` (`sapegin/mrm`) is codemod-style config maintenance: idempotent tasks that keep files such as `package.json`
+and lint configs in sync without clobbering user data, contrasting itself explicitly with one-shot templates.
+It fails the gate on narrow, manually-invoked scope rather than on lack of a reconcile concept:
+it manages a curated set of task-defined config files, not arbitrary derived files, and has no watch loop.
+
+### Desired-state, dotfile, and cross-host sync
+
+These reconcile a desired state, but against the wrong target.
+Their destination is the user's home directory or a second host or replica, not this repo's worktree.
+
+- `chezmoi` (`twpayne/chezmoi`): applies a source-state directory to `$HOME`.
+  Excellent at that; it is a personal-dotfile engine, not a worktree derived-file tool.
+- `dotbot` (`anishathalye/dotbot`): symlinks dotfiles into `$HOME`.
+- `stow` (`aspiers/stow`): builds symlink trees into an external install directory.
+- `rcm` (`thoughtbot/rcm`): deploys config to `$HOME` with host variants.
+- `yadm` (`yadm-dev/yadm`): a Git dotfile manager whose working tree is `$HOME`.
+- `unison` (`bcpierce00/unison`): bidirectional sync between two replicas.
+- `mutagen` (`mutagen-io/mutagen`): real-time sync between endpoints.
+- `rsync` (`rsync.samba.org`): incremental mirroring between locations.
+- `syncthing` (`syncthing/syncthing`): continuous peer-to-peer device sync.
+
+### Narrow-domain workspace-consistency enforcers
+
+This is the cluster the first audit missed entirely, because none of these tools is in `mise registry`.
+They are the most tempting false peers, because they do enforce derived and consistent file content with a fix mode.
+They all fail the gate at the source level: every read and write target is the npm `package.json` manifest schema,
+sometimes plus `pnpm-workspace.yaml`.
+They cannot write `CLAUDE.md`, `mise.toml`, JetBrains XML, or any file outside that schema.
+This cluster is the direct evidence for the project rule that a tool managing only its own workspace is not good enough.
+
+- `syncpack` (`JamieMason/syncpack`): Rust, distributed through npm.
+  Keeps dependency versions and `package.json` formatting consistent across a workspace.
+  Gate failure is structural: the source type for a managed file is an enum of exactly `Package` and `PnpmYaml`,
+  and default discovery hard-wires `package.json` patterns.
+  Evidence: `/tmp/agent/fe-wsconsist-syncpack-20260615` at `3b2c99d793975d54438f12da4e595a803afe5b8b` (2026-06-15),
+  `src/source.rs`, `src/source_patterns.rs`, `src/disk.rs`.
+  It does carry a capability file-enforcer lacks: a `lint` check mode distinct from `fix`, where `lint` reports and
+  returns a nonzero exit without writing, and `fix` mutates with a `--dry-run` no-write variant.
+  Evidence: `src/commands/lint.rs`, `src/commands/fix.rs`.
+- `manypkg` (`Thinkmill/manypkg`): TypeScript.
+  Lints `package.json` files across a workspace.
+  Gate failure: the fix writer writes `path.join(pkg.dir, "package.json")` exclusively.
+  Evidence: `/tmp/agent/fe-wsconsist-manypkg-20260615` at `97e2ab9bc64e45af099f63f25c515f3792738cfb` (2026-06-10),
+  `packages/cli/src/utils.ts`, `packages/cli/src/checks/index.ts`.
+  It splits `check` from `fix`, the same check-mode shape syncpack has.
+- `sherif` (`QuiiBz/sherif`): Rust, distributed through npm.
+  Opinionated `package.json` consistency linter.
+  Gate failure: package construction hard-codes `package.json` and errors when it is absent.
+  Evidence: `/tmp/agent/fe-wsconsist-sherif-20260615` at `f1e6490a681165db74ce38e91dc984d8c94d64eb` (2026-04-24),
+  `src/packages/mod.rs`, `src/rules/multiple_dependency_versions.rs`.
+  Default mode checks and exits nonzero; `--fix` mutates and refuses to run in continuous integration.
+- Yarn constraints (`yarnpkg/berry`, `plugin-constraints`): built into Yarn Berry.
+  This is the most capable of the cluster and still fails the gate.
+  Its rules are fully programmable JavaScript in `yarn.config.cjs`, which beats the declarative-data tools on A1,
+  but every mutation in its API targets the `package.json` manifest: `set`, `unset`, `update`, `delete`,
+  persisted through `persistManifest`.
+  The official documentation states it does not support arbitrary file writing.
+  Evidence tier documentation plus targeted source read at `master` (2026-06-15):
+  `packages/yarnpkg-types/sources/constraints.ts`,
+  `packages/plugin-constraints/sources/commands/constraints.ts`,
+  and <https://yarnpkg.com/features/constraints>.
+  The lesson here is the load-bearing one for the whole audit: programmable rules are not the same as general file
+  management.
+  A programmable rules engine bolted to a fixed output schema is still narrow.
+- `knip` (`webpro-nl/knip`): TypeScript.
+  Listed because it is often grouped with the above, but it fails for a different reason and is better called a
+  complement.
+  It edits many file types, but every fix is removal only: it deletes unused files, strips unused exports,
+  and removes unused dependencies and catalog entries.
+  It has no path that generates or derives content, so it cannot enforce a derived file even though it can edit one.
+  Evidence: `/tmp/agent/fe-wsconsist-knip-20260615` at `e265d281b031783dd7f92dfc0db29f60f7138d5b` (2026-06-15),
+  `packages/knip/src/IssueFixer.ts`.
+
+### Configuration loaders
+
+These resolve configuration into memory.
+Three of them write nothing at all, so they cannot enforce any derived file.
+
+- `cosmiconfig` (`cosmiconfig/cosmiconfig`): searches for and loads config; writes nothing.
+- `lilconfig` (`antonk52/lilconfig`): zero-dependency config seeker; writes nothing.
+- `unconfig` (`antfu/unconfig`): universal config loader; writes nothing.
+- `c12` (`unjs/c12`): borderline.
+  It loads and merges config, and an experimental `updateConfig` path, backed by `magicast`, can edit config files,
+  so the blanket "writes nothing" is false for c12.
+  Its real failure is that config editing is not a reconcile loop over arbitrary derived files.
+
+## Tier two: layer components a reconciler calls
+
+These tools do real work, but they are pieces a reconciler invokes, not reconcilers.
+A replacement must define generated content and own the reconcile loop; these define neither.
+file-enforcer could call several of them, and already depends on one.
+
+### Watchers, the A6 trigger layer
+
+These trigger commands on filesystem changes.
+They generate no content and protect no destination, so they cover only part of A6.
+
+- `watchexec` (`watchexec/watchexec`): mature cross-platform watcher and command runner.
+- `onchange` (`Qard/onchange`): runs a command on glob-matched changes.
+- `nodemon` (`remy/nodemon`): watches and restarts a Node process.
+- `node --watch` (Node.js builtin): process restart on change.
+- `watchlist` (`lukeed/watchlist`): recursive directory watcher running a command.
+  Note: the canonical repo is `lukeed/watchlist`; a `vercel/watchlist` repo does not exist.
+- `chokidar-cli` (`open-cli-tools/chokidar-cli`): CLI over chokidar.
+- `chokidar` (`paulmillr/chokidar`): the watch library file-enforcer's own watch layer builds on.
+  This is a dependency file-enforcer consumes, not a competitor.
+  Evidence: `chokidar` in `packages/dev-script/file-enforcer/package.json`.
+
+### Structured-data editors and TOML tooling, the A4 layer
+
+These edit one structured file at a time.
+They cannot express the whole sync graph and provide no tracked sources, protected destinations, or programmable
+monorepo API.
+
+- `yq` (`mikefarah/yq`): YAML and JSON evaluation with in-place writes.
+- `dasel` (`TomWright/dasel`): selector-based reads and writes across formats.
+- `jq` and `gojq`: JSON transforms.
+- `sd`: string replacement.
+- `taplo` (`tamasfe/taplo`): TOML formatting and limited DOM rewriting.
+- `tombi` (`tombi-toml/tombi`): TOML parsing, formatting, and schema-aware editing.
+  Worth watching as a TOML complement; its maintenance signal is stronger than Taplo's.
+
+For TOML specifically, this repo already uses `@monochromatic-dev/module-toml-edit` through file-enforcer to preserve
+comments and unmutated whitespace in splice mode, so the A4 need these tools serve is met in-repo and in TypeScript.
+
+### Template renderers, an A1 subset
+
+- `gomplate` (`hairyhenderson/gomplate`): renders templates from data sources.
+  Good when the problem is pure template rendering; it models none of A2, A3, A5, A6, A7, or A8.
+
+### Schema-driven codegen, an A1 subset
+
+Each emits output derived from one schema or input and could be called by a reconciler.
+None owns a tracked-read, watch, or destination-protection loop over arbitrary files.
+
+- `quicktype` (`glideapps/quicktype`): types and serializers from JSON, JSON Schema, TypeScript, or GraphQL.
+- `json-schema-to-typescript` (`bcherny/json-schema-to-typescript`): JSON Schema to TypeScript.
+- `openapi-typescript` (`openapi-ts/openapi-typescript`): TypeScript from OpenAPI specs.
+- `graphql-codegen` (`dotansimha/graphql-code-generator`): code from a GraphQL schema, with a `--watch` flag.
+  The watch flag is why the failing axis is the schema-only transform scope, not watch support.
+- `ts-json-schema-generator` (`vega/ts-json-schema-generator`): JSON Schema from TypeScript.
+
+### Hook and task runners, the invocation layer
+
+These can run file-enforcer as a commit gate, a continuous-integration step, or a watch wrapper.
+They do not define generated content, so they cannot replace it.
+
+- `pre-commit` (`pre-commit/pre-commit`): hook installation and execution.
+- `lefthook` (`evilmartians/lefthook`): Git hook execution.
+- `just` (`casey/just`): command runner.
+- `make`, `cargo-make`, `mage`, `cmdx`, `mask`, `xc`: task runners that can invoke a generator but author no content.
+
+## Tier three: general-target tools that pass the gate but are not replacements
+
+These tools can produce arbitrary output files, so they clear the gate, yet none replaces file-enforcer.
+This tier carries the deepest analysis because these are the only tools that could have changed the conclusion,
+and because two of them are the reference implementations for the absorption roadmap.
+
+### Build-graph reconcilers
+
+`make`, `ninja`, `redo`, `tup`, `wireit`, and `turbo` derive output files from inputs and skip work when inputs and
+outputs are unchanged.
+That overlaps file-enforcer on A5.
+The decisive separation is content generation.
+Every tool in this cluster runs a user-supplied shell command to produce content; none has a general native transform.
+The single exception is `tup`'s built-in `varsed`, a narrow `@VARIABLE@` substitution subprogram, and even it runs as a
+command inside a build rule.
+So adopting any of them would require writing the generators as shell glue and would still leave A2, A4, A6, and A8 to
+build by hand.
+That is the opposite of file-enforcer's design, where generation is TypeScript with native transforms.
+
+Where this cluster is genuinely ahead, and feeds the roadmap, is in two places: a real check mode, and a per-target
+incremental graph.
+
+- `make` (GNU make): mtime-based derivation, shell recipes.
+  It owns the canonical check mode: `-q` or `--question` silently checks whether targets are up to date and runs no
+  recipe, exiting zero when current and nonzero when an update is needed.
+  This is precisely the A7 shape file-enforcer lacks.
+  Its mtime model has no managed-destination protection: a hand-edited output looks newer than its inputs, so make
+  treats it as current and skips it.
+  Evidence tier documentation: <https://www.gnu.org/software/make/manual/>.
+- `ninja` (`ninja-build/ninja`): mtime DAG executor of shell commands, usually fed by a generator such as CMake.
+  Its `-n` or `--dry-run` is a plan preview that exits zero, not a drift gate.
+  No watch, no destination protection.
+  Evidence: `/tmp/agent/fe-buildgraph-ninja-20260615` at `f735970600b5713276583589dce207d575950b14` (2026-06-14),
+  `doc/manual.asciidoc`, `src/subprocess-posix.cc`, `src/build.cc`.
+- `redo` (`apenwarr/redo`): targets built by `.do` shell scripts.
+  Freshness defaults to mtime, size, and inode, with opt-in content checksums through `redo-stamp`.
+  It has the cluster's only preserve-on-hand-edit reaction: when a generated target is edited externally,
+  it marks the file an override and skips the rebuild rather than clobbering it.
+  That is a design option worth weighing against file-enforcer's notify-and-regenerate stance.
+  Evidence: `/tmp/agent/fe-buildgraph-redo-20260615` at `7f00abc36be15f398fa3ecf9f4e5283509c34a00` (2021-07-27),
+  `redo/state.py`, `redo/deps.py`.
+  The implementation is effectively dormant: its last substantive commit is from 2021 and issues are disabled.
+- `tup` (`gittup/tup`): the closest design relative in this cluster.
+  It has the one native transform (`varsed`), real managed-destination detection that warns and overwrites on an
+  externally modified generated file, a config-drift check in `tup refactor`, filesystem-monitored freshness,
+  and a `tup monitor` watch mode.
+  Its general build path still runs shell commands, and its destination reaction clobbers rather than preserves.
+  Evidence: `/tmp/agent/fe-buildgraph-tup-20260615` at `2867b66e7105d432dce2609538117c1e6910bc73` (2026-03-18),
+  `src/tup/varsed.c`, `src/tup/create_name_file.c`, `tup.1`.
+- `wireit` (`google/wireit`): the closest npm-native peer.
+  It wraps npm scripts with SHA-256 content-hash input fingerprinting, a persisted per-script fingerprint cache,
+  per-target freshness, and a watch mode.
+  Its content-hash input model and per-target manifest are a sharper version of file-enforcer's A5,
+  worth studying for the per-rule incremental enhancement.
+  It generates nothing itself; content comes from the npm-script command.
+  Its output-manifest protection uses an mtime-and-size heuristic and reacts by clobbering.
+  It has no check mode.
+  Evidence: `/tmp/agent/fe-buildgraph-wireit-20260615` at `3ad0bbfb6b5bc5e5fbb21c12036023ae898e839f` (2026-06-12),
+  `src/fingerprint.ts`, `src/execution/standard.ts`, `src/script-child-process.ts`.
+- `turbo` (`vercel/turborepo`): a workspace task graph with git-based content hashing of inputs and an output cache.
+  Inputs and outputs are declared per task as glob arrays in `turbo.json`.
+  Its `--dry` is a plan preview that exits zero, not a drift gate, and it does not protect outputs:
+  freshness comes from input hashes only, so a hand-edited output does not trigger a rerun.
+  Its per-task input and output declaration and DAG are the incremental model file-enforcer, which re-runs its whole
+  config, could borrow.
+  Evidence: `/tmp/agent/fe-buildgraph-turbo-20260615` at `a562e78a4ee598670675d5b5cd72219ce0e3cfd0` (2026-06-15),
+  `crates/turborepo-task-executor/src/command.rs`, `crates/turborepo-scm/src/hash_object.rs`,
+  `packages/turbo-types/schemas/schema.json`.
+
+Axis scoring for the cluster, against file-enforcer's checklist:
+
+- A1 native generation: none, except `tup` `varsed` narrowly.
+  All run shell commands.
+- A2 tracked source reads: yes, via explicit input declarations (`make` prerequisites, `wireit` `files`,
+  `turbo` `inputs`) or filesystem monitoring (`tup`).
+- A3 content-stable writes: no native transform writes, so not comparable; `redo`'s opt-in checksum stamp is the nearest
+  parallel.
+- A4 structured transforms: none.
+- A5 incremental fingerprinting: yes, and stronger than file-enforcer in `wireit` and `turbo`.
+- A6 watch with destination protection: `wireit`, `turbo`, and `tup` watch; destination protection exists in `wireit`
+  and `tup` (clobber) and `redo` (preserve); `make` and `ninja` have neither.
+- A7 check mode: only `make` `-q` is a true nonzero-on-stale gate; the others are plan previews or lists.
+- A8 region management: none.
+- A9 in-repo native integration: none; all need a separate build file and shell glue.
+
+### Region and partial-file embedders
+
+These sync generated content into a marked region of an otherwise hand-edited file.
+That is exactly A8, the capability file-enforcer lacks, and three of the four also implement A7.
+They pass the gate weakly: `cog` manages arbitrary text files, the others are markdown-bound.
+None is a file-enforcer replacement, because none owns A2, A5, or the structured-transform and programmable monorepo
+model; their value to this audit is as reference implementations for the roadmap.
+
+- `cog`, packaged as `cogapp` (`nedbat/cog`): the closest analog to the missing capabilities.
+  It manages arbitrary text files, hiding generated regions inside any host language's comments through substring
+  marker matching and common-prefix stripping.
+  The region body is arbitrary Python, so generated content is fully programmable, not a fixed transform.
+  It guarantees idempotency and skips when regenerated output matches.
+  It implements A7 cleanly: `--check` regenerates without writing, sets a failure when the file would change,
+  and exits with code five, with `--diff` to show the drift.
+  It adds an opt-in `-c` output checksum that refuses to overwrite a hand-edited region, a tamper-evidence model
+  stronger than file-enforcer's notify-after-the-fact.
+  Evidence: `/tmp/agent/fe-region-cog-20260615` at `c0419cf618b46af4224994a0a82759c04e27531b` (2026-06-15),
+  `cogapp/cogapp.py`, `cogapp/options.py`, `cogapp/hashhandler.py`.
+- `doctoc` (`thlorenz/doctoc`): a single-purpose markdown table-of-contents generator.
+  It earns a place because its `--dryrun` is a clean, well-tested A7 reference: on an out-of-date file it sets a nonzero
+  exit code and writes nothing, and its region markers with skip-if-unchanged are exactly the A8 shape.
+  Evidence: `/tmp/agent/fe-region-doctoc-20260615` at `eef394097f85ef41c43a5910b5f8f3e19da7da06` (2026-06-16),
+  `doctoc.js`, `lib/transform.js`.
+- `embedme` (`zakhenry/embedme`): embeds source-file contents into markdown code fences.
+  Its `--verify` exits nonzero on drift without writing, a minor A7 reference.
+  It is markdown-fence bound and a fixed transform, and it is stale, last pushed in 2024, with a known
+  false-negative idempotency bug, issue 109.
+  Evidence: `/tmp/agent/fe-region-embedme-20260615` at `3cd8692de2c905cf3c9cbc6d87c1b4220f2e6eeb` (2024-10-07),
+  `src/embedme.ts`, `src/embedme.lib.ts`.
+- `markdown-magic` (`DavidWells/markdown-magic`): transforms content between comment markers across several comment
+  syntaxes, with pluggable transforms.
+  It is the weakest of the four on the axes that matter here: it has no drift-failing check mode, and at the cloned
+  head its file-write path is commented out, so write behavior could not be verified.
+  Evidence: `/tmp/agent/fe-region-mdmagic-20260615` at `62b616e573882208412538bb62ded4e122af1673` (2026-06-15),
+  `packages/core/src/index.js`, `packages/block-parser/src/syntax.js`.
+
+### Dependency-update and vendoring pipelines
+
+These passed the earlier audit as serious complements and are re-slotted here unchanged.
+They pass the gate, in that they can write real files, but they target a different problem than root generation.
+
+- `updatecli` (`updatecli/updatecli`): the most important adjacent tool.
+  It runs source, condition, and target stages to automate dependency, version, and configuration updates,
+  with remote sources, Go-template and regexp transforms, dry-run diffs, unchanged-content skip,
+  and source-control checkout, commit, and push.
+  It is stronger than file-enforcer for dependency-update pull requests and source-control actions, and weaker for root
+  generation because its config is manifest data, not arbitrary TypeScript with local imports.
+  It has no equivalent for tracked reads, lazy staleness manifests, watch-mode destination protection, JetBrains
+  settings patching, or package-index helpers.
+  Evidence: `updatecli/updatecli` at `8deb2563286f8c0388fc594e0528e2fa2523060c` (2026-06-14),
+  `pkg/plugins/resources/file/target.go`, `pkg/core/pipeline/target/main.go`.
+- `vendir` (`carvel-dev/vendir`): syncs vendored external directories into a tree, with a lock file and per-source
+  checksums.
+  It should be considered only if a future file-enforcer job is actually vendoring an external tree.
+  It is not a general file generator.
+  Evidence: `carvel-dev/vendir` at `a7fb189b2a1d1be30ccdf0049ae62b17d83240bc` (2026-06-03),
+  `pkg/vendir/directory/directory.go`, `pkg/vendir/fetch`.
+- `go-task` (`go-task/task`): the strongest task-runner overlap.
+  Its fingerprint, sources, generated-file, checksum, timestamp, and status checks overlap file-enforcer on A5,
+  and its status checks are an A7-adjacent concept.
+  Generated content still lives in shell commands or side scripts, so it does not provide the TypeScript transform API,
+  the tracked read-and-write model, atomic destination protection, or structured helpers.
+  Evidence: `go-task/task` at `24a3ccdf42043a2cced5b24f67cefcf902995ef3` (2026-06-07),
+  `internal/fingerprint/task.go`, `internal/fingerprint/status.go`, `watch.go`.
 
 ## Audit finding
 
-No screened registry candidate currently justifies replacing `file-enforcer`
-for repo-local derived-file synchronization.
-
-The narrower tool roles are:
-
-- `updatecli`:
-dependency,
-version,
-and policy update pipelines that may open SCM changes.
-- `go-task/task`:
-package-level task orchestration with source and generated-file checks.
-- `gomplate`,
-`copier`,
-`cookiecutter`,
-`boilerplate`:
-template rendering or scaffolding.
-- `vendir`:
-vendored external directories.
-- `cue`,
-`pkl`,
-`ytt`,
-`dhall`,
-`jsonnet`:
-structured configuration languages.
-- `yq`,
-`dasel`,
-`taplo`,
-`tombi`:
-narrow structured-file edits,
-formatting,
-or validation.
-- `watchexec`,
-`pre-commit`,
-`lefthook`,
-`just`:
-wrappers that can invoke file-enforcer.
-
-No replacement candidate became a migration finalist after source-fit screening.
-For that reason this audit source-read and maintenance-checked serious alternatives,
-but it did not run every upstream project's full validation suite.
-If a future task proposes migrating a specific slice to one candidate,
-that migration needs a separate adoption vet:
-build the candidate,
-run its full validation,
-and exercise this repo's integration boundary in a disposable fixture.
-
-This document is an audit,
-not a final migration decision document.
-If the user later chooses a specific tool or migration slice,
-record that choice under `docs/decisions/`.
-
-## Registry screen
-
-### Cloned serious and adjacent candidates
-
-- `updatecli`:
-`aqua:updatecli/updatecli`.
-- `boilerplate`:
-`aqua:gruntwork-io/boilerplate`.
-- `gomplate`:
-`aqua:hairyhenderson/gomplate`.
-- `copier`:
-`pipx:copier`.
-- `cookiecutter`:
-`pipx:cookiecutter`.
-- `chezmoi`:
-`aqua:twpayne/chezmoi`.
-- `vendir`:
-`aqua:carvel-dev/vendir`.
-- `cue`:
-`aqua:cue-lang/cue`.
-- `go-jsonnet`:
-`aqua:google/go-jsonnet`.
-- `dhall`:
-`aqua:dhall-lang/dhall-haskell`.
-- `pkl`:
-`aqua:apple/pkl`.
-- `ytt`:
-`aqua:carvel-dev/ytt`.
-- `dasel`:
-`aqua:TomWright/dasel`.
-- `yq`:
-`aqua:mikefarah/yq`.
-- `taplo`:
-`aqua:tamasfe/taplo`.
-- `tombi`:
-`aqua:tombi-toml/tombi`.
-- `watchexec`:
-`aqua:watchexec/watchexec`.
-- `just`:
-`aqua:casey/just`.
-- `task`:
-`aqua:go-task/task`.
-- `pre-commit`:
-`aqua:pre-commit/pre-commit` and `pipx:pre-commit`.
-- `lefthook`:
-`aqua:evilmartians/lefthook` and `go:github.com/evilmartians/lefthook`.
-
-### Registry entries screened out as narrow adjuncts
-
-These tools can be invoked by file-enforcer or by a hook/task runner,
-but they do not synchronize arbitrary derived files by themselves.
-
-- Task runners:
-`make`,
-`cargo-make`,
-`mage`,
-`cmdx`,
-`mask`,
-`xc`.
-- Formatters and linters:
-`dprint`,
-`prettier`,
-`biome`,
-`yamlfmt`,
-`editorconfig-checker`,
-`ls-lint`,
-`yamllint`,
-`actionlint`,
-`shellcheck`,
-`shfmt`,
-`ktlint`,
-`hadolint`,
-`golangci-lint`,
-`staticcheck`,
-`cfn-lint`,
-`tflint`,
-`kube-linter`,
-`protolint`,
-`regal`.
-- Policy and schema validators:
-`conftest`,
-`opa`,
-`jsonschema`,
-`checkov`,
-`dependency-check`.
-- Transform primitives:
-`jq`,
-`gojq`,
-`sd`,
-`dasel`,
-`yq`.
-- Configuration package helpers:
-`jsonnet-bundler`,
-`jb`,
-`helm`,
-`helmfile`,
-`kustomize`,
-`ksops`,
-`vals`.
-
-`dasel` and `yq` appear in both lists because they were useful enough to source-read,
-but their final role is adjunct.
-
-## Clone evidence
-
-Each cloned candidate was inspected at these commits:
-
-- `TomWright/dasel`:
-`abc1e1d5305bca0bb709979cdf16f467a378fa21`,
-commit date 2026-05-19,
-source <https://github.com/TomWright/dasel>.
-- `apple/pkl`:
-`a9c98e439626ed9619e6244a063fddfc19a74574`,
-commit date 2026-06-11,
-source <https://github.com/apple/pkl>.
-- `carvel-dev/vendir`:
-`a7fb189b2a1d1be30ccdf0049ae62b17d83240bc`,
-commit date 2026-06-03,
-source <https://github.com/carvel-dev/vendir>.
-- `carvel-dev/ytt`:
-`38ea8974e5a300c412c7283b418d8927528120aa`,
-commit date 2026-06-05,
-source <https://github.com/carvel-dev/ytt>.
-- `casey/just`:
-`d7f5d6198e643c6cbca482bfab7e38f77bdd74c4`,
-commit date 2026-06-15,
-source <https://github.com/casey/just>.
-- `cookiecutter/cookiecutter`:
-`c88fbe921c97c58b65f1883ba90a0ab53cc91b34`,
-commit date 2026-03-04,
-source <https://github.com/cookiecutter/cookiecutter>.
-- `copier-org/copier`:
-`b80196e5e075eaa1810323b1dc5836f9698d418b`,
-commit date 2026-06-12,
-source <https://github.com/copier-org/copier>.
-- `cue-lang/cue`:
-`61bcbc9232e939ed496c62900d43b86d301aeab6`,
-commit date 2026-06-14,
-source <https://github.com/cue-lang/cue>.
-- `dhall-lang/dhall-haskell`:
-`848efeac703dbe26f6bc148732e4bfd196b3c4f4`,
-commit date 2026-06-08,
-source <https://github.com/dhall-lang/dhall-haskell>.
-- `evilmartians/lefthook`:
-`b9549b88451254a37a9dbbfeeb85e606dcbd33f3`,
-commit date 2026-06-08,
-source <https://github.com/evilmartians/lefthook>.
-- `go-task/task`:
-`24a3ccdf42043a2cced5b24f67cefcf902995ef3`,
-commit date 2026-06-07,
-source <https://github.com/go-task/task>.
-- `google/go-jsonnet`:
-`567b61ac4a6c23546a62d79324bb4aaed6bdc941`,
-commit date 2026-03-24,
-source <https://github.com/google/go-jsonnet>.
-- `gruntwork-io/boilerplate`:
-`d1d56ece8405ebc40d3e4770faa85db2505820ef`,
-commit date 2026-05-12,
-source <https://github.com/gruntwork-io/boilerplate>.
-- `hairyhenderson/gomplate`:
-`12b6736b47f7a7e9963f4be3ca5150aa3f57f60a`,
-commit date 2026-06-08,
-source <https://github.com/hairyhenderson/gomplate>.
-- `mikefarah/yq`:
-`5cf0adcc5b1f05537c68234dba216e9a0882a705`,
-commit date 2026-06-09,
-source <https://github.com/mikefarah/yq>.
-- `pre-commit/pre-commit`:
-`1553b465fd7ea42321ae0d04d1b41e706b89ae45`,
-commit date 2026-05-19,
-source <https://github.com/pre-commit/pre-commit>.
-- `tamasfe/taplo`:
-`b673b44df2773db8673a00df2e7654b769f7fde7`,
-commit date 2026-03-11,
-source <https://github.com/tamasfe/taplo>.
-- `tombi-toml/tombi`:
-`9d68d00e3d0de69d3fd061e7da14a54e3f76610b`,
-commit date 2026-06-13,
-source <https://github.com/tombi-toml/tombi>.
-- `twpayne/chezmoi`:
-`4ca579b2333cdc7b66593b25598613293a40de9f`,
-commit date 2026-06-09,
-source <https://github.com/twpayne/chezmoi>.
-- `updatecli/updatecli`:
-`8deb2563286f8c0388fc594e0528e2fa2523060c`,
-commit date 2026-06-14,
-source <https://github.com/updatecli/updatecli>.
-- `watchexec/watchexec`:
-`9d8e3443f8e15017f245dba74eec27efe623940e`,
-commit date 2026-05-05,
-source <https://github.com/watchexec/watchexec>.
-
-## Candidate comparisons
-
-### Updatecli
-
-Verdict:
-serious complement,
-not replacement.
-
-Updatecli is the most important adjacent alternative.
-Its homepage says it applies file update strategies,
-and its introduction describes `source`,
-`target`,
-and `condition` stages for automating dependency,
-version,
-and configuration updates.
-Sources:
-<https://www.updatecli.io/> and <https://www.updatecli.io/docs/prologue/introduction/>.
-
-Evidence inspected:
-
-- `pkg/core/pipeline/target/main.go`:
-resource targets,
-transformers,
-SCM checkout,
-commit,
-and push behavior.
-- `pkg/plugins/resources/file/target.go`:
-file creation and update,
-Go template rendering with Sprig,
-regexp replacement,
-dry-run diffs,
-and unchanged-content skip.
-- `pkg/plugins/resources/yaml/target.go`:
-YAML target updates through configured engines.
-- `.github/workflows/go.yaml`:
-build,
-lint,
-short pull-request tests,
-scheduled full tests,
-e2e tests,
-and Codecov upload.
-
-Maintenance screen:
-GitHub metadata sampled on 2026-06-15 reported 930 stars,
-release `v0.118.0` on 2026-06-02,
-and repository activity on 2026-06-14.
-A five-issue sample showed maintainer involvement on two issues,
-plus two maintainer-authored issues.
-The PR sample was dominated by bot update PRs.
-Source search found no broad fuzz,
-property,
-or mutation harness.
-
-Fit:
-
-- Stronger than file-enforcer for dependency update pipelines,
-remote sources,
-conditions,
-SCM commits,
-and PR-oriented automation.
-- Weaker for current root generation because the config is manifest data,
-not arbitrary TypeScript with local imports and direct function calls.
-- Missing file-enforcer equivalents for read tracking,
-lazy staleness manifests,
-watch-mode destination protection,
-JetBrains settings patching,
-and package-index helpers.
-
-### Go Task
-
-Verdict:
-strongest task-runner overlap,
-still not replacement.
-
-Evidence inspected:
-
-- `cmd/task/task.go` and `task.go`:
-task execution.
-- `watch.go`:
-watch reruns.
-- `internal/fingerprint/task.go`,
-`sources_checksum.go`,
-`sources_timestamp.go`,
-and `status.go`:
-source,
-generated-file,
-checksum,
-timestamp,
-and status checks.
-- `.github/workflows/test.yml`,
-`lint.yml`,
-and `security.yml`:
-validation workflows.
-
-Maintenance screen:
-A GitHub sample found maintainer comments on two sampled issues
-and maintainer reviews on three sampled PRs.
-No Go fuzz,
-property,
-or mutation harness was found.
-
-Fit:
-Task overlaps with staleness and watch semantics,
-but generated content still lives in shell commands or side scripts.
-It does not provide file-enforcer's TypeScript transform API,
-tracked read/write model,
-atomic destination protection,
-or structured TOML/XML/JetBrains helpers.
-
-### Gomplate
-
-Verdict:
-complement for pure template rendering.
-
-Evidence inspected:
-
-- `gomplate.go`:
-CLI execution.
-- `template.go`:
-template gathering.
-- `render.go`:
-parsing and rendering.
-- `config.go`:
-configuration.
-- `.github/workflows/build.yml`:
-build,
-test,
-integration,
-Linux architecture,
-and Windows validation.
-- `crypto/crypto_fuzz_test.go` and `strings/strings_fuzz_test.go`:
-Go fuzz functions.
-
-Maintenance screen:
-GitHub metadata sampled on 2026-06-15 reported 3,162 stars,
-release `v5.1.0` on 2026-05-02,
-and same-day repository activity.
-Three of five sampled issues had maintainer comments.
-
-Fit:
-Gomplate is good when the problem is rendering templates from data sources.
-It does not model this repo's TypeScript config,
-staleness manifest,
-structured TOML/XML edits,
-package-index helpers,
-or managed-destination watch protection.
-
-### Copier
-
-Verdict:
-complement for versioned project-template lifecycle.
-
-Evidence inspected:
-
-- `copier/_main.py`:
-copy,
-update,
-template rendering,
-and update application.
-- `copier/_template.py`:
-template configuration loading.
-- `tests/test_copy.py` and `tests/test_updatediff.py`:
-copy and update behavior.
-- `.github/workflows/ci.yml`:
-pytest coverage,
-pre-commit,
-and Python/OS matrices.
-
-Maintenance screen:
-GitHub metadata sampled on 2026-06-15 reported 3,413 stars,
-release `v9.15.2` on 2026-06-12,
-and same-day activity.
-Five of five sampled issues had maintainer comments.
-One of five sampled PRs had maintainer involvement.
-No Hypothesis,
-fuzz,
-or mutation tooling was found.
-
-Fit:
-Copier is stronger than file-enforcer for projects generated from versioned templates.
-It is too template-repository-oriented for current root config generation,
-and it does not solve watch protection or staleness.
-
-### Vendir
-
-Verdict:
-complement for vendored external directories.
-
-Evidence inspected:
-
-- `pkg/vendir/cmd/sync.go`:
-sync command.
-- `pkg/vendir/directory/directory.go`:
-directory sync.
-- `pkg/vendir/directory/staging_dir.go`:
-staging replacement.
-- `pkg/vendir/fetch/*/sync.go`:
-source fetchers.
-- `.github/workflows/test-gh.yml`:
-build,
-unit,
-e2e,
-and binary build.
-- `hack/test.sh` and `hack/test-e2e.sh`:
-local validation paths.
-
-Maintenance screen:
-GitHub metadata sampled on 2026-06-15 reported 373 stars,
-release `v0.46.0` on 2026-06-10,
-and recent activity.
-Three of five sampled issues had maintainer comments.
-Five of five sampled PRs had maintainer involvement.
-No fuzz,
-property,
-or mutation harness was found.
-
-Fit:
-Vendir should be considered if a future file-enforcer job is actually vendoring an external tree.
-It is not a general file generator for `CLAUDE.md`,
-`mise.toml`,
-Browserslist output,
-or JetBrains settings.
-
-### Boilerplate
-
-Verdict:
-one-shot scaffolding tool,
-not replacement.
-
-Evidence inspected:
-
-- `cli/boilerplate_cli.go`:
-CLI entry.
-- `templates/template_processor.go`:
-template processing.
-- `render/render_template.go`:
-rendering.
-- `manifest/`:
-manifest support.
-- `.github/workflows/ci.yml`:
-lint,
-spelling,
-tests,
-Windows tests,
-and build.
-- `integration-tests/examples_test.go`:
-example rendering and expected-output comparison.
-
-Maintenance screen:
-GitHub metadata sampled on 2026-06-15 reported 342 stars,
-release `v0.16.0` on 2026-05-13,
-and May repository activity.
-The sampled issues and PRs did not show maintainer interaction by GitHub association.
-No fuzz,
-property,
-or mutation harness was found.
-
-Fit:
-Boilerplate can generate a project or folder from templates,
-but it does not provide an ongoing reconcile loop,
-source tracking,
-destination protection,
-or arbitrary TypeScript orchestration.
-
-### Cookiecutter
-
-Verdict:
-project scaffolder,
-not replacement.
-
-Evidence inspected:
-
-- `cookiecutter/main.py`:
-main generation flow.
-- `cookiecutter/generate.py`:
-context generation,
-file generation,
-and directory rendering.
-- `.github/workflows/tests.yml`:
-lint and pytest across OS/Python matrices.
-- `tests/`:
-generation,
-hooks,
-replay,
-VCS,
-and zip coverage.
-
-Maintenance screen:
-GitHub metadata sampled on 2026-06-15 reported 24,941 stars,
-release `v2.7.1` on 2026-03-04,
-and April repository activity.
-Sampled issues and PRs did not show maintainer interaction by GitHub association.
-No Hypothesis,
-fuzz,
-or mutation tooling was found.
-
-Fit:
-Cookiecutter is appropriate for creating a new project from a template.
-It is not designed for continuous derived-file enforcement inside an existing monorepo.
-
-### Chezmoi
-
-Verdict:
-strong desired-state engine for dotfiles,
-not repo replacement.
-
-Evidence inspected:
-
-- `internal/cmd/applycmd.go`:
-apply command.
-- `internal/cmd/config.go`:
-apply arguments.
-- `internal/chezmoi/sourcestate.go`:
-source-state reading and applying.
-- `internal/chezmoi/targetstateentry.go`:
-target-state entry application.
-- `.github/workflows/main.yml`:
-CodeQL,
-distro tests,
-OS tests,
-race tests,
-lint,
-and checks.
-
-Maintenance screen:
-GitHub metadata sampled on 2026-06-15 reported 20,200 stars,
-release `v2.70.5` on 2026-06-03,
-and June activity.
-Three of five sampled issues had maintainer comments.
-Five of five sampled PRs had maintainer involvement.
-No fuzz,
-property,
-or mutation harness was found.
-
-Fit:
-Chezmoi is excellent for applying a source-state directory to a user's home directory.
-This repo needs generated artifacts inside the worktree,
-not personal dotfile deployment.
-
-### Structured configuration languages
-
-Verdict:
-complements for structured configuration,
-not replacements.
-
-Candidates:
-
-- Cue:
-`cmd/cue/cmd/export.go`,
-`cmd/cue/cmd/eval.go`,
-`internal/encoding/encoder.go`,
-and `cue/context.go` implement evaluation and export.
-- Pkl:
-`pkl-core/src/main/java/org/pkl/core/EvaluatorImpl.java`,
-`pkl-cli/src/main/kotlin/org/pkl/cli/commands/EvalCommand.kt`,
-and `pkl-cli/src/main/kotlin/org/pkl/cli/OutputUtils.kt` implement evaluation and output.
-- ytt:
-`pkg/cmd/template/cmd.go`,
-`pkg/workspace/library_execution.go`,
-`pkg/yamltemplate/template.go`,
-and `pkg/yttlibrary/overlay/api.go` implement YAML templating and overlays.
-- Dhall:
-`dhall/src/Dhall/Main.hs`,
-`dhall/src/Dhall/Eval.hs`,
-`dhall-json/src/Dhall/JSON.hs`,
-`dhall-yaml/src/Dhall/Yaml.hs`,
-and `dhall-toml/src/Dhall/DhallToToml.hs` implement evaluation and encoders.
-- go-jsonnet:
-`vm.go`,
-`interpreter.go`,
-`cmd/jsonnet/cmd.go`,
-and `yaml.go` implement evaluation and multi-output writing.
-
-Maintenance screen:
-
-- Cue had 6,143 stars,
-release `v0.16.1` on 2026-04-08,
-broad Go CI,
-and `cue/fuzz_test.go` defining `FuzzStandaloneCUE`.
-- Pkl had 11,411 stars,
-release `0.31.1` on 2026-03-26,
-197 Java/Kotlin test files,
-and no fuzz/property harness found.
-- ytt had 1,853 stars,
-release `v0.55.1` on 2026-06-01,
-build/test/all/binary CI,
-and limited `gofuzz` use in tests.
-- Dhall had 965 stars,
-release `1.42.2` on 2025-01-19,
-strong QuickCheck coverage,
-and active maintainer reviews in sampled PRs.
-- go-jsonnet had 1,831 stars,
-release `v0.22.0` on 2026-03-24,
-Go plus shared-jsonnet CI,
-and weak recent public issue support in the sample.
-
-Fit:
-These tools make sense when generated output is primarily structured data.
-They do not replace the file-enforcer runtime model:
-we would still need a wrapper to decide which files to read,
-where to write them,
-when to skip unchanged writes,
-how to watch/protect outputs,
-and how to call repo-specific TypeScript helpers.
-Pkl is the closest conceptual language replacement,
-but adopting it would rewrite the root generator rather than remove the need for an enforcement layer.
-
-### Data editors and TOML tools
-
-Verdict:
-narrow complements.
-
-Candidates:
-
-- yq:
-`cmd/evaluate_sequence_command.go`,
-`pkg/yqlib/stream_evaluator.go`,
-`pkg/yqlib/operator_assign.go`,
-and `pkg/yqlib/write_in_place_handler.go` implement evaluation and in-place writes.
-- dasel:
-`internal/cli/run.go`,
-`api.go`,
-`execution/execute_assign.go`,
-`selector/parser/parser.go`,
-and `parsing/writer.go` implement selectors and writes.
-- taplo:
-`crates/taplo-cli/src/commands/format.rs`,
-`crates/taplo/src/parser/mod.rs`,
-`crates/taplo/src/formatter/mod.rs`,
-and `crates/taplo/src/dom/rewrite.rs` implement TOML formatting and limited DOM rewriting.
-- tombi:
-`rust/tombi-cli/src/app/command/format.rs`,
-`crates/tombi-parser/src/parser.rs`,
-`crates/tombi-formatter/src/formatter.rs`,
-and `crates/tombi-ast-editor/src/editor.rs` implement TOML parsing,
-formatting,
-and schema-aware editing.
-
-Maintenance screen:
-
-- yq had 15,547 stars,
-release `v4.53.3` on 2026-06-06,
-Go test workflows,
-OSS-Fuzz regression tests in source,
-and weak recent sampled maintainer response.
-- dasel had 7,975 stars,
-release `v3.11.0` on 2026-05-19,
-race-enabled Go tests,
-and maintainer comments on sampled issues.
-- taplo had 2,301 stars,
-release `0.10.0` on 2025-05-23,
-CI for formatter checks,
-`cargo test`,
-`toml-test`,
-and MSRV,
-but no recent sampled maintainer responses.
-- tombi had 975 stars,
-release `v1.1.3` on 2026-06-09,
-`cargo nextest`,
-`toml-test`,
-and strong sampled maintainer issue response.
-
-Fit:
-These are useful inside a generator or task.
-They cannot express the whole sync graph,
-and they do not provide tracked sources,
-protected destinations,
-or a programmable monorepo API.
-For TOML specifically,
-this repo already uses `@monochromatic-dev/module-toml-edit` through file-enforcer
-to preserve comments and unmutated whitespace in splice mode.
-`tombi` is worth watching as a TOML-tooling complement because its maintenance signal
-is stronger than Taplo's.
-
-### Watchers and hook runners
-
-Verdict:
-wrappers or gates,
-not replacements.
-
-Candidates:
-
-- watchexec:
-`crates/cli/src/lib.rs`,
-`crates/lib/src/watchexec.rs`,
-`crates/lib/src/sources/fs.rs`,
-and `crates/lib/src/action/worker.rs` implement watch and action behavior.
-- pre-commit:
-`pre_commit/main.py`,
-`pre_commit/commands/run.py`,
-`pre_commit/commands/hook_impl.py`,
-and `pre_commit/commands/install_uninstall.py` implement hook installation and execution.
-- lefthook:
-`cmd/run.go`,
-`internal/command/run.go`,
-`internal/command/install.go`,
-and `internal/run/controller/controller.go` implement hook execution.
-- just:
-`src/main.rs`,
-`src/run.rs`,
-`src/subcommand.rs`,
-`src/executor.rs`,
-and `src/recipe.rs` implement command-runner behavior.
-
-Maintenance screen:
-
-- watchexec has mature cross-platform watch code and CI,
-but no fuzz/property/mutation setup found.
-- pre-commit has extensive pytest coverage and strong sampled maintainer issue response.
-- lefthook has Go tests and integration tests,
-with maintainer response in sampled issues.
-- just has a Rust fuzz target under `fuzz/fuzz_targets/compile.rs` and broad CI.
-
-Fit:
-These tools can run file-enforcer as a hook,
-CI gate,
-or generic watch wrapper.
-They cannot replace the file-enforcer API because they do not define generated content
-or structured transforms.
-`watchexec` overlaps only with watch triggering,
-while file-enforcer also knows which paths are sources and which destinations are protected.
-
-## Incumbent gaps
-
-The audit did not find a replacement,
-but it did surface boundaries where a purpose-built tool is better:
-
-- Updatecli is better for dependency update PRs and SCM actions.
-- Vendir is better for vendoring external directories.
-- Task is better for command orchestration with source and generated-file checks.
-- Cue,
-Pkl,
-Dhall,
-Jsonnet,
-and ytt are better language-level models for pure structured configuration.
-- Hook runners are better commit and CI gates.
-
-Those boundaries do not match the current root `file-enforcer.config.ts` workload.
-The current audit finding is to keep file-enforcer for repo-local derived artifacts,
-and move only future slices that fit those narrower tools.
+No screened candidate replaces file-enforcer for repo-local derived-file synchronization, and the wider sweep makes the
+reason sharper than before.
+
+- The gate eliminates every narrow-domain tool.
+  Workspace-consistency enforcers manage `package.json` only; dotfile and sync tools target `$HOME` or another host;
+  config languages emit one blob; config loaders write nothing.
+  A tool that manages only its own workspace cannot manage `CLAUDE.md`, `mise.toml`, JetBrains XML, Browserslist
+  output, and skill mirrors in one run.
+- The general-target build tools clear the gate but fail the model.
+  They generate content only through shell commands, with no native structured transforms, no tracked-read API in the
+  generator, no managed-destination protection by default, and no in-repo TypeScript integration.
+  Replacing file-enforcer with any of them means rebuilding A1, A2, A4, A6, and A8 as glue around a build runner.
+- The region embedders own the two capabilities file-enforcer lacks but nothing else, so they are feature donors,
+  not replacements.
+
+So the incumbent stays.
+This is not a defensive conclusion.
+file-enforcer already holds seven of the nine axes plus the gate, in one TypeScript surface, with property and mutation
+testing behind it.
+The right move is to grow it into the two axes it lacks, using the cited reference implementations,
+so it becomes the single tool for repo-local derived-file work rather than one tool among several.
+
+## Absorption roadmap: toward one tool
+
+Ordered by value.
+Each item names the capability, the cited reference implementations, and the concrete fit against file-enforcer's
+existing source and `TODO.md`.
+
+1.  Check or verify mode, axis A7.
+    This is the highest-value addition and the cheapest, and the `TODO.md` framing overstates its cost.
+    The package already has the mechanism: `overwrite()` reads the existing destination through `readExisting()` and
+    logs `skip (unchanged)` when content already matches.
+    Evidence: `src/io/write.ts`.
+    A check mode is that comparison with the write suppressed and a nonzero exit on any mismatch, plus an optional diff.
+    It does not require the descriptor or interpreter rewrite `TODO.md` assumes; it is a run-mode flag threaded through
+    the write functions, and it can reuse the destination content hashes already in the staleness manifest.
+    Evidence: `src/io/staleness-hash.ts`.
+    Reference implementations: `make` `-q` with its zero-or-nonzero exit, `cog` `--check` with `--diff`,
+    and `doctoc` `--dryrun`.
+    Payoff: continuous integration can assert that every derived file is in sync and fail the build on drift,
+    which the repo cannot do today.
+    There is an honest tension with the direct-execution design recorded in `docs/decisions`, since the design avoids a
+    no-op write layer on purpose; the resolution is a thin compare-and-report wrapper, not a descriptor engine,
+    so the tension is real but small.
+
+2.  Region or partial-file management, axis A8.
+    Today file-enforcer overwrites whole files, so a generated file cannot share space with hand-edited content.
+    Region markers let it own a slice of an otherwise human-owned file, which generalizes the `appendTo` and
+    `prependTo` operations `TODO.md` lists as missing.
+    Reference implementations: `cog` is the model to follow, because it manages arbitrary text files rather than
+    markdown only, lets the region body be arbitrary code, guarantees idempotency, and adds an opt-in checksum that
+    refuses to overwrite a hand-edited region.
+    `doctoc` and `embedme` show the simpler marker-and-verify shape.
+    Fit: a new write helper that reads the destination, replaces only the marked region, and skips when unchanged,
+    reusing the existing content-stable write path.
+
+3.  Per-rule incremental rerun, an enhancement of axis A5.
+    `TODO.md` already proposes tagging rules with their source paths so only affected rules rerun, and notes that warm
+    full reruns are fast enough that this is low priority.
+    The build-graph cluster shows the mature form: `wireit`'s per-target content-hash fingerprint and `turbo`'s
+    per-task input and output globs.
+    file-enforcer already hashes source sets and destinations in its manifest, so this is an enhancement of existing
+    machinery, not new infrastructure.
+    Evidence: `src/io/staleness-hash.ts`, `src/io/staleness-manifest.ts`.
+
+4.  Niche absorptions, lower priority, adopt only when a real job needs them.
+    - Remote sources and source-control commit or pull-request automation, from `updatecli`, if file-enforcer ever owns
+      a dependency-update job rather than delegating it.
+    - Vendoring external trees with a lock file and per-source checksums, from `vendir`, if a job vendors an external
+      directory.
+    - Schema validation of emitted structured output, from `cue` and `pkl`, to validate the TOML or JSON file-enforcer
+      writes against a schema before the write lands.
+    - Native Git-hook installation, from `pre-commit` and `lefthook`, so enforcement and the new check mode run on
+      commit without external wiring.
+    - A polling watch fallback for filesystem backends where `fs.watch` misses events, which `TODO.md` already lists
+      and which `watchexec` demonstrates cross-platform.
+    - A managed-destination reaction policy, taking `redo`'s preserve-on-hand-edit as a configurable alternative to the
+      current notify-and-regenerate behavior.
+
+### What file-enforcer should not absorb
+
+The gate cuts both ways.
+file-enforcer's moat is general-target reconciliation in native TypeScript, and chasing capabilities that betray that
+focus would weaken it.
+
+- Not home-directory dotfile deployment.
+  That is `chezmoi`'s target and a different problem; the worktree is the boundary.
+- Not project scaffolding or initialization.
+  Scaffolders run once with a different lifecycle; reconciliation is the point here.
+- Not a general task runner.
+  `mise`, `just`, and `go-task` already run tasks, and file-enforcer is invoked by `mise`, not a replacement for it.
+- Not a built-in `package.json` consistency mode.
+  This is the sharpest lesson of the workspace cluster.
+  file-enforcer's generality already lets a config express cross-package `package.json` invariants as ordinary
+  TypeScript, reading every manifest and writing the ones that drift.
+  Baking in a fixed-schema mode like `syncpack` would trade the generality that is its whole advantage for a narrow
+  feature it can already express.
+  The cluster that tempted this audit as a peer is exactly the shape file-enforcer should not become.
+
+## Maintenance snapshots
+
+Sampled on 2026-06-15 unless noted.
+Star counts and release dates are point-in-time signals, not endorsements.
+
+Tier-three and feature-donor tools:
+
+- `cog` / `cogapp`: about four hundred stars, PyPI release 3.6.0, active, a single large test file, no fuzz or mutation
+  harness.
+- `doctoc`: about four thousand four hundred stars, release v2.5.0 on 2026-06-12, very active, no fuzz or mutation
+  harness.
+- `embedme`: about two hundred forty stars, last pushed 2024-10, stale, a known idempotency bug open, no fuzz harness.
+- `markdown-magic`: about eight hundred sixty stars, release 4.9.0 on 2026-05-30, write path disabled at the cloned
+  head, no fuzz harness.
+- `wireit`: about six thousand four hundred stars, npm release 0.14.12 on 2025-04-10, actively merged, no fuzz or
+  mutation harness.
+- `turbo`: about thirty thousand five hundred stars, release v2.9.18 on 2026-06-10, daily activity, `quickcheck` in one
+  terminal crate, no dedicated fuzz directory found.
+- `ninja`: about thirteen thousand stars, release v1.13.2 on 2025-11-20, active, manifest-parser fuzzing present.
+- `redo`: about one thousand eight hundred stars, dormant since 2021, issues disabled, no fuzz harness.
+- `tup`: about one thousand two hundred stars, actively maintained in 2026, no fuzz harness in tup's own source.
+- `make`: GNU make 4.4.1 from 2023-02, foundational and stable, fuzz posture not assessed at documentation tier.
+- `updatecli`: about nine hundred thirty stars, release v0.118.0 on 2026-06-02, maintainer-active, no broad fuzz,
+  property, or mutation harness found.
+- `vendir`: about three hundred seventy stars, release v0.46.0 on 2026-06-10, maintainer-active on sampled pull
+  requests, no fuzz or mutation harness.
+- `go-task`: maintainer comments and reviews on sampled issues and pull requests, no Go fuzz, property, or mutation
+  harness found.
+
+Narrow-domain cluster, recorded so the dismissal is not mistaken for staleness:
+
+- `syncpack`: about two thousand stars, release 15.3.2 on 2026-06-15, highly responsive owner, no fuzz, property, or
+  mutation harness.
+- `manypkg`: about one thousand stars, `@manypkg/cli` 0.25.1, active in 2026, no fuzz harness.
+- `sherif`: about one thousand two hundred stars, release v1.11.1 on 2026-03-30, active owner, snapshot tests but no
+  property or fuzz harness.
+- Yarn constraints: part of `yarnpkg/berry`, about eight thousand stars on the monorepo, actively pushed.
+- `knip`: about eleven thousand five hundred stars, release 6.16.1 on 2026-06-06, active owner, no fuzz harness.
+
+## Evidence and provenance
+
+New clones from this revision, under `/tmp/agent/`, shallow unless history was needed:
+
+- `JamieMason/syncpack`: `fe-wsconsist-syncpack-20260615` at `3b2c99d793975d54438f12da4e595a803afe5b8b`, 2026-06-15.
+- `Thinkmill/manypkg`: `fe-wsconsist-manypkg-20260615` at `97e2ab9bc64e45af099f63f25c515f3792738cfb`, 2026-06-10.
+- `QuiiBz/sherif`: `fe-wsconsist-sherif-20260615` at `f1e6490a681165db74ce38e91dc984d8c94d64eb`, 2026-04-24.
+- `webpro-nl/knip`: `fe-wsconsist-knip-20260615` at `e265d281b031783dd7f92dfc0db29f60f7138d5b`, 2026-06-15.
+- `nedbat/cog`: `fe-region-cog-20260615` at `c0419cf618b46af4224994a0a82759c04e27531b`, 2026-06-15.
+- `zakhenry/embedme`: `fe-region-embedme-20260615` at `3cd8692de2c905cf3c9cbc6d87c1b4220f2e6eeb`, 2024-10-07.
+- `DavidWells/markdown-magic`: `fe-region-mdmagic-20260615` at `62b616e573882208412538bb62ded4e122af1673`, 2026-06-15.
+- `thlorenz/doctoc`: `fe-region-doctoc-20260615` at `eef394097f85ef41c43a5910b5f8f3e19da7da06`, 2026-06-16.
+- `google/wireit`: `fe-buildgraph-wireit-20260615` at `3ad0bbfb6b5bc5e5fbb21c12036023ae898e839f`, 2026-06-12.
+- `vercel/turborepo`: `fe-buildgraph-turbo-20260615` at `a562e78a4ee598670675d5b5cd72219ce0e3cfd0`, 2026-06-15.
+- `ninja-build/ninja`: `fe-buildgraph-ninja-20260615` at `f735970600b5713276583589dce207d575950b14`, 2026-06-14.
+- `apenwarr/redo`: `fe-buildgraph-redo-20260615` at `7f00abc36be15f398fa3ecf9f4e5283509c34a00`, 2021-07-27.
+- `gittup/tup`: `fe-buildgraph-tup-20260615` at `2867b66e7105d432dce2609538117c1e6910bc73`, 2026-03-18.
+
+Earlier-revision clones retained for the re-slotted tools, under `/tmp/agent/file-enforcer-audit-20260615/`:
+`updatecli/updatecli` at `8deb2563286f8c0388fc594e0528e2fa2523060c`,
+`carvel-dev/vendir` at `a7fb189b2a1d1be30ccdf0049ae62b17d83240bc`,
+`go-task/task` at `24a3ccdf42043a2cced5b24f67cefcf902995ef3`,
+plus the configuration-language, scaffolder, dotfile, and data-editor clones cited inline above.
+
+Documentation-tier verification, no clone, was used for the Tier-one and Tier-two structural dismissals and for GNU
+make, each checked against the tool's README or official documentation and cited inline.
+
+This document is an audit, not a migration decision.
+If a future task adopts a specific tool or absorbs a specific capability, record that under `docs/decisions/`,
+and for any absorbed capability, vet the reference implementation's integration boundary in a disposable fixture before
+landing it.
