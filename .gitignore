@@ -39,7 +39,6 @@ locks/
 # Build outputs and generated code
 .dist/
 dist/
-build/
 target/
 *.bun-build
 *.br
@@ -76,7 +75,7 @@ coverage/
 /bak/
 /.bak/
 /caddy/
-/serverless/
+.serverless/
 .vscode-test/
 *.vsix
 
@@ -204,6 +203,8 @@ out/
 /packages/dev-script/vm-builder/output/
 /packages/music-player/android-app/.gradle/
 /packages/music-player/android-app/.kotlin/
+/packages/music-player/android-app/build/
+/packages/music-player/android-app/app/build/
 /packages/music-player/android-app/local.properties
 /packages/music-player/android-app/**/*.iml
 /packages/music-player/android-app/**/.idea/
