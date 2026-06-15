@@ -87,7 +87,7 @@ cfc33f68 refactor(forbidden-strings): extract library boundary with run_cli_from
 <td>5</td>
 <td>Scaffold cargo-fuzz</td>
 <td>PARTIAL</td>
-<td>Workspace materialized via `cargo +nightly fuzz init --fuzzing-workspace=true`. Cargo.toml wired for the `fuzzing` feature + arbitrary + sha2 + panic=unwind. `fuzz/.gitignore` ignores corpus growth, keeps `seed-*` files. Root `.gitignore` re-includes `fuzz/Cargo.lock`. Committed (4a1fe951). **PLACEHOLDER `fuzz_targets/fuzz_target_1.rs` STILL PRESENT** — delete it when phase 7 lands.</td>
+<td>Workspace materialized via `cargo +nightly fuzz init --fuzzing-workspace=true`. Cargo.toml wired for the `fuzzing` feature + arbitrary + sha2 + panic=unwind. Root `.gitignore` ignores corpus growth while re-including `seed-*`; `Cargo.lock` is tracked directly because root `.gitignore` does not ignore Cargo lockfiles. Committed (4a1fe951). **PLACEHOLDER `fuzz_targets/fuzz_target_1.rs` STILL PRESENT**, delete it when phase 7 lands.</td>
 </tr>
 <tr>
 <td>6</td>
@@ -133,7 +133,7 @@ cfc33f68 refactor(forbidden-strings): extract library boundary with run_cli_from
 ```
 packages/cli/forbidden-strings/fuzz/
 ├── .gitignore          # ignores target, artifacts, coverage, corpus/*/* (except seed-*)
-├── Cargo.lock          # ✅ tracked via root .gitignore re-include
+├── Cargo.lock          # ✅ tracked directly; Cargo lockfiles are not gitignored
 ├── Cargo.toml          # wired with libfuzzer-sys (arbitrary-derive), arbitrary, sha2,
 │                       # forbidden-strings (features=["fuzzing"]), panic=unwind override
 └── fuzz_targets/
@@ -324,8 +324,8 @@ Run in order:
    container wrapper.
 7. `mise run //packages/cli/forbidden-strings:fuzz:smoke` inside the
    container wrapper.
-8. `git check-ignore -v packages/cli/forbidden-strings/fuzz/Cargo.lock`
-   must report the re-include rule (verified — currently passes).
+8. `git check-ignore -v packages/fuzz/forbidden-strings/Cargo.lock`
+   must return no match; Cargo lockfiles are not gitignored.
 9. Sentinel commands from AGENTS.
    md "Git cleanup and worktree safety
    reviews" to confirm no fuzz output escapes the ignore set.
@@ -1229,11 +1229,9 @@ integration tests = all green.
 
 - `find . -maxdepth 1 \( -name HEAD -o -name config -o ... \)` -- no
   fuzz output escaped gitignore.
-- `git check-ignore -v packages/cli/forbidden-strings/fuzz/Cargo.lock`
-  exits 1 (not ignored — correct;
-   the root .
-  gitignore re-includes
-  the lockfile so it remains tracked).
+- `git check-ignore -v packages/fuzz/forbidden-strings/Cargo.lock`
+  exits 1 (not ignored, correct;
+   Cargo lockfiles are not ignored by root `.gitignore`).
 - The post-fix fuzz log shows the panic immediately after
   `seed corpus: files: 18278 ...` with no intervening `INITED` or
   `#N` lines,

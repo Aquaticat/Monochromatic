@@ -66,18 +66,14 @@ the user already has on PATH.
 The `.gitignore` carve-out for the workspace currently looks like this:
 
 ```gitignore
-# Claude Code plugin bundles (marketplace distribution requires committed built files)
-!packages/claude-code-plugins/*/dist/
-!packages/claude-code-plugins/*/dist/final/
-!packages/claude-code-plugins/*/dist/final/*.js
-!packages/claude-code-plugins/*/dist/final/node/
-!packages/claude-code-plugins/*/dist/final/node/*.mjs
-!packages/claude-code-plugins/*/dist/final/node/*.d.mts
+# Claude Code plugin bundles. Marketplace distribution requires committed built files.
+!/packages/claude-code-plugins/*/dist/
+!/packages/claude-code-plugins/*/dist/final/*.js
 ```
 
-The carve-out covers 19 files across eight plugins:
-`bash-output-filter`, `claude-spawn`, `guardrail`, `prompt-time`, `session-start-housekeeping`,
-`stop-reminders`, `terminal-title`, and the standalone CLI bundles
+The carve-out covers 21 files across eight plugins:
+`bash-output-filter`, `claude-spawn`, `correction-reminder`, `guardrail`, `prompt-time`,
+`session-start-housekeeping`, `stop-reminders`, `terminal-title`, and the standalone CLI bundles
 (`ccssh.js`, `ccsr.js`, `cctt.js`) that those plugins reference.
 
 Each plugin's `package.json` (verified at e.g. `packages/claude-code-plugins/terminal-title/package.json:18`)
@@ -119,9 +115,11 @@ For an eight-plugin scope, the trade is not worth it (see "Rejected alternatives
 
 The cost the carve-out is paying is also bounded:
 
-- The 19 committed files live under a single namespaced subtree, isolated from human-edited code.
+- The 21 committed files live under a single namespaced subtree, isolated from human-edited code.
 - Each plugin's `dist/final/` is a deterministic `tsdown` bundle.
-- `.gitignore` denies new `dist/` paths anywhere else; the carve-out is allowlist-only.
+- `.gitignore` denies new `dist/` paths anywhere else; the carve-out stays scoped to
+  `packages/claude-code-plugins/*/dist/`, with `.js` shims re-included because the global `*.js` rule
+  would otherwise hide them.
 - The `session-start-housekeeping` plugin already cleans stale dist artifacts on session start,
   reducing the "forgot to rebuild" risk for the workspace's own consumption.
 
