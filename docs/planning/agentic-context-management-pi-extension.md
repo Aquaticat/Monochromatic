@@ -93,8 +93,8 @@ and one `context` event handler.
   derives active rules,
   and applies them to a cloned message list.
 - Rules apply immediately to the next provider request after the successful `acm` tool call;
-  preview and list surfaces are diagnostic aids,
-  not prerequisites.
+  `list` is a diagnostic aid,
+  not a prerequisite.
 - The provider receives only the transformed `AgentMessage[]` after normal `convertToLlm()` conversion.
 - The session file still contains the original text and the `acm` audit trail.
 
@@ -393,9 +393,8 @@ Earlier rules win overlap conflicts.
 
 A skipped rule leaves the original text unchanged and never corrupts the provider request.
 Install-time diagnostics belong in the current `acm` tool result `details`.
-Request-time diagnostics are recomputed by `action: "list"`,
-`/acm-list`,
-and `/acm-preview`,
+Request-time diagnostics are recomputed by `action: "list"`
+and `/acm-list`,
 and are not written back into older tool result details.
 
 ## Context output example
@@ -516,15 +515,14 @@ Definition of done:
 the user's example is covered by a unit test and by an extension-runner integration test.
 A bad rule can be listed and disabled without editing the session file.
 
-### Phase 2: human-facing management commands and preview
+### Phase 2: human-facing list command
 
 - Add `/acm-list` for the human user.
-- Add `/acm-preview` to show transformed context without sending it to a provider.
 - Add richer human-facing renderer output for diagnostics.
 - Add a provider-payload verification harness.
 
 Definition of done:
-human-facing commands can inspect active rules and preview transformed context.
+human-facing commands can inspect active rules without injecting preview text into provider context.
 
 ### Phase 3: hardening after all-eligible MVP
 
@@ -625,16 +623,15 @@ the model hides tool evidence from itself.
 Mitigation:
 allow only tool result text rewrites,
 keep tool call blocks and tool result metadata intact,
-and require list,
-disable,
-preview diagnostics,
+and require list diagnostics,
+exact-matcher disable,
 and per-request budgets.
 
 Risk:
 a broad pattern omits too much.
 
 Mitigation:
-list and preview commands,
+list commands,
 immediate disable,
 `/g` semantics,
 request budgets,
@@ -644,8 +641,7 @@ Risk:
 regex matching hangs the extension.
 
 Mitigation:
-ship literal matching first,
-then enable regex only after proving an abortable matching boundary or selecting a source-audited safe engine.
+ship literal matching until Phase 0 selects a source-audited safe regex engine.
 
 Risk:
 tool arguments duplicate the text being removed.
@@ -682,7 +678,7 @@ and still preserves user instructions by keeping user messages out of scope.
 Cons:
 tool output is evidence,
 so an overbroad rule can make the model forget command output or test failures.
-The implementation must preserve tool metadata and provide preview/list diagnostics.
+The implementation must preserve tool metadata and provide list diagnostics with current match counts.
 
 Rejected alternative:
 assistant-authored text only.
@@ -807,7 +803,7 @@ and preserves ACM's audit trail.
 Cons:
 custom tool output can carry important state,
 so bad rules can still hide evidence from the next provider request.
-Preview/list diagnostics and current match counts become mandatory.
+List diagnostics and current match counts become mandatory.
 
 Rejected alternative:
 only bulky built-in tools are eligible by default,
@@ -895,7 +891,6 @@ Cons:
 ACM loses a stale-rule guard,
 so list,
 disable,
-preview diagnostics,
 and conservative broad-match behavior become more important.
 
 Rejected alternative:
@@ -939,7 +934,6 @@ Cons:
 `/g` can omit many spans if the pattern is broad,
 so list,
 disable,
-preview diagnostics,
 and per-request budgets carry the safety burden.
 
 Rejected alternative:
@@ -985,7 +979,6 @@ Cons:
 broad regex mistakes have a larger blast radius,
 so list,
 disable,
-preview,
 and budgets must be available in the first usable version.
 
 Rejected alternative:
@@ -1017,12 +1010,12 @@ Ranking:
 all-eligible beats role filters because it matches the user's mental model and removes target complexity.
 Role filters beat previous and recent scopes because role-level filtering avoids anchoring drift.
 
-### Question 9: should ACM rules apply immediately or require preview first?
+### Question 9: should ACM rules apply immediately or require dry-run first?
 
 Decision:
 rules apply immediately after a successful `acm` tool call.
 User answered this on 2026-06-15.
-Separate `list` and preview surfaces still exist for diagnostics,
+Separate `list` diagnostics still exist,
 but they are not prerequisites.
 
 Pros:
@@ -1031,7 +1024,7 @@ keeps the loop fast,
 and avoids turning every context rewrite into a two-step ceremony.
 
 Cons:
-a bad broad `/g` rule affects the next provider request before the model inspects preview output.
+a bad broad `/g` rule affects the next provider request before the model inspects list output.
 
 Rejected alternative:
 require a dry-run tool call before an apply tool call.
@@ -1043,10 +1036,10 @@ Cons:
 doubles tool calls and token noise for the common case.
 
 Rejected alternative:
-require human approval for broad scopes.
+require human approval for broad rewrites.
 
 Pros:
-strongest guard for all-prior rewrites.
+strongest guard for broad rewrites.
 
 Cons:
 breaks the core requirement that the active model can manage context agentically via tool calls.
@@ -1099,9 +1092,8 @@ Required description beats structured metadata because prose is simpler and chea
 
 Decision:
 install-time diagnostics live in the current `acm` tool result `details`.
-Request-time diagnostics are recomputed through `action: "list"`,
-`/acm-list`,
-and `/acm-preview`,
+Request-time diagnostics are recomputed through `action: "list"`
+and `/acm-list`,
 without injecting extra context messages or mutating older tool result details.
 User answered the placement on 2026-06-15;
 the install-time versus request-time split follows from the non-destructive `context` hook boundary.
@@ -1336,7 +1328,7 @@ keeps diagnostics compact,
 and avoids putting omitted text back into provider context.
 
 Cons:
-visual audit requires `/acm-preview` or session inspection rather than list snippets.
+visual audit requires session inspection rather than list snippets.
 
 Rejected alternative:
 include matched snippets in `action: "list"`.
@@ -1360,6 +1352,44 @@ Ranking:
 matcher summary beats snippets because disable needs normalized matchers and list should stay compact.
 Snippets beat counts-only for human audit,
 but counts-only is too weak for the exact-matcher disable contract.
+
+### Question 17: should ACM include a preview surface?
+
+Decision:
+ACM should not include preview in the MVP.
+User answered this on 2026-06-15.
+
+Pros:
+smallest diagnostic surface,
+avoids duplicating omitted text into tool results or UI command output,
+and keeps implementation focused on the request-time transformer plus list diagnostics.
+
+Cons:
+debugging broad rewrites depends on matcher summaries,
+current match counts,
+and inspecting the original transcript.
+
+Rejected alternative:
+human-only `/acm-preview`.
+
+Pros:
+lets the user inspect transformed context without adding preview text to model context.
+
+Cons:
+adds another command and renderer surface.
+
+Rejected alternative:
+model-callable preview action.
+
+Pros:
+lets the model self-audit exact request-time rewrites.
+
+Cons:
+can duplicate large or intentionally omitted text back into provider context.
+
+Ranking:
+no preview beats human-only preview because the user wants the smaller surface.
+Human-only preview beats model preview because it avoids adding preview payloads to model context.
 
 ## Resolved implementation decisions
 
@@ -1394,7 +1424,7 @@ descriptions are model-supplied strings,
 and empty strings are valid.
 Question 11 is resolved:
 install-time diagnostics live in current `acm` tool result `details`,
-and request-time diagnostics are recomputed through `list` and preview commands.
+and request-time diagnostics are recomputed through `list` commands.
 Question 12 is resolved:
 ACM rewrites provider context only.
 Question 13 is resolved:
@@ -1405,5 +1435,7 @@ Question 15 is resolved:
 ACM disables rules by exact normalized matcher rather than by rule id.
 Question 16 is resolved:
 `action: "list"` returns matcher summaries without matched text snippets.
+Question 17 is resolved:
+ACM has no preview surface in the MVP.
 Before implementation,
 run the documented Phase 0 source audit to choose the exact safe regex engine and budgets.
