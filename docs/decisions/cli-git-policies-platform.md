@@ -137,7 +137,7 @@ It borrows mise's machinery but, deliberately, not mise's default posture:
   re-prompts before it executes.
   This is stricter than mise's default on purpose: mise executes config on `cd` or an explicit command, while
   cli-git executes it on ordinary git commands, so the silent-pulled-change hole is worth closing by default.
-- Relaxed mode (no content re-check): paranoid is on by default but can be turned off per config, not only globally.
+- Relaxed mode (no content re-check): paranoid is on by default and can be turned off only per config, never globally.
   The `CLI_GIT_PARANOID` env var carries entries keyed on (filesystem id, path), the same key the trust registry
   uses, written as JSON object members without the outer braces and comma-separated, so a parser wraps the value
   in `{ }` and runs `JSON.parse` (illustratively `"a281dfd5d0534daf:/abs/path/cli-git.config.mjs":false`), and a
@@ -150,7 +150,11 @@ It borrows mise's machinery but, deliberately, not mise's default posture:
   config no longer re-prompts (its explicit cost), but first execution still requires `cli-git trust`.
   Per-path paranoid lives in the environment by necessity, not preference: it cannot live in the repo config it
   governs, or a repo could opt itself out of being re-checked.
-  This diverges from mise deliberately, which makes `paranoid` global-only (`settings.toml`, `global_only = true`).
+  This is the inverse of mise, which makes `paranoid` global-only (`settings.toml`, `global_only = true`), and
+  the inversion is the point: a global off-switch would itself be a non-(filesystem id, path)-keyed relaxation,
+  exactly the form the security note treats as suspicious, so allowing one would hand an attacker a legitimate
+  non-keyed bypass and defeat the detection.
+  With per-config-only relaxation, every non-fsId-keyed entry is unambiguously the attack signature.
 - It fails closed when it cannot prompt and the artifact is untrusted, or, under paranoid, changed (run
   built-ins, do not execute it), and exposes an env kill-switch to disable discovery entirely.
 
