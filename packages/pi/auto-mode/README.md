@@ -144,7 +144,11 @@ gracefully rather than throwing.
 }
 ```
 
-The `judgeModel` defaults to `{strategy: "same-provider", majorVersions: 1}` when the config is absent or `judgeModel` is unset; defined once in `src/constants.ts` as `JUDGE_MODEL_DEFAULTS` and referenced from the loader, the global defaults, and the budget-model selector.
+The `judgeModel` defaults to `{strategy: "same-provider", majorVersions: 1}` when the config is absent
+or `judgeModel` is unset; defined once in `src/constants.ts` as `JUDGE_MODEL_DEFAULTS` and referenced from
+the loader, the global defaults, and the budget-model selector.
+Legacy `judgeModel.costRatio` values are accepted for older config files but ignored;
+budget selection no longer rejects candidates for being close to active-model cost.
 
 ## Skill read allowlist
 

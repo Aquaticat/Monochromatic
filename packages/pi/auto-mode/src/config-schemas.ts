@@ -59,6 +59,7 @@ type ModelOverride =
 type JudgeModel = {
   modelOverride?: ModelOverride;
   strategy: Strategy;
+  costRatio?: number;
   majorVersions: number;
 };
 
@@ -121,6 +122,7 @@ const ModelOverrideSchema: v.GenericSchema<ModelOverride> = v.union([
 const JudgeModelSchema: v.GenericSchema<JudgeModel> = v.object({
   modelOverride: v.exactOptional(ModelOverrideSchema,),
   strategy: v.picklist(STRATEGY_VALUES,),
+  costRatio: v.exactOptional(v.number(),),
   majorVersions: v.number(),
 },);
 

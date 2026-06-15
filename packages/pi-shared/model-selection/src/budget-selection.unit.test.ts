@@ -24,6 +24,9 @@ import type { BudgetModelAuth, } from './types.ts';
 
 //region Fixtures
 
+/** Same-provider near-active input token price. */
+const NEAR_ACTIVE_INPUT_COST = 9;
+
 /** Active model fixture. */
 const activeModel = fixtureModel({
   provider: 'openai',
@@ -36,6 +39,13 @@ const sameProviderModel = fixtureModel({
   provider: 'openai',
   id: 'gpt-4o-mini',
   inputCost: 1,
+},);
+
+/** Same-provider model close to active-model price. */
+const nearActiveCostModel = fixtureModel({
+  provider: 'openai',
+  id: 'gpt-4o-near-active',
+  inputCost: NEAR_ACTIVE_INPUT_COST,
 },);
 
 /** Any-provider budget model fixture. */
@@ -108,6 +118,22 @@ await describe({
           ...authCallbacks([fixtureSlug(anyProviderModel,),],),
         },);
         expect(selected.model,).toBe(anyProviderModel,);
+      },
+    },),
+    it({
+      name: 'selects same-provider candidate without cost-ratio rejection',
+      fn: async function testSameProviderSelectionWithoutCostRatioRejection() {
+        const selected = await selectBudgetModel({
+          activeModel,
+          allModels: [
+            activeModel,
+            nearActiveCostModel,
+          ],
+          strategy: 'same-provider',
+          majorVersions: 1,
+          ...authCallbacks([fixtureSlug(nearActiveCostModel,),],),
+        },);
+        expect(selected.model,).toBe(nearActiveCostModel,);
       },
     },),
     it({

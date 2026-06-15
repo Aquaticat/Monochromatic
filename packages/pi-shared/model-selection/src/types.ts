@@ -338,6 +338,12 @@ export type BudgetModelSelectionOptions<TModel extends ModelPricing = ReadonlyMo
    */
   readonly strategy: BudgetModelStrategy;
   /**
+   * Legacy cost-ratio option retained for callers that still pass it.
+   *
+   * @deprecated Budget selection no longer rejects candidates by cost ratio.
+   */
+  readonly costRatio?: number;
+  /**
    * Number of major-version families to search, or zero for all.
    */
   readonly majorVersions: number;
