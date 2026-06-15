@@ -79,9 +79,22 @@ of host-global faking (console, `queueMicrotask`, `navigator.storage`,
 
 The campaign asserts invariants the current code violates, so these land first;
 otherwise phase 3 and phase 5 fail on day one against known defects rather than
-new ones. Each is a finding from the prior assessment.
+new ones. Each is a finding from the prior assessment. The owner decisions that
+shaped these fixes are resolved and recorded in
+`docs/decisions/logger-fuzzing.md`; this section states the resulting contracts.
 
-### Gap A: `flush()` can hang forever (must fix)
+### Failure stance (resolves the direction of every gap below)
+
+The logger is fail-safe with one breadcrumb. Log calls never throw. `flush()`
+always resolves, never rejects and never hangs. Buffer overflow drops rather
+than errors. A logger that finishes initialization with no available backend
+emits one guarded raw-`console` warning at end of init, then discards
+subsequently. This stance is the root the rest of Phase 0 follows: write the
+loud signal once, at a boundary, never at a log call. It is grounded in the 102
+import sites across CLIs and servers, none of which guard log calls in
+`try`/`catch`, so a throwing log line would crash unguarded callers.
+
+### Gap A: `flush()` can hang forever (the primary fix)
 
 `drainPendingWrites` (`src/create-logger.ts`) awaits
 `Promise.all([...pendingWrites])`. A tracked write leaves the set only when it
@@ -89,50 +102,81 @@ settles, and `trackWrite`'s catch fires on rejection, not on a promise that
 stays pending. A sink `write` (or a sink `flush` hook) whose underlying call
 never resolves, a stuck mount or full-disk `appendFile`, a wedged OPFS queue,
 leaves `flush()` awaiting forever. The documented shutdown path is
-`await logger.flush()`, so the process never exits cleanly. There is no timeout
-or `AbortController` anywhere.
+`await logger.flush()`, so the process never exits cleanly.
 
-Fix direction: bound every tracked write and every sink flush hook with a
-timeout race, using `wait()` from `@monochromatic-dev/module-async-time` (already
-a devDependency, promoted to a dependency here) rather than a hand-rolled
-`new Promise`. `flush()` resolves when all tracked work settles or its bound
-elapses, never later. The per-write bound and the on-timeout policy are owner
-decisions (see Decisions needed). This is the primary bulletproofing fix.
+Resolved contract:
 
-Deliverables:
+- One global deadline wraps the entire `flush()` body, including `await
+  initPromise`, the pending-write drain, and the flush-hook drain, using
+  `withTimeout` from `@monochromatic-dev/module-async-time` with its rejection
+  swallowed so flush resolves rather than rejects. `flush()` provably returns
+  within one deadline regardless of how many writes are in flight or whether a
+  verify, write, or hook hangs. No per-write timers, so no `timeout x writes`
+  accumulation.
+- `pendingWrites` holds bounded wrapper promises, never raw sink promises. The
+  abandoned raw promise gets a rejection handler so a late settlement after the
+  deadline cannot become an unhandled rejection or corrupt sink availability.
+  Abandoned writes are not forcibly cancelled (the sinks expose no
+  `AbortSignal`); they are dropped from the logger's view.
+- Default deadline 1000ms, overridable via a `createLogger` option. The deadline
+  bites only when work is actually stuck; normal writes settle in single-digit
+  milliseconds, so ordinary CLI shutdown is not delayed. The `withTimeout` timer
+  is cleared on settle, so it does not keep the process alive between flushes.
 
-- A bounded-settle helper in `src/create-logger.ts` wrapping each entry in
-  `pendingWrites` and each `flush` hook.
-- A decision-doc entry recording the bound, the on-timeout behavior, and why a
-  logger flush must be total.
+### Gap A2: slow or hung `verify()` (concurrent and bounded)
 
-Pass criteria:
+`initialize()` currently awaits verifiers sequentially, so one sink whose
+`verify()` never resolves head-of-line blocks every later sink and `initialized`
+never flips. Resolved contract: run verifiers concurrently with `Promise.all`,
+each bounded by a per-verify timeout (default 1000ms, overridable); a verify
+that times out counts as unavailable. The documented sequential order does not
+affect replay correctness, so concurrency is safe and removes the blocking.
 
-- A property in phase 5 with a fake sink whose `write` never resolves proves
-  `flush()` settles within the bound rather than hanging the harness.
+### Gap A3: stall and failure policy (transient, with a retire threshold)
 
-### Gap B: a log call can throw (owner decision, then implement)
+A write or flush-hook timeout, a flush-hook rejection, and a write rejection are
+all transient: the sink stays available and `flush()` resolves. A per-sink
+counter of consecutive sink-level failures retires the sink once it reaches a
+threshold (default 10, overridable); any successful write or hook resets the
+counter to zero. A threshold retire is permanent for the run and emits a
+breadcrumb, matching a verify-failure retire. This removes the current
+inconsistency where a rejecting flush hook retires a sink but a rejecting write
+does not, and it honors the documented "transient errors stay transient" policy
+while still removing a backend that is persistently broken.
+
+### Gap B: a log call can throw (now: never throws)
 
 `logAtLevel` throws `Error('No logging backends available')` once initialized
-with zero available sinks. Near-unreachable for the default logger (only if
-console verify fails: no `console.debug` or no `queueMicrotask`), but reachable
-via `createLogger` with an all-failing sink list. A diagnostic line becoming a
-synchronous exception is the sharpest non-bulletproof property, because callers
-assume logging never throws.
+with zero available sinks. Under the fail-safe stance this is removed: log calls
+never throw. A logger that initializes with no available backend discards and
+relies on the end-of-init breadcrumb to surface the misconfiguration once. Phase
+3 pins "no log call throws, ever" as an asserted invariant.
 
-This is a genuine design choice with several valid answers, so it is an owner
-decision (see Decisions needed), not a unilateral change. Whichever option is
-chosen, phase 3 pins it as an asserted invariant so the behavior is exact and
-intentional rather than incidental.
+### Gap C: pre-init records dropping silently (bounded ring, with a marker)
 
-### Gap C: pre-init records can vanish silently (small fix)
+Records logged before any sink verifies buffer in `startupRecords`; if the
+buffer were unbounded a burst during the init window could grow memory without a
+ceiling, and silent loss on a fully-dead logger is inconsistent with the stance.
+Resolved contract: a bounded ring buffer (default cap ~10,000, overridable) that
+drops the oldest record on overflow; when init completes and any were dropped,
+emit one synthetic record, `N startup records dropped before a backend
+verified`, so the loss is never silent.
 
-Records logged before initialization buffer in `startupRecords`; if no sink ever
-verifies available, `initialize()` clears the buffer and those records are lost
-with no output and no throw, while later calls throw. Decide one consistent
-no-backend contract (drop both, or signal both) and bound the startup buffer so
-a flood before a slow verify cannot grow memory without limit. Phase 3 asserts
-the chosen contract.
+### Gap D: console terminal-escape boundary (preserve SGR, neutralize the rest)
+
+The console sink passes raw messages to `console.*`, so attacker-influenced log
+data carrying terminal escapes (clear screen, set title, write clipboard, spoof
+hyperlinks) drives the terminal, and `%`-specifiers in a single-arg
+`console.log` are interpreted by `util.format`. Resolved contract: a linear-scan
+escape classifier (its own module, since `console.ts` is already near the
+max-lines budget) that allows only well-formed CSI SGR color sequences (`ESC [`
+parameters, final byte `m`) and `\n` and `\t`, and neutralizes `ESC`, the C1
+range, `DEL`, and other C0 controls as `\uXXXX`. The text is passed as
+`console.x('%s', text)` so `util.format` cannot interpret `%`-specifiers in the
+message. The JSONL sinks need no change here: `JSON.stringify` already escapes
+control characters and newlines, which phase 4 proves. The classifier is a
+single linear pass, not a regex (the `ITR` and `RG2` rules), and phase 4 tests
+it against malformed and partial escape sequences.
 
 ## Phase 1: campaign scaffold
 
@@ -258,16 +302,20 @@ mandatory, not optional):
 - JSONL destinations (file, opfs, sessionStorage): for every adversarial message
   family, each emitted line is valid JSON and `JSON.parse` of it deep-equals the
   source record. No message content can terminate the line or corrupt the next.
-- console destination: assert the handling of terminal escape sequences and
-  `%s`-style format specifiers in messages. The console sink currently passes the
-  raw message to `console.*`, so a message containing terminal control codes can
-  drive the terminal. Whether to neutralize terminal escapes at the console sink
-  is an owner decision (see Decisions needed); the property pins whatever
-  contract is chosen.
+- console destination: assert the Gap D contract. Well-formed CSI SGR color
+  sequences and `\n` and `\t` survive; `ESC`, the C1 range, `DEL`, and other C0
+  controls are neutralized as `\uXXXX`; the classifier handles malformed and
+  partial sequences (a trailing `ESC`, a `ESC [` with no final byte, an
+  unterminated OSC, nested `ESC`) without throwing or passing the escape through.
+  A separate property asserts that a `%`-bearing message reaches the terminal
+  literally, proving the `console.x('%s', text)` shape blocks `util.format`
+  specifier interpretation.
 
 Pass criteria:
 
-- Every sink file has at least one property block.
+- Every sink has properties for verify, write, failure handling, host absence,
+  and the format or security boundary where applicable, not merely one block per
+  file.
 - The coverage gate (phase 7) shows each sink file exercised.
 
 ## Phase 5: stateful model and scheduler interleaving
@@ -360,8 +408,9 @@ Deliverables:
   node pasted into workflow logic. Prove the path filter with a real run.
 - `docs/decisions/logger-fuzzing.md` recording the method, the `fast-check` and
   `module-async-time` dependency decisions, the rejected differential oracle, the
-  Gap A, B, and C owner decisions and their resolutions, and the reusable
-  fuzz-target checklist.
+  Phase 0 owner decisions (stance, flush deadline, stall policy, verify liveness,
+  startup overflow, console boundary) with their options and resolutions, and the
+  reusable fuzz-target checklist.
 - The checklist requires, for the logger and any future async target, the five
   toml-edit questions plus a sixth for the new factor:
   - Is the tested layer where the logic and bugs live?
@@ -378,31 +427,93 @@ Pass criteria:
   and `fuzz:coverage`.
 - CI path filtering is proven by an actual run before the work is called done.
 
-## Decisions needed
+## Resolved decisions
 
-These are non-measurable design choices with more than one valid answer. They
-are owner decisions; the plan records a recommendation but does not presume it.
+These were owner decisions with more than one valid answer; they are now
+resolved and recorded in full, with options and rationale, in
+`docs/decisions/logger-fuzzing.md`. The resulting contracts are written into
+Phase 0 above. In brief:
 
-- Gap A on-timeout policy: when a bounded write or flush hook exceeds its bound,
-  does `flush()` resolve and leave the sink available (treat the stall as a
-  transient write hiccup, consistent with the write-failures-do-not-disable
-  policy), or mark the sink unavailable? Recommendation: resolve flush, keep the
-  sink available, emit one internal `console.error`, since a single slow write
-  should not retire a backend. Also choose the default bound (recommendation: a
-  few seconds, overridable).
-- Gap B no-backend contract: keep the fail-loud throw, never throw and drop
-  silently, or never throw from log calls and move the assertion to an explicit
-  readiness check. Recommendation: keep the throw for `createLogger` callers who
-  opt into a custom sink list, but guarantee the default `logger` never throws
-  because it always includes a console sink whose verify cannot fail in a sane
-  runtime. Stated as an invariant and pinned by a property either way.
-- Gap C no-backend startup contract: drop pre-init records silently or surface
-  them on the first post-init failure. Recommendation: make it consistent with
-  Gap B and bound the startup buffer.
-- Console terminal-escape contract: pass messages through raw (status quo, fast,
-  but a terminal-escape injection vector per SYB), or neutralize control and
-  escape sequences at the console sink. Recommendation: neutralize, since a log
-  message is attacker-influenceable data crossing into the terminal grammar.
+- Failure stance: fail-safe with one breadcrumb. Log calls never throw, `flush()`
+  always resolves, overflow drops, a dead logger warns once at end of init.
+- Flush deadline: one global deadline over the whole `flush()` body, default
+  1000ms, overridable.
+- Stall and failure policy: transient (keep the sink), with a per-sink retire
+  after 10 consecutive sink-level failures, reset on any success.
+- Verify liveness: concurrent and per-verify bounded, default 1000ms.
+- Startup overflow: bounded ring, drop oldest, synthetic dropped-count marker,
+  default cap ~10,000.
+- Console boundary: preserve well-formed CSI SGR color, neutralize `ESC`, C1,
+  `DEL`, and other C0 controls as `\uXXXX`, pass text via `console.x('%s', text)`.
+
+Settled by default (clearly-dominant, no real tradeoff): `pendingWrites` holds
+bounded wrappers with a rejection handler on each abandoned raw promise;
+`@monochromatic-dev/module-async-time` is promoted to a runtime dependency; the
+deadlines, verify timeout, retire threshold, and buffer cap are optional
+`createLogger` parameters (named-constant defaults) so the fuzz harness can force
+tiny deadlines deterministically; the model oracle is built in three layers (v1
+synchronous, v2 async verify and replay, v3 scheduled writes and flush) each with
+deterministic self-tests; public-contract properties import the built entry point
+while seam and coverage tests import source; `tagged.ts` gets its own property
+block; the flush deadline does not cancel abandoned writes, it only drops them
+from the logger's view.
+
+## Amendments folded in from the GPT Pro review
+
+These refinements are accepted and apply to the phases named; they are recorded
+here so the per-phase text stays readable while nothing is lost.
+
+- Phase 2 fake sinks carry an explicit behavior descriptor per hook (`verify`:
+  true, false, reject, delayed-true, delayed-false, never; `write`: resolve,
+  reject, throw-sync, delay, never; `flush`: absent, resolve, reject, throw-sync,
+  delay, never) plus a stable sink identity field so a shrunk counterexample
+  reads as, for example, `sink 2: verify delayed-true, write never, flush
+  resolve`. The adversarial message set has no hostile-`toString` family: the log
+  API is string-only, so callers own serialization and no object reaches a sink.
+- Phase 2 includes an early scheduler feasibility spike: one minimal property
+  proving `fast-check`'s `scheduler()` can control the logger's verify, write,
+  and flush interleavings (with the `queueMicrotask` host fake) before the full
+  stateful suite is built, so the harness risk surfaces cheaply.
+- Phase 2 fakes install through one disposable harness that restores globals in a
+  `finally`, rejects nested installs, prints the active fake environment on a
+  property failure, and has its own unit tests; every property asserts globals are
+  restored afterward.
+- Phase 3 states delivery as exactly-once write attempt (the `write` is invoked
+  once per available sink), not successful persistence, since a rejected write is
+  swallowed and does not retire the sink. Dropout is split: verify false or reject
+  means never available; the threshold retire is the only path that removes an
+  initially-available sink; a single write or flush failure does not.
+- Phase 4 file-sink property weakens the cross-platform non-interleaving claim to
+  the provable one: each `appendFile` call carries exactly one complete JSONL
+  line. True ordering across concurrent appends is asserted only if the sink
+  grows an internal write queue, recorded as an open option, not assumed.
+- Phase 4 OPFS fake is adversarial: it fails the property if the sink ever holds
+  two writers at once or writes after close, so the spec-serialized contract is
+  enforced, not trusted. Phase 4 sessionStorage property asserts unrelated keys
+  are never clobbered and a malformed pre-existing logger key does not break new
+  writes.
+- Phase 5 names concrete schedule classes the generator must cover: all verifies
+  settle before the first log; logs precede any verify settling; one sink
+  verifies, then a log, then another verifies; flush races verify; flush races a
+  write rejection; flush races a never-settling write; a write resolves after the
+  flush deadline. It adds a late-effect property: after flush times out and
+  resolves, a late write settlement must not produce an unhandled rejection or
+  corrupt sink availability.
+- Phase 6 conformance injects the timestamp source (a fake `Date.now` or an
+  injected clock) so the ISO round-trip property is deterministic rather than
+  flaky around record-creation boundaries.
+- Phase 7 baseline records both covered lines and intentionally uncovered lines
+  with a reason (browser-only, host-fake-unreachable, or accepted dead), not a
+  bare exclusion list, and copies toml-edit's V8 source-map handling so coverage
+  maps to TypeScript source rather than emitted JS.
+- Phase 8 CI path filter covers files that change logger behavior beyond
+  `packages/module/logger/**`: `pnpm-workspace.yaml`, the lockfile, shared mise
+  and tsconfig config, the workflow file, the decision doc, and
+  `packages/module/async-time/**` now that it is a runtime dependency.
+- The `module-async-time` promotion is recorded in the decision doc with its
+  runtime impact: `wait` and `withTimeout` are thin `setTimeout` wrappers that
+  work in node and browser, and `withTimeout` clears its timer on settle so a
+  flush or verify timer never keeps the process alive past its window.
 
 ## Definition of done
 
