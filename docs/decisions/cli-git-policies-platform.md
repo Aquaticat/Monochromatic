@@ -115,13 +115,26 @@ Because the wrapper shadows `git`, loading `cli-git.config.mjs` turns an innocuo
 execution, the hazard native hooks avoid by never running a clone's checked-out hooks.
 cli-git therefore gates config loading behind trust, with its own self-contained registry rather than mise's,
 because standalone and non-mise use is expected.
+
+The allowlist key is the pair (filesystem id, artifact path), and adds a sha256 of `cli-git.config.mjs` under
+paranoid mode.
+The filesystem id binds trust to the physical volume rather than the mount path, so a path trusted on one
+volume is not trusted when a different volume is mounted at the same path; this closes a mount-swap
+trust-confusion hole that a path-only key leaves open, and it is why the id must be part of the key, not just
+the path.
+It reuses editord's proven mechanic, `resolveFsId`
+(`packages-paused/desktop-daemon/editord/src/server/operations/resolve-fs-id.ts`): an OS-level filesystem id,
+read on Linux as `f_fsid` via `stat -f --format=%i`, on macOS via `stat -f %v`, and on Windows as the volume
+serial via `vol`.
+Because editord is paused, the mechanic is extracted to a shared module rather than depended on in place.
+
 It borrows mise's machinery but, deliberately, not mise's default posture:
 
 - Default: content-hashed (mise's paranoid posture made the default).
-  The registry keys trust on the artifact's path plus a sha256 of `cli-git.config.mjs` (mise's
-  `file_hash_sha256`, which mise gates behind `Settings::paranoid`).
   First encounter is untrusted: built-ins run, the repo config does not, until an explicit `cli-git trust`.
-  Any later change to the artifact, an edit, a re-bundle, or a pulled change, re-prompts before it executes.
+  The sha256 component of the key is active (mise's `file_hash_sha256`, which mise gates behind
+  `Settings::paranoid`), so any later change to the artifact, an edit, a re-bundle, or a pulled change,
+  re-prompts before it executes.
   This is stricter than mise's default on purpose: mise executes config on `cd` or an explicit command, while
   cli-git executes it on ordinary git commands, so the silent-pulled-change hole is worth closing by default.
 - Relaxed mode (path-keyed): paranoid is on by default but can be turned off per config path, not only globally.
@@ -129,19 +142,29 @@ It borrows mise's machinery but, deliberately, not mise's default posture:
   `{"/abs/path/cli-git.config.mjs": false}`; the exact wire format is for the implementation spec), and an
   entry wins over the global default for that path, so a user can content-check most repos while path-keying a
   specific one, or the reverse.
-  Path-keying a path drops only the content re-check; path-keyed trust stays, so a modified trusted config no
-  longer re-prompts (its explicit cost), but first execution of that config still requires `cli-git trust`.
+  Relaxing a path drops only the content re-check; the (filesystem id, path) trust still applies, so a modified
+  trusted config no longer re-prompts (its explicit cost), but first execution of that config still requires
+  `cli-git trust`.
   Per-path paranoid lives in the environment by necessity, not preference: it cannot live in the repo config it
   governs, or a repo could opt itself out of being re-checked.
   This diverges from mise deliberately, which makes `paranoid` global-only (`settings.toml`, `global_only = true`).
 - It fails closed when it cannot prompt and the artifact is untrusted, or, under paranoid, changed (run
   built-ins, do not execute it), and exposes an env kill-switch to disable discovery entirely.
 
-Security note on the env channel: env vars can be set by repo-trusted mechanisms (a trusted `mise.toml` env
-block, a direnv `.envrc`), so a per-path paranoid-off entry is only as trustworthy as whatever set it; a repo
-whose env mechanism a user has already trusted could plant its own relaxation.
-This weakens only the re-check on later changes, not the initial gate: path-keyed first-execution trust still
-requires an explicit `cli-git trust`.
+Security note on the env channel.
+Env vars can be set by repo-trusted mechanisms (a trusted `mise.toml` env block, a direnv `.envrc`), so a
+per-path paranoid-off entry is only as trustworthy as whatever set it.
+The attack to defeat: a repo plants `CLI_GIT_PARANOID` entries for guessed common config paths in its
+`mise.toml` env, betting a cloner trusts the `mise.toml` without much thought and so silently relaxes
+cli-git's content check.
+The mitigation is to never honor such a relaxation silently.
+Whenever `CLI_GIT_PARANOID` turns paranoid off for a path, cli-git shouts: a loud warning on every affected
+invocation, naming the variable and the relaxed path, treating an env-sourced relaxation as suspicious by default.
+The noise is deliberate, because a silent relaxation is the whole attack.
+Two further layers bound the damage if the warning is ignored: the relaxation removes only the re-check on
+later changes, not the first-execution gate (the (filesystem id, path) trust still requires an explicit
+`cli-git trust`), and a planted relaxation for a path the cloner never trusted, or trusted on a different
+volume, does nothing because the key will not match.
 
 Provisional, derived from mise rather than decided here: whether to support mise's `.monorepo`-style trust of a
 config root for a subtree, and how an external consumer's CI that runs the wrapper obtains trust under a
@@ -277,6 +300,9 @@ The platform's own plugin supply chain is governed by the consumer's lockfile pi
   (TS `defineConfig` and plugin packages), not the runtime.
 - jdx/mise `src/config/config_file/mod.rs` (`trust_path`, the `paranoid`-gated `file_hash_sha256`) and
   `src/cli/trust.rs`: the trust model cli-git mirrors, path-keyed by default, content-hashed only under paranoid.
+- `packages-paused/desktop-daemon/editord/src/server/operations/resolve-fs-id.ts` and editord's `PHILOSOPHY.md`
+  (Filesystem volume ID): the `resolveFsId` mechanic the trust key reuses for the filesystem id (Linux and
+  macOS `f_fsid`, Windows volume serial), extracted to a shared module since editord is paused.
 - `hk.pkl`: the current hk config (forbidden-root-context and forbidden-strings on pre-commit, pre-push, check).
 - `.github/workflows/forbidden-strings.yml`: the CI gate, already off hk.
 - `mise-aqua-backend.md`: hk's supply-chain posture.
