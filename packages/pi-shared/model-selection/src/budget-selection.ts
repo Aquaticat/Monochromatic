@@ -42,7 +42,7 @@ type BudgetStrategyOptions<TModel extends ModelPricing,> = Omit<
 /**
  * Find the cheapest authenticated budget model for configured strategy.
  *
- * @param options - active model, model list, strategy, ratio, and auth callbacks
+ * @param options - active model, model list, strategy, major versions, and auth callbacks
  *
  * @returns selected budget model with auth
  *
@@ -50,7 +50,7 @@ type BudgetStrategyOptions<TModel extends ModelPricing,> = Omit<
  *
  * @example
  * ```typescript
- * const budget = await selectBudgetModel({ activeModel, allModels, strategy, costRatio, majorVersions, resolveAuth, hasConfiguredAuth });
+ * const budget = await selectBudgetModel({ activeModel, allModels, strategy, majorVersions, resolveAuth, hasConfiguredAuth });
  * ```
  */
 export async function selectBudgetModel<TModel extends ModelPricing,>(
@@ -61,7 +61,6 @@ export async function selectBudgetModel<TModel extends ModelPricing,>(
     return await findAnyProvider({
       activeModel: options.activeModel,
       allModels: options.allModels,
-      costRatio: options.costRatio,
       majorVersions: options.majorVersions,
       resolveAuth: options.resolveAuth,
       hasConfiguredAuth: options.hasConfiguredAuth,
@@ -70,7 +69,6 @@ export async function selectBudgetModel<TModel extends ModelPricing,>(
   return await findSameProvider({
     activeModel: options.activeModel,
     allModels: options.allModels,
-    costRatio: options.costRatio,
     majorVersions: options.majorVersions,
     resolveAuth: options.resolveAuth,
     hasConfiguredAuth: options.hasConfiguredAuth,
@@ -175,11 +173,9 @@ export function findCheapestCandidate<TModel extends ModelPricing,>(
 /**
  * Find cheapest model in the same provider as active model.
  *
- * @param activeModel - active model used for provider and cost-ratio reference
+ * @param activeModel - active model used for provider reference
  *
  * @param allModels - registry model list
- *
- * @param costRatio - maximum accepted ratio against active model input cost
  *
  * @param majorVersions - major-version families to search
  *
@@ -193,7 +189,6 @@ async function findSameProvider<TModel extends ModelPricing,>(
   {
     activeModel,
     allModels,
-    costRatio,
     majorVersions,
     resolveAuth,
     hasConfiguredAuth,
@@ -266,36 +261,7 @@ async function findSameProvider<TModel extends ModelPricing,>(
     );
   }
 
-  if (cheapestCandidate.cost
-    .input
-    >= (activeModel.cost
-      .input
-      * costRatio)) {
-    /**
-     * Same-provider report row for too-expensive error.
-     */
-    const sameProvider = toBudgetModelCandidate({
-      model: cheapestCandidate,
-      hasConfiguredAuth: hasConfiguredAuth({ model: cheapestCandidate, },),
-    },);
-    throw new NoBudgetModelError(
-      `cheapest model in ${activeProvider} is $${cheapestCandidate.cost
-        .input}/M input; not significantly cheaper than active model ($${activeModel.cost
-          .input}/M input)`,
-      {
-        sameProvider,
-        ...cheapestOverallContext(),
-      },
-    );
-  }
-
   for (const candidate of candidates) {
-    if (candidate.cost
-      .input
-      >= (activeModel.cost
-        .input
-        * costRatio))
-      break;
     /* oxlint-disable no-await-in-loop -- sequential auth walk must stop at first successful candidate. */
     /**
      * Resolved auth for current candidate.
@@ -333,11 +299,7 @@ async function findSameProvider<TModel extends ModelPricing,>(
 /**
  * Find cheapest model across all providers.
  *
- * @param activeModel - active model used for cost-ratio reference
- *
  * @param allModels - registry model list
- *
- * @param costRatio - maximum accepted ratio against active model input cost
  *
  * @param majorVersions - major-version families to search
  *
@@ -347,9 +309,7 @@ async function findSameProvider<TModel extends ModelPricing,>(
  */
 async function findAnyProvider<TModel extends ModelPricing,>(
   {
-    activeModel,
     allModels,
-    costRatio,
     majorVersions,
     resolveAuth,
   }: BudgetStrategyOptions<TModel>,
@@ -387,34 +347,7 @@ async function findAnyProvider<TModel extends ModelPricing,>(
     return leftInputCost - rightInputCost;
   },);
 
-  /**
-   * Cheapest candidate, when any candidate exists.
-   */
-  const cheapestCandidate = sortedCandidates.at(0,);
-  /**
-   * Input cost of cheapest candidate, or infinity so empty case fails ratio gate.
-   */
-  const cheapestCost = cheapestCandidate !== undefined
-    ? cheapestCandidate.cost
-      .input
-    : Number.POSITIVE_INFINITY;
-
-  if (cheapestCost >= (activeModel.cost
-    .input
-    * costRatio)) {
-    throw new NoBudgetModelError(
-      `cheapest model across all providers is $${cheapestCost}/M input; not significantly cheaper than active model ($${activeModel.cost
-        .input}/M input)`,
-    );
-  }
-
   for (const model of sortedCandidates) {
-    if (model.cost
-      .input
-      >= (activeModel.cost
-        .input
-        * costRatio))
-      break;
     /* oxlint-disable no-await-in-loop -- sequential auth walk must stop at first successful candidate. */
     /**
      * Resolved auth for current candidate.

@@ -91,7 +91,6 @@ await describe({
           activeModel,
           allModels,
           strategy: 'same-provider',
-          costRatio: 0.5,
           majorVersions: 1,
           ...authCallbacks([fixtureSlug(sameProviderModel,),],),
         },);
@@ -105,7 +104,6 @@ await describe({
           activeModel,
           allModels,
           strategy: 'any-provider',
-          costRatio: 0.5,
           majorVersions: 1,
           ...authCallbacks([fixtureSlug(anyProviderModel,),],),
         },);
@@ -113,32 +111,19 @@ await describe({
       },
     },),
     it({
-      name: 'throws no-auth and too-expensive error shapes',
+      name: 'throws no-auth error shape',
       fn: async function testBudgetSelectionErrors() {
         const noAuth = await captureAsyncError(async function selectWithoutAuth() {
           return await selectBudgetModel({
             activeModel,
             allModels,
             strategy: 'same-provider',
-            costRatio: 0.5,
             majorVersions: 1,
             ...authCallbacks([],),
           },);
         },);
-        const tooExpensive = await captureAsyncError(async function selectTooExpensive() {
-          return await selectBudgetModel({
-            activeModel,
-            allModels,
-            strategy: 'same-provider',
-            costRatio: 0.1,
-            majorVersions: 1,
-            ...authCallbacks([fixtureSlug(sameProviderModel,),],),
-          },);
-        },);
         expect(noAuth,).toBeInstanceOf(NoBudgetModelError,);
         expect((noAuth as Error).message,).toContain('no API key available',);
-        expect(tooExpensive,).toBeInstanceOf(NoBudgetModelError,);
-        expect((tooExpensive as Error).message,).toContain('not significantly cheaper',);
       },
     },),
   ],

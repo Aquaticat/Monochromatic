@@ -326,7 +326,7 @@ export type ResolveBudgetAuth<TModel extends ModelIdentity = ReadonlyModel,> = (
  */
 export type BudgetModelSelectionOptions<TModel extends ModelPricing = ReadonlyModel,> = {
   /**
-   * Active model used as cost-ratio reference.
+   * Active model whose provider anchors same-provider selection.
    */
   readonly activeModel: TModel;
   /**
@@ -337,10 +337,6 @@ export type BudgetModelSelectionOptions<TModel extends ModelPricing = ReadonlyMo
    * Search strategy.
    */
   readonly strategy: BudgetModelStrategy;
-  /**
-   * Maximum cost ratio versus active model.
-   */
-  readonly costRatio: number;
   /**
    * Number of major-version families to search, or zero for all.
    */

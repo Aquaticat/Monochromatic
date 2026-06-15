@@ -361,7 +361,6 @@ function toBudgetModelOptions(
    */
   const {
     strategy,
-    costRatio,
     majorVersions,
     modelOverride,
   } = config.judgeModel;
@@ -370,7 +369,6 @@ function toBudgetModelOptions(
    */
   const opts: BudgetModelOptions = {
     strategy,
-    costRatio,
     majorVersions,
     ...(modelOverride !== undefined
       ? { modelOverride, }

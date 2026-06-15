@@ -147,7 +147,6 @@ function loadMergedConfig(
    */
   const judgeModel: MergedConfig['judgeModel'] = {
     strategy: rawJudgeModel.strategy,
-    costRatio: rawJudgeModel.costRatio,
     majorVersions: rawJudgeModel.majorVersions,
     ...overrideContext,
   };

@@ -232,20 +232,6 @@ if (textContent !== '')
 
 The README claims the new code reads tool arguments directly; in fact, it falls back to parsing free text exactly when the tool isn't called, the precise antipattern the README says was replaced.
 
-## Duplicated config defaults
-
-The `judgeModel` default object `{strategy: "same-provider", costRatio: 0.5, majorVersions: 1}` is duplicated three times:
-
-- `config.ts:53-57` -- inside `loadMergedConfig`
-- `config.ts:113-117` -- in `GLOBAL_DEFAULTS`
-- `budget-model.ts:78-82` -- in `findBudgetModel`
-
-When this default needs to change, three sites must be updated in lockstep. The first appearance in `loadMergedConfig` doesn't reference `GLOBAL_DEFAULTS.judgeModel` even though both live in the same file.
-
-The `BudgetModelOptions` shape is also re-declared twice in `evaluate.ts:212-244` (once as the function return type, once as the variable type), in addition to the actual `BudgetModelOptions` definition in `budget-model.ts:34-47`. Three near-identical type declarations.
-
-The `auth: { apiKey?: string; headers?: Record<string, string> }` shape is inlined in five places.
-
 ## Sloppy decompositions
 
 Files split by line count, not by concern:

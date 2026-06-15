@@ -37,12 +37,6 @@ const ANY_PROVIDER_INPUT = 0.25;
 /** Any-provider budget output token price. */
 const ANY_PROVIDER_OUTPUT = 1;
 
-/** Cost ratio that accepts cheaper fixtures. */
-const ACCEPTING_COST_RATIO = 0.5;
-
-/** Cost ratio that rejects equal-threshold fixtures. */
-const REJECTING_COST_RATIO = 0.1;
-
 /** Major-version count used by budget selection fixtures. */
 const MAJOR_VERSIONS = 1;
 
@@ -105,7 +99,7 @@ function modelFixture(
   } satisfies Model<Api>;
 }
 
-/** Active model fixture used as cost-ratio reference. */
+/** Active model fixture used as same-provider reference. */
 const activeModel = modelFixture({
   provider: 'openai',
   id: 'gpt-4o',
@@ -242,7 +236,6 @@ await describe({
           },),
           options: {
             strategy: 'same-provider',
-            costRatio: ACCEPTING_COST_RATIO,
             majorVersions: MAJOR_VERSIONS,
           },
         },);
@@ -259,7 +252,6 @@ await describe({
           },),
           options: {
             strategy: 'any-provider',
-            costRatio: ACCEPTING_COST_RATIO,
             majorVersions: MAJOR_VERSIONS,
           },
         },);
@@ -275,7 +267,6 @@ await describe({
             ctx: contextFixture({ authenticatedSlugs: [], },),
             options: {
               strategy: 'same-provider',
-              costRatio: ACCEPTING_COST_RATIO,
               majorVersions: MAJOR_VERSIONS,
             },
           },);
@@ -284,28 +275,6 @@ await describe({
         expect(caught,).toBeInstanceOf(Error,);
         expect((caught as Error).message,).toContain(
           'no API key available for cheapest models in provider "openai"',
-        );
-      },
-    },),
-    it({
-      name: 'keeps too-expensive error message shape',
-      fn: async function testTooExpensiveErrorShape() {
-        const caught = await captureError(async function selectTooExpensiveModel() {
-          return await findBudgetModel({
-            ctx: contextFixture({
-              authenticatedSlugs: [slugFor(sameProviderBudgetModel,),],
-            },),
-            options: {
-              strategy: 'same-provider',
-              costRatio: REJECTING_COST_RATIO,
-              majorVersions: MAJOR_VERSIONS,
-            },
-          },);
-        },);
-
-        expect(caught,).toBeInstanceOf(Error,);
-        expect((caught as Error).message,).toContain(
-          'not significantly cheaper than active model',
         );
       },
     },),

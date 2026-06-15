@@ -21,7 +21,6 @@
  */
 export const JUDGE_MODEL_DEFAULTS = {
   strategy: 'same-provider',
-  costRatio: 0.5,
   majorVersions: 1,
 } as const;
 

@@ -27,9 +27,8 @@ import type {
  * Find the cheapest available model for the judge.
  *
  * If `options.modelOverride` is set, selection is skipped. Otherwise shared
- * strategy selection walks candidate models cheapest-first, gated by
- * `costRatio` against the active model, and returns the first candidate the
- * registry can authenticate.
+ * strategy selection walks candidate models cheapest-first and returns the
+ * first candidate the registry can authenticate.
  *
  * @param ctx - pi extension context
  *
@@ -89,7 +88,7 @@ async function findBudgetModel(
     throw new NoBudgetModelError('no active model set',);
 
   /**
-   * Active model handed in by host so cost-ratio gate has a reference point.
+   * Active model handed in by host so same-provider selection has a reference provider.
    */
   const activeModel = ctx.model;
 
@@ -98,7 +97,6 @@ async function findBudgetModel(
     allModels: ctx.modelRegistry
       .getAll(),
     strategy: opts.strategy,
-    costRatio: opts.costRatio,
     majorVersions: opts.majorVersions,
     async resolveAuth({ model, },) {
       return await resolveBudgetAuth({

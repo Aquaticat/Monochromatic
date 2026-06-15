@@ -411,10 +411,6 @@ type JudgeModelConfig = {
   readonly modelOverride?: ModelOverride;
   readonly strategy: ModelStrategy;
   /**
-   * Maximum cost ratio vs active model (0-1).
-   */
-  readonly costRatio: number;
-  /**
    * How many major version families to search.
    */
   readonly majorVersions: number;

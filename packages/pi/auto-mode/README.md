@@ -138,14 +138,13 @@ gracefully rather than throwing.
   "judgeModel": {
     "modelOverride": "openai/gpt-4o-mini",
     "strategy": "same-provider",
-    "costRatio": 0.5,
     "majorVersions": 1
   },
   "judgeTimeoutMs": 10000
 }
 ```
 
-The `judgeModel` defaults to `{strategy: "same-provider", costRatio: 0.5, majorVersions: 1}` when the config is absent or `judgeModel` is unset; defined once in `src/constants.ts` as `JUDGE_MODEL_DEFAULTS` and referenced from the loader, the global defaults, and the budget-model selector.
+The `judgeModel` defaults to `{strategy: "same-provider", majorVersions: 1}` when the config is absent or `judgeModel` is unset; defined once in `src/constants.ts` as `JUDGE_MODEL_DEFAULTS` and referenced from the loader, the global defaults, and the budget-model selector.
 
 ## Skill read allowlist
 

@@ -89,7 +89,7 @@ Some files contain consumer-specific adapters that become thinner rather than di
   - `budget-model.ts`,
      370 lines:
      same-provider and any-provider strategies,
-     cost-ratio gating,
+     cheapest-first candidate ordering,
     and sequential auth walk.
   - `budget-model-auth.ts`,
      312 lines:
@@ -350,9 +350,8 @@ Move budget selection strategy into shared while keeping host-specific auth in a
 
 - `budget-selection.ts`:
    same-provider and any-provider strategies,
-   cost-ratio gating,
    major-version filtering,
-  candidate ordering,
+   candidate ordering,
    and sequential auth walk.
 - `budget-override.ts`:
    override parsing and selection through injected model lookup and auth callbacks.
@@ -373,7 +372,6 @@ export type BudgetModelSelectionOptions<TModel extends ModelPricing> = {
   readonly activeModel: TModel;
   readonly allModels: readonly TModel[];
   readonly strategy: 'same-provider' | 'any-provider';
-  readonly costRatio: number;
   readonly majorVersions: number;
   readonly resolveAuth: ResolveBudgetAuth<TModel>;
   readonly hasConfiguredAuth: (options: { readonly model: TModel; }) => boolean;
@@ -473,7 +471,6 @@ Move and generalize from auto-mode:
   `version.unit.test.ts`.
 - same-provider strategy,
    any-provider strategy,
-   cost-ratio rejection,
    auth failure,
    override selection,
   and candidate-report tests into `budget-selection.unit.test.ts` and `budget-override.unit.test.ts`.
@@ -498,7 +495,7 @@ Add characterization tests before rewiring imports:
    out-of-scope,
    and unknown slugs.
 - Auto-mode budget selection returns the same model for same-provider and any-provider fixtures.
-- Auto-mode emits the same user-facing error message shape for no-auth and too-expensive cases.
+- Auto-mode emits the same user-facing error message shape for no-auth cases.
 - Thinking-defaults returns the same level for slash-prefixed and bare GPT ids.
 
 ## Migration steps
