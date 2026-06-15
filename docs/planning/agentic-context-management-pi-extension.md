@@ -246,6 +246,8 @@ tool name,
 tool call id,
 `isError`,
 and `details` metadata even when it rewrites result text.
+ACM's own tool results are not eligible for rewriting,
+so the audit trail for active rules stays visible.
 If a later version supports user-message omission,
 that must be an explicit config setting and should require user approval.
 
@@ -414,6 +416,7 @@ Expected package metadata:
   while preserving tool result metadata and non-text blocks.
 - Support `previous_assistant_text` first,
   then `previous_tool_result_text` before broader recent/all-prior scopes.
+- Exclude `acm` tool results from tool-result targets.
 - Add a terse custom renderer for `acm` tool calls and results.
 
 Definition of done:
@@ -459,6 +462,7 @@ Unit tests:
   and `&` before insertion into the omitted tag;
 - assistant-targeted rules transform only assistant text blocks;
 - explicit tool-result targets transform only tool result text blocks;
+- ACM tool result text remains unchanged even when a broad tool-result rule would match;
 - tool result `details`,
   `toolName`,
   `toolCallId`,
@@ -682,9 +686,10 @@ Hybrid state beats custom entries because at least the tool result remains the v
 
 ### Question 4: which tool results may ACM rewrite?
 
-Recommended answer:
+Decision:
 all non-ACM tool result text blocks are eligible,
 with ACM's own tool results excluded.
+User answered this on 2026-06-15.
 
 Pros:
 matches the user's decision that tool call results are in scope,
@@ -699,7 +704,7 @@ custom tool output can carry important state,
 so bad rules can still hide evidence from the next provider request.
 Preview/list diagnostics and exact match counts become mandatory.
 
-Alternative:
+Rejected alternative:
 only bulky built-in tools are eligible by default,
 for example `read`,
 `bash`,
@@ -713,7 +718,7 @@ smaller safety surface and easier tests.
 Cons:
 custom tools that generate large context remain outside ACM unless the user adds config.
 
-Alternative:
+Rejected alternative:
 all tool results,
 including ACM's own tool results,
 are eligible.
@@ -728,6 +733,45 @@ Ranking:
 non-ACM tool results beat bulky built-ins because user intent named tool results broadly.
 Bulky built-ins beat all tool results because preserving ACM's own audit trail matters.
 
+### Question 5: how long should rules live?
+
+Recommended answer:
+rules persist on the active branch until disabled.
+
+Pros:
+one `acm` call keeps redundant boilerplate or bulky output omitted across future turns,
+which matches context-management intent and avoids repeated tool calls.
+
+Cons:
+a stale rule can keep applying after its original context is no longer relevant,
+so list/disable tooling must be easy to use.
+
+Alternative:
+rules apply only to the next provider request.
+
+Pros:
+lowest risk of stale omissions.
+
+Cons:
+the model must repeatedly call ACM for recurring boilerplate,
+which adds tool noise and context cost.
+
+Alternative:
+rules expire after a fixed number of turns.
+
+Pros:
+limits stale omissions while still lasting longer than one request.
+
+Cons:
+turn counting through tool-call loops,
+steering,
+follow-ups,
+and branch navigation adds lifecycle complexity.
+
+Ranking:
+persist-until-disabled beats fixed turn expiry because explicit state is easier to audit.
+Fixed turn expiry beats next-request-only because it can still reduce recurring context cost.
+
 ## First implementation decision needed
 
 Question 1 is resolved:
@@ -737,7 +781,9 @@ bounded regex is in scope,
 while raw JavaScript `RegExp` over full context is out of scope.
 Question 3 is resolved:
 active rules live in `acm` tool result `details`.
-Before building past Phase 1,
-answer Question 4.
-My recommendation is all non-ACM tool result text blocks are eligible,
+Question 4 is resolved:
+all non-ACM tool result text blocks are eligible,
 with ACM's own tool results excluded.
+Before building past Phase 1,
+answer Question 5.
+My recommendation is rules persist on the active branch until disabled.
