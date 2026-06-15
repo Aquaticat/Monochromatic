@@ -170,9 +170,18 @@ Recommended strict schema:
     };
     description: string;
   }>;
-  ruleIds?: string[];
+  matches?: Array<{
+    kind: "literal" | "regex";
+    value: string;
+    flags?: string;
+  }>;
 }
 ```
+
+For `action: "disable"`,
+`matches` contains exact normalized matchers to remove.
+The extension disables every active rule whose matcher equals a supplied matcher after normalization.
+Descriptions are not part of the disable key.
 
 Compatibility shim:
 `prepareArguments()` should accept the shorthand shown by the user as an illustrative notation.
@@ -336,27 +345,27 @@ type AcmToolDetails = {
 type AcmAction =
   | {
       readonly type: "add";
-      readonly id: string;
       readonly match: AcmMatch;
       readonly description: string;
     }
   | {
       readonly type: "disable";
-      readonly ids: readonly string[];
+      readonly matches: readonly AcmMatch[];
     };
 ```
 
-The stored action does not need `createdByToolCallId`.
+The stored action does not need `createdByToolCallId` or a rule id.
 During replay,
 the enclosing `ToolResultMessage.toolCallId` remains available for audit,
-but target selection does not depend on it.
+but target selection and disable semantics do not depend on it.
 
 The `context` handler should:
 
 - scan messages in source order;
 - collect `toolResult` messages whose `toolName` is `acm`;
 - ignore malformed details and unknown details versions safely;
-- replay `add` and `disable` actions into an active rule map;
+- replay `add` and `disable` actions into an active rule list;
+- apply a `disable` action by removing every active rule whose normalized matcher equals a supplied matcher;
 - keep rules active in request context until a later `disable` action removes them,
   or until Pi compaction removes the source `acm` tool result from provider context;
 - build the eligible text-block list from the request-time clone;
@@ -485,8 +494,8 @@ and the implementation verifies that unsupported regex syntax is rejected clearl
   broad `/g` matches,
   malformed details,
   unknown details versions,
-  duplicate rule ids,
-  unknown disable ids,
+  duplicate normalized matchers,
+  unknown disable matchers,
   and overlap skips.
 - Add a terse custom renderer for `acm` tool calls and results.
 
@@ -538,10 +547,10 @@ Unit tests:
 - disabled rule no longer applies;
 - malformed ACM details are ignored safely;
 - unknown ACM details versions are ignored safely;
-- duplicate rule ids are handled deterministically;
-- disabling an unknown rule id is a no-op with diagnostics;
-- disable after add in the same tool result works;
-- add after disable of the same id is either rejected or clearly defined;
+- duplicate normalized matchers are listed deterministically;
+- disabling an unknown matcher is a no-op with diagnostics;
+- disabling a matcher removes every active rule with that normalized matcher;
+- adding a matcher after disabling it reactivates that matcher for later context;
 - multiple substitutions in one ACM call apply in stable order;
 - global zero-width regex cannot infinite-loop;
 - regex flags parser rejects unsupported flags;
@@ -1238,6 +1247,58 @@ safe engine beats abortable worker because documented linear-time matching is a 
 Abortable worker beats restricted syntax because preserving regex semantics is more useful than a fragile local parser.
 Restricted syntax beats literal-only because it can still support some regex shorthand.
 
+### Question 15: how should ACM disable persistent rules?
+
+Decision:
+ACM should disable rules by exact normalized matcher rather than by rule id.
+User answered this on 2026-06-15 after asking why ACM needs rule IDs at all.
+
+Pros:
+removes generated-ID lifecycle semantics,
+keeps the public tool call tied to the same matcher the model installed,
+and avoids ordinal drift.
+
+Cons:
+selective disable is less precise when several active rules share the same matcher with different descriptions;
+those rules are disabled together.
+
+Rejected alternative:
+extension-generated stable rule IDs.
+
+Pros:
+precise selective disable after `list`.
+
+Cons:
+requires ID generation,
+duplicate handling,
+and a separate identifier surface the user questioned.
+
+Rejected alternative:
+clear all active rules.
+
+Pros:
+simplest escape hatch and no selector semantics.
+
+Cons:
+removes useful rules along with the bad rule,
+forcing the model to re-add them.
+
+Rejected alternative:
+list ordinals.
+
+Pros:
+concise and no stored IDs.
+
+Cons:
+ordinals can drift after compaction,
+branching,
+or earlier disables.
+
+Ranking:
+exact matcher beats generated IDs because it keeps disable semantics tied to the rule's actual selector.
+Generated IDs beat clear-all because they preserve precise selective disable.
+Clear-all beats ordinals because it is blunt but not drift-prone.
+
 ## Resolved implementation decisions
 
 Question 1 is resolved:
@@ -1278,5 +1339,7 @@ Question 13 is resolved:
 rules expire when Pi compaction removes their source `acm` tool results from provider context.
 Question 14 is resolved:
 Phase 0 requires a source-audited safe regex engine before enabling regex.
+Question 15 is resolved:
+ACM disables rules by exact normalized matcher rather than by rule id.
 Before implementation,
 run the documented Phase 0 source audit to choose the exact safe regex engine and budgets.
