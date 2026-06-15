@@ -312,7 +312,7 @@ export type BudgetModelCandidate = {
  * `maybe.ts` was removed, so `ResolveBudgetAuth` can reference both
  * `typeof NO_AUTH` and `BudgetModelAuth` without a module cycle.
  */
-export const NO_AUTH: unique symbol = Symbol('model-selection/no-auth',);
+export const NO_AUTH: unique symbol = Symbol('model selection budget auth credentials absent',);
 
 /**
  * Auth callback used by budget selection.

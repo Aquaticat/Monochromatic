@@ -180,7 +180,7 @@ function getReusableApproval(
  * Sentinel marking that no verdict entry is awaiting its tool call during the
  * {@link buildContext} scan.
  */
-const NO_PENDING_VERDICT = Symbol('no-pending-verdict',);
+const NO_PENDING_VERDICT = Symbol('pending verdict entry absent from context',);
 
 /**
  * Build a context summary for the LLM judge.

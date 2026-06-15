@@ -27,7 +27,7 @@ import type { SignalContext, } from './types.ts';
  * const missing = REALPATH_UNAVAILABLE;
  * ```
  */
-const REALPATH_UNAVAILABLE = Symbol('realpath-unavailable',);
+const REALPATH_UNAVAILABLE = Symbol('path signal realpath unavailable for target',);
 
 /**
  * Result from attempting filesystem canonicalisation.

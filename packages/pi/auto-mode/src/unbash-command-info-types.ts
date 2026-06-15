@@ -175,7 +175,7 @@ type VisitResult = {
 /**
  * Sentinel returned when no nested script exists.
  */
-const NO_SCRIPT: unique symbol = Symbol('no nested script',);
+const NO_SCRIPT: unique symbol = Symbol('nested script payload absent from unbash command',);
 
 /**
  * Empty redirects singleton used for child work items.

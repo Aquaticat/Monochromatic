@@ -23,7 +23,7 @@ import {
  * candidate (empty registry). A `unique symbol`; narrowed with
  * `=== NO_CANDIDATE`. Exported because `findCheapestCandidate` is public.
  */
-export const NO_CANDIDATE: unique symbol = Symbol('model-selection/no-candidate',);
+export const NO_CANDIDATE: unique symbol = Symbol('model selection budget candidate absent after version filtering',);
 
 //region Internal types
 

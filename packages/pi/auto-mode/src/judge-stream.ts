@@ -83,7 +83,7 @@ type JsonRetryStreamFactory = (
  * let toolCall: ToolCall | typeof NO_TOOL_CALL = NO_TOOL_CALL;
  * ```
  */
-const NO_TOOL_CALL = Symbol('no-tool-call',);
+const NO_TOOL_CALL = Symbol('judge stream render verdict tool call absent',);
 
 /**
  * Collect verdict arguments from the first tool-call stream, retrying once

@@ -15,7 +15,7 @@ import type { EnvAssignment, } from './types.ts';
 /**
  * Sentinel returned when token is not shell assignment word.
  */
-const NO_SHELL_ASSIGNMENT: unique symbol = Symbol('no-shell-assignment',);
+const NO_SHELL_ASSIGNMENT: unique symbol = Symbol('shell assignment prefix absent before command',);
 
 /**
  * Result from parsing shell assignment word.

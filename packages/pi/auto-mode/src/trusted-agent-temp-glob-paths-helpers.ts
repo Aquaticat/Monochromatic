@@ -15,7 +15,7 @@ import { isUnder, } from './path-signals.ts';
 /**
  * Sentinel for paths whose canonical filesystem target cannot be resolved.
  */
-const REALPATH_UNAVAILABLE: unique symbol = Symbol('realpath-unavailable',);
+const REALPATH_UNAVAILABLE: unique symbol = Symbol('trusted agent temp glob realpath unavailable for path',);
 
 /**
  * Result from attempting filesystem canonicalisation.

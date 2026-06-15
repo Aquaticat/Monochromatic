@@ -19,7 +19,7 @@ const DATE_TOKEN_DIGIT_COUNT = 8;
 /**
  * Sentinel returned by {@link extractMajorVersion} when no version token exists.
  */
-export const NO_MAJOR_VERSION: unique symbol = Symbol('no-major-version',);
+export const NO_MAJOR_VERSION: unique symbol = Symbol('major version number absent from model id',);
 
 //endregion Constants
 

@@ -4,6 +4,10 @@
  * @module
  */
 
+import type {
+  Api,
+  Model,
+} from '@earendil-works/pi-ai';
 import type { ExtensionContext, } from '@earendil-works/pi-coding-agent';
 import {
   NoBudgetModelError,
@@ -90,12 +94,16 @@ async function findBudgetModel(
   /**
    * Active model handed in by host so same-provider selection has a reference provider.
    */
-  const activeModel = ctx.model;
+  const activeModel = ctx.model as Model<Api>;
+  /**
+   * Registry models narrowed to auto-mode's pi model shape for shared selection callbacks.
+   */
+  const allModels = ctx.modelRegistry
+    .getAll() as readonly Model<Api>[];
 
-  return await selectBudgetModel({
+  return await selectBudgetModel<Model<Api>>({
     activeModel,
-    allModels: ctx.modelRegistry
-      .getAll(),
+    allModels,
     strategy: opts.strategy,
     majorVersions: opts.majorVersions,
     async resolveAuth({ model, },) {

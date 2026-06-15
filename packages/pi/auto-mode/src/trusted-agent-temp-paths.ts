@@ -27,7 +27,7 @@ import type {
 /**
  * Sentinel for paths whose canonical filesystem target cannot be resolved.
  */
-const REALPATH_UNAVAILABLE = Symbol('realpath-unavailable',);
+const REALPATH_UNAVAILABLE = Symbol('trusted agent temp realpath unavailable for path',);
 
 /**
  * Result from attempting filesystem canonicalisation.

@@ -17,7 +17,7 @@ import type {
  * `unique symbol`; callers narrow with `=== MALFORMED_SLUG`. Exported because
  * `budget-override` consumes it across the module seam.
  */
-export const MALFORMED_SLUG: unique symbol = Symbol('model-selection/malformed-slug',);
+export const MALFORMED_SLUG: unique symbol = Symbol('model selection provider model slug malformed',);
 
 //region Types
 

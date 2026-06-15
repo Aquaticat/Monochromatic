@@ -53,7 +53,7 @@ const GIT_METADATA_QUERY_TIMEOUT_MS = 2_000;
 /**
  * Sentinel returned when git metadata query exits non-zero or cannot run.
  */
-const GIT_STDOUT_UNAVAILABLE = Symbol('git-stdout-unavailable',);
+const GIT_STDOUT_UNAVAILABLE = Symbol('git worktree stdout unavailable during read allowlist',);
 
 /**
  * Result from read-only git stdout query.
