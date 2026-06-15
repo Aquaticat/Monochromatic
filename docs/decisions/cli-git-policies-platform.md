@@ -104,6 +104,12 @@ The migrated forbidden-strings policy ships defaulting to error.
 The footgun is named deliberately: warn would let a secret-bearing commit through locally,
 so error is what keeps the local gate real, and CI is the backstop regardless.
 
+The same caution extends to the safety guards.
+linked-worktree-only gates destructive commands (`git stash`, state-changing `git clean`,
+and `--hard`/`--merge`/`--keep` reset in the main worktree),
+so warn there would permit data loss with only a diagnostic.
+Destructive-command validators default to error, and warn is discouraged for them.
+
 ## Scan trigger points
 
 forbidden-strings scans at commit time, which is the real gate.
@@ -145,6 +151,26 @@ Per `mise-aqua-backend.md`, hk is digest-verified only, because mise does not im
 Retiring hk and pkl removes that under-verified surface from the toolchain.
 forbidden-strings, by contrast, is built in-repo and distributed to CI with SLSA provenance,
 so consolidating onto it does not inherit hk's gap.
+
+## Alternatives considered
+
+Sequencing was the live fork, because hk is already off CI and retiring it is cheap and high-value on its own.
+
+- Decouple and retire hk now (rejected).
+  Fold the two checks into the existing RULES pipeline as first-party modules immediately,
+  retire hk and pkl, and grow the platform afterward.
+  This lands the supply-chain and simplification win at once and matches the repo's commit-early lean.
+  Rejected in favor of a single coherent landing: the platform and the migration arrive together
+  rather than leaving a half-migrated intermediate state,
+  and nothing ships this session anyway, so the speed argument carries little weight.
+- Parallel-run both (rejected).
+  Run the checks in `cli-git` while keeping hk running them too, until the wrapper's versions are proven.
+  Rejected because CI is already the authoritative gate, so the safety margin is low-value
+  while it double-scans every commit and keeps hk and pkl around.
+- Platform-first (chosen).
+  Build the platform, migrate the checks onto it, retire hk and pkl as the capstone.
+  The accepted cost is recorded plainly: hk, pkl, and hk's under-verified supply-chain surface persist
+  for the whole platform build, which the supply-chain note would otherwise argue for removing sooner.
 
 ## References
 
