@@ -17,7 +17,9 @@ packages/<category>/<project>
 ```
 
 The important word is **category**.
-The first segment is not always an artifact type such as `cli`, `module`, or `webapp`.
+The first segment is not always an artifact type such as `cli`,
+ `module`,
+ or `webapp`.
 It can also be a product or subsystem owner when several buildable units share one product identity.
 
 That means this is good:
@@ -43,40 +45,65 @@ The plan recommends:
 - Keep `packages/music-player/*` product-first and add a shared native core there.
 - Consider folding `packages/pi-shared/model-selection` into `packages/pi/model-selection`.
 - Consider turning `cli/mvm` plus `mcp/mvm` into a `packages/mvm/*` product cluster.
-- Consider turning `config/oxlint`, `oxlint-plugins/*`, and oxlint fixture packages into a `packages/oxlint/*`
+- Consider turning `config/oxlint`,
+   `oxlint-plugins/*`,
+   and oxlint fixture packages into a `packages/oxlint/*`
   subsystem cluster.
 - Consider turning `done` and `done-postcss` into a `packages/done/*` product cluster if comparison variants keep
   growing.
-- Keep broad independent utility buckets such as `module`, `config`, `dev-script`, `shim`, and `stub` broad.
+- Keep broad independent utility buckets such as `module`,
+   `config`,
+   `dev-script`,
+   `shim`,
+   and `stub` broad.
 
 ## Why this plan exists
 
 The package layout currently mixes two category styles:
 
 - Artifact-type categories:
-  `cli`, `module`, `config`, `mcp`, `dev-script`, `webapp-productivity`.
+  `cli`,
+   `module`,
+   `config`,
+   `mcp`,
+   `dev-script`,
+   `webapp-productivity`.
 - Product or subsystem categories:
-  `music-player`, `claude-code-plugins`, `figma-parsers`, `pi`.
+  `music-player`,
+   `claude-code-plugins`,
+   `figma-parsers`,
+   `pi`.
 
 Both styles are valid.
 The problem appears when a product spans several artifact types.
-The `music-player` product has a desktop app, an Android app, Rust engine code, Kotlin logic,
+The `music-player` product has a desktop app,
+ an Android app,
+ Rust engine code,
+ Kotlin logic,
 and obvious shared native-code opportunities.
 If the desktop and Android apps lived under separate artifact categories,
 shared code would have to live somewhere distant and artificial.
 
 The plan below treats a category as the **ownership boundary** for code sharing.
 Use artifact-type categories only when packages are genuinely unrelated except for artifact type.
-Use product or subsystem categories when packages are adapters, variants, plugins, fixtures, or shared cores for
+Use product or subsystem categories when packages are adapters,
+ variants,
+ plugins,
+ fixtures,
+ or shared cores for
 one product or host.
 
 ## Rush precedent
 
 This layout is based on Rushstack's category-folder model.
 The primary source is `microsoft/rushstack` at commit `0e46b84a4f62134298365f49bbe03b609ab09f7e`.
-In `rush.json`, Rushstack recommends that buildable project folders be exactly two levels below the repository root;
+In `rush.json`,
+ Rushstack recommends that buildable project folders be exactly two levels below the repository root;
 the parent folder acts as the category.
-It gives examples such as `apps`, `libraries`, `tools`, and `prototypes`.
+It gives examples such as `apps`,
+ `libraries`,
+ `tools`,
+ and `prototypes`.
 The same file sets:
 
 ```json
@@ -90,13 +117,25 @@ Source:
 Rush enforces the policy in `RushConfigurationProject.ts` by rejecting project folders shallower or deeper than
 configured.
 Source:
-`https://github.com/microsoft/rushstack/blob/0e46b84a4f62134298365f49bbe03b609ab09f7e/libraries/rush-lib/src/api/RushConfigurationProject.ts#L223-L235`.
+`microsoft/rushstack` commit `0e46b84`,
+`libraries/rush-lib/src/api/RushConfigurationProject.ts`,
+lines 223 to 235.
 
 The key lesson is not the literal folder name `packages`.
-The lesson is that depth stays fixed, and category names are periodically rebalanced through discussion.
-Rushstack's own current category set includes `apps`, `libraries`, `build-tests`, `heft-plugins`, `rush-plugins`,
-`rigs`, `vscode-extensions`, and others.
-That proves the first segment can be a product area, a plugin host, a test family, or a tool family.
+The lesson is that depth stays fixed,
+ and category names are periodically rebalanced through discussion.
+Rushstack's own current category set includes `apps`,
+ `libraries`,
+ `build-tests`,
+ `heft-plugins`,
+ `rush-plugins`,
+`rigs`,
+ `vscode-extensions`,
+ and others.
+That proves the first segment can be a product area,
+ a plugin host,
+ a test family,
+ or a tool family.
 
 ## Current repository constraints
 
@@ -112,7 +151,9 @@ Current measured state from the active tree:
 
 Important nuance:
 not every `packages/*/*` directory is an npm workspace package.
-Some are Rust, Gradle, or tooling islands with `mise.toml` but no `package.json`.
+Some are Rust,
+ Gradle,
+ or tooling islands with `mise.toml` but no `package.json`.
 Those are still active project roots for this repository.
 
 The active non-`package.json` project roots are:
@@ -163,7 +204,9 @@ The repository has separate trees for package lifecycle state:
 - `packages-paused/`:
   packages intentionally removed from active workspace and task fanout.
 
-Do not solve status by inventing category names such as `old`, `paused`, or `deprecated` under `packages/`.
+Do not solve status by inventing category names such as `old`,
+ `paused`,
+ or `deprecated` under `packages/`.
 Use the status trees.
 
 ## Terms used in this plan
@@ -173,29 +216,47 @@ Use the status trees.
 The first segment under `packages/`.
 It is the ownership and grouping boundary.
 Examples:
-`music-player`, `claude-code-plugins`, `module`, `config`, `mvm`, `oxlint`.
+`music-player`,
+ `claude-code-plugins`,
+ `module`,
+ `config`,
+ `mvm`,
+ `oxlint`.
 
 ### Project
 
 The second segment under `packages/`.
 It is a buildable or task-addressable unit.
-It may be an npm package, a Rust crate, a Gradle project, a fixture package, or a mise-only tool root.
+It may be an npm package,
+ a Rust crate,
+ a Gradle project,
+ a fixture package,
+ or a mise-only tool root.
 
 ### Adapter
 
 A project that exposes a shared core through one host or interface.
 Examples:
-CLI adapter, MCP adapter, Pi extension, Claude Code plugin shim, Android app shell.
+CLI adapter,
+ MCP adapter,
+ Pi extension,
+ Claude Code plugin shim,
+ Android app shell.
 
 ### Core
 
 A project that owns shared logic consumed by multiple adapters or apps.
 Examples:
-`claude-code-plugins/source`, future `music-player/native-core`, future `mvm/core`.
+`claude-code-plugins/source`,
+ future `music-player/native-core`,
+ future `mvm/core`.
 
 ### Variant
 
-A project that implements the same product against a different framework, renderer, build pipeline, or experiment.
+A project that implements the same product against a different framework,
+ renderer,
+ build pipeline,
+ or experiment.
 Example:
 `done-postcss` is a PostCSS comparison variant of `done`.
 
@@ -218,7 +279,10 @@ they belong under the same category even if they produce different artifacts.
 
 ### Rule 2: product clusters beat artifact buckets
 
-Use a product category when a product has multiple adapters, platforms, variants, or shared internals.
+Use a product category when a product has multiple adapters,
+ platforms,
+ variants,
+ or shared internals.
 
 Good:
 
@@ -347,7 +411,8 @@ packages/music-player/
 ```
 
 This is already the right category shape.
-Both roots are project roots with `mise.toml`, but neither is an npm package.
+Both roots are project roots with `mise.toml`,
+ but neither is an npm package.
 `desktop-app` is a Rust plus Slint app.
 `android-app` is a Gradle plus Kotlin app with a nested Rust `cdylib` crate at `android-app/rust`.
 
@@ -365,10 +430,14 @@ Evidence of shared-code pressure:
 The matching file names are not small.
 Measured line totals across the desktop and Android copies were:
 
-- `decode.rs`: 2,827 lines.
-- `opus.rs`: 1,386 lines.
-- `truepeak.rs`: 1,122 lines.
-- `engine.rs`: 1,805 lines.
+- `decode.rs`:
+   2,827 lines.
+- `opus.rs`:
+   1,386 lines.
+- `truepeak.rs`:
+   1,122 lines.
+- `engine.rs`:
+   1,805 lines.
 
 The product glossary already recognizes the shared product language:
 
@@ -461,7 +530,9 @@ Keep these adapter-owned:
 
 6. Move tests with the module,
    then keep adapter-specific tests beside adapters.
-7. Repeat for `opus`, `decode`, and shared error surfaces only after `truepeak` is stable.
+7. Repeat for `opus`,
+    `decode`,
+    and shared error surfaces only after `truepeak` is stable.
 
 ### Verification
 
@@ -731,7 +802,9 @@ The plugin READMEs point at matching fixture packages.
 
 This is a subsystem cluster split across three first-level categories.
 The split is understandable historically:
-config packages under `config`, plugins under `oxlint-plugins`, fixtures under `test-fixture`.
+config packages under `config`,
+ plugins under `oxlint-plugins`,
+ fixtures under `test-fixture`.
 But ownership is now oxlint-specific.
 
 ### Target shape
@@ -857,7 +930,9 @@ Does not belong there:
 - generic LLM types,
 - generic page-weight or build tooling.
 
-Those stay in `build-tool`, `module`, or `dev-script`.
+Those stay in `build-tool`,
+ `module`,
+ or `dev-script`.
 
 ### Migration sketch
 
@@ -958,7 +1033,12 @@ because MVM owns it.
 
 Keep `packages/config/*` broad for host-neutral tool presets.
 Examples:
-TypeScript, tsdown, dprint, stylelint, cosign, tofu.
+TypeScript,
+ tsdown,
+ dprint,
+ stylelint,
+ cosign,
+ tofu.
 
 Exception:
 `config/oxlint` may move into an `oxlint` subsystem because its config is tightly coupled to local oxlint plugin
@@ -983,9 +1063,11 @@ Likely owner-specific fixture candidates:
 - `test-fixture/oxlint-*`:
   owned by the oxlint subsystem.
 - `test-fixture/toml-edit`:
-  owned by `module/toml-edit`, unless it must stay package-like for fuzz workflows.
+  owned by `module/toml-edit`,
+   unless it must stay package-like for fuzz workflows.
 - `test-fixture/file-enforcer-perf`:
-  owned by `dev-script/file-enforcer`, unless it must stay package-like for benchmark isolation.
+  owned by `dev-script/file-enforcer`,
+   unless it must stay package-like for benchmark isolation.
 
 Do not move fixtures just to make the tree look tidy.
 Move them when test ownership or path clarity improves.
@@ -1023,9 +1105,14 @@ Handle low-risk cleanup first:
 
 1. Remove or explain empty `packages/android-app/`.
 2. Decide the status of non-package Claude Code plugin dirs:
-   `research-agent`, `statusline`, `verbose-tool-output`.
+   `research-agent`,
+    `statusline`,
+    `verbose-tool-output`.
 3. Decide whether every active `packages/*/*` directory must have one of:
-   `package.json`, `Cargo.toml`, Gradle settings, or `mise.toml`.
+   `package.json`,
+    `Cargo.toml`,
+    Gradle settings,
+    or `mise.toml`.
 4. Document accepted npm-name exceptions.
 
 This phase should not rename packages or move large source trees.
@@ -1050,9 +1137,12 @@ Do not move platform output or UI code into the core.
 
 Decision point:
 
-- If only Pi packages consume `model-selection`, move it to `packages/pi/model-selection`.
-- If non-Pi consumers are planned soon, keep it and document the expected consumers.
-- If the concept is broader than Pi, rename the category to a broader category only after real consumers exist.
+- If only Pi packages consume `model-selection`,
+   move it to `packages/pi/model-selection`.
+- If non-Pi consumers are planned soon,
+   keep it and document the expected consumers.
+- If the concept is broader than Pi,
+   rename the category to a broader category only after real consumers exist.
 
 This phase is mostly path and documentation cleanup.
 
@@ -1138,9 +1228,13 @@ Do not use bulk `git add .`.
 For a path-only move,
 update at least:
 
-- `package.json` `repository.directory`, when present,
+- `package.json` `repository.directory`,
+   when present,
 - README install and task examples,
-- docs under `docs/decisions`, `docs/planning`, `docs/troubleshooting`, and `docs/handover`,
+- docs under `docs/decisions`,
+   `docs/planning`,
+   `docs/troubleshooting`,
+   and `docs/handover`,
 - root `package.json` dependencies only if package names change,
 - workspace dependencies only if package names change,
 - task references such as `mise run //packages/old/path:task`,
@@ -1222,7 +1316,9 @@ Neutral utilities stay neutral.
 When adding a package,
 answer these in order:
 
-1. Is this part of an existing product, plugin host, or subsystem?
+1. Is this part of an existing product,
+    plugin host,
+    or subsystem?
    If yes,
    put it under that category.
 2. Is this a shared core for adapters in that category?
@@ -1230,13 +1326,18 @@ answer these in order:
    keep it beside the adapters.
 3. Is this an independent reusable utility?
    If yes,
-   use `module`, `config`, `dev-script`, `shim`, or `stub` as appropriate.
+   use `module`,
+    `config`,
+    `dev-script`,
+    `shim`,
+    or `stub` as appropriate.
 4. Is this a fixture for one owner?
    If yes,
    keep it near the owner unless it needs a workspace boundary.
 5. Is this paused or deprecated?
    If yes,
-   use `packages-paused/` or `packages-deprecated/`, not a category name under `packages/`.
+   use `packages-paused/` or `packages-deprecated/`,
+    not a category name under `packages/`.
 6. Would the package path need three segments below `packages/`?
    If yes,
    rename the second segment instead of adding depth.
