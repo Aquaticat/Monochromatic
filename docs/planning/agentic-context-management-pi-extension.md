@@ -1018,9 +1018,10 @@ Hidden context beats TUI-only because model-visible repair matters for agentic o
 
 ### Question 12: should ACM change only provider context or also rendered transcript UI?
 
-Recommended answer:
+Decision:
 ACM rewrites provider context only.
 The transcript UI and session JSONL keep the original text plus ACM audit trail.
+User answered this on 2026-06-15.
 
 Pros:
 maximal auditability,
@@ -1030,7 +1031,7 @@ and avoids confusing `/tree` or resume behavior.
 Cons:
 the human may still see large original tool outputs in the transcript UI unless normal tool-collapse UI hides them.
 
-Alternative:
+Rejected alternative:
 also render omitted markers in the UI while keeping JSONL original.
 
 Pros:
@@ -1039,7 +1040,7 @@ human view matches model view.
 Cons:
 adds a parallel renderer path and may hide useful audit details from visual review.
 
-Alternative:
+Rejected alternative:
 rewrite session history destructively.
 
 Pros:
@@ -1051,6 +1052,43 @@ loses evidence and breaks the core non-destructive design.
 Ranking:
 provider-only beats UI-mirrored because the context hook's strength is non-destructive request-time rewriting.
 UI-mirrored beats destructive history rewrite because original evidence remains recoverable.
+
+### Question 13: should ACM rules survive Pi compaction?
+
+Recommended answer:
+rules survive compaction until explicitly disabled.
+The implementation should replay rule actions from `ctx.sessionManager.getBranch()` rather than only `event.messages`,
+because `event.messages` may contain a compaction summary instead of older `acm` tool results.
+
+Pros:
+respects the persist-until-disabled decision across automatic and manual compaction.
+
+Cons:
+the `context` handler has to reconcile branch entries with provider messages,
+which is more complex than scanning `event.messages` alone.
+
+Alternative:
+rules expire when their tool results fall behind compaction.
+
+Pros:
+simpler context handler.
+
+Cons:
+compaction silently disables active ACM rules,
+contradicting the lifetime decision.
+
+Alternative:
+write a fresh ACM state entry during compaction.
+
+Pros:
+keeps post-compaction replay short.
+
+Cons:
+creates a second state materialization path that can diverge from tool result replay.
+
+Ranking:
+survive via branch replay beats fresh state because tool result details remain the single source of truth.
+Fresh state beats expire-on-compaction because it preserves user-visible behavior.
 
 ## First implementation decision needed
 
@@ -1081,7 +1119,8 @@ descriptions are model-supplied strings,
 and empty strings are valid.
 Question 11 is resolved:
 diagnostics live in `acm` tool result `details` plus `list` and preview commands.
+Question 12 is resolved:
+ACM rewrites provider context only.
 Before building past Phase 1,
-answer Question 12.
-My recommendation is provider-context-only rewriting,
-with transcript UI and session JSONL left original.
+answer Question 13.
+My recommendation is rules survive Pi compaction by replaying from branch entries.
