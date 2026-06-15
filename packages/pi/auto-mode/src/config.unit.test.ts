@@ -10,9 +10,7 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import * as v from 'valibot';
 import { compilePatterns, } from './config.ts';
-import { AutoModeConfigSchema, } from './config-schemas.ts';
 import { CONTEXT_ACTIVITY_FLOOR, } from './constants.ts';
 import {
   BASE_SYSTEM_PROMPT,
@@ -34,27 +32,6 @@ await describe({
       name: 'DEFAULT_DENY_GUIDANCE mentions propose_trust',
       fn: async () => {
         expect(DEFAULT_DENY_GUIDANCE.includes('propose_trust',),).toBe(true,);
-      },
-    },),
-
-    it({
-      name: 'accepts legacy judgeModel costRatio',
-      fn: async () => {
-        const result = v.safeParse(
-          AutoModeConfigSchema,
-          {
-            commands: [],
-            patterns: [],
-            enabled: true,
-            judgeModel: {
-              strategy: 'same-provider',
-              costRatio: 1 / 2,
-              majorVersions: 1,
-            },
-            judgeTimeoutMs: 10_000,
-          },
-        );
-        expect(result.success,).toBe(true,);
       },
     },),
   ],

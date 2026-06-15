@@ -121,7 +121,7 @@ await describe({
       },
     },),
     it({
-      name: 'selects same-provider candidate without cost-ratio rejection',
+      name: 'selects near-active-cost same-provider candidate',
       fn: async function testSameProviderSelectionWithoutCostRatioRejection() {
         const selected = await selectBudgetModel({
           activeModel,

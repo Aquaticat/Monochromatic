@@ -411,12 +411,6 @@ type JudgeModelConfig = {
   readonly modelOverride?: ModelOverride;
   readonly strategy: ModelStrategy;
   /**
-   * Legacy cost-ratio setting accepted for older config files.
-   *
-   * @deprecated Budget selection no longer rejects candidates by cost ratio.
-   */
-  readonly costRatio?: number;
-  /**
    * How many major version families to search.
    */
   readonly majorVersions: number;
