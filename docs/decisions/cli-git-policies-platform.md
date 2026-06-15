@@ -115,25 +115,35 @@ Because the wrapper shadows `git`, loading `cli-git.config.mjs` turns an innocuo
 execution, the hazard native hooks avoid by never running a clone's checked-out hooks.
 cli-git therefore gates config loading behind trust, with its own self-contained registry rather than mise's,
 because standalone and non-mise use is expected.
-It follows mise's verified model:
+It borrows mise's machinery but, deliberately, not mise's default posture:
 
-- Default: trust is path-keyed.
-  A per-user registry records a marker for the config artifact's path (mise stores empty path-named markers
-  under `~/.local/state/mise/trusted-configs/`, with a `.monorepo` variant trusting a config root for a subtree).
+- Default: content-hashed (mise's paranoid posture made the default).
+  The registry keys trust on the artifact's path plus a sha256 of `cli-git.config.mjs` (mise's
+  `file_hash_sha256`, which mise gates behind `Settings::paranoid`).
   First encounter is untrusted: built-ins run, the repo config does not, until an explicit `cli-git trust`.
-  Once trusted, that path stays trusted; later edits, re-bundles, or pulled changes are not re-checked.
-- Paranoid mode (opt-in setting): additionally records and verifies a sha256 of the artifact (mise's
-  `file_hash_sha256`, gated by `Settings::paranoid`), so any change to `cli-git.config.mjs` re-prompts.
-- It fails closed when it cannot prompt and the config is untrusted (run built-ins, do not execute it),
-  auto-trusts in detected CI unless paranoid mode is set, and exposes an env kill-switch to disable discovery.
+  Any later change to the artifact, an edit, a re-bundle, or a pulled change, re-prompts before it executes.
+  This is stricter than mise's default on purpose: mise executes config on `cd` or an explicit command, while
+  cli-git executes it on ordinary git commands, so the silent-pulled-change hole is worth closing by default.
+- Relaxed mode (opt-in): path-keyed only.
+  Turning the content check off reverts to mise's default behavior, trust keyed on path with no re-check on
+  change, lower friction during active config development.
+  The exposure it reopens, a modified trusted config running silently, is the explicit cost of the relaxed mode.
+- It fails closed when it cannot prompt and the artifact is untrusted or changed (run built-ins, do not
+  execute it), and exposes an env kill-switch to disable discovery entirely.
+
+Provisional, derived from mise rather than decided here: whether to support mise's `.monorepo`-style trust of a
+config root for a subtree, and how an external consumer's CI that runs the wrapper obtains trust under a
+content-hashed default (this repo's own CI runs the attested binary directly, not the wrapper, so it is
+unaffected).
+Both belong in the implementation spec.
 
 The supply-chain boundary is stated plainly so a future reader does not over-read it.
-In the default mode a once-trusted config that is later modified executes without re-prompting, exactly as
-with mise; only paranoid mode closes that.
-Trust answers only whether to execute this repo's config at all.
-It does not vet what that config imports: plugin internals and versions are the consumer's lockfile-pinning
-problem (the earlier "provenance is not cli-git's business" stance), and even a bundled-in plugin update is
-re-checked only under paranoid mode, never in the default path-keyed mode.
+Under the default a modified `cli-git.config.mjs` re-prompts, so a bundled-in plugin update is caught;
+only plugins the artifact imports from node_modules rather than inlining escape the hash, and those are
+governed by the consumer's lockfile pinning.
+Trust answers only whether to execute this repo's config at all; it does not vet what that config imports.
+Plugin internals and versions remain the consumer's lockfile-pinning problem (the earlier "provenance is not
+cli-git's business" stance), not cli-git's.
 
 ## Severity
 
@@ -207,9 +217,10 @@ The three forks the external review surfaced resolved as:
 - Config loading: eager load of a consumer-produced prebundle (chosen) over a cli-git-built manifest (rejected,
   it would put a build cli-git does not own on the hot path) and dynamic-import thunks (rejected, they drop the
   plain-import authoring ergonomic).
-- Trust: cli-git's own path-keyed registry on mise's model (chosen) over reusing mise's store (rejected,
-  non-mise use is expected) and treating trust as out of scope (rejected, it turns `git status` into code
-  execution on any clone).
+- Trust: cli-git's own registry, content-hashed by default (chosen, stricter than mise's path-keyed default
+  because the wrapper executes config on ordinary git commands) over reusing mise's store (rejected, non-mise
+  use is expected) and treating trust as out of scope (rejected, it turns `git status` into code execution on
+  any clone).
 - Scan timing: both pre-forward and post-commit (chosen) over pre-forward only (rejected, a misprediction
   false-passes to the remote) and post-commit only (rejected, no early feedback).
 
