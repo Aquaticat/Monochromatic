@@ -176,14 +176,19 @@ The attack to defeat is different: a repo plants `CLI_GIT_NO_PARANOID` entries f
 its `mise.toml` env, betting a cloner trusts the `mise.toml` without much thought.
 The tell is that such an entry cannot carry a real filesystem id, because the attacker can guess a path but does
 not know the cloner's volume, so the planted entry is path-only.
-So cli-git consults only the entry that names the config path it is about to load: it honors that entry when its
-filesystem id matches the resolved volume, and shouts when an entry for this path carries a filesystem id that
-matches no volume, or no id at all (a path-only entry), because that is the signature of opportunistic path
-matching, not an intentional relaxation.
-Scoping the check to the current config path is deliberate: a dormant entry for some other path (an unplugged
-external drive, or a repo not yet cloned) is never consulted, so a legitimate user is not shouted at, while a
-planted entry for this repo's config path still mismatches the volume and shouts.
-The noise is aimed at the attack, not at legitimate use, which carries the real id and stays quiet.
+So cli-git shouts on two kinds of entry.
+Structurally, on any list entry that carries no filesystem id or a malformed one (an id that does not parse as a
+real volume-id shape), wherever it sits in the list: such an entry cannot come from legitimate use, which always
+writes a well-formed `<filesystem id>:<path>` through `cli-git trust`.
+Semantically, and scoped to the config being loaded, on the entry that names this config's path but whose
+well-formed id matches no mounted volume: this config's own volume is necessarily mounted at load time, so a
+well-formed but wrong id there is a planted guess.
+The scoping is what keeps the semantic check quiet for a legitimate dormant entry: a well-formed entry for some
+other path (an unplugged external drive, or a repo not yet cloned) names a real id that simply is not mounted
+right now, so it is never consulted.
+A shout is a loud warning naming the variable and the offending path, because both shapes are signatures of
+opportunistic path matching, not intentional relaxation; legitimate use carries the real id for a mounted volume
+and stays quiet.
 Even ignored, the relaxation removes only the re-check on later changes, not the first-execution gate (the
 (filesystem id, path) trust still requires an explicit `cli-git trust`), and a path-only entry matches no
 trusted key anyway.

@@ -165,6 +165,10 @@ Design points:
   need refreshing after a reboot").
 - The module guarantees `value` is colon-free and a test asserts it, so the cli-git key
   contract cannot silently regress.
+- It exports a shape guard, `isFsId(value: string): value is FsId` (TY6, TY7), so a consumer can
+  validate an id's shape without re-encoding the per-platform formats.
+  cli-git uses it to flag malformed or missing ids in `CLI_GIT_NO_PARANOID` entries; the guard checks
+  shape (well-formed), not liveness (mounted), which stays the consumer's scoped semantic check.
 - Per-process memoization keyed by absolute path avoids re-spawning `findmnt`/`diskutil`.
   cli-git processes are short-lived (one git command) and editord resolves once at startup,
   so a simple `Map` memo is sufficient and mount changes mid-process are not a concern for
