@@ -124,8 +124,8 @@ prebuilt image isn't handy.
   fuzzer-mutated input that triggered the crash and may contain
   secret-shaped bytes.
 - `coverage/` -- coverage data. Ignored.
-- `Cargo.lock`: committed so the fuzz toolchain stays
-  reproducible.
+- `Cargo.lock`:
+  Committed so the fuzz toolchain stays reproducible.
   Root `.gitignore` does not ignore Cargo lockfiles.
 
 The local deny-list (`/forbidden-strings.local.txt`) must NEVER
