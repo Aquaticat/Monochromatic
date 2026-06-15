@@ -406,6 +406,14 @@ first. Either keeps the existing single-entry and `||`-union inputs working
 while fixing accumulated per-version entries. A duplicate-name warning at parse
 time would also surface the footgun.
 
+Note the blast radius: `evaluateVersionPolicy` / `createPackageVersionPolicy`
+also back `trustPolicyExclude` (via `createExcludePolicy` in
+`createNpmResolutionVerifier`), so this fix applies there too. That is a
+consistent improvement (multiple same-name trust-exclude entries would all be
+honored), not a regression. The reproduction above exercises exact-name
+matches; the glob case (`nameMatcher` may be a `*` matcher) is reasoned, not
+separately tested.
+
 This report was prepared with AI assistance: the source trace, the
 reproduction, the prototype fix, and the workarounds above were produced by an
 AI agent. The submitter should review and confirm them before filing.
