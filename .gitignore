@@ -6,6 +6,12 @@
 .env
 .env*.local
 *.local.*
+cosign.key
+local.properties
+*.auto.tfvars
+*.tfstate
+*.tfstate.*
+.terraform.lock.hcl
 
 # Root files created by sandboxes or local shells
 /.bash_profile
@@ -28,6 +34,9 @@ node_modules/
 .pnpm-store/
 .pnp.cjs
 .yarn/
+.gradle/
+.kotlin/
+.terraform/
 bun.lockb
 package-lock.json
 pnpm.sh
@@ -49,6 +58,7 @@ target/
 *.zst
 .bin/
 *.bin
+jniLibs/
 
 # Runtime outputs, caches, and temporary files
 cache/
@@ -64,6 +74,15 @@ pids/
 *.pid
 *.pid.lock
 *.seed
+*.backup
+artifacts/
+output/
+cache_*.json
+ipinfo_lite.json
+canary-history.jsonl
+_invocation-log.jsonl
+canary-lint/
+perf-test-data/*.txt
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 test-results/
 playwright-report/
@@ -164,7 +183,7 @@ $RECYCLE.BIN/
 .idea/**/caches/build_file_checksums.ser
 .idea/httpRequests/
 .idea_modules/
-/.idea/*.iml
+*.iml
 *.iws
 out/
 # Ignore the root .vscode sentinel file, but allow shared VS Code config if the path is a directory.
@@ -178,6 +197,7 @@ out/
 !.vscode/*.code-snippets
 .zed/settings.json
 .history/
+captures/
 
 # Astro and project data generated at runtime
 .astro/
@@ -185,48 +205,19 @@ out/
 /packages/webapp-forge/*/data/
 /packages-paused/webapp-forge/*/data/
 
-# Package-specific secrets and generated files
-/packages/config/cosign/cosign.key
-/packages/config/tofu/**/*.auto.tfvars
-/packages/config/tofu/**/*.lock.*
-/packages/config/tofu/**/.terraform/
-/packages/config/tofu/**/cache_*.json
-/packages/config/tofu/**/ipinfo_lite.json
-/packages/config/tofu/**/*.backup
-/packages/config/tofu/**/*.tfstate
+# Package-specific generated files unsafe to generalize
 /packages/desktop-daemon/hall-monitor/**/hall-monitor
-/packages/dev-script/vm-builder/output/
-/packages/music-player/android-app/.gradle/
-/packages/music-player/android-app/.kotlin/
 /packages/music-player/android-app/build/
 /packages/music-player/android-app/app/build/
-/packages/music-player/android-app/local.properties
-/packages/music-player/android-app/**/*.iml
 /packages/music-player/android-app/**/.idea/
-/packages/music-player/android-app/**/captures/
-/packages/music-player/android-app/app/src/main/jniLibs/
-
-# Inference canary generated artifacts
-/packages-paused/dev-script/inference-canary/src/canary-lint/
-/packages-paused/dev-script/inference-canary/canary-history.jsonl
-/packages-paused/dev-script/inference-canary/_invocation-log.jsonl
-/packages-paused/dev-script/inference-canary/src/codegen/perf-test-data/*.txt
 
 # Fuzzing artifacts
-/packages/fuzz/forbidden-strings/artifacts/
 /packages/fuzz/forbidden-strings/corpus/*/*
-!/packages/fuzz/forbidden-strings/corpus/.keep
 !/packages/fuzz/forbidden-strings/corpus/*/seed-*
 
 # Claude Code plugin bundles. Marketplace distribution requires committed built files.
 !/packages/claude-code-plugins/*/dist/
-!/packages/claude-code-plugins/*/dist/final/
 !/packages/claude-code-plugins/*/dist/final/*.js
-!/packages/claude-code-plugins/*/dist/final/node/
-!/packages/claude-code-plugins/*/dist/final/node/*.mjs
-!/packages/claude-code-plugins/*/dist/final/node/*.d.mts
 
-# Re-include files hidden by broader local or generated-output patterns.
+# Re-include files hidden by broader local patterns.
 !/forbidden-strings.local.example.txt
-!/packages/cli/forbidden-strings/Cargo.lock
-!/packages/cli/forbidden-strings/fuzz/Cargo.lock
