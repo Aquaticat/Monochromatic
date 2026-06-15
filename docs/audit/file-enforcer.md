@@ -435,28 +435,34 @@ model; their value to this audit is as reference implementations for the roadmap
   stronger than file-enforcer's notify-after-the-fact.
   Evidence: `/tmp/agent/fe-region-cog-20260615` at `c0419cf618b46af4224994a0a82759c04e27531b` (2026-06-15),
   `cogapp/cogapp.py`, `cogapp/options.py`, `cogapp/hashhandler.py`.
+  Axes: passes the gate weakly through arbitrary text, plus A1, A3, A7, and A8; lacks A2, A4, A5, A6, and A9.
 - `doctoc` (`thlorenz/doctoc`): a single-purpose markdown table-of-contents generator.
   It earns a place because its `--dryrun` is a clean, well-tested A7 reference: on an out-of-date file it sets a nonzero
   exit code and writes nothing, and its region markers with skip-if-unchanged are exactly the A8 shape.
   Evidence: `/tmp/agent/fe-region-doctoc-20260615` at `eef394097f85ef41c43a5910b5f8f3e19da7da06` (2026-06-16),
   `doctoc.js`, `lib/transform.js`.
+  Axes: passes A3, A7, and A8; lacks A1, A2, A4, A5, A6, and A9; the gate is markdown only.
 - `embedme` (`zakhenry/embedme`): embeds source-file contents into markdown code fences.
   Its `--verify` exits nonzero on drift without writing, a minor A7 reference.
   It is markdown-fence bound and a fixed transform, and it is stale, last pushed in 2024, with a known
   false-negative idempotency bug, issue 109.
   Evidence: `/tmp/agent/fe-region-embedme-20260615` at `3cd8692de2c905cf3c9cbc6d87c1b4220f2e6eeb` (2024-10-07),
   `src/embedme.ts`, `src/embedme.lib.ts`.
+  Axes: passes A3, A7, and A8; lacks A1, A2, A4, A5, A6, and A9; the gate is markdown only.
 - `markdown-magic` (`DavidWells/markdown-magic`): transforms content between comment markers across several comment
   syntaxes, with pluggable transforms.
   It is the weakest of the four on the axes that matter here: it has no drift-failing check mode, and at the cloned
   head its file-write path is commented out, so write behavior could not be verified.
   Evidence: `/tmp/agent/fe-region-mdmagic-20260615` at `62b616e573882208412538bb62ded4e122af1673` (2026-06-15),
   `packages/core/src/index.js`, `packages/block-parser/src/syntax.js`.
+  Axes: passes A8 and a partial A1; lacks A7, A2, A4, A5, A6, and A9; the write path is unverified at the cloned head.
 
 ### Dependency-update and vendoring pipelines
 
 These passed the earlier audit as serious complements and are re-slotted here unchanged.
 They pass the gate, in that they can write real files, but they target a different problem than root generation.
+Their source citations and maintenance signals are inherited from the prior revision rather than re-deepened,
+since they remain complements rather than replacement finalists.
 
 - `updatecli` (`updatecli/updatecli`): the most important adjacent tool.
   It runs source, condition, and target stages to automate dependency, version, and configuration updates,
@@ -468,12 +474,16 @@ They pass the gate, in that they can write real files, but they target a differe
   settings patching, or package-index helpers.
   Evidence: `updatecli/updatecli` at `8deb2563286f8c0388fc594e0528e2fa2523060c` (2026-06-14),
   `pkg/plugins/resources/file/target.go`, `pkg/core/pipeline/target/main.go`.
+  Axes: passes the gate, A3, and a dry-run diff adjacent to A7, with remote sources and source-control actions
+  beyond the axes; lacks A1, A4, A5, A6, A8, and A9.
 - `vendir` (`carvel-dev/vendir`): syncs vendored external directories into a tree, with a lock file and per-source
   checksums.
   It should be considered only if a future file-enforcer job is actually vendoring an external tree.
   It is not a general file generator.
   Evidence: `carvel-dev/vendir` at `a7fb189b2a1d1be30ccdf0049ae62b17d83240bc` (2026-06-03),
   `pkg/vendir/directory/directory.go`, `pkg/vendir/fetch`.
+  Axes: passes the gate for vendored trees only, with A3 through a lock file and checksums;
+  lacks A1, A2, A4, A6, A7, A8, and A9.
 - `go-task` (`go-task/task`): the strongest task-runner overlap.
   Its fingerprint, sources, generated-file, checksum, timestamp, and status checks overlap file-enforcer on A5,
   and its status checks are an A7-adjacent concept.
@@ -481,6 +491,8 @@ They pass the gate, in that they can write real files, but they target a differe
   the tracked read-and-write model, atomic destination protection, or structured helpers.
   Evidence: `go-task/task` at `24a3ccdf42043a2cced5b24f67cefcf902995ef3` (2026-06-07),
   `internal/fingerprint/task.go`, `internal/fingerprint/status.go`, `watch.go`.
+  Axes: passes the gate through shell commands, with strong A5 (fingerprint, checksum, timestamp, status) and A6 watch,
+  and status checks adjacent to A7; lacks native A1, A4, A8, and A9.
 
 ## Audit finding
 
@@ -590,37 +602,32 @@ Star counts and release dates are point-in-time signals, not endorsements.
 
 Tier-three and feature-donor tools:
 
-- `cog` / `cogapp`: about four hundred stars, PyPI release 3.6.0, active, a single large test file, no fuzz or mutation
-  harness.
-- `doctoc`: about four thousand four hundred stars, release v2.5.0 on 2026-06-12, very active, no fuzz or mutation
-  harness.
-- `embedme`: about two hundred forty stars, last pushed 2024-10, stale, a known idempotency bug open, no fuzz harness.
-- `markdown-magic`: about eight hundred sixty stars, release 4.9.0 on 2026-05-30, write path disabled at the cloned
-  head, no fuzz harness.
-- `wireit`: about six thousand four hundred stars, npm release 0.14.12 on 2025-04-10, actively merged, no fuzz or
-  mutation harness.
-- `turbo`: about thirty thousand five hundred stars, release v2.9.18 on 2026-06-10, daily activity, `quickcheck` in one
-  terminal crate, no dedicated fuzz directory found.
-- `ninja`: about thirteen thousand stars, release v1.13.2 on 2025-11-20, active, manifest-parser fuzzing present.
-- `redo`: about one thousand eight hundred stars, dormant since 2021, issues disabled, no fuzz harness.
-- `tup`: about one thousand two hundred stars, actively maintained in 2026, no fuzz harness in tup's own source.
+- `cog` / `cogapp`: 406 stars, PyPI release 3.6.0, active, a single large test file, no fuzz or mutation harness.
+- `doctoc`: 4,449 stars, release v2.5.0 on 2026-06-12, very active, no fuzz or mutation harness.
+- `embedme`: 238 stars, last pushed 2024-10, stale, a known idempotency bug open, no fuzz harness.
+- `markdown-magic`: 864 stars, release 4.9.0 on 2026-05-30, write path disabled at the cloned head, no fuzz harness.
+- `wireit`: 6,410 stars, npm release 0.14.12 on 2025-04-10, actively merged, no fuzz or mutation harness.
+- `turbo`: 30,548 stars, release v2.9.18 on 2026-06-10, daily activity, `quickcheck` in one terminal crate,
+  no dedicated fuzz directory found.
+- `ninja`: 13,020 stars, release v1.13.2 on 2025-11-20, active, manifest-parser fuzzing present.
+- `redo`: 1,845 stars, dormant since 2021, issues disabled, no fuzz harness.
+- `tup`: 1,255 stars, actively maintained in 2026, no fuzz harness in tup's own source.
 - `make`: GNU make 4.4.1 from 2023-02, foundational and stable, fuzz posture not assessed at documentation tier.
-- `updatecli`: about nine hundred thirty stars, release v0.118.0 on 2026-06-02, maintainer-active, no broad fuzz,
-  property, or mutation harness found.
-- `vendir`: about three hundred seventy stars, release v0.46.0 on 2026-06-10, maintainer-active on sampled pull
-  requests, no fuzz or mutation harness.
+- `updatecli`: 930 stars, release v0.118.0 on 2026-06-02, maintainer-active, no broad fuzz, property, or mutation
+  harness found.
+- `vendir`: 373 stars, release v0.46.0 on 2026-06-10, maintainer-active on sampled pull requests, no fuzz or mutation
+  harness.
 - `go-task`: maintainer comments and reviews on sampled issues and pull requests, no Go fuzz, property, or mutation
   harness found.
 
 Narrow-domain cluster, recorded so the dismissal is not mistaken for staleness:
 
-- `syncpack`: about two thousand stars, release 15.3.2 on 2026-06-15, highly responsive owner, no fuzz, property, or
-  mutation harness.
-- `manypkg`: about one thousand stars, `@manypkg/cli` 0.25.1, active in 2026, no fuzz harness.
-- `sherif`: about one thousand two hundred stars, release v1.11.1 on 2026-03-30, active owner, snapshot tests but no
-  property or fuzz harness.
-- Yarn constraints: part of `yarnpkg/berry`, about eight thousand stars on the monorepo, actively pushed.
-- `knip`: about eleven thousand five hundred stars, release 6.16.1 on 2026-06-06, active owner, no fuzz harness.
+- `syncpack`: 2,063 stars, release 15.3.2 on 2026-06-15, highly responsive owner, no fuzz, property, or mutation
+  harness.
+- `manypkg`: 1,036 stars, `@manypkg/cli` 0.25.1, active in 2026, no fuzz harness.
+- `sherif`: 1,164 stars, release v1.11.1 on 2026-03-30, active owner, snapshot tests but no property or fuzz harness.
+- Yarn constraints: part of `yarnpkg/berry`, 8,078 stars on the monorepo, actively pushed.
+- `knip`: 11,487 stars, release 6.16.1 on 2026-06-06, active owner, no fuzz harness.
 
 ## Evidence and provenance
 
