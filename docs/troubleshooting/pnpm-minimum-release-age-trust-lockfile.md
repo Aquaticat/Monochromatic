@@ -132,8 +132,16 @@ reviewed,
 
 ### Add explicit release-age exclusions
 
-Add the rejected package versions to `minimumReleaseAgeExclude` in `pnpm-workspace.yaml`,
+Add the rejected packages to `minimumReleaseAgeExclude` in `pnpm-workspace.yaml`,
  then rerun the normal install.
+
+Use one entry per package, not one entry per version.
+A bare name (`@scope/pkg`) exempts every version;
+ a single `||` union (`@scope/pkg@1.0.0 || 1.1.0`) exempts the listed versions.
+Listing the same name on multiple `name@version` lines does not work:
+ pnpm honors only the first listed version per name and silently drops the rest,
+ which is the exact shape `pnpm audit --fix` accumulates.
+See `docs/troubleshooting/pnpm-minimum-release-age-exclude-first-match.md`.
 
 Tradeoff:
  the exclusion is durable policy.
