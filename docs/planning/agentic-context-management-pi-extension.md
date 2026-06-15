@@ -183,6 +183,18 @@ For `action: "disable"`,
 The extension disables every active rule whose matcher equals a supplied matcher after normalization.
 Descriptions are not part of the disable key.
 
+For `action: "list"`,
+the tool result should return compact active-rule summaries:
+normalized matcher,
+description,
+source `toolCallId`,
+creation order,
+current assistant-text match count,
+current tool-result-text match count,
+and skip diagnostics.
+The list output must not include matched text snippets by default,
+because that can reintroduce omitted text into provider context.
+
 Compatibility shim:
 `prepareArguments()` should accept the shorthand shown by the user as an illustrative notation.
 Actual model tool calls must still arrive as JSON-compatible arguments,
@@ -496,6 +508,7 @@ and the implementation verifies that unsupported regex syntax is rejected clearl
   unknown details versions,
   duplicate normalized matchers,
   unknown disable matchers,
+  list summaries without matched snippets,
   and overlap skips.
 - Add a terse custom renderer for `acm` tool calls and results.
 
@@ -551,6 +564,8 @@ Unit tests:
 - disabling an unknown matcher is a no-op with diagnostics;
 - disabling a matcher removes every active rule with that normalized matcher;
 - adding a matcher after disabling it reactivates that matcher for later context;
+- `action: "list"` returns normalized matchers that can be copied into `action: "disable"`;
+- `action: "list"` reports current assistant and tool-result match counts without matched text snippets;
 - multiple substitutions in one ACM call apply in stable order;
 - global zero-width regex cannot infinite-loop;
 - regex flags parser rejects unsupported flags;
@@ -1299,6 +1314,53 @@ exact matcher beats generated IDs because it keeps disable semantics tied to the
 Generated IDs beat clear-all because they preserve precise selective disable.
 Clear-all beats ordinals because it is blunt but not drift-prone.
 
+### Question 16: what should `action: "list"` return?
+
+Decision:
+`action: "list"` should return matcher summaries without matched text snippets.
+User answered this on 2026-06-15.
+
+Each summary should include:
+
+- normalized matcher,
+- description,
+- source `toolCallId`,
+- creation order,
+- current assistant-text match count,
+- current tool-result-text match count,
+- skip diagnostics.
+
+Pros:
+lets the model copy exact normalized matchers into `action: "disable"`,
+keeps diagnostics compact,
+and avoids putting omitted text back into provider context.
+
+Cons:
+visual audit requires `/acm-preview` or session inspection rather than list snippets.
+
+Rejected alternative:
+include matched snippets in `action: "list"`.
+
+Pros:
+easier to inspect what will be omitted.
+
+Cons:
+can reintroduce large or intentionally omitted text into context.
+
+Rejected alternative:
+return counts only.
+
+Pros:
+smallest diagnostic output.
+
+Cons:
+does not support exact-matcher disable without retyping matchers from memory.
+
+Ranking:
+matcher summary beats snippets because disable needs normalized matchers and list should stay compact.
+Snippets beat counts-only for human audit,
+but counts-only is too weak for the exact-matcher disable contract.
+
 ## Resolved implementation decisions
 
 Question 1 is resolved:
@@ -1341,5 +1403,7 @@ Question 14 is resolved:
 Phase 0 requires a source-audited safe regex engine before enabling regex.
 Question 15 is resolved:
 ACM disables rules by exact normalized matcher rather than by rule id.
+Question 16 is resolved:
+`action: "list"` returns matcher summaries without matched text snippets.
 Before implementation,
 run the documented Phase 0 source audit to choose the exact safe regex engine and budgets.
