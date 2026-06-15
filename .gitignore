@@ -1,348 +1,14 @@
-# Personal backup ignore config
+# Local config, secrets, and machine-specific files
 .kopiaignore
-
-node_modules
-.jj
-.dist
-dist
-.env
-/bak
-/.bak
-*.tsbuildinfo
-*.map
-.bin
-test-results
-playwright-report
-blob-report
-.cache
-cache/
-**/cache/
-/temp
-src/temp
-.pnpm-store
-pnpm.sh
-packages/*/*/temp
-locks
-.pnp.cjs
-*.br
-*.zst
-/caddy
-.yarn
-bun.lockb
-package-lock.json
-*.tmp
-*.log.jsonl
-*.log
-*.js
-!*.config.js
-.tmp
-.mastra
-.stylelintcache
-
-.eslintcache
-
-*.local.json
-
-# Contains forbidden literals and regex patterns.
+.mcp.json
 /betterleaks.toml
 /forbidden-strings.local.txt
-# Cargo build output for the forbidden-strings scanner.
-# Cargo.lock IS committed for the binary crate (reproducible builds catch
-# upstream supply-chain tampering). The unignore lives near the bottom of
-# this file so it overrides the global *.lock pattern below.
-packages/cli/forbidden-strings/target/
-
-# Contains secrets.
-.mcp.json
-
-# Spell linter relies on this.
-.vale
-
-*.bun-build
-
-.fastembed_cache
-
-*.fast
-
-*.vec
-
-*.term
-
-*.idx
-
-*.pos
-
-*.store
-
-*.fieldnorm
-
-*.del
-
-meta.json
-
-*.bin
-
-.tmp*
-
-.managed.json
-
-index.meta
-
-metadata.json
-
-# So that actions/setup-node can correctly build yarn cache
-#yarn.lock
-
-#region Created by https://www.toptal.com/developers/gitignore/api/node,astro,macos,linux,windows,visualstudiocode,jetbrains
-# Edit at https://www.toptal.com/developers/gitignore?templates=node,astro,macos,linux,windows,visualstudiocode,jetbrains
-# Aquaticat: Modified to remove patterns for tools that we're not using.
-
-### Astro ###
-# Gitignore template for Astro projects
-# Ignore content collection generated files
-.astro
-
-### Linux ###
-*~
-
-# temporary files which can be created if a process still has a handle open of a deleted file
-.fuse_hidden*
-
-# KDE directory preferences
-.directory
-
-# Linux trash folder which might appear on any partition or disk
-.Trash-*
-
-# .nfs files are created when an open file is removed but is still being accessed
-.nfs*
-
-### macOS ###
-# General
-.DS_Store
-.AppleDouble
-.LSOverride
-
-# Icon must end with two \r
-Icon
-
-
-# Thumbnails
-# USER: That's not just thumbnails! Commented.
-# ._*
-
-# Files that might appear in the root of a volume
-.DocumentRevisions-V100
-.fseventsd
-.Spotlight-V100
-.TemporaryItems
-.Trashes
-.VolumeIcon.icns
-.com.apple.timemachine.donotpresent
-
-# Directories potentially created on remote AFP share
-.AppleDB
-.AppleDesktop
-Network Trash Folder
-Temporary Items
-.apdisk
-
-### macOS Patch ###
-# iCloud generated files
-*.icloud
-
-### Node ###
-# Logs
-logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-lerna-debug.log*
-.pnpm-debug.log*
-
-# Diagnostic reports (https://nodejs.org/api/report.html)
-report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
-
-# Runtime data
-pids
-*.pid
-*.seed
-*.pid.lock
-
-# Coverage directory used by tools like istanbul
-coverage
-*.lcov
-
-# Optional npm cache directory
-.npm
-
-# Optional REPL history
-.node_repl_history
-
-# Output of 'npm pack'
-*.tgz
-
-# dotenv environment variable files
-.env.development.local
-.env.test.local
-.env.production.local
-.env.local
-
-# vuepress v2.x temp and cache directory
-.temp
-
-# Serverless directories
-.serverless/
-
-# Stores VSCode versions used for testing VSCode extensions
-.vscode-test
-
-### Windows ###
-# Windows thumbnail cache files
-Thumbs.db
-Thumbs.db:encryptable
-ehthumbs.db
-ehthumbs_vista.db
-
-# Dump file
-*.stackdump
-
-# Folder config file
-[Dd]esktop.ini
-
-# Recycle Bin used on file shares
-$RECYCLE.BIN/
-
-# Windows Installer files
-*.cab
-*.msi
-*.msix
-*.msm
-*.msp
-
-# Windows shortcuts
-*.lnk
-
-
-### JetBrains ###
-# Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio, WebStorm and Rider
-# Reference: https://intellij-support.jetbrains.com/hc/en-us/articles/206544839
-
-# User-specific stuff
-.idea/**/workspace.xml
-.idea/**/tasks.xml
-.idea/**/usage.statistics.xml
-.idea/**/dictionaries
-.idea/**/shelf
-
-# Generated files
-.idea/**/contentModel.xml
-
-# Sensitive or high-churn files
-.idea/**/dataSources/
-.idea/**/dataSources.ids
-.idea/**/dataSources.local.xml
-.idea/**/sqlDataSources.xml
-.idea/**/dynamic.xml
-.idea/**/uiDesigner.xml
-.idea/**/dbnavigator.xml
-
-# File-based project format
-*.iws
-
-# IntelliJ
-out/
-
-# mpeltonen/sbt-idea plugin
-.idea_modules/
-
-# Editor-based Rest Client
-.idea/httpRequests
-
-# Android studio 3.1+ serialized cache file
-.idea/caches/build_file_checksums.ser
-
-### JetBrains Patch ###
-# Comment Reason: https://github.com/joeblau/gitignore.io/issues/186#issuecomment-215987721
-
-# Root JetBrains module files are local IDE state.
-/.idea/*.iml
-
-# *.iml
-# modules.xml
-# .idea/misc.xml
-# *.ipr
-
-# Markdown Navigator plugin
-# https://plugins.jetbrains.com/plugin/7896-markdown-navigator-enhanced
-.idea/**/markdown-navigator.xml
-.idea/**/markdown-navigator-enh.xml
-.idea/**/markdown-navigator/
-
-# Cache file creation bug
-# See https://youtrack.jetbrains.com/issue/JBR-2257
-.idea/$CACHE_FILE$
-
-### VisualStudioCode ###
-.vscode/*
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
-!.vscode/*.code-snippets
-
-### Zed ###
-.zed/settings.json
-
-# Local History for Visual Studio Code
-.history
-
-# Built Visual Studio Code Extensions
-*.vsix
-
-#endregion https://www.toptal.com/developers/gitignore/api/node,astro,macos,linux,windows,visualstudiocode,jetbrains
-.aider*
-
-# mise
-.mise/cache
+.env
+.env*.local
 *.local.*
+*.local.json
 
-# Crush
-.crush/
-
-# Serena code analysis tool
-.serena/cache/
-.serena/memories/
-.serena/project.local.yml
-.serena/.gitignore
-
-# Claude Code plugin bundles (marketplace distribution requires committed built files)
-!packages/claude-code-plugins/*/dist/
-!packages/claude-code-plugins/*/dist/final/
-!packages/claude-code-plugins/*/dist/final/*.js
-!packages/claude-code-plugins/*/dist/final/node/
-!packages/claude-code-plugins/*/dist/final/node/*.mjs
-!packages/claude-code-plugins/*/dist/final/node/*.d.mts
-
-# vm-builder build artifacts (qcow2 images, can be multiple GB)
-packages/dev-script/vm-builder/output/
-
-# webapp-forge dev SQLite databases (default `./data/forge.db` from
-# `data/db.ts`, picked up when running the server or seed CLI without
-# `--db=` or `DB_PATH` overrides). Includes the WAL/SHM sidecars.
-/data/
-packages/webapp-forge/*/data/
-packages-paused/webapp-forge/*/data/
-
-# file-enforcer managed outputs (regenerated by `mise run prepare`)
-/CLAUDE.md
-/.factory/skills/
-
-# Claude Code local and generated project state. Force-add reviewed shared config when needed.
-/.claude/
-
-# Claude Code sandbox sentinel files
+# Root files created by sandboxes or local shells
 /.bash_profile
 /.bashrc
 /.gitconfig
@@ -350,7 +16,6 @@ packages-paused/webapp-forge/*/data/
 /.nvimlog
 /.profile
 /.ripgreprc
-/.vscode
 /.zprofile
 /.zshrc
 /HEAD
@@ -359,84 +24,213 @@ packages-paused/webapp-forge/*/data/
 /objects
 /refs
 
-# Nested .gitignore rules merged into root.
-# Paths below preserve directory-relative semantics from removed nested files.
+# Dependencies and package-manager state
+node_modules/
+.pnpm-store/
+.pnp.cjs
+.yarn/
+bun.lockb
+package-lock.json
+pnpm.sh
+locks/
+.npm/
+.node_repl_history
 
-# .idea/.gitignore
-/.idea/shelf/
-/.idea/workspace.xml
-/.idea/httpRequests/
-/.idea/dataSources/
-/.idea/dataSources.local.xml
+# Build outputs and generated code
+.dist/
+dist/
+build/
+target/
+*.bun-build
+*.br
+*.js
+!*.config.js
+*.map
+*.tsbuildinfo
+*.tgz
+*.zst
+.bin/
+*.bin
 
-# .pi/npm/.gitignore
-/.pi/npm/*
+# Runtime outputs, caches, and temporary files
+cache/
+.cache/
+temp/
+.temp/
+.tmp
+.tmp*
+*.tmp
+*.log
+*.log.jsonl
+logs/
+pids/
+*.pid
+*.pid.lock
+*.seed
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+test-results/
+playwright-report/
+blob-report/
+coverage/
+*.lcov
+/bak/
+/.bak/
+/caddy/
+/serverless/
+.vscode-test/
+*.vsix
 
-# packages-paused/dev-script/inference-canary-viewer/.gitignore
-/packages-paused/dev-script/inference-canary-viewer/**/dist/
+# Generated search and vector indexes
+.fastembed_cache
+*.fast
+*.vec
+*.term
+*.idx
+*.pos
+*.store
+*.fieldnorm
+*.del
+meta.json
+metadata.json
+index.meta
+*.managed.json
 
-# packages-paused/dev-script/inference-canary/.gitignore
+# Local agent and editor-tool state
+.aider*
+.crush/
+.jj/
+.mastra/
+/.claude/
+/.factory/skills/
+/.pi/npm/
+.mise/cache/
+.serena/cache/
+.serena/memories/
+.serena/project.local.yml
+.serena/.gitignore
+.stylelintcache
+.eslintcache
+.vale
+
+# OS files
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+*.icloud
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# JetBrains, VS Code, and Zed local state
+.idea/**/workspace.xml
+.idea/**/tasks.xml
+.idea/**/usage.statistics.xml
+.idea/**/dictionaries/
+.idea/**/shelf/
+.idea/**/contentModel.xml
+.idea/**/dataSources/
+.idea/**/dataSources.ids
+.idea/**/dataSources.local.xml
+.idea/**/sqlDataSources.xml
+.idea/**/dynamic.xml
+.idea/**/uiDesigner.xml
+.idea/**/dbnavigator.xml
+.idea/**/markdown-navigator.xml
+.idea/**/markdown-navigator-enh.xml
+.idea/**/markdown-navigator/
+.idea/**/caches/build_file_checksums.ser
+.idea/httpRequests/
+.idea_modules/
+/.idea/*.iml
+*.iws
+out/
+# Ignore the root .vscode sentinel file, but allow shared VS Code config if the path is a directory.
+/.vscode
+!/.vscode/
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/*.code-snippets
+.zed/settings.json
+.history/
+
+# Astro and project data generated at runtime
+.astro/
+/data/
+/packages/webapp-forge/*/data/
+/packages-paused/webapp-forge/*/data/
+
+# Package-specific secrets and generated files
+/packages/config/cosign/cosign.key
+/packages/config/tofu/**/*.auto.tfvars
+/packages/config/tofu/**/.env.local
+/packages/config/tofu/**/*.lock.*
+/packages/config/tofu/**/.terraform/
+/packages/config/tofu/**/cache_*.json
+/packages/config/tofu/**/ipinfo_lite.json
+/packages/config/tofu/**/*.backup
+/packages/config/tofu/**/*.tfstate
+/packages/desktop-daemon/hall-monitor/**/hall-monitor
+/packages/dev-script/vm-builder/output/
+/packages/music-player/android-app/.gradle/
+/packages/music-player/android-app/.kotlin/
+/packages/music-player/android-app/local.properties
+/packages/music-player/android-app/**/*.iml
+/packages/music-player/android-app/**/.idea/
+/packages/music-player/android-app/**/captures/
+/packages/music-player/android-app/app/src/main/jniLibs/
+
+# Inference canary generated artifacts
 /packages-paused/dev-script/inference-canary/src/canary-lint/
 /packages-paused/dev-script/inference-canary/canary-history.jsonl
 /packages-paused/dev-script/inference-canary/_invocation-log.jsonl
 /packages-paused/dev-script/inference-canary/src/codegen/perf-test-data/*.txt
 
-# packages/config/cosign/.gitignore
-/packages/config/cosign/cosign.key
-
-# packages/config/tofu/.gitignore
-/packages/config/tofu/**/*.auto.tfvars
-/packages/config/tofu/**/.env.local
-/packages/config/tofu/**/*.lock.*
-/packages/config/tofu/**/.terraform
-/packages/config/tofu/**/cache_*.json
-/packages/config/tofu/**/ipinfo_lite.json
-/packages/config/tofu/**/node_modules
-/packages/config/tofu/**/*.backup
-/packages/config/tofu/**/*.tfstate
-
-# packages/desktop-app/terminal/.gitignore
-/packages/desktop-app/terminal/target
-
-# packages/desktop-daemon/hall-monitor/.gitignore
-/packages/desktop-daemon/hall-monitor/**/hall-monitor
-
-# packages/fuzz/forbidden-strings/.gitignore
-/packages/fuzz/forbidden-strings/**/target
-/packages/fuzz/forbidden-strings/**/artifacts
-/packages/fuzz/forbidden-strings/**/coverage
+# Fuzzing artifacts
+/packages/fuzz/forbidden-strings/artifacts/
 /packages/fuzz/forbidden-strings/corpus/*/*
 !/packages/fuzz/forbidden-strings/corpus/.keep
 !/packages/fuzz/forbidden-strings/corpus/*/seed-*
 
-# packages/linter/rust/.gitignore
-/packages/linter/rust/target
+# Claude Code plugin bundles. Marketplace distribution requires committed built files.
+!/packages/claude-code-plugins/*/dist/
+!/packages/claude-code-plugins/*/dist/final/
+!/packages/claude-code-plugins/*/dist/final/*.js
+!/packages/claude-code-plugins/*/dist/final/node/
+!/packages/claude-code-plugins/*/dist/final/node/*.mjs
+!/packages/claude-code-plugins/*/dist/final/node/*.d.mts
 
-# packages/music-player/android-app/.gitignore
-/packages/music-player/android-app/build
-/packages/music-player/android-app/app/build
-/packages/music-player/android-app/.gradle
-/packages/music-player/android-app/.kotlin
-/packages/music-player/android-app/local.properties
-/packages/music-player/android-app/**/*.iml
-/packages/music-player/android-app/**/.idea/
-/packages/music-player/android-app/**/captures/
-/packages/music-player/android-app/rust/target
-/packages/music-player/android-app/app/src/main/jniLibs
-
-# packages/music-player/desktop-app/.gitignore
-/packages/music-player/desktop-app/target
-/packages/music-player/desktop-app/dist
-
-# packages/typeface/aquaticat/.gitignore
-/packages/typeface/aquaticat/**/dist/
-
-# packages/webapp-content/ssg-test/.gitignore
-/packages/webapp-content/ssg-test/**/dist/
-/packages/webapp-content/ssg-test/**/.cache/
-
-# forbidden-strings: re-include files hidden by global *.local.* / *.lock.
-# These must appear AFTER the global patterns to take effect.
+# Re-include files hidden by broader local or generated-output patterns.
 !/forbidden-strings.local.example.txt
 !/packages/cli/forbidden-strings/Cargo.lock
 !/packages/cli/forbidden-strings/fuzz/Cargo.lock
