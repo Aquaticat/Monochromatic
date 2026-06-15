@@ -25,6 +25,95 @@ import type {
   BudgetModelOptions,
 } from './types.ts';
 
+//region Model shape guards
+
+/**
+ * Detect the structural pi model fields used by budget selection and auth callbacks.
+ *
+ * @param value - value to inspect
+ *
+ * @returns whether value has the needed pi model fields
+ */
+function isModelApi(
+  value: unknown,
+): value is Model<Api> {
+  if ((value === null) || ((typeof value) !== 'object'))
+    return false;
+  if (!('cost' in value))
+    return false;
+  /**
+   * Cost object inspected separately so nested price fields stay type-safe.
+   */
+  const { cost, } = value;
+  if ((cost === null) || ((typeof cost) !== 'object'))
+    return false;
+  return ('id' in value)
+    && ((typeof value.id) === 'string')
+    && ('name' in value)
+    && ((typeof value.name) === 'string')
+    && ('provider' in value)
+    && ((typeof value.provider) === 'string')
+    && ('api' in value)
+    && ((typeof value.api) === 'string')
+    && ('baseUrl' in value)
+    && ((typeof value.baseUrl) === 'string')
+    && ('reasoning' in value)
+    && ((typeof value.reasoning) === 'boolean')
+    && ('input' in value)
+    && Array.isArray(value.input,)
+    && ('contextWindow' in value)
+    && ((typeof value.contextWindow) === 'number')
+    && ('maxTokens' in value)
+    && ((typeof value.maxTokens) === 'number')
+    && ('input' in cost)
+    && ((typeof cost.input) === 'number')
+    && ('output' in cost)
+    && ((typeof cost.output) === 'number')
+    && ('cacheRead' in cost)
+    && ((typeof cost.cacheRead) === 'number')
+    && ('cacheWrite' in cost)
+    && ((typeof cost.cacheWrite) === 'number');
+}
+
+/**
+ * Assert that a value has the pi model shape auto-mode budget selection needs.
+ *
+ * @param value - value to inspect
+ *
+ * @throws NoBudgetModelError when value is not a pi model
+ */
+function assertModelApi(
+  value: unknown,
+): asserts value is Model<Api> {
+  if (!isModelApi(value,)) {
+    throw new NoBudgetModelError(
+      'budget model selection received an invalid active model shape',
+    );
+  }
+}
+
+/**
+ * Assert that a value is a list of pi models auto-mode budget selection can inspect.
+ *
+ * @param value - value to inspect
+ *
+ * @throws NoBudgetModelError when value is not a pi model list
+ */
+function assertModelApiList(
+  value: unknown,
+): asserts value is readonly Model<Api>[] {
+  if (!Array.isArray(value,)
+    || !value.every(function registryModelHasShape(model,) {
+      return isModelApi(model,);
+    },)) {
+    throw new NoBudgetModelError(
+      'budget model selection received an invalid registry model shape',
+    );
+  }
+}
+
+//endregion Model shape guards
+
 //region Public API
 
 /**
@@ -94,12 +183,16 @@ async function findBudgetModel(
   /**
    * Active model handed in by host so same-provider selection has a reference provider.
    */
-  const activeModel = ctx.model as Model<Api>;
+  const rawActiveModel: unknown = ctx.model;
+  assertModelApi(rawActiveModel,);
+  const activeModel = rawActiveModel;
   /**
    * Registry models narrowed to auto-mode's pi model shape for shared selection callbacks.
    */
-  const allModels = ctx.modelRegistry
-    .getAll() as readonly Model<Api>[];
+  const rawAllModels: unknown = ctx.modelRegistry
+    .getAll();
+  assertModelApiList(rawAllModels,);
+  const allModels = rawAllModels;
 
   return await selectBudgetModel<Model<Api>>({
     activeModel,
