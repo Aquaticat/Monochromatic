@@ -111,14 +111,16 @@ Status markers per section let the user interrupt and resume.
 ```md
 ### Setup
 
-Status: TODO | DONE
+Status:
+TODO | DONE
 
 What to bring up first.
 Open the app, sign in, navigate to the screen that the steps assume.
 
 ### Steps
 
-Status: TODO | DONE
+Status:
+TODO | DONE
 
 1. Numbered actions, one observable action per step.
 2. Bold every UI element.
@@ -126,21 +128,27 @@ Status: TODO | DONE
 
 ### What to check
 
-Status: TODO | DONE
+Status:
+TODO | DONE
 
 Expected outcome with the exact strings to grep or filter for.
 Use concrete strings, not paraphrases.
 
 ### Restore
 
-Status: TODO | DONE
+Status:
+TODO | DONE
 
 How to undo any test state, return the system to its pre-runbook configuration,
 or delete created resources.
 ```
 
-The `Status: TODO | DONE` line per section lets the user cross out `TODO`
+The `Status:` marker per section,
+with `TODO | DONE` on the line below it,
+lets the user cross out `TODO`
 and leave `DONE` to signal section completion.
+The value sits on its own line because the repo's semantic-line-breaks lint requires a break after the colon;
+keep it split rather than rejoining it onto the `Status:` line.
 Multi-section runbooks survive interruption this way.
 
 ## Element-level rules
@@ -231,19 +239,23 @@ so the skill is self-contained if the example file moves:
 
 ## Setup
 
-Status: TODO
+Status:
+TODO
 
 ## Steps
 
-Status: TODO
+Status:
+TODO
 
 ## What to check
 
-Status: TODO
+Status:
+TODO
 
 ## Restore
 
-Status: TODO
+Status:
+TODO
 ```
 
 ## Cues you are violating the rules
