@@ -359,6 +359,82 @@ packages-paused/webapp-forge/*/data/
 /objects
 /refs
 
+# Nested .gitignore rules merged into root.
+# Paths below preserve directory-relative semantics from removed nested files.
+
+# .idea/.gitignore
+/.idea/shelf/
+/.idea/workspace.xml
+/.idea/httpRequests/
+/.idea/dataSources/
+/.idea/dataSources.local.xml
+
+# .pi/npm/.gitignore
+/.pi/npm/*
+
+# packages-paused/dev-script/inference-canary-viewer/.gitignore
+/packages-paused/dev-script/inference-canary-viewer/**/dist/
+
+# packages-paused/dev-script/inference-canary/.gitignore
+/packages-paused/dev-script/inference-canary/src/canary-lint/
+/packages-paused/dev-script/inference-canary/canary-history.jsonl
+/packages-paused/dev-script/inference-canary/_invocation-log.jsonl
+/packages-paused/dev-script/inference-canary/src/codegen/perf-test-data/*.txt
+
+# packages/config/cosign/.gitignore
+/packages/config/cosign/cosign.key
+
+# packages/config/tofu/.gitignore
+/packages/config/tofu/**/*.auto.tfvars
+/packages/config/tofu/**/.env.local
+/packages/config/tofu/**/*.lock.*
+/packages/config/tofu/**/.terraform
+/packages/config/tofu/**/cache_*.json
+/packages/config/tofu/**/ipinfo_lite.json
+/packages/config/tofu/**/node_modules
+/packages/config/tofu/**/*.backup
+/packages/config/tofu/**/*.tfstate
+
+# packages/desktop-app/terminal/.gitignore
+/packages/desktop-app/terminal/target
+
+# packages/desktop-daemon/hall-monitor/.gitignore
+/packages/desktop-daemon/hall-monitor/**/hall-monitor
+
+# packages/fuzz/forbidden-strings/.gitignore
+/packages/fuzz/forbidden-strings/**/target
+/packages/fuzz/forbidden-strings/**/artifacts
+/packages/fuzz/forbidden-strings/**/coverage
+/packages/fuzz/forbidden-strings/corpus/*/*
+!/packages/fuzz/forbidden-strings/corpus/.keep
+!/packages/fuzz/forbidden-strings/corpus/*/seed-*
+
+# packages/linter/rust/.gitignore
+/packages/linter/rust/target
+
+# packages/music-player/android-app/.gitignore
+/packages/music-player/android-app/build
+/packages/music-player/android-app/app/build
+/packages/music-player/android-app/.gradle
+/packages/music-player/android-app/.kotlin
+/packages/music-player/android-app/local.properties
+/packages/music-player/android-app/**/*.iml
+/packages/music-player/android-app/**/.idea/
+/packages/music-player/android-app/**/captures/
+/packages/music-player/android-app/rust/target
+/packages/music-player/android-app/app/src/main/jniLibs
+
+# packages/music-player/desktop-app/.gitignore
+/packages/music-player/desktop-app/target
+/packages/music-player/desktop-app/dist
+
+# packages/typeface/aquaticat/.gitignore
+/packages/typeface/aquaticat/**/dist/
+
+# packages/webapp-content/ssg-test/.gitignore
+/packages/webapp-content/ssg-test/**/dist/
+/packages/webapp-content/ssg-test/**/.cache/
+
 # forbidden-strings: re-include files hidden by global *.local.* / *.lock.
 # These must appear AFTER the global patterns to take effect.
 !/forbidden-strings.local.example.txt
