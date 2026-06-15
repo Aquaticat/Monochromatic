@@ -326,6 +326,7 @@ The `context` handler should:
 - scan messages in source order;
 - collect `toolResult` messages whose `toolName` is `acm`;
 - replay `add` and `disable` actions into an active rule map;
+- keep rules active on the current branch until a later `disable` action removes them;
 - apply active rules in creation order;
 - skip a rule when it would delete or alter a non-text block;
 - skip overlapping replacements rather than guessing;
@@ -735,8 +736,9 @@ Bulky built-ins beat all tool results because preserving ACM's own audit trail m
 
 ### Question 5: how long should rules live?
 
-Recommended answer:
+Decision:
 rules persist on the active branch until disabled.
+User answered this on 2026-06-15.
 
 Pros:
 one `acm` call keeps redundant boilerplate or bulky output omitted across future turns,
@@ -746,7 +748,7 @@ Cons:
 a stale rule can keep applying after its original context is no longer relevant,
 so list/disable tooling must be easy to use.
 
-Alternative:
+Rejected alternative:
 rules apply only to the next provider request.
 
 Pros:
@@ -756,7 +758,7 @@ Cons:
 the model must repeatedly call ACM for recurring boilerplate,
 which adds tool noise and context cost.
 
-Alternative:
+Rejected alternative:
 rules expire after a fixed number of turns.
 
 Pros:
@@ -772,6 +774,43 @@ Ranking:
 persist-until-disabled beats fixed turn expiry because explicit state is easier to audit.
 Fixed turn expiry beats next-request-only because it can still reduce recurring context cost.
 
+### Question 6: what happens when a rule does not match as promised?
+
+Recommended answer:
+fail closed by skipping the whole rule,
+then report a diagnostic through `list` or preview output.
+
+Pros:
+no partial omission,
+no surprise history rewrite,
+and the provider request remains valid even when a pattern goes stale.
+
+Cons:
+token savings can disappear silently until diagnostics are checked,
+so the implementation should make skipped-rule counts visible.
+
+Alternative:
+apply all matches up to `occurrenceLimit` even when `expectedMatches` differs.
+
+Pros:
+keeps saving tokens when nearby text changed slightly.
+
+Cons:
+can omit unintended evidence after a broad or stale pattern starts matching new text.
+
+Alternative:
+throw an error and block the turn.
+
+Pros:
+never sends a context that violates the rule contract.
+
+Cons:
+a stale context-management rule can halt unrelated work.
+
+Ranking:
+skip-and-diagnose beats block-turn because context management should degrade gracefully.
+Block-turn beats partial-apply because partial omission can silently corrupt context.
+
 ## First implementation decision needed
 
 Question 1 is resolved:
@@ -784,6 +823,8 @@ active rules live in `acm` tool result `details`.
 Question 4 is resolved:
 all non-ACM tool result text blocks are eligible,
 with ACM's own tool results excluded.
+Question 5 is resolved:
+rules persist on the active branch until disabled.
 Before building past Phase 1,
-answer Question 5.
-My recommendation is rules persist on the active branch until disabled.
+answer Question 6.
+My recommendation is fail closed by skipping the whole rule and reporting diagnostics.
