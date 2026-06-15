@@ -344,16 +344,18 @@ That is both a performance risk and a denial-of-service footgun.
 Recommended MVP:
 
 - support literal matching without copying giant spans into tool arguments;
-- support bounded regex for the user shorthand path;
+- support safe-engine regex for the user shorthand path;
 - run Phase 0 before implementation to choose the exact source-audited safe regex engine;
 - reject raw full-context JavaScript `RegExp` matching;
-- for the bounded regex path,
-  enforce short pattern,
-  short supported-flags allowlist,
+- for the safe-engine regex path,
+  enforce the supported-flags allowlist,
   duplicate-flag rejection,
   canonical flag ordering,
-  and bounded text block size;
-- reject regexes that exceed those bounds;
+  and safe-engine syntax validation;
+- do not add ACM-specific length,
+  inspected-character,
+  replacement-count,
+  or active-rule caps;
 - do not require or store expected match counts;
 - do not require or store explicit occurrence limits;
 - for regex matching,
@@ -512,18 +514,13 @@ Expected package metadata:
 - Source-audit the finalist and at least two serious alternatives before adding a dependency.
 - Do not enable regex unless the selected engine has documented linear-time behavior for supported syntax.
 - Ship only literal matching if the safe-engine audit has not completed.
-- Record concrete budgets for pattern length,
-  description length,
-  literal length,
-  inspected text per block,
-  inspected text per request,
-  replacements per rule,
-  replacements per request,
-  and active rules replayed.
+- Record that ACM adds no custom length,
+  inspected-character,
+  replacement-count,
+  or active-rule caps.
 
 Definition of done:
 regex support is enabled only after a source-audited safe engine is selected,
-budgets are documented,
 and the implementation verifies that unsupported regex syntax is rejected clearly.
 
 ### Phase 1: minimal branch-safe omission
@@ -612,9 +609,9 @@ Unit tests:
 - multiple substitutions in one ACM call apply in stable order;
 - global zero-width regex cannot infinite-loop;
 - regex flags parser rejects unsupported flags;
-- description length is capped;
-- literal match length is capped;
-- total per-request match budget is enforced;
+- no ACM-specific length cap rejects descriptions,
+  literals,
+  or patterns;
 - compaction boundary makes a rule inactive when its source `acm` tool result is absent from `event.messages`;
 - branch-specific rule replay ignores tool results that are not on `event.messages`.
 
@@ -668,9 +665,7 @@ the model hides tool evidence from itself.
 Mitigation:
 allow only tool result text rewrites,
 keep tool call blocks and tool result metadata intact,
-and require list diagnostics,
-exact-matcher disable,
-and per-request budgets.
+and require list diagnostics plus exact-matcher disable.
 
 Risk:
 a broad pattern omits too much.
@@ -679,7 +674,6 @@ Mitigation:
 list commands,
 immediate disable,
 `/g` semantics,
-request budgets,
 and deterministic skip behavior for ambiguous matches.
 
 Risk:
@@ -692,9 +686,8 @@ Risk:
 tool arguments duplicate the text being removed.
 
 Mitigation:
-prefer regex or bounded range-style selectors for large spans,
-reject huge literal match strings,
-and keep literal matching for short exact phrases only.
+prefer regex selectors for large spans,
+and keep literal matching for exact phrases when that cost is acceptable.
 
 Risk:
 other extensions observe different context than ACM expects.
@@ -754,17 +747,17 @@ Assistant-only beats any-role because preserving user instructions matters more 
 ### Question 2: how much regex power is acceptable?
 
 Decision:
-ACM should support bounded regex.
+ACM should support safe-engine regex.
 User answered this on 2026-06-15.
 
 Pros:
 supports the requested `/^As.+model,$/gm` shorthand path,
 keeps flexible selectors for recurring boilerplate and long tool output,
-and avoids unbounded full-context regex execution.
+and avoids unsafe JavaScript `RegExp` execution.
 
 Cons:
-some expressive regexes are rejected,
-and implementation must prove a safe matching boundary before enabling regex by default.
+some regex syntax may be rejected by the selected safe engine,
+and implementation must source-audit that engine before enabling regex by default.
 
 Rejected alternative:
 short literal matching only.
@@ -786,7 +779,7 @@ Cons:
 model-generated regex can hang or over-match.
 
 Ranking:
-bounded regex beats literal-only because it preserves the requested example while controlling hangs.
+safe-engine regex beats literal-only because it preserves the requested example while controlling hangs.
 Literal-only beats raw JavaScript regex because predictable safety matters more than unrestricted pattern syntax.
 
 ### Question 3: where should active rules live?
@@ -980,7 +973,7 @@ Cons:
 `/g` can omit many spans if the pattern is broad,
 so list,
 disable,
-and per-request budgets carry the safety burden.
+and safe-engine matching carry the safety burden.
 
 Rejected alternative:
 explicit occurrence limits.
@@ -1023,9 +1016,7 @@ and a closer match to the intended model that rules manage all eligible context.
 
 Cons:
 broad regex mistakes have a larger blast radius,
-so list,
-disable,
-and budgets must be available in the first usable version.
+so list and disable must be available in the first usable version.
 
 Rejected alternative:
 keep previous,
@@ -1279,7 +1270,7 @@ preserves JavaScript regex semantics.
 Cons:
 adds worker overhead,
 timeout tuning,
-and request-budget complexity.
+and lifecycle complexity.
 
 Rejected alternative:
 accept only a restricted JavaScript regex syntax.
@@ -1653,12 +1644,68 @@ Ranking:
 matcher summaries beat counts-only because exact-matcher disable needs provider-visible selectors.
 Counts-only beats terse success because counts at least reveal broad or zero matches.
 
+### Question 23: should ACM define custom caps?
+
+Decision:
+ACM should not define custom caps for description length,
+literal length,
+regex pattern length,
+inspected text,
+replacement count,
+or active rules.
+User answered this on 2026-06-15 by saying "No caps."
+
+Pros:
+avoids arbitrary limits,
+keeps model-authored selectors expressive,
+and lets Phase 0 focus on selecting a safe regex engine rather than tuning constants.
+
+Cons:
+large descriptions,
+literals,
+or many active rules can still cost tokens or CPU within the existing provider context window.
+List diagnostics and exact-matcher disable must carry the operational safety burden.
+
+Rejected alternative:
+choose exact constants during Phase 0.
+
+Pros:
+turns safety limits into concrete implementation requirements.
+
+Cons:
+requires arbitrary policy choices after the user rejected caps.
+
+Rejected alternative:
+make caps configurable.
+
+Pros:
+lets users tune different sessions.
+
+Cons:
+adds config schema,
+validation,
+and more failure modes.
+
+Rejected alternative:
+hardcode starter caps now.
+
+Pros:
+more immediately implementation-ready.
+
+Cons:
+most arbitrary option.
+
+Ranking:
+no caps beats Phase 0 constants because it matches the user's stated preference.
+Phase 0 constants beat configurable caps because they keep the surface smaller.
+Configurable caps beat hardcoded starter caps because at least users can adjust them.
+
 ## Resolved implementation decisions
 
 Question 1 is resolved:
 assistant text and tool result text are both in scope.
 Question 2 is resolved:
-bounded regex is in scope,
+safe-engine regex is in scope,
 while raw JavaScript `RegExp` over full context is out of scope.
 Question 3 is resolved:
 active rules live in `acm` tool result `details`.
@@ -1710,5 +1757,7 @@ Question 21 is resolved:
 shorthand keys parse as slash-regex when they start with `/`, otherwise as literals.
 Question 22 is resolved:
 `substitute` and `disable` tool result content include compact matcher summaries without snippets.
+Question 23 is resolved:
+ACM defines no custom caps for descriptions, literals, patterns, inspected text, replacements, or active rules.
 Before implementation,
-run the documented Phase 0 source audit to choose the exact safe regex engine and budgets.
+run the documented Phase 0 source audit to choose the exact safe regex engine.

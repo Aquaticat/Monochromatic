@@ -30,8 +30,7 @@ preserves JavaScript regex semantics and can terminate a hung match outside the 
 
 Rejection reason:
 timeout behavior becomes part of every request-time context pass,
-adds worker lifecycle complexity,
-and still requires careful global request budgets.
+and adds worker lifecycle complexity.
 A safe engine is a stronger default boundary.
 
 ### Restricted JavaScript regex syntax
@@ -63,11 +62,7 @@ Phase 0 must:
 - source-audit the finalist and at least two serious alternatives,
 - validate build and test commands for the finalist,
 - document supported syntax differences from JavaScript `RegExp`,
-- document concrete budgets for pattern length,
-  description length,
-  literal length,
-  inspected text per block,
-  inspected text per request,
-  replacements per rule,
-  replacements per request,
-  and active rules replayed.
+- document that ACM adds no custom length,
+  inspected-character,
+  replacement-count,
+  or active-rule caps.
