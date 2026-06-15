@@ -137,14 +137,16 @@ It borrows mise's machinery but, deliberately, not mise's default posture:
   re-prompts before it executes.
   This is stricter than mise's default on purpose: mise executes config on `cd` or an explicit command, while
   cli-git executes it on ordinary git commands, so the silent-pulled-change hole is worth closing by default.
-- Relaxed mode (path-keyed): paranoid is on by default but can be turned off per config path, not only globally.
-  The `CLI_GIT_PARANOID` env var carries a map of config-artifact path to a paranoid boolean (illustratively
-  `{"/abs/path/cli-git.config.mjs": false}`; the exact wire format is for the implementation spec), and an
-  entry wins over the global default for that path, so a user can content-check most repos while path-keying a
-  specific one, or the reverse.
-  Relaxing a path drops only the content re-check; the (filesystem id, path) trust still applies, so a modified
-  trusted config no longer re-prompts (its explicit cost), but first execution of that config still requires
-  `cli-git trust`.
+- Relaxed mode (no content re-check): paranoid is on by default but can be turned off per config, not only globally.
+  The `CLI_GIT_PARANOID` env var carries a map keyed on (filesystem id, path), the same key the trust registry
+  uses (illustratively `{"a281dfd5d0534daf:/abs/path/cli-git.config.mjs": false}`; the exact wire format is for
+  the implementation spec), and a matching entry wins over the global default for that key.
+  Keying the override on the filesystem id, not the path alone, is the security feature: a legitimate relaxation
+  names the exact (filesystem id, path) it relaxes, which requires knowing the actual volume, whereas an
+  opportunistic attacker planting guesses in a repo's env knows a likely path but not the cloner's filesystem id
+  (see the security note).
+  Relaxing drops only the content re-check; the (filesystem id, path) trust still applies, so a modified trusted
+  config no longer re-prompts (its explicit cost), but first execution still requires `cli-git trust`.
   Per-path paranoid lives in the environment by necessity, not preference: it cannot live in the repo config it
   governs, or a repo could opt itself out of being re-checked.
   This diverges from mise deliberately, which makes `paranoid` global-only (`settings.toml`, `global_only = true`).
@@ -152,19 +154,19 @@ It borrows mise's machinery but, deliberately, not mise's default posture:
   built-ins, do not execute it), and exposes an env kill-switch to disable discovery entirely.
 
 Security note on the env channel.
-Env vars can be set by repo-trusted mechanisms (a trusted `mise.toml` env block, a direnv `.envrc`), so a
-per-path paranoid-off entry is only as trustworthy as whatever set it.
-The attack to defeat: a repo plants `CLI_GIT_PARANOID` entries for guessed common config paths in its
-`mise.toml` env, betting a cloner trusts the `mise.toml` without much thought and so silently relaxes
-cli-git's content check.
-The mitigation is to never honor such a relaxation silently.
-Whenever `CLI_GIT_PARANOID` turns paranoid off for a path, cli-git shouts: a loud warning on every affected
-invocation, naming the variable and the relaxed path, treating an env-sourced relaxation as suspicious by default.
-The noise is deliberate, because a silent relaxation is the whole attack.
-Two further layers bound the damage if the warning is ignored: the relaxation removes only the re-check on
-later changes, not the first-execution gate (the (filesystem id, path) trust still requires an explicit
-`cli-git trust`), and a planted relaxation for a path the cloner never trusted, or trusted on a different
-volume, does nothing because the key will not match.
+Setting `CLI_GIT_PARANOID` intentionally, in your own shell or `mise.toml`, is fine; relaxing a config you own
+is your call and is not flagged.
+The attack to defeat is different: a repo plants `CLI_GIT_PARANOID` entries for guessed common config paths in
+its `mise.toml` env, betting a cloner trusts the `mise.toml` without much thought.
+The tell is that such an entry cannot be filesystem-id-keyed, because the attacker can guess a path but does not
+know the cloner's volume, so the planted entry is path-only.
+So cli-git honors only entries keyed on (filesystem id, path) that match an actual volume, and shouts on any
+non-filesystem-id-keyed entry: a loud warning naming the variable and the path, because a path-only relaxation
+is the signature of opportunistic path matching, not an intentional relaxation.
+The noise is aimed at the attack, not at legitimate use, which is correctly keyed and stays quiet.
+Even ignored, the relaxation removes only the re-check on later changes, not the first-execution gate (the
+(filesystem id, path) trust still requires an explicit `cli-git trust`), and a path-only entry matches no
+trusted key anyway.
 
 Provisional, derived from mise rather than decided here: whether to support mise's `.monorepo`-style trust of a
 config root for a subtree, and how an external consumer's CI that runs the wrapper obtains trust under a
