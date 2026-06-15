@@ -6,7 +6,6 @@
 .env
 .env*.local
 *.local.*
-*.local.json
 
 # Root files created by sandboxes or local shells
 /.bash_profile
@@ -56,7 +55,6 @@ cache/
 .cache/
 temp/
 .temp/
-.tmp
 .tmp*
 *.tmp
 *.log
@@ -102,8 +100,6 @@ index.meta
 /.claude/
 /.factory/skills/
 /.pi/npm/
-.mise/cache/
-.serena/cache/
 .serena/memories/
 .serena/project.local.yml
 .serena/.gitignore
@@ -192,7 +188,6 @@ out/
 # Package-specific secrets and generated files
 /packages/config/cosign/cosign.key
 /packages/config/tofu/**/*.auto.tfvars
-/packages/config/tofu/**/.env.local
 /packages/config/tofu/**/*.lock.*
 /packages/config/tofu/**/.terraform/
 /packages/config/tofu/**/cache_*.json
