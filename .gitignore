@@ -82,7 +82,7 @@ ipinfo_lite.json
 canary-history.jsonl
 _invocation-log.jsonl
 canary-lint/
-perf-test-data/*.txt
+perf-test-data/
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 test-results/
 playwright-report/
