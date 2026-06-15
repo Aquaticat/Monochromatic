@@ -163,13 +163,6 @@ Recommended strict schema:
 {
   action: "substitute" | "disable" | "list";
   substitutions?: Array<{
-    target:
-      | "previous_assistant_text"
-      | "recent_assistant_text"
-      | "all_prior_assistant_text"
-      | "previous_tool_result_text"
-      | "recent_tool_result_text"
-      | "all_prior_tool_result_text";
     match: {
       kind: "literal" | "regex";
       value: string;
@@ -199,7 +192,6 @@ The shim normalizes it to:
   action: "substitute",
   substitutions: [
     {
-      target: "previous_assistant_text",
       match: {
         kind: "regex",
         value: "^As.+model,$",
@@ -260,6 +252,37 @@ For assistant messages and tool result messages,
 only `TextContent.text` may change.
 `toolCall` blocks must stay intact so the provenance of each result remains visible.
 
+## Target selection semantics
+
+ACM no longer has `previous_*`,
+`recent_*`,
+or `all_prior_*` target scopes.
+The user clarified on 2026-06-15 that rules apply to everything eligible.
+
+For each provider request,
+every active substitution scans every eligible text block in `event.messages`,
+in message order and content-block order.
+Eligible text blocks are:
+
+- assistant `TextContent.text` blocks,
+- non-ACM tool result `TextContent.text` blocks.
+
+Ineligible context remains unchanged:
+
+- user messages,
+- system prompt text,
+- assistant `toolCall` blocks,
+- assistant `thinking` blocks,
+- image blocks,
+- custom messages from other extensions,
+- ACM's own tool result text and details.
+
+Rules are rolling while active:
+a substitution can affect eligible assistant or tool-result text that appears after the tool call that installed it.
+A rule stops being active when a later `disable` action removes it,
+or when Pi compaction removes the source `acm` tool result from `event.messages`.
+No anchor to a previous or recent block is needed.
+
 ## Matching plan
 
 The implementation must not run arbitrary model-generated JavaScript regular expressions
@@ -281,15 +304,14 @@ Recommended MVP:
 - do not require or store explicit occurrence limits;
 - for regex matching,
   use JavaScript-style global-flag semantics:
-  `/g` rewrites every match inside the selected target,
-  while no `/g` rewrites the first match only;
+  `/g` rewrites every match across eligible text blocks in source order,
+  while no `/g` rewrites the first match across eligible text blocks;
 - for literal matching,
-  rewrite the first matching span only unless a later design adds an explicit literal-all mode;
+  rewrite the first matching span across eligible text blocks
+  unless a later design adds an explicit literal-all mode;
 - treat zero matches as a no-op with diagnostics rather than a rule-contract failure;
-- run a Phase 1 spike to verify whether custom tool execution can see the just-finished assistant message
-  through `ctx.sessionManager`;
-- until that visibility is proven,
-  treat install-time match counting as best effort and rely on the `context` pass for enforcement.
+- tool execution does not need to read the just-finished assistant message for anchoring,
+  because target selection is all eligible provider context.
 
 Do not pick a regex dependency in the first implementation pass without running the repo's
 technology-selection process.
@@ -305,20 +327,13 @@ Each successful `acm` tool result should store JSON-serializable details:
 type AcmToolDetails = {
   readonly version: 1;
   readonly actions: readonly AcmAction[];
+  readonly installDiagnostics: readonly AcmInstallDiagnostic[];
 };
 
 type AcmAction =
   | {
       readonly type: "add";
       readonly id: string;
-      readonly createdByToolCallId: string;
-      readonly target:
-        | "previous_assistant_text"
-        | "recent_assistant_text"
-        | "all_prior_assistant_text"
-        | "previous_tool_result_text"
-        | "recent_tool_result_text"
-        | "all_prior_tool_result_text";
       readonly match: AcmMatch;
       readonly description: string;
     }
@@ -328,20 +343,36 @@ type AcmAction =
     };
 ```
 
+The stored action does not need `createdByToolCallId`.
+During replay,
+the enclosing `ToolResultMessage.toolCallId` remains available for audit,
+but target selection does not depend on it.
+
 The `context` handler should:
 
 - scan messages in source order;
 - collect `toolResult` messages whose `toolName` is `acm`;
+- ignore malformed details and unknown details versions safely;
 - replay `add` and `disable` actions into an active rule map;
 - keep rules active in request context until a later `disable` action removes them,
   or until Pi compaction removes the source `acm` tool result from provider context;
+- build the eligible text-block list from the request-time clone;
+- collect candidate replacement spans by scanning each eligible text block's original text;
 - apply active rules in creation order;
-- skip a rule when it would delete or alter a non-text block;
-- skip overlapping replacements rather than guessing;
+- skip candidates that overlap an earlier accepted span;
+- render each changed text block once from its original text and accepted spans;
 - produce deterministic output from the original cloned messages each time.
 
-A skipped rule should leave the original text unchanged and surface a compact diagnostic in the tool result or UI.
-It should never corrupt the provider request.
+Matching against original text prevents later rules from matching inside an earlier
+`<omitted>...</omitted>` marker.
+Earlier rules win overlap conflicts.
+
+A skipped rule leaves the original text unchanged and never corrupts the provider request.
+Install-time diagnostics belong in the current `acm` tool result `details`.
+Request-time diagnostics are recomputed by `action: "list"`,
+`/acm-list`,
+and `/acm-preview`,
+and are not written back into older tool result details.
 
 ## Context output example
 
@@ -415,46 +446,62 @@ Expected package metadata:
 
 ## Implementation phases
 
+### Phase 0: regex safety gate
+
+- Decide the regex safety boundary before enabling regex in Phase 1.
+- Ship only literal matching if the gate is not satisfied.
+- Record concrete budgets for pattern length,
+  description length,
+  literal length,
+  inspected text per block,
+  inspected text per request,
+  replacements per rule,
+  replacements per request,
+  and active rules replayed.
+
+Definition of done:
+regex support is enabled only after the implementation has a safe engine,
+an abortable worker boundary,
+or a syntax restriction that rejects catastrophic backtracking constructs.
+
 ### Phase 1: minimal branch-safe omission
 
 - Register `acm` with strict schema and shorthand compatibility.
+- Implement `action: "substitute"`,
+  `action: "disable"`,
+  and `action: "list"`.
 - Implement rule details in tool results.
 - Implement `context` handler that derives rules from current `event.messages`.
-- Transform only assistant `TextContent.text`.
-- Transform tool result `TextContent.text` for explicit tool-result targets,
-  while preserving tool result metadata and non-text blocks.
-- Support all six MVP targets:
-  `previous_assistant_text`,
-  `recent_assistant_text`,
-  `all_prior_assistant_text`,
-  `previous_tool_result_text`,
-  `recent_tool_result_text`,
-  and `all_prior_tool_result_text`.
-- Exclude `acm` tool results from tool-result targets.
+- Transform assistant `TextContent.text` and non-ACM tool result `TextContent.text`.
+- Preserve tool result metadata and non-text blocks.
+- Exclude `acm` tool results from eligible tool-result text.
+- Add install-time and request-time diagnostics for invalid regex,
+  zero matches,
+  broad `/g` matches,
+  malformed details,
+  unknown details versions,
+  duplicate rule ids,
+  unknown disable ids,
+  and overlap skips.
 - Add a terse custom renderer for `acm` tool calls and results.
 
 Definition of done:
 the user's example is covered by a unit test and by an extension-runner integration test.
-The phase also records the answer to the tool-execution visibility spike:
-whether `ctx.sessionManager` inside `execute()` includes the assistant message that requested the `acm` call.
+A bad rule can be listed and disabled without editing the session file.
 
-### Phase 2: management commands and diagnostics
+### Phase 2: human-facing management commands and preview
 
-- Add `action: "list"` so the model can inspect active rules.
-- Add `action: "disable"` so the model can retire bad rules.
 - Add `/acm-list` for the human user.
 - Add `/acm-preview` to show transformed context without sending it to a provider.
-- Add diagnostics for invalid regex,
-  zero matches,
-  broad `/g` matches,
-  and overlap skips.
+- Add richer human-facing renderer output for diagnostics.
+- Add a provider-payload verification harness.
 
 Definition of done:
-a bad rule can be found and disabled without editing the session file.
+human-facing commands can inspect active rules and preview transformed context.
 
-### Phase 3: hardening after all-scope MVP
+### Phase 3: hardening after all-eligible MVP
 
-- Tune broad-target diagnostics after the all-scope MVP has real fixtures.
+- Tune broad-rule diagnostics after the all-eligible MVP has real fixtures.
 - Consider user-approved omission of user messages or ACM's own tool results as a later explicit opt-in.
 - Decide whether old `acm` tool results should themselves be compacted into a smaller custom message.
 
@@ -472,9 +519,8 @@ Unit tests:
 - description text escapes `<`,
   `>`,
   and `&` before insertion into the omitted tag;
-- assistant-targeted rules transform only assistant text blocks;
-- explicit tool-result targets transform only tool result text blocks;
-- ACM tool result text remains unchanged even when a broad tool-result rule would match;
+- substitutions transform assistant text blocks and non-ACM tool result text blocks;
+- ACM tool result text remains unchanged even when a broad rule would match;
 - tool result `details`,
   `toolName`,
   `toolCallId`,
@@ -483,7 +529,21 @@ Unit tests:
 - user messages remain unchanged;
 - tool call blocks remain unchanged;
 - overlapping replacements skip deterministically;
+- later rule matching cannot match inside an earlier omitted marker;
 - disabled rule no longer applies;
+- malformed ACM details are ignored safely;
+- unknown ACM details versions are ignored safely;
+- duplicate rule ids are handled deterministically;
+- disabling an unknown rule id is a no-op with diagnostics;
+- disable after add in the same tool result works;
+- add after disable of the same id is either rejected or clearly defined;
+- multiple substitutions in one ACM call apply in stable order;
+- global zero-width regex cannot infinite-loop;
+- regex flags parser rejects unsupported flags;
+- description length is capped;
+- literal match length is capped;
+- total per-request match budget is enforced;
+- compaction boundary makes a rule inactive when its source `acm` tool result is absent from `event.messages`;
 - branch-specific rule replay ignores tool results that are not on `event.messages`.
 
 Integration tests:
@@ -536,15 +596,19 @@ the model hides tool evidence from itself.
 Mitigation:
 allow only tool result text rewrites,
 keep tool call blocks and tool result metadata intact,
-and require target scoping plus list/preview diagnostics.
+and require list,
+disable,
+preview diagnostics,
+and per-request budgets.
 
 Risk:
 a broad pattern omits too much.
 
 Mitigation:
-small target scopes,
+list and preview commands,
+immediate disable,
 `/g` semantics,
-preview/list commands,
+request budgets,
 and deterministic skip behavior for ambiguous matches.
 
 Risk:
@@ -714,7 +778,7 @@ and preserves ACM's audit trail.
 Cons:
 custom tool output can carry important state,
 so bad rules can still hide evidence from the next provider request.
-Preview/list diagnostics and exact match counts become mandatory.
+Preview/list diagnostics and current match counts become mandatory.
 
 Rejected alternative:
 only bulky built-in tools are eligible by default,
@@ -800,8 +864,9 @@ and no need for the model to predict exact match counts before ACM validates con
 
 Cons:
 ACM loses a stale-rule guard,
-so target scoping,
-preview/list diagnostics,
+so list,
+disable,
+preview diagnostics,
 and conservative broad-match behavior become more important.
 
 Rejected alternative:
@@ -831,9 +896,9 @@ Internal guard beats model-supplied count because computed metadata is less nois
 ### Question 7: how many matches should a rule apply to?
 
 Decision:
-regex `/g` rewrites all matches inside the selected target,
-regex without `/g` rewrites one match,
-and literal matching rewrites one span by default.
+regex `/g` rewrites all matches across eligible text blocks,
+regex without `/g` rewrites one match across eligible text blocks,
+and literal matching rewrites one span across eligible text blocks by default.
 User answered this on 2026-06-15.
 
 Pros:
@@ -843,7 +908,10 @@ and avoids a second count-like parameter after rejecting expected match counts.
 
 Cons:
 `/g` can omit many spans if the pattern is broad,
-so preview/list diagnostics and target scoping carry the safety burden.
+so list,
+disable,
+preview diagnostics,
+and per-request budgets carry the safety burden.
 
 Rejected alternative:
 explicit occurrence limits.
@@ -867,44 +935,58 @@ Ranking:
 `/g` semantics beat explicit limits because they match user expectation and common regex behavior.
 Explicit limits beat always-all because bounded replacement is safer than implicit broad omission.
 
-### Question 8: which target scopes belong in the MVP?
+### Question 8: should ACM have previous, recent, and all-prior target scopes?
 
 Decision:
-all target scopes belong in the MVP.
-User answered this on 2026-06-15.
+ACM should not have previous,
+recent,
+or all-prior target scopes.
+Every active rule scans all eligible provider-context text until disabled or expired by compaction.
+User answered this on 2026-06-15:
+"Why do we even have previous_* and recent_* ? Don't the rules apply to everything?"
+Then the user chose the all-eligible model.
 
 Pros:
-most powerful first release,
-lets the model compact older scattered assistant and tool-result context immediately,
-and matches the broad goal of letting the active model manage its own context.
+simpler schema,
+no anchoring drift,
+no recent-window definition,
+and a closer match to the intended model that rules manage all eligible context.
 
 Cons:
-widest blast radius for broad `/g` patterns and longest verification path.
-All-prior targets need strong fixtures before implementation is declared complete.
+broad regex mistakes have a larger blast radius,
+so list,
+disable,
+preview,
+and budgets must be available in the first usable version.
 
 Rejected alternative:
-MVP includes previous assistant text and previous non-ACM tool result text,
-then adds recent-window scopes after the first tests pass.
+keep previous,
+recent,
+and all-prior target scopes.
 
 Pros:
-solves the example and the tool-result use case while keeping matching surfaces small.
+smaller blast radius for one-off rewrites.
 
 Cons:
-the model cannot compact older scattered context until recent/all-prior scopes land.
+requires anchoring,
+recent-boundary semantics,
+and more tests for surprising drift.
 
 Rejected alternative:
-MVP includes previous and recent-window scopes.
+keep only role filters,
+for example assistant text,
+tool result text,
+or both.
 
 Pros:
-useful for context emitted a few turns back.
+preserves some safety with less complexity than previous and recent windows.
 
 Cons:
-requires a window definition and more branch tests immediately,
-without delivering the all-prior control the user wants.
+still requires schema and diagnostics that the all-eligible model does not need.
 
 Ranking:
-all-scopes beats previous-plus-recent because the user wants broad tool-call control over context.
-Previous-plus-recent beats previous-only because it covers more real stale-context cases.
+all-eligible beats role filters because it matches the user's mental model and removes target complexity.
+Role filters beat previous and recent scopes because role-level filtering avoids anchoring drift.
 
 ### Question 9: should ACM rules apply immediately or require preview first?
 
@@ -920,7 +1002,7 @@ keeps the loop fast,
 and avoids turning every context rewrite into a two-step ceremony.
 
 Cons:
-a bad all-prior `/g` rule affects the next provider request before the model inspects preview output.
+a bad broad `/g` rule affects the next provider request before the model inspects preview output.
 
 Rejected alternative:
 require a dry-run tool call before an apply tool call.
@@ -987,9 +1069,13 @@ Required description beats structured metadata because prose is simpler and chea
 ### Question 11: where should diagnostics appear?
 
 Decision:
-diagnostics live in `acm` tool result `details` and are exposed through `list` and preview commands,
-without injecting extra context messages.
-User answered this on 2026-06-15.
+install-time diagnostics live in the current `acm` tool result `details`.
+Request-time diagnostics are recomputed through `action: "list"`,
+`/acm-list`,
+and `/acm-preview`,
+without injecting extra context messages or mutating older tool result details.
+User answered the placement on 2026-06-15;
+the install-time versus request-time split follows from the non-destructive `context` hook boundary.
 
 Pros:
 keeps diagnostics auditable without adding hidden prompt tokens on every provider request.
@@ -1114,22 +1200,25 @@ with Pi compaction as an expiration boundary if it removes the source `acm` tool
 Question 6 is resolved:
 rules do not include expected match counts.
 Question 7 is resolved:
-regex `/g` rewrites all matches,
-regex without `/g` rewrites one match,
-and literal matching rewrites one span by default.
+regex `/g` rewrites all matches across eligible text blocks,
+regex without `/g` rewrites one match across eligible text blocks,
+and literal matching rewrites one span across eligible text blocks by default.
 Question 8 is resolved:
-all target scopes belong in the MVP.
+ACM has no previous,
+recent,
+or all-prior target scopes;
+rules scan all eligible provider-context text until disabled or expired by compaction.
 Question 9 is resolved:
 rules apply immediately after a successful `acm` tool call.
 Question 10 is resolved:
 descriptions are model-supplied strings,
 and empty strings are valid.
 Question 11 is resolved:
-diagnostics live in `acm` tool result `details` plus `list` and preview commands.
+install-time diagnostics live in current `acm` tool result `details`,
+and request-time diagnostics are recomputed through `list` and preview commands.
 Question 12 is resolved:
 ACM rewrites provider context only.
 Question 13 is resolved:
 rules expire when Pi compaction removes their source `acm` tool results from provider context.
-No blocking grill-me design questions remain in this plan.
 Before implementation,
-run the documented Phase 1 spikes for regex safety and tool-execution visibility.
+resolve the Phase 0 regex safety gate strategy.
