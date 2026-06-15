@@ -124,12 +124,24 @@ It borrows mise's machinery but, deliberately, not mise's default posture:
   Any later change to the artifact, an edit, a re-bundle, or a pulled change, re-prompts before it executes.
   This is stricter than mise's default on purpose: mise executes config on `cd` or an explicit command, while
   cli-git executes it on ordinary git commands, so the silent-pulled-change hole is worth closing by default.
-- Relaxed mode (opt-in): path-keyed only.
-  Turning the content check off reverts to mise's default behavior, trust keyed on path with no re-check on
-  change, lower friction during active config development.
-  The exposure it reopens, a modified trusted config running silently, is the explicit cost of the relaxed mode.
-- It fails closed when it cannot prompt and the artifact is untrusted or changed (run built-ins, do not
-  execute it), and exposes an env kill-switch to disable discovery entirely.
+- Relaxed mode (path-keyed): paranoid is on by default but can be turned off per config path, not only globally.
+  The `CLI_GIT_PARANOID` env var carries a map of config-artifact path to a paranoid boolean (illustratively
+  `{"/abs/path/cli-git.config.mjs": false}`; the exact wire format is for the implementation spec), and an
+  entry wins over the global default for that path, so a user can content-check most repos while path-keying a
+  specific one, or the reverse.
+  Path-keying a path drops only the content re-check; path-keyed trust stays, so a modified trusted config no
+  longer re-prompts (its explicit cost), but first execution of that config still requires `cli-git trust`.
+  Per-path paranoid lives in the environment by necessity, not preference: it cannot live in the repo config it
+  governs, or a repo could opt itself out of being re-checked.
+  This diverges from mise deliberately, which makes `paranoid` global-only (`settings.toml`, `global_only = true`).
+- It fails closed when it cannot prompt and the artifact is untrusted, or, under paranoid, changed (run
+  built-ins, do not execute it), and exposes an env kill-switch to disable discovery entirely.
+
+Security note on the env channel: env vars can be set by repo-trusted mechanisms (a trusted `mise.toml` env
+block, a direnv `.envrc`), so a per-path paranoid-off entry is only as trustworthy as whatever set it; a repo
+whose env mechanism a user has already trusted could plant its own relaxation.
+This weakens only the re-check on later changes, not the initial gate: path-keyed first-execution trust still
+requires an explicit `cli-git trust`.
 
 Provisional, derived from mise rather than decided here: whether to support mise's `.monorepo`-style trust of a
 config root for a subtree, and how an external consumer's CI that runs the wrapper obtains trust under a
