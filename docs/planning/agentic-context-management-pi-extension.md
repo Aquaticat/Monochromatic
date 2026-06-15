@@ -693,9 +693,9 @@ Risk:
 other extensions observe different context than ACM expects.
 
 Mitigation:
-document extension load order,
+document that ACM makes no load-order guarantee,
 keep ACM's transformer pure,
-and add tests where a second context handler runs after ACM.
+and add tests where context handlers run before and after ACM.
 
 ## Grill-me decision tree
 
@@ -1700,6 +1700,43 @@ no caps beats Phase 0 constants because it matches the user's stated preference.
 Phase 0 constants beat configurable caps because they keep the surface smaller.
 Configurable caps beat hardcoded starter caps because at least users can adjust them.
 
+### Question 24: what load-order guarantee should ACM make?
+
+Decision:
+ACM should make no guarantee about running before or after other context-mutating extensions.
+User answered this on 2026-06-15.
+
+Pros:
+simplest packaging,
+honest about Pi extension composition,
+and avoids depending on global extension-order control.
+
+Cons:
+users can get different final provider context depending on extension load order.
+
+Rejected alternative:
+recommend loading ACM last.
+
+Pros:
+ACM omissions apply near the final provider payload.
+
+Cons:
+earlier handlers can still remove ACM tool results before replay,
+and the guarantee depends on user configuration outside the package.
+
+Rejected alternative:
+recommend loading ACM first.
+
+Pros:
+later handlers can observe omitted markers.
+
+Cons:
+later handlers can reintroduce text or invalidate ACM diagnostics.
+
+Ranking:
+no guarantee beats run-last because it matches the user's preference and avoids promising order control.
+Run-last beats run-first because final-payload shaping is more useful than marker visibility to later handlers.
+
 ## Resolved implementation decisions
 
 Question 1 is resolved:
@@ -1759,5 +1796,7 @@ Question 22 is resolved:
 `substitute` and `disable` tool result content include compact matcher summaries without snippets.
 Question 23 is resolved:
 ACM defines no custom caps for descriptions, literals, patterns, inspected text, replacements, or active rules.
+Question 24 is resolved:
+ACM makes no load-order guarantee relative to other context-mutating extensions.
 Before implementation,
 run the documented Phase 0 source audit to choose the exact safe regex engine.
