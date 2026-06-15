@@ -189,7 +189,9 @@ async function findBudgetModel(
    */
   const rawActiveModel: unknown = ctx.model;
   assertModelApi(rawActiveModel,);
-  /** Active model after runtime shape validation. */
+  /**
+   * Active model after runtime shape validation.
+   */
   const activeModel = rawActiveModel;
   /**
    * Registry models narrowed to auto-mode's pi model shape for shared selection callbacks.
@@ -197,7 +199,9 @@ async function findBudgetModel(
   const rawAllModels: unknown = ctx.modelRegistry
     .getAll();
   assertModelApiList(rawAllModels,);
-  /** Registry models after runtime shape validation. */
+  /**
+   * Registry models after runtime shape validation.
+   */
   const allModels = rawAllModels;
 
   return await selectBudgetModel<Model<Api>>({
