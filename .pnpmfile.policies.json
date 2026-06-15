@@ -53,6 +53,10 @@
     "action": "throw",
     "reason": "polyfill for Node<6 fs.realpath bugs; native realpath stable on every supported runtime"
   },
+  "js-yaml": {
+    "action": "throw",
+    "reason": "unused YAML source; workspace YAML uses the `yaml` package. Sole transitive consumer is cosmiconfig (stylelint), whose lazy loadYaml is never reached (config is stylelint.config.mjs). See docs/troubleshooting/dependencies.md."
+  },
   "methods": {
     "action": "throw",
     "reason": "abandoned express 4.x util; HTTP methods are RFC 7231 constants"

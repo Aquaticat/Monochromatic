@@ -31,6 +31,10 @@ None were in the resolved graph at the time the entries were added
 One has since entered the graph: `convert-source-map`, pulled transitively by
 StrykerJS via `@babel/core`. See its deep-dive under "Package Management Warnings"
 below for why the throwing stub is never loaded at runtime.
+A second throwing-stub substitution, `js-yaml`, was added later as a deliberate
+in-graph substitution rather than a forward-looking canary: it was already in the
+graph via `stylelint > cosmiconfig`, and the policy strips the real package. It is
+not one of the 24 pre-emptive bans; see its own deep-dive below.
 The policy is a forward-looking canary:
 if a future manifest declares one of these as a dependency,
 `pnpm install` emits a stderr `[blocked-dep]` line naming the consumer,
@@ -963,6 +967,80 @@ mutation run (for example `mise run //packages/dev-script/file-enforcer:test:mut
 completes and reports killed and survived mutants without any `convert-source-map`
 error. See `docs/troubleshooting/stryker-container-runtime.md` for the Stryker runtime
 notes and `docs/dependency-blocklist.md` for the policy reference.
+
+### `js-yaml` (throwing stub; never loaded by cosmiconfig)
+
+`js-yaml` is not a pre-emptive ban; it was already in the resolved graph, pulled
+transitively by `stylelint@17.6.0` through `cosmiconfig@9.0.1`. The workspace does
+not consume it: all YAML parsing uses the `yaml` package
+(`packages/dev-script/deps-cube/src/catalog.ts`,
+`packages/webapp-content/ssg-test/src/lib/content.ts`). The `action: 'throw'` policy
+substitutes it with `@monochromatic-dev/stub-throwing`, removing the real js-yaml
+package, and the `argparse` edge it carried, from `node_modules`.
+
+#### Dependency chain
+
+```text
+stylelint@17.6.0
+└─┬ cosmiconfig@9.0.1
+  └── js-yaml  (substituted: link:packages/stub/throwing)
+```
+
+`cosmiconfig` is the sole consumer of js-yaml in the tree (verified against every
+workspace `package.json` and `pnpm-lock.yaml`). No workspace package depends on
+cosmiconfig directly; it arrives only through stylelint.
+
+#### Why runtime is fine
+
+cosmiconfig references js-yaml in exactly one place, a lazy require inside
+`loadYaml` (`dist/loaders.js`):
+
+```js
+let yaml;
+function loadYaml(filepath, content) {
+  if (yaml === undefined) { yaml = require('js-yaml'); }
+  return yaml.load(content);
+}
+```
+
+`loadYaml` is registered (`dist/defaults.js:92-94`) only for the `.yaml`, `.yml`,
+and extensionless (`noExt`) config formats; `.mjs`/`.cjs`/`.js` route to `loadJs`,
+`.ts` to `loadTs`, and `.json` to `loadJson`, none of which touch js-yaml. The
+repo's only stylelint config is `stylelint.config.mjs`, so cosmiconfig uses
+`loadJs`, never `loadYaml`. There is no extensionless `.stylelintrc`, no
+`.stylelintrc.yaml`/`.yml`, and no `"stylelint"` key in any `package.json`, so the
+YAML loader is unreachable and `require('js-yaml')` never executes. No eager
+js-yaml require exists in cosmiconfig outside `loaders.js`.
+
+Verified empirically: `mise run lint:stylelint` loads `stylelint.config.mjs` and
+completes with zero `[blocked-dep]` throws. As a positive control, requiring
+js-yaml from cosmiconfig's resolution location throws the stub's `[blocked-dep]`
+error, confirming the installed module is the throwing stub.
+
+#### Why the throw action is correct
+
+cosmiconfig's `require('js-yaml')` is a hard require with no `try/catch` guard, so
+`throw` (a loud, doc-pointing failure at the import site) is the right substitution
+per the decision rule in "Global blocklist (substitution vs removal)" above. It
+stays inert because the YAML loader is never reached.
+
+#### Why removal was not used
+
+A removal (`'js-yaml': '-'`, or the parent-scoped `'cosmiconfig>js-yaml': '-'`, in
+`pnpm-workspace.yaml`) would also keep the build green today and matches the
+argparse precedent. The throwing stub was kept instead because its message points
+at `docs/dependency-blocklist.md`, which is more useful than a bare
+`MODULE_NOT_FOUND` if a future change ever adds a YAML stylelint config and reaches
+`loadYaml`. Revisit and switch to removal (or a functional shim backed by the
+`yaml` package) if a deliberate YAML stylelint config is introduced.
+
+#### Verification
+
+`rg js-yaml pnpm-lock.yaml` shows only the `link:packages/stub/throwing` redirect
+under cosmiconfig, with no `js-yaml@4.1.1` resolution block. The argparse edge
+js-yaml previously carried is gone; argparse remains removed for wawoff2 via the
+`'argparse': '-'` override. See `docs/dependency-blocklist.md` for the policy
+reference.
 
 ## Why we do not file the policy entries upstream
 

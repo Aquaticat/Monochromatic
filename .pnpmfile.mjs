@@ -12,8 +12,10 @@
  *
  * Re-resolution caveat: pnpm's `pnpmfileChecksum` hashes this file's bytes only,
  * not the imported `.pnpmfile.policies.json`. After editing the policy data,
- * touch this file (or run `pnpm install --force`) so pnpm re-runs resolution;
- * a data-only edit alone leaves the checksum unchanged and the old graph cached.
+ * change this file's bytes so pnpm re-runs resolution; a data-only edit alone
+ * leaves the checksum unchanged and the old graph cached. `pnpm install --force`
+ * alone may not re-trigger the hook while the checksum is unchanged (observed on
+ * pnpm 11.6.0), so editing this file is the reliable trigger.
  *
  * See `docs/dependency-blocklist.md` for the policy reference, the decision
  * rule between throw / silent / remove, and worked examples.

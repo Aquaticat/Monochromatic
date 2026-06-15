@@ -364,13 +364,15 @@ overrides:
   # packages/config/dprint/README.md for the policy and VSCode-extension
   # workaround. Refs #163.
   'dprint': '-'
-  # Remove argparse globally. It is shipped by two transitive importers solely
-  # for their CLI entry points: js-yaml (bin/js-yaml.js, pulled in via
-  # stylelint > cosmiconfig) and wawoff2 (bin/woff2_{compress,decompress}.js,
-  # pulled in directly by webapp-content/ssg-test). Neither CLI is invoked
-  # anywhere in the tree or in CI; we use wawoff2.decompress as a library and
-  # do not consume js-yaml at all (workspace YAML parsing now uses the `yaml`
-  # package -- see packages/dev-script/deps-cube/src/catalog.ts and
+  # Remove argparse globally. It is shipped solely for the CLI entry point of
+  # wawoff2 (bin/woff2_{compress,decompress}.js, pulled in directly by
+  # webapp-content/ssg-test). That CLI is never invoked anywhere in the tree or
+  # in CI; we use wawoff2.decompress as a library. The other former argparse
+  # importer, js-yaml (bin/js-yaml.js, pulled in via stylelint > cosmiconfig),
+  # has itself left the graph: it is substituted with the throwing stub via the
+  # `js-yaml` policy in .pnpmfile.policies.json, so it no longer ships argparse.
+  # The workspace does not consume js-yaml at all; YAML parsing uses the `yaml`
+  # package (see packages/dev-script/deps-cube/src/catalog.ts and
   # packages/webapp-content/ssg-test/src/lib/content.ts). Removing argparse
   # leaves the library APIs intact and drops 4214 LOC of supply-chain surface
   # (last commit 2022-05).

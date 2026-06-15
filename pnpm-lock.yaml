@@ -339,7 +339,7 @@ overrides:
 
 packageExtensionsChecksum: sha256-GnnAYW6z49xCaONoJyQ2EUSE9h8q5NiDP6AMKJiY1SE=
 
-pnpmfileChecksum: sha256-Wl98vvC9oLni0WX96+21olh7fAywncjDJJtnaemsQyM=
+pnpmfileChecksum: sha256-+JgUg3IiJaGDQMDLnqPUSEZvBb2N6C46c2sr2EmD/+w=
 
 importers:
 
@@ -4962,10 +4962,6 @@ packages:
   js-tokens@9.0.1:
     resolution: {integrity: sha512-mxa9E9ITFOt0ban3j6L5MpjwegGz6lBQmM1IJkWeBZGcMxto50+eWdjC/52xDbS2vy0k7vIMK0Fe2wfL9OQSpQ==}
 
-  js-yaml@4.1.1:
-    resolution: {integrity: sha512-qQKT4zQxXl8lLwBtHMWwaTcGfFOZviOJet3Oy/xmGk2gZH677CJM9EvtfdSkgWcATZhj/55JZ0rmy3myCT5lsA==}
-    hasBin: true
-
   jsesc@3.1.0:
     resolution: {integrity: sha512-/sM3dO2FOzXjKQhJuo0Q173wf2KOo8t4I8vHy6lF9poUp7bKT0/NHE8fPX23PwfhnykfqnC2xRxOnVw5XuGIaA==}
     engines: {node: '>=6'}
@@ -7606,7 +7602,7 @@ snapshots:
     dependencies:
       env-paths: 2.2.1
       import-fresh: 3.3.1
-      js-yaml: 4.1.1
+      js-yaml: link:packages/stub/throwing
       parse-json: 5.2.0
     optionalDependencies:
       typescript: 6.0.3
@@ -8217,8 +8213,6 @@ snapshots:
   js-tokens@4.0.0: {}
 
   js-tokens@9.0.1: {}
-
-  js-yaml@4.1.1: {}
 
   jsesc@3.1.0: {}
 
