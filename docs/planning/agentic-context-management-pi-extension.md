@@ -92,6 +92,9 @@ and one `context` event handler.
   the `context` handler scans the current branch messages for prior `acm` tool results,
   derives active rules,
   and applies them to a cloned message list.
+- Rules apply immediately to the next provider request after the successful `acm` tool call;
+  preview and list surfaces are diagnostic aids,
+  not prerequisites.
 - The provider receives only the transformed `AgentMessage[]` after normal `convertToLlm()` conversion.
 - The session file still contains the original text and the `acm` audit trail.
 
@@ -897,9 +900,11 @@ Previous-plus-recent beats previous-only because it covers more real stale-conte
 
 ### Question 9: should ACM rules apply immediately or require preview first?
 
-Recommended answer:
-apply immediately after a successful `acm` tool call,
-while providing separate `list` and preview surfaces for diagnostics.
+Decision:
+rules apply immediately after a successful `acm` tool call.
+User answered this on 2026-06-15.
+Separate `list` and preview surfaces still exist for diagnostics,
+but they are not prerequisites.
 
 Pros:
 matches agentic tool-call control,
@@ -909,7 +914,7 @@ and avoids turning every context rewrite into a two-step ceremony.
 Cons:
 a bad all-prior `/g` rule affects the next provider request before the model inspects preview output.
 
-Alternative:
+Rejected alternative:
 require a dry-run tool call before an apply tool call.
 
 Pros:
@@ -918,7 +923,7 @@ forces visibility into broad rewrites.
 Cons:
 doubles tool calls and token noise for the common case.
 
-Alternative:
+Rejected alternative:
 require human approval for broad scopes.
 
 Pros:
@@ -930,6 +935,43 @@ breaks the core requirement that the active model can manage context agentically
 Ranking:
 immediate apply beats dry-run-first because the plugin is explicitly agentic.
 Dry-run-first beats human approval because it preserves autonomous operation.
+
+### Question 10: what should omitted markers contain?
+
+Recommended answer:
+`description` is optional freeform text,
+and empty descriptions are allowed.
+
+Pros:
+matches the user's example `<omitted></omitted>`,
+keeps token cost low,
+and lets the model add a description only when it helps future reasoning.
+
+Cons:
+empty markers may be hard to understand in later context without inspecting ACM diagnostics.
+
+Alternative:
+require a non-empty description for every omission.
+
+Pros:
+every omission carries a human-readable reason.
+
+Cons:
+adds token cost and forces noisy filler for obvious boilerplate.
+
+Alternative:
+use structured marker metadata,
+for example attributes with rule id and match count.
+
+Pros:
+more auditable inside the transformed context.
+
+Cons:
+adds syntax-escaping complexity and token overhead to every omission.
+
+Ranking:
+optional freeform beats required description because the user's example explicitly allows empty content.
+Required description beats structured metadata because prose is simpler and cheaper than attributes.
 
 ## First implementation decision needed
 
@@ -953,7 +995,9 @@ regex without `/g` rewrites one match,
 and literal matching rewrites one span by default.
 Question 8 is resolved:
 all target scopes belong in the MVP.
+Question 9 is resolved:
+rules apply immediately after a successful `acm` tool call.
 Before building past Phase 1,
-answer Question 9.
-My recommendation is immediate application after a successful `acm` tool call,
-with separate list and preview diagnostics.
+answer Question 10.
+My recommendation is optional freeform `description`,
+with empty descriptions allowed.
