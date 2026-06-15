@@ -163,8 +163,9 @@ It borrows mise's machinery but, deliberately, not mise's default posture:
   the inversion is the point: a global off-switch would be an entry that names no (filesystem id, path) at all,
   exactly the shape the security note treats as suspicious, so allowing one would hand an attacker a legitimate
   unkeyed bypass and defeat the detection.
-  With per-config-only relaxation, every list entry whose filesystem id matches no actual volume is unambiguously
-  the attack signature.
+  With per-config-only relaxation, a list entry for the config being loaded that carries no matching filesystem
+  id is unambiguously the attack signature, because that config's own volume is necessarily mounted at load time,
+  so a legitimate relaxation for it would carry the real id.
 - It fails closed when it cannot prompt and the artifact is untrusted, or, under paranoid, changed (run
   built-ins, do not execute it), and exposes an env kill-switch to disable discovery entirely.
 
@@ -175,9 +176,13 @@ The attack to defeat is different: a repo plants `CLI_GIT_NO_PARANOID` entries f
 its `mise.toml` env, betting a cloner trusts the `mise.toml` without much thought.
 The tell is that such an entry cannot carry a real filesystem id, because the attacker can guess a path but does
 not know the cloner's volume, so the planted entry is path-only.
-So cli-git honors only list entries whose (filesystem id, path) matches an actual volume, and shouts on any entry
-whose filesystem id matches no volume (in particular a path-only entry): a loud warning naming the variable and
-the path, because such an entry is the signature of opportunistic path matching, not an intentional relaxation.
+So cli-git consults only the entry that names the config path it is about to load: it honors that entry when its
+filesystem id matches the resolved volume, and shouts when an entry for this path carries a filesystem id that
+matches no volume, or no id at all (a path-only entry), because that is the signature of opportunistic path
+matching, not an intentional relaxation.
+Scoping the check to the current config path is deliberate: a dormant entry for some other path (an unplugged
+external drive, or a repo not yet cloned) is never consulted, so a legitimate user is not shouted at, while a
+planted entry for this repo's config path still mismatches the volume and shouts.
 The noise is aimed at the attack, not at legitimate use, which carries the real id and stays quiet.
 Even ignored, the relaxation removes only the re-check on later changes, not the first-execution gate (the
 (filesystem id, path) trust still requires an explicit `cli-git trust`), and a path-only entry matches no
