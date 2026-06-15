@@ -410,8 +410,10 @@ but target selection and disable semantics do not depend on it.
 The `context` handler should:
 
 - scan messages in source order;
-- collect `toolResult` messages whose `toolName` is `acm`;
-- ignore malformed details and unknown details versions safely;
+- collect successful `toolResult` messages whose `toolName` is `acm`;
+- ignore errored ACM tool results,
+  malformed details,
+  and unknown details versions safely;
 - replay `add` and `disable` actions into an active rule list;
 - apply an `add` action by replacing any existing active rule with the same normalized matcher,
   then inserting the new rule at the latest creation order;
@@ -592,6 +594,7 @@ Unit tests:
   and image blocks remain unchanged;
 - user messages remain unchanged;
 - tool call blocks remain unchanged;
+- errored ACM tool results are ignored during replay;
 - overlapping replacements skip deterministically;
 - later rule matching cannot match inside an earlier omitted marker;
 - disabled rule no longer applies;
