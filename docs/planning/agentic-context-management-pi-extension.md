@@ -68,7 +68,7 @@ and later debugging can recover exactly what happened.
   and `timestamp`,
   which is the exact surface ACM would replay
   (`@earendil-works/pi-ai/dist/types.d.ts`).
-- Provider adapters serialize tool result `content` to provider payloads and do not serialize `details`.
+- Provider adapters inspected serialize tool result `content` to provider payloads and do not serialize `details`.
   Verified in `@earendil-works/pi-ai/dist/providers/openai-completions.js`,
   `.../openai-responses-shared.js`,
   and `.../anthropic.js`.
@@ -123,7 +123,7 @@ and aligned with Pi's request-time `context` hook.
 Cons:
 the `acm` tool result content remains visible to the model unless the context handler also compresses old `acm` records.
 Structured `details` remain available to the extension and transcript UI,
-but provider adapters do not send `details` to the model.
+but provider adapters inspected do not send `details` to the model.
 The model can infer that a rewrite happened.
 That is acceptable because this feature is for context pressure,
 not secrecy.
@@ -414,7 +414,7 @@ The `context` handler should:
 - ignore errored ACM tool results,
   malformed details,
   and unknown details versions safely;
-- replay `add` and `disable` actions into an active rule list;
+- replay `add` and `disable` actions into an ordered active-rule map keyed by normalized matcher;
 - apply an `add` action by replacing any existing active rule with the same normalized matcher,
   then inserting the new rule at the latest creation order;
 - apply a `disable` action by removing every active rule whose normalized matcher equals a supplied matcher;
@@ -534,6 +534,8 @@ and the implementation verifies that unsupported regex syntax is rejected clearl
 - Implement rule details in tool results.
 - Implement `context` handler that derives rules from current `event.messages`.
 - Transform assistant `TextContent.text` and non-ACM tool result `TextContent.text`.
+- Support regex only when Phase 0 has selected and documented the safe engine;
+  otherwise Phase 1 remains literal-only.
 - Preserve tool result metadata and non-text blocks.
 - Exclude `acm` tool results from eligible tool-result text.
 - Add install-time and request-time diagnostics for invalid regex,
@@ -684,6 +686,14 @@ regex matching hangs the extension.
 
 Mitigation:
 ship literal matching until Phase 0 selects a source-audited safe regex engine.
+
+Risk:
+no ACM-specific caps means large context and many active rules can still cost CPU.
+
+Mitigation:
+use a documented-linear safe regex engine,
+keep matching deterministic and side-effect-free,
+and rely on list diagnostics plus exact-matcher disable for operational recovery.
 
 Risk:
 tool arguments duplicate the text being removed.
