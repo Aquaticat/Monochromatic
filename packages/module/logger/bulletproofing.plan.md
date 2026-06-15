@@ -11,6 +11,119 @@ logger cannot regress to green-but-weak.
 a discovered defect either gets fixed and pinned as a regression example, or it
 is recorded as an owner decision. Nothing silently survives.
 
+## Implementer notes: read this before touching code
+
+Assume you have no prior context. This section is the orientation and the list of
+traps. Read it fully before editing, then read Phase 0, then start.
+
+### Where the code is
+
+- `src/create-logger.ts`: the orchestrator. Verify, startup buffering and replay,
+  per-sink availability, in-flight write tracking, `flush()`. Every Phase 0 fix
+  except the console one lives here. This is the load-bearing file.
+- `src/logger.ts`: builds the default `logger` by applying `createLogger` to the
+  default sink set. Zero-config; it must stay zero-config.
+- `src/tagged.ts`: wraps a logger to prepend a tag. It delegates to the wrapped
+  logger's methods, so every fix in `create-logger.ts` automatically applies to
+  tagged loggers. Do not duplicate logic here.
+- `src/sinks/console.ts`, `file.ts`, `opfs.ts`, `session-storage.ts`, `noop.ts`:
+  the sinks. Only the console one changes in Phase 0 (the escape classifier).
+- `src/types.ts`: `Logger`, `Sink`, `LogRecord`, `Level` types.
+- `DECISIONS.md` (in this package) and `docs/decisions/logger-fuzzing.md`: why the
+  current and the new contracts are what they are. Read both before changing a
+  contract.
+
+### How to build, test, and lint (the commands are not obvious)
+
+- This package has no `test:unit` mise task yet (Phase 1 adds it). Until then run
+  a single test file directly with `bun <file>`, or run the whole package suite
+  through the repo root task with explicit file paths:
+  `mise run //:test:unit packages/module/logger/src/<file>.unit.test.ts`. Passing
+  a bare directory to that task fails; it wants file paths.
+- Never run `bun test`. It misreports under the `@monochromatic-dev/module-test`
+  harness (the `CM4` rule). Use `bun <file>` or the mise task.
+- Type-check with `mise run //packages/module/logger:lint:types` after every
+  TypeScript edit (there is no automatic type-check).
+- Lint with `mise run //packages/module/logger:lint:oxlint`. Zero warnings is the
+  bar, not zero errors.
+
+### Do this first, before any fix
+
+Add the tuning knobs to `createLogger` as optional parameters with named-constant
+defaults: the global flush deadline, the per-verify timeout, the consecutive-
+failure retire threshold, and the startup-buffer cap. Everything else in Phase 0
+depends on them, and so does the future fuzz harness, because the property tests
+must inject tiny deadlines (single-digit milliseconds) to force the timeout paths
+deterministically. Without injectable deadlines you would be testing timeouts by
+waiting whole seconds of real wall-clock, which is slow and flaky. The default
+`logger` passes none of these and gets the defaults, so it stays zero-config.
+
+### Order to implement Phase 0
+
+1.  The `createLogger` options surface (above).
+2.  Gap A flush deadline and the bounded-wrapper tracking.
+3.  Gap A2 concurrent bounded verify.
+4.  Gap A3 transient-with-retire failure counter.
+5.  Gap B remove the throw.
+6.  Gap C startup ring buffer and dropped-count marker.
+7.  Gap D console escape classifier (a new sibling module under `src/sinks/`).
+
+Each step lands with a direct regression test that fails against the code before
+the step and passes after. If a test passes before your change, it is not
+testing your change; fix the test, not the feeling.
+
+### Traps that will bite you
+
+- `withTimeout` from `@monochromatic-dev/module-async-time` rejects when the
+  deadline fires. `flush()` must resolve, never reject, so you must catch and
+  swallow that rejection. If you forget, every flush that hits the deadline throws
+  and you have reintroduced Gap B at the flush boundary.
+- `pendingWrites` must hold the bounded wrapper promise, never the raw sink write
+  promise. If you keep the raw promise and only race a timeout beside it, a write
+  that never settles stays in the set forever and leaks, and a future flush can
+  still observe it. Symptom: memory grows under a stalling sink, or flush slows
+  over time.
+- The raw sink promise you abandon at the deadline still settles later. Attach a
+  rejection handler to it (a no-op catch) or a late rejection becomes an
+  unhandled rejection that crashes the process or trips the test harness. This is
+  the single most common timeout-race bug; the plan calls it out twice on purpose.
+- Abandoned writes are not cancelled. The sinks have no `AbortSignal`. You drop
+  them from the logger's view and move on; you do not try to stop them.
+- The consecutive-failure counter counts every sink-level failure (write reject,
+  write timeout, flush-hook reject, flush-hook timeout) and resets to zero on any
+  success (a write that resolves, a hook that resolves). It is consecutive, not
+  cumulative. Retire is permanent for the run and emits a breadcrumb. Do not retire
+  on the first failure; that is the rejected "fatal" option.
+- Switching verify from sequential to concurrent must not break replay-exactly-once.
+  The invariant that makes the current code correct is that a record's
+  immediate-write set (sinks already available) and its replay set (a sink the
+  moment it becomes available) are disjoint. Concurrency changes verify timing, not
+  that invariant, but the Phase 3 property must still pass. If you see a record
+  delivered twice to one sink, you broke the disjointness.
+- The console escape classifier must be a single linear pass over the string
+  (the `ITR` and `RG2` rules), not a regex and not recursion. It lives in its own
+  module because `console.ts` is already near the max-lines budget; do not inline
+  it and do not raise the budget (the `MXL` rule forbids that). Test it against
+  malformed input: a trailing lone `ESC`, an `ESC [` with no final byte, an
+  unterminated OSC, nested `ESC`. A naive classifier passes those straight
+  through, which is the hole you are closing.
+- The breadcrumbs (dead-logger warning, dropped-count, stall, retire) use guarded
+  raw `console`, wrapped in `try`/`catch`. The console sink itself may be the dead
+  one, so you cannot route a breadcrumb through the logger. The `TLG` rule permits
+  raw `console` for this kind of last-resort control output.
+
+### Rules you must not break while editing this package
+
+- Do not remove or quiet existing logging to "clean up" (the `LOG` rule). Add
+  more logging at branch decisions and error paths; treat it as permanent.
+- Production code uses tagged loggers, never raw `console.log`, except the guarded
+  last-resort breadcrumbs above (the `TLG` rule).
+- Do not raise, disable, or work around the max-lines budget. Split into sibling
+  modules and re-export (the `MXL` rule).
+- Throw and return early; never silently swallow an unexpected state except the
+  documented per-sink write swallow (the `PP7` and `PP8` rules). The deliberate
+  swallows in this package each carry a comment saying why; keep that discipline.
+
 ## The standard we are matching
 
 Distilled from `packages/module/toml-edit/` (`HANDOVER.fuzzing.md`,
