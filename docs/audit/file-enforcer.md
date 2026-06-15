@@ -535,21 +535,26 @@ expressible by writing code in the config, so they are not engine work.
 Those are catalogued after the roadmap, not in it.
 
 1.  Check or verify mode, axis A7.
-    This is the highest-value addition and the cheapest, and the `TODO.md` framing overstates its cost.
-    The package already has the mechanism: `overwrite()` reads the existing destination through `readExisting()` and
-    logs `skip (unchanged)` when content already matches.
-    Evidence: `src/io/write.ts`.
-    A check mode is that comparison with the write suppressed and a nonzero exit on any mismatch, plus an optional diff.
-    It does not require the descriptor or interpreter rewrite `TODO.md` assumes; it is a run-mode flag threaded through
-    the write functions, and it can reuse the destination content hashes already in the staleness manifest.
-    Evidence: `src/io/staleness-hash.ts`.
+    The highest-value addition, and the one genuinely non-trivial item on this list.
+    For a write-only config, which the current root config is, it is cheap: `overwrite()`, `overwriteEach()`, and the
+    lazy builders all route through `writeFileAtomically`, and `overwrite()` already reads the destination through
+    `readExisting()` and logs `skip (unchanged)` when content matches.
+    So for that case a check mode is that comparison with the write suppressed, a nonzero exit on any mismatch, and an
+    optional diff, reusing the destination hashes already in the staleness manifest.
+    Evidence: `src/io/write.ts`, `src/io/write-atomic.ts`, `src/io/staleness-hash.ts`.
+    The catch, and the reason `TODO.md` calls this descriptor-pattern work, is that the public API also has side
+    effects a write-wrapper cannot neutralize: `exec()` runs commands, `ensurePackage()` installs system packages under
+    `sudo`, and `notify` sends desktop notifications.
+    A config that calls those cannot be checked safely by suppressing writes alone.
+    Evidence: `src/pipeline/exec.ts`, `src/package/ensure-package.ts`.
+    So the honest scope is a check mode for write-only configs, cheap and high-value, with configs that use the
+    side-effecting API out of scope unless a descriptor layer is added later.
+    This item is hard for the same reason axis A9 is powerful: the engine cannot reason about an opaque arbitrary-code
+    rule without running its effects.
     Reference implementations: `make` `-q` with its zero-or-nonzero exit, `cog` `--check` with `--diff`,
     and `doctoc` `--dryrun`.
-    Payoff: continuous integration can assert that every derived file is in sync and fail the build on drift,
-    which the repo cannot do today.
-    There is an honest tension with the direct-execution design recorded in `docs/decisions`, since the design avoids a
-    no-op write layer on purpose; the resolution is a thin compare-and-report wrapper, not a descriptor engine,
-    so the tension is real but small.
+    Payoff: continuous integration can assert that every write-only derived file is in sync and fail the build on
+    drift, which the repo cannot do today.
 
 2.  Polling watch fallback for unreliable filesystem backends.
     A must-have, not a niche item.
@@ -622,6 +627,20 @@ They are listed here so the roadmap's short length reads as a deliberate result,
   Git hooks are being deprecated in this repo, so the check mode runs in continuous integration, not on commit,
   and there is no hook to install.
   Evidence: `docs/decisions/cli-git-policies-platform.md`.
+
+### Out of audit scope: engine hardening and scale
+
+This audit ranked capabilities to absorb from peer tools.
+A separate class of work has no peer donor, so it does not appear in the roadmap above, yet it is not small.
+A short absorption roadmap should not be read as an empty backlog.
+`TODO.md` already tracks it, and at least the last item is architectural rather than a helper:
+
+- cache correctness when more than one external tool edits a source between reruns, where only the last edit is seen;
+- unbounded in-memory cache growth on very large monorepos, with no eviction strategy;
+- graceful shutdown on `SIGINT` and `SIGTERM`, so watchers and abort controllers are released cleanly;
+- multiple config files, for example per-package configs merged at the root.
+
+Evidence: `packages/dev-script/file-enforcer/TODO.md`.
 
 ### What file-enforcer should not absorb
 
