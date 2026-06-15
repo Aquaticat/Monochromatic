@@ -293,7 +293,7 @@ Recommended MVP:
 
 - support literal matching without copying giant spans into tool arguments;
 - support bounded regex for the user shorthand path;
-- run a safety spike before implementation to choose the abortable boundary or safe regex engine;
+- run Phase 0 before implementation to choose the exact source-audited safe regex engine;
 - reject raw full-context JavaScript `RegExp` matching;
 - for the bounded regex path,
   enforce short pattern,
@@ -317,6 +317,9 @@ Do not pick a regex dependency in the first implementation pass without running 
 technology-selection process.
 If a dependency becomes necessary,
 run a source audit for the finalist and at least two alternatives before adding it.
+Phase 0 should prefer a source-audited safe regex engine with documented linear-time behavior.
+Abortable workers are the fallback strategy only if the safe-engine audit fails and the user reopens the decision.
+Hand-rolled syntax restriction and literal-only regex deferral are rejected as default strategies.
 
 ## Rule replay semantics
 
@@ -448,8 +451,10 @@ Expected package metadata:
 
 ### Phase 0: regex safety gate
 
-- Decide the regex safety boundary before enabling regex in Phase 1.
-- Ship only literal matching if the gate is not satisfied.
+- Choose the exact safe regex engine through the repo's technology-selection process.
+- Source-audit the finalist and at least two serious alternatives before adding a dependency.
+- Do not enable regex unless the selected engine has documented linear-time behavior for supported syntax.
+- Ship only literal matching if the safe-engine audit has not completed.
 - Record concrete budgets for pattern length,
   description length,
   literal length,
@@ -460,9 +465,9 @@ Expected package metadata:
   and active rules replayed.
 
 Definition of done:
-regex support is enabled only after the implementation has a safe engine,
-an abortable worker boundary,
-or a syntax restriction that rejects catastrophic backtracking constructs.
+regex support is enabled only after a source-audited safe engine is selected,
+budgets are documented,
+and the implementation verifies that unsupported regex syntax is rejected clearly.
 
 ### Phase 1: minimal branch-safe omission
 
@@ -1182,6 +1187,57 @@ Ranking:
 expire-on-compaction beats survive-via-branch-replay because the user prefers the simpler natural reset boundary.
 Survive-via-branch-replay beats fresh state because tool result details remain the single source of truth.
 
+### Question 14: what should Phase 0 require before regex is enabled?
+
+Decision:
+Phase 0 should choose a source-audited safe regex engine with documented linear-time behavior.
+User answered this on 2026-06-15.
+The exact dependency remains unchosen until Phase 0 runs the repo's technology-selection process.
+
+Pros:
+preserves regex power for shorthand patterns,
+gives a clearer safety proof than hand-rolled syntax checks,
+and avoids relying on timeout behavior for every request.
+
+Cons:
+requires dependency-selection work,
+source auditing,
+and possibly a supported syntax subset that differs from JavaScript `RegExp`.
+
+Rejected alternative:
+wrap JavaScript `RegExp` in an abortable worker.
+
+Pros:
+preserves JavaScript regex semantics.
+
+Cons:
+adds worker overhead,
+timeout tuning,
+and request-budget complexity.
+
+Rejected alternative:
+accept only a restricted JavaScript regex syntax.
+
+Pros:
+avoids adding a dependency.
+
+Cons:
+hand-rolled regex safety is easy to under-specify and test poorly.
+
+Rejected alternative:
+ship literal matching first and defer regex.
+
+Pros:
+safest initial implementation.
+
+Cons:
+does not support the user's shorthand example until later.
+
+Ranking:
+safe engine beats abortable worker because documented linear-time matching is a stronger default safety boundary.
+Abortable worker beats restricted syntax because preserving regex semantics is more useful than a fragile local parser.
+Restricted syntax beats literal-only because it can still support some regex shorthand.
+
 ## Resolved implementation decisions
 
 Question 1 is resolved:
@@ -1220,5 +1276,7 @@ Question 12 is resolved:
 ACM rewrites provider context only.
 Question 13 is resolved:
 rules expire when Pi compaction removes their source `acm` tool results from provider context.
+Question 14 is resolved:
+Phase 0 requires a source-audited safe regex engine before enabling regex.
 Before implementation,
-resolve the Phase 0 regex safety gate strategy.
+run the documented Phase 0 source audit to choose the exact safe regex engine and budgets.
