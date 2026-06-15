@@ -572,12 +572,19 @@ Those are catalogued after the roadmap, not in it.
     This generalizes the `appendTo` and `prependTo` operations `TODO.md` lists as missing.
     The current root config needs none of this, since its generated files are whole-file, so this is worth building
     only when a real job must place a generated slice inside a hand-edited file.
-    Reference implementations: `cog` is the model to follow, because it manages arbitrary text files rather than
-    markdown only, lets the region body be arbitrary code, guarantees idempotency, and adds an opt-in checksum that
-    refuses to overwrite a hand-edited region.
-    `doctoc` and `embedme` show the simpler marker-and-verify shape.
-    Fit: a new write helper that reads the destination, replaces only the marked region, and skips when unchanged,
-    reusing the existing content-stable write path.
+    Mechanically this is a small string splice, not a new engine: scan for the begin and end markers and replace the
+    slice between them, the way the package's existing partial-edit primitives use a parser or string `indexOf` and
+    `slice` rather than a regex, which the repo's `no-restricted-syntax/no-regex` policy disfavors anyway
+    (`docs/handover/no-regex.md`).
+    The matching is the easy part.
+    The substance is the syntax boundary: the generated payload can itself contain the end marker, so a naive regex and
+    a naive `indexOf` both corrupt the region on the next run.
+    Handling that, by choosing markers the payload cannot contain, encoding the payload, or a tamper-evident checksum,
+    is the work, and it is exactly the cross-syntax-boundary concern the repo's own rules call out.
+    Design reference: `cog`, whose opt-in checksum refuses to overwrite a hand-edited region and whose idempotency
+    guarantee addresses precisely this; `doctoc` and `embedme` show the simpler marker-and-verify shape.
+    Fit: a string-splice write helper that reuses the existing content-stable write path and skips when unchanged,
+    with adversarial boundary tests for markers appearing in the payload.
 
 4.  Per-rule incremental rerun, an enhancement of axis A5.
     `TODO.md` already proposes tagging rules with their source paths so only affected rules rerun, and notes that warm
