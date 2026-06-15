@@ -1,9 +1,0 @@
-target
-artifacts
-coverage
-
-# Ignore corpus growth that libFuzzer adds over a run. Curated seed
-# files written by `seed-from-tests` are re-included below.
-corpus/*/*
-!corpus/.keep
-!corpus/*/seed-*
