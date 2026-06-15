@@ -147,6 +147,9 @@ It borrows mise's machinery but, deliberately, not mise's default posture:
 - Relaxed mode (no content re-check): paranoid is on by default and can be turned off only per config, never globally.
   Because the only thing a relaxation can express is "paranoid off here", the value never needs to carry one, so
   `CLI_GIT_NO_PARANOID` is just a list of the (filesystem id, path) pairs whose content re-check is disabled.
+  The operator sets it by hand (in a shell or `mise.toml`); cli-git never writes it, but it surfaces the exact
+  `<filesystem id>:<path>` entry to paste, so the operator does not have to compute the id (the command that
+  prints it is in the implementation spec).
   Each entry is the colon-joined `<filesystem id>:<path>` key the trust registry uses, recovered by splitting on
   the first colon (the id is colon-free, so this round-trips even for a Windows `C:\...` path); membership in the
   list is the whole signal, with no JSON and no key-to-value map (the exact list separator and escaping are in the
@@ -178,8 +181,9 @@ The tell is that such an entry cannot carry a real filesystem id, because the at
 not know the cloner's volume, so the planted entry is path-only.
 So cli-git shouts on two kinds of entry.
 Structurally, on any list entry that carries no filesystem id or a malformed one (an id that does not parse as a
-real volume-id shape), wherever it sits in the list: such an entry cannot come from legitimate use, which always
-writes a well-formed `<filesystem id>:<path>` through `cli-git trust`.
+real volume-id shape), wherever it sits in the list: a legitimate entry carries the real id that cli-git
+surfaced for the operator to paste, so a missing or malformed id is the mark of a path guess, not of legitimate
+use.
 Semantically, and scoped to the config being loaded, on the entry that names this config's path but whose
 well-formed id matches no mounted volume: this config's own volume is necessarily mounted at load time, so a
 well-formed but wrong id there is a planted guess.
