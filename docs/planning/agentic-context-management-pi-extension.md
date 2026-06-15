@@ -378,6 +378,8 @@ The `context` handler should:
 - collect `toolResult` messages whose `toolName` is `acm`;
 - ignore malformed details and unknown details versions safely;
 - replay `add` and `disable` actions into an active rule list;
+- apply an `add` action by replacing any existing active rule with the same normalized matcher,
+  then inserting the new rule at the latest creation order;
 - apply a `disable` action by removing every active rule whose normalized matcher equals a supplied matcher;
 - keep rules active in request context until a later `disable` action removes them,
   or until Pi compaction removes the source `acm` tool result from provider context;
@@ -561,7 +563,7 @@ Unit tests:
 - a zero-current-match rule applies later when matching eligible context appears;
 - malformed ACM details are ignored safely;
 - unknown ACM details versions are ignored safely;
-- duplicate normalized matchers are listed deterministically;
+- duplicate normalized matchers replace the prior active rule and move to latest order;
 - disabling an unknown matcher is a no-op with diagnostics;
 - disabling a matcher removes every active rule with that normalized matcher;
 - adding a matcher after disabling it reactivates that matcher for later context;
@@ -1430,6 +1432,57 @@ Ranking:
 install-with-warning beats reject because rolling rules can intentionally match future context.
 Reject beats silent install because surfacing likely mistakes matters.
 
+### Question 19: what happens when a matcher is added twice?
+
+Decision:
+adding a normalized matcher that is already active should replace the prior active rule.
+The replacement gets the new description,
+source `toolCallId`,
+and latest creation order.
+User answered this on 2026-06-15.
+
+Pros:
+lets the model update descriptions or refresh provenance without rule IDs,
+avoids duplicate overlap noise,
+and keeps exact-matcher disable unambiguous.
+
+Cons:
+re-adding a matcher changes provenance and rule order.
+
+Rejected alternative:
+reject duplicate normalized matchers.
+
+Pros:
+catches accidental repeated rules.
+
+Cons:
+updating a description requires a disable call followed by a substitute call.
+
+Rejected alternative:
+keep the first active rule.
+
+Pros:
+preserves original provenance.
+
+Cons:
+a later substitute appears to succeed but changes nothing.
+
+Rejected alternative:
+allow duplicate active rules.
+
+Pros:
+pure event-log replay with no dedupe.
+
+Cons:
+duplicate matches overlap,
+add diagnostics noise,
+and exact-matcher disable removes all copies anyway.
+
+Ranking:
+replace beats reject because it supports updating rules without IDs.
+Reject beats keep-first because explicit failure is clearer than a no-op substitute.
+Keep-first beats duplicates because duplicate active rules create overlap noise.
+
 ## Resolved implementation decisions
 
 Question 1 is resolved:
@@ -1478,5 +1531,7 @@ Question 17 is resolved:
 ACM has no preview surface in the MVP.
 Question 18 is resolved:
 zero-current-match substitutions install active rules with warnings.
+Question 19 is resolved:
+adding an already active normalized matcher replaces the prior active rule.
 Before implementation,
 run the documented Phase 0 source audit to choose the exact safe regex engine and budgets.
