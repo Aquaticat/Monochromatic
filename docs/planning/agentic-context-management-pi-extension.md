@@ -333,7 +333,8 @@ The `context` handler should:
 - scan messages in source order;
 - collect `toolResult` messages whose `toolName` is `acm`;
 - replay `add` and `disable` actions into an active rule map;
-- keep rules active on the current branch until a later `disable` action removes them;
+- keep rules active in request context until a later `disable` action removes them,
+  or until Pi compaction removes the source `acm` tool result from provider context;
 - apply active rules in creation order;
 - skip a rule when it would delete or alter a non-text block;
 - skip overlapping replacements rather than guessing;
@@ -747,8 +748,10 @@ Bulky built-ins beat all tool results because preserving ACM's own audit trail m
 ### Question 5: how long should rules live?
 
 Decision:
-rules persist on the active branch until disabled.
-User answered this on 2026-06-15.
+rules persist on the active branch until disabled,
+with Pi compaction as an expiration boundary if it removes the source `acm` tool result from provider context.
+User answered the base lifetime on 2026-06-15,
+then answered the compaction boundary in Question 13.
 
 Pros:
 one `acm` call keeps redundant boilerplate or bulky output omitted across future turns,
@@ -1055,29 +1058,32 @@ UI-mirrored beats destructive history rewrite because original evidence remains 
 
 ### Question 13: should ACM rules survive Pi compaction?
 
-Recommended answer:
+Decision:
+rules expire when their source `acm` tool results fall behind Pi compaction.
+User answered this on 2026-06-15.
+
+Pros:
+simplest context handler,
+keeps replay based on the same `event.messages` provider-context surface that ACM rewrites,
+and treats Pi compaction as a natural reset boundary.
+
+Cons:
+compaction can disable active ACM rules before an explicit `disable` action.
+This narrows the persist-until-disabled decision to uncompacted provider context.
+
+Rejected alternative:
 rules survive compaction until explicitly disabled.
-The implementation should replay rule actions from `ctx.sessionManager.getBranch()` rather than only `event.messages`,
+The implementation would replay rule actions from `ctx.sessionManager.getBranch()` rather than only `event.messages`,
 because `event.messages` may contain a compaction summary instead of older `acm` tool results.
 
 Pros:
-respects the persist-until-disabled decision across automatic and manual compaction.
+respects persist-until-disabled across automatic and manual compaction.
 
 Cons:
 the `context` handler has to reconcile branch entries with provider messages,
 which is more complex than scanning `event.messages` alone.
 
-Alternative:
-rules expire when their tool results fall behind compaction.
-
-Pros:
-simpler context handler.
-
-Cons:
-compaction silently disables active ACM rules,
-contradicting the lifetime decision.
-
-Alternative:
+Rejected alternative:
 write a fresh ACM state entry during compaction.
 
 Pros:
@@ -1087,10 +1093,10 @@ Cons:
 creates a second state materialization path that can diverge from tool result replay.
 
 Ranking:
-survive via branch replay beats fresh state because tool result details remain the single source of truth.
-Fresh state beats expire-on-compaction because it preserves user-visible behavior.
+expire-on-compaction beats survive-via-branch-replay because the user prefers the simpler natural reset boundary.
+Survive-via-branch-replay beats fresh state because tool result details remain the single source of truth.
 
-## First implementation decision needed
+## Resolved implementation decisions
 
 Question 1 is resolved:
 assistant text and tool result text are both in scope.
@@ -1103,7 +1109,8 @@ Question 4 is resolved:
 all non-ACM tool result text blocks are eligible,
 with ACM's own tool results excluded.
 Question 5 is resolved:
-rules persist on the active branch until disabled.
+rules persist on the active branch until disabled,
+with Pi compaction as an expiration boundary if it removes the source `acm` tool result from provider context.
 Question 6 is resolved:
 rules do not include expected match counts.
 Question 7 is resolved:
@@ -1121,6 +1128,8 @@ Question 11 is resolved:
 diagnostics live in `acm` tool result `details` plus `list` and preview commands.
 Question 12 is resolved:
 ACM rewrites provider context only.
-Before building past Phase 1,
-answer Question 13.
-My recommendation is rules survive Pi compaction by replaying from branch entries.
+Question 13 is resolved:
+rules expire when Pi compaction removes their source `acm` tool results from provider context.
+No blocking grill-me design questions remain in this plan.
+Before implementation,
+run the documented Phase 1 spikes for regex safety and tool-execution visibility.
