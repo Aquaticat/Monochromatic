@@ -208,6 +208,15 @@ The list output must not include matched text snippets by default,
 because that can reintroduce omitted text into provider context.
 The tool result `details` should store the same structured summary for UI rendering and replay tests.
 
+For `action: "substitute"` and `action: "disable"`,
+the tool result content should also return matcher summaries without snippets:
+normalized matcher,
+description for added rules,
+action result,
+current match counts,
+and warnings.
+This keeps exact-match disable usable from provider-visible context.
+
 Compatibility shim:
 `prepareArguments()` should accept the shorthand shown by the user as an illustrative notation.
 Actual model tool calls must still arrive as JSON-compatible arguments,
@@ -599,6 +608,7 @@ Unit tests:
 - adding a matcher after disabling it reactivates that matcher for later context;
 - `action: "list"` returns normalized matchers that can be copied into `action: "disable"`;
 - `action: "list"` reports current assistant and tool-result match counts without matched text snippets;
+- `action: "substitute"` and `action: "disable"` return provider-visible matcher summaries without snippets;
 - multiple substitutions in one ACM call apply in stable order;
 - global zero-width regex cannot infinite-loop;
 - regex flags parser rejects unsupported flags;
@@ -1599,6 +1609,50 @@ Ranking:
 slash-regex-else-literal beats regex-only because literal shorthand is useful and unambiguous for non-slash keys.
 Regex-only beats strict-only because it still supports the user's concise regex example.
 
+### Question 22: what should substitute and disable tool result content include?
+
+Decision:
+`substitute` and `disable` tool result content should include compact matcher summaries without matched snippets.
+User answered this on 2026-06-15.
+
+Each summary should include:
+
+- normalized matcher,
+- description for added rules,
+- action result,
+- current match counts,
+- warnings.
+
+Pros:
+keeps exact-matcher disable usable from provider-visible context,
+surfaces zero-match and duplicate-replacement warnings,
+and avoids putting matched text snippets back into context.
+
+Cons:
+costs more tokens than a terse success result.
+
+Rejected alternative:
+return counts only.
+
+Pros:
+smaller provider-visible result.
+
+Cons:
+the model cannot copy exact matchers from install output into `disable`.
+
+Rejected alternative:
+return only a terse success status.
+
+Pros:
+lowest token cost.
+
+Cons:
+hides warnings and selector details from the model.
+
+Ranking:
+matcher summaries beat counts-only because exact-matcher disable needs provider-visible selectors.
+Counts-only beats terse success because counts at least reveal broad or zero matches.
+
 ## Resolved implementation decisions
 
 Question 1 is resolved:
@@ -1654,5 +1708,7 @@ Question 20 is resolved:
 exact normalized matcher means `kind`, exact `value`, and sorted unique regex `flags`.
 Question 21 is resolved:
 shorthand keys parse as slash-regex when they start with `/`, otherwise as literals.
+Question 22 is resolved:
+`substitute` and `disable` tool result content include compact matcher summaries without snippets.
 Before implementation,
 run the documented Phase 0 source audit to choose the exact safe regex engine and budgets.
