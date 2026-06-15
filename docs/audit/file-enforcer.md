@@ -369,7 +369,7 @@ incremental graph.
   Freshness defaults to mtime, size, and inode, with opt-in content checksums through `redo-stamp`.
   It has the cluster's only preserve-on-hand-edit reaction: when a generated target is edited externally,
   it marks the file an override and skips the rebuild rather than clobbering it.
-  That is a design option worth weighing against file-enforcer's notify-and-regenerate stance.
+  file-enforcer takes the opposite stance on purpose, notify and regenerate, so this is a contrast, not a gap.
   Evidence: `/tmp/agent/fe-buildgraph-redo-20260615` at `7f00abc36be15f398fa3ecf9f4e5283509c34a00` (2021-07-27),
   `redo/state.py`, `redo/deps.py`.
   The implementation is effectively dormant: its last substantive commit is from 2021 and issues are disabled.
@@ -523,6 +523,10 @@ so it becomes the single tool for repo-local derived-file work rather than one t
 Ordered by value.
 Each item names the capability, the cited reference implementations, and the concrete fit against file-enforcer's
 existing source and `TODO.md`.
+The list is deliberately short.
+Because the config is arbitrary TypeScript, axis A9, many capabilities other tools ship as engine features are already
+expressible by writing code in the config, so they are not engine work.
+Those are catalogued after the roadmap, not in it.
 
 1.  Check or verify mode, axis A7.
     This is the highest-value addition and the cheapest, and the `TODO.md` framing overstates its cost.
@@ -541,7 +545,17 @@ existing source and `TODO.md`.
     no-op write layer on purpose; the resolution is a thin compare-and-report wrapper, not a descriptor engine,
     so the tension is real but small.
 
-2.  Region or partial-file management, axis A8.
+2.  Polling watch fallback for unreliable filesystem backends.
+    A must-have, not a niche item.
+    `fs.watch` misses events on some backends, notably NFS and FUSE mounts, so watch mode can silently stop
+    reconciling without any error.
+    `TODO.md` already lists this under watch-mode reliability, and `watchexec` demonstrates a cross-platform polling
+    fallback.
+    Fit: a poll-based watcher selected when the native backend is known-unreliable or when expected events stop
+    arriving, behind the existing watch supervisor.
+    Evidence: `packages/dev-script/file-enforcer/TODO.md`, `src/watch/watch-supervisor.ts`.
+
+3.  Region or partial-file management, axis A8.
     Today file-enforcer overwrites whole files, so a generated file cannot share space with hand-edited content.
     Region markers let it own a slice of an otherwise human-owned file, which generalizes the `appendTo` and
     `prependTo` operations `TODO.md` lists as missing.
@@ -552,7 +566,7 @@ existing source and `TODO.md`.
     Fit: a new write helper that reads the destination, replaces only the marked region, and skips when unchanged,
     reusing the existing content-stable write path.
 
-3.  Per-rule incremental rerun, an enhancement of axis A5.
+4.  Per-rule incremental rerun, an enhancement of axis A5.
     `TODO.md` already proposes tagging rules with their source paths so only affected rules rerun, and notes that warm
     full reruns are fast enough that this is low priority.
     The build-graph cluster shows the mature form: `wireit`'s per-target content-hash fingerprint and `turbo`'s
@@ -561,19 +575,32 @@ existing source and `TODO.md`.
     machinery, not new infrastructure.
     Evidence: `src/io/staleness-hash.ts`, `src/io/staleness-manifest.ts`.
 
-4.  Niche absorptions, lower priority, adopt only when a real job needs them.
-    - Remote sources and source-control commit or pull-request automation, from `updatecli`, if file-enforcer ever owns
-      a dependency-update job rather than delegating it.
-    - Vendoring external trees with a lock file and per-source checksums, from `vendir`, if a job vendors an external
-      directory.
-    - Schema validation of emitted structured output, from `cue` and `pkl`, to validate the TOML or JSON file-enforcer
-      writes against a schema before the write lands.
-    - Native Git-hook installation, from `pre-commit` and `lefthook`, so enforcement and the new check mode run on
-      commit without external wiring.
-    - A polling watch fallback for filesystem backends where `fs.watch` misses events, which `TODO.md` already lists
-      and which `watchexec` demonstrates cross-platform.
-    - A managed-destination reaction policy, taking `redo`'s preserve-on-hand-edit as a configurable alternative to the
-      current notify-and-regenerate behavior.
+### Already covered, not roadmap items
+
+Several capabilities other tools ship as engine features are not file-enforcer gaps,
+because the config is arbitrary TypeScript with top-level `await` and local imports.
+They are listed here so the roadmap's short length reads as a deliberate result, not an oversight.
+
+- Remote sources.
+  A generator can call `fetch()` in the config directly, and the content-stable write path already detects when the
+  fetched content changed, so there is nothing for the engine to add.
+  This is `updatecli`'s remote-source feature, made unnecessary by axis A9.
+- Schema validation of generated structured output.
+  Import a schema library into the config, `valibot` for example, and validate the value before the write lands.
+  This is the `cue` and `pkl` validation argument, expressed in-config rather than built into the tool.
+- Vendoring external trees.
+  `mise` vendors tools and `pnpm` vendors packages, both with lock files and integrity hashes, so `vendir`'s job is
+  already done for the dependency shapes this repo has.
+  Its one unique niche, vendoring an arbitrary non-package directory, is not a need here; if it arose, a `fetch()` and
+  a checksum in the config would cover it.
+- Dependency-update pull requests.
+  `updatecli`'s source-control automation checks out a branch, commits the computed file change, pushes, and opens a
+  pull request, the way Renovate or Dependabot do.
+  That is an autonomous update-bot problem, not derived-file reconciliation, so it stays `updatecli`'s domain as a
+  complement.
+- Git-hook installation.
+  Git hooks are being deprecated in this repo, so the check mode runs in continuous integration, not on commit,
+  and there is no hook to install.
 
 ### What file-enforcer should not absorb
 
@@ -594,6 +621,10 @@ focus would weaken it.
   Baking in a fixed-schema mode like `syncpack` would trade the generality that is its whole advantage for a narrow
   feature it can already express.
   The cluster that tempted this audit as a peer is exactly the shape file-enforcer should not become.
+- Not a configurable managed-destination reaction policy.
+  `redo` preserves a hand-edited output and skips regeneration; file-enforcer notifies and regenerates on purpose,
+  because a managed destination is owned by its generator, so an external edit to it is drift to correct,
+  not content to keep.
 
 ## Maintenance snapshots
 
