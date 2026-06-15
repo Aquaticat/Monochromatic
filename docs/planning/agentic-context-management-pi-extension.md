@@ -182,6 +182,12 @@ For `action: "disable"`,
 `matches` contains exact normalized matchers to remove.
 The extension disables every active rule whose matcher equals a supplied matcher after normalization.
 Descriptions are not part of the disable key.
+Matcher equality is the canonical tuple:
+`kind`,
+exact `value`,
+and sorted unique `flags` for regex matchers.
+Unsupported or duplicate flags are rejected rather than normalized silently.
+No deeper regex semantic equivalence is attempted.
 
 For `action: "list"`,
 the tool result should return compact active-rule summaries:
@@ -318,7 +324,9 @@ Recommended MVP:
 - reject raw full-context JavaScript `RegExp` matching;
 - for the bounded regex path,
   enforce short pattern,
-  short flags allowlist,
+  short supported-flags allowlist,
+  duplicate-flag rejection,
+  canonical flag ordering,
   and bounded text block size;
 - reject regexes that exceed those bounds;
 - do not require or store expected match counts;
@@ -543,6 +551,8 @@ Unit tests:
 - shorthand input normalizes to strict schema;
 - invalid action is rejected;
 - regex flags outside the allowlist are rejected;
+- duplicate regex flags are rejected;
+- regex flags are canonicalized into sorted order for matcher equality;
 - empty description renders `<omitted></omitted>`;
 - description text escapes `<`,
   `>`,
@@ -1483,6 +1493,48 @@ replace beats reject because it supports updating rules without IDs.
 Reject beats keep-first because explicit failure is clearer than a no-op substitute.
 Keep-first beats duplicates because duplicate active rules create overlap noise.
 
+### Question 20: what does exact normalized matcher mean?
+
+Decision:
+matcher equality is the canonical tuple of `kind`,
+exact `value`,
+and sorted unique `flags` for regex matchers.
+Unsupported or duplicate flags are rejected rather than normalized silently.
+No deeper regex semantic equivalence is attempted.
+User answered this on 2026-06-15.
+
+Pros:
+`/x/gi` and `/x/ig` disable the same rule,
+duplicate and unsupported flags fail early,
+and equality stays independent of safe-engine internals.
+
+Cons:
+semantically equivalent regex forms with different source text are still different matchers.
+
+Rejected alternative:
+raw string equality.
+
+Pros:
+simplest implementation.
+
+Cons:
+flag order makes disable brittle.
+
+Rejected alternative:
+semantic regex equivalence.
+
+Pros:
+could treat equivalent regex forms as the same matcher.
+
+Cons:
+costly,
+safe-engine-specific,
+and hard to prove correct.
+
+Ranking:
+canonical tuple beats raw string because flag-order differences should not break disable.
+Raw string beats semantic equivalence because it is simple and predictable.
+
 ## Resolved implementation decisions
 
 Question 1 is resolved:
@@ -1533,5 +1585,7 @@ Question 18 is resolved:
 zero-current-match substitutions install active rules with warnings.
 Question 19 is resolved:
 adding an already active normalized matcher replaces the prior active rule.
+Question 20 is resolved:
+exact normalized matcher means `kind`, exact `value`, and sorted unique regex `flags`.
 Before implementation,
 run the documented Phase 0 source audit to choose the exact safe regex engine and budgets.
