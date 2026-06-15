@@ -173,7 +173,6 @@ Recommended strict schema:
       flags?: string;
     };
     description: string;
-    expectedMatches?: number;
     occurrenceLimit?: number;
   }>;
   ruleIds?: string[];
@@ -205,7 +204,6 @@ The shim normalizes it to:
         flags: "gm"
       },
       description: "",
-      expectedMatches: 1,
       occurrenceLimit: 1
     }
   ]
@@ -274,13 +272,13 @@ Recommended MVP:
   bounded text block size,
   and bounded replacement count;
 - reject regexes that exceed those bounds;
-- require `expectedMatches` and default it to `1` for shorthand;
-- reject zero matches and excessive matches when the tool can count safely;
+- do not require or store expected match counts;
+- treat zero matches as a no-op with diagnostics rather than a rule-contract failure;
+- make `occurrenceLimit` the guard against broad omission;
 - run a Phase 1 spike to verify whether custom tool execution can see the just-finished assistant message
   through `ctx.sessionManager`;
 - until that visibility is proven,
-  treat match counting inside the tool as best effort and make the `context` pass skip rules that do not
-  match exactly as promised.
+  treat install-time match counting as best effort and rely on the `context` pass for enforcement.
 
 Do not pick a regex dependency in the first implementation pass without running the repo's
 technology-selection process.
@@ -312,7 +310,6 @@ type AcmAction =
         | "all_prior_tool_result_text";
       readonly match: AcmMatch;
       readonly description: string;
-      readonly expectedMatches: number;
       readonly occurrenceLimit: number;
     }
   | {
@@ -525,13 +522,12 @@ the model hides tool evidence from itself.
 Mitigation:
 allow only tool result text rewrites,
 keep tool call blocks and tool result metadata intact,
-and require explicit match counts plus list/preview diagnostics.
+and require occurrence limits plus list/preview diagnostics.
 
 Risk:
 a broad pattern omits too much.
 
 Mitigation:
-`expectedMatches`,
 `occurrenceLimit`,
 preview/list commands,
 and deterministic skip behavior for ambiguous matches.
@@ -774,42 +770,81 @@ Ranking:
 persist-until-disabled beats fixed turn expiry because explicit state is easier to audit.
 Fixed turn expiry beats next-request-only because it can still reduce recurring context cost.
 
-### Question 6: what happens when a rule does not match as promised?
+### Question 6: should rules include expected match counts?
 
-Recommended answer:
-fail closed by skipping the whole rule,
-then report a diagnostic through `list` or preview output.
-
-Pros:
-no partial omission,
-no surprise history rewrite,
-and the provider request remains valid even when a pattern goes stale.
-
-Cons:
-token savings can disappear silently until diagnostics are checked,
-so the implementation should make skipped-rule counts visible.
-
-Alternative:
-apply all matches up to `occurrenceLimit` even when `expectedMatches` differs.
+Decision:
+rules should not include expected match counts.
+User answered this on 2026-06-15 after asking why a rule would include one.
 
 Pros:
-keeps saving tokens when nearby text changed slightly.
+simpler tool calls,
+less brittle matching,
+and no need for the model to predict exact match counts before ACM validates context.
 
 Cons:
-can omit unintended evidence after a broad or stale pattern starts matching new text.
+ACM loses a stale-rule guard,
+so `occurrenceLimit`,
+preview/list diagnostics,
+and conservative over-limit behavior become more important.
 
-Alternative:
-throw an error and block the turn.
+Rejected alternative:
+ACM computes and stores an internal expected count.
 
 Pros:
-never sends a context that violates the rule contract.
+protects against a rule that matched one span at install time later matching zero or many spans.
 
 Cons:
-a stale context-management rule can halt unrelated work.
+needs reliable install-time or first-apply counting,
+and can disable a useful rule when harmless context drift changes counts.
+
+Rejected alternative:
+the model supplies the expected count.
+
+Pros:
+explicit contract in the tool call.
+
+Cons:
+noisy and brittle,
+because the model must know counts before the extension validates matches.
 
 Ranking:
-skip-and-diagnose beats block-turn because context management should degrade gracefully.
-Block-turn beats partial-apply because partial omission can silently corrupt context.
+no count beats internal guard because user intent favors simpler rules over count contracts.
+Internal guard beats model-supplied count because computed metadata is less noisy than asking the model.
+
+### Question 7: what happens when matches exceed `occurrenceLimit`?
+
+Recommended answer:
+skip the whole rule and report diagnostics.
+
+Pros:
+prevents a broad or stale pattern from omitting unintended evidence,
+and keeps context management fail-closed without halting unrelated work.
+
+Cons:
+token savings disappear for that rule until it is narrowed or disabled.
+
+Alternative:
+apply the first `occurrenceLimit` matches in source order.
+
+Pros:
+still saves tokens for broad patterns.
+
+Cons:
+source order may omit the wrong span,
+especially in long tool output.
+
+Alternative:
+block the turn.
+
+Pros:
+never sends context after a rule violates its limit.
+
+Cons:
+one stale ACM rule can halt unrelated work.
+
+Ranking:
+skip-rule beats first-N because silent partial omission is hard to audit.
+First-N beats block-turn because token management should not halt unrelated work.
 
 ## First implementation decision needed
 
@@ -825,6 +860,8 @@ all non-ACM tool result text blocks are eligible,
 with ACM's own tool results excluded.
 Question 5 is resolved:
 rules persist on the active branch until disabled.
+Question 6 is resolved:
+rules do not include expected match counts.
 Before building past Phase 1,
-answer Question 6.
-My recommendation is fail closed by skipping the whole rule and reporting diagnostics.
+answer Question 7.
+My recommendation is skip the whole rule when matches exceed `occurrenceLimit`.
