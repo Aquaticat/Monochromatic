@@ -173,7 +173,6 @@ Recommended strict schema:
       flags?: string;
     };
     description: string;
-    occurrenceLimit?: number;
   }>;
   ruleIds?: string[];
 }
@@ -203,8 +202,7 @@ The shim normalizes it to:
         value: "^As.+model,$",
         flags: "gm"
       },
-      description: "",
-      occurrenceLimit: 1
+      description: ""
     }
   ]
 }
@@ -269,12 +267,17 @@ Recommended MVP:
 - for the bounded regex path,
   enforce short pattern,
   short flags allowlist,
-  bounded text block size,
-  and bounded replacement count;
+  and bounded text block size;
 - reject regexes that exceed those bounds;
 - do not require or store expected match counts;
+- do not require or store explicit occurrence limits;
+- for regex matching,
+  use JavaScript-style global-flag semantics:
+  `/g` rewrites every match inside the selected target,
+  while no `/g` rewrites the first match only;
+- for literal matching,
+  rewrite the first matching span only unless a later design adds an explicit literal-all mode;
 - treat zero matches as a no-op with diagnostics rather than a rule-contract failure;
-- make `occurrenceLimit` the guard against broad omission;
 - run a Phase 1 spike to verify whether custom tool execution can see the just-finished assistant message
   through `ctx.sessionManager`;
 - until that visibility is proven,
@@ -310,7 +313,6 @@ type AcmAction =
         | "all_prior_tool_result_text";
       readonly match: AcmMatch;
       readonly description: string;
-      readonly occurrenceLimit: number;
     }
   | {
       readonly type: "disable";
@@ -430,7 +432,7 @@ whether `ctx.sessionManager` inside `execute()` includes the assistant message t
 - Add `/acm-preview` to show transformed context without sending it to a provider.
 - Add diagnostics for invalid regex,
   zero matches,
-  too many matches,
+  broad `/g` matches,
   and overlap skips.
 
 Definition of done:
@@ -439,13 +441,13 @@ a bad rule can be found and disabled without editing the session file.
 ### Phase 3: broader targeting after grill-me decisions
 
 - Add `recent_assistant_text` with a bounded message count.
-- Add `all_prior_assistant_text` only with explicit `occurrenceLimit`.
-- Consider user-approved omission of user messages or tool results,
-  but only if the first grill-me decision allows it.
+- Add `all_prior_assistant_text` and `all_prior_tool_result_text` only after broad-target tests cover
+  `/g` all-match behavior and no-`/g` first-match behavior.
+- Consider user-approved omission of user messages or ACM's own tool results as a later explicit opt-in.
 - Decide whether old `acm` tool results should themselves be compacted into a smaller custom message.
 
 Definition of done:
-the extension can compress older assistant context without risking user instruction loss.
+the extension can compress older assistant and eligible tool context without risking user instruction loss.
 
 ## Tests to write before implementation is declared complete
 
@@ -522,13 +524,14 @@ the model hides tool evidence from itself.
 Mitigation:
 allow only tool result text rewrites,
 keep tool call blocks and tool result metadata intact,
-and require occurrence limits plus list/preview diagnostics.
+and require target scoping plus list/preview diagnostics.
 
 Risk:
 a broad pattern omits too much.
 
 Mitigation:
-`occurrenceLimit`,
+small target scopes,
+`/g` semantics,
 preview/list commands,
 and deterministic skip behavior for ambiguous matches.
 
@@ -783,9 +786,9 @@ and no need for the model to predict exact match counts before ACM validates con
 
 Cons:
 ACM loses a stale-rule guard,
-so `occurrenceLimit`,
+so target scoping,
 preview/list diagnostics,
-and conservative over-limit behavior become more important.
+and conservative broad-match behavior become more important.
 
 Rejected alternative:
 ACM computes and stores an internal expected count.
@@ -811,40 +814,79 @@ Ranking:
 no count beats internal guard because user intent favors simpler rules over count contracts.
 Internal guard beats model-supplied count because computed metadata is less noisy than asking the model.
 
-### Question 7: what happens when matches exceed `occurrenceLimit`?
+### Question 7: how many matches should a rule apply to?
 
-Recommended answer:
-skip the whole rule and report diagnostics.
-
-Pros:
-prevents a broad or stale pattern from omitting unintended evidence,
-and keeps context management fail-closed without halting unrelated work.
-
-Cons:
-token savings disappear for that rule until it is narrowed or disabled.
-
-Alternative:
-apply the first `occurrenceLimit` matches in source order.
+Decision:
+regex `/g` rewrites all matches inside the selected target,
+regex without `/g` rewrites one match,
+and literal matching rewrites one span by default.
+User answered this on 2026-06-15.
 
 Pros:
-still saves tokens for broad patterns.
+matches common regex replacement semantics,
+keeps the shorthand easy to understand,
+and avoids a second count-like parameter after rejecting expected match counts.
 
 Cons:
-source order may omit the wrong span,
-especially in long tool output.
+`/g` can omit many spans if the pattern is broad,
+so preview/list diagnostics and target scoping carry the safety burden.
 
-Alternative:
-block the turn.
+Rejected alternative:
+explicit occurrence limits.
 
 Pros:
-never sends context after a rule violates its limit.
+every rule states its replacement cap.
 
 Cons:
-one stale ACM rule can halt unrelated work.
+noisy and contrary to the user's preferred `/g` semantics.
+
+Rejected alternative:
+always rewrite every match.
+
+Pros:
+simplest schema.
+
+Cons:
+non-global regexes and literal matches can erase more than the caller intended.
 
 Ranking:
-skip-rule beats first-N because silent partial omission is hard to audit.
-First-N beats block-turn because token management should not halt unrelated work.
+`/g` semantics beat explicit limits because they match user expectation and common regex behavior.
+Explicit limits beat always-all because bounded replacement is safer than implicit broad omission.
+
+### Question 8: which target scopes belong in the MVP?
+
+Recommended answer:
+MVP includes previous assistant text and previous non-ACM tool result text,
+then adds recent-window scopes after the first tests pass.
+All-prior scopes stay Phase 3.
+
+Pros:
+solves the example and the tool-result use case while keeping matching surfaces small.
+
+Cons:
+the model cannot compact older scattered context until recent/all-prior scopes land.
+
+Alternative:
+MVP includes previous and recent-window scopes.
+
+Pros:
+useful for context emitted a few turns back.
+
+Cons:
+requires a window definition and more branch tests immediately.
+
+Alternative:
+MVP includes all target scopes.
+
+Pros:
+most powerful first release.
+
+Cons:
+widest blast radius for broad `/g` patterns and longest verification path.
+
+Ranking:
+previous-only MVP beats previous-plus-recent because it minimizes first implementation risk.
+Previous-plus-recent beats all-scopes because broad all-prior rewriting should wait for stronger tests.
 
 ## First implementation decision needed
 
@@ -862,6 +904,11 @@ Question 5 is resolved:
 rules persist on the active branch until disabled.
 Question 6 is resolved:
 rules do not include expected match counts.
+Question 7 is resolved:
+regex `/g` rewrites all matches,
+regex without `/g` rewrites one match,
+and literal matching rewrites one span by default.
 Before building past Phase 1,
-answer Question 7.
-My recommendation is skip the whole rule when matches exceed `occurrenceLimit`.
+answer Question 8.
+My recommendation is previous assistant text and previous non-ACM tool result text in the MVP,
+with broader scopes deferred.
