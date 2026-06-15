@@ -106,8 +106,8 @@ only when its subcommand matches, so eager loading pays for registration, not fo
 With no `cli-git.config.mjs` present the wrapper runs built-in rules only, with no parsing, transpilation, or
 plugin load.
 Discovery is bounded to the repo root rather than an unbounded parent walk, and read-only or inspection
-commands (`status`, `log`, `diff`, `show`) never load config at all, which limits both the hot-path cost and,
-under the trust model below, the code-execution exposure.
+commands (those that cannot mutate state, such as `status`, `log`, `diff`, `show`) never load config at all,
+which limits both the hot-path cost and, under the trust model below, the code-execution exposure.
 
 ## Trust
 
@@ -122,11 +122,18 @@ The filesystem id binds trust to the physical volume rather than the mount path,
 volume is not trusted when a different volume is mounted at the same path; this closes a mount-swap
 trust-confusion hole that a path-only key leaves open, and it is why the id must be part of the key, not just
 the path.
-It reuses editord's proven mechanic, `resolveFsId`
-(`packages-paused/desktop-daemon/editord/src/server/operations/resolve-fs-id.ts`): an OS-level filesystem id,
-read on Linux as `f_fsid` via `stat -f --format=%i`, on macOS via `stat -f %v`, and on Windows as the volume
-serial via `vol`.
-Because editord is paused, the mechanic is extracted to a shared module rather than depended on in place.
+The filesystem id comes from a new shared module, `@monochromatic-dev/module-fs-id`, planned in
+`docs/planning/module-fs-id.md`.
+That module extracts and corrects the mechanic editord seeded
+(`packages-paused/desktop-daemon/editord/src/server/operations/resolve-fs-id.ts`), which was unshared and
+latently wrong: it called the Linux `f_fsid` reboot-stable (filesystem-specific, false for XFS), read a device
+number on macOS while labeling it `f_fsid`, and misdescribed the Windows command.
+The module instead resolves a reboot-stable volume id where the platform can produce one (a filesystem UUID via
+`findmnt` on Linux, the Volume UUID via `diskutil` on macOS, the volume serial on Windows), degrades to a
+runtime id and warns when stability cannot be guaranteed, and never fails merely because a stable id is
+unavailable, since a trust check that hard-fails on an exotic filesystem trains people to disable it.
+The resolved id is guaranteed colon-free, so the `"<filesystem id>:<path>"` key recovers both halves by
+splitting on the first colon even when the path is a Windows `C:\...` path.
 
 It borrows mise's machinery but, deliberately, not mise's default posture:
 
@@ -138,37 +145,40 @@ It borrows mise's machinery but, deliberately, not mise's default posture:
   This is stricter than mise's default on purpose: mise executes config on `cd` or an explicit command, while
   cli-git executes it on ordinary git commands, so the silent-pulled-change hole is worth closing by default.
 - Relaxed mode (no content re-check): paranoid is on by default and can be turned off only per config, never globally.
-  The `CLI_GIT_PARANOID` env var carries entries keyed on (filesystem id, path), the same key the trust registry
-  uses, written as JSON object members without the outer braces and comma-separated, so a parser wraps the value
-  in `{ }` and runs `JSON.parse` (illustratively `"a281dfd5d0534daf:/abs/path/cli-git.config.mjs":false`), and a
-  matching entry wins over the global default for that key.
-  Keying the override on the filesystem id, not the path alone, is the security feature: a legitimate relaxation
+  Because the only thing a relaxation can express is "paranoid off here", the value never needs to carry one, so
+  `CLI_GIT_NO_PARANOID` is just a list of the (filesystem id, path) pairs whose content re-check is disabled.
+  Each entry is the colon-joined `<filesystem id>:<path>` key the trust registry uses, recovered by splitting on
+  the first colon (the id is colon-free, so this round-trips even for a Windows `C:\...` path); membership in the
+  list is the whole signal, with no JSON and no key-to-value map (the exact list separator and escaping are in the
+  implementation spec).
+  Keying each entry on the filesystem id, not the path alone, is the security feature: a legitimate relaxation
   names the exact (filesystem id, path) it relaxes, which requires knowing the actual volume, whereas an
   opportunistic attacker planting guesses in a repo's env knows a likely path but not the cloner's filesystem id
   (see the security note).
   Relaxing drops only the content re-check; the (filesystem id, path) trust still applies, so a modified trusted
   config no longer re-prompts (its explicit cost), but first execution still requires `cli-git trust`.
-  Per-path paranoid lives in the environment by necessity, not preference: it cannot live in the repo config it
+  Per-path no-paranoid lives in the environment by necessity, not preference: it cannot live in the repo config it
   governs, or a repo could opt itself out of being re-checked.
   This is the inverse of mise, which makes `paranoid` global-only (`settings.toml`, `global_only = true`), and
-  the inversion is the point: a global off-switch would itself be a non-(filesystem id, path)-keyed relaxation,
-  exactly the form the security note treats as suspicious, so allowing one would hand an attacker a legitimate
-  non-keyed bypass and defeat the detection.
-  With per-config-only relaxation, every non-fsId-keyed entry is unambiguously the attack signature.
+  the inversion is the point: a global off-switch would be an entry that names no (filesystem id, path) at all,
+  exactly the shape the security note treats as suspicious, so allowing one would hand an attacker a legitimate
+  unkeyed bypass and defeat the detection.
+  With per-config-only relaxation, every list entry whose filesystem id matches no actual volume is unambiguously
+  the attack signature.
 - It fails closed when it cannot prompt and the artifact is untrusted, or, under paranoid, changed (run
   built-ins, do not execute it), and exposes an env kill-switch to disable discovery entirely.
 
 Security note on the env channel.
-Setting `CLI_GIT_PARANOID` intentionally, in your own shell or `mise.toml`, is fine; relaxing a config you own
+Setting `CLI_GIT_NO_PARANOID` intentionally, in your own shell or `mise.toml`, is fine; relaxing a config you own
 is your call and is not flagged.
-The attack to defeat is different: a repo plants `CLI_GIT_PARANOID` entries for guessed common config paths in
+The attack to defeat is different: a repo plants `CLI_GIT_NO_PARANOID` entries for guessed common config paths in
 its `mise.toml` env, betting a cloner trusts the `mise.toml` without much thought.
-The tell is that such an entry cannot be filesystem-id-keyed, because the attacker can guess a path but does not
-know the cloner's volume, so the planted entry is path-only.
-So cli-git honors only entries keyed on (filesystem id, path) that match an actual volume, and shouts on any
-non-filesystem-id-keyed entry: a loud warning naming the variable and the path, because a path-only relaxation
-is the signature of opportunistic path matching, not an intentional relaxation.
-The noise is aimed at the attack, not at legitimate use, which is correctly keyed and stays quiet.
+The tell is that such an entry cannot carry a real filesystem id, because the attacker can guess a path but does
+not know the cloner's volume, so the planted entry is path-only.
+So cli-git honors only list entries whose (filesystem id, path) matches an actual volume, and shouts on any entry
+whose filesystem id matches no volume (in particular a path-only entry): a loud warning naming the variable and
+the path, because such an entry is the signature of opportunistic path matching, not an intentional relaxation.
+The noise is aimed at the attack, not at legitimate use, which carries the real id and stays quiet.
 Even ignored, the relaxation removes only the re-check on later changes, not the first-execution gate (the
 (filesystem id, path) trust still requires an explicit `cli-git trust`), and a path-only entry matches no
 trusted key anyway.
@@ -229,6 +239,9 @@ The escape-hatch parsing already exists and is parser-based, so it is not a desi
 strip it before forwarding, and preserve any token past the `--` pathspec separator, so `git commit -- --no-enforce-x`
 is correctly treated as a pathspec.
 The platform inherits this convention for per-policy bypass, and config severity `off` is the persistent disable.
+This persistent disable is itself a change for the built-in safety policies: require-root, add-explicit, and
+linked-worktree-only are bypassable today only per invocation (for example `--no-enforce-bulk-add`) and now gain
+a persistent `off` through config; they default to their current always-on severity, so the change is opt-in.
 `git commit --no-verify` no longer affects these checks, because there are no native hooks left for it to skip.
 That is a behavior change from the hk era and the docs must state it, so nobody assumes `--no-verify` still opts out.
 
@@ -303,14 +316,17 @@ The platform's own plugin supply chain is governed by the consumer's lockfile pi
 - `packages/cli/git/README.md` and `packages/cli/git/src/index.ts`: the current wrapper and its RULES pipeline.
 - `packages/cli/git/src/escape-hatch.ts` and `packages/cli/git/src/rules/commit-only.ts`: the existing
   Optique-based escape-hatch parsing and the commit-mode narrowing the scan relies on.
+- `packages/cli/git/src/rules/add-explicit.ts` and `packages/cli/git/src/auto-push.ts`: the add-explicit
+  validator (now a built-in configurable policy) and the post-commit auto-push the post-commit scan gates.
 - `oxlint.config.ts`, `packages/config/oxlint`, `packages/oxlint-plugins/tsdoc`: the authoring model borrowed
   (TS `defineConfig` and plugin packages), not the runtime.
 - jdx/mise `src/config/config_file/mod.rs` (`trust_path`, the `paranoid`-gated `file_hash_sha256`) and
   `src/cli/trust.rs`: the trust model cli-git mirrors, path-keyed by default, content-hashed only under paranoid.
-- `packages-paused/desktop-daemon/editord/src/server/operations/resolve-fs-id.ts` and editord's `PHILOSOPHY.md`
-  (Filesystem volume ID): the `resolveFsId` mechanic the trust key reuses for the filesystem id (Linux and
-  macOS `f_fsid`, Windows volume serial), extracted to a shared module since editord is paused.
+- `docs/planning/module-fs-id.md` and the planned `@monochromatic-dev/module-fs-id`: the corrected shared
+  filesystem-id mechanic the trust key uses (a reboot-stable volume id where available, degrade-and-warn
+  otherwise), extracted from and fixing editord's seed `resolve-fs-id.ts`.
 - `hk.pkl`: the current hk config (forbidden-root-context and forbidden-strings on pre-commit, pre-push, check).
 - `.github/workflows/forbidden-strings.yml`: the CI gate, already off hk.
 - `mise-aqua-backend.md`: hk's supply-chain posture.
-- A future implementation spec, to hold the policy API contract, performance budgets, and parity-test list.
+- A future implementation spec, to hold the policy API contract, performance budgets, the parity-test list, and
+  the exact `CLI_GIT_NO_PARANOID` list format (the entry separator and path escaping).
