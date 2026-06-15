@@ -330,7 +330,8 @@ Recommended MVP:
 - for literal matching,
   rewrite the first matching span across eligible text blocks
   unless a later design adds an explicit literal-all mode;
-- treat zero matches as a no-op with diagnostics rather than a rule-contract failure;
+- install zero-current-match rules with diagnostics rather than rejecting them,
+  because rolling rules may intentionally target future eligible context;
 - tool execution does not need to read the just-finished assistant message for anchoring,
   because target selection is all eligible provider context.
 
@@ -501,7 +502,7 @@ and the implementation verifies that unsupported regex syntax is rejected clearl
 - Preserve tool result metadata and non-text blocks.
 - Exclude `acm` tool results from eligible tool-result text.
 - Add install-time and request-time diagnostics for invalid regex,
-  zero matches,
+  zero current matches,
   broad `/g` matches,
   malformed details,
   unknown details versions,
@@ -556,6 +557,8 @@ Unit tests:
 - overlapping replacements skip deterministically;
 - later rule matching cannot match inside an earlier omitted marker;
 - disabled rule no longer applies;
+- zero-current-match substitutions install active rules with warnings;
+- a zero-current-match rule applies later when matching eligible context appears;
 - malformed ACM details are ignored safely;
 - unknown ACM details versions are ignored safely;
 - duplicate normalized matchers are listed deterministically;
@@ -1391,6 +1394,42 @@ Ranking:
 no preview beats human-only preview because the user wants the smaller surface.
 Human-only preview beats model preview because it avoids adding preview payloads to model context.
 
+### Question 18: should zero-current-match substitutions install rules?
+
+Decision:
+zero-current-match substitutions should install active rolling rules with warnings.
+User answered this on 2026-06-15.
+
+Pros:
+supports future-oriented context management,
+keeps rolling-rule semantics consistent,
+and surfaces possible typos through diagnostics.
+
+Cons:
+stale typo rules can persist until disabled.
+
+Rejected alternative:
+reject zero-current-match substitutions.
+
+Pros:
+catches likely typos before a rule becomes active.
+
+Cons:
+prevents rules intended to catch future matching context.
+
+Rejected alternative:
+install zero-current-match substitutions silently.
+
+Pros:
+simplest tool output.
+
+Cons:
+hides misspelled patterns and makes bad rules hard to notice.
+
+Ranking:
+install-with-warning beats reject because rolling rules can intentionally match future context.
+Reject beats silent install because surfacing likely mistakes matters.
+
 ## Resolved implementation decisions
 
 Question 1 is resolved:
@@ -1437,5 +1476,7 @@ Question 16 is resolved:
 `action: "list"` returns matcher summaries without matched text snippets.
 Question 17 is resolved:
 ACM has no preview surface in the MVP.
+Question 18 is resolved:
+zero-current-match substitutions install active rules with warnings.
 Before implementation,
 run the documented Phase 0 source audit to choose the exact safe regex engine and budgets.
