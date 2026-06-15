@@ -1,6 +1,6 @@
 # cpal 0.15 pulls a second `windows` crate (0.54) and cpal 0.18's API breaks surface only on native macOS/Windows builds
 
-`packages/desktop-app/music-player` uses `cpal` for its non-Linux audio backend
+`packages/music-player/desktop-app` uses `cpal` for its non-Linux audio backend
 (`src/output_cpal.rs`: CoreAudio on macOS, WASAPI on Windows). Two related
 problems showed up while making the player properly cross-platform.
 
@@ -90,7 +90,7 @@ Inspect the windows-crate count from the lockfile (no build needed, the lock is
 target-agnostic):
 
 ```bash
-rg -A1 '^name = "windows"$' packages/desktop-app/music-player/Cargo.lock
+rg -A1 '^name = "windows"$' packages/music-player/desktop-app/Cargo.lock
 ```
 
 What fails:

@@ -1,6 +1,6 @@
 # Handover: porting music-player to Android (Jetpack Compose + Kotlin)
 
-Working state for porting `packages/desktop-app/music-player` (Rust + Slint) to Android, targeting the connected
+Working state for porting `packages/music-player/desktop-app` (Rust + Slint) to Android, targeting the connected
 Pixel 6. Invoked via `/grill-with-docs`. The grilling (design interview) is COMPLETE; no Android code is written
 yet. The authoritative decision record is `docs/decisions/music-player-android-port.md`; read it first. This
 handover adds the working state, measured facts, and exact next steps.
@@ -125,7 +125,7 @@ Milestone 2 (Media3 parity, not needed to measure decode/output): audio focus, b
 
 Milestone 1, the derisk, is complete and verified at the user boundary:
 
-- `929789f1e` feat(music-player-android): scaffold. `packages/android-app/music-player/` is a Gradle island (AGP
+- `929789f1e` feat(music-player-android): scaffold. `packages/music-player/android-app/` is a Gradle island (AGP
   9.2.1 / Gradle 9.5.1 / Kotlin 2.2.10 / Compose BOM 2026.05.01 / Media3 1.10.1), one `:app` with three product
   flavors on the `engine` dimension (`media3`, `hybrid`, `rust`), each with its own `applicationIdSuffix`
   (`.media3` etc.) so all three install side by side. The engine sits behind an `AudioEngine` interface; each
@@ -148,7 +148,7 @@ Milestone 1, the derisk, is complete and verified at the user boundary:
 - Milestone 1.5, the pure-logic Kotlin port, is DONE (a 6-agent workflow, then central verification). The
   platform-independent `core` package now holds faithful ports of relpath, pagination, queue, true-peak, peak
   cache, session, and the audio-extension allowlist, against a fixed contract (ShuffleMode, Page/PageEntry). 52
-  host JVM JUnit tests pass via `mise run //packages/android-app/music-player:test:unit` (no device). True-peak
+  host JVM JUnit tests pass via `mise run //packages/music-player/android-app:test:unit` (no device). True-peak
   was verified line-for-line against `truepeak.rs`. Each port was driven by the Rust module plus its `_tests.rs`
   as the test oracle; deferrals are listed under "Integration seams left by the port" below.
 - Milestone 2 (in progress), the real player UI, is DONE and verified on device. The debug skeleton is replaced by
@@ -224,7 +224,7 @@ Milestone 1, the derisk, is complete and verified at the user boundary:
   re-pick `Plain/Music` (the picker needs a human tap; the grant + choice are the user's). The scroll fix was
   verified on the MediaStore "Plain" page (~3000 rows scroll; the tab row scrolls off with the list). Playback is
   hosted in `PlaybackService`. To exercise the MediaStore path deliberately, just do not re-pick a folder.
-  Rebuild + reinstall with `mise run //packages/android-app/music-player:build:media3` then
+  Rebuild + reinstall with `mise run //packages/music-player/android-app:build:media3` then
   `adb -s 1C171FDF600KWW install -r app/build/outputs/apk/media3/debug/app-media3-debug.apk`; re-grant with
   `adb -s 1C171FDF600KWW shell pm grant dev.monochromatic.musicplayer.media3 android.permission.READ_MEDIA_AUDIO`
   (and `... android.permission.POST_NOTIFICATIONS`). The seek-bar slider responds to `input tap` at device y=305
@@ -276,7 +276,7 @@ On-device run was not re-verified this session (no behavioral code changed).
 Pre-build (desktop side): `7ea4ad07` unify identity to dev.monochromatic.musicplayer (`src/identity.rs`,
 `src/peakcache.rs`, `src/session.rs`, `macos/Info.plist`, `README.md`); `44b4affe` record the Android port ADR.
 
-Android package (`packages/android-app/music-player/`), in order:
+Android package (`packages/music-player/android-app/`), in order:
 
 - `929789f1e` scaffold: 3-flavor Gradle island, all flavors build green.
 - `e7ced156` docs: milestone 1 + codec-claim correction.
@@ -437,7 +437,7 @@ Note: concurrent sessions (an iOS vet) interleave their own commits on `main`; t
   `AudioStream` is neither `Send` nor `Sync`, so wrap it in `Arc<Mutex<...>>` (with a manual `unsafe impl Send`) if it
   crosses threads, exactly as cpal does. cpal alternative (NOT chosen) would have been 0.18.1 + the `realtime` feature
   (default cpal does not request LowLatency on Android).
-- Placement: `packages/android-app/music-player/` (new category). Identity: `dev.monochromatic.musicplayer`.
+- Placement: `packages/music-player/android-app/` (new category). Identity: `dev.monochromatic.musicplayer`.
 - minSdk 36 (raised from 26 on 2026-06-12 by owner directive: single-target app for the owner's Pixel 6, so no
   older-release support and modern APIs without compat guards), compileSdk 37, targetSdk 36, JDK 21, AGP 9.x,
   Gradle 9.x, latest Compose BOM and Media3.
@@ -548,7 +548,7 @@ attempted; these `/var/tmp` paths can be reaped, so a future session may need to
   cmdline-tools (rev 12.0) cannot fetch `platforms;android-37` (it only parses repo XML up to v3 and skips the v4
   android-37 entry, "Failed to find package"); the vet-jc SDK already had android-37.0 installed, so use it.
 - JDK: Temurin 21 via mise (`/home/user/.local/share/mise/installs/java/temurin-21.0.11+10.0.LTS`). The package
-  `mise.toml` pins `java = "temurin-21"`, so `mise run //packages/android-app/music-player:<task>` sets JAVA_HOME
+  `mise.toml` pins `java = "temurin-21"`, so `mise run //packages/music-player/android-app:<task>` sets JAVA_HOME
   automatically; Gradle reads the SDK from `local.properties`, so no ANDROID_HOME env is needed.
 - Gradle: the committed wrapper (9.5.1) drives all builds; it was generated with the standalone
   `/var/tmp/vet-jc/gradle-9.5.1`.
@@ -576,7 +576,7 @@ attempted; these `/var/tmp` paths can be reaped, so a future session may need to
   be reaped). Regenerate by re-running the saved script at
   `/home/user/.claude/projects/-var-home-user-Monochromatic/17b04683-9e7b-4fa8-84d1-e2c4fc9a363c/workflows/scripts/music-player-desktop-survey-wf_e71b903d-8d8.js`.
   The durable source of truth is the desktop source itself.
-- Desktop source: `packages/desktop-app/music-player/src/*.rs` and `ui/app.slint`; `README.md` has a
+- Desktop source: `packages/music-player/desktop-app/src/*.rs` and `ui/app.slint`; `README.md` has a
   module-by-module Layout section. Key exact specs already extracted into the survey: the audio-extension
   allowlist (`flac, wav, wave, mp3, ogg, oga, opus, m4a, m4b, mp4, aac, aiff, aif, aifc`), the pagination
   tie-breaks, the true-peak constants (CEILING `0.8912509`, `gain = min(CEILING/peak, 1.0)`, 4x Catmull-Rom), the
@@ -595,7 +595,7 @@ attempted; these `/var/tmp` paths can be reaped, so a future session may need to
   triple: `config_dir = /home/user/.config/musicplayer`, so a current-source desktop build finds the migrated data.
 - Caveat for a future session: the installed binary `~/.local/bin/music-player` (Jun 11, pre-unification) still
   resolves `~/.config/music-player` and would recreate that old dir with an empty session if run. Rebuild and
-  reinstall the desktop app (`mise run //packages/desktop-app/music-player:build` then redeploy to `~/.local/bin`)
+  reinstall the desktop app (`mise run //packages/music-player/desktop-app:build` then redeploy to `~/.local/bin`)
   so the installed binary uses the new path; not done here because the desktop app is not this port's focus.
 
 ## Next steps (the build phase, when the user says go)
@@ -650,7 +650,7 @@ The adversarial review confirmed two more real findings, deferred deliberately (
    lowest API level that still builds and lints clean WITHOUT any source change (no new compat guards), then set
    `minSdk` to that floor. minSdk is at 36 now only to avoid old-API contortions during development; the true floor
    is whatever the APIs actually used permit. Method: lower `minSdk` in `app/build.gradle.kts`, run
-   `mise run //packages/android-app/music-player:build` + `:lint` (the `NewApi` lint check is the oracle: it errors
+   `mise run //packages/music-player/android-app:build` + `:lint` (the `NewApi` lint check is the oracle: it errors
    when a used API exceeds `minSdk`), and binary-search to the lowest value with zero `NewApi` errors and no edits.
    Run for every flavor (each pulls in different APIs), and take the maximum of the per-flavor floors.
 
@@ -699,7 +699,7 @@ persistable grants are per-applicationId, so each flavor needs its own grant.
   comment pass is deferred to finalization (Task #14, alongside the minSdk bisect) and is NOT written during
   development, so the existing Kotlin and Rust files deliberately still lack it. General repo rules apply: run
   everything through mise tasks, commit eagerly with scoped pathspecs, no AI-attribution trailers.
-- Instrumented tests (`mise run //packages/android-app/music-player:test:instrumented` ->
+- Instrumented tests (`mise run //packages/music-player/android-app:test:instrumented` ->
   `connectedMedia3DebugAndroidTest`) run on the connected device via gradle's own adb, so pin `ANDROID_SERIAL` and
   hold the `/tmp/agent/adb-phone.lock` flock around the run to coordinate with concurrent sessions. CAVEAT: AGP
   UNINSTALLS both the app and the test APK after a connected run, which also revokes the app's persisted SAF grant

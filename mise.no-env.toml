@@ -98,7 +98,7 @@ cargo-binstall = "latest"
 
 # CMake for building vendored C libraries from Rust -sys crates. music-player's
 # `opus` dependency (pinned to opus-rs git HEAD in
-# packages/desktop-app/music-player/Cargo.toml) uses opusic-sys, whose `bundled`
+# packages/music-player/desktop-app/Cargo.toml) uses opusic-sys, whose `bundled`
 # feature is on by default and compiles libopus 1.6.1 from source via CMake on
 # every platform. The Linux host carries no system cmake, so mise provides it
 # here; the two podman-built desktop apps install cmake inside their Containerfiles
@@ -109,7 +109,7 @@ cargo-binstall = "latest"
 cmake = "latest"
 
 # rcodesign (the `apple-codesign` crate) signs, notarizes, and staples the
-# packages/desktop-app/music-player macOS .app from Linux (the Mach-O is still
+# packages/music-player/desktop-app macOS .app from Linux (the Mach-O is still
 # built on the Mac; only signing is cross-platform). Installed from crates.io by
 # crate name through the cargo backend, consistent with the other Rust CLIs in
 # this list. The crate's single binary is named `rcodesign` (not after the
@@ -129,8 +129,9 @@ cmake = "latest"
 zig = "0.15.2"
 
 # Slint language server (.slint completion, diagnostics, live preview) for the
-# two desktop-app packages. Pinned to the SAME git rev as their `slint` dependency
-# (packages/desktop-app/{terminal,music-player}/Cargo.toml) so the LSP's compiler
+# desktop Slint packages. Pinned to the SAME git rev as their `slint` dependency
+# (`packages/desktop-app/terminal/Cargo.toml` and
+# `packages/music-player/desktop-app/Cargo.toml`) so the LSP's compiler
 # and live preview match the runtime the apps build against; a crates.io release
 # (1.16) lags the pinned master rev. Installed from the slint workspace via mise's
 # cargo backend: `crate` selects the slint-lsp member (the repo root is a virtual
@@ -171,7 +172,7 @@ hk = "latest"
 # Pkl: hk's config language
 pkl = "latest"
 
-# === Android toolchain (packages/android-app/music-player) ===
+# === Android toolchain (packages/music-player/android-app) ===
 # Hoisted here so the whole repo provisions from one tool manifest; the package's
 # mise.toml carries only tasks. This replaces the former dependency on a
 # machine-local Android SDK under /var/tmp (a reapable path) referenced from a
@@ -865,7 +866,7 @@ run = """
 runWorkspaceNode('packages/dev-script/task-util', 'depends', ['--sources', 'sh:echo Infinity', '--outputs', 'sh:podman image exists monochromatic-playwright && echo Infinity || echo -Infinity', '--', 'podman', 'build', '-t', 'monochromatic-playwright', '-f', 'playwright.Dockerfile', '.'])
 """
 
-# Android SDK components for packages/android-app/music-player. The android-sdk
+# Android SDK components for packages/music-player/android-app. The android-sdk
 # tool (in [tools]) installs only the command-line tools; the platform, build-tools,
 # NDK, and platform-tools are not declarable as mise tools, so sdkmanager installs
 # them into $ANDROID_HOME here. A depth-2 `prepare:*` task, so the `prepare` umbrella
@@ -873,7 +874,7 @@ runWorkspaceNode('packages/dev-script/task-util', 'depends', ['--sources', 'sh:e
 # Triple-SINGLE-quoted so the `\n` license-acceptance newlines reach node literally
 # (a triple-double-quoted body would have TOML pre-expand them and break the JS).
 [tasks."prepare:android"]
-description = "Install the Android SDK components packages/android-app/music-player needs (platforms;android-37.0, build-tools;37.0.0, ndk;29.0.13846066, platform-tools) into $ANDROID_HOME via sdkmanager, accept licenses, and add the aarch64-linux-android (devices) and x86_64-linux-android (emulators) rustup targets. EXPENSIVE: ~2.9 GB on disk (the NDK alone is ~2.4 GB), and the `prepare` umbrella auto-runs it for every developer, not just Android ones; this cost is intended and tolerated. Idempotent: a no-op once provisioned."
+description = "Install the Android SDK components packages/music-player/android-app needs (platforms;android-37.0, build-tools;37.0.0, ndk;29.0.13846066, platform-tools) into $ANDROID_HOME via sdkmanager, accept licenses, and add the aarch64-linux-android (devices) and x86_64-linux-android (emulators) rustup targets. EXPENSIVE: ~2.9 GB on disk (the NDK alone is ~2.4 GB), and the `prepare` umbrella auto-runs it for every developer, not just Android ones; this cost is intended and tolerated. Idempotent: a no-op once provisioned."
 shell = "node -e"
 run = '''
 const { existsSync, readdirSync } = require("node:fs");

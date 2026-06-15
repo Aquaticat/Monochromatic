@@ -86,7 +86,7 @@ Vet iOS UI/app-shell frameworks on the owner's real iPhone X to the depth of the
 (`docs/decisions/kotlin-android-kopia-pcloud-stack.md`): clone, source-audit, build, and run on the
 device, not judged from metadata. Two apps define the requirements: the kopia-to-pCloud backup app
 (in-app S3/HTTP server, streaming HTTPS to pCloud, background transfer, kopia as a linked static lib)
-and `packages/desktop-app/music-player` (Rust + Slint, to port to iOS).
+and `packages/music-player/desktop-app` (Rust + Slint, to port to iOS).
 
 Owner-stated hard constraints (these decide outcomes):
 

@@ -77,7 +77,7 @@ Approved plan:
   the messages to carry `u64` frame counts instead,
    the user is open to it but f64-seconds is the current contract.
 - Placement:
-   `packages/desktop-app/music-player/` (new category,
+   `packages/music-player/desktop-app/` (new category,
    parallel to `desktop-daemon`).
    Package/binary name `music-player`,
    lib crate `music_player`.
@@ -135,7 +135,7 @@ The host is an immutable-style Fedora (`/home` -> `var/home`) and the user refus
   `run` (Wayland/PipeWire/D-Bus/DRI passthrough),
    `gen:fixtures` (host ffmpeg).
 - The image is already built.
-   Rebuild with `mise run //packages/desktop-app/music-player:image` if the Containerfile changes.
+   Rebuild with `mise run //packages/music-player/desktop-app:image` if the Containerfile changes.
 
 Gotchas learned:
 - Reference the image as `localhost/monochromatic/music-player` (fully-qualified).
@@ -146,7 +146,7 @@ Gotchas learned:
    which masked a real build failure once.
 - Live Wayland (`wayland-0`) + PipeWire + pipewire-pulse are running on the host,
    so end-to-end GUI + audio
-  verification via `mise run //packages/desktop-app/music-player:run` is possible on this machine.
+  verification via `mise run //packages/music-player/desktop-app:run` is possible on this machine.
 
 ## What exists now (committed checkpoint)
 
@@ -217,8 +217,8 @@ tree (slint,
  The cargo cache volume `music-player-cargo` is now warm,
 so the next `lint`/`test` only recompiles from fontconfig-sys onward plus our crate.
  First action next session:
-`mise run //packages/desktop-app/music-player:image` if not already done,
- then `mise run //packages/desktop-app/music-player:lint`
+`mise run //packages/music-player/desktop-app:image` if not already done,
+ then `mise run //packages/music-player/desktop-app:lint`
 to confirm `command`/`queue`/`session`/`error` compile (high confidence;
  the failure was environmental,
  not source).
@@ -230,7 +230,7 @@ to confirm `command`/`queue`/`session`/`error` compile (high confidence;
 2. Write `src/opus.rs` and `src/decode.rs` (designs + verified APIs below),
     add `pub mod decode; pub mod opus;` to
    `lib.rs`.
-3. `mise run //packages/desktop-app/music-player:gen:fixtures` to create per-codec fixtures,
+3. `mise run //packages/music-player/desktop-app:gen:fixtures` to create per-codec fixtures,
     then run `test`.
 4. Write `src/output.rs` (PipeWire ThreadLoop + Stream,
     ringbuf consumer in the process callback,

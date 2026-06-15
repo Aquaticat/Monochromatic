@@ -87,7 +87,7 @@ Status: TODO | DONE
    export MP_WIN_PKCS11_CERT='<pkcs11 cert id or URI>'
    export MP_WIN_PKCS11_KEY='<pkcs11 key id or URI>'
    export MP_WIN_TIMESTAMP_URL='<CA RFC3161 TSA URL>'
-   mise run //packages/desktop-app/music-player:sign:windows
+   mise run //packages/music-player/desktop-app:sign:windows
    ```
    Expected: the task prints `signing with organization OV cert via PKCS#11` and
    then `signed dist/music-player-signed.exe`.

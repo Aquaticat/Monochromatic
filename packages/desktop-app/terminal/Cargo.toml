@@ -15,7 +15,7 @@ name = "monochromatic-terminal"
 path = "src/main.rs"
 
 [dependencies]
-# Pinned to the same Slint master revision as packages/desktop-app/music-player
+# Pinned to the same Slint master revision as packages/music-player/desktop-app
 # so Flickable owns smooth wheel and touch scrolling. Keep slint-build below on
 # the same rev because the markup compiler and runtime are versioned together.
 # Same Slint rev as above. The explicit winit backend lets the app stamp its

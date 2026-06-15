@@ -39,7 +39,7 @@ this project signs under a registered organization rather than an individual (se
 ## Verification
 
 Tool under test: `osslsigncode` 2.9 (Fedora 41 package, in this repo's
-`packages/desktop-app/music-player/Containerfile.sign`), built against OpenSSL 3.2. Its `sign` usage confirms both
+`packages/music-player/desktop-app/Containerfile.sign`), built against OpenSSL 3.2. Its `sign` usage confirms both
 the legacy `.pfx` path and the PKCS#11 path:
 
 ```text

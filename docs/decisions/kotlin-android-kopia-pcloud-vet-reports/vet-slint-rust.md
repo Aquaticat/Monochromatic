@@ -3,7 +3,7 @@
 Scope: assess the STACK (Slint UI + Rust ecosystem) for an Android-only app. kopia and the
 pCloud API are out of scope; the binary-bundling and on-device-server mechanics are assessed
 because they are stack concerns. The repo already ships Slint + Rust for two desktop apps
-(packages/desktop-app/terminal, packages/desktop-app/music-player), pinned to a slint git rev;
+(packages/desktop-app/terminal, packages/music-player/desktop-app), pinned to a slint git rev;
 this vet covers the NEW part: Android.
 
 Standard applied: choosing-technology FULL-VERIFICATION (clone + source audit + maintenance

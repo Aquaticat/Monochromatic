@@ -4,7 +4,7 @@ Status: decisions accepted; build not yet started. Date: 2026-06-12.
 
 ## Context
 
-The `packages/desktop-app/music-player` app is a Rust plus Slint native music player (symphonia plus libopus
+The `packages/music-player/desktop-app` app is a Rust plus Slint native music player (symphonia plus libopus
 decode, always-on true-peak normalization with an on-disk peak cache, an ad-hoc folder-scanned queue with
 two-axis pagination, session persistence, PipeWire/cpal output). This records the decisions for porting it to
 Android with Jetpack Compose and Kotlin, targeting the owner's Pixel 6 (oriole, GrapheneOS, Android 16 / API 36,
@@ -138,7 +138,7 @@ end-to-end via `testTag`.
 
 ## Lower-priority defaults
 
-- Placement: a new `packages/android-app/music-player/` category alongside `desktop-app` and `desktop-daemon`, a
+- Placement: a new `packages/music-player/android-app/` category alongside `desktop-app` and `desktop-daemon`, a
   Gradle project wrapped by mise tasks shelling to the Gradle wrapper (the kopia vet established this island
   pattern; there is no shared build graph with pnpm/cargo).
 - Identity: `applicationId` and namespace `dev.monochromatic.musicplayer`, unified with the desktop's macOS bundle

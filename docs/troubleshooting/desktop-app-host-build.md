@@ -1,6 +1,6 @@
 # Host-native builds of packages/desktop-app crates on immutable Fedora (Bazzite 44)
 
-Two host-only build failures hit `packages/desktop-app/music-player` and `packages/desktop-app/terminal` when
+Two host-only build failures hit `packages/music-player/desktop-app` and `packages/desktop-app/terminal` when
 building natively instead of in the podman container (see `../decisions/desktop-app-podman-build.md`).
 Both are specific to the immutable-Fedora host layout (Bazzite 44,
  ostree) and do not occur in the container,
@@ -87,10 +87,10 @@ fc44,
 
 ```bash
 # FAIL: no resource-dir -> stdbool.h not found (above)
-mise run //packages/desktop-app/music-player:lint
+mise run //packages/music-player/desktop-app:lint
 
 # PASS: point clang at the lib-side resource dir
-BINDGEN_EXTRA_CLANG_ARGS="-resource-dir=/usr/lib/clang/22" mise run //packages/desktop-app/music-player:lint
+BINDGEN_EXTRA_CLANG_ARGS="-resource-dir=/usr/lib/clang/22" mise run //packages/music-player/desktop-app:lint
 # -> Checking pipewire v0.10.0 ... compiles (libspa-sys bindgen succeeds)
 ```
 

@@ -21,7 +21,7 @@ code-level and launch-level layers are already verified (see "Already verified")
   (`pthread_set_qos_class_self_np` / `QOS_CLASS_BACKGROUND`) compiles. Note the
   build needs `SLINT_ENABLE_EXPERIMENTAL_FEATURES=1` because the `ui/app.slint`
   page-tab bar uses the experimental `FlexboxLayout`; every mise task sets it, so
-  build with `mise run //packages/desktop-app/music-player:build`, not a bare
+  build with `mise run //packages/music-player/desktop-app:build`, not a bare
   `cargo build` (which fails with `Unknown element 'FlexboxLayout'`).
 - An earlier launch over SSH ran the event loop for ~8s with no panic and no
   stderr, so `Output::new` opened the default output device (the engine prints

@@ -25,7 +25,7 @@ taskbar bar can only be confirmed on the real logged-in desktop.
   `cmake_minimum_required` is 3.16). The build needs
   `SLINT_ENABLE_EXPERIMENTAL_FEATURES=1` (the page-tab bar uses the experimental
   `FlexboxLayout`); every mise task sets it, so use
-  `mise run //packages/desktop-app/music-player:build`, not a bare `cargo build`.
+  `mise run //packages/music-player/desktop-app:build`, not a bare `cargo build`.
 - The Windows-native additions compile and are clippy-clean: the background-sweep
   `THREAD_PRIORITY_IDLE` call in `src/measure.rs`, and the `ITaskbarList3` taskbar
   progress in `src/ui_progress.rs`. Both use the `windows` crate (pinned 0.62),

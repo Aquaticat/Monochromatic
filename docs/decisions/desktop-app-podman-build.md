@@ -2,7 +2,7 @@
 
 ## Decision
 
-Cargo work for `packages/desktop-app/terminal` and `packages/desktop-app/music-player` runs on the host when the
+Cargo work for `packages/desktop-app/terminal` and `packages/music-player/desktop-app` runs on the host when the
 native development libraries are present, and falls back to a Fedora podman container (see each package's
 `Containerfile`) otherwise.
 This covers build, check, clippy, test, and the `format:clippy` autofix task.

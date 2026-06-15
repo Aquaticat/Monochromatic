@@ -328,7 +328,7 @@ shell = "node -e"
 run = """
 const { existsSync, rmSync, mkdirSync, copyFileSync, readFileSync, writeFileSync, chmodSync } = await import('node:fs')
 const bin = process.env.MP_MACOS_BINARY ?? 'dist/music-player'
-if (!existsSync(bin)) { throw new Error(`macOS binary not found at ${bin}. Build on the Mac then copy target/release/music-player to ${bin}. Build task: //packages/desktop-app/music-player:build`) }
+if (!existsSync(bin)) { throw new Error(`macOS binary not found at ${bin}. Build on the Mac then copy target/release/music-player to ${bin}. Build task: //packages/music-player/desktop-app:build`) }
 const versionLine = readFileSync('Cargo.toml', 'utf8').split('\\n').find((line) => line.trimStart().startsWith('version'))
 const ver = versionLine.slice(versionLine.indexOf('"') + 1, versionLine.lastIndexOf('"'))
 const app = 'dist/Music Player.app'
@@ -401,7 +401,7 @@ const { execFileSync } = await import('node:child_process')
 const { existsSync, mkdirSync } = await import('node:fs')
 execFileSync('podman', ['build', '-t', 'localhost/monochromatic/sign', '-f', 'Containerfile.sign', '.'], { stdio: 'inherit' })
 const exe = process.env.MP_WIN_EXE ?? 'dist/music-player.exe'
-if (!existsSync(exe)) { throw new Error(`Windows exe not found at ${exe}. Build on x13-win then copy target/release/music-player.exe to ${exe}. Build task: //packages/desktop-app/music-player:build`) }
+if (!existsSync(exe)) { throw new Error(`Windows exe not found at ${exe}. Build on x13-win then copy target/release/music-player.exe to ${exe}. Build task: //packages/music-player/desktop-app:build`) }
 const out = 'dist/music-player-signed.exe'
 const ts = process.env.MP_WIN_TIMESTAMP_URL ?? 'http://time.certum.pl'
 const pre = ['run', '--rm', '--security-opt', 'label=disable', '-v', `${process.cwd()}:/work`, '-w', '/work', 'localhost/monochromatic/sign']

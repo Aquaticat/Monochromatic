@@ -102,9 +102,9 @@ Status: TODO | DONE
    export MP_MACOS_P12=dist/developer-id.p12
    export MP_MACOS_P12_PASSWORD_FILE=dist/developer-id.p12.pass
    export MP_ASC_API_KEY_JSON=dist/asc-api-key.json
-   mise run //packages/desktop-app/music-player:bundle:macos
-   mise run //packages/desktop-app/music-player:sign:macos
-   mise run //packages/desktop-app/music-player:notarize:macos
+   mise run //packages/music-player/desktop-app:bundle:macos
+   mise run //packages/music-player/desktop-app:sign:macos
+   mise run //packages/music-player/desktop-app:notarize:macos
    ```
    Expected: `sign:macos` prints `signing with Developer ID (.p12) for
    notarization`, and `notarize:macos` prints `notarized + stapled dist/Music

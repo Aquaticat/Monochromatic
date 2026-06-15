@@ -191,7 +191,7 @@ graphemes (which is acceptable for CJK).
 
 ### Use a release build
 
-`mise run //packages/desktop-app/music-player:run` builds `--release`, where the
+`mise run //packages/music-player/desktop-app:run` builds `--release`, where the
 icu_provider shim is already a no-op, so the flood never appears.
 
 Tradeoff: the fast-iteration `run-debug` path (and any `cargo run`/`target/debug`

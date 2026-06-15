@@ -1,7 +1,7 @@
 # music-player
 
 Shared glossary for the music-player product (desktop here;
- the Android sibling at `packages/android-app/music-player`
+ the Android sibling at `packages/music-player/android-app`
 shares this language, with the platform deltas noted below).
 This file is a glossary of the product's language, not a spec and not an implementation record;
  decisions live in `docs/adr/`.

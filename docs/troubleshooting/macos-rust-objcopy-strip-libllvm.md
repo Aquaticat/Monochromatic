@@ -2,7 +2,7 @@
 
 ## Symptom
 
-A `cargo build --release` of `packages/desktop-app/music-player` on the Apple
+A `cargo build --release` of `packages/music-player/desktop-app` on the Apple
 Silicon Mac (`ssh m1`, rustc 1.98.0-nightly, `nightly-aarch64-apple-darwin`)
 finishes successfully (exit 0) but prints one warning, because the
 `[profile.release] strip = "symbols"` setting runs `rust-objcopy` as a post-link

@@ -717,7 +717,7 @@ The build targets `x86_64-pc-windows-msvc` and links with LLVM's `lld-link.exe` 
 
 mise runs task logic through `node -e` on Windows too (a per-task `shell = "node -e"`),
  so the
-`mise run //packages/desktop-app/music-player:...` commands below work unchanged.
+`mise run //packages/music-player/desktop-app:...` commands below work unchanged.
  If the GPU OpenGL path
 misbehaves,
  force the software renderer with `SLINT_BACKEND=winit-software`.
@@ -742,27 +742,27 @@ this package directory,
 ```bash
 # build the container image (only needed for the container path; the host
 # fallback also builds it automatically when missing)
-mise run //packages/desktop-app/music-player:image
+mise run //packages/music-player/desktop-app:image
 
 # compile checks (host if dev libs present, else container)
-mise run //packages/desktop-app/music-player:lint          # cargo check
-mise run //packages/desktop-app/music-player:lint:clippy   # clippy, warnings denied
+mise run //packages/music-player/desktop-app:lint          # cargo check
+mise run //packages/music-player/desktop-app:lint:clippy   # clippy, warnings denied
 
 # tests (queue, session, decode-per-codec)
-mise run //packages/desktop-app/music-player:test
+mise run //packages/music-player/desktop-app:test
 
 # release build
-mise run //packages/desktop-app/music-player:build
+mise run //packages/music-player/desktop-app:build
 
 # build, install to ~/.local/bin + ~/.local/share/applications,
 # then run the GUI on the host (optional single folder or file arg)
-mise run //packages/desktop-app/music-player:run -- path/to/folder
+mise run //packages/music-player/desktop-app:run -- path/to/folder
 
 # force the container path (asserts the container build still works on any host)
-mise run //packages/desktop-app/music-player:verify:container
+mise run //packages/music-player/desktop-app:verify:container
 
 # regenerate the per-codec test fixtures with host ffmpeg (rarely needed)
-mise run //packages/desktop-app/music-player:gen:fixtures
+mise run //packages/music-player/desktop-app:gen:fixtures
 ```
 
 The binary also accepts a single optional path argument:
@@ -807,18 +807,18 @@ The per-OS binary is copied into `dist/` (gitignored) after building,
 
 ```bash
 # macOS: assemble the .app, sign it, then notarize + staple it
-mise run //packages/desktop-app/music-player:bundle:macos
-mise run //packages/desktop-app/music-player:sign:macos
-mise run //packages/desktop-app/music-player:notarize:macos
+mise run //packages/music-player/desktop-app:bundle:macos
+mise run //packages/music-player/desktop-app:sign:macos
+mise run //packages/music-player/desktop-app:notarize:macos
 
 # Windows: Authenticode-sign the exe (osslsigncode in the sign container)
-mise run //packages/desktop-app/music-player:sign:windows
+mise run //packages/music-player/desktop-app:sign:windows
 
 # self-signed end-to-end smoke test of the whole pipeline (no real credentials)
-mise run //packages/desktop-app/music-player:verify:signing
+mise run //packages/music-player/desktop-app:verify:signing
 
 # regenerate the app icon (.icns + .ico) after editing assets/icon.svg
-mise run //packages/desktop-app/music-player:gen:icons
+mise run //packages/music-player/desktop-app:gen:icons
 ```
 
 Each sign task reads its real credentials from environment variables and falls back to a throwaway self-signed

@@ -30,7 +30,7 @@ Affected names are the experimental builtins removed from the default register:
 `FlexboxLayout`, `ComponentContainer`, and the `FlexboxLayout*` enums
 (`FlexboxLayoutDirection`, `FlexboxLayoutAlignContent`, `FlexboxLayoutWrap`,
 `FlexboxLayoutAlignSelf`). The two desktop-app packages
-(`packages/desktop-app/terminal`, `packages/desktop-app/music-player`) already
+(`packages/desktop-app/terminal`, `packages/music-player/desktop-app`) already
 set `SLINT_ENABLE_EXPERIMENTAL_FEATURES = "1"` in their `mise.toml [env]` for the
 build, so `FlexboxLayout` compiles there; the editor is a separate process that
 does not inherit that build env.

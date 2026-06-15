@@ -1,7 +1,7 @@
 # music-player-android
 
 Android port of the music-player product.
-It shares the product glossary in `../../desktop-app/music-player/CONTEXT.md`
+It shares the product glossary in `../desktop-app/CONTEXT.md`
 (Source Root, Track, Queue, Selected Track, Session, Live Updating, Restore Auto-Correction);
  this file records only the terms whose Android referent differs.
 

@@ -16,7 +16,7 @@ never receives iOS 17):
   `kotlin-android-kopia-pcloud-stack.md`). It runs kopia on the phone and backs up to pCloud without
   staging a second copy. kopia speaks S3, so the app stands up a local S3/HTTP endpoint that kopia
   targets and translates to pCloud, streaming bytes through rather than buffering.
-- `packages/desktop-app/music-player`, a Rust plus Slint native player (symphonia plus libopus decode,
+- `packages/music-player/desktop-app`, a Rust plus Slint native player (symphonia plus libopus decode,
   always-on true-peak normalization with an on-disk peak cache, a folder-scanned queue with two-axis
   pagination, session persistence, cpal output) to be ported to iOS.
 

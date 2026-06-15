@@ -1,7 +1,7 @@
 # music-player: Just-in-time shuffle without a precomputed order
 
 Status: decisions accepted; implementation not yet started. Date: 2026-06-13.
-Applies to both `packages/desktop-app/music-player` and `packages/android-app/music-player`.
+Applies to both `packages/music-player/desktop-app` and `packages/music-player/android-app`.
 
 ## Context
 
