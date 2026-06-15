@@ -55,7 +55,9 @@ the axes where a real general-target peer scores and file-enforcer does not are 
 - A6 watch with managed-destination protection: re-run on a source change, and react when a generated file is edited
   by hand.
 - A7 check or verify mode: report drift and exit nonzero without writing, for continuous-integration gating.
-- A8 region or partial-file management: sync a marked slice of an otherwise hand-edited file.
+- A8 marker-region management in unstructured text: sync a marked slice of an otherwise hand-edited file that has no
+  parseable structure to scope the edit, so an explicit text marker delimits the region; structured partial edits are
+  A4, not this.
 - A9 in-repo native integration: config is repo TypeScript calling functions directly, with no separate language and no
   shell glue.
 
@@ -91,8 +93,11 @@ The two gaps, with the package's own acknowledgement:
 - A7 check or verify mode: `packages/dev-script/file-enforcer/TODO.md` records "No dry-run mode" and frames it as
   needing a descriptor pattern.
   The roadmap section below shows why that framing overstates the cost.
-- A8 region or partial-file management: file-enforcer overwrites whole files.
-  `TODO.md` records the absence of `appendTo` and `prependTo` operations; managed regions go further than either.
+- A8 marker-region management: file-enforcer already does partial, key-scoped edits for structured formats under A4,
+  the TOML splice (`overwriteTomlKey`, `editTomlKey`), the XML entry replace-or-insert (`replaceOrInsertXmlEntry`),
+  and the JSON key merge (`mergeFlatJson`), so generated and hand-edited content already coexist in structured files.
+  What it lacks is a marked region in an unstructured file, where no key path scopes the edit.
+  `TODO.md` records the absence of `appendTo` and `prependTo`; a managed region goes further than either.
 
 Measured footprint, for scale, on 2026-06-15:
 `packages/dev-script/file-enforcer/src` holds seventy-one production TypeScript files,
@@ -419,7 +424,8 @@ Axis scoring for the cluster, against file-enforcer's checklist:
 ### Region and partial-file embedders
 
 These sync generated content into a marked region of an otherwise hand-edited file.
-That is exactly A8, the capability file-enforcer lacks, and three of the four also implement A7.
+That is exactly A8, the marker-region capability file-enforcer lacks for unstructured files,
+and three of the four also implement A7.
 They pass the gate weakly: `cog` manages arbitrary text files, the others are markdown-bound.
 None is a file-enforcer replacement, because none owns A2, A5, or the structured-transform and programmable monorepo
 model; their value to this audit is as reference implementations for the roadmap.
@@ -555,10 +561,17 @@ Those are catalogued after the roadmap, not in it.
     arriving, behind the existing watch supervisor.
     Evidence: `packages/dev-script/file-enforcer/TODO.md`, `src/watch/watch-supervisor.ts`.
 
-3.  Region or partial-file management, axis A8.
-    Today file-enforcer overwrites whole files, so a generated file cannot share space with hand-edited content.
-    Region markers let it own a slice of an otherwise human-owned file, which generalizes the `appendTo` and
-    `prependTo` operations `TODO.md` lists as missing.
+3.  Marker-region management in unstructured text, axis A8.
+    The blunt version of this gap does not exist: file-enforcer already does partial, key-scoped replacement for
+    structured formats, the TOML splice that keeps unmutated regions byte-identical (`overwriteTomlKey`,
+    `editTomlKey`), the XML entry replace-or-insert (`replaceOrInsertXmlEntry`), and the JSON key merge
+    (`mergeFlatJson`), so generated and hand-edited content already coexist in those files, scoped by structure.
+    Evidence: `src/io/write-toml.ts`, `src/pipeline/xml.ts`, `src/pipeline/json.ts`.
+    The residual gap is the unstructured case: a generated slice inside a hand-written file with no key path to scope
+    the edit, such as a section of a prose or markdown document, which only an explicit text marker can delimit.
+    This generalizes the `appendTo` and `prependTo` operations `TODO.md` lists as missing.
+    The current root config needs none of this, since its generated files are whole-file, so this is worth building
+    only when a real job must place a generated slice inside a hand-edited file.
     Reference implementations: `cog` is the model to follow, because it manages arbitrary text files rather than
     markdown only, lets the region body be arbitrary code, guarantees idempotency, and adds an opt-in checksum that
     refuses to overwrite a hand-edited region.
