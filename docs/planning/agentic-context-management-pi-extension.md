@@ -641,9 +641,10 @@ Literal-only beats raw JavaScript regex because predictable safety matters more 
 
 ### Question 3: where should active rules live?
 
-Recommended answer:
-`acm` tool result `details`,
+Decision:
+active rules should live in `acm` tool result `details`,
 replayed from the current branch.
+User answered this on 2026-06-15.
 
 Pros:
 branch-safe,
@@ -654,7 +655,19 @@ and no hidden memory state.
 Cons:
 rule details are visible to the model unless separately compacted.
 
-Alternative:
+Rejected alternative:
+hybrid state,
+with tool results as audit trail and custom entries as a hidden cache.
+
+Pros:
+keeps an audit trail while avoiding repeated replay work.
+
+Cons:
+two sources of truth and extra invalidation logic after branch changes,
+compaction,
+and reload.
+
+Rejected alternative:
 custom entries via `pi.appendEntry()`.
 
 Pros:
@@ -664,7 +677,56 @@ Cons:
 branch and ordering reconstruction becomes extension-specific.
 
 Ranking:
-tool result details beat custom entries because Pi's branch context already solves the hard part.
+tool result details beat hybrid state because one replayable source of truth is simpler and safer.
+Hybrid state beats custom entries because at least the tool result remains the visible audit trail.
+
+### Question 4: which tool results may ACM rewrite?
+
+Recommended answer:
+all non-ACM tool result text blocks are eligible,
+with ACM's own tool results excluded.
+
+Pros:
+matches the user's decision that tool call results are in scope,
+handles bulky `read`,
+`bash`,
+search,
+and custom-tool outputs,
+and preserves ACM's audit trail.
+
+Cons:
+custom tool output can carry important state,
+so bad rules can still hide evidence from the next provider request.
+Preview/list diagnostics and exact match counts become mandatory.
+
+Alternative:
+only bulky built-in tools are eligible by default,
+for example `read`,
+`bash`,
+`grep`,
+`find`,
+and `ls`.
+
+Pros:
+smaller safety surface and easier tests.
+
+Cons:
+custom tools that generate large context remain outside ACM unless the user adds config.
+
+Alternative:
+all tool results,
+including ACM's own tool results,
+are eligible.
+
+Pros:
+maximum compression.
+
+Cons:
+the model can hide or corrupt the very audit trail that explains why context changed.
+
+Ranking:
+non-ACM tool results beat bulky built-ins because user intent named tool results broadly.
+Bulky built-ins beat all tool results because preserving ACM's own audit trail matters.
 
 ## First implementation decision needed
 
@@ -673,7 +735,9 @@ assistant text and tool result text are both in scope.
 Question 2 is resolved:
 bounded regex is in scope,
 while raw JavaScript `RegExp` over full context is out of scope.
+Question 3 is resolved:
+active rules live in `acm` tool result `details`.
 Before building past Phase 1,
-answer Question 3.
-My recommendation is `acm` tool result `details`,
-replayed from the current branch.
+answer Question 4.
+My recommendation is all non-ACM tool result text blocks are eligible,
+with ACM's own tool results excluded.
