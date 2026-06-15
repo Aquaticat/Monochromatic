@@ -125,7 +125,8 @@ prebuilt image isn't handy.
   secret-shaped bytes.
 - `coverage/` -- coverage data. Ignored.
 - `Cargo.lock`: committed so the fuzz toolchain stays
-  reproducible; root `.gitignore` does not ignore Cargo lockfiles.
+  reproducible.
+  Root `.gitignore` does not ignore Cargo lockfiles.
 
 The local deny-list (`/forbidden-strings.local.txt`) must NEVER
 enter the corpus, dictionary, or reproducer text. The seeder's

@@ -72,8 +72,15 @@ The `.gitignore` carve-out for the workspace currently looks like this:
 ```
 
 The carve-out covers 21 files across eight plugins:
-`bash-output-filter`, `claude-spawn`, `correction-reminder`, `guardrail`, `prompt-time`,
-`session-start-housekeeping`, `stop-reminders`, `terminal-title`, and the standalone CLI bundles
+`bash-output-filter`,
+`claude-spawn`,
+`correction-reminder`,
+`guardrail`,
+`prompt-time`,
+`session-start-housekeeping`,
+`stop-reminders`,
+`terminal-title`,
+and the standalone CLI bundles
 (`ccssh.js`, `ccsr.js`, `cctt.js`) that those plugins reference.
 
 Each plugin's `package.json` (verified at e.g. `packages/claude-code-plugins/terminal-title/package.json:18`)
@@ -117,9 +124,9 @@ The cost the carve-out is paying is also bounded:
 
 - The 21 committed files live under a single namespaced subtree, isolated from human-edited code.
 - Each plugin's `dist/final/` is a deterministic `tsdown` bundle.
-- `.gitignore` denies new `dist/` paths anywhere else; the carve-out stays scoped to
-  `packages/claude-code-plugins/*/dist/`, with `.js` shims re-included because the global `*.js` rule
-  would otherwise hide them.
+- `.gitignore` denies new `dist/` paths anywhere else.
+  The carve-out stays scoped to `packages/claude-code-plugins/*/dist/`,
+  with `.js` shims re-included because the global `*.js` rule would otherwise hide them.
 - The `session-start-housekeeping` plugin already cleans stale dist artifacts on session start,
   reducing the "forgot to rebuild" risk for the workspace's own consumption.
 
