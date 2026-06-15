@@ -160,7 +160,13 @@ Recommended strict schema:
 {
   action: "substitute" | "disable" | "list";
   substitutions?: Array<{
-    target: "previous_assistant_text" | "recent_assistant_text" | "all_prior_assistant_text";
+    target:
+      | "previous_assistant_text"
+      | "recent_assistant_text"
+      | "all_prior_assistant_text"
+      | "previous_tool_result_text"
+      | "recent_tool_result_text"
+      | "all_prior_tool_result_text";
     match: {
       kind: "literal" | "regex";
       value: string;
@@ -220,26 +226,33 @@ The model may only omit and describe.
 
 ## Scope guardrails
 
-Default scope must be assistant-authored text only.
+Default scope must be assistant-authored text plus tool result text.
+This records the user's 2026-06-15 answer to the first grill-me question:
+ACM should be allowed to rewrite tool call results as well.
 The MVP should reject attempts to rewrite:
 
 - user messages,
-- tool result messages,
 - tool call blocks,
 - thinking blocks,
 - custom messages from other extensions,
 - system prompt text.
 
 Reason:
-the model should be able to compact its own redundant prose,
-not hide the user's requirements or tool evidence from itself.
-If a later version supports user or tool-result omission,
+the model should be able to compact its own redundant prose and bulky tool outputs,
+not hide the user's requirements from itself.
+Tool output omission is still evidence-sensitive,
+so the MVP must preserve the tool call block,
+tool name,
+tool call id,
+`isError`,
+and `details` metadata even when it rewrites result text.
+If a later version supports user-message omission,
 that must be an explicit config setting and should require user approval.
 
 The context transformer must preserve all non-text content blocks exactly.
-For assistant messages,
+For assistant messages and tool result messages,
 only `TextContent.text` may change.
-`toolCall` blocks and their paired `toolResult` messages must stay intact.
+`toolCall` blocks must stay intact so the provenance of each result remains visible.
 
 ## Matching plan
 
@@ -391,7 +404,10 @@ Expected package metadata:
 - Implement rule details in tool results.
 - Implement `context` handler that derives rules from current `event.messages`.
 - Transform only assistant `TextContent.text`.
-- Support `previous_assistant_text` first.
+- Transform tool result `TextContent.text` for explicit tool-result targets,
+  while preserving tool result metadata and non-text blocks.
+- Support `previous_assistant_text` first,
+  then `previous_tool_result_text` before broader recent/all-prior scopes.
 - Add a terse custom renderer for `acm` tool calls and results.
 
 Definition of done:
@@ -435,10 +451,15 @@ Unit tests:
 - description text escapes `<`,
   `>`,
   and `&` before insertion into the omitted tag;
-- only assistant text blocks are transformed;
+- assistant-targeted rules transform only assistant text blocks;
+- explicit tool-result targets transform only tool result text blocks;
+- tool result `details`,
+  `toolName`,
+  `toolCallId`,
+  `isError`,
+  and image blocks remain unchanged;
 - user messages remain unchanged;
 - tool call blocks remain unchanged;
-- tool results remain unchanged;
 - overlapping replacements skip deterministically;
 - disabled rule no longer applies;
 - branch-specific rule replay ignores tool results that are not on `event.messages`.
@@ -456,8 +477,10 @@ End-user boundary verification for the eventual implementation:
 
 - run the built extension through pi or the Pi SDK in a throwaway session;
 - capture the provider payload with `before_provider_request` or a fake provider;
-- confirm the payload excludes the omitted assistant text;
-- confirm the session JSONL still includes the original assistant text and the `acm` tool result;
+- confirm the payload excludes the omitted assistant text and omitted tool result text;
+- confirm the session JSONL still includes the original assistant text,
+  original tool result text,
+  and the `acm` tool result;
 - trigger `/tree` or an equivalent branch fixture and confirm only current-branch rules apply.
 
 ## Non-goals
@@ -470,7 +493,9 @@ End-user boundary verification for the eventual implementation:
   `context` operates on messages,
   while system prompt control belongs to `before_agent_start` or provider payload hooks.
 - Do not mutate session history to make the transcript appear cleaner.
-- Do not auto-omit user requirements or tool output.
+- Do not auto-omit user requirements.
+  Tool output omission is allowed only through explicit ACM rules,
+  not through automatic broad deletion.
 - Do not replace Pi's built-in compaction.
   This is fine-grained self-omission,
   not whole-session summarization.
@@ -481,8 +506,15 @@ Risk:
 the model hides a user constraint from itself.
 
 Mitigation:
-assistant-only scope in the MVP,
-with no user-message rewrite path unless the user explicitly opts in later.
+user-message rewrite remains out of scope unless the user explicitly opts in later.
+
+Risk:
+the model hides tool evidence from itself.
+
+Mitigation:
+allow only tool result text rewrites,
+keep tool call blocks and tool result metadata intact,
+and require explicit match counts plus list/preview diagnostics.
 
 Risk:
 a broad pattern omits too much.
@@ -523,18 +555,32 @@ Recommended answers are included so the discussion has a default path.
 
 ### Question 1: what may ACM rewrite?
 
-Recommended answer:
-assistant-authored text only for the MVP.
+Decision:
+assistant-authored text and tool result text are both in scope for the MVP.
+User answered this on 2026-06-15.
 
 Pros:
-prevents the model from hiding user requirements or tool evidence,
-still solves the example,
-and keeps the feature clearly about compressing the model's own prose.
+solves the example,
+lets ACM compress bulky command or read outputs,
+and still preserves user instructions by keeping user messages out of scope.
 
 Cons:
-older user messages and large tool outputs remain expensive until normal compaction runs.
+tool output is evidence,
+so an overbroad rule can make the model forget command output or test failures.
+The implementation must preserve tool metadata and provide preview/list diagnostics.
 
-Alternative:
+Rejected alternative:
+assistant-authored text only.
+
+Pros:
+smaller safety surface.
+
+Cons:
+leaves the largest context chunks,
+especially tool results,
+for normal compaction only.
+
+Rejected alternative:
 allow any message role with user approval.
 
 Pros:
@@ -546,7 +592,8 @@ more UI decisions,
 and more ways to make future behavior diverge from the user's actual instructions.
 
 Ranking:
-assistant-only beats any-role because preserving user and tool evidence matters more than early maximal compression.
+assistant plus tool-result text beats assistant-only because tool results are often the largest removable context cost.
+Assistant-only beats any-role because preserving user instructions matters more than maximal compression.
 
 ### Question 2: how much regex power is acceptable?
 
@@ -601,6 +648,9 @@ tool result details beat custom entries because Pi's branch context already solv
 
 ## First implementation decision needed
 
+Question 1 is resolved:
+assistant text and tool result text are both in scope.
 Before building past Phase 1,
-answer Question 1.
-My recommendation is assistant-authored text only for the MVP.
+answer Question 2.
+My recommendation is short literal matching plus bounded regex for the example path,
+with raw JavaScript `RegExp` rejected for full-context matching.
