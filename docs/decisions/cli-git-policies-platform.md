@@ -138,9 +138,9 @@ It borrows mise's machinery but, deliberately, not mise's default posture:
   This is stricter than mise's default on purpose: mise executes config on `cd` or an explicit command, while
   cli-git executes it on ordinary git commands, so the silent-pulled-change hole is worth closing by default.
 - Relaxed mode (no content re-check): paranoid is on by default but can be turned off per config, not only globally.
-  The `CLI_GIT_PARANOID` env var carries a map keyed on (filesystem id, path), the same key the trust registry
-  uses (illustratively `{"a281dfd5d0534daf:/abs/path/cli-git.config.mjs": false}`; the exact wire format is for
-  the implementation spec), and a matching entry wins over the global default for that key.
+  The `CLI_GIT_PARANOID` env var carries entries keyed on (filesystem id, path), the same key the trust registry
+  uses (illustratively `a281dfd5d0534daf:/abs/path/cli-git.config.mjs=false`, no outer braces; the exact wire
+  format is for the implementation spec), and a matching entry wins over the global default for that key.
   Keying the override on the filesystem id, not the path alone, is the security feature: a legitimate relaxation
   names the exact (filesystem id, path) it relaxes, which requires knowing the actual volume, whereas an
   opportunistic attacker planting guesses in a repo's env knows a likely path but not the cloner's filesystem id
