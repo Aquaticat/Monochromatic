@@ -983,9 +983,10 @@ Required description beats structured metadata because prose is simpler and chea
 
 ### Question 11: where should diagnostics appear?
 
-Recommended answer:
-store diagnostics in `acm` tool result `details` and expose them through `list` and preview commands,
+Decision:
+diagnostics live in `acm` tool result `details` and are exposed through `list` and preview commands,
 without injecting extra context messages.
+User answered this on 2026-06-15.
 
 Pros:
 keeps diagnostics auditable without adding hidden prompt tokens on every provider request.
@@ -993,7 +994,7 @@ keeps diagnostics auditable without adding hidden prompt tokens on every provide
 Cons:
 the model must ask for diagnostics or inspect tool results to notice skipped or broad rewrites.
 
-Alternative:
+Rejected alternative:
 inject a hidden custom message with active diagnostic summaries.
 
 Pros:
@@ -1002,7 +1003,7 @@ the model sees stale or skipped-rule warnings automatically.
 Cons:
 adds context tokens and creates a second source of ACM state.
 
-Alternative:
+Rejected alternative:
 show diagnostics only in the TUI.
 
 Pros:
@@ -1014,6 +1015,42 @@ the model cannot use diagnostics to repair bad rules.
 Ranking:
 tool-result plus commands beat hidden context because diagnostics should be available but not always injected.
 Hidden context beats TUI-only because model-visible repair matters for agentic operation.
+
+### Question 12: should ACM change only provider context or also rendered transcript UI?
+
+Recommended answer:
+ACM rewrites provider context only.
+The transcript UI and session JSONL keep the original text plus ACM audit trail.
+
+Pros:
+maximal auditability,
+matches Pi's `context` event boundary,
+and avoids confusing `/tree` or resume behavior.
+
+Cons:
+the human may still see large original tool outputs in the transcript UI unless normal tool-collapse UI hides them.
+
+Alternative:
+also render omitted markers in the UI while keeping JSONL original.
+
+Pros:
+human view matches model view.
+
+Cons:
+adds a parallel renderer path and may hide useful audit details from visual review.
+
+Alternative:
+rewrite session history destructively.
+
+Pros:
+every surface matches the omitted context.
+
+Cons:
+loses evidence and breaks the core non-destructive design.
+
+Ranking:
+provider-only beats UI-mirrored because the context hook's strength is non-destructive request-time rewriting.
+UI-mirrored beats destructive history rewrite because original evidence remains recoverable.
 
 ## First implementation decision needed
 
@@ -1042,8 +1079,9 @@ rules apply immediately after a successful `acm` tool call.
 Question 10 is resolved:
 descriptions are model-supplied strings,
 and empty strings are valid.
+Question 11 is resolved:
+diagnostics live in `acm` tool result `details` plus `list` and preview commands.
 Before building past Phase 1,
-answer Question 11.
-My recommendation is diagnostics in `acm` tool result `details`,
-plus `list` and preview commands,
-with no extra context messages.
+answer Question 12.
+My recommendation is provider-context-only rewriting,
+with transcript UI and session JSONL left original.
