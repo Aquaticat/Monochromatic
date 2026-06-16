@@ -1,0 +1,10 @@
+name = "monochromatic-lfs"
+main = "src/index.js"
+compatibility_date = "2026-06-01"
+workers_dev = true
+
+# Download is anonymous (public read). Upload is gated by the LFS_WRITE_TOKEN
+# secret, set out-of-band with: wrangler secret put LFS_WRITE_TOKEN
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "monochromatic-lfs"
