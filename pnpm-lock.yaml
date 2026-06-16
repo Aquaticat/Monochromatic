@@ -972,6 +972,8 @@ importers:
 
   packages/config/dprint: {}
 
+  packages/config/lfs-r2-worker: {}
+
   packages/config/oxlint:
     dependencies:
       '@monochromatic-dev/config-oxlint-no-restricted-syntax':

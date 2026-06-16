@@ -1,0 +1,11 @@
+[tasks.deploy]
+description = "Deploy the Git LFS R2 worker to Cloudflare (requires a prior wrangler login)."
+run = "wrangler deploy"
+
+[tasks.build]
+description = "Validate the worker bundle without deploying."
+run = "wrangler deploy --dry-run"
+
+[tasks."secret:write-token"]
+description = "Set or rotate the LFS_WRITE_TOKEN upload secret (reads the value on stdin)."
+run = "wrangler secret put LFS_WRITE_TOKEN"

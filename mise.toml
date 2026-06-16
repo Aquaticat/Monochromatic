@@ -166,6 +166,11 @@ hcloud = "latest"
 "npm:typescript-language-server" = "latest"
 "cargo:coreutils" = { version = "latest", features = "unix" }
 "npm:socket" = "latest"
+
+# Cloudflare Workers CLI. Deploys packages/config/lfs-r2-worker, this repo's
+# Git LFS server backed by R2 (anonymous read, token-gated write). Invoked only
+# as a CLI (`wrangler deploy`), so it lives here rather than as a pnpm dependency.
+"npm:wrangler" = "latest"
 betterleaks = "latest"
 
 # Git hook runner

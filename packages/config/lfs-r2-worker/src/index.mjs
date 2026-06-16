@@ -15,7 +15,7 @@ const LFS_JSON = 'application/vnd.git-lfs+json';
 /**
  * True when `value` is a git-lfs object id: exactly 64 lowercase hex chars.
  * Implemented without a regex so the worker carries no backtracking surface and
- * matches the repo's no-unguarded-regex rule if the source is vendored in.
+ * satisfies the repo's no-unguarded-regex rule.
  * @param value - Candidate path segment to classify.
  * @returns Whether `value` is a well-formed sha256 oid.
  * @example

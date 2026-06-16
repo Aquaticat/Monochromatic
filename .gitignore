@@ -63,6 +63,7 @@ jniLibs/
 # Runtime outputs, caches, and temporary files
 cache/
 .cache/
+.wrangler/
 temp/
 .temp/
 .tmp*
