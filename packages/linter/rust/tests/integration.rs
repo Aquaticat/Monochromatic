@@ -203,3 +203,56 @@ fn exempt_file_is_skipped() {
     // Why:      Confirm the exemption holds end to end through the binary.
     assert_eq!(code, 0, "exempt file should exit 0");
 }
+
+// What:     `#[test] fn undocumented_fixture_exits_nonzero() { ... }`. Run the
+//           binary at the default budget over a fixture whose items lack rustdoc.
+// Why:      A require-rustdoc violation must exit non-zero and name the rule, end
+//           to end through the binary.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// it("exits non-zero on undocumented items", () => { ... });
+// ```
+#[test]
+fn undocumented_fixture_exits_nonzero() {
+    // What:     `let (code, stdout) = run(&["fixtures/undocumented.rs"]);`. No
+    //           `--max`, so the default budget applies and only the rustdoc rule
+    //           can fire (the file is tiny).
+    // Why:      Trigger and observe a require-rustdoc violation.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const { code, stdout } = run(["fixtures/undocumented.rs"]);
+    // ```
+    let (code, stdout) = run(&["fixtures/undocumented.rs"]);
+
+    // What:     `assert_eq!(code, 1, ...)`. Exit code must be 1 (violations found).
+    // Why:      Rustdoc failures are signalled by exit 1.
+    assert_eq!(code, 1, "undocumented should exit 1; stdout: {stdout}");
+
+    // What:     `assert!(stdout.contains("require-rustdoc"), ...)`. The output must
+    //           name the rule. `.contains(...)` is a substring test.
+    // Why:      Confirm the diagnostic comes from require-rustdoc, not max-lines.
+    assert!(stdout.contains("require-rustdoc"), "stdout should name the rule: {stdout}");
+}
+
+// What:     `#[test] fn documented_fixture_exits_zero() { ... }`. Run the binary at
+//           the default budget over a fully documented fixture.
+// Why:      A clean file exits 0 with no output, even with require-rustdoc active.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// it("exits zero on a documented file", () => { ... });
+// ```
+#[test]
+fn documented_fixture_exits_zero() {
+    // What:     `let (code, stdout) = run(&["fixtures/documented.rs"]);`. Every item
+    //           in this fixture carries rustdoc.
+    // Why:      Observe the passing path.
+    let (code, stdout) = run(&["fixtures/documented.rs"]);
+
+    // What:     two assertions: exit 0 and empty stdout.
+    // Why:      A documented, under-budget file is clean for every rule.
+    assert_eq!(code, 0, "documented should exit 0; stdout: {stdout}");
+    assert!(stdout.is_empty(), "documented should print nothing: {stdout}");
+}

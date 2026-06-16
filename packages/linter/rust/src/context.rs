@@ -9,14 +9,19 @@
 //             - `SourceFile`: the typed root of a parsed Rust file.
 //             - `SyntaxKind`: the big enum naming every token/node kind; we only
 //               look at `COMMENT` and `WHITESPACE`.
+//             - `SyntaxNode`: a handle to one inner node of the parsed tree (the
+//               whole file's root is one of these). It is reference-counted
+//               (cloning it just bumps a counter, like a TS object reference),
+//               so we can keep the root around for AST-based rules to walk.
 // Why:      These are the exact pieces needed to turn source text into a token
-//           stream and ask each token "are you a comment, whitespace, or code?".
+//           stream and ask each token "are you a comment, whitespace, or code?",
+//           and to hand later rules the parsed tree without re-reading the file.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// import { Edition, NodeOrToken, SourceFile, SyntaxKind } from "<rust-parser>";
+// import { Edition, NodeOrToken, SourceFile, SyntaxKind, SyntaxNode } from "<rust-parser>";
 // ```
-use ra_ap_syntax::{Edition, NodeOrToken, SourceFile, SyntaxKind};
+use ra_ap_syntax::{Edition, NodeOrToken, SourceFile, SyntaxKind, SyntaxNode};
 
 // What:     `pub struct LintContext { ... }` is the per-file bundle handed to
 //           every rule: the file path, its full source text, and the precomputed
@@ -48,6 +53,25 @@ pub struct LintContext {
     // Why:      This is exactly oxlint's "lines after skipping blanks and
     //           comments"; computing it once lets max-lines just read its length.
     code_lines: Vec<usize>,
+
+    // What:     `syntax: SyntaxNode`. The root node of the parsed lossless tree,
+    //           kept (not dropped) after construction. `SyntaxNode` is
+    //           reference-counted internally, so storing it is cheap and cloning
+    //           it just bumps a counter. Private (no `pub`); rules reach it
+    //           through the `syntax_node()` accessor below.
+    // Why:      AST-based rules (such as require-rustdoc) need to walk the tree;
+    //           parsing once here and lending the result avoids re-reading and
+    //           re-parsing the file inside every rule.
+    syntax: SyntaxNode,
+
+    // What:     `line_starts: Vec<usize>`. The byte offset at which each line
+    //           begins (line 0 starts at offset 0, then one entry just past every
+    //           `\n`). Sibling shapes: `&[usize]` (borrowed view), `[usize; N]`
+    //           (fixed array). Private.
+    // Why:      Turn an AST node's byte offset into a 1-based line number for
+    //           diagnostics, via the `line_at_offset()` accessor below; computed
+    //           once and reused.
+    line_starts: Vec<usize>,
 }
 
 // What:     `impl LintContext { ... }` attaches the constructor and accessors.
@@ -80,31 +104,61 @@ impl LintContext {
         // ```
         let line_starts = compute_line_starts(&source);
 
-        // What:     `let code_lines = compute_code_lines(&source, &line_starts);`.
-        //           Again `&` lends both values read-only to the helper.
-        // Why:      Do the parse-and-classify work and keep only the result.
+        // What:     `let parse = SourceFile::parse(&source, Edition::CURRENT);`.
+        //           Runs the real Rust parser over the borrowed source.
+        //           `Edition::CURRENT` selects the newest edition's grammar;
+        //           comment and whitespace tokenization is edition-independent, so
+        //           this choice does not affect the line count.
+        // Why:      Parse exactly once here; both the code-line classifier and any
+        //           AST rule read the resulting tree.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // const codeLines = computeCodeLines(source, lineStarts);
+        // const parse = parser.parse(source);
         // ```
-        let code_lines = compute_code_lines(&source, &line_starts);
+        let parse = SourceFile::parse(&source, Edition::CURRENT);
 
-        // What:     `Self { path, source, code_lines }` builds the struct using
-        //           field shorthand (each local has the same name as its field).
-        //           No trailing `;`, so this is the function's tail expression
-        //           and becomes the returned value. `path` and `source` are moved
-        //           into the struct here.
-        // Why:      Hand back the fully built context.
+        // What:     `let syntax = parse.syntax_node();`. Pulls the root
+        //           `SyntaxNode` out of the parse result. It is reference-counted,
+        //           so this is a cheap handle, not a copy of the tree.
+        // Why:      Keep the root so rules can walk it later, and so the classifier
+        //           below reuses it instead of re-parsing.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // return { path, source, codeLines };
+        // const syntax = parse.rootNode;
+        // ```
+        let syntax = parse.syntax_node();
+
+        // What:     `let code_lines = compute_code_lines(&syntax, &line_starts);`.
+        //           `&` lends both the tree and the line table read-only to the
+        //           helper.
+        // Why:      Classify lines from the already-parsed tree and keep only the
+        //           result.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const codeLines = computeCodeLines(syntax, lineStarts);
+        // ```
+        let code_lines = compute_code_lines(&syntax, &line_starts);
+
+        // What:     `Self { path, source, code_lines, syntax, line_starts }` builds
+        //           the struct using field shorthand (each local has the same name
+        //           as its field). No trailing `;`, so this is the function's tail
+        //           expression and becomes the returned value. `path`, `source`,
+        //           `syntax`, and `line_starts` are moved into the struct here.
+        // Why:      Hand back the fully built context, tree and all.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // return { path, source, codeLines, syntax, lineStarts };
         // ```
         Self {
             path,
             source,
             code_lines,
+            syntax,
+            line_starts,
         }
     }
 
@@ -154,6 +208,56 @@ impl LintContext {
         // return this.codeLines[i];
         // ```
         self.code_lines.get(index).copied()
+    }
+
+    // What:     `pub fn syntax_node(&self) -> &SyntaxNode`. Borrows self read-only
+    //           and hands back a borrowed reference to the stored parse-tree root.
+    //           Returning `&SyntaxNode` (a borrow) rather than `SyntaxNode` (an
+    //           owned clone) lets the caller walk the tree without bumping the
+    //           reference count; the tree lives as long as the context does.
+    // Why:      AST-based rules call this to walk the file's items instead of
+    //           re-parsing the source themselves.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // syntaxNode(): SyntaxNode { return this.syntax; }
+    // ```
+    pub fn syntax_node(&self) -> &SyntaxNode {
+        // What:     `&self.syntax`. Lends out the stored root node. Tail
+        //           expression, so it is returned.
+        // Why:      Give rules read access to the parsed tree.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // return this.syntax;
+        // ```
+        &self.syntax
+    }
+
+    // What:     `pub fn line_at_offset(&self, offset: usize) -> usize`. Maps a byte
+    //           offset within the source to the 1-based line number that contains
+    //           it. `usize` is the pointer-wide unsigned integer (siblings `u32`,
+    //           `u64`); offsets and line numbers are both counts, so `usize` keeps
+    //           them index-compatible without casts.
+    // Why:      An AST node knows its byte range, not its line; diagnostics print a
+    //           1-based line, so rules convert through this helper.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // lineAtOffset(offset: number): number { return lineIndex(offset, this.lineStarts) + 1; }
+    // ```
+    pub fn line_at_offset(&self, offset: usize) -> usize {
+        // What:     `line_index(offset, &self.line_starts) + 1`. `line_index`
+        //           returns the 0-based line index for the offset (binary search
+        //           over the line-start table); adding 1 converts it to the 1-based
+        //           line number humans and editors use. Tail expression.
+        // Why:      Hand back a line number ready to print in a diagnostic.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // return lineIndex(offset, this.lineStarts) + 1;
+        // ```
+        line_index(offset, &self.line_starts) + 1
     }
 }
 
@@ -252,39 +356,22 @@ fn line_index(offset: usize, line_starts: &[usize]) -> usize {
     line_starts.partition_point(|&s| s <= offset) - 1
 }
 
-// What:     `fn compute_code_lines(source: &str, line_starts: &[usize]) ->
-//           Vec<usize>`. Parses the source and returns the sorted, distinct,
-//           1-based line numbers that contain at least one non-trivia token.
+// What:     `fn compute_code_lines(node: &SyntaxNode, line_starts: &[usize]) ->
+//           Vec<usize>`. Walks an already-parsed tree and returns the sorted,
+//           distinct, 1-based line numbers that contain at least one non-trivia
+//           token. `&SyntaxNode` borrows the root the caller already parsed;
+//           sibling shape: an owned `SyntaxNode` (we take a borrow to avoid the
+//           reference-count bump).
 // Why:      This is the whole point: code lines = total minus blank minus comment,
 //           computed via the real Rust lexer so `//` inside a string never counts.
+//           Taking the parsed node (instead of re-parsing the source string) keeps
+//           parsing to exactly once per file.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function computeCodeLines(source: string, lineStarts: number[]): number[] { /* ... */ }
+// function computeCodeLines(node: SyntaxNode, lineStarts: number[]): number[] { /* ... */ }
 // ```
-fn compute_code_lines(source: &str, line_starts: &[usize]) -> Vec<usize> {
-    // What:     `let parse = SourceFile::parse(source, Edition::CURRENT);`. Calls
-    //           the parser. `Edition::CURRENT` selects the newest edition's
-    //           grammar; comment and whitespace tokenization is edition-
-    //           independent, so this choice does not affect the count.
-    // Why:      Turn text into a lossless token tree.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // const parse = parser.parse(source);
-    // ```
-    let parse = SourceFile::parse(source, Edition::CURRENT);
-
-    // What:     `let node = parse.syntax_node();`. Pulls the root `SyntaxNode` out
-    //           of the parse result so we can walk it.
-    // Why:      The walk below starts from this root.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // const node = parse.rootNode;
-    // ```
-    let node = parse.syntax_node();
-
+fn compute_code_lines(node: &SyntaxNode, line_starts: &[usize]) -> Vec<usize> {
     // What:     `let mut is_code = vec![false; line_starts.len()];`. Builds a
     //           growable boolean array, one slot per line, all initially false.
     //           `mut` because we flip slots to true below.

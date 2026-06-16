@@ -1055,6 +1055,41 @@ MXR:
  `build.rs` exempt;
  never disable or raise.
 
+RDC:
+ Require rustdoc on every documentable `.rs` item (`monochromatic-rust-linter`,
+ `packages/linter/rust`,
+ rule `require-rustdoc`),
+ mirroring `require-tsdoc` for TypeScript.
+ `///` outer or `//!` inner doc comment counts;
+ plain `//` does NOT,
+ so the `dum-dum-non-ts` `// What:`/`// Why:` block never satisfies it on its own:
+ add a `///` summary directly above each item (and a `//!` atop each file) on top of the dum-dum block.
+ Covers functions,
+ structs,
+ enums,
+ unions,
+ traits,
+ type aliases,
+ consts,
+ statics,
+ modules,
+ macro defs,
+ extern crates/blocks,
+ `use`,
+ `impl` blocks,
+ enum variants,
+ fields,
+ item-position macro calls,
+ the file itself;
+ public AND private,
+ no trait-impl carve-out (unlike Rust's public-only `missing_docs`).
+ Run via root `lint:rust`.
+ `tests/`,
+ `*_tests.rs`,
+ `fuzz/`,
+ `build.rs` exempt;
+ never disable.
+
 ### Linting
 
 LN1:

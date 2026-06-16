@@ -74,17 +74,25 @@ pub trait Rule {
 // function allRules(): Rule[] { return [new MaxLines()]; }
 // ```
 pub fn all_rules() -> Vec<Box<dyn Rule>> {
-    // What:     `vec![Box::new(crate::rules::max_lines::MaxLines)]`. `vec![...]`
+    // What:     `vec![Box::new(...) as Box<dyn Rule>, Box::new(...)]`. `vec![...]`
     //           builds a `Vec`. `Box::new(value)` moves `value` onto the heap and
-    //           yields the owning pointer. `crate::rules::max_lines::MaxLines` is
-    //           the unit struct (a zero-field type) for the one rule. Tail
+    //           yields the owning pointer. `crate::rules::max_lines::MaxLines` and
+    //           `crate::rules::require_rustdoc::RequireRustdoc` are the unit structs
+    //           (zero-field types) for the two rules. The `as Box<dyn Rule>` on the
+    //           first entry "forgets" its concrete type so the list's element type
+    //           is the trait object; the second entry then coerces to match. Tail
     //           expression, so it is returned.
-    // Why:      Today there is exactly one rule; adding more is just more boxed
-    //           entries here.
+    // Why:      Every registered rule runs against every file; adding a rule is
+    //           just another boxed entry here. Two DIFFERENT concrete types in one
+    //           list need that first `as` cast, or the array's element type cannot
+    //           be inferred.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // return [new MaxLines()];
+    // return [new MaxLines(), new RequireRustdoc()];
     // ```
-    vec![Box::new(crate::rules::max_lines::MaxLines)]
+    vec![
+        Box::new(crate::rules::max_lines::MaxLines) as Box<dyn Rule>,
+        Box::new(crate::rules::require_rustdoc::RequireRustdoc),
+    ]
 }

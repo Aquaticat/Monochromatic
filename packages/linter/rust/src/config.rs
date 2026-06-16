@@ -163,3 +163,111 @@ pub fn max_lines_exempt(path: &Path) -> bool {
     // ```
     false
 }
+
+// What:     `pub fn missing_rustdoc_exempt(path: &Path) -> bool`. Borrows a path
+//           read-only and answers whether the require-rustdoc rule should skip it.
+//           Kept as its own function (not a call to `max_lines_exempt`) so the two
+//           rules' skip lists can drift apart later without entangling them.
+// Why:      Documentation is pointless on throwaway code: unit/integration test
+//           files (`tests/`, `*_tests.rs`), fuzz harnesses (`fuzz/`), and the cargo
+//           build script (`build.rs`). Everything else, including the linter's own
+//           `fixtures/` inputs, must be documented (maximal enforcement).
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function missingRustdocExempt(p: string): boolean { /* ... */ }
+// ```
+pub fn missing_rustdoc_exempt(path: &Path) -> bool {
+    // What:     `if let Some(name) = path.file_name().and_then(|n| n.to_str())`.
+    //           `path.file_name()` returns `Option<&OsStr>` (the last segment, or
+    //           `None`); `.and_then(|n| n.to_str())` converts it to `Option<&str>`
+    //           when the bytes are valid UTF-8; `if let Some(name) = ...` runs the
+    //           block only when a name is present, binding the `&str` to `name`.
+    // Why:      Get the file's base name as text to test its suffix.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const name = path.basename(p);
+    // if (name) { /* ... */ }
+    // ```
+    if let Some(name) = path.file_name().and_then(|n| n.to_str()) {
+        // What:     `if name == "build.rs" { return true; }`. Plain string equality
+        //           and an early return.
+        // Why:      The cargo build script is generated glue, not documented API.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // if (name === "build.rs") return true;
+        // ```
+        if name == "build.rs" {
+            return true;
+        }
+
+        // What:     `if name.ends_with("_tests.rs") { return true; }`.
+        //           `.ends_with(...)` is a plain suffix test on the `&str`.
+        // Why:      This repo keeps unit tests in sibling `*_tests.rs` files; test
+        //           code does not need rustdoc.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // if (name.endsWith("_tests.rs")) return true;
+        // ```
+        if name.ends_with("_tests.rs") {
+            return true;
+        }
+    }
+
+    // What:     `for component in path.components()`. Iterates the path piece by
+    //           piece, yielding `Component` values.
+    // Why:      Detect whether the file lives under a `tests/` or `fuzz/` folder.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // for (const component of p.split("/")) { /* ... */ }
+    // ```
+    for component in path.components() {
+        // What:     `if let Component::Normal(segment) = component`. Matches only
+        //           the ordinary-name variant, binding its `&OsStr` to `segment`
+        //           (skips root `/`, `.`, `..`, drive prefixes).
+        // Why:      We only compare real directory names.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const segment = component;
+        // ```
+        if let Component::Normal(segment) = component {
+            // What:     `if let Some(text) = segment.to_str()`. Convert the OS
+            //           string segment to UTF-8 `&str`, present only if valid.
+            // Why:      Compare it as ordinary text.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // const text = segment; if (text) { /* ... */ }
+            // ```
+            if let Some(text) = segment.to_str() {
+                // What:     `if text == "tests" || text == "fuzz" { return true; }`.
+                //           Logical OR of two equality tests; early-return on a hit.
+                // Why:      A `tests/` or `fuzz/` ancestor means non-production code
+                //           that needs no rustdoc.
+                //
+                // In TS you'd write (pseudocode):
+                // ```ts
+                // if (text === "tests" || text === "fuzz") return true;
+                // ```
+                if text == "tests" || text == "fuzz" {
+                    return true;
+                }
+            }
+        }
+    }
+
+    // What:     `false`. Bare tail expression: nothing matched, so the file is not
+    //           exempt.
+    // Why:      Default to requiring rustdoc.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // return false;
+    // ```
+    false
+}
