@@ -1,5 +1,5 @@
 name = "monochromatic-lfs"
-main = "src/index.js"
+main = "src/index.mjs"
 compatibility_date = "2026-06-01"
 workers_dev = true
 
