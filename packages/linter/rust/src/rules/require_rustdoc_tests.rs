@@ -340,3 +340,45 @@ fn exempt_paths_are_skipped() {
     assert!(!run_rule("fn a() {}\n", "src/lib.rs").is_empty(), "ordinary source linted");
     assert!(!run_rule("fn a() {}\n", "a/fixtures/x.rs").is_empty(), "fixtures linted");
 }
+
+// What:     `#[test] fn macro_calls_only_flagged_at_item_position() { ... }`. The
+//           macro-call branch is the one kind whose requirement depends on WHERE
+//           it appears, so it gets its own both-directions test.
+// Why:      An expression/statement macro (`println!`, `vec!`) cannot carry a doc
+//           comment, so flagging it would be an unsatisfiable false positive; an
+//           item-position macro (`thread_local! { ... }`) can and must.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// it("only flags item-position macro calls", () => { ... });
+// ```
+#[test]
+fn macro_calls_only_flagged_at_item_position() {
+    // What:     `let expr = item_findings("/// f\nfn a() {\n    println!(\"x\");\n
+    //           let v = vec![1];\n}\n", "src/x.rs");`. A documented fn whose body
+    //           uses two expression-position macros.
+    // Why:      Those macros must NOT be flagged (no valid doc-comment site).
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const expr = itemFindings("/// f\nfn a() { console.log('x'); const v = [1]; }", "src/x.rs");
+    // ```
+    let expr = item_findings("/// f\nfn a() {\n    println!(\"x\");\n    let v = vec![1];\n}\n", "src/x.rs");
+
+    // What:     `assert!(expr.is_empty(), ...)`. No item findings: the fn is
+    //           documented and the inner macros are skipped.
+    // Why:      Expression-position macros are off-policy.
+    assert!(expr.is_empty(), "expression macros must be skipped: {expr:?}");
+
+    // What:     `let item = item_findings("some_items! {}\n", "src/x.rs");`. A
+    //           macro call at item position (a direct child of the file root).
+    // Why:      Item-position macro calls CAN carry a doc comment, so they are
+    //           required to.
+    let item = item_findings("some_items! {}\n", "src/x.rs");
+
+    // What:     `assert_eq!(item.len(), 1, ...)` and the message check. Exactly one
+    //           item finding, naming the macro item.
+    // Why:      Confirm the item-position branch flags, and uses the right label.
+    assert_eq!(item.len(), 1, "item-position macro should be flagged: {item:?}");
+    assert_eq!(item[0].message, "Missing rustdoc on macro item.", "macro item label");
+}
