@@ -528,65 +528,6 @@ url = "https://github.com/dprint/dprint/releases/download/0.54.0/dprint-x86_64-p
 checksum = "sha256:3fd881acaf7fd4fbc5d07c3030ce79b965a4cb7128fe0eb1ebe725188ccd2715"
 url = "https://github.com/dprint/dprint/releases/download/0.54.0/dprint-x86_64-pc-windows-msvc.zip"
 
-[[tools."github:ggml-org/llama.cpp"]]
-version = "b9019"
-backend = "github:ggml-org/llama.cpp"
-
-[tools."github:ggml-org/llama.cpp"."platforms.linux-arm64"]
-checksum = "sha256:b18ea658644262861e7283fdd04e5a8d50b56b0de46254c629e66ec7562ac27d"
-url = "https://github.com/ggml-org/llama.cpp/releases/download/b9019/llama-b9019-bin-ubuntu-arm64.tar.gz"
-url_api = "https://api.github.com/repos/ggml-org/llama.cpp/releases/assets/411991799"
-
-[tools."github:ggml-org/llama.cpp"."platforms.linux-arm64-musl"]
-checksum = "sha256:b18ea658644262861e7283fdd04e5a8d50b56b0de46254c629e66ec7562ac27d"
-url = "https://github.com/ggml-org/llama.cpp/releases/download/b9019/llama-b9019-bin-ubuntu-arm64.tar.gz"
-url_api = "https://api.github.com/repos/ggml-org/llama.cpp/releases/assets/411991799"
-
-[tools."github:ggml-org/llama.cpp"."platforms.linux-x64"]
-checksum = "sha256:b180831403708355c690ce9c5c72191ea5eb00f0bf671c0c243bb127dd5aceef"
-url = "https://github.com/ggml-org/llama.cpp/releases/download/b9019/llama-b9019-bin-ubuntu-x64.tar.gz"
-url_api = "https://api.github.com/repos/ggml-org/llama.cpp/releases/assets/411991968"
-
-[tools."github:ggml-org/llama.cpp"."platforms.linux-x64-baseline"]
-checksum = "sha256:b180831403708355c690ce9c5c72191ea5eb00f0bf671c0c243bb127dd5aceef"
-url = "https://github.com/ggml-org/llama.cpp/releases/download/b9019/llama-b9019-bin-ubuntu-x64.tar.gz"
-url_api = "https://api.github.com/repos/ggml-org/llama.cpp/releases/assets/411991968"
-
-[tools."github:ggml-org/llama.cpp"."platforms.linux-x64-musl"]
-checksum = "sha256:b180831403708355c690ce9c5c72191ea5eb00f0bf671c0c243bb127dd5aceef"
-url = "https://github.com/ggml-org/llama.cpp/releases/download/b9019/llama-b9019-bin-ubuntu-x64.tar.gz"
-url_api = "https://api.github.com/repos/ggml-org/llama.cpp/releases/assets/411991968"
-
-[tools."github:ggml-org/llama.cpp"."platforms.linux-x64-musl-baseline"]
-checksum = "sha256:b180831403708355c690ce9c5c72191ea5eb00f0bf671c0c243bb127dd5aceef"
-url = "https://github.com/ggml-org/llama.cpp/releases/download/b9019/llama-b9019-bin-ubuntu-x64.tar.gz"
-url_api = "https://api.github.com/repos/ggml-org/llama.cpp/releases/assets/411991968"
-
-[tools."github:ggml-org/llama.cpp"."platforms.macos-arm64"]
-checksum = "sha256:86248521dd633ed6f39ba742f996bd120fccd5df7bddfcd5e5397d96804848d3"
-url = "https://github.com/ggml-org/llama.cpp/releases/download/b9019/llama-b9019-bin-macos-arm64.tar.gz"
-url_api = "https://api.github.com/repos/ggml-org/llama.cpp/releases/assets/411991775"
-
-[tools."github:ggml-org/llama.cpp"."platforms.macos-x64"]
-checksum = "sha256:9d35ced9a22a830913dfa5176cc9563348ca8fa42adb8578ac868536cfd24175"
-url = "https://github.com/ggml-org/llama.cpp/releases/download/b9019/llama-b9019-bin-macos-x64.tar.gz"
-url_api = "https://api.github.com/repos/ggml-org/llama.cpp/releases/assets/411991788"
-
-[tools."github:ggml-org/llama.cpp"."platforms.macos-x64-baseline"]
-checksum = "sha256:9d35ced9a22a830913dfa5176cc9563348ca8fa42adb8578ac868536cfd24175"
-url = "https://github.com/ggml-org/llama.cpp/releases/download/b9019/llama-b9019-bin-macos-x64.tar.gz"
-url_api = "https://api.github.com/repos/ggml-org/llama.cpp/releases/assets/411991788"
-
-[tools."github:ggml-org/llama.cpp"."platforms.windows-x64"]
-checksum = "sha256:25f115e6430ea14e4dc1e1b321bfadae47e9f7d87468bd9622fb3ba60279fa7f"
-url = "https://github.com/ggml-org/llama.cpp/releases/download/b9019/llama-b9019-bin-win-cpu-x64.zip"
-url_api = "https://api.github.com/repos/ggml-org/llama.cpp/releases/assets/411991984"
-
-[tools."github:ggml-org/llama.cpp"."platforms.windows-x64-baseline"]
-checksum = "sha256:25f115e6430ea14e4dc1e1b321bfadae47e9f7d87468bd9622fb3ba60279fa7f"
-url = "https://github.com/ggml-org/llama.cpp/releases/download/b9019/llama-b9019-bin-win-cpu-x64.zip"
-url_api = "https://api.github.com/repos/ggml-org/llama.cpp/releases/assets/411991984"
-
 [[tools.harper-cli]]
 version = "2.5.0"
 backend = "aqua:Automattic/harper/harper-cli"
@@ -926,7 +867,7 @@ checksum = "sha256:ec6d0f6b056c89498a9b26c4d5c77a31fd0b7fe45ba8a45fa87d26f66c3eb
 url = "https://nodejs.org/dist/v26.3.0/node-v26.3.0-win-x64.zip"
 
 [[tools."npm:socket"]]
-version = "1.1.119"
+version = "2.1.0"
 backend = "npm:socket"
 
 [[tools."npm:typescript-language-server"]]
