@@ -437,8 +437,24 @@ backend = "cargo:https://github.com/slint-ui/slint"
 bin = "slint-lsp"
 crate = "slint-lsp"
 
+[[tools."cargo:https://github.com/slint-ui/slint"]]
+version = "ref:85e3eb76819762cdcaa732fa87533ff896546bac"
+backend = "cargo:https://github.com/slint-ui/slint"
+
+[tools."cargo:https://github.com/slint-ui/slint".options]
+bin = "slint-lsp"
+crate = "slint-lsp"
+
 [[tools."cargo:https://github.com/slint-ui/slint.git"]]
 version = "rev:85e3eb76819762cdcaa732fa87533ff896546bac"
+backend = "cargo:https://github.com/slint-ui/slint.git"
+
+[tools."cargo:https://github.com/slint-ui/slint.git".options]
+bin = "slint-viewer"
+crate = "slint-viewer"
+
+[[tools."cargo:https://github.com/slint-ui/slint.git"]]
+version = "ref:85e3eb76819762cdcaa732fa87533ff896546bac"
 backend = "cargo:https://github.com/slint-ui/slint.git"
 
 [tools."cargo:https://github.com/slint-ui/slint.git".options]
@@ -874,6 +890,10 @@ backend = "npm:socket"
 version = "5.3.0"
 backend = "npm:typescript-language-server"
 
+[[tools."npm:wrangler"]]
+version = "4.100.0"
+backend = "npm:wrangler"
+
 [[tools.opentofu]]
 version = "1.12.2"
 backend = "aqua:opentofu/opentofu"
@@ -971,52 +991,52 @@ checksum = "sha256:a8834481667325b44c539dbb758d7365a16389070f343c04b639bbe525ede
 url = "https://github.com/apple/pkl/releases/download/0.31.1/pkl-windows-amd64.exe"
 
 [[tools.pnpm]]
-version = "11.6.0"
+version = "11.7.0"
 backend = "aqua:pnpm/pnpm"
 
 [tools.pnpm."platforms.linux-arm64"]
-checksum = "sha256:2fec653ff6dadab340d1c3d2214688a7451cc471f39710839440b293ca7c53b0"
-url = "https://github.com/pnpm/pnpm/releases/download/v11.6.0/pnpm-linux-arm64.tar.gz"
+checksum = "sha256:a110731cf0f46cf89eb5659b42c9f5c3a2361d30087e2eed921c8378b1fe64a0"
+url = "https://github.com/pnpm/pnpm/releases/download/v11.7.0/pnpm-linux-arm64.tar.gz"
 provenance = "github-attestations"
 
 [tools.pnpm."platforms.linux-arm64-musl"]
-checksum = "sha256:56a78c08cf22adf29e7dacb6f7f100139731693863d20fb94a7883463a62169e"
-url = "https://github.com/pnpm/pnpm/releases/download/v11.6.0/pnpm-linux-arm64-musl.tar.gz"
+checksum = "sha256:9c82a83d0fa6dbcd4757f7846f20e73f77d451d6282b32602d9f933b5e2f4052"
+url = "https://github.com/pnpm/pnpm/releases/download/v11.7.0/pnpm-linux-arm64-musl.tar.gz"
 provenance = "github-attestations"
 
 [tools.pnpm."platforms.linux-x64"]
-checksum = "sha256:74d64c1646385fb21691f32f0ab6aca1a9f5c829ba54d3cda3a24838a228e68c"
-url = "https://github.com/pnpm/pnpm/releases/download/v11.6.0/pnpm-linux-x64.tar.gz"
+checksum = "sha256:752e31654c6f24bc945db784d12831b80b29f533b43105575ce30dd3c8658609"
+url = "https://github.com/pnpm/pnpm/releases/download/v11.7.0/pnpm-linux-x64.tar.gz"
 provenance = "github-attestations"
 
 [tools.pnpm."platforms.linux-x64-baseline"]
-checksum = "sha256:74d64c1646385fb21691f32f0ab6aca1a9f5c829ba54d3cda3a24838a228e68c"
-url = "https://github.com/pnpm/pnpm/releases/download/v11.6.0/pnpm-linux-x64.tar.gz"
+checksum = "sha256:752e31654c6f24bc945db784d12831b80b29f533b43105575ce30dd3c8658609"
+url = "https://github.com/pnpm/pnpm/releases/download/v11.7.0/pnpm-linux-x64.tar.gz"
 provenance = "github-attestations"
 
 [tools.pnpm."platforms.linux-x64-musl"]
-checksum = "sha256:7a0c463a09d912fba6b7d9eca0a946bc228ea50f3015a05c09a29e7e85a932d7"
-url = "https://github.com/pnpm/pnpm/releases/download/v11.6.0/pnpm-linux-x64-musl.tar.gz"
+checksum = "sha256:6fa3052e350a1aceeeac90c9f9b59ed048312cab04b34c0472b018e71b243885"
+url = "https://github.com/pnpm/pnpm/releases/download/v11.7.0/pnpm-linux-x64-musl.tar.gz"
 provenance = "github-attestations"
 
 [tools.pnpm."platforms.linux-x64-musl-baseline"]
-checksum = "sha256:7a0c463a09d912fba6b7d9eca0a946bc228ea50f3015a05c09a29e7e85a932d7"
-url = "https://github.com/pnpm/pnpm/releases/download/v11.6.0/pnpm-linux-x64-musl.tar.gz"
+checksum = "sha256:6fa3052e350a1aceeeac90c9f9b59ed048312cab04b34c0472b018e71b243885"
+url = "https://github.com/pnpm/pnpm/releases/download/v11.7.0/pnpm-linux-x64-musl.tar.gz"
 provenance = "github-attestations"
 
 [tools.pnpm."platforms.macos-arm64"]
-checksum = "sha256:87c901635a14481fb30566a3749041134ffd4317bc6fe866c345b69fdf9b6b85"
-url = "https://github.com/pnpm/pnpm/releases/download/v11.6.0/pnpm-darwin-arm64.tar.gz"
+checksum = "sha256:97d077cca1225ae6ab492e5b6d0e6737ab7149c34813e70f25f67c6c2bf274a2"
+url = "https://github.com/pnpm/pnpm/releases/download/v11.7.0/pnpm-darwin-arm64.tar.gz"
 provenance = "github-attestations"
 
 [tools.pnpm."platforms.windows-x64"]
-checksum = "sha256:91c753435542b04859c689304fae0dd64eba6b40937cfa426a48485b712e4e9c"
-url = "https://github.com/pnpm/pnpm/releases/download/v11.6.0/pnpm-win32-x64.zip"
+checksum = "sha256:08acc088646c1dbf3030984918266058d23c5acf4c518dc7502bd539fc99c280"
+url = "https://github.com/pnpm/pnpm/releases/download/v11.7.0/pnpm-win32-x64.zip"
 provenance = "github-attestations"
 
 [tools.pnpm."platforms.windows-x64-baseline"]
-checksum = "sha256:91c753435542b04859c689304fae0dd64eba6b40937cfa426a48485b712e4e9c"
-url = "https://github.com/pnpm/pnpm/releases/download/v11.6.0/pnpm-win32-x64.zip"
+checksum = "sha256:08acc088646c1dbf3030984918266058d23c5acf4c518dc7502bd539fc99c280"
+url = "https://github.com/pnpm/pnpm/releases/download/v11.7.0/pnpm-win32-x64.zip"
 provenance = "github-attestations"
 
 [[tools.ripgrep]]
