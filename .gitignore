@@ -209,7 +209,8 @@ captures/
 # Package-specific generated files unsafe to generalize
 /packages/desktop-daemon/hall-monitor/**/hall-monitor
 /packages/music-player/android-app/build/
-/packages/music-player/android-app/app/build/
+**/app/build/
+**/detekt-rules/build/
 /packages/music-player/android-app/**/.idea/
 
 # Fuzzing artifacts

@@ -14,3 +14,4 @@ dependencyResolutionManagement {
 }
 rootProject.name = "music-player"
 include(":app")
+include(":detekt-rules")

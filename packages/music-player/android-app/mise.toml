@@ -184,9 +184,19 @@ depends = ["build:native"]
 run = "./gradlew :app:connectedDebugAndroidTest --no-daemon --console=plain"
 
 [tasks.lint]
-description = "Run Android Lint on the debug variant"
+description = "Run Android Lint and detekt (custom require-kdoc rule set) on the debug variant"
 dir = "{{config_root}}"
-run = "./gradlew :app:lintDebug --no-daemon --console=plain"
+run = "./gradlew :app:lintDebug :app:detekt --no-daemon --console=plain"
+
+[tasks."lint:detekt"]
+description = "Run detekt with the custom require-kdoc rule set over the app sources"
+dir = "{{config_root}}"
+run = "./gradlew :app:detekt --no-daemon --console=plain"
+
+[tasks."test:detekt-rules"]
+description = "Run the JVM unit tests for the custom detekt require-kdoc rule set"
+dir = "{{config_root}}"
+run = "./gradlew :detekt-rules:test --no-daemon --console=plain"
 
 [tasks.clean]
 description = "Delete Gradle build outputs"
