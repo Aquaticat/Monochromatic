@@ -1,4 +1,4 @@
-package dev.monochromatic.musicplayer.detekt
+package dev.monochromatic.detekt
 
 import io.gitlab.arturbosch.detekt.api.CodeSmell
 import io.gitlab.arturbosch.detekt.api.Config
@@ -22,7 +22,7 @@ import org.jetbrains.kotlin.psi.KtTypeAlias
 
 /**
  * Requires a KDoc comment on every documentable declaration, including private,
- * local, and nested ones.
+ * local, and nested ones, across every Kotlin source in the monorepo.
  *
  * This is the Kotlin counterpart of the `require-tsdoc` oxlint rule that the repo
  * applies to TypeScript: documentation is mandatory everywhere, not only on the
@@ -39,8 +39,8 @@ import org.jetbrains.kotlin.psi.KtTypeAlias
  * destructuring entries, and `init` blocks. These never reach a report because
  * [documentableKind] returns null for them.
  *
- * Test sources are skipped through the rule's `excludes` config in `detekt.yml`,
- * the same way `require-tsdoc` skips `.test.ts` files.
+ * Test sources and build scripts are skipped by the caller's global excludes (the
+ * root `lint:detekt` task), the same way `require-tsdoc` skips `.test.ts` files.
  *
  * @example
  * ```kotlin
@@ -92,6 +92,7 @@ class RequireKDoc(config: Config = Config.empty) : Rule(config) {
      */
     override fun visitDeclaration(dcl: KtDeclaration) {
         super.visitDeclaration(dcl)
+        /** Finding noun for this declaration, or null when it is a kind to skip. */
         val kind = documentableKind(dcl) ?: return
         if (allowOverride && dcl.hasModifier(KtTokens.OVERRIDE_KEYWORD)) {
             return

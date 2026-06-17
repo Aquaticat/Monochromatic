@@ -210,7 +210,7 @@ captures/
 /packages/desktop-daemon/hall-monitor/**/hall-monitor
 /packages/music-player/android-app/build/
 **/app/build/
-**/detekt-rules/build/
+**/linter/kotlin/build/
 /packages/music-player/android-app/**/.idea/
 
 # Fuzzing artifacts

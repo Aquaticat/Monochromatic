@@ -1,0 +1,75 @@
+# kotlin-linter
+
+Monorepo-wide [detekt] rule set enforcing KDoc on every Kotlin declaration, the
+Kotlin counterpart of the repo's `require-tsdoc` oxlint rule for TypeScript. It is
+the Kotlin sibling of `packages/linter/rust`: a standalone linter run over all of
+`packages/` by the root `lint:detekt` task.
+
+## Why this exists
+
+detekt ships `UndocumentedPublicClass`, `UndocumentedPublicFunction`, and
+`UndocumentedPublicProperty`, but they only cover the public API surface and cannot
+be configured down to private or local declarations. The repo's documentation
+standard is "everywhere", so a custom rule is required.
+
+## The rule contract
+
+`RequireKDoc` reports any declaration of a covered kind that has no preceding KDoc
+(`KtDeclaration.docComment == null`).
+
+Covered kinds:
+
+- classes, interfaces, annotation classes (`KtClass`)
+- objects and companion objects (`KtObjectDeclaration`)
+- named functions, including member and local ones (`KtNamedFunction`)
+- properties, including member and local `val`/`var` (`KtProperty`)
+- secondary constructors (`KtSecondaryConstructor`)
+- type aliases (`KtTypeAlias`)
+- enum entries (`KtEnumEntry`)
+
+Deliberately skipped, mirroring `require-tsdoc`:
+
+- parameters (documented via the owner's `@param`)
+- primary constructors (documented by the class KDoc)
+- property accessors (documented by the property)
+- anonymous object literals, destructuring entries, and `init` blocks
+
+The implementation overrides a single choke point, `visitDeclaration`, because every
+declaration kind delegates to it in the PSI visitor chain. The `super` call preserves
+the tree walk into bodies, which is what reaches local and nested declarations.
+
+## How it runs monorepo-wide
+
+The root `lint:detekt` task (in `mise.no-env.toml`, part of the `lint` aggregate)
+invokes the detekt CLI over `packages/` with this module's jar on `--plugins` and
+default rule sets disabled:
+
+```sh
+mise run lint:detekt    # scan all of packages/
+```
+
+Global excludes drop build output, `.gradle` caches, build scripts (`.kts`), and test
+sources (`**/src/test/**`, `**/src/androidTest/**`) before parsing.
+
+## Configuration
+
+`detekt.yml` activates only `require-kdoc` and sets `build.maxIssues: 0` so any
+missing KDoc fails the run. The `allowOverride` rule option (default false) can let
+`override` members inherit documentation.
+
+## Package tasks
+
+```sh
+mise run //packages/linter/kotlin:test         # rule unit tests
+mise run //packages/linter/kotlin:lint         # local compile check (fanout-safe)
+mise run //packages/linter/kotlin:lint:detekt  # dogfood over this package's own src
+mise run //packages/linter/kotlin:build        # build the plugin jar
+```
+
+## Adding a rule
+
+Add the rule class beside `RequireKDoc.kt`, then register it in the `instance` list
+inside `KdocRuleSetProvider.kt`. The service file under
+`src/main/resources/META-INF/services/` only needs the provider, not individual rules.
+
+[detekt]: https://detekt.dev

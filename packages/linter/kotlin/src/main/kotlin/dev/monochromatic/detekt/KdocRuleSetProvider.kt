@@ -1,4 +1,4 @@
-package dev.monochromatic.musicplayer.detekt
+package dev.monochromatic.detekt
 
 import io.gitlab.arturbosch.detekt.api.Config
 import io.gitlab.arturbosch.detekt.api.RuleSet
@@ -7,7 +7,7 @@ import io.gitlab.arturbosch.detekt.api.RuleSetProvider
 /**
  * Registers the `require-kdoc` rule set with detekt. Discovered through the
  * `META-INF/services/io.gitlab.arturbosch.detekt.api.RuleSetProvider` service file
- * when this module is on detekt's `detektPlugins` classpath.
+ * when this module's jar is passed to detekt via `--plugins`.
  */
 class KdocRuleSetProvider : RuleSetProvider {
     /**

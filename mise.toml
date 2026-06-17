@@ -715,7 +715,7 @@ run = [{ tasks = ["watch:build", "watch:test"] }]
 description = "Lint"
 run = [
   "mise '//packages/...:lint'",
-  { tasks = ["lint:dprint", "lint:stylelint", "lint:markdown", "lint:rust"] },
+  { tasks = ["lint:dprint", "lint:stylelint", "lint:markdown", "lint:rust", "lint:detekt"] },
 ]
 [tasks."lint".env]
 OXLINT_THREADS = "1"
@@ -756,6 +756,15 @@ description = "Enforce the per-file code-line budget on .rs under packages/ (mon
 # until they are split; tracked in issue #235. Also runnable per package via
 # `:lint:max-lines`.
 run = "cargo run --quiet --manifest-path packages/linter/rust/Cargo.toml -- packages"
+
+[tasks."lint:detekt"]
+description = "Enforce KDoc on Kotlin via the custom detekt rule set (kotlin-linter), fanned out per package"
+# Part of the `lint` aggregate. Fans out to each package's own `lint:detekt`, which
+# scans only that package's Kotlin source root. detekt-cli is not gitignore-aware, so
+# a single scan over packages/ would walk ~200k node_modules/build files to find ~50
+# .kt; per-package scans keep the input tiny. Pre-existing undocumented declarations
+# keep this red until baselined or backfilled; tracked in issue #253.
+run = "mise '//packages/...:lint:detekt'"
 
 #endregion Linting Tasks
 

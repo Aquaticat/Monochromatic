@@ -3,7 +3,6 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.plugin.compose") version "2.2.10"
-    id("io.gitlab.arturbosch.detekt")
 }
 
 android {
@@ -62,20 +61,7 @@ android {
     }
 }
 
-detekt {
-    // Run ONLY the custom require-kdoc rule set. detekt's built-in rule sets are
-    // out of scope for this adoption and would flood the existing app, so the
-    // default rule sets are disabled and the config is not built upon detekt's
-    // default config; detekt.yml enables require-kdoc alone.
-    disableDefaultRuleSets = true
-    buildUponDefaultConfig = false
-    config.setFrom(files("$rootDir/detekt.yml"))
-    parallel = true
-}
-
 dependencies {
-    // The custom KDoc-presence rule set, loaded onto detekt's analysis classpath.
-    detektPlugins(project(":detekt-rules"))
 
     val composeBom = platform("androidx.compose:compose-bom:2026.05.01")
     implementation(composeBom)

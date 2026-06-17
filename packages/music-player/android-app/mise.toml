@@ -184,19 +184,18 @@ depends = ["build:native"]
 run = "./gradlew :app:connectedDebugAndroidTest --no-daemon --console=plain"
 
 [tasks.lint]
-description = "Run Android Lint and detekt (custom require-kdoc rule set) on the debug variant"
+description = "Run Android Lint on the debug variant"
 dir = "{{config_root}}"
-run = "./gradlew :app:lintDebug :app:detekt --no-daemon --console=plain"
+run = "./gradlew :app:lintDebug --no-daemon --console=plain"
 
+# Enforce KDoc on this app's Kotlin via the shared kotlin-linter (packages/linter/kotlin),
+# mirroring how Rust packages call the shared rust-linter for lint:max-lines. Scans only
+# this app's main source root so detekt never walks node_modules/build. Picked up by the
+# root `lint:detekt` fanout.
 [tasks."lint:detekt"]
-description = "Run detekt with the custom require-kdoc rule set over the app sources"
+description = "Enforce KDoc on this app's Kotlin via the shared kotlin-linter"
 dir = "{{config_root}}"
-run = "./gradlew :app:detekt --no-daemon --console=plain"
-
-[tasks."test:detekt-rules"]
-description = "Run the JVM unit tests for the custom detekt require-kdoc rule set"
-dir = "{{config_root}}"
-run = "./gradlew :detekt-rules:test --no-daemon --console=plain"
+run = "../../linter/kotlin/gradlew --project-dir ../../linter/kotlin detektCheck -PdetektInput={{config_root}}/app/src/main/kotlin --no-daemon --console=plain"
 
 [tasks.clean]
 description = "Delete Gradle build outputs"

@@ -1,4 +1,4 @@
-package dev.monochromatic.musicplayer.detekt
+package dev.monochromatic.detekt
 
 import io.gitlab.arturbosch.detekt.test.TestConfig
 import io.gitlab.arturbosch.detekt.test.compileAndLint
