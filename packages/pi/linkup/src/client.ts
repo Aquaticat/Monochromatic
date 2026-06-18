@@ -10,28 +10,28 @@ import { linkupLogger, } from './log.ts';
 //region Constants
 
 /** Default Linkup API base URL. */
-const DEFAULT_LINKUP_BASE_URL = 'https://api.linkup.so/v1';
+const DEFAULT_LINKUP_BASE_URL: 'https://api.linkup.so/v1' = 'https://api.linkup.so/v1';
 
 /** Linkup search endpoint path. */
-const LINKUP_SEARCH_ENDPOINT = '/search';
+const LINKUP_SEARCH_ENDPOINT: '/search' = '/search';
 
 /** Linkup fetch endpoint path. */
-const LINKUP_FETCH_ENDPOINT = '/fetch';
+const LINKUP_FETCH_ENDPOINT: '/fetch' = '/fetch';
 
 /** Fixed Linkup search depth selected for this package. */
-const LINKUP_SEARCH_DEPTH = 'standard';
+const LINKUP_SEARCH_DEPTH: 'standard' = 'standard';
 
 /** Fixed Linkup search output type selected for this package. */
-const LINKUP_SEARCH_OUTPUT_TYPE = 'searchResults';
+const LINKUP_SEARCH_OUTPUT_TYPE: 'searchResults' = 'searchResults';
 
 /** Fixed Linkup fetch JavaScript rendering mode. */
-const LINKUP_FETCH_RENDER_JS = true;
+const LINKUP_FETCH_RENDER_JS: true = true;
 
 /** Fixed Linkup fetch image extraction mode. */
-const LINKUP_FETCH_EXTRACT_IMAGES = false;
+const LINKUP_FETCH_EXTRACT_IMAGES: false = false;
 
 /** Fixed Linkup fetch raw HTML mode. */
-const LINKUP_FETCH_INCLUDE_RAW_HTML = false;
+const LINKUP_FETCH_INCLUDE_RAW_HTML: false = false;
 
 /** HTTP POST method. */
 const HTTP_POST = 'POST';

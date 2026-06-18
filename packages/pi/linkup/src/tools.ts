@@ -13,6 +13,10 @@ import { defineTool, } from '@earendil-works/pi-coding-agent';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
   type Static,
+  type TArray,
+  type TObject,
+  type TOptional,
+  type TString,
   Type,
 } from 'typebox';
 import type {
@@ -36,10 +40,10 @@ import {
 //region Constants
 
 /** Public Linkup search tool name. */
-const LINKUP_WEB_SEARCH_TOOL_NAME = 'linkup_web_search';
+const LINKUP_WEB_SEARCH_TOOL_NAME: 'linkup_web_search' = 'linkup_web_search';
 
 /** Public Linkup fetch tool name. */
-const LINKUP_WEB_FETCH_TOOL_NAME = 'linkup_web_fetch';
+const LINKUP_WEB_FETCH_TOOL_NAME: 'linkup_web_fetch' = 'linkup_web_fetch';
 
 /** Supported search input keys. */
 const SEARCH_SUPPORTED_KEYS = [
@@ -55,10 +59,10 @@ const FETCH_SUPPORTED_KEYS = [
 ] as const;
 
 /** Search ignored-key fixed behavior text. */
-const SEARCH_FIXED_BEHAVIOR = 'This extension always uses depth="standard", outputType="searchResults", the configured global blocklist, and no per-search result-count controls.';
+const SEARCH_FIXED_BEHAVIOR: string = 'This extension always uses depth="standard", outputType="searchResults", the configured global blocklist, and no per-search result-count controls.';
 
 /** Fetch ignored-key fixed behavior text. */
-const FETCH_FIXED_BEHAVIOR = 'This extension always uses renderJs=true, extractImages=false, and includeRawHtml=false.';
+const FETCH_FIXED_BEHAVIOR: string = 'This extension always uses renderJs=true, extractImages=false, and includeRawHtml=false.';
 
 //endregion Constants
 
@@ -79,7 +83,12 @@ const typeOptional = Type.Optional;
 /**
  * Model-facing search parameter schema.
  */
-const LinkupWebSearchParametersSchema = typeObject({
+const LinkupWebSearchParametersSchema: TObject<{
+  query: TString;
+  fromDate: TOptional<TString>;
+  includeDomains: TOptional<TArray<TString>>;
+  toDate: TOptional<TString>;
+}> = typeObject({
   query: typeString({
     description: 'Search query sent to Linkup as q. Be specific and include names, dates, versions, or locations when relevant.',
   },),
@@ -97,7 +106,9 @@ const LinkupWebSearchParametersSchema = typeObject({
 /**
  * Model-facing fetch parameter schema.
  */
-const LinkupWebFetchParametersSchema = typeObject({
+const LinkupWebFetchParametersSchema: TObject<{
+  url: TString;
+}> = typeObject({
   url: typeString({
     description: 'Absolute URL to fetch with Linkup.',
   },),
