@@ -7,7 +7,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 // the root `lint:detekt` task over packages/). detekt and the CLI resolve from
 // mavenCentral; nothing here ships in any application.
 plugins {
-    kotlin("jvm") version "2.2.10"
+    kotlin("jvm") version "2.4.0"
 }
 
 // detekt 2.0.x is the active upgrade target for the repo's custom Kotlin rule set.
