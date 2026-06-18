@@ -14,6 +14,7 @@ import {
   createJsonContent,
   createLinkupToolOutput,
   createWarningContent,
+  LINKUP_VISIBLE_JSON_MAX_BYTES,
 } from '../dist/final/node/index.mjs';
 
 //region Fixtures
@@ -32,6 +33,21 @@ const FIXED_BEHAVIOR = 'This extension always uses fixed behavior.';
  * Response fixture.
  */
 const RESPONSE = { results: [], };
+
+/**
+ * Bytes in one kibibyte, matching Pi's truncation utilities.
+ */
+const BYTES_PER_KIBIBYTE = 1024;
+
+/**
+ * Expected Linkup visible JSON cap in kibibytes.
+ */
+const EXPECTED_LINKUP_VISIBLE_JSON_KIBIBYTES = 100;
+
+/**
+ * JSON payload kibibytes that exceed Pi's core default but not Linkup's cap.
+ */
+const ABOVE_PI_DEFAULT_JSON_KIBIBYTES = 60;
 
 //endregion Fixtures
 
@@ -76,6 +92,31 @@ await describe({
             expect(result.content.type,).toBe('text',);
             expect(result.content.text,).toContain('"results"',);
             expect(result.fullJsonPath,).toBeUndefined();
+          },
+        },),
+        it({
+          name: 'keeps JSON above Pi default when below Linkup byte limit',
+          fn: async () => {
+            /**
+             * Large string that would exceed Pi's 50 KiB default limit.
+             */
+            const largeText = 'x'.repeat(
+              ABOVE_PI_DEFAULT_JSON_KIBIBYTES * BYTES_PER_KIBIBYTE,
+            );
+            /**
+             * Local value for result.
+             */
+            const result = await createJsonContent({
+              value: {
+                largeText,
+              },
+            },);
+
+            expect(LINKUP_VISIBLE_JSON_MAX_BYTES,).toBe(
+              EXPECTED_LINKUP_VISIBLE_JSON_KIBIBYTES * BYTES_PER_KIBIBYTE,
+            );
+            expect(result.fullJsonPath,).toBeUndefined();
+            expect(result.content.text,).not.toContain('JSON response truncated',);
           },
         },),
         it({

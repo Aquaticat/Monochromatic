@@ -6,6 +6,7 @@
 
 import {
   defineTool,
+  formatSize,
   type AgentToolUpdateCallback,
   type ExtensionContext,
   type ToolDefinition,
@@ -33,6 +34,7 @@ import {
 import { linkupLogger, } from './log.ts';
 import {
   createLinkupToolOutput,
+  LINKUP_VISIBLE_JSON_MAX_BYTES,
   type LinkupToolDetails,
 } from './tool-output.ts';
 
@@ -243,7 +245,7 @@ function createLinkupWebSearchTool(
   return defineTool({
     name: LINKUP_WEB_SEARCH_TOOL_NAME,
     label: 'Linkup Web Search',
-    description: 'Search the web with Linkup POST /v1/search. Always uses depth="standard", outputType="searchResults", and the configured global blocklist. Output is JSON and may be truncated with a full response temp path.',
+    description: `Search the web with Linkup POST /v1/search. Always uses depth="standard", outputType="searchResults", and the configured global blocklist. Output is JSON and may be truncated after ${formatSize(LINKUP_VISIBLE_JSON_MAX_BYTES,)} with a full response temp path.`,
     promptSnippet: 'Search the web with Linkup using standard depth, searchResults output, and the global blocklist.',
     promptGuidelines: [
       'Use linkup_web_search to discover sources across the web before fetching a specific page.',
@@ -336,7 +338,7 @@ function createLinkupWebFetchTool(
   return defineTool({
     name: LINKUP_WEB_FETCH_TOOL_NAME,
     label: 'Linkup Web Fetch',
-    description: 'Fetch one page with Linkup POST /v1/fetch. Always uses renderJs=true, extractImages=false, and includeRawHtml=false. Blocked hosts throw before Linkup is called. Output is JSON and may be truncated with a full response temp path.',
+    description: `Fetch one page with Linkup POST /v1/fetch. Always uses renderJs=true, extractImages=false, and includeRawHtml=false. Blocked hosts throw before Linkup is called. Output is JSON and may be truncated after ${formatSize(LINKUP_VISIBLE_JSON_MAX_BYTES,)} with a full response temp path.`,
     promptSnippet: 'Fetch a known URL with Linkup using renderJs=true and the global blocklist preflight.',
     promptGuidelines: [
       'Use linkup_web_fetch when the URL is already known and the goal is to read Linkup-fetched page content.',

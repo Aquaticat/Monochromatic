@@ -12,7 +12,6 @@ import {
 import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 import {
-  DEFAULT_MAX_BYTES,
   DEFAULT_MAX_LINES,
   formatSize,
   truncateHead,
@@ -45,6 +44,21 @@ const TEMP_RANDOM_BYTES = 4;
  * Pretty JSON indentation width.
  */
 const JSON_INDENT_SPACES = 2;
+
+/**
+ * Bytes in one kibibyte, matching Pi's byte-limit size formatting.
+ */
+const BYTES_PER_KIBIBYTE = 1024;
+
+/**
+ * Linkup response JSON kibibytes visible to the model before temp-file fallback.
+ */
+const LINKUP_VISIBLE_JSON_MAX_KIBIBYTES = 100;
+
+/**
+ * Linkup response JSON bytes visible to the model before temp-file fallback.
+ */
+const LINKUP_VISIBLE_JSON_MAX_BYTES = LINKUP_VISIBLE_JSON_MAX_KIBIBYTES * BYTES_PER_KIBIBYTE;
 
 //endregion Constants
 
@@ -272,18 +286,18 @@ async function createJsonContent(options: JsonContentOptions,): Promise<JsonCont
    */
   const jsonText = stringifyJsonForModel(options.value,);
   /**
-   * Truncation result using Pi defaults unless tests override limits.
+   * Truncation result using Linkup byte cap and Pi line cap unless tests override limits.
    */
   const truncation = truncateHead(
     jsonText,
     {
-    maxLines: options.truncationOptions
-      ?.maxLines
-      ?? DEFAULT_MAX_LINES,
-    maxBytes: options.truncationOptions
-      ?.maxBytes
-      ?? DEFAULT_MAX_BYTES,
-  },
+      maxLines: options.truncationOptions
+        ?.maxLines
+        ?? DEFAULT_MAX_LINES,
+      maxBytes: options.truncationOptions
+        ?.maxBytes
+        ?? LINKUP_VISIBLE_JSON_MAX_BYTES,
+    },
   );
   if (!truncation.truncated)
     return {
@@ -408,6 +422,7 @@ export {
   createJsonContent,
   createLinkupToolOutput,
   createWarningContent,
+  LINKUP_VISIBLE_JSON_MAX_BYTES,
 };
 export type {
   JsonContentResult,
