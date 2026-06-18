@@ -5,10 +5,9 @@
     <option name="linkedExternalProjectsSettings">
       <GradleProjectSettings>
         <option name="externalProjectPath" value="$PROJECT_DIR$/packages/linter/kotlin" />
-        <option name="gradleJvm" value="temurin-21 (mise)" />
         <option name="modules">
           <set>
-            <option value="$PROJECT_DIR$/packages/linter/kotlin" />
+            <option value="/var/home/user/Monochromatic/packages/linter/kotlin" />
           </set>
         </option>
         <option name="resolveExternalAnnotations" value="true" />
