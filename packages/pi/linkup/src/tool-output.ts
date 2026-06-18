@@ -58,7 +58,7 @@ const LINKUP_VISIBLE_JSON_MAX_KIBIBYTES = 100;
 /**
  * Linkup response JSON bytes visible to the model before temp-file fallback.
  */
-const LINKUP_VISIBLE_JSON_MAX_BYTES = LINKUP_VISIBLE_JSON_MAX_KIBIBYTES * BYTES_PER_KIBIBYTE;
+const LINKUP_VISIBLE_JSON_MAX_BYTES: number = LINKUP_VISIBLE_JSON_MAX_KIBIBYTES * BYTES_PER_KIBIBYTE;
 
 //endregion Constants
 
