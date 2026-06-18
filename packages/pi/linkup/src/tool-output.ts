@@ -48,7 +48,7 @@ const JSON_INDENT_SPACES = 2;
 /**
  * Bytes in one kibibyte, matching Pi's byte-limit size formatting.
  */
-const BYTES_PER_KIBIBYTE = 1024;
+const BYTES_PER_KIBIBYTE = 1_024;
 
 /**
  * Linkup response JSON kibibytes visible to the model before temp-file fallback.

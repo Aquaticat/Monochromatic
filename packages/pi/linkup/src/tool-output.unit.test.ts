@@ -37,7 +37,7 @@ const RESPONSE = { results: [], };
 /**
  * Bytes in one kibibyte, matching Pi's truncation utilities.
  */
-const BYTES_PER_KIBIBYTE = 1024;
+const BYTES_PER_KIBIBYTE = 1_024;
 
 /**
  * Expected Linkup visible JSON cap in kibibytes.
