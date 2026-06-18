@@ -51,6 +51,11 @@ const JSON_INDENT_SPACES = 2;
 const MARKDOWN_RESPONSE_KEY = 'markdown' as const;
 
 /**
+ * Sentinel used when a response is not exactly one markdown field.
+ */
+const NOT_MARKDOWN_ONLY_RESPONSE: unique symbol = Symbol('not a markdown-only Linkup response',);
+
+/**
  * Bytes in one kibibyte, matching Pi's byte-limit size formatting.
  */
 const BYTES_PER_KIBIBYTE = 1_024;
@@ -192,6 +197,11 @@ type LinkupToolOutputOptions = {
    */
   readonly removedBlockedUrls?: readonly string[];
 };
+
+/**
+ * Model text extracted from a markdown-only response, or sentinel for every other shape.
+ */
+type MarkdownOnlyResponseText = string | typeof NOT_MARKDOWN_ONLY_RESPONSE;
 
 //endregion Types
 
@@ -379,7 +389,10 @@ function modelTextForLinkupResponse(value: unknown,): string {
    * Markdown response text, when value is exactly a markdown-only response.
    */
   const markdownText = markdownOnlyResponseText(value,);
-  return markdownText ?? stringifyJsonForModel(value,);
+  if ((typeof markdownText) === 'string')
+    return markdownText;
+
+  return stringifyJsonForModel(value,);
 }
 
 /**
@@ -394,28 +407,47 @@ function modelTextForLinkupResponse(value: unknown,): string {
  * markdownOnlyResponseText({ markdown: '# Meow' });
  * ```
  */
-function markdownOnlyResponseText(value: unknown,): string | undefined {
-  if ((value === null) || ((typeof value) !== 'object') || Array.isArray(value,))
-    return undefined;
+function markdownOnlyResponseText(value: unknown,): MarkdownOnlyResponseText {
+  if (
+    (value === null)
+    || ((typeof value) !== 'object')
+    || Array.isArray(value,)
+  )
+    return NOT_MARKDOWN_ONLY_RESPONSE;
 
   /**
    * Own enumerable response keys.
    */
   const keys = Object.keys(value,);
   if ((keys.length !== 1) || (keys[0] !== MARKDOWN_RESPONSE_KEY))
-    return undefined;
+    return NOT_MARKDOWN_ONLY_RESPONSE;
 
-  /**
-   * Response value viewed as a string-keyed record after object narrowing.
-   */
-  const record = value as Readonly<Record<string, unknown>>;
+  if (!hasMarkdownResponseProperty(value,))
+    return NOT_MARKDOWN_ONLY_RESPONSE;
+
   /**
    * Markdown property value.
    */
-  const markdown = record[MARKDOWN_RESPONSE_KEY];
+  const markdown = value.markdown;
   return ((typeof markdown) === 'string')
     ? markdown
-    : undefined;
+    : NOT_MARKDOWN_ONLY_RESPONSE;
+}
+
+/**
+ * Return whether object exposes a markdown response property.
+ *
+ * @param value - object response value
+ *
+ * @returns whether object has a markdown property readable as unknown
+ *
+ * @example
+ * ```ts
+ * hasMarkdownResponseProperty({ markdown: '# Meow' });
+ * ```
+ */
+function hasMarkdownResponseProperty(value: object,): value is { readonly markdown: unknown; } {
+  return MARKDOWN_RESPONSE_KEY in value;
 }
 
 /**

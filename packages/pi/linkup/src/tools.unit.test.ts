@@ -265,12 +265,49 @@ await describe({
       },
     },),
     it({
-      name: 'fetch stores model-visible response in details and visible output is JSON',
+      name: 'fetch stores markdown-only response in details and visible output is markdown',
       fn: async () => {
         /**
          * Local value for fetchResponse.
          */
         const fetchResponse = { markdown: 'Fetched page', };
+        /**
+         * Local value for mock.
+         */
+        const mock = mockClient({
+          searchResponse: EMPTY_RESPONSE,
+          fetchResponse,
+        },);
+        /**
+         * Local value for fetchTool.
+         */
+        const fetchTool = fetchToolFrom(mock.client,);
+
+        /**
+         * Local value for result.
+         */
+        const result = await fetchTool.execute(
+          'tool-call-fetch-markdown',
+          { url: 'https://example.com', },
+          undefined,
+          undefined,
+          fakeContext(),
+        );
+
+        expect(result.details.linkupResponse,).toBe(fetchResponse,);
+        expect(textContentAt({ result, index: 0, },),).toBe(fetchResponse.markdown,);
+      },
+    },),
+    it({
+      name: 'fetch stores non-exact markdown response in details and visible output is JSON',
+      fn: async () => {
+        /**
+         * Local value for fetchResponse.
+         */
+        const fetchResponse = {
+          markdown: 'Fetched page',
+          title: 'Fetched title',
+        };
         /**
          * Local value for mock.
          */
