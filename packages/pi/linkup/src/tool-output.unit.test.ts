@@ -35,6 +35,19 @@ const FIXED_BEHAVIOR = 'This extension always uses fixed behavior.';
 const RESPONSE = { results: [], };
 
 /**
+ * Markdown-only response fixture.
+ */
+const MARKDOWN_ONLY_RESPONSE = { markdown: '# Meow', } as const;
+
+/**
+ * Markdown response fixture with additional metadata.
+ */
+const MARKDOWN_WITH_EXTRA_KEY_RESPONSE = {
+  markdown: '# Meow',
+  title: 'Meow title',
+} as const;
+
+/**
  * Bytes in one kibibyte, matching Pi's truncation utilities.
  */
 const BYTES_PER_KIBIBYTE = 1_024;
@@ -92,6 +105,38 @@ await describe({
             expect(result.content.type,).toBe('text',);
             expect(result.content.text,).toContain('"results"',);
             expect(result.fullJsonPath,).toBeUndefined();
+          },
+        },),
+        it({
+          name: 'returns raw markdown for single-field markdown responses',
+          fn: async () => {
+            /**
+             * Local value for result.
+             */
+            const result = await createJsonContent({
+              value: MARKDOWN_ONLY_RESPONSE,
+            },);
+
+            expect(result.content.type,).toBe('text',);
+            expect(result.content.text,).toBe(MARKDOWN_ONLY_RESPONSE.markdown,);
+            expect(result.content.text,).not.toContain('"markdown"',);
+            expect(result.fullJsonPath,).toBeUndefined();
+          },
+        },),
+        it({
+          name: 'keeps JSON for markdown responses with extra fields',
+          fn: async () => {
+            /**
+             * Local value for result.
+             */
+            const result = await createJsonContent({
+              value: MARKDOWN_WITH_EXTRA_KEY_RESPONSE,
+            },);
+
+            expect(result.content.type,).toBe('text',);
+            expect(result.content.text,).toContain('"markdown"',);
+            expect(result.content.text,).toContain('"title"',);
+            expect(result.content.text,).not.toBe(MARKDOWN_WITH_EXTRA_KEY_RESPONSE.markdown,);
           },
         },),
         it({
@@ -169,6 +214,29 @@ await describe({
             expect(result.content[0]?.type,).toBe('text',);
             expect(result.details.linkupResponse,).toBe(RESPONSE,);
             expect(result.details.rawLinkupResponse,).toBe(RESPONSE,);
+          },
+        },),
+        it({
+          name: 'returns markdown content and details for markdown-only response',
+          fn: async () => {
+            /**
+             * Local value for result.
+             */
+            const result = await createLinkupToolOutput({
+              toolName: TOOL_NAME,
+              linkupResponse: MARKDOWN_ONLY_RESPONSE,
+              rawLinkupResponse: MARKDOWN_ONLY_RESPONSE,
+              ignoredKeys: [],
+              fixedBehavior: FIXED_BEHAVIOR,
+            },);
+
+            expect(result.content,).toHaveLength(1,);
+            expect(result.content[0]?.type,).toBe('text',);
+            if (result.content[0]?.type !== 'text')
+              throw new Error('markdown content was not text',);
+            expect(result.content[0].text,).toBe(MARKDOWN_ONLY_RESPONSE.markdown,);
+            expect(result.details.linkupResponse,).toBe(MARKDOWN_ONLY_RESPONSE,);
+            expect(result.details.rawLinkupResponse,).toBe(MARKDOWN_ONLY_RESPONSE,);
           },
         },),
         it({

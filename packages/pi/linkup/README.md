@@ -51,7 +51,11 @@ The tool returns a warning text item before the JSON response when that happens.
 
 Blocked fetch hosts throw before any network request is made.
 
-Both tools cap model-visible JSON responses at 100KB or 2000 lines,
+Responses that are exactly a single `markdown` string field are returned as raw markdown text,
+for example `{ "markdown": "# Meow" }` becomes `# Meow`.
+Other response shapes are returned as JSON.
+
+Both tools cap model-visible response text at 100KB or 2000 lines,
 whichever is hit first.
 When truncation happens,
 the full JSON response is written to a temporary file and the tool result names that path.

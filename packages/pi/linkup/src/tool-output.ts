@@ -46,6 +46,11 @@ const TEMP_RANDOM_BYTES = 4;
 const JSON_INDENT_SPACES = 2;
 
 /**
+ * Single-field Linkup markdown response key.
+ */
+const MARKDOWN_RESPONSE_KEY = 'markdown' as const;
+
+/**
  * Bytes in one kibibyte, matching Pi's byte-limit size formatting.
  */
 const BYTES_PER_KIBIBYTE = 1_024;
@@ -113,7 +118,7 @@ type LinkupToolDetails = {
  */
 type JsonContentOptions = {
   /**
-   * Value to serialize to JSON.
+   * Linkup response value to render.
    */
   readonly value: unknown;
   /**
@@ -222,9 +227,9 @@ async function createLinkupToolOutput(
   options: LinkupToolOutputOptions,
 ): Promise<AgentToolResult<LinkupToolDetails>> {
   /**
-   * Serialized JSON content item and truncation metadata.
+   * Model-visible content item and truncation metadata.
    */
-  const jsonContent = await createJsonContent({
+  const modelContent = await createJsonContent({
     value: options.linkupResponse,
   },);
   /**
@@ -243,10 +248,10 @@ async function createLinkupToolOutput(
    * Model-visible content items in final result order.
    */
   const content = warningContent === undefined
-    ? [jsonContent.content,]
+    ? [modelContent.content,]
     : [
       warningContent,
-      jsonContent.content,
+      modelContent.content,
     ];
 
   return {
@@ -262,14 +267,14 @@ async function createLinkupToolOutput(
         === 0)
         ? {}
         : { removedBlockedUrls: options.removedBlockedUrls, }),
-      ...(jsonContent.fullJsonPath === undefined ? {} : { fullJsonPath: jsonContent.fullJsonPath, }),
-      ...(jsonContent.truncation === undefined ? {} : { truncation: jsonContent.truncation, }),
+      ...(modelContent.fullJsonPath === undefined ? {} : { fullJsonPath: modelContent.fullJsonPath, }),
+      ...(modelContent.truncation === undefined ? {} : { truncation: modelContent.truncation, }),
     },
   };
 }
 
 /**
- * Create a JSON text content item, truncating and writing full JSON to temp when needed.
+ * Create a model-visible text content item, truncating and writing full JSON to temp when needed.
  *
  * @param options - value and optional truncation limits
  *
@@ -282,14 +287,14 @@ async function createLinkupToolOutput(
  */
 async function createJsonContent(options: JsonContentOptions,): Promise<JsonContentResult> {
   /**
-   * Pretty JSON text.
+   * Model-visible response text.
    */
-  const jsonText = stringifyJsonForModel(options.value,);
+  const contentText = modelTextForLinkupResponse(options.value,);
   /**
    * Truncation result using Linkup byte cap and Pi line cap unless tests override limits.
    */
   const truncation = truncateHead(
-    jsonText,
+    contentText,
     {
       maxLines: options.truncationOptions
         ?.maxLines
@@ -310,7 +315,7 @@ async function createJsonContent(options: JsonContentOptions,): Promise<JsonCont
   /**
    * Temp file path containing the full JSON response.
    */
-  const fullJsonPath = await writeFullJsonToTemp(jsonText,);
+  const fullJsonPath = await writeFullJsonToTemp(stringifyJsonForModel(options.value,),);
   /**
    * Visible text with truncation notice appended.
    */
@@ -356,6 +361,62 @@ function createWarningContent(options: WarningContentOptions,): TextContentItem 
 //endregion Public API
 
 //region Helpers
+
+/**
+ * Return model-visible text for a Linkup response value.
+ *
+ * @param value - Linkup response value
+ *
+ * @returns markdown text for single-field markdown responses, otherwise pretty JSON
+ *
+ * @example
+ * ```ts
+ * modelTextForLinkupResponse({ markdown: '# Meow' });
+ * ```
+ */
+function modelTextForLinkupResponse(value: unknown,): string {
+  /**
+   * Markdown response text, when value is exactly a markdown-only response.
+   */
+  const markdownText = markdownOnlyResponseText(value,);
+  return markdownText ?? stringifyJsonForModel(value,);
+}
+
+/**
+ * Extract markdown text from exact single-field markdown Linkup responses.
+ *
+ * @param value - Linkup response value
+ *
+ * @returns markdown text when value has only a string markdown property
+ *
+ * @example
+ * ```ts
+ * markdownOnlyResponseText({ markdown: '# Meow' });
+ * ```
+ */
+function markdownOnlyResponseText(value: unknown,): string | undefined {
+  if ((value === null) || ((typeof value) !== 'object') || Array.isArray(value,))
+    return undefined;
+
+  /**
+   * Own enumerable response keys.
+   */
+  const keys = Object.keys(value,);
+  if ((keys.length !== 1) || (keys[0] !== MARKDOWN_RESPONSE_KEY))
+    return undefined;
+
+  /**
+   * Response value viewed as a string-keyed record after object narrowing.
+   */
+  const record = value as Readonly<Record<string, unknown>>;
+  /**
+   * Markdown property value.
+   */
+  const markdown = record[MARKDOWN_RESPONSE_KEY];
+  return ((typeof markdown) === 'string')
+    ? markdown
+    : undefined;
+}
 
 /**
  * JSON-stringify a value for model-visible content.

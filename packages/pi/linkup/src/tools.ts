@@ -338,11 +338,12 @@ function createLinkupWebFetchTool(
   return defineTool({
     name: LINKUP_WEB_FETCH_TOOL_NAME,
     label: 'Linkup Web Fetch',
-    description: `Fetch one page with Linkup POST /v1/fetch. Always uses renderJs=true, extractImages=false, and includeRawHtml=false. Blocked hosts throw before Linkup is called. Output is JSON and may be truncated after ${formatSize(LINKUP_VISIBLE_JSON_MAX_BYTES,)} with a full response temp path.`,
+    description: `Fetch one page with Linkup POST /v1/fetch. Always uses renderJs=true, extractImages=false, and includeRawHtml=false. Blocked hosts throw before Linkup is called. Output is raw markdown when Linkup returns only a markdown field; otherwise JSON. Model-visible output may be truncated after ${formatSize(LINKUP_VISIBLE_JSON_MAX_BYTES,)} with a full response temp path.`,
     promptSnippet: 'Fetch a known URL with Linkup using renderJs=true and the global blocklist preflight.',
     promptGuidelines: [
       'Use linkup_web_fetch when the URL is already known and the goal is to read Linkup-fetched page content.',
       'linkup_web_fetch always sends renderJs=true, extractImages=false, and includeRawHtml=false; unsupported fetch knobs are ignored with a warning.',
+      'linkup_web_fetch returns raw markdown when Linkup responds with only a markdown field; otherwise it returns JSON.',
       'linkup_web_fetch refuses configured blocked hosts before any Linkup network request is made.',
     ],
     parameters: LinkupWebFetchParametersSchema,
