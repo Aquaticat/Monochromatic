@@ -1040,6 +1040,7 @@ _.path = [
   "packages/pi/statusline/node_modules/.bin",
   "packages/pi/spawn/node_modules/.bin",
   "packages/pi/morph-compact/node_modules/.bin",
+  "packages/pi/linkup/node_modules/.bin",
   "packages/pi/current-time-context/node_modules/.bin",
   "packages/pi/auto-mode/node_modules/.bin",
   "packages/pi/advisor/node_modules/.bin",
