@@ -1,0 +1,355 @@
+/**
+ * Unit tests for Linkup HTTP client request shaping and errors.
+ *
+ * @module
+ */
+
+import {
+  describe,
+  expect,
+  it,
+} from '@monochromatic-dev/module-test/ts';
+import {
+  LinkupClient,
+  type FetchLike,
+  type LinkupSearchRequestBody,
+} from '../dist/final/node/index.mjs';
+
+//region Fixtures
+
+/** API key fixture that must never appear in errors. */
+const SECRET_API_KEY = 'super-secret-linkup-key';
+
+/** Search response fixture. */
+const SEARCH_RESPONSE = { results: [], };
+
+/** Fetch response fixture. */
+const FETCH_RESPONSE = { markdown: 'hello', };
+
+/** Blocklist fixture. */
+const BLOCKLIST = ['badwikipedia.invalid',] as const;
+
+/** Base URL fixture. */
+const BASE_URL = 'https://linkup.test/v1';
+
+//endregion Fixtures
+
+await describe({
+  name: LinkupClient.name,
+  children: [
+    it({
+      name: 'search sends q, fixed standard depth, fixed searchResults output, and global excludeDomains',
+      fn: async () => {
+        const mock = mockFetch({ body: SEARCH_RESPONSE, },);
+        const client = clientWithMock(mock.fetchImpl,);
+
+        await client.search({
+          input: { query: 'What is Linkup?', },
+        },);
+
+        const requestBody = requestJsonBody(mock.calls[0],) as LinkupSearchRequestBody;
+        expect(requestBody.q,).toBe('What is Linkup?',);
+        expect(requestBody.depth,).toBe('standard',);
+        expect(requestBody.outputType,).toBe('searchResults',);
+        expect(requestBody.excludeDomains,).toEqual(BLOCKLIST,);
+      },
+    },),
+    it({
+      name: 'search includes fromDate includeDomains and toDate when provided',
+      fn: async () => {
+        const mock = mockFetch({ body: SEARCH_RESPONSE, },);
+        const client = clientWithMock(mock.fetchImpl,);
+
+        await client.search({
+          input: {
+            query: 'Microsoft revenue',
+            fromDate: '2025-01-01',
+            includeDomains: ['microsoft.com',],
+            toDate: '2025-12-31',
+          },
+        },);
+
+        const requestBody = requestJsonBody(mock.calls[0],);
+        expect(requestBody,).toHaveProperty('fromDate', '2025-01-01',);
+        expect(requestBody,).toHaveProperty('includeDomains', ['microsoft.com',],);
+        expect(requestBody,).toHaveProperty('toDate', '2025-12-31',);
+      },
+    },),
+    it({
+      name: 'search does not send extension-unsupported per-call options',
+      fn: async () => {
+        const mock = mockFetch({ body: SEARCH_RESPONSE, },);
+        const client = clientWithMock(mock.fetchImpl,);
+
+        await client.search({
+          input: {
+            query: 'ignored options',
+            depth: 'deep',
+            maxResults: 5,
+            limit: 2,
+          } as never,
+        },);
+
+        const requestBody = requestJsonBody(mock.calls[0],);
+        expect('maxResults' in requestBody,).toBe(false,);
+        expect('limit' in requestBody,).toBe(false,);
+        expect(requestBody.depth,).toBe('standard',);
+      },
+    },),
+    it({
+      name: 'fetch sends fixed renderJs extractImages and includeRawHtml flags',
+      fn: async () => {
+        const mock = mockFetch({ body: FETCH_RESPONSE, },);
+        const client = clientWithMock(mock.fetchImpl,);
+
+        await client.fetch({
+          input: { url: 'https://example.com', },
+        },);
+
+        const requestBody = requestJsonBody(mock.calls[0],);
+        expect(requestBody,).toEqual({
+          url: 'https://example.com',
+          renderJs: true,
+          extractImages: false,
+          includeRawHtml: false,
+        },);
+      },
+    },),
+    it({
+      name: 'non-2xx response throws without leaking API key',
+      fn: async () => {
+        const mock = mockFetch({
+          body: { error: { message: 'forbidden', }, },
+          status: 403,
+          statusText: 'Forbidden',
+        },);
+        const client = clientWithMock(mock.fetchImpl,);
+
+        let caught: unknown;
+        try {
+          await client.search({
+            input: { query: 'secret safety', },
+          },);
+        }
+        catch (error: unknown) {
+          caught = error;
+        }
+
+        expect(caught,).toBeInstanceOf(Error,);
+        expect((caught as Error).message,).toContain('/search',);
+        expect((caught as Error).message.includes(SECRET_API_KEY,),).toBe(false,);
+        expect((caught as Error).message.includes('Authorization',),).toBe(false,);
+      },
+    },),
+    it({
+      name: 'missing API key throws clear endpoint error',
+      fn: async () => {
+        const mock = mockFetch({ body: SEARCH_RESPONSE, },);
+        const client = new LinkupClient({
+          blocklist: [],
+          baseUrl: BASE_URL,
+          fetchImpl: mock.fetchImpl,
+        },);
+
+        let caught: unknown;
+        try {
+          await client.search({
+            input: { query: 'missing key', },
+          },);
+        }
+        catch (error: unknown) {
+          caught = error;
+        }
+
+        expect(caught,).toBeInstanceOf(Error,);
+        expect((caught as Error).message,).toContain('missing API key',);
+        expect(mock.calls,).toHaveLength(0,);
+      },
+    },),
+    it({
+      name: 'invalid JSON response throws endpoint error',
+      fn: async () => {
+        const mock = mockFetchText({ text: 'not json', },);
+        const client = clientWithMock(mock.fetchImpl,);
+
+        let caught: unknown;
+        try {
+          await client.fetch({
+            input: { url: 'https://example.com', },
+          },);
+        }
+        catch (error: unknown) {
+          caught = error;
+        }
+
+        expect(caught,).toBeInstanceOf(Error,);
+        expect((caught as Error).message,).toContain('invalid JSON',);
+        expect((caught as Error).message,).toContain('/fetch',);
+      },
+    },),
+    it({
+      name: 'aborted request throws endpoint abort error',
+      fn: async () => {
+        const mock = mockAbortFetch();
+        const client = clientWithMock(mock.fetchImpl,);
+
+        let caught: unknown;
+        try {
+          await client.search({
+            input: { query: 'abort', },
+          },);
+        }
+        catch (error: unknown) {
+          caught = error;
+        }
+
+        expect(caught,).toBeInstanceOf(Error,);
+        expect((caught as Error).message,).toContain('request aborted',);
+      },
+    },),
+  ],
+},);
+
+//region Helpers
+
+/** Recorded fetch call. */
+type FetchCall = {
+  /** Request URL. */
+  readonly input: RequestInfo | URL;
+  /** Request init. */
+  readonly init: RequestInit;
+};
+
+/** Mock fetch harness. */
+type FetchMock = {
+  /** Fetch implementation passed to client. */
+  readonly fetchImpl: FetchLike;
+  /** Recorded fetch calls. */
+  readonly calls: FetchCall[];
+};
+
+/**
+ * Create client with common fixtures.
+ *
+ * @param fetchImpl - mocked fetch implementation
+ *
+ * @returns Linkup client
+ */
+function clientWithMock(fetchImpl: FetchLike,): LinkupClient {
+  return new LinkupClient({
+    apiKey: SECRET_API_KEY,
+    blocklist: BLOCKLIST,
+    baseUrl: BASE_URL,
+    fetchImpl,
+  },);
+}
+
+/**
+ * Create JSON response fetch mock.
+ *
+ * @param body - response JSON body
+ *
+ * @param status - HTTP status
+ *
+ * @param statusText - HTTP status text
+ *
+ * @returns mock fetch harness
+ */
+function mockFetch(
+  {
+    body,
+    status = 200,
+    statusText = 'OK',
+  }: {
+    readonly body: unknown;
+    readonly status?: number;
+    readonly statusText?: string;
+  },
+): FetchMock {
+  return mockFetchText({
+    text: JSON.stringify(body,),
+    status,
+    statusText,
+  },);
+}
+
+/**
+ * Create text response fetch mock.
+ *
+ * @param text - response body text
+ *
+ * @param status - HTTP status
+ *
+ * @param statusText - HTTP status text
+ *
+ * @returns mock fetch harness
+ */
+function mockFetchText(
+  {
+    text,
+    status = 200,
+    statusText = 'OK',
+  }: {
+    readonly text: string;
+    readonly status?: number;
+    readonly statusText?: string;
+  },
+): FetchMock {
+  const calls: FetchCall[] = [];
+  const fetchImpl: FetchLike = async function fetchMock(input, init,) {
+    calls.push({
+      input,
+      init: init ?? {},
+    },);
+    return new Response(text, {
+      status,
+      statusText,
+    },);
+  };
+  return {
+    fetchImpl,
+    calls,
+  };
+}
+
+/**
+ * Create fetch mock that throws AbortError.
+ *
+ * @returns mock fetch harness
+ */
+function mockAbortFetch(): FetchMock {
+  const calls: FetchCall[] = [];
+  const fetchImpl: FetchLike = async function abortingFetch(input, init,) {
+    calls.push({
+      input,
+      init: init ?? {},
+    },);
+    const error = new Error('aborted by test');
+    error.name = 'AbortError';
+    throw error;
+  };
+  return {
+    fetchImpl,
+    calls,
+  };
+}
+
+/**
+ * Parse JSON request body from recorded fetch call.
+ *
+ * @param call - recorded fetch call
+ *
+ * @returns parsed body record
+ */
+function requestJsonBody(call: FetchCall | undefined,): Record<string, unknown> {
+  if (call === undefined)
+    throw new Error('missing fetch call',);
+  if (typeof call.init.body !== 'string')
+    throw new Error('fetch body was not a string',);
+  const parsed = JSON.parse(call.init.body,) as unknown;
+  if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed,))
+    throw new Error('fetch body was not an object',);
+  return parsed as Record<string, unknown>;
+}
+
+//endregion Helpers
