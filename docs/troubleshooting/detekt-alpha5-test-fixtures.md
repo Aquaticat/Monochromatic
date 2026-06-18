@@ -180,6 +180,141 @@ BUILD SUCCESSFUL in 6s
   The root task already documents that pre-existing undocumented declarations
   keep it red until issue `#253` is resolved.
 
+## Upstream prototype
+
+Fresh prototype clone:
+
+```text
+/tmp/agent/detekt-alpha5-prototype-KQgY5o
+```
+
+Origin and tag were verified before editing:
+
+```text
+https://github.com/detekt/detekt.git
+9c6ced63392cb451b7091dda25a9653875d275b6
+v2.0.0-alpha.5
+```
+
+The minimal upstream patch publishes `detekt-api`'s test-fixture runtime variant
+while continuing to hide the test-fixture API variant:
+
+```diff
+# /tmp/agent/detekt-alpha5-prototype-KQgY5o/detekt-api/build.gradle.kts
+@@ -40,11 +40,9 @@ tasks {
+ }
+ 
+ val javaComponent = components["java"] as AdhocComponentWithVariants
+-listOf(configurations.testFixturesApiElements, configurations.testFixturesRuntimeElements).forEach { config ->
+-    config.configure {
+-        javaComponent.withVariantsFromConfiguration(this) {
+-            skip()
+-        }
++configurations.testFixturesApiElements.configure {
++    javaComponent.withVariantsFromConfiguration(this) {
++        skip()
+     }
+ }
+```
+
+Before the patch,
+a disposable consumer project reproduced the failure with this task:
+
+```kotlin
+// /tmp/agent/detekt-consumer-before-P7uAER/build.gradle.kts
+tasks.register("resolveTestRuntime") {
+    doLast {
+        configurations.testRuntimeClasspath.get().files.forEach { println(it.name) }
+    }
+}
+```
+
+Command:
+
+```sh
+# /var/home/user/Monochromatic
+GRADLE_USER_HOME=/tmp/agent/detekt-gradle-home \
+  /tmp/agent/detekt-alpha5-prototype-KQgY5o/gradlew \
+  --project-dir /tmp/agent/detekt-consumer-before-P7uAER \
+  resolveTestRuntime \
+  --no-daemon \
+  --console=plain
+```
+
+Output:
+
+```text
+> Could not resolve dev.detekt:detekt-api:2.0.0-alpha.5.
+  No matching variant of dev.detekt:detekt-api:2.0.0-alpha.5 with capability
+  'dev.detekt:detekt-api-test-fixtures' was found.
+```
+
+After the patch,
+the prototype was published to a disposable Maven repository.
+The clone's `Versions.DETEKT` constant was locally set to `2.0.0-alpha.5`
+only so the local publication used the affected release coordinate;
+that version edit is not part of the upstream fix diff above.
+
+Command:
+
+```sh
+# /var/home/user/Monochromatic
+env -i \
+  HOME=/tmp/agent/detekt-proto-home \
+  PATH="$PATH" \
+  JAVA_HOME="${JAVA_HOME:-}" \
+  GRADLE_USER_HOME=/tmp/agent/detekt-gradle-home \
+  /tmp/agent/detekt-alpha5-prototype-KQgY5o/gradlew \
+  -Dmaven.repo.local=/tmp/agent/detekt-proto-m2 \
+  --project-dir /tmp/agent/detekt-alpha5-prototype-KQgY5o \
+  :detekt-api:publishToMavenLocal \
+  :detekt-test:publishToMavenLocal \
+  --no-daemon \
+  --console=plain
+```
+
+Output:
+
+```text
+BUILD SUCCESSFUL in 25s
+40 actionable tasks: 17 executed, 13 from cache, 10 up-to-date
+```
+
+The patched published metadata includes a runtime fixture variant:
+
+```text
+/tmp/agent/detekt-proto-m2/dev/detekt/detekt-api/2.0.0-alpha.5/detekt-api-2.0.0-alpha.5.module:130:      "name": "testFixturesRuntimeElements",
+/tmp/agent/detekt-proto-m2/dev/detekt/detekt-api/2.0.0-alpha.5/detekt-api-2.0.0-alpha.5.module:189:          "name": "detekt-api-test-fixtures",
+```
+
+A second disposable consumer resolved the same dependency successfully
+from `/tmp/agent/detekt-proto-m2` ahead of Maven Central.
+
+Command:
+
+```sh
+# /var/home/user/Monochromatic
+GRADLE_USER_HOME=/tmp/agent/detekt-gradle-home \
+  /tmp/agent/detekt-alpha5-prototype-KQgY5o/gradlew \
+  --project-dir /tmp/agent/detekt-consumer-after-KnWsL1 \
+  resolveTestRuntime \
+  --no-daemon \
+  --console=plain
+```
+
+Output:
+
+```text
+> Task :resolveTestRuntime
+detekt-test-2.0.0-alpha.5.jar
+detekt-api-2.0.0-alpha.5-test-fixtures.jar
+detekt-api-2.0.0-alpha.5.jar
+detekt-test-utils-2.0.0-alpha.5.jar
+
+BUILD SUCCESSFUL in 6s
+1 actionable task: 1 executed
+```
+
 ## Verified workarounds
 
 ### Consumer-side Gradle exclusion
@@ -277,12 +412,12 @@ Constraint check:
   and this is an alpha publication metadata issue.
 - Constraint 6:
   prototype,
-  not done in this task.
-  Do not file the draft below as-is
-  until an upstream patch is prototyped and verified against publication metadata.
+  yes.
+  The disposable upstream patch publishes `testFixturesRuntimeElements` for `detekt-api`,
+  and a disposable consumer resolved `detekt-test:2.0.0-alpha.5`
+  with `detekt-api-2.0.0-alpha.5-test-fixtures.jar` on the runtime classpath.
 
-Draft issue,
-do not file as-is:
+Draft issue:
 
 ~~~md
 Title: detekt-test 2.0.0-alpha.5 requests an unpublished detekt-api-test-fixtures runtime variant
@@ -359,12 +494,37 @@ that reference `dev.detekt.api.testfixtures`.
 
 ## Suggested fix
 
-Prototype and verify one of these before filing:
+Publish `detekt-api`'s test-fixture runtime variant,
+while continuing to skip the test-fixture API variant:
 
-- publish `detekt-api` test-fixture runtime variants for Maven consumers,
-- remove the public `detekt-test` dependency on `detekt-api` test fixtures,
-- or move the needed fixture helpers into a published module
-  that `detekt-test` can depend on normally.
+```diff
+@@ -40,11 +40,9 @@ tasks {
+ }
+ 
+ val javaComponent = components["java"] as AdhocComponentWithVariants
+-listOf(configurations.testFixturesApiElements, configurations.testFixturesRuntimeElements).forEach { config ->
+-    config.configure {
+-        javaComponent.withVariantsFromConfiguration(this) {
+-            skip()
+-        }
++configurations.testFixturesApiElements.configure {
++    javaComponent.withVariantsFromConfiguration(this) {
++        skip()
+     }
+ }
+```
+
+I verified this patch by publishing `detekt-api` and `detekt-test`
+to a disposable Maven repository,
+then resolving `testRuntimeClasspath` in a disposable consumer project.
+The successful runtime classpath contained:
+
+```text
+detekt-test-2.0.0-alpha.5.jar
+detekt-api-2.0.0-alpha.5-test-fixtures.jar
+detekt-api-2.0.0-alpha.5.jar
+detekt-test-utils-2.0.0-alpha.5.jar
+```
 
 ## Environment
 
