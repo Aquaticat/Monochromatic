@@ -366,7 +366,9 @@ function createWarningContent(options: WarningContentOptions,): TextContentItem 
 /**
  * Write full response text to a temp file.
  *
- * @param options - response text and filename
+ * @param responseText - response text to write
+ *
+ * @param filename - temp file basename
  *
  * @returns temp file path
  */

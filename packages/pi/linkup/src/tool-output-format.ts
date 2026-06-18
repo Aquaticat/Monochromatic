@@ -239,7 +239,11 @@ function resultsArrayJsonlText(value: unknown,): ResultsArrayJsonlResponseText {
    * Results array items before object-shape validation.
    */
   const resultItems: readonly unknown[] = results;
-  if (!resultItems.every(isRecord,))
+  if (!resultItems.every(function isResultRecord(
+    resultItem,
+  ): resultItem is Record<string, unknown> {
+    return isRecord(resultItem,);
+  },))
     return NOT_RESULTS_ARRAY_RESPONSE;
 
   return resultItems
@@ -325,7 +329,7 @@ function stringifyJsonForModel(value: unknown,): string {
  *
  * @returns compact JSON text for one JSONL line
  */
-function stringifyJsonLineForModel(value: Record<string, unknown>,): string {
+function stringifyJsonLineForModel(value: Readonly<Record<string, unknown>>,): string {
   /**
    * JSON line output.
    */
