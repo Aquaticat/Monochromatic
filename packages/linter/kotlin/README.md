@@ -53,9 +53,9 @@ sources (`**/src/test/**`, `**/src/androidTest/**`) before parsing.
 
 ## Configuration
 
-`detekt.yml` activates only `require-kdoc` and sets `build.maxIssues: 0` so any
-missing KDoc fails the run. The `allowOverride` rule option (default false) can let
-`override` members inherit documentation.
+`detekt.yml` activates only `require-kdoc` and leaves findings at detekt 2's default
+`error` severity, so missing KDoc fails the run. The `allowOverride` rule option
+(default false) can let `override` members inherit documentation.
 
 ## Package tasks
 
@@ -68,8 +68,9 @@ mise run //packages/linter/kotlin:build        # build the plugin jar
 
 ## Adding a rule
 
-Add the rule class beside `RequireKDoc.kt`, then register it in the `instance` list
-inside `KdocRuleSetProvider.kt`. The service file under
-`src/main/resources/META-INF/services/` only needs the provider, not individual rules.
+Add the rule class beside `RequireKDoc.kt`, then register its factory in the map
+inside `KdocRuleSetProvider.kt`. The `dev.detekt.api.RuleSetProvider` service file
+under `src/main/resources/META-INF/services/` only needs the provider, not individual
+rules.
 
 [detekt]: https://detekt.dev

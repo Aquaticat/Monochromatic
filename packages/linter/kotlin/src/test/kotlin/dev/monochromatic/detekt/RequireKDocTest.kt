@@ -1,7 +1,7 @@
 package dev.monochromatic.detekt
 
-import io.gitlab.arturbosch.detekt.test.TestConfig
-import io.gitlab.arturbosch.detekt.test.compileAndLint
+import dev.detekt.test.TestConfig
+import dev.detekt.test.lint
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -18,7 +18,7 @@ class RequireKDocTest {
      */
     @Test
     fun reportsUndocumentedTopLevelDeclarations() {
-        val findings = RequireKDoc().compileAndLint(
+        val findings = RequireKDoc().lint(
             """
             class Foo
             interface Bar
@@ -37,7 +37,7 @@ class RequireKDocTest {
      */
     @Test
     fun reportsMembersLocalsAndNested() {
-        val findings = RequireKDoc().compileAndLint(
+        val findings = RequireKDoc().lint(
             """
             /** Documented. */
             class Outer {
@@ -60,7 +60,7 @@ class RequireKDocTest {
      */
     @Test
     fun reportsSecondaryConstructorAndEnumEntries() {
-        val findings = RequireKDoc().compileAndLint(
+        val findings = RequireKDoc().lint(
             """
             /** Documented. */
             class WithCtor(val a: Int) {
@@ -84,7 +84,7 @@ class RequireKDocTest {
      */
     @Test
     fun acceptsFullyDocumentedCode() {
-        val findings = RequireKDoc().compileAndLint(
+        val findings = RequireKDoc().lint(
             """
             /** A documented function. */
             fun double(n: Int): Int {
@@ -103,7 +103,7 @@ class RequireKDocTest {
      */
     @Test
     fun skipsExcludedKinds() {
-        val findings = RequireKDoc().compileAndLint(
+        val findings = RequireKDoc().lint(
             """
             /** Documented. */
             class Sample(undocumentedParam: Int) {
@@ -135,7 +135,7 @@ class RequireKDocTest {
     @Test
     fun allowOverrideExemptsOverridingMembers() {
         val config = TestConfig("allowOverride" to true)
-        val findings = RequireKDoc(config).compileAndLint(
+        val findings = RequireKDoc(config).lint(
             """
             /** Documented. */
             interface Base {

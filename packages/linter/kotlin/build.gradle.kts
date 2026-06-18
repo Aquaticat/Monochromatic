@@ -10,8 +10,8 @@ plugins {
     kotlin("jvm") version "2.2.10"
 }
 
-// detekt 1.23.8 is the current stable line (2.x is still alpha as of 2026-06).
-val detektVersion = "1.23.8"
+// detekt 2.0.x is the active upgrade target for the repo's custom Kotlin rule set.
+val detektVersion = "2.0.0-alpha.5"
 
 // Holds the detekt CLI and its dependencies, used as the classpath for the
 // detektCheck runner. Kept separate from the compile classpath so the runner gets
@@ -21,9 +21,9 @@ val detektCli: Configuration by configurations.creating
 dependencies {
     // The rule compiles against detekt-api only; detekt-core provides it at analysis
     // time, so it must not be bundled into the plugin jar.
-    compileOnly("io.gitlab.arturbosch.detekt:detekt-api:$detektVersion")
-    detektCli("io.gitlab.arturbosch.detekt:detekt-cli:$detektVersion")
-    testImplementation("io.gitlab.arturbosch.detekt:detekt-test:$detektVersion")
+    compileOnly("dev.detekt:detekt-api:$detektVersion")
+    detektCli("dev.detekt:detekt-cli:$detektVersion")
+    testImplementation("dev.detekt:detekt-test:$detektVersion")
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
@@ -54,7 +54,7 @@ tasks.register<JavaExec>("detektCheck") {
     description = "Run detekt with the custom require-kdoc rule set over --input (detektInput property)."
     dependsOn(tasks.jar)
     classpath = detektCli
-    mainClass.set("io.gitlab.arturbosch.detekt.cli.Main")
+    mainClass.set("dev.detekt.cli.Main")
 
     val ruleJar = tasks.jar.flatMap { it.archiveFile }
     inputs.file(ruleJar)

@@ -1,14 +1,11 @@
 package dev.monochromatic.detekt
 
-import io.gitlab.arturbosch.detekt.api.CodeSmell
-import io.gitlab.arturbosch.detekt.api.Config
-import io.gitlab.arturbosch.detekt.api.Debt
-import io.gitlab.arturbosch.detekt.api.Entity
-import io.gitlab.arturbosch.detekt.api.Issue
-import io.gitlab.arturbosch.detekt.api.Rule
-import io.gitlab.arturbosch.detekt.api.Severity
-import io.gitlab.arturbosch.detekt.api.config
-import io.gitlab.arturbosch.detekt.api.internal.Configuration
+import dev.detekt.api.Config
+import dev.detekt.api.Configuration
+import dev.detekt.api.Entity
+import dev.detekt.api.Finding
+import dev.detekt.api.Rule
+import dev.detekt.api.config
 import org.jetbrains.kotlin.lexer.KtTokens
 import org.jetbrains.kotlin.psi.KtClass
 import org.jetbrains.kotlin.psi.KtDeclaration
@@ -60,18 +57,10 @@ import org.jetbrains.kotlin.psi.KtTypeAlias
  * }
  * ```
  */
-class RequireKDoc(config: Config = Config.empty) : Rule(config) {
-    /**
-     * Identifies this rule and supplies the human-facing description detekt prints
-     * when no per-finding message is available.
-     */
-    override val issue: Issue = Issue(
-        javaClass.simpleName,
-        Severity.Maintainability,
-        "Every declaration must carry a KDoc comment.",
-        Debt.FIVE_MINS,
-    )
-
+class RequireKDoc(config: Config = Config.empty) : Rule(
+    config,
+    description = "Every declaration must carry a KDoc comment.",
+) {
     /**
      * When true, `override` members may inherit their documentation from the
      * supertype and so need no KDoc of their own. Defaults to false to mirror
@@ -100,7 +89,7 @@ class RequireKDoc(config: Config = Config.empty) : Rule(config) {
         if (dcl.docComment != null) {
             return
         }
-        report(CodeSmell(issue, entityOf(dcl), "Missing KDoc on $kind ${displayName(dcl)}."))
+        report(Finding(entityOf(dcl), "Missing KDoc on $kind ${displayName(dcl)}."))
     }
 
     /**

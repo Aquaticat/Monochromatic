@@ -1,13 +1,12 @@
 # detekt configuration for the monorepo-wide require-kdoc run. Only the require-kdoc
 # rule set is active (the root lint:detekt task passes --disable-default-rulesets), so
-# this file configures that one rule set plus the failure threshold. File-level
-# exclusions (build output, .kts scripts, test sources) are passed as global
-# --excludes by the runner, which stops detekt parsing them at all.
-build:
-  # Any finding fails the run, so missing KDoc breaks lint.
-  maxIssues: 0
-
+# this file configures that one rule set. File-level exclusions (build output, .kts
+# scripts, test sources) are passed as global --excludes by the runner, which stops
+# detekt parsing them at all.
 require-kdoc:
+  active: true
+  # detekt 2 fails the run on error-severity findings, replacing build.maxIssues.
+  severity: error
   RequireKDoc:
     active: true
     # Set true to let `override` members inherit documentation from the supertype.
