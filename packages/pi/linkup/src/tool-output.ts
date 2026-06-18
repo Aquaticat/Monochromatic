@@ -5,16 +5,19 @@
  */
 
 import { randomBytes, } from 'node:crypto';
-import { mkdtemp, writeFile, } from 'node:fs/promises';
+import {
+  mkdtemp,
+  writeFile,
+} from 'node:fs/promises';
 import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
-import type { AgentToolResult, } from '@earendil-works/pi-coding-agent';
 import {
   DEFAULT_MAX_BYTES,
   DEFAULT_MAX_LINES,
   formatSize,
   truncateHead,
   withFileMutationQueue,
+  type AgentToolResult,
   type TruncationOptions,
   type TruncationResult,
 } from '@earendil-works/pi-coding-agent';
@@ -52,12 +55,12 @@ const JSON_INDENT_SPACES = 2;
  */
 type TextContentItem = {
   /**
- * Content item type.
- */
+   * Content item type.
+   */
   readonly type: 'text';
   /**
- * Text visible to the model.
- */
+   * Text visible to the model.
+   */
   readonly text: string;
 };
 
@@ -66,28 +69,28 @@ type TextContentItem = {
  */
 type LinkupToolDetails = {
   /**
- * Model-visible Linkup-shaped response.
- */
+   * Model-visible Linkup-shaped response.
+   */
   readonly linkupResponse: unknown;
   /**
- * Untouched upstream Linkup response.
- */
+   * Untouched upstream Linkup response.
+   */
   readonly rawLinkupResponse: unknown;
   /**
- * Ignored compatibility keys, when supplied.
- */
+   * Ignored compatibility keys, when supplied.
+   */
   readonly ignoredKeys?: readonly string[];
   /**
- * Blocked search result URLs removed locally, when any were removed.
- */
+   * Blocked search result URLs removed locally, when any were removed.
+   */
   readonly removedBlockedUrls?: readonly string[];
   /**
- * Full JSON temp-file path, when visible JSON was truncated.
- */
+   * Full JSON temp-file path, when visible JSON was truncated.
+   */
   readonly fullJsonPath?: string;
   /**
- * Truncation metadata, when visible JSON was truncated.
- */
+   * Truncation metadata, when visible JSON was truncated.
+   */
   readonly truncation?: TruncationResult;
 };
 
@@ -96,12 +99,12 @@ type LinkupToolDetails = {
  */
 type JsonContentOptions = {
   /**
- * Value to serialize to JSON.
- */
+   * Value to serialize to JSON.
+   */
   readonly value: unknown;
   /**
- * Optional truncation limits, primarily for tests.
- */
+   * Optional truncation limits, primarily for tests.
+   */
   readonly truncationOptions?: TruncationOptions;
 };
 
@@ -110,16 +113,16 @@ type JsonContentOptions = {
  */
 type JsonContentResult = {
   /**
- * Text content item visible to the model.
- */
+   * Text content item visible to the model.
+   */
   readonly content: TextContentItem;
   /**
- * Full JSON temp-file path when truncation occurred.
- */
+   * Full JSON temp-file path when truncation occurred.
+   */
   readonly fullJsonPath?: string;
   /**
- * Truncation metadata when truncation occurred.
- */
+   * Truncation metadata when truncation occurred.
+   */
   readonly truncation?: TruncationResult;
 };
 
@@ -128,16 +131,16 @@ type JsonContentResult = {
  */
 type WarningContentOptions = {
   /**
- * Tool name reporting ignored keys.
- */
+   * Tool name reporting ignored keys.
+   */
   readonly toolName: string;
   /**
- * Ignored compatibility keys.
- */
+   * Ignored compatibility keys.
+   */
   readonly ignoredKeys: readonly string[];
   /**
- * Fixed behavior explanation.
- */
+   * Fixed behavior explanation.
+   */
   readonly fixedBehavior: string;
 };
 
@@ -146,28 +149,28 @@ type WarningContentOptions = {
  */
 type LinkupToolOutputOptions = {
   /**
- * Tool name reporting warnings.
- */
+   * Tool name reporting warnings.
+   */
   readonly toolName: string;
   /**
- * Model-visible response object.
- */
+   * Model-visible response object.
+   */
   readonly linkupResponse: unknown;
   /**
- * Untouched upstream Linkup response object.
- */
+   * Untouched upstream Linkup response object.
+   */
   readonly rawLinkupResponse: unknown;
   /**
- * Ignored compatibility keys.
- */
+   * Ignored compatibility keys.
+   */
   readonly ignoredKeys: readonly string[];
   /**
- * Fixed behavior explanation for ignored-key warning.
- */
+   * Fixed behavior explanation for ignored-key warning.
+   */
   readonly fixedBehavior: string;
   /**
- * Blocked search result URLs removed locally.
- */
+   * Blocked search result URLs removed locally.
+   */
   readonly removedBlockedUrls?: readonly string[];
 };
 
@@ -205,15 +208,17 @@ async function createLinkupToolOutput(
   options: LinkupToolOutputOptions,
 ): Promise<AgentToolResult<LinkupToolDetails>> {
   /**
- * Serialized JSON content item and truncation metadata.
- */
+   * Serialized JSON content item and truncation metadata.
+   */
   const jsonContent = await createJsonContent({
     value: options.linkupResponse,
   },);
   /**
- * Warning content item, when compatibility keys were ignored.
- */
-  const warningContent = options.ignoredKeys.length === 0
+   * Warning content item, when compatibility keys were ignored.
+   */
+  const warningContent = options.ignoredKeys
+    .length
+    === 0
     ? undefined
     : createWarningContent({
       toolName: options.toolName,
@@ -221,19 +226,26 @@ async function createLinkupToolOutput(
       fixedBehavior: options.fixedBehavior,
     },);
   /**
- * Model-visible content items in final result order.
- */
+   * Model-visible content items in final result order.
+   */
   const content = warningContent === undefined
     ? [jsonContent.content,]
-    : [warningContent, jsonContent.content,];
+    : [
+      warningContent,
+      jsonContent.content,
+    ];
 
   return {
     content,
     details: {
       linkupResponse: options.linkupResponse,
       rawLinkupResponse: options.rawLinkupResponse,
-      ...(options.ignoredKeys.length === 0 ? {} : { ignoredKeys: options.ignoredKeys, }),
-      ...(options.removedBlockedUrls === undefined || options.removedBlockedUrls.length === 0
+      ...(options.ignoredKeys
+        .length
+        === 0 ? {} : { ignoredKeys: options.ignoredKeys, }),
+      ...((options.removedBlockedUrls === undefined) || (options.removedBlockedUrls
+        .length
+        === 0)
         ? {}
         : { removedBlockedUrls: options.removedBlockedUrls, }),
       ...(jsonContent.fullJsonPath === undefined ? {} : { fullJsonPath: jsonContent.fullJsonPath, }),
@@ -256,16 +268,23 @@ async function createLinkupToolOutput(
  */
 async function createJsonContent(options: JsonContentOptions,): Promise<JsonContentResult> {
   /**
- * Pretty JSON text.
- */
+   * Pretty JSON text.
+   */
   const jsonText = stringifyJsonForModel(options.value,);
   /**
- * Truncation result using Pi defaults unless tests override limits.
- */
-  const truncation = truncateHead(jsonText, {
-    maxLines: options.truncationOptions?.maxLines ?? DEFAULT_MAX_LINES,
-    maxBytes: options.truncationOptions?.maxBytes ?? DEFAULT_MAX_BYTES,
-  },);
+   * Truncation result using Pi defaults unless tests override limits.
+   */
+  const truncation = truncateHead(
+    jsonText,
+    {
+    maxLines: options.truncationOptions
+      ?.maxLines
+      ?? DEFAULT_MAX_LINES,
+    maxBytes: options.truncationOptions
+      ?.maxBytes
+      ?? DEFAULT_MAX_BYTES,
+  },
+  );
   if (!truncation.truncated)
     return {
       content: {
@@ -275,12 +294,12 @@ async function createJsonContent(options: JsonContentOptions,): Promise<JsonCont
     };
 
   /**
- * Temp file path containing the full JSON response.
- */
+   * Temp file path containing the full JSON response.
+   */
   const fullJsonPath = await writeFullJsonToTemp(jsonText,);
   /**
- * Visible text with truncation notice appended.
- */
+   * Visible text with truncation notice appended.
+   */
   const visibleText = [
     truncation.content,
     `[JSON response truncated: showing ${String(truncation.outputLines,)} of ${String(truncation.totalLines,)} lines (${formatSize(truncation.outputBytes,)} of ${formatSize(truncation.totalBytes,)}). Full JSON response saved to: ${fullJsonPath}]`,
@@ -313,7 +332,8 @@ function createWarningContent(options: WarningContentOptions,): TextContentItem 
   return {
     type: 'text',
     text: [
-      `Warning: ignored extension-unsupported ${options.toolName} parameters: ${options.ignoredKeys.join(', ',)}.`,
+      `Warning: ignored extension-unsupported ${options.toolName} parameters: ${options.ignoredKeys
+        .join(', ',)}.`,
       options.fixedBehavior,
     ].join('\n',),
   };
@@ -332,8 +352,8 @@ function createWarningContent(options: WarningContentOptions,): TextContentItem 
  */
 function stringifyJsonForModel(value: unknown,): string {
   /**
- * JSON string output.
- */
+   * JSON string output.
+   */
   const json = JSON.stringify(
     value,
     null,
@@ -351,30 +371,34 @@ function stringifyJsonForModel(value: unknown,): string {
  */
 async function writeFullJsonToTemp(jsonText: string,): Promise<string> {
   /**
- * Random suffix to avoid temp directory collisions.
- */
-  const randomSuffix = randomBytes(TEMP_RANDOM_BYTES,).toString('hex',);
+   * Random suffix to avoid temp directory collisions.
+   */
+  const randomSuffix = randomBytes(TEMP_RANDOM_BYTES,)
+    .toString('hex',);
   /**
- * Temp directory dedicated to this response.
- */
+   * Temp directory dedicated to this response.
+   */
   const tempDir = await mkdtemp(join(
     tmpdir(),
     `${TEMP_DIR_PREFIX}${randomSuffix}-`,
   ),);
   /**
- * Temp file path storing full JSON response.
- */
+   * Temp file path storing full JSON response.
+   */
   const tempFile = join(
     tempDir,
     TEMP_JSON_FILENAME,
   );
-  await withFileMutationQueue(tempFile, async function writeQueuedJson() {
+  await withFileMutationQueue(
+    tempFile,
+    async function writeQueuedJson() {
     await writeFile(
       tempFile,
       jsonText,
       'utf8',
     );
-  },);
+  },
+  );
   return tempFile;
 }
 

@@ -51,13 +51,22 @@ await describe({
     it({
       name: 'search sends q, fixed standard depth, fixed searchResults output, and global excludeDomains',
       fn: async () => {
+        /**
+         * Local value for mock.
+         */
         const mock = mockFetch({ body: SEARCH_RESPONSE, },);
+        /**
+         * Local value for client.
+         */
         const client = clientWithMock(mock.fetchImpl,);
 
         await client.search({
           input: { query: 'What is Linkup?', },
         },);
 
+        /**
+         * Local value for requestBody.
+         */
         const requestBody = requestJsonBody(mock.calls[0],) as LinkupSearchRequestBody;
         expect(requestBody.q,).toBe('What is Linkup?',);
         expect(requestBody.depth,).toBe('standard',);
@@ -68,7 +77,13 @@ await describe({
     it({
       name: 'search includes fromDate includeDomains and toDate when provided',
       fn: async () => {
+        /**
+         * Local value for mock.
+         */
         const mock = mockFetch({ body: SEARCH_RESPONSE, },);
+        /**
+         * Local value for client.
+         */
         const client = clientWithMock(mock.fetchImpl,);
 
         await client.search({
@@ -80,6 +95,9 @@ await describe({
           },
         },);
 
+        /**
+         * Local value for requestBody.
+         */
         const requestBody = requestJsonBody(mock.calls[0],);
         expect(requestBody,).toHaveProperty('fromDate', '2025-01-01',);
         expect(requestBody,).toHaveProperty('includeDomains', ['microsoft.com',],);
@@ -89,7 +107,13 @@ await describe({
     it({
       name: 'search does not send extension-unsupported per-call options',
       fn: async () => {
+        /**
+         * Local value for mock.
+         */
         const mock = mockFetch({ body: SEARCH_RESPONSE, },);
+        /**
+         * Local value for client.
+         */
         const client = clientWithMock(mock.fetchImpl,);
 
         await client.search({
@@ -101,6 +125,9 @@ await describe({
           } as never,
         },);
 
+        /**
+         * Local value for requestBody.
+         */
         const requestBody = requestJsonBody(mock.calls[0],);
         expect('maxResults' in requestBody,).toBe(false,);
         expect('limit' in requestBody,).toBe(false,);
@@ -110,13 +137,22 @@ await describe({
     it({
       name: 'fetch sends fixed renderJs extractImages and includeRawHtml flags',
       fn: async () => {
+        /**
+         * Local value for mock.
+         */
         const mock = mockFetch({ body: FETCH_RESPONSE, },);
+        /**
+         * Local value for client.
+         */
         const client = clientWithMock(mock.fetchImpl,);
 
         await client.fetch({
           input: { url: 'https://example.com', },
         },);
 
+        /**
+         * Local value for requestBody.
+         */
         const requestBody = requestJsonBody(mock.calls[0],);
         expect(requestBody,).toEqual({
           url: 'https://example.com',
@@ -129,11 +165,17 @@ await describe({
     it({
       name: 'non-2xx response throws without leaking API key',
       fn: async () => {
+        /**
+         * Local value for mock.
+         */
         const mock = mockFetch({
           body: { error: { message: 'forbidden', }, },
           status: 403,
           statusText: 'Forbidden',
         },);
+        /**
+         * Local value for client.
+         */
         const client = clientWithMock(mock.fetchImpl,);
 
         let caught: unknown;
@@ -155,7 +197,13 @@ await describe({
     it({
       name: 'missing API key throws clear endpoint error',
       fn: async () => {
+        /**
+         * Local value for mock.
+         */
         const mock = mockFetch({ body: SEARCH_RESPONSE, },);
+        /**
+         * Local value for client.
+         */
         const client = createLinkupClient({
           blocklist: [],
           baseUrl: BASE_URL,
@@ -180,7 +228,13 @@ await describe({
     it({
       name: 'invalid JSON response throws endpoint error',
       fn: async () => {
+        /**
+         * Local value for mock.
+         */
         const mock = mockFetchText({ text: 'not json', },);
+        /**
+         * Local value for client.
+         */
         const client = clientWithMock(mock.fetchImpl,);
 
         let caught: unknown;
@@ -201,7 +255,13 @@ await describe({
     it({
       name: 'aborted request throws endpoint abort error',
       fn: async () => {
+        /**
+         * Local value for mock.
+         */
         const mock = mockAbortFetch();
+        /**
+         * Local value for client.
+         */
         const client = clientWithMock(mock.fetchImpl,);
 
         let caught: unknown;
@@ -228,12 +288,12 @@ await describe({
  */
 type FetchCall = {
   /**
- * Request URL.
- */
+   * Request URL.
+   */
   readonly input: RequestInfo | URL;
   /**
- * Request init.
- */
+   * Request init.
+   */
   readonly init: RequestInit;
 };
 
@@ -242,12 +302,12 @@ type FetchCall = {
  */
 type FetchMock = {
   /**
- * Fetch implementation passed to client.
- */
+   * Fetch implementation passed to client.
+   */
   readonly fetchImpl: FetchLike;
   /**
- * Recorded fetch calls.
- */
+   * Recorded fetch calls.
+   */
   readonly calls: FetchCall[];
 };
 
@@ -318,7 +378,13 @@ function mockFetchText(
     readonly statusText?: string;
   },
 ): FetchMock {
+  /**
+   * Local value for calls.
+   */
   const calls: FetchCall[] = [];
+  /**
+   * Local value for fetchImpl.
+   */
   const fetchImpl: FetchLike = async function fetchMock(input, init,) {
     calls.push({
       input,
@@ -341,12 +407,21 @@ function mockFetchText(
  * @returns mock fetch harness
  */
 function mockAbortFetch(): FetchMock {
+  /**
+   * Local value for calls.
+   */
   const calls: FetchCall[] = [];
+  /**
+   * Local value for fetchImpl.
+   */
   const fetchImpl: FetchLike = async function abortingFetch(input, init,) {
     calls.push({
       input,
       init: init ?? {},
     },);
+    /**
+     * Local value for error.
+     */
     const error = new Error('aborted by test');
     error.name = 'AbortError';
     throw error;
@@ -367,10 +442,13 @@ function mockAbortFetch(): FetchMock {
 function requestJsonBody(call: FetchCall | undefined,): Record<string, unknown> {
   if (call === undefined)
     throw new Error('missing fetch call',);
-  if (typeof call.init.body !== 'string')
+  if ((typeof call.init.body) !== 'string')
     throw new Error('fetch body was not a string',);
+  /**
+   * Local value for parsed.
+   */
   const parsed = JSON.parse(call.init.body,) as unknown;
-  if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed,))
+  if ((parsed === null) || ((typeof parsed) !== 'object') || Array.isArray(parsed,))
     throw new Error('fetch body was not an object',);
   return parsed as Record<string, unknown>;
 }

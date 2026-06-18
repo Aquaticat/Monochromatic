@@ -44,6 +44,9 @@ await describe({
         it({
           name: 'names ignored keys and fixed behavior',
           fn: async () => {
+            /**
+             * Local value for warning.
+             */
             const warning = createWarningContent({
               toolName: TOOL_NAME,
               ignoredKeys: ['depth', 'limit',],
@@ -63,6 +66,9 @@ await describe({
         it({
           name: 'returns pretty JSON text when below truncation limits',
           fn: async () => {
+            /**
+             * Local value for result.
+             */
             const result = await createJsonContent({
               value: RESPONSE,
             },);
@@ -75,6 +81,9 @@ await describe({
         it({
           name: 'truncates large JSON and writes full JSON to temp file',
           fn: async () => {
+            /**
+             * Local value for result.
+             */
             const result = await createJsonContent({
               value: {
                 long: 'abcdefghijklmnopqrstuvwxyz',
@@ -89,6 +98,9 @@ await describe({
             expect(result.fullJsonPath,).toBeDefined();
             if (result.fullJsonPath === undefined)
               throw new Error('missing full JSON path',);
+            /**
+             * Local value for fullJson.
+             */
             const fullJson = await readFile(result.fullJsonPath, 'utf8',);
             expect(fullJson,).toContain('abcdefghijklmnopqrstuvwxyz',);
           },
@@ -101,6 +113,9 @@ await describe({
         it({
           name: 'returns JSON content and details for model-visible response',
           fn: async () => {
+            /**
+             * Local value for result.
+             */
             const result = await createLinkupToolOutput({
               toolName: TOOL_NAME,
               linkupResponse: RESPONSE,
@@ -118,6 +133,9 @@ await describe({
         it({
           name: 'returns warning before JSON when ignored keys are present',
           fn: async () => {
+            /**
+             * Local value for result.
+             */
             const result = await createLinkupToolOutput({
               toolName: TOOL_NAME,
               linkupResponse: RESPONSE,

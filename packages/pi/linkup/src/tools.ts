@@ -4,12 +4,12 @@
  * @module
  */
 
-import type {
-  AgentToolUpdateCallback,
-  ExtensionContext,
-  ToolDefinition,
+import {
+  defineTool,
+  type AgentToolUpdateCallback,
+  type ExtensionContext,
+  type ToolDefinition,
 } from '@earendil-works/pi-coding-agent';
-import { defineTool, } from '@earendil-works/pi-coding-agent';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
   type Static,
@@ -42,12 +42,12 @@ import {
 /**
  * Public Linkup search tool name.
  */
-const LINKUP_WEB_SEARCH_TOOL_NAME: 'linkup_web_search' = 'linkup_web_search';
+const LINKUP_WEB_SEARCH_TOOL_NAME = 'linkup_web_search' as const;
 
 /**
  * Public Linkup fetch tool name.
  */
-const LINKUP_WEB_FETCH_TOOL_NAME: 'linkup_web_fetch' = 'linkup_web_fetch';
+const LINKUP_WEB_FETCH_TOOL_NAME = 'linkup_web_fetch' as const;
 
 /**
  * Supported search input keys.
@@ -115,9 +115,12 @@ const LinkupWebSearchParametersSchema: TObject<{
   fromDate: typeOptional(typeString({
     description: 'Optional ISO date forwarded to Linkup as fromDate.',
   },),),
-  includeDomains: typeOptional(typeArray(typeString(), {
+  includeDomains: typeOptional(typeArray(
+    typeString(),
+    {
     description: 'Optional domain allow-list forwarded to Linkup as includeDomains.',
-  },),),
+  },
+  ),),
   toDate: typeOptional(typeString({
     description: 'Optional ISO date forwarded to Linkup as toDate.',
   },),),
@@ -137,12 +140,12 @@ const LinkupWebFetchParametersSchema: TObject<{
 /**
  * Static search params from TypeBox schema.
  */
-type LinkupWebSearchParams = Static<typeof LinkupWebSearchParametersSchema>;
+type LinkupWebSearchParams = Readonly<Static<typeof LinkupWebSearchParametersSchema>>;
 
 /**
  * Static fetch params from TypeBox schema.
  */
-type LinkupWebFetchParams = Static<typeof LinkupWebFetchParametersSchema>;
+type LinkupWebFetchParams = Readonly<Static<typeof LinkupWebFetchParametersSchema>>;
 
 //endregion Schemas
 
@@ -158,12 +161,12 @@ type LinkupToolClient = Pick<LinkupClient, 'search' | 'fetch'>;
  */
 type CreateLinkupToolsOptions = {
   /**
- * Loaded extension config.
- */
+   * Loaded extension config.
+   */
   readonly config: LinkupConfig;
   /**
- * Linkup HTTP client.
- */
+   * Linkup HTTP client.
+   */
   readonly client: LinkupToolClient;
 };
 
@@ -230,27 +233,29 @@ function createLinkupWebSearchTool(
     async execute(
       _toolCallId: string,
       params: LinkupWebSearchParams,
+      // oxlint-disable-next-line no-restricted-syntax/no-nullish-union -- Pi ToolDefinition.execute requires positional signal before later context args, so optionality cannot move to a trailing parameter.
       signal: AbortSignal | undefined,
+      // oxlint-disable-next-line no-restricted-syntax/no-nullish-union -- Pi ToolDefinition.execute provides onUpdate as callback-or-undefined in a fixed positional signature.
       onUpdate: AgentToolUpdateCallback<LinkupToolDetails> | undefined,
       _ctx: ExtensionContext,
     ) {
       /**
- * Logger tagged for this tool execution.
- */
+       * Logger tagged for this tool execution.
+       */
       const innerL = tagged({
         tag: LINKUP_WEB_SEARCH_TOOL_NAME,
         l,
       },);
       /**
- * Ignored compatibility keys supplied by the model.
- */
+       * Ignored compatibility keys supplied by the model.
+       */
       const ignoredKeys = collectIgnoredKeys({
         input: params,
         supportedKeys: SEARCH_SUPPORTED_KEYS,
       },);
       /**
- * Sanitized search input that cannot carry unsupported keys to the client.
- */
+       * Sanitized search input that cannot carry unsupported keys to the client.
+       */
       const searchInput = supportedSearchInput(params,);
 
       onUpdate?.({
@@ -269,18 +274,20 @@ function createLinkupWebSearchTool(
         innerL.warn(`ignoring search parameters: ${ignoredKeys.join(', ',)}`,);
 
       /**
- * Untouched upstream Linkup response.
- */
-      const rawLinkupResponse = await options.client.search({
+       * Untouched upstream Linkup response.
+       */
+      const rawLinkupResponse = await options.client
+        .search({
         input: searchInput,
         ...(signal === undefined ? {} : { signal, }),
       },);
       /**
- * Local policy-filtered response.
- */
+       * Local policy-filtered response.
+       */
       const filtered = filterBlockedSearchResults({
         response: rawLinkupResponse,
-        blocklist: options.config.blocklist,
+        blocklist: options.config
+          .blocklist,
       },);
 
       return createLinkupToolOutput({
@@ -319,34 +326,37 @@ function createLinkupWebFetchTool(
     async execute(
       _toolCallId: string,
       params: LinkupWebFetchParams,
+      // oxlint-disable-next-line no-restricted-syntax/no-nullish-union -- Pi ToolDefinition.execute requires positional signal before later context args, so optionality cannot move to a trailing parameter.
       signal: AbortSignal | undefined,
+      // oxlint-disable-next-line no-restricted-syntax/no-nullish-union -- Pi ToolDefinition.execute provides onUpdate as callback-or-undefined in a fixed positional signature.
       onUpdate: AgentToolUpdateCallback<LinkupToolDetails> | undefined,
       _ctx: ExtensionContext,
     ) {
       /**
- * Logger tagged for this tool execution.
- */
+       * Logger tagged for this tool execution.
+       */
       const innerL = tagged({
         tag: LINKUP_WEB_FETCH_TOOL_NAME,
         l,
       },);
       /**
- * Ignored compatibility keys supplied by the model.
- */
+       * Ignored compatibility keys supplied by the model.
+       */
       const ignoredKeys = collectIgnoredKeys({
         input: params,
         supportedKeys: FETCH_SUPPORTED_KEYS,
       },);
       /**
- * Sanitized fetch input that cannot carry unsupported keys to the client.
- */
+       * Sanitized fetch input that cannot carry unsupported keys to the client.
+       */
       const fetchInput = supportedFetchInput(params,);
       /**
- * Matching blocklist entry for this fetch URL, when blocked.
- */
+       * Matching blocklist entry for this fetch URL, when blocked.
+       */
       const blockedEntry = findBlockedUrlMatch({
         url: fetchInput.url,
-        blocklist: options.config.blocklist,
+        blocklist: options.config
+          .blocklist,
       },);
 
       if (blockedEntry.blocked)
@@ -368,9 +378,10 @@ function createLinkupWebFetchTool(
         innerL.warn(`ignoring fetch parameters: ${ignoredKeys.join(', ',)}`,);
 
       /**
- * Untouched upstream Linkup response.
- */
-      const rawLinkupResponse = await options.client.fetch({
+       * Untouched upstream Linkup response.
+       */
+      const rawLinkupResponse = await options.client
+        .fetch({
         input: fetchInput,
         ...(signal === undefined ? {} : { signal, }),
       },);
@@ -398,6 +409,11 @@ function createLinkupWebFetchTool(
  * @param supportedKeys - supported key names
  *
  * @returns ignored key names in caller-provided order
+ *
+ * @example
+ * ```ts
+ * collectIgnoredKeys({ input: { query: 'docs', limit: 3 }, supportedKeys: ['query'] });
+ * ```
  */
 function collectIgnoredKeys(
   {
@@ -409,8 +425,8 @@ function collectIgnoredKeys(
   },
 ): readonly string[] {
   /**
- * Supported key lookup set.
- */
+   * Supported key lookup set.
+   */
   const supported = new Set(supportedKeys,);
   return Object.keys(input,)
     .filter(function isIgnoredKey(key,) {

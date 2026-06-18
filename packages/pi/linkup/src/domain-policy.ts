@@ -131,15 +131,27 @@ const l = tagged({
  * ```
  */
 function normalizeBlocklistEntry(entry: string,): string {
+  /**
+   * Local value for innerL.
+   */
   const innerL = tagged({
     tag: normalizeBlocklistEntry.name,
     l,
   },);
+  /**
+   * Local value for trimmed.
+   */
   const trimmed = entry.trim();
   if (trimmed === '')
     throw new Error('blocklist entry is empty');
 
+  /**
+   * Local value for lowered.
+   */
   const lowered = trimmed.toLowerCase();
+  /**
+   * Local value for normalized.
+   */
   const normalized = stripOneTrailingDot(lowered,);
   if (normalized === '')
     throw new Error(`blocklist entry ${JSON.stringify(entry,)} is empty after normalization`);
@@ -152,12 +164,15 @@ function normalizeBlocklistEntry(entry: string,): string {
   if (normalized.includes(WILDCARD,))
     throw new Error(`blocklist entry ${JSON.stringify(entry,)} must not include a wildcard`);
 
+  /**
+   * Local value for labels.
+   */
   const labels = normalized.split(DOT,);
   if (labels.some(function isEmptyLabel(label,) {
     return label === '';
   },))
     throw new Error(`blocklist entry ${JSON.stringify(entry,)} must not include empty labels`);
-  if (![...normalized,].every(function isAllowedChar(char,) {
+  if (!normalized.split('',).every(function isAllowedChar(char,) {
     return isAllowedHostSuffixChar(char,);
   },))
     throw new Error(`blocklist entry ${JSON.stringify(entry,)} contains invalid host characters`);
@@ -181,6 +196,9 @@ function normalizeBlocklistEntry(entry: string,): string {
  * ```
  */
 function normalizeBlocklist(entries: readonly string[],): readonly string[] {
+  /**
+   * Local value for normalizedEntries.
+   */
   const normalizedEntries = entries.map(function normalizeEntry(entry,) {
     return normalizeBlocklistEntry(entry,);
   },);
@@ -241,7 +259,13 @@ function isAllowedHostSuffixChar(char: string,): boolean {
  * ```
  */
 function normalizeHostForPolicy(host: string,): string {
+  /**
+   * Local value for trimmed.
+   */
   const trimmed = host.trim();
+  /**
+   * Local value for lowered.
+   */
   const lowered = trimmed.toLowerCase();
   return stripOneTrailingDot(lowered,);
 }
@@ -269,7 +293,13 @@ function findBlockedHostMatch(
     readonly blocklist: readonly string[];
   },
 ): BlocklistMatch {
+  /**
+   * Local value for normalizedHost.
+   */
   const normalizedHost = normalizeHostForPolicy(host,);
+  /**
+   * Local value for matchedEntry.
+   */
   const matchedEntry = blocklist.find(function matchesEntry(entry,) {
     return (normalizedHost === entry)
       || normalizedHost.endsWith(`${DOT_PREFIX}${entry}`,);
@@ -308,7 +338,8 @@ function isBlockedHost(
   return findBlockedHostMatch({
     host,
     blocklist,
-  },).blocked;
+  },)
+    .blocked;
 }
 
 /**
@@ -336,6 +367,9 @@ function findBlockedUrlMatch(
     readonly blocklist: readonly string[];
   },
 ): BlocklistMatch {
+  /**
+   * Local value for parsedUrl.
+   */
   const parsedUrl = parsePolicyUrl(url,);
   return findBlockedHostMatch({
     host: parsedUrl.hostname,
@@ -371,7 +405,8 @@ function isBlockedUrl(
   return findBlockedUrlMatch({
     url,
     blocklist,
-  },).blocked;
+  },)
+    .blocked;
 }
 
 /**
@@ -393,6 +428,9 @@ function parsePolicyUrl(url: string,): URL {
     return new URL(url,);
   }
   catch (error: unknown) {
+    /**
+     * Local value for detail.
+     */
     const detail = error instanceof Error
       ? error.message
       : String(error,);
@@ -435,16 +473,31 @@ function filterBlockedSearchResults(
   if (!isRecord(response,))
     return unfilteredSearchResponse(response,);
 
+  /**
+   * Local destructured value.
+   */
   const { results: rawResults, } = response;
   if (!Array.isArray(rawResults,))
     return unfilteredSearchResponse(response,);
 
+  /**
+   * Local value for removedBlockedUrls.
+   */
   const removedBlockedUrls: string[] = [];
+  /**
+   * Local value for filteredResults.
+   */
   const filteredResults = rawResults.filter(function keepAllowedResult(result,) {
+    /**
+     * Local value for resultUrl.
+     */
     const resultUrl = searchResultUrl(result,);
     if (!resultUrl.found)
       return true;
 
+    /**
+     * Local value for blockedEntry.
+     */
     const blockedEntry = blockedEntryForPossiblyInvalidUrl({
       url: resultUrl.url,
       blocklist,
@@ -535,8 +588,11 @@ function blockedEntryForPossiblyInvalidUrl(
 function searchResultUrl(value: unknown,): SearchResultUrl {
   if (!isRecord(value,))
     return { found: false, };
+  /**
+   * Local destructured value.
+   */
   const { url, } = value;
-  return typeof url === 'string'
+  return (typeof url) === 'string'
     ? {
       found: true,
       url,
@@ -558,8 +614,8 @@ function searchResultUrl(value: unknown,): SearchResultUrl {
  */
 function isRecord(value: unknown,): value is Record<string, unknown> {
   return (value !== null)
-    && (typeof value === 'object')
-    && !Array.isArray(value,);
+    && ((typeof value) === 'object')
+    && (!Array.isArray(value,));
 }
 
 //endregion Search result filtering

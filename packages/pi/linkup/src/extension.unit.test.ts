@@ -51,6 +51,9 @@ await describe({
     it({
       name: 'registers exactly search and fetch tools',
       fn: async () => {
+        /**
+         * Local value for fakePi.
+         */
         const fakePi = fakePiApi();
 
         registerPiLinkup({
@@ -76,12 +79,12 @@ await describe({
  */
 type FakePi = {
   /**
- * Fake Pi API.
- */
+   * Fake Pi API.
+   */
   readonly api: ExtensionAPI;
   /**
- * Registered tool names.
- */
+   * Registered tool names.
+   */
   readonly tools: string[];
 };
 
@@ -91,7 +94,13 @@ type FakePi = {
  * @returns fake Pi API harness
  */
 function fakePiApi(): FakePi {
+  /**
+   * Local value for tools.
+   */
   const tools: string[] = [];
+  /**
+   * Local value for api.
+   */
   const api = {
     registerTool(tool: { readonly name: string; },) {
       tools.push(tool.name,);

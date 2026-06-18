@@ -189,27 +189,52 @@ const l = tagged({
  * ```
  */
 function loadLinkupConfig(options: LoadLinkupConfigOptions = {},): LinkupConfig {
+  /**
+   * Local value for innerL.
+   */
   const innerL = tagged({
     tag: loadLinkupConfig.name,
     l,
   },);
+  /**
+   * Local value for home.
+   */
   const home = options.home
-    ?? process.env.HOME
+    ?? process.env
+    .HOME
     ?? homedir();
+  /**
+   * Local value for env.
+   */
   const env = options.env
     ?? process.env;
+  /**
+   * Local value for configPath.
+   */
   const configPath = configPathForHome({ home, },);
+  /**
+   * Local value for readResult.
+   */
   const readResult = readOptionalConfigJson({ configPath, },);
+  /**
+   * Local value for configFile.
+   */
   const configFile = readResult.loaded
     ? validateConfigShape({
       value: readResult.value,
       configPath,
     },)
     : {};
+  /**
+   * Local value for blocklist.
+   */
   const blocklist = normalizeConfigBlocklist({
     entries: configFile.blocklist ?? [],
     configPath,
   },);
+  /**
+   * Local value for apiKey.
+   */
   const apiKey = resolveApiKey({
     env,
     ...(configFile.apiKey === undefined ? {} : { configApiKey: configFile.apiKey, }),
@@ -261,7 +286,13 @@ function configPathForHome({ home, }: { readonly home: string; }): string {
  */
 function readOptionalConfigJson({ configPath, }: { readonly configPath: string; }): ConfigJsonReadResult {
   try {
-    const content = readFileSync(configPath, 'utf8',);
+    /**
+     * Local value for content.
+     */
+    const content = readFileSync(
+      configPath,
+      'utf8',
+    );
     return {
       loaded: true,
       value: parseConfigJson({
@@ -299,6 +330,9 @@ function parseConfigJson(
     return JSON.parse(content,) as unknown;
   }
   catch (error: unknown) {
+    /**
+     * Local value for detail.
+     */
     const detail = error instanceof Error
       ? error.message
       : String(error,);
@@ -318,7 +352,7 @@ function parseConfigJson(
  */
 function isMissingFileError(error: unknown,): boolean {
   return isErrorWithCode(error,)
-    && error.code === FILE_NOT_FOUND_CODE;
+    && (error.code === FILE_NOT_FOUND_CODE);
 }
 
 /**
@@ -363,6 +397,9 @@ function validateConfigShape(
       reason: 'root value must be an object',
     },);
 
+  /**
+   * Local value for extraKeys.
+   */
   const extraKeys = Object
     .keys(value,)
     .filter(function isExtraKey(key,) {
@@ -374,13 +411,19 @@ function validateConfigShape(
       reason: `unsupported keys: ${extraKeys.join(', ',)}`,
     },);
 
-  const { apiKey, blocklist, } = value;
-  if (apiKey !== undefined && typeof apiKey !== 'string')
+  /**
+   * Local destructured value.
+   */
+  const {
+    apiKey,
+    blocklist,
+  } = value;
+  if ((apiKey !== undefined) && ((typeof apiKey) !== 'string'))
     throw schemaError({
       configPath,
       reason: 'apiKey must be a string when present',
     },);
-  if (blocklist !== undefined && !isStringArray(blocklist,))
+  if ((blocklist !== undefined) && (!isStringArray(blocklist,)))
     throw schemaError({
       configPath,
       reason: 'blocklist must be an array of strings when present',
@@ -422,8 +465,8 @@ function schemaError(
  */
 function isRecord(value: unknown,): value is Record<string, unknown> {
   return (value !== null)
-    && (typeof value === 'object')
-    && !Array.isArray(value,);
+    && ((typeof value) === 'object')
+    && (!Array.isArray(value,));
 }
 
 /**
@@ -436,7 +479,7 @@ function isRecord(value: unknown,): value is Record<string, unknown> {
 function isStringArray(value: unknown,): value is readonly string[] {
   return Array.isArray(value,)
     && value.every(function isString(item,) {
-      return typeof item === 'string';
+      return (typeof item) === 'string';
     },);
 }
 
@@ -468,6 +511,9 @@ function normalizeConfigBlocklist(
     return normalizeBlocklist(entries,);
   }
   catch (error: unknown) {
+    /**
+     * Local value for detail.
+     */
     const detail = error instanceof Error
       ? error.message
       : String(error,);
@@ -496,15 +542,22 @@ function resolveApiKey(
     readonly configApiKey?: string;
   },
 ): ApiKeyResolution {
-  const envApiKey = env[LINKUP_API_KEY_ENV]?.trim();
-  if (envApiKey !== undefined && envApiKey !== '')
+  /**
+   * Local value for envApiKey.
+   */
+  const envApiKey = env[LINKUP_API_KEY_ENV]
+    ?.trim();
+  if ((envApiKey !== undefined) && (envApiKey !== ''))
     return {
       configured: true,
       value: envApiKey,
     };
 
+  /**
+   * Local value for fileApiKey.
+   */
   const fileApiKey = configApiKey?.trim();
-  if (fileApiKey === undefined || fileApiKey === '')
+  if ((fileApiKey === undefined) || (fileApiKey === ''))
     return { configured: false, };
   return {
     configured: true,

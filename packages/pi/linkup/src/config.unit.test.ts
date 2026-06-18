@@ -51,7 +51,13 @@ await describe({
     it({
       name: 'uses empty blocklist and no config API key when config is absent',
       fn: async () => {
+        /**
+         * Local value for home.
+         */
         const home = await tempHome();
+        /**
+         * Local value for config.
+         */
         const config = loadLinkupConfig({
           home,
           env: {},
@@ -65,6 +71,9 @@ await describe({
     it({
       name: 'lets environment API key beat config API key',
       fn: async () => {
+        /**
+         * Local value for home.
+         */
         const home = await tempHome();
         await writeConfig({
           home,
@@ -73,6 +82,9 @@ await describe({
           },
         },);
 
+        /**
+         * Local value for config.
+         */
         const config = loadLinkupConfig({
           home,
           env: {
@@ -86,6 +98,9 @@ await describe({
     it({
       name: 'loads flat apiKey and blocklist config',
       fn: async () => {
+        /**
+         * Local value for home.
+         */
         const home = await tempHome();
         await writeConfig({
           home,
@@ -95,6 +110,9 @@ await describe({
           },
         },);
 
+        /**
+         * Local value for config.
+         */
         const config = loadLinkupConfig({
           home,
           env: {},
@@ -109,7 +127,13 @@ await describe({
     it({
       name: 'reports invalid JSON with config path and parsing phase',
       fn: async () => {
+        /**
+         * Local value for home.
+         */
         const home = await tempHome();
+        /**
+         * Local value for configPath.
+         */
         const configPath = configPathForHome({ home, },);
         await mkdir(dirname(configPath,), { recursive: true, },);
         await writeFile(configPath, '{',);
@@ -134,6 +158,9 @@ await describe({
     it({
       name: 'reports invalid blocklist entry with offending entry',
       fn: async () => {
+        /**
+         * Local value for home.
+         */
         const home = await tempHome();
         await writeConfig({
           home,
@@ -192,6 +219,9 @@ async function writeConfig(
     readonly value: unknown;
   },
 ): Promise<void> {
+  /**
+   * Local value for configPath.
+   */
   const configPath = configPathForHome({ home, },);
   await mkdir(dirname(configPath,), { recursive: true, },);
   await writeFile(

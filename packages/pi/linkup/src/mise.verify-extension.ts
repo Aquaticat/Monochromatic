@@ -43,8 +43,8 @@ const TEMP_HOME_PREFIX = 'pi-linkup-verify-';
  */
 type LinkupExtensionModule = {
   /**
- * Pi extension factory.
- */
+   * Pi extension factory.
+   */
   readonly default: ExtensionFactory;
 };
 
@@ -61,34 +61,35 @@ type LinkupExtensionModule = {
  */
 async function verifyBuiltExtension(): Promise<string> {
   /**
- * Temp home directory avoiding real user config during verification.
- */
+   * Temp home directory avoiding real user config during verification.
+   */
   const tempHome = await mkdtemp(join(
     tmpdir(),
     TEMP_HOME_PREFIX,
   ),);
-  process.env.HOME = tempHome;
+  process.env
+    .HOME = tempHome;
 
   /**
- * Built extension module imported through package output.
- */
+   * Built extension module imported through package output.
+   */
   const mod: unknown = await import(BUILT_EXTENSION_PATH);
   if (!isLinkupExtensionModule(mod,))
     throw new Error('built Pi Linkup extension does not export a default extension factory');
 
   /**
- * Fake Pi API and its registration call log.
- */
+   * Fake Pi API and its registration call log.
+   */
   const fakeApi = fakePiApi();
   await mod.default(fakeApi.api,);
 
   /**
- * Snapshot of recorded registration calls.
- */
+   * Snapshot of recorded registration calls.
+   */
   const registrations = fakeApi.registrations();
   /**
- * Expected registrations not observed.
- */
+   * Expected registrations not observed.
+   */
   const missing = EXPECTED_REGISTRATIONS.filter(function isMissing(expected,) {
     return !registrations.includes(expected,);
   },);
@@ -96,8 +97,8 @@ async function verifyBuiltExtension(): Promise<string> {
     throw new Error(`missing Pi Linkup registrations: ${missing.join(', ',)}`,);
 
   /**
- * Unexpected registrations observed.
- */
+   * Unexpected registrations observed.
+   */
   const unexpected = registrations.filter(function isUnexpected(registration,) {
     return !EXPECTED_REGISTRATIONS.includes(registration as typeof EXPECTED_REGISTRATIONS[number],);
   },);
@@ -115,10 +116,10 @@ async function verifyBuiltExtension(): Promise<string> {
  * @returns whether module exports an extension factory
  */
 function isLinkupExtensionModule(value: unknown,): value is LinkupExtensionModule {
-  if ((value === null) || (typeof value !== 'object'))
+  if ((value === null) || ((typeof value) !== 'object'))
     return false;
-  return 'default' in value
-    && typeof value.default === 'function';
+  return ('default' in value)
+    && ((typeof value.default) === 'function');
 }
 
 /**
@@ -131,12 +132,12 @@ function fakePiApi(): {
   readonly registrations: () => readonly string[];
 } {
   /**
- * Locally owned registration log accessed through closures.
- */
+   * Locally owned registration log accessed through closures.
+   */
   const registrations: string[] = [];
   /**
- * Fake extension API that records registration calls into the closure.
- */
+   * Fake extension API that records registration calls into the closure.
+   */
   const api: ExtensionAPI = {
     on(event: string,) {
       registrations.push(`event:${event}`,);

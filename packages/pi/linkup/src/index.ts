@@ -35,16 +35,16 @@ const l = tagged({
  */
 type RegisterPiLinkupOptions = {
   /**
- * Pi extension API.
- */
+   * Pi extension API.
+   */
   readonly pi: ExtensionAPI;
   /**
- * Loaded Linkup config.
- */
+   * Loaded Linkup config.
+   */
   readonly config: LinkupConfig;
   /**
- * Linkup client used by tools.
- */
+   * Linkup client used by tools.
+   */
   readonly client: LinkupToolClient;
 };
 
@@ -65,19 +65,19 @@ type RegisterPiLinkupOptions = {
  */
 export default function piLinkup(pi: ExtensionAPI,): void {
   /**
- * Logger tagged for extension startup.
- */
+   * Logger tagged for extension startup.
+   */
   const innerL = tagged({
     tag: piLinkup.name,
     l,
   },);
   /**
- * Runtime config loaded from the global Pi extension config file.
- */
+   * Runtime config loaded from the global Pi extension config file.
+   */
   const config = loadLinkupConfig();
   /**
- * Linkup HTTP client shared by the registered tools.
- */
+   * Linkup HTTP client shared by the registered tools.
+   */
   const client = createLinkupClient({
     ...(config.apiKey === undefined ? {} : { apiKey: config.apiKey, }),
     blocklist: config.blocklist,
@@ -107,22 +107,23 @@ export default function piLinkup(pi: ExtensionAPI,): void {
  */
 function registerPiLinkup(options: RegisterPiLinkupOptions,): void {
   /**
- * Logger tagged for registration.
- */
+   * Logger tagged for registration.
+   */
   const innerL = tagged({
     tag: registerPiLinkup.name,
     l,
   },);
   /**
- * Public Linkup tools.
- */
+   * Public Linkup tools.
+   */
   const tools = createLinkupTools({
     config: options.config,
     client: options.client,
   },);
 
   tools.forEach(function registerTool(tool,) {
-    options.pi.registerTool(tool,);
+    options.pi
+      .registerTool(tool,);
     innerL.info(`registered Linkup tool: ${tool.name}`,);
   },);
 }
