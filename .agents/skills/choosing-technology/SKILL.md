@@ -47,6 +47,10 @@ Typical context-fork dimensions:
 - Geography or compliance (HIPAA, GDPR, SOC2, data residency).
 - Single-user vs team vs public-facing.
 - Existing stack constraints (Node-only, Bun-supported, browser-baseline).
+- Trust boundary of the dependency: does the code execute inside another agent
+  or tool, handle credentials, or run in CI? Such packages raise the weight of
+  human-auditability (see that rule) and of source provenance, and can flip a
+  recommendation toward a leaner, more verifiable candidate.
 
 The cue you are about to violate this rule: about to name a candidate
 without having any of these dimensions pinned down for the user's situation.
@@ -224,6 +228,44 @@ Report exact cloned paths, files, and commands inspected inline with the recomme
 If a candidate cannot be cloned or lacks public source,
 state that limitation before comparing it with source-audited alternatives.
 
+### Weight human-auditability as a selection factor
+
+Code that executes inside another tool (a coding-agent extension, a plugin,
+a hook, a CI runner, a library that handles credentials) carries a trust burden
+the user inherits, not the recommender. After the source audit, measure how
+hard that code is for a human to verify as a selection criterion in its own
+right, distinct from whether you already read it.
+
+Measure these factors inline for finalists, since they flip recommendations
+even when the feature set favors the larger candidate:
+
+- Code volume and file count. Fewer non-test lines across fewer modules is a
+  smaller surface a human can actually finish reading.
+- Runtime dependency count, and whether those deps are the author's own
+  packages. Each runtime dep, especially a same-author utility package the
+  recommender did not already audit, extends the audit beyond the candidate's
+  own repo.
+- Architecture shape. Flat, linear, top-to-bottom control flow is easier to
+  trace than an event bus, plugin handshake, or distributed state machine that
+  forces the reader to jump between files to follow a request.
+- Concentration of security-critical code. Credentials, network calls, and
+  filesystem access grouped into a few obvious named files are easier to verify
+  than the same concerns spread across many modules.
+- Platform or rendering surface. Less TUI/UI rendering and less generated-code
+  boundary code is less to verify.
+
+When two finalists both satisfy the hard constraints and one is materially
+more auditable, name the tradeoff explicitly (feature richness vs
+verifiability) and let the user's tolerance for unaudited surface weigh in;
+do not default to "more features wins." This is especially decisive when the
+user is not using the features the larger candidate adds: the extra surface
+buys nothing and costs trust the user must carry.
+
+The cue you are about to violate this rule: about to recommend the candidate
+with the richer feature set without having compared its auditability surface
+to a leaner alternative, or without checking whether the user actually uses
+the features that justify the larger surface.
+
 ### Maintain a decision document
 
 After the user picks, write the choice and rejected alternatives to
@@ -240,6 +282,10 @@ Without it, the same rejected paths get re-proposed and the user pushes back aga
   (the assumption never reaches the response,
   so neither you nor the user can see it).
   Remedy: write the candidate set explicitly even when one option feels obvious.
+- Recommending the most feature-rich candidate without comparing its
+  auditability surface to a leaner alternative, especially for code that
+  executes inside another agent or handles credentials, or without checking
+  whether the user actually uses the features that justify the larger surface.
 
 ## Worked example
 
@@ -307,6 +353,11 @@ Decision doc: `docs/decisions/staging-database.md`."
   (in an isolated container or VM when heavy); any candidate impractical to verify rejected.
 - Dependency replacements include parity audit: transitive deps, source-path behavior,
   native/Wasm provenance, and maintenance signals.
+- For finalists that execute inside another tool, handle credentials, or run
+  in CI: human-auditability surface compared inline (code volume, runtime deps
+  including same-author packages, architecture shape, concentration of
+  security-critical code, rendering surface), and the feature-richness vs
+  verifiability tradeoff named when it could flip the pick.
 - Decision doc updated at `docs/decisions/<project>.md`.
 
 If any item is unmet, do not name a candidate yet.
