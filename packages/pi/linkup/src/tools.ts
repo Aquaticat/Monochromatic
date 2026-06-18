@@ -39,13 +39,19 @@ import {
 
 //region Constants
 
-/** Public Linkup search tool name. */
+/**
+ * Public Linkup search tool name.
+ */
 const LINKUP_WEB_SEARCH_TOOL_NAME: 'linkup_web_search' = 'linkup_web_search';
 
-/** Public Linkup fetch tool name. */
+/**
+ * Public Linkup fetch tool name.
+ */
 const LINKUP_WEB_FETCH_TOOL_NAME: 'linkup_web_fetch' = 'linkup_web_fetch';
 
-/** Supported search input keys. */
+/**
+ * Supported search input keys.
+ */
 const SEARCH_SUPPORTED_KEYS = [
   'query',
   'fromDate',
@@ -53,31 +59,45 @@ const SEARCH_SUPPORTED_KEYS = [
   'toDate',
 ] as const;
 
-/** Supported fetch input keys. */
+/**
+ * Supported fetch input keys.
+ */
 const FETCH_SUPPORTED_KEYS = [
   'url',
 ] as const;
 
-/** Search ignored-key fixed behavior text. */
+/**
+ * Search ignored-key fixed behavior text.
+ */
 const SEARCH_FIXED_BEHAVIOR: string = 'This extension always uses depth="standard", outputType="searchResults", the configured global blocklist, and no per-search result-count controls.';
 
-/** Fetch ignored-key fixed behavior text. */
+/**
+ * Fetch ignored-key fixed behavior text.
+ */
 const FETCH_FIXED_BEHAVIOR: string = 'This extension always uses renderJs=true, extractImages=false, and includeRawHtml=false.';
 
 //endregion Constants
 
 //region Schemas
 
-/** TypeBox object builder alias. */
+/**
+ * TypeBox object builder alias.
+ */
 const typeObject = Type.Object;
 
-/** TypeBox string builder alias. */
+/**
+ * TypeBox string builder alias.
+ */
 const typeString = Type.String;
 
-/** TypeBox array builder alias. */
+/**
+ * TypeBox array builder alias.
+ */
 const typeArray = Type.Array;
 
-/** TypeBox optional builder alias. */
+/**
+ * TypeBox optional builder alias.
+ */
 const typeOptional = Type.Optional;
 
 /**
@@ -114,10 +134,14 @@ const LinkupWebFetchParametersSchema: TObject<{
   },),
 },);
 
-/** Static search params from TypeBox schema. */
+/**
+ * Static search params from TypeBox schema.
+ */
 type LinkupWebSearchParams = Static<typeof LinkupWebSearchParametersSchema>;
 
-/** Static fetch params from TypeBox schema. */
+/**
+ * Static fetch params from TypeBox schema.
+ */
 type LinkupWebFetchParams = Static<typeof LinkupWebFetchParametersSchema>;
 
 //endregion Schemas
@@ -133,9 +157,13 @@ type LinkupToolClient = Pick<LinkupClient, 'search' | 'fetch'>;
  * Options for creating Linkup tools.
  */
 type CreateLinkupToolsOptions = {
-  /** Loaded extension config. */
+  /**
+ * Loaded extension config.
+ */
   readonly config: LinkupConfig;
-  /** Linkup HTTP client. */
+  /**
+ * Linkup HTTP client.
+ */
   readonly client: LinkupToolClient;
 };
 
@@ -149,7 +177,9 @@ type LinkupToolDefinition = ToolDefinition<
 
 //endregion Types
 
-/** Module logger. */
+/**
+ * Module logger.
+ */
 const l = tagged({
   tag: 'tools',
   l: linkupLogger,
@@ -204,17 +234,23 @@ function createLinkupWebSearchTool(
       onUpdate: AgentToolUpdateCallback<LinkupToolDetails> | undefined,
       _ctx: ExtensionContext,
     ) {
-      /** Logger tagged for this tool execution. */
+      /**
+ * Logger tagged for this tool execution.
+ */
       const innerL = tagged({
         tag: LINKUP_WEB_SEARCH_TOOL_NAME,
         l,
       },);
-      /** Ignored compatibility keys supplied by the model. */
+      /**
+ * Ignored compatibility keys supplied by the model.
+ */
       const ignoredKeys = collectIgnoredKeys({
         input: params,
         supportedKeys: SEARCH_SUPPORTED_KEYS,
       },);
-      /** Sanitized search input that cannot carry unsupported keys to the client. */
+      /**
+ * Sanitized search input that cannot carry unsupported keys to the client.
+ */
       const searchInput = supportedSearchInput(params,);
 
       onUpdate?.({
@@ -232,12 +268,16 @@ function createLinkupWebSearchTool(
       if (ignoredKeys.length > 0)
         innerL.warn(`ignoring search parameters: ${ignoredKeys.join(', ',)}`,);
 
-      /** Untouched upstream Linkup response. */
+      /**
+ * Untouched upstream Linkup response.
+ */
       const rawLinkupResponse = await options.client.search({
         input: searchInput,
         ...(signal === undefined ? {} : { signal, }),
       },);
-      /** Local policy-filtered response. */
+      /**
+ * Local policy-filtered response.
+ */
       const filtered = filterBlockedSearchResults({
         response: rawLinkupResponse,
         blocklist: options.config.blocklist,
@@ -283,26 +323,34 @@ function createLinkupWebFetchTool(
       onUpdate: AgentToolUpdateCallback<LinkupToolDetails> | undefined,
       _ctx: ExtensionContext,
     ) {
-      /** Logger tagged for this tool execution. */
+      /**
+ * Logger tagged for this tool execution.
+ */
       const innerL = tagged({
         tag: LINKUP_WEB_FETCH_TOOL_NAME,
         l,
       },);
-      /** Ignored compatibility keys supplied by the model. */
+      /**
+ * Ignored compatibility keys supplied by the model.
+ */
       const ignoredKeys = collectIgnoredKeys({
         input: params,
         supportedKeys: FETCH_SUPPORTED_KEYS,
       },);
-      /** Sanitized fetch input that cannot carry unsupported keys to the client. */
+      /**
+ * Sanitized fetch input that cannot carry unsupported keys to the client.
+ */
       const fetchInput = supportedFetchInput(params,);
-      /** Matching blocklist entry for this fetch URL, when blocked. */
+      /**
+ * Matching blocklist entry for this fetch URL, when blocked.
+ */
       const blockedEntry = findBlockedUrlMatch({
         url: fetchInput.url,
         blocklist: options.config.blocklist,
       },);
 
-      if (blockedEntry !== undefined)
-        throw new Error(`Blocked by pi-linkup blocklist: ${blockedEntry}`,);
+      if (blockedEntry.blocked)
+        throw new Error(`Blocked by pi-linkup blocklist: ${blockedEntry.entry}`,);
 
       onUpdate?.({
         content: [{
@@ -319,7 +367,9 @@ function createLinkupWebFetchTool(
       if (ignoredKeys.length > 0)
         innerL.warn(`ignoring fetch parameters: ${ignoredKeys.join(', ',)}`,);
 
-      /** Untouched upstream Linkup response. */
+      /**
+ * Untouched upstream Linkup response.
+ */
       const rawLinkupResponse = await options.client.fetch({
         input: fetchInput,
         ...(signal === undefined ? {} : { signal, }),
@@ -358,7 +408,9 @@ function collectIgnoredKeys(
     readonly supportedKeys: readonly string[];
   },
 ): readonly string[] {
-  /** Supported key lookup set. */
+  /**
+ * Supported key lookup set.
+ */
   const supported = new Set(supportedKeys,);
   return Object.keys(input,)
     .filter(function isIgnoredKey(key,) {

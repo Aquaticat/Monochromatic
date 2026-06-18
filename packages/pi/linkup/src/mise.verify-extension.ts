@@ -16,25 +16,35 @@ import {
 
 //region Constants
 
-/** Built extension path consumed by Pi. */
+/**
+ * Built extension path consumed by Pi.
+ */
 const BUILT_EXTENSION_PATH = '../dist/final/node/index.mjs';
 
-/** Expected resource registrations from the extension entry point. */
+/**
+ * Expected resource registrations from the extension entry point.
+ */
 const EXPECTED_REGISTRATIONS = [
   'tool:linkup_web_search',
   'tool:linkup_web_fetch',
 ] as const;
 
-/** Temp home prefix for isolated config loading. */
+/**
+ * Temp home prefix for isolated config loading.
+ */
 const TEMP_HOME_PREFIX = 'pi-linkup-verify-';
 
 //endregion Constants
 
 //region Types
 
-/** Built Pi Linkup extension module shape. */
+/**
+ * Built Pi Linkup extension module shape.
+ */
 type LinkupExtensionModule = {
-  /** Pi extension factory. */
+  /**
+ * Pi extension factory.
+ */
   readonly default: ExtensionFactory;
 };
 
@@ -50,32 +60,44 @@ type LinkupExtensionModule = {
  * @throws when built extension import or registration fails
  */
 async function verifyBuiltExtension(): Promise<string> {
-  /** Temp home directory avoiding real user config during verification. */
+  /**
+ * Temp home directory avoiding real user config during verification.
+ */
   const tempHome = await mkdtemp(join(
     tmpdir(),
     TEMP_HOME_PREFIX,
   ),);
   process.env.HOME = tempHome;
 
-  /** Built extension module imported through package output. */
+  /**
+ * Built extension module imported through package output.
+ */
   const mod: unknown = await import(BUILT_EXTENSION_PATH);
   if (!isLinkupExtensionModule(mod,))
     throw new Error('built Pi Linkup extension does not export a default extension factory');
 
-  /** Fake Pi API and its registration call log. */
+  /**
+ * Fake Pi API and its registration call log.
+ */
   const fakeApi = fakePiApi();
   await mod.default(fakeApi.api,);
 
-  /** Snapshot of recorded registration calls. */
+  /**
+ * Snapshot of recorded registration calls.
+ */
   const registrations = fakeApi.registrations();
-  /** Expected registrations not observed. */
+  /**
+ * Expected registrations not observed.
+ */
   const missing = EXPECTED_REGISTRATIONS.filter(function isMissing(expected,) {
     return !registrations.includes(expected,);
   },);
   if (missing.length > 0)
     throw new Error(`missing Pi Linkup registrations: ${missing.join(', ',)}`,);
 
-  /** Unexpected registrations observed. */
+  /**
+ * Unexpected registrations observed.
+ */
   const unexpected = registrations.filter(function isUnexpected(registration,) {
     return !EXPECTED_REGISTRATIONS.includes(registration as typeof EXPECTED_REGISTRATIONS[number],);
   },);
@@ -108,9 +130,13 @@ function fakePiApi(): {
   readonly api: ExtensionAPI;
   readonly registrations: () => readonly string[];
 } {
-  /** Locally owned registration log accessed through closures. */
+  /**
+ * Locally owned registration log accessed through closures.
+ */
   const registrations: string[] = [];
-  /** Fake extension API that records registration calls into the closure. */
+  /**
+ * Fake extension API that records registration calls into the closure.
+ */
   const api: ExtensionAPI = {
     on(event: string,) {
       registrations.push(`event:${event}`,);

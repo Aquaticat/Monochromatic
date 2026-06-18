@@ -22,13 +22,19 @@ import {
 
 //region Fixtures
 
-/** Blocked host fixture. */
+/**
+ * Blocked host fixture.
+ */
 const BLOCKED_HOST = 'badwikipedia.invalid';
 
-/** Good search result URL fixture. */
+/**
+ * Good search result URL fixture.
+ */
 const GOOD_RESULT_URL = 'https://example.com/good';
 
-/** Fixed config fixture. */
+/**
+ * Fixed config fixture.
+ */
 const CONFIG: LinkupConfig = {
   apiKey: 'key',
   blocklist: [BLOCKED_HOST,],
@@ -38,7 +44,9 @@ const CONFIG: LinkupConfig = {
   },
 };
 
-/** Empty Linkup response fixture. */
+/**
+ * Empty Linkup response fixture.
+ */
 const EMPTY_RESPONSE = { results: [], };
 
 //endregion Fixtures
@@ -226,25 +234,41 @@ await describe({
 
 //region Helpers
 
-/** Search call record. */
+/**
+ * Search call record.
+ */
 type SearchCall = {
-  /** Search input passed to client. */
+  /**
+ * Search input passed to client.
+ */
   readonly input: LinkupWebSearchInput;
 };
 
-/** Fetch call record. */
+/**
+ * Fetch call record.
+ */
 type FetchCall = {
-  /** Fetch input passed to client. */
+  /**
+ * Fetch input passed to client.
+ */
   readonly input: LinkupWebFetchInput;
 };
 
-/** Mock client harness. */
+/**
+ * Mock client harness.
+ */
 type MockClient = {
-  /** Client implementation. */
+  /**
+ * Client implementation.
+ */
   readonly client: LinkupToolClient;
-  /** Recorded search calls. */
+  /**
+ * Recorded search calls.
+ */
   readonly searchCalls: SearchCall[];
-  /** Recorded fetch calls. */
+  /**
+ * Recorded fetch calls.
+ */
   readonly fetchCalls: FetchCall[];
 };
 

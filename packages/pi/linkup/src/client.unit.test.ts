@@ -10,32 +10,43 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import {
-  LinkupClient,
+  createLinkupClient,
   type FetchLike,
+  type LinkupClient,
   type LinkupSearchRequestBody,
 } from '../dist/final/node/index.mjs';
 
 //region Fixtures
 
-/** API key fixture that must never appear in errors. */
+/**
+ * API key fixture that must never appear in errors.
+ */
 const SECRET_API_KEY = 'super-secret-linkup-key';
 
-/** Search response fixture. */
+/**
+ * Search response fixture.
+ */
 const SEARCH_RESPONSE = { results: [], };
 
-/** Fetch response fixture. */
+/**
+ * Fetch response fixture.
+ */
 const FETCH_RESPONSE = { markdown: 'hello', };
 
-/** Blocklist fixture. */
+/**
+ * Blocklist fixture.
+ */
 const BLOCKLIST = ['badwikipedia.invalid',] as const;
 
-/** Base URL fixture. */
+/**
+ * Base URL fixture.
+ */
 const BASE_URL = 'https://linkup.test/v1';
 
 //endregion Fixtures
 
 await describe({
-  name: LinkupClient.name,
+  name: createLinkupClient.name,
   children: [
     it({
       name: 'search sends q, fixed standard depth, fixed searchResults output, and global excludeDomains',
@@ -145,7 +156,7 @@ await describe({
       name: 'missing API key throws clear endpoint error',
       fn: async () => {
         const mock = mockFetch({ body: SEARCH_RESPONSE, },);
-        const client = new LinkupClient({
+        const client = createLinkupClient({
           blocklist: [],
           baseUrl: BASE_URL,
           fetchImpl: mock.fetchImpl,
@@ -212,19 +223,31 @@ await describe({
 
 //region Helpers
 
-/** Recorded fetch call. */
+/**
+ * Recorded fetch call.
+ */
 type FetchCall = {
-  /** Request URL. */
+  /**
+ * Request URL.
+ */
   readonly input: RequestInfo | URL;
-  /** Request init. */
+  /**
+ * Request init.
+ */
   readonly init: RequestInit;
 };
 
-/** Mock fetch harness. */
+/**
+ * Mock fetch harness.
+ */
 type FetchMock = {
-  /** Fetch implementation passed to client. */
+  /**
+ * Fetch implementation passed to client.
+ */
   readonly fetchImpl: FetchLike;
-  /** Recorded fetch calls. */
+  /**
+ * Recorded fetch calls.
+ */
   readonly calls: FetchCall[];
 };
 
@@ -236,7 +259,7 @@ type FetchMock = {
  * @returns Linkup client
  */
 function clientWithMock(fetchImpl: FetchLike,): LinkupClient {
-  return new LinkupClient({
+  return createLinkupClient({
     apiKey: SECRET_API_KEY,
     blocklist: BLOCKLIST,
     baseUrl: BASE_URL,

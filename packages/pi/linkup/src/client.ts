@@ -9,50 +9,80 @@ import { linkupLogger, } from './log.ts';
 
 //region Constants
 
-/** Default Linkup API base URL. */
-const DEFAULT_LINKUP_BASE_URL: 'https://api.linkup.so/v1' = 'https://api.linkup.so/v1';
+/**
+ * Default Linkup API base URL.
+ */
+const DEFAULT_LINKUP_BASE_URL = 'https://api.linkup.so/v1' as const;
 
-/** Linkup search endpoint path. */
-const LINKUP_SEARCH_ENDPOINT: '/search' = '/search';
+/**
+ * Linkup search endpoint path.
+ */
+const LINKUP_SEARCH_ENDPOINT = '/search' as const;
 
-/** Linkup fetch endpoint path. */
-const LINKUP_FETCH_ENDPOINT: '/fetch' = '/fetch';
+/**
+ * Linkup fetch endpoint path.
+ */
+const LINKUP_FETCH_ENDPOINT = '/fetch' as const;
 
-/** Fixed Linkup search depth selected for this package. */
-const LINKUP_SEARCH_DEPTH: 'standard' = 'standard';
+/**
+ * Fixed Linkup search depth selected for this package.
+ */
+const LINKUP_SEARCH_DEPTH = 'standard' as const;
 
-/** Fixed Linkup search output type selected for this package. */
-const LINKUP_SEARCH_OUTPUT_TYPE: 'searchResults' = 'searchResults';
+/**
+ * Fixed Linkup search output type selected for this package.
+ */
+const LINKUP_SEARCH_OUTPUT_TYPE = 'searchResults' as const;
 
-/** Fixed Linkup fetch JavaScript rendering mode. */
-const LINKUP_FETCH_RENDER_JS: true = true;
+/**
+ * Fixed Linkup fetch JavaScript rendering mode.
+ */
+const LINKUP_FETCH_RENDER_JS = true as const;
 
-/** Fixed Linkup fetch image extraction mode. */
-const LINKUP_FETCH_EXTRACT_IMAGES: false = false;
+/**
+ * Fixed Linkup fetch image extraction mode.
+ */
+const LINKUP_FETCH_EXTRACT_IMAGES = false as const;
 
-/** Fixed Linkup fetch raw HTML mode. */
-const LINKUP_FETCH_INCLUDE_RAW_HTML: false = false;
+/**
+ * Fixed Linkup fetch raw HTML mode.
+ */
+const LINKUP_FETCH_INCLUDE_RAW_HTML = false as const;
 
-/** HTTP POST method. */
-const HTTP_POST = 'POST';
+/**
+ * HTTP POST method.
+ */
+const HTTP_POST = 'POST' as const;
 
-/** Authorization header name. */
-const AUTHORIZATION_HEADER = 'Authorization';
+/**
+ * Authorization header name.
+ */
+const AUTHORIZATION_HEADER = 'Authorization' as const;
 
-/** JSON content type header name. */
-const CONTENT_TYPE_HEADER = 'Content-Type';
+/**
+ * JSON content type header name.
+ */
+const CONTENT_TYPE_HEADER = 'Content-Type' as const;
 
-/** JSON media type sent to Linkup. */
-const JSON_CONTENT_TYPE = 'application/json';
+/**
+ * JSON media type sent to Linkup.
+ */
+const JSON_CONTENT_TYPE = 'application/json' as const;
 
-/** User-Agent header name. */
-const USER_AGENT_HEADER = 'User-Agent';
+/**
+ * User-Agent header name.
+ */
+const USER_AGENT_HEADER = 'User-Agent' as const;
 
-/** User-Agent value sent by this package. */
-const USER_AGENT_VALUE = '@monochromatic-dev/pi-linkup';
+/**
+ * User-Agent value sent by this package.
+ */
+const USER_AGENT_VALUE = '@monochromatic-dev/pi-linkup' as const;
 
-/** AbortError name used by fetch implementations. */
-const ABORT_ERROR_NAME = 'AbortError';
+/**
+ * AbortError name used by fetch implementations.
+ */
+const ABORT_ERROR_NAME = 'AbortError' as const;
 
 //endregion Constants
 
@@ -62,13 +92,21 @@ const ABORT_ERROR_NAME = 'AbortError';
  * Model-facing search input supported by Pi Linkup.
  */
 type LinkupWebSearchInput = {
-  /** Natural language search query. */
+  /**
+   * Natural language search query.
+   */
   readonly query: string;
-  /** Optional start date forwarded to Linkup. */
+  /**
+   * Optional start date forwarded to Linkup.
+   */
   readonly fromDate?: string;
-  /** Optional include-domain filter forwarded to Linkup. */
+  /**
+   * Optional include-domain filter forwarded to Linkup.
+   */
   readonly includeDomains?: readonly string[];
-  /** Optional end date forwarded to Linkup. */
+  /**
+   * Optional end date forwarded to Linkup.
+   */
   readonly toDate?: string;
 };
 
@@ -76,7 +114,9 @@ type LinkupWebSearchInput = {
  * Model-facing fetch input supported by Pi Linkup.
  */
 type LinkupWebFetchInput = {
-  /** Absolute URL to fetch through Linkup. */
+  /**
+   * Absolute URL to fetch through Linkup.
+   */
   readonly url: string;
 };
 
@@ -84,19 +124,33 @@ type LinkupWebFetchInput = {
  * Request body sent to Linkup search.
  */
 type LinkupSearchRequestBody = {
-  /** Linkup query field. */
+  /**
+   * Linkup query field.
+   */
   readonly q: string;
-  /** Fixed search depth. */
+  /**
+   * Fixed search depth.
+   */
   readonly depth: typeof LINKUP_SEARCH_DEPTH;
-  /** Fixed search output type. */
+  /**
+   * Fixed search output type.
+   */
   readonly outputType: typeof LINKUP_SEARCH_OUTPUT_TYPE;
-  /** Global blocklist sent to Linkup as excluded domains. */
+  /**
+   * Global blocklist sent to Linkup as excluded domains.
+   */
   readonly excludeDomains: readonly string[];
-  /** Optional start date. */
+  /**
+   * Optional start date.
+   */
   readonly fromDate?: string;
-  /** Optional include-domain filter. */
+  /**
+   * Optional include-domain filter.
+   */
   readonly includeDomains?: readonly string[];
-  /** Optional end date. */
+  /**
+   * Optional end date.
+   */
   readonly toDate?: string;
 };
 
@@ -104,13 +158,21 @@ type LinkupSearchRequestBody = {
  * Request body sent to Linkup fetch.
  */
 type LinkupFetchRequestBody = {
-  /** URL to fetch. */
+  /**
+   * URL to fetch.
+   */
   readonly url: string;
-  /** Fixed JavaScript rendering behavior. */
+  /**
+   * Fixed JavaScript rendering behavior.
+   */
   readonly renderJs: typeof LINKUP_FETCH_RENDER_JS;
-  /** Fixed image extraction behavior. */
+  /**
+   * Fixed image extraction behavior.
+   */
   readonly extractImages: typeof LINKUP_FETCH_EXTRACT_IMAGES;
-  /** Fixed raw HTML behavior. */
+  /**
+   * Fixed raw HTML behavior.
+   */
   readonly includeRawHtml: typeof LINKUP_FETCH_INCLUDE_RAW_HTML;
 };
 
@@ -123,13 +185,21 @@ type FetchLike = typeof fetch;
  * Linkup client constructor options.
  */
 type LinkupClientOptions = {
-  /** Optional Linkup API key. */
+  /**
+   * Optional Linkup API key.
+   */
   readonly apiKey?: string;
-  /** Normalized global blocklist sent to search. */
+  /**
+   * Normalized global blocklist sent to search.
+   */
   readonly blocklist: readonly string[];
-  /** Optional base URL override for tests. */
+  /**
+   * Optional base URL override for tests.
+   */
   readonly baseUrl?: string;
-  /** Optional fetch implementation override for tests. */
+  /**
+   * Optional fetch implementation override for tests.
+   */
   readonly fetchImpl?: FetchLike;
 };
 
@@ -137,9 +207,13 @@ type LinkupClientOptions = {
  * Arguments for a Linkup search request.
  */
 type SearchOptions = {
-  /** Supported search input. */
+  /**
+   * Supported search input.
+   */
   readonly input: LinkupWebSearchInput;
-  /** Abort signal from Pi tool execution. */
+  /**
+   * Abort signal from Pi tool execution.
+   */
   readonly signal?: AbortSignal;
 };
 
@@ -147,239 +221,405 @@ type SearchOptions = {
  * Arguments for a Linkup fetch request.
  */
 type FetchOptions = {
-  /** Supported fetch input. */
+  /**
+   * Supported fetch input.
+   */
   readonly input: LinkupWebFetchInput;
-  /** Abort signal from Pi tool execution. */
+  /**
+   * Abort signal from Pi tool execution.
+   */
   readonly signal?: AbortSignal;
+};
+
+/**
+ * Linkup client surface used by tools.
+ */
+type LinkupClient = {
+  /**
+   * Execute a fixed-policy Linkup search.
+   */
+  readonly search: (options: SearchOptions,) => Promise<unknown>;
+  /**
+   * Execute a fixed-policy Linkup fetch.
+   */
+  readonly fetch: (options: FetchOptions,) => Promise<unknown>;
 };
 
 /**
  * Arguments for internal POST requests.
  */
 type PostJsonOptions = {
-  /** Endpoint path beginning with slash. */
+  /**
+   * Endpoint path beginning with slash.
+   */
   readonly endpoint: string;
-  /** JSON request body. */
+  /**
+   * JSON request body.
+   */
   readonly body: unknown;
-  /** Abort signal from Pi tool execution. */
+  /**
+   * Abort signal from Pi tool execution.
+   */
   readonly signal?: AbortSignal;
+};
+
+/**
+ * Dependencies captured by internal client functions.
+ */
+type ClientRuntime = {
+  /**
+   * Optional Linkup API key.
+   */
+  readonly apiKey?: string;
+  /**
+   * Normalized global blocklist.
+   */
+  readonly blocklist: readonly string[];
+  /**
+   * Linkup API base URL.
+   */
+  readonly baseUrl: string;
+  /**
+   * Fetch implementation.
+   */
+  readonly fetchImpl: FetchLike;
+};
+
+/**
+ * Result of extracting a Linkup error message.
+ */
+type ExtractedLinkupErrorMessage = {
+  /**
+   * Whether a Linkup message was present.
+   */
+  readonly found: false;
+} | {
+  /**
+   * Whether a Linkup message was present.
+   */
+  readonly found: true;
+  /**
+   * Extracted Linkup message.
+   */
+  readonly message: string;
 };
 
 //endregion Types
 
-/** Module logger. */
+/**
+ * Module logger.
+ */
 const l = tagged({
   tag: 'client',
   l: linkupLogger,
 },);
 
-//region Client
+//region Client factory
 
 /**
- * Linkup HTTP client that preserves this extension's fixed request policy.
+ * Create Linkup HTTP client that preserves this extension's fixed request policy.
+ *
+ * @param options - client options
+ *
+ * @returns frozen Linkup client
  *
  * @example
  * ```ts
- * const client = new LinkupClient({ apiKey: 'key', blocklist: [] });
+ * const client = createLinkupClient({ apiKey: 'key', blocklist: [] });
  * ```
  */
-class LinkupClient {
-  /** Optional Linkup API key. */
-  readonly #apiKey: string | undefined;
-
-  /** Normalized global blocklist. */
-  readonly #blocklist: readonly string[];
-
-  /** Base URL for Linkup API. */
-  readonly #baseUrl: string;
-
-  /** Fetch implementation. */
-  readonly #fetchImpl: FetchLike;
-
+function createLinkupClient(options: LinkupClientOptions,): LinkupClient {
   /**
-   * Construct a Linkup client.
-   *
-   * @param options - client options
+   * Runtime dependencies captured by client methods.
    */
-  public constructor(options: LinkupClientOptions,) {
-    this.#apiKey = options.apiKey;
-    this.#blocklist = options.blocklist;
-    this.#baseUrl = options.baseUrl ?? DEFAULT_LINKUP_BASE_URL;
-    this.#fetchImpl = options.fetchImpl ?? fetch;
-  }
+  const runtime: ClientRuntime = {
+    ...(options.apiKey === undefined ? {} : { apiKey: options.apiKey, }),
+    blocklist: options.blocklist,
+    baseUrl: options.baseUrl ?? DEFAULT_LINKUP_BASE_URL,
+    fetchImpl: options.fetchImpl ?? fetch,
+  };
 
-  /**
-   * Execute a fixed-policy Linkup search.
-   *
-   * @param options - search input and cancellation signal
-   *
-   * @returns parsed Linkup response object
-   *
-   * @throws when API key is absent, Linkup rejects, JSON parsing fails, or request aborts
-   */
-  public async search(options: SearchOptions,): Promise<unknown> {
-    /** Logger tagged for this search call. */
-    const innerL = tagged({
-      tag: this.search.name,
-      l,
-    },);
-    /** Linkup search body with fixed depth, output type, and global blocklist. */
-    const body: LinkupSearchRequestBody = {
-      q: options.input.query,
-      depth: LINKUP_SEARCH_DEPTH,
-      outputType: LINKUP_SEARCH_OUTPUT_TYPE,
-      excludeDomains: this.#blocklist,
-      ...(options.input.fromDate === undefined ? {} : { fromDate: options.input.fromDate, }),
-      ...(options.input.includeDomains === undefined ? {} : { includeDomains: options.input.includeDomains, }),
-      ...(options.input.toDate === undefined ? {} : { toDate: options.input.toDate, }),
-    };
-
-    innerL.info(`calling Linkup search for query: ${options.input.query}`,);
-    return this.#postJson({
-      endpoint: LINKUP_SEARCH_ENDPOINT,
-      body,
-      ...(options.signal === undefined ? {} : { signal: options.signal, }),
-    },);
-  }
-
-  /**
-   * Execute a fixed-policy Linkup fetch.
-   *
-   * @param options - fetch input and cancellation signal
-   *
-   * @returns parsed Linkup response object
-   *
-   * @throws when API key is absent, Linkup rejects, JSON parsing fails, or request aborts
-   */
-  public async fetch(options: FetchOptions,): Promise<unknown> {
-    /** Logger tagged for this fetch call. */
-    const innerL = tagged({
-      tag: this.fetch.name,
-      l,
-    },);
-    /** Linkup fetch body with fixed rendering and extraction flags. */
-    const body: LinkupFetchRequestBody = {
-      url: options.input.url,
-      renderJs: LINKUP_FETCH_RENDER_JS,
-      extractImages: LINKUP_FETCH_EXTRACT_IMAGES,
-      includeRawHtml: LINKUP_FETCH_INCLUDE_RAW_HTML,
-    };
-
-    innerL.info(`calling Linkup fetch for URL: ${options.input.url}`,);
-    return this.#postJson({
-      endpoint: LINKUP_FETCH_ENDPOINT,
-      body,
-      ...(options.signal === undefined ? {} : { signal: options.signal, }),
-    },);
-  }
-
-  /**
-   * POST JSON to Linkup and parse JSON response.
-   *
-   * @param options - endpoint, body, and cancellation signal
-   *
-   * @returns parsed JSON response
-   */
-  async #postJson(options: PostJsonOptions,): Promise<unknown> {
-    /** API key validated for this endpoint. */
-    const apiKey = this.#apiKeyForEndpoint({ endpoint: options.endpoint, },);
-    /** Full Linkup request URL. */
-    const requestUrl = `${this.#baseUrl}${options.endpoint}`;
-    /** Fetch response from Linkup. */
-    const response = await this.#sendRequest({
-      endpoint: options.endpoint,
-      requestUrl,
-      apiKey,
-      body: options.body,
-      ...(options.signal === undefined ? {} : { signal: options.signal, }),
-    },);
-    /** Raw response text. */
-    const responseText = await response.text();
-
-    if (!response.ok)
-      throw new Error(formatHttpError({
-        endpoint: options.endpoint,
-        response,
-        responseText,
-      },),);
-
-    return parseJsonResponse({
-      endpoint: options.endpoint,
-      responseText,
-    },);
-  }
-
-  /**
-   * Send fetch request and normalize abort/network failures.
-   *
-   * @param endpoint - endpoint path for diagnostics
-   *
-   * @param requestUrl - full URL to call
-   *
-   * @param apiKey - Linkup API key
-   *
-   * @param body - JSON body
-   *
-   * @param signal - optional abort signal
-   *
-   * @returns fetch response
-   */
-  async #sendRequest(
-    {
-      endpoint,
-      requestUrl,
-      apiKey,
-      body,
-      signal,
-    }: {
-      readonly endpoint: string;
-      readonly requestUrl: string;
-      readonly apiKey: string;
-      readonly body: unknown;
-      readonly signal?: AbortSignal;
+  return Object.freeze({
+    search: function search(options: SearchOptions,): Promise<unknown> {
+      return searchLinkup({
+        runtime,
+        options,
+      },);
     },
-  ): Promise<Response> {
-    try {
-      /** Fetch request init without undefined optional properties. */
-      const requestInit: RequestInit = {
-        method: HTTP_POST,
-        headers: {
-          [AUTHORIZATION_HEADER]: `Bearer ${apiKey}`,
-          [CONTENT_TYPE_HEADER]: JSON_CONTENT_TYPE,
-          [USER_AGENT_HEADER]: USER_AGENT_VALUE,
-        },
-        body: JSON.stringify(body,),
-        ...(signal === undefined ? {} : { signal, }),
-      };
-      return await this.#fetchImpl(requestUrl, requestInit,);
-    }
-    catch (error: unknown) {
-      if (isAbortError({
-        error,
-        ...(signal === undefined ? {} : { signal, }),
-      },))
-        throw new Error(`Linkup ${endpoint} request aborted`,);
-      throw new Error(`Linkup ${endpoint} request failed: ${errorMessage(error,)}`,);
-    }
-  }
+    fetch: function fetch(options: FetchOptions,): Promise<unknown> {
+      return fetchLinkup({
+        runtime,
+        options,
+      },);
+    },
+  },);
+}
 
+/**
+ * Execute a fixed-policy Linkup search.
+ *
+ * @param runtime - client runtime dependencies
+ *
+ * @param options - search input and cancellation signal
+ *
+ * @returns parsed Linkup response object
+ *
+ * @throws when API key is absent, Linkup rejects, JSON parsing fails, or request aborts
+ */
+function searchLinkup(
+  {
+    runtime,
+    options,
+  }: {
+    readonly runtime: ClientRuntime;
+    readonly options: SearchOptions;
+  },
+): Promise<unknown> {
   /**
-   * Return API key or throw endpoint-specific missing-key error.
-   *
-   * @param endpoint - endpoint path for diagnostics
-   *
-   * @returns configured API key
+   * Logger tagged for this search call.
    */
-  #apiKeyForEndpoint({ endpoint, }: { readonly endpoint: string; }): string {
-    if (this.#apiKey === undefined || this.#apiKey.trim() === '')
+  const innerL = tagged({
+    tag: searchLinkup.name,
+    l,
+  },);
+  /**
+   * Search input snapshot.
+   */
+  const input = options.input;
+  /**
+   * Linkup search body with fixed depth, output type, and global blocklist.
+   */
+  const body: LinkupSearchRequestBody = {
+    q: input.query,
+    depth: LINKUP_SEARCH_DEPTH,
+    outputType: LINKUP_SEARCH_OUTPUT_TYPE,
+    excludeDomains: runtime.blocklist,
+    ...(input.fromDate === undefined ? {} : { fromDate: input.fromDate, }),
+    ...(input.includeDomains === undefined ? {} : { includeDomains: input.includeDomains, }),
+    ...(input.toDate === undefined ? {} : { toDate: input.toDate, }),
+  };
+
+  innerL.info(`calling Linkup search for query: ${input.query}`,);
+  return postJson({
+    runtime,
+    endpoint: LINKUP_SEARCH_ENDPOINT,
+    body,
+    ...(options.signal === undefined ? {} : { signal: options.signal, }),
+  },);
+}
+
+/**
+ * Execute a fixed-policy Linkup fetch.
+ *
+ * @param runtime - client runtime dependencies
+ *
+ * @param options - fetch input and cancellation signal
+ *
+ * @returns parsed Linkup response object
+ *
+ * @throws when API key is absent, Linkup rejects, JSON parsing fails, or request aborts
+ */
+function fetchLinkup(
+  {
+    runtime,
+    options,
+  }: {
+    readonly runtime: ClientRuntime;
+    readonly options: FetchOptions;
+  },
+): Promise<unknown> {
+  /**
+   * Logger tagged for this fetch call.
+   */
+  const innerL = tagged({
+    tag: fetchLinkup.name,
+    l,
+  },);
+  /**
+   * Fetch input snapshot.
+   */
+  const input = options.input;
+  /**
+   * Linkup fetch body with fixed rendering and extraction flags.
+   */
+  const body: LinkupFetchRequestBody = {
+    url: input.url,
+    renderJs: LINKUP_FETCH_RENDER_JS,
+    extractImages: LINKUP_FETCH_EXTRACT_IMAGES,
+    includeRawHtml: LINKUP_FETCH_INCLUDE_RAW_HTML,
+  };
+
+  innerL.info(`calling Linkup fetch for URL: ${input.url}`,);
+  return postJson({
+    runtime,
+    endpoint: LINKUP_FETCH_ENDPOINT,
+    body,
+    ...(options.signal === undefined ? {} : { signal: options.signal, }),
+  },);
+}
+
+//endregion Client factory
+
+//region Request helpers
+
+/**
+ * POST JSON to Linkup and parse JSON response.
+ *
+ * @param runtime - client runtime dependencies
+ *
+ * @param endpoint - endpoint path
+ *
+ * @param body - JSON request body
+ *
+ * @param signal - optional cancellation signal
+ *
+ * @returns parsed JSON response
+ */
+async function postJson(
+  {
+    runtime,
+    endpoint,
+    body,
+    signal,
+  }: PostJsonOptions & {
+    readonly runtime: ClientRuntime;
+  },
+): Promise<unknown> {
+  /**
+   * API key validated for this endpoint.
+   */
+  const apiKey = apiKeyForEndpoint({
+    ...(runtime.apiKey === undefined ? {} : { apiKey: runtime.apiKey, }),
+    endpoint,
+  },);
+  /**
+   * Full Linkup request URL.
+   */
+  const requestUrl = `${runtime.baseUrl}${endpoint}`;
+  /**
+   * Fetch response from Linkup.
+   */
+  const response = await sendRequest({
+    runtime,
+    endpoint,
+    requestUrl,
+    apiKey,
+    body,
+    ...(signal === undefined ? {} : { signal, }),
+  },);
+  /**
+   * Raw response text.
+   */
+  const responseText = await response.text();
+
+  if (!response.ok)
+    throw new Error(formatHttpError({
+      endpoint,
+      response,
+      responseText,
+    },),);
+
+  return parseJsonResponse({
+    endpoint,
+    responseText,
+  },);
+}
+
+/**
+ * Send fetch request and normalize abort or network failures.
+ *
+ * @param runtime - client runtime dependencies
+ *
+ * @param endpoint - endpoint path for diagnostics
+ *
+ * @param requestUrl - full URL to call
+ *
+ * @param apiKey - Linkup API key
+ *
+ * @param body - JSON body
+ *
+ * @param signal - optional abort signal
+ *
+ * @returns fetch response
+ */
+async function sendRequest(
+  {
+    runtime,
+    endpoint,
+    requestUrl,
+    apiKey,
+    body,
+    signal,
+  }: {
+    readonly runtime: ClientRuntime;
+    readonly endpoint: string;
+    readonly requestUrl: string;
+    readonly apiKey: string;
+    readonly body: unknown;
+    readonly signal?: AbortSignal;
+  },
+): Promise<Response> {
+  try {
+    /**
+     * Fetch request init without undefined optional properties.
+     */
+    const requestInit: RequestInit = {
+      method: HTTP_POST,
+      headers: {
+        [AUTHORIZATION_HEADER]: `Bearer ${apiKey}`,
+        [CONTENT_TYPE_HEADER]: JSON_CONTENT_TYPE,
+        [USER_AGENT_HEADER]: USER_AGENT_VALUE,
+      },
+      body: JSON.stringify(body,),
+      ...(signal === undefined ? {} : { signal, }),
+    };
+    return await runtime.fetchImpl(
+      requestUrl,
+      requestInit,
+    );
+  }
+  catch (error: unknown) {
+    if (isAbortError({
+      error,
+      ...(signal === undefined ? {} : { signal, }),
+    },))
       throw new Error(
-        `Linkup ${endpoint} missing API key. Set LINKUP_API_KEY or apiKey in pi-linkup.json.`,
+        `Linkup ${endpoint} request aborted`,
+        { cause: error, },
       );
-    return this.#apiKey;
+    throw new Error(
+      `Linkup ${endpoint} request failed: ${errorMessage(error,)}`,
+      { cause: error, },
+    );
   }
 }
 
-//endregion Client
+/**
+ * Return API key or throw endpoint-specific missing-key error.
+ *
+ * @param apiKey - optional configured API key
+ *
+ * @param endpoint - endpoint path for diagnostics
+ *
+ * @returns configured API key
+ */
+function apiKeyForEndpoint(
+  {
+    apiKey,
+    endpoint,
+  }: {
+    readonly apiKey?: string;
+    readonly endpoint: string;
+  },
+): string {
+  if ((apiKey === undefined) || (apiKey.trim() === ''))
+    throw new Error(
+      `Linkup ${endpoint} missing API key. Set LINKUP_API_KEY or apiKey in pi-linkup.json.`,
+    );
+  return apiKey;
+}
+
+//endregion Request helpers
 
 //region Response helpers
 
@@ -407,7 +647,10 @@ function parseJsonResponse(
     return JSON.parse(responseText,) as unknown;
   }
   catch (error: unknown) {
-    throw new Error(`Linkup ${endpoint} returned invalid JSON response: ${errorMessage(error,)}`,);
+    throw new Error(
+      `Linkup ${endpoint} returned invalid JSON response: ${errorMessage(error,)}`,
+      { cause: error, },
+    );
   }
 }
 
@@ -433,16 +676,24 @@ function formatHttpError(
     readonly responseText: string;
   },
 ): string {
-  /** Optional status text suffix. */
-  const statusText = response.statusText.trim() === ''
+  /**
+   * Status text with leading space, when present.
+   */
+  const statusText = response.statusText
+    .trim()
+    === ''
     ? ''
     : ` ${response.statusText}`;
-  /** Linkup error message parsed from response body, when present. */
+  /**
+   * Linkup error message parsed from response body, when present.
+   */
   const linkupMessage = extractLinkupErrorMessage(responseText,);
-  /** Optional Linkup message suffix. */
-  const messageSuffix = linkupMessage === undefined
-    ? ''
-    : `: ${linkupMessage}`;
+  /**
+   * Linkup message suffix.
+   */
+  const messageSuffix = linkupMessage.found
+    ? `: ${linkupMessage.message}`
+    : '';
   return `Linkup ${endpoint} failed with HTTP ${String(response.status,)}${statusText}${messageSuffix}`;
 }
 
@@ -451,24 +702,28 @@ function formatHttpError(
  *
  * @param responseText - raw error response text
  *
- * @returns upstream error message, when shaped as expected
+ * @returns extraction result
  */
-function extractLinkupErrorMessage(responseText: string,): string | undefined {
+function extractLinkupErrorMessage(responseText: string,): ExtractedLinkupErrorMessage {
   try {
-    /** Parsed error response. */
+    /**
+     * Parsed error response.
+     */
     const parsed = JSON.parse(responseText,) as unknown;
     if (!isRecord(parsed,))
-      return undefined;
-    /** Upstream error property. */
-    const error = parsed.error;
+      return { found: false, };
+    const { error, } = parsed;
     if (!isRecord(error,))
-      return undefined;
-    return typeof error.message === 'string'
-      ? error.message
-      : undefined;
+      return { found: false, };
+    if (typeof error.message !== 'string')
+      return { found: false, };
+    return {
+      found: true,
+      message: error.message,
+    };
   }
   catch {
-    return undefined;
+    return { found: false, };
   }
 }
 
@@ -492,8 +747,8 @@ function isAbortError(
 ): boolean {
   if (signal?.aborted === true)
     return true;
-  return error instanceof Error
-    && error.name === ABORT_ERROR_NAME;
+  return (error instanceof Error)
+    && (error.name === ABORT_ERROR_NAME);
 }
 
 /**
@@ -517,8 +772,8 @@ function errorMessage(error: unknown,): string {
  * @returns whether value can be read by string keys
  */
 function isRecord(value: unknown,): value is Record<string, unknown> {
-  return value !== null
-    && typeof value === 'object'
+  return (value !== null)
+    && (typeof value === 'object')
     && !Array.isArray(value,);
 }
 
@@ -528,11 +783,12 @@ export {
   DEFAULT_LINKUP_BASE_URL,
   LINKUP_FETCH_ENDPOINT,
   LINKUP_SEARCH_ENDPOINT,
-  LinkupClient,
+  createLinkupClient,
 };
 export type {
   FetchLike,
   FetchOptions,
+  LinkupClient,
   LinkupClientOptions,
   LinkupFetchRequestBody,
   LinkupSearchRequestBody,

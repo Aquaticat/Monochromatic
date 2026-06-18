@@ -18,13 +18,19 @@ import {
 
 //region Fixtures
 
-/** Tool name fixture. */
+/**
+ * Tool name fixture.
+ */
 const TOOL_NAME = 'linkup_web_search';
 
-/** Fixed behavior warning fixture. */
+/**
+ * Fixed behavior warning fixture.
+ */
 const FIXED_BEHAVIOR = 'This extension always uses fixed behavior.';
 
-/** Response fixture. */
+/**
+ * Response fixture.
+ */
 const RESPONSE = { results: [], };
 
 //endregion Fixtures

@@ -9,15 +9,20 @@
 
 import type { ExtensionAPI, } from '@earendil-works/pi-coding-agent';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
-import { LinkupClient, } from './client.ts';
-import { loadLinkupConfig, type LinkupConfig, } from './config.ts';
+import { createLinkupClient, } from './client.ts';
+import {
+  loadLinkupConfig,
+  type LinkupConfig,
+} from './config.ts';
 import { linkupLogger, } from './log.ts';
 import {
   createLinkupTools,
   type LinkupToolClient,
 } from './tools.ts';
 
-/** Module logger. */
+/**
+ * Module logger.
+ */
 const l = tagged({
   tag: 'index',
   l: linkupLogger,
@@ -29,11 +34,17 @@ const l = tagged({
  * Options for registering Pi Linkup with injected dependencies.
  */
 type RegisterPiLinkupOptions = {
-  /** Pi extension API. */
+  /**
+ * Pi extension API.
+ */
   readonly pi: ExtensionAPI;
-  /** Loaded Linkup config. */
+  /**
+ * Loaded Linkup config.
+ */
   readonly config: LinkupConfig;
-  /** Linkup client used by tools. */
+  /**
+ * Linkup client used by tools.
+ */
   readonly client: LinkupToolClient;
 };
 
@@ -53,15 +64,21 @@ type RegisterPiLinkupOptions = {
  * ```
  */
 export default function piLinkup(pi: ExtensionAPI,): void {
-  /** Logger tagged for extension startup. */
+  /**
+ * Logger tagged for extension startup.
+ */
   const innerL = tagged({
     tag: piLinkup.name,
     l,
   },);
-  /** Runtime config loaded from the global Pi extension config file. */
+  /**
+ * Runtime config loaded from the global Pi extension config file.
+ */
   const config = loadLinkupConfig();
-  /** Linkup HTTP client shared by the registered tools. */
-  const client = new LinkupClient({
+  /**
+ * Linkup HTTP client shared by the registered tools.
+ */
+  const client = createLinkupClient({
     ...(config.apiKey === undefined ? {} : { apiKey: config.apiKey, }),
     blocklist: config.blocklist,
   },);
@@ -71,7 +88,11 @@ export default function piLinkup(pi: ExtensionAPI,): void {
     config,
     client,
   },);
-  innerL.info(`pi-linkup extension loaded; blocklist entries=${String(config.blocklist.length,)}`,);
+  innerL.info(`pi-linkup extension loaded; blocklist entries=${String(
+    config
+      .blocklist
+      .length,
+  )}`,);
 }
 
 /**
@@ -85,12 +106,16 @@ export default function piLinkup(pi: ExtensionAPI,): void {
  * ```
  */
 function registerPiLinkup(options: RegisterPiLinkupOptions,): void {
-  /** Logger tagged for registration. */
+  /**
+ * Logger tagged for registration.
+ */
   const innerL = tagged({
     tag: registerPiLinkup.name,
     l,
   },);
-  /** Public Linkup tools. */
+  /**
+ * Public Linkup tools.
+ */
   const tools = createLinkupTools({
     config: options.config,
     client: options.client,
@@ -104,7 +129,7 @@ function registerPiLinkup(options: RegisterPiLinkupOptions,): void {
 
 //endregion Extension entry point
 
-export { LinkupClient, } from './client.ts';
+export { createLinkupClient, } from './client.ts';
 export {
   configPathForHome,
   loadLinkupConfig,
@@ -138,6 +163,7 @@ export { registerPiLinkup, };
 export type {
   FetchLike,
   FetchOptions,
+  LinkupClient,
   LinkupClientOptions,
   LinkupFetchRequestBody,
   LinkupSearchRequestBody,
@@ -150,7 +176,10 @@ export type {
   LinkupConfigSource,
   LoadLinkupConfigOptions,
 } from './config.ts';
-export type { SearchResultFilterResult, } from './domain-policy.ts';
+export type {
+  BlocklistMatch,
+  SearchResultFilterResult,
+} from './domain-policy.ts';
 export type {
   JsonContentResult,
   LinkupToolDetails,

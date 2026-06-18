@@ -18,13 +18,19 @@ import {
 
 //region Fixtures
 
-/** Canonical blocked host fixture. */
+/**
+ * Canonical blocked host fixture.
+ */
 const BLOCKED_HOST = 'badwikipedia.invalid';
 
-/** Uppercase host fixture with root dot. */
+/**
+ * Uppercase host fixture with root dot.
+ */
 const UPPERCASE_ROOT_DOT_HOST = ' BadWikipedia.INVALID. ';
 
-/** Invalid blocklist entry fixtures. */
+/**
+ * Invalid blocklist entry fixtures.
+ */
 const INVALID_BLOCKLIST_ENTRIES = [
   'https://badwikipedia.invalid',
   'badwikipedia.invalid:443',
@@ -121,7 +127,10 @@ await describe({
             expect(findBlockedHostMatch({
               host: `www.${BLOCKED_HOST}`,
               blocklist: [BLOCKED_HOST,],
-            },),).toBe(BLOCKED_HOST,);
+            },),).toEqual({
+              blocked: true,
+              entry: BLOCKED_HOST,
+            },);
           },
         },),
       ],

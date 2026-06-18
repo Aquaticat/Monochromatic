@@ -20,7 +20,9 @@ import {
 
 //region Fixtures
 
-/** Config fixture. */
+/**
+ * Config fixture.
+ */
 const CONFIG: LinkupConfig = {
   blocklist: [],
   source: {
@@ -29,7 +31,9 @@ const CONFIG: LinkupConfig = {
   },
 };
 
-/** Client fixture unused during registration. */
+/**
+ * Client fixture unused during registration.
+ */
 const CLIENT: LinkupToolClient = {
   async search() {
     return { results: [], };
@@ -67,11 +71,17 @@ await describe({
 
 //region Helpers
 
-/** Fake Pi API harness. */
+/**
+ * Fake Pi API harness.
+ */
 type FakePi = {
-  /** Fake Pi API. */
+  /**
+ * Fake Pi API.
+ */
   readonly api: ExtensionAPI;
-  /** Registered tool names. */
+  /**
+ * Registered tool names.
+ */
   readonly tools: string[];
 };
 

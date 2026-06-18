@@ -13,27 +13,42 @@ import { linkupLogger, } from './log.ts';
 
 //region Constants
 
-/** Environment variable that wins over config-file API keys. */
+/**
+ * Environment variable that wins over config-file API keys.
+ */
 const LINKUP_API_KEY_ENV = 'LINKUP_API_KEY';
 
-/** Directory below home that stores global Pi extension config. */
+/**
+ * Directory below home that stores global Pi extension config.
+ */
 const PI_EXTENSION_CONFIG_DIR = join(
   '.pi',
   'agent',
   'extensions',
 );
 
-/** Pi Linkup config filename. */
+/**
+ * Pi Linkup config filename.
+ */
 const PI_LINKUP_CONFIG_FILE = 'pi-linkup.json';
 
-/** Node error code for missing files. */
+/**
+ * Node error code for missing files.
+ */
 const FILE_NOT_FOUND_CODE = 'ENOENT';
 
-/** Valid top-level config keys. */
+/**
+ * Valid top-level config keys.
+ */
 const CONFIG_KEYS = [
   'apiKey',
   'blocklist',
 ] as const;
+
+/**
+ * Valid top-level config key lookup.
+ */
+const CONFIG_KEY_SET = new Set<string>(CONFIG_KEYS,);
 
 //endregion Constants
 
@@ -43,11 +58,17 @@ const CONFIG_KEYS = [
  * Loaded Pi Linkup config.
  */
 type LinkupConfig = {
-  /** Optional API key after environment and file precedence are applied. */
+  /**
+   * Optional API key after environment and file precedence are applied.
+   */
   readonly apiKey?: string;
-  /** Normalized global host suffix blocklist. */
+  /**
+   * Normalized global host suffix blocklist.
+   */
   readonly blocklist: readonly string[];
-  /** Source metadata useful for diagnostics. */
+  /**
+   * Source metadata useful for diagnostics.
+   */
   readonly source: LinkupConfigSource;
 };
 
@@ -55,9 +76,13 @@ type LinkupConfig = {
  * Pi Linkup config source metadata.
  */
 type LinkupConfigSource = {
-  /** Absolute config file path checked by the loader. */
+  /**
+   * Absolute config file path checked by the loader.
+   */
   readonly path: string;
-  /** Whether config file existed and loaded successfully. */
+  /**
+   * Whether config file existed and loaded successfully.
+   */
   readonly loaded: boolean;
 };
 
@@ -65,9 +90,13 @@ type LinkupConfigSource = {
  * Options for loading Pi Linkup config.
  */
 type LoadLinkupConfigOptions = {
-  /** Home directory used to resolve global Pi config. */
+  /**
+   * Home directory used to resolve global Pi config.
+   */
   readonly home?: string;
-  /** Environment used for API key precedence. */
+  /**
+   * Environment used for API key precedence.
+   */
   readonly env?: Readonly<NodeJS.ProcessEnv>;
 };
 
@@ -75,23 +104,69 @@ type LoadLinkupConfigOptions = {
  * Parsed config-file shape after schema validation.
  */
 type ConfigFileShape = {
-  /** Optional fallback API key from config file. */
+  /**
+   * Optional fallback API key from config file.
+   */
   readonly apiKey?: string;
-  /** Optional raw host suffix blocklist. */
+  /**
+   * Optional raw host suffix blocklist.
+   */
   readonly blocklist?: readonly string[];
 };
 
 /**
- * Node filesystem error with optional error code.
+ * Optional parsed config JSON result.
  */
-type NodeErrorCodeCarrier = Error & {
-  /** Node system error code. */
-  readonly code?: unknown;
+type ConfigJsonReadResult = {
+  /**
+   * Whether config file loaded.
+   */
+  readonly loaded: false;
+} | {
+  /**
+   * Whether config file loaded.
+   */
+  readonly loaded: true;
+  /**
+   * Parsed JSON value.
+   */
+  readonly value: unknown;
+};
+
+/**
+ * API key resolution result.
+ */
+type ApiKeyResolution = {
+  /**
+   * Whether an API key was configured.
+   */
+  readonly configured: false;
+} | {
+  /**
+   * Whether an API key was configured.
+   */
+  readonly configured: true;
+  /**
+   * Effective API key.
+   */
+  readonly value: string;
+};
+
+/**
+ * Error object with a Node system code.
+ */
+type ErrorWithCode = Error & {
+  /**
+   * Node system code.
+   */
+  readonly code: unknown;
 };
 
 //endregion Types
 
-/** Module logger. */
+/**
+ * Module logger.
+ */
 const l = tagged({
   tag: 'config',
   l: linkupLogger,
@@ -106,7 +181,7 @@ const l = tagged({
  *
  * @returns loaded config with normalized blocklist and API key precedence
  *
- * @throws when the config file has invalid JSON, schema, or blocklist entries
+ * @throws when config file has invalid JSON, schema, or blocklist entries
  *
  * @example
  * ```ts
@@ -114,53 +189,45 @@ const l = tagged({
  * ```
  */
 function loadLinkupConfig(options: LoadLinkupConfigOptions = {},): LinkupConfig {
-  /** Logger tagged for this load call. */
   const innerL = tagged({
     tag: loadLinkupConfig.name,
     l,
   },);
-  /** Home directory used for config resolution. */
   const home = options.home
     ?? process.env.HOME
     ?? homedir();
-  /** Environment used for API key precedence. */
   const env = options.env
     ?? process.env;
-  /** Absolute config path checked by this loader. */
   const configPath = configPathForHome({ home, },);
-  /** Raw parsed JSON value from config file, when present. */
-  const parsedConfig = readOptionalConfigJson({ configPath, },);
-  /** Config-file shape after schema validation. */
-  const configFile = parsedConfig === undefined
-    ? {}
-    : validateConfigShape({
-      value: parsedConfig,
+  const readResult = readOptionalConfigJson({ configPath, },);
+  const configFile = readResult.loaded
+    ? validateConfigShape({
+      value: readResult.value,
       configPath,
-    },);
-  /** Normalized blocklist after local grammar validation. */
+    },)
+    : {};
   const blocklist = normalizeConfigBlocklist({
     entries: configFile.blocklist ?? [],
     configPath,
   },);
-  /** Effective API key after environment precedence. */
   const apiKey = resolveApiKey({
     env,
     ...(configFile.apiKey === undefined ? {} : { configApiKey: configFile.apiKey, }),
   },);
 
-  innerL.info(`loaded pi-linkup config from ${configPath}; present=${String(parsedConfig !== undefined,)}`,);
+  innerL.info(`loaded pi-linkup config from ${configPath}; present=${String(readResult.loaded,)}`,);
   return {
-    ...(apiKey === undefined ? {} : { apiKey, }),
+    ...(apiKey.configured ? { apiKey: apiKey.value, } : {}),
     blocklist,
     source: {
       path: configPath,
-      loaded: parsedConfig !== undefined,
+      loaded: readResult.loaded,
     },
   };
 }
 
 /**
- * Resolve the global Pi Linkup config path for a home directory.
+ * Resolve global Pi Linkup config path for a home directory.
  *
  * @param home - home directory
  *
@@ -188,31 +255,57 @@ function configPathForHome({ home, }: { readonly home: string; }): string {
  *
  * @param configPath - absolute config path
  *
- * @returns parsed JSON value, or undefined when absent
+ * @returns parsed JSON result, or absent result when file is absent
  *
  * @throws when reading fails for a reason other than missing file or JSON parsing fails
  */
-function readOptionalConfigJson({ configPath, }: { readonly configPath: string; }): unknown | undefined {
-  /** Raw file content. */
-  let content: string;
+function readOptionalConfigJson({ configPath, }: { readonly configPath: string; }): ConfigJsonReadResult {
   try {
-    content = readFileSync(configPath, 'utf8',);
+    const content = readFileSync(configPath, 'utf8',);
+    return {
+      loaded: true,
+      value: parseConfigJson({
+        content,
+        configPath,
+      },),
+    };
   }
   catch (error: unknown) {
     if (isMissingFileError(error,))
-      return undefined;
+      return { loaded: false, };
     throw error;
   }
+}
 
+/**
+ * Parse config JSON content.
+ *
+ * @param content - raw file content
+ *
+ * @param configPath - config path used in diagnostics
+ *
+ * @returns parsed JSON value
+ */
+function parseConfigJson(
+  {
+    content,
+    configPath,
+  }: {
+    readonly content: string;
+    readonly configPath: string;
+  },
+): unknown {
   try {
     return JSON.parse(content,) as unknown;
   }
   catch (error: unknown) {
-    /** JSON parse failure detail. */
     const detail = error instanceof Error
       ? error.message
       : String(error,);
-    throw new Error(`${PI_LINKUP_CONFIG_FILE} parsing failed at ${configPath}: ${detail}`,);
+    throw new Error(
+      `${PI_LINKUP_CONFIG_FILE} parsing failed at ${configPath}: ${detail}`,
+      { cause: error, },
+    );
   }
 }
 
@@ -224,9 +317,20 @@ function readOptionalConfigJson({ configPath, }: { readonly configPath: string; 
  * @returns whether error has ENOENT code
  */
 function isMissingFileError(error: unknown,): boolean {
-  return error instanceof Error
-    && 'code' in error
-    && (error as NodeErrorCodeCarrier).code === FILE_NOT_FOUND_CODE;
+  return isErrorWithCode(error,)
+    && error.code === FILE_NOT_FOUND_CODE;
+}
+
+/**
+ * Return whether error is an Error with a system code.
+ *
+ * @param error - unknown error
+ *
+ * @returns whether error has a code property
+ */
+function isErrorWithCode(error: unknown,): error is ErrorWithCode {
+  return (error instanceof Error)
+    && ('code' in error);
 }
 
 //endregion File parsing
@@ -242,7 +346,7 @@ function isMissingFileError(error: unknown,): boolean {
  *
  * @returns config-file shape
  *
- * @throws when value is not the expected flat object
+ * @throws when value is not expected flat object
  */
 function validateConfigShape(
   {
@@ -259,10 +363,10 @@ function validateConfigShape(
       reason: 'root value must be an object',
     },);
 
-  /** Unknown config-file keys. */
-  const extraKeys = Object.keys(value,)
+  const extraKeys = Object
+    .keys(value,)
     .filter(function isExtraKey(key,) {
-      return !CONFIG_KEYS.includes(key as typeof CONFIG_KEYS[number],);
+      return !CONFIG_KEY_SET.has(key,);
     },);
   if (extraKeys.length > 0)
     throw schemaError({
@@ -270,16 +374,12 @@ function validateConfigShape(
       reason: `unsupported keys: ${extraKeys.join(', ',)}`,
     },);
 
-  /** Config API key value. */
-  const apiKey = value.apiKey;
+  const { apiKey, blocklist, } = value;
   if (apiKey !== undefined && typeof apiKey !== 'string')
     throw schemaError({
       configPath,
       reason: 'apiKey must be a string when present',
     },);
-
-  /** Config blocklist value. */
-  const blocklist = value.blocklist;
   if (blocklist !== undefined && !isStringArray(blocklist,))
     throw schemaError({
       configPath,
@@ -321,8 +421,8 @@ function schemaError(
  * @returns whether value can be read by string keys
  */
 function isRecord(value: unknown,): value is Record<string, unknown> {
-  return value !== null
-    && typeof value === 'object'
+  return (value !== null)
+    && (typeof value === 'object')
     && !Array.isArray(value,);
 }
 
@@ -368,11 +468,13 @@ function normalizeConfigBlocklist(
     return normalizeBlocklist(entries,);
   }
   catch (error: unknown) {
-    /** Normalization failure detail. */
     const detail = error instanceof Error
       ? error.message
       : String(error,);
-    throw new Error(`${PI_LINKUP_CONFIG_FILE} blocklist normalization failed at ${configPath}: ${detail}`,);
+    throw new Error(
+      `${PI_LINKUP_CONFIG_FILE} blocklist normalization failed at ${configPath}: ${detail}`,
+      { cause: error, },
+    );
   }
 }
 
@@ -383,7 +485,7 @@ function normalizeConfigBlocklist(
  *
  * @param configApiKey - optional config-file API key
  *
- * @returns effective non-empty API key, if configured
+ * @returns effective API key resolution
  */
 function resolveApiKey(
   {
@@ -393,17 +495,21 @@ function resolveApiKey(
     readonly env: Readonly<NodeJS.ProcessEnv>;
     readonly configApiKey?: string;
   },
-): string | undefined {
-  /** Environment API key after trimming surrounding whitespace. */
+): ApiKeyResolution {
   const envApiKey = env[LINKUP_API_KEY_ENV]?.trim();
   if (envApiKey !== undefined && envApiKey !== '')
-    return envApiKey;
+    return {
+      configured: true,
+      value: envApiKey,
+    };
 
-  /** Config API key after trimming surrounding whitespace. */
   const fileApiKey = configApiKey?.trim();
-  return fileApiKey === ''
-    ? undefined
-    : fileApiKey;
+  if (fileApiKey === undefined || fileApiKey === '')
+    return { configured: false, };
+  return {
+    configured: true,
+    value: fileApiKey,
+  };
 }
 
 //endregion Value normalization

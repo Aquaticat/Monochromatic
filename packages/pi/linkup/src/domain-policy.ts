@@ -9,25 +9,39 @@ import { linkupLogger, } from './log.ts';
 
 //region Constants
 
-/** Characters allowed in normalized host suffix entries. */
+/**
+ * Characters allowed in normalized host suffix entries.
+ */
 const HOST_SUFFIX_ALLOWED_CHARS = 'abcdefghijklmnopqrstuvwxyz0123456789-.';
 
-/** Scheme delimiter rejected in blocklist entries. */
+/**
+ * Scheme delimiter rejected in blocklist entries.
+ */
 const SCHEME_DELIMITER = '://';
 
-/** Slash rejected in blocklist entries. */
+/**
+ * Slash rejected in blocklist entries.
+ */
 const SLASH = '/';
 
-/** Colon rejected in blocklist entries. */
+/**
+ * Colon rejected in blocklist entries.
+ */
 const COLON = ':';
 
-/** Wildcard rejected in blocklist entries. */
+/**
+ * Wildcard rejected in blocklist entries.
+ */
 const WILDCARD = '*';
 
-/** Dot used as host label separator. */
+/**
+ * Dot used as host label separator.
+ */
 const DOT = '.';
 
-/** Boundary suffix separator for subdomain matching. */
+/**
+ * Boundary suffix separator for subdomain matching.
+ */
 const DOT_PREFIX = '.';
 
 //endregion Constants
@@ -38,17 +52,63 @@ const DOT_PREFIX = '.';
  * Result of filtering Linkup search results with the local host blocklist.
  */
 type SearchResultFilterResult = {
-  /** Linkup-shaped response visible to the model after local filtering. */
+  /**
+   * Linkup-shaped response visible to the model after local filtering.
+   */
   readonly linkupResponse: unknown;
-  /** Untouched upstream Linkup response. */
+  /**
+   * Untouched upstream Linkup response.
+   */
   readonly rawLinkupResponse: unknown;
-  /** Blocked result URLs removed from the model-visible response. */
+  /**
+   * Blocked result URLs removed from the model-visible response.
+   */
   readonly removedBlockedUrls: readonly string[];
+};
+
+/**
+ * Host or URL blocklist match result.
+ */
+type BlocklistMatch = {
+  /**
+   * Whether input matched the blocklist.
+   */
+  readonly blocked: false;
+} | {
+  /**
+   * Whether input matched the blocklist.
+   */
+  readonly blocked: true;
+  /**
+   * Matching blocklist entry.
+   */
+  readonly entry: string;
+};
+
+/**
+ * Optional URL extracted from a Linkup search result.
+ */
+type SearchResultUrl = {
+  /**
+   * Whether a URL was present.
+   */
+  readonly found: false;
+} | {
+  /**
+   * Whether a URL was present.
+   */
+  readonly found: true;
+  /**
+   * Search result URL.
+   */
+  readonly url: string;
 };
 
 //endregion Types
 
-/** Module logger. */
+/**
+ * Module logger.
+ */
 const l = tagged({
   tag: 'domain-policy',
   l: linkupLogger,
@@ -71,18 +131,16 @@ const l = tagged({
  * ```
  */
 function normalizeBlocklistEntry(entry: string,): string {
-  /** Logger tagged for this normalization call. */
   const innerL = tagged({
     tag: normalizeBlocklistEntry.name,
     l,
   },);
-  /** Trimmed host suffix candidate. */
   const trimmed = entry.trim();
   if (trimmed === '')
     throw new Error('blocklist entry is empty');
 
-  /** Lowercase host suffix candidate with one optional trailing root dot removed. */
-  const normalized = stripOneTrailingDot(trimmed.toLowerCase(),);
+  const lowered = trimmed.toLowerCase();
+  const normalized = stripOneTrailingDot(lowered,);
   if (normalized === '')
     throw new Error(`blocklist entry ${JSON.stringify(entry,)} is empty after normalization`);
   if (normalized.includes(SCHEME_DELIMITER,))
@@ -94,13 +152,14 @@ function normalizeBlocklistEntry(entry: string,): string {
   if (normalized.includes(WILDCARD,))
     throw new Error(`blocklist entry ${JSON.stringify(entry,)} must not include a wildcard`);
 
-  /** Host labels split on dots. */
   const labels = normalized.split(DOT,);
   if (labels.some(function isEmptyLabel(label,) {
     return label === '';
   },))
     throw new Error(`blocklist entry ${JSON.stringify(entry,)} must not include empty labels`);
-  if (!Array.from(normalized,).every(isAllowedHostSuffixChar,))
+  if (![...normalized,].every(function isAllowedChar(char,) {
+    return isAllowedHostSuffixChar(char,);
+  },))
     throw new Error(`blocklist entry ${JSON.stringify(entry,)} contains invalid host characters`);
 
   innerL.debug(`normalized blocklist entry ${entry} to ${normalized}`,);
@@ -122,7 +181,6 @@ function normalizeBlocklistEntry(entry: string,): string {
  * ```
  */
 function normalizeBlocklist(entries: readonly string[],): readonly string[] {
-  /** Normalized host suffixes. */
   const normalizedEntries = entries.map(function normalizeEntry(entry,) {
     return normalizeBlocklistEntry(entry,);
   },);
@@ -142,9 +200,12 @@ function normalizeBlocklist(entries: readonly string[],): readonly string[] {
  * ```
  */
 function stripOneTrailingDot(value: string,): string {
-  return value.endsWith(DOT,)
-    ? value.slice(0, -1,)
-    : value;
+  if (!value.endsWith(DOT,))
+    return value;
+  return value.slice(
+    0,
+    -1,
+  );
 }
 
 /**
@@ -180,7 +241,9 @@ function isAllowedHostSuffixChar(char: string,): boolean {
  * ```
  */
 function normalizeHostForPolicy(host: string,): string {
-  return stripOneTrailingDot(host.trim().toLowerCase(),);
+  const trimmed = host.trim();
+  const lowered = trimmed.toLowerCase();
+  return stripOneTrailingDot(lowered,);
 }
 
 /**
@@ -190,7 +253,7 @@ function normalizeHostForPolicy(host: string,): string {
  *
  * @param blocklist - normalized host suffix blocklist
  *
- * @returns matching blocklist entry, when blocked
+ * @returns match result
  *
  * @example
  * ```ts
@@ -205,13 +268,18 @@ function findBlockedHostMatch(
     readonly host: string;
     readonly blocklist: readonly string[];
   },
-): string | undefined {
-  /** Normalized host from URL parsing. */
+): BlocklistMatch {
   const normalizedHost = normalizeHostForPolicy(host,);
-  return blocklist.find(function matchesEntry(entry,) {
-    return normalizedHost === entry
+  const matchedEntry = blocklist.find(function matchesEntry(entry,) {
+    return (normalizedHost === entry)
       || normalizedHost.endsWith(`${DOT_PREFIX}${entry}`,);
   },);
+  return matchedEntry === undefined
+    ? { blocked: false, }
+    : {
+      blocked: true,
+      entry: matchedEntry,
+    };
 }
 
 /**
@@ -237,7 +305,10 @@ function isBlockedHost(
     readonly blocklist: readonly string[];
   },
 ): boolean {
-  return findBlockedHostMatch({ host, blocklist, },) !== undefined;
+  return findBlockedHostMatch({
+    host,
+    blocklist,
+  },).blocked;
 }
 
 /**
@@ -247,7 +318,7 @@ function isBlockedHost(
  *
  * @param blocklist - normalized host suffix blocklist
  *
- * @returns matching blocklist entry, when blocked
+ * @returns match result
  *
  * @throws when url cannot be parsed
  *
@@ -264,8 +335,7 @@ function findBlockedUrlMatch(
     readonly url: string;
     readonly blocklist: readonly string[];
   },
-): string | undefined {
-  /** Parsed URL used as host grammar authority. */
+): BlocklistMatch {
   const parsedUrl = parsePolicyUrl(url,);
   return findBlockedHostMatch({
     host: parsedUrl.hostname,
@@ -298,7 +368,10 @@ function isBlockedUrl(
     readonly blocklist: readonly string[];
   },
 ): boolean {
-  return findBlockedUrlMatch({ url, blocklist, },) !== undefined;
+  return findBlockedUrlMatch({
+    url,
+    blocklist,
+  },).blocked;
 }
 
 /**
@@ -320,11 +393,13 @@ function parsePolicyUrl(url: string,): URL {
     return new URL(url,);
   }
   catch (error: unknown) {
-    /** Parse failure detail from the URL constructor. */
     const detail = error instanceof Error
       ? error.message
       : String(error,);
-    throw new Error(`Invalid URL for pi-linkup blocklist check: ${url}. ${detail}`,);
+    throw new Error(
+      `Invalid URL for pi-linkup blocklist check: ${url}. ${detail}`,
+      { cause: error, },
+    );
   }
 }
 
@@ -356,54 +431,33 @@ function filterBlockedSearchResults(
   },
 ): SearchResultFilterResult {
   if (blocklist.length === 0)
-    return {
-      linkupResponse: response,
-      rawLinkupResponse: response,
-      removedBlockedUrls: [],
-    };
+    return unfilteredSearchResponse(response,);
   if (!isRecord(response,))
-    return {
-      linkupResponse: response,
-      rawLinkupResponse: response,
-      removedBlockedUrls: [],
-    };
+    return unfilteredSearchResponse(response,);
 
-  /** Raw `results` property from Linkup response. */
-  const rawResults = response.results;
+  const { results: rawResults, } = response;
   if (!Array.isArray(rawResults,))
-    return {
-      linkupResponse: response,
-      rawLinkupResponse: response,
-      removedBlockedUrls: [],
-    };
+    return unfilteredSearchResponse(response,);
 
-  /** Blocked result URLs observed while filtering. */
   const removedBlockedUrls: string[] = [];
-  /** Results allowed to remain model-visible. */
   const filteredResults = rawResults.filter(function keepAllowedResult(result,) {
-    /** Result URL when the result has a string URL field. */
     const resultUrl = searchResultUrl(result,);
-    if (resultUrl === undefined)
+    if (!resultUrl.found)
       return true;
 
-    /** Matching blocklist entry, when URL host is blocked. */
     const blockedEntry = blockedEntryForPossiblyInvalidUrl({
-      url: resultUrl,
+      url: resultUrl.url,
       blocklist,
     },);
-    if (blockedEntry === undefined)
+    if (!blockedEntry.blocked)
       return true;
 
-    removedBlockedUrls.push(resultUrl,);
+    removedBlockedUrls.push(resultUrl.url,);
     return false;
   },);
 
   if (removedBlockedUrls.length === 0)
-    return {
-      linkupResponse: response,
-      rawLinkupResponse: response,
-      removedBlockedUrls,
-    };
+    return unfilteredSearchResponse(response,);
 
   l.warn(`removed ${String(removedBlockedUrls.length,)} blocked Linkup search result(s)`,);
   return {
@@ -417,13 +471,28 @@ function filterBlockedSearchResults(
 }
 
 /**
- * Return blocklist match for a Linkup result URL or undefined for unparsable URLs.
+ * Build an unfiltered search filter result.
+ *
+ * @param response - upstream response
+ *
+ * @returns unfiltered filter result
+ */
+function unfilteredSearchResponse(response: unknown,): SearchResultFilterResult {
+  return {
+    linkupResponse: response,
+    rawLinkupResponse: response,
+    removedBlockedUrls: [],
+  };
+}
+
+/**
+ * Return blocklist match for a Linkup result URL or unblocked for unparsable URLs.
  *
  * @param url - Linkup result URL
  *
  * @param blocklist - normalized host suffix blocklist
  *
- * @returns matching blocklist entry, when the URL parses and is blocked
+ * @returns matching blocklist entry, when URL parses and is blocked
  *
  * @example
  * ```ts
@@ -438,13 +507,16 @@ function blockedEntryForPossiblyInvalidUrl(
     readonly url: string;
     readonly blocklist: readonly string[];
   },
-): string | undefined {
+): BlocklistMatch {
   try {
-    return findBlockedUrlMatch({ url, blocklist, },);
+    return findBlockedUrlMatch({
+      url,
+      blocklist,
+    },);
   }
   catch {
     l.warn(`skipping local blocklist filtering for unparsable Linkup result URL: ${url}`,);
-    return undefined;
+    return { blocked: false, };
   }
 }
 
@@ -453,19 +525,23 @@ function blockedEntryForPossiblyInvalidUrl(
  *
  * @param value - Linkup result candidate
  *
- * @returns URL when value has a string url property
+ * @returns URL extraction result
  *
  * @example
  * ```ts
  * searchResultUrl({ url: 'https://example.com' });
  * ```
  */
-function searchResultUrl(value: unknown,): string | undefined {
+function searchResultUrl(value: unknown,): SearchResultUrl {
   if (!isRecord(value,))
-    return undefined;
-  return typeof value.url === 'string'
-    ? value.url
-    : undefined;
+    return { found: false, };
+  const { url, } = value;
+  return typeof url === 'string'
+    ? {
+      found: true,
+      url,
+    }
+    : { found: false, };
 }
 
 /**
@@ -481,8 +557,8 @@ function searchResultUrl(value: unknown,): string | undefined {
  * ```
  */
 function isRecord(value: unknown,): value is Record<string, unknown> {
-  return value !== null
-    && typeof value === 'object'
+  return (value !== null)
+    && (typeof value === 'object')
     && !Array.isArray(value,);
 }
 
@@ -498,4 +574,7 @@ export {
   normalizeBlocklistEntry,
   normalizeHostForPolicy,
 };
-export type { SearchResultFilterResult, };
+export type {
+  BlocklistMatch,
+  SearchResultFilterResult,
+};

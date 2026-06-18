@@ -23,16 +23,24 @@ import {
 
 //region Fixtures
 
-/** Config API key fixture. */
+/**
+ * Config API key fixture.
+ */
 const CONFIG_API_KEY = 'config-key';
 
-/** Environment API key fixture. */
+/**
+ * Environment API key fixture.
+ */
 const ENV_API_KEY = 'env-key';
 
-/** Blocklist entry fixture. */
+/**
+ * Blocklist entry fixture.
+ */
 const BLOCKLIST_ENTRY = 'badwikipedia.invalid';
 
-/** Invalid blocklist entry fixture. */
+/**
+ * Invalid blocklist entry fixture.
+ */
 const INVALID_BLOCKLIST_ENTRY = 'badwikipedia.invalid:443';
 
 //endregion Fixtures
