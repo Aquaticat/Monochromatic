@@ -1,6 +1,7 @@
 # Pi 0.79.6 and @benvargas/pi-synthetic-provider 1.1.14: startup model scope drops Synthetic GLM-5.2
 
-Current status (2026-06-18): diagnosed and reproduced.
+Current status (2026-06-18):
+diagnosed and reproduced.
 The local package was not patched.
 A minimal upstream-compatible prototype patch is recorded in
 [`pi-synthetic-provider-startup-model-scope.patch`](pi-synthetic-provider-startup-model-scope.patch).
@@ -56,14 +57,18 @@ curl --silent --show-error --location https://api.synthetic.new/openai/v1/models
 
 The provider registers a four-model hardcoded fallback catalog during extension loading,
 then fetches the live Synthetic catalog later in `session_start`.
-Pi resolves `enabledModels` against the provider catalog that exists before that
-`session_start` refresh.
-GLM-5.2 is live in Synthetic, but it is not in the provider's startup fallback catalog,
+Behavior shows `enabledModels` is resolved against the provider catalog that exists
+before the `session_start` refresh is visible.
+GLM-5.2 is live in Synthetic,
+but it is not in the provider's startup fallback catalog,
 so the exact scoped-model pattern misses and Pi emits the warning.
+Line references under `packages/pi-synthetic-provider/` refer to upstream clone commit
+`a14dbe2ba398271392483f31d0f5f62e3cb33a98` unless otherwise noted.
 
 ### Step 1: Pi reads an exact scoped-model pattern
 
-The observed local settings entry is exact, not fuzzy and not a glob:
+The observed local settings entry is exact,
+not fuzzy and not a glob:
 `~/.pi/agent/settings.json:36-40` shows `synthetic/hf:zai-org/GLM-5.2`.
 
 ```json
@@ -117,7 +122,7 @@ for (const { name, config, extensionPath } of extensionsResult.runtime.pendingPr
 extensionsResult.runtime.pendingProviderRegistrations = [];
 ```
 
-### Step 3: the provider's live refresh happens after startup model matching
+### Step 3: the provider's live refresh is not visible to startup model matching
 
 `packages/pi-synthetic-provider/extensions/index.ts:85-109` fetches live models only
 inside `session_start`:
@@ -144,7 +149,9 @@ pi.on("session_start", async (_event, ctx) => {
 ```
 
 Pi's own custom-provider documentation says dynamic model discovery belongs in an
-async extension factory, not `session_start`, when the catalog must be visible
+async extension factory,
+not `session_start`,
+when the catalog must be visible
 during startup and to `pi --list-models`.
 `@earendil-works/pi-coding-agent@0.79.6/docs/custom-provider.md:63`:
 
@@ -168,7 +175,8 @@ async function loadExtension(extensionPath, cwd, eventBus, runtime) {
         await factory(api);
 ```
 
-`session_start` is emitted later, when extensions are bound to an `AgentSession`.
+`session_start` is emitted later,
+when extensions are bound to an `AgentSession`.
 `@earendil-works/pi-coding-agent@0.79.6/dist/core/agent-session.js:1654-1656`:
 
 ```javascript
@@ -235,7 +243,10 @@ export async function fetchSyntheticModels(apiKey?: string): Promise<ProviderMod
 ```
 
 `packages/pi-synthetic-provider/extensions/models.ts:78-89` documents the fallback
-catalog as Kimi-K2.6, MiniMax-M2.5, Nemotron, and GLM-5.1:
+catalog as Kimi-K2.6,
+MiniMax-M2.5,
+Nemotron,
+and GLM-5.1:
 
 ```typescript
 /**
@@ -253,7 +264,8 @@ catalog as Kimi-K2.6, MiniMax-M2.5, Nemotron, and GLM-5.1:
 ```
 
 The fallback implementation includes GLM-5.1 at
-`packages/pi-synthetic-provider/extensions/models.ts:137-151`, not GLM-5.2:
+`packages/pi-synthetic-provider/extensions/models.ts:137-151`,
+not GLM-5.2:
 
 ```typescript
 {
@@ -277,12 +289,16 @@ The fallback implementation includes GLM-5.1 at
 
 Version under test:
 
-- Pi CLI: `pi --version` returned `0.79.6`.
-- Installed provider: `@benvargas/pi-synthetic-provider` version `1.1.14`
+- Pi CLI value from `pi --version` was `0.79.6`.
+- `SYNTHETIC_API_KEY=dummy` in the `pi --list-models` commands below is only a
+  scratch value to mark the provider as auth-configured for model listing.
+  It is not valid for inference;
+  real model calls need a real Synthetic key.
+- Installed provider was `@benvargas/pi-synthetic-provider` version `1.1.14`
   from `~/.pi/agent/npm/node_modules/@benvargas/pi-synthetic-provider/package.json`.
-- Source clone: `ben-vargas/pi-packages` at
-  `a14dbe2ba398271392483f31d0f5f62e3cb33a98`, cloned from
-  `https://github.com/ben-vargas/pi-packages.git`.
+- Source clone was `ben-vargas/pi-packages` at
+  `a14dbe2ba398271392483f31d0f5f62e3cb33a98`,
+  cloned from `https://github.com/ben-vargas/pi-packages.git`.
 
 ### Failing catalog
 
@@ -313,7 +329,14 @@ synthetic  hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4  262.1K   65.5K    
 synthetic  hf:zai-org/GLM-5.1                                 196.6K   65.5K    yes       no
 ```
 
-A `models.json` provider entry does not fix the package case when the provider
+A `models.json` provider entry does load when the provider package is absent:
+
+```text
+provider   model               context  max-out  thinking  images
+synthetic  hf:zai-org/GLM-5.2  524.3K   65.5K    yes       no
+```
+
+The same `models.json` entry does not fix the package case when the provider
 extension is also installed:
 
 ```text
@@ -327,7 +350,8 @@ synthetic  hf:zai-org/GLM-5.1                                 196.6K   65.5K    
 
 That result follows Pi's provider-registration semantics:
 `@earendil-works/pi-coding-agent@0.79.6/dist/core/model-registry.js:691-692`
-checks for model-bearing registrations, and the following block removes existing
+checks for model-bearing registrations,
+and the following block removes existing
 models for that provider before pushing the registered list:
 
 ```javascript
@@ -359,7 +383,8 @@ provider   model               context  max-out  thinking  images
 synthetic  hf:zai-org/GLM-5.1  196.6K   65.5K    yes       no
 ```
 
-A fuzzy fallback pattern also works cleanly, but it resolves to GLM-5.1,
+A fuzzy fallback pattern also works cleanly,
+but it resolves to GLM-5.1,
 not GLM-5.2:
 
 ```text
@@ -394,7 +419,7 @@ synthetic  hf:zai-org/GLM-5.2  524.3K   65.5K    yes       no
 
 Use a shim extension after `@benvargas/pi-synthetic-provider` in `packages` to
 register GLM-5.2 during extension loading.
-This is a consumer-side workaround: it does not edit the third-party package.
+This consumer-side workaround does not edit the third-party package.
 
 ```typescript
 // ~/.pi/agent/extensions/synthetic-glm-52.ts
@@ -450,10 +475,12 @@ provider   model               context  max-out  thinking  images
 synthetic  hf:zai-org/GLM-5.2  524.3K   65.5K    yes       no
 ```
 
-Tradeoff: this hardcodes GLM-5.2 metadata at the consumer boundary.
-If startup model cycling should include more Synthetic models before the provider's
-`session_start` refresh, those models must be listed in the shim too.
-After a full interactive session starts, the upstream provider's existing
+Tradeoff:
+this hardcodes GLM-5.2 metadata at the consumer boundary.
+Add every other Synthetic model from `enabledModels` to the shim too.
+Do the same for each Synthetic model needed for startup cycling before the provider's
+`session_start` refresh.
+After a full interactive session starts the upstream provider's existing
 `session_start` handler still refreshes the live catalog.
 
 ### Use a fallback model in `enabledModels`
@@ -461,28 +488,33 @@ After a full interactive session starts, the upstream provider's existing
 Pointing `enabledModels` at `synthetic/hf:zai-org/GLM-5.1` avoids the warning
 because GLM-5.1 is in the startup fallback catalog.
 
-Tradeoff: this changes the selected model to GLM-5.1.
+Tradeoff:
+this changes the selected model to GLM-5.1.
 It is only acceptable when the goal is a quiet startup rather than using GLM-5.2.
 
 ## What does not work
 
 - Adding GLM-5.2 to `~/.pi/agent/models.json` while the provider package is installed
-  does not work. The provider package's model-bearing `registerProvider("synthetic", ...)`
+  does not work because the package's model-bearing `registerProvider("synthetic", ...)`
   call replaces the existing `synthetic` provider models before scoped-model resolution.
-- Changing the pattern to a broader fallback match, such as `hf:zai-org/GLM-5`,
+- Changing the pattern to a broader fallback match such as `hf:zai-org/GLM-5`
   avoids the GLM-5.2 warning only by resolving to GLM-5.1.
   That is not a GLM-5.2 workaround.
 - Waiting for `session_start` does not help `pi --list-models` or the initial
-  scoped-model warning. Pi's custom-provider documentation explicitly says dynamic
-  model discovery needed at startup belongs in the extension factory.
+  scoped-model warning.
+  Pi's custom-provider documentation explicitly says dynamic model discovery needed
+  at startup belongs in the extension factory.
 
 ## Upstream filing decision
 
 ### Out-of-scope check
 
 No matching exemption exists in `.out-of-scope/`.
-The search checked files under `.out-of-scope/` for `synthetic`, `pi`, `provider`,
-and `GLM`; matches were unrelated to this provider warning.
+The search checked files under `.out-of-scope/` for `synthetic`,
+`pi`,
+`provider`,
+and `GLM`;
+matches were unrelated to this provider warning.
 
 ### Duplicate search
 
@@ -506,34 +538,62 @@ Each returned `[]`.
 
 ### Constraint check
 
-- Is it really upstream's fault? Yes.
-  The local settings entry is valid Pi syntax, the live Synthetic endpoint includes
-  GLM-5.2, and the provider registers stale fallback models during extension loading.
-  The warning comes from Pi resolving a valid pattern against that stale provider catalog.
-- Can upstream fix it? Yes.
-  The provider can fetch live models in an async factory before initial registration,
-  exactly as Pi's custom-provider documentation recommends.
-- Are they supporting this use case? Yes.
-  `packages/pi-synthetic-provider/README.md:7-13` advertises dynamic model discovery
-  at session start and graceful degradation through fallback models.
-  Pi's custom-provider docs explicitly support async factory registration for dynamic
-  catalogs that must be visible to startup and `pi --list-models`.
-- Would the repo welcome our contribution? Yes.
-  The repository has no `CONTRIBUTING.md`, issue template, PR template, or AI-assisted
-  filing ban in the cloned source.
-  `README.md` has a Contributing section with local testing instructions.
-  Recent repo history shows merged PRs, including PR 7 for a Synthetic fallback update
-  and PR 13 for Pi compatibility.
-- Will they likely fix it? Soft yes.
-  No duplicate or wontfix signal was found, and the repo has prior Synthetic fallback
-  maintenance.
-- Have we prototyped a minimal fix compatible with their architecture? Yes.
-  The patch in `pi-synthetic-provider-startup-model-scope.patch` makes the extension
-  factory async, fetches live models before initial registration, keeps fallback behavior
-  through the existing `fetchSyntheticModels()` catch path, and updates the package's
-  startup registration test.
-  The prototype was verified with `PI_CODING_AGENT_DIR` pointing at the patched clone;
-  `pi --list-models GLM-5.2` listed GLM-5.2 without the warning.
+#### Is it really upstream's fault
+
+Yes.
+The local settings entry is valid Pi syntax.
+The live Synthetic endpoint includes GLM-5.2.
+The provider registers stale fallback models during extension loading.
+The warning comes from Pi resolving a valid pattern against that stale provider catalog.
+
+#### Can upstream fix it
+
+Yes.
+The provider can fetch live models in an async factory before initial registration,
+exactly as Pi's custom-provider documentation recommends.
+
+#### Are they supporting this use case
+
+Yes.
+`packages/pi-synthetic-provider/README.md:7-13` advertises dynamic model discovery
+at session start and graceful degradation through fallback models.
+Pi's custom-provider docs explicitly support async factory registration for dynamic
+catalogs that must be visible to startup and `pi --list-models`.
+
+#### Would the repo welcome our contribution
+
+Soft yes.
+No repository policy was found that discourages filing.
+The repository has no `CONTRIBUTING.md`,
+no issue template,
+no PR template,
+and no AI-assisted filing ban in the cloned source.
+The README has a Contributing section with local testing instructions.
+Recent repo history shows merged PRs.
+Examples include PR 7 for a Synthetic fallback update and PR 13 for Pi compatibility.
+
+#### Will they likely fix it
+
+Soft yes under the default filing check.
+No duplicate or wontfix signal was found.
+The repo has prior Synthetic fallback maintenance.
+This is enough to make filing reasonable,
+not a prediction of maintainer response.
+
+#### Have we prototyped a minimal fix compatible with their architecture
+
+Yes.
+The patch in `pi-synthetic-provider-startup-model-scope.patch` makes the extension
+factory async.
+It fetches live models before initial registration.
+It keeps fallback behavior through the existing `fetchSyntheticModels()` catch path.
+It updates the package's startup registration test.
+The prototype was verified with `PI_CODING_AGENT_DIR` pointing at the patched clone;
+`pi --list-models GLM-5.2` listed GLM-5.2 without the warning.
+Tradeoff:
+startup now waits for the model-catalog fetch.
+`packages/pi-synthetic-provider/extensions/models.ts:13-24` has no explicit timeout,
+so an upstream patch should consider a bounded fetch if startup latency matters.
 
 ### Draft issue
 
@@ -609,17 +669,20 @@ helper before the initial `registerProvider` call:
 +export default async function (pi: ExtensionAPI) {
 +	const startupModels = await fetchSyntheticModels();
 +
- 	pi.registerProvider("synthetic", {
- 		baseUrl: SYNTHETIC_API_BASE_URL,
- 		apiKey: "$SYNTHETIC_API_KEY",
- 		api: "openai-completions",
+	pi.registerProvider("synthetic", {
+		baseUrl: SYNTHETIC_API_BASE_URL,
+		apiKey: "$SYNTHETIC_API_KEY",
+		api: "openai-completions",
 -		models: getFallbackModels(),
 +		models: startupModels,
- 	});
+	});
 ```
 
 `fetchSyntheticModels()` already catches endpoint failures and returns
 `getFallbackModels()`, so the existing graceful-degradation behavior is preserved.
+The tradeoff is that startup now waits for the model-catalog fetch.
+The current helper has no explicit timeout, so a production patch should consider
+bounding that fetch if startup latency matters.
 
 I prototyped this in a disposable clone and verified:
 
