@@ -2,6 +2,7 @@
 
 Status:
  resolved implementation plan from grill-me review.
+ Revised after GLM review on 2026-06-18.
  Not built.
  Authored 2026-06-18.
 
@@ -17,7 +18,8 @@ The extension's job is narrow:
 - Search with Linkup's `POST /v1/search` endpoint.
 - Fetch pages with Linkup's `POST /v1/fetch` endpoint.
 - Apply a global host blocklist to every search request and every fetch attempt.
-- Return Linkup's own response object as raw JSON text for the model.
+- Return Linkup's own response object as JSON text for the model,
+  except when local policy filtering removes blocked search results.
 
 The extension is not a general web provider layer,
 not a research tool,
@@ -39,6 +41,11 @@ and not a Linkup account-management UI.
   with required `q`, `depth`, and `outputType`,
   plus optional `excludeDomains`, `fromDate`, `includeDomains`, `toDate`,
   `includeImages`, and `maxResults`.
+- Linkup's max-results changelog says `maxResults` is a first-class `/search`
+  parameter for controlling the amount of context passed downstream.
+- Linkup's source-filtering guide documents `excludeDomains` for excluding
+  URLs or domains,
+  but does not specify whether a domain entry matches subdomains by suffix.
 - Linkup's fetch reference documents `POST https://api.linkup.so/v1/fetch`
   with required `url`,
   plus optional `renderJs`, `extractImages`, and `includeRawHtml`.
@@ -46,6 +53,12 @@ and not a Linkup account-management UI.
   so fetch blocklist enforcement must happen locally before the network call.
 - Existing repo Pi package tests are colocated as `src/*.unit.test.ts`
   and run through package-scoped `mise run` tasks.
+- Existing repo Pi packages that log use tagged loggers from
+  `@monochromatic-dev/module-logger`.
+- Existing repo Pi packages that declare `typebox` as a peer also install it
+  for development when they import it directly.
+- Several existing repo Pi packages ship `src/mise.verify-extension.ts` plus a
+  `verify:extension` mise task to assert built extension registrations.
 
 ## Package shape
 
@@ -55,14 +68,15 @@ Create `packages/pi/linkup/` with these package properties:
 - Entry point: `src/index.ts`.
 - Built extension: `dist/final/node/index.mjs`.
 - `package.json#pi.extensions`: `['./dist/final/node/index.mjs']`.
-- Runtime dependencies: none beyond Pi peer dependencies and Node built-ins.
+- Runtime dependencies: `@monochromatic-dev/module-logger` plus Node built-ins.
 - Peer dependencies: `@earendil-works/pi-coding-agent` and `typebox`.
 - Dev dependencies follow sibling Pi packages:
   `@earendil-works/pi-coding-agent`,
   `@monochromatic-dev/config-tsdown`,
   `@monochromatic-dev/config-typescript`,
   `@monochromatic-dev/module-test`,
-  and `@types/node`.
+  `@types/node`,
+  and `typebox`.
 
 The package should include these files at minimum:
 
@@ -73,6 +87,8 @@ The package should include these files at minimum:
 - `src/client.ts`
 - `src/config.ts`
 - `src/domain-policy.ts`
+- `src/log.ts`
+- `src/mise.verify-extension.ts`
 - `src/tool-output.ts`
 - `src/tools.ts`
 - colocated unit tests for each module with branch logic
@@ -124,7 +140,7 @@ The request body sent to Linkup is always:
 }
 ```
 
-Unsupported search parameters are accepted only as compatibility noise,
+Extension-unsupported or fixed search parameters are accepted only as compatibility noise,
 ignored,
 and warned about in the tool result.
 This includes:
@@ -137,14 +153,29 @@ This includes:
 - `outputType`
 - every other extra key
 
+`maxResults` is supported by Linkup,
+but it is intentionally not exposed by this extension because the user selected
+no per-search result-count control for this v1 plan.
+`limit` is different:
+it is the incumbent tool's parameter name,
+not a Linkup API field.
+Both are ignored with a warning so old tool calls fail loudly enough for the model
+without changing the request sent to Linkup.
+
 The tool must never let a per-call value override the fixed `standard` depth,
 the fixed `searchResults` output type,
 or the global blocklist.
 
-Search results are not post-filtered by the extension.
-The extension relies on Linkup's `excludeDomains` handling for search.
-This is an explicit design decision from grill-me review,
-not an accidental omission.
+Search still sends the normalized global blocklist to Linkup as `excludeDomains`.
+After Linkup returns,
+the extension also filters `response.results` with the same local suffix matcher
+used by fetch preflight.
+This local post-filter is required because Linkup's docs do not specify whether
+`excludeDomains: ['badwikipedia.invalid']` also excludes
+`www.badwikipedia.invalid`.
+The model-visible response keeps Linkup's response shape with blocked result
+entries removed.
+The untouched upstream response stays in non-model-visible details for audit.
 
 ## Fetch contract
 
@@ -245,25 +276,51 @@ Matching rules:
 - `badwikipedia.invalid` does not match `notbadwikipedia.invalid`.
 
 The normalized blocklist is sent to Linkup search as `excludeDomains`.
-The same normalized blocklist is used locally for fetch preflight.
+The same normalized blocklist is used locally for search result post-filtering
+and fetch preflight.
+
+## Deliberate capability removals
+
+The incumbent skill advertises knobs this package deliberately does not expose.
+These are settled grill-me decisions,
+not omissions:
+
+- Search depth is always `standard`.
+  `fast` and `deep` are ignored with warnings when supplied.
+- Search output type is always `searchResults`.
+  Web-answer output is not present in the package.
+- Search does not expose per-call `maxResults` in v1,
+  even though Linkup supports it.
+- Fetch always sends `renderJs: true`.
+  `renderJs: false` is ignored with a warning when supplied.
 
 ## Tool output
 
-Return Linkup's response object as raw JSON text.
-The parsed response object is stored untouched in `details.linkupResponse`.
+Return Linkup's response object as JSON text when no policy filtering changes it.
+If search post-filtering removes blocked results,
+return the filtered Linkup-shaped response as JSON text instead.
+
+Details should store both forms:
+
+- `details.linkupResponse`: the model-visible response object,
+  after policy filtering when filtering occurred.
+- `details.rawLinkupResponse`: the untouched parsed Linkup response object.
+
+Do not surface `details.rawLinkupResponse` to the model when it contains blocked
+search results.
 
 If ignored parameters were supplied,
-return a separate warning text block before the raw JSON block.
+return a separate warning text block before the JSON block.
 The warning should name every ignored key and say the fixed behavior that won.
 For example:
 
 ```text
-Warning: ignored unsupported linkup_web_search parameters: depth, limit.
-This extension always uses depth="standard" and Linkup's default result count.
+Warning: ignored extension-unsupported linkup_web_search parameters: depth, limit, maxResults.
+This extension always uses depth="standard" and does not expose per-search result-count controls.
 ```
 
-Then return the raw response JSON as a separate text content item.
-This keeps the Linkup response itself as-is while still making migration warnings
+Then return the response JSON as a separate text content item.
+This keeps normal Linkup responses visually raw while still making migration warnings
 visible to the model.
 
 Large JSON output should be truncated using Pi's default truncation helpers.
@@ -283,6 +340,12 @@ The client should throw clear errors for:
 
 Error messages should include endpoint context,
 but must not include the API key or authorization header.
+
+Use tagged loggers from `@monochromatic-dev/module-logger` for production logging.
+Do not use raw `console.log` or `console.error` in the extension runtime.
+The `src/mise.verify-extension.ts` script may print its final verification result
+because it is a user-facing verification script,
+not production tool execution.
 
 ## Tests
 
@@ -309,7 +372,8 @@ Client tests with mocked `fetch`:
 
 - search sends `q`, fixed `standard`, fixed `searchResults`, and global `excludeDomains`
 - search includes `fromDate`, `includeDomains`, and `toDate` when provided
-- search does not send unsupported per-call options
+- search does not send extension-unsupported per-call options,
+  including Linkup-supported `maxResults`
 - fetch sends fixed `renderJs: true`, `extractImages: false`, and `includeRawHtml: false`
 - non-2xx response throws without leaking secrets
 
@@ -317,10 +381,17 @@ Tool tests:
 
 - extension registers only `linkup_web_search` and `linkup_web_fetch`
 - search ignored params produce model-visible warnings
+- search local post-filter removes blocked result URLs from model-visible output
+- search preserves the untouched upstream response in `details.rawLinkupResponse`
 - fetch ignored params produce model-visible warnings
 - blocked fetch throws before mocked `fetch` is called
-- raw Linkup response is preserved in `details.linkupResponse`
-- visible output is JSON for the Linkup response
+- model-visible response is preserved in `details.linkupResponse`
+- visible output is JSON for the model-visible response
+
+Built-extension tests:
+
+- `src/mise.verify-extension.ts` imports the built `dist/final/node/index.mjs`
+- the fake Pi API sees only `tool:linkup_web_search` and `tool:linkup_web_fetch`
 
 ## Verification plan
 
@@ -331,6 +402,7 @@ mise run //packages/pi/linkup:build
 mise run //packages/pi/linkup:lint:types
 mise run //packages/pi/linkup:lint:oxlint
 mise run //packages/pi/linkup:test:unit
+mise run //packages/pi/linkup:verify:extension
 ```
 
 After package tests pass,
@@ -338,7 +410,8 @@ verify the extension at the user boundary:
 
 - Load the local package or source extension through Pi.
 - Confirm only `linkup_web_search` and `linkup_web_fetch` are registered.
-- Run a real search and inspect the outgoing behavior through a safe fixture or logged mock.
+- Run a real search and confirm blocked-result post-filtering with a fixture
+  or a mocked Linkup response.
 - Run a fetch for an allowed URL.
 - Run a fetch for a blocked host and confirm no Linkup network call occurs.
 - Install `@monochromatic-dev/pi-linkup` into `~/.pi/agent`.
