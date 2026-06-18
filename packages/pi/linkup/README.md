@@ -44,6 +44,7 @@ Legacy or unsupported keys such as `depth`, `limit`, `maxResults`,
 The tool returns a warning text item before the response when that happens.
 
 When a search response is exactly `{ "results": [...] }`,
+and every result is an object,
 the tool returns the inner results array as JSONL,
 one result object per line.
 Other search response shapes are returned as JSON.

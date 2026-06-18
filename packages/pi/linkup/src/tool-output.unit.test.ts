@@ -51,6 +51,19 @@ const RESULTS_RESPONSE = {
 } as const;
 
 /**
+ * Response fixture with results plus metadata.
+ */
+const RESULTS_WITH_EXTRA_KEY_RESPONSE = {
+  results: [
+    {
+      title: 'First',
+      url: 'https://example.com/first',
+    },
+  ],
+  total: 1,
+} as const;
+
+/**
  * Markdown-only response fixture.
  */
 const MARKDOWN_ONLY_RESPONSE = { markdown: '# Meow', } as const;
@@ -145,6 +158,66 @@ await describe({
             expect(result.content.text,).toBe(expectedJsonl,);
             expect(result.content.text,).not.toContain('"results"',);
             expect(result.fullJsonPath,).toBeUndefined();
+          },
+        },),
+        it({
+          name: 'returns empty JSONL for empty results when requested',
+          fn: async () => {
+            /**
+             * Local value for result.
+             */
+            const result = await createJsonContent({
+              value: RESPONSE,
+              renderResultsArrayAsJsonl: true,
+            },);
+
+            expect(result.content.type,).toBe('text',);
+            expect(result.content.text,).toBe('',);
+            expect(result.fullJsonPath,).toBeUndefined();
+          },
+        },),
+        it({
+          name: 'keeps JSON for results responses with extra fields',
+          fn: async () => {
+            /**
+             * Local value for result.
+             */
+            const result = await createJsonContent({
+              value: RESULTS_WITH_EXTRA_KEY_RESPONSE,
+              renderResultsArrayAsJsonl: true,
+            },);
+
+            expect(result.content.type,).toBe('text',);
+            expect(result.content.text,).toContain('"results"',);
+            expect(result.content.text,).toContain('"total"',);
+          },
+        },),
+        it({
+          name: 'truncates JSONL and writes full JSONL to temp file',
+          fn: async () => {
+            /**
+             * Local value for result.
+             */
+            const result = await createJsonContent({
+              value: RESULTS_RESPONSE,
+              renderResultsArrayAsJsonl: true,
+              truncationOptions: {
+                maxBytes: 10,
+                maxLines: 10,
+              },
+            },);
+
+            expect(result.content.text,).toContain('JSONL response truncated',);
+            expect(result.fullJsonPath,).toBeDefined();
+            if (result.fullJsonPath === undefined)
+              throw new Error('missing full JSONL path',);
+            expect(result.fullJsonPath.endsWith('/response.jsonl',),).toBe(true,);
+            /**
+             * Local value for fullJsonl.
+             */
+            const fullJsonl = await readFile(result.fullJsonPath, 'utf8',);
+            expect(fullJsonl,).toContain('"title":"First"',);
+            expect(fullJsonl,).not.toContain('"results"',);
           },
         },),
         it({

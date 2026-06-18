@@ -245,13 +245,13 @@ function createLinkupWebSearchTool(
   return defineTool({
     name: LINKUP_WEB_SEARCH_TOOL_NAME,
     label: 'Linkup Web Search',
-    description: `Search the web with Linkup POST /v1/search. Always uses depth="standard", outputType="searchResults", and the configured global blocklist. Exact {"results":[...]} responses are returned as JSONL from the inner results array; other output is JSON and may be truncated after ${formatSize(LINKUP_VISIBLE_JSON_MAX_BYTES,)} with a full response temp path.`,
+    description: `Search the web with Linkup POST /v1/search. Always uses depth="standard", outputType="searchResults", and the configured global blocklist. Exact {"results":[...]} responses whose results are objects are returned as JSONL from the inner results array; other output is JSON and may be truncated after ${formatSize(LINKUP_VISIBLE_JSON_MAX_BYTES,)} with a full response temp path.`,
     promptSnippet: 'Search the web with Linkup using standard depth, searchResults output, and the global blocklist.',
     promptGuidelines: [
       'Use linkup_web_search to discover sources across the web before fetching a specific page.',
       'linkup_web_search always uses depth="standard" and outputType="searchResults"; do not rely on fast, deep, web-answer, limit, or maxResults controls.',
       'linkup_web_search applies the configured global blocklist to Linkup excludeDomains and locally removes blocked result hosts after Linkup responds.',
-      'linkup_web_search returns exact {"results":[...]} responses as one JSON object per line from the inner results array.',
+      'linkup_web_search returns exact {"results":[...]} responses whose results are objects as one JSON object per line from the inner results array.',
     ],
     parameters: LinkupWebSearchParametersSchema,
     async execute(
