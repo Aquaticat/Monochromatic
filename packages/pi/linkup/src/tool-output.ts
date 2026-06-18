@@ -408,11 +408,13 @@ function modelTextForLinkupResponse(value: unknown,): string {
  * ```
  */
 function markdownOnlyResponseText(value: unknown,): MarkdownOnlyResponseText {
-  if (
-    (value === null)
-    || ((typeof value) !== 'object')
-    || Array.isArray(value,)
-  )
+  if (value === null)
+    return NOT_MARKDOWN_ONLY_RESPONSE;
+
+  if ((typeof value) !== 'object')
+    return NOT_MARKDOWN_ONLY_RESPONSE;
+
+  if (Array.isArray(value,))
     return NOT_MARKDOWN_ONLY_RESPONSE;
 
   /**
@@ -428,7 +430,7 @@ function markdownOnlyResponseText(value: unknown,): MarkdownOnlyResponseText {
   /**
    * Markdown property value.
    */
-  const markdown = value.markdown;
+  const { markdown, } = value;
   return ((typeof markdown) === 'string')
     ? markdown
     : NOT_MARKDOWN_ONLY_RESPONSE;
