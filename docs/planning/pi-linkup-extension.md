@@ -55,6 +55,9 @@ and not a Linkup account-management UI.
   and run through package-scoped `mise run` tasks.
 - Existing repo Pi packages that log use tagged loggers from
   `@monochromatic-dev/module-logger`.
+- `@monochromatic-dev/module-logger` now documents that consumers do not await
+  `initPromise` before logging,
+  because startup records replay after sinks verify.
 - Existing repo Pi packages that declare `typebox` as a peer also install it
   for development when they import it directly.
 - Several existing repo Pi packages ship `src/mise.verify-extension.ts` plus a
@@ -92,6 +95,13 @@ The package should include these files at minimum:
 - `src/tool-output.ts`
 - `src/tools.ts`
 - colocated unit tests for each module with branch logic
+
+`src/log.ts` should be only the package root logger module:
+import `logger` and `tagged`,
+tag the root logger as `pi-linkup`,
+and export that tagged logger for submodules to wrap with narrower tags.
+Do not import or await `initPromise` there;
+`@monochromatic-dev/module-logger` buffers startup records until sinks verify.
 
 ## Public tools
 
@@ -343,6 +353,8 @@ but must not include the API key or authorization header.
 
 Use tagged loggers from `@monochromatic-dev/module-logger` for production logging.
 Do not use raw `console.log` or `console.error` in the extension runtime.
+Do not await `initPromise` from `@monochromatic-dev/module-logger`;
+logging before sink verification is supported by startup replay.
 The `src/mise.verify-extension.ts` script may print its final verification result
 because it is a user-facing verification script,
 not production tool execution.
