@@ -23,7 +23,13 @@ dependencies {
     // time, so it must not be bundled into the plugin jar.
     compileOnly("dev.detekt:detekt-api:$detektVersion")
     detektCli("dev.detekt:detekt-cli:$detektVersion")
-    testImplementation("dev.detekt:detekt-test:$detektVersion")
+    testImplementation("dev.detekt:detekt-test:$detektVersion") {
+        // detekt 2.0.0-alpha.5 metadata asks for detekt-api-test-fixtures at runtime,
+        // but only the test-fixtures sources variant is published. The lint() helper
+        // used here does not need those fixtures, so keep the normal API jar below.
+        exclude(group = "dev.detekt", module = "detekt-api")
+    }
+    testImplementation("dev.detekt:detekt-api:$detektVersion")
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
