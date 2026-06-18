@@ -1,0 +1,104 @@
+diff --git a/packages/pi-synthetic-provider/__tests__/index.test.ts b/packages/pi-synthetic-provider/__tests__/index.test.ts
+index f936050..fe44ff7 100644
+--- a/packages/pi-synthetic-provider/__tests__/index.test.ts
++++ b/packages/pi-synthetic-provider/__tests__/index.test.ts
+@@ -1,5 +1,5 @@
+ import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
+-import { describe, expect, it, vi } from "vitest";
++import { afterEach, describe, expect, it, vi } from "vitest";
+ import syntheticProvider from "../extensions/index.js";
+ 
+ const createMockPi = () =>
+@@ -9,14 +9,49 @@ const createMockPi = () =>
+ 		on: vi.fn(),
+ 	}) satisfies Partial<ExtensionAPI>;
+ 
++const stubModelsFetch = () => {
++	vi.stubGlobal(
++		"fetch",
++		vi.fn().mockResolvedValue({
++			ok: true,
++			json: async () => ({
++				data: [
++					{
++						id: "hf:zai-org/GLM-5.2",
++						name: "zai-org/GLM-5.2",
++						always_on: true,
++						supported_features: ["tools", "reasoning"],
++						input_modalities: ["text"],
++						context_length: 524288,
++						max_output_length: 65536,
++						pricing: {
++							prompt: "1",
++							completion: "3",
++						},
++					},
++				],
++			}),
++		}),
++	);
++};
++
++afterEach(() => {
++	vi.unstubAllGlobals();
++});
++
+ describe("pi-synthetic-provider", () => {
+-	it("registers provider and commands", () => {
++	it("registers live startup provider and commands", async () => {
++		stubModelsFetch();
+ 		const mockPi = createMockPi();
+-		syntheticProvider(mockPi as unknown as ExtensionAPI);
++		await syntheticProvider(mockPi as unknown as ExtensionAPI);
+ 
+ 		expect(mockPi.registerProvider).toHaveBeenCalledWith(
+ 			"synthetic",
+-			expect.objectContaining({ api: "openai-completions", apiKey: "$SYNTHETIC_API_KEY" }),
++			expect.objectContaining({
++				api: "openai-completions",
++				apiKey: "$SYNTHETIC_API_KEY",
++				models: [expect.objectContaining({ id: "hf:zai-org/GLM-5.2" })],
++			}),
+ 		);
+ 		expect(mockPi.registerCommand).toHaveBeenCalledWith(
+ 			"synthetic-models",
+@@ -28,9 +63,10 @@ describe("pi-synthetic-provider", () => {
+ 		);
+ 	});
+ 
+-	it("registers event listeners", () => {
++	it("registers event listeners", async () => {
++		stubModelsFetch();
+ 		const mockPi = createMockPi();
+-		syntheticProvider(mockPi as unknown as ExtensionAPI);
++		await syntheticProvider(mockPi as unknown as ExtensionAPI);
+ 
+ 		const eventNames = mockPi.on.mock.calls.map(([name]) => name);
+ 		expect(eventNames).toEqual(expect.arrayContaining(["session_start", "model_select"]));
+diff --git a/packages/pi-synthetic-provider/extensions/index.ts b/packages/pi-synthetic-provider/extensions/index.ts
+index d2d2427..031cd72 100644
+--- a/packages/pi-synthetic-provider/extensions/index.ts
++++ b/packages/pi-synthetic-provider/extensions/index.ts
+@@ -70,8 +70,11 @@ export {
+ 	shouldDisplaySubscriptionQuota,
+ } from "./quota.js";
+ 
+-export default function (pi: ExtensionAPI) {
+-	// Register provider synchronously with fallback models.
++export default async function (pi: ExtensionAPI) {
++	const startupModels = await fetchSyntheticModels();
++
++	// Register provider during extension loading with live models, falling back
++	// inside fetchSyntheticModels() if the API is unavailable.
+ 	// pi.registerProvider() during loading is queued and applied during
+ 	// runner.initialize(). Registrations in event handlers (e.g., session_start)
+ 	// are queued but never flushed, so the initial registration must happen here.
+@@ -79,7 +82,7 @@ export default function (pi: ExtensionAPI) {
+ 		baseUrl: SYNTHETIC_API_BASE_URL,
+ 		apiKey: "$SYNTHETIC_API_KEY",
+ 		api: "openai-completions",
+-		models: getFallbackModels(),
++		models: startupModels,
+ 	});
+ 
+ 	// After session starts, replace fallback models with live data from the API.
