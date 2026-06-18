@@ -292,7 +292,7 @@ function createLinkupWebSearchTool(
         },
       },);
 
-      innerL.info(`executing search for query: ${searchInput.query}`,);
+      innerL.debug(`executing search for query: ${searchInput.query}`,);
       if (ignoredKeys.length > 0)
         innerL.warn(`ignoring search parameters: ${ignoredKeys.join(', ',)}`,);
 
@@ -396,7 +396,7 @@ function createLinkupWebFetchTool(
         },
       },);
 
-      innerL.info(`executing fetch for URL: ${fetchInput.url}`,);
+      innerL.debug(`executing fetch for URL: ${fetchInput.url}`,);
       if (ignoredKeys.length > 0)
         innerL.warn(`ignoring fetch parameters: ${ignoredKeys.join(', ',)}`,);
 

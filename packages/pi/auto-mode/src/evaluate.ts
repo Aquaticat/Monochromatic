@@ -140,7 +140,7 @@ async function evaluate(
      * Audit reason recorded for this reuse decision and surfaced in the flow widget.
      */
     const reuseReason = `Previously approved in this session (${reusableApproval.source}): ${reusableApproval.reason}`;
-    innerL.info(`reuse ${reusableApproval.source}: ${action}`,);
+    innerL.debug(`reuse ${reusableApproval.source}: ${action}`,);
     pi.appendEntry(
       VERDICT_ENTRY_TYPE,
       {
@@ -246,7 +246,7 @@ async function evaluate(
 
     if (verdict.verdict
       === 'approve') {
-      innerL.info(`approve: ${verdict.reason}`,);
+      innerL.debug(`approve: ${verdict.reason}`,);
       pi.appendEntry(
         VERDICT_ENTRY_TYPE,
         {
@@ -288,7 +288,7 @@ async function evaluate(
       };
     }
 
-    innerL.info(`ask: ${verdict.reason}`,);
+    innerL.debug(`ask: ${verdict.reason}`,);
     return {
       decision: await askUser({
         pi,

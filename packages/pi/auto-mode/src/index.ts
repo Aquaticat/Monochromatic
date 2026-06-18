@@ -115,7 +115,7 @@ export default function autoMode(
     return;
   }
 
-  innerL.info('auto-mode active; registering handlers',);
+  innerL.debug('auto-mode active; registering handlers',);
   /**
    * Static judge system prompt; recomputed at startup so config edits take effect on relaunch.
    */

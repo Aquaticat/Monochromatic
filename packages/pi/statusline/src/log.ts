@@ -21,7 +21,7 @@ await initPromise;
  *
  * @example
  * ```ts
- * statuslineLogger.info('loaded');
+ * statuslineLogger.debug('loaded');
  * ```
  */
 const statuslineLogger: Logger = tagged({

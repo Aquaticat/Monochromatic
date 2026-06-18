@@ -74,7 +74,7 @@ export default function advisor(
    */
   const state = createAdvisorSessionState(config.enabled,);
 
-  innerL.info(`advisor extension loaded; enabled=${String(state.getEnabled(),)}`,);
+  innerL.debug(`advisor extension loaded; enabled=${String(state.getEnabled(),)}`,);
 
   pi.registerTool(createAdvisorTool({
     getConfig: function getConfig() {

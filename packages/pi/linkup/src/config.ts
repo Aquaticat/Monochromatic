@@ -240,7 +240,7 @@ function loadLinkupConfig(options: LoadLinkupConfigOptions = {},): LinkupConfig 
     ...(configFile.apiKey === undefined ? {} : { configApiKey: configFile.apiKey, }),
   },);
 
-  innerL.info(`loaded pi-linkup config from ${configPath}; present=${String(readResult.loaded,)}`,);
+  innerL.debug(`loaded pi-linkup config from ${configPath}; present=${String(readResult.loaded,)}`,);
   return {
     ...(apiKey.configured ? { apiKey: apiKey.value, } : {}),
     blocklist,

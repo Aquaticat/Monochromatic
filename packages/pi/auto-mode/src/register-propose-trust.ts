@@ -116,7 +116,7 @@ function registerProposeTrust(
         ctx,
         rule: params.rule,
       },)) {
-        innerL.info('auto-accepting already-active trust rule proposal',);
+        innerL.debug('auto-accepting already-active trust rule proposal',);
         return trustRuleAcceptedResult({
           alreadyTrusted: true,
           rule: params.rule,
@@ -148,7 +148,7 @@ function registerProposeTrust(
         );
 
       if (choice === 'Accept') {
-        innerL.info('user accepted trust rule proposal',);
+        innerL.debug('user accepted trust rule proposal',);
         pi.appendEntry(
           TRUST_ENTRY_TYPE,
           params.rule,
@@ -159,7 +159,7 @@ function registerProposeTrust(
         },);
       }
 
-      innerL.info('user rejected trust rule proposal',);
+      innerL.debug('user rejected trust rule proposal',);
       return trustRuleRejectedResult();
     },
   },);

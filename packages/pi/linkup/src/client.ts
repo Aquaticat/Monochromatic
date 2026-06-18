@@ -124,7 +124,7 @@ function searchLinkup(
     ...(input.toDate === undefined ? {} : { toDate: input.toDate, }),
   };
 
-  innerL.info(`calling Linkup search for query: ${input.query}`,);
+  innerL.debug(`calling Linkup search for query: ${input.query}`,);
   return postJson({
     runtime,
     endpoint: LINKUP_SEARCH_ENDPOINT,
@@ -174,7 +174,7 @@ function fetchLinkup(
     includeRawHtml: LINKUP_FETCH_INCLUDE_RAW_HTML,
   };
 
-  innerL.info(`calling Linkup fetch for URL: ${input.url}`,);
+  innerL.debug(`calling Linkup fetch for URL: ${input.url}`,);
   return postJson({
     runtime,
     endpoint: LINKUP_FETCH_ENDPOINT,

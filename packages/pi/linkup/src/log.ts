@@ -17,7 +17,7 @@ import {
  *
  * @example
  * ```ts
- * linkupLogger.info('extension loaded');
+ * linkupLogger.debug('extension loaded');
  * ```
  */
 const linkupLogger: Logger = tagged({

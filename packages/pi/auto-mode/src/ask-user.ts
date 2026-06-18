@@ -118,7 +118,7 @@ async function askUser(
   );
 
   if (choice === 'Allow') {
-    innerL.info(`user-approve: ${action}`,);
+    innerL.debug(`user-approve: ${action}`,);
     pi.appendEntry(
       VERDICT_ENTRY_TYPE,
       {
@@ -134,7 +134,7 @@ async function askUser(
   }
 
   if (choice === 'Stop') {
-    innerL.info(`user-stop: ${action}`,);
+    innerL.debug(`user-stop: ${action}`,);
     pi.appendEntry(
       VERDICT_ENTRY_TYPE,
       {
@@ -153,7 +153,7 @@ async function askUser(
     };
   }
 
-  innerL.info(`user-deny: ${action}`,);
+  innerL.debug(`user-deny: ${action}`,);
   pi.appendEntry(
     VERDICT_ENTRY_TYPE,
     {

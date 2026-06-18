@@ -88,7 +88,7 @@ export default function piLinkup(pi: ExtensionAPI,): void {
     config,
     client,
   },);
-  innerL.info(`pi-linkup extension loaded; blocklist entries=${String(
+  innerL.debug(`pi-linkup extension loaded; blocklist entries=${String(
     config
       .blocklist
       .length,
@@ -124,7 +124,7 @@ function registerPiLinkup(options: RegisterPiLinkupOptions,): void {
   tools.forEach(function registerTool(tool,) {
     options.pi
       .registerTool(tool,);
-    innerL.info(`registered Linkup tool: ${tool.name}`,);
+    innerL.debug(`registered Linkup tool: ${tool.name}`,);
   },);
 }
 
