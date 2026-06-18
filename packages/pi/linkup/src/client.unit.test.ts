@@ -100,7 +100,7 @@ await describe({
          */
         const requestBody = requestJsonBody(firstFetchCall(mock,),);
         expect(requestBody,).toHaveProperty('fromDate', '2025-01-01',);
-        expect(requestBody,).toHaveProperty('includeDomains', ['microsoft.com',],);
+        expect(requestBody.includeDomains,).toEqual(['microsoft.com',],);
         expect(requestBody,).toHaveProperty('toDate', '2025-12-31',);
       },
     },),
