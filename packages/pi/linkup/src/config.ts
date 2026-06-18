@@ -145,7 +145,7 @@ function loadLinkupConfig(options: LoadLinkupConfigOptions = {},): LinkupConfig 
   /** Effective API key after environment precedence. */
   const apiKey = resolveApiKey({
     env,
-    configApiKey: configFile.apiKey,
+    ...(configFile.apiKey === undefined ? {} : { configApiKey: configFile.apiKey, }),
   },);
 
   innerL.info(`loaded pi-linkup config from ${configPath}; present=${String(parsedConfig !== undefined,)}`,);

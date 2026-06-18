@@ -340,19 +340,24 @@ class LinkupClient {
     },
   ): Promise<Response> {
     try {
-      return await this.#fetchImpl(requestUrl, {
+      /** Fetch request init without undefined optional properties. */
+      const requestInit: RequestInit = {
         method: HTTP_POST,
-        signal,
         headers: {
           [AUTHORIZATION_HEADER]: `Bearer ${apiKey}`,
           [CONTENT_TYPE_HEADER]: JSON_CONTENT_TYPE,
           [USER_AGENT_HEADER]: USER_AGENT_VALUE,
         },
         body: JSON.stringify(body,),
-      },);
+        ...(signal === undefined ? {} : { signal, }),
+      };
+      return await this.#fetchImpl(requestUrl, requestInit,);
     }
     catch (error: unknown) {
-      if (isAbortError({ error, signal, },))
+      if (isAbortError({
+        error,
+        ...(signal === undefined ? {} : { signal, }),
+      },))
         throw new Error(`Linkup ${endpoint} request aborted`,);
       throw new Error(`Linkup ${endpoint} request failed: ${errorMessage(error,)}`,);
     }

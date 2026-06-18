@@ -94,8 +94,9 @@ await describe({
         expect(warning,).toContain('depth, limit, maxResults',);
         expect(warning,).toContain('depth="standard"',);
         expect(mock.searchCalls,).toHaveLength(1,);
-        expect('depth' in mock.searchCalls[0]?.input as object,).toBe(false,);
-        expect('maxResults' in mock.searchCalls[0]?.input as object,).toBe(false,);
+        const searchInput = firstSearchInput(mock,);
+        expect('depth' in searchInput,).toBe(false,);
+        expect('maxResults' in searchInput,).toBe(false,);
       },
     },),
     it({
@@ -166,7 +167,8 @@ await describe({
         expect(result.content,).toHaveLength(2,);
         expect(textContentAt({ result, index: 0, },),).toContain('renderJs, includeRawHtml',);
         expect(mock.fetchCalls,).toHaveLength(1,);
-        expect('renderJs' in mock.fetchCalls[0]?.input as object,).toBe(false,);
+        const fetchInput = firstFetchInput(mock,);
+        expect('renderJs' in fetchInput,).toBe(false,);
       },
     },),
     it({
@@ -280,6 +282,34 @@ function mockClient(
     searchCalls,
     fetchCalls,
   };
+}
+
+/**
+ * Return first recorded search input.
+ *
+ * @param mock - mock client harness
+ *
+ * @returns first search input
+ */
+function firstSearchInput(mock: MockClient,): LinkupWebSearchInput {
+  const call = mock.searchCalls[0];
+  if (call === undefined)
+    throw new Error('missing search call',);
+  return call.input;
+}
+
+/**
+ * Return first recorded fetch input.
+ *
+ * @param mock - mock client harness
+ *
+ * @returns first fetch input
+ */
+function firstFetchInput(mock: MockClient,): LinkupWebFetchInput {
+  const call = mock.fetchCalls[0];
+  if (call === undefined)
+    throw new Error('missing fetch call',);
+  return call.input;
 }
 
 /**
