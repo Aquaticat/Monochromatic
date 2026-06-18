@@ -35,6 +35,22 @@ const FIXED_BEHAVIOR = 'This extension always uses fixed behavior.';
 const RESPONSE = { results: [], };
 
 /**
+ * Response fixture with object search results.
+ */
+const RESULTS_RESPONSE = {
+  results: [
+    {
+      title: 'First',
+      url: 'https://example.com/first',
+    },
+    {
+      title: 'Second',
+      url: 'https://example.com/second',
+    },
+  ],
+} as const;
+
+/**
  * Markdown-only response fixture.
  */
 const MARKDOWN_ONLY_RESPONSE = { markdown: '# Meow', } as const;
@@ -104,6 +120,30 @@ await describe({
 
             expect(result.content.type,).toBe('text',);
             expect(result.content.text,).toContain('"results"',);
+            expect(result.fullJsonPath,).toBeUndefined();
+          },
+        },),
+        it({
+          name: 'returns inner results array as JSONL when requested',
+          fn: async () => {
+            /**
+             * Local value for result.
+             */
+            const result = await createJsonContent({
+              value: RESULTS_RESPONSE,
+              renderResultsArrayAsJsonl: true,
+            },);
+            /**
+             * Expected model-visible JSONL text.
+             */
+            const expectedJsonl = [
+              '{"title":"First","url":"https://example.com/first"}',
+              '{"title":"Second","url":"https://example.com/second"}',
+            ].join('\n',);
+
+            expect(result.content.type,).toBe('text',);
+            expect(result.content.text,).toBe(expectedJsonl,);
+            expect(result.content.text,).not.toContain('"results"',);
             expect(result.fullJsonPath,).toBeUndefined();
           },
         },),

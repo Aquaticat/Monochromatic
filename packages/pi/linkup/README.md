@@ -41,7 +41,12 @@ and every fetch attempt before Linkup is called.
 
 Legacy or unsupported keys such as `depth`, `limit`, `maxResults`,
 `excludeDomains`, `includeImages`, and `outputType` are ignored.
-The tool returns a warning text item before the JSON response when that happens.
+The tool returns a warning text item before the response when that happens.
+
+When a search response is exactly `{ "results": [...] }`,
+the tool returns the inner results array as JSONL,
+one result object per line.
+Other search response shapes are returned as JSON.
 
 `linkup_web_fetch` sends Linkup `POST /v1/fetch` requests with fixed behavior:
 
@@ -53,12 +58,12 @@ Blocked fetch hosts throw before any network request is made.
 
 Responses that are exactly a single `markdown` string field are returned as raw markdown text,
 for example `{ "markdown": "# Meow" }` becomes `# Meow`.
-Other response shapes are returned as JSON.
+Other fetch response shapes are returned as JSON.
 
 Both tools cap model-visible response text at 100KB or 2000 lines,
 whichever is hit first.
 When truncation happens,
-the full JSON response is written to a temporary file and the tool result names that path.
+the full response is written to a temporary file and the tool result names that path.
 
 ## Verification
 

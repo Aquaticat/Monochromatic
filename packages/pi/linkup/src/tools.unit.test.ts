@@ -176,13 +176,9 @@ await describe({
         /**
          * Local value for visible.
          */
-        const visible = parseVisibleJson({ result, index: 0, },);
-        /**
-         * Local value for visibleResults.
-         */
-        const visibleResults = resultsArray(visible,);
-        expect(visibleResults,).toHaveLength(1,);
-        expect(resultUrl(visibleResults[0],),).toBe(GOOD_RESULT_URL,);
+        const visible = parseVisibleJsonl({ result, index: 0, },);
+        expect(visible,).toHaveLength(1,);
+        expect(resultUrl(visible[0],),).toBe(GOOD_RESULT_URL,);
         expect(resultsArray(result.details.rawLinkupResponse,),).toHaveLength(3,);
         expect(result.details.removedBlockedUrls,).toEqual([
           `https://${BLOCKED_HOST}/a`,
@@ -553,6 +549,37 @@ function parseVisibleJson(
   },
 ): unknown {
   return JSON.parse(textContentAt({ result, index, },),) as unknown;
+}
+
+/**
+ * Parse visible JSONL content at index.
+ *
+ * @param result - tool result
+ *
+ * @param index - content item index
+ *
+ * @returns parsed JSONL items
+ */
+function parseVisibleJsonl(
+  {
+    result,
+    index,
+  }: {
+    readonly result: { readonly content: readonly unknown[]; };
+    readonly index: number;
+  },
+): readonly unknown[] {
+  /**
+   * Local value for text.
+   */
+  const text = textContentAt({ result, index, },);
+  if (text === '')
+    return [];
+  return text
+    .split('\n',)
+    .map(function parseJsonLine(line,) {
+      return JSON.parse(line,) as unknown;
+    },);
 }
 
 /**

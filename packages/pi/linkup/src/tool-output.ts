@@ -22,18 +22,14 @@ import {
 } from '@earendil-works/pi-coding-agent';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { linkupLogger, } from './log.ts';
+import { modelTextForLinkupResponse, } from './tool-output-format.ts';
 
 //region Constants
 
 /**
- * Prefix used for temp directories that hold full JSON output.
+ * Prefix used for temp directories that hold full response output.
  */
-const TEMP_DIR_PREFIX = 'pi-linkup-json-';
-
-/**
- * JSON response temp filename.
- */
-const TEMP_JSON_FILENAME = 'response.json';
+const TEMP_RESPONSE_DIR_PREFIX = 'pi-linkup-response-';
 
 /**
  * Number of random bytes added to temp directory prefix.
@@ -41,32 +37,17 @@ const TEMP_JSON_FILENAME = 'response.json';
 const TEMP_RANDOM_BYTES = 4;
 
 /**
- * Pretty JSON indentation width.
- */
-const JSON_INDENT_SPACES = 2;
-
-/**
- * Single-field Linkup markdown response key.
- */
-const MARKDOWN_RESPONSE_KEY = 'markdown' as const;
-
-/**
- * Sentinel used when a response is not exactly one markdown field.
- */
-const NOT_MARKDOWN_ONLY_RESPONSE: unique symbol = Symbol('not a markdown-only Linkup response',);
-
-/**
  * Bytes in one kibibyte, matching Pi's byte-limit size formatting.
  */
 const BYTES_PER_KIBIBYTE = 1_024;
 
 /**
- * Linkup response JSON kibibytes visible to the model before temp-file fallback.
+ * Linkup response kibibytes visible to the model before temp-file fallback.
  */
 const LINKUP_VISIBLE_JSON_MAX_KIBIBYTES = 100;
 
 /**
- * Linkup response JSON bytes visible to the model before temp-file fallback.
+ * Linkup response bytes visible to the model before temp-file fallback.
  */
 const LINKUP_VISIBLE_JSON_MAX_BYTES: number = LINKUP_VISIBLE_JSON_MAX_KIBIBYTES * BYTES_PER_KIBIBYTE;
 
@@ -109,17 +90,17 @@ type LinkupToolDetails = {
    */
   readonly removedBlockedUrls?: readonly string[];
   /**
-   * Full JSON temp-file path, when visible JSON was truncated.
+   * Full response temp-file path, kept under this field for compatibility.
    */
   readonly fullJsonPath?: string;
   /**
-   * Truncation metadata, when visible JSON was truncated.
+   * Truncation metadata, when visible response text was truncated.
    */
   readonly truncation?: TruncationResult;
 };
 
 /**
- * Options for creating JSON content items.
+ * Options for creating response content items.
  */
 type JsonContentOptions = {
   /**
@@ -127,13 +108,17 @@ type JsonContentOptions = {
    */
   readonly value: unknown;
   /**
+   * Whether exact single-field results arrays should render as JSONL.
+   */
+  readonly renderResultsArrayAsJsonl?: boolean;
+  /**
    * Optional truncation limits, primarily for tests.
    */
   readonly truncationOptions?: Readonly<TruncationOptions>;
 };
 
 /**
- * JSON content item plus temp-file metadata.
+ * Response content item plus temp-file metadata.
  */
 type JsonContentResult = {
   /**
@@ -141,7 +126,7 @@ type JsonContentResult = {
    */
   readonly content: TextContentItem;
   /**
-   * Full JSON temp-file path when truncation occurred.
+   * Full response temp-file path when truncation occurred.
    */
   readonly fullJsonPath?: string;
   /**
@@ -193,15 +178,14 @@ type LinkupToolOutputOptions = {
    */
   readonly fixedBehavior: string;
   /**
+   * Whether exact single-field results arrays should render as JSONL.
+   */
+  readonly renderResultsArrayAsJsonl?: boolean;
+  /**
    * Blocked search result URLs removed locally.
    */
   readonly removedBlockedUrls?: readonly string[];
 };
-
-/**
- * Model text extracted from a markdown-only response, or sentinel for every other shape.
- */
-type MarkdownOnlyResponseText = string | typeof NOT_MARKDOWN_ONLY_RESPONSE;
 
 //endregion Types
 
@@ -220,7 +204,7 @@ const l = tagged({
  *
  * @param options - response, raw response, and warning metadata
  *
- * @returns Pi tool result with JSON response content and structured details
+ * @returns Pi tool result with response content and structured details
  *
  * @example
  * ```ts
@@ -241,6 +225,7 @@ async function createLinkupToolOutput(
    */
   const modelContent = await createJsonContent({
     value: options.linkupResponse,
+    renderResultsArrayAsJsonl: options.renderResultsArrayAsJsonl === true,
   },);
   /**
    * Warning content item, when compatibility keys were ignored.
@@ -284,7 +269,7 @@ async function createLinkupToolOutput(
 }
 
 /**
- * Create a model-visible text content item, truncating and writing full JSON to temp when needed.
+ * Create a model-visible text content item, truncating and writing full response text to temp when needed.
  *
  * @param options - value and optional truncation limits
  *
@@ -297,14 +282,17 @@ async function createLinkupToolOutput(
  */
 async function createJsonContent(options: JsonContentOptions,): Promise<JsonContentResult> {
   /**
-   * Model-visible response text.
+   * Model-visible response text and format metadata.
    */
-  const contentText = modelTextForLinkupResponse(options.value,);
+  const modelText = modelTextForLinkupResponse({
+    value: options.value,
+    renderResultsArrayAsJsonl: options.renderResultsArrayAsJsonl === true,
+  },);
   /**
    * Truncation result using Linkup byte cap and Pi line cap unless tests override limits.
    */
   const truncation = truncateHead(
-    contentText,
+    modelText.text,
     {
       maxLines: options.truncationOptions
         ?.maxLines
@@ -323,18 +311,21 @@ async function createJsonContent(options: JsonContentOptions,): Promise<JsonCont
     };
 
   /**
-   * Temp file path containing the full JSON response.
+   * Temp file path containing the full response text.
    */
-  const fullJsonPath = await writeFullJsonToTemp(stringifyJsonForModel(options.value,),);
+  const fullJsonPath = await writeFullResponseToTemp({
+    responseText: modelText.text,
+    filename: modelText.tempFilename,
+  },);
   /**
    * Visible text with truncation notice appended.
    */
   const visibleText = [
     truncation.content,
-    `[JSON response truncated: showing ${String(truncation.outputLines,)} of ${String(truncation.totalLines,)} lines (${formatSize(truncation.outputBytes,)} of ${formatSize(truncation.totalBytes,)}). Full JSON response saved to: ${fullJsonPath}]`,
+    `[${modelText.truncationLabel} truncated: showing ${String(truncation.outputLines,)} of ${String(truncation.totalLines,)} lines (${formatSize(truncation.outputBytes,)} of ${formatSize(truncation.totalBytes,)}). Full ${modelText.truncationLabel} saved to: ${fullJsonPath}]`,
   ].join('\n\n',);
 
-  l.warn(`truncated Linkup JSON response; full response at ${fullJsonPath}`,);
+  l.warn(`truncated Linkup response; full response at ${fullJsonPath}`,);
   return {
     content: {
       type: 'text',
@@ -373,112 +364,21 @@ function createWarningContent(options: WarningContentOptions,): TextContentItem 
 //region Helpers
 
 /**
- * Return model-visible text for a Linkup response value.
+ * Write full response text to a temp file.
  *
- * @param value - Linkup response value
- *
- * @returns markdown text for single-field markdown responses, otherwise pretty JSON
- *
- * @example
- * ```ts
- * modelTextForLinkupResponse({ markdown: '# Meow' });
- * ```
- */
-function modelTextForLinkupResponse(value: unknown,): string {
-  /**
-   * Markdown response text, when value is exactly a markdown-only response.
-   */
-  const markdownText = markdownOnlyResponseText(value,);
-  if ((typeof markdownText) === 'string')
-    return markdownText;
-
-  return stringifyJsonForModel(value,);
-}
-
-/**
- * Extract markdown text from exact single-field markdown Linkup responses.
- *
- * @param value - Linkup response value
- *
- * @returns markdown text when value has only a string markdown property
- *
- * @example
- * ```ts
- * markdownOnlyResponseText({ markdown: '# Meow' });
- * ```
- */
-function markdownOnlyResponseText(value: unknown,): MarkdownOnlyResponseText {
-  if (value === null)
-    return NOT_MARKDOWN_ONLY_RESPONSE;
-
-  if ((typeof value) !== 'object')
-    return NOT_MARKDOWN_ONLY_RESPONSE;
-
-  if (Array.isArray(value,))
-    return NOT_MARKDOWN_ONLY_RESPONSE;
-
-  /**
-   * Own enumerable response keys.
-   */
-  const keys = Object.keys(value,);
-  if ((keys.length !== 1) || (keys[0] !== MARKDOWN_RESPONSE_KEY))
-    return NOT_MARKDOWN_ONLY_RESPONSE;
-
-  if (!hasMarkdownResponseProperty(value,))
-    return NOT_MARKDOWN_ONLY_RESPONSE;
-
-  /**
-   * Markdown property value.
-   */
-  const { markdown, } = value;
-  return ((typeof markdown) === 'string')
-    ? markdown
-    : NOT_MARKDOWN_ONLY_RESPONSE;
-}
-
-/**
- * Return whether object exposes a markdown response property.
- *
- * @param value - object response value
- *
- * @returns whether object has a markdown property readable as unknown
- *
- * @example
- * ```ts
- * hasMarkdownResponseProperty({ markdown: '# Meow' });
- * ```
- */
-function hasMarkdownResponseProperty(value: object,): value is { readonly markdown: unknown; } {
-  return MARKDOWN_RESPONSE_KEY in value;
-}
-
-/**
- * JSON-stringify a value for model-visible content.
- *
- * @param value - value to serialize
- *
- * @returns pretty JSON text, or JSON null when value is undefined
- */
-function stringifyJsonForModel(value: unknown,): string {
-  /**
-   * JSON string output.
-   */
-  const json = JSON.stringify(
-    value,
-    null,
-    JSON_INDENT_SPACES,
-  );
-  return json ?? 'null';
-}
-
-/**
- * Write full JSON text to a temp file.
- *
- * @param jsonText - full JSON text
+ * @param options - response text and filename
  *
  * @returns temp file path
  */
-async function writeFullJsonToTemp(jsonText: string,): Promise<string> {
+async function writeFullResponseToTemp(
+  {
+    responseText,
+    filename,
+  }: {
+    readonly responseText: string;
+    readonly filename: string;
+  },
+): Promise<string> {
   /**
    * Random suffix to avoid temp directory collisions.
    */
@@ -489,24 +389,24 @@ async function writeFullJsonToTemp(jsonText: string,): Promise<string> {
    */
   const tempDir = await mkdtemp(join(
     tmpdir(),
-    `${TEMP_DIR_PREFIX}${randomSuffix}-`,
+    `${TEMP_RESPONSE_DIR_PREFIX}${randomSuffix}-`,
   ),);
   /**
-   * Temp file path storing full JSON response.
+   * Temp file path storing full response text.
    */
   const tempFile = join(
     tempDir,
-    TEMP_JSON_FILENAME,
+    filename,
   );
   await withFileMutationQueue(
     tempFile,
-    async function writeQueuedJson() {
-    await writeFile(
-      tempFile,
-      jsonText,
-      'utf8',
-    );
-  },
+    async function writeQueuedResponse() {
+      await writeFile(
+        tempFile,
+        responseText,
+        'utf8',
+      );
+    },
   );
   return tempFile;
 }
