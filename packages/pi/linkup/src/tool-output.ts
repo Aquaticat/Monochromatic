@@ -105,7 +105,7 @@ type JsonContentOptions = {
   /**
    * Optional truncation limits, primarily for tests.
    */
-  readonly truncationOptions?: TruncationOptions;
+  readonly truncationOptions?: Readonly<TruncationOptions>;
 };
 
 /**

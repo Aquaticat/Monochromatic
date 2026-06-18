@@ -67,7 +67,7 @@ await describe({
         /**
          * Local value for requestBody.
          */
-        const requestBody = requestJsonBody(mock.calls[0],) as LinkupSearchRequestBody;
+        const requestBody = requestJsonBody(firstFetchCall(mock,),) as LinkupSearchRequestBody;
         expect(requestBody.q,).toBe('What is Linkup?',);
         expect(requestBody.depth,).toBe('standard',);
         expect(requestBody.outputType,).toBe('searchResults',);
@@ -98,7 +98,7 @@ await describe({
         /**
          * Local value for requestBody.
          */
-        const requestBody = requestJsonBody(mock.calls[0],);
+        const requestBody = requestJsonBody(firstFetchCall(mock,),);
         expect(requestBody,).toHaveProperty('fromDate', '2025-01-01',);
         expect(requestBody,).toHaveProperty('includeDomains', ['microsoft.com',],);
         expect(requestBody,).toHaveProperty('toDate', '2025-12-31',);
@@ -128,7 +128,7 @@ await describe({
         /**
          * Local value for requestBody.
          */
-        const requestBody = requestJsonBody(mock.calls[0],);
+        const requestBody = requestJsonBody(firstFetchCall(mock,),);
         expect('maxResults' in requestBody,).toBe(false,);
         expect('limit' in requestBody,).toBe(false,);
         expect(requestBody.depth,).toBe('standard',);
@@ -153,7 +153,7 @@ await describe({
         /**
          * Local value for requestBody.
          */
-        const requestBody = requestJsonBody(mock.calls[0],);
+        const requestBody = requestJsonBody(firstFetchCall(mock,),);
         expect(requestBody,).toEqual({
           url: 'https://example.com',
           renderJs: true,
@@ -383,9 +383,18 @@ function mockFetchText(
    */
   const calls: FetchCall[] = [];
   /**
-   * Local value for fetchImpl.
+   * Fetch implementation returning configured response text.
+   *
+   * @param input - fetch input recorded for assertions
+   *
+   * @param init - fetch init recorded for assertions
+   *
+   * @returns configured response
    */
-  const fetchImpl: FetchLike = async function fetchMock(input, init,) {
+  async function fetchImpl(
+    input: Parameters<FetchLike>[0],
+    init: Parameters<FetchLike>[1],
+  ): ReturnType<FetchLike> {
     calls.push({
       input,
       init: init ?? {},
@@ -394,7 +403,7 @@ function mockFetchText(
       status,
       statusText,
     },);
-  };
+  }
   return {
     fetchImpl,
     calls,
@@ -412,9 +421,18 @@ function mockAbortFetch(): FetchMock {
    */
   const calls: FetchCall[] = [];
   /**
-   * Local value for fetchImpl.
+   * Fetch implementation throwing AbortError after recording input.
+   *
+   * @param input - fetch input recorded for assertions
+   *
+   * @param init - fetch init recorded for assertions
+   *
+   * @returns never resolves because it throws AbortError
    */
-  const fetchImpl: FetchLike = async function abortingFetch(input, init,) {
+  async function fetchImpl(
+    input: Parameters<FetchLike>[0],
+    init: Parameters<FetchLike>[1],
+  ): ReturnType<FetchLike> {
     calls.push({
       input,
       init: init ?? {},
@@ -425,11 +443,28 @@ function mockAbortFetch(): FetchMock {
     const error = new Error('aborted by test');
     error.name = 'AbortError';
     throw error;
-  };
+  }
   return {
     fetchImpl,
     calls,
   };
+}
+
+/**
+ * Return first recorded fetch call.
+ *
+ * @param mock - fetch mock harness
+ *
+ * @returns first recorded fetch call
+ */
+function firstFetchCall(mock: FetchMock,): FetchCall {
+  /**
+   * First recorded fetch call.
+   */
+  const [call,] = mock.calls;
+  if (call === undefined)
+    throw new Error('missing fetch call',);
+  return call;
 }
 
 /**
@@ -439,9 +474,7 @@ function mockAbortFetch(): FetchMock {
  *
  * @returns parsed body record
  */
-function requestJsonBody(call: FetchCall | undefined,): Record<string, unknown> {
-  if (call === undefined)
-    throw new Error('missing fetch call',);
+function requestJsonBody(call: FetchCall,): Record<string, unknown> {
   if ((typeof call.init.body) !== 'string')
     throw new Error('fetch body was not a string',);
   /**

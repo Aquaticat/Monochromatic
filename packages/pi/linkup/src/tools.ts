@@ -12,7 +12,6 @@ import {
 } from '@earendil-works/pi-coding-agent';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
-  type Static,
   type TArray,
   type TObject,
   type TOptional,
@@ -138,14 +137,36 @@ const LinkupWebFetchParametersSchema: TObject<{
 },);
 
 /**
- * Static search params from TypeBox schema.
+ * Runtime search params accepted from Pi after TypeBox validation.
  */
-type LinkupWebSearchParams = Readonly<Static<typeof LinkupWebSearchParametersSchema>>;
+type LinkupWebSearchParams = {
+  /**
+   * Search query sent to Linkup.
+   */
+  readonly query: string;
+  /**
+   * Optional start date forwarded to Linkup.
+   */
+  readonly fromDate?: string;
+  /**
+   * Optional include-domain filter forwarded to Linkup.
+   */
+  readonly includeDomains?: readonly string[];
+  /**
+   * Optional end date forwarded to Linkup.
+   */
+  readonly toDate?: string;
+};
 
 /**
- * Static fetch params from TypeBox schema.
+ * Runtime fetch params accepted from Pi after TypeBox validation.
  */
-type LinkupWebFetchParams = Readonly<Static<typeof LinkupWebFetchParametersSchema>>;
+type LinkupWebFetchParams = {
+  /**
+   * URL fetched by Linkup.
+   */
+  readonly url: string;
+};
 
 //endregion Schemas
 

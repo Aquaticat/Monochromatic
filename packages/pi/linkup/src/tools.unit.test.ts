@@ -392,9 +392,9 @@ function mockClient(
  */
 function firstSearchInput(mock: MockClient,): LinkupWebSearchInput {
   /**
-   * Local value for call.
+   * First recorded search call.
    */
-  const call = mock.searchCalls[0];
+  const [call,] = mock.searchCalls;
   if (call === undefined)
     throw new Error('missing search call',);
   return call.input;
@@ -409,9 +409,9 @@ function firstSearchInput(mock: MockClient,): LinkupWebSearchInput {
  */
 function firstFetchInput(mock: MockClient,): LinkupWebFetchInput {
   /**
-   * Local value for call.
+   * First recorded fetch call.
    */
-  const call = mock.fetchCalls[0];
+  const [call,] = mock.fetchCalls;
   if (call === undefined)
     throw new Error('missing fetch call',);
   return call.input;

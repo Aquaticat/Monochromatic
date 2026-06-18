@@ -100,7 +100,7 @@ async function verifyBuiltExtension(): Promise<string> {
    * Unexpected registrations observed.
    */
   const unexpected = registrations.filter(function isUnexpected(registration,) {
-    return !EXPECTED_REGISTRATIONS.includes(registration as typeof EXPECTED_REGISTRATIONS[number],);
+    return !isExpectedRegistration(registration,);
   },);
   if (unexpected.length > 0)
     throw new Error(`unexpected Pi Linkup registrations: ${unexpected.join(', ',)}`,);
@@ -120,6 +120,19 @@ function isLinkupExtensionModule(value: unknown,): value is LinkupExtensionModul
     return false;
   return ('default' in value)
     && ((typeof value.default) === 'function');
+}
+
+/**
+ * Return whether a registration key belongs to this extension.
+ *
+ * @param registration - registration key recorded from fake Pi API
+ *
+ * @returns whether registration is expected
+ */
+function isExpectedRegistration(registration: string,): boolean {
+  return EXPECTED_REGISTRATIONS.some(function isExpected(expected,) {
+    return expected === registration;
+  },);
 }
 
 /**

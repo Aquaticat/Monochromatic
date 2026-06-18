@@ -172,9 +172,7 @@ function normalizeBlocklistEntry(entry: string,): string {
     return label === '';
   },))
     throw new Error(`blocklist entry ${JSON.stringify(entry,)} must not include empty labels`);
-  if (!normalized.split('',).every(function isAllowedChar(char,) {
-    return isAllowedHostSuffixChar(char,);
-  },))
+  if (!hasOnlyAllowedHostSuffixChars(normalized,))
     throw new Error(`blocklist entry ${JSON.stringify(entry,)} contains invalid host characters`);
 
   innerL.debug(`normalized blocklist entry ${entry} to ${normalized}`,);
@@ -240,6 +238,21 @@ function stripOneTrailingDot(value: string,): string {
  */
 function isAllowedHostSuffixChar(char: string,): boolean {
   return HOST_SUFFIX_ALLOWED_CHARS.includes(char,);
+}
+
+/**
+ * Return whether host suffix text uses only allowed ASCII host characters.
+ *
+ * @param value - normalized host suffix text
+ *
+ * @returns whether every character is allowed
+ */
+function hasOnlyAllowedHostSuffixChars(value: string,): boolean {
+  for (const char of value) {
+    if (!isAllowedHostSuffixChar(char,))
+      return false;
+  }
+  return true;
 }
 
 //endregion Blocklist normalization
