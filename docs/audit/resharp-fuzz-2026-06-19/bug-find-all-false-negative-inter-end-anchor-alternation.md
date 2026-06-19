@@ -62,53 +62,88 @@ combination.
 
 ## Root cause
 
-Same root as the `is_match` finding
-(`bug-is-match-false-positive-inter-optional-end-anchor.md`), but reaching
-`find_all` through the kind classifier. The `FindAll` kind is chosen from
-`has_anchors_pre = b.contains_anchors(node_fwd_simpl)`
-(`resharp-engine/src/lib.rs:1069-1070`), computed on the forward-simplified node:
+The defect is in the FORWARD node construction, not the kind classifier. The
+forward matcher is built from `node_fwd_simpl = b.simplify_fwd_initial(node)`
+(`resharp-engine/src/lib.rs:1035`); for `.&a(?:$|b)` the simplification drops the
+`$` alternative as locally dead, so the forward automaton itself cannot reach the
+`$`-branch end, while the reverse pass still proposes the start. The Dfa find_all
+loop has an internal tripwire for exactly this inconsistency
+(`resharp-engine/src/ldfa.rs:842-846`):
 
 ```rust
-// resharp-engine/src/lib.rs:1035
-let node_fwd_simpl = b.simplify_fwd_initial(node);
-// resharp-engine/src/lib.rs:1069
-let has_anchors_pre = b.contains_anchors(node_fwd_simpl);
-let ah = auto_harden(&mut b, fwd_start, has_anchors_pre);
+debug_assert_ne!(
+    NO_MATCH, l_max_end,
+    "find_all: forward scan found no end for reverse-proposed start 0"
+);
+if l_max_end != NO_MATCH {
+    matches.push(Match { start: 0, ...
 ```
 
-`simplify_fwd_initial` prunes the `$` alternative as dead in the forward prefix of
-`.&a(?:$|b)`, so `has_anchors_pre` is `false` and the pattern is classified
-`FindAll::FwdPrefix` (the SIMD forward-prefix anchored scan), confirmed by the
-`diag` build:
+In debug this assertion fires; in release (`debug_assert` off) the `if` simply
+does not push the match, so `find_all` silently returns `[]`. This is the false
+negative.
+
+The kind classifier is a contributing-but-secondary factor. The `FindAll` kind is
+chosen from `has_anchors_pre = b.contains_anchors(node_fwd_simpl)`
+(`lib.rs:1069`); since the `$` is dropped, `has_anchors_pre` is `false` and the
+pattern is classified `FwdPrefix`, while the correct `.&a$` keeps the anchor and
+gets `Dfa`:
 
 ```text
-/.&a(?:$|b)/  find_all_kind = FwdPrefix   (anchor dropped -> wrong fast path)
-/.&a$/        find_all_kind = Dfa         (anchor kept -> correct path)
+/.&a(?:$|b)/  find_all_kind = FwdPrefix      /.&a$/  find_all_kind = Dfa
 ```
 
-The `FwdPrefix` path does not account for the `$`-branch zero-width match and
-returns `[]`. The correct pattern `.&a$` keeps the anchor (`has_anchors` true) and
-is routed to `Dfa`, which is correct. So the unified root cause across all three
-06-19 findings is: anchor presence for routing decisions is read from
-`node_fwd_simpl`, which drops anchors that forward-simplification proves locally
-dead, mis-routing `find_all` (kind classifier), `is_match`, and `find_anchored`.
+Earlier reading (in the first commit of this doc) was WRONG: it claimed the root
+was the `FwdPrefix` misclassification and that routing the kind decision off the
+original node would fix `find_all`. The prototype disproved this. Forcing
+`.&a(?:$|b)` to `Dfa` (via an `anchors_orig`-gated classifier guard) leaves
+`find_all` still `[]` and trips the `ldfa.rs:844` assertion above (regressing the
+upstream `hardened_zero_width_interior_null_matches_default` test): the Dfa
+forward scan, built on the same corrupted `node_fwd_simpl`, also cannot find the
+end. So the fix is not at the routing layer; it is in `simplify_fwd_initial` /
+the intersection-with-end-anchor-alternation forward derivative (the algebra
+core), i.e. the driver/representation unification of issue #22.
+
+Relation to the other two findings: bugs 2 (`is_match`) and 3 (`find_all`) share
+the SYMPTOM (an anchor dropped by forward simplification), but only bug 2 is fixed
+at the routing/fast-path layer (defer to `find_all`); bug 3 is in `find_all`
+itself and is algebra-deep. Bug 1 (`find_anchored` on `(\z|$)$`) shares the fix
+SHAPE (defer via `anchors_orig`) but its locus is `scan_fwd_optional`, a sibling.
 
 ## Adjudication and severity
 
 Real bug, tier "asserted-contract / internal-inconsistency" (self-evident from
 resharp's own operand outputs; no model needed). Most severe of the three 06-19
-findings: it is in `find_all`, the production API, and the direction is a FALSE
-NEGATIVE (a dropped match), i.e. fail-OPEN. A scanner that gates on `find_all`
-over an intersection-with-end-anchor pattern could MISS content that actually
-matches. The two earlier findings were a `find_anchored` phantom and an `is_match`
-false positive (fail-toward-noise); this one fails toward silence.
+findings for the CRATE: it is in `find_all`, the production API, and the direction
+is a FALSE NEGATIVE (a dropped match), i.e. fail-OPEN. A crate consumer that gates
+on `find_all` over an intersection-with-end-anchor pattern could MISS content that
+actually matches. The two earlier findings were a `find_anchored` phantom and an
+`is_match` false positive (fail-toward-noise); this one fails toward silence.
 
-Note on the committed prototype: the earlier fix
+Consumer scope (crate vs forbidden-strings): this does NOT affect our consumer.
+`forbidden-strings` rules (`packages/cli/forbidden-strings/data/`,
+betterleaks-style) are ordinary leftmost patterns; a search for intersection (`&`)
+co-occurring with `$`/`\z` in the rule set finds none, and the scanner uses
+`find_all`. The fail-open framing is a crate-level property for
+intersection-with-anchor patterns, not a forbidden-strings exposure.
+
+Why the self-consistency lane could not have found this (the campaign-gap payoff):
+on the minimal trigger, `is_match=false` AND `find_all=[]` AGREE, so the C1
+contract (is_match iff find_all non-empty) HOLDS. Every lane the original campaign
+ran (self-consistency, and the denotational oracle which had no anchors) is blind
+to a COORDINATED false negative; only an independent-ground-truth oracle over the
+anchor family catches it. That oracle (`anchor_denot`) is exactly the gap this
+round closed, which is why the third finding existed to be found.
+
+Why the prototype does not fix it: the earlier patch
 (`docs/troubleshooting/resharp-end-anchor-cross-api.patch`) guards `is_match` and
-`find_anchored` only; it does NOT fix this `find_all` defect, because the
-`FindAll` kind is chosen before those guards run. The complete fix must compute
-the routing anchor flag from the ORIGINAL node for the kind classifier too (not
-just the two fast-path guards).
+`find_anchored` only. A second prototype that additionally routes the `FindAll`
+kind off the original node was attempted and FAILED: it forces `.&a(?:$|b)` to
+`Dfa` but `find_all` stays `[]` and the Dfa path trips the `ldfa.rs:844`
+assertion, regressing `hardened_zero_width_interior_null_matches_default`. The
+fix is not at the routing layer; it is in `simplify_fwd_initial` / the forward
+derivative (algebra core, issue #22 territory). Recorded as a useful failed probe;
+not pursued further.
 
 ## Reproduce
 

@@ -12,13 +12,19 @@ Superseded in part by the deeper multi-oracle campaign
 `docs/audit/resharp-fuzz-2026-06-19/`, which ran an independent denotational
 oracle (217M pattern-input pairs), the recovered Lean formally-verified position
 oracle (0 disagreements over 2310 lookaround-superset cases), an engine-internal
-self-consistency lane, and the in-tree libFuzzer targets on x86 (AVX2) and M1
-(NEON). That campaign confirmed the prior crash/soundness fixes hold but found two
-new live soundness residuals that update the "one live item" claim below: a
-`find_anchored` phantom/missing span on `(\z|$)$`, and an `is_match` false positive
-on `_&(?:[ab]|$)?`. Both are in `find_anchored`/`is_match` only (`find_all` is
-sound), both arch-independent, both the bug-02/08/10 family narrowed but not
-eliminated. See that directory's `README.md`.
+self-consistency lane, an anchor-extended denotational oracle, and the in-tree
+libFuzzer targets on x86 (AVX2) and M1 (NEON). That campaign confirmed the prior
+crash/soundness fixes hold but found THREE new live soundness residuals that update
+the "one live item" claim below: a `find_anchored` phantom/missing span on
+`(\z|$)$`, an `is_match` false positive on `_&(?:[ab]|$)?`, and (most seriously) a
+`find_all` FALSE NEGATIVE on `.&a(?:$|b)` where both operands match (0,1) but the
+intersection drops it. All three are arch-independent and trace to anchors dropped
+by forward simplification; the `find_all` one is the bug-02/08/10 family reaching
+the production API itself (fail-open). The third was found only after extending the
+denotational oracle to anchors, because the earlier lanes were structurally blind
+to a coordinated find_all/is_match false negative. `find_all` is therefore NOT
+sound on the intersection-with-anchor zone, correcting the line below. See that
+directory's `README.md`.
 
 ## Verdict
 
@@ -132,13 +138,19 @@ any robustness claim can be.
 
 ## Bottom line
 
-For forbidden-strings: safe to ship on v0.6.13, and the fail-closed wrappers mean
-a future regression degrades to a synthetic hit, not a silent CI pass. For
-resharp as a general-purpose engine on untrusted patterns: substantially
-hardened, actively maintained, `find_all` sound across a 217M-pair denotational
-search and a Lean formal differential, with the known-bug list at v0.6.13 down to
-two narrow soundness residuals in `find_anchored` and `is_match` plus one
+For forbidden-strings: safe to ship on v0.6.13. The fail-closed wrappers mean a
+future regression degrades to a synthetic hit, not a silent CI pass, and the one
+new severe defect (a `find_all` false negative) does not reach our rule set, which
+uses no intersection-with-anchor patterns. For resharp as a general-purpose engine
+on untrusted patterns: substantially hardened and actively maintained, with
+`find_all` matching an independent oracle across a 217M-pair search on the
+anchor-free fragment, but with the known-bug list at v0.6.13 standing at THREE
+narrow soundness residuals on the accepted-superset end-anchor zone (`find_anchored`
+phantom, `is_match` false positive, and a `find_all` false negative on
+intersection-with-anchor that is fail-open and algebra-deep, issue #22) plus one
 acknowledged compile-cost item (the deeper `docs/audit/resharp-fuzz-2026-06-19/`
-campaign), but it is a young 0.x engine with `unsafe` SIMD, no internal panic
+campaign). `find_all` is therefore sound on anchor-free and simple-anchor patterns
+but NOT on intersection-with-anchor. It is a young 0.x engine with `unsafe` SIMD,
+no internal panic
 boundary, and an unmeasured unknown-bug frontier. Robust and improving fast; not
 bulletproof.

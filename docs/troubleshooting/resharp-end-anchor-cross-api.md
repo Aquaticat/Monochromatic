@@ -1,11 +1,15 @@
-# resharp 0.6.13: find_anchored and is_match disagree with find_all on end-anchor shapes
+# resharp 0.6.13: find_all, find_anchored, and is_match wrong on end-anchor shapes
 
-Two cross-API soundness bugs in `ieviev/resharp` 0.6.13 (== repo HEAD `f0ce60a`,
-behaviorally identical to the published 0.6.13 commit `d89964b`). `find_all` is
-correct; `find_anchored` and `is_match` each return a wrong answer on certain
-end-anchor shapes, violating the documented cross-API contract. Found by the
-2026-06-19 fuzz campaign (`docs/audit/resharp-fuzz-2026-06-19/`); this doc adds
-the root-cause trace, the upstream-filing check, and the prototyped fix.
+Three soundness bugs in `ieviev/resharp` 0.6.13 (== repo HEAD `f0ce60a`,
+behaviorally identical to the published 0.6.13 commit `d89964b`), all on the
+accepted-superset end-anchor zone, all tracing to anchors dropped by forward
+simplification. Bugs 1 (`find_anchored`) and 2 (`is_match`) disagree with a
+correct `find_all`; bug 3 is in `find_all` ITSELF (a false negative on
+intersection-with-end-anchor). Found by the 2026-06-19 fuzz campaign
+(`docs/audit/resharp-fuzz-2026-06-19/`); bug 3 was found after extending the
+denotational oracle to anchors. This doc adds the root-cause traces, the
+upstream-filing check, and the prototypes (complete for bugs 1+2; bug 3's minimal
+routing prototype is shown insufficient, the real fix being algebra-deep).
 
 ## Symptom
 
@@ -30,6 +34,23 @@ with an optional union of a class and the end anchor), on `"\n"`:
 `_` forces width 1; `([ab]|$)?` matches width 1 only via `[ab]`; `\n` is not in
 `[ab]`, so the language is empty on `"\n"`. `find_all=[]` is correct; `is_match`
 over-accepts.
+
+Bug 3, `find_all` FALSE NEGATIVE (most severe; in the production API). Pattern
+`.&a(?:$|b)` (any-byte intersected with `a` then end-anchor-or-`b`), on `"a\n"`:
+
+```text
+/.&a(?:$|b)/  "a\n" : find_all=[]  is_match=false   WRONG (drops a real match)
+/./           "a\n" : find_all=[(0,1)]              (left operand matches (0,1))
+/a(?:$|b)/    "a\n" : find_all=[(0,1)]              (right operand matches (0,1))
+/.&a$/        "a\n" : find_all=[(0,1)]              (subset of the trigger; matches)
+```
+
+Both operands individually match span `(0,1)` per resharp's OWN `find_all`, and
+the subset `.&a$` matches `(0,1)`, but the intersection `.&a(?:$|b)` returns `[]`.
+An intersection cannot drop a span both operands contain, and a superset cannot
+match less than its subset: a `find_all` false negative (fail-open direction).
+Arch-identical (AVX2, NEON), all four unicode modes. Proven from resharp's own
+outputs; no external oracle needed.
 
 Both violate api.md's asserted contract: `is_match` is true exactly when
 `find_all` is non-empty, and `find_anchored=Some(m)` means `m` is the longest
@@ -95,6 +116,27 @@ which has a `\A`), but it does NOT fix the minimal `_&(?:[ab]|$)?`, because the
 gate is the very flag that is wrong. The fix must use anchor presence in the
 ORIGINAL node, not the simplified one.
 
+Bug 3 (`find_all` false negative) is deeper. The forward matcher is built from
+`node_fwd_simpl = simplify_fwd_initial(node)` (`lib.rs:1035`); for `.&a(?:$|b)` the
+simplification drops the `$` alternative, so the forward automaton itself cannot
+reach the `$`-branch end. The Dfa find_all loop has an internal tripwire for this
+(`resharp-engine/src/ldfa.rs:842-846`):
+
+```rust
+debug_assert_ne!(
+    NO_MATCH, l_max_end,
+    "find_all: forward scan found no end for reverse-proposed start 0"
+);
+if l_max_end != NO_MATCH { matches.push(Match { start: 0, ... }) }
+```
+
+In release (`debug_assert` off) the `if` simply skips the push, so `find_all`
+returns `[]`. Anchor dropping also mis-classifies the kind to `FwdPrefix`
+(`.&a$` is `Dfa`, `.&a(?:$|b)` is `FwdPrefix`), but that is secondary: forcing it
+to `Dfa` does NOT fix `find_all` (it trips the assertion above). So bug 3's locus
+is `simplify_fwd_initial` / the intersection-with-end-anchor-alternation forward
+derivative, an algebra-core fix, not a routing change.
+
 ## Verification
 
 Version under test: resharp 0.6.13, repo HEAD `f0ce60a` (`origin`
@@ -129,8 +171,11 @@ let at0 = re.find_all(input)?.into_iter().next().filter(|m| m.start == 0);
 Tradeoff: `find_all` enumerates all matches, so it is slower than the
 single-forward-scan `is_match`/`find_anchored` fast paths; for anchor-free
 patterns the fast paths are correct and cheaper, so only route anchor-bearing
-patterns through `find_all`. The `forbidden-strings` scanner already uses
-`find_all` exclusively, so it is unaffected by either bug.
+patterns through `find_all`. This workaround addresses bugs 1 and 2 only. For bug
+3, `find_all` itself is wrong, so there is NO consumer-side workaround on the
+crate API short of avoiding intersection-with-end-anchor patterns. The
+`forbidden-strings` scanner uses `find_all` and its rule set has no
+intersection-with-anchor patterns, so it is unaffected by all three.
 
 ## What does not work
 
@@ -145,15 +190,19 @@ patterns through `find_all`. The `forbidden-strings` scanner already uses
 
 ## Upstream filing decision
 
-All six constraints hold; the prototype below closes constraint 6. The matching
-upstream issue is the open #22, so the artifact is an additive comment, not a new
-issue.
+All six constraints hold; the matching upstream issue is the open #22, so the
+artifact is an additive comment, not a new issue.
 
-1. **Upstream's fault?** Yes. Two of resharp's own APIs contradict a third
-   (`find_all`) and violate the api.md asserted contract. Behavior bug, not
-   wording, not an architectural restriction.
-2. **Can upstream fix it?** Yes. Prototyped below; passes the full test suite.
-3. **Supporting this use case?** Yes. `find_anchored` and `is_match` are
+1. **Upstream's fault?** Yes. For bugs 1+2, two APIs contradict `find_all` and the
+   api.md contract. For bug 3, `find_all` contradicts itself (both operands match
+   `(0,1)`, the intersection does not). Behavior bugs, not wording, not
+   architectural restrictions.
+2. **Can upstream fix it?** Yes. Bugs 1+2 prototyped below (pass the full test
+   suite). Bug 3's minimal routing prototype is insufficient (it trips an internal
+   Dfa assertion); the fix is in the forward-derivative algebra, larger but not
+   impossible (issue #22's driver/representation unification). Constraint 2 is
+   about possibility, which holds.
+3. **Supporting this use case?** Yes. `find_all`/`find_anchored`/`is_match` are
    documented production APIs and the cross-API agreement is asserted intent the
    maintainer is converging on (issue #22).
 4. **Would the repo welcome it?** Yes. No CONTRIBUTING.md, issue/PR template, or
@@ -197,27 +246,60 @@ Full diff: [resharp-end-anchor-cross-api.patch](resharp-end-anchor-cross-api.pat
   failed**, including `cross_api_prop.rs` and `engine_test.rs` (which exercise the
   touched contracts).
 
-The fix restores correctness conservatively; the maintainer may prefer to instead
-correct `has_anchors` detection (so the existing flag is reliable) or land the
-full driver unification of #22. The prototype demonstrates a working minimal fix
-exists and gives a tested starting point.
+This fix (bugs 1+2) restores correctness conservatively; the maintainer may prefer
+to instead correct `has_anchors` detection or land the full driver unification of
+#22. It demonstrates a working minimal fix for those two and gives a tested
+starting point.
+
+Bug 3 prototype (insufficient, recorded as a failed probe). Extending the same
+`anchors_orig` idea to the `FindAll` kind classifier (skip `FwdPrefix`/`FwdLbPrefix`
+when `anchors_orig`, so `.&a(?:$|b)` routes to `Dfa`) does NOT fix `find_all`:
+`.&a(?:$|b)` still returns `[]` and now trips the internal `ldfa.rs:844` assertion,
+regressing the upstream `hardened_zero_width_interior_null_matches_default` test
+(suite drops to 1 failed). This proves the defect is in the forward node built from
+`simplify_fwd_initial`, not the routing layer: both the `FwdPrefix` and `Dfa`
+forward scans miss the `$`-branch end. The real fix is algebra-core (the #22
+driver/representation unification), beyond a minimal routing patch. Probe
+recorded; not pursued further per the audit's bounded scope.
 
 ### Duplicate: issue #22 (open)
 
 `gh search` found [ieviev/resharp#22](https://github.com/ieviev/resharp/issues/22)
 "Unify the find_all / find_anchored / stream drivers behind one match-enumeration
-core" (open, authored by this project). Both bugs are concrete instances of the
-driver divergence #22 proposes to fix. The thread does not yet contain these two
-minimal reproductions, the `has_anchors`-on-simplified-node root cause, or a
-prototyped fix, so an additive comment advances it. Do not open a new issue.
+core" (open, authored by this project). All three bugs are concrete instances of
+the driver divergence #22 proposes to fix, and bug 3 is direct motivation for it
+(the divergence reaching `find_all` itself). The thread does not yet contain these
+reproductions, the `simplify_fwd_initial` anchor-drop root cause, the prototypes,
+or the probe showing the routing fix is insufficient for `find_all`, so an additive
+comment advances it. Do not open a new issue.
 
 Additive comment draft (post to #22 only with authorization; discloses AI
 assistance per a conservative reading of constraint 4):
 
 ~~~md
-Two concrete instances of the driver divergence this issue is about, found
-fuzzing 0.6.13 (HEAD f0ce60a), both with `find_all` correct and a sibling API
-wrong. Reproductions are minimal and arch-independent (AVX2 and NEON identical).
+Three concrete instances of the driver divergence this issue is about, found
+fuzzing 0.6.13 (HEAD f0ce60a). The first two have `find_all` correct and a sibling
+API wrong; the third is in `find_all` itself, which makes this issue's unification
+a soundness fix, not only a cleanup. All minimal and arch-independent (AVX2 and
+NEON identical).
+
+find_all FALSE NEGATIVE on intersection with an end-anchor alternation (the severe
+one, in the production API):
+
+```rust
+// UnicodeMode::Ascii (all modes identical), input "a\n"
+/./          : find_all=[(0,1)]   // left operand matches (0,1)
+/a(?:$|b)/   : find_all=[(0,1)]   // right operand matches (0,1)
+/.&a$/       : find_all=[(0,1)]   // subset of the trigger
+/.&a(?:$|b)/ : find_all=[]        // intersection drops the (0,1) both operands have
+```
+Both operands match (0,1) per find_all, and the subset `.&a$` matches, but the
+superset intersection returns []. Root: the forward node is built from
+`simplify_fwd_initial(node)`, which drops the `$`-branch for `.&a(?:$|b)`; the Dfa
+loop even has an assertion for it (ldfa.rs:844 "forward scan found no end for
+reverse-proposed start 0") that fires in debug and is silently skipped in release
+(returning []). Routing the kind off the original node does not help (both Dfa and
+FwdPrefix forward scans miss the end); the fix is in the forward derivative itself.
 
 find_anchored phantom/missing span on a union of end anchors:
 
@@ -243,12 +325,14 @@ drops the `$` branch as dead under the width-1 `_` intersection, so
 false, is_match takes the `scan_fwd_optional` fast path (ismatch.rs:23) and
 over-accepts.
 
-A minimal fix that restores correctness and passes `cargo test -p resharp`
+For find_anchored and is_match, a minimal fix passes `cargo test -p resharp`
 (279 passed, 0 failed): detect anchors from the ORIGINAL node (an `anchors_orig`
-flag) and, when set, defer `find_anchored`/`is_match` to `find_all` (the
-pre-f12ff0b find_anchored approach), keeping the fast path for anchor-free
-patterns. The other directions are correcting `has_anchors` detection so the
-existing flag is reliable, or the full driver unification this issue proposes.
-Investigation and patch were AI-assisted; the reproductions, the source trace,
-and the test run were verified.
+flag) and, when set, defer those two to `find_all` (the pre-f12ff0b find_anchored
+approach), keeping the fast path for anchor-free patterns. That does NOT fix the
+find_all case: routing `.&a(?:$|b)` to the Dfa kind leaves find_all=[] and trips
+the ldfa.rs:844 assertion, so the find_all fix has to be in `simplify_fwd_initial`
+/ the intersection-with-end-anchor forward derivative, which is squarely what this
+issue's unification would address.
+Investigation and patches were AI-assisted; the reproductions, the source trace,
+the prototype test run, and the failed routing probe were all verified.
 ~~~

@@ -17,7 +17,17 @@ below bound exactly what the confidence covers.
   formally-verified Lean `llmatch`, 0 disagreements.
 - Engine-internal contracts (is_match, find_anchored, default==hardened, stream)
   across all four unicode modes and hardened/default, over the full anchor and
-  lookaround superset: 6,899,984 pairs. Found the two reported bugs; C4 clean.
+  lookaround superset: 6,899,984 pairs. Found the first two reported bugs; C4 clean.
+- Anchor-extended denotational oracle (`tools/anchor_denot.rs`), added after the
+  "have we exhausted findings?" review to close the primary oracle's anchor blind
+  spot (no anchor nodes, alphabet `abc`). Independent membership ground truth for
+  `\A \z ^ $` (multiline) over alphabet `ab\n`, validated against the `regex` crate
+  `(?m)`, positive-control proven to re-find the two known bugs. Gave the FIRST
+  independent check of anchored `find_all` (self-consistency is circular for
+  find_all; Lean was partial) and found the third bug. The anchor family is clean
+  against the model except that third bug and the anchor-inside-intersection
+  definitional zone (resharp self-consistent there; textbook vs positional anchor
+  semantics, not adjudicated as a bug).
 - The four in-tree libFuzzer targets on both arches, millions of executions, 0
   crashes (only compile-cost slow-units).
 - Compile-cost curve for the one acknowledged perf residual; full re-verification
@@ -39,29 +49,41 @@ below bound exactly what the confidence covers.
   the denotational position differential (which used ASCII so substring membership
   is closed). Multi-byte position correctness is therefore less independently
   adjudicated than ASCII.
-- Bounded input lengths (exhaustive to 5-6 bytes). Both findings are small, but a
-  bug requiring a long haystack would be missed.
-- Positional correctness of the unfaithful (trust1) zone is NOT independently
-  adjudicated: anchors inside complement, lookbehind-of-lookaround, and similar are
-  where the Lean translation faithfulness is unestablished and the dotnet
-  adjudicator (now being retired) was 06-11's tie-breaker. This campaign checked
-  that zone only for crashes and internal contradictions (self-consistency lane),
-  not for positional correctness. This is the same open frontier 06-11 flagged.
+- Bounded input lengths (exhaustive to 5-6 bytes). All three findings are small,
+  but a bug requiring a long haystack would be missed.
+- Positional correctness of the unfaithful (trust1) zone is now PARTIALLY
+  adjudicated. The anchor-extended oracle added independent ground truth for
+  `\A \z ^ $` over `ab\n` and found the third bug there; but two corners remain
+  unadjudicated: (a) anchors inside complement (kept out of the primary generator;
+  the model's complement-of-zero-width semantics is a definitional guess and
+  resharp rejects much of it), and (b) the anchor-inside-INTERSECTION definitional
+  zone, where resharp is self-consistent across all APIs but diverges from the
+  textbook zero-width-language model (positional vs language semantics). Which is
+  the intended semantics is a question for the maintainer / POPL'25 definitions,
+  not resolved here. Lookbehind-of-lookaround and the dotnet tie-breaker (retired)
+  remain as 06-11 flagged.
 - Lean coverage is partial: of 6000 generated lookaround-superset cases, 2892 were
   evaluated by the harvest point (the Lean leftmost-longest matcher has exponential
   complexity and is slow on complement-heavy cases). 0 disagreements over the 2310
   comparable, but the full batch was not exhausted.
 - Unknown bugs. This is a known-class plus coverage-guided search. The bug-02/08/10
-  families were narrowed across three campaigns (27 root causes, then 13, then 2),
-  but each campaign keeps finding tail triggers, so the frontier is open; "no known
-  bug fires" is not "sound".
+  families were narrowed across campaigns (27 root causes, then 13, then 3 this
+  round), but each campaign keeps finding tail triggers, so the frontier is open;
+  "no known bug fires" is not "sound". The third finding here is direct evidence:
+  it was invisible to every lane until new (anchor) oracle machinery was built.
 
 ## Stopping condition
 
-The denotational oracle exhausted the fragment with 0 new disagreements over 200M+
-pairs; the self-consistency families converged on two minimized triggers; the Lean
-lane reached 0 disagreements over thousands of comparable cases; the in-tree
-fuzzers produced only compile-cost slow-units across millions of executions. At
-that point additional same-shape fuzzing has diminishing returns; the remaining
-risk lives in the gaps above (multi-byte, trust1 positional, long inputs,
-unknowns), which would need new oracle machinery rather than more of the same.
+Two stops, honestly distinct. The FIRST stop (the original two-finding writeup) was
+premature on the completeness question: it rested on lanes that could not see a
+coordinated `find_all`/`is_match` false negative (the denotational oracle had no
+anchors; self-consistency is circular for find_all). The "have we exhausted
+findings?" review reopened it, the anchor-extended oracle was built, and it found
+the third bug on the first bounded pass. The SECOND (current) stop: the anchor
+oracle's `find_all`-vs-model check is clean except the third bug and the
+definitional anchor-in-intersection zone; the routing prototype for the third bug
+was tried and shown insufficient (the fix is algebra-deep, issue #22), so further
+same-shape iteration converges rather than finds. Remaining risk lives in the gaps
+above (multi-byte, anchor-in-complement, the intersection-anchor definitional
+question, long inputs, unknowns), which need new oracle machinery or maintainer
+semantics input, not more of the same.

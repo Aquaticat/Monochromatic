@@ -14,14 +14,34 @@ empirical, multi-oracle answer for 0.6.13, at the depth of
 ## Headline
 
 The known-bug classes from the 2026-06-04 and 2026-06-11 campaigns are fixed in
-0.6.13, confirmed by an independent formally-grounded oracle. Two new live
-correctness bugs were found, one acknowledged perf residual persists, and the
+0.6.13, confirmed by an independent formally-grounded oracle. THREE new live
+correctness bugs were found (two in the first round, a third after extending the
+denotational oracle to anchors), one acknowledged perf residual persists, and the
 experimental `stream` feature remains phantom-prone by design. Net: 0.6.13 is
-substantially sound on its production APIs across a very large search, with
-`find_all` sound on both arches and two narrow soundness defects isolated to
-`find_anchored` and `is_match` on accepted-superset end-anchor shapes.
+substantially sound but NOT clean on the accepted-superset end-anchor zone: a
+`find_anchored` phantom, an `is_match` false positive, and, most seriously, a
+`find_all` FALSE NEGATIVE on intersection-with-end-anchor patterns. All three are
+arch-independent and trace to anchors being dropped by forward simplification.
+
+Update note: an earlier version of this README said "two" findings and called
+`find_all` sound. The third finding (`find_all` false negative) was found later by
+the anchor-extended oracle and supersedes the "find_all sound" claim for the
+intersection-with-anchor zone.
 
 Findings, by tier (adjudication rules in `method-and-oracles.md`):
+
+- `bug-find-all-false-negative-inter-end-anchor-alternation` (NEW, live soundness,
+  MOST SEVERE): `find_all` returns `[]` for `.&a(?:$|b)` on `"a\n"` although both
+  operands (`.` and `a(?:$|b)`) individually match `(0,1)` per resharp's own
+  `find_all`, and the subset `.&a$` returns `[(0,1)]`. A dropped match (fail-open
+  direction) in the production API. Self-evident from resharp's own outputs
+  (membership + monotonicity); no model needed. AVX2 and NEON identical, all four
+  unicode modes. Root: `simplify_fwd_initial` drops the `$`-branch from the forward
+  node; both Dfa and FwdPrefix paths then miss the end (the Dfa path has a
+  debug-only tripwire at `ldfa.rs:844`; release silently returns `[]`). Not fixed
+  by the routing prototype; needs an algebra-core fix (issue #22). It does NOT
+  affect `forbidden-strings` (no intersection-with-anchor rules). See
+  `bug-find-all-false-negative-inter-end-anchor-alternation.md`.
 
 - `bug-find-anchored-end-anchor-union` (NEW, live soundness): `find_anchored`
   returns a phantom or missing span for the shape `(\z|$)$` (a union of end
@@ -53,7 +73,9 @@ Everything else came back clean across a very large search (coverage in
 
 ## What was run
 
-Five lanes, on both arches, against 0.6.13/HEAD.
+Six lanes, on both arches, against 0.6.13/HEAD. The sixth (anchor-extended
+denotational oracle) was added after the "have we exhausted findings?" review and
+found the third bug.
 
 - In-tree libFuzzer targets (`compile`, `diff_regex`, `match_invariants`,
   `simd_diff`) on AVX2 and NEON. Result: 0 crashes; the only artifact is one
@@ -70,13 +92,25 @@ Five lanes, on both arches, against 0.6.13/HEAD.
   disagreements (llmatch, is_match, find_anchored) and 0 crashes in the fragment
   plus the no-lookaround slice of the accepted superset (intersection,
   complement, zero-width). See `method-and-oracles.md`.
+- Anchor-extended denotational oracle (`tools/anchor_denot.rs`), added to close the
+  above oracle's anchor blind spot (it had no anchor nodes and alphabet `abc`).
+  Adds `\A \z ^ $` (multiline default) to the membership model over alphabet
+  `ab\n`, validated against the `regex` crate `(?m)` on the plain-anchor subset,
+  with a positive control proving it re-finds the two known bugs. Result: ~7M
+  pairs/run, found the third bug (`find_all` false negative), independently
+  corroborated the other two, and otherwise confirmed `find_all` matches the model
+  except in the anchor-inside-intersection definitional zone (where resharp is
+  self-consistent across all APIs; a textbook-vs-positional anchor-semantics
+  difference, not a bug). See `bug-find-all-false-negative-inter-end-anchor-alternation.md`.
 - Engine-internal self-consistency lane over the anchor and lookaround superset
   the denotational oracle cannot reach: checks resharp's own asserted contracts
   against itself across all four unicode modes and hardened/default. Result: C1
-  (is_match iff find_all non-empty) and C4 (default == hardened) hold with 0
-  violations; C2/C3 (find_anchored vs find_all) surfaced exactly the new
-  find_anchored bug; C5 is the experimental `stream` issue. See
-  `self-consistency.md`.
+  (is_match iff find_all non-empty) surfaced the new is_match bug; C2/C3
+  (find_anchored vs find_all) surfaced the new find_anchored bug; C4
+  (default == hardened) held with 0 violations; C5 is the experimental `stream`
+  issue. Note: C1 could NOT catch the third (find_all) bug, because there is_match
+  and find_all agree on the wrong answer; that needed the anchor-extended oracle.
+  See `self-consistency.md`.
 - Lean formal position differential. The 2026-06-11 Lean formalization
   (`extended-regexes`, the `Regex.MatchingAlgorithm` `llmatch`) was recovered and
   rebuilt on the M1 (mathlib cache), giving a formally-grounded ground truth for
@@ -101,15 +135,20 @@ opportunistic secondary sanity check where convenient.
 
 ## Verdict
 
-For 0.6.13 specifically: `find_all` is sound across an extremely large
-multi-oracle search, with the crash, panic, and silent-mismatch classes from the
-prior campaigns all fixed. The residual defects are narrow: two soundness bugs
-isolated to `find_anchored` (phantom/missing span on `(\z|$)$`) and `is_match`
-(false positive on `_&(?:[ab]|$)?`) on accepted-superset end-anchor shapes, one
-acknowledged and bounded compile-cost case, and the experimental `stream` feature.
-This is a strong, mostly-clean result; it raises confidence in 0.6.13 rather than
-indicating shallow fuzzing (see `coverage-and-limits.md` for what that confidence
-does and does not cover). It does not make resharp "bulletproof": it is a young
-0.x engine with `unsafe` SIMD, no internal panic boundary, and an
-always-incomplete unknown-bug frontier. See `../resharp-robustness-2026-06-19.md`
-for the cross-cutting robustness assessment this campaign updates.
+For 0.6.13 specifically: the crash, panic, and silent-mismatch classes from the
+prior campaigns are all fixed, and `find_all` matches an independent oracle across
+an extremely large search EXCEPT on the accepted-superset end-anchor zone, where
+three live soundness defects remain: a `find_all` false negative on
+intersection-with-end-anchor (`.&a(?:$|b)`, the most severe, fail-open in the
+production API), a `find_anchored` phantom/missing span (`(\z|$)$`), and an
+`is_match` false positive (`_&(?:[ab]|$)?`); plus one acknowledged bounded
+compile-cost case and the experimental `stream` feature. All three new defects
+trace to anchors dropped by forward simplification; the first is algebra-deep
+(issue #22), the latter two are fixed by the committed prototype. This raises
+confidence in 0.6.13 for anchor-free and simple-anchor patterns, but the
+intersection-with-anchor corner is demonstrably not yet sound. It does not make
+resharp "bulletproof": a young 0.x engine with `unsafe` SIMD, no internal panic
+boundary, an always-incomplete unknown-bug frontier, and now a known live
+`find_all` soundness gap. Our consumer `forbidden-strings` is unaffected (no
+intersection-with-anchor rules). See `../resharp-robustness-2026-06-19.md` for the
+cross-cutting robustness assessment this campaign updates.
