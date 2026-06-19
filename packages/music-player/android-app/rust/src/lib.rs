@@ -891,44 +891,24 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeMea
         // ```
         Err(_) => return -2.0,
     };
-    // What:     `match truepeak::measure_true_peak(source) { ... }` runs the true-peak
-    //           scan (which returns `Result<f32, PlayerError>`) over the decoder,
-    //           passing `source` by VALUE (moving ownership in), and branches on the
-    //           outcome. This `match` is the function's tail expression, so its value
-    //           is returned.
-    // Why:      Produce the peak figure (or an error sentinel) for Kotlin.
+    // What:     `truepeak::measure_true_peak(source).unwrap_or(-3.0)` runs the true-peak
+    //           scan (which returns `Result<f32, PlayerError>`) over the decoder, passing
+    //           `source` by VALUE (moving ownership in). `.unwrap_or(fallback)` yields the
+    //           inner `f32` on `Ok` and the eager fallback `-3.0` (the "-3 decode error"
+    //           sentinel) on `Err`, discarding the error. This call is the function's tail
+    //           expression, so its value is returned.
+    // Why:      Produce the peak figure, or the decode-error sentinel, for Kotlin.
+    // Gotcha:   `.unwrap_or` collapses what was a two-arm `match` (`Ok(peak) => peak` /
+    //           `Err(_) => -3.0`) into one value-yielding call. The earlier
+    //           `decode::open_borrowed_fd` site above stays a `match` because its failure
+    //           arm `return -2.0` is CONTROL FLOW, which `unwrap_or` (it only yields a
+    //           value) cannot express.
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // try { return truepeak.measureTruePeak(source); } catch { return -3.0; }
     // ```
-    match truepeak::measure_true_peak(source) {
-        // What:     `Ok(peak) => peak`. Success arm: destructure the measured `f32`
-        //           peak out of `Ok` and yield it directly (no wrapper), which the
-        //           tail `match` returns.
-        // Why:      Measurement succeeded; hand the peak value back to Kotlin.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // return peak;
-        // ```
-        Ok(peak) => peak,
-        // What:     `Err(_) => -3.0`. Failure variant, error discarded; the arm yields
-        //           `-3.0` (the "-3 decode error" sentinel). Because the whole `match`
-        //           is the tail expression, this `-3.0` is returned (note: NO `return`
-        //           keyword here, unlike earlier arms, because the match itself is the
-        //           return position).
-        // Why:      Decode/measurement failed; report the decode-error code.
-        // Gotcha:   This arm has no `return` and no `;`; it is a value the surrounding
-        //           tail `match` returns. Earlier `Err(_) => return -2.0` arms WERE in
-        //           statement position, so they needed an explicit `return`.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // // failed: -3.0 (returned by the surrounding match)
-        // ```
-        Err(_) => -3.0,
-    }
+    truepeak::measure_true_peak(source).unwrap_or(-3.0)
 }
 
 // What:     `#[no_mangle]`: keep the symbol name unmangled so the JVM finds it.
@@ -1062,39 +1042,22 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeOut
     _env: JNIEnv<'local>,
     _class: JClass<'local>,
 ) -> jdouble {
-    // What:     `match output::measure_output_latency_ms() { ... }`. The call returns
-    //           an `Option<f64>` (Rust's null-free "maybe a value" container: either
-    //           `Some(x)` with a value, or `None` for "no value"), NOT a `Result`. The
-    //           `match` is the tail expression, so its value is returned.
-    // Why:      Open the AAudio stream, measure latency, and either return the number
-    //           or signal failure.
+    // What:     `output::measure_output_latency_ms().unwrap_or(-1.0)`. The call returns an
+    //           `Option<f64>` (Rust's null-free "maybe a value" container: either `Some(x)`
+    //           with a value, or `None` for "no value"), NOT a `Result`. `.unwrap_or(
+    //           fallback)` yields the inner `f64` on `Some` and the eager fallback `-1.0`
+    //           on `None`. This call is the tail expression, so its value is returned.
+    // Why:      Open the AAudio stream, measure latency, and either return the number or
+    //           signal failure with -1.0.
+    // Gotcha:   `.unwrap_or` collapses what was a two-arm `match` (`Some(ms) => ms` /
+    //           `None => -1.0`); the eager `-1.0` is fine for a plain literal sentinel.
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // const ms = output.measureOutputLatencyMs(); // number | null
     // return ms ?? -1.0;
     // ```
-    match output::measure_output_latency_ms() {
-        // What:     `Some(ms) => ms`. `Some(...)` is the "present" variant of `Option`;
-        //           we destructure the inner `f64` latency into `ms` and yield it as
-        //           the match value.
-        // Why:      We got a real latency reading; return it.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // // ms !== null: return ms;
-        // ```
-        Some(ms) => ms,
-        // What:     `None => -1.0`. `None` is the "absent" variant of `Option` (Rust's
-        //           stand-in for `null`); the arm yields the `-1.0` failure sentinel.
-        // Why:      The probe failed (no reading); report -1.0.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // // ms === null: return -1.0;
-        // ```
-        None => -1.0,
-    }
+    output::measure_output_latency_ms().unwrap_or(-1.0)
 }
 
 // What:     `#[no_mangle]`: keep the symbol name for JVM lookup.

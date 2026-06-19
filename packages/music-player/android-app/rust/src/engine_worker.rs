@@ -1796,23 +1796,25 @@ fn audio_callback(
             control.ended.store(true, Ordering::Release);
         }
     }
-    // What:     `if channels > 0 { ... }`. Guard against a zero channel count (which would
-    //           make the division below divide by zero). Plain integer comparison.
-    // Why:      Only advance the played-frame counter when channels is valid; protects the
-    //           `popped / channels` divide below.
+    // What:     `if let Some(frames) = popped.checked_div(channels) { ... }`. `checked_div`
+    //           divides `popped` (a SAMPLE count) by `channels`, returning `None` when
+    //           `channels == 0` (a checked divide that cannot divide-by-zero) and
+    //           `Some(frames)` otherwise, where `frames` is the FRAME count (samples per
+    //           frame equals channels). The `if let` runs the body only on `Some`.
+    // Why:      Only advance the played-frame counter when channels is valid; `checked_div`
+    //           folds the zero-guard and the divide into one call (no separate `> 0` check).
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // if (channels > 0) { ... }
+    // const frames = channels > 0 ? Math.floor(popped / channels) : null;
+    // if (frames !== null) { ... }
     // ```
-    if channels > 0 {
-        // What:     `control.frames_played.fetch_add((popped / channels) as u64, Ordering::AcqRel);`.
-        //           `popped / channels` converts a popped SAMPLE count into a FRAME count
-        //           (samples per frame equals channels). `as u64` CASTS that `usize` to the
-        //           atomic's 64-bit width. `.fetch_add(delta, ordering)` atomically ADDS the
-        //           delta to the counter (a read-modify-write). `Ordering::AcqRel` is both
-        //           Acquire and Release at once, correct for a read-modify-write that both
-        //           observes and publishes. The call is split across lines for width.
+    if let Some(frames) = popped.checked_div(channels) {
+        // What:     `control.frames_played.fetch_add(frames as u64, Ordering::AcqRel);`.
+        //           `as u64` CASTS the `usize` frame count to the atomic's 64-bit width.
+        //           `.fetch_add(delta, ordering)` atomically ADDS the delta to the counter
+        //           (a read-modify-write). `Ordering::AcqRel` is both Acquire and Release at
+        //           once, correct for a read-modify-write that both observes and publishes.
         // Why:      Advance the position counter by the frames we just played, so Kotlin's
         //           polled position moves forward.
         // Gotcha:   `fetch_add` is an ATOMIC increment (not a plain `+=`); it returns the OLD
@@ -1820,11 +1822,11 @@ fn audio_callback(
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // Atomics.add(control.framesPlayed, 0, Math.floor(popped / channels));
+        // Atomics.add(control.framesPlayed, 0, frames);
         // ```
         control
             .frames_played
-            .fetch_add((popped / channels) as u64, Ordering::AcqRel);
+            .fetch_add(frames as u64, Ordering::AcqRel);
     }
     // What:     `AudioCallbackResult::Continue`. The `Continue` variant as the function's
     //           TAIL EXPRESSION (no trailing `;`), so it is what the callback returns,
