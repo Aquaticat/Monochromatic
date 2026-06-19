@@ -57,6 +57,10 @@ package dev.monochromatic.musicplayer
 // ```ts
 // export type FinishLoadResult = "RestoredSavedSession" | "KeptUserSelectionDuringLoad";
 // ```
+/**
+ * Defines finish load result type for this music-player component; the TypeScript-oriented notes above explain
+ * its role.
+ */
 enum class FinishLoadResult {
     // What:     `RestoredSavedSession` is the first enum constant (a fieldless tag
     //           of type `FinishLoadResult`). The trailing comma separates it from
@@ -70,6 +74,10 @@ enum class FinishLoadResult {
     // ```ts
     // "RestoredSavedSession"
     // ```
+    /**
+     * Defines restored saved session case for this music-player state; the TypeScript-oriented notes above
+     * explain when it is selected.
+     */
     RestoredSavedSession,
 
     // What:     `KeptUserSelectionDuringLoad` is the second and final enum constant
@@ -84,5 +92,9 @@ enum class FinishLoadResult {
     // ```ts
     // "KeptUserSelectionDuringLoad"
     // ```
+    /**
+     * Defines kept user selection during load case for this music-player state; the TypeScript-oriented notes
+     * above explain when it is selected.
+     */
     KeptUserSelectionDuringLoad,
 }

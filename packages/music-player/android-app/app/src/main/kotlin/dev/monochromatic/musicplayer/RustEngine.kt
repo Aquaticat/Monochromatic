@@ -265,6 +265,10 @@ import kotlinx.coroutines.launch
 //   constructor(context: Context) { /* ...fields below... */ }
 // }
 // ```
+/**
+ * Defines rust engine type for this music-player component; the TypeScript-oriented notes above explain its
+ * role.
+ */
 class RustEngine(context: Context) : AudioEngine {
     // What:     `private val appContext: Context = context.applicationContext` declares a private
     //           read-only `Context` holding the long-lived application context.
@@ -274,6 +278,10 @@ class RustEngine(context: Context) : AudioEngine {
     // ```ts
     // private readonly appContext: Context = context.applicationContext;
     // ```
+    /**
+     * Defines app context value for this music-player component; the TypeScript-oriented notes above explain its
+     * source and use.
+     */
     private val appContext: Context = context.applicationContext
 
     // What:     `private var handle: Long = NativeBridge.nativeEngineCreate()` declares a private,
@@ -288,6 +296,10 @@ class RustEngine(context: Context) : AudioEngine {
     // ```ts
     // private handle: bigint = NativeBridge.nativeEngineCreate(); // 0n => spawn failed
     // ```
+    /**
+     * Defines handle value for this music-player component; the TypeScript-oriented notes above explain its
+     * source and use.
+     */
     private var handle: Long = NativeBridge.nativeEngineCreate()
 
     // What:     `private var onPlayingChanged: ((Boolean) -> Unit)? = null` declares a private,
@@ -299,6 +311,10 @@ class RustEngine(context: Context) : AudioEngine {
     // ```ts
     // private onPlayingChanged: ((playing: boolean) => void) | null = null;
     // ```
+    /**
+     * Defines on playing changed value for this music-player component; the TypeScript-oriented notes above
+     * explain its source and use.
+     */
     private var onPlayingChanged: ((Boolean) -> Unit)? = null
 
     // What:     `private var onTrackEnded: (() -> Unit)? = null` declares a private, reassignable
@@ -309,6 +325,10 @@ class RustEngine(context: Context) : AudioEngine {
     // ```ts
     // private onTrackEnded: (() => void) | null = null;
     // ```
+    /**
+     * Defines on track ended value for this music-player component; the TypeScript-oriented notes above explain
+     * its source and use.
+     */
     private var onTrackEnded: (() -> Unit)? = null
 
     // What:     `private val resolveScope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)`
@@ -323,6 +343,10 @@ class RustEngine(context: Context) : AudioEngine {
     // ```ts
     // const resolveScope = new AbortController(); // owns background gain-resolution tasks
     // ```
+    /**
+     * Defines resolve scope value for this music-player component; the TypeScript-oriented notes above explain
+     * its source and use.
+     */
     private val resolveScope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     // What:     `private var loadGeneration: Int = 0` declares a private reassignable 32-bit `Int`
@@ -335,6 +359,10 @@ class RustEngine(context: Context) : AudioEngine {
     // ```ts
     // private loadGeneration = 0;
     // ```
+    /**
+     * Defines load generation value for this music-player component; the TypeScript-oriented notes above explain
+     * its source and use.
+     */
     private var loadGeneration: Int = 0
 
     // What:     `private var lastPlaying: Boolean = false` declares a private reassignable boolean,
@@ -346,6 +374,10 @@ class RustEngine(context: Context) : AudioEngine {
     // ```ts
     // private lastPlaying = false;
     // ```
+    /**
+     * Defines last playing value for this music-player component; the TypeScript-oriented notes above explain
+     * its source and use.
+     */
     private var lastPlaying: Boolean = false
 
     // What:     `private var endedHandled: Boolean = false` declares a private reassignable boolean,
@@ -357,6 +389,10 @@ class RustEngine(context: Context) : AudioEngine {
     // ```ts
     // private endedHandled = false;
     // ```
+    /**
+     * Defines ended handled value for this music-player component; the TypeScript-oriented notes above explain
+     * its source and use.
+     */
     private var endedHandled: Boolean = false
 
     // What:     `private val poller: Handler = Handler(Looper.getMainLooper())` declares a private
@@ -369,6 +405,10 @@ class RustEngine(context: Context) : AudioEngine {
     // ```ts
     // const poller = new Handler(Looper.getMainLooper());
     // ```
+    /**
+     * Defines poller value for this music-player component; the TypeScript-oriented notes above explain its
+     * source and use.
+     */
     private val poller: Handler = Handler(Looper.getMainLooper())
 
     // What:     `private val pollTask: Runnable = object : Runnable { override fun run() { ... } }`
@@ -384,6 +424,10 @@ class RustEngine(context: Context) : AudioEngine {
     //   run() { this.poll(); this.poller.postDelayed(pollTask, POLL_MS); },
     // };
     // ```
+    /**
+     * Defines poll task value for this music-player component; the TypeScript-oriented notes above explain its
+     * source and use.
+     */
     private val pollTask: Runnable = object : Runnable {
         // What:     `override fun run() { ... }` overrides the `Runnable.run` method (the work the
         //           handler executes).
@@ -393,6 +437,10 @@ class RustEngine(context: Context) : AudioEngine {
         // ```ts
         // run() { this.poll(); this.poller.postDelayed(this, POLL_MS); }
         // ```
+        /**
+         * Defines run behavior for this music-player component; the TypeScript-oriented notes above explain its
+         * call shape and effects.
+         */
         override fun run() {
             // What:     `poll()` calls the engine's private `poll` method (sample native state, fire
             //           callbacks on transitions).
@@ -431,6 +479,10 @@ class RustEngine(context: Context) : AudioEngine {
     // ```ts
     // const audioManager = appContext.getSystemService(Context.AUDIO_SERVICE) as AudioManager;
     // ```
+    /**
+     * Defines audio manager value for this music-player component; the TypeScript-oriented notes above explain
+     * its source and use.
+     */
     private val audioManager: AudioManager = appContext.getSystemService(Context.AUDIO_SERVICE) as AudioManager
 
     // What:     `private val focusRequest: AudioFocusRequest = AudioFocusRequest.Builder(...)....build()`
@@ -447,6 +499,10 @@ class RustEngine(context: Context) : AudioEngine {
     //   .setWillPauseWhenDucked(true)
     //   .build();
     // ```
+    /**
+     * Defines focus request value for this music-player component; the TypeScript-oriented notes above explain
+     * its source and use.
+     */
     private val focusRequest: AudioFocusRequest =
         AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
             // What:     `.setAudioAttributes( AudioAttributes.Builder().setUsage(...).setContentType(...).build() )`
@@ -506,6 +562,10 @@ class RustEngine(context: Context) : AudioEngine {
     // ```ts
     // private resumeOnFocusGain = false;
     // ```
+    /**
+     * Defines resume on focus gain value for this music-player component; the TypeScript-oriented notes above
+     * explain its source and use.
+     */
     private var resumeOnFocusGain: Boolean = false
 
     // What:     `private val noisyReceiver: BroadcastReceiver = object : BroadcastReceiver() { ... }`
@@ -523,6 +583,10 @@ class RustEngine(context: Context) : AudioEngine {
     //   onReceive(context: Context | null, intent: Intent | null) { ... }
     // })();
     // ```
+    /**
+     * Defines noisy receiver value for this music-player component; the TypeScript-oriented notes above explain
+     * its source and use.
+     */
     private val noisyReceiver: BroadcastReceiver = object : BroadcastReceiver() {
         // What:     `override fun onReceive(context: Context?, intent: Intent?) { ... }` overrides the
         //           receiver callback. Both params are NULLABLE (`Context?`, `Intent?`) because the
@@ -533,6 +597,10 @@ class RustEngine(context: Context) : AudioEngine {
         // ```ts
         // onReceive(context: Context | null, intent: Intent | null) { ... }
         // ```
+        /**
+         * Defines on receive behavior for this music-player component; the TypeScript-oriented notes above
+         * explain its call shape and effects.
+         */
         override fun onReceive(context: Context?, intent: Intent?) {
             // What:     `if (intent?.action == AudioManager.ACTION_AUDIO_BECOMING_NOISY) { ... }` is a
             //           guarded check. `intent?.action` is a SAFE CALL: read `.action` only if `intent`
@@ -639,6 +707,10 @@ class RustEngine(context: Context) : AudioEngine {
     // ```ts
     // load(uri: string, play: boolean): void { ... }
     // ```
+    /**
+     * Defines load behavior for this music-player component; the TypeScript-oriented notes above explain its
+     * call shape and effects.
+     */
     override fun load(uri: String, play: Boolean) {
         // What:     `Log.i(LOG_TAG, "RustEngine.load ${uri.substringAfterLast('/')} play=$play")` logs
         //           the load. `uri.substringAfterLast('/')` is the filename (text after the last `'/'`
@@ -668,6 +740,10 @@ class RustEngine(context: Context) : AudioEngine {
         // ```ts
         // const generation = ++this.loadGeneration;
         // ```
+        /**
+         * Defines generation value for this music-player component; the TypeScript-oriented notes above explain
+         * its source and use.
+         */
         val generation: Int = ++loadGeneration
         // What:     `val descriptor: ParcelFileDescriptor? = openDescriptor(uri)` declares a read-only
         //           NULLABLE `ParcelFileDescriptor?` from the private `openDescriptor` helper (which
@@ -678,6 +754,10 @@ class RustEngine(context: Context) : AudioEngine {
         // ```ts
         // const descriptor = this.openDescriptor(uri); // ParcelFileDescriptor | null
         // ```
+        /**
+         * Defines descriptor value for this music-player component; the TypeScript-oriented notes above explain
+         * its source and use.
+         */
         val descriptor: ParcelFileDescriptor? = openDescriptor(uri)
         // What:     `if (descriptor == null) { Log.w(...); return }` is an early-return guard on the
         //           nullable descriptor (`== null` is the null check).
@@ -717,6 +797,10 @@ class RustEngine(context: Context) : AudioEngine {
         // ```ts
         // const startPlaying = play && this.requestFocus();
         // ```
+        /**
+         * Defines start playing value for this music-player component; the TypeScript-oriented notes above
+         * explain its source and use.
+         */
         val startPlaying: Boolean = play && requestFocus()
         // What:     `val result: Int = descriptor.use { NativeBridge.nativeEngineLoad(handle, it.fd, startPlaying) }`
         //           declares a read-only `Int`. `descriptor.use { ... }` runs the block and then
@@ -732,6 +816,10 @@ class RustEngine(context: Context) : AudioEngine {
         // let result: number;
         // { using d = descriptor; result = NativeBridge.nativeEngineLoad(this.handle, d.fd, startPlaying); }
         // ```
+        /**
+         * Defines result value for this music-player component; the TypeScript-oriented notes above explain its
+         * source and use.
+         */
         val result: Int = descriptor.use { NativeBridge.nativeEngineLoad(handle, it.fd, startPlaying) }
         // What:     `if (result != 0) { Log.w(...); return }` checks the native return code (`0` = success;
         //           `!= 0` = failure) and bails on failure.
@@ -787,6 +875,10 @@ class RustEngine(context: Context) : AudioEngine {
             // ```ts
             // const gain = await this.resolveNormalizationGain(uri);
             // ```
+            /**
+             * Defines gain value for this music-player component; the TypeScript-oriented notes above explain
+             * its source and use.
+             */
             val gain: Float = resolveNormalizationGain(uri)
             // What:     `poller.post { ... }` posts the trailing-lambda block onto the MAIN looper to run
             //           there (marshalling back to the main thread from the background coroutine).
@@ -833,6 +925,10 @@ class RustEngine(context: Context) : AudioEngine {
     // ```ts
     // private async resolveNormalizationGain(uri: string): Promise<number> { ... }
     // ```
+    /**
+     * Defines resolve normalization gain behavior for this music-player component; the TypeScript-oriented notes
+     * above explain its call shape and effects.
+     */
     private suspend fun resolveNormalizationGain(uri: String): Float {
         // What:     `val parsed: Uri = Uri.parse(uri)` declares a read-only `Uri` by parsing the string
         //           via the static `Uri.parse`.
@@ -842,6 +938,10 @@ class RustEngine(context: Context) : AudioEngine {
         // ```ts
         // const parsed = Uri.parse(uri);
         // ```
+        /**
+         * Defines parsed value for this music-player component; the TypeScript-oriented notes above explain its
+         * source and use.
+         */
         val parsed: Uri = Uri.parse(uri)
         // What:     `val key: String = TrackFingerprint.of(appContext, parsed) ?: return UNITY_GAIN`
         //           declares a read-only `String`. `TrackFingerprint.of(...)` (a shared `main` helper)
@@ -856,6 +956,10 @@ class RustEngine(context: Context) : AudioEngine {
         // if (fp === null) return UNITY_GAIN;
         // const key: string = fp;
         // ```
+        /**
+         * Defines key value for this music-player component; the TypeScript-oriented notes above explain its
+         * source and use.
+         */
         val key: String = TrackFingerprint.of(appContext, parsed) ?: return UNITY_GAIN
         // What:     `PeakCacheStore.get(appContext, key)?.let { cachedPeak -> return normalizationGain(cachedPeak) }`
         //           looks up a cached peak; `?.let { ... }` runs the lambda ONLY when non-null (safe-call +
@@ -889,6 +993,10 @@ class RustEngine(context: Context) : AudioEngine {
         //   return UNITY_GAIN;
         // }
         // ```
+        /**
+         * Defines peak value for this music-player component; the TypeScript-oriented notes above explain its
+         * source and use.
+         */
         val peak: Float = try {
             // What:     `measureTruePeakBlocking(appContext, parsed)` calls the flavor's blocking native
             //           measure (defined in this flavor's `PeakMeasurer.kt`); its `Float` result is the
@@ -974,6 +1082,10 @@ class RustEngine(context: Context) : AudioEngine {
     //   }
     // }
     // ```
+    /**
+     * Defines open descriptor behavior for this music-player component; the TypeScript-oriented notes above
+     * explain its call shape and effects.
+     */
     private fun openDescriptor(uri: String): ParcelFileDescriptor? =
         try {
             // What:     `if (uri.startsWith("/")) { ... } else { ... }` is an IF EXPRESSION: it evaluates to
@@ -1036,6 +1148,10 @@ class RustEngine(context: Context) : AudioEngine {
     // ```ts
     // play(): void { if (this.requestFocus()) NativeBridge.nativeEnginePlay(this.handle); }
     // ```
+    /**
+     * Defines play behavior for this music-player component; the TypeScript-oriented notes above explain its
+     * call shape and effects.
+     */
     override fun play() {
         // What:     `if (requestFocus()) { NativeBridge.nativeEnginePlay(handle) }` requests focus (a side
         //           effect) and plays only if it was granted.
@@ -1064,6 +1180,10 @@ class RustEngine(context: Context) : AudioEngine {
     // ```ts
     // pause(): void { NativeBridge.nativeEnginePause(this.handle); }
     // ```
+    /**
+     * Defines pause behavior for this music-player component; the TypeScript-oriented notes above explain its
+     * call shape and effects.
+     */
     override fun pause() {
         // What:     `NativeBridge.nativeEnginePause(handle)` calls the native pause via JNI.
         // Why:      Pause native playback.
@@ -1083,6 +1203,10 @@ class RustEngine(context: Context) : AudioEngine {
     // ```ts
     // seekTo(positionSec: number): void { NativeBridge.nativeEngineSeek(this.handle, positionSec); }
     // ```
+    /**
+     * Defines seek to behavior for this music-player component; the TypeScript-oriented notes above explain its
+     * call shape and effects.
+     */
     override fun seekTo(positionSec: Double) {
         // What:     `NativeBridge.nativeEngineSeek(handle, positionSec)` calls the native seek via JNI,
         //           passing seconds directly (the native side handles the unit).
@@ -1103,6 +1227,10 @@ class RustEngine(context: Context) : AudioEngine {
     // ```ts
     // setVolume(volume: number): void { NativeBridge.nativeEngineSetVolume(this.handle, volume); }
     // ```
+    /**
+     * Defines set volume behavior for this music-player component; the TypeScript-oriented notes above explain
+     * its call shape and effects.
+     */
     override fun setVolume(volume: Float) {
         // What:     `NativeBridge.nativeEngineSetVolume(handle, volume)` calls the native volume setter via JNI.
         // Why:      Apply the user volume natively.
@@ -1122,6 +1250,10 @@ class RustEngine(context: Context) : AudioEngine {
     // ```ts
     // positionSec(): number { return NativeBridge.nativeEnginePositionSec(this.handle); }
     // ```
+    /**
+     * Defines position sec behavior for this music-player component; the TypeScript-oriented notes above explain
+     * its call shape and effects.
+     */
     override fun positionSec(): Double = NativeBridge.nativeEnginePositionSec(handle)
 
     // What:     `override fun durationSec(): Double = NativeBridge.nativeEngineDurationSec(handle)`
@@ -1132,6 +1264,10 @@ class RustEngine(context: Context) : AudioEngine {
     // ```ts
     // durationSec(): number { return NativeBridge.nativeEngineDurationSec(this.handle); }
     // ```
+    /**
+     * Defines duration sec behavior for this music-player component; the TypeScript-oriented notes above explain
+     * its call shape and effects.
+     */
     override fun durationSec(): Double = NativeBridge.nativeEngineDurationSec(handle)
 
     // What:     `override fun playWhenReady(): Boolean = NativeBridge.nativeEnginePlayWhenReady(handle)`
@@ -1142,6 +1278,10 @@ class RustEngine(context: Context) : AudioEngine {
     // ```ts
     // playWhenReady(): boolean { return NativeBridge.nativeEnginePlayWhenReady(this.handle); }
     // ```
+    /**
+     * Defines play when ready behavior for this music-player component; the TypeScript-oriented notes above
+     * explain its call shape and effects.
+     */
     override fun playWhenReady(): Boolean = NativeBridge.nativeEnginePlayWhenReady(handle)
 
     // What:     `override fun setOnPlayingChanged(callback: (Boolean) -> Unit) { ... }` implements the setter
@@ -1152,6 +1292,10 @@ class RustEngine(context: Context) : AudioEngine {
     // ```ts
     // setOnPlayingChanged(callback: (playing: boolean) => void): void { this.onPlayingChanged = callback; }
     // ```
+    /**
+     * Defines set on playing changed behavior for this music-player component; the TypeScript-oriented notes
+     * above explain its call shape and effects.
+     */
     override fun setOnPlayingChanged(callback: (Boolean) -> Unit) {
         // What:     `onPlayingChanged = callback` stores the callback in the nullable field.
         // Why:      Remember it so the poller can invoke it on state changes.
@@ -1171,6 +1315,10 @@ class RustEngine(context: Context) : AudioEngine {
     // ```ts
     // setOnTrackEnded(callback: () => void): void { this.onTrackEnded = callback; }
     // ```
+    /**
+     * Defines set on track ended behavior for this music-player component; the TypeScript-oriented notes above
+     * explain its call shape and effects.
+     */
     override fun setOnTrackEnded(callback: () -> Unit) {
         // What:     `onTrackEnded = callback` stores the callback in the nullable field.
         // Why:      Remember it so the poller can invoke it on a natural end.
@@ -1190,6 +1338,10 @@ class RustEngine(context: Context) : AudioEngine {
     // ```ts
     // release(): void { ... }
     // ```
+    /**
+     * Defines release behavior for this music-player component; the TypeScript-oriented notes above explain its
+     * call shape and effects.
+     */
     override fun release() {
         // What:     `poller.removeCallbacks(pollTask)` cancels any scheduled runs of the self-rescheduling
         //           poll task.
@@ -1282,6 +1434,10 @@ class RustEngine(context: Context) : AudioEngine {
     //   return this.audioManager.requestAudioFocus(focusRequest) === AudioManager.AUDIOFOCUS_REQUEST_GRANTED;
     // }
     // ```
+    /**
+     * Defines request focus behavior for this music-player component; the TypeScript-oriented notes above
+     * explain its call shape and effects.
+     */
     private fun requestFocus(): Boolean =
         audioManager.requestAudioFocus(focusRequest) == AudioManager.AUDIOFOCUS_REQUEST_GRANTED
 
@@ -1296,6 +1452,10 @@ class RustEngine(context: Context) : AudioEngine {
     // ```ts
     // private onFocusChange(change: number): void { ... }
     // ```
+    /**
+     * Defines on focus change behavior for this music-player component; the TypeScript-oriented notes above
+     * explain its call shape and effects.
+     */
     private fun onFocusChange(change: Int) {
         // What:     `when (change) { ... }` is a WHEN STATEMENT: Kotlin's switch-like multi-way branch on the
         //           value of `change`. Each `LABEL -> { ... }` arm runs when `change` equals that label; a
@@ -1425,6 +1585,10 @@ class RustEngine(context: Context) : AudioEngine {
     // ```ts
     // private poll(): void { ... }
     // ```
+    /**
+     * Defines poll behavior for this music-player component; the TypeScript-oriented notes above explain its
+     * call shape and effects.
+     */
     private fun poll() {
         // What:     `if (handle == 0L) { return }` early-returns when the engine is released (`handle == 0L`).
         // Why:      Do not call into a freed native engine.
@@ -1444,6 +1608,10 @@ class RustEngine(context: Context) : AudioEngine {
         // ```ts
         // const playing = NativeBridge.nativeEngineIsPlaying(this.handle);
         // ```
+        /**
+         * Defines playing value for this music-player component; the TypeScript-oriented notes above explain its
+         * source and use.
+         */
         val playing: Boolean = NativeBridge.nativeEngineIsPlaying(handle)
         // What:     `if (playing != lastPlaying) { ... }` fires only when the play state CHANGED since the
         //           last poll (`!=`).
@@ -1479,6 +1647,10 @@ class RustEngine(context: Context) : AudioEngine {
         // ```ts
         // const ended = NativeBridge.nativeEngineIsEnded(this.handle);
         // ```
+        /**
+         * Defines ended value for this music-player component; the TypeScript-oriented notes above explain its
+         * source and use.
+         */
         val ended: Boolean = NativeBridge.nativeEngineIsEnded(handle)
         // What:     `if (ended && !endedHandled) { ... } else if (!ended) { ... }` is the rising-edge /
         //           rearm logic. The first arm fires once when `ended` is newly true (`ended && !endedHandled`);
@@ -1521,6 +1693,10 @@ class RustEngine(context: Context) : AudioEngine {
         }
     }
 
+    /**
+     * Defines companion object for this music-player component; the TypeScript-oriented notes above explain its
+     * shared role.
+     */
     // What:     `companion object { ... }` declares the class's static-like member bag.
     // Why:      Hosts the log tag, poll cadence, and unity-gain constants shared by all instances.
     //
@@ -1538,6 +1714,10 @@ class RustEngine(context: Context) : AudioEngine {
         // ```ts
         // private static readonly LOG_TAG = "RustEngine";
         // ```
+        /**
+         * Defines log tag value for this music-player component; the TypeScript-oriented notes above explain its
+         * source and use.
+         */
         private const val LOG_TAG: String = "RustEngine"
 
         // What:     `private const val POLL_MS: Long = 200L` declares a private compile-time `Long` (64-bit)
@@ -1549,6 +1729,10 @@ class RustEngine(context: Context) : AudioEngine {
         // ```ts
         // private static readonly POLL_MS = 200; // milliseconds
         // ```
+        /**
+         * Defines poll ms value for this music-player component; the TypeScript-oriented notes above explain its
+         * source and use.
+         */
         private const val POLL_MS: Long = 200L
 
         // What:     `private const val UNITY_GAIN: Float = 1.0f` declares a private compile-time `Float`
@@ -1559,6 +1743,10 @@ class RustEngine(context: Context) : AudioEngine {
         // ```ts
         // private static readonly UNITY_GAIN = 1.0;
         // ```
+        /**
+         * Defines unity gain value for this music-player component; the TypeScript-oriented notes above explain
+         * its source and use.
+         */
         private const val UNITY_GAIN: Float = 1.0f
     }
 }

@@ -60,6 +60,10 @@ package dev.monochromatic.musicplayer.core
 // ```ts
 // const SEPARATOR = "/"; // one-char string; TS has no Char type
 // ```
+/**
+ * Defines separator value for this music-player component; the TypeScript-oriented notes above explain its
+ * source and use.
+ */
 private const val SEPARATOR: Char = '/'
 
 // What:     `private const val EXTENSION_DOT: Char = '.'`. Same construct as the line
@@ -77,6 +81,10 @@ private const val SEPARATOR: Char = '/'
 // ```ts
 // const EXTENSION_DOT = "."; // one-char string; TS has no Char type
 // ```
+/**
+ * Defines extension dot value for this music-player component; the TypeScript-oriented notes above explain its
+ * source and use.
+ */
 private const val EXTENSION_DOT: Char = '.'
 
 // What:     `val AUDIO_EXTENSIONS: Set<String> = setOf( ... )`. Declares a read-only
@@ -111,6 +119,10 @@ private const val EXTENSION_DOT: Char = '.'
 //   "m4a", "m4b", "mp4", "aac", "aiff", "aif", "aifc",
 // ]);
 // ```
+/**
+ * Defines audio extensions value for this music-player component; the TypeScript-oriented notes above explain
+ * its source and use.
+ */
 val AUDIO_EXTENSIONS: Set<String> = setOf(
     // The 14 entries below are plain data — each is an ordinary string literal,
     // character-identical to a TS array element, so they need no per-line block.
@@ -157,6 +169,10 @@ val AUDIO_EXTENSIONS: Set<String> = setOf(
 //   // ...body below...
 // }
 // ```
+/**
+ * Defines extension of behavior for this music-player component; the TypeScript-oriented notes above explain its
+ * call shape and effects.
+ */
 private fun extensionOf(path: String): String? {
     // What:     `val component = path.substringAfterLast(SEPARATOR)`. Declares a
     //           read-only local `component`. `path.substringAfterLast(SEPARATOR)` is a
@@ -173,6 +189,10 @@ private fun extensionOf(path: String): String? {
     // ```ts
     // const component = path.slice(path.lastIndexOf("/") + 1);
     // ```
+    /**
+     * Defines component value for this music-player component; the TypeScript-oriented notes above explain its
+     * source and use.
+     */
     val component = path.substringAfterLast(SEPARATOR)
     // What:     `val dotIndex = component.lastIndexOf(EXTENSION_DOT)`. Declares a
     //           read-only local `dotIndex` holding the position (an `Int`, inferred) of
@@ -190,6 +210,10 @@ private fun extensionOf(path: String): String? {
     // ```ts
     // const dotIndex = component.lastIndexOf(".");
     // ```
+    /**
+     * Defines dot index value for this music-player component; the TypeScript-oriented notes above explain its
+     * source and use.
+     */
     val dotIndex = component.lastIndexOf(EXTENSION_DOT)
     // What:     `if (dotIndex <= 0)`. A plain conditional whose syntax is identical to
     //           TS. The comparison is what carries meaning: `dotIndex <= 0` is true in
@@ -260,6 +284,10 @@ private fun extensionOf(path: String): String? {
 //   // ...body below...
 // }
 // ```
+/**
+ * Defines is audio file behavior for this music-player component; the TypeScript-oriented notes above explain
+ * its call shape and effects.
+ */
 fun isAudioFile(path: String): Boolean {
     // What:     `val extension = extensionOf(path) ?: return false`. Two concepts on one
     //           line:
@@ -282,6 +310,10 @@ fun isAudioFile(path: String): Boolean {
     // const extension = extensionOf(path);
     // if (extension === null) return false;
     // ```
+    /**
+     * Defines extension value for this music-player component; the TypeScript-oriented notes above explain its
+     * source and use.
+     */
     val extension = extensionOf(path) ?: return false
     // What:     `return extension in AUDIO_EXTENSIONS`. The `in` operator here is a
     //           MEMBERSHIP test: `x in someCollection` calls the collection's
@@ -324,6 +356,10 @@ fun isAudioFile(path: String): Boolean {
 //   // ...the single tail expression below becomes the return...
 // }
 // ```
+/**
+ * Defines audio files sorted behavior for this music-player component; the TypeScript-oriented notes above
+ * explain its call shape and effects.
+ */
 fun audioFilesSorted(names: List<String>): List<String> =
     // What:     `names.filter(::isAudioFile).sorted()`. This is the function's TAIL
     //           EXPRESSION — because of the `=` body above, its value IS the return

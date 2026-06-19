@@ -50,6 +50,10 @@ package dev.monochromatic.musicplayer
 //   // ...method signatures go here, same as below...
 // }
 // ```
+/**
+ * Defines audio engine interface for this music-player component; the TypeScript-oriented notes above explain
+ * its contract.
+ */
 interface AudioEngine {
     // What:     `fun load(uri: String, play: Boolean)` declares a method named `load`. `fun` is
     //           Kotlin's keyword for "function/method". It takes two parameters: `uri` of type
@@ -76,6 +80,10 @@ interface AudioEngine {
     // // play: true = start immediately, false = load paused.
     // load(uri: string, play: boolean): void;
     // ```
+    /**
+     * Defines load behavior for this music-player component; the TypeScript-oriented notes above explain its
+     * call shape and effects.
+     */
     fun load(uri: String, play: Boolean)
 
     // What:     `fun play()` declares a method named `play` that takes no parameters and (no `:` after
@@ -88,6 +96,10 @@ interface AudioEngine {
     // ```ts
     // play(): void;
     // ```
+    /**
+     * Defines play behavior for this music-player component; the TypeScript-oriented notes above explain its
+     * call shape and effects.
+     */
     fun play()
 
     // What:     `fun pause()` declares a method named `pause`, no parameters, returns `Unit` (void). No
@@ -99,6 +111,10 @@ interface AudioEngine {
     // ```ts
     // pause(): void;
     // ```
+    /**
+     * Defines pause behavior for this music-player component; the TypeScript-oriented notes above explain its
+     * call shape and effects.
+     */
     fun pause()
 
     // What:     `fun seekTo(positionSec: Double)` declares a method named `seekTo` taking one parameter
@@ -122,6 +138,10 @@ interface AudioEngine {
     // // positionSec: target position in seconds.
     // seekTo(positionSec: number): void;
     // ```
+    /**
+     * Defines seek to behavior for this music-player component; the TypeScript-oriented notes above explain its
+     * call shape and effects.
+     */
     fun seekTo(positionSec: Double)
 
     // What:     `fun setVolume(volume: Float)` declares a method named `setVolume` taking one parameter
@@ -145,6 +165,10 @@ interface AudioEngine {
     // // volume: linear gain in 0.0..1.0.
     // setVolume(volume: number): void;
     // ```
+    /**
+     * Defines set volume behavior for this music-player component; the TypeScript-oriented notes above explain
+     * its call shape and effects.
+     */
     fun setVolume(volume: Float)
 
     // What:     `fun positionSec(): Double` declares a method named `positionSec` that takes no
@@ -163,6 +187,10 @@ interface AudioEngine {
     // // returns current position in seconds, 0.0 when nothing is loaded.
     // positionSec(): number;
     // ```
+    /**
+     * Defines position sec behavior for this music-player component; the TypeScript-oriented notes above explain
+     * its call shape and effects.
+     */
     fun positionSec(): Double
 
     // What:     `fun durationSec(): Double` declares a method named `durationSec`, no parameters,
@@ -179,6 +207,10 @@ interface AudioEngine {
     // // returns duration in seconds, 0.0 when still unknown.
     // durationSec(): number;
     // ```
+    /**
+     * Defines duration sec behavior for this music-player component; the TypeScript-oriented notes above explain
+     * its call shape and effects.
+     */
     fun durationSec(): Double
 
     // What:     `fun playWhenReady(): Boolean` declares a method named `playWhenReady`, no parameters,
@@ -200,6 +232,10 @@ interface AudioEngine {
     // // false when paused. Distinct from "sound is actually audible".
     // playWhenReady(): boolean;
     // ```
+    /**
+     * Defines play when ready behavior for this music-player component; the TypeScript-oriented notes above
+     * explain its call shape and effects.
+     */
     fun playWhenReady(): Boolean
 
     // What:     `fun setOnPlayingChanged(callback: (Boolean) -> Unit)` declares a method named
@@ -226,6 +262,10 @@ interface AudioEngine {
     // //           false when paused or stopped.
     // setOnPlayingChanged(callback: (isPlaying: boolean) => void): void;
     // ```
+    /**
+     * Defines set on playing changed behavior for this music-player component; the TypeScript-oriented notes
+     * above explain its call shape and effects.
+     */
     fun setOnPlayingChanged(callback: (Boolean) -> Unit)
 
     // What:     `fun setOnTrackEnded(callback: () -> Unit)` declares a method named `setOnTrackEnded`.
@@ -246,6 +286,10 @@ interface AudioEngine {
     // // callback: invoked when the loaded track plays through to its end.
     // setOnTrackEnded(callback: () => void): void;
     // ```
+    /**
+     * Defines set on track ended behavior for this music-player component; the TypeScript-oriented notes above
+     * explain its call shape and effects.
+     */
     fun setOnTrackEnded(callback: () -> Unit)
 
     // What:     `fun release()` declares a method named `release`, no parameters, returning `Unit`
@@ -265,5 +309,9 @@ interface AudioEngine {
     // // Closest TS idea: an explicit dispose()/close() you must call.
     // release(): void;
     // ```
+    /**
+     * Defines release behavior for this music-player component; the TypeScript-oriented notes above explain its
+     * call shape and effects.
+     */
     fun release()
 }

@@ -81,6 +81,9 @@ package dev.monochromatic.musicplayer.core
 //   name: string;
 // };
 // ```
+/**
+ * Defines page entry type for this music-player component; the TypeScript-oriented notes above explain its role.
+ */
 data class PageEntry(
     // What:     `val index: Int`. `val` declares a READ-ONLY property: it is
     //           both a primary-constructor parameter AND a field you can read
@@ -148,6 +151,9 @@ data class PageEntry(
 //   entries: PageEntry[];
 // };
 // ```
+/**
+ * Defines page type for this music-player component; the TypeScript-oriented notes above explain its role.
+ */
 data class Page(
     // What:     `val label: String`. A read-only (`val`) property holding the
     //           page's tab caption: either a top-level folder name (e.g.

@@ -54,6 +54,10 @@ package dev.monochromatic.musicplayer
 // };
 // // Note: TS objects compare by reference; Kotlin `data class` compares by value.
 // ```
+/**
+ * Defines snapshot item type for this music-player component; the TypeScript-oriented notes above explain its
+ * role.
+ */
 data class SnapshotItem(
     // What:     `val uri: String`. `val` means "read-only binding" (assign
     //           once, never reassign). `uri` is the field name. `String` is
@@ -126,6 +130,10 @@ data class SnapshotItem(
 //   positionMs: number;
 // };
 // ```
+/**
+ * Defines playback snapshot type for this music-player component; the TypeScript-oriented notes above explain
+ * its role.
+ */
 data class PlaybackSnapshot(
     // What:     `val items: List<SnapshotItem>`. A read-only (`val`) field
     //           named `items`. `List<SnapshotItem>` is Kotlin's read-only list

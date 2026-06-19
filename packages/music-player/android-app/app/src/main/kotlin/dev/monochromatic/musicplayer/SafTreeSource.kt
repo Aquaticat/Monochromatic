@@ -213,6 +213,10 @@ import kotlinx.coroutines.withContext
 //   // ...members below...
 // };
 // ```
+/**
+ * Defines saf tree source object for this music-player component; the TypeScript-oriented notes above explain
+ * its shared role.
+ */
 object SafTreeSource {
     // What:     `private const val SOURCE_TAG: String = "SafTreeSource"` declares a
     //           private compile-time `String` constant (`const` = compile-time + inlined;
@@ -224,6 +228,10 @@ object SafTreeSource {
     // ```ts
     // const SOURCE_TAG: string = "SafTreeSource";
     // ```
+    /**
+     * Defines source tag value for this music-player component; the TypeScript-oriented notes above explain its
+     * source and use.
+     */
     private const val SOURCE_TAG: String = "SafTreeSource"
 
     // What:     `private val PROJECTION: Array<String> = arrayOf( ... )` declares a
@@ -245,6 +253,10 @@ object SafTreeSource {
     //   Document.COLUMN_MIME_TYPE,
     // ];
     // ```
+    /**
+     * Defines projection value for this music-player component; the TypeScript-oriented notes above explain its
+     * source and use.
+     */
     private val PROJECTION: Array<String> = arrayOf(
         // What:     `Document.COLUMN_DOCUMENT_ID` is the column-name `String` constant for
         //           a row's opaque document id, listed as the first `arrayOf` element.
@@ -290,6 +302,9 @@ object SafTreeSource {
     // ```ts
     // type Frame = { readonly documentId: string; readonly prefix: string };
     // ```
+    /**
+     * Defines frame type for this music-player component; the TypeScript-oriented notes above explain its role.
+     */
     private data class Frame(val documentId: String, val prefix: String)
 
     // What:     `suspend fun query(resolver, treeUri, onBatch): List<Track> = withContext(Dispatchers.IO) { ... }`
@@ -320,6 +335,10 @@ object SafTreeSource {
     //   });
     // }
     // ```
+    /**
+     * Defines query behavior for this music-player component; the TypeScript-oriented notes above explain its
+     * call shape and effects.
+     */
     suspend fun query(
         // What:     `resolver: ContentResolver` is the resolver to query through.
         // Why:      Every directory listing goes through it.
@@ -375,6 +394,10 @@ object SafTreeSource {
         //   (left, right) => compareByCodePoint(left.displayPath, right.displayPath),
         // );
         // ```
+        /**
+         * Defines gate value for this music-player component; the TypeScript-oriented notes above explain its
+         * source and use.
+         */
         val gate: BatchEmitGate<Track> =
             BatchEmitGate(LIBRARY_BATCH_SIZE) { left, right -> compareByCodePoint(left.displayPath, right.displayPath) }
         // What:     `val rootDocumentId: String = DocumentsContract.getTreeDocumentId(treeUri)`
@@ -387,6 +410,10 @@ object SafTreeSource {
         // ```ts
         // const rootDocumentId: string = DocumentsContract.getTreeDocumentId(treeUri);
         // ```
+        /**
+         * Defines root document id value for this music-player component; the TypeScript-oriented notes above
+         * explain its source and use.
+         */
         val rootDocumentId: String = DocumentsContract.getTreeDocumentId(treeUri)
         // What:     `val pending: ArrayDeque<Frame> = ArrayDeque()` declares a read-only
         //           binding `pending` (the `val` locks the NAME, not the contents) of type
@@ -405,6 +432,10 @@ object SafTreeSource {
         // ```ts
         // const pending: Frame[] = []; // used as a LIFO stack via push/pop
         // ```
+        /**
+         * Defines pending value for this music-player component; the TypeScript-oriented notes above explain its
+         * source and use.
+         */
         val pending: ArrayDeque<Frame> = ArrayDeque()
         // What:     `pending.addLast(Frame(documentId = rootDocumentId, prefix = ""))`
         //           pushes one item onto the stack. `addLast(x)` appends to the deque's
@@ -431,6 +462,10 @@ object SafTreeSource {
         // ```ts
         // const visited: Set<string> = new Set();
         // ```
+        /**
+         * Defines visited value for this music-player component; the TypeScript-oriented notes above explain its
+         * source and use.
+         */
         val visited: MutableSet<String> = mutableSetOf()
         // What:     `val tracks: MutableList<Track> = mutableListOf()` declares a read-only
         //           binding `tracks` of type `MutableList<Track>` (the GROWABLE list
@@ -445,6 +480,10 @@ object SafTreeSource {
         // ```ts
         // const tracks: Track[] = [];
         // ```
+        /**
+         * Defines tracks value for this music-player component; the TypeScript-oriented notes above explain its
+         * source and use.
+         */
         val tracks: MutableList<Track> = mutableListOf()
 
         // What:     `while (pending.isNotEmpty()) { ... }` loops while the work stack still
@@ -468,6 +507,10 @@ object SafTreeSource {
             // ```ts
             // const frame: Frame = pending.pop()!;
             // ```
+            /**
+             * Defines frame value for this music-player component; the TypeScript-oriented notes above explain
+             * its source and use.
+             */
             val frame: Frame = pending.removeLast()
             // What:     `if (!visited.add(frame.documentId)) { continue }`. `visited.add(x)`
             //           returns a `Boolean`: `true` if `x` was NEWLY inserted, `false` if it
@@ -580,6 +623,10 @@ object SafTreeSource {
     //   gate: BatchEmitGate<Track>,
     // ): Promise<void> { ... }
     // ```
+    /**
+     * Defines scan directory behavior for this music-player component; the TypeScript-oriented notes above
+     * explain its call shape and effects.
+     */
     private suspend fun scanDirectory(
         // What:     `resolver: ContentResolver` is the resolver to query through.
         // Why:      Each child query goes through it.
@@ -656,6 +703,10 @@ object SafTreeSource {
         // ```ts
         // const childrenUri: Uri = DocumentsContract.buildChildDocumentsUriUsingTree(treeUri, frame.documentId);
         // ```
+        /**
+         * Defines children uri value for this music-player component; the TypeScript-oriented notes above
+         * explain its source and use.
+         */
         val childrenUri: Uri = DocumentsContract.buildChildDocumentsUriUsingTree(treeUri, frame.documentId)
         // What:     `try { ... } catch (cancellation: CancellationException) { ... } catch (failure: Exception) { ... }`
         //           is a TRY with TWO catch clauses, checked in order: the MORE SPECIFIC
@@ -711,6 +762,10 @@ object SafTreeSource {
                 // ```ts
                 // const idColumn: number = cursor.getColumnIndexOrThrow(Document.COLUMN_DOCUMENT_ID);
                 // ```
+                /**
+                 * Defines id column value for this music-player component; the TypeScript-oriented notes above
+                 * explain its source and use.
+                 */
                 val idColumn: Int = cursor.getColumnIndexOrThrow(Document.COLUMN_DOCUMENT_ID)
                 // What:     `val nameColumn: Int = cursor.getColumnIndexOrThrow(Document.COLUMN_DISPLAY_NAME)`
                 //           resolves the display-name column's index (throws if missing).
@@ -720,6 +775,10 @@ object SafTreeSource {
                 // ```ts
                 // const nameColumn: number = cursor.getColumnIndexOrThrow(Document.COLUMN_DISPLAY_NAME);
                 // ```
+                /**
+                 * Defines name column value for this music-player component; the TypeScript-oriented notes above
+                 * explain its source and use.
+                 */
                 val nameColumn: Int = cursor.getColumnIndexOrThrow(Document.COLUMN_DISPLAY_NAME)
                 // What:     `val mimeColumn: Int = cursor.getColumnIndexOrThrow(Document.COLUMN_MIME_TYPE)`
                 //           resolves the mime-type column's index (throws if missing).
@@ -729,6 +788,10 @@ object SafTreeSource {
                 // ```ts
                 // const mimeColumn: number = cursor.getColumnIndexOrThrow(Document.COLUMN_MIME_TYPE);
                 // ```
+                /**
+                 * Defines mime column value for this music-player component; the TypeScript-oriented notes above
+                 * explain its source and use.
+                 */
                 val mimeColumn: Int = cursor.getColumnIndexOrThrow(Document.COLUMN_MIME_TYPE)
                 // What:     `while (cursor.moveToNext()) { ... }`. `moveToNext()` advances the
                 //           cursor to the next row and returns `true` while a row exists,
@@ -755,6 +818,10 @@ object SafTreeSource {
                     // if (maybeId == null) continue;
                     // const childId: string = maybeId;
                     // ```
+                    /**
+                     * Defines child id value for this music-player component; the TypeScript-oriented notes
+                     * above explain its source and use.
+                     */
                     val childId: String = cursor.getString(idColumn) ?: continue
                     // What:     `val name: String = cursor.getString(nameColumn) ?: continue`.
                     //           Same Elvis-or-skip shape as `childId`: a non-null name, or
@@ -767,6 +834,10 @@ object SafTreeSource {
                     // if (maybeName == null) continue;
                     // const name: string = maybeName;
                     // ```
+                    /**
+                     * Defines name value for this music-player component; the TypeScript-oriented notes above
+                     * explain its source and use.
+                     */
                     val name: String = cursor.getString(nameColumn) ?: continue
                     // What:     `val mimeType: String? = cursor.getString(mimeColumn)` declares a
                     //           NULLABLE `String?` (the trailing `?` = "a `String` OR null"). We
@@ -781,6 +852,10 @@ object SafTreeSource {
                     // ```ts
                     // const mimeType: string | null = cursor.getString(mimeColumn);
                     // ```
+                    /**
+                     * Defines mime type value for this music-player component; the TypeScript-oriented notes
+                     * above explain its source and use.
+                     */
                     val mimeType: String? = cursor.getString(mimeColumn)
                     // What:     `val childPath: String = joinDisplayPath(frame.prefix, name)`
                     //           declares a read-only `String` by joining this directory's
@@ -792,6 +867,10 @@ object SafTreeSource {
                     // ```ts
                     // const childPath: string = joinDisplayPath(frame.prefix, name);
                     // ```
+                    /**
+                     * Defines child path value for this music-player component; the TypeScript-oriented notes
+                     * above explain its source and use.
+                     */
                     val childPath: String = joinDisplayPath(frame.prefix, name)
                     // What:     `if (mimeType == Document.MIME_TYPE_DIR) { ... } else if (isAudioFile(name)) { ... }`
                     //           branches on the child kind. `==` is value equality; comparing a
@@ -833,6 +912,10 @@ object SafTreeSource {
                         // ```ts
                         // const documentUri: Uri = DocumentsContract.buildDocumentUriUsingTree(treeUri, childId);
                         // ```
+                        /**
+                         * Defines document uri value for this music-player component; the TypeScript-oriented
+                         * notes above explain its source and use.
+                         */
                         val documentUri: Uri = DocumentsContract.buildDocumentUriUsingTree(treeUri, childId)
                         // What:     `tracks.add(Track(uri = documentUri.toString(), displayPath = childPath))`
                         //           appends a new `Track` to the accumulator. `Track(...)`
@@ -870,6 +953,10 @@ object SafTreeSource {
                         // }
                         // ```
                         if (onBatch != null) {
+                            /**
+                             * Defines batch value for this music-player component; the TypeScript-oriented notes
+                             * above explain its source and use.
+                             */
                             val batch: List<Track>? = gate.nextBatch(tracks)
                             if (batch != null) {
                                 onBatch(batch)

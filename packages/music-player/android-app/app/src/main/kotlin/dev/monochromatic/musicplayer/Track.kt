@@ -92,4 +92,7 @@ package dev.monochromatic.musicplayer
 // // Construction is a plain object literal (no `new`, no generated `copy`):
 // const t: Track = { uri, displayPath };
 // ```
+/**
+ * Defines track type for this music-player component; the TypeScript-oriented notes above explain its role.
+ */
 data class Track(val uri: String, val displayPath: String)

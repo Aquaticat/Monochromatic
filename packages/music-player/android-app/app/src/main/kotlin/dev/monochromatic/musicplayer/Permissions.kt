@@ -116,6 +116,10 @@ import androidx.core.content.ContextCompat
 //     : Manifest.permission.READ_EXTERNAL_STORAGE;
 // }
 // ```
+/**
+ * Defines audio permission behavior for this music-player component; the TypeScript-oriented notes above explain
+ * its call shape and effects.
+ */
 internal fun audioPermission(): String =
     // What:     `if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) { A } else { B }`.
     //           In Kotlin `if` is an EXPRESSION: whichever branch runs, its last
@@ -177,6 +181,10 @@ internal fun audioPermission(): String =
 //     === PackageManager.PERMISSION_GRANTED;
 // }
 // ```
+/**
+ * Defines has audio permission behavior for this music-player component; the TypeScript-oriented notes above
+ * explain its call shape and effects.
+ */
 internal fun hasAudioPermission(context: Context): Boolean =
     // What:     `ContextCompat.checkSelfPermission(context, audioPermission()) == PackageManager.PERMISSION_GRANTED`
     //           is the expression body. Pieces:

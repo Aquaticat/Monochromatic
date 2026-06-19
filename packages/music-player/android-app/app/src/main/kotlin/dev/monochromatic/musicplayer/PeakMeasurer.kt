@@ -135,6 +135,10 @@ import kotlinx.coroutines.withContext
 // ```ts
 // // const sweepDecodeDispatcher = asDispatcher(makeSingleLowPriorityWorker("peak-sweep-decode"));
 // ```
+/**
+ * Defines sweep decode dispatcher value for this music-player component; the TypeScript-oriented notes above
+ * explain its source and use.
+ */
 private val sweepDecodeDispatcher: CoroutineDispatcher =
     // What:     `Executors.newSingleThreadExecutor { runnable -> ... }` calls the factory with a
     //           THREAD FACTORY passed as a TRAILING LAMBDA (SAM conversion: `ThreadFactory` is a
@@ -206,6 +210,10 @@ private val sweepDecodeDispatcher: CoroutineDispatcher =
 //   return await runOn(sweepDecodeDispatcher, () => measureTruePeakBlocking(context, uri));
 // }
 // ```
+/**
+ * Defines measure track peak behavior for this music-player component; the TypeScript-oriented notes above
+ * explain its call shape and effects.
+ */
 suspend fun measureTrackPeak(context: Context, uri: Uri): Float =
     withContext(sweepDecodeDispatcher) { measureTruePeakBlocking(context, uri) }
 
@@ -227,6 +235,10 @@ suspend fun measureTrackPeak(context: Context, uri: Uri): Float =
 // // module-internal, synchronous:
 // function measureTruePeakBlocking(context: Context, uri: Uri): number { ... }
 // ```
+/**
+ * Defines measure true peak blocking behavior for this music-player component; the TypeScript-oriented notes
+ * above explain its call shape and effects.
+ */
 internal fun measureTruePeakBlocking(context: Context, uri: Uri): Float {
     // What:     `val descriptor: ParcelFileDescriptor = context.contentResolver.openFileDescriptor(uri, "r") ?: throw FileNotFoundException("could not open $uri for true-peak measure")`
     //           declares a read-only `ParcelFileDescriptor`. `openFileDescriptor(uri, "r")` opens
@@ -243,6 +255,10 @@ internal fun measureTruePeakBlocking(context: Context, uri: Uri): Float {
     // if (d === null) throw new FileNotFoundException(`could not open ${uri} for true-peak measure`);
     // const descriptor: ParcelFileDescriptor = d;
     // ```
+    /**
+     * Defines descriptor value for this music-player component; the TypeScript-oriented notes above explain its
+     * source and use.
+     */
     val descriptor: ParcelFileDescriptor = context.contentResolver.openFileDescriptor(uri, "r")
         ?: throw FileNotFoundException("could not open $uri for true-peak measure")
     // What:     `val peak: Float = descriptor.use { NativeBridge.nativeMeasureTruePeak(it.fd) }`
@@ -266,6 +282,10 @@ internal fun measureTruePeakBlocking(context: Context, uri: Uri): Float {
     //   peak = NativeBridge.nativeMeasureTruePeak(d.fd);
     // }
     // ```
+    /**
+     * Defines peak value for this music-player component; the TypeScript-oriented notes above explain its source
+     * and use.
+     */
     val peak: Float = descriptor.use { NativeBridge.nativeMeasureTruePeak(it.fd) }
     // What:     `if (peak < 0.0f) { ... }` checks for a negative native result. `0.0f` is a `Float`
     //           literal (the `f` suffix; a negative `peak` is the native error-code convention).

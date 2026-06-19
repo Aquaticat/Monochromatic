@@ -94,4 +94,8 @@ import android.content.Context
 //   return new RustEngine(context);
 // }
 // ```
+/**
+ * Defines create audio engine behavior for this music-player component; the TypeScript-oriented notes above
+ * explain its call shape and effects.
+ */
 fun createAudioEngine(context: Context): AudioEngine = RustEngine(context)

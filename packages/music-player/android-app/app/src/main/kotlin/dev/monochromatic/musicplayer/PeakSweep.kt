@@ -116,6 +116,10 @@ import kotlinx.coroutines.CancellationException
 // ```ts
 // const SWEEP_TAG: string = "PeakSweep";
 // ```
+/**
+ * Defines sweep tag value for this music-player component; the TypeScript-oriented notes above explain its
+ * source and use.
+ */
 private const val SWEEP_TAG: String = "PeakSweep"
 
 // What:     `enum class SweepOutcome { CACHED, MEASURED, UNFINGERPRINTABLE, FAILED }`
@@ -143,7 +147,35 @@ private const val SWEEP_TAG: String = "PeakSweep"
 // ```ts
 // type SweepOutcome = "CACHED" | "MEASURED" | "UNFINGERPRINTABLE" | "FAILED";
 // ```
-enum class SweepOutcome { CACHED, MEASURED, UNFINGERPRINTABLE, FAILED }
+/**
+ * Defines sweep outcome type for this music-player component; the TypeScript-oriented notes above explain
+ * its role.
+ */
+enum class SweepOutcome {
+    /**
+     * Defines cached case for this music-player state; the TypeScript-oriented notes above explain when it is
+     * selected.
+     */
+    CACHED,
+
+    /**
+     * Defines measured case for this music-player state; the TypeScript-oriented notes above explain when it is
+     * selected.
+     */
+    MEASURED,
+
+    /**
+     * Defines unfingerprintable case for this music-player state; the TypeScript-oriented notes above explain
+     * when it is selected.
+     */
+    UNFINGERPRINTABLE,
+
+    /**
+     * Defines failed case for this music-player state; the TypeScript-oriented notes above explain when it is
+     * selected.
+     */
+    FAILED,
+}
 
 // What:     `suspend fun measureAndCache(context: Context, uri: Uri): SweepOutcome`
 //           declares a function. Piece by piece:
@@ -175,6 +207,10 @@ enum class SweepOutcome { CACHED, MEASURED, UNFINGERPRINTABLE, FAILED }
 //   uri: Uri,
 // ): Promise<SweepOutcome> { ... }
 // ```
+/**
+ * Defines measure and cache behavior for this music-player component; the TypeScript-oriented notes above
+ * explain its call shape and effects.
+ */
 suspend fun measureAndCache(context: Context, uri: Uri): SweepOutcome {
     // What:     `val key: String = TrackFingerprint.of(context, uri) ?: return SweepOutcome.UNFINGERPRINTABLE`
     //           does four things on one line:
@@ -206,6 +242,10 @@ suspend fun measureAndCache(context: Context, uri: Uri): SweepOutcome {
     // if (maybeKey == null) return "UNFINGERPRINTABLE";
     // const key: string = maybeKey;
     // ```
+    /**
+     * Defines key value for this music-player component; the TypeScript-oriented notes above explain its source
+     * and use.
+     */
     val key: String = TrackFingerprint.of(context, uri) ?: return SweepOutcome.UNFINGERPRINTABLE
     // What:     `if (PeakCacheStore.get(context, key) != null) {` checks the
     //           on-disk peak cache. `PeakCacheStore.get` returns a nullable
@@ -259,6 +299,10 @@ suspend fun measureAndCache(context: Context, uri: Uri): SweepOutcome {
     // let peak: number; // TS number is 64-bit; Kotlin Float is 32-bit
     // try {
     // ```
+    /**
+     * Defines peak value for this music-player component; the TypeScript-oriented notes above explain its source
+     * and use.
+     */
     val peak: Float = try {
         // What:     `measureTrackPeak(context, uri)` calls the per-flavor decode
         //           seam that actually reads the audio and computes its true

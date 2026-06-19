@@ -248,6 +248,10 @@ import com.google.common.util.concurrent.ListenableFuture
 //   // ...body...
 // }
 // ```
+/**
+ * Defines brain player type for this music-player component; the TypeScript-oriented notes above explain its
+ * role.
+ */
 class BrainPlayer(
     // What:     `private val controller: PlayerController` is a constructor
     //           parameter that is ALSO a property. `private val` in the
@@ -290,6 +294,10 @@ class BrainPlayer(
     // ```ts
     // private readonly handler: Handler = new Handler(looper);
     // ```
+    /**
+     * Defines handler value for this music-player component; the TypeScript-oriented notes above explain its
+     * source and use.
+     */
     private val handler: Handler = Handler(looper)
 
     // What:     `init { ... }` is Kotlin's INITIALIZER BLOCK: code that runs as
@@ -347,6 +355,10 @@ class BrainPlayer(
     // ```ts
     // override getState(): State { ... }
     // ```
+    /**
+     * Defines get state behavior for this music-player component; the TypeScript-oriented notes above explain
+     * its call shape and effects.
+     */
     override fun getState(): State {
         // What:     `val snapshot: PlaybackSnapshot = controller.snapshot()`
         //           declares a read-only local `snapshot` (the `val` keyword =
@@ -362,6 +374,10 @@ class BrainPlayer(
         // ```ts
         // const snapshot: PlaybackSnapshot = controller.snapshot();
         // ```
+        /**
+         * Defines snapshot value for this music-player component; the TypeScript-oriented notes above explain
+         * its source and use.
+         */
         val snapshot: PlaybackSnapshot = controller.snapshot()
         // What:     `val playlist: List<MediaItemData> = snapshot.items.mapIndexed { index, item -> ... }`
         //           declares a read-only local `playlist` typed as
@@ -386,6 +402,10 @@ class BrainPlayer(
         //   (item, index) => { /* ...build one row... */ },
         // );
         // ```
+        /**
+         * Defines playlist value for this music-player component; the TypeScript-oriented notes above explain
+         * its source and use.
+         */
         val playlist: List<MediaItemData> = snapshot.items.mapIndexed { index, item ->
             // What:     `val durationUs: Long = if (cond) { a } else { b }`
             //           declares a read-only local `durationUs` of type `Long`
@@ -411,6 +431,10 @@ class BrainPlayer(
             //     ? snapshot.durationMs * MICROS_PER_MILLI
             //     : C.TIME_UNSET;
             // ```
+            /**
+             * Defines duration us value for this music-player component; the TypeScript-oriented notes above
+             * explain its source and use.
+             */
             val durationUs: Long = if (index == snapshot.currentIndex && snapshot.durationMs > 0L) {
                 // What:     `snapshot.durationMs * MICROS_PER_MILLI` is the
                 //           TRUE branch's last expression, so it becomes the
@@ -584,6 +608,10 @@ class BrainPlayer(
         //   .setPlaylist(playlist)
         //   /* ...etc... */;
         // ```
+        /**
+         * Defines builder value for this music-player component; the TypeScript-oriented notes above explain its
+         * source and use.
+         */
         val builder: State.Builder = State.Builder()
             // What:     `.setAvailableCommands(AVAILABLE_COMMANDS)` tells the
             //           framework which commands this player supports (the
@@ -692,6 +720,10 @@ class BrainPlayer(
         // ```ts
         // const current: number | null = snapshot.currentIndex;
         // ```
+        /**
+         * Defines current value for this music-player component; the TypeScript-oriented notes above explain its
+         * source and use.
+         */
         val current: Int? = snapshot.currentIndex
         // What:     `if (current != null && current in playlist.indices) { ... }`
         //           is a plain `if` STATEMENT (used for side effects here, not as
@@ -758,6 +790,10 @@ class BrainPlayer(
     //   return Promise.resolve();
     // }
     // ```
+    /**
+     * Defines handle set play when ready behavior for this music-player component; the TypeScript-oriented notes
+     * above explain its call shape and effects.
+     */
     override fun handleSetPlayWhenReady(playWhenReady: Boolean): ListenableFuture<*> {
         // What:     `controller.setPlayWhenReady(playWhenReady)` forwards the
         //           play/pause intent into the brain (the single source of
@@ -797,6 +833,10 @@ class BrainPlayer(
     //   return Promise.resolve();
     // }
     // ```
+    /**
+     * Defines handle prepare behavior for this music-player component; the TypeScript-oriented notes above
+     * explain its call shape and effects.
+     */
     override fun handlePrepare(): ListenableFuture<*> {
         // What:     `return Futures.immediateVoidFuture()` returns an instantly
         //           resolved, value-less future from this no-op handler.
@@ -831,6 +871,10 @@ class BrainPlayer(
     //   seekCommand: number,
     // ): Promise<unknown> { ... }
     // ```
+    /**
+     * Defines handle seek behavior for this music-player component; the TypeScript-oriented notes above explain
+     * its call shape and effects.
+     */
     override fun handleSeek(mediaItemIndex: Int, positionMs: Long, seekCommand: Int): ListenableFuture<*> {
         // What:     `val hasPosition: Boolean = positionMs != C.TIME_UNSET`
         //           declares a read-only `Boolean` `hasPosition` that is true
@@ -843,6 +887,10 @@ class BrainPlayer(
         // ```ts
         // const hasPosition: boolean = positionMs !== C.TIME_UNSET;
         // ```
+        /**
+         * Defines has position value for this music-player component; the TypeScript-oriented notes above
+         * explain its source and use.
+         */
         val hasPosition: Boolean = positionMs != C.TIME_UNSET
         // What:     `val targetSec: Double = if (hasPosition) positionMs / MILLIS_PER_SEC else 0.0`
         //           declares a read-only `Double` (64-bit float; sibling `Float`
@@ -865,6 +913,10 @@ class BrainPlayer(
         //   ? positionMs / MILLIS_PER_SEC
         //   : 0;
         // ```
+        /**
+         * Defines target sec value for this music-player component; the TypeScript-oriented notes above explain
+         * its source and use.
+         */
         val targetSec: Double = if (hasPosition) positionMs / MILLIS_PER_SEC else 0.0
         // What:     `val staysOnCurrent: Boolean = mediaItemIndex == C.INDEX_UNSET || mediaItemIndex == controller.currentScopeIndex()`
         //           declares a read-only `Boolean`. The `||` is logical OR:
@@ -885,6 +937,10 @@ class BrainPlayer(
         //   mediaItemIndex === C.INDEX_UNSET ||
         //   mediaItemIndex === controller.currentScopeIndex();
         // ```
+        /**
+         * Defines stays on current value for this music-player component; the TypeScript-oriented notes above
+         * explain its source and use.
+         */
         val staysOnCurrent: Boolean = mediaItemIndex == C.INDEX_UNSET || mediaItemIndex == controller.currentScopeIndex()
         // What:     `if (staysOnCurrent) { ... } else { ... }` is a plain `if/else`
         //           STATEMENT (used for control flow, not as a value) that
@@ -955,6 +1011,10 @@ class BrainPlayer(
     // ```ts
     // override handleRelease(): Promise<unknown> { ... }
     // ```
+    /**
+     * Defines handle release behavior for this music-player component; the TypeScript-oriented notes above
+     * explain its call shape and effects.
+     */
     override fun handleRelease(): ListenableFuture<*> {
         // What:     `controller.onStateChanged = null` clears the brain's
         //           state-changed callback by ASSIGNING null. This is legal
@@ -994,6 +1054,10 @@ class BrainPlayer(
         return Futures.immediateVoidFuture()
     }
 
+    /**
+     * Defines companion object for this music-player component; the TypeScript-oriented notes above explain its
+     * shared role.
+     */
     // What:     `companion object { ... }` declares a COMPANION OBJECT: a single
     //           shared instance attached to the `BrainPlayer` CLASS itself (not
     //           to each `BrainPlayer` instance). Members inside it are accessed
@@ -1028,6 +1092,10 @@ class BrainPlayer(
         // ```ts
         // private static readonly MICROS_PER_MILLI = 1000;
         // ```
+        /**
+         * Defines micros per milli value for this music-player component; the TypeScript-oriented notes above
+         * explain its source and use.
+         */
         private const val MICROS_PER_MILLI: Long = 1000L
 
         // What:     `private const val MILLIS_PER_SEC: Double = 1000.0` declares a
@@ -1045,6 +1113,10 @@ class BrainPlayer(
         // ```ts
         // private static readonly MILLIS_PER_SEC = 1000;
         // ```
+        /**
+         * Defines millis per sec value for this music-player component; the TypeScript-oriented notes above
+         * explain its source and use.
+         */
         private const val MILLIS_PER_SEC: Double = 1000.0
 
         // What:     `private val AVAILABLE_COMMANDS: Player.Commands = Player.Commands.Builder().addAll(...).build()`
@@ -1067,6 +1139,10 @@ class BrainPlayer(
         // private static readonly AVAILABLE_COMMANDS: Player.Commands =
         //   new Player.Commands.Builder().addAll(/* ...constants... */).build();
         // ```
+        /**
+         * Defines available commands value for this music-player component; the TypeScript-oriented notes above
+         * explain its source and use.
+         */
         private val AVAILABLE_COMMANDS: Player.Commands = Player.Commands.Builder()
             // What:     `.addAll( ... )` adds many command CONSTANTS to the
             //           builder in one call. Each `Player.COMMAND_*` below is a

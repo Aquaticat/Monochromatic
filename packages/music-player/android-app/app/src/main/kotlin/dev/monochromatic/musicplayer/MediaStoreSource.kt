@@ -157,6 +157,10 @@ import kotlinx.coroutines.withContext
 //   // ...members below...
 // };
 // ```
+/**
+ * Defines media store source object for this music-player component; the TypeScript-oriented notes above explain
+ * its shared role.
+ */
 object MediaStoreSource {
     // What:     `private const val SOURCE_TAG: String = "MediaStoreSource"` declares a
     //           compile-time constant. `private` hides it outside this object; `const`
@@ -169,6 +173,10 @@ object MediaStoreSource {
     // ```ts
     // const SOURCE_TAG: string = "MediaStoreSource";
     // ```
+    /**
+     * Defines source tag value for this music-player component; the TypeScript-oriented notes above explain its
+     * source and use.
+     */
     private const val SOURCE_TAG: String = "MediaStoreSource"
 
     // What:     `@Suppress("DEPRECATION")` is an annotation (metadata attached to the next
@@ -209,6 +217,10 @@ object MediaStoreSource {
     //   });
     // }
     // ```
+    /**
+     * Defines query behavior for this music-player component; the TypeScript-oriented notes above explain its
+     * call shape and effects.
+     */
     suspend fun query(
         // What:     `resolver: ContentResolver` is the resolver to read MediaStore through.
         // Why:      The cursor query runs on it.
@@ -253,6 +265,10 @@ object MediaStoreSource {
         //   (left, right) => compareByCodePoint(left.displayPath, right.displayPath),
         // );
         // ```
+        /**
+         * Defines gate value for this music-player component; the TypeScript-oriented notes above explain its
+         * source and use.
+         */
         val gate: BatchEmitGate<Track> =
             BatchEmitGate(LIBRARY_BATCH_SIZE) { left, right -> compareByCodePoint(left.displayPath, right.displayPath) }
         // What:     `val hasRelativePath: Boolean = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q`
@@ -267,6 +283,10 @@ object MediaStoreSource {
         // ```ts
         // const hasRelativePath: boolean = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q;
         // ```
+        /**
+         * Defines has relative path value for this music-player component; the TypeScript-oriented notes above
+         * explain its source and use.
+         */
         val hasRelativePath: Boolean = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
         // What:     `val collection = if (hasRelativePath) { A } else { B }`. In Kotlin `if`
         //           is an EXPRESSION: each branch's last value becomes the result, and that
@@ -284,6 +304,10 @@ object MediaStoreSource {
         //   ? MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL)
         //   : MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
         // ```
+        /**
+         * Defines collection value for this music-player component; the TypeScript-oriented notes above explain
+         * its source and use.
+         */
         val collection = if (hasRelativePath) {
             MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL)
         } else {
@@ -316,6 +340,10 @@ object MediaStoreSource {
         //   return cols;
         // })();
         // ```
+        /**
+         * Defines projection value for this music-player component; the TypeScript-oriented notes above explain
+         * its source and use.
+         */
         val projection: Array<String> = buildList {
             // What:     `add(MediaStore.Audio.Media._ID)` appends the `_ID` column name (the
             //           numeric row id) to the list being built inside `buildList`. `add` is the
@@ -383,6 +411,10 @@ object MediaStoreSource {
         // ```ts
         // const selection = `${MediaStore.Audio.Media.IS_MUSIC} != 0`;
         // ```
+        /**
+         * Defines selection value for this music-player component; the TypeScript-oriented notes above explain
+         * its source and use.
+         */
         val selection = "${MediaStore.Audio.Media.IS_MUSIC} != 0"
 
         // What:     `val tracks: MutableList<Track> = mutableListOf()` declares a growable,
@@ -399,6 +431,10 @@ object MediaStoreSource {
         // ```ts
         // const tracks: Track[] = [];
         // ```
+        /**
+         * Defines tracks value for this music-player component; the TypeScript-oriented notes above explain its
+         * source and use.
+         */
         val tracks: MutableList<Track> = mutableListOf()
         // What:     `resolver.query(collection, projection, selection, null, null)?.use { cursor -> ... }`.
         //           `.query(...)` runs the database query and returns a `Cursor?` (a cursor that
@@ -437,6 +473,10 @@ object MediaStoreSource {
             // ```ts
             // const idColumn: number = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID);
             // ```
+            /**
+             * Defines id column value for this music-player component; the TypeScript-oriented notes above
+             * explain its source and use.
+             */
             val idColumn: Int = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID)
             // What:     `val nameColumn: Int = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DISPLAY_NAME)`
             //           looks up the column index of the file-name column, throwing if absent.
@@ -446,6 +486,10 @@ object MediaStoreSource {
             // ```ts
             // const nameColumn: number = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DISPLAY_NAME);
             // ```
+            /**
+             * Defines name column value for this music-player component; the TypeScript-oriented notes above
+             * explain its source and use.
+             */
             val nameColumn: Int = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DISPLAY_NAME)
             // What:     `val pathColumn: Int = if (hasRelativePath) { ... } else { ... }`. Another
             //           `if` USED AS AN EXPRESSION: whichever branch runs, its
@@ -460,6 +504,10 @@ object MediaStoreSource {
             //   ? cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.RELATIVE_PATH)
             //   : cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA);
             // ```
+            /**
+             * Defines path column value for this music-player component; the TypeScript-oriented notes above
+             * explain its source and use.
+             */
             val pathColumn: Int = if (hasRelativePath) {
                 // What:     `cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.RELATIVE_PATH)`
                 //           returns the index of the relative-folder-path column, throwing if it is
@@ -512,6 +560,10 @@ object MediaStoreSource {
                 // if (maybeName == null) continue;
                 // const name: string = maybeName;
                 // ```
+                /**
+                 * Defines name value for this music-player component; the TypeScript-oriented notes above
+                 * explain its source and use.
+                 */
                 val name: String = cursor.getString(nameColumn) ?: continue
                 // What:     `val id: Long = cursor.getLong(idColumn)` reads the `_ID` value as a
                 //           `Long`, a 64-bit signed integer. `: Long` is the explicit type.
@@ -522,6 +574,10 @@ object MediaStoreSource {
                 // ```ts
                 // const id: number = cursor.getLong(idColumn); // 64-bit row id, fits in JS number
                 // ```
+                /**
+                 * Defines id value for this music-player component; the TypeScript-oriented notes above explain
+                 * its source and use.
+                 */
                 val id: Long = cursor.getLong(idColumn)
                 // What:     `val rawPath: String? = cursor.getString(pathColumn)`. The `String?` type
                 //           (note the trailing `?`) means "a `String` OR null"; we keep the null here
@@ -536,6 +592,10 @@ object MediaStoreSource {
                 // ```ts
                 // const rawPath: string | null = cursor.getString(pathColumn);
                 // ```
+                /**
+                 * Defines raw path value for this music-player component; the TypeScript-oriented notes above
+                 * explain its source and use.
+                 */
                 val rawPath: String? = cursor.getString(pathColumn)
                 // What:     `val displayPath: String = displayPathOf(rawPath = rawPath, name = name, isRelative = hasRelativePath)`
                 //           calls the private helper with NAMED ARGUMENTS (`paramName = value`), which
@@ -547,6 +607,10 @@ object MediaStoreSource {
                 // ```ts
                 // const displayPath: string = displayPathOf(rawPath, name, hasRelativePath);
                 // ```
+                /**
+                 * Defines display path value for this music-player component; the TypeScript-oriented notes
+                 * above explain its source and use.
+                 */
                 val displayPath: String = displayPathOf(rawPath = rawPath, name = name, isRelative = hasRelativePath)
                 // What:     `val uri: String = ContentUris.withAppendedId(collection, id).toString()`.
                 //           `withAppendedId(baseUri, id)` builds a `Uri` pointing at this exact row by
@@ -559,6 +623,10 @@ object MediaStoreSource {
                 // ```ts
                 // const uri: string = ContentUris.withAppendedId(collection, id).toString();
                 // ```
+                /**
+                 * Defines uri value for this music-player component; the TypeScript-oriented notes above explain
+                 * its source and use.
+                 */
                 val uri: String = ContentUris.withAppendedId(collection, id).toString()
                 // What:     `tracks.add(Track(uri = uri, displayPath = displayPath))`. `Track(...)`
                 //           constructs a `Track` value (Kotlin calls the constructor WITHOUT a `new`
@@ -594,6 +662,10 @@ object MediaStoreSource {
                 // }
                 // ```
                 if (onBatch != null) {
+                    /**
+                     * Defines batch value for this music-player component; the TypeScript-oriented notes above
+                     * explain its source and use.
+                     */
                     val batch: List<Track>? = gate.nextBatch(tracks)
                     if (batch != null) {
                         onBatch(batch)
@@ -654,6 +726,10 @@ object MediaStoreSource {
     //   return rawPath;
     // }
     // ```
+    /**
+     * Defines display path of behavior for this music-player component; the TypeScript-oriented notes above
+     * explain its call shape and effects.
+     */
     private fun displayPathOf(rawPath: String?, name: String, isRelative: Boolean): String = when {
         // What:     `rawPath.isNullOrEmpty() -> name`. `isNullOrEmpty()` is a Kotlin extension that
         //           safely returns `true` when `rawPath` is either null OR the empty string (it can be

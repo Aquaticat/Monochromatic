@@ -38,6 +38,10 @@ package dev.monochromatic.musicplayer.core
 // ```ts
 // const SEPARATOR = "/";
 // ```
+/**
+ * Defines separator value for this music-player component; the TypeScript-oriented notes above explain its
+ * source and use.
+ */
 private const val SEPARATOR = "/"
 
 // What:     `private fun normalComponents(path: String): List<String>` declares a function.
@@ -60,6 +64,10 @@ private const val SEPARATOR = "/"
 //   return path.split("/").filter((seg) => seg !== "" && seg !== "." && seg !== "..");
 // }
 // ```
+/**
+ * Defines normal components behavior for this music-player component; the TypeScript-oriented notes above
+ * explain its call shape and effects.
+ */
 private fun normalComponents(path: String): List<String> =
     // What:     The `=` after the signature is Kotlin's EXPRESSION-BODY function form: instead of a
     //           `{ ... }` block with a `return`, the whole function IS the single expression on the
@@ -100,6 +108,10 @@ private fun normalComponents(path: String): List<String> =
 // ```ts
 // function commonPrefixLen(lists: string[][]): number { ... }
 // ```
+/**
+ * Defines common prefix len behavior for this music-player component; the TypeScript-oriented notes above
+ * explain its call shape and effects.
+ */
 private fun commonPrefixLen(lists: List<List<String>>): Int {
     // What:     `val shortest = lists.minOfOrNull { it.size } ?: 0`.
     //           - `val` declares a read-only local binding (cannot be reassigned). Sibling: `var`
@@ -119,6 +131,10 @@ private fun commonPrefixLen(lists: List<List<String>>): Int {
     // const sizes = lists.map((l) => l.length);
     // const shortest = sizes.length === 0 ? 0 : Math.min(...sizes);
     // ```
+    /**
+     * Defines shortest value for this music-player component; the TypeScript-oriented notes above explain its
+     * source and use.
+     */
     val shortest = lists.minOfOrNull { it.size } ?: 0
     // What:     `if (shortest == 0) return 0`. An early `return` when some path has no named segments
     //           at all (so there is nothing to strip). `==` in Kotlin is STRUCTURAL equality (it calls
@@ -142,6 +158,10 @@ private fun commonPrefixLen(lists: List<List<String>>): Int {
     // ```ts
     // const cap = shortest - 1;
     // ```
+    /**
+     * Defines cap value for this music-player component; the TypeScript-oriented notes above explain its source
+     * and use.
+     */
     val cap = shortest - 1
     // What:     `var run = 0`. A MUTABLE local `Int`, the counter for how many leading segments match
     //           so far. We use `var` (not `val`) precisely because the loop below reassigns it.
@@ -151,6 +171,10 @@ private fun commonPrefixLen(lists: List<List<String>>): Int {
     // ```ts
     // let run = 0;
     // ```
+    /**
+     * Defines run value for this music-player component; the TypeScript-oriented notes above explain its source
+     * and use.
+     */
     var run = 0
     // What:     `while (run < cap && lists.all { it[run] == lists[0][run] }) { ... }`.
     //           - The loop continues while BOTH conditions hold (`&&` short-circuits, so the
@@ -214,6 +238,10 @@ private fun commonPrefixLen(lists: List<List<String>>): Int {
 //   });
 // }
 // ```
+/**
+ * Defines relative display paths behavior for this music-player component; the TypeScript-oriented notes above
+ * explain its call shape and effects.
+ */
 fun relativeDisplayPaths(tracks: List<String>): List<String> {
     // What:     `if (tracks.isEmpty()) return emptyList()`. An early `return` for an empty queue.
     //           - `tracks.isEmpty()` is `true` when the list has no elements.
@@ -243,6 +271,10 @@ fun relativeDisplayPaths(tracks: List<String>): List<String> {
     // ```ts
     // const componentLists = tracks.map((it) => normalComponents(it));
     // ```
+    /**
+     * Defines component lists value for this music-player component; the TypeScript-oriented notes above explain
+     * its source and use.
+     */
     val componentLists = tracks.map { normalComponents(it) }
     // What:     `val prefixLen = commonPrefixLen(componentLists)`. A read-only `Int`: how many leading
     //           segments are the shared root. Plain function call, no special syntax; Kotlin passes the
@@ -253,6 +285,10 @@ fun relativeDisplayPaths(tracks: List<String>): List<String> {
     // ```ts
     // const prefixLen = commonPrefixLen(componentLists);
     // ```
+    /**
+     * Defines prefix len value for this music-player component; the TypeScript-oriented notes above explain its
+     * source and use.
+     */
     val prefixLen = commonPrefixLen(componentLists)
     // What:     `return componentLists.zip(tracks).map { (list, path) -> ... }`. The final, returned
     //           expression, built from two chained calls:
@@ -287,6 +323,10 @@ fun relativeDisplayPaths(tracks: List<String>): List<String> {
         // ```ts
         // const relative = list.slice(prefixLen).join("/");
         // ```
+        /**
+         * Defines relative value for this music-player component; the TypeScript-oriented notes above explain
+         * its source and use.
+         */
         val relative = list.drop(prefixLen).joinToString(SEPARATOR)
         // What:     `if (relative.isEmpty()) path else relative`. This is an IF-EXPRESSION: in Kotlin
         //           `if/else` produces a value (like a ternary), so this whole line evaluates to one of

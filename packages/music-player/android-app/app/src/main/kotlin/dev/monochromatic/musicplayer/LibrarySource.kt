@@ -115,6 +115,10 @@ import kotlinx.coroutines.CancellationException
 //   // load, scanRoot defined below
 // };
 // ```
+/**
+ * Defines library source object for this music-player component; the TypeScript-oriented notes above explain its
+ * shared role.
+ */
 object LibrarySource {
     // What:     `private const val SOURCE_TAG: String = "LibrarySource"` declares a
     //           compile-time constant string.
@@ -135,6 +139,10 @@ object LibrarySource {
     // ```ts
     // const SOURCE_TAG: string = "LibrarySource";
     // ```
+    /**
+     * Defines source tag value for this music-player component; the TypeScript-oriented notes above explain its
+     * source and use.
+     */
     private const val SOURCE_TAG: String = "LibrarySource"
 
     // What:     `suspend fun load(context: Context): List<Track>` declares a
@@ -164,6 +172,10 @@ object LibrarySource {
     //   // ...body...
     // }
     // ```
+    /**
+     * Defines load behavior for this music-player component; the TypeScript-oriented notes above explain its
+     * call shape and effects.
+     */
     suspend fun load(
         // What:     `context: Context` is the app-environment handle.
         // Why:      Used to resolve the held folder, check the audio permission, and reach the
@@ -208,6 +220,10 @@ object LibrarySource {
         // ```ts
         // const root: Uri | null = LibraryRoot.heldRoot(context);
         // ```
+        /**
+         * Defines root value for this music-player component; the TypeScript-oriented notes above explain its
+         * source and use.
+         */
         val root: Uri? = LibraryRoot.heldRoot(context)
         // What:     `if (root != null) { ... }` tests whether the chosen-folder URI
         //           exists. Inside this block Kotlin SMART-CASTS `root` from `Uri?`
@@ -306,6 +322,10 @@ object LibrarySource {
     //   // ...body...
     // }
     // ```
+    /**
+     * Defines scan root behavior for this music-player component; the TypeScript-oriented notes above explain
+     * its call shape and effects.
+     */
     suspend fun scanRoot(
         // What:     `context: Context` is the app-environment handle.
         // Why:      Used to reach the content resolver for the SAF walk.

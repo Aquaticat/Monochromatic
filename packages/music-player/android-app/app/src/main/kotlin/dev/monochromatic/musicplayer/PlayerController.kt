@@ -151,6 +151,10 @@ import dev.monochromatic.musicplayer.core.paginate
 //   // ...state and methods below...
 // }
 // ```
+/**
+ * Defines player controller type for this music-player component; the TypeScript-oriented notes above explain
+ * its role.
+ */
 class PlayerController(private val engine: AudioEngine) {
     // What:     `private val queue: Queue = Queue.new()` declares a private read-only
     //           field `queue`, built by the FACTORY `Queue.new()` (a companion-object
@@ -161,6 +165,10 @@ class PlayerController(private val engine: AudioEngine) {
     // ```ts
     // private readonly queue: Queue = Queue.new();
     // ```
+    /**
+     * Defines queue value for this music-player component; the TypeScript-oriented notes above explain its
+     * source and use.
+     */
     private val queue: Queue = Queue.new()
     // What:     `private var pages: List<Page> = emptyList()` declares a private,
     //           REASSIGNABLE (`var`) field of read-only list type `List<Page>` (sibling
@@ -171,6 +179,10 @@ class PlayerController(private val engine: AudioEngine) {
     // ```ts
     // private pages: readonly Page[] = [];
     // ```
+    /**
+     * Defines pages value for this music-player component; the TypeScript-oriented notes above explain its
+     * source and use.
+     */
     private var pages: List<Page> = emptyList()
     // What:     `private var loadedUri: String? = null` declares a private, reassignable
     //           field of NULLABLE `String?` (the trailing `?` = "a `String` OR null"),
@@ -187,6 +199,10 @@ class PlayerController(private val engine: AudioEngine) {
     // ```ts
     // private loadedUri: string | null = null;
     // ```
+    /**
+     * Defines loaded uri value for this music-player component; the TypeScript-oriented notes above explain its
+     * source and use.
+     */
     private var loadedUri: String? = null
     // What:     `private var isPlaying: Boolean = false` declares a private, reassignable
     //           boolean field, initialised `false`.
@@ -196,6 +212,10 @@ class PlayerController(private val engine: AudioEngine) {
     // ```ts
     // private isPlaying: boolean = false;
     // ```
+    /**
+     * Defines is playing value for this music-player component; the TypeScript-oriented notes above explain its
+     * source and use.
+     */
     private var isPlaying: Boolean = false
 
     // What:     `private var isLoading: Boolean = true` declares a private, reassignable
@@ -209,6 +229,10 @@ class PlayerController(private val engine: AudioEngine) {
     // ```ts
     // private isLoading: boolean = true;
     // ```
+    /**
+     * Defines is loading value for this music-player component; the TypeScript-oriented notes above explain its
+     * source and use.
+     */
     private var isLoading: Boolean = true
 
     // What:     `private var uris: List<String> = emptyList()` declares a private,
@@ -222,6 +246,10 @@ class PlayerController(private val engine: AudioEngine) {
     // ```ts
     // private uris: readonly string[] = [];
     // ```
+    /**
+     * Defines uris value for this music-player component; the TypeScript-oriented notes above explain its source
+     * and use.
+     */
     private var uris: List<String> = emptyList()
 
     // What:     `var uiState: PlayerUiState by mutableStateOf(PlayerUiState(loading = true))`
@@ -245,6 +273,10 @@ class PlayerController(private val engine: AudioEngine) {
     // get uiState(): PlayerUiState { return this._uiState.value; }
     // // (setter is restricted to this class — see `private set` below)
     // ```
+    /**
+     * Defines ui state value for this music-player component; the TypeScript-oriented notes above explain its
+     * source and use.
+     */
     var uiState: PlayerUiState by mutableStateOf(PlayerUiState(loading = true))
         // What:     `private set` restricts the SETTER of `uiState` to this class while the
         //           GETTER stays public. It is written on its own indented line directly
@@ -275,6 +307,10 @@ class PlayerController(private val engine: AudioEngine) {
     // ```ts
     // onStateChanged: (() => void) | null = null;
     // ```
+    /**
+     * Defines on state changed value for this music-player component; the TypeScript-oriented notes above
+     * explain its source and use.
+     */
     var onStateChanged: (() -> Unit)? = null
 
     // What:     `var onPersist: (() -> Unit)? = null` declares a SECOND public, reassignable
@@ -290,6 +326,10 @@ class PlayerController(private val engine: AudioEngine) {
     // ```ts
     // onPersist: (() => void) | null = null;
     // ```
+    /**
+     * Defines on persist value for this music-player component; the TypeScript-oriented notes above explain its
+     * source and use.
+     */
     var onPersist: (() -> Unit)? = null
 
     // What:     `init { ... }` is Kotlin's INITIALIZER BLOCK: code that runs once as part
@@ -390,6 +430,10 @@ class PlayerController(private val engine: AudioEngine) {
     // ```ts
     // beginLoad(): void { this.isLoading = true; this.refresh(); }
     // ```
+    /**
+     * Defines begin load behavior for this music-player component; the TypeScript-oriented notes above explain
+     * its call shape and effects.
+     */
     fun beginLoad() {
         // What:     `isLoading = true` sets the loading flag.
         // Why:      Tell the next snapshot a scan is running.
@@ -421,6 +465,10 @@ class PlayerController(private val engine: AudioEngine) {
     // ```ts
     // openLibrary(tracks: readonly Track[]): void { ... }
     // ```
+    /**
+     * Defines open library behavior for this music-player component; the TypeScript-oriented notes above explain
+     * its call shape and effects.
+     */
     fun openLibrary(tracks: List<Track>) {
         // What:     `uris = tracks.map { it.uri }` reassigns `uris`. `tracks.map { ... }`
         //           builds a new list by transforming each element; the trailing lambda
@@ -511,6 +559,10 @@ class PlayerController(private val engine: AudioEngine) {
     //   return i === null ? null : this.uris[i];
     // }
     // ```
+    /**
+     * Defines current uri behavior for this music-player component; the TypeScript-oriented notes above explain
+     * its call shape and effects.
+     */
     private fun currentUri(): String? = queue.currentIndex()?.let { uris[it] }
 
     // What:     `fun currentSession(): Session { ... }` declares a public method returning a
@@ -531,6 +583,10 @@ class PlayerController(private val engine: AudioEngine) {
     //   });
     // }
     // ```
+    /**
+     * Defines current session behavior for this music-player component; the TypeScript-oriented notes above
+     * explain its call shape and effects.
+     */
     fun currentSession(): Session = Session(
         selected = currentUri(),
         positionSecs = engine.positionSec(),
@@ -559,6 +615,10 @@ class PlayerController(private val engine: AudioEngine) {
     //   this.uiState = { ...this.uiState, volume: session.volume };
     // }
     // ```
+    /**
+     * Defines apply settings behavior for this music-player component; the TypeScript-oriented notes above
+     * explain its call shape and effects.
+     */
     fun applySettings(session: Session) {
         // What:     `queue.setRepeatTrack(session.repeatTrack)` then `queue.setShuffle(session.shuffle)`
         //           store the saved settings in the queue's mode fields.
@@ -616,6 +676,10 @@ class PlayerController(private val engine: AudioEngine) {
     //   this.refresh(true);
     // }
     // ```
+    /**
+     * Defines restore selected track behavior for this music-player component; the TypeScript-oriented notes
+     * above explain its call shape and effects.
+     */
     private fun restoreSelectedTrack(tracks: List<Track>, session: Session) {
         // What:     `uris = tracks.map { it.uri }` and `queue.setTracks(tracks.map { it.displayPath })`
         //           adopt the full scanned tracks: URIs in `uris`, display paths into the queue's
@@ -651,6 +715,10 @@ class PlayerController(private val engine: AudioEngine) {
         // ```ts
         // const savedIndex = session.selected ? this.uris.indexOf(session.selected) : -1;
         // ```
+        /**
+         * Defines saved index value for this music-player component; the TypeScript-oriented notes above explain
+         * its source and use.
+         */
         val savedIndex: Int = session.selected?.let { uris.indexOf(it) } ?: -1
         // What:     `if (savedIndex >= 0) { ... } else { queue.clearSelection() }` branches on
         //           whether the saved track survived.
@@ -733,6 +801,10 @@ class PlayerController(private val engine: AudioEngine) {
     //   return "RestoredSavedSession";
     // }
     // ```
+    /**
+     * Defines finish load behavior for this music-player component; the TypeScript-oriented notes above explain
+     * its call shape and effects.
+     */
     fun finishLoad(tracks: List<Track>, session: Session): FinishLoadResult {
         // What:     `if (loadedUri != null) { ... }` tests whether a track is loaded in the engine,
         //           which on a cold start means "the user tapped a row while it was loading."
@@ -817,6 +889,10 @@ class PlayerController(private val engine: AudioEngine) {
     //   this.refresh(true);
     // }
     // ```
+    /**
+     * Defines reconcile library behavior for this music-player component; the TypeScript-oriented notes above
+     * explain its call shape and effects.
+     */
     fun reconcileLibrary(tracks: List<Track>) {
         // What:     `val playingUri: String? = loadedUri` snapshots the loaded URI BEFORE the
         //           track list is replaced.
@@ -826,6 +902,10 @@ class PlayerController(private val engine: AudioEngine) {
         // ```ts
         // const playingUri = this.loadedUri;
         // ```
+        /**
+         * Defines playing uri value for this music-player component; the TypeScript-oriented notes above explain
+         * its source and use.
+         */
         val playingUri: String? = loadedUri
         // What:     `uris = tracks.map { it.uri }`, `queue.setTracks(tracks.map { it.displayPath })`,
         //           `pages = paginate(queue.displayPaths())` adopt the fresh scan and repaginate.
@@ -848,6 +928,10 @@ class PlayerController(private val engine: AudioEngine) {
         // ```ts
         // const newIndex = playingUri ? this.uris.indexOf(playingUri) : -1;
         // ```
+        /**
+         * Defines new index value for this music-player component; the TypeScript-oriented notes above explain
+         * its source and use.
+         */
         val newIndex: Int = playingUri?.let { uris.indexOf(it) } ?: -1
         // What:     `if (newIndex >= 0) { queue.playIndex(newIndex) } else { ... }` branches on
         //           whether the playing track survived.
@@ -915,6 +999,10 @@ class PlayerController(private val engine: AudioEngine) {
     // ```ts
     // playIndex(index: number): void { this.queue.playIndex(index); this.playCurrent(); }
     // ```
+    /**
+     * Defines play index behavior for this music-player component; the TypeScript-oriented notes above explain
+     * its call shape and effects.
+     */
     fun playIndex(index: Int) {
         // What:     `queue.playIndex(index)` selects that track in the queue (switching
         //           scope if it is on another page).
@@ -948,6 +1036,10 @@ class PlayerController(private val engine: AudioEngine) {
     // ```ts
     // seekToScopeIndex(scopeIndex: number, positionSec: number = 0): void { ... }
     // ```
+    /**
+     * Defines seek to scope index behavior for this music-player component; the TypeScript-oriented notes above
+     * explain its call shape and effects.
+     */
     fun seekToScopeIndex(scopeIndex: Int, positionSec: Double = 0.0) {
         // What:     `if (queue.moveCursorTo(scopeIndex) == null) { return }`. `moveCursorTo`
         //           returns `Int?` (the now-current index, or null for out-of-range);
@@ -1006,6 +1098,10 @@ class PlayerController(private val engine: AudioEngine) {
     // ```ts
     // togglePlay(): void { ... }
     // ```
+    /**
+     * Defines toggle play behavior for this music-player component; the TypeScript-oriented notes above explain
+     * its call shape and effects.
+     */
     fun togglePlay() {
         // What:     `if (isPlaying) { ... } else if (loadedUri != null && loadedUri == currentUri()) { ... } else { ... }`
         //           is an if / else-if / else CHAIN. `loadedUri != null` is a null check;
@@ -1071,6 +1167,10 @@ class PlayerController(private val engine: AudioEngine) {
     // ```ts
     // setPlayWhenReady(play: boolean): void { ... }
     // ```
+    /**
+     * Defines set play when ready behavior for this music-player component; the TypeScript-oriented notes above
+     * explain its call shape and effects.
+     */
     fun setPlayWhenReady(play: Boolean) {
         // What:     `if (play) { ... } else { engine.pause() }` branches on the requested
         //           intent: play vs pause.
@@ -1138,6 +1238,10 @@ class PlayerController(private val engine: AudioEngine) {
     // ```ts
     // next(): void { this.queue.advance(false); this.playCurrent(); }
     // ```
+    /**
+     * Defines next behavior for this music-player component; the TypeScript-oriented notes above explain its
+     * call shape and effects.
+     */
     fun next() {
         // What:     `queue.advance(natural = false)` advances the queue with the `natural`
         //           argument by NAME as `false` (a manual Next does NOT honour repeat-track).
@@ -1165,6 +1269,10 @@ class PlayerController(private val engine: AudioEngine) {
     // ```ts
     // prev(): void { this.queue.prev(); this.playCurrent(); }
     // ```
+    /**
+     * Defines prev behavior for this music-player component; the TypeScript-oriented notes above explain its
+     * call shape and effects.
+     */
     fun prev() {
         // What:     `queue.prev()` moves the cursor to the previous track in scope.
         // Why:      Step backward on an explicit Prev.
@@ -1192,6 +1300,10 @@ class PlayerController(private val engine: AudioEngine) {
     // ```ts
     // setShuffle(mode: ShuffleMode): void { this.queue.setShuffle(mode); this.refresh(); }
     // ```
+    /**
+     * Defines set shuffle behavior for this music-player component; the TypeScript-oriented notes above explain
+     * its call shape and effects.
+     */
     fun setShuffle(mode: ShuffleMode) {
         // What:     `queue.setShuffle(mode)` applies the new shuffle/scope mode in the queue.
         // Why:      Change the mode while keeping the playing track current.
@@ -1219,6 +1331,10 @@ class PlayerController(private val engine: AudioEngine) {
     // ```ts
     // setRepeatTrack(on: boolean): void { this.queue.setRepeatTrack(on); this.refresh(); }
     // ```
+    /**
+     * Defines set repeat track behavior for this music-player component; the TypeScript-oriented notes above
+     * explain its call shape and effects.
+     */
     fun setRepeatTrack(on: Boolean) {
         // What:     `queue.setRepeatTrack(on)` stores the repeat-track flag in the queue.
         // Why:      Record the new repeat-track state.
@@ -1246,6 +1362,10 @@ class PlayerController(private val engine: AudioEngine) {
     // ```ts
     // selectPage(page: number): void { ... }
     // ```
+    /**
+     * Defines select page behavior for this music-player component; the TypeScript-oriented notes above explain
+     * its call shape and effects.
+     */
     fun selectPage(page: Int) {
         // What:     `if (page in pages.indices) { ... }` uses Kotlin's `in` operator for
         //           RANGE MEMBERSHIP: `pages.indices` is the `0 until pages.size` range, and
@@ -1284,6 +1404,10 @@ class PlayerController(private val engine: AudioEngine) {
     // ```ts
     // seek(positionSec: number): void { this.engine.seekTo(positionSec); }
     // ```
+    /**
+     * Defines seek behavior for this music-player component; the TypeScript-oriented notes above explain its
+     * call shape and effects.
+     */
     fun seek(positionSec: Double) {
         // What:     `engine.seekTo(positionSec)` moves the playhead within the current track.
         // Why:      Scrub to the requested position.
@@ -1304,6 +1428,10 @@ class PlayerController(private val engine: AudioEngine) {
     // ```ts
     // setVolume(volume: number): void { ... }
     // ```
+    /**
+     * Defines set volume behavior for this music-player component; the TypeScript-oriented notes above explain
+     * its call shape and effects.
+     */
     fun setVolume(volume: Float) {
         // What:     `engine.setVolume(volume)` applies the gain to the engine.
         // Why:      Change the actual output level.
@@ -1333,6 +1461,10 @@ class PlayerController(private val engine: AudioEngine) {
     // ```ts
     // positionSec(): number { return this.engine.positionSec(); }
     // ```
+    /**
+     * Defines position sec behavior for this music-player component; the TypeScript-oriented notes above explain
+     * its call shape and effects.
+     */
     fun positionSec(): Double = engine.positionSec()
 
     // What:     `fun durationSec(): Double = engine.durationSec()` declares a public method
@@ -1344,6 +1476,10 @@ class PlayerController(private val engine: AudioEngine) {
     // ```ts
     // durationSec(): number { return this.engine.durationSec(); }
     // ```
+    /**
+     * Defines duration sec behavior for this music-player component; the TypeScript-oriented notes above explain
+     * its call shape and effects.
+     */
     fun durationSec(): Double = engine.durationSec()
 
     // What:     `fun snapshot(): PlaybackSnapshot { ... }` declares a public method, block
@@ -1358,6 +1494,10 @@ class PlayerController(private val engine: AudioEngine) {
     // ```ts
     // snapshot(): PlaybackSnapshot { ... }
     // ```
+    /**
+     * Defines snapshot behavior for this music-player component; the TypeScript-oriented notes above explain its
+     * call shape and effects.
+     */
     fun snapshot(): PlaybackSnapshot {
         // What:     `val order: List<Int> = queue.playbackOrder()` declares a read-only
         //           `List<Int>` local `order`: the current scope's load-order indices in
@@ -1368,6 +1508,10 @@ class PlayerController(private val engine: AudioEngine) {
         // ```ts
         // const order: readonly number[] = this.queue.playbackOrder();
         // ```
+        /**
+         * Defines order value for this music-player component; the TypeScript-oriented notes above explain its
+         * source and use.
+         */
         val order: List<Int> = queue.playbackOrder()
         // What:     `val display: List<String> = queue.displayPaths()` declares a read-only
         //           `List<String>` local `display`: the per-track display strings in load
@@ -1378,6 +1522,10 @@ class PlayerController(private val engine: AudioEngine) {
         // ```ts
         // const display: readonly string[] = this.queue.displayPaths();
         // ```
+        /**
+         * Defines display value for this music-player component; the TypeScript-oriented notes above explain its
+         * source and use.
+         */
         val display: List<String> = queue.displayPaths()
         // What:     `val items: List<SnapshotItem> = order.map { loadIndex -> SnapshotItem(...) }`
         //           builds the timeline rows. `order.map { ... }` transforms each element;
@@ -1395,6 +1543,10 @@ class PlayerController(private val engine: AudioEngine) {
         //   loadIndex,
         // }));
         // ```
+        /**
+         * Defines items value for this music-player component; the TypeScript-oriented notes above explain its
+         * source and use.
+         */
         val items: List<SnapshotItem> = order.map { loadIndex ->
             // What:     `SnapshotItem(uri = uris[loadIndex], title = display[loadIndex], loadIndex = loadIndex)`
             //           constructs one timeline item (no `new`) with named args. It is the
@@ -1497,6 +1649,10 @@ class PlayerController(private val engine: AudioEngine) {
     // ```ts
     // currentScopeIndex(): number | null { return this.queue.cursorPosition(); }
     // ```
+    /**
+     * Defines current scope index behavior for this music-player component; the TypeScript-oriented notes above
+     * explain its call shape and effects.
+     */
     fun currentScopeIndex(): Int? = queue.cursorPosition()
 
     // What:     `fun release() { ... }` declares a public method, block body, `Unit`.
@@ -1506,6 +1662,10 @@ class PlayerController(private val engine: AudioEngine) {
     // ```ts
     // release(): void { this.engine.release(); }
     // ```
+    /**
+     * Defines release behavior for this music-player component; the TypeScript-oriented notes above explain its
+     * call shape and effects.
+     */
     fun release() {
         // What:     `engine.release()` releases the engine's resources.
         // Why:      Free audio focus, buffers, and file handles.
@@ -1526,6 +1686,10 @@ class PlayerController(private val engine: AudioEngine) {
     // ```ts
     // private playCurrent(): void { ... }
     // ```
+    /**
+     * Defines play current behavior for this music-player component; the TypeScript-oriented notes above explain
+     * its call shape and effects.
+     */
     private fun playCurrent() {
         // What:     `val index = queue.currentIndex()` declares a read-only local `index`
         //           (type INFERRED as `Int?`) from the queue's current load-order index.
@@ -1535,6 +1699,10 @@ class PlayerController(private val engine: AudioEngine) {
         // ```ts
         // const index = this.queue.currentIndex();
         // ```
+        /**
+         * Defines index value for this music-player component; the TypeScript-oriented notes above explain its
+         * source and use.
+         */
         val index = queue.currentIndex()
         // What:     `if (index == null) { refresh(); return }` handles the empty-queue case:
         //           when there is no current track, repaint idle state and bail.
@@ -1614,6 +1782,10 @@ class PlayerController(private val engine: AudioEngine) {
     //   return byLabel >= 0 ? byLabel : clamp(this.uiState.selectedPage, 0, Math.max(0, this.pages.length - 1));
     // }
     // ```
+    /**
+     * Defines resolve viewed page behavior for this music-player component; the TypeScript-oriented notes above
+     * explain its call shape and effects.
+     */
     private fun resolveViewedPage(): Int {
         // What:     `val previousLabel: String? = uiState.pageLabels.getOrNull(uiState.selectedPage)`
         //           reads the label of the tab the user was on, or null. `getOrNull(i)` returns the
@@ -1626,6 +1798,10 @@ class PlayerController(private val engine: AudioEngine) {
         // ```ts
         // const previousLabel: string | null = this.uiState.pageLabels[this.uiState.selectedPage] ?? null;
         // ```
+        /**
+         * Defines previous label value for this music-player component; the TypeScript-oriented notes above
+         * explain its source and use.
+         */
         val previousLabel: String? = uiState.pageLabels.getOrNull(uiState.selectedPage)
         // What:     `val byLabel: Int = previousLabel?.let { label -> pages.indexOfFirst { it.label == label } } ?: -1`
         //           finds the new index of that label, or -1.
@@ -1643,6 +1819,10 @@ class PlayerController(private val engine: AudioEngine) {
         // ```ts
         // const byLabel = previousLabel === null ? -1 : this.pages.findIndex((p) => p.label === previousLabel);
         // ```
+        /**
+         * Defines by label value for this music-player component; the TypeScript-oriented notes above explain
+         * its source and use.
+         */
         val byLabel: Int = previousLabel?.let { label -> pages.indexOfFirst { it.label == label } } ?: -1
         // What:     `if (byLabel >= 0) { return byLabel }` returns the resolved index early when the
         //           label was found.
@@ -1680,6 +1860,10 @@ class PlayerController(private val engine: AudioEngine) {
     // ```ts
     // private refresh(followCurrent: boolean = false): void { ... }
     // ```
+    /**
+     * Defines refresh behavior for this music-player component; the TypeScript-oriented notes above explain its
+     * call shape and effects.
+     */
     private fun refresh(followCurrent: Boolean = false) {
         // What:     `val current = queue.currentIndex()` declares a read-only local `current`
         //           (inferred `Int?`) from the queue's current index.
@@ -1689,6 +1873,10 @@ class PlayerController(private val engine: AudioEngine) {
         // ```ts
         // const current = this.queue.currentIndex();
         // ```
+        /**
+         * Defines current value for this music-player component; the TypeScript-oriented notes above explain its
+         * source and use.
+         */
         val current = queue.currentIndex()
         // What:     `val selected = if (followCurrent && current != null) { ... } else { ... }`
         //           declares `selected` from an `if/else` EXPRESSION. The condition combines
@@ -1704,6 +1892,10 @@ class PlayerController(private val engine: AudioEngine) {
         //   ? (pageOfIndex(this.pages, current) ?? this.uiState.selectedPage)
         //   : clamp(this.uiState.selectedPage, 0, Math.max(0, this.pages.length - 1));
         // ```
+        /**
+         * Defines selected value for this music-player component; the TypeScript-oriented notes above explain
+         * its source and use.
+         */
         val selected = if (followCurrent && current != null) {
             // What:     `pageOfIndex(pages, current) ?: uiState.selectedPage` is the `then`
             //           branch value. `pageOfIndex(...)` returns the page holding `current`
@@ -1876,6 +2068,10 @@ class PlayerController(private val engine: AudioEngine) {
         onPersist?.invoke()
     }
 
+    /**
+     * Defines companion object for this music-player component; the TypeScript-oriented notes above explain its
+     * shared role.
+     */
     // What:     `companion object { ... }` declares the static-like object on
     //           `PlayerController`; its member is read as `PlayerController.MILLIS_PER_SEC`
     //           (within the class, just `MILLIS_PER_SEC`).
@@ -1900,6 +2096,10 @@ class PlayerController(private val engine: AudioEngine) {
         // ```ts
         // private static readonly MILLIS_PER_SEC = 1000;
         // ```
+        /**
+         * Defines millis per sec value for this music-player component; the TypeScript-oriented notes above
+         * explain its source and use.
+         */
         private const val MILLIS_PER_SEC: Double = 1000.0
     }
 }

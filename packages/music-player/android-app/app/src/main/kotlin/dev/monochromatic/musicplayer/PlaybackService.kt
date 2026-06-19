@@ -213,6 +213,10 @@ import kotlinx.coroutines.withContext
 //   // ...fields and lifecycle methods below...
 // }
 // ```
+/**
+ * Defines playback service type for this music-player component; the TypeScript-oriented notes above explain its
+ * role.
+ */
 class PlaybackService : MediaSessionService() {
     // What:     `private lateinit var controller: PlayerController` declares a private,
     //           REASSIGNABLE (`var`) field whose type is the NON-NULLABLE
@@ -233,6 +237,10 @@ class PlaybackService : MediaSessionService() {
     // ```ts
     // private controller!: PlayerController; // assigned in onCreate, asserted non-null
     // ```
+    /**
+     * Defines controller value for this music-player component; the TypeScript-oriented notes above explain its
+     * source and use.
+     */
     private lateinit var controller: PlayerController
     // What:     `private lateinit var brainPlayer: BrainPlayer` declares another private,
     //           deferred-init non-null field (see `controller` for what `lateinit`
@@ -243,6 +251,10 @@ class PlaybackService : MediaSessionService() {
     // ```ts
     // private brainPlayer!: BrainPlayer;
     // ```
+    /**
+     * Defines brain player value for this music-player component; the TypeScript-oriented notes above explain
+     * its source and use.
+     */
     private lateinit var brainPlayer: BrainPlayer
     // What:     `private var session: MediaSession? = null` declares a private,
     //           reassignable field whose type is the NULLABLE `MediaSession?` (the
@@ -255,6 +267,10 @@ class PlaybackService : MediaSessionService() {
     // ```ts
     // private session: MediaSession | null = null;
     // ```
+    /**
+     * Defines session value for this music-player component; the TypeScript-oriented notes above explain its
+     * source and use.
+     */
     private var session: MediaSession? = null
 
     // What:     `private var libraryLoaded: Boolean = false` declares a private,
@@ -266,6 +282,10 @@ class PlaybackService : MediaSessionService() {
     // ```ts
     // private libraryLoaded: boolean = false;
     // ```
+    /**
+     * Defines library loaded value for this music-player component; the TypeScript-oriented notes above explain
+     * its source and use.
+     */
     private var libraryLoaded: Boolean = false
 
     // What:     `private var sessionRestored: Boolean = false` declares a private,
@@ -283,6 +303,10 @@ class PlaybackService : MediaSessionService() {
     // ```ts
     // private sessionRestored: boolean = false;
     // ```
+    /**
+     * Defines session restored value for this music-player component; the TypeScript-oriented notes above
+     * explain its source and use.
+     */
     private var sessionRestored: Boolean = false
 
     // What:     `private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)`
@@ -304,6 +328,10 @@ class PlaybackService : MediaSessionService() {
     //   dispatcher: Dispatchers.Main, // run on the UI thread
     // });
     // ```
+    /**
+     * Defines scope value for this music-player component; the TypeScript-oriented notes above explain its
+     * source and use.
+     */
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
 
     // What:     `private var loadJob: Job? = null` declares a private, reassignable field
@@ -318,6 +346,10 @@ class PlaybackService : MediaSessionService() {
     // ```ts
     // private loadJob: Job | null = null;
     // ```
+    /**
+     * Defines load job value for this music-player component; the TypeScript-oriented notes above explain its
+     * source and use.
+     */
     private var loadJob: Job? = null
 
     // What:     `private val localBinder: LocalBinder = LocalBinder()` declares a private
@@ -330,6 +362,10 @@ class PlaybackService : MediaSessionService() {
     // ```ts
     // private readonly localBinder: LocalBinder = new LocalBinder();
     // ```
+    /**
+     * Defines local binder value for this music-player component; the TypeScript-oriented notes above explain
+     * its source and use.
+     */
     private val localBinder: LocalBinder = LocalBinder()
 
     // What:     `inner class LocalBinder : Binder() { ... }` declares a NESTED class
@@ -351,6 +387,10 @@ class PlaybackService : MediaSessionService() {
     //   // (conceptually carries a reference `outer` to the PlaybackService)
     // }
     // ```
+    /**
+     * Defines local binder type for this music-player component; the TypeScript-oriented notes above explain its
+     * role.
+     */
     inner class LocalBinder : Binder() {
         // What:     `val controller: PlayerController get() = this@PlaybackService.controller`
         //           declares a read-only property `controller` with a CUSTOM GETTER: the
@@ -370,6 +410,10 @@ class PlaybackService : MediaSessionService() {
         //   return this.outer.controller;
         // }
         // ```
+        /**
+         * Defines controller value for this music-player component; the TypeScript-oriented notes above explain
+         * its source and use.
+         */
         val controller: PlayerController get() = this@PlaybackService.controller
 
         // What:     `fun ensureLibraryLoaded() = this@PlaybackService.ensureLibraryLoaded()`
@@ -385,6 +429,10 @@ class PlaybackService : MediaSessionService() {
         //   this.outer.ensureLibraryLoaded();
         // }
         // ```
+        /**
+         * Defines ensure library loaded behavior for this music-player component; the TypeScript-oriented notes
+         * above explain its call shape and effects.
+         */
         fun ensureLibraryLoaded() = this@PlaybackService.ensureLibraryLoaded()
 
         // What:     `fun reloadFromRoot(treeUri: Uri) = this@PlaybackService.reloadFromRoot(treeUri)`
@@ -399,6 +447,10 @@ class PlaybackService : MediaSessionService() {
         //   this.outer.reloadFromRoot(treeUri);
         // }
         // ```
+        /**
+         * Defines reload from root behavior for this music-player component; the TypeScript-oriented notes above
+         * explain its call shape and effects.
+         */
         fun reloadFromRoot(treeUri: Uri) = this@PlaybackService.reloadFromRoot(treeUri)
 
         // What:     `fun rescan() = this@PlaybackService.rescan()` declares an
@@ -411,6 +463,10 @@ class PlaybackService : MediaSessionService() {
         // ```ts
         // rescan(): void { this.outer.rescan(); }
         // ```
+        /**
+         * Defines rescan behavior for this music-player component; the TypeScript-oriented notes above explain
+         * its call shape and effects.
+         */
         fun rescan() = this@PlaybackService.rescan()
 
         // What:     `fun saveSession() = this@PlaybackService.saveSession()` declares an
@@ -423,6 +479,10 @@ class PlaybackService : MediaSessionService() {
         // ```ts
         // saveSession(): void { this.outer.saveSession(); }
         // ```
+        /**
+         * Defines save session behavior for this music-player component; the TypeScript-oriented notes above
+         * explain its call shape and effects.
+         */
         fun saveSession() = this@PlaybackService.saveSession()
     }
 
@@ -436,6 +496,10 @@ class PlaybackService : MediaSessionService() {
     // ```ts
     // override onCreate(): void { ... }
     // ```
+    /**
+     * Defines on create behavior for this music-player component; the TypeScript-oriented notes above explain
+     * its call shape and effects.
+     */
     override fun onCreate() {
         // What:     `super.onCreate()` calls the BASE class's `onCreate` first.
         //           `super` refers to `MediaSessionService`; this runs its setup before
@@ -505,6 +569,10 @@ class PlaybackService : MediaSessionService() {
         // ```ts
         // const built: MediaSession = new MediaSession.Builder(this, this.brainPlayer).build();
         // ```
+        /**
+         * Defines built value for this music-player component; the TypeScript-oriented notes above explain its
+         * source and use.
+         */
         val built: MediaSession = MediaSession.Builder(this, brainPlayer).build()
         // What:     `session = built` stores the freshly built session into the nullable
         //           `session` field.
@@ -571,6 +639,10 @@ class PlaybackService : MediaSessionService() {
     //   return this.session;
     // }
     // ```
+    /**
+     * Defines on get session behavior for this music-player component; the TypeScript-oriented notes above
+     * explain its call shape and effects.
+     */
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession? = session
 
     // What:     `override fun onBind(intent: Intent?): IBinder? = if (intent?.action == ACTION_LOCAL_BIND) localBinder else super.onBind(intent)`
@@ -591,6 +663,10 @@ class PlaybackService : MediaSessionService() {
     //     : super.onBind(intent);
     // }
     // ```
+    /**
+     * Defines on bind behavior for this music-player component; the TypeScript-oriented notes above explain its
+     * call shape and effects.
+     */
     override fun onBind(intent: Intent?): IBinder? =
         if (intent?.action == ACTION_LOCAL_BIND) localBinder else super.onBind(intent)
 
@@ -606,6 +682,10 @@ class PlaybackService : MediaSessionService() {
     // ```ts
     // ensureLibraryLoaded(): void { ... }
     // ```
+    /**
+     * Defines ensure library loaded behavior for this music-player component; the TypeScript-oriented notes
+     * above explain its call shape and effects.
+     */
     fun ensureLibraryLoaded() {
         // What:     `if (libraryLoaded) { return }` is an early-return guard: if the load
         //           already happened, exit (returning `Unit`).
@@ -654,6 +734,10 @@ class PlaybackService : MediaSessionService() {
         // ```ts
         // const session = SessionStore.load(this);
         // ```
+        /**
+         * Defines session value for this music-player component; the TypeScript-oriented notes above explain its
+         * source and use.
+         */
         val session = SessionStore.load(this)
         // What:     `controller.applySettings(session)` applies the saved shuffle, repeat, and
         //           volume to the controller NOW, before the load starts.
@@ -728,6 +812,10 @@ class PlaybackService : MediaSessionService() {
             //   await withContext(Dispatchers.Main, () => this.controller.reconcileLibrary(batch));
             // });
             // ```
+            /**
+             * Defines tracks value for this music-player component; the TypeScript-oriented notes above explain
+             * its source and use.
+             */
             val tracks = LibrarySource.load(this@PlaybackService) { batch ->
                 withContext(Dispatchers.Main) { controller.reconcileLibrary(batch) }
             }
@@ -743,6 +831,10 @@ class PlaybackService : MediaSessionService() {
             // ```ts
             // const result = this.controller.finishLoad(tracks, session);
             // ```
+            /**
+             * Defines result value for this music-player component; the TypeScript-oriented notes above explain
+             * its source and use.
+             */
             val result = controller.finishLoad(tracks, session)
             // What:     `sessionRestored = true` flips the save gate AFTER `finishLoad` returns.
             // Why:      Until now `saveSession` was a no-op (protecting the saved session). On the
@@ -794,6 +886,10 @@ class PlaybackService : MediaSessionService() {
     // ```ts
     // reloadFromRoot(treeUri: Uri): void { ... }
     // ```
+    /**
+     * Defines reload from root behavior for this music-player component; the TypeScript-oriented notes above
+     * explain its call shape and effects.
+     */
     fun reloadFromRoot(treeUri: Uri) {
         // What:     `libraryLoaded = true` sets the guard (an explicit re-pick is also a
         //           "load has happened").
@@ -854,6 +950,10 @@ class PlaybackService : MediaSessionService() {
             // ```ts
             // const tracks = await LibrarySource.scanRoot(this, treeUri);
             // ```
+            /**
+             * Defines tracks value for this music-player component; the TypeScript-oriented notes above explain
+             * its source and use.
+             */
             val tracks = LibrarySource.scanRoot(this@PlaybackService, treeUri)
             // What:     `sessionRestored = true` flips the save gate just BEFORE delivering the
             //           picked folder.
@@ -909,6 +1009,10 @@ class PlaybackService : MediaSessionService() {
     //   });
     // }
     // ```
+    /**
+     * Defines rescan behavior for this music-player component; the TypeScript-oriented notes above explain its
+     * call shape and effects.
+     */
     fun rescan() {
         // What:     `if (!libraryLoaded) return` bails before the first load.
         // Why:      Nothing to reconcile until a library has been loaded; the first load is
@@ -950,6 +1054,10 @@ class PlaybackService : MediaSessionService() {
             // ```ts
             // const tracks = await LibrarySource.load(this);
             // ```
+            /**
+             * Defines tracks value for this music-player component; the TypeScript-oriented notes above explain
+             * its source and use.
+             */
             val tracks = LibrarySource.load(this@PlaybackService)
             // What:     `controller.reconcileLibrary(tracks)` reconciles the queue with the
             //           scan, preserving the playing track by URI WITHOUT restarting playback.
@@ -988,6 +1096,10 @@ class PlaybackService : MediaSessionService() {
     //   SessionStore.save(this, this.controller.currentSession());
     // }
     // ```
+    /**
+     * Defines save session behavior for this music-player component; the TypeScript-oriented notes above explain
+     * its call shape and effects.
+     */
     fun saveSession() {
         // What:     `if (!sessionRestored) return` guards against saving before the saved session
         //           has been read and applied to the controller.
@@ -1022,6 +1134,10 @@ class PlaybackService : MediaSessionService() {
     // ```ts
     // override onDestroy(): void { ... }
     // ```
+    /**
+     * Defines on destroy behavior for this music-player component; the TypeScript-oriented notes above explain
+     * its call shape and effects.
+     */
     override fun onDestroy() {
         // What:     `saveSession()` persists the final session BEFORE anything is released.
         // Why:      Capture the latest selection/settings/position while the controller and
@@ -1101,6 +1217,10 @@ class PlaybackService : MediaSessionService() {
         super.onDestroy()
     }
 
+    /**
+     * Defines companion object for this music-player component; the TypeScript-oriented notes above explain its
+     * shared role.
+     */
     // What:     `companion object { ... }` declares the single static-like object attached
     //           to `PlaybackService`; its member is read as
     //           `PlaybackService.ACTION_LOCAL_BIND`.
@@ -1124,6 +1244,10 @@ class PlaybackService : MediaSessionService() {
         // ```ts
         // static readonly ACTION_LOCAL_BIND = "dev.monochromatic.musicplayer.LOCAL_BIND";
         // ```
+        /**
+         * Defines action local bind value for this music-player component; the TypeScript-oriented notes above
+         * explain its source and use.
+         */
         const val ACTION_LOCAL_BIND: String = "dev.monochromatic.musicplayer.LOCAL_BIND"
     }
 }

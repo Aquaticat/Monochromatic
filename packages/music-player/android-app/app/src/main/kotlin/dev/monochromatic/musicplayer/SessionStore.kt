@@ -103,6 +103,10 @@ import dev.monochromatic.musicplayer.core.ShuffleMode
 // ```ts
 // export const SessionStore = { load(ctx) {...}, save(ctx, s) {...} };
 // ```
+/**
+ * Defines session store object for this music-player component; the TypeScript-oriented notes above explain its
+ * shared role.
+ */
 object SessionStore {
     // What:     `private const val PREFS_NAME: String = "session"` declares a private
     //           compile-time constant naming the SharedPreferences file.
@@ -115,6 +119,10 @@ object SessionStore {
     // ```ts
     // const PREFS_NAME = "session";
     // ```
+    /**
+     * Defines prefs name value for this music-player component; the TypeScript-oriented notes above explain its
+     * source and use.
+     */
     private const val PREFS_NAME: String = "session"
 
     // What:     `private const val KEY_SELECTED: String = "selected"` is the key for
@@ -125,6 +133,10 @@ object SessionStore {
     // ```ts
     // const KEY_SELECTED = "selected";
     // ```
+    /**
+     * Defines key selected value for this music-player component; the TypeScript-oriented notes above explain
+     * its source and use.
+     */
     private const val KEY_SELECTED: String = "selected"
 
     // What:     `private const val KEY_POSITION: String = "position_bits"` is the key
@@ -135,6 +147,10 @@ object SessionStore {
     // ```ts
     // const KEY_POSITION = "position_bits";
     // ```
+    /**
+     * Defines key position value for this music-player component; the TypeScript-oriented notes above explain
+     * its source and use.
+     */
     private const val KEY_POSITION: String = "position_bits"
 
     // What:     `private const val KEY_VOLUME: String = "volume"` is the key for the
@@ -145,6 +161,10 @@ object SessionStore {
     // ```ts
     // const KEY_VOLUME = "volume";
     // ```
+    /**
+     * Defines key volume value for this music-player component; the TypeScript-oriented notes above explain its
+     * source and use.
+     */
     private const val KEY_VOLUME: String = "volume"
 
     // What:     `private const val KEY_SHUFFLE: String = "shuffle"` is the key for the
@@ -155,6 +175,10 @@ object SessionStore {
     // ```ts
     // const KEY_SHUFFLE = "shuffle";
     // ```
+    /**
+     * Defines key shuffle value for this music-player component; the TypeScript-oriented notes above explain its
+     * source and use.
+     */
     private const val KEY_SHUFFLE: String = "shuffle"
 
     // What:     `private const val KEY_REPEAT: String = "repeat_track"` is the key for
@@ -165,6 +189,10 @@ object SessionStore {
     // ```ts
     // const KEY_REPEAT = "repeat_track";
     // ```
+    /**
+     * Defines key repeat value for this music-player component; the TypeScript-oriented notes above explain its
+     * source and use.
+     */
     private const val KEY_REPEAT: String = "repeat_track"
 
     // What:     `fun load(context: Context): Session { ... }` declares a public function
@@ -186,6 +214,10 @@ object SessionStore {
     //   });
     // }
     // ```
+    /**
+     * Defines load behavior for this music-player component; the TypeScript-oriented notes above explain its
+     * call shape and effects.
+     */
     fun load(context: Context): Session {
         // What:     `val prefs: SharedPreferences = prefs(context)` opens the store.
         // Why:      One handle reused for every field read below.
@@ -194,6 +226,10 @@ object SessionStore {
         // ```ts
         // const prefs = this.prefs(context);
         // ```
+        /**
+         * Defines prefs value for this music-player component; the TypeScript-oriented notes above explain its
+         * source and use.
+         */
         val prefs: SharedPreferences = prefs(context)
         // What:     `val shuffleName: String? = prefs.getString(KEY_SHUFFLE, null)` reads
         //           the stored shuffle name, or `null` when absent. `getString(key,
@@ -204,6 +240,10 @@ object SessionStore {
         // ```ts
         // const shuffleName = prefs.getString(KEY_SHUFFLE, null);
         // ```
+        /**
+         * Defines shuffle name value for this music-player component; the TypeScript-oriented notes above
+         * explain its source and use.
+         */
         val shuffleName: String? = prefs.getString(KEY_SHUFFLE, null)
         // What:     `val shuffle: ShuffleMode = ShuffleMode.entries.firstOrNull { it.name == shuffleName } ?: ShuffleMode.OFF`
         //           resolves the stored name to a `ShuffleMode`.
@@ -221,6 +261,10 @@ object SessionStore {
         // ```ts
         // const shuffle = ShuffleMode.entries.find((m) => m.name === shuffleName) ?? ShuffleMode.OFF;
         // ```
+        /**
+         * Defines shuffle value for this music-player component; the TypeScript-oriented notes above explain its
+         * source and use.
+         */
         val shuffle: ShuffleMode = ShuffleMode.entries.firstOrNull { it.name == shuffleName } ?: ShuffleMode.OFF
         // What:     `return Session( ... )` builds the model from the stored fields using
         //           NAMED ARGUMENTS.
@@ -266,6 +310,10 @@ object SessionStore {
     //   });
     // }
     // ```
+    /**
+     * Defines save behavior for this music-player component; the TypeScript-oriented notes above explain its
+     * call shape and effects.
+     */
     fun save(context: Context, session: Session) {
         // What:     `prefs(context).edit { ... }` opens the store and the KTX `edit`
         //           lambda; inside, `this` is the `SharedPreferences.Editor`, so the
@@ -340,6 +388,10 @@ object SessionStore {
     // ```ts
     // private prefs(context: Context) { return context.getSharedPreferences(PREFS_NAME, MODE_PRIVATE); }
     // ```
+    /**
+     * Defines prefs behavior for this music-player component; the TypeScript-oriented notes above explain its
+     * call shape and effects.
+     */
     private fun prefs(context: Context): SharedPreferences =
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 }

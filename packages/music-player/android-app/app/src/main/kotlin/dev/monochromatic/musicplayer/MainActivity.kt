@@ -646,6 +646,10 @@ import kotlinx.coroutines.delay
 // ```ts
 // export const LOG_TAG = "MusicPlayer";
 // ```
+/**
+ * Defines log tag value for this music-player component; the TypeScript-oriented notes above explain its source
+ * and use.
+ */
 const val LOG_TAG = "MusicPlayer"
 
 // What:     `private const val SECONDS_PER_MINUTE: Int = 60` declares a private
@@ -656,6 +660,10 @@ const val LOG_TAG = "MusicPlayer"
 // ```ts
 // const SECONDS_PER_MINUTE = 60;
 // ```
+/**
+ * Defines seconds per minute value for this music-player component; the TypeScript-oriented notes above explain
+ * its source and use.
+ */
 private const val SECONDS_PER_MINUTE: Int = 60
 
 // What:     `private const val POSITION_POLL_MS: Long = 200L` declares a private
@@ -669,6 +677,10 @@ private const val SECONDS_PER_MINUTE: Int = 60
 // ```ts
 // const POSITION_POLL_MS = 200;
 // ```
+/**
+ * Defines position poll ms value for this music-player component; the TypeScript-oriented notes above explain
+ * its source and use.
+ */
 private const val POSITION_POLL_MS: Long = 200L
 
 // What:     `class MainActivity : ComponentActivity() { ... }` declares the activity class
@@ -686,6 +698,10 @@ private const val POSITION_POLL_MS: Long = 200L
 //   // ...fields and lifecycle methods below...
 // }
 // ```
+/**
+ * Defines main activity type for this music-player component; the TypeScript-oriented notes above explain its
+ * role.
+ */
 class MainActivity : ComponentActivity() {
     // What:     `private val boundController = mutableStateOf<PlayerController?>(null)`
     //           declares a private read-only field holding a Compose MUTABLE-STATE OBJECT
@@ -704,6 +720,10 @@ class MainActivity : ComponentActivity() {
     // ```ts
     // private readonly boundController = signal<PlayerController | null>(null);
     // ```
+    /**
+     * Defines bound controller value for this music-player component; the TypeScript-oriented notes above
+     * explain its source and use.
+     */
     private val boundController = mutableStateOf<PlayerController?>(null)
 
     // What:     `private var binder: PlaybackService.LocalBinder? = null` declares a
@@ -716,6 +736,10 @@ class MainActivity : ComponentActivity() {
     // ```ts
     // private binder: PlaybackService.LocalBinder | null = null;
     // ```
+    /**
+     * Defines binder value for this music-player component; the TypeScript-oriented notes above explain its
+     * source and use.
+     */
     private var binder: PlaybackService.LocalBinder? = null
 
     // What:     `private var pendingRoot: Uri? = null` declares a private, reassignable
@@ -729,6 +753,10 @@ class MainActivity : ComponentActivity() {
     // ```ts
     // private pendingRoot: Uri | null = null;
     // ```
+    /**
+     * Defines pending root value for this music-player component; the TypeScript-oriented notes above explain
+     * its source and use.
+     */
     private var pendingRoot: Uri? = null
 
     // What:     `private val folderPicker = registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) { tree -> ... }`
@@ -751,6 +779,10 @@ class MainActivity : ComponentActivity() {
     //   (tree) => { if (tree !== null) this.onFolderChosen(tree); },
     // );
     // ```
+    /**
+     * Defines folder picker value for this music-player component; the TypeScript-oriented notes above explain
+     * its source and use.
+     */
     private val folderPicker = registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) { tree ->
         // What:     `if (tree != null) { onFolderChosen(tree) }` null-checks the picked
         //           `Uri?`. Inside the block `tree` is SMART-CAST to a non-null `Uri`.
@@ -790,6 +822,10 @@ class MainActivity : ComponentActivity() {
     //   onServiceDisconnected: (name) => { ... },
     // };
     // ```
+    /**
+     * Defines connection value for this music-player component; the TypeScript-oriented notes above explain its
+     * source and use.
+     */
     private val connection = object : ServiceConnection {
         // What:     `override fun onServiceConnected(name: ComponentName?, service: IBinder?) { ... }`
         //           overrides the interface callback Android calls when the bind completes.
@@ -800,6 +836,10 @@ class MainActivity : ComponentActivity() {
         // ```ts
         // onServiceConnected(name, service) { ... }
         // ```
+        /**
+         * Defines on service connected behavior for this music-player component; the TypeScript-oriented notes
+         * above explain its call shape and effects.
+         */
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
             // What:     `val local = service as PlaybackService.LocalBinder` declares a local
             //           `local` by CASTING the `IBinder?` `service` to the concrete
@@ -816,6 +856,10 @@ class MainActivity : ComponentActivity() {
             // ```ts
             // const local = service as PlaybackService.LocalBinder;
             // ```
+            /**
+             * Defines local value for this music-player component; the TypeScript-oriented notes above explain
+             * its source and use.
+             */
             val local = service as PlaybackService.LocalBinder
             // What:     `binder = local` stores the binder handle.
             // Why:      Keep it for the post-grant library-load signal.
@@ -865,6 +909,10 @@ class MainActivity : ComponentActivity() {
             // if (pending !== null) { local.reloadFromRoot(pending); this.pendingRoot = null; }
             // else { local.rescan(); }
             // ```
+            /**
+             * Defines pending value for this music-player component; the TypeScript-oriented notes above explain
+             * its source and use.
+             */
             val pending = pendingRoot
             if (pending != null) {
                 // What:     `local.reloadFromRoot(pending)` tells the service to load the pending
@@ -899,6 +947,10 @@ class MainActivity : ComponentActivity() {
         // ```ts
         // onServiceDisconnected(name) { ... }
         // ```
+        /**
+         * Defines on service disconnected behavior for this music-player component; the TypeScript-oriented
+         * notes above explain its call shape and effects.
+         */
         override fun onServiceDisconnected(name: ComponentName?) {
             // What:     `binder = null` clears the binder handle.
             // Why:      The connection is gone.
@@ -938,6 +990,10 @@ class MainActivity : ComponentActivity() {
     // ```ts
     // override onCreate(savedInstanceState: Bundle | null): void { ... }
     // ```
+    /**
+     * Defines on create behavior for this music-player component; the TypeScript-oriented notes above explain
+     * its call shape and effects.
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         // What:     `super.onCreate(savedInstanceState)` calls the base class first.
         // Why:      The framework must initialize the activity before we touch it.
@@ -1018,6 +1074,10 @@ class MainActivity : ComponentActivity() {
             // ```ts
             // const colorScheme = isSystemInDarkTheme() ? darkColorScheme() : lightColorScheme();
             // ```
+            /**
+             * Defines color scheme value for this music-player component; the TypeScript-oriented notes above
+             * explain its source and use.
+             */
             val colorScheme = if (isSystemInDarkTheme()) darkColorScheme() else lightColorScheme()
             // What:     `MaterialTheme(colorScheme = colorScheme) { ... }` calls the
             //           `MaterialTheme` composable with the `colorScheme` named argument and a
@@ -1052,6 +1112,10 @@ class MainActivity : ComponentActivity() {
                     // ```ts
                     // const controller = this.boundController.value;
                     // ```
+                    /**
+                     * Defines controller value for this music-player component; the TypeScript-oriented notes
+                     * above explain its source and use.
+                     */
                     val controller = boundController.value
                     // What:     `if (controller == null) { StartingGate() } else { AppRoot(...) }`
                     //           branches the UI: no brain yet -> show `StartingGate`; bound ->
@@ -1117,6 +1181,10 @@ class MainActivity : ComponentActivity() {
     // ```ts
     // override onStart(): void { this.binder?.rescan(); }
     // ```
+    /**
+     * Defines on start behavior for this music-player component; the TypeScript-oriented notes above explain its
+     * call shape and effects.
+     */
     override fun onStart() {
         // What:     `super.onStart()` calls the base class first.
         // Why:      Let the framework run its own start logic.
@@ -1158,6 +1226,10 @@ class MainActivity : ComponentActivity() {
     // ```ts
     // override onStop(): void { this.binder?.saveSession(); }
     // ```
+    /**
+     * Defines on stop behavior for this music-player component; the TypeScript-oriented notes above explain its
+     * call shape and effects.
+     */
     override fun onStop() {
         // What:     `super.onStop()` calls the base class first.
         // Why:      Let the framework run its own stop logic.
@@ -1198,6 +1270,10 @@ class MainActivity : ComponentActivity() {
     // ```ts
     // override onDestroy(): void { this.unbindService(this.connection); this.binder = null; }
     // ```
+    /**
+     * Defines on destroy behavior for this music-player component; the TypeScript-oriented notes above explain
+     * its call shape and effects.
+     */
     override fun onDestroy() {
         // What:     `super.onDestroy()` calls the base class first.
         // Why:      Let the framework run its own destroy logic.
@@ -1233,6 +1309,10 @@ class MainActivity : ComponentActivity() {
     // ```ts
     // private onFolderChosen(treeUri: Uri): void { ... }
     // ```
+    /**
+     * Defines on folder chosen behavior for this music-player component; the TypeScript-oriented notes above
+     * explain its call shape and effects.
+     */
     private fun onFolderChosen(treeUri: Uri) {
         // What:     `contentResolver.takePersistableUriPermission(treeUri, Intent.FLAG_GRANT_READ_URI_PERMISSION)`
         //           takes a persistable READ grant for the picked tree. `contentResolver` is
@@ -1262,6 +1342,10 @@ class MainActivity : ComponentActivity() {
         // ```ts
         // const bound = this.binder;
         // ```
+        /**
+         * Defines bound value for this music-player component; the TypeScript-oriented notes above explain its
+         * source and use.
+         */
         val bound = binder
         // What:     `if (bound != null) { bound.reloadFromRoot(treeUri) } else { ... }`
         //           branches on whether we are bound. `bound != null` smart-casts `bound` to
@@ -1332,6 +1416,10 @@ class MainActivity : ComponentActivity() {
 //   onChooseFolder: () => void;
 // }) { ... }
 // ```
+/**
+ * Defines app root behavior for this music-player component; the TypeScript-oriented notes above explain its
+ * call shape and effects.
+ */
 private fun AppRoot(controller: PlayerController, onAudioGranted: () -> Unit, onChooseFolder: () -> Unit) {
     // What:     `val context = LocalContext.current` reads the current Android `Context`
     //           from the `LocalContext` CompositionLocal (`.current` is the in-scope value).
@@ -1341,6 +1429,10 @@ private fun AppRoot(controller: PlayerController, onAudioGranted: () -> Unit, on
     // ```ts
     // const context = useContext(LocalContext);
     // ```
+    /**
+     * Defines context value for this music-player component; the TypeScript-oriented notes above explain its
+     * source and use.
+     */
     val context = LocalContext.current
     // What:     `var hasAudioAccess by remember { mutableStateOf(hasAudioPermission(context)) }`
     //           declares a STATE-BACKED local. `remember { ... }` computes the value once and
@@ -1356,6 +1448,10 @@ private fun AppRoot(controller: PlayerController, onAudioGranted: () -> Unit, on
     // ```ts
     // const [hasAudioAccess, setHasAudioAccess] = useState(hasAudioPermission(context));
     // ```
+    /**
+     * Defines has audio access value for this music-player component; the TypeScript-oriented notes above
+     * explain its source and use.
+     */
     var hasAudioAccess by remember { mutableStateOf(hasAudioPermission(context)) }
     // What:     `val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission(),) { granted -> ... }`
     //           registers a permission-request launcher inside the composition, with the
@@ -1370,6 +1466,10 @@ private fun AppRoot(controller: PlayerController, onAudioGranted: () -> Unit, on
     //   (granted) => { setHasAudioAccess(granted); },
     // );
     // ```
+    /**
+     * Defines permission launcher value for this music-player component; the TypeScript-oriented notes above
+     * explain its source and use.
+     */
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission(),
     ) { granted ->
@@ -1510,6 +1610,10 @@ private fun AppRoot(controller: PlayerController, onAudioGranted: () -> Unit, on
 // ```ts
 // function StartingGate() { ... }
 // ```
+/**
+ * Defines starting gate behavior for this music-player component; the TypeScript-oriented notes above explain
+ * its call shape and effects.
+ */
 private fun StartingGate() {
     // What:     `Column( modifier = Modifier.fillMaxSize().padding(24.dp), verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically), horizontalAlignment = Alignment.CenterHorizontally, ) { ... }`
     //           calls the `Column` layout composable with named args and a trailing-lambda
@@ -1568,6 +1672,10 @@ private fun StartingGate() {
 // ```ts
 // function PlayerScreen(props: { controller: PlayerController; onChooseFolder: () => void; }) { ... }
 // ```
+/**
+ * Defines player screen behavior for this music-player component; the TypeScript-oriented notes above explain
+ * its call shape and effects.
+ */
 fun PlayerScreen(controller: PlayerController, onChooseFolder: () -> Unit) {
     // What:     `val state = controller.uiState` reads the brain's Compose-observable
     //           snapshot. Reading the `uiState` (a Compose state) here SUBSCRIBES this
@@ -1578,6 +1686,10 @@ fun PlayerScreen(controller: PlayerController, onChooseFolder: () -> Unit) {
     // ```ts
     // const state = controller.uiState;
     // ```
+    /**
+     * Defines state value for this music-player component; the TypeScript-oriented notes above explain its
+     * source and use.
+     */
     val state = controller.uiState
     // What:     `var position by remember { mutableDoubleStateOf(0.0) }` declares a
     //           state-backed `Double` local via the `useState` idiom: `remember` keeps it
@@ -1590,6 +1702,10 @@ fun PlayerScreen(controller: PlayerController, onChooseFolder: () -> Unit) {
     // ```ts
     // const [position, setPosition] = useState(0);
     // ```
+    /**
+     * Defines position value for this music-player component; the TypeScript-oriented notes above explain its
+     * source and use.
+     */
     var position by remember { mutableDoubleStateOf(0.0) }
     // What:     `var duration by remember { mutableDoubleStateOf(0.0) }` declares another
     //           state-backed `Double` local (same `by remember { mutableDoubleStateOf(...) }`
@@ -1600,6 +1716,10 @@ fun PlayerScreen(controller: PlayerController, onChooseFolder: () -> Unit) {
     // ```ts
     // const [duration, setDuration] = useState(0);
     // ```
+    /**
+     * Defines duration value for this music-player component; the TypeScript-oriented notes above explain its
+     * source and use.
+     */
     var duration by remember { mutableDoubleStateOf(0.0) }
 
     // What:     `LaunchedEffect(controller) { ... }` runs the trailing `suspend` block,
@@ -1762,6 +1882,10 @@ fun PlayerScreen(controller: PlayerController, onChooseFolder: () -> Unit) {
 // ```ts
 // function SeekRow(props: { position: number; duration: number; onSeek: (n: number) => void; }) { ... }
 // ```
+/**
+ * Defines seek row behavior for this music-player component; the TypeScript-oriented notes above explain its
+ * call shape and effects.
+ */
 private fun SeekRow(position: Double, duration: Double, onSeek: (Double) -> Unit) {
     // What:     `val maxValue = if (duration > 0.0) duration.toFloat() else 1.0f` declares
     //           `maxValue` from an `if/else` EXPRESSION. `duration.toFloat()` converts the
@@ -1778,6 +1902,10 @@ private fun SeekRow(position: Double, duration: Double, onSeek: (Double) -> Unit
     // ```ts
     // const maxValue = duration > 0 ? duration : 1;
     // ```
+    /**
+     * Defines max value value for this music-player component; the TypeScript-oriented notes above explain its
+     * source and use.
+     */
     val maxValue = if (duration > 0.0) duration.toFloat() else 1.0f
     // What:     `Row(verticalAlignment = Alignment.CenterVertically) { ... }` lays the seek
     //           controls out horizontally, vertically centered.
@@ -1855,6 +1983,10 @@ private fun SeekRow(position: Double, duration: Double, onSeek: (Double) -> Unit
 // ```ts
 // function VolumeRow(props: { volume: number; onVolume: (n: number) => void; }) { ... }
 // ```
+/**
+ * Defines volume row behavior for this music-player component; the TypeScript-oriented notes above explain its
+ * call shape and effects.
+ */
 private fun VolumeRow(volume: Float, onVolume: (Float) -> Unit) {
     // What:     `Row(verticalAlignment = Alignment.CenterVertically) { ... }` lays out the
     //           label and slider on one centered line.
@@ -1930,6 +2062,10 @@ private fun VolumeRow(volume: Float, onVolume: (Float) -> Unit) {
 // ```ts
 // function ControlRow(props: { state: PlayerUiState; controller: PlayerController; onOpen: () => void; }) { ... }
 // ```
+/**
+ * Defines control row behavior for this music-player component; the TypeScript-oriented notes above explain its
+ * call shape and effects.
+ */
 private fun ControlRow(state: PlayerUiState, controller: PlayerController, onOpen: () -> Unit) {
     // What:     `FlowRow( horizontalArrangement = Arrangement.spacedBy(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp), ) { ... }`
     //           lays children left-to-right, WRAPPING to new lines on overflow, with 16dp
@@ -2096,6 +2232,10 @@ private fun ControlRow(state: PlayerUiState, controller: PlayerController, onOpe
 // ```ts
 // function ShuffleOption(props: { label: string; selected: boolean; onSelect: () => void; }) { ... }
 // ```
+/**
+ * Defines shuffle option behavior for this music-player component; the TypeScript-oriented notes above explain
+ * its call shape and effects.
+ */
 private fun ShuffleOption(label: String, selected: Boolean, onSelect: () -> Unit) {
     // What:     `Row( verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable { onSelect() }, ) { ... }`
     //           lays out the radio and label, with `Modifier.clickable { onSelect() }` making
@@ -2160,6 +2300,10 @@ private fun ShuffleOption(label: String, selected: Boolean, onSelect: () -> Unit
 // ```ts
 // function PageTabs(props: { state: PlayerUiState; onSelectPage: (n: number) => void; }) { ... }
 // ```
+/**
+ * Defines page tabs behavior for this music-player component; the TypeScript-oriented notes above explain its
+ * call shape and effects.
+ */
 private fun PageTabs(state: PlayerUiState, onSelectPage: (Int) -> Unit) {
     // What:     `FlowRow(horizontalArrangement = Arrangement.spacedBy(4.dp)) { ... }` lays the
     //           tab buttons left-to-right, wrapping, with 4dp gaps.
@@ -2248,6 +2392,10 @@ private fun PageTabs(state: PlayerUiState, onSelectPage: (Int) -> Unit) {
 // // must be rendered inside a <Column>; uses column-only weight()
 // function TrackPager(props: { state: PlayerUiState; controller: PlayerController; }) { ... }
 // ```
+/**
+ * Defines track pager behavior for this music-player component; the TypeScript-oriented notes above explain its
+ * call shape and effects.
+ */
 private fun ColumnScope.TrackPager(state: PlayerUiState, controller: PlayerController) {
     // What:     `if (state.queueSize == 0) { ... }` checks for an empty queue (`==` integer
     //           equality).
@@ -2396,6 +2544,10 @@ private fun ColumnScope.TrackPager(state: PlayerUiState, controller: PlayerContr
 // ```ts
 // function TrackRow(props: { item: PageEntry; state: PlayerUiState; controller: PlayerController; }) { ... }
 // ```
+/**
+ * Defines track row behavior for this music-player component; the TypeScript-oriented notes above explain its
+ * call shape and effects.
+ */
 private fun TrackRow(item: PageEntry, state: PlayerUiState, controller: PlayerController) {
     // What:     `val isCurrent = item.index == state.currentIndex` declares a `Boolean`
     //           `isCurrent` comparing this row's load-order `index` (an `Int`) to the
@@ -2407,6 +2559,10 @@ private fun TrackRow(item: PageEntry, state: PlayerUiState, controller: PlayerCo
     // ```ts
     // const isCurrent = item.index === state.currentIndex;
     // ```
+    /**
+     * Defines is current value for this music-player component; the TypeScript-oriented notes above explain its
+     * source and use.
+     */
     val isCurrent = item.index == state.currentIndex
     // What:     `val rowBackground = if (isCurrent) MaterialTheme.colorScheme.primary else Color.Transparent`
     //           picks the row background from an `if/else` EXPRESSION: the theme primary when
@@ -2417,6 +2573,10 @@ private fun TrackRow(item: PageEntry, state: PlayerUiState, controller: PlayerCo
     // ```ts
     // const rowBackground = isCurrent ? MaterialTheme.colorScheme.primary : Color.Transparent;
     // ```
+    /**
+     * Defines row background value for this music-player component; the TypeScript-oriented notes above explain
+     * its source and use.
+     */
     val rowBackground = if (isCurrent) MaterialTheme.colorScheme.primary else Color.Transparent
     // What:     `val rowColor = if (isCurrent) { MaterialTheme.colorScheme.onPrimary } else { MaterialTheme.colorScheme.onSurface }`
     //           picks the text color from an `if/else` EXPRESSION: the on-primary color when
@@ -2429,6 +2589,10 @@ private fun TrackRow(item: PageEntry, state: PlayerUiState, controller: PlayerCo
     //   ? MaterialTheme.colorScheme.onPrimary
     //   : MaterialTheme.colorScheme.onSurface;
     // ```
+    /**
+     * Defines row color value for this music-player component; the TypeScript-oriented notes above explain its
+     * source and use.
+     */
     val rowColor = if (isCurrent) {
         // What:     `MaterialTheme.colorScheme.onPrimary` is the `then`-branch value: the color
         //           meant to sit on top of the primary color.
@@ -2461,6 +2625,10 @@ private fun TrackRow(item: PageEntry, state: PlayerUiState, controller: PlayerCo
     // ```ts
     // const rowLabel = state.pageLabels[state.selectedPage] ?? "";
     // ```
+    /**
+     * Defines row label value for this music-player component; the TypeScript-oriented notes above explain its
+     * source and use.
+     */
     val rowLabel: String = state.pageLabels.getOrNull(state.selectedPage).orEmpty()
     // What:     `val rowText: String = rowDisplay(rowLabel, item.name)` declares a read-only
     //           `String`: the text to SHOW. `rowDisplay` strips the `<rowLabel>/` folder prefix
@@ -2472,6 +2640,10 @@ private fun TrackRow(item: PageEntry, state: PlayerUiState, controller: PlayerCo
     // ```ts
     // const rowText = rowDisplay(rowLabel, item.name);
     // ```
+    /**
+     * Defines row text value for this music-player component; the TypeScript-oriented notes above explain its
+     * source and use.
+     */
     val rowText: String = rowDisplay(rowLabel, item.name)
     // What:     `Text( text = rowText, color = rowColor, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.fillMaxWidth().background(rowBackground).clickable { ... }.padding(horizontal = 8.dp, vertical = 8.dp), )`
     //           renders the row as a single `Text`. Named args: `text` is the trimmed display
@@ -2560,6 +2732,10 @@ private fun TrackRow(item: PageEntry, state: PlayerUiState, controller: PlayerCo
 // ```ts
 // function LoadingNotice() { ... }
 // ```
+/**
+ * Defines loading notice behavior for this music-player component; the TypeScript-oriented notes above explain
+ * its call shape and effects.
+ */
 private fun LoadingNotice() {
     // What:     `Row( verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.padding(vertical = 12.dp), ) { ... }`
     //           lays the spinner and text on one centered line, 12dp apart, with vertical
@@ -2608,6 +2784,10 @@ private fun LoadingNotice() {
 // ```ts
 // function formatTime(seconds: number): string { ... }
 // ```
+/**
+ * Defines format time behavior for this music-player component; the TypeScript-oriented notes above explain its
+ * call shape and effects.
+ */
 private fun formatTime(seconds: Double): String {
     // What:     `val total = seconds.toInt()` declares `total` (inferred `Int`) by converting
     //           the `Double` to an `Int` with `.toInt()`, which TRUNCATES toward zero (drops
@@ -2619,6 +2799,10 @@ private fun formatTime(seconds: Double): String {
     // ```ts
     // const total = Math.trunc(seconds);
     // ```
+    /**
+     * Defines total value for this music-player component; the TypeScript-oriented notes above explain its
+     * source and use.
+     */
     val total = seconds.toInt()
     // What:     `val minutes = total / SECONDS_PER_MINUTE` declares `minutes` (inferred `Int`)
     //           via INTEGER DIVISION: `Int / Int` discards the remainder (so `127 / 60` is
@@ -2631,6 +2815,10 @@ private fun formatTime(seconds: Double): String {
     // ```ts
     // const minutes = Math.trunc(total / SECONDS_PER_MINUTE);
     // ```
+    /**
+     * Defines minutes value for this music-player component; the TypeScript-oriented notes above explain its
+     * source and use.
+     */
     val minutes = total / SECONDS_PER_MINUTE
     // What:     `val secs = total % SECONDS_PER_MINUTE` declares `secs` (inferred `Int`) via
     //           the MODULO operator `%` (the remainder after dividing by 60).
@@ -2640,6 +2828,10 @@ private fun formatTime(seconds: Double): String {
     // ```ts
     // const secs = total % SECONDS_PER_MINUTE;
     // ```
+    /**
+     * Defines secs value for this music-player component; the TypeScript-oriented notes above explain its source
+     * and use.
+     */
     val secs = total % SECONDS_PER_MINUTE
     // What:     `return "%d:%02d".format(minutes, secs)` formats and returns the result.
     //           `"%d:%02d".format(...)` is a method ON the `String` literal: `%d` is an
@@ -2671,6 +2863,10 @@ private fun formatTime(seconds: Double): String {
 // ```ts
 // function PermissionGate(props: { onGrant: () => void; }) { ... }
 // ```
+/**
+ * Defines permission gate behavior for this music-player component; the TypeScript-oriented notes above explain
+ * its call shape and effects.
+ */
 private fun PermissionGate(onGrant: () -> Unit) {
     // What:     `Column( modifier = Modifier.fillMaxSize().padding(24.dp), verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically), horizontalAlignment = Alignment.CenterHorizontally, ) { ... }`
     //           centers the rationale and button (same layout shape as `StartingGate`).

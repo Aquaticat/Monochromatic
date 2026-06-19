@@ -99,6 +99,9 @@ import kotlin.random.Random
 //   // ...state fields and methods below...
 // }
 // ```
+/**
+ * Defines queue type for this music-player component; the TypeScript-oriented notes above explain its role.
+ */
 class Queue private constructor(private val rng: Random) {
     //region State
     // What:     `private var tracks: List<String> = emptyList()` declares a private,
@@ -120,6 +123,10 @@ class Queue private constructor(private val rng: Random) {
     // ```ts
     // private tracks: readonly string[] = [];
     // ```
+    /**
+     * Defines tracks value for this music-player component; the TypeScript-oriented notes above explain its
+     * source and use.
+     */
     private var tracks: List<String> = emptyList()
 
     // What:     `private var order: List<Int> = emptyList()` declares a private,
@@ -141,6 +148,10 @@ class Queue private constructor(private val rng: Random) {
     // ```ts
     // private order: readonly number[] = [];
     // ```
+    /**
+     * Defines order value for this music-player component; the TypeScript-oriented notes above explain its
+     * source and use.
+     */
     private var order: List<Int> = emptyList()
 
     // What:     `private var pos: Int? = null` declares a private, reassignable field
@@ -160,6 +171,10 @@ class Queue private constructor(private val rng: Random) {
     // ```ts
     // private pos: number | null = null;
     // ```
+    /**
+     * Defines pos value for this music-player component; the TypeScript-oriented notes above explain its source
+     * and use.
+     */
     private var pos: Int? = null
 
     // What:     `private var shuffle: ShuffleMode = ShuffleMode.OFF` declares a
@@ -176,6 +191,10 @@ class Queue private constructor(private val rng: Random) {
     // ```ts
     // private shuffle: ShuffleMode = ShuffleMode.OFF;
     // ```
+    /**
+     * Defines shuffle value for this music-player component; the TypeScript-oriented notes above explain its
+     * source and use.
+     */
     private var shuffle: ShuffleMode = ShuffleMode.OFF
 
     // What:     `private var repeatTrackFlag: Boolean = false` declares a private,
@@ -190,6 +209,10 @@ class Queue private constructor(private val rng: Random) {
     // ```ts
     // private repeatTrackFlag: boolean = false;
     // ```
+    /**
+     * Defines repeat track flag value for this music-player component; the TypeScript-oriented notes above
+     * explain its source and use.
+     */
     private var repeatTrackFlag: Boolean = false
 
     // What:     `private var cycleStart: Int = 0` declares a private, reassignable
@@ -208,9 +231,17 @@ class Queue private constructor(private val rng: Random) {
     // ```ts
     // private cycleStart = 0; // index into `order`: start of the current shuffle cycle
     // ```
+    /**
+     * Defines cycle start value for this music-player component; the TypeScript-oriented notes above explain its
+     * source and use.
+     */
     private var cycleStart: Int = 0
     //endregion
 
+    /**
+     * Defines companion object for this music-player component; the TypeScript-oriented notes above explain its
+     * shared role.
+     */
     //region Factories
     // What:     `companion object { ... }` declares a single, file-private OBJECT
     //           attached to the `Queue` class. A "companion object" is Kotlin's way
@@ -258,6 +289,10 @@ class Queue private constructor(private val rng: Random) {
         //   return Queue.withRngSeed(BigInt(performance.now())); // nondeterministic seed
         // }
         // ```
+        /**
+         * Defines new behavior for this music-player component; the TypeScript-oriented notes above explain its
+         * call shape and effects.
+         */
         fun new(): Queue = withRngSeed(System.nanoTime())
 
         // What:     `fun withRngSeed(seed: Long): Queue = Queue(Random(seed))` declares
@@ -287,6 +322,10 @@ class Queue private constructor(private val rng: Random) {
         //   return new Queue(new Random(seed)); // same seed -> same shuffle order
         // }
         // ```
+        /**
+         * Defines with rng seed behavior for this music-player component; the TypeScript-oriented notes above
+         * explain its call shape and effects.
+         */
         fun withRngSeed(seed: Long): Queue = Queue(Random(seed))
     }
     //endregion
@@ -303,6 +342,10 @@ class Queue private constructor(private val rng: Random) {
     // ```ts
     // len(): number { return this.tracks.length; }
     // ```
+    /**
+     * Defines len behavior for this music-player component; the TypeScript-oriented notes above explain its call
+     * shape and effects.
+     */
     fun len(): Int = tracks.size
 
     // What:     `fun tracks(): List<String> = tracks` declares an instance method
@@ -318,6 +361,10 @@ class Queue private constructor(private val rng: Random) {
     // ```ts
     // tracks(): readonly string[] { return this.tracks; }
     // ```
+    /**
+     * Defines tracks behavior for this music-player component; the TypeScript-oriented notes above explain its
+     * call shape and effects.
+     */
     fun tracks(): List<String> = tracks
 
     // What:     `fun isEmpty(): Boolean = tracks.isEmpty()` declares an instance
@@ -330,6 +377,10 @@ class Queue private constructor(private val rng: Random) {
     // ```ts
     // isEmpty(): boolean { return this.tracks.length === 0; }
     // ```
+    /**
+     * Defines is empty behavior for this music-player component; the TypeScript-oriented notes above explain its
+     * call shape and effects.
+     */
     fun isEmpty(): Boolean = tracks.isEmpty()
 
     // What:     `fun repeatTrack(): Boolean = repeatTrackFlag` declares an instance
@@ -342,6 +393,10 @@ class Queue private constructor(private val rng: Random) {
     // ```ts
     // repeatTrack(): boolean { return this.repeatTrackFlag; }
     // ```
+    /**
+     * Defines repeat track behavior for this music-player component; the TypeScript-oriented notes above explain
+     * its call shape and effects.
+     */
     fun repeatTrack(): Boolean = repeatTrackFlag
 
     // What:     `fun shuffleMode(): ShuffleMode = shuffle` declares an instance
@@ -354,6 +409,10 @@ class Queue private constructor(private val rng: Random) {
     // ```ts
     // shuffleMode(): ShuffleMode { return this.shuffle; }
     // ```
+    /**
+     * Defines shuffle mode behavior for this music-player component; the TypeScript-oriented notes above explain
+     * its call shape and effects.
+     */
     fun shuffleMode(): ShuffleMode = shuffle
 
     // What:     `fun displayPaths(): List<String> = relativeDisplayPaths(tracks)`
@@ -371,6 +430,10 @@ class Queue private constructor(private val rng: Random) {
     // ```ts
     // displayPaths(): string[] { return relativeDisplayPaths(this.tracks); }
     // ```
+    /**
+     * Defines display paths behavior for this music-player component; the TypeScript-oriented notes above
+     * explain its call shape and effects.
+     */
     fun displayPaths(): List<String> = relativeDisplayPaths(tracks)
 
     // What:     `fun currentIndex(): Int? = pos?.let { order[it] }` declares an
@@ -399,6 +462,10 @@ class Queue private constructor(private val rng: Random) {
     //   return this.pos === null ? null : this.order[this.pos];
     // }
     // ```
+    /**
+     * Defines current index behavior for this music-player component; the TypeScript-oriented notes above
+     * explain its call shape and effects.
+     */
     fun currentIndex(): Int? = pos?.let { order[it] }
 
     // What:     `fun currentPath(): String? = currentIndex()?.let { tracks[it] }`
@@ -421,6 +488,10 @@ class Queue private constructor(private val rng: Random) {
     //   return i === null ? null : this.tracks[i];
     // }
     // ```
+    /**
+     * Defines current path behavior for this music-player component; the TypeScript-oriented notes above explain
+     * its call shape and effects.
+     */
     fun currentPath(): String? = currentIndex()?.let { tracks[it] }
 
     // What:     `fun playbackOrder(): List<Int> = order` declares an instance method
@@ -437,6 +508,10 @@ class Queue private constructor(private val rng: Random) {
     // ```ts
     // playbackOrder(): readonly number[] { return this.order; }
     // ```
+    /**
+     * Defines playback order behavior for this music-player component; the TypeScript-oriented notes above
+     * explain its call shape and effects.
+     */
     fun playbackOrder(): List<Int> = order
 
     // What:     `fun cursorPosition(): Int? = pos` declares an instance method
@@ -452,6 +527,10 @@ class Queue private constructor(private val rng: Random) {
     // ```ts
     // cursorPosition(): number | null { return this.pos; }
     // ```
+    /**
+     * Defines cursor position behavior for this music-player component; the TypeScript-oriented notes above
+     * explain its call shape and effects.
+     */
     fun cursorPosition(): Int? = pos
     //endregion
 
@@ -466,6 +545,10 @@ class Queue private constructor(private val rng: Random) {
     // ```ts
     // setRepeatTrack(on: boolean): void { this.repeatTrackFlag = on; }
     // ```
+    /**
+     * Defines set repeat track behavior for this music-player component; the TypeScript-oriented notes above
+     * explain its call shape and effects.
+     */
     fun setRepeatTrack(on: Boolean) {
         // What:     `repeatTrackFlag = on` is a plain field assignment: store the
         //           parameter into the `var` field. No Kotlin-specific punctuation.
@@ -492,6 +575,10 @@ class Queue private constructor(private val rng: Random) {
     //   this.rebuildScopeOrder(0);
     // }
     // ```
+    /**
+     * Defines set tracks behavior for this music-player component; the TypeScript-oriented notes above explain
+     * its call shape and effects.
+     */
     fun setTracks(newTracks: List<String>) {
         // What:     `tracks = newTracks` reassigns the `var` field to the new list.
         //           Plain assignment; no special punctuation.
@@ -526,6 +613,10 @@ class Queue private constructor(private val rng: Random) {
     // ```ts
     // clearSelection(): void { this.rebuildScopeOrder(null); }
     // ```
+    /**
+     * Defines clear selection behavior for this music-player component; the TypeScript-oriented notes above
+     * explain its call shape and effects.
+     */
     fun clearSelection() {
         // What:     `rebuildScopeOrder(null)` calls the private helper with a `null` anchor,
         //           which (see `rebuildScopeOrder`) empties `order` and nulls `pos`. `null` is
@@ -556,6 +647,10 @@ class Queue private constructor(private val rng: Random) {
     //   this.rebuildScopeOrder(current);
     // }
     // ```
+    /**
+     * Defines set shuffle behavior for this music-player component; the TypeScript-oriented notes above explain
+     * its call shape and effects.
+     */
     fun setShuffle(mode: ShuffleMode) {
         // What:     `if (mode == shuffle) return` is an EARLY RETURN guard. `==` on
         //           two enum values is a value/identity comparison (enum constants are
@@ -583,6 +678,10 @@ class Queue private constructor(private val rng: Random) {
         // ```ts
         // const current: number | null = this.currentIndex();
         // ```
+        /**
+         * Defines current value for this music-player component; the TypeScript-oriented notes above explain its
+         * source and use.
+         */
         val current: Int? = currentIndex()
         // What:     `shuffle = mode` reassigns the `var` field to the new mode.
         // Why:      Record the new mode so `rebuildScopeOrder`/`scopeIndices` read it.
@@ -629,6 +728,10 @@ class Queue private constructor(private val rng: Random) {
     //   return track;
     // }
     // ```
+    /**
+     * Defines play index behavior for this music-player component; the TypeScript-oriented notes above explain
+     * its call shape and effects.
+     */
     fun playIndex(track: Int): Int? {
         // What:     `if (track >= tracks.size) return null` is an early-return bounds
         //           check. `tracks.size` is the element count; `>=` compares the
@@ -670,6 +773,10 @@ class Queue private constructor(private val rng: Random) {
             // ```ts
             // const position: number = this.order.indexOf(track);
             // ```
+            /**
+             * Defines position value for this music-player component; the TypeScript-oriented notes above
+             * explain its source and use.
+             */
             val position: Int = order.indexOf(track)
             // What:     `if (position >= 0) { pos = position } else { rebuildScopeOrder(track) }`.
             //           The condition means "the track is already in the current scope
@@ -739,6 +846,10 @@ class Queue private constructor(private val rng: Random) {
     //   this.pos = 0; return this.order[0];
     // }
     // ```
+    /**
+     * Defines advance behavior for this music-player component; the TypeScript-oriented notes above explain its
+     * call shape and effects.
+     */
     fun advance(natural: Boolean): Int? {
         // What:     `val position: Int = pos ?: return null` declares a read-only `Int`
         //           local `position` (the cursor's index WITHIN `order`) using the
@@ -758,6 +869,10 @@ class Queue private constructor(private val rng: Random) {
         // if (this.pos === null) return null;
         // const position = this.pos;
         // ```
+        /**
+         * Defines position value for this music-player component; the TypeScript-oriented notes above explain
+         * its source and use.
+         */
         val position: Int = pos ?: return null
         // What:     `if (natural && repeatTrackFlag) return order[position]`. `&&` is
         //           logical AND; the body runs only when the track ended naturally AND
@@ -811,6 +926,10 @@ class Queue private constructor(private val rng: Random) {
             // ```ts
             // const current = this.order[position];
             // ```
+            /**
+             * Defines current value for this music-player component; the TypeScript-oriented notes above explain
+             * its source and use.
+             */
             val current: Int = order[position]
             // What:     `val pick: Int = pickNextShuffle(current)` draws the next
             //           without-replacement scope track (a load-order index), starting a
@@ -822,6 +941,10 @@ class Queue private constructor(private val rng: Random) {
             // ```ts
             // const pick = this.pickNextShuffle(current);
             // ```
+            /**
+             * Defines pick value for this music-player component; the TypeScript-oriented notes above explain
+             * its source and use.
+             */
             val pick: Int = pickNextShuffle(current)
             // What:     `order = order + pick` reassigns `order` to a NEW list with
             //           `pick` appended. `list + element` is Kotlin's immutable-append
@@ -865,6 +988,10 @@ class Queue private constructor(private val rng: Random) {
         // ```ts
         // const next: number = position + 1;
         // ```
+        /**
+         * Defines next value for this music-player component; the TypeScript-oriented notes above explain its
+         * source and use.
+         */
         val next: Int = position + 1
         // What:     `if (next < order.size) { pos = next; return order[next] }` is the
         //           normal forward step when there is a track after the current one.
@@ -910,6 +1037,10 @@ class Queue private constructor(private val rng: Random) {
     //   return this.order[scopeIndex];
     // }
     // ```
+    /**
+     * Defines move cursor to behavior for this music-player component; the TypeScript-oriented notes above
+     * explain its call shape and effects.
+     */
     fun moveCursorTo(scopeIndex: Int): Int? {
         // What:     `if (scopeIndex < 0 || scopeIndex >= order.size) { return null }`
         //           is a bounds-check guard. `||` is logical OR; the condition is true
@@ -966,6 +1097,10 @@ class Queue private constructor(private val rng: Random) {
     //   this.pos = last; return this.order[last];
     // }
     // ```
+    /**
+     * Defines prev behavior for this music-player component; the TypeScript-oriented notes above explain its
+     * call shape and effects.
+     */
     fun prev(): Int? {
         // What:     `val position: Int = pos ?: return null` declares a read-only `Int`
         //           local `position` (the cursor index within `order`) using the Elvis
@@ -979,6 +1114,10 @@ class Queue private constructor(private val rng: Random) {
         // if (this.pos === null) return null;
         // const position = this.pos;
         // ```
+        /**
+         * Defines position value for this music-player component; the TypeScript-oriented notes above explain
+         * its source and use.
+         */
         val position: Int = pos ?: return null
         // What:     `if (shuffle != ShuffleMode.OFF) { ... }` branches into the
         //           just-in-time shuffle path. `!=` is enum value inequality.
@@ -1037,6 +1176,10 @@ class Queue private constructor(private val rng: Random) {
         // ```ts
         // const last = this.order.length - 1; this.pos = last; return this.order[last];
         // ```
+        /**
+         * Defines last value for this music-player component; the TypeScript-oriented notes above explain its
+         * source and use.
+         */
         val last: Int = order.size - 1
         pos = last
         return order[last]
@@ -1068,6 +1211,10 @@ class Queue private constructor(private val rng: Random) {
     //     : [...this.tracks.keys()];
     // }
     // ```
+    /**
+     * Defines scope indices behavior for this music-player component; the TypeScript-oriented notes above
+     * explain its call shape and effects.
+     */
     private fun scopeIndices(anchor: Int): List<Int> {
         // What:     `if (shuffle == ShuffleMode.ALL) { ... }` is a control-flow check.
         //           `==` compares the `shuffle` field against the `ShuffleMode.ALL`
@@ -1102,6 +1249,10 @@ class Queue private constructor(private val rng: Random) {
         // ```ts
         // const names: string[] = this.displayPaths();
         // ```
+        /**
+         * Defines names value for this music-player component; the TypeScript-oriented notes above explain its
+         * source and use.
+         */
         val names: List<String> = displayPaths()
         // What:     `val pages: List<Page> = paginate(names)` declares a read-only
         //           `List<Page>` local `pages`. `paginate(names)` calls the sibling
@@ -1116,6 +1267,10 @@ class Queue private constructor(private val rng: Random) {
         // ```ts
         // const pages: Page[] = paginate(names);
         // ```
+        /**
+         * Defines pages value for this music-player component; the TypeScript-oriented notes above explain its
+         * source and use.
+         */
         val pages: List<Page> = paginate(names)
         // What:     `val page: Int? = pageOfIndex(pages, anchor)` declares a read-only
         //           NULLABLE `Int?` local `page`. `pageOfIndex(pages, anchor)` is the
@@ -1128,6 +1283,10 @@ class Queue private constructor(private val rng: Random) {
         // ```ts
         // const page: number | null = pageOfIndex(pages, anchor);
         // ```
+        /**
+         * Defines page value for this music-player component; the TypeScript-oriented notes above explain its
+         * source and use.
+         */
         val page: Int? = pageOfIndex(pages, anchor)
         // What:     `return if (page != null) { ... } else { ... }` returns the value
         //           of an IF/ELSE used as an EXPRESSION (it evaluates to one of the
@@ -1204,6 +1363,10 @@ class Queue private constructor(private val rng: Random) {
     //   return remaining[this.rng.nextInt(remaining.length)];
     // }
     // ```
+    /**
+     * Defines pick next shuffle behavior for this music-player component; the TypeScript-oriented notes above
+     * explain its call shape and effects.
+     */
     private fun pickNextShuffle(current: Int): Int {
         // What:     `val scope: List<Int> = scopeIndices(current)` declares a read-only
         //           `List<Int>` of the load-order indices eligible this cycle (the
@@ -1214,6 +1377,10 @@ class Queue private constructor(private val rng: Random) {
         // ```ts
         // const scope = this.scopeIndices(current);
         // ```
+        /**
+         * Defines scope value for this music-player component; the TypeScript-oriented notes above explain its
+         * source and use.
+         */
         val scope: List<Int> = scopeIndices(current)
         // What:     `val played: Set<Int> = order.subList(cycleStart, order.size).toHashSet()`
         //           declares a read-only `Set<Int>` of the indices already played THIS
@@ -1232,6 +1399,10 @@ class Queue private constructor(private val rng: Random) {
         // ```ts
         // const played = new Set(this.order.slice(this.cycleStart));
         // ```
+        /**
+         * Defines played value for this music-player component; the TypeScript-oriented notes above explain its
+         * source and use.
+         */
         val played: Set<Int> = order.subList(cycleStart, order.size).toHashSet()
         // What:     `var remaining: List<Int> = scope.filter { it !in played }` declares
         //           a REASSIGNABLE (`var`) `List<Int>` of scope tracks not yet played
@@ -1249,6 +1420,10 @@ class Queue private constructor(private val rng: Random) {
         // ```ts
         // let remaining = scope.filter((i) => !played.has(i));
         // ```
+        /**
+         * Defines remaining value for this music-player component; the TypeScript-oriented notes above explain
+         * its source and use.
+         */
         var remaining: List<Int> = scope.filter { it !in played }
         // What:     `if (remaining.isEmpty()) { ... }` runs when every scope track has
         //           been played this cycle (the cycle is exhausted).
@@ -1333,6 +1508,10 @@ class Queue private constructor(private val rng: Random) {
     //   }
     // }
     // ```
+    /**
+     * Defines rebuild scope order behavior for this music-player component; the TypeScript-oriented notes above
+     * explain its call shape and effects.
+     */
     private fun rebuildScopeOrder(anchor: Int?) {
         // What:     `if (tracks.isEmpty()) { ... }` is a control-flow check using the
         //           `List.isEmpty()` predicate (true when there are zero tracks).
@@ -1400,6 +1579,10 @@ class Queue private constructor(private val rng: Random) {
         // ```ts
         // const clamped: number = Math.min(anchor, this.tracks.length - 1);
         // ```
+        /**
+         * Defines clamped value for this music-player component; the TypeScript-oriented notes above explain its
+         * source and use.
+         */
         val clamped: Int = minOf(anchor, tracks.size - 1)
         // What:     `if (shuffle == ShuffleMode.OFF) { ... } else { ... }` branches the
         //           rebuild on shuffle mode. `==` is enum value equality.
@@ -1422,6 +1605,10 @@ class Queue private constructor(private val rng: Random) {
             // ```ts
             // const scope = this.scopeIndices(clamped);
             // ```
+            /**
+             * Defines scope value for this music-player component; the TypeScript-oriented notes above explain
+             * its source and use.
+             */
             val scope: List<Int> = scopeIndices(clamped)
             // What:     `val found: Int = scope.indexOf(clamped)` locates the anchor's
             //           position within the scope, or `-1` if absent.
@@ -1433,6 +1620,10 @@ class Queue private constructor(private val rng: Random) {
             // ```ts
             // const found = scope.indexOf(clamped);
             // ```
+            /**
+             * Defines found value for this music-player component; the TypeScript-oriented notes above explain
+             * its source and use.
+             */
             val found: Int = scope.indexOf(clamped)
             // What:     `order = scope` adopts the sequential scope as the playback order.
             // Why:      Under `OFF` the order is the load-order page.

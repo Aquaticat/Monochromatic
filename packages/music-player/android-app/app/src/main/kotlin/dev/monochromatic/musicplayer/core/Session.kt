@@ -99,6 +99,9 @@ package dev.monochromatic.musicplayer.core
 //   };
 // }
 // ```
+/**
+ * Defines session type for this music-player component; the TypeScript-oriented notes above explain its role.
+ */
 data class Session(
     // What:     `val selected: String? = null`. A read-only property holding the
     //           identity of the selected track, OR `null`.

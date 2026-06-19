@@ -140,6 +140,10 @@ import java.util.concurrent.TimeUnit
 //   enqueue(context: Context): void { /* ... */ },
 // };
 // ```
+/**
+ * Defines peak sweep scheduler object for this music-player component; the TypeScript-oriented notes above
+ * explain its shared role.
+ */
 object PeakSweepScheduler {
     // What:     `private const val UNIQUE_WORK_NAME: String = "peak-sweep"`. Breaking it
     //           down: `private` hides it from other files; `const` means a true
@@ -159,6 +163,10 @@ object PeakSweepScheduler {
     // ```ts
     // const UNIQUE_WORK_NAME: string = "peak-sweep";
     // ```
+    /**
+     * Defines unique work name value for this music-player component; the TypeScript-oriented notes above
+     * explain its source and use.
+     */
     private const val UNIQUE_WORK_NAME: String = "peak-sweep"
 
     // What:     `private const val SWEEP_INTERVAL_MINUTES: Long = 15L`. Same modifiers as
@@ -183,6 +191,10 @@ object PeakSweepScheduler {
     // ```ts
     // const SWEEP_INTERVAL_MINUTES = 15; // TS `number` — no Int/Long distinction
     // ```
+    /**
+     * Defines sweep interval minutes value for this music-player component; the TypeScript-oriented notes above
+     * explain its source and use.
+     */
     private const val SWEEP_INTERVAL_MINUTES: Long = 15L
 
     // What:     `fun enqueue(context: Context) { ... }` declares a function named `enqueue`.
@@ -206,6 +218,10 @@ object PeakSweepScheduler {
     //   // ...body...
     // }
     // ```
+    /**
+     * Defines enqueue behavior for this music-player component; the TypeScript-oriented notes above explain its
+     * call shape and effects.
+     */
     fun enqueue(context: Context) {
         // What:     `val constraints: Constraints = Constraints.Builder().setRequiresCharging(true).build()`.
         //           `val` is an immutable local (like TS `const`). `: Constraints` is an
@@ -227,6 +243,10 @@ object PeakSweepScheduler {
         //   .setRequiresCharging(true)
         //   .build();
         // ```
+        /**
+         * Defines constraints value for this music-player component; the TypeScript-oriented notes above explain
+         * its source and use.
+         */
         val constraints: Constraints = Constraints.Builder()
             .setRequiresCharging(true)
             .build()
@@ -254,6 +274,10 @@ object PeakSweepScheduler {
         //   .setConstraints(constraints)
         //   .build();
         // ```
+        /**
+         * Defines request value for this music-player component; the TypeScript-oriented notes above explain its
+         * source and use.
+         */
         val request = PeriodicWorkRequestBuilder<PeakSweepWorker>(SWEEP_INTERVAL_MINUTES, TimeUnit.MINUTES)
             .setConstraints(constraints)
             .build()

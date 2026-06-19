@@ -117,6 +117,10 @@ import androidx.core.net.toUri
 //   // save, heldRoot, clear defined below
 // };
 // ```
+/**
+ * Defines library root object for this music-player component; the TypeScript-oriented notes above explain its
+ * shared role.
+ */
 object LibraryRoot {
     // What:     `private const val ROOT_TAG: String = "LibraryRoot"` declares a compile-time
     //           constant string. `val` = read-only binding (vs `var` = reassignable). `const` = the
@@ -133,6 +137,10 @@ object LibraryRoot {
     // ```ts
     // const ROOT_TAG: string = "LibraryRoot";
     // ```
+    /**
+     * Defines root tag value for this music-player component; the TypeScript-oriented notes above explain its
+     * source and use.
+     */
     private const val ROOT_TAG: String = "LibraryRoot"
 
     // What:     `private const val PREFS_NAME: String = "library_root"` is the FILENAME of the
@@ -146,6 +154,10 @@ object LibraryRoot {
     // ```ts
     // const PREFS_NAME: string = "library_root";
     // ```
+    /**
+     * Defines prefs name value for this music-player component; the TypeScript-oriented notes above explain its
+     * source and use.
+     */
     private const val PREFS_NAME: String = "library_root"
 
     // What:     `private const val KEY_TREE_URI: String = "tree_uri"` is the KEY (the entry name)
@@ -158,6 +170,10 @@ object LibraryRoot {
     // ```ts
     // const KEY_TREE_URI: string = "tree_uri";
     // ```
+    /**
+     * Defines key tree uri value for this music-player component; the TypeScript-oriented notes above explain
+     * its source and use.
+     */
     private const val KEY_TREE_URI: String = "tree_uri"
 
     // What:     `fun save(context: Context, treeUri: Uri) { ... }` declares a function named `save`
@@ -175,6 +191,10 @@ object LibraryRoot {
     // ```ts
     // function save(context: Context, treeUri: Uri): void { ... }
     // ```
+    /**
+     * Defines save behavior for this music-player component; the TypeScript-oriented notes above explain its
+     * call shape and effects.
+     */
     fun save(context: Context, treeUri: Uri) {
         // What:     `prefs(context).edit { putString(KEY_TREE_URI, treeUri.toString()) }` does three
         //           things on one line:
@@ -233,6 +253,10 @@ object LibraryRoot {
     // ```ts
     // function heldRoot(context: Context): Uri | null { ... }
     // ```
+    /**
+     * Defines held root behavior for this music-player component; the TypeScript-oriented notes above explain
+     * its call shape and effects.
+     */
     fun heldRoot(context: Context): Uri? {
         // What:     `val saved: String = prefs(context).getString(KEY_TREE_URI, null) ?: return null`
         //           reads the remembered string and bails early if absent.
@@ -255,6 +279,10 @@ object LibraryRoot {
         // if (maybe == null) return null;
         // const saved: string = maybe;
         // ```
+        /**
+         * Defines saved value for this music-player component; the TypeScript-oriented notes above explain its
+         * source and use.
+         */
         val saved: String = prefs(context).getString(KEY_TREE_URI, null) ?: return null
         // What:     `val uri: Uri = saved.toUri()` parses the stored string into a `Uri` object.
         //           `.toUri()` is the imported extension function on `String`; it returns a non-null
@@ -268,6 +296,10 @@ object LibraryRoot {
         // ```ts
         // const uri: Uri = new URL(saved); // toUri() parses the string into a Uri object
         // ```
+        /**
+         * Defines uri value for this music-player component; the TypeScript-oriented notes above explain its
+         * source and use.
+         */
         val uri: Uri = saved.toUri()
         // What:     `val held: Boolean = context.contentResolver.persistedUriPermissions.any {
         //           permission -> permission.uri == uri && permission.isReadPermission }` asks the OS
@@ -300,6 +332,10 @@ object LibraryRoot {
         //   (permission) => permission.uri.equals(uri) && permission.isReadPermission,
         // ); // .any -> .some; Kotlin `==` -> .equals() value comparison
         // ```
+        /**
+         * Defines held value for this music-player component; the TypeScript-oriented notes above explain its
+         * source and use.
+         */
         val held: Boolean = context.contentResolver.persistedUriPermissions.any { permission ->
             permission.uri == uri && permission.isReadPermission
         }
@@ -374,6 +410,10 @@ object LibraryRoot {
     // ```ts
     // function clear(context: Context): void { ... }
     // ```
+    /**
+     * Defines clear behavior for this music-player component; the TypeScript-oriented notes above explain its
+     * call shape and effects.
+     */
     fun clear(context: Context) {
         // What:     `prefs(context).edit { remove(KEY_TREE_URI) }` opens the settings editor and
         //           deletes our key. Same machinery as `save`: `prefs(context)` fetches the handle,
@@ -413,5 +453,9 @@ object LibraryRoot {
     // const prefs = (context: Context) =>
     //   context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
     // ```
+    /**
+     * Defines prefs behavior for this music-player component; the TypeScript-oriented notes above explain its
+     * call shape and effects.
+     */
     private fun prefs(context: Context) = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 }

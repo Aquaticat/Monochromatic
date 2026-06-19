@@ -66,6 +66,10 @@ package dev.monochromatic.musicplayer.core
 // ```ts
 // const PAGE_SEPARATOR = "/";
 // ```
+/**
+ * Defines page separator value for this music-player component; the TypeScript-oriented notes above explain its
+ * source and use.
+ */
 private const val PAGE_SEPARATOR: String = "/"
 
 // What:     `private const val FOLDER_GROUP: Int = 0`. `Int` is Kotlin's
@@ -85,6 +89,10 @@ private const val PAGE_SEPARATOR: String = "/"
 // ```ts
 // const FOLDER_GROUP = 0;
 // ```
+/**
+ * Defines folder group value for this music-player component; the TypeScript-oriented notes above explain its
+ * source and use.
+ */
 private const val FOLDER_GROUP: Int = 0
 
 // What:     `private const val LETTER_GROUP: Int = 1`. Same `Int` (signed
@@ -97,6 +105,10 @@ private const val FOLDER_GROUP: Int = 0
 // ```ts
 // const LETTER_GROUP = 1;
 // ```
+/**
+ * Defines letter group value for this music-player component; the TypeScript-oriented notes above explain its
+ * source and use.
+ */
 private const val LETTER_GROUP: Int = 1
 
 // What:     `private const val CATCH_ALL_GROUP: Int = 2`. Sort-group tag (`Int`,
@@ -108,6 +120,10 @@ private const val LETTER_GROUP: Int = 1
 // ```ts
 // const CATCH_ALL_GROUP = 2;
 // ```
+/**
+ * Defines catch all group value for this music-player component; the TypeScript-oriented notes above explain its
+ * source and use.
+ */
 private const val CATCH_ALL_GROUP: Int = 2
 
 // What:     `private const val CATCH_ALL_LABEL: String = "#"`. The single-char
@@ -121,6 +137,10 @@ private const val CATCH_ALL_GROUP: Int = 2
 // ```ts
 // const CATCH_ALL_LABEL = "#";
 // ```
+/**
+ * Defines catch all label value for this music-player component; the TypeScript-oriented notes above explain its
+ * source and use.
+ */
 private const val CATCH_ALL_LABEL: String = "#"
 
 // What:     `private fun letterKey(name: String): Pair<Int, String>` declares
@@ -141,6 +161,10 @@ private const val CATCH_ALL_LABEL: String = "#"
 // ```ts
 // function letterKey(name: string): [number, string] { ... }
 // ```
+/**
+ * Defines letter key behavior for this music-player component; the TypeScript-oriented notes above explain its
+ * call shape and effects.
+ */
 private fun letterKey(name: String): Pair<Int, String> {
     // What:     `val first: Char? = name.firstOrNull()`. `val` is an immutable
     //           binding. The type `Char?` is a NULLABLE `Char`: the trailing
@@ -160,6 +184,10 @@ private fun letterKey(name: String): Pair<Int, String> {
     // ```ts
     // const first: string | undefined = name[0]; // undefined when name is ""
     // ```
+    /**
+     * Defines first value for this music-player component; the TypeScript-oriented notes above explain its
+     * source and use.
+     */
     val first: Char? = name.firstOrNull()
     // What:     `return if (first != null && (first in 'a'..'z' || first in 'A'..'Z')) { ... } else { ... }`.
     //           In Kotlin `if/else` is an EXPRESSION whose value is returned.
@@ -235,6 +263,10 @@ private fun letterKey(name: String): Pair<Int, String> {
 // ```ts
 // function pageKey(name: string): [number, string] { ... }
 // ```
+/**
+ * Defines page key behavior for this music-player component; the TypeScript-oriented notes above explain its
+ * call shape and effects.
+ */
 private fun pageKey(name: String): Pair<Int, String> {
     // What:     `val slash: Int = name.indexOf(PAGE_SEPARATOR)`. Immutable
     //           binding of type `Int` (signed 32-bit; siblings `Long`/`Short`).
@@ -250,6 +282,10 @@ private fun pageKey(name: String): Pair<Int, String> {
     // ```ts
     // const slash = name.indexOf("/"); // -1 when absent
     // ```
+    /**
+     * Defines slash value for this music-player component; the TypeScript-oriented notes above explain its
+     * source and use.
+     */
     val slash: Int = name.indexOf(PAGE_SEPARATOR)
     // What:     `return if (slash >= 0) { ... } else { ... }`. An `if/else`
     //           EXPRESSION (its value is returned). `slash >= 0` tests the
@@ -313,6 +349,10 @@ private fun pageKey(name: String): Pair<Int, String> {
 // ```ts
 // const sortKey = (label: string): string => label.toUpperCase();
 // ```
+/**
+ * Defines sort key behavior for this music-player component; the TypeScript-oriented notes above explain its
+ * call shape and effects.
+ */
 private fun sortKey(label: String): String = label.uppercase()
 
 // What:     `internal fun compareByCodePoint(left: String, right: String): Int`.
@@ -334,6 +374,10 @@ private fun sortKey(label: String): String = label.uppercase()
 // ```ts
 // function compareByCodePoint(left: string, right: string): number { ... }
 // ```
+/**
+ * Defines compare by code point behavior for this music-player component; the TypeScript-oriented notes above
+ * explain its call shape and effects.
+ */
 internal fun compareByCodePoint(left: String, right: String): Int {
     // What:     `var leftOffset = 0`. `var` declares a MUTABLE binding (can be
     //           reassigned), the opposite of `val`. No explicit type, so Kotlin
@@ -349,6 +393,10 @@ internal fun compareByCodePoint(left: String, right: String): Int {
     // ```ts
     // let leftOffset = 0;
     // ```
+    /**
+     * Defines left offset value for this music-player component; the TypeScript-oriented notes above explain its
+     * source and use.
+     */
     var leftOffset = 0
     // What:     `var rightOffset = 0`. A second MUTABLE `Int` cursor (type
     //           inferred from `0`), this one into `right`.
@@ -360,6 +408,10 @@ internal fun compareByCodePoint(left: String, right: String): Int {
     // ```ts
     // let rightOffset = 0;
     // ```
+    /**
+     * Defines right offset value for this music-player component; the TypeScript-oriented notes above explain
+     * its source and use.
+     */
     var rightOffset = 0
     // What:     `while (leftOffset < left.length && rightOffset < right.length)`.
     //           A `while` loop (the side-effecting cursor form). `.length` is
@@ -390,6 +442,10 @@ internal fun compareByCodePoint(left: String, right: String): Int {
         // ```ts
         // const leftCodePoint = left.codePointAt(leftOffset)!;
         // ```
+        /**
+         * Defines left code point value for this music-player component; the TypeScript-oriented notes above
+         * explain its source and use.
+         */
         val leftCodePoint: Int = left.codePointAt(leftOffset)
         // What:     `val rightCodePoint: Int = right.codePointAt(rightOffset)`.
         //           The same code-point read (immutable `Int`; sibling `Char`)
@@ -401,6 +457,10 @@ internal fun compareByCodePoint(left: String, right: String): Int {
         // ```ts
         // const rightCodePoint = right.codePointAt(rightOffset)!;
         // ```
+        /**
+         * Defines right code point value for this music-player component; the TypeScript-oriented notes above
+         * explain its source and use.
+         */
         val rightCodePoint: Int = right.codePointAt(rightOffset)
         // What:     `if (leftCodePoint != rightCodePoint) { ... }`. A plain
         //           equality branch on two `Int`s.
@@ -494,6 +554,10 @@ internal fun compareByCodePoint(left: String, right: String): Int {
 // type PageSortKey = { group: number; fold: string; label: string };
 // // (with structural equality / a derived string key for map use)
 // ```
+/**
+ * Defines page sort key type for this music-player component; the TypeScript-oriented notes above explain its
+ * role.
+ */
 private data class PageSortKey(
     // What:     `val group: Int,`. A constructor-declared, immutable property of
     //           type `Int` (signed 32-bit; siblings `Long`/`Short`). The
@@ -563,6 +627,10 @@ private data class PageSortKey(
     // ```ts
     // compareTo(other: PageSortKey): number { ... }
     // ```
+    /**
+     * Defines compare to behavior for this music-player component; the TypeScript-oriented notes above explain
+     * its call shape and effects.
+     */
     override fun compareTo(other: PageSortKey): Int {
         // What:     `val byGroup: Int = group.compareTo(other.group)`. Immutable
         //           `Int`. `group.compareTo(other.group)` three-way compares the
@@ -574,6 +642,10 @@ private data class PageSortKey(
         // ```ts
         // const byGroup = this.group - other.group;
         // ```
+        /**
+         * Defines by group value for this music-player component; the TypeScript-oriented notes above explain
+         * its source and use.
+         */
         val byGroup: Int = group.compareTo(other.group)
         // What:     `if (byGroup != 0) return byGroup`. A single-line guard:
         //           when the groups differ, that result already decides the
@@ -597,6 +669,10 @@ private data class PageSortKey(
         // ```ts
         // const byFold = compareByCodePoint(this.fold, other.fold);
         // ```
+        /**
+         * Defines by fold value for this music-player component; the TypeScript-oriented notes above explain its
+         * source and use.
+         */
         val byFold: Int = compareByCodePoint(fold, other.fold)
         // What:     `if (byFold != 0) return byFold`. Early-return guard: when
         //           the folded labels differ, return that ordering.
@@ -649,6 +725,10 @@ private data class PageSortKey(
 //     .map(([key, entries]) => ({ label: deserialize(key).label, entries: [...entries] }));
 // }
 // ```
+/**
+ * Defines paginate behavior for this music-player component; the TypeScript-oriented notes above explain its
+ * call shape and effects.
+ */
 fun paginate(names: List<String>): List<Page> {
     // What:     `val groups: MutableMap<PageSortKey, MutableList<PageEntry>> = mutableMapOf()`.
     //           Immutable BINDING (`val`) to a MUTABLE MAP. `MutableMap<K, V>`
@@ -669,6 +749,10 @@ fun paginate(names: List<String>): List<Page> {
     // ```ts
     // const groups = new Map<string, PageEntry[]>(); // not sorted; sorted later
     // ```
+    /**
+     * Defines groups value for this music-player component; the TypeScript-oriented notes above explain its
+     * source and use.
+     */
     val groups: MutableMap<PageSortKey, MutableList<PageEntry>> = mutableMapOf()
     // What:     `names.forEachIndexed { index, name -> ... }`. `forEachIndexed`
     //           iterates the list, passing BOTH the position and the element to
@@ -714,6 +798,10 @@ fun paginate(names: List<String>): List<Page> {
         // ```ts
         // const key = { group, fold: sortKey(label), label };
         // ```
+        /**
+         * Defines key value for this music-player component; the TypeScript-oriented notes above explain its
+         * source and use.
+         */
         val key = PageSortKey(group, sortKey(label), label)
         // What:     `groups.getOrPut(key) { mutableListOf() }.add(PageEntry(index = index, name = name))`.
         //           `getOrPut(key) { default }` returns the value for `key`,
@@ -802,6 +890,10 @@ fun paginate(names: List<String>): List<Page> {
 // ```ts
 // function pageOfIndex(pages: readonly Page[], index: number): number | null { ... }
 // ```
+/**
+ * Defines page of index behavior for this music-player component; the TypeScript-oriented notes above explain
+ * its call shape and effects.
+ */
 fun pageOfIndex(pages: List<Page>, index: Int): Int? {
     // What:     `val position: Int = pages.indexOfFirst { page -> page.entries.any { it.index == index } }`.
     //           Immutable `Int` (signed 32-bit). `indexOfFirst { predicate }`
@@ -824,6 +916,10 @@ fun pageOfIndex(pages: List<Page>, index: Int): Int? {
     //   (page) => page.entries.some((e) => e.index === index),
     // ); // -1 when not found
     // ```
+    /**
+     * Defines position value for this music-player component; the TypeScript-oriented notes above explain its
+     * source and use.
+     */
     val position: Int = pages.indexOfFirst { page -> page.entries.any { it.index == index } }
     // What:     `return if (position < 0) null else position`. An `if/else`
     //           EXPRESSION used as the return value. `position < 0` tests the
@@ -861,6 +957,10 @@ fun pageOfIndex(pages: List<Page>, index: Int): Int? {
 //   return name.startsWith(prefix) ? name.slice(prefix.length) : name;
 // }
 // ```
+/**
+ * Defines row display behavior for this music-player component; the TypeScript-oriented notes above explain its
+ * call shape and effects.
+ */
 fun rowDisplay(label: String, name: String): String {
     // What:     `val prefix: String = label + PAGE_SEPARATOR` declares a read-only (`val`)
     //           `String` `prefix`. `+` here is String CONCATENATION (not a numeric add);
@@ -873,6 +973,10 @@ fun rowDisplay(label: String, name: String): String {
     // ```ts
     // const prefix = label + "/";
     // ```
+    /**
+     * Defines prefix value for this music-player component; the TypeScript-oriented notes above explain its
+     * source and use.
+     */
     val prefix: String = label + PAGE_SEPARATOR
     // What:     `return if (name.startsWith(prefix)) name.substring(prefix.length) else name`.
     //           An `if/else` EXPRESSION whose value is returned. `name.startsWith(prefix)` is a

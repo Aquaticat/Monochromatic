@@ -47,6 +47,10 @@ package dev.monochromatic.musicplayer
 //   // ...native function declarations as members...
 // };
 // ```
+/**
+ * Defines native bridge object for this music-player component; the TypeScript-oriented notes above explain its
+ * shared role.
+ */
 object NativeBridge {
     // What:     `init { System.loadLibrary("musicplayer_native") }` is an INITIALIZER BLOCK that
     //           runs once when the object is first used. `System.loadLibrary("musicplayer_native")`
@@ -78,6 +82,10 @@ object NativeBridge {
     // ```ts
     // declare function nativePing(): number; // implemented in the native addon
     // ```
+    /**
+     * Defines native ping behavior for this music-player component; the TypeScript-oriented notes above explain
+     * its call shape and effects.
+     */
     external fun nativePing(): Int
 
     // What:     `external fun nativeOpusSelfTest(): Int` is a JNI native function (no Kotlin body)
@@ -89,6 +97,10 @@ object NativeBridge {
     // ```ts
     // declare function nativeOpusSelfTest(): number;
     // ```
+    /**
+     * Defines native opus self test behavior for this music-player component; the TypeScript-oriented notes
+     * above explain its call shape and effects.
+     */
     external fun nativeOpusSelfTest(): Int
 
     // What:     `external fun nativeSymphoniaSelfTest(): Int` is a JNI native function returning an
@@ -100,6 +112,10 @@ object NativeBridge {
     // ```ts
     // declare function nativeSymphoniaSelfTest(): number;
     // ```
+    /**
+     * Defines native symphonia self test behavior for this music-player component; the TypeScript-oriented notes
+     * above explain its call shape and effects.
+     */
     external fun nativeSymphoniaSelfTest(): Int
 
     // What:     `external fun nativeDecodeBenchmark(path: String): Double` is a JNI native function
@@ -113,6 +129,10 @@ object NativeBridge {
     // ```ts
     // declare function nativeDecodeBenchmark(path: string): number;
     // ```
+    /**
+     * Defines native decode benchmark behavior for this music-player component; the TypeScript-oriented notes
+     * above explain its call shape and effects.
+     */
     external fun nativeDecodeBenchmark(path: String): Double
 
     // What:     `external fun nativeDecodeFdBenchmark(fd: Int): Double` is a JNI native function
@@ -126,6 +146,10 @@ object NativeBridge {
     // ```ts
     // declare function nativeDecodeFdBenchmark(fd: number): number;
     // ```
+    /**
+     * Defines native decode fd benchmark behavior for this music-player component; the TypeScript-oriented notes
+     * above explain its call shape and effects.
+     */
     external fun nativeDecodeFdBenchmark(fd: Int): Double
 
     // What:     `external fun nativeOutputLatencyProbe(): Double` is a JNI native function returning
@@ -137,6 +161,10 @@ object NativeBridge {
     // ```ts
     // declare function nativeOutputLatencyProbe(): number;
     // ```
+    /**
+     * Defines native output latency probe behavior for this music-player component; the TypeScript-oriented
+     * notes above explain its call shape and effects.
+     */
     external fun nativeOutputLatencyProbe(): Double
 
     // What:     `external fun nativeMeasureTruePeak(fd: Int): Float` is a JNI native function taking
@@ -150,6 +178,10 @@ object NativeBridge {
     // ```ts
     // declare function nativeMeasureTruePeak(fd: number): number; // <0 means error
     // ```
+    /**
+     * Defines native measure true peak behavior for this music-player component; the TypeScript-oriented notes
+     * above explain its call shape and effects.
+     */
     external fun nativeMeasureTruePeak(fd: Int): Float
 
     // What:     `external fun nativeEngineCreate(): Long` is a JNI native function returning a `Long`
@@ -165,6 +197,10 @@ object NativeBridge {
     // ```ts
     // declare function nativeEngineCreate(): bigint; // opaque engine handle; 0n = failed
     // ```
+    /**
+     * Defines native engine create behavior for this music-player component; the TypeScript-oriented notes above
+     * explain its call shape and effects.
+     */
     external fun nativeEngineCreate(): Long
 
     // What:     `external fun nativeEngineLoad(handle: Long, fd: Int, play: Boolean): Int` is a JNI
@@ -178,6 +214,10 @@ object NativeBridge {
     // ```ts
     // declare function nativeEngineLoad(handle: bigint, fd: number, play: boolean): number;
     // ```
+    /**
+     * Defines native engine load behavior for this music-player component; the TypeScript-oriented notes above
+     * explain its call shape and effects.
+     */
     external fun nativeEngineLoad(handle: Long, fd: Int, play: Boolean): Int
 
     // What:     `external fun nativeEnginePlay(handle: Long)` is a JNI native function taking the
@@ -188,6 +228,10 @@ object NativeBridge {
     // ```ts
     // declare function nativeEnginePlay(handle: bigint): void;
     // ```
+    /**
+     * Defines native engine play behavior for this music-player component; the TypeScript-oriented notes above
+     * explain its call shape and effects.
+     */
     external fun nativeEnginePlay(handle: Long)
 
     // What:     `external fun nativeEnginePause(handle: Long)` is a JNI native function taking the
@@ -198,6 +242,10 @@ object NativeBridge {
     // ```ts
     // declare function nativeEnginePause(handle: bigint): void;
     // ```
+    /**
+     * Defines native engine pause behavior for this music-player component; the TypeScript-oriented notes above
+     * explain its call shape and effects.
+     */
     external fun nativeEnginePause(handle: Long)
 
     // What:     `external fun nativeEngineSeek(handle: Long, positionSec: Double)` is a JNI native
@@ -209,6 +257,10 @@ object NativeBridge {
     // ```ts
     // declare function nativeEngineSeek(handle: bigint, positionSec: number): void;
     // ```
+    /**
+     * Defines native engine seek behavior for this music-player component; the TypeScript-oriented notes above
+     * explain its call shape and effects.
+     */
     external fun nativeEngineSeek(handle: Long, positionSec: Double)
 
     // What:     `external fun nativeEngineSetVolume(handle: Long, volume: Float)` is a JNI native
@@ -220,6 +272,10 @@ object NativeBridge {
     // ```ts
     // declare function nativeEngineSetVolume(handle: bigint, volume: number): void;
     // ```
+    /**
+     * Defines native engine set volume behavior for this music-player component; the TypeScript-oriented notes
+     * above explain its call shape and effects.
+     */
     external fun nativeEngineSetVolume(handle: Long, volume: Float)
 
     // What:     `external fun nativeEngineSetNormalizationGain(handle: Long, gain: Float)` is a JNI
@@ -232,6 +288,10 @@ object NativeBridge {
     // ```ts
     // declare function nativeEngineSetNormalizationGain(handle: bigint, gain: number): void;
     // ```
+    /**
+     * Defines native engine set normalization gain behavior for this music-player component; the TypeScript-
+     * oriented notes above explain its call shape and effects.
+     */
     external fun nativeEngineSetNormalizationGain(handle: Long, gain: Float)
 
     // What:     `external fun nativeEnginePositionSec(handle: Long): Double` is a JNI native function
@@ -242,6 +302,10 @@ object NativeBridge {
     // ```ts
     // declare function nativeEnginePositionSec(handle: bigint): number;
     // ```
+    /**
+     * Defines native engine position sec behavior for this music-player component; the TypeScript-oriented notes
+     * above explain its call shape and effects.
+     */
     external fun nativeEnginePositionSec(handle: Long): Double
 
     // What:     `external fun nativeEngineDurationSec(handle: Long): Double` is a JNI native function
@@ -252,6 +316,10 @@ object NativeBridge {
     // ```ts
     // declare function nativeEngineDurationSec(handle: bigint): number;
     // ```
+    /**
+     * Defines native engine duration sec behavior for this music-player component; the TypeScript-oriented notes
+     * above explain its call shape and effects.
+     */
     external fun nativeEngineDurationSec(handle: Long): Double
 
     // What:     `external fun nativeEngineIsPlaying(handle: Long): Boolean` is a JNI native function
@@ -263,6 +331,10 @@ object NativeBridge {
     // ```ts
     // declare function nativeEngineIsPlaying(handle: bigint): boolean;
     // ```
+    /**
+     * Defines native engine is playing behavior for this music-player component; the TypeScript-oriented notes
+     * above explain its call shape and effects.
+     */
     external fun nativeEngineIsPlaying(handle: Long): Boolean
 
     // What:     `external fun nativeEngineIsEnded(handle: Long): Boolean` is a JNI native function
@@ -274,6 +346,10 @@ object NativeBridge {
     // ```ts
     // declare function nativeEngineIsEnded(handle: bigint): boolean;
     // ```
+    /**
+     * Defines native engine is ended behavior for this music-player component; the TypeScript-oriented notes
+     * above explain its call shape and effects.
+     */
     external fun nativeEngineIsEnded(handle: Long): Boolean
 
     // What:     `external fun nativeEnginePlayWhenReady(handle: Long): Boolean` is a JNI native
@@ -285,6 +361,10 @@ object NativeBridge {
     // ```ts
     // declare function nativeEnginePlayWhenReady(handle: bigint): boolean;
     // ```
+    /**
+     * Defines native engine play when ready behavior for this music-player component; the TypeScript-oriented
+     * notes above explain its call shape and effects.
+     */
     external fun nativeEnginePlayWhenReady(handle: Long): Boolean
 
     // What:     `external fun nativeEngineRelease(handle: Long)` is a JNI native function taking the
@@ -298,5 +378,9 @@ object NativeBridge {
     // ```ts
     // declare function nativeEngineRelease(handle: bigint): void; // handle invalid afterward
     // ```
+    /**
+     * Defines native engine release behavior for this music-player component; the TypeScript-oriented notes
+     * above explain its call shape and effects.
+     */
     external fun nativeEngineRelease(handle: Long)
 }

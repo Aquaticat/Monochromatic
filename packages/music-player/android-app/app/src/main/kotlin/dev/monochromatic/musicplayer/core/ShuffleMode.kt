@@ -80,6 +80,10 @@ package dev.monochromatic.musicplayer.core
 // // String-literal union; the strings match the desktop's serialized wire form.
 // export type ShuffleMode = "Off" | "WithinPage" | "All";
 // ```
+/**
+ * Defines shuffle mode type for this music-player component; the TypeScript-oriented notes above explain its
+ * role.
+ */
 enum class ShuffleMode {
     // What:     `OFF` is the first enum constant (a fieldless tag of type `ShuffleMode`). The
     //           trailing comma simply separates it from the next constant.
@@ -93,6 +97,10 @@ enum class ShuffleMode {
     // ```ts
     // "Off"
     // ```
+    /**
+     * Defines off case for this music-player state; the TypeScript-oriented notes above explain when it is
+     * selected.
+     */
     OFF,
 
     // What:     `WITHIN_PAGE` is the second enum constant (a fieldless tag of type `ShuffleMode`).
@@ -105,6 +113,10 @@ enum class ShuffleMode {
     // ```ts
     // "WithinPage"
     // ```
+    /**
+     * Defines within page case for this music-player state; the TypeScript-oriented notes above explain when it
+     * is selected.
+     */
     WITHIN_PAGE,
 
     // What:     `ALL` is the third and final enum constant (a fieldless tag of type
@@ -117,5 +129,9 @@ enum class ShuffleMode {
     // ```ts
     // "All"
     // ```
+    /**
+     * Defines all case for this music-player state; the TypeScript-oriented notes above explain when it is
+     * selected.
+     */
     ALL,
 }

@@ -163,6 +163,10 @@ import org.json.JSONObject
 //   // ...all the consts and methods below become properties of this one object...
 // };
 // ```
+/**
+ * Defines peak cache store object for this music-player component; the TypeScript-oriented notes above explain
+ * its shared role.
+ */
 object PeakCacheStore {
     // What:     `private const val STORE_TAG: String = "PeakCache"` declares a compile-time
     //           constant string. `private` = visible only inside this object; `const` = the
@@ -176,6 +180,10 @@ object PeakCacheStore {
     // ```ts
     // const STORE_TAG: string = "PeakCache";
     // ```
+    /**
+     * Defines store tag value for this music-player component; the TypeScript-oriented notes above explain its
+     * source and use.
+     */
     private const val STORE_TAG: String = "PeakCache"
 
     // What:     `private const val FILE_NAME: String = "peaks.json"` is the name of the
@@ -187,6 +195,10 @@ object PeakCacheStore {
     // ```ts
     // const FILE_NAME: string = "peaks.json";
     // ```
+    /**
+     * Defines file name value for this music-player component; the TypeScript-oriented notes above explain its
+     * source and use.
+     */
     private const val FILE_NAME: String = "peaks.json"
 
     // What:     `private const val TEMP_FILE_NAME: String = "peaks.json.tmp"` is the name of the
@@ -197,6 +209,10 @@ object PeakCacheStore {
     // ```ts
     // const TEMP_FILE_NAME: string = "peaks.json.tmp";
     // ```
+    /**
+     * Defines temp file name value for this music-player component; the TypeScript-oriented notes above explain
+     * its source and use.
+     */
     private const val TEMP_FILE_NAME: String = "peaks.json.tmp"
 
     // What:     `private val mutex: Mutex = Mutex()` creates the single lock instance. `Mutex()`
@@ -211,6 +227,10 @@ object PeakCacheStore {
     // ```ts
     // const mutex: Mutex = new Mutex();
     // ```
+    /**
+     * Defines mutex value for this music-player component; the TypeScript-oriented notes above explain its
+     * source and use.
+     */
     private val mutex: Mutex = Mutex()
 
     // What:     `private val cache: PeakCache = PeakCache()` constructs the one shared in-memory
@@ -224,6 +244,10 @@ object PeakCacheStore {
     // ```ts
     // const cache: PeakCache = new PeakCache();
     // ```
+    /**
+     * Defines cache value for this music-player component; the TypeScript-oriented notes above explain its
+     * source and use.
+     */
     private val cache: PeakCache = PeakCache()
 
     // What:     `private var loaded: Boolean = false` declares a MUTABLE flag. `var` (not `val`)
@@ -237,6 +261,10 @@ object PeakCacheStore {
     // ```ts
     // let loaded: boolean = false;
     // ```
+    /**
+     * Defines loaded value for this music-player component; the TypeScript-oriented notes above explain its
+     * source and use.
+     */
     private var loaded: Boolean = false
 
     // What:     `suspend fun get(context: Context, key: String): Float? = ...` declares a
@@ -263,6 +291,10 @@ object PeakCacheStore {
     //   });
     // }
     // ```
+    /**
+     * Defines get behavior for this music-player component; the TypeScript-oriented notes above explain its call
+     * shape and effects.
+     */
     suspend fun get(context: Context, key: String): Float? = mutex.withLock {
         // What:     `ensureLoaded(context)` calls the lazy-load helper. It is a plain call, but
         //           it runs INSIDE the `withLock { ... }` block, so the load is serialized under
@@ -309,6 +341,10 @@ object PeakCacheStore {
     //   });
     // }
     // ```
+    /**
+     * Defines put behavior for this music-player component; the TypeScript-oriented notes above explain its call
+     * shape and effects.
+     */
     suspend fun put(context: Context, key: String, peak: Float) {
         // What:     `mutex.withLock { ... }` locks the mutex, runs the block, and unlocks even on
         //           throw. Here the block returns nothing, so `withLock` is used purely for its
@@ -362,6 +398,10 @@ object PeakCacheStore {
     //   await writeAtomic(context, json);
     // }
     // ```
+    /**
+     * Defines flush behavior for this music-player component; the TypeScript-oriented notes above explain its
+     * call shape and effects.
+     */
     suspend fun flush(context: Context) {
         // What:     `val json: String = mutex.withLock { ... }` captures the lambda's value into
         //           an immutable local. `val` = immutable; `: String` explicit type. `withLock`
@@ -373,6 +413,10 @@ object PeakCacheStore {
         // ```ts
         // const json: string = await mutex.runExclusive(async () => { ... });
         // ```
+        /**
+         * Defines json value for this music-player component; the TypeScript-oriented notes above explain its
+         * source and use.
+         */
         val json: String = mutex.withLock {
             // What:     `ensureLoaded(context)` lazy-loads under the lock.
             // Why:      A flush must include any entries already on disk, not overwrite them with
@@ -421,6 +465,10 @@ object PeakCacheStore {
     // ```ts
     // private async ensureLoaded(context: Context): Promise<void> { ... }
     // ```
+    /**
+     * Defines ensure loaded behavior for this music-player component; the TypeScript-oriented notes above
+     * explain its call shape and effects.
+     */
     private suspend fun ensureLoaded(context: Context) {
         // What:     `if (loaded) { return }` early-exits when the file was already read. `return`
         //           with no value leaves the function (returns `Unit`).
@@ -450,6 +498,10 @@ object PeakCacheStore {
         //   return file.exists() ? file.readText() : null;
         // });
         // ```
+        /**
+         * Defines text value for this music-player component; the TypeScript-oriented notes above explain its
+         * source and use.
+         */
         val text: String? = withContext(Dispatchers.IO) {
             // What:     `val file = File(context.filesDir, FILE_NAME)` builds a `File` handle for
             //           `<app private dir>/peaks.json`. `File(dir, name)` is a CONSTRUCTOR call
@@ -463,6 +515,10 @@ object PeakCacheStore {
             // ```ts
             // const file = path.join(context.filesDir, FILE_NAME);
             // ```
+            /**
+             * Defines file value for this music-player component; the TypeScript-oriented notes above explain
+             * its source and use.
+             */
             val file = File(context.filesDir, FILE_NAME)
             // What:     `if (file.exists()) file.readText() else null` is an IF USED AS AN
             //           EXPRESSION: the whole `if/else` evaluates to a value (the read text, or
@@ -553,6 +609,10 @@ object PeakCacheStore {
     // ```ts
     // private parseInto(text: string, target: PeakCache): void { ... }
     // ```
+    /**
+     * Defines parse into behavior for this music-player component; the TypeScript-oriented notes above explain
+     * its call shape and effects.
+     */
     private fun parseInto(text: String, target: PeakCache) {
         // What:     `val obj = JSONObject(text)` parses the JSON text into a `JSONObject`.
         //           `JSONObject(text)` is a CONSTRUCTOR call (no `new`) that THROWS if `text` is
@@ -566,6 +626,10 @@ object PeakCacheStore {
         // ```ts
         // const obj = JSON.parse(text);
         // ```
+        /**
+         * Defines obj value for this music-player component; the TypeScript-oriented notes above explain its
+         * source and use.
+         */
         val obj = JSONObject(text)
         // What:     `obj.keys().forEach { key -> target.insert(key, obj.getDouble(key).toFloat()) }`
         //           iterates every key. `obj.keys()` returns an iterator of the JSON keys;
@@ -602,6 +666,10 @@ object PeakCacheStore {
     // ```ts
     // private serialize(entries: ReadonlyMap<string, number>): string { ... }
     // ```
+    /**
+     * Defines serialize behavior for this music-player component; the TypeScript-oriented notes above explain
+     * its call shape and effects.
+     */
     private fun serialize(entries: Map<String, Float>): String {
         // What:     `val obj = JSONObject()` constructs an EMPTY JSON object (no-arg constructor,
         //           no `new`). Type inferred `JSONObject`.
@@ -611,6 +679,10 @@ object PeakCacheStore {
         // ```ts
         // const obj: Record<string, number> = {};
         // ```
+        /**
+         * Defines obj value for this music-player component; the TypeScript-oriented notes above explain its
+         * source and use.
+         */
         val obj = JSONObject()
         // What:     `entries.forEach { (key, peak) -> obj.put(key, peak.toDouble()) }` iterates the
         //           map. `.forEach { (key, peak) -> ... }` uses DESTRUCTURING in the lambda
@@ -654,6 +726,10 @@ object PeakCacheStore {
     // ```ts
     // private async writeAtomic(context: Context, json: string): Promise<void> { ... }
     // ```
+    /**
+     * Defines write atomic behavior for this music-player component; the TypeScript-oriented notes above explain
+     * its call shape and effects.
+     */
     private suspend fun writeAtomic(context: Context, json: String) {
         // What:     `withContext(Dispatchers.IO) { ... }` runs the whole write on the IO thread
         //           pool and suspends the caller until it completes. Same shape as in
@@ -674,6 +750,10 @@ object PeakCacheStore {
             // ```ts
             // const temp = path.join(context.filesDir, TEMP_FILE_NAME);
             // ```
+            /**
+             * Defines temp value for this music-player component; the TypeScript-oriented notes above explain
+             * its source and use.
+             */
             val temp = File(context.filesDir, TEMP_FILE_NAME)
             // What:     `val target = File(context.filesDir, FILE_NAME)` builds the handle for the
             //           REAL cache file (`<dir>/peaks.json`). Constructor call, inferred `File`.
@@ -683,6 +763,10 @@ object PeakCacheStore {
             // ```ts
             // const target = path.join(context.filesDir, FILE_NAME);
             // ```
+            /**
+             * Defines target value for this music-player component; the TypeScript-oriented notes above explain
+             * its source and use.
+             */
             val target = File(context.filesDir, FILE_NAME)
             // What:     `temp.writeText(json)` writes the JSON text to the temp file, creating or
             //           truncating it. This is the blocking I/O the surrounding `withContext` moved

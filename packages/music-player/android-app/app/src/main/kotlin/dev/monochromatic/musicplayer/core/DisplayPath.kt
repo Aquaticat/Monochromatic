@@ -62,6 +62,10 @@ package dev.monochromatic.musicplayer.core
 // ```ts
 // const SEPARATOR = "/"; // a length-1 string; TS has no Char type
 // ```
+/**
+ * Defines separator value for this music-player component; the TypeScript-oriented notes above explain its
+ * source and use.
+ */
 private const val SEPARATOR: Char = '/'
 
 // What:     `private const val SEPARATOR_REPLACEMENT: Char = '∕'` declares another
@@ -80,6 +84,10 @@ private const val SEPARATOR: Char = '/'
 // ```ts
 // const SEPARATOR_REPLACEMENT = "∕"; // looks like "/" but isn't the separator
 // ```
+/**
+ * Defines separator replacement value for this music-player component; the TypeScript-oriented notes above
+ * explain its source and use.
+ */
 private const val SEPARATOR_REPLACEMENT: Char = '∕'
 
 // What:     `private const val CONTROL_REPLACEMENT: Char = ' '` declares a third
@@ -93,6 +101,10 @@ private const val SEPARATOR_REPLACEMENT: Char = '∕'
 // ```ts
 // const CONTROL_REPLACEMENT = " "; // one space, swapped in for control chars
 // ```
+/**
+ * Defines control replacement value for this music-player component; the TypeScript-oriented notes above explain
+ * its source and use.
+ */
 private const val CONTROL_REPLACEMENT: Char = ' '
 
 // What:     `fun sanitizeComponent(name: String): String = ...` declares a top-level
@@ -122,6 +134,10 @@ private const val CONTROL_REPLACEMENT: Char = ' '
 //     .join("");
 // }
 // ```
+/**
+ * Defines sanitize component behavior for this music-player component; the TypeScript-oriented notes above
+ * explain its call shape and effects.
+ */
 fun sanitizeComponent(name: String): String =
     // What:     `name` on its own line is the start of the expression body: the
     //           receiver that the following `.map { ... }` and `.joinToString(...)`
@@ -256,6 +272,10 @@ fun sanitizeComponent(name: String): String =
 //   return prefix === "" ? segment : `${prefix}${SEPARATOR}${segment}`;
 // }
 // ```
+/**
+ * Defines join display path behavior for this music-player component; the TypeScript-oriented notes above
+ * explain its call shape and effects.
+ */
 fun joinDisplayPath(prefix: String, name: String): String {
     // What:     `val segment = sanitizeComponent(name)` declares a read-only local
     //           binding `segment` (Kotlin `val` = immutable; `var` would be mutable)
@@ -268,6 +288,10 @@ fun joinDisplayPath(prefix: String, name: String): String {
     // ```ts
     // const segment = sanitizeComponent(name);
     // ```
+    /**
+     * Defines segment value for this music-player component; the TypeScript-oriented notes above explain its
+     * source and use.
+     */
     val segment = sanitizeComponent(name)
     // What:     `return if (prefix.isEmpty()) segment else "$prefix$SEPARATOR$segment"`.
     //           Several pieces:

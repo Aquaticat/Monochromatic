@@ -156,6 +156,10 @@ import dev.monochromatic.musicplayer.core.ShuffleMode
 //   queueSize: 0, loading: false, ...p,
 // });
 // ```
+/**
+ * Defines player ui state type for this music-player component; the TypeScript-oriented notes above explain its
+ * role.
+ */
 data class PlayerUiState(
     // What:     `val pageLabels: List<String> = emptyList()`. `val` declares a
     //           READ-ONLY property: it is both a primary-constructor parameter

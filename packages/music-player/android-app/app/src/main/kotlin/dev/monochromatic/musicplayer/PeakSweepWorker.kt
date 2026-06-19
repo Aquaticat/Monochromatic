@@ -131,6 +131,10 @@ import androidx.work.WorkerParameters
 //   // ...body...
 // }
 // ```
+/**
+ * Defines peak sweep worker type for this music-player component; the TypeScript-oriented notes above explain
+ * its role.
+ */
 class PeakSweepWorker(
     // What:     `context: Context` is a plain constructor parameter (no `val`/`var`,
     //           so not a stored field). It is the application context WorkManager
@@ -170,6 +174,10 @@ class PeakSweepWorker(
     // ```ts
     // override async doWork(): Promise<Result> { ... }
     // ```
+    /**
+     * Defines do work behavior for this music-player component; the TypeScript-oriented notes above explain its
+     * call shape and effects.
+     */
     override suspend fun doWork(): Result {
         // What:     `val tracks: List<Track> = LibrarySource.load(applicationContext)`
         //           declares a read-only `List<Track>` local `tracks` (an immutable
@@ -183,6 +191,10 @@ class PeakSweepWorker(
         // ```ts
         // const tracks: readonly Track[] = await LibrarySource.load(this.applicationContext);
         // ```
+        /**
+         * Defines tracks value for this music-player component; the TypeScript-oriented notes above explain its
+         * source and use.
+         */
         val tracks: List<Track> = LibrarySource.load(applicationContext)
         // What:     `if (tracks.isEmpty()) { ... }` is a control-flow check using the
         //           `List.isEmpty()` predicate (true when there are zero tracks).
@@ -227,6 +239,10 @@ class PeakSweepWorker(
         // ```ts
         // const limit: number = inputData.getInt(KEY_MAX_TRACKS, DEFAULT_MAX_TRACKS);
         // ```
+        /**
+         * Defines limit value for this music-player component; the TypeScript-oriented notes above explain its
+         * source and use.
+         */
         val limit: Int = inputData.getInt(KEY_MAX_TRACKS, DEFAULT_MAX_TRACKS)
         // What:     `var processed = 0` declares a REASSIGNABLE (`var`, not `val`)
         //           local counter `processed`, initialised to `0`. No explicit type is
@@ -238,6 +254,10 @@ class PeakSweepWorker(
         // ```ts
         // let processed = 0;
         // ```
+        /**
+         * Defines processed value for this music-player component; the TypeScript-oriented notes above explain
+         * its source and use.
+         */
         var processed = 0
         // What:     `var measured = 0` declares a reassignable `Int` counter (type
         //           inferred from `0`) for tracks freshly measured this run.
@@ -247,6 +267,10 @@ class PeakSweepWorker(
         // ```ts
         // let measured = 0;
         // ```
+        /**
+         * Defines measured value for this music-player component; the TypeScript-oriented notes above explain
+         * its source and use.
+         */
         var measured = 0
         // What:     `var cached = 0` declares a reassignable `Int` counter (inferred)
         //           for tracks already in the cache (a skip).
@@ -256,6 +280,10 @@ class PeakSweepWorker(
         // ```ts
         // let cached = 0;
         // ```
+        /**
+         * Defines cached value for this music-player component; the TypeScript-oriented notes above explain its
+         * source and use.
+         */
         var cached = 0
         // What:     `var skipped = 0` declares a reassignable `Int` counter (inferred)
         //           for tracks that could not be fingerprinted.
@@ -265,6 +293,10 @@ class PeakSweepWorker(
         // ```ts
         // let skipped = 0;
         // ```
+        /**
+         * Defines skipped value for this music-player component; the TypeScript-oriented notes above explain its
+         * source and use.
+         */
         var skipped = 0
         // What:     `var failed = 0` declares a reassignable `Int` counter (inferred)
         //           for tracks whose measurement threw.
@@ -274,6 +306,10 @@ class PeakSweepWorker(
         // ```ts
         // let failed = 0;
         // ```
+        /**
+         * Defines failed value for this music-player component; the TypeScript-oriented notes above explain its
+         * source and use.
+         */
         var failed = 0
         // What:     `var pendingFlush = 0` declares a reassignable `Int` counter
         //           (inferred) for fresh measurements not yet written to disk.
@@ -284,6 +320,10 @@ class PeakSweepWorker(
         // ```ts
         // let pendingFlush = 0;
         // ```
+        /**
+         * Defines pending flush value for this music-player component; the TypeScript-oriented notes above
+         * explain its source and use.
+         */
         var pendingFlush = 0
         // What:     `for (track in tracks) { ... }` is a FOR-EACH loop: `track` is
         //           bound to each element of `tracks` in turn. Kotlin's `for (x in xs)`
@@ -336,6 +376,10 @@ class PeakSweepWorker(
             //   toUri(track.uri),
             // );
             // ```
+            /**
+             * Defines outcome value for this music-player component; the TypeScript-oriented notes above explain
+             * its source and use.
+             */
             val outcome: SweepOutcome = measureAndCache(applicationContext, track.uri.toUri())
             // What:     `processed += 1` is a compound assignment (`processed = processed + 1`),
             //           plain integer arithmetic identical to TS.
@@ -508,6 +552,10 @@ class PeakSweepWorker(
         return Result.success()
     }
 
+    /**
+     * Defines companion object for this music-player component; the TypeScript-oriented notes above explain its
+     * shared role.
+     */
     // What:     `companion object { ... }` declares a single file-private OBJECT
     //           attached to the `PeakSweepWorker` class. A "companion object" hangs
     //           STATIC-LIKE members (values that belong to the class itself, not to
@@ -533,6 +581,10 @@ class PeakSweepWorker(
         // ```ts
         // private static readonly WORKER_TAG = "PeakSweep";
         // ```
+        /**
+         * Defines worker tag value for this music-player component; the TypeScript-oriented notes above explain
+         * its source and use.
+         */
         private const val WORKER_TAG: String = "PeakSweep"
 
         // What:     `private const val FLUSH_BATCH: Int = 16` declares a private
@@ -546,6 +598,10 @@ class PeakSweepWorker(
         // ```ts
         // private static readonly FLUSH_BATCH = 16;
         // ```
+        /**
+         * Defines flush batch value for this music-player component; the TypeScript-oriented notes above explain
+         * its source and use.
+         */
         private const val FLUSH_BATCH: Int = 16
 
         // What:     `internal const val KEY_MAX_TRACKS: String = "max_tracks"` declares a
@@ -561,6 +617,10 @@ class PeakSweepWorker(
         // ```ts
         // static readonly KEY_MAX_TRACKS = "max_tracks";
         // ```
+        /**
+         * Defines key max tracks value for this music-player component; the TypeScript-oriented notes above
+         * explain its source and use.
+         */
         internal const val KEY_MAX_TRACKS: String = "max_tracks"
 
         // What:     `internal const val DEFAULT_MAX_TRACKS: Int = Int.MAX_VALUE` declares a
@@ -575,6 +635,10 @@ class PeakSweepWorker(
         // ```ts
         // static readonly DEFAULT_MAX_TRACKS = 2147483647; // Int.MAX_VALUE
         // ```
+        /**
+         * Defines default max tracks value for this music-player component; the TypeScript-oriented notes above
+         * explain its source and use.
+         */
         internal const val DEFAULT_MAX_TRACKS: Int = Int.MAX_VALUE
     }
 }

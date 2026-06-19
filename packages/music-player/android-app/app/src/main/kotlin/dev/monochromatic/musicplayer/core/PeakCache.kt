@@ -48,6 +48,10 @@ package dev.monochromatic.musicplayer.core
 // ```ts
 // const FNV_OFFSET = 14695981039346656037n; // BigInt: u64 value exceeds Number's safe range
 // ```
+/**
+ * Defines fnv offset value for this music-player component; the TypeScript-oriented notes above explain its
+ * source and use.
+ */
 private const val FNV_OFFSET: ULong = 14695981039346656037uL
 
 // What:     `private const val FNV_PRIME: ULong = 1099511628211uL` declares the second FNV-1a
@@ -61,6 +65,10 @@ private const val FNV_OFFSET: ULong = 14695981039346656037uL
 // ```ts
 // const FNV_PRIME = 1099511628211n; // BigInt
 // ```
+/**
+ * Defines fnv prime value for this music-player component; the TypeScript-oriented notes above explain its
+ * source and use.
+ */
 private const val FNV_PRIME: ULong = 1099511628211uL
 
 // What:     `private const val FINGERPRINT_HEX_WIDTH: Int = 16` declares a file-private compile-time
@@ -75,6 +83,10 @@ private const val FNV_PRIME: ULong = 1099511628211uL
 // ```ts
 // const FINGERPRINT_HEX_WIDTH = 16;
 // ```
+/**
+ * Defines fingerprint hex width value for this music-player component; the TypeScript-oriented notes above
+ * explain its source and use.
+ */
 private const val FINGERPRINT_HEX_WIDTH: Int = 16
 
 // What:     `private const val SIZE_LE_BYTES: Int = 8` declares a file-private compile-time `Int`
@@ -88,6 +100,10 @@ private const val FINGERPRINT_HEX_WIDTH: Int = 16
 // ```ts
 // const SIZE_LE_BYTES = 8;
 // ```
+/**
+ * Defines size le bytes value for this music-player component; the TypeScript-oriented notes above explain its
+ * source and use.
+ */
 private const val SIZE_LE_BYTES: Int = 8
 
 // What:     `private const val MTIME_LE_BYTES: Int = 16` declares a file-private compile-time `Int`
@@ -102,6 +118,10 @@ private const val SIZE_LE_BYTES: Int = 8
 // ```ts
 // const MTIME_LE_BYTES = 16;
 // ```
+/**
+ * Defines mtime le bytes value for this music-player component; the TypeScript-oriented notes above explain its
+ * source and use.
+ */
 private const val MTIME_LE_BYTES: Int = 16
 
 // What:     `private fun fnv1aHash(bytes: ByteArray): ULong = ...` declares a file-private function
@@ -129,6 +149,10 @@ private const val MTIME_LE_BYTES: Int = 16
 //   );
 // }
 // ```
+/**
+ * Defines fnv1a hash behavior for this music-player component; the TypeScript-oriented notes above explain its
+ * call shape and effects.
+ */
 private fun fnv1aHash(bytes: ByteArray): ULong =
     // What:     `bytes.fold(FNV_OFFSET) { hash, byte -> ... }` is a reduce/accumulate over the
     //           array. `fold` takes a seed (`FNV_OFFSET`, the starting accumulator) and a two-arg
@@ -195,6 +219,10 @@ private fun fnv1aHash(bytes: ByteArray): ULong =
 //   }
 // }
 // ```
+/**
+ * Defines append little endian behavior for this music-player component; the TypeScript-oriented notes above
+ * explain its call shape and effects.
+ */
 private fun appendLittleEndian(sink: MutableList<Byte>, value: ULong, width: Int) {
     // What:     `(0 until width).forEach { byteIndex -> ... }` iterates the integers `0, 1, ...,
     //           width - 1`. `0 until width` builds a HALF-OPEN `IntRange` (includes `0`, EXCLUDES
@@ -219,6 +247,10 @@ private fun appendLittleEndian(sink: MutableList<Byte>, value: ULong, width: Int
         // ```ts
         // const shift = byteIndex * 8;
         // ```
+        /**
+         * Defines shift value for this music-player component; the TypeScript-oriented notes above explain its
+         * source and use.
+         */
         val shift = byteIndex * Byte.SIZE_BITS
         // What:     `val byte = if (shift >= ULong.SIZE_BITS) 0u else (value shr shift) and 0xFFuL`
         //           declares an immutable local using `if` AS AN EXPRESSION (it produces a value,
@@ -243,6 +275,10 @@ private fun appendLittleEndian(sink: MutableList<Byte>, value: ULong, width: Int
         // ```ts
         // const byte = shift >= 64 ? 0n : (value >> BigInt(shift)) & 0xffn;
         // ```
+        /**
+         * Defines byte value for this music-player component; the TypeScript-oriented notes above explain its
+         * source and use.
+         */
         val byte = if (shift >= ULong.SIZE_BITS) 0u else (value shr shift) and 0xFFuL
         // What:     `sink.add(byte.toByte())` appends to the list. `byte` here is an unsigned value
         //           (a `ULong` masked to 0..255, or the `UInt` `0u`); `.toByte()` converts it down to
@@ -287,6 +323,10 @@ private fun appendLittleEndian(sink: MutableList<Byte>, value: ULong, width: Int
 //   return hash.toString(16).padStart(16, "0");
 // }
 // ```
+/**
+ * Defines fingerprint behavior for this music-player component; the TypeScript-oriented notes above explain its
+ * call shape and effects.
+ */
 fun fingerprint(path: String, size: ULong, mtimeNanos: ULong): String {
     // What:     `val material: MutableList<Byte> = mutableListOf()` declares an immutable local
     //           binding (`val`, not reassignable) to a NEWLY-CREATED empty growable byte list.
@@ -300,6 +340,10 @@ fun fingerprint(path: String, size: ULong, mtimeNanos: ULong): String {
     // ```ts
     // const material: number[] = [];
     // ```
+    /**
+     * Defines material value for this music-player component; the TypeScript-oriented notes above explain its
+     * source and use.
+     */
     val material: MutableList<Byte> = mutableListOf()
     // What:     `material.addAll(path.encodeToByteArray().asList())` appends many elements at once.
     //           `path.encodeToByteArray()` encodes the string to its UTF-8 bytes as a `ByteArray`
@@ -346,6 +390,10 @@ fun fingerprint(path: String, size: ULong, mtimeNanos: ULong): String {
     // ```ts
     // const hash = fnv1aHash(Uint8Array.from(material));
     // ```
+    /**
+     * Defines hash value for this music-player component; the TypeScript-oriented notes above explain its source
+     * and use.
+     */
     val hash = fnv1aHash(material.toByteArray())
     // What:     `return hash.toString(FINGERPRINT_HEX_WIDTH).padStart(FINGERPRINT_HEX_WIDTH, '0')`
     //           is the explicit return. `hash.toString(16)` renders the `ULong` in base 16 (radix
@@ -386,6 +434,9 @@ fun fingerprint(path: String, size: ULong, mtimeNanos: ULong): String {
 //   snapshot(): Record<string, number> { ... }
 // }
 // ```
+/**
+ * Defines peak cache type for this music-player component; the TypeScript-oriented notes above explain its role.
+ */
 class PeakCache {
     // What:     `private val map: MutableMap<String, Float> = mutableMapOf()` declares a
     //           file/class-private, non-reassignable (`val`) field bound to a NEWLY-CREATED empty
@@ -401,6 +452,10 @@ class PeakCache {
     // ```ts
     // private map: Record<string, number> = {}; // TS `number` blurs the f32/f64 distinction
     // ```
+    /**
+     * Defines map value for this music-player component; the TypeScript-oriented notes above explain its source
+     * and use.
+     */
     private val map: MutableMap<String, Float> = mutableMapOf()
 
     // What:     `fun get(fingerprint: String): Float? = map[fingerprint]` declares a public method
@@ -421,6 +476,10 @@ class PeakCache {
     //   return this.map[fingerprint];
     // }
     // ```
+    /**
+     * Defines get behavior for this music-player component; the TypeScript-oriented notes above explain its call
+     * shape and effects.
+     */
     fun get(fingerprint: String): Float? = map[fingerprint]
 
     // What:     `fun insert(fingerprint: String, peak: Float) { ... }` declares a public method
@@ -434,6 +493,10 @@ class PeakCache {
     //   this.map[fingerprint] = peak;
     // }
     // ```
+    /**
+     * Defines insert behavior for this music-player component; the TypeScript-oriented notes above explain its
+     * call shape and effects.
+     */
     fun insert(fingerprint: String, peak: Float) {
         // What:     `map[fingerprint] = peak` is the indexed-WRITE operator on a `MutableMap`, which
         //           compiles to `map.put(fingerprint, peak)`. It stores or overwrites the entry.
@@ -464,5 +527,9 @@ class PeakCache {
     //   return { ...this.map };
     // }
     // ```
+    /**
+     * Defines snapshot behavior for this music-player component; the TypeScript-oriented notes above explain its
+     * call shape and effects.
+     */
     fun snapshot(): Map<String, Float> = map.toMap()
 }

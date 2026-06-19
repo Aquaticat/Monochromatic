@@ -82,6 +82,10 @@ import kotlin.math.min
 // ```ts
 // const HALF = 1 / 2;
 // ```
+/**
+ * Defines half value for this music-player component; the TypeScript-oriented notes above explain its source and
+ * use.
+ */
 internal const val HALF: Float = 1.0f / 2.0f
 
 // What:     `private const val QUARTER: Float = HALF / 2.0f` declares the compile-time constant
@@ -95,6 +99,10 @@ internal const val HALF: Float = 1.0f / 2.0f
 // ```ts
 // const QUARTER = HALF / 2;
 // ```
+/**
+ * Defines quarter value for this music-player component; the TypeScript-oriented notes above explain its source
+ * and use.
+ */
 private const val QUARTER: Float = HALF / 2.0f
 
 // What:     `private const val THREE_QUARTERS: Float = HALF + QUARTER` declares the compile-time
@@ -106,6 +114,10 @@ private const val QUARTER: Float = HALF / 2.0f
 // ```ts
 // const THREE_QUARTERS = HALF + QUARTER;
 // ```
+/**
+ * Defines three quarters value for this music-player component; the TypeScript-oriented notes above explain its
+ * source and use.
+ */
 private const val THREE_QUARTERS: Float = HALF + QUARTER
 
 // What:     `internal const val CEILING: Float = 0.8912509f` declares the true-peak target as a
@@ -120,6 +132,10 @@ private const val THREE_QUARTERS: Float = HALF + QUARTER
 // ```ts
 // const CEILING = 10 ** (-1 / 20); // -1 dBTP, about 0.8912509
 // ```
+/**
+ * Defines ceiling value for this music-player component; the TypeScript-oriented notes above explain its source
+ * and use.
+ */
 internal const val CEILING: Float = 0.8912509f
 
 // What:     `private const val WINDOW: Int = 4` declares the constant window length. `Int` is Kotlin's
@@ -133,6 +149,10 @@ internal const val CEILING: Float = 0.8912509f
 // ```ts
 // const WINDOW = 4;
 // ```
+/**
+ * Defines window value for this music-player component; the TypeScript-oriented notes above explain its source
+ * and use.
+ */
 private const val WINDOW: Int = 4
 
 // What:     `private const val QUARTER_SQ: Float = QUARTER * QUARTER` precomputes QUARTER squared
@@ -146,6 +166,10 @@ private const val WINDOW: Int = 4
 // ```ts
 // const QUARTER_SQ = QUARTER * QUARTER;
 // ```
+/**
+ * Defines quarter sq value for this music-player component; the TypeScript-oriented notes above explain its
+ * source and use.
+ */
 private const val QUARTER_SQ: Float = QUARTER * QUARTER
 
 // What:     `private const val QUARTER_CUBE: Float = QUARTER_SQ * QUARTER` precomputes QUARTER cubed
@@ -156,6 +180,10 @@ private const val QUARTER_SQ: Float = QUARTER * QUARTER
 // ```ts
 // const QUARTER_CUBE = QUARTER_SQ * QUARTER;
 // ```
+/**
+ * Defines quarter cube value for this music-player component; the TypeScript-oriented notes above explain its
+ * source and use.
+ */
 private const val QUARTER_CUBE: Float = QUARTER_SQ * QUARTER
 
 // What:     `private const val HALF_SQ: Float = HALF * HALF` precomputes HALF squared (the t-squared
@@ -166,6 +194,10 @@ private const val QUARTER_CUBE: Float = QUARTER_SQ * QUARTER
 // ```ts
 // const HALF_SQ = HALF * HALF;
 // ```
+/**
+ * Defines half sq value for this music-player component; the TypeScript-oriented notes above explain its source
+ * and use.
+ */
 private const val HALF_SQ: Float = HALF * HALF
 
 // What:     `private const val HALF_CUBE: Float = HALF_SQ * HALF` precomputes HALF cubed (the t-cubed
@@ -176,6 +208,10 @@ private const val HALF_SQ: Float = HALF * HALF
 // ```ts
 // const HALF_CUBE = HALF_SQ * HALF;
 // ```
+/**
+ * Defines half cube value for this music-player component; the TypeScript-oriented notes above explain its
+ * source and use.
+ */
 private const val HALF_CUBE: Float = HALF_SQ * HALF
 
 // What:     `private const val THREE_QUARTERS_SQ: Float = THREE_QUARTERS * THREE_QUARTERS` precomputes
@@ -187,6 +223,10 @@ private const val HALF_CUBE: Float = HALF_SQ * HALF
 // ```ts
 // const THREE_QUARTERS_SQ = THREE_QUARTERS * THREE_QUARTERS;
 // ```
+/**
+ * Defines three quarters sq value for this music-player component; the TypeScript-oriented notes above explain
+ * its source and use.
+ */
 private const val THREE_QUARTERS_SQ: Float = THREE_QUARTERS * THREE_QUARTERS
 
 // What:     `private const val THREE_QUARTERS_CUBE: Float = THREE_QUARTERS_SQ * THREE_QUARTERS`
@@ -198,6 +238,10 @@ private const val THREE_QUARTERS_SQ: Float = THREE_QUARTERS * THREE_QUARTERS
 // ```ts
 // const THREE_QUARTERS_CUBE = THREE_QUARTERS_SQ * THREE_QUARTERS;
 // ```
+/**
+ * Defines three quarters cube value for this music-player component; the TypeScript-oriented notes above explain
+ * its source and use.
+ */
 private const val THREE_QUARTERS_CUBE: Float = THREE_QUARTERS_SQ * THREE_QUARTERS
 
 // What:     `internal fun catmullRom(p0: Float, p1: Float, p2: Float, p3: Float, t: Float): Float { ... }`
@@ -216,6 +260,10 @@ private const val THREE_QUARTERS_CUBE: Float = THREE_QUARTERS_SQ * THREE_QUARTER
 // ```ts
 // function catmullRom(p0: number, p1: number, p2: number, p3: number, t: number): number { ... }
 // ```
+/**
+ * Defines catmull rom behavior for this music-player component; the TypeScript-oriented notes above explain its
+ * call shape and effects.
+ */
 internal fun catmullRom(p0: Float, p1: Float, p2: Float, p3: Float, t: Float): Float {
     // What:     `val t2: Float = t * t` binds a read-only local `t2` to t squared. `val` is an
     //           immutable binding (sibling: `var`, reassignable); `val` because t2 never changes. The
@@ -227,6 +275,10 @@ internal fun catmullRom(p0: Float, p1: Float, p2: Float, p3: Float, t: Float): F
     // ```ts
     // const t2 = t * t;
     // ```
+    /**
+     * Defines t2 value for this music-player component; the TypeScript-oriented notes above explain its source
+     * and use.
+     */
     val t2: Float = t * t
     // What:     `val t3: Float = t2 * t` binds the read-only local `t3` to t cubed (t-squared times t).
     //           `val` immutable, `Float` (not `Double`).
@@ -236,6 +288,10 @@ internal fun catmullRom(p0: Float, p1: Float, p2: Float, p3: Float, t: Float): F
     // ```ts
     // const t3 = t2 * t;
     // ```
+    /**
+     * Defines t3 value for this music-player component; the TypeScript-oriented notes above explain its source
+     * and use.
+     */
     val t3: Float = t2 * t
     // What:     `return HALF * ( ... )` is an explicit return of the Catmull-Rom basis evaluated for
     //           these four points. The whole multi-line parenthesized expression is the value: HALF
@@ -275,6 +331,10 @@ internal fun catmullRom(p0: Float, p1: Float, p2: Float, p3: Float, t: Float): F
 // ```ts
 // function maxInteriorAbs(p0: number, p1: number, p2: number, p3: number): number { ... }
 // ```
+/**
+ * Defines max interior abs behavior for this music-player component; the TypeScript-oriented notes above explain
+ * its call shape and effects.
+ */
 internal fun maxInteriorAbs(p0: Float, p1: Float, p2: Float, p3: Float): Float {
     // What:     `val twoP1: Float = 2.0f * p1` binds the read-only local `twoP1` to two times p1. `val`
     //           immutable, `Float` (not `Double`), `2.0f` is a Float literal.
@@ -285,6 +345,10 @@ internal fun maxInteriorAbs(p0: Float, p1: Float, p2: Float, p3: Float): Float {
     // ```ts
     // const twoP1 = 2 * p1;
     // ```
+    /**
+     * Defines two p1 value for this music-player component; the TypeScript-oriented notes above explain its
+     * source and use.
+     */
     val twoP1: Float = 2.0f * p1
     // What:     `val a: Float = p2 - p0` binds the read-only local `a` to the linear coefficient
     //           `(p2 - p0)` of the cubic. `val` immutable, `Float` (not `Double`).
@@ -294,6 +358,10 @@ internal fun maxInteriorAbs(p0: Float, p1: Float, p2: Float, p3: Float): Float {
     // ```ts
     // const a = p2 - p0;
     // ```
+    /**
+     * Defines a value for this music-player component; the TypeScript-oriented notes above explain its source
+     * and use.
+     */
     val a: Float = p2 - p0
     // What:     `val b: Float = 2.0f * p0 - 5.0f * p1 + 4.0f * p2 - p3` binds the read-only local `b`
     //           to the t-squared coefficient of the cubic. `val` immutable, `Float` (not `Double`); the
@@ -304,6 +372,10 @@ internal fun maxInteriorAbs(p0: Float, p1: Float, p2: Float, p3: Float): Float {
     // ```ts
     // const b = 2*p0 - 5*p1 + 4*p2 - p3;
     // ```
+    /**
+     * Defines b value for this music-player component; the TypeScript-oriented notes above explain its source
+     * and use.
+     */
     val b: Float = 2.0f * p0 - 5.0f * p1 + 4.0f * p2 - p3
     // What:     `val c: Float = 3.0f * p1 - 3.0f * p2 + p3 - p0` binds the read-only local `c` to the
     //           t-cubed coefficient of the cubic. `val` immutable, `Float` (not `Double`).
@@ -313,6 +385,10 @@ internal fun maxInteriorAbs(p0: Float, p1: Float, p2: Float, p3: Float): Float {
     // ```ts
     // const c = 3*p1 - 3*p2 + p3 - p0;
     // ```
+    /**
+     * Defines c value for this music-player component; the TypeScript-oriented notes above explain its source
+     * and use.
+     */
     val c: Float = 3.0f * p1 - 3.0f * p2 + p3 - p0
     // What:     `val atQuarter: Float = HALF * (twoP1 + a * QUARTER + b * QUARTER_SQ + c * QUARTER_CUBE)`
     //           evaluates the cubic at the t = 1/4 position using the precomputed coefficients and the
@@ -325,6 +401,10 @@ internal fun maxInteriorAbs(p0: Float, p1: Float, p2: Float, p3: Float): Float {
     // ```ts
     // const atQuarter = HALF * (twoP1 + a*QUARTER + b*QUARTER_SQ + c*QUARTER_CUBE);
     // ```
+    /**
+     * Defines at quarter value for this music-player component; the TypeScript-oriented notes above explain its
+     * source and use.
+     */
     val atQuarter: Float = HALF * (twoP1 + a * QUARTER + b * QUARTER_SQ + c * QUARTER_CUBE)
     // What:     `val atHalf: Float = HALF * (twoP1 + a * HALF + b * HALF_SQ + c * HALF_CUBE)` evaluates
     //           the cubic at the t = 1/2 (middle) position. `val` immutable, `Float` (not `Double`).
@@ -334,6 +414,10 @@ internal fun maxInteriorAbs(p0: Float, p1: Float, p2: Float, p3: Float): Float {
     // ```ts
     // const atHalf = HALF * (twoP1 + a*HALF + b*HALF_SQ + c*HALF_CUBE);
     // ```
+    /**
+     * Defines at half value for this music-player component; the TypeScript-oriented notes above explain its
+     * source and use.
+     */
     val atHalf: Float = HALF * (twoP1 + a * HALF + b * HALF_SQ + c * HALF_CUBE)
     // What:     `val atThreeQuarters: Float = HALF * (twoP1 + a * THREE_QUARTERS + b * THREE_QUARTERS_SQ
     //           + c * THREE_QUARTERS_CUBE)` evaluates the cubic at the t = 3/4 position. The `=` and the
@@ -346,6 +430,10 @@ internal fun maxInteriorAbs(p0: Float, p1: Float, p2: Float, p3: Float): Float {
     // ```ts
     // const atThreeQuarters = HALF * (twoP1 + a*THREE_QUARTERS + b*THREE_QUARTERS_SQ + c*THREE_QUARTERS_CUBE);
     // ```
+    /**
+     * Defines at three quarters value for this music-player component; the TypeScript-oriented notes above
+     * explain its source and use.
+     */
     val atThreeQuarters: Float =
         HALF * (twoP1 + a * THREE_QUARTERS + b * THREE_QUARTERS_SQ + c * THREE_QUARTERS_CUBE)
     // What:     `return max(abs(atQuarter), max(abs(atHalf), abs(atThreeQuarters)))` explicitly returns
@@ -380,6 +468,10 @@ internal fun maxInteriorAbs(p0: Float, p1: Float, p2: Float, p3: Float): Float {
 //   // ...properties and methods...
 // }
 // ```
+/**
+ * Defines true peak meter type for this music-player component; the TypeScript-oriented notes above explain its
+ * role.
+ */
 internal class TruePeakMeter(private val channels: Int) {
     // What:     `private val win: Array<FloatArray> = Array(channels) { FloatArray(WINDOW) }` declares
     //           a read-only property `win` whose type is `Array<FloatArray>` (an array whose elements
@@ -403,6 +495,10 @@ internal class TruePeakMeter(private val channels: Int) {
     // ```ts
     // private win: number[][] = Array.from({ length: channels }, () => [0, 0, 0, 0]);
     // ```
+    /**
+     * Defines win value for this music-player component; the TypeScript-oriented notes above explain its source
+     * and use.
+     */
     private val win: Array<FloatArray> = Array(channels) { FloatArray(WINDOW) }
 
     // What:     `private val filled: IntArray = IntArray(channels)` declares a read-only property
@@ -416,6 +512,10 @@ internal class TruePeakMeter(private val channels: Int) {
     // ```ts
     // private filled: number[] = new Array(channels).fill(0);
     // ```
+    /**
+     * Defines filled value for this music-player component; the TypeScript-oriented notes above explain its
+     * source and use.
+     */
     private val filled: IntArray = IntArray(channels)
 
     // What:     `var peak: Float = 0.0f` followed on the next line by `private set` declares a MUTABLE
@@ -434,6 +534,10 @@ internal class TruePeakMeter(private val channels: Int) {
     // get peak(): number { return this._peak; }
     // // writes to this._peak only happen inside the class
     // ```
+    /**
+     * Defines peak value for this music-player component; the TypeScript-oriented notes above explain its source
+     * and use.
+     */
     var peak: Float = 0.0f
         private set
 
@@ -447,6 +551,10 @@ internal class TruePeakMeter(private val channels: Int) {
     // ```ts
     // feed(chunk: number[]): void { ... }
     // ```
+    /**
+     * Defines feed behavior for this music-player component; the TypeScript-oriented notes above explain its
+     * call shape and effects.
+     */
     fun feed(chunk: FloatArray) {
         // What:     `chunk.forEachIndexed { i, s -> push(i % channels, s) }` calls the standard-library
         //           `forEachIndexed` on the array, passing a TRAILING LAMBDA whose parameters are
@@ -482,6 +590,10 @@ internal class TruePeakMeter(private val channels: Int) {
     // ```ts
     // private push(channel: number, s: number): void { ... }
     // ```
+    /**
+     * Defines push behavior for this music-player component; the TypeScript-oriented notes above explain its
+     * call shape and effects.
+     */
     private fun push(channel: Int, s: Float) {
         // What:     `val w: FloatArray = win[channel]` binds the read-only local `w` to this channel's
         //           window. `val` pins the BINDING (you cannot reassign `w` to a different array), but
@@ -501,6 +613,10 @@ internal class TruePeakMeter(private val channels: Int) {
         // ```ts
         // const w = this.win[channel]; // reference to the same array, mutating w mutates win[channel]
         // ```
+        /**
+         * Defines w value for this music-player component; the TypeScript-oriented notes above explain its
+         * source and use.
+         */
         val w: FloatArray = win[channel]
         // What:     `w[0] = w[1]` overwrites slot 0 with the value currently in slot 1. Plain indexed
         //           array element assignment, identical to TS.
@@ -560,6 +676,10 @@ internal class TruePeakMeter(private val channels: Int) {
         // ```ts
         // let localPeak = Math.abs(s);
         // ```
+        /**
+         * Defines local peak value for this music-player component; the TypeScript-oriented notes above explain
+         * its source and use.
+         */
         var localPeak: Float = abs(s)
         // What:     `if (filled[channel] == WINDOW) { ... }` runs its body only when this channel has
         //           accumulated exactly WINDOW (four) real samples. `==` on `Int`s is plain value
@@ -622,6 +742,10 @@ internal class TruePeakMeter(private val channels: Int) {
 // ```ts
 // function measureTruePeak(channels: number, chunks: Iterable<number[]>): number { ... }
 // ```
+/**
+ * Defines measure true peak behavior for this music-player component; the TypeScript-oriented notes above
+ * explain its call shape and effects.
+ */
 internal fun measureTruePeak(channels: Int, chunks: Sequence<FloatArray>): Float {
     // What:     `if (channels == 0) { return 0.0f }` guards against a malformed zero-channel stream and
     //           returns a peak of `0.0f` (a `Float` literal) immediately. `==` is numeric equality on
@@ -646,6 +770,10 @@ internal fun measureTruePeak(channels: Int, chunks: Sequence<FloatArray>): Float
     // ```ts
     // const meter = new TruePeakMeter(channels);
     // ```
+    /**
+     * Defines meter value for this music-player component; the TypeScript-oriented notes above explain its
+     * source and use.
+     */
     val meter = TruePeakMeter(channels)
     // What:     `for (chunk in chunks) { ... }` is Kotlin's for-each loop: it iterates `chunks`,
     //           binding each element to the read-only loop variable `chunk` (a `FloatArray`) in turn.
@@ -704,6 +832,10 @@ internal fun measureTruePeak(channels: Int, chunks: Sequence<FloatArray>): Float
 // ```ts
 // function normalizationGain(truePeak: number): number { ... }
 // ```
+/**
+ * Defines normalization gain behavior for this music-player component; the TypeScript-oriented notes above
+ * explain its call shape and effects.
+ */
 internal fun normalizationGain(truePeak: Float): Float {
     // What:     `if (truePeak <= 0.0f) { return 1.0f }` returns a unity gain (`1.0f`, a `Float` literal,
     //           meaning "leave the sample unchanged") whenever the measured peak is zero or negative.
@@ -755,5 +887,9 @@ internal fun normalizationGain(truePeak: Float): Float {
 //   return Math.min(Math.max(scaled, -1), 1);
 // }
 // ```
+/**
+ * Defines process sample behavior for this music-player component; the TypeScript-oriented notes above explain
+ * its call shape and effects.
+ */
 internal fun processSample(sample: Float, gain: Float): Float =
     (sample * gain).coerceIn(-1.0f, 1.0f)

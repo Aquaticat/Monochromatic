@@ -135,6 +135,10 @@ import kotlinx.coroutines.withContext
 //   // ...members below...
 // };
 // ```
+/**
+ * Defines track fingerprint object for this music-player component; the TypeScript-oriented notes above explain
+ * its shared role.
+ */
 object TrackFingerprint {
     // What:     `private const val NANOS_PER_MILLI: Long = 1_000_000L` declares a
     //           compile-time constant. `private` hides it outside this object;
@@ -155,6 +159,10 @@ object TrackFingerprint {
     // ```ts
     // const NANOS_PER_MILLI = 1_000_000;
     // ```
+    /**
+     * Defines nanos per milli value for this music-player component; the TypeScript-oriented notes above explain
+     * its source and use.
+     */
     private const val NANOS_PER_MILLI: Long = 1_000_000L
 
     // What:     `private const val UNKNOWN_MODIFIED_MS: Long = 0L` declares another
@@ -169,6 +177,10 @@ object TrackFingerprint {
     // ```ts
     // const UNKNOWN_MODIFIED_MS = 0;
     // ```
+    /**
+     * Defines unknown modified ms value for this music-player component; the TypeScript-oriented notes above
+     * explain its source and use.
+     */
     private const val UNKNOWN_MODIFIED_MS: Long = 0L
 
     // What:     `suspend fun of(context: Context, uri: Uri): String? = withContext(Dispatchers.IO) { ... }`
@@ -195,6 +207,10 @@ object TrackFingerprint {
     //   });
     // }
     // ```
+    /**
+     * Defines of behavior for this music-player component; the TypeScript-oriented notes above explain its call
+     * shape and effects.
+     */
     suspend fun of(context: Context, uri: Uri): String? = withContext(Dispatchers.IO) {
         // What:     `val size: Long = querySize(context, uri) ?: return@withContext null`
         //           declares a read-only `Long` local `size`. The right side uses the
@@ -219,6 +235,10 @@ object TrackFingerprint {
         // if (maybeSize === null) return null;
         // const size = maybeSize;
         // ```
+        /**
+         * Defines size value for this music-player component; the TypeScript-oriented notes above explain its
+         * source and use.
+         */
         val size: Long = querySize(context, uri) ?: return@withContext null
         // What:     `val modifiedMs: Long = queryLastModifiedMs(context, uri)` declares
         //           a read-only `Long` local `modifiedMs` from the helper, which always
@@ -231,6 +251,10 @@ object TrackFingerprint {
         // ```ts
         // const modifiedMs: number = queryLastModifiedMs(context, uri);
         // ```
+        /**
+         * Defines modified ms value for this music-player component; the TypeScript-oriented notes above explain
+         * its source and use.
+         */
         val modifiedMs: Long = queryLastModifiedMs(context, uri)
         // What:     `fingerprint(uri.toString(), size.toULong(), (modifiedMs * NANOS_PER_MILLI).toULong())`
         //           is the TAIL EXPRESSION of the `withContext` lambda (no trailing
@@ -285,6 +309,10 @@ object TrackFingerprint {
     //   return null;
     // }
     // ```
+    /**
+     * Defines query size behavior for this music-player component; the TypeScript-oriented notes above explain
+     * its call shape and effects.
+     */
     private fun querySize(context: Context, uri: Uri): Long? {
         // What:     `context.contentResolver` reads the `ContentResolver` off the
         //           context: the object you hand a query to in order to read a content
@@ -402,6 +430,10 @@ object TrackFingerprint {
     //   } catch { return UNKNOWN_MODIFIED_MS; }
     // }
     // ```
+    /**
+     * Defines query last modified ms behavior for this music-player component; the TypeScript-oriented notes
+     * above explain its call shape and effects.
+     */
     private fun queryLastModifiedMs(context: Context, uri: Uri): Long =
         // What:     `runCatching { ... }` runs the trailing lambda and CATCHES any
         //           exception it throws, returning a `Result<T>` (a wrapper that is

@@ -55,6 +55,10 @@ package dev.monochromatic.musicplayer.core
 // ```ts
 // export const LIBRARY_BATCH_SIZE = 128;
 // ```
+/**
+ * Defines library batch size value for this music-player component; the TypeScript-oriented notes above explain
+ * its source and use.
+ */
 const val LIBRARY_BATCH_SIZE: Int = 128
 
 // What:     `class BatchEmitGate<T>( ... ) { ... }` declares a class with ONE
@@ -84,6 +88,10 @@ const val LIBRARY_BATCH_SIZE: Int = 128
 //   // nextBatch defined below
 // }
 // ```
+/**
+ * Defines batch emit gate type for this music-player component; the TypeScript-oriented notes above explain its
+ * role.
+ */
 class BatchEmitGate<T>(
     // What:     `private val threshold: Int` is the first constructor parameter
     //           AND a read-only private field: how many newly found items must
@@ -121,6 +129,10 @@ class BatchEmitGate<T>(
     // ```ts
     // private lastEmittedCount = 0;
     // ```
+    /**
+     * Defines last emitted count value for this music-player component; the TypeScript-oriented notes above
+     * explain its source and use.
+     */
     private var lastEmittedCount: Int = 0
 
     // What:     `fun nextBatch(accumulated: List<T>): List<T>? { ... }` declares
@@ -139,6 +151,10 @@ class BatchEmitGate<T>(
     // ```ts
     // nextBatch(accumulated: readonly T[]): readonly T[] | null { ... }
     // ```
+    /**
+     * Defines next batch behavior for this music-player component; the TypeScript-oriented notes above explain
+     * its call shape and effects.
+     */
     fun nextBatch(accumulated: List<T>): List<T>? {
         // What:     `if (accumulated.size - lastEmittedCount < threshold) { return null }`
         //           subtracts the last emitted total from the current total to
