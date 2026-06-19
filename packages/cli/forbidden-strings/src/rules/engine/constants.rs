@@ -1,5 +1,5 @@
-//! Rustdoc summary for the `rules::engine::constants` module.
-/// Rustdoc summary for constant `TROUBLESHOOT_REF`.
+//! rules engine constants support for the forbidden-strings scanner.
+/// Defines the `TROUBLESHOOT_REF` constant.
 // What:     `pub(super) const TROUBLESHOOT_REF: &str = "...";` is a compile-time
 //           constant pointing readers from a runtime error message to
 //           the long-form troubleshooting doc. `&str` here is a

@@ -1,5 +1,5 @@
-//! Rustdoc summary for the `rules::engine` module.
-/// Rustdoc summary for module `compiled`.
+//! rules engine support for the forbidden-strings scanner.
+/// Registers the `compiled` child module.
 // What:     Engine submodule wiring. Each `mod foo;` declares a sibling
 //           file under `src/rules/engine/foo.rs`, and each `pub use`
 //           re-exports the public helper through `super::engine::*`.
@@ -13,46 +13,46 @@
 // export { requiresResharp } from "./routing";
 // ```
 mod compiled;
-/// Rustdoc summary for module `complement`.
+/// Registers the `complement` child module.
 mod complement;
-/// Rustdoc summary for module `constants`.
+/// Registers the `constants` child module.
 mod constants;
-/// Rustdoc summary for module `lookaround_misc`.
+/// Registers the `lookaround_misc` child module.
 mod lookaround_misc;
-/// Rustdoc summary for module `lookaround_nested_quant`.
+/// Registers the `lookaround_nested_quant` child module.
 mod lookaround_nested_quant;
-/// Rustdoc summary for module `lookaround_trailing`.
+/// Registers the `lookaround_trailing` child module.
 mod lookaround_trailing;
-/// Rustdoc summary for module `quantifier`.
+/// Registers the `quantifier` child module.
 mod quantifier;
-/// Rustdoc summary for module `routing`.
+/// Registers the `routing` child module.
 mod routing;
-/// Rustdoc summary for module `slow_quantifier`.
+/// Registers the `slow_quantifier` child module.
 mod slow_quantifier;
 
-/// Rustdoc summary for use.
+/// Imports dependencies used by this module.
 pub use compiled::CompiledRegex;
-/// Rustdoc summary for use.
+/// Imports dependencies used by this module.
 pub use complement::{
     complement_intersection_quantified_group,
     lookaround_in_complement,
     nested_complement,
 };
-/// Rustdoc summary for use.
+/// Imports dependencies used by this module.
 pub use lookaround_misc::{
     intersection_with_lookbehind,
     intersection_with_word_end_alternation,
     lookaround_in_alternation_with_sibling,
 };
-/// Rustdoc summary for use.
+/// Imports dependencies used by this module.
 pub use lookaround_nested_quant::nested_lookahead_in_quantified_group;
-/// Rustdoc summary for use.
+/// Imports dependencies used by this module.
 pub use lookaround_trailing::quantified_lookahead_with_sibling_content;
-/// Rustdoc summary for use.
+/// Imports dependencies used by this module.
 pub use quantifier::{nested_grouped_quantifier, stacked_quantifier};
-/// Rustdoc summary for use.
+/// Imports dependencies used by this module.
 pub use routing::requires_resharp;
-/// Rustdoc summary for use.
+/// Imports dependencies used by this module.
 pub use slow_quantifier::{
     nested_chain_in_lookaround_body,
     nested_quantifier_after_wildcard,

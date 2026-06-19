@@ -1,5 +1,5 @@
-//! Rustdoc summary for the `rules::nesting` module.
-/// Rustdoc summary for constant `TROUBLESHOOT_REF`.
+//! rules nesting support for the forbidden-strings scanner.
+/// Defines the `TROUBLESHOOT_REF` constant.
 // What:     `const TROUBLESHOOT_REF: &str = "..."`. `&str` is a borrowed,
 //           read-only view of UTF-8 bytes baked into the binary at compile
 //           time (sibling: `String`, a heap-allocated owned buffer). This
@@ -15,7 +15,7 @@
 // ```
 const TROUBLESHOOT_REF: &str = "See docs/troubleshooting/resharp.md for workarounds.";
 
-/// Rustdoc summary for constant `MAX_NESTING_DEPTH`.
+/// Defines the `MAX_NESTING_DEPTH` constant.
 // What:     `const MAX_NESTING_DEPTH: usize = 1_000`. `usize` is the
 //           unsigned integer wide enough to count any byte offset on this
 //           platform (siblings the reader might expect: `u32`, `u64`,
@@ -37,7 +37,7 @@ const TROUBLESHOOT_REF: &str = "See docs/troubleshooting/resharp.md for workarou
 // ```
 const MAX_NESTING_DEPTH: usize = 1_000;
 
-/// Rustdoc summary for function `nesting_depth`.
+/// Implements `nesting_depth`.
 // What:     `pub fn nesting_depth(src: &str) -> Option<String>`. Takes a
 //           borrowed rule source string (`&str`, not an owned `String`,
 //           because it only reads it) and returns `Option<String>`: the

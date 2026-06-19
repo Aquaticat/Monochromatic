@@ -1,5 +1,5 @@
-//! Rustdoc summary for the `scan` module.
-/// Rustdoc summary for use.
+//! scan support for the forbidden-strings scanner.
+/// Imports dependencies used by this module.
 // What:     `use rayon::prelude::*;` brings rayon's parallel-iterator
 //           traits into scope. We use it for the per-rule parallel
 //           `find_all` pass on the violation slow path.
@@ -13,7 +13,7 @@
 // ```
 use rayon::prelude::*;
 
-/// Rustdoc summary for use.
+/// Imports dependencies used by this module.
 // What:     `use std::collections::BTreeSet;` imports an ordered set
 //           backed by a balanced binary tree. Insertions and lookups
 //           are O(log n). `BTreeSet<usize>` here holds rule positions
@@ -28,7 +28,7 @@ use rayon::prelude::*;
 // ```
 use std::collections::BTreeSet;
 
-/// Rustdoc summary for use.
+/// Imports dependencies used by this module.
 // What:     `use std::sync::OnceLock;` brings the thread-safe "set
 //           exactly once" cell into scope. `OnceLock<T: Send + Sync>`
 //           is itself `Sync`, so a single instance can be shared by
@@ -55,7 +55,7 @@ use std::collections::BTreeSet;
 // ```
 use std::sync::OnceLock;
 
-/// Rustdoc summary for use.
+/// Imports dependencies used by this module.
 // What:     `use crate::rules::{is_word_byte, AcMeta, RuleSet};` imports
 //           the top-level rules container, the per-AC-pattern metadata
 //           tag, and the word-character classifier from the sibling
@@ -71,10 +71,10 @@ use std::sync::OnceLock;
 // import { isWordByte, AcMeta, type RuleSet } from "./rules";
 // ```
 use crate::rules::{is_word_byte, AcMeta, ResidualShard, RuleSet};
-/// Rustdoc summary for use.
+/// Imports dependencies used by this module.
 use crate::scan_format::{build_line_index, emit_hit};
 
-/// Rustdoc summary for function `scan_content`.
+/// Implements `scan_content`.
 // What:     `pub fn scan_content(path: &str, content: &[u8], rs: &RuleSet) -> Vec<String>`
 //           scans one file's contents against the full ruleset and
 //           returns an owned `Vec` of redacted hit strings. Empty Vec

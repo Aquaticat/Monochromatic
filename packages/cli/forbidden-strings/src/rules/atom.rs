@@ -1,13 +1,13 @@
-//! Rustdoc summary for the `rules::atom` module.
-/// Rustdoc summary for use.
+//! rules atom support for the forbidden-strings scanner.
+/// Imports dependencies used by this module.
 use super::regex_syntax::{
     find_matching_close_paren, group_body_start, quantifier_is_required, skip_any_quantifier,
     skip_class_body,
 };
-/// Rustdoc summary for use.
+/// Imports dependencies used by this module.
 use super::walker::extract_scope;
 
-/// Rustdoc summary for function `walk_literal_bytes`.
+/// Implements `walk_literal_bytes`.
 // What:     `fn walk_literal_bytes(input, out, remainder)` walks `input`
 //           character by character (UTF-8 aware), pushing literal
 //           characters into `out` and returning the un-walked tail via
@@ -285,7 +285,7 @@ pub fn walk_literal_bytes<'a>(
     *remainder = tail;
 }
 
-/// Rustdoc summary for function `skip_atom_with_extract`.
+/// Implements `skip_atom_with_extract`.
 // What:     `fn skip_atom_with_extract(s, ci) -> Option<(&str, Option<Vec<(String, bool)>>, Option<bool>)>`
 //           recognizes one head atom, advances past it AND its
 //           quantifier, and optionally returns a Vec of (substring, ci)

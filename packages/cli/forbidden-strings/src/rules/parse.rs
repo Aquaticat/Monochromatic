@@ -1,5 +1,5 @@
-//! Rustdoc summary for the `rules::parse` module.
-/// Rustdoc summary for enum `ParsedRule`.
+//! rules parse support for the forbidden-strings scanner.
+/// Enumerates `ParsedRule` variants.
 // What:     `pub enum ParsedRule { Literal(String), Regex(String) }`
 //           declares an enum (Rust's tagged-union; closer to a
 //           discriminated union in TS than a TS `enum`). Each variant
@@ -28,7 +28,7 @@ pub enum ParsedRule {
     ),
 }
 
-/// Rustdoc summary for function `parse_rule_source`.
+/// Implements `parse_rule_source`.
 // What:     `pub fn parse_rule_source(line: &str) -> Option<ParsedRule>`
 //           classifies one line of the rules file into a literal or a
 //           regex (or `None` for blank/comment lines). `&str` is a

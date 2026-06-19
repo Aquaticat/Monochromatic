@@ -1,5 +1,5 @@
-//! Rustdoc summary for the `scan_format` module.
-/// Rustdoc summary for use.
+//! scan_format support for the forbidden-strings scanner.
+/// Imports dependencies used by this module.
 // What:     `use memchr::memchr_iter;` imports a SIMD-accelerated
 //           "find every occurrence of byte B in slice S" iterator.
 //           memchr is the foundation that aho-corasick is also built
@@ -26,7 +26,7 @@ use memchr::memchr_iter;
 //           secret" report useful; the perf saving from skipping
 //           binaries does not justify the soundness gap.
 
-/// Rustdoc summary for function `build_line_index`.
+/// Implements `build_line_index`.
 // What:     `pub fn build_line_index(content: &[u8]) -> Vec<usize>`
 //           produces a sorted `Vec<usize>` of byte offsets where each
 //           line starts. The first entry is always `0` (line 1's start);
@@ -84,7 +84,7 @@ pub fn build_line_index(content: &[u8]) -> Vec<usize> {
     starts
 }
 
-/// Rustdoc summary for function `line_and_col_indexed`.
+/// Implements `line_and_col_indexed`.
 // What:     `pub fn line_and_col_indexed(line_starts: &[usize], offset: usize) -> (usize, usize)`
 //           is the indexed replacement for the old `line_and_col`. It
 //           does an O(log L) binary search instead of an O(offset)
@@ -129,7 +129,7 @@ pub fn line_and_col_indexed(line_starts: &[usize], offset: usize) -> (usize, usi
     (line, col)
 }
 
-/// Rustdoc summary for function `end_in_line_indexed`.
+/// Implements `end_in_line_indexed`.
 // What:     `pub fn end_in_line_indexed(line_starts: &[usize], start: usize, end: usize) -> usize`
 //           returns the byte offset of the first `\n` in `[start, end)`
 //           if one exists, else returns `end` unchanged. Indexed
@@ -162,7 +162,7 @@ pub fn end_in_line_indexed(line_starts: &[usize], start: usize, end: usize) -> u
     end
 }
 
-/// Rustdoc summary for function `format_hit`.
+/// Implements `format_hit`.
 // What:     `pub fn format_hit(path, line, col_start, col_end, rule_idx) -> String`
 //           builds the redacted `path:line:col_start..col_end rule=N`
 //           output string. Public so `scan.rs` can call it.
@@ -187,7 +187,7 @@ pub fn format_hit(
     format!("{}:{}:{}..{} rule={}", path, line, col_start, col_end, rule_idx)
 }
 
-/// Rustdoc summary for function `emit_hit`.
+/// Implements `emit_hit`.
 // What:     `pub fn emit_hit(li, path, start, end, rule_idx) -> String`
 //           composes the three-step (line, col_start, col_end) compute
 //           and `format_hit` call that every hit-emission site in
@@ -242,7 +242,7 @@ pub fn emit_hit(
     format_hit(path, line, col_start, col_end, rule_idx)
 }
 
-/// Rustdoc summary for module `tests`.
+/// Registers the `tests` child module.
 // What:     `#[cfg(test)] #[path = "scan_format_tests.rs"] mod tests;`
 //           declares a test-only submodule whose code lives in the sibling
 //           file `scan_format_tests.rs`. `#[cfg(test)]` gates it to test

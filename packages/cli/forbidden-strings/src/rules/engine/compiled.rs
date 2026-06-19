@@ -1,5 +1,5 @@
-//! Rustdoc summary for the `rules::engine::compiled` module.
-/// Rustdoc summary for use.
+//! rules engine compiled support for the forbidden-strings scanner.
+/// Imports dependencies used by this module.
 // What:     `use resharp::Regex;` imports the resharp regex type.
 //           Resharp's `Regex` holds a `Mutex<RegexInner>` for lazy DFA
 //           growth, so calling `is_match`/`find_all` on a SHARED Regex
@@ -16,7 +16,7 @@
 // ```
 use resharp::Regex;
 
-/// Rustdoc summary for use.
+/// Imports dependencies used by this module.
 // What:     `use std::panic::{catch_unwind, AssertUnwindSafe};` brings
 //           the panic-recovery primitives into scope.
 //           - `catch_unwind(closure)` runs the closure on the current
@@ -78,7 +78,7 @@ use resharp::Regex;
 // ```
 use std::panic::{catch_unwind, AssertUnwindSafe};
 
-/// Rustdoc summary for use.
+/// Imports dependencies used by this module.
 // What:     `use regex::bytes::Regex as PlainRegex;` imports the
 //           standard `regex` crate's byte-mode regex type under an
 //           alias to disambiguate from `resharp::Regex`. The `regex`
@@ -106,7 +106,7 @@ use std::panic::{catch_unwind, AssertUnwindSafe};
 // ```
 use regex::bytes::Regex as PlainRegex;
 
-/// Rustdoc summary for enum `CompiledRegex`.
+/// Enumerates `CompiledRegex` variants.
 // What:     `pub enum CompiledRegex { Resharp(Regex), Plain(PlainRegex) }`
 //           is the unified compiled-regex container. Each rule's
 //           source is classified at load time (set-algebra vs not)
@@ -145,7 +145,7 @@ pub enum CompiledRegex {
     ),
 }
 
-/// Rustdoc summary for struct `ScanMatch`.
+/// Groups fields for `ScanMatch`.
 // What:     `pub struct ScanMatch { pub start: usize, pub end: usize }`
 //           is the engine-agnostic match record. Field-shape is
 //           identical to `resharp::Match` so `scan.rs` code reading
@@ -166,15 +166,15 @@ pub enum CompiledRegex {
 // ```
 #[derive(Debug, Clone, Copy)]
 pub struct ScanMatch {
-/// Rustdoc summary for field `start`.
+/// Stores `start`.
     pub start: usize,
-/// Rustdoc summary for field `end`.
+/// Stores `end`.
     pub end: usize,
 }
 
-/// Rustdoc summary for impl block.
+/// Provides methods for this type.
 impl CompiledRegex {
-/// Rustdoc summary for function `find_all`.
+/// Implements `find_all`.
     // What:     `pub fn find_all(&self, content: &[u8]) -> Result<Vec<ScanMatch>, ()>`
     //           returns every non-overlapping match in `content` as
     //           a Vec of ScanMatch. The empty Vec means clean (no
@@ -256,7 +256,7 @@ impl CompiledRegex {
         }
     }
 
-/// Rustdoc summary for function `is_match`.
+/// Implements `is_match`.
     // What:     `pub fn is_match(&self, content: &[u8]) -> Result<bool, ()>`
     //           is the short-circuit "any match anywhere" check. Used by
     //           the Combined residual shard's gate. Returns `Ok(true)` on

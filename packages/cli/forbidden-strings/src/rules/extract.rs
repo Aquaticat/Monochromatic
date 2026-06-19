@@ -1,8 +1,8 @@
-//! Rustdoc summary for the `rules::extract` module.
-/// Rustdoc summary for use.
+//! rules extract support for the forbidden-strings scanner.
+/// Imports dependencies used by this module.
 use super::walker::extract_scope;
 
-/// Rustdoc summary for constant `MIN_PREFIX_LEN`.
+/// Defines the `MIN_PREFIX_LEN` constant.
 // What:     Minimum byte length of an extracted regex prefix. Anything
 //           shorter is dropped from the unified AC index because short
 //           prefixes (like "a" or "to") fire on every file and defeat
@@ -29,7 +29,7 @@ use super::walker::extract_scope;
 // cost exceeds the residual-scan saving.
 pub const MIN_PREFIX_LEN: usize = 3;
 
-/// Rustdoc summary for function `extract_gating_substrings`.
+/// Implements `extract_gating_substrings`.
 // What:     `pub fn extract_gating_substrings(src: &str) -> Option<Vec<(String, bool)>>`
 //           returns a Vec of (substring, ci) pairs such that ANY successful
 //           regex match must contain AT LEAST ONE of them. The `ci` flag

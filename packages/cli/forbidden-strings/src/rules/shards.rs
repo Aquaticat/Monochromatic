@@ -1,13 +1,13 @@
-//! Rustdoc summary for the `rules::shards` module.
-/// Rustdoc summary for use.
+//! rules shards support for the forbidden-strings scanner.
+/// Imports dependencies used by this module.
 use resharp::Regex;
 
-/// Rustdoc summary for use.
+/// Imports dependencies used by this module.
 use super::engine::{requires_resharp, CompiledRegex};
-/// Rustdoc summary for use.
+/// Imports dependencies used by this module.
 use super::types::ResidualShard;
 
-/// Rustdoc summary for function `build_residual_shards`.
+/// Implements `build_residual_shards`.
 // What:     `pub fn build_residual_shards(positions, regex_specs) -> Result<Vec<ResidualShard>, String>`
 //           is the public entry point. Delegates to `greedy_combine`,
 //           which returns `Vec<ResidualShard>` infallibly: the recursion
@@ -89,7 +89,7 @@ pub fn build_residual_shards(
     Ok(shards)
 }
 
-/// Rustdoc summary for constant `GREEDY_COMBINE_THRESHOLD`.
+/// Defines the `GREEDY_COMBINE_THRESHOLD` constant.
 // What:     `GREEDY_COMBINE_THRESHOLD` is the residual-count above which
 //           `build_residual_shards` runs the divide-and-conquer
 //           greedy_combine. Below it, every position is emitted as a
@@ -107,7 +107,7 @@ pub fn build_residual_shards(
 // ```
 const GREEDY_COMBINE_THRESHOLD: usize = 16;
 
-/// Rustdoc summary for function `greedy_combine`.
+/// Implements `greedy_combine`.
 // What:     `fn greedy_combine(positions, regex_specs) -> Vec<ResidualShard>`
 //           is a recursive divide-and-conquer partitioner. For each slice:
 //             - len == 0: empty.
@@ -188,7 +188,7 @@ fn greedy_combine(
     left
 }
 
-/// Rustdoc summary for function `try_compile_combined`.
+/// Implements `try_compile_combined`.
 // What:     `fn try_compile_combined(chunk, regex_specs) -> Option<CompiledRegex>`
 //           builds a combined-alternation source for `chunk` (joining
 //           each rule's regex source with `|`, wrapping each in parens),

@@ -1,5 +1,5 @@
-//! Rustdoc summary for the `rules` module.
-/// Rustdoc summary for module `atom`.
+//! rules support for the forbidden-strings scanner.
+/// Registers the `atom` child module.
 // What:     Module-tree wiring. Each `mod foo;` declares that
 //           `src/rules/foo.rs` exists and should be compiled as
 //           `crate::rules::foo`. The submodules carry the actual
@@ -17,26 +17,26 @@
 // // No equivalent. Closest: the `index.ts` barrel-export pattern.
 // ```
 mod atom;
-/// Rustdoc summary for module `compile`.
+/// Registers the `compile` child module.
 mod compile;
-/// Rustdoc summary for module `engine`.
+/// Registers the `engine` child module.
 mod engine;
-/// Rustdoc summary for module `extract`.
+/// Registers the `extract` child module.
 mod extract;
-/// Rustdoc summary for module `nesting`.
+/// Registers the `nesting` child module.
 mod nesting;
-/// Rustdoc summary for module `parse`.
+/// Registers the `parse` child module.
 mod parse;
-/// Rustdoc summary for module `regex_syntax`.
+/// Registers the `regex_syntax` child module.
 mod regex_syntax;
-/// Rustdoc summary for module `shards`.
+/// Registers the `shards` child module.
 mod shards;
-/// Rustdoc summary for module `types`.
+/// Registers the `types` child module.
 mod types;
-/// Rustdoc summary for module `walker`.
+/// Registers the `walker` child module.
 mod walker;
 
-/// Rustdoc summary for module `algebra_tests`.
+/// Registers the `algebra_tests` child module.
 // What:     `#[cfg(test)] mod atom_tests;` and `#[cfg(test)] mod
 //           extract_tests;` declare two sibling submodules that ONLY
 //           compile when running `cargo test`. The `#[cfg(test)]`
@@ -56,20 +56,20 @@ mod walker;
 // ```
 #[cfg(test)]
 mod algebra_tests;
-/// Rustdoc summary for module `atom_tests`.
+/// Registers the `atom_tests` child module.
 #[cfg(test)]
 mod atom_tests;
-/// Rustdoc summary for module `engine_tests`.
+/// Registers the `engine_tests` child module.
 #[cfg(test)]
 mod engine_tests;
-/// Rustdoc summary for module `extract_tests`.
+/// Registers the `extract_tests` child module.
 #[cfg(test)]
 mod extract_tests;
-/// Rustdoc summary for module `nesting_tests`.
+/// Registers the `nesting_tests` child module.
 #[cfg(test)]
 mod nesting_tests;
 
-/// Rustdoc summary for use.
+/// Imports dependencies used by this module.
 // What:     Public surface re-exports so external callers (`scan.rs`,
 //           `main.rs`) can keep using `crate::rules::Foo` without
 //           knowing which submodule actually defines `Foo`.
@@ -81,7 +81,7 @@ mod nesting_tests;
 // export { CompiledRegex, ScanMatch, requiresResharp } from "./rules/engine";
 // ```
 pub use compile::compile_rule_src;
-/// Rustdoc summary for use.
+/// Imports dependencies used by this module.
 pub use engine::{
     complement_intersection_quantified_group,
     intersection_with_lookbehind,
@@ -98,18 +98,18 @@ pub use engine::{
     stacked_quantifier,
     CompiledRegex,
 };
-/// Rustdoc summary for use.
+/// Imports dependencies used by this module.
 pub use nesting::nesting_depth;
-/// Rustdoc summary for use.
+/// Imports dependencies used by this module.
 pub use extract::extract_gating_substrings;
-/// Rustdoc summary for use.
+/// Imports dependencies used by this module.
 pub use parse::{parse_rule_source, ParsedRule};
-/// Rustdoc summary for use.
+/// Imports dependencies used by this module.
 pub use shards::build_residual_shards;
-/// Rustdoc summary for use.
+/// Imports dependencies used by this module.
 pub use types::{is_word_byte, AcMeta, RegexRule, ResidualShard, RuleSet, SUBSTRING_THRESHOLD};
 
-/// Rustdoc summary for use.
+/// Imports dependencies used by this module.
 // What:     Crate-local re-exports gated behind the `fuzzing` Cargo
 //           feature. Each item is a `pub(crate)` helper inside the
 //           rules submodule; the re-export pulls it up to
@@ -132,7 +132,7 @@ pub use types::{is_word_byte, AcMeta, RegexRule, ResidualShard, RuleSet, SUBSTRI
 // ```
 #[cfg(feature = "fuzzing")]
 pub use atom::{skip_atom_with_extract, walk_literal_bytes};
-/// Rustdoc summary for use.
+/// Imports dependencies used by this module.
 #[cfg(feature = "fuzzing")]
 pub use regex_syntax::{
     find_matching_close_paren,
@@ -142,7 +142,7 @@ pub use regex_syntax::{
     skip_class_body,
 };
 
-/// Rustdoc summary for use.
+/// Imports dependencies used by this module.
 // What:     `use std::fs;` brings the filesystem module into scope. We
 //           use `fs::read_to_string` to slurp the rules file.
 // Why:      Reading rules is sync and tiny; no need for streaming.
@@ -153,7 +153,7 @@ pub use regex_syntax::{
 // ```
 use std::fs;
 
-/// Rustdoc summary for use.
+/// Imports dependencies used by this module.
 // What:     `use aho_corasick::AhoCorasick;` imports the multi-pattern
 //           literal-matcher type from the `aho-corasick` crate.
 //           AhoCorasick is `Send + Sync` (no interior mutex), uses SIMD
@@ -171,7 +171,7 @@ use std::fs;
 // ```
 use aho_corasick::AhoCorasick;
 
-/// Rustdoc summary for use.
+/// Imports dependencies used by this module.
 // What:     `use rayon::prelude::*;` is a "prelude import" that brings
 //           every common rayon trait into scope, notably `IntoParallelIterator`,
 //           `ParallelIterator`, `IndexedParallelIterator`. Glob imports
@@ -186,7 +186,7 @@ use aho_corasick::AhoCorasick;
 // ```
 use rayon::prelude::*;
 
-/// Rustdoc summary for function `load_ruleset`.
+/// Implements `load_ruleset`.
 // What:     `pub fn load_ruleset(path: &str) -> Result<RuleSet, String>`
 //           reads the rules file at `path`, surfaces the I/O error
 //           with a friendly message if the read fails, and hands
@@ -228,7 +228,7 @@ pub fn load_ruleset(path: &str) -> Result<RuleSet, String> {
     load_ruleset_from_source(&content, path)
 }
 
-/// Rustdoc summary for function `load_ruleset_from_source`.
+/// Implements `load_ruleset_from_source`.
 // What:     `pub fn load_ruleset_from_source(content: &str, _label: &str) -> Result<RuleSet, String>`
 //           runs the loader pipeline (classify -> compile regex
 //           rules in parallel -> extract gating substrings -> build

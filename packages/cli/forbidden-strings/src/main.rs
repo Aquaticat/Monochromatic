@@ -1,5 +1,5 @@
-//! Rustdoc summary for the `main` module.
-/// Rustdoc summary for use.
+//! main support for the forbidden-strings scanner.
+/// Imports dependencies used by this module.
 // What:     `use forbidden_strings::run_cli_from_env;` imports the
 //           public lib entry point. The crate's library target is
 //           named `forbidden_strings` (underscores; the `[[bin]]`
@@ -20,7 +20,7 @@
 // ```
 use forbidden_strings::run_cli_from_env;
 
-/// Rustdoc summary for use.
+/// Imports dependencies used by this module.
 // What:     `use std::process::ExitCode;` imports the typed wrapper
 //           for OS exit codes. Returning `ExitCode` from `main` is
 //           the idiomatic way to set the exit status from Rust.
@@ -33,7 +33,7 @@ use forbidden_strings::run_cli_from_env;
 // ```
 use std::process::ExitCode;
 
-/// Rustdoc summary for function `main`.
+/// Implements `main`.
 // What:     `fn main() -> ExitCode` is the program entry point. It
 //           dispatches to `run_cli_from_env` and converts the
 //           returned `Result<i32, String>` into an `ExitCode`. The

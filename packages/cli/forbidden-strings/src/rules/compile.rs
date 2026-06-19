@@ -1,5 +1,5 @@
-//! Rustdoc summary for the `rules::compile` module.
-/// Rustdoc summary for use.
+//! rules compile support for the forbidden-strings scanner.
+/// Imports dependencies used by this module.
 // What:     `use resharp::Regex;` imports the resharp regex type.
 //           Used inside `load_ruleset` for the (smaller) regex bucket
 //           on rules that use set-algebra; rules without set-algebra
@@ -13,7 +13,7 @@
 // ```
 use resharp::Regex;
 
-/// Rustdoc summary for use.
+/// Imports dependencies used by this module.
 // What:     `use std::panic::{catch_unwind, AssertUnwindSafe};` brings
 //           the panic-recovery primitives into scope for the
 //           compile-time wrap on `Regex::new`. Full primer at the
@@ -48,7 +48,7 @@ use resharp::Regex;
 // ```
 use std::panic::{catch_unwind, AssertUnwindSafe};
 
-/// Rustdoc summary for use.
+/// Imports dependencies used by this module.
 // What:     `use super::{...};` imports helpers re-exported by the
 //           parent `rules` module. `super` means "the module above
 //           this one".
@@ -79,7 +79,7 @@ use super::{
     CompiledRegex,
 };
 
-/// Rustdoc summary for constant `UNICODE_WS_ALT`.
+/// Defines the `UNICODE_WS_ALT` constant.
 // What:     The byte alternation that matches every Unicode whitespace
 //           code point as its UTF-8 byte sequence. Each `\xHH` literal
 //           in the regex source compiles to one byte under the regex
@@ -111,7 +111,7 @@ use super::{
 // ```
 const UNICODE_WS_ALT: &str = r"\xc2\xa0|\xe1\x9a\x80|\xe1\xa0\x8e|\xe2\x80[\x80-\x8a\xa8\xa9\xaf]|\xe2\x81\x9f|\xe3\x80\x80|\xef\xbb\xbf";
 
-/// Rustdoc summary for function `scan_class`.
+/// Implements `scan_class`.
 // What:     `fn scan_class(bytes, start) -> Option<(usize, bool)>`
 //           walks a character class starting at `bytes[start] == b'['`
 //           and returns `(close_offset, contains_s)` -- the index of
@@ -155,7 +155,7 @@ fn scan_class(bytes: &[u8], start: usize) -> Option<(usize, bool)> {
     None
 }
 
-/// Rustdoc summary for function `utf8_width`.
+/// Implements `utf8_width`.
 // What:     `fn utf8_width(leading: u8) -> usize` returns how many
 //           bytes the UTF-8 sequence starting with `leading` occupies.
 //           ASCII (< 0x80) -> 1, two-byte leading (0xc0-0xdf) -> 2,
@@ -180,7 +180,7 @@ fn utf8_width(leading: u8) -> usize {
     }
 }
 
-/// Rustdoc summary for function `expand_unicode_whitespace`.
+/// Implements `expand_unicode_whitespace`.
 // What:     `fn expand_unicode_whitespace(src) -> String` rewrites the
 //           regex source so `\s` matches Unicode whitespace under
 //           `unicode(false)` compile mode. Transformations:
@@ -287,7 +287,7 @@ fn expand_unicode_whitespace(src: &str) -> String {
     out
 }
 
-/// Rustdoc summary for function `compile_rule_src`.
+/// Implements `compile_rule_src`.
 // What:     `pub fn compile_rule_src(src: &str) -> Result<CompiledRegex, String>`
 //           is the single source of truth for the regex compile
 //           decision. It walks the routing classifier
@@ -781,7 +781,7 @@ pub fn compile_rule_src(src: &str) -> Result<CompiledRegex, String> {
     compile_plain_rule_to_compiled(src)
 }
 
-/// Rustdoc summary for function `compile_plain_rule_to_compiled`.
+/// Implements `compile_plain_rule_to_compiled`.
 // What:     `fn compile_plain_rule_to_compiled(src: &str) -> Result<CompiledRegex, String>`
 //           is the unicode-off / unicode-on fallback compile path
 //           for rules that did NOT route to resharp. Identical to

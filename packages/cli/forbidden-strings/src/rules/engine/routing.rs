@@ -1,5 +1,5 @@
-//! Rustdoc summary for the `rules::engine::routing` module.
-/// Rustdoc summary for function `requires_resharp`.
+//! rules engine routing support for the forbidden-strings scanner.
+/// Implements `requires_resharp`.
 // What:     `fn requires_resharp(src: &str) -> bool` returns `true` when
 //           `src` contains any feature the `regex` crate cannot parse
 //           OR would parse with semantics different from resharp's.

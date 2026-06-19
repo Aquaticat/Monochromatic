@@ -1,5 +1,5 @@
-//! Rustdoc summary for the `rules::engine::lookaround_nested_quant` module.
-/// Rustdoc summary for use.
+//! rules engine lookaround_nested_quant support for the forbidden-strings scanner.
+/// Imports dependencies used by this module.
 // What:     `use super::constants::TROUBLESHOOT_REF;` imports the shared
 //           troubleshooting-doc suffix from the parent engine module.
 // Why:      Every rejection message should point at the same long-form
@@ -11,7 +11,7 @@
 // ```
 use super::constants::TROUBLESHOOT_REF;
 
-/// Rustdoc summary for function `nested_lookahead_in_quantified_group`.
+/// Implements `nested_lookahead_in_quantified_group`.
 // What:     `pub fn nested_lookahead_in_quantified_group(src: &str) -> Option<String>`
 //           detects rule shapes that trigger a `attempt to add with
 //           overflow` panic at `resharp-algebra/src/lib.rs:2479`
@@ -98,7 +98,7 @@ pub fn nested_lookahead_in_quantified_group(src: &str) -> Option<String> {
     let bytes = src.as_bytes();
     let mut i = 0usize;
     let mut in_class = false;
-/// Rustdoc summary for struct `Frame`.
+/// Groups fields for `Frame`.
     // What:     `struct Frame { ... }`. One per open group; pushed at
     //           `(`, popped at `)`. Tracks the structural facts needed
     //           to decide whether the group's quantifier completes a
@@ -110,15 +110,15 @@ pub fn nested_lookahead_in_quantified_group(src: &str) -> Option<String> {
     //           sibling literals / alternations that break the chain.
     #[derive(Default, Clone)]
     struct Frame {
-/// Rustdoc summary for field `is_lookahead_self`.
+/// Stores `is_lookahead_self`.
         is_lookahead_self: bool,
-/// Rustdoc summary for field `has_lookahead_subtree`.
+/// Stores `has_lookahead_subtree`.
         has_lookahead_subtree: bool,
-/// Rustdoc summary for field `has_inner_quant_group`.
+/// Stores `has_inner_quant_group`.
         has_inner_quant_group: bool,
-/// Rustdoc summary for field `has_non_group_atom`.
+/// Stores `has_non_group_atom`.
         has_non_group_atom: bool,
-/// Rustdoc summary for field `has_alternation`.
+/// Stores `has_alternation`.
         has_alternation: bool,
     }
     let mut stack: Vec<Frame> = Vec::new();
