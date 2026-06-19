@@ -13,90 +13,84 @@
 //! `NativeBridgeTest.fingerprintIsDeterministicOpaqueAndChangeSensitiveOnDevice`,
 //! and the identical hashing algorithm is unit-tested host-side on the desktop twin.
 
-// What:     `use jni::JNIEnv;` imports the per-call interface pointer the JVM hands
-//           every native method (the gateway used to read the Java string and build
-//           the returned one).
-// Why:      `native_fingerprint` reads its `JString` argument and allocates the
-//           result string through this handle.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// type JNIEnv = RuntimeContext; // per-call handle to talk to the host runtime
-// ```
-/// Imports.
+/// What:     `use jni::JNIEnv;` imports the per-call interface pointer the JVM hands
+///           every native method (the gateway used to read the Java string and build
+///           the returned one).
+/// Why:      `native_fingerprint` reads its `JString` argument and allocates the
+///           result string through this handle.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type JNIEnv = RuntimeContext; // per-call handle to talk to the host runtime
+/// ```
 use jni::JNIEnv;
 
-// What:     `use jni::objects::{JClass, JString};`. `JClass` is the calling Java
-//           class handle (unused here); `JString` is a borrowed handle to a Java
-//           `String` argument (sibling: `JObject`, the untyped object handle).
-// Why:      The JNI entry's signature names both: `_class` is the class handle and
-//           `path` is the incoming Java string.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// // both are opaque host-runtime handles
-// ```
-/// Imports.
+/// What:     `use jni::objects::{JClass, JString};`. `JClass` is the calling Java
+///           class handle (unused here); `JString` is a borrowed handle to a Java
+///           `String` argument (sibling: `JObject`, the untyped object handle).
+/// Why:      The JNI entry's signature names both: `_class` is the class handle and
+///           `path` is the incoming Java string.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // both are opaque host-runtime handles
+/// ```
 use jni::objects::{JClass, JString};
 
-// What:     `use jni::sys::{jlong, jstring};`. `jlong` is the JNI 64-bit signed
-//           integer (maps to Kotlin `Long`; sibling `jint` is 32-bit). `jstring` is
-//           the RAW pointer type a native method returns to hand a string back to
-//           the JVM (sibling: the safe `JString` used for arguments).
-// Why:      `size`/`mtime_nanos` arrive as `jlong`, and the function returns a
-//           `jstring`.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// type jlong = bigint; type jstring = HostStringHandle;
-// ```
-/// Imports.
+/// What:     `use jni::sys::{jlong, jstring};`. `jlong` is the JNI 64-bit signed
+///           integer (maps to Kotlin `Long`; sibling `jint` is 32-bit). `jstring` is
+///           the RAW pointer type a native method returns to hand a string back to
+///           the JVM (sibling: the safe `JString` used for arguments).
+/// Why:      `size`/`mtime_nanos` arrive as `jlong`, and the function returns a
+///           `jstring`.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type jlong = bigint; type jstring = HostStringHandle;
+/// ```
 use jni::sys::{jlong, jstring};
 
-// What:     `use gxhash::gxhash64;` imports ONE free function from the external
-//           `gxhash` crate: `gxhash64(input: &[u8], seed: i64) -> u64`, a fast
-//           NON-cryptographic hash. Siblings: `gxhash32` / `gxhash128`.
-// Why:      It is the cache fingerprint hash, replacing the old pure-Kotlin FNV-1a.
-// Gotcha:   `gxhash` compiles a hardware-AES path with no software fallback, so the
-//           native crate only builds with the `aes` CPU feature enabled (set in
-//           `.cargo/config.toml` for the Android target triples) and the resulting
-//           `.so` requires a CPU with ARM AES (every arm64-v8a phone with the crypto
-//           extensions; checked on the target device before shipping).
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { gxhash64 } from "gxhash"; // hypothetical; no real JVM port exists
-// ```
-/// Imports.
+/// What:     `use gxhash::gxhash64;` imports ONE free function from the external
+///           `gxhash` crate: `gxhash64(input: &[u8], seed: i64) -> u64`, a fast
+///           NON-cryptographic hash. Siblings: `gxhash32` / `gxhash128`.
+/// Why:      It is the cache fingerprint hash, replacing the old pure-Kotlin FNV-1a.
+/// Gotcha:   `gxhash` compiles a hardware-AES path with no software fallback, so the
+///           native crate only builds with the `aes` CPU feature enabled (set in
+///           `.cargo/config.toml` for the Android target triples) and the resulting
+///           `.so` requires a CPU with ARM AES (every arm64-v8a phone with the crypto
+///           extensions; checked on the target device before shipping).
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { gxhash64 } from "gxhash"; // hypothetical; no real JVM port exists
+/// ```
 use gxhash::gxhash64;
 
-// What:     `const FINGERPRINT_SEED: i64 = 0;`. The fixed seed handed to `gxhash64`.
-//           `i64` (signed 64-bit; the sibling `u64` is what you might expect, but the
-//           gxhash API takes `i64`) because that is `gxhash64`'s exact parameter type.
-// Why:      gxhash64 is fully deterministic given `(bytes, seed)`; pinning one
-//           constant seed makes the fingerprint reproducible. It MUST equal the
-//           desktop crate's `FINGERPRINT_SEED` (also 0) so the two flavors hash
-//           identical input identically.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// const FINGERPRINT_SEED = 0n;
-// ```
-/// Fingerprint seed.
+/// What:     `const FINGERPRINT_SEED: i64 = 0;`. The fixed seed handed to `gxhash64`.
+///           `i64` (signed 64-bit; the sibling `u64` is what you might expect, but the
+///           gxhash API takes `i64`) because that is `gxhash64`'s exact parameter type.
+/// Why:      gxhash64 is fully deterministic given `(bytes, seed)`; pinning one
+///           constant seed makes the fingerprint reproducible. It MUST equal the
+///           desktop crate's `FINGERPRINT_SEED` (also 0) so the two flavors hash
+///           identical input identically.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const FINGERPRINT_SEED = 0n;
+/// ```
 const FINGERPRINT_SEED: i64 = 0;
 
-// What:     `fn compute(path: &str, size: u64, mtime_nanos: u128) -> String`. The
-//           pure fingerprint: borrow the path text (`&str`, a borrowed view; sibling
-//           owned `String`), the file size, and the modified-time in nanoseconds, and
-//           return the owned hex `String` cache key.
-// Why:      Keeping the hashing here (separate from the JNI glue) mirrors the
-//           desktop's `fingerprint` and keeps the byte layout in one readable place.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// function compute(path: string, size: bigint, mtimeNanos: bigint): string { ... }
-// ```
-/// Compute.
+/// What:     `fn compute(path: &str, size: u64, mtime_nanos: u128) -> String`. The
+///           pure fingerprint: borrow the path text (`&str`, a borrowed view; sibling
+///           owned `String`), the file size, and the modified-time in nanoseconds, and
+///           return the owned hex `String` cache key.
+/// Why:      Keeping the hashing here (separate from the JNI glue) mirrors the
+///           desktop's `fingerprint` and keeps the byte layout in one readable place.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function compute(path: string, size: bigint, mtimeNanos: bigint): string { ... }
+/// ```
 fn compute(path: &str, size: u64, mtime_nanos: u128) -> String {
     // What:     `let mut material: Vec<u8> = Vec::new();`. A growable byte buffer
     //           (`Vec<u8>`; sibling fixed `[u8; N]` or borrowed `&[u8]`). `mut`
@@ -165,23 +159,22 @@ fn compute(path: &str, size: u64, mtime_nanos: u128) -> String {
 // // no annotation needed
 // ```
 #[no_mangle]
-// What:     `pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeFingerprint<'local>(...)`.
-//           The JNI entry. The name encodes `Java_` + package + class (`NativeBridge`)
-//           + method (`nativeFingerprint`), underscore-joined. Params: `env` (the JNI
-//           gateway), `_class` (the calling class, unused), `path: JString<'local>`
-//           (the borrowed Java string), `size`/`mtime_nanos` (`jlong`, i.e. Kotlin
-//           `Long`). `-> jstring` returns a raw Java-string pointer.
-// Why:      Kotlin's `NativeBridge.nativeFingerprint(path, size, mtimeNanos)` calls
-//           this; it returns the hex cache key.
-// Gotcha:   `extern "system"` means a panic must NEVER cross this boundary; the body
-//           only does infallible work plus two `match`es that return a null `jstring`
-//           on the (practically unreachable) JNI string-conversion failure.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// export function nativeFingerprint(env, _class, path: JString, size: bigint, mtimeNanos: bigint): jstring { ... }
-// ```
-/// JNI export native fingerprint.
+/// What:     `pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeFingerprint<'local>(...)`.
+///           The JNI entry. The name encodes `Java_` + package + class (`NativeBridge`)
+///           + method (`nativeFingerprint`), underscore-joined. Params: `env` (the JNI
+///           gateway), `_class` (the calling class, unused), `path: JString<'local>`
+///           (the borrowed Java string), `size`/`mtime_nanos` (`jlong`, i.e. Kotlin
+///           `Long`). `-> jstring` returns a raw Java-string pointer.
+/// Why:      Kotlin's `NativeBridge.nativeFingerprint(path, size, mtimeNanos)` calls
+///           this; it returns the hex cache key.
+/// Gotcha:   `extern "system"` means a panic must NEVER cross this boundary; the body
+///           only does infallible work plus two `match`es that return a null `jstring`
+///           on the (practically unreachable) JNI string-conversion failure.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export function nativeFingerprint(env, _class, path: JString, size: bigint, mtimeNanos: bigint): jstring { ... }
+/// ```
 pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeFingerprint<'local>(
     env: JNIEnv<'local>,
     _class: JClass<'local>,

@@ -18,190 +18,176 @@
 //! `jdouble`, `jfloat`, `jboolean`, `JString`), which are just the platform's
 //! fixed-width integers/floats and an opaque Java-string handle.
 
-// What:     `mod decode;` declares a child module named `decode` and tells the
-//           compiler its code lives in the sibling file `decode.rs`. A "module" is
-//           Rust's namespace/file-grouping unit. The other `mod` lines do the same
-//           for `engine.rs`, `engine_worker.rs`, `error.rs`, `opus.rs`, `output.rs`,
-//           and `truepeak.rs`.
-// Why:      This file (the crate root) is the only place that lists the crate's
-//           modules; without these lines those sibling files are never compiled and
-//           `decode::open`, `engine::Engine`, etc. below would not resolve.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// // No runtime statement; the bundler discovers ./decode.ts when it is imported.
-// // Mentally: `import * as decode from "./decode";` makes `decode.open` reachable.
-// ```
-/// Decode module.
+/// What:     `mod decode;` declares a child module named `decode` and tells the
+///           compiler its code lives in the sibling file `decode.rs`. A "module" is
+///           Rust's namespace/file-grouping unit. The other `mod` lines do the same
+///           for `engine.rs`, `engine_worker.rs`, `error.rs`, `opus.rs`, `output.rs`,
+///           and `truepeak.rs`.
+/// Why:      This file (the crate root) is the only place that lists the crate's
+///           modules; without these lines those sibling files are never compiled and
+///           `decode::open`, `engine::Engine`, etc. below would not resolve.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // No runtime statement; the bundler discovers ./decode.ts when it is imported.
+/// // Mentally: `import * as decode from "./decode";` makes `decode.open` reachable.
+/// ```
 mod decode;
-// What:     `mod engine;` declares the `engine` child module, compiled from
-//           `engine.rs`. It holds the playback `Engine` type the JNI handle wraps.
-// Why:      So `engine::Engine::new()` and the `engine_ref.*` method calls below
-//           resolve to real code.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import * as engine from "./engine";
-// ```
-/// Engine module.
+/// What:     `mod engine;` declares the `engine` child module, compiled from
+///           `engine.rs`. It holds the playback `Engine` type the JNI handle wraps.
+/// Why:      So `engine::Engine::new()` and the `engine_ref.*` method calls below
+///           resolve to real code.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import * as engine from "./engine";
+/// ```
 mod engine;
-// What:     `mod engine_worker;` declares the `engine_worker` child module
-//           (`engine_worker.rs`), the background thread the engine drives.
-// Why:      The `engine` module spawns it; declaring it here puts it in the build.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import * as engine_worker from "./engine_worker";
-// ```
-/// Engine worker module.
+/// What:     `mod engine_worker;` declares the `engine_worker` child module
+///           (`engine_worker.rs`), the background thread the engine drives.
+/// Why:      The `engine` module spawns it; declaring it here puts it in the build.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import * as engine_worker from "./engine_worker";
+/// ```
 mod engine_worker;
-// What:     `mod error;` declares the `error` child module (`error.rs`), home of
-//           the shared `PlayerError` type that all fallible calls funnel into.
-// Why:      Many functions below return `Result<_, PlayerError>`; this brings that
-//           type's definition into the crate.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import * as error from "./error";
-// ```
-/// Error module.
+/// What:     `mod error;` declares the `error` child module (`error.rs`), home of
+///           the shared `PlayerError` type that all fallible calls funnel into.
+/// Why:      Many functions below return `Result<_, PlayerError>`; this brings that
+///           type's definition into the crate.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import * as error from "./error";
+/// ```
 mod error;
-// What:     `mod fingerprint;` declares the `fingerprint` child module
-//           (`fingerprint.rs`), which holds the gxhash cache-key fingerprint and its
-//           `nativeFingerprint` JNI entry. The entry is `#[no_mangle]`, so the JVM
-//           finds its symbol in the `.so` even though the module is private here.
-// Why:      Keeps the new JNI export and its hashing out of this file (and under the
-//           per-file code-line budget); nothing in this file calls it directly.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import * as fingerprint from "./fingerprint"; // its native export is auto-registered
-// ```
-/// Fingerprint module.
+/// What:     `mod fingerprint;` declares the `fingerprint` child module
+///           (`fingerprint.rs`), which holds the gxhash cache-key fingerprint and its
+///           `nativeFingerprint` JNI entry. The entry is `#[no_mangle]`, so the JVM
+///           finds its symbol in the `.so` even though the module is private here.
+/// Why:      Keeps the new JNI export and its hashing out of this file (and under the
+///           per-file code-line budget); nothing in this file calls it directly.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import * as fingerprint from "./fingerprint"; // its native export is auto-registered
+/// ```
 mod fingerprint;
-// What:     `mod opus;` declares a LOCAL child module named `opus` (`opus.rs`),
-//           our own Opus glue. Note: there is ALSO an external crate also named
-//           `opus` (libopus bindings); this local module shadows that name at the
-//           crate root, which is why `nativeOpusSelfTest` reaches the external one
-//           with the leading-`::` form `::opus` (see its comment).
-// Why:      Our decode path uses this local wrapper around libopus.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import * as opus from "./opus";
-// ```
-/// Opus module.
+/// What:     `mod opus;` declares a LOCAL child module named `opus` (`opus.rs`),
+///           our own Opus glue. Note: there is ALSO an external crate also named
+///           `opus` (libopus bindings); this local module shadows that name at the
+///           crate root, which is why `nativeOpusSelfTest` reaches the external one
+///           with the leading-`::` form `::opus` (see its comment).
+/// Why:      Our decode path uses this local wrapper around libopus.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import * as opus from "./opus";
+/// ```
 mod opus;
-// What:     `mod output;` declares the `output` child module (`output.rs`), the
-//           AAudio (Android's low-latency audio) output backend.
-// Why:      `output::measure_output_latency_ms()` below lives here.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import * as output from "./output";
-// ```
-/// Output module.
+/// What:     `mod output;` declares the `output` child module (`output.rs`), the
+///           AAudio (Android's low-latency audio) output backend.
+/// Why:      `output::measure_output_latency_ms()` below lives here.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import * as output from "./output";
+/// ```
 mod output;
-// What:     `mod truepeak;` declares the `truepeak` child module (`truepeak.rs`),
-//           the oversampled true-peak loudness measurement.
-// Why:      `truepeak::measure_true_peak(...)` below lives here.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import * as truepeak from "./truepeak";
-// ```
-/// Truepeak module.
+/// What:     `mod truepeak;` declares the `truepeak` child module (`truepeak.rs`),
+///           the oversampled true-peak loudness measurement.
+/// Why:      `truepeak::measure_true_peak(...)` below lives here.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import * as truepeak from "./truepeak";
+/// ```
 mod truepeak;
 
-// What:     `use std::os::fd::RawFd;` imports the Unix raw-file-descriptor type.
-//           A file descriptor is a small integer the OS uses to name an open
-//           file/stream. `RawFd` is a plain type alias for `i32` (a 32-bit signed
-//           integer; the OS reserves `-1` for "no fd", which is why it is signed,
-//           not the sibling `u32`). `use` just brings the name into scope so we can
-//           write `RawFd` instead of the full `std::os::fd::RawFd` path.
-// Why:      We convert the JVM's `jint` fd into a `RawFd` before handing it to the
-//           decoder/engine, which speak in `RawFd`.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// type RawFd = number; // a bare OS file-descriptor integer
-// ```
-/// Imports.
+/// What:     `use std::os::fd::RawFd;` imports the Unix raw-file-descriptor type.
+///           A file descriptor is a small integer the OS uses to name an open
+///           file/stream. `RawFd` is a plain type alias for `i32` (a 32-bit signed
+///           integer; the OS reserves `-1` for "no fd", which is why it is signed,
+///           not the sibling `u32`). `use` just brings the name into scope so we can
+///           write `RawFd` instead of the full `std::os::fd::RawFd` path.
+/// Why:      We convert the JVM's `jint` fd into a `RawFd` before handing it to the
+///           decoder/engine, which speak in `RawFd`.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type RawFd = number; // a bare OS file-descriptor integer
+/// ```
 use std::os::fd::RawFd;
-// What:     `use std::path::Path;` imports the borrowed filesystem-path type.
-//           `Path` is an unsized, borrowed VIEW of a path (its owned, growable
-//           sibling is `PathBuf`, exactly like `&str` is to `String`).
-// Why:      `decode::open` takes `&Path`, so we wrap the decoded path string in a
-//           `Path` reference before calling it.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// type Path = string;
-// ```
-/// Imports.
+/// What:     `use std::path::Path;` imports the borrowed filesystem-path type.
+///           `Path` is an unsized, borrowed VIEW of a path (its owned, growable
+///           sibling is `PathBuf`, exactly like `&str` is to `String`).
+/// Why:      `decode::open` takes `&Path`, so we wrap the decoded path string in a
+///           `Path` reference before calling it.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type Path = string;
+/// ```
 use std::path::Path;
-// What:     `use std::time::Instant;` imports a monotonic clock reading. `Instant`
-//           is an opaque "moment on the steady clock" (it never goes backwards,
-//           unlike wall-clock `SystemTime`, its sibling), used only for measuring
-//           elapsed durations.
-// Why:      The benchmark records `Instant::now()` before the decode loop and asks
-//           how much time elapsed after it.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// type Instant = number; // a performance.now() timestamp, monotonic
-// ```
-/// Imports.
+/// What:     `use std::time::Instant;` imports a monotonic clock reading. `Instant`
+///           is an opaque "moment on the steady clock" (it never goes backwards,
+///           unlike wall-clock `SystemTime`, its sibling), used only for measuring
+///           elapsed durations.
+/// Why:      The benchmark records `Instant::now()` before the decode loop and asks
+///           how much time elapsed after it.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type Instant = number; // a performance.now() timestamp, monotonic
+/// ```
 use std::time::Instant;
 
-// What:     `use jni::objects::{JClass, JString};` imports two handle types from the
-//           `jni` crate. `JClass<'local>` is a borrowed handle to the Java/Kotlin
-//           class object that invoked us; `JString<'local>` is a borrowed handle to
-//           a Java string passed across the boundary (NOT a Rust `String` yet, it
-//           must be converted). The `{A, B}` braces import several names in one line.
-// Why:      Every JNI entry point receives the calling class, and the path/string
-//           functions also receive a `JString` argument; we need these types named.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// type JClass = OpaqueHandle;  // the calling class object
-// type JString = OpaqueHandle; // a Java string handle, convert before use
-// ```
-/// Imports.
+/// What:     `use jni::objects::{JClass, JString};` imports two handle types from the
+///           `jni` crate. `JClass<'local>` is a borrowed handle to the Java/Kotlin
+///           class object that invoked us; `JString<'local>` is a borrowed handle to
+///           a Java string passed across the boundary (NOT a Rust `String` yet, it
+///           must be converted). The `{A, B}` braces import several names in one line.
+/// Why:      Every JNI entry point receives the calling class, and the path/string
+///           functions also receive a `JString` argument; we need these types named.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type JClass = OpaqueHandle;  // the calling class object
+/// type JString = OpaqueHandle; // a Java string handle, convert before use
+/// ```
 use jni::objects::{JClass, JFloatArray, JString};
-// What:     `use jni::sys::{jboolean, jdouble, jfloat, jint, jlong};` imports the
-//           JVM's fixed-width primitive types as Rust aliases. `jint` is a 32-bit
-//           signed integer (Java `int`), `jlong` a 64-bit signed integer (Java
-//           `long`), `jdouble` a 64-bit float (Java `double`), `jfloat` a 32-bit
-//           float (Java `float`), `jboolean` an 8-bit unsigned byte where 0 is false
-//           and non-zero is true (Java `boolean`). Siblings a reader might expect on
-//           the Rust side are `u32`/`i64`/`f64`/`f32`/`bool`; we use the `j*` aliases
-//           because the function signatures must match exactly what the JVM passes.
-// Why:      The JNI functions can only speak these types across the boundary; using
-//           the aliases documents "this is a JVM-ABI value", not a free Rust value.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// type jint = number;     // 32-bit signed
-// type jlong = number;    // 64-bit signed
-// type jdouble = number;  // 64-bit float
-// type jfloat = number;   // 32-bit float
-// type jboolean = number; // 0 = false, non-zero = true
-// ```
-/// Imports.
+/// What:     `use jni::sys::{jboolean, jdouble, jfloat, jint, jlong};` imports the
+///           JVM's fixed-width primitive types as Rust aliases. `jint` is a 32-bit
+///           signed integer (Java `int`), `jlong` a 64-bit signed integer (Java
+///           `long`), `jdouble` a 64-bit float (Java `double`), `jfloat` a 32-bit
+///           float (Java `float`), `jboolean` an 8-bit unsigned byte where 0 is false
+///           and non-zero is true (Java `boolean`). Siblings a reader might expect on
+///           the Rust side are `u32`/`i64`/`f64`/`f32`/`bool`; we use the `j*` aliases
+///           because the function signatures must match exactly what the JVM passes.
+/// Why:      The JNI functions can only speak these types across the boundary; using
+///           the aliases documents "this is a JVM-ABI value", not a free Rust value.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type jint = number;     // 32-bit signed
+/// type jlong = number;    // 64-bit signed
+/// type jdouble = number;  // 64-bit float
+/// type jfloat = number;   // 32-bit float
+/// type jboolean = number; // 0 = false, non-zero = true
+/// ```
 use jni::sys::{jboolean, jdouble, jfloat, jint, jlong};
-// What:     `use jni::JNIEnv;` imports the per-call interface pointer the JVM hands
-//           every native method. `JNIEnv<'local>` is the gateway object you call to
-//           touch JVM state (read a string, throw, etc.); it is valid only for the
-//           duration of one native call and only on the calling thread.
-// Why:      The string-taking entry point uses it (`env.get_string(...)`) to pull a
-//           Rust string out of the `JString`.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// type JNIEnv = RuntimeContext; // per-call handle to talk to the host runtime
-// ```
-/// Imports.
+/// What:     `use jni::JNIEnv;` imports the per-call interface pointer the JVM hands
+///           every native method. `JNIEnv<'local>` is the gateway object you call to
+///           touch JVM state (read a string, throw, etc.); it is valid only for the
+///           duration of one native call and only on the calling thread.
+/// Why:      The string-taking entry point uses it (`env.get_string(...)`) to pull a
+///           Rust string out of the `JString`.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type JNIEnv = RuntimeContext; // per-call handle to talk to the host runtime
+/// ```
 use jni::JNIEnv;
 
 // What:     `#[no_mangle]` is an ATTRIBUTE (a compiler annotation, written
@@ -217,27 +203,26 @@ use jni::JNIEnv;
 // // no annotation needed; `export function nativePing()` keeps its name
 // ```
 #[no_mangle]
-// What:     `pub extern "system" fn Java_..._nativePing<'local>(...) -> jint`
-//           declares the function. `pub` = visible outside this module. `extern
-//           "system"` = use the platform's C/JVM calling convention so the JVM can
-//           call it (NOT Rust's internal convention). The long name is the JNI
-//           wiring: `Java_` + package path + class + method, underscore-joined.
-//           `<'local>` introduces a LIFETIME parameter named `local` (a label, not a
-//           value) used by the borrowed JVM handle types. `-> jint` returns a 32-bit
-//           signed JVM int. `_env` / `_class` are the two params every JNI method
-//           gets; the leading `_` marks them deliberately unused.
-// Why:      This is the first slot Kotlin calls to prove the `.so` loaded and an int
-//           survives the round trip; it just returns a known constant.
-// Gotcha:   `extern "system"` means a panic must NEVER cross this boundary (it would
-//           abort the process); this function only returns a literal, so it is safe.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// export function nativePing(_env: JNIEnv, _class: JClass): number {
-//   return 42;
-// }
-// ```
-/// JNI export native ping.
+/// What:     `pub extern "system" fn Java_..._nativePing<'local>(...) -> jint`
+///           declares the function. `pub` = visible outside this module. `extern
+///           "system"` = use the platform's C/JVM calling convention so the JVM can
+///           call it (NOT Rust's internal convention). The long name is the JNI
+///           wiring: `Java_` + package path + class + method, underscore-joined.
+///           `<'local>` introduces a LIFETIME parameter named `local` (a label, not a
+///           value) used by the borrowed JVM handle types. `-> jint` returns a 32-bit
+///           signed JVM int. `_env` / `_class` are the two params every JNI method
+///           gets; the leading `_` marks them deliberately unused.
+/// Why:      This is the first slot Kotlin calls to prove the `.so` loaded and an int
+///           survives the round trip; it just returns a known constant.
+/// Gotcha:   `extern "system"` means a panic must NEVER cross this boundary (it would
+///           abort the process); this function only returns a literal, so it is safe.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export function nativePing(_env: JNIEnv, _class: JClass): number {
+///   return 42;
+/// }
+/// ```
 pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativePing<'local>(
     _env: JNIEnv<'local>,
     _class: JClass<'local>,
@@ -262,16 +247,15 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativePin
 // // no annotation needed
 // ```
 #[no_mangle]
-// What:     Same declaration shape as `nativePing`: `pub extern "system"`, the JNI
-//           mangled name, a `<'local>` lifetime, the two unused `_env`/`_class`
-//           params, and a `-> jint` return.
-// Why:      A second self-test slot Kotlin calls; returns 1 or 0 as success/failure.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// export function nativeOpusSelfTest(_env: JNIEnv, _class: JClass): number { ... }
-// ```
-/// JNI export native opus self test.
+/// What:     Same declaration shape as `nativePing`: `pub extern "system"`, the JNI
+///           mangled name, a `<'local>` lifetime, the two unused `_env`/`_class`
+///           params, and a `-> jint` return.
+/// Why:      A second self-test slot Kotlin calls; returns 1 or 0 as success/failure.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export function nativeOpusSelfTest(_env: JNIEnv, _class: JClass): number { ... }
+/// ```
 pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeOpusSelfTest<'local>(
     _env: JNIEnv<'local>,
     _class: JClass<'local>,
@@ -332,15 +316,14 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeOpu
 // // no annotation needed
 // ```
 #[no_mangle]
-// What:     Same JNI-entry declaration shape: `pub extern "system"`, mangled name,
-//           `<'local>` lifetime, unused `_env`/`_class`, `-> jint`.
-// Why:      A self-test slot that forces symphonia's registries to initialize.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// export function nativeSymphoniaSelfTest(_env: JNIEnv, _class: JClass): number { ... }
-// ```
-/// JNI export native symphonia self test.
+/// What:     Same JNI-entry declaration shape: `pub extern "system"`, mangled name,
+///           `<'local>` lifetime, unused `_env`/`_class`, `-> jint`.
+/// Why:      A self-test slot that forces symphonia's registries to initialize.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export function nativeSymphoniaSelfTest(_env: JNIEnv, _class: JClass): number { ... }
+/// ```
 pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeSymphoniaSelfTest<'local>(
     _env: JNIEnv<'local>,
     _class: JClass<'local>,
@@ -383,29 +366,28 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeSym
     1
 }
 
-// What:     `fn benchmark_decode(mut source: Box<dyn decode::Source>) -> jdouble`
-//           declares a PRIVATE helper (no `pub`, so it is only callable inside this
-//           file). `mut source` = the parameter is mutable (we call mutating methods
-//           on it). `Box<dyn decode::Source>` is an OWNING heap pointer to "some
-//           value that implements the `Source` trait, exact type chosen at runtime"
-//           (`dyn` = dynamic dispatch, like a TS interface reference; `Box` is the
-//           owned heap box, siblings `Rc<T>`/`Arc<T>` would be shared-ownership
-//           pointers, which we do not want here because exactly one owner runs the
-//           benchmark). `-> jdouble` returns a 64-bit float (the JVM `double`).
-// Why:      Both the path and fd benchmarks open a decoder and then run the SAME
-//           timed loop; factoring it here avoids duplicating the loop twice. It
-//           returns microseconds per interleaved sample (comparable to the Media3
-//           MediaCodec ~0.33 baseline), or a negative sentinel: -3 decode error,
-//           -4 zero samples. It also exercises seek once untimed so the seek path
-//           is covered on-device.
-// Gotcha:   `Box<dyn Source>` is an OWNED value moved INTO this function; the caller
-//           gives it up. In TS the caller would still hold a reference afterward.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// function benchmarkDecode(source: Source): number { ... }
-// ```
-/// Benchmark decode.
+/// What:     `fn benchmark_decode(mut source: Box<dyn decode::Source>) -> jdouble`
+///           declares a PRIVATE helper (no `pub`, so it is only callable inside this
+///           file). `mut source` = the parameter is mutable (we call mutating methods
+///           on it). `Box<dyn decode::Source>` is an OWNING heap pointer to "some
+///           value that implements the `Source` trait, exact type chosen at runtime"
+///           (`dyn` = dynamic dispatch, like a TS interface reference; `Box` is the
+///           owned heap box, siblings `Rc<T>`/`Arc<T>` would be shared-ownership
+///           pointers, which we do not want here because exactly one owner runs the
+///           benchmark). `-> jdouble` returns a 64-bit float (the JVM `double`).
+/// Why:      Both the path and fd benchmarks open a decoder and then run the SAME
+///           timed loop; factoring it here avoids duplicating the loop twice. It
+///           returns microseconds per interleaved sample (comparable to the Media3
+///           MediaCodec ~0.33 baseline), or a negative sentinel: -3 decode error,
+///           -4 zero samples. It also exercises seek once untimed so the seek path
+///           is covered on-device.
+/// Gotcha:   `Box<dyn Source>` is an OWNED value moved INTO this function; the caller
+///           gives it up. In TS the caller would still hold a reference afterward.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function benchmarkDecode(source: Source): number { ... }
+/// ```
 fn benchmark_decode(mut source: Box<dyn decode::Source>) -> jdouble {
     // What:     `let spec = source.spec();` calls the trait method `spec()` to read
     //           the audio format (rate/channels/duration) and binds it to the
@@ -612,20 +594,19 @@ fn benchmark_decode(mut source: Box<dyn decode::Source>) -> jdouble {
 // // no annotation needed
 // ```
 #[no_mangle]
-// What:     The JNI entry declaration. Same shape as before, but with a THIRD
-//           parameter `path: JString<'local>` (a borrowed Java-string handle), and
-//           `env` is taken WITHOUT a leading `_` this time because we actually use it.
-//           `-> jdouble` returns a 64-bit float (the throughput or a negative error).
-// Why:      Kotlin calls this with a filesystem path string to benchmark a file; it
-//           times the decode loop only (not the open/probe) and returns throughput,
-//           or a negative sentinel: -1 bad path string, -2 open failed, plus the
-//           shared codes from `benchmark_decode`.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// export function nativeDecodeBenchmark(env: JNIEnv, _class: JClass, path: JString): number { ... }
-// ```
-/// JNI export native decode benchmark.
+/// What:     The JNI entry declaration. Same shape as before, but with a THIRD
+///           parameter `path: JString<'local>` (a borrowed Java-string handle), and
+///           `env` is taken WITHOUT a leading `_` this time because we actually use it.
+///           `-> jdouble` returns a 64-bit float (the throughput or a negative error).
+/// Why:      Kotlin calls this with a filesystem path string to benchmark a file; it
+///           times the decode loop only (not the open/probe) and returns throughput,
+///           or a negative sentinel: -1 bad path string, -2 open failed, plus the
+///           shared codes from `benchmark_decode`.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export function nativeDecodeBenchmark(env: JNIEnv, _class: JClass, path: JString): number { ... }
+/// ```
 pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeDecodeBenchmark<'local>(
     env: JNIEnv<'local>,
     _class: JClass<'local>,
@@ -743,20 +724,19 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeDec
 // // no annotation needed
 // ```
 #[no_mangle]
-// What:     JNI entry declaration. Third parameter is `fd: jint` (a 32-bit signed JVM
-//           int holding the Android file descriptor). `_env`/`_class` unused; returns
-//           `jdouble` (throughput or negative error code).
-// Why:      Kotlin calls this with a borrowed `content://` file descriptor (a
-//           `ParcelFileDescriptor.getFd()`) to benchmark it; `open_borrowed_fd` dups
-//           the fd synchronously so the JVM keeps and closes the original. Returns
-//           throughput, or a negative sentinel: -1 bad fd, -2 dup/open failed, plus
-//           the shared codes from `benchmark_decode`.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// export function nativeDecodeFdBenchmark(_env: JNIEnv, _class: JClass, fd: number): number { ... }
-// ```
-/// JNI export native decode fd benchmark.
+/// What:     JNI entry declaration. Third parameter is `fd: jint` (a 32-bit signed JVM
+///           int holding the Android file descriptor). `_env`/`_class` unused; returns
+///           `jdouble` (throughput or negative error code).
+/// Why:      Kotlin calls this with a borrowed `content://` file descriptor (a
+///           `ParcelFileDescriptor.getFd()`) to benchmark it; `open_borrowed_fd` dups
+///           the fd synchronously so the JVM keeps and closes the original. Returns
+///           throughput, or a negative sentinel: -1 bad fd, -2 dup/open failed, plus
+///           the shared codes from `benchmark_decode`.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export function nativeDecodeFdBenchmark(_env: JNIEnv, _class: JClass, fd: number): number { ... }
+/// ```
 pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeDecodeFdBenchmark<'local>(
     _env: JNIEnv<'local>,
     _class: JClass<'local>,
@@ -829,21 +809,20 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeDec
 // // no annotation needed
 // ```
 #[no_mangle]
-// What:     JNI entry declaration. Third parameter `fd: jint`. Returns `jfloat` (a
-//           32-bit float) this time, because a true-peak figure fits in `f32` and
-//           that matches the Kotlin side; siblings `jdouble`/`f64` would be wider than
-//           needed.
-// Why:      Kotlin calls this to measure a track's true peak (4x Catmull-Rom
-//           oversampled, the loudness-normalization input the Kotlin core turns into
-//           a gain) from a borrowed `content://` fd that `open_borrowed_fd` dups
-//           synchronously. Returns the peak, or a negative sentinel: -1 bad fd,
-//           -2 dup/open failed, -3 decode error.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// export function nativeMeasureTruePeak(_env: JNIEnv, _class: JClass, fd: number): number { ... }
-// ```
-/// JNI export native measure true peak.
+/// What:     JNI entry declaration. Third parameter `fd: jint`. Returns `jfloat` (a
+///           32-bit float) this time, because a true-peak figure fits in `f32` and
+///           that matches the Kotlin side; siblings `jdouble`/`f64` would be wider than
+///           needed.
+/// Why:      Kotlin calls this to measure a track's true peak (4x Catmull-Rom
+///           oversampled, the loudness-normalization input the Kotlin core turns into
+///           a gain) from a borrowed `content://` fd that `open_borrowed_fd` dups
+///           synchronously. Returns the peak, or a negative sentinel: -1 bad fd,
+///           -2 dup/open failed, -3 decode error.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export function nativeMeasureTruePeak(_env: JNIEnv, _class: JClass, fd: number): number { ... }
+/// ```
 pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeMeasureTruePeak<'local>(
     _env: JNIEnv<'local>,
     _class: JClass<'local>,
@@ -919,27 +898,26 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeMea
 // // no annotation needed
 // ```
 #[no_mangle]
-// What:     `pub extern "system" fn Java_..._nativeTruePeakSynthetic<'local>(env,`
-//           `_class, samples: JFloatArray, channels: jint) -> jfloat`. A TEST-ONLY
-//           JNI entry that measures the true peak of an IN-MEMORY interleaved-`f32`
-//           array handed straight from Kotlin, bypassing the decoder.
-//           `samples: JFloatArray<'local>` is the JVM `float[]` handle; `channels:
-//           jint` the interleave width; `-> jfloat` returns the measured peak (or a
-//           negative sentinel on a JNI read error).
-// Why:      Production `nativeMeasureTruePeak` needs a real encoded file + a
-//           `content://` descriptor, so an instrumented test cannot assert a KNOWN
-//           golden peak through it. This entry lets the on-device test feed a
-//           synthetic signal with a known inter-sample peak and verify the SAME
-//           `TruePeakMeter` + `catmull_rom` path on the real arm64 target. It is
-//           exercised ONLY by `NativeBridgeTest`, never by production Kotlin.
-// Gotcha:   Returns `-1.0` if the JVM array cannot be read; a real peak is >= 0.0,
-//           so the test treats any negative value as a JNI failure.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// export function nativeTruePeakSynthetic(env, _class, samples: number[], channels: number): number { ... }
-// ```
-/// JNI export native true peak synthetic.
+/// What:     `pub extern "system" fn Java_..._nativeTruePeakSynthetic<'local>(env,`
+///           `_class, samples: JFloatArray, channels: jint) -> jfloat`. A TEST-ONLY
+///           JNI entry that measures the true peak of an IN-MEMORY interleaved-`f32`
+///           array handed straight from Kotlin, bypassing the decoder.
+///           `samples: JFloatArray<'local>` is the JVM `float[]` handle; `channels:
+///           jint` the interleave width; `-> jfloat` returns the measured peak (or a
+///           negative sentinel on a JNI read error).
+/// Why:      Production `nativeMeasureTruePeak` needs a real encoded file + a
+///           `content://` descriptor, so an instrumented test cannot assert a KNOWN
+///           golden peak through it. This entry lets the on-device test feed a
+///           synthetic signal with a known inter-sample peak and verify the SAME
+///           `TruePeakMeter` + `catmull_rom` path on the real arm64 target. It is
+///           exercised ONLY by `NativeBridgeTest`, never by production Kotlin.
+/// Gotcha:   Returns `-1.0` if the JVM array cannot be read; a real peak is >= 0.0,
+///           so the test treats any negative value as a JNI failure.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export function nativeTruePeakSynthetic(env, _class, samples: number[], channels: number): number { ... }
+/// ```
 pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeTruePeakSynthetic<'local>(
     env: JNIEnv<'local>,
     _class: JClass<'local>,
@@ -1026,18 +1004,17 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeTru
 // // no annotation needed
 // ```
 #[no_mangle]
-// What:     JNI entry declaration with no extra params; `_env`/`_class` unused;
-//           returns `jdouble` (latency in ms, or -1.0 on failure).
-// Why:      Kotlin calls this to probe the native (raw ndk::audio) AAudio output
-//           latency on-device; it opens a silent low-latency stream (inaudible, it
-//           writes zeros) and returns the measured latency in milliseconds, or -1.0
-//           on failure.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// export function nativeOutputLatencyProbe(_env: JNIEnv, _class: JClass): number { ... }
-// ```
-/// JNI export native output latency probe.
+/// What:     JNI entry declaration with no extra params; `_env`/`_class` unused;
+///           returns `jdouble` (latency in ms, or -1.0 on failure).
+/// Why:      Kotlin calls this to probe the native (raw ndk::audio) AAudio output
+///           latency on-device; it opens a silent low-latency stream (inaudible, it
+///           writes zeros) and returns the measured latency in milliseconds, or -1.0
+///           on failure.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export function nativeOutputLatencyProbe(_env: JNIEnv, _class: JClass): number { ... }
+/// ```
 pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeOutputLatencyProbe<'local>(
     _env: JNIEnv<'local>,
     _class: JClass<'local>,
@@ -1068,20 +1045,19 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeOut
 // // no annotation needed
 // ```
 #[no_mangle]
-// What:     JNI entry declaration. No extra params; returns `jlong` (a 64-bit signed
-//           int) that secretly holds a raw pointer to a heap `Engine`, used as an
-//           opaque handle Kotlin passes back in later calls. We use `jlong` (not a
-//           narrower `jint`) because a pointer needs 64 bits on a 64-bit device.
-// Why:      Kotlin calls this once to create the engine and stash the handle (or 0 if
-//           the worker thread could not spawn). The handle must be released exactly
-//           once with `nativeEngineRelease` and only used from the one Kotlin thread
-//           that owns it.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// export function nativeEngineCreate(_env: JNIEnv, _class: JClass): number { ... }
-// ```
-/// JNI export native engine create.
+/// What:     JNI entry declaration. No extra params; returns `jlong` (a 64-bit signed
+///           int) that secretly holds a raw pointer to a heap `Engine`, used as an
+///           opaque handle Kotlin passes back in later calls. We use `jlong` (not a
+///           narrower `jint`) because a pointer needs 64 bits on a 64-bit device.
+/// Why:      Kotlin calls this once to create the engine and stash the handle (or 0 if
+///           the worker thread could not spawn). The handle must be released exactly
+///           once with `nativeEngineRelease` and only used from the one Kotlin thread
+///           that owns it.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export function nativeEngineCreate(_env: JNIEnv, _class: JClass): number { ... }
+/// ```
 pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEngineCreate<'local>(
     _env: JNIEnv<'local>,
     _class: JClass<'local>,
@@ -1143,20 +1119,19 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEng
 // // no annotation needed
 // ```
 #[no_mangle]
-// What:     JNI entry declaration with THREE extra params: `handle: jlong` (the
-//           opaque engine handle from create), `fd: jint` (the file descriptor), and
-//           `play: jboolean` (0 = false, non-zero = true, whether to start playing).
-//           Returns `jint` (0 ok, or a negative error code).
-// Why:      Kotlin calls this to hand a borrowed `content://` fd (a
-//           `ParcelFileDescriptor.getFd()`, duplicated synchronously) to the engine
-//           and optionally play it. Returns 0 on success, -1 bad fd, -2 dup/dispatch
-//           failed, -3 null handle.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// export function nativeEngineLoad(_env, _class, handle: number, fd: number, play: number): number { ... }
-// ```
-/// JNI export native engine load.
+/// What:     JNI entry declaration with THREE extra params: `handle: jlong` (the
+///           opaque engine handle from create), `fd: jint` (the file descriptor), and
+///           `play: jboolean` (0 = false, non-zero = true, whether to start playing).
+///           Returns `jint` (0 ok, or a negative error code).
+/// Why:      Kotlin calls this to hand a borrowed `content://` fd (a
+///           `ParcelFileDescriptor.getFd()`, duplicated synchronously) to the engine
+///           and optionally play it. Returns 0 on success, -1 bad fd, -2 dup/dispatch
+///           failed, -3 null handle.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export function nativeEngineLoad(_env, _class, handle: number, fd: number, play: number): number { ... }
+/// ```
 pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEngineLoad<'local>(
     _env: JNIEnv<'local>,
     _class: JClass<'local>,
@@ -1253,16 +1228,15 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEng
 // // no annotation needed
 // ```
 #[no_mangle]
-// What:     JNI entry declaration taking the engine `handle: jlong` and returning
-//           NOTHING (no `-> ...`, so the return type is `()`, Rust's "unit"/void).
-// Why:      Kotlin calls this to resume playback of the loaded track; it is
-//           fire-and-forget, no result.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// export function nativeEnginePlay(_env: JNIEnv, _class: JClass, handle: number): void { ... }
-// ```
-/// JNI export native engine play.
+/// What:     JNI entry declaration taking the engine `handle: jlong` and returning
+///           NOTHING (no `-> ...`, so the return type is `()`, Rust's "unit"/void).
+/// Why:      Kotlin calls this to resume playback of the loaded track; it is
+///           fire-and-forget, no result.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export function nativeEnginePlay(_env: JNIEnv, _class: JClass, handle: number): void { ... }
+/// ```
 pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEnginePlay<'local>(
     _env: JNIEnv<'local>,
     _class: JClass<'local>,
@@ -1311,16 +1285,15 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEng
 // // no annotation needed
 // ```
 #[no_mangle]
-// What:     JNI entry declaration taking the engine `handle: jlong` and returning
-//           nothing (unit/void).
-// Why:      Kotlin calls this to pause playback (keeping the loaded track and
-//           buffered audio); fire-and-forget.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// export function nativeEnginePause(_env: JNIEnv, _class: JClass, handle: number): void { ... }
-// ```
-/// JNI export native engine pause.
+/// What:     JNI entry declaration taking the engine `handle: jlong` and returning
+///           nothing (unit/void).
+/// Why:      Kotlin calls this to pause playback (keeping the loaded track and
+///           buffered audio); fire-and-forget.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export function nativeEnginePause(_env: JNIEnv, _class: JClass, handle: number): void { ... }
+/// ```
 pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEnginePause<'local>(
     _env: JNIEnv<'local>,
     _class: JClass<'local>,
@@ -1365,15 +1338,14 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEng
 // // no annotation needed
 // ```
 #[no_mangle]
-// What:     JNI entry declaration taking the engine `handle: jlong` and a target
-//           `position_sec: jdouble` (64-bit float seconds); returns nothing (void).
-// Why:      Kotlin calls this to seek; fire-and-forget.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// export function nativeEngineSeek(_env, _class, handle: number, positionSec: number): void { ... }
-// ```
-/// JNI export native engine seek.
+/// What:     JNI entry declaration taking the engine `handle: jlong` and a target
+///           `position_sec: jdouble` (64-bit float seconds); returns nothing (void).
+/// Why:      Kotlin calls this to seek; fire-and-forget.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export function nativeEngineSeek(_env, _class, handle: number, positionSec: number): void { ... }
+/// ```
 pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEngineSeek<'local>(
     _env: JNIEnv<'local>,
     _class: JClass<'local>,
@@ -1418,15 +1390,14 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEng
 // // no annotation needed
 // ```
 #[no_mangle]
-// What:     JNI entry declaration taking the engine `handle: jlong` and a `volume:
-//           jfloat` (32-bit float, linear gain 0.0..1.0); returns nothing (void).
-// Why:      Kotlin calls this to set user volume; fire-and-forget.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// export function nativeEngineSetVolume(_env, _class, handle: number, volume: number): void { ... }
-// ```
-/// JNI export native engine set volume.
+/// What:     JNI entry declaration taking the engine `handle: jlong` and a `volume:
+///           jfloat` (32-bit float, linear gain 0.0..1.0); returns nothing (void).
+/// Why:      Kotlin calls this to set user volume; fire-and-forget.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export function nativeEngineSetVolume(_env, _class, handle: number, volume: number): void { ... }
+/// ```
 pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEngineSetVolume<'local>(
     _env: JNIEnv<'local>,
     _class: JClass<'local>,
@@ -1471,17 +1442,16 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEng
 // // no annotation needed
 // ```
 #[no_mangle]
-// What:     JNI entry declaration taking the engine `handle: jlong` and a `gain:
-//           jfloat` (32-bit float, linear normalization gain 0.0..1.0); returns
-//           nothing (void).
-// Why:      Kotlin calls this to set the per-track loudness-normalization gain;
-//           fire-and-forget.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// export function nativeEngineSetNormalizationGain(_env, _class, handle: number, gain: number): void { ... }
-// ```
-/// JNI export native engine set normalization gain.
+/// What:     JNI entry declaration taking the engine `handle: jlong` and a `gain:
+///           jfloat` (32-bit float, linear normalization gain 0.0..1.0); returns
+///           nothing (void).
+/// Why:      Kotlin calls this to set the per-track loudness-normalization gain;
+///           fire-and-forget.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export function nativeEngineSetNormalizationGain(_env, _class, handle: number, gain: number): void { ... }
+/// ```
 pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEngineSetNormalizationGain<'local>(
     _env: JNIEnv<'local>,
     _class: JClass<'local>,
@@ -1526,15 +1496,14 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEng
 // // no annotation needed
 // ```
 #[no_mangle]
-// What:     JNI entry declaration taking the engine `handle: jlong` and returning a
-//           `jdouble` (64-bit float, current position in seconds).
-// Why:      Kotlin polls this to show the current playback position.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// export function nativeEnginePositionSec(_env: JNIEnv, _class: JClass, handle: number): number { ... }
-// ```
-/// JNI export native engine position sec.
+/// What:     JNI entry declaration taking the engine `handle: jlong` and returning a
+///           `jdouble` (64-bit float, current position in seconds).
+/// Why:      Kotlin polls this to show the current playback position.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export function nativeEnginePositionSec(_env: JNIEnv, _class: JClass, handle: number): number { ... }
+/// ```
 pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEnginePositionSec<'local>(
     _env: JNIEnv<'local>,
     _class: JClass<'local>,
@@ -1581,15 +1550,14 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEng
 // // no annotation needed
 // ```
 #[no_mangle]
-// What:     JNI entry declaration taking the engine `handle: jlong` and returning a
-//           `jdouble` (64-bit float, track duration in seconds).
-// Why:      Kotlin reads this to size the seek bar / show total length.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// export function nativeEngineDurationSec(_env: JNIEnv, _class: JClass, handle: number): number { ... }
-// ```
-/// JNI export native engine duration sec.
+/// What:     JNI entry declaration taking the engine `handle: jlong` and returning a
+///           `jdouble` (64-bit float, track duration in seconds).
+/// Why:      Kotlin reads this to size the seek bar / show total length.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export function nativeEngineDurationSec(_env: JNIEnv, _class: JClass, handle: number): number { ... }
+/// ```
 pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEngineDurationSec<'local>(
     _env: JNIEnv<'local>,
     _class: JClass<'local>,
@@ -1634,15 +1602,14 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEng
 // // no annotation needed
 // ```
 #[no_mangle]
-// What:     JNI entry declaration taking the engine `handle: jlong` and returning a
-//           `jboolean` (8-bit JVM boolean: 0 = false, non-zero = true).
-// Why:      Kotlin reads this to know if audio is actually coming out right now.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// export function nativeEngineIsPlaying(_env: JNIEnv, _class: JClass, handle: number): boolean { ... }
-// ```
-/// JNI export native engine is playing.
+/// What:     JNI entry declaration taking the engine `handle: jlong` and returning a
+///           `jboolean` (8-bit JVM boolean: 0 = false, non-zero = true).
+/// Why:      Kotlin reads this to know if audio is actually coming out right now.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export function nativeEngineIsPlaying(_env: JNIEnv, _class: JClass, handle: number): boolean { ... }
+/// ```
 pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEngineIsPlaying<'local>(
     _env: JNIEnv<'local>,
     _class: JClass<'local>,
@@ -1693,15 +1660,14 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEng
 // // no annotation needed
 // ```
 #[no_mangle]
-// What:     JNI entry declaration taking the engine `handle: jlong` and returning a
-//           `jboolean` (8-bit JVM boolean).
-// Why:      Kotlin reads this to know when to advance to the next track.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// export function nativeEngineIsEnded(_env: JNIEnv, _class: JClass, handle: number): boolean { ... }
-// ```
-/// JNI export native engine is ended.
+/// What:     JNI entry declaration taking the engine `handle: jlong` and returning a
+///           `jboolean` (8-bit JVM boolean).
+/// Why:      Kotlin reads this to know when to advance to the next track.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export function nativeEngineIsEnded(_env: JNIEnv, _class: JClass, handle: number): boolean { ... }
+/// ```
 pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEngineIsEnded<'local>(
     _env: JNIEnv<'local>,
     _class: JClass<'local>,
@@ -1748,16 +1714,15 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEng
 // // no annotation needed
 // ```
 #[no_mangle]
-// What:     JNI entry declaration taking the engine `handle: jlong` and returning a
-//           `jboolean` (8-bit JVM boolean).
-// Why:      Kotlin reads this "playWhenReady" intent (true from a play/load-and-play
-//           request until a pause), distinct from actual sounding.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// export function nativeEnginePlayWhenReady(_env: JNIEnv, _class: JClass, handle: number): boolean { ... }
-// ```
-/// JNI export native engine play when ready.
+/// What:     JNI entry declaration taking the engine `handle: jlong` and returning a
+///           `jboolean` (8-bit JVM boolean).
+/// Why:      Kotlin reads this "playWhenReady" intent (true from a play/load-and-play
+///           request until a pause), distinct from actual sounding.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export function nativeEnginePlayWhenReady(_env: JNIEnv, _class: JClass, handle: number): boolean { ... }
+/// ```
 pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEnginePlayWhenReady<'local>(
     _env: JNIEnv<'local>,
     _class: JClass<'local>,
@@ -1804,17 +1769,16 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEng
 // // no annotation needed
 // ```
 #[no_mangle]
-// What:     JNI entry declaration taking the engine `handle: jlong` and returning
-//           nothing (unit/void).
-// Why:      Kotlin calls this once to tear down the engine (stop the worker, close
-//           the AAudio stream, free the handle) and reclaim the leaked box; the
-//           handle must not be used afterwards.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// export function nativeEngineRelease(_env: JNIEnv, _class: JClass, handle: number): void { ... }
-// ```
-/// JNI export native engine release.
+/// What:     JNI entry declaration taking the engine `handle: jlong` and returning
+///           nothing (unit/void).
+/// Why:      Kotlin calls this once to tear down the engine (stop the worker, close
+///           the AAudio stream, free the handle) and reclaim the leaked box; the
+///           handle must not be used afterwards.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export function nativeEngineRelease(_env: JNIEnv, _class: JClass, handle: number): void { ... }
+/// ```
 pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEngineRelease<'local>(
     _env: JNIEnv<'local>,
     _class: JClass<'local>,

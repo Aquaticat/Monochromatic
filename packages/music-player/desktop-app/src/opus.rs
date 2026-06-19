@@ -4,202 +4,184 @@
 //! crate exists but is not wired into the `all` feature set), so we feed those
 //! raw packets to libopus through the `opus` crate. Output is always 48 kHz.
 
-// What:     `use symphonia::core::errors::Error;` imports symphonia's error enum.
-// Why:      We match its `ResetRequired` variant (treated as end-of-track) and propagate
-//           any other error.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { SymphoniaError } from "symphonia/errors";
-// ```
-/// Imports.
+/// What:     `use symphonia::core::errors::Error;` imports symphonia's error enum.
+/// Why:      We match its `ResetRequired` variant (treated as end-of-track) and propagate
+///           any other error.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { SymphoniaError } from "symphonia/errors";
+/// ```
 use symphonia::core::errors::Error;
 
-// What:     `use symphonia::core::formats::{FormatReader, Track};`. `FormatReader` = the
-//           demuxer trait; `Track` = one track's id, codec params, and timing (channels,
-//           pre-skip `delay`, `num_frames`). The seeking enums (`SeekMode`/`SeekTo`) are
-//           not imported here because the actual seek happens inside `seek_format` in
-//           `decode.rs`; this module holds the demuxer and delegates.
-// Why:      `OpusSource` stores a `Box<dyn FormatReader>` and reads channels/delay/
-//           frame-count from the owned `Track` `new` receives.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { FormatReader, Track } from "symphonia/formats";
-// ```
-/// Imports.
+/// What:     `use symphonia::core::formats::{FormatReader, Track};`. `FormatReader` = the
+///           demuxer trait; `Track` = one track's id, codec params, and timing (channels,
+///           pre-skip `delay`, `num_frames`). The seeking enums (`SeekMode`/`SeekTo`) are
+///           not imported here because the actual seek happens inside `seek_format` in
+///           `decode.rs`; this module holds the demuxer and delegates.
+/// Why:      `OpusSource` stores a `Box<dyn FormatReader>` and reads channels/delay/
+///           frame-count from the owned `Track` `new` receives.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { FormatReader, Track } from "symphonia/formats";
+/// ```
 use symphonia::core::formats::{FormatReader, Track};
 
-// What:     `use crate::decode::{AudioSpec, Source, seek_format};` imports our spec
-//           record, the `Source` interface, and the shared seek helper from the sibling
-//           `decode.rs` module.
-// Why:      `OpusSource` returns an `AudioSpec`, implements `Source`, and delegates its
-//           `seek` to `seek_format` so the start-frame math lives in one place.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { AudioSpec, Source, seekFormat } from "./decode";
-// ```
-/// Imports.
+/// What:     `use crate::decode::{AudioSpec, Source, seek_format};` imports our spec
+///           record, the `Source` interface, and the shared seek helper from the sibling
+///           `decode.rs` module.
+/// Why:      `OpusSource` returns an `AudioSpec`, implements `Source`, and delegates its
+///           `seek` to `seek_format` so the start-frame math lives in one place.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { AudioSpec, Source, seekFormat } from "./decode";
+/// ```
 use crate::decode::{AudioSpec, Source, seek_format};
 
-// What:     `use crate::error::PlayerError;` imports our app-wide error type.
-// Why:      Every fallible method here returns `PlayerError`.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { PlayerError } from "@/error";
-// ```
-/// Imports.
+/// What:     `use crate::error::PlayerError;` imports our app-wide error type.
+/// Why:      Every fallible method here returns `PlayerError`.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { PlayerError } from "@/error";
+/// ```
 use crate::error::PlayerError;
 
-// What:     `const OPUS_RATE: u32 = 48_000;`. A named compile-time constant: the fixed
-//           output sample rate libopus always decodes to. `u32` matches `AudioSpec.rate`
-//           and the opus API; the `_` in `48_000` is a digit separator (purely cosmetic).
-// Why:      Opus is defined to output 48 kHz; naming it avoids a magic number.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// const OPUS_RATE = 48_000;
-// ```
-/// Opus rate.
+/// What:     `const OPUS_RATE: u32 = 48_000;`. A named compile-time constant: the fixed
+///           output sample rate libopus always decodes to. `u32` matches `AudioSpec.rate`
+///           and the opus API; the `_` in `48_000` is a digit separator (purely cosmetic).
+/// Why:      Opus is defined to output 48 kHz; naming it avoids a magic number.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const OPUS_RATE = 48_000;
+/// ```
 const OPUS_RATE: u32 = 48_000;
 
-// What:     `const MAX_FRAMES_PER_CHANNEL: usize = 5760;`. The largest number of samples
-//           per channel a single Opus packet can decode to (a 120 ms frame at 48 kHz =
-//           0.120 * 48000 = 5760). `usize` because it sizes a buffer (memory length),
-//           which is what `usize` is for.
-// Why:      We pre-allocate a scratch buffer big enough for any packet so `decode_float`
-//           never overflows it.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// const MAX_FRAMES_PER_CHANNEL = 5760;
-// ```
-/// Max frames per channel.
+/// What:     `const MAX_FRAMES_PER_CHANNEL: usize = 5760;`. The largest number of samples
+///           per channel a single Opus packet can decode to (a 120 ms frame at 48 kHz =
+///           0.120 * 48000 = 5760). `usize` because it sizes a buffer (memory length),
+///           which is what `usize` is for.
+/// Why:      We pre-allocate a scratch buffer big enough for any packet so `decode_float`
+///           never overflows it.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const MAX_FRAMES_PER_CHANNEL = 5760;
+/// ```
 const MAX_FRAMES_PER_CHANNEL: usize = 5760;
 
-// What:     `const STEREO: usize = 2;`. Named constant for the stereo channel count, used
-//           to branch mono vs stereo. `usize` to compare against the `usize` channel
-//           count without a cast.
-// Why:      Avoid a bare `2` literal when classifying the layout.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// const STEREO = 2;
-// ```
-/// Stereo.
+/// What:     `const STEREO: usize = 2;`. Named constant for the stereo channel count, used
+///           to branch mono vs stereo. `usize` to compare against the `usize` channel
+///           count without a cast.
+/// Why:      Avoid a bare `2` literal when classifying the layout.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const STEREO = 2;
+/// ```
 const STEREO: usize = 2;
 
-// What:     `const MONO: usize = 1;`. Named constant for the mono channel count.
-// Why:      Avoid a bare `1` literal when classifying the layout.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// const MONO = 1;
-// ```
-/// Mono.
+/// What:     `const MONO: usize = 1;`. Named constant for the mono channel count.
+/// Why:      Avoid a bare `1` literal when classifying the layout.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const MONO = 1;
+/// ```
 const MONO: usize = 1;
 
-// What:     `pub struct OpusSource { ... }`. The live Opus decode state.
-// Why:      Bundles the demuxer, libopus decoder, and reusable scratch so the `Source`
-//           methods can advance them.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// class OpusSource implements Source { format; decoder; trackId; channels; spec; scratch; preSkip; }
-// ```
-/// Opus source.
+/// What:     `pub struct OpusSource { ... }`. The live Opus decode state.
+/// Why:      Bundles the demuxer, libopus decoder, and reusable scratch so the `Source`
+///           methods can advance them.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// class OpusSource implements Source { format; decoder; trackId; channels; spec; scratch; preSkip; }
+/// ```
 pub struct OpusSource {
-    // What:     `format: Box<dyn FormatReader>`. Owning, heap, type-erased Ogg demuxer
-    //           (single owner; not the shared `Rc`/`Arc`).
-    // Why:      Source of raw Opus packets.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // format: FormatReader;
-    // ```
-    /// Format.
+    /// What:     `format: Box<dyn FormatReader>`. Owning, heap, type-erased Ogg demuxer
+    ///           (single owner; not the shared `Rc`/`Arc`).
+    /// Why:      Source of raw Opus packets.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// format: FormatReader;
+    /// ```
     format: Box<dyn FormatReader>,
-    // What:     `decoder: opus::Decoder`. The libopus decoder VALUE (owned by this struct,
-    //           not boxed: it is a concrete type, not a trait object).
-    // Why:      Decodes each Opus packet to f32 PCM.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // decoder: OpusDecoder;
-    // ```
-    /// Decoder.
+    /// What:     `decoder: opus::Decoder`. The libopus decoder VALUE (owned by this struct,
+    ///           not boxed: it is a concrete type, not a trait object).
+    /// Why:      Decodes each Opus packet to f32 PCM.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// decoder: OpusDecoder;
+    /// ```
     decoder: opus::Decoder,
-    // What:     `track_id: u32`. Id of the Opus track (matches `u32` symphonia ids).
-    // Why:      Skip packets from other tracks.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // trackId: number;
-    // ```
-    /// Track id.
+    /// What:     `track_id: u32`. Id of the Opus track (matches `u32` symphonia ids).
+    /// Why:      Skip packets from other tracks.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// trackId: number;
+    /// ```
     track_id: u32,
-    // What:     `channels: usize`. Channel count kept as `usize` (1 or 2) for buffer math
-    //           (frames * channels) without casts.
-    // Why:      Slice the decoded output and size the scratch buffer.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // channels: number;
-    // ```
-    /// Channels.
+    /// What:     `channels: usize`. Channel count kept as `usize` (1 or 2) for buffer math
+    ///           (frames * channels) without casts.
+    /// Why:      Slice the decoded output and size the scratch buffer.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// channels: number;
+    /// ```
     channels: usize,
-    // What:     `spec: AudioSpec`. Cached rate(=48000)/channels/duration.
-    // Why:      `spec()` returns it directly.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // spec: AudioSpec;
-    // ```
-    /// Spec.
+    /// What:     `spec: AudioSpec`. Cached rate(=48000)/channels/duration.
+    /// Why:      `spec()` returns it directly.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// spec: AudioSpec;
+    /// ```
     spec: AudioSpec,
-    // What:     `scratch: Vec<f32>`. A reusable owned f32 buffer libopus writes into each
-    //           call (sized `MAX_FRAMES_PER_CHANNEL * channels`).
-    // Why:      Avoid allocating a fresh buffer per packet.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // scratch: Float32Array;
-    // ```
-    /// Scratch.
+    /// What:     `scratch: Vec<f32>`. A reusable owned f32 buffer libopus writes into each
+    ///           call (sized `MAX_FRAMES_PER_CHANNEL * channels`).
+    /// Why:      Avoid allocating a fresh buffer per packet.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// scratch: Float32Array;
+    /// ```
     scratch: Vec<f32>,
-    // What:     `pre_skip: usize`. Remaining encoder-delay frames-per-channel to discard
-    //           at the very start (Opus prepends silence/priming).
-    // Why:      Dropping them avoids a click and aligns playback to t=0.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // preSkip: number;
-    // ```
-    /// Pre skip.
+    /// What:     `pre_skip: usize`. Remaining encoder-delay frames-per-channel to discard
+    ///           at the very start (Opus prepends silence/priming).
+    /// Why:      Dropping them avoids a click and aligns playback to t=0.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// preSkip: number;
+    /// ```
     pre_skip: usize,
 }
 
-// What:     `impl OpusSource { ... }`. Inherent methods (the constructor).
-// Why:      Holds `new`.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// class OpusSource { static create(...) { ... } }
-// ```
-/// Implementation block.
+/// What:     `impl OpusSource { ... }`. Inherent methods (the constructor).
+/// Why:      Holds `new`.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// class OpusSource { static create(...) { ... } }
+/// ```
 impl OpusSource {
-    // What:     `pub fn new(format: Box<dyn FormatReader>, track: Track, track_id: u32) -> Result<Self, PlayerError>`.
-    //           Takes ownership of the demuxer and the owned `Track`; builds a libopus
-    //           decoder. `Self` is `OpusSource`.
-    // Why:      Set up Opus decoding for this track, rejecting >2 channels.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // static create(format, track, trackId): OpusSource { ... }
-    // ```
-    /// New.
+    /// What:     `pub fn new(format: Box<dyn FormatReader>, track: Track, track_id: u32) -> Result<Self, PlayerError>`.
+    ///           Takes ownership of the demuxer and the owned `Track`; builds a libopus
+    ///           decoder. `Self` is `OpusSource`.
+    /// Why:      Set up Opus decoding for this track, rejecting >2 channels.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// static create(format, track, trackId): OpusSource { ... }
+    /// ```
     pub fn new(
         format: Box<dyn FormatReader>,
         track: Track,
@@ -402,24 +384,22 @@ impl OpusSource {
     }
 }
 
-// What:     `impl Source for OpusSource { ... }`. Implements the shared interface.
-// Why:      So `open()` can return it as `Box<dyn Source>`.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// // OpusSource implements the Source interface: spec(), next_chunk(), seek()
-// ```
-/// Implementation block.
+/// What:     `impl Source for OpusSource { ... }`. Implements the shared interface.
+/// Why:      So `open()` can return it as `Box<dyn Source>`.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // OpusSource implements the Source interface: spec(), next_chunk(), seek()
+/// ```
 impl Source for OpusSource {
-    // What:     `fn spec(&self) -> AudioSpec { self.spec }`. Returns a copy of the cached
-    //           spec (`AudioSpec` is `Copy`).
-    // Why:      Report the stream shape.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // spec(): AudioSpec { return this.spec; }
-    // ```
-    /// Spec.
+    /// What:     `fn spec(&self) -> AudioSpec { self.spec }`. Returns a copy of the cached
+    ///           spec (`AudioSpec` is `Copy`).
+    /// Why:      Report the stream shape.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// spec(): AudioSpec { return this.spec; }
+    /// ```
     fn spec(&self) -> AudioSpec {
         // What:     `self.spec` tail expression -> returned BY VALUE (copy, since
         //           `AudioSpec` derives `Copy`).
@@ -432,16 +412,15 @@ impl Source for OpusSource {
         self.spec
     }
 
-    // What:     `fn next_chunk(&mut self) -> Result<Vec<f32>, PlayerError>`. Pulls the next
-    //           Opus packet and decodes it to interleaved f32. `&mut self` because decoding
-    //           advances the demuxer and decoder.
-    // Why:      Produce the next PCM block (or EOF).
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // nextChunk(): number[] { ... }
-    // ```
-    /// Next chunk.
+    /// What:     `fn next_chunk(&mut self) -> Result<Vec<f32>, PlayerError>`. Pulls the next
+    ///           Opus packet and decodes it to interleaved f32. `&mut self` because decoding
+    ///           advances the demuxer and decoder.
+    /// Why:      Produce the next PCM block (or EOF).
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// nextChunk(): number[] { ... }
+    /// ```
     fn next_chunk(&mut self) -> Result<Vec<f32>, PlayerError> {
         // What:     `loop { ... }`. Repeat because some packets are other tracks or get
         //           fully consumed by pre-skip and yield nothing.
@@ -607,15 +586,14 @@ impl Source for OpusSource {
         }
     }
 
-    // What:     `fn seek(&mut self, secs: f64) -> Result<(), PlayerError>`. Jump the demuxer
-    //           to a time and clear decoder state.
-    // Why:      Implement seeking for Opus.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // seek(secs: number): void { ... }
-    // ```
-    /// Seek.
+    /// What:     `fn seek(&mut self, secs: f64) -> Result<(), PlayerError>`. Jump the demuxer
+    ///           to a time and clear decoder state.
+    /// Why:      Implement seeking for Opus.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// seek(secs: number): void { ... }
+    /// ```
     fn seek(&mut self, secs: f64) -> Result<(), PlayerError> {
         // What:     `seek_format(self.format.as_mut(), self.track_id, secs)?`. Call the
         //           shared helper from `decode.rs`. `self.format` is a

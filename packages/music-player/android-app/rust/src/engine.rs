@@ -18,303 +18,282 @@
 //! threads at once (JNI/main, the decode worker, the realtime AAudio callback) without
 //! a lock.
 
-// What:     `use std::os::fd::{BorrowedFd, RawFd};`. Two file-descriptor types from
-//           the standard library's Unix fd module. A "file descriptor" is the small
-//           integer the OS hands you to refer to an open file/socket/pipe. `RawFd` is
-//           literally that integer (a bare `i32`) with NO ownership meaning: holding
-//           one does not keep the file open and dropping one does not close it.
-//           `BorrowedFd<'fd>` is a typed, lifetime-tagged BORROW of an fd you do not
-//           own (you may use it but must not close it). Sibling you might expect:
-//           `OwnedFd`, which DOES own the fd and closes it on drop; we never construct
-//           one of those directly here, we go through `std::fs::File` instead.
-// Why:      Kotlin passes the audio file's fd in as a plain integer over JNI; we need
-//           `RawFd` to receive it and `BorrowedFd` to wrap it safely before duplicating.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// type RawFd = number; // the OS handle integer
-// type BorrowedFd = number; // same integer, but "do not close this yourself"
-// ```
-/// Imports.
+/// What:     `use std::os::fd::{BorrowedFd, RawFd};`. Two file-descriptor types from
+///           the standard library's Unix fd module. A "file descriptor" is the small
+///           integer the OS hands you to refer to an open file/socket/pipe. `RawFd` is
+///           literally that integer (a bare `i32`) with NO ownership meaning: holding
+///           one does not keep the file open and dropping one does not close it.
+///           `BorrowedFd<'fd>` is a typed, lifetime-tagged BORROW of an fd you do not
+///           own (you may use it but must not close it). Sibling you might expect:
+///           `OwnedFd`, which DOES own the fd and closes it on drop; we never construct
+///           one of those directly here, we go through `std::fs::File` instead.
+/// Why:      Kotlin passes the audio file's fd in as a plain integer over JNI; we need
+///           `RawFd` to receive it and `BorrowedFd` to wrap it safely before duplicating.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type RawFd = number; // the OS handle integer
+/// type BorrowedFd = number; // same integer, but "do not close this yourself"
+/// ```
 use std::os::fd::{BorrowedFd, RawFd};
 
-// What:     `use std::sync::atomic::{AtomicBool, AtomicU32, AtomicU64, Ordering};`.
-//           Lock-free shared cells plus the memory-ordering enum. An `AtomicBool` /
-//           `AtomicU32` / `AtomicU64` is a `bool` / 32-bit / 64-bit unsigned integer
-//           that MULTIPLE THREADS may read and write at the same time without a lock
-//           or a data race; reads and writes go through `.load()` / `.store()` methods,
-//           never `=`. Siblings the reader might expect: `AtomicI32`/`AtomicI64`
-//           (signed), `AtomicUsize` (pointer-width); we pick the unsigned fixed-width
-//           ones because the values are sample rates, channel counts, frame counters,
-//           and bit-patterns of `f32`s, all naturally non-negative. `Ordering` is an
-//           enum picking how strongly a given atomic access synchronizes with others
-//           (its variants `Relaxed`/`Acquire`/`Release` appear below).
-// Why:      Three threads (JNI/main, decode worker, realtime callback) share playback
-//           state with no lock so the realtime path never blocks; atomics are how they
-//           hand values across thread boundaries safely.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// // no equivalent: JS is single-threaded.
-// // mentally: shared cells read/written via Atomics.load / Atomics.store,
-// // never plain assignment, with an Ordering arg saying how synchronized.
-// ```
-/// Imports.
+/// What:     `use std::sync::atomic::{AtomicBool, AtomicU32, AtomicU64, Ordering};`.
+///           Lock-free shared cells plus the memory-ordering enum. An `AtomicBool` /
+///           `AtomicU32` / `AtomicU64` is a `bool` / 32-bit / 64-bit unsigned integer
+///           that MULTIPLE THREADS may read and write at the same time without a lock
+///           or a data race; reads and writes go through `.load()` / `.store()` methods,
+///           never `=`. Siblings the reader might expect: `AtomicI32`/`AtomicI64`
+///           (signed), `AtomicUsize` (pointer-width); we pick the unsigned fixed-width
+///           ones because the values are sample rates, channel counts, frame counters,
+///           and bit-patterns of `f32`s, all naturally non-negative. `Ordering` is an
+///           enum picking how strongly a given atomic access synchronizes with others
+///           (its variants `Relaxed`/`Acquire`/`Release` appear below).
+/// Why:      Three threads (JNI/main, decode worker, realtime callback) share playback
+///           state with no lock so the realtime path never blocks; atomics are how they
+///           hand values across thread boundaries safely.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // no equivalent: JS is single-threaded.
+/// // mentally: shared cells read/written via Atomics.load / Atomics.store,
+/// // never plain assignment, with an Ordering arg saying how synchronized.
+/// ```
 use std::sync::atomic::{AtomicBool, AtomicU32, AtomicU64, Ordering};
 
-// What:     `use std::sync::mpsc::{self, Sender};`. The multi-producer/single-consumer
-//           channel: a thread-safe one-way queue. `Sender` is the push end; the matching
-//           pop end is `Receiver` (we do not name it here because only the worker uses
-//           it, inside `engine_worker`). `self` also imports the `mpsc` module itself so
-//           we can call `mpsc::channel()` below.
-// Why:      The JNI/main thread sends slow, owned-state `Command`s (load/seek/quit) to
-//           the worker thread through this queue.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// // a thread-safe queue; we keep only the Sender (push) end here.
-// ```
-/// Imports.
+/// What:     `use std::sync::mpsc::{self, Sender};`. The multi-producer/single-consumer
+///           channel: a thread-safe one-way queue. `Sender` is the push end; the matching
+///           pop end is `Receiver` (we do not name it here because only the worker uses
+///           it, inside `engine_worker`). `self` also imports the `mpsc` module itself so
+///           we can call `mpsc::channel()` below.
+/// Why:      The JNI/main thread sends slow, owned-state `Command`s (load/seek/quit) to
+///           the worker thread through this queue.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // a thread-safe queue; we keep only the Sender (push) end here.
+/// ```
 use std::sync::mpsc::{self, Sender};
 
-// What:     `use std::sync::Arc;`. `Arc<T>` = "Atomically Reference-Counted" shared
-//           pointer: a value of `T` lives on the heap, and every `Arc` clone is another
-//           owner; the `T` is freed only when the LAST `Arc` is dropped, and the counter
-//           is updated atomically so clones can live on different threads. Siblings the
-//           reader might expect: `Rc<T>`, the same idea but with a NON-atomic counter,
-//           usable only within one thread (cheaper, but would be rejected here because
-//           we cross threads); `Box<T>`, a single-owner heap pointer with no sharing.
-// Why:      The one `Control` struct must be shared by three threads at once, so we wrap
-//           it in `Arc` and hand each thread its own clone of the pointer.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// // no wrapper: a plain object reference is already shared and GC-freed.
-// ```
-/// Imports.
+/// What:     `use std::sync::Arc;`. `Arc<T>` = "Atomically Reference-Counted" shared
+///           pointer: a value of `T` lives on the heap, and every `Arc` clone is another
+///           owner; the `T` is freed only when the LAST `Arc` is dropped, and the counter
+///           is updated atomically so clones can live on different threads. Siblings the
+///           reader might expect: `Rc<T>`, the same idea but with a NON-atomic counter,
+///           usable only within one thread (cheaper, but would be rejected here because
+///           we cross threads); `Box<T>`, a single-owner heap pointer with no sharing.
+/// Why:      The one `Control` struct must be shared by three threads at once, so we wrap
+///           it in `Arc` and hand each thread its own clone of the pointer.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // no wrapper: a plain object reference is already shared and GC-freed.
+/// ```
 use std::sync::Arc;
 
-// What:     `use std::thread::{self, JoinHandle};`. `thread::spawn`/`thread::Builder`
-//           start a worker; a `JoinHandle<T>` lets us later wait for that worker to
-//           finish (and recover its return value of type `T`). `self` imports the
-//           `thread` module itself so we can call `thread::Builder::new()`.
-// Why:      The engine runs decode/output on its own OS thread; `Drop` joins it on exit.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// // JoinHandle ~ a Worker + a promise that resolves when the worker exits.
-// ```
-/// Imports.
+/// What:     `use std::thread::{self, JoinHandle};`. `thread::spawn`/`thread::Builder`
+///           start a worker; a `JoinHandle<T>` lets us later wait for that worker to
+///           finish (and recover its return value of type `T`). `self` imports the
+///           `thread` module itself so we can call `thread::Builder::new()`.
+/// Why:      The engine runs decode/output on its own OS thread; `Drop` joins it on exit.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // JoinHandle ~ a Worker + a promise that resolves when the worker exits.
+/// ```
 use std::thread::{self, JoinHandle};
 
-// What:     `use crate::engine_worker;`. Import a SIBLING MODULE in this same crate
-//           (not a single name) so we can call `engine_worker::worker_run(...)` below.
-//           `crate::` means "from the root of this crate" (this package).
-// Why:      `new` spawns the worker by handing the channel receiver and shared control
-//           to `worker_run`.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import * as engineWorker from "./engine_worker";
-// ```
-/// Imports.
+/// What:     `use crate::engine_worker;`. Import a SIBLING MODULE in this same crate
+///           (not a single name) so we can call `engine_worker::worker_run(...)` below.
+///           `crate::` means "from the root of this crate" (this package).
+/// Why:      `new` spawns the worker by handing the channel receiver and shared control
+///           to `worker_run`.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import * as engineWorker from "./engine_worker";
+/// ```
 use crate::engine_worker;
 
-// What:     `use crate::error::PlayerError;`. Import the crate's one unified error enum
-//           (defined in `error.rs`) so this file can return and construct it.
-// Why:      `load` returns `Result<(), PlayerError>` and builds a `PlayerError` when the
-//           worker has gone away.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { PlayerError } from "./error";
-// ```
-/// Imports.
+/// What:     `use crate::error::PlayerError;`. Import the crate's one unified error enum
+///           (defined in `error.rs`) so this file can return and construct it.
+/// Why:      `load` returns `Result<(), PlayerError>` and builds a `PlayerError` when the
+///           worker has gone away.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { PlayerError } from "./error";
+/// ```
 use crate::error::PlayerError;
 
-// What:     `pub(crate) const MILLIS_PER_SEC: f64 = 1000.0;`. A compile-time constant
-//           named `MILLIS_PER_SEC`. `pub(crate)` = visible to every module in THIS crate
-//           but not to outside crates (sibling visibilities: bare `pub` is fully public,
-//           no modifier is private to this module). `f64` is a 64-bit IEEE-754 floating
-//           point number (Rust's "double"); its sibling `f32` is the 32-bit "single".
-// Why:      We pick `f64` (not `f32`) because durations are computed and divided in
-//           seconds where the extra precision avoids drift; the constant converts the
-//           worker's millisecond duration into the seconds Kotlin reads.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// const MILLIS_PER_SEC = 1000; // TS number is already an f64
-// ```
-/// Millis per sec.
+/// What:     `pub(crate) const MILLIS_PER_SEC: f64 = 1000.0;`. A compile-time constant
+///           named `MILLIS_PER_SEC`. `pub(crate)` = visible to every module in THIS crate
+///           but not to outside crates (sibling visibilities: bare `pub` is fully public,
+///           no modifier is private to this module). `f64` is a 64-bit IEEE-754 floating
+///           point number (Rust's "double"); its sibling `f32` is the 32-bit "single".
+/// Why:      We pick `f64` (not `f32`) because durations are computed and divided in
+///           seconds where the extra precision avoids drift; the constant converts the
+///           worker's millisecond duration into the seconds Kotlin reads.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const MILLIS_PER_SEC = 1000; // TS number is already an f64
+/// ```
 pub(crate) const MILLIS_PER_SEC: f64 = 1000.0;
 
-// What:     `pub(crate) struct Control { ... }`. A record type holding the shared
-//           lock-free playback state and telemetry. Every field is an atomic (see the
-//           imports above), so any of the three threads may touch any field at any time
-//           without a lock. `pub(crate)` = visible crate-wide, not to outside crates.
-// Why:      This is the ENTIRE shared surface between threads: the worker writes track
-//           facts, the realtime callback writes progress, the main thread writes
-//           play/volume intent, and Kotlin polls everything. One atomic-only struct keeps
-//           the realtime audio path off any lock.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// class Control {
-//   playing: SharedBool; volumeBits: SharedU32; rate: SharedU32; channels: SharedU32;
-//   startFrame: SharedU64; framesPlayed: SharedU64; durationMs: SharedU64;
-//   decodeDone: SharedBool; ended: SharedBool; normGainBits: SharedU32;
-// }
-// ```
-/// Control.
+/// What:     `pub(crate) struct Control { ... }`. A record type holding the shared
+///           lock-free playback state and telemetry. Every field is an atomic (see the
+///           imports above), so any of the three threads may touch any field at any time
+///           without a lock. `pub(crate)` = visible crate-wide, not to outside crates.
+/// Why:      This is the ENTIRE shared surface between threads: the worker writes track
+///           facts, the realtime callback writes progress, the main thread writes
+///           play/volume intent, and Kotlin polls everything. One atomic-only struct keeps
+///           the realtime audio path off any lock.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// class Control {
+///   playing: SharedBool; volumeBits: SharedU32; rate: SharedU32; channels: SharedU32;
+///   startFrame: SharedU64; framesPlayed: SharedU64; durationMs: SharedU64;
+///   decodeDone: SharedBool; ended: SharedBool; normGainBits: SharedU32;
+/// }
+/// ```
 pub(crate) struct Control {
-    // What:     `pub(crate) playing: AtomicBool`. A thread-safe boolean "play gate":
-    //           true means the callback drains the ring buffer to the speaker, false
-    //           means it emits silence. `AtomicBool` (not a plain `bool`) so the
-    //           realtime callback can read it while the main thread flips it.
-    // Why:      Play/pause must take effect on the very next audio buffer with no queue
-    //           round trip, so it lives here as an atomic rather than as a `Command`.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // playing: SharedBool;
-    // ```
-    /// Playing.
+    /// What:     `pub(crate) playing: AtomicBool`. A thread-safe boolean "play gate":
+    ///           true means the callback drains the ring buffer to the speaker, false
+    ///           means it emits silence. `AtomicBool` (not a plain `bool`) so the
+    ///           realtime callback can read it while the main thread flips it.
+    /// Why:      Play/pause must take effect on the very next audio buffer with no queue
+    ///           round trip, so it lives here as an atomic rather than as a `Command`.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// playing: SharedBool;
+    /// ```
     pub(crate) playing: AtomicBool,
-    // What:     `pub(crate) volume_bits: AtomicU32`. The user volume stored as the RAW
-    //           32 BITS of an `f32`, not as a number you can do math on. `f32` has no
-    //           atomic type, so we keep its bit-pattern in an `AtomicU32` (sibling
-    //           `AtomicU64` would waste half the cell) and reinterpret it with
-    //           `f32::from_bits` when reading.
-    // Why:      The realtime callback multiplies every sample by this gain; storing it as
-    //           atomic bits lets the main thread change volume mid-playback losslessly.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // volumeBits: SharedU32; // raw bits of an f32 gain
-    // ```
-    /// Volume bits.
+    /// What:     `pub(crate) volume_bits: AtomicU32`. The user volume stored as the RAW
+    ///           32 BITS of an `f32`, not as a number you can do math on. `f32` has no
+    ///           atomic type, so we keep its bit-pattern in an `AtomicU32` (sibling
+    ///           `AtomicU64` would waste half the cell) and reinterpret it with
+    ///           `f32::from_bits` when reading.
+    /// Why:      The realtime callback multiplies every sample by this gain; storing it as
+    ///           atomic bits lets the main thread change volume mid-playback losslessly.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// volumeBits: SharedU32; // raw bits of an f32 gain
+    /// ```
     pub(crate) volume_bits: AtomicU32,
-    // What:     `pub(crate) rate: AtomicU32`. The loaded track's output sample rate in
-    //           Hz, or 0 when nothing is loaded. `AtomicU32` (a 32-bit unsigned integer;
-    //           siblings `AtomicU64`/`AtomicUsize`) is plenty: sample rates are small
-    //           positive numbers like 44100 or 48000.
-    // Why:      `position_sec` divides the played-frame count by this rate to get seconds,
-    //           and the worker writes it on load/seek.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // rate: SharedU32; // Hz, 0 = nothing loaded
-    // ```
-    /// Rate.
+    /// What:     `pub(crate) rate: AtomicU32`. The loaded track's output sample rate in
+    ///           Hz, or 0 when nothing is loaded. `AtomicU32` (a 32-bit unsigned integer;
+    ///           siblings `AtomicU64`/`AtomicUsize`) is plenty: sample rates are small
+    ///           positive numbers like 44100 or 48000.
+    /// Why:      `position_sec` divides the played-frame count by this rate to get seconds,
+    ///           and the worker writes it on load/seek.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// rate: SharedU32; // Hz, 0 = nothing loaded
+    /// ```
     pub(crate) rate: AtomicU32,
-    // What:     `pub(crate) channels: AtomicU32`. The loaded track's channel count
-    //           (1 = mono, 2 = stereo, ...). Same `AtomicU32` choice and reasoning as
-    //           `rate`: a small non-negative integer shared across threads.
-    // Why:      The output and frame math need to know how many samples make one frame.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // channels: SharedU32;
-    // ```
-    /// Channels.
+    /// What:     `pub(crate) channels: AtomicU32`. The loaded track's channel count
+    ///           (1 = mono, 2 = stereo, ...). Same `AtomicU32` choice and reasoning as
+    ///           `rate`: a small non-negative integer shared across threads.
+    /// Why:      The output and frame math need to know how many samples make one frame.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// channels: SharedU32;
+    /// ```
     pub(crate) channels: AtomicU32,
-    // What:     `pub(crate) start_frame: AtomicU64`. The frame index the current stream
-    //           STARTED at (the seek target), added to `frames_played` to get the true
-    //           position. `AtomicU64` (a 64-bit unsigned integer; sibling `AtomicU32`
-    //           would overflow) because frame counts on a long track can exceed 4 billion.
-    // Why:      After a seek we restart the played-frame counter at zero, so we must add
-    //           the seek base back to report an absolute position.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // startFrame: SharedU64; // seek base, added to framesPlayed
-    // ```
-    /// Start frame.
+    /// What:     `pub(crate) start_frame: AtomicU64`. The frame index the current stream
+    ///           STARTED at (the seek target), added to `frames_played` to get the true
+    ///           position. `AtomicU64` (a 64-bit unsigned integer; sibling `AtomicU32`
+    ///           would overflow) because frame counts on a long track can exceed 4 billion.
+    /// Why:      After a seek we restart the played-frame counter at zero, so we must add
+    ///           the seek base back to report an absolute position.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// startFrame: SharedU64; // seek base, added to framesPlayed
+    /// ```
     pub(crate) start_frame: AtomicU64,
-    // What:     `pub(crate) frames_played: AtomicU64`. How many frames the realtime
-    //           callback has ACTUALLY played since the last load/seek. `AtomicU64` for the
-    //           same overflow reason as `start_frame` (a 32-bit sibling would wrap).
-    // Why:      The callback bumps this each buffer; `position_sec` reads it to report how
-    //           far into the track we are.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // framesPlayed: SharedU64;
-    // ```
-    /// Frames played.
+    /// What:     `pub(crate) frames_played: AtomicU64`. How many frames the realtime
+    ///           callback has ACTUALLY played since the last load/seek. `AtomicU64` for the
+    ///           same overflow reason as `start_frame` (a 32-bit sibling would wrap).
+    /// Why:      The callback bumps this each buffer; `position_sec` reads it to report how
+    ///           far into the track we are.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// framesPlayed: SharedU64;
+    /// ```
     pub(crate) frames_played: AtomicU64,
-    // What:     `pub(crate) duration_ms: AtomicU64`. The loaded track's total length in
-    //           MILLISECONDS, or 0 when unknown. `AtomicU64` because a long track in
-    //           milliseconds easily exceeds the `AtomicU32` (~4.29 million ms ≈ 71 min)
-    //           ceiling.
-    // Why:      Kotlin polls this (converted to seconds via `MILLIS_PER_SEC`) for the
-    //           progress bar's total length.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // durationMs: SharedU64; // 0 = unknown
-    // ```
-    /// Duration ms.
+    /// What:     `pub(crate) duration_ms: AtomicU64`. The loaded track's total length in
+    ///           MILLISECONDS, or 0 when unknown. `AtomicU64` because a long track in
+    ///           milliseconds easily exceeds the `AtomicU32` (~4.29 million ms ≈ 71 min)
+    ///           ceiling.
+    /// Why:      Kotlin polls this (converted to seconds via `MILLIS_PER_SEC`) for the
+    ///           progress bar's total length.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// durationMs: SharedU64; // 0 = unknown
+    /// ```
     pub(crate) duration_ms: AtomicU64,
-    // What:     `pub(crate) decode_done: AtomicBool`. Set true by the WORKER when the
-    //           decoder hits end-of-file or errors. `AtomicBool` so the realtime callback
-    //           can observe it without a lock.
-    // Why:      The callback needs to know "no more samples are coming" so it can decide
-    //           the track ended once the ring buffer also drains.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // decodeDone: SharedBool;
-    // ```
-    /// Decode done.
+    /// What:     `pub(crate) decode_done: AtomicBool`. Set true by the WORKER when the
+    ///           decoder hits end-of-file or errors. `AtomicBool` so the realtime callback
+    ///           can observe it without a lock.
+    /// Why:      The callback needs to know "no more samples are coming" so it can decide
+    ///           the track ended once the ring buffer also drains.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// decodeDone: SharedBool;
+    /// ```
     pub(crate) decode_done: AtomicBool,
-    // What:     `pub(crate) ended: AtomicBool`. Set true by the CALLBACK once
-    //           `decode_done` is true AND the ring buffer has drained, i.e. the track
-    //           truly finished sounding. `AtomicBool` shared with the main thread's poller.
-    // Why:      Kotlin polls this to fire its one `onTrackEnded`; separating it from
-    //           `decode_done` means "decoder finished" and "audio finished" are distinct.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // ended: SharedBool;
-    // ```
-    /// Ended.
+    /// What:     `pub(crate) ended: AtomicBool`. Set true by the CALLBACK once
+    ///           `decode_done` is true AND the ring buffer has drained, i.e. the track
+    ///           truly finished sounding. `AtomicBool` shared with the main thread's poller.
+    /// Why:      Kotlin polls this to fire its one `onTrackEnded`; separating it from
+    ///           `decode_done` means "decoder finished" and "audio finished" are distinct.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// ended: SharedBool;
+    /// ```
     pub(crate) ended: AtomicBool,
-    // What:     `pub(crate) norm_gain_bits: AtomicU32`. The per-track true-peak
-    //           normalization gain, stored (like `volume_bits`) as the RAW BITS of an
-    //           `f32` inside an `AtomicU32`, since `f32` itself has no atomic form.
-    // Why:      The callback multiplies each sample by this gain alongside the user volume,
-    //           so loud and quiet tracks come out at a matched loudness.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // normGainBits: SharedU32; // raw bits of an f32 normalization gain
-    // ```
-    /// Norm gain bits.
+    /// What:     `pub(crate) norm_gain_bits: AtomicU32`. The per-track true-peak
+    ///           normalization gain, stored (like `volume_bits`) as the RAW BITS of an
+    ///           `f32` inside an `AtomicU32`, since `f32` itself has no atomic form.
+    /// Why:      The callback multiplies each sample by this gain alongside the user volume,
+    ///           so loud and quiet tracks come out at a matched loudness.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// normGainBits: SharedU32; // raw bits of an f32 normalization gain
+    /// ```
     pub(crate) norm_gain_bits: AtomicU32,
 }
 
-// What:     `impl Control { ... }`. The methods that belong to the `Control` struct (its
-//           constructor and two convenience readers). An `impl` block is where Rust hangs
-//           a type's methods, separate from the field declarations above.
-// Why:      Group `Control`'s construction and its float-reading helpers with the type.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// class Control { static new(): Control; volume(): number; normGain(): number; }
-// ```
-/// Implementation block.
+/// What:     `impl Control { ... }`. The methods that belong to the `Control` struct (its
+///           constructor and two convenience readers). An `impl` block is where Rust hangs
+///           a type's methods, separate from the field declarations above.
+/// Why:      Group `Control`'s construction and its float-reading helpers with the type.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// class Control { static new(): Control; volume(): number; normGain(): number; }
+/// ```
 impl Control {
-    // What:     `pub(crate) fn new() -> Control`. An associated CONSTRUCTOR function (no
-    //           `self` parameter) that builds and returns a fresh `Control`. The `->
-    //           Control` is the return type; `pub(crate)` keeps it crate-visible.
-    // Why:      Give the engine one place to spin up the shared state with sane defaults.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // static new(): Control { ... }
-    // ```
-    /// New.
+    /// What:     `pub(crate) fn new() -> Control`. An associated CONSTRUCTOR function (no
+    ///           `self` parameter) that builds and returns a fresh `Control`. The `->
+    ///           Control` is the return type; `pub(crate)` keeps it crate-visible.
+    /// Why:      Give the engine one place to spin up the shared state with sane defaults.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// static new(): Control { ... }
+    /// ```
     pub(crate) fn new() -> Control {
         // What:     `Control { ... }`. A struct literal that constructs the value field by
         //           field. There is no trailing `;`, so this whole expression is the
@@ -430,17 +409,16 @@ impl Control {
         }
     }
 
-    // What:     `pub(crate) fn volume(&self) -> f32`. A reader method. `&self` is a
-    //           READ-ONLY BORROW of the `Control` (it lends the struct to the method
-    //           without transferring ownership and without allowing mutation). Returns an
-    //           `f32` (the 32-bit float; sibling `f64` is the wider double).
-    // Why:      The callback wants the volume as a usable float, not raw bits.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // volume(): number { ... }
-    // ```
-    /// Volume.
+    /// What:     `pub(crate) fn volume(&self) -> f32`. A reader method. `&self` is a
+    ///           READ-ONLY BORROW of the `Control` (it lends the struct to the method
+    ///           without transferring ownership and without allowing mutation). Returns an
+    ///           `f32` (the 32-bit float; sibling `f64` is the wider double).
+    /// Why:      The callback wants the volume as a usable float, not raw bits.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// volume(): number { ... }
+    /// ```
     pub(crate) fn volume(&self) -> f32 {
         // What:     `f32::from_bits(self.volume_bits.load(Ordering::Relaxed))`. Inner part
         //           first: `self.volume_bits.load(Ordering::Relaxed)` atomically READS the
@@ -460,15 +438,14 @@ impl Control {
         f32::from_bits(self.volume_bits.load(Ordering::Relaxed))
     }
 
-    // What:     `pub(crate) fn norm_gain(&self) -> f32`. The same shape as `volume`: a
-    //           read-only-borrow (`&self`) reader returning an `f32`.
-    // Why:      Hand the callback the normalization gain as a usable float.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // normGain(): number { ... }
-    // ```
-    /// Norm gain.
+    /// What:     `pub(crate) fn norm_gain(&self) -> f32`. The same shape as `volume`: a
+    ///           read-only-borrow (`&self`) reader returning an `f32`.
+    /// Why:      Hand the callback the normalization gain as a usable float.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// normGain(): number { ... }
+    /// ```
     pub(crate) fn norm_gain(&self) -> f32 {
         // What:     `f32::from_bits(self.norm_gain_bits.load(Ordering::Relaxed))`. Same
         //           two-step as in `volume`: `.load(Ordering::Relaxed)` atomically reads
@@ -484,160 +461,177 @@ impl Control {
     }
 }
 
-// What:     `pub(crate) enum Command { ... }`. A SUM TYPE: a `Command` value is exactly
-//           ONE of the listed variants at a time. Two variants are tuple-style
-//           (`Name(types...)`), wrapping inner data. These are the worker inputs that
-//           need the worker's OWNED state (the open file and the output stream); the fast
-//           play/pause/volume knobs deliberately skip this enum and write atomics instead.
-// Why:      Only commands that touch state the worker exclusively owns travel down the
-//           channel; everything cheap stays lock-free.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// type Command =
-//   | { kind: "load"; file: FileHandle; play: boolean }
-//   | { kind: "seek"; positionSec: number }
-//   | { kind: "quit" };
-// ```
-/// Command.
+/// What:     `pub(crate) enum Command { ... }`. A SUM TYPE: a `Command` value is exactly
+///           ONE of the listed variants at a time. Two variants are tuple-style
+///           (`Name(types...)`), wrapping inner data. These are the worker inputs that
+///           need the worker's OWNED state (the open file and the output stream); the fast
+///           play/pause/volume knobs deliberately skip this enum and write atomics instead.
+/// Why:      Only commands that touch state the worker exclusively owns travel down the
+///           channel; everything cheap stays lock-free.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type Command =
+///   | { kind: "load"; file: FileHandle; play: boolean }
+///   | { kind: "seek"; positionSec: number }
+///   | { kind: "quit" };
+/// ```
 pub(crate) enum Command {
-    // What:     `Load(std::fs::File, bool)`. A tuple variant carrying TWO inner values:
-    //           a `std::fs::File` (an OWNED open file handle, here backed by a duplicate
-    //           of the `content://` fd Kotlin passed) and a `bool` (whether to start
-    //           playing immediately). `std::fs::File` owns its fd and closes it on drop.
-    // Why:      Opening and building the output needs the worker's owned state, so loading
-    //           is a command, not an atomic write.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // { kind: "load"; file: FileHandle; play: boolean }
-    // ```
-    /// Load.
+    /// What:     `Load(std::fs::File, bool)`. A tuple variant carrying TWO inner values:
+    ///           a `std::fs::File` (an OWNED open file handle, here backed by a duplicate
+    ///           of the `content://` fd Kotlin passed) and a `bool` (whether to start
+    ///           playing immediately). `std::fs::File` owns its fd and closes it on drop.
+    /// Why:      Opening and building the output needs the worker's owned state, so loading
+    ///           is a command, not an atomic write.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// { kind: "load"; file: FileHandle; play: boolean }
+    /// ```
     Load(
-        /// Load value 1.
+        /// What:     First field `.0` of the `Load` variant: an OWNED `std::fs::File`
+        ///           (a handle that owns its underlying OS file descriptor and closes it
+        ///           on drop; here it wraps a DUPLICATE of the `content://` fd Kotlin
+        ///           passed across JNI). Siblings the reader might expect: the bare
+        ///           `RawFd`/`OwnedFd` integer handle, or a borrowed `&File`.
+        /// Why:      The worker must OWN the open file so it can decode from it and close
+        ///           it deterministically when the load is replaced or the worker quits.
+        ///
+        /// In TS you'd write (pseudocode):
+        /// ```ts
+        /// // the `file: FileHandle` payload of { kind: "load" }
+        /// ```
         std::fs::File,
-        /// Load value 2.
+        /// What:     Second field `.1` of the `Load` variant: a `bool` flag, `true` to
+        ///           start playing immediately and `false` to load paused.
+        /// Why:      Lets a single `Load` command both open the file and set the initial
+        ///           transport state, with no second round-trip down the channel.
+        ///
+        /// In TS you'd write (pseudocode):
+        /// ```ts
+        /// // the `play: boolean` payload of { kind: "load" }
+        /// ```
         bool,
     ),
-    // What:     `Seek(f64)`. A tuple variant wrapping one `f64` (the target position in
-    //           seconds; `f64` not `f32` for sub-millisecond precision over long tracks).
-    // Why:      Repositioning the source and flushing the ring is worker-owned work.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // { kind: "seek"; positionSec: number }
-    // ```
-    /// Seek.
+    /// What:     `Seek(f64)`. A tuple variant wrapping one `f64` (the target position in
+    ///           seconds; `f64` not `f32` for sub-millisecond precision over long tracks).
+    /// Why:      Repositioning the source and flushing the ring is worker-owned work.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// { kind: "seek"; positionSec: number }
+    /// ```
     Seek(
-        /// Seek value.
+        /// What:     Unnamed field `.0` of the `Seek` variant: the target position in
+        ///           SECONDS as an `f64` (64-bit IEEE double; sibling `f32` is the 32-bit
+        ///           float, too coarse for sub-millisecond accuracy over long tracks).
+        /// Why:      `f64` (not `f32`) keeps repositioning sample-accurate even on
+        ///           hour-long files.
+        ///
+        /// In TS you'd write (pseudocode):
+        /// ```ts
+        /// // the `positionSec: number` payload of { kind: "seek" }
+        /// ```
         f64,
     ),
-    // What:     `Quit`. A UNIT variant (no payload): just a tag telling the worker to stop.
-    // Why:      Dropping the worker's owned state closes the AAudio stream, so quitting is
-    //           a command that lets the worker tear itself down cleanly.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // { kind: "quit" }
-    // ```
-    /// Quit.
+    /// What:     `Quit`. A UNIT variant (no payload): just a tag telling the worker to stop.
+    /// Why:      Dropping the worker's owned state closes the AAudio stream, so quitting is
+    ///           a command that lets the worker tear itself down cleanly.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// { kind: "quit" }
+    /// ```
     Quit,
 }
 
-// What:     `pub struct Engine { ... }`. The main-thread handle to the engine, i.e. the
-//           value that lives behind the JNI `jlong` Kotlin stores. `pub` (fully public)
-//           because Kotlin's JNI glue constructs and calls it. It holds the channel
-//           sender, the worker's join handle, the shared control, and the play intent;
-//           because the AAudio stream lives in the WORKER, this handle contains nothing
-//           thread-bound and is therefore `Send` (movable across threads).
-// Why:      One owner object Kotlin can hold, call methods on, and drop to shut down.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// class Engine {
-//   tx: Sender<Command>;
-//   worker: JoinHandle | null;
-//   control: Control; // shared
-//   playIntent: boolean;
-// }
-// ```
-/// Engine.
+/// What:     `pub struct Engine { ... }`. The main-thread handle to the engine, i.e. the
+///           value that lives behind the JNI `jlong` Kotlin stores. `pub` (fully public)
+///           because Kotlin's JNI glue constructs and calls it. It holds the channel
+///           sender, the worker's join handle, the shared control, and the play intent;
+///           because the AAudio stream lives in the WORKER, this handle contains nothing
+///           thread-bound and is therefore `Send` (movable across threads).
+/// Why:      One owner object Kotlin can hold, call methods on, and drop to shut down.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// class Engine {
+///   tx: Sender<Command>;
+///   worker: JoinHandle | null;
+///   control: Control; // shared
+///   playIntent: boolean;
+/// }
+/// ```
 pub struct Engine {
-    // What:     `tx: Sender<Command>`. The SEND end of the command channel. `Sender<T>`
-    //           is generic over the message type, pinned here to `Command` via the
-    //           `<Command>` type argument.
-    // Why:      `load`/`seek_to`/`drop` push commands to the worker through it.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // tx: Sender<Command>;
-    // ```
-    /// Tx.
+    /// What:     `tx: Sender<Command>`. The SEND end of the command channel. `Sender<T>`
+    ///           is generic over the message type, pinned here to `Command` via the
+    ///           `<Command>` type argument.
+    /// Why:      `load`/`seek_to`/`drop` push commands to the worker through it.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// tx: Sender<Command>;
+    /// ```
     tx: Sender<Command>,
-    // What:     `worker: Option<JoinHandle<()>>`. The worker's join handle wrapped in
-    //           `Option`. `Option<T>` is Rust's null-safe "maybe a value" type: it is
-    //           either `Some(value)` or `None`. `JoinHandle<()>` returns the unit type
-    //           `()` (pronounced "unit", Rust's "nothing" / `void`-like value), meaning
-    //           the worker thread produces no result.
-    // Why:      `Drop` calls `.take()` to MOVE the handle out (leaving `None`) so it can
-    //           join the worker exactly once; `Option` models "already joined".
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // worker: JoinHandle | null;
-    // ```
-    /// Worker.
+    /// What:     `worker: Option<JoinHandle<()>>`. The worker's join handle wrapped in
+    ///           `Option`. `Option<T>` is Rust's null-safe "maybe a value" type: it is
+    ///           either `Some(value)` or `None`. `JoinHandle<()>` returns the unit type
+    ///           `()` (pronounced "unit", Rust's "nothing" / `void`-like value), meaning
+    ///           the worker thread produces no result.
+    /// Why:      `Drop` calls `.take()` to MOVE the handle out (leaving `None`) so it can
+    ///           join the worker exactly once; `Option` models "already joined".
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// worker: JoinHandle | null;
+    /// ```
     worker: Option<JoinHandle<()>>,
-    // What:     `control: Arc<Control>`. The shared control, held through an `Arc` (the
-    //           atomically reference-counted shared pointer from the imports). This handle
-    //           owns one of the several `Arc` clones; the worker owns another.
-    // Why:      The main thread reads position/duration/playing/ended off this same shared
-    //           `Control` that the worker and callback write.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // control: Control; // shared object reference
-    // ```
-    /// Control.
+    /// What:     `control: Arc<Control>`. The shared control, held through an `Arc` (the
+    ///           atomically reference-counted shared pointer from the imports). This handle
+    ///           owns one of the several `Arc` clones; the worker owns another.
+    /// Why:      The main thread reads position/duration/playing/ended off this same shared
+    ///           `Control` that the worker and callback write.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// control: Control; // shared object reference
+    /// ```
     control: Arc<Control>,
-    // What:     `play_intent: bool`. A plain (non-atomic) boolean: what Kotlin LAST asked
-    //           for (its `playWhenReady`), distinct from whether the engine is actually
-    //           sounding right now. `bool` not `AtomicBool` because only this main-thread
-    //           handle reads and writes it.
-    // Why:      Lets `play_when_ready` report intent even when, say, the track has ended
-    //           but the user never pressed pause.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // playIntent: boolean;
-    // ```
-    /// Play intent.
+    /// What:     `play_intent: bool`. A plain (non-atomic) boolean: what Kotlin LAST asked
+    ///           for (its `playWhenReady`), distinct from whether the engine is actually
+    ///           sounding right now. `bool` not `AtomicBool` because only this main-thread
+    ///           handle reads and writes it.
+    /// Why:      Lets `play_when_ready` report intent even when, say, the track has ended
+    ///           but the user never pressed pause.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// playIntent: boolean;
+    /// ```
     play_intent: bool,
 }
 
-// What:     `impl Engine { ... }`. The handle's methods: construction, the JNI-facing
-//           control surface (load/play/pause/seek/volume/normalization), and the pollers
-//           Kotlin reads (position/duration/is_playing/is_ended/play_when_ready).
-// Why:      Group everything Kotlin calls over JNI with the `Engine` type.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// class Engine { /* new, load, play, pause, seekTo, ... pollers */ }
-// ```
-/// Implementation block.
+/// What:     `impl Engine { ... }`. The handle's methods: construction, the JNI-facing
+///           control surface (load/play/pause/seek/volume/normalization), and the pollers
+///           Kotlin reads (position/duration/is_playing/is_ended/play_when_ready).
+/// Why:      Group everything Kotlin calls over JNI with the `Engine` type.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// class Engine { /* new, load, play, pause, seekTo, ... pollers */ }
+/// ```
 impl Engine {
-    // What:     `pub fn new() -> Result<Engine, std::io::Error>`. The constructor. Returns
-    //           a `Result<Engine, std::io::Error>`: Rust's two-channel "either it worked or
-    //           it failed" type, holding `Ok(Engine)` on success or `Err(io::Error)` on
-    //           failure. The only failure is the OS refusing to create the thread.
-    // Why:      Spawn the worker and hand back a ready-to-use handle, surfacing the rare
-    //           thread-spawn failure instead of crashing.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // static new(): Engine { /* throws on OS thread-spawn failure */ }
-    // ```
-    /// New.
+    /// What:     `pub fn new() -> Result<Engine, std::io::Error>`. The constructor. Returns
+    ///           a `Result<Engine, std::io::Error>`: Rust's two-channel "either it worked or
+    ///           it failed" type, holding `Ok(Engine)` on success or `Err(io::Error)` on
+    ///           failure. The only failure is the OS refusing to create the thread.
+    /// Why:      Spawn the worker and hand back a ready-to-use handle, surfacing the rare
+    ///           thread-spawn failure instead of crashing.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// static new(): Engine { /* throws on OS thread-spawn failure */ }
+    /// ```
     pub fn new() -> Result<Engine, std::io::Error> {
         // What:     `let control = Arc::new(Control::new());`. Inner first: `Control::new()`
         //           builds a fresh control value; `Arc::new(...)` is the WRAPPER
@@ -721,22 +715,21 @@ impl Engine {
         })
     }
 
-    // What:     `pub fn load(&mut self, fd: RawFd, play: bool) -> Result<(), PlayerError>`.
-    //           `&mut self` is a MUTABLE BORROW of the engine (this method may change its
-    //           fields, here `play_intent`). `fd: RawFd` is the raw OS file-descriptor
-    //           integer Kotlin passed over JNI; `play: bool` says whether to start playing.
-    //           Returns `Result<(), PlayerError>`: `Ok(())` (success carrying the unit
-    //           value, i.e. "nothing") or `Err(PlayerError)`.
-    // Why:      Receive Kotlin's fd, duplicate it so the worker can own a copy, and hand
-    //           the file to the worker to open and (optionally) play. The caller guarantees
-    //           `fd >= 0` and that the fd is alive for this synchronous call (Kotlin is
-    //           inside the file descriptor's `use {}`).
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // load(fd: number, play: boolean): void { /* throws PlayerError on worker-gone */ }
-    // ```
-    /// Load.
+    /// What:     `pub fn load(&mut self, fd: RawFd, play: bool) -> Result<(), PlayerError>`.
+    ///           `&mut self` is a MUTABLE BORROW of the engine (this method may change its
+    ///           fields, here `play_intent`). `fd: RawFd` is the raw OS file-descriptor
+    ///           integer Kotlin passed over JNI; `play: bool` says whether to start playing.
+    ///           Returns `Result<(), PlayerError>`: `Ok(())` (success carrying the unit
+    ///           value, i.e. "nothing") or `Err(PlayerError)`.
+    /// Why:      Receive Kotlin's fd, duplicate it so the worker can own a copy, and hand
+    ///           the file to the worker to open and (optionally) play. The caller guarantees
+    ///           `fd >= 0` and that the fd is alive for this synchronous call (Kotlin is
+    ///           inside the file descriptor's `use {}`).
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// load(fd: number, play: boolean): void { /* throws PlayerError on worker-gone */ }
+    /// ```
     pub fn load(&mut self, fd: RawFd, play: bool) -> Result<(), PlayerError> {
         // What:     `let borrowed = unsafe { BorrowedFd::borrow_raw(fd) };`. `unsafe { ... }`
         //           is a block where we promise the compiler we have manually upheld a
@@ -815,16 +808,15 @@ impl Engine {
         Ok(())
     }
 
-    // What:     `pub fn play(&mut self)`. A control method that takes a MUTABLE BORROW
-    //           (`&mut self`) because it changes `play_intent`. No return type means it
-    //           returns the unit value `()`.
-    // Why:      Resume playback: the realtime callback un-gates on its next buffer.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // play(): void { ... }
-    // ```
-    /// Play.
+    /// What:     `pub fn play(&mut self)`. A control method that takes a MUTABLE BORROW
+    ///           (`&mut self`) because it changes `play_intent`. No return type means it
+    ///           returns the unit value `()`.
+    /// Why:      Resume playback: the realtime callback un-gates on its next buffer.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// play(): void { ... }
+    /// ```
     pub fn play(&mut self) {
         // What:     `self.play_intent = true;`. Plain boolean field assignment.
         // Why:      Record that the user wants sound.
@@ -850,16 +842,15 @@ impl Engine {
         self.control.playing.store(true, Ordering::Release);
     }
 
-    // What:     `pub fn pause(&mut self)`. The mirror of `play`: a `&mut self` control
-    //           method returning nothing.
-    // Why:      Pause: the callback emits silence on its next buffer while KEEPING the
-    //           audio already buffered (so resume is instant).
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // pause(): void { ... }
-    // ```
-    /// Pause.
+    /// What:     `pub fn pause(&mut self)`. The mirror of `play`: a `&mut self` control
+    ///           method returning nothing.
+    /// Why:      Pause: the callback emits silence on its next buffer while KEEPING the
+    ///           audio already buffered (so resume is instant).
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// pause(): void { ... }
+    /// ```
     pub fn pause(&mut self) {
         // What:     `self.play_intent = false;`. Plain boolean field assignment.
         // Why:      Record that the user wants silence.
@@ -881,18 +872,17 @@ impl Engine {
         self.control.playing.store(false, Ordering::Release);
     }
 
-    // What:     `pub fn seek_to(&self, position_sec: f64)`. `&self` is a READ-ONLY BORROW
-    //           (this method does not mutate the engine; it only sends a command).
-    //           `position_sec: f64` is the seek target in seconds (`f64`, not `f32`, for
-    //           precision). Returns nothing.
-    // Why:      Ask the worker to reposition the loaded track; the worker re-flushes the
-    //           ring buffer.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // seekTo(positionSec: number): void { ... }
-    // ```
-    /// Seek to.
+    /// What:     `pub fn seek_to(&self, position_sec: f64)`. `&self` is a READ-ONLY BORROW
+    ///           (this method does not mutate the engine; it only sends a command).
+    ///           `position_sec: f64` is the seek target in seconds (`f64`, not `f32`, for
+    ///           precision). Returns nothing.
+    /// Why:      Ask the worker to reposition the loaded track; the worker re-flushes the
+    ///           ring buffer.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// seekTo(positionSec: number): void { ... }
+    /// ```
     pub fn seek_to(&self, position_sec: f64) {
         // What:     `let _ = self.tx.send(Command::Seek(position_sec));`.
         //           `Command::Seek(position_sec)` is a WRAPPER CONSTRUCTOR building the
@@ -908,16 +898,15 @@ impl Engine {
         let _ = self.tx.send(Command::Seek(position_sec));
     }
 
-    // What:     `pub fn set_volume(&self, volume: f32)`. A read-only-borrow (`&self`)
-    //           method taking `volume: f32` (a 32-bit float linear gain; sibling `f64`
-    //           would be needless precision for a volume knob). Returns nothing.
-    // Why:      Set the user volume; the callback multiplies every sample by it.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // setVolume(volume: number): void { ... }
-    // ```
-    /// Set volume.
+    /// What:     `pub fn set_volume(&self, volume: f32)`. A read-only-borrow (`&self`)
+    ///           method taking `volume: f32` (a 32-bit float linear gain; sibling `f64`
+    ///           would be needless precision for a volume knob). Returns nothing.
+    /// Why:      Set the user volume; the callback multiplies every sample by it.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// setVolume(volume: number): void { ... }
+    /// ```
     pub fn set_volume(&self, volume: f32) {
         // What:     `self.control.volume_bits.store(volume.to_bits(), Ordering::Relaxed);`.
         //           `volume.to_bits()` REINTERPRETS the `f32` as its raw `u32` bit-pattern
@@ -936,16 +925,15 @@ impl Engine {
             .store(volume.to_bits(), Ordering::Relaxed);
     }
 
-    // What:     `pub fn set_normalization_gain(&self, gain: f32)`. The same shape as
-    //           `set_volume`: a read-only-borrow method taking an `f32` linear gain.
-    // Why:      Set the per-track true-peak normalization gain, applied together with the
-    //           user volume in the callback.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // setNormalizationGain(gain: number): void { ... }
-    // ```
-    /// Set normalization gain.
+    /// What:     `pub fn set_normalization_gain(&self, gain: f32)`. The same shape as
+    ///           `set_volume`: a read-only-borrow method taking an `f32` linear gain.
+    /// Why:      Set the per-track true-peak normalization gain, applied together with the
+    ///           user volume in the callback.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// setNormalizationGain(gain: number): void { ... }
+    /// ```
     pub fn set_normalization_gain(&self, gain: f32) {
         // What:     `self.control.norm_gain_bits.store(gain.to_bits(), Ordering::Relaxed);`.
         //           `gain.to_bits()` reinterprets the `f32` gain as raw `u32` bits;
@@ -963,16 +951,15 @@ impl Engine {
             .store(gain.to_bits(), Ordering::Relaxed);
     }
 
-    // What:     `pub fn position_sec(&self) -> f64`. A read-only-borrow poller returning
-    //           the current playback position in seconds as an `f64` (the wide double;
-    //           sibling `f32` would lose precision for long-running positions).
-    // Why:      Kotlin polls this for the progress bar; 0 when nothing is loaded.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // positionSec(): number { ... }
-    // ```
-    /// Position sec.
+    /// What:     `pub fn position_sec(&self) -> f64`. A read-only-borrow poller returning
+    ///           the current playback position in seconds as an `f64` (the wide double;
+    ///           sibling `f32` would lose precision for long-running positions).
+    /// Why:      Kotlin polls this for the progress bar; 0 when nothing is loaded.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// positionSec(): number { ... }
+    /// ```
     pub fn position_sec(&self) -> f64 {
         // What:     `let rate = self.control.rate.load(Ordering::Acquire);`. `.load(
         //           Ordering::Acquire)` atomically READS the sample rate. `Ordering::Acquire`
@@ -1029,15 +1016,14 @@ impl Engine {
         frames as f64 / rate as f64
     }
 
-    // What:     `pub fn duration_sec(&self) -> f64`. A read-only-borrow poller returning the
-    //           loaded track's duration in seconds as an `f64`.
-    // Why:      Kotlin polls this for the progress bar's total length; 0 when unknown.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // durationSec(): number { ... }
-    // ```
-    /// Duration sec.
+    /// What:     `pub fn duration_sec(&self) -> f64`. A read-only-borrow poller returning the
+    ///           loaded track's duration in seconds as an `f64`.
+    /// Why:      Kotlin polls this for the progress bar's total length; 0 when unknown.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// durationSec(): number { ... }
+    /// ```
     pub fn duration_sec(&self) -> f64 {
         // What:     `self.control.duration_ms.load(Ordering::Acquire) as f64 /
         //           MILLIS_PER_SEC`. `.load(Ordering::Acquire)` atomically reads the
@@ -1053,16 +1039,15 @@ impl Engine {
         self.control.duration_ms.load(Ordering::Acquire) as f64 / MILLIS_PER_SEC
     }
 
-    // What:     `pub fn is_playing(&self) -> bool`. A read-only-borrow poller returning a
-    //           plain `bool`: whether the engine is ACTUALLY sounding (playing and not yet
-    //           ended), which differs from `play_when_ready` (mere intent).
-    // Why:      Kotlin polls this to know if sound is really coming out right now.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // isPlaying(): boolean { ... }
-    // ```
-    /// Is playing.
+    /// What:     `pub fn is_playing(&self) -> bool`. A read-only-borrow poller returning a
+    ///           plain `bool`: whether the engine is ACTUALLY sounding (playing and not yet
+    ///           ended), which differs from `play_when_ready` (mere intent).
+    /// Why:      Kotlin polls this to know if sound is really coming out right now.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// isPlaying(): boolean { ... }
+    /// ```
     pub fn is_playing(&self) -> bool {
         // What:     `self.control.playing.load(Ordering::Acquire) &&
         //           !self.control.ended.load(Ordering::Acquire)`. Two atomic
@@ -1081,15 +1066,14 @@ impl Engine {
         self.control.playing.load(Ordering::Acquire) && !self.control.ended.load(Ordering::Acquire)
     }
 
-    // What:     `pub fn is_ended(&self) -> bool`. A read-only-borrow poller returning a
-    //           plain `bool`: whether the loaded track has played through to its end.
-    // Why:      Kotlin's poller de-duplicates this into a single `onTrackEnded` callback.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // isEnded(): boolean { ... }
-    // ```
-    /// Is ended.
+    /// What:     `pub fn is_ended(&self) -> bool`. A read-only-borrow poller returning a
+    ///           plain `bool`: whether the loaded track has played through to its end.
+    /// Why:      Kotlin's poller de-duplicates this into a single `onTrackEnded` callback.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// isEnded(): boolean { ... }
+    /// ```
     pub fn is_ended(&self) -> bool {
         // What:     `self.control.ended.load(Ordering::Acquire)`. A single atomic
         //           `.load(Ordering::Acquire)` of the `ended` flag. Tail expression, so it
@@ -1103,17 +1087,16 @@ impl Engine {
         self.control.ended.load(Ordering::Acquire)
     }
 
-    // What:     `pub fn play_when_ready(&self) -> bool`. A read-only-borrow poller returning
-    //           a plain `bool`: the last play INTENT Kotlin asked for (its `playWhenReady`),
-    //           true from a play / load-and-play request until a pause.
-    // Why:      Lets Kotlin distinguish "the user wants playback" from "audio is actually
-    //           sounding" (which `is_playing` reports).
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // playWhenReady(): boolean { ... }
-    // ```
-    /// Play when ready.
+    /// What:     `pub fn play_when_ready(&self) -> bool`. A read-only-borrow poller returning
+    ///           a plain `bool`: the last play INTENT Kotlin asked for (its `playWhenReady`),
+    ///           true from a play / load-and-play request until a pause.
+    /// Why:      Lets Kotlin distinguish "the user wants playback" from "audio is actually
+    ///           sounding" (which `is_playing` reports).
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// playWhenReady(): boolean { ... }
+    /// ```
     pub fn play_when_ready(&self) -> bool {
         // What:     `self.play_intent`. Read the plain (non-atomic) boolean field directly.
         //           No trailing `;`, so this bare field access is the tail expression and
@@ -1128,28 +1111,26 @@ impl Engine {
     }
 }
 
-// What:     `impl Drop for Engine { ... }`. Implement the `Drop` TRAIT for `Engine`.
-//           `Drop` is Rust's DESTRUCTOR trait: its `drop` method runs automatically the
-//           moment an `Engine` goes out of scope (when Kotlin's JNI glue frees the handle).
-// Why:      Tell the worker to quit and wait for it, so the AAudio stream the worker owns
-//           is closed cleanly before the process moves on.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// class Engine { [Symbol.dispose]() { /* send quit, then await worker */ } }
-// ```
-/// Implementation block.
+/// What:     `impl Drop for Engine { ... }`. Implement the `Drop` TRAIT for `Engine`.
+///           `Drop` is Rust's DESTRUCTOR trait: its `drop` method runs automatically the
+///           moment an `Engine` goes out of scope (when Kotlin's JNI glue frees the handle).
+/// Why:      Tell the worker to quit and wait for it, so the AAudio stream the worker owns
+///           is closed cleanly before the process moves on.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// class Engine { [Symbol.dispose]() { /* send quit, then await worker */ } }
+/// ```
 impl Drop for Engine {
-    // What:     `fn drop(&mut self)`. The destructor method. `&mut self` because tearing the
-    //           engine down mutates it (it `.take()`s the worker handle out). The runtime,
-    //           not your code, calls this; you never call `drop` by name.
-    // Why:      Run graceful shutdown at end of the engine's life.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // [Symbol.dispose]() { ... }
-    // ```
-    /// Drop.
+    /// What:     `fn drop(&mut self)`. The destructor method. `&mut self` because tearing the
+    ///           engine down mutates it (it `.take()`s the worker handle out). The runtime,
+    ///           not your code, calls this; you never call `drop` by name.
+    /// Why:      Run graceful shutdown at end of the engine's life.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// [Symbol.dispose]() { ... }
+    /// ```
     fn drop(&mut self) {
         // What:     `let _ = self.tx.send(Command::Quit);`. `Command::Quit` is the unit
         //           WRAPPER CONSTRUCTOR for the `Quit` variant. `self.tx.send(...)` returns

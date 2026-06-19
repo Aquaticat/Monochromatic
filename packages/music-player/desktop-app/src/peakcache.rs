@@ -6,120 +6,112 @@
 //! of (path, size, mtime). No filename, path, or tag ever lands on disk, so the
 //! cache reveals nothing about which tracks the user has.
 
-// What:     `use std::collections::HashMap;`. A hash map (key -> value). Sibling:
-//           `BTreeMap` (ordered, slower lookups); we do not need ordering.
-// Why:      Maps a track fingerprint to its measured true peak.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// type HashMap = Record<string, number>;
-// ```
-/// Imports.
+/// What:     `use std::collections::HashMap;`. A hash map (key -> value). Sibling:
+///           `BTreeMap` (ordered, slower lookups); we do not need ordering.
+/// Why:      Maps a track fingerprint to its measured true peak.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type HashMap = Record<string, number>;
+/// ```
 use std::collections::HashMap;
 
-// What:     `use std::path::{Path, PathBuf};`. Borrowed and owned filesystem paths.
-// Why:      `fingerprint` borrows a path; the cache stores its file path owned.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// // both are just `string` in TS
-// ```
-/// Imports.
+/// What:     `use std::path::{Path, PathBuf};`. Borrowed and owned filesystem paths.
+/// Why:      `fingerprint` borrows a path; the cache stores its file path owned.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // both are just `string` in TS
+/// ```
 use std::path::{Path, PathBuf};
 
-// What:     `use std::time::UNIX_EPOCH;`. The 1970 reference instant.
-// Why:      Convert a file's modified-time into a number for the fingerprint.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// const UNIX_EPOCH = 0; // ms-since-1970 baseline
-// ```
-/// Imports.
+/// What:     `use std::time::UNIX_EPOCH;`. The 1970 reference instant.
+/// Why:      Convert a file's modified-time into a number for the fingerprint.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const UNIX_EPOCH = 0; // ms-since-1970 baseline
+/// ```
 use std::time::UNIX_EPOCH;
 
-// What:     `use std::sync::{Arc, Mutex};`. The atomically reference-counted shared
-//           pointer and the mutual-exclusion lock.
-// Why:      `flush` below takes the cache as the same `Arc<Mutex<PeakCache>>` the
-//           worker threads share, so it must name both types.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// // no direct equivalent: a shared, lock-guarded handle
-// ```
-/// Imports.
+/// What:     `use std::sync::{Arc, Mutex};`. The atomically reference-counted shared
+///           pointer and the mutual-exclusion lock.
+/// Why:      `flush` below takes the cache as the same `Arc<Mutex<PeakCache>>` the
+///           worker threads share, so it must name both types.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // no direct equivalent: a shared, lock-guarded handle
+/// ```
 use std::sync::{Arc, Mutex};
 
-// What:     `use gxhash::gxhash64;` pulls in ONE free function from the external
-//           `gxhash` crate: `gxhash64(input: &[u8], seed: i64) -> u64`. It is a
-//           fast NON-cryptographic hash; siblings in the same crate are
-//           `gxhash32` (32-bit output) and `gxhash128` (128-bit), plus a
-//           `GxHasher` type that plugs into `std::collections::HashMap`. We import
-//           only the one-shot 64-bit function.
-// Why:      It replaces the hand-rolled FNV-1a as the fingerprint hash. The
-//           one-shot `gxhash64` (not the `GxHasher`/`HashMap` path) is the only
-//           form whose output is fully determined by `(bytes, seed)` with no
-//           per-process randomness, which is what a stable-within-a-run cache key
-//           needs.
-// Gotcha:   `gxhash` compiles a hardware-AES code path with no software fallback,
-//           so the crate only builds when the target enables the `aes` CPU feature
-//           (set in .cargo/config.toml) and the resulting binary SIGILLs on a CPU
-//           without AES. FNV-1a had no such hardware requirement.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { gxhash64 } from "gxhash"; // hypothetical; no real JVM/JS port exists
-// ```
-/// Imports.
+/// What:     `use gxhash::gxhash64;` pulls in ONE free function from the external
+///           `gxhash` crate: `gxhash64(input: &[u8], seed: i64) -> u64`. It is a
+///           fast NON-cryptographic hash; siblings in the same crate are
+///           `gxhash32` (32-bit output) and `gxhash128` (128-bit), plus a
+///           `GxHasher` type that plugs into `std::collections::HashMap`. We import
+///           only the one-shot 64-bit function.
+/// Why:      It replaces the hand-rolled FNV-1a as the fingerprint hash. The
+///           one-shot `gxhash64` (not the `GxHasher`/`HashMap` path) is the only
+///           form whose output is fully determined by `(bytes, seed)` with no
+///           per-process randomness, which is what a stable-within-a-run cache key
+///           needs.
+/// Gotcha:   `gxhash` compiles a hardware-AES code path with no software fallback,
+///           so the crate only builds when the target enables the `aes` CPU feature
+///           (set in .cargo/config.toml) and the resulting binary SIGILLs on a CPU
+///           without AES. FNV-1a had no such hardware requirement.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { gxhash64 } from "gxhash"; // hypothetical; no real JVM/JS port exists
+/// ```
 use gxhash::gxhash64;
 
-// What:     `use crate::identity;` imports the shared identity-strings module
-//           (importing the MODULE, so reads stay qualified as
-//           `identity::CONFIG_APPLICATION`, keeping the origin obvious).
-// Why:      `cache_path` builds the config dir from the same reverse-DNS triple
-//           `session.rs` uses, so the cache and the session always share a directory
-//           and the literals cannot drift.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import * as identity from "./identity";
-// ```
-/// Imports.
+/// What:     `use crate::identity;` imports the shared identity-strings module
+///           (importing the MODULE, so reads stay qualified as
+///           `identity::CONFIG_APPLICATION`, keeping the origin obvious).
+/// Why:      `cache_path` builds the config dir from the same reverse-DNS triple
+///           `session.rs` uses, so the cache and the session always share a directory
+///           and the literals cannot drift.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import * as identity from "./identity";
+/// ```
 use crate::identity;
 
-// What:     `const FINGERPRINT_SEED: i64 = 0;`. The fixed seed handed to
-//           `gxhash64`. `i64` (a signed 64-bit integer; the sibling `u64` is what
-//           you might expect, but gxhash's API takes `i64`) because that is the
-//           exact parameter type of `gxhash64(input, seed)`.
-// Why:      gxhash64 is fully deterministic given `(bytes, seed)`, so pinning a
-//           single constant seed makes the fingerprint reproducible across runs of
-//           the SAME binary, which is all a cache key needs. The value itself is
-//           arbitrary (0 is fine); what matters is that it never changes within a
-//           build. We do NOT use gxhash's `GxHasher`/`HashMap` path, which seeds
-//           itself randomly per process and would make the key unstable.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// const FINGERPRINT_SEED = 0n; // bigint: the API wants a 64-bit integer
-// ```
-/// Fingerprint seed.
+/// What:     `const FINGERPRINT_SEED: i64 = 0;`. The fixed seed handed to
+///           `gxhash64`. `i64` (a signed 64-bit integer; the sibling `u64` is what
+///           you might expect, but gxhash's API takes `i64`) because that is the
+///           exact parameter type of `gxhash64(input, seed)`.
+/// Why:      gxhash64 is fully deterministic given `(bytes, seed)`, so pinning a
+///           single constant seed makes the fingerprint reproducible across runs of
+///           the SAME binary, which is all a cache key needs. The value itself is
+///           arbitrary (0 is fine); what matters is that it never changes within a
+///           build. We do NOT use gxhash's `GxHasher`/`HashMap` path, which seeds
+///           itself randomly per process and would make the key unstable.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const FINGERPRINT_SEED = 0n; // bigint: the API wants a 64-bit integer
+/// ```
 const FINGERPRINT_SEED: i64 = 0;
 
-// What:     `pub(crate) fn fingerprint(path: &Path) -> Option<String>`. Build the opaque
-//           cache key for a file from its path, size, and modified-time. Returns `None`
-//           if the file cannot be stat'd. `pub(crate)` for the controller and background
-//           worker.
-// Why:      Identify a track without storing anything identifying; size+mtime make the
-//           key change when the file is replaced or edited in place.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// function fingerprint(path: string): string | null {
-//   let meta; try { meta = statSync(path); } catch { return null; }
-//   const material = encode(path) + u64le(meta.size) + u128le(meta.mtimeNanos);
-//   return gxhash64(material, FINGERPRINT_SEED).toString(16).padStart(16, "0");
-// }
-// ```
-/// Fingerprint.
+/// What:     `pub(crate) fn fingerprint(path: &Path) -> Option<String>`. Build the opaque
+///           cache key for a file from its path, size, and modified-time. Returns `None`
+///           if the file cannot be stat'd. `pub(crate)` for the controller and background
+///           worker.
+/// Why:      Identify a track without storing anything identifying; size+mtime make the
+///           key change when the file is replaced or edited in place.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function fingerprint(path: string): string | null {
+///   let meta; try { meta = statSync(path); } catch { return null; }
+///   const material = encode(path) + u64le(meta.size) + u128le(meta.mtimeNanos);
+///   return gxhash64(material, FINGERPRINT_SEED).toString(16).padStart(16, "0");
+/// }
+/// ```
 pub(crate) fn fingerprint(path: &Path) -> Option<String> {
     // What:     `let meta = std::fs::metadata(path).ok()?;`. Read filesystem metadata.
     //           `.ok()` turns the `Result` into an `Option` (dropping the error); `?`
@@ -217,19 +209,18 @@ pub(crate) fn fingerprint(path: &Path) -> Option<String> {
     Some(format!("{:016x}", gxhash64(&material, FINGERPRINT_SEED)))
 }
 
-// What:     `fn cache_path() -> Option<PathBuf>`. The on-disk location of the peak cache
-//           file, or `None` if no config directory is available. Module-private.
-// Why:      One place decides where the cache lives (the same `identity::config_dir` the
-//           session file uses, so they never drift apart).
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// function cachePath(): string | null {
-//   const dir = configDir();
-//   return dir ? join(dir, "peaks.json") : null;
-// }
-// ```
-/// Cache path.
+/// What:     `fn cache_path() -> Option<PathBuf>`. The on-disk location of the peak cache
+///           file, or `None` if no config directory is available. Module-private.
+/// Why:      One place decides where the cache lives (the same `identity::config_dir` the
+///           session file uses, so they never drift apart).
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function cachePath(): string | null {
+///   const dir = configDir();
+///   return dir ? join(dir, "peaks.json") : null;
+/// }
+/// ```
 fn cache_path() -> Option<PathBuf> {
     // What:     `identity::config_dir().map(|dir| dir.join("peaks.json"))`. Take the shared
     //           config directory (`Option<PathBuf>`, Linux: `$XDG_CONFIG_HOME/musicplayer`)
@@ -246,68 +237,63 @@ fn cache_path() -> Option<PathBuf> {
     identity::config_dir().map(|dir| dir.join("peaks.json"))
 }
 
-// What:     `pub(crate) struct PeakCache { ... }`. The in-memory cache plus where it
-//           persists and how many inserts are unsaved. `pub(crate)` so the controller
-//           and worker share it (behind an `Arc<Mutex<...>>`).
-// Why:      Hold the fingerprint -> peak map and batch writes to disk.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// class PeakCache { map: Record<string, number>; path: string | null; unsaved: number; }
-// ```
-/// Peak cache.
+/// What:     `pub(crate) struct PeakCache { ... }`. The in-memory cache plus where it
+///           persists and how many inserts are unsaved. `pub(crate)` so the controller
+///           and worker share it (behind an `Arc<Mutex<...>>`).
+/// Why:      Hold the fingerprint -> peak map and batch writes to disk.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// class PeakCache { map: Record<string, number>; path: string | null; unsaved: number; }
+/// ```
 pub(crate) struct PeakCache {
-    // What:     `map: HashMap<String, f32>`. Fingerprint hex -> measured true peak.
-    // Why:      The actual memoized data.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // map: Record<string, number>;
-    // ```
-    /// Map.
+    /// What:     `map: HashMap<String, f32>`. Fingerprint hex -> measured true peak.
+    /// Why:      The actual memoized data.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// map: Record<string, number>;
+    /// ```
     map: HashMap<String, f32>,
-    // What:     `path: Option<PathBuf>`. Where to persist, or `None` (no config dir).
-    // Why:      Save/load target; `None` means run in-memory only.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // path: string | null;
-    // ```
-    /// Path.
+    /// What:     `path: Option<PathBuf>`. Where to persist, or `None` (no config dir).
+    /// Why:      Save/load target; `None` means run in-memory only.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// path: string | null;
+    /// ```
     path: Option<PathBuf>,
-    // What:     `unsaved: usize`. Count of inserts not yet flushed to disk.
-    // Why:      Lets the background worker batch saves instead of writing per track.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // unsaved: number;
-    // ```
-    /// Unsaved.
+    /// What:     `unsaved: usize`. Count of inserts not yet flushed to disk.
+    /// Why:      Lets the background worker batch saves instead of writing per track.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// unsaved: number;
+    /// ```
     unsaved: usize,
 }
 
-// What:     `pub(crate) fn write_atomic(path: &Path, json: &str) -> std::io::Result<()>`.
-//           Write `json` to `path` atomically: stage it in a sibling `.tmp` file, then
-//           rename over the real file. `&Path`/`&str` borrow the inputs read-only (we do
-//           not take ownership). `pub(crate)` so the background sweep can call it WITHOUT
-//           holding the cache lock.
-// Why:      Saving is the only part of persistence that touches the disk; pulling it out
-//           as a free function lets a caller serialize under the lock, then release the
-//           lock and do the slow file I/O here. That matters because the sweep runs at
-//           idle scheduling priority: holding the shared cache mutex across a disk write
-//           could stall the engine thread (which also locks the cache on track load) if
-//           the idle sweep is starved mid-write.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// function writeAtomic(path: string, json: string): void {
-//   mkdirSync(dirname(path), { recursive: true });
-//   const tmp = path.replace(/\.json$/, ".tmp");
-//   writeFileSync(tmp, json);
-//   renameSync(tmp, path);
-// }
-// ```
-/// Write atomic.
+/// What:     `pub(crate) fn write_atomic(path: &Path, json: &str) -> std::io::Result<()>`.
+///           Write `json` to `path` atomically: stage it in a sibling `.tmp` file, then
+///           rename over the real file. `&Path`/`&str` borrow the inputs read-only (we do
+///           not take ownership). `pub(crate)` so the background sweep can call it WITHOUT
+///           holding the cache lock.
+/// Why:      Saving is the only part of persistence that touches the disk; pulling it out
+///           as a free function lets a caller serialize under the lock, then release the
+///           lock and do the slow file I/O here. That matters because the sweep runs at
+///           idle scheduling priority: holding the shared cache mutex across a disk write
+///           could stall the engine thread (which also locks the cache on track load) if
+///           the idle sweep is starved mid-write.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function writeAtomic(path: string, json: string): void {
+///   mkdirSync(dirname(path), { recursive: true });
+///   const tmp = path.replace(/\.json$/, ".tmp");
+///   writeFileSync(tmp, json);
+///   renameSync(tmp, path);
+/// }
+/// ```
 pub(crate) fn write_atomic(path: &Path, json: &str) -> std::io::Result<()> {
     // What:     `if let Some(parent) = path.parent() { std::fs::create_dir_all(parent)?; }`.
     //           Ensure the directory exists; `?` propagates an IO error.
@@ -357,24 +343,22 @@ pub(crate) fn write_atomic(path: &Path, json: &str) -> std::io::Result<()> {
     Ok(())
 }
 
-// What:     `impl PeakCache { ... }`. The cache's behaviour.
-// Why:      Load, query, insert, and persist.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// class PeakCache { /* load, from_path, get, unsaved, insert, save, pending_save, mark_saved */ }
-// ```
-/// Implementation block.
+/// What:     `impl PeakCache { ... }`. The cache's behaviour.
+/// Why:      Load, query, insert, and persist.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// class PeakCache { /* load, from_path, get, unsaved, insert, save, pending_save, mark_saved */ }
+/// ```
 impl PeakCache {
-    // What:     `pub(crate) fn load() -> PeakCache`. Read the cache from its standard
-    //           location, or start empty if absent/corrupt.
-    // Why:      Called once at startup.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // static load(): PeakCache { return PeakCache.fromPath(cachePath()); }
-    // ```
-    /// Load.
+    /// What:     `pub(crate) fn load() -> PeakCache`. Read the cache from its standard
+    ///           location, or start empty if absent/corrupt.
+    /// Why:      Called once at startup.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// static load(): PeakCache { return PeakCache.fromPath(cachePath()); }
+    /// ```
     pub(crate) fn load() -> PeakCache {
         // What:     `PeakCache::from_path(cache_path())`. Delegate to the path-taking
         //           constructor with the standard location. Tail -> return.
@@ -387,16 +371,15 @@ impl PeakCache {
         PeakCache::from_path(cache_path())
     }
 
-    // What:     `pub(crate) fn from_path(path: Option<PathBuf>) -> PeakCache`. Build a
-    //           cache that persists to `path`, pre-loading any existing entries.
-    //           `pub(crate)` so `measure`'s tests can point it at a throwaway file.
-    // Why:      One place to parse the on-disk map, reusable by `load` and tests.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // static fromPath(path: string | null): PeakCache { ... }
-    // ```
-    /// From path.
+    /// What:     `pub(crate) fn from_path(path: Option<PathBuf>) -> PeakCache`. Build a
+    ///           cache that persists to `path`, pre-loading any existing entries.
+    ///           `pub(crate)` so `measure`'s tests can point it at a throwaway file.
+    /// Why:      One place to parse the on-disk map, reusable by `load` and tests.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// static fromPath(path: string | null): PeakCache { ... }
+    /// ```
     pub(crate) fn from_path(path: Option<PathBuf>) -> PeakCache {
         // What:     `let map = path.as_ref().and_then(...).and_then(...).unwrap_or_default();`.
         //           Read the file to a string then parse it as a `HashMap<String, f32>`;
@@ -431,15 +414,14 @@ impl PeakCache {
         }
     }
 
-    // What:     `pub(crate) fn get(&self, fingerprint: &str) -> Option<f32>`. Look up a
-    //           cached peak. `&str` borrows the key; `Option<f32>` is the maybe-result.
-    // Why:      Callers check the cache before measuring.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // get(fingerprint: string): number | undefined { return this.map[fingerprint]; }
-    // ```
-    /// Get.
+    /// What:     `pub(crate) fn get(&self, fingerprint: &str) -> Option<f32>`. Look up a
+    ///           cached peak. `&str` borrows the key; `Option<f32>` is the maybe-result.
+    /// Why:      Callers check the cache before measuring.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// get(fingerprint: string): number | undefined { return this.map[fingerprint]; }
+    /// ```
     pub(crate) fn get(&self, fingerprint: &str) -> Option<f32> {
         // What:     `self.map.get(fingerprint).copied()`. `.get` returns `Option<&f32>` (a
         //           borrow); `.copied()` turns it into `Option<f32>` (an owned copy). Tail
@@ -453,15 +435,14 @@ impl PeakCache {
         self.map.get(fingerprint).copied()
     }
 
-    // What:     `pub(crate) fn unsaved(&self) -> usize`. How many inserts are pending a
-    //           save.
-    // Why:      The background worker uses it to decide when to flush a batch.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // unsaved(): number { return this.unsaved; }
-    // ```
-    /// Unsaved.
+    /// What:     `pub(crate) fn unsaved(&self) -> usize`. How many inserts are pending a
+    ///           save.
+    /// Why:      The background worker uses it to decide when to flush a batch.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// unsaved(): number { return this.unsaved; }
+    /// ```
     pub(crate) fn unsaved(&self) -> usize {
         // What:     `self.unsaved`. Tail -> return the counter.
         // Why:      Expose the private field read-only.
@@ -473,16 +454,15 @@ impl PeakCache {
         self.unsaved
     }
 
-    // What:     `pub(crate) fn insert(&mut self, fingerprint: String, peak: f32)`. Add or
-    //           replace an entry and bump the unsaved counter. Takes an OWNED `String`
-    //           key (the map stores it).
-    // Why:      Record a freshly measured peak.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // insert(fingerprint: string, peak: number): void { this.map[fingerprint] = peak; this.unsaved++; }
-    // ```
-    /// Insert.
+    /// What:     `pub(crate) fn insert(&mut self, fingerprint: String, peak: f32)`. Add or
+    ///           replace an entry and bump the unsaved counter. Takes an OWNED `String`
+    ///           key (the map stores it).
+    /// Why:      Record a freshly measured peak.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// insert(fingerprint: string, peak: number): void { this.map[fingerprint] = peak; this.unsaved++; }
+    /// ```
     pub(crate) fn insert(&mut self, fingerprint: String, peak: f32) {
         // What:     `self.map.insert(fingerprint, peak);`. Store the pair (consumes the
         //           owned key).
@@ -503,26 +483,25 @@ impl PeakCache {
         self.unsaved += 1;
     }
 
-    // What:     `pub(crate) fn save(&mut self) -> std::io::Result<()>`. Write the map to
-    //           disk atomically (write a temp file, then rename over the real one) and
-    //           reset the unsaved counter.
-    // Why:      Persist memoized peaks; atomic rename means a crash/kill mid-write cannot
-    //           corrupt the real cache file.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // save(): void { if (!this.path) return; writeAtomic(this.path, JSON.stringify(this.map)); this.unsaved = 0; }
-    // ```
-    // What:     `#[cfg(test)]` compiles the next method only for test builds.
-    // Why:      Production callers use `pending_save` plus `write_atomic` so disk I/O
-    //           happens outside the mutex; tests keep this direct helper for round-trip assertions.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // // only exported in test builds
-    // ```
+    /// What:     `pub(crate) fn save(&mut self) -> std::io::Result<()>`. Write the map to
+    ///           disk atomically (write a temp file, then rename over the real one) and
+    ///           reset the unsaved counter.
+    /// Why:      Persist memoized peaks; atomic rename means a crash/kill mid-write cannot
+    ///           corrupt the real cache file.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// save(): void { if (!this.path) return; writeAtomic(this.path, JSON.stringify(this.map)); this.unsaved = 0; }
+    /// ```
+    /// What:     `#[cfg(test)]` compiles the next method only for test builds.
+    /// Why:      Production callers use `pending_save` plus `write_atomic` so disk I/O
+    ///           happens outside the mutex; tests keep this direct helper for round-trip assertions.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// // only exported in test builds
+    /// ```
     #[cfg(test)]
-    /// Save.
     pub(crate) fn save(&mut self) -> std::io::Result<()> {
         // What:     `let path = match &self.path { Some(p) => p, None => return Ok(()) };`.
         //           Borrow the target path, or quietly succeed if there is none.
@@ -588,23 +567,22 @@ impl PeakCache {
         Ok(())
     }
 
-    // What:     `pub(crate) fn pending_save(&self) -> Option<(PathBuf, String, usize)>`.
-    //           Take a SNAPSHOT for an out-of-lock write: if there is a path and at least
-    //           one unsaved insert, serialize the map now (under the caller's lock) and
-    //           return the owned `(path, json, count)` tuple. `None` means nothing to
-    //           write. Read-only borrow of self.
-    // Why:      Lets the background sweep do the slow disk write WITHOUT holding the cache
-    //           mutex: it calls this under the lock (fast, in-memory), releases the lock,
-    //           writes with `write_atomic`, then calls `mark_saved(count)`.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // pendingSave(): [string, string, number] | null {
-    //   if (this.unsaved === 0 || !this.path) return null;
-    //   return [this.path, JSON.stringify(this.map), this.unsaved];
-    // }
-    // ```
-    /// Pending save.
+    /// What:     `pub(crate) fn pending_save(&self) -> Option<(PathBuf, String, usize)>`.
+    ///           Take a SNAPSHOT for an out-of-lock write: if there is a path and at least
+    ///           one unsaved insert, serialize the map now (under the caller's lock) and
+    ///           return the owned `(path, json, count)` tuple. `None` means nothing to
+    ///           write. Read-only borrow of self.
+    /// Why:      Lets the background sweep do the slow disk write WITHOUT holding the cache
+    ///           mutex: it calls this under the lock (fast, in-memory), releases the lock,
+    ///           writes with `write_atomic`, then calls `mark_saved(count)`.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// pendingSave(): [string, string, number] | null {
+    ///   if (this.unsaved === 0 || !this.path) return null;
+    ///   return [this.path, JSON.stringify(this.map), this.unsaved];
+    /// }
+    /// ```
     pub(crate) fn pending_save(&self) -> Option<(PathBuf, String, usize)> {
         // What:     `if self.unsaved == 0 { return None; }`. Nothing new to persist.
         // Why:      Skip redundant writes.
@@ -646,18 +624,17 @@ impl PeakCache {
         Some((path, json, self.unsaved))
     }
 
-    // What:     `pub(crate) fn mark_saved(&mut self, count: usize)`. After a successful
-    //           out-of-lock write of a `pending_save` snapshot, subtract the snapshot's
-    //           entry count from the unsaved counter.
-    // Why:      Inserts that happened AFTER the snapshot (e.g. the engine thread measuring
-    //           a just-loaded track) must stay counted as unsaved, so we subtract `count`
-    //           rather than resetting to zero.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // markSaved(count: number): void { this.unsaved = Math.max(0, this.unsaved - count); }
-    // ```
-    /// Mark saved.
+    /// What:     `pub(crate) fn mark_saved(&mut self, count: usize)`. After a successful
+    ///           out-of-lock write of a `pending_save` snapshot, subtract the snapshot's
+    ///           entry count from the unsaved counter.
+    /// Why:      Inserts that happened AFTER the snapshot (e.g. the engine thread measuring
+    ///           a just-loaded track) must stay counted as unsaved, so we subtract `count`
+    ///           rather than resetting to zero.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// markSaved(count: number): void { this.unsaved = Math.max(0, this.unsaved - count); }
+    /// ```
     pub(crate) fn mark_saved(&mut self, count: usize) {
         // What:     `self.unsaved = self.unsaved.saturating_sub(count);`. Subtract, but
         //           clamp at 0 instead of underflowing (a concurrent `save()` may have
@@ -673,24 +650,23 @@ impl PeakCache {
     }
 }
 
-// What:     `pub(crate) fn flush(cache: &Arc<Mutex<PeakCache>>)`. Persist any unsaved
-//           cache entries to disk WITHOUT holding the lock across the file write.
-//           `&Arc<...>` borrows the shared handle (no ownership taken).
-// Why:      Both the background sweep (measure.rs) and the current-track measurement
-//           (peak_swap.rs) need this exact off-lock save dance; owning it here, next to
-//           `pending_save`/`mark_saved`/`write_atomic`, keeps the lock discipline in one
-//           place instead of two copies that could drift.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// function flush(cache: SharedPeakCache): void {
-//   const snapshot = withLock(cache, (c) => c.pendingSave());
-//   if (!snapshot) return;
-//   const [path, json, count] = snapshot;
-//   if (writeAtomic(path, json)) withLock(cache, (c) => c.markSaved(count));
-// }
-// ```
-/// Flush.
+/// What:     `pub(crate) fn flush(cache: &Arc<Mutex<PeakCache>>)`. Persist any unsaved
+///           cache entries to disk WITHOUT holding the lock across the file write.
+///           `&Arc<...>` borrows the shared handle (no ownership taken).
+/// Why:      Both the background sweep (measure.rs) and the current-track measurement
+///           (peak_swap.rs) need this exact off-lock save dance; owning it here, next to
+///           `pending_save`/`mark_saved`/`write_atomic`, keeps the lock discipline in one
+///           place instead of two copies that could drift.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function flush(cache: SharedPeakCache): void {
+///   const snapshot = withLock(cache, (c) => c.pendingSave());
+///   if (!snapshot) return;
+///   const [path, json, count] = snapshot;
+///   if (writeAtomic(path, json)) withLock(cache, (c) => c.markSaved(count));
+/// }
+/// ```
 pub(crate) fn flush(cache: &Arc<Mutex<PeakCache>>) {
     // What:     `let snapshot = { let guard = cache.lock().unwrap(); guard.pending_save() };`.
     //           A BLOCK EXPRESSION: lock the cache, take an owned `(path, json, count)`
@@ -741,22 +717,21 @@ pub(crate) fn flush(cache: &Arc<Mutex<PeakCache>>) {
     }
 }
 
-// What:     `#[cfg(test)] #[path = "peakcache_tests.rs"] mod tests;` declares a
-//           test-only submodule whose code lives in the sibling file
-//           `peakcache_tests.rs`. `#[cfg(test)]` gates it to test builds only;
-//           `#[path = "..."]` aims the module at a flat sibling file instead of the
-//           default `peakcache/tests.rs` subdirectory lookup. The file stays the `tests`
-//           CHILD of peakcache, so its `use super::*` reaches the module items
-//           (including private ones) unchanged.
-// Why:      Keep `peakcache.rs` to production code; the tests live beside it without
-//           inflating this file or its max-lines budget (sibling `*_tests.rs` files are
-//           exempt from the linter).
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// // peakcache.unit.test.ts, run only by the test runner
-// ```
+/// What:     `#[cfg(test)] #[path = "peakcache_tests.rs"] mod tests;` declares a
+///           test-only submodule whose code lives in the sibling file
+///           `peakcache_tests.rs`. `#[cfg(test)]` gates it to test builds only;
+///           `#[path = "..."]` aims the module at a flat sibling file instead of the
+///           default `peakcache/tests.rs` subdirectory lookup. The file stays the `tests`
+///           CHILD of peakcache, so its `use super::*` reaches the module items
+///           (including private ones) unchanged.
+/// Why:      Keep `peakcache.rs` to production code; the tests live beside it without
+///           inflating this file or its max-lines budget (sibling `*_tests.rs` files are
+///           exempt from the linter).
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // peakcache.unit.test.ts, run only by the test runner
+/// ```
 #[cfg(test)]
 #[path = "peakcache_tests.rs"]
-/// Tests module.
 mod tests;

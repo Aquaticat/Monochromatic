@@ -6,49 +6,45 @@
 //! path if it is still present. See
 //! `docs/decisions/music-player-session-source-root.md`.
 
-// What:     `use std::path::PathBuf;` imports the OWNED path type (sibling: borrowed
-//           `&Path`).
-// Why:      The session stores the Source Root directory and the Selected Track path.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// // a path is just a string in TS
-// ```
-/// Imports.
+/// What:     `use std::path::PathBuf;` imports the OWNED path type (sibling: borrowed
+///           `&Path`).
+/// Why:      The session stores the Source Root directory and the Selected Track path.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // a path is just a string in TS
+/// ```
 use std::path::PathBuf;
 
-// What:     `use serde::{Deserialize, Serialize};` imports the two derive macros that
-//           generate JSON conversion code.
-// Why:      `Session` is read from and written to disk as JSON.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { Serializable } from "some-json-lib";
-// ```
-/// Imports.
+/// What:     `use serde::{Deserialize, Serialize};` imports the two derive macros that
+///           generate JSON conversion code.
+/// Why:      `Session` is read from and written to disk as JSON.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { Serializable } from "some-json-lib";
+/// ```
 use serde::{Deserialize, Serialize};
 
-// What:     `use crate::command::ShuffleMode;` imports our shuffle enum.
-// Why:      The saved session remembers the shuffle mode.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { ShuffleMode } from "./command";
-// ```
-/// Imports.
+/// What:     `use crate::command::ShuffleMode;` imports our shuffle enum.
+/// Why:      The saved session remembers the shuffle mode.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { ShuffleMode } from "./command";
+/// ```
 use crate::command::ShuffleMode;
 
-// What:     `use crate::identity;` imports the shared identity-strings module
-//           (importing the MODULE, so reads stay qualified as
-//           `identity::CONFIG_APPLICATION`, keeping the origin obvious).
-// Why:      `session_path` builds the config dir from the reverse-DNS triple, which now
-//           lives in one place instead of inline literals.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import * as identity from "./identity";
-// ```
-/// Imports.
+/// What:     `use crate::identity;` imports the shared identity-strings module
+///           (importing the MODULE, so reads stay qualified as
+///           `identity::CONFIG_APPLICATION`, keeping the origin obvious).
+/// Why:      `session_path` builds the config dir from the reverse-DNS triple, which now
+///           lives in one place instead of inline literals.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import * as identity from "./identity";
+/// ```
 use crate::identity;
 
 // What:     `#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]`
@@ -75,108 +71,99 @@ use crate::identity;
 // const s = { ...defaultSession(), ...JSON.parse(text) };
 // ```
 #[serde(default)]
-// What:     `pub struct Session { ... }` a public record of the saved state. Fields are
-//           `pub` so the engine can read/build them directly.
-// Why:      One serializable blob describing "where the user left off".
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// interface Session {
-//   sourceRoot: string | null;
-//   selected: string | null;
-//   positionSecs: number;
-//   volume: number;
-//   shuffle: ShuffleMode;
-//   repeatTrack: boolean;
-// }
-// ```
-/// Session.
+/// What:     `pub struct Session { ... }` a public record of the saved state. Fields are
+///           `pub` so the engine can read/build them directly.
+/// Why:      One serializable blob describing "where the user left off".
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// interface Session {
+///   sourceRoot: string | null;
+///   selected: string | null;
+///   positionSecs: number;
+///   volume: number;
+///   shuffle: ShuffleMode;
+///   repeatTrack: boolean;
+/// }
+/// ```
 pub struct Session {
-    // What:     `pub source_root: Option<PathBuf>` the opened directory whose scan IS the
-    //           queue (`Some(dir)`), or `None` on first run / no usable root.
-    // Why:      The queue is re-derived by scanning this directory on restore, so the
-    //           directory is the only queue-identifying thing stored.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // sourceRoot: string | null;
-    // ```
-    /// Source root.
+    /// What:     `pub source_root: Option<PathBuf>` the opened directory whose scan IS the
+    ///           queue (`Some(dir)`), or `None` on first run / no usable root.
+    /// Why:      The queue is re-derived by scanning this directory on restore, so the
+    ///           directory is the only queue-identifying thing stored.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// sourceRoot: string | null;
+    /// ```
     pub source_root: Option<PathBuf>,
-    // What:     `pub selected: Option<PathBuf>` the Selected Track's path (`Some`), or
-    //           `None` when nothing was cued.
-    // Why:      Re-select this track on restore if the fresh scan still contains it.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // selected: string | null;
-    // ```
-    /// Selected.
+    /// What:     `pub selected: Option<PathBuf>` the Selected Track's path (`Some`), or
+    ///           `None` when nothing was cued.
+    /// Why:      Re-select this track on restore if the fresh scan still contains it.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// selected: string | null;
+    /// ```
     pub selected: Option<PathBuf>,
-    // What:     `pub position_secs: f64` saved playback position in seconds. Siblings:
-    //           `f32`, `u64` frames. f64 matches the `Position`/`Seek` messages
-    //           (precision + seconds unit).
-    // Why:      Resume the Selected Track where it left off.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // positionSecs: number;
-    // ```
-    /// Position secs.
+    /// What:     `pub position_secs: f64` saved playback position in seconds. Siblings:
+    ///           `f32`, `u64` frames. f64 matches the `Position`/`Seek` messages
+    ///           (precision + seconds unit).
+    /// Why:      Resume the Selected Track where it left off.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// positionSecs: number;
+    /// ```
     pub position_secs: f64,
-    // What:     `pub volume: f32` saved gain 0.0..=1.0. Sibling: `f64`. f32 matches the
-    //           audio path and Slint.
-    // Why:      Restore the user's last volume.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // volume: number;
-    // ```
-    /// Volume.
+    /// What:     `pub volume: f32` saved gain 0.0..=1.0. Sibling: `f64`. f32 matches the
+    ///           audio path and Slint.
+    /// Why:      Restore the user's last volume.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// volume: number;
+    /// ```
     pub volume: f32,
-    // What:     `pub shuffle: ShuffleMode` the saved shuffle mode (off / within-page /
-    //           all).
-    // Why:      Restore the user's shuffle choice.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // shuffle: ShuffleMode;
-    // ```
-    /// Shuffle.
+    /// What:     `pub shuffle: ShuffleMode` the saved shuffle mode (off / within-page /
+    ///           all).
+    /// Why:      Restore the user's shuffle choice.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// shuffle: ShuffleMode;
+    /// ```
     pub shuffle: ShuffleMode,
-    // What:     `pub repeat_track: bool` whether "repeat track" was on.
-    // Why:      Restore the repeat-track flag.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // repeatTrack: boolean;
-    // ```
-    /// Repeat track.
+    /// What:     `pub repeat_track: bool` whether "repeat track" was on.
+    /// Why:      Restore the repeat-track flag.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// repeatTrack: boolean;
+    /// ```
     pub repeat_track: bool,
 }
 
-// What:     `impl Default for Session { ... }` provides the first-run / corrupt-file
-//           fallback value, and the per-field fallback for `#[serde(default)]`.
-// Why:      `load()` returns this when there is no readable session.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// function defaultSession(): Session {
-//   return { sourceRoot: null, selected: null, positionSecs: 0, volume: 1,
-//            shuffle: "off", repeatTrack: false };
-// }
-// ```
-/// Implementation block.
+/// What:     `impl Default for Session { ... }` provides the first-run / corrupt-file
+///           fallback value, and the per-field fallback for `#[serde(default)]`.
+/// Why:      `load()` returns this when there is no readable session.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function defaultSession(): Session {
+///   return { sourceRoot: null, selected: null, positionSecs: 0, volume: 1,
+///            shuffle: "off", repeatTrack: false };
+/// }
+/// ```
 impl Default for Session {
-    // What:     `fn default() -> Session`. The single method `Default` requires; builds
-    //           the fallback value.
-    // Why:      One place defines the empty starting state.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // static default(): Session { return defaultSession(); }
-    // ```
-    /// Default.
+    /// What:     `fn default() -> Session`. The single method `Default` requires; builds
+    ///           the fallback value.
+    /// Why:      One place defines the empty starting state.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// static default(): Session { return defaultSession(); }
+    /// ```
     fn default() -> Session {
         // What:     struct literal as the tail expression (return value). `None` empty
         //           options; `0.0` start of track; `1.0` full volume; `ShuffleMode::Off`
@@ -198,32 +185,30 @@ impl Default for Session {
     }
 }
 
-// What:     `impl Session { ... }` the methods block.
-// Why:      `load` and `save` are the two operations the engine drives.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// class Session { static load() {} save() {} }
-// ```
-/// Implementation block.
+/// What:     `impl Session { ... }` the methods block.
+/// Why:      `load` and `save` are the two operations the engine drives.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// class Session { static load() {} save() {} }
+/// ```
 impl Session {
-    // What:     `pub fn load() -> Session` reads the session file and parses it; any
-    //           failure (no config dir, missing file, unreadable, malformed JSON) yields
-    //           `Session::default()`.
-    // Why:      Restore on launch without ever failing the program start. The decision of
-    //           whether the saved `source_root` still exists (and what to scan) belongs to
-    //           the controller, not here, so `load` no longer prunes anything.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // static load(): Session {
-    //   const path = sessionPath();
-    //   if (!path) return defaultSession();
-    //   try { return { ...defaultSession(), ...JSON.parse(readFileSync(path, "utf8")) }; }
-    //   catch { return defaultSession(); }
-    // }
-    // ```
-    /// Load.
+    /// What:     `pub fn load() -> Session` reads the session file and parses it; any
+    ///           failure (no config dir, missing file, unreadable, malformed JSON) yields
+    ///           `Session::default()`.
+    /// Why:      Restore on launch without ever failing the program start. The decision of
+    ///           whether the saved `source_root` still exists (and what to scan) belongs to
+    ///           the controller, not here, so `load` no longer prunes anything.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// static load(): Session {
+    ///   const path = sessionPath();
+    ///   if (!path) return defaultSession();
+    ///   try { return { ...defaultSession(), ...JSON.parse(readFileSync(path, "utf8")) }; }
+    ///   catch { return defaultSession(); }
+    /// }
+    /// ```
     pub fn load() -> Session {
         // What:     `let path = match session_path() { Some(p) => p, None => return ... };`
         //           obtains the file path or bails to default.
@@ -291,19 +276,18 @@ impl Session {
         serde_json::from_str(&text).unwrap_or_default()
     }
 
-    // What:     `pub fn save(&self) -> std::io::Result<()>` serializes `self` to JSON and
-    //           writes it under the config directory, creating the directory if needed.
-    // Why:      Persist "where the user left off" on quit.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // save(): void {
-    //   const path = sessionPath(); if (!path) return;
-    //   mkdirSync(dirname(path), { recursive: true });
-    //   writeFileSync(path, JSON.stringify(this, null, 2));
-    // }
-    // ```
-    /// Save.
+    /// What:     `pub fn save(&self) -> std::io::Result<()>` serializes `self` to JSON and
+    ///           writes it under the config directory, creating the directory if needed.
+    /// Why:      Persist "where the user left off" on quit.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// save(): void {
+    ///   const path = sessionPath(); if (!path) return;
+    ///   mkdirSync(dirname(path), { recursive: true });
+    ///   writeFileSync(path, JSON.stringify(this, null, 2));
+    /// }
+    /// ```
     pub fn save(&self) -> std::io::Result<()> {
         // What:     `let path = match session_path() { Some(p) => p, None => return Ok(()) };`
         //           get the target path or quietly succeed if there is no config dir.
@@ -374,19 +358,18 @@ impl Session {
     }
 }
 
-// What:     `fn session_path() -> Option<PathBuf>` computes the on-disk location of the
-//           session file, or `None` if no config directory is available. Module-private.
-// Why:      One place that decides where the session lives (its directory comes from the
-//           shared `identity::config_dir`, which the peak cache uses too).
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// function sessionPath(): string | null {
-//   const dir = configDir();
-//   return dir ? join(dir, "session.json") : null;
-// }
-// ```
-/// Session path.
+/// What:     `fn session_path() -> Option<PathBuf>` computes the on-disk location of the
+///           session file, or `None` if no config directory is available. Module-private.
+/// Why:      One place that decides where the session lives (its directory comes from the
+///           shared `identity::config_dir`, which the peak cache uses too).
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function sessionPath(): string | null {
+///   const dir = configDir();
+///   return dir ? join(dir, "session.json") : null;
+/// }
+/// ```
 fn session_path() -> Option<PathBuf> {
     // What:     `identity::config_dir().map(|dir| dir.join("session.json"))`. Take the
     //           shared config directory (`Option<PathBuf>`) and, when present, append the
@@ -402,15 +385,14 @@ fn session_path() -> Option<PathBuf> {
     identity::config_dir().map(|dir| dir.join("session.json"))
 }
 
-// What:     `#[cfg(test)] #[path = "session_tests.rs"] mod tests;` declares a test-only
-//           submodule whose code lives in the sibling file `session_tests.rs`.
-// Why:      Keep `session.rs` to production code; the tests live beside it.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// // session.unit.test.ts, run only by the test runner
-// ```
+/// What:     `#[cfg(test)] #[path = "session_tests.rs"] mod tests;` declares a test-only
+///           submodule whose code lives in the sibling file `session_tests.rs`.
+/// Why:      Keep `session.rs` to production code; the tests live beside it.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // session.unit.test.ts, run only by the test runner
+/// ```
 #[cfg(test)]
 #[path = "session_tests.rs"]
-/// Tests module.
 mod tests;

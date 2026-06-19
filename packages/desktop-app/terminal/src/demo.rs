@@ -1,17 +1,16 @@
 //! Demo VT stream for the first prototype checkpoint.
 
-// What:     `pub fn demo_vt() -> Vec<u8>` returns owned bytes. `Vec<u8>` is a
-//           growable byte array; siblings are borrowed slices `&[u8]` and fixed
-//           arrays `[u8; N]`.
-// Why:      The prototype feeds deterministic VT content until PTY I/O is added.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// export function demoVt(): Uint8Array {
-//   return new TextEncoder().encode(lines.join("\r\n"));
-// }
-// ```
-/// Demo vt.
+/// What:     `pub fn demo_vt() -> Vec<u8>` returns owned bytes. `Vec<u8>` is a
+///           growable byte array; siblings are borrowed slices `&[u8]` and fixed
+///           arrays `[u8; N]`.
+/// Why:      The prototype feeds deterministic VT content until PTY I/O is added.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export function demoVt(): Uint8Array {
+///   return new TextEncoder().encode(lines.join("\r\n"));
+/// }
+/// ```
 pub fn demo_vt() -> Vec<u8> {
     // What:     `let mut bytes = Vec::new()` creates a mutable owned byte array.
     //           `Vec` is chosen over `String` because VT streams are bytes, not

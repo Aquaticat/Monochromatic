@@ -17,264 +17,245 @@
 // ```
 slint::include_modules!();
 
-// What:     `mod ui_progress;` loads the sibling `ui_progress.rs` module into this
-//           binary crate.
-// Why:      The progress debounce bridge uses generated Slint types, so it belongs
-//           beside `main.rs`, not in the reusable library crate.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import * as uiProgress from "./ui_progress";
-// ```
-/// Ui progress module.
+/// What:     `mod ui_progress;` loads the sibling `ui_progress.rs` module into this
+///           binary crate.
+/// Why:      The progress debounce bridge uses generated Slint types, so it belongs
+///           beside `main.rs`, not in the reusable library crate.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import * as uiProgress from "./ui_progress";
+/// ```
 mod ui_progress;
 
-// What:     `mod ui_page;` loads the sibling `ui_page.rs` module into this binary crate.
-// Why:      The queue/now-playing projection helpers use generated Slint types, so they belong
-//           beside `main.rs`, not in the reusable library crate.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import * as uiPage from "./ui_page";
-// ```
-/// Ui page module.
+/// What:     `mod ui_page;` loads the sibling `ui_page.rs` module into this binary crate.
+/// Why:      The queue/now-playing projection helpers use generated Slint types, so they belong
+///           beside `main.rs`, not in the reusable library crate.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import * as uiPage from "./ui_page";
+/// ```
 mod ui_page;
 
-// What:     `use std::path::PathBuf;`. The OWNED filesystem path type: a heap-
-//           allocated, growable path buffer. Sibling: `&Path`, a BORROWED view
-//           that does not own its bytes (the `String` vs `&str` distinction, but
-//           for paths).
-// Why:      Picked folders and the music dir become owned `PathBuf`s, and the two
-//           path helpers below return `Option<PathBuf>`; `PathBuf` (not `&Path`)
-//           because these paths outlive the calls that produce them.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// // no import needed; a path is just a string
-// ```
-/// Imports.
+/// What:     `use std::path::PathBuf;`. The OWNED filesystem path type: a heap-
+///           allocated, growable path buffer. Sibling: `&Path`, a BORROWED view
+///           that does not own its bytes (the `String` vs `&str` distinction, but
+///           for paths).
+/// Why:      Picked folders and the music dir become owned `PathBuf`s, and the two
+///           path helpers below return `Option<PathBuf>`; `PathBuf` (not `&Path`)
+///           because these paths outlive the calls that produce them.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // no import needed; a path is just a string
+/// ```
 use std::path::PathBuf;
 
-// What:     `#[cfg(unix)] use std::path::Path;`. The BORROWED path view (`&Path`),
-//           imported ONLY on Unix targets. `#[cfg(unix)]` is a conditional-
-//           compilation attribute that keeps the line on Unix (Linux/macOS/BSD)
-//           and drops it elsewhere; siblings: `windows`, `target_os = "..."`.
-// Why:      `Path::new` is used solely inside the Unix-only `xdg_user_dir_music`
-//           helper below, so importing it unconditionally would be an unused
-//           import on Windows (which trips the deny-warnings clippy gate).
-// Gotcha:   `#[cfg(...)]` is COMPILE-time conditional compilation, not a runtime
-//           `if`: the line literally does not exist in a non-Unix build, so it
-//           cannot be an unused import there.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// // no equivalent: the import is physically absent from non-Unix builds
-// ```
+/// What:     `#[cfg(unix)] use std::path::Path;`. The BORROWED path view (`&Path`),
+///           imported ONLY on Unix targets. `#[cfg(unix)]` is a conditional-
+///           compilation attribute that keeps the line on Unix (Linux/macOS/BSD)
+///           and drops it elsewhere; siblings: `windows`, `target_os = "..."`.
+/// Why:      `Path::new` is used solely inside the Unix-only `xdg_user_dir_music`
+///           helper below, so importing it unconditionally would be an unused
+///           import on Windows (which trips the deny-warnings clippy gate).
+/// Gotcha:   `#[cfg(...)]` is COMPILE-time conditional compilation, not a runtime
+///           `if`: the line literally does not exist in a non-Unix build, so it
+///           cannot be an unused import there.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // no equivalent: the import is physically absent from non-Unix builds
+/// ```
 #[cfg(unix)]
-/// Imports.
 use std::path::Path;
 
-// What:     `use std::rc::Rc;`. `Rc<T>` is a single-threaded shared-ownership
-//           pointer (reference counted). Sibling: `Arc<T>` (atomic refcount, safe
-//           to share across threads); `Box<T>` (single owner, no sharing).
-// Why:      Several UI callbacks need to share the one `Engine`; they all run on
-//           the UI thread, so non-atomic `Rc` is enough (and cheaper than `Arc`'s
-//           atomic counter), and we never need `Box`'s single-owner model.
-// Gotcha:   `Rc` is NOT thread-safe; sending one across threads does not compile.
-//           The cross-thread sharing below uses `Arc` instead.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// const engine = new Engine(); // closures just capture it; GC handles sharing
-// ```
-/// Imports.
+/// What:     `use std::rc::Rc;`. `Rc<T>` is a single-threaded shared-ownership
+///           pointer (reference counted). Sibling: `Arc<T>` (atomic refcount, safe
+///           to share across threads); `Box<T>` (single owner, no sharing).
+/// Why:      Several UI callbacks need to share the one `Engine`; they all run on
+///           the UI thread, so non-atomic `Rc` is enough (and cheaper than `Arc`'s
+///           atomic counter), and we never need `Box`'s single-owner model.
+/// Gotcha:   `Rc` is NOT thread-safe; sending one across threads does not compile.
+///           The cross-thread sharing below uses `Arc` instead.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const engine = new Engine(); // closures just capture it; GC handles sharing
+/// ```
 use std::rc::Rc;
 
-// What:     `use std::sync::{Arc, Mutex};`. `Arc<T>` is a thread-safe shared owner
-//           (atomic refcount; sibling: single-thread `Rc<T>`), and `Mutex<T>` is a
-//           lock that lets one thread mutate `T` at a time (sibling: `RwLock<T>`,
-//           many readers OR one writer).
-// Why:      The engine update callback must be `Send`, so progress debounce state
-//           cannot be an `Rc`; an `Arc<Mutex<_>>` crosses into the UI callback
-//           safely and still mutates only one small state object (no need for
-//           `RwLock`'s reader/writer split).
-// Gotcha:   a `Mutex` in Rust WRAPS the data it guards; you reach the value only
-//           by locking. There is no "forgot to lock" path like a bare JS object.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// const progressDebouncer = new ProgressDebouncer(); // GC + single thread: no lock
-// ```
-/// Imports.
+/// What:     `use std::sync::{Arc, Mutex};`. `Arc<T>` is a thread-safe shared owner
+///           (atomic refcount; sibling: single-thread `Rc<T>`), and `Mutex<T>` is a
+///           lock that lets one thread mutate `T` at a time (sibling: `RwLock<T>`,
+///           many readers OR one writer).
+/// Why:      The engine update callback must be `Send`, so progress debounce state
+///           cannot be an `Rc`; an `Arc<Mutex<_>>` crosses into the UI callback
+///           safely and still mutates only one small state object (no need for
+///           `RwLock`'s reader/writer split).
+/// Gotcha:   a `Mutex` in Rust WRAPS the data it guards; you reach the value only
+///           by locking. There is no "forgot to lock" path like a bare JS object.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const progressDebouncer = new ProgressDebouncer(); // GC + single thread: no lock
+/// ```
 use std::sync::{Arc, Mutex};
 
-// What:     `use std::time::Instant;`. `Instant` is a monotonic timestamp (only
-//           ever moves forward). Sibling: `Duration`, the elapsed span produced by
-//           `Instant::elapsed`; `SystemTime`, the wall clock that can jump.
-// Why:      Progress debounce decisions use elapsed time since startup, which needs
-//           the monotonic `Instant`, not the jumpy `SystemTime`.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// const startedAt = performance.now(); // monotonic clock
-// ```
-/// Imports.
+/// What:     `use std::time::Instant;`. `Instant` is a monotonic timestamp (only
+///           ever moves forward). Sibling: `Duration`, the elapsed span produced by
+///           `Instant::elapsed`; `SystemTime`, the wall clock that can jump.
+/// Why:      Progress debounce decisions use elapsed time since startup, which needs
+///           the monotonic `Instant`, not the jumpy `SystemTime`.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const startedAt = performance.now(); // monotonic clock
+/// ```
 use std::time::Instant;
 
-// What:     `use music_player::command::{Command, ShuffleMode, Update};`. The
-//           message types from our library crate. The package is `music-player`
-//           but a Rust crate identifier cannot contain `-`, so the lib crate is
-//           `music_player` (the hyphen becomes an underscore).
-// Why:      We build `Command`s and read `Update`s.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { Command, ShuffleMode, Update } from "music-player/command";
-// ```
-/// Imports.
+/// What:     `use music_player::command::{Command, ShuffleMode, Update};`. The
+///           message types from our library crate. The package is `music-player`
+///           but a Rust crate identifier cannot contain `-`, so the lib crate is
+///           `music_player` (the hyphen becomes an underscore).
+/// Why:      We build `Command`s and read `Update`s.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { Command, ShuffleMode, Update } from "music-player/command";
+/// ```
 use music_player::command::{Command, ShuffleMode, Update};
 
-// What:     `use music_player::cli::Cli;`. The clap-derived argument-parser struct
-//           from our library crate (its fields are `start_playing` and `paths`).
-// Why:      `main` calls `Cli::parse()` to turn the command line into that struct.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { Cli } from "music-player/cli";
-// ```
-/// Imports.
+/// What:     `use music_player::cli::Cli;`. The clap-derived argument-parser struct
+///           from our library crate (its fields are `start_playing` and `paths`).
+/// Why:      `main` calls `Cli::parse()` to turn the command line into that struct.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { Cli } from "music-player/cli";
+/// ```
 use music_player::cli::Cli;
 
-// What:     `use music_player::engine::Engine;`. The controller handle.
-// Why:      We spawn it and send commands.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { Engine } from "music-player/engine";
-// ```
-/// Imports.
+/// What:     `use music_player::engine::Engine;`. The controller handle.
+/// Why:      We spawn it and send commands.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { Engine } from "music-player/engine";
+/// ```
 use music_player::engine::Engine;
 
-// What:     `use music_player::progress::ProgressDebouncer;`. The pure debounce
-//           state shared with the binary-only UI bridge.
-// Why:      The binary owns the state object; `ui_progress` owns the Slint wiring.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { ProgressDebouncer } from "music-player/progress";
-// ```
-/// Imports.
+/// What:     `use music_player::progress::ProgressDebouncer;`. The pure debounce
+///           state shared with the binary-only UI bridge.
+/// Why:      The binary owns the state object; `ui_progress` owns the Slint wiring.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { ProgressDebouncer } from "music-player/progress";
+/// ```
 use music_player::progress::ProgressDebouncer;
 
-// What:     `use music_player::session::Session;`. The saved-state record.
-// Why:      We load it on launch to restore the last session.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { Session } from "music-player/session";
-// ```
-/// Imports.
+/// What:     `use music_player::session::Session;`. The saved-state record.
+/// Why:      We load it on launch to restore the last session.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { Session } from "music-player/session";
+/// ```
 use music_player::session::Session;
 
-// What:     `use music_player::pagination;`. The pure queue-pagination module.
-//           Importing the MODULE (not its items) so calls read `pagination::paginate`
-//           / `pagination::page_of_index`, keeping the origin obvious at the call.
-// Why:      The binary groups the queue's display paths into pages: one per top-
-//           level folder for subfolder tracks, A-Z + `#` letter pages for root-
-//           level tracks.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import * as pagination from "music-player/pagination";
-// ```
-/// Imports.
+/// What:     `use music_player::pagination;`. The pure queue-pagination module.
+///           Importing the MODULE (not its items) so calls read `pagination::paginate`
+///           / `pagination::page_of_index`, keeping the origin obvious at the call.
+/// Why:      The binary groups the queue's display paths into pages: one per top-
+///           level folder for subfolder tracks, A-Z + `#` letter pages for root-
+///           level tracks.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import * as pagination from "music-player/pagination";
+/// ```
 use music_player::pagination;
 
-// What:     `use music_player::launcher::{self, Launcher};`. The desktop-shell
-//           integration: `self` re-imports the MODULE itself (so `launcher::set_window_app_id`
-//           still resolves), and `Launcher` pulls in the struct that emits KDE
-//           taskbar progress.
-// Why:      `main` installs the app-id hook via the module path and constructs a
-//           `Launcher`, so it needs both the module and the type in scope.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import * as launcher from "music-player/launcher";
-// import { Launcher } from "music-player/launcher";
-// ```
-/// Imports.
+/// What:     `use music_player::launcher::{self, Launcher};`. The desktop-shell
+///           integration: `self` re-imports the MODULE itself (so `launcher::set_window_app_id`
+///           still resolves), and `Launcher` pulls in the struct that emits KDE
+///           taskbar progress.
+/// Why:      `main` installs the app-id hook via the module path and constructs a
+///           `Launcher`, so it needs both the module and the type in scope.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import * as launcher from "music-player/launcher";
+/// import { Launcher } from "music-player/launcher";
+/// ```
 use music_player::launcher::{self, Launcher};
 
-// What:     `use clap::Parser;`. The `Parser` TRAIT whose `parse()` method reads the
-//           process arguments into a `Cli`. The matching `#[derive(Parser)]` MACRO
-//           lives beside the struct in `cli.rs`; here we import only the trait so we
-//           can CALL `Cli::parse()` (a trait method needs its trait in scope).
-// Why:      Without the trait in scope, `Cli::parse()` would not resolve.
-// Gotcha:   in Rust a method can come from a TRAIT, and the trait must be imported
-//           to call it, even though `Cli` is already in scope. There is no TS
-//           analogue: TS methods always live on the value itself.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { parseArgs } from "some-cli-parser";
-// ```
-/// Imports.
+/// What:     `use clap::Parser;`. The `Parser` TRAIT whose `parse()` method reads the
+///           process arguments into a `Cli`. The matching `#[derive(Parser)]` MACRO
+///           lives beside the struct in `cli.rs`; here we import only the trait so we
+///           can CALL `Cli::parse()` (a trait method needs its trait in scope).
+/// Why:      Without the trait in scope, `Cli::parse()` would not resolve.
+/// Gotcha:   in Rust a method can come from a TRAIT, and the trait must be imported
+///           to call it, even though `Cli` is already in scope. There is no TS
+///           analogue: TS methods always live on the value itself.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { parseArgs } from "some-cli-parser";
+/// ```
 use clap::Parser;
 
-// What:     `use i_slint_backend_winit::Backend;`. Slint's winit backend, built
-//           explicitly so a window-attributes hook can run.
-// Why:      The default backend selector gives no hook to set the Wayland app id.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { Backend } from "slint-winit-backend";
-// ```
-/// Imports.
+/// What:     `use i_slint_backend_winit::Backend;`. Slint's winit backend, built
+///           explicitly so a window-attributes hook can run.
+/// Why:      The default backend selector gives no hook to set the Wayland app id.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { Backend } from "slint-winit-backend";
+/// ```
 use i_slint_backend_winit::Backend;
 
-// What:     `use slint::{ComponentHandle, Model, SharedString, VecModel};`.
-//           `ComponentHandle` is the trait giving `.as_weak()`/`.run()` on the
-//           window; `Model` is the trait whose `.iter()` reads a list property
-//           back (we re-read the full `queue` model to repaginate); `SharedString`
-//           is Slint's cheap-to-clone string (sibling: `String`, which would force
-//           a fresh allocation on every clone); `VecModel` builds the list model
-//           behind a list property. (The `ModelRc` a setter wants is produced by
-//           `.into()`, so it needs no import.)
-// Why:      Needed to drive the window, read its `queue`, and set its list props;
-//           `SharedString` over `String` because Slint clones these strings often
-//           and a refcounted clone is far cheaper than reallocating.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { ComponentHandle, Model, SharedString, VecModel } from "slint";
-// ```
-/// Imports.
+/// What:     `use slint::{ComponentHandle, Model, SharedString, VecModel};`.
+///           `ComponentHandle` is the trait giving `.as_weak()`/`.run()` on the
+///           window; `Model` is the trait whose `.iter()` reads a list property
+///           back (we re-read the full `queue` model to repaginate); `SharedString`
+///           is Slint's cheap-to-clone string (sibling: `String`, which would force
+///           a fresh allocation on every clone); `VecModel` builds the list model
+///           behind a list property. (The `ModelRc` a setter wants is produced by
+///           `.into()`, so it needs no import.)
+/// Why:      Needed to drive the window, read its `queue`, and set its list props;
+///           `SharedString` over `String` because Slint clones these strings often
+///           and a refcounted clone is far cheaper than reallocating.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { ComponentHandle, Model, SharedString, VecModel } from "slint";
+/// ```
 use slint::{ComponentHandle, Model, SharedString, VecModel};
 
-// What:     `use ui_page::{set_now_playing, set_queue_model, PageNav};`. The sibling module's
-//           page-navigation intent type and the property-setter helpers.
-// Why:      `refresh_page` and `apply_update` below project engine `Update`s onto Slint
-//           properties through these.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { setNowPlaying, setQueueModel, PageNav } from "./ui_page";
-// ```
-/// Imports.
+/// What:     `use ui_page::{set_now_playing, set_queue_model, PageNav};`. The sibling module's
+///           page-navigation intent type and the property-setter helpers.
+/// Why:      `refresh_page` and `apply_update` below project engine `Update`s onto Slint
+///           properties through these.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { setNowPlaying, setQueueModel, PageNav } from "./ui_page";
+/// ```
 use ui_page::{set_now_playing, set_queue_model, PageNav};
 
-// What:     `fn shuffle_to_int(mode: ShuffleMode) -> i32`. Map the enum to the
-//           integer the UI property uses (Off=0, WithinPage=1, All=2). `i32` is a
-//           32-bit signed integer; siblings: `u32` (unsigned), `i64`/`usize`.
-// Why:      Slint has no Rust enum; it stores the mode as an `int` (which is `i32`
-//           on the Rust side) the radio group compares against, so `i32` matches
-//           the generated property type exactly.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// function shuffleToInt(mode: ShuffleMode): number { ... }
-// ```
-/// Shuffle to int.
+/// What:     `fn shuffle_to_int(mode: ShuffleMode) -> i32`. Map the enum to the
+///           integer the UI property uses (Off=0, WithinPage=1, All=2). `i32` is a
+///           32-bit signed integer; siblings: `u32` (unsigned), `i64`/`usize`.
+/// Why:      Slint has no Rust enum; it stores the mode as an `int` (which is `i32`
+///           on the Rust side) the radio group compares against, so `i32` matches
+///           the generated property type exactly.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function shuffleToInt(mode: ShuffleMode): number { ... }
+/// ```
 fn shuffle_to_int(mode: ShuffleMode) -> i32 {
     // What:     `match mode { ... }`. Pattern-match each enum variant to its number.
     //           `match` is exhaustive: the compiler rejects it if a variant is
@@ -316,15 +297,14 @@ fn shuffle_to_int(mode: ShuffleMode) -> i32 {
     }
 }
 
-// What:     `fn int_to_shuffle(value: i32) -> ShuffleMode`. Inverse of the above:
-//           the UI radio's selected `i32` back into a `ShuffleMode` enum value.
-// Why:      Turn the radio group's selected integer back into a `ShuffleMode`.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// function intToShuffle(value: number): ShuffleMode { ... }
-// ```
-/// Int to shuffle.
+/// What:     `fn int_to_shuffle(value: i32) -> ShuffleMode`. Inverse of the above:
+///           the UI radio's selected `i32` back into a `ShuffleMode` enum value.
+/// Why:      Turn the radio group's selected integer back into a `ShuffleMode`.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function intToShuffle(value: number): ShuffleMode { ... }
+/// ```
 fn int_to_shuffle(value: i32) -> ShuffleMode {
     // What:     `match value { 1 => WithinPage, 2 => All, _ => Off }`. The wildcard
     //           `_` arm matches anything not matched above (including 0 and any
@@ -363,18 +343,17 @@ fn int_to_shuffle(value: i32) -> ShuffleMode {
     }
 }
 
-// What:     `fn format_time(secs: f64) -> String`. Format seconds as "m:ss".
-//           `f64` is a 64-bit float (sibling: `f32`); `String` is an owned heap
-//           string (sibling: `&str`, a borrowed view we could not return here
-//           because it would point at this function's freed locals).
-// Why:      Slint number-to-string is awkward, so we format here and pass strings;
-//           the result is `String` (owned) so the caller can keep it past this call.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// function formatTime(secs: number): string { ... }
-// ```
-/// Format time.
+/// What:     `fn format_time(secs: f64) -> String`. Format seconds as "m:ss".
+///           `f64` is a 64-bit float (sibling: `f32`); `String` is an owned heap
+///           string (sibling: `&str`, a borrowed view we could not return here
+///           because it would point at this function's freed locals).
+/// Why:      Slint number-to-string is awkward, so we format here and pass strings;
+///           the result is `String` (owned) so the caller can keep it past this call.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function formatTime(secs: number): string { ... }
+/// ```
 pub(crate) fn format_time(secs: f64) -> String {
     // What:     `let whole = if secs > 0.0 { secs as u64 } else { 0 };`. `if/else`
     //           used as an EXPRESSION (both arms yield a value). `secs as u64` is a
@@ -405,21 +384,20 @@ pub(crate) fn format_time(secs: f64) -> String {
     format!("{}:{:02}", whole / 60, whole % 60)
 }
 
-// What:     `fn refresh_page(app: &AppWindow, target: PageNav)`. Rebuild the
-//           page-tab list and the visible page from the full `queue` property.
-//           `app: &AppWindow` is a BORROWED, read-only reference to the window (we
-//           only call its getters/setters, we do not own it). `target` is a `PageNav`:
-//           `Show(page)` to show a specific page, `Follow` to jump to the current
-//           track's page, or `Keep` to preserve the page already shown. No `-> ...`, so
-//           it returns `()` (the unit type, like TS `void`). Runs on the UI thread.
-// Why:      One place derives the pagination view, so the tabs, the visible rows,
-//           and the selected tab can never disagree.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// function refreshPage(app: AppWindow, target: PageNav): void { ... }
-// ```
-/// Refresh page.
+/// What:     `fn refresh_page(app: &AppWindow, target: PageNav)`. Rebuild the
+///           page-tab list and the visible page from the full `queue` property.
+///           `app: &AppWindow` is a BORROWED, read-only reference to the window (we
+///           only call its getters/setters, we do not own it). `target` is a `PageNav`:
+///           `Show(page)` to show a specific page, `Follow` to jump to the current
+///           track's page, or `Keep` to preserve the page already shown. No `-> ...`, so
+///           it returns `()` (the unit type, like TS `void`). Runs on the UI thread.
+/// Why:      One place derives the pagination view, so the tabs, the visible rows,
+///           and the selected tab can never disagree.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function refreshPage(app: AppWindow, target: PageNav): void { ... }
+/// ```
 fn refresh_page(app: &AppWindow, target: PageNav) {
     // What:     `let names: Vec<String> = app.get_queue().iter().map(|s| s.to_string()).collect();`.
     //           `app.get_queue()` returns the full-list model (`ModelRc<SharedString>`);
@@ -660,18 +638,17 @@ fn refresh_page(app: &AppWindow, target: PageNav) {
     app.set_selected_page(clamped);
 }
 
-// What:     `fn apply_update(app: &AppWindow, update: &Update)`. Apply one engine
-//           update to the window's properties. `app` is a borrowed window handle;
-//           `update` is BORROWED (`&Update`) so the progress-debounce wrapper can forward
-//           the very same value without rebuilding it. The match reads the payload by
-//           reference. Runs on the event-loop thread.
-// Why:      Keep the on-screen state mirroring the engine's state.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// function applyUpdate(app: AppWindow, update: Update): void { ... }
-// ```
-/// Apply update.
+/// What:     `fn apply_update(app: &AppWindow, update: &Update)`. Apply one engine
+///           update to the window's properties. `app` is a borrowed window handle;
+///           `update` is BORROWED (`&Update`) so the progress-debounce wrapper can forward
+///           the very same value without rebuilding it. The match reads the payload by
+///           reference. Runs on the event-loop thread.
+/// Why:      Keep the on-screen state mirroring the engine's state.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function applyUpdate(app: AppWindow, update: Update): void { ... }
+/// ```
 fn apply_update(app: &AppWindow, update: &Update) {
     // What:     `match update { ... }`. Pattern-match (and destructure) the update
     //           enum's variant; exhaustive over every `Update` case.
@@ -860,27 +837,26 @@ fn apply_update(app: &AppWindow, update: &Update) {
 
 
 
-// What:     `fn xdg_user_dir_music() -> Option<PathBuf>`. Last-resort lookup: shell
-//           out to the `xdg-user-dir MUSIC` command and use its printed path. The
-//           return is `Option<PathBuf>`: `Some(path)` on success, `None` otherwise
-//           (Rust has no `null`; absence is modeled by the `Option` enum).
-// Why:      Some setups (and some `directories` parsing gaps) leave the music dir
-//           discoverable only through the official `xdg-user-dir` tool; this is the
-//           fallback when the env var and the user-dirs file both come up empty.
-// What:     `#[cfg(unix)]` compiles this Unix version of the helper only on Unix
-//           targets (Linux/macOS/BSD); the `#[cfg(not(unix))]` stub just below
-//           replaces it on Windows. `unix` is a built-in cfg covering the whole
-//           Unix family; siblings: `windows`, `target_os = "linux"`.
-// Why:      `xdg-user-dir` is a freedesktop CLI tool that exists only on Unix
-//           desktops; on Windows the spawn would always fail, so gate it out and
-//           let the stub return `None` instead of wasting a process spawn.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// function xdgUserDirMusic(): string | null { ... } // Unix-only implementation
-// ```
+/// What:     `fn xdg_user_dir_music() -> Option<PathBuf>`. Last-resort lookup: shell
+///           out to the `xdg-user-dir MUSIC` command and use its printed path. The
+///           return is `Option<PathBuf>`: `Some(path)` on success, `None` otherwise
+///           (Rust has no `null`; absence is modeled by the `Option` enum).
+/// Why:      Some setups (and some `directories` parsing gaps) leave the music dir
+///           discoverable only through the official `xdg-user-dir` tool; this is the
+///           fallback when the env var and the user-dirs file both come up empty.
+/// What:     `#[cfg(unix)]` compiles this Unix version of the helper only on Unix
+///           targets (Linux/macOS/BSD); the `#[cfg(not(unix))]` stub just below
+///           replaces it on Windows. `unix` is a built-in cfg covering the whole
+///           Unix family; siblings: `windows`, `target_os = "linux"`.
+/// Why:      `xdg-user-dir` is a freedesktop CLI tool that exists only on Unix
+///           desktops; on Windows the spawn would always fail, so gate it out and
+///           let the stub return `None` instead of wasting a process spawn.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function xdgUserDirMusic(): string | null { ... } // Unix-only implementation
+/// ```
 #[cfg(unix)]
-/// Xdg user dir music.
 fn xdg_user_dir_music() -> Option<PathBuf> {
     // What:     `let output = std::process::Command::new("xdg-user-dir").arg("MUSIC").output().ok()?;`.
     //           `Command::new(name)` starts a process builder; `.arg("MUSIC")` adds an
@@ -978,21 +954,20 @@ fn xdg_user_dir_music() -> Option<PathBuf> {
     Some(PathBuf::from(trimmed))
 }
 
-// What:     `#[cfg(not(unix))] fn xdg_user_dir_music() -> Option<PathBuf>`. The
-//           non-Unix stub (Windows): same signature as the Unix version above,
-//           compiled only when NOT a Unix target. `not(unix)` inverts the `unix`
-//           cfg predicate.
-// Why:      Windows has no `xdg-user-dir` tool, and `music_dir()` already resolves
-//           the Windows Music known-folder via the `directories` crate one step
-//           earlier, so this fallback has nothing to do; keep the call site
-//           platform-agnostic by returning `None`.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// function xdgUserDirMusic(): string | null { return null; } // non-Unix stub
-// ```
+/// What:     `#[cfg(not(unix))] fn xdg_user_dir_music() -> Option<PathBuf>`. The
+///           non-Unix stub (Windows): same signature as the Unix version above,
+///           compiled only when NOT a Unix target. `not(unix)` inverts the `unix`
+///           cfg predicate.
+/// Why:      Windows has no `xdg-user-dir` tool, and `music_dir()` already resolves
+///           the Windows Music known-folder via the `directories` crate one step
+///           earlier, so this fallback has nothing to do; keep the call site
+///           platform-agnostic by returning `None`.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function xdgUserDirMusic(): string | null { return null; } // non-Unix stub
+/// ```
 #[cfg(not(unix))]
-/// Xdg user dir music.
 fn xdg_user_dir_music() -> Option<PathBuf> {
     // What:     `None`. The empty case of `Option<PathBuf>` (no path); sibling
     //           `Some(p)` would carry a path. Bare tail expression -> return value.
@@ -1005,21 +980,20 @@ fn xdg_user_dir_music() -> Option<PathBuf> {
     None
 }
 
-// What:     `fn music_dir() -> Option<PathBuf>`. Find the user's music directory:
-//           the `XDG_MUSIC_DIR` environment variable first, then the XDG user-dirs
-//           file via the `directories` crate, then the `xdg-user-dir MUSIC`
-//           command. Returns `None` unless one yields an existing directory.
-// Why:      The containerized `run` task bind-mounts the host music folder and
-//           exports `XDG_MUSIC_DIR` as its in-container path; a native run has no
-//           such env, so we fall back to the user-dirs file and finally the
-//           `xdg-user-dir` tool. The `directories` crate reads only the file, never
-//           the env var, so the env lookup must be explicit here.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// function musicDir(): string | null { ... }
-// ```
-/// Music dir.
+/// What:     `fn music_dir() -> Option<PathBuf>`. Find the user's music directory:
+///           the `XDG_MUSIC_DIR` environment variable first, then the XDG user-dirs
+///           file via the `directories` crate, then the `xdg-user-dir MUSIC`
+///           command. Returns `None` unless one yields an existing directory.
+/// Why:      The containerized `run` task bind-mounts the host music folder and
+///           exports `XDG_MUSIC_DIR` as its in-container path; a native run has no
+///           such env, so we fall back to the user-dirs file and finally the
+///           `xdg-user-dir` tool. The `directories` crate reads only the file, never
+///           the env var, so the env lookup must be explicit here.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function musicDir(): string | null { ... }
+/// ```
 fn music_dir() -> Option<PathBuf> {
     // What:     `std::env::var_os("XDG_MUSIC_DIR")`. Read an environment variable as
     //           an `Option<OsString>` (raw OS bytes, not required to be UTF-8).
@@ -1098,19 +1072,18 @@ fn music_dir() -> Option<PathBuf> {
         .filter(|p| p.is_dir())
 }
 
-// What:     `fn main() -> Result<(), slint::PlatformError>`. The entry point. The
-//           return type `Result<(), E>` is the success-or-error enum: `Ok(())`
-//           (success with the unit value, like `void`) or `Err(PlatformError)`.
-//           Returning `Err` from `main` makes the process exit non-zero and prints
-//           the error.
-// Why:      Propagate window/backend failure (e.g. no display server) as the exit
-//           status, rather than panicking.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// async function main(): Promise<void> { ... } // throws on platform failure
-// ```
-/// Main.
+/// What:     `fn main() -> Result<(), slint::PlatformError>`. The entry point. The
+///           return type `Result<(), E>` is the success-or-error enum: `Ok(())`
+///           (success with the unit value, like `void`) or `Err(PlatformError)`.
+///           Returning `Err` from `main` makes the process exit non-zero and prints
+///           the error.
+/// Why:      Propagate window/backend failure (e.g. no display server) as the exit
+///           status, rather than panicking.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// async function main(): Promise<void> { ... } // throws on platform failure
+/// ```
 fn main() -> Result<(), slint::PlatformError> {
     // What:     `let cli = Cli::parse();`. Read and validate the command-line
     //           arguments FIRST, before any backend, window, or GPU setup.

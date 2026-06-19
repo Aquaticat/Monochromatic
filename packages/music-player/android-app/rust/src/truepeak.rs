@@ -13,111 +13,104 @@
 //! path and also owns the gain function; here the caller hands us an
 //! already-open boxed decoder and the gain step happens on the Kotlin side.
 
-// What:     `use crate::decode::Source;`. Pull in the `Source` trait (an
-//           interface: a set of method signatures any decoder type promises to
-//           implement). `crate::` means "from the root of THIS crate" (this
-//           Rust package), `decode` is the sibling module, `Source` is the
-//           trait defined inside it. Unlike the desktop file (which imports the
-//           whole `decode` module and a `Path`), here we import the trait by
-//           name because `measure_true_peak` receives a `Box<dyn Source>` and
-//           calls the trait's `.spec()` / `.next_chunk()` methods on it.
-// Why:      The function signature below names `Source`, and calling a trait's
-//           methods on a `dyn Source` value requires the trait to be in scope.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { Source } from "./decode";
-// ```
-/// Imports.
+/// What:     `use crate::decode::Source;`. Pull in the `Source` trait (an
+///           interface: a set of method signatures any decoder type promises to
+///           implement). `crate::` means "from the root of THIS crate" (this
+///           Rust package), `decode` is the sibling module, `Source` is the
+///           trait defined inside it. Unlike the desktop file (which imports the
+///           whole `decode` module and a `Path`), here we import the trait by
+///           name because `measure_true_peak` receives a `Box<dyn Source>` and
+///           calls the trait's `.spec()` / `.next_chunk()` methods on it.
+/// Why:      The function signature below names `Source`, and calling a trait's
+///           methods on a `dyn Source` value requires the trait to be in scope.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { Source } from "./decode";
+/// ```
 use crate::decode::Source;
 
-// What:     `use crate::error::PlayerError;`. The single error type every
-//           fallible function in this crate returns. `crate::error` is the
-//           sibling module, `PlayerError` the enum (sum type) inside it.
-// Why:      `measure_true_peak` returns `Result<f32, PlayerError>` and
-//           propagates decode errors with the `?` operator, so the name must be
-//           in scope.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { PlayerError } from "./error";
-// ```
-/// Imports.
+/// What:     `use crate::error::PlayerError;`. The single error type every
+///           fallible function in this crate returns. `crate::error` is the
+///           sibling module, `PlayerError` the enum (sum type) inside it.
+/// Why:      `measure_true_peak` returns `Result<f32, PlayerError>` and
+///           propagates decode errors with the `?` operator, so the name must be
+///           in scope.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { PlayerError } from "./error";
+/// ```
 use crate::error::PlayerError;
 
-// What:     `const HALF: f32 = 1.0 / 2.0;`. The fraction one-half. Composed from
-//           the always-allowed `-2..=2` range rather than written as a bare
-//           `0.5` literal. The type is `f32` (a 32-bit IEEE float); its sibling
-//           is `f64` (64-bit, double precision). We pick `f32` to match the PCM
-//           sample type these calculations run on.
-// Why:      Used as the Catmull-Rom 1/2 scale factor and to build the
-//           sub-sample offsets below; the repo bans bare fractional literals, so
-//           it is composed from the exempt range.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// const HALF = 1 / 2;
-// ```
-/// Half.
+/// What:     `const HALF: f32 = 1.0 / 2.0;`. The fraction one-half. Composed from
+///           the always-allowed `-2..=2` range rather than written as a bare
+///           `0.5` literal. The type is `f32` (a 32-bit IEEE float); its sibling
+///           is `f64` (64-bit, double precision). We pick `f32` to match the PCM
+///           sample type these calculations run on.
+/// Why:      Used as the Catmull-Rom 1/2 scale factor and to build the
+///           sub-sample offsets below; the repo bans bare fractional literals, so
+///           it is composed from the exempt range.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const HALF = 1 / 2;
+/// ```
 const HALF: f32 = 1.0 / 2.0;
 
-// What:     `const QUARTER: f32 = HALF / 2.0;`. One-quarter (0.25), built from
-//           `HALF`. Type `f32` (sibling `f64`), same reason as `HALF`.
-// Why:      The first of three interior sample positions between two samples
-//           where we probe the reconstructed curve.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// const QUARTER = HALF / 2;
-// ```
-/// Quarter.
+/// What:     `const QUARTER: f32 = HALF / 2.0;`. One-quarter (0.25), built from
+///           `HALF`. Type `f32` (sibling `f64`), same reason as `HALF`.
+/// Why:      The first of three interior sample positions between two samples
+///           where we probe the reconstructed curve.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const QUARTER = HALF / 2;
+/// ```
 const QUARTER: f32 = HALF / 2.0;
 
-// What:     `const THREE_QUARTERS: f32 = HALF + QUARTER;`. Three-quarters
-//           (0.75), built from the two constants above. Type `f32` (sibling
-//           `f64`).
-// Why:      The third interior sample position between two stored samples.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// const THREE_QUARTERS = HALF + QUARTER;
-// ```
-/// Three quarters.
+/// What:     `const THREE_QUARTERS: f32 = HALF + QUARTER;`. Three-quarters
+///           (0.75), built from the two constants above. Type `f32` (sibling
+///           `f64`).
+/// Why:      The third interior sample position between two stored samples.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const THREE_QUARTERS = HALF + QUARTER;
+/// ```
 const THREE_QUARTERS: f32 = HALF + QUARTER;
 
-// What:     `const WINDOW: usize = 4;`. The number of consecutive samples the
-//           cubic interpolation needs (two on each side of the interval it
-//           fills in). The type `usize` is the unsigned integer wide enough to
-//           index any array on this platform (32 bits on a 32-bit build, 64 on a
-//           64-bit build). Siblings the reader might expect: `u8`, `u16`, `u32`,
-//           `u64`.
-// Why:      Catmull-Rom evaluates the curve between the 2nd and 3rd of four
-//           points; we also use `WINDOW` to size and index the per-channel
-//           arrays, and indexing wants `usize`.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// const WINDOW = 4;
-// ```
-/// Window.
+/// What:     `const WINDOW: usize = 4;`. The number of consecutive samples the
+///           cubic interpolation needs (two on each side of the interval it
+///           fills in). The type `usize` is the unsigned integer wide enough to
+///           index any array on this platform (32 bits on a 32-bit build, 64 on a
+///           64-bit build). Siblings the reader might expect: `u8`, `u16`, `u32`,
+///           `u64`.
+/// Why:      Catmull-Rom evaluates the curve between the 2nd and 3rd of four
+///           points; we also use `WINDOW` to size and index the per-channel
+///           arrays, and indexing wants `usize`.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const WINDOW = 4;
+/// ```
 const WINDOW: usize = 4;
 
-// What:     `fn catmull_rom(p0: f32, p1: f32, p2: f32, p3: f32, t: f32) -> f32`.
-//           Declares a free function (not a method) named `catmull_rom` that
-//           takes five `f32` floats and returns one `f32`. The `-> f32` after
-//           the parameter list is the return type. It evaluates the Catmull-Rom
-//           cubic through four equally-spaced points at position `t` (0.0..=1.0)
-//           on the segment BETWEEN `p1` and `p2`. The parameters are positional
-//           (Rust functions have no object-parameter sugar; this matches the
-//           surrounding Rust style).
-// Why:      Estimates the waveform between two stored samples, which is exactly
-//           where inter-sample peaks hide.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// function catmullRom(p0: number, p1: number, p2: number, p3: number, t: number): number { ... }
-// ```
-/// Catmull rom.
+/// What:     `fn catmull_rom(p0: f32, p1: f32, p2: f32, p3: f32, t: f32) -> f32`.
+///           Declares a free function (not a method) named `catmull_rom` that
+///           takes five `f32` floats and returns one `f32`. The `-> f32` after
+///           the parameter list is the return type. It evaluates the Catmull-Rom
+///           cubic through four equally-spaced points at position `t` (0.0..=1.0)
+///           on the segment BETWEEN `p1` and `p2`. The parameters are positional
+///           (Rust functions have no object-parameter sugar; this matches the
+///           surrounding Rust style).
+/// Why:      Estimates the waveform between two stored samples, which is exactly
+///           where inter-sample peaks hide.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function catmullRom(p0: number, p1: number, p2: number, p3: number, t: number): number { ... }
+/// ```
 fn catmull_rom(p0: f32, p1: f32, p2: f32, p3: f32, t: f32) -> f32 {
     // What:     `let t2 = t * t;` and `let t3 = t2 * t;`. Local immutable
     //           bindings (`let` with no `mut`) holding the square and cube of
@@ -153,102 +146,95 @@ fn catmull_rom(p0: f32, p1: f32, p2: f32, p3: f32, t: f32) -> f32 {
         + (3.0 * p1 - 3.0 * p2 + p3 - p0) * t3)
 }
 
-// What:     `struct TruePeakMeter { ... }`. Declares a record type (a struct,
-//           like a plain object shape) holding the running state for the
-//           streaming peak scan: how many channels, a 4-sample sliding window
-//           PER channel, how many real samples each channel has seen, and the
-//           largest magnitude so far. It has no `pub`, so it is private to this
-//           module.
-// Why:      Lets us scan the file chunk by chunk without ever holding the whole
-//           track in memory; the state is just a few floats and counters per
-//           channel (constant memory regardless of track length).
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// class TruePeakMeter { channels: number; win: number[][]; filled: number[]; peak: number; }
-// ```
-/// True peak meter.
+/// What:     `struct TruePeakMeter { ... }`. Declares a record type (a struct,
+///           like a plain object shape) holding the running state for the
+///           streaming peak scan: how many channels, a 4-sample sliding window
+///           PER channel, how many real samples each channel has seen, and the
+///           largest magnitude so far. It has no `pub`, so it is private to this
+///           module.
+/// Why:      Lets us scan the file chunk by chunk without ever holding the whole
+///           track in memory; the state is just a few floats and counters per
+///           channel (constant memory regardless of track length).
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// class TruePeakMeter { channels: number; win: number[][]; filled: number[]; peak: number; }
+/// ```
 struct TruePeakMeter {
-    // What:     `channels: usize`. A struct field: the channel count (the
-    //           interleave width). `usize` (siblings `u16`/`u32`/`u64`) because
-    //           it is used to index the per-channel vectors below, and indexing
-    //           wants `usize`.
-    // Why:      We need it to demultiplex interleaved samples into per-channel
-    //           windows.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // channels: number;
-    // ```
-    /// Channels.
+    /// What:     `channels: usize`. A struct field: the channel count (the
+    ///           interleave width). `usize` (siblings `u16`/`u32`/`u64`) because
+    ///           it is used to index the per-channel vectors below, and indexing
+    ///           wants `usize`.
+    /// Why:      We need it to demultiplex interleaved samples into per-channel
+    ///           windows.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// channels: number;
+    /// ```
     channels: usize,
-    // What:     `win: Vec<[f32; WINDOW]>`. A field holding one fixed-size array
-    //           of the last 4 samples per channel. `[f32; 4]` is a fixed-LENGTH
-    //           array (the `4` is part of the type; its sibling is `Vec<f32>`, a
-    //           growable list, or `&[f32]`, a borrowed view). `Vec<...>` is the
-    //           owned, growable outer list (one inner array per channel). We use
-    //           a fixed-size inner array because the window never changes size.
-    // Why:      Cubic interpolation needs the latest four samples of a channel,
-    //           and there is exactly one window per channel.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // win: number[][]; // each inner array length 4
-    // ```
-    /// Win.
+    /// What:     `win: Vec<[f32; WINDOW]>`. A field holding one fixed-size array
+    ///           of the last 4 samples per channel. `[f32; 4]` is a fixed-LENGTH
+    ///           array (the `4` is part of the type; its sibling is `Vec<f32>`, a
+    ///           growable list, or `&[f32]`, a borrowed view). `Vec<...>` is the
+    ///           owned, growable outer list (one inner array per channel). We use
+    ///           a fixed-size inner array because the window never changes size.
+    /// Why:      Cubic interpolation needs the latest four samples of a channel,
+    ///           and there is exactly one window per channel.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// win: number[][]; // each inner array length 4
+    /// ```
     win: Vec<[f32; WINDOW]>,
-    // What:     `filled: Vec<usize>`. A field: per channel, how many real samples
-    //           have arrived (capped at `WINDOW`). `Vec<usize>` is an owned,
-    //           growable list of unsigned platform-width integers (sibling
-    //           element types: `u32`/`u64`); `usize` because these are counts
-    //           compared against the `usize` constant `WINDOW`.
-    // Why:      We only interpolate once a channel's window holds four REAL
-    //           samples (not the zero-padding the window starts with).
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // filled: number[];
-    // ```
-    /// Filled.
+    /// What:     `filled: Vec<usize>`. A field: per channel, how many real samples
+    ///           have arrived (capped at `WINDOW`). `Vec<usize>` is an owned,
+    ///           growable list of unsigned platform-width integers (sibling
+    ///           element types: `u32`/`u64`); `usize` because these are counts
+    ///           compared against the `usize` constant `WINDOW`.
+    /// Why:      We only interpolate once a channel's window holds four REAL
+    ///           samples (not the zero-padding the window starts with).
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// filled: number[];
+    /// ```
     filled: Vec<usize>,
-    // What:     `peak: f32`. A field: the largest absolute sample or interpolated
-    //           value seen so far. `f32` (sibling `f64`) to match the sample
-    //           type.
-    // Why:      When the scan ends, this field IS the measured true peak.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // peak: number;
-    // ```
-    /// Peak.
+    /// What:     `peak: f32`. A field: the largest absolute sample or interpolated
+    ///           value seen so far. `f32` (sibling `f64`) to match the sample
+    ///           type.
+    /// Why:      When the scan ends, this field IS the measured true peak.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// peak: number;
+    /// ```
     peak: f32,
 }
 
-// What:     `impl TruePeakMeter { ... }`. An `impl` block attaches methods to
-//           the `TruePeakMeter` struct. It is not the struct's data (that is
-//           above); it is the struct's behaviour (constructor + the two
-//           sample-feeding methods).
-// Why:      Rust separates a type's fields (the `struct`) from its methods (the
-//           `impl`); this block is where `new`, `feed`, and `push` live.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// class TruePeakMeter { /* methods go here */ }
-// ```
-/// Implementation block.
+/// What:     `impl TruePeakMeter { ... }`. An `impl` block attaches methods to
+///           the `TruePeakMeter` struct. It is not the struct's data (that is
+///           above); it is the struct's behaviour (constructor + the two
+///           sample-feeding methods).
+/// Why:      Rust separates a type's fields (the `struct`) from its methods (the
+///           `impl`); this block is where `new`, `feed`, and `push` live.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// class TruePeakMeter { /* methods go here */ }
+/// ```
 impl TruePeakMeter {
-    // What:     `fn new(channels: usize) -> TruePeakMeter`. An associated
-    //           function (no `self` parameter, so it is called as
-    //           `TruePeakMeter::new(...)`, like a static factory) that builds a
-    //           meter sized for `channels` channels with all windows zeroed and
-    //           returns the new struct.
-    // Why:      Produces the starting state for a scan.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // constructor(channels: number) { ... }
-    // ```
-    /// New.
+    /// What:     `fn new(channels: usize) -> TruePeakMeter`. An associated
+    ///           function (no `self` parameter, so it is called as
+    ///           `TruePeakMeter::new(...)`, like a static factory) that builds a
+    ///           meter sized for `channels` channels with all windows zeroed and
+    ///           returns the new struct.
+    /// Why:      Produces the starting state for a scan.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// constructor(channels: number) { ... }
+    /// ```
     fn new(channels: usize) -> TruePeakMeter {
         // What:     `TruePeakMeter { ... }`. A struct literal that constructs the
         //           value. `channels` uses field-init shorthand (the field and
@@ -274,22 +260,21 @@ impl TruePeakMeter {
         }
     }
 
-    // What:     `fn feed(&mut self, chunk: &[f32])`. A method that pushes one
-    //           interleaved chunk of samples through the meter. `&mut self`
-    //           borrows the meter MUTABLY (the method may change its fields but
-    //           does not consume/own it). `chunk: &[f32]` is a borrowed,
-    //           read-only slice (a view into a `Vec<f32>` or array the caller
-    //           still owns; sibling: `Vec<f32>`, which would be owned/moved in).
-    //           Return type is omitted, which in Rust means it returns `()`, the
-    //           empty unit (like TS `void`).
-    // Why:      Drives the running peak update for a whole block of audio at
-    //           once.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // feed(chunk: number[]): void { ... }
-    // ```
-    /// Feed.
+    /// What:     `fn feed(&mut self, chunk: &[f32])`. A method that pushes one
+    ///           interleaved chunk of samples through the meter. `&mut self`
+    ///           borrows the meter MUTABLY (the method may change its fields but
+    ///           does not consume/own it). `chunk: &[f32]` is a borrowed,
+    ///           read-only slice (a view into a `Vec<f32>` or array the caller
+    ///           still owns; sibling: `Vec<f32>`, which would be owned/moved in).
+    ///           Return type is omitted, which in Rust means it returns `()`, the
+    ///           empty unit (like TS `void`).
+    /// Why:      Drives the running peak update for a whole block of audio at
+    ///           once.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// feed(chunk: number[]): void { ... }
+    /// ```
     fn feed(&mut self, chunk: &[f32]) {
         // What:     `for (index, &sample) in chunk.iter().enumerate() { ... }`.
         //           `chunk.iter()` makes an iterator of references over the
@@ -334,20 +319,19 @@ impl TruePeakMeter {
         }
     }
 
-    // What:     `fn push(&mut self, channel: usize, sample: f32)`. A method that
-    //           slides one sample into one channel's window, updates the raw
-    //           peak, and (once the window is full) samples the interpolated
-    //           curve between the two middle points. `&mut self` is a mutable
-    //           borrow of the meter; `channel: usize` is the channel index
-    //           (sibling `u32`; `usize` because it indexes the vectors);
-    //           `sample: f32` is the new audio sample by value.
-    // Why:      This is the core inter-sample peak step, run once per sample.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // push(channel: number, sample: number): void { ... }
-    // ```
-    /// Push.
+    /// What:     `fn push(&mut self, channel: usize, sample: f32)`. A method that
+    ///           slides one sample into one channel's window, updates the raw
+    ///           peak, and (once the window is full) samples the interpolated
+    ///           curve between the two middle points. `&mut self` is a mutable
+    ///           borrow of the meter; `channel: usize` is the channel index
+    ///           (sibling `u32`; `usize` because it indexes the vectors);
+    ///           `sample: f32` is the new audio sample by value.
+    /// Why:      This is the core inter-sample peak step, run once per sample.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// push(channel: number, sample: number): void { ... }
+    /// ```
     fn push(&mut self, channel: usize, sample: f32) {
         // What:     `let window = self.win[channel];`. Read the channel's 4-array
         //           out of the vector. Because `[f32; 4]` is made of `Copy`
@@ -484,32 +468,31 @@ impl TruePeakMeter {
     }
 }
 
-// What:     `pub fn measure_true_peak(mut source: Box<dyn Source>) -> Result<f32, PlayerError>`.
-//           A public free function that scans a decoder to the end and returns
-//           the estimated true peak (a linear amplitude, typically near 1.0 for
-//           full-scale material). `mut source` makes the parameter binding
-//           mutable so we can advance the decoder. `Box<dyn Source>` is an
-//           OWNING, heap-allocated pointer to some type that implements the
-//           `Source` trait, with the concrete type erased at compile time (a
-//           "trait object"); siblings: `Rc<dyn Source>` / `Arc<dyn Source>`
-//           (shared, reference-counted) or `&dyn Source` (borrowed, not owned).
-//           We take `Box` (owned) so the function fully consumes/drives the
-//           decoder. `Result<f32, PlayerError>` is the success-or-error return:
-//           `Ok(f32)` on success, `Err(PlayerError)` on failure. `pub` makes it
-//           callable from outside this module (the JNI/Kotlin bridge invokes
-//           it).
-// Why:      This is THE measurement the per-track normalization is based on;
-//           note the gain calculation itself lives in Kotlin, so this function
-//           returns only the raw peak.
-// Gotcha:   The desktop sibling takes a `&Path` and opens its own decoder; this
-//           Android version receives an already-open `Box<dyn Source>` and MOVES
-//           ownership of it in, so the caller cannot use the decoder afterwards.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// function measureTruePeak(source: Source): number { /* throws on decode error */ }
-// ```
-/// Measure true peak.
+/// What:     `pub fn measure_true_peak(mut source: Box<dyn Source>) -> Result<f32, PlayerError>`.
+///           A public free function that scans a decoder to the end and returns
+///           the estimated true peak (a linear amplitude, typically near 1.0 for
+///           full-scale material). `mut source` makes the parameter binding
+///           mutable so we can advance the decoder. `Box<dyn Source>` is an
+///           OWNING, heap-allocated pointer to some type that implements the
+///           `Source` trait, with the concrete type erased at compile time (a
+///           "trait object"); siblings: `Rc<dyn Source>` / `Arc<dyn Source>`
+///           (shared, reference-counted) or `&dyn Source` (borrowed, not owned).
+///           We take `Box` (owned) so the function fully consumes/drives the
+///           decoder. `Result<f32, PlayerError>` is the success-or-error return:
+///           `Ok(f32)` on success, `Err(PlayerError)` on failure. `pub` makes it
+///           callable from outside this module (the JNI/Kotlin bridge invokes
+///           it).
+/// Why:      This is THE measurement the per-track normalization is based on;
+///           note the gain calculation itself lives in Kotlin, so this function
+///           returns only the raw peak.
+/// Gotcha:   The desktop sibling takes a `&Path` and opens its own decoder; this
+///           Android version receives an already-open `Box<dyn Source>` and MOVES
+///           ownership of it in, so the caller cannot use the decoder afterwards.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function measureTruePeak(source: Source): number { /* throws on decode error */ }
+/// ```
 pub fn measure_true_peak(mut source: Box<dyn Source>) -> Result<f32, PlayerError> {
     // What:     `let channels = source.spec().channels as usize;`. Call the
     //           trait method `.spec()` (returns an `AudioSpec`), read its
@@ -614,30 +597,29 @@ pub fn measure_true_peak(mut source: Box<dyn Source>) -> Result<f32, PlayerError
     Ok(meter.peak)
 }
 
-// What:     `pub fn true_peak_interleaved(samples: &[f32], channels: usize) -> f32`.
-//           A public free function that runs the SAME streaming meter as
-//           `measure_true_peak`, but over an ALREADY-decoded slice of interleaved
-//           `f32` PCM instead of a `Box<dyn Source>`. `samples: &[f32]` is a
-//           borrowed, read-only view (the caller keeps ownership); `channels` is
-//           the interleave width; `-> f32` returns the measured true peak. `pub`
-//           so the JNI layer (`lib.rs`) can reach it from the test-only
-//           `nativeTruePeakSynthetic` entry.
-// Why:      Lets an on-device instrumented test feed a KNOWN synthetic signal
-//           straight into the production `TruePeakMeter` and assert the measured
-//           inter-sample peak on the real target, with NO decoder and NO golden
-//           audio file. It shares the exact meter + `catmull_rom` path that
-//           `measure_true_peak` drives, so a green device test proves that path.
-// Gotcha:   Feeds the whole slice as ONE chunk; that is equivalent to the decoder
-//           feeding many chunks, because the meter's per-channel window/`filled`
-//           state persists across samples, so chunk boundaries never move the
-//           result. This is why the old Kotlin "chunk boundaries" test does not
-//           need a separate device entry.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// function truePeakInterleaved(samples: Float32Array, channels: number): number { ... }
-// ```
-/// True peak interleaved.
+/// What:     `pub fn true_peak_interleaved(samples: &[f32], channels: usize) -> f32`.
+///           A public free function that runs the SAME streaming meter as
+///           `measure_true_peak`, but over an ALREADY-decoded slice of interleaved
+///           `f32` PCM instead of a `Box<dyn Source>`. `samples: &[f32]` is a
+///           borrowed, read-only view (the caller keeps ownership); `channels` is
+///           the interleave width; `-> f32` returns the measured true peak. `pub`
+///           so the JNI layer (`lib.rs`) can reach it from the test-only
+///           `nativeTruePeakSynthetic` entry.
+/// Why:      Lets an on-device instrumented test feed a KNOWN synthetic signal
+///           straight into the production `TruePeakMeter` and assert the measured
+///           inter-sample peak on the real target, with NO decoder and NO golden
+///           audio file. It shares the exact meter + `catmull_rom` path that
+///           `measure_true_peak` drives, so a green device test proves that path.
+/// Gotcha:   Feeds the whole slice as ONE chunk; that is equivalent to the decoder
+///           feeding many chunks, because the meter's per-channel window/`filled`
+///           state persists across samples, so chunk boundaries never move the
+///           result. This is why the old Kotlin "chunk boundaries" test does not
+///           need a separate device entry.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function truePeakInterleaved(samples: Float32Array, channels: number): number { ... }
+/// ```
 pub fn true_peak_interleaved(samples: &[f32], channels: usize) -> f32 {
     // What:     `if channels == 0 { return 0.0; }`. Guard a zero-channel request,
     //           returning a `0.0` (silence) peak. Mirrors the same guard in

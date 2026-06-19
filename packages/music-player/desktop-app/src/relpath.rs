@@ -6,47 +6,44 @@
 //! to build the list handed to the UI, and `pagination` then groups the result
 //! (by folder for subfolder tracks, by first letter for root-level ones).
 
-// What:     `use std::path::{Component, Path, PathBuf};`. `PathBuf` is the OWNED,
-//           growable path (sibling: the borrowed `&Path`); `Path` is the borrowed
-//           view; `Component` is one piece of a split path (a root `/`, a `..`, a
-//           normal name segment, etc.).
-// Why:      We borrow each track path (`&Path`), split it into `Component`s, and
-//           keep only the named segments; the input list is owned `PathBuf`s.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// // all three are just strings in TS; Component ~ one element of path.split("/")
-// ```
-/// Imports.
+/// What:     `use std::path::{Component, Path, PathBuf};`. `PathBuf` is the OWNED,
+///           growable path (sibling: the borrowed `&Path`); `Path` is the borrowed
+///           view; `Component` is one piece of a split path (a root `/`, a `..`, a
+///           normal name segment, etc.).
+/// Why:      We borrow each track path (`&Path`), split it into `Component`s, and
+///           keep only the named segments; the input list is owned `PathBuf`s.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // all three are just strings in TS; Component ~ one element of path.split("/")
+/// ```
 use std::path::{Component, Path, PathBuf};
 
-// What:     `const SEPARATOR: &str = "/";`. `&str` is a BORROWED string slice
-//           (sibling: the owned `String`); the separator we re-join segments with.
-// Why:      The queue is Linux-only and the UI/pagination expect a single `/`
-//           separator; naming it avoids a bare `"/"` literal scattered around.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// const SEPARATOR = "/";
-// ```
-/// Separator.
+/// What:     `const SEPARATOR: &str = "/";`. `&str` is a BORROWED string slice
+///           (sibling: the owned `String`); the separator we re-join segments with.
+/// Why:      The queue is Linux-only and the UI/pagination expect a single `/`
+///           separator; naming it avoids a bare `"/"` literal scattered around.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const SEPARATOR = "/";
+/// ```
 const SEPARATOR: &str = "/";
 
-// What:     `fn normal_components(path: &Path) -> Vec<String>`. Split a path into its
-//           NAMED segments only, each as an owned `String`. `&Path` is a read-only
-//           borrow; `Vec<String>` is the owned, growable array of owned strings
-//           (sibling: the borrowed slice `&[String]`). Private helper.
-// Why:      Dropping the root (`/`) and any `.`/`..` leaves just the folder and file
-//           names, so prefix comparison and re-joining are clean and behave the same
-//           for absolute and relative inputs.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// function normalComponents(path: string): string[] {
-//   return path.split("/").filter(seg => seg !== "" && seg !== "." && seg !== "..");
-// }
-// ```
-/// Normal components.
+/// What:     `fn normal_components(path: &Path) -> Vec<String>`. Split a path into its
+///           NAMED segments only, each as an owned `String`. `&Path` is a read-only
+///           borrow; `Vec<String>` is the owned, growable array of owned strings
+///           (sibling: the borrowed slice `&[String]`). Private helper.
+/// Why:      Dropping the root (`/`) and any `.`/`..` leaves just the folder and file
+///           names, so prefix comparison and re-joining are clean and behave the same
+///           for absolute and relative inputs.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function normalComponents(path: string): string[] {
+///   return path.split("/").filter(seg => seg !== "" && seg !== "." && seg !== "..");
+/// }
+/// ```
 fn normal_components(path: &Path) -> Vec<String> {
     // What:     `let mut out: Vec<String> = Vec::new();`. `Vec::new()` builds a fresh
     //           empty owned array. `mut` marks it mutable (bindings are read-only by
@@ -104,19 +101,18 @@ fn normal_components(path: &Path) -> Vec<String> {
     out
 }
 
-// What:     `fn common_prefix_len(lists: &[Vec<String>]) -> usize`. How many LEADING
-//           segments every track shares, capped so at least one segment (the
-//           filename) always remains. `&[Vec<String>]` is a borrowed slice of
-//           segment lists; `usize` is the pointer-sized unsigned integer used for
-//           lengths/indices (siblings: `u32`, `u64`, `i32`). Private helper.
-// Why:      That shared prefix is the "loaded root"; stripping it turns absolute
-//           paths into the relative paths the UI shows.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// function commonPrefixLen(lists: string[][]): number { ... }
-// ```
-/// Common prefix len.
+/// What:     `fn common_prefix_len(lists: &[Vec<String>]) -> usize`. How many LEADING
+///           segments every track shares, capped so at least one segment (the
+///           filename) always remains. `&[Vec<String>]` is a borrowed slice of
+///           segment lists; `usize` is the pointer-sized unsigned integer used for
+///           lengths/indices (siblings: `u32`, `u64`, `i32`). Private helper.
+/// Why:      That shared prefix is the "loaded root"; stripping it turns absolute
+///           paths into the relative paths the UI shows.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function commonPrefixLen(lists: string[][]): number { ... }
+/// ```
 fn common_prefix_len(lists: &[Vec<String>]) -> usize {
     // What:     `let shortest = lists.iter().map(|list| list.len()).min().unwrap_or(0);`.
     //           `.iter()` borrows each list; `.map(|list| list.len())` turns each into
@@ -192,26 +188,25 @@ fn common_prefix_len(lists: &[Vec<String>]) -> usize {
     run
 }
 
-// What:     `pub fn relative_display_paths(tracks: &[PathBuf]) -> Vec<String>`. Turn
-//           each track's full path into its path relative to the queue's common
-//           root. `&[PathBuf]` is a borrowed slice of owned paths (read-only); the
-//           result is one owned relative string per track, in order.
-// Why:      The UI shows folders, not just filenames, but the absolute prefix (e.g.
-//           `/home/user/Music`) is noise; this strips it once per queue.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// function relativeDisplayPaths(tracks: string[]): string[] {
-//   if (tracks.length === 0) return [];
-//   const lists = tracks.map(normalComponents);
-//   const prefix = commonPrefixLen(lists);
-//   return lists.map((list, i) => {
-//     const rel = list.slice(prefix).join("/");
-//     return rel === "" ? tracks[i] : rel;
-//   });
-// }
-// ```
-/// Relative display paths.
+/// What:     `pub fn relative_display_paths(tracks: &[PathBuf]) -> Vec<String>`. Turn
+///           each track's full path into its path relative to the queue's common
+///           root. `&[PathBuf]` is a borrowed slice of owned paths (read-only); the
+///           result is one owned relative string per track, in order.
+/// Why:      The UI shows folders, not just filenames, but the absolute prefix (e.g.
+///           `/home/user/Music`) is noise; this strips it once per queue.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function relativeDisplayPaths(tracks: string[]): string[] {
+///   if (tracks.length === 0) return [];
+///   const lists = tracks.map(normalComponents);
+///   const prefix = commonPrefixLen(lists);
+///   return lists.map((list, i) => {
+///     const rel = list.slice(prefix).join("/");
+///     return rel === "" ? tracks[i] : rel;
+///   });
+/// }
+/// ```
 pub fn relative_display_paths(tracks: &[PathBuf]) -> Vec<String> {
     // What:     `if tracks.is_empty() { return Vec::new(); }`. Early return for an
     //           empty queue. `Vec::new()` builds an empty owned array.
@@ -292,22 +287,21 @@ pub fn relative_display_paths(tracks: &[PathBuf]) -> Vec<String> {
         .collect()
 }
 
-// What:     `#[cfg(test)] #[path = "relpath_tests.rs"] mod tests;` declares a
-//           test-only submodule whose code lives in the sibling file
-//           `relpath_tests.rs`. `#[cfg(test)]` gates it to test builds only;
-//           `#[path = "..."]` aims the module at a flat sibling file instead of the
-//           default `relpath/tests.rs` subdirectory lookup. The file stays the
-//           `tests` CHILD of relpath, so its `use super::*` reaches the module items
-//           (including private ones) unchanged.
-// Why:      Keep `relpath.rs` to production code; the tests live beside it without
-//           inflating this file or its max-lines budget (sibling `*_tests.rs` files
-//           are exempt from the linter).
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// // relpath.unit.test.ts, run only by the test runner
-// ```
+/// What:     `#[cfg(test)] #[path = "relpath_tests.rs"] mod tests;` declares a
+///           test-only submodule whose code lives in the sibling file
+///           `relpath_tests.rs`. `#[cfg(test)]` gates it to test builds only;
+///           `#[path = "..."]` aims the module at a flat sibling file instead of the
+///           default `relpath/tests.rs` subdirectory lookup. The file stays the
+///           `tests` CHILD of relpath, so its `use super::*` reaches the module items
+///           (including private ones) unchanged.
+/// Why:      Keep `relpath.rs` to production code; the tests live beside it without
+///           inflating this file or its max-lines budget (sibling `*_tests.rs` files
+///           are exempt from the linter).
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // relpath.unit.test.ts, run only by the test runner
+/// ```
 #[cfg(test)]
 #[path = "relpath_tests.rs"]
-/// Tests module.
 mod tests;

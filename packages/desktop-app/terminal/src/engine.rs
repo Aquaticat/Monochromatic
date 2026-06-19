@@ -1,58 +1,53 @@
 //! libghostty-vt terminal engine and render extraction.
 
-// What:     `use libghostty_vt::{...};` imports the safe Ghostty binding types.
-//           `Terminal` owns VT state; `RenderState` snapshots visible rows.
-// Why:      This module is the only place that talks to libghostty-vt directly.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { Terminal, RenderState, TerminalOptions } from "libghostty-vt";
-// ```
-/// Imports.
+/// What:     `use libghostty_vt::{...};` imports the safe Ghostty binding types.
+///           `Terminal` owns VT state; `RenderState` snapshots visible rows.
+/// Why:      This module is the only place that talks to libghostty-vt directly.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { Terminal, RenderState, TerminalOptions } from "libghostty-vt";
+/// ```
 use libghostty_vt::{RenderState, Terminal, TerminalOptions};
 
-// What:     `use libghostty_vt::render::{CellIterator, RowIterator};` imports
-//           reusable iterator handles for snapshot rows and cells.
-// Why:      Render extraction walks rows and cells without using slow grid refs.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { RowIterator, CellIterator } from "libghostty-vt/render";
-// ```
-/// Imports.
+/// What:     `use libghostty_vt::render::{CellIterator, RowIterator};` imports
+///           reusable iterator handles for snapshot rows and cells.
+/// Why:      Render extraction walks rows and cells without using slow grid refs.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { RowIterator, CellIterator } from "libghostty-vt/render";
+/// ```
 use libghostty_vt::render::{CellIterator, RowIterator};
 
-// What:     `use libghostty_vt::style::{RgbColor, Underline};` imports Ghostty
-//           style helpers. `RgbColor` is the upstream color record; `Underline`
-//           is the style enum.
-// Why:      The engine resolves inverse video and underline flags while copying cells.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import type { RgbColor, Underline } from "libghostty-vt/style";
-// ```
-/// Imports.
+/// What:     `use libghostty_vt::style::{RgbColor, Underline};` imports Ghostty
+///           style helpers. `RgbColor` is the upstream color record; `Underline`
+///           is the style enum.
+/// Why:      The engine resolves inverse video and underline flags while copying cells.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import type { RgbColor, Underline } from "libghostty-vt/style";
+/// ```
 use libghostty_vt::style::{RgbColor, Underline};
 
-// What:     `use libghostty_vt::terminal::ScrollViewport;` imports the row-scroll
-//           command enum. Siblings are `Top`, `Bottom`, and `Delta` variants.
-// Why:      Absolute pixel scrolling is implemented by converting to row deltas.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { ScrollViewport } from "libghostty-vt/terminal";
-// ```
-/// Imports.
+/// What:     `use libghostty_vt::terminal::ScrollViewport;` imports the row-scroll
+///           command enum. Siblings are `Top`, `Bottom`, and `Delta` variants.
+/// Why:      Absolute pixel scrolling is implemented by converting to row deltas.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { ScrollViewport } from "libghostty-vt/terminal";
+/// ```
 use libghostty_vt::terminal::ScrollViewport;
 
-// What:     `use crate::...` imports sibling modules from this package.
-// Why:      Engine methods return crate models and crate errors.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { TerminalError, TerminalCell, TerminalSnapshot, mapPixelScroll } from "./deps";
-// ```
-/// Imports.
+/// What:     `use crate::...` imports sibling modules from this package.
+/// Why:      Engine methods return crate models and crate errors.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { TerminalError, TerminalCell, TerminalSnapshot, mapPixelScroll } from "./deps";
+/// ```
 use crate::{
     error::TerminalError,
     render::{TerminalCell, TerminalSnapshot},
@@ -69,53 +64,46 @@ use crate::{
 // type ViewportGeometry = { cols: number; rows: number; cellWidthPx: number; cellHeightPx: number };
 // ```
 #[derive(Clone, Copy, Debug, PartialEq)]
-// What:     `pub struct ViewportGeometry` declares terminal dimensions in cells
-//           plus the cell dimensions in logical pixels.
-// Why:      libghostty-vt resize needs both cell counts and pixel cell sizes.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// type ViewportGeometry = { cols: number; rows: number; cellWidthPx: number; cellHeightPx: number };
-// ```
-/// Viewport geometry.
+/// What:     `pub struct ViewportGeometry` declares terminal dimensions in cells
+///           plus the cell dimensions in logical pixels.
+/// Why:      libghostty-vt resize needs both cell counts and pixel cell sizes.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type ViewportGeometry = { cols: number; rows: number; cellWidthPx: number; cellHeightPx: number };
+/// ```
 pub struct ViewportGeometry {
-    // What:     `pub cols: u16` stores terminal columns. Sibling integers include
-    //           `usize` and `u32`; libghostty-vt's API requires `u16`.
-    // Why:      Avoid casts at every resize call.
-    /// Cols.
+    /// What:     `pub cols: u16` stores terminal columns. Sibling integers include
+    ///           `usize` and `u32`; libghostty-vt's API requires `u16`.
+    /// Why:      Avoid casts at every resize call.
     pub cols: u16,
-    // What:     `pub rows: u16` stores terminal rows for libghostty-vt.
-    // Why:      Match Ghostty's API exactly.
-    /// Rows.
+    /// What:     `pub rows: u16` stores terminal rows for libghostty-vt.
+    /// Why:      Match Ghostty's API exactly.
     pub rows: u16,
-    // What:     `pub cell_width_px: f32` stores logical pixel cell width.
-    // Why:      Rust receives Slint lengths as `f32`.
-    /// Cell width px.
+    /// What:     `pub cell_width_px: f32` stores logical pixel cell width.
+    /// Why:      Rust receives Slint lengths as `f32`.
     pub cell_width_px: f32,
-    // What:     `pub cell_height_px: f32` stores logical pixel cell height.
-    // Why:      This value drives both resize and scroll mapping.
-    /// Cell height px.
+    /// What:     `pub cell_height_px: f32` stores logical pixel cell height.
+    /// Why:      This value drives both resize and scroll mapping.
     pub cell_height_px: f32,
 }
 
-// What:     `impl ViewportGeometry` starts methods attached to the geometry type.
-// Why:      Construction from pixels is reused by the binary and tests.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// const ViewportGeometry = { fromPixels(...) { ... } };
-// ```
-/// Implementation block.
+/// What:     `impl ViewportGeometry` starts methods attached to the geometry type.
+/// Why:      Construction from pixels is reused by the binary and tests.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const ViewportGeometry = { fromPixels(...) { ... } };
+/// ```
 impl ViewportGeometry {
-    // What:     `pub fn from_pixels(...) -> Self` builds cell counts from Slint
-    //           viewport pixels and fixed cell metrics.
-    // Why:      Resize support lives in Rust, not Slint integer math.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // return { cols: Math.max(1, Math.floor(width / cellWidth)), rows: Math.max(1, Math.floor(height / cellHeight)), cellWidthPx: cellWidth, cellHeightPx: cellHeight };
-    // ```
-    /// From pixels.
+    /// What:     `pub fn from_pixels(...) -> Self` builds cell counts from Slint
+    ///           viewport pixels and fixed cell metrics.
+    /// Why:      Resize support lives in Rust, not Slint integer math.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// return { cols: Math.max(1, Math.floor(width / cellWidth)), rows: Math.max(1, Math.floor(height / cellHeight)), cellWidthPx: cellWidth, cellHeightPx: cellHeight };
+    /// ```
     pub fn from_pixels(
         width_px: f32,
         height_px: f32,
@@ -182,51 +170,116 @@ impl ViewportGeometry {
     }
 }
 
-// What:     `pub struct TerminalEngine` declares the stateful terminal wrapper.
-//           The libghostty-vt handles are `!Send + !Sync`, so this struct stays
-//           on the Slint UI thread in the prototype.
-// Why:      One object owns VT state, render iterators, and viewport position.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// class TerminalEngine { terminal; renderState; rowIterator; cellIterator; }
-// ```
-/// Terminal engine.
+/// What:     `pub struct TerminalEngine` declares the stateful terminal wrapper.
+///           The libghostty-vt handles are `!Send + !Sync`, so this struct stays
+///           on the Slint UI thread in the prototype.
+/// Why:      One object owns VT state, render iterators, and viewport position.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// class TerminalEngine { terminal; renderState; rowIterator; cellIterator; }
+/// ```
 pub struct TerminalEngine {
-    /// Terminal.
+    /// What:     `terminal: Terminal<'static, 'static>` is the owned libghostty-vt
+    ///           VT-state object: the parser, screen grid, and scrollback store. The
+    ///           two `<'static, 'static>` are lifetime parameters; `'static` means
+    ///           "borrows nothing that lives shorter than the whole program", i.e. it
+    ///           owns or refers only to permanent data. Siblings would be shorter,
+    ///           named lifetimes like `<'a, 'b>` tied to some caller's stack frame.
+    /// Why:      `'static` (not a shorter `<'a>`) lets this struct hold the terminal
+    ///           for the whole UI session without a borrow expiring; combined with the
+    ///           type being `!Send + !Sync` (see the struct block above), the engine
+    ///           stays pinned to the Slint UI thread.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// terminal: Terminal;
+    /// ```
     terminal: Terminal<'static, 'static>,
-    /// Render state.
+    /// What:     `render_state: RenderState<'static>` is the owned snapshot buffer that
+    ///           libghostty-vt copies visible rows into each frame. The one `<'static>`
+    ///           is a lifetime parameter meaning "tied to nothing shorter-lived than the
+    ///           program". Sibling would be a shorter `<'a>` lifetime borrowing from a
+    ///           local.
+    /// Why:      `'static` (not a frame-bound `<'a>`) lets the engine keep and reuse one
+    ///           render buffer across every frame instead of re-borrowing it per call.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// renderState: RenderState;
+    /// ```
     render_state: RenderState<'static>,
-    /// Row iterator.
+    /// What:     `row_iterator: RowIterator<'static>` is an owned, reusable cursor that
+    ///           walks the rows of a render snapshot. The `<'static>` lifetime parameter
+    ///           means it is not bound to a shorter-lived borrow; sibling would be a
+    ///           frame-scoped `<'a>`.
+    /// Why:      `'static` (not `<'a>`) lets the engine keep one row cursor alive for the
+    ///           whole session and re-aim it at each new snapshot, avoiding per-frame
+    ///           allocation.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// rowIterator: RowIterator;
+    /// ```
     row_iterator: RowIterator<'static>,
-    /// Cell iterator.
+    /// What:     `cell_iterator: CellIterator<'static>` is an owned, reusable cursor that
+    ///           walks the cells within one row of a render snapshot. The `<'static>`
+    ///           lifetime parameter means it is not bound to a shorter-lived borrow;
+    ///           sibling would be a frame-scoped `<'a>`.
+    /// Why:      `'static` (not `<'a>`) lets the engine keep one cell cursor alive for the
+    ///           whole session and re-aim it at each row, avoiding per-frame allocation.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// cellIterator: CellIterator;
+    /// ```
     cell_iterator: CellIterator<'static>,
-    /// Viewport top row.
+    /// What:     `viewport_top_row: usize` remembers Ghostty's current absolute top-row
+    ///           offset into the scrollback. `usize` is the unsigned integer wide enough
+    ///           to address any element in memory (32 bits on a 32-bit OS, 64 on a
+    ///           64-bit OS). Siblings the reader might expect: `u32`, `u64`, `i32`, `i64`.
+    /// Why:      `usize` (not `u32`/`u64`/`i32`/`i64`) because this value is used as a
+    ///           row index and is compared against `scrollback_rows()`, which returns
+    ///           `usize`; matching widths avoids casts everywhere.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// viewportTopRow: number;
+    /// ```
     viewport_top_row: usize,
-    /// Geometry.
+    /// What:     `geometry: ViewportGeometry` is the owned record of current grid size
+    ///           (cols, rows) plus cell pixel metrics, declared earlier in this file.
+    ///           It is a `Copy` value type, not a reference; sibling `&ViewportGeometry`
+    ///           would only borrow one owned elsewhere.
+    /// Why:      Owned (not `&ViewportGeometry`) because the engine outlives any caller
+    ///           that produced the geometry, and resize logic compares the stored value
+    ///           against incoming ones to skip duplicate notifications.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// geometry: ViewportGeometry;
+    /// ```
     geometry: ViewportGeometry,
 }
 
-// What:     `impl TerminalEngine` starts methods for the stateful wrapper.
-// Why:      Keep libghostty-vt operations behind a small testable API.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// class TerminalEngine { static create(...) {} }
-// ```
-/// Implementation block.
+/// What:     `impl TerminalEngine` starts methods for the stateful wrapper.
+/// Why:      Keep libghostty-vt operations behind a small testable API.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// class TerminalEngine { static create(...) {} }
+/// ```
 impl TerminalEngine {
-    // What:     `pub fn new(...) -> Result<Self, TerminalError>` constructs a
-    //           terminal and render iterator handles. `Result` is Rust's
-    //           success-or-error wrapper; sibling `Option` has no error payload.
-    // Why:      libghostty-vt allocation can fail, so construction is fallible.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // const terminal = new Terminal({ cols, rows, maxScrollback });
-    // return new TerminalEngine(terminal);
-    // ```
-    /// New.
+    /// What:     `pub fn new(...) -> Result<Self, TerminalError>` constructs a
+    ///           terminal and render iterator handles. `Result` is Rust's
+    ///           success-or-error wrapper; sibling `Option` has no error payload.
+    /// Why:      libghostty-vt allocation can fail, so construction is fallible.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// const terminal = new Terminal({ cols, rows, maxScrollback });
+    /// return new TerminalEngine(terminal);
+    /// ```
     pub fn new(
         geometry: ViewportGeometry,
         max_scrollback: usize,
@@ -275,18 +328,17 @@ impl TerminalEngine {
         })
     }
 
-    // What:     `pub fn feed(&mut self, bytes: &[u8]) -> Result<(), TerminalError>`
-    //           takes a mutable engine and a borrowed byte slice, then returns a
-    //           fallible result. `&[u8]` is like a read-only Uint8Array view.
-    // Why:      PTY I/O or demo data can push raw VT bytes through Ghostty, and the
-    //           engine must refresh its remembered bottom-row offset afterward.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // this.terminal.vtWrite(bytes);
-    // this.viewportTopRow = this.terminal.scrollbackRows();
-    // ```
-    /// Feed.
+    /// What:     `pub fn feed(&mut self, bytes: &[u8]) -> Result<(), TerminalError>`
+    ///           takes a mutable engine and a borrowed byte slice, then returns a
+    ///           fallible result. `&[u8]` is like a read-only Uint8Array view.
+    /// Why:      PTY I/O or demo data can push raw VT bytes through Ghostty, and the
+    ///           engine must refresh its remembered bottom-row offset afterward.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// this.terminal.vtWrite(bytes);
+    /// this.viewportTopRow = this.terminal.scrollbackRows();
+    /// ```
     pub fn feed(&mut self, bytes: &[u8]) -> Result<(), TerminalError> {
         // What:     `self.terminal.vt_write(bytes)` parses untrusted VT bytes.
         // Why:      This updates screen, cursor, style, and scrollback state.
@@ -326,15 +378,14 @@ impl TerminalEngine {
         Ok(())
     }
 
-    // What:     `pub fn resize(&mut self, geometry: ViewportGeometry) -> Result...`
-    //           mutates Ghostty's grid dimensions.
-    // Why:      The Slint window can be resized after startup.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // this.terminal.resize(geometry.cols, geometry.rows, geometry.cellWidthPx, geometry.cellHeightPx);
-    // ```
-    /// Resize.
+    /// What:     `pub fn resize(&mut self, geometry: ViewportGeometry) -> Result...`
+    ///           mutates Ghostty's grid dimensions.
+    /// Why:      The Slint window can be resized after startup.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// this.terminal.resize(geometry.cols, geometry.rows, geometry.cellWidthPx, geometry.cellHeightPx);
+    /// ```
     pub fn resize(&mut self, geometry: ViewportGeometry) -> Result<(), TerminalError> {
         // What:     `if self.geometry == geometry { return Ok(()); }` exits early
         //           when no cell count or cell metric changed.
@@ -376,10 +427,9 @@ impl TerminalEngine {
         Ok(())
     }
 
-    // What:     `pub fn scrollback_rows(&self) -> Result<usize, TerminalError>`
-    //           borrows the engine immutably and returns the scrollback count.
-    // Why:      The binary uses this to initialize Flickable at the bottom.
-    /// Scrollback rows.
+    /// What:     `pub fn scrollback_rows(&self) -> Result<usize, TerminalError>`
+    ///           borrows the engine immutably and returns the scrollback count.
+    /// Why:      The binary uses this to initialize Flickable at the bottom.
     pub fn scrollback_rows(&self) -> Result<usize, TerminalError> {
         // What:     `self.terminal.scrollback_rows()?` reads Ghostty's count and
         //           propagates errors.
@@ -390,10 +440,9 @@ impl TerminalEngine {
         Ok(rows)
     }
 
-    // What:     `pub fn set_pixel_scroll(...) -> Result<ScrollMapping, ...>` maps
-    //           Slint pixels to Ghostty rows and moves the Ghostty viewport.
-    // Why:      This is the central smooth-scroll bridge.
-    /// Set pixel scroll.
+    /// What:     `pub fn set_pixel_scroll(...) -> Result<ScrollMapping, ...>` maps
+    ///           Slint pixels to Ghostty rows and moves the Ghostty viewport.
+    /// Why:      This is the central smooth-scroll bridge.
     pub fn set_pixel_scroll(
         &mut self,
         pixel_scroll: f32,
@@ -413,10 +462,9 @@ impl TerminalEngine {
         Ok(mapping)
     }
 
-    // What:     `pub fn snapshot(...) -> Result<TerminalSnapshot, ...>` extracts a
-    //           renderer-neutral frame from Ghostty's current row viewport.
-    // Why:      The binary should not know libghostty-vt iterator APIs.
-    /// Snapshot.
+    /// What:     `pub fn snapshot(...) -> Result<TerminalSnapshot, ...>` extracts a
+    ///           renderer-neutral frame from Ghostty's current row viewport.
+    /// Why:      The binary should not know libghostty-vt iterator APIs.
     pub fn snapshot(
         &mut self,
         mapping: ScrollMapping,
@@ -555,10 +603,9 @@ impl TerminalEngine {
         })
     }
 
-    // What:     `fn set_viewport_top_row(...) -> Result<(), TerminalError>` is a
-    //           private helper that converts absolute row offsets to Ghostty calls.
-    // Why:      Ghostty supports Top, Bottom, or Delta, not direct absolute set.
-    /// Set viewport top row.
+    /// What:     `fn set_viewport_top_row(...) -> Result<(), TerminalError>` is a
+    ///           private helper that converts absolute row offsets to Ghostty calls.
+    /// Why:      Ghostty supports Top, Bottom, or Delta, not direct absolute set.
     fn set_viewport_top_row(&mut self, target_top_row: usize) -> Result<(), TerminalError> {
         // What:     `let max_top_row = ...` fetches the bottom offset.
         // Why:      Absolute row requests must clamp to current scrollback size.
@@ -595,11 +642,10 @@ impl TerminalEngine {
     }
 }
 
-// What:     `fn resolve_inverse(...) -> (RgbColor, RgbColor)` returns a tuple of
-//           Ghostty colors. Tuples are fixed-size ordered records; sibling named
-//           structs would be more verbose here.
-// Why:      Inverse video swaps foreground and background before UI conversion.
-/// Resolve inverse.
+/// What:     `fn resolve_inverse(...) -> (RgbColor, RgbColor)` returns a tuple of
+///           Ghostty colors. Tuples are fixed-size ordered records; sibling named
+///           structs would be more verbose here.
+/// Why:      Inverse video swaps foreground and background before UI conversion.
 fn resolve_inverse(
     foreground: RgbColor,
     background: RgbColor,
@@ -614,9 +660,8 @@ fn resolve_inverse(
     }
 }
 
-// What:     `fn should_copy_cell(...) -> bool` is a private visibility filter.
-// Why:      Plain empty cells are represented by the content background, not models.
-/// Should copy cell.
+/// What:     `fn should_copy_cell(...) -> bool` is a private visibility filter.
+/// Why:      Plain empty cells are represented by the content background, not models.
 fn should_copy_cell(
     text: &str,
     background: Option<RgbColor>,
@@ -628,23 +673,22 @@ fn should_copy_cell(
     !text.is_empty() || background.is_some() || inverse
 }
 
-// What:     `#[cfg(test)] #[path = "engine_tests.rs"] mod tests;`
-//           declares a test-only submodule whose code lives in the sibling
-//           file `engine_tests.rs`. `#[cfg(test)]` gates it to test
-//           builds only; `#[path = "..."]` aims the module at a flat sibling
-//           file instead of the default `engine/tests.rs`
-//           subdirectory lookup. The file stays the `tests` CHILD of
-//           engine, so its `use super::*` reaches the module items
-//           (including private ones) unchanged.
-// Why:      Keep `engine.rs` to production code; the tests live
-//           beside it without inflating this file or its max-lines budget
-//           (sibling `*_tests.rs` files are exempt from the linter).
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// // engine.unit.test.ts, run only by the test runner
-// ```
+/// What:     `#[cfg(test)] #[path = "engine_tests.rs"] mod tests;`
+///           declares a test-only submodule whose code lives in the sibling
+///           file `engine_tests.rs`. `#[cfg(test)]` gates it to test
+///           builds only; `#[path = "..."]` aims the module at a flat sibling
+///           file instead of the default `engine/tests.rs`
+///           subdirectory lookup. The file stays the `tests` CHILD of
+///           engine, so its `use super::*` reaches the module items
+///           (including private ones) unchanged.
+/// Why:      Keep `engine.rs` to production code; the tests live
+///           beside it without inflating this file or its max-lines budget
+///           (sibling `*_tests.rs` files are exempt from the linter).
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // engine.unit.test.ts, run only by the test runner
+/// ```
 #[cfg(test)]
 #[path = "engine_tests.rs"]
-/// Tests module.
 mod tests;

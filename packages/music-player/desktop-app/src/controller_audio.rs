@@ -3,115 +3,105 @@
 //! line budget. These methods open decoders, prepare each track's true-peak swap
 //! gain, push samples into the ring buffer, and report position.
 
-// What:     `use std::path::{Path, PathBuf};`. Borrowed (`&Path`) and owned (`PathBuf`)
-//           filesystem-path types.
-// Why:      `install_source` borrows a `&Path` to read the current file;
-//           `scan_root_into_queue` takes an owned `PathBuf` root.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// // a path is just a string in TS
-// ```
-/// Imports.
+/// What:     `use std::path::{Path, PathBuf};`. Borrowed (`&Path`) and owned (`PathBuf`)
+///           filesystem-path types.
+/// Why:      `install_source` borrows a `&Path` to read the current file;
+///           `scan_root_into_queue` takes an owned `PathBuf` root.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // a path is just a string in TS
+/// ```
 use std::path::{Path, PathBuf};
 
-// What:     `use ringbuf::traits::Producer;`. Brings `push_slice` into scope for the
-//           producer half of the ring buffer.
-// Why:      We push decoded samples into the buffer the output gave us.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// // no equivalent: importing an interface to unlock .pushSlice()
-// ```
-/// Imports.
+/// What:     `use ringbuf::traits::Producer;`. Brings `push_slice` into scope for the
+///           producer half of the ring buffer.
+/// Why:      We push decoded samples into the buffer the output gave us.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // no equivalent: importing an interface to unlock .pushSlice()
+/// ```
 use ringbuf::traits::Producer;
 
-// What:     `use crate::command::Update;`. The engine->UI message enum.
-// Why:      These methods emit `NowPlaying`/`Position` updates.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { Update } from "./command";
-// ```
-/// Imports.
+/// What:     `use crate::command::Update;`. The engine->UI message enum.
+/// Why:      These methods emit `NowPlaying`/`Position` updates.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { Update } from "./command";
+/// ```
 use crate::command::Update;
 
-// What:     `use crate::controller::Controller;`. The state struct from the sibling
-//           module; this file adds a second `impl Controller` block.
-// Why:      Name the type we are implementing methods on.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { Controller } from "./controller";
-// ```
-/// Imports.
+/// What:     `use crate::controller::Controller;`. The state struct from the sibling
+///           module; this file adds a second `impl Controller` block.
+/// Why:      Name the type we are implementing methods on.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { Controller } from "./controller";
+/// ```
 use crate::controller::Controller;
 
-// What:     `use crate::decode::Source;`. The decoder trait (so `Box<dyn Source>` is
-//           nameable and its `spec`/`next_chunk`/`seek` methods are in scope).
-// Why:      `install_source` takes a `Box<dyn Source>` and we drive it.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { Source } from "./decode";
-// ```
-/// Imports.
+/// What:     `use crate::decode::Source;`. The decoder trait (so `Box<dyn Source>` is
+///           nameable and its `spec`/`next_chunk`/`seek` methods are in scope).
+/// Why:      `install_source` takes a `Box<dyn Source>` and we drive it.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { Source } from "./decode";
+/// ```
 use crate::decode::Source;
 
-// What:     `use crate::playback::{expand_paths, file_name_of, frames_to_secs, process_sample};`.
-//           Folder-to-file expansion, display-name extraction, frame->seconds conversion,
-//           and the per-sample gain+clamp stage.
-// Why:      Used by scan_root_into_queue, install_source, current_session/advance_position,
-//           and pump_audio.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { expandPaths, fileNameOf, framesToSecs, processSample } from "./playback";
-// ```
-/// Imports.
+/// What:     `use crate::playback::{expand_paths, file_name_of, frames_to_secs, process_sample};`.
+///           Folder-to-file expansion, display-name extraction, frame->seconds conversion,
+///           and the per-sample gain+clamp stage.
+/// Why:      Used by scan_root_into_queue, install_source, current_session/advance_position,
+///           and pump_audio.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { expandPaths, fileNameOf, framesToSecs, processSample } from "./playback";
+/// ```
 use crate::playback::{expand_paths, file_name_of, frames_to_secs, process_sample};
 
-// What:     `use crate::session::Session;`. The serializable saved-state record.
-// Why:      `current_session` builds one.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { Session } from "./session";
-// ```
-/// Imports.
+/// What:     `use crate::session::Session;`. The serializable saved-state record.
+/// Why:      `current_session` builds one.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { Session } from "./session";
+/// ```
 use crate::session::Session;
 
-// What:     `const POSITION_EMIT_INTERVAL_SECS: f64 = 0.1;`. Minimum seconds of progress
-//           between `Position` updates. `f64` matches the time contract.
-// Why:      Throttle position updates to ~10/second instead of per buffer.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// const POSITION_EMIT_INTERVAL_SECS = 0.1;
-// ```
-/// Position emit interval secs.
+/// What:     `const POSITION_EMIT_INTERVAL_SECS: f64 = 0.1;`. Minimum seconds of progress
+///           between `Position` updates. `f64` matches the time contract.
+/// Why:      Throttle position updates to ~10/second instead of per buffer.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const POSITION_EMIT_INTERVAL_SECS = 0.1;
+/// ```
 const POSITION_EMIT_INTERVAL_SECS: f64 = 0.1;
 
-// What:     `impl Controller { ... }`. The loading/audio half of the behaviour (a SECOND
-//           inherent `impl` block for `Controller`, whose other half is in
-//           `controller.rs`).
-// Why:      Keep these methods beside the command-handling half without one huge file.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// class Controller { /* current_session, save_session, load_current, install_source, seek, pump_audio, on_track_end, advance_position */ }
-// ```
-/// Implementation block.
+/// What:     `impl Controller { ... }`. The loading/audio half of the behaviour (a SECOND
+///           inherent `impl` block for `Controller`, whose other half is in
+///           `controller.rs`).
+/// Why:      Keep these methods beside the command-handling half without one huge file.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// class Controller { /* current_session, save_session, load_current, install_source, seek, pump_audio, on_track_end, advance_position */ }
+/// ```
 impl Controller {
-    // What:     `fn current_session(&self) -> Session`. Snapshot the playback state into a
-    //           serializable `Session`.
-    // Why:      Persist where the user left off.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // currentSession(): Session { ... }
-    // ```
-    /// Current session.
+    /// What:     `fn current_session(&self) -> Session`. Snapshot the playback state into a
+    ///           serializable `Session`.
+    /// Why:      Persist where the user left off.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// currentSession(): Session { ... }
+    /// ```
     fn current_session(&self) -> Session {
         // What:     `let position_secs = frames_to_secs(self.position_frames, self.spec.as_ref().map_or(0, |s| s.rate));`.
         //           Convert the frame counter to seconds. `self.spec.as_ref().map_or(0, |s| s.rate)`
@@ -147,16 +137,15 @@ impl Controller {
         }
     }
 
-    // What:     `pub(crate) fn save_session(&self)`. Write the current session to disk,
-    //           logging (not propagating) any IO error. `pub(crate)` so `engine::run` can
-    //           call it on quit.
-    // Why:      A failed save should not block shutdown.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // saveSession(): void { try { this.currentSession().save(); } catch (e) { console.error(e); } }
-    // ```
-    /// Save session.
+    /// What:     `pub(crate) fn save_session(&self)`. Write the current session to disk,
+    ///           logging (not propagating) any IO error. `pub(crate)` so `engine::run` can
+    ///           call it on quit.
+    /// Why:      A failed save should not block shutdown.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// saveSession(): void { try { this.currentSession().save(); } catch (e) { console.error(e); } }
+    /// ```
     pub(crate) fn save_session(&self) {
         // What:     `if let Err(e) = self.current_session().save() { ... }`. `save` returns
         //           `io::Result<()>`; the `if let Err(e)` runs the body only on the error
@@ -172,25 +161,24 @@ impl Controller {
         }
     }
 
-    // What:     `pub(crate) fn emit_reconciled(&self)`. Emit one `Update::Reconciled` carrying
-    //           the current queue (display paths) PLUS the re-anchored now-playing view (the
-    //           possibly-shifted index, its display name, and the loaded duration). `pub(crate)`
-    //           so the `Rescan` handler in `controller.rs` can call it.
-    // Why:      A live rescan must refresh the list and highlight together WITHOUT moving the
-    //           user's selected tab (the UI keeps its current page for `Reconciled`, unlike a
-    //           `Queue`/`NowPlaying` pair which would reset/follow the page).
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // emitReconciled(): void {
-    //   const names = this.queue.displayPaths();
-    //   const index = this.queue.currentIndex();
-    //   const name = index != null ? names[index] ?? "" : "";
-    //   const duration = index != null ? this.spec?.durationSecs ?? 0 : 0;
-    //   this.emit({ kind: "reconciled", names, index, name, duration });
-    // }
-    // ```
-    /// Emit reconciled.
+    /// What:     `pub(crate) fn emit_reconciled(&self)`. Emit one `Update::Reconciled` carrying
+    ///           the current queue (display paths) PLUS the re-anchored now-playing view (the
+    ///           possibly-shifted index, its display name, and the loaded duration). `pub(crate)`
+    ///           so the `Rescan` handler in `controller.rs` can call it.
+    /// Why:      A live rescan must refresh the list and highlight together WITHOUT moving the
+    ///           user's selected tab (the UI keeps its current page for `Reconciled`, unlike a
+    ///           `Queue`/`NowPlaying` pair which would reset/follow the page).
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// emitReconciled(): void {
+    ///   const names = this.queue.displayPaths();
+    ///   const index = this.queue.currentIndex();
+    ///   const name = index != null ? names[index] ?? "" : "";
+    ///   const duration = index != null ? this.spec?.durationSecs ?? 0 : 0;
+    ///   this.emit({ kind: "reconciled", names, index, name, duration });
+    /// }
+    /// ```
     pub(crate) fn emit_reconciled(&self) {
         // What:     `let names = self.queue.display_paths();`. The reconciled queue as display
         //           paths, computed once and moved into the update below.
@@ -250,17 +238,16 @@ impl Controller {
         });
     }
 
-    // What:     `pub(crate) fn rewatch_source_root(&mut self)`. Point the file watcher at the
-    //           current Source Root (if both a root and a watcher exist). `pub(crate)` so the
-    //           open/restore handlers in `controller.rs` can call it.
-    // Why:      Called after every open/restore so on-disk changes to the newly-loaded root
-    //           drive a `Rescan`; a no-op in tests (no watcher) and when no root is set.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // rewatchSourceRoot(): void { if (this.sourceRoot && this.watcher) this.watcher.watch(this.sourceRoot); }
-    // ```
-    /// Rewatch source root.
+    /// What:     `pub(crate) fn rewatch_source_root(&mut self)`. Point the file watcher at the
+    ///           current Source Root (if both a root and a watcher exist). `pub(crate)` so the
+    ///           open/restore handlers in `controller.rs` can call it.
+    /// Why:      Called after every open/restore so on-disk changes to the newly-loaded root
+    ///           drive a `Rescan`; a no-op in tests (no watcher) and when no root is set.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// rewatchSourceRoot(): void { if (this.sourceRoot && this.watcher) this.watcher.watch(this.sourceRoot); }
+    /// ```
     pub(crate) fn rewatch_source_root(&mut self) {
         // What:     `if let Some(root) = self.source_root.clone() { ... }`. Clone the root so
         //           the immutable borrow ends before the mutable watcher borrow.
@@ -285,23 +272,22 @@ impl Controller {
         }
     }
 
-    // What:     `pub(crate) fn scan_root_into_queue(&mut self, root: PathBuf)`. Adopt `root`
-    //           as the Source Root: remember it, re-point the file watcher at it, and rebuild
-    //           the queue by scanning it from disk. Consumes the owned `root`. `pub(crate)`
-    //           so the command-handling half can call it.
-    // Why:      "The Queue is the scan of the Source Root" (see CONTEXT.md). Opening a folder
-    //           and restoring a session both start with this identical projection, so it
-    //           lives in one place instead of being duplicated across the two command arms.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // scanRootIntoQueue(root: string): void {
-    //   this.sourceRoot = root;
-    //   this.rewatchSourceRoot();
-    //   this.queue.setTracks(expandPaths([root]));
-    // }
-    // ```
-    /// Scan root into queue.
+    /// What:     `pub(crate) fn scan_root_into_queue(&mut self, root: PathBuf)`. Adopt `root`
+    ///           as the Source Root: remember it, re-point the file watcher at it, and rebuild
+    ///           the queue by scanning it from disk. Consumes the owned `root`. `pub(crate)`
+    ///           so the command-handling half can call it.
+    /// Why:      "The Queue is the scan of the Source Root" (see CONTEXT.md). Opening a folder
+    ///           and restoring a session both start with this identical projection, so it
+    ///           lives in one place instead of being duplicated across the two command arms.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// scanRootIntoQueue(root: string): void {
+    ///   this.sourceRoot = root;
+    ///   this.rewatchSourceRoot();
+    ///   this.queue.setTracks(expandPaths([root]));
+    /// }
+    /// ```
     pub(crate) fn scan_root_into_queue(&mut self, root: PathBuf) {
         // What:     `self.source_root = Some(root.clone());`. Remember the directory the queue
         //           is scanned from. `.clone()` because `root` is moved into `expand_paths`.
@@ -334,17 +320,16 @@ impl Controller {
         self.queue.set_tracks(expand_paths(vec![root]));
     }
 
-    // What:     `pub(crate) fn load_current(&mut self) -> bool`. Open the queue's current
-    //           track into a decoder + reconfigure output. Returns whether a track was
-    //           loaded. Skips past files that fail to open. `pub(crate)` so the
-    //           command-handling half can call it.
-    // Why:      One place that turns "current path" into live playback state.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // loadCurrent(): boolean { ... }
-    // ```
-    /// Load current.
+    /// What:     `pub(crate) fn load_current(&mut self) -> bool`. Open the queue's current
+    ///           track into a decoder + reconfigure output. Returns whether a track was
+    ///           loaded. Skips past files that fail to open. `pub(crate)` so the
+    ///           command-handling half can call it.
+    /// Why:      One place that turns "current path" into live playback state.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// loadCurrent(): boolean { ... }
+    /// ```
     pub(crate) fn load_current(&mut self) -> bool {
         // What:     `let max_attempts = self.queue.len();`. How many opens to try before
         //           giving up.
@@ -479,16 +464,15 @@ impl Controller {
         }
     }
 
-    // What:     `fn install_source(&mut self, source: Box<dyn Source>, path: &Path)`. Store
-    //           the source, reconfigure the output, resolve the track's normalization gain,
-    //           reset position, and tell the UI what is playing.
-    // Why:      The common setup after a successful `open`.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // installSource(source: Source, path: string): void { ... }
-    // ```
-    /// Install source.
+    /// What:     `fn install_source(&mut self, source: Box<dyn Source>, path: &Path)`. Store
+    ///           the source, reconfigure the output, resolve the track's normalization gain,
+    ///           reset position, and tell the UI what is playing.
+    /// Why:      The common setup after a successful `open`.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// installSource(source: Source, path: string): void { ... }
+    /// ```
     fn install_source(&mut self, source: Box<dyn Source>, path: &Path) {
         // What:     `let spec = source.spec();`. Copy the stream's rate/channels/duration
         //           (`AudioSpec` is `Copy`).
@@ -668,15 +652,14 @@ impl Controller {
         }
     }
 
-    // What:     `pub(crate) fn seek(&mut self, secs: f64)`. Move playback to `secs` and
-    //           flush buffered audio. `pub(crate)` so the command-handling half can call it.
-    // Why:      Seek-bar control.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // seek(secs: number): void { ... }
-    // ```
-    /// Seek.
+    /// What:     `pub(crate) fn seek(&mut self, secs: f64)`. Move playback to `secs` and
+    ///           flush buffered audio. `pub(crate)` so the command-handling half can call it.
+    /// Why:      Seek-bar control.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// seek(secs: number): void { ... }
+    /// ```
     pub(crate) fn seek(&mut self, secs: f64) {
         // What:     `let spec = match self.spec { Some(s) => s, None => return };`. Copy the
         //           format out, or do nothing if no track is loaded.
@@ -813,16 +796,15 @@ impl Controller {
         self.emit(Update::Position(secs));
     }
 
-    // What:     `pub(crate) fn pump_audio(&mut self) -> bool`. Push at most one block of
-    //           audio into the ring buffer. Returns whether it did meaningful work.
-    //           `pub(crate)` so `engine::run` can call it each loop iteration.
-    // Why:      The decode->buffer feeding step.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // pumpAudio(): boolean { ... }
-    // ```
-    /// Pump audio.
+    /// What:     `pub(crate) fn pump_audio(&mut self) -> bool`. Push at most one block of
+    ///           audio into the ring buffer. Returns whether it did meaningful work.
+    ///           `pub(crate)` so `engine::run` can call it each loop iteration.
+    /// Why:      The decode->buffer feeding step.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// pumpAudio(): boolean { ... }
+    /// ```
     pub(crate) fn pump_audio(&mut self) -> bool {
         // What:     `if !self.playing { return false; }`. Paused: no work.
         // Why:      Respect pause.
@@ -1034,15 +1016,14 @@ impl Controller {
         true
     }
 
-    // What:     `fn on_track_end(&mut self)`. Natural end of the current track: advance the
-    //           queue (natural end, so repeat-one replays) and load, or stop.
-    // Why:      Auto-advance between tracks.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // onTrackEnd(): void { const moved = this.queue.advance(true); this.afterMove(moved); }
-    // ```
-    /// On track end.
+    /// What:     `fn on_track_end(&mut self)`. Natural end of the current track: advance the
+    ///           queue (natural end, so repeat-one replays) and load, or stop.
+    /// Why:      Auto-advance between tracks.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// onTrackEnd(): void { const moved = this.queue.advance(true); this.afterMove(moved); }
+    /// ```
     fn on_track_end(&mut self) {
         // What:     `let moved = self.queue.advance(true);`. `true` = natural end, letting
         //           repeat-one replay the same track.
@@ -1064,15 +1045,14 @@ impl Controller {
         self.after_move(moved);
     }
 
-    // What:     `fn advance_position(&mut self, samples_pushed: usize)`. Add the pushed
-    //           frames to the position counter and emit a throttled `Position` update.
-    // Why:      Keep the seek bar moving without flooding the UI.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // advancePosition(samplesPushed: number): void { ... }
-    // ```
-    /// Advance position.
+    /// What:     `fn advance_position(&mut self, samples_pushed: usize)`. Add the pushed
+    ///           frames to the position counter and emit a throttled `Position` update.
+    /// Why:      Keep the seek bar moving without flooding the UI.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// advancePosition(samplesPushed: number): void { ... }
+    /// ```
     fn advance_position(&mut self, samples_pushed: usize) {
         // What:     `let channels = self.spec.as_ref().map_or(0, |s| s.channels) as u64;`.
         //           Read the channel count (0 if no spec); `as u64` widens for the division.

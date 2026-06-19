@@ -8,110 +8,101 @@
 //! constant gain that brings the track down to a -1 dBTP ceiling (never up), so
 //! playback cannot overflow the converter.
 
-// What:     `use std::path::Path;`. Borrowed filesystem-path type (sibling: the owned
-//           `PathBuf`, like `&str` vs `String`).
-// Why:      `measure_true_peak` only reads the path, so it borrows it.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// // a path is just a string in TS
-// ```
-/// Imports.
+/// What:     `use std::path::Path;`. Borrowed filesystem-path type (sibling: the owned
+///           `PathBuf`, like `&str` vs `String`).
+/// Why:      `measure_true_peak` only reads the path, so it borrows it.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // a path is just a string in TS
+/// ```
 use std::path::Path;
 
-// What:     `use crate::decode;`. The decode module, for `decode::open`. The `Source`
-//           trait is NOT imported: its `spec`/`next_chunk` methods are callable on the
-//           `Box<dyn Source>` value through the trait object itself, with no import.
-// Why:      Measurement decodes the whole file through the same path playback uses.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import * as decode from "./decode";
-// ```
-/// Imports.
+/// What:     `use crate::decode;`. The decode module, for `decode::open`. The `Source`
+///           trait is NOT imported: its `spec`/`next_chunk` methods are callable on the
+///           `Box<dyn Source>` value through the trait object itself, with no import.
+/// Why:      Measurement decodes the whole file through the same path playback uses.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import * as decode from "./decode";
+/// ```
 use crate::decode;
 
-// What:     `use crate::error::PlayerError;`. The single error type all fallible
-//           functions in this crate return.
-// Why:      `measure_true_peak` propagates decode errors with `?`.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { PlayerError } from "./error";
-// ```
-/// Imports.
+/// What:     `use crate::error::PlayerError;`. The single error type all fallible
+///           functions in this crate return.
+/// Why:      `measure_true_peak` propagates decode errors with `?`.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { PlayerError } from "./error";
+/// ```
 use crate::error::PlayerError;
 
-// What:     `const HALF: f32 = 1.0 / 2.0;`. The fraction one-half. Composed from the
-//           always-allowed `-2..=2` range rather than written as a bare `0.5` literal.
-//           `f32` (sibling `f64`) to match the PCM sample type.
-// Why:      Used as the Catmull-Rom 1/2 scale factor and to build the sample offsets
-//           below; the repo bans bare fractional literals, so it is composed.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// const HALF = 1 / 2;
-// ```
-/// Half.
+/// What:     `const HALF: f32 = 1.0 / 2.0;`. The fraction one-half. Composed from the
+///           always-allowed `-2..=2` range rather than written as a bare `0.5` literal.
+///           `f32` (sibling `f64`) to match the PCM sample type.
+/// Why:      Used as the Catmull-Rom 1/2 scale factor and to build the sample offsets
+///           below; the repo bans bare fractional literals, so it is composed.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const HALF = 1 / 2;
+/// ```
 const HALF: f32 = 1.0 / 2.0;
 
-// What:     `const QUARTER: f32 = HALF / 2.0;`. One-quarter (0.25), built from HALF.
-// Why:      The first of three interior sample positions between two samples.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// const QUARTER = HALF / 2;
-// ```
-/// Quarter.
+/// What:     `const QUARTER: f32 = HALF / 2.0;`. One-quarter (0.25), built from HALF.
+/// Why:      The first of three interior sample positions between two samples.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const QUARTER = HALF / 2;
+/// ```
 const QUARTER: f32 = HALF / 2.0;
 
-// What:     `const THREE_QUARTERS: f32 = HALF + QUARTER;`. Three-quarters (0.75).
-// Why:      The third interior sample position.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// const THREE_QUARTERS = HALF + QUARTER;
-// ```
-/// Three quarters.
+/// What:     `const THREE_QUARTERS: f32 = HALF + QUARTER;`. Three-quarters (0.75).
+/// Why:      The third interior sample position.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const THREE_QUARTERS = HALF + QUARTER;
+/// ```
 const THREE_QUARTERS: f32 = HALF + QUARTER;
 
-// What:     `const CEILING: f32 = 0.891_250_9;`. The true-peak target, 10^(-1/20), i.e.
-//           -1 dBTP. `f32` (sibling: `f64`) to match the PCM sample type. `10f32.powf`
-//           is not a `const fn`, so the precomputed value is written. The `_` digit
-//           separators are ignored by the compiler (readability only).
-// Why:      The level we normalize each track's true peak down to; -1 dBTP is the EBU
-//           R128 / ATSC A/85 ceiling that leaves room for the DAC's reconstruction.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// const CEILING = 10 ** (-1 / 20); // -1 dBTP ≈ 0.8912509
-// ```
-/// Ceiling.
+/// What:     `const CEILING: f32 = 0.891_250_9;`. The true-peak target, 10^(-1/20), i.e.
+///           -1 dBTP. `f32` (sibling: `f64`) to match the PCM sample type. `10f32.powf`
+///           is not a `const fn`, so the precomputed value is written. The `_` digit
+///           separators are ignored by the compiler (readability only).
+/// Why:      The level we normalize each track's true peak down to; -1 dBTP is the EBU
+///           R128 / ATSC A/85 ceiling that leaves room for the DAC's reconstruction.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const CEILING = 10 ** (-1 / 20); // -1 dBTP ≈ 0.8912509
+/// ```
 const CEILING: f32 = 0.891_250_9;
 
-// What:     `const WINDOW: usize = 4;`. Number of consecutive samples the cubic
-//           interpolation needs (two on each side of the interval it fills). `usize`
-//           (siblings `u32`/`u64`) because it sizes/indexes arrays.
-// Why:      Catmull-Rom evaluates the curve between the 2nd and 3rd of four points.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// const WINDOW = 4;
-// ```
-/// Window.
+/// What:     `const WINDOW: usize = 4;`. Number of consecutive samples the cubic
+///           interpolation needs (two on each side of the interval it fills). `usize`
+///           (siblings `u32`/`u64`) because it sizes/indexes arrays.
+/// Why:      Catmull-Rom evaluates the curve between the 2nd and 3rd of four points.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const WINDOW = 4;
+/// ```
 const WINDOW: usize = 4;
 
-// What:     `fn catmull_rom(p0: f32, p1: f32, p2: f32, p3: f32, t: f32) -> f32`.
-//           Evaluate the Catmull-Rom cubic through four equally-spaced points at
-//           position `t` (0.0..=1.0) on the segment BETWEEN `p1` and `p2`. Positional
-//           params match the existing Rust style here (Rust has no object params).
-// Why:      Estimates the waveform between two samples, where inter-sample peaks live.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// function catmullRom(p0: number, p1: number, p2: number, p3: number, t: number): number { ... }
-// ```
-/// Catmull rom.
+/// What:     `fn catmull_rom(p0: f32, p1: f32, p2: f32, p3: f32, t: f32) -> f32`.
+///           Evaluate the Catmull-Rom cubic through four equally-spaced points at
+///           position `t` (0.0..=1.0) on the segment BETWEEN `p1` and `p2`. Positional
+///           params match the existing Rust style here (Rust has no object params).
+/// Why:      Estimates the waveform between two samples, where inter-sample peaks live.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function catmullRom(p0: number, p1: number, p2: number, p3: number, t: number): number { ... }
+/// ```
 fn catmull_rom(p0: f32, p1: f32, p2: f32, p3: f32, t: f32) -> f32 {
     // What:     `let t2 = t * t;` and `let t3 = t2 * t;`. The square and cube of `t`.
     //           Plain float multiplies (TS-identical).
@@ -141,78 +132,71 @@ fn catmull_rom(p0: f32, p1: f32, p2: f32, p3: f32, t: f32) -> f32 {
         + (3.0 * p1 - 3.0 * p2 + p3 - p0) * t3)
 }
 
-// What:     `struct TruePeakMeter { ... }`. Running state for the streaming peak scan:
-//           how many channels, a 4-sample sliding window PER channel, how many real
-//           samples each channel has seen, and the largest magnitude so far. Private.
-// Why:      Lets us scan the file chunk by chunk without holding the whole track in
-//           memory (constant memory: a few floats per channel).
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// class TruePeakMeter { channels: number; win: number[][]; filled: number[]; peak: number; }
-// ```
-/// True peak meter.
+/// What:     `struct TruePeakMeter { ... }`. Running state for the streaming peak scan:
+///           how many channels, a 4-sample sliding window PER channel, how many real
+///           samples each channel has seen, and the largest magnitude so far. Private.
+/// Why:      Lets us scan the file chunk by chunk without holding the whole track in
+///           memory (constant memory: a few floats per channel).
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// class TruePeakMeter { channels: number; win: number[][]; filled: number[]; peak: number; }
+/// ```
 struct TruePeakMeter {
-    // What:     `channels: usize`. Channel count (interleave width). `usize` (siblings:
-    //           `u16`/`u32`) because it indexes the per-channel vectors.
-    // Why:      Demultiplex interleaved samples into per-channel windows.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // channels: number;
-    // ```
-    /// Channels.
+    /// What:     `channels: usize`. Channel count (interleave width). `usize` (siblings:
+    ///           `u16`/`u32`) because it indexes the per-channel vectors.
+    /// Why:      Demultiplex interleaved samples into per-channel windows.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// channels: number;
+    /// ```
     channels: usize,
-    // What:     `win: Vec<[f32; WINDOW]>`. One fixed-size array of the last 4 samples
-    //           per channel. `[f32; 4]` is a fixed-length array (sibling: `Vec<f32>`, a
-    //           growable one); fixed because the window never changes size.
-    // Why:      Cubic interpolation needs the latest four samples of a channel.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // win: number[][]; // each inner array length 4
-    // ```
-    /// Win.
+    /// What:     `win: Vec<[f32; WINDOW]>`. One fixed-size array of the last 4 samples
+    ///           per channel. `[f32; 4]` is a fixed-length array (sibling: `Vec<f32>`, a
+    ///           growable one); fixed because the window never changes size.
+    /// Why:      Cubic interpolation needs the latest four samples of a channel.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// win: number[][]; // each inner array length 4
+    /// ```
     win: Vec<[f32; WINDOW]>,
-    // What:     `filled: Vec<usize>`. Per channel, how many real samples have arrived
-    //           (capped at WINDOW). `usize` counts.
-    // Why:      Only interpolate once a channel's window holds four real samples.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // filled: number[];
-    // ```
-    /// Filled.
+    /// What:     `filled: Vec<usize>`. Per channel, how many real samples have arrived
+    ///           (capped at WINDOW). `usize` counts.
+    /// Why:      Only interpolate once a channel's window holds four real samples.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// filled: number[];
+    /// ```
     filled: Vec<usize>,
-    // What:     `peak: f32`. Largest absolute sample/interpolated value seen so far.
-    // Why:      This is the measured true peak when the scan ends.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // peak: number;
-    // ```
-    /// Peak.
+    /// What:     `peak: f32`. Largest absolute sample/interpolated value seen so far.
+    /// Why:      This is the measured true peak when the scan ends.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// peak: number;
+    /// ```
     peak: f32,
 }
 
-// What:     `impl TruePeakMeter { ... }`. The meter's behaviour.
-// Why:      Construction and feeding samples.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// class TruePeakMeter { /* methods */ }
-// ```
-/// Implementation block.
+/// What:     `impl TruePeakMeter { ... }`. The meter's behaviour.
+/// Why:      Construction and feeding samples.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// class TruePeakMeter { /* methods */ }
+/// ```
 impl TruePeakMeter {
-    // What:     `fn new(channels: usize) -> TruePeakMeter`. Build a meter sized for
-    //           `channels` channels, all windows zeroed.
-    // Why:      Starting state for a scan.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // constructor(channels: number) { ... }
-    // ```
-    /// New.
+    /// What:     `fn new(channels: usize) -> TruePeakMeter`. Build a meter sized for
+    ///           `channels` channels, all windows zeroed.
+    /// Why:      Starting state for a scan.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// constructor(channels: number) { ... }
+    /// ```
     fn new(channels: usize) -> TruePeakMeter {
         // What:     `TruePeakMeter { ... }`. Struct literal. `vec![[0.0; WINDOW]; channels]`
         //           builds `channels` copies of a zeroed 4-array; `vec![0; channels]`
@@ -232,16 +216,15 @@ impl TruePeakMeter {
         }
     }
 
-    // What:     `fn feed(&mut self, chunk: &[f32])`. Push one interleaved chunk of
-    //           samples through the meter. `&mut self` borrows the meter mutably;
-    //           `&[f32]` is a borrowed read-only slice.
-    // Why:      Update the running peak with this block of audio.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // feed(chunk: number[]): void { ... }
-    // ```
-    /// Feed.
+    /// What:     `fn feed(&mut self, chunk: &[f32])`. Push one interleaved chunk of
+    ///           samples through the meter. `&mut self` borrows the meter mutably;
+    ///           `&[f32]` is a borrowed read-only slice.
+    /// Why:      Update the running peak with this block of audio.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// feed(chunk: number[]): void { ... }
+    /// ```
     fn feed(&mut self, chunk: &[f32]) {
         // What:     `for (i, &s) in chunk.iter().enumerate() { ... }`. `.enumerate()`
         //           pairs each item with its index; the `&s` pattern COPIES each `f32`
@@ -273,16 +256,15 @@ impl TruePeakMeter {
         }
     }
 
-    // What:     `fn push(&mut self, channel: usize, s: f32)`. Slide one sample into a
-    //           channel's window, update the raw peak, and (once the window is full)
-    //           sample the interpolated curve between the two middle points.
-    // Why:      The core inter-sample peak step.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // push(channel: number, s: number): void { ... }
-    // ```
-    /// Push.
+    /// What:     `fn push(&mut self, channel: usize, s: f32)`. Slide one sample into a
+    ///           channel's window, update the raw peak, and (once the window is full)
+    ///           sample the interpolated curve between the two middle points.
+    /// Why:      The core inter-sample peak step.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// push(channel: number, s: number): void { ... }
+    /// ```
     fn push(&mut self, channel: usize, s: f32) {
         // What:     `let w = self.win[channel];`. COPY the 4-array out (arrays of `Copy`
         //           types are `Copy`), so we can read it without holding a borrow of
@@ -382,18 +364,17 @@ impl TruePeakMeter {
     }
 }
 
-// What:     `pub(crate) fn measure_true_peak(path: &Path) -> Result<f32, PlayerError>`.
-//           Decode the whole file once and return its estimated true peak (linear,
-//           typically near 1.0 for full-scale material). The return `Result<f32, E>`
-//           is success-or-error. `pub(crate)` so the cache and background worker can
-//           call it, but it is not crate-public API.
-// Why:      The measurement that per-track normalization is based on.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// function measureTruePeak(path: string): number { /* throws on decode error */ }
-// ```
-/// Measure true peak.
+/// What:     `pub(crate) fn measure_true_peak(path: &Path) -> Result<f32, PlayerError>`.
+///           Decode the whole file once and return its estimated true peak (linear,
+///           typically near 1.0 for full-scale material). The return `Result<f32, E>`
+///           is success-or-error. `pub(crate)` so the cache and background worker can
+///           call it, but it is not crate-public API.
+/// Why:      The measurement that per-track normalization is based on.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function measureTruePeak(path: string): number { /* throws on decode error */ }
+/// ```
 pub(crate) fn measure_true_peak(path: &Path) -> Result<f32, PlayerError> {
     // What:     `let mut source = decode::open(path)?;`. Open a decoder for the file.
     //           `?` PROPAGATES a decode error (returns it from this function). `mut`
@@ -484,21 +465,20 @@ pub(crate) fn measure_true_peak(path: &Path) -> Result<f32, PlayerError> {
     Ok(meter.peak)
 }
 
-// What:     `pub(crate) fn normalization_gain(true_peak: f32) -> f32`. Turn a measured
-//           true peak into the constant gain that brings it down to the ceiling, never
-//           amplifying (gain is capped at 1.0).
-// Why:      Attenuate-only normalization: prevents inter-sample overflow without ever
-//           boosting a quiet track (which would risk a sudden loud, possibly harmful,
-//           level and is outside the clipping-prevention intent).
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// function normalizationGain(truePeak: number): number {
-//   if (truePeak <= 0) return 1;
-//   return Math.min(CEILING / truePeak, 1);
-// }
-// ```
-/// Normalization gain.
+/// What:     `pub(crate) fn normalization_gain(true_peak: f32) -> f32`. Turn a measured
+///           true peak into the constant gain that brings it down to the ceiling, never
+///           amplifying (gain is capped at 1.0).
+/// Why:      Attenuate-only normalization: prevents inter-sample overflow without ever
+///           boosting a quiet track (which would risk a sudden loud, possibly harmful,
+///           level and is outside the clipping-prevention intent).
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function normalizationGain(truePeak: number): number {
+///   if (truePeak <= 0) return 1;
+///   return Math.min(CEILING / truePeak, 1);
+/// }
+/// ```
 pub(crate) fn normalization_gain(true_peak: f32) -> f32 {
     // What:     `if true_peak <= 0.0 { return 1.0; }`. A silent or invalid measurement
     //           leaves the signal unchanged.
@@ -524,22 +504,21 @@ pub(crate) fn normalization_gain(true_peak: f32) -> f32 {
     (CEILING / true_peak).min(1.0)
 }
 
-// What:     `#[cfg(test)] #[path = "truepeak_tests.rs"] mod tests;` declares a
-//           test-only submodule whose code lives in the sibling file
-//           `truepeak_tests.rs`. `#[cfg(test)]` gates it to test builds only;
-//           `#[path = "..."]` aims the module at a flat sibling file instead of the
-//           default `truepeak/tests.rs` subdirectory lookup. The file stays the
-//           `tests` CHILD of truepeak, so its `use super::*` reaches the module items
-//           (including private ones) unchanged.
-// Why:      Keep `truepeak.rs` to production code; the tests live beside it without
-//           inflating this file or its max-lines budget (sibling `*_tests.rs` files
-//           are exempt from the linter).
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// // truepeak.unit.test.ts, run only by the test runner
-// ```
+/// What:     `#[cfg(test)] #[path = "truepeak_tests.rs"] mod tests;` declares a
+///           test-only submodule whose code lives in the sibling file
+///           `truepeak_tests.rs`. `#[cfg(test)]` gates it to test builds only;
+///           `#[path = "..."]` aims the module at a flat sibling file instead of the
+///           default `truepeak/tests.rs` subdirectory lookup. The file stays the
+///           `tests` CHILD of truepeak, so its `use super::*` reaches the module items
+///           (including private ones) unchanged.
+/// Why:      Keep `truepeak.rs` to production code; the tests live beside it without
+///           inflating this file or its max-lines budget (sibling `*_tests.rs` files
+///           are exempt from the linter).
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // truepeak.unit.test.ts, run only by the test runner
+/// ```
 #[cfg(test)]
 #[path = "truepeak_tests.rs"]
-/// Tests module.
 mod tests;

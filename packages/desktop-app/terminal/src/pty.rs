@@ -1,10 +1,9 @@
 //! PTY process management for the interactive terminal.
 
-// What:     `use std::{...};` imports standard-library modules. `env` reads process
-//           environment, `Read` and `Write` are byte-stream traits, `Sender` is a
-//           channel sender, and `thread` starts the background reader.
-// Why:      PTY output must be read off the UI thread and forwarded as byte chunks.
-/// Imports.
+/// What:     `use std::{...};` imports standard-library modules. `env` reads process
+///           environment, `Read` and `Write` are byte-stream traits, `Sender` is a
+///           channel sender, and `thread` starts the background reader.
+/// Why:      PTY output must be read off the UI thread and forwarded as byte chunks.
 use std::{
     env,
     io::{Read, Write},
@@ -12,64 +11,121 @@ use std::{
     thread,
 };
 
-// What:     `use portable_pty::{...};` imports the selected PTY abstraction.
-//           `PtySize` describes terminal dimensions, `CommandBuilder` describes
-//           the shell process, and `MasterPty` owns the read/write side.
-// Why:      This crate avoids hand-written `forkpty` and `ioctl` setup.
-/// Imports.
+/// What:     `use portable_pty::{...};` imports the selected PTY abstraction.
+///           `PtySize` describes terminal dimensions, `CommandBuilder` describes
+///           the shell process, and `MasterPty` owns the read/write side.
+/// Why:      This crate avoids hand-written `forkpty` and `ioctl` setup.
 use portable_pty::{native_pty_system, Child, CommandBuilder, MasterPty, PtySize};
 
-// What:     `use crate::engine::ViewportGeometry;` imports the shared terminal
-//           size model from the engine module.
-// Why:      Ghostty and the PTY must receive the same rows, cols, and pixel size.
-/// Imports.
+/// What:     `use crate::engine::ViewportGeometry;` imports the shared terminal
+///           size model from the engine module.
+/// Why:      Ghostty and the PTY must receive the same rows, cols, and pixel size.
 use crate::engine::ViewportGeometry;
 
-// What:     `pub enum PtyEvent` declares messages from the reader thread to the UI
-//           thread. The sibling shape would be one struct, but this is a tagged
-//           union with separate output and stopped cases.
-// Why:      The UI timer needs to distinguish shell bytes from reader lifecycle text.
+/// What:     `pub enum PtyEvent` declares messages from the reader thread to the UI
+///           thread. The sibling shape would be one struct, but this is a tagged
+///           union with separate output and stopped cases.
+/// Why:      The UI timer needs to distinguish shell bytes from reader lifecycle text.
 #[derive(Debug)]
-/// Pty event.
 pub enum PtyEvent {
-    // What:     `Output(Vec<u8>)` carries one owned byte chunk from the PTY.
-    // Why:      The UI thread feeds these bytes into libghostty-vt.
-    /// Output.
+    /// What:     `Output(Vec<u8>)` carries one owned byte chunk from the PTY.
+    /// Why:      The UI thread feeds these bytes into libghostty-vt.
     Output(
-        /// Output value.
+        /// What:     `Vec<u8>` is the single, unnamed `.0` field of this tuple variant:
+        ///           an owned, growable, heap-allocated array of bytes (`u8` is an
+        ///           unsigned 8-bit integer). Siblings the reader might expect: `&[u8]`,
+        ///           a borrowed read-only view, and `[u8; N]`, a fixed-size stack array.
+        /// Why:      `Vec<u8>` (not the borrowed `&[u8]` nor a fixed `[u8; N]`) because
+        ///           this value is moved through the `Sender` channel from the reader
+        ///           thread to the UI thread: it must own its bytes, since a borrow
+        ///           would dangle once the reader thread's buffer is reused, and the
+        ///           chunk length varies per read.
+        ///
+        /// In TS you'd write (pseudocode):
+        /// ```ts
+        /// bytes: Uint8Array;
+        /// ```
         Vec<u8>,
     ),
-    // What:     `ReaderStopped(String)` carries human-readable reader shutdown text.
-    // Why:      The app can show EOF or read errors in the status line.
-    /// Reader stopped.
+    /// What:     `ReaderStopped(String)` carries human-readable reader shutdown text.
+    /// Why:      The app can show EOF or read errors in the status line.
     ReaderStopped(
-        /// Reader stopped value.
+        /// What:     `String` is the single, unnamed `.0` field of this tuple variant:
+        ///           an owned, heap-allocated, growable UTF-8 text buffer holding the
+        ///           reader-shutdown message. Sibling `&str` is a borrowed view that
+        ///           does not own its bytes.
+        /// Why:      `String` (not `&str`) because this value is moved through the
+        ///           `Sender` channel to the UI thread; a borrowed `&str` would dangle
+        ///           once the reader thread's stack frame returns, so the message must
+        ///           own its bytes.
+        ///
+        /// In TS you'd write (pseudocode):
+        /// ```ts
+        /// message: string;
+        /// ```
         String,
     ),
 }
 
-// What:     `pub struct PtySession` owns the live PTY process. Boxed trait objects
-//           hide platform-specific Unix or Windows implementations from callers.
-// Why:      Main only needs resize, write, and cleanup operations.
-/// Pty session.
+/// What:     `pub struct PtySession` owns the live PTY process. Boxed trait objects
+///           hide platform-specific Unix or Windows implementations from callers.
+/// Why:      Main only needs resize, write, and cleanup operations.
 pub struct PtySession {
-    /// Master.
+    /// What:     `master: Box<dyn MasterPty + Send>` owns the master side of the PTY.
+    ///           `Box<dyn Trait>` is a heap-allocated trait object: a value reached
+    ///           through a pointer whose concrete type is hidden, exposing only the
+    ///           `MasterPty` interface (like a TS interface-typed value). `+ Send` is a
+    ///           marker promising the value is safe to move to another thread. Siblings
+    ///           the reader might expect: `Rc<dyn MasterPty>` and `Arc<dyn MasterPty>`,
+    ///           which add reference counting for shared ownership.
+    /// Why:      `Box` (not `Rc`/`Arc`) because the session is the single owner of the
+    ///           master; trait-object boxing hides whether the platform built a Unix or
+    ///           Windows PTY, and the `+ Send` marker certifies the handle is thread-safe
+    ///           to move, which `portable_pty`'s API requires here.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// master: MasterPty;
+    /// ```
     master: Box<dyn MasterPty + Send>,
-    /// Writer.
+    /// What:     `writer: Box<dyn Write + Send>` owns the one writable handle to PTY
+    ///           input. `Box<dyn Write>` is a heap-allocated trait object exposing only
+    ///           the `Write` byte-sink interface; `+ Send` marks it safe to move across
+    ///           threads. Siblings `Rc<dyn Write>` / `Arc<dyn Write>` add shared,
+    ///           reference-counted ownership.
+    /// Why:      `Box` (not `Rc`/`Arc`) because the session uniquely owns the writer;
+    ///           boxing the trait object hides the platform stream type, and `+ Send`
+    ///           keeps it movable between threads.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// writer: Writable;
+    /// ```
     writer: Box<dyn Write + Send>,
-    /// Child.
+    /// What:     `child: Box<dyn Child + Send + Sync>` owns the spawned shell process
+    ///           handle. `Box<dyn Child>` is a heap-allocated trait object exposing the
+    ///           `Child` process interface; `+ Send` marks it movable across threads and
+    ///           `+ Sync` marks it safe to share by reference across threads. Siblings
+    ///           `Rc<dyn Child>` / `Arc<dyn Child>` would add reference counting.
+    /// Why:      `Box` (not `Rc`/`Arc`) because the session is the sole owner of the
+    ///           child and kills it on drop; the `+ Send + Sync` markers certify the
+    ///           handle is thread-safe to move and to share by reference, which
+    ///           `portable_pty`'s API requires here.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// child: ChildProcess;
+    /// ```
     child: Box<dyn Child + Send + Sync>,
 }
 
-// What:     `impl PtySession` defines methods on the live PTY session.
-// Why:      Keep PTY creation and IO operations in one module.
-/// Implementation block.
+/// What:     `impl PtySession` defines methods on the live PTY session.
+/// Why:      Keep PTY creation and IO operations in one module.
 impl PtySession {
-    // What:     `pub fn spawn_shell(...) -> Result<Self, Box<dyn std::error::Error>>`
-    //           creates a shell PTY and returns it or a boxed error. `Self` means
-    //           `PtySession`.
-    // Why:      The binary should call one function to start an interactive shell.
-    /// Spawn shell.
+    /// What:     `pub fn spawn_shell(...) -> Result<Self, Box<dyn std::error::Error>>`
+    ///           creates a shell PTY and returns it or a boxed error. `Self` means
+    ///           `PtySession`.
+    /// Why:      The binary should call one function to start an interactive shell.
     pub fn spawn_shell(
         geometry: ViewportGeometry,
         event_sender: Sender<PtyEvent>,
@@ -93,10 +149,9 @@ impl PtySession {
         Self::spawn_command(geometry, command, event_sender)
     }
 
-    // What:     `pub fn spawn_command(...) -> Result<Self, ...>` creates a PTY around
-    //           an arbitrary command.
-    // Why:      Tests and future command-launch options need the same PTY wiring.
-    /// Spawn command.
+    /// What:     `pub fn spawn_command(...) -> Result<Self, ...>` creates a PTY around
+    ///           an arbitrary command.
+    /// Why:      Tests and future command-launch options need the same PTY wiring.
     pub fn spawn_command(
         geometry: ViewportGeometry,
         command: CommandBuilder,
@@ -129,10 +184,9 @@ impl PtySession {
         })
     }
 
-    // What:     `pub fn resize(&self, geometry: ViewportGeometry) -> Result...` sends
-    //           updated terminal size to the PTY master.
-    // Why:      Shells and full-screen apps need SIGWINCH and updated rows or cols.
-    /// Resize.
+    /// What:     `pub fn resize(&self, geometry: ViewportGeometry) -> Result...` sends
+    ///           updated terminal size to the PTY master.
+    /// Why:      Shells and full-screen apps need SIGWINCH and updated rows or cols.
     pub fn resize(&self, geometry: ViewportGeometry) -> Result<(), Box<dyn std::error::Error>> {
         // What:     `self.master.resize(...)` asks the OS PTY to update its winsize.
         // Why:      Child programs read this size and repaint to the new viewport.
@@ -142,10 +196,9 @@ impl PtySession {
         Ok(())
     }
 
-    // What:     `pub fn write_bytes(&mut self, bytes: &[u8]) -> std::io::Result<()>`
-    //           writes borrowed bytes to the PTY input stream.
-    // Why:      Keyboard input reaches the shell through the master writer.
-    /// Write bytes.
+    /// What:     `pub fn write_bytes(&mut self, bytes: &[u8]) -> std::io::Result<()>`
+    ///           writes borrowed bytes to the PTY input stream.
+    /// Why:      Keyboard input reaches the shell through the master writer.
     pub fn write_bytes(&mut self, bytes: &[u8]) -> std::io::Result<()> {
         // What:     `self.writer.write_all(bytes)?` writes the entire borrowed byte slice.
         // Why:      Partial writes would corrupt escape sequences and UTF-8 text.
@@ -156,13 +209,11 @@ impl PtySession {
     }
 }
 
-// What:     `impl Drop for PtySession` defines cleanup when the session is destroyed.
-// Why:      Closing the terminal window should terminate the child shell.
-/// Implementation block.
+/// What:     `impl Drop for PtySession` defines cleanup when the session is destroyed.
+/// Why:      Closing the terminal window should terminate the child shell.
 impl Drop for PtySession {
-    // What:     `fn drop(&mut self)` is Rust's destructor hook.
-    // Why:      It runs automatically when the last `PtySession` owner goes away.
-    /// Drop.
+    /// What:     `fn drop(&mut self)` is Rust's destructor hook.
+    /// Why:      It runs automatically when the last `PtySession` owner goes away.
     fn drop(&mut self) {
         // What:     `let _ = self.child.kill();` calls kill and intentionally ignores
         //           cleanup errors. `let _ =` is Rust's explicit discard pattern.
@@ -171,9 +222,8 @@ impl Drop for PtySession {
     }
 }
 
-// What:     `fn default_shell_path() -> String` returns an owned shell path string.
-// Why:      `CommandBuilder::new` needs a stable string while building the command.
-/// Default shell path.
+/// What:     `fn default_shell_path() -> String` returns an owned shell path string.
+/// Why:      `CommandBuilder::new` needs a stable string while building the command.
 fn default_shell_path() -> String {
     // What:     `env::var("SHELL").ok()` reads `$SHELL` and converts `Result` to
     //           `Option`. `filter` rejects empty strings.
@@ -184,10 +234,9 @@ fn default_shell_path() -> String {
     shell.unwrap_or_else(|| "/bin/sh".to_string())
 }
 
-// What:     `fn pty_size_from_geometry(...) -> PtySize` converts engine geometry to
-//           portable-pty's size struct.
-// Why:      Ghostty and the kernel PTY must agree on rows, cols, and pixel size.
-/// Pty size from geometry.
+/// What:     `fn pty_size_from_geometry(...) -> PtySize` converts engine geometry to
+///           portable-pty's size struct.
+/// Why:      Ghostty and the kernel PTY must agree on rows, cols, and pixel size.
 fn pty_size_from_geometry(geometry: ViewportGeometry) -> PtySize {
     // What:     `PtySize { ... }` constructs a size record with rows, cols, and pixels.
     // Why:      PTY resize APIs need text dimensions and can also carry pixel hints.
@@ -199,10 +248,9 @@ fn pty_size_from_geometry(geometry: ViewportGeometry) -> PtySize {
     }
 }
 
-// What:     `fn spawn_reader_thread(...)` takes ownership of a reader and sender,
-//           then starts a background thread.
-// Why:      PTY reads block until the child writes output.
-/// Spawn reader thread.
+/// What:     `fn spawn_reader_thread(...)` takes ownership of a reader and sender,
+///           then starts a background thread.
+/// Why:      PTY reads block until the child writes output.
 fn spawn_reader_thread(mut reader: Box<dyn Read + Send>, event_sender: Sender<PtyEvent>) {
     // What:     `thread::spawn(move || { ... })` starts a native thread and moves the
     //           reader plus sender into its closure.
@@ -244,23 +292,22 @@ fn spawn_reader_thread(mut reader: Box<dyn Read + Send>, event_sender: Sender<Pt
     });
 }
 
-// What:     `#[cfg(test)] #[path = "pty_tests.rs"] mod tests;`
-//           declares a test-only submodule whose code lives in the sibling
-//           file `pty_tests.rs`. `#[cfg(test)]` gates it to test
-//           builds only; `#[path = "..."]` aims the module at a flat sibling
-//           file instead of the default `pty/tests.rs`
-//           subdirectory lookup. The file stays the `tests` CHILD of
-//           pty, so its `use super::*` reaches the module items
-//           (including private ones) unchanged.
-// Why:      Keep `pty.rs` to production code; the tests live
-//           beside it without inflating this file or its max-lines budget
-//           (sibling `*_tests.rs` files are exempt from the linter).
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// // pty.unit.test.ts, run only by the test runner
-// ```
+/// What:     `#[cfg(test)] #[path = "pty_tests.rs"] mod tests;`
+///           declares a test-only submodule whose code lives in the sibling
+///           file `pty_tests.rs`. `#[cfg(test)]` gates it to test
+///           builds only; `#[path = "..."]` aims the module at a flat sibling
+///           file instead of the default `pty/tests.rs`
+///           subdirectory lookup. The file stays the `tests` CHILD of
+///           pty, so its `use super::*` reaches the module items
+///           (including private ones) unchanged.
+/// Why:      Keep `pty.rs` to production code; the tests live
+///           beside it without inflating this file or its max-lines budget
+///           (sibling `*_tests.rs` files are exempt from the linter).
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // pty.unit.test.ts, run only by the test runner
+/// ```
 #[cfg(test)]
 #[path = "pty_tests.rs"]
-/// Tests module.
 mod tests;

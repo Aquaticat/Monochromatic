@@ -23,101 +23,94 @@
 //! and KDE `WM_CLASS`, where renaming is a breaking change. Collecting them here
 //! makes that one intentional difference visible rather than looking like drift.
 
-// What:     `use std::path::PathBuf;` imports the OWNED filesystem-path type (heap-
-//           allocated, growable; sibling: the borrowed `&Path`).
-// Why:      `config_dir` below returns an owned `PathBuf` the callers extend with a
-//           filename.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// type PathBuf = string;
-// ```
-/// Imports.
+/// What:     `use std::path::PathBuf;` imports the OWNED filesystem-path type (heap-
+///           allocated, growable; sibling: the borrowed `&Path`).
+/// Why:      `config_dir` below returns an owned `PathBuf` the callers extend with a
+///           filename.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type PathBuf = string;
+/// ```
 use std::path::PathBuf;
 
-// What:     `pub const APP_ID: &str = "monochromatic.music-player";`. A module-
-//           level immutable string constant. `&str` is a borrowed string slice
-//           (sibling: the owned, heap-allocated `String`); a `const` `&str`
-//           points at bytes baked into the binary, so no allocation happens.
-// Why:      One name for the Wayland app id / WM_CLASS / `.desktop` basename, so
-//           the window, the desktop file, and KDE's launcher matching can never
-//           disagree. Declared on every platform (only Linux reads it); a `pub`
-//           constant unused inside this library is NOT dead code, so non-Linux
-//           builds stay warning-clean without a `#[cfg]`.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// export const APP_ID = "monochromatic.music-player";
-// ```
-/// App id.
+/// What:     `pub const APP_ID: &str = "monochromatic.music-player";`. A module-
+///           level immutable string constant. `&str` is a borrowed string slice
+///           (sibling: the owned, heap-allocated `String`); a `const` `&str`
+///           points at bytes baked into the binary, so no allocation happens.
+/// Why:      One name for the Wayland app id / WM_CLASS / `.desktop` basename, so
+///           the window, the desktop file, and KDE's launcher matching can never
+///           disagree. Declared on every platform (only Linux reads it); a `pub`
+///           constant unused inside this library is NOT dead code, so non-Linux
+///           builds stay warning-clean without a `#[cfg]`.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export const APP_ID = "monochromatic.music-player";
+/// ```
 pub const APP_ID: &str = "monochromatic.music-player";
 
-// What:     `pub const MACOS_BUNDLE_IDENTIFIER: &str = "dev.monochromatic.musicplayer";`.
-//           Another `const` string slice (see `APP_ID` for the `&str` vs `String`
-//           note).
-// Why:      The macOS `CFBundleIdentifier` is authored in `macos/Info.plist`, but
-//           recording it here gives the value a single documented home and lets a
-//           unit test assert the plist still contains it, catching silent drift.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// export const MACOS_BUNDLE_IDENTIFIER = "dev.monochromatic.musicplayer";
-// ```
-/// Macos bundle identifier.
+/// What:     `pub const MACOS_BUNDLE_IDENTIFIER: &str = "dev.monochromatic.musicplayer";`.
+///           Another `const` string slice (see `APP_ID` for the `&str` vs `String`
+///           note).
+/// Why:      The macOS `CFBundleIdentifier` is authored in `macos/Info.plist`, but
+///           recording it here gives the value a single documented home and lets a
+///           unit test assert the plist still contains it, catching silent drift.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export const MACOS_BUNDLE_IDENTIFIER = "dev.monochromatic.musicplayer";
+/// ```
 pub const MACOS_BUNDLE_IDENTIFIER: &str = "dev.monochromatic.musicplayer";
 
-// What:     `pub const CONFIG_QUALIFIER: &str = "dev";`. The first of the three
-//           reverse-DNS parts the `directories` crate's `ProjectDirs::from`
-//           takes (qualifier, organization, application).
-// Why:      Pulling the literal out of session.rs means the config-dir identity
-//           is named in one place next to the other identifiers.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// export const CONFIG_QUALIFIER = "dev";
-// ```
-/// Config qualifier.
+/// What:     `pub const CONFIG_QUALIFIER: &str = "dev";`. The first of the three
+///           reverse-DNS parts the `directories` crate's `ProjectDirs::from`
+///           takes (qualifier, organization, application).
+/// Why:      Pulling the literal out of session.rs means the config-dir identity
+///           is named in one place next to the other identifiers.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export const CONFIG_QUALIFIER = "dev";
+/// ```
 pub const CONFIG_QUALIFIER: &str = "dev";
 
-// What:     `pub const CONFIG_ORGANIZATION: &str = "monochromatic";`. The second
-//           `ProjectDirs::from` part (the organization name).
-// Why:      Same single-source-of-truth reason as `CONFIG_QUALIFIER`.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// export const CONFIG_ORGANIZATION = "monochromatic";
-// ```
-/// Config organization.
+/// What:     `pub const CONFIG_ORGANIZATION: &str = "monochromatic";`. The second
+///           `ProjectDirs::from` part (the organization name).
+/// Why:      Same single-source-of-truth reason as `CONFIG_QUALIFIER`.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export const CONFIG_ORGANIZATION = "monochromatic";
+/// ```
 pub const CONFIG_ORGANIZATION: &str = "monochromatic";
 
-// What:     `pub const CONFIG_APPLICATION: &str = "musicplayer";`. The third
-//           `ProjectDirs::from` part (the application name); also the last
-//           segment of the config directory path.
-// Why:      Same single-source-of-truth reason as `CONFIG_QUALIFIER`.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// export const CONFIG_APPLICATION = "musicplayer";
-// ```
-/// Config application.
+/// What:     `pub const CONFIG_APPLICATION: &str = "musicplayer";`. The third
+///           `ProjectDirs::from` part (the application name); also the last
+///           segment of the config directory path.
+/// Why:      Same single-source-of-truth reason as `CONFIG_QUALIFIER`.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export const CONFIG_APPLICATION = "musicplayer";
+/// ```
 pub const CONFIG_APPLICATION: &str = "musicplayer";
 
-// What:     `pub(crate) fn config_dir() -> Option<PathBuf>`. Resolve the per-user
-//           config DIRECTORY (no filename) from the reverse-DNS triple via the
-//           `directories` crate, or `None` when the platform exposes no config home.
-//           `pub(crate)` so session.rs and peakcache.rs share it.
-// Why:      The session file and the peak cache both live in this directory; deriving
-//           it once here keeps their parent path from drifting and removes the
-//           duplicated `ProjectDirs::from` triple from both modules.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// function configDir(): string | null {
-//   const dirs = projectDirs(CONFIG_QUALIFIER, CONFIG_ORGANIZATION, CONFIG_APPLICATION);
-//   return dirs ? dirs.configDir : null;
-// }
-// ```
-/// Config dir.
+/// What:     `pub(crate) fn config_dir() -> Option<PathBuf>`. Resolve the per-user
+///           config DIRECTORY (no filename) from the reverse-DNS triple via the
+///           `directories` crate, or `None` when the platform exposes no config home.
+///           `pub(crate)` so session.rs and peakcache.rs share it.
+/// Why:      The session file and the peak cache both live in this directory; deriving
+///           it once here keeps their parent path from drifting and removes the
+///           duplicated `ProjectDirs::from` triple from both modules.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function configDir(): string | null {
+///   const dirs = projectDirs(CONFIG_QUALIFIER, CONFIG_ORGANIZATION, CONFIG_APPLICATION);
+///   return dirs ? dirs.configDir : null;
+/// }
+/// ```
 pub(crate) fn config_dir() -> Option<PathBuf> {
     // What:     `directories::ProjectDirs::from(CONFIG_QUALIFIER, CONFIG_ORGANIZATION,
     //           CONFIG_APPLICATION)`. Ask the `directories` crate for the standard
@@ -144,20 +137,19 @@ pub(crate) fn config_dir() -> Option<PathBuf> {
         .map(|dirs| dirs.config_dir().to_path_buf())
 }
 
-// What:     `#[cfg(test)] #[path = "identity_tests.rs"] mod tests;`. Declare the
-//           test submodule, sourced from the sibling `identity_tests.rs` file.
-//           `#[cfg(test)]` compiles it only for test builds; `#[path = "..."]`
-//           points the module at the flat sibling file instead of the default
-//           `identity/tests.rs` lookup.
-// Why:      Keep this file to the constants while the drift-guard tests live beside
-//           it (sibling `*_tests.rs` files are exempt from the max-lines linter),
-//           matching the convention in session.rs / peakcache.rs / etc.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// // identity.unit.test.ts beside identity.ts; the test runner picks it up
-// ```
+/// What:     `#[cfg(test)] #[path = "identity_tests.rs"] mod tests;`. Declare the
+///           test submodule, sourced from the sibling `identity_tests.rs` file.
+///           `#[cfg(test)]` compiles it only for test builds; `#[path = "..."]`
+///           points the module at the flat sibling file instead of the default
+///           `identity/tests.rs` lookup.
+/// Why:      Keep this file to the constants while the drift-guard tests live beside
+///           it (sibling `*_tests.rs` files are exempt from the max-lines linter),
+///           matching the convention in session.rs / peakcache.rs / etc.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // identity.unit.test.ts beside identity.ts; the test runner picks it up
+/// ```
 #[cfg(test)]
 #[path = "identity_tests.rs"]
-/// Tests module.
 mod tests;

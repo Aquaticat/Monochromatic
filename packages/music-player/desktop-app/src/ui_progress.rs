@@ -4,89 +4,82 @@
 //! types. The pure timing rule lives in `music_player::progress`; this file
 //! wires that rule to the on-screen seek bar and KDE taskbar progress.
 
-// What:     `use std::sync::Mutex;`. A standard-library lock that lets one thread mutate
-//           a value at a time. Sibling: `RwLock`, which has separate read and write
-//           locking.
-// Why:      The update callback crosses from the engine thread to the UI thread, so the
-//           debounce state is shared behind a lock.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// // Mutex<T> ~ a shared value you must lock() before touching
-// ```
-/// Imports.
+/// What:     `use std::sync::Mutex;`. A standard-library lock that lets one thread mutate
+///           a value at a time. Sibling: `RwLock`, which has separate read and write
+///           locking.
+/// Why:      The update callback crosses from the engine thread to the UI thread, so the
+///           debounce state is shared behind a lock.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // Mutex<T> ~ a shared value you must lock() before touching
+/// ```
 use std::sync::Mutex;
 
-// What:     `use std::time::Duration;`. A standard-library elapsed time span. Sibling:
-//           `Instant`, a timestamp.
-// Why:      The caller passes elapsed time since startup into the debouncer.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// type Duration = number; // milliseconds
-// ```
-/// Imports.
+/// What:     `use std::time::Duration;`. A standard-library elapsed time span. Sibling:
+///           `Instant`, a timestamp.
+/// Why:      The caller passes elapsed time since startup into the debouncer.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type Duration = number; // milliseconds
+/// ```
 use std::time::Duration;
 
-// What:     `use music_player::command::Update;`. The engine-to-UI update enum.
-// Why:      This bridge classifies `Position`, `NowPlaying`, and `Playing` updates.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { Update } from "music-player/command";
-// ```
-/// Imports.
+/// What:     `use music_player::command::Update;`. The engine-to-UI update enum.
+/// Why:      This bridge classifies `Position`, `NowPlaying`, and `Playing` updates.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { Update } from "music-player/command";
+/// ```
 use music_player::command::Update;
 
-// What:     `use music_player::launcher::Launcher;`. The KDE taskbar-progress signal
-//           helper.
-// Why:      Accepted progress updates mirror from Slint state to the taskbar.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { Launcher } from "music-player/launcher";
-// ```
-/// Imports.
+/// What:     `use music_player::launcher::Launcher;`. The KDE taskbar-progress signal
+///           helper.
+/// Why:      Accepted progress updates mirror from Slint state to the taskbar.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { Launcher } from "music-player/launcher";
+/// ```
 use music_player::launcher::Launcher;
 
-// What:     `use music_player::progress::{ProgressDebouncer, ProgressUpdateKind};`. The
-//           pure debounce state and update-kind enum.
-// Why:      Keep timing policy tested in the library while this module handles UI
-//           plumbing.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { ProgressDebouncer, ProgressUpdateKind } from "music-player/progress";
-// ```
-/// Imports.
+/// What:     `use music_player::progress::{ProgressDebouncer, ProgressUpdateKind};`. The
+///           pure debounce state and update-kind enum.
+/// Why:      Keep timing policy tested in the library while this module handles UI
+///           plumbing.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { ProgressDebouncer, ProgressUpdateKind } from "music-player/progress";
+/// ```
 use music_player::progress::{ProgressDebouncer, ProgressUpdateKind};
 
-// What:     `use crate::{apply_update, AppWindow};`. Import the parent binary module's
-//           generated Slint window type and existing update applier.
-// Why:      The generated `AppWindow` type only exists in this binary crate, not in the
-//           library crate.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { applyUpdate, AppWindow } from "./main";
-// ```
-/// Imports.
+/// What:     `use crate::{apply_update, AppWindow};`. Import the parent binary module's
+///           generated Slint window type and existing update applier.
+/// Why:      The generated `AppWindow` type only exists in this binary crate, not in the
+///           library crate.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { applyUpdate, AppWindow } from "./main";
+/// ```
 use crate::{apply_update, AppWindow};
 
-// What:     `fn progress_fraction(app: &AppWindow) -> f64`. Read the Slint window's
-//           position and duration properties and return a 0..1 fraction. `f64` (sibling
-//           `f32`) for the D-Bus double.
-// Why:      The on-screen progress and KDE taskbar progress must use the same
-//           post-update state.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// function progressFraction(app: AppWindow): number {
-//   const duration = app.duration;
-//   return duration > 0 ? app.position / duration : 0;
-// }
-// ```
-/// Progress fraction.
+/// What:     `fn progress_fraction(app: &AppWindow) -> f64`. Read the Slint window's
+///           position and duration properties and return a 0..1 fraction. `f64` (sibling
+///           `f32`) for the D-Bus double.
+/// Why:      The on-screen progress and KDE taskbar progress must use the same
+///           post-update state.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function progressFraction(app: AppWindow): number {
+///   const duration = app.duration;
+///   return duration > 0 ? app.position / duration : 0;
+/// }
+/// ```
 fn progress_fraction(app: &AppWindow) -> f64 {
     // What:     `let duration = app.get_duration();`. Read the current track length in
     //           seconds from the generated Slint getter.
@@ -129,16 +122,15 @@ fn progress_fraction(app: &AppWindow) -> f64 {
     }
 }
 
-// What:     `fn emit_launcher_progress(app: &AppWindow, launcher: &Launcher)`. Push the
-//           current progress state to KDE's LauncherEntry signal helper.
-// Why:      Centralizing this keeps taskbar progress in sync with debounced Slint progress
-//           updates.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// function emitLauncherProgress(app: AppWindow, launcher: Launcher): void { ... }
-// ```
-/// Emit launcher progress.
+/// What:     `fn emit_launcher_progress(app: &AppWindow, launcher: &Launcher)`. Push the
+///           current progress state to KDE's LauncherEntry signal helper.
+/// Why:      Centralizing this keeps taskbar progress in sync with debounced Slint progress
+///           updates.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function emitLauncherProgress(app: AppWindow, launcher: Launcher): void { ... }
+/// ```
 fn emit_launcher_progress(app: &AppWindow, launcher: &Launcher) {
     // What:     `let duration = app.get_duration();`. Read the current track length.
     // Why:      The taskbar bar should be visible only when a real-duration track is
@@ -194,16 +186,15 @@ fn emit_launcher_progress(app: &AppWindow, launcher: &Launcher) {
     set_windows_taskbar_progress(app, fraction, visible);
 }
 
-// What:     `fn should_surface_progress(progress_debouncer: &Mutex<ProgressDebouncer>, elapsed: Duration, kind: ProgressUpdateKind) -> bool`.
-//           Lock the shared debouncer and ask whether this update should repaint progress
-//           surfaces now.
-// Why:      The update callback crosses threads, so the state lives behind a mutex.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// function shouldSurfaceProgress(debouncer, elapsed, kind): boolean { ... }
-// ```
-/// Should surface progress.
+/// What:     `fn should_surface_progress(progress_debouncer: &Mutex<ProgressDebouncer>, elapsed: Duration, kind: ProgressUpdateKind) -> bool`.
+///           Lock the shared debouncer and ask whether this update should repaint progress
+///           surfaces now.
+/// Why:      The update callback crosses threads, so the state lives behind a mutex.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function shouldSurfaceProgress(debouncer, elapsed, kind): boolean { ... }
+/// ```
 fn should_surface_progress(
     progress_debouncer: &Mutex<ProgressDebouncer>,
     elapsed: Duration,
@@ -234,17 +225,16 @@ fn should_surface_progress(
     debouncer.should_surface(elapsed, kind)
 }
 
-// What:     `pub(crate) fn apply_update_with_progress_debounce(app: &AppWindow, launcher: &Launcher, progress_debouncer: &Mutex<ProgressDebouncer>, elapsed: Duration, update: Update)`.
-//           Apply one engine update, but gate progress-surface repaints through
-//           `ProgressDebouncer`. `pub(crate)` lets `main.rs` call it.
-// Why:      Short tracks can emit rapid position resets; the seek bar and taskbar should
-//           update at a human-visible cadence instead of flickering.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// function applyUpdateWithProgressDebounce(app, launcher, progressDebouncer, elapsed, update): void { ... }
-// ```
-/// Apply update with progress debounce.
+/// What:     `pub(crate) fn apply_update_with_progress_debounce(app: &AppWindow, launcher: &Launcher, progress_debouncer: &Mutex<ProgressDebouncer>, elapsed: Duration, update: Update)`.
+///           Apply one engine update, but gate progress-surface repaints through
+///           `ProgressDebouncer`. `pub(crate)` lets `main.rs` call it.
+/// Why:      Short tracks can emit rapid position resets; the seek bar and taskbar should
+///           update at a human-visible cadence instead of flickering.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function applyUpdateWithProgressDebounce(app, launcher, progressDebouncer, elapsed, update): void { ... }
+/// ```
 pub(crate) fn apply_update_with_progress_debounce(
     app: &AppWindow,
     launcher: &Launcher,
@@ -413,63 +403,59 @@ pub(crate) fn apply_update_with_progress_debounce(
 // the same fraction/visibility `emit_launcher_progress` already computed. It is
 // compiled only on Windows; every item is `#[cfg(windows)]`.
 
-// What:     `use std::cell::RefCell;`. A single-threaded interior-mutability cell: it
-//           allows mutation through a shared `&` reference, enforcing the borrow rules at
-//           RUNTIME instead of compile time. Sibling: `Cell<T>` (move in/out, no
-//           borrowing); `RefCell` lets us borrow the inner value.
-// Why:      The cached COM interface lives in a `thread_local!`, which hands out only `&`
-//           references, so mutation (first-time creation) needs a `RefCell`.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// // no equivalent: a one-slot box you can mutate through a shared reference
-// ```
+/// What:     `use std::cell::RefCell;`. A single-threaded interior-mutability cell: it
+///           allows mutation through a shared `&` reference, enforcing the borrow rules at
+///           RUNTIME instead of compile time. Sibling: `Cell<T>` (move in/out, no
+///           borrowing); `RefCell` lets us borrow the inner value.
+/// Why:      The cached COM interface lives in a `thread_local!`, which hands out only `&`
+///           references, so mutation (first-time creation) needs a `RefCell`.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // no equivalent: a one-slot box you can mutate through a shared reference
+/// ```
 #[cfg(windows)]
-/// Imports.
 use std::cell::RefCell;
 
-// What:     `use windows::Win32::Foundation::HWND;`. The Win32 window-handle type (a
-//           newtype around a raw pointer to the window).
-// Why:      ITaskbarList3's methods take the target window's `HWND`.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// type HWND = number; // an opaque window handle
-// ```
+/// What:     `use windows::Win32::Foundation::HWND;`. The Win32 window-handle type (a
+///           newtype around a raw pointer to the window).
+/// Why:      ITaskbarList3's methods take the target window's `HWND`.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type HWND = number; // an opaque window handle
+/// ```
 #[cfg(windows)]
-/// Imports.
 use windows::Win32::Foundation::HWND;
 
-// What:     `use windows::Win32::System::Com::{CLSCTX_INPROC_SERVER, COINIT_APARTMENTTHREADED, CoCreateInstance, CoInitializeEx};`.
-//           COM bootstrap items: `CoInitializeEx` initializes COM on the thread;
-//           `CoCreateInstance` builds a COM object by class id; `CLSCTX_INPROC_SERVER`
-//           asks for an in-process implementation; `COINIT_APARTMENTTHREADED` is the
-//           single-threaded-apartment mode winit's window thread already uses.
-// Why:      Needed to construct the taskbar COM object on the UI thread.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { CoCreateInstance, CoInitializeEx, CLSCTX_INPROC_SERVER, COINIT_APARTMENTTHREADED } from "windows-com";
-// ```
+/// What:     `use windows::Win32::System::Com::{CLSCTX_INPROC_SERVER, COINIT_APARTMENTTHREADED, CoCreateInstance, CoInitializeEx};`.
+///           COM bootstrap items: `CoInitializeEx` initializes COM on the thread;
+///           `CoCreateInstance` builds a COM object by class id; `CLSCTX_INPROC_SERVER`
+///           asks for an in-process implementation; `COINIT_APARTMENTTHREADED` is the
+///           single-threaded-apartment mode winit's window thread already uses.
+/// Why:      Needed to construct the taskbar COM object on the UI thread.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { CoCreateInstance, CoInitializeEx, CLSCTX_INPROC_SERVER, COINIT_APARTMENTTHREADED } from "windows-com";
+/// ```
 #[cfg(windows)]
-/// Imports.
 use windows::Win32::System::Com::{
     CLSCTX_INPROC_SERVER, COINIT_APARTMENTTHREADED, CoCreateInstance, CoInitializeEx,
 };
 
-// What:     `use windows::Win32::UI::Shell::{ITaskbarList3, TBPF_NOPROGRESS, TBPF_NORMAL, TaskbarList};`.
-//           `ITaskbarList3` is the COM INTERFACE (a fat pointer to vtable methods);
-//           `TaskbarList` is the CLASS ID (`GUID`) of the concrete shell object that
-//           implements it; `TBPF_NORMAL`/`TBPF_NOPROGRESS` are progress-state flags (show
-//           a normal bar / hide the bar).
-// Why:      These drive the taskbar progress bar.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { ITaskbarList3, TaskbarList, TBPF_NORMAL, TBPF_NOPROGRESS } from "windows-shell";
-// ```
+/// What:     `use windows::Win32::UI::Shell::{ITaskbarList3, TBPF_NOPROGRESS, TBPF_NORMAL, TaskbarList};`.
+///           `ITaskbarList3` is the COM INTERFACE (a fat pointer to vtable methods);
+///           `TaskbarList` is the CLASS ID (`GUID`) of the concrete shell object that
+///           implements it; `TBPF_NORMAL`/`TBPF_NOPROGRESS` are progress-state flags (show
+///           a normal bar / hide the bar).
+/// Why:      These drive the taskbar progress bar.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { ITaskbarList3, TaskbarList, TBPF_NORMAL, TBPF_NOPROGRESS } from "windows-shell";
+/// ```
 #[cfg(windows)]
-/// Imports.
 use windows::Win32::UI::Shell::{ITaskbarList3, TBPF_NOPROGRESS, TBPF_NORMAL, TaskbarList};
 
 // What:     `thread_local! { static TASKBAR: RefCell<Option<ITaskbarList3>> = const { RefCell::new(None) }; }`.
@@ -489,50 +475,46 @@ thread_local! {
     static TASKBAR: RefCell<Option<ITaskbarList3>> = const { RefCell::new(None) };
 }
 
-// What:     `fn window_hwnd(app: &AppWindow) -> Option<HWND>`. Resolve the running
-//           window's Win32 handle, or `None` if it is not yet realized or not a
-//           winit/Win32 window. Module-private, Windows-only.
-// Why:      The handle exists only once the event loop has created the window, which is
-//           why this is resolved lazily on each progress tick rather than at startup.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// function windowHwnd(app: AppWindow): HWND | null { ... }
-// ```
+/// What:     `fn window_hwnd(app: &AppWindow) -> Option<HWND>`. Resolve the running
+///           window's Win32 handle, or `None` if it is not yet realized or not a
+///           winit/Win32 window. Module-private, Windows-only.
+/// Why:      The handle exists only once the event loop has created the window, which is
+///           why this is resolved lazily on each progress tick rather than at startup.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function windowHwnd(app: AppWindow): HWND | null { ... }
+/// ```
 #[cfg(windows)]
-/// Window hwnd.
 fn window_hwnd(app: &AppWindow) -> Option<HWND> {
-    // What:     `use slint::ComponentHandle;`. Brings the `.window()` accessor into scope
-    //           (a trait method is callable only when its trait is imported).
-    // Why:      `app.window()` returns the `slint::Window` the next call needs.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // import { ComponentHandle } from "slint";
-    // ```
-    /// Imports.
+    /// What:     `use slint::ComponentHandle;`. Brings the `.window()` accessor into scope
+    ///           (a trait method is callable only when its trait is imported).
+    /// Why:      `app.window()` returns the `slint::Window` the next call needs.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// import { ComponentHandle } from "slint";
+    /// ```
     use slint::ComponentHandle;
-    // What:     `use i_slint_backend_winit::WinitWindowAccessor;`. The extension trait
-    //           adding `.with_winit_window(...)` to `slint::Window` on the winit backend.
-    // Why:      It exposes the underlying winit window, from which the raw handle comes.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // import { WinitWindowAccessor } from "slint-winit-backend";
-    // ```
-    /// Imports.
+    /// What:     `use i_slint_backend_winit::WinitWindowAccessor;`. The extension trait
+    ///           adding `.with_winit_window(...)` to `slint::Window` on the winit backend.
+    /// Why:      It exposes the underlying winit window, from which the raw handle comes.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// import { WinitWindowAccessor } from "slint-winit-backend";
+    /// ```
     use i_slint_backend_winit::WinitWindowAccessor;
-    // What:     `use i_slint_backend_winit::winit::raw_window_handle::{HasWindowHandle, RawWindowHandle};`.
-    //           `HasWindowHandle` provides `.window_handle()`; `RawWindowHandle` is the
-    //           per-platform handle enum. Imported through winit's OWN re-export so the
-    //           `raw-window-handle` version matches winit's exactly (no separate dep).
-    // Why:      Needed to read and match the platform window handle.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // import { HasWindowHandle, RawWindowHandle } from "winit/raw-window-handle";
-    // ```
-    /// Imports.
+    /// What:     `use i_slint_backend_winit::winit::raw_window_handle::{HasWindowHandle, RawWindowHandle};`.
+    ///           `HasWindowHandle` provides `.window_handle()`; `RawWindowHandle` is the
+    ///           per-platform handle enum. Imported through winit's OWN re-export so the
+    ///           `raw-window-handle` version matches winit's exactly (no separate dep).
+    /// Why:      Needed to read and match the platform window handle.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// import { HasWindowHandle, RawWindowHandle } from "winit/raw-window-handle";
+    /// ```
     use i_slint_backend_winit::winit::raw_window_handle::{HasWindowHandle, RawWindowHandle};
     // What:     `app.window().with_winit_window(|w| { ... }).flatten()`. `with_winit_window`
     //           runs the closure with the live winit `Window`, returning
@@ -586,18 +568,17 @@ fn window_hwnd(app: &AppWindow) -> Option<HWND> {
         .flatten()
 }
 
-// What:     `fn create_taskbar_list() -> Option<ITaskbarList3>`. Initialize COM on this
-//           thread and build the taskbar COM object, or `None` on any failure.
-//           Module-private, Windows-only.
-// Why:      Done once and cached; pulled into its own function so `set_..._progress` reads
-//           cleanly.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// function createTaskbarList(): ITaskbarList3 | null { ... }
-// ```
+/// What:     `fn create_taskbar_list() -> Option<ITaskbarList3>`. Initialize COM on this
+///           thread and build the taskbar COM object, or `None` on any failure.
+///           Module-private, Windows-only.
+/// Why:      Done once and cached; pulled into its own function so `set_..._progress` reads
+///           cleanly.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function createTaskbarList(): ITaskbarList3 | null { ... }
+/// ```
 #[cfg(windows)]
-/// Create taskbar list.
 fn create_taskbar_list() -> Option<ITaskbarList3> {
     // What:     `unsafe { ... }`. COM calls are raw FFI, so the whole body is `unsafe`
     //           (Rust cannot verify the COM contracts). `unsafe` means "trust me", not
@@ -658,18 +639,17 @@ fn create_taskbar_list() -> Option<ITaskbarList3> {
     }
 }
 
-// What:     `fn set_windows_taskbar_progress(app: &AppWindow, fraction: f64, visible: bool)`.
-//           Push the current progress to the Windows taskbar bar. Module-private,
-//           Windows-only. Runs on the UI thread.
-// Why:      The Windows counterpart to the Linux `Launcher::set_progress`; called from
-//           `emit_launcher_progress` under `#[cfg(windows)]`.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// function setWindowsTaskbarProgress(app, fraction, visible): void { ... }
-// ```
+/// What:     `fn set_windows_taskbar_progress(app: &AppWindow, fraction: f64, visible: bool)`.
+///           Push the current progress to the Windows taskbar bar. Module-private,
+///           Windows-only. Runs on the UI thread.
+/// Why:      The Windows counterpart to the Linux `Launcher::set_progress`; called from
+///           `emit_launcher_progress` under `#[cfg(windows)]`.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function setWindowsTaskbarProgress(app, fraction, visible): void { ... }
+/// ```
 #[cfg(windows)]
-/// Set windows taskbar progress.
 fn set_windows_taskbar_progress(app: &AppWindow, fraction: f64, visible: bool) {
     // What:     `let hwnd = match window_hwnd(app) { Some(h) => h, None => return };`.
     //           Resolve the window handle, or bail out silently if it is not ready.

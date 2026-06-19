@@ -7,125 +7,115 @@
 //! already cached and returns quickly. The current track is handled by
 //! `peak_swap`, because playback may wait briefly for that one visible result.
 
-// What:     `use std::path::PathBuf;`. Owned filesystem path buffer. Sibling:
-//           `&Path`, a borrowed path view, is not needed here because the sweep
-//           owns a list of paths.
-// Why:      The detached sweep thread needs paths that outlive the caller.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// type PathBuf = string;
-// ```
-/// Imports.
+/// What:     `use std::path::PathBuf;`. Owned filesystem path buffer. Sibling:
+///           `&Path`, a borrowed path view, is not needed here because the sweep
+///           owns a list of paths.
+/// Why:      The detached sweep thread needs paths that outlive the caller.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type PathBuf = string;
+/// ```
 use std::path::PathBuf;
 
-// What:     `use std::sync::{Arc, Mutex};`. `Arc<T>` is a thread-safe shared owner
-//           (atomic reference count; sibling: `Rc<T>`, single-thread only). `Mutex<T>`
-//           guards `T` so only one thread touches it at a time.
-// Why:      The cache is shared between the engine thread and background sweeps.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// // Arc<Mutex<T>> ~ a shared object you must lock() before touching
-// ```
-/// Imports.
+/// What:     `use std::sync::{Arc, Mutex};`. `Arc<T>` is a thread-safe shared owner
+///           (atomic reference count; sibling: `Rc<T>`, single-thread only). `Mutex<T>`
+///           guards `T` so only one thread touches it at a time.
+/// Why:      The cache is shared between the engine thread and background sweeps.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // Arc<Mutex<T>> ~ a shared object you must lock() before touching
+/// ```
 use std::sync::{Arc, Mutex};
 
-// What:     `use std::thread;`. Thread spawning.
-// Why:      The background sweep runs on its own thread.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// // std::thread ~ Web Workers
-// ```
-/// Imports.
+/// What:     `use std::thread;`. Thread spawning.
+/// Why:      The background sweep runs on its own thread.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // std::thread ~ Web Workers
+/// ```
 use std::thread;
 
-// What:     `use std::time::{Duration, Instant};`. `Duration` is a span of time;
-//           `Instant` is a monotonic clock reading (a point in time you can measure
-//           elapsed time from). Sibling you might expect: `SystemTime` (wall clock, can
-//           jump backwards); `Instant` is the right one for "how long since X".
-// Why:      `Duration` for the gentle sleep and the save interval; `Instant` to know when
-//           the last save happened so we can flush on a time bound.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// // Duration ~ ms number; Instant ~ performance.now()
-// ```
-/// Imports.
+/// What:     `use std::time::{Duration, Instant};`. `Duration` is a span of time;
+///           `Instant` is a monotonic clock reading (a point in time you can measure
+///           elapsed time from). Sibling you might expect: `SystemTime` (wall clock, can
+///           jump backwards); `Instant` is the right one for "how long since X".
+/// Why:      `Duration` for the gentle sleep and the save interval; `Instant` to know when
+///           the last save happened so we can flush on a time bound.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // Duration ~ ms number; Instant ~ performance.now()
+/// ```
 use std::time::{Duration, Instant};
 
-// What:     `use crate::peakcache::{self, PeakCache};`. The cache module (for
-//           `peakcache::fingerprint`) and the `PeakCache` type.
-// Why:      Look up and store measured peaks.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import * as peakcache from "./peakcache";
-// import { PeakCache } from "./peakcache";
-// ```
-/// Imports.
+/// What:     `use crate::peakcache::{self, PeakCache};`. The cache module (for
+///           `peakcache::fingerprint`) and the `PeakCache` type.
+/// Why:      Look up and store measured peaks.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import * as peakcache from "./peakcache";
+/// import { PeakCache } from "./peakcache";
+/// ```
 use crate::peakcache::{self, PeakCache};
 
-// What:     `use crate::truepeak::measure_true_peak;`. The whole-file true-peak
-//           scanner.
-// Why:      Background sweeps decode uncached tracks and cache their raw peaks.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { measureTruePeak } from "./truepeak";
-// ```
-/// Imports.
+/// What:     `use crate::truepeak::measure_true_peak;`. The whole-file true-peak
+///           scanner.
+/// Why:      Background sweeps decode uncached tracks and cache their raw peaks.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { measureTruePeak } from "./truepeak";
+/// ```
 use crate::truepeak::measure_true_peak;
 
-// What:     `const SAVE_BATCH: usize = 16;`. Persist the cache after this many new
-//           measurements during a sweep. `usize` to compare with the unsaved count.
-// Why:      Avoid rewriting the file once per track over a long queue.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// const SAVE_BATCH = 16;
-// ```
-/// Save batch.
+/// What:     `const SAVE_BATCH: usize = 16;`. Persist the cache after this many new
+///           measurements during a sweep. `usize` to compare with the unsaved count.
+/// Why:      Avoid rewriting the file once per track over a long queue.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const SAVE_BATCH = 16;
+/// ```
 const SAVE_BATCH: usize = 16;
 
-// What:     `const MEASURE_GAP_MS: u64 = 20;`. Milliseconds to sleep after measuring one
-//           track. `u64` is what `Duration::from_millis` wants.
-// Why:      Yield CPU so the background scan does not starve the realtime audio path.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// const MEASURE_GAP_MS = 20;
-// ```
-/// Measure gap ms.
+/// What:     `const MEASURE_GAP_MS: u64 = 20;`. Milliseconds to sleep after measuring one
+///           track. `u64` is what `Duration::from_millis` wants.
+/// Why:      Yield CPU so the background scan does not starve the realtime audio path.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const MEASURE_GAP_MS = 20;
+/// ```
 const MEASURE_GAP_MS: u64 = 20;
 
-// What:     `const SAVE_INTERVAL_SECS: u64 = 10;`. Maximum seconds between cache flushes
-//           during a sweep, independent of how many tracks were measured. `u64` is what
-//           `Duration::from_secs` wants.
-// Why:      The sweep is detached and dies at process exit, so anything unsaved when the
-//           user quits is lost and re-measured next launch. Flushing at least this often
-//           bounds that loss to ~10 seconds of work, so a large library actually finishes
-//           caching across short sessions instead of restarting.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// const SAVE_INTERVAL_SECS = 10;
-// ```
-/// Save interval secs.
+/// What:     `const SAVE_INTERVAL_SECS: u64 = 10;`. Maximum seconds between cache flushes
+///           during a sweep, independent of how many tracks were measured. `u64` is what
+///           `Duration::from_secs` wants.
+/// Why:      The sweep is detached and dies at process exit, so anything unsaved when the
+///           user quits is lost and re-measured next launch. Flushing at least this often
+///           bounds that loss to ~10 seconds of work, so a large library actually finishes
+///           caching across short sessions instead of restarting.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const SAVE_INTERVAL_SECS = 10;
+/// ```
 const SAVE_INTERVAL_SECS: u64 = 10;
 
-// What:     `pub(crate) fn spawn_queue_measurement(tracks: Vec<PathBuf>, cache: Arc<Mutex<PeakCache>>)`.
-//           Start a detached background thread that measures every uncached track in
-//           `tracks` into the shared cache. Takes ownership of both arguments (moved into
-//           the thread). `pub(crate)` for the controller.
-// Why:      Pre-warm the cache for the whole queue so later track changes are instant.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// function spawnQueueMeasurement(tracks: string[], cache: SharedPeakCache): void { ... }
-// ```
-/// Spawn queue measurement.
+/// What:     `pub(crate) fn spawn_queue_measurement(tracks: Vec<PathBuf>, cache: Arc<Mutex<PeakCache>>)`.
+///           Start a detached background thread that measures every uncached track in
+///           `tracks` into the shared cache. Takes ownership of both arguments (moved into
+///           the thread). `pub(crate)` for the controller.
+/// Why:      Pre-warm the cache for the whole queue so later track changes are instant.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function spawnQueueMeasurement(tracks: string[], cache: SharedPeakCache): void { ... }
+/// ```
 pub(crate) fn spawn_queue_measurement(tracks: Vec<PathBuf>, cache: Arc<Mutex<PeakCache>>) {
     // What:     `thread::spawn(move || run_sweep(tracks, cache));`. Spawn a worker. The
     //           `move ||` closure TAKES OWNERSHIP of `tracks` and `cache`. We drop the
@@ -140,20 +130,19 @@ pub(crate) fn spawn_queue_measurement(tracks: Vec<PathBuf>, cache: Arc<Mutex<Pea
     thread::spawn(move || run_sweep(tracks, cache));
 }
 
-// What:     `#[cfg(target_os = "linux")] fn lower_current_thread_to_idle()`. Move the
-//           CALLING thread into the Linux `SCHED_IDLE` scheduling class. The `#[cfg(...)]`
-//           attribute compiles this version ONLY on Linux.
-// Why:      The sweep decodes whole files back-to-back (CPU-bound). `SCHED_IDLE` threads
-//           run only when no normal-priority thread wants the CPU, on ANY core, so the
-//           sweep never competes with the realtime audio thread, the UI, or other
-//           applications. It still finishes when the machine is otherwise idle.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// // no equivalent: JS runtimes expose no per-thread scheduling class
-// ```
+/// What:     `#[cfg(target_os = "linux")] fn lower_current_thread_to_idle()`. Move the
+///           CALLING thread into the Linux `SCHED_IDLE` scheduling class. The `#[cfg(...)]`
+///           attribute compiles this version ONLY on Linux.
+/// Why:      The sweep decodes whole files back-to-back (CPU-bound). `SCHED_IDLE` threads
+///           run only when no normal-priority thread wants the CPU, on ANY core, so the
+///           sweep never competes with the realtime audio thread, the UI, or other
+///           applications. It still finishes when the machine is otherwise idle.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // no equivalent: JS runtimes expose no per-thread scheduling class
+/// ```
 #[cfg(target_os = "linux")]
-/// Lower current thread to idle.
 fn lower_current_thread_to_idle() {
     // What:     `let param = libc::sched_param { sched_priority: 0 };`. The scheduler
     //           parameter struct; `SCHED_IDLE` ignores the priority, so 0 is the only valid
@@ -193,22 +182,21 @@ fn lower_current_thread_to_idle() {
     }
 }
 
-// What:     `#[cfg(target_os = "macos")] fn lower_current_thread_to_idle()`. The macOS
-//           version: drop the CALLING thread into the BACKGROUND Quality of Service (QoS)
-//           class. `#[cfg(target_os = "macos")]` compiles it only on macOS (siblings:
-//           `target_os = "linux"`, `windows`).
-// Why:      macOS schedules threads by QoS class, not by the POSIX scheduling classes
-//           Linux uses, so the Linux SCHED_IDLE call does not exist here.
-//           `QOS_CLASS_BACKGROUND` is the lowest tier: the sweep's CPU-bound decoding
-//           yields to the realtime audio thread, the UI, and foreground apps, the same
-//           intent as the Linux path.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// // no equivalent: JS runtimes expose no per-thread QoS class
-// ```
+/// What:     `#[cfg(target_os = "macos")] fn lower_current_thread_to_idle()`. The macOS
+///           version: drop the CALLING thread into the BACKGROUND Quality of Service (QoS)
+///           class. `#[cfg(target_os = "macos")]` compiles it only on macOS (siblings:
+///           `target_os = "linux"`, `windows`).
+/// Why:      macOS schedules threads by QoS class, not by the POSIX scheduling classes
+///           Linux uses, so the Linux SCHED_IDLE call does not exist here.
+///           `QOS_CLASS_BACKGROUND` is the lowest tier: the sweep's CPU-bound decoding
+///           yields to the realtime audio thread, the UI, and foreground apps, the same
+///           intent as the Linux path.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // no equivalent: JS runtimes expose no per-thread QoS class
+/// ```
 #[cfg(target_os = "macos")]
-/// Lower current thread to idle.
 fn lower_current_thread_to_idle() {
     // What:     `let result = unsafe { libc::pthread_set_qos_class_self_np(libc::qos_class_t::QOS_CLASS_BACKGROUND, 0) };`.
     //           Call the Apple-specific libc function that sets the CURRENT thread's QoS
@@ -241,32 +229,30 @@ fn lower_current_thread_to_idle() {
     }
 }
 
-// What:     `#[cfg(windows)] fn lower_current_thread_to_idle()`. The Windows version: set
-//           the CALLING thread to the IDLE priority level. `#[cfg(windows)]` compiles it
-//           only on Windows.
-// Why:      Windows schedules by per-thread priority level, not POSIX classes or QoS.
-//           `THREAD_PRIORITY_IDLE` is the lowest level: the sweep runs only when no
-//           higher-priority thread wants the CPU, the same intent as Linux SCHED_IDLE and
-//           macOS background QoS.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// // no equivalent: JS runtimes expose no per-thread priority level
-// ```
+/// What:     `#[cfg(windows)] fn lower_current_thread_to_idle()`. The Windows version: set
+///           the CALLING thread to the IDLE priority level. `#[cfg(windows)]` compiles it
+///           only on Windows.
+/// Why:      Windows schedules by per-thread priority level, not POSIX classes or QoS.
+///           `THREAD_PRIORITY_IDLE` is the lowest level: the sweep runs only when no
+///           higher-priority thread wants the CPU, the same intent as Linux SCHED_IDLE and
+///           macOS background QoS.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // no equivalent: JS runtimes expose no per-thread priority level
+/// ```
 #[cfg(windows)]
-/// Lower current thread to idle.
 fn lower_current_thread_to_idle() {
-    // What:     `use windows::Win32::System::Threading::{GetCurrentThread, SetThreadPriority, THREAD_PRIORITY_IDLE};`.
-    //           Import the Win32 thread-priority bindings from the `windows` crate. A
-    //           function-local `use` keeps these Windows-only names out of the module's top
-    //           scope (they exist only in a Windows build).
-    // Why:      Name the three Win32 items the call below needs.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // import { GetCurrentThread, SetThreadPriority, THREAD_PRIORITY_IDLE } from "windows";
-    // ```
-    /// Imports.
+    /// What:     `use windows::Win32::System::Threading::{GetCurrentThread, SetThreadPriority, THREAD_PRIORITY_IDLE};`.
+    ///           Import the Win32 thread-priority bindings from the `windows` crate. A
+    ///           function-local `use` keeps these Windows-only names out of the module's top
+    ///           scope (they exist only in a Windows build).
+    /// Why:      Name the three Win32 items the call below needs.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// import { GetCurrentThread, SetThreadPriority, THREAD_PRIORITY_IDLE } from "windows";
+    /// ```
     use windows::Win32::System::Threading::{
         GetCurrentThread, SetThreadPriority, THREAD_PRIORITY_IDLE,
     };
@@ -305,31 +291,29 @@ fn lower_current_thread_to_idle() {
     }
 }
 
-// What:     `#[cfg(not(any(target_os = "linux", target_os = "macos", windows)))] fn lower_current_thread_to_idle() {}`.
-//           The no-op fallback compiled on every OTHER target (for example the BSDs) where
-//           no scheduling call is wired up. `not(any(...))` is true only when NONE of the
-//           listed cfg predicates hold. Empty body `{}`.
-// Why:      Keep `run_sweep` portable: the call site stays the same and simply does nothing
-//           where we have not implemented a scheduling tweak.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// function lowerCurrentThreadToIdle() {} // fallback no-op
-// ```
+/// What:     `#[cfg(not(any(target_os = "linux", target_os = "macos", windows)))] fn lower_current_thread_to_idle() {}`.
+///           The no-op fallback compiled on every OTHER target (for example the BSDs) where
+///           no scheduling call is wired up. `not(any(...))` is true only when NONE of the
+///           listed cfg predicates hold. Empty body `{}`.
+/// Why:      Keep `run_sweep` portable: the call site stays the same and simply does nothing
+///           where we have not implemented a scheduling tweak.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function lowerCurrentThreadToIdle() {} // fallback no-op
+/// ```
 #[cfg(not(any(target_os = "linux", target_os = "macos", windows)))]
-/// Lower current thread to idle.
 fn lower_current_thread_to_idle() {}
 
-// What:     `fn run_sweep(tracks: Vec<PathBuf>, cache: Arc<Mutex<PeakCache>>)`. The
-//           background body: measure each uncached track, batching saves, sleeping briefly
-//           after each real measurement. Takes ownership of both args. Module-private.
-// Why:      Keep the thread logic in one place.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// function runSweep(tracks: string[], cache: SharedPeakCache): void { ... }
-// ```
-/// Run sweep.
+/// What:     `fn run_sweep(tracks: Vec<PathBuf>, cache: Arc<Mutex<PeakCache>>)`. The
+///           background body: measure each uncached track, batching saves, sleeping briefly
+///           after each real measurement. Takes ownership of both args. Module-private.
+/// Why:      Keep the thread logic in one place.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function runSweep(tracks: string[], cache: SharedPeakCache): void { ... }
+/// ```
 fn run_sweep(tracks: Vec<PathBuf>, cache: Arc<Mutex<PeakCache>>) {
     // What:     `lower_current_thread_to_idle();`. Drop this thread to idle scheduling
     //           priority before any decoding (no-op off Linux/macOS/Windows).
@@ -520,21 +504,20 @@ fn run_sweep(tracks: Vec<PathBuf>, cache: Arc<Mutex<PeakCache>>) {
     peakcache::flush(&cache);
 }
 
-// What:     `#[cfg(test)] #[path = "measure_tests.rs"] mod tests;` declares a test-only
-//           submodule whose code lives in the sibling file `measure_tests.rs`.
-//           `#[cfg(test)]` gates it to test builds only; `#[path = "..."]` aims the module
-//           at a flat sibling file instead of the default `measure/tests.rs` subdirectory
-//           lookup. The file stays the `tests` CHILD of measure, so its `use super::*`
-//           reaches the module items (including private ones) unchanged.
-// Why:      Keep `measure.rs` to production code; the tests live beside it without
-//           inflating this file or its max-lines budget (sibling `*_tests.rs` files are
-//           exempt from the linter).
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// // measure.unit.test.ts, run only by the test runner
-// ```
+/// What:     `#[cfg(test)] #[path = "measure_tests.rs"] mod tests;` declares a test-only
+///           submodule whose code lives in the sibling file `measure_tests.rs`.
+///           `#[cfg(test)]` gates it to test builds only; `#[path = "..."]` aims the module
+///           at a flat sibling file instead of the default `measure/tests.rs` subdirectory
+///           lookup. The file stays the `tests` CHILD of measure, so its `use super::*`
+///           reaches the module items (including private ones) unchanged.
+/// Why:      Keep `measure.rs` to production code; the tests live beside it without
+///           inflating this file or its max-lines budget (sibling `*_tests.rs` files are
+///           exempt from the linter).
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // measure.unit.test.ts, run only by the test runner
+/// ```
 #[cfg(test)]
 #[path = "measure_tests.rs"]
-/// Tests module.
 mod tests;

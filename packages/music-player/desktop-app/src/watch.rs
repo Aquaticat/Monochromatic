@@ -4,118 +4,108 @@
 //! what kind): the queue is the scan of the root, so any change just means "rescan".
 //! See `docs/decisions/music-player-live-update-rescan.md`.
 
-// What:     `use std::path::{Path, PathBuf};`. Borrowed path view and owned path buffer.
-// Why:      `watch` takes a borrowed `&Path`; the currently-watched root is stored owned.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// type Path = string;
-// ```
-/// Imports.
+/// What:     `use std::path::{Path, PathBuf};`. Borrowed path view and owned path buffer.
+/// Why:      `watch` takes a borrowed `&Path`; the currently-watched root is stored owned.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type Path = string;
+/// ```
 use std::path::{Path, PathBuf};
 
-// What:     `use std::time::Duration;`. A span of time.
-// Why:      The debounce window is a `Duration`.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// // a number of milliseconds
-// ```
-/// Imports.
+/// What:     `use std::time::Duration;`. A span of time.
+/// Why:      The debounce window is a `Duration`.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // a number of milliseconds
+/// ```
 use std::time::Duration;
 
-// What:     `use notify_debouncer_mini::{new_debouncer, DebounceEventResult, Debouncer};`.
-//           The constructor, the handler's argument type, and the guard type.
-// Why:      Build a debounced recursive watcher whose handler we drive.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { newDebouncer, type DebounceEventResult, type Debouncer } from "notify-debouncer-mini";
-// ```
-/// Imports.
+/// What:     `use notify_debouncer_mini::{new_debouncer, DebounceEventResult, Debouncer};`.
+///           The constructor, the handler's argument type, and the guard type.
+/// Why:      Build a debounced recursive watcher whose handler we drive.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { newDebouncer, type DebounceEventResult, type Debouncer } from "notify-debouncer-mini";
+/// ```
 use notify_debouncer_mini::{new_debouncer, DebounceEventResult, Debouncer};
 
-// What:     `use notify_debouncer_mini::notify::{RecommendedWatcher, RecursiveMode};`.
-//           The platform-default watcher type and the recursive-mode enum. The
-//           `watch`/`unwatch` methods reached via `Debouncer::watcher()` resolve without
-//           importing the `Watcher` trait here.
-// Why:      `RecommendedWatcher` is the `Debouncer`'s type parameter; `RecursiveMode`
-//           selects a deep watch.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { RecommendedWatcher, RecursiveMode } from "notify";
-// ```
-/// Imports.
+/// What:     `use notify_debouncer_mini::notify::{RecommendedWatcher, RecursiveMode};`.
+///           The platform-default watcher type and the recursive-mode enum. The
+///           `watch`/`unwatch` methods reached via `Debouncer::watcher()` resolve without
+///           importing the `Watcher` trait here.
+/// Why:      `RecommendedWatcher` is the `Debouncer`'s type parameter; `RecursiveMode`
+///           selects a deep watch.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { RecommendedWatcher, RecursiveMode } from "notify";
+/// ```
 use notify_debouncer_mini::notify::{RecommendedWatcher, RecursiveMode};
 
-// What:     `const DEBOUNCE_MS: u64 = 500;`. The debounce window in milliseconds.
-// Why:      Coalesce bursts (copying an album, an editor's atomic-rename temp files) into
-//           one rescan instead of one per raw event. Named (not an inline literal) per the
-//           magic-number rule.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// const DEBOUNCE_MS = 500;
-// ```
-/// Debounce ms.
+/// What:     `const DEBOUNCE_MS: u64 = 500;`. The debounce window in milliseconds.
+/// Why:      Coalesce bursts (copying an album, an editor's atomic-rename temp files) into
+///           one rescan instead of one per raw event. Named (not an inline literal) per the
+///           magic-number rule.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const DEBOUNCE_MS = 500;
+/// ```
 const DEBOUNCE_MS: u64 = 500;
 
-// What:     `pub(crate) struct SourceWatcher { ... }`. Owns the debouncer (a guard that
-//           stops its background thread on drop) and remembers which root is watched.
-// Why:      The controller holds one of these and re-points it whenever the Source Root
-//           changes; dropping it (on quit) tears the watcher down.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// class SourceWatcher { debouncer: Debouncer; watched: string | null; }
-// ```
-/// Source watcher.
+/// What:     `pub(crate) struct SourceWatcher { ... }`. Owns the debouncer (a guard that
+///           stops its background thread on drop) and remembers which root is watched.
+/// Why:      The controller holds one of these and re-points it whenever the Source Root
+///           changes; dropping it (on quit) tears the watcher down.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// class SourceWatcher { debouncer: Debouncer; watched: string | null; }
+/// ```
 pub(crate) struct SourceWatcher {
-    // What:     `debouncer: Debouncer<RecommendedWatcher>`. The debounced watcher guard.
-    // Why:      Kept alive so its background thread keeps delivering events; dropping it
-    //           stops the watch.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // debouncer: Debouncer;
-    // ```
-    /// Debouncer.
+    /// What:     `debouncer: Debouncer<RecommendedWatcher>`. The debounced watcher guard.
+    /// Why:      Kept alive so its background thread keeps delivering events; dropping it
+    ///           stops the watch.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// debouncer: Debouncer;
+    /// ```
     debouncer: Debouncer<RecommendedWatcher>,
-    // What:     `watched: Option<PathBuf>`. The currently-watched root (`Some`), or `None`.
-    // Why:      `watch` unwatches this before watching a new root, so only one root is ever
-    //           watched at a time.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // watched: string | null;
-    // ```
-    /// Watched.
+    /// What:     `watched: Option<PathBuf>`. The currently-watched root (`Some`), or `None`.
+    /// Why:      `watch` unwatches this before watching a new root, so only one root is ever
+    ///           watched at a time.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// watched: string | null;
+    /// ```
     watched: Option<PathBuf>,
 }
 
-// What:     `impl SourceWatcher { ... }`. The constructor and the re-point method.
-// Why:      Two operations: create the debouncer, and watch a given root.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// class SourceWatcher { static new() {} watch() {} }
-// ```
-/// Implementation block.
+/// What:     `impl SourceWatcher { ... }`. The constructor and the re-point method.
+/// Why:      Two operations: create the debouncer, and watch a given root.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// class SourceWatcher { static new() {} watch() {} }
+/// ```
 impl SourceWatcher {
-    // What:     `pub(crate) fn new<F>(on_change: F) -> Option<SourceWatcher> where F: Fn() + Send + 'static`.
-    //           Build the debouncer whose handler calls `on_change` on any change; `None` if
-    //           the OS watcher cannot be created.
-    // Why:      The watcher stays ignorant of the engine: the caller passes a closure (which
-    //           in the app enqueues `Command::Rescan` and wakes the worker), keeping this
-    //           module dependency-free and unit-testable. The app must still run (without live
-    //           updates) if the watcher fails to start.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // static new(onChange: () => void): SourceWatcher | null { ... }
-    // ```
-    /// New.
+    /// What:     `pub(crate) fn new<F>(on_change: F) -> Option<SourceWatcher> where F: Fn() + Send + 'static`.
+    ///           Build the debouncer whose handler calls `on_change` on any change; `None` if
+    ///           the OS watcher cannot be created.
+    /// Why:      The watcher stays ignorant of the engine: the caller passes a closure (which
+    ///           in the app enqueues `Command::Rescan` and wakes the worker), keeping this
+    ///           module dependency-free and unit-testable. The app must still run (without live
+    ///           updates) if the watcher fails to start.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// static new(onChange: () => void): SourceWatcher | null { ... }
+    /// ```
     pub(crate) fn new<F>(on_change: F) -> Option<SourceWatcher>
     where
         F: Fn() + Send + 'static,
@@ -164,15 +154,14 @@ impl SourceWatcher {
         })
     }
 
-    // What:     `pub(crate) fn watch(&mut self, root: &Path)`. Watch `root` recursively,
-    //           after unwatching any previously-watched root.
-    // Why:      Re-point the single watch when the Source Root changes (open, restore).
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // watch(root: string): void { ... }
-    // ```
-    /// Watch.
+    /// What:     `pub(crate) fn watch(&mut self, root: &Path)`. Watch `root` recursively,
+    ///           after unwatching any previously-watched root.
+    /// Why:      Re-point the single watch when the Source Root changes (open, restore).
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// watch(root: string): void { ... }
+    /// ```
     pub(crate) fn watch(&mut self, root: &Path) {
         // What:     `if let Some(prev) = self.watched.take() { let _ = self.debouncer.watcher().unwatch(&prev); }`.
         //           `take()` removes and yields the previous root; `unwatch` stops watching
@@ -217,15 +206,14 @@ impl SourceWatcher {
     }
 }
 
-// What:     `#[cfg(test)] #[path = "watch_tests.rs"] mod tests;`. Pull the integration test
-//           in from the sibling file `watch_tests.rs`; test builds only.
-// Why:      Keep `watch.rs` to production code; the test lives beside it.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// // watch_tests.rs is watch.unit.test.ts beside watch.ts
-// ```
+/// What:     `#[cfg(test)] #[path = "watch_tests.rs"] mod tests;`. Pull the integration test
+///           in from the sibling file `watch_tests.rs`; test builds only.
+/// Why:      Keep `watch.rs` to production code; the test lives beside it.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // watch_tests.rs is watch.unit.test.ts beside watch.ts
+/// ```
 #[cfg(test)]
 #[path = "watch_tests.rs"]
-/// Tests module.
 mod tests;

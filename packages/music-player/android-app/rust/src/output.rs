@@ -21,152 +21,144 @@
 //! it shares with them is the idea of an OS audio "stream" with a realtime fill
 //! callback.
 
-// What:     `use std::os::raw::c_void;`. `c_void` is Rust's stand-in for C's
-//           `void` type. It exists only to be pointed AT: a `*mut c_void` is "a
-//           raw address to some bytes whose type Rust does not know". Siblings
-//           you might expect: `u8` (a byte) or `()` (Rust's own empty/unit
-//           type); `c_void` is specifically the one that lines up with the C
-//           ABI, which is what AAudio speaks.
-// Why:      The AAudio data callback (below) receives the output buffer as a
-//           `*mut c_void`, mirroring the C signature, so we must name this type
-//           to write that signature.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// // no equivalent: a raw address to bytes of unknown type
-// ```
-/// Imports.
+/// What:     `use std::os::raw::c_void;`. `c_void` is Rust's stand-in for C's
+///           `void` type. It exists only to be pointed AT: a `*mut c_void` is "a
+///           raw address to some bytes whose type Rust does not know". Siblings
+///           you might expect: `u8` (a byte) or `()` (Rust's own empty/unit
+///           type); `c_void` is specifically the one that lines up with the C
+///           ABI, which is what AAudio speaks.
+/// Why:      The AAudio data callback (below) receives the output buffer as a
+///           `*mut c_void`, mirroring the C signature, so we must name this type
+///           to write that signature.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // no equivalent: a raw address to bytes of unknown type
+/// ```
 use std::os::raw::c_void;
 
-// What:     `use std::time::Duration;`. `Duration` is a span of time (seconds +
-//           nanoseconds), not a point in time. Sibling you might confuse it
-//           with: `Instant`, which is a TIMESTAMP (a moment on the clock);
-//           `Duration` is a LENGTH.
-// Why:      We sleep for a fixed `Duration` after starting the stream so audio
-//           is actually flowing before we read the latency.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// // a length of time, expressed in ms as a plain number
-// ```
-/// Imports.
+/// What:     `use std::time::Duration;`. `Duration` is a span of time (seconds +
+///           nanoseconds), not a point in time. Sibling you might confuse it
+///           with: `Instant`, which is a TIMESTAMP (a moment on the clock);
+///           `Duration` is a LENGTH.
+/// Why:      We sleep for a fixed `Duration` after starting the stream so audio
+///           is actually flowing before we read the latency.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // a length of time, expressed in ms as a plain number
+/// ```
 use std::time::Duration;
 
-// What:     `use ndk::audio::{ ... };`. One `use` pulling in several names from
-//           the `ndk::audio` module. The `{...}` is a grouped import (the `::`
-//           is Rust's path separator, like `.` between TS module segments).
-//           - `AudioCallbackResult`: the enum our data callback returns to tell
-//             AAudio whether to keep going (`Continue`) or stop (`Stop`).
-//           - `AudioDirection`: enum picking input vs output (`Output` here).
-//           - `AudioFormat`: enum naming the sample format (`PCM_Float` here).
-//           - `AudioPerformanceMode`: enum picking the latency/power tradeoff
-//             (`LowLatency` here).
-//           - `AudioStream`: the opened stream handle type (a parameter type of
-//             the callback).
-//           - `AudioStreamBuilder`: the builder we configure step by step and
-//             then `.open_stream()` on.
-//           - `Clockid`: enum naming which OS clock the presentation timestamp
-//             is measured against (`Monotonic` here).
-// Why:      Every one of these names is used below to build, open, run, and
-//           query the stream; importing them brings them into scope so we can
-//           write them unqualified.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import {
-//   AudioCallbackResult, AudioDirection, AudioFormat, AudioPerformanceMode,
-//   AudioStream, AudioStreamBuilder, Clockid,
-// } from "ndk/audio";
-// ```
-/// Imports.
+/// What:     `use ndk::audio::{ ... };`. One `use` pulling in several names from
+///           the `ndk::audio` module. The `{...}` is a grouped import (the `::`
+///           is Rust's path separator, like `.` between TS module segments).
+///           - `AudioCallbackResult`: the enum our data callback returns to tell
+///             AAudio whether to keep going (`Continue`) or stop (`Stop`).
+///           - `AudioDirection`: enum picking input vs output (`Output` here).
+///           - `AudioFormat`: enum naming the sample format (`PCM_Float` here).
+///           - `AudioPerformanceMode`: enum picking the latency/power tradeoff
+///             (`LowLatency` here).
+///           - `AudioStream`: the opened stream handle type (a parameter type of
+///             the callback).
+///           - `AudioStreamBuilder`: the builder we configure step by step and
+///             then `.open_stream()` on.
+///           - `Clockid`: enum naming which OS clock the presentation timestamp
+///             is measured against (`Monotonic` here).
+/// Why:      Every one of these names is used below to build, open, run, and
+///           query the stream; importing them brings them into scope so we can
+///           write them unqualified.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import {
+///   AudioCallbackResult, AudioDirection, AudioFormat, AudioPerformanceMode,
+///   AudioStream, AudioStreamBuilder, Clockid,
+/// } from "ndk/audio";
+/// ```
 use ndk::audio::{
     AudioCallbackResult, AudioDirection, AudioFormat, AudioPerformanceMode, AudioStream,
     AudioStreamBuilder, Clockid,
 };
 
-// What:     `const SAMPLE_RATE: i32 = 48_000;`. A compile-time constant naming
-//           the requested sample rate (48 kHz, a standard rate). `i32` is a
-//           signed 32-bit integer. Siblings the reader might expect: `u32`
-//           (unsigned 32-bit), `usize` (pointer-wide unsigned), `i64`
-//           (signed 64-bit). The `_` in `48_000` is just a digit separator for
-//           readability (it is NOT part of the number).
-// Why:      We ask AAudio to open the stream at this rate; the device may give
-//           us a different actual rate, which is why we re-read it later.
-// Why i32:  `ndk::audio`'s `.sample_rate(...)` setter takes an `i32` because the
-//           underlying AAudio C API uses C `int32_t`; using `i32` here avoids a
-//           cast at that boundary. `u32`/`usize` would force an `as` conversion.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// const SAMPLE_RATE = 48_000;
-// ```
-/// Sample rate.
+/// What:     `const SAMPLE_RATE: i32 = 48_000;`. A compile-time constant naming
+///           the requested sample rate (48 kHz, a standard rate). `i32` is a
+///           signed 32-bit integer. Siblings the reader might expect: `u32`
+///           (unsigned 32-bit), `usize` (pointer-wide unsigned), `i64`
+///           (signed 64-bit). The `_` in `48_000` is just a digit separator for
+///           readability (it is NOT part of the number).
+/// Why:      We ask AAudio to open the stream at this rate; the device may give
+///           us a different actual rate, which is why we re-read it later.
+/// Why i32:  `ndk::audio`'s `.sample_rate(...)` setter takes an `i32` because the
+///           underlying AAudio C API uses C `int32_t`; using `i32` here avoids a
+///           cast at that boundary. `u32`/`usize` would force an `as` conversion.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const SAMPLE_RATE = 48_000;
+/// ```
 const SAMPLE_RATE: i32 = 48_000;
 
-// What:     `const CHANNELS: i32 = 2;`. Constant for the channel count
-//           (2 = stereo). `i32` again, same family as above (`u32`, `usize`,
-//           `i64` are the siblings).
-// Why:      We request a 2-channel stream and, separately, use the count to
-//           compute how many `f32` samples a frame's worth of audio is.
-// Why i32:  `.channel_count(...)` on the builder takes an `i32` (the AAudio C
-//           API uses `int32_t`), so storing the constant as `i32` matches that
-//           setter with no cast; we only convert to `usize` where we index.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// const CHANNELS = 2;
-// ```
-/// Channels.
+/// What:     `const CHANNELS: i32 = 2;`. Constant for the channel count
+///           (2 = stereo). `i32` again, same family as above (`u32`, `usize`,
+///           `i64` are the siblings).
+/// Why:      We request a 2-channel stream and, separately, use the count to
+///           compute how many `f32` samples a frame's worth of audio is.
+/// Why i32:  `.channel_count(...)` on the builder takes an `i32` (the AAudio C
+///           API uses `int32_t`), so storing the constant as `i32` matches that
+///           setter with no cast; we only convert to `usize` where we index.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const CHANNELS = 2;
+/// ```
 const CHANNELS: i32 = 2;
 
-// What:     `const SETTLE: Duration = Duration::from_millis(300);`. A constant
-//           `Duration` of 300 milliseconds. `Duration::from_millis(300)` is a
-//           CONSTRUCTOR call: it builds a `Duration` value from a millisecond
-//           count (the `::` is the path to an associated function on the
-//           `Duration` type, like a static method).
-// Why:      After starting the stream we wait this long so frames are actually
-//           flowing through the hardware before we read the timestamp; reading
-//           too early would report a meaningless latency.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// const SETTLE_MS = 300; // settle time, in milliseconds
-// ```
-/// Settle.
+/// What:     `const SETTLE: Duration = Duration::from_millis(300);`. A constant
+///           `Duration` of 300 milliseconds. `Duration::from_millis(300)` is a
+///           CONSTRUCTOR call: it builds a `Duration` value from a millisecond
+///           count (the `::` is the path to an associated function on the
+///           `Duration` type, like a static method).
+/// Why:      After starting the stream we wait this long so frames are actually
+///           flowing through the hardware before we read the timestamp; reading
+///           too early would report a meaningless latency.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const SETTLE_MS = 300; // settle time, in milliseconds
+/// ```
 const SETTLE: Duration = Duration::from_millis(300);
 
-// What:     `const MILLIS_PER_SEC: f64 = 1000.0;`. A constant conversion factor.
-//           `f64` is a 64-bit floating-point number (a "double"). Sibling you
-//           might expect: `f32`, the 32-bit float; `f64` is the wider, more
-//           precise one and is Rust's DEFAULT float type.
-// Why:      The latency math divides a frame count by a sample rate (giving
-//           seconds) and multiplies by this to express the result in
-//           milliseconds.
-// Why f64:  We use `f64` (not `f32`) because the helper returns `f64` and
-//           Rust's default float literal is `f64`; the extra precision is free
-//           here and avoids mixing float widths in the division.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// const MILLIS_PER_SEC = 1000;
-// ```
-/// Millis per sec.
+/// What:     `const MILLIS_PER_SEC: f64 = 1000.0;`. A constant conversion factor.
+///           `f64` is a 64-bit floating-point number (a "double"). Sibling you
+///           might expect: `f32`, the 32-bit float; `f64` is the wider, more
+///           precise one and is Rust's DEFAULT float type.
+/// Why:      The latency math divides a frame count by a sample rate (giving
+///           seconds) and multiplies by this to express the result in
+///           milliseconds.
+/// Why f64:  We use `f64` (not `f32`) because the helper returns `f64` and
+///           Rust's default float literal is `f64`; the extra precision is free
+///           here and avoids mixing float widths in the division.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const MILLIS_PER_SEC = 1000;
+/// ```
 const MILLIS_PER_SEC: f64 = 1000.0;
 
-// What:     `pub fn measure_output_latency_ms() -> Option<f64>`. A public
-//           function taking no arguments and returning `Option<f64>`. `Option<T>`
-//           is Rust's "a value, or nothing" type (Rust has no `null`); its two
-//           cases are `Some(value)` and `None`. So the return is "a latency in
-//           milliseconds (`f64`), or nothing if any step failed".
-// Why:      This is the whole probe: open a silent stream, run it, measure how
-//           far ahead of the DAC we are buffered, and hand back the number (or
-//           `None` if the device would not cooperate at any step).
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// function measureOutputLatencyMs(): number | null { ... }
-// ```
-/// Measure output latency ms.
+/// What:     `pub fn measure_output_latency_ms() -> Option<f64>`. A public
+///           function taking no arguments and returning `Option<f64>`. `Option<T>`
+///           is Rust's "a value, or nothing" type (Rust has no `null`); its two
+///           cases are `Some(value)` and `None`. So the return is "a latency in
+///           milliseconds (`f64`), or nothing if any step failed".
+/// Why:      This is the whole probe: open a silent stream, run it, measure how
+///           far ahead of the DAC we are buffered, and hand back the number (or
+///           `None` if the device would not cooperate at any step).
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function measureOutputLatencyMs(): number | null { ... }
+/// ```
 pub fn measure_output_latency_ms() -> Option<f64> {
     // What:     `let stream = AudioStreamBuilder::new().ok()? . ... .open_stream().ok()?;`.
     //           This single `let` statement spans many lines: it builds and
@@ -320,39 +312,38 @@ pub fn measure_output_latency_ms() -> Option<f64> {
     latency
 }
 
-// What:     `fn silent_callback(_stream: &AudioStream, audio_data: *mut c_void,
-//           num_frames: i32) -> AudioCallbackResult`. A private function (no
-//           `pub`) that AAudio calls ON ITS REALTIME AUDIO THREAD every time the
-//           hardware needs more samples. Parameters:
-//           - `_stream: &AudioStream`. A read-only BORROW of the stream. The
-//             leading `_` says "I accept this argument but do not use it"
-//             (silences the unused-parameter warning).
-//           - `audio_data: *mut c_void`. A RAW, MUTABLE pointer to the output
-//             buffer AAudio wants us to fill. `*mut` = "raw mutable pointer";
-//             `c_void` = "bytes of a type Rust does not track". This is NOT a
-//             safe Rust reference: there is no length attached and the compiler
-//             will not check our writes.
-//           - `num_frames: i32`. How many audio FRAMES the buffer holds (one
-//             frame = one sample per channel). `i32` because AAudio's C API
-//             reports it as `int32_t`.
-//           Returns `AudioCallbackResult`, an enum telling AAudio what to do
-//           next (`Continue` to keep streaming, `Stop` to end).
-// Why:      Our probe never plays real audio; this callback exists only to keep
-//           the stream alive and flowing by writing silence, so the presentation
-//           timestamp advances and we can measure latency.
-// Gotcha:   this runs on a REALTIME thread: it must not allocate, lock, block,
-//           or panic. Writing zeros with one bulk memory operation respects
-//           that.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// function silentCallback(
-//   _stream: AudioStream,
-//   audioData: Float32Array, // really a raw address in Rust
-//   numFrames: number,
-// ): "continue" | "stop" { ... }
-// ```
-/// Silent callback.
+/// What:     `fn silent_callback(_stream: &AudioStream, audio_data: *mut c_void,
+///           num_frames: i32) -> AudioCallbackResult`. A private function (no
+///           `pub`) that AAudio calls ON ITS REALTIME AUDIO THREAD every time the
+///           hardware needs more samples. Parameters:
+///           - `_stream: &AudioStream`. A read-only BORROW of the stream. The
+///             leading `_` says "I accept this argument but do not use it"
+///             (silences the unused-parameter warning).
+///           - `audio_data: *mut c_void`. A RAW, MUTABLE pointer to the output
+///             buffer AAudio wants us to fill. `*mut` = "raw mutable pointer";
+///             `c_void` = "bytes of a type Rust does not track". This is NOT a
+///             safe Rust reference: there is no length attached and the compiler
+///             will not check our writes.
+///           - `num_frames: i32`. How many audio FRAMES the buffer holds (one
+///             frame = one sample per channel). `i32` because AAudio's C API
+///             reports it as `int32_t`.
+///           Returns `AudioCallbackResult`, an enum telling AAudio what to do
+///           next (`Continue` to keep streaming, `Stop` to end).
+/// Why:      Our probe never plays real audio; this callback exists only to keep
+///           the stream alive and flowing by writing silence, so the presentation
+///           timestamp advances and we can measure latency.
+/// Gotcha:   this runs on a REALTIME thread: it must not allocate, lock, block,
+///           or panic. Writing zeros with one bulk memory operation respects
+///           that.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function silentCallback(
+///   _stream: AudioStream,
+///   audioData: Float32Array, // really a raw address in Rust
+///   numFrames: number,
+/// ): "continue" | "stop" { ... }
+/// ```
 fn silent_callback(
     _stream: &AudioStream,
     audio_data: *mut c_void,
@@ -429,22 +420,21 @@ fn silent_callback(
     AudioCallbackResult::Continue
 }
 
-// What:     `fn read_latency_ms(stream: &AudioStream, rate: i32) -> Option<f64>`.
-//           A private helper computing the output latency in milliseconds.
-//           Parameters:
-//           - `stream: &AudioStream`. A read-only BORROW of the stream (the `&`
-//             means "lent, not owned"); we only query it, never keep it.
-//           - `rate: i32`. The stream's actual sample rate, passed by copy.
-//           Returns `Option<f64>`: the latency in ms (`Some(x)`) or `None` when
-//           the numbers do not make sense (bad rate, or a negative buffer).
-// Why:      Isolate the timestamp arithmetic so it can be reasoned about and
-//           tested apart from the stream lifecycle in `measure_output_latency_ms`.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// function readLatencyMs(stream: AudioStream, rate: number): number | null { ... }
-// ```
-/// Read latency ms.
+/// What:     `fn read_latency_ms(stream: &AudioStream, rate: i32) -> Option<f64>`.
+///           A private helper computing the output latency in milliseconds.
+///           Parameters:
+///           - `stream: &AudioStream`. A read-only BORROW of the stream (the `&`
+///             means "lent, not owned"); we only query it, never keep it.
+///           - `rate: i32`. The stream's actual sample rate, passed by copy.
+///           Returns `Option<f64>`: the latency in ms (`Some(x)`) or `None` when
+///           the numbers do not make sense (bad rate, or a negative buffer).
+/// Why:      Isolate the timestamp arithmetic so it can be reasoned about and
+///           tested apart from the stream lifecycle in `measure_output_latency_ms`.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function readLatencyMs(stream: AudioStream, rate: number): number | null { ... }
+/// ```
 fn read_latency_ms(stream: &AudioStream, rate: i32) -> Option<f64> {
     // What:     `if rate <= 0 { return None; }`. Guard clause. If the sample rate
     //           is zero or negative the division below would be meaningless (or a

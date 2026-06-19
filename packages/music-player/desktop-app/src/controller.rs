@@ -7,369 +7,334 @@
 //! stays crate-private because it holds the `!Send` `Output` and never leaves its
 //! thread.
 
-// What:     `use std::path::{Path, PathBuf};`. `Path` is the borrowed filesystem-path
-//           view; `PathBuf` is the owned path buffer.
-// Why:      `prepare_peak_for_path` borrows the current track path, and the controller
-//           now also OWNS the current Source Root path in a field.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// type Path = string;
-// ```
-/// Imports.
+/// What:     `use std::path::{Path, PathBuf};`. `Path` is the borrowed filesystem-path
+///           view; `PathBuf` is the owned path buffer.
+/// Why:      `prepare_peak_for_path` borrows the current track path, and the controller
+///           now also OWNS the current Source Root path in a field.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type Path = string;
+/// ```
 use std::path::{Path, PathBuf};
 
-// What:     `use std::sync::{Arc, Mutex};`. `Arc<T>` is a thread-safe shared owner
-//           (atomic refcount; sibling: single-thread `Rc<T>`); `Mutex<T>` guards `T` so
-//           one thread touches it at a time.
-// Why:      The peak cache is shared with background measurement threads.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// // Arc<Mutex<T>> ~ a shared object you must lock() before touching
-// ```
-/// Imports.
+/// What:     `use std::sync::{Arc, Mutex};`. `Arc<T>` is a thread-safe shared owner
+///           (atomic refcount; sibling: single-thread `Rc<T>`); `Mutex<T>` guards `T` so
+///           one thread touches it at a time.
+/// Why:      The peak cache is shared with background measurement threads.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // Arc<Mutex<T>> ~ a shared object you must lock() before touching
+/// ```
 use std::sync::{Arc, Mutex};
 
-// What:     `use std::thread;`. Rust's standard OS-thread API.
-// Why:      `prepare_peak_for_path` passes the current engine thread handle to the
-//           measurement worker so completion can wake the engine immediately.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// const currentWorker = Worker.current;
-// ```
-/// Imports.
+/// What:     `use std::thread;`. Rust's standard OS-thread API.
+/// Why:      `prepare_peak_for_path` passes the current engine thread handle to the
+///           measurement worker so completion can wake the engine immediately.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const currentWorker = Worker.current;
+/// ```
 use std::thread;
 
-// What:     `use std::time::Duration;`. A monotonic span of time.
-// Why:      Unit tests and the start path pass explicit wait windows to the peak
-//           swap helper.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// type Duration = number;
-// ```
-/// Imports.
+/// What:     `use std::time::Duration;`. A monotonic span of time.
+/// Why:      Unit tests and the start path pass explicit wait windows to the peak
+///           swap helper.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type Duration = number;
+/// ```
 use std::time::Duration;
 
-// What:     `use ringbuf::HeapProd;`. The WRITE half of a heap ring buffer.
-// Why:      The `producer` field type.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// type HeapProd = RingProducer;
-// ```
-/// Imports.
+/// What:     `use ringbuf::HeapProd;`. The WRITE half of a heap ring buffer.
+/// Why:      The `producer` field type.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type HeapProd = RingProducer;
+/// ```
 use ringbuf::HeapProd;
 
-// What:     `use crate::command::{Command, Update};`. The UI->engine and engine->UI
-//           message enums.
-// Why:      We match `Command`s and emit `Update`s.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { Command, Update } from "./command";
-// ```
-/// Imports.
+/// What:     `use crate::command::{Command, Update};`. The UI->engine and engine->UI
+///           message enums.
+/// Why:      We match `Command`s and emit `Update`s.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { Command, Update } from "./command";
+/// ```
 use crate::command::{Command, Update};
 
-// What:     `use crate::watch::SourceWatcher;`. The Source Root file watcher type.
-// Why:      The controller owns one and re-points it whenever the Source Root changes.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { SourceWatcher } from "./watch";
-// ```
-/// Imports.
+/// What:     `use crate::watch::SourceWatcher;`. The Source Root file watcher type.
+/// Why:      The controller owns one and re-points it whenever the Source Root changes.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { SourceWatcher } from "./watch";
+/// ```
 use crate::watch::SourceWatcher;
 
-// What:     `use crate::decode::{AudioSpec, Source};`. `AudioSpec` describes a decoded
-//           stream; `Source` is the decoder trait (a `Box<dyn Source>` field).
-// Why:      Struct fields name both types.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { AudioSpec, Source } from "./decode";
-// ```
-/// Imports.
+/// What:     `use crate::decode::{AudioSpec, Source};`. `AudioSpec` describes a decoded
+///           stream; `Source` is the decoder trait (a `Box<dyn Source>` field).
+/// Why:      Struct fields name both types.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { AudioSpec, Source } from "./decode";
+/// ```
 use crate::decode::{AudioSpec, Source};
 
-// What:     `use crate::measure::spawn_queue_measurement;`. Starts the background sweep
-//           that pre-measures a queue's tracks.
-// Why:      Called on every queue load.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { spawnQueueMeasurement } from "./measure";
-// ```
-/// Imports.
+/// What:     `use crate::measure::spawn_queue_measurement;`. Starts the background sweep
+///           that pre-measures a queue's tracks.
+/// Why:      Called on every queue load.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { spawnQueueMeasurement } from "./measure";
+/// ```
 use crate::measure::spawn_queue_measurement;
 
-// What:     `use crate::output::Output;`. The PipeWire output (FFI boundary).
-// Why:      The `output` field and `new`'s parameter name it.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { Output } from "./output";
-// ```
-/// Imports.
+/// What:     `use crate::output::Output;`. The PipeWire output (FFI boundary).
+/// Why:      The `output` field and `new`'s parameter name it.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { Output } from "./output";
+/// ```
 use crate::output::Output;
 
-// What:     `use crate::peakcache::PeakCache;`. The persistent true-peak cache.
-// Why:      The shared `peaks` field's inner type.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { PeakCache } from "./peakcache";
-// ```
-/// Imports.
+/// What:     `use crate::peakcache::PeakCache;`. The persistent true-peak cache.
+/// Why:      The shared `peaks` field's inner type.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { PeakCache } from "./peakcache";
+/// ```
 use crate::peakcache::PeakCache;
 
-// What:     `use crate::peak_swap::{...};`. Import the current-track peak swap
-//           helper functions and state/result enums.
-// Why:      The controller owns pending current-track measurements and applies
-//           measured gains when they arrive.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { fallbackTrackGain, peakSwapWait, prepareTrackGain } from "./peak_swap";
-// ```
-/// Imports.
+/// What:     `use crate::peak_swap::{...};`. Import the current-track peak swap
+///           helper functions and state/result enums.
+/// Why:      The controller owns pending current-track measurements and applies
+///           measured gains when they arrive.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { fallbackTrackGain, peakSwapWait, prepareTrackGain } from "./peak_swap";
+/// ```
 use crate::peak_swap::{
     fallback_track_gain, peak_swap_wait, prepare_track_gain, PeakGainResult,
     PendingPeakMeasurement, PendingPeakStatus, TrackGainResolution,
 };
 
-// What:     `use crate::playback::expand_paths;`. Folder-to-file expansion.
-// Why:      `OpenPaths` expands folders into their tracks.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { expandPaths } from "./playback";
-// ```
-/// Imports.
+/// What:     `use crate::playback::expand_paths;`. Folder-to-file expansion.
+/// Why:      `OpenPaths` expands folders into their tracks.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { expandPaths } from "./playback";
+/// ```
 use crate::playback::expand_paths;
 
-// What:     `use crate::queue::Queue;`. The pure play-queue model.
-// Why:      The `queue` field and `Queue::new()` name it.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { Queue } from "./queue";
-// ```
-/// Imports.
+/// What:     `use crate::queue::Queue;`. The pure play-queue model.
+/// Why:      The `queue` field and `Queue::new()` name it.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { Queue } from "./queue";
+/// ```
 use crate::queue::Queue;
 
-// What:     `pub(crate) struct Controller { ... }`. All mutable playback state, owned by
-//           the worker thread. Not `Send` (holds the `!Send` `Output`), which is fine
-//           because it never leaves this thread. `pub(crate)` so `engine::run` can drive
-//           it. Fields are `pub(crate)` too so the second `impl` block in
-//           `controller_audio.rs` can reach them.
-// Why:      Bundle the state so methods can mutate it.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// class Controller { onUpdate; output; queue; source; producer; spec; playing; volume; trackGain; peakGeneration; pendingPeak; peaks; positionFrames; lastEmitSecs; pending; pendingPos; }
-// ```
-/// Controller.
+/// What:     `pub(crate) struct Controller { ... }`. All mutable playback state, owned by
+///           the worker thread. Not `Send` (holds the `!Send` `Output`), which is fine
+///           because it never leaves this thread. `pub(crate)` so `engine::run` can drive
+///           it. Fields are `pub(crate)` too so the second `impl` block in
+///           `controller_audio.rs` can reach them.
+/// Why:      Bundle the state so methods can mutate it.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// class Controller { onUpdate; output; queue; source; producer; spec; playing; volume; trackGain; peakGeneration; pendingPeak; peaks; positionFrames; lastEmitSecs; pending; pendingPos; }
+/// ```
 pub(crate) struct Controller {
-    // What:     `on_update: Box<dyn Fn(Update) + Send>`. The UI callback (a heap-boxed
-    //           trait object).
-    // Why:      Push state changes back to the UI.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // onUpdate: (u: Update) => void;
-    // ```
-    /// On update.
+    /// What:     `on_update: Box<dyn Fn(Update) + Send>`. The UI callback (a heap-boxed
+    ///           trait object).
+    /// Why:      Push state changes back to the UI.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// onUpdate: (u: Update) => void;
+    /// ```
     pub(crate) on_update: Box<dyn Fn(Update) + Send>,
-    // What:     `output: Option<Output>`. The PipeWire output, or `None` in silent mode.
-    // Why:      Reconfigured per track; absent if audio init failed.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // output: Output | null;
-    // ```
-    /// Output.
+    /// What:     `output: Option<Output>`. The PipeWire output, or `None` in silent mode.
+    /// Why:      Reconfigured per track; absent if audio init failed.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// output: Output | null;
+    /// ```
     pub(crate) output: Option<Output>,
-    // What:     `queue: Queue`. The play-queue model.
-    // Why:      Decides track order and current track.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // queue: Queue;
-    // ```
-    /// Queue.
+    /// What:     `queue: Queue`. The play-queue model.
+    /// Why:      Decides track order and current track.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// queue: Queue;
+    /// ```
     pub(crate) queue: Queue,
-    // What:     `source_root: Option<PathBuf>`. The directory the current queue was scanned
-    //           from (`Some`), or `None` before anything is loaded.
-    // Why:      The session persists this, the watcher watches it, and a rescan re-derives
-    //           the queue from it. The queue holds files; this holds the one directory they
-    //           came from, which `expand_paths` otherwise discards.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // sourceRoot: string | null;
-    // ```
-    /// Source root.
+    /// What:     `source_root: Option<PathBuf>`. The directory the current queue was scanned
+    ///           from (`Some`), or `None` before anything is loaded.
+    /// Why:      The session persists this, the watcher watches it, and a rescan re-derives
+    ///           the queue from it. The queue holds files; this holds the one directory they
+    ///           came from, which `expand_paths` otherwise discards.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// sourceRoot: string | null;
+    /// ```
     pub(crate) source_root: Option<PathBuf>,
-    // What:     `watcher: Option<SourceWatcher>`. The Source Root file watcher (`Some` in the
-    //           running app, `None` in unit tests and if the OS watcher failed to start).
-    // Why:      Re-pointed at the current root on open/restore so on-disk changes drive a
-    //           `Rescan`; `None` simply means no live updates.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // watcher: SourceWatcher | null;
-    // ```
-    /// Watcher.
+    /// What:     `watcher: Option<SourceWatcher>`. The Source Root file watcher (`Some` in the
+    ///           running app, `None` in unit tests and if the OS watcher failed to start).
+    /// Why:      Re-pointed at the current root on open/restore so on-disk changes drive a
+    ///           `Rescan`; `None` simply means no live updates.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// watcher: SourceWatcher | null;
+    /// ```
     pub(crate) watcher: Option<SourceWatcher>,
-    // What:     `source: Option<Box<dyn Source>>`. The active decoder, or `None`.
-    // Why:      Produces the PCM we push.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // source: Source | null;
-    // ```
-    /// Source.
+    /// What:     `source: Option<Box<dyn Source>>`. The active decoder, or `None`.
+    /// Why:      Produces the PCM we push.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// source: Source | null;
+    /// ```
     pub(crate) source: Option<Box<dyn Source>>,
-    // What:     `producer: Option<HeapProd<f32>>`. The ring-buffer write end, or `None`.
-    // Why:      Where decoded samples go.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // producer: RingProducer | null;
-    // ```
-    /// Producer.
+    /// What:     `producer: Option<HeapProd<f32>>`. The ring-buffer write end, or `None`.
+    /// Why:      Where decoded samples go.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// producer: RingProducer | null;
+    /// ```
     pub(crate) producer: Option<HeapProd<f32>>,
-    // What:     `spec: Option<AudioSpec>`. The current track's rate/channels/duration.
-    // Why:      Drives position math and reconfigure calls.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // spec: AudioSpec | null;
-    // ```
-    /// Spec.
+    /// What:     `spec: Option<AudioSpec>`. The current track's rate/channels/duration.
+    /// Why:      Drives position math and reconfigure calls.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// spec: AudioSpec | null;
+    /// ```
     pub(crate) spec: Option<AudioSpec>,
-    // What:     `playing: bool`. Whether we are actively feeding audio.
-    // Why:      Pause/play gate.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // playing: boolean;
-    // ```
-    /// Playing.
+    /// What:     `playing: bool`. Whether we are actively feeding audio.
+    /// Why:      Pause/play gate.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// playing: boolean;
+    /// ```
     pub(crate) playing: bool,
-    // What:     `volume: f32`. Linear user gain 0.0..=1.0 applied to samples.
-    // Why:      Volume control (PCM-gain approach).
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // volume: number;
-    // ```
-    /// Volume.
+    /// What:     `volume: f32`. Linear user gain 0.0..=1.0 applied to samples.
+    /// Why:      Volume control (PCM-gain approach).
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// volume: number;
+    /// ```
     pub(crate) volume: f32,
-    // What:     `track_gain: f32`. The current track's normalization gain (<=1.0), from
-    //           true-peak measurement. Multiplied with `volume` per sample.
-    // Why:      Per-track true-peak normalization to the -1 dBTP ceiling.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // trackGain: number;
-    // ```
-    /// Track gain.
+    /// What:     `track_gain: f32`. The current track's normalization gain (<=1.0), from
+    ///           true-peak measurement. Multiplied with `volume` per sample.
+    /// Why:      Per-track true-peak normalization to the -1 dBTP ceiling.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// trackGain: number;
+    /// ```
     pub(crate) track_gain: f32,
-    // What:     `peak_generation: u64`. Monotonic identifier for each loaded
-    //           current track. `u64` is used instead of `usize` so the value is
-    //           independent of platform pointer width.
-    // Why:      Stale async peak results from older tracks must not change the
-    //           current track's gain.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // peakGeneration: number;
-    // ```
-    /// Peak generation.
+    /// What:     `peak_generation: u64`. Monotonic identifier for each loaded
+    ///           current track. `u64` is used instead of `usize` so the value is
+    ///           independent of platform pointer width.
+    /// Why:      Stale async peak results from older tracks must not change the
+    ///           current track's gain.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// peakGeneration: number;
+    /// ```
     pub(crate) peak_generation: u64,
-    // What:     `pending_peak: Option<PendingPeakMeasurement>`. Optional handle to
-    //           the in-flight current-track measurement.
-    // Why:      Cache misses need to be polled later, while cache hits have no
-    //           pending work.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // pendingPeak: PendingPeakMeasurement | null;
-    // ```
-    /// Pending peak.
+    /// What:     `pending_peak: Option<PendingPeakMeasurement>`. Optional handle to
+    ///           the in-flight current-track measurement.
+    /// Why:      Cache misses need to be polled later, while cache hits have no
+    ///           pending work.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// pendingPeak: PendingPeakMeasurement | null;
+    /// ```
     pub(crate) pending_peak: Option<PendingPeakMeasurement>,
-    // What:     `peaks: Arc<Mutex<PeakCache>>`. The shared, persistent true-peak cache.
-    // Why:      Read on track load; written by load + background sweeps.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // peaks: SharedPeakCache;
-    // ```
-    /// Peaks.
+    /// What:     `peaks: Arc<Mutex<PeakCache>>`. The shared, persistent true-peak cache.
+    /// Why:      Read on track load; written by load + background sweeps.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// peaks: SharedPeakCache;
+    /// ```
     pub(crate) peaks: Arc<Mutex<PeakCache>>,
-    // What:     `position_frames: u64`. Frames pushed for the current track so far. `u64`
-    //           because long tracks exceed `u32` frame counts.
-    // Why:      Position seconds = frames / rate.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // positionFrames: number;
-    // ```
-    /// Position frames.
+    /// What:     `position_frames: u64`. Frames pushed for the current track so far. `u64`
+    ///           because long tracks exceed `u32` frame counts.
+    /// Why:      Position seconds = frames / rate.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// positionFrames: number;
+    /// ```
     pub(crate) position_frames: u64,
-    // What:     `last_emit_secs: f64`. Position (seconds) at the last `Position` update.
-    // Why:      Throttle update frequency.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // lastEmitSecs: number;
-    // ```
-    /// Last emit secs.
+    /// What:     `last_emit_secs: f64`. Position (seconds) at the last `Position` update.
+    /// Why:      Throttle update frequency.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// lastEmitSecs: number;
+    /// ```
     pub(crate) last_emit_secs: f64,
-    // What:     `pending: Vec<f32>`. Gained samples decoded but not yet fully pushed.
-    // Why:      Resume pushing them next cycle instead of dropping audio.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // pending: number[];
-    // ```
-    /// Pending.
+    /// What:     `pending: Vec<f32>`. Gained samples decoded but not yet fully pushed.
+    /// Why:      Resume pushing them next cycle instead of dropping audio.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// pending: number[];
+    /// ```
     pub(crate) pending: Vec<f32>,
-    // What:     `pending_pos: usize`. How many of `pending` are already pushed.
-    // Why:      Push the remainder `pending[pending_pos..]` next time.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // pendingPos: number;
-    // ```
-    /// Pending pos.
+    /// What:     `pending_pos: usize`. How many of `pending` are already pushed.
+    /// Why:      Push the remainder `pending[pending_pos..]` next time.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// pendingPos: number;
+    /// ```
     pub(crate) pending_pos: usize,
 }
 
-// What:     `impl Controller { ... }`. The command/state half of the behaviour.
-// Why:      Construction, command handling, and the measurement kickoff.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// class Controller { /* new, emit, set_playing, start_queue_measurement, handle_command, after_move */ }
-// ```
-/// Implementation block.
+/// What:     `impl Controller { ... }`. The command/state half of the behaviour.
+/// Why:      Construction, command handling, and the measurement kickoff.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// class Controller { /* new, emit, set_playing, start_queue_measurement, handle_command, after_move */ }
+/// ```
 impl Controller {
-    // What:     `pub(crate) fn new(on_update: Box<dyn Fn(Update) + Send>, output: Option<Output>) -> Controller`.
-    //           Build initial state (empty queue, nothing playing, full volume + gain,
-    //           loaded peak cache). `pub(crate)` so `engine::run` can construct it.
-    // Why:      Starting point for the worker.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // constructor(onUpdate, output) { ... }
-    // ```
-    /// New.
+    /// What:     `pub(crate) fn new(on_update: Box<dyn Fn(Update) + Send>, output: Option<Output>) -> Controller`.
+    ///           Build initial state (empty queue, nothing playing, full volume + gain,
+    ///           loaded peak cache). `pub(crate)` so `engine::run` can construct it.
+    /// Why:      Starting point for the worker.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// constructor(onUpdate, output) { ... }
+    /// ```
     pub(crate) fn new(
         on_update: Box<dyn Fn(Update) + Send>,
         output: Option<Output>,
@@ -407,15 +372,14 @@ impl Controller {
         }
     }
 
-    // What:     `pub(crate) fn emit(&self, update: Update)`. Call the UI callback.
-    //           `pub(crate)` because `controller_audio.rs` also emits.
-    // Why:      One place to push updates out.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // emit(update) { this.onUpdate(update); }
-    // ```
-    /// Emit.
+    /// What:     `pub(crate) fn emit(&self, update: Update)`. Call the UI callback.
+    ///           `pub(crate)` because `controller_audio.rs` also emits.
+    /// Why:      One place to push updates out.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// emit(update) { this.onUpdate(update); }
+    /// ```
     pub(crate) fn emit(&self, update: Update) {
         // What:     `(self.on_update)(update);`. Call the boxed closure. The parens make it
         //           call the field, not a method.
@@ -428,16 +392,15 @@ impl Controller {
         (self.on_update)(update);
     }
 
-    // What:     `pub(crate) fn prepare_peak_for_path(&mut self, path: &Path)`. Start
-    //           or resolve peak gain for a newly loaded current track.
-    // Why:      Loading a track must never synchronously decode the whole file on a
-    //           cache miss; it sets fallback gain and stores a pending measurement instead.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // preparePeakForPath(path: string): void { ... }
-    // ```
-    /// Prepare peak for path.
+    /// What:     `pub(crate) fn prepare_peak_for_path(&mut self, path: &Path)`. Start
+    ///           or resolve peak gain for a newly loaded current track.
+    /// Why:      Loading a track must never synchronously decode the whole file on a
+    ///           cache miss; it sets fallback gain and stores a pending measurement instead.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// preparePeakForPath(path: string): void { ... }
+    /// ```
     pub(crate) fn prepare_peak_for_path(&mut self, path: &Path) {
         // What:     `self.peak_generation = self.peak_generation.wrapping_add(1);`.
         //           Increment the generation with explicit wrap semantics.
@@ -494,16 +457,15 @@ impl Controller {
         }
     }
 
-    // What:     `fn apply_peak_result(&mut self, result: PeakGainResult) -> bool`.
-    //           Apply a measured gain only when its generation matches the current track.
-    // Why:      Old measurement workers may finish after the user changes tracks; their
-    //           cache writes are useful, but their playback result is stale.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // applyPeakResult(result: PeakGainResult): boolean { ... }
-    // ```
-    /// Apply peak result.
+    /// What:     `fn apply_peak_result(&mut self, result: PeakGainResult) -> bool`.
+    ///           Apply a measured gain only when its generation matches the current track.
+    /// Why:      Old measurement workers may finish after the user changes tracks; their
+    ///           cache writes are useful, but their playback result is stale.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// applyPeakResult(result: PeakGainResult): boolean { ... }
+    /// ```
     fn apply_peak_result(&mut self, result: PeakGainResult) -> bool {
         // What:     `if result.generation != self.peak_generation { return false; }`.
         //           Compare worker generation to the current track generation.
@@ -534,15 +496,14 @@ impl Controller {
         true
     }
 
-    // What:     `fn handle_peak_status(&mut self, status: PendingPeakStatus) -> bool`.
-    //           Convert a pending measurement status into controller state updates.
-    // Why:      Polling and timed waiting share the same ready/pending/closed handling.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // handlePeakStatus(status: PendingPeakStatus): boolean { ... }
-    // ```
-    /// Handle peak status.
+    /// What:     `fn handle_peak_status(&mut self, status: PendingPeakStatus) -> bool`.
+    ///           Convert a pending measurement status into controller state updates.
+    /// Why:      Polling and timed waiting share the same ready/pending/closed handling.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// handlePeakStatus(status: PendingPeakStatus): boolean { ... }
+    /// ```
     fn handle_peak_status(&mut self, status: PendingPeakStatus) -> bool {
         // What:     `match status { ... }`. Branch on ready, still pending, or closed.
         // Why:      Each state affects `pending_peak` differently.
@@ -589,16 +550,15 @@ impl Controller {
         }
     }
 
-    // What:     `pub(crate) fn poll_pending_peak(&mut self) -> bool`. Poll the
-    //           current-track measurement once without blocking.
-    // Why:      The engine loop calls this before pumping audio so a newly landed
-    //           measurement affects the next decoded chunk.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // pollPendingPeak(): boolean { ... }
-    // ```
-    /// Poll pending peak.
+    /// What:     `pub(crate) fn poll_pending_peak(&mut self) -> bool`. Poll the
+    ///           current-track measurement once without blocking.
+    /// Why:      The engine loop calls this before pumping audio so a newly landed
+    ///           measurement affects the next decoded chunk.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// pollPendingPeak(): boolean { ... }
+    /// ```
     pub(crate) fn poll_pending_peak(&mut self) -> bool {
         // What:     `let status = match self.pending_peak.as_ref() { ... }`. Borrow the
         //           optional pending handle and poll it, or return if none exists.
@@ -638,16 +598,15 @@ impl Controller {
         self.handle_peak_status(status)
     }
 
-    // What:     `pub(crate) fn wait_for_pending_peak(&mut self, timeout: Duration)`.
-    //           Give an in-flight current-track measurement a bounded chance to finish.
-    // Why:      Playback starts should wait briefly for exact gain, then swap to
-    //           fallback instead of blocking indefinitely.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // waitForPendingPeak(timeoutMs: number): void { ... }
-    // ```
-    /// Wait for pending peak.
+    /// What:     `pub(crate) fn wait_for_pending_peak(&mut self, timeout: Duration)`.
+    ///           Give an in-flight current-track measurement a bounded chance to finish.
+    /// Why:      Playback starts should wait briefly for exact gain, then swap to
+    ///           fallback instead of blocking indefinitely.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// waitForPendingPeak(timeoutMs: number): void { ... }
+    /// ```
     pub(crate) fn wait_for_pending_peak(&mut self, timeout: Duration) {
         // What:     `if self.poll_pending_peak() { return; }`. First handle any result
         //           that already landed without waiting.
@@ -698,15 +657,14 @@ impl Controller {
         self.handle_peak_status(status);
     }
 
-    // What:     `pub(crate) fn wait_for_pending_peak_before_start(&mut self)`. Use the
-    //           standard one-second swap window before starting playback.
-    // Why:      All start paths share the same wait/fallback behavior.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // waitForPendingPeakBeforeStart(): void { this.waitForPendingPeak(1000); }
-    // ```
-    /// Wait for pending peak before start.
+    /// What:     `pub(crate) fn wait_for_pending_peak_before_start(&mut self)`. Use the
+    ///           standard one-second swap window before starting playback.
+    /// Why:      All start paths share the same wait/fallback behavior.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// waitForPendingPeakBeforeStart(): void { this.waitForPendingPeak(1000); }
+    /// ```
     pub(crate) fn wait_for_pending_peak_before_start(&mut self) {
         // What:     `self.wait_for_pending_peak(peak_swap_wait());`. Call the generic
         //           wait helper with the configured one-second duration.
@@ -719,14 +677,13 @@ impl Controller {
         self.wait_for_pending_peak(peak_swap_wait());
     }
 
-    // What:     `fn set_playing(&mut self, on: bool)`. Set the flag and tell the UI.
-    // Why:      Keep the play/pause button in sync.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // setPlaying(on: boolean): void { ... }
-    // ```
-    /// Set playing.
+    /// What:     `fn set_playing(&mut self, on: bool)`. Set the flag and tell the UI.
+    /// Why:      Keep the play/pause button in sync.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// setPlaying(on: boolean): void { ... }
+    /// ```
     fn set_playing(&mut self, on: bool) {
         // What:     `if on && !self.playing { self.wait_for_pending_peak_before_start(); }`.
         //           When the caller starts playback from a paused state, run the
@@ -774,21 +731,20 @@ impl Controller {
         self.emit(Update::Playing(on));
     }
 
-    // What:     `fn emit_no_track(&self)`. Tell the UI that NOTHING is current: a cleared
-    //           now-playing label and a reset seek bar. `&self` is a SHARED (read-only) borrow
-    //           (we only send messages, never mutate state here).
-    // Why:      The desktop's `current-index` and `track-name` UI properties change ONLY via a
-    //           `NowPlaying` emit, so clearing the queue cursor is not enough; we must also
-    //           push the "nothing playing" view on a normal open or a no-selection restore.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // emitNoTrack(): void {
-    //   this.emit({ kind: "nowPlaying", index: null, name: "", duration: 0 });
-    //   this.emit({ kind: "position", secs: 0 });
-    // }
-    // ```
-    /// Emit no track.
+    /// What:     `fn emit_no_track(&self)`. Tell the UI that NOTHING is current: a cleared
+    ///           now-playing label and a reset seek bar. `&self` is a SHARED (read-only) borrow
+    ///           (we only send messages, never mutate state here).
+    /// Why:      The desktop's `current-index` and `track-name` UI properties change ONLY via a
+    ///           `NowPlaying` emit, so clearing the queue cursor is not enough; we must also
+    ///           push the "nothing playing" view on a normal open or a no-selection restore.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// emitNoTrack(): void {
+    ///   this.emit({ kind: "nowPlaying", index: null, name: "", duration: 0 });
+    ///   this.emit({ kind: "position", secs: 0 });
+    /// }
+    /// ```
     fn emit_no_track(&self) {
         // What:     `self.emit(Update::NowPlaying { index: None, name: String::new(), duration: 0.0 });`.
         //           Struct-variant literal: `index: None` is the absent `Option<usize>` (the UI
@@ -817,17 +773,16 @@ impl Controller {
         self.emit(Update::Position(0.0));
     }
 
-    // What:     `fn start_queue_measurement(&self)`. Kick off the background sweep that
-    //           pre-measures every non-current track in the current queue into the
-    //           shared cache. Read-only borrow (it only clones paths and the cache handle).
-    // Why:      Called on every queue load so later track changes hit the cache, while
-    //           the dedicated current-track measurement owns the visible track.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // startQueueMeasurement(): void { ... }
-    // ```
-    /// Start queue measurement.
+    /// What:     `fn start_queue_measurement(&self)`. Kick off the background sweep that
+    ///           pre-measures every non-current track in the current queue into the
+    ///           shared cache. Read-only borrow (it only clones paths and the cache handle).
+    /// Why:      Called on every queue load so later track changes hit the cache, while
+    ///           the dedicated current-track measurement owns the visible track.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// startQueueMeasurement(): void { ... }
+    /// ```
     fn start_queue_measurement(&self) {
         // What:     `let current = self.queue.current_path().cloned();`. Read the
         //           current path and clone it into an owned `PathBuf` if present.
@@ -868,15 +823,14 @@ impl Controller {
         spawn_queue_measurement(tracks, Arc::clone(&self.peaks));
     }
 
-    // What:     `pub(crate) fn handle_command(&mut self, command: Command)`. Apply one UI
-    //           command. `pub(crate)` so `engine::run` can call it.
-    // Why:      The core of UI control.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // handleCommand(command: Command): void { ... }
-    // ```
-    /// Handle command.
+    /// What:     `pub(crate) fn handle_command(&mut self, command: Command)`. Apply one UI
+    ///           command. `pub(crate)` so `engine::run` can call it.
+    /// Why:      The core of UI control.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// handleCommand(command: Command): void { ... }
+    /// ```
     pub(crate) fn handle_command(&mut self, command: Command) {
         // What:     `match command { ... }`. Dispatch on the command variant (exhaustive
         //           over every `Command`).
@@ -1528,17 +1482,16 @@ impl Controller {
         }
     }
 
-    // What:     `pub(crate) fn after_move(&mut self, moved: Option<usize>)`. Shared
-    //           follow-up for Next/Prev/natural-end: load the new current track, or stop at
-    //           the end. `pub(crate)` so `on_track_end` (in `controller_audio.rs`) can call
-    //           it.
-    // Why:      Avoid duplicating the load-or-stop logic.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // afterMove(moved: number | null): void { ... }
-    // ```
-    /// After move.
+    /// What:     `pub(crate) fn after_move(&mut self, moved: Option<usize>)`. Shared
+    ///           follow-up for Next/Prev/natural-end: load the new current track, or stop at
+    ///           the end. `pub(crate)` so `on_track_end` (in `controller_audio.rs`) can call
+    ///           it.
+    /// Why:      Avoid duplicating the load-or-stop logic.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// afterMove(moved: number | null): void { ... }
+    /// ```
     pub(crate) fn after_move(&mut self, moved: Option<usize>) {
         // What:     `match moved { ... }`. `Some` = a track to load; `None` = end.
         // Why:      Two outcomes.
@@ -1573,16 +1526,15 @@ impl Controller {
     }
 }
 
-// What:     `#[cfg(test)] #[path = "controller_tests.rs"] mod tests;` declares a
-//           test-only child module loaded from the sibling file.
-// Why:      Keep controller peak-swap tests beside the controller without adding
-//           production code.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// // test runner imports controller.unit.test.ts only for tests
-// ```
+/// What:     `#[cfg(test)] #[path = "controller_tests.rs"] mod tests;` declares a
+///           test-only child module loaded from the sibling file.
+/// Why:      Keep controller peak-swap tests beside the controller without adding
+///           production code.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // test runner imports controller.unit.test.ts only for tests
+/// ```
 #[cfg(test)]
 #[path = "controller_tests.rs"]
-/// Tests module.
 mod tests;
