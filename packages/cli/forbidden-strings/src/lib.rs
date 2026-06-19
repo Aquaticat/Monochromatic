@@ -7,17 +7,26 @@
 // TODO:     crate (`regex-automata::dfa::dense::DFA::to_bytes`). Trigger: when
 // TODO:     startup-only time goes back over ~100ms after P1+P2 land.
 
-// What:     `mod walk;` declares a child module whose source lives in
-//           `walk.rs` (sibling to this file). `mod` is Rust's module
-//           system: it does NOT import names; it simply tells the
-//           compiler "this file/module exists, compile it". Names
-//           referenced via `crate::walk::xxx` afterward.
-// Why:      We split the binary into four files so each unit is
-//           focused: `walk.rs` for the working-tree walker that
-//           respects `.gitignore`.
-// Gotcha:   `mod foo;` without a body is NOT an import; it's a
-//           registration. Forgetting to write `mod` for a sibling file
-//           silently excludes it from the build.
+// What:     `mod cli;` declares a child module whose source lives in `cli.rs`.
+//           `mod` is Rust's module system: it does NOT import names; it tells
+//           the compiler "this file/module exists, compile it". Names referenced
+//           via `crate::cli::xxx` afterward.
+// Why:      Clap-backed argument parsing now lives beside the run loop but outside
+//           it, replacing the previous handwritten argv scanner.
+// Gotcha:   `mod foo;` without a body is NOT an import; it's a registration.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// // No equivalent. Closest: TypeScript automatically picks up files
+// // in `include` paths; Rust requires explicit `mod` declarations.
+// ```
+mod cli;
+
+// What:     `mod walk;` declares child modules whose source lives in sibling
+//           `.rs` files. `mod` registers each file with the compiler; it does
+//           not import names into local scope.
+// Why:      We split the binary into focused files: CLI parsing, rules, scanning,
+//           hit formatting, and the working-tree walker.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -46,8 +55,20 @@ mod walk;
 #[cfg(feature = "fuzzing")]
 pub mod fuzz_api;
 
-// What:     `use std::env;` imports the std `env` module so we can
-//           reference `env::args` / `env::var`.
+// What:     `use clap::Parser;` brings the parser trait into this module. Rust
+//           only lets trait methods such as `Cli::try_parse_from(...)` be called
+//           when the trait is in scope. `::` is Rust's namespace separator.
+// Why:      `run_cli_from_env` should let clap validate argv and render help,
+//           version, and parse errors.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { parseArgs } from "some-cli-parser";
+// ```
+use clap::Parser;
+
+// What:     `use std::env;` imports the std `env` module so we can reference
+//           `env::args` / `env::var`.
 // Why:      Reading argv and environment variables.
 //
 // In TS you'd write (pseudocode):
@@ -100,14 +121,27 @@ use std::io::Write;
 // ```
 use rayon::prelude::*;
 
-// What:     `use crate::walk::list_files;` re-exports the named function
-//           from the sibling module under a short alias for local use.
-//           `crate::` is the absolute root of this crate.
-// Why:      We call `list_files(".")` once when `--all` mode is
-//           selected to enumerate every scannable file.
+// What:     `use crate::cli::Cli;` imports the clap-backed parsed option struct
+//           from the sibling module. `crate::` is the absolute root of this
+//           crate.
+// Why:      `run_cli_from_env` needs the generated parser and the typed fields it
+//           returns.
 //
 // In TS you'd write (pseudocode):
 // ```ts
+// import { Cli } from "./cli";
+// ```
+use crate::cli::Cli;
+
+// What:     `use crate::walk::list_files;` imports named functions from sibling
+//           modules under short aliases for local use. `crate::` is the absolute
+//           root of this crate.
+// Why:      We load rules, scan file contents, and enumerate files for `--all`.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { loadRuleset } from "./rules";
+// import { scanContent } from "./scan";
 // import { listFiles } from "./walk";
 // ```
 use crate::rules::load_ruleset;
@@ -378,301 +412,124 @@ fn read_with_binary_check(path: &str) -> Result<Vec<u8>, std::io::Error> {
     Ok(buf)
 }
 
-// What:     `pub fn run_cli_from_env() -> Result<i32, String>` is the
-//           library entry point. It reads `env::args()` and env vars,
-//           parses flags, loads the ruleset, runs the parallel scan,
-//           prints hits to stderr, and returns the exit code the OS
-//           should see. `Result<i32, String>` lets the binary thin
-//           wrapper decide how to report a catastrophic failure (the
-//           `Err` arm) versus a regular run (`Ok(0)` clean,
-//           `Ok(1)` violation, `Ok(2)` usage error already eprinted).
-//           Sibling shape considered: returning `ExitCode` directly --
-//           rejected because tests written against the lib want a
-//           plain `i32` they can compare, and `ExitCode` has no `Eq`.
-// Why:      Coordinate arg parsing, ruleset loading, parallel scan,
-//           and result reporting from a unit testable surface. The bin
-//           target's `main` is now a five-line wrapper that turns the
-//           returned code into an `ExitCode` and prints `Err` to
-//           stderr with a fixed prefix.
+/// Run the scanner from real process arguments and environment values.
+// What:     `pub fn run_cli_from_env() -> Result<i32, String>` is the library
+//           entry point. It asks clap to parse `env::args()`, applies the
+//           `FORBIDDEN_STRINGS_RULES` fallback, loads the ruleset, runs the
+//           parallel scan, prints hits to stderr, and returns the exit code the
+//           OS should see. `Result<i32, String>` lets the binary thin wrapper
+//           decide how to report a catastrophic failure (the `Err` arm) versus a
+//           regular run (`Ok(0)` clean, `Ok(1)` violation, `Ok(2)` usage error
+//           already printed). Sibling shape considered: returning `ExitCode`
+//           directly, rejected because tests written against the lib want a plain
+//           `i32` they can compare, and `ExitCode` has no `Eq`.
+// Why:      Coordinate clap parsing, ruleset loading, parallel scan, and result
+//           reporting from a unit-testable surface. The bin target's `main` stays
+//           a tiny wrapper that turns the returned code into an `ExitCode` and
+//           prints `Err` to stderr with a fixed prefix.
 //
 // In TS you'd write (pseudocode):
 // ```ts
 // async function runCliFromEnv(): Promise<number> {
+//   const cli = parseArgs(process.argv);
 //   // ...
 //   return anyViolation ? 1 : 0;
 // }
 // process.exit(await runCliFromEnv());
 // ```
 pub fn run_cli_from_env() -> Result<i32, String> {
-    // What:     `let args: Vec<String> = env::args().skip(1).collect();`
-    //           reads command-line arguments. `env::args()` returns an
-    //           iterator of `String`s where index 0 is the program name
-    //           ("forbidden-strings"); `.skip(1)` drops it; `.collect()`
-    //           materializes the remainder into a `Vec<String>`. The
-    //           explicit `Vec<String>` annotation tells `.collect()` what
-    //           container to build (without it, the collect call is
-    //           ambiguous). Sibling type to consider: `Vec<&str>` would
-    //           BORROW the args, but `env::args()` already yields owned
-    //           `String`s -- borrowing is not an option here.
-    // Why:      We need the user's actual flags/files; the program name
-    //           is irrelevant.
+    // What:     `Cli::try_parse_from(env::args())` calls the clap-generated parser.
+    //           `::` is Rust's namespace operator. `env::args()` includes the
+    //           program name at index 0, which clap expects so it can render usage.
+    //           `match` extracts the success payload (`Ok(parsed_cli)`) or handles
+    //           clap's display/error wrapper (`Err(parse_error)`).
+    // Why:      Replace the handwritten argv loop with clap while preserving this
+    //           function's non-panicking `Result<i32, String>` boundary.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // const args: string[] = process.argv.slice(2);
+    // let cli: Cli;
+    // try { cli = parseArgs(process.argv); }
+    // catch (error) { print(error); return error.exitCode; }
     // ```
-    let args: Vec<String> = env::args().skip(1).collect();
-
-    // What:     `let mut rules_path: Option<String> = env::var("...").ok();`
-    //           reads an environment variable. `env::var` returns
-    //           `Result<String, VarError>` (Err if unset); `.ok()` converts
-    //           it into `Option<String>` -- `Some(value)` if set, `None`
-    //           otherwise. The `mut` lets us reassign `rules_path` later if
-    //           `--rules` overrides. Sibling type: `Option<&str>` would
-    //           need the env value to live somewhere else; `String` is
-    //           owned so it can outlive any function call.
-    // Why:      Initial source for the rules-file path; `--rules` flag
-    //           takes precedence and overwrites this.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // let rulesPath: string | undefined = process.env.FORBIDDEN_STRINGS_RULES;
-    // ```
-    let mut rules_path: Option<String> = env::var("FORBIDDEN_STRINGS_RULES").ok();
-
-    // What:     `let mut all = false;` declares a mutable boolean. No
-    //           type annotation needed -- the literal `false` infers `bool`.
-    // Why:      Tracks whether `--all` was passed; we toggle it to true
-    //           when we encounter the flag.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // let all = false;
-    // ```
-    let mut all = false;
-
-    // What:     `let mut files: Vec<String> = Vec::new();` allocates an
-    //           empty growable, owned vector of `String`. `Vec::new()` is
-    //           the empty-vector constructor; the explicit type annotation
-    //           tells the compiler the element type since the empty
-    //           constructor cannot infer it. Sibling: `Vec<&str>` cannot
-    //           hold values that outlive the source; we want owned data.
-    // Why:      Accumulates positional file arguments as we parse argv.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // const files: string[] = [];
-    // ```
-    let mut files: Vec<String> = Vec::new();
-
-    // What:     `let mut i: usize = 0;` declares a mutable index counter.
-    //           `usize` is the unsigned integer wide enough to address any
-    //           byte in memory on this platform (32 bits on 32-bit OS,
-    //           64 bits on 64-bit OS). Siblings the reader might expect:
-    //           `u32`, `u64`, `i32`, `i64`. Why `usize` not `u64`? Every
-    //           std API that takes a "size" or "index" wants `usize`;
-    //           mixing widths forces casts.
-    // Why:      Manual index lets us advance by 2 (consume `--rules` plus
-    //           its value) inside the loop body.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // let i = 0;
-    // ```
-    let mut i: usize = 0;
-
-    // What:     `while i < args.len() { ... }` is a basic conditional loop.
-    //           No iterator, no syntactic sugar -- just "keep going while
-    //           condition holds". `args.len()` returns the vector's length
-    //           as `usize`.
-    // Why:      We need manual index control to consume `--rules` plus
-    //           its argument together; a `for arg in &args` loop cannot
-    //           skip ahead.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // while (i < args.length) { ... }
-    // ```
-    while i < args.len() {
-        // What:     `let a = &args[i];` borrows the i-th element. `&` is
-        //           Rust's "borrow" operator: it gives a read-only
-        //           reference to the value without taking ownership; the
-        //           original vector still owns the `String`. Without `&`,
-        //           Rust would try to MOVE the `String` out of the vector,
-        //           which is illegal because `Vec<String>` does not
-        //           support hole-poking moves.
-        // Why:      We want to inspect the arg's contents (compare to
-        //           "--rules", etc.) without consuming it.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // const a = args[i];
-        // ```
-        let a = &args[i];
-        if a == "--rules" {
-            i += 1;
-            if i >= args.len() {
-                eprintln!("--rules needs an argument");
-                // What:     `return Ok(2);` early-exits `run_cli_from_env`
-                //           with the eventual OS exit code 2. `Ok(...)`
-                //           wraps the `i32` into the success variant of
-                //           `Result<i32, String>`; the bin wrapper turns
-                //           it into `ExitCode::from(2)`.
-                // Why:      Convention: 0 = success, 1 = violation,
-                //           2 = usage / config error. The usage message
-                //           was already printed on the previous line.
-                //
-                // In TS you'd write (pseudocode):
-                // ```ts
-                // return 2;
-                // ```
-                return Ok(2);
+    let cli = match Cli::try_parse_from(env::args()) {
+        Ok(parsed_cli) => parsed_cli,
+        Err(parse_error) => {
+            // What:     `if let Err(print_error) = parse_error.print() { ... }`
+            //           is a one-arm pattern match over clap's attempt to write
+            //           help, version, or parse errors to the right stream.
+            //           `print_error.to_string()` converts an IO error into the
+            //           owned `String` this function's `Err` arm carries.
+            // Why:      If clap cannot print, surface that catastrophic failure to
+            //           `main` instead of silently returning a success code.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // const printed = error.print();
+            // if (!printed.ok) throw new Error(String(printed.error));
+            // ```
+            if let Err(print_error) = parse_error.print() {
+                return Err(print_error.to_string());
             }
-            // What:     `rules_path = Some(args[i].clone());` reassigns
-            //           the `Option<String>` variable. `Some(...)` wraps
-            //           a value into the present variant of `Option`;
-            //           `args[i].clone()` deep-copies the indexed `String`
-            //           so the assignment OWNS its bytes (we cannot move
-            //           out of a Vec, and a borrow would tie `rules_path`
-            //           to `args`'s lifetime).
-            // Why:      Capture the argument that follows `--rules` as
-            //           our authoritative rules path.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // rulesPath = args[i];
-            // ```
-            rules_path = Some(args[i].clone());
-        } else if a == "--all" {
-            all = true;
-        } else if a == "--help" || a == "-h" {
-            // What:     `concat!` is a compile-time macro joining string
-            //           literals into a single `&'static str`. The `!`
-            //           marks it as a macro call, not a function call.
-            //           `env!("CARGO_PKG_VERSION")` reads `version` from
-            //           Cargo.toml at compile time and inlines it as a
-            //           string literal.
-            // Why:      Print a single static help string with the version
-            //           baked in, no runtime allocation, no formatter.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // const VERSION = process.env.npm_package_version!;
-            // const HELP = `forbidden-strings ${VERSION}\n...`;
-            // console.log(HELP);
-            // ```
-            println!(
-                "{}",
-                concat!(
-                    "forbidden-strings ", env!("CARGO_PKG_VERSION"), "\n",
-                    "Linear-time deny-list scanner for Git repos.\n",
-                    "\n",
-                    "USAGE:\n",
-                    "    forbidden-strings [--rules <PATH>] [--all] [FILE...]\n",
-                    "\n",
-                    "FLAGS:\n",
-                    "    --rules <PATH>    Path to the rule file (one rule per line).\n",
-                    "                      Overrides FORBIDDEN_STRINGS_RULES.\n",
-                    "                      Default: ./forbidden-strings.local.txt\n",
-                    "    --all             Scan every git-tracked file under cwd.\n",
-                    "                      Respects .gitignore (via the `ignore` crate).\n",
-                    "    -h, --help        Print this help and exit.\n",
-                    "    -V, --version     Print version and exit.\n",
-                    "\n",
-                    "ENV:\n",
-                    "    FORBIDDEN_STRINGS_RULES    Default rules path; --rules wins if both are set.\n",
-                    "                               If unset, falls back to ./forbidden-strings.local.txt\n",
-                    "\n",
-                    "EXIT CODES:\n",
-                    "    0    No violations.\n",
-                    "    1    One or more violations (printed to stderr, redacted).\n",
-                    "    2    Usage error or rule-file error.\n",
-                    "\n",
-                    "EXAMPLES:\n",
-                    "    # Scan a few files\n",
-                    "    forbidden-strings --rules ./rules.txt src/main.ts README.md\n",
-                    "\n",
-                    "    # Scan the whole working tree\n",
-                    "    FORBIDDEN_STRINGS_RULES=./rules.txt forbidden-strings --all\n",
-                    "\n",
-                    "RULE FORMAT:\n",
-                    "    Bare line              -> case-sensitive literal substring\n",
-                    "    /PATTERN/FLAGS         -> regex (resharp; supports A&B, ~(A), (?=...), (?<=...))\n",
-                    "    # ...                  -> comment\n",
-                    "    Empty line             -> skipped\n",
-                    "\n",
-                    "RESHARP LIMITATIONS (0.5.x through 0.6.x):\n",
-                    "    A `~(...)` complement body cannot contain `\\b`, `\\B`, `^`, `$`,\n",
-                    "    or any user-explicit lookaround. Use `\\W` or literal whitespace for\n",
-                    "    `\\b`; `\\A`/`\\z` for `^`/`$` when whole-content semantics fit; or\n",
-                    "    lift the boundary check outside the complement. Loader rejects every\n",
-                    "    failing shape with a named-trigger error. See docs/troubleshooting/resharp.md.\n",
-                    "\n",
-                    "OUTPUT:\n",
-                    "    PATH:LINE:COL_START..COL_END rule=N    (matched substring is NEVER printed)\n",
-                    "\n",
-                    "See README.md for set-algebra rule examples and CI integration.\n",
-                ),
-            );
-            return Ok(0);
-        } else if a == "--version" || a == "-V" {
-            // What:     Same `concat!` + `env!` trick: compile-time string
-            //           literal, no runtime cost. `env!` panics at compile
-            //           time if `CARGO_PKG_VERSION` is unset, which is
-            //           impossible inside a Cargo build.
-            // Why:      Match `cargo`/`rustc` convention -- `--version`
-            //           prints `<name> <semver>` on stdout.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // console.log(`forbidden-strings ${VERSION}`);
-            // ```
-            println!("forbidden-strings {}", env!("CARGO_PKG_VERSION"));
-            return Ok(0);
-        } else if a.starts_with("--") || a.starts_with("-") && a.len() > 1 {
-            eprintln!("unknown flag {}", a);
-            return Ok(2);
-        } else {
-            // What:     `files.push(a.clone())`. `a` is a `&String`
-            //           (borrowed); `.clone()` deep-copies the `String`
-            //           so the new owned copy can be moved into the
-            //           vector. We cannot push the borrow itself --
-            //           `Vec<String>` requires owned `String`s and the
-            //           borrow's lifetime would not outlive `args`.
-            // Why:      Stash the positional file argument for later
-            //           scanning.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // files.push(a);
-            // ```
-            files.push(a.clone());
-        }
-        // What:     `i += 1;` advances to the next argv slot. Plain
-        //           integer increment; no Rust-specific magic.
-        // Why:      Move past the just-consumed flag/value.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // i += 1;
-        // ```
-        i += 1;
-    }
 
-    // What:     `unwrap_or_else(|| ...)` returns the inner `Some` value or
-    //           runs the closure to produce a fallback. The closure body
-    //           is a string literal converted to `String` via `.to_string()`.
-    // Why:      Default the rules path to `forbidden-strings.local.txt` in
-    //           cwd when neither `--rules` nor `FORBIDDEN_STRINGS_RULES`
-    //           is set, matching the conventional filename. The loader
-    //           emits a clear "file not found" error if the default
-    //           doesn't exist; we don't pre-check and shadow that error.
+            // What:     `return Ok(parse_error.exit_code());` converts clap's
+            //           display/error outcome into this function's normal exit-code
+            //           channel. Help and version return 0; invalid syntax returns 2.
+            // Why:      Keep `run_cli_from_env` testable without letting clap call
+            //           `std::process::exit` inside the library.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // return error.exitCode;
+            // ```
+            return Ok(parse_error.exit_code());
+        }
+    };
+
+    // What:     `cli.rules_path.or_else(|| env::var("...").ok()).unwrap_or_else(...)`
+    //           applies the existing rules-path precedence. `Option::or_else`
+    //           keeps clap's `Some(path)` when `--rules` was present; otherwise it
+    //           runs the closure that reads `FORBIDDEN_STRINGS_RULES`. `.ok()`
+    //           converts `Result<String, VarError>` into `Option<String>`.
+    //           `.unwrap_or_else(...)` supplies the owned default `String` only
+    //           when both sources are absent. Sibling type `&str` would borrow from
+    //           either argv or env storage; owned `String` is simpler and matches
+    //           the loader API.
+    // Why:      Preserve documented precedence: `--rules`, then env var, then
+    //           `./forbidden-strings.local.txt`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // const finalRulesPath = rulesPath ?? "forbidden-strings.local.txt";
+    // const rulesPath = cli.rulesPath ?? process.env.FORBIDDEN_STRINGS_RULES ??
+    //   "forbidden-strings.local.txt";
     // ```
-    let rules_path = rules_path.unwrap_or_else(|| "forbidden-strings.local.txt".to_string());
+    let rules_path = cli
+        .rules_path
+        .or_else(|| env::var("FORBIDDEN_STRINGS_RULES").ok())
+        .unwrap_or_else(|| "forbidden-strings.local.txt".to_string());
+
+    // What:     `let all = cli.all;` copies the parsed boolean flag. `bool` is a
+    //           tiny copy type, unlike owned `String` or `Vec<String>`.
+    // Why:      The rest of the run loop already branches on a local named `all`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const all = cli.all;
+    // ```
+    let all = cli.all;
+
+    // What:     `let mut files = cli.files;` moves the owned vector of parsed
+    //           positional file paths out of the `Cli` struct and makes the local
+    //           binding mutable. Sibling `Vec<&str>` would borrow, but clap gives us
+    //           owned `String`s that can outlive parsing.
+    // Why:      `--all` mode replaces this vector with walker output later; explicit
+    //           positional mode keeps the clap-parsed values.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // let files = cli.files;
+    // ```
+    let mut files = cli.files;
 
     // Run `load_ruleset` and `list_files` concurrently when --all is
     // set: rules loading is CPU-bound (regex compile + AC build);

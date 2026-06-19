@@ -846,13 +846,12 @@ fn all_mode_skips_configured_rules_file() {
 
 // What:     An unknown flag (`--no-such-flag`) must exit 2 (usage
 //           error) and surface the offending token on stderr.
-// Why:      Argv parsing falls through to a generic `--`/`-`-prefix
-//           reject arm. A regression that silently treated unknowns as
-//           positional file args would cause `forbidden-strings
-//           --typo-flag` to scan a file named `--typo-flag` -- a confusing
-//           silent failure, since the file does not exist and the
-//           downstream read would surface as a "read error" hit. Exit 2
-//           plus a "unknown flag" message is the right shape.
+// Why:      Clap rejects unknown options before the scanner runs. A regression
+//           that silently treated unknowns as positional file args would cause
+//           `forbidden-strings --typo-flag` to scan a file named `--typo-flag`,
+//           a confusing silent failure because the downstream read would surface
+//           as a file error. Exit 2 plus clap's "unexpected argument" message is
+//           the right shape.
 #[test]
 fn unknown_flag_exits_with_usage_error() {
     let output = Command::new(BIN)
@@ -867,8 +866,8 @@ fn unknown_flag_exits_with_usage_error() {
         code, stderr,
     );
     assert!(
-        stderr.contains("unknown flag"),
-        "stderr must mention unknown flag; got: {}",
+        stderr.contains("unexpected argument"),
+        "stderr must carry clap's unknown-argument wording; got: {}",
         stderr,
     );
     assert!(
