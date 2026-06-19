@@ -110,10 +110,24 @@ not thin out the comments.
 
 ## Comment template
 
-Every concept-introducing line gets a comment block above it, using the
-language's line-comment syntax (`//` in C / C++ / Rust / Go / Java / Swift /
-Kotlin, `#` in Python / Ruby / Elixir, `--` in Haskell / Lua / SQL, `;` in
-Lisp / Clojure):
+Every concept-introducing line gets a comment block above it, written in
+whichever of the language's comment forms fits the line's role. Do not assume a
+plain line comment:
+
+- A **documentable declaration** (function, type, field, variant, module,
+  constant, import, and so on) in a language that has **doc comments** takes the
+  block AS a doc comment, so the one block is also the item's API documentation:
+  in Rust, `///` above the item and `//!` at the top of the file; the equivalent
+  in other languages. Write the block once, in the doc-comment form. Never leave
+  it as a plain comment and bolt a separate one-line summary on top, and never
+  keep both a plain block and a doc-comment summary for the same item.
+- **Everything else** (statements and expressions inside a body, and languages
+  with no doc comments) takes an ordinary comment: `//` in C / C++ / Rust / Go /
+  Java / Swift / Kotlin, `#` in Python / Ruby / Elixir, `--` in Haskell / Lua /
+  SQL, `;` in Lisp / Clojure. Where a doc comment on a non-item is an error
+  (Rust `///` on a statement), this ordinary comment is the only legal choice.
+
+The block's fields are the same whichever comment form carries it:
 
 - **What:** name the construct in plain English. No jargon. If jargon is
   unavoidable (e.g. "preprocessor", "namespace"), define it in the same
@@ -219,9 +233,11 @@ int main() {
 
 In this 4-line program the comments outweigh the code roughly 15:1. **That
 is the intended ratio.** Other languages follow the same template by
-analogy; only the comment-syntax prefix changes (`//` → `#` → `--` → `;`).
-The lead-in stays `In TS you'd write (pseudocode):` regardless of source
-language, because the pseudocode block always contains TypeScript.
+analogy; only the comment form changes: a plain `//` / `#` / `--` / `;`
+comment, or the language's doc-comment form when the block sits above a
+documentable declaration. The lead-in stays `In TS you'd write (pseudocode):`
+regardless of source language, because the pseudocode block always contains
+TypeScript.
 
 If a real file feels too verbose, the answer is to make the file smaller
 (split into more functions, more files), **not** to thin out the comments.
@@ -232,6 +248,43 @@ These cases are taken from a real session where the skill was followed
 loosely. Each shows the **bad** output the agent produced and the **good**
 output the skill demands. Internalise the pattern, not just the specific
 construct.
+
+### Plain comment block with a stub doc comment bolted on (the rustdoc case)
+
+Bad — the dum-dum block is written as plain `//` comments, then a separate,
+name-derived doc comment is bolted on only to satisfy a "every item needs a doc
+comment" lint:
+
+````rust
+// What:     `const CEILING: f32 = ...` is the -1 dBTP linear-amplitude ceiling.
+// Why:      Normalised output must never exceed it.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const CEILING = 0.891;
+// ```
+/// Ceiling.
+const CEILING: f32 = 0.8912509;
+````
+
+Good — the block itself is the doc comment (`///`), so the one block both
+satisfies the lint and documents the item; there is no second summary:
+
+````rust
+/// What:     `const CEILING: f32 = ...` is the -1 dBTP linear-amplitude ceiling.
+/// Why:      Normalised output must never exceed it.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const CEILING = 0.891;
+/// ```
+const CEILING: f32 = 0.8912509;
+````
+
+The `/// Ceiling.` line only restates the name and splits the documentation into
+a real block plus a hollow summary. For a statement inside a function body (not a
+documentable item) the block stays plain `//`, because a doc comment there is a
+compile error.
 
 ### Bare wrapper-constructor tail (the `Ok(rules)` case)
 

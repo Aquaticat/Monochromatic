@@ -1052,8 +1052,10 @@ RDC:
  mirroring `require-tsdoc` for TypeScript.
  `///` outer or `//!` inner doc comment counts;
  plain `//` does NOT,
- so the `dum-dum-non-ts` `// What:`/`// Why:` block never satisfies it on its own:
- add a `///` summary directly above each item (and a `//!` atop each file) on top of the dum-dum block.
+ so on a documentable item write the `dum-dum-non-ts` `// What:`/`// Why:` block itself as `///` (and `//!` atop each file):
+ the one block is both the dum-dum explainer and the rustdoc, no separate summary.
+ Never keep a plain `//` block with a `///` name-stub bolted on;
+ statements inside a body stay plain `//` (a `///` there is a rustc `unused_doc_comments` error).
  Covers functions,
  structs,
  enums,
