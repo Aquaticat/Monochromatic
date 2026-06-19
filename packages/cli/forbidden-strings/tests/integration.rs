@@ -687,6 +687,69 @@ fn rules_flag_wins_over_env_var() {
     let _ = fs::remove_dir_all(&dir);
 }
 
+// What:     Repeating `--rules` should keep the last value, matching the old
+//           handwritten parser's assignment behaviour.
+// Why:      Clap rejects duplicate `ArgAction::Set` options unless configured to
+//           let later occurrences override earlier ones. CI wrappers can layer a
+//           default `--rules` before a caller-supplied override; the migration
+//           must not turn that shape into a usage error.
+#[test]
+fn repeated_rules_flag_uses_last_value() {
+    let dir = unique_tmp("rules-repeat");
+    let first_rules = dir.join("first-rules.txt");
+    fs::write(&first_rules, "UNRELATED_LITERAL_NEVER_PRESENT\n").expect("write first rules");
+    let second_rules = dir.join("second-rules.txt");
+    fs::write(&second_rules, "SECRET_NEEDLE_XYZ_LONG_ENOUGH\n").expect("write second rules");
+    let target = dir.join("target.txt");
+    fs::write(&target, "SECRET_NEEDLE_XYZ_LONG_ENOUGH\n").expect("write target");
+
+    let output = Command::new(BIN)
+        .args(["--rules"])
+        .arg(&first_rules)
+        .args(["--rules"])
+        .arg(&second_rules)
+        .arg(&target)
+        .output()
+        .expect("spawn binary");
+
+    assert!(
+        !output.status.success(),
+        "last repeated --rules value must drive matching; expected non-zero exit.\n\
+         stdout: {}\nstderr: {}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr),
+    );
+    let _ = fs::remove_dir_all(&dir);
+}
+
+// What:     `--rules` must accept a value whose path token begins with `-`.
+// Why:      The old manual parser treated the token immediately after `--rules`
+//           as a value, not as another flag. Clap needs `allow_hyphen_values` on
+//           that option to preserve the same path surface.
+#[test]
+fn rules_flag_accepts_hyphen_prefixed_path_value() {
+    let dir = unique_tmp("rules-hyphen-path");
+    let rules = dir.join("-rules.txt");
+    fs::write(&rules, "UNRELATED_LITERAL_NEVER_PRESENT\n").expect("write rules");
+    let target = dir.join("target.txt");
+    fs::write(&target, "SECRET_NEEDLE_XYZ_LONG_ENOUGH\n").expect("write target");
+
+    let output = Command::new(BIN)
+        .current_dir(&dir)
+        .args(["--rules", "-rules.txt", "target.txt"])
+        .output()
+        .expect("spawn binary");
+
+    assert!(
+        output.status.success(),
+        "hyphen-prefixed rules path should parse as a value and produce clean exit.\n\
+         stdout: {}\nstderr: {}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr),
+    );
+    let _ = fs::remove_dir_all(&dir);
+}
+
 // What:     With `FORBIDDEN_STRINGS_RULES` set and no `--rules` flag,
 //           the scanner must use the env-pointed rules file. Set it to
 //           a rules file whose literal MATCHES the target; expect a

@@ -114,6 +114,7 @@ See README.md for set-algebra rule examples and CI integration.\n\
     about = "Linear-time deny-list scanner for Git repos.",
     help_template = HELP_TEMPLATE,
     after_help = AFTER_HELP,
+    args_override_self = true,
 )]
 pub struct Cli {
     /// Optional path to the rule file passed with `--rules`.
@@ -124,6 +125,9 @@ pub struct Cli {
     //           a default before env fallback runs.
     // Why:      `lib.rs` must know whether CLI syntax supplied a path so it can
     //           apply the existing precedence: flag, env var, then default file.
+    //           `allow_hyphen_values` preserves the old manual parser behaviour
+    //           where the token after `--rules` was always the path, even when it
+    //           began with `-`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -133,6 +137,7 @@ pub struct Cli {
     #[arg(
         long = "rules",
         value_name = "PATH",
+        allow_hyphen_values = true,
         help = "Path to the rule file (one rule per line)"
     )]
     pub rules_path: Option<String>,
