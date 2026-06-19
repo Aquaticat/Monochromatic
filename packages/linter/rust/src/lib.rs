@@ -1,14 +1,15 @@
-// What:     Five `pub mod ...;` lines declare the crate's submodules, each living
-//           in the matching file (`config.rs`, `context.rs`, `diagnostic.rs`,
-//           `rule.rs`, and the `rules/` folder). `mod` is what compiles a file
-//           into the crate at all; `pub` re-exposes it to outside consumers and
-//           to the binary half.
+// What:     Six `pub mod ...;` lines declare the crate's submodules, each living
+//           in the matching file (`cli.rs`, `config.rs`, `context.rs`,
+//           `diagnostic.rs`, `rule.rs`, and the `rules/` folder). `mod` is what
+//           compiles a file into the crate at all; `pub` re-exposes it to outside
+//           consumers and to the binary half.
 // Why:      Split the linter into small, separately commentable files.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// export * from "./config"; export * from "./context"; /* ...and so on */
+// export * from "./cli"; export * from "./config"; /* ...and so on */
 // ```
+pub mod cli;
 pub mod config;
 pub mod context;
 pub mod diagnostic;
@@ -46,6 +47,16 @@ use std::path::Path;
 // ```
 use ignore::WalkBuilder;
 
+// What:     `use crate::cli::Cli;` imports the clap-backed parser output from
+//           this crate. `crate::` means "from the root of this same crate".
+// Why:      The run loop receives already-validated command-line options.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { Cli } from "./cli";
+// ```
+use crate::cli::Cli;
+
 // What:     `use crate::config::Config;` and the next three lines import this
 //           crate's own types and the rule registry.
 // Why:      The run loop builds a `Config`, makes `LintContext`s, collects
@@ -60,77 +71,41 @@ use crate::context::LintContext;
 use crate::diagnostic::{Diagnostic, Severity};
 use crate::rule::{all_rules, Rule};
 
-// What:     `struct Parsed { paths: Vec<String>, max_lines: usize }`. A private
-//           record holding parsed command-line options: the paths to scan and the
-//           budget. `Vec<String>` is an owned, growable array of owned strings.
-// Why:      Bundle the two parsed values so `parse_args` returns one thing.
+// What:     `pub fn run_cli(cli: &Cli) -> i32`. The library entry point. `&Cli` is
+//           a read-only borrow of clap's parsed options. `i32` is a 32-bit signed
+//           integer (siblings: `u32`, `u64`, `usize`) used here because process
+//           exit codes are conventionally represented as signed integers before
+//           `main` narrows them.
+// Why:      Keep lint behaviour in a testable library function while clap owns
+//           raw argv parsing in `main.rs`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// type Parsed = { paths: string[]; maxLines: number };
+// function runCli(cli: Cli): number { /* ... */ }
 // ```
-struct Parsed {
-    paths: Vec<String>,
-    max_lines: usize,
-}
-
-// What:     `pub fn run_cli_from_env() -> Result<i32, String>`. The library entry
-//           point. `Result<i32, String>` means it returns either `Ok(code)` (an
-//           exit code) or `Err(message)` (a fatal error string).
-// Why:      Hold all CLI behaviour in one testable function; `main.rs` just maps
-//           its result to an OS exit code.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// function runCliFromEnv(): number { /* ... */ }
-// ```
-pub fn run_cli_from_env() -> Result<i32, String> {
-    // What:     `let args: Vec<String> = std::env::args().skip(1).collect();`.
-    //           `std::env::args()` yields the process arguments (an iterator of
-    //           `String`); `.skip(1)` drops the program name; `.collect()`
-    //           gathers the rest into a `Vec<String>` (the `: Vec<String>`
-    //           annotation tells `collect` what to build).
-    // Why:      Get the user-supplied arguments to parse.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // const args = process.argv.slice(2);
-    // ```
-    let args: Vec<String> = std::env::args().skip(1).collect();
-
-    // What:     `let parsed = parse_args(&args)?;`. Lends `args` read-only to the
-    //           parser. The trailing `?` is the propagation operator: if
-    //           `parse_args` returned `Err(e)`, return that same `Err` from here
-    //           immediately; otherwise unwrap the `Ok` value into `parsed`.
-    // Why:      Turn raw arguments into structured options, bailing on bad input.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // const parsed = parseArgs(args);
-    // ```
-    let parsed = parse_args(&args)?;
-
-    // What:     `let config = Config { max_lines: parsed.max_lines };`. Builds the
-    //           settings struct from the parsed budget.
+pub fn run_cli(cli: &Cli) -> i32 {
+    // What:     `let config = Config { max_lines: cli.max_lines };`. Builds the
+    //           settings struct from clap's parsed budget.
     // Why:      Rules read the budget from here.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // const config = { maxLines: parsed.maxLines };
+    // const config = { maxLines: cli.maxLines };
     // ```
     let config = Config {
-        max_lines: parsed.max_lines,
+        max_lines: cli.max_lines,
     };
 
-    // What:     `let files = collect_rust_files(&parsed.paths);`. Lends the paths
-    //           and gets back an owned `Vec<String>` of `.rs` file paths.
+    // What:     `let files = collect_rust_files(&cli.paths);`. Lends the parsed
+    //           path vector and gets back an owned `Vec<String>` of `.rs` files.
+    //           The `&` is a read-only borrow, so `cli` keeps owning the paths.
     // Why:      The list of files to lint.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // const files = collectRustFiles(parsed.paths);
+    // const files = collectRustFiles(cli.paths);
     // ```
-    let files = collect_rust_files(&parsed.paths);
+    let files = collect_rust_files(&cli.paths);
 
     // What:     `let rules = all_rules();`. The enabled rule set as
     //           `Vec<Box<dyn Rule>>` (heap-boxed trait objects).
@@ -200,9 +175,8 @@ pub fn run_cli_from_env() -> Result<i32, String> {
         .iter()
         .any(|d| d.severity == Severity::Error);
 
-    // What:     `if any_error { Ok(1) } else { Ok(0) }`. `Ok(1)` / `Ok(0)`
-    //           construct the success variant of `Result` carrying the exit code.
-    //           The whole `if/else` is the tail expression, so it is returned.
+    // What:     `if any_error { 1 } else { 0 }`. The whole `if/else` is the tail
+    //           expression, so it is returned as the process status number.
     // Why:      1 signals "lint violations found", 0 signals "clean".
     //
     // In TS you'd write (pseudocode):
@@ -210,172 +184,10 @@ pub fn run_cli_from_env() -> Result<i32, String> {
     // return anyError ? 1 : 0;
     // ```
     if any_error {
-        Ok(1)
+        1
     } else {
-        Ok(0)
+        0
     }
-}
-
-// What:     `fn parse_args(args: &[String]) -> Result<Parsed, String>`. Private
-//           helper. `&[String]` is a borrowed slice of strings. Returns parsed
-//           options or an error message.
-// Why:      Read `--max N` / `--max=N` and treat every other argument as a path.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// function parseArgs(args: string[]): Parsed { /* ... */ }
-// ```
-fn parse_args(args: &[String]) -> Result<Parsed, String> {
-    // What:     `let mut paths: Vec<String> = Vec::new();`. Mutable empty vector to
-    //           collect path arguments.
-    // Why:      Gather everything that is not a flag.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // const paths: string[] = [];
-    // ```
-    let mut paths: Vec<String> = Vec::new();
-
-    // What:     `let mut max_lines: usize = Config::with_defaults().max_lines;`.
-    //           Builds a default `Config` and reads its budget field, so the
-    //           literal `300` lives in exactly one place (the constructor).
-    // Why:      Used unless `--max` overrides it; keeps one source of truth.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // let maxLines = withDefaults().maxLines;
-    // ```
-    let mut max_lines: usize = Config::with_defaults().max_lines;
-
-    // What:     `let mut index = 0usize;`. Manual cursor into `args` (we sometimes
-    //           need to consume the NEXT argument for `--max N`, so a plain
-    //           `for` loop is awkward).
-    // Why:      Walk arguments with lookahead.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // let index = 0;
-    // ```
-    let mut index = 0usize;
-
-    // What:     `while index < args.len()`. Loop until the cursor passes the end.
-    // Why:      Process each argument, advancing the cursor ourselves.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // while (index < args.length) { /* ... */ }
-    // ```
-    while index < args.len() {
-        // What:     `let arg = &args[index];`. Borrow the current argument as a
-        //           `&String`.
-        // Why:      Inspect it without copying.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // const arg = args[index];
-        // ```
-        let arg = &args[index];
-
-        // What:     `if arg == "--max"`. Compare the argument to the flag name.
-        // Why:      The space-separated form `--max 400` needs the next argument.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // if (arg === "--max") { /* ... */ }
-        // ```
-        if arg == "--max" {
-            // What:     `index += 1;`. Advance to the value argument.
-            // Why:      `--max` is followed by its number.
-            index += 1;
-
-            // What:     `let value = args.get(index).ok_or_else(|| "--max needs a
-            //           value".to_string())?;`. `args.get(index)` returns
-            //           `Option<&String>` (None if past the end, no panic).
-            //           `.ok_or_else(closure)` converts `None` into `Err(closure())`
-            //           and `Some(v)` into `Ok(v)`; the closure builds an owned
-            //           error `String`. The `?` then propagates any `Err` and
-            //           unwraps the `Ok` into `value`.
-            // Why:      Fail cleanly if `--max` is the last argument with no number.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // const value = args[index];
-            // if (value === undefined) throw new Error("--max needs a value");
-            // ```
-            let value = args
-                .get(index)
-                .ok_or_else(|| "--max needs a value".to_string())?;
-
-            // What:     `max_lines = value.parse::<usize>().map_err(|_| format!(
-            //           "invalid --max value: {value}"))?;`. `.parse::<usize>()`
-            //           tries to read the string as a `usize`, returning
-            //           `Result<usize, _>`. `.map_err(|_| ...)` replaces the
-            //           parser's error with our own message (the `_` ignores the
-            //           original). `?` propagates failure or unwraps the number.
-            // Why:      Accept only a valid non-negative integer budget.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // const n = Number(value);
-            // if (!Number.isInteger(n) || n < 0) throw new Error(`invalid --max value: ${value}`);
-            // maxLines = n;
-            // ```
-            max_lines = value
-                .parse::<usize>()
-                .map_err(|_| format!("invalid --max value: {value}"))?;
-        } else if let Some(rest) = arg.strip_prefix("--max=") {
-            // What:     `else if let Some(rest) = arg.strip_prefix("--max=")`.
-            //           `.strip_prefix(p)` returns `Some(remainder)` if `arg`
-            //           starts with `p`, else `None`. `if let Some(rest) = ...`
-            //           runs this branch only on a match, binding the remainder.
-            // Why:      Support the joined form `--max=400`.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // else if (arg.startsWith("--max=")) { const rest = arg.slice("--max=".length); /* parse */ }
-            // ```
-            max_lines = rest
-                .parse::<usize>()
-                .map_err(|_| format!("invalid --max value: {rest}"))?;
-        } else {
-            // What:     `paths.push(arg.clone());`. `.clone()` makes an OWNED copy
-            //           of the borrowed `&String` so the vector can own it.
-            // Why:      Treat any non-flag argument as a path to scan.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // paths.push(arg);
-            // ```
-            paths.push(arg.clone());
-        }
-
-        // What:     `index += 1;`. Move to the next argument.
-        // Why:      Advance the cursor each iteration.
-        index += 1;
-    }
-
-    // What:     `if paths.is_empty() { paths.push(".".to_string()); }`. If no path
-    //           was given, default to the current directory. `".".to_string()`
-    //           allocates an owned `String` from the borrowed literal.
-    // Why:      Running with no arguments should lint the working tree.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // if (paths.length === 0) paths.push(".");
-    // ```
-    if paths.is_empty() {
-        paths.push(".".to_string());
-    }
-
-    // What:     `Ok(Parsed { paths, max_lines })`. Wrap the built options in the
-    //           success variant. Tail expression, so it is returned.
-    // Why:      Hand structured options back to the caller.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // return { paths, maxLines };
-    // ```
-    Ok(Parsed { paths, max_lines })
 }
 
 // What:     `fn collect_rust_files(paths: &[String]) -> Vec<String>`. Borrow the

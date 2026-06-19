@@ -184,6 +184,33 @@ fn under_budget_exits_zero() {
     assert!(stdout.is_empty(), "under budget should print nothing: {stdout}");
 }
 
+// What:     `#[test] fn joined_max_value_exits_zero() { ... }`. Same clean path as
+//           above, but uses clap's joined flag form `--max=5`.
+// Why:      Preserve behaviour from the old parser while proving clap accepts the
+//           form through the real binary.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// it("accepts --max=value", () => { ... });
+// ```
+#[test]
+fn joined_max_value_exits_zero() {
+    // What:     `let (code, stdout) = run(&["--max=5", "fixtures/sample.rs"]);`.
+    //           The `=` keeps the flag name and value in one argv token.
+    // Why:      Confirm clap handles the previously supported joined spelling.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const { code, stdout } = run(["--max=5", "fixtures/sample.rs"]);
+    // ```
+    let (code, stdout) = run(&["--max=5", "fixtures/sample.rs"]);
+
+    // What:     two assertions: exit 0 and empty stdout.
+    // Why:      The joined spelling should be equivalent to `--max 5`.
+    assert_eq!(code, 0, "joined --max should exit 0");
+    assert!(stdout.is_empty(), "joined --max should print nothing: {stdout}");
+}
+
 // What:     `#[test] fn exempt_file_is_skipped() { ... }`. An over-budget fixture
 //           whose name ends in `_tests.rs`.
 // Why:      Exempt files are never reported, even with a tiny budget.

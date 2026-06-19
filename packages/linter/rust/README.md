@@ -85,7 +85,9 @@ accepted cost of maximal enforcement.
 
 ## Usage
 
-As a CLI, pass one or more paths (files or directories) and an optional budget:
+As a CLI, pass one or more paths (files or directories) and an optional budget.
+Argument parsing uses `clap`, so `--help`, `--version`, and validation come from
+`src/cli.rs`:
 
 ```sh
 # lint the current directory at the default budget of 300
@@ -109,15 +111,17 @@ path/to/file.rs:LINE: error[require-rustdoc]: Missing rustdoc on function "foo".
 ```sh
 mise run //packages/linter/rust:build         # cargo build --release
 mise run //packages/linter/rust:lint:clippy   # cargo clippy --release -- -D warnings
-mise run //packages/linter/rust:test          # cargo test --release
+mise run //packages/linter/rust:test          # cargo nextest run --release
 mise run //packages/linter/rust:lint:max-lines # dogfood: run the rule over this crate's src
 mise run //packages/linter/rust:run -- --max 200 some/path
 ```
 
 ## Module layout
 
-- `src/main.rs`: thin binary wrapper that maps the library result to an exit code.
-- `src/lib.rs`: `run_cli_from_env`, argument parsing, file discovery, the run loop.
+- `src/main.rs`: thin binary wrapper that asks clap to parse argv, then maps the
+  library result to an exit code.
+- `src/cli.rs`: clap declaration for `--max`, path positionals, help, and version.
+- `src/lib.rs`: `run_cli`, file discovery, and the run loop.
 - `src/context.rs`: `LintContext` and the code-line classifier (the only place
   that touches `ra_ap_syntax`).
 - `src/rule.rs`: the `Rule` trait and the rule registry.

@@ -25,6 +25,11 @@ name = "rust-linter"
 path = "src/main.rs"
 
 [dependencies]
+# `clap` owns argv parsing, generated help/version output, and validation for the
+# rust-linter binary. The derive feature keeps the command shape declared beside
+# the parsed `Cli` struct.
+clap = { version = "4", features = ["derive"] }
+
 # `ignore` is the gitignore-aware parallel file walker that ripgrep uses; we
 # use it to enumerate `.rs` files while automatically skipping `target/` and
 # anything else .gitignore excludes.
