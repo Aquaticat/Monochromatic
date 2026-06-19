@@ -1,3 +1,5 @@
+//! Library entry points, file discovery, and lint run loop.
+
 // What:     Six `pub mod ...;` lines declare the crate's submodules, each living
 //           in the matching file (`cli.rs`, `config.rs`, `context.rs`,
 //           `diagnostic.rs`, `rule.rs`, and the `rules/` folder). `mod` is what
@@ -9,11 +11,17 @@
 // ```ts
 // export * from "./cli"; export * from "./config"; /* ...and so on */
 // ```
+/// Clap-backed command-line parser module.
 pub mod cli;
+/// Runtime configuration and exemption predicates.
 pub mod config;
+/// Per-file parsed context shared by lint rules.
 pub mod context;
+/// Diagnostic payload and rendering types.
 pub mod diagnostic;
+/// Rule trait and enabled-rule registry.
 pub mod rule;
+/// Built-in lint rule implementations.
 pub mod rules;
 
 // What:     `use std::fs;` imports the standard filesystem module (we call
@@ -24,6 +32,7 @@ pub mod rules;
 // ```ts
 // import * as fs from "node:fs";
 // ```
+/// Imports filesystem helpers for reading Rust source files.
 use std::fs;
 
 // What:     `use std::path::Path;` imports the borrowed-path type used to test
@@ -34,6 +43,7 @@ use std::fs;
 // ```ts
 // import path from "node:path";
 // ```
+/// Imports path helpers for file and directory discovery.
 use std::path::Path;
 
 // What:     `use clap::Parser;` imports the trait that gives `Cli::parse()` its
@@ -45,6 +55,7 @@ use std::path::Path;
 // ```ts
 // import { parseArgs } from "some-cli-parser";
 // ```
+/// Imports clap parser trait for the compatibility entry point.
 use clap::Parser;
 
 // What:     `use ignore::WalkBuilder;` imports the gitignore-aware directory
@@ -56,6 +67,7 @@ use clap::Parser;
 // ```ts
 // import { walk } from "<gitignore-aware walker>";
 // ```
+/// Imports gitignore-aware directory walker.
 use ignore::WalkBuilder;
 
 // What:     `use crate::cli::Cli;` imports the clap-backed parser output from
@@ -66,6 +78,7 @@ use ignore::WalkBuilder;
 // ```ts
 // import { Cli } from "./cli";
 // ```
+/// Imports parsed command-line options.
 use crate::cli::Cli;
 
 // What:     `use crate::config::Config;` and the next three lines import this
@@ -77,9 +90,13 @@ use crate::cli::Cli;
 // ```ts
 // import { Config } from "./config";
 // ```
+/// Imports shared linter settings.
 use crate::config::Config;
+/// Imports parsed per-file lint context.
 use crate::context::LintContext;
+/// Imports diagnostic payload and severity types.
 use crate::diagnostic::{Diagnostic, Severity};
+/// Imports enabled-rule registry and rule trait.
 use crate::rule::{all_rules, Rule};
 
 /// Parse real process arguments with clap, then run the linter.
@@ -132,6 +149,7 @@ pub fn run_cli_from_env() -> Result<i32, String> {
 // ```ts
 // function runCli(cli: Cli): number { /* ... */ }
 // ```
+/// Run the linter from already-parsed command-line options.
 pub fn run_cli(cli: &Cli) -> i32 {
     // What:     `let config = Config { max_lines: cli.max_lines };`. Builds the
     //           settings struct from clap's parsed budget.
@@ -247,6 +265,7 @@ pub fn run_cli(cli: &Cli) -> i32 {
 // ```ts
 // function collectRustFiles(paths: string[]): string[] { /* ... */ }
 // ```
+/// Expand file and directory arguments into Rust source file paths.
 fn collect_rust_files(paths: &[String]) -> Vec<String> {
     // What:     `let mut files: Vec<String> = Vec::new();`. Accumulator for results.
     // Why:      Collect every discovered file path.
@@ -338,6 +357,7 @@ fn collect_rust_files(paths: &[String]) -> Vec<String> {
 // ```ts
 // function lintFile(path: string, config: Config, rules: Rule[], out: Diagnostic[]): void { /* ... */ }
 // ```
+/// Read one file and apply every enabled rule to it.
 fn lint_file(path: &str, config: &Config, rules: &[Box<dyn Rule>], out: &mut Vec<Diagnostic>) {
     // What:     `let source = match fs::read_to_string(path) { Ok(text) => text,
     //           Err(error) => { eprintln!(...); return; } };`. `fs::read_to_string`

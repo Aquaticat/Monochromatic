@@ -1,3 +1,5 @@
+//! Built-in lint rule modules and test modules.
+
 // What:     `pub mod max_lines;` declares a public submodule named `max_lines`,
 //           whose code lives in the sibling file `max_lines.rs`. `mod` is Rust's
 //           way of pulling another file into the module tree (there is no
@@ -8,6 +10,7 @@
 // ```ts
 // export * as maxLines from "./max-lines";
 // ```
+/// Max-lines lint rule module.
 pub mod max_lines;
 
 // What:     `#[cfg(test)] mod max_lines_tests;`. `#[cfg(test)]` is a conditional-
@@ -20,6 +23,7 @@ pub mod max_lines;
 // ```ts
 // // max-lines.test.ts, run only by the test runner
 // ```
+/// Unit tests for the max-lines rule.
 #[cfg(test)]
 mod max_lines_tests;
 
@@ -31,6 +35,7 @@ mod max_lines_tests;
 // ```ts
 // export * as requireRustdoc from "./require-rustdoc";
 // ```
+/// Require-rustdoc lint rule module.
 pub mod require_rustdoc;
 
 // What:     `#[cfg(test)] mod require_rustdoc_tests;`. Compiles the sibling test
@@ -41,5 +46,6 @@ pub mod require_rustdoc;
 // ```ts
 // // require-rustdoc.test.ts, run only by the test runner
 // ```
+/// Unit tests for the require-rustdoc rule.
 #[cfg(test)]
 mod require_rustdoc_tests;

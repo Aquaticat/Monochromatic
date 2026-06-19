@@ -1,3 +1,5 @@
+//! Binary entry point for the rust-linter CLI.
+
 /// Imports clap's parser trait so `Cli::parse()` is available in `main`.
 // What:     `use clap::Parser;` brings the `Parser` trait into this binary. Rust
 //           only lets trait methods such as `Cli::parse()` be called when the

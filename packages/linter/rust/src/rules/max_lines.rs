@@ -1,3 +1,5 @@
+//! Max-lines rule implementation.
+
 // What:     `use crate::config::{max_lines_exempt, Config};` imports two names
 //           from this crate's config module: the exemption predicate and the
 //           settings struct.
@@ -7,6 +9,7 @@
 // ```ts
 // import { maxLinesExempt, Config } from "../config";
 // ```
+/// Imports max-lines configuration and exemption predicate.
 use crate::config::{max_lines_exempt, Config};
 
 // What:     `use crate::context::LintContext;` imports the per-file bundle type.
@@ -16,6 +19,7 @@ use crate::config::{max_lines_exempt, Config};
 // ```ts
 // import { LintContext } from "../context";
 // ```
+/// Imports parsed per-file context.
 use crate::context::LintContext;
 
 // What:     `use crate::diagnostic::{Diagnostic, Severity};` imports the finding
@@ -26,6 +30,7 @@ use crate::context::LintContext;
 // ```ts
 // import { Diagnostic, Severity } from "../diagnostic";
 // ```
+/// Imports diagnostic payload and severity types.
 use crate::diagnostic::{Diagnostic, Severity};
 
 // What:     `use crate::rule::Rule;` imports the trait this rule implements.
@@ -35,6 +40,7 @@ use crate::diagnostic::{Diagnostic, Severity};
 // ```ts
 // import { Rule } from "../rule";
 // ```
+/// Imports rule trait implemented by this rule.
 use crate::rule::Rule;
 
 // What:     `use std::path::Path;` imports the borrowed-path type.
@@ -44,6 +50,7 @@ use crate::rule::Rule;
 // ```ts
 // import path from "node:path";
 // ```
+/// Imports path helper used by exemption checks.
 use std::path::Path;
 
 // What:     `pub struct MaxLines;`. A UNIT struct: a type with no fields, written
@@ -56,6 +63,7 @@ use std::path::Path;
 // ```ts
 // class MaxLines implements Rule { /* no fields */ }
 // ```
+/// Rule enforcing maximum code lines per Rust file.
 pub struct MaxLines;
 
 // What:     `impl Rule for MaxLines { ... }`. Provides the trait's methods for the
@@ -67,6 +75,7 @@ pub struct MaxLines;
 // ```ts
 // class MaxLines implements Rule { id() { return "max-lines"; } check(...) { ... } }
 // ```
+/// Rule trait implementation for the max-lines check.
 impl Rule for MaxLines {
     // What:     `fn id(&self) -> &'static str { "max-lines" }`. Returns the fixed
     //           rule id. The string literal is the tail expression, so it is
@@ -77,6 +86,7 @@ impl Rule for MaxLines {
     // ```ts
     // id(): string { return "max-lines"; }
     // ```
+    /// Return max-lines rule identifier.
     fn id(&self) -> &'static str {
         "max-lines"
     }
@@ -90,6 +100,7 @@ impl Rule for MaxLines {
     // ```ts
     // check(ctx: LintContext, cfg: Config, out: Diagnostic[]): void { /* ... */ }
     // ```
+    /// Append a diagnostic when a nonexempt file exceeds configured budget.
     fn check(&self, context: &LintContext, config: &Config, out: &mut Vec<Diagnostic>) {
         // What:     `let path = Path::new(&context.path);`. `Path::new` wraps the
         //           borrowed string (`&context.path`, a `&String` that coerces to

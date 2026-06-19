@@ -1,3 +1,5 @@
+//! Diagnostic severity, payload, and rendering types.
+
 // What:     `pub enum Severity { Error, Warn }` declares a type with exactly two
 //           named values (a "sum type" / "tagged union"). `pub` makes it visible
 //           outside this file.
@@ -8,9 +10,12 @@
 // ```ts
 // type Severity = "error" | "warn";
 // ```
+/// Severity level attached to one diagnostic.
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub enum Severity {
+    /// Finding that fails the linter run.
     Error,
+    /// Advisory finding that does not fail the linter run.
     Warn,
 }
 
@@ -22,6 +27,7 @@ pub enum Severity {
 // ```ts
 // // methods on Severity would live in a class or as free functions
 // ```
+/// Rendering helpers for diagnostic severity values.
 impl Severity {
     // What:     `pub fn label(&self) -> &'static str`. `&self` borrows the value
     //           (read-only) instead of consuming it. `&'static str` is a
@@ -35,6 +41,7 @@ impl Severity {
     // ```ts
     // label(): string { return this; }
     // ```
+    /// Return the lowercase label printed in diagnostic output.
     pub fn label(&self) -> &'static str {
         // What:     `if *self == Severity::Error { ... } else { ... }`. `*self`
         //           dereferences the borrowed `&self` back to a `Severity` value
@@ -67,17 +74,20 @@ impl Severity {
 //   ruleId: string; severity: Severity; message: string; path: string; line: number;
 // };
 // ```
+/// Complete user-facing finding emitted by one lint rule.
 #[derive(Clone, Debug)]
 pub struct Diagnostic {
     // What:     `rule_id: &'static str`. A borrowed string slice living for the
     //           whole program. Sibling: `String` (owned, heap). We use the
     //           borrowed form because rule ids are fixed literals like "max-lines".
     // Why:      Identify which rule produced the finding.
+    /// Stable lint rule identifier.
     pub rule_id: &'static str,
 
     // What:     `severity: Severity`. One of the two-variant enum above, stored
     //           by value (it is `Copy`, so it is duplicated cheaply, not moved).
     // Why:      Decide exit code and how to label the line.
+    /// Severity that controls output labeling and exit status.
     pub severity: Severity,
 
     // What:     `message: String`. An OWNED, heap-allocated, growable UTF-8
@@ -85,12 +95,14 @@ pub struct Diagnostic {
     //           message is built at runtime (it contains numbers) and must
     //           outlive the function that created it.
     // Why:      Hold the human-readable explanation.
+    /// Human-readable explanation of the finding.
     pub message: String,
 
     // What:     `path: String`. OWNED string holding the file path as text.
     //           Sibling: `&str` or `std::path::Path`; we keep a plain owned
     //           `String` because it is only ever printed, never traversed.
     // Why:      Tell the reader which file the finding is in.
+    /// File path associated with the finding.
     pub path: String,
 
     // What:     `line: usize`. `usize` is the unsigned integer wide enough to
@@ -98,6 +110,7 @@ pub struct Diagnostic {
     //           64-bit OS). Siblings: `u32`, `u64`, `i32`, `i64`. 1-based.
     // Why:      `usize` because line numbers are counts/indices, which every Rust
     //           collection API expresses as `usize`; mixing widths forces casts.
+    /// One-based source line associated with the finding.
     pub line: usize,
 }
 
@@ -108,6 +121,7 @@ pub struct Diagnostic {
 // ```ts
 // function renderDiagnostic(d: Diagnostic): string { /* ... */ }
 // ```
+/// Rendering helpers for diagnostic values.
 impl Diagnostic {
     // What:     `pub fn render(&self) -> String`. Borrows the diagnostic
     //           read-only (`&self`) and returns a freshly built OWNED `String`.
@@ -119,6 +133,7 @@ impl Diagnostic {
     //   return `${this.path}:${this.line}: ${this.severity}[${this.ruleId}]: ${this.message}`;
     // }
     // ```
+    /// Render this diagnostic as one CLI output line.
     pub fn render(&self) -> String {
         // What:     `format!(...)` is the macro (the `!`) that builds a new
         //           `String` from a template, like a template literal. `{}`

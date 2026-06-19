@@ -1,3 +1,5 @@
+//! Require-rustdoc rule implementation.
+
 // What:     `use crate::config::{missing_rustdoc_exempt, Config};` imports the
 //           skip predicate and the settings struct from this crate's config
 //           module. `crate::` means "from the root of this same crate", not an
@@ -10,6 +12,7 @@
 // ```ts
 // import { missingRustdocExempt, Config } from "../config";
 // ```
+/// Imports require-rustdoc configuration and exemption predicate.
 use crate::config::{missing_rustdoc_exempt, Config};
 
 // What:     `use crate::context::LintContext;` imports the per-file bundle type.
@@ -19,6 +22,7 @@ use crate::config::{missing_rustdoc_exempt, Config};
 // ```ts
 // import { LintContext } from "../context";
 // ```
+/// Imports parsed per-file context.
 use crate::context::LintContext;
 
 // What:     `use crate::diagnostic::{Diagnostic, Severity};` imports the finding
@@ -29,6 +33,7 @@ use crate::context::LintContext;
 // ```ts
 // import { Diagnostic, Severity } from "../diagnostic";
 // ```
+/// Imports diagnostic payload and severity types.
 use crate::diagnostic::{Diagnostic, Severity};
 
 // What:     `use crate::rule::Rule;` imports the trait this rule implements.
@@ -38,6 +43,7 @@ use crate::diagnostic::{Diagnostic, Severity};
 // ```ts
 // import { Rule } from "../rule";
 // ```
+/// Imports rule trait implemented by this rule.
 use crate::rule::Rule;
 
 // What:     `use ra_ap_syntax::ast::DocCommentIter;` imports rust-analyzer's
@@ -50,6 +56,7 @@ use crate::rule::Rule;
 // ```ts
 // import { DocCommentIter } from "<rust-parser>/ast";
 // ```
+/// Imports rust-analyzer doc-comment iterator.
 use ra_ap_syntax::ast::DocCommentIter;
 
 // What:     `use ra_ap_syntax::{SyntaxKind, SyntaxNode};`. `SyntaxKind` is the big
@@ -62,6 +69,7 @@ use ra_ap_syntax::ast::DocCommentIter;
 // ```ts
 // import { SyntaxKind, SyntaxNode } from "<rust-parser>";
 // ```
+/// Imports syntax node and kind types used by AST checks.
 use ra_ap_syntax::{SyntaxKind, SyntaxNode};
 
 // What:     `use std::path::Path;` imports the borrowed-path type.
@@ -71,6 +79,7 @@ use ra_ap_syntax::{SyntaxKind, SyntaxNode};
 // ```ts
 // import path from "node:path";
 // ```
+/// Imports path helper used by exemption checks.
 use std::path::Path;
 
 // What:     `const KIND_LABELS: &[(SyntaxKind, &str)] = &[ ... ];`. A compile-time
@@ -88,6 +97,7 @@ use std::path::Path;
 // ```ts
 // const KIND_LABELS: [SyntaxKind, string][] = [ [SyntaxKind.FN, "function"], ... ];
 // ```
+/// Node kinds that require rustdoc and their diagnostic labels.
 const KIND_LABELS: &[(SyntaxKind, &str)] = &[
     (SyntaxKind::FN, "function"),
     (SyntaxKind::STRUCT, "struct"),
@@ -124,6 +134,7 @@ const KIND_LABELS: &[(SyntaxKind, &str)] = &[
 // ```ts
 // const ITEM_LIST_PARENTS: SyntaxKind[] = [SyntaxKind.SOURCE_FILE, SyntaxKind.ITEM_LIST, ...];
 // ```
+/// Parent node kinds that make a macro call an item-position macro.
 const ITEM_LIST_PARENTS: &[SyntaxKind] = &[
     SyntaxKind::SOURCE_FILE,
     SyntaxKind::ITEM_LIST,
@@ -141,6 +152,7 @@ const ITEM_LIST_PARENTS: &[SyntaxKind] = &[
 // ```ts
 // function kindIsDocumented(kind: SyntaxKind): boolean { return KIND_LABELS.some(p => p[0] === kind); }
 // ```
+/// Return whether a syntax kind is in the documentable-kind table.
 fn kind_is_documented(kind: SyntaxKind) -> bool {
     // What:     `KIND_LABELS.iter().any(|pair| pair.0 == kind)`. `.iter()` borrows
     //           each `&(SyntaxKind, &str)`; `.any(closure)` is true when the
@@ -165,6 +177,7 @@ fn kind_is_documented(kind: SyntaxKind) -> bool {
 // ```ts
 // function macroCallAtItemPosition(node: SyntaxNode): boolean { /* ... */ }
 // ```
+/// Return whether a macro call is used where rustdoc can attach.
 fn macro_call_at_item_position(node: &SyntaxNode) -> bool {
     // What:     `node.parent().is_some_and(|parent| ITEM_LIST_PARENTS.contains(
     //           &parent.kind()))`. `node.parent()` returns `Option<SyntaxNode>`
@@ -193,6 +206,7 @@ fn macro_call_at_item_position(node: &SyntaxNode) -> bool {
 // ```ts
 // function requiresRustdoc(node: SyntaxNode): boolean { /* ... */ }
 // ```
+/// Return whether a syntax node must carry rustdoc.
 fn requires_rustdoc(node: &SyntaxNode) -> bool {
     // What:     `let kind = node.kind();`. The node's `SyntaxKind`.
     // Why:      Both gates below branch on it.
@@ -247,6 +261,7 @@ fn requires_rustdoc(node: &SyntaxNode) -> bool {
 // ```ts
 // function hasDocComment(node: SyntaxNode): boolean { /* ... */ }
 // ```
+/// Return whether a syntax node already has rustdoc attached.
 fn has_doc_comment(node: &SyntaxNode) -> bool {
     // What:     `DocCommentIter::from_syntax_node(node).next().is_some()`. Builds
     //           the doc-comment iterator over this node's own child tokens (a `///`
@@ -276,6 +291,7 @@ fn has_doc_comment(node: &SyntaxNode) -> bool {
 // ```ts
 // function itemName(node: SyntaxNode): string | undefined { /* ... */ }
 // ```
+/// Return a syntax node name when the item has one.
 fn item_name(node: &SyntaxNode) -> Option<String> {
     // What:     `node.children().find(|child| child.kind() == SyntaxKind::NAME)
     //           .map(|child| child.text().to_string())`. `.children()` yields the
@@ -306,6 +322,7 @@ fn item_name(node: &SyntaxNode) -> Option<String> {
 // ```ts
 // function kindLabel(kind: SyntaxKind): string { /* ... */ }
 // ```
+/// Return human-readable label for a documentable syntax kind.
 fn kind_label(kind: SyntaxKind) -> &'static str {
     // What:     `KIND_LABELS.iter().find(|pair| pair.0 == kind).map(|pair| pair.1)
     //           .unwrap_or("item")`. Find the matching row, take its label (the
@@ -333,6 +350,7 @@ fn kind_label(kind: SyntaxKind) -> &'static str {
 // ```ts
 // function describeMissing(node: SyntaxNode): string { /* ... */ }
 // ```
+/// Build diagnostic message for one undocumented syntax node.
 fn describe_missing(node: &SyntaxNode) -> String {
     // What:     `let label = kind_label(node.kind());`. The human word for the kind.
     // Why:      Both message shapes start with it.
@@ -387,6 +405,7 @@ fn describe_missing(node: &SyntaxNode) -> String {
 // ```ts
 // class RequireRustdoc implements Rule { /* no fields */ }
 // ```
+/// Rule enforcing rustdoc on documentable Rust items.
 pub struct RequireRustdoc;
 
 // What:     `impl Rule for RequireRustdoc { ... }`. Provides the trait's methods.
@@ -396,6 +415,7 @@ pub struct RequireRustdoc;
 // ```ts
 // class RequireRustdoc implements Rule { id() {...} check(...) {...} }
 // ```
+/// Rule trait implementation for rustdoc enforcement.
 impl Rule for RequireRustdoc {
     // What:     `fn id(&self) -> &'static str { "require-rustdoc" }`. Returns the
     //           fixed rule id. The string literal is the tail expression.
@@ -405,6 +425,7 @@ impl Rule for RequireRustdoc {
     // ```ts
     // id(): string { return "require-rustdoc"; }
     // ```
+    /// Return require-rustdoc rule identifier.
     fn id(&self) -> &'static str {
         "require-rustdoc"
     }
@@ -420,6 +441,7 @@ impl Rule for RequireRustdoc {
     // ```ts
     // check(ctx: LintContext, _cfg: Config, out: Diagnostic[]): void { /* ... */ }
     // ```
+    /// Append diagnostics for undocumented nonexempt syntax nodes.
     fn check(&self, context: &LintContext, _config: &Config, out: &mut Vec<Diagnostic>) {
         // What:     `let path = Path::new(&context.path);`. Wrap the borrowed path
         //           string as a `&Path` without copying.

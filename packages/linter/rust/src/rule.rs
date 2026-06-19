@@ -1,3 +1,5 @@
+//! Rule trait and registry for enabled lint rules.
+
 // What:     `use crate::config::Config;` imports the settings type from this
 //           crate. `crate::` means "from the root of this same crate" (not an
 //           external dependency).
@@ -7,6 +9,7 @@
 // ```ts
 // import { Config } from "./config";
 // ```
+/// Imports shared rule configuration.
 use crate::config::Config;
 
 // What:     `use crate::context::LintContext;` imports the per-file bundle.
@@ -16,6 +19,7 @@ use crate::config::Config;
 // ```ts
 // import { LintContext } from "./context";
 // ```
+/// Imports parsed per-file context.
 use crate::context::LintContext;
 
 // What:     `use crate::diagnostic::Diagnostic;` imports the finding record.
@@ -25,6 +29,7 @@ use crate::context::LintContext;
 // ```ts
 // import { Diagnostic } from "./diagnostic";
 // ```
+/// Imports diagnostic payload type.
 use crate::diagnostic::Diagnostic;
 
 // What:     `pub trait Rule { ... }`. A `trait` is a set of methods a type must
@@ -36,12 +41,14 @@ use crate::diagnostic::Diagnostic;
 // ```ts
 // interface Rule { id(): string; check(ctx: LintContext, cfg: Config, out: Diagnostic[]): void; }
 // ```
+/// Shared interface implemented by every lint rule.
 pub trait Rule {
     // What:     `fn id(&self) -> &'static str;`. A method signature with no body
     //           (implementors fill it in). `&self` borrows the rule read-only;
     //           `&'static str` is a program-lifetime borrowed string (the rule's
     //           fixed name). Sibling return type: owned `String`.
     // Why:      Name the rule for diagnostics and config.
+    /// Return stable rule identifier used in diagnostics.
     fn id(&self) -> &'static str;
 
     // What:     `fn check(&self, context: &LintContext, config: &Config, out: &mut
@@ -58,6 +65,7 @@ pub trait Rule {
     // ```ts
     // check(ctx: LintContext, cfg: Config, out: Diagnostic[]): void;
     // ```
+    /// Inspect one file context and append diagnostics.
     fn check(&self, context: &LintContext, config: &Config, out: &mut Vec<Diagnostic>);
 }
 
@@ -73,6 +81,7 @@ pub trait Rule {
 // ```ts
 // function allRules(): Rule[] { return [new MaxLines()]; }
 // ```
+/// Build the enabled lint rule set.
 pub fn all_rules() -> Vec<Box<dyn Rule>> {
     // What:     `vec![Box::new(...) as Box<dyn Rule>, Box::new(...)]`. `vec![...]`
     //           builds a `Vec`. `Box::new(value)` moves `value` onto the heap and

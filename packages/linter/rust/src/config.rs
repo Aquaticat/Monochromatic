@@ -1,3 +1,5 @@
+//! Configuration defaults and path-based lint exemptions.
+
 // What:     `use std::path::{Component, Path};` imports two standard-library
 //           types for filesystem paths:
 //             - `Path`: a borrowed, OS-aware path (sibling: owned `PathBuf`).
@@ -9,6 +11,7 @@
 // ```ts
 // import path from "node:path";
 // ```
+/// Imports filesystem path types used by exemption predicates.
 use std::path::{Component, Path};
 
 // What:     `pub struct Config { pub max_lines: usize }` is the linter's settings
@@ -21,7 +24,9 @@ use std::path::{Component, Path};
 // ```ts
 // type Config = { maxLines: number };
 // ```
+/// Runtime settings shared by all lint rules.
 pub struct Config {
+    /// Maximum nonblank, noncomment Rust code lines allowed per enforced file.
     pub max_lines: usize,
 }
 
@@ -32,6 +37,7 @@ pub struct Config {
 // ```ts
 // function withDefaults(): Config { return { maxLines: 300 }; }
 // ```
+/// Constructors for runtime linter settings.
 impl Config {
     // What:     `pub fn with_defaults() -> Self`. Returns a fresh `Config` (no
     //           `self` parameter, so it is an associated function / static method).
@@ -41,6 +47,7 @@ impl Config {
     // ```ts
     // static withDefaults(): Config { return { maxLines: 300 }; }
     // ```
+    /// Build repository-default linter settings.
     pub fn with_defaults() -> Self {
         // What:     `Self { max_lines: 300 }`. Builds the struct; the literal 300
         //           is the budget. Tail expression, so it is returned.
@@ -67,6 +74,7 @@ impl Config {
 // ```ts
 // function maxLinesExempt(p: string): boolean { /* ... */ }
 // ```
+/// Return whether the max-lines rule should skip `path`.
 pub fn max_lines_exempt(path: &Path) -> bool {
     // What:     `if let Some(name) = path.file_name().and_then(|n| n.to_str())`.
     //           `path.file_name()` returns `Option<&OsStr>` (the last segment, or
@@ -177,6 +185,7 @@ pub fn max_lines_exempt(path: &Path) -> bool {
 // ```ts
 // function missingRustdocExempt(p: string): boolean { /* ... */ }
 // ```
+/// Return whether the require-rustdoc rule should skip `path`.
 pub fn missing_rustdoc_exempt(path: &Path) -> bool {
     // What:     `if let Some(name) = path.file_name().and_then(|n| n.to_str())`.
     //           `path.file_name()` returns `Option<&OsStr>` (the last segment, or

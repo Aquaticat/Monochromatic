@@ -1,3 +1,5 @@
+//! Per-file lint context built from rust-analyzer syntax trees.
+
 // What:     `use ra_ap_syntax::{...}` imports four names from rust-analyzer's
 //           lossless-syntax-tree crate:
 //             - `Edition`: an enum picking which Rust edition's grammar to parse
@@ -21,6 +23,7 @@
 // ```ts
 // import { Edition, NodeOrToken, SourceFile, SyntaxKind, SyntaxNode } from "<rust-parser>";
 // ```
+/// Imports rust-analyzer syntax tree types used to parse and classify Rust source.
 use ra_ap_syntax::{Edition, NodeOrToken, SourceFile, SyntaxKind, SyntaxNode};
 
 // What:     `pub struct LintContext { ... }` is the per-file bundle handed to
@@ -33,15 +36,18 @@ use ra_ap_syntax::{Edition, NodeOrToken, SourceFile, SyntaxKind, SyntaxNode};
 // ```ts
 // type LintContext = { path: string; source: string; codeLines: number[] };
 // ```
+/// Parsed source bundle shared by every lint rule for one file.
 pub struct LintContext {
     // What:     `pub path: String`. OWNED string of the file path. Sibling: `&str`.
     // Why:      Diagnostics print it; owning it frees the context from the
     //           lifetime of whoever discovered the path.
+    /// File path displayed in diagnostics.
     pub path: String,
 
     // What:     `pub source: String`. OWNED full file contents.
     // Why:      Kept so future rules can inspect raw text; also the basis of the
     //           line computations below.
+    /// Full source text read from disk.
     pub source: String,
 
     // What:     `code_lines: Vec<usize>`. `Vec<usize>` is a heap-allocated,
@@ -52,6 +58,7 @@ pub struct LintContext {
     //           token.
     // Why:      This is exactly oxlint's "lines after skipping blanks and
     //           comments"; computing it once lets max-lines just read its length.
+    /// One-based line numbers that contain Rust code after skipping blanks and comments.
     code_lines: Vec<usize>,
 
     // What:     `syntax: SyntaxNode`. The root node of the parsed lossless tree,
@@ -62,6 +69,7 @@ pub struct LintContext {
     // Why:      AST-based rules (such as require-rustdoc) need to walk the tree;
     //           parsing once here and lending the result avoids re-reading and
     //           re-parsing the file inside every rule.
+    /// Parsed syntax tree root reused by AST-based rules.
     syntax: SyntaxNode,
 
     // What:     `line_starts: Vec<usize>`. The byte offset at which each line
@@ -71,6 +79,7 @@ pub struct LintContext {
     // Why:      Turn an AST node's byte offset into a 1-based line number for
     //           diagnostics, via the `line_at_offset()` accessor below; computed
     //           once and reused.
+    /// Byte offsets where each source line begins.
     line_starts: Vec<usize>,
 }
 
@@ -81,6 +90,7 @@ pub struct LintContext {
 // ```ts
 // class LintContext { /* ... */ }
 // ```
+/// Constructors and accessors for per-file lint context.
 impl LintContext {
     // What:     `pub fn new(path: String, source: String) -> Self`. Takes
     //           OWNERSHIP of both strings (no `&`), parses, and returns a new
@@ -91,6 +101,7 @@ impl LintContext {
     // ```ts
     // static create(path: string, source: string): LintContext { /* ... */ }
     // ```
+    /// Parse source text and precompute reusable per-file indexes.
     pub fn new(path: String, source: String) -> Self {
         // What:     `let line_starts = compute_line_starts(&source);`. `&source`
         //           lends the string read-only to the helper (we are not giving
@@ -170,6 +181,7 @@ impl LintContext {
     // ```ts
     // codeLineCount(): number { return this.codeLines.length; }
     // ```
+    /// Return count of lines that contain Rust code.
     pub fn code_line_count(&self) -> usize {
         // What:     `self.code_lines.len()`. `.len()` returns the element count as
         //           `usize`. Tail expression, so it is returned.
@@ -194,6 +206,7 @@ impl LintContext {
     // ```ts
     // codeLineAt(i: number): number | undefined { return this.codeLines[i]; }
     // ```
+    /// Return one-based source line for code-line index.
     pub fn code_line_at(&self, index: usize) -> Option<usize> {
         // What:     `self.code_lines.get(index).copied()`. `.get(index)` returns
         //           `Option<&usize>` (a borrowed maybe-reference, no panic on
@@ -222,6 +235,7 @@ impl LintContext {
     // ```ts
     // syntaxNode(): SyntaxNode { return this.syntax; }
     // ```
+    /// Return borrowed parsed syntax tree root.
     pub fn syntax_node(&self) -> &SyntaxNode {
         // What:     `&self.syntax`. Lends out the stored root node. Tail
         //           expression, so it is returned.
@@ -246,6 +260,7 @@ impl LintContext {
     // ```ts
     // lineAtOffset(offset: number): number { return lineIndex(offset, this.lineStarts) + 1; }
     // ```
+    /// Convert a byte offset into a one-based source line.
     pub fn line_at_offset(&self, offset: usize) -> usize {
         // What:     `line_index(offset, &self.line_starts) + 1`. `line_index`
         //           returns the 0-based line index for the offset (binary search
@@ -270,6 +285,7 @@ impl LintContext {
 // ```ts
 // function computeLineStarts(source: string): number[] { /* ... */ }
 // ```
+/// Compute byte offsets where each source line begins.
 fn compute_line_starts(source: &str) -> Vec<usize> {
     // What:     `let mut starts = vec![0usize];`. `vec![...]` is the macro that
     //           builds a `Vec`. `mut` marks the binding mutable (we will push to
@@ -336,6 +352,7 @@ fn compute_line_starts(source: &str) -> Vec<usize> {
 // ```ts
 // function lineIndex(offset: number, lineStarts: number[]): number { /* ... */ }
 // ```
+/// Convert a byte offset into a zero-based line index.
 fn line_index(offset: usize, line_starts: &[usize]) -> usize {
     // What:     `line_starts.partition_point(|&s| s <= offset)`. `partition_point`
     //           does a binary search over the sorted slice and returns the count
@@ -371,6 +388,7 @@ fn line_index(offset: usize, line_starts: &[usize]) -> usize {
 // ```ts
 // function computeCodeLines(node: SyntaxNode, lineStarts: number[]): number[] { /* ... */ }
 // ```
+/// Compute one-based lines that contain nontrivia Rust tokens.
 fn compute_code_lines(node: &SyntaxNode, line_starts: &[usize]) -> Vec<usize> {
     // What:     `let mut is_code = vec![false; line_starts.len()];`. Builds a
     //           growable boolean array, one slot per line, all initially false.
