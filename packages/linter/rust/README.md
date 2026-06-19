@@ -121,7 +121,8 @@ mise run //packages/linter/rust:run -- --max 200 some/path
 - `src/main.rs`: thin binary wrapper that asks clap to parse argv, then maps the
   library result to an exit code.
 - `src/cli.rs`: clap declaration for `--max`, path positionals, help, and version.
-- `src/lib.rs`: `run_cli`, file discovery, and the run loop.
+- `src/lib.rs`: `run_cli`, the compatibility `run_cli_from_env` wrapper, file
+  discovery, and the run loop.
 - `src/context.rs`: `LintContext` and the code-line classifier (the only place
   that touches `ra_ap_syntax`).
 - `src/rule.rs`: the `Rule` trait and the rule registry.

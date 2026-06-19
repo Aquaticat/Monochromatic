@@ -20,18 +20,19 @@
 // ```
 use std::process::Command;
 
-// What:     `fn run(args: &[&str]) -> (i32, String)`. Helper that runs the binary
-//           with the given arguments and returns the `(exit_code, stdout)` pair.
-//           `&[&str]` is a borrowed slice of borrowed string slices. `(i32,
-//           String)` is a tuple: a 32-bit signed exit code and an owned stdout
-//           string.
-// Why:      All three tests differ only in arguments and expectations.
+// What:     `fn run_with_stderr(args: &[&str]) -> (i32, String, String)`.
+//           Helper that runs the binary with the given arguments and returns the
+//           `(exit_code, stdout, stderr)` triple. `&[&str]` is a borrowed slice of
+//           borrowed string slices. `(i32, String, String)` is a tuple: a 32-bit
+//           signed exit code plus owned stdout and stderr strings.
+// Why:      Clap-specific tests need stderr, while ordinary lint tests mostly read
+//           stdout diagnostics.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function run(args: string[]): { code: number; stdout: string } { /* ... */ }
+// function runWithStderr(args: string[]): { code: number; stdout: string; stderr: string } { /* ... */ }
 // ```
-fn run(args: &[&str]) -> (i32, String) {
+fn run_with_stderr(args: &[&str]) -> (i32, String, String) {
     // What:     `let binary = env!("CARGO_BIN_EXE_rust-linter");`. `env!` is a
     //           macro that reads an environment variable AT COMPILE TIME. Cargo
     //           sets `CARGO_BIN_EXE_<bin-name>` to the path of the built binary
@@ -89,11 +90,11 @@ fn run(args: &[&str]) -> (i32, String) {
     //           `Result<Output, io::Error>`; `.expect(msg)` unwraps the `Ok` or
     //           panics with `msg` (acceptable in a test: a spawn failure should
     //           fail loudly).
-    // Why:      Capture the exit status and stdout.
+    // Why:      Capture the exit status, stdout, and stderr.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // const output = execFileSync(binary, argv, options);
+    // const output = spawnSync(binary, argv, options);
     // ```
     let output = command.output().expect("failed to run rust-linter");
 
@@ -113,16 +114,62 @@ fn run(args: &[&str]) -> (i32, String) {
     //           borrows it. `String::from_utf8_lossy` decodes bytes to text,
     //           replacing any invalid UTF-8; `.into_owned()` yields an owned
     //           `String`.
-    // Why:      Inspect the printed diagnostics as text.
+    // Why:      Inspect printed lint diagnostics and clap help text as text.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // const stdout = output.toString("utf8");
+    // const stdout = output.stdout.toString("utf8");
     // ```
     let stdout = String::from_utf8_lossy(&output.stdout).into_owned();
 
-    // What:     `(code, stdout)`. Tail expression: return the pair as a tuple.
-    // Why:      Hand both values back to the test.
+    // What:     `let stderr = String::from_utf8_lossy(&output.stderr).into_owned();`.
+    //           Same lossy UTF-8 conversion as stdout, but for the child process's
+    //           error stream.
+    // Why:      Clap writes parse errors to stderr, so invalid-argument tests need
+    //           this text.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const stderr = output.stderr.toString("utf8");
+    // ```
+    let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
+
+    // What:     `(code, stdout, stderr)`. Tail expression: return the triple as a
+    //           tuple.
+    // Why:      Hand every observable process result back to the test.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // return { code, stdout, stderr };
+    // ```
+    (code, stdout, stderr)
+}
+
+// What:     `fn run(args: &[&str]) -> (i32, String)`. Smaller wrapper around
+//           `run_with_stderr` for tests that only care about stdout.
+// Why:      Keep existing lint assertions compact while clap assertions can opt
+//           into stderr.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function run(args: string[]): { code: number; stdout: string } { /* ... */ }
+// ```
+fn run(args: &[&str]) -> (i32, String) {
+    // What:     `let (code, stdout, _stderr) = run_with_stderr(args);`. Destructures
+    //           the tuple and binds stderr to `_stderr`, where the leading
+    //           underscore means intentionally unused.
+    // Why:      Reuse one subprocess implementation without forcing every test to
+    //           mention stderr.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const { code, stdout } = runWithStderr(args);
+    // ```
+    let (code, stdout, _stderr) = run_with_stderr(args);
+
+    // What:     `(code, stdout)`. Tail expression: return only the values this
+    //           helper promises.
+    // Why:      Preserve the existing helper shape for lint-result tests.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -209,6 +256,64 @@ fn joined_max_value_exits_zero() {
     // Why:      The joined spelling should be equivalent to `--max 5`.
     assert_eq!(code, 0, "joined --max should exit 0");
     assert!(stdout.is_empty(), "joined --max should print nothing: {stdout}");
+}
+
+// What:     `#[test] fn help_exits_zero_and_mentions_max() { ... }`. Runs the real
+//           binary with clap's generated `--help` flag.
+// Why:      Verify the migration exposes user-facing help and includes the custom
+//           max-lines option.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// it("prints help", () => { ... });
+// ```
+#[test]
+fn help_exits_zero_and_mentions_max() {
+    // What:     `let (code, stdout, stderr) = run_with_stderr(&["--help"]);`.
+    //           `--help` is handled by clap before linting starts.
+    // Why:      Capture every stream because clap should write help to stdout and
+    //           leave stderr empty.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const { code, stdout, stderr } = runWithStderr(["--help"]);
+    // ```
+    let (code, stdout, stderr) = run_with_stderr(&["--help"]);
+
+    // What:     assertions over clap help: exit 0, contains `--max`, no stderr.
+    // Why:      Prove the generated help is user-visible and clean.
+    assert_eq!(code, 0, "--help should exit 0; stderr: {stderr}");
+    assert!(stdout.contains("--max"), "help should mention --max: {stdout}");
+    assert!(stderr.is_empty(), "help should not print stderr: {stderr}");
+}
+
+// What:     `#[test] fn invalid_max_exits_two_on_stderr() { ... }`. Runs the real
+//           binary with a nonnumeric `--max` value.
+// Why:      Clap should reject invalid input before linting and use exit code 2.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// it("rejects invalid --max", () => { ... });
+// ```
+#[test]
+fn invalid_max_exits_two_on_stderr() {
+    // What:     `let (code, stdout, stderr) = run_with_stderr(&["--max", "nope",
+    //           "fixtures/sample.rs"]);`. The `nope` token cannot parse as `usize`.
+    // Why:      Exercise clap's typed-value validation through the compiled binary.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const result = runWithStderr(["--max", "nope", "fixtures/sample.rs"]);
+    // ```
+    let (code, stdout, stderr) = run_with_stderr(&["--max", "nope", "fixtures/sample.rs"]);
+
+    // What:     assertions over clap's parse error: exit 2, no stdout, useful
+    //           stderr mentioning `--max`.
+    // Why:      Preserve the linter's invalid-argument failure boundary while
+    //           delegating the message formatting to clap.
+    assert_eq!(code, 2, "invalid --max should exit 2; stderr: {stderr}");
+    assert!(stdout.is_empty(), "invalid --max should not print stdout: {stdout}");
+    assert!(stderr.contains("--max"), "stderr should mention --max: {stderr}");
 }
 
 // What:     `#[test] fn exempt_file_is_skipped() { ... }`. An over-budget fixture

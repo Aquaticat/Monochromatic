@@ -36,6 +36,17 @@ use std::fs;
 // ```
 use std::path::Path;
 
+// What:     `use clap::Parser;` imports the trait that gives `Cli::parse()` its
+//           method. `Parser` here is a trait from clap, not this crate's own type.
+// Why:      The compatibility `run_cli_from_env` wrapper below needs to parse real
+//           process arguments the same way `main.rs` does.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { parseArgs } from "some-cli-parser";
+// ```
+use clap::Parser;
+
 // What:     `use ignore::WalkBuilder;` imports the gitignore-aware directory
 //           walker from the external `ignore` crate (the one ripgrep uses).
 // Why:      Enumerate `.rs` files under a directory while skipping `target/` and
@@ -70,6 +81,44 @@ use crate::config::Config;
 use crate::context::LintContext;
 use crate::diagnostic::{Diagnostic, Severity};
 use crate::rule::{all_rules, Rule};
+
+/// Parse real process arguments with clap, then run the linter.
+// What:     `pub fn run_cli_from_env() -> Result<i32, String>` preserves the old
+//           public entry-point shape. `Result<i32, String>` can still represent a
+//           fatal setup error, though clap handles argument errors by printing and
+//           exiting before this function returns.
+// Why:      External callers that used `run_cli_from_env` keep compiling while the
+//           implementation moves from manual argv scanning to clap.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// export function runCliFromEnv(): number { return runCli(parseArgs(process.argv)); }
+// ```
+pub fn run_cli_from_env() -> Result<i32, String> {
+    // What:     `let cli = Cli::parse();` calls the clap-generated parser. `::` is
+    //           Rust's namespace operator. `parse()` reads real process argv; on
+    //           `--help`, `--version`, or invalid input, clap prints and exits the
+    //           process before this function continues.
+    // Why:      Keep this compatibility wrapper behaviour aligned with `main.rs`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const cli = parseArgs(process.argv.slice(2));
+    // ```
+    let cli = Cli::parse();
+
+    // What:     `Ok(run_cli(&cli))` constructs the success variant of `Result` and
+    //           lends the parsed options to `run_cli`. The `&` is a read-only
+    //           borrow, and the tail expression is returned.
+    // Why:      Keep the old `Result`-returning API while delegating all work to
+    //           the clap-backed run loop.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // return runCli(cli);
+    // ```
+    Ok(run_cli(&cli))
+}
 
 // What:     `pub fn run_cli(cli: &Cli) -> i32`. The library entry point. `&Cli` is
 //           a read-only borrow of clap's parsed options. `i32` is a 32-bit signed
