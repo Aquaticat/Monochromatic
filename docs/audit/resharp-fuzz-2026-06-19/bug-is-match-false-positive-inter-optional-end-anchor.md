@@ -97,8 +97,12 @@ cargo run --release --bin c1probe    # full per-config table
 
 ## Upstream filing
 
-Not filed (same policy as the find_anchored finding). Strong candidate: minimal
-`_&(?:[ab]|$)?`, self-evident is_match-vs-find_all contradiction that the
-`match_invariants` target's own asserted invariant should catch, arch parity, and
-the `ismatch.rs` separate-forward-path root-cause pointer. Authorization required
-before any outward filing.
+Minimal fix prototyped and verified, with a sharper root cause than this doc's
+first read: `has_anchors` is computed on the forward-simplified node
+(`lib.rs:1177`), which drops the `$` proven dead under the `_` intersection, so the
+anchor-routing guard is `false` and the fast path is taken. The fix detects
+anchors from the original node and defers to `find_all`; it passes the full
+upstream suite (279/0). The 6-constraint check, the patch, and the additive-comment
+draft for the duplicate (open issue #22) live in
+`docs/troubleshooting/resharp-end-anchor-cross-api.md` (+ `.patch`). Not yet
+posted: outward filing requires explicit authorization.

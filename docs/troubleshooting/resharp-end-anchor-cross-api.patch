@@ -1,0 +1,98 @@
+diff --git a/resharp-engine/src/ismatch.rs b/resharp-engine/src/ismatch.rs
+index 9bc1ca3..2e6021e 100644
+--- a/resharp-engine/src/ismatch.rs
++++ b/resharp-engine/src/ismatch.rs
+@@ -38,13 +38,27 @@ impl Regex {
+         }
+         #[cfg(all(feature = "debug", debug_assertions))]
+         eprintln!("[is_match] path={:?}", self.find_all);
++        // PROTOTYPE FIX (is_match end-anchor soundness): the dfa / fwd_ts fast
++        // paths over-accept anchor-bearing shapes such as `_&(?:[ab]|$)?` on "\n"
++        // (is_match=true while find_all=[]). Defer anchor-bearing patterns to the
++        // authoritative find_all; anchor-free patterns keep the fast path.
+         match self.find_all {
+             FindAll::EmptyLang => Ok(false),
+             FindAll::Anchored => Ok(self.find_anchored(input)?.is_some()),
+             FindAll::EndAnchored => Ok(self.find_end_anchored(input)?.is_some()),
+-            FindAll::Hardened | FindAll::Dfa => self.is_match_dfa(input),
++            FindAll::Hardened | FindAll::Dfa => {
++                if self.anchors_orig {
++                    Ok(!self.find_all(input)?.is_empty())
++                } else {
++                    self.is_match_dfa(input)
++                }
++            }
+             FindAll::Bounded | FindAll::FwdPrefix | FindAll::FwdLbPrefix => {
+-                self.is_match_fwd_ts(input)
++                if self.anchors_orig {
++                    Ok(!self.find_all(input)?.is_empty())
++                } else {
++                    self.is_match_fwd_ts(input)
++                }
+             }
+         }
+     }
+diff --git a/resharp-engine/src/lib.rs b/resharp-engine/src/lib.rs
+index f0eae9f..7db8e4a 100644
+--- a/resharp-engine/src/lib.rs
++++ b/resharp-engine/src/lib.rs
+@@ -317,6 +317,12 @@ pub struct Regex {
+     pub(crate) fwd_lb_begin_nullable: bool,
+     pub(crate) fwd_lb_body_nullable: bool,
+     pub(crate) has_anchors: bool,
++    /// PROTOTYPE: anchors present in the ORIGINAL (pre-forward-simplification)
++    /// node. has_anchors is computed on node_fwd_simpl, which drops anchors that
++    /// simplification proves dead in an intersection (e.g. the `$` in
++    /// `_&(?:[ab]|$)?`), leaving the fast is_match/find_anchored paths to
++    /// over-accept. This conservative flag gates the defer-to-find_all guards.
++    pub(crate) anchors_orig: bool,
+     pub(crate) has_lb: bool,
+     pub(crate) has_la: bool,
+     pub(crate) find_all: FindAll,
+@@ -1175,6 +1181,7 @@ impl Regex {
+             false
+         };
+         let has_anchors = b.contains_anchors(node_fwd_simpl);
++        let anchors_orig = b.contains_anchors(node);
+         let has_lb = b.contains_lookbehind(node_fwd_simpl);
+         let has_la = node_fwd_simpl.contains_lookahead(&b);
+ 
+@@ -1234,6 +1241,7 @@ impl Regex {
+             fwd_lb_begin_nullable,
+             fwd_lb_body_nullable,
+             has_anchors,
++            anchors_orig,
+             has_lb,
+             has_la,
+             #[cfg(feature = "stream")]
+@@ -1285,6 +1293,8 @@ impl Regex {
+             .map(|b| (b.states.len(), 1usize << b.mt_log, b.prefix_len))
+     }
+ 
++    #[cfg(feature = "diag")]
++    #[allow(missing_docs)]
+     #[cfg(feature = "diag")]
+     #[allow(missing_docs)]
+     pub fn find_all_kind_name(&self) -> &'static str {
+@@ -1900,11 +1910,20 @@ impl Regex {
+         if input.is_empty() {
+             return Ok(self.empty_input_match());
+         }
+-        let inner = &mut *self.inner.lock().unwrap_or_else(|e| e.into_inner());
+         if self.has_lb {
+             // ugly scenario for find_anchored, easier to reject it than to special case it
+             return Err(Error::Algebra(resharp_algebra::ResharpError::UnsupportedPattern))
+         }
++        // PROTOTYPE FIX (find_anchored end-anchor-union soundness):
++        // the scan_fwd_optional fast path mis-answers anchor-bearing shapes such as
++        // `(\z|$)$` (phantom (0,1) on "\n", missing match on "\na"). Defer
++        // anchor-bearing patterns to the authoritative find_all enumeration (the
++        // leftmost-longest match at offset 0). The `!= Anchored` guard avoids
++        // recursion, since find_all dispatches \A-anchored patterns back here.
++        if self.anchors_orig && self.find_all != FindAll::Anchored {
++            return Ok(self.find_all(input)?.into_iter().next().filter(|m| m.start == 0));
++        }
++        let inner = &mut *self.inner.lock().unwrap_or_else(|e| e.into_inner());
+         Ok(inner.fwd.scan_fwd_optional(&mut inner.b, 0, input)?.map(|end| Match { start: 0, end }))
+     }
+ 

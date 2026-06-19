@@ -111,10 +111,9 @@ cargo run --release --bin trig             # trigger-boundary minimization
 
 ## Upstream filing
 
-Not filed. Filing is an outward action requiring explicit authorization, and the
-repo's upstream-filing policy (`docs/troubleshooting/resharp.md`) requires a
-prototyped, architecture-compatible fix first. This is a strong candidate: it is a
-minimal, self-evident internal inconsistency in the bug-02/bug-10 family the
-maintainer has been fixing, and ieviev has accepted comparable reports. A prepared
-report would include the minimal `(\z|$)$` repro, the `find_all`-is-correct
-contrast, the arch parity, and the `scan_fwd_optional` root-cause pointer above.
+Minimal fix prototyped and verified (defer anchor-bearing patterns to `find_all`;
+passes the full upstream suite, 279/0), and the upstream-filing 6-constraint check
+plus the additive-comment draft for the duplicate (open issue #22) live in
+`docs/troubleshooting/resharp-end-anchor-cross-api.md` with the patch in
+`docs/troubleshooting/resharp-end-anchor-cross-api.patch`. Not yet posted: filing
+is an outward action requiring explicit authorization.
