@@ -454,6 +454,8 @@ importers:
         specifier: 'catalog:'
         version: 6.0.3
 
+  packages-deprecated/audit/oph-common-look-and-feel: {}
+
   packages-deprecated/mcp/nvim:
     devDependencies:
       '@monochromatic-dev/config-tsdown':
@@ -477,8 +479,6 @@ importers:
       typescript:
         specifier: 'catalog:'
         version: 6.0.3
-
-  packages/audit/oph-common-look-and-feel: {}
 
   packages/build-tool/css:
     dependencies:

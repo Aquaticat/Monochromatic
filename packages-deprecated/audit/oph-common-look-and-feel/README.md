@@ -1,5 +1,10 @@
 # Ottawa Public Health; Common Look and Feel audit
 
+> **Deprecated.** This audit package is no longer maintained and has moved to
+> `packages-deprecated/audit/oph-common-look-and-feel/` for reference. It is a
+> private static document (never published); the source stays for historical
+> reference only.
+
 Exhaustive design audit of [ottawapublichealth.ca](https://www.ottawapublichealth.ca/en/index.aspx)
 as a reference for building new pages that conform to the site's existing visual language and component patterns.
 
