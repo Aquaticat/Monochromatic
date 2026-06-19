@@ -15,6 +15,16 @@ abort/leak in `find_all`, PR #16). The 0.6.10/0.6.11 delta does not touch the
 reverse-pass `Kind::Compl` arm, so Bug A is presumed unchanged; it was last
 behaviourally verified at v0.6.9 (`264e85b`, 2026-06-04).
 
+Update (2026-06-19, resharp v0.6.13, the version now pinned in
+`packages/cli/forbidden-strings/Cargo.lock`): every known crash and soundness
+reproducer from the 2026-06-04 and 2026-06-11 campaigns was re-run against
+published v0.6.13 in both debug and release. All crashes and checkable soundness
+findings are resolved; one compile-cost finding (full-unicode `\w{N}` bounded
+repeat, bug-06) is still live. Bug A remains a by-design restriction held by the
+consumer guard. Full per-finding results and the robustness verdict:
+`docs/audit/resharp-fuzz-2026-06-11/verification-0.6.13.md` and
+`docs/audit/resharp-robustness-2026-06-19.md`.
+
 A separate, broader fuzz campaign against v0.6.9 lives in
 `docs/audit/resharp-fuzz-2026-06-04/` (twenty-three distinct root causes plus
 one regression); bug-04, bug-07, and regression-01 from that campaign are
