@@ -1030,9 +1030,8 @@ _.file = [{ path = ".env", redact = true }, { path = ".env.local", redact = true
 _.path = [
   "node_modules/.bin",
   "packages/webapp-productivity/done-postcss/node_modules/.bin",
-  "packages/ssg/aquati.cat/node_modules/.bin",
-  "packages/webapp-content/messages-demo/node_modules/.bin",
   "packages/typeface/aquaticat/node_modules/.bin",
+  "packages/ssg/aquati.cat/node_modules/.bin",
   "packages/rolldown-plugins/import-attributes/node_modules/.bin",
   "packages/pi-shared/model-selection/node_modules/.bin",
   "packages/pi/thinking-defaults/node_modules/.bin",
