@@ -172,7 +172,9 @@ function hasProcessStderr(): boolean {
     if ((typeof process) === 'undefined')
       return false;
 
-    return (typeof process.stderr.write) === 'function';
+    return (typeof process
+      .stderr
+      .write) === 'function';
   }
   catch {
     return false;
