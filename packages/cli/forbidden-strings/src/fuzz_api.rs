@@ -1,3 +1,4 @@
+//! Rustdoc summary for the `fuzz_api` module.
 // What:     `crate::fuzz_api` is a curated re-export module that
 //           appears ONLY when the crate is built with the `fuzzing`
 //           Cargo feature on. It pulls together the helpers
@@ -30,6 +31,7 @@
 // } from "./scan_format";
 // ```
 
+/// Rustdoc summary for use.
 // What:     `pub use crate::rules::{...};` re-exports the rules-
 //           module symbols the fuzz targets need. Every name is
 //           already public-or-pub(crate) inside `crate::rules`;
@@ -81,6 +83,7 @@ pub use crate::rules::{
     SUBSTRING_THRESHOLD,
 };
 
+/// Rustdoc summary for use.
 // What:     `pub use crate::scan::scan_content;`. The main scanner
 //           entry point; takes a path label, file content, and a
 //           ruleset, and returns the hit-formatted `Vec<String>`.
@@ -93,6 +96,7 @@ pub use crate::rules::{
 // ```
 pub use crate::scan::scan_content;
 
+/// Rustdoc summary for use.
 // What:     `pub use crate::scan_format::{...};` re-exports the
 //           hit-formatting helpers `fuzz_scan_format` exercises.
 // Why:      The format target asserts byte-to-line/column conversion

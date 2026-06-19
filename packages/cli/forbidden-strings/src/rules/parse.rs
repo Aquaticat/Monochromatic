@@ -1,3 +1,5 @@
+//! Rustdoc summary for the `rules::parse` module.
+/// Rustdoc summary for enum `ParsedRule`.
 // What:     `pub enum ParsedRule { Literal(String), Regex(String) }`
 //           declares an enum (Rust's tagged-union; closer to a
 //           discriminated union in TS than a TS `enum`). Each variant
@@ -14,10 +16,19 @@
 //   | { kind: "regex"; src: string };
 // ```
 pub enum ParsedRule {
-    Literal(String),
-    Regex(String),
+    /// Parsed literal rule.
+    Literal(
+        /// Owned literal text after trimming rule-file whitespace.
+        String,
+    ),
+    /// Parsed regex rule.
+    Regex(
+        /// Owned resharp-compatible regex source string.
+        String,
+    ),
 }
 
+/// Rustdoc summary for function `parse_rule_source`.
 // What:     `pub fn parse_rule_source(line: &str) -> Option<ParsedRule>`
 //           classifies one line of the rules file into a literal or a
 //           regex (or `None` for blank/comment lines). `&str` is a

@@ -1,3 +1,5 @@
+//! Rustdoc summary for the `rules::engine::slow_quantifier` module.
+/// Rustdoc summary for function `nested_quantifier_after_wildcard`.
 // What:     `pub fn nested_quantifier_after_wildcard(src: &str) -> Option<String>`
 //           detects rule shapes where a bare `_` wildcard (the
 //           scanner's `_` triad atom, expanded to wildcard during
@@ -111,6 +113,7 @@ pub fn nested_quantifier_after_wildcard(src: &str) -> Option<String> {
     None
 }
 
+/// Rustdoc summary for function `nested_chain_in_lookaround_body`.
 // What:     `pub fn nested_chain_in_lookaround_body(src: &str) -> Option<String>`
 //           detects rule shapes containing a chain of three or more
 //           consecutive `)`+quantifier adjacencies anywhere INSIDE
@@ -280,6 +283,7 @@ pub fn nested_chain_in_lookaround_body(src: &str) -> Option<String> {
     None
 }
 
+/// Rustdoc summary for function `count_close_quant_chain_after`.
 // What:     `fn count_close_quant_chain_after(bytes: &[u8], start: usize) -> usize`
 //           returns the number of consecutive `)`+quantifier pairs
 //           starting at `start`. Used by `nested_quantifier_after_wildcard`
@@ -318,6 +322,7 @@ fn count_close_quant_chain_after(bytes: &[u8], start: usize) -> usize {
     chain
 }
 
+/// Rustdoc summary for function `is_lookaround_opener`.
 // What:     `fn is_lookaround_opener(bytes: &[u8], i: usize) -> bool`
 //           returns true if `bytes[i..]` starts with `(?!`/`(?=`/
 //           `(?<!`/`(?<=`.

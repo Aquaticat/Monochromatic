@@ -1,3 +1,5 @@
+//! Rustdoc summary for the `walk` module.
+/// Rustdoc summary for use.
 // What:     `use ignore::WalkBuilder;` imports the type that builds a
 //           filesystem walker honoring `.gitignore`, hidden-file rules,
 //           and parent-directory ignore files. `ignore` is the crate
@@ -12,6 +14,7 @@
 // ```
 use ignore::WalkBuilder;
 
+/// Rustdoc summary for use.
 // What:     `use ignore::WalkState;` imports the enum returned by the
 //           parallel walker's per-entry callback to control whether to
 //           keep walking, skip the current subtree, or quit entirely.
@@ -24,6 +27,7 @@ use ignore::WalkBuilder;
 // ```
 use ignore::WalkState;
 
+/// Rustdoc summary for use.
 // What:     `use std::sync::{Arc, Mutex};` imports two thread-safe
 //           wrappers from the standard library.
 //             - `Arc<T>` ("atomically reference-counted") is a heap-
@@ -46,6 +50,7 @@ use ignore::WalkState;
 // ```
 use std::sync::{Arc, Mutex};
 
+/// Rustdoc summary for function `detect_index_hash_kind`.
 // What:     `fn detect_index_hash_kind(repo_root) -> gix_hash::Kind`
 //           reads `.git/config` and returns `Sha256` when the repository
 //           was initialized with `git init --object-format=sha256`,
@@ -129,6 +134,7 @@ fn detect_index_hash_kind(repo_root: &std::path::Path) -> gix_hash::Kind {
     gix_hash::Kind::Sha1
 }
 
+/// Rustdoc summary for function `list_files`.
 // What:     `pub fn list_files(root: &str) -> Result<Vec<String>, String>`
 //           walks the working tree starting at `root` and returns an
 //           owned vector of file paths (UTF-8). `pub` makes it visible
@@ -493,6 +499,7 @@ pub fn list_files(root: &str) -> Result<Vec<String>, String> {
     Ok(files)
 }
 
+/// Rustdoc summary for module `tests`.
 // What:     `#[cfg(test)] #[path = "walk_tests.rs"] mod tests;` declares a
 //           test-only submodule whose code lives in the sibling file
 //           `walk_tests.rs`. `#[cfg(test)]` is a conditional-compilation

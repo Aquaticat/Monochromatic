@@ -1,3 +1,5 @@
+//! Rustdoc summary for the `rules::engine::lookaround_trailing` module.
+/// Rustdoc summary for use.
 // What:     `use super::constants::TROUBLESHOOT_REF;` imports the shared
 //           troubleshooting-doc suffix from the parent engine module.
 // Why:      Every rejection message should point at the same long-form
@@ -9,6 +11,7 @@
 // ```
 use super::constants::TROUBLESHOOT_REF;
 
+/// Rustdoc summary for function `quantified_lookahead_with_sibling_content`.
 // What:     `pub fn quantified_lookahead_with_sibling_content(src: &str) -> Option<String>`
 //           detects a second Bug F shape that the narrower
 //           `nested_lookahead_in_quantified_group` misses: a
@@ -99,6 +102,7 @@ pub fn quantified_lookahead_with_sibling_content(src: &str) -> Option<String> {
     let bytes = src.as_bytes();
     let mut i = 0usize;
     let mut in_class = false;
+/// Rustdoc summary for struct `Frame`.
     // What:     `struct Frame { ... }`. One per open group; pushed at
     //           `(`, popped at `)`. The top entry represents the
     //           implicit top-level frame so trailing content at the
@@ -111,8 +115,11 @@ pub fn quantified_lookahead_with_sibling_content(src: &str) -> Option<String> {
     //           trailing `a` if the parent itself is armed).
     #[derive(Default, Clone)]
     struct Frame {
+/// Rustdoc summary for field `is_lookahead_self`.
         is_lookahead_self: bool,
+/// Rustdoc summary for field `has_lookahead_subtree`.
         has_lookahead_subtree: bool,
+/// Rustdoc summary for field `pending_trailing_count`.
         pending_trailing_count: i32,
     }
     let mut stack: Vec<Frame> = vec![Frame {
@@ -120,6 +127,7 @@ pub fn quantified_lookahead_with_sibling_content(src: &str) -> Option<String> {
         has_lookahead_subtree: false,
         pending_trailing_count: -1,
     }];
+/// Rustdoc summary for function `fire_reason`.
     // What:     `fire_reason()` returns the diagnostic string. Wrapped
     //           in a helper because three call sites (escape, class,
     //           group-open, alternation-boundary, eof-boundary,

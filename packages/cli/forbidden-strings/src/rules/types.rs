@@ -1,3 +1,5 @@
+//! Rustdoc summary for the `rules::types` module.
+/// Rustdoc summary for use.
 // What:     `use aho_corasick::AhoCorasick;` imports the multi-pattern
 //           literal-matcher type from the `aho-corasick` crate.
 // Why:      `RuleSet` holds two AC instances (case-sensitive and
@@ -10,8 +12,10 @@
 // ```
 use aho_corasick::AhoCorasick;
 
+/// Rustdoc summary for use.
 use super::engine::CompiledRegex;
 
+/// Rustdoc summary for struct `RegexRule`.
 // What:     `pub struct RegexRule { pub idx: usize, pub re: Regex }` is
 //           a record type pairing the original line index with a
 //           compiled resharp `Regex`. `pub` on the struct and on each
@@ -25,10 +29,13 @@ use super::engine::CompiledRegex;
 // type RegexRule = { idx: number; re: Regex };
 // ```
 pub struct RegexRule {
+/// Rustdoc summary for field `idx`.
     pub idx: usize,
+/// Rustdoc summary for field `re`.
     pub re: CompiledRegex,
 }
 
+/// Rustdoc summary for enum `AcMeta`.
 // What:     `pub enum AcMeta { Literal { idx, bound_left, bound_right }, RegexPrefix { rule_pos } }`
 //           is the side-table value telling `scan.rs` what an AC pattern
 //           id represents. `Literal` carries the user-facing rule line
@@ -58,10 +65,23 @@ pub struct RegexRule {
 //   | { kind: "regexPrefix"; rulePos: number };
 // ```
 pub enum AcMeta {
-    Literal { idx: usize, bound_left: bool, bound_right: bool },
-    RegexPrefix { rule_pos: usize },
+    /// Metadata for a literal rule hit emitted directly from the AC pass.
+    Literal {
+        /// Original one-based line number of the literal rule.
+        idx: usize,
+        /// Whether the byte before the match must be a non-word boundary.
+        bound_left: bool,
+        /// Whether the byte after the match must be a non-word boundary.
+        bound_right: bool,
+    },
+    /// Metadata for a regex rule whose required prefix matched in AC.
+    RegexPrefix {
+        /// Position of the regex rule in `RuleSet::regex_rules`.
+        rule_pos: usize,
+    },
 }
 
+/// Rustdoc summary for function `is_word_byte`.
 // What:     `pub fn is_word_byte(b: u8) -> bool` returns `true` when the
 //           ASCII byte `b` is a "word character" in the regex sense:
 //           `[A-Za-z0-9_]`. Public so `scan.rs` can reuse the same
@@ -86,6 +106,7 @@ pub fn is_word_byte(b: u8) -> bool {
     b.is_ascii_alphanumeric() || b == b'_'
 }
 
+/// Rustdoc summary for constant `SUBSTRING_THRESHOLD`.
 // What:     Minimum literal length (in bytes) at which conditional
 //           word-boundary checks are DROPPED -- literals at or above
 //           this length match as pure case-sensitive substrings.
@@ -112,6 +133,7 @@ pub fn is_word_byte(b: u8) -> bool {
 // ```
 pub const SUBSTRING_THRESHOLD: usize = 7;
 
+/// Rustdoc summary for enum `ResidualShard`.
 // What:     `pub enum ResidualShard { Single { rule_pos }, Combined { gate, positions } }`
 //           is the residual-gate node. `Single` references a single
 //           regex_rule by position -- no separate gate Regex is
@@ -146,10 +168,21 @@ pub const SUBSTRING_THRESHOLD: usize = 7;
 // so the size asymmetry costs at most a few KiB total.
 #[allow(clippy::large_enum_variant)]
 pub enum ResidualShard {
-    Single { rule_pos: usize },
-    Combined { gate: CompiledRegex, positions: Vec<usize> },
+    /// Residual shard for one regex rule scanned without a separate gate.
+    Single {
+        /// Position of the regex rule in `RuleSet::regex_rules`.
+        rule_pos: usize,
+    },
+    /// Residual shard that gates several regex rules behind one combined regex.
+    Combined {
+        /// Combined regex used as the pre-filter gate.
+        gate: CompiledRegex,
+        /// Positions of the regex rules covered by this gate.
+        positions: Vec<usize>,
+    },
 }
 
+/// Rustdoc summary for struct `RuleSet`.
 // What:     `pub struct RuleSet { ... }` is the top-level rules
 //           container produced by `load_ruleset` and consumed by
 //           `scan_content`. The unified `ac` index now covers literals
@@ -174,8 +207,11 @@ pub enum ResidualShard {
 // };
 // ```
 pub struct RuleSet {
+/// Rustdoc summary for field `ac`.
     pub ac: Option<AhoCorasick>,
+/// Rustdoc summary for field `ac_meta`.
     pub ac_meta: Vec<AcMeta>,
+/// Rustdoc summary for field `ac_ci`.
     // What:     `pub ac_ci: Option<AhoCorasick>` is a SECOND Aho-Corasick
     //           automaton built with `ascii_case_insensitive(true)`. It
     //           covers required-substring prefixes extracted from regex
@@ -197,7 +233,10 @@ pub struct RuleSet {
     // acMetaCi: AcMeta[];
     // ```
     pub ac_ci: Option<AhoCorasick>,
+/// Rustdoc summary for field `ac_meta_ci`.
     pub ac_meta_ci: Vec<AcMeta>,
+/// Rustdoc summary for field `regex_rules`.
     pub regex_rules: Vec<RegexRule>,
+/// Rustdoc summary for field `residual_shards`.
     pub residual_shards: Vec<ResidualShard>,
 }

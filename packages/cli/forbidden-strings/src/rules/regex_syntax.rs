@@ -1,3 +1,5 @@
+//! Rustdoc summary for the `rules::regex_syntax` module.
+/// Rustdoc summary for function `group_body_start`.
 // What:     `fn group_body_start(s: &str) -> Option<usize>` returns the
 //           byte offset of the first character of a group's body.
 //           For `(body)` it is `1`; for `(?:body)` and `(?P<name>body)`
@@ -68,6 +70,7 @@ pub fn group_body_start(s: &str) -> Option<usize> {
     None
 }
 
+/// Rustdoc summary for function `find_matching_close_paren`.
 // What:     `fn find_matching_close_paren(s: &str) -> Option<usize>`
 //           returns the byte index of the `)` matching the leading `(`
 //           in `s`. Handles nested parens, character classes (which
@@ -136,6 +139,7 @@ pub fn find_matching_close_paren(s: &str) -> Option<usize> {
     None
 }
 
+/// Rustdoc summary for function `skip_any_quantifier`.
 // What:     `fn skip_any_quantifier(s: &str) -> &str` advances past one
 //           leading quantifier (required OR optional) and returns the
 //           remainder. If no quantifier is present, returns `s`.
@@ -200,6 +204,7 @@ pub fn skip_any_quantifier(s: &str) -> &str {
     s
 }
 
+/// Rustdoc summary for function `quantifier_is_required`.
 // What:     `fn quantifier_is_required(s: &str) -> bool` returns true
 //           if the head of `s` is a quantifier whose lower bound is
 //           >= 1 (or there is no quantifier, treating "exactly one"
@@ -267,6 +272,7 @@ pub fn quantifier_is_required(s: &str) -> bool {
     true
 }
 
+/// Rustdoc summary for function `skip_class_body`.
 // What:     `fn skip_class_body(s: &str) -> Option<&str>` skips a single
 //           bracketed character class starting at the leading `[` of
 //           `s` and returns the remainder after the closing `]`.

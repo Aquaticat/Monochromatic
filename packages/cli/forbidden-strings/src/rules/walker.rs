@@ -1,5 +1,8 @@
+//! Rustdoc summary for the `rules::walker` module.
+/// Rustdoc summary for use.
 use super::atom::{skip_atom_with_extract, walk_literal_bytes};
 
+/// Rustdoc summary for function `extract_scope`.
 // What:     `pub(super) fn extract_scope(s: &str, ci: bool) -> Option<Vec<(String, bool)>>`
 //           splits `s` on top-level `|` (respecting paren depth, character
 //           classes, and `\X` escapes) and returns the union of each
@@ -44,6 +47,7 @@ pub(super) fn extract_scope(s: &str, ci: bool) -> Option<Vec<(String, bool)>> {
     Some(out)
 }
 
+/// Rustdoc summary for function `extract_branch`.
 // What:     `fn extract_branch(s: &str, ci: bool) -> Option<Vec<(String, bool)>>`
 //           walks one branch (no top-level `|`), returning the BEST candidate
 //           gating set. A "candidate" is either a single literal run
@@ -246,6 +250,7 @@ fn extract_branch(s: &str, ci: bool) -> Option<Vec<(String, bool)>> {
     Some(best)
 }
 
+/// Rustdoc summary for function `split_top_level_alternations`.
 // What:     `fn split_top_level_alternations(s: &str) -> Vec<&str>`
 //           returns slices of `s` separated by `|` characters at
 //           depth 0 (i.e. NOT inside a `(...)` group, NOT inside a

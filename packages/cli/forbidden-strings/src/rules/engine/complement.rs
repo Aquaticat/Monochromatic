@@ -1,3 +1,5 @@
+//! Rustdoc summary for the `rules::engine::complement` module.
+/// Rustdoc summary for use.
 // What:     `use super::constants::TROUBLESHOOT_REF;` imports the shared
 //           troubleshooting-doc suffix from the parent engine module.
 // Why:      Every rejection message should point at the same long-form
@@ -9,6 +11,7 @@
 // ```
 use super::constants::TROUBLESHOOT_REF;
 
+/// Rustdoc summary for function `lookaround_in_complement`.
 // What:     `pub fn lookaround_in_complement(src: &str) -> Option<String>`
 //           returns `Some(reason)` when `src` contains a `~(...)` whose
 //           body holds an atom that resharp 0.5.x through 0.6.x cannot handle, and
@@ -207,6 +210,7 @@ pub fn lookaround_in_complement(src: &str) -> Option<String> {
     None
 }
 
+/// Rustdoc summary for function `complement_intersection_quantified_group`.
 // What:     `pub fn complement_intersection_quantified_group(src: &str) -> Option<String>`
 //           detects rule shapes that cause resharp's algebra
 //           simplification to hang for tens of seconds or
@@ -349,6 +353,7 @@ pub fn complement_intersection_quantified_group(src: &str) -> Option<String> {
     None
 }
 
+/// Rustdoc summary for function `nested_complement`.
 // What:     `pub fn nested_complement(src: &str) -> Option<String>`
 //           detects rule shapes containing one resharp complement
 //           `~(...)` whose body contains another `~(...)` complement

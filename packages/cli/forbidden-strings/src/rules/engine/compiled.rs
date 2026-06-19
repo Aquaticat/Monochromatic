@@ -1,3 +1,5 @@
+//! Rustdoc summary for the `rules::engine::compiled` module.
+/// Rustdoc summary for use.
 // What:     `use resharp::Regex;` imports the resharp regex type.
 //           Resharp's `Regex` holds a `Mutex<RegexInner>` for lazy DFA
 //           growth, so calling `is_match`/`find_all` on a SHARED Regex
@@ -14,6 +16,7 @@
 // ```
 use resharp::Regex;
 
+/// Rustdoc summary for use.
 // What:     `use std::panic::{catch_unwind, AssertUnwindSafe};` brings
 //           the panic-recovery primitives into scope.
 //           - `catch_unwind(closure)` runs the closure on the current
@@ -75,6 +78,7 @@ use resharp::Regex;
 // ```
 use std::panic::{catch_unwind, AssertUnwindSafe};
 
+/// Rustdoc summary for use.
 // What:     `use regex::bytes::Regex as PlainRegex;` imports the
 //           standard `regex` crate's byte-mode regex type under an
 //           alias to disambiguate from `resharp::Regex`. The `regex`
@@ -102,6 +106,7 @@ use std::panic::{catch_unwind, AssertUnwindSafe};
 // ```
 use regex::bytes::Regex as PlainRegex;
 
+/// Rustdoc summary for enum `CompiledRegex`.
 // What:     `pub enum CompiledRegex { Resharp(Regex), Plain(PlainRegex) }`
 //           is the unified compiled-regex container. Each rule's
 //           source is classified at load time (set-algebra vs not)
@@ -128,10 +133,19 @@ use regex::bytes::Regex as PlainRegex;
 // `RegexRule` values is a one-time per-process cost.
 #[allow(clippy::large_enum_variant)]
 pub enum CompiledRegex {
-    Resharp(Regex),
-    Plain(PlainRegex),
+    /// Regex compiled by the resharp engine.
+    Resharp(
+        /// Owned resharp regex instance.
+        Regex,
+    ),
+    /// Regex compiled by the fallback `regex` crate engine.
+    Plain(
+        /// Owned byte-regex instance.
+        PlainRegex,
+    ),
 }
 
+/// Rustdoc summary for struct `ScanMatch`.
 // What:     `pub struct ScanMatch { pub start: usize, pub end: usize }`
 //           is the engine-agnostic match record. Field-shape is
 //           identical to `resharp::Match` so `scan.rs` code reading
@@ -152,11 +166,15 @@ pub enum CompiledRegex {
 // ```
 #[derive(Debug, Clone, Copy)]
 pub struct ScanMatch {
+/// Rustdoc summary for field `start`.
     pub start: usize,
+/// Rustdoc summary for field `end`.
     pub end: usize,
 }
 
+/// Rustdoc summary for impl block.
 impl CompiledRegex {
+/// Rustdoc summary for function `find_all`.
     // What:     `pub fn find_all(&self, content: &[u8]) -> Result<Vec<ScanMatch>, ()>`
     //           returns every non-overlapping match in `content` as
     //           a Vec of ScanMatch. The empty Vec means clean (no
@@ -238,6 +256,7 @@ impl CompiledRegex {
         }
     }
 
+/// Rustdoc summary for function `is_match`.
     // What:     `pub fn is_match(&self, content: &[u8]) -> Result<bool, ()>`
     //           is the short-circuit "any match anywhere" check. Used by
     //           the Combined residual shard's gate. Returns `Ok(true)` on

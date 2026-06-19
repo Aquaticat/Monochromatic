@@ -1,3 +1,5 @@
+//! Rustdoc summary for the `rules::engine::quantifier` module.
+/// Rustdoc summary for function `stacked_quantifier`.
 // What:     `pub fn stacked_quantifier(src: &str) -> Option<String>`
 //           detects two regex quantifier suffixes appearing back-to-back
 //           without an atom or group between them: `a**`, `\D{5,11}{5,11}`,
@@ -207,6 +209,7 @@ pub fn stacked_quantifier(src: &str) -> Option<String> {
     None
 }
 
+/// Rustdoc summary for function `nested_grouped_quantifier`.
 // What:     `pub fn nested_grouped_quantifier(src: &str) -> Option<String>`
 //           detects regex source containing four or more consecutive
 //           `)`+quantifier adjacencies. The shape the fuzz target
@@ -299,6 +302,7 @@ pub fn nested_grouped_quantifier(src: &str) -> Option<String> {
     //           nest, only that there are CHAIN consecutive
     //           close+quantifier pairs back-to-back.
     let mut chain: usize = 0;
+/// Rustdoc summary for constant `THRESHOLD`.
     // What:     `const THRESHOLD: usize = 4;` is the flag-at chain
     //           length. Empirically 3 still compiles in milliseconds
     //           even on Unicode classes; 4 is the inflection point

@@ -1,3 +1,5 @@
+//! Rustdoc summary for the `rules::engine::lookaround_misc` module.
+/// Rustdoc summary for use.
 // What:     `use super::constants::TROUBLESHOOT_REF;` imports the shared
 //           troubleshooting-doc suffix from the parent engine module.
 // Why:      Every rejection message should point at the same long-form
@@ -9,6 +11,7 @@
 // ```
 use super::constants::TROUBLESHOOT_REF;
 
+/// Rustdoc summary for function `intersection_with_lookbehind`.
 // What:     `pub fn intersection_with_lookbehind(src: &str) -> Option<String>`
 //           detects rule shapes that match resharp 0.5.x through 0.6.x's
 //           lookahead-vs-lookbehind intersection debug_assert at
@@ -152,6 +155,7 @@ pub fn intersection_with_lookbehind(src: &str) -> Option<String> {
     None
 }
 
+/// Rustdoc summary for function `lookaround_in_alternation_with_sibling`.
 // What:     `pub fn lookaround_in_alternation_with_sibling(src: &str) -> Option<String>`
 //           detects rule shapes that compile through resharp's
 //           parser but trigger the `engine.rs:1020` `debug_assert!`
@@ -366,6 +370,7 @@ pub fn lookaround_in_alternation_with_sibling(src: &str) -> Option<String> {
     None
 }
 
+/// Rustdoc summary for function `intersection_with_word_end_alternation`.
 // What:     `pub fn intersection_with_word_end_alternation(src: &str) -> Option<String>`
 //           detects rule shapes that match resharp 0.5.x through 0.6.x's
 //           algebra arithmetic-overflow panic at

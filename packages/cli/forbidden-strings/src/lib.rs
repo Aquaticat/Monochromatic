@@ -1,3 +1,4 @@
+//! Rustdoc summary for the `lib` module.
 // TODO: deferred perf work. See /home/user/.claude/plans/dapper-coalescing-horizon.md.
 // TODO:   - L2: line-start index for `line_and_col` -- only matters on the
 // TODO:     violation path; revisit if a single file with many hits ever becomes
@@ -7,6 +8,7 @@
 // TODO:     crate (`regex-automata::dfa::dense::DFA::to_bytes`). Trigger: when
 // TODO:     startup-only time goes back over ~100ms after P1+P2 land.
 
+/// Rustdoc summary for module `cli`.
 // What:     `mod cli;` declares a child module whose source lives in `cli.rs`.
 //           `mod` is Rust's module system: it does NOT import names; it tells
 //           the compiler "this file/module exists, compile it". Names referenced
@@ -22,6 +24,7 @@
 // ```
 mod cli;
 
+/// Rustdoc summary for module `rules`.
 // What:     `mod walk;` declares child modules whose source lives in sibling
 //           `.rs` files. `mod` registers each file with the compiler; it does
 //           not import names into local scope.
@@ -34,10 +37,14 @@ mod cli;
 // // in `include` paths; Rust requires explicit `mod` declarations.
 // ```
 mod rules;
+/// Rustdoc summary for module `scan`.
 mod scan;
+/// Rustdoc summary for module `scan_format`.
 mod scan_format;
+/// Rustdoc summary for module `walk`.
 mod walk;
 
+/// Rustdoc summary for module `fuzz_api`.
 // What:     `#[cfg(feature = "fuzzing")] pub mod fuzz_api;` registers
 //           the curated re-export module ONLY when the `fuzzing`
 //           Cargo feature is on. The bin target leaves the feature
@@ -55,6 +62,7 @@ mod walk;
 #[cfg(feature = "fuzzing")]
 pub mod fuzz_api;
 
+/// Rustdoc summary for use.
 // What:     `use clap::Parser;` brings the parser trait into this module. Rust
 //           only lets trait methods such as `Cli::try_parse_from(...)` be called
 //           when the trait is in scope. `::` is Rust's namespace separator.
@@ -67,6 +75,7 @@ pub mod fuzz_api;
 // ```
 use clap::Parser;
 
+/// Rustdoc summary for use.
 // What:     `use std::env;` imports the std `env` module so we can reference
 //           `env::args` / `env::var`.
 // Why:      Reading argv and environment variables.
@@ -97,6 +106,7 @@ use std::env;
 //           per-file alloc cost is dwarfed by the unicode-mode
 //           speedup; not worth the re-entrancy hazard.
 
+/// Rustdoc summary for use.
 // What:     `use std::io::Write;` imports the `Write` TRAIT (interface-
 //           like). Methods declared by a trait are only callable when
 //           the trait is in scope, even when used via macros like
@@ -109,6 +119,7 @@ use std::env;
 // ```
 use std::io::Write;
 
+/// Rustdoc summary for use.
 // What:     `use rayon::prelude::*;` brings rayon's parallel-iterator
 //           extension methods into scope (`par_iter`, `flat_map_iter`,
 //           etc.).
@@ -121,6 +132,7 @@ use std::io::Write;
 // ```
 use rayon::prelude::*;
 
+/// Rustdoc summary for use.
 // What:     `use crate::cli::Cli;` imports the clap-backed parsed option struct
 //           from the sibling module. `crate::` is the absolute root of this
 //           crate.
@@ -133,6 +145,7 @@ use rayon::prelude::*;
 // ```
 use crate::cli::Cli;
 
+/// Rustdoc summary for use.
 // What:     `use crate::walk::list_files;` imports named functions from sibling
 //           modules under short aliases for local use. `crate::` is the absolute
 //           root of this crate.
@@ -145,9 +158,12 @@ use crate::cli::Cli;
 // import { listFiles } from "./walk";
 // ```
 use crate::rules::load_ruleset;
+/// Rustdoc summary for use.
 use crate::scan::scan_content;
+/// Rustdoc summary for use.
 use crate::walk::list_files;
 
+/// Rustdoc summary for function `build_skip_set`.
 // What:     `fn build_skip_set(rules_path: &str) -> HashSet<PathBuf>`
 //           returns the set of CANONICAL absolute paths to skip when
 //           walking the tree in `--all` mode. Pre-fix this logic was a
@@ -253,6 +269,7 @@ fn build_skip_set(rules_path: &str) -> std::collections::HashSet<std::path::Path
     set
 }
 
+/// Rustdoc summary for function `is_walker_skipped`.
 // What:     `fn is_walker_skipped(path: &str, skip_set: &HashSet<PathBuf>) -> bool`
 //           returns true when the path's canonical form matches a
 //           skip-set entry. Used ONLY for walker output in --all mode;
@@ -298,6 +315,7 @@ fn is_walker_skipped(
     false
 }
 
+/// Rustdoc summary for function `is_config_file_at_cwd`.
 // What:     `fn is_config_file_at_cwd(path, cwd_canonical) -> bool` returns
 //           true when `path` names a `forbidden-strings.*.txt` file sitting
 //           DIRECTLY in the current working directory. The basename check is
@@ -339,6 +357,7 @@ fn is_config_file_at_cwd(
     canonical.parent() == Some(cwd)
 }
 
+/// Rustdoc summary for constant `BIN_PROBE_SIZE`.
 // What:     `BIN_PROBE_SIZE` is the byte length read up-front from every
 //           file before deciding whether the file is binary. 8 KiB is
 //           the same probe size the pre-BUG-5 `is_likely_binary`
@@ -352,6 +371,7 @@ fn is_config_file_at_cwd(
 //           established convention.
 const BIN_PROBE_SIZE: usize = 8192;
 
+/// Rustdoc summary for function `read_with_binary_check`.
 // What:     `read_with_binary_check(path)` reads a file under a binary
 //           heuristic:
 //             1. Always read the first `BIN_PROBE_SIZE` bytes.
@@ -391,7 +411,9 @@ const BIN_PROBE_SIZE: usize = 8192;
 // }
 // ```
 fn read_with_binary_check(path: &str) -> Result<Vec<u8>, std::io::Error> {
+/// Rustdoc summary for use.
     use std::fs::File;
+/// Rustdoc summary for use.
     use std::io::Read;
 
     let mut file = File::open(path)?;
