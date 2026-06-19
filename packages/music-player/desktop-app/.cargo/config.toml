@@ -1,15 +1,43 @@
-# Use LLVM's lld-link as the linker for the Windows MSVC target only.
+# Per-target build overrides for this crate. Two concerns live here:
+#   1. The Windows MSVC linker (lld-link).
+#   2. The `aes` CPU target-feature that the `gxhash` dependency REQUIRES.
 #
-# Scope: this table is keyed on `target.x86_64-pc-windows-msvc`, so cargo applies
-# it ONLY when building that target (that is, on Windows). Linux and macOS builds
-# never read it, so their default linker is unchanged. This is the only
-# .cargo/config.toml in the repo, so it introduces the override cleanly.
-#
-# `lld-link.exe` is LLVM's MSVC-compatible linker (a drop-in for Visual Studio's
-# `link.exe`). It must be on PATH: LLVM ships it in its `bin` directory
-# (`C:\Program Files\LLVM\bin`), which is not on PATH by default, so that directory
-# has to be added (see README "Windows" and HANDOVER.windows-toolchain-and-check.md).
-# rustc still discovers the Visual Studio CRT and Windows SDK import libraries and
-# passes them as `/LIBPATH:` arguments, which lld-link consumes unchanged.
+# gxhash (src/peakcache.rs, the cache fingerprint hash) compiles its hardware
+# AES path unconditionally and emits a `compile_error!` unless the target enables
+# `aes` (plus `sse2` on x86, which is already in the x86_64 baseline, or `neon` on
+# aarch64, already baseline). It ships NO software fallback, so we enable `aes`
+# per target triple below. Consequence: the produced binary REQUIRES a CPU with
+# AES acceleration; one without it crashes with SIGILL at runtime. AES-NI is
+# universal on x86_64 since ~2010 and every Apple-Silicon Mac has the ARM crypto
+# extensions, so this is safe for a desktop player. We deliberately do NOT use
+# `-C target-cpu=native` (gxhash's own example does): that would bake the build
+# host's full feature set into the distributed, signed binary and SIGILL on any
+# other machine. `+aes` is the minimal, portable flag. The aarch64-apple-darwin
+# entry is technically redundant (Apple Silicon enables `aes` by default) but is
+# spelled out so the requirement is explicit and survives a toolchain default
+# change. See docs/troubleshooting/gxhash-aes-target-feature.md.
+
+# Linux desktop (host build and the Fedora podman container both resolve to this
+# host triple, with no explicit --target, so cargo applies this table to both).
+[target.x86_64-unknown-linux-gnu]
+rustflags = ["-C", "target-feature=+aes"]
+
+# Intel macOS.
+[target.x86_64-apple-darwin]
+rustflags = ["-C", "target-feature=+aes"]
+
+# Apple-Silicon macOS (aes is on by default here; kept explicit, see header).
+[target.aarch64-apple-darwin]
+rustflags = ["-C", "target-feature=+aes"]
+
+# Windows MSVC. `lld-link.exe` is LLVM's MSVC-compatible linker (a drop-in for
+# Visual Studio's `link.exe`). It must be on PATH: LLVM ships it in its `bin`
+# directory (`C:\Program Files\LLVM\bin`), which is not on PATH by default, so that
+# directory has to be added (see README "Windows" and
+# HANDOVER.windows-toolchain-and-check.md). rustc still discovers the Visual Studio
+# CRT and Windows SDK import libraries and passes them as `/LIBPATH:` arguments,
+# which lld-link consumes unchanged. The `rustflags` line adds the same `+aes`
+# gxhash needs (sse2 is already in the x86_64 baseline).
 [target.x86_64-pc-windows-msvc]
 linker = "lld-link.exe"
+rustflags = ["-C", "target-feature=+aes"]

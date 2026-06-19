@@ -25,6 +25,20 @@ path = "src/main.rs"
 # the resolved git source too. slint-build below MUST track the same rev. Revert
 # both to a crates.io `version` once a release including #11338 ships.
 directories = "5"
+# True-peak cache fingerprint hashing (src/peakcache.rs). We call the one-shot
+# `gxhash64(bytes, seed)` to derive the opaque cache key from (path, size, mtime),
+# replacing the hand-rolled FNV-1a. Pinned to major 3: gxhash guarantees its output
+# is stable WITHIN a major version and identical across its supported platforms
+# (x86_64 + aarch64), but it MAY change across major versions. A major bump silently
+# re-keys the on-disk cache, but that only costs a one-time re-measure (the cache
+# self-heals on a miss, see src/peakcache.rs), so floating minor/patch is safe.
+# REQUIRES the `aes` CPU feature on every target (plus sse2 on x86) and ships NO
+# software fallback: a CPU without AES crashes with SIGILL at RUNTIME, not build
+# time. .cargo/config.toml therefore sets `-C target-feature=+aes` for each desktop
+# target triple; without it gxhash refuses to compile (a `compile_error!`). The
+# default (non-hybrid) build compiles on STABLE Rust; the `hybrid`/AVX2 feature is
+# nightly-only and left OFF. See docs/troubleshooting/gxhash-aes-target-feature.md.
+gxhash = "3"
 # Command-line argument parsing (src/cli.rs). The `derive` feature lets the `Cli`
 # struct declare the `--start-playing` flag and the file/folder positionals via
 # `#[derive(Parser)]`, replacing hand-rolled argv scanning and generating

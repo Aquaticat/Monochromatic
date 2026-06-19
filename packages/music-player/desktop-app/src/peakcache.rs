@@ -45,6 +45,28 @@ use std::time::UNIX_EPOCH;
 // ```
 use std::sync::{Arc, Mutex};
 
+// What:     `use gxhash::gxhash64;` pulls in ONE free function from the external
+//           `gxhash` crate: `gxhash64(input: &[u8], seed: i64) -> u64`. It is a
+//           fast NON-cryptographic hash; siblings in the same crate are
+//           `gxhash32` (32-bit output) and `gxhash128` (128-bit), plus a
+//           `GxHasher` type that plugs into `std::collections::HashMap`. We import
+//           only the one-shot 64-bit function.
+// Why:      It replaces the hand-rolled FNV-1a as the fingerprint hash. The
+//           one-shot `gxhash64` (not the `GxHasher`/`HashMap` path) is the only
+//           form whose output is fully determined by `(bytes, seed)` with no
+//           per-process randomness, which is what a stable-within-a-run cache key
+//           needs.
+// Gotcha:   `gxhash` compiles a hardware-AES code path with no software fallback,
+//           so the crate only builds when the target enables the `aes` CPU feature
+//           (set in .cargo/config.toml) and the resulting binary SIGILLs on a CPU
+//           without AES. FNV-1a had no such hardware requirement.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { gxhash64 } from "gxhash"; // hypothetical; no real JVM/JS port exists
+// ```
+use gxhash::gxhash64;
+
 // What:     `use crate::identity;` imports the shared identity-strings module
 //           (importing the MODULE, so reads stay qualified as
 //           `identity::CONFIG_APPLICATION`, keeping the origin obvious).
@@ -58,55 +80,22 @@ use std::sync::{Arc, Mutex};
 // ```
 use crate::identity;
 
-// What:     `const FNV_OFFSET: u64 = 14695981039346656037;`. The 64-bit FNV-1a offset
-//           basis (the hash's starting value). `u64` (sibling: `u32` for the 32-bit FNV
-//           variant) because we want a 64-bit fingerprint.
-// Why:      Standard FNV-1a seed; using the published constant keeps the hash stable.
+// What:     `const FINGERPRINT_SEED: i64 = 0;`. The fixed seed handed to
+//           `gxhash64`. `i64` (a signed 64-bit integer; the sibling `u64` is what
+//           you might expect, but gxhash's API takes `i64`) because that is the
+//           exact parameter type of `gxhash64(input, seed)`.
+// Why:      gxhash64 is fully deterministic given `(bytes, seed)`, so pinning a
+//           single constant seed makes the fingerprint reproducible across runs of
+//           the SAME binary, which is all a cache key needs. The value itself is
+//           arbitrary (0 is fine); what matters is that it never changes within a
+//           build. We do NOT use gxhash's `GxHasher`/`HashMap` path, which seeds
+//           itself randomly per process and would make the key unstable.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// const FNV_OFFSET = 14695981039346656037n; // BigInt: u64 exceeds Number
+// const FINGERPRINT_SEED = 0n; // bigint: the API wants a 64-bit integer
 // ```
-const FNV_OFFSET: u64 = 14695981039346656037;
-
-// What:     `const FNV_PRIME: u64 = 1099511628211;`. The 64-bit FNV-1a prime multiplier.
-// Why:      The other half of the FNV-1a definition.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// const FNV_PRIME = 1099511628211n;
-// ```
-const FNV_PRIME: u64 = 1099511628211;
-
-// What:     `fn fnv1a(bytes: &[u8]) -> u64`. Hash a byte slice with FNV-1a, a small fast
-//           non-cryptographic hash. `&[u8]` is a borrowed read-only byte slice.
-// Why:      Produce a compact, stable, opaque fingerprint from the key material.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// function fnv1a(bytes: Uint8Array): bigint {
-//   return [...bytes].reduce((h, b) => BigInt.asUintN(64, (h ^ BigInt(b)) * FNV_PRIME), FNV_OFFSET);
-// }
-// ```
-fn fnv1a(bytes: &[u8]) -> u64 {
-    // What:     `bytes.iter().fold(FNV_OFFSET, |hash, &b| (hash ^ b as u64).wrapping_mul(FNV_PRIME))`.
-    //           `.fold(seed, closure)` reduces the bytes: start at the offset basis, and
-    //           for each byte XOR it in then multiply by the prime. `&b` copies the byte;
-    //           `b as u64` widens it; `.wrapping_mul` multiplies with intentional
-    //           overflow wrap (no panic), which is exactly how FNV is defined. Tail ->
-    //           return.
-    // Why:      FNV-1a = for each byte: hash = (hash XOR byte) * prime.
-    // Gotcha:   `.wrapping_mul` is DELIBERATE overflow wraparound; plain `*` on `u64`
-    //           would PANIC on overflow in debug builds.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // return bytes.reduce((h, b) => BigInt.asUintN(64, (h ^ BigInt(b)) * FNV_PRIME), FNV_OFFSET);
-    // ```
-    bytes
-        .iter()
-        .fold(FNV_OFFSET, |hash, &b| (hash ^ b as u64).wrapping_mul(FNV_PRIME))
-}
+const FINGERPRINT_SEED: i64 = 0;
 
 // What:     `pub(crate) fn fingerprint(path: &Path) -> Option<String>`. Build the opaque
 //           cache key for a file from its path, size, and modified-time. Returns `None`
@@ -120,7 +109,7 @@ fn fnv1a(bytes: &[u8]) -> u64 {
 // function fingerprint(path: string): string | null {
 //   let meta; try { meta = statSync(path); } catch { return null; }
 //   const material = encode(path) + u64le(meta.size) + u128le(meta.mtimeNanos);
-//   return fnv1a(material).toString(16).padStart(16, "0");
+//   return gxhash64(material, FINGERPRINT_SEED).toString(16).padStart(16, "0");
 // }
 // ```
 pub(crate) fn fingerprint(path: &Path) -> Option<String> {
@@ -199,16 +188,25 @@ pub(crate) fn fingerprint(path: &Path) -> Option<String> {
     // material.push(...u128le(mtimeNanos));
     // ```
     material.extend_from_slice(&mtime_nanos.to_le_bytes());
-    // What:     `Some(format!("{:016x}", fnv1a(&material)))`. Hash the material and
-    //           `format!` it as a zero-padded 16-digit lowercase hex string (`{:016x}`),
-    //           wrapped in `Some`. Tail -> return.
-    // Why:      The opaque key stored on disk; reversing it to the path is infeasible.
+    // What:     `Some(format!("{:016x}", gxhash64(&material, FINGERPRINT_SEED)))`.
+    //           `gxhash64(&material, FINGERPRINT_SEED)` hashes the borrowed byte slice
+    //           `&material` with the fixed seed and returns a `u64`; `&material` lends
+    //           the buffer read-only (gxhash does not take ownership). `format!` then
+    //           renders that `u64` as a zero-padded 16-digit lowercase hex string
+    //           (`{:016x}`), and `Some(...)` wraps it as the present variant of
+    //           `Option`. No trailing `;`, so this tail expression is the return value.
+    // Why:      The opaque key stored on disk; a 64-bit non-cryptographic hash is not
+    //           reversible to the path in practice, preserving the privacy guarantee.
+    // Gotcha:   gxhash output is stable only WITHIN a gxhash major version; a future
+    //           major bump changes these keys, which just re-measures every track once
+    //           (the cache treats a miss as "not measured yet"). FNV-1a was stable
+    //           forever; we accept the trade for the shared hash implementation.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // return fnv1a(material).toString(16).padStart(16, "0");
+    // return gxhash64(material, FINGERPRINT_SEED).toString(16).padStart(16, "0");
     // ```
-    Some(format!("{:016x}", fnv1a(&material)))
+    Some(format!("{:016x}", gxhash64(&material, FINGERPRINT_SEED)))
 }
 
 // What:     `fn cache_path() -> Option<PathBuf>`. The on-disk location of the peak cache
