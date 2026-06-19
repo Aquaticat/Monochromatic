@@ -13,12 +13,12 @@ import {
 /**
  * Sentinel returned when a header or object property is missing or invalid.
  */
-const INVALID_VALUE: unique symbol = Symbol('invalidValue',);
+const INVALID_VALUE: unique symbol = Symbol('usage header value missing or invalid',);
 
 /**
  * Sentinel returned when a provider value cannot produce a snapshot.
  */
-const INVALID_RATE_LIMIT_SNAPSHOT: unique symbol = Symbol('invalidRateLimitSnapshot',);
+const INVALID_RATE_LIMIT_SNAPSHOT: unique symbol = Symbol('usage rate limit snapshot missing or invalid',);
 
 /**
  * Invalid value sentinel type.

@@ -167,7 +167,7 @@ function truncateForSummary({
  * LLM context. A unique symbol rather than `undefined` so the no-nullish-union
  * rule is satisfied while {@link convertToLlm} can filter it out.
  */
-const OMIT = Symbol('omit-from-context',);
+const OMIT = Symbol('morph compact message omitted from context',);
 
 /**
  * Map an extended `AgentMessage` (possibly carrying pi-coding-agent's custom
@@ -285,8 +285,8 @@ export function convertToLlm(
 
 /**
  * Extract concatenated text from a `user`-message content field, which may be
- * a raw string or a structured array of {@link TextContent}/{@link
- * ImageContent} blocks. Image blocks are dropped because Morph Compact
+ * a raw string or a structured array of {@link TextContent} or
+ * {@link ImageContent} blocks. Image blocks are dropped because Morph Compact
  * operates on text only.
  *
  * @param content - user message content (raw or structured)

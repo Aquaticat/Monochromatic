@@ -45,7 +45,7 @@ type AdvisorAgentMessage = Parameters<typeof convertToLlm>[0][number];
  * current tool call, or empty content). A `unique symbol`; callers narrow with
  * `=== MESSAGE_EXCLUDED`.
  */
-const MESSAGE_EXCLUDED: unique symbol = Symbol('advisor/message-excluded',);
+const MESSAGE_EXCLUDED: unique symbol = Symbol('advisor/current message excluded from context',);
 
 /**
  * Options for building Advisor context.

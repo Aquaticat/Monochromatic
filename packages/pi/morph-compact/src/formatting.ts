@@ -54,7 +54,7 @@ function isTextContentItem(
  * A unique symbol rather than `undefined`/`''` so the no-empty-sentinel and
  * no-nullish-union rules are satisfied while callers can still branch on it.
  */
-const NO_TEXT: unique symbol = Symbol('no-text',);
+const NO_TEXT: unique symbol = Symbol('morph compact content has no text',);
 
 /**
  * Extract text content from a message content field (string or content array).

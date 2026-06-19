@@ -21,7 +21,7 @@ import { tmpdir, } from 'node:os';
  * envVar({ name: 'X', value: CLEAR_ENV });
  * ```
  */
-const CLEAR_ENV: unique symbol = Symbol('spawn-pi/clear-env',);
+const CLEAR_ENV: unique symbol = Symbol('spawn pi test environment variable cleared',);
 
 /**
  * Disposable temporary directory handle.

@@ -38,7 +38,7 @@ type McpConfig = {
  * value, so it survives the no-nullish-union rule while still letting callers
  * branch on "no key configured".
  */
-export const NO_MORPH_KEY: unique symbol = Symbol('no-morph-api-key',);
+export const NO_MORPH_KEY: unique symbol = Symbol('morph api key missing from config',);
 
 /**
  * Cache of the resolved Morph API key for the session.
