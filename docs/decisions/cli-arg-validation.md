@@ -30,7 +30,7 @@ Current state when this decision was made:
 - Valibot is already in the workspace catalog
   (`PHILOSOPHY.tool-choices.md:27`: `valibot@>=1.4.0`, Standard
   Schema-compatible). It is used in `packages/pi/advisor/` and
-  `packages/webapp-content/ssg-test/`, but never in a CLI package.
+  `packages/ssg/aquati.cat/`, but never in a CLI package.
 
 `@optique/valibot` is Optique's adapter that lets a Valibot schema act as
 an Optique `ValueParser`. Adopting it gives the CLIs access to the

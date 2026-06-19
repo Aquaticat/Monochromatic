@@ -8,7 +8,7 @@ State of the lint-failure refactor triggered by the oxlint rule
 Full-workspace `mise run //:lint` cross-check is now green for every
 non-paused package. Final pass landed these fixes in this resume turn:
 doodle-widget, webapp-productivity/rss, typeface/aquaticat,
-webapp-content/ssg-test (with helper extraction to
+ssg/aquati.cat (with helper extraction to
 `postprocess-excludes.ts` to stay under the max-lines limit).
 
 Three packages are paused at the user's direction; each has a

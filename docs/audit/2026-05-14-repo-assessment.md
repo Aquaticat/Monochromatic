@@ -132,7 +132,7 @@ Risks:
   This count includes generated or artifact-like source files under the package.
 - Other notable source packages without colocated tests include
   `packages/desktop-daemon/editord`, `packages/webapp-productivity/done`,
-  `packages/webapp-productivity/done-postcss`, `packages/webapp-content/ssg-test`,
+  `packages/webapp-productivity/done-postcss`, `packages/ssg/aquati.cat`,
   and `packages/cli/terminal-exec`.
 - Browser and e2e test counts are small relative to the number of web application packages.
 

@@ -158,7 +158,7 @@ export default defineConfig({
 
 **Goal**: Rename `ssg-test` to `ssg` and update all references.
 
-- [ ] Rename directory `packages/webapp-content/ssg-test/` to `packages/webapp-content/ssg/`
+- [ ] Rename directory `packages/ssg/aquati.cat/` to `packages/webapp-content/ssg/`
 - [ ] Update `package.json` name to `@monochromatic-dev/ssg`
 - [ ] Add proper `exports` field for the public API (`defineConfig`, build entry point)
 - [ ] Update `pnpm-workspace.yaml` if the path is listed explicitly

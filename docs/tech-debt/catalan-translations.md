@@ -9,8 +9,8 @@ Created 2026-05-12.
 
 Commit `d0ad7a50` translated the 17 ssg-test posts to Catalan and registered `ca` as a typesafe-i18n locale:
 
-- 17 MDX files under `packages/webapp-content/ssg-test/src/content/ca/` (1444 insertions).
-- UI strings bundle at `packages/webapp-content/ssg-test/src/i18n/ca/index.ts`,
+- 17 MDX files under `packages/ssg/aquati.cat/src/content/ca/` (1444 insertions).
+- UI strings bundle at `packages/ssg/aquati.cat/src/i18n/ca/index.ts`,
    mirroring the Chinese bundle.
 - Regenerated typesafe-i18n outputs (`i18n-types.ts`,
    `i18n-util.ts`,

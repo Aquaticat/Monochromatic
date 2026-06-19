@@ -100,7 +100,7 @@ only in their `entry` arrays:
 - `packages/webapp-productivity/doodle-widget/tsdown.client.config.ts`
 - `packages/webapp-productivity/syllable-break-demo/tsdown.client.config.ts`
 - `packages/webapp-edu/paper2vn/tsdown.client.config.ts`
-- `packages/webapp-content/ssg-test/tsdown.client.config.ts`
+- `packages/ssg/aquati.cat/tsdown.client.config.ts`
 - `packages/webapp-content/messages-demo/tsdown.client.config.ts`
 
 Suggested resolution: this is the third structural duplication of the same shape
@@ -318,7 +318,7 @@ canonical source remains.
 
 - `packages/module/hyperscript/src/html/index.ts:escapeHtml` (canonical)
 - `packages/webapp-content/messages-demo/src/server/pages/_layout.ts:escapeHtml`
-- `packages/webapp-content/ssg-test/src/client/search.ts:escapeHtml`
+- `packages/ssg/aquati.cat/src/client/search.ts:escapeHtml`
 
 Each replaces `&`, `<`, `>`, `"` with their HTML entities.
 
@@ -408,7 +408,7 @@ function, its `cachedRepoRoot` cache, and the `access`/`dirname`/`join`
 imports were deleted; the latent ostree bug is fixed by using the shared
 helper's normalization.
 
-`packages/webapp-content/ssg-test/src/lib/git-dates.ts:56` defines `findRepoRoot()`
+`packages/ssg/aquati.cat/src/lib/git-dates.ts:56` defines `findRepoRoot()`
 walking up looking for `.git`. `packages/module/es/src/path/find-monorepo-root.ts:199`
 already exports `findMiseMonorepoRoot` walking up looking for `mise.toml` containing
 `[monorepo]`, plus normalizes `/home/...` to `/var/home/...` for Fedora ostree.
@@ -444,7 +444,7 @@ from `@monochromatic-dev/module-logger/types`; the `ReturnType<typeof tagged>`
 alias and the `tagged` import were removed.
 
 - `packages/module/logger/src/types.ts:6` (canonical, structural)
-- `packages/webapp-content/ssg-test/src/lib/types.ts` (`ReturnType<typeof tagged>`)
+- `packages/ssg/aquati.cat/src/lib/types.ts` (`ReturnType<typeof tagged>`)
 
 Suggested resolution: replace the `ReturnType<typeof tagged>` with a direct import.
 
@@ -454,7 +454,7 @@ Suggested resolution: replace the `ReturnType<typeof tagged>` with a direct impo
 local type now reads `type CommandResult = Pick<Result, 'stdout' | 'stderr'>`
 with `Result` imported from `nano-spawn`.
 
-`packages/webapp-content/ssg-test/src/lib/git-dates.ts:31` defines a local
+`packages/ssg/aquati.cat/src/lib/git-dates.ts:31` defines a local
 `{ stdout, stderr }` type matching the public type returned by `nano-spawn`.
 
 Suggested resolution: switch to `nano-spawn` and import its result type.
@@ -529,7 +529,7 @@ fork consolidation.
 #### `Translations`, `RootTranslation`, `TranslationFunctions` declared in two packages
 
 - `packages/webapp-edu/paper2vn/src/client/i18n/i18n-types.ts`
-- `packages/webapp-content/ssg-test/src/i18n/i18n-types.ts`
+- `packages/ssg/aquati.cat/src/i18n/i18n-types.ts`
 
 Two consumers of `typesafe-i18n` each declare the same wrapper triple.
 
@@ -540,7 +540,7 @@ expose the types from a single existing helper module.
 
 - `packages/dev-script/inference-canary-viewer/src/client/tags.ts:HIGHLIGHT_GROUPS`
 - `packages/desktop-daemon/editord/src/client/highlight/tags.ts:HIGHLIGHT_GROUPS`
-- `packages/webapp-content/ssg-test/src/client/highlight-groups.ts:HIGHLIGHT_GROUPS`
+- `packages/ssg/aquati.cat/src/client/highlight-groups.ts:HIGHLIGHT_GROUPS`
 
 The first two share a 7-entry list (`keyword, string, comment, number, type, function,
 property`). The third has 10 entries (extra: `heading, link, emphasis`).
@@ -756,9 +756,9 @@ Suggested home: `packages/module/es/src/types/t number/t bytes/`.
 - `packages/webapp-forge/server/src/git/pkt-line.ts`
 - `packages/webapp-productivity/doodle-widget/src/client/export-pdf.ts`
 - `packages/desktop-daemon/editord/src/server/operations/hex-dump.ts`
-- `packages/webapp-content/ssg-test/src/components/question-radio.ts`
-- `packages/webapp-content/ssg-test/src/components/question-checkbox.ts`
-- `packages/webapp-content/ssg-test/src/lib/icons/codepoints.ts`
+- `packages/ssg/aquati.cat/src/components/question-radio.ts`
+- `packages/ssg/aquati.cat/src/components/question-checkbox.ts`
+- `packages/ssg/aquati.cat/src/lib/icons/codepoints.ts`
 
 Folds into the parse-int helper proposal.
 
@@ -877,7 +877,7 @@ Listed for completeness so the next audit does not re-flag it.
 - `packages/desktop-daemon/editord/src/client/inlay/styles.ts`: `(2 + 1) / 2`
 - `packages/webapp-productivity/done-h-css-test/src/client/components/top-nav-styles.ts`:
   `1 / 2 / 2`
-- `packages/webapp-content/ssg-test/src/styles/constants.ts`: `1.6`
+- `packages/ssg/aquati.cat/src/styles/constants.ts`: `1.6`
 
 Same name, different values. Worth surfacing as a probable copy-paste bug: the first
 two compose to 1.5, the third to 0.25, the fourth to 1.6. Either the value or the name
@@ -887,7 +887,7 @@ is wrong in at least two of the four.
 
 - `packages/desktop-daemon/editord/src/client/styles/fullscreen-fab.styles.ts`: `2 + 1`
 - `packages/webapp-productivity/done-h-css-test/src/client/mixins.ts`: `3`
-- `packages/webapp-content/ssg-test/src/styles/constants.ts`: `3` (exported)
+- `packages/ssg/aquati.cat/src/styles/constants.ts`: `3` (exported)
 
 Two values match; one is the same value composed from primitives. Should converge on a
 single export.
@@ -897,7 +897,7 @@ single export.
 - `packages/dev-script/file-enforcer/src/watch/watch-dir.ts:DEBOUNCE_MS = 100` (exported)
 - `packages/desktop-daemon/editord/src/client/search/search.ts:DEBOUNCE_MS = 150`
 - `packages/desktop-daemon/editord/src/server/operations/watch-filesystem-filter.ts:DEBOUNCE_MS = 200` (exported)
-- `packages/webapp-content/ssg-test/src/client/search.ts:DEBOUNCE_MS = 200`
+- `packages/ssg/aquati.cat/src/client/search.ts:DEBOUNCE_MS = 200`
 
 Listed so reviewers can decide whether the values reflect deliberate choice (likely yes)
 or copy-paste drift.
@@ -1009,7 +1009,7 @@ saying "this should not be here long-term".
 
 Stated explicitly at line 4 of `packages/webapp-forge/server/src/fragments/jsx-runtime.ts`:
 
-> Inline copy of `packages/webapp-content/ssg-test/src/lib/jsx-to-html.ts`.
+> Inline copy of `packages/ssg/aquati.cat/src/lib/jsx-to-html.ts`.
 > Kept inline (not factored to a workspace package) per the design plan
 > so each surface can pin its own escape semantics.
 
@@ -1064,7 +1064,7 @@ already covered by earlier findings:
 - `webapp-forge/server/src/lib/args.ts` ("Mirrors
   `packages/webapp-content/messages-demo/src/lib/args.ts`"): covered by the
   `lib/args.ts` finding.
-- `webapp-content/ssg-test/src/client/tags.ts` ("Mirrors the mapping used by editord
+- `ssg/aquati.cat/src/client/tags.ts` ("Mirrors the mapping used by editord
   for visual consistency across surfaces"), covered by the `HIGHLIGHT_GROUPS`
   finding.
 
@@ -1087,7 +1087,7 @@ zip-writer cases pass.
 `nano-spawn` appears in 38 source files (verified by `rg "from 'nano-spawn'"`). Four
 files still use the `node:child_process` + `node:util` `promisify(execFile)` pattern:
 
-- `packages/webapp-content/ssg-test/src/lib/git-dates.ts:14`
+- `packages/ssg/aquati.cat/src/lib/git-dates.ts:14`
 - `packages/figma-parsers/kiwi/src/index.ts`
 - `packages/webapp-forge/server/src/server/routes/git.cli.unit.test.ts`
 - `packages/module/zip-writer/src/index.unit.test.ts`
@@ -1122,7 +1122,7 @@ next audit does not re-flag the pattern.
 
 #### `question-radio.ts` and `question-checkbox.ts` share 224 of 396/390 lines
 
-`packages/webapp-content/ssg-test/src/components/question-{radio,checkbox}.ts` are
+`packages/ssg/aquati.cat/src/components/question-{radio,checkbox}.ts` are
 sibling React-style components (radio button group vs checkbox group). Combined size
 786 lines; 172-line diff.
 
@@ -1158,8 +1158,8 @@ collision rather than DRY duplication.
 
 #### `validate` declared in two places
 
-- `packages/webapp-content/ssg-test/src/components/question-radio.ts:validate`
-- `packages/webapp-content/ssg-test/src/components/question-checkbox.ts:validate`
+- `packages/ssg/aquati.cat/src/components/question-radio.ts:validate`
+- `packages/ssg/aquati.cat/src/components/question-checkbox.ts:validate`
 
 Folds into the question-radio/checkbox sibling finding above.
 
@@ -1433,7 +1433,7 @@ Three near-identical wrappers around `mkdir(..., { recursive: true })`:
   takes a file path, calls `mkdir(dirname(filePath), { recursive: true })`
 - `packages/claude-code-plugins/source/src/handlers/session-start-housekeeping.ts:ensureDir(dirPath)`:
   takes a directory path directly
-- `packages/webapp-content/ssg-test/src/build/assets.ts:ensureDir(dir)`: inline
+- `packages/ssg/aquati.cat/src/build/assets.ts:ensureDir(dir)`: inline
   callback inside a `Promise.all(map)` chain
 
 Three call shapes, three definitions, one underlying operation. The first one
@@ -1588,13 +1588,13 @@ log-line. Both CLI packages import.
 Five separate `groupBy`-shaped functions across two packages, each implementing the
 same one-pass partition-by-key with different key types and result shapes:
 
-- `packages/webapp-content/ssg-test/src/lib/content-group.ts:groupByLang(posts)`:
+- `packages/ssg/aquati.cat/src/lib/content-group.ts:groupByLang(posts)`:
   delegates to `Map.groupBy`, returns `Partial<Record<Locales, Post[]>>`
-- `packages/webapp-content/ssg-test/src/lib/content-group.ts:groupByName(posts)`:
+- `packages/ssg/aquati.cat/src/lib/content-group.ts:groupByName(posts)`:
   delegates to `Map.groupBy`, returns `Record<string, Post[]>`
-- `packages/webapp-content/ssg-test/src/lib/content-group.ts:groupByTag(posts)`:
+- `packages/ssg/aquati.cat/src/lib/content-group.ts:groupByTag(posts)`:
   walks `allTags(posts)`, returns `Record<string, Post[]>`
-- `packages/webapp-content/ssg-test/src/lib/content-group.ts:groupByLangThenTag(posts)`:
+- `packages/ssg/aquati.cat/src/lib/content-group.ts:groupByLangThenTag(posts)`:
   composition of the previous two, returns `Partial<Record<Locales, Record<string, Post[]>>>`
 - `packages/desktop-daemon/editord/src/client/inlay/group-by-line.ts:groupByLine<T>({items, keyFn})`:
   generic, returns `Map<number, T[]>`, hand-rolled (does not use `Map.groupBy`)

@@ -201,7 +201,7 @@ naming choice; the steps below are common to whichever option is picked.
 - [ ] Add an `exports` field for the public API (`defineConfig`, `SupportedLocale`, the label key union)
       and the `bin` field.
 - [ ] Update the functional reference at `mise.toml:619`
-      (`packages/webapp-content/ssg-test/node_modules/.bin`) and the rationale comments at
+      (`packages/ssg/aquati.cat/node_modules/.bin`) and the rationale comments at
       `pnpm-workspace.yaml:243,309,313`.
 - [ ] Remove `src/content/` from the SSG (now in site-aquaticat).
 

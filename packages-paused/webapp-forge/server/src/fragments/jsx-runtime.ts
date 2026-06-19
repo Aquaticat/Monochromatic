@@ -1,7 +1,7 @@
 /**
  * Minimal JSX-to-HTML runtime for fragment rendering.
  *
- * Inline copy of `packages/webapp-content/ssg-test/src/lib/jsx-to-html.ts`.
+ * Inline copy of `packages/ssg/aquati.cat/src/lib/jsx-to-html.ts`.
  * Kept inline (not factored to a workspace package) per the design plan
  * so each surface can pin its own escape semantics.
  *

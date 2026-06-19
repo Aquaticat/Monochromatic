@@ -67,7 +67,7 @@ Packages with **blank/empty** README first lines: `config/stylelint`, `dev-scrip
 - missing (13): config/dprint, config/stylelint, config/tsdown, oxlint-plugins/tsdoc,
   config/tofu, oxlint-plugins/no-restricted-syntax,
   oxlint-plugins/stylistic, config/oxlint,
-  webapp-content/ssg-test, webapp-productivity/done, webapp-productivity/done-h-css-test,
+  ssg/aquati.cat, webapp-productivity/done, webapp-productivity/done-h-css-test,
   desktop-daemon/editord, audit/oph-common-look-and-feel
 
 ### `private`
@@ -211,7 +211,7 @@ The single source of truth is `pnpm-workspace.yaml`.
 Two different license values across 67 packages:
 
 - `LGPL-3.0-or-later` (65 packages)
-- `LGPL-3.0-or-later AND CC-BY-SA-4.0` (2): webapp-content/ssg-test, typeface/aquaticat
+- `LGPL-3.0-or-later AND CC-BY-SA-4.0` (2): ssg/aquati.cat, typeface/aquaticat
 
 The mixed licenses are likely intentional (content vs code),
 but there is no documentation explaining the licensing model.

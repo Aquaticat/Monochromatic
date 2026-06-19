@@ -84,7 +84,7 @@ Leaf packages still to fix:
 - `rolldown-plugins/import-attributes` (8e), `build-tool/css` (4e)
 - `desktop-daemon/hall-monitor` (7w 6e)
 - `claude-code-plugins/hook-types` (3e), `claude-code-plugins/source` (3w 24e)
-- `dev-script/inference-canary-viewer` (2e), `webapp-content/ssg-test` (4e)
+- `dev-script/inference-canary-viewer` (2e), `ssg/aquati.cat` (4e)
 - `module/memoize` (2e): import `ABSENT` from kv-store and narrow by identity; it broke when kv-store stopped returning `undefined`.
 
 Open behavioral decision discovered during the sweep (NOT a lint issue):
@@ -101,7 +101,7 @@ Post-sweep consolidation candidate (out of scope for lint-zero, noted for the us
 
 Manual rework that no lint rule catches (the type annotation is honest):
 
-- `webapp-content/ssg-test` and `dev-script/inference-canary-viewer` used `''` as an absence sentinel in earlier passes. The user ruled that `''` is not a valid sentinel. Hunt these by reading the files (grep for `''` defaults and returns in slots that mean absent) and convert to `?:`, an `if`-guard, or a real Symbol or domain sentinel.
+- `ssg/aquati.cat` and `dev-script/inference-canary-viewer` used `''` as an absence sentinel in earlier passes. The user ruled that `''` is not a valid sentinel. Hunt these by reading the files (grep for `''` defaults and returns in slots that mean absent) and convert to `?:`, an `if`-guard, or a real Symbol or domain sentinel.
 
 After all leaves: rebuild (`mise run build`), then run the full `mise run lint` and confirm exit 0 across active packages (excluding `module/es`).
 

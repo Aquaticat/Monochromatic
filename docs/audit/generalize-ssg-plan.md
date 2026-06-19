@@ -1,7 +1,7 @@
 # Audit: `TODO.generalize-ssg.md`
 
 Generated 2026-05-28 from a critical review of
-[`packages/webapp-content/ssg-test/TODO.generalize-ssg.md`](../../packages/webapp-content/ssg-test/TODO.generalize-ssg.md),
+[`packages/ssg/aquati.cat/TODO.generalize-ssg.md`](../../packages/ssg/aquati.cat/TODO.generalize-ssg.md),
 the plan to extract `ssg-test` into a publishable, general-purpose static site generator
 (`@monochromatic-dev/ssg`) with the Aquaticat content split into a new `site-aquaticat` package.
 
@@ -113,7 +113,7 @@ These are verified against the source, cited by repo-relative path and line.
 16. The rename surface is understated.
     Phase 4 says "update pnpm-workspace.yaml if the path is listed explicitly."
     There is a live functional reference at `mise.toml:619`
-    (`packages/webapp-content/ssg-test/node_modules/.bin` in a PATH list),
+    (`packages/ssg/aquati.cat/node_modules/.bin` in a PATH list),
     plus rationale comments in `pnpm-workspace.yaml:243,309,313`.
     The vague phrasing invites missing the functional one.
 

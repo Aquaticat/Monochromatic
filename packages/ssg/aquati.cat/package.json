@@ -1,6 +1,6 @@
 {
   "license": "LGPL-3.0-or-later AND CC-BY-SA-4.0",
-  "name": "@monochromatic-dev/webapp-content-ssg-test",
+  "name": "@monochromatic-dev/ssg-aquati.cat",
   "description": "Static site generator for the Aquaticat blog. Converts MDX to flat HTML with Lezer syntax highlighting, RSS feeds, and zstd compression.",
   "private": true,
   "type": "module",

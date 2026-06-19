@@ -1,4 +1,4 @@
-# ssg-test
+# aquati.cat
 
 Static site generator for the Aquaticat blog.
 Converts MDX content into flat HTML pages served by Caddy with clean URLs.

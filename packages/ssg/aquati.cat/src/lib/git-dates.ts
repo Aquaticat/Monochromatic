@@ -274,7 +274,7 @@ async function gitLogDates(
  * @example
  * ```ts
  * const rel = await getRepoRelativePath('src/content/en/post.mdx');
- * // → 'packages/webapp-content/ssg-test/src/content/en/post.mdx'
+ * // → 'packages/ssg/aquati.cat/src/content/en/post.mdx'
  * ```
  */
 async function getRepoRelativePath(filePath: string,): Promise<string> {
@@ -323,7 +323,7 @@ async function getRepoRelativePath(filePath: string,): Promise<string> {
  * ```ts
  * const first = await ghApiFirstCommitDate({
  *   slug: 'Aquaticat/Monochromatic',
- *   repoRelPath: 'packages/webapp-content/ssg-test/src/content/en/post.mdx',
+ *   repoRelPath: 'packages/ssg/aquati.cat/src/content/en/post.mdx',
  * });
  * ```
  */

@@ -105,7 +105,7 @@ The prototype's improvement over the hand-tuned config came from three sources:
 - `packages/oxlint-plugins/no-restricted-syntax/src/rules/no-hasownproperty.ts`,
   `no-promise-catch.ts`, and `no-promise-finally.ts` share 23 lines of rule scaffolding
 - `packages/desktop-daemon/editord/src/client/highlight/tags.ts:56-147` and
-  `packages/webapp-content/ssg-test/src/client/tags.ts:35-126`
+  `packages/ssg/aquati.cat/src/client/tags.ts:35-126`
   duplicate 92 lines of highlight tag wiring
 
 ### Dead dependencies

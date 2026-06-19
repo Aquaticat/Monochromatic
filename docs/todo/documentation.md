@@ -77,7 +77,7 @@ Reduce redundant attributes in PlantUML-generated SVGs:
 
 **Status**:
  Done.
- `webapp-content/ssg-test` runs `pagefind --site dist` in
+ `ssg/aquati.cat` runs `pagefind --site dist` in
 `build:postprocess` (parallel with the fingerprinting phases).
  The client
 consumes the runtime `pagefind.search()` API via `src/client/search.ts`,
@@ -98,7 +98,7 @@ README for the full pipeline.
 #### Set Default Modified Date by Git Log
 
 **Status**:
- Done in `packages/webapp-content/ssg-test`.
+ Done in `packages/ssg/aquati.cat`.
 
 The SSG derives publication and modification dates from git history,
 renders them on content pages,
@@ -106,7 +106,7 @@ renders them on content pages,
  and warns
 when legacy hand-authored date frontmatter diverges from git.
  See
-`packages/webapp-content/ssg-test/README.md`.
+`packages/ssg/aquati.cat/README.md`.
 
 #### Enhanced Git Integration
 

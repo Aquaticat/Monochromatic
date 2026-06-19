@@ -528,7 +528,7 @@ Replace with paired commas, parentheses, colon, semicolon, or period.
 
 - Line 30: /** Minimal context shape needed by all event handlers — just `ui.setTitle()`. */
 
-### packages/webapp-content/ssg-test/src/content/en/link-vs-button-quiz.mdx (54 occurrences, first 20 shown)
+### packages/ssg/aquati.cat/src/content/en/link-vs-button-quiz.mdx (54 occurrences, first 20 shown)
 
 - Line 2: title: "Link vs Button — Tricky Questions"
 - Line 10: `<a>` and `<button>` look interchangeable: both are clickable, both can run JavaScript, both can be styled to look like whichever the designer prefers. The actual choice between th
@@ -552,11 +552,11 @@ Replace with paired commas, parentheses, colon, semicolon, or period.
 - Line 183: explanation: <><code>{`<a href="#top">`}</code> works without any JavaScript. When the user clicks it, the browser scrolls to the top of the page because <code>#top</code> is a spe
 - ... and 34 more
 
-### packages/webapp-content/ssg-test/src/pages/tag.ts
+### packages/ssg/aquati.cat/src/pages/tag.ts
 
 - Line 73: description: `${t.siteDescription()} — ${tag}`,
 
-### packages/webapp-content/ssg-test/src/templates/head.ts
+### packages/ssg/aquati.cat/src/templates/head.ts
 
 - Line 59: //region Capo.js priority 11 — pragma directives
 - Line 72: //region Capo.js priority 10 — title
@@ -599,7 +599,7 @@ Replace with "to" for ranges, or paired commas/parentheses for asides.
 - Line 235: decls: { system: 'cyclic', symbols: '"–"', suffix: '" "', },
 - Line 237: .toBe('@counter-style dash{system:cyclic;symbols:"–";suffix:" "}',);
 
-### packages/webapp-content/ssg-test/src/components/question-radio.ts
+### packages/ssg/aquati.cat/src/components/question-radio.ts
 
 - Line 11: * hardcoded A–E letter scheme. Labels and explanations accept full
 
@@ -633,10 +633,10 @@ Replace with proper punctuation or restructure sentence.
 - Line 1520: escapes `\` and `'` for embedding into single-quoted TypeScript string literals --
 - Line 1554: `spawn({command, args}): Promise<string>` -- 11-line diff between two 50-line files
 - Line 1565: helper -- either as a new tiny package (e.g. `module/spawn-tagged`) or as an export
-- Line 1574: - `packages/webapp-content/ssg-test/src/lib/content-group.ts:groupByLang(posts)` --
-- Line 1576: - `packages/webapp-content/ssg-test/src/lib/content-group.ts:groupByName(posts)` --
-- Line 1578: - `packages/webapp-content/ssg-test/src/lib/content-group.ts:groupByTag(posts)` --
-- Line 1580: - `packages/webapp-content/ssg-test/src/lib/content-group.ts:groupByLangThenTag(posts)` --
+- Line 1574: - `packages/ssg/aquati.cat/src/lib/content-group.ts:groupByLang(posts)` --
+- Line 1576: - `packages/ssg/aquati.cat/src/lib/content-group.ts:groupByName(posts)` --
+- Line 1578: - `packages/ssg/aquati.cat/src/lib/content-group.ts:groupByTag(posts)` --
+- Line 1580: - `packages/ssg/aquati.cat/src/lib/content-group.ts:groupByLangThenTag(posts)` --
 - Line 1582: - `packages/desktop-daemon/editord/src/client/inlay/group-by-line.ts:groupByLine<T>({items, keyFn})` --
 - Line 1652: export * as positional from './p p/index.ts';` -- 16 files
 
@@ -2281,7 +2281,7 @@ Replace with proper punctuation or restructure sentence.
 
 - Line 302: //region Local validation helpers -- thin wrappers, no library
 
-### packages/webapp-content/ssg-test/README.md
+### packages/ssg/aquati.cat/README.md
 
 - Line 60: - Authoring a post without committing is undefined behavior --
 - Line 85: The `data-hl-*` attributes add ~1.1 KB compressed across all pages --
@@ -2291,32 +2291,32 @@ Replace with proper punctuation or restructure sentence.
 - Line 179: 2. **CSS** -- rewrite font `url()` references with hashed names from phase 1, then hash the CSS itself
 - Line 180: 3. **Reference rewriting** -- replace original basenames with hashed basenames in all HTML files and `manifest.webmanifest`
 
-### packages/webapp-content/ssg-test/TODO.generalize-ssg.md
+### packages/ssg/aquati.cat/TODO.generalize-ssg.md
 
 - Line 189: The risk is low -- no architectural changes, just plumbing a config object through existing code.
 
-### packages/webapp-content/ssg-test/src/build.ts
+### packages/ssg/aquati.cat/src/build.ts
 
 - Line 48: // File justification: 120 lines -- linear pipeline script; splitting the
 - Line 74: //region Build orchestration -- loads content, processes MDX, generates pages and assets
 
-### packages/webapp-content/ssg-test/src/build/favicon.ts
+### packages/ssg/aquati.cat/src/build/favicon.ts
 
 - Line 169: //region Standalone execution -- allows running via `mise run generate:favicons`
 
-### packages/webapp-content/ssg-test/src/build/postprocess.ts
+### packages/ssg/aquati.cat/src/build/postprocess.ts
 
 - Line 151: //region Phase 1 -- fingerprint leaf assets
 - Line 199: //region Phase 2 -- fingerprint CSS
 - Line 290: //region Phase 3 -- rewrite references
 - Line 479: * -- neither branch touches HTML, so they race on disjoint files.
 
-### packages/webapp-content/ssg-test/src/client/search.ts
+### packages/ssg/aquati.cat/src/client/search.ts
 
 - Line 118: // resolved at bundle time -- it must be a runtime import.
 - Line 122: // @ts-expect-error -- Pagefind bundle is generated at build time by `pagefind --site dist`; no type declarations exist
 
-### packages/webapp-content/ssg-test/src/components/site-footer.ts
+### packages/ssg/aquati.cat/src/components/site-footer.ts
 
 - Line 29: // Cookie Clicker -- the game's newsticker has this news
 - Line 31: // AI slop -- "slop" as slang for low-effort AI-generated content
@@ -2328,25 +2328,25 @@ Replace with proper punctuation or restructure sentence.
 - Line 45: // Viral video -- Exotic Black TV cleaning a Himalayan marmot with a paint roller (2025)
 - Line 47: // Phil Karlton -- There are only two hard things in Computer Science: cache invalidation and naming things.
 
-### packages/webapp-content/ssg-test/src/content/en/about.mdx
+### packages/ssg/aquati.cat/src/content/en/about.mdx
 
 - Line 11: Aquaticat -- UI/UX Designer and Developer.
 - Line 20: My work spans the full product lifecycle --
 - Line 37: **Interactive Media Design -- Ontario College Advanced Diploma**
 - Line 38: Algonquin College, 2023 -- 2026
 
-### packages/webapp-content/ssg-test/src/content/en/portfolio-done.mdx
+### packages/ssg/aquati.cat/src/content/en/portfolio-done.mdx
 
 - Line 2: title: "DONE -- To-Do List App"
 - Line 14: within the Monochromatic monorepo (2025 -- present).
 - Line 17: DONE aims to eliminate the overhead that plagues most task management tools --
 - Line 43: Developed visual moodboards establishing the geometric, minimal aesthetic --
 
-### packages/webapp-content/ssg-test/src/content/en/portfolio-monochromatic.mdx
+### packages/ssg/aquati.cat/src/content/en/portfolio-monochromatic.mdx
 
 - Line 2: title: "Monochromatic -- Open-Source Design System and Monorepo"
 
-### packages/webapp-content/ssg-test/src/content/en/portfolio-morph-apply.mdx
+### packages/ssg/aquati.cat/src/content/en/portfolio-morph-apply.mdx
 
 - Line 2: title: "Morph Apply -- Job Application Tracker Redesign"
 - Line 30: 1. **Research** -- Competitive analysis of existing AI tools,
@@ -2355,33 +2355,33 @@ Replace with proper punctuation or restructure sentence.
 - Line 35: 4. **Prototyping** -- Interactive Figma prototypes for key user flows
 - Line 36: 5. **Presentation** -- Pitched the design to stakeholders with supporting research
 
-### packages/webapp-content/ssg-test/src/content/en/portfolio-website.mdx
+### packages/ssg/aquati.cat/src/content/en/portfolio-website.mdx
 
 - Line 62: -- for example, `backdrop-filter: blur(...)` --
 
-### packages/webapp-content/ssg-test/src/images/convert.ts
+### packages/ssg/aquati.cat/src/images/convert.ts
 
 - Line 31: * Returns `false` on **any** access error, not only missing files --
 
-### packages/webapp-content/ssg-test/src/images/format.ts
+### packages/ssg/aquati.cat/src/images/format.ts
 
 - Line 53: //region Top-level conversion pipeline -- scans directories and converts raster images to AVIF
 
-### packages/webapp-content/ssg-test/src/lib/cache.ts
+### packages/ssg/aquati.cat/src/lib/cache.ts
 
 - Line 27: // File justification: 164 lines -- schema definitions, I/O, and lookup form a
 
-### packages/webapp-content/ssg-test/src/lib/content-group.ts
+### packages/ssg/aquati.cat/src/lib/content-group.ts
 
 - Line 7: // File justification: 104 lines -- grouping functions share the same type
 
-### packages/webapp-content/ssg-test/src/lib/jsx-to-html.ts
+### packages/ssg/aquati.cat/src/lib/jsx-to-html.ts
 
 - Line 20: * components) are called with their props and return `SafeHtml` directly --
 - Line 146: //region Public API -- JSX runtime exports
 - Line 217: //endregion Public API -- JSX runtime exports
 
-### packages/webapp-content/ssg-test/src/styles/icons.ts
+### packages/ssg/aquati.cat/src/styles/icons.ts
 
 - Line 17: * -- is what makes tight subsetting possible: harfbuzz only retains
 
@@ -3510,25 +3510,25 @@ Replace with proper punctuation or restructure sentence.
 - Line 23: - **`doubleQuote`** - Strings containing double quotes (`"`)
 - Line 24: - **`backtick`** - Strings containing backticks/template literals (`` ` ``)
 
-### packages/webapp-content/ssg-test/src/content/en/magicbread.mdx
+### packages/ssg/aquati.cat/src/content/en/magicbread.mdx
 
 - Line 135: need to consider the market - the potential customers.
 
-### packages/webapp-content/ssg-test/src/content/en/mdx.mdx
+### packages/ssg/aquati.cat/src/content/en/mdx.mdx
 
 - Line 36: This HTML output is stolen from MDN, Adding Captions and Subtitles to Video
 
-### packages/webapp-content/ssg-test/src/content/en/web-resources.mdx
+### packages/ssg/aquati.cat/src/content/en/web-resources.mdx
 
 - Line 10: [Web Typography - A handbook for designing beautiful and effective responsive typography](https://book.webtypography.net/)
 - Line 36: [Every Layout - Relearn CSS layout by example](https://every-layout.dev/)
 - Line 56: [adactio - Jeremy Keith](https://adactio.com)
 
-### packages/webapp-content/ssg-test/src/content/en/wolf-icons.mdx
+### packages/ssg/aquati.cat/src/content/en/wolf-icons.mdx
 
 - Line 3: description: "You thought this was just an unassuming wolf - but wait! It's scary! What? It's not?"
 
-### packages/webapp-content/ssg-test/src/content/zh/mdx.mdx
+### packages/ssg/aquati.cat/src/content/zh/mdx.mdx
 
 - Line 36: This HTML output is stolen from MDN, Adding Captions and Subtitles to Video
 

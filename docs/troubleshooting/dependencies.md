@@ -673,7 +673,7 @@ ms@2.1.3
 │ ├── micromark → @monochromatic-dev/dev-script-inference-canary-viewer
 │ │             → @monochromatic-dev/webapp-content-messages-demo
 │ │             → mdast-util-from-markdown → remark-* → @mdx-js/mdx
-│ │             → @monochromatic-dev/webapp-content-ssg-test
+│ │             → @monochromatic-dev/ssg-aquati.cat
 │ └── stylelint → @monochromatic-dev/config-stylelint
 │                → stylelint-config-recommended → stylelint-config-standard
 │                → monochromatic (workspace root devDependency)
@@ -974,7 +974,7 @@ notes and `docs/dependency-blocklist.md` for the policy reference.
 transitively by `stylelint@17.6.0` through `cosmiconfig@9.0.1`. The workspace does
 not consume it: all YAML parsing uses the `yaml` package
 (`packages/dev-script/deps-cube/src/catalog.ts`,
-`packages/webapp-content/ssg-test/src/lib/content.ts`). The `action: 'throw'` policy
+`packages/ssg/aquati.cat/src/lib/content.ts`). The `action: 'throw'` policy
 substitutes it with `@monochromatic-dev/stub-throwing`, removing the real js-yaml
 package, and the `argparse` edge it carried, from `node_modules`.
 

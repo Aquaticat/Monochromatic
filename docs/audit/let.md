@@ -68,7 +68,7 @@ Top contributors (total `let` count per package):
 - `pi/auto-mode`: 28
 - `module/logger`: 24
 - `figma-parsers/kiwi`: 24
-- `webapp-content/ssg-test`: 23
+- `ssg/aquati.cat`: 23
 - `dev-script/inference-canary`: 23
 - `pi/morph-compact`: 22
 

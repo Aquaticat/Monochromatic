@@ -255,12 +255,12 @@ These trapped the first implementation and will trap the next contributor unless
 
 These are the bits that did not get written down inside the package itself:
 
-- The `ssg-test` cache pipeline glob at `packages/webapp-content/ssg-test/src/build.ts:72` (`PIPELINE_GLOB = 'src/{lib,components,client}/**/*.ts'`) **does not include `src/i18n/`**.
+- The `ssg-test` cache pipeline glob at `packages/ssg/aquati.cat/src/build.ts:72` (`PIPELINE_GLOB = 'src/{lib,components,client}/**/*.ts'`) **does not include `src/i18n/`**.
    Phase 6 acceptance says i18n source changes must invalidate cached rendered output (§13 Phase 6 / §15).
    Widen the glob (or add a separate i18n fingerprint) before declaring the migration done.
 - `ssg-test`'s `package.json` does not yet depend on `@monochromatic-dev/module-i18n-compose`.
    Phase 6 must add `"@monochromatic-dev/module-i18n-compose": "workspace:*"` to `dependencies` and remove `"typesafe-i18n"` from `devDependencies`.
-- The existing call sites use `const t = i18nObject(lang); t.siteName()` — across roughly ten files (rg `'i18nObject'` from `packages/webapp-content/ssg-test/src`).
+- The existing call sites use `const t = i18nObject(lang); t.siteName()` — across roughly ten files (rg `'i18nObject'` from `packages/ssg/aquati.cat/src`).
    The plan's §3 forbids exporting a `bindLocale` / `t(locale)` accessor from the shared package.
    Rewrites must become explicit `i18n.label(lang, 'siteName')` calls;
    an app-local thin wrapper is allowed if call-site noise becomes painful,
@@ -283,7 +283,7 @@ These are the bits that did not get written down inside the package itself:
    `formatters.ts` is a thin stub that currently returns an empty object;
    nothing depends on it semantically.
 - The `build:i18n` mise task (`typesafe-i18n --no-watch`) and the `typesafe-i18n` devDependency both go away.
-- Test the migration via `mise run //packages/webapp-content/ssg-test:build` (or whatever the equivalent task names are when you read this — `mise tasks -C packages/webapp-content/ssg-test` lists them).
+- Test the migration via `mise run //packages/ssg/aquati.cat:build` (or whatever the equivalent task names are when you read this — `mise tasks -C packages/ssg/aquati.cat` lists them).
    Rendered output diff should either be empty or every diff line should have a one-line explanation.
 
 ## 1. Goal

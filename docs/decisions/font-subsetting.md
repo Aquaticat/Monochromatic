@@ -1,7 +1,7 @@
-## Font subsetting pipeline (webapp-content/ssg-test)
+## Font subsetting pipeline (ssg/aquati.cat)
 
 Records the technology choice behind `src/build/subset-fonts.ts` in
-`packages/webapp-content/ssg-test/`. Future sessions consult this before
+`packages/ssg/aquati.cat/`. Future sessions consult this before
 re-proposing rejected paths.
 
 This document is appended to, not rewritten. When a downstream choice forces

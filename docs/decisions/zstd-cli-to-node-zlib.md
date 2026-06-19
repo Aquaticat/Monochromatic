@@ -15,7 +15,7 @@ Two places in the workspace shell out to the external `zstd` command-line tool:
   zstd-compressed document section of a Figma `.fig` / `.deck` / `.jam` export. It first tries an
   optional native module (`@bokuwatch/zstd`, never declared as a dependency) and otherwise spawns
   `zstd -d` through `nano-spawn`, shuttling data through temp files.
-- `packages/webapp-content/ssg-test/mise.toml`, task `build:compress`, runs
+- `packages/ssg/aquati.cat/mise.toml`, task `build:compress`, runs
   `zstd -z -f --no-check -T0 --exclude-compressed --no-content-size -r --adapt dist` to write a
   `<file>.zst` companion next to every compressible asset in `dist/`. The companions are read by
   `packages/dev-script/page-weight/src/size.ts` (`wireSize`) and exist for precompressed serving.
@@ -681,7 +681,7 @@ decodes real `.fig` / `.deck` / `.jam` files (`bun packages/figma-parsers/kiwi/s
 
 ### ssg compression
 
-Add `packages/webapp-content/ssg-test/src/build/compress.ts` beside `postprocess.ts`, and change the
+Add `packages/ssg/aquati.cat/src/build/compress.ts` beside `postprocess.ts`, and change the
 `build:compress` task from the `zstd` shell command to `node src/build/compress.ts` (Node, since Bun
 is being removed). The script: on the main thread, walk `dist/`, skip known-incompressible extensions
 without reading them, shard the remaining files across `node:worker_threads` (worker count = physical
@@ -815,7 +815,7 @@ versions in the environment table; the datasets rebuild deterministically from t
 To reproduce the headline comparison directly:
 
 ```sh
-# build dist first (mise run //packages/webapp-content/ssg-test:build:site), then:
+# build dist first (mise run //packages/ssg/aquati.cat:build:site), then:
 hyperfine --warmup 3 --runs 12 --prepare 'rm -rf /tmp/out && mkdir -p /tmp/out' \
   --command-name current 'cd dist && zstd -q -z -f --no-check --no-content-size -T0 --adapt -r . --output-dir-mirror /tmp/out' \
   --command-name 'cli-matched-L19' 'cd dist && zstd -q -19 --ultra --no-check --no-content-size -T0 -r . --output-dir-mirror /tmp/out -f' \
