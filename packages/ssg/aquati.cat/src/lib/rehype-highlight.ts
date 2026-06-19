@@ -96,7 +96,7 @@ const LANGUAGE_PREFIX = 'language-';
  * `language-*` class. A unique symbol rather than the empty string, so "no
  * language" is never mistaken for a (nonsensical) empty language name.
  */
-const NO_LANGUAGE: unique symbol = Symbol('no-language',);
+const NO_LANGUAGE: unique symbol = Symbol('code block language class missing',);
 
 //endregion Parser configuration
 

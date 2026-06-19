@@ -8,7 +8,7 @@
 /**
  * Sentinel returned when a frontmatter date field is absent.
  */
-const NO_AUTHORED_DATE: unique symbol = Symbol('no-authored-date',);
+const NO_AUTHORED_DATE: unique symbol = Symbol('frontmatter authored date missing',);
 
 /**
  * Frontmatter date fields accepted only for migration diagnostics.

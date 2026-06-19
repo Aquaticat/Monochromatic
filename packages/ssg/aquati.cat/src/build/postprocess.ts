@@ -92,7 +92,7 @@ const STALE_HASH_ZST_PATTERN = /\.[0-9a-f]{10}\.[^.]+\.zst$/u;
  * fingerprint (already renamed). A genuine `Symbol` rather than
  * `null`/`undefined`, which the `no-nullish-union` rule rejects.
  */
-const CSS_ABSENT: unique symbol = Symbol('css-absent',);
+const CSS_ABSENT: unique symbol = Symbol('stylesheet asset missing before fingerprinting',);
 
 //region Phase 1: fingerprint leaf assets
 

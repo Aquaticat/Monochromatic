@@ -30,7 +30,7 @@ import type { Logger, } from './types.ts';
  * unique symbol rather than the empty string, so an absent value can never be
  * confused with a genuine (if implausible) empty date or slug.
  */
-export const ABSENT: unique symbol = Symbol('git-dates-absent',);
+export const ABSENT: unique symbol = Symbol('git dates probe returned nothing',);
 
 /**
  * Result of running a git (or gh) command with stdout captured as UTF-8.

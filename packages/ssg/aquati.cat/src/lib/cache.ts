@@ -88,14 +88,14 @@ const buildManifestSchema = v.object({
  * A genuine `Symbol` rather than `null`/`undefined`, which the
  * `no-nullish-union` rule rejects as non-sentinels.
  */
-export const NO_CACHE: unique symbol = Symbol('no-cache',);
+export const NO_CACHE: unique symbol = Symbol('build manifest file missing',);
 
 /**
  * Sentinel returned by `getCachedEntry` when the manifest has no matching,
  * content-hash-current entry for a file. A genuine `Symbol` rather than
  * `null`/`undefined`.
  */
-export const CACHE_MISS: unique symbol = Symbol('cache-miss',);
+export const CACHE_MISS: unique symbol = Symbol('build cache entry missing',);
 
 //endregion Sentinels
 
