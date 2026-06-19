@@ -14,11 +14,12 @@ empirical, multi-oracle answer for 0.6.13, at the depth of
 ## Headline
 
 The known-bug classes from the 2026-06-04 and 2026-06-11 campaigns are fixed in
-0.6.13, confirmed by an independent formally-grounded oracle. One new live
-correctness bug was found, one acknowledged perf residual persists, and the
+0.6.13, confirmed by an independent formally-grounded oracle. Two new live
+correctness bugs were found, one acknowledged perf residual persists, and the
 experimental `stream` feature remains phantom-prone by design. Net: 0.6.13 is
-substantially sound on its production APIs across a very large search, with a
-single narrow `find_anchored` soundness defect on an all-end-anchor shape.
+substantially sound on its production APIs across a very large search, with
+`find_all` sound on both arches and two narrow soundness defects isolated to
+`find_anchored` and `is_match` on accepted-superset end-anchor shapes.
 
 Findings, by tier (adjudication rules in `method-and-oracles.md`):
 
@@ -29,6 +30,13 @@ Findings, by tier (adjudication rules in `method-and-oracles.md`):
   Self-evident from internal inconsistency; no external oracle needed. Identical
   on AVX2 and NEON. This is the 06-11 bug-02 / bug-10 family, narrowed but not
   eliminated. See `bug-find-anchored-end-anchor-union.md`.
+- `bug-is-match-false-positive-inter-optional-end-anchor` (NEW, live soundness):
+  `is_match` returns true where `find_all` is empty and the language has no match,
+  on `_&(?:[ab]|$)?` over inputs with `\n`. `find_all` is correct; `is_match` uses
+  a separate forward path that over-accepts. Internal C1-contract violation; no
+  external oracle needed. Identical on AVX2 and NEON. The 06-11 bug-08 family,
+  narrowed but not eliminated. See
+  `bug-is-match-false-positive-inter-optional-end-anchor.md`.
 - `compile-cost-recheck` (KNOWN, acknowledged by maintainer, not fixed):
   full-Unicode `\w{N}` bounded-repeat compile time. Measured curve peaks at
   ~4.7s near N=24 then cliffs to ~0.4s at N>=32 (a strategy switch), while
@@ -93,10 +101,11 @@ opportunistic secondary sanity check where convenient.
 
 ## Verdict
 
-For 0.6.13 specifically: the production APIs (`find_all`, `is_match`) are sound
-across an extremely large multi-oracle search, with the crash, panic, and
-silent-mismatch classes from the prior campaigns all fixed. The residual defects
-are narrow: one `find_anchored`-only soundness bug on an all-end-anchor shape, one
+For 0.6.13 specifically: `find_all` is sound across an extremely large
+multi-oracle search, with the crash, panic, and silent-mismatch classes from the
+prior campaigns all fixed. The residual defects are narrow: two soundness bugs
+isolated to `find_anchored` (phantom/missing span on `(\z|$)$`) and `is_match`
+(false positive on `_&(?:[ab]|$)?`) on accepted-superset end-anchor shapes, one
 acknowledged and bounded compile-cost case, and the experimental `stream` feature.
 This is a strong, mostly-clean result; it raises confidence in 0.6.13 rather than
 indicating shallow fuzzing (see `coverage-and-limits.md` for what that confidence
