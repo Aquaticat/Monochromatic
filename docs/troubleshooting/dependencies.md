@@ -635,14 +635,31 @@ The overrides retained for pi-coding-agent are:
 - `marked`: pi-coding-agent vendors `core/export-html/vendor/marked.min.js`
   and does not statically import the npm `marked` package.
 
-`undici` was previously retained as an override on the assumption that
+`undici` was previously retained as a removal override on the assumption that
 "library consumers never load it." That audit missed the `bin` entry:
 `package.json` maps `"pi": "dist/cli.js"`, and `dist/cli.js:8` statically
 imports `undici` (it installs an `EnvHttpProxyAgent` with disabled body /
 header timeouts). The workspace ships a `commit` shell alias that resolves
 to `pi 'commit all'`, so the `pi` binary is a first-class consumer of this
 workspace. Run-the-binary, not just import-the-library, is part of the
-"reachable from each pi-* package's entry" audit. The override is gone.
+"reachable from each pi-* package's entry" audit. Removal is still rejected.
+
+As of 2026-06-19, `pnpm audit --json` and GitHub Dependabot alerts #57, #58,
+and #59 reported three advisories against `undici@8.3.0`:
+GHSA-38rv-x7px-6hhq / CVE-2026-9675,
+GHSA-pr7r-676h-xcf6 / CVE-2026-9678,
+and GHSA-vmh5-mc38-953g / CVE-2026-9697. The vulnerable range is
+`>=8.0.0 <8.5.0`, and the patched floor is `8.5.0`. Every audit path reached
+`undici` through `@earendil-works/pi-coding-agent`, and
+`@earendil-works/pi-coding-agent@0.79.7` still pins `undici: 8.3.0`, so a
+normal pi package bump does not clear the advisory.
+
+`pnpm-workspace.yaml` now carries a global version override,
+`'undici': '>=8.5.0'`. This is not a blocklist/removal override: it keeps
+`undici` installed for the reachable pi CLI path while forcing any present or
+future workspace consumer onto the patched security floor. Regenerating the
+lockfile with `pnpm install --lockfile-only --ignore-scripts` resolves
+`undici@8.5.0`, and `pnpm audit --json` returns zero advisories.
 
 The overrides retained for pi-tui are `chalk` and `mime-types`, neither
 of which the dist statically imports. `koffi` is removed for the optional
