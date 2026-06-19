@@ -32,6 +32,39 @@ history is the file's reason for existing.
 
 ## Last benched
 
+**2026-06-19 (abandoned resharp-only serialize-cache experiment)**,
+hyperfine 1.20.0. Main binary:
+`/var/home/user/Monochromatic/packages/cli/forbidden-strings/target/release/forbidden-strings`.
+Experiment binary:
+`/tmp/agent/forbidden-strings-resharp-cache-20260619/packages/cli/forbidden-strings/target/release/forbidden-strings`.
+Both scanned `/var/home/user/Monochromatic` with
+`forbidden-strings.local.example.txt`. The `--all` runs used
+`--ignore-failure` because rule 404 already fires on
+`docs/troubleshooting/mise-env-redacted-values.patch` in the main worktree.
+
+Experiment summary: migrating every regex rule to resharp and using resharp's
+`serialize` feature as an on-disk ruleset cache was abandoned. Warm cache loads
+were still much slower than main's hybrid engine, and cold cache writes were
+seconds slower. Do not revive this exact design unless the cache format changes
+substantially, for example per-entry files, a size cap, mmap, or a smaller
+upstream dump representation.
+
+```text
+startup, main                         10.3 ms ± 0.9 ms   30 runs
+startup, resharp cache warm          244.4 ms ± 2.8 ms   30 runs
+startup, resharp cache cold            4.329 s ± 0.128 s  5 runs
+--all, main                           78.8 ms ± 4.0 ms   20 runs
+--all, resharp cache warm            358.4 ms ± 4.6 ms   20 runs
+--all, resharp cache cold              4.254 s ± 0.064 s  3 runs
+```
+
+The warm experiment cache file for the example ruleset was 255,270,294 bytes
+(244 MiB from `du --summarize`). The warm serialize cache cut cold resharp
+startup by about 17.7x, but main still beat the warm-cache experiment by
+23.8x on startup and 4.55x on `--all`.
+
+---
+
 **2026-05-16 (post-emit-hit-consolidation, A/B vs immediate predecessor)**,
 hyperfine 1.20.0, same hardware. Apples-to-apples A/B between two binaries
 built from the same commit modulo the `scan.rs` consolidation: the
