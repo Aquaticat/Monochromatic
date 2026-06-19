@@ -44,6 +44,7 @@ Verify with a reverse-dependency search before moving one in.
 
 ## Currently paused
 
+- `webapp-content/` (`messages-demo`)
 - `webapp-search/` (`ai-tree`, `exa-search`)
 - `webapp-forge/` (`seed`, `server`, `stress`)
 - `webapp-edu/` (`paper2vn`)
