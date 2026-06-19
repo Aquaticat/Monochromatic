@@ -230,6 +230,14 @@ overrides:
   # @libsql/isomorphic-ws, crossws). Patch-level bump is
   # range-compatible with every consumer's ^8.x constraint.
   'ws': '>=8.20.1'
+  # Patch GHSA-38rv-x7px-6hhq / CVE-2026-9675,
+  # GHSA-pr7r-676h-xcf6 / CVE-2026-9678,
+  # and GHSA-vmh5-mc38-953g / CVE-2026-9697: undici >=8.0.0 <8.5.0
+  # carries WebSocket denial-of-service, shared-cache information disclosure,
+  # and SOCKS5 ProxyAgent TLS certificate validation bypass advisories.
+  # Current @earendil-works/pi-coding-agent 0.79.7 still pins undici 8.3.0,
+  # so a workspace-wide security floor is needed until upstream bumps it.
+  'undici': '>=8.5.0'
   'postcss': '>=8.5.10'
   # Substitute deprecated node-domexception@1.0.0 with a workspace shim that
   # re-exports globalThis.DOMException (the native constructor on Node 17+
