@@ -34,6 +34,9 @@ const STARTUP_MESSAGE = 'startup before consumer init await';
 /** JSONL fragment proving the startup message reached the file sink. */
 const STARTUP_MESSAGE_FRAGMENT = `"message":${JSON.stringify(STARTUP_MESSAGE,)}`;
 
+/** Debug message used by the process-stream startup probe. */
+const DEBUG_MESSAGE = 'debug before consumer init await';
+
 /** Async-disposable temporary project for file-sink startup probes. */
 type TempProject = {
   readonly path: string;
@@ -52,9 +55,13 @@ type ProbeResult = {
  * Builds a throwaway project root with `node_modules` so the file sink chooses
  * an isolated `node_modules/.monochromatic` log directory.
  *
+ * @param logLine - Logger call that the generated probe should execute.
+ *
  * @returns Temporary project handle removed by `await using`.
  */
-async function createTempProject(): Promise<TempProject> {
+async function createTempProject(
+  { logLine, }: { readonly logLine: string; },
+): Promise<TempProject> {
   const path = await mkdtemp(join(tmpdir(), 'logger-startup-',),);
   await mkdir(
     join(
@@ -73,7 +80,7 @@ async function createTempProject(): Promise<TempProject> {
   const script = [
     `import { logger, } from ${JSON.stringify(BUILT_INDEX_PATH,)};`,
     '',
-    `logger.info(${JSON.stringify(STARTUP_MESSAGE,)},);`,
+    logLine,
     'await logger.flush();',
     '',
   ].join('\n',);
@@ -95,6 +102,7 @@ async function createTempProject(): Promise<TempProject> {
  * Runs a probe script in its temporary project root.
  *
  * @param cwd - Project root used as `process.cwd()` by the file sink.
+ * @param env - Environment overrides applied to the probe process.
  * @param scriptPath - Absolute path to the probe script.
  *
  * @returns Captured stdout, stderr, and exit code.
@@ -102,9 +110,11 @@ async function createTempProject(): Promise<TempProject> {
 async function runProbe(
   {
     cwd,
+    env = {},
     scriptPath,
   }: {
     readonly cwd: string;
+    readonly env?: Readonly<Record<string, string>>;
     readonly scriptPath: string;
   },
 ): Promise<ProbeResult> {
@@ -114,7 +124,13 @@ async function runProbe(
   const subprocess = spawn(
     'bun',
     [scriptPath,],
-    { cwd, },
+    {
+      cwd,
+      env: {
+        ...process.env,
+        ...env,
+      },
+    },
   );
 
   const [
@@ -171,7 +187,9 @@ await describe({
     it({
       name: 'delivers startup records to file sink without awaiting initPromise',
       fn: async () => {
-        await using project = await createTempProject();
+        await using project = await createTempProject({
+          logLine: `logger.info(${JSON.stringify(STARTUP_MESSAGE,)},);`,
+        },);
 
         const result = await runProbe({
           cwd: project.path,
@@ -187,6 +205,27 @@ await describe({
         const content = await readOnlyLogContent({ projectPath: project.path, },);
         expect(content,)
           .toContain(STARTUP_MESSAGE_FRAGMENT,);
+      },
+    },),
+
+    it({
+      name: 'writes debug startup records to stderr when process exists',
+      fn: async () => {
+        await using project = await createTempProject({
+          logLine: `logger.debug(${JSON.stringify(DEBUG_MESSAGE,)},);`,
+        },);
+
+        const result = await runProbe({
+          cwd: project.path,
+          env: { DEBUG: 'true', },
+          scriptPath: project.scriptPath,
+        },);
+        expect(result.exitCode,)
+          .toBe(0,);
+        expect(result.stdout,)
+          .toBe('',);
+        expect(result.stderr,)
+          .toContain(DEBUG_MESSAGE,);
       },
     },),
   ],

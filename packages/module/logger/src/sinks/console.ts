@@ -155,6 +155,31 @@ function formatRecord(record: LogRecord,): string {
 }
 
 /**
+ * Detects whether process stderr can receive debug records directly. Kept
+ * separate from writing so availability checks can still require
+ * `console.debug` when stderr is unavailable and browser fallback is needed.
+ *
+ * @returns Whether process stderr exposes a callable `write` method.
+ *
+ * @example
+ * ```ts
+ * hasProcessStderr();
+ * // => true in Node.js and Bun processes
+ * ```
+ */
+function hasProcessStderr(): boolean {
+  try {
+    if ((typeof process) === 'undefined')
+      return false;
+
+    return (typeof process.stderr.write) === 'function';
+  }
+  catch {
+    return false;
+  }
+}
+
+/**
  * Writes a formatted debug run to process stderr when the host exposes a
  * process stream. Falling back to `console.debug` keeps browser and restricted
  * runtimes working when `process` is absent or unusable.
@@ -171,7 +196,7 @@ function formatRecord(record: LogRecord,): string {
  */
 function writeDebugRunToProcessStderr(text: string,): boolean {
   try {
-    if ((typeof process) === 'undefined')
+    if (!hasProcessStderr())
       return false;
 
     process.stderr
@@ -319,11 +344,10 @@ function verifyConsole(): Promise<boolean> {
       return Promise.resolve(false,);
 
     /**
-     * Sample `console.info` reference used only to check that a representative
-     * console method exists in the host; debug can use process stderr under
-     * process runtimes.
+     * Sample console method used only to check that debug has an output path:
+     * process runtimes use stderr, while fallback runtimes need `console.debug`.
      */
-    const testFn = console.info;
+    const testFn = hasProcessStderr() ? console.info : console.debug;
     if ((typeof testFn) !== 'function')
       return Promise.resolve(false,);
 
