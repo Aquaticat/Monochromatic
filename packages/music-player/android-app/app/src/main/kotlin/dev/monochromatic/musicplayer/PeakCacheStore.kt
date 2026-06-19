@@ -13,9 +13,9 @@
 // worker (androidx.work) cannot corrupt the shared map or the file by racing.
 //
 // Privacy, identical to the desktop: the JSON only ever maps the opaque fingerprint hex
-// key (a one-way hash of path+size+mtime, produced by `core.fingerprint`) to a measured
-// peak number. No filename, path, or tag is ever written to disk, so the cache file
-// reveals nothing about which tracks the user owns.
+// key (a one-way hash of path+size+mtime, produced by the native crate via
+// `NativeBridge.nativeFingerprint`) to a measured peak number. No filename, path, or tag is
+// ever written to disk, so the cache file reveals nothing about which tracks the user owns.
 //
 // The atomic-write trick: write to a sibling temp file first, then rename it onto the
 // real file. A rename on one filesystem is atomic, so a crash mid-write can never leave a

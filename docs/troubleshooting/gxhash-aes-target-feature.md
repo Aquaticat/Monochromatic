@@ -114,6 +114,15 @@ The on-device pass proves the `+aes`-built `.so` runs gxhash on a real arm64 CPU
 `/proc/cpuinfo` Features line includes `aes`) with no SIGILL, and that the JNI fingerprint is
 deterministic, opaque, 16 hex chars, and change-sensitive to path, size, and mtime.
 
+The on-device test is the coverage mechanism for the Android fingerprint, not a host
+`cargo test`: the native crate is Android-only and will not build off-Android, because its
+`ndk` dependency pulls `ndk-sys`, which emits `compile_error!("ndk-sys only supports compiling
+for Android")` for any non-Android target (a host `cargo test --no-run` dies there). This is why
+the crate carries no `#[cfg(test)]` for any of its logic (decode, true-peak, opus, fingerprint
+are all device-tested). The fingerprint's hashing algorithm is nonetheless host-tested
+indirectly: the desktop twin's `peakcache_tests.rs` exercises the byte-identical material plus
+`gxhash64` on x86_64.
+
 What fails (build) without the config: a plain `cargo build` for any of the four non-Apple
 target triples hits the `compile_error!` above. What fails (runtime): a `+aes` binary on a CPU
 without AES SIGILLs. What fails (debug, aarch64): `debug-assertions`-on hashing can panic per

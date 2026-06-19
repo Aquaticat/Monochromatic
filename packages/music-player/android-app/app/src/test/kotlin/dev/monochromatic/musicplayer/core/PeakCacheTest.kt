@@ -58,28 +58,26 @@ import org.junit.Test
 // File summary (folds in the old class KDoc's domain content)
 // =============================================================================
 //
-// Host-JVM unit tests for `fingerprint` and `PeakCache`, ported from the desktop player's
+// Host-JVM unit tests for the in-memory `PeakCache` map, ported from the desktop player's
 // `peakcache_tests.rs` so the Kotlin port stays faithful to the Rust behaviour.
 //
-// Both Rust tests reach the disk: the first stats a real temp file for size and mtime; the
-// second round-trips the cache through a temp JSON file. Filesystem and JSON are platform I/O
-// and are deferred from this pure port, so each test is adapted to drive the pure surface
-// directly: feeding fixed (path, size, mtime) vectors instead of stat'ing a file, and
-// exercising the in-memory map instead of save/reload. The expected fingerprints are the exact
-// 64-bit FNV-1a outputs of the Rust key material (path UTF-8 bytes, then size as 8
-// little-endian bytes, then mtime as 16 little-endian bytes). The cases pin: fingerprint
-// determinism, opacity (a 16-char hex key that does not leak the path), change-sensitivity to
-// size/mtime/path, in-memory insert/get hit and miss, and snapshot being a defensive copy.
+// This suite no longer covers the fingerprint: the hash is now `gxhash` (hardware AES, no JVM
+// port), computed in the native crate and reached through `NativeBridge.nativeFingerprint`, so
+// it can only run on a device. Its determinism / opacity / change-sensitivity assertions moved
+// to `androidTest`'s `NativeBridgeTest.fingerprintIsDeterministicOpaqueAndChangeSensitiveOnDevice`.
+// What remains here is the PURE in-memory map, which needs no native library: the desktop's
+// `save_and_reload` round-trips a temp JSON file (platform I/O deferred from this pure port), so
+// it is adapted to exercise the in-memory map instead. The cases pin: in-memory insert/get hit
+// and miss, and snapshot being a defensive copy.
 
 // What:     `class PeakCacheTest { ... }` declares a JUnit 4 test class the runner instantiates
-//           to invoke each `@Test`-marked method. It also holds one private FIELD (`trackPath`)
-//           shared across the fingerprint vectors.
-// Why:      Groups every peak-cache test plus the shared path fixture.
+//           to invoke each `@Test`-marked method.
+// Why:      Groups the in-memory `PeakCache` map tests.
 //
 // In TS you'd write (pseudocode):
 // ```ts
 // describe("PeakCache", () => {
-//   // ...shared trackPath + each @Test fun become a const / test(...) calls inside here...
+//   // ...each @Test fun becomes a test(...) call inside here...
 // });
 // ```
 class PeakCacheTest {
@@ -104,7 +102,7 @@ class PeakCacheTest {
     // Why:      Adapted from the Rust `save_and_reload_preserves_entries_without_metadata`: the
     //           pure in-memory map preserves an inserted entry and reports a MISS for an absent
     //           key. The disk save/reload and on-disk privacy assertions are deferred with the
-    //           JSON layer; key opacity is covered by the fingerprint test above.
+    //           JSON layer; key opacity is covered by the on-device fingerprint test.
     //
     // In TS you'd write (pseudocode):
     // ```ts

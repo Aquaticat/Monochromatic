@@ -4,9 +4,10 @@
 //
 // This file computes the opaque peak-cache KEY for a track from its content
 // URI: the Android source for the desktop player's filesystem
-// `path + size + mtime` fingerprint. The pure core (`core.fingerprint`) hashes
-// the pieces; the platform-specific pieces it left as parameters (the file's
-// size and modified-time) are read from the Android content provider HERE.
+// `path + size + mtime` fingerprint. The native crate (reached via
+// `NativeBridge.nativeFingerprint`) gxhashes the pieces; the platform-specific
+// pieces (the file's size and modified-time) are read from the Android content
+// provider HERE.
 // Because the result is hashed, no path, name, or tag is ever stored.
 //
 // How the Android pieces stand in for the desktop's:

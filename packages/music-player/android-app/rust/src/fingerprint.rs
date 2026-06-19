@@ -5,6 +5,13 @@
 //! layout (path bytes, then size as 8 little-endian bytes, then mtime-nanos as 16
 //! little-endian bytes) and the fixed seed match the desktop crate
 //! (`desktop-app/src/peakcache.rs`), so identical inputs hash identically on both.
+//!
+//! Testing: this crate is Android-only (its `ndk`/`ndk-sys` dependency refuses to
+//! compile off-Android), so there is no host `cargo test` to exercise `compute`
+//! directly. The fingerprint contract (determinism, 16-char opacity,
+//! change-sensitivity to path/size/mtime) is verified ON DEVICE by
+//! `NativeBridgeTest.fingerprintIsDeterministicOpaqueAndChangeSensitiveOnDevice`,
+//! and the identical hashing algorithm is unit-tested host-side on the desktop twin.
 
 // What:     `use jni::JNIEnv;` imports the per-call interface pointer the JVM hands
 //           every native method (the gateway used to read the Java string and build
