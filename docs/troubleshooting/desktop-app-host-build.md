@@ -265,6 +265,23 @@ resolves physically).
 // ZIG_GLOBAL_CACHE_DIR: `${process.cwd()}/target/zig-global-cache`
 ```
 
+The repo also sets the same cache for Cargo invocations that do not go through mise,
+including JetBrains IDEA Rust run configurations:
+
+```toml
+# .cargo/config.toml
+[env]
+ZIG_GLOBAL_CACHE_DIR = { value = "packages/desktop-app/terminal/target/zig-global-cache", relative = true }
+SLINT_ENABLE_EXPERIMENTAL_FEATURES = "1"
+```
+
+`relative = true` is important:
+ Cargo resolves the value through the config file's real path,
+so opening the repo through `/home/user/Monochromatic` still yields a physical `/var/home/user/Monochromatic/...`
+cache path.
+ Verified with `cargo check --manifest-path packages/desktop-app/terminal/Cargo.toml` from the repo root;
+the direct Cargo path completed successfully after this config was added.
+
 Tradeoff:
  a per-package zig cache,
  not shared with other zig builds,
