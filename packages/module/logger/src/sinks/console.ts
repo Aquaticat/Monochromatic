@@ -213,7 +213,7 @@ function writeDebugRunToProcessStderr(text: string,): boolean {
 /**
  * Emits a contiguous run of same-level records as a single console call,
  * joining formatted lines with `\n`. Debug records write to process stderr
- * when `process` exists so machine-readable stdout stays clean in CLI hosts.
+ * when `process.stderr.write` is available, keeping stdout clean in CLI hosts.
  *
  * @param records - Records that all share `level`.
  *

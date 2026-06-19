@@ -190,7 +190,7 @@ await describe({
     },),
 
     it({
-      name: 'debug writes to process stderr when process exists',
+      name: 'debug writes to process stderr when process stderr is available',
       fn: async ({ sinon, },) => {
         process.env.DEBUG = 'true';
         const sink = createConsoleSink();

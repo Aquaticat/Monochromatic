@@ -209,7 +209,7 @@ await describe({
     },),
 
     it({
-      name: 'writes debug startup records to stderr when process exists',
+      name: 'writes debug startup records to stderr when process stderr is available',
       fn: async () => {
         await using project = await createTempProject({
           logLine: `logger.debug(${JSON.stringify(DEBUG_MESSAGE,)},);`,
