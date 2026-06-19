@@ -341,19 +341,20 @@ fn exempt_paths_are_skipped() {
     assert!(!run_rule("fn a() {}\n", "a/fixtures/x.rs").is_empty(), "fixtures linted");
 }
 
-// What:     `#[test] fn macro_calls_only_flagged_at_item_position() { ... }`. The
-//           macro-call branch is the one kind whose requirement depends on WHERE
-//           it appears, so it gets its own both-directions test.
-// Why:      An expression/statement macro (`println!`, `vec!`) cannot carry a doc
-//           comment, so flagging it would be an unsatisfiable false positive; an
-//           item-position macro (`thread_local! { ... }`) can and must.
+// What:     `#[test] fn macros_are_never_flagged() { ... }`. Macros are excluded
+//           from the documentable set entirely, in any position.
+// Why:      rustc emits `unused_doc_comments` for a `///` on a macro invocation
+//           ("rustdoc does not generate documentation for macro invocations"), so
+//           requiring one there is unsatisfiable; declarative macro definitions
+//           are excluded by the same policy. Neither expression-position nor
+//           item-position macros may be flagged.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// it("only flags item-position macro calls", () => { ... });
+// it("never flags macros", () => { ... });
 // ```
 #[test]
-fn macro_calls_only_flagged_at_item_position() {
+fn macros_are_never_flagged() {
     // What:     `let expr = item_findings("/// f\nfn a() {\n    println!(\"x\");\n
     //           let v = vec![1];\n}\n", "src/x.rs");`. A documented fn whose body
     //           uses two expression-position macros.
@@ -372,13 +373,12 @@ fn macro_calls_only_flagged_at_item_position() {
 
     // What:     `let item = item_findings("some_items! {}\n", "src/x.rs");`. A
     //           macro call at item position (a direct child of the file root).
-    // Why:      Item-position macro calls CAN carry a doc comment, so they are
-    //           required to.
+    // Why:      Item-position macro calls are now excluded too, so this must NOT be
+    //           flagged (rustc would warn on a `///` placed there).
     let item = item_findings("some_items! {}\n", "src/x.rs");
 
-    // What:     `assert_eq!(item.len(), 1, ...)` and the message check. Exactly one
-    //           item finding, naming the macro item.
-    // Why:      Confirm the item-position branch flags, and uses the right label.
-    assert_eq!(item.len(), 1, "item-position macro should be flagged: {item:?}");
-    assert_eq!(item[0].message, "Missing rustdoc on macro item.", "macro item label");
+    // What:     `assert!(item.is_empty(), ...)`. No findings for an item-position
+    //           macro call.
+    // Why:      Confirm macros are excluded regardless of position.
+    assert!(item.is_empty(), "macros must never be flagged: {item:?}");
 }

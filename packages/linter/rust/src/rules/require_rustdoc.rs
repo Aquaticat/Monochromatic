@@ -91,7 +91,13 @@ use std::path::Path;
 // Why:      One source of truth for BOTH "which kinds need docs" and "what to call
 //           each kind", so the two never drift apart. Matching the TSDoc policy
 //           (`require-tsdoc`), the set is maximal: every doc-comment-legal item,
-//           item-part, and the file root, public AND private.
+//           item-part, and the file root, public AND private. Macros and extern
+//           blocks are deliberately EXCLUDED: rustc emits `unused_doc_comments`
+//           for a `///` on a macro invocation ("rustdoc does not generate
+//           documentation for macro invocations") and on an `extern "C" { }`
+//           block, so requiring docs there would be unsatisfiable. Items INSIDE
+//           an extern block (foreign fns/statics) are still documentable and
+//           remain required.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -108,39 +114,13 @@ const KIND_LABELS: &[(SyntaxKind, &str)] = &[
     (SyntaxKind::CONST, "constant"),
     (SyntaxKind::STATIC, "static"),
     (SyntaxKind::MODULE, "module"),
-    (SyntaxKind::MACRO_DEF, "macro"),
-    (SyntaxKind::MACRO_RULES, "macro"),
-    (SyntaxKind::MACRO_CALL, "macro item"),
     (SyntaxKind::EXTERN_CRATE, "extern crate"),
-    (SyntaxKind::EXTERN_BLOCK, "extern block"),
     (SyntaxKind::USE, "use"),
     (SyntaxKind::IMPL, "impl block"),
     (SyntaxKind::VARIANT, "enum variant"),
     (SyntaxKind::RECORD_FIELD, "field"),
     (SyntaxKind::TUPLE_FIELD, "field"),
     (SyntaxKind::SOURCE_FILE, "file"),
-];
-
-// What:     `const ITEM_LIST_PARENTS: &[SyntaxKind] = &[ ... ];`. The node kinds
-//           whose direct children are ITEMS: the file root, a module body
-//           (`ITEM_LIST`), an impl/trait body (`ASSOC_ITEM_LIST`), an extern-block
-//           body (`EXTERN_ITEM_LIST`), and a macro expansion (`MACRO_ITEMS`).
-// Why:      A `macro_call!` is doc-legal only at item position. A `///` cannot
-//           attach to a `println!()` used as an expression or statement, so we
-//           require docs on a macro call only when its parent is one of these
-//           item-holding containers; expression/statement macro calls are skipped.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// const ITEM_LIST_PARENTS: SyntaxKind[] = [SyntaxKind.SOURCE_FILE, SyntaxKind.ITEM_LIST, ...];
-// ```
-/// Parent node kinds that make a macro call an item-position macro.
-const ITEM_LIST_PARENTS: &[SyntaxKind] = &[
-    SyntaxKind::SOURCE_FILE,
-    SyntaxKind::ITEM_LIST,
-    SyntaxKind::ASSOC_ITEM_LIST,
-    SyntaxKind::EXTERN_ITEM_LIST,
-    SyntaxKind::MACRO_ITEMS,
 ];
 
 // What:     `fn kind_is_documented(kind: SyntaxKind) -> bool`. Answers whether a
@@ -166,36 +146,6 @@ fn kind_is_documented(kind: SyntaxKind) -> bool {
     // return KIND_LABELS.some(pair => pair[0] === kind);
     // ```
     KIND_LABELS.iter().any(|pair| pair.0 == kind)
-}
-
-// What:     `fn macro_call_at_item_position(node: &SyntaxNode) -> bool`. `&Syntax
-//           Node` borrows the macro-call node read-only.
-// Why:      Distinguish an item-position `lazy_static! { ... }` (doc-legal) from an
-//           expression/statement `println!(...)` (not doc-legal).
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// function macroCallAtItemPosition(node: SyntaxNode): boolean { /* ... */ }
-// ```
-/// Return whether a macro call is used where rustdoc can attach.
-fn macro_call_at_item_position(node: &SyntaxNode) -> bool {
-    // What:     `node.parent().is_some_and(|parent| ITEM_LIST_PARENTS.contains(
-    //           &parent.kind()))`. `node.parent()` returns `Option<SyntaxNode>`
-    //           (`None` only for the root). `.is_some_and(closure)` is true when
-    //           the option is present AND the closure holds for the inner value.
-    //           `ITEM_LIST_PARENTS.contains(&parent.kind())` checks the parent's
-    //           kind against the item-container set; `&` lends the kind to
-    //           `contains`. Tail expression.
-    // Why:      Item-position macro calls live directly inside an item container;
-    //           everything else (inside an expression or a statement list) is not.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // const parent = node.parent;
-    // return parent !== undefined && ITEM_LIST_PARENTS.includes(parent.kind);
-    // ```
-    node.parent()
-        .is_some_and(|parent| ITEM_LIST_PARENTS.contains(&parent.kind()))
 }
 
 // What:     `fn requires_rustdoc(node: &SyntaxNode) -> bool`. The overall predicate
@@ -229,21 +179,8 @@ fn requires_rustdoc(node: &SyntaxNode) -> bool {
         return false;
     }
 
-    // What:     `if kind == SyntaxKind::MACRO_CALL { return
-    //           macro_call_at_item_position(node); }`. For the one kind that is
-    //           position-sensitive, defer to the parent check.
-    // Why:      Only item-position macro calls can carry a doc comment.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // if (kind === SyntaxKind.MACRO_CALL) return macroCallAtItemPosition(node);
-    // ```
-    if kind == SyntaxKind::MACRO_CALL {
-        return macro_call_at_item_position(node);
-    }
-
-    // What:     `true`. Bare tail expression: every other listed kind always needs
-    //           docs.
+    // What:     `true`. Bare tail expression: every listed kind always needs docs
+    //           (macros are not in the table, so they never reach here).
     // Why:      Default to requiring documentation.
     //
     // In TS you'd write (pseudocode):
