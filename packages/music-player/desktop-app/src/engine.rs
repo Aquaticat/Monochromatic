@@ -19,6 +19,7 @@
 // ```ts
 // // a thread-safe queue split into a Sender (push) and a Receiver (tryPop)
 // ```
+/// Imports.
 use std::sync::mpsc::{self, Receiver, Sender, TryRecvError};
 
 // What:     `use std::thread::{self, JoinHandle, Thread};`. `thread::spawn` starts a
@@ -33,6 +34,7 @@ use std::sync::mpsc::{self, Receiver, Sender, TryRecvError};
 // ```ts
 // // JoinHandle ~ a Worker + exit promise; Thread ~ a WorkerRef you can post "wake" to
 // ```
+/// Imports.
 use std::thread::{self, JoinHandle, Thread};
 
 // What:     `use std::time::Duration;`. A span of time (here, a sleep interval).
@@ -42,6 +44,7 @@ use std::thread::{self, JoinHandle, Thread};
 // ```ts
 // type Duration = number; // milliseconds
 // ```
+/// Imports.
 use std::time::Duration;
 
 // What:     `use crate::command::{Command, Update};`. The UI->engine and engine->UI
@@ -52,6 +55,7 @@ use std::time::Duration;
 // ```ts
 // import { Command, Update } from "./command";
 // ```
+/// Imports.
 use crate::command::{Command, Update};
 
 // What:     `use crate::controller::Controller;`. The playback state machine.
@@ -61,6 +65,7 @@ use crate::command::{Command, Update};
 // ```ts
 // import { Controller } from "./controller";
 // ```
+/// Imports.
 use crate::controller::Controller;
 
 // What:     `use crate::output::Output;`. The PipeWire output (FFI boundary).
@@ -70,6 +75,7 @@ use crate::controller::Controller;
 // ```ts
 // import { Output } from "./output";
 // ```
+/// Imports.
 use crate::output::Output;
 
 // What:     `const IDLE_PARK_FALLBACK_MS: u64 = 100;`. Milliseconds the worker will PARK
@@ -89,6 +95,7 @@ use crate::output::Output;
 // ```ts
 // const IDLE_PARK_FALLBACK_MS = 100; // ms safety-net before re-checking when idle
 // ```
+/// Idle park fallback ms.
 const IDLE_PARK_FALLBACK_MS: u64 = 100;
 
 // What:     `pub struct Engine { ... }`. The handle the UI keeps. It is `Send` (only a
@@ -99,6 +106,7 @@ const IDLE_PARK_FALLBACK_MS: u64 = 100;
 // ```ts
 // class Engine { tx: Sender<Command>; worker: WorkerRef; handle: ThreadHandle | null; }
 // ```
+/// Engine.
 pub struct Engine {
     // What:     `tx: Sender<Command>`. The send end of the command channel.
     // Why:      `send` pushes commands to the worker.
@@ -107,6 +115,7 @@ pub struct Engine {
     // ```ts
     // tx: Sender<Command>;
     // ```
+    /// Tx.
     tx: Sender<Command>,
     // What:     `worker: Thread`. A cloneable handle to the worker thread (the one
     //           running `run`). We never join through this; we only call `.unpark()` on
@@ -119,6 +128,7 @@ pub struct Engine {
     // ```ts
     // worker: WorkerRef;
     // ```
+    /// Worker.
     worker: Thread,
     // What:     `handle: Option<JoinHandle<()>>`. The worker's join handle, or `None`
     //           after we have joined it. `JoinHandle<()>` = the thread returns nothing.
@@ -128,6 +138,7 @@ pub struct Engine {
     // ```ts
     // handle: ThreadHandle | null;
     // ```
+    /// Handle.
     handle: Option<JoinHandle<()>>,
 }
 
@@ -147,6 +158,7 @@ pub struct Engine {
 //   worker.postWakeUp();
 // }
 // ```
+/// Send and wake.
 fn send_and_wake(tx: &Sender<Command>, worker: &Thread, command: Command) {
     // What:     `let _ = tx.send(command);`. `send` returns a `Result` that errs only if the
     //           worker is gone; `let _ =` DISCARDS it.
@@ -183,6 +195,7 @@ fn send_and_wake(tx: &Sender<Command>, worker: &Thread, command: Command) {
 // class CommandSender { tx: Sender<Command>; worker: WorkerRef; }
 // ```
 #[derive(Clone)]
+/// Command sender.
 pub struct CommandSender {
     // What:     `tx: Sender<Command>`. The send end of the command channel.
     // Why:      The picker thread pushes `OpenPaths` through it.
@@ -191,6 +204,7 @@ pub struct CommandSender {
     // ```ts
     // tx: Sender<Command>;
     // ```
+    /// Tx.
     tx: Sender<Command>,
     // What:     `worker: Thread`. The same worker handle `Engine` holds.
     // Why:      Wake the worker after queueing a command.
@@ -199,6 +213,7 @@ pub struct CommandSender {
     // ```ts
     // worker: WorkerRef;
     // ```
+    /// Worker.
     worker: Thread,
 }
 
@@ -209,6 +224,7 @@ pub struct CommandSender {
 // ```ts
 // class CommandSender { send(command: Command): void { ... } }
 // ```
+/// Implementation block.
 impl CommandSender {
     // What:     `pub fn send(&self, command: Command)`. Queue a command, then wake the
     //           worker. Read-only borrow of self.
@@ -218,6 +234,7 @@ impl CommandSender {
     // ```ts
     // send(command: Command): void { ... }
     // ```
+    /// Send.
     pub fn send(&self, command: Command) {
         // What:     `send_and_wake(&self.tx, &self.worker, command);`. Delegate to the shared
         //           send-then-wake helper, lending this sender's channel and worker handle.
@@ -239,6 +256,7 @@ impl CommandSender {
 // ```ts
 // class Engine { /* spawn, sender, send */ }
 // ```
+/// Implementation block.
 impl Engine {
     // What:     `pub fn spawn<F>(on_update: F) -> Engine where F: Fn(Update) + Send + 'static`.
     //           Start the worker. `F` is the callback type; the WHERE clause requires it
@@ -250,6 +268,7 @@ impl Engine {
     // ```ts
     // static spawn(onUpdate: (u: Update) => void): Engine { ... }
     // ```
+    /// Spawn.
     pub fn spawn<F>(on_update: F) -> Engine
     where
         F: Fn(Update) + Send + 'static,
@@ -341,6 +360,7 @@ impl Engine {
     // ```ts
     // sender(): CommandSender { return new CommandSender(this.tx.clone(), this.worker); }
     // ```
+    /// Sender.
     pub fn sender(&self) -> CommandSender {
         // What:     `CommandSender { tx: self.tx.clone(), worker: self.worker.clone() }`.
         //           `self.tx.clone()` duplicates the sender (both refer to the same
@@ -366,6 +386,7 @@ impl Engine {
     // ```ts
     // send(command: Command): void { ... }
     // ```
+    /// Send.
     pub fn send(&self, command: Command) {
         // What:     `send_and_wake(&self.tx, &self.worker, command);`. Delegate to the shared
         //           send-then-wake helper, lending this engine's channel and worker handle.
@@ -388,6 +409,7 @@ impl Engine {
 // ```ts
 // class Engine { [Symbol.dispose]() { /* stop + join worker */ } }
 // ```
+/// Implementation block.
 impl Drop for Engine {
     // What:     `fn drop(&mut self)`. Runs at end of life. `&mut self` because it tears the
     //           engine down.
@@ -397,6 +419,7 @@ impl Drop for Engine {
     // ```ts
     // [Symbol.dispose]() { ... }
     // ```
+    /// Drop.
     fn drop(&mut self) {
         // What:     `let _ = self.tx.send(Command::Quit);`. Ask the worker to stop; ignore
         //           the error if it already exited.
@@ -443,6 +466,7 @@ impl Drop for Engine {
 // ```ts
 // function run(rx: Receiver<Command>, onUpdate: (u: Update) => void): void { ... }
 // ```
+/// Run.
 fn run(
     rx: Receiver<Command>,
     on_update: Box<dyn Fn(Update) + Send>,
@@ -670,4 +694,5 @@ fn run(
 // ```
 #[cfg(test)]
 #[path = "engine_tests.rs"]
+/// Tests module.
 mod tests;

@@ -16,6 +16,7 @@
 // ```ts
 // type PathBuf = string;
 // ```
+/// Imports.
 use std::path::PathBuf;
 
 // What:     `use std::sync::{Arc, Mutex};`. `Arc<T>` is a thread-safe shared owner
@@ -27,6 +28,7 @@ use std::path::PathBuf;
 // ```ts
 // // Arc<Mutex<T>> ~ a shared object you must lock() before touching
 // ```
+/// Imports.
 use std::sync::{Arc, Mutex};
 
 // What:     `use std::thread;`. Thread spawning.
@@ -36,6 +38,7 @@ use std::sync::{Arc, Mutex};
 // ```ts
 // // std::thread ~ Web Workers
 // ```
+/// Imports.
 use std::thread;
 
 // What:     `use std::time::{Duration, Instant};`. `Duration` is a span of time;
@@ -49,6 +52,7 @@ use std::thread;
 // ```ts
 // // Duration ~ ms number; Instant ~ performance.now()
 // ```
+/// Imports.
 use std::time::{Duration, Instant};
 
 // What:     `use crate::peakcache::{self, PeakCache};`. The cache module (for
@@ -60,6 +64,7 @@ use std::time::{Duration, Instant};
 // import * as peakcache from "./peakcache";
 // import { PeakCache } from "./peakcache";
 // ```
+/// Imports.
 use crate::peakcache::{self, PeakCache};
 
 // What:     `use crate::truepeak::measure_true_peak;`. The whole-file true-peak
@@ -70,6 +75,7 @@ use crate::peakcache::{self, PeakCache};
 // ```ts
 // import { measureTruePeak } from "./truepeak";
 // ```
+/// Imports.
 use crate::truepeak::measure_true_peak;
 
 // What:     `const SAVE_BATCH: usize = 16;`. Persist the cache after this many new
@@ -80,6 +86,7 @@ use crate::truepeak::measure_true_peak;
 // ```ts
 // const SAVE_BATCH = 16;
 // ```
+/// Save batch.
 const SAVE_BATCH: usize = 16;
 
 // What:     `const MEASURE_GAP_MS: u64 = 20;`. Milliseconds to sleep after measuring one
@@ -90,6 +97,7 @@ const SAVE_BATCH: usize = 16;
 // ```ts
 // const MEASURE_GAP_MS = 20;
 // ```
+/// Measure gap ms.
 const MEASURE_GAP_MS: u64 = 20;
 
 // What:     `const SAVE_INTERVAL_SECS: u64 = 10;`. Maximum seconds between cache flushes
@@ -104,6 +112,7 @@ const MEASURE_GAP_MS: u64 = 20;
 // ```ts
 // const SAVE_INTERVAL_SECS = 10;
 // ```
+/// Save interval secs.
 const SAVE_INTERVAL_SECS: u64 = 10;
 
 // What:     `pub(crate) fn spawn_queue_measurement(tracks: Vec<PathBuf>, cache: Arc<Mutex<PeakCache>>)`.
@@ -116,6 +125,7 @@ const SAVE_INTERVAL_SECS: u64 = 10;
 // ```ts
 // function spawnQueueMeasurement(tracks: string[], cache: SharedPeakCache): void { ... }
 // ```
+/// Spawn queue measurement.
 pub(crate) fn spawn_queue_measurement(tracks: Vec<PathBuf>, cache: Arc<Mutex<PeakCache>>) {
     // What:     `thread::spawn(move || run_sweep(tracks, cache));`. Spawn a worker. The
     //           `move ||` closure TAKES OWNERSHIP of `tracks` and `cache`. We drop the
@@ -143,6 +153,7 @@ pub(crate) fn spawn_queue_measurement(tracks: Vec<PathBuf>, cache: Arc<Mutex<Pea
 // // no equivalent: JS runtimes expose no per-thread scheduling class
 // ```
 #[cfg(target_os = "linux")]
+/// Lower current thread to idle.
 fn lower_current_thread_to_idle() {
     // What:     `let param = libc::sched_param { sched_priority: 0 };`. The scheduler
     //           parameter struct; `SCHED_IDLE` ignores the priority, so 0 is the only valid
@@ -197,6 +208,7 @@ fn lower_current_thread_to_idle() {
 // // no equivalent: JS runtimes expose no per-thread QoS class
 // ```
 #[cfg(target_os = "macos")]
+/// Lower current thread to idle.
 fn lower_current_thread_to_idle() {
     // What:     `let result = unsafe { libc::pthread_set_qos_class_self_np(libc::qos_class_t::QOS_CLASS_BACKGROUND, 0) };`.
     //           Call the Apple-specific libc function that sets the CURRENT thread's QoS
@@ -242,6 +254,7 @@ fn lower_current_thread_to_idle() {
 // // no equivalent: JS runtimes expose no per-thread priority level
 // ```
 #[cfg(windows)]
+/// Lower current thread to idle.
 fn lower_current_thread_to_idle() {
     // What:     `use windows::Win32::System::Threading::{GetCurrentThread, SetThreadPriority, THREAD_PRIORITY_IDLE};`.
     //           Import the Win32 thread-priority bindings from the `windows` crate. A
@@ -253,6 +266,7 @@ fn lower_current_thread_to_idle() {
     // ```ts
     // import { GetCurrentThread, SetThreadPriority, THREAD_PRIORITY_IDLE } from "windows";
     // ```
+    /// Imports.
     use windows::Win32::System::Threading::{
         GetCurrentThread, SetThreadPriority, THREAD_PRIORITY_IDLE,
     };
@@ -303,6 +317,7 @@ fn lower_current_thread_to_idle() {
 // function lowerCurrentThreadToIdle() {} // fallback no-op
 // ```
 #[cfg(not(any(target_os = "linux", target_os = "macos", windows)))]
+/// Lower current thread to idle.
 fn lower_current_thread_to_idle() {}
 
 // What:     `fn run_sweep(tracks: Vec<PathBuf>, cache: Arc<Mutex<PeakCache>>)`. The
@@ -314,6 +329,7 @@ fn lower_current_thread_to_idle() {}
 // ```ts
 // function runSweep(tracks: string[], cache: SharedPeakCache): void { ... }
 // ```
+/// Run sweep.
 fn run_sweep(tracks: Vec<PathBuf>, cache: Arc<Mutex<PeakCache>>) {
     // What:     `lower_current_thread_to_idle();`. Drop this thread to idle scheduling
     //           priority before any decoding (no-op off Linux/macOS/Windows).
@@ -520,4 +536,5 @@ fn run_sweep(tracks: Vec<PathBuf>, cache: Arc<Mutex<PeakCache>>) {
 // ```
 #[cfg(test)]
 #[path = "measure_tests.rs"]
+/// Tests module.
 mod tests;

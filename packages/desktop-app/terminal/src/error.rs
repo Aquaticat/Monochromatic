@@ -8,6 +8,7 @@
 // ```ts
 // import { formatError } from "std/fmt";
 // ```
+/// Imports.
 use std::fmt;
 
 // What:     `#[derive(Debug)]` asks the compiler to generate debug printing for
@@ -29,6 +30,7 @@ use std::fmt;
 // ```ts
 // type TerminalError = { kind: "ghostty"; source: Error };
 // ```
+/// Terminal error.
 pub enum TerminalError {
     // What:     `Ghostty(libghostty_vt::Error)` is an enum variant that wraps one
     //           libghostty-vt error value. `::` is Rust's path separator.
@@ -38,7 +40,11 @@ pub enum TerminalError {
     // ```ts
     // { kind: "ghostty", source }
     // ```
-    Ghostty(libghostty_vt::Error),
+    /// Ghostty.
+    Ghostty(
+        /// Ghostty value.
+        libghostty_vt::Error,
+    ),
 }
 
 // What:     `impl fmt::Display for TerminalError` teaches Rust how to print the
@@ -49,6 +55,7 @@ pub enum TerminalError {
 // ```ts
 // function terminalErrorToString(error: TerminalError): string { ... }
 // ```
+/// Implementation block.
 impl fmt::Display for TerminalError {
     // What:     `fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result`
     //           is the required formatting method. `&self` borrows the error;
@@ -62,6 +69,7 @@ impl fmt::Display for TerminalError {
     //   return `libghostty-vt error: ${error.source}`;
     // }
     // ```
+    /// Fmt.
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         // What:     `match self` branches on the enum variant by borrowing `self`.
         // Why:      Each variant can print its own message.
@@ -92,6 +100,7 @@ impl fmt::Display for TerminalError {
 // ```ts
 // class TerminalError extends Error {}
 // ```
+/// Implementation block.
 impl std::error::Error for TerminalError {
     // What:     `fn source(&self) -> Option<&(dyn std::error::Error + 'static)>`
     //           returns a borrowed nested error if one exists. `Option` is Rust's
@@ -102,6 +111,7 @@ impl std::error::Error for TerminalError {
     // ```ts
     // return error.source;
     // ```
+    /// Source.
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         // What:     `match self` branches on the enum and returns `Some(source)`.
         //           `Some` wraps a present value for `Option`; `&` keeps it borrowed.
@@ -136,6 +146,7 @@ impl std::error::Error for TerminalError {
 //   return { kind: "ghostty", source };
 // }
 // ```
+/// Implementation block.
 impl From<libghostty_vt::Error> for TerminalError {
     // What:     `fn from(source: libghostty_vt::Error) -> Self` consumes the
     //           upstream error and returns this crate's error enum.
@@ -145,6 +156,7 @@ impl From<libghostty_vt::Error> for TerminalError {
     // ```ts
     // return { kind: "ghostty", source };
     // ```
+    /// From.
     fn from(source: libghostty_vt::Error) -> Self {
         // What:     `TerminalError::Ghostty(source)` constructs the wrapper variant.
         // Why:      Keep the upstream error intact.

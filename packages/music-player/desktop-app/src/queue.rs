@@ -36,6 +36,7 @@
 // ```ts
 // type PathBuf = string;
 // ```
+/// Imports.
 use std::path::PathBuf;
 
 // What:     `use std::collections::HashSet;` the hash-set type.
@@ -46,6 +47,7 @@ use std::path::PathBuf;
 // ```ts
 // // const played = new Set<number>();
 // ```
+/// Imports.
 use std::collections::HashSet;
 
 // What:     `use crate::command::ShuffleMode;` imports our own enum from the sibling
@@ -56,6 +58,7 @@ use std::collections::HashSet;
 // ```ts
 // import { ShuffleMode } from "./command";
 // ```
+/// Imports.
 use crate::command::ShuffleMode;
 
 // What:     `pub struct Queue { ... }` declares a public record type with named fields.
@@ -74,6 +77,7 @@ use crate::command::ShuffleMode;
 //   private rngState: bigint;
 // }
 // ```
+/// Queue.
 pub struct Queue {
     // What:     `tracks: Vec<PathBuf>`. An OWNED, growable array of owned paths. Sibling:
     //           `&[PathBuf]`, a borrowed slice that owns nothing.
@@ -84,6 +88,7 @@ pub struct Queue {
     // ```ts
     // private tracks: string[];
     // ```
+    /// Tracks.
     tracks: Vec<PathBuf>,
     // What:     `order: Vec<usize>`. A growable array of indices into `tracks`. `usize` is
     //           the pointer-sized unsigned int used for indexing (siblings: `u32`, `u64`).
@@ -95,6 +100,7 @@ pub struct Queue {
     // ```ts
     // private order: number[];
     // ```
+    /// Order.
     order: Vec<usize>,
     // What:     `pos: Option<usize>`. "maybe an index": `Some(p)` or `None`.
     // Why:      The cursor's position WITHIN `order`. `None` means the queue is empty /
@@ -104,6 +110,7 @@ pub struct Queue {
     // ```ts
     // private pos: number | null;
     // ```
+    /// Pos.
     pos: Option<usize>,
     // What:     `shuffle: ShuffleMode`. The three-state shuffle/scope setting (Off /
     //           WithinPage / All). `ShuffleMode` is `Copy`.
@@ -114,6 +121,7 @@ pub struct Queue {
     // ```ts
     // private shuffle: ShuffleMode;
     // ```
+    /// Shuffle.
     shuffle: ShuffleMode,
     // What:     `repeat_track: bool`. When true, a track that ends naturally replays
     //           itself.
@@ -123,6 +131,7 @@ pub struct Queue {
     // ```ts
     // private repeatTrack: boolean;
     // ```
+    /// Repeat track.
     repeat_track: bool,
     // What:     `rng_state: u64`. An unsigned 64-bit integer (siblings: `u32`, `usize`,
     //           `i64`). Used as the running state of a tiny PRNG.
@@ -133,6 +142,7 @@ pub struct Queue {
     // ```ts
     // private rngState: bigint;
     // ```
+    /// Rng state.
     rng_state: u64,
     // What:     `cycle_start: usize`. An index into `order` marking where the current shuffle
     //           CYCLE began (a cycle plays every scope track once before repeating). Only
@@ -145,6 +155,7 @@ pub struct Queue {
     // ```ts
     // private cycleStart: number;
     // ```
+    /// Cycle start.
     cycle_start: usize,
 }
 
@@ -156,6 +167,7 @@ pub struct Queue {
 // ```ts
 // class Queue { /* methods */ }
 // ```
+/// Implementation block.
 impl Queue {
     // What:     `pub fn new() -> Queue` is the public constructor. `-> Queue` is the return
     //           type.
@@ -166,6 +178,7 @@ impl Queue {
     // ```ts
     // static new(): Queue { return new Queue(seedFromClock()); }
     // ```
+    /// New.
     pub fn new() -> Queue {
         // What:     `let seed = std::time::SystemTime::now().duration_since(UNIX_EPOCH).map(...).unwrap_or(...);`.
         //           `SystemTime::now()` is the wall clock; the chain turns "now" into a
@@ -226,6 +239,7 @@ impl Queue {
     // ```ts
     // static withRngSeed(seed: bigint): Queue { ... }
     // ```
+    /// With rng seed.
     pub fn with_rng_seed(seed: u64) -> Queue {
         // What:     `Queue { ... }`. A struct literal constructs the record. `Vec::new()`
         //           makes an empty owned array; `None` is the empty `Option`.
@@ -274,6 +288,7 @@ impl Queue {
     // ```ts
     // private nextRand(): bigint { /* xorshift on this.rngState */ }
     // ```
+    /// Next rand.
     fn next_rand(&mut self) -> u64 {
         // What:     `let mut x = self.rng_state;` binds a LOCAL MUTABLE copy. `mut` marks
         //           it reassignable; without it, bindings are read-only by default.
@@ -442,6 +457,7 @@ impl Queue {
     // ```ts
     // displayPaths(): string[] { return relativeDisplayPaths(this.tracks); }
     // ```
+    /// Display paths.
     pub fn display_paths(&self) -> Vec<String> {
         // What:     `crate::relpath::relative_display_paths(&self.tracks)`. Call the pure
         //           path helper. `crate::` means "from this package's root"; `&self.tracks`
@@ -467,6 +483,7 @@ impl Queue {
     //   return this.pos === null ? null : this.order[this.pos];
     // }
     // ```
+    /// Current index.
     pub fn current_index(&self) -> Option<usize> {
         // What:     `self.pos.map(|p| self.order[p])`. `self.pos` is `Option<usize>`;
         //           `.map` runs the closure only if `Some`. `self.order[p]` indexes the
@@ -492,6 +509,7 @@ impl Queue {
     //   return i === null ? null : this.tracks[i];
     // }
     // ```
+    /// Current path.
     pub fn current_path(&self) -> Option<&PathBuf> {
         // What:     `self.current_index().map(|i| &self.tracks[i])`. `self.current_index()`
         //           gives `Option<usize>`; `.map(|i| &self.tracks[i])` borrows the element.
@@ -512,6 +530,7 @@ impl Queue {
     // ```ts
     // setRepeatTrack(on: boolean): void { this.repeatTrack = on; }
     // ```
+    /// Set repeat track.
     pub fn set_repeat_track(&mut self, on: bool) {
         // What:     `self.repeat_track = on;`. Plain field assignment through the mutable
         //           borrow.
@@ -535,6 +554,7 @@ impl Queue {
     //   this.rebuildScopeOrder(tracks.length ? 0 : null);
     // }
     // ```
+    /// Set tracks.
     pub fn set_tracks(&mut self, tracks: Vec<PathBuf>) {
         // What:     `self.tracks = tracks;` moves the new vector in, dropping (freeing) the
         //           old one.
@@ -568,6 +588,7 @@ impl Queue {
     // ```ts
     // clearSelection(): void { this.rebuildScopeOrder(null); }
     // ```
+    /// Clear selection.
     pub fn clear_selection(&mut self) {
         // What:     `self.rebuild_scope_order(None);`. Rebuild the scope with a `None` anchor;
         //           `None` is the absent variant of `Option<usize>`, which `rebuild_scope_order`
@@ -600,6 +621,7 @@ impl Queue {
     //     : pages[p].entries.map(e => e.index);
     // }
     // ```
+    /// Scope indices.
     fn scope_indices(&self, anchor: usize) -> Vec<usize> {
         // What:     `if self.shuffle == ShuffleMode::All { ... }`. `==` compares the `Copy`
         //           enum (it derives `PartialEq`).
@@ -695,6 +717,7 @@ impl Queue {
     //   return remaining[Number(this.nextRand() % BigInt(remaining.length))];
     // }
     // ```
+    /// Pick next shuffle.
     fn pick_next_shuffle(&mut self, current: usize) -> usize {
         // What:     `let scope = self.scope_indices(current);`. The scope's load-order indices
         //           (the page for `WithinPage`, the whole queue for `All`).
@@ -801,6 +824,7 @@ impl Queue {
     //   this.pos = p < 0 ? 0 : p;
     // }
     // ```
+    /// Rebuild scope order.
     fn rebuild_scope_order(&mut self, anchor: Option<usize>) {
         // What:     `if self.tracks.is_empty() { self.order = Vec::new(); self.pos = None; return; }`.
         //           Empty queue: no order, no cursor.
@@ -930,6 +954,7 @@ impl Queue {
     //   this.rebuildScopeOrder(cur);
     // }
     // ```
+    /// Set shuffle.
     pub fn set_shuffle(&mut self, mode: ShuffleMode) {
         // What:     `if mode == self.shuffle { return; }`. Early return when nothing
         //           changes. `==` compares the enum.
@@ -985,6 +1010,7 @@ impl Queue {
     //   return track;
     // }
     // ```
+    /// Play index.
     pub fn play_index(&mut self, track: usize) -> Option<usize> {
         // What:     `if track >= self.tracks.len() { return None; }` bounds check.
         // Why:      Ignore an out-of-range click.
@@ -1076,6 +1102,7 @@ impl Queue {
     //   this.pos = 0; return this.order[0]; // loop the scope (page or all)
     // }
     // ```
+    /// Advance.
     pub fn advance(&mut self, natural: bool) -> Option<usize> {
         // What:     `let pos = self.pos?;`. The `?` operator on an `Option`: if `self.pos`
         //           is `Some(p)` it unwraps to `p`; if `None` it RETURNS `None` from the
@@ -1230,6 +1257,7 @@ impl Queue {
     //   const last = this.order.length - 1; this.pos = last; return this.order[last];
     // }
     // ```
+    /// Prev.
     pub fn prev(&mut self) -> Option<usize> {
         // What:     `let pos = self.pos?;`. The `?` operator on the `Option<usize>` cursor:
         //           unwraps `Some(p)` to `p`, or returns `None` from `prev` immediately when
@@ -1332,6 +1360,7 @@ impl Queue {
 // ```ts
 // // Queue.default() === Queue.new()
 // ```
+/// Implementation block.
 impl Default for Queue {
     // What:     `fn default() -> Queue`. The single method `Default` requires.
     // Why:      Provide the zero-argument construction generic code expects.
@@ -1340,6 +1369,7 @@ impl Default for Queue {
     // ```ts
     // static default(): Queue { return Queue.new(); }
     // ```
+    /// Default.
     fn default() -> Queue {
         // What:     `Queue::new()`. Delegate to the seeded constructor. Tail expression.
         // Why:      One source of truth for construction.
@@ -1368,4 +1398,5 @@ impl Default for Queue {
 // ```
 #[cfg(test)]
 #[path = "queue_tests.rs"]
+/// Tests module.
 mod tests;

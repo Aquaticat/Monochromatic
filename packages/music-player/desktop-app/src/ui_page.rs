@@ -12,6 +12,7 @@
 // ```ts
 // // a reference-counted handle
 // ```
+/// Imports.
 use std::rc::Rc;
 
 // What:     `use slint::{SharedString, VecModel};`. The Slint string type and the vector-backed
@@ -22,6 +23,7 @@ use std::rc::Rc;
 // ```ts
 // import { SharedString, VecModel } from "slint";
 // ```
+/// Imports.
 use slint::{SharedString, VecModel};
 
 // What:     `use crate::{format_time, AppWindow};`. The binary crate's "m:ss" formatter and the
@@ -33,6 +35,7 @@ use slint::{SharedString, VecModel};
 // ```ts
 // import { formatTime, AppWindow } from "./main";
 // ```
+/// Imports.
 use crate::{format_time, AppWindow};
 
 // What:     `enum PageNav { Show(i32), Follow, Keep }`. How `refresh_page` should choose the
@@ -47,16 +50,23 @@ use crate::{format_time, AppWindow};
 // ```ts
 // type PageNav = { kind: "show"; page: number } | { kind: "follow" } | { kind: "keep" };
 // ```
+/// Page nav.
 pub(crate) enum PageNav {
     // What:     `Show(i32)` show this exact page index.
     // Why:      A tab click, or page 0 on a fresh open/restore.
-    Show(i32),
+    /// Show.
+    Show(
+        /// Show value.
+        i32,
+    ),
     // What:     `Follow` jump to the current track's page (or keep the page when nothing is
     //           current).
     // Why:      A transport/selection change keeps the playing row visible.
+    /// Follow.
     Follow,
     // What:     `Keep` leave the selected page as it is (clamped to the new page count).
     // Why:      A rescan reconcile refreshes the data without moving the user's tab.
+    /// Keep.
     Keep,
 }
 
@@ -70,6 +80,7 @@ pub(crate) enum PageNav {
 // ```ts
 // function setQueueModel(app: AppWindow, names: string[]): void { app.queue = names.slice(); }
 // ```
+/// Set queue model.
 pub(crate) fn set_queue_model(app: &AppWindow, names: &[String]) {
     // What:     `let items: Vec<SharedString> = names.iter().map(|s| SharedString::from(s.as_str())).collect();`.
     //           Copy each borrowed `String` into the `SharedString`s the model holds.
@@ -102,6 +113,7 @@ pub(crate) fn set_queue_model(app: &AppWindow, names: &[String]) {
 // ```ts
 // function setNowPlaying(app, index, name, duration) { app.trackName = name; app.duration = duration; app.durationText = formatTime(duration); app.currentIndex = index ?? -1; }
 // ```
+/// Set now playing.
 pub(crate) fn set_now_playing(app: &AppWindow, index: Option<usize>, name: &str, duration: f64) {
     // What:     `app.set_track_name(name.into());`. Convert to `SharedString` and set the title
     //           source.

@@ -36,6 +36,7 @@
 // ```ts
 // // no import: think of an untyped ArrayBuffer you later view as Float32Array
 // ```
+/// Imports.
 use std::os::raw::c_void;
 
 // What:     `use std::sync::atomic::Ordering;`. `Ordering` is an enum describing how
@@ -53,6 +54,7 @@ use std::os::raw::c_void;
 // ```ts
 // // no equivalent: JS Atomics don't expose a memory-ordering argument
 // ```
+/// Imports.
 use std::sync::atomic::Ordering;
 
 // What:     `use std::sync::mpsc::{Receiver, TryRecvError};`. `mpsc` is "multi-producer,
@@ -70,6 +72,7 @@ use std::sync::atomic::Ordering;
 // ```ts
 // // the read side of a cross-thread message queue, with EMPTY / DISCONNECTED states
 // ```
+/// Imports.
 use std::sync::mpsc::{Receiver, TryRecvError};
 
 // What:     `use std::sync::Arc;`. `Arc<T>` is an ATOMICALLY reference-counted shared
@@ -84,6 +87,7 @@ use std::sync::mpsc::{Receiver, TryRecvError};
 // ```ts
 // // both threads close over the same `control` object; GC handles lifetime
 // ```
+/// Imports.
 use std::sync::Arc;
 
 // What:     `use std::thread;`. The standard-library threading module, which provides
@@ -96,6 +100,7 @@ use std::sync::Arc;
 // ```ts
 // // no blocking sleep in TS; mentally `await new Promise(r => setTimeout(r, ms))`
 // ```
+/// Imports.
 use std::thread;
 
 // What:     `use std::time::Duration;`. `Duration` is a span of time (seconds plus
@@ -108,6 +113,7 @@ use std::thread;
 // ```ts
 // // TS uses a plain number of milliseconds instead of a Duration type
 // ```
+/// Imports.
 use std::time::Duration;
 
 // What:     `use ndk::audio::{ ... };`. `ndk` is the Rust binding to Android's NDK
@@ -124,6 +130,7 @@ use std::time::Duration;
 // ```ts
 // import { AudioCallbackResult, AudioDirection, AudioFormat, AudioPerformanceMode, AudioStream, AudioStreamBuilder } from "ndk-audio";
 // ```
+/// Imports.
 use ndk::audio::{
     AudioCallbackResult, AudioDirection, AudioFormat, AudioPerformanceMode, AudioStream,
     AudioStreamBuilder,
@@ -143,6 +150,7 @@ use ndk::audio::{
 // ```ts
 // // no equivalent: importing interfaces just to unlock .split()/.pushSlice()/.popSlice()
 // ```
+/// Imports.
 use ringbuf::traits::{Consumer, Producer, Split};
 
 // What:     `use ringbuf::{HeapCons, HeapProd, HeapRb};`. `HeapRb<T>` is a
@@ -158,6 +166,7 @@ use ringbuf::traits::{Consumer, Producer, Split};
 // ```ts
 // // a fixed-size lock-free Float32Array queue split into a writer and a reader
 // ```
+/// Imports.
 use ringbuf::{HeapCons, HeapProd, HeapRb};
 
 // What:     `use symphonia::core::formats::probe::Hint;`. `symphonia` is a pure-Rust
@@ -172,6 +181,7 @@ use ringbuf::{HeapCons, HeapProd, HeapRb};
 // ```ts
 // import { Hint } from "symphonia";
 // ```
+/// Imports.
 use symphonia::core::formats::probe::Hint;
 
 // What:     `use crate::decode::{self, Source};`. `crate::` means "from the root of THIS
@@ -187,6 +197,7 @@ use symphonia::core::formats::probe::Hint;
 // import * as decode from "./decode";
 // import type { Source } from "./decode";
 // ```
+/// Imports.
 use crate::decode::{self, Source};
 
 // What:     `use crate::engine::{Command, Control, MILLIS_PER_SEC};`. From this crate's
@@ -201,6 +212,7 @@ use crate::decode::{self, Source};
 // ```ts
 // import { Command, Control, MILLIS_PER_SEC } from "./engine";
 // ```
+/// Imports.
 use crate::engine::{Command, Control, MILLIS_PER_SEC};
 
 // What:     `use crate::error::PlayerError;`. Our one app-wide error type (a tagged
@@ -212,6 +224,7 @@ use crate::engine::{Command, Control, MILLIS_PER_SEC};
 // ```ts
 // import { PlayerError } from "./error";
 // ```
+/// Imports.
 use crate::error::PlayerError;
 
 // What:     `const MIN_RING: usize = 8192;`. A compile-time constant named `MIN_RING`
@@ -228,6 +241,7 @@ use crate::error::PlayerError;
 // ```ts
 // const MIN_RING = 8192; // minimum ring capacity in samples
 // ```
+/// Min ring.
 const MIN_RING: usize = 8192;
 
 // What:     `const IDLE_SLEEP: Duration = Duration::from_millis(5);`. A constant named
@@ -241,6 +255,7 @@ const MIN_RING: usize = 8192;
 // ```ts
 // const IDLE_SLEEP = 5; // milliseconds; mentally a Duration
 // ```
+/// Idle sleep.
 const IDLE_SLEEP: Duration = Duration::from_millis(5);
 
 // What:     `struct WorkerState { ... }` declares a record type holding everything the
@@ -272,6 +287,7 @@ const IDLE_SLEEP: Duration = Duration::from_millis(5);
 //   pendingPos = 0;
 // }
 // ```
+/// Worker state.
 struct WorkerState {
     // What:     `source: Option<Box<dyn Source>>`. The decoder for the loaded track, or
     //           `None` when nothing is loaded. `Box<dyn Source>` is an owning heap
@@ -286,6 +302,7 @@ struct WorkerState {
     // ```ts
     // source: Source | null;
     // ```
+    /// Source.
     source: Option<Box<dyn Source>>,
     // What:     `stream: Option<AudioStream>`. The current AAudio output stream, owned,
     //           or `None` before the first track. Dropping the `AudioStream` value closes
@@ -297,6 +314,7 @@ struct WorkerState {
     // ```ts
     // stream: AudioStream | null;
     // ```
+    /// Stream.
     stream: Option<AudioStream>,
     // What:     `prod: Option<HeapProd<f32>>`. The ring buffer's WRITE end for `f32`
     //           samples, owned, or `None`. The decode pump pushes into this.
@@ -307,6 +325,7 @@ struct WorkerState {
     // ```ts
     // prod: RingProducer | null;
     // ```
+    /// Prod.
     prod: Option<HeapProd<f32>>,
     // What:     `pending: Vec<f32>`. An OWNED, growable array of leftover decoded samples
     //           that a full ring could not accept yet (backpressure carryover). `Vec<f32>`
@@ -319,6 +338,7 @@ struct WorkerState {
     // ```ts
     // pending: number[];
     // ```
+    /// Pending.
     pending: Vec<f32>,
     // What:     `pending_pos: usize`. A read cursor (index) into `pending`: how many of
     //           its samples have already been pushed into the ring. `usize` because it is
@@ -330,6 +350,7 @@ struct WorkerState {
     // ```ts
     // pendingPos: number;
     // ```
+    /// Pending pos.
     pending_pos: usize,
 }
 
@@ -341,6 +362,7 @@ struct WorkerState {
 // ```ts
 // class WorkerState { /* methods, e.g. a constructor, go here */ }
 // ```
+/// Implementation block.
 impl WorkerState {
     // What:     `fn new() -> WorkerState`. An ASSOCIATED function (no `self` parameter,
     //           so it is called as `WorkerState::new()`, like a static factory) that
@@ -351,6 +373,7 @@ impl WorkerState {
     // ```ts
     // static create(): WorkerState { return new WorkerState(); }
     // ```
+    /// New.
     fn new() -> WorkerState {
         // What:     `WorkerState { source: None, stream: None, prod: None, pending: Vec::new(), pending_pos: 0 }`.
         //           Construct the struct. `None` is the empty case of `Option` for the
@@ -390,6 +413,7 @@ impl WorkerState {
 // ```ts
 // function workerRun(rx: Receiver<Command>, control: Control): void { ... }
 // ```
+/// Worker run.
 pub(crate) fn worker_run(rx: Receiver<Command>, control: Arc<Control>) {
     // What:     `let mut state = WorkerState::new();`. Declare a LOCAL variable `state`
     //           and call the `WorkerState::new()` associated function to fill it. `mut`
@@ -555,6 +579,7 @@ pub(crate) fn worker_run(rx: Receiver<Command>, control: Arc<Control>) {
 // ```ts
 // function handleLoad(state: WorkerState, control: Control, file: File, play: boolean): void { ... }
 // ```
+/// Handle load.
 fn handle_load(state: &mut WorkerState, control: &Arc<Control>, file: std::fs::File, play: bool) {
     // What:     `state.stream = None;`. Overwrite the stream field with the empty `Option`.
     //           Assigning `None` DROPS the previous `AudioStream`, which closes it and
@@ -808,6 +833,7 @@ fn handle_load(state: &mut WorkerState, control: &Arc<Control>, file: std::fs::F
 // ```ts
 // function handleSeek(state: WorkerState, control: Control, positionSec: number): void { ... }
 // ```
+/// Handle seek.
 fn handle_seek(state: &mut WorkerState, control: &Arc<Control>, position_sec: f64) {
     // What:     `let (rate, channels) = match state.source.as_mut() { ... };`. The left
     //           side `(rate, channels)` is TUPLE DESTRUCTURING: the `match` yields a
@@ -991,6 +1017,7 @@ fn handle_seek(state: &mut WorkerState, control: &Arc<Control>, position_sec: f6
 // ```ts
 // function reconfigureOutput(state: WorkerState, control: Control, rate: number, channels: number): void { ... }
 // ```
+/// Reconfigure output.
 fn reconfigure_output(
     state: &mut WorkerState,
     control: &Arc<Control>,
@@ -1281,6 +1308,7 @@ fn reconfigure_output(
 // ```ts
 // function pump(state: WorkerState, control: Control): boolean { ... }
 // ```
+/// Pump.
 fn pump(state: &mut WorkerState, control: &Control) -> bool {
     // What:     `let mut did_work = false;`. A MUTABLE local boolean, initially `false`.
     //           `mut` because we OR new progress into it below.
@@ -1592,6 +1620,7 @@ fn pump(state: &mut WorkerState, control: &Control) -> bool {
 // ```ts
 // function audioCallback(cons, data, frames, control, channels): "continue" | "stop" { ... }
 // ```
+/// Audio callback.
 fn audio_callback(
     cons: &mut HeapCons<f32>,
     data: *mut c_void,
@@ -1821,6 +1850,7 @@ fn audio_callback(
 // ```ts
 // function audioError(error: unknown): PlayerError { return new PlayerError(`${error}`); }
 // ```
+/// Audio error.
 fn audio_error<E: std::fmt::Debug>(error: E) -> PlayerError {
     // What:     `PlayerError::Audio(format!("{error:?}"))`. `format!(...)` is a MACRO (the `!`
     //           marks it) that builds an owned `String` from a template; `{error:?}` formats

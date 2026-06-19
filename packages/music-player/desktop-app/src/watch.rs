@@ -11,6 +11,7 @@
 // ```ts
 // type Path = string;
 // ```
+/// Imports.
 use std::path::{Path, PathBuf};
 
 // What:     `use std::time::Duration;`. A span of time.
@@ -20,6 +21,7 @@ use std::path::{Path, PathBuf};
 // ```ts
 // // a number of milliseconds
 // ```
+/// Imports.
 use std::time::Duration;
 
 // What:     `use notify_debouncer_mini::{new_debouncer, DebounceEventResult, Debouncer};`.
@@ -30,6 +32,7 @@ use std::time::Duration;
 // ```ts
 // import { newDebouncer, type DebounceEventResult, type Debouncer } from "notify-debouncer-mini";
 // ```
+/// Imports.
 use notify_debouncer_mini::{new_debouncer, DebounceEventResult, Debouncer};
 
 // What:     `use notify_debouncer_mini::notify::{RecommendedWatcher, RecursiveMode};`.
@@ -43,6 +46,7 @@ use notify_debouncer_mini::{new_debouncer, DebounceEventResult, Debouncer};
 // ```ts
 // import { RecommendedWatcher, RecursiveMode } from "notify";
 // ```
+/// Imports.
 use notify_debouncer_mini::notify::{RecommendedWatcher, RecursiveMode};
 
 // What:     `const DEBOUNCE_MS: u64 = 500;`. The debounce window in milliseconds.
@@ -54,6 +58,7 @@ use notify_debouncer_mini::notify::{RecommendedWatcher, RecursiveMode};
 // ```ts
 // const DEBOUNCE_MS = 500;
 // ```
+/// Debounce ms.
 const DEBOUNCE_MS: u64 = 500;
 
 // What:     `pub(crate) struct SourceWatcher { ... }`. Owns the debouncer (a guard that
@@ -65,6 +70,7 @@ const DEBOUNCE_MS: u64 = 500;
 // ```ts
 // class SourceWatcher { debouncer: Debouncer; watched: string | null; }
 // ```
+/// Source watcher.
 pub(crate) struct SourceWatcher {
     // What:     `debouncer: Debouncer<RecommendedWatcher>`. The debounced watcher guard.
     // Why:      Kept alive so its background thread keeps delivering events; dropping it
@@ -74,6 +80,7 @@ pub(crate) struct SourceWatcher {
     // ```ts
     // debouncer: Debouncer;
     // ```
+    /// Debouncer.
     debouncer: Debouncer<RecommendedWatcher>,
     // What:     `watched: Option<PathBuf>`. The currently-watched root (`Some`), or `None`.
     // Why:      `watch` unwatches this before watching a new root, so only one root is ever
@@ -83,6 +90,7 @@ pub(crate) struct SourceWatcher {
     // ```ts
     // watched: string | null;
     // ```
+    /// Watched.
     watched: Option<PathBuf>,
 }
 
@@ -93,6 +101,7 @@ pub(crate) struct SourceWatcher {
 // ```ts
 // class SourceWatcher { static new() {} watch() {} }
 // ```
+/// Implementation block.
 impl SourceWatcher {
     // What:     `pub(crate) fn new<F>(on_change: F) -> Option<SourceWatcher> where F: Fn() + Send + 'static`.
     //           Build the debouncer whose handler calls `on_change` on any change; `None` if
@@ -106,6 +115,7 @@ impl SourceWatcher {
     // ```ts
     // static new(onChange: () => void): SourceWatcher | null { ... }
     // ```
+    /// New.
     pub(crate) fn new<F>(on_change: F) -> Option<SourceWatcher>
     where
         F: Fn() + Send + 'static,
@@ -162,6 +172,7 @@ impl SourceWatcher {
     // ```ts
     // watch(root: string): void { ... }
     // ```
+    /// Watch.
     pub(crate) fn watch(&mut self, root: &Path) {
         // What:     `if let Some(prev) = self.watched.take() { let _ = self.debouncer.watcher().unwatch(&prev); }`.
         //           `take()` removes and yields the previous root; `unwatch` stops watching
@@ -216,4 +227,5 @@ impl SourceWatcher {
 // ```
 #[cfg(test)]
 #[path = "watch_tests.rs"]
+/// Tests module.
 mod tests;

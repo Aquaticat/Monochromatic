@@ -12,6 +12,7 @@
 // ```ts
 // import { SymphoniaError } from "symphonia/errors";
 // ```
+/// Imports.
 use symphonia::core::errors::Error;
 
 // What:     `use symphonia::core::formats::{FormatReader, Track};`. `FormatReader` = the
@@ -26,6 +27,7 @@ use symphonia::core::errors::Error;
 // ```ts
 // import { FormatReader, Track } from "symphonia/formats";
 // ```
+/// Imports.
 use symphonia::core::formats::{FormatReader, Track};
 
 // What:     `use crate::decode::{AudioSpec, Source, seek_format};` imports our spec
@@ -38,6 +40,7 @@ use symphonia::core::formats::{FormatReader, Track};
 // ```ts
 // import { AudioSpec, Source, seekFormat } from "./decode";
 // ```
+/// Imports.
 use crate::decode::{AudioSpec, Source, seek_format};
 
 // What:     `use crate::error::PlayerError;` imports our app-wide error type.
@@ -47,6 +50,7 @@ use crate::decode::{AudioSpec, Source, seek_format};
 // ```ts
 // import { PlayerError } from "@/error";
 // ```
+/// Imports.
 use crate::error::PlayerError;
 
 // What:     `const OPUS_RATE: u32 = 48_000;`. A named compile-time constant: the fixed
@@ -58,6 +62,7 @@ use crate::error::PlayerError;
 // ```ts
 // const OPUS_RATE = 48_000;
 // ```
+/// Opus rate.
 const OPUS_RATE: u32 = 48_000;
 
 // What:     `const MAX_FRAMES_PER_CHANNEL: usize = 5760;`. The largest number of samples
@@ -71,6 +76,7 @@ const OPUS_RATE: u32 = 48_000;
 // ```ts
 // const MAX_FRAMES_PER_CHANNEL = 5760;
 // ```
+/// Max frames per channel.
 const MAX_FRAMES_PER_CHANNEL: usize = 5760;
 
 // What:     `const STEREO: usize = 2;`. Named constant for the stereo channel count, used
@@ -82,6 +88,7 @@ const MAX_FRAMES_PER_CHANNEL: usize = 5760;
 // ```ts
 // const STEREO = 2;
 // ```
+/// Stereo.
 const STEREO: usize = 2;
 
 // What:     `const MONO: usize = 1;`. Named constant for the mono channel count.
@@ -91,6 +98,7 @@ const STEREO: usize = 2;
 // ```ts
 // const MONO = 1;
 // ```
+/// Mono.
 const MONO: usize = 1;
 
 // What:     `pub struct OpusSource { ... }`. The live Opus decode state.
@@ -101,6 +109,7 @@ const MONO: usize = 1;
 // ```ts
 // class OpusSource implements Source { format; decoder; trackId; channels; spec; scratch; preSkip; }
 // ```
+/// Opus source.
 pub struct OpusSource {
     // What:     `format: Box<dyn FormatReader>`. Owning, heap, type-erased Ogg demuxer
     //           (single owner; not the shared `Rc`/`Arc`).
@@ -110,6 +119,7 @@ pub struct OpusSource {
     // ```ts
     // format: FormatReader;
     // ```
+    /// Format.
     format: Box<dyn FormatReader>,
     // What:     `decoder: opus::Decoder`. The libopus decoder VALUE (owned by this struct,
     //           not boxed: it is a concrete type, not a trait object).
@@ -119,6 +129,7 @@ pub struct OpusSource {
     // ```ts
     // decoder: OpusDecoder;
     // ```
+    /// Decoder.
     decoder: opus::Decoder,
     // What:     `track_id: u32`. Id of the Opus track (matches `u32` symphonia ids).
     // Why:      Skip packets from other tracks.
@@ -127,6 +138,7 @@ pub struct OpusSource {
     // ```ts
     // trackId: number;
     // ```
+    /// Track id.
     track_id: u32,
     // What:     `channels: usize`. Channel count kept as `usize` (1 or 2) for buffer math
     //           (frames * channels) without casts.
@@ -136,6 +148,7 @@ pub struct OpusSource {
     // ```ts
     // channels: number;
     // ```
+    /// Channels.
     channels: usize,
     // What:     `spec: AudioSpec`. Cached rate(=48000)/channels/duration.
     // Why:      `spec()` returns it directly.
@@ -144,6 +157,7 @@ pub struct OpusSource {
     // ```ts
     // spec: AudioSpec;
     // ```
+    /// Spec.
     spec: AudioSpec,
     // What:     `scratch: Vec<f32>`. A reusable owned f32 buffer libopus writes into each
     //           call (sized `MAX_FRAMES_PER_CHANNEL * channels`).
@@ -153,6 +167,7 @@ pub struct OpusSource {
     // ```ts
     // scratch: Float32Array;
     // ```
+    /// Scratch.
     scratch: Vec<f32>,
     // What:     `pre_skip: usize`. Remaining encoder-delay frames-per-channel to discard
     //           at the very start (Opus prepends silence/priming).
@@ -162,6 +177,7 @@ pub struct OpusSource {
     // ```ts
     // preSkip: number;
     // ```
+    /// Pre skip.
     pre_skip: usize,
 }
 
@@ -172,6 +188,7 @@ pub struct OpusSource {
 // ```ts
 // class OpusSource { static create(...) { ... } }
 // ```
+/// Implementation block.
 impl OpusSource {
     // What:     `pub fn new(format: Box<dyn FormatReader>, track: Track, track_id: u32) -> Result<Self, PlayerError>`.
     //           Takes ownership of the demuxer and the owned `Track`; builds a libopus
@@ -182,6 +199,7 @@ impl OpusSource {
     // ```ts
     // static create(format, track, trackId): OpusSource { ... }
     // ```
+    /// New.
     pub fn new(
         format: Box<dyn FormatReader>,
         track: Track,
@@ -391,6 +409,7 @@ impl OpusSource {
 // ```ts
 // // OpusSource implements the Source interface: spec(), next_chunk(), seek()
 // ```
+/// Implementation block.
 impl Source for OpusSource {
     // What:     `fn spec(&self) -> AudioSpec { self.spec }`. Returns a copy of the cached
     //           spec (`AudioSpec` is `Copy`).
@@ -400,6 +419,7 @@ impl Source for OpusSource {
     // ```ts
     // spec(): AudioSpec { return this.spec; }
     // ```
+    /// Spec.
     fn spec(&self) -> AudioSpec {
         // What:     `self.spec` tail expression -> returned BY VALUE (copy, since
         //           `AudioSpec` derives `Copy`).
@@ -421,6 +441,7 @@ impl Source for OpusSource {
     // ```ts
     // nextChunk(): number[] { ... }
     // ```
+    /// Next chunk.
     fn next_chunk(&mut self) -> Result<Vec<f32>, PlayerError> {
         // What:     `loop { ... }`. Repeat because some packets are other tracks or get
         //           fully consumed by pre-skip and yield nothing.
@@ -594,6 +615,7 @@ impl Source for OpusSource {
     // ```ts
     // seek(secs: number): void { ... }
     // ```
+    /// Seek.
     fn seek(&mut self, secs: f64) -> Result<(), PlayerError> {
         // What:     `seek_format(self.format.as_mut(), self.track_id, secs)?`. Call the
         //           shared helper from `decode.rs`. `self.format` is a

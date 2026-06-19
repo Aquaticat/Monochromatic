@@ -35,6 +35,7 @@
 // ```ts
 // // no equivalent: a raw address to bytes of unknown type
 // ```
+/// Imports.
 use std::os::raw::c_void;
 
 // What:     `use std::time::Duration;`. `Duration` is a span of time (seconds +
@@ -48,6 +49,7 @@ use std::os::raw::c_void;
 // ```ts
 // // a length of time, expressed in ms as a plain number
 // ```
+/// Imports.
 use std::time::Duration;
 
 // What:     `use ndk::audio::{ ... };`. One `use` pulling in several names from
@@ -76,6 +78,7 @@ use std::time::Duration;
 //   AudioStream, AudioStreamBuilder, Clockid,
 // } from "ndk/audio";
 // ```
+/// Imports.
 use ndk::audio::{
     AudioCallbackResult, AudioDirection, AudioFormat, AudioPerformanceMode, AudioStream,
     AudioStreamBuilder, Clockid,
@@ -97,6 +100,7 @@ use ndk::audio::{
 // ```ts
 // const SAMPLE_RATE = 48_000;
 // ```
+/// Sample rate.
 const SAMPLE_RATE: i32 = 48_000;
 
 // What:     `const CHANNELS: i32 = 2;`. Constant for the channel count
@@ -112,6 +116,7 @@ const SAMPLE_RATE: i32 = 48_000;
 // ```ts
 // const CHANNELS = 2;
 // ```
+/// Channels.
 const CHANNELS: i32 = 2;
 
 // What:     `const SETTLE: Duration = Duration::from_millis(300);`. A constant
@@ -127,6 +132,7 @@ const CHANNELS: i32 = 2;
 // ```ts
 // const SETTLE_MS = 300; // settle time, in milliseconds
 // ```
+/// Settle.
 const SETTLE: Duration = Duration::from_millis(300);
 
 // What:     `const MILLIS_PER_SEC: f64 = 1000.0;`. A constant conversion factor.
@@ -144,6 +150,7 @@ const SETTLE: Duration = Duration::from_millis(300);
 // ```ts
 // const MILLIS_PER_SEC = 1000;
 // ```
+/// Millis per sec.
 const MILLIS_PER_SEC: f64 = 1000.0;
 
 // What:     `pub fn measure_output_latency_ms() -> Option<f64>`. A public
@@ -159,6 +166,7 @@ const MILLIS_PER_SEC: f64 = 1000.0;
 // ```ts
 // function measureOutputLatencyMs(): number | null { ... }
 // ```
+/// Measure output latency ms.
 pub fn measure_output_latency_ms() -> Option<f64> {
     // What:     `let stream = AudioStreamBuilder::new().ok()? . ... .open_stream().ok()?;`.
     //           This single `let` statement spans many lines: it builds and
@@ -344,6 +352,7 @@ pub fn measure_output_latency_ms() -> Option<f64> {
 //   numFrames: number,
 // ): "continue" | "stop" { ... }
 // ```
+/// Silent callback.
 fn silent_callback(
     _stream: &AudioStream,
     audio_data: *mut c_void,
@@ -435,6 +444,7 @@ fn silent_callback(
 // ```ts
 // function readLatencyMs(stream: AudioStream, rate: number): number | null { ... }
 // ```
+/// Read latency ms.
 fn read_latency_ms(stream: &AudioStream, rate: i32) -> Option<f64> {
     // What:     `if rate <= 0 { return None; }`. Guard clause. If the sample rate
     //           is zero or negative the division below would be meaningless (or a

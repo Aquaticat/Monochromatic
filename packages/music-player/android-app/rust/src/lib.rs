@@ -32,6 +32,7 @@
 // // No runtime statement; the bundler discovers ./decode.ts when it is imported.
 // // Mentally: `import * as decode from "./decode";` makes `decode.open` reachable.
 // ```
+/// Decode module.
 mod decode;
 // What:     `mod engine;` declares the `engine` child module, compiled from
 //           `engine.rs`. It holds the playback `Engine` type the JNI handle wraps.
@@ -42,6 +43,7 @@ mod decode;
 // ```ts
 // import * as engine from "./engine";
 // ```
+/// Engine module.
 mod engine;
 // What:     `mod engine_worker;` declares the `engine_worker` child module
 //           (`engine_worker.rs`), the background thread the engine drives.
@@ -51,6 +53,7 @@ mod engine;
 // ```ts
 // import * as engine_worker from "./engine_worker";
 // ```
+/// Engine worker module.
 mod engine_worker;
 // What:     `mod error;` declares the `error` child module (`error.rs`), home of
 //           the shared `PlayerError` type that all fallible calls funnel into.
@@ -61,6 +64,7 @@ mod engine_worker;
 // ```ts
 // import * as error from "./error";
 // ```
+/// Error module.
 mod error;
 // What:     `mod fingerprint;` declares the `fingerprint` child module
 //           (`fingerprint.rs`), which holds the gxhash cache-key fingerprint and its
@@ -73,6 +77,7 @@ mod error;
 // ```ts
 // import * as fingerprint from "./fingerprint"; // its native export is auto-registered
 // ```
+/// Fingerprint module.
 mod fingerprint;
 // What:     `mod opus;` declares a LOCAL child module named `opus` (`opus.rs`),
 //           our own Opus glue. Note: there is ALSO an external crate also named
@@ -85,6 +90,7 @@ mod fingerprint;
 // ```ts
 // import * as opus from "./opus";
 // ```
+/// Opus module.
 mod opus;
 // What:     `mod output;` declares the `output` child module (`output.rs`), the
 //           AAudio (Android's low-latency audio) output backend.
@@ -94,6 +100,7 @@ mod opus;
 // ```ts
 // import * as output from "./output";
 // ```
+/// Output module.
 mod output;
 // What:     `mod truepeak;` declares the `truepeak` child module (`truepeak.rs`),
 //           the oversampled true-peak loudness measurement.
@@ -103,6 +110,7 @@ mod output;
 // ```ts
 // import * as truepeak from "./truepeak";
 // ```
+/// Truepeak module.
 mod truepeak;
 
 // What:     `use std::os::fd::RawFd;` imports the Unix raw-file-descriptor type.
@@ -118,6 +126,7 @@ mod truepeak;
 // ```ts
 // type RawFd = number; // a bare OS file-descriptor integer
 // ```
+/// Imports.
 use std::os::fd::RawFd;
 // What:     `use std::path::Path;` imports the borrowed filesystem-path type.
 //           `Path` is an unsized, borrowed VIEW of a path (its owned, growable
@@ -129,6 +138,7 @@ use std::os::fd::RawFd;
 // ```ts
 // type Path = string;
 // ```
+/// Imports.
 use std::path::Path;
 // What:     `use std::time::Instant;` imports a monotonic clock reading. `Instant`
 //           is an opaque "moment on the steady clock" (it never goes backwards,
@@ -141,6 +151,7 @@ use std::path::Path;
 // ```ts
 // type Instant = number; // a performance.now() timestamp, monotonic
 // ```
+/// Imports.
 use std::time::Instant;
 
 // What:     `use jni::objects::{JClass, JString};` imports two handle types from the
@@ -156,6 +167,7 @@ use std::time::Instant;
 // type JClass = OpaqueHandle;  // the calling class object
 // type JString = OpaqueHandle; // a Java string handle, convert before use
 // ```
+/// Imports.
 use jni::objects::{JClass, JFloatArray, JString};
 // What:     `use jni::sys::{jboolean, jdouble, jfloat, jint, jlong};` imports the
 //           JVM's fixed-width primitive types as Rust aliases. `jint` is a 32-bit
@@ -176,6 +188,7 @@ use jni::objects::{JClass, JFloatArray, JString};
 // type jfloat = number;   // 32-bit float
 // type jboolean = number; // 0 = false, non-zero = true
 // ```
+/// Imports.
 use jni::sys::{jboolean, jdouble, jfloat, jint, jlong};
 // What:     `use jni::JNIEnv;` imports the per-call interface pointer the JVM hands
 //           every native method. `JNIEnv<'local>` is the gateway object you call to
@@ -188,6 +201,7 @@ use jni::sys::{jboolean, jdouble, jfloat, jint, jlong};
 // ```ts
 // type JNIEnv = RuntimeContext; // per-call handle to talk to the host runtime
 // ```
+/// Imports.
 use jni::JNIEnv;
 
 // What:     `#[no_mangle]` is an ATTRIBUTE (a compiler annotation, written
@@ -223,6 +237,7 @@ use jni::JNIEnv;
 //   return 42;
 // }
 // ```
+/// JNI export native ping.
 pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativePing<'local>(
     _env: JNIEnv<'local>,
     _class: JClass<'local>,
@@ -256,6 +271,7 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativePin
 // ```ts
 // export function nativeOpusSelfTest(_env: JNIEnv, _class: JClass): number { ... }
 // ```
+/// JNI export native opus self test.
 pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeOpusSelfTest<'local>(
     _env: JNIEnv<'local>,
     _class: JClass<'local>,
@@ -324,6 +340,7 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeOpu
 // ```ts
 // export function nativeSymphoniaSelfTest(_env: JNIEnv, _class: JClass): number { ... }
 // ```
+/// JNI export native symphonia self test.
 pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeSymphoniaSelfTest<'local>(
     _env: JNIEnv<'local>,
     _class: JClass<'local>,
@@ -388,6 +405,7 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeSym
 // ```ts
 // function benchmarkDecode(source: Source): number { ... }
 // ```
+/// Benchmark decode.
 fn benchmark_decode(mut source: Box<dyn decode::Source>) -> jdouble {
     // What:     `let spec = source.spec();` calls the trait method `spec()` to read
     //           the audio format (rate/channels/duration) and binds it to the
@@ -607,6 +625,7 @@ fn benchmark_decode(mut source: Box<dyn decode::Source>) -> jdouble {
 // ```ts
 // export function nativeDecodeBenchmark(env: JNIEnv, _class: JClass, path: JString): number { ... }
 // ```
+/// JNI export native decode benchmark.
 pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeDecodeBenchmark<'local>(
     env: JNIEnv<'local>,
     _class: JClass<'local>,
@@ -737,6 +756,7 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeDec
 // ```ts
 // export function nativeDecodeFdBenchmark(_env: JNIEnv, _class: JClass, fd: number): number { ... }
 // ```
+/// JNI export native decode fd benchmark.
 pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeDecodeFdBenchmark<'local>(
     _env: JNIEnv<'local>,
     _class: JClass<'local>,
@@ -823,6 +843,7 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeDec
 // ```ts
 // export function nativeMeasureTruePeak(_env: JNIEnv, _class: JClass, fd: number): number { ... }
 // ```
+/// JNI export native measure true peak.
 pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeMeasureTruePeak<'local>(
     _env: JNIEnv<'local>,
     _class: JClass<'local>,
@@ -938,6 +959,7 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeMea
 // ```ts
 // export function nativeTruePeakSynthetic(env, _class, samples: number[], channels: number): number { ... }
 // ```
+/// JNI export native true peak synthetic.
 pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeTruePeakSynthetic<'local>(
     env: JNIEnv<'local>,
     _class: JClass<'local>,
@@ -1035,6 +1057,7 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeTru
 // ```ts
 // export function nativeOutputLatencyProbe(_env: JNIEnv, _class: JClass): number { ... }
 // ```
+/// JNI export native output latency probe.
 pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeOutputLatencyProbe<'local>(
     _env: JNIEnv<'local>,
     _class: JClass<'local>,
@@ -1095,6 +1118,7 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeOut
 // ```ts
 // export function nativeEngineCreate(_env: JNIEnv, _class: JClass): number { ... }
 // ```
+/// JNI export native engine create.
 pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEngineCreate<'local>(
     _env: JNIEnv<'local>,
     _class: JClass<'local>,
@@ -1169,6 +1193,7 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEng
 // ```ts
 // export function nativeEngineLoad(_env, _class, handle: number, fd: number, play: number): number { ... }
 // ```
+/// JNI export native engine load.
 pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEngineLoad<'local>(
     _env: JNIEnv<'local>,
     _class: JClass<'local>,
@@ -1274,6 +1299,7 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEng
 // ```ts
 // export function nativeEnginePlay(_env: JNIEnv, _class: JClass, handle: number): void { ... }
 // ```
+/// JNI export native engine play.
 pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEnginePlay<'local>(
     _env: JNIEnv<'local>,
     _class: JClass<'local>,
@@ -1331,6 +1357,7 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEng
 // ```ts
 // export function nativeEnginePause(_env: JNIEnv, _class: JClass, handle: number): void { ... }
 // ```
+/// JNI export native engine pause.
 pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEnginePause<'local>(
     _env: JNIEnv<'local>,
     _class: JClass<'local>,
@@ -1383,6 +1410,7 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEng
 // ```ts
 // export function nativeEngineSeek(_env, _class, handle: number, positionSec: number): void { ... }
 // ```
+/// JNI export native engine seek.
 pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEngineSeek<'local>(
     _env: JNIEnv<'local>,
     _class: JClass<'local>,
@@ -1435,6 +1463,7 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEng
 // ```ts
 // export function nativeEngineSetVolume(_env, _class, handle: number, volume: number): void { ... }
 // ```
+/// JNI export native engine set volume.
 pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEngineSetVolume<'local>(
     _env: JNIEnv<'local>,
     _class: JClass<'local>,
@@ -1489,6 +1518,7 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEng
 // ```ts
 // export function nativeEngineSetNormalizationGain(_env, _class, handle: number, gain: number): void { ... }
 // ```
+/// JNI export native engine set normalization gain.
 pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEngineSetNormalizationGain<'local>(
     _env: JNIEnv<'local>,
     _class: JClass<'local>,
@@ -1541,6 +1571,7 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEng
 // ```ts
 // export function nativeEnginePositionSec(_env: JNIEnv, _class: JClass, handle: number): number { ... }
 // ```
+/// JNI export native engine position sec.
 pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEnginePositionSec<'local>(
     _env: JNIEnv<'local>,
     _class: JClass<'local>,
@@ -1595,6 +1626,7 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEng
 // ```ts
 // export function nativeEngineDurationSec(_env: JNIEnv, _class: JClass, handle: number): number { ... }
 // ```
+/// JNI export native engine duration sec.
 pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEngineDurationSec<'local>(
     _env: JNIEnv<'local>,
     _class: JClass<'local>,
@@ -1647,6 +1679,7 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEng
 // ```ts
 // export function nativeEngineIsPlaying(_env: JNIEnv, _class: JClass, handle: number): boolean { ... }
 // ```
+/// JNI export native engine is playing.
 pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEngineIsPlaying<'local>(
     _env: JNIEnv<'local>,
     _class: JClass<'local>,
@@ -1705,6 +1738,7 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEng
 // ```ts
 // export function nativeEngineIsEnded(_env: JNIEnv, _class: JClass, handle: number): boolean { ... }
 // ```
+/// JNI export native engine is ended.
 pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEngineIsEnded<'local>(
     _env: JNIEnv<'local>,
     _class: JClass<'local>,
@@ -1760,6 +1794,7 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEng
 // ```ts
 // export function nativeEnginePlayWhenReady(_env: JNIEnv, _class: JClass, handle: number): boolean { ... }
 // ```
+/// JNI export native engine play when ready.
 pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEnginePlayWhenReady<'local>(
     _env: JNIEnv<'local>,
     _class: JClass<'local>,
@@ -1816,6 +1851,7 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEng
 // ```ts
 // export function nativeEngineRelease(_env: JNIEnv, _class: JClass, handle: number): void { ... }
 // ```
+/// JNI export native engine release.
 pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEngineRelease<'local>(
     _env: JNIEnv<'local>,
     _class: JClass<'local>,

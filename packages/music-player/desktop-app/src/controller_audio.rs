@@ -12,6 +12,7 @@
 // ```ts
 // // a path is just a string in TS
 // ```
+/// Imports.
 use std::path::{Path, PathBuf};
 
 // What:     `use ringbuf::traits::Producer;`. Brings `push_slice` into scope for the
@@ -22,6 +23,7 @@ use std::path::{Path, PathBuf};
 // ```ts
 // // no equivalent: importing an interface to unlock .pushSlice()
 // ```
+/// Imports.
 use ringbuf::traits::Producer;
 
 // What:     `use crate::command::Update;`. The engine->UI message enum.
@@ -31,6 +33,7 @@ use ringbuf::traits::Producer;
 // ```ts
 // import { Update } from "./command";
 // ```
+/// Imports.
 use crate::command::Update;
 
 // What:     `use crate::controller::Controller;`. The state struct from the sibling
@@ -41,6 +44,7 @@ use crate::command::Update;
 // ```ts
 // import { Controller } from "./controller";
 // ```
+/// Imports.
 use crate::controller::Controller;
 
 // What:     `use crate::decode::Source;`. The decoder trait (so `Box<dyn Source>` is
@@ -51,6 +55,7 @@ use crate::controller::Controller;
 // ```ts
 // import { Source } from "./decode";
 // ```
+/// Imports.
 use crate::decode::Source;
 
 // What:     `use crate::playback::{expand_paths, file_name_of, frames_to_secs, process_sample};`.
@@ -63,6 +68,7 @@ use crate::decode::Source;
 // ```ts
 // import { expandPaths, fileNameOf, framesToSecs, processSample } from "./playback";
 // ```
+/// Imports.
 use crate::playback::{expand_paths, file_name_of, frames_to_secs, process_sample};
 
 // What:     `use crate::session::Session;`. The serializable saved-state record.
@@ -72,6 +78,7 @@ use crate::playback::{expand_paths, file_name_of, frames_to_secs, process_sample
 // ```ts
 // import { Session } from "./session";
 // ```
+/// Imports.
 use crate::session::Session;
 
 // What:     `const POSITION_EMIT_INTERVAL_SECS: f64 = 0.1;`. Minimum seconds of progress
@@ -82,6 +89,7 @@ use crate::session::Session;
 // ```ts
 // const POSITION_EMIT_INTERVAL_SECS = 0.1;
 // ```
+/// Position emit interval secs.
 const POSITION_EMIT_INTERVAL_SECS: f64 = 0.1;
 
 // What:     `impl Controller { ... }`. The loading/audio half of the behaviour (a SECOND
@@ -93,6 +101,7 @@ const POSITION_EMIT_INTERVAL_SECS: f64 = 0.1;
 // ```ts
 // class Controller { /* current_session, save_session, load_current, install_source, seek, pump_audio, on_track_end, advance_position */ }
 // ```
+/// Implementation block.
 impl Controller {
     // What:     `fn current_session(&self) -> Session`. Snapshot the playback state into a
     //           serializable `Session`.
@@ -102,6 +111,7 @@ impl Controller {
     // ```ts
     // currentSession(): Session { ... }
     // ```
+    /// Current session.
     fn current_session(&self) -> Session {
         // What:     `let position_secs = frames_to_secs(self.position_frames, self.spec.as_ref().map_or(0, |s| s.rate));`.
         //           Convert the frame counter to seconds. `self.spec.as_ref().map_or(0, |s| s.rate)`
@@ -146,6 +156,7 @@ impl Controller {
     // ```ts
     // saveSession(): void { try { this.currentSession().save(); } catch (e) { console.error(e); } }
     // ```
+    /// Save session.
     pub(crate) fn save_session(&self) {
         // What:     `if let Err(e) = self.current_session().save() { ... }`. `save` returns
         //           `io::Result<()>`; the `if let Err(e)` runs the body only on the error
@@ -179,6 +190,7 @@ impl Controller {
     //   this.emit({ kind: "reconciled", names, index, name, duration });
     // }
     // ```
+    /// Emit reconciled.
     pub(crate) fn emit_reconciled(&self) {
         // What:     `let names = self.queue.display_paths();`. The reconciled queue as display
         //           paths, computed once and moved into the update below.
@@ -248,6 +260,7 @@ impl Controller {
     // ```ts
     // rewatchSourceRoot(): void { if (this.sourceRoot && this.watcher) this.watcher.watch(this.sourceRoot); }
     // ```
+    /// Rewatch source root.
     pub(crate) fn rewatch_source_root(&mut self) {
         // What:     `if let Some(root) = self.source_root.clone() { ... }`. Clone the root so
         //           the immutable borrow ends before the mutable watcher borrow.
@@ -288,6 +301,7 @@ impl Controller {
     //   this.queue.setTracks(expandPaths([root]));
     // }
     // ```
+    /// Scan root into queue.
     pub(crate) fn scan_root_into_queue(&mut self, root: PathBuf) {
         // What:     `self.source_root = Some(root.clone());`. Remember the directory the queue
         //           is scanned from. `.clone()` because `root` is moved into `expand_paths`.
@@ -330,6 +344,7 @@ impl Controller {
     // ```ts
     // loadCurrent(): boolean { ... }
     // ```
+    /// Load current.
     pub(crate) fn load_current(&mut self) -> bool {
         // What:     `let max_attempts = self.queue.len();`. How many opens to try before
         //           giving up.
@@ -473,6 +488,7 @@ impl Controller {
     // ```ts
     // installSource(source: Source, path: string): void { ... }
     // ```
+    /// Install source.
     fn install_source(&mut self, source: Box<dyn Source>, path: &Path) {
         // What:     `let spec = source.spec();`. Copy the stream's rate/channels/duration
         //           (`AudioSpec` is `Copy`).
@@ -660,6 +676,7 @@ impl Controller {
     // ```ts
     // seek(secs: number): void { ... }
     // ```
+    /// Seek.
     pub(crate) fn seek(&mut self, secs: f64) {
         // What:     `let spec = match self.spec { Some(s) => s, None => return };`. Copy the
         //           format out, or do nothing if no track is loaded.
@@ -805,6 +822,7 @@ impl Controller {
     // ```ts
     // pumpAudio(): boolean { ... }
     // ```
+    /// Pump audio.
     pub(crate) fn pump_audio(&mut self) -> bool {
         // What:     `if !self.playing { return false; }`. Paused: no work.
         // Why:      Respect pause.
@@ -1024,6 +1042,7 @@ impl Controller {
     // ```ts
     // onTrackEnd(): void { const moved = this.queue.advance(true); this.afterMove(moved); }
     // ```
+    /// On track end.
     fn on_track_end(&mut self) {
         // What:     `let moved = self.queue.advance(true);`. `true` = natural end, letting
         //           repeat-one replay the same track.
@@ -1053,6 +1072,7 @@ impl Controller {
     // ```ts
     // advancePosition(samplesPushed: number): void { ... }
     // ```
+    /// Advance position.
     fn advance_position(&mut self, samples_pushed: usize) {
         // What:     `let channels = self.spec.as_ref().map_or(0, |s| s.channels) as u64;`.
         //           Read the channel count (0 if no spec); `as u64` widens for the division.

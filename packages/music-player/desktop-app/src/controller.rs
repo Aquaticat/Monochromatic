@@ -16,6 +16,7 @@
 // ```ts
 // type Path = string;
 // ```
+/// Imports.
 use std::path::{Path, PathBuf};
 
 // What:     `use std::sync::{Arc, Mutex};`. `Arc<T>` is a thread-safe shared owner
@@ -27,6 +28,7 @@ use std::path::{Path, PathBuf};
 // ```ts
 // // Arc<Mutex<T>> ~ a shared object you must lock() before touching
 // ```
+/// Imports.
 use std::sync::{Arc, Mutex};
 
 // What:     `use std::thread;`. Rust's standard OS-thread API.
@@ -37,6 +39,7 @@ use std::sync::{Arc, Mutex};
 // ```ts
 // const currentWorker = Worker.current;
 // ```
+/// Imports.
 use std::thread;
 
 // What:     `use std::time::Duration;`. A monotonic span of time.
@@ -47,6 +50,7 @@ use std::thread;
 // ```ts
 // type Duration = number;
 // ```
+/// Imports.
 use std::time::Duration;
 
 // What:     `use ringbuf::HeapProd;`. The WRITE half of a heap ring buffer.
@@ -56,6 +60,7 @@ use std::time::Duration;
 // ```ts
 // type HeapProd = RingProducer;
 // ```
+/// Imports.
 use ringbuf::HeapProd;
 
 // What:     `use crate::command::{Command, Update};`. The UI->engine and engine->UI
@@ -66,6 +71,7 @@ use ringbuf::HeapProd;
 // ```ts
 // import { Command, Update } from "./command";
 // ```
+/// Imports.
 use crate::command::{Command, Update};
 
 // What:     `use crate::watch::SourceWatcher;`. The Source Root file watcher type.
@@ -75,6 +81,7 @@ use crate::command::{Command, Update};
 // ```ts
 // import { SourceWatcher } from "./watch";
 // ```
+/// Imports.
 use crate::watch::SourceWatcher;
 
 // What:     `use crate::decode::{AudioSpec, Source};`. `AudioSpec` describes a decoded
@@ -85,6 +92,7 @@ use crate::watch::SourceWatcher;
 // ```ts
 // import { AudioSpec, Source } from "./decode";
 // ```
+/// Imports.
 use crate::decode::{AudioSpec, Source};
 
 // What:     `use crate::measure::spawn_queue_measurement;`. Starts the background sweep
@@ -95,6 +103,7 @@ use crate::decode::{AudioSpec, Source};
 // ```ts
 // import { spawnQueueMeasurement } from "./measure";
 // ```
+/// Imports.
 use crate::measure::spawn_queue_measurement;
 
 // What:     `use crate::output::Output;`. The PipeWire output (FFI boundary).
@@ -104,6 +113,7 @@ use crate::measure::spawn_queue_measurement;
 // ```ts
 // import { Output } from "./output";
 // ```
+/// Imports.
 use crate::output::Output;
 
 // What:     `use crate::peakcache::PeakCache;`. The persistent true-peak cache.
@@ -113,6 +123,7 @@ use crate::output::Output;
 // ```ts
 // import { PeakCache } from "./peakcache";
 // ```
+/// Imports.
 use crate::peakcache::PeakCache;
 
 // What:     `use crate::peak_swap::{...};`. Import the current-track peak swap
@@ -124,6 +135,7 @@ use crate::peakcache::PeakCache;
 // ```ts
 // import { fallbackTrackGain, peakSwapWait, prepareTrackGain } from "./peak_swap";
 // ```
+/// Imports.
 use crate::peak_swap::{
     fallback_track_gain, peak_swap_wait, prepare_track_gain, PeakGainResult,
     PendingPeakMeasurement, PendingPeakStatus, TrackGainResolution,
@@ -136,6 +148,7 @@ use crate::peak_swap::{
 // ```ts
 // import { expandPaths } from "./playback";
 // ```
+/// Imports.
 use crate::playback::expand_paths;
 
 // What:     `use crate::queue::Queue;`. The pure play-queue model.
@@ -145,6 +158,7 @@ use crate::playback::expand_paths;
 // ```ts
 // import { Queue } from "./queue";
 // ```
+/// Imports.
 use crate::queue::Queue;
 
 // What:     `pub(crate) struct Controller { ... }`. All mutable playback state, owned by
@@ -158,6 +172,7 @@ use crate::queue::Queue;
 // ```ts
 // class Controller { onUpdate; output; queue; source; producer; spec; playing; volume; trackGain; peakGeneration; pendingPeak; peaks; positionFrames; lastEmitSecs; pending; pendingPos; }
 // ```
+/// Controller.
 pub(crate) struct Controller {
     // What:     `on_update: Box<dyn Fn(Update) + Send>`. The UI callback (a heap-boxed
     //           trait object).
@@ -167,6 +182,7 @@ pub(crate) struct Controller {
     // ```ts
     // onUpdate: (u: Update) => void;
     // ```
+    /// On update.
     pub(crate) on_update: Box<dyn Fn(Update) + Send>,
     // What:     `output: Option<Output>`. The PipeWire output, or `None` in silent mode.
     // Why:      Reconfigured per track; absent if audio init failed.
@@ -175,6 +191,7 @@ pub(crate) struct Controller {
     // ```ts
     // output: Output | null;
     // ```
+    /// Output.
     pub(crate) output: Option<Output>,
     // What:     `queue: Queue`. The play-queue model.
     // Why:      Decides track order and current track.
@@ -183,6 +200,7 @@ pub(crate) struct Controller {
     // ```ts
     // queue: Queue;
     // ```
+    /// Queue.
     pub(crate) queue: Queue,
     // What:     `source_root: Option<PathBuf>`. The directory the current queue was scanned
     //           from (`Some`), or `None` before anything is loaded.
@@ -194,6 +212,7 @@ pub(crate) struct Controller {
     // ```ts
     // sourceRoot: string | null;
     // ```
+    /// Source root.
     pub(crate) source_root: Option<PathBuf>,
     // What:     `watcher: Option<SourceWatcher>`. The Source Root file watcher (`Some` in the
     //           running app, `None` in unit tests and if the OS watcher failed to start).
@@ -204,6 +223,7 @@ pub(crate) struct Controller {
     // ```ts
     // watcher: SourceWatcher | null;
     // ```
+    /// Watcher.
     pub(crate) watcher: Option<SourceWatcher>,
     // What:     `source: Option<Box<dyn Source>>`. The active decoder, or `None`.
     // Why:      Produces the PCM we push.
@@ -212,6 +232,7 @@ pub(crate) struct Controller {
     // ```ts
     // source: Source | null;
     // ```
+    /// Source.
     pub(crate) source: Option<Box<dyn Source>>,
     // What:     `producer: Option<HeapProd<f32>>`. The ring-buffer write end, or `None`.
     // Why:      Where decoded samples go.
@@ -220,6 +241,7 @@ pub(crate) struct Controller {
     // ```ts
     // producer: RingProducer | null;
     // ```
+    /// Producer.
     pub(crate) producer: Option<HeapProd<f32>>,
     // What:     `spec: Option<AudioSpec>`. The current track's rate/channels/duration.
     // Why:      Drives position math and reconfigure calls.
@@ -228,6 +250,7 @@ pub(crate) struct Controller {
     // ```ts
     // spec: AudioSpec | null;
     // ```
+    /// Spec.
     pub(crate) spec: Option<AudioSpec>,
     // What:     `playing: bool`. Whether we are actively feeding audio.
     // Why:      Pause/play gate.
@@ -236,6 +259,7 @@ pub(crate) struct Controller {
     // ```ts
     // playing: boolean;
     // ```
+    /// Playing.
     pub(crate) playing: bool,
     // What:     `volume: f32`. Linear user gain 0.0..=1.0 applied to samples.
     // Why:      Volume control (PCM-gain approach).
@@ -244,6 +268,7 @@ pub(crate) struct Controller {
     // ```ts
     // volume: number;
     // ```
+    /// Volume.
     pub(crate) volume: f32,
     // What:     `track_gain: f32`. The current track's normalization gain (<=1.0), from
     //           true-peak measurement. Multiplied with `volume` per sample.
@@ -253,6 +278,7 @@ pub(crate) struct Controller {
     // ```ts
     // trackGain: number;
     // ```
+    /// Track gain.
     pub(crate) track_gain: f32,
     // What:     `peak_generation: u64`. Monotonic identifier for each loaded
     //           current track. `u64` is used instead of `usize` so the value is
@@ -264,6 +290,7 @@ pub(crate) struct Controller {
     // ```ts
     // peakGeneration: number;
     // ```
+    /// Peak generation.
     pub(crate) peak_generation: u64,
     // What:     `pending_peak: Option<PendingPeakMeasurement>`. Optional handle to
     //           the in-flight current-track measurement.
@@ -274,6 +301,7 @@ pub(crate) struct Controller {
     // ```ts
     // pendingPeak: PendingPeakMeasurement | null;
     // ```
+    /// Pending peak.
     pub(crate) pending_peak: Option<PendingPeakMeasurement>,
     // What:     `peaks: Arc<Mutex<PeakCache>>`. The shared, persistent true-peak cache.
     // Why:      Read on track load; written by load + background sweeps.
@@ -282,6 +310,7 @@ pub(crate) struct Controller {
     // ```ts
     // peaks: SharedPeakCache;
     // ```
+    /// Peaks.
     pub(crate) peaks: Arc<Mutex<PeakCache>>,
     // What:     `position_frames: u64`. Frames pushed for the current track so far. `u64`
     //           because long tracks exceed `u32` frame counts.
@@ -291,6 +320,7 @@ pub(crate) struct Controller {
     // ```ts
     // positionFrames: number;
     // ```
+    /// Position frames.
     pub(crate) position_frames: u64,
     // What:     `last_emit_secs: f64`. Position (seconds) at the last `Position` update.
     // Why:      Throttle update frequency.
@@ -299,6 +329,7 @@ pub(crate) struct Controller {
     // ```ts
     // lastEmitSecs: number;
     // ```
+    /// Last emit secs.
     pub(crate) last_emit_secs: f64,
     // What:     `pending: Vec<f32>`. Gained samples decoded but not yet fully pushed.
     // Why:      Resume pushing them next cycle instead of dropping audio.
@@ -307,6 +338,7 @@ pub(crate) struct Controller {
     // ```ts
     // pending: number[];
     // ```
+    /// Pending.
     pub(crate) pending: Vec<f32>,
     // What:     `pending_pos: usize`. How many of `pending` are already pushed.
     // Why:      Push the remainder `pending[pending_pos..]` next time.
@@ -315,6 +347,7 @@ pub(crate) struct Controller {
     // ```ts
     // pendingPos: number;
     // ```
+    /// Pending pos.
     pub(crate) pending_pos: usize,
 }
 
@@ -325,6 +358,7 @@ pub(crate) struct Controller {
 // ```ts
 // class Controller { /* new, emit, set_playing, start_queue_measurement, handle_command, after_move */ }
 // ```
+/// Implementation block.
 impl Controller {
     // What:     `pub(crate) fn new(on_update: Box<dyn Fn(Update) + Send>, output: Option<Output>) -> Controller`.
     //           Build initial state (empty queue, nothing playing, full volume + gain,
@@ -335,6 +369,7 @@ impl Controller {
     // ```ts
     // constructor(onUpdate, output) { ... }
     // ```
+    /// New.
     pub(crate) fn new(
         on_update: Box<dyn Fn(Update) + Send>,
         output: Option<Output>,
@@ -380,6 +415,7 @@ impl Controller {
     // ```ts
     // emit(update) { this.onUpdate(update); }
     // ```
+    /// Emit.
     pub(crate) fn emit(&self, update: Update) {
         // What:     `(self.on_update)(update);`. Call the boxed closure. The parens make it
         //           call the field, not a method.
@@ -401,6 +437,7 @@ impl Controller {
     // ```ts
     // preparePeakForPath(path: string): void { ... }
     // ```
+    /// Prepare peak for path.
     pub(crate) fn prepare_peak_for_path(&mut self, path: &Path) {
         // What:     `self.peak_generation = self.peak_generation.wrapping_add(1);`.
         //           Increment the generation with explicit wrap semantics.
@@ -466,6 +503,7 @@ impl Controller {
     // ```ts
     // applyPeakResult(result: PeakGainResult): boolean { ... }
     // ```
+    /// Apply peak result.
     fn apply_peak_result(&mut self, result: PeakGainResult) -> bool {
         // What:     `if result.generation != self.peak_generation { return false; }`.
         //           Compare worker generation to the current track generation.
@@ -504,6 +542,7 @@ impl Controller {
     // ```ts
     // handlePeakStatus(status: PendingPeakStatus): boolean { ... }
     // ```
+    /// Handle peak status.
     fn handle_peak_status(&mut self, status: PendingPeakStatus) -> bool {
         // What:     `match status { ... }`. Branch on ready, still pending, or closed.
         // Why:      Each state affects `pending_peak` differently.
@@ -559,6 +598,7 @@ impl Controller {
     // ```ts
     // pollPendingPeak(): boolean { ... }
     // ```
+    /// Poll pending peak.
     pub(crate) fn poll_pending_peak(&mut self) -> bool {
         // What:     `let status = match self.pending_peak.as_ref() { ... }`. Borrow the
         //           optional pending handle and poll it, or return if none exists.
@@ -607,6 +647,7 @@ impl Controller {
     // ```ts
     // waitForPendingPeak(timeoutMs: number): void { ... }
     // ```
+    /// Wait for pending peak.
     pub(crate) fn wait_for_pending_peak(&mut self, timeout: Duration) {
         // What:     `if self.poll_pending_peak() { return; }`. First handle any result
         //           that already landed without waiting.
@@ -665,6 +706,7 @@ impl Controller {
     // ```ts
     // waitForPendingPeakBeforeStart(): void { this.waitForPendingPeak(1000); }
     // ```
+    /// Wait for pending peak before start.
     pub(crate) fn wait_for_pending_peak_before_start(&mut self) {
         // What:     `self.wait_for_pending_peak(peak_swap_wait());`. Call the generic
         //           wait helper with the configured one-second duration.
@@ -684,6 +726,7 @@ impl Controller {
     // ```ts
     // setPlaying(on: boolean): void { ... }
     // ```
+    /// Set playing.
     fn set_playing(&mut self, on: bool) {
         // What:     `if on && !self.playing { self.wait_for_pending_peak_before_start(); }`.
         //           When the caller starts playback from a paused state, run the
@@ -745,6 +788,7 @@ impl Controller {
     //   this.emit({ kind: "position", secs: 0 });
     // }
     // ```
+    /// Emit no track.
     fn emit_no_track(&self) {
         // What:     `self.emit(Update::NowPlaying { index: None, name: String::new(), duration: 0.0 });`.
         //           Struct-variant literal: `index: None` is the absent `Option<usize>` (the UI
@@ -783,6 +827,7 @@ impl Controller {
     // ```ts
     // startQueueMeasurement(): void { ... }
     // ```
+    /// Start queue measurement.
     fn start_queue_measurement(&self) {
         // What:     `let current = self.queue.current_path().cloned();`. Read the
         //           current path and clone it into an owned `PathBuf` if present.
@@ -831,6 +876,7 @@ impl Controller {
     // ```ts
     // handleCommand(command: Command): void { ... }
     // ```
+    /// Handle command.
     pub(crate) fn handle_command(&mut self, command: Command) {
         // What:     `match command { ... }`. Dispatch on the command variant (exhaustive
         //           over every `Command`).
@@ -1492,6 +1538,7 @@ impl Controller {
     // ```ts
     // afterMove(moved: number | null): void { ... }
     // ```
+    /// After move.
     pub(crate) fn after_move(&mut self, moved: Option<usize>) {
         // What:     `match moved { ... }`. `Some` = a track to load; `None` = end.
         // Why:      Two outcomes.
@@ -1537,4 +1584,5 @@ impl Controller {
 // ```
 #[cfg(test)]
 #[path = "controller_tests.rs"]
+/// Tests module.
 mod tests;

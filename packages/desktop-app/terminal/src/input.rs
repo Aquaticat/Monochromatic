@@ -4,38 +4,66 @@
 //           special-key names. Sibling `String` would allocate at runtime.
 // Why:      Keeping names in one place prevents the Slint callback and tests from
 //           disagreeing about non-printable keys.
+/// Key backspace.
 const KEY_BACKSPACE: &str = "Backspace";
+/// Key tab.
 const KEY_TAB: &str = "Tab";
+/// Key return.
 const KEY_RETURN: &str = "Return";
+/// Key escape.
 const KEY_ESCAPE: &str = "Escape";
+/// Key backtab.
 const KEY_BACKTAB: &str = "Backtab";
+/// Key delete.
 const KEY_DELETE: &str = "Delete";
+/// Key insert.
 const KEY_INSERT: &str = "Insert";
+/// Key up arrow.
 const KEY_UP_ARROW: &str = "UpArrow";
+/// Key down arrow.
 const KEY_DOWN_ARROW: &str = "DownArrow";
+/// Key left arrow.
 const KEY_LEFT_ARROW: &str = "LeftArrow";
+/// Key right arrow.
 const KEY_RIGHT_ARROW: &str = "RightArrow";
+/// Key home.
 const KEY_HOME: &str = "Home";
+/// Key end.
 const KEY_END: &str = "End";
+/// Key page up.
 const KEY_PAGE_UP: &str = "PageUp";
+/// Key page down.
 const KEY_PAGE_DOWN: &str = "PageDown";
+/// Key f1.
 const KEY_F1: &str = "F1";
+/// Key f2.
 const KEY_F2: &str = "F2";
+/// Key f3.
 const KEY_F3: &str = "F3";
+/// Key f4.
 const KEY_F4: &str = "F4";
+/// Key f5.
 const KEY_F5: &str = "F5";
+/// Key f6.
 const KEY_F6: &str = "F6";
+/// Key f7.
 const KEY_F7: &str = "F7";
+/// Key f8.
 const KEY_F8: &str = "F8";
+/// Key f9.
 const KEY_F9: &str = "F9";
+/// Key f10.
 const KEY_F10: &str = "F10";
+/// Key f11.
 const KEY_F11: &str = "F11";
+/// Key f12.
 const KEY_F12: &str = "F12";
 
 // What:     `pub fn encode_terminal_key(...) -> Option<Vec<u8>>` converts one
 //           Slint key event into bytes for a PTY. `Option` is Rust's
 //           `value | null`; `Vec<u8>` is a growable byte array.
 // Why:      The UI should not know terminal escape sequences or control-byte math.
+/// Encode terminal key.
 pub fn encode_terminal_key(key_text: &str, control: bool, alt: bool) -> Option<Vec<u8>> {
     // What:     `let encoded = ...?` tries control, named, and printable encoders.
     //           The `?` returns `None` if all encoders reject the key.
@@ -73,6 +101,7 @@ pub fn encode_terminal_key(key_text: &str, control: bool, alt: bool) -> Option<V
 
 // What:     `fn encode_control_key(...) -> Option<Vec<u8>>` handles Ctrl+letter.
 // Why:      Shell shortcuts such as Ctrl+C and Ctrl+D are control bytes, not text.
+/// Encode control key.
 fn encode_control_key(key_text: &str) -> Option<Vec<u8>> {
     // What:     `let mut chars = key_text.chars()` creates a Unicode character iterator.
     // Why:      Ctrl mapping only applies to a single visible character.
@@ -102,6 +131,7 @@ fn encode_control_key(key_text: &str) -> Option<Vec<u8>> {
 // What:     `fn encode_named_key(...) -> Option<Vec<u8>>` maps Slint special-key
 //           names to terminal byte sequences.
 // Why:      Arrows and editing keys are escape sequences, not printable text.
+/// Encode named key.
 fn encode_named_key(key_text: &str) -> Option<Vec<u8>> {
     // What:     `let bytes = if ...` picks one byte slice for known special keys.
     // Why:      Plain string comparisons avoid regex and keep the mapping explicit.
@@ -170,6 +200,7 @@ fn encode_named_key(key_text: &str) -> Option<Vec<u8>> {
 // What:     `fn encode_printable_text(...) -> Option<Vec<u8>>` converts ordinary
 //           Slint text into UTF-8 bytes.
 // Why:      Printable input and paste-like key text should reach the shell unchanged.
+/// Encode printable text.
 fn encode_printable_text(key_text: &str) -> Option<Vec<u8>> {
     // What:     `if key_text.is_empty() { return None; }` rejects modifier-only events.
     // Why:      Writing nothing is different from writing an empty allocation.
@@ -199,4 +230,5 @@ fn encode_printable_text(key_text: &str) -> Option<Vec<u8>> {
 // ```
 #[cfg(test)]
 #[path = "input_tests.rs"]
+/// Tests module.
 mod tests;

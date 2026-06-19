@@ -11,6 +11,7 @@
 // ```ts
 // export * as command from "./command";
 // ```
+/// Command module.
 pub mod command;
 
 // What:     `pub mod cli;` declares and re-exports the `cli` module
@@ -23,6 +24,7 @@ pub mod command;
 // ```ts
 // export * as cli from "./cli";
 // ```
+/// Cli module.
 pub mod cli;
 
 // What:     `pub mod identity;` the platform identity-string module
@@ -34,6 +36,7 @@ pub mod cli;
 // ```ts
 // export * as identity from "./identity";
 // ```
+/// Identity module.
 pub mod identity;
 
 // What:     `pub mod queue;` the play-queue model module.
@@ -43,6 +46,7 @@ pub mod identity;
 // ```ts
 // export * as queue from "./queue";
 // ```
+/// Queue module.
 pub mod queue;
 
 // What:     `pub mod session;` the save/restore module.
@@ -52,6 +56,7 @@ pub mod queue;
 // ```ts
 // export * as session from "./session";
 // ```
+/// Session module.
 pub mod session;
 
 // What:     `pub mod error;` the shared error type module.
@@ -61,6 +66,7 @@ pub mod session;
 // ```ts
 // export * as error from "./error";
 // ```
+/// Error module.
 pub mod error;
 
 // What:     `pub mod decode;` the decoding module (`src/decode.rs`).
@@ -70,6 +76,7 @@ pub mod error;
 // ```ts
 // export * as decode from "./decode";
 // ```
+/// Decode module.
 pub mod decode;
 
 // What:     `pub mod opus;` the Opus decode path (`src/opus.rs`).
@@ -79,6 +86,7 @@ pub mod decode;
 // ```ts
 // export * as opus from "./opus";
 // ```
+/// Opus module.
 pub mod opus;
 
 // What:     `#[cfg(target_os = "linux")]` is a CONDITIONAL-COMPILATION attribute:
@@ -98,6 +106,7 @@ pub mod opus;
 // ```
 #[cfg(target_os = "linux")]
 #[path = "output_pipewire.rs"]
+/// Output module.
 pub mod output;
 
 // What:     The non-Linux counterpart: `#[cfg(not(target_os = "linux"))]` compiles
@@ -116,6 +125,7 @@ pub mod output;
 // ```
 #[cfg(not(target_os = "linux"))]
 #[path = "output_cpal.rs"]
+/// Output module.
 pub mod output;
 
 // What:     `pub mod playback;` the device-free playback helpers (`src/playback.rs`):
@@ -127,6 +137,7 @@ pub mod output;
 // ```ts
 // export * as playback from "./playback";
 // ```
+/// Playback module.
 pub mod playback;
 
 // What:     `pub mod progress;` the progress-surface debounce helper module.
@@ -137,6 +148,7 @@ pub mod playback;
 // ```ts
 // export * as progress from "./progress";
 // ```
+/// Progress module.
 pub mod progress;
 
 // What:     `pub mod truepeak;` the true-peak measurement module (`src/truepeak.rs`).
@@ -146,6 +158,7 @@ pub mod progress;
 // ```ts
 // export * as truepeak from "./truepeak";
 // ```
+/// Truepeak module.
 pub mod truepeak;
 
 // What:     `pub mod peakcache;` the persistent peak cache (`src/peakcache.rs`).
@@ -155,6 +168,7 @@ pub mod truepeak;
 // ```ts
 // export * as peakcache from "./peakcache";
 // ```
+/// Peakcache module.
 pub mod peakcache;
 
 // What:     `pub mod measure;` the measurement orchestration (`src/measure.rs`).
@@ -164,6 +178,7 @@ pub mod peakcache;
 // ```ts
 // export * as measure from "./measure";
 // ```
+/// Measure module.
 pub mod measure;
 
 // What:     `pub mod peak_swap;` the current-track true-peak swap strategy
@@ -175,6 +190,7 @@ pub mod measure;
 // ```ts
 // export * as peakSwap from "./peak_swap";
 // ```
+/// Peak swap module.
 pub mod peak_swap;
 
 // What:     `pub mod controller;` the playback state machine (`src/controller.rs`),
@@ -185,6 +201,7 @@ pub mod peak_swap;
 // ```ts
 // export * as controller from "./controller";
 // ```
+/// Controller module.
 pub mod controller;
 
 // What:     `pub mod controller_audio;` the second `impl Controller` block
@@ -195,6 +212,7 @@ pub mod controller;
 // ```ts
 // // more methods of the same `controller` class, in another file
 // ```
+/// Controller audio module.
 pub mod controller_audio;
 
 // What:     `pub mod engine;` the worker-thread front door (`src/engine.rs`).
@@ -204,6 +222,7 @@ pub mod controller_audio;
 // ```ts
 // export * as engine from "./engine";
 // ```
+/// Engine module.
 pub mod engine;
 
 // What:     `pub mod watch;` the Source Root file watcher (`src/watch.rs`).
@@ -214,6 +233,7 @@ pub mod engine;
 // ```ts
 // export * as watch from "./watch";
 // ```
+/// Watch module.
 pub mod watch;
 
 // What:     `pub mod pagination;` the queue-pagination module (`src/pagination.rs`).
@@ -224,6 +244,7 @@ pub mod watch;
 // ```ts
 // export * as pagination from "./pagination";
 // ```
+/// Pagination module.
 pub mod pagination;
 
 // What:     `pub mod relpath;` the relative-path display module (`src/relpath.rs`).
@@ -234,6 +255,7 @@ pub mod pagination;
 // ```ts
 // export * as relpath from "./relpath";
 // ```
+/// Relpath module.
 pub mod relpath;
 
 // What:     `pub mod launcher;` the desktop-shell integration module
@@ -245,4 +267,5 @@ pub mod relpath;
 // ```ts
 // export * as launcher from "./launcher";
 // ```
+/// Launcher module.
 pub mod launcher;

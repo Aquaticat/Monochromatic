@@ -13,6 +13,7 @@
 // ```ts
 // export * as demo from "./demo";
 // ```
+/// Demo module.
 pub mod demo;
 
 // What:     `pub mod engine;` exposes the libghostty-vt wrapper.
@@ -22,6 +23,7 @@ pub mod demo;
 // ```ts
 // export * as engine from "./engine";
 // ```
+/// Engine module.
 pub mod engine;
 
 // What:     `pub mod error;` exposes the crate error type.
@@ -32,6 +34,7 @@ pub mod engine;
 // ```ts
 // export * as error from "./error";
 // ```
+/// Error module.
 pub mod error;
 
 // What:     `pub mod input;` exposes keyboard-to-terminal byte encoding.
@@ -41,6 +44,7 @@ pub mod error;
 // ```ts
 // export * as input from "./input";
 // ```
+/// Input module.
 pub mod input;
 
 // What:     `pub mod launcher;` exposes desktop-shell setup helpers.
@@ -51,6 +55,7 @@ pub mod input;
 // ```ts
 // export * as launcher from "./launcher";
 // ```
+/// Launcher module.
 pub mod launcher;
 
 // What:     `pub mod pty;` exposes interactive PTY process management.
@@ -60,6 +65,7 @@ pub mod launcher;
 // ```ts
 // export * as pty from "./pty";
 // ```
+/// Pty module.
 pub mod pty;
 
 // What:     `pub mod render;` exposes renderer-neutral cell and snapshot types.
@@ -70,6 +76,7 @@ pub mod pty;
 // ```ts
 // export * as render from "./render";
 // ```
+/// Render module.
 pub mod render;
 
 // What:     `pub mod scroll;` exposes pixel-to-row scroll mapping.
@@ -80,4 +87,5 @@ pub mod render;
 // ```ts
 // export * as scroll from "./scroll";
 // ```
+/// Scroll module.
 pub mod scroll;

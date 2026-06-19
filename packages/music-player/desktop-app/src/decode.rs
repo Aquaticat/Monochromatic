@@ -15,6 +15,7 @@
 // ```ts
 // import { open as fsOpen } from "node:fs/promises";
 // ```
+/// Imports.
 use std::fs::File;
 
 // What:     `use std::path::Path;` imports the borrowed filesystem-path type. `Path` is an
@@ -27,6 +28,7 @@ use std::fs::File;
 // ```ts
 // type Path = string;
 // ```
+/// Imports.
 use std::path::Path;
 
 // What:     `use symphonia::core::codecs::audio::{AudioDecoder, AudioDecoderOptions};`
@@ -42,6 +44,7 @@ use std::path::Path;
 // ```ts
 // import { AudioDecoder, AudioDecoderOptions } from "symphonia/codecs/audio";
 // ```
+/// Imports.
 use symphonia::core::codecs::audio::{AudioDecoder, AudioDecoderOptions};
 
 // What:     `use symphonia::core::codecs::audio::well_known::CODEC_ID_OPUS;` imports the
@@ -55,6 +58,7 @@ use symphonia::core::codecs::audio::{AudioDecoder, AudioDecoderOptions};
 // ```ts
 // import { CODEC_ID_OPUS } from "symphonia/codecs/audio/wellKnown";
 // ```
+/// Imports.
 use symphonia::core::codecs::audio::well_known::CODEC_ID_OPUS;
 
 // What:     `use symphonia::core::errors::Error;` imports symphonia's own error enum
@@ -65,6 +69,7 @@ use symphonia::core::codecs::audio::well_known::CODEC_ID_OPUS;
 // ```ts
 // import { SymphoniaError } from "symphonia/errors";
 // ```
+/// Imports.
 use symphonia::core::errors::Error;
 
 // What:     `use symphonia::core::formats::probe::Hint;` imports a struct that gives the
@@ -77,6 +82,7 @@ use symphonia::core::errors::Error;
 // ```ts
 // import { Hint } from "symphonia/formats/probe";
 // ```
+/// Imports.
 use symphonia::core::formats::probe::Hint;
 
 // What:     `use symphonia::core::formats::{...};` imports demuxer types: `FormatOptions`
@@ -92,6 +98,7 @@ use symphonia::core::formats::probe::Hint;
 // ```ts
 // import { FormatOptions, FormatReader, SeekMode, SeekTo, Track, TrackType } from "symphonia/formats";
 // ```
+/// Imports.
 use symphonia::core::formats::{
     FormatOptions, FormatReader, SeekMode, SeekTo, Track, TrackType,
 };
@@ -104,6 +111,7 @@ use symphonia::core::formats::{
 // ```ts
 // import { MediaSourceStream } from "symphonia/io";
 // ```
+/// Imports.
 use symphonia::core::io::MediaSourceStream;
 
 // What:     `use symphonia::core::meta::MetadataOptions;` imports the tag/meta reader knobs
@@ -114,6 +122,7 @@ use symphonia::core::io::MediaSourceStream;
 // ```ts
 // import { MetadataOptions } from "symphonia/meta";
 // ```
+/// Imports.
 use symphonia::core::meta::MetadataOptions;
 
 // What:     `use symphonia::core::units::{Duration, Timestamp};` imports symphonia's 0.6
@@ -133,6 +142,7 @@ use symphonia::core::meta::MetadataOptions;
 // ```ts
 // import { Duration, Timestamp } from "symphonia/units";
 // ```
+/// Imports.
 use symphonia::core::units::{Duration, Timestamp};
 
 // What:     `use crate::error::PlayerError;` imports our one app-wide error type. `crate::`
@@ -144,6 +154,7 @@ use symphonia::core::units::{Duration, Timestamp};
 // ```ts
 // import { PlayerError } from "@/error";
 // ```
+/// Imports.
 use crate::error::PlayerError;
 
 // What:     `use crate::opus::OpusSource;` imports the Opus-specific decoder source defined
@@ -154,6 +165,7 @@ use crate::error::PlayerError;
 // ```ts
 // import { OpusSource } from "./opus";
 // ```
+/// Imports.
 use crate::opus::OpusSource;
 
 // What:     `#[derive(Clone, Copy, Debug)]` auto-generates three traits: `Clone` (explicit
@@ -185,6 +197,7 @@ use crate::opus::OpusSource;
 // ```ts
 // type AudioSpec = { rate: number; channels: number; durationSecs: number };
 // ```
+/// Audio spec.
 pub struct AudioSpec {
     // What:     `pub rate: u32`. Samples per second; see the struct comment for the type
     //           choice.
@@ -194,6 +207,7 @@ pub struct AudioSpec {
     // ```ts
     // rate: number;
     // ```
+    /// Rate.
     pub rate: u32,
     // What:     `pub channels: u16`. Channel count; see the struct comment for the type
     //           choice.
@@ -203,6 +217,7 @@ pub struct AudioSpec {
     // ```ts
     // channels: number;
     // ```
+    /// Channels.
     pub channels: u16,
     // What:     `pub duration_secs: f64`. Total seconds; see the struct comment for the type
     //           choice.
@@ -212,6 +227,7 @@ pub struct AudioSpec {
     // ```ts
     // durationSecs: number;
     // ```
+    /// Duration secs.
     pub duration_secs: f64,
 }
 
@@ -232,6 +248,7 @@ pub struct AudioSpec {
 //   seek(secs: number): void;
 // }
 // ```
+/// Source trait.
 pub trait Source: Send {
     // What:     `fn spec(&self) -> AudioSpec;` a method signature (no body, the implementor
     //           provides it). `&self` borrows the source read-only.
@@ -241,6 +258,7 @@ pub trait Source: Send {
     // ```ts
     // spec(): AudioSpec;
     // ```
+    /// Spec.
     fn spec(&self) -> AudioSpec;
 
     // What:     `fn next_chunk(&mut self) -> Result<Vec<f32>, PlayerError>;`. `&mut self` =
@@ -254,6 +272,7 @@ pub trait Source: Send {
     // ```ts
     // nextChunk(): number[]; // [] means EOF
     // ```
+    /// Next chunk.
     fn next_chunk(&mut self) -> Result<Vec<f32>, PlayerError>;
 
     // What:     `fn seek(&mut self, secs: f64) -> Result<(), PlayerError>;`. `Result<(), E>`
@@ -265,6 +284,7 @@ pub trait Source: Send {
     // ```ts
     // seek(secs: number): void;
     // ```
+    /// Seek.
     fn seek(&mut self, secs: f64) -> Result<(), PlayerError>;
 }
 
@@ -280,6 +300,7 @@ pub trait Source: Send {
 // ```ts
 // function open(path: string): Source { ... }
 // ```
+/// Open.
 pub fn open(path: &Path) -> Result<Box<dyn Source>, PlayerError> {
     // What:     `File::open(path)?`. `File::open` returns `Result<File, io::Error>`; the `?`
     //           operator UNWRAPS the `Ok` value, or RETURNS the error early (converting it
@@ -516,6 +537,7 @@ pub fn open(path: &Path) -> Result<Box<dyn Source>, PlayerError> {
 //   format.seek("accurate", { ts, trackId });
 // }
 // ```
+/// Seek format.
 pub(crate) fn seek_format(
     format: &mut dyn FormatReader,
     track_id: u32,
@@ -701,6 +723,7 @@ pub(crate) fn seek_format(
 // ```ts
 // class SymphoniaSource implements Source { format; decoder; trackId; spec; pending; nFrames; }
 // ```
+/// Symphonia source.
 struct SymphoniaSource {
     // What:     `format: Box<dyn FormatReader>`. An owning, heap, type-erased demuxer.
     //           (Sibling pointers `Rc`/`Arc` would be shared; this is single-owner.)
@@ -710,6 +733,7 @@ struct SymphoniaSource {
     // ```ts
     // format: FormatReader;
     // ```
+    /// Format.
     format: Box<dyn FormatReader>,
     // What:     `decoder: Box<dyn AudioDecoder>`. Owning, heap, type-erased audio decoder
     //           (0.6 renamed the 0.5 `Decoder` trait to `AudioDecoder`).
@@ -719,6 +743,7 @@ struct SymphoniaSource {
     // ```ts
     // decoder: AudioDecoder;
     // ```
+    /// Decoder.
     decoder: Box<dyn AudioDecoder>,
     // What:     `track_id: u32`. The id of the track we decode (a packet stream may
     //           interleave several tracks). `u32` because symphonia ids are `u32` (sibling
@@ -729,6 +754,7 @@ struct SymphoniaSource {
     // ```ts
     // trackId: number;
     // ```
+    /// Track id.
     track_id: u32,
     // What:     `spec: AudioSpec`. The cached rate/channels/duration. NOTE: for some codecs
     //           (AAC/ALAC in MP4) the channel count is unknown until the first packet is
@@ -739,6 +765,7 @@ struct SymphoniaSource {
     // ```ts
     // spec: AudioSpec;
     // ```
+    /// Spec.
     spec: AudioSpec,
     // What:     `pending: Option<Vec<f32>>`. The first decoded chunk, buffered by `new` while
     //           priming. `Some(chunk)` until the first `next_chunk` consumes it, then `None`.
@@ -749,6 +776,7 @@ struct SymphoniaSource {
     // ```ts
     // pending: number[] | null;
     // ```
+    /// Pending.
     pending: Option<Vec<f32>>,
     // What:     `n_frames: Option<u64>`. Total decoded frames the container reported, if
     //           known (`u64` because frame counts of long tracks exceed `u32`; sibling
@@ -760,6 +788,7 @@ struct SymphoniaSource {
     // ```ts
     // nFrames: number | null;
     // ```
+    /// N frames.
     n_frames: Option<u64>,
 }
 
@@ -771,6 +800,7 @@ struct SymphoniaSource {
 // ```ts
 // class SymphoniaSource { static create(...) {} private decodeNextRaw() {} }
 // ```
+/// Implementation block.
 impl SymphoniaSource {
     // What:     `fn new(format: Box<dyn FormatReader>, track: Track, track_id: u32) -> Result<Self, PlayerError>`.
     //           `Self` is the type being impl'd (`SymphoniaSource`). Takes ownership of
@@ -782,6 +812,7 @@ impl SymphoniaSource {
     // ```ts
     // static create(format, track, trackId): SymphoniaSource { ... }
     // ```
+    /// New.
     fn new(
         format: Box<dyn FormatReader>,
         track: Track,
@@ -993,6 +1024,7 @@ impl SymphoniaSource {
     // ```ts
     // private decodeNextRaw(): number[] { ... } // [] means EOF
     // ```
+    /// Decode next raw.
     fn decode_next_raw(&mut self) -> Result<Vec<f32>, PlayerError> {
         // What:     `loop { ... }`. Infinite loop; we `return` out. Needed because some
         //           packets are other tracks, fail to decode, or decode to zero frames
@@ -1206,6 +1238,7 @@ impl SymphoniaSource {
 // ```ts
 // // SymphoniaSource implements Source: spec(), next_chunk(), seek()
 // ```
+/// Implementation block.
 impl Source for SymphoniaSource {
     // What:     `fn spec(&self) -> AudioSpec { self.spec }`. Read-only borrow; returns a COPY
     //           of the cached spec (`AudioSpec` is `Copy`).
@@ -1215,6 +1248,7 @@ impl Source for SymphoniaSource {
     // ```ts
     // spec(): AudioSpec { return this.spec; }
     // ```
+    /// Spec.
     fn spec(&self) -> AudioSpec {
         // What:     `self.spec` as the tail expression -> returned by value (copy).
         // Why:      Return the cached spec.
@@ -1234,6 +1268,7 @@ impl Source for SymphoniaSource {
     // ```ts
     // nextChunk(): number[] { ... }
     // ```
+    /// Next chunk.
     fn next_chunk(&mut self) -> Result<Vec<f32>, PlayerError> {
         // What:     `if let Some(chunk) = self.pending.take() { return Ok(chunk); }`. `.take()`
         //           REPLACES `self.pending` with `None` and returns its previous value as an
@@ -1277,6 +1312,7 @@ impl Source for SymphoniaSource {
     // ```ts
     // seek(secs: number): void { ... }
     // ```
+    /// Seek.
     fn seek(&mut self, secs: f64) -> Result<(), PlayerError> {
         // What:     `seek_format(self.format.as_mut(), self.track_id, secs)?`. Call the shared
         //           helper (defined above this struct). `self.format` is a `Box<dyn
@@ -1342,4 +1378,5 @@ impl Source for SymphoniaSource {
 // ```
 #[cfg(test)]
 #[path = "decode_tests.rs"]
+/// Tests module.
 mod tests;

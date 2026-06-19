@@ -14,6 +14,7 @@
 // ```ts
 // // a path is just a string in TS
 // ```
+/// Imports.
 use std::path::PathBuf;
 
 // What:     `use serde::{Deserialize, Serialize};` imports the two derive macros that
@@ -24,6 +25,7 @@ use std::path::PathBuf;
 // ```ts
 // import { Serializable } from "some-json-lib";
 // ```
+/// Imports.
 use serde::{Deserialize, Serialize};
 
 // What:     `use crate::command::ShuffleMode;` imports our shuffle enum.
@@ -33,6 +35,7 @@ use serde::{Deserialize, Serialize};
 // ```ts
 // import { ShuffleMode } from "./command";
 // ```
+/// Imports.
 use crate::command::ShuffleMode;
 
 // What:     `use crate::identity;` imports the shared identity-strings module
@@ -45,6 +48,7 @@ use crate::command::ShuffleMode;
 // ```ts
 // import * as identity from "./identity";
 // ```
+/// Imports.
 use crate::identity;
 
 // What:     `#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]`
@@ -86,6 +90,7 @@ use crate::identity;
 //   repeatTrack: boolean;
 // }
 // ```
+/// Session.
 pub struct Session {
     // What:     `pub source_root: Option<PathBuf>` the opened directory whose scan IS the
     //           queue (`Some(dir)`), or `None` on first run / no usable root.
@@ -96,6 +101,7 @@ pub struct Session {
     // ```ts
     // sourceRoot: string | null;
     // ```
+    /// Source root.
     pub source_root: Option<PathBuf>,
     // What:     `pub selected: Option<PathBuf>` the Selected Track's path (`Some`), or
     //           `None` when nothing was cued.
@@ -105,6 +111,7 @@ pub struct Session {
     // ```ts
     // selected: string | null;
     // ```
+    /// Selected.
     pub selected: Option<PathBuf>,
     // What:     `pub position_secs: f64` saved playback position in seconds. Siblings:
     //           `f32`, `u64` frames. f64 matches the `Position`/`Seek` messages
@@ -115,6 +122,7 @@ pub struct Session {
     // ```ts
     // positionSecs: number;
     // ```
+    /// Position secs.
     pub position_secs: f64,
     // What:     `pub volume: f32` saved gain 0.0..=1.0. Sibling: `f64`. f32 matches the
     //           audio path and Slint.
@@ -124,6 +132,7 @@ pub struct Session {
     // ```ts
     // volume: number;
     // ```
+    /// Volume.
     pub volume: f32,
     // What:     `pub shuffle: ShuffleMode` the saved shuffle mode (off / within-page /
     //           all).
@@ -133,6 +142,7 @@ pub struct Session {
     // ```ts
     // shuffle: ShuffleMode;
     // ```
+    /// Shuffle.
     pub shuffle: ShuffleMode,
     // What:     `pub repeat_track: bool` whether "repeat track" was on.
     // Why:      Restore the repeat-track flag.
@@ -141,6 +151,7 @@ pub struct Session {
     // ```ts
     // repeatTrack: boolean;
     // ```
+    /// Repeat track.
     pub repeat_track: bool,
 }
 
@@ -155,6 +166,7 @@ pub struct Session {
 //            shuffle: "off", repeatTrack: false };
 // }
 // ```
+/// Implementation block.
 impl Default for Session {
     // What:     `fn default() -> Session`. The single method `Default` requires; builds
     //           the fallback value.
@@ -164,6 +176,7 @@ impl Default for Session {
     // ```ts
     // static default(): Session { return defaultSession(); }
     // ```
+    /// Default.
     fn default() -> Session {
         // What:     struct literal as the tail expression (return value). `None` empty
         //           options; `0.0` start of track; `1.0` full volume; `ShuffleMode::Off`
@@ -192,6 +205,7 @@ impl Default for Session {
 // ```ts
 // class Session { static load() {} save() {} }
 // ```
+/// Implementation block.
 impl Session {
     // What:     `pub fn load() -> Session` reads the session file and parses it; any
     //           failure (no config dir, missing file, unreadable, malformed JSON) yields
@@ -209,6 +223,7 @@ impl Session {
     //   catch { return defaultSession(); }
     // }
     // ```
+    /// Load.
     pub fn load() -> Session {
         // What:     `let path = match session_path() { Some(p) => p, None => return ... };`
         //           obtains the file path or bails to default.
@@ -288,6 +303,7 @@ impl Session {
     //   writeFileSync(path, JSON.stringify(this, null, 2));
     // }
     // ```
+    /// Save.
     pub fn save(&self) -> std::io::Result<()> {
         // What:     `let path = match session_path() { Some(p) => p, None => return Ok(()) };`
         //           get the target path or quietly succeed if there is no config dir.
@@ -370,6 +386,7 @@ impl Session {
 //   return dir ? join(dir, "session.json") : null;
 // }
 // ```
+/// Session path.
 fn session_path() -> Option<PathBuf> {
     // What:     `identity::config_dir().map(|dir| dir.join("session.json"))`. Take the
     //           shared config directory (`Option<PathBuf>`) and, when present, append the
@@ -395,4 +412,5 @@ fn session_path() -> Option<PathBuf> {
 // ```
 #[cfg(test)]
 #[path = "session_tests.rs"]
+/// Tests module.
 mod tests;

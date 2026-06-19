@@ -16,6 +16,7 @@
 // ```ts
 // // a path is just a string in TS
 // ```
+/// Imports.
 use std::path::Path;
 
 // What:     `use crate::decode;`. The decode module, for `decode::open`. The `Source`
@@ -27,6 +28,7 @@ use std::path::Path;
 // ```ts
 // import * as decode from "./decode";
 // ```
+/// Imports.
 use crate::decode;
 
 // What:     `use crate::error::PlayerError;`. The single error type all fallible
@@ -37,6 +39,7 @@ use crate::decode;
 // ```ts
 // import { PlayerError } from "./error";
 // ```
+/// Imports.
 use crate::error::PlayerError;
 
 // What:     `const HALF: f32 = 1.0 / 2.0;`. The fraction one-half. Composed from the
@@ -49,6 +52,7 @@ use crate::error::PlayerError;
 // ```ts
 // const HALF = 1 / 2;
 // ```
+/// Half.
 const HALF: f32 = 1.0 / 2.0;
 
 // What:     `const QUARTER: f32 = HALF / 2.0;`. One-quarter (0.25), built from HALF.
@@ -58,6 +62,7 @@ const HALF: f32 = 1.0 / 2.0;
 // ```ts
 // const QUARTER = HALF / 2;
 // ```
+/// Quarter.
 const QUARTER: f32 = HALF / 2.0;
 
 // What:     `const THREE_QUARTERS: f32 = HALF + QUARTER;`. Three-quarters (0.75).
@@ -67,6 +72,7 @@ const QUARTER: f32 = HALF / 2.0;
 // ```ts
 // const THREE_QUARTERS = HALF + QUARTER;
 // ```
+/// Three quarters.
 const THREE_QUARTERS: f32 = HALF + QUARTER;
 
 // What:     `const CEILING: f32 = 0.891_250_9;`. The true-peak target, 10^(-1/20), i.e.
@@ -80,6 +86,7 @@ const THREE_QUARTERS: f32 = HALF + QUARTER;
 // ```ts
 // const CEILING = 10 ** (-1 / 20); // -1 dBTP ≈ 0.8912509
 // ```
+/// Ceiling.
 const CEILING: f32 = 0.891_250_9;
 
 // What:     `const WINDOW: usize = 4;`. Number of consecutive samples the cubic
@@ -91,6 +98,7 @@ const CEILING: f32 = 0.891_250_9;
 // ```ts
 // const WINDOW = 4;
 // ```
+/// Window.
 const WINDOW: usize = 4;
 
 // What:     `fn catmull_rom(p0: f32, p1: f32, p2: f32, p3: f32, t: f32) -> f32`.
@@ -103,6 +111,7 @@ const WINDOW: usize = 4;
 // ```ts
 // function catmullRom(p0: number, p1: number, p2: number, p3: number, t: number): number { ... }
 // ```
+/// Catmull rom.
 fn catmull_rom(p0: f32, p1: f32, p2: f32, p3: f32, t: f32) -> f32 {
     // What:     `let t2 = t * t;` and `let t3 = t2 * t;`. The square and cube of `t`.
     //           Plain float multiplies (TS-identical).
@@ -142,6 +151,7 @@ fn catmull_rom(p0: f32, p1: f32, p2: f32, p3: f32, t: f32) -> f32 {
 // ```ts
 // class TruePeakMeter { channels: number; win: number[][]; filled: number[]; peak: number; }
 // ```
+/// True peak meter.
 struct TruePeakMeter {
     // What:     `channels: usize`. Channel count (interleave width). `usize` (siblings:
     //           `u16`/`u32`) because it indexes the per-channel vectors.
@@ -151,6 +161,7 @@ struct TruePeakMeter {
     // ```ts
     // channels: number;
     // ```
+    /// Channels.
     channels: usize,
     // What:     `win: Vec<[f32; WINDOW]>`. One fixed-size array of the last 4 samples
     //           per channel. `[f32; 4]` is a fixed-length array (sibling: `Vec<f32>`, a
@@ -161,6 +172,7 @@ struct TruePeakMeter {
     // ```ts
     // win: number[][]; // each inner array length 4
     // ```
+    /// Win.
     win: Vec<[f32; WINDOW]>,
     // What:     `filled: Vec<usize>`. Per channel, how many real samples have arrived
     //           (capped at WINDOW). `usize` counts.
@@ -170,6 +182,7 @@ struct TruePeakMeter {
     // ```ts
     // filled: number[];
     // ```
+    /// Filled.
     filled: Vec<usize>,
     // What:     `peak: f32`. Largest absolute sample/interpolated value seen so far.
     // Why:      This is the measured true peak when the scan ends.
@@ -178,6 +191,7 @@ struct TruePeakMeter {
     // ```ts
     // peak: number;
     // ```
+    /// Peak.
     peak: f32,
 }
 
@@ -188,6 +202,7 @@ struct TruePeakMeter {
 // ```ts
 // class TruePeakMeter { /* methods */ }
 // ```
+/// Implementation block.
 impl TruePeakMeter {
     // What:     `fn new(channels: usize) -> TruePeakMeter`. Build a meter sized for
     //           `channels` channels, all windows zeroed.
@@ -197,6 +212,7 @@ impl TruePeakMeter {
     // ```ts
     // constructor(channels: number) { ... }
     // ```
+    /// New.
     fn new(channels: usize) -> TruePeakMeter {
         // What:     `TruePeakMeter { ... }`. Struct literal. `vec![[0.0; WINDOW]; channels]`
         //           builds `channels` copies of a zeroed 4-array; `vec![0; channels]`
@@ -225,6 +241,7 @@ impl TruePeakMeter {
     // ```ts
     // feed(chunk: number[]): void { ... }
     // ```
+    /// Feed.
     fn feed(&mut self, chunk: &[f32]) {
         // What:     `for (i, &s) in chunk.iter().enumerate() { ... }`. `.enumerate()`
         //           pairs each item with its index; the `&s` pattern COPIES each `f32`
@@ -265,6 +282,7 @@ impl TruePeakMeter {
     // ```ts
     // push(channel: number, s: number): void { ... }
     // ```
+    /// Push.
     fn push(&mut self, channel: usize, s: f32) {
         // What:     `let w = self.win[channel];`. COPY the 4-array out (arrays of `Copy`
         //           types are `Copy`), so we can read it without holding a borrow of
@@ -375,6 +393,7 @@ impl TruePeakMeter {
 // ```ts
 // function measureTruePeak(path: string): number { /* throws on decode error */ }
 // ```
+/// Measure true peak.
 pub(crate) fn measure_true_peak(path: &Path) -> Result<f32, PlayerError> {
     // What:     `let mut source = decode::open(path)?;`. Open a decoder for the file.
     //           `?` PROPAGATES a decode error (returns it from this function). `mut`
@@ -479,6 +498,7 @@ pub(crate) fn measure_true_peak(path: &Path) -> Result<f32, PlayerError> {
 //   return Math.min(CEILING / truePeak, 1);
 // }
 // ```
+/// Normalization gain.
 pub(crate) fn normalization_gain(true_peak: f32) -> f32 {
     // What:     `if true_peak <= 0.0 { return 1.0; }`. A silent or invalid measurement
     //           leaves the signal unchanged.
@@ -521,4 +541,5 @@ pub(crate) fn normalization_gain(true_peak: f32) -> f32 {
 // ```
 #[cfg(test)]
 #[path = "truepeak_tests.rs"]
+/// Tests module.
 mod tests;

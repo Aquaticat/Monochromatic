@@ -11,6 +11,7 @@
 //   return new TextEncoder().encode(lines.join("\r\n"));
 // }
 // ```
+/// Demo vt.
 pub fn demo_vt() -> Vec<u8> {
     // What:     `let mut bytes = Vec::new()` creates a mutable owned byte array.
     //           `Vec` is chosen over `String` because VT streams are bytes, not

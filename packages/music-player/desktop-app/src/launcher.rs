@@ -32,6 +32,7 @@
 // // no equivalent: this import is physically absent from non-Linux builds
 // ```
 #[cfg(target_os = "linux")]
+/// Imports.
 use std::collections::HashMap;
 
 // What:     `use i_slint_backend_winit::winit::platform::wayland::WindowAttributesExtWayland;`.
@@ -51,6 +52,7 @@ use std::collections::HashMap;
 // // no equivalent: a Wayland-only mixin, absent on macOS
 // ```
 #[cfg(target_os = "linux")]
+/// Imports.
 use i_slint_backend_winit::winit::platform::wayland::WindowAttributesExtWayland;
 
 // What:     `use i_slint_backend_winit::winit::window::WindowAttributes;`. The winit
@@ -61,6 +63,7 @@ use i_slint_backend_winit::winit::platform::wayland::WindowAttributesExtWayland;
 // ```ts
 // import type { WindowAttributes } from "winit";
 // ```
+/// Imports.
 use i_slint_backend_winit::winit::window::WindowAttributes;
 
 // What:     `use zbus::blocking::Connection;`. A synchronous D-Bus connection (the
@@ -79,6 +82,7 @@ use i_slint_backend_winit::winit::window::WindowAttributes;
 // import { Connection } from "dbus"; // Linux only
 // ```
 #[cfg(target_os = "linux")]
+/// Imports.
 use zbus::blocking::Connection;
 
 // What:     `use zbus::zvariant::Value;`. The D-Bus dynamic-value enum (`v`):
@@ -95,6 +99,7 @@ use zbus::blocking::Connection;
 // type Value = number | boolean | string; // Linux only
 // ```
 #[cfg(target_os = "linux")]
+/// Imports.
 use zbus::zvariant::Value;
 
 // What:     `use crate::identity::APP_ID;` imports the Wayland app id (the `.desktop`
@@ -114,6 +119,7 @@ use zbus::zvariant::Value;
 // import { APP_ID } from "./identity"; // Linux only
 // ```
 #[cfg(target_os = "linux")]
+/// Imports.
 use crate::identity::APP_ID;
 
 // What:     `const SIGNAL_PATH: &str = "/org/monochromatic/MusicPlayer";`. The object
@@ -130,6 +136,7 @@ use crate::identity::APP_ID;
 // const SIGNAL_PATH = "/org/monochromatic/MusicPlayer"; // Linux only
 // ```
 #[cfg(target_os = "linux")]
+/// Signal path.
 const SIGNAL_PATH: &str = "/org/monochromatic/MusicPlayer";
 
 // What:     `const LAUNCHER_INTERFACE: &str = "com.canonical.Unity.LauncherEntry";`.
@@ -144,6 +151,7 @@ const SIGNAL_PATH: &str = "/org/monochromatic/MusicPlayer";
 // const LAUNCHER_INTERFACE = "com.canonical.Unity.LauncherEntry"; // Linux only
 // ```
 #[cfg(target_os = "linux")]
+/// Launcher interface.
 const LAUNCHER_INTERFACE: &str = "com.canonical.Unity.LauncherEntry";
 
 // What:     `const UPDATE_MEMBER: &str = "Update";`. The signal name.
@@ -156,6 +164,7 @@ const LAUNCHER_INTERFACE: &str = "com.canonical.Unity.LauncherEntry";
 // const UPDATE_MEMBER = "Update"; // Linux only
 // ```
 #[cfg(target_os = "linux")]
+/// Update member.
 const UPDATE_MEMBER: &str = "Update";
 
 // What:     `pub fn set_window_app_id(attributes: WindowAttributes) -> WindowAttributes`.
@@ -176,6 +185,7 @@ const UPDATE_MEMBER: &str = "Update";
 // }
 // ```
 #[cfg(target_os = "linux")]
+/// Set window app id.
 pub fn set_window_app_id(attributes: WindowAttributes) -> WindowAttributes {
     // What:     `attributes.with_name(APP_ID, APP_ID)`. Set the name pair (Wayland app
     //           id = first arg; the same field feeds the X11 `WM_CLASS`). Tail
@@ -204,6 +214,7 @@ pub fn set_window_app_id(attributes: WindowAttributes) -> WindowAttributes {
 // }
 // ```
 #[cfg(not(target_os = "linux"))]
+/// Set window app id.
 pub fn set_window_app_id(attributes: WindowAttributes) -> WindowAttributes {
     // What:     `attributes`. Bare tail expression: return the input untouched.
     // Why:      Nothing to stamp on a non-Wayland platform.
@@ -231,6 +242,7 @@ pub fn set_window_app_id(attributes: WindowAttributes) -> WindowAttributes {
 // ```
 #[cfg(target_os = "linux")]
 #[derive(Clone)]
+/// Launcher.
 pub struct Launcher {
     // What:     `connection: Option<Connection>`. The session-bus connection, or `None`
     //           when no bus is reachable (`Option<T>` is Rust's no-`null` "maybe").
@@ -240,6 +252,7 @@ pub struct Launcher {
     // ```ts
     // connection: Connection | null;
     // ```
+    /// Connection.
     connection: Option<Connection>,
     // What:     `app_uri: String`. The `application://<APP_ID>.desktop` URI naming
     //           which launcher entry the progress applies to. `String` is owned
@@ -250,6 +263,7 @@ pub struct Launcher {
     // ```ts
     // appUri: string;
     // ```
+    /// App uri.
     app_uri: String,
 }
 
@@ -264,6 +278,7 @@ pub struct Launcher {
 // class Launcher { /* methods */ } // Linux build
 // ```
 #[cfg(target_os = "linux")]
+/// Implementation block.
 impl Launcher {
     // What:     `pub fn new() -> Launcher`. Connect to the session bus (best-effort)
     //           and precompute the launcher URI.
@@ -273,6 +288,7 @@ impl Launcher {
     // ```ts
     // static connect(): Launcher { ... }
     // ```
+    /// New.
     pub fn new() -> Launcher {
         // What:     `let connection = Connection::session().ok();`. Open the session
         //           bus; `Connection::session()` returns a `Result`, and `.ok()` turns
@@ -308,6 +324,7 @@ impl Launcher {
     // ```ts
     // setProgress(fraction: number, visible: boolean): void { ... }
     // ```
+    /// Set progress.
     pub fn set_progress(&self, fraction: f64, visible: bool) {
         // What:     `if let Some(connection) = self.connection.as_ref() { ... }`.
         //           `.as_ref()` borrows the inner connection without moving it out of
@@ -382,6 +399,7 @@ impl Launcher {
 // ```
 #[cfg(not(target_os = "linux"))]
 #[derive(Clone)]
+/// Launcher.
 pub struct Launcher;
 
 // What:     `#[cfg(not(target_os = "linux"))] impl Launcher { ... }`. The no-op
@@ -394,6 +412,7 @@ pub struct Launcher;
 // class Launcher { /* no-op methods */ } // non-Linux
 // ```
 #[cfg(not(target_os = "linux"))]
+/// Implementation block.
 impl Launcher {
     // What:     `pub fn new() -> Launcher`. Build the empty placeholder.
     // Why:      Mirror the Linux constructor's signature.
@@ -402,6 +421,7 @@ impl Launcher {
     // ```ts
     // static connect(): Launcher { return new Launcher(); }
     // ```
+    /// New.
     pub fn new() -> Launcher {
         // What:     `Launcher`. Construct the unit struct (no fields). Bare tail
         //           expression -> return value.
@@ -424,6 +444,7 @@ impl Launcher {
     // ```ts
     // setProgress(_fraction: number, _visible: boolean): void {}
     // ```
+    /// Set progress.
     pub fn set_progress(&self, _fraction: f64, _visible: bool) {}
 }
 
@@ -436,6 +457,7 @@ impl Launcher {
 // ```ts
 // // no equivalent: Default is a Rust trait with no TS analogue
 // ```
+/// Implementation block.
 impl Default for Launcher {
     // What:     `fn default() -> Self { Self::new() }`. Build via `new`. `Self` is
     //           `Launcher`. Tail expression -> return value.
@@ -445,6 +467,7 @@ impl Default for Launcher {
     // ```ts
     // static default() { return Launcher.connect(); }
     // ```
+    /// Default.
     fn default() -> Self {
         Self::new()
     }

@@ -5,6 +5,7 @@
 //           integer type, and `thread` starts the forwarding worker.
 // Why:      The filter redirects process stderr through a pipe and forwards every
 //           line except Ghostty's known noisy OSC debug line.
+/// Imports.
 use std::{
     ffi::c_int,
     fs::File,
@@ -17,25 +18,31 @@ use std::{
 //           gives one away.
 // Why:      After `pipe` and `dup`, Rust needs to own those raw descriptors as files.
 #[cfg(unix)]
+/// Imports.
 use std::os::fd::FromRawFd;
 
 // What:     `const STDERR_FILE_DESCRIPTOR: c_int = 2;` names Unix stderr's fd.
 //           Sibling fd values are stdin `0` and stdout `1`.
 // Why:      `dup2` needs the numeric destination fd for process stderr.
 #[cfg(unix)]
+/// Stderr file descriptor.
 const STDERR_FILE_DESCRIPTOR: c_int = 2;
 
 // What:     `const SUPPRESSED_GHOSTTY_OSC_LOG: &[u8] = ...` stores bytes, not a
 //           `&str`; sibling `&str` would require valid UTF-8 input.
 // Why:      Stderr is a byte stream, so filtering should not fail on non-UTF-8 text.
+/// Suppressed ghostty osc log.
 const SUPPRESSED_GHOSTTY_OSC_LOG: &[u8] = b"unimplemented OSC callback";
 
 // What:     `struct PipeFileDescriptors` names the two numeric ends returned by
 //           Unix `pipe`. A tuple sibling would hide which fd is read vs write.
 // Why:      Error cleanup must close the correct end at each step.
 #[cfg(unix)]
+/// Pipe file descriptors.
 struct PipeFileDescriptors {
+    /// Read fd.
     read_fd: c_int,
+    /// Write fd.
     write_fd: c_int,
 }
 
@@ -44,9 +51,13 @@ struct PipeFileDescriptors {
 // Why:      The standard library wraps files but does not expose `pipe` or `dup2`.
 #[cfg(unix)]
 unsafe extern "C" {
+    /// Pipe.
     fn pipe(pipe_fds: *mut c_int) -> c_int;
+    /// Dup.
     fn dup(old_fd: c_int) -> c_int;
+    /// Dup2.
     fn dup2(old_fd: c_int, new_fd: c_int) -> c_int;
+    /// Close.
     fn close(fd: c_int) -> c_int;
 }
 
@@ -55,6 +66,7 @@ unsafe extern "C" {
 // Why:      Ghostty writes the noisy debug line directly to stderr before Rust can
 //           handle it at the terminal-engine layer.
 #[cfg(unix)]
+/// Install ghostty stderr filter.
 pub fn install_ghostty_stderr_filter() -> io::Result<()> {
     // What:     `let pipe_fds = create_pipe()?` creates a read end and write end.
     // Why:      Future stderr bytes need somewhere to go before filtering.
@@ -101,6 +113,7 @@ pub fn install_ghostty_stderr_filter() -> io::Result<()> {
 // Why:      The terminal package currently targets Linux, but this keeps the crate
 //           compiling if Cargo checks it on another platform.
 #[cfg(not(unix))]
+/// Install ghostty stderr filter.
 pub fn install_ghostty_stderr_filter() -> io::Result<()> {
     // What:     `Ok(())` returns success with no payload.
     // Why:      There is no Unix fd 2 to filter on this platform path.
@@ -110,6 +123,7 @@ pub fn install_ghostty_stderr_filter() -> io::Result<()> {
 // What:     `fn create_pipe() -> io::Result<PipeFileDescriptors>` wraps Unix `pipe`.
 // Why:      Callers get normal Rust error handling instead of raw `-1` checks.
 #[cfg(unix)]
+/// Create pipe.
 fn create_pipe() -> io::Result<PipeFileDescriptors> {
     // What:     `let mut pipe_fds = [0; 2]` creates two C-int slots for libc to fill.
     // Why:      `pipe` writes the read fd into index 0 and write fd into index 1.
@@ -133,6 +147,7 @@ fn create_pipe() -> io::Result<PipeFileDescriptors> {
 // What:     `fn duplicate_fd(fd: c_int) -> io::Result<c_int>` wraps Unix `dup`.
 // Why:      The original stderr destination must survive after fd 2 is replaced.
 #[cfg(unix)]
+/// Duplicate fd.
 fn duplicate_fd(fd: c_int) -> io::Result<c_int> {
     // What:     `unsafe { dup(fd) }` asks libc to duplicate one open fd.
     // Why:      The duplicate gives the filter thread a stable output destination.
@@ -151,6 +166,7 @@ fn duplicate_fd(fd: c_int) -> io::Result<c_int> {
 //           Unix `dup2`.
 // Why:      Repointing fd 2 makes existing C/Zig stderr writes enter our pipe.
 #[cfg(unix)]
+/// Replace stderr with pipe.
 fn replace_stderr_with_pipe(write_fd: c_int) -> io::Result<()> {
     // What:     `unsafe { dup2(...) }` atomically copies `write_fd` onto fd 2.
     // Why:      Future writes to stderr should use the pipe without changing callers.
@@ -168,6 +184,7 @@ fn replace_stderr_with_pipe(write_fd: c_int) -> io::Result<()> {
 // What:     `fn close_fd(fd: c_int)` wraps Unix `close` and discards errors.
 // Why:      Cleanup paths cannot fix a close failure and should preserve the earlier error.
 #[cfg(unix)]
+/// Close fd.
 fn close_fd(fd: c_int) {
     // What:     `let _ = unsafe { close(fd) }` calls C `close` and explicitly discards
     //           its return code.
@@ -178,6 +195,7 @@ fn close_fd(fd: c_int) {
 // What:     `fn file_from_fd(fd: c_int) -> File` converts a raw fd into a `File`.
 // Why:      Rust should close the fd automatically when the worker exits.
 #[cfg(unix)]
+/// File from fd.
 fn file_from_fd(fd: c_int) -> File {
     // What:     `unsafe { File::from_raw_fd(fd) }` tells Rust it now owns `fd`.
     // Why:      The fd came from `pipe` or `dup`, so no other Rust `File` owns it.
@@ -187,6 +205,7 @@ fn file_from_fd(fd: c_int) -> File {
 // What:     `fn forward_filtered_stderr(...)` reads redirected stderr and writes kept
 //           lines to the original stderr destination.
 // Why:      Only Ghostty's known noisy OSC debug line should disappear.
+/// Forward filtered stderr.
 fn forward_filtered_stderr(reader_file: File, mut writer_file: File) {
     // What:     `BufReader::new(reader_file)` buffers reads from the pipe.
     // Why:      Line-oriented filtering should not make one syscall per byte.
@@ -229,6 +248,7 @@ fn forward_filtered_stderr(reader_file: File, mut writer_file: File) {
 // What:     `fn should_suppress_stderr_line(line: &[u8]) -> bool` checks one borrowed
 //           stderr byte line for the Ghostty noise marker.
 // Why:      Tests can lock the exact filtering rule without touching process stderr.
+/// Should suppress stderr line.
 fn should_suppress_stderr_line(line: &[u8]) -> bool {
     // What:     `.windows(...).any(|window| ...)` scans overlapping byte windows with
     //           a Rust closure. It is the byte-slice sibling of string `includes`.
@@ -255,4 +275,5 @@ fn should_suppress_stderr_line(line: &[u8]) -> bool {
 // ```
 #[cfg(test)]
 #[path = "stderr_filter_tests.rs"]
+/// Tests module.
 mod tests;

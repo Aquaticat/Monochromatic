@@ -8,6 +8,7 @@
 // ```ts
 // import { Terminal, RenderState, TerminalOptions } from "libghostty-vt";
 // ```
+/// Imports.
 use libghostty_vt::{RenderState, Terminal, TerminalOptions};
 
 // What:     `use libghostty_vt::render::{CellIterator, RowIterator};` imports
@@ -18,6 +19,7 @@ use libghostty_vt::{RenderState, Terminal, TerminalOptions};
 // ```ts
 // import { RowIterator, CellIterator } from "libghostty-vt/render";
 // ```
+/// Imports.
 use libghostty_vt::render::{CellIterator, RowIterator};
 
 // What:     `use libghostty_vt::style::{RgbColor, Underline};` imports Ghostty
@@ -29,6 +31,7 @@ use libghostty_vt::render::{CellIterator, RowIterator};
 // ```ts
 // import type { RgbColor, Underline } from "libghostty-vt/style";
 // ```
+/// Imports.
 use libghostty_vt::style::{RgbColor, Underline};
 
 // What:     `use libghostty_vt::terminal::ScrollViewport;` imports the row-scroll
@@ -39,6 +42,7 @@ use libghostty_vt::style::{RgbColor, Underline};
 // ```ts
 // import { ScrollViewport } from "libghostty-vt/terminal";
 // ```
+/// Imports.
 use libghostty_vt::terminal::ScrollViewport;
 
 // What:     `use crate::...` imports sibling modules from this package.
@@ -48,6 +52,7 @@ use libghostty_vt::terminal::ScrollViewport;
 // ```ts
 // import { TerminalError, TerminalCell, TerminalSnapshot, mapPixelScroll } from "./deps";
 // ```
+/// Imports.
 use crate::{
     error::TerminalError,
     render::{TerminalCell, TerminalSnapshot},
@@ -72,19 +77,24 @@ use crate::{
 // ```ts
 // type ViewportGeometry = { cols: number; rows: number; cellWidthPx: number; cellHeightPx: number };
 // ```
+/// Viewport geometry.
 pub struct ViewportGeometry {
     // What:     `pub cols: u16` stores terminal columns. Sibling integers include
     //           `usize` and `u32`; libghostty-vt's API requires `u16`.
     // Why:      Avoid casts at every resize call.
+    /// Cols.
     pub cols: u16,
     // What:     `pub rows: u16` stores terminal rows for libghostty-vt.
     // Why:      Match Ghostty's API exactly.
+    /// Rows.
     pub rows: u16,
     // What:     `pub cell_width_px: f32` stores logical pixel cell width.
     // Why:      Rust receives Slint lengths as `f32`.
+    /// Cell width px.
     pub cell_width_px: f32,
     // What:     `pub cell_height_px: f32` stores logical pixel cell height.
     // Why:      This value drives both resize and scroll mapping.
+    /// Cell height px.
     pub cell_height_px: f32,
 }
 
@@ -95,6 +105,7 @@ pub struct ViewportGeometry {
 // ```ts
 // const ViewportGeometry = { fromPixels(...) { ... } };
 // ```
+/// Implementation block.
 impl ViewportGeometry {
     // What:     `pub fn from_pixels(...) -> Self` builds cell counts from Slint
     //           viewport pixels and fixed cell metrics.
@@ -104,6 +115,7 @@ impl ViewportGeometry {
     // ```ts
     // return { cols: Math.max(1, Math.floor(width / cellWidth)), rows: Math.max(1, Math.floor(height / cellHeight)), cellWidthPx: cellWidth, cellHeightPx: cellHeight };
     // ```
+    /// From pixels.
     pub fn from_pixels(
         width_px: f32,
         height_px: f32,
@@ -179,12 +191,19 @@ impl ViewportGeometry {
 // ```ts
 // class TerminalEngine { terminal; renderState; rowIterator; cellIterator; }
 // ```
+/// Terminal engine.
 pub struct TerminalEngine {
+    /// Terminal.
     terminal: Terminal<'static, 'static>,
+    /// Render state.
     render_state: RenderState<'static>,
+    /// Row iterator.
     row_iterator: RowIterator<'static>,
+    /// Cell iterator.
     cell_iterator: CellIterator<'static>,
+    /// Viewport top row.
     viewport_top_row: usize,
+    /// Geometry.
     geometry: ViewportGeometry,
 }
 
@@ -195,6 +214,7 @@ pub struct TerminalEngine {
 // ```ts
 // class TerminalEngine { static create(...) {} }
 // ```
+/// Implementation block.
 impl TerminalEngine {
     // What:     `pub fn new(...) -> Result<Self, TerminalError>` constructs a
     //           terminal and render iterator handles. `Result` is Rust's
@@ -206,6 +226,7 @@ impl TerminalEngine {
     // const terminal = new Terminal({ cols, rows, maxScrollback });
     // return new TerminalEngine(terminal);
     // ```
+    /// New.
     pub fn new(
         geometry: ViewportGeometry,
         max_scrollback: usize,
@@ -265,6 +286,7 @@ impl TerminalEngine {
     // this.terminal.vtWrite(bytes);
     // this.viewportTopRow = this.terminal.scrollbackRows();
     // ```
+    /// Feed.
     pub fn feed(&mut self, bytes: &[u8]) -> Result<(), TerminalError> {
         // What:     `self.terminal.vt_write(bytes)` parses untrusted VT bytes.
         // Why:      This updates screen, cursor, style, and scrollback state.
@@ -312,6 +334,7 @@ impl TerminalEngine {
     // ```ts
     // this.terminal.resize(geometry.cols, geometry.rows, geometry.cellWidthPx, geometry.cellHeightPx);
     // ```
+    /// Resize.
     pub fn resize(&mut self, geometry: ViewportGeometry) -> Result<(), TerminalError> {
         // What:     `if self.geometry == geometry { return Ok(()); }` exits early
         //           when no cell count or cell metric changed.
@@ -356,6 +379,7 @@ impl TerminalEngine {
     // What:     `pub fn scrollback_rows(&self) -> Result<usize, TerminalError>`
     //           borrows the engine immutably and returns the scrollback count.
     // Why:      The binary uses this to initialize Flickable at the bottom.
+    /// Scrollback rows.
     pub fn scrollback_rows(&self) -> Result<usize, TerminalError> {
         // What:     `self.terminal.scrollback_rows()?` reads Ghostty's count and
         //           propagates errors.
@@ -369,6 +393,7 @@ impl TerminalEngine {
     // What:     `pub fn set_pixel_scroll(...) -> Result<ScrollMapping, ...>` maps
     //           Slint pixels to Ghostty rows and moves the Ghostty viewport.
     // Why:      This is the central smooth-scroll bridge.
+    /// Set pixel scroll.
     pub fn set_pixel_scroll(
         &mut self,
         pixel_scroll: f32,
@@ -391,6 +416,7 @@ impl TerminalEngine {
     // What:     `pub fn snapshot(...) -> Result<TerminalSnapshot, ...>` extracts a
     //           renderer-neutral frame from Ghostty's current row viewport.
     // Why:      The binary should not know libghostty-vt iterator APIs.
+    /// Snapshot.
     pub fn snapshot(
         &mut self,
         mapping: ScrollMapping,
@@ -532,6 +558,7 @@ impl TerminalEngine {
     // What:     `fn set_viewport_top_row(...) -> Result<(), TerminalError>` is a
     //           private helper that converts absolute row offsets to Ghostty calls.
     // Why:      Ghostty supports Top, Bottom, or Delta, not direct absolute set.
+    /// Set viewport top row.
     fn set_viewport_top_row(&mut self, target_top_row: usize) -> Result<(), TerminalError> {
         // What:     `let max_top_row = ...` fetches the bottom offset.
         // Why:      Absolute row requests must clamp to current scrollback size.
@@ -572,6 +599,7 @@ impl TerminalEngine {
 //           Ghostty colors. Tuples are fixed-size ordered records; sibling named
 //           structs would be more verbose here.
 // Why:      Inverse video swaps foreground and background before UI conversion.
+/// Resolve inverse.
 fn resolve_inverse(
     foreground: RgbColor,
     background: RgbColor,
@@ -588,6 +616,7 @@ fn resolve_inverse(
 
 // What:     `fn should_copy_cell(...) -> bool` is a private visibility filter.
 // Why:      Plain empty cells are represented by the content background, not models.
+/// Should copy cell.
 fn should_copy_cell(
     text: &str,
     background: Option<RgbColor>,
@@ -617,4 +646,5 @@ fn should_copy_cell(
 // ```
 #[cfg(test)]
 #[path = "engine_tests.rs"]
+/// Tests module.
 mod tests;

@@ -30,6 +30,7 @@
 // ```ts
 // // no built-in sorted map: a Map you always iterate via [...map.keys()].sort()
 // ```
+/// Imports.
 use std::collections::BTreeMap;
 
 // What:     `const SEPARATOR: char = '/';`. `char` is a single Unicode scalar value
@@ -42,6 +43,7 @@ use std::collections::BTreeMap;
 // ```ts
 // const SEPARATOR = "/";
 // ```
+/// Separator.
 const SEPARATOR: char = '/';
 
 // What:     `const FOLDER_GROUP: u8 = 0;`. `u8` is an 8-bit unsigned integer (siblings:
@@ -53,6 +55,7 @@ const SEPARATOR: char = '/';
 // ```ts
 // const FOLDER_GROUP = 0;
 // ```
+/// Folder group.
 const FOLDER_GROUP: u8 = 0;
 
 // What:     `const LETTER_GROUP: u8 = 1;`. Sort-group tag for the A-Z letter pages.
@@ -62,6 +65,7 @@ const FOLDER_GROUP: u8 = 0;
 // ```ts
 // const LETTER_GROUP = 1;
 // ```
+/// Letter group.
 const LETTER_GROUP: u8 = 1;
 
 // What:     `const CATCH_ALL_GROUP: u8 = 2;`. Sort-group tag for the `#` page.
@@ -71,6 +75,7 @@ const LETTER_GROUP: u8 = 1;
 // ```ts
 // const CATCH_ALL_GROUP = 2;
 // ```
+/// Catch all group.
 const CATCH_ALL_GROUP: u8 = 2;
 
 // What:     `const CATCH_ALL_LABEL: &str = "#";`. `&str` is a BORROWED string slice
@@ -82,6 +87,7 @@ const CATCH_ALL_GROUP: u8 = 2;
 // ```ts
 // const CATCH_ALL_LABEL = "#";
 // ```
+/// Catch all label.
 const CATCH_ALL_LABEL: &str = "#";
 
 // What:     `#[derive(Debug, Clone, PartialEq, Eq)]` runs the listed macros to
@@ -105,6 +111,7 @@ const CATCH_ALL_LABEL: &str = "#";
 // ```ts
 // type PageEntry = { index: number; name: string };
 // ```
+/// Page entry.
 pub struct PageEntry {
     // What:     `pub index: usize`. `usize` is the pointer-sized unsigned integer used
     //           for array indices (siblings: `u32`, `u64`, `i32`). The track's position
@@ -116,6 +123,7 @@ pub struct PageEntry {
     // ```ts
     // index: number;
     // ```
+    /// Index.
     pub index: usize,
     // What:     `pub name: String`. `String` is the OWNED, growable UTF-8 buffer
     //           (sibling: the borrowed `&str`). The display string: a folder-relative
@@ -128,6 +136,7 @@ pub struct PageEntry {
     // ```ts
     // name: string;
     // ```
+    /// Name.
     pub name: String,
 }
 
@@ -148,6 +157,7 @@ pub struct PageEntry {
 // ```ts
 // type Page = { label: string; entries: PageEntry[] };
 // ```
+/// Page.
 pub struct Page {
     // What:     `pub label: String`. The page caption (owned): a relative folder path
     //           (`Artist/Album`), a single A-Z letter, or `#`.
@@ -158,6 +168,7 @@ pub struct Page {
     // ```ts
     // label: string;
     // ```
+    /// Label.
     pub label: String,
     // What:     `pub entries: Vec<PageEntry>`. `Vec<T>` is the owned, growable array
     //           (sibling: the borrowed slice `&[T]`). This page's tracks.
@@ -168,6 +179,7 @@ pub struct Page {
     // ```ts
     // entries: PageEntry[];
     // ```
+    /// Entries.
     pub entries: Vec<PageEntry>,
 }
 
@@ -181,6 +193,7 @@ pub struct Page {
 // ```ts
 // function letterKey(name: string): [number, string] { ... }
 // ```
+/// Letter key.
 fn letter_key(name: &str) -> (u8, String) {
     // What:     `match name.chars().next() { ... }`. `name.chars()` iterates the string's
     //           Unicode characters; `.next()` pulls the first as `Option<char>` (`Some(c)`
@@ -231,6 +244,7 @@ fn letter_key(name: &str) -> (u8, String) {
 // ```ts
 // function pageKey(name: string): [number, string] { ... }
 // ```
+/// Page key.
 fn page_key(name: &str) -> (u8, String) {
     // What:     `match name.find(SEPARATOR) { ... }`. `name.find(c)` returns
     //           `Option<usize>`: the BYTE index of the FIRST `/`, or `None` when the name
@@ -284,6 +298,7 @@ fn page_key(name: &str) -> (u8, String) {
 // ```ts
 // function sortKey(label: string): string { return label.toUpperCase(); }
 // ```
+/// Sort key.
 fn sort_key(label: &str) -> String {
     // What:     `label.to_uppercase()`. Uppercase every character (Unicode-aware). Tail
     //           expression -> return value.
@@ -314,6 +329,7 @@ fn sort_key(label: &str) -> String {
 //   return [...groups.keys()].sort().map(key => ({ label: key.split(" ")[1], entries: groups.get(key)! }));
 // }
 // ```
+/// Paginate.
 pub fn paginate(names: &[String]) -> Vec<Page> {
     // What:     `let mut groups: BTreeMap<(u8, String, String), Vec<PageEntry>> = BTreeMap::new();`.
     //           A fresh empty sorted map keyed by `(sort-group, sort-key, label)` to that
@@ -425,6 +441,7 @@ pub fn paginate(names: &[String]) -> Vec<Page> {
 //   return p < 0 ? null : p;
 // }
 // ```
+/// Page of index.
 pub fn page_of_index(pages: &[Page], index: usize) -> Option<usize> {
     // What:     `pages.iter().position(|page| page.entries.iter().any(|entry| entry.index == index))`.
     //           `.iter()` borrows each page; `.position(|page| ...)` returns the index of
@@ -465,6 +482,7 @@ pub fn page_of_index(pages: &[Page], index: usize) -> Option<usize> {
 //   return name.startsWith(prefix) ? name.slice(prefix.length) : name;
 // }
 // ```
+/// Row display.
 pub fn row_display<'a>(label: &str, name: &'a str) -> &'a str {
     // What:     `match name.strip_prefix(label) { ... }`. `name.strip_prefix(label)` returns
     //           `Option<&str>`: `Some(rest)` (the text AFTER `label`, a slice borrowed from
@@ -521,4 +539,5 @@ pub fn row_display<'a>(label: &str, name: &'a str) -> &'a str {
 // ```
 #[cfg(test)]
 #[path = "pagination_tests.rs"]
+/// Tests module.
 mod tests;

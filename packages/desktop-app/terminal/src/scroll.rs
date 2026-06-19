@@ -10,6 +10,7 @@
 // ```ts
 // export const DEFAULT_CELL_WIDTH_PX = 9;
 // ```
+/// Default cell width px.
 pub const DEFAULT_CELL_WIDTH_PX: f32 = 9.0;
 
 // What:     `pub const DEFAULT_CELL_HEIGHT_PX: f32 = 18.0;` is the vertical cell
@@ -21,6 +22,7 @@ pub const DEFAULT_CELL_WIDTH_PX: f32 = 9.0;
 // ```ts
 // export const DEFAULT_CELL_HEIGHT_PX = 18;
 // ```
+/// Default cell height px.
 pub const DEFAULT_CELL_HEIGHT_PX: f32 = 18.0;
 
 // What:     `#[derive(Clone, Copy, Debug, PartialEq)]` asks Rust to generate
@@ -45,19 +47,23 @@ pub const DEFAULT_CELL_HEIGHT_PX: f32 = 18.0;
 //   fractionalPx: number;
 // };
 // ```
+/// Scroll mapping.
 pub struct ScrollMapping {
     // What:     `pub pixel_scroll: f32` stores the clamped pixel offset. `f32`
     //           matches Slint; `f64` would add casts without useful precision.
     // Why:      The status text and tests can report the exact pixel position used.
+    /// Pixel scroll.
     pub pixel_scroll: f32,
     // What:     `pub whole_row_offset: usize` stores a non-negative row count.
     //           Sibling integers include `u32`/`u64`/`i32`; `usize` matches Rust
     //           indexing and libghostty-vt scrollback row counts.
     // Why:      This is the absolute row offset sent to libghostty-vt.
+    /// Whole row offset.
     pub whole_row_offset: usize,
     // What:     `pub fractional_px: f32` stores the leftover pixels after taking
     //           the whole-row floor.
     // Why:      Slint keeps this fractional motion smooth between row updates.
+    /// Fractional px.
     pub fractional_px: f32,
 }
 
@@ -74,6 +80,7 @@ pub struct ScrollMapping {
 //   return { pixelScroll: clampedPixel, wholeRowOffset, fractionalPx: clampedPixel % cellHeight };
 // }
 // ```
+/// Map pixel scroll.
 pub fn map_pixel_scroll(
     pixel_scroll: f32,
     cell_height_px: f32,
@@ -168,4 +175,5 @@ pub fn map_pixel_scroll(
 // ```
 #[cfg(test)]
 #[path = "scroll_tests.rs"]
+/// Tests module.
 mod tests;

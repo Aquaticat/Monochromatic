@@ -14,6 +14,7 @@
 // ```ts
 // // Mutex<T> ~ a shared value you must lock() before touching
 // ```
+/// Imports.
 use std::sync::Mutex;
 
 // What:     `use std::time::Duration;`. A standard-library elapsed time span. Sibling:
@@ -24,6 +25,7 @@ use std::sync::Mutex;
 // ```ts
 // type Duration = number; // milliseconds
 // ```
+/// Imports.
 use std::time::Duration;
 
 // What:     `use music_player::command::Update;`. The engine-to-UI update enum.
@@ -33,6 +35,7 @@ use std::time::Duration;
 // ```ts
 // import { Update } from "music-player/command";
 // ```
+/// Imports.
 use music_player::command::Update;
 
 // What:     `use music_player::launcher::Launcher;`. The KDE taskbar-progress signal
@@ -43,6 +46,7 @@ use music_player::command::Update;
 // ```ts
 // import { Launcher } from "music-player/launcher";
 // ```
+/// Imports.
 use music_player::launcher::Launcher;
 
 // What:     `use music_player::progress::{ProgressDebouncer, ProgressUpdateKind};`. The
@@ -54,6 +58,7 @@ use music_player::launcher::Launcher;
 // ```ts
 // import { ProgressDebouncer, ProgressUpdateKind } from "music-player/progress";
 // ```
+/// Imports.
 use music_player::progress::{ProgressDebouncer, ProgressUpdateKind};
 
 // What:     `use crate::{apply_update, AppWindow};`. Import the parent binary module's
@@ -65,6 +70,7 @@ use music_player::progress::{ProgressDebouncer, ProgressUpdateKind};
 // ```ts
 // import { applyUpdate, AppWindow } from "./main";
 // ```
+/// Imports.
 use crate::{apply_update, AppWindow};
 
 // What:     `fn progress_fraction(app: &AppWindow) -> f64`. Read the Slint window's
@@ -80,6 +86,7 @@ use crate::{apply_update, AppWindow};
 //   return duration > 0 ? app.position / duration : 0;
 // }
 // ```
+/// Progress fraction.
 fn progress_fraction(app: &AppWindow) -> f64 {
     // What:     `let duration = app.get_duration();`. Read the current track length in
     //           seconds from the generated Slint getter.
@@ -131,6 +138,7 @@ fn progress_fraction(app: &AppWindow) -> f64 {
 // ```ts
 // function emitLauncherProgress(app: AppWindow, launcher: Launcher): void { ... }
 // ```
+/// Emit launcher progress.
 fn emit_launcher_progress(app: &AppWindow, launcher: &Launcher) {
     // What:     `let duration = app.get_duration();`. Read the current track length.
     // Why:      The taskbar bar should be visible only when a real-duration track is
@@ -195,6 +203,7 @@ fn emit_launcher_progress(app: &AppWindow, launcher: &Launcher) {
 // ```ts
 // function shouldSurfaceProgress(debouncer, elapsed, kind): boolean { ... }
 // ```
+/// Should surface progress.
 fn should_surface_progress(
     progress_debouncer: &Mutex<ProgressDebouncer>,
     elapsed: Duration,
@@ -235,6 +244,7 @@ fn should_surface_progress(
 // ```ts
 // function applyUpdateWithProgressDebounce(app, launcher, progressDebouncer, elapsed, update): void { ... }
 // ```
+/// Apply update with progress debounce.
 pub(crate) fn apply_update_with_progress_debounce(
     app: &AppWindow,
     launcher: &Launcher,
@@ -415,6 +425,7 @@ pub(crate) fn apply_update_with_progress_debounce(
 // // no equivalent: a one-slot box you can mutate through a shared reference
 // ```
 #[cfg(windows)]
+/// Imports.
 use std::cell::RefCell;
 
 // What:     `use windows::Win32::Foundation::HWND;`. The Win32 window-handle type (a
@@ -426,6 +437,7 @@ use std::cell::RefCell;
 // type HWND = number; // an opaque window handle
 // ```
 #[cfg(windows)]
+/// Imports.
 use windows::Win32::Foundation::HWND;
 
 // What:     `use windows::Win32::System::Com::{CLSCTX_INPROC_SERVER, COINIT_APARTMENTTHREADED, CoCreateInstance, CoInitializeEx};`.
@@ -440,6 +452,7 @@ use windows::Win32::Foundation::HWND;
 // import { CoCreateInstance, CoInitializeEx, CLSCTX_INPROC_SERVER, COINIT_APARTMENTTHREADED } from "windows-com";
 // ```
 #[cfg(windows)]
+/// Imports.
 use windows::Win32::System::Com::{
     CLSCTX_INPROC_SERVER, COINIT_APARTMENTTHREADED, CoCreateInstance, CoInitializeEx,
 };
@@ -456,6 +469,7 @@ use windows::Win32::System::Com::{
 // import { ITaskbarList3, TaskbarList, TBPF_NORMAL, TBPF_NOPROGRESS } from "windows-shell";
 // ```
 #[cfg(windows)]
+/// Imports.
 use windows::Win32::UI::Shell::{ITaskbarList3, TBPF_NOPROGRESS, TBPF_NORMAL, TaskbarList};
 
 // What:     `thread_local! { static TASKBAR: RefCell<Option<ITaskbarList3>> = const { RefCell::new(None) }; }`.
@@ -486,6 +500,7 @@ thread_local! {
 // function windowHwnd(app: AppWindow): HWND | null { ... }
 // ```
 #[cfg(windows)]
+/// Window hwnd.
 fn window_hwnd(app: &AppWindow) -> Option<HWND> {
     // What:     `use slint::ComponentHandle;`. Brings the `.window()` accessor into scope
     //           (a trait method is callable only when its trait is imported).
@@ -495,6 +510,7 @@ fn window_hwnd(app: &AppWindow) -> Option<HWND> {
     // ```ts
     // import { ComponentHandle } from "slint";
     // ```
+    /// Imports.
     use slint::ComponentHandle;
     // What:     `use i_slint_backend_winit::WinitWindowAccessor;`. The extension trait
     //           adding `.with_winit_window(...)` to `slint::Window` on the winit backend.
@@ -504,6 +520,7 @@ fn window_hwnd(app: &AppWindow) -> Option<HWND> {
     // ```ts
     // import { WinitWindowAccessor } from "slint-winit-backend";
     // ```
+    /// Imports.
     use i_slint_backend_winit::WinitWindowAccessor;
     // What:     `use i_slint_backend_winit::winit::raw_window_handle::{HasWindowHandle, RawWindowHandle};`.
     //           `HasWindowHandle` provides `.window_handle()`; `RawWindowHandle` is the
@@ -515,6 +532,7 @@ fn window_hwnd(app: &AppWindow) -> Option<HWND> {
     // ```ts
     // import { HasWindowHandle, RawWindowHandle } from "winit/raw-window-handle";
     // ```
+    /// Imports.
     use i_slint_backend_winit::winit::raw_window_handle::{HasWindowHandle, RawWindowHandle};
     // What:     `app.window().with_winit_window(|w| { ... }).flatten()`. `with_winit_window`
     //           runs the closure with the live winit `Window`, returning
@@ -579,6 +597,7 @@ fn window_hwnd(app: &AppWindow) -> Option<HWND> {
 // function createTaskbarList(): ITaskbarList3 | null { ... }
 // ```
 #[cfg(windows)]
+/// Create taskbar list.
 fn create_taskbar_list() -> Option<ITaskbarList3> {
     // What:     `unsafe { ... }`. COM calls are raw FFI, so the whole body is `unsafe`
     //           (Rust cannot verify the COM contracts). `unsafe` means "trust me", not
@@ -650,6 +669,7 @@ fn create_taskbar_list() -> Option<ITaskbarList3> {
 // function setWindowsTaskbarProgress(app, fraction, visible): void { ... }
 // ```
 #[cfg(windows)]
+/// Set windows taskbar progress.
 fn set_windows_taskbar_progress(app: &AppWindow, fraction: f64, visible: bool) {
     // What:     `let hwnd = match window_hwnd(app) { Some(h) => h, None => return };`.
     //           Resolve the window handle, or bail out silently if it is not ready.

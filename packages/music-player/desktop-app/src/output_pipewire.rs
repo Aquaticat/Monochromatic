@@ -24,6 +24,7 @@
 // ```ts
 // const buf = []; // a sink the serializer appends to
 // ```
+/// Imports.
 use std::io::Cursor;
 
 // What:     `use std::mem::size_of;`. `size_of::<T>()` returns the byte size of a type at
@@ -35,6 +36,7 @@ use std::io::Cursor;
 // ```ts
 // const F32_BYTES = 4; // Float32 is 4 bytes
 // ```
+/// Imports.
 use std::mem::size_of;
 
 // What:     `use std::sync::atomic::{AtomicBool, Ordering};`. `AtomicBool` is a `bool`
@@ -51,6 +53,7 @@ use std::mem::size_of;
 // ```ts
 // let playing = false; // a cross-thread boolean flag
 // ```
+/// Imports.
 use std::sync::atomic::{AtomicBool, Ordering};
 
 // What:     `use std::sync::Arc;`. `Arc<T>` is an ATOMICALLY reference-counted shared
@@ -66,6 +69,7 @@ use std::sync::atomic::{AtomicBool, Ordering};
 // ```ts
 // // both closures capture the same `playing` variable
 // ```
+/// Imports.
 use std::sync::Arc;
 
 // What:     `use std::thread::Thread;`. `Thread` is a cheap, cloneable HANDLE to a running
@@ -79,6 +83,7 @@ use std::sync::Arc;
 // ```ts
 // type Thread = WorkerRef; // a handle you can post "wake up" to
 // ```
+/// Imports.
 use std::thread::Thread;
 
 // What:     `use pipewire as pw;`. Import the crate and rename it `pw` for short.
@@ -88,6 +93,7 @@ use std::thread::Thread;
 // ```ts
 // import * as pw from "pipewire";
 // ```
+/// Imports.
 use pipewire as pw;
 
 // What:     `use pw::{properties::properties, spa};`. Brings the `properties!` MACRO
@@ -99,6 +105,7 @@ use pipewire as pw;
 // ```ts
 // import { properties, spa } from "pipewire";
 // ```
+/// Imports.
 use pw::{properties::properties, spa};
 
 // What:     `use pw::context::ContextRc;`. The PipeWire "context" object: the root handle
@@ -109,6 +116,7 @@ use pw::{properties::properties, spa};
 // ```ts
 // import { Context } from "pipewire";
 // ```
+/// Imports.
 use pw::context::ContextRc;
 
 // What:     `use pw::core::CoreRc;`. The connected "core": your session with the PipeWire
@@ -119,6 +127,7 @@ use pw::context::ContextRc;
 // ```ts
 // import { Core } from "pipewire";
 // ```
+/// Imports.
 use pw::core::CoreRc;
 
 // What:     `use pw::stream::{StreamFlags, StreamListener, StreamRc};`. `Stream` is an
@@ -130,6 +139,7 @@ use pw::core::CoreRc;
 // ```ts
 // import { Stream, StreamFlags, StreamListener } from "pipewire";
 // ```
+/// Imports.
 use pw::stream::{StreamFlags, StreamListener, StreamRc};
 
 // What:     `use pw::thread_loop::ThreadLoopRc;`. A loop that runs on its OWN OS thread,
@@ -140,6 +150,7 @@ use pw::stream::{StreamFlags, StreamListener, StreamRc};
 // ```ts
 // // a Worker that owns its own event loop, but driven by C
 // ```
+/// Imports.
 use pw::thread_loop::ThreadLoopRc;
 
 // What:     `use spa::param::audio::{AudioFormat, AudioInfoRaw};`. `AudioFormat` names the
@@ -152,6 +163,7 @@ use pw::thread_loop::ThreadLoopRc;
 // ```ts
 // import { AudioFormat, AudioInfoRaw } from "pipewire/spa";
 // ```
+/// Imports.
 use spa::param::audio::{AudioFormat, AudioInfoRaw};
 
 // What:     `use spa::pod::{serialize::PodSerializer, Object, Pod, Value};`. A "pod"
@@ -164,6 +176,7 @@ use spa::param::audio::{AudioFormat, AudioInfoRaw};
 // ```ts
 // const bytes = encodePod({ type: "Format", ... }); // bespoke binary encoding
 // ```
+/// Imports.
 use spa::pod::{serialize::PodSerializer, Object, Pod, Value};
 
 // What:     `use spa::utils::Direction;`. Enum: is this stream `Output` (we produce audio)
@@ -174,6 +187,7 @@ use spa::pod::{serialize::PodSerializer, Object, Pod, Value};
 // ```ts
 // type Direction = "input" | "output";
 // ```
+/// Imports.
 use spa::utils::Direction;
 
 // What:     `use ringbuf::traits::{Consumer, Split};`. These TRAITS bring methods into
@@ -185,6 +199,7 @@ use spa::utils::Direction;
 // ```ts
 // // no equivalent: importing interfaces to unlock .split()/.popSlice()
 // ```
+/// Imports.
 use ringbuf::traits::{Consumer, Split};
 
 // What:     `use ringbuf::{HeapCons, HeapProd, HeapRb};`. `HeapRb<T>` is a heap-allocated
@@ -198,6 +213,7 @@ use ringbuf::traits::{Consumer, Split};
 // ```ts
 // // a fixed-size lock-free queue split into a writer and a reader
 // ```
+/// Imports.
 use ringbuf::{HeapCons, HeapProd, HeapRb};
 
 // What:     `use crate::error::PlayerError;`. Our one app-wide error type.
@@ -207,6 +223,7 @@ use ringbuf::{HeapCons, HeapProd, HeapRb};
 // ```ts
 // import { PlayerError } from "./error";
 // ```
+/// Imports.
 use crate::error::PlayerError;
 
 // What:     `const F32_BYTES: usize = size_of::<f32>();`. Bytes in one `f32` sample (4).
@@ -217,6 +234,7 @@ use crate::error::PlayerError;
 // ```ts
 // const F32_BYTES = 4;
 // ```
+/// F32 bytes.
 const F32_BYTES: usize = size_of::<f32>();
 
 // What:     `struct ProcessData { ... }`. The state the realtime callback owns. It is
@@ -229,6 +247,7 @@ const F32_BYTES: usize = size_of::<f32>();
 // ```ts
 // type ProcessData = { consumer: RingConsumer; channels: number; scratch: Float32Array; playing: { value: boolean }; worker: WorkerRef };
 // ```
+/// Process data.
 struct ProcessData {
     // What:     `consumer: HeapCons<f32>`. The READ half of the ring buffer.
     // Why:      The callback pops decoded samples from it.
@@ -237,6 +256,7 @@ struct ProcessData {
     // ```ts
     // consumer: RingConsumer<number>;
     // ```
+    /// Consumer.
     consumer: HeapCons<f32>,
     // What:     `channels: usize`. Channel count of the current track (1 or 2...). `usize`
     //           for index/stride arithmetic without casts.
@@ -246,6 +266,7 @@ struct ProcessData {
     // ```ts
     // channels: number;
     // ```
+    /// Channels.
     channels: usize,
     // What:     `scratch: Vec<f32>`. A reusable buffer the callback pops into before
     //           converting to little-endian bytes.
@@ -256,6 +277,7 @@ struct ProcessData {
     // ```ts
     // scratch: Float32Array;
     // ```
+    /// Scratch.
     scratch: Vec<f32>,
     // What:     `playing: Arc<AtomicBool>`. A shared cross-thread flag: `true` means feed
     //           real audio, `false` means output silence. This is a CLONE of the same cell
@@ -268,6 +290,7 @@ struct ProcessData {
     // ```ts
     // playing: { value: boolean };
     // ```
+    /// Playing.
     playing: Arc<AtomicBool>,
     // What:     `worker: Thread`. A cloneable handle to the engine worker thread. The
     //           callback calls `.unpark()` on it after popping samples.
@@ -279,6 +302,7 @@ struct ProcessData {
     // ```ts
     // worker: WorkerRef;
     // ```
+    /// Worker.
     worker: Thread,
 }
 
@@ -293,6 +317,7 @@ struct ProcessData {
 // ```ts
 // class Output { listener; stream; core; context; threadLoop; playing; worker; }
 // ```
+/// Output.
 pub struct Output {
     // What:     `listener: Option<StreamListener<ProcessData>>`. The live callback
     //           registration, or `None` before the first stream. Dropping it unregisters
@@ -303,6 +328,7 @@ pub struct Output {
     // ```ts
     // listener: StreamListener | null;
     // ```
+    /// Listener.
     listener: Option<StreamListener<ProcessData>>,
     // What:     `stream: Option<StreamRc>`. The current output stream, or `None`.
     // Why:      Recreated per track at that track's native rate/channels.
@@ -311,6 +337,7 @@ pub struct Output {
     // ```ts
     // stream: Stream | null;
     // ```
+    /// Stream.
     stream: Option<StreamRc>,
     // What:     `core: CoreRc`. The connected session. Held for the program's life.
     // Why:      Needed to create streams.
@@ -319,6 +346,7 @@ pub struct Output {
     // ```ts
     // core: Core;
     // ```
+    /// Core.
     core: CoreRc,
     // What:     `_context: ContextRc`. The context the core came from. The leading `_` says
     //           "kept only to stay alive, not otherwise used".
@@ -328,6 +356,7 @@ pub struct Output {
     // ```ts
     // private context: Context; // kept alive, never read
     // ```
+    /// Context.
     _context: ContextRc,
     // What:     `thread_loop: ThreadLoopRc`. The background audio loop.
     // Why:      Drives the realtime callback; dropped last.
@@ -336,6 +365,7 @@ pub struct Output {
     // ```ts
     // threadLoop: ThreadLoop;
     // ```
+    /// Thread loop.
     thread_loop: ThreadLoopRc,
     // What:     `playing: Arc<AtomicBool>`. The MASTER copy of the play/pause flag. Created
     //           once here and cloned into each new `ProcessData` on `reconfigure`, so the
@@ -347,6 +377,7 @@ pub struct Output {
     // ```ts
     // playing: { value: boolean };
     // ```
+    /// Playing.
     playing: Arc<AtomicBool>,
     // What:     `worker: Thread`. The engine worker's thread handle, kept so each new
     //           stream's callback (built in `reconfigure`) can be handed a clone.
@@ -357,6 +388,7 @@ pub struct Output {
     // ```ts
     // worker: WorkerRef;
     // ```
+    /// Worker.
     worker: Thread,
 }
 
@@ -367,6 +399,7 @@ pub struct Output {
 // ```ts
 // class Output { /* new, reconfigure, set_playing */ }
 // ```
+/// Implementation block.
 impl Output {
     // What:     `pub fn new(worker: Thread) -> Result<Output, PlayerError>`. Initialise
     //           PipeWire, build the loop/context/core, and start the loop thread. `worker`
@@ -379,6 +412,7 @@ impl Output {
     // ```ts
     // static create(worker: WorkerRef): Output { ... }
     // ```
+    /// New.
     pub fn new(worker: Thread) -> Result<Output, PlayerError> {
         // What:     `pw::init();`. Initialises the PipeWire library (global C setup). Safe
         //           to call; idempotent in practice.
@@ -492,6 +526,7 @@ impl Output {
     // ```ts
     // reconfigure(rate: number, channels: number, capacityFrames: number): RingProducer { ... }
     // ```
+    /// Reconfigure.
     pub fn reconfigure(
         &mut self,
         rate: u32,
@@ -1139,6 +1174,7 @@ impl Output {
     // ```ts
     // setPlaying(on: boolean): void { Atomics.store(playingFlag, 0, on ? 1 : 0); }
     // ```
+    /// Set playing.
     pub fn set_playing(&self, on: bool) {
         // What:     `self.playing.store(on, Ordering::Relaxed);`. The atomic WRITE: store
         //           `on` into the shared flag. `Relaxed` matches the loose ordering used by
@@ -1162,6 +1198,7 @@ impl Output {
 // ```ts
 // class Output { [Symbol.dispose]() { this.threadLoop.stop(); } }
 // ```
+/// Implementation block.
 impl Drop for Output {
     // What:     `fn drop(&mut self)`. Runs once, automatically, at end of life.
     // Why:      Stop the audio loop first.
@@ -1170,6 +1207,7 @@ impl Drop for Output {
     // ```ts
     // [Symbol.dispose]() { ... }
     // ```
+    /// Drop.
     fn drop(&mut self) {
         // What:     `self.thread_loop.stop();`. Stops the loop and joins its OS thread.
         //           After this no callbacks fire.

@@ -23,6 +23,7 @@
 // ```ts
 // type JNIEnv = RuntimeContext; // per-call handle to talk to the host runtime
 // ```
+/// Imports.
 use jni::JNIEnv;
 
 // What:     `use jni::objects::{JClass, JString};`. `JClass` is the calling Java
@@ -35,6 +36,7 @@ use jni::JNIEnv;
 // ```ts
 // // both are opaque host-runtime handles
 // ```
+/// Imports.
 use jni::objects::{JClass, JString};
 
 // What:     `use jni::sys::{jlong, jstring};`. `jlong` is the JNI 64-bit signed
@@ -48,6 +50,7 @@ use jni::objects::{JClass, JString};
 // ```ts
 // type jlong = bigint; type jstring = HostStringHandle;
 // ```
+/// Imports.
 use jni::sys::{jlong, jstring};
 
 // What:     `use gxhash::gxhash64;` imports ONE free function from the external
@@ -64,6 +67,7 @@ use jni::sys::{jlong, jstring};
 // ```ts
 // import { gxhash64 } from "gxhash"; // hypothetical; no real JVM port exists
 // ```
+/// Imports.
 use gxhash::gxhash64;
 
 // What:     `const FINGERPRINT_SEED: i64 = 0;`. The fixed seed handed to `gxhash64`.
@@ -78,6 +82,7 @@ use gxhash::gxhash64;
 // ```ts
 // const FINGERPRINT_SEED = 0n;
 // ```
+/// Fingerprint seed.
 const FINGERPRINT_SEED: i64 = 0;
 
 // What:     `fn compute(path: &str, size: u64, mtime_nanos: u128) -> String`. The
@@ -91,6 +96,7 @@ const FINGERPRINT_SEED: i64 = 0;
 // ```ts
 // function compute(path: string, size: bigint, mtimeNanos: bigint): string { ... }
 // ```
+/// Compute.
 fn compute(path: &str, size: u64, mtime_nanos: u128) -> String {
     // What:     `let mut material: Vec<u8> = Vec::new();`. A growable byte buffer
     //           (`Vec<u8>`; sibling fixed `[u8; N]` or borrowed `&[u8]`). `mut`
@@ -175,6 +181,7 @@ fn compute(path: &str, size: u64, mtime_nanos: u128) -> String {
 // ```ts
 // export function nativeFingerprint(env, _class, path: JString, size: bigint, mtimeNanos: bigint): jstring { ... }
 // ```
+/// JNI export native fingerprint.
 pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeFingerprint<'local>(
     env: JNIEnv<'local>,
     _class: JClass<'local>,

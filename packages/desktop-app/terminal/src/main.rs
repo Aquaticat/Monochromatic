@@ -3,6 +3,7 @@
 // What:     `mod stderr_filter;` declares a binary-local Rust module from
 //           `src/stderr_filter.rs`.
 // Why:      Process stderr filtering is an app-shell concern, not terminal library API.
+/// Stderr filter module.
 mod stderr_filter;
 
 // What:     `slint::include_modules!()` is a macro call. The `!` means Rust runs
@@ -24,6 +25,7 @@ slint::include_modules!();
 // ```ts
 // const engineRef = { current: engine };
 // ```
+/// Imports.
 use std::cell::RefCell;
 
 // What:     `use std::rc::Rc;` imports single-thread reference counting. Sibling
@@ -34,6 +36,7 @@ use std::cell::RefCell;
 // ```ts
 // const sharedEngine = engine;
 // ```
+/// Imports.
 use std::rc::Rc;
 
 // What:     `use std::sync::mpsc` imports Rust's multi-producer single-consumer
@@ -44,6 +47,7 @@ use std::rc::Rc;
 // ```ts
 // const { sender, receiver } = channel();
 // ```
+/// Imports.
 use std::sync::mpsc;
 
 // What:     `use std::time::Duration;` imports a time-span type. Sibling integer
@@ -54,6 +58,7 @@ use std::sync::mpsc;
 // ```ts
 // const duration = Duration.fromMillis(16);
 // ```
+/// Imports.
 use std::time::Duration;
 
 // What:     `use i_slint_backend_winit::Backend;` imports Slint's winit backend
@@ -64,6 +69,7 @@ use std::time::Duration;
 // ```ts
 // import { Backend } from "slint-winit";
 // ```
+/// Imports.
 use i_slint_backend_winit::Backend;
 
 // What:     `use slint::{Color, ComponentHandle, SharedString, VecModel};` imports
@@ -75,6 +81,7 @@ use i_slint_backend_winit::Backend;
 // ```ts
 // import { Color, VecModel } from "slint";
 // ```
+/// Imports.
 use slint::{Color, ComponentHandle, SharedString, Timer, TimerMode, VecModel};
 
 // What:     `use terminal_app::{...};` imports this package's library modules.
@@ -85,6 +92,7 @@ use slint::{Color, ComponentHandle, SharedString, Timer, TimerMode, VecModel};
 // ```ts
 // import { encodeTerminalKey, TerminalEngine, PtySession, ViewportGeometry } from "terminal-app";
 // ```
+/// Imports.
 use terminal_app::{
     engine::{TerminalEngine, ViewportGeometry},
     input::encode_terminal_key,
@@ -96,16 +104,19 @@ use terminal_app::{
 // What:     `const MAX_SCROLLBACK_ROWS: usize = 10_000;` declares a row-count
 //           constant. `usize` is chosen over `u32` because Ghostty returns `usize`.
 // Why:      Demo content can keep history while avoiding unbounded scrollback.
+/// Max scrollback rows.
 const MAX_SCROLLBACK_ROWS: usize = 10_000;
 
 // What:     `const OUTPUT_POLL_INTERVAL_MS: u64 = 16;` declares the PTY output
 //           polling interval. `u64` is what `Duration::from_millis` expects.
 // Why:      Around 60Hz keeps prompt/output latency low without busy waiting.
+/// Output poll interval ms.
 const OUTPUT_POLL_INTERVAL_MS: u64 = 16;
 
 // What:     `fn install_backend() -> Result<(), slint::PlatformError>` builds and
 //           installs the explicit Slint platform backend.
 // Why:      The Wayland app id must be stamped before the window is created.
+/// Install backend.
 fn install_backend() -> Result<(), slint::PlatformError> {
     // What:     `let mut builder = Backend::builder().with_window_attributes_hook(...)`
     //           creates a mutable backend builder with the app-id hook installed.
@@ -142,6 +153,7 @@ fn install_backend() -> Result<(), slint::PlatformError> {
 // What:     `fn color_from_rgb(rgb: Rgb) -> Color` converts this crate's color
 //           record into Slint's runtime color value.
 // Why:      Generated Slint structs expect `slint::Color` fields.
+/// Color from rgb.
 fn color_from_rgb(rgb: Rgb) -> Color {
     // What:     `Color::from_rgb_u8(...)` constructs a Slint color from 8-bit
     //           channels. `::` calls an associated function.
@@ -152,6 +164,7 @@ fn color_from_rgb(rgb: Rgb) -> Color {
 // What:     `fn to_slint_cell(cell: &terminal_app::render::TerminalCell) -> TerminalCell`
 //           borrows one engine cell and returns one generated Slint cell.
 // Why:      Keep generated-type construction in one place.
+/// To slint cell.
 fn to_slint_cell(cell: &terminal_app::render::TerminalCell) -> TerminalCell {
     // What:     `TerminalCell { ... }` constructs the Slint-generated struct.
     //           `as i32` narrows `usize` indexes to Slint `int`; `.as_str().into()`
@@ -173,6 +186,7 @@ fn to_slint_cell(cell: &terminal_app::render::TerminalCell) -> TerminalCell {
 // What:     `fn apply_snapshot(app: &AppWindow, snapshot: TerminalSnapshot)` borrows
 //           the Slint window and consumes one owned engine snapshot.
 // Why:      One function updates every UI property derived from a render frame.
+/// Apply snapshot.
 fn apply_snapshot(app: &AppWindow, snapshot: TerminalSnapshot) {
     // What:     `let cells: Vec<TerminalCell> = ...collect()` maps engine cells to
     //           generated Slint cells and gathers them into a vector.
@@ -210,6 +224,7 @@ fn apply_snapshot(app: &AppWindow, snapshot: TerminalSnapshot) {
 // What:     `fn refresh_from_scroll(...) -> Result<(), Box<dyn std::error::Error>>`
 //           handles one Slint pixel-scroll notification.
 // Why:      It keeps callback bodies short and testable by inspection.
+/// Refresh from scroll.
 fn refresh_from_scroll(
     app: &AppWindow,
     engine: &Rc<RefCell<TerminalEngine>>,
@@ -237,6 +252,7 @@ fn refresh_from_scroll(
 //           Slint viewport-size and cell-metric notifications.
 // Why:      Resize support must use the same measured font metrics that Slint uses
 //           for cell placement.
+/// Refresh from resize.
 fn refresh_from_resize(
     app: &AppWindow,
     engine: &Rc<RefCell<TerminalEngine>>,
@@ -267,6 +283,7 @@ fn refresh_from_resize(
 //           PTY reader events and refreshes the Slint model.
 // Why:      The background reader cannot touch `TerminalEngine`, so the UI thread
 //           feeds Ghostty from this timer callback.
+/// Refresh from pty events.
 fn refresh_from_pty_events(
     app: &AppWindow,
     engine: &Rc<RefCell<TerminalEngine>>,
@@ -345,6 +362,7 @@ fn refresh_from_pty_events(
 // What:     `fn write_terminal_key(...) -> Result<(), Box<dyn Error>>` converts one
 //           Slint key callback into PTY bytes.
 // Why:      Keyboard input should reach the spawned shell.
+/// Write terminal key.
 fn write_terminal_key(
     pty: &Rc<RefCell<PtySession>>,
     key_text: SharedString,
@@ -367,6 +385,7 @@ fn write_terminal_key(
 // What:     `fn log_callback_error(context: &str, error: Box<dyn std::error::Error>)`
 //           logs fallible callback work to stderr.
 // Why:      Slint callbacks cannot return errors to the event loop.
+/// Log callback error.
 fn log_callback_error(context: &str, error: Box<dyn std::error::Error>) {
     // What:     `eprintln!(...)` writes a user-visible diagnostic to stderr.
     // Why:      Prototype failures should be visible when launched from a terminal.
@@ -376,6 +395,7 @@ fn log_callback_error(context: &str, error: Box<dyn std::error::Error>) {
 // What:     `fn main() -> Result<(), Box<dyn std::error::Error>>` is the binary
 //           entry point. Returning `Result` lets failures become process errors.
 // Why:      No manual `process.exit` style path is needed.
+/// Main.
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     install_backend()?;
     let app = AppWindow::new()?;

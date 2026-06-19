@@ -32,6 +32,7 @@
 // ```ts
 // type PathBuf = string;
 // ```
+/// Imports.
 use std::path::PathBuf;
 
 // What:     `pub const APP_ID: &str = "monochromatic.music-player";`. A module-
@@ -48,6 +49,7 @@ use std::path::PathBuf;
 // ```ts
 // export const APP_ID = "monochromatic.music-player";
 // ```
+/// App id.
 pub const APP_ID: &str = "monochromatic.music-player";
 
 // What:     `pub const MACOS_BUNDLE_IDENTIFIER: &str = "dev.monochromatic.musicplayer";`.
@@ -61,6 +63,7 @@ pub const APP_ID: &str = "monochromatic.music-player";
 // ```ts
 // export const MACOS_BUNDLE_IDENTIFIER = "dev.monochromatic.musicplayer";
 // ```
+/// Macos bundle identifier.
 pub const MACOS_BUNDLE_IDENTIFIER: &str = "dev.monochromatic.musicplayer";
 
 // What:     `pub const CONFIG_QUALIFIER: &str = "dev";`. The first of the three
@@ -73,6 +76,7 @@ pub const MACOS_BUNDLE_IDENTIFIER: &str = "dev.monochromatic.musicplayer";
 // ```ts
 // export const CONFIG_QUALIFIER = "dev";
 // ```
+/// Config qualifier.
 pub const CONFIG_QUALIFIER: &str = "dev";
 
 // What:     `pub const CONFIG_ORGANIZATION: &str = "monochromatic";`. The second
@@ -83,6 +87,7 @@ pub const CONFIG_QUALIFIER: &str = "dev";
 // ```ts
 // export const CONFIG_ORGANIZATION = "monochromatic";
 // ```
+/// Config organization.
 pub const CONFIG_ORGANIZATION: &str = "monochromatic";
 
 // What:     `pub const CONFIG_APPLICATION: &str = "musicplayer";`. The third
@@ -94,6 +99,7 @@ pub const CONFIG_ORGANIZATION: &str = "monochromatic";
 // ```ts
 // export const CONFIG_APPLICATION = "musicplayer";
 // ```
+/// Config application.
 pub const CONFIG_APPLICATION: &str = "musicplayer";
 
 // What:     `pub(crate) fn config_dir() -> Option<PathBuf>`. Resolve the per-user
@@ -111,6 +117,7 @@ pub const CONFIG_APPLICATION: &str = "musicplayer";
 //   return dirs ? dirs.configDir : null;
 // }
 // ```
+/// Config dir.
 pub(crate) fn config_dir() -> Option<PathBuf> {
     // What:     `directories::ProjectDirs::from(CONFIG_QUALIFIER, CONFIG_ORGANIZATION,
     //           CONFIG_APPLICATION)`. Ask the `directories` crate for the standard
@@ -152,4 +159,5 @@ pub(crate) fn config_dir() -> Option<PathBuf> {
 // ```
 #[cfg(test)]
 #[path = "identity_tests.rs"]
+/// Tests module.
 mod tests;

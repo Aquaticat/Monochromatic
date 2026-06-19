@@ -12,6 +12,7 @@
 // ```ts
 // type PathBuf = string; // a filesystem path
 // ```
+/// Imports.
 use std::path::PathBuf;
 
 // What:     `use serde::{Deserialize, Serialize};` imports two DERIVE MACROS. A
@@ -25,6 +26,7 @@ use std::path::PathBuf;
 // ```ts
 // import { Serializable } from "some-json-lib";
 // ```
+/// Imports.
 use serde::{Deserialize, Serialize};
 
 // What:     `#[derive(...)]` is an ATTRIBUTE that runs the listed macros to
@@ -69,6 +71,7 @@ use serde::{Deserialize, Serialize};
 // queue" (non-shuffle + repeat-all): when not shuffling, the user stays inside
 // the current folder/page. This is intended: when playing in order, people do
 // not want playback to jump to a different artist once a folder finishes.
+/// Shuffle mode.
 pub enum ShuffleMode {
     // What:     `#[default]` marks this variant as the one `derive(Default)` returns
     //           from `ShuffleMode::default()`. It is an ATTRIBUTE on the variant, not
@@ -88,6 +91,7 @@ pub enum ShuffleMode {
     // ```ts
     // "off"
     // ```
+    /// Off.
     Off,
     // What:     `WithinPage` a fieldless enum variant.
     // Why:      Shuffle the current page, looping within the page once all are played.
@@ -96,6 +100,7 @@ pub enum ShuffleMode {
     // ```ts
     // "withinPage"
     // ```
+    /// Within page.
     WithinPage,
     // What:     `All` a fieldless enum variant.
     // Why:      Shuffle the whole queue, looping the queue once all are played.
@@ -104,6 +109,7 @@ pub enum ShuffleMode {
     // ```ts
     // "all"
     // ```
+    /// All.
     All,
 }
 
@@ -126,6 +132,7 @@ pub enum ShuffleMode {
 //   | { kind: "setRepeatTrack"; on: boolean }
 //   | { kind: "quit" };
 // ```
+/// Command.
 pub enum Command {
     // What:     `OpenRoot { root: PathBuf, select: Option<PathBuf>, play: bool }` is a
     //           STRUCT variant: set the Source Root to `root`, scan it recursively to
@@ -141,6 +148,7 @@ pub enum Command {
     // ```ts
     // { kind: "openRoot"; root: string; select: string | null; play: boolean }
     // ```
+    /// Open root.
     OpenRoot {
         // What:     `root: PathBuf` the directory to scan into the queue (owned path).
         // Why:      The Source Root whose scan IS the queue.
@@ -149,6 +157,7 @@ pub enum Command {
         // ```ts
         // root: string;
         // ```
+        /// Root.
         root: PathBuf,
         // What:     `select: Option<PathBuf>` a track to preselect (`Some`), or `None` to
         //           open with nothing selected.
@@ -159,6 +168,7 @@ pub enum Command {
         // ```ts
         // select: string | null;
         // ```
+        /// Select.
         select: Option<PathBuf>,
         // What:     `play: bool` whether to start playing once loaded.
         // Why:      Set only by a `--start-playing` command-line launch; the folder
@@ -168,6 +178,7 @@ pub enum Command {
         // ```ts
         // play: boolean;
         // ```
+        /// Play.
         play: bool,
     },
     // What:     `TogglePlay` a fieldless variant.
@@ -177,6 +188,7 @@ pub enum Command {
     // ```ts
     // { kind: "togglePlay" }
     // ```
+    /// Toggle play.
     TogglePlay,
     // What:     `Play` a fieldless variant.
     // Why:      Resume playback.
@@ -185,6 +197,7 @@ pub enum Command {
     // ```ts
     // { kind: "play" }
     // ```
+    /// Play.
     Play,
     // What:     `Pause` a fieldless variant.
     // Why:      Pause playback (keep position).
@@ -193,6 +206,7 @@ pub enum Command {
     // ```ts
     // { kind: "pause" }
     // ```
+    /// Pause.
     Pause,
     // What:     `Next` a fieldless variant.
     // Why:      Skip to the next track.
@@ -201,6 +215,7 @@ pub enum Command {
     // ```ts
     // { kind: "next" }
     // ```
+    /// Next.
     Next,
     // What:     `Prev` a fieldless variant.
     // Why:      Skip to the previous track.
@@ -209,6 +224,7 @@ pub enum Command {
     // ```ts
     // { kind: "prev" }
     // ```
+    /// Prev.
     Prev,
     // What:     `SelectIndex(usize)` a tuple variant carrying a queue position. It
     //           makes the track at this position current and loads it PAUSED (it does
@@ -224,7 +240,11 @@ pub enum Command {
     // ```ts
     // { kind: "selectIndex"; index: number }
     // ```
-    SelectIndex(usize),
+    /// Select index.
+    SelectIndex(
+        /// Select index value.
+        usize,
+    ),
     // What:     `Seek(f64)` carries a target time in SECONDS as an `f64`. Siblings:
     //           `f32`, `u64` frames, `Duration`.
     // Why:      Same seconds-as-f64 unit as `Position`/`duration`; the engine converts
@@ -237,7 +257,11 @@ pub enum Command {
     // ```ts
     // { kind: "seek"; secs: number }
     // ```
-    Seek(f64),
+    /// Seek.
+    Seek(
+        /// Seek value.
+        f64,
+    ),
     // What:     `SetVolume(f32)` is a gain in 0.0..=1.0 as an `f32`. Sibling: `f64`.
     // Why:      `f32` matches PipeWire's f32 samples and Slint's `float`, and a 0..1
     //           gain gains nothing from `f64` precision.
@@ -246,7 +270,11 @@ pub enum Command {
     // ```ts
     // { kind: "setVolume"; volume: number }
     // ```
-    SetVolume(f32),
+    /// Set volume.
+    SetVolume(
+        /// Set volume value.
+        f32,
+    ),
     // What:     `SetShuffle(ShuffleMode)` a tuple variant carrying the chosen mode.
     // Why:      Set the shuffle mode (off / within-page / all).
     //
@@ -254,7 +282,11 @@ pub enum Command {
     // ```ts
     // { kind: "setShuffle"; mode: ShuffleMode }
     // ```
-    SetShuffle(ShuffleMode),
+    /// Set shuffle.
+    SetShuffle(
+        /// Set shuffle value.
+        ShuffleMode,
+    ),
     // What:     `SetRepeatTrack(bool)` a tuple variant carrying the desired flag.
     // Why:      Turn "repeat track" (replay the current track on its natural end) on
     //           or off.
@@ -263,7 +295,11 @@ pub enum Command {
     // ```ts
     // { kind: "setRepeatTrack"; on: boolean }
     // ```
-    SetRepeatTrack(bool),
+    /// Set repeat track.
+    SetRepeatTrack(
+        /// Set repeat track value.
+        bool,
+    ),
     // What:     `Restore { ... }` is a STRUCT variant carrying a saved session to
     //           reinstate at launch: the Source Root to scan, the optional Selected Track
     //           to re-select, the position, and the volume/shuffle/repeat settings. The
@@ -277,6 +313,7 @@ pub enum Command {
     // { kind: "restore"; root: string; selected: string | null; position: number;
     //   volume: number; shuffle: ShuffleMode; repeatTrack: boolean }
     // ```
+    /// Restore.
     Restore {
         // What:     `root: PathBuf` the saved Source Root to re-scan into the queue.
         // Why:      The queue is re-derived from disk, not from a saved track list.
@@ -285,6 +322,7 @@ pub enum Command {
         // ```ts
         // root: string;
         // ```
+        /// Root.
         root: PathBuf,
         // What:     `selected: Option<PathBuf>` the saved Selected Track's path, or `None`.
         //           `Option<T>` is `Some(value)` or `None` (Rust's no-`null` "maybe").
@@ -295,6 +333,7 @@ pub enum Command {
         // ```ts
         // selected: string | null;
         // ```
+        /// Selected.
         selected: Option<PathBuf>,
         // What:     `position: f64` saved playback position in seconds (same
         //           seconds-as-f64 unit as `Seek`/`Position`).
@@ -304,6 +343,7 @@ pub enum Command {
         // ```ts
         // position: number;
         // ```
+        /// Position.
         position: f64,
         // What:     `volume: f32` saved gain (32-bit float; sibling `f64`).
         // Why:      Restore the last volume.
@@ -312,6 +352,7 @@ pub enum Command {
         // ```ts
         // volume: number;
         // ```
+        /// Volume.
         volume: f32,
         // What:     `shuffle: ShuffleMode` saved shuffle mode.
         // Why:      Restore shuffle.
@@ -320,6 +361,7 @@ pub enum Command {
         // ```ts
         // shuffle: ShuffleMode;
         // ```
+        /// Shuffle.
         shuffle: ShuffleMode,
         // What:     `repeat_track: bool` saved "repeat track" flag.
         // Why:      Restore whether the current track replays on its natural end.
@@ -328,6 +370,7 @@ pub enum Command {
         // ```ts
         // repeatTrack: boolean;
         // ```
+        /// Repeat track.
         repeat_track: bool,
     },
     // What:     `Rescan` a fieldless variant.
@@ -341,6 +384,7 @@ pub enum Command {
     // ```ts
     // { kind: "rescan" }
     // ```
+    /// Rescan.
     Rescan,
     // What:     `Quit` a fieldless variant.
     // Why:      Shut the engine thread down.
@@ -349,6 +393,7 @@ pub enum Command {
     // ```ts
     // { kind: "quit" }
     // ```
+    /// Quit.
     Quit,
 }
 
@@ -370,6 +415,7 @@ pub enum Command {
 //   | { kind: "shuffle"; mode: ShuffleMode }
 //   | { kind: "repeatTrack"; on: boolean };
 // ```
+/// Update.
 pub enum Update {
     // What:     `Queue(Vec<String>)` a tuple variant carrying the full queue as
     //           display paths, each relative to the queue's common root (e.g.
@@ -380,7 +426,11 @@ pub enum Update {
     // ```ts
     // { kind: "queue"; names: string[] }
     // ```
-    Queue(Vec<String>),
+    /// Queue.
+    Queue(
+        /// Queue value.
+        Vec<String>,
+    ),
     // What:     `NowPlaying { index, name, duration }` a STRUCT variant: the current
     //           track changed. `index` is its position in the queue, or `None` when
     //           nothing is loaded.
@@ -390,6 +440,7 @@ pub enum Update {
     // ```ts
     // { kind: "nowPlaying"; index: number | null; name: string; duration: number }
     // ```
+    /// Now playing.
     NowPlaying {
         // What:     `index: Option<usize>` the "maybe a number" type. `Option<T>` has
         //           two variants: `Some(value)` or `None`. `usize` is the
@@ -402,6 +453,7 @@ pub enum Update {
         // ```ts
         // index: number | null;
         // ```
+        /// Index.
         index: Option<usize>,
         // What:     `name: String` the display path of the current track, relative to
         //           the queue root (the same string the list row shows, e.g.
@@ -414,6 +466,7 @@ pub enum Update {
         // ```ts
         // name: string;
         // ```
+        /// Name.
         name: String,
         // What:     `duration: f64` the track length in SECONDS as an `f64` (64-bit
         //           IEEE double). Siblings the reader might expect: `f32` (32-bit
@@ -431,6 +484,7 @@ pub enum Update {
         // ```ts
         // duration: number;
         // ```
+        /// Duration.
         duration: f64,
     },
     // What:     `Reconciled { names, index, name, duration }` a STRUCT variant: a live rescan
@@ -446,22 +500,27 @@ pub enum Update {
     // ```ts
     // { kind: "reconciled"; names: string[]; index: number | null; name: string; duration: number }
     // ```
+    /// Reconciled.
     Reconciled {
         // What:     `names: Vec<String>` the reconciled queue as display paths (same shape as
         //           `Queue`'s payload).
         // Why:      The list may have gained or lost rows; the UI rebuilds from this.
+        /// Names.
         names: Vec<String>,
         // What:     `index: Option<usize>` the current track's possibly-shifted load-order index,
         //           or `None` when nothing is selected (or the selected file left the root).
         // Why:      Drives the row highlight after a reorder without restarting playback.
+        /// Index.
         index: Option<usize>,
         // What:     `name: String` the current track's display path (empty when `index` is
         //           `None`), used for the window title.
         // Why:      The common-root prefix can shift when files are added or removed.
+        /// Name.
         name: String,
         // What:     `duration: f64` the current track's length in SECONDS (0.0 when `index` is
         //           `None`); see `NowPlaying.duration` for why f64.
         // Why:      Keeps the seek-bar maximum correct without recomputing it.
+        /// Duration.
         duration: f64,
     },
     // What:     `Position(f64)` carries the live playback position in SECONDS as an
@@ -474,7 +533,11 @@ pub enum Update {
     // ```ts
     // { kind: "position"; secs: number }
     // ```
-    Position(f64),
+    /// Position.
+    Position(
+        /// Position value.
+        f64,
+    ),
     // What:     `Playing(bool)` a tuple variant carrying the play/pause state.
     // Why:      Whether audio is currently playing (true) or paused (false).
     //
@@ -482,7 +545,11 @@ pub enum Update {
     // ```ts
     // { kind: "playing"; on: boolean }
     // ```
-    Playing(bool),
+    /// Playing.
+    Playing(
+        /// Playing value.
+        bool,
+    ),
     // What:     `Volume(f32)` is a gain in 0.0..=1.0 as an `f32` (32-bit float).
     //           Sibling: `f64` (double).
     // Why:      `f32` not `f64` because a 0..1 gain needs no double precision and it
@@ -493,7 +560,11 @@ pub enum Update {
     // ```ts
     // { kind: "volume"; volume: number }
     // ```
-    Volume(f32),
+    /// Volume.
+    Volume(
+        /// Volume value.
+        f32,
+    ),
     // What:     `Shuffle(ShuffleMode)` a tuple variant carrying the current mode.
     // Why:      Current shuffle mode (off / within-page / all).
     //
@@ -501,7 +572,11 @@ pub enum Update {
     // ```ts
     // { kind: "shuffle"; mode: ShuffleMode }
     // ```
-    Shuffle(ShuffleMode),
+    /// Shuffle.
+    Shuffle(
+        /// Shuffle value.
+        ShuffleMode,
+    ),
     // What:     `RepeatTrack(bool)` a tuple variant carrying the flag state.
     // Why:      Whether "repeat track" is on.
     //
@@ -509,5 +584,9 @@ pub enum Update {
     // ```ts
     // { kind: "repeatTrack"; on: boolean }
     // ```
-    RepeatTrack(bool),
+    /// Repeat track.
+    RepeatTrack(
+        /// Repeat track value.
+        bool,
+    ),
 }

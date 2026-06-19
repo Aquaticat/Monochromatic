@@ -8,6 +8,7 @@
 // ```ts
 // import type { RgbColor } from "libghostty-vt/style";
 // ```
+/// Imports.
 use libghostty_vt::style::RgbColor;
 
 // What:     `#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]` generates
@@ -28,16 +29,20 @@ use libghostty_vt::style::RgbColor;
 // ```ts
 // type Rgb = { red: number; green: number; blue: number };
 // ```
+/// Rgb.
 pub struct Rgb {
     // What:     `pub red: u8` stores one 0 to 255 channel. Sibling integer types
     //           include `u16` and `usize`; `u8` matches libghostty-vt and color APIs.
     // Why:      Avoid widening colors until Slint conversion.
+    /// Red.
     pub red: u8,
     // What:     `pub green: u8` stores one color channel.
     // Why:      Keep the RGB record complete.
+    /// Green.
     pub green: u8,
     // What:     `pub blue: u8` stores one color channel.
     // Why:      Keep the RGB record complete.
+    /// Blue.
     pub blue: u8,
 }
 
@@ -51,6 +56,7 @@ pub struct Rgb {
 //   return { red: color.r, green: color.g, blue: color.b };
 // }
 // ```
+/// Implementation block.
 impl From<RgbColor> for Rgb {
     // What:     `fn from(color: RgbColor) -> Self` consumes Ghostty's RGB value and
     //           returns this crate's RGB value.
@@ -60,6 +66,7 @@ impl From<RgbColor> for Rgb {
     // ```ts
     // return { red: color.r, green: color.g, blue: color.b };
     // ```
+    /// From.
     fn from(color: RgbColor) -> Self {
         // What:     `Self { ... }` constructs an `Rgb`. No trailing semicolon makes
         //           it the implicit return.
@@ -101,35 +108,45 @@ impl From<RgbColor> for Rgb {
 //   background: Rgb;
 // };
 // ```
+/// Terminal cell.
 pub struct TerminalCell {
     // What:     `pub row: usize` stores a viewport-relative row index. `usize`
     //           matches Rust vector indexing; `u32` would need casts.
     // Why:      Slint positions the cell vertically from this row.
+    /// Row.
     pub row: usize,
     // What:     `pub col: usize` stores a viewport-relative column index.
     // Why:      Slint positions the cell horizontally from this column.
+    /// Col.
     pub col: usize,
     // What:     `pub text: String` stores owned UTF-8. Sibling `&str` borrows text;
     //           owned `String` lets the snapshot outlive libghostty-vt iterators.
     // Why:      Render iterators become invalid after update, so text must be copied.
+    /// Text.
     pub text: String,
     // What:     `pub foreground: Rgb` stores the resolved foreground color.
     // Why:      Slint should not resolve palette indexes itself.
+    /// Foreground.
     pub foreground: Rgb,
     // What:     `pub background: Rgb` stores the resolved background color.
     // Why:      Slint can draw cell rectangles directly.
+    /// Background.
     pub background: Rgb,
     // What:     `pub bold: bool` stores SGR bold state.
     // Why:      The UI can draw a second shifted glyph for prototype bold.
+    /// Bold.
     pub bold: bool,
     // What:     `pub italic: bool` stores SGR italic state.
     // Why:      The model exposes style even if the prototype UI does not use it yet.
+    /// Italic.
     pub italic: bool,
     // What:     `pub inverse: bool` stores whether inverse video was active.
     // Why:      Tests and future renderers can see that the style existed.
+    /// Inverse.
     pub inverse: bool,
     // What:     `pub underline: bool` stores whether any underline style was active.
     // Why:      The UI draws a simple underline for all underline variants.
+    /// Underline.
     pub underline: bool,
 }
 
@@ -150,37 +167,48 @@ pub struct TerminalCell {
 // ```ts
 // type TerminalSnapshot = { cells: TerminalCell[]; title: string };
 // ```
+/// Terminal snapshot.
 pub struct TerminalSnapshot {
     // What:     `pub cells: Vec<TerminalCell>` stores owned cells. `Vec<T>` is a
     //           growable array; siblings are fixed arrays and borrowed slices.
     // Why:      The number of non-empty/styled cells changes per frame.
+    /// Cells.
     pub cells: Vec<TerminalCell>,
     // What:     `pub viewport_rows: usize` stores visible terminal rows.
     // Why:      Status text and tests need the render-state viewport height.
+    /// Viewport rows.
     pub viewport_rows: usize,
     // What:     `pub viewport_cols: usize` stores visible terminal columns.
     // Why:      Status text and resize verification need the width.
+    /// Viewport cols.
     pub viewport_cols: usize,
     // What:     `pub total_rows: usize` stores active screen rows plus scrollback.
     // Why:      Slint uses it to size the Flickable content.
+    /// Total rows.
     pub total_rows: usize,
     // What:     `pub scrollback_rows: usize` stores rows above the active viewport.
     // Why:      Slint clamps bottom scroll to this many whole rows.
+    /// Scrollback rows.
     pub scrollback_rows: usize,
     // What:     `pub whole_row_offset: usize` stores the viewport's absolute top row.
     // Why:      Slint positions visible cells at absolute content rows.
+    /// Whole row offset.
     pub whole_row_offset: usize,
     // What:     `pub fractional_px: f32` stores sub-row scroll remainder.
     // Why:      Status text shows the smooth scrolling bridge explicitly.
+    /// Fractional px.
     pub fractional_px: f32,
     // What:     `pub cell_width_px: f32` stores logical pixel cell width.
     // Why:      Slint content width and Rust resize math stay in sync.
+    /// Cell width px.
     pub cell_width_px: f32,
     // What:     `pub cell_height_px: f32` stores logical pixel cell height.
     // Why:      Slint content height and Rust scroll math stay in sync.
+    /// Cell height px.
     pub cell_height_px: f32,
     // What:     `pub title: String` stores the terminal title copied from Ghostty.
     //           `String` owns its bytes; `&str` would borrow from the terminal.
     // Why:      The UI can show OSC title state without lifetime coupling.
+    /// Title.
     pub title: String,
 }

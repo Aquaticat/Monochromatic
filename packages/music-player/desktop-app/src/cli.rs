@@ -14,6 +14,7 @@
 // ```ts
 // // no import needed; a path is just a string
 // ```
+/// Imports.
 use std::path::PathBuf;
 
 // What:     `use clap::Parser;`. Brings TWO things into scope under one name: the
@@ -27,6 +28,7 @@ use std::path::PathBuf;
 // ```ts
 // import { parseArgs } from "some-cli-parser";
 // ```
+/// Imports.
 use clap::Parser;
 
 // What:     `#[derive(Parser, Debug, PartialEq)]` asks the compiler to auto-generate
@@ -53,6 +55,7 @@ use clap::Parser;
     version,
     about = "Minimal native music player. Opens one folder (scanned recursively) as the source root, or one file (its parent folder becomes the source root and the file is preselected), loaded PAUSED unless --start-playing is passed."
 )]
+/// Cli.
 pub struct Cli {
     // What:     `#[arg(long = "start-playing")] pub start_playing: bool`. The
     //           `#[arg(long = "...")]` attribute tells clap this field is an OPTIONAL
@@ -70,6 +73,7 @@ pub struct Cli {
         long = "start-playing",
         help = "Begin playback immediately on launch instead of loading the queue paused"
     )]
+    /// Start playing.
     pub start_playing: bool,
 
     // What:     `pub path: Option<PathBuf>`. A field with NO `#[arg(...)]` flag attribute
@@ -85,6 +89,7 @@ pub struct Cli {
     // // @positional() path?: string;
     // ```
     #[arg(help = "One folder (scanned recursively) or one file (its parent folder becomes the source root)")]
+    /// Path.
     pub path: Option<PathBuf>,
 }
 
@@ -103,4 +108,5 @@ pub struct Cli {
 // ```
 #[cfg(test)]
 #[path = "cli_tests.rs"]
+/// Tests module.
 mod tests;

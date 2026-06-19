@@ -40,6 +40,7 @@
 // ```ts
 // let playing = false; // a cross-thread boolean flag
 // ```
+/// Imports.
 use std::sync::atomic::{AtomicBool, Ordering};
 
 // What:     `use std::sync::Arc;`. `Arc<T>` is an ATOMICALLY reference-counted shared
@@ -55,6 +56,7 @@ use std::sync::atomic::{AtomicBool, Ordering};
 // ```ts
 // // both closures capture the same `playing` variable
 // ```
+/// Imports.
 use std::sync::Arc;
 
 // What:     `use std::thread::Thread;`. `Thread` is a cheap, cloneable HANDLE to a
@@ -68,6 +70,7 @@ use std::sync::Arc;
 // ```ts
 // type Thread = WorkerRef; // a handle you can post "wake up" to
 // ```
+/// Imports.
 use std::thread::Thread;
 
 // What:     `use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};`. These are TRAITS
@@ -82,6 +85,7 @@ use std::thread::Thread;
 // ```ts
 // // no equivalent: TS methods don't need their interface imported to be callable
 // ```
+/// Imports.
 use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
 
 // What:     `use cpal::{BufferSize, StreamConfig};`. `StreamConfig` is the struct
@@ -97,6 +101,7 @@ use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
 // ```ts
 // import { BufferSize, StreamConfig } from "cpal";
 // ```
+/// Imports.
 use cpal::{BufferSize, StreamConfig};
 
 // What:     `use ringbuf::traits::{Consumer, Split};`. These TRAITS bring methods into
@@ -108,6 +113,7 @@ use cpal::{BufferSize, StreamConfig};
 // ```ts
 // // no equivalent: importing interfaces to unlock .split()/.popSlice()
 // ```
+/// Imports.
 use ringbuf::traits::{Consumer, Split};
 
 // What:     `use ringbuf::{HeapProd, HeapRb};`. `HeapRb<T>` is a heap-allocated ring
@@ -122,6 +128,7 @@ use ringbuf::traits::{Consumer, Split};
 // ```ts
 // // a fixed-size lock-free queue split into a writer and a reader
 // ```
+/// Imports.
 use ringbuf::{HeapProd, HeapRb};
 
 // What:     `use crate::error::PlayerError;`. Our one app-wide error type.
@@ -131,6 +138,7 @@ use ringbuf::{HeapProd, HeapRb};
 // ```ts
 // import { PlayerError } from "./error";
 // ```
+/// Imports.
 use crate::error::PlayerError;
 
 // What:     `pub struct Output { ... }`. Owns the cpal output. Fields:
@@ -151,6 +159,7 @@ use crate::error::PlayerError;
 // ```ts
 // class Output { device: AudioDevice; stream: AudioStream | null; playing: { value: boolean }; worker: WorkerRef; }
 // ```
+/// Output.
 pub struct Output {
     // What:     `device: cpal::Device`. The chosen output device (speakers/DAC), owned by
     //           this struct. Sibling you might expect: a borrowed `&Device`, but we OWN
@@ -162,6 +171,7 @@ pub struct Output {
     // ```ts
     // device: AudioDevice;
     // ```
+    /// Device.
     device: cpal::Device,
     // What:     `stream: Option<cpal::Stream>`. The live stream, or `None`. Dropping the
     //           `Stream` stops audio, so replacing this field is how we tear a track's
@@ -172,6 +182,7 @@ pub struct Output {
     // ```ts
     // stream: AudioStream | null;
     // ```
+    /// Stream.
     stream: Option<cpal::Stream>,
     // What:     `playing: Arc<AtomicBool>`. The shared play/pause flag (master copy).
     //           `set_playing` writes it from the engine thread; each callback reads a
@@ -182,6 +193,7 @@ pub struct Output {
     // ```ts
     // playing: { value: boolean };
     // ```
+    /// Playing.
     playing: Arc<AtomicBool>,
     // What:     `worker: Thread`. The engine worker's thread handle, kept so each new
     //           stream's callback (built in `reconfigure`) gets a clone.
@@ -192,6 +204,7 @@ pub struct Output {
     // ```ts
     // worker: WorkerRef;
     // ```
+    /// Worker.
     worker: Thread,
 }
 
@@ -202,6 +215,7 @@ pub struct Output {
 // ```ts
 // class Output { /* new, reconfigure, set_playing */ }
 // ```
+/// Implementation block.
 impl Output {
     // What:     `pub fn new(worker: Thread) -> Result<Output, PlayerError>`. Pick the
     //           default output device and build a silent (stream-less) `Output`. `worker`
@@ -215,6 +229,7 @@ impl Output {
     // ```ts
     // static create(worker: WorkerRef): Output { ... } // throws on failure
     // ```
+    /// New.
     pub fn new(worker: Thread) -> Result<Output, PlayerError> {
         // What:     `let host = cpal::default_host();`. The "host" is the audio API
         //           backend; cpal exposes one default per OS (CoreAudio on macOS, WASAPI
@@ -292,6 +307,7 @@ impl Output {
     // ```ts
     // reconfigure(rate: number, channels: number, capacityFrames: number): RingProducer { ... }
     // ```
+    /// Reconfigure.
     pub fn reconfigure(
         &mut self,
         rate: u32,
@@ -592,6 +608,7 @@ impl Output {
     // ```ts
     // setPlaying(on: boolean): void { Atomics.store(playingFlag, 0, on ? 1 : 0); }
     // ```
+    /// Set playing.
     pub fn set_playing(&self, on: bool) {
         // What:     `self.playing.store(on, Ordering::Relaxed);`. The atomic WRITE: store
         //           `on` into the shared flag. `Relaxed` matches the loose ordering used by

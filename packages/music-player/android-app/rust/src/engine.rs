@@ -35,6 +35,7 @@
 // type RawFd = number; // the OS handle integer
 // type BorrowedFd = number; // same integer, but "do not close this yourself"
 // ```
+/// Imports.
 use std::os::fd::{BorrowedFd, RawFd};
 
 // What:     `use std::sync::atomic::{AtomicBool, AtomicU32, AtomicU64, Ordering};`.
@@ -58,6 +59,7 @@ use std::os::fd::{BorrowedFd, RawFd};
 // // mentally: shared cells read/written via Atomics.load / Atomics.store,
 // // never plain assignment, with an Ordering arg saying how synchronized.
 // ```
+/// Imports.
 use std::sync::atomic::{AtomicBool, AtomicU32, AtomicU64, Ordering};
 
 // What:     `use std::sync::mpsc::{self, Sender};`. The multi-producer/single-consumer
@@ -72,6 +74,7 @@ use std::sync::atomic::{AtomicBool, AtomicU32, AtomicU64, Ordering};
 // ```ts
 // // a thread-safe queue; we keep only the Sender (push) end here.
 // ```
+/// Imports.
 use std::sync::mpsc::{self, Sender};
 
 // What:     `use std::sync::Arc;`. `Arc<T>` = "Atomically Reference-Counted" shared
@@ -88,6 +91,7 @@ use std::sync::mpsc::{self, Sender};
 // ```ts
 // // no wrapper: a plain object reference is already shared and GC-freed.
 // ```
+/// Imports.
 use std::sync::Arc;
 
 // What:     `use std::thread::{self, JoinHandle};`. `thread::spawn`/`thread::Builder`
@@ -100,6 +104,7 @@ use std::sync::Arc;
 // ```ts
 // // JoinHandle ~ a Worker + a promise that resolves when the worker exits.
 // ```
+/// Imports.
 use std::thread::{self, JoinHandle};
 
 // What:     `use crate::engine_worker;`. Import a SIBLING MODULE in this same crate
@@ -112,6 +117,7 @@ use std::thread::{self, JoinHandle};
 // ```ts
 // import * as engineWorker from "./engine_worker";
 // ```
+/// Imports.
 use crate::engine_worker;
 
 // What:     `use crate::error::PlayerError;`. Import the crate's one unified error enum
@@ -123,6 +129,7 @@ use crate::engine_worker;
 // ```ts
 // import { PlayerError } from "./error";
 // ```
+/// Imports.
 use crate::error::PlayerError;
 
 // What:     `pub(crate) const MILLIS_PER_SEC: f64 = 1000.0;`. A compile-time constant
@@ -138,6 +145,7 @@ use crate::error::PlayerError;
 // ```ts
 // const MILLIS_PER_SEC = 1000; // TS number is already an f64
 // ```
+/// Millis per sec.
 pub(crate) const MILLIS_PER_SEC: f64 = 1000.0;
 
 // What:     `pub(crate) struct Control { ... }`. A record type holding the shared
@@ -157,6 +165,7 @@ pub(crate) const MILLIS_PER_SEC: f64 = 1000.0;
 //   decodeDone: SharedBool; ended: SharedBool; normGainBits: SharedU32;
 // }
 // ```
+/// Control.
 pub(crate) struct Control {
     // What:     `pub(crate) playing: AtomicBool`. A thread-safe boolean "play gate":
     //           true means the callback drains the ring buffer to the speaker, false
@@ -169,6 +178,7 @@ pub(crate) struct Control {
     // ```ts
     // playing: SharedBool;
     // ```
+    /// Playing.
     pub(crate) playing: AtomicBool,
     // What:     `pub(crate) volume_bits: AtomicU32`. The user volume stored as the RAW
     //           32 BITS of an `f32`, not as a number you can do math on. `f32` has no
@@ -182,6 +192,7 @@ pub(crate) struct Control {
     // ```ts
     // volumeBits: SharedU32; // raw bits of an f32 gain
     // ```
+    /// Volume bits.
     pub(crate) volume_bits: AtomicU32,
     // What:     `pub(crate) rate: AtomicU32`. The loaded track's output sample rate in
     //           Hz, or 0 when nothing is loaded. `AtomicU32` (a 32-bit unsigned integer;
@@ -194,6 +205,7 @@ pub(crate) struct Control {
     // ```ts
     // rate: SharedU32; // Hz, 0 = nothing loaded
     // ```
+    /// Rate.
     pub(crate) rate: AtomicU32,
     // What:     `pub(crate) channels: AtomicU32`. The loaded track's channel count
     //           (1 = mono, 2 = stereo, ...). Same `AtomicU32` choice and reasoning as
@@ -204,6 +216,7 @@ pub(crate) struct Control {
     // ```ts
     // channels: SharedU32;
     // ```
+    /// Channels.
     pub(crate) channels: AtomicU32,
     // What:     `pub(crate) start_frame: AtomicU64`. The frame index the current stream
     //           STARTED at (the seek target), added to `frames_played` to get the true
@@ -216,6 +229,7 @@ pub(crate) struct Control {
     // ```ts
     // startFrame: SharedU64; // seek base, added to framesPlayed
     // ```
+    /// Start frame.
     pub(crate) start_frame: AtomicU64,
     // What:     `pub(crate) frames_played: AtomicU64`. How many frames the realtime
     //           callback has ACTUALLY played since the last load/seek. `AtomicU64` for the
@@ -227,6 +241,7 @@ pub(crate) struct Control {
     // ```ts
     // framesPlayed: SharedU64;
     // ```
+    /// Frames played.
     pub(crate) frames_played: AtomicU64,
     // What:     `pub(crate) duration_ms: AtomicU64`. The loaded track's total length in
     //           MILLISECONDS, or 0 when unknown. `AtomicU64` because a long track in
@@ -239,6 +254,7 @@ pub(crate) struct Control {
     // ```ts
     // durationMs: SharedU64; // 0 = unknown
     // ```
+    /// Duration ms.
     pub(crate) duration_ms: AtomicU64,
     // What:     `pub(crate) decode_done: AtomicBool`. Set true by the WORKER when the
     //           decoder hits end-of-file or errors. `AtomicBool` so the realtime callback
@@ -250,6 +266,7 @@ pub(crate) struct Control {
     // ```ts
     // decodeDone: SharedBool;
     // ```
+    /// Decode done.
     pub(crate) decode_done: AtomicBool,
     // What:     `pub(crate) ended: AtomicBool`. Set true by the CALLBACK once
     //           `decode_done` is true AND the ring buffer has drained, i.e. the track
@@ -261,6 +278,7 @@ pub(crate) struct Control {
     // ```ts
     // ended: SharedBool;
     // ```
+    /// Ended.
     pub(crate) ended: AtomicBool,
     // What:     `pub(crate) norm_gain_bits: AtomicU32`. The per-track true-peak
     //           normalization gain, stored (like `volume_bits`) as the RAW BITS of an
@@ -272,6 +290,7 @@ pub(crate) struct Control {
     // ```ts
     // normGainBits: SharedU32; // raw bits of an f32 normalization gain
     // ```
+    /// Norm gain bits.
     pub(crate) norm_gain_bits: AtomicU32,
 }
 
@@ -284,6 +303,7 @@ pub(crate) struct Control {
 // ```ts
 // class Control { static new(): Control; volume(): number; normGain(): number; }
 // ```
+/// Implementation block.
 impl Control {
     // What:     `pub(crate) fn new() -> Control`. An associated CONSTRUCTOR function (no
     //           `self` parameter) that builds and returns a fresh `Control`. The `->
@@ -294,6 +314,7 @@ impl Control {
     // ```ts
     // static new(): Control { ... }
     // ```
+    /// New.
     pub(crate) fn new() -> Control {
         // What:     `Control { ... }`. A struct literal that constructs the value field by
         //           field. There is no trailing `;`, so this whole expression is the
@@ -419,6 +440,7 @@ impl Control {
     // ```ts
     // volume(): number { ... }
     // ```
+    /// Volume.
     pub(crate) fn volume(&self) -> f32 {
         // What:     `f32::from_bits(self.volume_bits.load(Ordering::Relaxed))`. Inner part
         //           first: `self.volume_bits.load(Ordering::Relaxed)` atomically READS the
@@ -446,6 +468,7 @@ impl Control {
     // ```ts
     // normGain(): number { ... }
     // ```
+    /// Norm gain.
     pub(crate) fn norm_gain(&self) -> f32 {
         // What:     `f32::from_bits(self.norm_gain_bits.load(Ordering::Relaxed))`. Same
         //           two-step as in `volume`: `.load(Ordering::Relaxed)` atomically reads
@@ -476,6 +499,7 @@ impl Control {
 //   | { kind: "seek"; positionSec: number }
 //   | { kind: "quit" };
 // ```
+/// Command.
 pub(crate) enum Command {
     // What:     `Load(std::fs::File, bool)`. A tuple variant carrying TWO inner values:
     //           a `std::fs::File` (an OWNED open file handle, here backed by a duplicate
@@ -488,7 +512,13 @@ pub(crate) enum Command {
     // ```ts
     // { kind: "load"; file: FileHandle; play: boolean }
     // ```
-    Load(std::fs::File, bool),
+    /// Load.
+    Load(
+        /// Load value 1.
+        std::fs::File,
+        /// Load value 2.
+        bool,
+    ),
     // What:     `Seek(f64)`. A tuple variant wrapping one `f64` (the target position in
     //           seconds; `f64` not `f32` for sub-millisecond precision over long tracks).
     // Why:      Repositioning the source and flushing the ring is worker-owned work.
@@ -497,7 +527,11 @@ pub(crate) enum Command {
     // ```ts
     // { kind: "seek"; positionSec: number }
     // ```
-    Seek(f64),
+    /// Seek.
+    Seek(
+        /// Seek value.
+        f64,
+    ),
     // What:     `Quit`. A UNIT variant (no payload): just a tag telling the worker to stop.
     // Why:      Dropping the worker's owned state closes the AAudio stream, so quitting is
     //           a command that lets the worker tear itself down cleanly.
@@ -506,6 +540,7 @@ pub(crate) enum Command {
     // ```ts
     // { kind: "quit" }
     // ```
+    /// Quit.
     Quit,
 }
 
@@ -526,6 +561,7 @@ pub(crate) enum Command {
 //   playIntent: boolean;
 // }
 // ```
+/// Engine.
 pub struct Engine {
     // What:     `tx: Sender<Command>`. The SEND end of the command channel. `Sender<T>`
     //           is generic over the message type, pinned here to `Command` via the
@@ -536,6 +572,7 @@ pub struct Engine {
     // ```ts
     // tx: Sender<Command>;
     // ```
+    /// Tx.
     tx: Sender<Command>,
     // What:     `worker: Option<JoinHandle<()>>`. The worker's join handle wrapped in
     //           `Option`. `Option<T>` is Rust's null-safe "maybe a value" type: it is
@@ -549,6 +586,7 @@ pub struct Engine {
     // ```ts
     // worker: JoinHandle | null;
     // ```
+    /// Worker.
     worker: Option<JoinHandle<()>>,
     // What:     `control: Arc<Control>`. The shared control, held through an `Arc` (the
     //           atomically reference-counted shared pointer from the imports). This handle
@@ -560,6 +598,7 @@ pub struct Engine {
     // ```ts
     // control: Control; // shared object reference
     // ```
+    /// Control.
     control: Arc<Control>,
     // What:     `play_intent: bool`. A plain (non-atomic) boolean: what Kotlin LAST asked
     //           for (its `playWhenReady`), distinct from whether the engine is actually
@@ -572,6 +611,7 @@ pub struct Engine {
     // ```ts
     // playIntent: boolean;
     // ```
+    /// Play intent.
     play_intent: bool,
 }
 
@@ -584,6 +624,7 @@ pub struct Engine {
 // ```ts
 // class Engine { /* new, load, play, pause, seekTo, ... pollers */ }
 // ```
+/// Implementation block.
 impl Engine {
     // What:     `pub fn new() -> Result<Engine, std::io::Error>`. The constructor. Returns
     //           a `Result<Engine, std::io::Error>`: Rust's two-channel "either it worked or
@@ -596,6 +637,7 @@ impl Engine {
     // ```ts
     // static new(): Engine { /* throws on OS thread-spawn failure */ }
     // ```
+    /// New.
     pub fn new() -> Result<Engine, std::io::Error> {
         // What:     `let control = Arc::new(Control::new());`. Inner first: `Control::new()`
         //           builds a fresh control value; `Arc::new(...)` is the WRAPPER
@@ -694,6 +736,7 @@ impl Engine {
     // ```ts
     // load(fd: number, play: boolean): void { /* throws PlayerError on worker-gone */ }
     // ```
+    /// Load.
     pub fn load(&mut self, fd: RawFd, play: bool) -> Result<(), PlayerError> {
         // What:     `let borrowed = unsafe { BorrowedFd::borrow_raw(fd) };`. `unsafe { ... }`
         //           is a block where we promise the compiler we have manually upheld a
@@ -781,6 +824,7 @@ impl Engine {
     // ```ts
     // play(): void { ... }
     // ```
+    /// Play.
     pub fn play(&mut self) {
         // What:     `self.play_intent = true;`. Plain boolean field assignment.
         // Why:      Record that the user wants sound.
@@ -815,6 +859,7 @@ impl Engine {
     // ```ts
     // pause(): void { ... }
     // ```
+    /// Pause.
     pub fn pause(&mut self) {
         // What:     `self.play_intent = false;`. Plain boolean field assignment.
         // Why:      Record that the user wants silence.
@@ -847,6 +892,7 @@ impl Engine {
     // ```ts
     // seekTo(positionSec: number): void { ... }
     // ```
+    /// Seek to.
     pub fn seek_to(&self, position_sec: f64) {
         // What:     `let _ = self.tx.send(Command::Seek(position_sec));`.
         //           `Command::Seek(position_sec)` is a WRAPPER CONSTRUCTOR building the
@@ -871,6 +917,7 @@ impl Engine {
     // ```ts
     // setVolume(volume: number): void { ... }
     // ```
+    /// Set volume.
     pub fn set_volume(&self, volume: f32) {
         // What:     `self.control.volume_bits.store(volume.to_bits(), Ordering::Relaxed);`.
         //           `volume.to_bits()` REINTERPRETS the `f32` as its raw `u32` bit-pattern
@@ -898,6 +945,7 @@ impl Engine {
     // ```ts
     // setNormalizationGain(gain: number): void { ... }
     // ```
+    /// Set normalization gain.
     pub fn set_normalization_gain(&self, gain: f32) {
         // What:     `self.control.norm_gain_bits.store(gain.to_bits(), Ordering::Relaxed);`.
         //           `gain.to_bits()` reinterprets the `f32` gain as raw `u32` bits;
@@ -924,6 +972,7 @@ impl Engine {
     // ```ts
     // positionSec(): number { ... }
     // ```
+    /// Position sec.
     pub fn position_sec(&self) -> f64 {
         // What:     `let rate = self.control.rate.load(Ordering::Acquire);`. `.load(
         //           Ordering::Acquire)` atomically READS the sample rate. `Ordering::Acquire`
@@ -988,6 +1037,7 @@ impl Engine {
     // ```ts
     // durationSec(): number { ... }
     // ```
+    /// Duration sec.
     pub fn duration_sec(&self) -> f64 {
         // What:     `self.control.duration_ms.load(Ordering::Acquire) as f64 /
         //           MILLIS_PER_SEC`. `.load(Ordering::Acquire)` atomically reads the
@@ -1012,6 +1062,7 @@ impl Engine {
     // ```ts
     // isPlaying(): boolean { ... }
     // ```
+    /// Is playing.
     pub fn is_playing(&self) -> bool {
         // What:     `self.control.playing.load(Ordering::Acquire) &&
         //           !self.control.ended.load(Ordering::Acquire)`. Two atomic
@@ -1038,6 +1089,7 @@ impl Engine {
     // ```ts
     // isEnded(): boolean { ... }
     // ```
+    /// Is ended.
     pub fn is_ended(&self) -> bool {
         // What:     `self.control.ended.load(Ordering::Acquire)`. A single atomic
         //           `.load(Ordering::Acquire)` of the `ended` flag. Tail expression, so it
@@ -1061,6 +1113,7 @@ impl Engine {
     // ```ts
     // playWhenReady(): boolean { ... }
     // ```
+    /// Play when ready.
     pub fn play_when_ready(&self) -> bool {
         // What:     `self.play_intent`. Read the plain (non-atomic) boolean field directly.
         //           No trailing `;`, so this bare field access is the tail expression and
@@ -1085,6 +1138,7 @@ impl Engine {
 // ```ts
 // class Engine { [Symbol.dispose]() { /* send quit, then await worker */ } }
 // ```
+/// Implementation block.
 impl Drop for Engine {
     // What:     `fn drop(&mut self)`. The destructor method. `&mut self` because tearing the
     //           engine down mutates it (it `.take()`s the worker handle out). The runtime,
@@ -1095,6 +1149,7 @@ impl Drop for Engine {
     // ```ts
     // [Symbol.dispose]() { ... }
     // ```
+    /// Drop.
     fn drop(&mut self) {
         // What:     `let _ = self.tx.send(Command::Quit);`. `Command::Quit` is the unit
         //           WRAPPER CONSTRUCTOR for the `Quit` variant. `self.tx.send(...)` returns

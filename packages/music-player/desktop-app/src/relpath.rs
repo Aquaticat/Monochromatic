@@ -17,6 +17,7 @@
 // ```ts
 // // all three are just strings in TS; Component ~ one element of path.split("/")
 // ```
+/// Imports.
 use std::path::{Component, Path, PathBuf};
 
 // What:     `const SEPARATOR: &str = "/";`. `&str` is a BORROWED string slice
@@ -28,6 +29,7 @@ use std::path::{Component, Path, PathBuf};
 // ```ts
 // const SEPARATOR = "/";
 // ```
+/// Separator.
 const SEPARATOR: &str = "/";
 
 // What:     `fn normal_components(path: &Path) -> Vec<String>`. Split a path into its
@@ -44,6 +46,7 @@ const SEPARATOR: &str = "/";
 //   return path.split("/").filter(seg => seg !== "" && seg !== "." && seg !== "..");
 // }
 // ```
+/// Normal components.
 fn normal_components(path: &Path) -> Vec<String> {
     // What:     `let mut out: Vec<String> = Vec::new();`. `Vec::new()` builds a fresh
     //           empty owned array. `mut` marks it mutable (bindings are read-only by
@@ -113,6 +116,7 @@ fn normal_components(path: &Path) -> Vec<String> {
 // ```ts
 // function commonPrefixLen(lists: string[][]): number { ... }
 // ```
+/// Common prefix len.
 fn common_prefix_len(lists: &[Vec<String>]) -> usize {
     // What:     `let shortest = lists.iter().map(|list| list.len()).min().unwrap_or(0);`.
     //           `.iter()` borrows each list; `.map(|list| list.len())` turns each into
@@ -207,6 +211,7 @@ fn common_prefix_len(lists: &[Vec<String>]) -> usize {
 //   });
 // }
 // ```
+/// Relative display paths.
 pub fn relative_display_paths(tracks: &[PathBuf]) -> Vec<String> {
     // What:     `if tracks.is_empty() { return Vec::new(); }`. Early return for an
     //           empty queue. `Vec::new()` builds an empty owned array.
@@ -304,4 +309,5 @@ pub fn relative_display_paths(tracks: &[PathBuf]) -> Vec<String> {
 // ```
 #[cfg(test)]
 #[path = "relpath_tests.rs"]
+/// Tests module.
 mod tests;

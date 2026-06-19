@@ -16,6 +16,7 @@
 // ```ts
 // // a Duration is just a number of milliseconds in TS
 // ```
+/// Imports.
 use std::time::Duration;
 
 // What:     `pub const PROGRESS_UPDATE_DEBOUNCE_INTERVAL: Duration = Duration::from_millis(250);`.
@@ -29,6 +30,7 @@ use std::time::Duration;
 // ```ts
 // export const PROGRESS_UPDATE_DEBOUNCE_INTERVAL = 250; // ms
 // ```
+/// Progress update debounce interval.
 pub const PROGRESS_UPDATE_DEBOUNCE_INTERVAL: Duration = Duration::from_millis(250);
 
 // What:     `#[derive(Clone, Copy, Debug, Eq, PartialEq)]` auto-implements five
@@ -54,6 +56,7 @@ pub const PROGRESS_UPDATE_DEBOUNCE_INTERVAL: Duration = Duration::from_millis(25
 // ```ts
 // type ProgressUpdateKind = "debounced" | "immediate";
 // ```
+/// Progress update kind.
 pub enum ProgressUpdateKind {
     // What:     `Debounced` a fieldless enum variant (carries no data).
     // Why:      Ordinary progress movement or track-reset progress that may be
@@ -63,6 +66,7 @@ pub enum ProgressUpdateKind {
     // ```ts
     // "debounced"
     // ```
+    /// Debounced.
     Debounced,
     // What:     `Immediate` a fieldless enum variant.
     // Why:      State transitions that must update visible/hidden taskbar state now.
@@ -71,6 +75,7 @@ pub enum ProgressUpdateKind {
     // ```ts
     // "immediate"
     // ```
+    /// Immediate.
     Immediate,
 }
 
@@ -94,6 +99,7 @@ pub enum ProgressUpdateKind {
 // ```ts
 // class ProgressDebouncer { lastSurfaceAt: number | null = null; }
 // ```
+/// Progress debouncer.
 pub struct ProgressDebouncer {
     // What:     `last_surface_at: Option<Duration>` remembers the elapsed time of the
     //           last accepted progress update. `Option<Duration>` is either
@@ -105,6 +111,7 @@ pub struct ProgressDebouncer {
     // ```ts
     // lastSurfaceAt: number | null;
     // ```
+    /// Last surface at.
     last_surface_at: Option<Duration>,
 }
 
@@ -116,6 +123,7 @@ pub struct ProgressDebouncer {
 // ```ts
 // class ProgressDebouncer { /* methods */ }
 // ```
+/// Implementation block.
 impl ProgressDebouncer {
     // What:     `pub fn new() -> Self`. Build a fresh debouncer. `Self` is an alias
     //           for `ProgressDebouncer` inside this impl block.
@@ -125,6 +133,7 @@ impl ProgressDebouncer {
     // ```ts
     // constructor() { this.lastSurfaceAt = null; }
     // ```
+    /// New.
     pub fn new() -> Self {
         // What:     `Self::default()` calls the derived `Default`, which sets
         //           `last_surface_at` to `None`. Tail expression -> return value.
@@ -150,6 +159,7 @@ impl ProgressDebouncer {
     // ```ts
     // shouldSurface(now: number, kind: ProgressUpdateKind): boolean { ... }
     // ```
+    /// Should surface.
     pub fn should_surface(&mut self, now: Duration, kind: ProgressUpdateKind) -> bool {
         // What:     `if kind == ProgressUpdateKind::Immediate { ... }`. Compare the
         //           passed kind against the immediate variant with `==` (available
@@ -267,4 +277,5 @@ impl ProgressDebouncer {
 // ```
 #[cfg(test)]
 #[path = "progress_tests.rs"]
+/// Tests module.
 mod tests;

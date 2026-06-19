@@ -28,6 +28,7 @@
 // ```ts
 // import { Source } from "./decode";
 // ```
+/// Imports.
 use crate::decode::Source;
 
 // What:     `use crate::error::PlayerError;`. The single error type every
@@ -41,6 +42,7 @@ use crate::decode::Source;
 // ```ts
 // import { PlayerError } from "./error";
 // ```
+/// Imports.
 use crate::error::PlayerError;
 
 // What:     `const HALF: f32 = 1.0 / 2.0;`. The fraction one-half. Composed from
@@ -56,6 +58,7 @@ use crate::error::PlayerError;
 // ```ts
 // const HALF = 1 / 2;
 // ```
+/// Half.
 const HALF: f32 = 1.0 / 2.0;
 
 // What:     `const QUARTER: f32 = HALF / 2.0;`. One-quarter (0.25), built from
@@ -67,6 +70,7 @@ const HALF: f32 = 1.0 / 2.0;
 // ```ts
 // const QUARTER = HALF / 2;
 // ```
+/// Quarter.
 const QUARTER: f32 = HALF / 2.0;
 
 // What:     `const THREE_QUARTERS: f32 = HALF + QUARTER;`. Three-quarters
@@ -78,6 +82,7 @@ const QUARTER: f32 = HALF / 2.0;
 // ```ts
 // const THREE_QUARTERS = HALF + QUARTER;
 // ```
+/// Three quarters.
 const THREE_QUARTERS: f32 = HALF + QUARTER;
 
 // What:     `const WINDOW: usize = 4;`. The number of consecutive samples the
@@ -94,6 +99,7 @@ const THREE_QUARTERS: f32 = HALF + QUARTER;
 // ```ts
 // const WINDOW = 4;
 // ```
+/// Window.
 const WINDOW: usize = 4;
 
 // What:     `fn catmull_rom(p0: f32, p1: f32, p2: f32, p3: f32, t: f32) -> f32`.
@@ -111,6 +117,7 @@ const WINDOW: usize = 4;
 // ```ts
 // function catmullRom(p0: number, p1: number, p2: number, p3: number, t: number): number { ... }
 // ```
+/// Catmull rom.
 fn catmull_rom(p0: f32, p1: f32, p2: f32, p3: f32, t: f32) -> f32 {
     // What:     `let t2 = t * t;` and `let t3 = t2 * t;`. Local immutable
     //           bindings (`let` with no `mut`) holding the square and cube of
@@ -160,6 +167,7 @@ fn catmull_rom(p0: f32, p1: f32, p2: f32, p3: f32, t: f32) -> f32 {
 // ```ts
 // class TruePeakMeter { channels: number; win: number[][]; filled: number[]; peak: number; }
 // ```
+/// True peak meter.
 struct TruePeakMeter {
     // What:     `channels: usize`. A struct field: the channel count (the
     //           interleave width). `usize` (siblings `u16`/`u32`/`u64`) because
@@ -172,6 +180,7 @@ struct TruePeakMeter {
     // ```ts
     // channels: number;
     // ```
+    /// Channels.
     channels: usize,
     // What:     `win: Vec<[f32; WINDOW]>`. A field holding one fixed-size array
     //           of the last 4 samples per channel. `[f32; 4]` is a fixed-LENGTH
@@ -186,6 +195,7 @@ struct TruePeakMeter {
     // ```ts
     // win: number[][]; // each inner array length 4
     // ```
+    /// Win.
     win: Vec<[f32; WINDOW]>,
     // What:     `filled: Vec<usize>`. A field: per channel, how many real samples
     //           have arrived (capped at `WINDOW`). `Vec<usize>` is an owned,
@@ -199,6 +209,7 @@ struct TruePeakMeter {
     // ```ts
     // filled: number[];
     // ```
+    /// Filled.
     filled: Vec<usize>,
     // What:     `peak: f32`. A field: the largest absolute sample or interpolated
     //           value seen so far. `f32` (sibling `f64`) to match the sample
@@ -209,6 +220,7 @@ struct TruePeakMeter {
     // ```ts
     // peak: number;
     // ```
+    /// Peak.
     peak: f32,
 }
 
@@ -223,6 +235,7 @@ struct TruePeakMeter {
 // ```ts
 // class TruePeakMeter { /* methods go here */ }
 // ```
+/// Implementation block.
 impl TruePeakMeter {
     // What:     `fn new(channels: usize) -> TruePeakMeter`. An associated
     //           function (no `self` parameter, so it is called as
@@ -235,6 +248,7 @@ impl TruePeakMeter {
     // ```ts
     // constructor(channels: number) { ... }
     // ```
+    /// New.
     fn new(channels: usize) -> TruePeakMeter {
         // What:     `TruePeakMeter { ... }`. A struct literal that constructs the
         //           value. `channels` uses field-init shorthand (the field and
@@ -275,6 +289,7 @@ impl TruePeakMeter {
     // ```ts
     // feed(chunk: number[]): void { ... }
     // ```
+    /// Feed.
     fn feed(&mut self, chunk: &[f32]) {
         // What:     `for (index, &sample) in chunk.iter().enumerate() { ... }`.
         //           `chunk.iter()` makes an iterator of references over the
@@ -332,6 +347,7 @@ impl TruePeakMeter {
     // ```ts
     // push(channel: number, sample: number): void { ... }
     // ```
+    /// Push.
     fn push(&mut self, channel: usize, sample: f32) {
         // What:     `let window = self.win[channel];`. Read the channel's 4-array
         //           out of the vector. Because `[f32; 4]` is made of `Copy`
@@ -493,6 +509,7 @@ impl TruePeakMeter {
 // ```ts
 // function measureTruePeak(source: Source): number { /* throws on decode error */ }
 // ```
+/// Measure true peak.
 pub fn measure_true_peak(mut source: Box<dyn Source>) -> Result<f32, PlayerError> {
     // What:     `let channels = source.spec().channels as usize;`. Call the
     //           trait method `.spec()` (returns an `AudioSpec`), read its
@@ -620,6 +637,7 @@ pub fn measure_true_peak(mut source: Box<dyn Source>) -> Result<f32, PlayerError
 // ```ts
 // function truePeakInterleaved(samples: Float32Array, channels: number): number { ... }
 // ```
+/// True peak interleaved.
 pub fn true_peak_interleaved(samples: &[f32], channels: usize) -> f32 {
     // What:     `if channels == 0 { return 0.0; }`. Guard a zero-channel request,
     //           returning a `0.0` (silence) peak. Mirrors the same guard in

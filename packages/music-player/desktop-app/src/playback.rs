@@ -11,6 +11,7 @@
 // ```ts
 // // both are just `string` in TS
 // ```
+/// Imports.
 use std::path::{Path, PathBuf};
 
 // What:     `const AUDIO_EXTENSIONS: &[&str] = &[ ... ];`. `&[&str]` is a BORROWED
@@ -28,6 +29,7 @@ use std::path::{Path, PathBuf};
 // const AUDIO_EXTENSIONS = ["flac", "wav", "wave", "mp3", "ogg", "oga", "opus",
 //   "m4a", "m4b", "mp4", "aac", "aiff", "aif", "aifc"] as const;
 // ```
+/// Audio extensions.
 const AUDIO_EXTENSIONS: &[&str] = &[
     "flac", "wav", "wave", "mp3", "ogg", "oga", "opus", "m4a", "m4b", "mp4", "aac", "aiff", "aif",
     "aifc",
@@ -47,6 +49,7 @@ const AUDIO_EXTENSIONS: &[&str] = &[
 //   return AUDIO_EXTENSIONS.includes(ext);
 // }
 // ```
+/// Is audio file.
 pub(crate) fn is_audio_file(path: &Path) -> bool {
     // What:     `match path.extension() { ... }`. `path.extension()` returns
     //           `Option<&OsStr>`: the part after the final dot, or `None` when there
@@ -99,6 +102,7 @@ pub(crate) fn is_audio_file(path: &Path) -> bool {
 //   return Math.max(-1, Math.min(1, sample * gain));
 // }
 // ```
+/// Process sample.
 pub(crate) fn process_sample(sample: f32, gain: f32) -> f32 {
     // What:     `(sample * gain).clamp(-1.0, 1.0)`. Multiply the raw sample by the
     //           combined gain, then `f32::clamp` pins the result into `-1.0..=1.0`
@@ -132,6 +136,7 @@ pub(crate) fn process_sample(sample: f32, gain: f32) -> f32 {
 //   return frames / rate;
 // }
 // ```
+/// Frames to secs.
 pub(crate) fn frames_to_secs(frames: u64, rate: u32) -> f64 {
     // What:     `if rate == 0 { return 0.0; }`. Early return guarding the divide.
     // Why:      An unknown rate has no meaningful position; avoid dividing by zero.
@@ -170,6 +175,7 @@ pub(crate) fn frames_to_secs(frames: u64, rate: u32) -> f64 {
 //   return out;
 // }
 // ```
+/// Expand paths.
 pub(crate) fn expand_paths(paths: Vec<PathBuf>) -> Vec<PathBuf> {
     // What:     `let mut out: Vec<PathBuf> = Vec::new();`. The accumulating result.
     //           `mut` because we push into it; explicit type because it starts empty.
@@ -246,6 +252,7 @@ pub(crate) fn expand_paths(paths: Vec<PathBuf>) -> Vec<PathBuf> {
 //   return out;
 // }
 // ```
+/// Collect dir files.
 fn collect_dir_files(root: &Path) -> Vec<PathBuf> {
     // What:     `let mut out: Vec<PathBuf> = Vec::new();`. The collected files.
     // Why:      Accumulate across the whole walk.
@@ -462,6 +469,7 @@ fn collect_dir_files(root: &Path) -> Vec<PathBuf> {
 // ```ts
 // function fileNameOf(path: string): string { return basename(path) || String(path); }
 // ```
+/// File name of.
 pub(crate) fn file_name_of(path: &Path) -> String {
     // What:     `match path.file_name() { ... }`. `file_name()` returns `Option<&OsStr>`
     //           (the last component), or `None` (e.g. `/`).
@@ -511,4 +519,5 @@ pub(crate) fn file_name_of(path: &Path) -> String {
 // ```
 #[cfg(test)]
 #[path = "playback_tests.rs"]
+/// Tests module.
 mod tests;

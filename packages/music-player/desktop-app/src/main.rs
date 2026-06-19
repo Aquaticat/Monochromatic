@@ -26,6 +26,7 @@ slint::include_modules!();
 // ```ts
 // import * as uiProgress from "./ui_progress";
 // ```
+/// Ui progress module.
 mod ui_progress;
 
 // What:     `mod ui_page;` loads the sibling `ui_page.rs` module into this binary crate.
@@ -36,6 +37,7 @@ mod ui_progress;
 // ```ts
 // import * as uiPage from "./ui_page";
 // ```
+/// Ui page module.
 mod ui_page;
 
 // What:     `use std::path::PathBuf;`. The OWNED filesystem path type: a heap-
@@ -50,6 +52,7 @@ mod ui_page;
 // ```ts
 // // no import needed; a path is just a string
 // ```
+/// Imports.
 use std::path::PathBuf;
 
 // What:     `#[cfg(unix)] use std::path::Path;`. The BORROWED path view (`&Path`),
@@ -68,6 +71,7 @@ use std::path::PathBuf;
 // // no equivalent: the import is physically absent from non-Unix builds
 // ```
 #[cfg(unix)]
+/// Imports.
 use std::path::Path;
 
 // What:     `use std::rc::Rc;`. `Rc<T>` is a single-threaded shared-ownership
@@ -83,6 +87,7 @@ use std::path::Path;
 // ```ts
 // const engine = new Engine(); // closures just capture it; GC handles sharing
 // ```
+/// Imports.
 use std::rc::Rc;
 
 // What:     `use std::sync::{Arc, Mutex};`. `Arc<T>` is a thread-safe shared owner
@@ -100,6 +105,7 @@ use std::rc::Rc;
 // ```ts
 // const progressDebouncer = new ProgressDebouncer(); // GC + single thread: no lock
 // ```
+/// Imports.
 use std::sync::{Arc, Mutex};
 
 // What:     `use std::time::Instant;`. `Instant` is a monotonic timestamp (only
@@ -112,6 +118,7 @@ use std::sync::{Arc, Mutex};
 // ```ts
 // const startedAt = performance.now(); // monotonic clock
 // ```
+/// Imports.
 use std::time::Instant;
 
 // What:     `use music_player::command::{Command, ShuffleMode, Update};`. The
@@ -124,6 +131,7 @@ use std::time::Instant;
 // ```ts
 // import { Command, ShuffleMode, Update } from "music-player/command";
 // ```
+/// Imports.
 use music_player::command::{Command, ShuffleMode, Update};
 
 // What:     `use music_player::cli::Cli;`. The clap-derived argument-parser struct
@@ -134,6 +142,7 @@ use music_player::command::{Command, ShuffleMode, Update};
 // ```ts
 // import { Cli } from "music-player/cli";
 // ```
+/// Imports.
 use music_player::cli::Cli;
 
 // What:     `use music_player::engine::Engine;`. The controller handle.
@@ -143,6 +152,7 @@ use music_player::cli::Cli;
 // ```ts
 // import { Engine } from "music-player/engine";
 // ```
+/// Imports.
 use music_player::engine::Engine;
 
 // What:     `use music_player::progress::ProgressDebouncer;`. The pure debounce
@@ -153,6 +163,7 @@ use music_player::engine::Engine;
 // ```ts
 // import { ProgressDebouncer } from "music-player/progress";
 // ```
+/// Imports.
 use music_player::progress::ProgressDebouncer;
 
 // What:     `use music_player::session::Session;`. The saved-state record.
@@ -162,6 +173,7 @@ use music_player::progress::ProgressDebouncer;
 // ```ts
 // import { Session } from "music-player/session";
 // ```
+/// Imports.
 use music_player::session::Session;
 
 // What:     `use music_player::pagination;`. The pure queue-pagination module.
@@ -175,6 +187,7 @@ use music_player::session::Session;
 // ```ts
 // import * as pagination from "music-player/pagination";
 // ```
+/// Imports.
 use music_player::pagination;
 
 // What:     `use music_player::launcher::{self, Launcher};`. The desktop-shell
@@ -189,6 +202,7 @@ use music_player::pagination;
 // import * as launcher from "music-player/launcher";
 // import { Launcher } from "music-player/launcher";
 // ```
+/// Imports.
 use music_player::launcher::{self, Launcher};
 
 // What:     `use clap::Parser;`. The `Parser` TRAIT whose `parse()` method reads the
@@ -204,6 +218,7 @@ use music_player::launcher::{self, Launcher};
 // ```ts
 // import { parseArgs } from "some-cli-parser";
 // ```
+/// Imports.
 use clap::Parser;
 
 // What:     `use i_slint_backend_winit::Backend;`. Slint's winit backend, built
@@ -214,6 +229,7 @@ use clap::Parser;
 // ```ts
 // import { Backend } from "slint-winit-backend";
 // ```
+/// Imports.
 use i_slint_backend_winit::Backend;
 
 // What:     `use slint::{ComponentHandle, Model, SharedString, VecModel};`.
@@ -232,6 +248,7 @@ use i_slint_backend_winit::Backend;
 // ```ts
 // import { ComponentHandle, Model, SharedString, VecModel } from "slint";
 // ```
+/// Imports.
 use slint::{ComponentHandle, Model, SharedString, VecModel};
 
 // What:     `use ui_page::{set_now_playing, set_queue_model, PageNav};`. The sibling module's
@@ -243,6 +260,7 @@ use slint::{ComponentHandle, Model, SharedString, VecModel};
 // ```ts
 // import { setNowPlaying, setQueueModel, PageNav } from "./ui_page";
 // ```
+/// Imports.
 use ui_page::{set_now_playing, set_queue_model, PageNav};
 
 // What:     `fn shuffle_to_int(mode: ShuffleMode) -> i32`. Map the enum to the
@@ -256,6 +274,7 @@ use ui_page::{set_now_playing, set_queue_model, PageNav};
 // ```ts
 // function shuffleToInt(mode: ShuffleMode): number { ... }
 // ```
+/// Shuffle to int.
 fn shuffle_to_int(mode: ShuffleMode) -> i32 {
     // What:     `match mode { ... }`. Pattern-match each enum variant to its number.
     //           `match` is exhaustive: the compiler rejects it if a variant is
@@ -305,6 +324,7 @@ fn shuffle_to_int(mode: ShuffleMode) -> i32 {
 // ```ts
 // function intToShuffle(value: number): ShuffleMode { ... }
 // ```
+/// Int to shuffle.
 fn int_to_shuffle(value: i32) -> ShuffleMode {
     // What:     `match value { 1 => WithinPage, 2 => All, _ => Off }`. The wildcard
     //           `_` arm matches anything not matched above (including 0 and any
@@ -354,6 +374,7 @@ fn int_to_shuffle(value: i32) -> ShuffleMode {
 // ```ts
 // function formatTime(secs: number): string { ... }
 // ```
+/// Format time.
 pub(crate) fn format_time(secs: f64) -> String {
     // What:     `let whole = if secs > 0.0 { secs as u64 } else { 0 };`. `if/else`
     //           used as an EXPRESSION (both arms yield a value). `secs as u64` is a
@@ -398,6 +419,7 @@ pub(crate) fn format_time(secs: f64) -> String {
 // ```ts
 // function refreshPage(app: AppWindow, target: PageNav): void { ... }
 // ```
+/// Refresh page.
 fn refresh_page(app: &AppWindow, target: PageNav) {
     // What:     `let names: Vec<String> = app.get_queue().iter().map(|s| s.to_string()).collect();`.
     //           `app.get_queue()` returns the full-list model (`ModelRc<SharedString>`);
@@ -649,6 +671,7 @@ fn refresh_page(app: &AppWindow, target: PageNav) {
 // ```ts
 // function applyUpdate(app: AppWindow, update: Update): void { ... }
 // ```
+/// Apply update.
 fn apply_update(app: &AppWindow, update: &Update) {
     // What:     `match update { ... }`. Pattern-match (and destructure) the update
     //           enum's variant; exhaustive over every `Update` case.
@@ -857,6 +880,7 @@ fn apply_update(app: &AppWindow, update: &Update) {
 // function xdgUserDirMusic(): string | null { ... } // Unix-only implementation
 // ```
 #[cfg(unix)]
+/// Xdg user dir music.
 fn xdg_user_dir_music() -> Option<PathBuf> {
     // What:     `let output = std::process::Command::new("xdg-user-dir").arg("MUSIC").output().ok()?;`.
     //           `Command::new(name)` starts a process builder; `.arg("MUSIC")` adds an
@@ -968,6 +992,7 @@ fn xdg_user_dir_music() -> Option<PathBuf> {
 // function xdgUserDirMusic(): string | null { return null; } // non-Unix stub
 // ```
 #[cfg(not(unix))]
+/// Xdg user dir music.
 fn xdg_user_dir_music() -> Option<PathBuf> {
     // What:     `None`. The empty case of `Option<PathBuf>` (no path); sibling
     //           `Some(p)` would carry a path. Bare tail expression -> return value.
@@ -994,6 +1019,7 @@ fn xdg_user_dir_music() -> Option<PathBuf> {
 // ```ts
 // function musicDir(): string | null { ... }
 // ```
+/// Music dir.
 fn music_dir() -> Option<PathBuf> {
     // What:     `std::env::var_os("XDG_MUSIC_DIR")`. Read an environment variable as
     //           an `Option<OsString>` (raw OS bytes, not required to be UTF-8).
@@ -1084,6 +1110,7 @@ fn music_dir() -> Option<PathBuf> {
 // ```ts
 // async function main(): Promise<void> { ... } // throws on platform failure
 // ```
+/// Main.
 fn main() -> Result<(), slint::PlatformError> {
     // What:     `let cli = Cli::parse();`. Read and validate the command-line
     //           arguments FIRST, before any backend, window, or GPU setup.

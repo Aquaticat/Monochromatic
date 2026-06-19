@@ -8,6 +8,7 @@
 // ```ts
 // import { withWaylandName } from "winit-wayland";
 // ```
+/// Imports.
 use i_slint_backend_winit::winit::platform::wayland::WindowAttributesExtWayland;
 
 // What:     `use i_slint_backend_winit::winit::window::WindowAttributes;` imports
@@ -18,6 +19,7 @@ use i_slint_backend_winit::winit::platform::wayland::WindowAttributesExtWayland;
 // ```ts
 // import type { WindowAttributes } from "winit";
 // ```
+/// Imports.
 use i_slint_backend_winit::winit::window::WindowAttributes;
 
 // What:     `pub const APP_ID: &str = "monochromatic.terminal";` declares a public
@@ -28,6 +30,7 @@ use i_slint_backend_winit::winit::window::WindowAttributes;
 // ```ts
 // export const APP_ID = "monochromatic.terminal";
 // ```
+/// App id.
 pub const APP_ID: &str = "monochromatic.terminal";
 
 // What:     `pub fn set_window_app_id(...) -> WindowAttributes` declares a public
@@ -40,6 +43,7 @@ pub const APP_ID: &str = "monochromatic.terminal";
 //   return attributes.withName(APP_ID, APP_ID);
 // }
 // ```
+/// Set window app id.
 pub fn set_window_app_id(attributes: WindowAttributes) -> WindowAttributes {
     // What:     `attributes.with_name(APP_ID, APP_ID)` sets Wayland app id and X11
     //           WM_CLASS name pair, then returns the modified builder value.

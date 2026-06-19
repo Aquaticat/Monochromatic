@@ -14,6 +14,7 @@
 // ```ts
 // type HashMap = Record<string, number>;
 // ```
+/// Imports.
 use std::collections::HashMap;
 
 // What:     `use std::path::{Path, PathBuf};`. Borrowed and owned filesystem paths.
@@ -23,6 +24,7 @@ use std::collections::HashMap;
 // ```ts
 // // both are just `string` in TS
 // ```
+/// Imports.
 use std::path::{Path, PathBuf};
 
 // What:     `use std::time::UNIX_EPOCH;`. The 1970 reference instant.
@@ -32,6 +34,7 @@ use std::path::{Path, PathBuf};
 // ```ts
 // const UNIX_EPOCH = 0; // ms-since-1970 baseline
 // ```
+/// Imports.
 use std::time::UNIX_EPOCH;
 
 // What:     `use std::sync::{Arc, Mutex};`. The atomically reference-counted shared
@@ -43,6 +46,7 @@ use std::time::UNIX_EPOCH;
 // ```ts
 // // no direct equivalent: a shared, lock-guarded handle
 // ```
+/// Imports.
 use std::sync::{Arc, Mutex};
 
 // What:     `use gxhash::gxhash64;` pulls in ONE free function from the external
@@ -65,6 +69,7 @@ use std::sync::{Arc, Mutex};
 // ```ts
 // import { gxhash64 } from "gxhash"; // hypothetical; no real JVM/JS port exists
 // ```
+/// Imports.
 use gxhash::gxhash64;
 
 // What:     `use crate::identity;` imports the shared identity-strings module
@@ -78,6 +83,7 @@ use gxhash::gxhash64;
 // ```ts
 // import * as identity from "./identity";
 // ```
+/// Imports.
 use crate::identity;
 
 // What:     `const FINGERPRINT_SEED: i64 = 0;`. The fixed seed handed to
@@ -95,6 +101,7 @@ use crate::identity;
 // ```ts
 // const FINGERPRINT_SEED = 0n; // bigint: the API wants a 64-bit integer
 // ```
+/// Fingerprint seed.
 const FINGERPRINT_SEED: i64 = 0;
 
 // What:     `pub(crate) fn fingerprint(path: &Path) -> Option<String>`. Build the opaque
@@ -112,6 +119,7 @@ const FINGERPRINT_SEED: i64 = 0;
 //   return gxhash64(material, FINGERPRINT_SEED).toString(16).padStart(16, "0");
 // }
 // ```
+/// Fingerprint.
 pub(crate) fn fingerprint(path: &Path) -> Option<String> {
     // What:     `let meta = std::fs::metadata(path).ok()?;`. Read filesystem metadata.
     //           `.ok()` turns the `Result` into an `Option` (dropping the error); `?`
@@ -221,6 +229,7 @@ pub(crate) fn fingerprint(path: &Path) -> Option<String> {
 //   return dir ? join(dir, "peaks.json") : null;
 // }
 // ```
+/// Cache path.
 fn cache_path() -> Option<PathBuf> {
     // What:     `identity::config_dir().map(|dir| dir.join("peaks.json"))`. Take the shared
     //           config directory (`Option<PathBuf>`, Linux: `$XDG_CONFIG_HOME/musicplayer`)
@@ -246,6 +255,7 @@ fn cache_path() -> Option<PathBuf> {
 // ```ts
 // class PeakCache { map: Record<string, number>; path: string | null; unsaved: number; }
 // ```
+/// Peak cache.
 pub(crate) struct PeakCache {
     // What:     `map: HashMap<String, f32>`. Fingerprint hex -> measured true peak.
     // Why:      The actual memoized data.
@@ -254,6 +264,7 @@ pub(crate) struct PeakCache {
     // ```ts
     // map: Record<string, number>;
     // ```
+    /// Map.
     map: HashMap<String, f32>,
     // What:     `path: Option<PathBuf>`. Where to persist, or `None` (no config dir).
     // Why:      Save/load target; `None` means run in-memory only.
@@ -262,6 +273,7 @@ pub(crate) struct PeakCache {
     // ```ts
     // path: string | null;
     // ```
+    /// Path.
     path: Option<PathBuf>,
     // What:     `unsaved: usize`. Count of inserts not yet flushed to disk.
     // Why:      Lets the background worker batch saves instead of writing per track.
@@ -270,6 +282,7 @@ pub(crate) struct PeakCache {
     // ```ts
     // unsaved: number;
     // ```
+    /// Unsaved.
     unsaved: usize,
 }
 
@@ -294,6 +307,7 @@ pub(crate) struct PeakCache {
 //   renameSync(tmp, path);
 // }
 // ```
+/// Write atomic.
 pub(crate) fn write_atomic(path: &Path, json: &str) -> std::io::Result<()> {
     // What:     `if let Some(parent) = path.parent() { std::fs::create_dir_all(parent)?; }`.
     //           Ensure the directory exists; `?` propagates an IO error.
@@ -350,6 +364,7 @@ pub(crate) fn write_atomic(path: &Path, json: &str) -> std::io::Result<()> {
 // ```ts
 // class PeakCache { /* load, from_path, get, unsaved, insert, save, pending_save, mark_saved */ }
 // ```
+/// Implementation block.
 impl PeakCache {
     // What:     `pub(crate) fn load() -> PeakCache`. Read the cache from its standard
     //           location, or start empty if absent/corrupt.
@@ -359,6 +374,7 @@ impl PeakCache {
     // ```ts
     // static load(): PeakCache { return PeakCache.fromPath(cachePath()); }
     // ```
+    /// Load.
     pub(crate) fn load() -> PeakCache {
         // What:     `PeakCache::from_path(cache_path())`. Delegate to the path-taking
         //           constructor with the standard location. Tail -> return.
@@ -380,6 +396,7 @@ impl PeakCache {
     // ```ts
     // static fromPath(path: string | null): PeakCache { ... }
     // ```
+    /// From path.
     pub(crate) fn from_path(path: Option<PathBuf>) -> PeakCache {
         // What:     `let map = path.as_ref().and_then(...).and_then(...).unwrap_or_default();`.
         //           Read the file to a string then parse it as a `HashMap<String, f32>`;
@@ -422,6 +439,7 @@ impl PeakCache {
     // ```ts
     // get(fingerprint: string): number | undefined { return this.map[fingerprint]; }
     // ```
+    /// Get.
     pub(crate) fn get(&self, fingerprint: &str) -> Option<f32> {
         // What:     `self.map.get(fingerprint).copied()`. `.get` returns `Option<&f32>` (a
         //           borrow); `.copied()` turns it into `Option<f32>` (an owned copy). Tail
@@ -443,6 +461,7 @@ impl PeakCache {
     // ```ts
     // unsaved(): number { return this.unsaved; }
     // ```
+    /// Unsaved.
     pub(crate) fn unsaved(&self) -> usize {
         // What:     `self.unsaved`. Tail -> return the counter.
         // Why:      Expose the private field read-only.
@@ -463,6 +482,7 @@ impl PeakCache {
     // ```ts
     // insert(fingerprint: string, peak: number): void { this.map[fingerprint] = peak; this.unsaved++; }
     // ```
+    /// Insert.
     pub(crate) fn insert(&mut self, fingerprint: String, peak: f32) {
         // What:     `self.map.insert(fingerprint, peak);`. Store the pair (consumes the
         //           owned key).
@@ -502,6 +522,7 @@ impl PeakCache {
     // // only exported in test builds
     // ```
     #[cfg(test)]
+    /// Save.
     pub(crate) fn save(&mut self) -> std::io::Result<()> {
         // What:     `let path = match &self.path { Some(p) => p, None => return Ok(()) };`.
         //           Borrow the target path, or quietly succeed if there is none.
@@ -583,6 +604,7 @@ impl PeakCache {
     //   return [this.path, JSON.stringify(this.map), this.unsaved];
     // }
     // ```
+    /// Pending save.
     pub(crate) fn pending_save(&self) -> Option<(PathBuf, String, usize)> {
         // What:     `if self.unsaved == 0 { return None; }`. Nothing new to persist.
         // Why:      Skip redundant writes.
@@ -635,6 +657,7 @@ impl PeakCache {
     // ```ts
     // markSaved(count: number): void { this.unsaved = Math.max(0, this.unsaved - count); }
     // ```
+    /// Mark saved.
     pub(crate) fn mark_saved(&mut self, count: usize) {
         // What:     `self.unsaved = self.unsaved.saturating_sub(count);`. Subtract, but
         //           clamp at 0 instead of underflowing (a concurrent `save()` may have
@@ -667,6 +690,7 @@ impl PeakCache {
 //   if (writeAtomic(path, json)) withLock(cache, (c) => c.markSaved(count));
 // }
 // ```
+/// Flush.
 pub(crate) fn flush(cache: &Arc<Mutex<PeakCache>>) {
     // What:     `let snapshot = { let guard = cache.lock().unwrap(); guard.pending_save() };`.
     //           A BLOCK EXPRESSION: lock the cache, take an owned `(path, json, count)`
@@ -734,4 +758,5 @@ pub(crate) fn flush(cache: &Arc<Mutex<PeakCache>>) {
 // ```
 #[cfg(test)]
 #[path = "peakcache_tests.rs"]
+/// Tests module.
 mod tests;

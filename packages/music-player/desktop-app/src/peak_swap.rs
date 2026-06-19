@@ -16,6 +16,7 @@
 // ```ts
 // type Path = string;
 // ```
+/// Imports.
 use std::path::{Path, PathBuf};
 
 // What:     `use std::sync::mpsc::{self, Receiver, RecvTimeoutError, TryRecvError};`.
@@ -30,6 +31,7 @@ use std::path::{Path, PathBuf};
 // ```ts
 // const channel = makeOneShotChannel<PeakGainResult>();
 // ```
+/// Imports.
 use std::sync::mpsc::{self, Receiver, RecvTimeoutError, TryRecvError};
 
 // What:     `use std::sync::{Arc, Mutex};`. `Arc<T>` is a thread-safe shared owner
@@ -42,6 +44,7 @@ use std::sync::mpsc::{self, Receiver, RecvTimeoutError, TryRecvError};
 // ```ts
 // const cache = new LockedSharedObject(new PeakCache());
 // ```
+/// Imports.
 use std::sync::{Arc, Mutex};
 
 // What:     `use std::thread;`. Rust's standard OS-thread API.
@@ -52,6 +55,7 @@ use std::sync::{Arc, Mutex};
 // ```ts
 // const worker = new Worker("measure-current-track.js");
 // ```
+/// Imports.
 use std::thread;
 
 // What:     `use std::time::Duration;`. A monotonic span of time.
@@ -61,6 +65,7 @@ use std::thread;
 // ```ts
 // type Duration = number;
 // ```
+/// Imports.
 use std::time::Duration;
 
 // What:     `use crate::peakcache::{self, PeakCache};`. Import the peak-cache
@@ -73,6 +78,7 @@ use std::time::Duration;
 // import * as peakcache from "./peakcache";
 // import { PeakCache } from "./peakcache";
 // ```
+/// Imports.
 use crate::peakcache::{self, PeakCache};
 
 // What:     `use crate::truepeak::{measure_true_peak, normalization_gain};`. The
@@ -84,6 +90,7 @@ use crate::peakcache::{self, PeakCache};
 // ```ts
 // import { measureTruePeak, normalizationGain } from "./truepeak";
 // ```
+/// Imports.
 use crate::truepeak::{measure_true_peak, normalization_gain};
 
 // What:     `const PEAK_SWAP_WAIT_SECS: u64 = 1;`. One second, stored as the
@@ -96,6 +103,7 @@ use crate::truepeak::{measure_true_peak, normalization_gain};
 // ```ts
 // const PEAK_SWAP_WAIT_SECS = 1;
 // ```
+/// Peak swap wait secs.
 const PEAK_SWAP_WAIT_SECS: u64 = 1;
 
 // What:     `#[derive(Clone, Copy, Debug)]` auto-generates cheap copying and debug
@@ -119,6 +127,7 @@ const PEAK_SWAP_WAIT_SECS: u64 = 1;
 // ```ts
 // type PeakGainResult = { generation: number; gain: number };
 // ```
+/// Peak gain result.
 pub(crate) struct PeakGainResult {
     // What:     `pub(crate) generation: u64`. Monotonic track-load generation,
     //           visible inside the crate. `u64` is used instead of `usize` so the
@@ -129,6 +138,7 @@ pub(crate) struct PeakGainResult {
     // ```ts
     // generation: number;
     // ```
+    /// Generation.
     pub(crate) generation: u64,
     // What:     `pub(crate) gain: f32`. Linear playback gain from true-peak
     //           normalization. Sibling `f64` would add precision the PCM path does
@@ -139,6 +149,7 @@ pub(crate) struct PeakGainResult {
     // ```ts
     // gain: number;
     // ```
+    /// Gain.
     pub(crate) gain: f32,
 }
 
@@ -155,6 +166,7 @@ pub(crate) struct PeakGainResult {
 //   | { kind: "pending" }
 //   | { kind: "closed" };
 // ```
+/// Pending peak status.
 pub(crate) enum PendingPeakStatus {
     // What:     `Ready(PeakGainResult)` wraps the measured result.
     // Why:      Hand the generation and gain to the controller.
@@ -163,7 +175,11 @@ pub(crate) enum PendingPeakStatus {
     // ```ts
     // { kind: "ready", result }
     // ```
-    Ready(PeakGainResult),
+    /// Ready.
+    Ready(
+        /// Ready value.
+        PeakGainResult,
+    ),
     // What:     `Pending` has no payload.
     // Why:      The worker is still running, so fallback gain remains active.
     //
@@ -171,6 +187,7 @@ pub(crate) enum PendingPeakStatus {
     // ```ts
     // { kind: "pending" }
     // ```
+    /// Pending.
     Pending,
     // What:     `Closed` has no payload.
     // Why:      Measurement failed or the worker exited without a result, so the
@@ -180,6 +197,7 @@ pub(crate) enum PendingPeakStatus {
     // ```ts
     // { kind: "closed" }
     // ```
+    /// Closed.
     Closed,
 }
 
@@ -192,6 +210,7 @@ pub(crate) enum PendingPeakStatus {
 // ```ts
 // class PendingPeakMeasurement { constructor(private receiver: Receiver<PeakGainResult>) {} }
 // ```
+/// Pending peak measurement.
 pub(crate) struct PendingPeakMeasurement {
     // What:     `receiver: Receiver<PeakGainResult>`. The owned read end of the
     //           one-shot channel. The sibling write end lives in the measurement thread.
@@ -201,6 +220,7 @@ pub(crate) struct PendingPeakMeasurement {
     // ```ts
     // receiver: Receiver<PeakGainResult>;
     // ```
+    /// Receiver.
     receiver: Receiver<PeakGainResult>,
 }
 
@@ -212,6 +232,7 @@ pub(crate) struct PendingPeakMeasurement {
 // ```ts
 // class PendingPeakMeasurement { /* fromReceiver, tryResult, waitResult */ }
 // ```
+/// Implementation block.
 impl PendingPeakMeasurement {
     // What:     `pub(crate) fn from_receiver(receiver: Receiver<PeakGainResult>) -> PendingPeakMeasurement`.
     //           Build a wrapper from an owned channel receiver.
@@ -223,6 +244,7 @@ impl PendingPeakMeasurement {
     //   return new PendingPeakMeasurement(receiver);
     // }
     // ```
+    /// From receiver.
     pub(crate) fn from_receiver(receiver: Receiver<PeakGainResult>) -> PendingPeakMeasurement {
         // What:     `PendingPeakMeasurement { receiver }`. Struct literal using field
         //           shorthand. Tail expression returns the wrapper.
@@ -244,6 +266,7 @@ impl PendingPeakMeasurement {
     // ```ts
     // tryResult(): PendingPeakStatus { return this.receiver.tryRead(); }
     // ```
+    /// Try result.
     pub(crate) fn try_result(&self) -> PendingPeakStatus {
         // What:     `match self.receiver.try_recv() { ... }`. Non-blocking channel
         //           receive, mapped into the simpler status enum.
@@ -293,6 +316,7 @@ impl PendingPeakMeasurement {
     // ```ts
     // waitResult(timeoutMs: number): PendingPeakStatus { return this.receiver.readWithTimeout(timeoutMs); }
     // ```
+    /// Wait result.
     pub(crate) fn wait_result(&self, timeout: Duration) -> PendingPeakStatus {
         // What:     `match self.receiver.recv_timeout(timeout) { ... }`. Blocking
         //           receive with a maximum duration.
@@ -345,6 +369,7 @@ impl PendingPeakMeasurement {
 //   | { kind: "ready"; gain: number }
 //   | { kind: "pending"; pending: PendingPeakMeasurement };
 // ```
+/// Track gain resolution.
 pub(crate) enum TrackGainResolution {
     // What:     `Ready(f32)` carries an already-known gain.
     // Why:      Cache hit path keeps exact normalization from the first sample.
@@ -353,7 +378,11 @@ pub(crate) enum TrackGainResolution {
     // ```ts
     // { kind: "ready", gain }
     // ```
-    Ready(f32),
+    /// Ready.
+    Ready(
+        /// Ready value.
+        f32,
+    ),
     // What:     `Pending(PendingPeakMeasurement)` carries a measurement handle.
     // Why:      Cache miss path can start with fallback while the worker decodes.
     //
@@ -361,7 +390,11 @@ pub(crate) enum TrackGainResolution {
     // ```ts
     // { kind: "pending", pending }
     // ```
-    Pending(PendingPeakMeasurement),
+    /// Pending.
+    Pending(
+        /// Pending value.
+        PendingPeakMeasurement,
+    ),
 }
 
 // What:     `pub(crate) fn peak_swap_wait() -> Duration`. Return the configured
@@ -372,6 +405,7 @@ pub(crate) enum TrackGainResolution {
 // ```ts
 // function peakSwapWait(): number { return PEAK_SWAP_WAIT_SECS * 1000; }
 // ```
+/// Peak swap wait.
 pub(crate) fn peak_swap_wait() -> Duration {
     // What:     `Duration::from_secs(PEAK_SWAP_WAIT_SECS)`. Build a `Duration` from
     //           an integer second count. Tail expression returns it.
@@ -393,6 +427,7 @@ pub(crate) fn peak_swap_wait() -> Duration {
 // ```ts
 // function fallbackTrackGain(): number { return normalizationGain(1); }
 // ```
+/// Fallback track gain.
 pub(crate) fn fallback_track_gain() -> f32 {
     // What:     `normalization_gain(1.0)`. Convert a full-scale peak into its
     //           attenuate-only gain, which is the -1 dBTP ceiling.
@@ -413,6 +448,7 @@ pub(crate) fn fallback_track_gain() -> f32 {
 // ```ts
 // function cachedTrackGain(path: string, cache: SharedPeakCache): number | null { ... }
 // ```
+/// Cached track gain.
 pub(crate) fn cached_track_gain(path: &Path, cache: &Arc<Mutex<PeakCache>>) -> Option<f32> {
     // What:     `let key = peakcache::fingerprint(path)?;`. Compute the opaque cache
     //           key; `?` returns `None` if the file cannot be stat'd.
@@ -453,6 +489,7 @@ pub(crate) fn cached_track_gain(path: &Path, cache: &Arc<Mutex<PeakCache>>) -> O
 // ```ts
 // function prepareTrackGain(path: string, cache: SharedPeakCache, generation: number): TrackGainResolution { ... }
 // ```
+/// Prepare track gain.
 pub(crate) fn prepare_track_gain(
     path: &Path,
     cache: &Arc<Mutex<PeakCache>>,
@@ -526,6 +563,7 @@ pub(crate) fn prepare_track_gain(
 // ```ts
 // function spawnCurrentTrackMeasurement(...args): PendingPeakMeasurement { ... }
 // ```
+/// Spawn current track measurement.
 fn spawn_current_track_measurement(
     path: PathBuf,
     cache: Arc<Mutex<PeakCache>>,
@@ -604,6 +642,7 @@ fn spawn_current_track_measurement(
 // ```ts
 // function measureAndStoreGain(path: string, cache: SharedPeakCache, fingerprint: string | null): number | null { ... }
 // ```
+/// Measure and store gain.
 fn measure_and_store_gain(
     path: &Path,
     cache: &Arc<Mutex<PeakCache>>,
@@ -671,4 +710,5 @@ fn measure_and_store_gain(
 // ```
 #[cfg(test)]
 #[path = "peak_swap_tests.rs"]
+/// Tests module.
 mod tests;

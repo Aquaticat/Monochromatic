@@ -18,6 +18,7 @@
 // ```ts
 // // no import: toString() is built in
 // ```
+/// Imports.
 use std::fmt;
 
 /// Decode-path failures: wrapped I/O, symphonia, and opus errors, plus an owned
@@ -68,7 +69,11 @@ pub enum PlayerError {
     // ```ts
     // { kind: "io"; cause: Error }
     // ```
-    Io(std::io::Error),
+    /// Io.
+    Io(
+        /// Io value.
+        std::io::Error,
+    ),
     // What:     `Decode(symphonia::core::errors::Error)` is a tuple variant that
     //           wraps one symphonia error value. `symphonia::core::errors::Error`
     //           is symphonia's own error type (the `::` segments are a module
@@ -82,7 +87,11 @@ pub enum PlayerError {
     // ```ts
     // { kind: "decode"; cause: Error }
     // ```
-    Decode(symphonia::core::errors::Error),
+    /// Decode.
+    Decode(
+        /// Decode value.
+        symphonia::core::errors::Error,
+    ),
     // What:     `Opus(opus::Error)` is a tuple variant wrapping one `opus::Error`
     //           value (the libopus binding's error type; `opus::` is the crate
     //           path). Sibling wrappers are the `std::io` and `symphonia` error
@@ -94,7 +103,11 @@ pub enum PlayerError {
     // ```ts
     // { kind: "opus"; cause: Error }
     // ```
-    Opus(opus::Error),
+    /// Opus.
+    Opus(
+        /// Opus value.
+        opus::Error,
+    ),
     // What:     `Unsupported(String)` is a tuple variant carrying one OWNED text
     //           message (an owned, heap-allocated, growable UTF-8 string). The
     //           type is `String`, NOT its sibling `&str` (a borrowed view that
@@ -109,7 +122,11 @@ pub enum PlayerError {
     // ```ts
     // { kind: "unsupported"; message: string }
     // ```
-    Unsupported(String),
+    /// Unsupported.
+    Unsupported(
+        /// Unsupported value.
+        String,
+    ),
     // What:     `Audio(String)` is a tuple variant carrying one OWNED text message
     //           (`String`, the owned heap UTF-8 buffer; sibling `&str` is the
     //           borrowed view we DON'T use, for the same outlive reason as
@@ -124,7 +141,11 @@ pub enum PlayerError {
     // ```ts
     // { kind: "audio"; message: string }
     // ```
-    Audio(String),
+    /// Audio.
+    Audio(
+        /// Audio value.
+        String,
+    ),
 }
 
 // What:     `impl fmt::Display for PlayerError { ... }` attaches the `Display`
@@ -139,6 +160,7 @@ pub enum PlayerError {
 // ```ts
 // // class PlayerError { toString(): string { switch (this.kind) { ... } } }
 // ```
+/// Implementation block.
 impl fmt::Display for PlayerError {
     // What:     `fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result` is the
     //           one method `Display` requires. `&self` is a READ-ONLY borrow of
@@ -159,6 +181,7 @@ impl fmt::Display for PlayerError {
     // ```ts
     // toString(): string { switch (this.kind) { ... } }
     // ```
+    /// Fmt.
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         // What:     `match self { ... }` inspects which variant `self` currently
         //           is and runs the matching arm. Each arm pattern (`PlayerError::Io(e)`
@@ -256,6 +279,7 @@ impl fmt::Display for PlayerError {
 // ```ts
 // class PlayerError extends Error {}
 // ```
+/// Implementation block.
 impl std::error::Error for PlayerError {}
 
 // What:     `impl From<std::io::Error> for PlayerError { ... }` defines a CONVERSION
@@ -273,6 +297,7 @@ impl std::error::Error for PlayerError {}
 // ```ts
 // // implicit: a thrown fs Error is just rethrown unchanged
 // ```
+/// Implementation block.
 impl From<std::io::Error> for PlayerError {
     // What:     `fn from(e: std::io::Error) -> PlayerError` is the single method
     //           `From` requires. It takes the io error `e` BY VALUE (taking
@@ -284,6 +309,7 @@ impl From<std::io::Error> for PlayerError {
     // ```ts
     // static from(e: Error): PlayerError { return { kind: "io", cause: e }; }
     // ```
+    /// From.
     fn from(e: std::io::Error) -> PlayerError {
         // What:     `PlayerError::Io(e)` constructs the `Io` variant, wrapping the
         //           owned error `e` inside it. There is no trailing `;`, so this is
@@ -309,6 +335,7 @@ impl From<std::io::Error> for PlayerError {
 // ```ts
 // // implicit rethrow of a decoder error
 // ```
+/// Implementation block.
 impl From<symphonia::core::errors::Error> for PlayerError {
     // What:     `fn from(e: symphonia::core::errors::Error) -> PlayerError` takes the
     //           symphonia error `e` BY VALUE (taking ownership) and returns a new
@@ -319,6 +346,7 @@ impl From<symphonia::core::errors::Error> for PlayerError {
     // ```ts
     // static from(e: Error): PlayerError { return { kind: "decode", cause: e }; }
     // ```
+    /// From.
     fn from(e: symphonia::core::errors::Error) -> PlayerError {
         // What:     `PlayerError::Decode(e)` constructs the `Decode` variant wrapping
         //           the owned symphonia error `e`. No trailing `;`, so this tail
@@ -342,6 +370,7 @@ impl From<symphonia::core::errors::Error> for PlayerError {
 // ```ts
 // // implicit rethrow of an opus error
 // ```
+/// Implementation block.
 impl From<opus::Error> for PlayerError {
     // What:     `fn from(e: opus::Error) -> PlayerError` takes the opus error `e` BY
     //           VALUE (taking ownership) and returns a new `PlayerError`.
@@ -351,6 +380,7 @@ impl From<opus::Error> for PlayerError {
     // ```ts
     // static from(e: Error): PlayerError { return { kind: "opus", cause: e }; }
     // ```
+    /// From.
     fn from(e: opus::Error) -> PlayerError {
         // What:     `PlayerError::Opus(e)` constructs the `Opus` variant wrapping the
         //           owned opus error `e`. No trailing `;`, so this tail expression is
