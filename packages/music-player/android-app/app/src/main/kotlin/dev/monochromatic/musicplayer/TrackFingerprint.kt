@@ -81,18 +81,18 @@ import android.provider.DocumentsContract
 // ```
 import android.provider.OpenableColumns
 
-// What:     `import dev.monochromatic.musicplayer.core.fingerprint` pulls in the
-//           app's own pure `fingerprint` FUNCTION from the sibling `.core`
-//           package. It takes a path string plus a size and a modified-time (both
-//           `ULong`, the unsigned 64-bit integer) and returns the hashed `String`
-//           cache key.
-// Why:      `of` calls it to produce the opaque key once it has read size/mtime.
+// What:     No import is needed for the fingerprint helper anymore. `of` now calls
+//           `NativeBridge.nativeFingerprint(...)`, and `NativeBridge` is in THIS file's
+//           package (`dev.monochromatic.musicplayer`), so it is visible with no import.
+//           The old pure-Kotlin `core.fingerprint` was removed: gxhash (the new hash)
+//           has no JVM port, so the computation moved into the native crate.
+// Why:      Document why the formerly-imported `core.fingerprint` is gone, so a reader
+//           does not look for it.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// import { fingerprint } from "./core/peak-cache";
+// // (no import) NativeBridge is a sibling in the same module folder
 // ```
-import dev.monochromatic.musicplayer.core.fingerprint
 
 // What:     `import kotlinx.coroutines.Dispatchers` pulls in `Dispatchers`, the
 //           coroutines object naming the thread pools. We use `Dispatchers.IO`,
@@ -256,37 +256,38 @@ object TrackFingerprint {
          * its source and use.
          */
         val modifiedMs: Long = queryLastModifiedMs(context, uri)
-        // What:     `fingerprint(uri.toString(), size.toULong(), (modifiedMs * NANOS_PER_MILLI).toULong())`
+        // What:     `NativeBridge.nativeFingerprint(uri.toString(), size, modifiedMs * NANOS_PER_MILLI)`
         //           is the TAIL EXPRESSION of the `withContext` lambda (no trailing
         //           `;`), so its value is what `withContext` returns, hence `of`'s
         //           result. Pieces:
         //           - `uri.toString()` is a TYPE-CONVERSION call turning the `Uri`
         //             object into its `String` form (the path stand-in).
-        //           - `size.toULong()` converts the `Long` size to a `ULong` (the
-        //             UNSIGNED 64-bit integer the core key wants; sibling `Long` is the
-        //             signed 64-bit form). Sizes are never negative, so unsigned fits.
+        //           - `size` is passed as the plain `Long` (no `.toULong()`): the
+        //             native function takes a signed `Long` and reinterprets it as
+        //             unsigned, since sizes are never negative.
         //           - `(modifiedMs * NANOS_PER_MILLI)` multiplies ms by 1,000,000 (both
-        //             `Long`, so 64-bit integer multiply) to get nanoseconds, then
-        //             `.toULong()` converts that `Long` to `ULong`.
-        //           - `fingerprint(path, size, mtime)` hashes the three into the cache
-        //             key `String`.
+        //             `Long`, so 64-bit integer multiply) to get nanoseconds, passed as
+        //             a plain `Long`.
+        //           - `NativeBridge.nativeFingerprint(...)` calls into the native crate
+        //             (src/fingerprint.rs) over JNI, which gxhashes the three into the
+        //             cache key `String`.
         // Why:      Produce the opaque, hashed cache key from the URI plus the two read
-        //           file attributes, matching the desktop's `path + size + mtime` key.
+        //           file attributes, matching the desktop's `path + size + mtime` key
+        //           and its gxhash, so both flavors agree on identical inputs.
         // Gotcha:   `Long * Long` is 64-bit integer multiply that WRAPS silently on
         //           overflow (no auto-widening like JS numbers); using `Long` for the
-        //           constant is what keeps it 64-bit. `ULong` is a SEPARATE type from
-        //           `Long`; the `.toULong()` conversions are mandatory to match
-        //           `fingerprint`'s unsigned parameters.
+        //           constant is what keeps it 64-bit. The conversion to unsigned now
+        //           happens native-side, so no `.toULong()` is needed here.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // return fingerprint(
+        // return NativeBridge.nativeFingerprint(
         //   uri.toString(),
-        //   BigInt(size),                       // unsigned 64-bit size
-        //   BigInt(modifiedMs * NANOS_PER_MILLI), // ms -> ns, unsigned 64-bit
+        //   size,                          // native side treats it as unsigned 64-bit
+        //   modifiedMs * NANOS_PER_MILLI,  // ms -> ns
         // );
         // ```
-        fingerprint(uri.toString(), size.toULong(), (modifiedMs * NANOS_PER_MILLI).toULong())
+        NativeBridge.nativeFingerprint(uri.toString(), size, modifiedMs * NANOS_PER_MILLI)
     }
 
     // What:     `private fun querySize(context: Context, uri: Uri): Long? { ... }`

@@ -19,6 +19,19 @@ crate-type = ["cdylib"]
 # Pure-Rust JNI bindings (no C).
 jni = "0.21"
 
+# Cache fingerprint hash (src/fingerprint.rs, exposed to Kotlin over JNI as
+# NativeBridge.nativeFingerprint). gxhash has no JVM/Kotlin port, so the
+# fingerprint that used to be hand-written FNV-1a in pure Kotlin moved into this
+# native crate. Pinned to major 3, matching the desktop crate, so identical
+# (path, size, mtime) input hashes identically on both flavors (gxhash output is
+# stable within a major and across its supported platforms). REQUIRES the `aes`
+# CPU feature with NO software fallback: .cargo/config.toml enables
+# -C target-feature=+aes for the Android target triples, and the arm64 device must
+# carry the ARMv8 crypto extensions (a SIGILL at runtime otherwise). Builds on
+# STABLE Rust (the nightly-only `hybrid` feature is left OFF). See
+# ../../../docs/troubleshooting/gxhash-aes-target-feature.md.
+gxhash = "3"
+
 # libopus via opus-rs HEAD: its opusic-sys backend bundles libopus 1.6.1 and
 # builds it from source with cmake on every platform. Pinned to the same rev as
 # the desktop crate (the CMake 4.x compatibility fix; see that crate's Cargo.toml).

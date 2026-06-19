@@ -194,6 +194,133 @@ class NativeBridgeTest {
     }
 
     // What:     `@Test` annotation marking the next method as a JUnit test case.
+    // Why:      Registers `fingerprintIsDeterministicOpaqueAndChangeSensitiveOnDevice`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // it("fingerprintIsDeterministicOpaqueAndChangeSensitiveOnDevice", () => { /* body */ });
+    // ```
+    @Test
+    // What:     `fun fingerprintIsDeterministicOpaqueAndChangeSensitiveOnDevice() { ... }` declares a
+    //           no-arg, `Unit`-returning test method. Domain note: this is the on-device successor to
+    //           the old pure-Kotlin host test `PeakCacheTest.fingerprintIsStableOpaqueAndChangeSensitive`.
+    //           The fingerprint hash is now `gxhash` (hardware AES, no JVM port), computed in the
+    //           native crate and reached via `NativeBridge.nativeFingerprint`, so it can only run on a
+    //           real device. It pins the same contract the host test did, minus the hardcoded value:
+    //           DETERMINISM (same inputs -> same key), OPACITY (a 16-char hex key not leaking the
+    //           path), and CHANGE-SENSITIVITY to size, mtime, and path. No hardcoded hex value is
+    //           asserted because gxhash output may change across gxhash major versions.
+    // Why:      Prove the native fingerprint behaves like a cache key on the actual CPU (and that the
+    //           +aes-built `.so` runs gxhash without a SIGILL).
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // function fingerprintIsDeterministicOpaqueAndChangeSensitiveOnDevice(): void { /* body */ }
+    // ```
+    fun fingerprintIsDeterministicOpaqueAndChangeSensitiveOnDevice() {
+        // What:     `val path = "/music/Artist/Album/a.flac"`. A read-only `String` local holding a
+        //           fixed baseline path (the same literal the old host test used). `val` is TS `const`.
+        // Why:      One path reused across the vectors; its basename `a.flac` is what the opacity check
+        //           confirms the hex key does NOT contain.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const path = "/music/Artist/Album/a.flac";
+        // ```
+        val path = "/music/Artist/Album/a.flac"
+        // What:     `val size = 5L`. The `L` suffix makes this a `Long` (64-bit signed integer; sibling
+        //           `Int` is 32-bit). `nativeFingerprint` takes the size as a `Long` (reinterpreted
+        //           unsigned native-side), so a plain `Long` is what we pass.
+        // Why:      A fixed file size (5 bytes) feeding the fingerprint's size input.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const size = 5n; // bigint stands in for Kotlin's Long
+        // ```
+        val size = 5L
+        // What:     `val mtimeNanos = 1_000_000_000L`. A `Long` (the `L` suffix); the `_` are cosmetic
+        //           DIGIT SEPARATORS (one billion ns = 1 second).
+        // Why:      A fixed modified-time (1 second past the epoch, in nanoseconds) feeding the mtime
+        //           input.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const mtimeNanos = 1_000_000_000n;
+        // ```
+        val mtimeNanos = 1_000_000_000L
+
+        // What:     `val first = NativeBridge.nativeFingerprint(path, size, mtimeNanos)`. Calls the
+        //           `external` native function across JNI; returns the hex cache-key `String`.
+        // Why:      The reference key the later assertions compare against.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const first = NativeBridge.nativeFingerprint(path, size, mtimeNanos);
+        // ```
+        val first = NativeBridge.nativeFingerprint(path, size, mtimeNanos)
+        // What:     `assertEquals(first, NativeBridge.nativeFingerprint(path, size, mtimeNanos))`.
+        //           `assertEquals(expected, actual)`: a SECOND call with the SAME inputs must equal the
+        //           reference key.
+        // Why:      Determinism: identical inputs yield an identical key, which is what makes a cache
+        //           lookup hit.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // expect(NativeBridge.nativeFingerprint(path, size, mtimeNanos)).toEqual(first);
+        // ```
+        assertEquals(first, NativeBridge.nativeFingerprint(path, size, mtimeNanos))
+        // What:     `assertEquals(16, first.length)`. EXPECTED `16` (an `Int`), ACTUAL the key's
+        //           character count.
+        // Why:      The key is a zero-padded 64-bit hash: exactly 16 lowercase-hex digits.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // expect(first.length).toEqual(16);
+        // ```
+        assertEquals(16, first.length)
+        // What:     `assertTrue("...", !first.contains("a.flac"))`. `assertTrue(message, condition)`
+        //           fails unless `condition` is true. `!first.contains("a.flac")` is true when the key
+        //           does NOT contain the path's basename (`!` is boolean NOT; `.contains` is substring
+        //           search).
+        // Why:      Opacity: the hash must not leak the path text.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // expect(first.includes("a.flac")).toBe(false);
+        // ```
+        assertTrue("fingerprint leaked the path basename: $first", !first.contains("a.flac"))
+        // What:     `assertTrue("...", first != NativeBridge.nativeFingerprint(path, 6L, mtimeNanos))`.
+        //           Fails unless the keys DIFFER. The second call keeps path and mtime but uses a
+        //           different size (`6L` vs `5L`). `!=` is structural inequality on `String`.
+        // Why:      Change-sensitivity to size: a re-encoded file (new size) must invalidate the entry.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // expect(NativeBridge.nativeFingerprint(path, 6n, mtimeNanos)).not.toEqual(first);
+        // ```
+        assertTrue("size change did not change key", first != NativeBridge.nativeFingerprint(path, 6L, mtimeNanos))
+        // What:     Same "must differ" check, varying only the mtime (`2_000_000_000L`, 2 seconds, vs
+        //           the baseline 1 second).
+        // Why:      Change-sensitivity to mtime: an in-place edit (same size, new mtime) must invalidate
+        //           the entry.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // expect(NativeBridge.nativeFingerprint(path, size, 2_000_000_000n)).not.toEqual(first);
+        // ```
+        assertTrue("mtime change did not change key", first != NativeBridge.nativeFingerprint(path, size, 2_000_000_000L))
+        // What:     Same "must differ" check, varying only the path (`b.flac` instead of `a.flac`).
+        // Why:      Change-sensitivity to path: two different tracks with identical size and mtime must
+        //           get distinct keys.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // expect(NativeBridge.nativeFingerprint("/music/Artist/Album/b.flac", size, mtimeNanos)).not.toEqual(first);
+        // ```
+        assertTrue("path change did not change key", first != NativeBridge.nativeFingerprint("/music/Artist/Album/b.flac", size, mtimeNanos))
+    }
+
+    // What:     `@Test` annotation marking the next method as a JUnit test case.
     // Why:      Registers `opusDecoderConstructsOnDevice` with the runner.
     //
     // In TS you'd write (pseudocode):

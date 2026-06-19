@@ -1,0 +1,30 @@
+# Enable the `aes` CPU target-feature that the `gxhash` dependency requires.
+#
+# gxhash (src/fingerprint.rs, the cache fingerprint hash) compiles its hardware
+# AES path unconditionally and emits a `compile_error!` unless the target enables
+# `aes` (plus `neon` on aarch64, already baseline; plus `sse2` on x86_64, already
+# baseline). It ships NO software fallback, so the produced `.so` REQUIRES a CPU
+# with AES acceleration and would SIGILL at runtime on one without it. Every
+# arm64-v8a phone carrying the ARMv8 crypto extensions has it (verified `aes` in
+# /proc/cpuinfo on the target device before shipping); the x86_64 entry covers the
+# emulator image.
+#
+# cargo-ndk (the `build:native` task) invokes cargo with an explicit
+# `--target <triple>`, so these per-target tables apply. The host entry lets a bare
+# `cargo check`/`cargo test` in this directory build too, instead of tripping the
+# compile_error. We deliberately do NOT use `-C target-cpu=native` (gxhash's own
+# example does): on the cross-compiled `.so` that is meaningless, and on a host
+# build it would bake the build host's full feature set in. `+aes` is the minimal,
+# portable flag. See docs/troubleshooting/gxhash-aes-target-feature.md.
+
+# arm64-v8a, the only ABI real devices use.
+[target.aarch64-linux-android]
+rustflags = ["-C", "target-feature=+aes,+neon"]
+
+# x86_64, the emulator ABI.
+[target.x86_64-linux-android]
+rustflags = ["-C", "target-feature=+aes"]
+
+# Host (Linux x86_64), so `cargo check`/`cargo test` in this dir compiles gxhash.
+[target.x86_64-unknown-linux-gnu]
+rustflags = ["-C", "target-feature=+aes"]

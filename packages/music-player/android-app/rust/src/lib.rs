@@ -62,6 +62,18 @@ mod engine_worker;
 // import * as error from "./error";
 // ```
 mod error;
+// What:     `mod fingerprint;` declares the `fingerprint` child module
+//           (`fingerprint.rs`), which holds the gxhash cache-key fingerprint and its
+//           `nativeFingerprint` JNI entry. The entry is `#[no_mangle]`, so the JVM
+//           finds its symbol in the `.so` even though the module is private here.
+// Why:      Keeps the new JNI export and its hashing out of this file (and under the
+//           per-file code-line budget); nothing in this file calls it directly.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import * as fingerprint from "./fingerprint"; // its native export is auto-registered
+// ```
+mod fingerprint;
 // What:     `mod opus;` declares a LOCAL child module named `opus` (`opus.rs`),
 //           our own Opus glue. Note: there is ALSO an external crate also named
 //           `opus` (libopus bindings); this local module shadows that name at the

@@ -22,29 +22,6 @@ package dev.monochromatic.musicplayer.core
 // ```
 import org.junit.Assert.assertEquals
 
-// What:     `import org.junit.Assert.assertFalse` imports the static `assertFalse` function
-//           (asserts a `Boolean` is `false`).
-// Why:      The opacity assertion below (`assertFalse(first.contains("a.flac"))`) needs it.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { assertFalse } from "@junit/assert";
-// ```
-import org.junit.Assert.assertFalse
-
-// What:     `import org.junit.Assert.assertNotEquals` imports the static `assertNotEquals`
-//           function, which FAILS the test unless its two arguments are NOT equal. This import
-//           is unique to this file among the test files; it is here because the
-//           change-sensitivity assertions need a "must differ" check.
-// Why:      The change-sensitivity assertions below (`assertNotEquals(first, fingerprint(...))`)
-//           need it.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { assertNotEquals } from "@junit/assert";
-// ```
-import org.junit.Assert.assertNotEquals
-
 // What:     `import org.junit.Assert.assertNull` imports the static `assertNull` function, which
 //           FAILS unless its argument is `null`.
 // Why:      The cache-miss assertions below (`assertNull(cache.get(...))`) need it, because
@@ -106,172 +83,13 @@ import org.junit.Test
 // });
 // ```
 class PeakCacheTest {
-    // What:     `private val trackPath: String = "/music/Artist/Album/a.flac"` declares a
-    //           class-private, read-only (`val`, not `var`) FIELD `trackPath` of explicit type
-    //           `String`, initialised to a fixed path literal.
-    // Why:      One path reused across the fingerprint vectors; its basename `a.flac` stands in
-    //           for the Rust temp file's suffix, so the opacity assertion checks the same leak
-    //           the Rust test guards (the path must not appear in the hex key).
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // const trackPath = "/music/Artist/Album/a.flac";
-    // ```
-    private val trackPath: String = "/music/Artist/Album/a.flac"
-
-    // What:     `@Test` is an ANNOTATION (metadata, no code) marking the method below as a test
-    //           the JUnit runner executes and reports.
-    // Why:      Registers `fingerprintIsStableOpaqueAndChangeSensitive` with the runner.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // test("fingerprint is stable, opaque, and change-sensitive", () => {
-    // ```
-    @Test
-    // What:     `fun fingerprintIsStableOpaqueAndChangeSensitive() { ... }` declares a
-    //           no-parameter test method returning `Unit` (Kotlin's "void"), block body. The
-    //           name is the report label.
-    // Why:      Adapted from the Rust `fingerprint_is_stable_opaque_and_change_sensitive`: pins
-    //           DETERMINISM (same inputs -> same key), OPACITY (a 16-char hex key that does not
-    //           leak the path), and CHANGE-SENSITIVITY to size and mtime (and path). The Rust
-    //           file-stat and its missing-file `None` branch are deferred with the I/O layer.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // () => { /* ...arrange + assertions below... *\/ }
-    // ```
-    fun fingerprintIsStableOpaqueAndChangeSensitive() {
-        // What:     `val size = 5uL` declares a read-only local `size`. The literal `5uL` has the
-        //           `uL` suffix: `u` makes it UNSIGNED, `L` makes it 64-bit-wide, so the type is
-        //           `ULong` (unsigned 64-bit integer), inferred from the literal. Siblings the
-        //           reader might expect: `5L` (signed `Long`), `5u` (`UInt`, 32-bit unsigned), `5`
-        //           (plain `Int`).
-        // Why:      A fixed file size (5 bytes) feeding `fingerprint`, whose `size` parameter is
-        //           `ULong`. `ULong` (not `Long`/`UInt`) is required because the function's
-        //           signature is `ULong` and the byte serialisation depends on the unsigned 64-bit
-        //           width.
-        // Gotcha:   `5uL` is `ULong`, NOT `Int` and NOT TS `number`. A plain `5` would be `Int` and
-        //           would not match the `ULong` parameter without conversion.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // const size = 5n; // bigint stands in for Kotlin's ULong
-        // ```
-        val size = 5uL
-        // What:     `val mtimeNanos = 1_000_000_000uL` declares a read-only `ULong` local. The
-        //           `uL` suffix again makes it `ULong`. The UNDERSCORES `_` are DIGIT SEPARATORS:
-        //           they are ignored by the compiler and only group digits for human readability
-        //           (one billion nanoseconds = 1 second).
-        // Why:      A fixed modified-time (1 second past the epoch, in nanoseconds) feeding
-        //           `fingerprint`, whose `mtimeNanos` parameter is `ULong`.
-        // Gotcha:   `_` are cosmetic; `1_000_000_000uL` is the single value 1000000000 as a
-        //           `ULong`, not multiple tokens.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // const mtimeNanos = 1_000_000_000n;
-        // ```
-        val mtimeNanos = 1_000_000_000uL
-
-        // What:     `val first = fingerprint(trackPath, size, mtimeNanos)` declares a read-only
-        //           `String` local `first` (type inferred from `fingerprint`'s `String` return),
-        //           holding the fingerprint of the baseline (path, size, mtime) vector.
-        // Why:      Compute the reference key once; later assertions compare other keys against it.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // const first = fingerprint(trackPath, size, mtimeNanos);
-        // ```
-        val first = fingerprint(trackPath, size, mtimeNanos)
-        // What:     `assertEquals(first, fingerprint(trackPath, size, mtimeNanos))` is
-        //           `assertEquals(expected, actual)`: EXPECTED is `first` (the reference key);
-        //           ACTUAL is a SECOND call with the SAME inputs. (Folds in the original note:
-        //           same inputs fingerprint identically; determinism for cache hits.)
-        // Why:      Prove the fingerprint is deterministic: identical inputs yield an identical
-        //           key, which is what makes a cache lookup hit.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // expect(fingerprint(trackPath, size, mtimeNanos)).toEqual(first);
-        // ```
-        assertEquals(first, fingerprint(trackPath, size, mtimeNanos))
-        // What:     `assertEquals("75553bb5d36767ef", first)` is `assertEquals(expected, actual)`:
-        //           EXPECTED is the literal hex string, ACTUAL is `first`. (Folds in the original
-        //           note: the key is the exact Rust 64-bit FNV-1a output for this material.)
-        // Why:      Pin the EXACT cross-language output, proving the Kotlin byte assembly + FNV-1a
-        //           hash reproduce the desktop Rust result bit-for-bit.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // expect(first).toEqual("75553bb5d36767ef");
-        // ```
-        assertEquals("75553bb5d36767ef", first)
-        // What:     `assertEquals(16, first.length)` is `assertEquals(expected, actual)`: EXPECTED
-        //           is the `Int` literal `16`; ACTUAL is `first.length`, the `Int` character count
-        //           of the string. (Folds in the original note: the key is a 16-char hex string,
-        //           not the path; no metadata exposed.)
-        // Why:      Confirm the key is exactly 16 hex digits wide (a zero-padded 64-bit hash), not
-        //           a path-derived string of varying length.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // expect(first.length).toEqual(16);
-        // ```
-        assertEquals(16, first.length)
-        // What:     `assertFalse(first.contains("a.flac"))` is the SINGLE-argument
-        //           `assertFalse(condition)`. The condition `first.contains("a.flac")` uses the
-        //           `String` overload of `.contains` (substring search) to ask whether the key
-        //           leaks the track's basename.
-        // Why:      Opacity: the hex key must NOT contain the path's `a.flac`, proving the
-        //           fingerprint is a one-way hash that exposes no filesystem metadata.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // expect(first.includes("a.flac")).toBe(false);
-        // ```
-        assertFalse(first.contains("a.flac"))
-
-        // What:     `assertNotEquals(first, fingerprint(trackPath, 6uL, mtimeNanos))` calls
-        //           `assertNotEquals(unexpected, actual)`, which FAILS unless the two DIFFER. The
-        //           ACTUAL fingerprints the SAME path and mtime but a DIFFERENT size: `6uL` (a
-        //           `ULong` literal, vs the baseline `5uL`). (Folds in the original note: a size
-        //           change, i.e. a re-encode, changes the key.)
-        // Why:      Prove the key is sensitive to file size, so a re-encoded file (new size)
-        //           invalidates the stale cache entry.
-        // Gotcha:   `assertNotEquals(a, b)` is the "must differ" assertion; do not read it as
-        //           `assertEquals`. `6uL` is a `ULong`, like `5uL`.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // expect(fingerprint(trackPath, 6n, mtimeNanos)).not.toEqual(first);
-        // ```
-        assertNotEquals(first, fingerprint(trackPath, 6uL, mtimeNanos))
-        // What:     `assertNotEquals(first, fingerprint(trackPath, size, 2_000_000_000uL))` is the
-        //           "must differ" assertion. The ACTUAL keeps the path and size but uses a
-        //           DIFFERENT mtime: `2_000_000_000uL` (a `ULong`, 2 seconds, vs the baseline 1
-        //           second). (Folds in the original note: an mtime change, i.e. an in-place edit,
-        //           changes the key.)
-        // Why:      Prove the key is sensitive to modified-time, so an in-place edit (same size,
-        //           new mtime) still invalidates the stale entry.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // expect(fingerprint(trackPath, size, 2_000_000_000n)).not.toEqual(first);
-        // ```
-        assertNotEquals(first, fingerprint(trackPath, size, 2_000_000_000uL))
-        // What:     `assertNotEquals(first, fingerprint("/music/Artist/Album/b.flac", size, mtimeNanos))`
-        //           is the "must differ" assertion. The ACTUAL keeps size and mtime but uses a
-        //           DIFFERENT path (`b.flac` instead of `a.flac`). (Folds in the original note: a
-        //           path change changes the key.)
-        // Why:      Prove the key is sensitive to the path, so two different tracks with identical
-        //           size and mtime still get distinct cache keys.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // expect(fingerprint("/music/Artist/Album/b.flac", size, mtimeNanos)).not.toEqual(first);
-        // ```
-        assertNotEquals(first, fingerprint("/music/Artist/Album/b.flac", size, mtimeNanos))
-    }
+    // What:     The host-side fingerprint test moved to an on-device instrumented test. The
+    //           fingerprint hash is now `gxhash` (hardware AES, no JVM port), computed in the
+    //           native crate and reached through `NativeBridge.nativeFingerprint`, so it can only
+    //           run on the device. Its determinism / opacity / change-sensitivity assertions now
+    //           live in `androidTest`'s `NativeBridgeTest.fingerprintIsDeterministicOpaqueAndChangeSensitiveOnDevice`.
+    // Why:      Keep this host suite to the PURE in-memory `PeakCache` map; nothing here calls the
+    //           native fingerprint, so no native library is loaded in the host JVM.
 
     // What:     `@Test` annotation marking the next method as a JUnit test (metadata only).
     // Why:      Registers `insertAndGetPreservesEntries` with the runner.

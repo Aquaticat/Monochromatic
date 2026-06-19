@@ -184,6 +184,29 @@ object NativeBridge {
      */
     external fun nativeMeasureTruePeak(fd: Int): Float
 
+    // What:     `external fun nativeFingerprint(path: String, size: Long, mtimeNanos: Long): String`
+    //           is a JNI native function (no Kotlin body). It takes the track `path` text, its `size`
+    //           in bytes, and its modified-time `mtimeNanos` in nanoseconds (both `Long`, 64-bit
+    //           signed; sibling `Int` is 32-bit, too narrow for nanosecond timestamps), and returns
+    //           the opaque hex cache-key `String`.
+    // Why:      gxhash (the cache fingerprint hash) has no JVM port, so the fingerprint that was
+    //           hand-written FNV-1a in pure Kotlin now lives in the native crate (src/fingerprint.rs)
+    //           and is reached here. The native side builds the SAME (path + size + mtime) byte
+    //           material and seed as the desktop crate, so identical inputs hash identically.
+    // Gotcha:   `size`/`mtimeNanos` are passed as signed `Long` but treated as unsigned native-side
+    //           (sizes/timestamps are never negative); the old core function took `ULong`, so callers
+    //           pass the plain `Long` here instead of converting.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // declare function nativeFingerprint(path: string, size: bigint, mtimeNanos: bigint): string;
+    // ```
+    /**
+     * Defines native fingerprint behavior for this music-player component; the TypeScript-oriented notes above
+     * explain its call shape and effects.
+     */
+    external fun nativeFingerprint(path: String, size: Long, mtimeNanos: Long): String
+
     // What:     `external fun nativeEngineCreate(): Long` is a JNI native function returning a `Long`
     //           (64-bit signed integer). The `Long` is an OPAQUE HANDLE: a native pointer/address
     //           the Rust engine owns, passed back on every later call. Sibling `Int` (32-bit) is
