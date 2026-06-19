@@ -1,0 +1,320 @@
+# Kotlin/Rust boundary for the Android music player
+
+Status: recommendation from source audit on 2026-06-19.
+Scope: `packages/music-player/android-app`.
+Goal: performance first, without turning the app into cross-language soup.
+
+## One-sentence rule
+
+Kotlin owns Android and user state.
+Rust owns audio bytes, decoded samples, DSP, and the realtime output thread.
+
+If code is mostly about screens, permissions, content URIs, services, saved settings, or lists of tracks,
+keep it in Kotlin.
+If code is mostly about PCM samples, decoders, true-peak scans, ring buffers, atomics, or AAudio callbacks,
+keep it in Rust.
+
+## Why this is the boundary
+
+Kotlin is the native language of the Android framework.
+The app talks to Compose, `ContentResolver`, SAF, MediaStore, WorkManager, `SharedPreferences`,
+`MediaSessionService`, permissions, and lifecycle callbacks.
+Those APIs already live on the JVM side.
+Moving that work into Rust would force Kotlin to call Rust, then Rust to call back into Kotlin or Java,
+which adds JNI crossings while making the code harder to debug.
+
+Rust is the right side for the audio engine because the hot path is not Android UI work.
+The Rust engine decodes audio to interleaved `f32` PCM,
+feeds an SPSC ring buffer,
+and fills AAudio's realtime callback without allocation, locking, or blocking.
+That shape is documented in `rust/src/engine.rs` and `rust/src/engine_worker.rs`.
+A garbage-collected Kotlin loop in the realtime sample path is the wrong tool.
+
+JNI is the border crossing.
+Cross it for coarse operations: load a track, play, pause, seek, set volume, measure a whole track,
+query a few scalar values.
+Do not cross it for every sample, every row render, every queue step, or every Compose state update.
+
+## Current build reality
+
+The current build is already a single full Rust engine app.
+`app/build.gradle.kts` says the Media3 and hybrid flavors are gone,
+and `mise.toml` drives one debug/release variant after `build:native` builds the `.so` files.
+`EngineFactory.kt` returns `RustEngine(context)`.
+
+Some comments are historical.
+For example, `AudioEngine.kt` still describes three swappable implementations,
+and `BrainPlayer.kt` still has old wording about an inner ExoPlayer.
+Treat those comments as design history, not current build shape.
+
+Measured inventory from the source tree, excluding Gradle and Rust build outputs:
+
+- Kotlin main source: 35 files under `app/src/main/kotlin`.
+- Kotlin unit tests: 11 files under `app/src/test/kotlin`.
+- Kotlin instrumented tests: 3 files under `app/src/androidTest/kotlin`.
+- Rust source: 9 files under `rust/src`.
+- Native libraries checked in for packaging: 2 `.so` files under `app/src/main/jniLibs`.
+- Current built APK artifacts found locally:
+  debug APK about 23.5 MB,
+  release APK about 19.6 MB,
+  arm64 native library about 4.4 MB,
+  x86_64 native library about 4.7 MB.
+
+The repo has comments saying the full Rust engine won the old head-to-head.
+I did not find a raw benchmark log or decision doc with the actual numbers.
+So this document treats full Rust as the current accepted code shape,
+not as a freshly re-measured claim.
+If somebody needs to defend the choice with numbers later,
+rerun and save the decode, latency, battery, memory, cold-start, and APK-size measurements.
+
+## Keep these parts in Kotlin
+
+### UI and user interaction
+
+Keep `MainActivity.kt`, `PlayerUiState.kt`, and the composables in Kotlin.
+They are Compose code, they bind to the service, they observe Compose state,
+and they handle taps, sliders, folder picking, and permission prompts.
+Rust has no advantage here.
+Every move to Rust would just marshal UI state back into Kotlin for rendering.
+
+### Android services and media-system integration
+
+Keep `PlaybackService.kt` and `BrainPlayer.kt` in Kotlin.
+They speak `MediaSessionService`, `MediaSession`, and media3 `SimpleBasePlayer`.
+The operating system expects this JVM-side shape for notification controls,
+lockscreen controls, headset buttons, and external controllers.
+
+The Rust engine can produce sound.
+Kotlin must still present that sound to Android as a normal media app.
+
+### Permissions, lifecycle, and storage framework access
+
+Keep `Permissions.kt`, `LibraryRoot.kt`, `LibrarySource.kt`, `SafTreeSource.kt`,
+and `MediaStoreSource.kt` in Kotlin.
+They use Android permission APIs, `ContentResolver`, cursors, SAF document trees,
+MediaStore columns, and content URIs.
+Rust cannot read a SAF tree by itself.
+Kotlin has to ask Android for the URI and descriptor anyway,
+so Rust should not own the scan.
+
+The right split is what the code already does:
+Kotlin resolves a playable thing to a `content://` URI,
+then opens a `ParcelFileDescriptor` only when the native engine or native peak scanner needs bytes.
+
+### Session and app-private persistence
+
+Keep `SessionStore.kt`, `LibraryRoot.kt`, and `PeakCacheStore.kt` in Kotlin.
+They are app storage code: `SharedPreferences`, app-private files, JSON text,
+mutexes around the in-process cache, and Android context access.
+This is not the realtime path.
+
+The pure in-memory `PeakCache` map can stay Kotlin too.
+It is just `fingerprint -> peak` lookup and update.
+The expensive part is measuring the peak, not storing the result.
+
+### Queue, pagination, and controller state
+
+Keep `PlayerController.kt`, `core/Queue.kt`, `core/Pagination.kt`, `core/Page.kt`,
+`core/RelPath.kt`, `core/DisplayPath.kt`, `core/AudioExtensions.kt`,
+`core/ShuffleMode.kt`, and `core/Session.kt` in Kotlin.
+
+These files control what the user sees and what track should play next.
+They work with lists of display strings, selected pages, Compose snapshots, and content URI identities.
+`docs/decisions/music-player-android-port.md` records a real library size of 3,857 files,
+which is a normal Kotlin collection workload.
+Moving this to Rust would mean copying track lists, page entries, selected indices,
+and state snapshots across JNI just to send them back to Kotlin for display.
+That is likely slower and definitely messier.
+
+Optimize these algorithms in Kotlin if profiling finds a problem.
+Do not move them to Rust only because the files are large.
+Large UI-state code is not the same thing as hot audio code.
+
+### Work scheduling
+
+Keep `PeakSweepScheduler.kt` and `PeakSweepWorker.kt` in Kotlin.
+WorkManager, charging/idle constraints, and worker lifecycle are Android framework concerns.
+The worker should schedule and iterate in Kotlin,
+then call the Rust true-peak scanner for each track.
+
+## Keep these parts in Rust
+
+### Decoding and demuxing
+
+Keep `rust/src/decode.rs` and `rust/src/opus.rs` in Rust.
+They turn a file descriptor into decoded interleaved `f32` PCM.
+They use Symphonia for most formats and libopus for Opus,
+which is exactly the kind of CPU-heavy byte processing Rust is good at.
+
+Kotlin should not receive decoded PCM arrays.
+The moment decoded samples cross JNI in chunks,
+the boundary is in the wrong place.
+
+### Playback engine and worker thread
+
+Keep `rust/src/engine.rs` and `rust/src/engine_worker.rs` in Rust.
+They own the playback worker, commands, atomics, ring buffer, AAudio stream, and realtime callback.
+The callback only pops samples, applies gain, fills silence on underrun, and advances counters.
+That is the performance-critical loop.
+
+Kotlin should drive it through coarse commands:
+`load`, `play`, `pause`, `seek`, `setVolume`, `setNormalizationGain`, and scalar state polls.
+It should not own the sample loop.
+
+### AAudio output and latency probe
+
+Keep `rust/src/output.rs` in Rust.
+It opens AAudio through the NDK bindings and reads native presentation timestamps.
+This is native audio API work, not app UI work.
+
+### True-peak measurement
+
+Keep true-peak measurement in `rust/src/truepeak.rs`, reached from `PeakMeasurer.kt`.
+A true-peak scan decodes the whole track and walks the samples.
+That is CPU-heavy and naturally belongs next to the decoder.
+
+Kotlin may keep the tiny `normalizationGain(peak)` formula.
+That function maps one float to one float,
+and it is called once per cache hit or measurement result.
+There is no performance reason to force that tiny formula into Rust.
+
+The larger Kotlin `core/TruePeak.kt` measurement implementation is not used by production code,
+except for the small gain helper.
+Keep it only as a reference or test oracle if it is useful.
+For cleanup, split the gain helper from the unused Kotlin scanner,
+or move scanner-only tests so future readers do not think production measures peaks twice.
+
+### Fingerprinting, with one caveat
+
+`TrackFingerprint.kt` queries Android for size and modified time in Kotlin,
+then calls `NativeBridge.nativeFingerprint`.
+The Rust side uses `gxhash` in `rust/src/fingerprint.rs`.
+That is justified by desktop parity and by the lack of a JVM/Kotlin gxhash port,
+not by a huge Android performance win.
+
+This call is acceptable because it is per track and not realtime.
+Do not put it inside row rendering or the AAudio callback.
+If fingerprinting ever becomes a scan bottleneck,
+either batch fingerprints across one JNI call or switch to a Kotlin-owned hash for Android-only caches.
+
+### JNI exports
+
+Keep `rust/src/lib.rs` as the exported native surface,
+and keep `NativeBridge.kt` as the thin Kotlin declaration surface.
+That split is normal:
+Kotlin declares `external` methods,
+Rust exports `Java_dev_monochromatic_musicplayer_NativeBridge_*` symbols.
+
+The good sign in the current bridge is that it passes primitives and file descriptors,
+not giant object graphs.
+Preserve that.
+
+## The boundary contract
+
+Future code should follow these rules.
+
+- If it touches Android SDK classes, keep it Kotlin.
+  Examples: `Context`, `Uri`, `ContentResolver`, `Cursor`, `SharedPreferences`, `WorkManager`,
+  `MediaSession`, `AudioManager`, `BroadcastReceiver`, Compose state.
+
+- If it touches decoded samples, keep it Rust.
+  Examples: `f32` PCM buffers, oversampling, decoder packets, audio output buffers,
+  ring-buffer producer/consumer halves, AAudio callbacks.
+
+- If it runs on the realtime audio thread, keep it Rust and keep it boring.
+  No allocation, no locks, no disk I/O, no JNI, no logging in the hot callback.
+
+- If it runs once per user action, once per track, or once per app lifecycle event,
+  Kotlin is usually fine.
+
+- If it runs once per sample, once per frame, or once per output buffer,
+  Rust owns it.
+
+- Pass file descriptors to Rust, not Android content APIs.
+  Kotlin opens the `content://` URI with `ContentResolver.openFileDescriptor`.
+  Rust duplicates the borrowed fd synchronously and owns its copy.
+  Kotlin closes its descriptor normally.
+
+- Pass scalars back to Kotlin.
+  Good return values: status codes, `Float` peak values, `Double` seconds, booleans,
+  opaque `Long` handles.
+  Bad return values: decoded sample arrays, whole queue snapshots, UI page trees.
+
+- Do not add native-to-JVM callbacks from the AAudio callback.
+  Kotlin polling every 200 ms for playing/ended state is not the audio hot path.
+  If lower end-of-track latency is ever needed,
+  signal from the worker thread, not from the realtime callback.
+
+## What not to move just because Rust feels faster
+
+Do not move pagination to Rust.
+It builds UI tabs and row labels.
+Rust would still hand the result back to Kotlin for Compose.
+
+Do not move queue state to Rust unless profiling proves the Kotlin queue is a CPU bottleneck.
+The queue is tied to selected pages, snapshots, shuffle controls, and user events.
+A JNI queue would make every tap and every rescan more complicated.
+
+Do not move SAF or MediaStore scanning to Rust.
+Rust cannot magically avoid Android's content provider boundary.
+Kotlin already has the cursor and URI APIs.
+
+Do not move `SessionStore` to Rust.
+Android sessions are per-device app state,
+and `SharedPreferences` is the simplest correct storage.
+
+Do not move Compose UI state to Rust.
+Compose observes Kotlin state.
+Rust cannot recompose the screen.
+
+## What to clean up next
+
+This document recommends architecture, not a code rewrite.
+If cleaning the current split, do it in this order.
+
+1.  Update stale comments that still describe old Media3 or hybrid flavors.
+    `AudioEngine.kt`, `EngineFactory.kt`, and `BrainPlayer.kt` have historical wording.
+    Keep real history in docs, but make source comments describe the current build.
+
+2.  Split or delete the unused Kotlin true-peak scanner.
+    Production should have one true peak measurement path: Rust.
+    Kotlin can keep `normalizationGain` and tests for the formula.
+
+3.  Keep `AudioEngine` as the only high-level engine seam.
+    The rest of Kotlin should not know about native handles, fds, or Rust modules.
+
+4.  Save real performance evidence beside the decision.
+    The repo currently has source comments saying full Rust won,
+    but not the raw head-to-head numbers.
+    Future maintainers need the measurement commands, device, build type, library sample,
+    and results for decode time, output latency, cold start, APK size, memory, and battery.
+
+5.  If a Kotlin list operation is suspected slow, profile before moving it.
+    First try data-structure and allocation fixes in Kotlin.
+    Move to Rust only if the hot loop is independent of Android and UI state.
+
+## Decision guide for new files
+
+Ask these questions in order.
+
+1.  Does the file import Android framework or AndroidX UI/service/storage APIs?
+    Put it in Kotlin.
+
+2.  Does the file need to run without the garbage collector interrupting a sound buffer?
+    Put it in Rust.
+
+3.  Does the file transform compressed audio bytes into PCM or scan PCM samples?
+    Put it in Rust.
+
+4.  Does the file decide what the user sees, which track is selected, or what gets saved?
+    Put it in Kotlin.
+
+5.  Would moving it to Rust require passing lists of tracks, strings, pages, or UI state over JNI?
+    Keep it Kotlin.
+
+6.  Would keeping it in Kotlin require passing PCM samples over JNI?
+    Put it in Rust.
+
+That is the whole rule.
+Keep the crossing narrow,
+with Kotlin as the Android shell and Rust as the audio machine.
