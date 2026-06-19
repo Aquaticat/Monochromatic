@@ -190,15 +190,49 @@ await describe({
     },),
 
     it({
+      name: 'debug writes to process stderr when process exists',
+      fn: async ({ sinon, },) => {
+        process.env.DEBUG = 'true';
+        const sink = createConsoleSink();
+        const stderrSpy = sinon.stub(
+          process.stderr,
+          'write',
+        );
+        const consoleDebugSpy = sinon.stub(
+          console,
+          'debug',
+        );
+
+        void sink.write(record({
+          level: 'debug',
+          message: 'shown',
+        },),);
+        await waitForFlush();
+
+        expect(stderrSpy.callCount,)
+          .toBe(1,);
+        expect(consoleDebugSpy.callCount,)
+          .toBe(0,);
+        const emitted = stderrSpy.firstCall.args[0] as string;
+        expect(emitted,)
+          .toBe('[debug] [1970-01-01T00:00:00.000Z] shown\n',);
+      },
+    },),
+
+    it({
       name: 'level transitions split into separate console calls',
       fn: async ({ sinon, },) => {
         process.env.DEBUG = 'true';
         const sink = createConsoleSink();
-        const debugSpy = sinon.spy(
+        const stderrSpy = sinon.stub(
+          process.stderr,
+          'write',
+        );
+        const consoleDebugSpy = sinon.stub(
           console,
           'debug',
         );
-        const warnSpy = sinon.spy(
+        const warnSpy = sinon.stub(
           console,
           'warn',
         );
@@ -221,16 +255,18 @@ await describe({
         },),);
 
         await waitForFlush();
-        expect(debugSpy.callCount,)
+        expect(stderrSpy.callCount,)
           .toBe(2,);
+        expect(consoleDebugSpy.callCount,)
+          .toBe(0,);
         expect(warnSpy.callCount,)
           .toBe(1,);
-        const firstDebug = debugSpy.firstCall.args[0] as string;
-        const secondDebug = debugSpy.secondCall.args[0] as string;
+        const firstDebug = stderrSpy.firstCall.args[0] as string;
+        const secondDebug = stderrSpy.secondCall.args[0] as string;
         expect(firstDebug.split('\n',).length,)
-          .toBe(2,);
+          .toBe(3,);
         expect(secondDebug.split('\n',).length,)
-          .toBe(1,);
+          .toBe(2,);
       },
     },),
 
@@ -257,7 +293,7 @@ await describe({
     },),
 
     it({
-      name: 'each level routes to its mapped console method',
+      name: 'each level routes to its mapped output channel',
       fn: async ({ sinon, },) => {
         process.env.DEBUG = 'true';
         const sink = createConsoleSink();
@@ -265,25 +301,29 @@ await describe({
         // internally calls this.error(stack), so a spied trace would delegate
         // into the spied console.error and inflate the error count by one.
         // The stub still records the routing call (callCount) without that
-        // delegation, isolating the sink's level->method mapping from Node's
+        // delegation, isolating the sink's level-to-channel mapping from Node
         // console internals.
         const traceSpy = sinon.stub(
           console,
           'trace',
         );
-        const debugSpy = sinon.spy(
+        const stderrSpy = sinon.stub(
+          process.stderr,
+          'write',
+        );
+        const consoleDebugSpy = sinon.stub(
           console,
           'debug',
         );
-        const infoSpy = sinon.spy(
+        const infoSpy = sinon.stub(
           console,
           'info',
         );
-        const warnSpy = sinon.spy(
+        const warnSpy = sinon.stub(
           console,
           'warn',
         );
-        const errorSpy = sinon.spy(
+        const errorSpy = sinon.stub(
           console,
           'error',
         );
@@ -320,19 +360,21 @@ await describe({
         await waitForFlush();
 
         // Assert the whole count map at once: a future drift reports which
-        // method's count changed (e.g. {error: 3} vs {error: 2}) instead of a
+        // channel's count changed (e.g. {error: 3} vs {error: 2}) instead of a
         // bare "expected 3 to equal 2". error is 2 because console.error backs
         // both 'error' and 'fatal' (fatal shares the error method). Keys are
         // alphabetized to satisfy oxlint sort-keys.
         expect({
-          debug: debugSpy.callCount,
+          debugConsole: consoleDebugSpy.callCount,
+          debugStderr: stderrSpy.callCount,
           error: errorSpy.callCount,
           info: infoSpy.callCount,
           trace: traceSpy.callCount,
           warn: warnSpy.callCount,
         },)
           .toEqual({
-            debug: 1,
+            debugConsole: 0,
+            debugStderr: 1,
             error: 2,
             info: 1,
             trace: 1,
@@ -349,9 +391,9 @@ await describe({
         // DEBUG here yields verbose=false (process.argv has no --verbose in a
         // normal test run, and 'window' is not in globalThis under Node).
         const sink = createConsoleSink();
-        const debugSpy = sinon.spy(
-          console,
-          'debug',
+        const stderrSpy = sinon.stub(
+          process.stderr,
+          'write',
         );
         const traceSpy = sinon.spy(
           console,
@@ -368,7 +410,7 @@ await describe({
         },),);
 
         await waitForFlush();
-        expect(debugSpy.callCount,)
+        expect(stderrSpy.callCount,)
           .toBe(0,);
         expect(traceSpy.callCount,)
           .toBe(0,);
@@ -383,9 +425,9 @@ await describe({
         // and no browser `window`, the --verbose argv flag is the sole trigger.
         using _restoreArgv = withVerboseArgv();
         const sink = createConsoleSink();
-        const spy = sinon.spy(
-          console,
-          'debug',
+        const spy = sinon.stub(
+          process.stderr,
+          'write',
         );
 
         void sink.write(record({

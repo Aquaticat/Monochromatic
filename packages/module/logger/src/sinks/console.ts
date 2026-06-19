@@ -121,7 +121,8 @@ function isWarnSuppressed(): boolean {
  * Maps log levels to the name of the console method that handles them.
  * Names rather than function references so tests (and other hot patches)
  * that replace `console.info` etc. after module load still see their
- * replacement when the sink flushes.
+ * replacement when the sink flushes. `debug` uses this mapping only when
+ * process stderr is unavailable, preserving browser `console.debug` output.
  */
 const LEVEL_TO_CONSOLE_METHOD: Record<Level,
   'debug' | 'error' | 'info' | 'trace' | 'warn'> = {
@@ -154,8 +155,38 @@ function formatRecord(record: LogRecord,): string {
 }
 
 /**
+ * Writes a formatted debug run to process stderr when the host exposes a
+ * process stream. Falling back to `console.debug` keeps browser and restricted
+ * runtimes working when `process` is absent or unusable.
+ *
+ * @param text - Formatted debug run text that should stay off stdout.
+ *
+ * @returns Whether process stderr accepted the debug run.
+ *
+ * @example
+ * ```ts
+ * writeDebugRunToProcessStderr('[debug] [1970-01-01T00:00:00.000Z] hi');
+ * // => true when process.stderr.write is available
+ * ```
+ */
+function writeDebugRunToProcessStderr(text: string,): boolean {
+  try {
+    if ((typeof process) === 'undefined')
+      return false;
+
+    process.stderr
+      .write(`${text}\n`,);
+    return true;
+  }
+  catch {
+    return false;
+  }
+}
+
+/**
  * Emits a contiguous run of same-level records as a single console call,
- * joining formatted lines with `\n`.
+ * joining formatted lines with `\n`. Debug records write to process stderr
+ * when `process` exists so machine-readable stdout stays clean in CLI hosts.
  *
  * @param records - Records that all share `level`.
  *
@@ -185,6 +216,8 @@ function emitRun(
       return formatRecord(r,);
     },)
     .join('\n',);
+  if ((level === 'debug') && writeDebugRunToProcessStderr(text,))
+    return;
   try {
     /**
      * Name (not the function reference) of the matching `console.*` method; resolved lazily so post-import hot patches still apply.
@@ -286,9 +319,11 @@ function verifyConsole(): Promise<boolean> {
       return Promise.resolve(false,);
 
     /**
-     * Sample `console.debug` reference used only to check the method actually exists in the host; absent in some stripped runtimes.
+     * Sample `console.info` reference used only to check that a representative
+     * console method exists in the host; debug can use process stderr under
+     * process runtimes.
      */
-    const testFn = console.debug;
+    const testFn = console.info;
     if ((typeof testFn) !== 'function')
       return Promise.resolve(false,);
 
@@ -310,7 +345,8 @@ function verifyConsole(): Promise<boolean> {
  * calls, sharply reducing console-panel overhead when an instrumented path
  * emits many records per sync frame.
  *
- * @returns Sink that writes formatted lines to `console.*`.
+ * @returns Sink that writes formatted lines to `console.*`, except
+ * process-hosted debug records write to stderr.
  *
  * @example
  * ```ts
@@ -361,9 +397,10 @@ export function createConsoleSink(): Sink {
   /**
    * Drains the buffer, collapsing contiguous same-level runs into single
    * console calls. A sequence `[debug, debug, warn, debug]` becomes three
-   * calls: `console.debug` (two lines joined), `console.warn`, then
-   * `console.debug`. Typical instrumented functions use a single level
-   * throughout, so most flushes collapse to one call.
+   * calls: `process.stderr.write` (two lines joined), `console.warn`, then
+   * `process.stderr.write` under process runtimes. Typical instrumented
+   * functions use a single level throughout, so most flushes collapse to one
+   * call.
    */
   function flushBuffer(): void {
     state.scheduled = false;

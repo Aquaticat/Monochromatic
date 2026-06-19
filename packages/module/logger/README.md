@@ -71,7 +71,8 @@ Availability is verified at module load; records emitted while an async sink is
 still being verified are replayed to that sink when it becomes available.
 
 - **console**: formats as `[level] [ISO timestamp] message`;
-  maps levels to corresponding `console.*` methods
+  maps levels to corresponding `console.*` methods,
+  except `debug` writes to `process.stderr` when `process` exists
 - **file**: Node.js only; walks up from `process.cwd()` to the nearest
   ancestor `node_modules/`, then appends JSONL records to
   `<that dir>/node_modules/.monochromatic/{timestamp}.log.jsonl` via
