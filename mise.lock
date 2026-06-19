@@ -437,24 +437,8 @@ backend = "cargo:https://github.com/slint-ui/slint"
 bin = "slint-lsp"
 crate = "slint-lsp"
 
-[[tools."cargo:https://github.com/slint-ui/slint"]]
-version = "ref:85e3eb76819762cdcaa732fa87533ff896546bac"
-backend = "cargo:https://github.com/slint-ui/slint"
-
-[tools."cargo:https://github.com/slint-ui/slint".options]
-bin = "slint-lsp"
-crate = "slint-lsp"
-
 [[tools."cargo:https://github.com/slint-ui/slint.git"]]
 version = "rev:85e3eb76819762cdcaa732fa87533ff896546bac"
-backend = "cargo:https://github.com/slint-ui/slint.git"
-
-[tools."cargo:https://github.com/slint-ui/slint.git".options]
-bin = "slint-viewer"
-crate = "slint-viewer"
-
-[[tools."cargo:https://github.com/slint-ui/slint.git"]]
-version = "ref:85e3eb76819762cdcaa732fa87533ff896546bac"
 backend = "cargo:https://github.com/slint-ui/slint.git"
 
 [tools."cargo:https://github.com/slint-ui/slint.git".options]
@@ -891,56 +875,56 @@ version = "5.3.0"
 backend = "npm:typescript-language-server"
 
 [[tools."npm:wrangler"]]
-version = "4.101.0"
+version = "4.102.0"
 backend = "npm:wrangler"
 
 [[tools.opentofu]]
-version = "1.12.2"
+version = "1.12.3"
 backend = "aqua:opentofu/opentofu"
 
 [tools.opentofu."platforms.linux-arm64"]
-checksum = "sha256:13d0e7a83f0fcffc2a61fa879aa63c5cf7f294f6c1c5a32abf5865bc2033d1c2"
-url = "https://github.com/opentofu/opentofu/releases/download/v1.12.2/tofu_1.12.2_linux_arm64.tar.gz"
+checksum = "sha256:98861dad4ac08882dcf255fe5d48bed7deddc34e8d6544f8690c65212320ad64"
+url = "https://github.com/opentofu/opentofu/releases/download/v1.12.3/tofu_1.12.3_linux_arm64.tar.gz"
 
 [tools.opentofu."platforms.linux-arm64-musl"]
-checksum = "sha256:13d0e7a83f0fcffc2a61fa879aa63c5cf7f294f6c1c5a32abf5865bc2033d1c2"
-url = "https://github.com/opentofu/opentofu/releases/download/v1.12.2/tofu_1.12.2_linux_arm64.tar.gz"
+checksum = "sha256:98861dad4ac08882dcf255fe5d48bed7deddc34e8d6544f8690c65212320ad64"
+url = "https://github.com/opentofu/opentofu/releases/download/v1.12.3/tofu_1.12.3_linux_arm64.tar.gz"
 
 [tools.opentofu."platforms.linux-x64"]
-checksum = "sha256:2ba8d1aeca94f68aab131628744cd417154462fa5a5b1633b5e04d7618c6ee52"
-url = "https://github.com/opentofu/opentofu/releases/download/v1.12.2/tofu_1.12.2_linux_amd64.tar.gz"
+checksum = "sha256:f87d45408dcbb963ddbe10b2f75e55b3495310556e05c35765dfd5913551f182"
+url = "https://github.com/opentofu/opentofu/releases/download/v1.12.3/tofu_1.12.3_linux_amd64.tar.gz"
 
 [tools.opentofu."platforms.linux-x64-baseline"]
-checksum = "sha256:2ba8d1aeca94f68aab131628744cd417154462fa5a5b1633b5e04d7618c6ee52"
-url = "https://github.com/opentofu/opentofu/releases/download/v1.12.2/tofu_1.12.2_linux_amd64.tar.gz"
+checksum = "sha256:f87d45408dcbb963ddbe10b2f75e55b3495310556e05c35765dfd5913551f182"
+url = "https://github.com/opentofu/opentofu/releases/download/v1.12.3/tofu_1.12.3_linux_amd64.tar.gz"
 
 [tools.opentofu."platforms.linux-x64-musl"]
-checksum = "sha256:2ba8d1aeca94f68aab131628744cd417154462fa5a5b1633b5e04d7618c6ee52"
-url = "https://github.com/opentofu/opentofu/releases/download/v1.12.2/tofu_1.12.2_linux_amd64.tar.gz"
+checksum = "sha256:f87d45408dcbb963ddbe10b2f75e55b3495310556e05c35765dfd5913551f182"
+url = "https://github.com/opentofu/opentofu/releases/download/v1.12.3/tofu_1.12.3_linux_amd64.tar.gz"
 
 [tools.opentofu."platforms.linux-x64-musl-baseline"]
-checksum = "sha256:2ba8d1aeca94f68aab131628744cd417154462fa5a5b1633b5e04d7618c6ee52"
-url = "https://github.com/opentofu/opentofu/releases/download/v1.12.2/tofu_1.12.2_linux_amd64.tar.gz"
+checksum = "sha256:f87d45408dcbb963ddbe10b2f75e55b3495310556e05c35765dfd5913551f182"
+url = "https://github.com/opentofu/opentofu/releases/download/v1.12.3/tofu_1.12.3_linux_amd64.tar.gz"
 
 [tools.opentofu."platforms.macos-arm64"]
-checksum = "sha256:10def6ebcc58ea438970a1c896e4b7fb32cd2d8d9d9ef260c8037a71671137e5"
-url = "https://github.com/opentofu/opentofu/releases/download/v1.12.2/tofu_1.12.2_darwin_arm64.tar.gz"
+checksum = "sha256:0c8ddee4294f7cea34d82b122fa805febce41d21905a54dc9ce9f79ee8145284"
+url = "https://github.com/opentofu/opentofu/releases/download/v1.12.3/tofu_1.12.3_darwin_arm64.tar.gz"
 
 [tools.opentofu."platforms.macos-x64"]
-checksum = "sha256:0d455eec551d58190ad622768f3ac262e7449283380cefe3e7d867323e5c058a"
-url = "https://github.com/opentofu/opentofu/releases/download/v1.12.2/tofu_1.12.2_darwin_amd64.tar.gz"
+checksum = "sha256:e4d5fa86cfbe7eb8b56ec19e4c7e0bc7885845ca4e4a955c49d184ae82c62ab2"
+url = "https://github.com/opentofu/opentofu/releases/download/v1.12.3/tofu_1.12.3_darwin_amd64.tar.gz"
 
 [tools.opentofu."platforms.macos-x64-baseline"]
-checksum = "sha256:0d455eec551d58190ad622768f3ac262e7449283380cefe3e7d867323e5c058a"
-url = "https://github.com/opentofu/opentofu/releases/download/v1.12.2/tofu_1.12.2_darwin_amd64.tar.gz"
+checksum = "sha256:e4d5fa86cfbe7eb8b56ec19e4c7e0bc7885845ca4e4a955c49d184ae82c62ab2"
+url = "https://github.com/opentofu/opentofu/releases/download/v1.12.3/tofu_1.12.3_darwin_amd64.tar.gz"
 
 [tools.opentofu."platforms.windows-x64"]
-checksum = "sha256:3498d3a5180e50e4a9d364520295a33c862fae96258abbe5f38fc536ce55bcc5"
-url = "https://github.com/opentofu/opentofu/releases/download/v1.12.2/tofu_1.12.2_windows_amd64.tar.gz"
+checksum = "sha256:34ddbab9eb07a72ea5cf36d98d97ce1931242cb89693cbf5dce06d65ba37d8cc"
+url = "https://github.com/opentofu/opentofu/releases/download/v1.12.3/tofu_1.12.3_windows_amd64.tar.gz"
 
 [tools.opentofu."platforms.windows-x64-baseline"]
-checksum = "sha256:3498d3a5180e50e4a9d364520295a33c862fae96258abbe5f38fc536ce55bcc5"
-url = "https://github.com/opentofu/opentofu/releases/download/v1.12.2/tofu_1.12.2_windows_amd64.tar.gz"
+checksum = "sha256:34ddbab9eb07a72ea5cf36d98d97ce1931242cb89693cbf5dce06d65ba37d8cc"
+url = "https://github.com/opentofu/opentofu/releases/download/v1.12.3/tofu_1.12.3_windows_amd64.tar.gz"
 
 [[tools.pkl]]
 version = "0.31.1"
@@ -991,52 +975,52 @@ checksum = "sha256:a8834481667325b44c539dbb758d7365a16389070f343c04b639bbe525ede
 url = "https://github.com/apple/pkl/releases/download/0.31.1/pkl-windows-amd64.exe"
 
 [[tools.pnpm]]
-version = "11.7.0"
+version = "11.8.0"
 backend = "aqua:pnpm/pnpm"
 
 [tools.pnpm."platforms.linux-arm64"]
-checksum = "sha256:a110731cf0f46cf89eb5659b42c9f5c3a2361d30087e2eed921c8378b1fe64a0"
-url = "https://github.com/pnpm/pnpm/releases/download/v11.7.0/pnpm-linux-arm64.tar.gz"
+checksum = "sha256:251222a30b3dcf6bc1c30c44fe3fdcd0bd4b2b06dd29f6a549647e56fa51548c"
+url = "https://github.com/pnpm/pnpm/releases/download/v11.8.0/pnpm-linux-arm64.tar.gz"
 provenance = "github-attestations"
 
 [tools.pnpm."platforms.linux-arm64-musl"]
-checksum = "sha256:9c82a83d0fa6dbcd4757f7846f20e73f77d451d6282b32602d9f933b5e2f4052"
-url = "https://github.com/pnpm/pnpm/releases/download/v11.7.0/pnpm-linux-arm64-musl.tar.gz"
+checksum = "sha256:dbc5077793d76d6318ea9a0b9c250327b12afaab4473b02549ee232f2d7b55b3"
+url = "https://github.com/pnpm/pnpm/releases/download/v11.8.0/pnpm-linux-arm64-musl.tar.gz"
 provenance = "github-attestations"
 
 [tools.pnpm."platforms.linux-x64"]
-checksum = "sha256:752e31654c6f24bc945db784d12831b80b29f533b43105575ce30dd3c8658609"
-url = "https://github.com/pnpm/pnpm/releases/download/v11.7.0/pnpm-linux-x64.tar.gz"
+checksum = "sha256:86b9aa5362b06cc61f5e829e41614ffda2fbda09993b8e84176feaa3c97b9532"
+url = "https://github.com/pnpm/pnpm/releases/download/v11.8.0/pnpm-linux-x64.tar.gz"
 provenance = "github-attestations"
 
 [tools.pnpm."platforms.linux-x64-baseline"]
-checksum = "sha256:752e31654c6f24bc945db784d12831b80b29f533b43105575ce30dd3c8658609"
-url = "https://github.com/pnpm/pnpm/releases/download/v11.7.0/pnpm-linux-x64.tar.gz"
+checksum = "sha256:86b9aa5362b06cc61f5e829e41614ffda2fbda09993b8e84176feaa3c97b9532"
+url = "https://github.com/pnpm/pnpm/releases/download/v11.8.0/pnpm-linux-x64.tar.gz"
 provenance = "github-attestations"
 
 [tools.pnpm."platforms.linux-x64-musl"]
-checksum = "sha256:6fa3052e350a1aceeeac90c9f9b59ed048312cab04b34c0472b018e71b243885"
-url = "https://github.com/pnpm/pnpm/releases/download/v11.7.0/pnpm-linux-x64-musl.tar.gz"
+checksum = "sha256:c22f99ca91ec4bab1f37114ed3eacc23e68da72573f42e72ebfafaeaa1131167"
+url = "https://github.com/pnpm/pnpm/releases/download/v11.8.0/pnpm-linux-x64-musl.tar.gz"
 provenance = "github-attestations"
 
 [tools.pnpm."platforms.linux-x64-musl-baseline"]
-checksum = "sha256:6fa3052e350a1aceeeac90c9f9b59ed048312cab04b34c0472b018e71b243885"
-url = "https://github.com/pnpm/pnpm/releases/download/v11.7.0/pnpm-linux-x64-musl.tar.gz"
+checksum = "sha256:c22f99ca91ec4bab1f37114ed3eacc23e68da72573f42e72ebfafaeaa1131167"
+url = "https://github.com/pnpm/pnpm/releases/download/v11.8.0/pnpm-linux-x64-musl.tar.gz"
 provenance = "github-attestations"
 
 [tools.pnpm."platforms.macos-arm64"]
-checksum = "sha256:97d077cca1225ae6ab492e5b6d0e6737ab7149c34813e70f25f67c6c2bf274a2"
-url = "https://github.com/pnpm/pnpm/releases/download/v11.7.0/pnpm-darwin-arm64.tar.gz"
+checksum = "sha256:7c9ef7523abf1190a2fde2b81dd652260d1679ba471c09950e8a08fa772c06e2"
+url = "https://github.com/pnpm/pnpm/releases/download/v11.8.0/pnpm-darwin-arm64.tar.gz"
 provenance = "github-attestations"
 
 [tools.pnpm."platforms.windows-x64"]
-checksum = "sha256:08acc088646c1dbf3030984918266058d23c5acf4c518dc7502bd539fc99c280"
-url = "https://github.com/pnpm/pnpm/releases/download/v11.7.0/pnpm-win32-x64.zip"
+checksum = "sha256:8cf6951ade777eeb7e4665fdcaefe77942724b217690eb3fa2f0b27c67b4310c"
+url = "https://github.com/pnpm/pnpm/releases/download/v11.8.0/pnpm-win32-x64.zip"
 provenance = "github-attestations"
 
 [tools.pnpm."platforms.windows-x64-baseline"]
-checksum = "sha256:08acc088646c1dbf3030984918266058d23c5acf4c518dc7502bd539fc99c280"
-url = "https://github.com/pnpm/pnpm/releases/download/v11.7.0/pnpm-win32-x64.zip"
+checksum = "sha256:8cf6951ade777eeb7e4665fdcaefe77942724b217690eb3fa2f0b27c67b4310c"
+url = "https://github.com/pnpm/pnpm/releases/download/v11.8.0/pnpm-win32-x64.zip"
 provenance = "github-attestations"
 
 [[tools.ripgrep]]
