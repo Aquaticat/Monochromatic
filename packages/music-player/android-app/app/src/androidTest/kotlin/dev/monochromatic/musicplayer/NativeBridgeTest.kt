@@ -574,6 +574,137 @@ class NativeBridgeTest {
     }
 
     // What:     `@Test` annotation marking the next method as a test case.
+    // Why:      Registers `nativeTruePeakInterpolatesInterSamplePeaks`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // it("nativeTruePeakInterpolatesInterSamplePeaks", () => { /* body */ });
+    // ```
+    @Test
+    // What:     `fun nativeTruePeakInterpolatesInterSamplePeaks() { ... }`. Feeds the
+    //           native true-peak meter known synthetic signals through the test-only
+    //           `nativeTruePeakSynthetic` JNI entry and asserts the result, proving the
+    //           Rust `TruePeakMeter` + `catmull_rom` path runs correctly on this real
+    //           device. These golden cases were ported from the deleted Kotlin
+    //           `core/TruePeakTest` scanner tests, which exercised a Kotlin meter that
+    //           production never ran; this drives the actual production native path.
+    // Why:      After deleting the unused Kotlin scanner, the production true-peak path
+    //           is Rust-only; this is its on-device coverage.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // function nativeTruePeakInterpolatesInterSamplePeaks(): void { /* body */ }
+    // ```
+    fun nativeTruePeakInterpolatesInterSamplePeaks() {
+        // What:     `val signal = floatArrayOf(0.0f, 0.0f, 0.9f, -0.9f, 0.9f, -0.9f, 0.0f, 0.0f)`.
+        //           A mono signal with a sharp alternating transient (the `0.9, -0.9`
+        //           runs) whose reconstructed inter-sample peak should EXCEED the raw
+        //           stored peak of 0.9. `floatArrayOf` builds a primitive `FloatArray`
+        //           (no boxing), the shape the JNI entry expects.
+        // Why:      The same vector the old Kotlin `meterReportsInterSamplePeak` used;
+        //           it forces the Catmull-Rom interpolation to overshoot.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const signal = new Float32Array([0, 0, 0.9, -0.9, 0.9, -0.9, 0, 0]);
+        // ```
+        val signal = floatArrayOf(0.0f, 0.0f, 0.9f, -0.9f, 0.9f, -0.9f, 0.0f, 0.0f)
+        // What:     `val rawPeak = 0.9f`. The largest stored-sample magnitude in
+        //           `signal`, written as a literal (`Float`) because the vector is fixed.
+        // Why:      The inter-sample (true) peak must be at least this raw peak.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const rawPeak = 0.9;
+        // ```
+        val rawPeak = 0.9f
+        // What:     `val measured = NativeBridge.nativeTruePeakSynthetic(signal, 1)`.
+        //           Call the test-only JNI entry with the mono (`channels = 1`) signal;
+        //           it returns the native meter's measured true peak as a `Float`.
+        // Why:      Run the real Rust meter over the synthetic signal on this device.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const measured = NativeBridge.nativeTruePeakSynthetic(signal, 1);
+        // ```
+        val measured = NativeBridge.nativeTruePeakSynthetic(signal, 1)
+        // What:     `assertTrue("native read error $measured", measured >= 0.0f)`.
+        //           A negative return is the JNI read-error sentinel; assert it did not
+        //           occur. `$measured` interpolates the value into the failure message.
+        // Why:      Distinguish a JNI failure from a genuine measurement.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // expect(measured >= 0).toBe(true);
+        // ```
+        assertTrue("native true-peak read error (sentinel $measured)", measured >= 0.0f)
+        // What:     `assertTrue("measured $measured should be >= raw $rawPeak", measured >= rawPeak - 1e-4f)`.
+        //           The measured inter-sample peak must be at least the raw peak, within
+        //           a `1e-4f` tolerance.
+        // Why:      Interpolation can only overshoot the stored samples; a result below
+        //           the raw peak would mean the oversampling is not running.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // expect(measured >= rawPeak - 1e-4).toBe(true);
+        // ```
+        assertTrue(
+            "measured peak $measured should be at least the raw peak $rawPeak",
+            measured >= rawPeak - 1e-4f,
+        )
+        // What:     `assertTrue("measured $measured should be a sane, finite level", measured < 4.0f)`.
+        //           Guard against a runaway/NaN/infinite result; a real inter-sample
+        //           peak for this signal stays well under 4.0.
+        // Why:      Catches a broken native path that returns garbage rather than a peak.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // expect(measured < 4.0).toBe(true);
+        // ```
+        assertTrue("measured peak $measured should be a sane, finite level", measured < 4.0f)
+        // What:     `val silence = NativeBridge.nativeTruePeakSynthetic(floatArrayOf(0.0f, 0.0f, 0.0f, 0.0f), 1)`.
+        //           Measure an all-zero mono signal.
+        // Why:      Silence must measure as ~0, the value that maps to unity
+        //           normalization gain on the Kotlin side.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const silence = NativeBridge.nativeTruePeakSynthetic(new Float32Array([0, 0, 0, 0]), 1);
+        // ```
+        val silence = NativeBridge.nativeTruePeakSynthetic(floatArrayOf(0.0f, 0.0f, 0.0f, 0.0f), 1)
+        // What:     `assertTrue("silence peak $silence should be ~0", silence in -1e-4f..1e-4f)`.
+        //           Assert the silence peak is within a tiny band around zero using
+        //           Kotlin's `in range` containment check on a `Float` range.
+        // Why:      A non-zero peak for pure silence would indicate a meter bug.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // expect(Math.abs(silence) <= 1e-4).toBe(true);
+        // ```
+        assertTrue("silence peak $silence should be ~0", silence in -1e-4f..1e-4f)
+        // What:     `val flat = NativeBridge.nativeTruePeakSynthetic(floatArrayOf(0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f), 1)`.
+        //           Measure a constant (DC) mono signal at 0.5.
+        // Why:      A constant signal has NO inter-sample overshoot (the cubic through
+        //           equal points is flat), so the true peak must equal the sample level.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const flat = NativeBridge.nativeTruePeakSynthetic(new Float32Array([0.5, 0.5, 0.5, 0.5, 0.5, 0.5]), 1);
+        // ```
+        val flat = NativeBridge.nativeTruePeakSynthetic(floatArrayOf(0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f), 1)
+        // What:     `assertTrue("flat DC peak $flat should be ~0.5", flat in 0.5f - 1e-3f..0.5f + 1e-3f)`.
+        //           Assert the constant-signal peak is ~0.5 within a small tolerance.
+        // Why:      Proves the interpolation does not invent overshoot where there is
+        //           none, complementing the overshoot case above.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // expect(Math.abs(flat - 0.5) <= 1e-3).toBe(true);
+        // ```
+        assertTrue("flat DC peak $flat should be ~0.5", flat in 0.5f - 1e-3f..0.5f + 1e-3f)
+    }
+
+    // What:     `@Test` annotation marking the next method as a test case.
     // Why:      Registers `measureTruePeakOnDevice`.
     //
     // In TS you'd write (pseudocode):

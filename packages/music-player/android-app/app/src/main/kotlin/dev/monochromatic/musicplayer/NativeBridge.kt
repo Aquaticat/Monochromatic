@@ -182,6 +182,29 @@ object NativeBridge {
      */
     external fun nativeMeasureTruePeak(fd: Int): Float
 
+    // What:     `external fun nativeTruePeakSynthetic(samples: FloatArray, channels: Int): Float` is a
+    //           TEST-ONLY JNI native function (no Kotlin body). It takes an in-memory `FloatArray` of
+    //           interleaved `f32` PCM (`samples`) and the `channels` interleave width (`Int`), and
+    //           returns the measured true peak (`Float`, 32-bit, matching the sample domain). Sibling
+    //           `nativeMeasureTruePeak` takes a file DESCRIPTOR and decodes; this one bypasses the
+    //           decoder so a caller can hand it a KNOWN signal.
+    // Why:      The instrumented test (`NativeBridgeTest`) cannot assert a known golden peak through
+    //           the decode path (that needs a real encoded file). This entry feeds a synthetic signal
+    //           with a known inter-sample peak straight into the production `TruePeakMeter` so the test
+    //           verifies the SAME native true-peak path on the real device. It is NOT called by
+    //           production code.
+    // Gotcha:   A negative return is a JNI read-error sentinel (`-1.0`); a real peak is `>= 0.0`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // declare function nativeTruePeakSynthetic(samples: Float32Array, channels: number): number; // <0 = error
+    // ```
+    /**
+     * Defines native true peak synthetic behavior for this music-player component; the TypeScript-oriented
+     * notes above explain its call shape and effects.
+     */
+    external fun nativeTruePeakSynthetic(samples: FloatArray, channels: Int): Float
+
     // What:     `external fun nativeFingerprint(path: String, size: Long, mtimeNanos: Long): String`
     //           is a JNI native function (no Kotlin body). It takes the track `path` text, its `size`
     //           in bytes, and its modified-time `mtimeNanos` in nanoseconds (both `Long`, 64-bit

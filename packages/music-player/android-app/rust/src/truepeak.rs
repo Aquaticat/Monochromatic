@@ -596,3 +596,70 @@ pub fn measure_true_peak(mut source: Box<dyn Source>) -> Result<f32, PlayerError
     // ```
     Ok(meter.peak)
 }
+
+// What:     `pub fn true_peak_interleaved(samples: &[f32], channels: usize) -> f32`.
+//           A public free function that runs the SAME streaming meter as
+//           `measure_true_peak`, but over an ALREADY-decoded slice of interleaved
+//           `f32` PCM instead of a `Box<dyn Source>`. `samples: &[f32]` is a
+//           borrowed, read-only view (the caller keeps ownership); `channels` is
+//           the interleave width; `-> f32` returns the measured true peak. `pub`
+//           so the JNI layer (`lib.rs`) can reach it from the test-only
+//           `nativeTruePeakSynthetic` entry.
+// Why:      Lets an on-device instrumented test feed a KNOWN synthetic signal
+//           straight into the production `TruePeakMeter` and assert the measured
+//           inter-sample peak on the real target, with NO decoder and NO golden
+//           audio file. It shares the exact meter + `catmull_rom` path that
+//           `measure_true_peak` drives, so a green device test proves that path.
+// Gotcha:   Feeds the whole slice as ONE chunk; that is equivalent to the decoder
+//           feeding many chunks, because the meter's per-channel window/`filled`
+//           state persists across samples, so chunk boundaries never move the
+//           result. This is why the old Kotlin "chunk boundaries" test does not
+//           need a separate device entry.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function truePeakInterleaved(samples: Float32Array, channels: number): number { ... }
+// ```
+pub fn true_peak_interleaved(samples: &[f32], channels: usize) -> f32 {
+    // What:     `if channels == 0 { return 0.0; }`. Guard a zero-channel request,
+    //           returning a `0.0` (silence) peak. Mirrors the same guard in
+    //           `measure_true_peak`.
+    // Why:      Avoids the divide-by-zero `index % channels` routing in `feed`; a
+    //           zero peak maps to a unity normalization gain on the Kotlin side.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // if (channels === 0) return 0;
+    // ```
+    if channels == 0 {
+        return 0.0;
+    }
+    // What:     `let mut meter = TruePeakMeter::new(channels);`. Build the running
+    //           scanner sized for `channels`; `mut` because `feed` mutates it.
+    // Why:      The same accumulator `measure_true_peak` uses, so this path stays
+    //           byte-for-byte identical to production.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const meter = new TruePeakMeter(channels);
+    // ```
+    let mut meter = TruePeakMeter::new(channels);
+    // What:     `meter.feed(samples);`. Push the whole interleaved slice through the
+    //           meter in one call (`feed` borrows it read-only).
+    // Why:      Update the running peak across every sample of the synthetic signal.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // meter.feed(samples);
+    // ```
+    meter.feed(samples);
+    // What:     `meter.peak`. The accumulated peak field as the tail expression (no
+    //           trailing `;`), so it is the return value.
+    // Why:      Hand the measured true peak back to the JNI caller.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // return meter.peak;
+    // ```
+    meter.peak
+}

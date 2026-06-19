@@ -156,7 +156,7 @@ use std::time::Instant;
 // type JClass = OpaqueHandle;  // the calling class object
 // type JString = OpaqueHandle; // a Java string handle, convert before use
 // ```
-use jni::objects::{JClass, JString};
+use jni::objects::{JClass, JFloatArray, JString};
 // What:     `use jni::sys::{jboolean, jdouble, jfloat, jint, jlong};` imports the
 //           JVM's fixed-width primitive types as Rust aliases. `jint` is a 32-bit
 //           signed integer (Java `int`), `jlong` a 64-bit signed integer (Java
@@ -908,6 +908,112 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeMea
         // ```
         Err(_) => -3.0,
     }
+}
+
+// What:     `#[no_mangle]`: keep the symbol name unmangled so the JVM finds it.
+// Why:      Same as the other JNI entry points.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// // no annotation needed
+// ```
+#[no_mangle]
+// What:     `pub extern "system" fn Java_..._nativeTruePeakSynthetic<'local>(env,`
+//           `_class, samples: JFloatArray, channels: jint) -> jfloat`. A TEST-ONLY
+//           JNI entry that measures the true peak of an IN-MEMORY interleaved-`f32`
+//           array handed straight from Kotlin, bypassing the decoder.
+//           `samples: JFloatArray<'local>` is the JVM `float[]` handle; `channels:
+//           jint` the interleave width; `-> jfloat` returns the measured peak (or a
+//           negative sentinel on a JNI read error).
+// Why:      Production `nativeMeasureTruePeak` needs a real encoded file + a
+//           `content://` descriptor, so an instrumented test cannot assert a KNOWN
+//           golden peak through it. This entry lets the on-device test feed a
+//           synthetic signal with a known inter-sample peak and verify the SAME
+//           `TruePeakMeter` + `catmull_rom` path on the real arm64 target. It is
+//           exercised ONLY by `NativeBridgeTest`, never by production Kotlin.
+// Gotcha:   Returns `-1.0` if the JVM array cannot be read; a real peak is >= 0.0,
+//           so the test treats any negative value as a JNI failure.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// export function nativeTruePeakSynthetic(env, _class, samples: number[], channels: number): number { ... }
+// ```
+pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeTruePeakSynthetic<'local>(
+    env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    samples: JFloatArray<'local>,
+    channels: jint,
+) -> jfloat {
+    // What:     `if channels <= 0 { return 0.0; }`. Reject a non-positive channel
+    //           count up front, returning a `0.0` (silence) peak.
+    // Why:      `true_peak_interleaved` also guards `channels == 0`; rejecting here
+    //           keeps the `channels as usize` cast below safe and meaningful.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // if (channels <= 0) return 0.0;
+    // ```
+    if channels <= 0 {
+        return 0.0;
+    }
+    // What:     `let len = match env.get_array_length(&samples) { Ok(n) => n, Err(_)`
+    //           `=> return -1.0 };`. Ask the JVM how many floats the array holds.
+    //           `get_array_length` borrows the array (`&samples`) and returns
+    //           `Result<jsize>`; on error we bail with the `-1.0` read-error sentinel.
+    // Why:      We must size the destination buffer before copying the elements out.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const len = samples.length;
+    // ```
+    let len = match env.get_array_length(&samples) {
+        Ok(n) => n,
+        Err(_) => return -1.0,
+    };
+    // What:     `if len <= 0 { return 0.0; }`. An empty array measures as silence.
+    // Why:      No samples means no peak; `0.0` maps to unity gain on the Kotlin side.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // if (len <= 0) return 0.0;
+    // ```
+    if len <= 0 {
+        return 0.0;
+    }
+    // What:     `let mut buf = vec![0.0f32; len as usize];`. Allocate a zeroed
+    //           host-side `Vec<f32>` of the array's length to receive the copy.
+    // Why:      `get_float_array_region` copies INTO a Rust slice we own; the JVM
+    //           array itself stays on the JVM heap.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const buf = new Float32Array(len);
+    // ```
+    let mut buf = vec![0.0f32; len as usize];
+    // What:     `if env.get_float_array_region(&samples, 0, &mut buf).is_err() {`
+    //           `return -1.0; }`. Copy all `len` floats from index 0 of the JVM
+    //           array into `buf`; on any JNI error, bail with the `-1.0` sentinel.
+    // Why:      Brings the synthetic PCM into Rust so the meter can scan it.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // copy samples[0..len] into buf
+    // ```
+    if env.get_float_array_region(&samples, 0, &mut buf).is_err() {
+        return -1.0;
+    }
+    // What:     `truepeak::true_peak_interleaved(&buf, channels as usize)`. Run the
+    //           production meter over the copied samples; `channels as usize` casts
+    //           the JVM int to the index type. Tail expression, so its `f32` is the
+    //           returned `jfloat`.
+    // Why:      Reuse the exact measurement path production uses, so the test
+    //           verifies real behaviour rather than a copy of it.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // return truePeakInterleaved(buf, channels);
+    // ```
+    truepeak::true_peak_interleaved(&buf, channels as usize)
 }
 
 // What:     `#[no_mangle]`: keep the symbol name for JVM lookup.
