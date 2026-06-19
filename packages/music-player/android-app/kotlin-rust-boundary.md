@@ -52,19 +52,22 @@ Measured inventory from the source tree, excluding Gradle and Rust build outputs
 - Kotlin unit tests: 11 files under `app/src/test/kotlin`.
 - Kotlin instrumented tests: 3 files under `app/src/androidTest/kotlin`.
 - Rust source: 9 files under `rust/src`.
-- Native libraries checked in for packaging: 2 `.so` files under `app/src/main/jniLibs`.
+- Native libraries built locally for packaging: 2 `.so` files under `app/src/main/jniLibs`
+  (gitignored, produced by `build:native`, not committed).
 - Current built APK artifacts found locally:
   debug APK about 23.5 MB,
   release APK about 19.6 MB,
   arm64 native library about 4.4 MB,
   x86_64 native library about 4.7 MB.
 
-The build configuration records that the full Rust engine replaced the old comparison variants.
-I did not find a raw benchmark log or decision doc with the actual numbers.
-So this document treats full Rust as the current accepted code shape,
-not as a freshly re-measured claim.
-If somebody needs to defend the choice with numbers later,
-rerun and save the decode, latency, battery, memory, cold-start, and APK-size measurements.
+The build configuration records this as a settled decision.
+`app/build.gradle.kts` states the head-to-head comparison `is decided (the full-Rust variant won decisively)`,
+which is why the Media3 and hybrid flavors were removed and only one variant remains.
+Aquaticat has accepted the full-Rust engine as the final architecture and does not plan to re-measure it:
+the raw head-to-head numbers were not retained, and the comparison cannot be reproduced anyway because the
+old engines are gone.
+Anyone who later wants fresh numbers can rebuild and benchmark the current engine, but this decision does
+not wait on them.
 
 ## Keep these parts in Kotlin
 
@@ -172,16 +175,17 @@ Keep true-peak measurement in `rust/src/truepeak.rs`, reached from `PeakMeasurer
 A true-peak scan decodes the whole track and walks the samples.
 That is CPU-heavy and naturally belongs next to the decoder.
 
-Kotlin may keep the tiny `normalizationGain(peak)` formula.
+Kotlin keeps the tiny `normalizationGain(peak)` formula in `core/Normalization.kt`.
 That function maps one float to one float,
 and it is called once per cache hit or measurement result.
 There is no performance reason to force that tiny formula into Rust.
 
-The larger Kotlin `core/TruePeak.kt` measurement implementation is not used by production code,
-except for the small gain helper.
-Keep it only as a reference or test oracle if it is useful.
-For cleanup, split the gain helper from the unused Kotlin scanner,
-or move scanner-only tests so future readers do not think production measures peaks twice.
+The unused Kotlin true-peak scanner that used to share `core/TruePeak.kt` has been removed:
+production measures peaks only in Rust, so the Kotlin scanner was a never-run second implementation.
+Its algorithm is now covered on-device against the real Rust path by
+`NativeBridgeTest.nativeTruePeakInterpolatesInterSamplePeaks`,
+which feeds synthetic PCM through the test-only `nativeTruePeakSynthetic` JNI entry.
+The gain helpers (`normalizationGain`, `processSample`) and their tests moved to `core/Normalization.kt`.
 
 ### Fingerprinting, with one caveat
 
@@ -268,21 +272,23 @@ Rust cannot recompose the screen.
 
 ## What to clean up next
 
-This document recommends architecture, not a code rewrite.
-If cleaning the current split, do it in this order.
+The Kotlin/Rust split has been cleaned up; the last item below is future guidance.
 
-1.  Split or delete the unused Kotlin true-peak scanner.
-    Production should have one true peak measurement path: Rust.
-    Kotlin can keep `normalizationGain` and tests for the formula.
+1.  Done: the unused Kotlin true-peak scanner was split out and deleted.
+    Production has one true-peak path (Rust);
+    `normalizationGain`/`processSample` and their tests live in `core/Normalization.kt`;
+    the Rust path is now covered on-device (see "True-peak measurement").
 
-2.  Keep `AudioEngine` as the only high-level engine seam.
-    The rest of Kotlin should not know about native handles, fds, or Rust modules.
+2.  `AudioEngine` is the only high-level PLAYBACK-engine seam.
+    The rest of Kotlin does not know about native engine handles, fds, or Rust modules.
+    The only other sanctioned native crossings are `NativeBridge.nativeFingerprint` and
+    `NativeBridge.nativeMeasureTruePeak` (plus the test-only `nativeTruePeakSynthetic`):
+    coarse per-track calls, not engine internals.
 
-3.  Save real performance evidence beside the decision.
-    The build configuration records that full Rust replaced the old comparison variants,
-    but not the raw head-to-head numbers.
-    Future maintainers need the measurement commands, device, build type, library sample,
-    and results for decode time, output latency, cold start, APK size, memory, and battery.
+3.  No benchmark evidence will be produced.
+    Aquaticat has settled the full-Rust decision (see "Current build reality");
+    the head-to-head cannot be reproduced because the Media3 and hybrid engines are gone,
+    and re-measuring is out of scope.
 
 4.  If a Kotlin list operation is suspected slow, profile before moving it.
     First try data-structure and allocation fixes in Kotlin.
