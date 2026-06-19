@@ -274,7 +274,7 @@ object TrackFingerprint {
         //             cache key `String`.
         // Why:      Produce the opaque, hashed cache key from the URI plus the two read
         //           file attributes, matching the desktop's `path + size + mtime` key
-        //           and its gxhash, so both flavors agree on identical inputs.
+        //           and its gxhash, so Android and desktop agree on identical inputs.
         // Gotcha:   `Long * Long` is 64-bit integer multiply that WRAPS silently on
         //           overflow (no auto-widening like JS numbers); using `Long` for the
         //           constant is what keeps it 64-bit. The conversion to unsigned now

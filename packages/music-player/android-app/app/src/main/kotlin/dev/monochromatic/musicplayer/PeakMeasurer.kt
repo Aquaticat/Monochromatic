@@ -1,12 +1,12 @@
 // What:     `package dev.monochromatic.musicplayer` declares the namespace this file's
-//           declarations belong to. This file is in the `rust` FLAVOR source set, merged with
-//           the shared `main` source set for the full-Rust build variant.
+//           declarations belong to. This file is compiled with the app's main source set and
+//           provides the native true-peak measurement entry point.
 // Why:      Keeps `measureTrackPeak` in the same package as the shared sweep code that calls it
 //           and the `NativeBridge` it decodes through.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// // No keyword — file path is the module; this one is rust-flavor only.
+// // No keyword — file path is the module.
 // ```
 package dev.monochromatic.musicplayer
 
@@ -107,11 +107,9 @@ import kotlinx.coroutines.withContext
 // File summary (folds in the old KDoc's domain content)
 // =============================================================================
 //
-// This file is the full-Rust flavor's offline true-peak MEASURER for the background sweep,
-// mirroring the Media3 flavor's `measureTrackPeak` so the engine-agnostic `measureAndCache`
-// (in shared `main`) resolves the right decoder AT COMPILE TIME. It decodes the track
-// NATIVELY (symphonia/libopus via `NativeBridge.nativeMeasureTruePeak`), the in-process
-// replacement for the Media3 flavor's MediaCodec decoder.
+// This file is the app's offline true-peak MEASURER for the background sweep. It decodes the
+// track NATIVELY with symphonia/libopus via `NativeBridge.nativeMeasureTruePeak`, matching the
+// production playback engine's decoder stack.
 //
 // It owns `sweepDecodeDispatcher`: ONE low-priority (nice 19) daemon thread the sweep decodes
 // on, so its CPU-heavy native true-peak pass yields to playback and the UI under contention.

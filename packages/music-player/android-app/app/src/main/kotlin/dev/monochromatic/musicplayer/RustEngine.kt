@@ -1,12 +1,12 @@
 // What:     `package dev.monochromatic.musicplayer` declares the namespace this file's
-//           declarations belong to. This file is in the `rust` FLAVOR source set, merged with
-//           the shared `main` source set for the full-Rust build variant.
+//           declarations belong to. This file is compiled with the app's main source set and
+//           implements the production native audio engine.
 // Why:      Keeps `RustEngine` in the same package as the shared `AudioEngine` interface it
 //           implements and the `NativeBridge` it calls into.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// // No keyword — file path is the module; this one is rust-flavor only.
+// // No keyword — file path is the module.
 // ```
 package dev.monochromatic.musicplayer
 
@@ -228,10 +228,9 @@ import kotlinx.coroutines.launch
 // File summary (folds in the old KDoc's domain content; corrects a stale claim)
 // =============================================================================
 //
-// `RustEngine` is the full-Rust `AudioEngine`: a thin Kotlin FACADE over the native engine
+// `RustEngine` is the production `AudioEngine`: a thin Kotlin FACADE over the native engine
 // (`engine.rs`), which decodes with symphonia/libopus and outputs through AAudio, ALL
-// in-process. This is the engine whose performance the variant exists to measure: no platform
-// MediaCodec, no ExoPlayer.
+// in-process. Playback does not go through platform MediaCodec or ExoPlayer.
 //
 // The native engine is PULL-based (no native-to-JVM callbacks), so this class translates that
 // into the PUSH-style `AudioEngine` contract: a 200 ms main-thread poller reads the native
@@ -244,18 +243,16 @@ import kotlinx.coroutines.launch
 // synchronously, so the JVM keeps and closes the original while Rust owns the dup (the
 // dup-ownership protocol that avoids the fdsan double-close).
 //
-// STALE-COMMENT CORRECTION: the old KDoc said audio-focus handling, the becoming-noisy
-// headphone-unplug pause, and true-peak normalization were "not yet wired". They ARE wired now,
-// in THIS file: audio focus via `focusRequest`/`requestFocus`/`onFocusChange`, the becoming-noisy
-// pause via `noisyReceiver`, and normalization via `resolveNormalizationGain` +
-// `NativeBridge.nativeEngineSetNormalizationGain`. ExoPlayer gave the Media3 flavor those for
-// free; the full-Rust engine adds them itself here.
+// This file owns the Android behaviors the native engine needs around the sample pipeline: audio
+// focus via `focusRequest`/`requestFocus`/`onFocusChange`, the becoming-noisy headphone-unplug pause
+// via `noisyReceiver`, and true-peak normalization via `resolveNormalizationGain` +
+// `NativeBridge.nativeEngineSetNormalizationGain`.
 
 // What:     `class RustEngine(context: Context) : AudioEngine { ... }` declares a class with a
 //           primary constructor taking a `Context` (no `val`, so not stored as a field) that
 //           IMPLEMENTS the `AudioEngine` interface (the `: AudioEngine` has no `()` because an
 //           interface is implemented, not constructed).
-// Why:      Provide the full-Rust implementation of the backend-agnostic `AudioEngine` contract.
+// Why:      Provide the native Rust implementation of the `AudioEngine` contract.
 // Gotcha:   `: AudioEngine` WITHOUT `()` = implements an interface; a supertype WITH `()` would be
 //           a superclass constructor call.
 //
@@ -353,7 +350,7 @@ class RustEngine(context: Context) : AudioEngine {
     //           counter starting at 0. `Long` is unnecessary (never billions of loads per session).
     // Why:      Bumped each load; a resolved gain is applied only when its load is still current, so a
     //           measure that finishes after the user skipped ahead cannot retag the new track.
-    //           Main-thread only (so, unlike the Media3 engine's, it needs no `@Volatile`).
+    //           Main-thread only, so it needs no `@Volatile`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -998,9 +995,8 @@ class RustEngine(context: Context) : AudioEngine {
          * source and use.
          */
         val peak: Float = try {
-            // What:     `measureTruePeakBlocking(appContext, parsed)` calls the flavor's blocking native
-            //           measure (defined in this flavor's `PeakMeasurer.kt`); its `Float` result is the
-            //           `try` block's value.
+            // What:     `measureTruePeakBlocking(appContext, parsed)` calls the blocking native measure
+            //           defined in `PeakMeasurer.kt`; its `Float` result is the `try` block's value.
             // Why:      Perform the actual native decode + measurement on a cache miss.
             //
             // In TS you'd write (pseudocode):
@@ -1444,9 +1440,9 @@ class RustEngine(context: Context) : AudioEngine {
     // What:     `private fun onFocusChange(change: Int) { ... }` declares a private function taking the
     //           focus-change code (`Int`) and returning `Unit` (void).
     // Why:      React to a system audio-focus change so a phone call, navigation prompt, or another media app
-    //           pauses (and a transient interruption resumes) this engine, the behavior ExoPlayer gives the
-    //           Media3 flavor for free. A permanent loss pauses and abandons focus; a transient loss pauses and
-    //           arms resume-on-gain; a gain resumes only if a transient loss had paused us.
+    //           pauses (and a transient interruption resumes) this engine. A permanent loss pauses and abandons
+    //           focus; a transient loss pauses and arms resume-on-gain; a gain resumes only if a transient loss
+    //           had paused us.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1707,8 +1703,7 @@ class RustEngine(context: Context) : AudioEngine {
     companion object {
         // What:     `private const val LOG_TAG: String = "RustEngine"` declares a private compile-time
         //           `String` constant.
-        // Why:      Logcat tag for this engine's lines. (Unlike the Media3 flavor, this flavor defines its
-        //           own `LOG_TAG` here.)
+        // Why:      Logcat tag for this engine's lines.
         //
         // In TS you'd write (pseudocode):
         // ```ts

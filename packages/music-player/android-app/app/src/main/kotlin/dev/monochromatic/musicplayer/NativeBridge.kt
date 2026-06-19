@@ -1,13 +1,12 @@
 // What:     `package dev.monochromatic.musicplayer` declares the namespace this file's
-//           declarations belong to. This file is in the `rust` FLAVOR source set
-//           (`app/src/rust/kotlin/...`), merged with the shared `main` source set for the
-//           full-Rust build variant.
+//           declarations belong to. This file is compiled with the app's main source set and
+//           declares the JNI functions implemented by the packaged native library.
 // Why:      Keeps `NativeBridge` in the same package as `RustEngine` and the shared code that
 //           call into it.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// // No keyword — file path is the module; this one is rust-flavor only.
+// // No keyword — file path is the module.
 // ```
 package dev.monochromatic.musicplayer
 
@@ -15,10 +14,10 @@ package dev.monochromatic.musicplayer
 // File summary (folds in the old comment's domain content)
 // =============================================================================
 //
-// `NativeBridge` is the full-Rust flavor's thin Kotlin FACADE over the native engine
-// shared library (`.so`, built from Rust via cargo-ndk). Every function here is `external`:
-// it has NO Kotlin body; its implementation lives in the native library and is linked at
-// load through JNI (Java Native Interface, the bridge between JVM code and native code).
+// `NativeBridge` is the app's thin Kotlin FACADE over the native engine shared library
+// (`.so`, built from Rust via cargo-ndk). Every function here is `external`: it has NO
+// Kotlin body; its implementation lives in the native library and is linked at load through
+// JNI (Java Native Interface, the bridge between JVM code and native code).
 //
 // Two groups of functions are declared:
 //   - SMOKE-TEST probes that proved the cargo-ndk -> JNI toolchain on device: `nativePing`,
@@ -123,7 +122,7 @@ object NativeBridge {
     //           `Float` (32-bit) is declined because a benchmark duration/throughput wants the
     //           wider precision.
     // Why:      Smoke test: decode the file at `path` natively and return a timing/throughput
-    //           figure for performance comparison against the Media3 flavor.
+    //           figure for diagnosing the native decoder path.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -154,8 +153,7 @@ object NativeBridge {
 
     // What:     `external fun nativeOutputLatencyProbe(): Double` is a JNI native function returning
     //           a `Double` (64-bit) latency figure.
-    // Why:      Smoke test: measure the native AAudio output path's latency for the
-    //           performance-comparison story this flavor exists to tell.
+    // Why:      Smoke test: measure the native AAudio output path's latency for diagnostics.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -377,8 +375,8 @@ object NativeBridge {
 
     // What:     `external fun nativeEnginePlayWhenReady(handle: Long): Boolean` is a JNI native
     //           function taking the `handle` and returning a `Boolean`.
-    // Why:      Query the engine's intended play state ("should play once ready"), mirroring
-    //           ExoPlayer's `playWhenReady` for the shared `AudioEngine` contract.
+    // Why:      Query the engine's intended play state ("should play once ready"), the value the
+    //           shared `AudioEngine` contract reports to the media-session projection.
     //
     // In TS you'd write (pseudocode):
     // ```ts

@@ -42,10 +42,9 @@ The current build is already a single full Rust engine app.
 and `mise.toml` drives one debug/release variant after `build:native` builds the `.so` files.
 `EngineFactory.kt` returns `RustEngine(context)`.
 
-Some comments are historical.
-For example, `AudioEngine.kt` still describes three swappable implementations,
-and `BrainPlayer.kt` still has old wording about an inner ExoPlayer.
-Treat those comments as design history, not current build shape.
+Source comments now describe that current shape:
+Kotlin owns the Android/media-session shell,
+and `RustEngine` owns native decode/output behind the small `AudioEngine` contract.
 
 Measured inventory from the source tree, excluding Gradle and Rust build outputs:
 
@@ -60,7 +59,7 @@ Measured inventory from the source tree, excluding Gradle and Rust build outputs
   arm64 native library about 4.4 MB,
   x86_64 native library about 4.7 MB.
 
-The repo has comments saying the full Rust engine won the old head-to-head.
+The build configuration records that the full Rust engine replaced the old comparison variants.
 I did not find a raw benchmark log or decision doc with the actual numbers.
 So this document treats full Rust as the current accepted code shape,
 not as a freshly re-measured claim.
@@ -272,24 +271,20 @@ Rust cannot recompose the screen.
 This document recommends architecture, not a code rewrite.
 If cleaning the current split, do it in this order.
 
-1.  Update stale comments that still describe old Media3 or hybrid flavors.
-    `AudioEngine.kt`, `EngineFactory.kt`, and `BrainPlayer.kt` have historical wording.
-    Keep real history in docs, but make source comments describe the current build.
-
-2.  Split or delete the unused Kotlin true-peak scanner.
+1.  Split or delete the unused Kotlin true-peak scanner.
     Production should have one true peak measurement path: Rust.
     Kotlin can keep `normalizationGain` and tests for the formula.
 
-3.  Keep `AudioEngine` as the only high-level engine seam.
+2.  Keep `AudioEngine` as the only high-level engine seam.
     The rest of Kotlin should not know about native handles, fds, or Rust modules.
 
-4.  Save real performance evidence beside the decision.
-    The repo currently has source comments saying full Rust won,
+3.  Save real performance evidence beside the decision.
+    The build configuration records that full Rust replaced the old comparison variants,
     but not the raw head-to-head numbers.
     Future maintainers need the measurement commands, device, build type, library sample,
     and results for decode time, output latency, cold start, APK size, memory, and battery.
 
-5.  If a Kotlin list operation is suspected slow, profile before moving it.
+4.  If a Kotlin list operation is suspected slow, profile before moving it.
     First try data-structure and allocation fixes in Kotlin.
     Move to Rust only if the hot loop is independent of Android and UI state.
 

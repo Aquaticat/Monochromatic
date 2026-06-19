@@ -30,9 +30,9 @@
 //      the scope. We therefore always report REPEAT_MODE_ALL. Replaying a
 //      single track on natural end is handled entirely inside the brain.
 //   2. Audio focus (ducking/pausing when another app grabbed the speaker) is
-//      NOT handled here. It lives in the inner ExoPlayer and surfaces as a
-//      normal pause through the brain, which then re-pulls this state, so a
-//      focus-induced pause flips the notification icon correctly.
+//      NOT handled here. It lives in `RustEngine` and surfaces as a normal pause
+//      through the brain, which then re-pulls this state, so a focus-induced
+//      pause flips the notification icon correctly.
 //
 
 // What:     `package dev.monochromatic.musicplayer` declares the namespace
@@ -1031,8 +1031,8 @@ class BrainPlayer(
         // ```
         controller.onStateChanged = null
         // What:     `controller.release()` tells the brain to release its
-        //           resources (the inner ExoPlayer/engine), freeing audio
-        //           focus, buffers, and file handles.
+        //           resources (the native engine), freeing audio focus, buffers,
+        //           worker threads, and file handles.
         // Why:      Prevent leaking the inner engine every time the service is
         //           destroyed (this is why COMMAND_RELEASE must be advertised;
         //           see the companion object).
@@ -1183,7 +1183,7 @@ class BrainPlayer(
                 //           release command (routed to `handleRelease`).
                 // Why:      MUST be advertised, otherwise `SimpleBasePlayer.release()`
                 //           early-returns before `handleRelease()` runs, leaking
-                //           the inner ExoPlayer on every service destroy.
+                //           the native engine on every service destroy.
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts

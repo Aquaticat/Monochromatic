@@ -875,10 +875,9 @@ internal fun normalizationGain(truePeak: Float): Float {
 //           -2..2 range. `internal` for the audio engine and tests.
 // Why:      Apply the combined linear gain to one PCM sample then hard-clamp it into the valid
 //           -1.0..1.0 range, kept as one tested unit so the gain-then-clamp rule lives in a single
-//           place the engine's per-sample audio processor calls. On Android the user-volume factor is
-//           applied downstream by the platform audio sink (ExoPlayer's `player.volume`), so the engine
-//           passes only the track's normalization gain here; the clamp still backstops measurement
-//           error and any source that was above full scale to begin with.
+//           place for reference tests. The production Rust callback applies user volume and the
+//           track's normalization gain together; this Kotlin helper preserves the same clamp rule for
+//           the JVM-side test oracle.
 //
 // In TS you'd write (pseudocode):
 // ```ts

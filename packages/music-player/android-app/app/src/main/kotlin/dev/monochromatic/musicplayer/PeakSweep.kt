@@ -9,9 +9,8 @@
 //
 // `measureAndCache` does the work for ONE track: it fingerprints the track,
 // short-circuits if the peak is already in the on-disk cache, otherwise hands
-// the actual audio decode to the per-flavor `measureTrackPeak` seam (the Media3
-// build decodes with `Media3TruePeakDecoder`; the native-Rust builds use their
-// own decoder), and memoizes the result.
+// the actual audio decode to the native `measureTrackPeak` seam, and memoizes
+// the result.
 //
 // It deliberately does NOT persist (flush) the cache: the foreground play path
 // flushes once per measurement, but the background sweep worker measures many
@@ -304,9 +303,9 @@ suspend fun measureAndCache(context: Context, uri: Uri): SweepOutcome {
      * and use.
      */
     val peak: Float = try {
-        // What:     `measureTrackPeak(context, uri)` calls the per-flavor decode
-        //           seam that actually reads the audio and computes its true
-        //           peak, returning a `Float`. It has no trailing assignment or
+        // What:     `measureTrackPeak(context, uri)` calls the native decode seam
+        //           that actually reads the audio and computes its true peak,
+        //           returning a `Float`. It has no trailing assignment or
         //           `return`, so as the last expression of the `try` block it
         //           IS the value the `try` expression produces (an
         //           implicit-return tail expression), which becomes `peak`.

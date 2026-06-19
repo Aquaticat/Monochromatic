@@ -141,7 +141,7 @@ import dev.monochromatic.musicplayer.core.paginate
 //           constructor parameter that is ALSO a private read-only PROPERTY (the `val`
 //           on a constructor param is Kotlin shorthand for "store this argument as a
 //           field"); `private` hides it outside the class.
-// Why:      The controller drives a flavor-specific `AudioEngine`; storing it as a
+// Why:      The controller drives the concrete `AudioEngine` it is handed; storing it as a
 //           private field lets every method reach it.
 //
 // In TS you'd write (pseudocode):

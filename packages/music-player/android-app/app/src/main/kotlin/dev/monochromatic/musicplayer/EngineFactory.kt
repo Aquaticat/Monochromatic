@@ -1,26 +1,17 @@
 // Top-of-file summary (the Kotlin stand-in for a Rust `//!` module header):
 //
-// This file is the engine factory for the "Full-Rust" build flavor of the music
-// player. A "flavor" here is a build-time variant of the same app: one variant
-// plays audio through Google's Media3/ExoPlayer library, and THIS variant plays
-// audio through a native engine written in Rust (it uses `symphonia` + `libopus`
-// to decode, AAudio to push samples to the speaker, and runs entirely in-process).
-// The whole reason this Rust variant exists is to measure its decode/output
-// performance against the Media3 variant.
+// This file is the app's engine factory. There is one production engine now: `RustEngine`, a native
+// engine written in Rust that decodes with `symphonia` + `libopus`, outputs through AAudio, and runs
+// in-process behind the small `AudioEngine` interface.
 //
-// The single function below, `createAudioEngine`, is deliberately given the EXACT
-// same name and shape as the Media3 flavor's `createAudioEngine`. Only one of the
-// two files is compiled into any given build, so the call site in `MainActivity`
-// can just call `createAudioEngine(context)` and the compiler picks whichever
-// flavor's version is present. That is how `MainActivity` "resolves the engine at
-// compile time" without any runtime branching.
+// The single function below, `createAudioEngine`, is still useful even without build flavors. It gives
+// the rest of the app one stable construction point, keeps `RustEngine` out of most call sites, and
+// leaves tests free to inject their own `AudioEngine` without knowing how the production engine is
+// built.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// // A whole source file is a module. There is no Kotlin/Android equivalent of
-// // "build flavors" in plain TS; the closest mental model is having two files
-// // `engineFactory.rust.ts` and `engineFactory.media3.ts` that export the same
-// // `createAudioEngine`, and a build step that swaps which one is bundled.
+// // A whole source file is a module. This file exports the production factory.
 // ```
 
 // What:     `package dev.monochromatic.musicplayer` declares the namespace (the
@@ -65,7 +56,7 @@ import android.content.Context
 //             writes the type AFTER the name with a colon, the reverse of how a
 //             beginner might guess.
 //           - `: AudioEngine` is the RETURN type. It is the INTERFACE
-//             `AudioEngine` (the contract every engine flavor implements), NOT the
+//             `AudioEngine` (the contract the production engine and test fakes implement), NOT the
 //             concrete class `RustEngine`. `RustEngine` is the sibling type we
 //             could have written here instead.
 //           - `=` followed by an expression is a "single-expression body": instead
@@ -75,14 +66,12 @@ import android.content.Context
 //             `context`. Note there is NO `new` keyword: in Kotlin you call the
 //             class name like a function to construct an instance.
 // Why:      `MainActivity` only ever calls `createAudioEngine(context)` and stores
-//           the result as an `AudioEngine`. This factory hides which concrete
-//           engine it is building; in this flavor it builds the native Rust one.
-//           Returning the interface `AudioEngine` (and not `RustEngine`) is the
-//           deliberate choice: the caller programs against the contract, so the
-//           same call site works unchanged in the Media3 flavor, whose own
-//           `createAudioEngine` returns a different concrete class. Declaring the
-//           concrete `RustEngine` as the return type would leak this flavor's
-//           implementation into the shared call site.
+//           the result as an `AudioEngine`. This factory hides the concrete native
+//           engine behind the small contract. Returning the interface `AudioEngine`
+//           (and not `RustEngine`) is the deliberate choice: the caller programs
+//           against the contract, so it does not learn about native handles,
+//           descriptors, or Rust internals. Declaring the concrete `RustEngine` as
+//           the return type would leak the engine implementation into the call site.
 // Gotcha:   Two traps for a TS reader on this line: (1) constructing an object has
 //           NO `new` keyword in Kotlin — `RustEngine(context)` looks like an
 //           ordinary function call but it builds an instance; (2) the `=` is an

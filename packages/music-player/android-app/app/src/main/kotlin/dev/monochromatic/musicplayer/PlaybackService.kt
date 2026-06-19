@@ -3,7 +3,7 @@
 // ============================================================================
 //
 // This file HOSTS the player so audio survives the activity being backgrounded
-// or destroyed. It owns the one `PlayerController` brain and the flavor's
+// or destroyed. It owns the one `PlayerController` brain and the app's
 // `AudioEngine` (built via `createAudioEngine`), projects the brain to a
 // `MediaSession` through `BrainPlayer`, and registers that session with the
 // media notification manager itself (`addSession`) so the system notification,
@@ -512,9 +512,8 @@ class PlaybackService : MediaSessionService() {
         // ```
         super.onCreate()
         // What:     `Log.i(LOG_TAG, "PlaybackService.onCreate")` logs an info line. `LOG_TAG`
-        //           is the shared tag declared in `MainActivity.kt`. (Dropped the old
-        //           `flavor=${BuildConfig.FLAVOR}` suffix: the media3/hybrid flavors are gone,
-        //           so there is one engine and no FLAVOR constant.)
+        //           is the shared tag declared in `MainActivity.kt`. There is no variant suffix:
+        //           the current build has one engine and no `BuildConfig.FLAVOR` constant.
         // Why:      Record service creation in logcat, for verification.
         //
         // In TS you'd write (pseudocode):
@@ -524,10 +523,9 @@ class PlaybackService : MediaSessionService() {
         Log.i(LOG_TAG, "PlaybackService.onCreate")
         // What:     `controller = PlayerController(createAudioEngine(this))` ASSIGNS the
         //           `lateinit` field. `PlayerController(...)` is a constructor call (no
-        //           `new`); its argument `createAudioEngine(this)` is a flavor-specific
-        //           factory that builds the audio engine, passed `this` (the service as a
-        //           `Context`).
-        // Why:      Create the one brain, wired to the flavor's audio engine.
+        //           `new`); its argument `createAudioEngine(this)` builds the production audio
+        //           engine, passed `this` (the service as a `Context`).
+        // Why:      Create the one brain, wired to the app's audio engine.
         // Gotcha:   This is the assignment the `lateinit` promised; reading `controller`
         //           before this line would throw.
         //

@@ -1,13 +1,12 @@
 // File summary (folded in from the interface's old KDoc):
-//   This file defines the low-level audio "primitive" that every engine flavor implements: play one
-//   track at a time, report the play/pause state and the natural end of a track, and expose the
-//   current position and total duration so a seek bar can be drawn. Everything ABOVE this primitive,
-//   the play queue, pagination, shuffle/scope selection, and transport orchestration (next/previous,
-//   gapless handoff), lives in a separate class called PlayerController; this interface is ONLY the
-//   "play this one file" seam. Keeping the surface this small is exactly what lets three different
-//   implementations (a Media3/ExoPlayer-backed one, a hybrid that calls into Rust for decoding, and a
-//   full-Rust one) be swapped in behind a single shared shape without the rest of the app caring which
-//   one is wired up.
+//   This file defines the low-level audio "primitive" the app's engine implements: play one track at
+//   a time, report the play/pause state and the natural end of a track, and expose the current
+//   position and total duration so a seek bar can be drawn. Everything ABOVE this primitive, the play
+//   queue, pagination, shuffle/scope selection, and transport orchestration (next/previous, gapless
+//   handoff), lives in a separate class called PlayerController; this interface is ONLY the "play
+//   this one file" seam. Keeping the surface this small lets PlayerController stay ignorant of native
+//   handles, file descriptors, Rust modules, and other engine internals while still driving the single
+//   production Rust engine and test fakes through one contract.
 //
 // What:     `package dev.monochromatic.musicplayer` declares which "package" (namespace, like a
 //           folder-shaped grouping of related code) every declaration in this file belongs to. Other
@@ -28,7 +27,7 @@ package dev.monochromatic.musicplayer
 
 // What:     `interface AudioEngine { ... }` declares an "interface": a pure contract that lists method
 //           signatures (names, parameters, return types) with NO bodies and NO stored fields. A class
-//           that says `class Media3Engine : AudioEngine` promises to provide a real implementation of
+//           that says `class RustEngine : AudioEngine` promises to provide a real implementation of
 //           every method listed here. The `{ ... }` braces hold the member declarations.
 //           Siblings the reader might have expected instead of `interface`:
 //             - `abstract class` — could ALSO declare unimplemented methods, but a class can only
@@ -36,10 +35,10 @@ package dev.monochromatic.musicplayer
 //               cannot hold constructor state.
 //             - `class` / `data class` / `sealed interface` — those would carry implementation or a
 //               closed set of subtypes; we want neither here, just the bare contract.
-// Why:      We need this so the three engine variants (Media3, hybrid Rust, full Rust) all conform to
-//           ONE shared shape. PlayerController can then hold an `AudioEngine` reference and call
-//           `load`/`play`/`pause` without knowing or caring which concrete engine is behind it. This
-//           is the "single seam" the file summary mentions.
+// Why:      We need this so the production Rust engine and the test fake conform to ONE shared shape.
+//           PlayerController can then hold an `AudioEngine` reference and call `load`/`play`/`pause`
+//           without knowing or caring whether it is driving native playback or a test double. This is
+//           the "single seam" the file summary mentions.
 // Gotcha:   This is a NOMINAL interface, not structural. A Kotlin class that happens to have all these
 //           methods but does not write `: AudioEngine` is NOT an `AudioEngine`. TS would accept it on
 //           shape alone; Kotlin will not.
@@ -151,10 +150,10 @@ interface AudioEngine {
     //             - `Double` is the 64-bit floating-point sibling (more precision; used by `seekTo`
     //               above).
     //             - `Int`/`Long` are the integer siblings.
-    //           `Float` is chosen here (not `Double`) because the Android audio APIs that ultimately
-    //           receive a gain value, e.g. ExoPlayer/AudioTrack `setVolume`, take a 32-bit `Float`;
-    //           matching that type avoids a narrowing conversion at the boundary. It is not `Int`
-    //           because the gain is a fraction in `0.0..1.0`.
+    //           `Float` is chosen here (not `Double`) because Android audio APIs and the native Rust
+    //           engine both use 32-bit floating-point gain values at the output boundary; matching that
+    //           type avoids a narrowing conversion at the boundary. It is not `Int` because the gain is a
+    //           fraction in `0.0..1.0`.
     // Why:      We need this so the caller can set the output loudness as a linear gain between `0.0`
     //           (silent) and `1.0` (full), e.g. to honor a volume slider or duck during a notification.
     // Gotcha:   The value is a LINEAR gain in `0.0..1.0`, not decibels and not a 0..100 percentage.
@@ -294,11 +293,11 @@ interface AudioEngine {
 
     // What:     `fun release()` declares a method named `release`, no parameters, returning `Unit`
     //           (void). No body (interface).
-    // Why:      We need this so a caller can free the NATIVE resources the engine holds: the underlying
-    //           ExoPlayer/codec, audio-focus registration, native Rust buffers, etc. After `release()`
-    //           the engine object is spent and must not be used again; the caller drops its reference.
-    //           Android/native resources are not reclaimed by garbage collection alone, so an explicit
-    //           teardown hook is required.
+    // Why:      We need this so a caller can free the NATIVE resources the engine holds: the audio-focus
+    //           registration, native Rust worker thread, native buffers, output stream, and open file
+    //           handles. After `release()` the engine object is spent and must not be used again; the
+    //           caller drops its reference. Android/native resources are not reclaimed by garbage
+    //           collection alone, so an explicit teardown hook is required.
     // Gotcha:   This is a ONE-WAY, terminal operation. Unlike `pause()`, you cannot `play()` again after
     //           `release()`; the object is dead. Forgetting to call it leaks native resources because GC
     //           will not free them for you.

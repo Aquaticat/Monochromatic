@@ -1004,9 +1004,8 @@ class MainActivity : ComponentActivity() {
         // ```
         super.onCreate(savedInstanceState)
         // What:     `Log.i(LOG_TAG, "MainActivity.onCreate")` logs an info line at activity
-        //           creation. (Dropped the old `flavor=${BuildConfig.FLAVOR}` suffix: the
-        //           media3/hybrid flavors are gone, so there is one engine and no FLAVOR
-        //           constant.)
+        //           creation. There is no variant suffix because the current build has one engine
+        //           and no `BuildConfig.FLAVOR` constant.
         // Why:      Trace activity launch in logcat, for verification.
         //
         // In TS you'd write (pseudocode):
