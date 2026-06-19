@@ -8,6 +8,18 @@ audit trail (`docs/troubleshooting/resharp.md`, `docs/audit/resharp-fuzz-*`,
 fresh empirical re-verification of every known reproducer against v0.6.13
 (`docs/audit/resharp-fuzz-2026-06-11/verification-0.6.13.md`).
 
+Superseded in part by the deeper multi-oracle campaign
+`docs/audit/resharp-fuzz-2026-06-19/`, which ran an independent denotational
+oracle (217M pattern-input pairs), the recovered Lean formally-verified position
+oracle (0 disagreements over 2310 lookaround-superset cases), an engine-internal
+self-consistency lane, and the in-tree libFuzzer targets on x86 (AVX2) and M1
+(NEON). That campaign confirmed the prior crash/soundness fixes hold but found two
+new live soundness residuals that update the "one live item" claim below: a
+`find_anchored` phantom/missing span on `(\z|$)$`, and an `is_match` false positive
+on `_&(?:[ab]|$)?`. Both are in `find_anchored`/`is_match` only (`find_all` is
+sound), both arch-independent, both the bug-02/08/10 family narrowed but not
+eliminated. See that directory's `README.md`.
+
 ## Verdict
 
 No, not bulletproof. Much closer than it was, and for our constrained usage it is
@@ -123,7 +135,10 @@ any robustness claim can be.
 For forbidden-strings: safe to ship on v0.6.13, and the fail-closed wrappers mean
 a future regression degrades to a synthetic hit, not a silent CI pass. For
 resharp as a general-purpose engine on untrusted patterns: substantially
-hardened, actively maintained, the known-bug list at v0.6.13 is down to one
-compile-cost item, but it is a young 0.x engine with `unsafe` SIMD, no internal
-panic boundary, and an unmeasured unknown-bug frontier. Robust and improving
-fast; not bulletproof.
+hardened, actively maintained, `find_all` sound across a 217M-pair denotational
+search and a Lean formal differential, with the known-bug list at v0.6.13 down to
+two narrow soundness residuals in `find_anchored` and `is_match` plus one
+acknowledged compile-cost item (the deeper `docs/audit/resharp-fuzz-2026-06-19/`
+campaign), but it is a young 0.x engine with `unsafe` SIMD, no internal panic
+boundary, and an unmeasured unknown-bug frontier. Robust and improving fast; not
+bulletproof.
