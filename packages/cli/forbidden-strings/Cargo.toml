@@ -45,7 +45,7 @@ ignore = "0.4"
 memchr = "2"
 rayon = "1"
 regex = "1"
-# Floor raised to 0.6.11. 0.6.11 lands three further upstream fixes filed by
+# Floor raised to 0.6.13. 0.6.11 landed three further upstream fixes filed by
 # this project against the 2026-06-04 fuzz campaign
 # (docs/audit/resharp-fuzz-2026-06-04/), all merged to ieviev/resharp main:
 #   - PR #15 (bug-07): the parser negates the byte class for ASCII `\D`/`\S`/
@@ -65,8 +65,8 @@ regex = "1"
 # `find_all` boundary zero-width fix) and re-admitted the `\A`/`\z`-inside-
 # complement workaround; the Bug B/C/E/F fixes landed in 0.6.4 and remain.
 # See docs/troubleshooting/resharp.md. Caret semantics keep this within
-# 0.6.x (`>=0.6.11, <0.7`).
-resharp = "0.6.11"
+# 0.6.x (`>=0.6.13, <0.7`).
+resharp = "0.6.13"
 
 # Why `panic = "unwind"` and `overflow-checks = true` instead of the smaller
 # "abort" + default-off overflow checks:
