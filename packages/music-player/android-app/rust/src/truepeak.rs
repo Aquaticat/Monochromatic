@@ -468,6 +468,25 @@ impl TruePeakMeter {
     }
 }
 
+/// Windows sampled across a long track to estimate the true peak without decoding the
+/// whole file: brickwalled (hot) masters hit their ceiling throughout, so a few spread
+/// windows capture it, while dynamic tracks read low and normalize to unity gain.
+/// See `HANDOVER.peak-sweep-optimization.md` for the validation.
+const WINDOW_COUNT: usize = 4;
+
+/// Seconds of audio decoded per sampled window.
+const WINDOW_SECS: f64 = 15.0;
+
+/// Tracks at or below this length are scanned in full; windowing saves nothing and the
+/// seeks would cost more than a straight decode.
+const FULL_SCAN_MAX_SECS: f64 = 90.0;
+
+/// Linear safety factor (about +2 dB) applied to a windowed peak. Windowing can slightly
+/// underestimate a hot track's true peak when the loudest instant falls between windows;
+/// inflating the estimate keeps attenuate-only normalization from under-attenuating into
+/// inter-sample clipping.
+const WINDOW_SAFETY_FACTOR: f32 = 1.26;
+
 /// What:     `pub fn measure_true_peak(mut source: Box<dyn Source>) -> Result<f32, PlayerError>`.
 ///           A public free function that scans a decoder to the end and returns
 ///           the estimated true peak (a linear amplitude, typically near 1.0 for
@@ -506,7 +525,8 @@ pub fn measure_true_peak(mut source: Box<dyn Source>) -> Result<f32, PlayerError
     // ```ts
     // const channels = source.spec().channels;
     // ```
-    let channels = source.spec().channels as usize;
+    let spec = source.spec();
+    let channels = spec.channels as usize;
     // What:     `if channels == 0 { return Ok(0.0); }`. Guard against a malformed
     //           zero-channel stream. `Ok(0.0)` is the success variant of
     //           `Result` wrapping a peak of `0.0` (treated as silence); an
@@ -533,6 +553,12 @@ pub fn measure_true_peak(mut source: Box<dyn Source>) -> Result<f32, PlayerError
     // const meter = new TruePeakMeter(channels);
     // ```
     let mut meter = TruePeakMeter::new(channels);
+    // Long tracks: sample a few spread windows instead of decoding the whole file. Hot
+    // masters hit their ceiling in every window; dynamic tracks read low and fall to
+    // unity gain. Short or unknown-length tracks use the full scan below.
+    if spec.duration_secs > FULL_SCAN_MAX_SECS {
+        return measure_windowed_peak(source, spec.duration_secs, spec.rate, channels);
+    }
     // What:     `loop { ... }`. Rust's UNCONDITIONAL infinite loop (equivalent to
     //           `while (true)`); it runs until an explicit `break` inside it
     //           exits.
@@ -595,6 +621,48 @@ pub fn measure_true_peak(mut source: Box<dyn Source>) -> Result<f32, PlayerError
     // return meter.peak;
     // ```
     Ok(meter.peak)
+}
+
+/// Estimate the true peak of a long track by sampling [`WINDOW_COUNT`] short windows
+/// spread across it, seeking between them and taking the loudest. Each window gets its
+/// own meter so the discontinuity between two non-adjacent windows cannot fabricate an
+/// inter-sample spike at the seam. The result is inflated by [`WINDOW_SAFETY_FACTOR`].
+fn measure_windowed_peak(
+    mut source: Box<dyn Source>,
+    duration_secs: f64,
+    rate: u32,
+    channels: usize,
+) -> Result<f32, PlayerError> {
+    let frames_per_window = (WINDOW_SECS * f64::from(rate)) as u64 * channels as u64;
+    let last_start = (duration_secs - WINDOW_SECS).max(0.0);
+    let mut peak = 0.0_f32;
+    for window in 0..WINDOW_COUNT {
+        let fraction = window as f64 / (WINDOW_COUNT - 1) as f64;
+        source.seek(fraction * last_start)?;
+        let mut meter = TruePeakMeter::new(channels);
+        feed_window(source.as_mut(), &mut meter, frames_per_window)?;
+        peak = peak.max(meter.peak);
+    }
+    Ok(peak * WINDOW_SAFETY_FACTOR)
+}
+
+/// Feed up to `frames` interleaved samples (one window) from `source` into `meter`,
+/// stopping early at end of stream.
+fn feed_window(
+    source: &mut dyn Source,
+    meter: &mut TruePeakMeter,
+    frames: u64,
+) -> Result<(), PlayerError> {
+    let mut fed: u64 = 0;
+    while fed < frames {
+        let chunk = source.next_chunk()?;
+        if chunk.is_empty() {
+            break;
+        }
+        fed += chunk.len() as u64;
+        meter.feed(&chunk);
+    }
+    Ok(())
 }
 
 /// What:     `pub fn true_peak_interleaved(samples: &[f32], channels: usize) -> f32`.
