@@ -18,17 +18,6 @@
 /// ```
 use std::path::{Path, PathBuf};
 
-/// What:     `use std::sync::{Arc, Mutex};`. `Arc<T>` is a thread-safe shared owner
-///           (atomic refcount; sibling: single-thread `Rc<T>`); `Mutex<T>` guards `T` so
-///           one thread touches it at a time.
-/// Why:      The peak cache is shared with background measurement threads.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// // Arc<Mutex<T>> ~ a shared object you must lock() before touching
-/// ```
-use std::sync::{Arc, Mutex};
-
 /// What:     `use std::thread;`. Rust's standard OS-thread API.
 /// Why:      `prepare_peak_for_path` passes the current engine thread handle to the
 ///           measurement worker so completion can wake the engine immediately.
@@ -106,14 +95,15 @@ use crate::measure::spawn_queue_measurement;
 /// ```
 use crate::output::Output;
 
-/// What:     `use crate::peakcache::PeakCache;`. The persistent true-peak cache.
-/// Why:      The shared `peaks` field's inner type.
+/// What:     `use crate::peakcache::CacheHandle;`. The synchronous handle to the
+///           persistent true-peak cache actor.
+/// Why:      The `peaks` field's type.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { PeakCache } from "./peakcache";
+/// import { CacheHandle } from "./peakcache";
 /// ```
-use crate::peakcache::PeakCache;
+use crate::peakcache::CacheHandle;
 
 /// What:     `use crate::peak_swap::{...};`. Import the current-track peak swap
 ///           helper functions and state/result enums.
@@ -275,14 +265,16 @@ pub(crate) struct Controller {
     /// pendingPeak: PendingPeakMeasurement | null;
     /// ```
     pub(crate) pending_peak: Option<PendingPeakMeasurement>,
-    /// What:     `peaks: Arc<Mutex<PeakCache>>`. The shared, persistent true-peak cache.
-    /// Why:      Read on track load; written by load + background sweeps.
+    /// What:     `peaks: CacheHandle`. The synchronous handle to the persistent true-peak
+    ///           cache actor.
+    /// Why:      Read on track load; written by the current-track worker + background sweeps.
+    ///           No `Mutex`: the actor owns the only mutable cache state.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// peaks: SharedPeakCache;
+    /// peaks: CacheHandle;
     /// ```
-    pub(crate) peaks: Arc<Mutex<PeakCache>>,
+    pub(crate) peaks: CacheHandle,
     /// What:     `position_frames: u64`. Frames pushed for the current track so far. `u64`
     ///           because long tracks exceed `u32` frame counts.
     /// Why:      Position seconds = frames / rate.
@@ -340,14 +332,14 @@ impl Controller {
         output: Option<Output>,
     ) -> Controller {
         // What:     `Controller { ... }`. Struct literal. `Queue::new()` empty queue;
-        //           volume/gain start at 1.0; `PeakCache::load()` reads any saved peaks;
-        //           `Arc::new(Mutex::new(...))` wraps it for sharing. Tail -> return.
+        //           volume/gain start at 1.0; `CacheHandle::open()` starts the cache actor
+        //           (opens peaks.db, seeds the key set). Tail -> return.
         // Why:      A clean idle state with the cache ready.
         //
         // In TS you'd write (pseudocode):
         // ```ts
         // return { onUpdate, output, queue: new Queue(), source: null, producer: null,
-        //          spec: null, playing: false, volume: 1, trackGain: 1, peaks: PeakCache.load(),
+        //          spec: null, playing: false, volume: 1, trackGain: 1, peaks: CacheHandle.open(),
         //          positionFrames: 0, lastEmitSecs: 0, pending: [], pendingPos: 0 };
         // ```
         Controller {
@@ -364,7 +356,7 @@ impl Controller {
             track_gain: 1.0,
             peak_generation: 0,
             pending_peak: None,
-            peaks: Arc::new(Mutex::new(PeakCache::load())),
+            peaks: CacheHandle::open(),
             position_frames: 0,
             last_emit_secs: 0.0,
             pending: Vec::new(),
@@ -811,16 +803,16 @@ impl Controller {
             .filter(|path| current.as_ref() != Some(*path))
             .cloned()
             .collect();
-        // What:     `spawn_queue_measurement(tracks, Arc::clone(&self.peaks));`.
-        //           Spawn the detached sweep. `Arc::clone(&self.peaks)` makes another
-        //           shared handle to the cache (same data, refcount bumped).
-        // Why:      Hand the worker its own track list and shared cache.
+        // What:     `spawn_queue_measurement(tracks, self.peaks.clone());`. Spawn the
+        //           detached sweep. `self.peaks.clone()` copies the cache handle's channel
+        //           senders (cheap; same actor).
+        // Why:      Hand the sweep its own track list and a handle to the shared cache.
         //
         // In TS you'd write (pseudocode):
         // ```ts
         // spawnQueueMeasurement(tracks, this.peaks);
         // ```
-        spawn_queue_measurement(tracks, Arc::clone(&self.peaks));
+        spawn_queue_measurement(tracks, self.peaks.clone());
     }
 
     /// What:     `pub(crate) fn handle_command(&mut self, command: Command)`. Apply one UI

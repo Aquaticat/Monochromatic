@@ -32,18 +32,6 @@ use std::path::{Path, PathBuf};
 /// ```
 use std::sync::mpsc::{self, Receiver, RecvTimeoutError, TryRecvError};
 
-/// What:     `use std::sync::{Arc, Mutex};`. `Arc<T>` is a thread-safe shared owner
-///           (sibling: single-thread `Rc<T>`); `Mutex<T>` guards mutable data so
-///           one thread uses it at a time.
-/// Why:      The dedicated current-track worker and the controller share the same
-///           peak cache safely.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// const cache = new LockedSharedObject(new PeakCache());
-/// ```
-use std::sync::{Arc, Mutex};
-
 /// What:     `use std::thread;`. Rust's standard OS-thread API.
 /// Why:      Current-track measurement decodes the whole file away from the
 ///           controller thread.
@@ -63,17 +51,17 @@ use std::thread;
 /// ```
 use std::time::Duration;
 
-/// What:     `use crate::peakcache::{self, PeakCache};`. Import the peak-cache
-///           module itself for `peakcache::fingerprint`, plus the `PeakCache` type.
+/// What:     `use crate::peakcache::{self, CacheHandle};`. Import the peak-cache
+///           module itself for `peakcache::fingerprint`, plus the `CacheHandle` type.
 /// Why:      The strategy checks cached peaks before spawning and stores fresh
 ///           measurements after decoding.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// import * as peakcache from "./peakcache";
-/// import { PeakCache } from "./peakcache";
+/// import { CacheHandle } from "./peakcache";
 /// ```
-use crate::peakcache::{self, PeakCache};
+use crate::peakcache::{self, CacheHandle};
 
 /// What:     `use crate::truepeak::{measure_true_peak, normalization_gain};`. The
 ///           whole-track true-peak scanner and its peak-to-gain conversion.
@@ -444,15 +432,15 @@ pub(crate) fn fallback_track_gain() -> f32 {
     normalization_gain(1.0)
 }
 
-/// What:     `pub(crate) fn cached_track_gain(path: &Path, cache: &Arc<Mutex<PeakCache>>) -> Option<f32>`.
+/// What:     `pub(crate) fn cached_track_gain(path: &Path, cache: &CacheHandle) -> Option<f32>`.
 ///           Try to read a measured peak from the cache and convert it to gain.
 /// Why:      Cache hits must avoid spawning a redundant current-track worker.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function cachedTrackGain(path: string, cache: SharedPeakCache): number | null { ... }
+/// function cachedTrackGain(path: string, cache: CacheHandle): number | null { ... }
 /// ```
-pub(crate) fn cached_track_gain(path: &Path, cache: &Arc<Mutex<PeakCache>>) -> Option<f32> {
+pub(crate) fn cached_track_gain(path: &Path, cache: &CacheHandle) -> Option<f32> {
     // What:     `let key = peakcache::fingerprint(path)?;`. Compute the opaque cache
     //           key; `?` returns `None` if the file cannot be stat'd.
     // Why:      No key means there can be no cache hit.
@@ -462,16 +450,15 @@ pub(crate) fn cached_track_gain(path: &Path, cache: &Arc<Mutex<PeakCache>>) -> O
     // const key = fingerprint(path); if (!key) return null;
     // ```
     let key = peakcache::fingerprint(path)?;
-    // What:     `let peak = cache.lock().unwrap().get(&key)?;`. Lock the shared cache,
-    //           read the peak, and use `?` to return `None` on a miss. `&key` lends
-    //           the owned key string.
+    // What:     `let peak = cache.get(&key)?;`. Ask the cache actor for the peak and use
+    //           `?` to return `None` on a miss. `&key` lends the owned key string.
     // Why:      Convert only real cache hits.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // const peak = withLock(cache, c => c.get(key)); if (peak == null) return null;
+    // const peak = cache.get(key); if (peak == null) return null;
     // ```
-    let peak = cache.lock().unwrap().get(&key)?;
+    let peak = cache.get(&key)?;
     // What:     `Some(normalization_gain(peak))`. Convert the peak and wrap it in
     //           `Some`. Tail expression returns the cache-hit gain.
     // Why:      Callers need gain, not raw true peak.
@@ -490,11 +477,11 @@ pub(crate) fn cached_track_gain(path: &Path, cache: &Arc<Mutex<PeakCache>>) -> O
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function prepareTrackGain(path: string, cache: SharedPeakCache, generation: number): TrackGainResolution { ... }
+/// function prepareTrackGain(path: string, cache: CacheHandle, generation: number): TrackGainResolution { ... }
 /// ```
 pub(crate) fn prepare_track_gain(
     path: &Path,
-    cache: &Arc<Mutex<PeakCache>>,
+    cache: &CacheHandle,
     generation: u64,
     worker: thread::Thread,
 ) -> TrackGainResolution {
@@ -530,7 +517,7 @@ pub(crate) fn prepare_track_gain(
     let fingerprint = peakcache::fingerprint(path);
     // What:     `let pending = spawn_current_track_measurement(...)`. Start the
     //           dedicated worker. `path.to_path_buf()` clones the borrowed path into
-    //           owned storage; `Arc::clone(cache)` shares the same cache.
+    //           owned storage; `cache.clone()` shares the same cache.
     // Why:      The thread outlives this function, so it needs owned inputs, and the
     //           worker thread handle lets measurement completion wake the engine promptly.
     //
@@ -540,7 +527,7 @@ pub(crate) fn prepare_track_gain(
     // ```
     let pending = spawn_current_track_measurement(
         path.to_path_buf(),
-        Arc::clone(cache),
+        cache.clone(),
         fingerprint,
         generation,
         worker,
@@ -567,7 +554,7 @@ pub(crate) fn prepare_track_gain(
 /// ```
 fn spawn_current_track_measurement(
     path: PathBuf,
-    cache: Arc<Mutex<PeakCache>>,
+    cache: CacheHandle,
     fingerprint: Option<String>,
     generation: u64,
     worker: thread::Thread,
@@ -641,11 +628,11 @@ fn spawn_current_track_measurement(
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function measureAndStoreGain(path: string, cache: SharedPeakCache, fingerprint: string | null): number | null { ... }
+/// function measureAndStoreGain(path: string, cache: CacheHandle, fingerprint: string | null): number | null { ... }
 /// ```
 fn measure_and_store_gain(
     path: &Path,
-    cache: &Arc<Mutex<PeakCache>>,
+    cache: &CacheHandle,
     fingerprint: Option<String>,
 ) -> Option<f32> {
     // What:     `let peak = measure_true_peak(path).ok()?;`. Decode the file and
@@ -667,27 +654,16 @@ fn measure_and_store_gain(
     // if (fingerprint) { ... }
     // ```
     if let Some(key) = fingerprint {
-        // What:     `cache.lock().unwrap().insert(key, peak);`. Lock the shared cache,
-        //           insert the measured peak under the owned fingerprint key, and release
-        //           the lock at the end of the statement.
-        // Why:      Warm the cache even if this result later becomes stale for playback.
+        // What:     `cache.upsert(key, peak);`. Fire-and-forget the measured peak to the
+        //           cache actor, which commits it durably.
+        // Why:      Warm the cache even if this result later becomes stale for playback; the
+        //           current-track worker must not block on persistence.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // withLock(cache, (c) => c.insert(key, peak));
+        // cache.upsert(key, peak);
         // ```
-        cache.lock().unwrap().insert(key, peak);
-        // What:     `peakcache::flush(cache);`. Persist the cache to disk OFF-LOCK (snapshot
-        //           under the lock, write without it, then re-lock only to mark saved).
-        // Why:      Persist this current-track measurement promptly through the same shared
-        //           helper the background sweep uses, so the snapshot-write-mark dance lives
-        //           in one place instead of a second copy here.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // flush(cache);
-        // ```
-        peakcache::flush(cache);
+        cache.upsert(key, peak);
     }
     // What:     `Some(normalization_gain(peak))`. Convert the raw peak to gain and
     //           wrap it. Tail expression returns the worker's result.

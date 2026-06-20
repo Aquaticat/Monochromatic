@@ -94,6 +94,31 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 slint = { git = "https://github.com/slint-ui/slint", rev = "85e3eb76819762cdcaa732fa87533ff896546bac", features = ["backend-winit", "renderer-femtovg", "renderer-software"] }
 symphonia = { version = "0.6", features = ["all"] }
+# Drives the Turso cache async API from the cache-service actor thread
+# (src/peakcache.rs). The actor owns ONE current-thread runtime
+# (`Builder::new_current_thread().enable_all()`), the only async surface in the
+# app: the realtime audio callback and the engine park/unpark loop stay
+# synchronous, and the rest of the code reaches the cache through the blocking
+# `CacheHandle`. Feature set settled by the Step-0 spike: `rt` (build the
+# current-thread runtime), `sync` (the request `mpsc` + reply `oneshot` the
+# handle blocks on), `macros` (`select!` to bias reads ahead of a cold sweep's
+# queued writes). NOT `rt-multi-thread`: one actor thread is enough and the spike
+# confirmed a current-thread runtime drives Turso's local futures.
+tokio = { version = "1", features = ["rt", "sync", "macros"] }
+# Persistent true-peak cache store (src/peakcache.rs), replacing the prior
+# hand-rolled peaks.json + Arc<Mutex<PeakCache>> + batch-flush. Turso is the
+# pure-Rust SQLite rewrite (no C SQLite, no cc toolchain), so it cross-compiles
+# as cleanly as symphonia; the Step-0 spike confirmed a Linux build+run, a clean
+# `x86_64-pc-windows-gnu` check, and that committed rows survive a hard process
+# kill (50/50 after SIGABRT). `default-features = false` drops the `fts`
+# (tantivy full-text engine) and `mimalloc` defaults the cache never uses; the
+# crate still unconditionally pulls a cloud-sync engine + prost, which we do not
+# call. Pinned to major 0.6 (BETA, accepted): a 0.x minor bump MAY change the
+# on-disk format, which only costs a one-time re-measure because the cache
+# self-heals on a miss (same regenerable contract gxhash relies on above). The
+# privacy guarantee is unchanged: only `fingerprint -> peak` rows hit disk, never
+# a path.
+turso = { version = "0.6", default-features = false }
 
 # Linux-only native backends. PipeWire (audio) and zbus (KDE taskbar progress)
 # have no macOS equivalent, so cargo compiles them only when target_os = linux;

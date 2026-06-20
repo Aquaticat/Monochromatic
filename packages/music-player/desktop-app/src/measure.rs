@@ -1,16 +1,29 @@
-//! Background queue true-peak measurement.
+//! Parallel background queue true-peak measurement.
 //!
 //! On every queue load the controller starts a background sweep over the queue's
-//! non-current tracks; it measures only the ones not already cached, gently (a
-//! short sleep between measurements) so it does not starve the audio thread.
-//! Sweeps are never cancelled: re-opening a directory just finds most peaks
-//! already cached and returns quickly. The current track is handled by
-//! `peak_swap`, because playback may wait briefly for that one visible result.
+//! non-current tracks. The sweep fans out one worker per logical core; each worker
+//! claims tracks from a shared atomic cursor, skips the ones already cached, and
+//! decodes the rest to measure their true peak, storing each result through the
+//! `CacheHandle`. Workers run at idle OS scheduling priority, so they saturate every
+//! core when the machine is otherwise free yet yield to the realtime audio thread
+//! and the UI. There is no inter-track sleep (the old throttle that fought "finish
+//! as fast as possible") and no flush bookkeeping: the cache actor commits each
+//! write durably. Sweeps are never cancelled: re-opening a directory finds most
+//! peaks already cached (via the one key-set snapshot) and returns quickly. The
+//! current track is handled by `peak_swap`, because playback may wait briefly for
+//! that one visible result.
 
-/// What:     `use std::path::PathBuf;`. Owned filesystem path buffer. Sibling:
-///           `&Path`, a borrowed path view, is not needed here because the sweep
-///           owns a list of paths.
-/// Why:      The detached sweep thread needs paths that outlive the caller.
+/// What:     `use std::collections::HashSet;`. A set of owned fingerprint strings.
+/// Why:      The skip-check reads one snapshot of every already-cached fingerprint.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type HashSet = Set<string>;
+/// ```
+use std::collections::HashSet;
+
+/// What:     `use std::path::PathBuf;`. Owned filesystem path buffer.
+/// Why:      The detached workers need paths that outlive the caller.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -18,19 +31,27 @@
 /// ```
 use std::path::PathBuf;
 
-/// What:     `use std::sync::{Arc, Mutex};`. `Arc<T>` is a thread-safe shared owner
-///           (atomic reference count; sibling: `Rc<T>`, single-thread only). `Mutex<T>`
-///           guards `T` so only one thread touches it at a time.
-/// Why:      The cache is shared between the engine thread and background sweeps.
+/// What:     `use std::sync::Arc;`. Thread-safe shared owner (atomic refcount).
+/// Why:      Workers share the track list, the cursor, and the key-set snapshot.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// // Arc<Mutex<T>> ~ a shared object you must lock() before touching
+/// // Arc<T> ~ a shared, cloneable handle to one T
 /// ```
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 
-/// What:     `use std::thread;`. Thread spawning.
-/// Why:      The background sweep runs on its own thread.
+/// What:     `use std::sync::atomic::{AtomicUsize, Ordering};`. A shared integer with
+///           atomic operations, plus the memory-ordering selector.
+/// Why:      The cursor is a lock-free counter workers `fetch_add` to claim work.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // AtomicUsize ~ an integer with atomic fetchAdd
+/// ```
+use std::sync::atomic::{AtomicUsize, Ordering};
+
+/// What:     `use std::thread;`. Thread spawning and `available_parallelism`.
+/// Why:      The coordinator spawns one worker per logical core.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -38,33 +59,19 @@ use std::sync::{Arc, Mutex};
 /// ```
 use std::thread;
 
-/// What:     `use std::time::{Duration, Instant};`. `Duration` is a span of time;
-///           `Instant` is a monotonic clock reading (a point in time you can measure
-///           elapsed time from). Sibling you might expect: `SystemTime` (wall clock, can
-///           jump backwards); `Instant` is the right one for "how long since X".
-/// Why:      `Duration` for the gentle sleep and the save interval; `Instant` to know when
-///           the last save happened so we can flush on a time bound.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// // Duration ~ ms number; Instant ~ performance.now()
-/// ```
-use std::time::{Duration, Instant};
-
-/// What:     `use crate::peakcache::{self, PeakCache};`. The cache module (for
-///           `peakcache::fingerprint`) and the `PeakCache` type.
-/// Why:      Look up and store measured peaks.
+/// What:     `use crate::peakcache::{self, CacheHandle};`. The cache module (for
+///           `peakcache::fingerprint`) and the synchronous handle type.
+/// Why:      Compute keys and store measured peaks.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// import * as peakcache from "./peakcache";
-/// import { PeakCache } from "./peakcache";
+/// import { CacheHandle } from "./peakcache";
 /// ```
-use crate::peakcache::{self, PeakCache};
+use crate::peakcache::{self, CacheHandle};
 
-/// What:     `use crate::truepeak::measure_true_peak;`. The whole-file true-peak
-///           scanner.
-/// Why:      Background sweeps decode uncached tracks and cache their raw peaks.
+/// What:     `use crate::truepeak::measure_true_peak;`. The whole-file true-peak scanner.
+/// Why:      Workers decode uncached tracks and cache their raw peaks.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -72,55 +79,21 @@ use crate::peakcache::{self, PeakCache};
 /// ```
 use crate::truepeak::measure_true_peak;
 
-/// What:     `const SAVE_BATCH: usize = 16;`. Persist the cache after this many new
-///           measurements during a sweep. `usize` to compare with the unsaved count.
-/// Why:      Avoid rewriting the file once per track over a long queue.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// const SAVE_BATCH = 16;
-/// ```
-const SAVE_BATCH: usize = 16;
-
-/// What:     `const MEASURE_GAP_MS: u64 = 20;`. Milliseconds to sleep after measuring one
-///           track. `u64` is what `Duration::from_millis` wants.
-/// Why:      Yield CPU so the background scan does not starve the realtime audio path.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// const MEASURE_GAP_MS = 20;
-/// ```
-const MEASURE_GAP_MS: u64 = 20;
-
-/// What:     `const SAVE_INTERVAL_SECS: u64 = 10;`. Maximum seconds between cache flushes
-///           during a sweep, independent of how many tracks were measured. `u64` is what
-///           `Duration::from_secs` wants.
-/// Why:      The sweep is detached and dies at process exit, so anything unsaved when the
-///           user quits is lost and re-measured next launch. Flushing at least this often
-///           bounds that loss to ~10 seconds of work, so a large library actually finishes
-///           caching across short sessions instead of restarting.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// const SAVE_INTERVAL_SECS = 10;
-/// ```
-const SAVE_INTERVAL_SECS: u64 = 10;
-
-/// What:     `pub(crate) fn spawn_queue_measurement(tracks: Vec<PathBuf>, cache: Arc<Mutex<PeakCache>>)`.
-///           Start a detached background thread that measures every uncached track in
-///           `tracks` into the shared cache. Takes ownership of both arguments (moved into
-///           the thread). `pub(crate)` for the controller.
+/// What:     `pub(crate) fn spawn_queue_measurement(tracks: Vec<PathBuf>, cache: CacheHandle)`.
+///           Start a detached coordinator that measures every uncached track in `tracks`
+///           in parallel, storing results through `cache`. Takes ownership of both
+///           arguments. `pub(crate)` for the controller.
 /// Why:      Pre-warm the cache for the whole queue so later track changes are instant.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function spawnQueueMeasurement(tracks: string[], cache: SharedPeakCache): void { ... }
+/// function spawnQueueMeasurement(tracks: string[], cache: CacheHandle): void { ... }
 /// ```
-pub(crate) fn spawn_queue_measurement(tracks: Vec<PathBuf>, cache: Arc<Mutex<PeakCache>>) {
-    // What:     `thread::spawn(move || run_sweep(tracks, cache));`. Spawn a worker. The
-    //           `move ||` closure TAKES OWNERSHIP of `tracks` and `cache`. We drop the
-    //           returned `JoinHandle` (detached): the thread runs to completion on its own,
-    //           and is killed at process exit (atomic saves keep the file intact).
+pub(crate) fn spawn_queue_measurement(tracks: Vec<PathBuf>, cache: CacheHandle) {
+    // What:     `thread::spawn(move || run_sweep(tracks, cache));`. Spawn the detached
+    //           coordinator; the closure TAKES OWNERSHIP of both arguments. We drop the
+    //           `JoinHandle`: the coordinator runs to completion on its own and is killed
+    //           at process exit (each cache write already committed durably).
     // Why:      Background work that does not block the engine and needs no join/cancel.
     //
     // In TS you'd write (pseudocode):
@@ -155,21 +128,18 @@ fn lower_current_thread_to_idle() {
     // ```
     let param = libc::sched_param { sched_priority: 0 };
     // What:     `let result = unsafe { libc::sched_setscheduler(0, libc::SCHED_IDLE, &param) };`.
-    //           Call the C function. `unsafe { ... }` is required for ANY raw FFI call (Rust
-    //           cannot verify the C contract). The first arg `0` means "the calling thread";
-    //           `libc::SCHED_IDLE` selects the idle class; `&param` lends the struct as a
-    //           raw pointer. Returns `0` on success, `-1` on error (a `c_int`).
+    //           Call the C function. `unsafe { ... }` is required for ANY raw FFI call. The
+    //           first arg `0` means "the calling thread"; `libc::SCHED_IDLE` selects the idle
+    //           class; `&param` lends the struct as a raw pointer. Returns `0` on success,
+    //           `-1` on error.
     // Why:      Actually change this thread's scheduling class.
-    // Gotcha:   `unsafe` here does NOT mean "dangerous"; it means "the compiler trusts ME
-    //           that this C call's contract is upheld". TS has no such opt-out.
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // const result = schedSetscheduler(0, SCHED_IDLE, param);
     // ```
     let result = unsafe { libc::sched_setscheduler(0, libc::SCHED_IDLE, &param) };
-    // What:     `if result != 0 { eprintln!(...); }`. On failure, log to stderr and carry
-    //           on. `result` is `-1` on error.
+    // What:     `if result != 0 { eprintln!(...); }`. On failure, log and carry on.
     // Why:      Best-effort: a failure just means the sweep runs at normal priority, which
     //           is still correct, only less polite. Never abort the sweep.
     //
@@ -184,13 +154,11 @@ fn lower_current_thread_to_idle() {
 
 /// What:     `#[cfg(target_os = "macos")] fn lower_current_thread_to_idle()`. The macOS
 ///           version: drop the CALLING thread into the BACKGROUND Quality of Service (QoS)
-///           class. `#[cfg(target_os = "macos")]` compiles it only on macOS (siblings:
-///           `target_os = "linux"`, `windows`).
-/// Why:      macOS schedules threads by QoS class, not by the POSIX scheduling classes
-///           Linux uses, so the Linux SCHED_IDLE call does not exist here.
-///           `QOS_CLASS_BACKGROUND` is the lowest tier: the sweep's CPU-bound decoding
-///           yields to the realtime audio thread, the UI, and foreground apps, the same
-///           intent as the Linux path.
+///           class. `#[cfg(target_os = "macos")]` compiles it only on macOS.
+/// Why:      macOS schedules threads by QoS class, not the POSIX scheduling classes Linux
+///           uses, so the Linux SCHED_IDLE call does not exist here. `QOS_CLASS_BACKGROUND`
+///           is the lowest tier: the sweep's CPU-bound decoding yields to the realtime audio
+///           thread, the UI, and foreground apps, the same intent as the Linux path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -200,13 +168,11 @@ fn lower_current_thread_to_idle() {
 fn lower_current_thread_to_idle() {
     // What:     `let result = unsafe { libc::pthread_set_qos_class_self_np(libc::qos_class_t::QOS_CLASS_BACKGROUND, 0) };`.
     //           Call the Apple-specific libc function that sets the CURRENT thread's QoS
-    //           class. `unsafe { ... }` is required for ANY raw FFI call (Rust cannot verify
-    //           the C contract). `libc::qos_class_t::QOS_CLASS_BACKGROUND` is a VARIANT of
-    //           the `qos_class_t` C enum (NOT a top-level `libc::` constant), and it is the
-    //           lowest QoS tier; the function's first parameter is typed `qos_class_t`, so
-    //           the variant is passed directly. The second argument is a relative-priority
-    //           offset WITHIN that class (`0` = no offset). Returns `0` on success, a
-    //           nonzero errno on failure.
+    //           class. `unsafe { ... }` is required for ANY raw FFI call.
+    //           `libc::qos_class_t::QOS_CLASS_BACKGROUND` is a VARIANT of the `qos_class_t`
+    //           C enum and is the lowest QoS tier; the second argument is a relative-priority
+    //           offset WITHIN that class (`0` = no offset). Returns `0` on success, a nonzero
+    //           errno on failure.
     // Why:      Actually lower this thread's scheduling tier.
     //
     // In TS you'd write (pseudocode):
@@ -215,8 +181,7 @@ fn lower_current_thread_to_idle() {
     // ```
     let result =
         unsafe { libc::pthread_set_qos_class_self_np(libc::qos_class_t::QOS_CLASS_BACKGROUND, 0) };
-    // What:     `if result != 0 { eprintln!(...); }`. On failure, log to stderr and carry
-    //           on. `result` is a nonzero errno on error.
+    // What:     `if result != 0 { eprintln!(...); }`. On failure, log and carry on.
     // Why:      Best-effort, exactly like the Linux path: a failure just means the sweep
     //           runs at normal priority, which is still correct.
     //
@@ -244,9 +209,8 @@ fn lower_current_thread_to_idle() {
 #[cfg(windows)]
 fn lower_current_thread_to_idle() {
     /// What:     `use windows::Win32::System::Threading::{GetCurrentThread, SetThreadPriority, THREAD_PRIORITY_IDLE};`.
-    ///           Import the Win32 thread-priority bindings from the `windows` crate. A
-    ///           function-local `use` keeps these Windows-only names out of the module's top
-    ///           scope (they exist only in a Windows build).
+    ///           Import the Win32 thread-priority bindings. A function-local `use` keeps these
+    ///           Windows-only names out of the module's top scope.
     /// Why:      Name the three Win32 items the call below needs.
     ///
     /// In TS you'd write (pseudocode):
@@ -258,8 +222,7 @@ fn lower_current_thread_to_idle() {
     };
     // What:     `let handle = unsafe { GetCurrentThread() };`. Get a PSEUDO-HANDLE to the
     //           current thread: a special constant that always means "this thread" and never
-    //           needs closing. `unsafe` because it is a raw Win32 FFI call. Returns a
-    //           `HANDLE`.
+    //           needs closing. `unsafe` because it is a raw Win32 FFI call.
     // Why:      `SetThreadPriority` needs a thread handle to act on.
     //
     // In TS you'd write (pseudocode):
@@ -269,8 +232,7 @@ fn lower_current_thread_to_idle() {
     let handle = unsafe { GetCurrentThread() };
     // What:     `let result = unsafe { SetThreadPriority(handle, THREAD_PRIORITY_IDLE) };`.
     //           Set this thread's priority to the idle level. In the high-level `windows`
-    //           crate this returns `windows::core::Result<()>` (`Ok(())` on success, `Err`
-    //           carrying the Win32 error), NOT the raw `BOOL` the C API returns.
+    //           crate this returns `windows::core::Result<()>`.
     // Why:      Actually lower this thread's priority.
     //
     // In TS you'd write (pseudocode):
@@ -278,8 +240,7 @@ fn lower_current_thread_to_idle() {
     // const result = setThreadPriority(handle, THREAD_PRIORITY_IDLE);
     // ```
     let result = unsafe { SetThreadPriority(handle, THREAD_PRIORITY_IDLE) };
-    // What:     `if result.is_err() { eprintln!(...); }`. `.is_err()` is true when the
-    //           `Result` is the error variant. On failure, log and carry on.
+    // What:     `if result.is_err() { eprintln!(...); }`. On failure, log and carry on.
     // Why:      Best-effort, exactly like the other platforms.
     //
     // In TS you'd write (pseudocode):
@@ -293,9 +254,8 @@ fn lower_current_thread_to_idle() {
 
 /// What:     `#[cfg(not(any(target_os = "linux", target_os = "macos", windows)))] fn lower_current_thread_to_idle() {}`.
 ///           The no-op fallback compiled on every OTHER target (for example the BSDs) where
-///           no scheduling call is wired up. `not(any(...))` is true only when NONE of the
-///           listed cfg predicates hold. Empty body `{}`.
-/// Why:      Keep `run_sweep` portable: the call site stays the same and simply does nothing
+///           no scheduling call is wired up. Empty body `{}`.
+/// Why:      Keep the workers portable: the call site stays the same and simply does nothing
 ///           where we have not implemented a scheduling tweak.
 ///
 /// In TS you'd write (pseudocode):
@@ -305,214 +265,242 @@ fn lower_current_thread_to_idle() {
 #[cfg(not(any(target_os = "linux", target_os = "macos", windows)))]
 fn lower_current_thread_to_idle() {}
 
-/// What:     `fn run_sweep(tracks: Vec<PathBuf>, cache: Arc<Mutex<PeakCache>>)`. The
-///           background body: measure each uncached track, batching saves, sleeping briefly
-///           after each real measurement. Takes ownership of both args. Module-private.
-/// Why:      Keep the thread logic in one place.
+/// What:     `fn run_sweep(tracks: Vec<PathBuf>, cache: CacheHandle)`. The detached
+///           coordinator: take one key-set snapshot, fan out workers over a shared cursor,
+///           and join them. Takes ownership of both args. Module-private.
+/// Why:      One place owns the fan-out and the shared state the workers read.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function runSweep(tracks: string[], cache: SharedPeakCache): void { ... }
+/// function runSweep(tracks: string[], cache: CacheHandle): void { ... }
 /// ```
-fn run_sweep(tracks: Vec<PathBuf>, cache: Arc<Mutex<PeakCache>>) {
-    // What:     `lower_current_thread_to_idle();`. Drop this thread to idle scheduling
+fn run_sweep(tracks: Vec<PathBuf>, cache: CacheHandle) {
+    // What:     `let known = Arc::new(cache.known_fingerprints());`. One snapshot of every
+    //           already-cached fingerprint, shared read-only with all workers.
+    // Why:      The skip-check reads this instead of querying the cache per track; within a
+    //           sweep each track is unique, so a single snapshot is enough.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const known = cache.knownFingerprints();
+    // ```
+    let known = Arc::new(cache.known_fingerprints());
+    // What:     `let tracks: Arc<[PathBuf]> = tracks.into();`. Move the list into a shared,
+    //           immutable slice the workers index by position.
+    // Why:      Share the paths without cloning the whole vec per worker.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const tracks = Object.freeze(tracksArray);
+    // ```
+    let tracks: Arc<[PathBuf]> = tracks.into();
+    // What:     `let cursor = Arc::new(AtomicUsize::new(0));`. The shared next-index counter.
+    // Why:      Workers `fetch_add` it to claim the next track, lock-free and load-balanced.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const cursor = new AtomicUsize(0);
+    // ```
+    let cursor = Arc::new(AtomicUsize::new(0));
+    // What:     `let workers = worker_count(tracks.len());`. How many threads to spawn.
+    // Why:      One per logical core, never more than there are tracks.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const workers = workerCount(tracks.length);
+    // ```
+    let workers = worker_count(tracks.len());
+    // What:     `let handles: Vec<_> = (0..workers).map(|_| { ... }).collect();`. Spawn the
+    //           workers, each with its own clones of the shared handles.
+    // Why:      Run decodes in parallel across every core.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const handles = range(workers).map(() => startWorker(...));
+    // ```
+    let handles: Vec<_> = (0..workers)
+        .map(|_| {
+            // What:     Clone the four shared handles for this worker's closure.
+            // Why:      Each `Arc::clone` bumps a refcount; `cache.clone()` copies the senders.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // const [t, c, ca, k] = [tracks, cursor, cache, known];
+            // ```
+            let tracks = Arc::clone(&tracks);
+            let cursor = Arc::clone(&cursor);
+            let cache = cache.clone();
+            let known = Arc::clone(&known);
+            // What:     Spawn the worker thread. Tail of the closure -> its `JoinHandle`.
+            // Why:      Collected so the coordinator can join them.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // return startWorker(() => runWorker(t, c, ca, k));
+            // ```
+            thread::spawn(move || run_worker(tracks, cursor, cache, known))
+        })
+        .collect();
+    // What:     `for handle in handles { let _ = handle.join(); }`. Wait for every worker;
+    //           ignore a worker panic (one bad thread must not poison the coordinator).
+    // Why:      Keep the coordinator alive until the sweep is fully done.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // for (const handle of handles) await handle;
+    // ```
+    for handle in handles {
+        let _ = handle.join();
+    }
+}
+
+/// What:     `fn worker_count(track_count: usize) -> usize`. The number of decode workers to
+///           spawn: one per logical core, clamped to the track count, `0` for none.
+/// Why:      Saturate the CPU without spawning idle threads for a short queue.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function workerCount(trackCount: number): number {
+///   if (trackCount === 0) return 0;
+///   return Math.min(navigator.hardwareConcurrency ?? 1, trackCount);
+/// }
+/// ```
+fn worker_count(track_count: usize) -> usize {
+    // What:     `if track_count == 0 { return 0; }`. Nothing to sweep.
+    // Why:      Spawn no threads for an empty queue.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // if (trackCount === 0) return 0;
+    // ```
+    if track_count == 0 {
+        return 0;
+    }
+    // What:     `let cores = thread::available_parallelism().map(|n| n.get()).unwrap_or(1);`.
+    //           Logical core count; fall back to 1 if the platform cannot report it.
+    // Why:      The degree of parallelism for CPU-bound decoding.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const cores = navigator.hardwareConcurrency ?? 1;
+    // ```
+    let cores = thread::available_parallelism()
+        .map(|n| n.get())
+        .unwrap_or(1);
+    // What:     `cores.min(track_count)`. Never more workers than tracks. Tail -> return.
+    // Why:      Extra threads beyond the work would just exit immediately.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // return Math.min(cores, trackCount);
+    // ```
+    cores.min(track_count)
+}
+
+/// What:     `fn run_worker(tracks: Arc<[PathBuf]>, cursor: Arc<AtomicUsize>, cache: CacheHandle, known: Arc<HashSet<String>>)`.
+///           One worker: drop to idle priority, then claim and measure tracks until the
+///           cursor passes the end. Module-private.
+/// Why:      The per-thread decode loop, shared by every spawned worker.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function runWorker(tracks, cursor, cache, known) { ... }
+/// ```
+fn run_worker(
+    tracks: Arc<[PathBuf]>,
+    cursor: Arc<AtomicUsize>,
+    cache: CacheHandle,
+    known: Arc<HashSet<String>>,
+) {
+    // What:     `lower_current_thread_to_idle();`. Drop this worker to idle scheduling
     //           priority before any decoding (no-op off Linux/macOS/Windows).
-    // Why:      Make the whole sweep non-disruptive: its CPU-heavy decoding yields to audio,
-    //           UI, and everything else.
+    // Why:      Keep the whole sweep non-disruptive: its CPU-heavy decoding yields to audio,
+    //           the UI, and everything else, even with every core busy.
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // lowerCurrentThreadToIdle();
     // ```
     lower_current_thread_to_idle();
-    // What:     `let mut last_save = Instant::now();`. Remember when we last flushed the
-    //           cache to disk. `let mut` because we update it after each save.
-    // Why:      Drive the time-based flush (every `SAVE_INTERVAL_SECS`) so progress survives
-    //           an early quit.
+    // What:     `loop { ... }`. Claim-and-measure until the cursor is past the end.
+    // Why:      Pull work dynamically so fast and slow files balance across workers.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // let lastSave = performance.now();
+    // while (true) { ... }
     // ```
-    let mut last_save = Instant::now();
-    // What:     `for path in tracks { ... }`. Consume each path by value.
-    // Why:      Visit every queue entry.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // for (const path of tracks) { ... }
-    // ```
-    for path in tracks {
-        // What:     `let key = match peakcache::fingerprint(&path) { Some(k) => k, None => continue };`.
-        //           Compute the key, or skip this file if it cannot be stat'd.
+    loop {
+        // What:     `let index = cursor.fetch_add(1, Ordering::Relaxed);`. Atomically claim
+        //           the next index and advance the cursor. `Relaxed` is enough: only the
+        //           counter's atomicity matters; the cache actor handles any cross-thread
+        //           visibility of stored peaks.
+        // Why:      Lock-free, load-balanced work distribution.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const index = cursor.fetchAdd(1);
+        // ```
+        let index = cursor.fetch_add(1, Ordering::Relaxed);
+        // What:     `let Some(path) = tracks.get(index) else { break };`. Stop once the cursor
+        //           runs past the slice.
+        // Why:      End the worker when there is no more work.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const path = tracks[index]; if (!path) break;
+        // ```
+        let Some(path) = tracks.get(index) else {
+            break;
+        };
+        // What:     `let Some(key) = peakcache::fingerprint(path) else { continue };`. Compute
+        //           the cache key, or skip a file that cannot be stat'd.
         // Why:      No key -> cannot cache it; move on.
         //
         // In TS you'd write (pseudocode):
         // ```ts
         // const key = fingerprint(path); if (!key) continue;
         // ```
-        let key = match peakcache::fingerprint(&path) {
-            // What:     `Some(k) => k`. Unwrap the key.
-            // Why:      Use it for the cache.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // key = k;
-            // ```
-            Some(k) => k,
-            // What:     `None => continue`. No key: skip this track.
-            // Why:      Cannot cache an un-stat'able file.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // continue;
-            // ```
-            None => continue,
+        let Some(key) = peakcache::fingerprint(path) else {
+            continue;
         };
-        // What:     `let already = cache.lock().unwrap().get(&key).is_some();`. Is it already
-        //           measured? Lock briefly, check, release. `.is_some()` is true when the
-        //           `Option` has a value.
-        // Why:      Skip cached tracks (the re-open-a-known-dir fast path).
+        // What:     `if known.contains(&key) { continue; }`. Skip tracks already cached when
+        //           the sweep started (the warm-restart fast path).
+        // Why:      Avoid redundant decoding; warm directories sweep through quickly.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // const already = withLock(cache, (c) => c.get(key) !== undefined);
+        // if (known.has(key)) continue;
         // ```
-        let already = cache.lock().unwrap().get(&key).is_some();
-        // What:     `if already { continue; }`. Nothing to do; no sleep, so warm directories
-        //           sweep through quickly.
-        // Why:      Avoid redundant decoding.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // if (already) continue;
-        // ```
-        if already {
+        if known.contains(&key) {
             continue;
         }
-        // What:     `let peak = match measure_true_peak(&path) { Ok(p) => p, Err(_) => continue };`.
-        //           Measure; skip files that fail to decode.
-        // Why:      One bad file must not abort the sweep.
+        // What:     `let Ok(peak) = measure_true_peak(path) else { continue };`. Measure; skip
+        //           files that fail to decode.
+        // Why:      One bad file must not stop the worker.
         //
         // In TS you'd write (pseudocode):
         // ```ts
         // let peak; try { peak = measureTruePeak(path); } catch { continue; }
         // ```
-        let peak = match measure_true_peak(&path) {
-            // What:     `Ok(p) => p`. Unwrap the measured peak.
-            // Why:      Cache it below.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // peak = p;
-            // ```
-            Ok(p) => p,
-            // What:     `Err(_) => continue`. Decode failed: skip, discard the error.
-            // Why:      Be robust to one bad file.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // continue;
-            // ```
-            Err(_) => continue,
+        let Ok(peak) = measure_true_peak(path) else {
+            continue;
         };
-        // What:     `let unsaved = { let mut guard = cache.lock().unwrap(); guard.insert(key, peak); guard.unsaved() };`.
-        //           A BLOCK EXPRESSION: lock the cache, record the measurement, read the
-        //           unsaved count, and release the lock at the end of the block.
-        // Why:      Memoize the peak; the count decides whether a batch flush is due.
+        // What:     `cache.upsert(key, peak);`. Fire-and-forget the measurement to the cache
+        //           actor, which commits it durably.
+        // Why:      Memoize the peak without blocking this worker on persistence.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // const unsaved = withLock(cache, (c) => { c.insert(key, peak); return c.unsaved(); });
+        // cache.upsert(key, peak);
         // ```
-        let unsaved = {
-            // What:     `let mut guard = cache.lock().unwrap();`. Take the lock to mutate.
-            // Why:      Insert under the lock.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // const guard = lock(cache);
-            // ```
-            let mut guard = cache.lock().unwrap();
-            // What:     `guard.insert(key, peak);`. Record the measurement.
-            // Why:      Memoize.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // guard.insert(key, peak);
-            // ```
-            guard.insert(key, peak);
-            // What:     `guard.unsaved()`. Tail of the block -> the count value.
-            // Why:      Hand the count out of the locked scope.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // return guard.unsaved();
-            // ```
-            guard.unsaved()
-        };
-        // What:     `if unsaved >= SAVE_BATCH || last_save.elapsed() >= Duration::from_secs(SAVE_INTERVAL_SECS) { ... }`.
-        //           Flush when a batch has accumulated OR enough time has passed.
-        //           `last_save.elapsed()` is the `Duration` since the last flush. `||`
-        //           short-circuits.
-        // Why:      The batch bound amortizes writes when measuring many tracks fast (warm
-        //           restart); the time bound guarantees progress is saved even when each
-        //           decode is slow at idle priority.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // if (unsaved >= SAVE_BATCH || (performance.now() - lastSave) >= SAVE_INTERVAL_SECS * 1000) { ... }
-        // ```
-        if unsaved >= SAVE_BATCH
-            || last_save.elapsed() >= Duration::from_secs(SAVE_INTERVAL_SECS)
-        {
-            // What:     `peakcache::flush(&cache);`. Persist out-of-lock.
-            // Why:      Write the accumulated measurements without blocking the engine.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // flush(cache);
-            // ```
-            peakcache::flush(&cache);
-            // What:     `last_save = Instant::now();`. Reset the flush timer.
-            // Why:      Start the next interval from now.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // lastSave = performance.now();
-            // ```
-            last_save = Instant::now();
-        }
-        // What:     `thread::sleep(Duration::from_millis(MEASURE_GAP_MS));`. Pause after a
-        //           real measurement (blocks this thread for the gap).
-        // Why:      Extra politeness on top of idle priority: a fixed gap between tracks.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // await sleep(MEASURE_GAP_MS);
-        // ```
-        thread::sleep(Duration::from_millis(MEASURE_GAP_MS));
+        cache.upsert(key, peak);
     }
-    // What:     `peakcache::flush(&cache);`. Final flush of any entries left below the batch
-    //           threshold, out-of-lock.
-    // Why:      Do not lose the tail of the queue's measurements.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // flush(cache);
-    // ```
-    peakcache::flush(&cache);
 }
 
 /// What:     `#[cfg(test)] #[path = "measure_tests.rs"] mod tests;` declares a test-only
 ///           submodule whose code lives in the sibling file `measure_tests.rs`.
-///           `#[cfg(test)]` gates it to test builds only; `#[path = "..."]` aims the module
-///           at a flat sibling file instead of the default `measure/tests.rs` subdirectory
-///           lookup. The file stays the `tests` CHILD of measure, so its `use super::*`
-///           reaches the module items (including private ones) unchanged.
-/// Why:      Keep `measure.rs` to production code; the tests live beside it without
-///           inflating this file or its max-lines budget (sibling `*_tests.rs` files are
-///           exempt from the linter).
+/// Why:      Keep `measure.rs` to production code; the tests live beside it without inflating
+///           this file or its max-lines budget (sibling `*_tests.rs` files are exempt).
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
