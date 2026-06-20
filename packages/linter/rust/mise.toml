@@ -18,8 +18,8 @@ run = "cargo clippy --release -- -D warnings"
 description = "cargo nextest run"
 run = "cargo nextest run --release"
 
-[tasks."lint:max-lines"]
-description = "Dogfood: run the linter's max-lines rule over its own src"
+[tasks."lint:rust"]
+description = "Dogfood: run monochromatic-rust-linter (max-lines + require-rustdoc) over its own src"
 run = "cargo run --release -- src"
 
 [tasks.run]

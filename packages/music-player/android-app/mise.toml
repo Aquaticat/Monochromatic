@@ -189,7 +189,7 @@ dir = "{{config_root}}"
 run = "./gradlew :app:lintDebug --no-daemon --console=plain"
 
 # Enforce KDoc on this app's Kotlin via the shared kotlin-linter (packages/linter/kotlin),
-# mirroring how Rust packages call the shared rust-linter for lint:max-lines. Scans only
+# mirroring how Rust packages call the shared rust-linter for lint:rust. Scans only
 # this app's main source root so detekt never walks node_modules/build. Picked up by the
 # root `lint:detekt` fanout.
 [tasks."lint:detekt"]

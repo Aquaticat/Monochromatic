@@ -112,7 +112,7 @@ path/to/file.rs:LINE: error[require-rustdoc]: Missing rustdoc on function "foo".
 mise run //packages/linter/rust:build         # cargo build --release
 mise run //packages/linter/rust:lint:clippy   # cargo clippy --release -- -D warnings
 mise run //packages/linter/rust:test          # cargo nextest run --release
-mise run //packages/linter/rust:lint:max-lines # dogfood: run the rule over this crate's src
+mise run //packages/linter/rust:lint:rust      # dogfood: run the linter over this crate's src
 mise run //packages/linter/rust:run -- --max 200 some/path
 ```
 

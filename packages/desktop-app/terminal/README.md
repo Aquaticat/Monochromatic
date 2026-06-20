@@ -158,7 +158,7 @@ Run compile checks, max-lines linting, clippy, and tests (host if Zig + dev libs
 ```bash
 # packages/desktop-app/terminal
 mise run //packages/desktop-app/terminal:lint
-mise run //packages/desktop-app/terminal:lint:max-lines
+mise run //packages/desktop-app/terminal:lint:rust
 mise run //packages/desktop-app/terminal:lint:clippy
 mise run //packages/desktop-app/terminal:test
 ```

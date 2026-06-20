@@ -1044,7 +1044,7 @@ MXR:
  rule `max-lines`,
  300 code lines,
  blanks/comments excluded).
- Run via each Rust package's `lint:max-lines` or root `lint:rust`.
+ Run via each Rust package's `lint:rust`, or root `lint:rust` which fans out to them.
  Remediate by splitting:
  sibling modules,
  re-export from parent `mod`,

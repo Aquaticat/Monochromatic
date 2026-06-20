@@ -130,8 +130,8 @@ run = """
 runCargo(['clippy', '--fix', '--allow-dirty', '--allow-staged', '--allow-no-vcs'])
 """
 
-[tasks."lint:max-lines"]
-description = "Enforce the 300 code-line budget on .rs files (monochromatic-rust-linter)"
+[tasks."lint:rust"]
+description = "Run monochromatic-rust-linter (max-lines + require-rustdoc) over this package's .rs"
 # Runs on the HOST, not in the container: the linter is a separate crate with
 # no pipewire/opus/clang deps, so it needs no container. .gitignore-aware
 # walking skips target/ (including Slint's generated .rs).
