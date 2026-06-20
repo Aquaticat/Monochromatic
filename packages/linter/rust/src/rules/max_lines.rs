@@ -115,8 +115,8 @@ impl Rule for MaxLines {
 
         // What:     `if max_lines_exempt(path) { return; }`. Calls the predicate
         //           and bails out early when the file is exempt.
-        // Why:      Tests, fuzz harnesses, and build scripts are off-budget,
-        //           mirroring oxlint's overrides.
+        // Why:      Tests, fuzz harnesses, fixtures, and build scripts are
+        //           off-budget, mirroring oxlint's overrides.
         //
         // In TS you'd write (pseudocode):
         // ```ts

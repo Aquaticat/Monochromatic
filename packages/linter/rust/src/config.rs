@@ -67,8 +67,12 @@ impl Config {
 // Why:      Mirror oxlint's overrides that turn max-lines OFF for test, fixture,
 //           and config-equivalent files. Here: integration tests (`tests/`),
 //           the repo's unit-test module convention (`*_tests.rs`), fuzz harnesses
-//           (`fuzz/`), and the cargo build script (`build.rs`). (`target/` never
-//           reaches us; the file walker already drops gitignored paths.)
+//           (`fuzz/`), the cargo build script (`build.rs`), and the linter's own
+//           deliberate samples under a `fixture/`, `fixtures/`, `test-fixture/`,
+//           or `invalid/` directory (matching oxlint's `ignorePatterns` globs
+//           `**/fixture/**`, `**/fixtures/**`, `**/test-fixture/**`,
+//           `**/invalid/**`). (`target/` never reaches us; the file walker already
+//           drops gitignored paths.)
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -120,7 +124,8 @@ pub fn max_lines_exempt(path: &Path) -> bool {
 
     // What:     `for component in path.components()`. Iterates the path piece by
     //           piece, yielding `Component` values.
-    // Why:      Detect whether the file lives under a `tests/` or `fuzz/` folder.
+    // Why:      Detect whether the file lives under a `tests/`, `fuzz/`, `fixture/`,
+    //           `fixtures/`, `test-fixture/`, or `invalid/` folder.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -146,15 +151,28 @@ pub fn max_lines_exempt(path: &Path) -> bool {
             // const text = segment; if (text) { /* ... */ }
             // ```
             if let Some(text) = segment.to_str() {
-                // What:     `if text == "tests" || text == "fuzz" { return true; }`.
-                //           Logical OR of two equality tests; early-return on a hit.
-                // Why:      A `tests/` or `fuzz/` ancestor means non-production code.
+                // What:     `if text == "tests" || text == "fuzz" || text == "fixture"
+                //           || text == "fixtures" || text == "test-fixture" || text ==
+                //           "invalid" { return true; }`. A chain of equality tests
+                //           joined by logical OR (`||`); the block runs (early-returning
+                //           `true`) when the segment equals any of the six names.
+                // Why:      A `tests/` or `fuzz/` ancestor is non-production code, and a
+                //           `fixture/`, `fixtures/`, `test-fixture/`, or `invalid/`
+                //           ancestor is a deliberate linter sample; both are off-budget,
+                //           matching oxlint's `ignorePatterns`.
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
-                // if (text === "tests" || text === "fuzz") return true;
+                // if (["tests", "fuzz", "fixture", "fixtures", "test-fixture", "invalid"]
+                //   .includes(text)) return true;
                 // ```
-                if text == "tests" || text == "fuzz" {
+                if text == "tests"
+                    || text == "fuzz"
+                    || text == "fixture"
+                    || text == "fixtures"
+                    || text == "test-fixture"
+                    || text == "invalid"
+                {
                     return true;
                 }
             }
@@ -177,9 +195,13 @@ pub fn max_lines_exempt(path: &Path) -> bool {
 //           Kept as its own function (not a call to `max_lines_exempt`) so the two
 //           rules' skip lists can drift apart later without entangling them.
 // Why:      Documentation is pointless on throwaway code: unit/integration test
-//           files (`tests/`, `*_tests.rs`), fuzz harnesses (`fuzz/`), and the cargo
-//           build script (`build.rs`). Everything else, including the linter's own
-//           `fixtures/` inputs, must be documented (maximal enforcement).
+//           files (`tests/`, `*_tests.rs`), fuzz harnesses (`fuzz/`), the cargo
+//           build script (`build.rs`), and the linter's own deliberate samples
+//           under a `fixture/`, `fixtures/`, `test-fixture/`, or `invalid/`
+//           directory. Those fixtures (such as `fixtures/undocumented.rs`) exist
+//           precisely to violate the rule, so scanning them is self-defeating;
+//           this mirrors oxlint's `ignorePatterns` (`**/fixture/**`,
+//           `**/fixtures/**`, `**/test-fixture/**`, `**/invalid/**`).
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -228,7 +250,8 @@ pub fn missing_rustdoc_exempt(path: &Path) -> bool {
 
     // What:     `for component in path.components()`. Iterates the path piece by
     //           piece, yielding `Component` values.
-    // Why:      Detect whether the file lives under a `tests/` or `fuzz/` folder.
+    // Why:      Detect whether the file lives under a `tests/`, `fuzz/`, `fixture/`,
+    //           `fixtures/`, `test-fixture/`, or `invalid/` folder.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -254,16 +277,28 @@ pub fn missing_rustdoc_exempt(path: &Path) -> bool {
             // const text = segment; if (text) { /* ... */ }
             // ```
             if let Some(text) = segment.to_str() {
-                // What:     `if text == "tests" || text == "fuzz" { return true; }`.
-                //           Logical OR of two equality tests; early-return on a hit.
-                // Why:      A `tests/` or `fuzz/` ancestor means non-production code
-                //           that needs no rustdoc.
+                // What:     `if text == "tests" || text == "fuzz" || text == "fixture"
+                //           || text == "fixtures" || text == "test-fixture" || text ==
+                //           "invalid" { return true; }`. A chain of equality tests
+                //           joined by logical OR (`||`); the block runs (early-returning
+                //           `true`) when the segment equals any of the six names.
+                // Why:      A `tests/` or `fuzz/` ancestor is non-production code, and a
+                //           `fixture/`, `fixtures/`, `test-fixture/`, or `invalid/`
+                //           ancestor is a deliberate linter sample; neither needs
+                //           rustdoc, matching oxlint's `ignorePatterns`.
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
-                // if (text === "tests" || text === "fuzz") return true;
+                // if (["tests", "fuzz", "fixture", "fixtures", "test-fixture", "invalid"]
+                //   .includes(text)) return true;
                 // ```
-                if text == "tests" || text == "fuzz" {
+                if text == "tests"
+                    || text == "fuzz"
+                    || text == "fixture"
+                    || text == "fixtures"
+                    || text == "test-fixture"
+                    || text == "invalid"
+                {
                     return true;
                 }
             }

@@ -153,12 +153,13 @@ fn classifier_counts_code_lines() {
 
 // What:     `#[test] fn exemptions_match_oxlint_overrides() { ... }`. Checks the
 //           path-based skip predicate.
-// Why:      Tests, `*_tests.rs`, fuzz, and `build.rs` must be exempt; ordinary
+// Why:      Tests, `*_tests.rs`, fuzz, `build.rs`, and the `fixture/`, `fixtures/`,
+//           `test-fixture/`, `invalid/` sample directories must be exempt; ordinary
 //           source must not be.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// it("exempts tests/fuzz/build.rs", () => { ... });
+// it("exempts tests/fuzz/fixtures/build.rs", () => { ... });
 // ```
 #[test]
 fn exemptions_match_oxlint_overrides() {
@@ -175,6 +176,10 @@ fn exemptions_match_oxlint_overrides() {
     assert!(max_lines_exempt(Path::new("a/b/engine_tests.rs")), "*_tests.rs");
     assert!(max_lines_exempt(Path::new("a/fuzz/target.rs")), "fuzz/ dir");
     assert!(max_lines_exempt(Path::new("build.rs")), "build.rs");
+    assert!(max_lines_exempt(Path::new("a/fixture/x.rs")), "fixture/ dir");
+    assert!(max_lines_exempt(Path::new("a/fixtures/x.rs")), "fixtures/ dir");
+    assert!(max_lines_exempt(Path::new("a/test-fixture/x.rs")), "test-fixture/ dir");
+    assert!(max_lines_exempt(Path::new("a/invalid/x.rs")), "invalid/ dir");
 
     // What:     `assert!(!max_lines_exempt(...))`. The leading `!` negates: assert
     //           the path is NOT exempt.

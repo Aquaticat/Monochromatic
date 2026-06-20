@@ -325,20 +325,27 @@ fn documented_file_is_clean() {
 // ```
 #[test]
 fn exempt_paths_are_skipped() {
-    // What:     Three `assert!(run_rule(..., exempt_path).is_empty(), ...)` checks.
+    // What:     Seven `assert!(run_rule(..., exempt_path).is_empty(), ...)` checks.
     //           An undocumented fn on each exempt path must produce nothing.
-    // Why:      Confirm the exemption short-circuits the whole rule.
+    // Why:      Confirm the exemption short-circuits the whole rule for test, fuzz,
+    //           and fixture/invalid sample paths. The `fixture/`, `fixtures/`,
+    //           `test-fixture/`, and `invalid/` directories hold the linter's own
+    //           deliberate negative samples (such as `fixtures/undocumented.rs`),
+    //           so requiring rustdoc on them would defeat their purpose; this
+    //           mirrors oxlint's `ignorePatterns`.
     assert!(run_rule("fn a() {}\n", "src/foo_tests.rs").is_empty(), "*_tests.rs");
     assert!(run_rule("fn a() {}\n", "a/tests/x.rs").is_empty(), "tests/ dir");
     assert!(run_rule("fn a() {}\n", "a/fuzz/x.rs").is_empty(), "fuzz/ dir");
+    assert!(run_rule("fn a() {}\n", "a/fixture/x.rs").is_empty(), "fixture/ dir");
+    assert!(run_rule("fn a() {}\n", "a/fixtures/x.rs").is_empty(), "fixtures/ dir");
+    assert!(run_rule("fn a() {}\n", "a/test-fixture/x.rs").is_empty(), "test-fixture/ dir");
+    assert!(run_rule("fn a() {}\n", "a/invalid/x.rs").is_empty(), "invalid/ dir");
 
-    // What:     Two `assert!(!run_rule(..., path).is_empty(), ...)` checks. The
-    //           leading `!` negates: ordinary source AND `fixtures/` paths must
-    //           still be linted (fixtures are NOT exempt, unlike for max-lines).
-    // Why:      Guard against the exemption being too broad; lock in that the
-    //           rustdoc rule enforces maximally, including the linter's fixtures.
+    // What:     `assert!(!run_rule(..., path).is_empty(), ...)`. The leading `!`
+    //           negates: an ordinary source path must still be linted.
+    // Why:      Guard against the exemption being too broad; production source
+    //           outside the exempt directories must keep requiring rustdoc.
     assert!(!run_rule("fn a() {}\n", "src/lib.rs").is_empty(), "ordinary source linted");
-    assert!(!run_rule("fn a() {}\n", "a/fixtures/x.rs").is_empty(), "fixtures linted");
 }
 
 // What:     `#[test] fn macros_are_never_flagged() { ... }`. Macros are excluded
