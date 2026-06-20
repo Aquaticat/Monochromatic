@@ -419,10 +419,10 @@ async fn seed_known(conn: &Connection) -> HashSet<String> {
     // for await (const row of rows) set.add(row.get(0));
     // ```
     while let Ok(Some(row)) = rows.next().await {
-        if let Ok(value) = row.get_value(0) {
-            if let Some(text) = value.as_text() {
-                set.insert(text.clone());
-            }
+        if let Ok(value) = row.get_value(0)
+            && let Some(text) = value.as_text()
+        {
+            set.insert(text.clone());
         }
     }
     // What:     Return the seeded set. Tail -> return.
