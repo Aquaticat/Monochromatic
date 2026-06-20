@@ -9,14 +9,32 @@
 //           `*_tests.rs` files are exempt from the linter).
 
 // What:     `use super::*;`. Bring the module's items into the test scope.
-// Why:      Tests use `fingerprint`, `PeakCache`, `PathBuf`.
+// Why:      Tests use `fingerprint`, `CacheHandle`, `PathBuf`.
 use super::*;
 // What:     `use std::fs;`. Filesystem helpers for fixtures.
-// Why:      Create real temp files to fingerprint and a temp cache to round-trip.
+// Why:      Create real temp files to fingerprint.
 use std::fs;
-// What:     `use std::time::{SystemTime, UNIX_EPOCH};`. Clock + epoch for unique names.
-// Why:      Build collision-free temp paths.
-use std::time::{SystemTime, UNIX_EPOCH};
+// What:     `use std::thread;` and `use std::time::{Duration, SystemTime, UNIX_EPOCH};`.
+//           Sleeping while polling the async cache, plus clock + epoch for unique names.
+// Why:      Upserts are fire-and-forget, so a test waits for the value to land; the clock
+//           builds collision-free temp paths.
+use std::thread;
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
+
+// What:     `fn wait_for_peak(cache: &CacheHandle, key: &str) -> Option<f32>`. Poll the
+//           cache until the key appears, up to ~2s.
+// Why:      `upsert` is fire-and-forget, so the row may not be committed on the first read.
+fn wait_for_peak(cache: &CacheHandle, key: &str) -> Option<f32> {
+    // What:     up to 100 polls, 20ms apart.
+    // Why:      Bounded wait for the async write to land without hanging forever.
+    for _ in 0..100 {
+        if let Some(peak) = cache.get(key) {
+            return Some(peak);
+        }
+        thread::sleep(Duration::from_millis(20));
+    }
+    None
+}
 
 // What:     `fn unique_path(suffix: &str) -> PathBuf`. A fresh throwaway path under
 //           the system temp dir, tagged with pid + nanoseconds + `suffix`.
@@ -70,41 +88,47 @@ fn fingerprint_is_stable_opaque_and_change_sensitive() {
     let _ = fs::remove_file(&file);
 }
 
-// What:     `#[test]` disk round-trip.
-// Why:      Insert + save + reload must preserve entries, and the file must hold
-//           only the opaque key and number (no path).
+// What:     `#[test]` Turso round-trip across handles.
+// Why:      An upsert must persist to disk and be readable after the handle is dropped
+//           and the database reopened.
 #[test]
-fn save_and_reload_preserves_entries_without_metadata() {
-    // What:     a throwaway cache file path.
+fn upsert_persists_across_handles() {
+    // What:     a throwaway database file path.
     // Why:      Never touch the real config dir.
-    let cache_file = unique_path("cache.json");
+    let db_file = unique_path("cache.db");
 
-    // What:     `let mut cache = PeakCache::from_path(Some(cache_file.clone()));`.
-    //           Build an empty cache pointing at the temp file.
+    // What:     `let cache = CacheHandle::open_at(db_file.clone());`. Start the cache actor
+    //           on the temp database.
     // Why:      Start fresh.
-    let mut cache = PeakCache::from_path(Some(cache_file.clone()));
-    // What:     insert one entry and save.
-    // Why:      Exercise insert + atomic save.
-    cache.insert("deadbeef00000000".to_string(), 0.75);
-    cache.save().unwrap();
+    let cache = CacheHandle::open_at(db_file.clone());
+    // What:     upsert one entry, then wait for it to land.
+    // Why:      Exercise the fire-and-forget write committing through Turso.
+    cache.upsert("deadbeef00000000".to_string(), 0.75);
+    assert_eq!(
+        wait_for_peak(&cache, "deadbeef00000000"),
+        Some(0.75),
+        "upsert did not become readable"
+    );
+    // What:     an unknown key misses.
+    // Why:      `get` returns `None` for fingerprints never written.
+    assert_eq!(cache.get("00000000deadbeef"), None);
+    // What:     the key shows up in the known-fingerprint snapshot.
+    // Why:      The sweep's skip-check reads this set.
+    assert!(cache.known_fingerprints().contains("deadbeef00000000"));
 
-    // What:     `let reloaded = PeakCache::from_path(Some(cache_file.clone()));`.
-    //           Load a new cache from the same file.
-    // Why:      Prove persistence across instances.
-    let reloaded = PeakCache::from_path(Some(cache_file.clone()));
-    // What:     the entry survived the round-trip.
+    // What:     drop the handle (closing the actor), let it release the file, then reopen.
+    // Why:      Prove the write reached disk, not just memory; the short settle avoids racing
+    //           the first actor's connection close.
+    drop(cache);
+    thread::sleep(Duration::from_millis(50));
+    let reopened = CacheHandle::open_at(db_file.clone());
+    // What:     the entry survived the reopen.
     // Why:      Memoization works across runs.
-    assert_eq!(reloaded.get("deadbeef00000000"), Some(0.75));
+    assert_eq!(reopened.get("deadbeef00000000"), Some(0.75));
 
-    // What:     read the raw file text.
-    // Why:      Inspect what actually hit disk.
-    let text = fs::read_to_string(&cache_file).unwrap();
-    // What:     the file contains the opaque key but nothing path-like.
-    // Why:      Privacy guarantee: only hashes and numbers.
-    assert!(text.contains("deadbeef00000000"));
-    assert!(!text.contains('/'));
-
-    // What:     clean up the temp file.
+    // What:     clean up the temp database (and any Turso sidecar files).
     // Why:      No droppings.
-    let _ = fs::remove_file(&cache_file);
+    let _ = fs::remove_file(&db_file);
+    let _ = fs::remove_file(db_file.with_extension("db-wal"));
+    let _ = fs::remove_file(db_file.with_extension("db-shm"));
 }

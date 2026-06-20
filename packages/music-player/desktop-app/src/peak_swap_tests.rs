@@ -11,10 +11,6 @@ use super::*;
 // Why:      Tests borrow fixture paths and create owned temp cache paths.
 use std::path::{Path, PathBuf};
 
-// What:     `use std::sync::{Arc, Mutex};`. Thread-safe shared owner plus lock.
-// Why:      Peak-swap helpers take the same shared cache shape as production.
-use std::sync::{Arc, Mutex};
-
 // What:     `use std::thread;`. Rust's standard OS-thread API.
 // Why:      Tests pass the current test thread handle into the peak worker.
 use std::thread;
@@ -37,7 +33,7 @@ fn temp_cache(tag: &str) -> PathBuf {
     //           under the system temp directory. Tail expression returns it.
     // Why:      Keep disposable cache state out of the repo and real config dir.
     std::env::temp_dir().join(format!(
-        "mp-peak-swap-{}-{}-{}.json",
+        "mp-peak-swap-{}-{}-{}.db",
         std::process::id(),
         nanos,
         tag
@@ -53,15 +49,29 @@ fn fixture() -> &'static Path {
     Path::new("fixtures/tone.flac")
 }
 
-// What:     `fn test_cache(path: &Path) -> Arc<Mutex<PeakCache>>`. Build a shared
-//           cache backed by a disposable path.
+// What:     `fn test_cache(path: &Path) -> CacheHandle`. Build a cache handle backed by a
+//           disposable database path.
 // Why:      Match production helper signatures while isolating persistence.
-fn test_cache(path: &Path) -> Arc<Mutex<PeakCache>> {
-    // What:     `Arc::new(Mutex::new(PeakCache::from_path(Some(path.to_path_buf()))))`.
-    //           Clone the borrowed path into `PathBuf`, wrap it in `Some`, construct
-    //           a cache, guard it with `Mutex`, and share it with `Arc`.
-    // Why:      The measurement worker and test thread use the same cache shape.
-    Arc::new(Mutex::new(PeakCache::from_path(Some(path.to_path_buf()))))
+fn test_cache(path: &Path) -> CacheHandle {
+    // What:     `CacheHandle::open_at(path.to_path_buf())`. Start the cache actor on the
+    //           given temp database file.
+    // Why:      The measurement worker and test thread share the same cache handle.
+    CacheHandle::open_at(path.to_path_buf())
+}
+
+// What:     `fn wait_cached(cache: &CacheHandle, key: &str)`. Poll until the key is cached,
+//           up to ~2s, then return whether it landed.
+// Why:      Writes are fire-and-forget, so a test must wait before reading the value back.
+fn wait_cached(cache: &CacheHandle, key: &str) -> bool {
+    // What:     up to 100 polls, 20ms apart.
+    // Why:      Bounded wait for the async write to land.
+    for _ in 0..100 {
+        if cache.get(key).is_some() {
+            return true;
+        }
+        thread::sleep(Duration::from_millis(20));
+    }
+    false
 }
 
 // What:     `fn approx_eq(a: f32, b: f32) -> bool`. Float comparison helper.
@@ -90,13 +100,11 @@ fn cached_track_gain_returns_measured_gain() {
     //           fixture's opaque cache key and unwrap it.
     // Why:      Seed a known cache hit without decoding the fixture.
     let key = peakcache::fingerprint(fixture()).unwrap();
-    // What:     `{ let mut guard = cache.lock().unwrap(); guard.insert(key, 2.0); }`.
-    //           Lock the cache, insert a synthetic peak, and release the lock at block end.
-    // Why:      A peak of 2.0 should normalize to half the ceiling fallback.
-    {
-        let mut guard = cache.lock().unwrap();
-        guard.insert(key, 2.0);
-    }
+    // What:     `cache.upsert(key.clone(), 2.0);` then wait for it to land. A peak of 2.0
+    //           normalizes to half the ceiling fallback.
+    // Why:      Seed a known cache hit; the write is async, so wait before reading it back.
+    cache.upsert(key.clone(), 2.0);
+    assert!(wait_cached(&cache, &key), "seeded peak did not land");
 
     // What:     `let gain = cached_track_gain(fixture(), &cache).unwrap();`. Resolve the
     //           cached peak into a playback gain.
@@ -162,9 +170,9 @@ fn async_current_track_measurement_populates_cache_and_returns_gain() {
     //           fixture cache key.
     // Why:      Confirm the worker warmed the cache.
     let key = peakcache::fingerprint(fixture()).unwrap();
-    // What:     `assert!(cache.lock().unwrap().get(&key).is_some());`. Check cache entry.
-    // Why:      Current-track measurement must warm the shared cache.
-    assert!(cache.lock().unwrap().get(&key).is_some());
+    // What:     `assert!(wait_cached(&cache, &key));`. Wait for and check the cache entry.
+    // Why:      Current-track measurement must warm the shared cache (write is async).
+    assert!(wait_cached(&cache, &key), "worker did not warm the cache");
 
     // What:     `let _ = std::fs::remove_file(&cache_path);`. Best-effort cleanup.
     // Why:      Leave no temp cache file behind.

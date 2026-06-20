@@ -12,10 +12,6 @@ use super::*;
 // Why:      The skip-current sweep test builds a queue of owned fixture paths.
 use std::path::PathBuf;
 
-// What:     `use std::sync::{Arc, Mutex};`. Thread-safe shared owner plus lock.
-// Why:      The skip-current sweep test points controller peak cache at disposable state.
-use std::sync::{Arc, Mutex};
-
 // What:     `use std::sync::mpsc;`. Import Rust's channel module.
 // Why:      Tests build manual pending peak receivers without spawning decoder threads.
 use std::sync::mpsc;
@@ -33,9 +29,10 @@ use std::time::{SystemTime, UNIX_EPOCH};
 // Why:      Tests need to seed pending state and assert gain changes.
 use crate::peak_swap::{fallback_track_gain, PeakGainResult, PendingPeakMeasurement};
 
-// What:     `use crate::peakcache::{self, PeakCache};`. Import peak-cache module and type.
-// Why:      The skip-current sweep test computes fingerprints and creates a temp-backed cache.
-use crate::peakcache::{self, PeakCache};
+// What:     `use crate::peakcache;`. Import the peak-cache module. `CacheHandle` arrives via
+//           `use super::*` (the controller re-imports it).
+// Why:      The skip-current sweep test computes fingerprints and opens a temp-backed cache.
+use crate::peakcache;
 
 // What:     `fn approx_eq(a: f32, b: f32) -> bool`. Float comparison helper.
 // Why:      Peak gains are f32 values, so tests compare with a small tolerance.
@@ -238,10 +235,10 @@ fn background_sweep_skips_current_track() {
     // What:     `let mut controller = test_controller();`. Build mutable controller.
     // Why:      The test replaces its cache and queue.
     let mut controller = test_controller();
-    // What:     `controller.peaks = Arc::new(Mutex::new(PeakCache::from_path(Some(cache_path.clone()))));`.
-    //           Replace the controller's peak cache with a temp-backed shared cache.
+    // What:     `controller.peaks = CacheHandle::open_at(cache_path.clone());`. Replace the
+    //           controller's peak cache with a temp-backed handle.
     // Why:      Background sweep writes to disposable state.
-    controller.peaks = Arc::new(Mutex::new(PeakCache::from_path(Some(cache_path.clone()))));
+    controller.peaks = CacheHandle::open_at(cache_path.clone());
     // What:     `let current = PathBuf::from("fixtures/tone.flac");`. First queue track.
     // Why:      Queue starts at index 0, so this is the current track to skip.
     let current = PathBuf::from("fixtures/tone.flac");
@@ -271,10 +268,10 @@ fn background_sweep_skips_current_track() {
     // What:     `for _ in 0..100 { ... }`. Poll briefly for the background worker.
     // Why:      The worker runs on another thread and should finish the tiny fixture.
     for _ in 0..100 {
-        // What:     `if controller.peaks.lock().unwrap().get(&other_key).is_some() { ... }`.
-        //           Check whether the non-current track was cached.
+        // What:     `if controller.peaks.get(&other_key).is_some() { ... }`. Check whether the
+        //           non-current track was cached.
         // Why:      Detect sweep completion without sleeping a fixed long time.
-        if controller.peaks.lock().unwrap().get(&other_key).is_some() {
+        if controller.peaks.get(&other_key).is_some() {
             other_found = true;
             break;
         }
@@ -285,10 +282,10 @@ fn background_sweep_skips_current_track() {
     // What:     `assert!(other_found);`. Non-current track was measured.
     // Why:      Prove the background sweep actually did work.
     assert!(other_found);
-    // What:     `assert!(controller.peaks.lock().unwrap().get(&current_key).is_none());`.
-    //           Check current track remains absent from the cache.
+    // What:     `assert!(controller.peaks.get(&current_key).is_none());`. Check current track
+    //           remains absent from the cache.
     // Why:      Dedicated current-track measurement, not background sweep, owns that path.
-    assert!(controller.peaks.lock().unwrap().get(&current_key).is_none());
+    assert!(controller.peaks.get(&current_key).is_none());
 
     // What:     `let _ = std::fs::remove_file(&cache_path);`. Best-effort cleanup.
     // Why:      Leave no temp cache file behind.

@@ -9,11 +9,12 @@
 //           `*_tests.rs` files are exempt from the linter).
 
 // What:     `use super::*;`. Bring the module's items into the test scope.
-// Why:      Tests use `spawn_queue_measurement`, `PeakCache`, and helpers.
+// Why:      Tests use `spawn_queue_measurement`, `CacheHandle`, `thread`, and helpers.
 use super::*;
-// What:     `use std::time::{SystemTime, UNIX_EPOCH};`. Clock + epoch for unique names.
-// Why:      Build a collision-free throwaway cache path.
-use std::time::{SystemTime, UNIX_EPOCH};
+// What:     `use std::time::{Duration, SystemTime, UNIX_EPOCH};`. `Duration` for the poll
+//           sleep (measure.rs no longer imports it), clock + epoch for unique names.
+// Why:      Wait for the async sweep, and build a collision-free throwaway cache path.
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 // What:     `fn temp_cache(tag: &str) -> PathBuf`. A fresh throwaway cache-file path.
 // Why:      Point the cache at disposable state, never the real config dir.
@@ -27,7 +28,7 @@ fn temp_cache(tag: &str) -> PathBuf {
     // What:     build the path under the system temp dir. Tail -> return.
     // Why:      Disposable location.
     std::env::temp_dir().join(format!(
-        "mp-measure-{}-{}-{}.json",
+        "mp-measure-{}-{}-{}.db",
         std::process::id(),
         nanos,
         tag
@@ -41,9 +42,9 @@ fn spawn_queue_measurement_populates_cache() {
     // What:     `let path = temp_cache("sweep");`. Throwaway cache file.
     // Why:      Disposable state.
     let path = temp_cache("sweep");
-    // What:     shared empty cache at the temp file.
+    // What:     cache handle backed by the temp database.
     // Why:      The sweep writes here.
-    let cache = Arc::new(Mutex::new(PeakCache::from_path(Some(path.clone()))));
+    let cache = CacheHandle::open_at(path.clone());
     // What:     `let fixture = PathBuf::from("fixtures/tone.flac");`. The track to sweep.
     // Why:      A real file the sweep can measure.
     let fixture = PathBuf::from("fixtures/tone.flac");
@@ -51,7 +52,7 @@ fn spawn_queue_measurement_populates_cache() {
     // What:     `spawn_queue_measurement(vec![fixture.clone()], Arc::clone(&cache));`.
     //           Start the detached sweep over a one-track queue.
     // Why:      The behaviour under test.
-    spawn_queue_measurement(vec![fixture.clone()], Arc::clone(&cache));
+    spawn_queue_measurement(vec![fixture.clone()], cache.clone());
 
     // What:     `let key = peakcache::fingerprint(&fixture).unwrap();`. The cache key.
     // Why:      Poll for it.
@@ -66,7 +67,7 @@ fn spawn_queue_measurement_populates_cache() {
         // What:     `if let Some(peak) = cache.lock().unwrap().get(&key) { found = Some(peak); break; }`.
         //           Check the shared cache; stop once present.
         // Why:      Detect completion.
-        if let Some(peak) = cache.lock().unwrap().get(&key) {
+        if let Some(peak) = cache.get(&key) {
             found = Some(peak);
             break;
         }
@@ -86,4 +87,53 @@ fn spawn_queue_measurement_populates_cache() {
     // What:     clean up the temp cache file.
     // Why:      No droppings.
     let _ = std::fs::remove_file(&path);
+}
+
+// What:     `#[test]` parallel sweep over many tracks across codecs.
+// Why:      Exercise the N-worker fan-out and the concurrent upsert path: every fingerprint
+//           must land, with no worker dropping or duplicating a track.
+#[test]
+fn parallel_sweep_measures_every_track() {
+    // What:     a throwaway cache database.
+    // Why:      Disposable state.
+    let path = temp_cache("parallel");
+    // What:     cache handle backed by the temp database.
+    // Why:      The sweep writes here.
+    let cache = CacheHandle::open_at(path.clone());
+    // What:     several real, decodable fixtures across codecs.
+    // Why:      Give the workers enough distinct tracks to run concurrently.
+    let tracks = vec![
+        PathBuf::from("fixtures/tone.flac"),
+        PathBuf::from("fixtures/tone.mp3"),
+        PathBuf::from("fixtures/tone.ogg"),
+        PathBuf::from("fixtures/tone.wav"),
+        PathBuf::from("fixtures/tone.opus"),
+        PathBuf::from("fixtures/tone.aac.m4a"),
+        PathBuf::from("fixtures/tone.alac.m4a"),
+    ];
+
+    // What:     run the parallel sweep over all tracks.
+    // Why:      The behaviour under test.
+    spawn_queue_measurement(tracks.clone(), cache.clone());
+
+    // What:     every track's fingerprint must become cached within the poll window.
+    // Why:      Confirm no worker dropped a track and every upsert landed.
+    for track in &tracks {
+        let key = peakcache::fingerprint(track).unwrap();
+        let mut found = false;
+        for _ in 0..200 {
+            if cache.get(&key).is_some() {
+                found = true;
+                break;
+            }
+            thread::sleep(Duration::from_millis(25));
+        }
+        assert!(found, "track not measured: {}", track.display());
+    }
+
+    // What:     clean up the temp database + Turso sidecars.
+    // Why:      No droppings.
+    let _ = std::fs::remove_file(&path);
+    let _ = std::fs::remove_file(path.with_extension("db-wal"));
+    let _ = std::fs::remove_file(path.with_extension("db-shm"));
 }
