@@ -16,11 +16,13 @@ import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ServiceInfo
+import android.os.Build
 import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
+import androidx.core.content.edit
 import androidx.core.net.toUri
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -50,7 +52,11 @@ class PeakSweepService : Service() {
             this,
             NOTIFICATION_ID,
             buildNotification(0, 0),
-            ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC,
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
+            } else {
+                0
+            },
         )
         scope.launch {
             /** True only when the sweep walked the whole library without being cut short. */
@@ -192,9 +198,7 @@ class PeakSweepService : Service() {
         /** Records that the initial full index finished, so it is not auto-started again. */
         private fun markInitialSweepDone(context: Context) {
             context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
-                .edit()
-                .putBoolean(KEY_INITIAL_DONE, true)
-                .apply()
+                .edit { putBoolean(KEY_INITIAL_DONE, true) }
         }
     }
 }
