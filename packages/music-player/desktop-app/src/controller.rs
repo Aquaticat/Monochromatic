@@ -318,28 +318,31 @@ pub(crate) struct Controller {
 /// class Controller { /* new, emit, set_playing, start_queue_measurement, handle_command, after_move */ }
 /// ```
 impl Controller {
-    /// What:     `pub(crate) fn new(on_update: Box<dyn Fn(Update) + Send>, output: Option<Output>) -> Controller`.
-    ///           Build initial state (empty queue, nothing playing, full volume + gain,
-    ///           loaded peak cache). `pub(crate)` so `engine::run` can construct it.
-    /// Why:      Starting point for the worker.
+    /// What:     `pub(crate) fn new(on_update: Box<dyn Fn(Update) + Send>, output: Option<Output>, peaks: CacheHandle) -> Controller`.
+    ///           Build initial state (empty queue, nothing playing, full volume + gain) around
+    ///           an INJECTED cache handle. `pub(crate)` so `engine::run` can construct it.
+    /// Why:      Starting point for the worker. The cache is injected (not opened here) so
+    ///           production passes `CacheHandle::open()` while tests pass a throwaway or
+    ///           degraded handle and never touch the real config dir.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// constructor(onUpdate, output) { ... }
+    /// constructor(onUpdate, output, peaks) { ... }
     /// ```
     pub(crate) fn new(
         on_update: Box<dyn Fn(Update) + Send>,
         output: Option<Output>,
+        peaks: CacheHandle,
     ) -> Controller {
         // What:     `Controller { ... }`. Struct literal. `Queue::new()` empty queue;
-        //           volume/gain start at 1.0; `CacheHandle::open()` starts the cache actor
-        //           (opens peaks.db, seeds the key set). Tail -> return.
+        //           volume/gain start at 1.0; `peaks` is the injected cache handle (field
+        //           shorthand). Tail -> return.
         // Why:      A clean idle state with the cache ready.
         //
         // In TS you'd write (pseudocode):
         // ```ts
         // return { onUpdate, output, queue: new Queue(), source: null, producer: null,
-        //          spec: null, playing: false, volume: 1, trackGain: 1, peaks: CacheHandle.open(),
+        //          spec: null, playing: false, volume: 1, trackGain: 1, peaks,
         //          positionFrames: 0, lastEmitSecs: 0, pending: [], pendingPos: 0 };
         // ```
         Controller {
@@ -356,7 +359,7 @@ impl Controller {
             track_gain: 1.0,
             peak_generation: 0,
             pending_peak: None,
-            peaks: CacheHandle::open(),
+            peaks,
             position_frames: 0,
             last_emit_secs: 0.0,
             pending: Vec::new(),

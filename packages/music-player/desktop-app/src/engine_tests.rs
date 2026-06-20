@@ -101,24 +101,28 @@ fn idle_root_emits_no_extra_queue_updates() {
     // What:     `let (tx, rx) = mpsc::channel::<usize>();`. A channel of list-update lengths.
     // Why:      The callback forwards each `Queue`/`Reconciled` length; the test counts them.
     let (tx, rx) = mpsc::channel::<usize>();
-    // What:     `let engine = Engine::spawn(move |update| { ... });`. Start the real worker,
-    //           which wires the watcher in `run`.
-    // Why:      Exercise the whole live-update seam, not a stub.
-    let engine = Engine::spawn(move |update| {
-        // What:     `match &update { Queue(p) | Reconciled { names: p, .. } => send(p.len()), _ => {} }`.
-        //           Forward the length of BOTH queue-list updates: a fresh `Queue` and a live
-        //           `Reconciled`.
-        // Why:      A resurfaced rescan loop would now show up as spontaneous `Reconciled`
-        //           updates, not `Queue`, so the guard must watch both.
-        let len = match &update {
-            Update::Queue(paths) => Some(paths.len()),
-            Update::Reconciled { names, .. } => Some(names.len()),
-            _ => None,
-        };
-        if let Some(len) = len {
-            let _ = tx.send(len);
-        }
-    });
+    // What:     `let engine = Engine::spawn_with_cache(move |update| { ... }, CacheHandle::open_degraded());`.
+    //           Start the real worker (wiring the watcher in `run`) with a degraded, no-disk
+    //           cache so the test never opens or creates the real peaks.db.
+    // Why:      Exercise the whole live-update seam, not a stub, without touching real state.
+    let engine = Engine::spawn_with_cache(
+        move |update| {
+            // What:     `match &update { Queue(p) | Reconciled { names: p, .. } => send(p.len()), _ => {} }`.
+            //           Forward the length of BOTH queue-list updates: a fresh `Queue` and a
+            //           live `Reconciled`.
+            // Why:      A resurfaced rescan loop would now show up as spontaneous `Reconciled`
+            //           updates, not `Queue`, so the guard must watch both.
+            let len = match &update {
+                Update::Queue(paths) => Some(paths.len()),
+                Update::Reconciled { names, .. } => Some(names.len()),
+                _ => None,
+            };
+            if let Some(len) = len {
+                let _ = tx.send(len);
+            }
+        },
+        CacheHandle::open_degraded(),
+    );
 
     // What:     `engine.send(Command::OpenRoot { ... select: None, play: false });`. Open the
     //           root with nothing cued and paused, arming the watcher.
@@ -187,25 +191,30 @@ fn watcher_drives_rescan_update_through_engine() {
     // Why:      The engine's update callback runs on the worker thread; it forwards each
     //           `Queue`/`Reconciled` length so the test thread can await specific lengths.
     let (tx, rx) = mpsc::channel::<usize>();
-    // What:     `let engine = Engine::spawn(move |update| { ... });`. Start the worker with a
-    //           callback that forwards `Queue` AND `Reconciled` lengths and drops other updates.
-    // Why:      Exercise the real `Engine` (which wires the watcher in `run`), not a stub. The
-    //           OPEN reports a `Queue`; the live RESCAN now reports a `Reconciled`.
-    let engine = Engine::spawn(move |update| {
-        // What:     `match &update { Queue(p) | Reconciled { names: p, .. } => send(p.len()), _ => {} }`.
-        //           Forward the count for both list updates; ignore now-playing/position. `let _`
-        //           drops the send error that occurs only after the test thread is gone.
-        // Why:      The test asserts on queue size across the open (`Queue`) and the live rescan
-        //           (`Reconciled`).
-        let len = match &update {
-            Update::Queue(paths) => Some(paths.len()),
-            Update::Reconciled { names, .. } => Some(names.len()),
-            _ => None,
-        };
-        if let Some(len) = len {
-            let _ = tx.send(len);
-        }
-    });
+    // What:     `let engine = Engine::spawn_with_cache(move |update| { ... }, CacheHandle::open_degraded());`.
+    //           Start the worker with a degraded, no-disk cache and a callback that forwards
+    //           `Queue` AND `Reconciled` lengths and drops other updates.
+    // Why:      Exercise the real `Engine` (which wires the watcher in `run`), not a stub,
+    //           without touching real state. The OPEN reports a `Queue`; the live RESCAN now
+    //           reports a `Reconciled`.
+    let engine = Engine::spawn_with_cache(
+        move |update| {
+            // What:     `match &update { Queue(p) | Reconciled { names: p, .. } => send(p.len()), _ => {} }`.
+            //           Forward the count for both list updates; ignore now-playing/position.
+            //           `let _` drops the send error that occurs only after the test thread is gone.
+            // Why:      The test asserts on queue size across the open (`Queue`) and the live
+            //           rescan (`Reconciled`).
+            let len = match &update {
+                Update::Queue(paths) => Some(paths.len()),
+                Update::Reconciled { names, .. } => Some(names.len()),
+                _ => None,
+            };
+            if let Some(len) = len {
+                let _ = tx.send(len);
+            }
+        },
+        CacheHandle::open_degraded(),
+    );
 
     // What:     `engine.send(Command::OpenRoot { root: dir.clone(), select: None, play: false });`.
     //           Open the directory as the Source Root. The handler scans it (emitting

@@ -148,6 +148,36 @@ impl CacheHandle {
         CacheHandle { read_tx, write_tx }
     }
 
+    /// What:     `#[cfg(test)] pub(crate) fn open_degraded() -> CacheHandle`. Start a cache
+    ///           actor with NO database file (degraded: reads miss, writes drop, key set
+    ///           empty). Test-only.
+    /// Why:      Controller tests that never exercise the cache must not open or create the
+    ///           real `peaks.db`; a degraded handle touches no disk at all.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// static openDegraded(): CacheHandle { return CacheHandle.spawn(null); }
+    /// ```
+    #[cfg(test)]
+    pub(crate) fn open_degraded() -> CacheHandle {
+        // What:     Spawn the actor with no path.
+        // Why:      No persistence, no file, a pure no-op cache.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const [readTx, writeTx] = service.spawn(null);
+        // ```
+        let (read_tx, write_tx) = service::spawn(None);
+        // What:     Wrap the senders. Tail -> return.
+        // Why:      Hand back the degraded handle.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // return { readTx, writeTx };
+        // ```
+        CacheHandle { read_tx, write_tx }
+    }
+
     /// What:     `pub(crate) fn get(&self, fingerprint: &str) -> Option<f32>`. Block
     ///           briefly for one cached peak, or `None` on miss/closed actor.
     /// Why:      `peak_swap` reads the current track's cached gain at load time.

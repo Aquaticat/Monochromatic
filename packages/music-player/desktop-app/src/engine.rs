@@ -63,6 +63,17 @@ use crate::command::{Command, Update};
 /// ```
 use crate::controller::Controller;
 
+/// What:     `use crate::peakcache::CacheHandle;`. The synchronous handle to the peak-cache
+///           actor.
+/// Why:      `run` opens the production cache (`CacheHandle::open`) and injects it into the
+///           controller, so the controller constructor stays test-friendly.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { CacheHandle } from "./peakcache";
+/// ```
+use crate::peakcache::CacheHandle;
+
 /// What:     `use crate::output::Output;`. The PipeWire output (FFI boundary).
 /// Why:      `run` tries to create one and hands it to the controller.
 ///
@@ -254,6 +265,32 @@ impl Engine {
     where
         F: Fn(Update) + Send + 'static,
     {
+        // What:     `Engine::spawn_with_cache(on_update, CacheHandle::open())`. Open the
+        //           PRODUCTION peak cache here, then delegate to the cache-injecting body.
+        // Why:      Keep the public entry point cache-free; tests call `spawn_with_cache` with
+        //           a degraded handle so they never open or create the real peaks.db.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // return Engine.spawnWithCache(onUpdate, CacheHandle.open());
+        // ```
+        Engine::spawn_with_cache(on_update, CacheHandle::open())
+    }
+
+    /// What:     `pub(crate) fn spawn_with_cache<F>(on_update: F, cache: CacheHandle) -> Engine where F: Fn(Update) + Send + 'static`.
+    ///           Start the worker around an INJECTED cache handle (the public `spawn` body,
+    ///           minus opening the cache).
+    /// Why:      Production `spawn` passes `CacheHandle::open()`; the engine tests pass a
+    ///           degraded handle, so the worker never touches the real config dir.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// static spawnWithCache(onUpdate, cache): Engine { ... }
+    /// ```
+    pub(crate) fn spawn_with_cache<F>(on_update: F, cache: CacheHandle) -> Engine
+    where
+        F: Fn(Update) + Send + 'static,
+    {
         // What:     `let (tx, rx) = mpsc::channel::<Command>();`. Create the channel;
         //           destructure into sender `tx` and receiver `rx`. `::<Command>` is the
         //           turbofish pinning the element type.
@@ -287,17 +324,18 @@ impl Engine {
         // ```
         let self_tx = tx.clone();
 
-        // What:     `let handle = thread::spawn(move || run(rx, callback, self_tx));`.
+        // What:     `let handle = thread::spawn(move || run(rx, callback, self_tx, cache));`.
         //           `thread::spawn` starts the worker; the `move` closure takes ownership of
-        //           `rx`, `callback`, and `self_tx` and runs `run(...)` on the new thread.
-        // Why:      Decode/playback happens off the UI thread; the worker also owns the
-        //           self-sender used to wire the watcher.
+        //           `rx`, `callback`, `self_tx`, and the injected `cache` and runs `run(...)`
+        //           on the new thread.
+        // Why:      Decode/playback happens off the UI thread; the worker owns the self-sender
+        //           used to wire the watcher and the cache handle it queries.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // const handle = startWorker(() => run(rx, callback, selfTx));
+        // const handle = startWorker(() => run(rx, callback, selfTx, cache));
         // ```
-        let handle = thread::spawn(move || run(rx, callback, self_tx));
+        let handle = thread::spawn(move || run(rx, callback, self_tx, cache));
 
         // What:     `let worker = handle.thread().clone();`. `handle.thread()` borrows the
         //           spawned thread's `Thread` handle (`&Thread`); `.clone()` makes an owned
@@ -433,20 +471,22 @@ impl Drop for Engine {
     }
 }
 
-/// What:     `fn run(rx: Receiver<Command>, on_update: Box<dyn Fn(Update) + Send>)`. The
-///           worker's entry point: set up state, then loop handling commands and pumping
-///           audio until told to quit. `Box<dyn Fn(...)>` is the heap-boxed callback trait
-///           object.
-/// Why:      Everything playback-related lives on this one thread.
+/// What:     `fn run(rx: Receiver<Command>, on_update: Box<dyn Fn(Update) + Send>, self_tx: Sender<Command>, cache: CacheHandle)`.
+///           The worker's entry point: set up state around the injected `cache`, then loop
+///           handling commands and pumping audio until told to quit. `Box<dyn Fn(...)>` is
+///           the heap-boxed callback trait object.
+/// Why:      Everything playback-related lives on this one thread. The cache is injected (not
+///           opened here) so the engine tests can pass a degraded, no-disk handle.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function run(rx: Receiver<Command>, onUpdate: (u: Update) => void): void { ... }
+/// function run(rx, onUpdate, selfTx, cache): void { ... }
 /// ```
 fn run(
     rx: Receiver<Command>,
     on_update: Box<dyn Fn(Update) + Send>,
     self_tx: Sender<Command>,
+    cache: CacheHandle,
 ) {
     // What:     `let output = match Output::new(thread::current()) { ... };`. Try to start
     //           PipeWire, handing it a handle to THIS thread. `thread::current()` returns
@@ -485,15 +525,16 @@ fn run(
         }
     };
 
-    // What:     `let mut controller = Controller::new(on_update, output);`. Build the
-    //           mutable controller state. `mut` because the loop mutates it.
+    // What:     `let mut controller = Controller::new(on_update, output, cache);`. Build the
+    //           mutable controller state around the injected cache handle. `mut` because the
+    //           loop mutates it.
     // Why:      Holds the queue, source, producer, and flags across the loop.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // const controller = new Controller(onUpdate, output);
+    // const controller = new Controller(onUpdate, output, cache);
     // ```
-    let mut controller = Controller::new(on_update, output);
+    let mut controller = Controller::new(on_update, output, cache);
 
     // What:     `let self_sender = CommandSender { tx: self_tx, worker: thread::current() };`.
     //           Bundle the self-sender with THIS worker thread's handle. `thread::current()`

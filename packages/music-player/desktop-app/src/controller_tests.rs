@@ -47,13 +47,15 @@ fn approx_eq(a: f32, b: f32) -> bool {
 }
 
 // What:     `fn test_controller() -> Controller`. Build a controller with no audio
-//           output and a no-op update callback.
-// Why:      Peak-swap state does not need PipeWire/cpal or UI machinery.
+//           output, a no-op update callback, and a degraded (no-disk) cache.
+// Why:      Peak-swap state does not need PipeWire/cpal or UI machinery, and tests must never
+//           open or create the real peaks.db.
 fn test_controller() -> Controller {
-    // What:     `Controller::new(Box::new(|_| {}), None)`. Construct the controller;
-    //           `Box::new` heap-boxes the callback closure, and `None` means silent mode.
-    // Why:      Give tests a real controller without opening an audio device.
-    Controller::new(Box::new(|_| {}), None)
+    // What:     `Controller::new(Box::new(|_| {}), None, CacheHandle::open_degraded())`.
+    //           Construct the controller; `Box::new` heap-boxes the callback closure, `None`
+    //           means silent mode, and the degraded cache touches no disk.
+    // Why:      Give tests a real controller without an audio device or real cache state.
+    Controller::new(Box::new(|_| {}), None, CacheHandle::open_degraded())
 }
 
 // What:     `fn temp_cache(tag: &str) -> PathBuf`. Build a fresh disposable cache path.
