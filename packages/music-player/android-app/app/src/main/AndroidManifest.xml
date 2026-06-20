@@ -14,6 +14,8 @@
          notification itself is exempt from that gate and shows without it. -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+    <!-- The initial parallel peak index runs as a dataSync foreground service (PeakSweepService). -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
@@ -42,6 +44,13 @@
                 <action android:name="androidx.media3.session.MediaSessionService" />
             </intent-filter>
         </service>
+
+        <!-- The auto-started initial true-peak index: a dataSync foreground service that runs the
+             bulk parallel sweep once and self-stops. Not exported; started only in-process. -->
+        <service
+            android:name=".PeakSweepService"
+            android:exported="false"
+            android:foregroundServiceType="dataSync" />
     </application>
 
 </manifest>

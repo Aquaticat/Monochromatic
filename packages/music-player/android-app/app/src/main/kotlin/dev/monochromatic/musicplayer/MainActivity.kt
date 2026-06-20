@@ -1013,6 +1013,9 @@ class MainActivity : ComponentActivity() {
         // console.info(`[${LOG_TAG}] MainActivity.onCreate`);
         // ```
         Log.i(LOG_TAG, "MainActivity.onCreate")
+        // Auto-start the one-time parallel true-peak index (no user action). Legal here because the
+        // activity is foregrounded; PeakSweepService self-stops fast if the initial index is done.
+        PeakSweepService.startIfNeeded(this)
         // What:     `enableEdgeToEdge()` draws the app behind the system bars. (Folds in the
         //           old inline note: draw edge to edge, the platform default on targetSdk
         //           35+, and let the `Scaffold` apply the system-bar insets.)

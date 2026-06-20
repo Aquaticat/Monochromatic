@@ -95,6 +95,7 @@ import android.util.Log
 // import { CancellationException } from "kotlinx/coroutines"; // ~ AbortError
 // ```
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineDispatcher
 
 // What:     `private const val SWEEP_TAG: String = "PeakSweep"` declares a
 //           file-private compile-time constant string.
@@ -207,10 +208,16 @@ enum class SweepOutcome {
 // ): Promise<SweepOutcome> { ... }
 // ```
 /**
- * Defines measure and cache behavior for this music-player component; the TypeScript-oriented notes above
- * explain its call shape and effects.
+ * Measures one track's true peak (decoding on [dispatcher]) and memoizes it, short-circuiting when
+ * the fingerprint is already cached. Default [dispatcher] is the single low-priority thread the
+ * background upkeep worker uses; the foreground initial sweep passes [foregroundSweepDispatcher] for
+ * parallel default-priority decode. Returns which branch ran so the caller drives its flush cadence.
  */
-suspend fun measureAndCache(context: Context, uri: Uri): SweepOutcome {
+suspend fun measureAndCache(
+    context: Context,
+    uri: Uri,
+    dispatcher: CoroutineDispatcher = sweepDecodeDispatcher,
+): SweepOutcome {
     // What:     `val key: String = TrackFingerprint.of(context, uri) ?: return SweepOutcome.UNFINGERPRINTABLE`
     //           does four things on one line:
     //           - `TrackFingerprint.of(context, uri)` calls the fingerprint
@@ -316,7 +323,7 @@ suspend fun measureAndCache(context: Context, uri: Uri): SweepOutcome {
         // ```ts
         //   peak = await measureTrackPeak(context, uri);
         // ```
-        measureTrackPeak(context, uri)
+        measureTrackPeak(context, uri, dispatcher)
     } catch (cancellation: CancellationException) {
         // What:     `throw cancellation` re-throws the caught cancellation
         //           exception unchanged. `cancellation` is the value bound by

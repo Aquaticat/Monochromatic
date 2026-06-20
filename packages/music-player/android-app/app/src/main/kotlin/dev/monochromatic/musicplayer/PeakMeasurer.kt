@@ -137,7 +137,7 @@ import kotlinx.coroutines.withContext
  * Defines sweep decode dispatcher value for this music-player component; the TypeScript-oriented notes above
  * explain its source and use.
  */
-private val sweepDecodeDispatcher: CoroutineDispatcher =
+internal val sweepDecodeDispatcher: CoroutineDispatcher =
     // What:     `Executors.newSingleThreadExecutor { runnable -> ... }` calls the factory with a
     //           THREAD FACTORY passed as a TRAILING LAMBDA (SAM conversion: `ThreadFactory` is a
     //           single-method interface). The lambda's parameter `runnable` is the work to wrap;
@@ -194,6 +194,31 @@ private val sweepDecodeDispatcher: CoroutineDispatcher =
         ).apply { isDaemon = true }
     }.asCoroutineDispatcher()
 
+/**
+ * Worker count for the user-initiated foreground sweep: half the logical cores, at least two. On a
+ * big.LITTLE phone that is the performance-core count; the Pixel 6 benchmark
+ * (DECISION.peak-sweep-parallelism.md) showed sustained decode throughput saturates there
+ * (~130 tracks/min) and extra threads only add heat and UI contention.
+ */
+internal val FOREGROUND_SWEEP_WORKERS: Int = maxOf(2, Runtime.getRuntime().availableProcessors() / 2)
+
+/**
+ * Multi-threaded decode dispatcher for the foreground initial sweep: [FOREGROUND_SWEEP_WORKERS]
+ * daemon threads at [Process.THREAD_PRIORITY_DEFAULT], so the first full index claims the big cores
+ * and finishes in one continuous session. Contrast [sweepDecodeDispatcher], the single nice-19
+ * thread the background upkeep worker uses to yield to playback.
+ */
+internal val foregroundSweepDispatcher: CoroutineDispatcher =
+    Executors.newFixedThreadPool(FOREGROUND_SWEEP_WORKERS) { runnable ->
+        Thread(
+            {
+                Process.setThreadPriority(Process.THREAD_PRIORITY_DEFAULT)
+                runnable.run()
+            },
+            "peak-sweep-fg",
+        ).apply { isDaemon = true }
+    }.asCoroutineDispatcher()
+
 // What:     `suspend fun measureTrackPeak(context: Context, uri: Uri): Float = withContext(sweepDecodeDispatcher) { measureTruePeakBlocking(context, uri) }`
 //           declares a top-level SUSPEND function with an EXPRESSION BODY whose value is the
 //           `withContext(...)` call: it runs `measureTruePeakBlocking(context, uri)` on the
@@ -209,11 +234,17 @@ private val sweepDecodeDispatcher: CoroutineDispatcher =
 // }
 // ```
 /**
- * Defines measure track peak behavior for this music-player component; the TypeScript-oriented notes above
- * explain its call shape and effects.
+ * Routes the blocking native true-peak measure onto [dispatcher] (default [sweepDecodeDispatcher],
+ * the single low-priority thread the background upkeep worker uses). The foreground initial sweep
+ * passes [foregroundSweepDispatcher] for parallel default-priority decode. Returns the measured
+ * true peak (linear), 0.0 for a zero-channel stream.
  */
-suspend fun measureTrackPeak(context: Context, uri: Uri): Float =
-    withContext(sweepDecodeDispatcher) { measureTruePeakBlocking(context, uri) }
+suspend fun measureTrackPeak(
+    context: Context,
+    uri: Uri,
+    dispatcher: CoroutineDispatcher = sweepDecodeDispatcher,
+): Float =
+    withContext(dispatcher) { measureTruePeakBlocking(context, uri) }
 
 // What:     `internal fun measureTruePeakBlocking(context: Context, uri: Uri): Float { ... }`
 //           declares a function with `internal` VISIBILITY: visible everywhere in THIS module
