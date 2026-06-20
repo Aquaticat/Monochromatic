@@ -213,6 +213,11 @@ java = "temurin-21"
 "cargo:cargo-ndk" = "4.1.2"
 
 [settings]
+
+# Generate mise.lock
+lockfile = true
+
+# Disable unused magical behavior
 env_shell_expand = false
 
 # Enable automatic tool installation when entering directory
