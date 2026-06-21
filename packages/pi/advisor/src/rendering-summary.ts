@@ -14,6 +14,16 @@ import type { AdvisorDetails, } from './types.ts';
  */
 const MILLISECONDS_PER_SECOND = 1_000;
 
+/**
+ * Markdown heading marker character.
+ */
+const MARKDOWN_HEADING_MARKER = '#';
+
+/**
+ * Character separating Markdown heading marker from heading text.
+ */
+const MARKDOWN_HEADING_SEPARATOR = ' ';
+
 //region Public helpers
 
 /**
@@ -86,14 +96,22 @@ export function renderAdvisorSummary(
 export function firstAdvisoryLine(
   text: string,
 ): string {
-  return text
+  /**
+   * Non-empty response lines after whitespace normalization.
+   */
+  const nonEmptyLines = text
     .split('\n',)
     .map(function trimLine(line,) {
       return line.trim();
     },)
-    .find(function keepLine(line,) {
+    .filter(function keepLine(line,) {
       return line !== '';
+    },);
+  return nonEmptyLines
+    .find(function keepBodyLine(line,) {
+      return !isMarkdownHeadingLine(line,);
     },)
+    ?? nonEmptyLines.at(0,)
     ?? '(advisor returned no text)';
 }
 
@@ -165,6 +183,33 @@ export function fallbackDetails(): AdvisorDetails {
 //endregion Public helpers
 
 //region Internal helpers
+
+/**
+ * Detect Markdown ATX heading lines.
+ *
+ * @param line - trimmed Advisor response line
+ *
+ * @returns whether line starts with one or more hash markers followed by a space
+ */
+function isMarkdownHeadingLine(
+  line: string,
+): boolean {
+  /**
+   * Line without leading indentation.
+   */
+  const trimmedLine = line.trimStart();
+  if (!trimmedLine.startsWith(MARKDOWN_HEADING_MARKER,))
+    return false;
+
+  /**
+   * Cursor pointing at first non-heading-marker character.
+   */
+  let cursor = 0;
+  while (trimmedLine.at(cursor,) === MARKDOWN_HEADING_MARKER) {
+    cursor += 1;
+  }
+  return (cursor > 0) && (trimmedLine.at(cursor,) === MARKDOWN_HEADING_SEPARATOR);
+}
 
 /**
  * Format Advisor result header.
