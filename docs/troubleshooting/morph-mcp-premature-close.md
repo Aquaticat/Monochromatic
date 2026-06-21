@@ -145,6 +145,28 @@ Versions and package artifacts checked:
 The configured Pi MCP key lives in `/home/user/.pi/agent/mcp.json` under server `morph`. The raw test printed
 only a SHA-256 fingerprint prefix, not the key value.
 
+### Version bump check
+
+Bumping the Pi installation from `@morphllm/morphmcp` 0.8.193 to 0.8.194 is not expected to fix this failure.
+`npm view @morphllm/morphmcp@latest version dependencies --json` returned 0.8.194 with
+`@morphllm/morphsdk` pinned to 0.2.184. `npm view @morphllm/morphsdk@latest version dependencies --json`
+returned 0.2.184 with `openai` `^4.52.7`.
+
+The latest `@morphllm/morphsdk` 0.2.184 tarball was inspected under `/tmp/agent/morphsdk-0.2.184`.
+Its Fast Apply code still constructs `new OpenAI(...)` without `fetch: globalThis.fetch`:
+
+```text
+# rg over /tmp/agent/morphsdk-0.2.184/dist/tools/fastapply/*.cjs and dist/tools/index.cjs
+/tmp/agent/morphsdk-0.2.184/dist/tools/fastapply/apply.cjs:411:  const client = new import_openai.default({
+/tmp/agent/morphsdk-0.2.184/dist/tools/fastapply/apply.cjs:413:    baseURL: `${apiUrl}/v1`,
+/tmp/agent/morphsdk-0.2.184/dist/tools/fastapply/apply.cjs:416:
+  defaultHeaders: { "X-Morph-SDK-Version": SDK_VERSION }
+```
+
+So the latest published MCP package moves from SDK 0.2.183 to 0.2.184, but the relevant transport path remains
+OpenAI's default Node transport. Unless Morph publishes a newer package that passes a native fetch override or
+moves off OpenAI's `node-fetch` default, the bump alone leaves the reproduced failure path intact.
+
 ### API host and auth behavior
 
 The API host is reachable from this machine. An unauthenticated models request returned a structured Morph
