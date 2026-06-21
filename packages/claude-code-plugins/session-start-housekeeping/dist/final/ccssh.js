@@ -1,3 +1,0 @@
-#!/usr/bin/env bun
-// @bun
-import{mkdir as a,rm as u}from"fs/promises";async function o(){let t=[],e=new TextDecoder;for await(let n of Bun.stdin.stream())t.push(e.decode(n,{stream:!0}));return t.push(e.decode()),t.join("")}async function d(t){await a(t,{recursive:!0})}var p=["HEAD","config","hooks","objects","refs",".claude"];async function c(t){let e=new Bun.Glob("packages/*/*/dist/final"),n=[];for await(let s of e.scan({cwd:t,onlyFiles:!1}))for(let r of p)n.push(u(`${t}/${s}/${r}`,{recursive:!0,force:!0}));await Promise.all(n)}async function m(t){await u(`${t}/.mcp.json`,{force:!0})}var l=await o(),h=JSON.parse(l),i=h.cwd;await Promise.all([d("/tmp/claude"),d("/tmp/claude-1000"),c(i),m(i)]);
