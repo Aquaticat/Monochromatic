@@ -82,14 +82,16 @@ class RequireKDoc(config: Config = Config.empty) : Rule(
     override fun visitDeclaration(dcl: KtDeclaration) {
         super.visitDeclaration(dcl)
         /** Finding noun for this declaration, or null when it is a kind to skip. */
-        val kind = documentableKind(dcl) ?: return
-        if (allowOverride && dcl.hasModifier(KtTokens.OVERRIDE_KEYWORD)) {
-            return
+        val kind = documentableKind(dcl)
+        if (kind != null) {
+            /** Whether this override can rely on the supertype's documentation. */
+            val overrideMayInherit = allowOverride && dcl.hasModifier(KtTokens.OVERRIDE_KEYWORD)
+            /** Whether this declaration already carries its own KDoc. */
+            val hasOwnKDoc = dcl.docComment != null
+            if (!overrideMayInherit && !hasOwnKDoc) {
+                report(Finding(entityOf(dcl), "Missing KDoc on $kind ${displayName(dcl)}."))
+            }
         }
-        if (dcl.docComment != null) {
-            return
-        }
-        report(Finding(entityOf(dcl), "Missing KDoc on $kind ${displayName(dcl)}."))
     }
 
     /**
