@@ -18,9 +18,9 @@ heat-soaked device, with the foreground service indexing the whole library and s
 cool first-launch is faster still. Windowed sampling (commit 9eea1b840) raised on-device throughput to
 483 to 588 tracks/min from ~130, a 3.7x to 4.5x speedup. The accuracy tradeoff is deliberate and
 bounded, not zero: windowing can under-read a dynamic track whose only loud transient falls between
-windows. Measured on 43 windowed tracks across all 5 formats, one (~2 percent) under-read past the
-+2 dB margin, and even that one stayed non-clipping because the -1 dBTP ceiling's own headroom
-absorbed it. See the validation below.
+windows. Verified against ffmpeg true peak over the WHOLE library (the local mirror, see below): of
+3604 windowed tracks, 2 (0.06 percent) end above 0 dBFS and both by at most +0.6 dBTP, well inside the
+~1 percent the owner accepts. See the validation below.
 
 ## Device and library facts (measured)
 
@@ -81,12 +81,20 @@ Implemented in `rust/src/truepeak.rs` (`measure_windowed_peak`): for tracks over
 windows of 15 s at 0/33/66/100 percent, each with its own meter (no seam artifact), take the loudest,
 and inflate by +2 dB (`WINDOW_SAFETY_FACTOR`). The +2 dB margin plus the -1 dBTP ceiling's own 1 dB of
 headroom keep sub-1dB under-reads non-clipping; they do not make windowing exact.
-Validated against ffmpeg true peak on 47 tracks across all 5 formats (31 Opus, 7 FLAC, 3 MP3, 3 WAV,
-3 M4A), 43 of them over 90 s so on the windowed path. One under-read past the +2 dB margin: Joe
-Hisaishi - Summer, a dynamic orchestral piece whose lone loud transient fell between windows, full true
-peak +0.5 dBTP versus windowed+2 dB at 0.0 dBTP, so it normalizes to about -0.5 dBTP, still under
-0 dBFS (no clip). That is the ~2 percent bounded miss the owner accepts; zero clip risk across the
-sample. The brickwalled hot majority never misses (at ceiling throughout every window).
+Validated against ffmpeg true peak over the ENTIRE library: the owner's `Plain/Music` on the Pixel 6
+mirrors `~/Seafile/Plain/Music` on the dev machine, so the check ran locally with ffmpeg (no adb
+sampling), `/tmp/agent/full-miss-check.mjs`. Of 3812 files, 3604 are over 90 s (the windowed path). For
+each, the metric is the final played true peak: an attenuated track ends at `FULL - (WMAX + 3 dB)` (the
++2 dB margin plus the 1 dB ceiling headroom), a track the windows read at or below the ceiling plays at
+unity so it ends at `FULL`. Result: 2 tracks (0.06 percent) end above 0 dBFS, both by at most +0.6 dBTP
+(Imagine Dragons - My Life at +0.6, an Emiya piano cover at +0.2); 29 (0.80 percent) land between the
+-1 dBTP ceiling and 0 dBFS; 3573 sit safely at or under the ceiling. The two over-0 tracks are dynamic
+masters whose lone transient falls between windows, so they play at essentially their own source
+inter-sample peak, the accepted case, not windowing introducing new clipping. No tuning is warranted: a
+larger `WINDOW_SAFETY_FACTOR` would over-attenuate all 3573 hot tracks (the whole library quieter) to
+claw back under 1 dB on 2 dynamic tracks. The brickwalled hot majority never misses (at ceiling
+throughout every window). If stricter behavior is ever wanted, raising `WINDOW_COUNT` to 6 catches more
+isolated transients at a modest scan-time cost, still far under the 20-minute goal.
 
 ## Next steps
 
