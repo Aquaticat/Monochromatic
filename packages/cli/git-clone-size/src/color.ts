@@ -191,6 +191,38 @@ function peekNonSpace({
 }
 
 /**
+ * Applies ANSI styling after {@link shouldColor} already decided color is allowed.
+ *
+ * `node:util`'s {@link styleText} checks `NO_COLOR` by default. That is right for
+ * direct calls, but this module already centralizes that policy in
+ * {@link shouldColor}. Disabling the second check keeps explicit color-on output
+ * deterministic during tests that temporarily mutate color environment variables.
+ *
+ * @param format - ANSI style names accepted by {@link styleText}
+ * @param text - JSON token text to wrap
+ *
+ * @returns ANSI-styled text without another environment-variable check
+ *
+ * @example
+ * ```ts
+ * forceStyleText({ format: ['cyan'], text: '"key"' });
+ * ```
+ */
+function forceStyleText({
+  format,
+  text,
+}: {
+  readonly format: readonly string[];
+  readonly text: string;
+},): string {
+  return styleText(
+    [...format,],
+    text,
+    { validateStream: false, },
+  );
+}
+
+/**
  * ANSI-highlights the tokens of a serialized JSON string via a single linear
  * scan (no regex): keys cyan, string values green, numbers yellow, booleans
  * magenta, null dim. Stripping the ANSI escapes restores the exact JSON.
@@ -235,10 +267,10 @@ export function colorizeJson({ json, }: { readonly json: string; },): string {
         json,
         from: read.next,
       },) === ':';
-      out.push(styleText(
-        [isKey ? 'cyan' : 'green',],
-        read.token,
-      ),);
+      out.push(forceStyleText({
+        format: [isKey ? 'cyan' : 'green',],
+        text: read.token,
+      },),);
       cursor.i = read.next;
       continue;
     }
@@ -250,10 +282,10 @@ export function colorizeJson({ json, }: { readonly json: string; },): string {
         json,
         start: cursor.i,
       },);
-      out.push(styleText(
-        ['yellow',],
-        read.token,
-      ),);
+      out.push(forceStyleText({
+        format: ['yellow',],
+        text: read.token,
+      },),);
       cursor.i = read.next;
       continue;
     }
@@ -271,13 +303,13 @@ export function colorizeJson({ json, }: { readonly json: string; },): string {
         'true',
         cursor.i,
       ) ? 'true'.length : 'false'.length;
-      out.push(styleText(
-        ['magenta',],
-        json.slice(
+      out.push(forceStyleText({
+        format: ['magenta',],
+        text: json.slice(
           cursor.i,
           cursor.i + length,
         ),
-      ),);
+      },),);
       cursor.i += length;
       continue;
     }
@@ -285,10 +317,10 @@ export function colorizeJson({ json, }: { readonly json: string; },): string {
       'null',
       cursor.i,
     )) {
-      out.push(styleText(
-        ['dim',],
-        'null',
-      ),);
+      out.push(forceStyleText({
+        format: ['dim',],
+        text: 'null',
+      },),);
       cursor.i += 'null'.length;
       continue;
     }
