@@ -13,10 +13,8 @@ import { buildAdvisorSystemPrompt, } from './advisor-client.ts';
 import { sendAdvisorMessage, } from './command-message.ts';
 import { ADVISOR_TOOL_NAME, } from './constants.ts';
 import { maxContextCharsForAdvisorModel, } from './context.ts';
-import {
-  resolveEffectiveScope,
-  selectDefaultModel,
-} from '@monochromatic-dev/pi-shared-model-selection/ts';
+import { resolveEffectiveScope, } from '@monochromatic-dev/pi-shared-model-selection/ts';
+import { selectAdvisorModel, } from './advisor-selection.ts';
 import { runAdvisor, } from './tool.ts';
 import type { AdvisorConfig, } from './types.ts';
 
@@ -214,11 +212,15 @@ export function buildAdvisorStatus(
     .length
     === 0
     ? undefined
-    : selectDefaultModel({
+    : selectAdvisorModel({
       scope,
+      config,
       estimatedInputTokens: 0,
-      maxOutputTokens: config.maxAdvisorOutputTokens,
-    },);
+      modelRegistry: ctx.modelRegistry,
+      ...(ctx.model
+        === undefined ? {} : { currentMainModel: ctx.model, }),
+    },)
+      .defaultSelection;
   /**
    * Advisor model system prompt used for budget reserve estimate.
    */

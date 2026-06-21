@@ -27,10 +27,8 @@ import {
   MAIN_MODEL_GUIDANCE_PREFIX,
 } from './constants.ts';
 import { l as parentLogger, } from './log.ts';
-import {
-  resolveEffectiveScope,
-  selectDefaultModel,
-} from '@monochromatic-dev/pi-shared-model-selection/ts';
+import { resolveEffectiveScope, } from '@monochromatic-dev/pi-shared-model-selection/ts';
+import { selectAdvisorModel, } from './advisor-selection.ts';
 import { renderAdvisorMessage, } from './rendering.ts';
 import { createAdvisorTool, } from './tool.ts';
 
@@ -182,11 +180,15 @@ function buildMainModelGuidance(
     .length
     === 0
     ? undefined
-    : selectDefaultModel({
+    : selectAdvisorModel({
       scope,
+      config,
       estimatedInputTokens: 0,
-      maxOutputTokens: config.maxAdvisorOutputTokens,
-    },);
+      modelRegistry: ctx.modelRegistry,
+      ...(ctx.model
+        === undefined ? {} : { currentMainModel: ctx.model, }),
+    },)
+      .defaultSelection;
   /**
    * Canonical slugs available to Advisor.
    */

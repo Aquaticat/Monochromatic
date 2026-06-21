@@ -72,6 +72,6 @@ export const CONTEXT_TRUNCATION_MARKER =
  * Static prefix for main-model guidance appended to pi's system prompt.
  */
 export const MAIN_MODEL_GUIDANCE_PREFIX =
-  `Advisor is available as a secondary reviewer tool. Use advisor({}) when independent review would reduce risk. Use advisor({ "model": "provider/model" }) only when you need a specific scoped advisor model. Advisor automatically receives the serialized conversation context. Requested models outside the current scoped model set fail.`;
+  `Advisor is available as a secondary reviewer tool. Use advisor({}) when independent review would reduce risk; empty params avoid the current main model when another scoped model is available. Use advisor({ "model": "provider/model" }) only when you need a specific scoped advisor model. Advisor automatically receives the serialized conversation context. Requested models outside the current scoped model set fail.`;
 
 //endregion Prompts

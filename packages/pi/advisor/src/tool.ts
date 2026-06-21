@@ -71,9 +71,9 @@ export function createAdvisorTool(
     name: ADVISOR_TOOL_NAME,
     label: 'Advisor',
     description:
-      'Consult an independent advisor model using the current conversation context. Empty params select the highest expected-cost model inside the current scoped model set. The optional model must be a scoped model slug.',
+      'Consult an independent advisor model using the current conversation context. Empty params select the highest expected-cost scoped model other than the current main model when possible. The optional model must be a scoped model slug.',
     promptSnippet:
-      'Consult an independent advisor model. Use advisor({}) for default scoped model, or advisor({ "model": "provider/model" }) for a specific scoped model.',
+      'Consult an independent advisor model. Use advisor({}) for default non-current scoped model, or advisor({ "model": "provider/model" }) for a specific scoped model.',
     promptGuidelines: [
       'Advisor receives the conversation context automatically and returns review feedback as a tool result.',
       'Call advisor when a secondary review can catch flawed assumptions, missing verification, risky changes, or overlooked files.',
@@ -203,6 +203,10 @@ export async function runAdvisor(
     scope,
     modelRegistry: options.ctx
       .modelRegistry,
+    ...(options.ctx.model
+      === undefined
+      ? {}
+      : { currentMainModel: options.ctx.model, }),
     ...(options.requestedSlug
       === undefined
       ? {}

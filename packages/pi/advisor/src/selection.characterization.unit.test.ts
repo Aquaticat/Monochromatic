@@ -16,6 +16,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import { selectAdvisorModel, } from './advisor-selection.ts';
+import { selectAdvisorRunContext, } from './tool-context-selection.ts';
 import type {
   AdvisorConfig,
   EffectiveModelScope,
@@ -226,6 +227,62 @@ await describe({
       },
     },),
     it({
+      name: 'skips current main model for default selection when alternate remains',
+      fn: async function testDefaultAvoidsCurrentMainModel() {
+        const result = selectAdvisorModel({
+          scope,
+          config: advisorConfig,
+          estimatedInputTokens: ADVISOR_INPUT_TOKENS,
+          modelRegistry,
+          currentMainModel: expensiveModel,
+        },);
+
+        expect(result.selected.canonicalSlug,).toBe('cheap/reviewer',);
+        expect(
+          result.defaultSelection?.ranking.map(function mapScore(score,) {
+            return score.slug;
+          },),
+        )
+          .toEqual(['cheap/reviewer',],);
+      },
+    },),
+    it({
+      name: 'falls back to current main model when no alternate remains',
+      fn: async function testDefaultFallbackToOnlyCurrentMainModel() {
+        const singleModelScope: EffectiveModelScope = {
+          source: 'available',
+          entries: [{
+            model: expensiveModel,
+            canonicalSlug: 'expensive/reviewer',
+          },],
+        };
+        const result = selectAdvisorModel({
+          scope: singleModelScope,
+          config: advisorConfig,
+          estimatedInputTokens: ADVISOR_INPUT_TOKENS,
+          modelRegistry,
+          currentMainModel: expensiveModel,
+        },);
+
+        expect(result.selected.canonicalSlug,).toBe('expensive/reviewer',);
+      },
+    },),
+    it({
+      name: 'honors explicit current main model request',
+      fn: async function testExplicitCurrentMainModelRequest() {
+        const result = selectAdvisorModel({
+          scope,
+          requestedSlug: 'expensive/reviewer',
+          config: advisorConfig,
+          estimatedInputTokens: ADVISOR_INPUT_TOKENS,
+          modelRegistry,
+          currentMainModel: expensiveModel,
+        },);
+
+        expect(result.selected.canonicalSlug,).toBe('expensive/reviewer',);
+      },
+    },),
+    it({
       name: 'keeps ambiguous bare-id error shape',
       fn: async function testAmbiguousBareIdErrorShape() {
         const caught = captureError(function selectAmbiguousBareId() {
@@ -274,6 +331,27 @@ await describe({
 
         expect(caught,).toBeInstanceOf(Error,);
         expect((caught as Error).message,).toContain('was not found in scoped models',);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: selectAdvisorRunContext.name,
+  children: [
+    it({
+      name: 'builds default context for non-current model when alternate remains',
+      fn: async function testRunContextAvoidsCurrentMainModel() {
+        const result = selectAdvisorRunContext({
+          branch: [],
+          config: advisorConfig,
+          advisorSystemPrompt: 'review carefully',
+          scope,
+          modelRegistry,
+          currentMainModel: expensiveModel,
+        },);
+
+        expect(result.selection.selected.canonicalSlug,).toBe('cheap/reviewer',);
       },
     },),
   ],

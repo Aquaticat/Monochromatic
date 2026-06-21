@@ -54,6 +54,19 @@ const fixtureModel: Model<'faux'> = {
   maxTokens: MAX_TOKENS,
 };
 
+/** Expensive current-main fixture used by default-avoidance tests. */
+const expensiveFixtureModel: Model<'faux'> = {
+  ...fixtureModel,
+  name: 'Expensive Reviewer',
+  provider: 'expensive-provider',
+  cost: {
+    input: 10,
+    output: 20,
+    cacheRead: 0,
+    cacheWrite: 0,
+  },
+};
+
 /** Advisor config fixture. */
 const advisorConfig: AdvisorConfig = {
   ...DEFAULT_CONFIG,
@@ -113,12 +126,41 @@ function extensionContext(): ExtensionContext {
 }
 
 /**
+ * Build a minimal extension context with current main model also in scope.
+ *
+ * @returns extension context mock
+ */
+function extensionContextWithCurrentMainModel(): ExtensionContext {
+  return {
+    cwd: '/repo',
+    model: expensiveFixtureModel,
+    modelRegistry: modelRegistryWith([
+      fixtureModel,
+      expensiveFixtureModel,
+    ],),
+    scopedModels: [
+      fixtureModel,
+      expensiveFixtureModel,
+    ],
+  } as unknown as ExtensionContext;
+}
+
+/**
  * Build a minimal command context mock.
  *
  * @returns command context mock
  */
 function commandContext(): ExtensionCommandContext {
   return extensionContext() as unknown as ExtensionCommandContext;
+}
+
+/**
+ * Build a minimal command context with current main model also in scope.
+ *
+ * @returns command context mock
+ */
+function commandContextWithCurrentMainModel(): ExtensionCommandContext {
+  return extensionContextWithCurrentMainModel() as unknown as ExtensionCommandContext;
 }
 
 /**
@@ -192,6 +234,17 @@ await describe({
         expect(guidance,).toContain('advisor({}) default model: faux-provider/reviewer',);
       },
     },),
+    it({
+      name: 'lists non-current default model when alternate remains',
+      fn: async () => {
+        const guidance = buildMainModelGuidance({
+          ctx: extensionContextWithCurrentMainModel(),
+          config: advisorConfig,
+        },);
+        expect(guidance,).toContain('expensive-provider/reviewer',);
+        expect(guidance,).toContain('advisor({}) default model: faux-provider/reviewer',);
+      },
+    },),
   ],
 },);
 
@@ -207,6 +260,18 @@ await describe({
           enabled: true,
         },);
         expect(status,).toContain('Advisor: on',);
+        expect(status,).toContain('Default model: faux-provider/reviewer',);
+      },
+    },),
+    it({
+      name: 'reports non-current default model when alternate remains',
+      fn: async () => {
+        const status = buildAdvisorStatus({
+          ctx: commandContextWithCurrentMainModel(),
+          config: advisorConfig,
+          enabled: true,
+        },);
+        expect(status,).toContain('Scoped models: faux-provider/reviewer, expensive-provider/reviewer',);
         expect(status,).toContain('Default model: faux-provider/reviewer',);
       },
     },),

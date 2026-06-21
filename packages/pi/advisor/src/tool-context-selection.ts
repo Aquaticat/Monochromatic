@@ -17,6 +17,10 @@ import {
   resolveRequestedModel,
   selectDefaultModelFromContextEstimates,
 } from '@monochromatic-dev/pi-shared-model-selection/ts';
+import {
+  type CurrentMainModelIdentity,
+  scopeAvoidingCurrentMainModel,
+} from './advisor-selection.ts';
 import type {
   AdvisorConfig,
   AdvisorContext,
@@ -65,6 +69,10 @@ export type SelectAdvisorRunContextOptions = {
    * Global model registry for explicit slug validation.
    */
   readonly modelRegistry: ReadonlyDeep<ModelRegistry>;
+  /**
+   * Active primary model to avoid for default selection when possible.
+   */
+  readonly currentMainModel?: CurrentMainModelIdentity;
   /**
    * Optional user-requested model slug.
    */
@@ -159,10 +167,17 @@ export function selectAdvisorRunContext(
   }
 
   /**
+   * Default-selection scope with current main model removed when alternatives exist.
+   */
+  const defaultScope = scopeAvoidingCurrentMainModel({
+    scope: options.scope,
+    ...(options.currentMainModel
+      === undefined ? {} : { currentMainModel: options.currentMainModel, }),
+  },);
+  /**
    * Context candidates using each scoped model's effective context budget.
    */
-  const candidates = options
-    .scope
+  const candidates = defaultScope
     .entries
     .map(function mapScopedModel(scopedModel,) {
     return {
@@ -194,7 +209,7 @@ export function selectAdvisorRunContext(
    * Default Advisor model selection using each candidate's own estimate.
    */
   const defaultSelection = selectDefaultModelFromContextEstimates({
-    scope: options.scope,
+    scope: defaultScope,
     estimatedInputTokensBySlug,
     maxOutputTokens: options.config
       .maxAdvisorOutputTokens,

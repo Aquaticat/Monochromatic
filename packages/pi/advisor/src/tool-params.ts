@@ -38,7 +38,7 @@ export const AdvisorToolParametersSchema: TObject<{
   {
     model: typeOptional(typeString({
       description:
-        'Optional scoped model slug. Use provider/model for canonical slugs. Empty params select the highest expected-cost scoped model.',
+        'Optional scoped model slug. Use provider/model for canonical slugs. Empty params select the highest expected-cost non-current scoped model when possible.',
     },),),
   },
   { additionalProperties: false, },

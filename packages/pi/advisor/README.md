@@ -23,13 +23,15 @@ pi -e ./packages/pi/advisor/src/index.ts
 
 ## Tool usage
 
-Use empty params to select the scoped model with the highest expected Advisor call cost:
+Use empty params to select the scoped model with the highest expected Advisor call cost,
+excluding the current main model when another scoped model is available:
 
 ```json
 {}
 ```
 
-Use an explicit scoped model slug when a specific reviewer model is needed:
+Use an explicit scoped model slug when a specific reviewer model is needed,
+including when you intentionally want the current main model:
 
 ```json
 { "model": "anthropic/claude-opus-4-7" }
@@ -46,7 +48,7 @@ The error lists allowed scoped slugs.
 
 ## Slash commands
 
-- `/advisor`: run an immediate review with the default scoped model.
+- `/advisor`: run an immediate review with the default non-current scoped model when available.
 - `/advisor <slug>`: run an immediate review with a specific scoped model.
 - `/advisor status`: show enablement, scope source, scoped slugs, default model, and config paths.
 - `/advisor off`: disable Advisor for the current session and remove the tool from active tools.
@@ -104,7 +106,8 @@ Exact live `/scoped-models` support needs a Pi API such as `ctx.getScopedModels(
 
 ## Default model ranking
 
-For `advisor({})`, Advisor estimates input tokens for the serialized request and computes:
+For `advisor({})`, Advisor first removes the current main model from default candidates when another scoped model remains.
+It then estimates input tokens for the serialized request and computes:
 
 ```text
 expectedCost = inputTokens * model.cost.input + maxAdvisorOutputTokens * model.cost.output

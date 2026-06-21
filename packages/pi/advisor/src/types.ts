@@ -203,7 +203,7 @@ export type AdvisorContext = {
  */
 export type AdvisorToolParams = {
   /**
-   * Optional scoped model slug. Empty params select default highest-cost scoped model.
+   * Optional scoped model slug. Empty params select default non-current scoped model when possible.
    */
   readonly model?: string;
 };
