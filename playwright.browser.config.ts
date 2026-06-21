@@ -30,7 +30,7 @@ const config: PlaywrightTestConfig = defineConfig({
   },
 
   webServer: {
-    command: 'bun playwright/serve.ts',
+    command: 'node playwright/serve.ts',
     url: 'http://localhost:3005',
     reuseExistingServer: !process.env
       .CI,

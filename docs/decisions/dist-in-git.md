@@ -167,7 +167,7 @@ Rejected because:
   Bun cannot pull `@monochromatic-dev/claude-code-plugins-source` out of thin air.
   The same workspace-publishing or source-inlining problem from the previous alternative applies.
 - Even if the imports resolved, every consumer would need Bun on `PATH`.
-  The workspace itself prefers Bun, but pushing that requirement onto plugin consumers (who may not be
+  The workspace itself now prefers Node, so pushing a Bun requirement onto plugin consumers (who may not be
   Bun users at all) is a new constraint imposed by the distribution choice.
   The current Node-only `.mjs` bundle has none of this friction.
 

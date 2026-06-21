@@ -322,6 +322,6 @@ add indirection and debugging pain.
 - Systemd user services run before the user's shell is ready,
   complicating interactive auth steps.
 
-Manual trigger (`bun setup-dev.config.ts`) costs one command typed once.
+Manual trigger (`node setup-dev.config.ts`) costs one command typed once.
 You see the output, you can ctrl-c if something breaks,
 and re-running is just running the command again.

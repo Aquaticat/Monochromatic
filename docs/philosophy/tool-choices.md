@@ -54,9 +54,9 @@ Rejected alternatives:
 - **Biome**: insufficient rules
 - **ESLint**: removed 2026-03-13 and not an adoption candidate. Oxlint covers the rules we relied on (gaps were filled by writing `@monochromatic-dev/config-oxlint-tsdoc` and `@monochromatic-dev/config-oxlint-no-restricted-syntax`), and oxlint runs orders of magnitude faster.
 
-## Testing: bun + module-test + Playwright
+## Testing: Node + module-test + Playwright
 
-Unit tests run on the bun runtime through the in-house `@monochromatic-dev/module-test` harness (Jest-style API on chai + sinon). Browser and end-to-end tests run on Playwright (in Podman for reproducibility).
+Unit tests run on Node through the in-house `@monochromatic-dev/module-test` harness (Jest-style API on chai + sinon). Browser and end-to-end tests run on Playwright (in Podman for reproducibility).
 
 Alternatives rejected:
 

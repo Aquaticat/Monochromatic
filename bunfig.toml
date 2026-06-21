@@ -1,19 +1,8 @@
+# Bun remains installed for explicit Bun islands only. Keep this root config
+# minimal so ad-hoc Bun use does not look like the workspace default runtime.
 logLevel = 'warn'
 telemetry = false
 
-[test]
-coverageSkipTestFiles = true
-concurrentTestGlob = "**/*.test.ts"
-
 [install]
-# Prevent Bun from auto-installing missing imports; pnpm manages node_modules
+# Prevent Bun from auto-installing missing imports; pnpm manages node_modules.
 auto = 'disable'
-
-[run]
-# Always use Bun's shell
-shell = 'bun'
-
-# Auto alias node to Bun
-bun = true
-
-silent = true

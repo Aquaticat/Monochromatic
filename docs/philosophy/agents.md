@@ -105,7 +105,7 @@ Global personal settings (relevant excerpt):
     "hooks": [
       {
         "type": "command",
-        "command": "bun run <global-hooks-dir>/check-shell.ts"
+        "command": "node <global-hooks-dir>/check-shell.ts"
       }
     ]
   }
