@@ -1,4 +1,4 @@
-#!/usr/bin/env bun
+#!/usr/bin/env node
 
 /**
  * Claude Code Stop hook that detects uncertain language and trailing questions

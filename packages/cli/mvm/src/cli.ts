@@ -1,4 +1,4 @@
-#!/usr/bin/env bun
+#!/usr/bin/env node
 import { message, } from '@optique/core/message';
 import { runSync, } from '@optique/run';
 

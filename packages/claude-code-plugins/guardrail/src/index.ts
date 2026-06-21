@@ -1,4 +1,4 @@
-#!/usr/bin/env bun
+#!/usr/bin/env node
 
 /**
  * Claude Code PreToolUse hook that guards Agent tool calls.

@@ -1,4 +1,4 @@
-#!/usr/bin/env bun
+#!/usr/bin/env node
 
 /**
  * Wrapper for `tsgo` that filters out diagnostics from known false-positive sources.

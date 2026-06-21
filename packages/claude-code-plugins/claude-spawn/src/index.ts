@@ -1,4 +1,4 @@
-#!/usr/bin/env bun
+#!/usr/bin/env node
 
 /**
  * Claude Code multi-event hook entry point for the claude-spawn plugin.

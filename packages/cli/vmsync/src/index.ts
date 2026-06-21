@@ -1,4 +1,4 @@
-#!/usr/bin/env bun
+#!/usr/bin/env node
 /**
  * CLI entry point for vmsync.
  * Parses argv, dispatches to the appropriate command handler.

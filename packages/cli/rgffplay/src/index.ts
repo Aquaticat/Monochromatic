@@ -1,4 +1,4 @@
-#!/usr/bin/env bun
+#!/usr/bin/env node
 /**
  * Music player that finds files by case-insensitive name via ripgrep and plays them with ffplay.
  *

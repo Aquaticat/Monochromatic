@@ -1,4 +1,4 @@
-#!/usr/bin/env bun
+#!/usr/bin/env node
 import type { ReporterName, } from './reporters.ts';
 import { run, } from './run.ts';
 

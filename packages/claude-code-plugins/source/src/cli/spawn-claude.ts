@@ -1,4 +1,4 @@
-#!/usr/bin/env bun
+#!/usr/bin/env node
 
 /**
  * CLI tool that spawns steerable child Claude Code sessions in terminal windows.

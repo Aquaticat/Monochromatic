@@ -1,4 +1,4 @@
-#!/usr/bin/env bun
+#!/usr/bin/env node
 
 /**
  * Claude Code SessionStart hook that performs housekeeping on session startup or resume.

@@ -1,4 +1,4 @@
-#!/usr/bin/env bun
+#!/usr/bin/env node
 /**
  * Imports an already-built qcow2 disk image into libvirt as a VM.
  * Skips the container build and bootc-image-builder conversion steps.

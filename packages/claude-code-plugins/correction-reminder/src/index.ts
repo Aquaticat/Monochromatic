@@ -1,4 +1,4 @@
-#!/usr/bin/env bun
+#!/usr/bin/env node
 
 /**
  * Claude Code UserPromptSubmit hook that detects correction phrases in user

@@ -1,4 +1,4 @@
-#!/usr/bin/env bun
+#!/usr/bin/env node
 
 /**
  * Stdin filter that strips wasteful patterns from Bash tool output before the

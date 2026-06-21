@@ -1,4 +1,4 @@
-#!/usr/bin/env bun
+#!/usr/bin/env node
 
 /**
  * CLI wrapper for `oxlint` that augments diagnostic output.

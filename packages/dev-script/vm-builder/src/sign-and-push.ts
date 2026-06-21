@@ -1,4 +1,4 @@
-#!/usr/bin/env bun
+#!/usr/bin/env node
 /**
  * Signs the container image with cosign and pushes it to GHCR.
  * Separate from `build-and-import.ts` because cosign signatures are OCI artifacts

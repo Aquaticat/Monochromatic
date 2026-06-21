@@ -1,4 +1,4 @@
-#!/usr/bin/env bun
+#!/usr/bin/env node
 /**
  * CLI script to convert Figma export files to Penpot format.
  *

@@ -1,4 +1,4 @@
-#!/usr/bin/env bun
+#!/usr/bin/env node
 /**
  * CLI for perceptual image difference comparison using multimodal embeddings.
  * Supports Voyage AI and Google Gemini backends.

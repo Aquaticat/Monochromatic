@@ -1,4 +1,4 @@
-#!/usr/bin/env bun
+#!/usr/bin/env node
 /**
  * MCP server entry point for mvm; exposes VM operations as MCP tools.
  * @module

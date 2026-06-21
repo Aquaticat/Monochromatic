@@ -1,4 +1,4 @@
-#!/usr/bin/env bun
+#!/usr/bin/env node
 
 /**
  * CLI wrapper for `pnpm` that filters out known-benign warnings.

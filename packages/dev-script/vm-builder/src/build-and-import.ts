@@ -1,4 +1,4 @@
-#!/usr/bin/env bun
+#!/usr/bin/env node
 /**
  * Orchestrates the full VM build pipeline:
  * 1. Build OCI container image from Containerfile (rootful podman, for bootc-image-builder compatibility)

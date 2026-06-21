@@ -1,4 +1,4 @@
-#!/usr/bin/env bun
+#!/usr/bin/env node
 
 /**
  * Tightens monorepo `pnpm-workspace.yaml` catalog `>=x.y.z` ranges

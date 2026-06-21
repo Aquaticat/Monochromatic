@@ -1,4 +1,4 @@
-#!/usr/bin/env bun
+#!/usr/bin/env node
 import nanoSpawn, { SubprocessError, } from 'nano-spawn';
 
 import {

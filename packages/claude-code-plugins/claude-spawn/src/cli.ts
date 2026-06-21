@@ -1,4 +1,4 @@
-#!/usr/bin/env bun
+#!/usr/bin/env node
 
 /**
  * spawn-claude CLI shim. The real CLI implementation lives at

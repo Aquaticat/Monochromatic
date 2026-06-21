@@ -1,4 +1,4 @@
-#!/usr/bin/env bun
+#!/usr/bin/env node
 import { object, } from '@optique/core/constructs';
 import { argument, } from '@optique/core/primitives';
 import { string, } from '@optique/core/valueparser';
