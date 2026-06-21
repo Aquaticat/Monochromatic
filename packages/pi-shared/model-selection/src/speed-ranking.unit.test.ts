@@ -38,18 +38,30 @@ await describe({
         it({
           name: 'scores explicit speed-name signals',
           fn: async function testScoreModelSpeed() {
-            expect(scoreModelSpeed(fixtureModel({
+            /**
+             * Model whose id carries the strongest speed signal.
+             */
+            const highSpeedModel = fixtureModel({
               provider: 'moonshotai',
               id: 'kimi-k2.7-code-highspeed',
-            },),),).toBe(HIGH_SPEED_SCORE,);
-            expect(scoreModelSpeed(fixtureModel({
+            },);
+            /**
+             * Model whose id carries a size-as-speed signal.
+             */
+            const miniModel = fixtureModel({
               provider: 'openai',
               id: 'gpt-4o-mini',
-            },),),).toBe(MINI_SCORE,);
-            expect(scoreModelSpeed(fixtureModel({
+            },);
+            /**
+             * Model with no recognized speed signal.
+             */
+            const baseModel = fixtureModel({
               provider: 'openai',
               id: 'gpt-4o',
-            },),),).toBe(NO_SPEED_SCORE,);
+            },);
+            expect(scoreModelSpeed(highSpeedModel,),).toBe(HIGH_SPEED_SCORE,);
+            expect(scoreModelSpeed(miniModel,),).toBe(MINI_SCORE,);
+            expect(scoreModelSpeed(baseModel,),).toBe(NO_SPEED_SCORE,);
           },
         },),
       ],
@@ -60,7 +72,9 @@ await describe({
         it({
           name: 'ranks speed-name signal before lower input cost',
           fn: async function testFindFastestMajorVersions() {
-            /** Models include a cheaper latest major version and a faster named one. */
+            /**
+             * Models include a cheaper latest major version and a faster named one.
+             */
             const models = [
               fixtureModel({ provider: 'openai', id: 'gpt-3.5-turbo', inputCost: 1, },),
               fixtureModel({ provider: 'openai', id: 'gpt-4o-mini', inputCost: 1, },),

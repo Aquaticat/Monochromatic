@@ -8,31 +8,49 @@ import type { ModelPricing, } from './types.ts';
 
 //region Score constants
 
-/** Score for models whose name says highspeed or high-speed. */
+/**
+ * Score for models whose name says highspeed or high-speed.
+ */
 const HIGH_SPEED_SCORE = 100;
 
-/** Score for models whose name says fast. */
+/**
+ * Score for models whose name says fast.
+ */
 const FAST_SCORE = 90;
 
-/** Score for models whose name says flash. */
+/**
+ * Score for models whose name says flash.
+ */
 const FLASH_SCORE = 80;
 
-/** Score for models whose name says turbo. */
+/**
+ * Score for models whose name says turbo.
+ */
 const TURBO_SCORE = 70;
 
-/** Score for models whose name says nano. */
+/**
+ * Score for models whose name says nano.
+ */
 const NANO_SCORE = 60;
 
-/** Score for models whose name says mini. */
+/**
+ * Score for models whose name says mini.
+ */
 const MINI_SCORE = 50;
 
-/** Score for models whose name says haiku. */
+/**
+ * Score for models whose name says haiku.
+ */
 const HAIKU_SCORE = 40;
 
-/** Score for models whose name says lite or light. */
+/**
+ * Score for models whose name says lite or light.
+ */
 const LITE_SCORE = 30;
 
-/** Score for models with no recognized speed signal. */
+/**
+ * Score for models with no recognized speed signal.
+ */
 const NO_SPEED_SCORE = 0;
 
 //endregion Score constants
@@ -51,25 +69,32 @@ const NO_SPEED_SCORE = 0;
  * scoreModelSpeed({ id: 'kimi-k2.7-code-highspeed', name: 'Kimi highspeed' });
  * ```
  */
-export function scoreModelSpeed<TModel extends Pick<ModelPricing, 'id' | 'name'>,>(
-  model: TModel,
+export function scoreModelSpeed(
+  model: Pick<ModelPricing, 'id' | 'name'>,
 ): number {
-  /** Token and compact forms derived from model id and display name. */
+  /**
+   * Token and compact forms derived from model id and display name.
+   */
   const signals = modelSpeedSignals(model,);
-  if (signals.compact.includes('highspeed',))
+  if (signals
+    .compact
+    .includes('highspeed',))
     return HIGH_SPEED_SCORE;
 
   return signals
     .tokens
-    .reduce(function maxSignalScore(
-      currentScore,
-      signal,
-    ) {
-      return Math.max(
+    .reduce(
+      function maxSignalScore(
         currentScore,
-        speedSignalScore(signal,),
-      );
-    }, NO_SPEED_SCORE,);
+        signal,
+      ) {
+        return Math.max(
+          currentScore,
+          speedSignalScore(signal,),
+        );
+      },
+      NO_SPEED_SCORE,
+    );
 }
 
 //endregion Public API
@@ -80,9 +105,13 @@ export function scoreModelSpeed<TModel extends Pick<ModelPricing, 'id' | 'name'>
  * Token and compact string forms used by speed scoring.
  */
 type ModelSpeedSignals = {
-  /** Separator-delimited model id and name tokens. */
+  /**
+   * Separator-delimited model id and name tokens.
+   */
   readonly tokens: readonly string[];
-  /** Lowercase model id and name with separators removed. */
+  /**
+   * Lowercase model id and name with separators removed.
+   */
   readonly compact: string;
 };
 
@@ -93,19 +122,25 @@ type ModelSpeedSignals = {
  *
  * @returns separator-delimited tokens and compact form
  */
-function modelSpeedSignals<TModel extends Pick<ModelPricing, 'id' | 'name'>,>(
-  model: TModel,
+function modelSpeedSignals(
+  model: Pick<ModelPricing, 'id' | 'name'>,
 ): ModelSpeedSignals {
-  /** Model text fields that may carry provider speed words. */
+  /**
+   * Model text fields that may carry provider speed words.
+   */
   const values = [
     model.id,
     model.name,
   ];
-  /** Tokens accumulated across every model text field. */
+  /**
+   * Tokens accumulated across every model text field.
+   */
   const tokens = values.flatMap(function tokensFromValue(value,) {
     return splitSpeedTokens(value,);
   },);
-  /** Compact form that catches compound strings like `high-speed` and `highspeed`. */
+  /**
+   * Compact form that catches compound strings like `high-speed` and `highspeed`.
+   */
   const compact = values
     .map(function compactValue(value,) {
       return compactSpeedText(value,);
@@ -156,9 +191,13 @@ function speedSignalScore(
 function splitSpeedTokens(
   value: string,
 ): string[] {
-  /** Completed lowercase tokens. */
+  /**
+   * Completed lowercase tokens.
+   */
   const tokens: string[] = [];
-  /** Characters collected for current token. */
+  /**
+   * Characters collected for current token.
+   */
   let currentTokenCharacters: string[] = [];
   for (const character of value.toLowerCase()) {
     if (isSpeedTokenSeparator(character,)) {
@@ -187,7 +226,9 @@ function splitSpeedTokens(
 function compactSpeedText(
   value: string,
 ): string {
-  /** Characters kept after dropping separators. */
+  /**
+   * Characters kept after dropping separators.
+   */
   const characters: string[] = [];
   for (const character of value.toLowerCase()) {
     if (!isSpeedTokenSeparator(character,))

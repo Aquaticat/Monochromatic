@@ -65,7 +65,9 @@ export class NoBudgetModelError extends Error {
        * Local alias so template strings stay readable.
        */
       const candidate = candidates.sameProvider;
-      /** Candidate line describing the best same-provider option. */
+      /**
+       * Candidate line describing the best same-provider option.
+       */
       const sameProviderLine = [
         `Best same-provider option: ${candidate.provider}/${candidate.modelId}`,
         `(speed ${candidate.speedScore};`,
@@ -80,7 +82,9 @@ export class NoBudgetModelError extends Error {
     const fastest = candidates.fastestOverall;
     if (fastest?.hasApiKey
       === true) {
-      /** Candidate line describing the fastest authenticated option. */
+      /**
+       * Candidate line describing the fastest authenticated option.
+       */
       const fastestLine = [
         `Fastest with API key: ${fastest.provider}/${fastest.modelId}`,
         `(speed ${fastest.speedScore};`,

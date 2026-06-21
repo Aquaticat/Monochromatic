@@ -9,7 +9,10 @@
  * @module
  */
 
-import { compareVersions, findCheapestInMajorVersions, } from './version.ts';
+import {
+  compareVersions,
+  findCheapestInMajorVersions,
+} from './version.ts';
 import { scoreModelSpeed, } from './speed-signals.ts';
 import type { ModelPricing, } from './types.ts';
 
@@ -38,12 +41,16 @@ export function compareModelSpeed<TModel extends ModelPricing,>(
     readonly right: TModel;
   },
 ): number {
-  /** Score delta with the right model first so higher speed scores sort earlier. */
+  /**
+   * Score delta with the right model first so higher speed scores sort earlier.
+   */
   const speedDiff = scoreModelSpeed(right,) - scoreModelSpeed(left,);
   if (speedDiff !== 0)
     return speedDiff;
 
-  /** Input-price tie-break preserving the previous budget-model fallback. */
+  /**
+   * Input-price tie-break preserving the previous budget-model fallback.
+   */
   const inputCostDiff = left.cost
     .input
     - right
@@ -85,7 +92,9 @@ export function findFastestInMajorVersions<TModel extends ModelPricing,>(
     readonly majorVersions: number;
   },
 ): TModel[] {
-  /** Eligible models from the same major-version filter used by budget selection. */
+  /**
+   * Eligible models from the same major-version filter used by budget selection.
+   */
   const eligible = findCheapestInMajorVersions({
     models,
     majorVersions,
