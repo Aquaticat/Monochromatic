@@ -171,6 +171,11 @@ hcloud = "latest"
 # Git LFS server backed by R2 (anonymous read, token-gated write). Invoked only
 # as a CLI (`wrangler deploy`), so it lives here rather than as a pnpm dependency.
 "npm:wrangler" = "latest"
+
+# Static-site search index generator for packages/ssg/aquati.cat (run as
+# `pagefind --site dist` in that package's build:postprocess). A CLI tool, so it
+# lives in the mise tool set rather than as a pnpm dependency.
+"npm:pagefind" = "latest"
 betterleaks = "latest"
 
 # Git hook runner
@@ -213,7 +218,6 @@ java = "temurin-21"
 "cargo:cargo-ndk" = "4.1.2"
 
 [settings]
-
 # Generate mise.lock
 lockfile = true
 
@@ -260,6 +264,12 @@ task.disable_spec_from_run_scripts = true
 # work under both. Bodies needing logic, structured data, or non-portable syntax
 # declare `shell = "node -e"` per task (node -e strips TS, runs ESM imports, and
 # supports top-level await).
+
+[settings.pipx]
+uvx = true
+
+[settings.npm]
+package_manager = "pnpm"
 
 [hooks]
 # Runs at first `cd` before any tool is installed, so it must be cross-platform

@@ -1,6 +1,3 @@
-[tools]
-"npm:pagefind" = "latest"
-
 [tasks.build]
 description = "Build SSG pipeline: clean, i18n + client JS, then site, then postprocess (pagefind + fingerprint), compress"
 run = [

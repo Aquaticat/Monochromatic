@@ -19,14 +19,14 @@ catalogs:
       specifier: '>=9.3.2'
       version: 9.3.2
     '@earendil-works/pi-ai':
-      specifier: '>=0.79.8'
-      version: 0.79.8
+      specifier: '>=0.79.9'
+      version: 0.79.9
     '@earendil-works/pi-coding-agent':
-      specifier: '>=0.79.8'
-      version: 0.79.8
+      specifier: '>=0.79.9'
+      version: 0.79.9
     '@earendil-works/pi-tui':
-      specifier: '>=0.79.8'
-      version: 0.79.8
+      specifier: '>=0.79.9'
+      version: 0.79.9
     '@lezer/common':
       specifier: '>=1.2.0'
       version: 1.5.1
@@ -2141,10 +2141,10 @@ importers:
     devDependencies:
       '@earendil-works/pi-ai':
         specifier: 'catalog:'
-        version: 0.79.8(zod@4.4.3)
+        version: 0.79.9(zod@4.4.3)
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
-        version: 0.79.8(zod@4.4.3)
+        version: 0.79.9(zod@4.4.3)
       '@monochromatic-dev/config-tsdown':
         specifier: workspace:*
         version: link:../../config/tsdown
@@ -2175,13 +2175,13 @@ importers:
     devDependencies:
       '@earendil-works/pi-ai':
         specifier: 'catalog:'
-        version: 0.79.8(zod@4.4.3)
+        version: 0.79.9(zod@4.4.3)
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
-        version: 0.79.8(zod@4.4.3)
+        version: 0.79.9(zod@4.4.3)
       '@earendil-works/pi-tui':
         specifier: 'catalog:'
-        version: 0.79.8
+        version: 0.79.9
       '@monochromatic-dev/config-tsdown':
         specifier: workspace:*
         version: link:../../config/tsdown
@@ -2215,10 +2215,10 @@ importers:
     devDependencies:
       '@earendil-works/pi-ai':
         specifier: 'catalog:'
-        version: 0.79.8(zod@4.4.3)
+        version: 0.79.9(zod@4.4.3)
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
-        version: 0.79.8(zod@4.4.3)
+        version: 0.79.9(zod@4.4.3)
       '@monochromatic-dev/config-tsdown':
         specifier: workspace:*
         version: link:../../config/tsdown
@@ -2243,7 +2243,7 @@ importers:
     devDependencies:
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
-        version: 0.79.8(zod@4.4.3)
+        version: 0.79.9(zod@4.4.3)
       '@monochromatic-dev/config-tsdown':
         specifier: workspace:*
         version: link:../../config/tsdown
@@ -2265,7 +2265,7 @@ importers:
     devDependencies:
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
-        version: 0.79.8(zod@4.4.3)
+        version: 0.79.9(zod@4.4.3)
       '@monochromatic-dev/config-tsdown':
         specifier: workspace:*
         version: link:../../config/tsdown
@@ -2286,10 +2286,10 @@ importers:
     devDependencies:
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
-        version: 0.79.8(zod@4.4.3)
+        version: 0.79.9(zod@4.4.3)
       '@earendil-works/pi-tui':
         specifier: 'catalog:'
-        version: 0.79.8
+        version: 0.79.9
       '@monochromatic-dev/config-tsdown':
         specifier: workspace:*
         version: link:../../config/tsdown
@@ -2317,7 +2317,7 @@ importers:
     devDependencies:
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
-        version: 0.79.8(zod@4.4.3)
+        version: 0.79.9(zod@4.4.3)
       '@monochromatic-dev/config-tsdown':
         specifier: workspace:*
         version: link:../../config/tsdown
@@ -2339,7 +2339,7 @@ importers:
     devDependencies:
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
-        version: 0.79.8(zod@4.4.3)
+        version: 0.79.9(zod@4.4.3)
       '@monochromatic-dev/config-tsdown':
         specifier: workspace:*
         version: link:../../config/tsdown
@@ -2357,7 +2357,7 @@ importers:
     devDependencies:
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
-        version: 0.79.8(zod@4.4.3)
+        version: 0.79.9(zod@4.4.3)
       '@monochromatic-dev/config-tsdown':
         specifier: workspace:*
         version: link:../../config/tsdown
@@ -2379,7 +2379,7 @@ importers:
     devDependencies:
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
-        version: 0.79.8(zod@4.4.3)
+        version: 0.79.9(zod@4.4.3)
       '@monochromatic-dev/config-tsdown':
         specifier: workspace:*
         version: link:../../config/tsdown
@@ -3104,22 +3104,22 @@ packages:
       '@luma.gl/core': ~9.3.3
       '@luma.gl/engine': ~9.3.3
 
-  '@earendil-works/pi-agent-core@0.79.8':
-    resolution: {integrity: sha512-8m5fcqRpoGpq3QY0I/tFXROSTmPwBb1dAuzYZO3XYgjsdCokkRMAGRjA9P8s/UD6Jy9yy69lyE4H6sz/5A1TmQ==}
+  '@earendil-works/pi-agent-core@0.79.9':
+    resolution: {integrity: sha512-GsFbPR85nhncKoU9++fTKa11PzwUkAmkrKXo97dBOzi10Td72rVV6vmfxKjwPLHTzRbJMa0byr12YhODZ59yLA==}
     engines: {node: '>=22.19.0'}
 
-  '@earendil-works/pi-ai@0.79.8':
-    resolution: {integrity: sha512-ZpSwaD7oNpsjn9vtEatZQNT9PSdDJXi6rFeY5Qv+OHQGFDKlmcrfJE4ypm4SAc/fBECPs4Rdi3l+YjVtXYrkKw==}
-    engines: {node: '>=22.19.0'}
-    hasBin: true
-
-  '@earendil-works/pi-coding-agent@0.79.8':
-    resolution: {integrity: sha512-wr9oTS/yrwURDXnYrONQgFgV7QDlwslXL/rvKU5X7TRtrGxIhippsRApXqYlRwSeMjb2YzgHMfZ/kAhOqrzoFQ==}
+  '@earendil-works/pi-ai@0.79.9':
+    resolution: {integrity: sha512-fHmgNMONwCCE7bQAKbcz76sgm3iQuA7km1mpIc4H5xXd9+zhPh/faULz6ARkgjQE0EufHnfZPJY39+lNf8Sa9g==}
     engines: {node: '>=22.19.0'}
     hasBin: true
 
-  '@earendil-works/pi-tui@0.79.8':
-    resolution: {integrity: sha512-QerB+0wUc6eEO8MwvzOQGtzcsbwo6y8VvdxYU6vGcakz6ofJZWhrmwrknp1dCGx3bEtCf+siUIxEzkqvFCzIsg==}
+  '@earendil-works/pi-coding-agent@0.79.9':
+    resolution: {integrity: sha512-8TZ796Zn0NE4vmhxG9hv4ZtJDGJzhqMjlmFg8ZkUKxfqB7LJa4ums2jSJKtnyAZfAamN6VzqzN0A82RNDqv8Ag==}
+    engines: {node: '>=22.19.0'}
+    hasBin: true
+
+  '@earendil-works/pi-tui@0.79.9':
+    resolution: {integrity: sha512-XcqfoGyoX64OSMQklMR1vG2MRi1TCPSUERRCmPDvYKCK6LtZoBqJ6idNCLRklNYveCj4gHDOzOsLhGqn04jmYw==}
     engines: {node: '>=22.19.0'}
 
   '@emnapi/core@1.10.0':
@@ -6399,9 +6399,9 @@ snapshots:
       - '@75lb/nature'
       - '@loaders.gl/core'
 
-  '@earendil-works/pi-agent-core@0.79.8(zod@4.4.3)':
+  '@earendil-works/pi-agent-core@0.79.9(zod@4.4.3)':
     dependencies:
-      '@earendil-works/pi-ai': 0.79.8(zod@4.4.3)
+      '@earendil-works/pi-ai': 0.79.9(zod@4.4.3)
       ignore: 7.0.5
       typebox: 1.1.38
       yaml: 2.9.0
@@ -6410,7 +6410,7 @@ snapshots:
       - ws
       - zod
 
-  '@earendil-works/pi-ai@0.79.8(zod@4.4.3)':
+  '@earendil-works/pi-ai@0.79.9(zod@4.4.3)':
     dependencies:
       '@anthropic-ai/sdk': 0.92.0(zod@4.4.3)
       '@opentelemetry/api': 1.9.0
@@ -6425,11 +6425,11 @@ snapshots:
       - ws
       - zod
 
-  '@earendil-works/pi-coding-agent@0.79.8(zod@4.4.3)':
+  '@earendil-works/pi-coding-agent@0.79.9(zod@4.4.3)':
     dependencies:
-      '@earendil-works/pi-agent-core': 0.79.8(zod@4.4.3)
-      '@earendil-works/pi-ai': 0.79.8(zod@4.4.3)
-      '@earendil-works/pi-tui': 0.79.8
+      '@earendil-works/pi-agent-core': 0.79.9(zod@4.4.3)
+      '@earendil-works/pi-ai': 0.79.9(zod@4.4.3)
+      '@earendil-works/pi-tui': 0.79.9
       '@silvia-odwyer/photon-node': 0.3.4
       chalk: 5.6.2
       cross-spawn: 7.0.6
@@ -6450,7 +6450,7 @@ snapshots:
       - ws
       - zod
 
-  '@earendil-works/pi-tui@0.79.8':
+  '@earendil-works/pi-tui@0.79.9':
     dependencies:
       get-east-asian-width: 1.6.0
       marked: 18.0.5

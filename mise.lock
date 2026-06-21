@@ -437,24 +437,8 @@ backend = "cargo:https://github.com/slint-ui/slint"
 bin = "slint-lsp"
 crate = "slint-lsp"
 
-[[tools."cargo:https://github.com/slint-ui/slint"]]
-version = "ref:85e3eb76819762cdcaa732fa87533ff896546bac"
-backend = "cargo:https://github.com/slint-ui/slint"
-
-[tools."cargo:https://github.com/slint-ui/slint".options]
-bin = "slint-lsp"
-crate = "slint-lsp"
-
 [[tools."cargo:https://github.com/slint-ui/slint.git"]]
 version = "rev:85e3eb76819762cdcaa732fa87533ff896546bac"
-backend = "cargo:https://github.com/slint-ui/slint.git"
-
-[tools."cargo:https://github.com/slint-ui/slint.git".options]
-bin = "slint-viewer"
-crate = "slint-viewer"
-
-[[tools."cargo:https://github.com/slint-ui/slint.git"]]
-version = "ref:85e3eb76819762cdcaa732fa87533ff896546bac"
 backend = "cargo:https://github.com/slint-ui/slint.git"
 
 [tools."cargo:https://github.com/slint-ui/slint.git".options]
@@ -882,8 +866,12 @@ url = "https://nodejs.org/dist/v26.3.1/node-v26.3.1-win-x64.zip"
 checksum = "sha256:45001b289ebffe7b22260898f3750059183d8246042b88e8ffa4337e65e6763e"
 url = "https://nodejs.org/dist/v26.3.1/node-v26.3.1-win-x64.zip"
 
+[[tools."npm:pagefind"]]
+version = "1.5.2"
+backend = "npm:pagefind"
+
 [[tools."npm:socket"]]
-version = "2.1.0"
+version = "1.1.124"
 backend = "npm:socket"
 
 [[tools."npm:typescript-language-server"]]
