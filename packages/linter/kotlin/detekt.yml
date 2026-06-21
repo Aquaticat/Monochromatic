@@ -1,5 +1,5 @@
-# detekt configuration for the monorepo-wide require-kdoc run. Detekt's default rule
-# sets stay active, and this file adds the repo custom require-kdoc rule set.
+# detekt configuration for the monorepo-wide require-kdoc run. Detekt's default config
+# stays active, and this file adds the repo custom require-kdoc rule set.
 # File-level exclusions (build output, .kts scripts, test sources) are passed as
 # global --excludes by the runner, which stops detekt parsing them at all.
 require-kdoc:

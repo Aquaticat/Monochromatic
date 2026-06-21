@@ -42,7 +42,7 @@ the tree walk into bodies, which is what reaches local and nested declarations.
 
 The root `lint:detekt` task (in `mise.no-env.toml`, part of the `lint` aggregate)
 invokes the detekt CLI over `packages/` with this module's jar on `--plugins`.
-Detekt's default rule sets stay active, and this package adds `require-kdoc` on top:
+Detekt's default config stays active, and this package adds `require-kdoc` on top:
 
 ```sh
 mise run lint:detekt    # scan all of packages/
