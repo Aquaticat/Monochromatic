@@ -19,19 +19,22 @@
 // skips.
 //
 // A single worker execution is time-bounded by the platform (WorkManager's
-// ~10-minute foreground-service-less limit), so `doWork` cooperates: it checks
-// `isStopped` at every track boundary, flushes what it measured, and returns
-// `Result.success()`. It does NOT return `Result.retry()`: WorkManager's
-// exponential backoff (capped at five hours, and only reset on a terminal
-// result) would otherwise pin a long sweep to one attempt per five hours even
-// while charging held continuously. As periodic work, returning success keeps
-// the attempt count at zero and lets the next period continue the backlog, and
-// newly added tracks are caught by future periods natively. Per-track failures
-// never fail the run, so one unsupported file cannot stall the sweep forever.
+// ~10-minute foreground-service-less limit), so `doWork` cooperates: it delegates
+// to the shared `sweepTracksInParallel` coordinator with ONE worker (serial
+// upkeep on the single low-priority decode thread). The coordinator stops
+// promptly when this worker's coroutine is cancelled on stop, flushes in batches,
+// and runs one final flush, so a stop loses at most a batch. On natural
+// completion `doWork` returns `Result.success()` (never `Result.retry()`):
+// WorkManager's exponential backoff (capped at five hours, reset only on a
+// terminal result) would otherwise pin a long sweep to one attempt per five hours
+// even while charging held continuously. As periodic work, returning success
+// keeps the attempt count at zero and lets the next period continue the backlog,
+// and newly added tracks are caught by future periods natively. Per-track
+// failures never fail the run, so one unsupported file cannot stall the sweep.
 //
-// `SweepOutcome`, `measureAndCache`, `PeakCacheStore`, `LibrarySource`, and
-// `Track` are all siblings in this same package (so no imports are needed for
-// them).
+// `SweepOutcome`, `sweepTracksInParallel`, `measureAndCache`, `sweepDecodeDispatcher`,
+// `PeakCacheStore`, `LibrarySource`, and `Track` are all siblings in this same
+// package (so no imports are needed for them).
 // ============================================================================
 
 // What:     `package dev.monochromatic.musicplayer` names the namespace this
@@ -244,301 +247,63 @@ class PeakSweepWorker(
          * source and use.
          */
         val limit: Int = inputData.getInt(KEY_MAX_TRACKS, DEFAULT_MAX_TRACKS)
-        // What:     `var processed = 0` declares a REASSIGNABLE (`var`, not `val`)
-        //           local counter `processed`, initialised to `0`. No explicit type is
-        //           written; Kotlin INFERS `Int` from the literal `0`.
-        // Why:      Counts how many tracks this run has handled (used for the limit
-        //           check and the summary log).
+        // What:     `val tally = sweepTracksInParallel(...)` delegates the whole sweep
+        //           to the shared coordinator. `workers = 1` makes it SERIAL (the upkeep
+        //           runs one decode at a time on the single low-priority thread
+        //           `sweepDecodeDispatcher`); `maxTracks = limit` applies the (test) cap;
+        //           the three trailing lambdas inject the per-track measure, the disk
+        //           flush, and a no-op progress sink. It returns a `SweepTally` of the
+        //           per-outcome counts.
+        // Why:      One tested loop shared with the foreground service instead of a
+        //           second hand-written copy. Stop is cooperative: when WorkManager
+        //           cancels this worker's coroutine, the coordinator's `isActive` workers
+        //           break and its final flush still runs under `NonCancellable`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // let processed = 0;
+        // const tally = await sweepTracksInParallel({
+        //   items: tracks, workers: 1, dispatcher: sweepDecodeDispatcher,
+        //   flushBatch: FLUSH_BATCH, notifyEvery: Number.MAX_SAFE_INTEGER, maxTracks: limit,
+        //   process: (track) => measureAndCache(this.applicationContext, toUri(track.uri)),
+        //   onFlush: () => PeakCacheStore.flush(this.applicationContext),
+        //   onProgress: () => {},
+        // });
         // ```
         /**
-         * Defines processed value for this music-player component; the TypeScript-oriented notes above explain
-         * its source and use.
-         */
-        var processed = 0
-        // What:     `var measured = 0` declares a reassignable `Int` counter (type
-        //           inferred from `0`) for tracks freshly measured this run.
-        // Why:      Tallied in the summary log and used to decide when to flush.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // let measured = 0;
-        // ```
-        /**
-         * Defines measured value for this music-player component; the TypeScript-oriented notes above explain
-         * its source and use.
-         */
-        var measured = 0
-        // What:     `var cached = 0` declares a reassignable `Int` counter (inferred)
-        //           for tracks already in the cache (a skip).
-        // Why:      Tallied in the summary log.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // let cached = 0;
-        // ```
-        /**
-         * Defines cached value for this music-player component; the TypeScript-oriented notes above explain its
+         * Defines tally value for this music-player component; the TypeScript-oriented notes above explain its
          * source and use.
          */
-        var cached = 0
-        // What:     `var skipped = 0` declares a reassignable `Int` counter (inferred)
-        //           for tracks that could not be fingerprinted.
-        // Why:      Tallied in the summary log.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // let skipped = 0;
-        // ```
-        /**
-         * Defines skipped value for this music-player component; the TypeScript-oriented notes above explain its
-         * source and use.
-         */
-        var skipped = 0
-        // What:     `var failed = 0` declares a reassignable `Int` counter (inferred)
-        //           for tracks whose measurement threw.
-        // Why:      Tallied in the summary log; per-track failures never fail the run.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // let failed = 0;
-        // ```
-        /**
-         * Defines failed value for this music-player component; the TypeScript-oriented notes above explain its
-         * source and use.
-         */
-        var failed = 0
-        // What:     `var pendingFlush = 0` declares a reassignable `Int` counter
-        //           (inferred) for fresh measurements not yet written to disk.
-        // Why:      When it reaches `FLUSH_BATCH` we flush, bounding how many
-        //           measurements an abrupt stop can lose.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // let pendingFlush = 0;
-        // ```
-        /**
-         * Defines pending flush value for this music-player component; the TypeScript-oriented notes above
-         * explain its source and use.
-         */
-        var pendingFlush = 0
-        // What:     `for (track in tracks) { ... }` is a FOR-EACH loop: `track` is
-        //           bound to each element of `tracks` in turn. Kotlin's `for (x in xs)`
-        //           always iterates the elements (there is no C-style index `for`).
-        // Why:      We process every track once.
-        // Gotcha:   `for (x in xs)` iterates VALUES, unlike JS's `for...in` which
-        //           iterates KEYS/indices; the Kotlin equivalent of `for...in` is
-        //           `for (i in xs.indices)`.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // for (const track of tracks) { ... }
-        // ```
-        for (track in tracks) {
-            // What:     `if (isStopped || processed >= limit) { break }`. `isStopped` is
-            //           a base-class `Boolean` property that flips true when WorkManager
-            //           asks us to stop; `||` is logical OR; `processed >= limit` caps the
-            //           run. `break` exits the `for` loop.
-            // Why:      Stop cooperatively at a track boundary when the platform asks, or
-            //           when the (test) cap is hit.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // if (this.isStopped || processed >= limit) break;
-            // ```
-            if (isStopped || processed >= limit) {
-                // What:     `break` immediately ends the enclosing `for` loop.
-                // Why:      Leave the sweep loop; the post-loop flush + success follow.
-                //
-                // In TS you'd write (pseudocode):
-                // ```ts
-                // break;
-                // ```
-                break
-            }
-            // What:     `val outcome: SweepOutcome = measureAndCache(applicationContext, track.uri.toUri())`
-            //           declares a read-only local `outcome` of the sibling ENUM type
-            //           `SweepOutcome` (one of `MEASURED`/`CACHED`/`UNFINGERPRINTABLE`/
-            //           `FAILED`). `measureAndCache(...)` measures one track and caches
-            //           it, returning which of those happened. `track.uri` is a `String`;
-            //           `.toUri()` is the imported EXTENSION function that parses it into
-            //           the `Uri` the function wants.
-            // Why:      Do the actual measure-and-cache for this track and record what
-            //           happened so the counters and flush logic can react.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // const outcome: SweepOutcome = await measureAndCache(
-            //   this.applicationContext,
-            //   toUri(track.uri),
-            // );
-            // ```
-            /**
-             * Defines outcome value for this music-player component; the TypeScript-oriented notes above explain
-             * its source and use.
-             */
-            val outcome: SweepOutcome = measureAndCache(applicationContext, track.uri.toUri())
-            // What:     `processed += 1` is a compound assignment (`processed = processed + 1`),
-            //           plain integer arithmetic identical to TS.
-            // Why:      Count this track as handled.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // processed += 1;
-            // ```
-            processed += 1
-            // What:     `when (outcome) { ... }` is a `when` WITH A SUBJECT: it dispatches
-            //           on the value of `outcome`, running the branch whose label matches.
-            //           Over an `enum` it is EXHAUSTIVE: the compiler checks every enum
-            //           constant is covered, so no `else` branch is needed. Each
-            //           `SweepOutcome.X -> ...` is one branch.
-            // Why:      Tally the right counter for whichever outcome this track produced.
-            // Gotcha:   No `break`/fall-through, and exhaustiveness is enforced; treat it
-            //           as a checked `switch`, not a loop or an `if`-chain.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // switch (outcome) {
-            //   case SweepOutcome.MEASURED: measured += 1; pendingFlush += 1; break;
-            //   case SweepOutcome.CACHED: cached += 1; break;
-            //   case SweepOutcome.UNFINGERPRINTABLE: skipped += 1; break;
-            //   case SweepOutcome.FAILED: failed += 1; break;
-            // }
-            // ```
-            when (outcome) {
-                // What:     `SweepOutcome.MEASURED -> { ... }` is the branch taken when the
-                //           track was freshly measured. The `{ ... }` block runs two
-                //           statements.
-                // Why:      A fresh measurement bumps both the `measured` tally and the
-                //           `pendingFlush` count (it is new, unwritten data).
-                //
-                // In TS you'd write (pseudocode):
-                // ```ts
-                // case SweepOutcome.MEASURED: { measured += 1; pendingFlush += 1; break; }
-                // ```
-                SweepOutcome.MEASURED -> {
-                    // What:     `measured += 1` increments the freshly-measured tally.
-                    // Why:      Count this measurement for the summary.
-                    //
-                    // In TS you'd write (pseudocode):
-                    // ```ts
-                    // measured += 1;
-                    // ```
-                    measured += 1
-                    // What:     `pendingFlush += 1` increments the count of unwritten
-                    //           measurements awaiting a disk flush.
-                    // Why:      This new data must eventually be flushed; track it toward
-                    //           the `FLUSH_BATCH` threshold.
-                    //
-                    // In TS you'd write (pseudocode):
-                    // ```ts
-                    // pendingFlush += 1;
-                    // ```
-                    pendingFlush += 1
-                }
-                // What:     `SweepOutcome.CACHED -> cached += 1` is a single-expression
-                //           branch (no `{ }`): when the track was already cached, bump the
-                //           `cached` tally. The `-> expr` form runs one expression.
-                // Why:      Count an already-cached track (a cheap skip).
-                //
-                // In TS you'd write (pseudocode):
-                // ```ts
-                // case SweepOutcome.CACHED: cached += 1; break;
-                // ```
-                SweepOutcome.CACHED -> cached += 1
-                // What:     `SweepOutcome.UNFINGERPRINTABLE -> skipped += 1` is a
-                //           single-expression branch for tracks whose fingerprint could
-                //           not be computed (so they were skipped).
-                // Why:      Count an unfingerprintable track.
-                //
-                // In TS you'd write (pseudocode):
-                // ```ts
-                // case SweepOutcome.UNFINGERPRINTABLE: skipped += 1; break;
-                // ```
-                SweepOutcome.UNFINGERPRINTABLE -> skipped += 1
-                // What:     `SweepOutcome.FAILED -> failed += 1` is a single-expression
-                //           branch for tracks whose measurement threw.
-                // Why:      Count a failure; it never fails the whole run.
-                //
-                // In TS you'd write (pseudocode):
-                // ```ts
-                // case SweepOutcome.FAILED: failed += 1; break;
-                // ```
-                SweepOutcome.FAILED -> failed += 1
-            }
-            // What:     `if (pendingFlush >= FLUSH_BATCH) { ... }` checks whether enough
-            //           fresh measurements have accumulated to write them out.
-            // Why:      Flush in batches: frequent enough to bound loss on an abrupt
-            //           stop, rare enough to keep disk writes infrequent.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // if (pendingFlush >= FLUSH_BATCH) { ... }
-            // ```
-            if (pendingFlush >= FLUSH_BATCH) {
-                // What:     `PeakCacheStore.flush(applicationContext)` writes the
-                //           accumulated peak cache to disk (it rewrites the whole
-                //           `peaks.json`).
-                // Why:      Persist the batch of fresh measurements.
-                //
-                // In TS you'd write (pseudocode):
-                // ```ts
-                // await PeakCacheStore.flush(this.applicationContext);
-                // ```
-                PeakCacheStore.flush(applicationContext)
-                // What:     `pendingFlush = 0` resets the unwritten-measurement counter
-                //           after a flush.
-                // Why:      The pending data is now on disk; start counting again.
-                //
-                // In TS you'd write (pseudocode):
-                // ```ts
-                // pendingFlush = 0;
-                // ```
-                pendingFlush = 0
-            }
-        }
-        // What:     `if (pendingFlush > 0) { ... }` is the post-loop check for any fresh
-        //           measurements not yet written by the in-loop batch flush.
-        // Why:      Make sure a final partial batch is persisted before we return.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // if (pendingFlush > 0) { ... }
-        // ```
-        if (pendingFlush > 0) {
-            // What:     `PeakCacheStore.flush(applicationContext)` writes the final
-            //           leftover measurements to disk.
-            // Why:      Don't lose the last sub-`FLUSH_BATCH` measurements on a clean end.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // await PeakCacheStore.flush(this.applicationContext);
-            // ```
-            PeakCacheStore.flush(applicationContext)
-        }
-        // What:     `Log.i( WORKER_TAG, "... $processed/${tracks.size} ..." + "(... $isStopped)", )`
-        //           writes the run summary. The message is split across two adjacent
-        //           STRING LITERALS joined by `+` (string concatenation). Each `$name`
-        //           and `${expr}` is a string-template placeholder replaced by that
-        //           value (`${tracks.size}` is the list length; Kotlin's `.size` is TS's
-        //           `.length`).
+        val tally = sweepTracksInParallel(
+            items = tracks,
+            workers = 1,
+            dispatcher = sweepDecodeDispatcher,
+            flushBatch = FLUSH_BATCH,
+            notifyEvery = Int.MAX_VALUE,
+            maxTracks = limit,
+            process = { track -> measureAndCache(applicationContext, track.uri.toUri()) },
+            onFlush = { PeakCacheStore.flush(applicationContext) },
+            onProgress = { _, _ -> },
+        )
+        // What:     `Log.i( WORKER_TAG, "... ${tally.processed}/${tally.total} ..." )`
+        //           writes the run summary from the returned tally. Each `${tally.x}` is
+        //           a string-template placeholder; `skipped` reports the unfingerprintable
+        //           count.
         // Why:      Emit one line with the per-outcome tallies and whether we were
         //           stopped, for on-device verification.
         //
         // In TS you'd write (pseudocode):
         // ```ts
         // console.info(
-        //   `[${WORKER_TAG}] PeakSweepWorker swept ${processed}/${tracks.length} tracks ` +
-        //     `(measured=${measured} cached=${cached} skipped=${skipped} failed=${failed} stopped=${this.isStopped})`,
+        //   `[${WORKER_TAG}] PeakSweepWorker swept ${tally.processed}/${tally.total} tracks ` +
+        //     `(measured=${tally.measured} cached=${tally.cached} skipped=${tally.unfingerprintable} ` +
+        //     `failed=${tally.failed} stopped=${this.isStopped})`,
         // );
         // ```
         Log.i(
             WORKER_TAG,
-            "PeakSweepWorker swept $processed/${tracks.size} tracks " +
-                "(measured=$measured cached=$cached skipped=$skipped failed=$failed stopped=$isStopped)",
+            "PeakSweepWorker swept ${tally.processed}/${tally.total} tracks " +
+                "(measured=${tally.measured} cached=${tally.cached} skipped=${tally.unfingerprintable} " +
+                "failed=${tally.failed} stopped=$isStopped)",
         )
         // What:     `return Result.success()` returns WorkManager's "succeeded" outcome
         //           from the normal end of the sweep.

@@ -28,10 +28,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * Foreground service that performs the one-time parallel true-peak index of the whole library.
@@ -78,42 +75,21 @@ class PeakSweepService : Service() {
             Log.i(TAG, "PeakSweepService found no library to index")
             return false
         }
-        /** Shared cursor handing the next track index to whichever worker is free. */
-        val next = AtomicInteger(0)
-        /** Count of tracks visited (measured, cached, skipped, or failed), for the progress UI. */
-        val processed = AtomicInteger(0)
-        /** Fresh measurements not yet flushed to disk, bounding loss on an abrupt stop. */
-        val pendingFlush = AtomicInteger(0)
-        coroutineScope {
-            repeat(FOREGROUND_SWEEP_WORKERS) {
-                launch(foregroundSweepDispatcher) {
-                    while (isActive) {
-                        /** This worker's claimed track index, or past-the-end when drained. */
-                        val index = next.getAndIncrement()
-                        if (index >= tracks.size) {
-                            break
-                        }
-                        /** Which branch ran for this track: measured, cached, skipped, or failed. */
-                        val outcome = measureAndCache(
-                            applicationContext,
-                            tracks[index].uri.toUri(),
-                            foregroundSweepDispatcher,
-                        )
-                        if (outcome == SweepOutcome.MEASURED && pendingFlush.incrementAndGet() >= FLUSH_BATCH) {
-                            pendingFlush.set(0)
-                            PeakCacheStore.flush(applicationContext)
-                        }
-                        /** Running visited count after this track, used to pace notification updates. */
-                        val done = processed.incrementAndGet()
-                        if (done % NOTIFY_EVERY == 0) {
-                            postProgress(done, tracks.size)
-                        }
-                    }
-                }
-            }
-        }
-        PeakCacheStore.flush(applicationContext)
-        Log.i(TAG, "PeakSweepService indexed ${processed.get()} of ${tracks.size} tracks")
+        /** Outcome tally from the shared parallel coordinator over the foreground decode pool. */
+        val tally = sweepTracksInParallel(
+            items = tracks,
+            workers = FOREGROUND_SWEEP_WORKERS,
+            dispatcher = foregroundSweepDispatcher,
+            flushBatch = FLUSH_BATCH,
+            notifyEvery = NOTIFY_EVERY,
+            maxTracks = Int.MAX_VALUE,
+            process = { track ->
+                measureAndCache(applicationContext, track.uri.toUri(), foregroundSweepDispatcher)
+            },
+            onFlush = { PeakCacheStore.flush(applicationContext) },
+            onProgress = { done, total -> postProgress(done, total) },
+        )
+        Log.i(TAG, "PeakSweepService indexed ${tally.processed} of ${tally.total} tracks")
         return true
     }
 
