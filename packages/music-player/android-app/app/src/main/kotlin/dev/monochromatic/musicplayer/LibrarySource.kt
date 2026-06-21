@@ -238,7 +238,8 @@ object LibrarySource {
         //   return scanRoot(context, root);
         // }
         // ```
-        if (root != null) {
+        return when {
+            root != null -> {
             // What:     `return scanRoot(context, root, onBatch)` calls the sibling function
             //           `scanRoot` with the context, the now-non-null `root`, and the
             //           forwarded `onBatch`, and returns its `List<Track>` to the caller.
@@ -252,8 +253,8 @@ object LibrarySource {
             // ```ts
             // return await scanRoot(context, root, onBatch);
             // ```
-            return scanRoot(context, root, onBatch)
-        }
+            scanRoot(context, root, onBatch)
+            }
         // What:     `if (hasAudioPermission(context)) { ... }` calls the top-level
         //           function `hasAudioPermission` (defined in `Permissions.kt`,
         //           visible here because it shares this package), which returns a
@@ -268,7 +269,7 @@ object LibrarySource {
         //   return MediaStoreSource.query(context.contentResolver);
         // }
         // ```
-        if (hasAudioPermission(context)) {
+            hasAudioPermission(context) -> {
             // What:     `return MediaStoreSource.query(context.contentResolver)`.
             //           - `context.contentResolver` reads the `contentResolver`
             //             property off the `Context`: Android's gateway object for
@@ -283,8 +284,8 @@ object LibrarySource {
             // ```ts
             // return await MediaStoreSource.query(context.contentResolver, onBatch);
             // ```
-            return MediaStoreSource.query(context.contentResolver, onBatch)
-        }
+            MediaStoreSource.query(context.contentResolver, onBatch)
+            }
         // What:     `return emptyList()` calls Kotlin's standard-library helper
         //           `emptyList()`, which returns a shared, immutable, zero-element
         //           `List<T>`. The element type `Track` is inferred from `load`'s
@@ -299,7 +300,8 @@ object LibrarySource {
         // ```ts
         // return [];
         // ```
-        return emptyList()
+            else -> emptyList()
+        }
     }
 
     // What:     `suspend fun scanRoot(context: Context, treeUri: Uri): List<Track>`

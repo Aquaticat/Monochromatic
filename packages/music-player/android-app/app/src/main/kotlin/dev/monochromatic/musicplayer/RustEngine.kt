@@ -930,136 +930,40 @@ class RustEngine(context: Context) : AudioEngine {
      * above explain its call shape and effects.
      */
     private suspend fun resolveNormalizationGain(uri: String): Float {
-        // What:     `val parsed: Uri = Uri.parse(uri)` declares a read-only `Uri` by parsing the string
-        //           via the static `Uri.parse`.
-        // Why:      The fingerprint and measure need a parsed `Uri`.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // const parsed = Uri.parse(uri);
-        // ```
-        /**
-         * Defines parsed value for this music-player component; the TypeScript-oriented notes above explain its
-         * source and use.
-         */
+        // What:     `val parsed: Uri = Uri.parse(uri)` parses text into Android's URI object.
+        // Why:      Fingerprinting and native measurement both need the structured form.
+        /** Parsed track URI used by cache and measurement helpers. */
         val parsed: Uri = Uri.parse(uri)
-        // What:     `val key: String = TrackFingerprint.of(appContext, parsed) ?: return UNITY_GAIN`
-        //           declares a read-only `String`. `TrackFingerprint.of(...)` (a shared `main` helper)
-        //           returns a nullable `String?`; `?:` (Elvis) returns `UNITY_GAIN` from the whole function
-        //           when it is `null`.
-        // Why:      Without a fingerprint we cannot cache or look up a peak, so fall back to unity gain.
-        // Gotcha:   `?: return X` is "unwrap-or-bail": null-checks and early-returns in one line.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // const fp = TrackFingerprint.of(this.appContext, parsed);
-        // if (fp === null) return UNITY_GAIN;
-        // const key: string = fp;
-        // ```
-        /**
-         * Defines key value for this music-player component; the TypeScript-oriented notes above explain its
-         * source and use.
-         */
-        val key: String = TrackFingerprint.of(appContext, parsed) ?: return UNITY_GAIN
-        // What:     `PeakCacheStore.get(appContext, key)?.let { cachedPeak -> return normalizationGain(cachedPeak) }`
-        //           looks up a cached peak; `?.let { ... }` runs the lambda ONLY when non-null (safe-call +
-        //           scope function), with `cachedPeak` the named non-null value. The `return` inside the
-        //           lambda is a NON-LOCAL return from the whole function (legal because `let` is inline).
-        // Why:      A cache hit short-circuits: convert the cached peak to a gain and return it.
-        // Gotcha:   The `return` exits `resolveNormalizationGain`, not just the lambda (non-local return).
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // const cachedPeak = PeakCacheStore.get(this.appContext, key);
-        // if (cachedPeak !== null) return normalizationGain(cachedPeak);
-        // ```
-        PeakCacheStore.get(appContext, key)?.let { cachedPeak ->
-            return normalizationGain(cachedPeak)
+        // What:     `val key: String? = TrackFingerprint.of(...)` asks for a cache key.
+        // Why:      A missing key means no safe cache entry, so the expression returns unity gain.
+        /** Optional stable cache key for this track. */
+        val key: String? = TrackFingerprint.of(appContext, parsed)
+        return if (key == null) {
+            UNITY_GAIN
+        } else {
+            /** Cached true peak, if this track was measured before. */
+            val cachedPeak: Float? = PeakCacheStore.get(appContext, key)
+            if (cachedPeak != null) {
+                normalizationGain(cachedPeak)
+            } else {
+                /** Fresh true peak, or null when decode/open failed. */
+                val peak: Float? = try {
+                    measureTruePeakBlocking(appContext, parsed)
+                } catch (cancellation: CancellationException) {
+                    throw cancellation
+                } catch (expectedFailure: Exception) {
+                    Log.w(LOG_TAG, "true-peak measure failed for $uri; using unity gain", expectedFailure)
+                    null
+                }
+                if (peak == null) {
+                    UNITY_GAIN
+                } else {
+                    PeakCacheStore.put(appContext, key, peak)
+                    PeakCacheStore.flush(appContext)
+                    normalizationGain(peak)
+                }
+            }
         }
-        // What:     `val peak: Float = try { ... } catch (cancellation: CancellationException) { ... } catch (failure:
-        //           Exception) { ... }`
-        //           declares a read-only `Float` from a TRY EXPRESSION (Kotlin's `try` yields a value): the
-        //           `try` body's value on success, while the catches rethrow or early-return.
-        // Why:      Measure the track now, but treat cancellation as cancellation (rethrow) and any other
-        //           failure as "use unity gain".
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // let peak: number;
-        // try {
-        //   peak = measureTruePeakBlocking(this.appContext, parsed);
-        // } catch (e) {
-        //   if (e instanceof CancellationException) throw e;
-        //   console.warn(LOG_TAG, `true-peak measure failed for ${uri}; using unity gain`, e);
-        //   return UNITY_GAIN;
-        // }
-        // ```
-        /**
-         * Defines peak value for this music-player component; the TypeScript-oriented notes above explain its
-         * source and use.
-         */
-        val peak: Float = try {
-            // What:     `measureTruePeakBlocking(appContext, parsed)` calls the blocking native measure
-            //           defined in `PeakMeasurer.kt`; its `Float` result is the `try` block's value.
-            // Why:      Perform the actual native decode + measurement on a cache miss.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // peak = measureTruePeakBlocking(this.appContext, parsed);
-            // ```
-            measureTruePeakBlocking(appContext, parsed)
-        } catch (cancellation: CancellationException) {
-            // What:     `throw cancellation` rethrows the caught `CancellationException` unchanged.
-            // Why:      A cancelled measurement must propagate as cancellation, not be swallowed.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // throw e; // it was a CancellationException
-            // ```
-            throw cancellation
-        } catch (expectedFailure: Exception) {
-            // What:     `Log.w(LOG_TAG, "true-peak measure failed for $uri; using unity gain", expectedFailure)`
-            //           logs any non-cancellation failure with the throwable.
-            // Why:      A genuine decode failure should not crash; fall back to unity gain.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // console.warn(LOG_TAG, `true-peak measure failed for ${uri}; using unity gain`, e);
-            // ```
-            Log.w(LOG_TAG, "true-peak measure failed for $uri; using unity gain", expectedFailure)
-            // What:     `return UNITY_GAIN` returns unity from the whole function (the catch's escape).
-            // Why:      Play the track unprocessed rather than failing the load.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // return UNITY_GAIN;
-            // ```
-            return UNITY_GAIN
-        }
-        // What:     `PeakCacheStore.put(appContext, key, peak)` stores the freshly measured peak.
-        // Why:      Cache the measurement so future loads skip the decode.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // PeakCacheStore.put(this.appContext, key, peak);
-        // ```
-        PeakCacheStore.put(appContext, key, peak)
-        // What:     `PeakCacheStore.flush(appContext)` persists the cache to disk.
-        // Why:      Make the new entry durable across restarts.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // PeakCacheStore.flush(this.appContext);
-        // ```
-        PeakCacheStore.flush(appContext)
-        // What:     `return normalizationGain(peak)` converts the measured peak into a gain and returns it.
-        // Why:      Hand back the gain for this track.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // return normalizationGain(peak);
-        // ```
-        return normalizationGain(peak)
     }
 
     // What:     `private fun openDescriptor(uri: String): ParcelFileDescriptor? = try { ... } catch (failure:

@@ -658,7 +658,9 @@ private data class PageSortKey(
         // ```ts
         // if (byGroup !== 0) return byGroup;
         // ```
-        if (byGroup != 0) return byGroup
+        if (byGroup != 0) {
+            return byGroup
+        }
         // What:     `val byFold: Int = compareByCodePoint(fold, other.fold)`.
         //           Immutable `Int`. Calls the code-point comparator on the two
         //           case-folded labels (this key's `fold` vs `other.fold`).
@@ -682,8 +684,10 @@ private data class PageSortKey(
         // ```ts
         // if (byFold !== 0) return byFold;
         // ```
-        if (byFold != 0) return byFold
-        // What:     `return compareByCodePoint(label, other.label)`. The final
+        return if (byFold != 0) {
+            byFold
+        } else {
+            // What:     `compareByCodePoint(label, other.label)`. The final
         //           tiebreaker: code-point compare the ORIGINAL labels (this
         //           key's `label` vs `other.label`). This is the function's
         //           last expression / return.
@@ -695,7 +699,8 @@ private data class PageSortKey(
         // ```ts
         // return compareByCodePoint(this.label, other.label);
         // ```
-        return compareByCodePoint(label, other.label)
+            compareByCodePoint(label, other.label)
+        }
     }
 }
 

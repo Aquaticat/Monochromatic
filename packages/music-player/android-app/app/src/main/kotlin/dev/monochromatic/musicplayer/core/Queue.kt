@@ -851,171 +851,38 @@ class Queue private constructor(private val rng: Random) {
      * call shape and effects.
      */
     fun advance(natural: Boolean): Int? {
-        // What:     `val position: Int = pos ?: return null` declares a read-only `Int`
-        //           local `position` (the cursor's index WITHIN `order`) using the
-        //           ELVIS operator `?:`: take `pos`'s value when non-null, otherwise
-        //           `return null` from the whole function.
-        // Why:      No cursor means the queue is empty / nothing to advance; bail out
-        //           early. This also smart-casts away the nullability so `position` is
-        //           a plain `Int` below. (Named `position`, not `current`, so it does
-        //           not clash with the TRACK index `order[position]` used in the
-        //           shuffle branch.)
-        // Gotcha:   `?: return null` is Kotlin's "unwrap-or-bail"; the right side of
-        //           Elvis can be any expression, including `return` (type `Nothing`),
-        //           the close analogue of Rust's `?` on an `Option`.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // if (this.pos === null) return null;
-        // const position = this.pos;
-        // ```
-        /**
-         * Defines position value for this music-player component; the TypeScript-oriented notes above explain
-         * its source and use.
-         */
-        val position: Int = pos ?: return null
-        // What:     `if (natural && repeatTrackFlag) return order[position]`. `&&` is
-        //           logical AND; the body runs only when the track ended naturally AND
-        //           repeat-track is on, returning the SAME track index without moving
-        //           the cursor.
-        // Why:      A track that ends on its own under "repeat track" replays itself (a
-        //           manual Next must NOT, which is why `natural` gates it). This is
-        //           independent of shuffle, so it is checked first.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // if (natural && this.repeatTrackFlag) return this.order[position];
-        // ```
-        if (natural && repeatTrackFlag) {
-            return order[position]
-        }
-        // What:     `if (shuffle != ShuffleMode.OFF) { ... }` branches into the
-        //           just-in-time shuffle path (`WITHIN_PAGE` or `ALL`). `!=` is enum
-        //           value inequality.
-        // Why:      Shuffle has no precomputed order: `order` is the play HISTORY built
-        //           as you go. So advancing either retraces forward through history (if
-        //           you previously stepped back) or draws a fresh without-replacement
-        //           pick and appends it.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // if (this.shuffle !== ShuffleMode.OFF) { /* retrace or draw a new pick */ }
-        // ```
-        if (shuffle != ShuffleMode.OFF) {
-            // What:     `if (position + 1 < order.size) { pos = position + 1; return order[position + 1] }`.
-            //           When the cursor is not at the end of the history (because a
-            //           prior `prev` stepped it back), advance retraces FORWARD through
-            //           the already-drawn history rather than drawing anew.
-            // Why:      `prev`/`next` act as a back/forward cursor over the shuffle
-            //           history; re-drawing here would lose the forward path.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // if (position + 1 < this.order.length) { this.pos = position + 1; return this.order[position + 1]; }
-            // ```
+        // What:     `val position: Int? = pos` snapshots the nullable cursor.
+        // Why:      The expression below returns null when the queue has no cursor.
+        /** Cursor position before advancing, or null when the queue is empty. */
+        val position: Int? = pos
+        return if (position == null) {
+            null
+        } else if (natural && repeatTrackFlag) {
+            order[position]
+        } else if (shuffle != ShuffleMode.OFF) {
             if (position + 1 < order.size) {
                 pos = position + 1
-                return order[position + 1]
+                order[position + 1]
+            } else {
+                /** Load-order index currently at the end of shuffle history. */
+                val current: Int = order[position]
+                /** Newly drawn load-order index for the next shuffle step. */
+                val pick: Int = pickNextShuffle(current)
+                order = order + pick
+                pos = order.size - 1
+                pick
             }
-            // What:     `val current: Int = order[position]` reads the load-order index
-            //           of the track currently at the cursor (the end of history).
-            // Why:      The new pick must avoid an immediate repeat of THIS track when a
-            //           fresh cycle starts; `pickNextShuffle` takes it to exclude it.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // const current = this.order[position];
-            // ```
-            /**
-             * Defines current value for this music-player component; the TypeScript-oriented notes above explain
-             * its source and use.
-             */
-            val current: Int = order[position]
-            // What:     `val pick: Int = pickNextShuffle(current)` draws the next
-            //           without-replacement scope track (a load-order index), starting a
-            //           new cycle if the current one is exhausted.
-            // Why:      This is the just-in-time draw: one random scope track not yet
-            //           played this cycle.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // const pick = this.pickNextShuffle(current);
-            // ```
-            /**
-             * Defines pick value for this music-player component; the TypeScript-oriented notes above explain
-             * its source and use.
-             */
-            val pick: Int = pickNextShuffle(current)
-            // What:     `order = order + pick` reassigns `order` to a NEW list with
-            //           `pick` appended. `list + element` is Kotlin's immutable-append
-            //           operator: it builds a fresh `List<Int>`, leaving the old one
-            //           untouched. (The desktop twin mutates a `Vec` via `.push`; the
-            //           Kotlin `order` field is an immutable `List`, so it is replaced.)
-            // Why:      Grow the play history by the new pick.
-            // Gotcha:   `order + pick` does NOT mutate; it allocates a new list and
-            //           rebinds the field. With one append per user-paced advance this
-            //           is fine (not a tight inner loop).
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // this.order = [...this.order, pick];
-            // ```
-            order = order + pick
-            // What:     `pos = order.size - 1` moves the cursor to the just-appended
-            //           last slot.
-            // Why:      The newly drawn pick is now current.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // this.pos = this.order.length - 1;
-            // ```
-            pos = order.size - 1
-            // What:     `return pick` returns the drawn load-order index (the `Int?`
-            //           result).
-            // Why:      Hand back the track to play next.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // return pick;
-            // ```
-            return pick
+        } else {
+            /** Sequential position after the current one. */
+            val next: Int = position + 1
+            if (next < order.size) {
+                pos = next
+                order[next]
+            } else {
+                pos = 0
+                order[0]
+            }
         }
-        // What:     `val next: Int = position + 1` is the position after the current one
-        //           in the (sequential, `OFF`) scope order.
-        // Why:      Try to step forward within the page.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // const next: number = position + 1;
-        // ```
-        /**
-         * Defines next value for this music-player component; the TypeScript-oriented notes above explain its
-         * source and use.
-         */
-        val next: Int = position + 1
-        // What:     `if (next < order.size) { pos = next; return order[next] }` is the
-        //           normal forward step when there is a track after the current one.
-        // Why:      A plain forward move without looping.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // if (next < this.order.length) { this.pos = next; return this.order[next]; }
-        // ```
-        if (next < order.size) {
-            pos = next
-            return order[next]
-        }
-        // What:     `pos = 0` then `return order[0]` wraps the cursor to the scope's
-        //           start. Reached only past the end of the `OFF` scope.
-        // Why:      `OFF`/`WITHIN_PAGE` loop the page (there is no "stop at end" mode
-        //           other than repeat-track), so the end wraps to the start.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // this.pos = 0; return this.order[0];
-        // ```
-        pos = 0
-        return order[0]
     }
 
     // What:     `fun moveCursorTo(scopeIndex: Int): Int? { ... }` declares an instance
@@ -1102,88 +969,30 @@ class Queue private constructor(private val rng: Random) {
      * call shape and effects.
      */
     fun prev(): Int? {
-        // What:     `val position: Int = pos ?: return null` declares a read-only `Int`
-        //           local `position` (the cursor index within `order`) using the Elvis
-        //           operator `?:`: take `pos`'s value when non-null, otherwise
-        //           `return null` from `prev` immediately.
-        // Why:      Nothing to go back to when there is no cursor; bail out early and
-        //           smart-cast away the nullability.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // if (this.pos === null) return null;
-        // const position = this.pos;
-        // ```
-        /**
-         * Defines position value for this music-player component; the TypeScript-oriented notes above explain
-         * its source and use.
-         */
-        val position: Int = pos ?: return null
-        // What:     `if (shuffle != ShuffleMode.OFF) { ... }` branches into the
-        //           just-in-time shuffle path. `!=` is enum value inequality.
-        // Why:      Under shuffle, `order` is the play HISTORY; `prev` steps back
-        //           through it but, unlike `OFF`, does NOT wrap to the end (there is no
-        //           "last" of a history; the start is the oldest played track).
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // if (this.shuffle !== ShuffleMode.OFF) { /* step back, no wrap */ }
-        // ```
-        if (shuffle != ShuffleMode.OFF) {
-            // What:     `if (position > 0) { pos = position - 1; return order[position - 1] }`.
-            //           When there is older history, step the cursor back one slot.
-            // Why:      Retrace the shuffle history backward (the back half of the
-            //           back/forward cursor `advance` retraces forward).
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // if (position > 0) { this.pos = position - 1; return this.order[position - 1]; }
-            // ```
+        // What:     `val position: Int? = pos` snapshots the nullable cursor.
+        // Why:      The expression below returns null when the queue has no cursor.
+        /** Cursor position before moving backward, or null when the queue is empty. */
+        val position: Int? = pos
+        return if (position == null) {
+            null
+        } else if (shuffle != ShuffleMode.OFF) {
             if (position > 0) {
                 pos = position - 1
-                return order[position - 1]
+                order[position - 1]
+            } else {
+                order[position]
             }
-            // What:     `return order[position]` returns the current track index WITHOUT
-            //           moving the cursor (reached only when `position == 0`).
-            // Why:      At the oldest played track, `prev` stays put rather than wrapping
-            //           (the desktop shuffle `prev` does the same).
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // return this.order[position]; // history start: stay put
-            // ```
-            return order[position]
-        }
-        // What:     `if (position > 0) { pos = position - 1; return order[position - 1] }`
-            //           is the normal `OFF` backward step within the page.
-        // Why:      A plain backward move without wrapping.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // if (position > 0) { this.pos = position - 1; return this.order[position - 1]; }
-        // ```
-        if (position > 0) {
+        } else if (position > 0) {
             pos = position - 1
-            return order[position - 1]
+            order[position - 1]
+        } else {
+            /** Last position in the current non-shuffle scope. */
+            val last: Int = order.size - 1
+            pos = last
+            order[last]
         }
-        // What:     `val last: Int = order.size - 1` then `pos = last` then
-        //           `return order[last]`. At the start of the `OFF` page, Previous wraps
-        //           to the page's last track.
-        // Why:      `OFF`/`WITHIN_PAGE` always loop the page, so Previous from the start
-        //           jumps to the end. (Shuffle returned above, so this wrap is `OFF`-only.)
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // const last = this.order.length - 1; this.pos = last; return this.order[last];
-        // ```
-        /**
-         * Defines last value for this music-player component; the TypeScript-oriented notes above explain its
-         * source and use.
-         */
-        val last: Int = order.size - 1
-        pos = last
-        return order[last]
     }
+
     //endregion
 
     //region Scope helpers
