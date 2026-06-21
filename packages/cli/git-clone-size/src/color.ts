@@ -1,4 +1,7 @@
-import { styleText, } from 'node:util';
+import {
+  styleText,
+  type InspectColor,
+} from 'node:util';
 
 /**
  * Color mode: `auto` decides from the stream and environment, `always`/`never`
@@ -212,11 +215,11 @@ function forceStyleText({
   format,
   text,
 }: {
-  readonly format: readonly string[];
+  readonly format: readonly InspectColor[];
   readonly text: string;
 },): string {
   return styleText(
-    [...format,],
+    format,
     text,
     { validateStream: false, },
   );
