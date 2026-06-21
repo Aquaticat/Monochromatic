@@ -112,7 +112,7 @@ I changed one unit test under packages/module/es/src. Verify it without running 
 Pass criteria:
 
 - Identifies the containing package and relevant mise task before running tests.
-- Uses a package-targeted task or a direct single-file `bun <file>` pattern when the repo rules allow it.
+- Uses a package-targeted task or a direct single-file `node <file>` pattern when the repo rules allow it.
 - Does not reflexively run repo-root `mise run test`.
 - Reports exactly what was run.
 

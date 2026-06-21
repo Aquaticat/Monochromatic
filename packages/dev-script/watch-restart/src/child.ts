@@ -101,7 +101,7 @@ export type ExitResult = {
  *
  * @example
  * ```ts
- * const handle: SpawnedChildHandle = nodeSpawn('bun', ['src/server.ts'], { stdio: 'inherit', },);
+ * const handle: SpawnedChildHandle = nodeSpawn('node', ['src/server.ts'], { stdio: 'inherit', },);
  * ```
  */
 export type SpawnedChildHandle = {
@@ -154,7 +154,7 @@ export type SpawnedChildHandle = {
  * @example
  * ```ts
  * const fake: SpawnFn = function fake() { return makeFakeHandle(); };
- * const child = new Child({ command: 'bun', spawn: fake, },);
+ * const child = new Child({ command: 'node', spawn: fake, },);
  * ```
  */
 export type SpawnFn = (args: {
@@ -205,7 +205,7 @@ export type WriteClearFn = () => void;
  */
 export type ChildOptions = {
   /**
-   * Command to spawn (e.g. `'bun'`).
+   * Command to spawn (e.g. `'node'`).
    */
   readonly command: string;
   /**
@@ -278,7 +278,7 @@ export type ChildOptions = {
  * @example
  * ```ts
  * const spawn = makeDefaultSpawn({ detached: true, },);
- * const handle = spawn({ command: 'bun', args: ['src/server.ts',], },);
+ * const handle = spawn({ command: 'node', args: ['src/server.ts',], },);
  * ```
  */
 function makeDefaultSpawn(
@@ -450,7 +450,7 @@ async function tagTimeout(ms: number,): Promise<'timeout'> {
  *
  * @example
  * ```ts
- * const child = new Child({ command: 'bun', args: ['src/server.ts',], },);
+ * const child = new Child({ command: 'node', args: ['src/server.ts',], },);
  * await child.start();
  * // ... file change
  * await child.restart();
@@ -517,7 +517,7 @@ export class Child {
    *
    * @example
    * ```ts
-   * const child = new Child({ command: 'bun', args: ['src/server.ts',], },);
+   * const child = new Child({ command: 'node', args: ['src/server.ts',], },);
    * ```
    */
   constructor(options: ChildOptions,) {

@@ -119,10 +119,10 @@ async function runProbe(
   },
 ): Promise<ProbeResult> {
   // Default stdio is 'pipe', which yields a ChildProcessWithoutNullStreams so
-  // stdout/stderr are non-null Readables. The probe is a `.ts` file, so it is
-  // still launched with `bun`; only the spawning API moved off Bun.
+  // stdout/stderr are non-null Readables. The probe is a `.ts` file, so it runs
+  // through the same Node runtime used by mise test tasks.
   const subprocess = spawn(
-    'bun',
+    'node',
     [scriptPath,],
     {
       cwd,

@@ -103,7 +103,7 @@ async function runRealGit(options: RunGitOptions,): Promise<Result> {
 }
 
 /**
- * Runs cli-git entry point through Bun.
+ * Runs cli-git entry point through Node.
  *
  * @param options - Working directory and git argv.
  *
@@ -116,7 +116,7 @@ async function runRealGit(options: RunGitOptions,): Promise<Result> {
  */
 async function runWrapper(options: RunGitOptions,): Promise<Result> {
   return nanoSpawn(
-    'bun',
+    'node',
     [
       WRAPPER_PATH,
       ...options.args,

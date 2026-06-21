@@ -52,7 +52,7 @@ the first line.
 
 Verified against:
 
-- bun 1.x (any version that handles `#!/usr/bin/env bun`)
+- The workspace's mise-managed Node runtime
 - pnpm 10.x, npm 11.x, yarn 4.x (all generate identical bin symlinks on
   Unix)
 - ImageMagick `import` 7.x present in `PATH` (the default on most
@@ -74,7 +74,7 @@ ln -s "$PWD/cli.ts" "$PWD/cli"  # mimic node_modules/.bin/cli
 Now add a shebang:
 
 ```bash
-sed -i '1i #!/usr/bin/env bun' cli.ts
+sed -i '1i #!/usr/bin/env node' cli.ts
 ./cli --hello
 # Prints: [ "--hello" ]
 ```
@@ -87,7 +87,7 @@ the entire difference.
 ### Add the shebang to the entry point
 
 ```typescript
-#!/usr/bin/env bun
+#!/usr/bin/env node
 import { parseArgs, } from 'node:util';
 // ...
 ```
@@ -96,7 +96,7 @@ Reinstall so the bin symlink/wrapper is regenerated with the corrected
 file in place:
 
 ```bash
-bun install
+pnpm install
 ```
 
 Tradeoff: every CLI package's entry point now has a non-TypeScript first
@@ -104,14 +104,14 @@ line. `dprint`, `oxlint`, and the workspace TSDoc tooling all tolerate
 the shebang (the `#!` line is treated as a comment by every TS-aware
 tool we use), so this cost is purely cosmetic.
 
-### Pin the interpreter explicitly via `bun run`
+### Pin the interpreter explicitly via `node`
 
 If editing the entry file is impossible (vendored fixture, generated
-file), invoke the script through `bun run <file>` instead of the
+file), invoke the script through `node <file>` instead of the
 `bin` symlink. This bypasses the kernel's shebang inspection entirely
-because `bun` parses the file itself.
+because `node` parses the file itself.
 
-Tradeoff: callers must know to use `bun run`; the bin symlink remains
+Tradeoff: callers must know to use `node`; the bin symlink remains
 broken for anyone who doesn't.
 
 ## What does not work
@@ -126,15 +126,15 @@ broken for anyone who doesn't.
 - Renaming the entry file to `.js`: extension does not matter; the
   kernel only inspects the first bytes of the file, and bash still sees
   TypeScript syntax it cannot parse.
-- Relying on `bun` always being PATH-resolved first: if a developer has
-  no `bun` on PATH (e.g. CI mis-provisioning), `/usr/bin/env bun` fails
-  loudly with `env: 'bun': No such file or directory`. That is the
+- Relying on `node` always being PATH-resolved first: if a developer has
+  no `node` on PATH (e.g. CI mis-provisioning), `/usr/bin/env node` fails
+  loudly with `env: 'node': No such file or directory`. That is the
   intended failure mode, distinct from the silent ImageMagick hang.
 
 ## Cross-platform notes
 
 The shebang is a Unix mechanism; Windows ignores it entirely. On
-Windows, package managers (npm, bun, pnpm) generate `.cmd` and `.ps1`
+Windows, package managers (npm, pnpm, yarn) generate `.cmd` and `.ps1`
 wrapper scripts in `node_modules/.bin/` that invoke the runtime
 explicitly, so the shebang in the source file is never read by Windows
 at all.

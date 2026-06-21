@@ -119,4 +119,4 @@ The current approach uses named SQL constants extracted to the top of each file.
 - `packages/build-tool/css/README.md`: `@mixin`/`@apply` pipeline details
 - `PLAN.md`: Implementation plan with DB schema, AI prompts, and deployment details
 - `SPEC.md`: Product specification (task model, screens, sync targets)
-- `FRAMEWORK_EVALUATION.md`: Why vanilla TS + Bun over SvelteKit, Vue Vapor, or WC frameworks
+- `FRAMEWORK_EVALUATION.md`: Historical evaluation of vanilla TS plus Bun before the Node migration

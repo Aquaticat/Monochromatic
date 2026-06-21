@@ -33,7 +33,7 @@ async function runMvm({ args, env, }: {
   exitCode: number;
 }> {
   try {
-    const result = await spawn('bun', [BIN_PATH, ...args,], {
+    const result = await spawn('node', [BIN_PATH, ...args,], {
       cwd: REPO_ROOT,
       ...(env !== undefined ? { env, } : {}),
     },);

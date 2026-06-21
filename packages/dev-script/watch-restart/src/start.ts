@@ -247,7 +247,7 @@ function buildEventKindFilter(
  * @example
  * ```ts
  * const filter = buildInternalFilter({
- *   paths: ['src',], command: 'bun',
+ *   paths: ['src',], command: 'node',
  *   extensions: ['.ts',], contentChanged: true,
  * },);
  * ```
@@ -387,7 +387,7 @@ async function buildInternalFilter(
  * ```ts
  * const handle = await startWatchRestart({
  *   paths: ['src/server',],
- *   command: 'bun',
+ *   command: 'node',
  *   args: ['src/server/index.ts',],
  * },);
  * // ... later, on Ctrl+C:

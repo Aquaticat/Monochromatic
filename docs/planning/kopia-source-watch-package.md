@@ -202,8 +202,8 @@ Pros:
 
 Cons:
 
-- Chokidar 5 requires Node `>= 20.19.0`; runtime compatibility with the repo's Bun-based CLI path
-  must be tested before implementation commits to Bun execution.
+- Chokidar 5 requires Node `>= 20.19.0`; runtime compatibility with the repo's Node CLI path
+  must be tested before implementation commits to Node execution.
 - Recursive watching still consumes one or more underlying watches per directory on Linux.
 - `awaitWriteFinish` uses polling of file size for pending writes and can reduce responsiveness
   when the stability threshold is high.

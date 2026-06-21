@@ -183,7 +183,7 @@ The previous plan never said how a consumer triggers a build whose entry lives i
 
 - [ ] Add a `bin` entry to the SSG `package.json` (modeled on `packages/cli/git/package.json:8`),
       for example `{ "mono-ssg": "dist/final/node/index.mjs" }`, with subcommands `build`, `dev`, `serve`.
-- [ ] The bin entry point has `#!/usr/bin/env bun` as its first line
+- [ ] The bin entry point has `#!/usr/bin/env node` as its first line
       (`AGENTS.md` "Adding new packages" rule 4); parse args with `@optique/core` (catalog), as `cli-git` does.
 - [ ] The CLI loads `site.config.ts` from cwd, resolves `projectRoot` and `packageRoot`, runs the pipeline.
 - [ ] Ship a default dev-server config from `packageRoot` (the current `Caddyfile` is generic SSG-output

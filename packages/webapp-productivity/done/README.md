@@ -60,6 +60,6 @@ comparison value is exhausted. See each variant's README for the per-file differ
 
 - `PLAN.md`: Implementation plan with DB schema, AI prompts, and deployment details
 - `SPEC.md`: Product specification (task model, screens, sync targets)
-- `FRAMEWORK_EVALUATION.md`: Why vanilla TS + Bun over SvelteKit, Vue Vapor, or WC frameworks
+- `FRAMEWORK_EVALUATION.md`: Historical evaluation of vanilla TS plus Bun before the Node migration
 - `PHILOSOPHY.css.md` (repo root): Why h-css over `@apply`, CSS-in-JS, and external CSS files
 - `packages/module/hyperscript/README.md`: h-css API reference

@@ -27,7 +27,7 @@ This hook denies tool calls in two cases:
 
 2. **`bun test` blocking**: when a Bash call invokes `bun test`, it is denied
    with a message directing the caller to `mise run //packages/<path>:test:unit`
-   (or `bun <file>` for ad-hoc single-file runs).
+   (or `node <file>` for ad-hoc single-file runs).
 
 ## Setup
 

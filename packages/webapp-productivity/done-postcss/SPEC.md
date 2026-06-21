@@ -16,9 +16,9 @@ Coolify's own reverse proxy terminates HTTPS upstream, so the orchestrator only 
 Path-based routing (`done.app/u/<user-id>/`) instead of subdomains: avoids DNS API calls on registration, offensive subdomain risk, wildcard cert complexity, and registrar rate limits.
 
 1. User registers with email on the orchestrator's own registration page, verified via SMTP (through `@upyo/smtp`)
-2. Orchestrator hashes password with `Bun.password` (argon2id), stores user record in `orchestrator.db`
+2. Orchestrator hashes password with a Node-compatible argon2id password hasher, stores user record in `orchestrator.db`
 3. On login, orchestrator verifies password, creates a session row in `orchestrator.db` with a random 32-byte hex token, sets cookie (`HttpOnly` / `SameSite=Strict` / `Secure`, scoped to `/u/<user-id>/`)
-4. Orchestrator spawns a new **Bun + h3 Done process** (`bun src/server.ts --port=XXXX --db=/data/<user-id>/done.db`)
+4. Orchestrator spawns a new **Node + h3 Done process** (`node src/server.ts --port=XXXX --db=/data/<user-id>/done.db`)
 5. On every request to `/u/<user-id>/*`, orchestrator validates the session cookie and checks that the session's user-id matches the path, then reverse-proxies to `localhost:$PORT`, stripping the `/u/<user-id>` prefix
 6. Unauthenticated requests get redirected to the login page; wrong-user requests get 403
 7. The orchestrator **suspends idle instances** (kill + respawn on next request) and **wakes them on URL access** (cold-start pattern)
@@ -28,7 +28,7 @@ User IDs are opaque (ULIDs), not user-chosen names; no abuse vector for offensiv
 
 Auth security considerations:
 
-- Password hashing via `Bun.password` uses argon2id (constant-time verification)
+- Password hashing uses a Node-compatible argon2id implementation with constant-time verification
 - Sessions are server-side lookup tokens (random 32-byte hex IDs stored in `orchestrator.db`), not signed JWTs; no crypto to get wrong
 - Session cookies: `HttpOnly` + `Secure` + `SameSite=Strict`, cookie `Path` set to `/u/<user-id>/`
 - Rate limit login attempts: in-memory counter per IP, max 10/minute
@@ -40,11 +40,11 @@ It does not just organize tasks; it actively surfaces the right task at the righ
 
 ## Tech stack
 
-- **Runtime**: Bun (server + bundler)
+- **Runtime**: Node (server) and tsdown (bundler)
 - **Framework**: h3 server with vanilla TypeScript client bundles. The server owns page routes and REST API routes under `/api/...`; client pages read server-embedded JSON and build DOM imperatively.
 - **Database**: libsql (SQLite-compatible, single file, local)
 - **AI**: Self-hosted llama.cpp (OpenAI-compatible API, full model control, no provider ban risk). Primary model: Qwen3-1.7B (Q4_K_M, ~1.2GB RAM, CPU-only, non-thinking mode for fast autofill). Fallback: LFM2.5-1.2B-Instruct (under 1GB, 239 tok/s on CPU).
-- **Auth + reverse proxy**: Orchestrator (Bun): handles registration, login, session cookies, path ACL enforcement, and HTTP reverse proxy to user processes. No Caddy or AuthCrunch; Coolify's reverse proxy terminates HTTPS upstream.
+- **Auth + reverse proxy**: Orchestrator (Node): handles registration, login, session cookies, path ACL enforcement, and HTTP reverse proxy to user processes. No Caddy or AuthCrunch; Coolify's reverse proxy terminates HTTPS upstream.
 - **Email**: `@upyo/smtp` (JSR): generic SMTP transport; works with Resend, Fastmail, or any SMTP provider. If the transport fails, that's the provider's problem, not ours.
 - **Deployment**: Docker Compose on Coolify; two containers (orchestrator+user processes, llama.cpp), path-based routing (`/u/<user-id>/`), named volumes for user data
 
@@ -235,16 +235,16 @@ The server is the authority for start/stop events; the client handles smooth dis
 
 ## Architecture notes
 
-### h3 server on Bun
+### h3 server on Node
 
-Each user's instance is a single Bun process running an h3 server.
+Each user's instance is a single Node process running an h3 server.
 The server handles HTML page routes and REST API routes under `/api/...`.
 Client pages use vanilla TypeScript bundles, read server-embedded JSON, and perform mutations through API handlers.
 The orchestrator reverse-proxies `done.app/u/<user-id>/*` to the user's h3 port, stripping the `/u/<user-id>` prefix before the request reaches the app.
 
 ### AI rate limiting
 
-Each Bun process enforces a simple in-memory rate limit on AI proxy calls (e.g., 30 requests/minute) to prevent runaway loops from overwhelming the shared llama.cpp instance.
+Each Node process enforces a simple in-memory rate limit on AI proxy calls (e.g., 30 requests/minute) to prevent runaway loops from overwhelming the shared llama.cpp instance.
 
 ### Docker Compose deployment (Coolify)
 
@@ -252,7 +252,7 @@ The entire stack ships as a `docker-compose.yml` deployable on Coolify.
 Coolify's own reverse proxy handles HTTPS termination; the orchestrator only listens on HTTP.
 Two services:
 
-1. **orchestrator**: Bun image with the h3 Done app and orchestrator code. Listens on port 3000 (HTTP). Handles registration, login, session validation, path ACL enforcement, and HTTP reverse proxy to user processes. Spawns per-user Bun processes as child processes within the same container.
+1. **orchestrator**: Node image with the h3 Done app and orchestrator code. Listens on port 3000 (HTTP). Handles registration, login, session validation, path ACL enforcement, and HTTP reverse proxy to user processes. Spawns per-user Node processes as child processes within the same container.
 2. **llama-cpp**: CPU-only `ghcr.io/ggml-org/llama.cpp:server` image. Shared AI inference for all users.
 
 Named volumes:

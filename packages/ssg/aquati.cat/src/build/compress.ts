@@ -3,7 +3,7 @@
  * worker_threads.
  *
  * Replaces the former `zstd ... -r --adapt dist` CLI task. The build runs under
- * Node (Bun is being removed); Node's async zstdCompress is pathological here,
+ * Node; Node's async zstdCompress is pathological here,
  * so each worker calls synchronous zstdCompressSync. The main thread snapshots
  * the candidate set before spawning any worker, so no worker observes a `.zst`
  * being created mid-run; existing `.zst` files are excluded from candidates, and

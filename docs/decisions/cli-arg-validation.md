@@ -140,12 +140,12 @@ Verified 2026-05-18 via `gh api repos/dahlia/optique`,
   returned `[]`).
 - Open bug-labeled issues: zero (11 closed).
 
-### Compatibility with the Bun-only CLI baseline
+### Compatibility with the Node CLI baseline
 
-All Optique CLIs use `#!/usr/bin/env bun`. `@optique/valibot` declares
-engines `node>=20.0.0`, `bun>=1.2.0`, `deno>=2.3.0`. The workspace's Bun
+All Optique CLIs use `#!/usr/bin/env node`. `@optique/valibot` declares
+engines `node>=20.0.0`, `bun>=1.2.0`, `deno>=2.3.0`. The workspace's Node
 version satisfies this. The adapter ships dual ESM/CJS exports; the
-Bun ESM resolver picks the ESM entry.
+Node ESM resolver picks the ESM entry.
 
 ### Catalog management
 

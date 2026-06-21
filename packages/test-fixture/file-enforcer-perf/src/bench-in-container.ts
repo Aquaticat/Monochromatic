@@ -161,7 +161,7 @@ const CLI_PATH = resolve(
  * ```
  */
 async function runConfig(): Promise<void> {
-  await spawn('bun', [CLI_PATH, CONFIG_PATH,],);
+  await spawn('node', [CLI_PATH, CONFIG_PATH,],);
 }
 
 /** Timing entry for one config execution */

@@ -207,7 +207,7 @@ only validates the current production source file.
 
 ### Package integration tests spawned Bun directly
 
-The repository is migrating away from Bun. The mutation runtime intentionally installs Node and pnpm only.
+The repository has migrated away from Bun. The mutation runtime intentionally installs Node and pnpm only.
 Some file-enforcer integration and regression fixture tests still spawned `bun` to execute temporary config
 files. Once integration tests were selected by default, Stryker's initial run failed with `spawn bun ENOENT`.
 The consumer-side fix is to update those tests to spawn `node` for temporary TypeScript config files.

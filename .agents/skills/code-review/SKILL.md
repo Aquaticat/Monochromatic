@@ -1154,7 +1154,7 @@ function processItem(
 
 ### Script conventions
 
-- No bash/shell scripts -- TypeScript only, executed with Bun
+- No bash/shell scripts -- TypeScript only, executed with Node
 - Top-level code, no `main()` wrapper; top-level await for async
 - No `process.exit()` -- throw errors instead
 

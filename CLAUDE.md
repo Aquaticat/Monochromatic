@@ -1277,7 +1277,7 @@ ST6:
  HTML,
  CSS,
  SQL) instead of `readFile`;
- Bun resolves these at build time,
+ build tooling resolves these at build time,
  no async preload step needed.
 
 ST8:
@@ -1850,9 +1850,11 @@ AP3:
 
 AP4:
  CLI packages with `bin` entry:
- add `#!/usr/bin/env bun` shebang as first line of entry point;
+ add `#!/usr/bin/env node` shebang as first line of entry point;
  without it,
  Unix falls back to `/bin/sh` + script hangs/errors.
+ Use `#!/usr/bin/env bun` only in an explicitly documented Bun island;
+ normal CLI bins default to Node.
 
 AP5:
  Packages with client-side bundling:
@@ -1886,13 +1888,13 @@ CM3:
  use corresponding mise task.
  When no suitable task exists,
  add one to target package's `mise.toml` first,
- unless a rule below carves out direct call (e.g. running test file with `bun <file>`).
+ unless a rule below carves out direct call (e.g. running test file with `node <file>`).
 
 CM4:
  Never substitute `bun test` for missing mise task;
  it misreports under `@monochromatic-dev/module-test` harness.
  Use `mise run //packages/<path>:test:unit`,
- or run file directly with `bun <file>` if no task exists.
+ or run file directly with `node <file>` if no task exists.
 
 CM5:
  Read `mise.toml` files in root + package directories for available commands.

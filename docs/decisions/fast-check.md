@@ -36,8 +36,8 @@ constraint-fit checks still apply and were verified before adding it:
 
 - Open source: MIT-licensed, published on npm, source at `github.com/dubzzz/fast-check`.
 - Dependency weight: one transitive runtime dependency (`pure-rand`), no peer dependencies.
-- Runtime fit: ships both ESM and CommonJS conditions and is pure JavaScript, so it runs under Bun,
-  which is how the harness self-test executes (`bun <file>` per the `test:unit` task).
+- Runtime fit: ships both ESM and CommonJS conditions and is pure JavaScript, so it runs under Node,
+  which is how the harness self-test executes (`node <file>` per the `test:unit` task).
 - Scope fit: needed only at test time, so it is a `devDependency` and stays out of the harness's
   runtime and public surface.
 

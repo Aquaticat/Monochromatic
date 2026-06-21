@@ -211,7 +211,7 @@ export function parseArgs(
  *
  * @example
  * ```ts
- * const args = parseArgs({ argv: ['-w', 'src', '--', 'bun',], },);
+ * const args = parseArgs({ argv: ['-w', 'src', '--', 'node',], },);
  * const options = argsToOptions(args,);
  * ```
  */

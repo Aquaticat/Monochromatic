@@ -82,8 +82,7 @@ Packages:
 
 - `sway`, `foot`, `wtype` (Wayland stack)
 - `mesa-dri-drivers` (software OpenGL for `WLR_RENDERER_ALLOW_SOFTWARE`)
-- `nodejs`, `npm` (Claude Code runtime)
-- `bun` (plugin hooks use `#!/usr/bin/env bun`)
+- `nodejs`, `npm` (Claude Code and plugin-hook runtime)
 - `@anthropic-ai/claude-code` (global npm install)
 - `git`, `procps-ng` (hook reads `/proc/{pid}/status`)
 
@@ -170,7 +169,7 @@ Steps:
 - If the marketplace caches plugin versions, a recently pushed commit
   might not be immediately available
 - The marketplace install downloads and builds the plugin;
-  `bun` must be available in the container for the `#!/usr/bin/env bun` shebang
+  `node` must be available in the container for the `#!/usr/bin/env node` shebang
   in the built hook handler
 
 **Claude Code TUI:**

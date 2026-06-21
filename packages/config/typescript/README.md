@@ -7,7 +7,7 @@ Shared TypeScript compiler configuration for Monochromatic packages.
 Three entry points are exported, each extending the next:
 
 - `.` (default): environment-agnostic baseline.
-  `lib: ['ESNext']`, `types: ['bun']`.
+  `lib: ['ESNext']`, `types: ['node']`.
   Use for pure-logic packages, stubs, shims, and test fixtures.
 - `./dom`: adds `lib: ['ESNext', 'DOM', 'WebWorker']`.
   Use for any package that touches browser or worker globals;

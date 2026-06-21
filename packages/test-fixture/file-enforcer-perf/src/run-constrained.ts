@@ -50,7 +50,7 @@ import {
 console.log('=== HOST BASELINE ===',);
 /** Raw JSON output from the host baseline benchmark */
 const hostJson = await runCapture(
-  ['bun', resolve(import.meta.dirname, 'validate-resources.ts',),],
+  ['node', resolve(import.meta.dirname, 'validate-resources.ts',),],
   'Running host baseline benchmark',
 );
 /** Parsed host baseline benchmark results */
@@ -116,7 +116,7 @@ async function runContainerBench(_unused: unknown,
       'taskset',
       '-c',
       CPUSET_CPU,
-      'bun',
+      'node',
       'packages/test-fixture/file-enforcer-perf/src/bench-in-container.ts',
     ],
     `Container ${String(containerIndex,)}`,

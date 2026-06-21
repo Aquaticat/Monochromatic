@@ -11,14 +11,14 @@ Items without a priority marker are implicitly highest priority.
 
 ## Architecture overview
 
-No framework. Vanilla TypeScript on both server and client, unified by Bun.
+No framework. Vanilla TypeScript on both server and client, unified by Node and tsdown.
 
 - **Server:** h3 `H3` route registration handles page and API routes. Static serving handles built client assets from `dist/client/`.
 - **Client:** Plain TypeScript with `document.createElement` for DOM construction. Custom elements where reuse is needed (task card, chip editor, collapsible section).
 - **Build:** `build-css` compiles global CSS and tsdown bundles client TypeScript as separate mise build tasks. Server startup compiles CSS, but client JS bundles are built separately by `mise run build:js:client`.
 - **CSS:** CSS files use `@mixin`/`@apply` syntax processed by `@monochromatic-dev/build-css`. Processed CSS is imported as text in client TS and injected at runtime; no separate `<link>` tags needed.
-- **Dev:** `mise watch -w src -r -- bun src/server.ts` restarts the server process on source changes.
-- **Operational advantage:** The orchestrator spawns per-user Bun processes. Each process runs the build pipeline at startup, so new/restarted processes immediately serve the latest code.
+- **Dev:** `mise watch -w src -r -- node src/server.ts` restarts the server process on source changes.
+- **Operational advantage:** The orchestrator spawns per-user Node processes. Each process runs the build pipeline at startup, so new/restarted processes immediately serve the latest code.
 
 See `FRAMEWORK_EVALUATION.md` for why this approach was chosen over SvelteKit, Vue Vapor, or Web Components frameworks.
 

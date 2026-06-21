@@ -56,7 +56,7 @@ Each per-plugin package's `src/index.ts` imports the handler trio from a subpath
 and calls the runtime:
 
 ```ts
-#!/usr/bin/env bun
+#!/usr/bin/env node
 
 import {
   guardrailHandler,

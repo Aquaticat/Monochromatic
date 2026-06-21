@@ -50,7 +50,7 @@ packages/dev-script/watch-restart/
 ├── src/
 │   ├── child.ts                       ← Child class (spawn + state machine) + killSignal/processGroup/clear + injectable SpawnFn/ProcessSignalFn/WriteClearFn
 │   ├── child.unit.test.ts             ← 17 tests (state machine + stop + restart + reentry guards + defaults + Q6 options block)
-│   ├── cli.ts                         ← #!/usr/bin/env bun; optique parser + argsToOptions + signal handlers (gated by import.meta.main)
+│   ├── cli.ts                         ← #!/usr/bin/env node; optique parser + argsToOptions + signal handlers (gated by import.meta.main)
 │   ├── cli-helpers.ts                 ← parseTypeToken, parseKillSignal, compileRegex, resolveBoolPair, splitCommas, cliEventToInternal
 │   ├── cli.unit.test.ts               ← argv round trip (baseline + Q6 flags) + argsToOptions errors
 │   ├── filters/
@@ -98,7 +98,7 @@ Verification at this checkpoint:
 
 The plan said "chokidar + readdirp to catalog." `readdirp` is chokidar's only transitive dep; we do not import it directly anywhere, so the catalog gains chokidar only. Catalog also gains `picomatch` because the plan's `globFilter()` implementation uses it directly. `picomatch` is already a transitive in the workspace via tsdown/rolldown/tinyglobby (per `AUDIT.md`); we adopt the same major (4.x).
 
-The plan said `bin: { watch-restart: <tsdown output for cli.ts> }`. I went with `bin: { watch-restart: src/cli.ts }` instead, matching `packages/dev-script/task-util`. The shebang `#!/usr/bin/env bun` handles TS execution at runtime; no separate build step is needed for the CLI. Library consumers still hit `dist/final/node/index.js` per `exports["."]`. If the implementer prefers shipping a pre-built CLI to `dist/`, the path is `dist/final/node/cli.js`: but the cost (rebuild before invocation) outweighs the cold-start saving on a long-running dev loop.
+The plan said `bin: { watch-restart: <tsdown output for cli.ts> }`. I went with `bin: { watch-restart: src/cli.ts }` instead, matching `packages/dev-script/task-util`. The shebang `#!/usr/bin/env node` handles TS execution at runtime; no separate build step is needed for the CLI. Library consumers still hit `dist/final/node/index.js` per `exports["."]`. If the implementer prefers shipping a pre-built CLI to `dist/`, the path is `dist/final/node/cli.js`: but the cost (rebuild before invocation) outweighs the cold-start saving on a long-running dev loop.
 
 The plan's `WatchCtx` shape was `{ logger, signal }`. Already added `hashCache: HashCache` to `WatchCtx` in `types.ts` so `contentHashFilter()` can run as a stateless predicate over a shared cache.
 
@@ -182,7 +182,7 @@ The plan listed task 8 as "`cli.ts` + `flags-to-filter.ts`". `flags-to-filter.ts
 
 **`parser` is not exported.** Optique combinators (`object`, `multiple`, `optional`, `option(...)` with value parsers) produce deeply generic types that `--isolatedDeclarations` cannot survive across the export boundary. Spelling the explicit `Parser<...>` type would leak @optique-internal generics. Resolution: keep `parser` module-internal; export an explicit `ParsedArgs` type and a `parseArgs({ argv, onExit?, stdout?, stderr? }): ParsedArgs` helper. Tests drive the helper; production calls it from the `import.meta.main` guard.
 
-**Top-level execution is gated by `import.meta.main`.** Bun's `import.meta.main` is `true` only when this file is the entrypoint. Tests importing `cli.ts` see `import.meta.main === false`, so the orchestrator does not boot and no signal handlers attach. The bin in `package.json` (`"watch-restart": "src/cli.ts"`) and the `#!/usr/bin/env bun` shebang make Bun the runtime.
+**Top-level execution is gated by `import.meta.main`.** Node's `import.meta.main` is `true` only when this file is the entrypoint. Tests importing `cli.ts` see `import.meta.main === false`, so the orchestrator does not boot and no signal handlers attach. The bin in `package.json` (`"watch-restart": "src/cli.ts"`) and the `#!/usr/bin/env node` shebang make Node the runtime.
 
 **Event-name vocabulary translation.** The CLI surfaces `create`/`change`/`delete` (filesystem-friendly); chokidar / our internal `WatchEventKind` uses `add`/`change`/`unlink`. `cliEventToInternal` maps the three forms; an unknown token throws so a typo fails the CLI rather than silently passing every event.
 

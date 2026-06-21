@@ -2,11 +2,11 @@
  * End-to-end lifecycle tests for the vmsync CLI on Linux and Windows guests.
  *
  * Named `*.unit.test.ts` (not `*.e2e.test.ts`) because `*.e2e.test.ts`
- * is reserved for Playwright browser tests in this monorepo, and the
- * global `bun test` runner only discovers `*.unit.test.*` files.
+ * is reserved for Playwright browser tests in this monorepo, and expensive
+ * unit tests are included only when the package task opts into them.
  *
  * Uses mvm to create ephemeral VMs, pushes the tsdown-bundled vmsync
- * entry point via virtiofs, installs mise+bun inside each guest,
+ * entry point via virtiofs, installs mise and Node inside each guest,
  * and exercises subcommands against real disk images.
  *
  * Run via: `mise run //packages/cli/vmsync:test:e2e`
@@ -29,11 +29,11 @@ import nanoSpawn from 'nano-spawn';
 
 //region Constants
 
-/** Path to the mvm CLI entry point. */
-const MVM = 'bun';
+/** Path to the mvm CLI runtime. */
+const MVM = 'node';
 
 /** Args prefix for running mvm. */
-const MVM_ARGS = ['packages/cli/mvm/src/index.ts',];
+const MVM_ARGS = ['packages/cli/mvm/src/cli.ts',];
 
 /** Timeout for VM creation (includes cloud-init / guest agent wait). */
 const CREATE_TIMEOUT_MS = 180_000;

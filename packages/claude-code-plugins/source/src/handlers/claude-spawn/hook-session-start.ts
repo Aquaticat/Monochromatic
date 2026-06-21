@@ -252,7 +252,7 @@ function autoSetupCli(hookDir: string,): string | typeof NO_WARNING {
      */
     const EXECUTABLE_PERMISSION = 0o755;
     /**
-     * Ensure CLI source is executable (shebang: #!/usr/bin/env bun).
+     * Ensure CLI source is executable (shebang: #!/usr/bin/env node).
      */
     chmodSync(
       cliSource,

@@ -29,9 +29,9 @@
 
 - The Containerfile installs sysbench via dnf on every build (cache miss).
   Pre-bake a base image with sysbench to speed up cold builds.
-- No pinned version for bun in the container.
-  `curl -fsSL https://bun.sh/install | bash` gets the latest, which could change benchmark behavior.
-  Pin to a specific bun version for reproducibility.
+- No pinned version for Node in the container.
+  The Fedora `nodejs` package can change benchmark behavior across base-image updates.
+  Pin to a specific Node version for reproducibility.
 - The container mounts the entire monorepo as a volume.
   For more isolated benchmarks, copy only the necessary packages into the container.
 

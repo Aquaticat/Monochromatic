@@ -15,7 +15,7 @@
  *
  * @example
  * ```ts
- * // Bundled by Bun, no manual invocation.
+ * // Bundled by rolldown, no manual invocation.
  * ```
  */
 

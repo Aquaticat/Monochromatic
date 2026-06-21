@@ -180,7 +180,7 @@ type SpawnRecord = {
  * @example
  * ```ts
  * const { spawn, records, } = makeRecordingSpawn({ autoExitOnSigterm: true, },);
- * const child = new Child({ command: 'bun', spawn, },);
+ * const child = new Child({ command: 'node', spawn, },);
  * ```
  */
 function makeRecordingSpawn(
@@ -236,7 +236,7 @@ await describe({
           fn: async () => {
             const { spawn, } = makeRecordingSpawn();
             const child = new Child({
-              command: 'bun',
+              command: 'node',
               processGroup: false,
               spawn,
             },);
@@ -250,7 +250,7 @@ await describe({
           fn: async () => {
             const { spawn, records, } = makeRecordingSpawn();
             const child = new Child({
-              command: 'bun',
+              command: 'node',
               processGroup: false,
               args: ['a', 'b',],
               spawn,
@@ -260,7 +260,7 @@ await describe({
 
             expect(child.state,).toBe('running',);
             expect(records,).toHaveLength(1,);
-            expect(records[0]?.command,).toBe('bun',);
+            expect(records[0]?.command,).toBe('node',);
             expect(records[0]?.args,).toEqual(['a', 'b',],);
             expect(child.current,).toBe(records[0]?.handle,);
           },
@@ -270,7 +270,7 @@ await describe({
           fn: async () => {
             const { spawn, records, } = makeRecordingSpawn();
             const child = new Child({
-              command: 'bun',
+              command: 'node',
               processGroup: false,
               spawn,
             },);
@@ -287,7 +287,7 @@ await describe({
           fn: async () => {
             const { spawn, records, } = makeRecordingSpawn();
             const child = new Child({
-              command: 'bun',
+              command: 'node',
               processGroup: false,
               spawn,
             },);
@@ -303,7 +303,7 @@ await describe({
           fn: async () => {
             const { spawn, records, } = makeRecordingSpawn();
             const child = new Child({
-              command: 'bun',
+              command: 'node',
               processGroup: false,
               spawn,
             },);
@@ -333,7 +333,7 @@ await describe({
               autoExitOnSigterm: true,
             },);
             const child = new Child({
-              command: 'bun',
+              command: 'node',
               processGroup: false,
               stopTimeout: 200,
               spawn,
@@ -355,7 +355,7 @@ await describe({
               autoExitOnSigterm: true,
             },);
             const child = new Child({
-              command: 'bun',
+              command: 'node',
               processGroup: false,
               stopTimeout: 1_000,
               spawn,
@@ -377,7 +377,7 @@ await describe({
               autoExitOnSigterm: false,
             },);
             const child = new Child({
-              command: 'bun',
+              command: 'node',
               processGroup: false,
               stopTimeout: stopTimeoutMs,
               spawn,
@@ -406,7 +406,7 @@ await describe({
           fn: async () => {
             const { spawn, records, } = makeRecordingSpawn();
             const child = new Child({
-              command: 'bun',
+              command: 'node',
               processGroup: false,
               spawn,
             },);
@@ -425,7 +425,7 @@ await describe({
               autoExitOnSigterm: true,
             },);
             const child = new Child({
-              command: 'bun',
+              command: 'node',
               processGroup: false,
               stopTimeout: 200,
               spawn,
@@ -454,7 +454,7 @@ await describe({
               autoExitOnSigterm: false,
             },);
             const child = new Child({
-              command: 'bun',
+              command: 'node',
               processGroup: false,
               stopTimeout: stopTimeoutMs,
               spawn,
@@ -490,7 +490,7 @@ await describe({
           fn: async () => {
             const { spawn, records, } = makeRecordingSpawn();
             const child = new Child({
-              command: 'bun',
+              command: 'node',
               processGroup: false,
               spawn,
             },);
@@ -513,7 +513,7 @@ await describe({
               autoExitOnSigterm: false,
             },);
             const child = new Child({
-              command: 'bun',
+              command: 'node',
               processGroup: false,
               killSignal: 'SIGHUP',
               stopTimeout: stopTimeoutMs,
@@ -568,7 +568,7 @@ await describe({
             }
             const processSignal: ProcessSignalFn = recordingProcessSignal;
             const child = new Child({
-              command: 'bun',
+              command: 'node',
               processGroup: true,
               stopTimeout: 200,
               spawn,
@@ -606,7 +606,7 @@ await describe({
               autoExitOnSigterm: true,
             },);
             const child = new Child({
-              command: 'bun',
+              command: 'node',
               processGroup: false,
               clear: true,
               stopTimeout: 200,
@@ -635,7 +635,7 @@ await describe({
               autoExitOnSigterm: true,
             },);
             const child = new Child({
-              command: 'bun',
+              command: 'node',
               processGroup: false,
               stopTimeout: 200,
               spawn,
@@ -664,7 +664,7 @@ await describe({
               autoExitOnSigterm: false,
             },);
             const child = new Child({
-              command: 'bun',
+              command: 'node',
               processGroup: false,
               stopTimeout: stopTimeoutMs,
               spawn,

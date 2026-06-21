@@ -4,8 +4,8 @@
  * between host and container. Diagnostic messages go to stderr.
  *
  * Usage:
- *   Host:      bun validate-resources.ts
- *   Container: podman run ... bun validate-resources.ts
+ *   Host:      node validate-resources.ts
+ *   Container: podman run ... node validate-resources.ts
  */
 
 import { readFile, } from 'node:fs/promises';

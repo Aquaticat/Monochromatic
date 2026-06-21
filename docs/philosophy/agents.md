@@ -182,7 +182,7 @@ work. AGENTS.md should name concrete forks agents face, not broad slogans that c
 
 #### Essential commands: why `bun test` is banned for this harness
 
-`bun test` specifically: never substitute it for a missing mise task. The custom `@monochromatic-dev/module-test` harness runs tests as a side effect of import, so `bun test <file>` prints `PASS` log lines (from the harness) and then reports `0 pass / 0 fail` (bun's runner finds no `bun:test` registrations). The misleading summary suggests the run was broken when in fact every test passed. Use `mise run //packages/<path>:test:unit`; if no such task exists, run the file directly with `bun <file>` (matches `packages/module/test/mise.toml`'s self-test pattern). A `PreToolUse` hook (`ccgr`, source at `packages/claude-code-plugins/source/src/handlers/guardrail.ts`) blocks the call when configured.
+`bun test` specifically: never substitute it for a missing mise task. The custom `@monochromatic-dev/module-test` harness runs tests as a side effect of import, so `bun test <file>` prints `PASS` log lines (from the harness) and then reports `0 pass / 0 fail` (bun's runner finds no `bun:test` registrations). The misleading summary suggests the run was broken when in fact every test passed. Use `mise run //packages/<path>:test:unit`; if no such task exists, run the file directly with `node <file>`, matching the Node-based test task template. A `PreToolUse` hook (`ccgr`, source at `packages/claude-code-plugins/source/src/handlers/guardrail.ts`) blocks the call when configured.
 
 #### Type system: why `const` narrowing does not reach function declarations
 

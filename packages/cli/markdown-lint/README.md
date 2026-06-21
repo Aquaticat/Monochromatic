@@ -7,7 +7,7 @@ Fixes are localized source edits at known offsets,
 never a parse-then-stringify round trip,
 so untouched spans stay byte-for-byte identical.
 
-It runs under Bun and executes its TypeScript source directly,
+It runs under Node and executes its TypeScript source directly,
 so there is no build-before-lint step.
 
 ## Why it exists

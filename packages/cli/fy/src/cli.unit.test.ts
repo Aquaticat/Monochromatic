@@ -54,7 +54,7 @@ async function runCliFy({ args, }: { args: readonly string[]; },): Promise<{
   exitCode: number;
 }> {
   try {
-    const result = await spawn('bun', ['packages/cli/fy/dist/final/node/index.mjs', ...args,], {
+    const result = await spawn('node', ['packages/cli/fy/dist/final/node/index.mjs', ...args,], {
       cwd: REPO_ROOT,
     },);
     return {

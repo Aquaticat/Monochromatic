@@ -49,7 +49,7 @@ change; the code edits await go-ahead.
 
 2. **The ssg `build:compress` task** becomes a build script (`src/build/compress.ts`, alongside the
    existing `postprocess.ts`) that walks `dist/`, compresses each file with `node:zlib`, and writes
-   `<file>.zst`. The workspace is migrating off Bun, so this script must run under **Node**; the
+   `<file>.zst`. The workspace has migrated off Bun, so this script must run under **Node**; the
    engine choice is made for Node, with Bun numbers kept only as reference. Specifics, each justified
    by the benchmark:
    - **Engine + threading:** shard the file list across **`node:worker_threads` (about 8 workers,
@@ -64,7 +64,7 @@ change; the code edits await go-ahead.
      worker_threads machinery is judged not worth it, but it does not scale with file count the way
      worker_threads does (2,000 files: 787 ms sequential versus 253 ms with 8 workers). Over-
      subscribing to all 16 logical threads is slightly slower than 8 for CPU-bound zstd. Bun's async
-     parallel path is faster still (72 ms) but Bun is being removed, so it is not the target.
+     parallel path is faster still (72 ms) but Bun is no longer the target runtime.
    - **Level:** fixed **level 19**. `node:zlib` has no equivalent of `--adapt`, so a fixed level is
      required, and a fixed level also makes the build's output reproducible (`--adapt` is not; see
      caveats). Level 19 is the best practical ratio; under the chosen Node worker_threads engine its
@@ -91,7 +91,7 @@ benchmark exists to justify.
 ## Head-to-head: the current task versus the proposal
 
 The single most decision-relevant measurement, framed for the **Node** target (the workspace is
-migrating off Bun). Real `dist/` text assets (138 files, 1,257,418 bytes raw), full wall time
+after the Bun-to-Node migration. Real `dist/` text assets (138 files, 1,257,418 bytes raw), full wall time
 including process startup and file writes, output dir cleared before each run. Times are mean +/-
 stddev. The key comparison is at *matched* compression (level 19), since the current `--adapt`
 command's speed comes entirely from it choosing a weak level.
@@ -123,7 +123,7 @@ Reading this table:
 - worker_threads (8 workers) beats Node sequential (243 ms / 257 ms) by ~1.5x here and by ~3x on
   larger file counts (see the Node parallelism section), and beats Node's async parallel path (~1 s)
   by ~6x.
-- Bun's async parallel path (74 ms) is the fastest of all, but Bun is being removed and so is not the
+- Bun's async parallel path (74 ms) is the fastest of all, but Bun is no longer the
   target; it is listed only to anchor the Node numbers.
 
 ## Environment
@@ -190,7 +190,7 @@ deliberately because they behave very differently.
 - **node:zlib worker_threads** (shard files across `n` `node:worker_threads`, each running
   synchronous `zstdCompressSync`): real OS-thread, cross-file parallelism that bypasses the async
   zlib path entirely. This is the chosen Node engine. It was added to the matrix as a follow-up once
-  the constraint that the build must run under Node (Bun is being removed) made the async path's
+  the constraint that the build must run under Node made the async path's
   pathology disqualifying.
 - **node:zlib in-frame multithreading** (`ZSTD_c_nbWorkers`): the direct analogue of the CLI's
   `-T<n>`, splitting a single file.
@@ -327,7 +327,7 @@ Mean wall time in milliseconds, real dataset, output cleared before each run. Th
 predates the Bun-removal constraint, so it sweeps `bun-par` and `node-par` (async); the chosen Node
 worker_threads engine is benchmarked separately in the Node parallelism section. `cli-rec-T0` is the
 current style, `node-par` (async) is shown to be pathological, and `node-seq` is the Node sequential
-baseline that worker_threads improves on. Bun numbers are reference only (Bun is being removed).
+baseline that worker_threads improves on. Bun numbers are reference only.
 
 tmpfs backend:
 
@@ -513,7 +513,7 @@ any compression is attempted.
 
 ## Node parallelism: worker_threads is the best optimized implementation
 
-Because the workspace is migrating off Bun, the parallel engine must work well under Node, and Node's
+Because the workspace has migrated off Bun, the parallel engine must work well under Node, and Node's
 async `zstdCompress` does not (see the pathology section). The fast Node path is to shard files
 across `node:worker_threads`, each worker running synchronous `zstdCompressSync`. This avoids Node's
 async zlib per-call overhead entirely and uses real OS threads. The worker_threads compressor was
@@ -581,9 +581,9 @@ cause was not isolated. Reporting the observation, not a mechanism:
 A plausible-sounding memory-pressure story was considered and rejected because the concurrency-1
 data contradicts it. The honest characterization is that Node's async zstd dispatch carries a large
 per-call overhead here that compounds at high levels, but the benchmark did not instrument the
-runtime to prove the mechanism. It does not affect the decision: the build runs under Bun, where the
-parallel path is the fastest engine measured. It is documented so a future reader does not
-"optimize" the build by switching it to Node parallel.
+runtime to prove the mechanism. It does not affect the decision: the build runs under Node, where the
+synchronous worker path avoids the async overhead measured here. It is documented so a future reader does not
+"optimize" the build by switching it to Node async parallel.
 
 ## Caveats and threats to validity
 

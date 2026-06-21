@@ -99,10 +99,10 @@ fonttools.
 ### Prerequisites
 
 Install [Mise](https://mise.jdx.dev/) (task runner and tool version manager).
-All other tools (Bun,
- Node,
+All other tools (Node,
+ pnpm,
  dprint,
- etc.) are installed automatically by Mise.
+ and Bun for explicit Bun-only packages) are installed automatically by Mise.
 
 ### Clone and bootstrap
 
@@ -215,8 +215,9 @@ packages/
 - **Task runner**:
    [Mise](https://mise.jdx.dev/) with Node (`shell = "node -e"`) for cross-platform task logic
 - **Runtime**:
-   [Bun](https://bun.sh/) (migrating away from Bun-specific APIs toward Node.
-  js standards)
+   [Node.js](https://nodejs.org/) for TypeScript task and CLI execution.
+   Bun stays installed only for explicit Bun islands,
+  such as the hall-monitor standalone compile task and runtime-error fixtures.
 - **Package manager**:
    [pnpm](https://pnpm.io/) workspaces with catalog dependency management and isolated node_modules
 - **Bundler**:
@@ -230,7 +231,7 @@ packages/
 - **Formatter**:
    dprint (orchestrates all formatters including oxlint auto-fix)
 - **Testing**:
-   Bun test runner for unit tests,
+   `@monochromatic-dev/module-test` unit files executed through Node-based `mise run` tasks,
    Playwright in Podman for browser and e2e tests
 - **HTTP framework**:
    [h3](https://h3.dev/) for server applications

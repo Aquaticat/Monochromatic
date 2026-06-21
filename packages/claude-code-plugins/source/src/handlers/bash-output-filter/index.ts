@@ -50,7 +50,7 @@ type BashOutputFilterOutput = PreToolUseOutput;
  * 3. **Denylist**: commands matching any skip pattern (binary tools, redirects,
  *    background processes, command substitutions, shell builtins) return `{}`.
  * 4. **Rewrite**: the surviving command becomes:
- *    `set -o pipefail && <cmd> 2>&1 | bun <filterPath> && true`.
+ *    `set -o pipefail && <cmd> 2>&1 | node <filterPath> && true`.
  *    The trailing `&& true` absorbs the sandbox's `< /dev/null` append (see
  *    `bash-output-filter/TROUBLESHOOTING.md`) and lets pipefail surface the
  *    original command's exit code while keeping the filter's exit code (always 0)
@@ -94,7 +94,7 @@ function bashOutputFilterHandler(event: ReadonlyDeep<PreToolUseInput>,): BashOut
    * Rewritten command pipeline that streams the original command's merged output through the filter.
    */
   const wrappedCommand =
-    `set -o pipefail && ${bashInput.command} 2>&1 | bun ${filterPath} && true`;
+    `set -o pipefail && ${bashInput.command} 2>&1 | node ${filterPath} && true`;
 
   return {
     hookSpecificOutput: {

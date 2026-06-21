@@ -79,7 +79,7 @@ async function runBin(
   env: Readonly<Record<string, string>>,
 ): Promise<{ stdout: string; stderr: string; exitCode: number; }> {
   try {
-    const result = await spawn('bun', [BIN, path, '--color=never',], { cwd: REPO_ROOT, env: { ...process.env, ...env, }, });
+    const result = await spawn('node', [BIN, path, '--color=never',], { cwd: REPO_ROOT, env: { ...process.env, ...env, }, });
     return { exitCode: 0, stderr: result.stderr, stdout: result.stdout, };
   } catch (error: unknown) {
     const spawnError = error as SubprocessError;

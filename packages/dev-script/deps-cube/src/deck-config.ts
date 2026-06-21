@@ -1,7 +1,7 @@
 /**
  * Top-level deck.gl scene configuration.
  *
- * Bundled into the output HTML's runtime via Bun's bundler. Holds the
+ * Bundled into the output HTML's runtime via rolldown. Holds the
  * `OrbitView` instance, the data-driven scene bounds computation, and
  * the main {@link buildLayers} entry point that delegates to
  * {@link ./deck-layers.ts} factory functions. Per-probe accessors live

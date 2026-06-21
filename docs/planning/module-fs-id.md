@@ -235,7 +235,7 @@ following `packages/module/or-throw`.
 The package opts into the global `test:unit` task template (`[tasks."test:unit"]` with
 `extends = "test:unit"`), which runs every `*.unit.test.ts` in parallel via node.
 Do not add a `self.unit.test.ts` aggregator (the single-file self-test pattern in fs-path is an
-anti-pattern), and do not run `bun test` or `bun <file>`: the repo is migrating off bun and the
+anti-pattern), and do not run `bun test` or `bun <file>`: the repo has migrated off Bun and the
 template already runs the suite on node.
 
 Coverage must enumerate every branch (TCV), not just the happy path:

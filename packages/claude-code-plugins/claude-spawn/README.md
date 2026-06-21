@@ -7,7 +7,7 @@ with automatic result forwarding via hooks.
 
 - [terminal-exec](../../cli/terminal-exec/) must be installed and on `PATH`
   (resolves the preferred terminal emulator on Linux/Windows)
-- [Bun](https://bun.sh/) runtime (hooks run via `bun`; CLI uses `node:child_process` and is runtime-neutral)
+- [Node.js](https://nodejs.org/) runtime (hooks and CLI use Node APIs)
 
 ## Installing
 

@@ -32,8 +32,8 @@ Constraints driving the library choice:
   own argument; the workspace's stated threshold is 95% TS by GitHub
   Linguist bytes.
 - Single bundled output, no external `<link>` or `<script src>` references.
-- Bun runtime for the build step; `Bun.build({ format: 'iife', minify: true,
-  target: 'browser' })` resolves and bundles transitively.
+- Node runtime for the build step; rolldown with `format: 'iife'` and
+  `minify: true` resolves and bundles transitively.
 
 ## Decision
 

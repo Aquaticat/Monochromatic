@@ -29,7 +29,7 @@ not the problem; the recursion-instead-of-loop reflex is.
 ### Runtime target
 
 The complexity figures above are the V8 (Node) figures, and the workspace
-is migrating its primary runtime to V8. This matters because Bun's
+has moved its primary runtime to V8. This matters because Bun's
 JavaScriptCore masks part of the defect today: JSC does proper tail-call
 elimination, so the tail-positioned cursor recursions do not overflow
 under Bun, and JSC uses rope strings, so `acc + c` concatenation measures

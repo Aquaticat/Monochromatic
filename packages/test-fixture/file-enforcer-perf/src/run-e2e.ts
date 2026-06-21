@@ -37,7 +37,7 @@ const CLI = resolve(
   'cli.ts',
 );
 /** Command string that runs the perf config through the CLI */
-const RUN_CONFIG = `bun ${CLI} ${CONFIG}`;
+const RUN_CONFIG = `node ${CLI} ${CONFIG}`;
 
 /** Fixture root and subdirectories, respects $TMPDIR for sandbox compatibility */
 const FIXTURE_DIR = join(tmpdir(), 'file-enforcer-perf',);
@@ -87,7 +87,7 @@ await runHyperfine('Cold run (all files written)', [
 console.log('\n[e2e] populating dest for warm runs...',);
 await rm(DEST_DIR, { recursive: true, force: true, },);
 await mkdir(DEST_DIR, { recursive: true, },);
-await spawn('bun', [CLI, CONFIG,],);
+await spawn('node', [CLI, CONFIG,],);
 
 await runHyperfine('Warm run (all unchanged)', [
   '--warmup',

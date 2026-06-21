@@ -244,7 +244,7 @@ import {
 
 const handle = await startWatchRestart({
   paths: ['src/server',],
-  command: 'bun',
+  command: 'node',
   args: ['src/server/index.ts',],
   extensions: ['.ts',],
   contentChanged: true,

@@ -36,12 +36,12 @@ traps. Read it fully before editing, then read Phase 0, then start.
 ### How to build, test, and lint (the commands are not obvious)
 
 - This package has no `test:unit` mise task yet (Phase 1 adds it). Until then run
-  a single test file directly with `bun <file>`, or run the whole package suite
+  a single test file directly with `node <file>`, or run the whole package suite
   through the repo root task with explicit file paths:
   `mise run //:test:unit packages/module/logger/src/<file>.unit.test.ts`. Passing
   a bare directory to that task fails; it wants file paths.
 - Never run `bun test`. It misreports under the `@monochromatic-dev/module-test`
-  harness (the `CM4` rule). Use `bun <file>` or the mise task.
+  harness (the `CM4` rule). Use `node <file>` or the mise task.
 - Type-check with `mise run //packages/module/logger:lint:types` after every
   TypeScript edit (there is no automatic type-check).
 - Lint with `mise run //packages/module/logger:lint:oxlint`. Zero warnings is the

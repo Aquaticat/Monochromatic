@@ -25,7 +25,7 @@ const BIN_PATH = 'packages/mcp/mvm/dist/final/node/index.mjs';
  */
 async function runWithClosedStdin(): Promise<number> {
   try {
-    await spawn('bun', [BIN_PATH,], { cwd: REPO_ROOT, stdin: 'ignore', },);
+    await spawn('node', [BIN_PATH,], { cwd: REPO_ROOT, stdin: 'ignore', },);
     return 0;
   }
   catch (error: unknown) {

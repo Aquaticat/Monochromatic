@@ -30,7 +30,7 @@ async function runBuildCss({ args, }: { args: readonly string[]; },): Promise<{
   exitCode: number;
 }> {
   try {
-    const result = await spawn('bun', [BIN_PATH, ...args,], { cwd: REPO_ROOT, },);
+    const result = await spawn('node', [BIN_PATH, ...args,], { cwd: REPO_ROOT, },);
     return {
       exitCode: 0,
       stderr: result.stderr,

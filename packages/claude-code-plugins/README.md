@@ -44,7 +44,7 @@ exported as three named functions:
 The per-plugin directory's `src/index.ts` is a four-line shim:
 
 ```ts
-#!/usr/bin/env bun
+#!/usr/bin/env node
 
 import {
   guardrailHandler,

@@ -226,7 +226,7 @@ function guardrailHandler(event: ReadonlyDeep<PreToolUseInput>,): GuardrailOutpu
             "so `bun test <file>` reports `0 pass / 0 fail` even when every test passed (the harness's `PASS`",
             "log lines are not measured by bun's test runner).",
             'Use `mise run //packages/<path>:test:unit` instead. When no such task exists, add one to the',
-            "target package's `mise.toml` first. For ad-hoc single-file runs use `bun <file>` directly",
+            "target package's `mise.toml` first. For ad-hoc single-file runs use `node <file>` directly",
             '(no `test` subcommand).',
           ]
             .join(' ',),

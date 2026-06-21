@@ -9,7 +9,7 @@ Tests file-enforcer under VPS-like resource constraints using podman containers 
 # Micro-benchmarks (fast, runs locally)
 mise run //packages/test-fixture/file-enforcer-perf:perf:micro
 
-# Grant CAP_PERFMON to bun once so perf:micro reports hardware counters
+# Grant CAP_PERFMON to node once so perf:micro reports hardware counters
 mise run //packages/test-fixture/file-enforcer-perf:perf:enable-counters
 
 # End-to-end benchmarks with hyperfine (requires hyperfine)
@@ -38,7 +38,7 @@ Writes ~68 destination files total.
 
 ### Micro-benchmarks (`perf.bench.test.ts`)
 
-11 standalone mitata benchmarks (declared with `bench()` from `mitata`, not the module-test harness; the file runs directly as `bun <path>`).
+11 standalone mitata benchmarks (declared with `bench()` from `mitata`, not the module-test harness; the file runs directly as `node <path>`).
 Detect gross regressions (10x+ slowdowns) but are inherently unreliable due to JIT optimization, GC pauses, and scheduler jitter.
 Use generous pass thresholds and consume results to prevent dead code elimination.
 
@@ -135,19 +135,19 @@ On Linux this needs perf access: the default `kernel.perf_event_paranoid=2` bloc
 mitata loads `@mitata/counters` itself and prints counters inline in its benchmark table.
 The workspace uses strict pnpm isolation (`hoist: false`, `nodeLinker: isolated`), so mitata cannot resolve the addon from its own location; a `packageExtensions` entry in `pnpm-workspace.yaml` declares the dependency for mitata so the runtime `import('@mitata/counters')` resolves.
 
-Grant `CAP_PERFMON` to the bun binary once, then run the micro benchmarks:
+Grant `CAP_PERFMON` to the node binary once, then run the micro benchmarks:
 
 ```bash
 mise run //packages/test-fixture/file-enforcer-perf:perf:enable-counters
 mise run //packages/test-fixture/file-enforcer-perf:perf:micro
 ```
 
-`perf:enable-counters` runs `setcap cap_perfmon+ep` on the bun binary (one sudo prompt).
+`perf:enable-counters` runs `setcap cap_perfmon+ep` on the node binary (one sudo prompt).
 Without the capability the benchmarks still run; mitata just omits the counter columns.
 Two caveats:
 
-- The capability is granted to the bun binary system-wide, so every bun process gains `CAP_PERFMON` until it is removed with `perf:disable-counters`.
-- A mise bun upgrade replaces the binary and drops the capability; re-run `perf:enable-counters` afterward.
+- The capability is granted to the node binary system-wide, so every node process gains `CAP_PERFMON` until it is removed with `perf:disable-counters`.
+- A mise node upgrade replaces the binary and drops the capability; re-run `perf:enable-counters` afterward.
 
 ### Constrained tier
 
@@ -199,4 +199,4 @@ The 2-55ms warm variance was caused by CFS period boundary stalls, not actual pe
 - `container-counters.ts`: best-effort `@mitata/counters` wiring (load, probe, per-region measure) for the constrained tier
 - `mitata-counters.d.ts`: ambient types for the untyped `@mitata/counters` addon
 - `run-constrained.ts`: orchestrates podman build, parallel container launch, and constrained benchmarks
-- `Containerfile`: Fedora 43 with bun and sysbench
+- `Containerfile`: Fedora 43 with Node and sysbench

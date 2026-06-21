@@ -20,7 +20,7 @@ import type { ParsedArgs, } from './cli-types.ts';
  *
  * @example
  * ```ts
- * const args = runParser(['-w', 'src', '--', 'bun',],);
+ * const args = runParser(['-w', 'src', '--', 'node',],);
  * ```
  */
 function runParser(argv: readonly string[],): ParsedArgs {
@@ -49,11 +49,11 @@ await describe({
         it({
           name: 'basic: -w <dir> -- <cmd> sets paths and command',
           fn: async function basicRoundTrip() {
-            const args = runParser(['-w', 'src', '--', 'bun',],);
+            const args = runParser(['-w', 'src', '--', 'node',],);
             const options = argsToOptions(args,);
 
             expect(options.paths,).toEqual(['src',],);
-            expect(options.command,).toBe('bun',);
+            expect(options.command,).toBe('node',);
             expect(options.args,).toBeUndefined();
           },
         },),
@@ -82,14 +82,14 @@ await describe({
               '-w',
               'src',
               '--',
-              'bun',
+              'node',
               'src/server.ts',
               '--port',
               '3000',
             ],);
             const options = argsToOptions(args,);
 
-            expect(options.command,).toBe('bun',);
+            expect(options.command,).toBe('node',);
             expect(options.args,).toEqual([
               'src/server.ts',
               '--port',

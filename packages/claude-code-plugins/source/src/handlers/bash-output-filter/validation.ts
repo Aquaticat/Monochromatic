@@ -186,7 +186,7 @@ function hasFileRedirect(cmd: string,): boolean {
  *
  * @example
  * ```ts
- * invokesFilterScript('bun ./filter.mjs'); // true
+ * invokesFilterScript('node ./filter.mjs'); // true
  * invokesFilterScript('bun ./other.ts');   // false
  * ```
  */

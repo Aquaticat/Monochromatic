@@ -179,7 +179,7 @@ Its primitives map directly to provisioner needs:
 
 Writing the provisioner as a file-enforcer config
 reuses existing infrastructure instead of inventing a new tool.
-The only runtime dependency is bun + file-enforcer,
+The only runtime dependency is Node + file-enforcer,
 both available after `mise install`.
 
 ## Why ZFS native encryption for FDE

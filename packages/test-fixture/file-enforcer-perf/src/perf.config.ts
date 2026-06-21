@@ -4,7 +4,7 @@
  * overwriteEach, dedup, getJsonProperty, and deep glob traversal.
  *
  * Writes ~68 destination files from ~240 source files.
- * Run via `bun perf.config.ts` after setup-fixture.ts creates the fixture.
+ * Run via `node perf.config.ts` after setup-fixture.ts creates the fixture.
  */
 
 import { tmpdir, } from 'node:os';
