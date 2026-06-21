@@ -88,9 +88,12 @@ each, the metric is the final played true peak: an attenuated track ends at `FUL
 +2 dB margin plus the 1 dB ceiling headroom), a track the windows read at or below the ceiling plays at
 unity so it ends at `FULL`. Result: 2 tracks (0.06 percent) end above 0 dBFS, both by at most +0.6 dBTP
 (Imagine Dragons - My Life at +0.6, an Emiya piano cover at +0.2); 29 (0.80 percent) land between the
--1 dBTP ceiling and 0 dBFS; 3573 sit safely at or under the ceiling. The two over-0 tracks are dynamic
-masters whose lone transient falls between windows, so they play at essentially their own source
-inter-sample peak, the accepted case, not windowing introducing new clipping. No tuning is warranted: a
+-1 dBTP ceiling and 0 dBFS; 3573 sit safely at or under the ceiling. Both over-0 tracks are dynamic
+masters whose lone loud transient falls between windows. The Emiya piano cover reads quiet enough to
+play at unity, so it ends at its own +0.2 dBTP source peak (the accepted "plays at original level"
+case); Imagine Dragons - My Life IS attenuated but, under-read by the windows, lands at +0.6 dBTP
+instead of the -1 dBTP target (still below its own louder source peak, just short of the ceiling).
+Neither is a clip the windowing introduced beyond a sub-1dB overshoot. No tuning is warranted: a
 larger `WINDOW_SAFETY_FACTOR` would over-attenuate all 3573 hot tracks (the whole library quieter) to
 claw back under 1 dB on 2 dynamic tracks. The brickwalled hot majority never misses (at ceiling
 throughout every window). If stricter behavior is ever wanted, raising `WINDOW_COUNT` to 6 catches more
@@ -113,12 +116,15 @@ isolated transients at a modest scan-time cost, still far under the 20-minute go
    final), cancellation stopping the workers while the final flush still runs (`NonCancellable`), and
    serial single-worker ordering. `test:unit`, `lint:detekt`, and Android `lint` all pass. The
    coordinator also adds a guaranteed final flush on cooperative cancellation (timeout/stop), tightening
-   kill-resilience beyond the periodic batch flush. Not run on device because the only instrumented mise
-   task (`connectedDebugAndroidTest`) uninstalls/reinstalls, which would wipe the SAF grant and the warm
-   3959-entry cache; the real parallel sweep was already device-verified pre-refactor (the 6.7-min run),
-   and the refactor preserves that behavior. The existing `PeakSweepWorkerTest`/`RustEngineTest`/
-   `NativeBridgeTest` remain runnable on device via `am instrument` (not `connectedAndroidTest`) when a
-   non-destructive device pass is wanted.
+   kill-resilience beyond the periodic batch flush. The unified Worker was also verified ON DEVICE
+   non-destructively: a new `test:instrumented:device` mise task installs both APKs with
+   `adb install -r` (keeps the SAF grant and the warm 3959-entry cache, confirmed unchanged at 149535
+   bytes before and after) and drives one class via `am instrument` instead of
+   `connectedDebugAndroidTest` (which would uninstall/reinstall and wipe both). `PeakSweepWorkerTest`
+   passed on device (OK, 2 tests), exercising `LibrarySource.load` to the coordinator to
+   `measureAndCache` to the tally on real CoroutineWorker semantics the faked JVM test cannot reach. The
+   task defaults to that silent test; pass a `class` arg for another, but `RustEngineTest` plays audio
+   and `am instrument` exits 0 even on failure (read its output).
 4. Rust windowing coverage. The native crate has no host `cargo test` (it is `crate-type = ["cdylib"]`
    only and pulls `ndk` with the `audio` feature, which `#[link]`s Android-only libaaudio, so it cannot
    link off-Android). `measure_windowed_peak`'s accuracy is covered by the full-library ffmpeg miss
