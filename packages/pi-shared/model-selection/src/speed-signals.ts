@@ -24,6 +24,11 @@ const FAST_SCORE = 90;
 const FLASH_SCORE = 80;
 
 /**
+ * Score for models whose name says spark.
+ */
+const SPARK_SCORE = FLASH_SCORE;
+
+/**
  * Score for models whose name says turbo.
  */
 const TURBO_SCORE = 70;
@@ -168,6 +173,8 @@ function speedSignalScore(
     return FAST_SCORE;
   if (signal === 'flash')
     return FLASH_SCORE;
+  if (signal === 'spark')
+    return SPARK_SCORE;
   if (signal === 'turbo')
     return TURBO_SCORE;
   if (signal === 'nano')

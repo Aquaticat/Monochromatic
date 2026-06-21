@@ -21,6 +21,9 @@ import { fixtureModel, } from './test-fixtures.ts';
 /** Score expected for models whose id says highspeed. */
 const HIGH_SPEED_SCORE = 100;
 
+/** Score expected for models whose id says spark. */
+const SPARK_SCORE = 80;
+
 /** Score expected for models whose id says mini. */
 const MINI_SCORE = 50;
 
@@ -46,6 +49,13 @@ await describe({
               id: 'kimi-k2.7-code-highspeed',
             },);
             /**
+             * Model whose id carries a speed-metaphor signal.
+             */
+            const sparkModel = fixtureModel({
+              provider: 'google',
+              id: 'gemini-3-spark',
+            },);
+            /**
              * Model whose id carries a size-as-speed signal.
              */
             const miniModel = fixtureModel({
@@ -60,6 +70,7 @@ await describe({
               id: 'gpt-4o',
             },);
             expect(scoreModelSpeed(highSpeedModel,),).toBe(HIGH_SPEED_SCORE,);
+            expect(scoreModelSpeed(sparkModel,),).toBe(SPARK_SCORE,);
             expect(scoreModelSpeed(miniModel,),).toBe(MINI_SCORE,);
             expect(scoreModelSpeed(baseModel,),).toBe(NO_SPEED_SCORE,);
           },
@@ -78,6 +89,7 @@ await describe({
             const models = [
               fixtureModel({ provider: 'openai', id: 'gpt-3.5-turbo', inputCost: 1, },),
               fixtureModel({ provider: 'openai', id: 'gpt-4o-mini', inputCost: 1, },),
+              fixtureModel({ provider: 'openai', id: 'gpt-4o-spark', inputCost: 8, },),
               fixtureModel({ provider: 'openai', id: 'gpt-4o-highspeed', inputCost: 9, },),
             ];
             const result = findFastestInMajorVersions({
@@ -89,6 +101,7 @@ await describe({
             },),)
               .toEqual([
                 'gpt-4o-highspeed',
+                'gpt-4o-spark',
                 'gpt-4o-mini',
               ],);
           },
