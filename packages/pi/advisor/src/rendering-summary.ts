@@ -220,16 +220,13 @@ function firstNonHeadingMarkerIndex(
   line: string,
 ): number {
   /**
-   * Index of first character that is not a heading marker.
+   * Cursor pointing at first non-heading-marker character.
    */
-  const firstNonMarkerIndex = Array
-    .from(line,)
-    .findIndex(function findNonMarker(character,) {
-      return character !== MARKDOWN_HEADING_MARKER;
-    },);
-  return firstNonMarkerIndex === (-1)
-    ? line.length
-    : firstNonMarkerIndex;
+  let cursor = 0;
+  while (line.at(cursor,) === MARKDOWN_HEADING_MARKER) {
+    cursor += 1;
+  }
+  return cursor;
 }
 
 /**
