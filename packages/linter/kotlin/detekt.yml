@@ -2,6 +2,12 @@
 # stays active, and this file adds the repo custom require-kdoc rule set.
 # File-level exclusions (build output, .kts scripts, test sources) are passed as
 # global --excludes by the runner, which stops detekt parsing them at all.
+complexity:
+  # The repo does not use detekt's max-functions-per-file/class/object budgets;
+  # TypeScript and Rust size budgets are handled by dedicated repo linters.
+  TooManyFunctions:
+    active: false
+
 require-kdoc:
   active: true
   # detekt 2 fails the run on error-severity findings, replacing build.maxIssues.
