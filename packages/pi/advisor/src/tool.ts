@@ -172,10 +172,14 @@ export async function runAdvisor(
    */
   const startedAt = Date.now();
   /**
+   * Pi extension context for this Advisor run.
+   */
+  const { ctx, } = options;
+  /**
    * Effective scoped model set.
    */
   const scope = resolveEffectiveScope({
-    ctx: options.ctx,
+    ctx,
     errorPrefix: 'advisor',
   },);
   if (scope.entries
@@ -193,19 +197,18 @@ export async function runAdvisor(
   /**
    * Current primary model to avoid for default Advisor selection when possible.
    */
-  const currentMainModel = options.ctx.model;
+  const { model: currentMainModel, } = ctx;
   /**
    * Selected Advisor model and model-budgeted serialized context.
    */
   const selectionContext = selectAdvisorRunContext({
-    branch: options
-      .ctx
+    branch: ctx
       .sessionManager
       .getBranch(),
     config: options.config,
     advisorSystemPrompt,
     scope,
-    modelRegistry: options.ctx
+    modelRegistry: ctx
       .modelRegistry,
     ...(currentMainModel
       === undefined
@@ -230,7 +233,7 @@ export async function runAdvisor(
    * Provider response from selected secondary model.
    */
   const response = await completeAdvisor({
-    ctx: options.ctx,
+    ctx,
     model: selection.selected
       .model,
     config: options.config,

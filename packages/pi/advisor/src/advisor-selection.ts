@@ -140,14 +140,25 @@ export function scopeAvoidingCurrentMainModel(
     },);
 
   /**
+   * Count of non-current default candidates.
+   */
+  const alternativeEntryCount = alternativeEntries.length;
+  /**
    * Whether no non-current default candidate exists.
    */
-  const noAlternativeEntries = alternativeEntries.length === 0;
+  const noAlternativeEntries = alternativeEntryCount === 0;
+  /**
+   * Original scoped entries before default-candidate filtering.
+   */
+  const { entries: scopedEntries, } = scope;
+  /**
+   * Count of original scoped entries.
+   */
+  const scopedEntryCount = scopedEntries.length;
   /**
    * Whether active primary model was absent from scope.
    */
-  const currentMainModelAbsentFromScope = alternativeEntries.length
-    === scope.entries.length;
+  const currentMainModelAbsentFromScope = alternativeEntryCount === scopedEntryCount;
   if (noAlternativeEntries || currentMainModelAbsentFromScope)
     return scope;
 
