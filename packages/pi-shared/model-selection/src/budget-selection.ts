@@ -174,7 +174,7 @@ export function findFastestCandidate<TModel extends ModelPricing,>(
  * findCheapestCandidate({ allModels, majorVersions: 1, hasConfiguredAuth });
  * ```
  */
-export const findCheapestCandidate = findFastestCandidate;
+export const findCheapestCandidate: typeof findFastestCandidate = findFastestCandidate;
 
 //endregion Public API
 
