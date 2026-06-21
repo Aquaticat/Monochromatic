@@ -90,15 +90,21 @@ sample. The brickwalled hot majority never misses (at ceiling throughout every w
 
 ## Next steps
 
-1. Done: lint fixes committed (0ba1fe3e4); windowed `measure_windowed_peak` implemented and
-   accuracy-validated; native rebuilt and installed.
-2. Confirm throughput: benchmark the windowed `nativeMeasureTruePeak` on a cooled device (fork APK,
-   `engine=truepeak`) and time a clean full sweep to completion. Target under 20 min. Tune
-   `WINDOW_COUNT`/`WINDOW_SECS` if needed (fewer/shorter windows = faster, slightly less reliable).
-3. Commit the Rust windowing change once the throughput target is confirmed.
-4. Optional further win: candidate-only oversampling (skip the three Catmull-Rom interpolations when
+1. Done: windowing implemented, accuracy-validated (43-track windowed-vs-full miss-rate, one
+   non-clipping miss), committed (9eea1b840); clean full sweep timed at 6.7 min, under the 20-min
+   goal; `lint:rust` task added and passing (65c54476e); accuracy claim corrected (f504aee6c).
+2. Optional further win: candidate-only oversampling (skip the three Catmull-Rom interpolations when
    `1.3 * window_max <= running_peak`, the exact L1-bound), now that windowing already cut decode.
-5. Write tests for the new paths and re-run the full sweep end to end.
+   Not needed for the goal (already met); a cooler-running bonus.
+3. Tests (the open PKG-completeness gap). The native crate currently has ZERO tests and is not
+   host-testable: it is `crate-type = ["cdylib"]` only (no rlib for a test harness) and pulls `ndk`
+   with the `audio` feature, which `#[link]`s the Android-only libaaudio, so `cargo test` on the host
+   cannot link. Testing `measure_windowed_peak` therefore needs either (a) extracting the meter/Source
+   logic into a host-testable sibling crate with a synthetic `Source` fixture, or (b) a cargo-ndk
+   on-device test target; the Kotlin `PeakSweepService` needs an instrumentation test (device or
+   emulator). Both new paths are already verified at the user boundary (on-device full sweep; ffmpeg
+   miss-rate), so this is automated-coverage debt, not unverified behavior. Sequence it with the
+   planned UX rework, which may reshape `PeakSweepService`.
 
 ## Gotchas
 
