@@ -126,7 +126,7 @@ await describe({
         const result = analyzeBashCommand(
           'GEMINI_API_KEY=value node /tmp/agent/gemcheck.ts',
         );
-        expect(result.commands[0]?.name,).toBe('bun',);
+        expect(result.commands[0]?.name,).toBe('node',);
         expect(result.commands[0]?.envAssignments,).toEqual([
           {
             name: 'GEMINI_API_KEY',
