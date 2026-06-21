@@ -104,15 +104,28 @@ isolated transients at a modest scan-time cost, still far under the 20-minute go
 2. Optional further win: candidate-only oversampling (skip the three Catmull-Rom interpolations when
    `1.3 * window_max <= running_peak`, the exact L1-bound), now that windowing already cut decode.
    Not needed for the goal (already met); a cooler-running bonus.
-3. Tests (the open PKG-completeness gap). The native crate currently has ZERO tests and is not
-   host-testable: it is `crate-type = ["cdylib"]` only (no rlib for a test harness) and pulls `ndk`
-   with the `audio` feature, which `#[link]`s the Android-only libaaudio, so `cargo test` on the host
-   cannot link. Testing `measure_windowed_peak` therefore needs either (a) extracting the meter/Source
-   logic into a host-testable sibling crate with a synthetic `Source` fixture, or (b) a cargo-ndk
-   on-device test target; the Kotlin `PeakSweepService` needs an instrumentation test (device or
-   emulator). Both new paths are already verified at the user boundary (on-device full sweep; ffmpeg
-   miss-rate), so this is automated-coverage debt, not unverified behavior. Sequence it with the
-   planned UX rework, which may reshape `PeakSweepService`.
+3. Done (Kotlin sweep concurrency): the parallel loop is extracted into one tested coordinator,
+   `sweepTracksInParallel` in `PeakSweepCoordinator.kt`, and BOTH consumers now delegate to it:
+   `PeakSweepService` (foreground, `workers = 4`) and `PeakSweepWorker` (background upkeep,
+   `workers = 1`, serial). It is covered by a fast JVM unit test, `PeakSweepCoordinatorTest` (in
+   `app/src/test`, no device): exactly-once cursor coverage under 8 parallel workers, the `maxTracks`
+   bound, per-outcome tallies, deterministic flush cadence (every `flushBatch` measured plus one
+   final), cancellation stopping the workers while the final flush still runs (`NonCancellable`), and
+   serial single-worker ordering. `test:unit`, `lint:detekt`, and Android `lint` all pass. The
+   coordinator also adds a guaranteed final flush on cooperative cancellation (timeout/stop), tightening
+   kill-resilience beyond the periodic batch flush. Not run on device because the only instrumented mise
+   task (`connectedDebugAndroidTest`) uninstalls/reinstalls, which would wipe the SAF grant and the warm
+   3959-entry cache; the real parallel sweep was already device-verified pre-refactor (the 6.7-min run),
+   and the refactor preserves that behavior. The existing `PeakSweepWorkerTest`/`RustEngineTest`/
+   `NativeBridgeTest` remain runnable on device via `am instrument` (not `connectedAndroidTest`) when a
+   non-destructive device pass is wanted.
+4. Rust windowing coverage. The native crate has no host `cargo test` (it is `crate-type = ["cdylib"]`
+   only and pulls `ndk` with the `audio` feature, which `#[link]`s Android-only libaaudio, so it cannot
+   link off-Android). `measure_windowed_peak`'s accuracy is covered by the full-library ffmpeg miss
+   check above; the shared Catmull-Rom meter math is host-tested on the desktop twin
+   (`desktop-app/src/truepeak_tests.rs`). A dedicated unit test would need either extracting the
+   meter/Source logic into a host-testable sibling crate or a cargo-ndk on-device target; deferred as
+   coverage debt, not unverified behavior.
 
 ## Gotchas
 
