@@ -38,21 +38,29 @@ The rejection rests on concrete findings, not vibes:
   (`no version of js-yaml matches range workspace:@monochromatic-dev/stub-throwing@*`).
   That means it cannot add a dependency, bump a version, or regenerate the lockfile here.
   That is day-to-day package management, not an edge case.
-- Immaturity. aube's first release was 2026-04-18, and it only moved to jdx's namespace on 2026-06-09.
-  It is roughly two months old. The `1.22.0` version string is `release-plz` auto-versioning, not a maturity signal.
-  Releases from the same week are titled "pnpm-lockfile parity sweep"; pnpm compatibility is still being built.
+- Immaturity, and a version number that oversells it.
+  aube's first public beta was 2026-04-18, and it only moved to jdx's namespace on 2026-06-09.
+  It is roughly two months old. The 1.x line is not a tooling artifact:
+  aube cut `v1.0.0` titled "First stable release" on 2026-04-23, five days after `v1.0.0-beta.1`,
+  and reached 1.22.0 by 2026-06-17. A 1.x version conventionally signals a committed, stable public API;
+  the reality is a tool still shipping weekly "pnpm-lockfile parity sweep" releases two months in,
+  one of which we tripped over. The version signals more maturity than exists.
 - It fails our test bar, and does not even measure it our way.
   Production Rust is around 72k lines against around 40k lines of Rust test code (roughly 1.8 to 1 the wrong way),
   plus 1491 BATS integration tests (around 30.6k lines of shell) for a closer-to-even effort ratio.
   Our standard is test code at least double production code (a 1 to 2 ratio or better); aube is nowhere near it.
   aube tracks parity-completeness against pnpm, not a coverage ratio or percentage,
   so it will never report a number we can gate on.
-- Breadth we would carry but never use.
+- Breadth we would carry but never use, and it will not go away.
   aube reimplements four lockfile formats (pnpm, npm, yarn, bun).
   For a pnpm-only repo, the npm, yarn, and bun support is dead surface:
   code we would inherit, that widens the audit and attack surface of a tool that runs lifecycle scripts,
   and that is already a demonstrated bug source (scoped-package misresolution on bun.lock import).
-  Breadth is a migration on-ramp for aube's adoption goals, not an engineering virtue for us.
+  This surface is permanent, not transitional: multi-format is the `aube-lockfile` crate's stated identity,
+  the four parsers are compiled in unconditionally with no feature flag to drop them,
+  and "reads any existing lockfile" is aube's core adoption pitch.
+  Breadth is a migration on-ramp for aube's adoption goals, not an engineering virtue for us,
+  and we should not expect it to shrink.
 - Reduced bug visibility. aube's GitHub issues are disabled by deliberate jdx policy;
   feedback funnels through a single rolling discussion, with only triaged items promoted to the tracker.
   This is a defensible maintainer-bandwidth choice, but it means we cannot browse an open-bug list
