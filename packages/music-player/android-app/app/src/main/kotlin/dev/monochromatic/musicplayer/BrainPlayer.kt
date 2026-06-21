@@ -918,7 +918,8 @@ class BrainPlayer(
          * its source and use.
          */
         val targetSec: Double = if (hasPosition) positionMs / MILLIS_PER_SEC else 0.0
-        // What:     `val staysOnCurrent: Boolean = mediaItemIndex == C.INDEX_UNSET || mediaItemIndex == controller.currentScopeIndex()`
+        // What:     `val staysOnCurrent: Boolean = mediaItemIndex == C.INDEX_UNSET || mediaItemIndex ==
+        //           controller.currentScopeIndex()`
         //           declares a read-only `Boolean`. The `||` is logical OR:
         //           true if the requested index is the "unset" sentinel (meaning
         //           "seek within whatever is current"), OR if it equals the
@@ -941,7 +942,8 @@ class BrainPlayer(
          * Defines stays on current value for this music-player component; the TypeScript-oriented notes above
          * explain its source and use.
          */
-        val staysOnCurrent: Boolean = mediaItemIndex == C.INDEX_UNSET || mediaItemIndex == controller.currentScopeIndex()
+        val staysOnCurrent: Boolean = mediaItemIndex == C.INDEX_UNSET ||
+            mediaItemIndex == controller.currentScopeIndex()
         // What:     `if (staysOnCurrent) { ... } else { ... }` is a plain `if/else`
         //           STATEMENT (used for control flow, not as a value) that
         //           branches between the in-place-seek path and the jump path.

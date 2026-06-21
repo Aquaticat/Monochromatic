@@ -245,7 +245,8 @@ object SessionStore {
          * explain its source and use.
          */
         val shuffleName: String? = prefs.getString(KEY_SHUFFLE, null)
-        // What:     `val shuffle: ShuffleMode = ShuffleMode.entries.firstOrNull { it.name == shuffleName } ?: ShuffleMode.OFF`
+        // What:     `val shuffle: ShuffleMode = ShuffleMode.entries.firstOrNull { it.name == shuffleName } ?:
+        //           ShuffleMode.OFF`
         //           resolves the stored name to a `ShuffleMode`.
         //           - `ShuffleMode.entries` is the enum's list of constants (Kotlin's
         //             `entries`, the modern replacement for `values()`).
@@ -376,7 +377,8 @@ object SessionStore {
         }
     }
 
-    // What:     `private fun prefs(context: Context): SharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)`
+    // What:     `private fun prefs(context: Context): SharedPreferences = context.getSharedPreferences(PREFS_NAME,
+    //           Context.MODE_PRIVATE)`
     //           declares a private helper returning the app-private preferences file,
     //           expression body.
     //           - `getSharedPreferences(name, mode)` opens (creating if absent) the

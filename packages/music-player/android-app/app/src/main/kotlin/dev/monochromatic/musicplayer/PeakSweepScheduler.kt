@@ -250,7 +250,8 @@ object PeakSweepScheduler {
         val constraints: Constraints = Constraints.Builder()
             .setRequiresCharging(true)
             .build()
-        // What:     `val request = PeriodicWorkRequestBuilder<PeakSweepWorker>(SWEEP_INTERVAL_MINUTES, TimeUnit.MINUTES).setConstraints(constraints).build()`.
+        // What:     `val request = PeriodicWorkRequestBuilder<PeakSweepWorker>(SWEEP_INTERVAL_MINUTES,
+        //           TimeUnit.MINUTES).setConstraints(constraints).build()`.
         //           `val request` is an immutable local; here the type is INFERRED (no `:
         //           Type`), Kotlin reads it off the builder's `.build()` return. The
         //           `<PeakSweepWorker>` is a GENERIC TYPE ARGUMENT in angle brackets: it tells
@@ -281,7 +282,8 @@ object PeakSweepScheduler {
         val request = PeriodicWorkRequestBuilder<PeakSweepWorker>(SWEEP_INTERVAL_MINUTES, TimeUnit.MINUTES)
             .setConstraints(constraints)
             .build()
-        // What:     `WorkManager.getInstance(context).enqueueUniquePeriodicWork(UNIQUE_WORK_NAME, ExistingPeriodicWorkPolicy.KEEP, request)`.
+        // What:     `WorkManager.getInstance(context).enqueueUniquePeriodicWork(UNIQUE_WORK_NAME,
+        //           ExistingPeriodicWorkPolicy.KEEP, request)`.
         //           `WorkManager.getInstance(context)` fetches the process-wide WorkManager
         //           singleton (it is NOT constructed; you always go through `getInstance`).
         //           `.enqueueUniquePeriodicWork(...)` then registers the job with three

@@ -643,7 +643,8 @@ class PlaybackService : MediaSessionService() {
      */
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession? = session
 
-    // What:     `override fun onBind(intent: Intent?): IBinder? = if (intent?.action == ACTION_LOCAL_BIND) localBinder else super.onBind(intent)`
+    // What:     `override fun onBind(intent: Intent?): IBinder? = if (intent?.action == ACTION_LOCAL_BIND) localBinder
+    //           else super.onBind(intent)`
     //           overrides the bind hook with an EXPRESSION body whose value is an
     //           `if/else` EXPRESSION. `intent` is a nullable `Intent?`; `intent?.action`
     //           SAFE-CALLs `.action` (null if `intent` is null); `== ACTION_LOCAL_BIND`
@@ -788,7 +789,8 @@ class PlaybackService : MediaSessionService() {
         // });
         // ```
         loadJob = scope.launch {
-            // What:     `val tracks = LibrarySource.load(this@PlaybackService) { batch -> withContext(Dispatchers.Main) { controller.reconcileLibrary(batch) } }`
+            // What:     `val tracks = LibrarySource.load(this@PlaybackService) { batch -> withContext(Dispatchers.Main)
+            //           { controller.reconcileLibrary(batch) } }`
             //           declares a read-only local `tracks` (type INFERRED as `List<Track>`) from
             //           the `suspend` `load`, NOW passing a STREAMING callback. The trailing lambda
             //           `{ batch -> ... }` is the `onBatch`: the scan calls it on its background

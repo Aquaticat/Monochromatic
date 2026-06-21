@@ -463,7 +463,8 @@ class RustEngine(context: Context) : AudioEngine {
         }
     }
 
-    // What:     `private val audioManager: AudioManager = appContext.getSystemService(Context.AUDIO_SERVICE) as AudioManager`
+    // What:     `private val audioManager: AudioManager = appContext.getSystemService(Context.AUDIO_SERVICE) as
+    //           AudioManager`
     //           declares a private read-only `AudioManager`. `getSystemService(Context.AUDIO_SERVICE)`
     //           returns a generic `Any?`/`Object`, so `as AudioManager` is an UNSAFE CAST narrowing it
     //           to `AudioManager` (it throws `ClassCastException` if the runtime type is wrong, which
@@ -491,7 +492,8 @@ class RustEngine(context: Context) : AudioEngine {
     // In TS you'd write (pseudocode):
     // ```ts
     // const focusRequest = new AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
-    //   .setAudioAttributes(new AudioAttributes.Builder().setUsage(USAGE_MEDIA).setContentType(CONTENT_TYPE_MUSIC).build())
+    //   .setAudioAttributes(new
+    //   AudioAttributes.Builder().setUsage(USAGE_MEDIA).setContentType(CONTENT_TYPE_MUSIC).build())
     //   .setOnAudioFocusChangeListener((change) => this.onFocusChange(change), this.poller)
     //   .setWillPauseWhenDucked(true)
     //   .build();
@@ -654,7 +656,8 @@ class RustEngine(context: Context) : AudioEngine {
         if (handle == 0L) {
             throw IllegalStateException("native engine worker could not be spawned")
         }
-        // What:     `ContextCompat.registerReceiver(appContext, noisyReceiver, IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY), ContextCompat.RECEIVER_NOT_EXPORTED)`
+        // What:     `ContextCompat.registerReceiver(appContext, noisyReceiver,
+        //           IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY), ContextCompat.RECEIVER_NOT_EXPORTED)`
         //           registers the receiver for the becoming-noisy action. `IntentFilter(...)` constructs
         //           a filter for that one action; `ContextCompat.RECEIVER_NOT_EXPORTED` flags the receiver
         //           as NOT visible to other apps.
@@ -973,7 +976,8 @@ class RustEngine(context: Context) : AudioEngine {
         PeakCacheStore.get(appContext, key)?.let { cachedPeak ->
             return normalizationGain(cachedPeak)
         }
-        // What:     `val peak: Float = try { ... } catch (cancellation: CancellationException) { ... } catch (failure: Exception) { ... }`
+        // What:     `val peak: Float = try { ... } catch (cancellation: CancellationException) { ... } catch (failure:
+        //           Exception) { ... }`
         //           declares a read-only `Float` from a TRY EXPRESSION (Kotlin's `try` yields a value): the
         //           `try` body's value on success, while the catches rethrow or early-return.
         // Why:      Measure the track now, but treat cancellation as cancellation (rethrow) and any other
@@ -1058,7 +1062,8 @@ class RustEngine(context: Context) : AudioEngine {
         return normalizationGain(peak)
     }
 
-    // What:     `private fun openDescriptor(uri: String): ParcelFileDescriptor? = try { ... } catch (failure: Exception) { ... }`
+    // What:     `private fun openDescriptor(uri: String): ParcelFileDescriptor? = try { ... } catch (failure:
+    //           Exception) { ... }`
     //           declares a private function returning a NULLABLE `ParcelFileDescriptor?` via an EXPRESSION
     //           BODY that is a TRY EXPRESSION (its value is the `try` block's value, or `null` from the catch).
     // Why:      Open a read-only descriptor for the track: a bare absolute path via
@@ -1373,7 +1378,8 @@ class RustEngine(context: Context) : AudioEngine {
         // this.audioManager.abandonAudioFocusRequest(focusRequest);
         // ```
         audioManager.abandonAudioFocusRequest(focusRequest)
-        // What:     `try { appContext.unregisterReceiver(noisyReceiver) } catch (alreadyUnregistered: IllegalArgumentException) { ... }`
+        // What:     `try { appContext.unregisterReceiver(noisyReceiver) } catch (alreadyUnregistered:
+        //           IllegalArgumentException) { ... }`
         //           unregisters the becoming-noisy receiver, catching the `IllegalArgumentException` Android
         //           throws when it was never registered (or already unregistered).
         // Why:      Stop listening for headphone-unplug; tolerate a double-release.
@@ -1419,7 +1425,8 @@ class RustEngine(context: Context) : AudioEngine {
         handle = 0L
     }
 
-    // What:     `private fun requestFocus(): Boolean = audioManager.requestAudioFocus(focusRequest) == AudioManager.AUDIOFOCUS_REQUEST_GRANTED`
+    // What:     `private fun requestFocus(): Boolean = audioManager.requestAudioFocus(focusRequest) ==
+    //           AudioManager.AUDIOFOCUS_REQUEST_GRANTED`
     //           declares a private function returning `Boolean` as an EXPRESSION BODY: it requests focus and
     //           compares the result against the "granted" constant with `==`.
     // Why:      Request media audio focus; returns `true` when focus was granted (so playback may start).
@@ -1476,7 +1483,9 @@ class RustEngine(context: Context) : AudioEngine {
             //
             // In TS you'd write (pseudocode):
             // ```ts
-            // case AudioManager.AUDIOFOCUS_LOSS: { this.resumeOnFocusGain = false; NativeBridge.nativeEnginePause(this.handle); this.audioManager.abandonAudioFocusRequest(focusRequest); break; }
+            // case AudioManager.AUDIOFOCUS_LOSS: { this.resumeOnFocusGain = false;
+            // NativeBridge.nativeEnginePause(this.handle); this.audioManager.abandonAudioFocusRequest(focusRequest);
+            // break; }
             // ```
             AudioManager.AUDIOFOCUS_LOSS -> {
                 // What:     `resumeOnFocusGain = false` clears the resume flag.
@@ -1504,7 +1513,8 @@ class RustEngine(context: Context) : AudioEngine {
                 // ```
                 audioManager.abandonAudioFocusRequest(focusRequest)
             }
-            // What:     `AudioManager.AUDIOFOCUS_LOSS_TRANSIENT, AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> { ... }`
+            // What:     `AudioManager.AUDIOFOCUS_LOSS_TRANSIENT, AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> {
+            //           ... }`
             //           is a MULTI-LABEL arm: it runs for EITHER a transient loss or a transient-can-duck loss
             //           (the comma means "or").
             // Why:      A brief interruption (a notification ping, a nav prompt): pause now and remember to
@@ -1513,7 +1523,8 @@ class RustEngine(context: Context) : AudioEngine {
             // In TS you'd write (pseudocode):
             // ```ts
             // case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
-            // case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK: { this.resumeOnFocusGain = NativeBridge.nativeEngineIsPlaying(this.handle); NativeBridge.nativeEnginePause(this.handle); break; }
+            // case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK: { this.resumeOnFocusGain =
+            // NativeBridge.nativeEngineIsPlaying(this.handle); NativeBridge.nativeEnginePause(this.handle); break; }
             // ```
             AudioManager.AUDIOFOCUS_LOSS_TRANSIENT, AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> {
                 // What:     `resumeOnFocusGain = NativeBridge.nativeEngineIsPlaying(handle)` records whether we
@@ -1539,7 +1550,8 @@ class RustEngine(context: Context) : AudioEngine {
             //
             // In TS you'd write (pseudocode):
             // ```ts
-            // case AudioManager.AUDIOFOCUS_GAIN: { if (this.resumeOnFocusGain) { this.resumeOnFocusGain = false; NativeBridge.nativeEnginePlay(this.handle); } break; }
+            // case AudioManager.AUDIOFOCUS_GAIN: { if (this.resumeOnFocusGain) { this.resumeOnFocusGain = false;
+            // NativeBridge.nativeEnginePlay(this.handle); } break; }
             // ```
             AudioManager.AUDIOFOCUS_GAIN -> {
                 // What:     `if (resumeOnFocusGain) { ... }` resumes only when the resume flag is set.

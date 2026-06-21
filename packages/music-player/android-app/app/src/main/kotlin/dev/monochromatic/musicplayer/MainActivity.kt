@@ -759,7 +759,8 @@ class MainActivity : ComponentActivity() {
      */
     private var pendingRoot: Uri? = null
 
-    // What:     `private val folderPicker = registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) { tree -> ... }`
+    // What:     `private val folderPicker = registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) {
+    //           tree -> ... }`
     //           declares a private read-only field by calling `registerForActivityResult`
     //           with a CONTRACT (`OpenDocumentTree()`) and a TRAILING LAMBDA callback
     //           `{ tree -> ... }` (its parameter `tree` is the picked `Uri?`). The call
@@ -1026,7 +1027,9 @@ class MainActivity : ComponentActivity() {
         // enableEdgeToEdge();
         // ```
         enableEdgeToEdge()
-        // What:     `bindService(Intent(this, PlaybackService::class.java).setAction(PlaybackService.ACTION_LOCAL_BIND), connection, Context.BIND_AUTO_CREATE)`
+        // What:     `bindService(Intent(this,
+        //           PlaybackService::class.java).setAction(PlaybackService.ACTION_LOCAL_BIND), connection,
+        //           Context.BIND_AUTO_CREATE)`
         //           binds to the service ONCE for the activity's whole lifetime (paired with the
         //           single `unbindService` in `onDestroy`). `BIND_AUTO_CREATE` also creates the
         //           service if it is not already running; `connection.onServiceConnected`
@@ -1146,7 +1149,8 @@ class MainActivity : ComponentActivity() {
                         // ```
                         StartingGate()
                     } else {
-                        // What:     `AppRoot(controller = controller, onAudioGranted = { binder?.ensureLibraryLoaded() }, onChooseFolder = { folderPicker.launch(null) },)`
+                        // What:     `AppRoot(controller = controller, onAudioGranted = { binder?.ensureLibraryLoaded()
+                        //           }, onChooseFolder = { folderPicker.launch(null) },)`
                         //           calls the `AppRoot` composable with named arguments. Two of
                         //           them are LAMBDA callbacks: `onAudioGranted` safe-calls
                         //           `binder?.ensureLibraryLoaded()`; `onChooseFolder` launches the
@@ -1402,7 +1406,8 @@ class MainActivity : ComponentActivity() {
 // // (no annotation; a function returning UI is a component)
 // ```
 @Composable
-// What:     `private fun AppRoot(controller: PlayerController, onAudioGranted: () -> Unit, onChooseFolder: () -> Unit) { ... }`
+// What:     `private fun AppRoot(controller: PlayerController, onAudioGranted: () -> Unit, onChooseFolder: () -> Unit)
+//           { ... }`
 //           declares a private composable taking the bound brain plus two FUNCTION-TYPE
 //           callbacks (`() -> Unit` = a no-arg void function; TS `() => void`).
 // Why:      The audio-permission gate and library trigger over a bound `controller`:
@@ -1455,7 +1460,8 @@ private fun AppRoot(controller: PlayerController, onAudioGranted: () -> Unit, on
      * explain its source and use.
      */
     var hasAudioAccess by remember { mutableStateOf(hasAudioPermission(context)) }
-    // What:     `val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission(),) { granted -> ... }`
+    // What:     `val permissionLauncher =
+    //           rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission(),) { granted -> ... }`
     //           registers a permission-request launcher inside the composition, with the
     //           `RequestPermission()` contract and a trailing-lambda result callback whose
     //           `granted` parameter is the `Boolean` result.
@@ -1617,7 +1623,9 @@ private fun AppRoot(controller: PlayerController, onAudioGranted: () -> Unit, on
  * its call shape and effects.
  */
 private fun StartingGate() {
-    // What:     `Column( modifier = Modifier.fillMaxSize().padding(24.dp), verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically), horizontalAlignment = Alignment.CenterHorizontally, ) { ... }`
+    // What:     `Column( modifier = Modifier.fillMaxSize().padding(24.dp), verticalArrangement =
+    //           Arrangement.spacedBy(12.dp, Alignment.CenterVertically), horizontalAlignment =
+    //           Alignment.CenterHorizontally, ) { ... }`
     //           calls the `Column` layout composable with named args and a trailing-lambda
     //           child. `Modifier.fillMaxSize().padding(24.dp)` is a chained modifier (fill the
     //           screen, then 24dp padding; `24.dp` is the `dp` extension on the literal).
@@ -1801,7 +1809,8 @@ fun PlayerScreen(controller: PlayerController, onChooseFolder: () -> Unit) {
     // )}</Scaffold>
     // ```
     Scaffold { innerPadding ->
-        // What:     `Column( modifier = Modifier.fillMaxSize().padding(innerPadding).padding(horizontal = 12.dp), verticalArrangement = Arrangement.spacedBy(8.dp), ) { ... }`
+        // What:     `Column( modifier = Modifier.fillMaxSize().padding(innerPadding).padding(horizontal = 12.dp),
+        //           verticalArrangement = Arrangement.spacedBy(8.dp), ) { ... }`
         //           lays the screen out vertically. The modifier chain fills the screen, then
         //           applies the scaffold `innerPadding`, then 12dp horizontal padding (named
         //           `horizontal = 12.dp`). Children are spaced 8dp apart.
@@ -1927,7 +1936,9 @@ private fun SeekRow(position: Double, duration: Double, onSeek: (Double) -> Unit
         // <Text>{formatTime(position)}</Text>
         // ```
         Text(formatTime(position))
-        // What:     `Slider( value = position.toFloat().coerceIn(0.0f, maxValue), onValueChange = { onSeek(it.toDouble()) }, valueRange = 0.0f..maxValue, modifier = Modifier.weight(1.0f).padding(horizontal = 8.dp), )`
+        // What:     `Slider( value = position.toFloat().coerceIn(0.0f, maxValue), onValueChange = {
+        //           onSeek(it.toDouble()) }, valueRange = 0.0f..maxValue, modifier =
+        //           Modifier.weight(1.0f).padding(horizontal = 8.dp), )`
         //           renders the scrubber. `position.toFloat()` converts the `Double` to a
         //           `Float`; `.coerceIn(0.0f, maxValue)` CLAMPS it into range. `onValueChange`
         //           is a lambda using `it` (the new `Float`), converted back with
@@ -2007,7 +2018,8 @@ private fun VolumeRow(volume: Float, onVolume: (Float) -> Unit) {
         // <Text>Volume</Text>
         // ```
         Text("Volume")
-        // What:     `Slider( value = volume, onValueChange = onVolume, valueRange = 0.0f..1.0f, modifier = Modifier.weight(1.0f).padding(start = 8.dp), )`
+        // What:     `Slider( value = volume, onValueChange = onVolume, valueRange = 0.0f..1.0f, modifier =
+        //           Modifier.weight(1.0f).padding(start = 8.dp), )`
         //           renders the gain slider. `value = volume` is the current `Float` gain;
         //           `onValueChange = onVolume` forwards the callback directly (no wrapping
         //           lambda needed); `valueRange = 0.0f..1.0f` is the `[0, 1]` `Float` range via
@@ -2069,7 +2081,8 @@ private fun VolumeRow(volume: Float, onVolume: (Float) -> Unit) {
  * call shape and effects.
  */
 private fun ControlRow(state: PlayerUiState, controller: PlayerController, onOpen: () -> Unit) {
-    // What:     `FlowRow( horizontalArrangement = Arrangement.spacedBy(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp), ) { ... }`
+    // What:     `FlowRow( horizontalArrangement = Arrangement.spacedBy(16.dp), verticalArrangement =
+    //           Arrangement.spacedBy(8.dp), ) { ... }`
     //           lays children left-to-right, WRAPPING to new lines on overflow, with 16dp
     //           horizontal and 8dp vertical gaps.
     // Why:      The controls wrap gracefully on narrow screens.
@@ -2111,7 +2124,8 @@ private fun ControlRow(state: PlayerUiState, controller: PlayerController, onOpe
             // <Text>Shuffle</Text>
             // ```
             Text("Shuffle")
-            // What:     `ShuffleOption("Off", state.shuffle == ShuffleMode.OFF) { controller.setShuffle(ShuffleMode.OFF) }`
+            // What:     `ShuffleOption("Off", state.shuffle == ShuffleMode.OFF) {
+            //           controller.setShuffle(ShuffleMode.OFF) }`
             //           renders the "Off" radio. The second arg `state.shuffle == ShuffleMode.OFF`
             //           is its selected `Boolean` (enum value equality); the trailing lambda is
             //           its `onSelect` action setting the mode to `OFF`.
@@ -2119,39 +2133,46 @@ private fun ControlRow(state: PlayerUiState, controller: PlayerController, onOpe
             //
             // In TS you'd write (pseudocode):
             // ```ts
-            // <ShuffleOption label="Off" selected={state.shuffle === ShuffleMode.OFF} onSelect={() => controller.setShuffle(ShuffleMode.OFF)}/>
+            // <ShuffleOption label="Off" selected={state.shuffle === ShuffleMode.OFF} onSelect={() =>
+            // controller.setShuffle(ShuffleMode.OFF)}/>
             // ```
             ShuffleOption("Off", state.shuffle == ShuffleMode.OFF) { controller.setShuffle(ShuffleMode.OFF) }
-            // What:     `ShuffleOption("Within page", state.shuffle == ShuffleMode.WITHIN_PAGE) { controller.setShuffle(ShuffleMode.WITHIN_PAGE) }`
+            // What:     `ShuffleOption("Within page", state.shuffle == ShuffleMode.WITHIN_PAGE) {
+            //           controller.setShuffle(ShuffleMode.WITHIN_PAGE) }`
             //           renders the "Within page" radio (selected when the mode is
             //           `WITHIN_PAGE`; its action sets that mode).
             // Why:      Let the user shuffle within the current page only.
             //
             // In TS you'd write (pseudocode):
             // ```ts
-            // <ShuffleOption label="Within page" selected={state.shuffle === ShuffleMode.WITHIN_PAGE} onSelect={() => controller.setShuffle(ShuffleMode.WITHIN_PAGE)}/>
+            // <ShuffleOption label="Within page" selected={state.shuffle === ShuffleMode.WITHIN_PAGE} onSelect={() =>
+            // controller.setShuffle(ShuffleMode.WITHIN_PAGE)}/>
             // ```
             ShuffleOption("Within page", state.shuffle == ShuffleMode.WITHIN_PAGE) {
                 controller.setShuffle(ShuffleMode.WITHIN_PAGE)
             }
-            // What:     `ShuffleOption("All", state.shuffle == ShuffleMode.ALL) { controller.setShuffle(ShuffleMode.ALL) }`
+            // What:     `ShuffleOption("All", state.shuffle == ShuffleMode.ALL) {
+            //           controller.setShuffle(ShuffleMode.ALL) }`
             //           renders the "All" radio (selected when the mode is `ALL`; its action
             //           sets that mode).
             // Why:      Let the user shuffle the whole queue.
             //
             // In TS you'd write (pseudocode):
             // ```ts
-            // <ShuffleOption label="All" selected={state.shuffle === ShuffleMode.ALL} onSelect={() => controller.setShuffle(ShuffleMode.ALL)}/>
+            // <ShuffleOption label="All" selected={state.shuffle === ShuffleMode.ALL} onSelect={() =>
+            // controller.setShuffle(ShuffleMode.ALL)}/>
             // ```
             ShuffleOption("All", state.shuffle == ShuffleMode.ALL) { controller.setShuffle(ShuffleMode.ALL) }
         }
-        // What:     `Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) { ... }`
+        // What:     `Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement =
+        //           Arrangement.spacedBy(8.dp)) { ... }`
         //           groups the transport buttons with 8dp gaps.
         // Why:      Keep Prev/Play/Next together.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // <Row verticalAlignment={Alignment.CenterVertically} horizontalArrangement={Arrangement.spacedBy(dp(8))}> ... </Row>
+        // <Row verticalAlignment={Alignment.CenterVertically} horizontalArrangement={Arrangement.spacedBy(dp(8))}> ...
+        // </Row>
         // ```
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             // What:     `Button(onClick = { controller.prev() }) { Text("Prev") }` renders the
@@ -2164,7 +2185,8 @@ private fun ControlRow(state: PlayerUiState, controller: PlayerController, onOpe
             // <Button onClick={() => controller.prev()}><Text>Prev</Text></Button>
             // ```
             Button(onClick = { controller.prev() }) { Text("Prev") }
-            // What:     `Button(onClick = { controller.togglePlay() }) { Text(if (state.playing) "Pause" else "Play") }`
+            // What:     `Button(onClick = { controller.togglePlay() }) { Text(if (state.playing) "Pause" else "Play")
+            //           }`
             //           renders the play/pause button. The content `Text(...)` takes an
             //           `if/else` EXPRESSION choosing the label "Pause" vs "Play" from
             //           `state.playing`.
@@ -2239,7 +2261,8 @@ private fun ControlRow(state: PlayerUiState, controller: PlayerController, onOpe
  * its call shape and effects.
  */
 private fun ShuffleOption(label: String, selected: Boolean, onSelect: () -> Unit) {
-    // What:     `Row( verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable { onSelect() }, ) { ... }`
+    // What:     `Row( verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable { onSelect() }, ) {
+    //           ... }`
     //           lays out the radio and label, with `Modifier.clickable { onSelect() }` making
     //           the WHOLE row tappable (the trailing lambda is the click handler).
     // Why:      Allow tapping anywhere on the radio+label pair to select it.
@@ -2580,7 +2603,8 @@ private fun TrackRow(item: PageEntry, state: PlayerUiState, controller: PlayerCo
      * its source and use.
      */
     val rowBackground = if (isCurrent) MaterialTheme.colorScheme.primary else Color.Transparent
-    // What:     `val rowColor = if (isCurrent) { MaterialTheme.colorScheme.onPrimary } else { MaterialTheme.colorScheme.onSurface }`
+    // What:     `val rowColor = if (isCurrent) { MaterialTheme.colorScheme.onPrimary } else {
+    //           MaterialTheme.colorScheme.onSurface }`
     //           picks the text color from an `if/else` EXPRESSION: the on-primary color when
     //           current (readable on the highlight), otherwise the on-surface color.
     // Why:      Keep the text readable against whichever background is used.
@@ -2647,7 +2671,9 @@ private fun TrackRow(item: PageEntry, state: PlayerUiState, controller: PlayerCo
      * source and use.
      */
     val rowText: String = rowDisplay(rowLabel, item.name)
-    // What:     `Text( text = rowText, color = rowColor, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.fillMaxWidth().background(rowBackground).clickable { ... }.padding(horizontal = 8.dp, vertical = 8.dp), )`
+    // What:     `Text( text = rowText, color = rowColor, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier =
+    //           Modifier.fillMaxWidth().background(rowBackground).clickable { ... }.padding(horizontal = 8.dp, vertical
+    //           = 8.dp), )`
     //           renders the row as a single `Text`. Named args: `text` is the trimmed display
     //           name (`rowText`); `color` is `rowColor`; `maxLines = 1` and
     //           `overflow = TextOverflow.Ellipsis` clip long names with an ellipsis. The
@@ -2662,7 +2688,8 @@ private fun TrackRow(item: PageEntry, state: PlayerUiState, controller: PlayerCo
     //   color={rowColor}
     //   maxLines={1}
     //   overflow={TextOverflow.Ellipsis}
-    //   modifier={Modifier.fillMaxWidth().background(rowBackground).clickable(onTap).padding({ horizontal: dp(8), vertical: dp(8) })}
+    //   modifier={Modifier.fillMaxWidth().background(rowBackground).clickable(onTap).padding({ horizontal: dp(8),
+    //   vertical: dp(8) })}
     // >{rowText}</Text>
     // ```
     Text(
@@ -2683,7 +2710,8 @@ private fun TrackRow(item: PageEntry, state: PlayerUiState, controller: PlayerCo
                 // console.info(`[${LOG_TAG}] tap row ${item.index} (current=${state.currentIndex})`);
                 // ```
                 Log.i(LOG_TAG, "tap row ${item.index} (current=${state.currentIndex})")
-                // What:     `if (item.index == state.currentIndex) { controller.togglePlay() } else { controller.playIndex(item.index) }`
+                // What:     `if (item.index == state.currentIndex) { controller.togglePlay() } else {
+                //           controller.playIndex(item.index) }`
                 //           branches the tap: tapping the CURRENT row toggles play/pause; tapping
                 //           another row plays that track. `==` is null-safe value equality.
                 // Why:      Tap-to-play, with the current row acting as play/pause.
@@ -2739,7 +2767,8 @@ private fun TrackRow(item: PageEntry, state: PlayerUiState, controller: PlayerCo
  * its call shape and effects.
  */
 private fun LoadingNotice() {
-    // What:     `Row( verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.padding(vertical = 12.dp), ) { ... }`
+    // What:     `Row( verticalAlignment = Alignment.CenterVertically, horizontalArrangement =
+    //           Arrangement.spacedBy(12.dp), modifier = Modifier.padding(vertical = 12.dp), ) { ... }`
     //           lays the spinner and text on one centered line, 12dp apart, with vertical
     //           padding.
     // Why:      Put the spinner next to its label.
@@ -2870,7 +2899,9 @@ private fun formatTime(seconds: Double): String {
  * its call shape and effects.
  */
 private fun PermissionGate(onGrant: () -> Unit) {
-    // What:     `Column( modifier = Modifier.fillMaxSize().padding(24.dp), verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically), horizontalAlignment = Alignment.CenterHorizontally, ) { ... }`
+    // What:     `Column( modifier = Modifier.fillMaxSize().padding(24.dp), verticalArrangement =
+    //           Arrangement.spacedBy(12.dp, Alignment.CenterVertically), horizontalAlignment =
+    //           Alignment.CenterHorizontally, ) { ... }`
     //           centers the rationale and button (same layout shape as `StartingGate`).
     // Why:      Present the access rationale and grant button centered on screen.
     //

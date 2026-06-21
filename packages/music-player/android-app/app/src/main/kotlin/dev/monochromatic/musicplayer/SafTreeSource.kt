@@ -375,7 +375,8 @@ object SafTreeSource {
         // ```
         onBatch: (suspend (List<Track>) -> Unit)? = null,
     ): List<Track> = withContext(Dispatchers.IO) {
-        // What:     `val gate: BatchEmitGate<Track> = BatchEmitGate(LIBRARY_BATCH_SIZE) { left, right -> compareByCodePoint(left.displayPath, right.displayPath) }`
+        // What:     `val gate: BatchEmitGate<Track> = BatchEmitGate(LIBRARY_BATCH_SIZE) { left, right ->
+        //           compareByCodePoint(left.displayPath, right.displayPath) }`
         //           creates ONE gate for this scan. `BatchEmitGate(...)` is the constructor
         //           (no `new` in Kotlin); the first argument is the threshold, and the
         //           trailing lambda `{ left, right -> ... }` is SAM-converted to the
@@ -539,7 +540,8 @@ object SafTreeSource {
                 // ```
                 continue
             }
-            // What:     `scanDirectory(resolver = ..., treeUri = ..., frame = ..., pending = ..., tracks = ..., onBatch = onBatch, gate = gate)`
+            // What:     `scanDirectory(resolver = ..., treeUri = ..., frame = ..., pending = ..., tracks = ..., onBatch
+            //           = onBatch, gate = gate)`
             //           calls the private helper with NAMED ARGUMENTS (`paramName = value`),
             //           which label each argument at the call site. It lists one directory:
             //           pushing subdirectories onto `pending`, appending audio files to
@@ -693,7 +695,8 @@ object SafTreeSource {
         // ```
         gate: BatchEmitGate<Track>,
     ) {
-        // What:     `val childrenUri: Uri = DocumentsContract.buildChildDocumentsUriUsingTree(treeUri, frame.documentId)`
+        // What:     `val childrenUri: Uri = DocumentsContract.buildChildDocumentsUriUsingTree(treeUri,
+        //           frame.documentId)`
         //           declares a read-only `Uri` local `childrenUri`. The helper builds the
         //           URI that, when queried, lists the CHILDREN of `frame.documentId` within
         //           the granted tree.
@@ -708,7 +711,8 @@ object SafTreeSource {
          * explain its source and use.
          */
         val childrenUri: Uri = DocumentsContract.buildChildDocumentsUriUsingTree(treeUri, frame.documentId)
-        // What:     `try { ... } catch (cancellation: CancellationException) { ... } catch (failure: Exception) { ... }`
+        // What:     `try { ... } catch (cancellation: CancellationException) { ... } catch (failure: Exception) { ...
+        //           }`
         //           is a TRY with TWO catch clauses, checked in order: the MORE SPECIFIC
         //           `CancellationException` first, then the broad `Exception`. Kotlin lets
         //           you TYPE each caught value.
@@ -901,7 +905,8 @@ object SafTreeSource {
                         // ```
                         pending.addLast(Frame(documentId = childId, prefix = childPath))
                     } else if (isAudioFile(name)) {
-                        // What:     `val documentUri: Uri = DocumentsContract.buildDocumentUriUsingTree(treeUri, childId)`
+                        // What:     `val documentUri: Uri = DocumentsContract.buildDocumentUriUsingTree(treeUri,
+                        //           childId)`
                         //           builds the playable per-document URI from the OPAQUE document
                         //           id (never from the name), within the granted tree.
                         // Why:      The engine needs a stable `content://` URI to open the file;
@@ -931,7 +936,8 @@ object SafTreeSource {
                         // tracks.push({ uri: documentUri.toString(), displayPath: childPath });
                         // ```
                         tracks.add(Track(uri = documentUri.toString(), displayPath = childPath))
-                        // What:     `if (onBatch != null) { val batch = gate.nextBatch(tracks); if (batch != null) { onBatch(batch) } }`
+                        // What:     `if (onBatch != null) { val batch = gate.nextBatch(tracks); if (batch != null) {
+                        //           onBatch(batch) } }`
                         //           streams a batch when one is requested. `gate.nextBatch(tracks)`
                         //           returns a sorted-so-far `List<Track>?` (the batch to emit) or
                         //           null (not yet). When non-null, `onBatch(batch)` is CALLED, and

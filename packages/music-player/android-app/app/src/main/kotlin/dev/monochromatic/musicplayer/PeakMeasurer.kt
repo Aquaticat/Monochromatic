@@ -123,7 +123,8 @@ import kotlinx.coroutines.withContext
 // the dispatcher choice lives with each caller (the foreground engine calls it on its own
 // default background thread).
 
-// What:     `private val sweepDecodeDispatcher: CoroutineDispatcher = Executors.newSingleThreadExecutor { ... }.asCoroutineDispatcher()`
+// What:     `private val sweepDecodeDispatcher: CoroutineDispatcher = Executors.newSingleThreadExecutor { ...
+//           }.asCoroutineDispatcher()`
 //           declares a FILE-PRIVATE, top-level read-only property of type `CoroutineDispatcher`,
 //           built by making a one-thread executor (with a custom thread factory) and adapting it
 //           into a coroutine dispatcher. The pieces are commented line by line below.
@@ -219,7 +220,8 @@ internal val foregroundSweepDispatcher: CoroutineDispatcher =
         ).apply { isDaemon = true }
     }.asCoroutineDispatcher()
 
-// What:     `suspend fun measureTrackPeak(context: Context, uri: Uri): Float = withContext(sweepDecodeDispatcher) { measureTruePeakBlocking(context, uri) }`
+// What:     `suspend fun measureTrackPeak(context: Context, uri: Uri): Float = withContext(sweepDecodeDispatcher) {
+//           measureTruePeakBlocking(context, uri) }`
 //           declares a top-level SUSPEND function with an EXPRESSION BODY whose value is the
 //           `withContext(...)` call: it runs `measureTruePeakBlocking(context, uri)` on the
 //           low-priority sweep thread and awaits the result.
@@ -269,7 +271,8 @@ suspend fun measureTrackPeak(
  * above explain its call shape and effects.
  */
 internal fun measureTruePeakBlocking(context: Context, uri: Uri): Float {
-    // What:     `val descriptor: ParcelFileDescriptor = context.contentResolver.openFileDescriptor(uri, "r") ?: throw FileNotFoundException("could not open $uri for true-peak measure")`
+    // What:     `val descriptor: ParcelFileDescriptor = context.contentResolver.openFileDescriptor(uri, "r") ?: throw
+    //           FileNotFoundException("could not open $uri for true-peak measure")`
     //           declares a read-only `ParcelFileDescriptor`. `openFileDescriptor(uri, "r")` opens
     //           the URI in READ mode (`"r"`) and returns a nullable `ParcelFileDescriptor?`; `?:`
     //           is the ELVIS operator that THROWS a `FileNotFoundException` when it is `null`.

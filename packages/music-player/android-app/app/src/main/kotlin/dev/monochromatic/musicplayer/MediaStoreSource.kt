@@ -247,7 +247,8 @@ object MediaStoreSource {
         // ```
         onBatch: (suspend (List<Track>) -> Unit)? = null,
     ): List<Track> = withContext(Dispatchers.IO) {
-        // What:     `val gate: BatchEmitGate<Track> = BatchEmitGate(LIBRARY_BATCH_SIZE) { left, right -> compareByCodePoint(left.displayPath, right.displayPath) }`
+        // What:     `val gate: BatchEmitGate<Track> = BatchEmitGate(LIBRARY_BATCH_SIZE) { left, right ->
+        //           compareByCodePoint(left.displayPath, right.displayPath) }`
         //           creates ONE gate for this scan. `BatchEmitGate(...)` is the constructor (no
         //           `new`); the first argument is the threshold, and the trailing lambda is
         //           SAM-converted to the `Comparator<Track>` it expects (a `(left, right) =>
@@ -597,7 +598,8 @@ object MediaStoreSource {
                  * explain its source and use.
                  */
                 val rawPath: String? = cursor.getString(pathColumn)
-                // What:     `val displayPath: String = displayPathOf(rawPath = rawPath, name = name, isRelative = hasRelativePath)`
+                // What:     `val displayPath: String = displayPathOf(rawPath = rawPath, name = name, isRelative =
+                //           hasRelativePath)`
                 //           calls the private helper with NAMED ARGUMENTS (`paramName = value`), which
                 //           label each argument at the call site. The result is a non-null `String`.
                 // Why:      Turn the row's raw path and name into the folder-relative display string the
@@ -641,7 +643,8 @@ object MediaStoreSource {
                 // tracks.push(new Track(uri, displayPath)); // or { uri, displayPath }
                 // ```
                 tracks.add(Track(uri = uri, displayPath = displayPath))
-                // What:     `if (onBatch != null) { val batch = gate.nextBatch(tracks); if (batch != null) { onBatch(batch) } }`
+                // What:     `if (onBatch != null) { val batch = gate.nextBatch(tracks); if (batch != null) {
+                //           onBatch(batch) } }`
                 //           streams a batch when one is requested. `gate.nextBatch(tracks)` returns a
                 //           sorted-so-far `List<Track>?` (the batch to emit) or null (not yet). When
                 //           non-null, `onBatch(batch)` is CALLED, and because `onBatch`'s type is

@@ -110,7 +110,8 @@ import androidx.work.CoroutineWorker
 // ```
 import androidx.work.WorkerParameters
 
-// What:     `class PeakSweepWorker( context: Context, parameters: WorkerParameters, ) : CoroutineWorker(context, parameters) { ... }`
+// What:     `class PeakSweepWorker( context: Context, parameters: WorkerParameters, ) : CoroutineWorker(context,
+//           parameters) { ... }`
 //           declares a class named `PeakSweepWorker`. The parentheses after the
 //           name are the PRIMARY CONSTRUCTOR. Note `context` and `parameters` have
 //           NO `val`/`var`, so they are plain constructor parameters (NOT stored as

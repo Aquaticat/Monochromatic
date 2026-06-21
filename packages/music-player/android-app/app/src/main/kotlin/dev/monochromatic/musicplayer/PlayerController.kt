@@ -671,7 +671,8 @@ class PlayerController(private val engine: AudioEngine) {
     //   this.pages = paginate(this.queue.displayPaths());
     //   this.loadedUri = null; this.isLoading = false;
     //   const i = session.selected ? this.uris.indexOf(session.selected) : -1;
-    //   if (i >= 0) { this.queue.playIndex(i); this.loadedUri = this.uris[i]; this.engine.load(this.uris[i], false); if (session.positionSecs > 0) this.engine.seekTo(session.positionSecs); }
+    //   if (i >= 0) { this.queue.playIndex(i); this.loadedUri = this.uris[i]; this.engine.load(this.uris[i], false); if
+    //   (session.positionSecs > 0) this.engine.seekTo(session.positionSecs); }
     //   else this.queue.clearSelection();
     //   this.refresh(true);
     // }
@@ -738,7 +739,8 @@ class PlayerController(private val engine: AudioEngine) {
             //
             // In TS you'd write (pseudocode):
             // ```ts
-            // this.queue.playIndex(savedIndex); this.loadedUri = this.uris[savedIndex]; this.engine.load(this.uris[savedIndex], false);
+            // this.queue.playIndex(savedIndex); this.loadedUri = this.uris[savedIndex];
+            // this.engine.load(this.uris[savedIndex], false);
             // ```
             queue.playIndex(savedIndex)
             loadedUri = uris[savedIndex]
@@ -915,7 +917,8 @@ class PlayerController(private val engine: AudioEngine) {
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // this.uris = tracks.map((t) => t.uri); this.queue.setTracks(tracks.map((t) => t.displayPath)); this.pages = paginate(this.queue.displayPaths());
+        // this.uris = tracks.map((t) => t.uri); this.queue.setTracks(tracks.map((t) => t.displayPath)); this.pages =
+        // paginate(this.queue.displayPaths());
         // ```
         uris = tracks.map { it.uri }
         queue.setTracks(tracks.map { it.displayPath })
@@ -1103,7 +1106,8 @@ class PlayerController(private val engine: AudioEngine) {
      * its call shape and effects.
      */
     fun togglePlay() {
-        // What:     `if (isPlaying) { ... } else if (loadedUri != null && loadedUri == currentUri()) { ... } else { ... }`
+        // What:     `if (isPlaying) { ... } else if (loadedUri != null && loadedUri == currentUri()) { ... } else { ...
+        //           }`
         //           is an if / else-if / else CHAIN. `loadedUri != null` is a null check;
         //           `&&` is logical AND; `loadedUri == currentUri()` compares the URI loaded
         //           in the engine to the current track's URI (both `String?`; `==` is
