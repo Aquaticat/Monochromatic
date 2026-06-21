@@ -290,6 +290,10 @@ export type BudgetModelCandidate = {
    */
   readonly modelId: string;
   /**
+   * Name-heuristic speed score.
+   */
+  readonly speedScore: number;
+  /**
    * Input-token price per million tokens.
    */
   readonly costInput: number;

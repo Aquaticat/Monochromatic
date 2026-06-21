@@ -48,6 +48,13 @@ const nearActiveCostModel = fixtureModel({
   inputCost: NEAR_ACTIVE_INPUT_COST,
 },);
 
+/** Same-provider model with explicit speed signal and higher price. */
+const sameProviderHighspeedModel = fixtureModel({
+  provider: 'openai',
+  id: 'gpt-4o-highspeed',
+  inputCost: NEAR_ACTIVE_INPUT_COST,
+},);
+
 /** Any-provider budget model fixture. */
 const anyProviderModel = fixtureModel({
   provider: 'anthropic',
@@ -55,11 +62,27 @@ const anyProviderModel = fixtureModel({
   inputCost: 0.25,
 },);
 
+/** Any-provider model with explicit speed signal and higher price. */
+const anyProviderHighspeedModel = fixtureModel({
+  provider: 'moonshotai',
+  id: 'kimi-k2.7-code-highspeed',
+  inputCost: NEAR_ACTIVE_INPUT_COST,
+},);
+
 /** All budget test models. */
 const allModels = [
   activeModel,
   sameProviderModel,
   anyProviderModel,
+] as const;
+
+/** All budget test models plus explicit speed fixtures. */
+const allModelsWithSpeed = [
+  activeModel,
+  sameProviderModel,
+  sameProviderHighspeedModel,
+  anyProviderModel,
+  anyProviderHighspeedModel,
 ] as const;
 
 /** Auth fixture. */
@@ -134,6 +157,38 @@ await describe({
           ...authCallbacks([fixtureSlug(nearActiveCostModel,),],),
         },);
         expect(selected.model,).toBe(nearActiveCostModel,);
+      },
+    },),
+    it({
+      name: 'selects speed-named same-provider candidate before cheaper model',
+      fn: async function testSameProviderSpeedSelection() {
+        const selected = await selectBudgetModel({
+          activeModel,
+          allModels: allModelsWithSpeed,
+          strategy: 'same-provider',
+          majorVersions: 1,
+          ...authCallbacks([
+            fixtureSlug(sameProviderModel,),
+            fixtureSlug(sameProviderHighspeedModel,),
+          ],),
+        },);
+        expect(selected.model,).toBe(sameProviderHighspeedModel,);
+      },
+    },),
+    it({
+      name: 'selects speed-named any-provider candidate before cheaper model',
+      fn: async function testAnyProviderSpeedSelection() {
+        const selected = await selectBudgetModel({
+          activeModel,
+          allModels: allModelsWithSpeed,
+          strategy: 'any-provider',
+          majorVersions: 1,
+          ...authCallbacks([
+            fixtureSlug(anyProviderModel,),
+            fixtureSlug(anyProviderHighspeedModel,),
+          ],),
+        },);
+        expect(selected.model,).toBe(anyProviderHighspeedModel,);
       },
     },),
     it({

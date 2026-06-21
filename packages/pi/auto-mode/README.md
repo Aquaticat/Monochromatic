@@ -35,7 +35,8 @@ approval reason plus `reusedFromVerdict` metadata for auditability. A later
 action and fingerprint disables reuse, so stale approvals do not override newer
 decisions.
 
-The flagger and judge are strictly separated: the flagger never provides reasons, the judge sees only raw action plus context.
+The flagger and judge are strictly separated: the flagger never provides reasons,
+the judge sees only raw action plus context.
 
 ### Judge context
 
@@ -146,8 +147,9 @@ gracefully rather than throwing.
 
 The `judgeModel` defaults to `{strategy: "same-provider", majorVersions: 1}` when the config is absent
 or `judgeModel` is unset; defined once in `src/constants.ts` as `JUDGE_MODEL_DEFAULTS` and referenced from
-the loader, the global defaults, and the budget-model selector.
-Budget selection no longer rejects candidates for being close to active-model cost.
+the loader, the global defaults, and the judge-model selector.
+Automatic judge selection ranks candidates by local speed-name heuristic first,
+then falls back to input cost and version when no speed signal separates them.
 
 ## Skill read allowlist
 

@@ -9,3 +9,4 @@ export * from './model-id.ts';
 export * from './exact-match.ts';
 export * from './pattern-match.ts';
 export * from './version.ts';
+export * from './speed-ranking.ts';

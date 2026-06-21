@@ -1,5 +1,5 @@
 /**
- * Budget model: auto-select the cheapest available judge model.
+ * Budget model: auto-select the fastest available judge model.
  *
  * @module
  */
@@ -121,10 +121,10 @@ function assertModelApiList(
 //region Public API
 
 /**
- * Find the cheapest available model for the judge.
+ * Find the fastest available model for the judge.
  *
  * If `options.modelOverride` is set, selection is skipped. Otherwise shared
- * strategy selection walks candidate models cheapest-first and returns the
+ * strategy selection walks candidate models fastest-first and returns the
  * first candidate the registry can authenticate.
  *
  * @param ctx - pi extension context

@@ -19,6 +19,9 @@ import { fixtureModel, } from './test-fixtures.ts';
 
 //region Fixtures
 
+/** Expected mini model speed score. */
+const MINI_SPEED_SCORE = 50;
+
 /** Model fixture used by report tests. */
 const model = fixtureModel({
   provider: 'openai',
@@ -45,6 +48,7 @@ await describe({
               .toEqual({
                 provider: 'openai',
                 modelId: 'gpt-4o-mini',
+                speedScore: MINI_SPEED_SCORE,
                 costInput: 1,
                 costOutput: 2,
                 hasApiKey: true,
@@ -75,14 +79,14 @@ await describe({
                 model,
                 hasConfiguredAuth: false,
               },),
-              cheapestOverall: toBudgetModelCandidate({
+              fastestOverall: toBudgetModelCandidate({
                 model,
                 hasConfiguredAuth: true,
               },),
             },);
             expect(error.message,).toContain('Reason: no auth',);
             expect(error.message,).toContain('Best same-provider option',);
-            expect(error.message,).toContain('Cheapest with API key',);
+            expect(error.message,).toContain('Fastest with API key',);
           },
         },),
       ],

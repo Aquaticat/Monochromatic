@@ -15,7 +15,7 @@ without loading platform-coupled modules.
 - `@monochromatic-dev/pi-shared-model-selection` and `/core` export dependency-free helpers and types.
 - `/scope` exports scope pattern, settings, and effective-scope helpers.
 - `/cost` exports cost scoring and ranking helpers.
-- `/budget` exports budget-model strategy and override selection helpers with injected auth callbacks.
+- `/budget` exports fast judge-model strategy and override selection helpers with injected auth callbacks.
 - `/pi-coding-agent` exports wrappers that directly import `@earendil-works/pi-coding-agent`.
 
 `@earendil-works/pi-ai` and `@earendil-works/pi-coding-agent` are optional peer dependencies.

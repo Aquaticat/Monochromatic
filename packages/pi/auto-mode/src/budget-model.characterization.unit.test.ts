@@ -115,6 +115,14 @@ const sameProviderBudgetModel = modelFixture({
   outputCost: SAME_PROVIDER_OUTPUT,
 },);
 
+/** Same-provider fast candidate fixture. */
+const sameProviderFastModel = modelFixture({
+  provider: 'openai',
+  id: 'gpt-4o-highspeed',
+  inputCost: ACTIVE_INPUT,
+  outputCost: ACTIVE_OUTPUT,
+},);
+
 /** Any-provider budget candidate fixture. */
 const anyProviderBudgetModel = modelFixture({
   provider: 'anthropic',
@@ -123,11 +131,21 @@ const anyProviderBudgetModel = modelFixture({
   outputCost: ANY_PROVIDER_OUTPUT,
 },);
 
+/** Any-provider fast candidate fixture. */
+const anyProviderFastModel = modelFixture({
+  provider: 'moonshotai',
+  id: 'kimi-k2.7-code-highspeed',
+  inputCost: ACTIVE_INPUT,
+  outputCost: ACTIVE_OUTPUT,
+},);
+
 /** All registry models used by budget tests. */
 const allModels = [
   activeModel,
   sameProviderBudgetModel,
+  sameProviderFastModel,
   anyProviderBudgetModel,
+  anyProviderFastModel,
 ] as const;
 
 /**
@@ -244,6 +262,25 @@ await describe({
       },
     },),
     it({
+      name: 'selects speed-named same-provider candidate before cheaper model',
+      fn: async function testSameProviderFastSelection() {
+        const budgetModel = await findBudgetModel({
+          ctx: contextFixture({
+            authenticatedSlugs: [
+              slugFor(sameProviderBudgetModel,),
+              slugFor(sameProviderFastModel,),
+            ],
+          },),
+          options: {
+            strategy: 'same-provider',
+            majorVersions: MAJOR_VERSIONS,
+          },
+        },);
+
+        expect(slugFor(budgetModel.model,),).toBe(slugFor(sameProviderFastModel,),);
+      },
+    },),
+    it({
       name: 'keeps any-provider model choice for fixed fixtures',
       fn: async function testAnyProviderSelection() {
         const budgetModel = await findBudgetModel({
@@ -257,6 +294,25 @@ await describe({
         },);
 
         expect(slugFor(budgetModel.model,),).toBe(slugFor(anyProviderBudgetModel,),);
+      },
+    },),
+    it({
+      name: 'selects speed-named any-provider candidate before cheaper model',
+      fn: async function testAnyProviderFastSelection() {
+        const budgetModel = await findBudgetModel({
+          ctx: contextFixture({
+            authenticatedSlugs: [
+              slugFor(anyProviderBudgetModel,),
+              slugFor(anyProviderFastModel,),
+            ],
+          },),
+          options: {
+            strategy: 'any-provider',
+            majorVersions: MAJOR_VERSIONS,
+          },
+        },);
+
+        expect(slugFor(budgetModel.model,),).toBe(slugFor(anyProviderFastModel,),);
       },
     },),
     it({
@@ -274,7 +330,7 @@ await describe({
 
         expect(caught,).toBeInstanceOf(Error,);
         expect((caught as Error).message,).toContain(
-          'no API key available for cheapest models in provider "openai"',
+          'no API key available for fastest models in provider "openai"',
         );
       },
     },),

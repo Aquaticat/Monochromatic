@@ -1,5 +1,5 @@
 /**
- * Budget-model strategy selection with injected auth callbacks.
+ * Fast judge-model strategy selection with injected auth callbacks.
  *
  * @module
  */
@@ -9,7 +9,10 @@ import {
   NoBudgetModelError,
   toBudgetModelCandidate,
 } from './budget-report.ts';
-import { findCheapestInMajorVersions, } from './version.ts';
+import {
+  compareModelSpeed,
+  findFastestInMajorVersions,
+} from './speed-ranking.ts';
 import {
   type BudgetModel,
   type BudgetModelCandidate,
@@ -19,11 +22,11 @@ import {
 } from './types.ts';
 
 /**
- * Sentinel returned by {@link findCheapestCandidate} when no provider yields a
+ * Sentinel returned by {@link findFastestCandidate} when no provider yields a
  * candidate (empty registry). A `unique symbol`; narrowed with
- * `=== NO_CANDIDATE`. Exported because `findCheapestCandidate` is public.
+ * `=== NO_CANDIDATE`. Exported because `findFastestCandidate` is public.
  */
-export const NO_CANDIDATE: unique symbol = Symbol('model selection budget candidate absent after version filtering',);
+export const NO_CANDIDATE: unique symbol = Symbol('model selection fast candidate absent after version filtering',);
 
 //region Internal types
 
@@ -40,7 +43,7 @@ type BudgetStrategyOptions<TModel extends ModelPricing,> = Omit<
 //region Public API
 
 /**
- * Find the cheapest authenticated budget model for configured strategy.
+ * Find the fastest authenticated judge model for configured strategy.
  *
  * @param options - active model, model list, strategy, major versions, and auth callbacks
  *
@@ -50,7 +53,14 @@ type BudgetStrategyOptions<TModel extends ModelPricing,> = Omit<
  *
  * @example
  * ```typescript
- * const budget = await selectBudgetModel({ activeModel, allModels, strategy, majorVersions, resolveAuth, hasConfiguredAuth });
+ * const budget = await selectBudgetModel({
+ *   activeModel,
+ *   allModels,
+ *   strategy,
+ *   majorVersions,
+ *   resolveAuth,
+ *   hasConfiguredAuth,
+ * });
  * ```
  */
 export async function selectBudgetModel<TModel extends ModelPricing,>(
@@ -76,7 +86,7 @@ export async function selectBudgetModel<TModel extends ModelPricing,>(
 }
 
 /**
- * Find the single cheapest model across all providers for error context.
+ * Find the single fastest model across all providers for error context.
  *
  * @param allModels - registry model list
  *
@@ -84,14 +94,14 @@ export async function selectBudgetModel<TModel extends ModelPricing,>(
  *
  * @param hasConfiguredAuth - host auth predicate for reporting
  *
- * @returns cheapest candidate when present
+ * @returns fastest candidate when present
  *
  * @example
  * ```typescript
- * const candidate = findCheapestCandidate({ allModels, majorVersions, hasConfiguredAuth });
+ * const candidate = findFastestCandidate({ allModels, majorVersions, hasConfiguredAuth });
  * ```
  */
-export function findCheapestCandidate<TModel extends ModelPricing,>(
+export function findFastestCandidate<TModel extends ModelPricing,>(
   {
     allModels,
     majorVersions,
@@ -108,7 +118,7 @@ export function findCheapestCandidate<TModel extends ModelPricing,>(
   const byProvider = groupModelsByProvider(allModels,);
 
   /**
-   * Cheapest per-provider head for every provider that yielded a candidate.
+   * Fastest per-provider head for every provider that yielded a candidate.
    */
   const providerHeads: {
     readonly model: TModel;
@@ -116,9 +126,9 @@ export function findCheapestCandidate<TModel extends ModelPricing,>(
   }[] = [];
   for (const [provider, models,] of byProvider) {
     /**
-     * Per-provider candidates already sorted by cost then version.
+     * Per-provider candidates already sorted by speed, cost, then version.
      */
-    const firstCandidate = findCheapestInMajorVersions({
+    const firstCandidate = findFastestInMajorVersions({
       models,
       majorVersions,
     },)
@@ -132,29 +142,16 @@ export function findCheapestCandidate<TModel extends ModelPricing,>(
   }
 
   /**
-   * Overall cheapest provider head by input cost.
+   * Overall fastest provider head by speed heuristic.
    */
-  const best = providerHeads.toSorted(function byInputCost(
+  const best = providerHeads.toSorted(function bySpeed(
     left,
     right,
   ) {
-    /**
-     * Models being compared.
-     */
-    const { model: leftModel, } = left;
-    /**
-     * Model being compared against.
-     */
-    const { model: rightModel, } = right;
-    /**
-     * Left candidate input price.
-     */
-    const { input: leftInputCost, } = leftModel.cost;
-    /**
-     * Right candidate input price.
-     */
-    const { input: rightInputCost, } = rightModel.cost;
-    return leftInputCost - rightInputCost;
+    return compareModelSpeed({
+      left: left.model,
+      right: right.model,
+    },);
   },)
     .at(0,);
 
@@ -166,12 +163,25 @@ export function findCheapestCandidate<TModel extends ModelPricing,>(
   },);
 }
 
+/**
+ * Backwards-compatible name for {@link findFastestCandidate}.
+ *
+ * @deprecated Use {@link findFastestCandidate}; automatic judge selection now
+ * ranks by speed heuristic before cost.
+ *
+ * @example
+ * ```typescript
+ * findCheapestCandidate({ allModels, majorVersions: 1, hasConfiguredAuth });
+ * ```
+ */
+export const findCheapestCandidate = findFastestCandidate;
+
 //endregion Public API
 
 //region Same-provider strategy
 
 /**
- * Find cheapest model in the same provider as active model.
+ * Find fastest model in the same provider as active model.
  *
  * @param activeModel - active model used for provider reference
  *
@@ -207,38 +217,38 @@ async function findSameProvider<TModel extends ModelPricing,>(
   },);
 
   /**
-   * Lazily find cheapest candidate across all providers.
+   * Lazily find fastest candidate across all providers.
    *
-   * @returns error-context object carrying cheapestOverall only when found
+   * @returns error-context object carrying fastestOverall only when found
    */
-  function cheapestOverallContext(): {
-    readonly cheapestOverall?: BudgetModelCandidate;
+  function fastestOverallContext(): {
+    readonly fastestOverall?: BudgetModelCandidate;
   } {
     /**
-     * Cheapest cross-provider candidate result.
+     * Fastest cross-provider candidate result.
      */
-    const candidate = findCheapestCandidate({
+    const candidate = findFastestCandidate({
       allModels,
       majorVersions,
       hasConfiguredAuth,
     },);
     return candidate === NO_CANDIDATE
       ? {}
-      : { cheapestOverall: candidate, };
+      : { fastestOverall: candidate, };
   }
 
   if (providerModels.length
     === 0) {
     throw new NoBudgetModelError(
       `no models found for provider "${activeProvider}"`,
-      cheapestOverallContext(),
+      fastestOverallContext(),
     );
   }
 
   /**
-   * Same-provider candidates ranked by cost then version.
+   * Same-provider candidates ranked by speed, cost, then version.
    */
-  const candidates = findCheapestInMajorVersions({
+  const candidates = findFastestInMajorVersions({
     models: providerModels,
     majorVersions,
   },);
@@ -247,15 +257,15 @@ async function findSameProvider<TModel extends ModelPricing,>(
     === 0) {
     throw new NoBudgetModelError(
       `no versioned models found for provider "${activeProvider}"`,
-      cheapestOverallContext(),
+      fastestOverallContext(),
     );
   }
 
   /**
-   * Cheapest same-provider candidate.
+   * Fastest same-provider candidate.
    */
-  const cheapestCandidate = candidates.at(0,);
-  if (cheapestCandidate === undefined) {
+  const fastestCandidate = candidates.at(0,);
+  if (fastestCandidate === undefined) {
     throw new NoBudgetModelError(
       `no candidates available for provider "${activeProvider}"`,
     );
@@ -280,14 +290,14 @@ async function findSameProvider<TModel extends ModelPricing,>(
    * Same-provider report row after every candidate failed auth.
    */
   const sameProvider = toBudgetModelCandidate({
-    model: cheapestCandidate,
-    hasConfiguredAuth: hasConfiguredAuth({ model: cheapestCandidate, },),
+    model: fastestCandidate,
+    hasConfiguredAuth: hasConfiguredAuth({ model: fastestCandidate, },),
   },);
   throw new NoBudgetModelError(
-    `no API key available for cheapest models in provider "${activeProvider}"`,
+    `no API key available for fastest models in provider "${activeProvider}"`,
     {
       sameProvider,
-      ...cheapestOverallContext(),
+      ...fastestOverallContext(),
     },
   );
 }
@@ -297,7 +307,7 @@ async function findSameProvider<TModel extends ModelPricing,>(
 //region Any-provider strategy
 
 /**
- * Find cheapest model across all providers.
+ * Find fastest model across all providers.
  *
  * @param allModels - registry model list
  *
@@ -324,27 +334,22 @@ async function findAnyProvider<TModel extends ModelPricing,>(
    */
   const allCandidates: TModel[] = [];
   for (const [, models,] of byProvider) {
-    allCandidates.push(...findCheapestInMajorVersions({
+    allCandidates.push(...findFastestInMajorVersions({
       models,
       majorVersions,
     },),);
   }
   /**
-   * Cross-provider candidates sorted by input cost ascending.
+   * Cross-provider candidates sorted by speed heuristic.
    */
-  const sortedCandidates = allCandidates.toSorted(function byCost(
+  const sortedCandidates = allCandidates.toSorted(function bySpeed(
     left,
     right,
   ) {
-    /**
-     * Left candidate input price.
-     */
-    const { input: leftInputCost, } = left.cost;
-    /**
-     * Right candidate input price.
-     */
-    const { input: rightInputCost, } = right.cost;
-    return leftInputCost - rightInputCost;
+    return compareModelSpeed({
+      left,
+      right,
+    },);
   },);
 
   for (const model of sortedCandidates) {
@@ -363,7 +368,7 @@ async function findAnyProvider<TModel extends ModelPricing,>(
   }
 
   throw new NoBudgetModelError(
-    'no budget models with API keys found across any provider',
+    'no fast judge models with API keys found across any provider',
   );
 }
 
