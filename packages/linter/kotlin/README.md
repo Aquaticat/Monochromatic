@@ -54,16 +54,20 @@ sources (`**/src/test/**`, `**/src/androidTest/**`) before parsing.
 ## Configuration
 
 `detekt.yml` activates `require-kdoc` and leaves findings at detekt 2's default
-`error` severity, so missing KDoc fails the run. The `allowOverride` rule option
-(default false) can let `override` members inherit documentation.
+`error` severity, so missing KDoc fails the run. `detekt-baseline.xml` records
+existing default-rule findings so new findings still fail. See the
+[default-config baseline troubleshooting note](../../../docs/troubleshooting/detekt-default-config-baseline.md)
+for the source trace. The `allowOverride` rule option (default false) can let
+`override` members inherit documentation.
 
 ## Package tasks
 
 ```sh
 mise run //packages/linter/kotlin:test         # rule unit tests
 mise run //packages/linter/kotlin:lint         # local compile check (fanout-safe)
-mise run //packages/linter/kotlin:lint:detekt  # dogfood over this package's own src
-mise run //packages/linter/kotlin:build        # build the plugin jar
+mise run //packages/linter/kotlin:lint:detekt           # dogfood over this package's own src
+mise run //packages/linter/kotlin:lint:detekt:baseline  # refresh the current-findings baseline
+mise run //packages/linter/kotlin:build                 # build the plugin jar
 ```
 
 ## Adding a rule

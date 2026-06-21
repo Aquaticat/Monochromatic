@@ -768,8 +768,8 @@ description = "Enforce KDoc on Kotlin via the custom detekt rule set (kotlin-lin
 # Part of the `lint` aggregate. Fans out to each package's own `lint:detekt`, which
 # scans only that package's Kotlin source root. detekt-cli is not gitignore-aware, so
 # a single scan over packages/ would walk ~200k node_modules/build files to find ~50
-# .kt; per-package scans keep the input tiny. Pre-existing undocumented declarations
-# keep this red until baselined or backfilled; tracked in issue #253.
+# .kt; per-package scans keep the input tiny. Existing default-rule findings are
+# tracked in packages/linter/kotlin/detekt-baseline.xml so new findings fail.
 run = "mise '//packages/...:lint:detekt'"
 
 #endregion Linting Tasks
