@@ -309,11 +309,7 @@ object MediaStoreSource {
          * Defines collection value for this music-player component; the TypeScript-oriented notes above explain
          * its source and use.
          */
-        val collection = if (hasRelativePath) {
-            MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL)
-        } else {
-            MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
-        }
+        val collection = mediaStoreCollection(hasRelativePath)
         // RELATIVE_PATH (API 29+) is the scoped-storage folder path; DATA is the legacy absolute path
         // kept only as the < API 29 fallback. Requesting RELATIVE_PATH on an older platform throws
         // "unknown column", so it is added conditionally.
@@ -345,61 +341,7 @@ object MediaStoreSource {
          * Defines projection value for this music-player component; the TypeScript-oriented notes above explain
          * its source and use.
          */
-        val projection: Array<String> = buildList {
-            // What:     `add(MediaStore.Audio.Media._ID)` appends the `_ID` column name (the
-            //           numeric row id) to the list being built inside `buildList`. `add` is the
-            //           implicit-receiver method the builder lambda exposes.
-            // Why:      We need each row's id to construct its playable per-track URI later.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // cols.push(MediaStore.Audio.Media._ID);
-            // ```
-            add(MediaStore.Audio.Media._ID)
-            // What:     `add(MediaStore.Audio.Media.DISPLAY_NAME)` appends the `DISPLAY_NAME`
-            //           column (the bare file name) to the builder list.
-            // Why:      We need the file name both as a display fallback and to append onto a
-            //           relative folder path.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // cols.push(MediaStore.Audio.Media.DISPLAY_NAME);
-            // ```
-            add(MediaStore.Audio.Media.DISPLAY_NAME)
-            // What:     `if (hasRelativePath) { ... } else { ... }` used here as a STATEMENT
-            //           (no value captured) to choose which path column to request. On API 29+
-            //           we add `RELATIVE_PATH`; otherwise the legacy `DATA` column.
-            // Why:      Requesting a column the platform does not define throws at query time;
-            //           this guards against that by only adding the column that exists.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // if (hasRelativePath) cols.push(MediaStore.Audio.Media.RELATIVE_PATH);
-            // else cols.push(MediaStore.Audio.Media.DATA);
-            // ```
-            if (hasRelativePath) {
-                // What:     `add(MediaStore.Audio.Media.RELATIVE_PATH)` appends the scoped-storage
-                //           folder-path column name (e.g. `Music/Artist/`) to the builder list.
-                // Why:      On API 29+ this is the folder-aware display source we prefer.
-                //
-                // In TS you'd write (pseudocode):
-                // ```ts
-                // cols.push(MediaStore.Audio.Media.RELATIVE_PATH);
-                // ```
-                add(MediaStore.Audio.Media.RELATIVE_PATH)
-            } else {
-                // What:     `add(MediaStore.Audio.Media.DATA)` appends the legacy absolute
-                //           filesystem-path column name to the builder list.
-                // Why:      Pre-API-29 there is no `RELATIVE_PATH`, so `DATA` is the only
-                //           folder-aware display source available.
-                //
-                // In TS you'd write (pseudocode):
-                // ```ts
-                // cols.push(MediaStore.Audio.Media.DATA);
-                // ```
-                add(MediaStore.Audio.Media.DATA)
-            }
-        }.toTypedArray()
+        val projection: Array<String> = mediaStoreProjection(hasRelativePath)
         // What:     `val selection = "${MediaStore.Audio.Media.IS_MUSIC} != 0"`. The
         //           `"${ ... }"` is a string TEMPLATE: the `${expr}` is replaced by the value
         //           of `expr` (here the column name string `IS_MUSIC`) inside the literal, so
@@ -664,16 +606,7 @@ object MediaStoreSource {
                 //   if (batch !== null) await onBatch(batch);
                 // }
                 // ```
-                if (onBatch != null) {
-                    /**
-                     * Defines batch value for this music-player component; the TypeScript-oriented notes above
-                     * explain its source and use.
-                     */
-                    val batch: List<Track>? = gate.nextBatch(tracks)
-                    if (batch != null) {
-                        onBatch(batch)
-                    }
-                }
+                emitLibraryBatchIfReady(onBatch = onBatch, gate = gate, tracks = tracks)
             }
         }
         // What:     `Log.i(SOURCE_TAG, "queried ${tracks.size} music tracks from MediaStore")`.
@@ -708,6 +641,28 @@ object MediaStoreSource {
         // ```
         tracks.sortedWith { left, right -> compareByCodePoint(left.displayPath, right.displayPath) }
     }
+
+    // What:     `private fun mediaStoreCollection(hasRelativePath: Boolean)` chooses the base URI.
+    // Why:      API 29+ uses the external-volume collection, older devices use the legacy URI.
+    /** Base MediaStore collection URI for this device API level. */
+    private fun mediaStoreCollection(hasRelativePath: Boolean): android.net.Uri = if (hasRelativePath) {
+        MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL)
+    } else {
+        MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
+    }
+
+    // What:     `private fun mediaStoreProjection(hasRelativePath: Boolean)` builds column names.
+    // Why:      RELATIVE_PATH exists only on API 29+, while DATA is the legacy fallback.
+    /** Column projection used for the MediaStore query. */
+    private fun mediaStoreProjection(hasRelativePath: Boolean): Array<String> = buildList {
+        add(MediaStore.Audio.Media._ID)
+        add(MediaStore.Audio.Media.DISPLAY_NAME)
+        if (hasRelativePath) {
+            add(MediaStore.Audio.Media.RELATIVE_PATH)
+        } else {
+            add(MediaStore.Audio.Media.DATA)
+        }
+    }.toTypedArray()
 
     // What:     `private fun displayPathOf(rawPath: String?, name: String, isRelative: Boolean): String = when { ... }`
     //           declares a private helper with three params: `rawPath` (nullable `String?`), `name`

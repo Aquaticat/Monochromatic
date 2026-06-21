@@ -307,6 +307,11 @@ object SafTreeSource {
      */
     private data class Frame(val documentId: String, val prefix: String)
 
+    // What:     `private data class ChildRow(...)` stores one non-null SAF row.
+    // Why:      Null ids or names are unusable, so cursor decoding happens once before row handling.
+    /** Non-null child document row read from a SAF cursor. */
+    private data class ChildRow(val id: String, val name: String, val mimeType: String?)
+
     // What:     `suspend fun query(resolver, treeUri, onBatch): List<Track> = withContext(Dispatchers.IO) { ... }`
     //           declares the one public entry point. `suspend` marks it a coroutine
     //           function (it can await background work); three named params (`resolver`,
@@ -600,6 +605,26 @@ object SafTreeSource {
         tracks.sortedWith { left, right -> compareByCodePoint(left.displayPath, right.displayPath) }
     }
 
+    // What:     `private fun childRowOf(...)` converts the current cursor row to a child record.
+    // Why:      The scan loop can use one `continue` for unusable rows instead of one per column.
+    /** Current cursor row as a non-null child record, or null when id/name is missing. */
+    private fun childRowOf(
+        cursor: android.database.Cursor,
+        idColumn: Int,
+        nameColumn: Int,
+        mimeColumn: Int,
+    ): ChildRow? {
+        /** Raw document id from the cursor, or null when the provider returned an unusable row. */
+        val childId: String? = cursor.getString(idColumn)
+        /** Raw display name from the cursor, or null when the provider returned an unusable row. */
+        val name: String? = cursor.getString(nameColumn)
+        return if (childId == null || name == null) {
+            null
+        } else {
+            ChildRow(id = childId, name = name, mimeType = cursor.getString(mimeColumn))
+        }
+    }
+
     // What:     `private suspend fun scanDirectory( resolver, treeUri, frame, pending, tracks, onBatch, gate ) { ... }`
     //           declares a private helper with seven named parameters and a block body
     //           (no return value, so the return type is the implicit `Unit`, Kotlin's
@@ -826,7 +851,12 @@ object SafTreeSource {
                      * Defines child id value for this music-player component; the TypeScript-oriented notes
                      * above explain its source and use.
                      */
-                    val childId: String = cursor.getString(idColumn) ?: continue
+                    val child: ChildRow = childRowOf(
+                        cursor = cursor,
+                        idColumn = idColumn,
+                        nameColumn = nameColumn,
+                        mimeColumn = mimeColumn,
+                    ) ?: continue
                     // What:     `val name: String = cursor.getString(nameColumn) ?: continue`.
                     //           Same Elvis-or-skip shape as `childId`: a non-null name, or
                     //           `continue` to the next row.
@@ -842,7 +872,6 @@ object SafTreeSource {
                      * Defines name value for this music-player component; the TypeScript-oriented notes above
                      * explain its source and use.
                      */
-                    val name: String = cursor.getString(nameColumn) ?: continue
                     // What:     `val mimeType: String? = cursor.getString(mimeColumn)` declares a
                     //           NULLABLE `String?` (the trailing `?` = "a `String` OR null"). We
                     //           KEEP the null here (no `?: continue`) because a null mime is
@@ -860,7 +889,6 @@ object SafTreeSource {
                      * Defines mime type value for this music-player component; the TypeScript-oriented notes
                      * above explain its source and use.
                      */
-                    val mimeType: String? = cursor.getString(mimeColumn)
                     // What:     `val childPath: String = joinDisplayPath(frame.prefix, name)`
                     //           declares a read-only `String` by joining this directory's
                     //           prefix and the child's name into one tree-relative display path.
@@ -875,7 +903,7 @@ object SafTreeSource {
                      * Defines child path value for this music-player component; the TypeScript-oriented notes
                      * above explain its source and use.
                      */
-                    val childPath: String = joinDisplayPath(frame.prefix, name)
+                    val childPath: String = joinDisplayPath(frame.prefix, child.name)
                     // What:     `if (mimeType == Document.MIME_TYPE_DIR) { ... } else if (isAudioFile(name)) { ... }`
                     //           branches on the child kind. `==` is value equality; comparing a
                     //           `String?` (`mimeType`) to a `String` constant is NULL-SAFE in
@@ -891,7 +919,7 @@ object SafTreeSource {
                     // if (mimeType === Document.MIME_TYPE_DIR) { ... }
                     // else if (isAudioFile(name)) { ... }
                     // ```
-                    if (mimeType == Document.MIME_TYPE_DIR) {
+                    if (child.mimeType == Document.MIME_TYPE_DIR) {
                         // What:     `pending.addLast(Frame(documentId = childId, prefix = childPath))`
                         //           pushes a new directory frame onto the work stack.
                         //           `addLast(x)` appends to the deque tail (stack top);
@@ -903,8 +931,8 @@ object SafTreeSource {
                         // ```ts
                         // pending.push({ documentId: childId, prefix: childPath });
                         // ```
-                        pending.addLast(Frame(documentId = childId, prefix = childPath))
-                    } else if (isAudioFile(name)) {
+                        pending.addLast(Frame(documentId = child.id, prefix = childPath))
+                    } else if (isAudioFile(child.name)) {
                         // What:     `val documentUri: Uri = DocumentsContract.buildDocumentUriUsingTree(treeUri,
                         //           childId)`
                         //           builds the playable per-document URI from the OPAQUE document
@@ -921,7 +949,7 @@ object SafTreeSource {
                          * Defines document uri value for this music-player component; the TypeScript-oriented
                          * notes above explain its source and use.
                          */
-                        val documentUri: Uri = DocumentsContract.buildDocumentUriUsingTree(treeUri, childId)
+                        val documentUri: Uri = DocumentsContract.buildDocumentUriUsingTree(treeUri, child.id)
                         // What:     `tracks.add(Track(uri = documentUri.toString(), displayPath = childPath))`
                         //           appends a new `Track` to the accumulator. `Track(...)`
                         //           constructs it (no `new`) with named args; `documentUri.toString()`
@@ -958,16 +986,7 @@ object SafTreeSource {
                         //   if (batch !== null) await onBatch(batch);
                         // }
                         // ```
-                        if (onBatch != null) {
-                            /**
-                             * Defines batch value for this music-player component; the TypeScript-oriented notes
-                             * above explain its source and use.
-                             */
-                            val batch: List<Track>? = gate.nextBatch(tracks)
-                            if (batch != null) {
-                                onBatch(batch)
-                            }
-                        }
+                        emitLibraryBatchIfReady(onBatch = onBatch, gate = gate, tracks = tracks)
                     }
                 }
             }
