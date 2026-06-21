@@ -197,6 +197,16 @@ description = "Enforce KDoc on this app's Kotlin via the shared kotlin-linter"
 dir = "{{config_root}}"
 run = "../../linter/kotlin/gradlew --project-dir ../../linter/kotlin detektCheck -PdetektInput={{config_root}}/app/src/main/kotlin --no-daemon --console=plain"
 
+# Run the shared monochromatic-rust-linter (max-lines + require-rustdoc) over this
+# app's native engine crate, mirroring how the sibling desktop-app wires lint:rust.
+# Runs on the HOST (the linter crate has no NDK/opus/clang deps) and walks
+# .gitignore-aware from the crate root, so rust/target is skipped. Picked up by the
+# root `lint:rust` fanout (`mise '//packages/...:lint:rust'`).
+[tasks."lint:rust"]
+description = "Run monochromatic-rust-linter (max-lines + require-rustdoc) over this app's native .rs"
+dir = "{{config_root}}/rust"
+run = "cargo run --quiet --manifest-path ../../../linter/rust/Cargo.toml -- ."
+
 [tasks.clean]
 description = "Delete Gradle build outputs"
 dir = "{{config_root}}"
