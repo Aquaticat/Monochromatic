@@ -139,8 +139,16 @@ export function scopeAvoidingCurrentMainModel(
         !== currentMainModelSlug;
     },);
 
-  if ((alternativeEntries.length === 0) || (alternativeEntries.length
-    === scope.entries.length))
+  /**
+   * Whether no non-current default candidate exists.
+   */
+  const noAlternativeEntries = alternativeEntries.length === 0;
+  /**
+   * Whether active primary model was absent from scope.
+   */
+  const currentMainModelAbsentFromScope = alternativeEntries.length
+    === scope.entries.length;
+  if (noAlternativeEntries || currentMainModelAbsentFromScope)
     return scope;
 
   return {

@@ -191,6 +191,10 @@ export async function runAdvisor(
    */
   const advisorSystemPrompt = buildAdvisorSystemPrompt(options.config,);
   /**
+   * Current primary model to avoid for default Advisor selection when possible.
+   */
+  const currentMainModel = options.ctx.model;
+  /**
    * Selected Advisor model and model-budgeted serialized context.
    */
   const selectionContext = selectAdvisorRunContext({
@@ -203,10 +207,10 @@ export async function runAdvisor(
     scope,
     modelRegistry: options.ctx
       .modelRegistry,
-    ...(options.ctx.model
+    ...(currentMainModel
       === undefined
       ? {}
-      : { currentMainModel: options.ctx.model, }),
+      : { currentMainModel, }),
     ...(options.requestedSlug
       === undefined
       ? {}
