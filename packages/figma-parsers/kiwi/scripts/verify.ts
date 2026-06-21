@@ -4,7 +4,7 @@
  * Tests parsing of all three Figma export file types (.fig, .deck, .jam)
  * from the sample files in the Nextcloud reference directory.
  *
- * Run with: bun packages/figma-parsers/kiwi/scripts/verify.ts
+ * Run with: node packages/figma-parsers/kiwi/scripts/verify.ts
  */
 
 import {

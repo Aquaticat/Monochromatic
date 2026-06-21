@@ -118,13 +118,13 @@ Start-Process -FilePath "$env:TEMP\vc_redist.x64.exe" -ArgumentList "/install","
 
 ## `mise where` vs `mise which`
 
-`mise where bun` returns the **install root** (e.g. `.../bun/1.3.11`).
-`mise which bun` returns the **full path to the executable** (e.g. `.../bun/1.3.11/bin/bun.exe`).
+`mise where node` returns the **install root** (e.g. `.../node/26.3.1`).
+`mise which node` returns the **full path to the executable** (e.g. `.../node/26.3.1/bin/node.exe`).
 
 If you use `mise where` to set PATH, you get the directory without `bin/`.
-`bun` will not be found.
+`node` will not be found.
 
-Fix: `$env:PATH = ((& mise.exe which bun 2>$null) | Split-Path) + ";" + $env:PATH`
+Fix: `$env:PATH = ((& mise.exe which node 2>$null) | Split-Path) + ";" + $env:PATH`
 
 ## `mise.jdx.dev` serves stale releases
 

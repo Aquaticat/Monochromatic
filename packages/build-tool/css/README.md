@@ -20,7 +20,7 @@ See [docs/troubleshooting/css-tooling.md](../../../docs/troubleshooting/css-tool
 ### CLI
 
 ```bash
-bun packages/build/css/src/index.ts src/main.css dist/bundle.css
+build-css src/main.css dist/bundle.css
 ```
 
 ### Programmatic

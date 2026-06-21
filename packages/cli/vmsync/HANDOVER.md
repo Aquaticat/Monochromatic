@@ -18,7 +18,7 @@ It is named `.unit.test.ts` because `.e2e.test.ts` is reserved for Playwright in
 It uses sequential test structure because VM lifecycle tests share expensive external state.
 
 Flow: creates Ubuntu VM via mvm, pushes tsdown bundle via virtiofs,
-installs mise+bun inside guest, runs all vmsync subcommands.
+installs mise+Node inside guest, runs all vmsync subcommands.
 
 Run: `mise run //packages/cli/vmsync:test:e2e`
 
@@ -32,7 +32,7 @@ Current flow:
 2. Pushes the bundled vmsync entry point via `mvm push`.
 3. Installs the Visual C++ runtime because `mise.exe` requires `vcruntime140.dll`.
 4. Downloads the latest mise Windows zip via the GitHub release redirect.
-5. Installs Bun through mise.
+5. Installs Node through mise.
 6. Exercises help, list, status, config, and already-synced sync behavior.
 
 The test assumes VirtioFsSvc maps the `mvm-shared` virtiofs tag to `Z:\`.

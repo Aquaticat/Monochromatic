@@ -84,7 +84,7 @@ await describe({
               };\nconsole.log('imported only');\n`,
             );
 
-            const { stdout, stderr, } = await execAsync(`bun ${importProbe}`,);
+            const { stdout, stderr, } = await execAsync(`node ${importProbe}`,);
 
             expect(stdout,).toBe('imported only\n',);
             expect(stderr,).toBe('',);
