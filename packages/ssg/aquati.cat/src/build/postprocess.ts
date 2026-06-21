@@ -30,7 +30,7 @@
  * `node_modules/`, hidden directories, and build artifacts
  * (`*.tsbuildinfo`, `*.jsonl`) that may exist inside `dist/`.
  *
- * Run via `mise run build:postprocess` or `bun src/build/postprocess.ts`.
+ * Run via `mise run build:postprocess` or `node src/build/postprocess.ts`.
  */
 import {
   readFile,

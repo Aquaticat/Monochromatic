@@ -10,7 +10,7 @@
  *
  * @example
  * ```bash
- * bun packages/dev-script/file-enforcer/src/package/mise.generate-index.ts
+ * node packages/dev-script/file-enforcer/src/package/mise.generate-index.ts
  * ```
  */
 

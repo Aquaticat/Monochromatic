@@ -586,12 +586,12 @@ Reasons:
 // Bad -- flag as NIT: target-language comment
 const xml = `
   <os><type arch='x86_64'>hvm</type></os>
-  <!-- Bun requires AVX -->
+  <!-- Guest CPU requires AVX -->
   <cpu mode='host-passthrough'/>
 `;
 
 // Bad -- flag as NIT: comment disconnected from the line it explains
-// Bun requires AVX
+// Guest CPU requires AVX
 const xml = `
   <os><type arch='x86_64'>hvm</type></os>
   <cpu mode='host-passthrough'/>
@@ -601,7 +601,7 @@ const xml = `
 const xml = `
   <os><type arch='x86_64'>hvm</type></os>
   ${
-  // Bun requires AVX
+  // Guest CPU requires AVX
   ''}
   <cpu mode='host-passthrough'/>
 `;

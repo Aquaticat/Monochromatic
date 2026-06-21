@@ -1502,7 +1502,7 @@ VB5:
  checkboxes,
  tabs) + read back rendered state via `agent-browser eval`.
  "Markup balances,
-" "JS parsed in bun,
+" "JS parsed in Node,
 " "I fetched the HTML" are prerequisites,
  not proof.
  If task involved rewriting any JS handler,

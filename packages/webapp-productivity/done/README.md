@@ -9,7 +9,7 @@ In development, `mise run dev:site` uses `mise watch` to restart the process on 
 
 ```sh
 mise run build:js:client  # bundle client scripts
-bun src/server.ts         # start server
+node src/server.ts        # start server
 mise run dev:site         # development (auto-restart on src/ change via mise watch)
 ```
 

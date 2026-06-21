@@ -20,7 +20,7 @@
  * Variable font axes are preserved (no `variationAxes` option) so the
  * CSS `font-weight: 100 900` / `100 700` declarations keep working.
  *
- * Run via `mise run format:fonts` or `bun src/build/subset-fonts.ts`.
+ * Run via `mise run format:fonts` or `node src/build/subset-fonts.ts`.
  */
 import {
   readFile,

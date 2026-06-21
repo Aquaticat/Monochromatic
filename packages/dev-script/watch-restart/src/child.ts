@@ -10,7 +10,7 @@ import {
  * Default grace period (ms) between SIGTERM and SIGKILL during {@link Child.stop}.
  *
  * 5 seconds is the watchexec default and the editord legacy value; tuned for
- * bun servers that flush sockets and close timers synchronously on SIGTERM.
+ * Node servers that flush sockets and close timers synchronously on SIGTERM.
  * Higher would make Ctrl+C feel sluggish; lower would surprise long-running
  * graceful-shutdown handlers.
  */
@@ -228,7 +228,7 @@ export type ChildOptions = {
    * child leads its own process group, and signal `-pid` (the negative
    * pid) so the whole subtree receives the signal. When `false`, signal
    * the direct child pid only. Defaults to `true`: the dev-server case
-   * commonly spawns its own workers (e.g. bun `--watch`, vite) that we
+   * commonly spawns its own workers (e.g. node `--watch`, vite) that we
    * want to kill together with the parent.
    */
   readonly processGroup?: boolean;
@@ -263,7 +263,7 @@ export type ChildOptions = {
  * Builds the default {@link SpawnFn}: wraps `node:child_process.spawn` with
  * `stdio: 'inherit'` and `detached: <processGroup>`.
  *
- * Stdio inheritance lets the bun child's logs flow through to the user's
+ * Stdio inheritance lets the Node child's logs flow through to the user's
  * terminal unchanged; the watcher process does not buffer or recolor, which
  * was a known failure mode under watchexec's nested-tree stdio handling.
  *

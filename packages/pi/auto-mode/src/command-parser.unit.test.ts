@@ -124,7 +124,7 @@ await describe({
       name: 'parses leading environment assignments before command name',
       fn: async () => {
         const result = analyzeBashCommand(
-          'GEMINI_API_KEY=value bun /tmp/agent/gemcheck.ts',
+          'GEMINI_API_KEY=value node /tmp/agent/gemcheck.ts',
         );
         expect(result.commands[0]?.name,).toBe('bun',);
         expect(result.commands[0]?.envAssignments,).toEqual([

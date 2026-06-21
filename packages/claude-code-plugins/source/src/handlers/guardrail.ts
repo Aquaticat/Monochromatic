@@ -52,7 +52,7 @@ function isCommandBoundary(c: string,): boolean {
  * invokesBunTest('(bun test)');                  // true
  * invokesBunTest('echo "bun test"');             // false (inside quotes)
  * invokesBunTest('bun run test');                // false (different command)
- * invokesBunTest('bun src/foo.unit.test.ts');    // false
+ * invokesBunTest('node src/foo.unit.test.ts');   // false
  * invokesBunTest('bun tests');                   // false (different word)
  * ```
  */

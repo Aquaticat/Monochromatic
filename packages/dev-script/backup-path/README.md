@@ -20,17 +20,17 @@ to lose.
 Run directly against the source:
 
 ```sh
-bun packages/dev-script/backup-path/src/index.ts ./some/file-or-dir
+node packages/dev-script/backup-path/src/index.ts ./some/file-or-dir
 ```
 
 Or against the built output once the package is installed as a
 workspace dependency:
 
 ```sh
-bun node_modules/@monochromatic-dev/dev-script-backup-path/dist/final/node/index.js ./some/file-or-dir
+node node_modules/@monochromatic-dev/dev-script-backup-path/dist/final/node/index.js ./some/file-or-dir
 ```
 
-There is no `mise run` task wrapper; invoke `bun` directly.
+There is no `mise run` task wrapper; invoke `node` directly.
 
 ## Arguments
 

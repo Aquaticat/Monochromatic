@@ -5,11 +5,10 @@
  * Test matrix:
  * - OS: ubuntu (apt), fedora (dnf)
  * - User: root, non-root (uid 1000)
- * - Runtime: bun
  *
  * @example
  * ```bash
- * bun packages/dev-script/file-enforcer/src/package/mise.container-test.ts
+ * node packages/dev-script/file-enforcer/src/package/mise.container-test.ts
  * ```
  */
 

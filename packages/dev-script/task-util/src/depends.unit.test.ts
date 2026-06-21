@@ -139,7 +139,7 @@ await describe({
             touch({ path: join(srcDir, 'a.ts',), },);
 
             await execAsync(
-              `bun ${cliPath} -s "${srcDir}/**" -o "${outDir}/**" -- ${
+              `node ${cliPath} -s "${srcDir}/**" -o "${outDir}/**" -- ${
                 writeMarkerCmd(markerPath,)
               }`,
             );
@@ -159,7 +159,7 @@ await describe({
             touch({ path: join(srcDir, 'a.ts',), },);
 
             await execAsync(
-              `bun ${cliPath} -s "${srcDir}/**" -o "${outDir}/**" -- ${
+              `node ${cliPath} -s "${srcDir}/**" -o "${outDir}/**" -- ${
                 writeMarkerCmd(markerPath,)
               }`,
             );
@@ -179,7 +179,7 @@ await describe({
             touch({ path: join(outDir, 'a.js',), },);
 
             await execAsync(
-              `bun ${cliPath} -s "${srcDir}/**" -o "${outDir}/**" -- ${
+              `node ${cliPath} -s "${srcDir}/**" -o "${outDir}/**" -- ${
                 writeMarkerCmd(markerPath,)
               }`,
             );
@@ -198,7 +198,7 @@ await describe({
             touch({ path: join(srcDir, 'a.ts',), },);
 
             const { stderr, } = await execAsync(
-              `bun ${cliPath} -v -s "${srcDir}/**" -o "${outDir}/**" -- ${
+              `node ${cliPath} -v -s "${srcDir}/**" -o "${outDir}/**" -- ${
                 writeMarkerCmd(markerPath,)
               }`,
             );
@@ -219,7 +219,7 @@ await describe({
             touch({ path: join(outDir, 'a.js',), },);
 
             const { stderr, } = await execAsync(
-              `bun ${cliPath} -v -s "${srcDir}/**" -o "${outDir}/**" -- ${
+              `node ${cliPath} -v -s "${srcDir}/**" -o "${outDir}/**" -- ${
                 writeMarkerCmd(markerPath,)
               }`,
             );
@@ -241,7 +241,7 @@ await describe({
             touch({ path: join(libDir, 'b.ts',), },);
 
             await execAsync(
-              `bun ${cliPath} -s "${srcDir}/**" -s "${libDir}/**" -o "${outDir}/**" -- ${
+              `node ${cliPath} -s "${srcDir}/**" -s "${libDir}/**" -o "${outDir}/**" -- ${
                 writeMarkerCmd(markerPath,)
               }`,
             );
@@ -264,7 +264,7 @@ await describe({
             touch({ path: join(dist2Dir, 'b.js',), },);
 
             await execAsync(
-              `bun ${cliPath} -s "${srcDir}/**" -o "${outDir}/**" -o "${dist2Dir}/**" -- ${
+              `node ${cliPath} -s "${srcDir}/**" -o "${outDir}/**" -o "${dist2Dir}/**" -- ${
                 writeMarkerCmd(markerPath,)
               }`,
             );
@@ -283,7 +283,7 @@ await describe({
             touch({ path: join(srcDir, 'a.ts',), },);
 
             await execAsync(
-              `bun ${cliPath} -s "${srcDir}/**" -o "${outDir}/**" -- ${
+              `node ${cliPath} -s "${srcDir}/**" -o "${outDir}/**" -- ${
                 writeMarkerCmd(markerPath,)
               }`,
             );
@@ -304,7 +304,7 @@ await describe({
             touch({ path: join(outDir, 'a.js',), },);
 
             await execAsync(
-              `bun ${cliPath} -s "${srcDir}/**/*.xyz" -o "${outDir}/**" -- ${
+              `node ${cliPath} -s "${srcDir}/**/*.xyz" -o "${outDir}/**" -- ${
                 writeMarkerCmd(markerPath,)
               }`,
             );
@@ -326,7 +326,7 @@ await describe({
             const { cliPath, markerPath, } = fixtures;
 
             await execAsync(
-              `bun ${cliPath} -s "sh:echo Infinity" -o "sh:echo -Infinity" -- ${
+              `node ${cliPath} -s "sh:echo Infinity" -o "sh:echo -Infinity" -- ${
                 writeMarkerCmd(markerPath,)
               }`,
             );
@@ -343,7 +343,7 @@ await describe({
             const { cliPath, markerPath, } = fixtures;
 
             await execAsync(
-              `bun ${cliPath} -s "sh:echo -Infinity" -o "sh:echo Infinity" -- ${
+              `node ${cliPath} -s "sh:echo -Infinity" -o "sh:echo Infinity" -- ${
                 writeMarkerCmd(markerPath,)
               }`,
             );
@@ -361,7 +361,7 @@ await describe({
 
             // With default newest: Math.max(Infinity, -Infinity) = Infinity → fresh
             await execAsync(
-              `bun ${cliPath} -s "sh:echo -Infinity" -o "sh:echo Infinity" -o "sh:echo -Infinity" -- ${
+              `node ${cliPath} -s "sh:echo -Infinity" -o "sh:echo Infinity" -o "sh:echo -Infinity" -- ${
                 writeMarkerCmd(markerPath,)
               }`,
             );
@@ -379,7 +379,7 @@ await describe({
 
             // With oldest: Math.min(Infinity, -Infinity) = -Infinity → stale
             await execAsync(
-              `bun ${cliPath} -s "sh:echo 0" --output-time-strategy oldest -o "sh:echo Infinity" -o "sh:echo -Infinity" -- ${
+              `node ${cliPath} -s "sh:echo 0" --output-time-strategy oldest -o "sh:echo Infinity" -o "sh:echo -Infinity" -- ${
                 writeMarkerCmd(markerPath,)
               }`,
             );
@@ -396,7 +396,7 @@ await describe({
             const { cliPath, markerPath, } = fixtures;
 
             await execAsync(
-              `bun ${cliPath} -s "sh:echo -Infinity" -o "sh:echo Infinity" -o "sh:echo Infinity" -- ${
+              `node ${cliPath} -s "sh:echo -Infinity" -o "sh:echo Infinity" -o "sh:echo Infinity" -- ${
                 writeMarkerCmd(markerPath,)
               }`,
             );
@@ -413,7 +413,7 @@ await describe({
             const { cliPath, markerPath, } = fixtures;
 
             const { stderr, } = await execAsync(
-              `bun ${cliPath} -v -s "sh:echo Infinity" -o "sh:echo -Infinity" -- ${
+              `node ${cliPath} -v -s "sh:echo Infinity" -o "sh:echo -Infinity" -- ${
                 writeMarkerCmd(markerPath,)
               }`,
             );
@@ -438,7 +438,7 @@ await describe({
             touch({ path: join(outDir, 'a.js',), },);
 
             await execAsync(
-              `bun ${cliPath} -s "sh:echo Infinity" -o "${outDir}/**" -- ${
+              `node ${cliPath} -s "sh:echo Infinity" -o "${outDir}/**" -- ${
                 writeMarkerCmd(markerPath,)
               }`,
             );
@@ -457,7 +457,7 @@ await describe({
             touch({ path: join(outDir, 'a.js',), },);
 
             await execAsync(
-              `bun ${cliPath} -s "sh:echo -Infinity" -o "${outDir}/**" -- ${
+              `node ${cliPath} -s "sh:echo -Infinity" -o "${outDir}/**" -- ${
                 writeMarkerCmd(markerPath,)
               }`,
             );
@@ -483,7 +483,7 @@ await describe({
             touch({ path: join(outDir, 'a.js',), },);
 
             await execAsync(
-              `bun ${cliPath} -s "sh:echo 2208988800" -o "${outDir}/**" -- ${
+              `node ${cliPath} -s "sh:echo 2208988800" -o "${outDir}/**" -- ${
                 writeMarkerCmd(markerPath,)
               }`,
             );
@@ -503,7 +503,7 @@ await describe({
             touch({ path: join(outDir, 'a.js',), },);
 
             await execAsync(
-              `bun ${cliPath} -s "sh:echo 2208988800000" -o "${outDir}/**" -- ${
+              `node ${cliPath} -s "sh:echo 2208988800000" -o "${outDir}/**" -- ${
                 writeMarkerCmd(markerPath,)
               }`,
             );
@@ -523,7 +523,7 @@ await describe({
             touch({ path: join(outDir, 'a.js',), },);
 
             await execAsync(
-              `bun ${cliPath} -s "sh:echo 2040-01-01T00:00:00Z" -o "${outDir}/**" -- ${
+              `node ${cliPath} -s "sh:echo 2040-01-01T00:00:00Z" -o "${outDir}/**" -- ${
                 writeMarkerCmd(markerPath,)
               }`,
             );
@@ -543,7 +543,7 @@ await describe({
             touch({ path: join(outDir, 'a.js',), },);
 
             await execAsync(
-              `bun ${cliPath} -s "sh:echo 946684800" -o "${outDir}/**" -- ${
+              `node ${cliPath} -s "sh:echo 946684800" -o "${outDir}/**" -- ${
                 writeMarkerCmd(markerPath,)
               }`,
             );
@@ -563,7 +563,7 @@ await describe({
             touch({ path: join(srcDir, 'a.ts',), },);
 
             await execAsync(
-              `bun ${cliPath} -s "${srcDir}/**" -o "sh:echo 946684800" -- ${
+              `node ${cliPath} -s "${srcDir}/**" -o "sh:echo 946684800" -- ${
                 writeMarkerCmd(markerPath,)
               }`,
             );
@@ -586,7 +586,7 @@ await describe({
 
             await expect(
               execAsync(
-                `bun ${cliPath} -s "sh:exit 1" -o "${outDir}/**" -- ${
+                `node ${cliPath} -s "sh:exit 1" -o "${outDir}/**" -- ${
                   writeMarkerCmd(markerPath,)
                 }`,
               ),
@@ -605,7 +605,7 @@ await describe({
 
             await expect(
               execAsync(
-                `bun ${cliPath} -o "sh:echo hello" -- ${writeMarkerCmd(markerPath,)}`,
+                `node ${cliPath} -o "sh:echo hello" -- ${writeMarkerCmd(markerPath,)}`,
               ),
             )
               .rejects
@@ -622,7 +622,7 @@ await describe({
 
             await expect(
               execAsync(
-                `bun ${cliPath} -o "sh:echo" -- ${writeMarkerCmd(markerPath,)}`,
+                `node ${cliPath} -o "sh:echo" -- ${writeMarkerCmd(markerPath,)}`,
               ),
             )
               .rejects
@@ -647,7 +647,7 @@ await describe({
             touch({ path: join(outDir, 'a.js',), },);
 
             await execAsync(
-              `bun ${cliPath} --source-time-strategy oldest -s "sh:echo 946684800" -s "sh:echo 2208988800" -o "${outDir}/**" -- ${
+              `node ${cliPath} --source-time-strategy oldest -s "sh:echo 946684800" -s "sh:echo 2208988800" -o "${outDir}/**" -- ${
                 writeMarkerCmd(markerPath,)
               }`,
             );
@@ -667,7 +667,7 @@ await describe({
             touch({ path: join(outDir, 'a.js',), },);
 
             await execAsync(
-              `bun ${cliPath} --source-time-strategy newest -s "sh:echo 946684800" -s "sh:echo 2208988800" -o "${outDir}/**" -- ${
+              `node ${cliPath} --source-time-strategy newest -s "sh:echo 946684800" -s "sh:echo 2208988800" -o "${outDir}/**" -- ${
                 writeMarkerCmd(markerPath,)
               }`,
             );
@@ -689,7 +689,7 @@ await describe({
             touch({ path: join(outDir, 'a.js',), },);
 
             await execAsync(
-              `bun ${cliPath} --output-time-strategy oldest -s "${srcDir}/**" -o "${outDir}/**" -o "sh:echo -Infinity" -- ${
+              `node ${cliPath} --output-time-strategy oldest -s "${srcDir}/**" -o "${outDir}/**" -o "sh:echo -Infinity" -- ${
                 writeMarkerCmd(markerPath,)
               }`,
             );
@@ -710,7 +710,7 @@ await describe({
             touch({ path: join(outDir, 'a.js',), },);
 
             await execAsync(
-              `bun ${cliPath} --output-time-strategy newest -s "${srcDir}/**" -o "${outDir}/**" -o "sh:echo -Infinity" -- ${
+              `node ${cliPath} --output-time-strategy newest -s "${srcDir}/**" -o "${outDir}/**" -o "sh:echo -Infinity" -- ${
                 writeMarkerCmd(markerPath,)
               }`,
             );
@@ -728,7 +728,7 @@ await describe({
 
             await expect(
               execAsync(
-                `bun ${cliPath} --source-time-strategy invalid -s "${srcDir}/**" -o "${outDir}/**" -- echo test`,
+                `node ${cliPath} --source-time-strategy invalid -s "${srcDir}/**" -o "${outDir}/**" -- echo test`,
               ),
             )
               .rejects
@@ -749,7 +749,7 @@ await describe({
             touch({ path: join(outDir, 'a.js',), },);
 
             await execAsync(
-              `bun ${cliPath} --source-time-strategy "sh:sort -n | head -1" -s "sh:echo 946684800" -s "sh:echo 2208988800" -o "${outDir}/**" -- ${
+              `node ${cliPath} --source-time-strategy "sh:sort -n | head -1" -s "sh:echo 946684800" -s "sh:echo 2208988800" -o "${outDir}/**" -- ${
                 writeMarkerCmd(markerPath,)
               }`,
             );
@@ -770,7 +770,7 @@ await describe({
             touch({ path: join(outDir, 'a.js',), },);
 
             await execAsync(
-              `bun ${cliPath} --source-time-strategy "sh:sort -rn | head -1" -s "sh:echo 946684800" -s "sh:echo 2208988800" -o "${outDir}/**" -- ${
+              `node ${cliPath} --source-time-strategy "sh:sort -rn | head -1" -s "sh:echo 946684800" -s "sh:echo 2208988800" -o "${outDir}/**" -- ${
                 writeMarkerCmd(markerPath,)
               }`,
             );
@@ -790,7 +790,7 @@ await describe({
             touch({ path: join(srcDir, 'a.ts',), },);
 
             await execAsync(
-              `bun ${cliPath} --output-time-strategy "sh:sort -n | head -1" -s "${srcDir}/**" -o "sh:echo Infinity" -o "sh:echo -Infinity" -- ${
+              `node ${cliPath} --output-time-strategy "sh:sort -n | head -1" -s "${srcDir}/**" -o "sh:echo Infinity" -o "sh:echo -Infinity" -- ${
                 writeMarkerCmd(markerPath,)
               }`,
             );
@@ -813,7 +813,7 @@ await describe({
 
             // No sources → sourceTime = -Infinity → -Infinity > Infinity → false → fresh
             await execAsync(
-              `bun ${cliPath} -o "sh:echo Infinity" -- ${writeMarkerCmd(markerPath,)}`,
+              `node ${cliPath} -o "sh:echo Infinity" -- ${writeMarkerCmd(markerPath,)}`,
             );
 
             expect(existsSync(markerPath,),).toBe(false,);
@@ -829,7 +829,7 @@ await describe({
 
             // No sources → sourceTime = -Infinity → -Infinity > -Infinity → false → fresh
             await execAsync(
-              `bun ${cliPath} -o "sh:echo -Infinity" -- ${writeMarkerCmd(markerPath,)}`,
+              `node ${cliPath} -o "sh:echo -Infinity" -- ${writeMarkerCmd(markerPath,)}`,
             );
 
             expect(existsSync(markerPath,),).toBe(false,);
@@ -845,7 +845,7 @@ await describe({
 
             // Explicit "always dirty" source pattern for gate checks
             await execAsync(
-              `bun ${cliPath} -s "sh:echo Infinity" -o "sh:echo -Infinity" -- ${
+              `node ${cliPath} -s "sh:echo Infinity" -o "sh:echo -Infinity" -- ${
                 writeMarkerCmd(markerPath,)
               }`,
             );
@@ -871,7 +871,7 @@ await describe({
             touch({ path: join(srcDir, 'a.ts',), },);
 
             await execAsync(
-              `bun ${cliPath} -s "${srcDir}/**" -o "sh:echo Infinity" -- ${
+              `node ${cliPath} -s "${srcDir}/**" -o "sh:echo Infinity" -- ${
                 writeMarkerCmd(markerPath,)
               }`,
             );
@@ -890,7 +890,7 @@ await describe({
             touch({ path: join(srcDir, 'a.ts',), },);
 
             await execAsync(
-              `bun ${cliPath} -s "${srcDir}/**" -o "sh:echo 946684800" -- ${
+              `node ${cliPath} -s "${srcDir}/**" -o "sh:echo 946684800" -- ${
                 writeMarkerCmd(markerPath,)
               }`,
             );
@@ -910,7 +910,7 @@ await describe({
             touch({ path: join(outDir, 'a.js',), },);
 
             await execAsync(
-              `bun ${cliPath} -s "${srcDir}/**" -o "${outDir}/**" -o "sh:echo Infinity" -- ${
+              `node ${cliPath} -s "${srcDir}/**" -o "${outDir}/**" -o "sh:echo Infinity" -- ${
                 writeMarkerCmd(markerPath,)
               }`,
             );
@@ -934,7 +934,7 @@ await describe({
             touch({ path: join(srcDir, 'a.ts',), },);
 
             const { stdout, } = await execAsync(
-              `bun ${cliPath} -s "${srcDir}/**" -o "${outDir}/**" -- echo HIDDEN_OUTPUT`,
+              `node ${cliPath} -s "${srcDir}/**" -o "${outDir}/**" -- echo HIDDEN_OUTPUT`,
             );
 
             expect(stdout,).not.toContain('HIDDEN_OUTPUT',);
@@ -952,7 +952,7 @@ await describe({
 
             try {
               await execAsync(
-                `bun ${cliPath} -s "${srcDir}/**" -o "${outDir}/**" -- node -e "console.log('VISIBLE_OUTPUT'); process.exit(1)"`,
+                `node ${cliPath} -s "${srcDir}/**" -o "${outDir}/**" -- node -e "console.log('VISIBLE_OUTPUT'); process.exit(1)"`,
               );
               expect(true,).toBe(false,);
             }
@@ -974,7 +974,7 @@ await describe({
 
             try {
               await execAsync(
-                `bun ${cliPath} -s "${srcDir}/**" -o "${outDir}/**" -- node -e "console.error('ERROR_OUTPUT'); process.exit(1)"`,
+                `node ${cliPath} -s "${srcDir}/**" -o "${outDir}/**" -- node -e "console.error('ERROR_OUTPUT'); process.exit(1)"`,
               );
               expect(true,).toBe(false,);
             }
@@ -1001,7 +1001,7 @@ await describe({
 
             await expect(
               execAsync(
-                `bun ${cliPath} -s "${srcDir}/**" -o "${outDir}/**" -- node -e "process.exit(42)"`,
+                `node ${cliPath} -s "${srcDir}/**" -o "${outDir}/**" -- node -e "process.exit(42)"`,
               ),
             )
               .rejects
@@ -1019,7 +1019,7 @@ await describe({
             touch({ path: join(srcDir, 'a.ts',), },);
 
             const result = await execAsync(
-              `bun ${cliPath} -a -s "${srcDir}/**" -o "${outDir}/**" -- node -e "process.exit(1)"`,
+              `node ${cliPath} -a -s "${srcDir}/**" -o "${outDir}/**" -- node -e "process.exit(1)"`,
             );
 
             expect(result,).toBeDefined();
@@ -1034,7 +1034,7 @@ await describe({
             const { cliPath, srcDir, } = fixtures;
 
             await expect(
-              execAsync(`bun ${cliPath} -s "${srcDir}/**" -- echo test`,),
+              execAsync(`node ${cliPath} -s "${srcDir}/**" -- echo test`,),
             )
               .rejects
               .toThrow();
@@ -1049,7 +1049,7 @@ await describe({
             const { cliPath, srcDir, outDir, } = fixtures;
 
             await expect(
-              execAsync(`bun ${cliPath} -s "${srcDir}/**" -o "${outDir}/**"`,),
+              execAsync(`node ${cliPath} -s "${srcDir}/**" -o "${outDir}/**"`,),
             )
               .rejects
               .toThrow();

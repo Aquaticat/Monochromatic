@@ -7,7 +7,7 @@ that imposes undocumented constraints on command structure.
 These constraints prevent several standard shell constructs from working as expected
 when the hook rewrites the command.
 
-The hook appends a filter pipe (`2>&1 | bun filter.mjs`) to the original command
+The hook appends a filter pipe (`2>&1 | node filter.mjs`) to the original command
 and must propagate the original command's exit code through the pipeline.
 Six approaches were tried before finding one that works reliably.
 
@@ -15,7 +15,7 @@ Six approaches were tried before finding one that works reliably.
 
 The sandbox treats `{` as a command name rather than a bash reserved word.
 
-**Wrapper:** `{ cmd 2>&1; echo ___BOF_EC:$?; } | bun filter; (exit $?)`
+**Wrapper:** `{ cmd 2>&1; echo ___BOF_EC:$?; } | node filter; (exit $?)`
 
 **Error:**
 
@@ -35,7 +35,7 @@ which requires the shell to see the entire construct as one unit.
 
 Variables and `$PIPESTATUS` set after `;` may not reference the preceding pipeline.
 
-**Wrapper:** `cmd 2>&1 | bun filter; _bof=$PIPESTATUS; (exit "$_bof")`
+**Wrapper:** `cmd 2>&1 | node filter; _bof=$PIPESTATUS; (exit "$_bof")`
 
 **Error (intermittent):**
 
@@ -58,7 +58,7 @@ Wrapping the command in `bash -o pipefail -c '...'` avoids `;` and `{ }`,
 but introduces a second shell parsing pass that transforms characters inside
 double-quoted strings.
 
-**Wrapper:** `bash -o pipefail -c 'bun -e "if (!body) { ... }" 2>&1 | bun filter'`
+**Wrapper:** `bash -o pipefail -c 'node -e "if (!body) { ... }" 2>&1 | node filter'`
 
 **Error:**
 
@@ -70,7 +70,7 @@ error: Unexpected escape sequence
 ```
 
 **Cause:**
-the `!` inside the double-quoted `bun -e` argument gets escaped to `\!`
+the `!` inside the double-quoted `node -e` argument gets escaped to `\!`
 somewhere in the eval chain between the sandbox and the inner `bash -c`.
 In standard non-interactive bash, `!` inside double quotes is literal,
 and single-quote escaping (`'\''`) preserves all characters verbatim.
@@ -84,14 +84,14 @@ in the command string.
 If the filter is the last command, `< /dev/null` overrides the pipe
 that feeds filtered output from the left side of the pipeline.
 
-**Wrapper:** `set -o pipefail && cmd 2>&1 | bun filter`
+**Wrapper:** `set -o pipefail && cmd 2>&1 | node filter`
 
 **Symptom:**
 commands exit 141 (128 + SIGPIPE signal 13) and produce no output.
 
 **Cause:**
 the sandbox transforms the wrapper into
-`set -o pipefail && cmd 2>&1 | bun filter < /dev/null`.
+`set -o pipefail && cmd 2>&1 | node filter < /dev/null`.
 Bash applies `< /dev/null` to the filter, replacing its pipe stdin with `/dev/null`.
 The filter reads nothing, outputs nothing, and the left side of the pipe
 receives SIGPIPE when it tries to write.
@@ -103,7 +103,7 @@ instead of the filter's exit code (0).
 Shell variable `$?` expands to an empty string in certain positions in the
 command string, rather than to the expected numeric exit code.
 
-**Wrapper:** `set -o pipefail && cmd 2>&1 | bun filter || (exit $?)`
+**Wrapper:** `set -o pipefail && cmd 2>&1 | node filter || (exit $?)`
 
 **Error:**
 
@@ -120,7 +120,7 @@ in suffix positions after `||`.
 
 ## Working approach: `set -o pipefail && ... && true`
 
-**Wrapper:** `set -o pipefail && cmd 2>&1 | bun filter && true`
+**Wrapper:** `set -o pipefail && cmd 2>&1 | node filter && true`
 
 This avoids all five constraints:
 
@@ -154,7 +154,7 @@ No shell variables are read, expanded, or assigned.
 If the sandbox splits `&&` the same way it splits `;` (not observed, but possible):
 
 - `set -o pipefail` runs in its own context and its effect is lost
-- `cmd 2>&1 | bun filter && true` runs without `pipefail`; exit code is the filter's (0)
+- `cmd 2>&1 | node filter && true` runs without `pipefail`; exit code is the filter's (0)
 - Output filtering still works; only exit code propagation is lost
 - No crash, no garbled output, no confusing error messages
 
@@ -164,10 +164,10 @@ For commands with `&&` or `||` chains (e.g. `git pull && git push`),
 the filter pipe binds to the last command due to operator precedence:
 
 ```
-set -o pipefail && git pull && git push 2>&1 | bun filter && true
+set -o pipefail && git pull && git push 2>&1 | node filter && true
 ```
 
-Parsed as: `set -o pipefail && git pull && (git push 2>&1 | bun filter) && true`
+Parsed as: `set -o pipefail && git pull && (git push 2>&1 | node filter) && true`
 
 Only `git push`'s output is filtered.
 This is the same behavior as the original approach and all subsequent attempts:

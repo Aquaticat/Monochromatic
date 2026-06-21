@@ -171,8 +171,8 @@ import { applyMixins, } from '@monochromatic-dev/build-css/ts';
 ## Testing
 
 ```bash
-# Run all module-test files in this package (preferred: via the mise task once backfilled)
-bun src/build.unit.test.ts
+# Run all module-test files in this package
+mise run //packages/build-tool/css:test:unit
 ```
 
 Integration tests exercise two CSS import resolution strategies using fixture packages:

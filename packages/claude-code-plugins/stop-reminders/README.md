@@ -36,7 +36,7 @@ Add the package as a workspace dependency in the root `package.json`:
 }
 ```
 
-Then run `bun install` to link the binary.
+Then run `pnpm install` to link the binary.
 
 ## Setup
 

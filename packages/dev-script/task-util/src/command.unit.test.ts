@@ -90,7 +90,7 @@ await describe({
         const { cliPath, testScript, } = fixtures;
 
         const { stdout, stderr, } = await execAsync(
-          `bun ${cliPath} -- node ${testScript} success`,
+          `node ${cliPath} -- node ${testScript} success`,
         );
 
         expect(stdout,).toContain('Success',);
@@ -105,12 +105,12 @@ await describe({
         const fixtures = setup();
         const { cliPath, testScript, } = fixtures;
 
-        await expect(execAsync(`bun ${cliPath} -- node ${testScript} fail`,),)
+        await expect(execAsync(`node ${cliPath} -- node ${testScript} fail`,),)
           .rejects
           .toThrow();
 
         try {
-          await execAsync(`bun ${cliPath} -- node ${testScript} fail`,);
+          await execAsync(`node ${cliPath} -- node ${testScript} fail`,);
         }
         catch (error: unknown) {
           const execError = error as { exitCode: number; stderr: string; };
@@ -128,7 +128,7 @@ await describe({
         const { cliPath, testScript, } = fixtures;
 
         const { stdout, stderr, } = await execAsync(
-          `bun ${cliPath} --allowFailure -- node ${testScript} fail`,
+          `node ${cliPath} --allowFailure -- node ${testScript} fail`,
         );
 
         expect(stderr,).toContain('Error: Test failure',);
@@ -144,7 +144,7 @@ await describe({
         const { cliPath, testScript, } = fixtures;
 
         const { stdout, stderr, } = await execAsync(
-          `bun ${cliPath} -a -- node ${testScript} fail`,
+          `node ${cliPath} -a -- node ${testScript} fail`,
         );
 
         expect(stderr,).toContain('Error: Test failure',);
@@ -160,7 +160,7 @@ await describe({
         const { cliPath, testScript, } = fixtures;
 
         const { stdout, stderr, } = await execAsync(
-          `bun ${cliPath} -- node ${testScript} output`,
+          `node ${cliPath} -- node ${testScript} output`,
         );
 
         expect(stdout,).toContain('stdout output',);
@@ -176,7 +176,7 @@ await describe({
         const { cliPath, } = fixtures;
 
         const { stdout, } = await execAsync(
-          `bun ${cliPath} -- echo "arg1" "arg2" "arg3"`,
+          `node ${cliPath} -- echo "arg1" "arg2" "arg3"`,
         );
 
         expect(stdout,).toContain('arg1 arg2 arg3',);
@@ -191,7 +191,7 @@ await describe({
         const { cliPath, } = fixtures;
 
         const { stdout, } = await execAsync(
-          `bun ${cliPath} --shell -- "echo hello && echo world"`,
+          `node ${cliPath} --shell -- "echo hello && echo world"`,
         );
 
         expect(stdout,).toContain('hello',);
@@ -206,7 +206,7 @@ await describe({
         const fixtures = setup();
         const { cliPath, } = fixtures;
 
-        const { stdout, } = await execAsync(`bun ${cliPath} -s -- "echo test"`,);
+        const { stdout, } = await execAsync(`node ${cliPath} -s -- "echo test"`,);
 
         expect(stdout,).toContain('test',);
 
@@ -220,7 +220,7 @@ await describe({
         const { cliPath, } = fixtures;
 
         try {
-          await execAsync(`bun ${cliPath}`,);
+          await execAsync(`node ${cliPath}`,);
           // Should not reach here
           expect(true,).toBe(false,);
         }
@@ -239,7 +239,7 @@ await describe({
         const { cliPath, } = fixtures;
 
         try {
-          await execAsync(`bun ${cliPath} --`,);
+          await execAsync(`node ${cliPath} --`,);
           // Should not reach here
           expect(true,).toBe(false,);
         }
@@ -258,7 +258,7 @@ await describe({
         const { cliPath, testScript, } = fixtures;
 
         try {
-          await execAsync(`bun ${cliPath} -- node ${testScript} fail-with-code 42`,);
+          await execAsync(`node ${cliPath} -- node ${testScript} fail-with-code 42`,);
         }
         catch (error: unknown) {
           const execError = error as { exitCode: number; };
@@ -275,7 +275,7 @@ await describe({
         const { cliPath, } = fixtures;
 
         try {
-          await execAsync(`bun ${cliPath} -- nonexistentcommand123`,);
+          await execAsync(`node ${cliPath} -- nonexistentcommand123`,);
           // Should not reach here
           expect(true,).toBe(false,);
         }
@@ -295,7 +295,7 @@ await describe({
 
         // Should not throw with allowFailure
         const result = await execAsync(
-          `bun ${cliPath} --allowFailure -- nonexistentcommand123`,
+          `node ${cliPath} --allowFailure -- nonexistentcommand123`,
         );
         // Command succeeds even though the subcommand doesn't exist
 
@@ -308,7 +308,7 @@ await describe({
         const fixtures = setup();
         const { cliPath, } = fixtures;
 
-        const { stdout, } = await execAsync(`bun ${cliPath} -- echo "Hello $USER!"`,);
+        const { stdout, } = await execAsync(`node ${cliPath} -- echo "Hello $USER!"`,);
 
         expect(stdout,).toContain('Hello',);
         expect(stdout,).toContain('!',);
@@ -334,7 +334,7 @@ await describe({
     `,);
 
         // Start the command in background and kill it
-        const childProcess = exec(`bun ${cliPath} -- node ${sleepScript}`,);
+        const childProcess = exec(`node ${cliPath} -- node ${sleepScript}`,);
 
         // Give it time to start
         await new Promise(function delayResolve(resolve,): void {
@@ -365,7 +365,7 @@ await describe({
         const { cliPath, } = fixtures;
 
         const { stdout, } = await execAsync(
-          `bun ${cliPath} -a -s -- "echo combined && exit 1"`,
+          `node ${cliPath} -a -s -- "echo combined && exit 1"`,
         );
 
         expect(stdout,).toContain('combined',);
@@ -381,7 +381,7 @@ await describe({
         const { cliPath, testScript, } = fixtures;
 
         const { stdout, } = await execAsync(
-          `bun ${cliPath} --timeout 5000 -- node ${testScript} success`,
+          `node ${cliPath} --timeout 5000 -- node ${testScript} success`,
         );
 
         expect(stdout,).toContain('Success',);
@@ -396,7 +396,7 @@ await describe({
         const { cliPath, testScript, } = fixtures;
 
         const { stdout, } = await execAsync(
-          `bun ${cliPath} -t 5000 -- node ${testScript} success`,
+          `node ${cliPath} -t 5000 -- node ${testScript} success`,
         );
 
         expect(stdout,).toContain('Success',);
@@ -420,7 +420,7 @@ await describe({
     `,);
 
         await expect(
-          execAsync(`bun ${cliPath} --timeout 500 -- node ${longScript}`,),
+          execAsync(`node ${cliPath} --timeout 500 -- node ${longScript}`,),
         )
           .rejects
           .toThrow();
@@ -448,7 +448,7 @@ await describe({
     `,);
 
         const { stdout, } = await execAsync(
-          `bun ${cliPath} --allowFailure --timeout 500 -- node ${longScript}`,
+          `node ${cliPath} --allowFailure --timeout 500 -- node ${longScript}`,
         );
 
         expect(stdout,).toContain('Starting long task',);
@@ -477,7 +477,7 @@ await describe({
     `,);
 
         const { stdout, } = await execAsync(
-          `bun ${cliPath} -- node ${timedScript}`,
+          `node ${cliPath} -- node ${timedScript}`,
         );
 
         expect(stdout,).toContain('Start',);

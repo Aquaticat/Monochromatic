@@ -171,7 +171,7 @@ secret-looking paths inside `/tmp/agent`, and paths outside the trusted root.
 When a bash command passes a secret-looking environment variable to a trusted
 `/tmp/agent` script or interpreter command, auto-mode permits `grep` to source
 that key from a project-local `.env` file. This covers image-diff or model-check
-helpers such as `GEMINI_API_KEY="$KEY" bun /tmp/agent/...`. It does not allow
+helpers such as `GEMINI_API_KEY="$KEY" node /tmp/agent/...`. It does not allow
 arbitrary secret files, unrelated dotenv reads, home dotfiles, direct network
 commands with secret parameter references, or untrusted script paths.
 

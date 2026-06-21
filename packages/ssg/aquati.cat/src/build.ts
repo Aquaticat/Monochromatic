@@ -10,7 +10,7 @@
  * 6. Copy static assets from public/
  * 7. Post-process: zstd compression
  *
- * Run via `mise run build:site` or `bun src/build.ts`.
+ * Run via `mise run build:site` or `node src/build.ts`.
  */
 import { relative, } from 'node:path';
 

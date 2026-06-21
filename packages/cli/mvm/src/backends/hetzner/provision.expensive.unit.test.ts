@@ -7,7 +7,7 @@
  * example:
  *
  * ```sh
- * HCLOUD_TOKEN=... bun packages/cli/mvm/src/backends/hetzner/provision.expensive.unit.test.ts
+ * HCLOUD_TOKEN=... node packages/cli/mvm/src/backends/hetzner/provision.expensive.unit.test.ts
  * ```
  *
  * It provisions a throwaway server, execs a command, round-trips a file,

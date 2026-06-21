@@ -87,7 +87,7 @@ performance cost.
 ```toml
 [tasks.build]
 depends = ["expensive-prep"]
-run = "bun src/build.ts"
+run = "node src/build.ts"
 
 [tasks.expensive-prep]
 sources = ["../sibling-pkg/src/**/*"]

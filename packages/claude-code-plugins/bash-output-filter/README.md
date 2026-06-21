@@ -21,7 +21,7 @@ The hook intercepts Bash tool calls at PreToolUse and rewrites the command to pi
 through a TypeScript filter:
 
 ```
-original_command 2>&1 | bun ccbof-filter.js; _bof=${PIPESTATUS[0]}; (exit $_bof)
+original_command 2>&1 | node ccbof-filter.mjs; _bof=${PIPESTATUS[0]}; (exit $_bof)
 ```
 
 **Key design decisions:**

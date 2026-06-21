@@ -186,7 +186,7 @@ This is built into Claude Code itself and cannot be configured from the script s
 ## Runtime
 
 Uses `node:fs`, `node:fs/promises`, and `node:stream/consumers` only.
-No runtime-specific APIs: works with Bun, Node, or Deno.
+No Bun-specific APIs: use Node by default, and the script remains portable to Deno-compatible APIs.
 
 ## Installation
 
@@ -196,7 +196,7 @@ Add to `~/.claude/settings.json`:
 {
   "statusLine": {
     "type": "command",
-    "command": "bun /path/to/statusline.ts"
+    "command": "node /path/to/statusline.ts"
   },
   "spinnerVerbs": { "mode": "replace", "verbs": [""] },
   "spinnerTipsEnabled": false

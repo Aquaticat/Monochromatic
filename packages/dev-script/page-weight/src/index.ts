@@ -12,7 +12,7 @@
  *
  * @example
  * ```sh
- * bun packages/dev-script/page-weight/src/index.ts ./dist
+ * node packages/dev-script/page-weight/src/index.ts ./dist
  * ```
  */
 import { resolve, } from 'node:path';
@@ -115,7 +115,7 @@ function humanBytes(bytes: number,): string {
 //region Main
 
 /**
- * Command-line arguments after `bun script.ts`.
+ * Command-line arguments after `page-weight` or direct `node` execution.
  */
 const args = process.argv
   .slice(2,);

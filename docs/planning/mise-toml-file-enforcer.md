@@ -279,9 +279,9 @@ Generator must explicitly never touch `*/mise.local.toml`.
 - The four empty `mise.toml` files in `packages/test-fixture/css-*` are real and
   may or may not be intentional.
    Decide before classifying them.
-- Bun vs node vs deno runtime is not assumed by any kind today;
+- Node vs deno runtime is not assumed by any kind today;
    the existing
-  per-task `run = "bun src/foo.ts"` strings stay in place under D (custom or
+  per-task `run = "node src/foo.ts"` strings stay in place under D (custom or
   extended from root).
    Kind-driven generation does not impose a runtime.
 

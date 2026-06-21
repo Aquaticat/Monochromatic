@@ -54,24 +54,24 @@ to follow-up commands (`exec`,
 
 ```sh
 # Create a new VM (downloads Ubuntu 24.04 LTS cloud image on first run)
-bun packages/cli/mvm/src/index.ts create dev-01
+mvm create dev-01
 
 # Create a VM with a different image
-bun packages/cli/mvm/src/index.ts create --image fedora build-box
-bun packages/cli/mvm/src/index.ts create --image alpine lightweight
-bun packages/cli/mvm/src/index.ts create --image windows win-box
+mvm create --image fedora build-box
+mvm create --image alpine lightweight
+mvm create --image windows win-box
 
 # Connect to a running VM (auto-login serial console, Ctrl+] to disconnect)
-bun packages/cli/mvm/src/index.ts shell dev-01
+mvm shell dev-01
 
 # List all managed VMs
-bun packages/cli/mvm/src/index.ts list
+mvm list
 
 # Clone a VM (full disk copy, new hostname via cloud-init)
-bun packages/cli/mvm/src/index.ts create --from dev-01 dev-02
+mvm create --from dev-01 dev-02
 
 # Destroy a VM and all its storage
-bun packages/cli/mvm/src/index.ts destroy dev-01
+mvm destroy dev-01
 ```
 
 Or via mise:
@@ -117,21 +117,21 @@ It provisions real,
 export HCLOUD_TOKEN=...   # a Hetzner Cloud API token with read/write access
 
 # Create a server (defaults: cheapest non-deprecated type, locations fsn1,nbg1,hel1)
-bun packages/cli/mvm/src/index.ts --backend hetzner create dev-01
+mvm --backend hetzner create dev-01
 
 # Pick a server type and location series (first available wins)
-bun packages/cli/mvm/src/index.ts --backend hetzner create big \
+mvm --backend hetzner create big \
   --server-type cpx41 --location ash,hil
 
 # Run a command (over SSH), copy files (over SCP), open a shell, then destroy
-bun packages/cli/mvm/src/index.ts --backend hetzner exec dev-01 -- uname -a
-bun packages/cli/mvm/src/index.ts --backend hetzner push dev-01 ./setup.sh /root/setup.sh
-bun packages/cli/mvm/src/index.ts --backend hetzner shell dev-01
-bun packages/cli/mvm/src/index.ts --backend hetzner destroy dev-01
+mvm --backend hetzner exec dev-01 -- uname -a
+mvm --backend hetzner push dev-01 ./setup.sh /root/setup.sh
+mvm --backend hetzner shell dev-01
+mvm --backend hetzner destroy dev-01
 
 # List or destroy every mvm-managed server (scoped by the mvm=true label)
-bun packages/cli/mvm/src/index.ts --backend hetzner list
-bun packages/cli/mvm/src/index.ts --backend hetzner destroy --all
+mvm --backend hetzner list
+mvm --backend hetzner destroy --all
 ```
 
 Notes:
@@ -182,7 +182,7 @@ A live,
 `test:unit` (the `.expensive.` marker) and only runs when `HCLOUD_TOKEN` is set:
 
 ```sh
-HCLOUD_TOKEN=... bun packages/cli/mvm/src/backends/hetzner/provision.expensive.unit.test.ts
+HCLOUD_TOKEN=... node packages/cli/mvm/src/backends/hetzner/provision.expensive.unit.test.ts
 ```
 
 ## Custom templates

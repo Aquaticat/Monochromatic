@@ -360,7 +360,7 @@ await describe({
             toolCallId: 'bash-agent-temp-credential',
             input: {
               command:
-                `KEY=$(grep --max-count=1 IMAGE_DIFF_GEMINI_API_KEY ${envPath} | cut --delimiter='=' --fields=2- | tr --delete '"'); GEMINI_API_KEY="$KEY" bun ${scriptPath} gemini-3.5-flash ${imageGlob}`,
+                `KEY=$(grep --max-count=1 IMAGE_DIFF_GEMINI_API_KEY ${envPath} | cut --delimiter='=' --fields=2- | tr --delete '"'); GEMINI_API_KEY="$KEY" node ${scriptPath} gemini-3.5-flash ${imageGlob}`,
             },
           },
           {

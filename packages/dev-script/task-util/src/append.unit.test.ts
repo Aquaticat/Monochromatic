@@ -75,7 +75,7 @@ await describe({
         const { cliPath, testFile, } = fixtures;
 
         const { stdout, stderr, } = await execAsync(
-          `bun ${cliPath} "new line" --to ${testFile}`,
+          `node ${cliPath} "new line" --to ${testFile}`,
         );
 
         expect(stderr,).toBe('',);
@@ -93,7 +93,7 @@ await describe({
         const { cliPath, testFile, } = fixtures;
 
         const { stdout, stderr, } = await execAsync(
-          `bun ${cliPath} "line 1" "line 2" "line 3" --to ${testFile}`,
+          `node ${cliPath} "line 1" "line 2" "line 3" --to ${testFile}`,
         );
 
         expect(stderr,).toBe('',);
@@ -111,7 +111,7 @@ await describe({
         const { cliPath, testFile, } = fixtures;
 
         const { stdout, stderr, } = await execAsync(
-          `bun ${cliPath} "line 1\\nline 2" --to ${testFile}`,
+          `node ${cliPath} "line 1\\nline 2" --to ${testFile}`,
         );
 
         expect(stderr,).toBe('',);
@@ -129,7 +129,7 @@ await describe({
         const { cliPath, testFile, } = fixtures;
 
         const { stdout, stderr, } = await execAsync(
-          `bun ${cliPath} "short flag test" -t ${testFile}`,
+          `node ${cliPath} "short flag test" -t ${testFile}`,
         );
 
         expect(stderr,).toBe('',);
@@ -146,7 +146,7 @@ await describe({
         const fixtures = setup();
         const { cliPath, testFile, } = fixtures;
 
-        await expect(execAsync(`bun ${cliPath} --to ${testFile}`,),).rejects.toThrow();
+        await expect(execAsync(`node ${cliPath} --to ${testFile}`,),).rejects.toThrow();
 
         teardown(fixtures,);
       },
@@ -157,7 +157,7 @@ await describe({
         const fixtures = setup();
         const { cliPath, } = fixtures;
 
-        await expect(execAsync(`bun ${cliPath} "some text"`,),).rejects.toThrow();
+        await expect(execAsync(`node ${cliPath} "some text"`,),).rejects.toThrow();
 
         teardown(fixtures,);
       },
@@ -169,7 +169,7 @@ await describe({
         const { cliPath, testDir, } = fixtures;
 
         const nonExistentFile = join(testDir, 'non-existent.txt',);
-        await expect(execAsync(`bun ${cliPath} "text" --to ${nonExistentFile}`,),)
+        await expect(execAsync(`node ${cliPath} "text" --to ${nonExistentFile}`,),)
           .rejects
           .toThrow();
 
@@ -198,7 +198,7 @@ await describe({
           // Permissions enforced, proceed with test
         }
 
-        await expect(execAsync(`bun ${cliPath} "text" --to ${testFile}`,),)
+        await expect(execAsync(`node ${cliPath} "text" --to ${testFile}`,),)
           .rejects
           .toThrow();
 
@@ -214,7 +214,7 @@ await describe({
         // Add some initial content
         writeFileSync(testFile, 'Line 1\nLine 2\n',);
 
-        await execAsync(`bun ${cliPath} "Line 3" --to ${testFile}`,);
+        await execAsync(`node ${cliPath} "Line 3" --to ${testFile}`,);
 
         const content = await readFile(testFile, 'utf8',);
         expect(content,).toBe('Line 1\nLine 2\nLine 3\n',);
@@ -228,7 +228,7 @@ await describe({
         const fixtures = setup();
         const { cliPath, testFile, } = fixtures;
 
-        await execAsync(`bun ${cliPath} "" --to ${testFile}`,);
+        await execAsync(`node ${cliPath} "" --to ${testFile}`,);
 
         const content = await readFile(testFile, 'utf8',);
         expect(content,).toBe('Initial content\n\n',);
@@ -244,7 +244,7 @@ await describe({
 
         // Use single quotes to prevent shell expansion of $USER and other special chars
         const specialText = 'Hello && echo test | cat';
-        await execAsync(`bun ${cliPath} '${specialText}' --to ${testFile}`,);
+        await execAsync(`node ${cliPath} '${specialText}' --to ${testFile}`,);
 
         const content = await readFile(testFile, 'utf8',);
         expect(content,).toBe(`Initial content\n${specialText}\n`,);
@@ -258,9 +258,9 @@ await describe({
         const fixtures = setup();
         const { cliPath, testFile, } = fixtures;
 
-        await execAsync(`bun ${cliPath} "First append" --to ${testFile}`,);
-        await execAsync(`bun ${cliPath} "Second append" --to ${testFile}`,);
-        await execAsync(`bun ${cliPath} "Third append" --to ${testFile}`,);
+        await execAsync(`node ${cliPath} "First append" --to ${testFile}`,);
+        await execAsync(`node ${cliPath} "Second append" --to ${testFile}`,);
+        await execAsync(`node ${cliPath} "Third append" --to ${testFile}`,);
 
         const content = await readFile(testFile, 'utf8',);
         expect(content,).toBe(

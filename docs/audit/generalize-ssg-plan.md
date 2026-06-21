@@ -105,7 +105,7 @@ These are verified against the source, cited by repo-relative path and line.
     The plan never acknowledges the inconsistency or resolves which of the name or the path should change.
 
 15. There is no invocation model.
-    The build entry is `bun src/build.ts` (`mise.toml`), and `package.json` has no `bin`.
+    The build entry is `node src/build.ts` (`mise.toml`), and `package.json` has no `bin`.
     Phase 3 says site-aquaticat gets "mise.toml with build/dev tasks that invoke the SSG" but never specifies
     how a consumer triggers a build whose entry lives in `node_modules`, nor how the `extends` task templates
     (`build:js:client`, `lint`, defined in the root `mise.toml:172,391`) resolve for a package outside this monorepo.

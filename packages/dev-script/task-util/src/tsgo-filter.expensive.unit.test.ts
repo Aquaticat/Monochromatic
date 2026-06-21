@@ -64,7 +64,7 @@ await describe({
             const { cliPath, } = fixtures;
 
             // tsgo --version should succeed and print version info
-            const { stdout, } = await execAsync(`bun ${cliPath} --version`,);
+            const { stdout, } = await execAsync(`node ${cliPath} --version`,);
 
             expect(stdout.trim().length,).toBeGreaterThan(0,);
 
@@ -109,7 +109,7 @@ await describe({
             writeFileSync(sourceFile, 'const x: number = "not a number";\n',);
 
             try {
-              await execAsync(`bun ${cliPath} --noEmit -p ${tsconfig}`,);
+              await execAsync(`node ${cliPath} --noEmit -p ${tsconfig}`,);
               // Should not reach here; tsgo should fail on the type error
               expect(true,).toBe(false,);
             }

@@ -520,7 +520,7 @@ await describe({
         );
 
         const analysis = analyzeBashCommand(
-          `KEY=$(grep --max-count=1 IMAGE_DIFF_GEMINI_API_KEY ${envPath} | cut --delimiter='=' --fields=2- | tr --delete '"'); GEMINI_API_KEY="$KEY" bun ${scriptPath} gemini-3.5-flash ${imageGlob}`,
+          `KEY=$(grep --max-count=1 IMAGE_DIFF_GEMINI_API_KEY ${envPath} | cut --delimiter='=' --fields=2- | tr --delete '"'); GEMINI_API_KEY="$KEY" node ${scriptPath} gemini-3.5-flash ${imageGlob}`,
         );
         const ctx: SignalContext = {
           cwd: projectRoot,
@@ -585,14 +585,14 @@ await describe({
 
         expect(bashSignals({
           analysis: analyzeBashCommand(
-            `GEMINI_API_KEY=value bun ${scriptPath} ${secretGlob}`,
+            `GEMINI_API_KEY=value node ${scriptPath} ${secretGlob}`,
           ),
           ctx,
           trustedAgentTempDirs: [agentRoot,],
         },),).toBe(true,);
         expect(bashSignals({
           analysis: analyzeBashCommand(
-            `GEMINI_API_KEY=value bun ${scriptPath} ${bracketSecretGlob}`,
+            `GEMINI_API_KEY=value node ${scriptPath} ${bracketSecretGlob}`,
           ),
           ctx,
           trustedAgentTempDirs: [agentRoot,],
@@ -654,7 +654,7 @@ await describe({
 
         expect(bashSignals({
           analysis: analyzeBashCommand(
-            `GEMINI_API_KEY=value bun ${scriptPath} ${join(linkRoot, 'page-*.png',)}`,
+            `GEMINI_API_KEY=value node ${scriptPath} ${join(linkRoot, 'page-*.png',)}`,
           ),
           ctx,
           trustedAgentTempDirs: [agentRoot,],
@@ -721,7 +721,7 @@ await describe({
         );
 
         const analysis = analyzeBashCommand(
-          `KEY=$(grep VALUE ${secretPath}); GEMINI_API_KEY="$KEY" bun ${scriptPath}`,
+          `KEY=$(grep VALUE ${secretPath}); GEMINI_API_KEY="$KEY" node ${scriptPath}`,
         );
         const ctx: SignalContext = {
           cwd: projectRoot,
@@ -780,7 +780,7 @@ await describe({
         );
 
         const analysis = analyzeBashCommand(
-          `grep IMAGE_DIFF_GEMINI_API_KEY ${envPath}; GEMINI_API_KEY=value bun ${scriptPath}; cat ${envPath}`,
+          `grep IMAGE_DIFF_GEMINI_API_KEY ${envPath}; GEMINI_API_KEY=value node ${scriptPath}; cat ${envPath}`,
         );
         const ctx: SignalContext = {
           cwd: projectRoot,

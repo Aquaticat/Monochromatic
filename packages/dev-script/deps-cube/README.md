@@ -14,7 +14,7 @@ deps-cube
 mise run //packages/dev-script/deps-cube:run
 ```
 
-Output: `<package>/dist/deps-cube-<YYYY-MM-DDTHH-MM-SSZ>.html` (filename carries ISO 8601 UTC down to seconds, with `:` rewritten as `-` for filesystem safety; each run produces a distinct artifact). The package directory is located by walking up from `import.meta.dirname` until this package's own `package.json` is found, so the path is the same in source mode (`bun src/cli.ts`) and built mode (`bun dist/final/node/cli.mjs`). The package's `dist/` is gitignored. Stdout prints exactly `Saved to <abs-path>`. Open the HTML in any modern browser (Firefox ESR 140+ baseline).
+Output: `<package>/dist/deps-cube-<YYYY-MM-DDTHH-MM-SSZ>.html` (filename carries ISO 8601 UTC down to seconds, with `:` rewritten as `-` for filesystem safety; each run produces a distinct artifact). The package directory is located by walking up from `import.meta.dirname` until this package's own `package.json` is found, so the path is the same in source mode (`node src/cli.ts`) and built mode (`node dist/final/node/cli.mjs`). The package's `dist/` is gitignored. Stdout prints exactly `Saved to <abs-path>`. Open the HTML in any modern browser (Firefox ESR 140+ baseline).
 
 ## Dimensions
 

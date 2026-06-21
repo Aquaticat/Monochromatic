@@ -13,7 +13,7 @@
  * resolved at module load by {@link findPackageRootCached} from
  * `@monochromatic-dev/module-fs-path`. The helper walks up from
  * `import.meta.dirname` until the package's own `package.json` is
- * found. This works identically in source mode (`bun src/cli.ts`) and
+ * found. This works identically in source mode (`node src/cli.ts`) and
  * in built mode (tsdown emits `<pkg>/dist/final/node/cli.mjs` and
  * `package.json#bin` points there). A hardcoded relative offset would
  * land on different absolute paths in the two modes.

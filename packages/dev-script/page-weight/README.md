@@ -37,7 +37,7 @@ references (`#id`) do not contribute to transfer weight and are omitted.
 ## Usage
 
 ```sh
-bun packages/dev-script/page-weight/src/index.ts path/to/dist
+node packages/dev-script/page-weight/src/index.ts path/to/dist
 ```
 
 The script accepts any dist directory: use it against any SSG output,

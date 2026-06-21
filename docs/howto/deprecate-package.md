@@ -56,8 +56,8 @@ dependencies, so consumers never run into 404s on private workspace deps.
 
 ### 1. Set up tsdown bundling
 
-Most workspace packages run via `bun src/index.ts` and have never been
-published. To produce a Node-compatible bundle:
+Most workspace packages run directly through Node or a built Node bundle
+managed by mise. To produce a publishable Node-compatible bundle:
 
 1. Create `tsdown.node.config.ts`. The minimum form re-exports the shared
    config:
@@ -119,11 +119,10 @@ published. To produce a Node-compatible bundle:
    - Keep external runtime deps in `dependencies` if any survived
      bundling decisions
 
-4. Change the source shebang from `#!/usr/bin/env bun` to
-   `#!/usr/bin/env node`. Bun ignores shebangs when invoked as
-   `bun run`, so local dev still works; the published bin runs on any
-   Node ≥ 18 host without bun installed. tsdown preserves the shebang in
-   the bundle output.
+4. Confirm the source shebang is `#!/usr/bin/env node`. If the source
+   still has a legacy `#!/usr/bin/env bun` shebang, change it before
+   building. tsdown preserves the shebang in the bundle output, so the
+   published bin runs on any Node ≥ 18 host without Bun installed.
 
 5. `pnpm install` then `mise run //packages/<cat>/<name>:build`. Confirm
    `dist/final/node/index.mjs` exists, has the right shebang, and lists

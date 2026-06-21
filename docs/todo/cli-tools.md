@@ -189,7 +189,7 @@ Create a custom MCP server for better mise integration with Claude/AI tools.
    unfamiliar)
 - When scripts are needed,
    create TypeScript files as `mise.<action>.ts` in `packages/module/es/src/`
-- Use Bun to execute TypeScript scripts directly
+- Use Node to execute TypeScript scripts directly
 - Avoid creating main() functions
   - Instead of wrapping code in a main() function,
      write top-level code directly

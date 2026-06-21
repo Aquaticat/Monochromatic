@@ -8,7 +8,7 @@
  * `@monochromatic-dev/claude-code-plugins-source/handlers/bash-output-filter/filter`.
  * This file is the second tsdown entry of the bash-output-filter plugin and
  * builds to `dist/final/node/filter.mjs`, which the hook's rewritten command
- * invokes via `bun <filterPath>`.
+ * invokes via `node <filterPath>`.
  *
  * @module
  */

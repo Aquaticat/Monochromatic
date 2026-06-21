@@ -10,8 +10,8 @@
  *
  * @example
  * ```sh
- * bun packages/dev-script/catalog-tighten/src/index.ts
- * bun packages/dev-script/catalog-tighten/src/index.ts --dry-run
+ * node packages/dev-script/catalog-tighten/src/index.ts
+ * node packages/dev-script/catalog-tighten/src/index.ts --dry-run
  * ```
  */
 

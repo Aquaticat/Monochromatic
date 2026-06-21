@@ -2,7 +2,7 @@
  * Build script that reads the master glyph strip SVG, extracts individual
  * letter shapes, and assembles them into an OpenType font file using opentype.js.
  *
- * Run: `bun src/build-font.ts`
+ * Run: `mise run //packages/typeface/aquaticat:build:font`
  */
 
 import {

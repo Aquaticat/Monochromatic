@@ -18,14 +18,14 @@ filter DSL,
 ## Why a package
 
 editord originally shelled out to `watchexec -w src/server --no-meta -r --
-bun src/server/index.ts`.
+node src/server/index.ts`.
  Two failure modes documented in
 the repo-root `TROUBLESHOOTING.mise-watch.md` motivated the
 replacement:
  a Tokio reference-cycle SIGINT hang in watchexec's jaq filter
 mode,
  and SIGTERM not reaching grandchildren through the `watchexec → mise → sh
-→ bun` chain.
+→ node` chain.
  A workspace-local TypeScript implementation pins the runtime we
 can audit (chokidar plus `child_process.spawn`) and exposes a library API that
 other dev servers in the workspace can reuse without learning a new tool.
@@ -63,7 +63,7 @@ watch-restart [-w <dir>...]
 editord's invocation (defaults cover this case):
 
 ```bash
-watch-restart -w src/server -- bun src/server/index.ts
+watch-restart -w src/server -- node src/server/index.ts
 ```
 
 ### Filter flags
@@ -294,31 +294,31 @@ watch-restart -w src/client --ext .css --ext .scss -- mise run build:css
 Vendored `src/` with symlinked workspace deps:
 
 ```bash
-watch-restart -w src --follow-symlinks --depth 5 -- bun src/index.ts
+watch-restart -w src --follow-symlinks --depth 5 -- node src/index.ts
 ```
 
 Anchored alternation picomatch cannot express:
 
 ```bash
-watch-restart -w src --exclude-regex '\.(test|spec|fixture)\.[jt]sx?$' -- bun src/index.ts
+watch-restart -w src --exclude-regex '\.(test|spec|fixture)\.[jt]sx?$' -- node src/index.ts
 ```
 
 Network-mounted source tree:
 
 ```bash
-watch-restart -w /mnt/nfs/src --poll 500 -- bun src/index.ts
+watch-restart -w /mnt/nfs/src --poll 500 -- node src/index.ts
 ```
 
 Soft-reload server that re-reads config on SIGHUP:
 
 ```bash
-watch-restart -w src --signal SIGHUP -- bun src/index.ts
+watch-restart -w src --signal SIGHUP -- node src/index.ts
 ```
 
 Clear the terminal on each restart:
 
 ```bash
-watch-restart -w src --clear -- bun src/index.ts
+watch-restart -w src --clear -- node src/index.ts
 ```
 
 ## Choices
@@ -346,13 +346,13 @@ watch-restart -w src --clear -- bun src/index.ts
   (Node-only restart semantics),
    `pm2` (production process manager),
    or
-  `bun --watch` / `--hot` (watches the import graph,
+  `node --watch` (watches the import graph,
    no content-hash filter,
   HMR-like semantics wrong for a server with sockets/tokens).
 - **Process-group ownership on by default**.
    The default child is spawned
   detached (POSIX `setsid`) and signaled via `-pid` so a dev command that
-  itself spawns workers (bun `--watch`,
+  itself spawns workers (node `--watch`,
    vite) gets killed together with
   its subtree.
    `--no-process-group` reverts to direct-child signalling.

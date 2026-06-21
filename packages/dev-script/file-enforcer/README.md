@@ -32,13 +32,13 @@ Run it directly or through the CLI:
 
 ```bash
 # Direct execution
-bun file-enforcer.config.ts
+node file-enforcer.config.ts
 
 # CLI (finds config via find-up)
-bun packages/dev-script/file-enforcer/src/index.ts
+node packages/dev-script/file-enforcer/src/index.ts
 
 # Watch mode -- re-runs on source changes, protects managed destinations
-bun packages/dev-script/file-enforcer/src/index.ts --watch
+node packages/dev-script/file-enforcer/src/index.ts --watch
 ```
 
 ## API

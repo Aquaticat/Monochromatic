@@ -278,6 +278,6 @@ export async function resolveSpecifier(
    */
   const globalLine = globalDir !== NOT_FOUND ? `  - Global: ${globalDir}\n` : '';
   throw new Error(
-    `Cannot resolve "${specifier}" from any of:\n  - CWD: ${cwd}\n${monorepoLine}${globalLine}Install the package first (e.g. bun add <package>)`,
+    `Cannot resolve "${specifier}" from any of:\n  - CWD: ${cwd}\n${monorepoLine}${globalLine}Install the package first (e.g. pnpm add <package>)`,
   );
 }

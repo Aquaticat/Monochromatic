@@ -159,9 +159,9 @@ await describe({
           },
         },),
         it({
-          name: 'allows "bun src/foo.unit.test.ts" (direct file invocation)',
+          name: 'allows "node src/foo.unit.test.ts" (direct file invocation)',
           fn: async ({ expect: e, },) => {
-            const result = guardrailHandler(makeBashEvent('bun src/foo.unit.test.ts',),);
+            const result = guardrailHandler(makeBashEvent('node src/foo.unit.test.ts',),);
             e(isDeny(result,),).toBe(false,);
           },
         },),

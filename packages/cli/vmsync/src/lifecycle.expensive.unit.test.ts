@@ -138,7 +138,7 @@ async function safeDestroy(vmName: string,): Promise<void> {
   /** Guest path to vmsync bundle on the virtiofs mount. */
   const BUNDLE = '/mnt/shared/index.mjs';
 
-  /** Shell preamble to set HOME and activate mise-managed bun. */
+  /** Shell preamble to set HOME and activate mise-managed Node. */
   const MISE =
     'export HOME=/home/ubuntu && eval "$(/home/ubuntu/.local/bin/mise activate bash)"';
 
@@ -147,7 +147,7 @@ async function safeDestroy(vmName: string,): Promise<void> {
    * All commands use sudo for consistent HOME since import requires
    * root for qemu-nbd, and non-root commands must read data from the same location.
    */
-  const VMSYNC = `${MISE} && sudo -E "$(which bun)" ${BUNDLE}`;
+  const VMSYNC = `${MISE} && sudo -E "$(which node)" ${BUNDLE}`;
 
   // beforeAll setup
   await safeDestroy(VM,);
@@ -159,7 +159,7 @@ async function safeDestroy(vmName: string,): Promise<void> {
   // Push the tsdown bundle via virtiofs (instant)
   await mvm({ args: ['push', VM, BUNDLE_PATH, 'index.mjs',], },);
 
-  // Install mise, then use mise to install bun (handles arch detection).
+  // Install mise, then use mise to install Node (handles arch detection).
   // guest-exec runs without login shell so HOME is unset; export it explicitly.
   await execInVm({
     vmName: VM,
@@ -169,7 +169,7 @@ async function safeDestroy(vmName: string,): Promise<void> {
   },);
   await execInVm({
     vmName: VM,
-    command: 'export HOME=/home/ubuntu && /home/ubuntu/.local/bin/mise use -g bun@latest',
+    command: 'export HOME=/home/ubuntu && /home/ubuntu/.local/bin/mise use -g node@latest',
     timeout: EXEC_TIMEOUT_MS,
   },);
 
@@ -188,7 +188,7 @@ async function safeDestroy(vmName: string,): Promise<void> {
     name: 'vmsync lifecycle (Linux)',
     children: [
       // All assertions in a single test to guarantee sequential execution.
-      // bunfig.toml sets concurrentTestGlob which runs tests in parallel;
+      // The test task may run files independently;
       // these commands have ordering dependencies (import before status, etc.).
       it({
         name: 'full CLI lifecycle',
@@ -307,16 +307,16 @@ async function safeDestroy(vmName: string,): Promise<void> {
   const MISE_BIN = String.raw`C:\Users\Administrator\.local\bin\mise.exe`;
 
   /**
-   * PowerShell preamble to activate mise-managed bun.
-   * Uses `mise which bun | Split-Path` to get the bin directory because
+   * PowerShell preamble to activate mise-managed Node.
+   * Uses `mise which node | Split-Path` to get the bin directory because
    * `mise where` returns the install root (missing the `bin` subdirectory).
    * Guest agent runs as SYSTEM so mise installs to systemprofile, which is fine.
    */
   const MISE =
-    `$env:PATH = ((& "${MISE_BIN}" which bun 2>$null) | Split-Path) + ";" + $env:PATH`;
+    `$env:PATH = ((& "${MISE_BIN}" which node 2>$null) | Split-Path) + ";" + $env:PATH`;
 
-  /** Guest command to run vmsync via mise-managed bun on Windows. */
-  const VMSYNC = `${MISE}; bun ${BUNDLE}`;
+  /** Guest command to run vmsync via mise-managed Node on Windows. */
+  const VMSYNC = `${MISE}; node ${BUNDLE}`;
 
   // beforeAll setup
   await safeDestroy(VM,);
@@ -367,13 +367,13 @@ async function safeDestroy(vmName: string,): Promise<void> {
     timeout: EXEC_TIMEOUT_MS,
   },);
 
-  // Use mise to install bun (handles arch detection).
+  // Use mise to install Node (handles arch detection).
   // ErrorActionPreference=Continue prevents PowerShell from treating
   // mise's stderr progress output as a terminating error.
   await execInVm({
     vmName: VM,
     command:
-      `$ErrorActionPreference = "Continue"; & "${MISE_BIN}" use -g bun@latest 2>$null; exit $LASTEXITCODE`,
+      `$ErrorActionPreference = "Continue"; & "${MISE_BIN}" use -g node@latest 2>$null; exit $LASTEXITCODE`,
     timeout: EXEC_TIMEOUT_MS,
   },);
 

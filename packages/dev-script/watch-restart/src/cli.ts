@@ -15,8 +15,8 @@
  *
  * @example
  * ```bash
- * watch-restart -w src/server; bun src/server/index.ts
- * watch-restart -w src --ext .ts --exclude '*.test.ts'; bun run dev
+ * watch-restart -w src/server -- node src/server/index.ts
+ * watch-restart -w src --ext .ts --exclude '*.test.ts' -- npm run dev
  * watch-restart -w src --no-initial; npm test
  * ```
  */
