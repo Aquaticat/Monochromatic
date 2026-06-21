@@ -1,22 +1,15 @@
-# Morph MCP 0.8.194: Fast Apply and WarpGrep calls fail with `Premature close` from `api.morphllm.com`
+# Morph MCP 0.8.193: Fast Apply fails with `Premature close` through OpenAI's Node `node-fetch`
 
 ## Symptom
 
-Morph MCP tools are registered and callable, but both local file editing and codebase search fail before returning
+Morph MCP tools are registered and callable, but local file editing and codebase search fail before returning
 Morph content.
 
-The Pi direct edit tool returned this error twice against a scratch file:
+The Pi MCP server is named `morph` and lists three tools. The edit tool still failed after the Morph key was
+rotated and the MCP server metadata was reconnected:
 
 ```text
-# filesystem_with_morph_edit_file output, line wrapped for width
-Error: ❌ Morph Edit Failed: Invalid response body while trying to fetch
-https://api.morphllm.com/v1/chat/completions: Premature close
-```
-
-The same edit call through the MCP gateway returned the same message:
-
-```text
-# mcp filesystem_with_morph_edit_file output, line wrapped for width
+# morph_edit_file output, line wrapped for width
 Error: ❌ Morph Edit Failed: Invalid response body while trying to fetch
 https://api.morphllm.com/v1/chat/completions: Premature close
 ```
@@ -24,28 +17,36 @@ https://api.morphllm.com/v1/chat/completions: Premature close
 The Morph semantic search tool returned the related transport failure:
 
 ```text
-# filesystem_with_morph_codebase_search output, line wrapped for width
+# morph_codebase_search output, line wrapped for width
 Error: Invalid response body while trying to fetch
 https://api.morphllm.com/v1/chat/completions: Premature close
 ```
 
-This is not the local missing-key or bad-key-format symptom. The MCP server remained connected, and `mcp({})`
-reported `filesystem-with-morph` as connected with three tools.
+This is not the local missing-key or bad-key-format symptom. The same key from `/home/user/.pi/agent/mcp.json`
+works with native `fetch`, and both `morph-v3-fast` and `morph-v3-large` return `HTTP 200` when called outside
+MCP.
 
 ## Root cause
 
-The exact upstream service cause was not confirmed from this workstation. The verified local call chain reaches
-Morph's OpenAI-compatible `/v1/chat/completions` endpoint and then fails while the client reads the response body.
+The failure is in the Node client transport used by Morph MCP, not in the rotated key and not in basic API
+reachability.
 
-`@morphllm/morphsdk` 0.2.184 constructs a single OpenAI-compatible chat-completions request for Fast Apply.
+The running Pi Morph MCP installation is:
+
+- `@morphllm/morphmcp` 0.8.193.
+- `@morphllm/morphsdk` 0.2.183.
+- `openai` 4.104.0.
+
+`@morphllm/morphsdk` 0.2.183 constructs a single OpenAI-compatible chat-completions request for Fast Apply.
 It chooses `morph-v3-large` unless `large` is disabled, defaults the base API URL to
 `https://api.morphllm.com`, creates an OpenAI client with `baseURL: ${apiUrl}/v1`, and calls
 `client.chat.completions.create(...)`.
 
-`/tmp/agent/morphsdk-0.2.184/dist/tools/index.cjs:401 to 431`:
+Installed Morph SDK file, package-relative path
+`node_modules/@morphllm/morphsdk/dist/tools/index.cjs:401 to 430`:
 
 ```js
-// /tmp/agent/morphsdk-0.2.184/dist/tools/index.cjs
+// .../node_modules/@morphllm/morphsdk/dist/tools/index.cjs
 async function callMorphAPI(originalCode, codeEdit, instructions, filepath, config) {
   const apiKey = config.morphApiKey || (typeof process !== "undefined" ? process.env?.MORPH_API_KEY : void 0);
   const apiUrl = config.morphApiUrl || DEFAULT_API_URL;
@@ -73,54 +74,42 @@ async function callMorphAPI(originalCode, codeEdit, instructions, filepath, conf
   const client = new import_openai.default({
     apiKey,
     baseURL: `${apiUrl}/v1`,
+```
+
+The same call creates the OpenAI client without a `fetch` override:
+
+Installed Morph SDK file, package-relative path
+`node_modules/@morphllm/morphsdk/dist/tools/index.cjs:426 to 431`:
+
+```js
+// .../node_modules/@morphllm/morphsdk/dist/tools/index.cjs
+  const client = new import_openai.default({
+    apiKey,
+    baseURL: `${apiUrl}/v1`,
     timeout,
     maxRetries: config.retryConfig?.maxRetries ?? 3,
     defaultHeaders: { "X-Morph-SDK-Version": SDK_VERSION }
   });
 ```
 
-`@morphllm/morphsdk` 0.2.184 surfaces authentication and rate-limit responses as different messages.
-A 401 response becomes `Authentication failed...`; a 429 response becomes `Rate limited...`.
+OpenAI 4.104.0 documents that, on Node.js, it uses `node-fetch` when no custom `fetch` function is provided:
 
-`/tmp/agent/morphsdk-0.2.184/dist/tools/index.cjs:433 to 461`:
+Installed OpenAI package file, package-relative path
+`node_modules/openai/index.d.ts:61 to 66`:
 
-```js
-// /tmp/agent/morphsdk-0.2.184/dist/tools/index.cjs
-  try {
-    const completion = await client.chat.completions.create({
-      model,
-      messages: [{ role: "user", content: message }]
-    });
-    const content = completion.choices[0]?.message?.content;
-    if (!content) {
-      throw new Error("Morph API returned empty response");
-    }
-    const elapsed = Date.now() - startTime;
-    logger.debug("FastApply", "http_response", {
-      status: 200,
-      completion_id: completion.id,
-      content_len: content.length,
-      latency_ms: elapsed
-    });
-    return { content, completionId: completion.id };
-  } catch (error) {
-    const elapsed = Date.now() - startTime;
-    const status = error?.status || error?.response?.status;
-    logger.error("FastApply", "http_error", {
-      status,
-      error: error?.message,
-      latency_ms: elapsed
-    });
-    if (status === 401) {
-      const err = new Error(
-        "Authentication failed: Your Morph API key is invalid or has been revoked. " +
-        "Please visit https://morphllm.com to get a valid API key, then update your MCP configuration."
-      );
+```ts
+// .../node_modules/openai/index.d.ts
+    /**
+     * Specify a custom `fetch` function implementation.
+     *
+     * If not provided, we use `node-fetch` on Node.js and otherwise expect that `fetch` is
+     * defined globally.
+     */
+    fetch?: Core.Fetch | undefined;
 ```
 
-The OpenAI TypeScript client parses JSON responses by awaiting `response.json()`. If the HTTP response body
-closes before the JSON body is complete, the underlying fetch stack raises a body-read error instead of a
-structured API status.
+The OpenAI client parses JSON responses by awaiting `response.json()`. When its default Node `node-fetch`
+transport reads Morph's 200 response body, `node-fetch` raises `ERR_STREAM_PREMATURE_CLOSE`.
 
 `/tmp/agent/openai-4.104.0/src/core.ts:82 to 91`:
 
@@ -138,19 +127,25 @@ structured API status.
   }
 ```
 
-That matches the observed error shape: no HTTP status-specific Morph message, just
+That matches the observed MCP error shape: no HTTP status-specific Morph message, just
 `Invalid response body while trying to fetch ... Premature close`.
 
 ## Verification
 
 Versions and package artifacts checked:
 
-- `@morphllm/morphmcp` 0.8.194, npm integrity
+- Running Pi installation: `@morphllm/morphmcp` 0.8.193, `@morphllm/morphsdk` 0.2.183, `openai` 4.104.0.
+- Latest npm package inspected earlier: `@morphllm/morphmcp` 0.8.194, npm integrity
   `sha512-Wn1z3pAFN33uP7gDSeSrGN7jcuIhpXqm/mdFjlockqEgBvtnsudJTnxUREOjY6zgBofFZ3Enlz6jt/Eoz2+4wA==`.
-- `@morphllm/morphsdk` 0.2.184, npm integrity
+- Latest npm package inspected earlier: `@morphllm/morphsdk` 0.2.184, npm integrity
   `sha512-v3ZEPQEY3xoAH3yxQX6c88RQ/9zwQXFxOAwvSg4TRPCGn1Z1PKjIyuia7z5LMNIF17koQ2elgPj5MXQCM1e2sw==`.
 - `openai` 4.104.0, npm integrity
   `sha512-p99EFNsA/yX6UhVO93f5kJsDRLAg+CTA2RBqdHK4RtK8u5IJw32Hyb2dTGKbnnFmnuoBv5r7Z2CURI9sGZpSuA==`.
+
+The configured Pi MCP key lives in `/home/user/.pi/agent/mcp.json` under server `morph`. The raw test printed
+only a SHA-256 fingerprint prefix, not the key value.
+
+### API host and auth behavior
 
 The API host is reachable from this machine. An unauthenticated models request returned a structured Morph
 401 JSON error through Cloudflare:
@@ -171,7 +166,7 @@ Message: API key required. Please provide a valid API key in the Authorization h
 Dashboard: https://morphllm.com/dashboard
 ```
 
-The chat-completions endpoint also returns a structured 401 for an invalid test key, not `Premature close`:
+A chat-completions request with an invalid test key also returns a structured 401, not `Premature close`:
 
 ```bash
 # /var/home/user/Monochromatic
@@ -192,6 +187,69 @@ Error code: invalid_api_key
 Message: API key required. Please provide a valid API key in the Authorization header.
 Dashboard: https://morphllm.com/dashboard
 ```
+
+### Rotated-key raw API requests
+
+A raw native `fetch` request using the key from `/home/user/.pi/agent/mcp.json` succeeds for both Morph Apply
+models:
+
+```text
+# node script output, key not printed
+Config path: /home/user/.pi/agent/mcp.json
+Morph-keyed server count: 1
+
+Server: morph
+Command: morph-mcp
+Env has MORPH_API_KEY: true
+Key fingerprint: sha256:e3dce5fe1dac
+MORPH_API_URL: https://api.morphllm.com
+MORPH_LARGE_APPLY: (unset)
+Raw morph-v3-fast: status=200 elapsed_ms=351 body_len=643
+Raw morph-v3-large: status=200 elapsed_ms=419 body_len=644
+```
+
+A second native-vs-node-fetch harness using the same key shows the exact transport split:
+
+```text
+# node script output, key not printed
+native fetch text: ok status=200 elapsed_ms=310
+native fetch json: ok status=200 elapsed_ms=225
+node-fetch text: error elapsed_ms=261
+Error name: FetchError
+Error message: Invalid response body while trying to fetch https://api.morphllm.com/v1/chat/completions: Premature close
+Error type/code: system/ERR_STREAM_PREMATURE_CLOSE
+node-fetch json: error elapsed_ms=226
+Error name: FetchError
+Error message: Invalid response body while trying to fetch https://api.morphllm.com/v1/chat/completions: Premature close
+Error type/code: system/ERR_STREAM_PREMATURE_CLOSE
+```
+
+The OpenAI SDK fails when it uses its default Node transport:
+
+```text
+# node script output, key not printed
+Imported OpenAI from:
+/home/user/.local/share/mise/installs/npm-morphllm-morphmcp/latest/lib/node_modules/
+@morphllm/morphmcp/node_modules/openai/index.mjs
+OpenAI SDK morph-v3-fast: error elapsed_ms=311
+Error name: FetchError
+Error message: Invalid response body while trying to fetch https://api.morphllm.com/v1/chat/completions: Premature close
+Error status: (none)
+OpenAI SDK morph-v3-large: error elapsed_ms=368
+Error name: FetchError
+Error message: Invalid response body while trying to fetch https://api.morphllm.com/v1/chat/completions: Premature close
+Error status: (none)
+```
+
+The same OpenAI SDK succeeds when explicitly constructed with native `fetch`:
+
+```text
+# node script output, key not printed
+OpenAI SDK with native fetch: ok elapsed_ms=334 id=chatcmpl-9ebc84ed1a418b98
+Content: const a = 2;\n
+```
+
+### Status host
 
 The public status hostname was not usable as an outage oracle. TLS verification failed because the wildcard
 certificate expired on 2025-11-05, and an insecure fetch returned Vercel `DEPLOYMENT_NOT_FOUND`:
@@ -225,48 +283,58 @@ Morph documentation confirms the expected MCP configuration and endpoint:
 ### Patterns that work cleanly
 
 - DNS, TLS, and HTTP connectivity to `https://api.morphllm.com/v1/models` work from this machine.
-- Missing or invalid API credentials produce structured 401 JSON responses from Morph.
-- The local MCP server is connected and lists `filesystem-with-morph` tools.
+- Missing or invalid credentials produce structured 401 JSON responses from Morph.
+- Native `fetch` with the rotated Pi MCP key succeeds against `morph-v3-fast` and `morph-v3-large`.
+- OpenAI 4.104.0 succeeds against Morph when constructed with `fetch: globalThis.fetch`.
 
 ### Patterns that fail
 
-- `filesystem_with_morph_edit_file` fails with `Premature close` on a scratch TypeScript file.
-- `filesystem_with_morph_codebase_search` fails with `Premature close` against this repository.
-- Calling `filesystem_with_morph_edit_file` through the generic MCP gateway fails with the same message.
+- `morph_edit_file` fails with `Premature close` on a scratch TypeScript file after reconnecting metadata.
+- `morph_codebase_search` fails with `Premature close` against this repository after key rotation.
+- OpenAI 4.104.0 fails against Morph when it uses its default Node `node-fetch` transport.
+- `node-fetch` fails against Morph's 200 JSON response for both `.text()` and `.json()`.
 
 ## Verified workarounds
 
+### Consumer code using OpenAI directly can pass native `fetch`
+
+When constructing the OpenAI client directly, pass `fetch: globalThis.fetch`:
+
+```ts
+// consumer-side workaround
+const client = new OpenAI({
+  apiKey: process.env.MORPH_API_KEY,
+  baseURL: 'https://api.morphllm.com/v1',
+  fetch: globalThis.fetch,
+});
+```
+
+Tradeoff: this helps consumer code that owns OpenAI client construction. It does not fix the current Morph MCP
+server because `@morphllm/morphsdk` constructs the OpenAI client internally without exposing a `fetch` option.
+
 ### Use Pi's non-Morph file tools while this persists
 
-Use `filesystem_with_morph_edit_file` only as the attempted fast path. If it returns `Premature close`, fall back
-to exact `edit`, `filesystem_with_morph_edit_file` alternatives are not required for correctness, or full `write`
-when creating new files.
+Use `morph_edit_file` only as the attempted fast path. If it returns `Premature close`, fall back to exact `edit`
+or full `write` when creating new files.
 
 Tradeoff: this loses Morph's semantic merge behavior and can cost more context. It avoids blocking work on a
 remote body-read failure.
 
-### Retry after checking the API host
-
-Run the unauthenticated `curl` checks above first. If they return structured 401 responses, local DNS and TLS to
-the API host are working. Retry the Morph tool later.
-
-Tradeoff: this only distinguishes host reachability from the Fast Apply response-body failure. It cannot prove
-whether valid-key traffic is healthy without a known-good key and a raw API harness.
-
 ## What does not work
 
+- Rotating the key in `/home/user/.pi/agent/mcp.json` did not fix MCP tool calls.
+- Reconnecting Morph MCP metadata did not fix MCP tool calls.
 - Changing the lazy edit snippet from a full replacement to `// ... existing code ...` markers did not change the
   failure.
-- Routing the same edit through the generic MCP gateway did not change the failure.
-- Treating this as a missing API key does not match the observed messages. Missing and invalid credentials return
-  structured 401 JSON from the public API, and the MCP server has separate missing-key and invalid-format messages.
+- Treating this as a missing API key does not match the evidence. The same configured key succeeds with native
+  `fetch`, and invalid credentials return structured 401 JSON from the public API.
 - The public `status.morphllm.com` hostname does not currently provide status data from this workstation.
 
 ## Upstream filing artifact
 
 ### Out-of-scope check
 
-No `.out-of-scope/` file names Morph, Morph MCP, Morph SDK, or Morph API.
+No `.out-of-scope/` file names Morph, Morph MCP, Morph SDK, OpenAI's Node client, or `node-fetch`.
 
 ### Duplicate search
 
@@ -286,10 +354,11 @@ gh search prs --owner morphllm --state closed --limit 20 \
 
 ### Upstream filing decision
 
-- **Is it really upstream's fault?** Not proven. The evidence points at a Morph API or network-edge body closure
-  after the MCP server sends a valid-looking request, but this workstation did not run a raw valid-key request.
-- **Can upstream fix it?** Unknown. If Morph's service is closing response bodies, upstream can fix it. If an
-  intermediary specific to this environment is closing the body, upstream may only be able to improve diagnostics.
+- **Is it really upstream's fault?** Yes, but the responsible boundary is split. Morph MCP and Morph SDK rely on
+  OpenAI's default Node `node-fetch` transport. Native `fetch` works, and OpenAI with `fetch: globalThis.fetch`
+  works. Morph can fix the user-facing MCP failure by passing a native fetch override or exposing one.
+- **Can upstream fix it?** Yes. Morph SDK's OpenAI client construction can include `fetch: globalThis.fetch` on
+  runtimes where native fetch exists, or expose a `fetch` option through the SDK and MCP server.
 - **Are they supporting this use case?** Yes. Morph's MCP quickstart documents `edit_file`, `codebase_search`,
   `MORPH_API_KEY`, and the `https://api.morphllm.com` default.
 - **Would the repo welcome our contribution?** Unknown. The npm package metadata points `bugs` at
@@ -297,16 +366,18 @@ gh search prs --owner morphllm --state closed --limit 20 \
   tracker. Public Morph repos did not expose an obvious `morphmcp` source repository during this investigation.
 - **Will they likely fix it?** Unknown. There is not enough public issue-tracker signal for this exact transport
   failure.
-- **Have we prototyped a minimal fix compatible with their architecture?** No. The failure was not narrowed to a
-  client-side source change. A server-side premature response close cannot be prototyped from the npm package.
+- **Have we prototyped a minimal fix compatible with their architecture?** Partly. A direct OpenAI client using
+  `fetch: globalThis.fetch` succeeds with the configured Pi MCP key. This proves the transport substitution.
+  It is not yet a patch against Morph SDK because the package source repository was not located.
 
-Decision: do not file as-is. Keep this as a local troubleshooting record until a valid-key raw API reproduction
-or Morph-provided incident signal exists.
+Decision: do not file as-is. Keep this as a local troubleshooting record until the correct Morph MCP or SDK issue
+tracker is known.
 
 ~~~md
 Title: Morph MCP Fast Apply fails with `Invalid response body ... Premature close`
+through OpenAI's default Node transport
 
-Do not file as-is. This draft lacks a valid-key raw API reproduction and a confirmed upstream tracker.
+Do not file as-is. This draft needs the correct upstream tracker for Morph MCP or Morph SDK.
 
 ## Symptom
 
@@ -318,17 +389,30 @@ Invalid response body while trying to fetch https://api.morphllm.com/v1/chat/com
 
 ## Evidence gathered
 
-- `@morphllm/morphsdk` 0.2.184 sends Fast Apply requests through the OpenAI client to
+- The configured key from `/home/user/.pi/agent/mcp.json` works with native `fetch` against
   `https://api.morphllm.com/v1/chat/completions`.
-- The public API host is reachable from the affected machine.
-- Missing and invalid credentials return structured 401 JSON from `api.morphllm.com`.
-- The generic MCP gateway and Pi's direct Morph tool both return the same `Premature close` message.
-- `status.morphllm.com` has an expired wildcard certificate and returns Vercel `DEPLOYMENT_NOT_FOUND` when fetched
-  insecurely, so it is not usable as a status source.
+- `morph-v3-fast` and `morph-v3-large` both return `HTTP 200` with native `fetch`.
+- OpenAI 4.104.0 fails with `ERR_STREAM_PREMATURE_CLOSE` when it uses its default Node `node-fetch` transport.
+- OpenAI 4.104.0 succeeds when constructed with `fetch: globalThis.fetch`.
+- `@morphllm/morphsdk` constructs the OpenAI client internally without passing a `fetch` override.
 
-## Missing before filing
+## Suggested fix
 
-- Raw valid-key API reproduction outside MCP.
-- Confirmation of the right upstream issue tracker.
-- Confirmation that the error reproduces outside this workstation or session.
+In Morph SDK's Fast Apply OpenAI client construction, use native fetch when it is available, or expose a fetch
+override from the SDK and MCP server config.
+
+```diff
+ const client = new OpenAI({
+   apiKey,
+   baseURL: `${apiUrl}/v1`,
+   timeout,
+   maxRetries: config.retryConfig?.maxRetries ?? 3,
++  fetch: globalThis.fetch,
+   defaultHeaders: { "X-Morph-SDK-Version": SDK_VERSION },
+ });
+```
+
+## Workaround for consumer code
+
+If constructing the OpenAI client directly, pass `fetch: globalThis.fetch`.
 ~~~
