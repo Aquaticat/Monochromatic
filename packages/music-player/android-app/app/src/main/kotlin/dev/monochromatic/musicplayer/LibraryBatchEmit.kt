@@ -8,6 +8,15 @@
 // ```
 package dev.monochromatic.musicplayer
 
+// What:     `import dev.monochromatic.musicplayer.core.BatchEmitGate` brings in the batch gate type.
+// Why:      The shared helper receives the source-specific gate instance and asks it for batches.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { BatchEmitGate } from "./core/BatchEmitGate";
+// ```
+import dev.monochromatic.musicplayer.core.BatchEmitGate
+
 // What:     `suspend fun emitLibraryBatchIfReady(...)` declares a coroutine helper.
 // Why:      Both library sources append tracks one at a time and need the same
 //           gate-controlled streaming behavior.
