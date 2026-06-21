@@ -7,6 +7,8 @@ Verdict:
 project-scoped,
  developer-owned daemons where the missing feature is workflow,
 not host supervision.
+ It does not completely replace watchexec or watch-restart;
+it only subsumes their watched-daemon-restart subset.
  Use systemd for production services,
  privileged host
 services,
@@ -41,7 +43,8 @@ code.
    `docs/reference/configuration.md`,
   `docs/guides/boot-start.md`,
    `docs/reference/file-locations.md`,
-  `src/boot_manager.rs`,
+  `docs/guides/file-watching.md`,
+   `src/boot_manager.rs`,
    `src/ipc/server.rs`,
    `src/ipc/client.rs`,
   `src/supervisor/lifecycle.rs`,
@@ -64,10 +67,29 @@ code.
    Docker Compose,
    PM2,
    Foreman,
+   Overmind,
+  watchexec,
+   and this repo's `@monochromatic-dev/dev-script-watch-restart`,
+   enough to place Pitchfork in the category rather than compare it only with
+  systemd.
+- Watchexec source clone:
+   `/tmp/agent/watchexec-20260621`,
+   commit
+  `791a65da9b0d955ceaaa417c41878b9c17ac04f2`.
+   I checked
+  `README.md`,
+   `doc/watchexec.1.md`,
+   `crates/cli/src/args.rs`,
+  `crates/cli/src/args/command.rs`,
+   and `crates/cli/src/args/events.rs`.
+- Watch-restart docs and source checked:
+   `packages/dev-script/watch-restart/README.md`,
+  `packages/dev-script/watch-restart/package.json`,
+  `packages/dev-script/watch-restart/src/start.ts`,
+  `packages/dev-script/watch-restart/src/watcher.ts`,
+  `packages/dev-script/watch-restart/src/child.ts`,
    and
-  Overmind,
-   enough to place Pitchfork in the category rather than compare it
-  only with systemd.
+  `docs/troubleshooting/mise-watch.md`.
 - Validation run:
    after the first `mise run test` failed because the cloned
   `mise.toml` was not trusted,
@@ -234,6 +256,16 @@ project dev-server hot-reload model.
 running project daemon when `src/**/*.ts` changes",
  Pitchfork is closer to the
 intent.
+
+This is also where Pitchfork overlaps watchexec and watch-restart.
+ The overlap
+is real but narrow:
+ Pitchfork's `watch` is daemon-auto-restart inside a
+supervisor,
+ not a general "run any command when files change" CLI and not a
+library-level watch primitive.
+ That distinction decides whether it can replace
+them.
 
 ### Developer UI, logs, and agent integration are part of the requirement
 
@@ -418,6 +450,122 @@ servers.
  Compose
 solves a different problem.
 
+### Watchexec
+
+Pros:
+ best fit when the requirement is one standalone command reacting to file
+events.
+ The primary manual describes recursive watching,
+ debounce,
+ restart,
+signal,
+ queue,
+ poll,
+ ignore files,
+ process wrapping,
+ event payload emission,
+filter programs,
+ and `--only-emit-events` for watcher-only use
+([watchexec manual][watchexec-manual]).
+ The README also frames it as a
+simple standalone tool that watches paths and runs commands,
+ not a project
+daemon registry ([watchexec README][watchexec-readme]).
+
+Cons:
+ it is not a multi-daemon supervisor.
+ It does not own a persistent project daemon
+state,
+ readiness graph,
+ TUI,
+ web UI,
+ MCP server,
+ or log store.
+ The existing
+editord troubleshooting record also found repo-specific hazards around
+`mise watch` flag forwarding,
+ direct watchexec `-j` filter shutdown,
+ and deep
+process trees ([mise watch troubleshooting][mise-watch-troubleshooting]).
+
+Replacement assertion:
+ Pitchfork can replace watchexec only for the narrow case
+"keep this daemon running and restart it when these globs change".
+ Pitchfork's
+documented watch surface is `watch` patterns plus `watch_mode`,
+ and the audited
+watch implementation forwards debounced `Modify`,
+ `Create`,
+ and `Remove` paths
+to matched running daemons.
+ I found no Pitchfork docs or source equivalents for
+watchexec's event payload modes,
+ watcher-only mode,
+ filter-program surface,
+non-recursive watch mode,
+ stdin quit,
+ interactive key controls,
+per-invocation timeout/exit-on-error behavior,
+ or single-command stateless CLI
+shape.
+
+### Watch-restart
+
+Pros:
+ best fit when this repo needs one long-running child process restarted by a
+local TypeScript watcher.
+ The package exists specifically to replace watchexec in
+editord's dev loop,
+ using chokidar,
+ an in-process content-hash cache,
+structured filters,
+ chokidar native filesystem events or an explicit polling interval,
+ default
+process-group signalling,
+configurable first signal,
+ SIGKILL escalation,
+ and a reusable library API
+(`startWatchRestart`) for workspace dev servers (repo paths
+`packages/dev-script/watch-restart/README.md`,
+`packages/dev-script/watch-restart/src/start.ts`,
+`packages/dev-script/watch-restart/src/watcher.ts`,
+`packages/dev-script/watch-restart/src/child.ts`).
+
+Cons:
+ it is intentionally narrower than Pitchfork.
+ It has no daemon registry,
+readiness checks,
+ dependency graph,
+ persistent log database,
+ shell hook,
+ boot
+integration,
+ web UI,
+ TUI,
+ or MCP server.
+ It is a local package we maintain,
+not an external tool with packaged binaries across operating systems.
+
+Replacement assertion:
+ Pitchfork cannot completely replace watch-restart today.
+ It can replace a
+watch-restart invocation only when the caller is willing to model that child as
+a Pitchfork daemon and accept Pitchfork's coarser watch semantics.
+ In the
+audited Pitchfork watch path,
+ `src/watch_files.rs` filters filesystem events to
+changed paths and `src/supervisor/watchers.rs` restarts matched running daemons;
+I found no content-hash cache or same-content suppression in that path.
+ It does
+not replace watch-restart's byte-identical write suppression,
+ TypeScript library
+API,
+ custom predicate hook,
+ exact CLI filter matrix,
+ pre-`ready` hash
+prepopulation,
+ or package-local no-supervisor-state execution model.
+
 ### PM2
 
 Pros:
@@ -463,9 +611,9 @@ those broader features are not needed,
 
 ### Ranking under these assumptions
 
-For a project-local development stack with non-container commands,
- my ranking is:
-Pitchfork over Foreman or Overmind over PM2 over Docker Compose over direct
+For a multi-daemon project-local development stack with non-container commands,
+my ranking is:
+ Pitchfork over Foreman or Overmind over PM2 over Docker Compose over direct
 systemd units.
  Pitchfork beats Foreman or Overmind when readiness,
  dependencies,
@@ -478,6 +626,24 @@ for host Node processes because it does not require containerizing them.
  Compose
 beats direct systemd units only when the project already wants container
 boundaries.
+ Watchexec and watch-restart are outside that full-stack ranking
+because they supervise a command,
+ not a daemon graph.
+
+For one watched long-running child in this repo,
+ my ranking is:
+ watch-restart
+over watchexec over Pitchfork over direct systemd units.
+ Watch-restart beats
+watchexec here because it was built around this repo's observed failure modes,
+including content-hash suppression and process-group signalling.
+ Watchexec beats
+Pitchfork when the job is just "watch files and rerun or restart a command"
+because it is stateless,
+ single-purpose,
+ and exposes richer event/filter modes.
+Pitchfork beats direct systemd units when the child is still a developer-owned
+repo daemon and the user wants Pitchfork's supervisor surface anyway.
 
 For production or shared host services,
  my ranking reverses at the top:
@@ -563,6 +729,12 @@ and mutation tooling were either unrelated dependency names or ordinary prose.
 
 ## Decision rules
 
+Pitchfork is not a complete replacement for both watchexec and watch-restart.
+ It
+is a partial replacement for watched daemon restarts,
+ and a broader replacement
+only when the caller wants a Pitchfork daemon model.
+
 Use Pitchfork instead of systemd when all of these are true:
 
 - The process set is owned by a project or developer workflow,
@@ -579,11 +751,33 @@ Use Pitchfork instead of systemd when all of these are true:
    or MCP control.
 - The daemons can tolerate an extra user-space supervisor and Pitchfork's state
   model.
+- The watch use case does not require watchexec-only behavior such as event
+  payload emission,
+   `--only-emit-events`,
+   filter programs,
+   interactive key controls,
+  or per-command timeout/exit-on-error semantics.
+- The watch use case does not require watch-restart-only behavior such as
+  byte-identical write suppression,
+   custom TypeScript filter predicates,
+   or use as a
+  package-local library with no persistent supervisor state.
 - Operators will not need to diagnose the service primarily through systemd's
   unit graph,
    journal,
    cgroups,
    and security policy.
+
+Keep watchexec or watch-restart instead of Pitchfork when the real deliverable is
+file-event command execution,
+ not daemon ownership.
+ Keep watchexec for portable,
+stateless command running with rich event/filter modes.
+ Keep watch-restart for this
+repo's single-child dev loops that depend on content-hash filtering,
+ process-group
+restart control,
+ or a TypeScript library API.
 
 Use systemd directly when any of these are true:
 
@@ -640,9 +834,18 @@ avoid learning systemd for services that actually belong to the host.
 - Alternatives:
    [Docker Compose overview][compose],
   [Docker Compose startup order][compose-order],
+   [watchexec README][watchexec-readme],
+  [watchexec manual][watchexec-manual],
    [PM2 quick start][pm2],
   [Foreman][foreman],
    [Overmind][overmind].
+- Internal watch-restart evidence:
+   `packages/dev-script/watch-restart/README.md`,
+  `packages/dev-script/watch-restart/src/start.ts`,
+  `packages/dev-script/watch-restart/src/watcher.ts`,
+  `packages/dev-script/watch-restart/src/child.ts`,
+   and
+  `docs/troubleshooting/mise-watch.md`.
 
 [pitchfork-readme]: https://github.com/jdx/pitchfork/blob/main/README.md
 [pitchfork-architecture]: https://pitchfork.jdx.dev/concepts/architecture
@@ -662,6 +865,9 @@ avoid learning systemd for services that actually belong to the host.
 [systemd-socket]: https://www.freedesktop.org/software/systemd/man/latest/systemd.socket.html
 [compose]: https://docs.docker.com/compose/
 [compose-order]: https://docs.docker.com/compose/how-tos/startup-order/
+[watchexec-readme]: https://github.com/watchexec/watchexec/blob/main/README.md
+[watchexec-manual]: https://github.com/watchexec/watchexec/blob/main/doc/watchexec.1.md
+[mise-watch-troubleshooting]: ../troubleshooting/mise-watch.md
 [pm2]: https://pm2.keymetrics.io/docs/usage/quick-start/
 [foreman]: https://github.com/ddollar/foreman
 [overmind]: https://github.com/DarthSim/overmind
