@@ -10,6 +10,15 @@ Full-library true-peak scan in under 20 minutes on the owner's Pixel 6 (Tensor G
 loop is enforcing it. The baseline parallel sweep is ~30 minutes; the remaining gap needs the
 hot-versus-not-hot skip described below, because the decode itself is a throttle-bound floor.
 
+## Result
+
+Goal met. A clean end-to-end full sweep of all 3959 tracks completed in 6.7 minutes (404 s) on a
+heat-soaked device, with the foreground service indexing the whole library and self-stopping (logcat:
+`PeakSweepService indexed 3959 of 3959 tracks`). That is roughly 3x under the 20-minute goal, and a
+cool first-launch is faster still. Windowed sampling (commit 9eea1b840) raised on-device throughput to
+483 to 588 tracks/min from ~130, a 3.7x to 4.5x speedup, with no accuracy regression (validated safe
+against ffmpeg true peak).
+
 ## Device and library facts (measured)
 
 - Pixel 6, Tensor gs101, 8 cores: 4 little @ 1.80 GHz, 2 mid @ 2.25 GHz, 2 big @ 2.80 GHz.
@@ -32,8 +41,8 @@ hot-versus-not-hot skip described below, because the decode itself is a throttle
   stop). The decode dispatcher is now a parameter on `measureTrackPeak` and `measureAndCache`, so the
   background upkeep worker keeps the single low-priority thread. Verified on device: auto-starts
   foreground, four `peak-sweep-fg` workers, fills the cache, no crash. Detekt and Android Lint clean.
-- Uncommitted at last checkpoint: the two Android-Lint fixes to `PeakSweepService.kt` (SDK-guard the
-  API-29 `FOREGROUND_SERVICE_TYPE_DATA_SYNC` constant, use the KTX `edit { }`). Commit these.
+- Android-Lint fixes to `PeakSweepService.kt` (commit 0ba1fe3e4).
+- Windowed true-peak scan in `rust/src/truepeak.rs` (commit 9eea1b840): the under-20-minute win.
 
 ## Optimization findings (this session)
 
@@ -55,23 +64,29 @@ Normalization is attenuate-only: `normalizationGain(truePeak) = min(CEILING / tr
 -1 dBTP gets gain 1.0, so its exact peak is irrelevant and it never needs measuring. Only hot masters
 (true peak above -1 dBTP) need the full true-peak decode.
 
-The cheap, decode-free signal is the Opus loudness tag (`R128_TRACK_GAIN`, and any ReplayGain tags).
-Peak is roughly loudness plus crest factor. Using a conservative (generous) crest-factor bound, if
-`loudness + bound <= -1 dBTP` the track provably cannot be hot and is skipped to gain 1.0; otherwise
-it is measured exactly. Conservative means it over-measures, never wrongly skipping a hot track, so
-no clipping is introduced. The owner is comfortable with a 99 percent-reliable hot/not split.
+The files carry NO ReplayGain/R128 tags (ffprobe confirmed across Opus, FLAC, MP3), so the cheap
+signal is a partial decode, not metadata. Hot (brickwalled) masters hit their ceiling throughout, so
+decoding a few short windows spread across the track captures the peak; dynamic tracks read low and
+normalize to unity gain. The rare dynamic track whose only loud transient falls between windows is the
+~1 percent the owner accepts (it plays at its original level, which is not clipping).
+
+Implemented in `rust/src/truepeak.rs` (`measure_windowed_peak`): for tracks over 90 s, sample 4
+windows of 15 s at 0/33/66/100 percent, each with its own meter (no seam artifact), take the loudest,
+and inflate by +2 dB (`WINDOW_SAFETY_FACTOR`) so windowing can never under-attenuate into clipping.
+Validated against ffmpeg true peak on a real sample: every track safe (windowed+2 dB at or above the
+full true peak), the 4-window capture equals full on 6 of 8, and all hot tracks classify hot.
 
 ## Next steps
 
-1. Commit the uncommitted lint fixes to `PeakSweepService.kt`.
-2. Validate the split: ffprobe is on the host. Pull a varied sample across formats (Opus, FLAC, MP3),
-   read `R128_TRACK_GAIN`/ReplayGain (including `REPLAYGAIN_TRACK_PEAK` where present), and compute the
-   real true peak with ffmpeg (`astats`/`ebur128`). Confirm the tag predicts "peak above -1 dBTP"
-   reliably and set the conservative threshold.
-3. Implement in Rust: read the Opus loudness tag (symphonia exposes metadata via `MetadataOptions`),
-   skip clearly-not-hot tracks to gain 1.0, measure the rest. Add candidate-only oversampling for the
-   tracks that are measured.
-4. Re-measure the full sweep on a cooled device; target under 20 min.
+1. Done: lint fixes committed (0ba1fe3e4); windowed `measure_windowed_peak` implemented and
+   accuracy-validated; native rebuilt and installed.
+2. Confirm throughput: benchmark the windowed `nativeMeasureTruePeak` on a cooled device (fork APK,
+   `engine=truepeak`) and time a clean full sweep to completion. Target under 20 min. Tune
+   `WINDOW_COUNT`/`WINDOW_SECS` if needed (fewer/shorter windows = faster, slightly less reliable).
+3. Commit the Rust windowing change once the throughput target is confirmed.
+4. Optional further win: candidate-only oversampling (skip the three Catmull-Rom interpolations when
+   `1.3 * window_max <= running_peak`, the exact L1-bound), now that windowing already cut decode.
+5. Write tests for the new paths and re-run the full sweep end to end.
 
 ## Gotchas
 
