@@ -16,8 +16,11 @@ Goal met. A clean end-to-end full sweep of all 3959 tracks completed in 6.7 minu
 heat-soaked device, with the foreground service indexing the whole library and self-stopping (logcat:
 `PeakSweepService indexed 3959 of 3959 tracks`). That is roughly 3x under the 20-minute goal, and a
 cool first-launch is faster still. Windowed sampling (commit 9eea1b840) raised on-device throughput to
-483 to 588 tracks/min from ~130, a 3.7x to 4.5x speedup, with no accuracy regression (validated safe
-against ffmpeg true peak).
+483 to 588 tracks/min from ~130, a 3.7x to 4.5x speedup. The accuracy tradeoff is deliberate and
+bounded, not zero: windowing can under-read a dynamic track whose only loud transient falls between
+windows. Measured on 43 windowed tracks across all 5 formats, one (~2 percent) under-read past the
++2 dB margin, and even that one stayed non-clipping because the -1 dBTP ceiling's own headroom
+absorbed it. See the validation below.
 
 ## Device and library facts (measured)
 
@@ -43,6 +46,10 @@ against ffmpeg true peak).
   foreground, four `peak-sweep-fg` workers, fills the cache, no crash. Detekt and Android Lint clean.
 - Android-Lint fixes to `PeakSweepService.kt` (commit 0ba1fe3e4).
 - Windowed true-peak scan in `rust/src/truepeak.rs` (commit 9eea1b840): the under-20-minute win.
+- `lint:rust` task added to the android-app `mise.toml`: the root `lint:rust` fanout
+  (`mise '//packages/...:lint:rust'`) previously skipped this crate because it had no such task, so the
+  native `.rs` was never run through the shared rust-linter (only hand-checked). It now passes clean
+  (max-lines, require-rustdoc).
 
 ## Optimization findings (this session)
 
@@ -72,9 +79,14 @@ normalize to unity gain. The rare dynamic track whose only loud transient falls 
 
 Implemented in `rust/src/truepeak.rs` (`measure_windowed_peak`): for tracks over 90 s, sample 4
 windows of 15 s at 0/33/66/100 percent, each with its own meter (no seam artifact), take the loudest,
-and inflate by +2 dB (`WINDOW_SAFETY_FACTOR`) so windowing can never under-attenuate into clipping.
-Validated against ffmpeg true peak on a real sample: every track safe (windowed+2 dB at or above the
-full true peak), the 4-window capture equals full on 6 of 8, and all hot tracks classify hot.
+and inflate by +2 dB (`WINDOW_SAFETY_FACTOR`). The +2 dB margin plus the -1 dBTP ceiling's own 1 dB of
+headroom keep sub-1dB under-reads non-clipping; they do not make windowing exact.
+Validated against ffmpeg true peak on 47 tracks across all 5 formats (31 Opus, 7 FLAC, 3 MP3, 3 WAV,
+3 M4A), 43 of them over 90 s so on the windowed path. One under-read past the +2 dB margin: Joe
+Hisaishi - Summer, a dynamic orchestral piece whose lone loud transient fell between windows, full true
+peak +0.5 dBTP versus windowed+2 dB at 0.0 dBTP, so it normalizes to about -0.5 dBTP, still under
+0 dBFS (no clip). That is the ~2 percent bounded miss the owner accepts; zero clip risk across the
+sample. The brickwalled hot majority never misses (at ceiling throughout every window).
 
 ## Next steps
 
