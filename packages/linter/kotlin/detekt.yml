@@ -1,8 +1,7 @@
-# detekt configuration for the monorepo-wide require-kdoc run. Only the require-kdoc
-# rule set is active (the root lint:detekt task passes --disable-default-rulesets), so
-# this file configures that one rule set. File-level exclusions (build output, .kts
-# scripts, test sources) are passed as global --excludes by the runner, which stops
-# detekt parsing them at all.
+# detekt configuration for the monorepo-wide require-kdoc run. Detekt's default rule
+# sets stay active, and this file adds the repo custom require-kdoc rule set.
+# File-level exclusions (build output, .kts scripts, test sources) are passed as
+# global --excludes by the runner, which stops detekt parsing them at all.
 require-kdoc:
   active: true
   # detekt 2 fails the run on error-severity findings, replacing build.maxIssues.

@@ -41,8 +41,8 @@ the tree walk into bodies, which is what reaches local and nested declarations.
 ## How it runs monorepo-wide
 
 The root `lint:detekt` task (in `mise.no-env.toml`, part of the `lint` aggregate)
-invokes the detekt CLI over `packages/` with this module's jar on `--plugins` and
-default rule sets disabled:
+invokes the detekt CLI over `packages/` with this module's jar on `--plugins`.
+Detekt's default rule sets stay active, and this package adds `require-kdoc` on top:
 
 ```sh
 mise run lint:detekt    # scan all of packages/
@@ -53,7 +53,7 @@ sources (`**/src/test/**`, `**/src/androidTest/**`) before parsing.
 
 ## Configuration
 
-`detekt.yml` activates only `require-kdoc` and leaves findings at detekt 2's default
+`detekt.yml` activates `require-kdoc` and leaves findings at detekt 2's default
 `error` severity, so missing KDoc fails the run. The `allowOverride` rule option
 (default false) can let `override` members inherit documentation.
 

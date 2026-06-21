@@ -51,10 +51,11 @@ tasks.withType<Test>().configureEach {
     useJUnitPlatform()
 }
 
-// Run detekt with only the custom require-kdoc rule set over the tree named by the
-// `detektInput` Gradle property (the root `lint:detekt` task passes the repo's
-// packages/ dir). Global --excludes drop build output, .gradle caches, build scripts
-// (.kts), and test sources before parsing, mirroring how require-tsdoc skips .test.ts.
+// Run detekt with the custom require-kdoc rule set and detekt's default rule sets
+// over the tree named by the `detektInput` Gradle property (the root `lint:detekt`
+// task passes the repo's packages/ dir). Global --excludes drop build output,
+// .gradle caches, build scripts (.kts), and test sources before parsing,
+// mirroring how require-tsdoc skips .test.ts.
 tasks.register<JavaExec>("detektCheck") {
     group = "verification"
     description = "Run detekt with the custom require-kdoc rule set over --input (detektInput property)."
@@ -74,7 +75,6 @@ tasks.register<JavaExec>("detektCheck") {
                 "--input", inputPath.get(),
                 "--config", configFile,
                 "--plugins", ruleJar.get().asFile.absolutePath,
-                "--disable-default-rulesets",
                 "--excludes",
                 "**/build/**,**/.gradle/**,**/node_modules/**,**/*.kts,**/src/test/**,**/src/androidTest/**",
             )
