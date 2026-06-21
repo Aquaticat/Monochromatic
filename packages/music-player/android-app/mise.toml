@@ -183,6 +183,23 @@ dir = "{{config_root}}"
 depends = ["build:native"]
 run = "./gradlew :app:connectedDebugAndroidTest --no-daemon --console=plain"
 
+# Non-destructive on-device instrumented run. Unlike test:instrumented (which uses
+# connectedDebugAndroidTest and uninstalls/reinstalls, wiping the SAF grant and the
+# warm peak cache), this installs with `-r` (keeps app data + grants) and drives a
+# single class via `am instrument`. Defaults to the silent PeakSweepWorkerTest
+# (decode-only, no audio); pass another fully-qualified class via the `class` arg,
+# but note RustEngineTest plays audio. Caveat: `am instrument` exits 0 even when a
+# test fails, so read its output for "OK (N tests)" versus "FAILURES!!!".
+[tasks."test:instrumented:device"]
+description = "Non-destructive on-device instrumented run (install -r + am instrument; keeps the SAF grant + warm cache). Defaults to the silent PeakSweepWorkerTest; override with the `class` arg."
+dir = "{{config_root}}"
+depends = ["test:instrumented:build"]
+run = [
+    "adb install -r app/build/outputs/apk/debug/app-debug.apk",
+    "adb install -r app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk",
+    "adb shell am instrument -w -e class {{arg(name='class', default='dev.monochromatic.musicplayer.PeakSweepWorkerTest')}} dev.monochromatic.musicplayer.test/androidx.test.runner.AndroidJUnitRunner",
+]
+
 [tasks.lint]
 description = "Run Android Lint on the debug variant"
 dir = "{{config_root}}"
