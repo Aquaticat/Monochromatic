@@ -1,6 +1,6 @@
 # Done; Framework evaluation
 
-Written Feb 9, 2026. Documents the reasoning behind choosing vanilla TS + Bun over SvelteKit, Vue Vapor, or Web Components frameworks.
+Written Feb 9, 2026. Historical record only: it documents the reasoning behind the original vanilla TS + Bun choice over SvelteKit, Vue Vapor, or Web Components frameworks. The current app runtime is Node with h3 and tsdown, as documented in `README.md` and `SPEC.md`.
 
 ## Context
 
