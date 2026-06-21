@@ -71,8 +71,7 @@ and test sources (`**/src/test/**`,
 
 `detekt.yml` activates `require-kdoc` and leaves findings at detekt 2's default `error` severity,
 so missing KDoc fails the run.
-`detekt-baseline.xml` records existing default-rule findings so new findings still fail.
-See the [default-config baseline troubleshooting note](../../../docs/troubleshooting/detekt-default-config-baseline.md)
+See the [default-config troubleshooting note](../../../docs/troubleshooting/detekt-default-config.md)
 for the source trace.
 The `allowOverride` rule option (default false) can let `override` members inherit documentation.
 
@@ -81,9 +80,8 @@ The `allowOverride` rule option (default false) can let `override` members inher
 ```sh
 mise run //packages/linter/kotlin:test                  # rule unit tests
 mise run //packages/linter/kotlin:lint                  # local compile check
-mise run //packages/linter/kotlin:lint:detekt           # dogfood own src
-mise run //packages/linter/kotlin:lint:detekt:baseline  # refresh baseline
-mise run //packages/linter/kotlin:build                 # build plugin jar
+mise run //packages/linter/kotlin:lint:detekt  # dogfood own src
+mise run //packages/linter/kotlin:build        # build plugin jar
 ```
 
 ## Adding a rule

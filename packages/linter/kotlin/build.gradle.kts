@@ -68,7 +68,6 @@ tasks.register<JavaExec>("detektCheck") {
     val inputPath = providers.gradleProperty("detektInput")
         .orElse(layout.projectDirectory.dir("src").asFile.absolutePath)
     val configFile = layout.projectDirectory.file("detekt.yml").asFile.absolutePath
-    val baselineFile = layout.projectDirectory.file("detekt-baseline.xml").asFile.absolutePath
 
     argumentProviders.add(
         CommandLineArgumentProvider {
@@ -76,7 +75,6 @@ tasks.register<JavaExec>("detektCheck") {
                 "--input", inputPath.get(),
                 "--config", configFile,
                 "--build-upon-default-config",
-                "--baseline", baselineFile,
                 "--plugins", ruleJar.get().asFile.absolutePath,
                 "--excludes",
                 "**/build/**,**/.gradle/**,**/node_modules/**,**/*.kts,**/src/test/**,**/src/androidTest/**",
@@ -85,34 +83,3 @@ tasks.register<JavaExec>("detektCheck") {
     )
 }
 
-// Create or refresh the baseline for default detekt findings that already exist in
-// the input tree. Normal detektCheck runs consume this file so new findings still
-// fail while the current backlog is handled by the baseline.
-tasks.register<JavaExec>("detektBaseline") {
-    group = "verification"
-    description = "Create detekt-baseline.xml for --input (detektInput property)."
-    dependsOn(tasks.jar)
-    classpath = detektCli
-    mainClass.set("dev.detekt.cli.Main")
-
-    val ruleJar = tasks.jar.flatMap { it.archiveFile }
-    val inputPath = providers.gradleProperty("detektInput")
-        .orElse(layout.projectDirectory.dir("src").asFile.absolutePath)
-    val configFile = layout.projectDirectory.file("detekt.yml").asFile.absolutePath
-    val baselineFile = layout.projectDirectory.file("detekt-baseline.xml").asFile.absolutePath
-
-    argumentProviders.add(
-        CommandLineArgumentProvider {
-            listOf(
-                "--input", inputPath.get(),
-                "--config", configFile,
-                "--build-upon-default-config",
-                "--baseline", baselineFile,
-                "--create-baseline",
-                "--plugins", ruleJar.get().asFile.absolutePath,
-                "--excludes",
-                "**/build/**,**/.gradle/**,**/node_modules/**,**/*.kts,**/src/test/**,**/src/androidTest/**",
-            )
-        },
-    )
-}

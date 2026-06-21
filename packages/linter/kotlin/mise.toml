@@ -27,7 +27,3 @@ description = "Dogfood: run require-kdoc over this package's own Kotlin sources"
 dir = "{{config_root}}"
 run = "./gradlew detektCheck -PdetektInput={{config_root}}/src/main/kotlin --no-daemon --console=plain"
 
-[tasks."lint:detekt:baseline"]
-description = "Refresh detekt-baseline.xml for current main-source Kotlin findings"
-dir = "{{config_root}}"
-run = "./gradlew detektBaseline -PdetektInput={{config_root}}/src/main/kotlin:{{config_root}}/../../music-player/android-app/app/src/main/kotlin --no-daemon --console=plain"
