@@ -202,13 +202,34 @@ function isMarkdownHeadingLine(
     return false;
 
   /**
-   * Cursor pointing at first non-heading-marker character.
+   * Index of first non-heading-marker character.
    */
-  let cursor = 0;
-  while (trimmedLine.at(cursor,) === MARKDOWN_HEADING_MARKER) {
-    cursor += 1;
-  }
-  return (cursor > 0) && (trimmedLine.at(cursor,) === MARKDOWN_HEADING_SEPARATOR);
+  const firstNonMarkerIndex = firstNonHeadingMarkerIndex(trimmedLine,);
+  return (firstNonMarkerIndex > 0)
+    && (trimmedLine.at(firstNonMarkerIndex,) === MARKDOWN_HEADING_SEPARATOR);
+}
+
+/**
+ * Find first character index after leading Markdown heading markers.
+ *
+ * @param line - line starting with at least one heading marker
+ *
+ * @returns index after leading heading markers
+ */
+function firstNonHeadingMarkerIndex(
+  line: string,
+): number {
+  /**
+   * Index of first character that is not a heading marker.
+   */
+  const firstNonMarkerIndex = Array
+    .from(line,)
+    .findIndex(function findNonMarker(character,) {
+      return character !== MARKDOWN_HEADING_MARKER;
+    },);
+  return firstNonMarkerIndex === (-1)
+    ? line.length
+    : firstNonMarkerIndex;
 }
 
 /**
