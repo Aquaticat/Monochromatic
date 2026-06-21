@@ -148,8 +148,11 @@ gracefully rather than throwing.
 The `judgeModel` defaults to `{strategy: "same-provider", majorVersions: 1}` when the config is absent
 or `judgeModel` is unset; defined once in `src/constants.ts` as `JUDGE_MODEL_DEFAULTS` and referenced from
 the loader, the global defaults, and the judge-model selector.
-Automatic judge selection ranks candidates by local speed-name heuristic first,
-then falls back to input cost and version when no speed signal separates them.
+Automatic judge selection first keeps the configured major-version families,
+then ranks candidates by local speed-name heuristic:
+`highspeed` or `high-speed` > `fast` > `flash` or `spark` > `turbo` > `nano` >
+`mini` > `haiku` > `lite` or `light` > no signal.
+When no speed signal separates candidates, selection falls back to input cost and version.
 
 ## Skill read allowlist
 

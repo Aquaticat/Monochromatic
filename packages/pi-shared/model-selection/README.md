@@ -25,3 +25,11 @@ Root and `/core` modules must not import either peer.
 
 Advisor and auto-mode can import heavier `/scope`, `/cost`, `/budget`, and `/pi-coding-agent` modules.
 Thinking-defaults imports only root or `/core` helpers.
+
+## Fast judge-model ranking
+
+Budget helpers retain their API names for compatibility, but automatic judge selection ranks by speed heuristic.
+The selector first keeps the configured major-version families, then scores model id and display name tokens:
+`highspeed` or `high-speed` > `fast` > `flash` or `spark` > `turbo` > `nano` >
+`mini` > `haiku` > `lite` or `light` > no signal.
+When no speed signal separates candidates, selection falls back to input cost and version.
