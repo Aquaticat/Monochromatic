@@ -8,6 +8,11 @@ complexity:
   TooManyFunctions:
     active: false
 
+style:
+  # The repo uses early returns for guard clauses; count body exits, not guards.
+  ReturnCount:
+    excludeGuardClauses: true
+
 require-kdoc:
   active: true
   # detekt 2 fails the run on error-severity findings, replacing build.maxIssues.

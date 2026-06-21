@@ -711,8 +711,8 @@ object SafTreeSource {
          * explain its source and use.
          */
         val childrenUri: Uri = DocumentsContract.buildChildDocumentsUriUsingTree(treeUri, frame.documentId)
-        // What:     `try { ... } catch (cancellation: CancellationException) { ... } catch (failure: Exception) { ...
-        //           }`
+        // What:     `try { ... } catch (cancellation: CancellationException) { ... }
+        //           catch (expectedFailure: Exception) { ... }`
         //           is a TRY with TWO catch clauses, checked in order: the MORE SPECIFIC
         //           `CancellationException` first, then the broad `Exception`. Kotlin lets
         //           you TYPE each caught value.
@@ -979,7 +979,7 @@ object SafTreeSource {
             // Why:      A newer load (for example a folder pick during a scan) cancels this
             //           one through the streamed emit; swallowing the cancellation would let
             //           the superseded scan keep emitting stale batches over the new library.
-            // Gotcha:   This clause MUST come before `catch (failure: Exception)`, since
+            // Gotcha:   This clause MUST come before `catch (expectedFailure: Exception)`, since
             //           `CancellationException` is an `Exception`; otherwise the broad clause
             //           would catch it first and wrongly skip the directory.
             //
@@ -988,8 +988,8 @@ object SafTreeSource {
             // if (e instanceof CancellationException) throw e;
             // ```
             throw cancellation
-        } catch (failure: Exception) {
-            // What:     `Log.w(SOURCE_TAG, "skipping unreadable directory ${frame.documentId}", failure)`
+        } catch (expectedFailure: Exception) {
+            // What:     `Log.w(SOURCE_TAG, "skipping unreadable directory ${frame.documentId}", expectedFailure)`
             //           writes a WARNING log line with the thrown `failure` attached (the
             //           third `Throwable` argument records the stack trace). The message is a
             //           string template with `${frame.documentId}` interpolated.
@@ -999,9 +999,9 @@ object SafTreeSource {
             //
             // In TS you'd write (pseudocode):
             // ```ts
-            // console.warn(`[${SOURCE_TAG}] skipping unreadable directory ${frame.documentId}`, failure);
+            // console.warn(`[${SOURCE_TAG}] skipping unreadable directory ${frame.documentId}`, expectedFailure);
             // ```
-            Log.w(SOURCE_TAG, "skipping unreadable directory ${frame.documentId}", failure)
+            Log.w(SOURCE_TAG, "skipping unreadable directory ${frame.documentId}", expectedFailure)
         }
     }
 }

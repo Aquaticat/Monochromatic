@@ -345,8 +345,8 @@ suspend fun measureAndCache(
         //   if (cancellation instanceof CancellationException) throw cancellation;
         // ```
         throw cancellation
-    } catch (failure: Exception) {
-        // What:     `Log.w(SWEEP_TAG, "true-peak measure failed for $uri; leaving it uncached", failure)`
+    } catch (expectedFailure: Exception) {
+        // What:     `Log.w(SWEEP_TAG, "true-peak measure failed for $uri; leaving it uncached", expectedFailure)`
         //           writes a WARNING-level logcat line. Arguments:
         //           - `SWEEP_TAG` is the shared tag constant.
         //           - the second argument is the message, where `$uri` is
@@ -361,9 +361,9 @@ suspend fun measureAndCache(
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        //   console.warn(`true-peak measure failed for ${uri}; leaving it uncached`, failure);
+        //   console.warn(`true-peak measure failed for ${uri}; leaving it uncached`, expectedFailure);
         // ```
-        Log.w(SWEEP_TAG, "true-peak measure failed for $uri; leaving it uncached", failure)
+        Log.w(SWEEP_TAG, "true-peak measure failed for $uri; leaving it uncached", expectedFailure)
         // What:     `return SweepOutcome.FAILED` exits the function (out of the
         //           catch block, out of the whole `try` expression) with the
         //           "decode threw" outcome. `SweepOutcome.FAILED` selects that

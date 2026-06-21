@@ -410,7 +410,7 @@ object LibrarySource {
             //           cancelled" from "the scan genuinely failed".
             // Gotcha:   Order matters: `CancellationException` is itself an
             //           `Exception`, so this MORE SPECIFIC clause must come before
-            //           the broad `catch (failure: Exception)` clause, or every
+            //           the broad `catch (expectedFailure: Exception)` clause, or every
             //           cancellation would be wrongly absorbed as a failure.
             //
             // In TS you'd write (pseudocode):
@@ -418,8 +418,8 @@ object LibrarySource {
             // if (e instanceof CancellationException) throw e;
             // ```
             throw cancellation
-        } catch (failure: Exception) {
-            // What:     `Log.w(SOURCE_TAG, "scan of folder $treeUri failed; treating as empty", failure)`
+        } catch (expectedFailure: Exception) {
+            // What:     `Log.w(SOURCE_TAG, "scan of folder $treeUri failed; treating as empty", expectedFailure)`
             //           writes a WARNING-level line to logcat.
             //           - `SOURCE_TAG` is the filter label.
             //           - The middle argument is a Kotlin STRING TEMPLATE: `$treeUri`
@@ -427,7 +427,7 @@ object LibrarySource {
             //             splices the `treeUri` value into the text (Kotlin calls
             //             `toString()` on it).
             //           - `failure` is the caught `Exception` from the
-            //             `catch (failure: Exception)` clause; passing it as the
+            //             `catch (expectedFailure: Exception)` clause; passing it as the
             //             third argument makes `Log` print its stack trace.
             // Why:      The whole folder walk failed for some unexpected reason; we
             //           record it visibly (rather than silently swallowing) before
@@ -438,9 +438,9 @@ object LibrarySource {
             //
             // In TS you'd write (pseudocode):
             // ```ts
-            // Log.w(SOURCE_TAG, `scan of folder ${treeUri} failed; treating as empty`, failure);
+            // Log.w(SOURCE_TAG, `scan of folder ${treeUri} failed; treating as empty`, expectedFailure);
             // ```
-            Log.w(SOURCE_TAG, "scan of folder $treeUri failed; treating as empty", failure)
+            Log.w(SOURCE_TAG, "scan of folder $treeUri failed; treating as empty", expectedFailure)
             // What:     `emptyList()` returns the shared immutable zero-element
             //           `List<Track>` (element type inferred from `scanRoot`'s
             //           return type). It is the last expression in this `catch`

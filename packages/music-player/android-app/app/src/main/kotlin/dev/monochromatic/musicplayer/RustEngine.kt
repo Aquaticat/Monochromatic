@@ -1017,8 +1017,8 @@ class RustEngine(context: Context) : AudioEngine {
             // throw e; // it was a CancellationException
             // ```
             throw cancellation
-        } catch (failure: Exception) {
-            // What:     `Log.w(LOG_TAG, "true-peak measure failed for $uri; using unity gain", failure)`
+        } catch (expectedFailure: Exception) {
+            // What:     `Log.w(LOG_TAG, "true-peak measure failed for $uri; using unity gain", expectedFailure)`
             //           logs any non-cancellation failure with the throwable.
             // Why:      A genuine decode failure should not crash; fall back to unity gain.
             //
@@ -1026,7 +1026,7 @@ class RustEngine(context: Context) : AudioEngine {
             // ```ts
             // console.warn(LOG_TAG, `true-peak measure failed for ${uri}; using unity gain`, e);
             // ```
-            Log.w(LOG_TAG, "true-peak measure failed for $uri; using unity gain", failure)
+            Log.w(LOG_TAG, "true-peak measure failed for $uri; using unity gain", expectedFailure)
             // What:     `return UNITY_GAIN` returns unity from the whole function (the catch's escape).
             // Why:      Play the track unprocessed rather than failing the load.
             //
@@ -1121,8 +1121,8 @@ class RustEngine(context: Context) : AudioEngine {
                 // ```
                 appContext.contentResolver.openFileDescriptor(Uri.parse(uri), "r")
             }
-        } catch (failure: Exception) {
-            // What:     `Log.w(LOG_TAG, "openDescriptor failed for $uri", failure)` logs the open failure
+        } catch (expectedFailure: Exception) {
+            // What:     `Log.w(LOG_TAG, "openDescriptor failed for $uri", expectedFailure)` logs the open failure
             //           with the throwable.
             // Why:      Make the failure visible before falling back to `null`.
             //
@@ -1130,7 +1130,7 @@ class RustEngine(context: Context) : AudioEngine {
             // ```ts
             // console.warn(LOG_TAG, `openDescriptor failed for ${uri}`, e);
             // ```
-            Log.w(LOG_TAG, "openDescriptor failed for $uri", failure)
+            Log.w(LOG_TAG, "openDescriptor failed for $uri", expectedFailure)
             // What:     `null` is the catch block's value (and thus the function's return on failure): the
             //           NULL variant of the `ParcelFileDescriptor?` return type.
             // Why:      Signal "could not open" to the caller without throwing.
