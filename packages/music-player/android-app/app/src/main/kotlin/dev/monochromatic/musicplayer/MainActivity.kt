@@ -24,15 +24,15 @@
 //     picker round-trip stops the activity.
 //
 // The composables, folded from their old KDocs:
-//   - `AppRoot`: the audio-permission gate + library trigger over a bound
-//     controller. Requests audio access once, shows `PermissionGate` until
-//     granted, then signals the service to load and shows `PlayerScreen`.
-//   - `PlayerScreen`: the desktop's narrow single-column layout (seek bar,
+//   - `appRoot`: the audio-permission gate + library trigger over a bound
+//     controller. Requests audio access once, shows `permissionGate` until
+//     granted, then signals the service to load and shows `playerScreen`.
+//   - `playerScreen`: the desktop's narrow single-column layout (seek bar,
 //     volume, control row, page tabs + track list). Tap a track to play; tap
 //     the playing track to pause/resume.
-//   - `StartingGate`/`LoadingNotice`/`PermissionGate`: small placeholder/notice
-//     screens. `SeekRow`/`VolumeRow`/`ControlRow`/`ShuffleOption`/`PageTabs`/
-//     `TrackPager`/`TrackRow`: the pieces of the player screen.
+//   - `startingGate`/`loadingNotice`/`permissionGate`: small placeholder/notice
+//     screens. `seekRow`/`volumeRow`/`controlRow`/`shuffleOption`/`pageTabs`/
+//     `trackPager`/`trackRow`: the pieces of the player screen.
 //   - `formatTime`: format a seconds value as `m:ss`.
 // ============================================================================
 
@@ -140,7 +140,7 @@ import androidx.activity.ComponentActivity
 // What:     `import androidx.activity.compose.rememberLauncherForActivityResult` pulls in
 //           the Compose helper that registers an activity-result launcher INSIDE a
 //           composition (the permission prompt below uses it).
-// Why:      `AppRoot` requests the audio permission via this launcher.
+// Why:      `appRoot` requests the audio permission via this launcher.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -182,7 +182,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 // What:     `import androidx.compose.foundation.background` pulls in the `background`
 //           MODIFIER (a styling extension on `Modifier` that paints a color behind a
 //           composable).
-// Why:      `TrackRow` highlights the current row with `Modifier.background(...)`.
+// Why:      `trackRow` highlights the current row with `Modifier.background(...)`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -192,7 +192,7 @@ import androidx.compose.foundation.background
 
 // What:     `import androidx.compose.foundation.clickable` pulls in the `clickable`
 //           MODIFIER (makes a composable respond to taps, taking an `onClick` lambda).
-// Why:      `ShuffleOption` and `TrackRow` make whole rows tappable.
+// Why:      `shuffleOption` and `trackRow` make whole rows tappable.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -235,7 +235,7 @@ import androidx.compose.foundation.layout.Column
 // What:     `import androidx.compose.foundation.layout.ColumnScope` pulls in
 //           `ColumnScope`, the RECEIVER type for code running inside a `Column`'s
 //           children block (it exposes column-only modifiers like `weight`).
-// Why:      `TrackPager` is declared as an EXTENSION on `ColumnScope` so it can use
+// Why:      `trackPager` is declared as an EXTENSION on `ColumnScope` so it can use
 //           `Modifier.weight(...)`.
 //
 // In TS you'd write (pseudocode):
@@ -317,7 +317,7 @@ import androidx.compose.foundation.layout.size
 
 // What:     `import androidx.compose.foundation.lazy.LazyColumn` pulls in `LazyColumn`, a
 //           SCROLLING column that only composes visible items (like a virtualized list).
-// Why:      `TrackPager` shows the tabs + tracks in one scrolling `LazyColumn`.
+// Why:      `trackPager` shows the tabs + tracks in one scrolling `LazyColumn`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -327,7 +327,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 
 // What:     `import androidx.compose.foundation.lazy.items` pulls in `items(list) { ... }`,
 //           the `LazyListScope` builder that emits one row per list element.
-// Why:      `TrackPager` lists the page's tracks with `items(...)`.
+// Why:      `trackPager` lists the page's tracks with `items(...)`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -357,7 +357,7 @@ import androidx.compose.material3.Checkbox
 
 // What:     `import androidx.compose.material3.CircularProgressIndicator` pulls in the
 //           spinner composable.
-// Why:      `LoadingNotice` shows a `CircularProgressIndicator`.
+// Why:      `loadingNotice` shows a `CircularProgressIndicator`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -387,7 +387,7 @@ import androidx.compose.material3.OutlinedButton
 
 // What:     `import androidx.compose.material3.RadioButton` pulls in the radio-button
 //           composable.
-// Why:      `ShuffleOption` shows a `RadioButton`.
+// Why:      `shuffleOption` shows a `RadioButton`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -397,7 +397,7 @@ import androidx.compose.material3.RadioButton
 
 // What:     `import androidx.compose.material3.Scaffold` pulls in `Scaffold`, a Material
 //           layout shell that supplies system-bar inset padding to its content lambda.
-// Why:      `PlayerScreen` wraps its content in a `Scaffold`.
+// Why:      `playerScreen` wraps its content in a `Scaffold`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -468,7 +468,7 @@ import androidx.compose.runtime.Composable
 // What:     `import androidx.compose.runtime.LaunchedEffect` pulls in `LaunchedEffect`,
 //           the composable that runs a `suspend` side-effect block tied to a key (re-runs
 //           when the key changes; cancels on leave).
-// Why:      `AppRoot` and `PlayerScreen` use `LaunchedEffect` for permission requests and
+// Why:      `appRoot` and `playerScreen` use `LaunchedEffect` for permission requests and
 //           position polling.
 //
 // In TS you'd write (pseudocode):
@@ -491,7 +491,7 @@ import androidx.compose.runtime.getValue
 // What:     `import androidx.compose.runtime.mutableDoubleStateOf` imports
 //           `mutableDoubleStateOf(x)`, a `Double`-specialized observable state holder (a
 //           `mutableStateOf` variant that avoids boxing the number).
-// Why:      `PlayerScreen` holds `position`/`duration` (both `Double`) in it.
+// Why:      `playerScreen` holds `position`/`duration` (both `Double`) in it.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -501,7 +501,7 @@ import androidx.compose.runtime.mutableDoubleStateOf
 
 // What:     `import androidx.compose.runtime.mutableStateOf` imports `mutableStateOf(x)`,
 //           the general observable state holder.
-// Why:      `boundController` and `AppRoot`'s `hasAudioAccess` use it.
+// Why:      `boundController` and `appRoot`'s `hasAudioAccess` use it.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -552,7 +552,7 @@ import androidx.compose.ui.Modifier
 
 // What:     `import androidx.compose.ui.graphics.Color` pulls in `Color`, Compose's color
 //           type (we use `Color.Transparent`).
-// Why:      `TrackRow` uses `Color.Transparent` for non-current rows.
+// Why:      `trackRow` uses `Color.Transparent` for non-current rows.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -562,7 +562,7 @@ import androidx.compose.ui.graphics.Color
 
 // What:     `import androidx.compose.ui.platform.LocalContext` pulls in `LocalContext`, a
 //           Compose CompositionLocal whose `.current` gives the current Android `Context`.
-// Why:      `AppRoot` reads `LocalContext.current` to check the permission.
+// Why:      `appRoot` reads `LocalContext.current` to check the permission.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -572,7 +572,7 @@ import androidx.compose.ui.platform.LocalContext
 
 // What:     `import androidx.compose.ui.text.style.TextOverflow` pulls in `TextOverflow`,
 //           the namespace describing how overflowing text is clipped (`Ellipsis`).
-// Why:      `TrackRow` uses `TextOverflow.Ellipsis`.
+// Why:      `trackRow` uses `TextOverflow.Ellipsis`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -596,7 +596,7 @@ import androidx.compose.ui.unit.dp
 
 // What:     `import dev.monochromatic.musicplayer.core.PageEntry` imports the `PageEntry`
 //           record (`{ index: Int; name: String }`) from `.core`.
-// Why:      `TrackRow` takes a `PageEntry`.
+// Why:      `trackRow` takes a `PageEntry`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -606,7 +606,7 @@ import dev.monochromatic.musicplayer.core.PageEntry
 
 // What:     `import dev.monochromatic.musicplayer.core.ShuffleMode` imports the
 //           three-value enum `ShuffleMode` (`OFF`/`WITHIN_PAGE`/`ALL`).
-// Why:      `ControlRow` compares and sets shuffle modes.
+// Why:      `controlRow` compares and sets shuffle modes.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -617,7 +617,7 @@ import dev.monochromatic.musicplayer.core.ShuffleMode
 // What:     `import dev.monochromatic.musicplayer.core.rowDisplay` imports the
 //           `rowDisplay(label, name)` FUNCTION that strips a folder tab's `<label>/` prefix
 //           from a track's display name (and leaves letter / `#` tab names whole).
-// Why:      `TrackRow` shows the path BELOW the active folder tab, not the full relative path.
+// Why:      `trackRow` shows the path BELOW the active folder tab, not the full relative path.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -628,7 +628,7 @@ import dev.monochromatic.musicplayer.core.rowDisplay
 // What:     `import kotlinx.coroutines.delay` imports `delay(ms)`, a `suspend` function
 //           that pauses the coroutine for the given milliseconds without blocking a
 //           thread.
-// Why:      `PlayerScreen`'s polling loop uses `delay(POSITION_POLL_MS)`.
+// Why:      `playerScreen`'s polling loop uses `delay(POSITION_POLL_MS)`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -1122,16 +1122,16 @@ class MainActivity : ComponentActivity() {
                      * above explain its source and use.
                      */
                     val controller = boundController.value
-                    // What:     `if (controller == null) { StartingGate() } else { AppRoot(...) }`
-                    //           branches the UI: no brain yet -> show `StartingGate`; bound ->
-                    //           show `AppRoot` (smart-cast `controller` to non-null in the else).
+                    // What:     `if (controller == null) { startingGate() } else { appRoot(...) }`
+                    //           branches the UI: no brain yet -> show `startingGate`; bound ->
+                    //           show `appRoot` (smart-cast `controller` to non-null in the else).
                     // Why:      Render the right screen for the bind state.
                     //
                     // In TS you'd write (pseudocode):
                     // ```ts
-                    // if (controller === null) return <StartingGate/>;
+                    // if (controller === null) return <startingGate/>;
                     // return (
-                    //   <AppRoot
+                    //   <appRoot
                     //     controller={controller}
                     //     onAudioGranted={() => this.binder?.ensureLibraryLoaded()}
                     //     onChooseFolder={() => this.folderPicker.launch(null)}
@@ -1139,19 +1139,19 @@ class MainActivity : ComponentActivity() {
                     // );
                     // ```
                     if (controller == null) {
-                        // What:     `StartingGate()` calls the placeholder composable shown
+                        // What:     `startingGate()` calls the placeholder composable shown
                         //           while binding.
                         // Why:      Show "Starting..." until the service binds.
                         //
                         // In TS you'd write (pseudocode):
                         // ```ts
-                        // <StartingGate/>
+                        // <startingGate/>
                         // ```
-                        StartingGate()
+                        startingGate()
                     } else {
-                        // What:     `AppRoot(controller = controller, onAudioGranted = { binder?.ensureLibraryLoaded()
+                        // What:     `appRoot(controller = controller, onAudioGranted = { binder?.ensureLibraryLoaded()
                         //           }, onChooseFolder = { folderPicker.launch(null) },)`
-                        //           calls the `AppRoot` composable with named arguments. Two of
+                        //           calls the `appRoot` composable with named arguments. Two of
                         //           them are LAMBDA callbacks: `onAudioGranted` safe-calls
                         //           `binder?.ensureLibraryLoaded()`; `onChooseFolder` launches the
                         //           folder picker with `folderPicker.launch(null)`.
@@ -1160,13 +1160,13 @@ class MainActivity : ComponentActivity() {
                         //
                         // In TS you'd write (pseudocode):
                         // ```ts
-                        // <AppRoot
+                        // <appRoot
                         //   controller={controller}
                         //   onAudioGranted={() => this.binder?.ensureLibraryLoaded()}
                         //   onChooseFolder={() => this.folderPicker.launch(null)}
                         // />
                         // ```
-                        AppRoot(
+                        appRoot(
                             controller = controller,
                             onAudioGranted = { binder?.ensureLibraryLoaded() },
                             onChooseFolder = { folderPicker.launch(null) },
@@ -1399,25 +1399,25 @@ class MainActivity : ComponentActivity() {
 
 // What:     `@Composable` is the ANNOTATION marking the next function as a Compose UI
 //           component (it may emit UI and read composition state).
-// Why:      `AppRoot` is a UI component.
+// Why:      `appRoot` is a UI component.
 //
 // In TS you'd write (pseudocode):
 // ```ts
 // // (no annotation; a function returning UI is a component)
 // ```
 @Composable
-// What:     `private fun AppRoot(controller: PlayerController, onAudioGranted: () -> Unit, onChooseFolder: () -> Unit)
+// What:     `private fun appRoot(controller: PlayerController, onAudioGranted: () -> Unit, onChooseFolder: () -> Unit)
 //           { ... }`
 //           declares a private composable taking the bound brain plus two FUNCTION-TYPE
 //           callbacks (`() -> Unit` = a no-arg void function; TS `() => void`).
 // Why:      The audio-permission gate and library trigger over a bound `controller`:
-//           request audio access once, show `PermissionGate` until granted, and on grant
+//           request audio access once, show `permissionGate` until granted, and on grant
 //           signal the service to load the library; once access is held show
-//           `PlayerScreen`.
+//           `playerScreen`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function AppRoot(props: {
+// function appRoot(props: {
 //   controller: PlayerController;
 //   onAudioGranted: () => void;
 //   onChooseFolder: () => void;
@@ -1427,7 +1427,7 @@ class MainActivity : ComponentActivity() {
  * Defines app root behavior for this music-player component; the TypeScript-oriented notes above explain its
  * call shape and effects.
  */
-private fun AppRoot(controller: PlayerController, onAudioGranted: () -> Unit, onChooseFolder: () -> Unit) {
+private fun appRoot(controller: PlayerController, onAudioGranted: () -> Unit, onChooseFolder: () -> Unit) {
     // What:     `val context = LocalContext.current` reads the current Android `Context`
     //           from the `LocalContext` CompositionLocal (`.current` is the in-scope value).
     // Why:      Needed to check the audio permission.
@@ -1566,63 +1566,63 @@ private fun AppRoot(controller: PlayerController, onAudioGranted: () -> Unit, on
             onAudioGranted()
         }
     }
-    // What:     `if (hasAudioAccess) { PlayerScreen(...) } else { PermissionGate(...) }`
+    // What:     `if (hasAudioAccess) { playerScreen(...) } else { permissionGate(...) }`
     //           chooses the screen: the player when access is held, otherwise the permission
-    //           gate. `PlayerScreen(controller = controller, onChooseFolder = onChooseFolder)`
-    //           and `PermissionGate(onGrant = { permissionLauncher.launch(audioPermission()) })`
+    //           gate. `playerScreen(controller = controller, onChooseFolder = onChooseFolder)`
+    //           and `permissionGate(onGrant = { permissionLauncher.launch(audioPermission()) })`
     //           are composable calls with named args (the gate's `onGrant` is a lambda that
     //           re-asks).
     // Why:      Show the right UI for the access state.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // if (hasAudioAccess) return <PlayerScreen controller={controller} onChooseFolder={onChooseFolder}/>;
-    // return <PermissionGate onGrant={() => permissionLauncher.launch(audioPermission())}/>;
+    // if (hasAudioAccess) return <playerScreen controller={controller} onChooseFolder={onChooseFolder}/>;
+    // return <permissionGate onGrant={() => permissionLauncher.launch(audioPermission())}/>;
     // ```
     if (hasAudioAccess) {
-        // What:     `PlayerScreen(controller = controller, onChooseFolder = onChooseFolder)`
+        // What:     `playerScreen(controller = controller, onChooseFolder = onChooseFolder)`
         //           renders the main player with named args.
         // Why:      Access held -> show the player.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // <PlayerScreen controller={controller} onChooseFolder={onChooseFolder}/>
+        // <playerScreen controller={controller} onChooseFolder={onChooseFolder}/>
         // ```
-        PlayerScreen(controller = controller, onChooseFolder = onChooseFolder)
+        playerScreen(controller = controller, onChooseFolder = onChooseFolder)
     } else {
-        // What:     `PermissionGate(onGrant = { permissionLauncher.launch(audioPermission()) })`
+        // What:     `permissionGate(onGrant = { permissionLauncher.launch(audioPermission()) })`
         //           renders the gate, passing an `onGrant` lambda that re-launches the
         //           permission request.
         // Why:      Access not held -> show the gate with a re-ask button.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // <PermissionGate onGrant={() => permissionLauncher.launch(audioPermission())}/>
+        // <permissionGate onGrant={() => permissionLauncher.launch(audioPermission())}/>
         // ```
-        PermissionGate(onGrant = { permissionLauncher.launch(audioPermission()) })
+        permissionGate(onGrant = { permissionLauncher.launch(audioPermission()) })
     }
 }
 
 // What:     `@Composable` marks the next function as a Compose component.
-// Why:      `StartingGate` is a UI component.
+// Why:      `startingGate` is a UI component.
 //
 // In TS you'd write (pseudocode):
 // ```ts
 // // (component function)
 // ```
 @Composable
-// What:     `private fun StartingGate() { ... }` declares a private no-arg composable.
+// What:     `private fun startingGate() { ... }` declares a private no-arg composable.
 // Why:      Brief placeholder shown while the activity binds to `PlaybackService`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function StartingGate() { ... }
+// function startingGate() { ... }
 // ```
 /**
  * Defines starting gate behavior for this music-player component; the TypeScript-oriented notes above explain
  * its call shape and effects.
  */
-private fun StartingGate() {
+private fun startingGate() {
     // What:     `Column( modifier = Modifier.fillMaxSize().padding(24.dp), verticalArrangement =
     //           Arrangement.spacedBy(12.dp, Alignment.CenterVertically), horizontalAlignment =
     //           Alignment.CenterHorizontally, ) { ... }`
@@ -1662,14 +1662,14 @@ private fun StartingGate() {
 }
 
 // What:     `@Composable` marks the next function as a Compose component.
-// Why:      `PlayerScreen` is the main UI component.
+// Why:      `playerScreen` is the main UI component.
 //
 // In TS you'd write (pseudocode):
 // ```ts
 // // (component function)
 // ```
 @Composable
-// What:     `fun PlayerScreen(controller: PlayerController, onChooseFolder: () -> Unit) { ... }`
+// What:     `fun playerScreen(controller: PlayerController, onChooseFolder: () -> Unit) { ... }`
 //           declares a PUBLIC (Kotlin default) composable taking the brain and an
 //           `onChooseFolder` callback (`() -> Unit`).
 // Why:      The player screen, the desktop's narrow (single-column) layout: a seek bar, a
@@ -1680,13 +1680,13 @@ private fun StartingGate() {
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function PlayerScreen(props: { controller: PlayerController; onChooseFolder: () => void; }) { ... }
+// function playerScreen(props: { controller: PlayerController; onChooseFolder: () => void; }) { ... }
 // ```
 /**
  * Defines player screen behavior for this music-player component; the TypeScript-oriented notes above explain
  * its call shape and effects.
  */
-fun PlayerScreen(controller: PlayerController, onChooseFolder: () -> Unit) {
+fun playerScreen(controller: PlayerController, onChooseFolder: () -> Unit) {
     // What:     `val state = controller.uiState` reads the brain's Compose-observable
     //           snapshot. Reading the `uiState` (a Compose state) here SUBSCRIBES this
     //           composable, so it recomposes when the brain swaps in a new snapshot.
@@ -1830,35 +1830,35 @@ fun PlayerScreen(controller: PlayerController, onChooseFolder: () -> Unit) {
                 .padding(horizontal = 12.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            // What:     `SeekRow(position = position, duration = duration, onSeek = { controller.seek(it) })`
+            // What:     `seekRow(position = position, duration = duration, onSeek = { controller.seek(it) })`
             //           renders the seek bar. `onSeek` is a lambda using the implicit `it`
             //           (the seeked-to seconds) to call `controller.seek(it)`.
             // Why:      Show and drive the position scrubber.
             //
             // In TS you'd write (pseudocode):
             // ```ts
-            // <SeekRow position={position} duration={duration} onSeek={(sec) => controller.seek(sec)}/>
+            // <seekRow position={position} duration={duration} onSeek={(sec) => controller.seek(sec)}/>
             // ```
-            SeekRow(position = position, duration = duration, onSeek = { controller.seek(it) })
-            // What:     `VolumeRow(volume = state.volume, onVolume = { controller.setVolume(it) })`
+            seekRow(position = position, duration = duration, onSeek = { controller.seek(it) })
+            // What:     `volumeRow(volume = state.volume, onVolume = { controller.setVolume(it) })`
             //           renders the volume slider; `onVolume`'s lambda uses `it` (the new gain).
             // Why:      Show and drive the volume control.
             //
             // In TS you'd write (pseudocode):
             // ```ts
-            // <VolumeRow volume={state.volume} onVolume={(v) => controller.setVolume(v)}/>
+            // <volumeRow volume={state.volume} onVolume={(v) => controller.setVolume(v)}/>
             // ```
-            VolumeRow(volume = state.volume, onVolume = { controller.setVolume(it) })
-            // What:     `ControlRow(state = state, controller = controller, onOpen = onChooseFolder)`
+            volumeRow(volume = state.volume, onVolume = { controller.setVolume(it) })
+            // What:     `controlRow(state = state, controller = controller, onOpen = onChooseFolder)`
             //           renders the open/shuffle/transport/repeat row.
             // Why:      Show the main control buttons.
             //
             // In TS you'd write (pseudocode):
             // ```ts
-            // <ControlRow state={state} controller={controller} onOpen={onChooseFolder}/>
+            // <controlRow state={state} controller={controller} onOpen={onChooseFolder}/>
             // ```
-            ControlRow(state = state, controller = controller, onOpen = onChooseFolder)
-            // What:     `TrackPager(state = state, controller = controller)` renders the page
+            controlRow(state = state, controller = controller, onOpen = onChooseFolder)
+            // What:     `trackPager(state = state, controller = controller)` renders the page
             //           tabs + track list. (Folds in the old inline note: page tabs and the
             //           track list share one scroll area, the desktop's narrow layout: a library
             //           with many folder pages would otherwise let the wrapping tab bar fill the
@@ -1868,22 +1868,22 @@ fun PlayerScreen(controller: PlayerController, onChooseFolder: () -> Unit) {
             //
             // In TS you'd write (pseudocode):
             // ```ts
-            // <TrackPager state={state} controller={controller}/>
+            // <trackPager state={state} controller={controller}/>
             // ```
-            TrackPager(state = state, controller = controller)
+            trackPager(state = state, controller = controller)
         }
     }
 }
 
 // What:     `@Composable` marks the next function as a Compose component.
-// Why:      `SeekRow` is a UI component.
+// Why:      `seekRow` is a UI component.
 //
 // In TS you'd write (pseudocode):
 // ```ts
 // // (component function)
 // ```
 @Composable
-// What:     `private fun SeekRow(position: Double, duration: Double, onSeek: (Double) -> Unit) { ... }`
+// What:     `private fun seekRow(position: Double, duration: Double, onSeek: (Double) -> Unit) { ... }`
 //           declares a private composable. `onSeek: (Double) -> Unit` is a function type
 //           "takes a `Double`, returns void" (TS `(n: number) => void`).
 // Why:      Seek bar: elapsed time, a position slider over the track duration, and total
@@ -1891,13 +1891,13 @@ fun PlayerScreen(controller: PlayerController, onChooseFolder: () -> Unit) {
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function SeekRow(props: { position: number; duration: number; onSeek: (n: number) => void; }) { ... }
+// function seekRow(props: { position: number; duration: number; onSeek: (n: number) => void; }) { ... }
 // ```
 /**
  * Defines seek row behavior for this music-player component; the TypeScript-oriented notes above explain its
  * call shape and effects.
  */
-private fun SeekRow(position: Double, duration: Double, onSeek: (Double) -> Unit) {
+private fun seekRow(position: Double, duration: Double, onSeek: (Double) -> Unit) {
     // What:     `val maxValue = if (duration > 0.0) duration.toFloat() else 1.0f` declares
     //           `maxValue` from an `if/else` EXPRESSION. `duration.toFloat()` converts the
     //           `Double` to a `Float` (32-bit; the Slider API takes `Float`). `1.0f` is a
@@ -1980,27 +1980,27 @@ private fun SeekRow(position: Double, duration: Double, onSeek: (Double) -> Unit
 }
 
 // What:     `@Composable` marks the next function as a Compose component.
-// Why:      `VolumeRow` is a UI component.
+// Why:      `volumeRow` is a UI component.
 //
 // In TS you'd write (pseudocode):
 // ```ts
 // // (component function)
 // ```
 @Composable
-// What:     `private fun VolumeRow(volume: Float, onVolume: (Float) -> Unit) { ... }`
+// What:     `private fun volumeRow(volume: Float, onVolume: (Float) -> Unit) { ... }`
 //           declares a private composable taking a `Float` gain and an `(Float) -> Unit`
 //           callback.
 // Why:      Volume row: a "Volume" label and a 0..1 gain slider.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function VolumeRow(props: { volume: number; onVolume: (n: number) => void; }) { ... }
+// function volumeRow(props: { volume: number; onVolume: (n: number) => void; }) { ... }
 // ```
 /**
  * Defines volume row behavior for this music-player component; the TypeScript-oriented notes above explain its
  * call shape and effects.
  */
-private fun VolumeRow(volume: Float, onVolume: (Float) -> Unit) {
+private fun volumeRow(volume: Float, onVolume: (Float) -> Unit) {
     // What:     `Row(verticalAlignment = Alignment.CenterVertically) { ... }` lays out the
     //           label and slider on one centered line.
     // Why:      Put "Volume" next to its slider.
@@ -2051,7 +2051,7 @@ private fun VolumeRow(volume: Float, onVolume: (Float) -> Unit) {
 //           of an EXPERIMENTAL API (`FlowRow`). `ExperimentalLayoutApi::class` is a CLASS
 //           REFERENCE (`::class` names the class as a value); without the opt-in the
 //           compiler refuses the experimental `FlowRow`.
-// Why:      `ControlRow` uses `FlowRow`, which is marked experimental.
+// Why:      `controlRow` uses `FlowRow`, which is marked experimental.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -2059,14 +2059,14 @@ private fun VolumeRow(volume: Float, onVolume: (Float) -> Unit) {
 // ```
 @OptIn(ExperimentalLayoutApi::class)
 // What:     `@Composable` marks the next function as a Compose component.
-// Why:      `ControlRow` is a UI component.
+// Why:      `controlRow` is a UI component.
 //
 // In TS you'd write (pseudocode):
 // ```ts
 // // (component function)
 // ```
 @Composable
-// What:     `private fun ControlRow(state: PlayerUiState, controller: PlayerController, onOpen: () -> Unit) { ... }`
+// What:     `private fun controlRow(state: PlayerUiState, controller: PlayerController, onOpen: () -> Unit) { ... }`
 //           declares a private composable taking the UI snapshot, the brain, and an
 //           `onOpen` callback.
 // Why:      Wrapping control row, in the desktop's order: Open (the folder picker), the
@@ -2074,13 +2074,13 @@ private fun VolumeRow(volume: Float, onVolume: (Float) -> Unit) {
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function ControlRow(props: { state: PlayerUiState; controller: PlayerController; onOpen: () => void; }) { ... }
+// function controlRow(props: { state: PlayerUiState; controller: PlayerController; onOpen: () => void; }) { ... }
 // ```
 /**
  * Defines control row behavior for this music-player component; the TypeScript-oriented notes above explain its
  * call shape and effects.
  */
-private fun ControlRow(state: PlayerUiState, controller: PlayerController, onOpen: () -> Unit) {
+private fun controlRow(state: PlayerUiState, controller: PlayerController, onOpen: () -> Unit) {
     // What:     `FlowRow( horizontalArrangement = Arrangement.spacedBy(16.dp), verticalArrangement =
     //           Arrangement.spacedBy(8.dp), ) { ... }`
     //           lays children left-to-right, WRAPPING to new lines on overflow, with 16dp
@@ -2124,7 +2124,7 @@ private fun ControlRow(state: PlayerUiState, controller: PlayerController, onOpe
             // <Text>Shuffle</Text>
             // ```
             Text("Shuffle")
-            // What:     `ShuffleOption("Off", state.shuffle == ShuffleMode.OFF) {
+            // What:     `shuffleOption("Off", state.shuffle == ShuffleMode.OFF) {
             //           controller.setShuffle(ShuffleMode.OFF) }`
             //           renders the "Off" radio. The second arg `state.shuffle == ShuffleMode.OFF`
             //           is its selected `Boolean` (enum value equality); the trailing lambda is
@@ -2133,11 +2133,11 @@ private fun ControlRow(state: PlayerUiState, controller: PlayerController, onOpe
             //
             // In TS you'd write (pseudocode):
             // ```ts
-            // <ShuffleOption label="Off" selected={state.shuffle === ShuffleMode.OFF} onSelect={() =>
+            // <shuffleOption label="Off" selected={state.shuffle === ShuffleMode.OFF} onSelect={() =>
             // controller.setShuffle(ShuffleMode.OFF)}/>
             // ```
-            ShuffleOption("Off", state.shuffle == ShuffleMode.OFF) { controller.setShuffle(ShuffleMode.OFF) }
-            // What:     `ShuffleOption("Within page", state.shuffle == ShuffleMode.WITHIN_PAGE) {
+            shuffleOption("Off", state.shuffle == ShuffleMode.OFF) { controller.setShuffle(ShuffleMode.OFF) }
+            // What:     `shuffleOption("Within page", state.shuffle == ShuffleMode.WITHIN_PAGE) {
             //           controller.setShuffle(ShuffleMode.WITHIN_PAGE) }`
             //           renders the "Within page" radio (selected when the mode is
             //           `WITHIN_PAGE`; its action sets that mode).
@@ -2145,13 +2145,13 @@ private fun ControlRow(state: PlayerUiState, controller: PlayerController, onOpe
             //
             // In TS you'd write (pseudocode):
             // ```ts
-            // <ShuffleOption label="Within page" selected={state.shuffle === ShuffleMode.WITHIN_PAGE} onSelect={() =>
+            // <shuffleOption label="Within page" selected={state.shuffle === ShuffleMode.WITHIN_PAGE} onSelect={() =>
             // controller.setShuffle(ShuffleMode.WITHIN_PAGE)}/>
             // ```
-            ShuffleOption("Within page", state.shuffle == ShuffleMode.WITHIN_PAGE) {
+            shuffleOption("Within page", state.shuffle == ShuffleMode.WITHIN_PAGE) {
                 controller.setShuffle(ShuffleMode.WITHIN_PAGE)
             }
-            // What:     `ShuffleOption("All", state.shuffle == ShuffleMode.ALL) {
+            // What:     `shuffleOption("All", state.shuffle == ShuffleMode.ALL) {
             //           controller.setShuffle(ShuffleMode.ALL) }`
             //           renders the "All" radio (selected when the mode is `ALL`; its action
             //           sets that mode).
@@ -2159,10 +2159,10 @@ private fun ControlRow(state: PlayerUiState, controller: PlayerController, onOpe
             //
             // In TS you'd write (pseudocode):
             // ```ts
-            // <ShuffleOption label="All" selected={state.shuffle === ShuffleMode.ALL} onSelect={() =>
+            // <shuffleOption label="All" selected={state.shuffle === ShuffleMode.ALL} onSelect={() =>
             // controller.setShuffle(ShuffleMode.ALL)}/>
             // ```
-            ShuffleOption("All", state.shuffle == ShuffleMode.ALL) { controller.setShuffle(ShuffleMode.ALL) }
+            shuffleOption("All", state.shuffle == ShuffleMode.ALL) { controller.setShuffle(ShuffleMode.ALL) }
         }
         // What:     `Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement =
         //           Arrangement.spacedBy(8.dp)) { ... }`
@@ -2241,26 +2241,26 @@ private fun ControlRow(state: PlayerUiState, controller: PlayerController, onOpe
 }
 
 // What:     `@Composable` marks the next function as a Compose component.
-// Why:      `ShuffleOption` is a UI component.
+// Why:      `shuffleOption` is a UI component.
 //
 // In TS you'd write (pseudocode):
 // ```ts
 // // (component function)
 // ```
 @Composable
-// What:     `private fun ShuffleOption(label: String, selected: Boolean, onSelect: () -> Unit) { ... }`
+// What:     `private fun shuffleOption(label: String, selected: Boolean, onSelect: () -> Unit) { ... }`
 //           declares a private composable for one shuffle radio.
 // Why:      One shuffle radio: a Material3 radio and its label, the whole pair clickable.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function ShuffleOption(props: { label: string; selected: boolean; onSelect: () => void; }) { ... }
+// function shuffleOption(props: { label: string; selected: boolean; onSelect: () => void; }) { ... }
 // ```
 /**
  * Defines shuffle option behavior for this music-player component; the TypeScript-oriented notes above explain
  * its call shape and effects.
  */
-private fun ShuffleOption(label: String, selected: Boolean, onSelect: () -> Unit) {
+private fun shuffleOption(label: String, selected: Boolean, onSelect: () -> Unit) {
     // What:     `Row( verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable { onSelect() }, ) {
     //           ... }`
     //           lays out the radio and label, with `Modifier.clickable { onSelect() }` making
@@ -2300,8 +2300,8 @@ private fun ShuffleOption(label: String, selected: Boolean, onSelect: () -> Unit
 }
 
 // What:     `@OptIn(ExperimentalLayoutApi::class)` acknowledges the experimental `FlowRow`
-//           used by `PageTabs` (see the same annotation on `ControlRow`).
-// Why:      `PageTabs` uses `FlowRow`.
+//           used by `pageTabs` (see the same annotation on `controlRow`).
+// Why:      `pageTabs` uses `FlowRow`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -2309,27 +2309,27 @@ private fun ShuffleOption(label: String, selected: Boolean, onSelect: () -> Unit
 // ```
 @OptIn(ExperimentalLayoutApi::class)
 // What:     `@Composable` marks the next function as a Compose component.
-// Why:      `PageTabs` is a UI component.
+// Why:      `pageTabs` is a UI component.
 //
 // In TS you'd write (pseudocode):
 // ```ts
 // // (component function)
 // ```
 @Composable
-// What:     `private fun PageTabs(state: PlayerUiState, onSelectPage: (Int) -> Unit) { ... }`
+// What:     `private fun pageTabs(state: PlayerUiState, onSelectPage: (Int) -> Unit) { ... }`
 //           declares a private composable taking the snapshot and an `(Int) -> Unit`
 //           page-select callback.
 // Why:      Page-tab grid: one button per page, the active page filled, the rest outlined.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function PageTabs(props: { state: PlayerUiState; onSelectPage: (n: number) => void; }) { ... }
+// function pageTabs(props: { state: PlayerUiState; onSelectPage: (n: number) => void; }) { ... }
 // ```
 /**
  * Defines page tabs behavior for this music-player component; the TypeScript-oriented notes above explain its
  * call shape and effects.
  */
-private fun PageTabs(state: PlayerUiState, onSelectPage: (Int) -> Unit) {
+private fun pageTabs(state: PlayerUiState, onSelectPage: (Int) -> Unit) {
     // What:     `FlowRow(horizontalArrangement = Arrangement.spacedBy(4.dp)) { ... }` lays the
     //           tab buttons left-to-right, wrapping, with 4dp gaps.
     // Why:      A wrapping grid of page tabs.
@@ -2390,14 +2390,14 @@ private fun PageTabs(state: PlayerUiState, onSelectPage: (Int) -> Unit) {
 }
 
 // What:     `@Composable` marks the next function as a Compose component.
-// Why:      `TrackPager` is a UI component.
+// Why:      `trackPager` is a UI component.
 //
 // In TS you'd write (pseudocode):
 // ```ts
 // // (component function)
 // ```
 @Composable
-// What:     `private fun ColumnScope.TrackPager(state: PlayerUiState, controller: PlayerController) { ... }`
+// What:     `private fun ColumnScope.trackPager(state: PlayerUiState, controller: PlayerController) { ... }`
 //           declares a private composable that is an EXTENSION on `ColumnScope`: the
 //           `ColumnScope.` receiver prefix means this function can only be called inside a
 //           `Column`'s child block and may use column-only modifiers like `Modifier.weight`.
@@ -2415,13 +2415,13 @@ private fun PageTabs(state: PlayerUiState, onSelectPage: (Int) -> Unit) {
 // In TS you'd write (pseudocode):
 // ```ts
 // // must be rendered inside a <Column>; uses column-only weight()
-// function TrackPager(props: { state: PlayerUiState; controller: PlayerController; }) { ... }
+// function trackPager(props: { state: PlayerUiState; controller: PlayerController; }) { ... }
 // ```
 /**
  * Defines track pager behavior for this music-player component; the TypeScript-oriented notes above explain its
  * call shape and effects.
  */
-private fun ColumnScope.TrackPager(state: PlayerUiState, controller: PlayerController) {
+private fun ColumnScope.trackPager(state: PlayerUiState, controller: PlayerController) {
     // What:     `if (state.queueSize == 0) { ... }` checks for an empty queue (`==` integer
     //           equality).
     // Why:      An empty queue shows either a loading notice or a "no music" message, then
@@ -2432,7 +2432,7 @@ private fun ColumnScope.TrackPager(state: PlayerUiState, controller: PlayerContr
     // if (state.queueSize === 0) { ... }
     // ```
     if (state.queueSize == 0) {
-        // What:     `if (state.loading) { LoadingNotice() } else { Text("No music found in your audio library.") }`
+        // What:     `if (state.loading) { loadingNotice() } else { Text("No music found in your audio library.") }`
         //           branches the empty-queue UI. (Folds in the old inline note: an empty queue
         //           means "no music" only once loading has finished; during a scan, a chosen
         //           folder can take seconds, show a loading notice instead of the
@@ -2441,18 +2441,18 @@ private fun ColumnScope.TrackPager(state: PlayerUiState, controller: PlayerContr
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // if (state.loading) return <LoadingNotice/>;
+        // if (state.loading) return <loadingNotice/>;
         // return <Text>No music found in your audio library.</Text>;
         // ```
         if (state.loading) {
-            // What:     `LoadingNotice()` renders the spinner + loading line.
+            // What:     `loadingNotice()` renders the spinner + loading line.
             // Why:      Show progress during a scan.
             //
             // In TS you'd write (pseudocode):
             // ```ts
-            // <LoadingNotice/>
+            // <loadingNotice/>
             // ```
-            LoadingNotice()
+            loadingNotice()
         } else {
             // What:     `Text("No music found in your audio library.")` renders the empty
             //           message.
@@ -2502,28 +2502,28 @@ private fun ColumnScope.TrackPager(state: PlayerUiState, controller: PlayerContr
         // if (state.pageLabels.length > 0) { ... }
         // ```
         if (state.pageLabels.isNotEmpty()) {
-            // What:     `item { PageTabs(state = state, onSelectPage = { controller.selectPage(it) }) }`
+            // What:     `item { pageTabs(state = state, onSelectPage = { controller.selectPage(it) }) }`
             //           emits ONE list item (`item { ... }` is the `LazyListScope` builder for a
-            //           single row) holding the `PageTabs`. Its `onSelectPage` lambda uses `it`
+            //           single row) holding the `pageTabs`. Its `onSelectPage` lambda uses `it`
             //           (the chosen page index).
             // Why:      Make the tab bar the first scrolling row.
             //
             // In TS you'd write (pseudocode):
             // ```ts
             // item(() => (
-            //   <PageTabs state={state} onSelectPage={(p) => controller.selectPage(p)}/>
+            //   <pageTabs state={state} onSelectPage={(p) => controller.selectPage(p)}/>
             // ));
             // ```
             item {
-                // What:     `PageTabs(state = state, onSelectPage = { controller.selectPage(it) })`
+                // What:     `pageTabs(state = state, onSelectPage = { controller.selectPage(it) })`
                 //           renders the tab bar; `it` is the page index passed to `selectPage`.
                 // Why:      Show the page tabs.
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
-                // <PageTabs state={state} onSelectPage={(p) => controller.selectPage(p)}/>
+                // <pageTabs state={state} onSelectPage={(p) => controller.selectPage(p)}/>
                 // ```
-                PageTabs(state = state, onSelectPage = { controller.selectPage(it) })
+                pageTabs(state = state, onSelectPage = { controller.selectPage(it) })
             }
         }
         // What:     `items(state.pageItems) { item -> ... }` emits one list row per element of
@@ -2534,32 +2534,32 @@ private fun ColumnScope.TrackPager(state: PlayerUiState, controller: PlayerContr
         // In TS you'd write (pseudocode):
         // ```ts
         // items(state.pageItems, (item) => (
-        //   <TrackRow item={item} state={state} controller={controller}/>
+        //   <trackRow item={item} state={state} controller={controller}/>
         // ));
         // ```
         items(state.pageItems) { item ->
-            // What:     `TrackRow(item = item, state = state, controller = controller)` renders
+            // What:     `trackRow(item = item, state = state, controller = controller)` renders
             //           one track row from the page entry.
             // Why:      Show and drive a single track row.
             //
             // In TS you'd write (pseudocode):
             // ```ts
-            // <TrackRow item={item} state={state} controller={controller}/>
+            // <trackRow item={item} state={state} controller={controller}/>
             // ```
-            TrackRow(item = item, state = state, controller = controller)
+            trackRow(item = item, state = state, controller = controller)
         }
     }
 }
 
 // What:     `@Composable` marks the next function as a Compose component.
-// Why:      `TrackRow` is a UI component.
+// Why:      `trackRow` is a UI component.
 //
 // In TS you'd write (pseudocode):
 // ```ts
 // // (component function)
 // ```
 @Composable
-// What:     `private fun TrackRow(item: PageEntry, state: PlayerUiState, controller: PlayerController) { ... }`
+// What:     `private fun trackRow(item: PageEntry, state: PlayerUiState, controller: PlayerController) { ... }`
 //           declares a private composable for one track row, taking the entry, the snapshot,
 //           and the brain.
 // Why:      One track row: its path relative to the loaded root, highlighted when it is the
@@ -2567,13 +2567,13 @@ private fun ColumnScope.TrackPager(state: PlayerUiState, controller: PlayerContr
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function TrackRow(props: { item: PageEntry; state: PlayerUiState; controller: PlayerController; }) { ... }
+// function trackRow(props: { item: PageEntry; state: PlayerUiState; controller: PlayerController; }) { ... }
 // ```
 /**
  * Defines track row behavior for this music-player component; the TypeScript-oriented notes above explain its
  * call shape and effects.
  */
-private fun TrackRow(item: PageEntry, state: PlayerUiState, controller: PlayerController) {
+private fun trackRow(item: PageEntry, state: PlayerUiState, controller: PlayerController) {
     // What:     `val isCurrent = item.index == state.currentIndex` declares a `Boolean`
     //           `isCurrent` comparing this row's load-order `index` (an `Int`) to the
     //           snapshot's `currentIndex` (an `Int?`). `==` is null-safe value equality (a
@@ -2747,26 +2747,26 @@ private fun TrackRow(item: PageEntry, state: PlayerUiState, controller: PlayerCo
 }
 
 // What:     `@Composable` marks the next function as a Compose component.
-// Why:      `LoadingNotice` is a UI component.
+// Why:      `loadingNotice` is a UI component.
 //
 // In TS you'd write (pseudocode):
 // ```ts
 // // (component function)
 // ```
 @Composable
-// What:     `private fun LoadingNotice() { ... }` declares a private no-arg composable.
+// What:     `private fun loadingNotice() { ... }` declares a private no-arg composable.
 // Why:      Shown while a library load or folder scan runs: a spinner and a short loading
 //           line.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function LoadingNotice() { ... }
+// function loadingNotice() { ... }
 // ```
 /**
  * Defines loading notice behavior for this music-player component; the TypeScript-oriented notes above explain
  * its call shape and effects.
  */
-private fun LoadingNotice() {
+private fun loadingNotice() {
     // What:     `Row( verticalAlignment = Alignment.CenterVertically, horizontalArrangement =
     //           Arrangement.spacedBy(12.dp), modifier = Modifier.padding(vertical = 12.dp), ) { ... }`
     //           lays the spinner and text on one centered line, 12dp apart, with vertical
@@ -2877,14 +2877,14 @@ private fun formatTime(seconds: Double): String {
 }
 
 // What:     `@Composable` marks the next function as a Compose component.
-// Why:      `PermissionGate` is a UI component.
+// Why:      `permissionGate` is a UI component.
 //
 // In TS you'd write (pseudocode):
 // ```ts
 // // (component function)
 // ```
 @Composable
-// What:     `private fun PermissionGate(onGrant: () -> Unit) { ... }` declares a private
+// What:     `private fun permissionGate(onGrant: () -> Unit) { ... }` declares a private
 //           composable taking an `onGrant` callback (`() -> Unit`).
 // Why:      Shown until audio access is granted: a one-line rationale and a button that
 //           re-requests the permission, so a user who declined the first prompt still has a
@@ -2892,17 +2892,17 @@ private fun formatTime(seconds: Double): String {
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function PermissionGate(props: { onGrant: () => void; }) { ... }
+// function permissionGate(props: { onGrant: () => void; }) { ... }
 // ```
 /**
  * Defines permission gate behavior for this music-player component; the TypeScript-oriented notes above explain
  * its call shape and effects.
  */
-private fun PermissionGate(onGrant: () -> Unit) {
+private fun permissionGate(onGrant: () -> Unit) {
     // What:     `Column( modifier = Modifier.fillMaxSize().padding(24.dp), verticalArrangement =
     //           Arrangement.spacedBy(12.dp, Alignment.CenterVertically), horizontalAlignment =
     //           Alignment.CenterHorizontally, ) { ... }`
-    //           centers the rationale and button (same layout shape as `StartingGate`).
+    //           centers the rationale and button (same layout shape as `startingGate`).
     // Why:      Present the access rationale and grant button centered on screen.
     //
     // In TS you'd write (pseudocode):
