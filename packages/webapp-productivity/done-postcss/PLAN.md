@@ -30,7 +30,7 @@ See `FRAMEWORK_EVALUATION.md` for why this approach was chosen over SvelteKit, V
 - (0.25h) Add `mise.toml` with `dev`, `build`, and `start` tasks
 - (0.25h) Create `src/server.ts`: entry point with build-css at startup, then h3 `H3` route registration and static serving
 - (0.25h) Create `src/client/` directory with a minimal `inbox.ts` entry point to verify the build pipeline
-- (0.25h) Verify: package build tasks produce client JS, `bun src/server.ts` serves it, and the mise dev task restarts on source changes
+- (0.25h) Verify: package build tasks produce client JS, `node src/server.ts` serves it, and the mise dev task restarts on source changes
 
 Historical server-entry sketch, superseded by the current h3 implementation in `src/server.ts`:
 

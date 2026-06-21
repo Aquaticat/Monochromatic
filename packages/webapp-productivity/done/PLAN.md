@@ -28,11 +28,11 @@ See `FRAMEWORK_EVALUATION.md` for why this approach was chosen over SvelteKit, V
 
 - (0.25h) Initialize project at `packages/site/done/` with `package.json` (`workspace:*` references to monorepo packages)
 - (0.25h) Add `mise.toml` with `dev`, `build`, and `start` tasks
-- (0.25h) Create `src/server.ts`: entry point with build-css + `Bun.build()` at startup, then `Bun.serve()` with `routes` property
+- (0.25h) Create `src/server.ts`: entry point with h3 `H3` route registration and static serving
 - (0.25h) Create `src/client/` directory with a minimal `inbox.ts` entry point to verify the build pipeline
-- (0.25h) Verify: `bun --watch src/server.ts` starts, builds CSS + client TS, serves the built JS, and restarts on file change
+- (0.25h) Verify: `mise run dev:site` starts the Node server, serves the built JS, and restarts on file change
 
-The server entry point (validated in bun-test):
+Historical Bun server-entry sketch, superseded by the current h3 implementation in `src/server.ts`:
 
 ```ts
 // src/server.ts -- entry point for each user's Done instance

@@ -976,7 +976,7 @@ in `## Reproduce`.
 ```sh
 BIN=target/release/forbidden-strings
 EX=../../../forbidden-strings.local.example.txt   # adjust path as needed
-RU=/tmp/claude/synth-rules.txt                    # regen with bun /tmp/claude/gen-fs-rules.ts
+RU=/tmp/claude/synth-rules.txt                    # regen with node /tmp/claude/gen-fs-rules.ts
 
 # realistic ruleset
 hyperfine --warmup 3 --runs 30 \
@@ -988,7 +988,7 @@ hyperfine --warmup 3 --runs 30 --ignore-failure \
   --command-name '1k-startup'   "$BIN --rules $RU" \
   --command-name '1k-all-mono'  "$BIN --rules $RU --all"
 
-# synthetic 10k ruleset on Monochromatic (regen with bun /tmp/claude/gen-fs-rules-10k.ts)
+# synthetic 10k ruleset on Monochromatic (regen with node /tmp/claude/gen-fs-rules-10k.ts)
 RU10=/tmp/claude/synth-rules-10k.txt
 hyperfine --warmup 3 --runs 30 --ignore-failure \
   --command-name '10k-startup'  "$BIN --rules $RU10" \
@@ -996,7 +996,7 @@ hyperfine --warmup 3 --runs 30 --ignore-failure \
 
 # residual sweep on the Linux kernel
 # Clone (one-time): git clone --depth=1 --single-branch https://github.com/torvalds/linux.git /tmp/claude/linux
-# Generate variants (one-time): bun /tmp/claude/gen-residual-sweep.ts
+# Generate variants (one-time): node /tmp/claude/gen-residual-sweep.ts
 cd /tmp/claude/linux && hyperfine --warmup 2 --runs 5 --ignore-failure \
   --command-name 'r=0'    "$BIN --rules /tmp/claude/sweep-resid0000.txt --all" \
   --command-name 'r=100'  "$BIN --rules /tmp/claude/sweep-resid0100.txt --all" \
@@ -1005,7 +1005,7 @@ cd /tmp/claude/linux && hyperfine --warmup 2 --runs 5 --ignore-failure \
   --command-name 'r=2000' "$BIN --rules /tmp/claude/sweep-resid2000.txt --all"
 
 # L2 pathological case (1M-hit single file)
-bun -e 'const fs = await import("node:fs"); const line = "PLACEHOLDER_DOES_NOT_EXIST_IN_THIS_REPO_XX\n"; const buf = Buffer.alloc(line.length * 1_000_000); for (let loopIndex = 0; loopIndex < 1_000_000; loopIndex++) buf.write(line, loopIndex * line.length); fs.writeFileSync("/tmp/claude/million-hits.txt", buf);'
+node -e 'const fs = await import("node:fs"); const line = "PLACEHOLDER_DOES_NOT_EXIST_IN_THIS_REPO_XX\n"; const buf = Buffer.alloc(line.length * 1_000_000); for (let loopIndex = 0; loopIndex < 1_000_000; loopIndex++) buf.write(line, loopIndex * line.length); fs.writeFileSync("/tmp/claude/million-hits.txt", buf);'
 /usr/bin/time -v $BIN --rules $EX /tmp/claude/million-hits.txt > /dev/null
 
 # Mmap A/B (only relevant if reconsidering the mmap rejection above)
