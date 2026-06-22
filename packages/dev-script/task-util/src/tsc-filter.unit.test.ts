@@ -5,11 +5,11 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  filterTsgoOutput,
+  filterTscOutput,
   isContinuationLine,
   isDiagnosticLine,
   isNodeModulesDiagnostic,
-} from './tsgo-filter.ts';
+} from './tsc-filter.ts';
 
 /** Iteration count for long-run equivalence cases; large enough to exercise the linear scan, fast to compare. */
 const LONG_RUN = 100_000;
@@ -25,7 +25,7 @@ await describe({
       name: isDiagnosticLine.name,
       children: [
         it({
-          name: 'matches standard tsgo diagnostic format',
+          name: 'matches standard tsc diagnostic format',
           fn: async () => {
             expect(isDiagnosticLine(
               "src/index.ts(1,15): error TS2304: Cannot find name 'foo'.",
@@ -257,7 +257,7 @@ await describe({
       ],
     },),
     describe({
-      name: filterTsgoOutput.name,
+      name: filterTscOutput.name,
       children: [
         it({
           name: 'passes through output with no node_modules diagnostics',
@@ -269,7 +269,7 @@ await describe({
             ]
               .join('\n',);
 
-            const result = filterTsgoOutput(input,);
+            const result = filterTscOutput(input,);
 
             expect(result.filtered,).toBe(input,);
             expect(result.hasRemainingErrors,).toBe(true,);
@@ -286,7 +286,7 @@ await describe({
             ]
               .join('\n',);
 
-            const result = filterTsgoOutput(input,);
+            const result = filterTscOutput(input,);
 
             expect(result.filtered,).toBe([
               "src/app.ts(5,3): error TS2304: Cannot find name 'foo'.",
@@ -307,7 +307,7 @@ await describe({
             ]
               .join('\n',);
 
-            const result = filterTsgoOutput(input,);
+            const result = filterTscOutput(input,);
 
             expect(result.filtered,).toBe('Found 2 errors.',);
             expect(result.hasRemainingErrors,).toBe(false,);
@@ -316,7 +316,7 @@ await describe({
         it({
           name: 'handles empty output',
           fn: async () => {
-            const result = filterTsgoOutput('',);
+            const result = filterTscOutput('',);
 
             expect(result.filtered,).toBe('',);
             expect(result.hasRemainingErrors,).toBe(false,);
@@ -336,7 +336,7 @@ await describe({
             ]
               .join('\n',);
 
-            const result = filterTsgoOutput(input,);
+            const result = filterTscOutput(input,);
 
             expect(result.filtered,).toBe('Found 2 errors.',);
             expect(result.hasRemainingErrors,).toBe(false,);
@@ -355,7 +355,7 @@ await describe({
             ]
               .join('\n',);
 
-            const result = filterTsgoOutput(input,);
+            const result = filterTscOutput(input,);
 
             expect(result.filtered,).toBe([
               "src/a.ts(1,1): error TS2304: Cannot find name 'a'.",
@@ -376,7 +376,7 @@ await describe({
             ]
               .join('\n',);
 
-            const result = filterTsgoOutput(input,);
+            const result = filterTscOutput(input,);
 
             expect(result.filtered,).toBe('Found 1 error.',);
             expect(result.hasRemainingErrors,).toBe(false,);
@@ -392,7 +392,7 @@ await describe({
             ]
               .join('\n',);
 
-            const result = filterTsgoOutput(input,);
+            const result = filterTscOutput(input,);
 
             expect(result.filtered,).toBe(input,);
             expect(result.hasRemainingErrors,).toBe(true,);

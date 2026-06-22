@@ -11,7 +11,7 @@
     "task-depends": "dist/final/node/depends.mjs",
     "task-oxlint": "dist/final/node/oxlint-wrapper.mjs",
     "task-pnpm": "dist/final/node/pnpm-filter.mjs",
-    "task-tsgo": "dist/final/node/tsgo-filter.mjs"
+    "task-tsc": "dist/final/node/tsc-filter.mjs"
   },
   "devDependencies": {
     "@monochromatic-dev/config-tsdown": "workspace:*",

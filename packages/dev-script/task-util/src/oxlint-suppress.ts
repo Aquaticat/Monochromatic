@@ -1,12 +1,12 @@
 /**
  * Suppression of known false-positive oxlint diagnostics for `task-oxlint`.
  *
- * Mirrors the source-filtering shape of {@link file://./tsgo-filter.ts}: a
+ * Mirrors the source-filtering shape of {@link file://./tsc-filter.ts}: a
  * hardcoded, documented list of known false-positive signatures, a pure
  * filter that drops matching diagnostic blocks, and an exit-code rule of
  * "fail only when non-suppressed diagnostics remain".
  *
- * Unlike `tsgo`, oxlint emits multi-line diagnostic blocks separated by blank
+ * Unlike `tsc`, oxlint emits multi-line diagnostic blocks separated by blank
  * lines and a trailing `Found N warnings and M errors.` summary, so this
  * module segments by block (not by line) and recomputes the summary counts.
  *
@@ -59,7 +59,7 @@ export type OxlintSuppression = {
 
 /**
  * Hardcoded known false-positive signatures, documented like
- * `tsgo-filter`'s suppressed sources.
+ * `tsc-filter`'s suppressed sources.
  *
  * @example
  * ```ts

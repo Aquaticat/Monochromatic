@@ -2,7 +2,7 @@
 
 CLI utilities for mise task orchestration: a command executor with `allowFailure` support,
 a file append helper, a make-style dependency checker,
-a `tsgo` wrapper that filters `node_modules` diagnostics,
+a `tsc` wrapper that filters `node_modules` diagnostics,
 and an `oxlint` wrapper that augments diagnostics and suppresses documented false positives.
 
 ## Binaries
@@ -82,9 +82,9 @@ task-depends -v -s "src/**" -o "dist/**" -- mise run build
 task-depends -a -s "src/**" -o "dist/**" -- mise run build
 ```
 
-### task-tsgo
+### task-tsc
 
-Wrapper for `tsgo` that cleans stale incremental caches and
+Wrapper for `tsc` that cleans stale incremental caches and
 filters out diagnostics originating from `node_modules/` paths.
 
 **Incremental cache cleanup.**
@@ -92,17 +92,17 @@ The shared tsconfig sets `composite: true`, which implies `incremental: true`.
 This is intentional; `composite` provides valuable constraints
 (rootDir defaults to the tsconfig directory, all source files must be matched by `include`,
 and `declaration` defaults to true).
-However, tsgo's `--build` mode has a cache invalidation bug
+However, tsc's `--build` mode has a cache invalidation bug
 ([#2666](https://github.com/nicolo-ribaudo/tc39-proposal-structs/issues/2666))
 where stale `.tsbuildinfo` files cause false negatives after dependency updates.
-To work around this, `task-tsgo` deletes all `dist/**/*.tsbuildinfo` files
+To work around this, `task-tsc` deletes all `dist/**/*.tsbuildinfo` files
 before each invocation, forcing a clean check every time.
 
 **`node_modules` diagnostic filtering.**
 JSR packages ship `.ts` source files instead of `.d.ts` declarations.
 TypeScript's resolver prefers `.ts` siblings over `.js` exports,
 and `skipLibCheck` only covers `.d.ts` files.
-This causes `tsgo --build` to type-check JSR package source
+This causes `tsc --build` to type-check JSR package source
 under the consumer's tsconfig, producing false positives
 (e.g. `noUncheckedIndexedAccess` violations in `@jsr/zod__zod`).
 The wrapper drops diagnostic lines whose file path contains `/node_modules/`
@@ -110,15 +110,15 @@ along with their continuation lines (indented context lines),
 and exits 0 when only `node_modules` errors were found.
 
 ```sh
-# Default: runs tsgo --build with filtering
-task-tsgo --build
+# Default: runs tsc --build with filtering
+task-tsc --build
 
-# Forward any tsgo arguments
-task-tsgo --build --noEmit
-task-tsgo --noEmit -p tsconfig.json
+# Forward any tsc arguments
+task-tsc --build --noEmit
+task-tsc --noEmit -p tsconfig.json
 
 # Without arguments, defaults to --build
-task-tsgo
+task-tsc
 ```
 
 See `TROUBLESHOOTING.typescript.md` section
@@ -271,9 +271,9 @@ Commands run via `/bin/sh` (Node.js `child_process` with `shell: true`).
 
 Strategies: `newest`, `oldest`, `mean`, `median`, or `sh:command`.
 
-### task-tsgo
+### task-tsc
 
-No flags of its own. All arguments are forwarded directly to `tsgo`.
+No flags of its own. All arguments are forwarded directly to `tsc`.
 Defaults to `--build` when no arguments are provided.
 
 ### task-oxlint

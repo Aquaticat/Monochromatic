@@ -21,17 +21,17 @@ const execAsync = promisify(exec,);
  * Creates a fresh throwaway test directory under `dist/temp/test` and returns the
  * source CLI path plus that directory.
  *
- * @returns Absolute path to the source `tsgo-filter.ts` and a unique scratch directory
+ * @returns Absolute path to the source `tsc-filter.ts` and a unique scratch directory
  */
 function setup() {
   const testFileDir = import.meta.dirname;
-  const cliPath = join(testFileDir, 'tsgo-filter.ts',);
+  const cliPath = join(testFileDir, 'tsc-filter.ts',);
 
   const packageDir = join(testFileDir, '..',);
   const timestamp = Date.now();
   const randomId = Math.random().toString(36,).slice(2, 8,);
   const testDir = join(packageDir, 'dist', 'temp', 'test',
-    `tsgo-filter-${timestamp}-${randomId}`,);
+    `tsc-filter-${timestamp}-${randomId}`,);
 
   if (!existsSync(testDir,))
     mkdirSync(testDir, { recursive: true, },);
@@ -49,21 +49,21 @@ function teardown({ testDir, }: { testDir: string; },) {
     rmSync(testDir, { recursive: true, },);
 }
 
-//region Integration tests for CLI execution (spawn real tsgo; flaky under parallel load, hence .expensive.)
+//region Integration tests for CLI execution (spawn real tsc; flaky under parallel load, hence .expensive.)
 
 await describe({
   name: '',
   children: [
     describe({
-      name: 'task-tsgo CLI',
+      name: 'task-tsc CLI',
       children: [
         it({
-          name: 'forwards arguments to tsgo',
+          name: 'forwards arguments to tsc',
           fn: async () => {
             const fixtures = setup();
             const { cliPath, } = fixtures;
 
-            // tsgo --version should succeed and print version info
+            // tsc --version should succeed and print version info
             const { stdout, } = await execAsync(`node ${cliPath} --version`,);
 
             expect(stdout.trim().length,).toBeGreaterThan(0,);
@@ -93,7 +93,7 @@ await describe({
           },
         },),
         it({
-          name: 'exits non-zero when tsgo reports project errors',
+          name: 'exits non-zero when tsc reports project errors',
           fn: async () => {
             const fixtures = setup();
             const { cliPath, testDir, } = fixtures;
@@ -110,7 +110,7 @@ await describe({
 
             try {
               await execAsync(`node ${cliPath} --noEmit -p ${tsconfig}`,);
-              // Should not reach here; tsgo should fail on the type error
+              // Should not reach here; tsc should fail on the type error
               expect(true,).toBe(false,);
             }
             catch (error: unknown) {

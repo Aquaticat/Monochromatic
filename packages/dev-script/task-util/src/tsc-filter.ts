@@ -1,19 +1,19 @@
 #!/usr/bin/env node
 
 /**
- * Wrapper for `tsgo` that filters out diagnostics from known false-positive sources.
+ * Wrapper for `tsc` that filters out diagnostics from known false-positive sources.
  *
  * Suppressed sources:
  * - `node_modules`: JSR packages ship `.ts` source files instead of `.d.ts` declarations.
  *   TypeScript's resolver prefers `.ts` siblings over `.js` exports,
  *   and `skipLibCheck` only covers `.d.ts` files.
- *   This causes `tsgo --build` to type-check JSR package source
+ *   This causes `tsc --build` to type-check JSR package source
  *   under the consumer's tsconfig, producing false positives.
  * - Auto-generated typesafe-i18n files (`i18n/i18n-*.ts`): these violate
  *   `--isolatedDeclarations` and carry "manual changes will be overwritten" headers.
  *
  * This wrapper:
- * 1. Runs `tsgo` with all provided arguments (defaults to `--build` if none given)
+ * 1. Runs `tsc` with all provided arguments (defaults to `--build` if none given)
  * 2. Captures stdout/stderr
  * 3. Drops diagnostic lines from suppressed sources
  * 4. Drops continuation lines (indented lines following a dropped diagnostic)
@@ -25,9 +25,9 @@
  *
  * @example
  * ```bash
- * task-tsgo --build
- * task-tsgo --build --noEmit
- * task-tsgo --noEmit -p tsconfig.json
+ * task-tsc --build
+ * task-tsc --build --noEmit
+ * task-tsc --noEmit -p tsconfig.json
  * ```
  */
 
@@ -41,7 +41,7 @@ import spawn from 'nano-spawn';
 //region Incremental cache cleanup
 
 /**
- * Glob patterns for TypeScript incremental caches that `task-tsgo` refreshes before each run.
+ * Glob patterns for TypeScript incremental caches that `task-tsc` refreshes before each run.
  */
 const BUILD_INFO_GLOBS = [
   'dist/**/*.tsbuildinfo',
@@ -52,7 +52,7 @@ const BUILD_INFO_GLOBS = [
  * Removes all `.tsbuildinfo` files emitted by TypeScript in the current working directory.
  *
  * `composite: true` implies `incremental: true`, which produces `.tsbuildinfo` caches.
- * tsgo's `--build` mode has a cache invalidation bug (#2666) where stale `.tsbuildinfo`
+ * tsc's `--build` mode has a cache invalidation bug (#2666) where stale `.tsbuildinfo`
  * files cause false negatives after dependency updates. Deleting them before each build
  * forces a clean check while preserving all other `composite` benefits
  * (rootDir defaulting, include enforcement, declaration defaulting).
@@ -86,7 +86,7 @@ async function removeStaleBuildInfo(): Promise<void> {
 //region Diagnostic line detection
 
 /**
- * Literal text that opens the error code on every tsgo diagnostic line.
+ * Literal text that opens the error code on every tsc diagnostic line.
  */
 const ERROR_CODE_TOKEN = '): error TS';
 
@@ -126,13 +126,13 @@ function endOfDigitRun({
 }
 
 /**
- * Tests whether a line is a tsgo diagnostic line.
+ * Tests whether a line is a tsc diagnostic line.
  *
  * Mirrors `/\(\d+,\d+\): error TS\d+:/` with a linear `indexOf` walk:
  * locate `): error TS`, then require digit runs flanking the surrounding
  * `(<digits>,<digits>)` prefix and a trailing `<digits>:`.
  *
- * @param line - single line of tsgo output
+ * @param line - single line of tsc output
  *
  * @returns true when the line matches the diagnostic format
  *
@@ -231,7 +231,7 @@ export function isDiagnosticLine(line: string,): boolean {
 /**
  * Tests whether a diagnostic line originates from a `node_modules` path.
  *
- * @param line - single diagnostic line of tsgo output
+ * @param line - single diagnostic line of tsc output
  *
  * @returns true when the file path portion contains `/node_modules/`
  *
@@ -256,7 +256,7 @@ export function isNodeModulesDiagnostic(line: string,): boolean {
  * with patterns that violate `--isolatedDeclarations`. These files carry
  * "Any manual changes will be overwritten" headers, so fixing them is futile.
  *
- * @param line - single diagnostic line of tsgo output
+ * @param line - single diagnostic line of tsc output
  *
  * @returns true when the file path matches an auto-generated i18n file
  *
@@ -287,7 +287,7 @@ export function isI18nGeneratedDiagnostic(line: string,): boolean {
  * through `skipLibCheck`) and auto-generated typesafe-i18n files
  * (which violate `--isolatedDeclarations` and cannot be manually fixed).
  *
- * @param line - single diagnostic line of tsgo output
+ * @param line - single diagnostic line of tsc output
  *
  * @returns true when the diagnostic should be filtered out
  *
@@ -312,7 +312,7 @@ export function isSuppressedDiagnostic(line: string,): boolean {
  * Continuation lines start with whitespace and carry indented context
  * for the preceding diagnostic (e.g. type mismatch details).
  *
- * @param line - single line of tsgo output
+ * @param line - single line of tsc output
  *
  * @returns true when the line starts with whitespace
  *
@@ -336,7 +336,7 @@ export function isContinuationLine(line: string,): boolean {
 //region Output filtering
 
 /**
- * Filters tsgo output to remove suppressed diagnostics.
+ * Filters tsc output to remove suppressed diagnostics.
  *
  * Suppressed sources: `node_modules` (JSR `.ts` leaking through `skipLibCheck`)
  * and auto-generated typesafe-i18n files (`i18n-types.ts`, `i18n-util.ts`, etc.).
@@ -344,13 +344,13 @@ export function isContinuationLine(line: string,): boolean {
  * Removes both the diagnostic line itself and any continuation lines
  * that follow it (indented lines providing additional type error context).
  *
- * @param output - raw tsgo stdout or stderr content
+ * @param output - raw tsc stdout or stderr content
  *
  * @returns object with filtered output and whether any non-suppressed errors remain
  *
  * @example
  * ```ts
- * const result = filterTsgoOutput([
+ * const result = filterTscOutput([
  *   'node_modules/.bun/zod/src/index.ts(1,1): error TS2532: Object is possibly undefined.',
  *   '  Type "string" is not assignable.',
  *   'src/i18n/i18n-util.ts(24,14): error TS9010: Variable must have an explicit type annotation.',
@@ -360,7 +360,7 @@ export function isContinuationLine(line: string,): boolean {
  * // result.hasRemainingErrors === true
  * ```
  */
-export function filterTsgoOutput(output: string,): {
+export function filterTscOutput(output: string,): {
   readonly filtered: string;
   readonly hasRemainingErrors: boolean;
 } {
@@ -426,7 +426,7 @@ export function filterTsgoOutput(output: string,): {
 //region Main execution
 
 /**
- * Runs the `task-tsgo` command-line wrapper.
+ * Runs the `task-tsc` command-line wrapper.
  *
  * @example
  * ```ts
@@ -435,28 +435,28 @@ export function filterTsgoOutput(output: string,): {
  */
 async function main(): Promise<void> {
   /**
-   * Arguments forwarded to tsgo, defaulting to `--build` when none are provided.
+   * Arguments forwarded to tsc, defaulting to `--build` when none are provided.
    */
-  const tsgoArgs = process.argv
+  const tscArgs = process.argv
     .length
     > 2
     ? process.argv
       .slice(2,)
     : ['--build',];
 
-  // tsgo #2666: stale .tsbuildinfo causes false negatives; clean before each build
+  // tsc #2666: stale .tsbuildinfo causes false negatives; clean before each build
   await removeStaleBuildInfo();
 
   try {
     /**
-     * Successful spawn result; stdout/stderr are forwarded unfiltered when tsgo exits 0.
+     * Successful spawn result; stdout/stderr are forwarded unfiltered when tsc exits 0.
      */
     const result = await spawn(
-      'tsgo',
-      [...tsgoArgs,],
+      'tsc',
+      [...tscArgs,],
     );
 
-    // tsgo succeeded (exit 0): pass output through unfiltered
+    // tsc succeeded (exit 0): pass output through unfiltered
     if (result.stdout
       .length
       > 0)
@@ -487,16 +487,16 @@ async function main(): Promise<void> {
       /* oxlint-enable typescript/no-unsafe-type-assertion */
 
       /**
-       * Filtered stdout payload with low-value tsgo diagnostics suppressed; written below when non-empty.
+       * Filtered stdout payload with low-value tsc diagnostics suppressed; written below when non-empty.
        */
-      // Filter stdout (where tsgo writes diagnostics)
-      const stdoutResult = filterTsgoOutput(subprocessError.stdout
+      // Filter stdout (where tsc writes diagnostics)
+      const stdoutResult = filterTscOutput(subprocessError.stdout
         ?? '',);
       /**
-       * Filtered stderr payload with low-value tsgo diagnostics suppressed; written below when non-empty.
+       * Filtered stderr payload with low-value tsc diagnostics suppressed; written below when non-empty.
        */
-      // Filter stderr as well in case tsgo writes diagnostics there
-      const stderrResult = filterTsgoOutput(subprocessError.stderr
+      // Filter stderr as well in case tsc writes diagnostics there
+      const stderrResult = filterTscOutput(subprocessError.stderr
         ?? '',);
 
       if (stdoutResult.filtered
@@ -535,15 +535,15 @@ async function main(): Promise<void> {
           !== ''))
       {
         console.error(
-          `[task-tsgo] tsgo terminated by signal: ${subprocessError.signalName}`,
+          `[task-tsc] tsc terminated by signal: ${subprocessError.signalName}`,
         );
         process.exitCode = 1;
       }
     }
     else {
-      // Non-subprocess error (e.g. tsgo not found)
+      // Non-subprocess error (e.g. tsc not found)
       console.error(
-        `[task-tsgo] failed to execute tsgo: ${
+        `[task-tsc] failed to execute tsc: ${
           error instanceof Error ? error.message : String(error,)
         }`,
       );
