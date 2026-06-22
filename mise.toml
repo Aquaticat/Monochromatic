@@ -538,12 +538,12 @@ description = "TypeScript"
 shell = "node -e"
 run = """
 {{vars.dispatch_workspace_node}}
-runWorkspaceNode('packages/dev-script/task-util', 'tsgo-filter', ['--build'])
+runWorkspaceNode('packages/dev-script/task-util', 'tsc-filter', ['--build'])
 """
 
 [task_templates."watch:lint:types"]
 description = "Type check in watch mode"
-run = "tsgo --watch"
+run = "tsc --watch"
 
 [task_templates.prepare]
 shell = "node -e"
@@ -979,7 +979,7 @@ run = "caddy run --config Caddyfile --adapter caddyfile"
 #region TypeScript Project References
 # Moon automatically synced TypeScript project references during build.
 # With mise, this needs to be done manually via a script.
-# Historical note: this is deprecated. tsgo is fast enough that importing ts source w/o any special setup is acceptable.
+# Historical note: this is deprecated. The native compiler (tsc) is fast enough that importing ts source w/o any special setup is acceptable.
 #endregion TypeScript Project References
 
 #region File Enforcer
