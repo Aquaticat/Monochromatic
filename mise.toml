@@ -1044,7 +1044,6 @@ execFileSync('pnpm', ['install'], { stdio: 'inherit' })
 _.file = [{ path = ".env", redact = true }, { path = ".env.local", redact = true }]
 _.path = [
   "node_modules/.bin",
-  "packages/webapp-productivity/done-postcss/node_modules/.bin",
   "packages/typeface/aquaticat/node_modules/.bin",
   "packages/ssg/aquati.cat/node_modules/.bin",
   "packages/rolldown-plugins/import-attributes/node_modules/.bin",
@@ -1059,18 +1058,10 @@ _.path = [
   "packages/pi/auto-mode/node_modules/.bin",
   "packages/pi/advisor/node_modules/.bin",
   "packages/module/token-count/node_modules/.bin",
-  "packages/mcp/mvm/node_modules/.bin",
   "packages/dev-script/mutation-test/node_modules/.bin",
   "packages/dev-script/file-enforcer/node_modules/.bin",
   "packages/dev-script/deps-cube/node_modules/.bin",
-  "packages/claude-code-plugins/terminal-title/node_modules/.bin",
-  "packages/claude-code-plugins/stop-reminders/node_modules/.bin",
-  "packages/claude-code-plugins/session-start-housekeeping/node_modules/.bin",
-  "packages/claude-code-plugins/prompt-time/node_modules/.bin",
-  "packages/claude-code-plugins/guardrail/node_modules/.bin",
-  "packages/claude-code-plugins/correction-reminder/node_modules/.bin",
-  "packages/claude-code-plugins/claude-spawn/node_modules/.bin",
-  "packages/claude-code-plugins/bash-output-filter/node_modules/.bin",
+  "packages/config/stylelint/node_modules/.bin",
 ]
 
 # Enables Slint's experimental builtins (e.g. FlexboxLayout) in slint-lsp when it

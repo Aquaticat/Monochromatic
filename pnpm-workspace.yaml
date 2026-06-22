@@ -359,7 +359,7 @@ overrides:
   # (last commit 2022-05).
   # See docs/troubleshooting/dependencies.md and docs/dependency-blocklist.md.
   'argparse': '-'
-packageImportMethod: hardlink
+packageImportMethod: clone-or-copy
 preferWorkspacePackages: true
 resolutionMode: highest
 resolvePeersFromWorkspaceRoot: false
