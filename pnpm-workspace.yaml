@@ -1,6 +1,5 @@
 packages:
-  - 'packages/*/*'
-  - 'packages-deprecated/*/*'
+- 'packages/*/*'
 
 allowBuilds:
   '@vscode/ripgrep': false
@@ -154,15 +153,18 @@ catalogs:
   # the `typescript` module, e.g. @stryker-mutator/typescript-checker. Binary: tsc6.
   classic:
     'typescript': 'npm:@typescript/typescript6@^6.0.0'
-childConcurrency: 16
 dedupeDirectDeps: true
 hoist: false
 hoistWorkspacePackages: false
 linkWorkspacePackages: true
-managePackageManagerVersions: false
+# version management of both node and pnpm is handled by Mise
+pmOnFail: ignore
+minimumReleaseAge: 1440
+minimumReleaseAgeIgnoreMissingTime: false
 minimumReleaseAgeStrict: true
+trustPolicy: no-downgrade
 nodeLinker: isolated
-
+lockfileIncludeTarballUrl: true
 peerDependencyRules:
   # tsdown and rolldown-plugin-dts declare an optional `typescript` peer ranged
   # ^5 || ^6 for their classic-compiler declaration-emit path. This workspace sets
@@ -183,16 +185,21 @@ packageExtensions:
   # load. Declaring the dependency here makes pnpm link it under mitata so the
   # import resolves. Only consumer is the file-enforcer-perf benchmark package.
   mitata:
-    dependencies:
+    optionalDependencies:
       '@mitata/counters': '>=0.0.8'
 
 overrides:
-  'qs': '>=6.15.2'
+  # Patch [ERR_PNPM_TRUST_DOWNGRADE] 2 lockfile entries failed verification:
+  #  nanoid@3.3.14 High-risk trust downgrade for "nanoid@3.3.14" (possible package takeover)
+  #  semver@6.3.1 High-risk trust downgrade for "semver@6.3.1" (possible package takeover)
+  'nanoid': '>=5.1.15'
+  'semver': '>=7.8.5'
   # Patch GHSA-q8mj-m7cp-5q26 / CVE-2026-8723: qs@<=6.15.1 crashes with
   # TypeError on null/undefined entries in comma-format arrays when
   # encodeValuesOnly is set. Only transitive consumer is
   # @stryker-mutator/core > typed-rest-client (`qs: ^6.9.4`); patch-level
   # bump is range-compatible.
+  'qs': '>=6.15.2'
   'jspdf>canvg': '-'
   'jspdf>dompurify': '-'
   '@anthropic-ai/sdk': '>=0.91.1'
@@ -360,6 +367,8 @@ savePrefix: ''
 saveWorkspaceProtocol: false
 shellEmulator: false
 strictPeerDependencies: true
+runtimeOnFail: ignore
+catalogMode: strict
 
 # Without multi-platform entries, the lockfile only records the optional
 # dependencies for the current host OS/arch. When a developer on macOS
@@ -373,14 +382,14 @@ strictPeerDependencies: true
 # See docs/decisions/pnpm-supported-architectures.md for full rationale.
 supportedArchitectures:
   cpu:
-    - x64
-    - arm64
-    - current
+  - x64
+  - arm64
+  - current
   libc:
-    - glibc
-    - musl
-    - current
+  - glibc
+  - musl
+  - current
   os:
-    - darwin
-    - linux
-    - current
+  - darwin
+  - linux
+  - current

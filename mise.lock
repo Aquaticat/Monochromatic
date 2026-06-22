@@ -411,7 +411,7 @@ version = "4.1.2"
 backend = "cargo:cargo-ndk"
 
 [[tools."cargo:cargo-nextest"]]
-version = "0.9.137"
+version = "0.9.138"
 backend = "cargo:cargo-nextest"
 
 [[tools."cargo:coreutils"]]
@@ -437,24 +437,8 @@ backend = "cargo:https://github.com/slint-ui/slint"
 bin = "slint-lsp"
 crate = "slint-lsp"
 
-[[tools."cargo:https://github.com/slint-ui/slint"]]
-version = "ref:85e3eb76819762cdcaa732fa87533ff896546bac"
-backend = "cargo:https://github.com/slint-ui/slint"
-
-[tools."cargo:https://github.com/slint-ui/slint".options]
-bin = "slint-lsp"
-crate = "slint-lsp"
-
 [[tools."cargo:https://github.com/slint-ui/slint.git"]]
 version = "rev:85e3eb76819762cdcaa732fa87533ff896546bac"
-backend = "cargo:https://github.com/slint-ui/slint.git"
-
-[tools."cargo:https://github.com/slint-ui/slint.git".options]
-bin = "slint-viewer"
-crate = "slint-viewer"
-
-[[tools."cargo:https://github.com/slint-ui/slint.git"]]
-version = "ref:85e3eb76819762cdcaa732fa87533ff896546bac"
 backend = "cargo:https://github.com/slint-ui/slint.git"
 
 [tools."cargo:https://github.com/slint-ui/slint.git".options]
