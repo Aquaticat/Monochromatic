@@ -138,8 +138,12 @@ Unrelated dirty worktree state observed before creating this file:
   Current installed manifests show `marked` belongs to `@earendil-works/pi-tui@0.79.9`, while
   `@earendil-works/pi-ai@0.79.9` now uses `http-proxy-agent` and `https-proxy-agent`, not
   `proxy-agent`. If the goal is future guardrails, keep no-op parent-scoped removals only with comments
-  saying they are future guards, not current graph pruning. If the goal is global absence, use global
-  removal overrides, but that has broader breakage risk than parent-scoped removals.
+  saying they are future guards, not current graph pruning. For the specific policy "drop koffi and
+  mime-types for pi", current `pnpm why koffi mime-types --recursive` is empty, so the existing
+  `@earendil-works/pi-tui>koffi` and `@earendil-works/pi-tui>mime-types` entries are only future
+  guards against those deps returning to `pi-tui`; keep them with that comment if that is intentional.
+  If the goal is global absence, use global removal overrides, but that has broader breakage risk than
+  parent-scoped removals.
 - `ws` override is currently unused.
 - `node-domexception` shim override is currently unused.
 - 34 catalog entries are unused by active workspace/root packages.
