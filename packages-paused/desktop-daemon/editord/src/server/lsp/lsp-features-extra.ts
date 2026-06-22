@@ -18,7 +18,7 @@ import { pathToUri, } from './uri.ts';
 /**
  * Requests inlay hints from an LSP client for a given range.
  *
- * @param client - LSP client to query (typically tsgo)
+ * @param client - LSP client to query (typically tsc)
  *
  * @param path - absolute file path
  *
@@ -81,7 +81,7 @@ export async function requestInlayHints({
  * Each returned range has a nested `parent` chain representing
  * progressively larger syntactic scopes.
  *
- * @param client - LSP client to query (typically tsgo)
+ * @param client - LSP client to query (typically tsc)
  *
  * @param path - absolute file path
  *

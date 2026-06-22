@@ -47,7 +47,7 @@ export type PendingLspRequest = {
  * routeJsonRpcMessage({
  *   message: { id: 1, result: { contents: 'hover text' } },
  *   pending,
- *   name: 'tsgo',
+ *   name: 'tsc',
  *   send: function writeTo(msg) { child.stdin.write(JSON.stringify(msg)); },
  *   onNotification: function handleNotif({ method, params }) { l.info(method); },
  * });

@@ -20,7 +20,7 @@ import { pathToUri, } from './uri.ts';
 /**
  * LSP server type identifier.
  */
-export type ServerType = 'oxlint' | 'tsgo' | 'dprint';
+export type ServerType = 'oxlint' | 'tsc' | 'dprint';
 
 /**
  * Separator between server type and root in pool map keys.
@@ -38,8 +38,8 @@ export const POOL_KEY_SEPARATOR = ':';
  *
  * @example
  * ```ts
- * const key = buildPoolKey({ type: 'tsgo', root: '/home/user/project', });
- * // key === 'tsgo:/home/user/project'
+ * const key = buildPoolKey({ type: 'tsc', root: '/home/user/project', });
+ * // key === 'tsc:/home/user/project'
  * ```
  */
 export function buildPoolKey({
@@ -61,7 +61,7 @@ export function buildPoolKey({
  *
  * @example
  * ```ts
- * const root = rootFromPoolKey({ key: 'tsgo:/home/user/project', });
+ * const root = rootFromPoolKey({ key: 'tsc:/home/user/project', });
  * // root === '/home/user/project'
  * ```
  */
@@ -78,7 +78,7 @@ export function rootFromPoolKey({ key, }: { readonly key: string; },): string {
  */
 export const CONFIG_FILES: Record<ServerType, readonly string[]> = {
   oxlint: ['package.json',],
-  tsgo: ['tsconfig.json',],
+  tsc: ['tsconfig.json',],
   dprint: [
     'dprint.json',
     'dprint.jsonc',
@@ -98,8 +98,8 @@ const COMMANDS: Record<ServerType, {
     args: ['--lsp',],
     initializationOptions: {},
   },
-  tsgo: {
-    command: 'tsgo',
+  tsc: {
+    command: 'tsc',
     args: [
       '--lsp',
       '--stdio',
@@ -142,7 +142,7 @@ const COMMANDS: Record<ServerType, {
  * @example
  * ```ts
  * const client = await spawnLspClient({
- *   type: 'tsgo',
+ *   type: 'tsc',
  *   root: '/home/user/project',
  *   l: logger,
  *   onNotification: function handleNotification({ source, method, params }) { l.info(method); },

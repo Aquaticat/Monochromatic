@@ -206,7 +206,7 @@ export async function managerDidClose({
  * ```ts
  * routeNotification({
  *   diagnostics: diagnosticStore,
- *   source: 'tsgo',
+ *   source: 'tsc',
  *   method: 'textDocument/publishDiagnostics',
  *   params: { uri: 'file:///src/main.ts', diagnostics: [] },
  * });

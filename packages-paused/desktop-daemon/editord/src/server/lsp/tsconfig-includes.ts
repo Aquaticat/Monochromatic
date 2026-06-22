@@ -1,12 +1,12 @@
 /**
  * Resolves and caches tsconfig `include` patterns for project roots.
  *
- * Runs `tsgo --showConfig` to get the fully resolved configuration
+ * Runs `tsc --showConfig` to get the fully resolved configuration
  * (with `${configDir}` substitution and `extends` chain applied),
  * then checks file paths against the resolved glob patterns using
  * `path.matchesGlob`. This prevents editord from sending files to
- * tsgo that fall outside the project's declared include scope,
- * a defense against tsgo panicking on non-source files it discovers
+ * tsc that fall outside the project's declared include scope,
+ * a defense against tsc panicking on non-source files it discovers
  * during project loading.
  */
 
@@ -47,7 +47,7 @@ const includesCache = new Map<string, IncludesCacheEntry>();
 /**
  * Resolves the tsconfig `include` patterns for a project root.
  *
- * Spawns `tsgo --showConfig` in the project directory and parses
+ * Spawns `tsc --showConfig` in the project directory and parses
  * the JSON output to extract the fully resolved `include` array.
  * Results are cached with a TTL so config changes are picked up
  * without restarting the server.
@@ -75,7 +75,7 @@ export async function resolveTsconfigIncludes({
   readonly l: Logger;
 },): Promise<readonly string[]> {
   /**
-   * TTL-gated reuse below avoids respawning tsgo for repeated queries.
+   * TTL-gated reuse below avoids respawning tsc for repeated queries.
    */
   const cached = includesCache.get(root,);
   if ((cached !== undefined) && ((Date.now()
@@ -85,17 +85,17 @@ export async function resolveTsconfigIncludes({
 
   try {
     /**
-     * Project-local bin dir prepended to PATH so workspace tsgo resolves first.
+     * Project-local bin dir prepended to PATH so workspace tsc resolves first.
      */
     const binPath = join(
       root,
       'node_modules/.bin',
     );
     /**
-     * tsgo --showConfig stdout; parsed as the project's resolved tsconfig.
+     * tsc --showConfig stdout; parsed as the project's resolved tsconfig.
      */
     const result = await spawn(
-      'tsgo',
+      'tsc',
       ['--showConfig',],
       {
         cwd: root,
@@ -108,7 +108,7 @@ export async function resolveTsconfigIncludes({
       },
     );
 
-    /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- tsgo --showConfig always returns { include?: string[] } */
+    /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- tsc --showConfig always returns { include?: string[] } */
     /**
      * Parsed tsconfig payload narrowed to the `include` field used below.
      */

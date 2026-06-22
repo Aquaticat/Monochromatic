@@ -82,7 +82,7 @@ export function findTextOffset({
  *
  * @example
  * ```ts
- * const result = createDiagnosticRange({ editor: editor, diagnostic: { range: { start: { line: 3, character: 0 }, end: { line: 3, character: 20 } }, severity: "error", message: "Type error", source: "tsgo" }, });
+ * const result = createDiagnosticRange({ editor: editor, diagnostic: { range: { start: { line: 3, character: 0 }, end: { line: 3, character: 20 } }, severity: "error", message: "Type error", source: "tsc" }, });
  * ```
  */
 export function createDiagnosticRange({

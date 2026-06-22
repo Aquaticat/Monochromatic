@@ -250,9 +250,9 @@ const STDERR_BUFFER_LIMIT = 4_096;
  * @example
  * ```ts
  * const client = createLspClient({
- *   command: 'tsgo',
+ *   command: 'tsc',
  *   args: ['--lsp', '--stdio'],
- *   name: 'tsgo',
+ *   name: 'tsc',
  *   cwd: '/home/user/project',
  *   env: process.env,
  *   l: logger,

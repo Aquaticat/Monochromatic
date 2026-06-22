@@ -17,7 +17,7 @@ import {
 /**
  * Requests go-to-definition from an LSP client.
  *
- * @param client - LSP client to query (typically tsgo)
+ * @param client - LSP client to query (typically tsc)
  *
  * @param path - absolute file path
  *
@@ -111,7 +111,7 @@ export async function requestGotoDefinition({
  * Requests references (usage sites) from an LSP client.
  * Excludes the declaration itself so only call sites are returned.
  *
- * @param client - LSP client to query (typically tsgo)
+ * @param client - LSP client to query (typically tsc)
  *
  * @param path - absolute file path
  *

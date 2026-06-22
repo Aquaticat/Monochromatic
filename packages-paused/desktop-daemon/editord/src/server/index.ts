@@ -5,7 +5,7 @@
  *
  * Boot sequence:
  * 1. Resolve auth token (reuse from previous instance on auto-restart, or generate fresh)
- * 2. Start LSP servers (oxlint, tsgo, dprint) in the background
+ * 2. Start LSP servers (oxlint, tsc, dprint) in the background
  * 3. Start h3 HTTP server with static file serving and WebSocket
  * 4. Print the URL with token for the user to open in Chrome
  * 5. Register SIGINT/SIGTERM handlers for graceful shutdown
@@ -161,7 +161,7 @@ function handleDiagnostics(
 }
 
 /**
- * LSP server coordinator managing oxlint, tsgo, and dprint.
+ * LSP server coordinator managing oxlint, tsc, and dprint.
  */
 const lspManager = createLspManager({
   ceiling: ROOT_DIR,

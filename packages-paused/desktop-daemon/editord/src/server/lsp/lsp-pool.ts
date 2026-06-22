@@ -44,18 +44,18 @@ const MAX_RESTART_DELAY_MS = 60_000;
 
 /**
  * Fixed retry interval for known deterministic panics (milliseconds).
- * tsgo's ScriptKind panic is triggered when a non-source file is open
- * in editord and tsgo spawns for that project root. The crash resolves
+ * tsc's ScriptKind panic is triggered when a non-source file is open
+ * in editord and tsc spawns for that project root. The crash resolves
  * as soon as the user navigates away from the problematic file,
  * so a short flat retry keeps recovery fast without backoff escalation.
  */
 const DETERMINISTIC_PANIC_RETRY_MS = 1_000;
 
 /**
- * Pattern matching tsgo's ScriptKind panic in stderr.
+ * Pattern matching tsc's ScriptKind panic in stderr.
  * When detected, the pool uses flat retry instead of exponential backoff
  * because the crash resolves as soon as the user navigates away
- * from the non-source file that triggered the tsgo spawn.
+ * from the non-source file that triggered the tsc spawn.
  */
 const SCRIPT_KIND_PANIC_PATTERN = 'ScriptKind must be specified';
 
@@ -248,7 +248,7 @@ export function createLspPool({
           return;
         pool.delete(key,);
         /**
-         * True when stderr contains the known tsgo ScriptKind panic; selects flat-retry over exponential backoff.
+         * True when stderr contains the known tsc ScriptKind panic; selects flat-retry over exponential backoff.
          */
         const deterministic = recentStderr.includes(SCRIPT_KIND_PANIC_PATTERN,);
         /**
@@ -287,12 +287,12 @@ export function createLspPool({
   }
 
   /**
-   * Resolves tsgo with a tsconfig include check gating ALL access.
+   * Resolves tsc with a tsconfig include check gating ALL access.
    *
    * Files outside the project's declared include scope get `null`
-   * even when an existing tsgo client is running for that root.
+   * even when an existing tsc client is running for that root.
    * This prevents feature request handlers from sending non-source
-   * file URIs to tsgo, which would trigger inferred-project creation
+   * file URIs to tsc, which would trigger inferred-project creation
    * and a ScriptKind panic on unsupported extensions.
    *
    * @param filePath - absolute file path that triggered the resolve
@@ -309,7 +309,7 @@ export function createLspPool({
     readonly root: string;
   },): Promise<LspClient | null> {
     /**
-     * tsconfig `include` glob patterns; gate access so non-source files never reach tsgo.
+     * tsconfig `include` glob patterns; gate access so non-source files never reach tsc.
      */
     const patterns = await resolveTsconfigIncludes({
       root,
@@ -319,36 +319,36 @@ export function createLspPool({
       path: filePath,
       patterns,
     },)) {
-      l.info(`${filePath} excluded by tsconfig includes, skipping tsgo`,);
+      l.info(`${filePath} excluded by tsconfig includes, skipping tsc`,);
       return null;
     }
 
     /**
-     * Pool map key for the tsgo client at this root; distinct from oxlint/dprint keys at the same root.
+     * Pool map key for the tsc client at this root; distinct from oxlint/dprint keys at the same root.
      */
     const key = buildPoolKey({
-      type: 'tsgo',
+      type: 'tsc',
       root,
     },);
     /**
-     * Cached tsgo creation promise; reused on subsequent matching-file resolves.
+     * Cached tsc creation promise; reused on subsequent matching-file resolves.
      */
     const existing = pool.get(key,);
     if (existing !== undefined) {
       l.info(
-        `tsgo resolve: reusing existing client for ${root} (trigger: ${filePath})`,
+        `tsc resolve: reusing existing client for ${root} (trigger: ${filePath})`,
       );
       return existing;
     }
     if (isInBackoff({ key, },))
       return null;
 
-    l.info(`tsgo resolve: spawning NEW client for ${root} (trigger: ${filePath})`,);
+    l.info(`tsc resolve: spawning NEW client for ${root} (trigger: ${filePath})`,);
     /**
-     * New tsgo client promise; stored in the pool before await so concurrent callers share it.
+     * New tsc client promise; stored in the pool before await so concurrent callers share it.
      */
     const promise = spawnWithCrashRecovery({
-      type: 'tsgo',
+      type: 'tsc',
       root,
       key,
     },);
@@ -363,9 +363,9 @@ export function createLspPool({
    * Finds or creates the LSP client for a server type given a file path.
    * Returns null when the server is in crash-backoff cooldown.
    *
-   * For tsgo, checks the resolved tsconfig `include` patterns before
+   * For tsc, checks the resolved tsconfig `include` patterns before
    * spawning a new server; files outside the project's declared scope
-   * are rejected so tsgo never receives an unsupported extension as its
+   * are rejected so tsc never receives an unsupported extension as its
    * initial trigger, which would cause a ScriptKind panic.
    *
    * @returns promise resolving to the client, or null if no project root is found or server is in backoff
@@ -391,14 +391,14 @@ export function createLspPool({
       return Promise.resolve(null,);
 
     /**
-     * For tsgo, ALWAYS check tsconfig includes: both for reuse
-     * and new spawns. Returning an existing tsgo client for a
+     * For tsc, ALWAYS check tsconfig includes: both for reuse
+     * and new spawns. Returning an existing tsc client for a
      * non-matching file (e.g. `.svg`) is just as dangerous as
      * spawning a new one: the feature request handler sends the
-     * file URI to tsgo, which creates an inferred project for it
+     * file URI to tsc, which creates an inferred project for it
      * and panics on the unsupported ScriptKind.
      */
-    if (type === 'tsgo') {
+    if (type === 'tsc') {
       return resolveTsgoWithIncludeCheck({
         filePath,
         root,
@@ -446,23 +446,23 @@ export function createLspPool({
   /**
    * Resolves all three server types for a given file path.
    *
-   * The tsconfig include filter for tsgo lives inside {@link resolve}
+   * The tsconfig include filter for tsc lives inside {@link resolve}
    * itself, so both this method and direct `resolve()` callers
    * (like feature request handlers) are equally protected.
    *
-   * @returns server slots with oxlint, tsgo, and dprint clients
+   * @returns server slots with oxlint, tsc, and dprint clients
    */
   async function resolveAll({ path, }: { readonly path: string; },): Promise<ServerSlots> {
     /**
      * Resolved clients for all three server types in parallel; each slot may be null.
      */
-    const [oxlint, tsgo, dprint,] = await Promise.all([
+    const [oxlint, tsc, dprint,] = await Promise.all([
       resolve({
         type: 'oxlint',
         filePath: path,
       },),
       resolve({
-        type: 'tsgo',
+        type: 'tsc',
         filePath: path,
       },),
       resolve({
@@ -473,7 +473,7 @@ export function createLspPool({
 
     return {
       oxlint,
-      tsgo,
+      tsc,
       dprint,
     };
   }

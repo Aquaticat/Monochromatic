@@ -29,6 +29,6 @@ export type DocumentState = {
  */
 export type ServerSlots = {
   readonly oxlint: LspClient | null;
-  readonly tsgo: LspClient | null;
+  readonly tsc: LspClient | null;
   readonly dprint: LspClient | null;
 };

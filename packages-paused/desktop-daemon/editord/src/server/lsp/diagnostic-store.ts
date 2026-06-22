@@ -1,7 +1,7 @@
 /**
  * Stores and merges diagnostics from multiple LSP sources.
  *
- * Each source (e.g. oxlint, tsgo) publishes diagnostics independently.
+ * Each source (e.g. oxlint, tsc) publishes diagnostics independently.
  * The store keeps the latest set per source per URI and merges them
  * into a single array for the client whenever any source updates.
  */

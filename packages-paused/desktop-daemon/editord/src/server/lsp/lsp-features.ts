@@ -29,7 +29,7 @@ export {
 /**
  * Requests hover information from an LSP client.
  *
- * @param client - LSP client to query (typically tsgo)
+ * @param client - LSP client to query (typically tsc)
  *
  * @param path - absolute file path
  *
@@ -81,7 +81,7 @@ export async function requestHover({
 /**
  * Requests completion items from an LSP client.
  *
- * @param client - LSP client to query (typically tsgo)
+ * @param client - LSP client to query (typically tsc)
  *
  * @param path - absolute file path
  *

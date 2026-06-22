@@ -31,7 +31,7 @@ function relevantClients(
   {
     languageId,
     oxlint,
-    tsgo,
+    tsc,
     dprint,
   }: { readonly languageId: string; } & ServerSlots,
 ): LspClient[] {
@@ -47,10 +47,10 @@ function relevantClients(
     && oxlint
     .initialized)
     clients.push(oxlint,);
-  if (isJsTs && (tsgo !== null)
-    && tsgo
+  if (isJsTs && (tsc !== null)
+    && tsc
     .initialized)
-    clients.push(tsgo,);
+    clients.push(tsc,);
   if ((dprint !== null) && dprint
     .initialized)
     clients.push(dprint,);

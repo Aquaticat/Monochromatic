@@ -35,7 +35,7 @@ export type PrepareRenameResult = {
  * Requests prepare-rename from an LSP client.
  * Validates whether the symbol at the cursor position can be renamed.
  *
- * @param client - LSP client to query (typically tsgo)
+ * @param client - LSP client to query (typically tsc)
  *
  * @param path - absolute file path
  *
@@ -91,7 +91,7 @@ export async function requestPrepareRename({
   /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
 
   /**
-   * tsgo returns `{ range, placeholder }` when prepareProvider is true.
+   * tsc returns `{ range, placeholder }` when prepareProvider is true.
    * Some servers return just a Range (without placeholder).
    */
   if (('placeholder' in raw) && ('range' in raw)) {
@@ -121,7 +121,7 @@ export async function requestPrepareRename({
  * Requests rename from an LSP client.
  * Renames all references to the symbol at the given position.
  *
- * @param client - LSP client to query (typically tsgo)
+ * @param client - LSP client to query (typically tsc)
  *
  * @param path - absolute file path
  *

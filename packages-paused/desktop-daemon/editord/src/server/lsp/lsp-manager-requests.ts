@@ -76,7 +76,7 @@ async function withClient<T,>({
   request,
 }: {
   readonly pool: LspPool;
-  readonly serverType: 'tsgo' | 'dprint';
+  readonly serverType: 'tsc' | 'dprint';
   readonly path: string;
   readonly fallback: T;
   readonly request: (client: LspClient,) => Promise<T>;
@@ -124,7 +124,7 @@ export function managerHover({
 } & FilePosition,): Promise<LspHover | null> {
   return withClient({
     pool,
-    serverType: 'tsgo',
+    serverType: 'tsc',
     path: pos.path,
     fallback: null,
     request: function doHover(client,) {
@@ -149,7 +149,7 @@ export function managerCompletion({
 } & FilePosition,): Promise<LspCompletionItem[]> {
   return withClient({
     pool,
-    serverType: 'tsgo',
+    serverType: 'tsc',
     path: pos.path,
     fallback: [],
     request: function doCompletion(client,) {
@@ -200,7 +200,7 @@ export function managerGotoDefinition({
 } & FilePosition,): Promise<FilePosition | null> {
   return withClient({
     pool,
-    serverType: 'tsgo',
+    serverType: 'tsc',
     path: pos.path,
     fallback: null,
     request: function doGotoDef(client,) {
@@ -225,7 +225,7 @@ export function managerReferences({
 } & FilePosition,): Promise<FilePosition[]> {
   return withClient({
     pool,
-    serverType: 'tsgo',
+    serverType: 'tsc',
     path: pos.path,
     fallback: [],
     request: function doRefs(client,) {
@@ -253,7 +253,7 @@ export function managerInlayHints({
 },): Promise<LspInlayHint[]> {
   return withClient({
     pool,
-    serverType: 'tsgo',
+    serverType: 'tsc',
     path,
     fallback: [],
     request: function doInlayHints(client,) {
@@ -285,7 +285,7 @@ export function managerSelectionRange({
 },): Promise<LspSelectionRange[]> {
   return withClient({
     pool,
-    serverType: 'tsgo',
+    serverType: 'tsc',
     path,
     fallback: [],
     request: function doSelRange(client,) {
@@ -311,7 +311,7 @@ export function managerPrepareRename({
 } & FilePosition,): Promise<PrepareRenameResult | null> {
   return withClient({
     pool,
-    serverType: 'tsgo',
+    serverType: 'tsc',
     path: pos.path,
     fallback: null,
     request: function doPrepareRename(client,) {
@@ -343,7 +343,7 @@ export function managerRename({
 },): Promise<LspWorkspaceEdit | null> {
   return withClient({
     pool,
-    serverType: 'tsgo',
+    serverType: 'tsc',
     path,
     fallback: null,
     request: function doRename(client,) {
