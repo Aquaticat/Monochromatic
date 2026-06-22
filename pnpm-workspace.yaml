@@ -154,7 +154,6 @@ catalogs:
 dedupeDirectDeps: true
 hoist: false
 hoistWorkspacePackages: false
-linkWorkspacePackages: true
 lockfileIncludeTarballUrl: true
 minimumReleaseAge: 1440
 minimumReleaseAgeIgnoreMissingTime: false
