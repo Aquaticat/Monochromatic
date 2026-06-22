@@ -157,15 +157,48 @@ These are correctness contracts, not preferences. Breaking one breaks both apps.
     - Tracks shorter than 60 seconds: scan in full, compute the exact true peak, normalize from it.
     - Tracks 10 minutes or longer: do not normalize (gain correction of 0 dB, that is, play at the
       decoded level); full-scanning the longest content is not worth it.
-    - Tracks from 60 seconds to under 10 minutes: probe four 15-second windows at roughly 0%, 33%,
-      66%, and 100%, and use that probe only to decide hot or not hot. If the signals say the track
-      is probably not hot, do not normalize (0 dB). If they say it is probably hot, scan the
-      remaining unsampled parts, compute the exact true peak over the whole track, and normalize
-      from that exact value.
-  This is a behavior change to ratify (very long tracks stop being normalized; mid-length tracks are
-  normalized only when the probe flags them), but it is one agreed, correct algorithm rather than a
-  choice between two flawed ones. Open detail under discussion: the exact "hot" signal the probe
-  reads and its cutoff (see open questions).
+    - Tracks from 60 seconds to under 10 minutes:
+      probe four 15-second windows at the beginning plus one-third plus two-thirds plus the end.
+      Use that probe only to decide hot or not hot.
+      Convert each probed window's peak to dBTP.
+      Then compute the classifier values:
+
+      ```text
+      spread_db = max_window_dbtp - min_window_dbtp
+      headroom_db = 1 + min(3, 0.25 * spread_db)
+      hot = max_window_dbtp >= -1 - headroom_db
+      ```
+
+  A safe classifier result means no normalization.
+  The gain correction is 0 dB.
+  A hot classifier result means scanning the remaining unsampled parts.
+  Then compute the exact true peak over the whole track and normalize from that exact value.
+  This is a behavior change.
+  Very long tracks stop being normalized.
+  Mid-length tracks are normalized only when the probe flags them.
+  It is one agreed, correct algorithm rather than a choice between two flawed ones.
+  The hot classifier is pinned by the full-library benchmark below.
+  It is not a guessed safety factor.
+
+  Benchmark evidence from 2026-06-21:
+    - Measured against `~/Seafile/Plain/Music` with the desktop app's Catmull-Rom true-peak meter and
+      decoder path.
+    - 3954 audio-extension files found.
+      3953 measured.
+      One AAC-in-MP4 decode path failed with Symphonia's existing `aac too complex` error.
+    - 3842 tracks fell in the 60-second to under-10-minute probe band.
+      3652 of them truly exceeded the -1 dBTP ceiling.
+    - The selected adaptive rule above produced zero false "not hot" results.
+      It triggered full scans for 3752 probe-band tracks and skipped full scans for 90 probe-band
+      tracks.
+    - The best fixed margin rule with zero false skips was 4 dB.
+      It full-scanned 3811 probe-band tracks.
+      That is 59 more than the adaptive rule.
+      Fixed margins of 3 dB and below missed at least one hot track.
+    - Scanning every successfully decoded file in full would decode 879779 seconds of audio.
+      The selected rule decodes 854070 seconds.
+      It saves 25709 decoded-audio seconds.
+      That is 2.9% while keeping exact gain whenever it applies gain.
 
 - **The audio-extension allowlist is shared, the filesystem walk is not.** Share the extension set
   and the predicate; the desktop keeps its recursive filesystem expansion, and Android keeps its
@@ -219,9 +252,9 @@ Verification must cross both build boundaries, not just compile.
 - **UniFFI multi-crate generation.** Library mode collecting types across the core and the facade
   is the load-bearing assumption for the thin Android adapter. Proven by spike in stage 1; the
   fallback adds some duplication.
-- **The true-peak algorithm change.** Needs a ratified decision because the new adaptive algorithm
-  alters playback levels on both platforms, and its "hot" signal and cutoff are still to be pinned
-  down.
+- **The true-peak algorithm change.** Ratified by the benchmarked classifier above, but it still
+  alters playback levels on both platforms and only modestly reduces decoded audio, because the local
+  library is mostly already hot.
 - **One UI description, two native UIs.** This is the "slint-or-jetpack" package's central bet and
   its hardest part. Slint and Jetpack Compose are different rendering models, so a shared UI
   description that produces idiomatic results on both is real research, and may land as a shared
