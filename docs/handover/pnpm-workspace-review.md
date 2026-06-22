@@ -101,6 +101,10 @@ Unrelated dirty worktree state observed before creating this file:
   Lock regeneration or update can select new majors unless another process tightens them.
 - Missing `catalogMode: strict` means new external deps can bypass the catalog.
   Throwaway verification saved a non-catalog package as a direct version.
+- `pnpm-workspace.yaml:355` forces `packageImportMethod: hardlink`.
+  pnpm docs describe `clone` as safer because edits in `node_modules` do not modify the central store.
+  The repo and pnpm store are on Btrfs, and a reflink test under `/var/home/user` succeeded, so `auto`
+  should be able to use clone semantics on this host.
 - `pnpm-workspace.yaml:360` sets `saveWorkspaceProtocol: false`.
   Throwaway verification saved local workspace deps as plain versions rather than `workspace:*`.
 - `pnpm install --lockfile-only --frozen-lockfile` warns about workspace cycles involving
