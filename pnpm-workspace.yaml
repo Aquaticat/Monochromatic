@@ -161,7 +161,7 @@ minimumReleaseAgeStrict: true
 nodeLinker: isolated
 
 overrides:
-  '@anthropic-ai/sdk': '>=0.91.1'
+  '@anthropic-ai/sdk': 'catalog:'
   # Drop @earendil-works/pi-* transitive deps that this workspace does not
   # exercise: either unused in the published dist, loaded only via lazy
   # `import()` inside provider modules, or loaded through an optional fallback.
@@ -268,7 +268,7 @@ overrides:
   # deprecation warning without altering runtime behaviour.
   # See docs/troubleshooting/dependencies.md and docs/dependency-blocklist.md.
   'node-domexception': 'link:packages/shim/node-domexception'
-  'postcss': '>=8.5.10'
+  'postcss': 'catalog:'
   # Substitute proper-lockfile@4.1.2 with a workspace shim that implements
   # lockSync/lock via node:fs.mkdirSync atomic-dir locking. The upstream is
   # abandoned (moxystudio/node-proper-lockfile, last commit 2021-01) and hard-
@@ -341,7 +341,7 @@ packageExtensions:
   # import resolves. Only consumer is the file-enforcer-perf benchmark package.
   mitata:
     optionalDependencies:
-      '@mitata/counters': '>=0.0.8'
+      '@mitata/counters': 'catalog:'
 packageImportMethod: clone-or-copy
 packages:
 - 'packages/*/*'
