@@ -1,8 +1,21 @@
 # Kotlin/Rust boundary for the Android music player
 
-Status: recommendation from source audit on 2026-06-19.
-Scope: `packages/music-player/android-app`.
-Goal: performance first, without turning the app into cross-language soup.
+Status: SUPERSEDED on 2026-06-21 by `../PROPOSAL.shared-core.md`.
+
+This document records one team member's opinion from a source audit on 2026-06-19: that the queue,
+pagination, relpath, session, and normalization logic should stay re-implemented in Kotlin, keeping
+the JNI surface narrow and the Compose state native. It favored simplicity, fewer moving parts and
+no UI state crossing the boundary, over a single source of truth.
+
+That recommendation is now superseded. The team's direction is that maintainability beats
+simplicity. The same domain logic re-implemented in both Rust and Kotlin drifts (the two true-peak
+implementations already differ by hundreds of lines), so one shared Rust core consumed by thin
+platform adapters is the maintainable shape, even though it must marshal UI snapshots across the
+boundary once per user action. The reasoning below is kept as historical context for why the
+simpler split was once chosen; it no longer reflects the intended architecture.
+
+Original scope: `packages/music-player/android-app`.
+Original goal: performance first, without turning the app into cross-language soup.
 
 ## One-sentence rule
 
