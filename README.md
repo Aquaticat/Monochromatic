@@ -38,7 +38,7 @@ read-only filesystem,
  15 s timeout) and scores across
 correctness,
  lint quality (oxlint),
- and type safety (tsgo).
+ and type safety (tsc).
 Statistical threshold detection (mean - 2*stddev) flags model degradation
 before it affects development.
 
@@ -223,7 +223,7 @@ packages/
 - **Bundler**:
    [tsdown](https://tsdown.dev/) (Rolldown-based)
 - **Language**:
-   TypeScript with `tsgo` for type checking
+   TypeScript 7 with native `tsc` for type checking
 - **Linters**:
    Oxlint (with custom JS plugins for TSDoc and restricted syntax),
    Stylelint,

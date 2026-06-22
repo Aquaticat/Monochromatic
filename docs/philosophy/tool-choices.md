@@ -92,19 +92,27 @@ Vercel AI SDK forces React dependencies for non-React projects:
 
 OpenAI SDK: direct API integration without unnecessary dependencies.
 
-## Type checking: tsgo > tsc
+## Type checking: native tsc > classic tsc6
 
-The monorepo uses `tsgo` (the native Go port of TypeScript) for all type checking via `mise run lint:types`.
-`tsc` is not used directly anywhere.
+The monorepo type-checks with the native (Go) TypeScript compiler via `mise run lint:types`.
+TypeScript 7 ships that compiler as the canonical `typescript` package
+(`typescript@7.0.1-rc`, binary `tsc`); it previously ran through the
+`@typescript/native-preview` dev builds whose binary was `tsgo`.
+
+The classic JavaScript-based compiler survives only as `@typescript/typescript6`
+(binary `tsc6`), which re-exports the TypeScript 6 programmatic API that the native
+compiler will not provide until TypeScript 7.1.
+Only tooling that imports the `typescript` module needs it,
+e.g. `@stryker-mutator/typescript-checker` in the mutation-test package.
 
 The Claude Code TypeScript LSP plugin has been removed (2026-03-10) because:
 
-- It runs `tsc` internally, not `tsgo`, producing diagnostics against the wrong checker
+- It ran a different compiler than `lint:types`, producing diagnostics against the wrong checker
 - It frequently serves stale diagnostics that do not reflect the current file state
 
 A Claude Code `PostToolUse` hook will replace it,
 triggering the package-specific `lint:types` task on every Edit/Write of a `.ts` file.
-This gives fresh `tsgo` diagnostics scoped to the affected package
+This gives fresh native-compiler diagnostics scoped to the affected package
 without the staleness and tool mismatch of the LSP plugin.
 
 ## HTTP framework: h3 v2 > Hono > Elysia

@@ -1337,7 +1337,7 @@ TY7:
  Use assertion functions (`asserts value is T`) for runtime type narrowing.
 
 TY8:
- `const` narrowing doesn't reach **function declarations** (tsc + tsgo).
+ `const` narrowing doesn't reach **function declarations** (classic tsc 6 + native tsc 7).
  Fix:
  helper returning non-null,
  or reassign to new `const` with explicit type annotation after null check.

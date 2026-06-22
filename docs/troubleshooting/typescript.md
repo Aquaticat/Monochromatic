@@ -1,4 +1,4 @@
-# TypeScript aggregator (tsc 6.0.x and tsgo 7.0.0-dev): seven failure modes from dprint baseUrl warnings through tsgo LSP ScriptKindUnknown panic on non-source files
+# TypeScript aggregator (native tsc 7.0.1-rc and classic tsc6 6.0.x): seven failure modes from dprint baseUrl warnings through native LSP ScriptKindUnknown panic on non-source files
 
 This file aggregates seven distinct TypeScript-related failure modes
 encountered across the workspace. Each section follows the
@@ -559,12 +559,12 @@ tsgo inherits the same semantics. No planned fix.
 ### Solution: wrapper script that strips `node_modules` errors
 
 Since no tsconfig option can suppress these errors,
-the `lint:types` mise task wraps `tsgo --build`
+the `lint:types` mise task wraps the native `tsc --build`
 in a script that filters out diagnostics originating from `node_modules` paths.
 
 The wrapper:
 
-1. Runs `tsgo --build` (or `tsgo --build --noEmit`, etc.) with all original arguments
+1. Runs `tsc --build` (or `tsc --build --noEmit`, etc.) with all original arguments
 2. Captures stdout/stderr line by line
 3. Drops any line whose file path contains `/node_modules/`
 4. Drops continuation lines (indented lines following a dropped diagnostic)
