@@ -105,8 +105,16 @@ Unrelated dirty worktree state observed before creating this file:
   pnpm docs describe `clone` as safer because edits in `node_modules` do not modify the central store.
   The repo and pnpm store are on Btrfs, and a reflink test under `/var/home/user` succeeded, so `auto`
   should be able to use clone semantics on this host.
-- `pnpm-workspace.yaml:360` sets `saveWorkspaceProtocol: false`.
+- `pnpm-workspace.yaml:356` and `pnpm-workspace.yaml:360` combine `preferWorkspacePackages: true`
+  with `saveWorkspaceProtocol: false`. This makes local workspace packages preferred even without a
+  `workspace:` dependency specifier, and newly added local deps are saved as plain versions.
   Throwaway verification saved local workspace deps as plain versions rather than `workspace:*`.
+- Publishable packages depend on private workspace packages. Verified manifests:
+  `packages/dev-script/watch-restart/package.json` depends on private `module-logger`,
+  `packages/module/test/package.json` depends on private `module-fs-path` and `module-logger`, and
+  `packages/module/toml-edit/package.json` depends on private `module-logger`.
+  pnpm converts `workspace:*` before publish, so those public packages would point consumers at
+  unpublished private packages.
 - `pnpm install --lockfile-only --frozen-lockfile` warns about workspace cycles involving
   `packages/config/tsdown`, `packages/module/test`, `packages/module/numeric-format`, and
   `packages/module/or-throw`.
