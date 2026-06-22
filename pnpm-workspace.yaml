@@ -195,6 +195,17 @@ minimumReleaseAgeExclude:
   - oxlint@1.67.0
 nodeLinker: isolated
 
+peerDependencyRules:
+  # tsdown and rolldown-plugin-dts declare an optional `typescript` peer ranged
+  # ^5 || ^6 for their classic-compiler declaration-emit path. This workspace sets
+  # isolatedDeclarations: true, so declarations are emitted by oxc and the classic
+  # compiler is never invoked; allow the TypeScript 7 RC so strictPeerDependencies
+  # passes. Re-confirm by building a dts-emitting package (see the typescript
+  # migration verification).
+  allowedVersions:
+    'tsdown>typescript': '7.0.1-rc'
+    'rolldown-plugin-dts>typescript': '7.0.1-rc'
+
 packageExtensions:
   # mitata calls `import('@mitata/counters')` at runtime to add hardware
   # performance counters (cycles, instructions, IPC, cache, branches) to its

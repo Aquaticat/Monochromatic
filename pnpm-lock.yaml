@@ -5,6 +5,10 @@ settings:
   excludeLinksFromLockfile: false
 
 catalogs:
+  classic:
+    typescript:
+      specifier: npm:@typescript/typescript6@^6.0.0
+      version: 6.0.1
   default:
     '@csstools/css-tokenizer':
       specifier: '>=4.0.0'
@@ -111,9 +115,6 @@ catalogs:
     '@types/unist':
       specifier: '>=3.0.3'
       version: 3.0.3
-    '@typescript/native-preview':
-      specifier: '>=7.0.0-dev.20260421.2'
-      version: 7.0.0-dev.20260507.1
     browserslist:
       specifier: '>=4.28.1'
       version: 4.28.2
@@ -280,8 +281,8 @@ catalogs:
       specifier: '>=5.27.1'
       version: 5.27.1
     typescript:
-      specifier: '>=6.0.3'
-      version: 6.0.3
+      specifier: 7.0.1-rc
+      version: 7.0.1-rc
     unbash:
       specifier: '>=3.0.0'
       version: 3.0.0
@@ -418,9 +419,6 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 25.9.2
-      '@typescript/native-preview':
-        specifier: 'catalog:'
-        version: 7.0.0-dev.20260507.1
       browserslist:
         specifier: 'catalog:'
         version: 4.28.2
@@ -444,13 +442,13 @@ importers:
         version: 1.8.1
       stylelint:
         specifier: 'catalog:'
-        version: 17.6.0(typescript@6.0.3)
+        version: 17.6.0(typescript@7.0.1-rc)
       tsdown:
         specifier: 'catalog:'
-        version: 0.22.0(@typescript/native-preview@7.0.0-dev.20260507.1)(typescript@6.0.3)
+        version: 0.22.0(typescript@7.0.1-rc)
       typescript:
         specifier: 'catalog:'
-        version: 6.0.3
+        version: 7.0.1-rc
 
   packages-deprecated/audit/oph-common-look-and-feel: {}
 
@@ -476,7 +474,7 @@ importers:
         version: 5.4.0
       typescript:
         specifier: 'catalog:'
-        version: 6.0.3
+        version: 7.0.1-rc
 
   packages/build-tool/css:
     dependencies:
@@ -774,10 +772,10 @@ importers:
         version: 25.9.2
       tsdown:
         specifier: 'catalog:'
-        version: 0.22.0(@typescript/native-preview@7.0.0-dev.20260507.1)(typescript@6.0.3)
+        version: 0.22.0(typescript@7.0.1-rc)
       typescript:
         specifier: 'catalog:'
-        version: 6.0.3
+        version: 7.0.1-rc
 
   packages/cli/markdown-lint:
     dependencies:
@@ -835,7 +833,7 @@ importers:
         version: 3.0.3
       typescript:
         specifier: 'catalog:'
-        version: 6.0.3
+        version: 7.0.1-rc
 
   packages/cli/mvm:
     dependencies:
@@ -1033,10 +1031,10 @@ importers:
         version: 25.9.2
       tsdown:
         specifier: 'catalog:'
-        version: 0.22.0(@typescript/native-preview@7.0.0-dev.20260507.1)(typescript@6.0.3)
+        version: 0.22.0(typescript@7.0.1-rc)
       typescript:
         specifier: 'catalog:'
-        version: 6.0.3
+        version: 7.0.1-rc
 
   packages/config/typescript: {}
 
@@ -1204,7 +1202,7 @@ importers:
         version: 9.6.1(@types/node@25.9.2)
       '@stryker-mutator/typescript-checker':
         specifier: 'catalog:'
-        version: 9.6.1(@stryker-mutator/core@9.6.1(@types/node@25.9.2))(typescript@6.0.3)
+        version: 9.6.1(@stryker-mutator/core@9.6.1(@types/node@25.9.2))(@typescript/typescript6@6.0.1)
       nano-spawn:
         specifier: 'catalog:'
         version: 2.1.0
@@ -1222,8 +1220,8 @@ importers:
         specifier: 'catalog:'
         version: 25.9.2
       typescript:
-        specifier: 'catalog:'
-        version: 6.0.3
+        specifier: catalog:classic
+        version: '@typescript/typescript6@6.0.1'
 
   packages/dev-script/page-weight:
     dependencies:
@@ -1383,7 +1381,7 @@ importers:
         version: 25.9.2
       typescript:
         specifier: 'catalog:'
-        version: 6.0.3
+        version: 7.0.1-rc
 
   packages/figma-parsers/penpot:
     dependencies:
@@ -1464,7 +1462,7 @@ importers:
         version: 25.9.2
       typescript:
         specifier: 'catalog:'
-        version: 6.0.3
+        version: 7.0.1-rc
 
   packages/module/async-iter:
     devDependencies:
@@ -1482,7 +1480,7 @@ importers:
         version: 25.9.2
       typescript:
         specifier: 'catalog:'
-        version: 6.0.3
+        version: 7.0.1-rc
 
   packages/module/async-time:
     devDependencies:
@@ -1500,7 +1498,7 @@ importers:
         version: 25.9.2
       typescript:
         specifier: 'catalog:'
-        version: 6.0.3
+        version: 7.0.1-rc
 
   packages/module/const:
     devDependencies:
@@ -1518,7 +1516,7 @@ importers:
         version: 25.9.2
       typescript:
         specifier: 'catalog:'
-        version: 6.0.3
+        version: 7.0.1-rc
 
   packages/module/current-time-context:
     devDependencies:
@@ -1536,7 +1534,7 @@ importers:
         version: 25.9.2
       typescript:
         specifier: 'catalog:'
-        version: 6.0.3
+        version: 7.0.1-rc
 
   packages/module/dom:
     devDependencies:
@@ -1548,7 +1546,7 @@ importers:
         version: link:../../config/typescript
       typescript:
         specifier: 'catalog:'
-        version: 6.0.3
+        version: 7.0.1-rc
 
   packages/module/fs-path:
     dependencies:
@@ -1573,10 +1571,10 @@ importers:
         version: 25.9.2
       tsdown:
         specifier: 'catalog:'
-        version: 0.22.0(@typescript/native-preview@7.0.0-dev.20260507.1)(typescript@6.0.3)
+        version: 0.22.0(typescript@7.0.1-rc)
       typescript:
         specifier: 'catalog:'
-        version: 6.0.3
+        version: 7.0.1-rc
 
   packages/module/function-arity:
     devDependencies:
@@ -1594,7 +1592,7 @@ importers:
         version: 25.9.2
       typescript:
         specifier: 'catalog:'
-        version: 6.0.3
+        version: 7.0.1-rc
 
   packages/module/hyperscript:
     devDependencies:
@@ -1615,7 +1613,7 @@ importers:
         version: 3.2.3
       typescript:
         specifier: 'catalog:'
-        version: 6.0.3
+        version: 7.0.1-rc
 
   packages/module/i18n-compose:
     devDependencies:
@@ -1633,7 +1631,7 @@ importers:
         version: 25.9.2
       typescript:
         specifier: 'catalog:'
-        version: 6.0.3
+        version: 7.0.1-rc
 
   packages/module/image-diff:
     dependencies:
@@ -1670,10 +1668,10 @@ importers:
         version: 2.1.0
       tsdown:
         specifier: 'catalog:'
-        version: 0.22.0(@typescript/native-preview@7.0.0-dev.20260507.1)(typescript@6.0.3)
+        version: 0.22.0(typescript@7.0.1-rc)
       typescript:
         specifier: 'catalog:'
-        version: 6.0.3
+        version: 7.0.1-rc
 
   packages/module/kv-store:
     dependencies:
@@ -1704,7 +1702,7 @@ importers:
         version: 25.9.2
       typescript:
         specifier: 'catalog:'
-        version: 6.0.3
+        version: 7.0.1-rc
 
   packages/module/llm-types:
     devDependencies:
@@ -1722,7 +1720,7 @@ importers:
         version: 25.9.2
       typescript:
         specifier: 'catalog:'
-        version: 6.0.3
+        version: 7.0.1-rc
 
   packages/module/logger:
     devDependencies:
@@ -1743,7 +1741,7 @@ importers:
         version: 25.9.2
       typescript:
         specifier: 'catalog:'
-        version: 6.0.3
+        version: 7.0.1-rc
 
   packages/module/matrix:
     dependencies:
@@ -1771,7 +1769,7 @@ importers:
         version: 25.9.2
       typescript:
         specifier: 'catalog:'
-        version: 6.0.3
+        version: 7.0.1-rc
 
   packages/module/memoize:
     dependencies:
@@ -1793,7 +1791,7 @@ importers:
         version: 25.9.2
       typescript:
         specifier: 'catalog:'
-        version: 6.0.3
+        version: 7.0.1-rc
 
   packages/module/numeric-format:
     dependencies:
@@ -1818,7 +1816,7 @@ importers:
         version: 25.9.2
       typescript:
         specifier: 'catalog:'
-        version: 6.0.3
+        version: 7.0.1-rc
 
   packages/module/observable:
     devDependencies:
@@ -1836,7 +1834,7 @@ importers:
         version: 25.9.2
       typescript:
         specifier: 'catalog:'
-        version: 6.0.3
+        version: 7.0.1-rc
 
   packages/module/or-throw:
     devDependencies:
@@ -1854,7 +1852,7 @@ importers:
         version: 25.9.2
       typescript:
         specifier: 'catalog:'
-        version: 6.0.3
+        version: 7.0.1-rc
 
   packages/module/pipe:
     dependencies:
@@ -1876,7 +1874,7 @@ importers:
         version: 25.9.2
       typescript:
         specifier: 'catalog:'
-        version: 6.0.3
+        version: 7.0.1-rc
 
   packages/module/test:
     dependencies:
@@ -1940,7 +1938,7 @@ importers:
         version: 4.8.0
       typescript:
         specifier: 'catalog:'
-        version: 6.0.3
+        version: 7.0.1-rc
 
   packages/module/throws:
     devDependencies:
@@ -1958,7 +1956,7 @@ importers:
         version: 25.9.2
       typescript:
         specifier: 'catalog:'
-        version: 6.0.3
+        version: 7.0.1-rc
 
   packages/module/token-count:
     dependencies:
@@ -1995,10 +1993,10 @@ importers:
         version: 2.1.0
       tsdown:
         specifier: 'catalog:'
-        version: 0.22.0(@typescript/native-preview@7.0.0-dev.20260507.1)(typescript@6.0.3)
+        version: 0.22.0(typescript@7.0.1-rc)
       typescript:
         specifier: 'catalog:'
-        version: 6.0.3
+        version: 7.0.1-rc
 
   packages/module/toml-edit:
     dependencies:
@@ -2032,7 +2030,7 @@ importers:
         version: 4.8.0
       typescript:
         specifier: 'catalog:'
-        version: 6.0.3
+        version: 7.0.1-rc
 
   packages/module/zip-writer:
     devDependencies:
@@ -2053,7 +2051,7 @@ importers:
         version: 2.1.0
       typescript:
         specifier: 'catalog:'
-        version: 6.0.3
+        version: 7.0.1-rc
 
   packages/oxlint-plugins/no-restricted-syntax:
     dependencies:
@@ -2435,7 +2433,7 @@ importers:
         version: link:../../config/typescript
       typescript:
         specifier: 'catalog:'
-        version: 6.0.3
+        version: 7.0.1-rc
 
   packages/shim/proper-lockfile:
     devDependencies:
@@ -2444,7 +2442,7 @@ importers:
         version: link:../../config/typescript
       typescript:
         specifier: 'catalog:'
-        version: 6.0.3
+        version: 7.0.1-rc
 
   packages/shim/readable-stream:
     devDependencies:
@@ -2453,7 +2451,7 @@ importers:
         version: link:../../config/typescript
       typescript:
         specifier: 'catalog:'
-        version: 6.0.3
+        version: 7.0.1-rc
 
   packages/shim/ungap-structured-clone:
     devDependencies:
@@ -2462,7 +2460,7 @@ importers:
         version: link:../../config/typescript
       typescript:
         specifier: 'catalog:'
-        version: 6.0.3
+        version: 7.0.1-rc
 
   packages/ssg/aquati.cat:
     dependencies:
@@ -2513,7 +2511,7 @@ importers:
         version: 2.0.0
       valibot:
         specifier: 'catalog:'
-        version: 1.4.0(typescript@6.0.3)
+        version: 1.4.0(typescript@7.0.1-rc)
       wawoff2:
         specifier: 'catalog:'
         version: 2.0.1
@@ -2565,13 +2563,13 @@ importers:
         version: 25.9.2
       tsdown:
         specifier: 'catalog:'
-        version: 0.22.0(@typescript/native-preview@7.0.0-dev.20260507.1)(typescript@6.0.3)
+        version: 0.22.0(typescript@7.0.1-rc)
       typesafe-i18n:
         specifier: 'catalog:'
-        version: 5.27.1(typescript@6.0.3)
+        version: 5.27.1(typescript@7.0.1-rc)
       typescript:
         specifier: 'catalog:'
-        version: 6.0.3
+        version: 7.0.1-rc
 
   packages/stub/silent:
     devDependencies:
@@ -2580,7 +2578,7 @@ importers:
         version: link:../../config/typescript
       typescript:
         specifier: 'catalog:'
-        version: 6.0.3
+        version: 7.0.1-rc
 
   packages/stub/throwing:
     devDependencies:
@@ -2589,7 +2587,7 @@ importers:
         version: link:../../config/typescript
       typescript:
         specifier: 'catalog:'
-        version: 6.0.3
+        version: 7.0.1-rc
 
   packages/test-fixture/css-imported: {}
 
@@ -2680,10 +2678,10 @@ importers:
         version: 25.9.2
       tsdown:
         specifier: 'catalog:'
-        version: 0.22.0(@typescript/native-preview@7.0.0-dev.20260507.1)(typescript@6.0.3)
+        version: 0.22.0(typescript@7.0.1-rc)
       typescript:
         specifier: 'catalog:'
-        version: 6.0.3
+        version: 7.0.1-rc
 
   packages/webapp-productivity/done-postcss:
     dependencies:
@@ -2720,10 +2718,10 @@ importers:
         version: 25.9.2
       tsdown:
         specifier: 'catalog:'
-        version: 0.22.0(@typescript/native-preview@7.0.0-dev.20260507.1)(typescript@6.0.3)
+        version: 0.22.0(typescript@7.0.1-rc)
       typescript:
         specifier: 'catalog:'
-        version: 6.0.3
+        version: 7.0.1-rc
 
   packages/webapp-productivity/doodle-widget:
     dependencies:
@@ -2784,7 +2782,7 @@ importers:
         version: 2.0.1-rc.22
       valibot:
         specifier: 'catalog:'
-        version: 1.4.0(typescript@6.0.3)
+        version: 1.4.0(typescript@7.0.1-rc)
     devDependencies:
       '@monochromatic-dev/config-tsdown':
         specifier: workspace:*
@@ -2794,10 +2792,10 @@ importers:
         version: 25.9.2
       tsdown:
         specifier: 'catalog:'
-        version: 0.22.0(@typescript/native-preview@7.0.0-dev.20260507.1)(typescript@6.0.3)
+        version: 0.22.0(typescript@7.0.1-rc)
       typescript:
         specifier: 'catalog:'
-        version: 6.0.3
+        version: 7.0.1-rc
 
   packages/webapp-productivity/syllable-break-demo:
     dependencies:
@@ -4063,51 +4061,128 @@ packages:
   '@types/unist@3.0.3':
     resolution: {integrity: sha512-ko/gIFJRv177XgZsZcBwnqJN5x/Gien8qNOn0D5bQU/zAzVf9Zt3BlcUiLqhV9y4ARk0GbT3tnUiPNgnTXzc/Q==}
 
-  '@typescript/native-preview-darwin-arm64@7.0.0-dev.20260507.1':
-    resolution: {integrity: sha512-2iWAWthp9tWDkgIOITi6GGQkEDQ8Mf+L28B83FR+MvvbLEtHJ5BIZoBOSBgKP5KW+eHlAv1LFUC9dggq1+NO0Q==}
+  '@typescript/typescript-aix-ppc64@7.0.1-rc':
+    resolution: {integrity: sha512-oqq2ZfEJ7BQuufcC3QBQndZLPNyamYNHLao8lKRBeeSkZKypBqxPSgkzrcFZtbYcIaBvpiyUnQP9MT7DEYHWbw==}
+    engines: {node: '>=16.20.0'}
+    cpu: [ppc64]
+    os: [aix]
+
+  '@typescript/typescript-darwin-arm64@7.0.1-rc':
+    resolution: {integrity: sha512-Slc0yTftT2F/uGDmtPst8ijydneL6uZaLEyr2UjahxZpbhTjHFBJ5agXtVz/TL4A+ldxzjzj+E8QtLZlh/5mXw==}
     engines: {node: '>=16.20.0'}
     cpu: [arm64]
     os: [darwin]
 
-  '@typescript/native-preview-darwin-x64@7.0.0-dev.20260507.1':
-    resolution: {integrity: sha512-pXBJx0gF4D9aNZsFavprlbPzL5clAvHsueaVpb3c7M8wv/3FFCdjK7NJUESxpK3+M1RW5MvNaKR6QTzkdunfvQ==}
+  '@typescript/typescript-darwin-x64@7.0.1-rc':
+    resolution: {integrity: sha512-h68iFW/LbA1/BsGgSRGFw981/3s1f/rY27YrmeZNuN+ly7dI+fiDduwT9ZT9866x2onoKNRq7PTyxSKyKDzfAQ==}
     engines: {node: '>=16.20.0'}
     cpu: [x64]
     os: [darwin]
 
-  '@typescript/native-preview-linux-arm64@7.0.0-dev.20260507.1':
-    resolution: {integrity: sha512-0F2o8sbpSOHR04ghnhWPFsyuH9uew78v3fc2+tplxAnwZ5Wt72hk6Ka0yG07m8D6Ca0SK/GtTVIq7BfjmNCP8w==}
+  '@typescript/typescript-freebsd-arm64@7.0.1-rc':
+    resolution: {integrity: sha512-DE+ppd8Ix2c6OMuRkKY4PJ4hngMGJ9M95OQUP17p9xL/1IKXof7npIeuusMN/bgL5o5JzMfSGh+N+5scTYRg0Q==}
+    engines: {node: '>=16.20.0'}
+    cpu: [arm64]
+    os: [freebsd]
+
+  '@typescript/typescript-freebsd-x64@7.0.1-rc':
+    resolution: {integrity: sha512-ST1ozHMw0u+CLOnWkcTyWDMV4Qn9osZ6fd1V1lnKDM1t0hZIp81mdGpdHxyHJjd7jdGrb6Gb/QXcZ1uqZ0t5zw==}
+    engines: {node: '>=16.20.0'}
+    cpu: [x64]
+    os: [freebsd]
+
+  '@typescript/typescript-linux-arm64@7.0.1-rc':
+    resolution: {integrity: sha512-N46pRihK3t5zD5MUtTQcdmQUqr1WI4U2nxno1gLwOtRSsB4krFkRjPHcQNG7h2DtRkX64rQiReX6WKwg2wprMA==}
     engines: {node: '>=16.20.0'}
     cpu: [arm64]
     os: [linux]
 
-  '@typescript/native-preview-linux-arm@7.0.0-dev.20260507.1':
-    resolution: {integrity: sha512-i2K4RRVjk9wSMpGcR5G2hKyUowSZMrnSKh5NYx1nVy6srBD7DVrTSBDH+KCVdAVAuZtsl0tOdVJixkRRjOsbpw==}
+  '@typescript/typescript-linux-arm@7.0.1-rc':
+    resolution: {integrity: sha512-gHmHwT5Naq5CKM8g9bbaGeEpnwQEvWCLn3fwP4K2m61VQdDKkPk0Dhab/OoZ4LV2SrMddmclYXTzpyg23YGt5g==}
     engines: {node: '>=16.20.0'}
     cpu: [arm]
     os: [linux]
 
-  '@typescript/native-preview-linux-x64@7.0.0-dev.20260507.1':
-    resolution: {integrity: sha512-dST5xeuhREr73obBJj4j5Dtf0dEQr6WuUyHIoLaVQCX9PZhWk0Iu2/9jJ0+Gtx7fh3jWGcidNPP1SgmSrXP6Sw==}
+  '@typescript/typescript-linux-loong64@7.0.1-rc':
+    resolution: {integrity: sha512-G17Sao312rgiPBTh2F4nOpLpa3CcnBSaNhqNghZk2LNhnsp1RaMO5HMq2me21gqu9xLpc6CIgHtOzU6JBgNlfg==}
+    engines: {node: '>=16.20.0'}
+    cpu: [loong64]
+    os: [linux]
+
+  '@typescript/typescript-linux-mips64el@7.0.1-rc':
+    resolution: {integrity: sha512-0FQspOb5UsQ4tQKvWgUO3pS9OIWkP7/8dPRWq+CRazJUeQZ4LBjtYK52jg5iIOrvItrVl2CwvRtrU3/9OihwJg==}
+    engines: {node: '>=16.20.0'}
+    cpu: [mips64el]
+    os: [linux]
+
+  '@typescript/typescript-linux-ppc64@7.0.1-rc':
+    resolution: {integrity: sha512-SUmwfVBEv6A2Ld0eWfcvW0FqrgemfQL8jFGOmV1qYxsDqumjE5DekHXqbstgmbE4SHr4rrjHjvmuGCY+kTH/vw==}
+    engines: {node: '>=16.20.0'}
+    cpu: [ppc64]
+    os: [linux]
+
+  '@typescript/typescript-linux-riscv64@7.0.1-rc':
+    resolution: {integrity: sha512-rxeqnNnGiYzv/LlPHi/3+4p0ooR1cNJLjRIHXKovtiVmxXGJq6gtw8VSpbHuWPekyFMXgIAoLCZN0SQ51rAALQ==}
+    engines: {node: '>=16.20.0'}
+    cpu: [riscv64]
+    os: [linux]
+
+  '@typescript/typescript-linux-s390x@7.0.1-rc':
+    resolution: {integrity: sha512-RYWCHCiPypxajdRHM2CNK/eM22e4Ex5TTjV2pXf7PTtBowGr0xX8i8kIMknyZS0LX2QfleYHouaoMVsFDSle3g==}
+    engines: {node: '>=16.20.0'}
+    cpu: [s390x]
+    os: [linux]
+
+  '@typescript/typescript-linux-x64@7.0.1-rc':
+    resolution: {integrity: sha512-PfLJSu0JzroDkqw2m4nqflPEcn8yev0m/vHFQlY9EzHorzjR6QG0wL8AJHvnD1e6h1s76AZngJ5u+z1K/D/HKw==}
     engines: {node: '>=16.20.0'}
     cpu: [x64]
     os: [linux]
 
-  '@typescript/native-preview-win32-arm64@7.0.0-dev.20260507.1':
-    resolution: {integrity: sha512-21rGqCoY2FgnbY2YQFGoAnaHFs5kagwdCmGdn7GmsdNF7P3zvS1ag56BFRYITZ2xw02xYa0fvbXcIIycysBS1A==}
+  '@typescript/typescript-netbsd-arm64@7.0.1-rc':
+    resolution: {integrity: sha512-FfbPxH3dTfp8yVIaNM7bdWTixXuyxpzoemluqcqMROSIz+ImpCG3Q9HO9Ptzp9/giv+P9YYEnCMSXh61migj2w==}
+    engines: {node: '>=16.20.0'}
+    cpu: [arm64]
+    os: [netbsd]
+
+  '@typescript/typescript-netbsd-x64@7.0.1-rc':
+    resolution: {integrity: sha512-FzdTfSzhRYb6hlav6K3cI5RVgcvCTvNAu/vc+t7B6AmZkThQ+t/1ntnvT5fnHmY1Az2RIBw7/b+qtCEG61HJTQ==}
+    engines: {node: '>=16.20.0'}
+    cpu: [x64]
+    os: [netbsd]
+
+  '@typescript/typescript-openbsd-arm64@7.0.1-rc':
+    resolution: {integrity: sha512-PQGhlxfNig+0YQ9Wwzd0USPBkt6w/ZqkBQWsU7G/0JkTzunJel+jSWwhKw4947pak/m7hGSeYiI04xReDLGZww==}
+    engines: {node: '>=16.20.0'}
+    cpu: [arm64]
+    os: [openbsd]
+
+  '@typescript/typescript-openbsd-x64@7.0.1-rc':
+    resolution: {integrity: sha512-WJ7NYgO2mHmLUkI/tZ+hl8lFd26QPJqO8ONOHNuYbdsybLvSB6B6sep222JIVrOfPRDGvFinbGGB+l3m1FWRWA==}
+    engines: {node: '>=16.20.0'}
+    cpu: [x64]
+    os: [openbsd]
+
+  '@typescript/typescript-sunos-x64@7.0.1-rc':
+    resolution: {integrity: sha512-UYjDeUxd765V9qcwlUPk4pEXyL0i3G76CJm9baK4i99u1pGO1psf3nXDw4MMmElVOPvGbZag99ZR/O59E2OX6w==}
+    engines: {node: '>=16.20.0'}
+    cpu: [x64]
+    os: [sunos]
+
+  '@typescript/typescript-win32-arm64@7.0.1-rc':
+    resolution: {integrity: sha512-KzXzFSXZOm7zvEt2Aw0MsB2LbTL88znAiVqTDNAOHdlEb7brgmUQh/X2wM/8Be+N0fjEqWKl65cBKNwpWEbJiw==}
     engines: {node: '>=16.20.0'}
     cpu: [arm64]
     os: [win32]
 
-  '@typescript/native-preview-win32-x64@7.0.0-dev.20260507.1':
-    resolution: {integrity: sha512-PORjTM6k/7ySuN7qbKKLKPJ5AlSQuZbaDkLsdQglapQySeHcrdjOhFl172U+V954sR+KhrE3ckhuinEH+Vjkug==}
+  '@typescript/typescript-win32-x64@7.0.1-rc':
+    resolution: {integrity: sha512-98R3+OqDr/r0/PLWEoXu88AE0lGVLNd335Ew8ONgzK1JWkNs4ou/5BGt3Or1ij4iXjH+c7PRL+jFjCbtWze+EA==}
     engines: {node: '>=16.20.0'}
     cpu: [x64]
     os: [win32]
 
-  '@typescript/native-preview@7.0.0-dev.20260507.1':
-    resolution: {integrity: sha512-1NCr79LEzPErrYtminofTji5EvFDYwJ2JDQfDhcQyP8XVJF93LZ5jiDXcYE2MgqDvwPUpaHMY8seC28jHrc/ew==}
-    engines: {node: '>=16.20.0'}
+  '@typescript/typescript6@6.0.1':
+    resolution: {integrity: sha512-JbesA1Y3wSOYpcw4b4XvG8KCk9AaStATxk1Vmc1qY0Y30fjovvcuRXX2fJ8eC2JRycKQi7V1VYKUljSVBJUzZA==}
     hasBin: true
 
   acorn-jsx@5.3.2:
@@ -5860,6 +5935,11 @@ packages:
     engines: {node: '>=14.17'}
     hasBin: true
 
+  typescript@7.0.1-rc:
+    resolution: {integrity: sha512-drEP77wK7CCDlPfXZH4e008UUQOsw1DFmHmZOZjuNA+yoDLLnSNMZRXi90NbV/1LVo7SbNLq1bs3jjvk49TEqQ==}
+    engines: {node: '>=16.20.0'}
+    hasBin: true
+
   typical@7.3.0:
     resolution: {integrity: sha512-ya4mg/30vm+DOWfBg4YK3j2WD6TWtRkCbasOJr40CseYENzCUby/7rIvXA99JGsQHeNxLbnXdyLLxKSv3tauFw==}
     engines: {node: '>=12.17'}
@@ -7240,13 +7320,13 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@stryker-mutator/typescript-checker@9.6.1(@stryker-mutator/core@9.6.1(@types/node@25.9.2))(typescript@6.0.3)':
+  '@stryker-mutator/typescript-checker@9.6.1(@stryker-mutator/core@9.6.1(@types/node@25.9.2))(@typescript/typescript6@6.0.1)':
     dependencies:
       '@stryker-mutator/api': 9.6.1
       '@stryker-mutator/core': 9.6.1(@types/node@25.9.2)
       '@stryker-mutator/util': 9.6.1
       semver: 7.7.4
-      typescript: 6.0.3
+      typescript: '@typescript/typescript6@6.0.1'
 
   '@stryker-mutator/util@9.6.1': {}
 
@@ -7354,36 +7434,69 @@ snapshots:
 
   '@types/unist@3.0.3': {}
 
-  '@typescript/native-preview-darwin-arm64@7.0.0-dev.20260507.1':
+  '@typescript/typescript-aix-ppc64@7.0.1-rc':
     optional: true
 
-  '@typescript/native-preview-darwin-x64@7.0.0-dev.20260507.1':
+  '@typescript/typescript-darwin-arm64@7.0.1-rc':
     optional: true
 
-  '@typescript/native-preview-linux-arm64@7.0.0-dev.20260507.1':
+  '@typescript/typescript-darwin-x64@7.0.1-rc':
     optional: true
 
-  '@typescript/native-preview-linux-arm@7.0.0-dev.20260507.1':
+  '@typescript/typescript-freebsd-arm64@7.0.1-rc':
     optional: true
 
-  '@typescript/native-preview-linux-x64@7.0.0-dev.20260507.1':
+  '@typescript/typescript-freebsd-x64@7.0.1-rc':
     optional: true
 
-  '@typescript/native-preview-win32-arm64@7.0.0-dev.20260507.1':
+  '@typescript/typescript-linux-arm64@7.0.1-rc':
     optional: true
 
-  '@typescript/native-preview-win32-x64@7.0.0-dev.20260507.1':
+  '@typescript/typescript-linux-arm@7.0.1-rc':
     optional: true
 
-  '@typescript/native-preview@7.0.0-dev.20260507.1':
-    optionalDependencies:
-      '@typescript/native-preview-darwin-arm64': 7.0.0-dev.20260507.1
-      '@typescript/native-preview-darwin-x64': 7.0.0-dev.20260507.1
-      '@typescript/native-preview-linux-arm': 7.0.0-dev.20260507.1
-      '@typescript/native-preview-linux-arm64': 7.0.0-dev.20260507.1
-      '@typescript/native-preview-linux-x64': 7.0.0-dev.20260507.1
-      '@typescript/native-preview-win32-arm64': 7.0.0-dev.20260507.1
-      '@typescript/native-preview-win32-x64': 7.0.0-dev.20260507.1
+  '@typescript/typescript-linux-loong64@7.0.1-rc':
+    optional: true
+
+  '@typescript/typescript-linux-mips64el@7.0.1-rc':
+    optional: true
+
+  '@typescript/typescript-linux-ppc64@7.0.1-rc':
+    optional: true
+
+  '@typescript/typescript-linux-riscv64@7.0.1-rc':
+    optional: true
+
+  '@typescript/typescript-linux-s390x@7.0.1-rc':
+    optional: true
+
+  '@typescript/typescript-linux-x64@7.0.1-rc':
+    optional: true
+
+  '@typescript/typescript-netbsd-arm64@7.0.1-rc':
+    optional: true
+
+  '@typescript/typescript-netbsd-x64@7.0.1-rc':
+    optional: true
+
+  '@typescript/typescript-openbsd-arm64@7.0.1-rc':
+    optional: true
+
+  '@typescript/typescript-openbsd-x64@7.0.1-rc':
+    optional: true
+
+  '@typescript/typescript-sunos-x64@7.0.1-rc':
+    optional: true
+
+  '@typescript/typescript-win32-arm64@7.0.1-rc':
+    optional: true
+
+  '@typescript/typescript-win32-x64@7.0.1-rc':
+    optional: true
+
+  '@typescript/typescript6@6.0.1':
+    dependencies:
+      typescript: 6.0.3
 
   acorn-jsx@5.3.2(acorn@8.16.0):
     dependencies:
@@ -7589,6 +7702,15 @@ snapshots:
       parse-json: 5.2.0
     optionalDependencies:
       typescript: 6.0.3
+
+  cosmiconfig@9.0.1(typescript@7.0.1-rc):
+    dependencies:
+      env-paths: 2.2.1
+      import-fresh: 3.3.1
+      js-yaml: link:packages/stub/throwing
+      parse-json: 5.2.0
+    optionalDependencies:
+      typescript: 7.0.1-rc
 
   cross-spawn@7.0.6:
     dependencies:
@@ -9072,7 +9194,7 @@ snapshots:
 
   reusify@1.1.0: {}
 
-  rolldown-plugin-dts@0.25.0(@typescript/native-preview@7.0.0-dev.20260507.1)(rolldown@1.0.1)(typescript@6.0.3):
+  rolldown-plugin-dts@0.25.0(rolldown@1.0.1)(typescript@7.0.1-rc):
     dependencies:
       '@babel/generator': 8.0.0-rc.4
       '@babel/helper-validator-identifier': 8.0.0-rc.4
@@ -9084,8 +9206,7 @@ snapshots:
       obug: 2.1.1
       rolldown: 1.0.1
     optionalDependencies:
-      '@typescript/native-preview': 7.0.0-dev.20260507.1
-      typescript: 6.0.3
+      typescript: 7.0.1-rc
     transitivePeerDependencies:
       - oxc-resolver
 
@@ -9318,6 +9439,48 @@ snapshots:
       - supports-color
       - typescript
 
+  stylelint@17.6.0(typescript@7.0.1-rc):
+    dependencies:
+      '@csstools/css-calc': 3.1.1(@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.0))(@csstools/css-tokenizer@4.0.0)
+      '@csstools/css-parser-algorithms': 4.0.0(@csstools/css-tokenizer@4.0.0)
+      '@csstools/css-syntax-patches-for-csstree': 1.1.2(css-tree@3.2.1)
+      '@csstools/css-tokenizer': 4.0.0
+      '@csstools/media-query-list-parser': 5.0.0(@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.0))(@csstools/css-tokenizer@4.0.0)
+      '@csstools/selector-resolve-nested': 4.0.0(postcss-selector-parser@7.1.1)
+      '@csstools/selector-specificity': 6.0.0(postcss-selector-parser@7.1.1)
+      colord: 2.9.3
+      cosmiconfig: 9.0.1(typescript@7.0.1-rc)
+      css-functions-list: 3.3.3
+      css-tree: 3.2.1
+      debug: 4.4.3
+      fast-glob: 3.3.3
+      fastest-levenshtein: 1.0.16
+      file-entry-cache: 11.1.2
+      global-modules: 2.0.0
+      globby: 16.2.0
+      globjoin: 0.1.4
+      html-tags: 5.1.0
+      ignore: 7.0.5
+      import-meta-resolve: 4.2.0
+      is-plain-object: 5.0.0
+      mathml-tag-names: 4.0.0
+      meow: 14.1.0
+      micromatch: 4.0.8
+      normalize-path: 3.0.0
+      picocolors: 1.1.1
+      postcss: 8.5.13
+      postcss-safe-parser: 7.0.1(postcss@8.5.13)
+      postcss-selector-parser: 7.1.1
+      postcss-value-parser: 4.2.0
+      string-width: 8.2.0
+      supports-hyperlinks: 4.4.0
+      svg-tags: 1.0.0
+      table: 6.9.0
+      write-file-atomic: 7.0.1
+    transitivePeerDependencies:
+      - supports-color
+      - typescript
+
   superjson@2.2.6:
     dependencies:
       copy-anything: 4.0.5
@@ -9401,7 +9564,7 @@ snapshots:
 
   ts-pattern@5.9.0: {}
 
-  tsdown@0.22.0(@typescript/native-preview@7.0.0-dev.20260507.1)(typescript@6.0.3):
+  tsdown@0.22.0(typescript@7.0.1-rc):
     dependencies:
       ansis: 4.2.0
       cac: 7.0.0
@@ -9412,14 +9575,14 @@ snapshots:
       obug: 2.1.1
       picomatch: 4.0.4
       rolldown: 1.0.1
-      rolldown-plugin-dts: 0.25.0(@typescript/native-preview@7.0.0-dev.20260507.1)(rolldown@1.0.1)(typescript@6.0.3)
+      rolldown-plugin-dts: 0.25.0(rolldown@1.0.1)(typescript@7.0.1-rc)
       semver: 7.7.4
       tinyexec: 1.1.2
       tinyglobby: 0.2.16
       tree-kill: 1.2.2
       unconfig-core: 7.5.0
     optionalDependencies:
-      typescript: 6.0.3
+      typescript: 7.0.1-rc
     transitivePeerDependencies:
       - '@ts-macro/tsc'
       - '@typescript/native-preview'
@@ -9450,11 +9613,34 @@ snapshots:
       tunnel: 0.0.6
       underscore: 1.13.8
 
-  typesafe-i18n@5.27.1(typescript@6.0.3):
+  typesafe-i18n@5.27.1(typescript@7.0.1-rc):
     dependencies:
-      typescript: 6.0.3
+      typescript: 7.0.1-rc
 
   typescript@6.0.3: {}
+
+  typescript@7.0.1-rc:
+    optionalDependencies:
+      '@typescript/typescript-aix-ppc64': 7.0.1-rc
+      '@typescript/typescript-darwin-arm64': 7.0.1-rc
+      '@typescript/typescript-darwin-x64': 7.0.1-rc
+      '@typescript/typescript-freebsd-arm64': 7.0.1-rc
+      '@typescript/typescript-freebsd-x64': 7.0.1-rc
+      '@typescript/typescript-linux-arm': 7.0.1-rc
+      '@typescript/typescript-linux-arm64': 7.0.1-rc
+      '@typescript/typescript-linux-loong64': 7.0.1-rc
+      '@typescript/typescript-linux-mips64el': 7.0.1-rc
+      '@typescript/typescript-linux-ppc64': 7.0.1-rc
+      '@typescript/typescript-linux-riscv64': 7.0.1-rc
+      '@typescript/typescript-linux-s390x': 7.0.1-rc
+      '@typescript/typescript-linux-x64': 7.0.1-rc
+      '@typescript/typescript-netbsd-arm64': 7.0.1-rc
+      '@typescript/typescript-netbsd-x64': 7.0.1-rc
+      '@typescript/typescript-openbsd-arm64': 7.0.1-rc
+      '@typescript/typescript-openbsd-x64': 7.0.1-rc
+      '@typescript/typescript-sunos-x64': 7.0.1-rc
+      '@typescript/typescript-win32-arm64': 7.0.1-rc
+      '@typescript/typescript-win32-x64': 7.0.1-rc
 
   typical@7.3.0: {}
 
@@ -9550,6 +9736,10 @@ snapshots:
   valibot@1.4.0(typescript@6.0.3):
     optionalDependencies:
       typescript: 6.0.3
+
+  valibot@1.4.0(typescript@7.0.1-rc):
+    optionalDependencies:
+      typescript: 7.0.1-rc
 
   vfile-location@5.0.3:
     dependencies:
