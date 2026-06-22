@@ -24,7 +24,7 @@
     "@monochromatic-dev/config-typescript": "workspace:*",
     "@monochromatic-dev/module-test": "workspace:*",
     "@types/node": "catalog:",
-    "typescript": "catalog:"
+    "typescript": "catalog:classic"
   },
   "dependencies": {
     "@stryker-mutator/core": "catalog:",

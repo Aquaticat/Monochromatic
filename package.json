@@ -36,7 +36,6 @@
     "@monochromatic-dev/config-stylelint": "workspace:*",
     "@monochromatic-dev/dev-script-file-enforcer": "workspace:*",
     "stylelint": "catalog:",
-    "@typescript/native-preview": "catalog:",
     "typescript": "catalog:",
     "tsdown": "catalog:",
     "@playwright/test": "catalog:",
