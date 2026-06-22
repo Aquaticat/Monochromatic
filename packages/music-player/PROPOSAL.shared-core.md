@@ -1,7 +1,8 @@
 # Music player: one Rust core, generated platform apps
 
 A proposal to collapse the desktop and Android music players onto a single shared Rust core,
-then grow that core into a published library from which both platform apps are generated.
+then use that work to seed a published, reusable Rust package that builds one UI codebase into
+both a Slint desktop app and a Jetpack Compose Android app.
 
 ## Status and audience
 
@@ -13,27 +14,32 @@ links so a reader with the repo checked out can follow them.
 
 ## The endgame (north star)
 
-The ambition is larger than removing duplication. The endgame is:
+The ambition is larger than this one app. The endgame is a published, reusable Rust package
+(working name "slint-or-jetpack") that **any Rust app can import to build one UI codebase into two
+native UIs**: a Slint desktop app and an Android Jetpack Compose app. You describe the UI and wire
+it to your Rust logic once; the package's build step produces both the desktop Slint app and the
+Android Jetpack Compose app, each idiomatic on its platform.
 
-- `music-player-core` graduates from an in-repo crate into a **published, versioned package**
-  (internal registry first, public crates.io if it proves useful) with a stable API. Any Rust
-  application can depend on it to get the whole music player: decode, true-peak normalization,
-  the queue and pagination model, session state, and the playback engine.
+The music player is the first consumer and the proving ground, not the published product. Its two
+apps already share most of their behavior, so refactoring it onto a shared core and then onto this
+UI layer is what designs the package's API, surfaces the hard cases (a real audio engine, real
+platform integration, real persistence), and shows whether "write the UI once in Rust, get Slint
+and Compose" holds up under a non-trivial app rather than a demo.
 
-- **One build produces both apps.** A single build pipeline takes the shared core plus a small
-  per-platform adapter description and emits both target apps: the Android Jetpack Compose app
-  (bound to the core through generated Kotlin) and the desktop Slint app. The platform-specific
-  pieces (audio output backend, file access, platform integration) are supplied by thin,
-  templated adapters; the shared core and the app's behavior are written once.
+Two distinct things come out of this work:
 
-- The platform apps stop being two codebases to maintain and become two generated outputs of one
-  codebase. Adding a feature means changing the core and rebuilding; both apps inherit it.
+- `music-player-core`: the music player's own shared domain logic (decode, normalization, queue,
+  pagination, session, engine). An in-repo crate the app owns. **Not** the published artifact.
 
-This is the direction, not a finished design. The most speculative part is full generation of the
-UI shells; the staged plan below builds the foundation that makes it reachable, and the open
-questions section is honest about what is still unproven. The near-term, fully-specified goal is
-the shared core with thin hand-written adapters; the generation pipeline is the layer added on top
-once the core API is stable.
+- "slint-or-jetpack": the general cross-platform UI package, factored out of what the two
+  music-player adapters end up having in common. **This** is the artifact that graduates into a
+  published, versioned package other Rust apps depend on.
+
+This is the direction, not a finished design. The central technical bet, that one UI description
+can render as idiomatic Slint on the desktop and idiomatic Jetpack Compose on Android, is also the
+hardest part and the main open question. The staged plan below deliberately builds the shared core
+and thin per-platform adapters first, so the UI package has a real app to be extracted from and
+proven against before anyone else depends on it.
 
 ## Why: the same player, built twice
 
@@ -70,8 +76,10 @@ packages/music-player/
     app/                        thin adapter: Compose UI + MediaSession + SAF/MediaStore
 ```
 
-The core is the product. Each app is a thin adapter that supplies a platform UI, an audio output
-backend, file access, and platform integration, and otherwise defers to the core.
+Within the music player, the core holds the behavior. Each app is a thin adapter that supplies a
+platform UI, an audio output backend, file access, and platform integration, and otherwise defers
+to the core. These two adapters are also the raw material the "slint-or-jetpack" package is later
+factored out of.
 
 What the core owns (moves out of both apps):
 
@@ -174,8 +182,9 @@ Each stage ends with both apps building and their tests green, committed before 
 6.  Move persistence to Turso in the core; delete the per-app stores.
 7.  Documentation, linting, and user-boundary verification on both platforms.
 
-Beyond stage 7, the generation endgame: stabilize and publish the core API, then build the pipeline
-that scaffolds each platform adapter from templates so both apps are generated outputs.
+Beyond stage 7, the framework endgame: factor out what the desktop Slint adapter and the Android
+Compose adapter have in common into the standalone "slint-or-jetpack" package, prove its API against
+a second consumer, and publish it. The music player stays its first user.
 
 ## Verification
 
@@ -199,12 +208,14 @@ Verification must cross both build boundaries, not just compile.
   is the load-bearing assumption for the thin Android adapter. Proven by spike in stage 1; the
   fallback adds some duplication.
 - **The long-track true-peak change.** Needs a ratified decision because it alters desktop output.
-- **UI shell generation.** The endgame's most speculative layer. Slint and Compose are different
-  enough that generating both UIs from one description is real work and may land as templated
-  scaffolding plus shared view-model rather than full UI generation. Scoped as a follow-on once the
-  core API is stable.
-- **Publishing.** Choosing a registry, an API stability policy, and a versioning cadence for a core
-  that two first-party apps and outside Rust apps all depend on.
+- **One UI description, two native UIs.** This is the "slint-or-jetpack" package's central bet and
+  its hardest part. Slint and Jetpack Compose are different rendering models, so a shared UI
+  description that produces idiomatic results on both is real research, and may land as a shared
+  view-model plus per-platform view templates rather than full UI generation. The music-player
+  refactor is scoped to reach a clean shared core and thin adapters first; extracting and publishing
+  the UI package is the follow-on it is designed to enable.
+- **Publishing.** Choosing a registry, an API stability policy, and a versioning cadence for the
+  published UI package once a second Rust app depends on it alongside the music player.
 
 ## Supersedes
 
