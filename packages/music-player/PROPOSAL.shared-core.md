@@ -147,13 +147,26 @@ These are correctness contracts, not preferences. Breaking one breaks both apps.
   (path, size, mtime) byte layout, and the AES target feature both `.cargo/config.toml` files set.
   Any change re-keys both peak caches.
 
-- **True-peak is a real behavior change for long tracks, not a free merge.** Unifying the two
-  implementations means picking one measurement for tracks over 90 seconds. Android's windowed scan
-  does not add to the desktop full scan; it replaces it with a sampled measurement that can
-  under-read the true peak, which is why Android carries a 1.26 safety factor. Adopting it shifts
-  the desktop normalization gain for long tracks, an audible change. This is a decision for the
-  team to ratify, not a refactor detail. The default proposal adopts the windowed path plus the
-  desktop ceiling and gain formula; the alternative keeps full-scan on desktop behind a flag.
+- **True-peak normalization: both apps are wrong today; replace them with one adaptive algorithm.**
+  Neither implementation is correct. Desktop scans every track in full, wasteful for long content.
+  Android samples a few windows and multiplies by a magic 1.26 factor, which over-attenuates in the
+  common case and, when a window misses the loudest moment, under-attenuates into clipping. The
+  shared core implements one correct algorithm with no safety-factor fudge. The cheap probe only
+  ever classifies the track; it never sets the gain, so the applied gain is always either exact or
+  absent, never an estimate:
+    - Tracks shorter than 60 seconds: scan in full, compute the exact true peak, normalize from it.
+    - Tracks 10 minutes or longer: do not normalize (gain correction of 0 dB, that is, play at the
+      decoded level); full-scanning the longest content is not worth it.
+    - Tracks from 60 seconds to under 10 minutes: probe four 15-second windows at roughly 0%, 33%,
+      66%, and 100%, and use that probe only to decide hot or not hot. If the signals say the track
+      is probably not hot, do not normalize (0 dB). If they say it is probably hot, scan the
+      remaining unsampled parts, compute the exact true peak over the whole track, and normalize
+      from that exact value.
+  This is a behavior change to ratify (very long tracks stop being normalized; mid-length tracks are
+  normalized only when the probe flags them), but it is one agreed, correct algorithm rather than a
+  choice between two flawed ones. Open detail for implementation: the exact "hot" signal and
+  threshold the probe reads (for example how close the probed peak sits to the ceiling) and the
+  precise duration boundaries.
 
 - **The audio-extension allowlist is shared, the filesystem walk is not.** Share the extension set
   and the predicate; the desktop keeps its recursive filesystem expansion, and Android keeps its
@@ -169,9 +182,9 @@ Each stage ends with both apps building and their tests green, committed before 
 
 1.  Scaffold the core crate and prove the UniFFI multi-crate path with a throwaway spike before any
     binding design rests on it.
-2.  Migrate the audio DSP core (decode, opus, true-peak reconciled, error, fingerprint), the proven
-    duplication and lowest risk. Point both apps at the core, delete their copies, keep each app's
-    thin opener.
+2.  Migrate the audio DSP core (decode, opus, error, fingerprint), the proven duplication and lowest
+    risk, and replace both true-peak implementations with the one adaptive algorithm above. Point
+    both apps at the core, delete their copies, keep each app's thin opener.
 3.  Migrate the pure logic (queue, pagination, page, relpath, displaypath, shuffle, session model,
     normalization, audio extensions). The desktop Rust is the canonical source; its tests come
     along.
@@ -207,7 +220,9 @@ Verification must cross both build boundaries, not just compile.
 - **UniFFI multi-crate generation.** Library mode collecting types across the core and the facade
   is the load-bearing assumption for the thin Android adapter. Proven by spike in stage 1; the
   fallback adds some duplication.
-- **The long-track true-peak change.** Needs a ratified decision because it alters desktop output.
+- **The true-peak algorithm change.** Needs a ratified decision because the new adaptive algorithm
+  alters playback levels on both platforms, and its "hot" signal, threshold, and duration boundaries
+  are still to be pinned down.
 - **One UI description, two native UIs.** This is the "slint-or-jetpack" package's central bet and
   its hardest part. Slint and Jetpack Compose are different rendering models, so a shared UI
   description that produces idiomatic results on both is real research, and may land as a shared
