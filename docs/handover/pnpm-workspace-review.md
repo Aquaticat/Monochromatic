@@ -121,11 +121,17 @@ Unrelated dirty worktree state observed before creating this file:
 
 ### Nits or cleanup candidates
 
-- Some parent-scoped overrides appear dead against current production dependencies:
+- Parent-scoped removal overrides that are stale or ineffective against current production manifests:
   `@earendil-works/pi-ai>chalk`, `@earendil-works/pi-ai>proxy-agent`,
-  `@earendil-works/pi-ai>undici`, `@earendil-works/pi-ai>zod-to-json-schema`,
-  `@earendil-works/pi-coding-agent>marked`, `@earendil-works/pi-tui>chalk`,
-  `@earendil-works/pi-tui>koffi`, and `@earendil-works/pi-tui>mime-types`.
+  `@earendil-works/pi-ai>undici`, and `@earendil-works/pi-ai>zod-to-json-schema`
+  target no current `dependencies`, `optionalDependencies`, or `peerDependencies` entry on
+  `@earendil-works/pi-ai@0.79.9`.
+  `@earendil-works/pi-coding-agent>marked` targets no current production dependency on
+  `@earendil-works/pi-coding-agent@0.79.9`; `marked` remains installed via
+  `@earendil-works/pi-tui@0.79.9`.
+  `@earendil-works/pi-tui>chalk`, `@earendil-works/pi-tui>koffi`, and
+  `@earendil-works/pi-tui>mime-types` target no current production dependency on
+  `@earendil-works/pi-tui@0.79.9`.
   Re-check before final because some may be intentional future guards.
 - `ws` override is currently unused.
 - `node-domexception` shim override is currently unused.
