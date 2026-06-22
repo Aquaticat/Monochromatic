@@ -274,7 +274,8 @@ if count > 0 {
 ```
 
 The earlier file-corruption hypothesis was wrong.
-`ffmpeg` decodes the original file's audio stream without error, so this is a Symphonia decoder capability gap:
+`ffmpeg` decodes the original file's audio stream without error,
+ so this is a Symphonia decoder capability gap:
 
 ```bash
 # from /var/home/user/Monochromatic
@@ -290,18 +291,26 @@ That command exits successfully with no output.
 
 Version under test:
 
-- `symphonia 0.6.0`, checksum `1758d6c853020a7244de03cc3e0185eaea3f58715122422dd3cc7452e6d4c16a`.
-- `symphonia-codec-aac 0.6.0`, checksum `f1979c515a76371b186aad2feff5f23e21cbec775bf95de08bf1e3af92a2ad76`.
-- `symphonia-common 0.6.0`, checksum `8257891ffa7f05e02b58f4761e2abf7e5278c8744fd59e981559e050f86eef55`.
-- `symphonia-format-isomp4 0.6.0`, checksum `2d179a01305b3505940135a9f0180d6ef4b487912748fe97554756f120fbd05e`.
+- `symphonia 0.6.0`,
+   checksum `1758d6c853020a7244de03cc3e0185eaea3f58715122422dd3cc7452e6d4c16a`.
+- `symphonia-codec-aac 0.6.0`,
+   checksum `f1979c515a76371b186aad2feff5f23e21cbec775bf95de08bf1e3af92a2ad76`.
+- `symphonia-common 0.6.0`,
+   checksum `8257891ffa7f05e02b58f4761e2abf7e5278c8744fd59e981559e050f86eef55`.
+- `symphonia-format-isomp4 0.6.0`,
+   checksum `2d179a01305b3505940135a9f0180d6ef4b487912748fe97554756f120fbd05e`.
 
 The source clone used for source reading was `/tmp/agent/symphonia-0-6-investigate`.
-Its origin was `https://github.com/pdeljanov/Symphonia.git`, and its checked-out commit was
+Its origin was `https://github.com/pdeljanov/Symphonia.git`,
+ and its checked-out commit was
 `9b791099ae99bed4f4fe7f7c1243ef4b8e7b3ccd`.
 The checked-out source matches the same AAC guard and SBR parsing paths as the published 0.6.0 crates.
 
 The reproduction harness was the throwaway benchmark in `/tmp/agent/music-player-truepeak-bench`.
-It includes the desktop app's `decode.rs`, `opus.rs`, `error.rs`, and `truepeak.rs` directly.
+It includes the desktop app's `decode.rs`,
+ `opus.rs`,
+ `error.rs`,
+ and `truepeak.rs` directly.
 Run it against the containing folder:
 
 ```bash
@@ -327,13 +336,20 @@ Expected result:
 
 Failing catalog:
 
-- Original MP4 video with HE-AAC audio, `mp4a.40.5`, fails with `unsupported feature: aac: aac too complex`.
-- Remuxed audio-only M4A with `-c:a copy` remains HE-AAC, still `mp4a.40.5`, and fails with the same error.
+- Original MP4 video with HE-AAC audio,
+   `mp4a.40.5`,
+   fails with `unsupported feature: aac: aac too complex`.
+- Remuxed audio-only M4A with `-c:a copy` remains HE-AAC,
+   still `mp4a.40.5`,
+   and fails with the same error.
 
 Working catalog:
 
-- Original MP4 decoded by `ffmpeg` works, proving the file is not corrupt.
-- Transcoded AAC-LC M4A, `mp4a.40.2`, measures successfully through the production decoder path.
+- Original MP4 decoded by `ffmpeg` works,
+   proving the file is not corrupt.
+- Transcoded AAC-LC M4A,
+   `mp4a.40.2`,
+   measures successfully through the production decoder path.
 
 The failing remux and working transcode were created with:
 
@@ -422,7 +438,8 @@ Tradeoffs:
 - This is lossy transcoding from one AAC stream to another.
 - It discards the video stream in this command.
   Keep or remap video separately if a video file is needed.
-- It changes codec profile from HE-AAC to AAC-LC, increasing bitrate for similar quality at low bitrates.
+- It changes codec profile from HE-AAC to AAC-LC,
+   increasing bitrate for similar quality at low bitrates.
 - It makes the file decodable by Symphonia's current AAC-LC decoder.
 
 ### Keep the file unsupported and skip its peak measurement
@@ -434,14 +451,16 @@ files Symphonia can decode.
 Tradeoffs:
 
 - Playback and true-peak measurement for this file remain unavailable through the current Symphonia decoder path.
-- The app should surface or log this as an unsupported codec, not as a corrupt file.
+- The app should surface or log this as an unsupported codec,
+   not as a corrupt file.
 
 ## What does not work
 
 ### Remuxing without transcoding
 
 `ffmpeg -c:a copy` moves the HE-AAC bitstream into M4A without changing the codec profile.
-The copied file still reports `HE-AAC` and `mp4a.40.5`, and the production decoder still fails with
+The copied file still reports `HE-AAC` and `mp4a.40.5`,
+ and the production decoder still fails with
 `unsupported feature: aac: aac too complex`.
 
 ### Changing MP4 stream selection
@@ -458,7 +477,8 @@ That would risk wrong audio rather than fixing decode support.
 
 ### Treating upstream issue 325 as the same bug
 
-[`pdeljanov/Symphonia#325`][symphonia-325] mentions `aac: aac too complex`, but the maintainer diagnosed that report as
+[`pdeljanov/Symphonia#325`][symphonia-325] mentions `aac: aac too complex`,
+ but the maintainer diagnosed that report as
 an ADTS stream auto-detection issue fixed in the 0.6 development branch.
 This report is an MP4 HE-AAC/SBR decode limitation in 0.6.0.
 The closed issue is not a duplicate.
@@ -466,8 +486,15 @@ The closed issue is not a duplicate.
 ## Upstream filing decision
 
 No `.out-of-scope/` exemption matches Symphonia or AAC.
-Checked files under `.out-of-scope/` included TypeScript, Claude Code, Bun, Codex, pi, Lightning CSS, JSR,
-Cargo workspace, and related project-specific exemptions.
+Checked files under `.out-of-scope/` included TypeScript,
+ Claude Code,
+ Bun,
+ Codex,
+ pi,
+ Lightning CSS,
+ JSR,
+Cargo workspace,
+ and related project-specific exemptions.
 
 Duplicate search:
 
@@ -483,44 +510,57 @@ gh search prs --repo pdeljanov/Symphonia "aac too complex" --state open --limit 
 gh search prs --repo pdeljanov/Symphonia "aac too complex" --state closed --limit 10
 ```
 
-Only `pdeljanov/Symphonia#325` appeared, and it is not the same root cause.
+Only `pdeljanov/Symphonia#325` appeared,
+ and it is not the same root cause.
 
 Six-constraint check:
 
 - Is it really upstream's fault?
-  As a bug report, no.
-  Symphonia documents AAC-LC support, and the AAC crate README says the decoder implements the LC profile.
+  As a bug report,
+   no.
+  Symphonia documents AAC-LC support,
+   and the AAC crate README says the decoder implements the LC profile.
   Symphonia also documents HE-AAC and HE-AACv2 with blank status in `README.md:102-106`.
 - Can upstream fix it?
   Yes.
-  HE-AAC/SBR support is implementable in principle, but it is real decoder work rather than a small guard change.
+  HE-AAC/SBR support is implementable in principle,
+   but it is real decoder work rather than a small guard change.
 - Are they supporting this use case?
   No.
   The top-level README lists AAC-LC as supported and HE-AAC/HE-AACv2 as not currently supported.
   The AAC crate README says the decoder implements the LC profile.
 - Would the repo welcome our contribution?
   Not an AI-authored external communication.
-  `CONTRIBUTING.md` welcomes new decoders and features, but `CONTRIBUTING.md:54-65` forbids copied or heavily
-  borrowed AI-generated implementation work, and `CONTRIBUTING.md:67-79` says responsible AI use must be disclosed.
+  `CONTRIBUTING.md` welcomes new decoders and features,
+   but `CONTRIBUTING.md:54-65` forbids copied or heavily
+  borrowed AI-generated implementation work,
+   and `CONTRIBUTING.md:67-79` says responsible AI use must be disclosed.
   It also says not to use AI for communications unless translation.
-  A human-authored issue or PR may be acceptable, but this AI-authored draft must not be filed as-is.
+  A human-authored issue or PR may be acceptable,
+   but this AI-authored draft must not be filed as-is.
 - Will they likely fix it?
   Unknown.
   The README explicitly marks HE-AAC support absent and points to `symphonia-adapter-fdk-aac` as a third-party
-  option for AAC-LC, HE-AAC, and HE-AACv2.
+  option for AAC-LC,
+   HE-AAC,
+   and HE-AACv2.
   No matching open issue or PR was found.
 - Have we prototyped a minimal fix compatible with their architecture?
   No.
-  The earlier constraints fail, and the source trace shows the minimal real fix is SBR support, not a local guard
+  The earlier constraints fail,
+   and the source trace shows the minimal real fix is SBR support,
+   not a local guard
   change.
   The auto-prototype rule therefore does not fire.
 
 Decision:
 Do not file upstream from this session.
-This is a documented unsupported feature, and Symphonia's contribution policy bars this AI-authored external
+This is a documented unsupported feature,
+ and Symphonia's contribution policy bars this AI-authored external
 communication from being filed as-is.
 
-Draft, do not file as-is:
+Draft,
+ do not file as-is:
 
 ~~~md
 Title: HE-AAC/SBR MP4 audio returns `unsupported feature: aac: aac too complex` in Symphonia 0.6.0
