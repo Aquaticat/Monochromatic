@@ -1,6 +1,3 @@
-packages:
-- 'packages/*/*'
-
 allowBuilds:
   '@vscode/ripgrep': false
   core-js: false
@@ -146,6 +143,7 @@ catalog:
   'woff2-encode-wasm': '>=0.1.1'
   'yaml': '>=3.0.0-0'
   'zeptomatch': '>=2.1.0'
+catalogMode: strict
 
 catalogs:
   # Classic TypeScript 6 compiler that re-exports the legacy programmatic compiler
@@ -157,143 +155,14 @@ dedupeDirectDeps: true
 hoist: false
 hoistWorkspacePackages: false
 linkWorkspacePackages: true
-# version management of both node and pnpm is handled by Mise
-pmOnFail: ignore
+lockfileIncludeTarballUrl: true
 minimumReleaseAge: 1440
 minimumReleaseAgeIgnoreMissingTime: false
 minimumReleaseAgeStrict: true
-trustPolicy: no-downgrade
 nodeLinker: isolated
-lockfileIncludeTarballUrl: true
-peerDependencyRules:
-  # tsdown and rolldown-plugin-dts declare an optional `typescript` peer ranged
-  # ^5 || ^6 for their classic-compiler declaration-emit path. This workspace sets
-  # isolatedDeclarations: true, so declarations are emitted by oxc and the classic
-  # compiler is never invoked; allow the TypeScript 7 RC so strictPeerDependencies
-  # passes. Re-confirm by building a dts-emitting package (see the typescript
-  # migration verification).
-  allowedVersions:
-    'tsdown>typescript': '7.0.1-rc'
-    'rolldown-plugin-dts>typescript': '7.0.1-rc'
-
-packageExtensions:
-  # mitata calls `import('@mitata/counters')` at runtime to add hardware
-  # performance counters (cycles, instructions, IPC, cache, branches) to its
-  # benchmark output, but does not declare the package as a dependency. Under
-  # this workspace's strict isolation (hoist: false, nodeLinker: isolated) that
-  # dynamic import is unresolvable from mitata's own location, so counters never
-  # load. Declaring the dependency here makes pnpm link it under mitata so the
-  # import resolves. Only consumer is the file-enforcer-perf benchmark package.
-  mitata:
-    optionalDependencies:
-      '@mitata/counters': '>=0.0.8'
 
 overrides:
-  # Patch [ERR_PNPM_TRUST_DOWNGRADE] 2 lockfile entries failed verification:
-  #  nanoid@3.3.14 High-risk trust downgrade for "nanoid@3.3.14" (possible package takeover)
-  #  semver@6.3.1 High-risk trust downgrade for "semver@6.3.1" (possible package takeover)
-  'nanoid': '>=5.1.15'
-  'semver': '>=7.8.5'
-  # Patch GHSA-q8mj-m7cp-5q26 / CVE-2026-8723: qs@<=6.15.1 crashes with
-  # TypeError on null/undefined entries in comma-format arrays when
-  # encodeValuesOnly is set. Only transitive consumer is
-  # @stryker-mutator/core > typed-rest-client (`qs: ^6.9.4`); patch-level
-  # bump is range-compatible.
-  'qs': '>=6.15.2'
-  'jspdf>canvg': '-'
-  'jspdf>dompurify': '-'
   '@anthropic-ai/sdk': '>=0.91.1'
-  # Patch GHSA-v39h-62p7-jpjc / CVE-2026-6322: <=3.1.1 decodes percent-encoded
-  # authority delimiters inside the host, letting a normalized URL re-parse
-  # against a different host than the source string appeared to encode. Only
-  # transitive consumer is ajv@8.18.0 (pulled in by stylelint > table); a
-  # patch-level bump is range-compatible with ajv's `^3.0.0` dep.
-  'fast-uri': '>=3.1.2'
-  'fast-xml-parser': '>=5.7.0'
-  # Patch GHSA-5wm8-gmm8-39j9 / CVE-2026-44665: <=1.1.6 lets quote characters
-  # in attribute values break out of the attribute and inject sibling
-  # attributes when processEntities is disabled. Only transitive consumer is
-  # fast-xml-parser@5.7.2 (`fast-xml-builder: ^1.1.5`); patch-level bump.
-  'fast-xml-builder': '>=1.1.7'
-  # Patch GHSA-58qx-3vcg-4xpx / CVE-2026-45736: ws <8.20.1 discloses
-  # uninitialized memory when a non-Uint8Array TypedArray (e.g.
-  # Float32Array) is passed as the reason argument to close(). The
-  # vulnerable API is not reached from any workspace code (all close()
-  # calls pass no reason or a string), but the override ensures the
-  # fixed version is resolved across all transitive consumers (openai,
-  # @libsql/isomorphic-ws, crossws). Patch-level bump is
-  # range-compatible with every consumer's ^8.x constraint.
-  'ws': '>=8.20.1'
-  # Patch GHSA-38rv-x7px-6hhq / CVE-2026-9675,
-  # GHSA-pr7r-676h-xcf6 / CVE-2026-9678,
-  # and GHSA-vmh5-mc38-953g / CVE-2026-9697: undici >=8.0.0 <8.5.0
-  # carries WebSocket denial-of-service, shared-cache information disclosure,
-  # and SOCKS5 ProxyAgent TLS certificate validation bypass advisories.
-  # Current @earendil-works/pi-coding-agent 0.79.7 still pins undici 8.3.0,
-  # so a workspace-wide security floor is needed until upstream bumps it.
-  'undici': '>=8.5.0'
-  'postcss': '>=8.5.10'
-  # Substitute deprecated node-domexception@1.0.0 with a workspace shim that
-  # re-exports globalThis.DOMException (the native constructor on Node 17+
-  # and Bun). fetch-blob/from.js hard-imports the package and uses it as a
-  # constructor, so removal would crash node-fetch at module load. The shim
-  # is API-identical-by-construction, eliminating pnpm's install-time
-  # deprecation warning without altering runtime behaviour.
-  # See docs/troubleshooting/dependencies.md and docs/dependency-blocklist.md.
-  'node-domexception': 'link:packages/shim/node-domexception'
-  # Substitute proper-lockfile@4.1.2 with a workspace shim that implements
-  # lockSync/lock via node:fs.mkdirSync atomic-dir locking. The upstream is
-  # abandoned (moxystudio/node-proper-lockfile, last commit 2021-01) and hard-
-  # imported by @earendil-works/pi-coding-agent's dist/core/auth-storage.js
-  # (line 12) and dist/core/settings-manager.js (line 4); both modules are
-  # statically re-exported from the package's dist/index.js barrel (lines 6
-  # and 22). The pi CLI host evaluates them at startup (dist/main.js:377
-  # SettingsManager.create, dist/main.js:408 AuthStorage.create,
-  # dist/core/model-registry.js:519 await authStorage.getApiKey), so removal
-  # would crash pi at module load and the workspace silent stub would hang
-  # on `await release` because the stub's Proxy treats every property access
-  # (including .then) as a self-return.
-  # See docs/decisions/proper-lockfile-removal.md and
-  # docs/troubleshooting/dependencies.md.
-  'proper-lockfile': 'link:packages/shim/proper-lockfile'
-  # Substitute readable-stream@3 (winston, winston-transport) and
-  # readable-stream@4 (isomorphic-git) with a single workspace shim that
-  # re-exports node:stream. Both upstream versions are userland mirrors of
-  # node:stream that originally targeted retired Node releases; on Node 22+
-  # they ship 3,005 LOC of duplicate stream machinery whose only purpose was
-  # back-compat with versions that no longer matter. The shim's index.cjs
-  # mirrors the end-state shape of readable-stream@3's entry (default export
-  # is Stream.Readable with every node:stream property defined as an own
-  # property on it, plus .Stream pointing at the module itself), and its
-  # lib/_stream_*.js subpaths re-export the matching node:stream class so
-  # winston-transport's deep import of readable-stream/lib/_stream_writable.js
-  # resolves unchanged. The shim uses Object.defineProperty rather than
-  # Object.assign because node:stream.Readable inherits a getter-only
-  # promises accessor on Node 22+ that makes the upstream Object.assign
-  # pattern throw at module load. The substitution also makes the transitive
-  # abort-controller fallback guards inside readable-stream@4's pipeline.js,
-  # duplexify.js, and operators.js unreachable, formally closing the loop on
-  # the 'abort-controller': '-' override above.
-  # See docs/decisions/readable-stream-shim.md for the full audit, including
-  # the enumerated consumer surface and the verification plan.
-  'readable-stream': 'link:packages/shim/readable-stream'
-  # Substitute @ungap/structured-clone@1.3.0 with a workspace shim that
-  # re-exports globalThis.structuredClone (the native function on Node 17+,
-  # Bun, and every browser meeting the Firefox ESR 140 baseline). The
-  # upstream is a ponyfill carrying a published CWE-502 deprecation
-  # ("Potential CWE-502 - Update to 1.3.1 or higher") and is reached
-  # transitively from packages/ssg/aquati.cat through
-  # mdast-util-to-hast (lib/state.js lines 263, 271, 381; lib/footer.js
-  # line 235) and rehype-autolink-headings (lib/index.js line 156). Both
-  # consumers import the default export and call it as structuredClone(value)
-  # with one argument; no transferables, no { lossy } / { json } modes are
-  # used, so re-exporting the native global is API-equivalent by
-  # construction. Only the default export is consumed; named serialize /
-  # deserialize are intentionally omitted and can be added if a future
-  # transitive dep reaches in.
-  # See packages/shim/ungap-structured-clone/README.md and
-  # docs/troubleshooting/dependencies.md for the audit trail.
-  '@ungap/structured-clone': 'link:packages/shim/ungap-structured-clone'
   # Drop @earendil-works/pi-* transitive deps that this workspace does not
   # exercise: either unused in the published dist, loaded only via lazy
   # `import()` inside provider modules, or loaded through an optional fallback.
@@ -320,6 +189,23 @@ overrides:
   # dynamic require is wrapped in try/catch and degrades Shift+Tab handling.
   '@earendil-works/pi-tui>koffi': '-'
   '@earendil-works/pi-tui>mime-types': '-'
+  # Substitute @ungap/structured-clone@1.3.0 with a workspace shim that
+  # re-exports globalThis.structuredClone (the native function on Node 17+,
+  # Bun, and every browser meeting the Firefox ESR 140 baseline). The
+  # upstream is a ponyfill carrying a published CWE-502 deprecation
+  # ("Potential CWE-502 - Update to 1.3.1 or higher") and is reached
+  # transitively from packages/ssg/aquati.cat through
+  # mdast-util-to-hast (lib/state.js lines 263, 271, 381; lib/footer.js
+  # line 235) and rehype-autolink-headings (lib/index.js line 156). Both
+  # consumers import the default export and call it as structuredClone(value)
+  # with one argument; no transferables, no { lossy } / { json } modes are
+  # used, so re-exporting the native global is API-equivalent by
+  # construction. Only the default export is consumed; named serialize /
+  # deserialize are intentionally omitted and can be added if a future
+  # transitive dep reaches in.
+  # See packages/shim/ungap-structured-clone/README.md and
+  # docs/troubleshooting/dependencies.md for the audit trail.
+  '@ungap/structured-clone': 'link:packages/shim/ungap-structured-clone'
   # Remove abort-controller globally. It is a polyfill of the WHATWG
   # AbortController for Node < 15. Our supported runtimes (Node 22+, Bun)
   # all ship a native AbortController on globalThis. The only transitive
@@ -332,19 +218,6 @@ overrides:
   # last commit 2021-01, abandoned), reducing supply-chain surface.
   # See docs/troubleshooting/dependencies.md and docs/dependency-blocklist.md.
   'abort-controller': '-'
-  # Remove dprint globally. The npm distribution is a Node wrapper that re-execs
-  # the native binary; each invocation pays the Node startup cost (multiple
-  # seconds in this workspace, vs sub-100ms for the native binary directly).
-  # The workspace runs dprint through mise (pinned in mise.toml), which executes
-  # the native binary without the wrapper. No workspace package depends on the
-  # npm distribution, so stripping it at install time is a no-op for the
-  # current tree; the override exists to keep it that way. If a future change
-  # adds `dprint` to a package.json, pnpm silently drops it and the binary
-  # never reaches node_modules, surfacing as a clear `Cannot find package`
-  # error at the call site. See docs/troubleshooting/dprint.md (Bug 1) and
-  # packages/config/dprint/README.md for the policy and VSCode-extension
-  # workaround. Refs #163.
-  'dprint': '-'
   # Remove argparse globally. It is shipped solely for the CLI entry point of
   # wawoff2 (bin/woff2_{compress,decompress}.js, pulled in directly by
   # ssg/aquati.cat). That CLI is never invoked anywhere in the tree or
@@ -359,16 +232,140 @@ overrides:
   # (last commit 2022-05).
   # See docs/troubleshooting/dependencies.md and docs/dependency-blocklist.md.
   'argparse': '-'
+  # Remove dprint globally. The npm distribution is a Node wrapper that re-execs
+  # the native binary; each invocation pays the Node startup cost (multiple
+  # seconds in this workspace, vs sub-100ms for the native binary directly).
+  # The workspace runs dprint through mise (pinned in mise.toml), which executes
+  # the native binary without the wrapper. No workspace package depends on the
+  # npm distribution, so stripping it at install time is a no-op for the
+  # current tree; the override exists to keep it that way. If a future change
+  # adds `dprint` to a package.json, pnpm silently drops it and the binary
+  # never reaches node_modules, surfacing as a clear `Cannot find package`
+  # error at the call site. See docs/troubleshooting/dprint.md (Bug 1) and
+  # packages/config/dprint/README.md for the policy and VSCode-extension
+  # workaround. Refs #163.
+  'dprint': '-'
+  # Patch GHSA-v39h-62p7-jpjc / CVE-2026-6322: <=3.1.1 decodes percent-encoded
+  # authority delimiters inside the host, letting a normalized URL re-parse
+  # against a different host than the source string appeared to encode. Only
+  # transitive consumer is ajv@8.18.0 (pulled in by stylelint > table); a
+  # patch-level bump is range-compatible with ajv's `^3.0.0` dep.
+  'fast-uri': '>=3.1.2'
+  # Patch GHSA-5wm8-gmm8-39j9 / CVE-2026-44665: <=1.1.6 lets quote characters
+  # in attribute values break out of the attribute and inject sibling
+  # attributes when processEntities is disabled. Only transitive consumer is
+  # fast-xml-parser@5.7.2 (`fast-xml-builder: ^1.1.5`); patch-level bump.
+  'fast-xml-builder': '>=1.1.7'
+  'fast-xml-parser': '>=5.7.0'
+  'jspdf>canvg': '-'
+  'jspdf>dompurify': '-'
+  # Patch [ERR_PNPM_TRUST_DOWNGRADE]: nanoid@3.3.14 failed verification with possible package takeover.
+  'nanoid': '>=5.1.15'
+  # Substitute deprecated node-domexception@1.0.0 with a workspace shim that
+  # re-exports globalThis.DOMException (the native constructor on Node 17+
+  # and Bun). fetch-blob/from.js hard-imports the package and uses it as a
+  # constructor, so removal would crash node-fetch at module load. The shim
+  # is API-identical-by-construction, eliminating pnpm's install-time
+  # deprecation warning without altering runtime behaviour.
+  # See docs/troubleshooting/dependencies.md and docs/dependency-blocklist.md.
+  'node-domexception': 'link:packages/shim/node-domexception'
+  'postcss': '>=8.5.10'
+  # Substitute proper-lockfile@4.1.2 with a workspace shim that implements
+  # lockSync/lock via node:fs.mkdirSync atomic-dir locking. The upstream is
+  # abandoned (moxystudio/node-proper-lockfile, last commit 2021-01) and hard-
+  # imported by @earendil-works/pi-coding-agent's dist/core/auth-storage.js
+  # (line 12) and dist/core/settings-manager.js (line 4); both modules are
+  # statically re-exported from the package's dist/index.js barrel (lines 6
+  # and 22). The pi CLI host evaluates them at startup (dist/main.js:377
+  # SettingsManager.create, dist/main.js:408 AuthStorage.create,
+  # dist/core/model-registry.js:519 await authStorage.getApiKey), so removal
+  # would crash pi at module load and the workspace silent stub would hang
+  # on `await release` because the stub's Proxy treats every property access
+  # (including .then) as a self-return.
+  # See docs/decisions/proper-lockfile-removal.md and
+  # docs/troubleshooting/dependencies.md.
+  'proper-lockfile': 'link:packages/shim/proper-lockfile'
+  # Patch GHSA-q8mj-m7cp-5q26 / CVE-2026-8723: qs@<=6.15.1 crashes with
+  # TypeError on null/undefined entries in comma-format arrays when
+  # encodeValuesOnly is set. Only transitive consumer is
+  # @stryker-mutator/core > typed-rest-client (`qs: ^6.9.4`); patch-level
+  # bump is range-compatible.
+  'qs': '>=6.15.2'
+  # Substitute readable-stream@3 (winston, winston-transport) and
+  # readable-stream@4 (isomorphic-git) with a single workspace shim that
+  # re-exports node:stream. Both upstream versions are userland mirrors of
+  # node:stream that originally targeted retired Node releases; on Node 22+
+  # they ship 3,005 LOC of duplicate stream machinery whose only purpose was
+  # back-compat with versions that no longer matter. The shim's index.cjs
+  # mirrors the end-state shape of readable-stream@3's entry (default export
+  # is Stream.Readable with every node:stream property defined as an own
+  # property on it, plus .Stream pointing at the module itself), and its
+  # lib/_stream_*.js subpaths re-export the matching node:stream class so
+  # winston-transport's deep import of readable-stream/lib/_stream_writable.js
+  # resolves unchanged. The shim uses Object.defineProperty rather than
+  # Object.assign because node:stream.Readable inherits a getter-only
+  # promises accessor on Node 22+ that makes the upstream Object.assign
+  # pattern throw at module load. The substitution also makes the transitive
+  # abort-controller fallback guards inside readable-stream@4's pipeline.js,
+  # duplexify.js, and operators.js unreachable, formally closing the loop on
+  # the 'abort-controller': '-' override above.
+  # See docs/decisions/readable-stream-shim.md for the full audit, including
+  # the enumerated consumer surface and the verification plan.
+  'readable-stream': 'link:packages/shim/readable-stream'
+  # Patch [ERR_PNPM_TRUST_DOWNGRADE]: semver@6.3.1 failed verification with possible package takeover.
+  'semver': '>=7.8.5'
+  # Patch GHSA-38rv-x7px-6hhq / CVE-2026-9675,
+  # GHSA-pr7r-676h-xcf6 / CVE-2026-9678,
+  # and GHSA-vmh5-mc38-953g / CVE-2026-9697: undici >=8.0.0 <8.5.0
+  # carries WebSocket denial-of-service, shared-cache information disclosure,
+  # and SOCKS5 ProxyAgent TLS certificate validation bypass advisories.
+  # Current @earendil-works/pi-coding-agent 0.79.7 still pins undici 8.3.0,
+  # so a workspace-wide security floor is needed until upstream bumps it.
+  'undici': '>=8.5.0'
+  # Patch GHSA-58qx-3vcg-4xpx / CVE-2026-45736: ws <8.20.1 discloses
+  # uninitialized memory when a non-Uint8Array TypedArray (e.g.
+  # Float32Array) is passed as the reason argument to close(). The
+  # vulnerable API is not reached from any workspace code (all close()
+  # calls pass no reason or a string), but the override ensures the
+  # fixed version is resolved across all transitive consumers (openai,
+  # @libsql/isomorphic-ws, crossws). Patch-level bump is
+  # range-compatible with every consumer's ^8.x constraint.
+  'ws': '>=8.20.1'
+
+packageExtensions:
+  # mitata calls `import('@mitata/counters')` at runtime to add hardware
+  # performance counters (cycles, instructions, IPC, cache, branches) to its
+  # benchmark output, but does not declare the package as a dependency. Under
+  # this workspace's strict isolation (hoist: false, nodeLinker: isolated) that
+  # dynamic import is unresolvable from mitata's own location, so counters never
+  # load. Declaring the dependency here makes pnpm link it under mitata so the
+  # import resolves. Only consumer is the file-enforcer-perf benchmark package.
+  mitata:
+    optionalDependencies:
+      '@mitata/counters': '>=0.0.8'
 packageImportMethod: clone-or-copy
+packages:
+- 'packages/*/*'
+peerDependencyRules:
+  # tsdown and rolldown-plugin-dts declare an optional `typescript` peer ranged
+  # ^5 || ^6 for their classic-compiler declaration-emit path. This workspace sets
+  # isolatedDeclarations: true, so declarations are emitted by oxc and the classic
+  # compiler is never invoked; allow the TypeScript 7 RC so strictPeerDependencies
+  # passes. Re-confirm by building a dts-emitting package (see the typescript
+  # migration verification).
+  allowedVersions:
+    'rolldown-plugin-dts>typescript': '7.0.1-rc'
+    'tsdown>typescript': '7.0.1-rc'
+# version management of both node and pnpm is handled by Mise
+pmOnFail: ignore
 preferWorkspacePackages: true
 resolutionMode: highest
 resolvePeersFromWorkspaceRoot: false
+runtimeOnFail: ignore
 savePrefix: ''
 saveWorkspaceProtocol: false
 shellEmulator: false
 strictPeerDependencies: true
-runtimeOnFail: ignore
-catalogMode: strict
 
 # Without multi-platform entries, the lockfile only records the optional
 # dependencies for the current host OS/arch. When a developer on macOS
@@ -393,3 +390,4 @@ supportedArchitectures:
   - darwin
   - linux
   - current
+trustPolicy: no-downgrade
