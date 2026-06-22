@@ -88,10 +88,13 @@ Unrelated dirty worktree state observed before creating this file:
   packageExtensions:
     mitata@1.0.34:
       optionalDependencies:
-        '@mitata/counters': 'catalog:'
+        '@mitata/counters': '>=0.0.8'
   ```
 
-  Or remove the extension if hardware counters are not required by the benchmark fixture.
+  Do not use `catalog:` inside this `packageExtensions` entry. A throwaway fixture showed pnpm fails
+  with `ERR_PNPM_SPEC_NOT_SUPPORTED_BY_ANY_RESOLVER` when `packageExtensions` injects a
+  `catalog:` dependency into an external package manifest. Remove the extension if hardware counters
+  are not required by the benchmark fixture.
 - `pnpm-workspace.yaml:162` uses removed pnpm 11 config `managePackageManagerVersions: false`.
   Replace with `pmOnFail: ignore` if mise owns pnpm version management.
 - `pnpm-workspace.yaml:357` combines `resolutionMode: highest` with many open-ended `>=` catalog ranges.
