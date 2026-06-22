@@ -164,9 +164,8 @@ These are correctness contracts, not preferences. Breaking one breaks both apps.
       from that exact value.
   This is a behavior change to ratify (very long tracks stop being normalized; mid-length tracks are
   normalized only when the probe flags them), but it is one agreed, correct algorithm rather than a
-  choice between two flawed ones. Open detail for implementation: the exact "hot" signal and
-  threshold the probe reads (for example how close the probed peak sits to the ceiling) and the
-  precise duration boundaries.
+  choice between two flawed ones. Open detail under discussion: the exact "hot" signal the probe
+  reads and its cutoff (see open questions).
 
 - **The audio-extension allowlist is shared, the filesystem walk is not.** Share the extension set
   and the predicate; the desktop keeps its recursive filesystem expansion, and Android keeps its
@@ -221,8 +220,8 @@ Verification must cross both build boundaries, not just compile.
   is the load-bearing assumption for the thin Android adapter. Proven by spike in stage 1; the
   fallback adds some duplication.
 - **The true-peak algorithm change.** Needs a ratified decision because the new adaptive algorithm
-  alters playback levels on both platforms, and its "hot" signal, threshold, and duration boundaries
-  are still to be pinned down.
+  alters playback levels on both platforms, and its "hot" signal and cutoff are still to be pinned
+  down.
 - **One UI description, two native UIs.** This is the "slint-or-jetpack" package's central bet and
   its hardest part. Slint and Jetpack Compose are different rendering models, so a shared UI
   description that produces idiomatic results on both is real research, and may land as a shared
