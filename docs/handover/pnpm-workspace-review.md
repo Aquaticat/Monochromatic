@@ -133,6 +133,11 @@ Unrelated dirty worktree state observed before creating this file:
   `@earendil-works/pi-tui>mime-types` target no current production dependency on
   `@earendil-works/pi-tui@0.79.9`.
   Re-check before final because some may be intentional future guards.
+  Current recommendation: delete all of those no-op parent-scoped removals except, if the policy still
+  wants `marked` removed, replace `@earendil-works/pi-coding-agent>marked` with
+  `@earendil-works/pi-tui>marked`. Current installed manifests show `marked` belongs to
+  `@earendil-works/pi-tui@0.79.9`, while `@earendil-works/pi-ai@0.79.9` now uses
+  `http-proxy-agent` and `https-proxy-agent`, not `proxy-agent`.
 - `ws` override is currently unused.
 - `node-domexception` shim override is currently unused.
 - 34 catalog entries are unused by active workspace/root packages.
