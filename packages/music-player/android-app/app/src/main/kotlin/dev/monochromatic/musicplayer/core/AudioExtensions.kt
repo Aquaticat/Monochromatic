@@ -87,6 +87,23 @@ private const val SEPARATOR: Char = '/'
  */
 private const val EXTENSION_DOT: Char = '.'
 
+// What:     `private const val APPLE_DOUBLE_PREFIX: String = "._"` declares a file-private
+//           compile-time string constant holding the filename prefix Apple uses for AppleDouble
+//           resource-fork sidecar files. `String` is Kotlin's immutable text type; sibling
+//           `Char` would hold only one code unit, which cannot represent this two-character
+//           marker.
+// Why:      Naming the marker once keeps every source path aligned on the exact sidecar rule.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const APPLE_DOUBLE_PREFIX = "._";
+// ```
+/**
+ * Defines AppleDouble prefix value for this music-player component; the TypeScript-oriented notes above explain
+ * its source and use.
+ */
+private const val APPLE_DOUBLE_PREFIX: String = "._"
+
 // What:     `val AUDIO_EXTENSIONS: Set<String> = setOf( ... )`. Declares a read-only
 //           top-level constant holding a collection of lowercased extension strings.
 //           - no `private`, so this IS visible to other files in the package (the
@@ -142,6 +159,45 @@ val AUDIO_EXTENSIONS: Set<String> = setOf(
     "aifc",
 )
 
+// What:     `private fun fileNameOf(path: String): String` declares a file-private helper.
+//           `String` is Kotlin's immutable text type; sibling `Char` would hold only one code
+//           unit, and sibling `String?` would allow null even though every input path has some
+//           final component text (possibly the whole path). The `=` body means the single
+//           expression after it is returned.
+// Why:      Both sidecar detection and extension extraction must inspect the same final path
+//           component, so this helper prevents the two rules from drifting apart.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function fileNameOf(path: string): string {
+//   return path.slice(path.lastIndexOf("/") + 1);
+// }
+// ```
+/**
+ * Defines file name of behavior for this music-player component; the TypeScript-oriented notes above explain its
+ * call shape and effects.
+ */
+private fun fileNameOf(path: String): String = path.substringAfterLast(SEPARATOR)
+
+// What:     `fun isAppleDoubleSidecar(path: String): Boolean` declares a PUBLIC top-level
+//           predicate. `Boolean` is Kotlin's true/false type, the direct sibling of TS
+//           `boolean`; no nullable `Boolean?` is needed because every path is either a sidecar
+//           or it is not.
+// Why:      MediaStore rows and the shared audio-extension predicate both need to drop Apple's
+//           `._name.ext` sidecar files before they can reach a queue.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function isAppleDoubleSidecar(path: string): boolean {
+//   return fileNameOf(path).startsWith(APPLE_DOUBLE_PREFIX);
+// }
+// ```
+/**
+ * Defines is AppleDouble sidecar behavior for this music-player component; the TypeScript-oriented notes above
+ * explain its call shape and effects.
+ */
+fun isAppleDoubleSidecar(path: String): Boolean = fileNameOf(path).startsWith(APPLE_DOUBLE_PREFIX)
+
 // What:     `private fun extensionOf(path: String): String?` declares a file-private
 //           function.
 //           - `private` = visible only inside this file.
@@ -174,26 +230,22 @@ val AUDIO_EXTENSIONS: Set<String> = setOf(
  * call shape and effects.
  */
 private fun extensionOf(path: String): String? {
-    // What:     `val component = path.substringAfterLast(SEPARATOR)`. Declares a
-    //           read-only local `component`. `path.substringAfterLast(SEPARATOR)` is a
-    //           standard-library method on `String`: it returns the part of `path`
-    //           AFTER the last `'/'`. Its type (`String`) is inferred, so no explicit
-    //           annotation is written.
-    // Why:      Isolate the final path component (the filename) so a dot inside a
-    //           parent directory name cannot be misread as the extension separator.
-    // Gotcha:   When `path` contains NO `'/'` at all, `substringAfterLast` returns the
-    //           WHOLE string (not an empty string), so a bare filename like `song.mp3`
-    //           still works correctly.
+    // What:     `val component = fileNameOf(path)`. Declares a read-only local
+    //           `component`. `fileNameOf(path)` returns the part after the final `/`;
+    //           its type (`String`) is inferred, so no explicit annotation is written.
+    // Why:      Reuse the same final-component extraction as the AppleDouble sidecar rule, so
+    //           a dot inside a parent directory name cannot be misread as the extension
+    //           separator.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // const component = path.slice(path.lastIndexOf("/") + 1);
+    // const component = fileNameOf(path);
     // ```
     /**
      * Defines component value for this music-player component; the TypeScript-oriented notes above explain its
      * source and use.
      */
-    val component = path.substringAfterLast(SEPARATOR)
+    val component = fileNameOf(path)
     // What:     `val dotIndex = component.lastIndexOf(EXTENSION_DOT)`. Declares a
     //           read-only local `dotIndex` holding the position (an `Int`, inferred) of
     //           the LAST `'.'` inside `component`. `lastIndexOf` is a `String` method
@@ -271,10 +323,11 @@ private fun extensionOf(path: String): String? {
 //           - `fun` / name / `(path: String)` parameter all as before.
 //           - `: Boolean` is the return type. `Boolean` is Kotlin's true/false type and
 //             maps cleanly onto TS `boolean` (no sibling-type subtlety here).
-//           Decides whether `path` names an audio file by comparing its extension
-//           against `AUDIO_EXTENSIONS` case-insensitively. Shared by the (deferred)
-//           folder scan and any session restore so the two cannot disagree on what
-//           belongs in a music queue. Faithful to the Rust `is_audio_file`.
+//           Decides whether `path` names an audio file by first rejecting AppleDouble
+//           resource-fork sidecars, then comparing its extension against `AUDIO_EXTENSIONS`
+//           case-insensitively. Shared by the folder scan and any session restore so the two
+//           cannot disagree on what belongs in a music queue. Faithful to the Rust
+//           `is_audio_file`.
 // Why:      One canonical predicate for "is this audio?" keeps every code path that
 //           builds a queue consistent.
 //
@@ -289,6 +342,19 @@ private fun extensionOf(path: String): String? {
  * its call shape and effects.
  */
 fun isAudioFile(path: String): Boolean {
+    // What:     `if (isAppleDoubleSidecar(path)) { return false }` calls the shared sidecar
+    //           predicate and immediately returns `false` when the final filename starts with
+    //           `._`.
+    // Why:      AppleDouble sidecars often copy the real track's extension (for example
+    //           `._song.mp3`), so extension allowlisting alone would enqueue junk.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // if (isAppleDoubleSidecar(path)) return false;
+    // ```
+    if (isAppleDoubleSidecar(path)) {
+        return false
+    }
     // What:     `val extension = extensionOf(path) ?: return false`. Two concepts on one
     //           line:
     //             - `extensionOf(path)` returns a `String?` (a `String` OR `null`).

@@ -95,6 +95,18 @@ import android.util.Log
 // ```
 import dev.monochromatic.musicplayer.core.compareByCodePoint
 
+// What:     Imports `isAppleDoubleSidecar`, this app's own `core` predicate that returns
+//           `true` when a final filename starts with Apple's `._` resource-fork sidecar
+//           marker.
+// Why:      MediaStore's `IS_MUSIC` filter can still surface sidecars with audio-looking
+//           names, so this source needs the same sidecar rule as SAF and desktop scans.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { isAppleDoubleSidecar } from "./core";
+// ```
+import dev.monochromatic.musicplayer.core.isAppleDoubleSidecar
+
 // What:     Imports the `BatchEmitGate` class from this app's own `core` package: the pure
 //           rule that decides when a streaming scan has accumulated enough new tracks to
 //           emit another sorted-so-far batch.
@@ -508,6 +520,20 @@ object MediaStoreSource {
                  * explain its source and use.
                  */
                 val name: String = cursor.getString(nameColumn) ?: continue
+                // What:     `if (isAppleDoubleSidecar(name)) { continue }` calls the shared sidecar
+                //           predicate with this row's display name, then skips the row when the
+                //           final filename starts with Apple's `._` marker.
+                // Why:      Sidecar files are metadata blobs for real tracks, not playable music; a
+                //           row named `._song.mp3` must not enter the queue even if MediaStore
+                //           indexed it as music.
+                //
+                // In TS you'd write (pseudocode):
+                // ```ts
+                // if (isAppleDoubleSidecar(name)) continue;
+                // ```
+                if (isAppleDoubleSidecar(name)) {
+                    continue
+                }
                 // What:     `val id: Long = cursor.getLong(idColumn)` reads the `_ID` value as a
                 //           `Long`, a 64-bit signed integer. `: Long` is the explicit type.
                 // Why:      MediaStore row ids are 64-bit, and the URI builder below

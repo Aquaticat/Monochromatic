@@ -122,6 +122,18 @@ fn expand_paths_walks_directories_recursively_and_sorts() {
     // Why:      Files are not expanded.
     assert_eq!(single, vec![root.join("a.flac")]);
 
+    // What:     create an AppleDouble sidecar file beside the direct-file case.
+    // Why:      The direct sidecar test should exercise an existing file, not a missing path.
+    fs::write(root.join("._a.flac"), b"x").unwrap();
+    // What:     `let direct_sidecar = expand_paths(vec![root.join("._a.flac")]);`. Expand a
+    //           directly supplied AppleDouble sidecar path.
+    // Why:      Direct file-open paths need the same `._` rejection as directory scans.
+    let direct_sidecar = expand_paths(vec![root.join("._a.flac")]);
+    // What:     `assert!(direct_sidecar.is_empty());` fails unless the expanded list has zero
+    //           entries.
+    // Why:      A direct sidecar must be ignored instead of passed to the decoder.
+    assert!(direct_sidecar.is_empty());
+
     // What:     `let _ = fs::remove_dir_all(&root);`. Delete the throwaway tree;
     //           `let _ =` discards the result (cleanup is best-effort).
     // Why:      Leave no fixture behind.
@@ -153,6 +165,15 @@ fn is_audio_file_matches_extensions_case_insensitively() {
     // What:     an extensionless name is rejected.
     // Why:      Nothing identifies it as audio.
     assert!(!is_audio_file(Path::new("noext")));
+    // What:     an AppleDouble sidecar with an audio-looking extension is rejected.
+    // Why:      `._song.mp3` is metadata for `song.mp3`, not a playable track.
+    assert!(!is_audio_file(Path::new("._song.mp3")));
+    // What:     the sidecar marker is checked on the final path component.
+    // Why:      Nested sidecars must be ignored the same way as root-level sidecars.
+    assert!(is_apple_double_sidecar(Path::new("/music/._Track.FLAC")));
+    // What:     an ordinary track is not classified as a sidecar.
+    // Why:      The helper must not reject real files beside AppleDouble metadata.
+    assert!(!is_apple_double_sidecar(Path::new("/music/Track.FLAC")));
 }
 
 // What:     `#[test]` marks the next function as a test case.
@@ -174,6 +195,9 @@ fn expand_paths_keeps_only_audio_files_and_skips_junk() {
     fs::write(root.join(".DS_Store"), b"x").unwrap();
     fs::write(root.join(".nomedia"), b"x").unwrap();
     fs::write(root.join(".database_uuid"), b"x").unwrap();
+    // What:     create an AppleDouble sidecar with an audio-looking extension.
+    // Why:      This is the regression case: extension-only filtering would keep it.
+    fs::write(root.join("._song.mp3"), b"x").unwrap();
 
     // What:     `let got = expand_paths(vec![root.clone()]);`. Scan the folder.
     // Why:      Exercise the filtered walk.

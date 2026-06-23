@@ -33,10 +33,68 @@ const AUDIO_EXTENSIONS: &[&str] = &[
     "aifc",
 ];
 
+/// What:     `const APPLE_DOUBLE_PREFIX: &str = "._"`. `&str` is a borrowed string
+///           slice (sibling: owned `String`) pointing at text baked into the binary.
+///           It holds the two-character prefix Apple uses for AppleDouble resource-fork
+///           sidecar files.
+/// Why:      Naming the marker once keeps desktop scanning aligned with the Android sources.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const APPLE_DOUBLE_PREFIX = "._";
+/// ```
+const APPLE_DOUBLE_PREFIX: &str = "._";
+
+/// What:     `fn is_apple_double_sidecar(path: &Path) -> bool`. Private predicate that
+///           checks the final filename for Apple's `._` sidecar prefix. `&Path` is a
+///           borrowed filesystem path; `bool` is Rust's true/false type, like TS `boolean`.
+/// Why:      AppleDouble files often copy the real track's extension, so extension filtering
+///           alone would enqueue `._song.mp3` as if it were a real track.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function isAppleDoubleSidecar(path: string): boolean { /* ...body below... *\/ }
+/// ```
+fn is_apple_double_sidecar(path: &Path) -> bool {
+    // What:     `match path.file_name() { ... }`. `file_name()` returns `Option<&OsStr>`:
+    //           `Some(name)` when the path has a final component, or `None` for paths like
+    //           `/`. The `match` chooses a branch based on which wrapper is present.
+    // Why:      Sidecar detection only makes sense on the final filename, not parent folders.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const name = basename(path);
+    // if (name === "") return false;
+    // ```
+    match path.file_name() {
+        // What:     `Some(name) => name.to_string_lossy().starts_with(APPLE_DOUBLE_PREFIX)`.
+        //           `Some(name)` unwraps the present filename. `.to_string_lossy()` converts
+        //           OS text to UTF-8, replacing invalid bytes if needed; `.starts_with(...)`
+        //           tests the named prefix.
+        // Why:      ASCII `._` survives lossy conversion, so this catches AppleDouble sidecars
+        //           even when the rest of the filename is not valid UTF-8.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // return name.startsWith(APPLE_DOUBLE_PREFIX);
+        // ```
+        Some(name) => name.to_string_lossy().starts_with(APPLE_DOUBLE_PREFIX),
+        // What:     `None => false`. The path has no final filename component.
+        // Why:      Without a filename, it cannot be an AppleDouble sidecar file.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // return false;
+        // ```
+        None => false,
+    }
+}
+
 /// What:     `pub(crate) fn is_audio_file(path: &Path) -> bool`. True when the path's
-///           extension is in `AUDIO_EXTENSIONS`, compared case-insensitively. `&Path`
-///           is a borrowed path (read-only). `pub(crate)` so the session pruner reuses
-///           the same rule (visible inside this crate but not outside it).
+///           filename is not an AppleDouble sidecar and its extension is in
+///           `AUDIO_EXTENSIONS`, compared case-insensitively. `&Path` is a borrowed path
+///           (read-only). `pub(crate)` so the session pruner reuses the same rule (visible
+///           inside this crate but not outside it).
 /// Why:      One predicate decides "does this belong in a music queue", shared by the
 ///           folder scan and the session restore so they cannot disagree.
 ///
@@ -48,6 +106,18 @@ const AUDIO_EXTENSIONS: &[&str] = &[
 /// }
 /// ```
 pub(crate) fn is_audio_file(path: &Path) -> bool {
+    // What:     `if is_apple_double_sidecar(path) { return false; }` calls the sidecar
+    //           predicate and exits early when the final filename starts with `._`.
+    // Why:      AppleDouble sidecars copy the real track's extension, so the prefix guard must
+    //           run before the extension allowlist.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // if (isAppleDoubleSidecar(path)) return false;
+    // ```
+    if is_apple_double_sidecar(path) {
+        return false;
+    }
     // What:     `match path.extension() { ... }`. `path.extension()` returns
     //           `Option<&OsStr>`: the part after the final dot, or `None` when there
     //           is none. A dotfile like `.DS_Store` has NO extension in Rust (the
@@ -210,9 +280,23 @@ pub(crate) fn expand_paths(paths: Vec<PathBuf>) -> Vec<PathBuf> {
             // ```
             out.extend(collect_dir_files(&path));
         } else {
-            // What:     `out.push(path);`. A plain path: keep it as-is (MOVES it into
-            //           `out`).
-            // Why:      Could be a file (or non-existent; the decoder will report).
+            // What:     `if is_apple_double_sidecar(&path) { continue; }` borrows `path` with
+            //           `&path`, checks whether it is an AppleDouble sidecar, and skips this
+            //           loop iteration when it is.
+            // Why:      Directly opened `._song.mp3` is still junk, even though direct non-audio
+            //           files continue through to the decoder's normal error path.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // if (isAppleDoubleSidecar(path)) continue;
+            // ```
+            if is_apple_double_sidecar(&path) {
+                continue;
+            }
+            // What:     `out.push(path);`. A plain non-sidecar path: keep it as-is (MOVES it
+            //           into `out`).
+            // Why:      Could be a file (or non-existent; the decoder will report), but Apple's
+            //           `._` sidecars are never meaningful opened tracks.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -386,7 +470,7 @@ fn collect_dir_files(root: &Path) -> Vec<PathBuf> {
             //           neither and is ignored (loop-safe).
             // Why:      Recurse into real folders; enqueue only audio files, so cover
             //           art, playlists, and system files (`.DS_Store`, `.nomedia`,
-            //           `.database_uuid`, ...) never enter the queue.
+            //           `.database_uuid`, `._song.mp3`, ...) never enter the queue.
             //
             // In TS you'd write (pseudocode):
             // ```ts

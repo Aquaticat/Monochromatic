@@ -185,6 +185,35 @@ class AudioExtensionsTest {
         // expect(isAudioFile("noext")).toBe(false);
         // ```
         assertFalse(isAudioFile("noext"))
+        // What:     `assertFalse(isAudioFile("._song.mp3"))` asserts `false` for an AppleDouble
+        //           sidecar whose name starts with `._` but still ends in an allowlisted extension.
+        // Why:      Sidecars copy the real track's extension, so the explicit prefix guard must beat
+        //           the extension allowlist.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // expect(isAudioFile("._song.mp3")).toBe(false);
+        // ```
+        assertFalse(isAudioFile("._song.mp3"))
+        // What:     `assertTrue(isAppleDoubleSidecar("/music/._Track.FLAC"))` asserts `true` for
+        //           the shared sidecar predicate when the marker sits on the final path component.
+        // Why:      MediaStore passes only a display name while SAF may pass nested names; both must
+        //           classify the same sidecar shape.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // expect(isAppleDoubleSidecar("/music/._Track.FLAC")).toBe(true);
+        // ```
+        assertTrue(isAppleDoubleSidecar("/music/._Track.FLAC"))
+        // What:     `assertFalse(isAppleDoubleSidecar("/music/Track.FLAC"))` asserts `false`
+        //           for an ordinary track whose final path component does not start with `._`.
+        // Why:      The helper must not reject real tracks just because they live beside sidecars.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // expect(isAppleDoubleSidecar("/music/Track.FLAC")).toBe(false);
+        // ```
+        assertFalse(isAppleDoubleSidecar("/music/Track.FLAC"))
     }
 
     // What:     `@Test` annotation marking the next method as a JUnit test case (metadata only;
@@ -370,7 +399,7 @@ class AudioExtensionsTest {
         // ```ts
         // const got = audioFilesSorted([
         //   "song.mp3", "tune.flac", "cover.jpg", "playlist.m3u",
-        //   ".DS_Store", ".nomedia", ".database_uuid",
+        //   ".DS_Store", ".nomedia", ".database_uuid", "._song.mp3",
         // ]);
         // ```
         val got =
@@ -386,7 +415,7 @@ class AudioExtensionsTest {
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
-                // ["song.mp3", "tune.flac", "cover.jpg", "playlist.m3u", ".DS_Store", ".nomedia", ".database_uuid"]
+                // ["song.mp3", "tune.flac", "cover.jpg", "playlist.m3u", ".DS_Store", ".nomedia", ".database_uuid", "._song.mp3"]
                 // ```
                 listOf(
                     "song.mp3",
@@ -396,6 +425,7 @@ class AudioExtensionsTest {
                     ".DS_Store",
                     ".nomedia",
                     ".database_uuid",
+                    "._song.mp3",
                 ),
             )
         // What:     `assertEquals(listOf("song.mp3", "tune.flac"), got)` calls the two-argument
