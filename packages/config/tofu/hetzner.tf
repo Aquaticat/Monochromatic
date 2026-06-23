@@ -798,10 +798,26 @@ locals {
       source_ips      = ["0.0.0.0/0", "::/0"]
     },
     {
+      description     = "rustdesk relay tcp"
+      destination_ips = []
+      direction       = "in"
+      port            = "21117"
+      protocol        = "tcp"
+      source_ips      = ["0.0.0.0/0", "::/0"]
+    },
+    {
       description     = "rustdesk web client websocket"
       destination_ips = []
       direction       = "in"
       port            = "21118"
+      protocol        = "tcp"
+      source_ips      = ["0.0.0.0/0", "::/0"]
+    },
+    {
+      description     = "rustdesk web client websocket"
+      destination_ips = []
+      direction       = "in"
+      port            = "21119"
       protocol        = "tcp"
       source_ips      = ["0.0.0.0/0", "::/0"]
     },
