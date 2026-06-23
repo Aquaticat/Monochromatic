@@ -48,7 +48,7 @@ type UnknownRecord = Record<PropertyKey, unknown>;
 /**
  * Sentinel returned when NDJSON line does not carry matching network.
  */
-const NO_MATCHING_NETWORK = Symbol('no matching network',);
+const NO_MATCHING_NETWORK = Symbol('ipinfo line has no ASN-matching network',);
 
 /**
  * Sentinel type for non-matching NDJSON lines.
