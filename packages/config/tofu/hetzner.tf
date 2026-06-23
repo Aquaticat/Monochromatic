@@ -111,6 +111,88 @@ data "external" "storagebox_ips" {
   }
 }
 
+locals {
+  # Single-host service egress destinations, resolved from DNS names by
+  # resolve_hosts.ts instead of being pinned as hardcoded CIDRs. Each comment
+  # names the service; resolve_hosts.ts unions fresh DNS with seed_resolved_hosts.json
+  # and the local accumulation cache so a moved host never silently loses egress.
+  # Published/broad ranges that do not map to one host (anthropic, hetzner DNS,
+  # syncthing/Oracle, chrome) stay hardcoded below.
+  resolvable_hostnames = [
+    # Design Systems News
+    "designsystems.news",
+    # HN RSS
+    "hnrss.org",
+    # Almost Secure (palant.info)
+    "palant.info",
+    # Wattenberger
+    "wattenberger.com",
+    # LetsEncrypt
+    "acme-v02.api.letsencrypt.org",
+    "letsencrypt.org",
+    # pCloud
+    "api.pcloud.com",
+    "eapi.pcloud.com",
+    # Linkup
+    "linkup.so",
+    "api.linkup.so",
+    # Resend
+    "resend.com",
+    "api.resend.com",
+    # OpenRouter
+    "openrouter.ai",
+    # Distrowatch
+    "distrowatch.com",
+    # Leaf And Core
+    "leafandcore.com",
+    # Lobsters
+    "lobste.rs",
+    # Scott Hanselman's blog
+    "hanselman.com",
+    # HTTP Toolkit
+    "httptoolkit.com",
+    # Pencil And Paper
+    "pencilandpaper.io",
+    # Set Studio
+    "set.studio",
+    # ntietz blog
+    "ntietz.com",
+    # Luna's Blog
+    "moonbase.lgbt",
+    # Linux Servers Containers
+    "lscr.io",
+    # Synthetic
+    "synthetic.new",
+    "api.synthetic.new",
+    # nginx.org (also reached on port 80 via package_repo_http_ips)
+    "nginx.org",
+    # archive.ubuntu.com (port 80 package repo only, kept off the 443 CDN path)
+    "archive.ubuntu.com",
+    # Nextcloud
+    "nextcloud.com",
+    "updates.nextcloud.com",
+    "connectivity.nextcloud.com",
+    "apps.nextcloud.com",
+    "ltd1.nextcloud.com",
+    "ltd2.nextcloud.com",
+    "ltd3.nextcloud.com",
+    "garm1.nextcloud.com",
+    "garm2.nextcloud.com",
+    "garm3.nextcloud.com",
+    "garm4.nextcloud.com",
+    "garm5.nextcloud.com",
+    "push-notifications.nextcloud.com",
+  ]
+}
+
+data "external" "resolved_hosts" {
+  program = ["bun", "run", "${path.module}/resolve_hosts.ts"]
+
+  query = {
+    hostnames = join(",", local.resolvable_hostnames)
+  }
+}
+
 data "http" "cloudflare_ips" {
   url = "https://api.cloudflare.com/client/v4/ips"
 }
@@ -204,20 +286,20 @@ locals {
     if can(cidrhost(ip, 0))
   ]
 
+  # CIDRs resolved from service hostnames by resolve_hosts.ts, keyed by hostname.
+  resolved_hosts_result = data.external.resolved_hosts.result
+
   # archive.ubuntu.com resolves through Cloudflare, not Ubuntu's AS41231.
   # Fresh containers can need port 80 before HTTPS certificates exist.
   archive_ubuntu_ips = [
-    "104.20.28.246/32",
-    "172.66.152.176/32",
-    "2606:4700:10::6814:1cf6/128",
-    "2606:4700:10::ac42:98b0/128",
+    for ip in split(",", lookup(local.resolved_hosts_result, "archive.ubuntu.com", "")) : ip
+    if ip != "" && can(cidrhost(ip, 0))
   ]
 
   # nginx.org publishes Linux packages under /packages/ and supports HTTP and HTTPS.
   nginx_org_ips = [
-    "3.136.61.53/32",
-    "2a05:d014:5c0:2600::6/128",
-    "2a05:d014:5c0:2601::6/128",
+    for ip in split(",", lookup(local.resolved_hosts_result, "nginx.org", "")) : ip
+    if ip != "" && can(cidrhost(ip, 0))
   ]
 
   package_repo_http_ips = distinct(concat(
@@ -261,75 +343,11 @@ locals {
     if contains(keys(var.home_isp_asns), name)
   ])
 
-  # Design Systems News
-  design_systems_news_ips = [
-    "142.93.187.240/32"
-  ]
-
-  # HN RSS
-  hn_rss_ips = [
-    "159.89.243.242/32"
-  ]
-
-  # Almost Secure (palant.info)
-  palant_ips = [
-    "2a01:4f8:c0c:3e12::2/128", "94.130.151.233/32"
-  ]
-
-  # Wattenberger
-  wattenberger_ips = ["2a05:d014:58f:6200::259/128", "2a05:d014:58f:6200::258/128",
-  "63.176.8.218/32", "35.157.26.135/32"]
-
-  # LetsEncrypt
-  letsencrypt_ips = ["18.208.88.157/32", "98.84.224.111/32", "2600:1f18:16e:df01::259/128", "2600:1f18:16e:df01::258/128", "172.65.32.248/32", "2606:4700:60:0:f53d:5624:85c7:3a2c/128"]
-
-  # pCloud
-  pCloud_ips = ["45.131.247.0/24", "74.120.8.122/32", "185.62.237.121/32"]
-
-  # Linkup
-  linkup_ips = ["31.43.160.6/32", "31.43.161.6/32", "104.20.29.222/32", "172.66.159.108/32", "2606:4700:10::ac42:9f6c/128", "2606:4700:10::6814:1dde/128"]
-
-  # Resend
-  resend_ips = ["76.76.21.22/32", "54.157.71.137/32", "54.205.195.44/32"]
-
-  # OpenRouter
-  openrouter_ips = ["104.18.3.115/32", "104.18.2.115/32", "2606:4700::6812:373/128", "2606:4700::6812:273/128"]
-
   # Anthropic https://platform.claude.com/docs/en/api/ip-addresses
   anthropic_ips = ["160.79.104.0/23", "2607:6bc0::/48"]
 
-  # Distrowatch
-  distrowatch_ips = ["82.103.129.71/32", "2a00:9080:1:58a::1/128"]
-
-  # Leaf And Core
-  leafAndCore_ips = ["162.241.225.96/32"]
-
-  # Lobsters
-  lobsters_ips = ["68.183.100.95/32", "2604:a880:400:d1:0:2:16bc:d001/128"]
-
-  # Scott Hanselman's blog
-  hanselman_ips = ["13.107.246.35/32", "13.107.213.35/32", "2620:1ec:46::35/128", "2620:1ec:bdf::35/128"]
-
   # Chrome
   chrome_ips = ["142.250.139.0/24", "2607:f8b0:4023:1804::/64"]
-
-  # HTTP Toolkit
-  httpToolkit_ips = ["169.150.219.114/32", "2400:52e0:1a06::1025:1/128"]
-
-  # Pencil And Paper
-  pencilAndPaper_ips = ["198.202.211.1/32"]
-
-  # Set Studio
-  setStudio_ips = ["172.64.80.1/32", "2606:4700:130:436c:6f75:6466:6c61:7265/128"]
-
-  # ntietz blog
-  ntietz_ips = ["147.182.138.16/32"]
-
-  # Luna's Blog
-  moonbaseLgbt_ips = ["138.68.164.160/32", "2a03:b0c0:1:d0::dbe:f001/128"]
-
-  # Linux Servers Containers
-  lscr_ips = ["52.33.86.107/32", "54.244.195.224/32", "34.213.189.139/32", "3.77.103.135/32"]
 
   hetzner_ips = ["185.12.64.0/24", "2a01:4ff:ff00::/64"]
 
@@ -339,73 +357,23 @@ locals {
     "2603:c022::/32"    # Syncthing IPv6 Range
   ]
 
-  synthetic_ips = ["3.209.162.83/32", "52.70.98.142/32", "104.26.6.235/32", "172.67.73.12/32", "104.26.7.235/32", "2606:4700:20::681a:7eb/128", "2606:4700:20::ac43:490c/128", "2606:4700:20::681a:6eb/128"]
-
-  nextcloud_ips = [
-    # nextcloud.com
-    "85.10.195.17/32",
-    "2a01:4f8:a0:3068::2/128",
-    # updates.nextcloud.com
-    "5.9.202.145/32",
-    "2a01:4f8:210:21c8::145/128",
-    # connectivity.nextcloud.com
-    "65.21.231.50/32",
-    "2a01:4f9:6a:1de8::2/128",
-    # apps.nextcloud.com
-    "65.21.231.50/32",
-    "2a01:4f9:6a:1de8::2/128",
-    # ltd1.nextcloud.com
-    "95.217.44.166/32",
-    "2a01:4f9:2a:3119::2/128",
-    # ltd2.nextcloud.com
-    "37.27.104.209/32",
-    "2a01:4f9:3070:1b62::2/128",
-    # ltd3.nextcloud.com
-    "95.216.37.161/32",
-    "2a01:4f9:2a:25de::2/128",
-    # garm3.nextcloud.com
-    "65.108.197.113/32",
-    "2a01:4f9:1a:995e::2/128",
-    # garm2.nextcloud.com
-    "65.109.114.179/32",
-    "2a01:4f9:3051:40eb::2/128",
-    # garm1.nextcloud.com
-    "65.109.20.140/32",
-    "2a01:4f9:5a:1299::2/128",
-    # garm4.nextcloud.com
-    "65.108.142.93/32",
-    "2a01:4f9:1a:9254::2/128",
-    # garm5.nextcloud.com
-    "65.21.22.252/32",
-    "2a01:4f9:3080:4f42::2/128",
-    # push-notifications.nextcloud.com
-    "95.217.53.153/32",
-    "2a01:4f9:2b:29dc::153/128"
+  # Single-host service CIDRs resolved from DNS names (see local.resolvable_hostnames).
+  # archive.ubuntu.com is excluded: it is allowlisted on port 80 only via
+  # package_repo_http_ips, not on the 443 CDN path.
+  resolved_cdn_ips = [
+    for ip in flatten([
+      for host, csv in local.resolved_hosts_result : split(",", csv)
+      if host != "archive.ubuntu.com"
+    ]) : ip
+    if ip != "" && can(cidrhost(ip, 0))
   ]
 
   small_cdn_ips = concat(
     local.hetzner_ips,
     local.syncthing_apt_ips,
-    local.synthetic_ips,
-    local.design_systems_news_ips,
-    local.hn_rss_ips,
-    local.palant_ips,
-    local.wattenberger_ips,
-    local.pCloud_ips,
-    local.linkup_ips,
-    local.resend_ips,
-    local.openrouter_ips,
-    local.ntietz_ips,
-    local.moonbaseLgbt_ips,
-    local.hanselman_ips,
-    local.chrome_ips,
-    local.httpToolkit_ips,
-    local.pencilAndPaper_ips,
-    local.setStudio_ips,
-    local.lscr_ips,
     local.anthropic_ips,
-    local.nextcloud_ips,
-    local.nginx_org_ips,
+    local.chrome_ips,
+    local.resolved_cdn_ips,
   )
 
   small_cdn_ips_v4 = [for p in local.small_cdn_ips : p if !strcontains(p, ":")]
