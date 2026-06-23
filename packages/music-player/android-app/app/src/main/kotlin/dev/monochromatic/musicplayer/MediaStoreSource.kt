@@ -498,42 +498,24 @@ object MediaStoreSource {
             // }
             // ```
             while (cursor.moveToNext()) {
-                // What:     `val name: String = cursor.getString(nameColumn) ?: continue`.
-                //           `getString(index)` returns a `String?` (nullable, the column may hold
-                //           null). The `?:` is the ELVIS operator: "use the left value if non-null,
-                //           otherwise evaluate the right side." Here the right side is `continue`,
-                //           which skips to the next loop iteration. So `name` is a guaranteed-non-null
-                //           `String`, or we move on.
-                // Why:      A row with no file name is unusable, so we drop it and keep scanning.
-                // Gotcha:   `?:` is Elvis (null-coalescing-with-control-flow here), NOT the start of a
-                //           ternary; the right-hand `continue` is a statement, which Kotlin allows
-                //           because `continue` has the "never" type.
+                // What:     `val name: String = mediaStoreTrackName(cursor.getString(nameColumn))
+                //           ?: continue`. `getString(index)` returns a nullable `String?`; the
+                //           helper returns null for missing names and AppleDouble sidecars. The `?:`
+                //           Elvis operator skips to the next row when that cleaned name is null.
+                // Why:      A row with no file name is unusable, and a `._song.mp3` sidecar is not
+                //           playable music even when MediaStore indexed it.
+                // Gotcha:   `?: continue` is Elvis with a control-flow right side, not a ternary.
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
-                // const maybeName = cursor.getString(nameColumn); // string | null
-                // if (maybeName == null) continue;
-                // const name: string = maybeName;
+                // const name = mediaStoreTrackName(cursor.getString(nameColumn));
+                // if (name == null) continue;
                 // ```
                 /**
                  * Defines name value for this music-player component; the TypeScript-oriented notes above
                  * explain its source and use.
                  */
-                val name: String = cursor.getString(nameColumn) ?: continue
-                // What:     `if (isAppleDoubleSidecar(name)) { continue }` calls the shared sidecar
-                //           predicate with this row's display name, then skips the row when the
-                //           final filename starts with Apple's `._` marker.
-                // Why:      Sidecar files are metadata blobs for real tracks, not playable music; a
-                //           row named `._song.mp3` must not enter the queue even if MediaStore
-                //           indexed it as music.
-                //
-                // In TS you'd write (pseudocode):
-                // ```ts
-                // if (isAppleDoubleSidecar(name)) continue;
-                // ```
-                if (isAppleDoubleSidecar(name)) {
-                    continue
-                }
+                val name: String = mediaStoreTrackName(cursor.getString(nameColumn)) ?: continue
                 // What:     `val id: Long = cursor.getLong(idColumn)` reads the `_ID` value as a
                 //           `Long`, a 64-bit signed integer. `: Long` is the explicit type.
                 // Why:      MediaStore row ids are 64-bit, and the URI builder below
@@ -689,6 +671,51 @@ object MediaStoreSource {
             add(MediaStore.Audio.Media.DATA)
         }
     }.toTypedArray()
+
+    // What:     `private fun mediaStoreTrackName(rawName: String?): String?` declares a private
+    //           helper. `String?` means a `String` or null; the return is also nullable so the
+    //           caller can use one Elvis `?: continue` for every unusable row.
+    // Why:      Keep the cursor loop to one jump statement while still dropping missing names and
+    //           AppleDouble `._` sidecars before track construction.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // function mediaStoreTrackName(rawName: string | null): string | null {
+    //   // ...body below...
+    // }
+    // ```
+    /** Clean MediaStore display name, or null when the row should be skipped. */
+    private fun mediaStoreTrackName(rawName: String?): String? {
+        // What:     `if (rawName == null) { return null }` checks for a missing display name.
+        // Why:      Rows without names cannot produce display paths or sidecar decisions.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // if (rawName === null) return null;
+        // ```
+        if (rawName == null) {
+            return null
+        }
+        // What:     `if (isAppleDoubleSidecar(rawName)) { return null }` calls the shared
+        //           AppleDouble predicate and turns a matching sidecar into a skipped row.
+        // Why:      A `._song.mp3` row is metadata, not a playable track.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // if (isAppleDoubleSidecar(rawName)) return null;
+        // ```
+        if (isAppleDoubleSidecar(rawName)) {
+            return null
+        }
+        // What:     `return rawName` returns the non-null, non-sidecar display name.
+        // Why:      The cursor loop can use this as the track name.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // return rawName;
+        // ```
+        return rawName
+    }
 
     // What:     `private fun displayPathOf(rawPath: String?, name: String, isRelative: Boolean): String = when { ... }`
     //           declares a private helper with three params: `rawPath` (nullable `String?`), `name`
