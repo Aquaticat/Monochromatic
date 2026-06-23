@@ -672,9 +672,9 @@ object MediaStoreSource {
         }
     }.toTypedArray()
 
-    // What:     `private fun mediaStoreTrackName(rawName: String?): String?` declares a private
-    //           helper. `String?` means a `String` or null; the return is also nullable so the
-    //           caller can use one Elvis `?: continue` for every unusable row.
+    // What:     `internal fun mediaStoreTrackName(rawName: String?): String?` declares a
+    //           module-visible helper. `String?` means a `String` or null; the return is also
+    //           nullable so the caller can use one Elvis `?: continue` for every unusable row.
     // Why:      Keep the cursor loop to one jump statement while still dropping missing names and
     //           AppleDouble `._` sidecars before track construction.
     //
@@ -685,7 +685,7 @@ object MediaStoreSource {
     // }
     // ```
     /** Clean MediaStore display name, or null when the row should be skipped. */
-    private fun mediaStoreTrackName(rawName: String?): String? {
+    internal fun mediaStoreTrackName(rawName: String?): String? {
         // What:     `if (rawName == null) { return null }` checks for a missing display name.
         // Why:      Rows without names cannot produce display paths or sidecar decisions.
         //
