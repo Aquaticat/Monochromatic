@@ -279,14 +279,26 @@ firewall is allowlist-only;
  everything else drops at the
 perimeter.
 
+Single-host service destinations are resolved from DNS names at plan
+time by `resolve_hosts.ts` (driven by `local.resolvable_hostnames`),
+which unions fresh DNS with `seed_resolved_hosts.json` and a local
+accumulation cache so a moved host keeps its previously-seen IPs.
+Published or broad ranges that do not map to one host (Anthropic,
+Hetzner DNS, Syncthing/Oracle, Chrome) stay hardcoded as locals.
+
 ### Verified workaround
 
-Add the destination's IPs to the appropriate list and run `tofu
-apply`.
+For a single-host service, add its hostname to
+`local.resolvable_hostnames` in `hetzner.tf` and run `tofu apply`;
+`resolve_hosts.ts` resolves it to `/32` and `/128` CIDRs and
+accumulates them, so a later address change does not silently break
+egress.
+ For a destination that is a published or broad range rather
+than one host, add the CIDRs to the relevant hardcoded local (or to
+`seed_resolved_hosts.json` under the closest hostname).
  Tradeoff:
- per-IP allowlisting;
- new destinations require
-a deploy,
+ new
+destinations still require a deploy,
  not just a code change.
 
 ### What does not work
@@ -298,10 +310,13 @@ a deploy,
   re-encrypt to the real destination;
    the firewall sees the
   proxy IP but allows it.
-- Putting hostnames in the firewall config:
+- Expecting hcloud to accept hostnames directly:
    Hetzner's firewall
-  rules take IPs,
-   not hostnames.
+  rules take IPs or CIDRs,
+   not hostnames;
+   `resolve_hosts.ts`
+  bridges this by resolving names to CIDRs at plan time, but the rule
+  itself still carries only the resolved CIDRs.
 
 ### Why we do not file this upstream
 
