@@ -166,7 +166,7 @@ locals {
     "api.synthetic.new",
     # nginx.org (also reached on port 80 via package_repo_http_ips)
     "nginx.org",
-    # archive.ubuntu.com (port 80 package repo only, kept off the 443 CDN path)
+    # archive.ubuntu.com (443 CDN path plus port 80 via package_repo_http_ips)
     "archive.ubuntu.com",
     # Nextcloud
     "nextcloud.com",
@@ -182,6 +182,107 @@ locals {
     "garm4.nextcloud.com",
     "garm5.nextcloud.com",
     "push-notifications.nextcloud.com",
+    # Personal blogs and sites read by the server
+    # Adactio (Jeremy Keith)
+    "adactio.com",
+    # Adam Argyle
+    "nerdy.dev",
+    # Ana Rodrigues
+    "ohhelloana.blog",
+    # Andre Garzia
+    "andregarzia.com",
+    # Andrew Betts (triblondon)
+    "trib.tv",
+    # Anna Monus (Annalytic)
+    "annalytic.com",
+    # Baldur Bjarnason
+    "baldurbjarnason.com",
+    # Ben Terrett
+    "benterrett.com",
+    # Bruce Lawson
+    "brucelawson.co.uk",
+    # Cassie Evans
+    "cassie.codes",
+    # Temani Afif (CSS Tip)
+    "css-tip.com",
+    # Dan Appelquist (Torgo)
+    "torgo.com",
+    # datagubbe
+    "datagubbe.se",
+    # David Baron
+    "dbaron.org",
+    # Drew DeVault
+    "drewdevault.com",
+    # Emery Berger
+    "emeryberger.com",
+    # Eric Meyer
+    "meyerweb.com",
+    # Eric W. Bailey
+    "ericwbailey.website",
+    # Erwin Hoffmann
+    "fehcom.de",
+    # Evan Martin
+    "neugierig.org",
+    # Henry Desroches (Henry From Online)
+    "henry.codes",
+    # Jecelyn Yeen
+    "jec.fyi",
+    # Julia Galef
+    "juliagalef.com",
+    # Karolina Szczur
+    "karolina.fish",
+    # HTMLHell (Manuel Matuzovic)
+    "htmlhell.dev",
+    # Manuel Matuzovic
+    "matuzo.at",
+    # Marvin Hagemeister
+    "marvinh.dev",
+    # Matthew Somerville (dracos)
+    "dracos.co.uk",
+    # Max Firtman
+    "firt.dev",
+    # Mayank
+    "mayank.co",
+    # Philip Tellis
+    "bluesmoon.info",
+    # Rick Viscomi
+    "rviscomi.dev",
+    # Roderick Gadellaa
+    "gadellaa.com",
+    # Sam Rose (samwho)
+    "samwho.dev",
+    # Sophie Koonin (localghost)
+    "localghost.dev",
+    # Stuart Langridge (kryogenix)
+    "kryogenix.org",
+    # Tess O'Connor
+    "tess.oconnor.cx",
+    # The Bias
+    "thebias.com",
+    # The Technium (Kevin Kelly)
+    "kk.org",
+    # Thomas Steiner (tomayac)
+    "blog.tomayac.com",
+    # Timo Tijhof
+    "timotijhof.net",
+    # Tom Loosemore (Tomski)
+    "blog.tomski.com",
+    # GrapheneOS changelog
+    "grapheneos.org",
+    # Hacker News
+    "news.ycombinator.com",
+    # Joe Liccini (webperf.tips)
+    "webperf.tips",
+    # Microsoft Edge Blog
+    "blogs.windows.com",
+    # Nolan Lawson (Read the Tea Leaves)
+    "nolanlawson.com",
+    # Open Web Advocacy
+    "open-web-advocacy.org",
+    # Patrick Brosset
+    "patrickbrosset.com",
+    # Piccalilli
+    "piccalil.li",
   ]
 }
 
@@ -358,12 +459,11 @@ locals {
   ]
 
   # Single-host service CIDRs resolved from DNS names (see local.resolvable_hostnames).
-  # archive.ubuntu.com is excluded: it is allowlisted on port 80 only via
-  # package_repo_http_ips, not on the 443 CDN path.
+  # Every resolved host is allowed on the 443 CDN path; archive.ubuntu.com is
+  # additionally allowed on port 80 via package_repo_http_ips.
   resolved_cdn_ips = [
     for ip in flatten([
       for host, csv in local.resolved_hosts_result : split(",", csv)
-      if host != "archive.ubuntu.com"
     ]) : ip
     if ip != "" && can(cidrhost(ip, 0))
   ]
@@ -670,6 +770,38 @@ locals {
       destination_ips = []
       direction       = "in"
       port            = "22000"
+      protocol        = "tcp"
+      source_ips      = ["0.0.0.0/0", "::/0"]
+    },
+    {
+      description     = "rustdesk nat type test"
+      destination_ips = []
+      direction       = "in"
+      port            = "21115"
+      protocol        = "tcp"
+      source_ips      = ["0.0.0.0/0", "::/0"]
+    },
+    {
+      description     = "rustdesk id registration heartbeat tcp"
+      destination_ips = []
+      direction       = "in"
+      port            = "21116"
+      protocol        = "tcp"
+      source_ips      = ["0.0.0.0/0", "::/0"]
+    },
+    {
+      description     = "rustdesk id registration heartbeat udp"
+      destination_ips = []
+      direction       = "in"
+      port            = "21116"
+      protocol        = "udp"
+      source_ips      = ["0.0.0.0/0", "::/0"]
+    },
+    {
+      description     = "rustdesk web client websocket"
+      destination_ips = []
+      direction       = "in"
+      port            = "21118"
       protocol        = "tcp"
       source_ips      = ["0.0.0.0/0", "::/0"]
     },
