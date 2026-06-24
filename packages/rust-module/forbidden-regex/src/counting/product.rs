@@ -22,7 +22,7 @@ use crate::context::Ctx;
 use crate::counting::element::{LinearProgram, linearize};
 
 /// Imports the shared simulation core.
-use crate::counting::sim::{State, boundary_ctx, closure, step};
+use crate::counting::sim::{State, boundary_ctx, closure, step_into};
 
 /// Imports the error type for validating a decoded program.
 use crate::error::CompileError;
@@ -100,16 +100,28 @@ pub fn linearize_product(node: &Node) -> Option<ProductProgram> {
     Some(ProductProgram { positives, negatives })
 }
 
-/// One in-flight match attempt anchored at a single start position.
+/// The per-operand simulation states for one side of a thread at one instant.
 ///
-/// What: the per-operand simulation state for every positive and negative, all
-/// advanced in lockstep over the same bytes. Why: keeping every operand of one
-/// start together is what enforces the same-span requirement.
-struct Thread {
+/// What: one `State` per positive operand and one per negative operand, in their
+/// program order. Why: a thread keeps two of these as ping-pong buffers so the
+/// byte step writes into the spare and swaps, never allocating per byte.
+struct Operands {
     /// Per-positive-operand simulation state, in `positives` order.
     positives: Vec<State>,
     /// Per-negative-operand simulation state, in `negatives` order.
     negatives: Vec<State>,
+}
+
+/// One in-flight match attempt anchored at a single start position.
+///
+/// What: the current operand states plus a spare buffer the byte step fills. Why:
+/// keeping every operand of one start together enforces the same-span requirement,
+/// and reusing the spare keeps the step allocation-free.
+struct Thread {
+    /// Live operand states for this start.
+    cur: Operands,
+    /// Spare buffer the byte step writes into, then swaps with `cur`.
+    next: Operands,
 }
 
 /// Runs the product across every boundary, returning true on first acceptance.
@@ -124,93 +136,98 @@ fn run_product(prog: &ProductProgram, line: &[u8]) -> bool {
         threads.push(new_thread(prog));
         let ctx = boundary_ctx(line, i);
         for thread in &mut threads {
-            close_thread(prog, thread, ctx);
+            close_operands(prog, &mut thread.cur, ctx);
         }
-        if threads.iter().any(accepts) {
+        if threads.iter().any(|thread| accepts(&thread.cur)) {
             return true;
         }
         if i == line.len() {
             break;
         }
-        threads = advance_threads(prog, threads, line[i]);
+        let b = line[i];
+        threads.retain_mut(|thread| advance_thread(prog, thread, b));
     }
     false
 }
 
 /// Builds a thread seeded for a start at the current boundary.
 ///
-/// What: one seeded `State` per operand. Why: each start gets its own anchored
-/// run, seeded exactly once here rather than re-seeded every boundary.
+/// What: seeded current states plus empty spare buffers, one per operand. Why: each
+/// start gets its own anchored run, seeded once; the spare is reused every byte.
 fn new_thread(prog: &ProductProgram) -> Thread {
     Thread {
-        positives: prog.positives.iter().map(seed_for).collect(),
-        negatives: prog.negatives.iter().map(seed_for).collect(),
+        cur: Operands {
+            positives: seeded_states(&prog.positives),
+            negatives: seeded_states(&prog.negatives),
+        },
+        next: Operands {
+            positives: empty_states(&prog.positives),
+            negatives: empty_states(&prog.negatives),
+        },
     }
 }
 
-/// Builds the seeded state for one operand.
+/// Builds a seeded state for each operand.
 ///
-/// What: a `State::seeded` sized to the operand's chain. Why: a shared tail used by
-/// both operand lists when a thread is created.
-fn seed_for(operand: &LinearProgram) -> State {
-    State::seeded(operand.elements.len())
+/// What: one `State::seeded` sized to each operand's chain. Why: the current side
+/// of a fresh thread starts poised before every operand's first element.
+fn seeded_states(operands: &[LinearProgram]) -> Vec<State> {
+    operands.iter().map(|o| State::seeded(&o.elements)).collect()
 }
 
-/// Takes the zero-width closure of every operand in a thread.
+/// Builds an empty state for each operand.
+///
+/// What: one `State::new` sized to each operand's chain. Why: the spare side of a
+/// fresh thread is the reusable byte-step destination.
+fn empty_states(operands: &[LinearProgram]) -> Vec<State> {
+    operands.iter().map(|o| State::new(&o.elements)).collect()
+}
+
+/// Takes the zero-width closure of every operand in one side.
 ///
 /// What: closes each positive and negative state under the boundary context. Why:
 /// anchors and skippable repetitions must settle before the accept test.
-fn close_thread(prog: &ProductProgram, thread: &mut Thread, ctx: Ctx) {
-    for (state, operand) in thread.positives.iter_mut().zip(&prog.positives) {
+fn close_operands(prog: &ProductProgram, ops: &mut Operands, ctx: Ctx) {
+    for (state, operand) in ops.positives.iter_mut().zip(&prog.positives) {
         closure(&operand.elements, state, ctx);
     }
-    for (state, operand) in thread.negatives.iter_mut().zip(&prog.negatives) {
+    for (state, operand) in ops.negatives.iter_mut().zip(&prog.negatives) {
         closure(&operand.elements, state, ctx);
     }
 }
 
-/// Reports whether a thread accepts: all positives match and no negative does.
+/// Reports whether a side accepts: all positives match and no negative does.
 ///
 /// What: conjunction over positives with a negation over negatives. Why: this is
 /// `A & ~B` evaluated on the one span the thread represents.
-fn accepts(thread: &Thread) -> bool {
-    thread.positives.iter().all(State::accepts) && thread.negatives.iter().all(|state| !state.accepts())
+fn accepts(ops: &Operands) -> bool {
+    ops.positives.iter().all(State::accepts) && ops.negatives.iter().all(|state| !state.accepts())
 }
 
-/// Advances every thread by one byte, dropping those that can no longer accept.
+/// Advances one thread by a byte, reporting whether it stays alive.
 ///
-/// What: steps each thread and keeps it only while every positive stays alive.
-/// Why: a dead positive can never match again, so the thread is pruned, which
-/// bounds the live-thread count by the longest positive operand.
-fn advance_threads(prog: &ProductProgram, threads: Vec<Thread>, b: u8) -> Vec<Thread> {
-    threads
-        .into_iter()
-        .filter_map(|thread| step_thread(prog, &thread, b))
-        .collect()
-}
-
-/// Steps one thread by a byte, returning `None` if a positive operand died.
-///
-/// What: steps every operand state, then prunes when any positive is dead. Why:
-/// negatives are kept even when dead (a dead negative means `~B` holds), but a dead
-/// positive makes the intersection unsatisfiable for this start.
-fn step_thread(prog: &ProductProgram, thread: &Thread, b: u8) -> Option<Thread> {
-    let positives: Vec<State> = thread
-        .positives
-        .iter()
-        .zip(&prog.positives)
-        .map(|(state, operand)| step(&operand.elements, state, b))
-        .collect();
-    if positives.iter().any(State::is_dead) {
-        return None;
+/// What: steps positives into the spare and prunes if any died, then steps
+/// negatives and swaps the buffers. Why: a dead positive can never match again so
+/// the thread is dropped, which bounds the live-thread count by the longest
+/// positive; negatives are kept even when dead (a dead negative means `~B` holds).
+fn advance_thread(prog: &ProductProgram, thread: &mut Thread, b: u8) -> bool {
+    step_states(&prog.positives, &thread.cur.positives, &mut thread.next.positives, b);
+    if thread.next.positives.iter().any(State::is_dead) {
+        return false;
     }
-    let negatives: Vec<State> = thread
-        .negatives
-        .iter()
-        .zip(&prog.negatives)
-        .map(|(state, operand)| step(&operand.elements, state, b))
-        .collect();
-    Some(Thread { positives, negatives })
+    step_states(&prog.negatives, &thread.cur.negatives, &mut thread.next.negatives, b);
+    std::mem::swap(&mut thread.cur, &mut thread.next);
+    true
+}
+
+/// Steps every operand state of one side from `src` into `dst`.
+///
+/// What: runs the byte step per operand, source to reused destination. Why: the
+/// shared advance for both the positive and negative lists.
+fn step_states(operands: &[LinearProgram], src: &[State], dst: &mut [State], b: u8) {
+    for ((operand, source), destination) in operands.iter().zip(src).zip(dst.iter_mut()) {
+        step_into(&operand.elements, source, b, destination);
+    }
 }
 
 /// Differential tests against the eager DFA plus a serialized-size proof.

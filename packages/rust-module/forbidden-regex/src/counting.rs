@@ -10,6 +10,9 @@
 /// The linear element IR and the linearizer.
 mod element;
 
+/// The bounded count bitset used by the simulation state.
+mod countset;
+
 /// The shared counting-set simulation core.
 mod sim;
 

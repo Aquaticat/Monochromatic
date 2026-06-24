@@ -4,7 +4,7 @@
 use crate::counting::element::{Element, LinearProgram};
 
 /// Imports the shared simulation core.
-use crate::counting::sim::{State, boundary_ctx, closure, step};
+use crate::counting::sim::{State, boundary_ctx, closure, step_into};
 
 /// The match entry point for the counting back-end.
 impl LinearProgram {
@@ -26,24 +26,27 @@ impl LinearProgram {
 /// Runs the simulation across every boundary, returning true on first acceptance.
 ///
 /// What: at each boundary seed a fresh start (the `Σ*` search prefix), take the
-/// zero-width closure, test acceptance, then consume the next byte. Why: a match
-/// may start at any position and end at any boundary, so both seeding and the
-/// accept test happen at every boundary.
+/// zero-width closure, test acceptance, then consume the next byte into the spare
+/// buffer and swap. Why: a match may start at any position and end at any boundary,
+/// so both seeding and the accept test happen at every boundary; the two buffers
+/// are reused so the byte step never allocates.
 fn run(elements: &[Element], line: &[u8]) -> bool {
-    let mut state = State::new(elements.len());
+    let mut cur = State::new(elements);
+    let mut next = State::new(elements);
     for i in 0..=line.len() {
         // What: the search prefix keeps a fresh start live at every boundary.
         // Why: a match may begin at this position.
-        state.seed();
+        cur.seed();
         let ctx = boundary_ctx(line, i);
-        closure(elements, &mut state, ctx);
-        if state.accepts() {
+        closure(elements, &mut cur, ctx);
+        if cur.accepts() {
             return true;
         }
         if i == line.len() {
             break;
         }
-        state = step(elements, &state, line[i]);
+        step_into(elements, &cur, line[i], &mut next);
+        std::mem::swap(&mut cur, &mut next);
     }
     false
 }
