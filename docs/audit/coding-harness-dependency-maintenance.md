@@ -201,6 +201,41 @@ It shows that several candidates handle dependency update automation better than
 while `pi`'s exact pins are intentional and paired with release activity plus npm audit checks.
 Dependency hygiene remains a separate axis from harness quality.
 
+## Follow-up checks after reviewer feedback
+
+Advisor review warned not to equate config-file presence with effective automation.
+I checked recent merged PRs with `gh pr list` for Dependabot and Renovate authors.
+
+- Gemini CLI has merged Dependabot PRs,
+  but the latest returned example was from 2026-02-18.
+- Codex has merged Dependabot PRs,
+  with returned examples from 2026-03.
+- Goose has merged Dependabot PRs as recently as 2026-06-22.
+- Crush has merged Dependabot PRs as recently as 2026-06-08.
+- ForgeCode has merged Dependabot PRs and Renovate PRs.
+  Returned Renovate examples included 2026-06-24 updates for `@ai-sdk/google-vertex`,
+  `ai`, `posthog-rs`, `rmcp`, and `gix`.
+- `pi`, Aider, and OpenCode returned no merged Dependabot or Renovate PRs from that query.
+
+ForgeCode clarification:
+
+- Root `package.json` is named `forge-code-evals`,
+  so npm dependencies appear to be eval or benchmark tooling rather than the core harness.
+- ForgeCode's core harness is Rust workspace code under `crates/*`.
+- ForgeCode's `package-lock.json` currently resolves `ai` to `6.0.209`
+  and `@ai-sdk/google-vertex` to `4.0.149`,
+  which matched the npm latest spot-check at the time of query.
+
+Safety caveats for final answer:
+
+- Update-bot config proves a mechanism exists;
+  recent merged bot PRs are stronger evidence of effective maintenance.
+- Manifest spec style does not prove lockfile freshness.
+- Raw dependency counts are not normalized by project size.
+- No full vulnerability scan was run across all candidates.
+- Dependency hygiene should count against or for a harness,
+  but it should not determine the overall harness ranking by itself.
+
 ## Outstanding work
 
 - Synthesize final ranked judgment by category:
@@ -210,7 +245,7 @@ Dependency hygiene remains a separate axis from harness quality.
   audit or security workflows,
   and dependency surface size.
 - Make the final answer explicit that ForgeCode improves the candidate set,
-  especially for update automation,
+  especially for recent Renovate activity,
   but does not by itself change the overall harness-quality judgment.
 
 ## Suggested skills for continuation
