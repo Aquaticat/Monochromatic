@@ -25,9 +25,15 @@ use crate::parse::escape::{EscapeResult, parse_escape};
 /// which kind it just read.
 enum ClassAtom {
     /// A single byte that may begin or end a range.
-    Byte(u8),
+    Byte(
+        /// Byte value, usable as a range endpoint.
+        u8,
+    ),
     /// A shorthand set that cannot participate in a range.
-    Set(ByteSet),
+    Set(
+        /// Shorthand set, never a range endpoint.
+        ByteSet,
+    ),
 }
 
 /// Parses a `[...]` (or `[^...]`) class into a class node.

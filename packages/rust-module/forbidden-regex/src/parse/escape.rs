@@ -20,9 +20,15 @@ use crate::parse::cursor::Cursor;
 pub enum EscapeResult {
     /// A single literal byte (`\t`, `\#`, an escaped metacharacter, escaped
     /// whitespace).
-    Byte(u8),
+    Byte(
+        /// Literal byte value the escape denotes.
+        u8,
+    ),
     /// A shorthand byte set (`\d \w \s` and their negations).
-    Set(ByteSet),
+    Set(
+        /// Byte set the shorthand expands to.
+        ByteSet,
+    ),
     /// The `\b` word-boundary assertion.
     Boundary,
 }

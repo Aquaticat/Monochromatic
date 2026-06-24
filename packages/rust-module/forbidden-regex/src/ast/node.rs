@@ -24,15 +24,30 @@ pub enum Node {
     /// Matches one byte drawn from the set.
     ///
     /// What: literals, `.`, `[...]`, and the shorthands all reduce to this.
-    Class(ByteSet),
+    Class(
+        /// Byte set the matched byte must belong to.
+        ByteSet,
+    ),
     /// Sequence: each child matches in order.
-    Concat(Vec<Node>),
+    Concat(
+        /// Ordered factors matched one after another.
+        Vec<Node>,
+    ),
     /// Alternation: any one child matches.
-    Alt(Vec<Node>),
+    Alt(
+        /// Branches, any one of which may match.
+        Vec<Node>,
+    ),
     /// Intersection: every child must match the same input.
-    Inter(Vec<Node>),
+    Inter(
+        /// Operands that must all match the same input.
+        Vec<Node>,
+    ),
     /// Complement: matches exactly the strings the child does not.
-    Comp(Box<Node>),
+    Comp(
+        /// Inner expression whose language is complemented.
+        Box<Node>,
+    ),
     /// Bounded repetition: match the child between `min` and `max` times.
     ///
     /// What: kept un-unrolled so a counter register, not DFA states, carries the
