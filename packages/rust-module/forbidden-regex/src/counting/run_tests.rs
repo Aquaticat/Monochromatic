@@ -4,7 +4,8 @@
 
 use crate::ast::node::Node;
 use crate::ast::smart::concat;
-use crate::counting::element::linearize;
+use crate::counting::build::build_nfa;
+use crate::counting::nfa::CountingNfa;
 use crate::dfa::build_dfa;
 use crate::parse::parse;
 
@@ -15,13 +16,13 @@ fn oracle(pattern: &str) -> impl Fn(&[u8]) -> bool {
     move |line: &[u8]| dfa.is_match(line)
 }
 
-// Linearizes a pattern, asserting it takes the counting back-end.
-fn linear(pattern: &str) -> crate::counting::element::LinearProgram {
+// Builds the counting NFA for a pattern, asserting it takes the counting back-end.
+fn linear(pattern: &str) -> CountingNfa {
     let node = parse(pattern).expect("pattern parses");
-    linearize(&node).expect("pattern is linear")
+    build_nfa(&node).expect("pattern builds an nfa")
 }
 
-// Every linearizable pattern must agree with the eager DFA on every probe input.
+// Every counting-NFA pattern must agree with the eager DFA on every probe input.
 #[test]
 fn linear_agrees_with_oracle() {
     let patterns = [
@@ -36,8 +37,12 @@ fn linear_agrees_with_oracle() {
         "[A-Z]{2}[0-9]{2}",
         "x?y",
         "AKIA[A-Z2-7]{4}",
+        "(?:(?:AKIA)|(?:ASIA))[A-Z2-7]{4}",
+        "(?:(?:abc)|(?:de)|f)",
+        "\\b(?:(?:A3T[A-Z0-9])|(?:AKIA)|(?:ASIA))[A-Z2-7]{3}\\b",
+        "x(?:(?:ab)|(?:cd))y",
     ];
-    let inputs: [&[u8]; 16] = [
+    let inputs: [&[u8]; 24] = [
         b"",
         b"a",
         b"abc",
@@ -54,6 +59,14 @@ fn linear_agrees_with_oracle() {
         b"AB12",
         b"y",
         b"xy",
+        b"ASIAB2C7",
+        b"AKIAB2C7",
+        b"A3TXB2C7",
+        b"de",
+        b"f",
+        b"abz",
+        b"cdz",
+        b"z",
     ];
     for pattern in patterns {
         let prog = linear(pattern);

@@ -3,8 +3,8 @@
 /// Imports the serde derives so a compiled engine can be persisted.
 use serde::{Deserialize, Serialize};
 
-/// Imports the counting back-end's linear program.
-use crate::counting::LinearProgram;
+/// Imports the counting NFA back-end.
+use crate::counting::CountingNfa;
 
 /// Imports the synchronized-product back-end for `&` and `~`.
 use crate::counting::ProductProgram;
@@ -23,17 +23,17 @@ use crate::error::CompileError;
 /// while the DFA still handles the set-algebra operators the linear IR cannot.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum Engine {
-    /// Branch-free counting back-end; small for counted repetition.
-    Linear(
-        /// Counting program for the branch-free pattern.
-        LinearProgram,
+    /// Counting-NFA back-end; small for counted repetition and alternation.
+    Nfa(
+        /// Counting NFA for a pattern without intersection or complement.
+        CountingNfa,
     ),
-    /// Synchronized-product counting back-end; handles linear `&` and `~`.
+    /// Synchronized-product counting back-end; handles `&` and `~`.
     Product(
-        /// Product program for the linear intersection-with-complement pattern.
+        /// Product program for the intersection-with-complement pattern.
         ProductProgram,
     ),
-    /// General derivative DFA; handles alternation and non-linear `&`, `~`.
+    /// General derivative DFA; handles shapes the counting back-end cannot.
     Table(
         /// General derivative DFA back-end.
         Dfa,
@@ -48,7 +48,7 @@ impl Engine {
     /// which representation was chosen at compile time.
     pub fn is_match(&self, line: &[u8]) -> bool {
         match self {
-            Engine::Linear(program) => program.is_match(line),
+            Engine::Nfa(nfa) => nfa.is_match(line),
             Engine::Product(program) => program.is_match(line),
             Engine::Table(dfa) => dfa.is_match(line),
         }
@@ -61,7 +61,7 @@ impl Engine {
     /// proven in-bounds first.
     pub fn validate(&self) -> Result<(), CompileError> {
         match self {
-            Engine::Linear(program) => program.validate(),
+            Engine::Nfa(nfa) => nfa.validate(),
             Engine::Product(program) => program.validate(),
             Engine::Table(dfa) => dfa.validate(),
         }

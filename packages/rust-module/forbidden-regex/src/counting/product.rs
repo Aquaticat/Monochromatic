@@ -1,25 +1,28 @@
-//! Synchronized-product back-end for intersection and complement over linear
-//! operands.
+//! Synchronized-product back-end for intersection and complement over counting
+//! NFAs.
 //!
 //! What: a [`ProductProgram`] holds positive operands (each must match the same
 //! span) and negative operands (none may match that span, the `~(...)` operands),
-//! matched by running every operand in lockstep per start position. Why: under
+//! matched by running every operand NFA in lockstep per start position. Why: under
 //! `Σ*·(A & ~B)` the SAME substring must satisfy `A` and fail `B`, so the operands
 //! cannot be run as independent search automata (they would match different spans);
 //! one thread per start keeps them synchronized while each operand's counts still
-//! live in a counter-set, so bounded repetition never blows up.
+//! live in a counter-set, so alternation and bounded repetition never blow up.
 
 /// Imports the serde derives so a product program can be persisted.
 use serde::{Deserialize, Serialize};
 
-/// Imports the node algebra the linearizer reads.
+/// Imports the node algebra the builder reads.
 use crate::ast::node::Node;
 
 /// Imports the boundary context threaded through the closure.
 use crate::context::Ctx;
 
-/// Imports the linear operand IR and its linearizer.
-use crate::counting::element::{LinearProgram, linearize};
+/// Imports the NFA builder for each operand.
+use crate::counting::build::build_nfa;
+
+/// Imports the counting NFA each operand compiles to.
+use crate::counting::nfa::CountingNfa;
 
 /// Imports the shared simulation core.
 use crate::counting::sim::{State, boundary_ctx, closure, step_into};
@@ -27,18 +30,17 @@ use crate::counting::sim::{State, boundary_ctx, closure, step_into};
 /// Imports the error type for validating a decoded program.
 use crate::error::CompileError;
 
-/// An intersection of linear operands, some of them complemented.
+/// An intersection of counting-NFA operands, some of them complemented.
 ///
-/// What: the positives that must all match one span and the negatives that must
-/// all fail that same span. Why: the serializable, counter-aware back-end for
-/// `&`/`~` patterns whose operands are each linear; its size is linear in the
-/// pattern, never in any repetition bound.
+/// What: the positives that must all match one span and the negatives that must all
+/// fail that same span. Why: the serializable, counter-aware back-end for `&`/`~`
+/// patterns; its size is linear in the pattern, never in any repetition bound.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ProductProgram {
     /// Operands that must each match the same span.
-    pub positives: Vec<LinearProgram>,
+    pub positives: Vec<CountingNfa>,
     /// Operands whose match would veto the span (the `~(...)` operands).
-    pub negatives: Vec<LinearProgram>,
+    pub negatives: Vec<CountingNfa>,
 }
 
 /// Matching and decode validation for a product program.
@@ -69,29 +71,29 @@ impl ProductProgram {
     }
 }
 
-/// Attempts to express `node` as a product of linear operands.
+/// Attempts to express `node` as a product of counting-NFA operands.
 ///
-/// What: a `Node::Inter` whose operands each linearize, splitting `Comp` operands
-/// into the negatives and the rest into the positives; returns `None` for anything
-/// else or when no positive remains. Why: those shapes need the derivative DFA, so
-/// the caller falls back to it; this back-end claims only the linear `&`/`~` cases.
+/// What: a `Node::Inter` whose operands each build into an NFA, splitting `Comp`
+/// operands into the negatives and the rest into the positives; returns `None` for
+/// anything else or when no positive remains. Why: those shapes need the eager DFA,
+/// so the caller falls back to it; this back-end claims only the NFA `&`/`~` cases.
 ///
 /// @example
 /// ```ignore
-/// // (?:AKIA[A-Z2-7]{16}) & ~(AKIA2{16}) -> one positive, one negative operand.
-/// let prog = linearize_product(&node).unwrap();
+/// // (?:\b(?:A3T[A-Z0-9]|AKIA|ASIA)[A-Z2-7]{16}\b) & ~(AKIA2{16})
+/// let prog = build_product(&node).unwrap();
 /// assert_eq!((prog.positives.len(), prog.negatives.len()), (1, 1));
 /// ```
-pub fn linearize_product(node: &Node) -> Option<ProductProgram> {
+pub fn build_product(node: &Node) -> Option<ProductProgram> {
     let Node::Inter(operands) = node else {
         return None;
     };
-    let mut positives: Vec<LinearProgram> = Vec::new();
-    let mut negatives: Vec<LinearProgram> = Vec::new();
+    let mut positives: Vec<CountingNfa> = Vec::new();
+    let mut negatives: Vec<CountingNfa> = Vec::new();
     for operand in operands {
         match operand {
-            Node::Comp(inner) => negatives.push(linearize(inner)?),
-            other => positives.push(linearize(other)?),
+            Node::Comp(inner) => negatives.push(build_nfa(inner)?),
+            other => positives.push(build_nfa(other)?),
         }
     }
     if positives.is_empty() {
@@ -103,8 +105,8 @@ pub fn linearize_product(node: &Node) -> Option<ProductProgram> {
 /// The per-operand simulation states for one side of a thread at one instant.
 ///
 /// What: one `State` per positive operand and one per negative operand, in their
-/// program order. Why: a thread keeps two of these as ping-pong buffers so the
-/// byte step writes into the spare and swaps, never allocating per byte.
+/// program order. Why: a thread keeps two of these as ping-pong buffers so the byte
+/// step writes into the spare and swaps, never allocating per byte.
 struct Operands {
     /// Per-positive-operand simulation state, in `positives` order.
     positives: Vec<State>,
@@ -169,18 +171,25 @@ fn new_thread(prog: &ProductProgram) -> Thread {
 
 /// Builds a seeded state for each operand.
 ///
-/// What: one `State::seeded` sized to each operand's chain. Why: the current side
-/// of a fresh thread starts poised before every operand's first element.
-fn seeded_states(operands: &[LinearProgram]) -> Vec<State> {
-    operands.iter().map(|o| State::seeded(&o.elements)).collect()
+/// What: one `State` per operand with its start positions active. Why: the current
+/// side of a fresh thread starts poised at every operand's start set.
+fn seeded_states(operands: &[CountingNfa]) -> Vec<State> {
+    operands
+        .iter()
+        .map(|nfa| {
+            let mut state = State::new(&nfa.elements);
+            state.seed(&nfa.start);
+            state
+        })
+        .collect()
 }
 
 /// Builds an empty state for each operand.
 ///
-/// What: one `State::new` sized to each operand's chain. Why: the spare side of a
-/// fresh thread is the reusable byte-step destination.
-fn empty_states(operands: &[LinearProgram]) -> Vec<State> {
-    operands.iter().map(|o| State::new(&o.elements)).collect()
+/// What: one `State::new` sized to each operand's positions. Why: the spare side of
+/// a fresh thread is the reusable byte-step destination.
+fn empty_states(operands: &[CountingNfa]) -> Vec<State> {
+    operands.iter().map(|nfa| State::new(&nfa.elements)).collect()
 }
 
 /// Takes the zero-width closure of every operand in one side.
@@ -188,11 +197,11 @@ fn empty_states(operands: &[LinearProgram]) -> Vec<State> {
 /// What: closes each positive and negative state under the boundary context. Why:
 /// anchors and skippable repetitions must settle before the accept test.
 fn close_operands(prog: &ProductProgram, ops: &mut Operands, ctx: Ctx) {
-    for (state, operand) in ops.positives.iter_mut().zip(&prog.positives) {
-        closure(&operand.elements, state, ctx);
+    for (state, nfa) in ops.positives.iter_mut().zip(&prog.positives) {
+        closure(&nfa.elements, &nfa.follow, state, ctx);
     }
-    for (state, operand) in ops.negatives.iter_mut().zip(&prog.negatives) {
-        closure(&operand.elements, state, ctx);
+    for (state, nfa) in ops.negatives.iter_mut().zip(&prog.negatives) {
+        closure(&nfa.elements, &nfa.follow, state, ctx);
     }
 }
 
@@ -206,10 +215,10 @@ fn accepts(ops: &Operands) -> bool {
 
 /// Advances one thread by a byte, reporting whether it stays alive.
 ///
-/// What: steps positives into the spare and prunes if any died, then steps
-/// negatives and swaps the buffers. Why: a dead positive can never match again so
-/// the thread is dropped, which bounds the live-thread count by the longest
-/// positive; negatives are kept even when dead (a dead negative means `~B` holds).
+/// What: steps positives into the spare and prunes if any died, then steps negatives
+/// and swaps the buffers. Why: a dead positive can never match again so the thread
+/// is dropped, which bounds the live-thread count by the longest positive; negatives
+/// are kept even when dead (a dead negative means `~B` holds).
 fn advance_thread(prog: &ProductProgram, thread: &mut Thread, b: u8) -> bool {
     step_states(&prog.positives, &thread.cur.positives, &mut thread.next.positives, b);
     if thread.next.positives.iter().any(State::is_dead) {
@@ -224,9 +233,9 @@ fn advance_thread(prog: &ProductProgram, thread: &mut Thread, b: u8) -> bool {
 ///
 /// What: runs the byte step per operand, source to reused destination. Why: the
 /// shared advance for both the positive and negative lists.
-fn step_states(operands: &[LinearProgram], src: &[State], dst: &mut [State], b: u8) {
-    for ((operand, source), destination) in operands.iter().zip(src).zip(dst.iter_mut()) {
-        step_into(&operand.elements, source, b, destination);
+fn step_states(operands: &[CountingNfa], src: &[State], dst: &mut [State], b: u8) {
+    for ((nfa, source), destination) in operands.iter().zip(src).zip(dst.iter_mut()) {
+        step_into(&nfa.elements, &nfa.follow, source, b, destination);
     }
 }
 

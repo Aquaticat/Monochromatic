@@ -5,7 +5,7 @@
 
 use crate::ast::node::Node;
 use crate::ast::smart::concat;
-use crate::counting::product::{ProductProgram, linearize_product};
+use crate::counting::product::{ProductProgram, build_product};
 use crate::dfa::build_dfa;
 use crate::parse::parse;
 
@@ -19,7 +19,7 @@ fn oracle(pattern: &str) -> impl Fn(&[u8]) -> bool {
 // Builds the product program, asserting the pattern takes the `&`/`~` back-end.
 fn product(pattern: &str) -> ProductProgram {
     let node = parse(pattern).expect("pattern parses");
-    linearize_product(&node).expect("pattern is a linear product")
+    build_product(&node).expect("pattern is a product")
 }
 
 // Every linear `&`/`~` pattern must agree with the eager DFA on every probe input.
@@ -32,8 +32,10 @@ fn product_agrees_with_oracle() {
         "(?:[A-Z]{3}) & (?:[A-Za-z]{3})",
         "(?:\\b[A-Z]{3}\\b) & ~(ABC)",
         "(?:[A-Za-z]{2,3}) & ~(ab) & ~(abc)",
+        "(?:(?:(?:AKIA)|(?:ASIA))[A-Z2-7]{4}) & ~(AKIA2222)",
+        "(?:\\b(?:(?:A3T[A-Z0-9])|(?:AKIA)|(?:ASIA))[A-Z2-7]{4}\\b) & ~(AKIA2222)",
     ];
-    let inputs: [&[u8]; 18] = [
+    let inputs: [&[u8]; 24] = [
         b"",
         b"A",
         b"AB",
@@ -52,6 +54,12 @@ fn product_agrees_with_oracle() {
         b"ABC\n",
         b"\nABC",
         b"aZ",
+        b"ASIA2222",
+        b"ASIAB2C7",
+        b"A3TXB2C7",
+        b" ASIAB2C7 ",
+        b"AKIAB2C7",
+        b"A3T2B2C7",
     ];
     for pattern in patterns {
         let prog = product(pattern);
@@ -98,4 +106,26 @@ fn aws_key_complement_is_exact() {
     assert!(prog.is_match(b"AKIA2222222222222223"));
     // Too few trailing bytes: the positive operand cannot match at all.
     assert!(!prog.is_match(b"AKIA222222222222222"));
+}
+
+// The full AWS rule with an alternation prefix stays small and decides exactly.
+#[test]
+fn aws_rule_with_alternation_stays_small() {
+    let prog = product(
+        "(?:\\b(?:(?:A3T[A-Z0-9])|(?:AKIA)|(?:ASIA))[A-Z2-7]{16}\\b) & ~(AKIA2{16})",
+    );
+    let bytes = bincode::serialize(&prog).expect("serializes");
+    assert!(
+        bytes.len() < 4_000,
+        "product program serialized to {} bytes, expected under 4 KB",
+        bytes.len()
+    );
+    // Real keys via each prefix branch, all 20-byte spans, none the placeholder.
+    assert!(prog.is_match(b" AKIAABCDEFGHIJKLMNOP "));
+    assert!(prog.is_match(b" ASIAABCDEFGHIJKLMNOP "));
+    assert!(prog.is_match(b" A3TXABCDEFGHIJKLMNOP "));
+    // The exact AKIA + sixteen '2' placeholder is vetoed by the complement.
+    assert!(!prog.is_match(b" AKIA2222222222222222 "));
+    // The same all-'2' tail under a different prefix is not the placeholder.
+    assert!(prog.is_match(b" ASIA2222222222222222 "));
 }

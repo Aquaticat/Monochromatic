@@ -9,11 +9,11 @@ use crate::ast::node::Node;
 /// Imports the concat constructor used to wrap a node for search.
 use crate::ast::smart::concat;
 
-/// Imports the linearizer that selects the counting back-end.
-use crate::counting::linearize;
+/// Imports the NFA builder that selects the counting back-end.
+use crate::counting::build_nfa;
 
-/// Imports the product linearizer that selects the `&`/`~` counting back-end.
-use crate::counting::linearize_product;
+/// Imports the product builder that selects the `&`/`~` counting back-end.
+use crate::counting::build_product;
 
 /// Imports the DFA builder and minimizer for the general back-end.
 use crate::dfa::{build_dfa, minimize};
@@ -43,14 +43,14 @@ fn search_root(node: Node) -> Node {
 /// minimized search DFA. Why: counting-heavy patterns stay small in the linear IR,
 /// while alternation, intersection, and complement need the DFA.
 fn build_engine(node: Node) -> Result<Engine, CompileError> {
-    // What: a branch-free node becomes a counting program. Why: it avoids the
-    // determinization blowup of bounded repetition.
-    if let Some(program) = linearize(&node) {
-        return Ok(Engine::Linear(program));
+    // What: a node without `&`/`~` becomes a counting NFA. Why: it avoids the
+    // determinization blowup of bounded repetition, alternation included.
+    if let Some(nfa) = build_nfa(&node) {
+        return Ok(Engine::Nfa(nfa));
     }
-    // What: a linear `&`/`~` node becomes a synchronized product. Why: it keeps the
-    // same-span set algebra small where the eager DFA would explode on `{n,m}`.
-    if let Some(program) = linearize_product(&node) {
+    // What: an `&`/`~` node becomes a synchronized product of counting NFAs. Why: it
+    // keeps the same-span set algebra small where the eager DFA explodes on `{n,m}`.
+    if let Some(program) = build_product(&node) {
         return Ok(Engine::Product(program));
     }
     let dfa = minimize(&build_dfa(search_root(node))?);
