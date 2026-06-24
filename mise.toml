@@ -145,14 +145,10 @@ zig = "0.15.2"
 
 # Slint standalone live previewer (renders a .slint file in a window without an
 # editor), pinned to the SAME rev as slint-lsp and the apps' slint dependency so
-# the preview matches the runtime. mise keys a cargo-git tool by its URL (git_url()
-# in mise's src/backend/cargo.rs parses the tool name as the repo URL) and has no
-# per-crate key, while TOML forbids a duplicate [tools] key; so a second crate from
-# the same repo needs a distinct key. The trailing ".git" makes this key unique
-# while resolving to the same repository at the same rev (cargo accepts the .git
-# URL). `crate` selects the slint-viewer member; `bin` limits the install to the
-# slint-viewer binary. Default features match the apps, so no `features` override.
-"cargo:https://github.com/slint-ui/slint.git" = { version = "rev:85e3eb76819762cdcaa732fa87533ff896546bac", crate = "slint-viewer", bin = "slint-viewer" }
+# the preview matches the runtime. Temporarily disabled because mise 2026.6.x
+# oscillates cargo-git rev/ref lock entries for this rarely used tool. See
+# docs/troubleshooting/mise-cargo-git-rev-ref-lock-oscillation.md.
+# "cargo:https://github.com/slint-ui/slint.git" = { version = "rev:85e3eb76819762cdcaa732fa87533ff896546bac", crate = "slint-viewer", bin = "slint-viewer" }
 
 # AI inference server for local development (packages/webapp-productivity/done).
 # Pinned (not "latest") because llama.cpp's release pipeline tags before the
@@ -1044,6 +1040,7 @@ execFileSync('pnpm', ['install'], { stdio: 'inherit' })
 _.file = [{ path = ".env", redact = true }, { path = ".env.local", redact = true }]
 _.path = [
   "node_modules/.bin",
+  "packages/webapp-productivity/done-postcss/node_modules/.bin",
   "packages/typeface/aquaticat/node_modules/.bin",
   "packages/ssg/aquati.cat/node_modules/.bin",
   "packages/rolldown-plugins/import-attributes/node_modules/.bin",
@@ -1058,10 +1055,20 @@ _.path = [
   "packages/pi/auto-mode/node_modules/.bin",
   "packages/pi/advisor/node_modules/.bin",
   "packages/module/token-count/node_modules/.bin",
+  "packages/mcp/mvm/node_modules/.bin",
   "packages/dev-script/mutation-test/node_modules/.bin",
   "packages/dev-script/file-enforcer/node_modules/.bin",
   "packages/dev-script/deps-cube/node_modules/.bin",
   "packages/config/stylelint/node_modules/.bin",
+  "packages/config/oxlint/node_modules/.bin",
+  "packages/claude-code-plugins/terminal-title/node_modules/.bin",
+  "packages/claude-code-plugins/stop-reminders/node_modules/.bin",
+  "packages/claude-code-plugins/session-start-housekeeping/node_modules/.bin",
+  "packages/claude-code-plugins/prompt-time/node_modules/.bin",
+  "packages/claude-code-plugins/guardrail/node_modules/.bin",
+  "packages/claude-code-plugins/correction-reminder/node_modules/.bin",
+  "packages/claude-code-plugins/claude-spawn/node_modules/.bin",
+  "packages/claude-code-plugins/bash-output-filter/node_modules/.bin",
 ]
 
 # Enables Slint's experimental builtins (e.g. FlexboxLayout) in slint-lsp when it
