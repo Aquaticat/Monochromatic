@@ -223,6 +223,59 @@ A narrow probe-feature rule can catch them,
  but the non-overfit version tested so far flagged extra tracks and overshot
 the target.
 
+## Verified half-target result
+
+For the follow-up target `439889.5/2 = 219944.75` seconds with `+0.5 dB` too-loud and `-2.0 dB`
+too-quiet bounds,
+ strict bounds work on the current library with:
+
+```text
+window_count = 14
+window_seconds = 3.754228571428571
+threshold_seconds = 52.5592
+probe_margin_db = 0.683
+```
+
+Artifacts:
+
+```text
+/tmp/agent/truepeak-param-search/out-20260624/windows-half-14x3.754229.jsonl
+```
+
+Verified result at `probe_margin_db = 0.683`:
+
+```text
+decoded_seconds = 219943.7791356195
+target_seconds = 219944.75
+delta_seconds = -0.9708643805061001
+short_full_scan_count = 82
+probably_no_full_scan_count = 3860
+needs_full_scan_exception_count = 49
+worst_too_loud_db = 0.4991655817434766
+worst_too_quiet_db = -0.6830000000000007
+```
+
+This result stays below the requested decoded-second target and inside the requested gain-error bounds without needing
+to loosen the too-quiet side.
+
+`measure_windows` exact run:
+
+```bash
+# from /tmp/agent/truepeak-param-search
+cargo run --release --bin measure_windows -- \
+  out-20260624/tracks.jsonl \
+  14 \
+  3.754228571428571 \
+  out-20260624/windows-half-14x3.754229.jsonl
+```
+
+Dead ends for this half-target search:
+
+- One-second-bin search found a near candidate at `14 × 3.753571428571398s`,
+  but exact window measurement came in far under target (`215342.73110288644s` at margin `0.85`).
+- The first tuned exact result at `14 × 3.754228571428571s` is close enough under target,
+  so no looser `-2 dB` search was needed.
+
 ## Optional production generalization
 
 The current-library parameter search is complete with the two exception tracks above.
