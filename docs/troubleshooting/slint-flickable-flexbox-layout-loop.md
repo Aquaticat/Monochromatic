@@ -1,11 +1,16 @@
-# Slint 1.17.0-dev can recurse when a Flickable sizes itself from a wrapped FlexboxLayout child
+# Slint 1.17 can recurse when a Flickable sizes itself from a wrapped FlexboxLayout child
 
-`music-player` pins Slint commit `85e3eb76819762cdcaa732fa87533ff896546bac`.
-At that revision,
- a `Flickable` whose implicit layout width comes from a wrapped
-`FlexboxLayout` child can compile and then panic with `Recursion detected` at
-runtime.
- A variant also emits binding-loop warnings during build.
+This was diagnosed while `music-player` pinned Slint commit
+`85e3eb76819762cdcaa732fa87533ff896546bac`.
+ The app now uses the Slint
+1.17.0 crates.io release,
+ but it keeps the same breakpoint workaround because the
+problem shape is a `Flickable` whose implicit layout width comes from a wrapped
+`FlexboxLayout` child.
+ That shape can compile and then panic with
+`Recursion detected` at runtime.
+ A variant also emits binding-loop warnings during
+build.
 
 ## Symptom
 
@@ -35,17 +40,13 @@ panic at runtime
 
 ## Root cause
 
-The pinned Slint source is `/tmp/agent/slint-20260601`,
+The audited Slint source is `/tmp/agent/slint-20260601`,
  with origin
 `https://github.com/slint-ui/slint.git` and commit
 `85e3eb76819762cdcaa732fa87533ff896546bac`.
- `music-player` pins the same commit
-for `slint`,
- `i-slint-backend-winit`,
- and `slint-build` in
-`packages/music-player/desktop-app/Cargo.toml:28`,
- `:34`,
- and `:56`.
+ That commit is an ancestor of
+Slint `v1.17.0`,
+ the release now used by the desktop app packages.
 
 Slint's compiler gives `Flickable` implicit preferred and maximum sizes from
 layout children when the app does not bind the `Flickable`'s own width or

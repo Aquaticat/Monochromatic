@@ -7,10 +7,9 @@ FROM registry.fedoraproject.org/fedora:41
 
 # Build toolchain:
 #   rustup-installed stable  Rust compiler + cargo + clippy. NOT Fedora's `rust`
-#                          package: the Slint git pin in Cargo.toml is master
-#                          (1.17.0-dev) and requires rustc >= 1.92, while Fedora
-#                          41 ships 1.91.1. rustup gives the current stable
-#                          toolchain (see the rustup RUN below).
+#                          package: Slint 1.17.0 declares rust-version 1.92,
+#                          while Fedora 41 ships 1.91.1. rustup gives the
+#                          current stable toolchain (see the rustup RUN below).
 #   gcc                    cc for building C dependencies (libopus is compiled
 #                          from source by opusic-sys, the opus crate's -sys
 #                          backend; see the opus pin in Cargo.toml)
@@ -45,9 +44,9 @@ RUN dnf install -y \
       google-noto-sans-cjk-fonts \
     && dnf clean all
 
-# Rust toolchain via rustup, not Fedora's `rust` package (1.91.1), because the
-# Slint git pin (master, 1.17.0-dev) requires rustc >= 1.92. RUSTUP_HOME holds
-# the toolchain and persists in the image. The install uses a throwaway
+# Rust toolchain via rustup, not Fedora's `rust` package (1.91.1), because
+# Slint 1.17.0 declares rust-version 1.92. RUSTUP_HOME holds the toolchain and
+# persists in the image. The install uses a throwaway
 # CARGO_HOME=/usr/local so the cargo/rustc/clippy proxy shims land in
 # /usr/local/bin (already on PATH, persistent in the image); the real CARGO_HOME
 # is set to /cargo below, a named volume that holds only the registry/git cache

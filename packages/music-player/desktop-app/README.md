@@ -380,14 +380,13 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
    The switch is an
   explicit width breakpoint,
    because the
-  breakpointless wrapping `FlexboxLayout` root created a Slint `Flickable` layout-info loop at the pinned Slint
-  revision;
+  breakpointless wrapping `FlexboxLayout` root created a Slint `Flickable` layout-info loop on Slint 1.17;
    see `../../../docs/troubleshooting/slint-flickable-flexbox-layout-loop.md`.
    The full page grid remains
   visible,
    so late-alphabet artists stay discoverable.
    The wide page-tab FlexboxLayout pins `align-content` and
-  `align-items` to start (both default to stretch),
+  `cross-axis-alignment` to start (both default to stretch),
    so its buttons keep the same natural size as in the narrow
   layout instead of inflating to fill the taller list column.
    Each scroll region is driven by a prominent custom
@@ -399,7 +398,7 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
    touchpad and touchscreen gestures fling with momentum,
    and mouse-wheel notches ease in over a
   short duration rather than snapping.
-   The wheel animation needs the pinned Slint 1.17 revision (it is absent from
+   The wheel animation is why the app depends on Slint 1.17 or newer (it is absent from
   the 1.16 releases);
    see `../../../docs/troubleshooting/slint-flickable-smooth-scroll.md`.
    Rows show each track's path
@@ -473,8 +472,7 @@ Rejected alternatives:
    where the horizontal room makes the
   separate panes worthwhile.
 - Breakpointless wrapping `FlexboxLayout` inside `Flickable`:
-   rejected after source-auditing the pinned Slint
-  revision,
+   rejected after source-auditing Slint's 1.17 layout path,
    because `Flickable` forwards preferred width from layout children and wrapped flex cross-axis layout
   needs the assigned width.
    This produced binding-loop warnings and runtime `Recursion detected` panics.
@@ -535,8 +533,7 @@ a container-built binary (Fedora 41 glibc) still links only against runtime libr
  The Rust toolchain comes from the repo-wide mise `rust`
 tool on the host and from rustup (current stable) in the container,
  not Fedora's `rust` package,
- because the
-Slint dependency is pinned to a git master revision (1.17.0-dev) that needs rustc 1.92 or newer;
+ because Slint 1.17.0 needs rustc 1.92 or newer;
  see the `slint`
 dependency comment in `Cargo.toml` and `../../../docs/troubleshooting/slint-flickable-smooth-scroll.md`.
 

@@ -129,25 +129,16 @@ cmake = "latest"
 zig = "0.15.2"
 
 # Slint language server (.slint completion, diagnostics, live preview) for the
-# desktop Slint packages. Pinned to the SAME git rev as their `slint` dependency
-# (`packages/desktop-app/terminal/Cargo.toml` and
-# `packages/music-player/desktop-app/Cargo.toml`) so the LSP's compiler
-# and live preview match the runtime the apps build against; a crates.io release
-# (1.16) lags the pinned master rev. Installed from the slint workspace via mise's
-# cargo backend: `crate` selects the slint-lsp member (the repo root is a virtual
-# workspace, so a bare --git is ambiguous) and `bin` limits the install to the
-# slint-lsp binary (skips the slint-editor bin, which upstream marked TODO: Remove
-# and which the LSP's own preview supersedes). Default features already give
-# backend-default(=winit on Linux) + renderer-femtovg + renderer-software +
-# preview, matching the apps' slint feature set, so no `features` override.
-"cargo:https://github.com/slint-ui/slint" = { version = "rev:85e3eb76819762cdcaa732fa87533ff896546bac", crate = "slint-lsp", bin = "slint-lsp" }
+# desktop Slint packages. Installed from crates.io now that Slint 1.17.0 includes
+# the Flickable wheel animation that previously required a git pin. Keep this
+# tool on the same Slint release family as the desktop app crates so the LSP's
+# compiler and live preview match the runtime they build against.
+"cargo:slint-lsp" = "1.17.0"
 
 # Slint standalone live previewer (renders a .slint file in a window without an
-# editor), pinned to the SAME rev as slint-lsp and the apps' slint dependency so
-# the preview matches the runtime. Temporarily disabled because mise 2026.6.x
-# oscillates cargo-git rev/ref lock entries for this rarely used tool. See
-# docs/troubleshooting/mise-cargo-git-rev-ref-lock-oscillation.md.
-# "cargo:https://github.com/slint-ui/slint.git" = { version = "rev:85e3eb76819762cdcaa732fa87533ff896546bac", crate = "slint-viewer", bin = "slint-viewer" }
+# editor). Also installed from crates.io so it matches slint-lsp without using
+# the old cargo-git rev/ref path that made mise.lock oscillate.
+"cargo:slint-viewer" = "1.17.0"
 
 # AI inference server for local development (packages/webapp-productivity/done).
 # Pinned (not "latest") because llama.cpp's release pipeline tags before the

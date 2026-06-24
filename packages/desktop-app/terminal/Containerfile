@@ -62,7 +62,7 @@ RUN arch="$(uname -m)" \
       | tar zxf - -C /usr/local/bin
 
 ENV CARGO_HOME=/cargo
-# Property changed callbacks and the pinned Slint Flickable improvements are
-# compiled consistently for build, lint, test, and run tasks.
+# Slint's experimental language surface used by the UI is compiled consistently
+# for build, lint, test, and run tasks.
 ENV SLINT_ENABLE_EXPERIMENTAL_FEATURES=1
 WORKDIR /work

@@ -15,20 +15,20 @@ name = "monochromatic-terminal"
 path = "src/main.rs"
 
 [dependencies]
-# Pinned to the same Slint master revision as packages/music-player/desktop-app
-# so Flickable owns smooth wheel and touch scrolling. Keep slint-build below on
-# the same rev because the markup compiler and runtime are versioned together.
-# Same Slint rev as above. The explicit winit backend lets the app stamp its
-# Wayland app id before the window is created.
-i-slint-backend-winit = { git = "https://github.com/slint-ui/slint", rev = "85e3eb76819762cdcaa732fa87533ff896546bac" }
+# Same Slint release family as packages/music-player/desktop-app so both desktop
+# prototypes share Flickable smooth wheel and touch scrolling. The explicit winit
+# backend lets the app stamp its Wayland app id before the window is created.
+# Keep slint-build below on the same release family because the markup compiler
+# and runtime are versioned together.
+i-slint-backend-winit = "1.17.0"
 # Safe Rust binding for Ghostty's terminal core. Default features are disabled
 # because this prototype renders text cells only and does not need Kitty images.
 libghostty-vt = { version = "0.1.1", default-features = false }
 # WezTerm's PTY abstraction. It gives this app safe shell spawn, read, write,
 # and resize operations without hand-written forkpty or ioctl setup.
 portable-pty = "0.9.0"
-slint = { git = "https://github.com/slint-ui/slint", rev = "85e3eb76819762cdcaa732fa87533ff896546bac", features = ["backend-winit", "renderer-femtovg", "renderer-software"] }
+slint = { version = "1.17.0", features = ["backend-winit", "renderer-femtovg", "renderer-software"] }
 
 [build-dependencies]
-# Must match the `slint` git rev above.
-slint-build = { git = "https://github.com/slint-ui/slint", rev = "85e3eb76819762cdcaa732fa87533ff896546bac" }
+# Must match the `slint` release family above.
+slint-build = "1.17.0"

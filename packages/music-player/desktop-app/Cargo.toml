@@ -15,15 +15,11 @@ name = "music-player"
 path = "src/main.rs"
 
 [dependencies]
-# Pinned to a Slint master revision (not a crates.io release) for smooth
-# mouse-wheel scrolling. Flickable animates discrete wheel events with a short
-# fixed-duration easing in slint-ui/slint#11338 (merged 2026-04-15, fixes
-# #11312). That commit diverged from the 1.16 release line, so it is absent from
-# the latest release (1.16.1, 2026-04-23) and ships only on master, landing in a
-# 1.17 release. The rev is pinned (not branch=master) so the exact Slint commit
-# is fixed and `cargo update` cannot move it; the committed Cargo.lock records
-# the resolved git source too. slint-build below MUST track the same rev. Revert
-# both to a crates.io `version` once a release including #11338 ships.
+# Slint 1.17.0 is the first crates.io release with Flickable mouse-wheel
+# animation (slint-ui/slint#11338, fixing #11312), so this package no longer
+# needs the former master-revision pin. Keep slint, i-slint-backend-winit, and
+# slint-build on the same release family because the runtime, explicit winit
+# backend, and markup compiler are versioned together.
 directories = "5"
 # True-peak cache fingerprint hashing (src/peakcache.rs). We call the one-shot
 # `gxhash64(bytes, seed)` to derive the opaque cache key from (path, size, mtime),
@@ -44,12 +40,13 @@ gxhash = "3"
 # `#[derive(Parser)]`, replacing hand-rolled argv scanning and generating
 # `--help` / `--version` for free. 4.x is the current major line.
 clap = { version = "4", features = ["derive"] }
-# Same Slint rev as above: the winit backend is constructed explicitly (not via
-# the default backend selector) so a window-attributes hook can set the Wayland
-# app_id, which KDE needs to attach taskbar progress to the running window. Its
-# re-exported `winit` (`i_slint_backend_winit::winit`) is reused for the
-# WindowAttributes ext trait, so no separate `winit` dependency is added.
-i-slint-backend-winit = { git = "https://github.com/slint-ui/slint", rev = "85e3eb76819762cdcaa732fa87533ff896546bac" }
+# Same Slint release family as above: the winit backend is constructed
+# explicitly (not via the default backend selector) so a window-attributes hook
+# can set the Wayland app_id, which KDE needs to attach taskbar progress to the
+# running window. Its re-exported `winit` (`i_slint_backend_winit::winit`) is
+# reused for the WindowAttributes ext trait, so no separate `winit` dependency is
+# added.
+i-slint-backend-winit = "1.17.0"
 # Not called from our code: a feature-unification shim. icu_provider reaches the
 # tree transitively (slint -> parley -> icu_segmenter -> icu_provider). With its
 # `logging` feature OFF, a DEBUG build routes ICU's internal `warn!` to a raw
@@ -92,7 +89,7 @@ notify-debouncer-mini = "0.7"
 ringbuf = "0.4"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-slint = { git = "https://github.com/slint-ui/slint", rev = "85e3eb76819762cdcaa732fa87533ff896546bac", features = ["backend-winit", "renderer-femtovg", "renderer-software"] }
+slint = { version = "1.17.0", features = ["backend-winit", "renderer-femtovg", "renderer-software"] }
 symphonia = { version = "0.6", features = ["all"] }
 # Drives the Turso cache async API from the cache-service actor thread
 # (src/peakcache.rs). The actor owns ONE current-thread runtime
@@ -183,9 +180,9 @@ libc = "0.2"
 windows = { version = "0.62", features = ["Win32_Foundation", "Win32_System_Com", "Win32_System_Threading", "Win32_UI_Shell"] }
 
 [build-dependencies]
-# Must match the `slint` git rev above (the compiler and runtime are versioned
-# together). See the comment on the `slint` dependency for why this is a git pin.
-slint-build = { git = "https://github.com/slint-ui/slint", rev = "85e3eb76819762cdcaa732fa87533ff896546bac" }
+# Must match the `slint` release family above because the compiler and runtime
+# are versioned together.
+slint-build = "1.17.0"
 
 # Windows-only build dependency: embeds assets/music-player.ico into the .exe so
 # Explorer, the taskbar, and Alt-Tab show the app icon (the macOS icon lives in

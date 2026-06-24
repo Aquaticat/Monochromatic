@@ -1,18 +1,17 @@
-# Slint Flickable smooth-scrolls touchpad gestures but not the mouse wheel until release 1.16.1; the wheel fix is merged upstream but unreleased
+# Slint 1.16.1 smooth-scrolls touchpad gestures but not mouse-wheel events; Slint 1.17.0 fixes the wheel path
 
 Slint 1.16.1's `Flickable` has momentum (fluent) scrolling,
  but only for
 touchpad and touchscreen gestures.
  Discrete mouse-wheel events jump
 instantly with no animation.
- The mouse-wheel animation exists upstream
+ The mouse-wheel animation exists in Slint 1.17.0
 (slint-ui/slint#11338,
- merged 2026-04-15) but diverged from the 1.16 release
-line,
- so it is absent from every published release through 1.16.1
-(2026-04-23) and ships only on master.
- `music-player` pins a Slint master
-revision to get it.
+ merged 2026-04-15,
+ fixing #11312).
+ It diverged from the 1.16 release line,
+ so every published 1.16 release lacks it.
+ `music-player` now uses the Slint 1.17.0 crates.io release instead of the former master-revision pin.
 
 ## Symptom
 
@@ -166,70 +165,52 @@ What does not animate in 1.16.1:
 - Mouse-wheel scrolling.
    Each notch is an instant step.
 
-Upstream state of the wheel fix on 2026-06-01:
+Upstream state of the wheel fix:
 
 - slint-ui/slint#11338 merged to master 2026-04-15 (merge commit
   `ce79e9393`).
-- Latest published release:
-   `v1.16.1` (2026-04-23).
-   No newer release exists.
-- `ce79e9393...master` reports `ahead_by: 683, behind_by: 0`,
-   so master HEAD
-  (`85e3eb76`,
-   2026-06-01) contains the fix.
+- Slint `v1.17.0` released 2026-06-24 and includes the changelog entry
+  `Flickable: Animate wheel scrolling. (#11312)`.
+- GitHub compare from the former pin
+  `85e3eb76819762cdcaa732fa87533ff896546bac` to `v1.17.0` reports
+  `ahead_by: 315` and `behind_by: 0`,
+   so the release contains the former pinned fix.
 
 ## Verified workaround
 
-Pin Slint to a master revision that contains #11338.
- `music-player`'s
-`Cargo.toml` pins both `slint` and `slint-build` to rev `85e3eb76` (master
-HEAD on 2026-06-01,
- which Cargo resolves as slint `1.17.0`) with a
-justification comment.
- That revision requires rustc 1.92 or newer,
- above
-Fedora 41's packaged 1.91.1,
- so the `Containerfile` installs the Rust
-toolchain with rustup (current stable,
- rustc 1.96 at last rebuild) instead of
-the distro `rust` package.
- The experimental builtins flag the app already sets
-for `FlexboxLayout` (`SLINT_ENABLE_EXPERIMENTAL_FEATURES=1` in the
-`Containerfile`) is unrelated to scrolling and continues to apply;
- the jump
-from 1.16.1 to 1.17.0 compiles `ui/app.slint` (FlexboxLayout included) clean
-under `cargo clippy --release -- -D warnings`.
+Use the Slint 1.17.0 crates.io release.
+ `music-player` and `terminal` depend on
+`slint`,
+ `i-slint-backend-winit`,
+ and `slint-build` with a `1.17.0` version
+requirement.
+ The release still requires rustc 1.92 or newer,
+ above Fedora 41's
+packaged 1.91.1,
+ so the `music-player` `Containerfile` keeps installing Rust with
+rustup instead of the distro `rust` package.
+ The experimental builtins flag the app already sets for `FlexboxLayout`
+(`SLINT_ENABLE_EXPERIMENTAL_FEATURES=1` in the `Containerfile`) is unrelated to
+scrolling and continues to apply.
+
+Verification after switching from the git pin to crates.io Slint 1.17.0 and
+renaming `FlexboxLayout.align-items` to `cross-axis-alignment`:
+
+- `mise run //packages/music-player/desktop-app:lint` passes.
+- `mise run //packages/desktop-app/terminal:lint` passes.
+- `mise run //packages/music-player/desktop-app:test` passes,
+   `78` tests.
+- `mise run //packages/desktop-app/terminal:test` passes,
+   `16` tests.
 
 Trade-offs:
 
-- Building from git compiles the Slint crates from source instead of using a
-  crates.
-  io artifact,
-   so the first build after the bump is slower and needs
-  network access inside the build container.
-- Master is ahead of the last release by hundreds of commits,
-   so unreleased
-  changes (including experimental-API drift in `FlexboxLayout`) ride along.
-  The pin is a fixed rev,
-   not `branch = "master"`,
-   so the exact Slint commit
-  is fixed and `cargo update` cannot move it.
-   Cargo.
-  lock is gitignored repo-wide
-  (`*.lock`),
-   so the rev pin,
-   not a committed lockfile,
-   is what fixes Slint;
-  non-Slint transitive deps still resolve to latest-compatible semver.
-
-Revert condition:
- once a Slint release that includes #11338 ships (a minor
-above 1.16,
- or a 1.16.
-x backport if upstream cherry-picks it),
- drop the git
-pin and return `slint` / `slint-build` to a crates.
-io `version` requirement.
+- Crates.io release artifacts replace the former git source build for Slint,
+  which removes the need for a moving master-revision rationale.
+- The Slint direct dependencies remain versioned together,
+  because the runtime,
+  explicit winit backend,
+  and markup compiler are released as one Slint family.
 
 ## What does not work
 
@@ -280,17 +261,13 @@ all five held.
     issue #11312 requested it and was accepted
    and closed by the fix.
 4. Will they fix it?
-    Already merged;
-    pending release.
+    Already merged and released in Slint 1.17.0.
 5. Prototyped a minimal fix?
     Not applicable;
     upstream's own merged change is
    the fix.
 
 There is nothing to report:
- the only open item is the release timing,
- which
-is upstream's to schedule.
- The local action is the git pin above plus the
-revert condition,
+ upstream already shipped the fix in Slint 1.17.0.
+ The local action is to use the crates.io release,
  not a new issue.

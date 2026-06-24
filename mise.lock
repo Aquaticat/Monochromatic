@@ -437,13 +437,13 @@ backend = "cargo:https://github.com/slint-ui/slint"
 bin = "slint-lsp"
 crate = "slint-lsp"
 
-[[tools."cargo:https://github.com/slint-ui/slint"]]
-version = "ref:85e3eb76819762cdcaa732fa87533ff896546bac"
-backend = "cargo:https://github.com/slint-ui/slint"
+[[tools."cargo:slint-lsp"]]
+version = "1.17.0"
+backend = "cargo:slint-lsp"
 
-[tools."cargo:https://github.com/slint-ui/slint".options]
-bin = "slint-lsp"
-crate = "slint-lsp"
+[[tools."cargo:slint-viewer"]]
+version = "1.17.0"
+backend = "cargo:slint-viewer"
 
 [[tools."cargo:timeout-cli"]]
 version = "0.1.0"

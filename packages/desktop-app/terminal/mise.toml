@@ -14,10 +14,10 @@
 # see ../../../docs/decisions/desktop-app-podman-build.md
 
 [env]
-# Property-changed callbacks and the pinned Slint Flickable improvements must be
-# compiled consistently on the host, matching the Containerfile's baked ENV.
-# podman does not forward host env into the container, so this only affects the
-# host branch (the image sets its own copy).
+# Slint's experimental language surface used by the UI must be compiled
+# consistently on the host, matching the Containerfile's baked ENV. podman does
+# not forward host env into the container, so this only affects the host branch
+# (the image sets its own copy).
 SLINT_ENABLE_EXPERIMENTAL_FEATURES = "1"
 # Host libclang ships only versioned (libclang.so.NN, no unversioned symlink), so
 # point bindgen (libghostty-vt-sys) at the lib dir explicitly. Host only; not

@@ -294,57 +294,45 @@ Works cleanly:
    regenerating `mise.toml`,
    and running
   `mise lock` prunes that stale tool.
-  After disabling `slint-viewer`,
-   `mise lock --dry-run`
-  no longer reported `cargo:https://github.com/slint-ui/slint.git` as stale.
-- A lockfile update after disabling `slint-viewer` changed only `mise.lock` and removed the
-  `slint-viewer` entries.
+- Moving the Slint tools to crates.io entries avoids the cargo-git `rev:` / `ref:` identity split.
+  `mise lock --dry-run 'cargo:slint-lsp' 'cargo:slint-viewer'` processes exactly
+  `cargo:slint-lsp@1.17.0` and `cargo:slint-viewer@1.17.0`.
 
-Still churns:
+Still churns on the historical config:
 
 - Keeping `slint-lsp` as a cargo-git `rev:` tool still leaves mise processing both
   `cargo:https://github.com/slint-ui/slint@ref:85e3...` and
   `cargo:https://github.com/slint-ui/slint@rev:85e3...` in `mise lock --dry-run`.
-  The local mitigation reduces the duplicate surface,
-   but it is not an upstream fix.
 - Running `mise lock` from a no-duplicate baseline can recreate `ref:` entries.
 
 ## Verified workarounds
 
-### Temporarily disable the rarely used duplicate cargo-git tool
+### Use crates.io Slint tool entries once a matching Slint release exists
 
-This is the workaround applied locally for `slint-viewer`:
+This is the workaround now applied locally for both Slint tools:
 
 ```toml
 # mise.no-env.toml
-# Slint standalone live previewer (renders a .slint file in a window without an
-# editor), pinned to the SAME rev as slint-lsp and the apps' slint dependency so
-# the preview matches the runtime. Temporarily disabled because mise 2026.6.x
-# oscillates cargo-git rev/ref lock entries for this rarely used tool. See
-# docs/troubleshooting/mise-cargo-git-rev-ref-lock-oscillation.md.
-# "cargo:https://github.com/slint-ui/slint.git" = { version = "rev:85e3eb76819762cdcaa732fa87533ff896546bac", crate = "slint-viewer", bin = "slint-viewer" }
+"cargo:slint-lsp" = "1.17.0"
+"cargo:slint-viewer" = "1.17.0"
 ```
 
-Then regenerate the generated config and prune the lockfile:
+Then regenerate the generated config and refresh the lockfile:
 
 ```bash
 # /var/home/user/Monochromatic
-mise run prepare:pnpm:others:files
-mise lock
+mise run sync:files
+mise lock 'cargo:slint-lsp' 'cargo:slint-viewer'
 ```
 
 Tradeoffs:
 
-- `slint-viewer` is no longer installed by mise.
-  That is acceptable while the previewer is rarely
-  used.
-- This removes the second Slint cargo-git tool key from config and lockfile,
-   so future lock churn
-  cannot include `cargo:https://github.com/slint-ui/slint.git`.
-- This does not solve the remaining `slint-lsp` `rev:` versus `ref:` mismatch.
-  Future mise changes
-  can still touch that entry until upstream normalizes the identity consistently or we stop using a
-  cargo-git `rev:` install for `slint-lsp`.
+- `slint-viewer` is installed again because it no longer needs the duplicate
+  cargo-git tool key.
+- This removes both Slint cargo-git tool keys from config and lockfile,
+  so future lock churn cannot include the `rev:` / `ref:` Slint entries.
+- This became available only after Slint 1.17.0 shipped matching crates.io
+  releases for the runtime crates and the tools.
 
 ## What does not work
 
@@ -356,7 +344,7 @@ Tradeoffs:
   It is generated from `mise.no-env.toml` by `file-enforcer.config.ts`,
    so
   the source file must change first,
-   then `mise run prepare:pnpm:others:files` must regenerate it.
+   then `mise run sync:files` must regenerate it.
 - Running plain `mise lock` while keeping a cargo-git `rev:` Slint tool.
   The dry-run still lists both
   `ref:` and `rev:` for `slint-lsp`.

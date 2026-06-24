@@ -316,13 +316,13 @@ export component AppWindow inherits Window {
         // against the slint clone's internal/core/layout.rs:1495-1524, where
         // alignment maps to justify_content and spacing-h/v map to the taffy gap
         // independently). spacing-vertical: 8px is the gap between wrapped rows;
-        // align-items: center vertically centres each group against the tallest
-        // in its row; vertical-stretch: 0 keeps the row at its wrapped height (the
+        // cross-axis-alignment: center vertically centres each group against the
+        // tallest in its row; vertical-stretch: 0 keeps the row at its wrapped height (the
         // queue region below absorbs the vertical slack).
         FlexboxLayout {
             flex-wrap: wrap;
             alignment: space-between;
-            align-items: center;
+            cross-axis-alignment: center;
             spacing-horizontal: 48px;
             spacing-vertical: 8px;
             vertical-stretch: 0;
@@ -451,8 +451,8 @@ export component AppWindow inherits Window {
                         viewport-height: tabsContent.preferred-height;
                         tabsContent := VerticalLayout {
                             alignment: start;
-                            // align-content and align-items default to stretch on
-                            // FlexboxLayout; pin both to start so the wrapped tab
+                            // align-content and cross-axis-alignment default to
+                            // stretch on FlexboxLayout; pin both to start so the wrapped tab
                             // lines and the buttons keep their natural height,
                             // packed at the top, rather than being inflated by any
                             // surplus cross-axis height.
@@ -461,7 +461,7 @@ export component AppWindow inherits Window {
                                 flex-wrap: wrap;
                                 alignment: start;
                                 align-content: start;
-                                align-items: start;
+                                cross-axis-alignment: start;
                                 vertical-stretch: 0;
                                 for label[p] in root.page-labels: Button {
                                     text: label;
@@ -569,7 +569,7 @@ export component AppWindow inherits Window {
                             flex-wrap: wrap;
                             alignment: start;
                             align-content: start;
-                            align-items: start;
+                            cross-axis-alignment: start;
                             vertical-stretch: 0;
                             for label[p] in root.page-labels: Button {
                                 text: label;
