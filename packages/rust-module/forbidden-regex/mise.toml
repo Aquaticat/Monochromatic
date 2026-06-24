@@ -35,7 +35,8 @@ description = "cargo nextest run in debug mode for fast TDD iteration"
 run = "cargo nextest run"
 
 [tasks.bench]
-description = "Throughput (lines/second) comparison vs regex and resharp on a pre-serialized RegexSet"
-# Bench lives in its own detached crate (bench/Cargo.toml) so the regex/resharp
-# comparison deps never enter this published crate's own test/build graph.
-run = "cargo run --release --manifest-path bench/Cargo.toml"
+description = "Throughput (lines/second) comparison vs the regex crate on a pre-serialized RegexSet"
+# Bench lives in a sidecar crate (../forbidden-regex.bench) so the regex comparison
+# dep never enters this published crate's own test/build graph. resharp is deferred
+# (its serialized matcher is too slow to be a useful baseline).
+run = "cargo run --release --manifest-path ../forbidden-regex.bench/Cargo.toml"

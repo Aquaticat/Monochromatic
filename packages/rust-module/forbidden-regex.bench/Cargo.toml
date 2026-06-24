@@ -1,0 +1,28 @@
+[package]
+name = "forbidden-regex-bench"
+version = "0.1.0"
+edition = "2024"
+publish = false
+description = "Throughput benchmark comparing forbidden-regex against the regex crate on a pre-serialized RegexSet."
+
+[[bin]]
+name = "forbidden-regex-bench"
+path = "src/main.rs"
+
+[dependencies]
+# The engine under test, by path so the comparison never enters its published
+# dependency graph.
+forbidden-regex = { path = "../forbidden-regex" }
+
+# The baseline. `regex` cannot do `&`/`~`, but the dialect overlap (literals,
+# classes, bounded repetition, alternation, anchors) is exactly where a fair
+# head-to-head throughput comparison lives.
+regex = "1"
+
+# Build both engines under one standard release profile so neither is advantaged:
+# whole-graph LTO, one codegen unit, full optimization. Overflow checks stay off
+# here (the deployed scanner turns them on; this measures the algorithm).
+[profile.release]
+lto = true
+codegen-units = 1
+opt-level = 3
