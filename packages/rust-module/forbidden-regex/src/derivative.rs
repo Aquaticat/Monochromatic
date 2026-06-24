@@ -4,7 +4,7 @@
 use crate::ast::node::Node;
 
 /// Imports the smart constructors that keep results canonical.
-use crate::ast::smart::{alt, comp, concat, inter};
+use crate::ast::smart::{alt, comp, concat, inter, repeat};
 
 /// Imports the boundary context used when a sequence steps past a nullable
 /// anchor.
@@ -41,6 +41,36 @@ pub fn derivative(node: &Node, byte: u8, ctx: Ctx) -> Node {
         Node::Inter(parts) => inter(parts.iter().map(|p| derivative(p, byte, ctx)).collect()),
         Node::Comp(inner) => comp(derivative(inner, byte, ctx)),
         Node::Concat(parts) => derivative_concat(parts, byte, ctx),
+        Node::Repeat { node, min, max } => derivative_repeat(node, *min, *max, byte, ctx),
+    }
+}
+
+/// Interim countdown derivative of a bounded repetition.
+///
+/// What: consuming a byte spends one copy of the body, leaving `D_b(R)` followed
+/// by the decremented repetition `R{min-1, max-1}`; when the body is nullable that
+/// first copy may instead match empty, so the byte may start a later copy, adding
+/// `D_b(R{min-1, max-1})`. Why: this keeps the eager derivative path correct while
+/// the counting back-end (which carries the count in a register, not in states) is
+/// built; it still blows up under search, so it is a stepping stone, not the goal.
+fn derivative_repeat(node: &Node, min: usize, max: usize, byte: u8, ctx: Ctx) -> Node {
+    // What: an exhausted repetition (no copies left) matches only the empty
+    // string, whose derivative is `Fail`. Why: nothing can be consumed.
+    if max == 0 {
+        return Node::Fail;
+    }
+    // What: the repetition with one fewer mandatory and one fewer allowed copy.
+    // Why: spending a copy on this byte leaves exactly this tail to match.
+    let dec = repeat(node.clone(), min.saturating_sub(1), max - 1);
+    // What: the body advances by `b`, then the decremented repetition follows.
+    // Why: the common case where this byte belongs to the current copy.
+    let main = concat(vec![derivative(node, byte, ctx), dec.clone()]);
+    if nullable(node, ctx) {
+        // What: the current copy matched empty, so `b` opens a later copy.
+        // Why: a nullable body lets the byte skip into the decremented tail.
+        alt(vec![main, derivative(&dec, byte, ctx)])
+    } else {
+        main
     }
 }
 

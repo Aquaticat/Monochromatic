@@ -1,10 +1,10 @@
-//! Bounded repetition `{n}` and `{n,m}`, desugared into the core algebra.
+//! Bounded repetition `{n}` and `{n,m}`, kept as a `Repeat` node.
 
 /// Imports the node algebra being repeated.
 use crate::ast::node::Node;
 
-/// Imports the constructors used to build the desugared sequence.
-use crate::ast::smart::{concat, optional};
+/// Imports the smart constructor that builds the `Repeat` node.
+use crate::ast::smart::repeat;
 
 /// Imports the error type for malformed or oversized repetitions.
 use crate::error::CompileError;
@@ -12,17 +12,18 @@ use crate::error::CompileError;
 /// Imports the cursor.
 use crate::parse::cursor::Cursor;
 
-/// Largest repetition count accepted, bounding desugared node growth.
+/// Largest repetition count accepted, bounding the counter range.
 ///
-/// What: an upper limit on `n` and `m`. Why: `{1000000}` would expand to a
-/// million nodes; capping turns that into a clean error instead of memory blowup.
+/// What: an upper limit on `n` and `m`. Why: the count becomes a runtime counter
+/// register, so `{1000000}` would demand a huge counter domain; capping turns that
+/// into a clean error instead of an unbounded counter.
 const REPEAT_CAP: usize = 1024;
 
 /// Parses a `{n}` or `{n,m}` quantifier and applies it to `atom`.
 ///
 /// What: reads the counts after `{`, rejects unbounded `{n,}` and `n > m`, caps
-/// the magnitude, and desugars to concatenations. Why: there is no repeat node;
-/// every repetition becomes plain concatenation and optionals.
+/// the magnitude, and builds a `Repeat` node. Why: the count stays symbolic on the
+/// node (later a counter register) rather than being unrolled into states.
 pub fn parse_repeat(cur: &mut Cursor, atom: Node) -> Result<Node, CompileError> {
     let pos = cur.pos();
     cur.bump();
@@ -33,7 +34,7 @@ pub fn parse_repeat(cur: &mut Cursor, atom: Node) -> Result<Node, CompileError> 
         Some(b'}') => {
             cur.bump();
             check_cap(n, pos)?;
-            Ok(repeat_exact(atom, n))
+            Ok(repeat(atom, n, n))
         }
         Some(b',') => {
             cur.bump();
@@ -75,7 +76,7 @@ fn parse_repeat_upper(cur: &mut Cursor, atom: Node, n: usize, pos: usize) -> Res
         });
     }
     check_cap(m, pos)?;
-    Ok(repeat_range(atom, n, m))
+    Ok(repeat(atom, n, m))
 }
 
 /// Reads a run of ASCII digits as a `usize`, failing on overflow or none.
@@ -122,30 +123,4 @@ fn check_cap(count: usize, pos: usize) -> Result<(), CompileError> {
     } else {
         Ok(())
     }
-}
-
-/// Builds `atom{n}` as `n` copies concatenated.
-///
-/// What: zero copies is the empty string. Why: exact repetition is plain
-/// concatenation of clones.
-fn repeat_exact(atom: Node, n: usize) -> Node {
-    // What: collect `n` clones and concatenate. Why: functional build of the
-    // bounded sequence; `n` is capped so the clone count is bounded.
-    let parts: Vec<Node> = (0..n).map(|_| atom.clone()).collect();
-    concat(parts)
-}
-
-/// Builds `atom{n,m}` as `n` required copies plus `m - n` optional copies.
-///
-/// What: `a{2,4}` becomes `a a a? a?`. Why: optional tails give exactly the
-/// counts `n` through `m` without an unbounded star.
-fn repeat_range(atom: Node, n: usize, m: usize) -> Node {
-    // What: required prefix then optional suffix, all concatenated.
-    // Why: `optional(a)` is `a|epsilon`, so each optional copy adds one to the
-    // allowed length up to `m`.
-    let mut parts: Vec<Node> = (0..n).map(|_| atom.clone()).collect();
-    for _ in n..m {
-        parts.push(optional(atom.clone()));
-    }
-    concat(parts)
 }

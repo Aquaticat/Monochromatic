@@ -148,12 +148,12 @@ behavior, then implement.
   `mise run //packages/rust-module/forbidden-regex:test:debug`. Direct
   `cargo nextest run` in the package dir is acceptable for iteration here.
 - Keep `cargo build` (debug) green at every step.
-- Commit with `git commit --no-verify` throughout this package's work. The
-  pre-commit hooks run the `forbidden-strings` scanner, which flags this crate's
-  own test fixtures (AWS-style keys like `AKIA...`, rule 111) as secrets. Those
-  are deliberate test inputs, not leaks, so the hook is bypassed here. Still stage
-  scoped pathspecs (`git commit packages/rust-module/forbidden-regex ...`), never
-  `-A`/`.`.
+- Stage scoped pathspecs (`git commit packages/rust-module/forbidden-regex ...`),
+  never `-A`/`.` (per AGENTS.md CLG). The `forbidden-strings` pre-commit hook,
+  which would otherwise flag this crate's own test fixtures (AWS-style keys like
+  `AKIA...`, rule 111) as secrets, is currently disabled repo-wide, so commits
+  here need no `--no-verify`. If that hook is re-enabled, those fixtures are
+  deliberate test inputs, not leaks, so bypass it for this package.
 - Before declaring any milestone done: `mise run //packages/rust-module/forbidden-regex:lint:rust`
   (max-lines 300 per file, rustdoc on every item) and `:lint:clippy`.
 

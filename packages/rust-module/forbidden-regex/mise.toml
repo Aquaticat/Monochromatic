@@ -28,6 +28,12 @@ run = "cargo run --quiet --manifest-path ../../linter/rust/Cargo.toml -- ."
 description = "cargo nextest run"
 run = "cargo nextest run --release"
 
+[tasks."test:debug"]
+description = "cargo nextest run in debug mode for fast TDD iteration"
+# Debug builds skip release LTO, so iteration is fast during the counting-automaton
+# rebuild. The release `test` task is the gate before declaring a milestone done.
+run = "cargo nextest run"
+
 [tasks.bench]
 description = "Throughput (lines/second) comparison vs regex and resharp on a pre-serialized RegexSet"
 # Bench lives in its own detached crate (bench/Cargo.toml) so the regex/resharp
