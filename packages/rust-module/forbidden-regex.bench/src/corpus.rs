@@ -1,143 +1,106 @@
-//! Deterministic synthetic corpus: mostly non-matching code-like lines plus keys.
+//! Corpus drawn from this repo's own non-gitignored lines: realistic scanner input.
+//!
+//! What: [`build_corpus`] walks the repo with the same `ignore::WalkBuilder` config the
+//! real forbidden-strings scanner uses, reads each text file, and collects its lines up
+//! to a cap. Why: a secret scanner runs over exactly this file set, so the honest
+//! throughput is the one measured on real source lines (mixed case, punctuation,
+//! identifiers, prose) rather than synthetic noise.
 
-/// Lines in the corpus.
+/// Imports the path types for repo file enumeration.
+use std::path::PathBuf;
+
+/// Imports the gitignore-aware walker the scanner uses.
+use ignore::WalkBuilder;
+
+/// Maximum lines gathered into the corpus.
 ///
-/// What: the per-pass line count. Why: bounds the benchmark to a fixed, modest
-/// working set so a run never threatens the host.
+/// What: a ceiling on the working set. Why: bounds memory and keeps each timed pass a
+/// fixed size regardless of repo growth.
 pub const CORPUS_LINES: usize = 50_000;
 
-/// One in this many lines carries a real key; the rest never match.
+/// Longest line admitted into the corpus.
 ///
-/// What: the positive-line stride. Why: a secret scanner mostly sees non-matching
-/// source, so the throughput that matters is the full-line no-match scan.
-const POSITIVE_EVERY: usize = 100;
+/// What: a per-line byte ceiling. Why: minified or generated megabyte lines would
+/// skew the average length and the scan, so they are skipped.
+const MAX_LINE_LEN: usize = 4_096;
 
-/// Bytes a non-matching line may contain: lowercase, digits, and spaces.
+/// Returns the repository root directory.
 ///
-/// What: excludes uppercase, `_`, `-`, and punctuation. Why: the shipped rules key
-/// off those characters, so a negative line cannot accidentally form a credential
-/// prefix, keeping the match-count parity check meaningful.
-const NEG_ALPHABET: &[u8] = b"abcdefghijklmnopqrstuvwxyz0123456789      ";
-
-/// Alphabet for a token body (`[A-Za-z0-9]`).
-const ALNUM: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-
-/// Alphabet for a GitLab token body (`[\w-]`).
-const WORD_DASH: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-";
-
-/// Shortest and longest negative line lengths.
-const MIN_LEN: usize = 24;
-
-/// Longest negative line length.
-const MAX_LEN: usize = 96;
-
-/// A small linear-congruential generator for reproducible corpus bytes.
-///
-/// What: a 64-bit LCG with the SplitMix-style multiplier. Why: deterministic output
-/// without a dependency, so the benchmark corpus is identical every run.
-struct Rng {
-    /// Mutable generator state advanced on each draw.
-    state: u64,
-}
-
-/// Drawing helpers over the generator.
-impl Rng {
-    /// Seeds the generator.
-    ///
-    /// What: stores the seed as the initial state. Why: a fixed seed gives a fixed
-    /// corpus across runs.
-    fn new(seed: u64) -> Rng {
-        Rng { state: seed }
-    }
-
-    /// Advances the state and returns the next pseudo-random word.
-    ///
-    /// What: one LCG step. Why: the single source of all corpus randomness.
-    fn next_u64(&mut self) -> u64 {
-        self.state = self
-            .state
-            .wrapping_mul(6364136223846793005)
-            .wrapping_add(1442695040888963407);
-        self.state
-    }
-
-    /// Picks one byte uniformly from `set`.
-    ///
-    /// What: indexes `set` by the next draw modulo its length. Why: builds a line
-    /// byte from a chosen alphabet.
-    fn pick(&mut self, set: &[u8]) -> u8 {
-        set[(self.next_u64() % set.len() as u64) as usize]
-    }
-
-    /// Returns a length in the inclusive range `[lo, hi]`.
-    ///
-    /// What: a modulo-bounded draw offset by `lo`. Why: varies negative-line length.
-    fn len_between(&mut self, lo: usize, hi: usize) -> usize {
-        lo + (self.next_u64() % (hi - lo + 1) as u64) as usize
+/// What: walks up from the working dir to the first ancestor holding a `.git` entry.
+/// Why: the walk and reads resolve against the repo root regardless of the bench's
+/// working dir, without shelling out to the repo's `cli-git` wrapper.
+fn repo_root() -> PathBuf {
+    let mut dir = std::env::current_dir().expect("working dir is readable");
+    loop {
+        if dir.join(".git").exists() {
+            return dir;
+        }
+        if !dir.pop() {
+            panic!("no .git directory found above the working dir");
+        }
     }
 }
 
-/// Builds the deterministic corpus: mostly negatives with periodic real keys.
+/// Lists every non-gitignored file under the repo root.
 ///
-/// What: every `POSITIVE_EVERY`-th line embeds an AWS key or GitHub token, the rest
-/// are non-matching code-like noise. Why: a realistic scanner workload whose match
-/// count is known, so both engines can be checked for parity before timing.
-pub fn build_corpus() -> Vec<Vec<u8>> {
-    let mut rng = Rng::new(0x9E37_79B9_7F4A_7C15);
-    (0..CORPUS_LINES)
-        .map(|i| {
-            if i.is_multiple_of(POSITIVE_EVERY) {
-                positive_line(&mut rng, i)
-            } else {
-                negative_line(&mut rng)
-            }
-        })
+/// What: the same walk the scanner uses, `WalkBuilder::new(root).hidden(false)
+/// .ignore(false)` skipping the `.git`/`.jj` subtrees, keeping only files. Why:
+/// `hidden(false)` includes tracked dotfiles, `ignore(false)` leaves `.ignore`
+/// re-exclusions out so `.gitignore` alone decides the set, exactly as the scanner does.
+fn non_ignored_files(root: &PathBuf) -> Vec<PathBuf> {
+    WalkBuilder::new(root)
+        .hidden(false)
+        .ignore(false)
+        .filter_entry(|entry| entry.file_name() != ".git" && entry.file_name() != ".jj")
+        .build()
+        .filter_map(Result::ok)
+        .filter(|entry| entry.file_type().is_some_and(|kind| kind.is_file()))
+        .map(|entry| entry.into_path())
         .collect()
 }
 
-/// Builds one non-matching line of code-like noise.
+/// Appends one file's usable text lines to `lines`, stopping at the cap.
 ///
-/// What: a random-length run of bytes from the safe negative alphabet. Why: forces
-/// a full-line scan with no early match, the scanner's common case.
-fn negative_line(rng: &mut Rng) -> Vec<u8> {
-    let len = rng.len_between(MIN_LEN, MAX_LEN);
-    (0..len).map(|_| rng.pick(NEG_ALPHABET)).collect()
+/// What: skips binary files (any NUL byte) and over-long or empty lines, trimming a
+/// trailing carriage return. Why: keeps the corpus to real, scannable text lines.
+fn gather_file(path: &PathBuf, lines: &mut Vec<Vec<u8>>) {
+    let Ok(bytes) = std::fs::read(path) else {
+        return;
+    };
+    if bytes.contains(&0) {
+        return;
+    }
+    for raw in bytes.split(|&b| b == b'\n') {
+        if lines.len() >= CORPUS_LINES {
+            return;
+        }
+        let line = raw.strip_suffix(b"\r").unwrap_or(raw);
+        if line.is_empty() || line.len() > MAX_LINE_LEN {
+            continue;
+        }
+        lines.push(line.to_vec());
+    }
 }
 
-/// Builds one matching line by splicing a real credential into noise.
+/// Builds the corpus from this repo's own non-gitignored text lines.
 ///
-/// What: a negative base plus a space-delimited GitHub PAT, GitLab PAT, or build
-/// tag, rotated by index. Why: exercises the match-found path (including a `&`/`~`
-/// rule) and gives a known positive count for the parity check.
-fn positive_line(rng: &mut Rng, i: usize) -> Vec<u8> {
-    let mut line = negative_line(rng);
-    line.push(b' ');
-    match i % 3 {
-        0 => {
-            line.extend_from_slice(b"ghp_");
-            extend_from(&mut line, rng, ALNUM, 36);
+/// What: enumerates non-ignored files and gathers their lines up to the cap. Why: a
+/// faithful, reproducible stand-in for the real files a secret scanner processes;
+/// whatever credentials the repo genuinely contains are matched by both engines, so the
+/// parity check stays meaningful.
+pub fn build_corpus() -> Vec<Vec<u8>> {
+    let root = repo_root();
+    let mut files = non_ignored_files(&root);
+    files.sort();
+    let mut lines: Vec<Vec<u8>> = Vec::new();
+    for file in files {
+        if lines.len() >= CORPUS_LINES {
+            break;
         }
-        1 => {
-            line.extend_from_slice(b"glpat-");
-            extend_from(&mut line, rng, WORD_DASH, 20);
-        }
-        _ => {
-            // A non-placeholder BUILD_ tag (first digit non-zero) so the `~(...)`
-            // complement in our version does not veto it.
-            line.extend_from_slice(b"BUILD_");
-            line.push(b'1' + (rng.next_u64() % 9) as u8);
-            extend_from(&mut line, rng, b"0123456789", 5);
-        }
+        gather_file(&file, &mut lines);
     }
-    line.push(b' ');
-    line
-}
-
-/// Appends `count` bytes drawn from `set` to `line`.
-///
-/// What: a small loop of `pick`. Why: builds the variable tail of a key.
-fn extend_from(line: &mut Vec<u8>, rng: &mut Rng, set: &[u8], count: usize) {
-    for _ in 0..count {
-        line.push(rng.pick(set));
+    if lines.is_empty() {
+        panic!("gathered no corpus lines from the repo");
     }
+    lines
 }

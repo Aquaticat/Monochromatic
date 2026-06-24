@@ -19,6 +19,11 @@ forbidden-regex = { path = "../forbidden-regex" }
 # head-to-head throughput comparison lives.
 regex = "1"
 
+# The same gitignore-aware walker the real forbidden-strings scanner uses, so the
+# corpus is the exact file set that scanner would process (honors `.gitignore`,
+# `.git/info/exclude`, skips `.git`/`.jj`).
+ignore = "0.4"
+
 # Build both engines under one standard release profile so neither is advantaged:
 # whole-graph LTO, one codegen unit, full optimization. Overflow checks stay off
 # here (the deployed scanner turns them on; this measures the algorithm).
