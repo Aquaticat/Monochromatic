@@ -1,6 +1,23 @@
-import { BRANCH_WORKTREE_ESCAPE_HATCH, type BranchCreationSubcommand, } from '../parsers/branch-create.ts';
+import {
+  BRANCH_WORKTREE_ESCAPE_HATCH,
+  type BranchCreationSubcommand,
+} from '../parsers/branch-create.ts';
 
 //region Branch worktree diagnostics
+
+/**
+ * Options for building branch-creation rejection messages.
+ */
+type BranchCreationMessageOptions = {
+  /**
+   * Git subcommand being rejected.
+   */
+  readonly subcommand: BranchCreationSubcommand;
+  /**
+   * Branch name being implicitly created, when known.
+   */
+  readonly target?: string;
+};
 
 /**
  * Builds human-facing rejection message for branch creation in current worktree.
@@ -10,14 +27,17 @@ import { BRANCH_WORKTREE_ESCAPE_HATCH, type BranchCreationSubcommand, } from '..
  * @param target - Branch name being implicitly created, when known.
  *
  * @returns cli-git diagnostic text.
+ *
+ * @example
+ * ```ts
+ * branchCreationMessage({ subcommand: 'switch', target: 'topic' });
+ * // => message that recommends git worktree add -b
+ * ```
  */
 export function branchCreationMessage({
   subcommand,
   target,
-}: {
-  readonly subcommand: BranchCreationSubcommand;
-  readonly target: string | undefined;
-},): string {
+}: BranchCreationMessageOptions,): string {
   /**
    * Optional target clause for implicit remote-tracking branch creation diagnostics.
    */

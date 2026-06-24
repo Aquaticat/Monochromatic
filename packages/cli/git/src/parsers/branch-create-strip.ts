@@ -40,7 +40,10 @@ export function stripBranchCreationEscapeHatch({
   /**
    * Pre-subcommand region and subcommand kept verbatim.
    */
-  const preAndSubcommand = args.slice(0, subcommandIndex + 1,);
+  const preAndSubcommand = args.slice(
+    0,
+    subcommandIndex + 1,
+  );
   /**
    * Args after guarded subcommand where wrapper-only flag can appear.
    */
@@ -64,7 +67,10 @@ export function stripBranchCreationEscapeHatch({
       break;
     }
 
-    if (consumesNextValue({ subcommand, arg, })) {
+    if (consumesNextValue({
+      subcommand,
+      arg,
+    },)) {
       /**
        * Value token following a separated-value option; preserved even when it equals escape hatch text.
        */

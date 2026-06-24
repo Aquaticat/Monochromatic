@@ -30,7 +30,7 @@ export {
 //region Branch-creation scan helpers
 
 /**
- * Mutable accumulator used only inside one linear argv scan.
+ * Accumulator mutated inside one linear argv scan.
  */
 type BranchCreationScan = {
   /**
@@ -73,48 +73,6 @@ function createScan(): BranchCreationScan {
     disablesImplicitGuess: false,
     positionals: [],
   };
-}
-
-/**
- * Applies subcommand-specific facts from one non-value argv token.
- *
- * @param scan - Mutable scan accumulator for current argv.
- *
- * @param subcommand - Guarded subcommand whose grammar applies.
- *
- * @param arg - Current non-value argv token.
- *
- * @returns Nothing; scan is updated in place for a short-lived parser accumulator.
- */
-function applyTokenFacts({
-  scan,
-  subcommand,
-  arg,
-}: {
-  readonly scan: BranchCreationScan;
-  readonly subcommand: BranchCreationSubcommand;
-  readonly arg: string;
-},): void {
-  if (arg === BRANCH_WORKTREE_ESCAPE_HATCH) {
-    scan.hasEscapeHatch = true;
-    return;
-  }
-
-  if (subcommand === 'branch') {
-    scan.createsBranch = scan.createsBranch || isBranchCopyModeOption(arg,);
-    scan.isBranchListMode = scan.isBranchListMode || isBranchListModeOption(arg,);
-    scan.isBranchNonCreateMode = scan.isBranchNonCreateMode || isBranchNonCreateModeOption(arg,);
-    return;
-  }
-
-  if (subcommand === 'checkout') {
-    scan.createsBranch = scan.createsBranch || isCheckoutCreateOption(arg,);
-    scan.disablesImplicitGuess = scan.disablesImplicitGuess || isCheckoutNonGuessOption(arg,);
-    return;
-  }
-
-  scan.createsBranch = scan.createsBranch || isSwitchCreateOption(arg,);
-  scan.disablesImplicitGuess = scan.disablesImplicitGuess || isSwitchNonGuessOption(arg,);
 }
 
 //endregion Branch-creation scan helpers
@@ -162,25 +120,57 @@ export function parseBranchCreationRegion({
       break;
     }
 
-    applyTokenFacts({ scan, subcommand, arg, },);
+    if (arg === BRANCH_WORKTREE_ESCAPE_HATCH) {
+      scan.hasEscapeHatch = true;
+    }
+    else if (subcommand === 'branch') {
+      scan.createsBranch ||= isBranchCopyModeOption(arg,);
+      scan.isBranchListMode ||= isBranchListModeOption(arg,);
+      scan.isBranchNonCreateMode ||= isBranchNonCreateModeOption(arg,);
+    }
+    else if (subcommand === 'checkout') {
+      scan.createsBranch ||= isCheckoutCreateOption(arg,);
+      scan.disablesImplicitGuess ||= isCheckoutNonGuessOption(arg,);
+    }
+    else {
+      scan.createsBranch ||= isSwitchCreateOption(arg,);
+      scan.disablesImplicitGuess ||= isSwitchNonGuessOption(arg,);
+    }
 
-    if (consumesNextValue({ subcommand, arg, })) {
+    if (consumesNextValue({
+      subcommand,
+      arg,
+    },)) {
       index += 1;
       continue;
     }
 
-    if (isPositionalToken(arg,))
-      scan.positionals.push(arg,);
+    if (isPositionalToken(arg,)) {
+      scan
+        .positionals
+        .push(arg,);
+    }
   }
 
   if (subcommand === 'branch') {
+    /**
+     * Positional arguments after branch-mode options consumed their values.
+     */
+    const { positionals, } = scan;
+    /**
+     * Number of positional arguments after branch-mode options consumed their values.
+     */
+    const positionalCount = positionals.length;
+    /**
+     * Whether git-branch positional arguments name new branches rather than list patterns or existing refs.
+     */
+    const positionalsCreateBranch = (positionalCount > 0)
+      && (!scan.isBranchListMode)
+      && (!scan.isBranchNonCreateMode);
+
     return {
-      createsBranch: scan.createsBranch
-        || (scan.positionals.length > 0
-          && !scan.isBranchListMode
-          && !scan.isBranchNonCreateMode),
+      createsBranch: scan.createsBranch || positionalsCreateBranch,
       hasEscapeHatch: scan.hasEscapeHatch,
-      implicitCreationTarget: undefined,
     };
   }
 
@@ -188,20 +178,26 @@ export function parseBranchCreationRegion({
    * Positional branch name that switch/checkout may turn into a local branch by guessing one remote.
    */
   const [candidateTarget, secondTarget,] = scan.positionals;
+
   /**
-   * Candidate is safe to query only when exactly one positional branch-like target remains.
+   * Whether no implicit branch creation target remains to check against remotes.
    */
-  const implicitCreationTarget = (!scan.createsBranch)
-    && (!scan.disablesImplicitGuess)
-    && (candidateTarget !== undefined)
-    && (secondTarget === undefined)
-    ? candidateTarget
-    : undefined;
+  const hasNoImplicitTarget = scan.createsBranch
+    || scan.disablesImplicitGuess
+    || (candidateTarget === undefined)
+    || (secondTarget !== undefined);
+
+  if (hasNoImplicitTarget) {
+    return {
+      createsBranch: scan.createsBranch,
+      hasEscapeHatch: scan.hasEscapeHatch,
+    };
+  }
 
   return {
     createsBranch: scan.createsBranch,
     hasEscapeHatch: scan.hasEscapeHatch,
-    implicitCreationTarget,
+    implicitCreationTarget: candidateTarget,
   };
 }
 

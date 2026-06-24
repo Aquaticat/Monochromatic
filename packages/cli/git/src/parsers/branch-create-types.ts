@@ -26,7 +26,7 @@ export type BranchCreationRegion = {
   /**
    * Branch name whose remote-tracking guess would make git create a local branch.
    */
-  readonly implicitCreationTarget: string | undefined;
+  readonly implicitCreationTarget?: string;
 };
 
 //endregion Branch-creation public facts

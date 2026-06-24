@@ -112,13 +112,34 @@ const BRANCH_VALUE_LONG_OPTIONS: ReadonlySet<string> = new Set([
  * @param arg - Argv token to inspect.
  *
  * @returns `true` when arg makes positionals branch patterns rather than new branch names.
+ *
+ * @example
+ * ```ts
+ * isBranchListModeOption('--list');
+ * // => true
+ * ```
  */
 export function isBranchListModeOption(arg: string,): boolean {
-  return hasShortOption({ arg, option: 'a', })
-    || hasShortOption({ arg, option: 'i', })
-    || hasShortOption({ arg, option: 'l', })
-    || hasShortOption({ arg, option: 'r', })
-    || hasShortOption({ arg, option: 'v', })
+  return hasShortOption({
+    arg,
+    option: 'a',
+  },)
+    || hasShortOption({
+      arg,
+      option: 'i',
+    },)
+    || hasShortOption({
+      arg,
+      option: 'l',
+    },)
+    || hasShortOption({
+      arg,
+      option: 'r',
+    },)
+    || hasShortOption({
+      arg,
+      option: 'v',
+    },)
     || matchesLongOption({
       arg,
       canonicalOptions: BRANCH_LIST_LONG_OPTIONS,
@@ -132,13 +153,34 @@ export function isBranchListModeOption(arg: string,): boolean {
  * @param arg - Argv token to inspect.
  *
  * @returns `true` when arg selects delete, move, or upstream-edit mode.
+ *
+ * @example
+ * ```ts
+ * isBranchNonCreateModeOption('--delete');
+ * // => true
+ * ```
  */
 export function isBranchNonCreateModeOption(arg: string,): boolean {
-  return hasShortOption({ arg, option: 'd', })
-    || hasShortOption({ arg, option: 'D', })
-    || hasShortOption({ arg, option: 'm', })
-    || hasShortOption({ arg, option: 'M', })
-    || hasShortOption({ arg, option: 'u', })
+  return hasShortOption({
+    arg,
+    option: 'd',
+  },)
+    || hasShortOption({
+      arg,
+      option: 'D',
+    },)
+    || hasShortOption({
+      arg,
+      option: 'm',
+    },)
+    || hasShortOption({
+      arg,
+      option: 'M',
+    },)
+    || hasShortOption({
+      arg,
+      option: 'u',
+    },)
     || matchesLongOption({
       arg,
       canonicalOptions: BRANCH_NON_CREATE_LONG_OPTIONS,
@@ -152,10 +194,22 @@ export function isBranchNonCreateModeOption(arg: string,): boolean {
  * @param arg - Argv token to inspect.
  *
  * @returns `true` when arg selects copy mode.
+ *
+ * @example
+ * ```ts
+ * isBranchCopyModeOption('--copy');
+ * // => true
+ * ```
  */
 export function isBranchCopyModeOption(arg: string,): boolean {
-  return hasShortOption({ arg, option: 'c', })
-    || hasShortOption({ arg, option: 'C', })
+  return hasShortOption({
+    arg,
+    option: 'c',
+  },)
+    || hasShortOption({
+      arg,
+      option: 'C',
+    },)
     || matchesLongOption({
       arg,
       canonicalOptions: BRANCH_COPY_LONG_OPTIONS,
@@ -169,12 +223,21 @@ export function isBranchCopyModeOption(arg: string,): boolean {
  * @param arg - Argv token to inspect.
  *
  * @returns `true` when next token is an option value.
+ *
+ * @example
+ * ```ts
+ * branchConsumesNextValue('--format');
+ * // => true
+ * ```
  */
 export function branchConsumesNextValue(arg: string,): boolean {
   if (arg.includes('=',))
     return false;
 
-  return isExactShortOption({ arg, option: 'u', })
+  return isExactShortOption({
+    arg,
+    option: 'u',
+  },)
     || matchesLongOption({
       arg,
       canonicalOptions: BRANCH_VALUE_LONG_OPTIONS,

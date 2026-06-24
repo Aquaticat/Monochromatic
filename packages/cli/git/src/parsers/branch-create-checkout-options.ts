@@ -80,11 +80,26 @@ const CHECKOUT_VALUE_LONG_OPTIONS: ReadonlySet<string> = new Set([
  * @param arg - Argv token to inspect.
  *
  * @returns `true` when arg selects `-b`, `-B`, `--orphan`, or `--track` creation.
+ *
+ * @example
+ * ```ts
+ * isCheckoutCreateOption('-b');
+ * // => true
+ * ```
  */
 export function isCheckoutCreateOption(arg: string,): boolean {
-  return hasShortOption({ arg, option: 'b', })
-    || hasShortOption({ arg, option: 'B', })
-    || hasShortOption({ arg, option: 't', })
+  return hasShortOption({
+    arg,
+    option: 'b',
+  },)
+    || hasShortOption({
+      arg,
+      option: 'B',
+    },)
+    || hasShortOption({
+      arg,
+      option: 't',
+    },)
     || matchesLongOption({
       arg,
       canonicalOptions: CHECKOUT_CREATE_LONG_OPTIONS,
@@ -98,10 +113,22 @@ export function isCheckoutCreateOption(arg: string,): boolean {
  * @param arg - Argv token to inspect.
  *
  * @returns `true` when arg selects detached, path restore, patch, or no-guess mode.
+ *
+ * @example
+ * ```ts
+ * isCheckoutNonGuessOption('--no-guess');
+ * // => true
+ * ```
  */
 export function isCheckoutNonGuessOption(arg: string,): boolean {
-  return hasShortOption({ arg, option: 'd', })
-    || hasShortOption({ arg, option: 'p', })
+  return hasShortOption({
+    arg,
+    option: 'd',
+  },)
+    || hasShortOption({
+      arg,
+      option: 'p',
+    },)
     || matchesLongOption({
       arg,
       canonicalOptions: CHECKOUT_NON_GUESS_LONG_OPTIONS,
@@ -115,14 +142,29 @@ export function isCheckoutNonGuessOption(arg: string,): boolean {
  * @param arg - Argv token to inspect.
  *
  * @returns `true` when next token is an option value.
+ *
+ * @example
+ * ```ts
+ * checkoutConsumesNextValue('--orphan');
+ * // => true
+ * ```
  */
 export function checkoutConsumesNextValue(arg: string,): boolean {
   if (arg.includes('=',))
     return false;
 
-  return isExactShortOption({ arg, option: 'b', })
-    || isExactShortOption({ arg, option: 'B', })
-    || isExactShortOption({ arg, option: 'U', })
+  return isExactShortOption({
+    arg,
+    option: 'b',
+  },)
+    || isExactShortOption({
+      arg,
+      option: 'B',
+    },)
+    || isExactShortOption({
+      arg,
+      option: 'U',
+    },)
     || matchesLongOption({
       arg,
       canonicalOptions: CHECKOUT_VALUE_LONG_OPTIONS,

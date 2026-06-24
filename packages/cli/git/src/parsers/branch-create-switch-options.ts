@@ -68,11 +68,26 @@ const SWITCH_VALUE_LONG_OPTIONS: ReadonlySet<string> = new Set([
  * @param arg - Argv token to inspect.
  *
  * @returns `true` when arg selects `-c`, `-C`, `--orphan`, or `--track` creation.
+ *
+ * @example
+ * ```ts
+ * isSwitchCreateOption('--create');
+ * // => true
+ * ```
  */
 export function isSwitchCreateOption(arg: string,): boolean {
-  return hasShortOption({ arg, option: 'c', })
-    || hasShortOption({ arg, option: 'C', })
-    || hasShortOption({ arg, option: 't', })
+  return hasShortOption({
+    arg,
+    option: 'c',
+  },)
+    || hasShortOption({
+      arg,
+      option: 'C',
+    },)
+    || hasShortOption({
+      arg,
+      option: 't',
+    },)
     || matchesLongOption({
       arg,
       canonicalOptions: SWITCH_CREATE_LONG_OPTIONS,
@@ -86,9 +101,18 @@ export function isSwitchCreateOption(arg: string,): boolean {
  * @param arg - Argv token to inspect.
  *
  * @returns `true` when arg selects detached or no-guess mode.
+ *
+ * @example
+ * ```ts
+ * isSwitchNonGuessOption('--detach');
+ * // => true
+ * ```
  */
 export function isSwitchNonGuessOption(arg: string,): boolean {
-  return hasShortOption({ arg, option: 'd', })
+  return hasShortOption({
+    arg,
+    option: 'd',
+  },)
     || matchesLongOption({
       arg,
       canonicalOptions: SWITCH_NON_GUESS_LONG_OPTIONS,
@@ -102,13 +126,25 @@ export function isSwitchNonGuessOption(arg: string,): boolean {
  * @param arg - Argv token to inspect.
  *
  * @returns `true` when next token is an option value.
+ *
+ * @example
+ * ```ts
+ * switchConsumesNextValue('--create');
+ * // => true
+ * ```
  */
 export function switchConsumesNextValue(arg: string,): boolean {
   if (arg.includes('=',))
     return false;
 
-  return isExactShortOption({ arg, option: 'c', })
-    || isExactShortOption({ arg, option: 'C', })
+  return isExactShortOption({
+    arg,
+    option: 'c',
+  },)
+    || isExactShortOption({
+      arg,
+      option: 'C',
+    },)
     || matchesLongOption({
       arg,
       canonicalOptions: SWITCH_VALUE_LONG_OPTIONS,

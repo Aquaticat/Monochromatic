@@ -3,6 +3,16 @@ import nanoSpawn, { SubprocessError, } from 'nano-spawn';
 //region Remote-guess probes
 
 /**
+ * Sentinel returned when git query fails before stdout can be read.
+ */
+const GIT_QUERY_FAILED: unique symbol = Symbol('git query failed before stdout could be read');
+
+/**
+ * Sentinel returned when remote ref short name does not contain remote separator.
+ */
+const MALFORMED_REMOTE_REF: unique symbol = Symbol('for-each-ref output lacks slash separator after fetch source');
+
+/**
  * Local part used by remote default-branch symbolic refs, for example `origin/HEAD`.
  */
 const REMOTE_HEAD_LOCAL_NAME = 'HEAD';
@@ -60,7 +70,7 @@ async function gitQuerySucceeds({
 }
 
 /**
- * Runs read-only git query and returns stdout, or `undefined` when git rejects it.
+ * Runs read-only git query and returns stdout, or sentinel when git rejects it.
  *
  * @param gitPath - Absolute path to real git binary.
  *
@@ -68,13 +78,13 @@ async function gitQuerySucceeds({
  *
  * @param args - Read-only git argv appended after global options.
  *
- * @returns Captured stdout when query exits zero.
+ * @returns Captured stdout when query exits zero, otherwise sentinel.
  */
 async function gitQueryStdout({
   gitPath,
   preSubcommandArgs,
   args,
-}: GitQueryOptions,): Promise<string | undefined> {
+}: GitQueryOptions,): Promise<string | typeof GIT_QUERY_FAILED> {
   try {
     /**
      * Captured git query result.
@@ -92,7 +102,7 @@ async function gitQueryStdout({
     if (!(error instanceof SubprocessError))
       throw error;
 
-    return undefined;
+    return GIT_QUERY_FAILED;
   }
 }
 
@@ -101,16 +111,16 @@ async function gitQueryStdout({
  *
  * @param remoteRef - Remote-tracking ref short name from git for-each-ref.
  *
- * @returns Branch-name portion after remote name, or `undefined` for malformed refs.
+ * @returns Branch-name portion after remote name, or sentinel for malformed refs.
  */
-function remoteLocalName(remoteRef: string,): string | undefined {
+function remoteLocalName(remoteRef: string,): string | typeof MALFORMED_REMOTE_REF {
   /**
    * Separator between remote name and branch name.
    */
   const slashIndex = remoteRef.indexOf('/',);
 
   if (slashIndex === (-1))
-    return undefined;
+    return MALFORMED_REMOTE_REF;
 
   return remoteRef.slice(slashIndex + 1,);
 }
@@ -125,6 +135,16 @@ function remoteLocalName(remoteRef: string,): string | undefined {
  * @param target - Branch-like target passed to switch/checkout.
  *
  * @returns `true` when no local branch exists and exactly one matching remote branch exists.
+ *
+ * @example
+ * ```ts
+ * await implicitRemoteGuessCreatesBranch({
+ *   gitPath: '/usr/bin/git',
+ *   preSubcommandArgs: ['-C', '/repo'],
+ *   target: 'topic',
+ * });
+ * // => true when only origin/topic exists and no local topic exists
+ * ```
  */
 export async function implicitRemoteGuessCreatesBranch({
   gitPath,
@@ -165,7 +185,12 @@ export async function implicitRemoteGuessCreatesBranch({
     ],
   },);
 
-  if (remoteRefs === undefined)
+  /**
+   * Whether remote refs query failed before producing stdout.
+   */
+  const remoteRefsUnavailable = (typeof remoteRefs) === 'symbol';
+
+  if (remoteRefsUnavailable)
     return false;
 
   /**
@@ -173,9 +198,18 @@ export async function implicitRemoteGuessCreatesBranch({
    */
   const matchingRemoteRefs = remoteRefs
     .split('\n',)
-    .map(remoteLocalName,)
+    .map(function mapRemoteLocalName(remoteRef,): string | typeof MALFORMED_REMOTE_REF {
+      return remoteLocalName(remoteRef,);
+    },)
     .filter(function isMatchingRemote(localName,): boolean {
-      return localName === target && localName !== REMOTE_HEAD_LOCAL_NAME;
+      /**
+       * Whether parsed remote ref local name is real branch text.
+       */
+      const isRemoteBranchName = (typeof localName) === 'string';
+
+      return isRemoteBranchName
+        && (localName === target)
+        && (localName !== REMOTE_HEAD_LOCAL_NAME);
     },);
 
   return matchingRemoteRefs.length === 1;

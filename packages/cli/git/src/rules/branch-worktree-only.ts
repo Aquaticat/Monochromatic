@@ -79,7 +79,10 @@ export async function branchWorktreeOnly(args: readonly string[],): Promise<read
    */
   const subcommand = args[subcommandIndex];
 
-  if (subcommand === undefined || !isGuardedSubcommand(subcommand,))
+  if (subcommand === undefined)
+    return args;
+
+  if (!isGuardedSubcommand(subcommand,))
     return args;
 
   /**
@@ -103,19 +106,26 @@ export async function branchWorktreeOnly(args: readonly string[],): Promise<read
 
   if (region.hasEscapeHatch) {
     rl.debug(`${BRANCH_WORKTREE_ESCAPE_HATCH} present, stripping and skipping check`,);
-    return stripBranchCreationEscapeHatch({ args, subcommandIndex, subcommand, },);
+    return stripBranchCreationEscapeHatch({
+      args,
+      subcommandIndex,
+      subcommand,
+    },);
   }
 
   if (region.createsBranch)
-    throw new Error(branchCreationMessage({ subcommand, target: undefined, },),);
+    throw new Error(branchCreationMessage({ subcommand, },),);
 
-  if (region.implicitCreationTarget === undefined)
+  if (!('implicitCreationTarget' in region))
     return args;
 
   /**
    * Pre-subcommand argv that captures caller's repository-selection layer.
    */
-  const preSubcommandArgs = args.slice(0, subcommandIndex,);
+  const preSubcommandArgs = args.slice(
+    0,
+    subcommandIndex,
+  );
   /**
    * Absolute path to real git binary for read-only branch existence probes.
    */

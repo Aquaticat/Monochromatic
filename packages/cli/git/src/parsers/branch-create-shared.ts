@@ -3,6 +3,11 @@ import { PATHSPEC_SEPARATOR, } from '../escape-hatch.ts';
 //region Long-option abbreviation helpers
 
 /**
+ * Sentinel returned when argv token is not a long option.
+ */
+const NOT_LONG_OPTION: unique symbol = Symbol('argv token is not a long option');
+
+/**
  * Options for testing a long option token against git's unique-abbreviation rules.
  */
 export type LongOptionMatchOptions = {
@@ -25,7 +30,7 @@ export type LongOptionMatchOptions = {
  *
  * @param arg - Argv token to inspect.
  *
- * @returns Long-option name, or `undefined` when token is not a long option.
+ * @returns Long-option name, or sentinel when token is not a long option.
  *
  * @example
  * ```ts
@@ -33,9 +38,14 @@ export type LongOptionMatchOptions = {
  * // => '--create'
  * ```
  */
-function longOptionName(arg: string,): string | undefined {
-  if (!arg.startsWith('--',) || arg === PATHSPEC_SEPARATOR)
-    return undefined;
+function longOptionName(arg: string,): string | typeof NOT_LONG_OPTION {
+  /**
+   * Whether token cannot be a long option name.
+   */
+  const notLongOption = (!arg.startsWith('--',)) || (arg === PATHSPEC_SEPARATOR);
+
+  if (notLongOption)
+    return NOT_LONG_OPTION;
 
   /**
    * Position where a glued long-option value begins.
@@ -83,7 +93,12 @@ export function matchesLongOption({
    */
   const name = longOptionName(arg,);
 
-  if (name === undefined)
+  /**
+   * Whether token did not provide a long-option name.
+   */
+  const missingLongOptionName = (typeof name) === 'symbol';
+
+  if (missingLongOptionName)
     return false;
 
   /**
@@ -142,7 +157,14 @@ export function hasShortOption({
   arg,
   option,
 }: ShortOptionOptions,): boolean {
-  if (!arg.startsWith('-',) || arg.startsWith('--',) || arg === '-')
+  /**
+   * Whether token cannot be a short-option cluster.
+   */
+  const notShortOption = (!arg.startsWith('-',))
+    || arg.startsWith('--',)
+    || (arg === '-');
+
+  if (notShortOption)
     return false;
 
   return arg
