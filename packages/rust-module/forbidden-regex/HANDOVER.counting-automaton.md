@@ -1,11 +1,14 @@
 # Handover: forbidden-regex counting-automaton rebuild
 
 The crate compiles, lints clean (`lint:rust`, `lint:clippy`), and all tests pass.
-The counting back-end for linear patterns is built and the bounded-repetition
-blowup is gone for them; intersection and complement still route to the eager DFA.
-This file is the source of truth for resuming. Remaining work: layer `&`/`~` onto
-the counting model, a counting-aware `RegexSet` gate, the `bench/` crate, and
-differential tests vs `resharp`/`regex`.
+The counting back-end is built for linear patterns and for linear `&`/`~`
+(intersection and complement whose operands each linearize), so the
+bounded-repetition blowup is gone for both. Counts live in fixed-width bitsets and
+the byte step reuses ping-pong buffers, so matching never allocates per byte. Only
+patterns with alternation inside an operand still route to the eager DFA. This file
+is the source of truth for resuming. Remaining work: generalize the operand IR so
+`&`/`~` operands may contain alternation (the real AWS rule), a counting-aware
+`RegexSet` gate, the `bench/` crate, and differential tests vs `resharp`/`regex`.
 
 ## What this crate is
 
@@ -112,23 +115,38 @@ Front-end (done):
 
 Back-ends:
 
-- Counting back-end (DONE for linear patterns): `src/counting/element.rs`
-  (`Element`, `LinearProgram`, `linearize`, `validate`) and `src/counting/run.rs`
-  (the counting-set simulation; tests in `src/counting/run_tests.rs`). `linearize`
-  returns `Some` only for a concatenation of classes, class repetitions, and
-  anchors; everything else returns `None`. The simulation keeps each `{n,m}` count
-  in a per-element `BTreeSet` (the counting set), seeds a fresh start at every
-  boundary (the `Σ*` search prefix), and matches `is_match` exactly against the
-  eager-DFA oracle. `AKIA[A-Z2-7]{16}` serializes to under 2 KB.
-- Eager DFA (still used for `&`, `~`, alternation): `src/dfa/build.rs`,
-  `src/dfa/table.rs` (`Dfa` table, match loop, `validate`), `src/dfa/minimize.rs`.
-  The product-union gate (`src/dfa/union.rs`) and the `Dfa::step`/`start_state`/
-  `accept_mask_of` helpers it used were REMOVED; a counting-aware gate replaces it.
-- `src/engine.rs`: `Engine { Linear(LinearProgram), Table(Dfa) }` picks the
-  back-end (`is_match`, `validate`).
+- Shared simulation core: `src/counting/sim.rs` holds `State` (reached control
+  points plus per-element count bitsets), `closure`, `step_into` (fills a reused
+  destination, no allocation), and `boundary_ctx`. Counts live in
+  `src/counting/countset.rs` (`CountSet`): a fixed-width bitset indexed by count
+  (`bit i` set means count `i` is live), sized to the element's `max`. Entry is a
+  bit-or, the exit guard a shift-and-test, and a matched byte advances every live
+  count at once with one multi-word left shift. Both back-ends reuse this core.
+- Linear counting back-end (DONE): `src/counting/element.rs` (`Element`,
+  `LinearProgram`, `linearize`, `validate`) and `src/counting/run.rs` (the search
+  loop; tests in `src/counting/run_tests.rs`). `linearize` returns `Some` only for a
+  concatenation of classes, class repetitions, and anchors. The search ping-pongs
+  two `State` buffers, seeds a fresh start at every boundary (the `Σ*` prefix), and
+  matches exactly against the eager-DFA oracle. `AKIA[A-Z2-7]{16}` is under 2 KB.
+- Synchronized-product back-end (DONE for linear operands):
+  `src/counting/product.rs` (`ProductProgram`, `linearize_product`, `validate`;
+  tests in `src/counting/product_tests.rs`). A `Node::Inter` whose operands each
+  linearize splits into positives (must match the same span) and negatives (the
+  `~(...)` operands, none may match that span). One thread per start runs every
+  operand in lockstep over the same bytes, so the same-span set algebra holds; each
+  thread reuses a spare buffer side, pruned in place via `retain_mut`.
+  `(?:AKIA[A-Z2-7]{16}) & ~(AKIA2{16})` stays under 2 KB and decides keys exactly.
+- Eager DFA (still used for alternation and any `&`/`~` with alternation inside an
+  operand): `src/dfa/build.rs`, `src/dfa/table.rs` (`Dfa` table, match loop,
+  `validate`), `src/dfa/minimize.rs`. The product-union gate (`src/dfa/union.rs`)
+  and the `Dfa::step`/`start_state`/`accept_mask_of` helpers it used were REMOVED; a
+  counting-aware gate replaces it.
+- `src/engine.rs`: `Engine { Linear(LinearProgram), Product(ProductProgram),
+  Table(Dfa) }` picks the back-end (`is_match`, `validate`).
 - `src/regex.rs`: `Regex` wraps one `Engine`; `RegexSet` holds `Vec<Engine>` and
-  iterates per-rule (no gate yet). `compile`, `new`, `from_ruleset`, `is_match`,
-  `matches`, `to_bytes`, `from_bytes`. Public surface unchanged.
+  iterates per-rule (no gate yet). `build_engine` tries `linearize`, then
+  `linearize_product`, then the eager DFA. `compile`, `new`, `from_ruleset`,
+  `is_match`, `matches`, `to_bytes`, `from_bytes`. Public surface unchanged.
 
 Tests (all green; `cargo nextest run` ~0.01s):
 
@@ -167,14 +185,23 @@ TDD targets:
    `run_tests.rs::linear_agrees_with_oracle`.
 3. DONE. Counting back-end for linear `class{n,m}` under search; the size proof
    (`counted_key_stays_small`, under 2 KB) and exact-bound checks pass.
-4. NEXT. Layer `&` and `~` onto the counting model. The hard constraint: under
-   `Σ*·(A & B)` the SAME substring must satisfy both operands, so the operands
-   cannot be run as independent search automata (that would match different spans).
-   Run a synchronized product seeded jointly at every position: a counting
-   simulation for the counting operand alongside a small DFA for the
-   counter-free `~(...)` operand (the real complement targets are fixed strings
-   like `AKIA2{16}`), accepting only when both accept at the same boundary.
-5. `RegexSet` gate over counting automata without the product blowup (the removed
+4. DONE (linear operands). `&` and `~` are layered onto the counting model via the
+   synchronized product in `src/counting/product.rs`. The hard constraint held:
+   under `Σ*·(A & B)` the SAME substring must satisfy both operands, so the operands
+   are not run as independent search automata (that would match different spans);
+   instead one thread per start runs every operand in lockstep and accepts only when
+   all positives and no negatives accept at the same boundary.
+   `product_tests.rs::product_agrees_with_oracle` diffs it against the eager DFA.
+5. NEXT. Generalize the operand IR so an operand of `&`/`~` may contain alternation,
+   so the real AWS rule
+   `(?:\b(?:A3T[A-Z0-9]|AKIA|ASIA)[A-Z2-7]{16}\b) & ~(AKIA2{16})` leaves the eager
+   DFA. Today `linearize` (and thus `linearize_product`) rejects any `Alt`, so that
+   rule still routes to the eager DFA and blows up on `{16}`. The lockstep product
+   framework in `product.rs` is reusable as-is; only the per-operand representation
+   needs to change from a flat `LinearProgram` to a small counting NFA (element
+   graph with alternation and epsilon moves) that exposes the same
+   seed/closure/accept/step/is-dead surface `sim.rs` already defines.
+6. `RegexSet` gate over counting automata without the product blowup (the removed
    `union.rs` did a product of per-rule DFAs and exploded). Likely a per-rule
    counting simulation run in parallel with an any-accept check, or a shared
    structural automaton with per-rule accept sets.
