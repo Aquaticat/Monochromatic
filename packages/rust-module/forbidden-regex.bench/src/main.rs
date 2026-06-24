@@ -107,7 +107,12 @@ fn main() {
     // lets regex scale instead of contending on a shared cache).
     let frate = throughput(&corpus, || (), |_, line| fset.is_match(line), threads);
     let rrate = throughput(&corpus, || rset.clone(), |r, line| r.is_match(line), threads);
+    // Profiling split: gate-only vs seedless-only, to locate the per-line bottleneck.
+    let gate_rate = throughput(&corpus, || (), |_, line| fset.gate_only_is_match(line), threads);
+    let seedless_rate = throughput(&corpus, || (), |_, line| fset.seedless_only_is_match(line), threads);
     report("forbidden-regex", frate, avg_len);
+    report("  gate-only     ", gate_rate, avg_len);
+    report("  seedless-only ", seedless_rate, avg_len);
     report("regex          ", rrate, avg_len);
     println!("\nforbidden-regex is {:.2}x the throughput of regex", frate / rrate);
 }

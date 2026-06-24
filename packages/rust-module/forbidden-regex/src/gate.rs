@@ -60,6 +60,12 @@ impl SetGate {
         let Some(matcher) = &self.matcher else {
             return false;
         };
+        // Fast reject: the leftmost `is_match` uses the SIMD prefilter, so a line with
+        // no seed is rejected in one accelerated pass; only on a hit do we enumerate
+        // the (overlapping) matches to find which rules to check.
+        if !matcher.is_match(line) {
+            return false;
+        }
         for found in matcher.find_overlapping_iter(line) {
             if check(self.literal_rule[found.pattern().as_usize()]) {
                 return true;

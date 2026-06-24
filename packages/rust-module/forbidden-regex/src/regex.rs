@@ -318,6 +318,23 @@ impl RegexSet {
         hits.into_iter()
     }
 
+    /// Profiling hook: runs only the seeded-rule gate path.
+    ///
+    /// What: the gate candidates, skipping the literal-free rules. Why: lets the
+    /// bench split per-line time between the gate and the literal-free scans.
+    pub fn gate_only_is_match(&self, line: &[u8]) -> bool {
+        self.gate
+            .any_candidate(line, |rule| self.rules[rule].is_match(line))
+    }
+
+    /// Profiling hook: runs only the literal-free rules.
+    ///
+    /// What: the seedless engines, skipping the gate. Why: the other half of the
+    /// per-line time split.
+    pub fn seedless_only_is_match(&self, line: &[u8]) -> bool {
+        self.seedless_ids.iter().any(|&id| self.rules[id].is_match(line))
+    }
+
     /// Returns how many rules have no required-literal prefilter.
     ///
     /// What: counts engines whose seed set is empty. Why: a diagnostic for tuning

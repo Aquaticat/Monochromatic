@@ -9,7 +9,47 @@ including the real AWS rule. Counts live in fixed-width bitsets and the byte ste
 reuses ping-pong buffers, so matching never allocates per byte. Only a repetition of
 a non-class body (e.g. an optional group `(?:ab)?`) and nested set algebra inside an
 operand still route to the eager DFA. This file is the source of truth for resuming.
-Remaining work: a counting-aware `RegexSet` gate, the `bench/` crate, and
+
+## Throughput status: regex still wins ~5x (honest, fair parallel bench)
+
+The bench sidecar now loads the real shipped ruleset, ports each rule (strip the
+boundary/context around the secret, keep keyword+value+set-algebra; see
+`bench/src/port.rs` + `normalize.rs`), and compile-filters to ~358 rules both
+engines accept. Build+serialize of all rules is ~3.8s (budget is 60s). Fair parallel
+bench (16 threads; forbidden-regex shared because it is immutable, regex cloned
+per-thread so its lazy-DFA cache does not contend):
+
+- regex: ~20M lines/s (~1.2 GB/s). forbidden-regex: ~4M lines/s (~0.24 GB/s).
+- regex is ~5x faster parallel, ~7x single-threaded.
+
+An earlier "1.42x win" was an artifact of sharing one regex `RegexSet` across
+threads (its cache pool serialized); do NOT do that, it is not a real win.
+
+Per-line profile (16 threads, `gate_only_is_match` / `seedless_only_is_match`):
+
+- gate-only (seeded prefilter, aho-corasick over ~343 literals): ~11M lines/s.
+- seedless-only (15 literal-free rules, each a separate scalar DFA scan): ~6M.
+- full = gate-time + seedless-time (they run in sequence per line): ~4M.
+
+Two bottlenecks, both must be fixed to beat regex:
+
+1. The 15 literal-free rules run as 15 separate scalar DFA scans. regex runs all of
+   them in ONE combined lazy DFA. Fix: a determinized counting automaton (one
+   structural DFA over byte-classes + counter-set registers, O(1)/byte, no `{n,m}`
+   blowup) that unions the literal-free rules into one pass. The eager-DFA union
+   blows up (counts multiply, ground to the cap in 57s); the counting-NFA union sim
+   is slower than the 15 separate DFAs. The counting-set automaton (Turonova et al.,
+   "Regex Matching with Counting-Set Automata"; the resharp/RE# core) is the answer.
+2. Even with #1 free, gate-only (~11M) < regex (~20M): our prefilter is scalar
+   aho-corasick (343 literals exceed Teddy's bucket capacity, so no SIMD), while
+   regex's prefilter is SIMD. Fix: a SIMD byte-set/Teddy prefilter for the gate
+   (matching what `regex-automata`'s prefilter does), or depend on
+   `regex-automata`'s prefilter directly.
+
+USER DECISION (this session): build the counting DFA (#1). It is necessary but not
+sufficient on its own; #2 (SIMD gate) is also required to surpass regex, and even
+both together is uncertain to beat a world-class engine. Remaining work: the
+counting DFA, the SIMD gate, and
 differential tests vs `resharp`/`regex`.
 
 ## What this crate is
@@ -229,13 +269,32 @@ TDD targets:
 - No recursion over flat input; recursion only over the node tree (structural).
 - Functional style, `const`/immutable where reasonable.
 
+## Benchmark scope and target hardware
+
+The throughput goal is narrow and explicit: beat the `regex` crate on the bench
+sidecar (`packages/rust-module/forbidden-regex.bench`), on two machines, measured
+only when each is otherwise idle. We do NOT need to beat `regex` universally.
+
+- This machine: AMD Ryzen 8700F, 64 GB RAM.
+- `ssh m1`: Apple M1, 16 GB RAM.
+- Both CPUs have many hardware threads, and the bench is only meaningful when the
+  machine is not under heavy load. Many threads plus the immutable, `Send + Sync`
+  `RegexSet` (no `Mutex`, unlike resharp) mean a parallel scan is a legitimate lever;
+  a fair bench parallelizes both engines, so threading alone does not move the ratio.
+- `resharp` is deferred indefinitely as a baseline: its serialized matcher is too
+  slow to be a useful comparison. Bench only against `regex`.
+- The bench loads the real shipped ruleset (`forbidden-strings.local.example.txt`
+  plus `forbidden-strings.append.txt`), ports each rule into this dialect, and
+  compile-filters to the subset both engines accept; our scanner gets the `&`/`~`
+  versions, `regex` gets the complement-stripped positives. Each engine is timed for
+  a fixed wall-clock budget (10 s) and reported in lines/s and MB/s.
+
 ## Verification end state (unchanged from the plan)
 
 - Lint clean (`lint:rust`, `lint:clippy`), all nextest tests pass.
 - `tests/integration.rs` crosses the crate boundary: build a `RegexSet`,
   serialize, reload via `from_bytes`, and match.
-- Differential correctness vs `resharp`/`regex` in a throwaway worktree on the
-  set-algebra rules.
-- Throughput: a `bench/` (its own detached crate, kept off this crate's test
-  graph) measuring lines/second on a pre-serialized `RegexSet` for
-  `forbidden_regex` vs `regex` vs `resharp`.
+- Differential correctness vs `regex` in a throwaway worktree on the plain rules
+  (set-algebra rules have no `regex` equivalent).
+- Throughput: the `bench/` sidecar measuring lines/second on a pre-serialized
+  `RegexSet` for `forbidden_regex` vs `regex`, beating `regex` on both machines.
