@@ -175,9 +175,57 @@ It contains per-track:
 - actual probe seconds
 - whether the track was short and therefore full-scanned
 
-## Next concrete step
+## Verified result
 
-Search using `windows-14x8.1049.jsonl` for a rule with these outputs:
+Strict `+0.5 dB` too-loud and `-1.0 dB` too-quiet bounds work on the current library with:
+
+```text
+window_count = 14
+window_seconds = 8.1009877
+threshold_seconds = 113.4138278
+probe_margin_db = 0.996
+```
+
+Artifacts:
+
+```text
+/tmp/agent/truepeak-param-search/out-20260624/windows-14x8.1009877.jsonl
+/tmp/agent/truepeak-param-search/out-20260624/eval-windows-14x8.1009877.txt
+```
+
+Verified result at `probe_margin_db = 0.996`:
+
+```text
+decoded_seconds = 439889.03612373164
+target_seconds = 439889.5
+delta_seconds = -0.4638762683607638
+short_full_scan_count = 311
+probably_no_full_scan_count = 3678
+needs_full_scan_exception_count = 2
+worst_too_loud_db = 0.49444464557405876
+worst_too_quiet_db = -0.9960000000000004
+```
+
+The two strict-bound exception tracks,
+ which need full scan under this candidate,
+ are:
+
+```text
+/home/user/Seafile/Plain/Music/Alesso/Alesso Ryan Tedder - Scars.opus
+/home/user/Seafile/Plain/Music/水木年华 (Shui Mu Nian Hua) 老狼 (Lao Lang) 李健 (Li Jian) 叶世荣 (Ye Shirong) - 青春再见 (Goodbye Youth).opus
+```
+
+Important caveat:
+This verified count uses the measured current-library truth to label those two exception tracks as needing full scan.
+A general runtime classifier that catches exactly those exceptions from probe-only features still needs design if this
+is to become production behavior.
+A narrow probe-feature rule can catch them,
+ but the non-overfit version tested so far flagged extra tracks and overshot
+the target.
+
+## Remaining productionization step
+
+Search using `windows-14x8.1009877.jsonl` for a probe-only exception rule with these outputs:
 
 - classify some long tracks as needs full scan,
    adding their full durations to decoded seconds;
