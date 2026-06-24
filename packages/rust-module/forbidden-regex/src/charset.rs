@@ -89,6 +89,25 @@ impl ByteSet {
     pub fn is_empty(&self) -> bool {
         self.words.iter().all(|w| *w == 0)
     }
+
+    /// Returns the sole member byte when the set holds exactly one.
+    ///
+    /// What: `Some(b)` iff one bit is set across all words, else `None`. Why: a
+    /// singleton class is a literal byte, which the prefilter chains into a required
+    /// literal seed.
+    pub fn as_singleton(&self) -> Option<u8> {
+        let total: u32 = self.words.iter().map(|w| w.count_ones()).sum();
+        if total != 1 {
+            return None;
+        }
+        // What: locate the one set bit. Why: its global index is the byte value.
+        for (i, &w) in self.words.iter().enumerate() {
+            if w != 0 {
+                return Some((i * BITS_PER_WORD + w.trailing_zeros() as usize) as u8);
+            }
+        }
+        None
+    }
 }
 
 /// Reports whether a byte is an ASCII word character `[A-Za-z0-9_]`.

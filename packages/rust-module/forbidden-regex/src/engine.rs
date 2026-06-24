@@ -1,10 +1,13 @@
-//! The per-pattern back-end: either the counting program or the general DFA.
+//! The per-pattern back-end: a matcher plus its required-literal prefilter.
 
 /// Imports the serde derives so a compiled engine can be persisted.
 use serde::{Deserialize, Serialize};
 
 /// Imports the counting NFA back-end.
 use crate::counting::CountingNfa;
+
+/// Imports the required-literal prefilter.
+use crate::counting::Prefilter;
 
 /// Imports the synchronized-product back-end for `&` and `~`.
 use crate::counting::ProductProgram;
@@ -15,55 +18,111 @@ use crate::dfa::table::Dfa;
 /// Imports the error type for decode validation.
 use crate::error::CompileError;
 
-/// The compiled matcher for one pattern.
+/// The matcher back-end chosen for one pattern.
 ///
-/// What: a `Linear` counting program for branch-free counting-heavy patterns, or a
-/// `Table` derivative DFA for everything with alternation, intersection, or
-/// complement. Why: the counting program stays small where the DFA would explode,
-/// while the DFA still handles the set-algebra operators the linear IR cannot.
+/// What: a `Table` derivative DFA for the fast O(1)-per-byte path, a `Nfa` counting
+/// automaton for patterns whose DFA would explode, or a `Product` for `&`/`~`. Why:
+/// the selector picks the fastest representation that does not blow up.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub enum Engine {
-    /// Counting-NFA back-end; small for counted repetition and alternation.
+pub enum EngineKind {
+    /// General derivative DFA; matches in O(1) per byte.
+    Table(
+        /// Flat transition-table automaton.
+        Dfa,
+    ),
+    /// Counting NFA; small where the DFA would explode on bounded repetition.
     Nfa(
-        /// Counting NFA for a pattern without intersection or complement.
+        /// Counting automaton over byte-class positions.
         CountingNfa,
     ),
-    /// Synchronized-product counting back-end; handles `&` and `~`.
+    /// Synchronized-product counting back-end for `&` and `~`.
     Product(
-        /// Product program for the intersection-with-complement pattern.
+        /// Product of counting NFAs.
         ProductProgram,
-    ),
-    /// General derivative DFA; handles shapes the counting back-end cannot.
-    Table(
-        /// General derivative DFA back-end.
-        Dfa,
     ),
 }
 
-/// Matching and decode validation shared by both back-ends.
+/// A compiled matcher plus the required-literal prefilter that guards it.
+///
+/// What: the back-end, the literal seeds every match must contain (empty when the
+/// pattern has no usable required literal), and the rebuilt searchers. Why: holding
+/// the seeds at this level lets both the single-pattern fast path and the
+/// `RegexSet` gate prefilter regardless of which back-end matches.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Engine {
+    /// The matcher back-end.
+    kind: EngineKind,
+    /// Required-literal seeds for the prefilter and the set gate.
+    seeds: Vec<Vec<u8>>,
+    /// Searchers rebuilt from `seeds`; never serialized.
+    #[serde(skip)]
+    prefilter: Prefilter,
+}
+
+/// Construction, matching, and decode handling for an engine.
 impl Engine {
+    /// Builds an engine from a back-end and its required-literal seeds.
+    ///
+    /// What: stores both and builds the prefilter searchers. Why: the only
+    /// constructor, so a built engine always has a prepared prefilter.
+    pub fn new(kind: EngineKind, seeds: Vec<Vec<u8>>) -> Engine {
+        let prefilter = Prefilter::from_seeds(&seeds);
+        Engine {
+            kind,
+            seeds,
+            prefilter,
+        }
+    }
+
     /// Reports whether the pattern matches some substring of `line`.
     ///
-    /// What: dispatches to the active back-end. Why: callers match without caring
-    /// which representation was chosen at compile time.
+    /// What: rejects on the prefilter, then runs the back-end. Why: most scanned
+    /// lines carry no required literal, so the cheap scan skips the matcher.
     pub fn is_match(&self, line: &[u8]) -> bool {
-        match self {
-            Engine::Nfa(nfa) => nfa.is_match(line),
-            Engine::Product(program) => program.is_match(line),
-            Engine::Table(dfa) => dfa.is_match(line),
+        self.prefilter.allows(line) && self.matches(line)
+    }
+
+    /// Runs the back-end matcher on `line`.
+    ///
+    /// What: dispatches to the chosen representation. Why: callers match without
+    /// caring which one was selected.
+    fn matches(&self, line: &[u8]) -> bool {
+        match &self.kind {
+            EngineKind::Table(dfa) => dfa.is_match(line),
+            EngineKind::Nfa(nfa) => nfa.is_match(line),
+            EngineKind::Product(program) => program.is_match(line),
+        }
+    }
+
+    /// Returns the required-literal seeds, or `None` when the engine has none.
+    ///
+    /// What: a clone of the seeds when present. Why: the `RegexSet` gate unions every
+    /// rule's seeds; a seedless engine is always a candidate.
+    pub fn seeds(&self) -> Option<Vec<Vec<u8>>> {
+        if self.seeds.is_empty() {
+            None
+        } else {
+            Some(self.seeds.clone())
         }
     }
 
     /// Validates a decoded engine before it runs against untrusted input.
     ///
-    /// What: defers to the back-end's own structural check. Why: both
-    /// representations are executed on attacker-influenced input, so each must be
-    /// proven in-bounds first.
+    /// What: defers to the back-end's structural check. Why: a decoded automaton is
+    /// executed on attacker-influenced input, so it must be proven in-bounds first.
     pub fn validate(&self) -> Result<(), CompileError> {
-        match self {
-            Engine::Nfa(nfa) => nfa.validate(),
-            Engine::Product(program) => program.validate(),
-            Engine::Table(dfa) => dfa.validate(),
+        match &self.kind {
+            EngineKind::Table(dfa) => dfa.validate(),
+            EngineKind::Nfa(nfa) => nfa.validate(),
+            EngineKind::Product(program) => program.validate(),
         }
+    }
+
+    /// Rebuilds the prefilter searchers from the decoded seeds.
+    ///
+    /// What: regenerates `prefilter` from `seeds`. Why: the searchers are not
+    /// serialized, so a reloaded engine must rebuild them before matching.
+    pub fn prepare(&mut self) {
+        self.prefilter = Prefilter::from_seeds(&self.seeds);
     }
 }

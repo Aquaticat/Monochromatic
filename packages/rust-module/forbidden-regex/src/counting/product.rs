@@ -35,7 +35,7 @@ use crate::error::CompileError;
 /// What: the positives that must all match one span and the negatives that must all
 /// fail that same span. Why: the serializable, counter-aware back-end for `&`/`~`
 /// patterns; its size is linear in the pattern, never in any repetition bound.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ProductProgram {
     /// Operands that must each match the same span.
     pub positives: Vec<CountingNfa>,
@@ -47,8 +47,8 @@ pub struct ProductProgram {
 impl ProductProgram {
     /// Reports whether some span satisfies every positive and no negative.
     ///
-    /// What: runs the synchronized-product simulation. Why: the boolean answer for
-    /// an intersection-with-complement pattern.
+    /// What: runs the synchronized-product simulation. Why: the boolean answer for an
+    /// intersection-with-complement pattern; the prefilter lives one level up.
     pub fn is_match(&self, line: &[u8]) -> bool {
         run_product(self, line)
     }

@@ -12,8 +12,8 @@ mod minimize;
 /// The serializable `Dfa` table and its match loop.
 pub mod table;
 
-/// Re-exports the builder entry point.
-pub use build::build_dfa;
+/// Re-exports the capped builder entry point.
+pub use build::build_dfa_within;
 
 /// Re-exports the minimizer.
 pub use minimize::minimize;

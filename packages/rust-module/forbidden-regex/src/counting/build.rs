@@ -15,6 +15,13 @@ use crate::counting::element::Element;
 /// Imports the counting NFA being built.
 use crate::counting::nfa::CountingNfa;
 
+/// Largest bound for which a non-class repetition is unrolled into copies.
+///
+/// What: a ceiling on `max` when a repeated body is not a single class. Why: a small
+/// repeated group (an optional `(?:labs)?`) is cheaply copied, but a large bound
+/// would multiply positions, so it falls back to the general engine instead.
+const REPEAT_UNROLL_LIMIT: usize = 64;
+
 /// The first/last/nullable summary of one subexpression's positions.
 ///
 /// What: `first` are positions that may start it, `last` those that may end it, and
@@ -90,36 +97,62 @@ impl Builder {
         }
     }
 
-    /// Builds a counted position, requiring its body to be a single class.
+    /// Builds a counted position, or unrolls a small non-class repetition.
     ///
-    /// What: a class body becomes one `Counted` position, nullable when `min` is 0;
-    /// any other body fails. Why: only class repetitions get the counter treatment.
+    /// What: a class body becomes one `Counted` position (nullable when `min` is 0);
+    /// any other body is unrolled into `min` mandatory copies and `max - min`
+    /// optional copies when the bound is small, else fails. Why: only class
+    /// repetitions get the counter treatment, but a small repeated group (an optional
+    /// `(?:labs)?`) is cheaply expressible by copying its sub-NFA.
     fn build_repeat(&mut self, body: &Node, min: usize, max: usize) -> Option<Frag> {
-        match body {
-            Node::Class(set) => Some(self.leaf(Element::Counted { set: *set, min, max }, min == 0)),
-            _ => None,
+        if let Node::Class(set) = body {
+            return Some(self.leaf(Element::Counted { set: *set, min, max }, min == 0));
         }
+        if max == 0 {
+            return Some(empty_frag());
+        }
+        if max > REPEAT_UNROLL_LIMIT {
+            return None;
+        }
+        let mut acc = empty_frag();
+        for i in 0..max {
+            let mut copy = self.build(body)?;
+            // What: copies past `min` are optional. Why: they may be skipped, so the
+            // concat treats them as nullable.
+            if i >= min {
+                copy.nullable = true;
+            }
+            acc = self.link_frags(acc, copy);
+        }
+        Some(acc)
     }
 
     /// Builds a concatenation, wiring each part's ends to the next part's starts.
     ///
-    /// What: folds the parts, linking last to first across nullable gaps and
-    /// combining first/last/nullable by the Glushkov concat rule. Why: concatenation
-    /// is the linear backbone the follow edges thread.
+    /// What: folds the parts with [`Builder::link_frags`]. Why: concatenation is the
+    /// linear backbone the follow edges thread.
     fn build_concat(&mut self, parts: &[Node]) -> Option<Frag> {
         let mut acc = empty_frag();
         for part in parts {
             let next = self.build(part)?;
-            self.link(&acc.last, &next.first);
-            let first = extend_if(acc.nullable, &acc.first, &next.first);
-            let last = extend_if(next.nullable, &next.last, &acc.last);
-            acc = Frag {
-                nullable: acc.nullable && next.nullable,
-                first,
-                last,
-            };
+            acc = self.link_frags(acc, next);
         }
         Some(acc)
+    }
+
+    /// Links two fragments in sequence by the Glushkov concatenation rule.
+    ///
+    /// What: wires `acc`'s ends to `next`'s starts and combines first/last/nullable
+    /// across the nullable gap. Why: shared by concatenation and repeat-unrolling.
+    fn link_frags(&mut self, acc: Frag, next: Frag) -> Frag {
+        self.link(&acc.last, &next.first);
+        let first = extend_if(acc.nullable, &acc.first, &next.first);
+        let last = extend_if(next.nullable, &next.last, &acc.last);
+        Frag {
+            nullable: acc.nullable && next.nullable,
+            first,
+            last,
+        }
     }
 
     /// Builds an alternation by unioning the branches' fragments.

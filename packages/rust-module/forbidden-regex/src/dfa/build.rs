@@ -24,12 +24,6 @@ use crate::dfa::classes::compute_classes;
 /// Imports the table type and its acceptance-bit helper.
 use crate::dfa::table::{Dfa, accept_bit};
 
-/// Largest number of DFA states before the build is abandoned.
-///
-/// What: an upper bound on determinization. Why: complement and intersection can
-/// in principle explode the state count; the cap turns that into a clean error.
-const STATE_CAP: usize = 200_000;
-
 /// A determinization state: a residual node plus its incoming boundary bits.
 ///
 /// What: the residual regex together with whether the previous byte was a
@@ -46,13 +40,14 @@ struct StateKey {
     prev_word: bool,
 }
 
-/// Builds a DFA from a (search-wrapped) node.
+/// Builds a DFA from a (search-wrapped) node, abandoning past `cap` states.
 ///
 /// What: BFS over derivative states, computing per-class transitions and a
-/// per-state acceptance mask, until no new state appears or the cap is hit. Why:
+/// per-state acceptance mask, until no new state appears or `cap` is hit. Why:
 /// eager determinization yields a flat table that matches with no per-byte
-/// allocation and no lazy-cache lock.
-pub fn build_dfa(root: Node) -> Result<Dfa, CompileError> {
+/// allocation and no lazy-cache lock; a caller selecting a back-end passes a small
+/// `cap` so a blowup fails fast and it can fall back to the counting engine.
+pub fn build_dfa_within(root: Node, cap: usize) -> Result<Dfa, CompileError> {
     let classes = compute_classes(&root);
     let nc = classes.nclasses;
     let mut index: HashMap<StateKey, u32> = HashMap::new();
@@ -100,8 +95,8 @@ pub fn build_dfa(root: Node) -> Result<Dfa, CompileError> {
             );
             trans.push(next);
         }
-        if states.len() > STATE_CAP {
-            return Err(CompileError::StateCap { limit: STATE_CAP });
+        if states.len() > cap {
+            return Err(CompileError::StateCap { limit: cap });
         }
         i += 1;
     }

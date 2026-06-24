@@ -32,6 +32,17 @@ serde = { version = "1", features = ["derive"] }
 # not need; the plain `bincode::serialize`/`deserialize` serde path is enough.
 bincode = "1"
 
+# `memchr` provides the SIMD substring search (`memmem::Finder`) behind the
+# per-pattern required-literal prefilter. Most scanned lines contain no secret, so
+# rejecting them on a cheap literal scan before the counting simulation is the
+# dominant throughput win; `memchr` is the canonical, dependency-light impl.
+memchr = "2"
+
+# `aho-corasick` provides the RegexSet-level combined prefilter: one multi-pattern
+# pass over a line (auto-selecting SIMD Teddy for small seed sets) replaces one
+# substring scan per rule, so a non-matching line is rejected in a single pass.
+aho-corasick = "1"
+
 # Why `panic = "unwind"` + `overflow-checks = true` here, mirroring the
 # forbidden-strings scanner this engine serves:
 #

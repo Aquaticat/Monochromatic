@@ -14,6 +14,9 @@ mod element;
 /// The bounded count bitset used by the simulation state.
 mod countset;
 
+/// The required-literal prefilter derived from a counting NFA.
+mod prefilter;
+
 /// The shared counting-NFA simulation core.
 mod sim;
 
@@ -37,3 +40,6 @@ pub use nfa::CountingNfa;
 
 /// Re-exports the product program and its builder for the engine and compiler.
 pub use product::{ProductProgram, build_product};
+
+/// Re-exports the prefilter and node-based seed extractor for the engine.
+pub(crate) use prefilter::{Prefilter, seeds_from_node};

@@ -36,6 +36,9 @@ mod counting;
 /// The per-pattern back-end selector.
 mod engine;
 
+/// The RegexSet-level combined literal prefilter.
+mod gate;
+
 /// Public matcher types.
 mod regex;
 

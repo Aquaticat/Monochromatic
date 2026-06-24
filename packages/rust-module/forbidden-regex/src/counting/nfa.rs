@@ -16,7 +16,7 @@ use crate::error::CompileError;
 /// initially active positions. Why: branching lives in the follow and start sets,
 /// so alternation costs only edges while each `{n,m}` stays one counted position;
 /// the whole structure is linear in the pattern, never in any repetition bound.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CountingNfa {
     /// Position kinds, indexed by position id.
     pub elements: Vec<Element>,
@@ -31,11 +31,12 @@ impl CountingNfa {
     /// Reports whether the NFA matches some substring of `line`.
     ///
     /// What: defers to the counting-set search. Why: the boolean answer for one
-    /// linear or alternation pattern.
+    /// linear or alternation pattern; the prefilter that fast-rejects most lines
+    /// lives one level up in `Engine`.
     ///
     /// @example
     /// ```ignore
-    /// let nfa = build_nfa(&parse("(?:AKIA|ASIA)[A-Z2-7]{4}").unwrap()).unwrap();
+    /// let nfa = build_nfa(&parse("(?:(?:AKIA)|(?:ASIA))[A-Z2-7]{4}").unwrap()).unwrap();
     /// assert!(nfa.is_match(b"xxAKIAB2C7"));
     /// ```
     pub fn is_match(&self, line: &[u8]) -> bool {

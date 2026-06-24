@@ -6,13 +6,13 @@ use crate::ast::node::Node;
 use crate::ast::smart::concat;
 use crate::counting::build::build_nfa;
 use crate::counting::nfa::CountingNfa;
-use crate::dfa::build_dfa;
+use crate::dfa::build_dfa_within;
 use crate::parse::parse;
 
 // Builds the eager-DFA oracle for a pattern: the trusted (if large) reference.
 fn oracle(pattern: &str) -> impl Fn(&[u8]) -> bool {
     let node = parse(pattern).expect("oracle pattern parses");
-    let dfa = build_dfa(concat(vec![Node::Top, node])).expect("oracle dfa builds");
+    let dfa = build_dfa_within(concat(vec![Node::Top, node]), 200_000).expect("oracle dfa builds");
     move |line: &[u8]| dfa.is_match(line)
 }
 
