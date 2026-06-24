@@ -181,7 +181,7 @@ export async function implicitRemoteGuessCreatesBranch({
     args: [
       'for-each-ref',
       '--format=%(refname:short)',
-      'refs/remotes',
+      `refs/remotes/*/${target}`,
     ],
   },);
 

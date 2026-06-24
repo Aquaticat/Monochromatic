@@ -116,7 +116,16 @@ export async function branchWorktreeOnly(args: readonly string[],): Promise<read
   if (region.createsBranch)
     throw new Error(branchCreationMessage({ subcommand, },),);
 
-  if (!('implicitCreationTarget' in region))
+  /**
+   * Target that may be created by git's implicit remote branch guessing.
+   */
+  const { implicitCreationTarget, } = region;
+  /**
+   * Whether parser found no implicit branch creation target to probe.
+   */
+  const hasNoImplicitTarget = (typeof implicitCreationTarget) === 'symbol';
+
+  if (hasNoImplicitTarget)
     return args;
 
   /**
@@ -136,13 +145,13 @@ export async function branchWorktreeOnly(args: readonly string[],): Promise<read
   const guessedBranchCreation = await implicitRemoteGuessCreatesBranch({
     gitPath,
     preSubcommandArgs,
-    target: region.implicitCreationTarget,
+    target: implicitCreationTarget,
   },);
 
   if (guessedBranchCreation) {
     throw new Error(branchCreationMessage({
       subcommand,
-      target: region.implicitCreationTarget,
+      target: implicitCreationTarget,
     },),);
   }
 

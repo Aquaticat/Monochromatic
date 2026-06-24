@@ -1371,6 +1371,36 @@ await describe({
       },
     },),
     it({
+      name: 'allows checkout branch creation with branch escape hatch',
+      fn: async function testCheckoutBranchCreationEscapeHatch(): Promise<void> {
+        await using tempDirectory = await createTempDirectory();
+
+        await initializeRepository({ repoPath: tempDirectory.path, },);
+        await createInitialCommit({ repoPath: tempDirectory.path, },);
+
+        await runWrapper({
+          cwd: tempDirectory.path,
+          args: [
+            'checkout',
+            '--no-enforce-worktree-branch',
+            '-b',
+            'side',
+          ],
+        },);
+
+        /** Branch checked out after escape-hatched branch creation. */
+        const branchName = (await runRealGit({
+          cwd: tempDirectory.path,
+          args: [
+            'branch',
+            '--show-current',
+          ],
+        },)).stdout;
+
+        expect(branchName,).toBe('side',);
+      },
+    },),
+    it({
       name: 'allows branch creation through worktree add',
       fn: async function testWorktreeAddBranchCreationAllowed(): Promise<void> {
         await using tempDirectory = await createTempDirectory();

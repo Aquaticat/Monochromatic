@@ -12,6 +12,7 @@ import { consumesNextValue, } from './branch-create-dispatch.ts';
 import { isPositionalToken, } from './branch-create-shared.ts';
 import {
   BRANCH_WORKTREE_ESCAPE_HATCH,
+  NO_IMPLICIT_CREATION_TARGET,
   type BranchCreationRegion,
   type BranchCreationSubcommand,
 } from './branch-create-types.ts';
@@ -23,6 +24,7 @@ import {
 export { stripBranchCreationEscapeHatch, } from './branch-create-strip.ts';
 export {
   BRANCH_WORKTREE_ESCAPE_HATCH,
+  NO_IMPLICIT_CREATION_TARGET,
   type BranchCreationRegion,
   type BranchCreationSubcommand,
 } from './branch-create-types.ts';
@@ -171,6 +173,7 @@ export function parseBranchCreationRegion({
     return {
       createsBranch: scan.createsBranch || positionalsCreateBranch,
       hasEscapeHatch: scan.hasEscapeHatch,
+      implicitCreationTarget: NO_IMPLICIT_CREATION_TARGET,
     };
   }
 
@@ -191,6 +194,7 @@ export function parseBranchCreationRegion({
     return {
       createsBranch: scan.createsBranch,
       hasEscapeHatch: scan.hasEscapeHatch,
+      implicitCreationTarget: NO_IMPLICIT_CREATION_TARGET,
     };
   }
 
