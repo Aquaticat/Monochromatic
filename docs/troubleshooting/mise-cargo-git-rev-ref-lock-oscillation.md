@@ -1,13 +1,19 @@
 # mise 2026.6.13 alternates cargo-git `rev:` and `ref:` lock entries for Slint tools
 
-mise 2026.6.13, cargo backend, `mise lock`, and lockfile-enabled config with a cargo-git
+mise 2026.6.13,
+ cargo backend,
+ `mise lock`,
+ and lockfile-enabled config with a cargo-git
 `rev:<commit>` tool can write both `rev:<commit>` and `ref:<commit>` entries for the same
-resolved git revision. Later lockfile update paths can drop one representation again, so
+resolved git revision.
+Later lockfile update paths can drop one representation again,
+ so
 `mise.lock` appears to oscillate randomly across otherwise unrelated commits.
 
 ## Symptom
 
-In this repo, `mise.lock` repeatedly changed around the Slint cargo-git tools without a matching
+In this repo,
+ `mise.lock` repeatedly changed around the Slint cargo-git tools without a matching
 version decision:
 
 ```text
@@ -32,13 +38,16 @@ The concrete diff shape is a pair of extra lockfile entries like this:
 +crate = "slint-lsp"
 ```
 
-Before the local mitigation, the same pattern also affected the second Slint tool key,
-`cargo:https://github.com/slint-ui/slint.git`, used only to install `slint-viewer` from the same
+Before the local mitigation,
+ the same pattern also affected the second Slint tool key,
+`cargo:https://github.com/slint-ui/slint.git`,
+ used only to install `slint-viewer` from the same
 upstream repository.
 
 ## Root cause
 
-The first representation comes from our config. `mise.no-env.toml` requested cargo-git `rev:`
+The first representation comes from our config.
+`mise.no-env.toml` requested cargo-git `rev:`
 versions for Slint:
 
 ```toml
@@ -47,9 +56,12 @@ versions for Slint:
 "cargo:https://github.com/slint-ui/slint.git" = { version = "rev:85e3eb76819762cdcaa732fa87533ff896546bac", crate = "slint-viewer", bin = "slint-viewer" }
 ```
 
-The second representation comes from mise's cargo-git normalization. In `jdx/mise` commit
-`d1fb2de4844d020a5fa3a17609432f79ef544897`, `latest_version_with_opts()` rewrites `tag:`,
-`branch:`, and `rev:` requests into `ref:` strings:
+The second representation comes from mise's cargo-git normalization.
+In `jdx/mise` commit
+`d1fb2de4844d020a5fa3a17609432f79ef544897`,
+ `latest_version_with_opts()` rewrites `tag:`,
+`branch:`,
+ and `rev:` requests into `ref:` strings:
 
 `src/toolset/tool_version.rs:261-266`
 
@@ -63,7 +75,9 @@ let version = match tv.request.version().split_once(':') {
 };
 ```
 
-`mise lock` then collects tools from more than one path. In the first pass, it takes already
+`mise lock` then collects tools from more than one path.
+In the first pass,
+ it takes already
 resolved versions from the active toolset and deduplicates by literal `(tool short, version)`:
 
 `src/cli/lock.rs:541-548`
@@ -80,7 +94,10 @@ if seen.insert(key) {
 }
 ```
 
-In the second pass, it walks the config file requests. If a resolved request matches, it again
+In the second pass,
+ it walks the config file requests.
+If a resolved request matches,
+ it again
 uses the literal version string as part of the dedupe key:
 
 `src/cli/lock.rs:570-578`
@@ -99,7 +116,8 @@ for tv in &resolved_tv.versions {
 }
 ```
 
-If mise has to resolve the request directly, that branch uses the same literal key:
+If mise has to resolve the request directly,
+ that branch uses the same literal key:
 
 `src/cli/lock.rs:620-624`
 
@@ -112,10 +130,13 @@ match request.resolve(config, &resolve_options).await {
 ```
 
 So `rev:85e3...` and `ref:85e3...` are considered different versions of the same tool during
-`mise lock`, even though cargo-git treats them as the same commit identity for this request.
+`mise lock`,
+ even though cargo-git treats them as the same commit identity for this request.
 
-Later, lockfile update paths rebuild entries from the active toolset and merge by literal
-`(version, options)`. Existing entries are only preserved if their literal key appears in the new
+Later,
+ lockfile update paths rebuild entries from the active toolset and merge by literal
+`(version, options)`.
+Existing entries are only preserved if their literal key appears in the new
 entry set:
 
 `src/lockfile.rs:1941-1967`
@@ -154,22 +175,28 @@ That explains the flip:
 - `mise lock` can add `ref:<commit>` beside config-originated `rev:<commit>`.
 - Other lockfile update paths can rebuild only the active representation and drop the unmatched
   existing representation.
-- The sequence depends on which mise command touched the lockfile last, so the commit history looks
+- The sequence depends on which mise command touched the lockfile last,
+   so the commit history looks
   random even though each command is deterministic.
 
 ## Verification
 
 Versions under test:
 
-- local mise: `2026.6.13 linux-x64 (2026-06-23)`;
-- mise source: `jdx/mise@d1fb2de4844d020a5fa3a17609432f79ef544897`;
-- repo config source before mitigation: `mise.no-env.toml` with both `slint-lsp` and
+- local mise:
+  `2026.6.13 linux-x64 (2026-06-23)`;
+- mise source:
+  `jdx/mise@d1fb2de4844d020a5fa3a17609432f79ef544897`;
+- repo config source before mitigation:
+  `mise.no-env.toml` with both `slint-lsp` and
   `slint-viewer` cargo-git `rev:` tools;
-- no-duplicate baseline commit: `205f14b845`.
+- no-duplicate baseline commit:
+  `205f14b845`.
 
 ### Reproduce the `mise lock` add side
 
-Run this in a disposable worktree, not in the main checkout:
+Run this in a disposable worktree,
+ not in the main checkout:
 
 ```bash
 # /var/home/user/Monochromatic
@@ -263,8 +290,12 @@ The relevant diff removed the `ref:` Slint entries:
 
 Works cleanly:
 
-- Removing a cargo-git tool from `mise.no-env.toml`, regenerating `mise.toml`, and running
-  `mise lock` prunes that stale tool. After disabling `slint-viewer`, `mise lock --dry-run`
+- Removing a cargo-git tool from `mise.no-env.toml`,
+   regenerating `mise.toml`,
+   and running
+  `mise lock` prunes that stale tool.
+  After disabling `slint-viewer`,
+   `mise lock --dry-run`
   no longer reported `cargo:https://github.com/slint-ui/slint.git` as stale.
 - A lockfile update after disabling `slint-viewer` changed only `mise.lock` and removed the
   `slint-viewer` entries.
@@ -274,7 +305,8 @@ Still churns:
 - Keeping `slint-lsp` as a cargo-git `rev:` tool still leaves mise processing both
   `cargo:https://github.com/slint-ui/slint@ref:85e3...` and
   `cargo:https://github.com/slint-ui/slint@rev:85e3...` in `mise lock --dry-run`.
-  The local mitigation reduces the duplicate surface, but it is not an upstream fix.
+  The local mitigation reduces the duplicate surface,
+   but it is not an upstream fix.
 - Running `mise lock` from a no-duplicate baseline can recreate `ref:` entries.
 
 ## Verified workarounds
@@ -303,28 +335,41 @@ mise lock
 
 Tradeoffs:
 
-- `slint-viewer` is no longer installed by mise. That is acceptable while the previewer is rarely
+- `slint-viewer` is no longer installed by mise.
+  That is acceptable while the previewer is rarely
   used.
-- This removes the second Slint cargo-git tool key from config and lockfile, so future lock churn
+- This removes the second Slint cargo-git tool key from config and lockfile,
+   so future lock churn
   cannot include `cargo:https://github.com/slint-ui/slint.git`.
-- This does not solve the remaining `slint-lsp` `rev:` versus `ref:` mismatch. Future mise changes
+- This does not solve the remaining `slint-lsp` `rev:` versus `ref:` mismatch.
+  Future mise changes
   can still touch that entry until upstream normalizes the identity consistently or we stop using a
   cargo-git `rev:` install for `slint-lsp`.
 
 ## What does not work
 
-- Treating this as random lockfile churn. The add and remove sides are deterministic, triggered by
+- Treating this as random lockfile churn.
+  The add and remove sides are deterministic,
+   triggered by
   different mise lockfile code paths.
-- Editing only `mise.toml`. It is generated from `mise.no-env.toml` by `file-enforcer.config.ts`, so
-  the source file must change first, then `mise run prepare:pnpm:others:files` must regenerate it.
-- Running plain `mise lock` while keeping a cargo-git `rev:` Slint tool. The dry-run still lists both
+- Editing only `mise.toml`.
+  It is generated from `mise.no-env.toml` by `file-enforcer.config.ts`,
+   so
+  the source file must change first,
+   then `mise run prepare:pnpm:others:files` must regenerate it.
+- Running plain `mise lock` while keeping a cargo-git `rev:` Slint tool.
+  The dry-run still lists both
   `ref:` and `rev:` for `slint-lsp`.
-- Removing only the `ref:` entries by hand. `mise lock` can recreate them from the installed
+- Removing only the `ref:` entries by hand.
+  `mise lock` can recreate them from the installed
   `ref:` representation.
 
 ## Upstream filing decision
 
-`.out-of-scope/` has no exemption matching mise, cargo-git lockfiles, or Slint. Checked files:
+`.out-of-scope/` has no exemption matching mise,
+ cargo-git lockfiles,
+ or Slint.
+Checked files:
 
 - `.out-of-scope/bun-install.md`
 - `.out-of-scope/cargo-workspace.md`
@@ -351,26 +396,119 @@ The commands returned no rows.
 
 Walking the six constraints:
 
-- Really upstream's fault? Yes for the inconsistent lock identity. Our config is valid cargo-git
-  `rev:` syntax, and mise itself writes both `rev:` and `ref:` forms.
-- Can upstream fix it? Yes. The identity can be normalized in `mise lock`, in lockfile merge keys,
-  or in cargo-git version canonicalization.
-- Are they supporting this use case? Mostly yes. mise documents lockfiles and has a cargo backend
-  that accepts cargo-git `rev:` requests.
-- Would the repo welcome our contribution? Not as a direct issue. `.github/ISSUE_TEMPLATE/config.yml`
-  sets `blank_issues_enabled: false` and directs features, bug reports, questions, configuration,
-  features, and behavior to GitHub Discussions. `CONTRIBUTING.md` points to the web guide, and the
-  guide says to start a discussion or mention the plan in Discord before non-obvious PRs. It does
-  welcome public pull requests after direction is settled, but a direct issue filing would not follow
-  the repo's stated intake path.
-- Will they likely fix it? Unknown. No matching issue or PR was found, and the local session did not
-  start the requested upstream discussion.
-- Prototyped a minimal fix? No. Because the repo's stated intake path is discussion-first for bug
-  reports and non-obvious changes, this local troubleshooting entry keeps a discussion draft rather
-  than a fileable issue. Do not file the draft below as an issue.
+- Really upstream's fault?
+  Yes for the inconsistent lock identity.
+  Our config is valid cargo-git `rev:` syntax,
+   and mise itself writes both
+  `rev:` and `ref:` forms.
+- Can upstream fix it?
+  Yes.
+  The identity can be normalized in `mise lock`,
+   in lockfile merge keys,
+   or in
+  cargo-git version canonicalization.
+- Are they supporting this use case?
+  Mostly yes.
+  mise documents lockfiles and has a cargo backend that accepts cargo-git
+  `rev:` requests.
+- Would the repo welcome our contribution?
+  Yes for a discussion-first contribution path,
+   not for a direct issue.
+  `.github/ISSUE_TEMPLATE/config.yml` sets `blank_issues_enabled: false` and
+  directs features,
+   bug reports,
+   questions,
+   configuration,
+   features,
+   and behavior
+  to GitHub Discussions.
+  `CONTRIBUTING.md` points to the web guide,
+   and the guide says to start a
+  discussion or mention the plan in Discord before non-obvious PRs.
+  It welcomes public pull requests after direction is settled.
+- Will they likely fix it?
+  Soft yes.
+  No matching issue or PR was found,
+   and no maintainer text was found declining
+  this class of lockfile fix.
+- Prototyped a minimal fix?
+  Yes.
+  The prototype patch is saved beside this document as
+  [mise-cargo-git-rev-ref-lock-oscillation.patch](mise-cargo-git-rev-ref-lock-oscillation.patch).
 
-Decision: do not file a GitHub issue. If upstreaming becomes worth the effort, start with a
-Discussion using the draft below, then prototype the accepted normalization shape before opening a PR.
+### Prototype result
+
+The prototype introduces `ToolVersion::lockfile_version()`.
+It preserves the request spelling when a cargo-git `tag:`,
+ `branch:`,
+ or `rev:`
+request resolves to the equivalent `ref:` install identity,
+ then uses that value
+when `mise lock` deduplicates,
+ prunes stale versions,
+ resolves lock data,
+ and
+serializes `LockfileTool` records.
+
+The disposable upstream clone was created fresh under `/tmp/agent/`:
+
+```bash
+# /var/home/user/Monochromatic
+mkdir --parents /tmp/agent
+chmod 700 /tmp/agent
+fresh=$(mktemp --directory /tmp/agent/mise-upstream-prototype.XXXXXXXX)
+rmdir "$fresh"
+gh repo clone jdx/mise "$fresh" -- --depth 1
+cd "$fresh"
+git remote get-url origin
+# https://github.com/jdx/mise.git
+git rev-parse HEAD
+# d1fb2de4844d020a5fa3a17609432f79ef544897
+git apply /var/home/user/Monochromatic/docs/troubleshooting/mise-cargo-git-rev-ref-lock-oscillation.patch
+git diff --stat
+# src/cli/lock.rs             | 92 +++++++++++++++++++++++++++++++++++++++++----
+# src/lockfile.rs             |  4 +-
+# src/toolset/tool_version.rs | 54 ++++++++++++++++++++++++++
+# 3 files changed, 140 insertions(+), 10 deletions(-)
+```
+
+Targeted verification ran in a secret-free environment outside this repository,
+with Cargo writing build artifacts under `/tmp/agent/`:
+
+```bash
+# /tmp/agent
+env -i \
+  HOME=/tmp/agent/mise-proto-home \
+  CARGO_HOME=/tmp/agent/mise-proto-home/.cargo \
+  RUSTUP_HOME=/home/user/.rustup \
+  RUSTUP_TOOLCHAIN=nightly-x86_64-unknown-linux-gnu \
+  CARGO_TARGET_DIR=/tmp/agent/mise-20260624-lock-oscillation/target \
+  PATH=/home/user/.cargo/bin:/usr/bin:/bin \
+  cargo test --manifest-path /tmp/agent/mise-upstream-prototype.DzUfrrWU/Cargo.toml cargo_git
+```
+
+The first prototype test run caught an over-broad unit-test seam that called
+backend registry state before initialization.
+That test was moved to `toolset::tool_version`,
+ where it exercises the new
+normalization helper without needing registry state.
+The corrected fresh-clone run passed:
+
+```text
+running 4 tests
+test toolset::tool_version::tests::lockfile_version_keeps_non_matching_cargo_git_ref ... ok
+test toolset::tool_version::tests::lockfile_version_preserves_requested_cargo_git_rev ... ok
+test cli::lock::tests::test_current_versions_preserve_requested_cargo_git_rev ... ok
+test cli::lock::tests::test_prune_stale_versions_removes_cargo_git_ref_duplicate ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 1409 filtered out; finished in 0.00s
+```
+
+Decision:
+do not file a GitHub issue because the repo disables blank issues and routes bug
+reports to Discussions.
+The draft below is appropriate for a Discussion or for a PR description after a
+human decides to upstream the prototype.
 
 ### Discussion draft, do not post as-is
 
@@ -418,6 +556,18 @@ git diff --unified=0 -- mise.lock
 ```
 
 Observed: `mise lock` adds the matching `ref:<sha>` entry beside the existing `rev:<sha>` entry.
+
+I prototyped a minimal fix that adds `ToolVersion::lockfile_version()` and uses it in the lockfile
+paths that deduplicate, prune stale versions, resolve lock data, and serialize lockfile tools.
+The targeted tests pass:
+
+```text
+running 4 tests
+test toolset::tool_version::tests::lockfile_version_keeps_non_matching_cargo_git_ref ... ok
+test toolset::tool_version::tests::lockfile_version_preserves_requested_cargo_git_rev ... ok
+test cli::lock::tests::test_current_versions_preserve_requested_cargo_git_rev ... ok
+test cli::lock::tests::test_prune_stale_versions_removes_cargo_git_ref_duplicate ... ok
+```
 
 Question: should cargo-git lock identity be normalized so `rev:<sha>` and `ref:<sha>` for the same
 resolved commit do not appear as separate lockfile versions?

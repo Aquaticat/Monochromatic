@@ -1,0 +1,247 @@
+diff --git a/src/cli/lock.rs b/src/cli/lock.rs
+index b52547f..69d77b5 100644
+--- a/src/cli/lock.rs
++++ b/src/cli/lock.rs
+@@ -382,7 +382,7 @@ impl Lock {
+             current_versions
+                 .entry(ba.short.clone())
+                 .or_default()
+-                .insert(tv.version.clone());
++                .insert(tv.lockfile_version());
+         }
+         current_versions
+     }
+@@ -543,7 +543,7 @@ impl Lock {
+             if tv.version == "latest" {
+                 continue;
+             }
+-            let key = (backend.ba().short.clone(), tv.version.clone());
++            let key = (backend.ba().short.clone(), tv.lockfile_version());
+             if seen.insert(key) {
+                 all_tools.push((backend.ba().as_ref().clone(), tv));
+             }
+@@ -572,7 +572,7 @@ impl Lock {
+                                         && tv.version != "latest"
+                                     {
+                                         matched_resolved = true;
+-                                        let key = (ba.short.clone(), tv.version.clone());
++                                        let key = (ba.short.clone(), tv.lockfile_version());
+                                         if seen.insert(key) {
+                                             all_tools.push((ba.as_ref().clone(), tv.clone()));
+                                         }
+@@ -619,7 +619,7 @@ impl Lock {
+                                 }
+                                 match request.resolve(config, &resolve_options).await {
+                                     Ok(tv) => {
+-                                        let key = (ba.short.clone(), tv.version.clone());
++                                        let key = (ba.short.clone(), tv.lockfile_version());
+                                         if seen.insert(key) {
+                                             all_tools.push((ba.as_ref().clone(), tv));
+                                         }
+@@ -698,7 +698,7 @@ impl Lock {
+             }
+             // Deduplicate after potential "latest" -> concrete-version resolution.
+             let mut seen_after: BTreeSet<(String, String)> = BTreeSet::new();
+-            tools.retain(|(ba, tv)| seen_after.insert((ba.short.clone(), tv.version.clone())));
++            tools.retain(|(ba, tv)| seen_after.insert((ba.short.clone(), tv.lockfile_version())));
+             Ok(tools)
+         }
+     }
+@@ -834,7 +834,7 @@ mod tests {
+     use crate::cli::args::ToolArg;
+     use crate::lockfile::{Lockfile, PlatformInfo};
+     use crate::toolset::{ToolRequest, ToolSource, ToolVersion};
+-    use std::collections::BTreeMap;
++    use std::collections::{BTreeMap, BTreeSet};
+     use std::str::FromStr;
+     use std::sync::Arc;
+ 
+@@ -888,11 +888,19 @@ mod tests {
+     fn configured_tool(
+         backend: &str,
+         version: &str,
++    ) -> (crate::cli::args::BackendArg, ToolVersion) {
++        configured_tool_with_resolved_version(backend, version, version)
++    }
++
++    fn configured_tool_with_resolved_version(
++        backend: &str,
++        request_version: &str,
++        resolved_version: &str,
+     ) -> (crate::cli::args::BackendArg, ToolVersion) {
+         let ba = crate::cli::args::BackendArg::new(backend.to_string(), Some(backend.to_string()));
+         let request =
+-            ToolRequest::new(Arc::new(ba.clone()), version, ToolSource::Argument).unwrap();
+-        let tv = ToolVersion::new(request, version.to_string());
++            ToolRequest::new(Arc::new(ba.clone()), request_version, ToolSource::Argument).unwrap();
++        let tv = ToolVersion::new(request, resolved_version.to_string());
+         (ba, tv)
+     }
+ 
+@@ -1032,4 +1040,72 @@ mod tests {
+             std::collections::BTreeSet::from(["linux-x64".to_string()])
+         );
+     }
++
++    #[test]
++    fn test_current_versions_preserve_requested_cargo_git_rev() {
++        let cmd = lock_cmd(&[]);
++        let backend = "cargo:https://github.com/slint-ui/slint";
++        let tools = vec![configured_tool_with_resolved_version(
++            backend,
++            "rev:85e3eb76819762cdcaa732fa87533ff896546bac",
++            "ref:85e3eb76819762cdcaa732fa87533ff896546bac",
++        )];
++
++        let versions = cmd.current_tool_versions(&tools);
++
++        assert_eq!(
++            versions.get(backend),
++            Some(&BTreeSet::from([String::from(
++                "rev:85e3eb76819762cdcaa732fa87533ff896546bac"
++            )]))
++        );
++    }
++
++    #[test]
++    fn test_prune_stale_versions_removes_cargo_git_ref_duplicate() {
++        let cmd = lock_cmd(&[]);
++        let backend = "cargo:https://github.com/slint-ui/slint";
++        let revision = "85e3eb76819762cdcaa732fa87533ff896546bac";
++        let mut lockfile = Lockfile::default();
++        lockfile.set_platform_info(
++            backend,
++            &format!("rev:{revision}"),
++            Some(backend),
++            &BTreeMap::new(),
++            "linux-x64",
++            PlatformInfo {
++                checksum: Some("sha256:rev".to_string()),
++                ..Default::default()
++            },
++        );
++        lockfile.set_platform_info(
++            backend,
++            &format!("ref:{revision}"),
++            Some(backend),
++            &BTreeMap::new(),
++            "linux-x64",
++            PlatformInfo {
++                checksum: Some("sha256:ref".to_string()),
++                ..Default::default()
++            },
++        );
++        let tools = vec![configured_tool_with_resolved_version(
++            backend,
++            &format!("rev:{revision}"),
++            &format!("ref:{revision}"),
++        )];
++
++        cmd.prune_stale_versions(&mut lockfile, &tools);
++
++        let requested_rev = BTreeSet::from([format!("rev:{revision}")]);
++        assert!(
++            lockfile
++                .stale_tool_versions(backend, &requested_rev)
++                .is_empty()
++        );
++        assert_eq!(
++            lockfile.all_platform_keys(),
++            std::collections::BTreeSet::from(["linux-x64".to_string()])
++        );
++    }
+ }
+diff --git a/src/lockfile.rs b/src/lockfile.rs
+index bb60655..35d14b4 100644
+--- a/src/lockfile.rs
++++ b/src/lockfile.rs
+@@ -1888,7 +1888,7 @@ pub async fn resolve_tool_lock_info(
+ 
+     (
+         ba.short.clone(),
+-        tv.version.clone(),
++        tv.lockfile_version(),
+         ba.full(),
+         platform,
+         info,
+@@ -2330,7 +2330,7 @@ fn lockfile_tool_from_tool_version(tv: &ToolVersion) -> Result<LockfileTool> {
+     };
+ 
+     Ok(LockfileTool {
+-        version: tv.version.clone(),
++        version: tv.lockfile_version(),
+         backend: Some(tv.ba().stored_full()),
+         options,
+         platforms,
+diff --git a/src/toolset/tool_version.rs b/src/toolset/tool_version.rs
+index 1102505..c514f3f 100644
+--- a/src/toolset/tool_version.rs
++++ b/src/toolset/tool_version.rs
+@@ -274,6 +274,18 @@ impl ToolVersion {
+             style(&format!("@{}", &self.version)).for_stderr()
+         )
+     }
++    pub fn lockfile_version(&self) -> String {
++        let request_version = self.request.version();
++        if let Some((ref_type @ ("tag" | "branch" | "rev"), request_ref)) =
++            request_version.split_once(':')
++        {
++            if self.version == format!("ref:{request_ref}") {
++                return format!("{ref_type}:{request_ref}");
++            }
++        }
++        self.version.clone()
++    }
++
+     pub fn tv_pathname(&self) -> String {
+         match &self.request {
+             ToolRequest::Version { .. } => self.version.to_string(),
+@@ -884,6 +896,48 @@ mod tests {
+         backend
+     }
+ 
++    #[test]
++    fn lockfile_version_preserves_requested_cargo_git_rev() {
++        let backend = test_backend(PathBuf::from("/tmp/mise-test-installs"));
++        let request = ToolRequest::Ref {
++            backend: Arc::new(backend),
++            ref_: "85e3eb76819762cdcaa732fa87533ff896546bac".to_string(),
++            ref_type: "rev".to_string(),
++            options: ToolVersionOptions::default(),
++            source: ToolSource::Argument,
++        };
++        let tv = ToolVersion::new(
++            request,
++            "ref:85e3eb76819762cdcaa732fa87533ff896546bac".to_string(),
++        );
++
++        assert_eq!(
++            tv.lockfile_version(),
++            "rev:85e3eb76819762cdcaa732fa87533ff896546bac"
++        );
++    }
++
++    #[test]
++    fn lockfile_version_keeps_non_matching_cargo_git_ref() {
++        let backend = test_backend(PathBuf::from("/tmp/mise-test-installs"));
++        let request = ToolRequest::Ref {
++            backend: Arc::new(backend),
++            ref_: "85e3eb76819762cdcaa732fa87533ff896546bac".to_string(),
++            ref_type: "rev".to_string(),
++            options: ToolVersionOptions::default(),
++            source: ToolSource::Argument,
++        };
++        let tv = ToolVersion::new(
++            request,
++            "ref:1111111111111111111111111111111111111111".to_string(),
++        );
++
++        assert_eq!(
++            tv.lockfile_version(),
++            "ref:1111111111111111111111111111111111111111"
++        );
++    }
++
+     #[test]
+     fn has_linked_version_detects_external_absolute_targets() -> Result<()> {
+         let temp_dir = tempfile::tempdir()?;
