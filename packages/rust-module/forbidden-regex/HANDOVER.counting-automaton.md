@@ -1,14 +1,16 @@
 # Handover: forbidden-regex counting-automaton rebuild
 
 The crate compiles, lints clean (`lint:rust`, `lint:clippy`), and all tests pass.
-The counting back-end is built for linear patterns and for linear `&`/`~`
-(intersection and complement whose operands each linearize), so the
-bounded-repetition blowup is gone for both. Counts live in fixed-width bitsets and
-the byte step reuses ping-pong buffers, so matching never allocates per byte. Only
-patterns with alternation inside an operand still route to the eager DFA. This file
-is the source of truth for resuming. Remaining work: generalize the operand IR so
-`&`/`~` operands may contain alternation (the real AWS rule), a counting-aware
-`RegexSet` gate, the `bench/` crate, and differential tests vs `resharp`/`regex`.
+The counting back-end is a Glushkov-style counting NFA (`CountingNfa`): it covers
+concatenation, alternation, class repetition, and anchors, and intersection with
+complement runs as a synchronized product of such NFAs. So the bounded-repetition
+blowup is gone for plain patterns, alternation patterns, and `&`/`~` alike,
+including the real AWS rule. Counts live in fixed-width bitsets and the byte step
+reuses ping-pong buffers, so matching never allocates per byte. Only a repetition of
+a non-class body (e.g. an optional group `(?:ab)?`) and nested set algebra inside an
+operand still route to the eager DFA. This file is the source of truth for resuming.
+Remaining work: a counting-aware `RegexSet` gate, the `bench/` crate, and
+differential tests vs `resharp`/`regex`.
 
 ## What this crate is
 
@@ -115,38 +117,43 @@ Front-end (done):
 
 Back-ends:
 
-- Shared simulation core: `src/counting/sim.rs` holds `State` (reached control
-  points plus per-element count bitsets), `closure`, `step_into` (fills a reused
-  destination, no allocation), and `boundary_ctx`. Counts live in
-  `src/counting/countset.rs` (`CountSet`): a fixed-width bitset indexed by count
-  (`bit i` set means count `i` is live), sized to the element's `max`. Entry is a
-  bit-or, the exit guard a shift-and-test, and a matched byte advances every live
-  count at once with one multi-word left shift. Both back-ends reuse this core.
-- Linear counting back-end (DONE): `src/counting/element.rs` (`Element`,
-  `LinearProgram`, `linearize`, `validate`) and `src/counting/run.rs` (the search
-  loop; tests in `src/counting/run_tests.rs`). `linearize` returns `Some` only for a
-  concatenation of classes, class repetitions, and anchors. The search ping-pongs
-  two `State` buffers, seeds a fresh start at every boundary (the `Σ*` prefix), and
-  matches exactly against the eager-DFA oracle. `AKIA[A-Z2-7]{16}` is under 2 KB.
-- Synchronized-product back-end (DONE for linear operands):
-  `src/counting/product.rs` (`ProductProgram`, `linearize_product`, `validate`;
-  tests in `src/counting/product_tests.rs`). A `Node::Inter` whose operands each
-  linearize splits into positives (must match the same span) and negatives (the
-  `~(...)` operands, none may match that span). One thread per start runs every
-  operand in lockstep over the same bytes, so the same-span set algebra holds; each
-  thread reuses a spare buffer side, pruned in place via `retain_mut`.
-  `(?:AKIA[A-Z2-7]{16}) & ~(AKIA2{16})` stays under 2 KB and decides keys exactly.
-- Eager DFA (still used for alternation and any `&`/`~` with alternation inside an
-  operand): `src/dfa/build.rs`, `src/dfa/table.rs` (`Dfa` table, match loop,
-  `validate`), `src/dfa/minimize.rs`. The product-union gate (`src/dfa/union.rs`)
-  and the `Dfa::step`/`start_state`/`accept_mask_of` helpers it used were REMOVED; a
-  counting-aware gate replaces it.
-- `src/engine.rs`: `Engine { Linear(LinearProgram), Product(ProductProgram),
-  Table(Dfa) }` picks the back-end (`is_match`, `validate`).
+- Leaf and bitset: `src/counting/element.rs` holds `Element` (the position kinds
+  `Class`, `Counted`, `LineStart`, `LineEnd`, `WordBoundary`) and `validate_element`.
+  Counts live in `src/counting/countset.rs` (`CountSet`): a fixed-width bitset
+  indexed by count (`bit i` set means count `i` is live), sized to the element's
+  `max`. Entry is a bit-or, the exit guard a shift-and-test, and a matched byte
+  advances every live count at once with one multi-word left shift.
+- Shared simulation core: `src/counting/sim.rs` holds `State` (active positions
+  `0..=len`, where `len` is the virtual accept, plus per-position count bitsets),
+  `closure`, `step_into` (fills a reused destination, no allocation), and
+  `boundary_ctx`. It walks follow sets, not an implicit chain, so it serves any NFA.
+- Counting NFA (DONE): `src/counting/nfa.rs` (`CountingNfa { elements, follow,
+  start }`, `is_match`, `validate`) and `src/counting/build.rs` (`build_nfa`, a
+  Glushkov first/last/follow walk; tests in `src/counting/run_tests.rs`). Covers
+  concatenation, alternation, class repetition, and anchors; returns `None` for
+  intersection, complement, `Top`, or a repetition of a non-class body. The search
+  in `src/counting/run.rs` ping-pongs two `State` buffers and re-seeds `start` every
+  boundary (the `Σ*` prefix). `AKIA[A-Z2-7]{16}` is under 2 KB.
+- Synchronized-product back-end (DONE): `src/counting/product.rs` (`ProductProgram`,
+  `build_product`, `validate`; tests in `src/counting/product_tests.rs`). A
+  `Node::Inter` whose operands each `build_nfa` splits into positives (must match the
+  same span) and negatives (the `~(...)` operands, none may match that span). One
+  thread per start runs every operand NFA in lockstep over the same bytes, so the
+  same-span set algebra holds; each thread reuses a spare buffer side, pruned in
+  place via `retain_mut`. The real AWS rule
+  `(?:\b(?:(?:A3T[A-Z0-9])|(?:AKIA)|(?:ASIA))[A-Z2-7]{16}\b) & ~(AKIA2{16})` is under
+  4 KB and decides keys exactly per prefix branch.
+- Eager DFA (still used for a repetition of a non-class body, e.g. an optional group
+  `(?:ab)?`, and nested set algebra inside an operand): `src/dfa/build.rs`,
+  `src/dfa/table.rs` (`Dfa` table, match loop, `validate`), `src/dfa/minimize.rs`.
+  The product-union gate (`src/dfa/union.rs`) and the `Dfa::step`/`start_state`/
+  `accept_mask_of` helpers it used were REMOVED; a counting-aware gate replaces it.
+- `src/engine.rs`: `Engine { Nfa(CountingNfa), Product(ProductProgram), Table(Dfa) }`
+  picks the back-end (`is_match`, `validate`).
 - `src/regex.rs`: `Regex` wraps one `Engine`; `RegexSet` holds `Vec<Engine>` and
-  iterates per-rule (no gate yet). `build_engine` tries `linearize`, then
-  `linearize_product`, then the eager DFA. `compile`, `new`, `from_ruleset`,
-  `is_match`, `matches`, `to_bytes`, `from_bytes`. Public surface unchanged.
+  iterates per-rule (no gate yet). `build_engine` tries `build_nfa`, then
+  `build_product`, then the eager DFA. `compile`, `new`, `from_ruleset`, `is_match`,
+  `matches`, `to_bytes`, `from_bytes`. Public surface unchanged.
 
 Tests (all green; `cargo nextest run` ~0.01s):
 
@@ -192,19 +199,25 @@ TDD targets:
    instead one thread per start runs every operand in lockstep and accepts only when
    all positives and no negatives accept at the same boundary.
    `product_tests.rs::product_agrees_with_oracle` diffs it against the eager DFA.
-5. NEXT. Generalize the operand IR so an operand of `&`/`~` may contain alternation,
-   so the real AWS rule
-   `(?:\b(?:A3T[A-Z0-9]|AKIA|ASIA)[A-Z2-7]{16}\b) & ~(AKIA2{16})` leaves the eager
-   DFA. Today `linearize` (and thus `linearize_product`) rejects any `Alt`, so that
-   rule still routes to the eager DFA and blows up on `{16}`. The lockstep product
-   framework in `product.rs` is reusable as-is; only the per-operand representation
-   needs to change from a flat `LinearProgram` to a small counting NFA (element
-   graph with alternation and epsilon moves) that exposes the same
-   seed/closure/accept/step/is-dead surface `sim.rs` already defines.
-6. `RegexSet` gate over counting automata without the product blowup (the removed
-   `union.rs` did a product of per-rule DFAs and exploded). Likely a per-rule
-   counting simulation run in parallel with an any-accept check, or a shared
-   structural automaton with per-rule accept sets.
+5. DONE. The operand IR is a counting NFA (`build_nfa`), so alternation costs only
+   follow edges and the real AWS rule
+   `(?:\b(?:(?:A3T[A-Z0-9])|(?:AKIA)|(?:ASIA))[A-Z2-7]{16}\b) & ~(AKIA2{16})` leaves
+   the eager DFA (`product_tests.rs::aws_rule_with_alternation_stays_small`, under
+   4 KB). Standalone alternation patterns are diffed against the oracle in
+   `run_tests.rs::linear_agrees_with_oracle`. Note the grammar requires each `&`/`|`
+   operand to be a single atom, so every multi-character alternation branch must be
+   wrapped: `(?:(?:AKIA)|(?:ASIA))`, not `(?:AKIA|ASIA)`. A repetition of a non-class
+   body (an optional group `(?:ab)?`, `(?:ab){2,4}`) is the remaining shape that
+   `build_nfa` rejects; it routes to the eager DFA. To lift that, `build_repeat`
+   would unroll a small-bound non-class body into fresh position copies (mandatory
+   copies for `min`, optional copies up to `max`), falling back to the eager DFA when
+   the bound is large; the counter-set trick does not apply to a multi-position body.
+6. NEXT. `RegexSet` gate over counting automata without the product blowup (the
+   removed `union.rs` did a product of per-rule DFAs and exploded). `RegexSet` today
+   holds `Vec<Engine>` and iterates per rule, which is already correct and
+   blowup-free; the open question is whether a shared structural automaton with
+   per-rule accept sets beats the per-rule loop on throughput. Measure before
+   building: the per-rule loop may already win, in which case this is just the bench.
 
 ## Lint and style reminders specific to this crate
 
