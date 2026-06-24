@@ -24,7 +24,9 @@ dependencies = [
 name = "forbidden-regex"
 version = "0.1.0"
 dependencies = [
+ "aho-corasick",
  "bincode",
+ "memchr",
  "serde",
 ]
 

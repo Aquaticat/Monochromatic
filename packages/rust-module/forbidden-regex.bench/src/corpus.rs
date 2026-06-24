@@ -12,17 +12,18 @@ pub const CORPUS_LINES: usize = 50_000;
 /// source, so the throughput that matters is the full-line no-match scan.
 const POSITIVE_EVERY: usize = 100;
 
-/// Bytes a non-matching line may contain: lowercase, digits, safe punctuation.
+/// Bytes a non-matching line may contain: lowercase, digits, and spaces.
 ///
-/// What: excludes uppercase, `_`, and `-`. Why: no pattern can then match by
-/// chance, so the match-count parity check between engines is meaningful.
-const NEG_ALPHABET: &[u8] = b"abcdefghijklmnopqrstuvwxyz0123456789 .,;(){}=+*/<>";
-
-/// Alphabet for an AWS key tail (`[A-Z2-7]`).
-const AWS_TAIL: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+/// What: excludes uppercase, `_`, `-`, and punctuation. Why: the shipped rules key
+/// off those characters, so a negative line cannot accidentally form a credential
+/// prefix, keeping the match-count parity check meaningful.
+const NEG_ALPHABET: &[u8] = b"abcdefghijklmnopqrstuvwxyz0123456789      ";
 
 /// Alphabet for a token body (`[A-Za-z0-9]`).
 const ALNUM: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+/// Alphabet for a GitLab token body (`[\w-]`).
+const WORD_DASH: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-";
 
 /// Shortest and longest negative line lengths.
 const MIN_LEN: usize = 24;
@@ -103,19 +104,30 @@ fn negative_line(rng: &mut Rng) -> Vec<u8> {
     (0..len).map(|_| rng.pick(NEG_ALPHABET)).collect()
 }
 
-/// Builds one matching line by splicing a real key into noise.
+/// Builds one matching line by splicing a real credential into noise.
 ///
-/// What: a negative base plus a space-delimited AWS key or GitHub token, alternated
-/// by index. Why: exercises the match-found path and gives a known positive count.
+/// What: a negative base plus a space-delimited GitHub PAT, GitLab PAT, or build
+/// tag, rotated by index. Why: exercises the match-found path (including a `&`/`~`
+/// rule) and gives a known positive count for the parity check.
 fn positive_line(rng: &mut Rng, i: usize) -> Vec<u8> {
     let mut line = negative_line(rng);
     line.push(b' ');
-    if i.is_multiple_of(2) {
-        line.extend_from_slice(b"AKIA");
-        extend_from(&mut line, rng, AWS_TAIL, 16);
-    } else {
-        line.extend_from_slice(b"ghp_");
-        extend_from(&mut line, rng, ALNUM, 36);
+    match i % 3 {
+        0 => {
+            line.extend_from_slice(b"ghp_");
+            extend_from(&mut line, rng, ALNUM, 36);
+        }
+        1 => {
+            line.extend_from_slice(b"glpat-");
+            extend_from(&mut line, rng, WORD_DASH, 20);
+        }
+        _ => {
+            // A non-placeholder BUILD_ tag (first digit non-zero) so the `~(...)`
+            // complement in our version does not veto it.
+            line.extend_from_slice(b"BUILD_");
+            line.push(b'1' + (rng.next_u64() % 9) as u8);
+            extend_from(&mut line, rng, b"0123456789", 5);
+        }
     }
     line.push(b' ');
     line
