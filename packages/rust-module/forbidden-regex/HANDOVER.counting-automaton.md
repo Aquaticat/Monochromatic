@@ -1,9 +1,11 @@
 # Handover: forbidden-regex counting-automaton rebuild
 
-Generated mid-implementation. The crate is intentionally committed in a
-non-compiling state (a `Repeat` node was added to the AST but `nullable`,
-`derivative`, the parser, and `dfa/classes` do not yet handle it, so several
-`match` arms are non-exhaustive). This file is the source of truth for resuming.
+The crate compiles, lints clean (`lint:rust`, `lint:clippy`), and all tests pass.
+The counting back-end for linear patterns is built and the bounded-repetition
+blowup is gone for them; intersection and complement still route to the eager DFA.
+This file is the source of truth for resuming. Remaining work: layer `&`/`~` onto
+the counting model, a counting-aware `RegexSet` gate, the `bench/` crate, and
+differential tests vs `resharp`/`regex`.
 
 ## What this crate is
 
@@ -93,48 +95,48 @@ incrementally.
 
 ## Current code state
 
-Front-end (keep):
+Front-end (done):
 
-- `src/charset.rs`: `ByteSet` (256-bit) plus `dot_set`, `word_set`, `digit_set`,
-  `space_set`, `singleton`, `is_word_byte`. Done.
-- `src/error.rs`: `CompileError`. Done.
-- `src/context.rs`: `Ctx` (line_start, line_end, word_before, word_after). Done.
-- `src/ast/node.rs`: `Node` algebra. `Repeat { node, min, max }` was just added.
-- `src/ast/smart.rs`: smart constructors. `repeat(node, min, max)` added;
-  `optional` now `repeat(node, 0, 1)`.
-- `src/parse/*`: cursor (verbose-mode skipping), escape, class, repeat, grammar,
-  and `parse.rs` (empty-match guard). The grammar enforces the single-atom-operand
-  rule and is correct. NOTE: `src/parse/repeat.rs` still DESUGARS into unrolled
-  concatenations via `repeat_exact`/`repeat_range`; it must be changed to emit the
-  `Repeat` node via `ast::smart::repeat`.
+- `src/charset.rs`: `ByteSet` (256-bit) plus the shorthand sets and
+  `is_word_byte`; now derives serde so a counting program can carry byte sets.
+- `src/error.rs`: `CompileError`.
+- `src/context.rs`: `Ctx` (line_start, line_end, word_before, word_after).
+- `src/ast/node.rs`: `Node` algebra including `Repeat { node, min, max }`.
+- `src/ast/smart.rs`: smart constructors; `repeat(node, min, max)` and `optional`.
+- `src/parse/*`: cursor (verbose-mode skipping), escape, class, repeat (emits a
+  `Repeat` node, no longer desugars), grammar, and `parse.rs` (empty-match guard).
+- `src/nullable.rs`: handles `Repeat` (`min == 0 || nullable(body)`).
+- `src/derivative.rs`: interim countdown derivative for `Repeat` (still used by the
+  eager DFA path; correct but blows up, which is why linear patterns now skip it).
+- `src/dfa/classes.rs`: `collect_sets` recurses into `Repeat`.
 
-Needs `Repeat` handling to compile again (interim countdown form is fine to keep
-correctness while the counting back-end is built):
+Back-ends:
 
-- `src/nullable.rs`: add `Repeat{node,min,max} => min == 0 || nullable(node, ctx)`.
-- `src/derivative.rs`: add the countdown derivative
-  `D_b(Repeat{R,min,max}) = if max==0 {Fail} else { let dec = repeat(R, min.saturating_sub(1), max-1); let main = concat([D_b(R), dec]); if nullable(R) { alt([main, D_b(dec)]) } else { main } }`.
-  This is the interim path; it still blows up under search but stays correct and
-  unblocks compilation and TDD of the front-end.
-- `src/dfa/classes.rs`: `collect_sets` must recurse into `Repeat`.
+- Counting back-end (DONE for linear patterns): `src/counting/element.rs`
+  (`Element`, `LinearProgram`, `linearize`, `validate`) and `src/counting/run.rs`
+  (the counting-set simulation; tests in `src/counting/run_tests.rs`). `linearize`
+  returns `Some` only for a concatenation of classes, class repetitions, and
+  anchors; everything else returns `None`. The simulation keeps each `{n,m}` count
+  in a per-element `BTreeSet` (the counting set), seeds a fresh start at every
+  boundary (the `Σ*` search prefix), and matches `is_match` exactly against the
+  eager-DFA oracle. `AKIA[A-Z2-7]{16}` serializes to under 2 KB.
+- Eager DFA (still used for `&`, `~`, alternation): `src/dfa/build.rs`,
+  `src/dfa/table.rs` (`Dfa` table, match loop, `validate`), `src/dfa/minimize.rs`.
+  The product-union gate (`src/dfa/union.rs`) and the `Dfa::step`/`start_state`/
+  `accept_mask_of` helpers it used were REMOVED; a counting-aware gate replaces it.
+- `src/engine.rs`: `Engine { Linear(LinearProgram), Table(Dfa) }` picks the
+  back-end (`is_match`, `validate`).
+- `src/regex.rs`: `Regex` wraps one `Engine`; `RegexSet` holds `Vec<Engine>` and
+  iterates per-rule (no gate yet). `compile`, `new`, `from_ruleset`, `is_match`,
+  `matches`, `to_bytes`, `from_bytes`. Public surface unchanged.
 
-Back-end (the eager unrolled DFA, to be REPLACED by the counting automaton):
+Tests (all green; `cargo nextest run` ~0.01s):
 
-- `src/dfa/build.rs` (determinization), `src/dfa/table.rs` (the `Dfa` table,
-  match loop, `validate`, `step`, `accept_mask_of`), `src/dfa/minimize.rs`
-  (Moore), `src/dfa/union.rs` (product-union + reclassify). These work but suffer
-  the counting blowup. The counting automaton will supersede `build`/`union`; the
-  flat-table match loop and serialization in `table.rs` are likely reusable.
-- `src/regex.rs`: `Regex`, `RegexSet`, `compile`, `new`, `from_ruleset`,
-  `is_match`, `matches`, `to_bytes`, `from_bytes`. Public surface is stable; only
-  the back-end it calls changes.
-
-Tests:
-
-- `tests/integration.rs`: end-to-end, passed before the `Repeat` change (9 tests).
-  They exercise literals, anchors, classes/shorthands, repetition bounds,
-  alternation/intersection/complement (the wrapped AWS case), empty-match
-  rejection, `RegexSet` + serialize round-trip, and `from_ruleset`.
+- `tests/integration.rs`: end-to-end (literals, anchors, classes/shorthands,
+  repetition bounds, alternation/intersection/complement, empty-match rejection,
+  `RegexSet` + serialize round-trip, `from_ruleset`).
+- `src/counting/run_tests.rs`: differential vs the eager DFA oracle, the
+  serialized-size proof, and exact `{16}` bound checks.
 
 ## How to work from here: TDD, debug builds
 
@@ -157,19 +159,25 @@ behavior, then implement.
 - Before declaring any milestone done: `mise run //packages/rust-module/forbidden-regex:lint:rust`
   (max-lines 300 per file, rustdoc on every item) and `:lint:clippy`.
 
-First TDD targets (suggested order):
+TDD targets:
 
-1. Front-end: `Repeat` flows through parser/nullable/derivative; re-green
-   `tests/integration.rs`. Add unit tests that `{n}`/`{n,m}` parse to `Repeat`
-   (not unrolled).
-2. A correctness oracle: a lazy counting matcher (interim) whose verdicts the
-   eager counting automaton must match.
-3. Counting back-end for a single `class{n,m}` under search: assert
-   `AKIA[A-Z2-7]{16}` compiles to a SMALL automaton (add a size assertion, e.g.
-   serialized bytes under a few KB) and matches correctly. This is the key proof
-   the blowup is gone.
-4. Layer `&` and `~` onto the counting automaton.
-5. `RegexSet` gate over counting automata without product blowup.
+1. DONE. Front-end: `Repeat` flows through parser/nullable/derivative;
+   `tests/integration.rs` green.
+2. DONE (oracle is the eager DFA). The counting simulation is diffed against it in
+   `run_tests.rs::linear_agrees_with_oracle`.
+3. DONE. Counting back-end for linear `class{n,m}` under search; the size proof
+   (`counted_key_stays_small`, under 2 KB) and exact-bound checks pass.
+4. NEXT. Layer `&` and `~` onto the counting model. The hard constraint: under
+   `Σ*·(A & B)` the SAME substring must satisfy both operands, so the operands
+   cannot be run as independent search automata (that would match different spans).
+   Run a synchronized product seeded jointly at every position: a counting
+   simulation for the counting operand alongside a small DFA for the
+   counter-free `~(...)` operand (the real complement targets are fixed strings
+   like `AKIA2{16}`), accepting only when both accept at the same boundary.
+5. `RegexSet` gate over counting automata without the product blowup (the removed
+   `union.rs` did a product of per-rule DFAs and exploded). Likely a per-rule
+   counting simulation run in parallel with an any-accept check, or a shared
+   structural automaton with per-rule accept sets.
 
 ## Lint and style reminders specific to this crate
 
