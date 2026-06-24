@@ -102,6 +102,24 @@ fn regexset_matches_and_roundtrip() {
 }
 
 #[test]
+fn product_rule_survives_roundtrip() {
+    // A set-algebra rule uses the product engine; serializing and reloading must
+    // run its decode validation and still decide keys exactly.
+    let set = RegexSet::new(&[
+        "(?:\\b(?:(?:A3T[A-Z0-9])|(?:AKIA)|(?:ASIA))[A-Z2-7]{16}\\b)&~(AKIA2{16})",
+        "ghp_[A-Za-z0-9]{36}",
+    ])
+    .unwrap();
+    let bytes = set.to_bytes().unwrap();
+    let reloaded = RegexSet::from_bytes(&bytes).unwrap();
+    assert!(reloaded.is_match(format!("key {AKIA_KEY} end").as_bytes()));
+    // The all-2s placeholder is vetoed by the complement, even after a round-trip.
+    assert!(!reloaded.is_match(b"AKIA2222222222222222"));
+    let hits: Vec<usize> = reloaded.matches(AKIA_KEY.as_bytes()).collect();
+    assert_eq!(hits, vec![0]);
+}
+
+#[test]
 fn from_ruleset_splits_on_delimiter() {
     let text = "AKIA[A-Z2-7]{16}\n---\nghp_[A-Za-z0-9]{36}\n";
     let set = RegexSet::from_ruleset(text, "---").unwrap();
