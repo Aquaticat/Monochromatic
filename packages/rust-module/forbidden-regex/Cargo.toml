@@ -43,6 +43,13 @@ memchr = "2"
 # substring scan per rule, so a non-matching line is rejected in a single pass.
 aho-corasick = "1"
 
+# `regex-automata` provides the SIMD literal prefilter (the same machinery the regex
+# crate uses) for the RegexSet gate's fast reject. With hundreds of seed literals,
+# aho-corasick's high-level search falls back to a scalar automaton; this prefilter
+# picks the best SIMD strategy (Teddy, memchr on rare bytes) for the negative-line
+# fast path. `perf-literal` enables the literal searchers.
+regex-automata = { version = "0.4", default-features = false, features = ["std", "syntax", "perf-literal"] }
+
 # Why `panic = "unwind"` + `overflow-checks = true` here, mirroring the
 # forbidden-strings scanner this engine serves:
 #

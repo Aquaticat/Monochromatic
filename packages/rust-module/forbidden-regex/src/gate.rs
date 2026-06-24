@@ -6,16 +6,29 @@
 //! Teddy pass) instead of every rule; the literal-free rules are handled separately
 //! by the set's union automaton.
 
-/// Imports the multi-pattern matcher backing the combined prefilter.
+/// Imports the multi-pattern matcher used to map a hit back to its rules.
 use aho_corasick::AhoCorasick;
+
+/// Imports the leftmost match-kind for the SIMD prefilter.
+use regex_automata::MatchKind;
+
+/// Imports the SIMD literal prefilter and the span it searches.
+use regex_automata::util::prefilter::Prefilter;
+
+/// Imports the span type the prefilter searches over.
+use regex_automata::Span;
 
 /// A combined required-literal gate over the seeded rules of a ruleset.
 ///
-/// What: the matcher over every seeded rule's literals and the per-literal rule id.
-/// Why: candidate selection turns a line into the few rules whose literal it
-/// contains, so a non-matching line is rejected in one pass.
+/// What: a SIMD prefilter over every seeded rule's literals for the negative-line
+/// fast reject, plus an aho-corasick matcher mapping a hit back to its rules. Why:
+/// the prefilter rejects most lines at SIMD speed (hundreds of literals exceed
+/// aho-corasick's SIMD capacity, so it alone would run scalar), and the matcher is
+/// only consulted on the rare line that does contain a seed.
 #[derive(Debug, Clone, Default)]
 pub struct SetGate {
+    /// SIMD prefilter over the seeded literals, or `None` when none are seeded.
+    prefilter: Option<Prefilter>,
     /// Matcher over every seeded rule's literals, or `None` when none are seeded.
     matcher: Option<AhoCorasick>,
     /// Rule id for each literal pattern in `matcher`, by pattern index.
@@ -40,12 +53,16 @@ impl SetGate {
                 }
             }
         }
-        let matcher = if literals.is_empty() {
-            None
+        let (prefilter, matcher) = if literals.is_empty() {
+            (None, None)
         } else {
-            AhoCorasick::new(&literals).ok()
+            (
+                Prefilter::new(MatchKind::LeftmostFirst, &literals),
+                AhoCorasick::new(&literals).ok(),
+            )
         };
         SetGate {
+            prefilter,
             matcher,
             literal_rule,
         }
@@ -60,10 +77,12 @@ impl SetGate {
         let Some(matcher) = &self.matcher else {
             return false;
         };
-        // Fast reject: the leftmost `is_match` uses the SIMD prefilter, so a line with
-        // no seed is rejected in one accelerated pass; only on a hit do we enumerate
-        // the (overlapping) matches to find which rules to check.
-        if !matcher.is_match(line) {
+        // Fast reject: the SIMD prefilter rejects a line with no seed in one
+        // accelerated pass; only on a hit do we enumerate the (overlapping) matches
+        // to find which rules to check.
+        if let Some(prefilter) = &self.prefilter
+            && prefilter.find(line, Span::from(0..line.len())).is_none()
+        {
             return false;
         }
         for found in matcher.find_overlapping_iter(line) {
