@@ -1,0 +1,280 @@
+//! Recursive-descent grammar with single-atom operands for `&` and `|`.
+
+/// Imports the byte-set helpers for `.` and literal bytes.
+use crate::charset::{dot_set, singleton};
+
+/// Imports the node algebra and constructors.
+use crate::ast::node::Node;
+
+/// Imports the set-algebra and class constructors.
+use crate::ast::smart::{alt, class, comp, concat, inter, optional};
+
+/// Imports the error type.
+use crate::error::CompileError;
+
+/// Imports the cursor.
+use crate::parse::cursor::Cursor;
+
+/// Imports the atom-position escape parser.
+use crate::parse::escape::parse_escape_atom;
+
+/// Imports the character-class parser.
+use crate::parse::class::parse_class;
+
+/// Imports the repetition parser.
+use crate::parse::repeat::parse_repeat;
+
+/// Parses a full expression at one nesting level, up to `close` or end.
+///
+/// What: reads a concatenation, then, if `&` or `|` follows, switches to the
+/// set-algebra form where every operand must be exactly one atom. Why: this is
+/// the chosen grammar with no operator precedence; operators never mix with
+/// concatenation at one level without explicit `(?:...)` grouping.
+pub fn parse_setexpr(cur: &mut Cursor, close: Option<u8>) -> Result<Node, CompileError> {
+    let units = parse_concat_units(cur, close)?;
+    cur.skip_ignorable();
+    // What: peek for a set-algebra operator. Why: its presence changes how the
+    // already-parsed left side must be interpreted (single atom, not concat).
+    match cur.peek() {
+        Some(op @ (b'|' | b'&')) => parse_set_algebra(cur, close, units, op),
+        _ => Ok(concat(units)),
+    }
+}
+
+/// Parses a chain of single-atom operands joined by one operator.
+///
+/// What: requires the left side to be a single atom, then reads each further
+/// operand as a single atom, rejecting any mix of `&` and `|`. Why: enforces the
+/// fully-wrapped-operand rule that removes precedence.
+fn parse_set_algebra(
+    cur: &mut Cursor,
+    close: Option<u8>,
+    left: Vec<Node>,
+    op: u8,
+) -> Result<Node, CompileError> {
+    let mut operands = vec![single_atom(left, cur.pos())?];
+    loop {
+        cur.skip_ignorable();
+        match cur.peek() {
+            Some(c) if c == op => {
+                cur.bump();
+                let next = parse_concat_units(cur, close)?;
+                operands.push(single_atom(next, cur.pos())?);
+            }
+            // What: the other operator at this level is illegal. Why: mixing `&`
+            // and `|` needs an explicit `(?:...)` wrapper.
+            Some(b'|') | Some(b'&') => {
+                return Err(CompileError::Syntax {
+                    pos: cur.pos(),
+                    message: "cannot mix '&' and '|' at one level; wrap one in (?:...)".to_string(),
+                });
+            }
+            _ => break,
+        }
+    }
+    // What: build the matching node. Why: `op` selects union or intersection.
+    if op == b'|' {
+        Ok(alt(operands))
+    } else {
+        Ok(inter(operands))
+    }
+}
+
+/// Returns the sole node of `units`, or errors if it is not exactly one atom.
+///
+/// What: an operand of `&`/`|` must be a single atom. Why: a bare concatenation
+/// (or empty) operand is rejected so the author wraps it in `(?:...)`.
+fn single_atom(units: Vec<Node>, pos: usize) -> Result<Node, CompileError> {
+    if units.len() == 1 {
+        Ok(units.into_iter().next().unwrap())
+    } else {
+        Err(CompileError::Syntax {
+            pos,
+            message: "operand of '&' or '|' must be a single atom; wrap it in (?:...)".to_string(),
+        })
+    }
+}
+
+/// Reads zero or more postfix atoms forming a concatenation.
+///
+/// What: stops at end, the closing delimiter, or a set-algebra operator. Why:
+/// the caller decides whether the run is a plain concatenation or one operand of
+/// an operator chain.
+fn parse_concat_units(cur: &mut Cursor, close: Option<u8>) -> Result<Vec<Node>, CompileError> {
+    let mut units = Vec::new();
+    loop {
+        cur.skip_ignorable();
+        match cur.peek() {
+            None => break,
+            Some(c) if Some(c) == close => break,
+            Some(b'|') | Some(b'&') => break,
+            Some(_) => units.push(parse_postfix(cur)?),
+        }
+    }
+    Ok(units)
+}
+
+/// Parses one atom and an optional single quantifier.
+///
+/// What: applies `?`, `{n}`, or `{n,m}`, rejects `*`/`+`, and forbids a stacked
+/// second quantifier. Why: one quantifier per atom keeps the grammar simple and
+/// the language finite.
+fn parse_postfix(cur: &mut Cursor) -> Result<Node, CompileError> {
+    let atom = parse_atom(cur)?;
+    cur.skip_ignorable();
+    // What: dispatch on the quantifier byte. Why: each maps to a distinct shape.
+    let quantified = match cur.peek() {
+        Some(b'?') => {
+            cur.bump();
+            optional(atom)
+        }
+        Some(b'{') => parse_repeat(cur, atom)?,
+        Some(b'*') => {
+            return Err(CompileError::Syntax {
+                pos: cur.pos(),
+                message: "'*' is unsupported; use {0,n}".to_string(),
+            });
+        }
+        Some(b'+') => {
+            return Err(CompileError::Syntax {
+                pos: cur.pos(),
+                message: "'+' is unsupported; use {1,n}".to_string(),
+            });
+        }
+        _ => return Ok(atom),
+    };
+    reject_stacked(cur)?;
+    Ok(quantified)
+}
+
+/// Rejects a second quantifier directly following the first.
+///
+/// What: after one quantifier, another `?`/`{`/`*`/`+` is an error. Why: stacked
+/// quantifiers are ambiguous and unsupported.
+fn reject_stacked(cur: &mut Cursor) -> Result<(), CompileError> {
+    cur.skip_ignorable();
+    match cur.peek() {
+        Some(b'?') | Some(b'{') | Some(b'*') | Some(b'+') => Err(CompileError::Syntax {
+            pos: cur.pos(),
+            message: "stacked quantifiers are unsupported; wrap in (?:...)".to_string(),
+        }),
+        _ => Ok(()),
+    }
+}
+
+/// Parses a single atom.
+///
+/// What: groups, complements, classes, `.`, anchors, escapes, or a literal byte;
+/// every other metacharacter in atom position is an error. Why: atoms are the
+/// leaves the rest of the grammar combines.
+fn parse_atom(cur: &mut Cursor) -> Result<Node, CompileError> {
+    cur.skip_ignorable();
+    let pos = cur.pos();
+    let b = cur.peek().ok_or(CompileError::Syntax {
+        pos,
+        message: "expected an expression".to_string(),
+    })?;
+    match b {
+        b'(' => parse_group(cur),
+        b'~' => parse_complement(cur),
+        b'[' => parse_class(cur),
+        b'.' => {
+            cur.bump();
+            Ok(class(dot_set()))
+        }
+        b'^' => {
+            cur.bump();
+            Ok(Node::LineStart)
+        }
+        b'$' => {
+            cur.bump();
+            Ok(Node::LineEnd)
+        }
+        b'\\' => parse_escape_atom(cur),
+        b')' | b']' | b'}' => Err(CompileError::Syntax {
+            pos,
+            message: format!("unmatched '{}'", b as char),
+        }),
+        b'{' => Err(CompileError::Syntax {
+            pos,
+            message: "'{' quantifier without a preceding atom".to_string(),
+        }),
+        b'*' | b'+' => Err(CompileError::Syntax {
+            pos,
+            message: format!("'{}' is unsupported", b as char),
+        }),
+        b'|' | b'&' => Err(CompileError::Syntax {
+            pos,
+            message: format!("'{}' has no left operand", b as char),
+        }),
+        _ => {
+            cur.bump();
+            Ok(class(singleton(b)))
+        }
+    }
+}
+
+/// Parses a `(?:...)` non-capturing group.
+///
+/// What: requires the `(?:` prefix and rejects capturing groups, lookaround, and
+/// inline flags. Why: only non-capturing grouping is supported.
+fn parse_group(cur: &mut Cursor) -> Result<Node, CompileError> {
+    let pos = cur.pos();
+    cur.bump();
+    // What: only `(?:` is accepted after `(`. Why: `(` alone is a capture and
+    // `(?` followed by anything but `:` is lookaround or an inline flag.
+    if cur.peek() != Some(b'?') {
+        return Err(CompileError::Syntax {
+            pos,
+            message: "capturing groups are unsupported; use (?:...)".to_string(),
+        });
+    }
+    cur.bump();
+    if cur.peek() != Some(b':') {
+        return Err(CompileError::Syntax {
+            pos,
+            message: "only (?:...) groups are supported (no lookaround or inline flags)".to_string(),
+        });
+    }
+    cur.bump();
+    let inner = parse_setexpr(cur, Some(b')'))?;
+    expect_close(cur, pos)?;
+    Ok(inner)
+}
+
+/// Parses a `~(...)` complement.
+///
+/// What: requires `~(` then a full subexpression then `)`. Why: complement is
+/// always explicitly parenthesized per the engine's grammar.
+fn parse_complement(cur: &mut Cursor) -> Result<Node, CompileError> {
+    let pos = cur.pos();
+    cur.bump();
+    cur.skip_ignorable();
+    if cur.peek() != Some(b'(') {
+        return Err(CompileError::Syntax {
+            pos,
+            message: "'~' must be followed by '(' as in ~(...)".to_string(),
+        });
+    }
+    cur.bump();
+    let inner = parse_setexpr(cur, Some(b')'))?;
+    expect_close(cur, pos)?;
+    Ok(comp(inner))
+}
+
+/// Consumes the closing `)` of a group or complement.
+///
+/// What: skips verbose noise then requires `)`. Why: a missing close is an
+/// unbalanced-parenthesis error reported at the opener.
+fn expect_close(cur: &mut Cursor, open_pos: usize) -> Result<(), CompileError> {
+    cur.skip_ignorable();
+    if cur.peek() == Some(b')') {
+        cur.bump();
+        Ok(())
+    } else {
+        Err(CompileError::Syntax {
+            pos: open_pos,
+            message: "missing closing ')'".to_string(),
+        })
+    }
+}

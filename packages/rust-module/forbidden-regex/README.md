@@ -1,0 +1,89 @@
+# forbidden-regex
+
+A restricted regular-expression engine built on Brzozowski derivatives and
+compiled eagerly to a serializable, byte-class-compressed DFA.
+
+It exists to power the `forbidden-strings` secret scanner: one matcher is run on
+every content line, with no separate literal prefilter, and a whole ruleset is
+combined into a single `RegexSet` that is checked in one pass per line. Unlike
+classic NFA or backtracking engines, derivatives make intersection (`&`) and
+complement (`~(...)`) first-class operators.
+
+## Match model
+
+- Input is a single non-empty line, matched as raw bytes (`&[u8]`).
+- Matching is unanchored search: a pattern matches if it matches any substring.
+- `^`, `$`, and `\b` anchor to line and word boundaries; the word set is ASCII
+  `[A-Za-z0-9_]`.
+- `multiline` and verbose (`x`) mode are always on. There are no flags to pass.
+
+## Supported constructs
+
+- Literals, and the escapes `\t`, `\b` (word boundary), backslash-escaped
+  metacharacters, and backslash-escaped whitespace.
+- Character classes: `[abc]`, `[a-z]`, `[a-zA-Z]`, negated `[^...]`, and the
+  shorthands `\d \w \s \D \W \S` (usable inside classes too).
+- `.` matches any byte except a newline.
+- Grouping and alternation: `(?:a|b)`. Groups are non-capturing only.
+- Bounded repetition: `a?`, `a{3}`, `a{3,6}`.
+- Anchors: `^`, `$`, `\b`.
+- Set algebra: intersection `&`, complement `~(...)`.
+
+Operators `&` and `|` take single-atom operands: a literal, a class, `.`, an
+anchor, a `(?:...)` group, or a `~(...)`. A concatenation or a quantified atom
+must be wrapped in `(?:...)` to be an operand, so there is no operator precedence
+to remember and operators never mix with concatenation at one level. `~(...)` is
+always parenthesized.
+
+## Verbose mode
+
+Because verbose mode is always on, unescaped whitespace outside character classes
+is ignored, so a single rule may be written across many lines. To match a literal
+space use `\<space>`, `\t`, or `[ ]`. A line whose first character is `#` is a
+comment to end-of-line; a `#` anywhere else is a literal. Whitespace and `#`
+inside `[...]` are literal.
+
+## Rejected at compile time
+
+Everything outside the supported set is a hard `CompileError` with the offending
+position: `*`, `+`, unbounded `{n,}`, `\xNN`, capturing `(`, lookaround and inline
+flags (`(?` not followed by `:`), backreferences, unknown escapes, unbalanced
+brackets, stacked quantifiers, `{n,m}` with `n` greater than `m`, and repetition
+whose expansion exceeds the configured cap.
+
+A pattern that can match the empty string is also rejected, because under
+unanchored search it would match every input. So `~(Y)` alone is rejected, while
+`(?:X) & ~(Y)` with a concrete `X` compiles.
+
+## Usage
+
+```rust
+// One pattern.
+use forbidden_regex::{compile, Regex};
+
+let re: Regex = compile("AKIA[A-Z2-7]{16}").unwrap();
+assert!(re.is_match(b"key=AKIA0123456789ABCDEF7"));
+
+// A whole ruleset as one DFA.
+use forbidden_regex::RegexSet;
+
+let set = RegexSet::new(&["AKIA[A-Z2-7]{16}", "ghp_[A-Za-z0-9]{36}"]).unwrap();
+assert!(set.is_match(b"... AKIA0123456789ABCDEF7 ..."));
+let hits: Vec<usize> = set.matches(b"... ghp_000000000000000000000000000000000000 ...").collect();
+assert_eq!(hits, vec![1]);
+
+// Persist a compiled set and reload it (the benchmark path).
+let bytes = set.to_bytes().unwrap();
+let reloaded = RegexSet::from_bytes(&bytes).unwrap();
+assert!(reloaded.is_match(b"... AKIA0123456789ABCDEF7 ..."));
+```
+
+## Tasks
+
+- `mise run //packages/rust-module/forbidden-regex:test` runs the unit and
+  integration tests.
+- `mise run //packages/rust-module/forbidden-regex:lint:rust` enforces the
+  code-line budget and required rustdoc.
+- `mise run //packages/rust-module/forbidden-regex:lint:clippy` runs clippy.
+- `mise run //packages/rust-module/forbidden-regex:bench` measures throughput
+  against `regex` and `resharp`.
