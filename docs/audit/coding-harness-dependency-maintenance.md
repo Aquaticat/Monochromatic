@@ -236,17 +236,56 @@ Safety caveats for final answer:
 - Dependency hygiene should count against or for a harness,
   but it should not determine the overall harness ranking by itself.
 
+## Final synthesis to carry forward
+
+Answer the user with this judgment:
+
+- Some OSS harnesses handle dependency maintenance better than `pi`,
+  especially Goose and Crush on security workflows,
+  and ForgeCode on recent Renovate activity.
+- ForgeCode's addition improves the update-automation comparison,
+  but it does not materially change the overall answer.
+  Its npm package is eval-focused,
+  its core is Rust,
+  and no dependency vulnerability workflow was found in the scan.
+- Codex and Gemini CLI have visible update-bot configuration and merged Dependabot PRs,
+  but Gemini is also exact-pinned and stale on `@google/genai` compared with npm latest,
+  so they are not clean counterexamples to `pi`'s pinning concern.
+- Aider and OpenCode do not look better than `pi` on visible update automation.
+  Aider uses generated exact Python requirements,
+  and OpenCode has a large exact/catalog/patch dependency surface with no obvious Dependabot or Renovate activity found.
+- `pi` has a real weakness on dependency freshness and automation:
+  exact external pins are enforced,
+  no Dependabot or Renovate config or merged bot PRs were found,
+  and npm spot-checks showed high-signal AI dependencies behind latest versions.
+- `pi` is not abandonware on this evidence:
+  the pins are intentional,
+  there is npm audit CI,
+  and the latest release checked was 2026-06-23.
+- Dependency hygiene should affect `pi`'s standing as one factor,
+  but it should not determine overall coding-harness ranking.
+  It counts against `pi` compared with Goose, Crush, and ForgeCode on maintenance automation,
+  but not enough to conclude those are better harnesses overall without evaluating UX,
+  agent loop quality,
+  extensibility,
+  model support,
+  safety controls,
+  and local workflow fit.
+
+Recommended concise final answer:
+
+`pi` is not best-in-class on dependency maintenance.
+Goose and Crush are stronger on security automation,
+ForgeCode is stronger on active update automation,
+and Codex or Gemini at least have version-update bots.
+But `pi`'s dependency posture is conservative and intentional rather than negligent,
+and dependency hygiene alone does not knock it out as a coding harness.
+It is a maintenance weakness,
+not a harness-quality verdict.
+
 ## Outstanding work
 
-- Synthesize final ranked judgment by category:
-  update automation,
-  version ranges versus exact pins,
-  release cadence,
-  audit or security workflows,
-  and dependency surface size.
-- Make the final answer explicit that ForgeCode improves the candidate set,
-  especially for recent Renovate activity,
-  but does not by itself change the overall harness-quality judgment.
+- None for this audit pass unless the user asks for a full vulnerability scan or lockfile freshness audit.
 
 ## Suggested skills for continuation
 
