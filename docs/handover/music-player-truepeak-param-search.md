@@ -223,9 +223,11 @@ A narrow probe-feature rule can catch them,
  but the non-overfit version tested so far flagged extra tracks and overshot
 the target.
 
-## Remaining productionization step
+## Optional production generalization
 
-Search using `windows-14x8.1009877.jsonl` for a probe-only exception rule with these outputs:
+The current-library parameter search is complete with the two exception tracks above.
+If this becomes production behavior rather than a benchmark-derived current-library rule,
+search using `windows-14x8.1009877.jsonl` for a probe-only exception rule with these outputs:
 
 - classify some long tracks as needs full scan,
    adding their full durations to decoded seconds;
