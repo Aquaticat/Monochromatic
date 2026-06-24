@@ -9,6 +9,9 @@ use crate::ast::node::Node;
 /// Imports the concat constructor used to wrap a node for search.
 use crate::ast::smart::concat;
 
+/// Imports the seedless-rule grouping into union DFAs.
+use crate::group::group_seedless;
+
 /// Imports the NFA builder that selects the counting back-end.
 use crate::counting::build_nfa;
 
@@ -162,8 +165,10 @@ pub fn compile(pattern: &str) -> Result<Regex, CompileError> {
 pub struct RegexSet {
     /// Per-rule engines, indexed by rule id.
     rules: Vec<Engine>,
-    /// Ids of the literal-free rules, run against every line.
+    /// Ids of the literal-free rules, run against every line for rule-id attribution.
     seedless_ids: Vec<usize>,
+    /// Union DFAs over groups of the literal-free rules, for the boolean fast path.
+    seedless_groups: Vec<Engine>,
     /// Combined required-literal gate over the seeded rules (never serialized).
     #[serde(skip)]
     gate: SetGate,
@@ -171,53 +176,66 @@ pub struct RegexSet {
 
 /// One compiled rule plus whether it is literal-free.
 ///
-/// What: the engine and a flag for whether it has no required literal. Why: the
-/// builders share the per-rule work, varying only in error handling.
+/// What: the engine, a flag for whether it has no required literal, and the node kept
+/// for grouping when it is literal-free. Why: the builders share the per-rule work,
+/// and the seedless nodes are combined into union DFAs afterward.
 struct BuiltRule {
     /// The compiled per-rule engine.
     engine: Engine,
     /// Whether the rule has no required-literal prefilter.
     seedless: bool,
+    /// Parsed node, kept only for a seedless rule so it can join a union DFA.
+    node: Option<Node>,
 }
 
 /// Compiles one parsed node into a rule, noting whether it is literal-free.
 ///
 /// What: extracts seeds and builds the engine (DFA when seedless, counting when
 /// seeded). Why: a literal-free rule must run against every line, so the caller
-/// records it; the split matches `build_engine`.
+/// records its id and node; the split matches `build_engine`.
 fn build_rule(node: Node) -> Result<BuiltRule, CompileError> {
     let seeds = seeds_from_node(&node);
     let seedless = seeds.is_empty();
     let kind = if seedless {
-        build_table_kind(node)?
+        build_table_kind(node.clone())?
     } else {
-        build_counting_kind(node)?
+        build_counting_kind(node.clone())?
     };
     Ok(BuiltRule {
         engine: Engine::new(kind, seeds),
         seedless,
+        node: if seedless { Some(node) } else { None },
     })
 }
 
-/// Records a built rule, tracking the literal-free ones.
+/// Records a built rule, tracking the literal-free ones and their nodes.
 ///
-/// What: appends the engine and, when seedless, its id. Why: shared by the strict
-/// and lenient builders; seedless rules run against every line.
-fn push_rule(built: BuiltRule, rules: &mut Vec<Engine>, seedless_ids: &mut Vec<usize>) {
+/// What: appends the engine and, when seedless, its id and node. Why: shared by the
+/// strict and lenient builders; seedless rules run against every line and are grouped.
+fn push_rule(
+    built: BuiltRule,
+    rules: &mut Vec<Engine>,
+    seedless_ids: &mut Vec<usize>,
+    seedless_nodes: &mut Vec<Node>,
+) {
     if built.seedless {
         seedless_ids.push(rules.len());
+        if let Some(node) = built.node {
+            seedless_nodes.push(node);
+        }
     }
     rules.push(built.engine);
 }
 
-/// Assembles a `RegexSet` from its rules and the literal-free id list.
+/// Assembles a `RegexSet` from its rules, the literal-free ids, and their nodes.
 ///
-/// What: stores both then builds the gate. Why: the one place that wires the
-/// matching structures together.
-fn assemble(rules: Vec<Engine>, seedless_ids: Vec<usize>) -> RegexSet {
+/// What: groups the seedless nodes into union DFAs, stores everything, then builds the
+/// gate. Why: the one place that wires the matching structures together.
+fn assemble(rules: Vec<Engine>, seedless_ids: Vec<usize>, seedless_nodes: Vec<Node>) -> RegexSet {
     let mut set = RegexSet {
         rules,
         seedless_ids,
+        seedless_groups: group_seedless(seedless_nodes),
         gate: SetGate::default(),
     };
     set.prepare();
@@ -233,11 +251,12 @@ impl RegexSet {
     pub fn new<S: AsRef<str>>(patterns: &[S]) -> Result<RegexSet, CompileError> {
         let mut rules: Vec<Engine> = Vec::new();
         let mut seedless_ids: Vec<usize> = Vec::new();
+        let mut seedless_nodes: Vec<Node> = Vec::new();
         for pattern in patterns {
             let built = parse(pattern.as_ref()).and_then(build_rule)?;
-            push_rule(built, &mut rules, &mut seedless_ids);
+            push_rule(built, &mut rules, &mut seedless_ids, &mut seedless_nodes);
         }
-        Ok(assemble(rules, seedless_ids))
+        Ok(assemble(rules, seedless_ids, seedless_nodes))
     }
 
     /// Rebuilds the combined required-literal gate from the seeded rules' seeds.
@@ -257,14 +276,15 @@ impl RegexSet {
     pub fn compile_lenient<S: AsRef<str>>(patterns: &[S]) -> (RegexSet, Vec<usize>) {
         let mut rules: Vec<Engine> = Vec::new();
         let mut seedless_ids: Vec<usize> = Vec::new();
+        let mut seedless_nodes: Vec<Node> = Vec::new();
         let mut kept: Vec<usize> = Vec::new();
         for (index, pattern) in patterns.iter().enumerate() {
             if let Ok(built) = parse(pattern.as_ref()).and_then(build_rule) {
-                push_rule(built, &mut rules, &mut seedless_ids);
+                push_rule(built, &mut rules, &mut seedless_ids, &mut seedless_nodes);
                 kept.push(index);
             }
         }
-        (assemble(rules, seedless_ids), kept)
+        (assemble(rules, seedless_ids, seedless_nodes), kept)
     }
 
     /// Compiles a ruleset from one text, split on a delimiter.
@@ -293,7 +313,7 @@ impl RegexSet {
         {
             return true;
         }
-        self.seedless_ids.iter().any(|&id| self.rules[id].is_match(line))
+        self.seedless_groups.iter().any(|group| group.is_match(line))
     }
 
     /// Returns the ids of the rules that match `line`.
@@ -327,12 +347,20 @@ impl RegexSet {
             .any_candidate(line, |rule| self.rules[rule].is_match(line))
     }
 
-    /// Profiling hook: runs only the literal-free rules.
+    /// Profiling hook: runs only the literal-free group DFAs.
     ///
-    /// What: the seedless engines, skipping the gate. Why: the other half of the
+    /// What: the seedless union engines, skipping the gate. Why: the other half of the
     /// per-line time split.
     pub fn seedless_only_is_match(&self, line: &[u8]) -> bool {
-        self.seedless_ids.iter().any(|&id| self.rules[id].is_match(line))
+        self.seedless_groups.iter().any(|group| group.is_match(line))
+    }
+
+    /// Returns how many union DFAs the seedless rules collapsed into.
+    ///
+    /// What: the group count. Why: a diagnostic for how well the literal-free rules
+    /// combine; one group means a single pass like regex's combined automaton.
+    pub fn seedless_group_count(&self) -> usize {
+        self.seedless_groups.len()
     }
 
     /// Returns how many rules have no required-literal prefilter.
@@ -377,7 +405,7 @@ impl RegexSet {
         })?;
         // What: validate the decoded graph, then rebuild its runtime prefilter. Why:
         // both must happen before any engine runs on untrusted input.
-        for engine in &mut set.rules {
+        for engine in set.rules.iter_mut().chain(set.seedless_groups.iter_mut()) {
             engine.validate()?;
             engine.prepare();
         }

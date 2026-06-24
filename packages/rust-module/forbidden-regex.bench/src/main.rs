@@ -70,7 +70,11 @@ fn main() {
     );
     let fset =
         forbidden_regex::RegexSet::from_bytes(&serialized).expect("forbidden-regex reloads");
-    eprintln!("[diag] seedless rules (run every line): {}", fset.seedless_count());
+    eprintln!(
+        "[diag] seedless rules: {} collapsed into {} union DFA(s)",
+        fset.seedless_count(),
+        fset.seedless_group_count()
+    );
 
     // Build regex over exactly the rules ours kept, so both race the same set. The
     // size limits are raised because the stripped generic-shape rules compile to a

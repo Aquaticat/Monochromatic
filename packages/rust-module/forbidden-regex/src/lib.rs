@@ -39,6 +39,9 @@ mod engine;
 /// The RegexSet-level combined literal prefilter.
 mod gate;
 
+/// Greedy combination of literal-free rules into union DFAs.
+mod group;
+
 /// Public matcher types.
 mod regex;
 
