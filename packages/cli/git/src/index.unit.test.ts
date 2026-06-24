@@ -1347,5 +1347,140 @@ await describe({
         expect(error.stderr,).toContain(`Repo root is ${worktreePath}`,);
       },
     },),
+    it({
+      name: 'rejects checkout branch creation in current worktree',
+      fn: async function testCheckoutBranchCreationRejected(): Promise<void> {
+        await using tempDirectory = await createTempDirectory();
+
+        await initializeRepository({ repoPath: tempDirectory.path, },);
+        await createInitialCommit({ repoPath: tempDirectory.path, },);
+
+        /** cli-git failure for checkout branch creation inside current worktree. */
+        const error = requireSubprocessError(await catchWrapperError({
+          cwd: tempDirectory.path,
+          args: [
+            'checkout',
+            '-b',
+            'side',
+          ],
+        },),);
+
+        expect(error.stderr,).toContain(
+          'cli-git: git checkout branch creation is rejected in the current worktree',
+        );
+      },
+    },),
+    it({
+      name: 'allows branch creation through worktree add',
+      fn: async function testWorktreeAddBranchCreationAllowed(): Promise<void> {
+        await using tempDirectory = await createTempDirectory();
+
+        /** Main repository path that owns linked worktree metadata. */
+        const repoPath = join(
+          tempDirectory.path,
+          'repo',
+        );
+        /** Linked worktree path to create through wrapper. */
+        const worktreePath = join(
+          tempDirectory.path,
+          'side-worktree',
+        );
+
+        await initializeRepository({ repoPath, },);
+        await createInitialCommit({ repoPath, },);
+
+        await runWrapper({
+          cwd: repoPath,
+          args: [
+            'worktree',
+            'add',
+            '--quiet',
+            '-b',
+            'side',
+            worktreePath,
+            'HEAD',
+          ],
+        },);
+
+        /** Branch checked out in linked worktree. */
+        const branchName = (await runRealGit({
+          cwd: worktreePath,
+          args: [
+            'branch',
+            '--show-current',
+          ],
+        },)).stdout;
+
+        expect(branchName,).toBe('side',);
+      },
+    },),
+    it({
+      name: 'rejects implicit remote branch guess in current worktree',
+      fn: async function testImplicitRemoteBranchGuessRejected(): Promise<void> {
+        await using tempDirectory = await createTempDirectory();
+
+        /** Working repository with one matching remote branch and no local branch. */
+        const repoPath = join(
+          tempDirectory.path,
+          'repo',
+        );
+        /** Bare origin remote that owns the guessed branch. */
+        const remotePath = join(
+          tempDirectory.path,
+          'origin.git',
+        );
+
+        await initializeRepository({ repoPath, },);
+        await createInitialCommit({ repoPath, },);
+        await runRealGit({
+          cwd: tempDirectory.path,
+          args: [
+            'init',
+            '--bare',
+            '--quiet',
+            remotePath,
+          ],
+        },);
+        await runRealGit({
+          cwd: repoPath,
+          args: [
+            'remote',
+            'add',
+            'origin',
+            remotePath,
+          ],
+        },);
+        await runRealGit({
+          cwd: repoPath,
+          args: [
+            'push',
+            '--quiet',
+            'origin',
+            'HEAD:refs/heads/remote-topic',
+          ],
+        },);
+        await runRealGit({
+          cwd: repoPath,
+          args: [
+            'fetch',
+            '--quiet',
+            'origin',
+          ],
+        },);
+
+        /** cli-git failure for implicit remote-tracking branch creation. */
+        const error = requireSubprocessError(await catchWrapperError({
+          cwd: repoPath,
+          args: [
+            'switch',
+            'remote-topic',
+          ],
+        },),);
+
+        expect(error.stderr,).toContain(
+          'cli-git: git switch for remote-topic branch creation is rejected in the current worktree',
+        );
+      },
+    },),
   ],
 },);

@@ -59,10 +59,11 @@ gh pr create --base main --head dev --title "Release: description" --body "Chang
 For larger features or experimental work:
 
 ```bash
-# Create feature branch from dev
+# Create feature branch from dev in its own worktree
 git checkout dev
 git pull origin dev
-git checkout -b feature/my-feature
+git worktree add -b feature/my-feature ../Monochromatic-feature-my-feature dev
+cd ../Monochromatic-feature-my-feature
 
 # Work on feature, commit changes
 git add .
@@ -98,10 +99,11 @@ gh pr create --base dev --head feature/my-feature --title "feat: my feature" --b
 **Create dev branch** (one-time setup):
 
 ```bash
-# Create dev branch from current main
+# Create dev branch from current main in its own worktree
 git checkout main
 git pull origin main
-git checkout -b dev
+git worktree add -b dev ../Monochromatic-dev main
+cd ../Monochromatic-dev
 git push -u origin dev
 ```
 
@@ -120,10 +122,11 @@ git push -u origin dev
 For critical production fixes:
 
 ```bash
-# Create hotfix branch from main
+# Create hotfix branch from main in its own worktree
 git checkout main
 git pull origin main
-git checkout -b hotfix/critical-fix
+git worktree add -b hotfix/critical-fix ../Monochromatic-hotfix-critical-fix main
+cd ../Monochromatic-hotfix-critical-fix
 
 # Make fix and commit
 git add .

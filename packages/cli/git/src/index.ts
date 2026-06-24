@@ -11,6 +11,7 @@ import { parseCommitRegion, } from './parsers/commit.ts';
 import { resolveGit, } from './resolve-git.ts';
 import { addExplicit, } from './rules/add-explicit.ts';
 import { atomicPush, } from './rules/atomic-push.ts';
+import { branchWorktreeOnly, } from './rules/branch-worktree-only.ts';
 import { commitOnly, } from './rules/commit-only.ts';
 import { linkedWorktreeOnly, } from './rules/linked-worktree-only.ts';
 import { requireRoot, } from './rules/require-root.ts';
@@ -90,6 +91,7 @@ const RULES: readonly ((
 ) => readonly string[] | Promise<readonly string[]>)[] = [
   requireRoot,
   linkedWorktreeOnly,
+  branchWorktreeOnly,
   addExplicit,
   atomicPush,
   commitOnly,
@@ -228,13 +230,16 @@ try {
 
   if (isVersionRequest) {
     console.log(
-      'cli-git wrapper (require-root, linked-worktree-only, add-explicit, atomic-push, commit-only, status-hints-off, auto-push)',
+      'cli-git wrapper (require-root, linked-worktree-only, branch-worktree-only, '
+        + 'add-explicit, atomic-push, commit-only, status-hints-off, auto-push)',
     );
   }
   else if (shouldPrintStatusNote) {
     console.log(
-      'cli-git: bulk-add patterns (`.`, `*`, `-A`, `-u`) and `git commit -a` are rejected; '
-        + 'stage with `git add <path>` and commit with `git commit -m <msg> <path>`.',
+      'cli-git: bulk-add patterns (`.`, `*`, `-A`, `-u`), `git commit -a`, '
+        + 'and current-worktree branch creation are rejected; stage with `git add <path>`, '
+        + 'commit with `git commit -m <msg> <path>`, and branch with '
+        + '`git worktree add -b <branch> <path>`.',
     );
   }
 }

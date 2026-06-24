@@ -1,0 +1,142 @@
+import {
+  BRANCH_WORKTREE_ESCAPE_HATCH,
+  parseBranchCreationRegion,
+  stripBranchCreationEscapeHatch,
+  type BranchCreationSubcommand,
+} from '../parsers/branch-create.ts';
+import { parseGlobalOptions, } from '../parse-global-options.ts';
+import { resolveGit, } from '../resolve-git.ts';
+import {
+  l,
+  tagged,
+} from '../log.ts';
+import { branchCreationMessage, } from './branch-worktree-messages.ts';
+import { implicitRemoteGuessCreatesBranch, } from './branch-worktree-remote-guess.ts';
+
+//region Branch worktree policy facts
+
+/**
+ * Git subcommands whose branch-creation modes must use `git worktree add`.
+ */
+const GUARDED_SUBCOMMANDS: ReadonlySet<string> = new Set([
+  'branch',
+  'checkout',
+  'switch',
+]);
+
+/**
+ * Narrows subcommand text to branch-creation guarded subcommands.
+ *
+ * @param subcommand - Subcommand located by global option parser.
+ *
+ * @returns `true` when subcommand can create branches outside `git worktree add`.
+ *
+ * @example
+ * ```ts
+ * isGuardedSubcommand('switch');
+ * // => true
+ * ```
+ */
+function isGuardedSubcommand(subcommand: string,): subcommand is BranchCreationSubcommand {
+  return GUARDED_SUBCOMMANDS.has(subcommand,);
+}
+
+//endregion Branch worktree policy facts
+
+//region Branch worktree enforcement entry
+
+/**
+ * Rejects branch creation in the current worktree, directing callers to create
+ * a linked worktree and branch together with `git worktree add -b`. The rule
+ * guards explicit creation forms (`git branch <name>`, `git branch -c`,
+ * `git checkout -b`, `git switch -c`, `--orphan`, and `--track`) plus the
+ * remote-tracking branch guess that `git switch <name>` and `git checkout <name>`
+ * perform when exactly one remote branch exists and no local branch does.
+ *
+ * Inspection, deletion, rename, upstream edits, detached checkouts, path
+ * checkouts, and `git worktree add -b` pass through. The wrapper-only escape
+ * hatch is stripped before forwarding when a one-off bypass is needed.
+ *
+ * @param args - Git argv to inspect after wrapper invocation.
+ *
+ * @returns Original argv when command is unguarded or safe; argv with escape hatch stripped when bypassed.
+ *
+ * @throws When branch creation is requested outside `git worktree add`.
+ *
+ * @example
+ * ```ts
+ * await branchWorktreeOnly(['switch', '-c', 'topic']);
+ * // throws
+ * ```
+ */
+export async function branchWorktreeOnly(args: readonly string[],): Promise<readonly string[]> {
+  /**
+   * Effective cwd and subcommand index after walking pre-subcommand global options.
+   */
+  const { subcommandIndex, } = parseGlobalOptions(args,);
+  /**
+   * Subcommand at located index; absent when args carry no subcommand.
+   */
+  const subcommand = args[subcommandIndex];
+
+  if (subcommand === undefined || !isGuardedSubcommand(subcommand,))
+    return args;
+
+  /**
+   * Tagged logger for branch-worktree-only rule.
+   */
+  const rl = tagged({
+    tag: branchWorktreeOnly.name,
+    l,
+  },);
+  /**
+   * Args after guarded subcommand.
+   */
+  const postSubcommandArgs = args.slice(subcommandIndex + 1,);
+  /**
+   * Parsed branch-creation facts for guarded subcommand.
+   */
+  const region = parseBranchCreationRegion({
+    subcommand,
+    postSubcommandArgs,
+  },);
+
+  if (region.hasEscapeHatch) {
+    rl.debug(`${BRANCH_WORKTREE_ESCAPE_HATCH} present, stripping and skipping check`,);
+    return stripBranchCreationEscapeHatch({ args, subcommandIndex, subcommand, },);
+  }
+
+  if (region.createsBranch)
+    throw new Error(branchCreationMessage({ subcommand, target: undefined, },),);
+
+  if (region.implicitCreationTarget === undefined)
+    return args;
+
+  /**
+   * Pre-subcommand argv that captures caller's repository-selection layer.
+   */
+  const preSubcommandArgs = args.slice(0, subcommandIndex,);
+  /**
+   * Absolute path to real git binary for read-only branch existence probes.
+   */
+  const gitPath = await resolveGit();
+  /**
+   * Whether git would create a local branch through remote-tracking branch guessing.
+   */
+  const guessedBranchCreation = await implicitRemoteGuessCreatesBranch({
+    gitPath,
+    preSubcommandArgs,
+    target: region.implicitCreationTarget,
+  },);
+
+  if (guessedBranchCreation) {
+    throw new Error(branchCreationMessage({
+      subcommand,
+      target: region.implicitCreationTarget,
+    },),);
+  }
+
+  return args;
+}
+
+//endregion Branch worktree enforcement entry

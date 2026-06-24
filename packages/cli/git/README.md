@@ -84,6 +84,40 @@ before a segment-aware containment check,
  Add sibling tool caches there when a new
 tool needs the same exemption.
 
+**Branch worktree only**:
+ rejects branch creation in the current worktree and
+redirects to creating the branch together with its own linked worktree.
+ Guarded
+forms are `git branch <name>`,
+ `git branch -c` / `git branch -C` /
+`git branch --copy`,
+ `git checkout -b` / `git checkout -B`,
+`git checkout --orphan`,
+ `git checkout --track`,
+ `git switch -c` /
+`git switch -C`,
+ `git switch --create` / `git switch --force-create`,
+`git switch --orphan`,
+ and `git switch --track`.
+ The wrapper also
+rejects the implicit remote-tracking branch guess that `git switch <name>` and
+`git checkout <name>` perform when exactly one matching remote branch exists and
+no local branch exists.
+ Listing,
+ deletion,
+ rename,
+ upstream edits,
+ detached
+checkouts,
+ path checkouts,
+ and `git worktree add -b <branch> <path> [<start-point>]`
+pass through.
+ Pass
+`--no-enforce-worktree-branch` after the guarded subcommand and before any `--`
+pathspec separator to bypass for one invocation;
+ the wrapper strips the flag
+before forwarding to real git.
+
 **Add explicit**:
  rejects `git add` invocations that use bulk-staging
 patterns (`.`,
