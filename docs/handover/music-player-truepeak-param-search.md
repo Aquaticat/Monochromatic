@@ -75,10 +75,17 @@ At that threshold:
 - Theoretical decoded seconds are `439889.500000025`,
    within floating-point error of target.
 
-## Completed searches
+## Completed searches and dead ends
 
 `search_params.py` checked a simple fixed-headroom sample-gain model over integer windows.
 It found no valid fixed or adaptive candidates at the target.
+This was too narrow because it did not allow full-scan exceptions for tracks where probe-derived gain misses the
+error envelope.
+
+The original no-params proof is a dead end for the clarified goal.
+It assumed non-hot means `0 dB` gain.
+That only proves the old exact-or-absent contract cannot hit half decode.
+It does not apply once non-hot tracks may use probe-derived approximate gain.
 
 `search_threshold_exact.py` used one-second bins and found approximate candidates for exact target threshold:
 
@@ -102,7 +109,27 @@ This means fixed margin is close but fails `+0.5/-1.0` on exact streaming window
 Next search should loosen the too-quiet side first or add a classifier that full-scans the tracks causing too-quiet
 failure.
 
-## Exact window measurement artifact
+`search_exceptions.py` was killed after `38s` because its direct nested Python loops were too slow.
+Do not resume that script as-is.
+
+`search_count14_fast.py` is a faster NumPy-assisted bin search around `14` windows.
+It found optimistic one-second-bin candidates near:
+
+```text
+threshold_seconds = 113.45
+window_count = 14
+window_seconds = 8.103571428571406
+margin_db = 0.996 to 1.0
+```
+
+The best bin result decoded `439820.7442487232` seconds,
+`68.75575127679622` seconds below target,
+with no bin-estimated exceptions.
+This is not yet verified because one-second bins over-cover fractional window edges and can overestimate sampled
+peaks.
+Exact streaming verification is required before trusting it.
+
+## Exact window measurement artifacts
 
 `measure_windows.rs` was added under the scratch harness to stream each track once and record exact sampled max/min
 for the candidate windows.
@@ -117,10 +144,27 @@ cargo run --release --bin measure_windows -- \
   out-20260624/windows-14x8.1049.jsonl
 ```
 
-Use this file next if present:
+Use this file for the exact-target `14` window analysis:
 
 ```text
 /tmp/agent/truepeak-param-search/out-20260624/windows-14x8.1049.jsonl
+```
+
+A second exact measurement is running for the faster bin candidate:
+
+```bash
+# from /tmp/agent/truepeak-param-search
+cargo run --release --bin measure_windows -- \
+  out-20260624/tracks.jsonl \
+  14 \
+  8.103571428571406 \
+  out-20260624/windows-14x8.10357.jsonl
+```
+
+Use this file when present:
+
+```text
+/tmp/agent/truepeak-param-search/out-20260624/windows-14x8.10357.jsonl
 ```
 
 It contains per-track:
