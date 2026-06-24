@@ -12,6 +12,9 @@ use crate::ast::smart::concat;
 /// Imports the linearizer that selects the counting back-end.
 use crate::counting::linearize;
 
+/// Imports the product linearizer that selects the `&`/`~` counting back-end.
+use crate::counting::linearize_product;
+
 /// Imports the DFA builder and minimizer for the general back-end.
 use crate::dfa::{build_dfa, minimize};
 
@@ -44,6 +47,11 @@ fn build_engine(node: Node) -> Result<Engine, CompileError> {
     // determinization blowup of bounded repetition.
     if let Some(program) = linearize(&node) {
         return Ok(Engine::Linear(program));
+    }
+    // What: a linear `&`/`~` node becomes a synchronized product. Why: it keeps the
+    // same-span set algebra small where the eager DFA would explode on `{n,m}`.
+    if let Some(program) = linearize_product(&node) {
+        return Ok(Engine::Product(program));
     }
     let dfa = minimize(&build_dfa(search_root(node))?);
     Ok(Engine::Table(dfa))

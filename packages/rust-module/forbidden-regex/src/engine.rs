@@ -6,6 +6,9 @@ use serde::{Deserialize, Serialize};
 /// Imports the counting back-end's linear program.
 use crate::counting::LinearProgram;
 
+/// Imports the synchronized-product back-end for `&` and `~`.
+use crate::counting::ProductProgram;
+
 /// Imports the general derivative DFA.
 use crate::dfa::table::Dfa;
 
@@ -25,7 +28,12 @@ pub enum Engine {
         /// Counting program for the branch-free pattern.
         LinearProgram,
     ),
-    /// General derivative DFA; handles `&`, `~`, and alternation.
+    /// Synchronized-product counting back-end; handles linear `&` and `~`.
+    Product(
+        /// Product program for the linear intersection-with-complement pattern.
+        ProductProgram,
+    ),
+    /// General derivative DFA; handles alternation and non-linear `&`, `~`.
     Table(
         /// General derivative DFA back-end.
         Dfa,
@@ -41,6 +49,7 @@ impl Engine {
     pub fn is_match(&self, line: &[u8]) -> bool {
         match self {
             Engine::Linear(program) => program.is_match(line),
+            Engine::Product(program) => program.is_match(line),
             Engine::Table(dfa) => dfa.is_match(line),
         }
     }
@@ -53,6 +62,7 @@ impl Engine {
     pub fn validate(&self) -> Result<(), CompileError> {
         match self {
             Engine::Linear(program) => program.validate(),
+            Engine::Product(program) => program.validate(),
             Engine::Table(dfa) => dfa.validate(),
         }
     }
