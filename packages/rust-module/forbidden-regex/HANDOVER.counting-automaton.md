@@ -46,11 +46,70 @@ Two bottlenecks, both must be fixed to beat regex:
    (matching what `regex-automata`'s prefilter does), or depend on
    `regex-automata`'s prefilter directly.
 
-USER DECISION (this session): build the counting DFA (#1). It is necessary but not
-sufficient on its own; #2 (SIMD gate) is also required to surpass regex, and even
-both together is uncertain to beat a world-class engine. Remaining work: the
-counting DFA, the SIMD gate, and
-differential tests vs `resharp`/`regex`.
+USER DECISIONS (this session): build the counting DFA (#1); the SIMD gate (#2) may
+depend on `regex-automata`'s prefilter. #2 IS DONE: `src/gate.rs` now uses
+`regex_automata::util::prefilter::Prefilter` for the negative-line fast reject, and
+aho-corasick only to map a hit back to rules. Gate-only rose ~11M to ~15M lines/s;
+the literal-free rules (now ~70% of per-line time) are the remaining bottleneck.
+
+### Counting-set automaton construction blueprint (#1, the remaining build)
+
+Goal: replace the N separate per-rule DFAs for the literal-free (seedless) rules
+with ONE counting-set automaton (CsA) run in a single O(1)-per-byte pass. Build it as
+a new `src/counting/csa.rs`, selected by `RegexSet` for the union of seedless rules.
+
+Inputs: the seedless rules' `CountingNfa`s, combined as one node `alt(seedless)` and
+built into one `CountingNfa` via `build_nfa` (Glushkov; no blowup, alternation is
+just follow edges). It has positions (`Class`, `Counted{set,min,max}`, anchors),
+`follow` sets, `start`, and accept = `elements.len()`.
+
+The CsA determinizes the STRUCTURE (which positions are active) while counts stay in
+runtime registers. Construction (subset construction with counter awareness):
+
+- A CsA structural state = the set of currently-active positions, PLUS, for each
+  active `Counted` position, a flag of whether its register is "live" (non-empty).
+  Anchors are resolved by context at runtime, so keep the four boundary-context
+  variants distinct only if a state's transitions differ under them (as the eager DFA
+  already does with its 2 incoming context bits; mirror that).
+- Each `Counted` position carries one register holding the live count SET (reuse
+  `CountSet`). Determinism comes from the structure; the register holds the data.
+- Transition on a byte-class `c` from structural state `S`:
+  1. For each active `Class(set)` with `c in set`: activate `follow`.
+  2. For each active `Counted{set,min,max}` with `c in set`: advance its register
+     (`copy_advanced_from`, the one-shift bitset op) and keep it active.
+  3. Zero-width closure: a `Counted` whose register has a value in `[min,max]`
+     activates `follow` (exit); anchors activate `follow` when the boundary context
+     permits; iterate to a fixpoint AT BUILD TIME, so runtime does one table lookup.
+  The successor structural state is the resulting active set; record per-transition
+  the register operations (which registers advance, which reset, where a fresh 0 is
+  inserted on entry).
+- Accept when the accept position is in the active set after closure (position-
+  dependent on `(word_after, line_end)`, like the eager DFA's accept mask).
+- Σ* search prefix: the start positions are re-seeded every boundary; fold this into
+  the start state's self-loop exactly as the eager DFA does (`search_root`).
+
+The subtlety is that a `Counted` position's exit depends on a runtime range check of
+its register, so the closure's "can this position exit" is data-dependent. Handle it
+the CsA way: the structural transition ALWAYS includes the exit edge, but the exit's
+target positions only become truly active when the register's range check passes at
+runtime; equivalently, keep the range check as a cheap per-transition guard
+(`CountSet::has_at_least(min)` already exists, O(1) amortized). The number of
+structural states stays small because it is bounded by subsets of positions, not by
+count values (counts live in registers). See Turonova et al. for the offset-list
+representation that makes register ops O(1) amortized; `CountSet` (fixed-width
+bitset) is a simpler stand-in that is O(max/64) per op, fine for our bounds.
+
+Validate by: differential test the CsA's `is_match` against the existing NFA `run`
+(the trusted oracle) over the seedless union, on a probe grid (see
+`run_tests.rs`/`product_tests.rs` for the pattern). Then wire `RegexSet` to use the
+CsA for the seedless union instead of N individual engines, re-bench, and confirm
+seedless-only throughput approaches gate-only.
+
+Even with the CsA done and the SIMD gate done, beating regex is uncertain (regex is
+world-class and uses the same architecture); the honest target is parity-or-better.
+
+Remaining work: the counting DFA (#1), then differential tests vs `regex`, then the
+ARM (`ssh m1`) bench verification.
 
 ## What this crate is
 
