@@ -9,9 +9,6 @@ mod build;
 /// Moore state minimization.
 mod minimize;
 
-/// Product-union of per-rule DFAs.
-mod union;
-
 /// The serializable `Dfa` table and its match loop.
 pub mod table;
 
@@ -20,6 +17,3 @@ pub use build::build_dfa;
 
 /// Re-exports the minimizer.
 pub use minimize::minimize;
-
-/// Re-exports the union builder.
-pub use union::union;

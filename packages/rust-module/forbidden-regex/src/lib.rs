@@ -30,6 +30,12 @@ mod parse;
 /// Determinization and the compiled table.
 mod dfa;
 
+/// The counting back-end for bounded repetition.
+mod counting;
+
+/// The per-pattern back-end selector.
+mod engine;
+
 /// Public matcher types.
 mod regex;
 

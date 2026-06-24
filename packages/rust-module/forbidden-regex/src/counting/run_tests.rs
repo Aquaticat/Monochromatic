@@ -1,0 +1,95 @@
+//! Tests for the counting-set simulation: differential vs the eager DFA, and a
+//! serialized-size proof that bounded repetition no longer blows up. Exempt from
+//! the max-lines and rustdoc budgets as a `*_tests.rs` file.
+
+use crate::ast::node::Node;
+use crate::ast::smart::concat;
+use crate::counting::element::linearize;
+use crate::dfa::build_dfa;
+use crate::parse::parse;
+
+// Builds the eager-DFA oracle for a pattern: the trusted (if large) reference.
+fn oracle(pattern: &str) -> impl Fn(&[u8]) -> bool {
+    let node = parse(pattern).expect("oracle pattern parses");
+    let dfa = build_dfa(concat(vec![Node::Top, node])).expect("oracle dfa builds");
+    move |line: &[u8]| dfa.is_match(line)
+}
+
+// Linearizes a pattern, asserting it takes the counting back-end.
+fn linear(pattern: &str) -> crate::counting::element::LinearProgram {
+    let node = parse(pattern).expect("pattern parses");
+    linearize(&node).expect("pattern is linear")
+}
+
+// Every linearizable pattern must agree with the eager DFA on every probe input.
+#[test]
+fn linear_agrees_with_oracle() {
+    let patterns = [
+        "abc",
+        "[A-Z]",
+        "[A-Z]{2}",
+        "[A-Z]{2,4}",
+        "a[0-9]{1,3}z",
+        "\\bAKIA[A-Z2-7]{3}\\b",
+        "^abc",
+        "abc$",
+        "[A-Z]{2}[0-9]{2}",
+        "x?y",
+        "AKIA[A-Z2-7]{4}",
+    ];
+    let inputs: [&[u8]; 16] = [
+        b"",
+        b"a",
+        b"abc",
+        b"xabcx",
+        b"AB",
+        b"ABCD",
+        b"ABCDE",
+        b"a12z",
+        b"a1234z",
+        b" AKIAABC ",
+        b"xAKIAABCy",
+        b"abc\n",
+        b"\nabc",
+        b"AB12",
+        b"y",
+        b"xy",
+    ];
+    for pattern in patterns {
+        let prog = linear(pattern);
+        let oracle_fn = oracle(pattern);
+        for input in inputs {
+            assert_eq!(
+                prog.is_match(input),
+                oracle_fn(input),
+                "pattern {pattern:?} disagreed on input {:?}",
+                String::from_utf8_lossy(input)
+            );
+        }
+    }
+}
+
+// The AWS-key shape that blew the eager DFA to 72 KB must stay tiny here.
+#[test]
+fn counted_key_stays_small() {
+    let prog = linear("AKIA[A-Z2-7]{16}");
+    // Four literal classes plus one counted element.
+    assert_eq!(prog.elements.len(), 5);
+    let bytes = bincode::serialize(&prog).expect("serializes");
+    assert!(
+        bytes.len() < 2_000,
+        "linear program serialized to {} bytes, expected under 2 KB",
+        bytes.len()
+    );
+}
+
+// The counted bound must match exactly: 16 trailing chars accept, 15 reject.
+#[test]
+fn counted_bound_is_exact() {
+    let prog = linear("AKIA[A-Z2-7]{16}");
+    assert!(prog.is_match(b"AKIAABCDEFGHIJKLMNOP"));
+    assert!(prog.is_match(b"prefix AKIAABCDEFGHIJKLMNOP suffix"));
+    assert!(!prog.is_match(b"AKIAABCDEFGHIJKLMNO"));
+    // A digit outside [A-Z2-7] breaks the run (0 and 1 are excluded).
+    assert!(!prog.is_match(b"AKIAABCDEFGHIJKLMN0P"));
+}

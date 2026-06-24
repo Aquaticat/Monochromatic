@@ -1,5 +1,8 @@
 //! A 256-bit set of bytes, the leaf alphabet of the engine.
 
+/// Imports the serde derives so byte sets can be persisted inside a compiled program.
+use serde::{Deserialize, Serialize};
+
 /// Number of `u64` words needed to hold one bit per possible byte value (256/64).
 const WORDS: usize = 4;
 
@@ -11,7 +14,7 @@ const BITS_PER_WORD: usize = 64;
 /// What: `[u64; 4]` where bit `b` is set when byte `b` is a member. Why: byte
 /// classes, `.`, single literals, and the `\d \w \s` shorthands are all just
 /// byte sets; membership and complement are O(1) word operations.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub struct ByteSet {
     /// Bitmap words; `words[b / 64]`'s bit `b % 64` is set iff `b` is present.
     words: [u64; WORDS],

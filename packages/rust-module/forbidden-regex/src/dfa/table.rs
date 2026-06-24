@@ -97,31 +97,6 @@ impl Dfa {
         self.accept[state] & accept_bit(false, true) != 0
     }
 
-    /// Returns the start state id.
-    ///
-    /// What: the entry state. Why: the union builder seeds its product from each
-    /// component's start.
-    pub(crate) fn start_state(&self) -> u32 {
-        self.start
-    }
-
-    /// Returns the successor of `state` on a raw byte.
-    ///
-    /// What: maps the byte through the class table, then the transition table.
-    /// Why: the union builder steps every component on the same raw byte.
-    pub(crate) fn step(&self, state: u32, byte: u8) -> u32 {
-        let class = self.class_map[byte as usize] as usize;
-        self.trans[state as usize * self.nclasses as usize + class]
-    }
-
-    /// Returns the acceptance mask of `state`.
-    ///
-    /// What: the per-state 4-bit accept mask. Why: the union ORs component masks
-    /// to decide whether any rule accepts at a boundary.
-    pub(crate) fn accept_mask_of(&self, state: u32) -> u8 {
-        self.accept[state as usize]
-    }
-
     /// Validates a decoded automaton so the match loop cannot read out of bounds.
     ///
     /// What: checks every length and that all class ids, transition targets, and
