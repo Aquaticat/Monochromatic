@@ -240,6 +240,7 @@ Artifacts:
 
 ```text
 /tmp/agent/truepeak-param-search/out-20260624/windows-half-14x3.754229.jsonl
+/tmp/agent/truepeak-param-search/out-20260624/half-target-14x3.754229-result.json
 ```
 
 Verified result at `probe_margin_db = 0.683`:
