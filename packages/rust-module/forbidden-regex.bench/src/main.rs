@@ -102,6 +102,11 @@ fn main() {
         eprintln!("WARNING: engines disagree on the sample; comparison is not apples to apples");
     }
 
+    let prefilter_hits = corpus.iter().filter(|l| fset.prefilter_only_is_match(l)).count();
+    eprintln!("[diag] prefilter flags {prefilter_hits}/{lines} lines (each triggers the per-rule fallback)");
+    let seeded = fset.len() - fset.seedless_count();
+    eprintln!("[diag] anchored {}/{seeded} seeded rules (rest fall back to counting)", fset.anchored_count());
+
     let avg_len = bytes as f64 / lines as f64;
     let threads = std::thread::available_parallelism().map_or(1, |n| n.get());
     println!("scanning {threads} threads per engine, {BUDGET_SECS:.0}s each");
@@ -111,10 +116,15 @@ fn main() {
     // lets regex scale instead of contending on a shared cache).
     let frate = throughput(&corpus, || (), |_, line| fset.is_match(line), threads);
     let rrate = throughput(&corpus, || rset.clone(), |r, line| r.is_match(line), threads);
-    // Profiling split: gate-only vs seedless-only, to locate the per-line bottleneck.
+    // Profiling split: prefilter-only vs gate-only vs seedless-only, to locate the
+    // per-line bottleneck (prefilter cost vs per-rule fallback vs literal-free scans).
+    let prefilter_rate = throughput(&corpus, || (), |_, line| fset.prefilter_only_is_match(line), threads);
+    let candidates_rate = throughput(&corpus, || (), |_, line| fset.candidates_only_is_match(line), threads);
     let gate_rate = throughput(&corpus, || (), |_, line| fset.gate_only_is_match(line), threads);
     let seedless_rate = throughput(&corpus, || (), |_, line| fset.seedless_only_is_match(line), threads);
     report("forbidden-regex", frate, avg_len);
+    report("  prefilter-only", prefilter_rate, avg_len);
+    report("  candidates    ", candidates_rate, avg_len);
     report("  gate-only     ", gate_rate, avg_len);
     report("  seedless-only ", seedless_rate, avg_len);
     report("regex          ", rrate, avg_len);

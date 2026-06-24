@@ -18,8 +18,8 @@ use crate::counting::build_nfa;
 /// Imports the product builder that selects the `&`/`~` counting back-end.
 use crate::counting::build_product;
 
-/// Imports the node-based required-literal seed extractor.
-use crate::counting::seeds_from_node;
+/// Imports the node-based seed extractor and leading-literal probe.
+use crate::counting::{leading_literals, seeds_from_node};
 
 /// Imports the DFA builder and minimizer for the general back-end.
 use crate::dfa::{build_dfa_within, minimize};
@@ -68,6 +68,30 @@ fn build_engine(node: Node) -> Result<Engine, CompileError> {
 /// What: a state ceiling for a seedless rule's DFA and the seeded last resort. Why:
 /// bounds build time against a pathological structure.
 const ENGINE_DFA_CAP: usize = 20_000;
+
+/// Builds an anchored DFA engine for a seeded rule whose seed is its leading literal.
+///
+/// What: when the gate's seeds equal the node's leading literals, every match starts
+/// at a seed position, so the rule is compiled to a bare (no `Σ*`) DFA that the gate
+/// runs anchored at the hit; returns `None` when the seed is not leading or the
+/// anchored DFA overruns the cap. Why: anchored there is no `Σ*` overlap, so even a
+/// literal-plus-counted rule (and `&`/`~`) is a small linear DFA, replacing the slow
+/// per-rule counting scan that real code triggers on every keyword hit.
+fn anchored_engine(node: &Node, seeds: &[Vec<u8>]) -> Option<Engine> {
+    let mut leading = leading_literals(node);
+    if leading.is_empty() {
+        return None;
+    }
+    let mut wanted = seeds.to_vec();
+    leading.sort();
+    wanted.sort();
+    if leading != wanted {
+        return None;
+    }
+    build_dfa_within(node.clone(), ENGINE_DFA_CAP)
+        .ok()
+        .map(|dfa| Engine::new(EngineKind::Table(minimize(&dfa)), Vec::new()))
+}
 
 /// Builds the eager-DFA back-end for a seedless node, or counting on overrun.
 ///
@@ -163,8 +187,10 @@ pub fn compile(pattern: &str) -> Result<Regex, CompileError> {
 /// the counting blowup is a later step, so the set iterates its rules for now.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RegexSet {
-    /// Per-rule engines, indexed by rule id.
+    /// Per-rule substring engines, indexed by rule id.
     rules: Vec<Engine>,
+    /// Per-rule anchored DFA, when the seed is the rule's leading literal, else `None`.
+    anchored: Vec<Option<Engine>>,
     /// Ids of the literal-free rules, run against every line for rule-id attribution.
     seedless_ids: Vec<usize>,
     /// Union DFAs over groups of the literal-free rules, for the boolean fast path.
@@ -186,16 +212,20 @@ struct BuiltRule {
     seedless: bool,
     /// Parsed node, kept only for a seedless rule so it can join a union DFA.
     node: Option<Node>,
+    /// Anchored DFA engine, when the seed is the rule's leading literal.
+    anchored: Option<Engine>,
 }
 
 /// Compiles one parsed node into a rule, noting whether it is literal-free.
 ///
-/// What: extracts seeds and builds the engine (DFA when seedless, counting when
-/// seeded). Why: a literal-free rule must run against every line, so the caller
-/// records its id and node; the split matches `build_engine`.
+/// What: extracts seeds, builds the substring engine (DFA when seedless, counting when
+/// seeded), and for a seeded rule whose seed is its leading literal also builds an
+/// anchored DFA. Why: a literal-free rule runs against every line, so the caller
+/// records its id and node; the anchored DFA gives the gate a fast per-rule check.
 fn build_rule(node: Node) -> Result<BuiltRule, CompileError> {
     let seeds = seeds_from_node(&node);
     let seedless = seeds.is_empty();
+    let anchored = if seedless { None } else { anchored_engine(&node, &seeds) };
     let kind = if seedless {
         build_table_kind(node.clone())?
     } else {
@@ -205,6 +235,7 @@ fn build_rule(node: Node) -> Result<BuiltRule, CompileError> {
         engine: Engine::new(kind, seeds),
         seedless,
         node: if seedless { Some(node) } else { None },
+        anchored,
     })
 }
 
@@ -217,6 +248,7 @@ fn push_rule(
     rules: &mut Vec<Engine>,
     seedless_ids: &mut Vec<usize>,
     seedless_nodes: &mut Vec<Node>,
+    anchored: &mut Vec<Option<Engine>>,
 ) {
     if built.seedless {
         seedless_ids.push(rules.len());
@@ -225,15 +257,22 @@ fn push_rule(
         }
     }
     rules.push(built.engine);
+    anchored.push(built.anchored);
 }
 
 /// Assembles a `RegexSet` from its rules, the literal-free ids, and their nodes.
 ///
 /// What: groups the seedless nodes into union DFAs, stores everything, then builds the
 /// gate. Why: the one place that wires the matching structures together.
-fn assemble(rules: Vec<Engine>, seedless_ids: Vec<usize>, seedless_nodes: Vec<Node>) -> RegexSet {
+fn assemble(
+    rules: Vec<Engine>,
+    anchored: Vec<Option<Engine>>,
+    seedless_ids: Vec<usize>,
+    seedless_nodes: Vec<Node>,
+) -> RegexSet {
     let mut set = RegexSet {
         rules,
+        anchored,
         seedless_ids,
         seedless_groups: group_seedless(seedless_nodes),
         gate: SetGate::default(),
@@ -252,11 +291,12 @@ impl RegexSet {
         let mut rules: Vec<Engine> = Vec::new();
         let mut seedless_ids: Vec<usize> = Vec::new();
         let mut seedless_nodes: Vec<Node> = Vec::new();
+        let mut anchored: Vec<Option<Engine>> = Vec::new();
         for pattern in patterns {
             let built = parse(pattern.as_ref()).and_then(build_rule)?;
-            push_rule(built, &mut rules, &mut seedless_ids, &mut seedless_nodes);
+            push_rule(built, &mut rules, &mut seedless_ids, &mut seedless_nodes, &mut anchored);
         }
-        Ok(assemble(rules, seedless_ids, seedless_nodes))
+        Ok(assemble(rules, anchored, seedless_ids, seedless_nodes))
     }
 
     /// Rebuilds the combined required-literal gate from the seeded rules' seeds.
@@ -277,14 +317,15 @@ impl RegexSet {
         let mut rules: Vec<Engine> = Vec::new();
         let mut seedless_ids: Vec<usize> = Vec::new();
         let mut seedless_nodes: Vec<Node> = Vec::new();
+        let mut anchored: Vec<Option<Engine>> = Vec::new();
         let mut kept: Vec<usize> = Vec::new();
         for (index, pattern) in patterns.iter().enumerate() {
             if let Ok(built) = parse(pattern.as_ref()).and_then(build_rule) {
-                push_rule(built, &mut rules, &mut seedless_ids, &mut seedless_nodes);
+                push_rule(built, &mut rules, &mut seedless_ids, &mut seedless_nodes, &mut anchored);
                 kept.push(index);
             }
         }
-        (assemble(rules, seedless_ids, seedless_nodes), kept)
+        (assemble(rules, anchored, seedless_ids, seedless_nodes), kept)
     }
 
     /// Compiles a ruleset from one text, split on a delimiter.
@@ -309,11 +350,23 @@ impl RegexSet {
     pub fn is_match(&self, line: &[u8]) -> bool {
         if self
             .gate
-            .any_candidate(line, |rule| self.rules[rule].is_match(line))
+            .any_candidate(line, |rule, pos| self.matches_rule(line, rule, pos))
         {
             return true;
         }
         self.seedless_groups.iter().any(|group| group.is_match(line))
+    }
+
+    /// Checks one seeded rule against `line`, anchored at `pos` when possible.
+    ///
+    /// What: runs the rule's anchored DFA over `line[pos..]` when the seed is the
+    /// rule's leading literal, else the whole-line substring engine. Why: anchoring at
+    /// the seed hit replaces the slow per-rule counting scan with one small linear DFA.
+    fn matches_rule(&self, line: &[u8], rule: usize, pos: usize) -> bool {
+        match &self.anchored[rule] {
+            Some(engine) => engine.is_match(&line[pos..]),
+            None => self.rules[rule].is_match(line),
+        }
     }
 
     /// Returns the ids of the rules that match `line`.
@@ -323,8 +376,8 @@ impl RegexSet {
     /// are checked directly.
     pub fn matches(&self, line: &[u8]) -> impl Iterator<Item = usize> {
         let mut hits: Vec<usize> = Vec::new();
-        self.gate.for_each_candidate(line, |rule| {
-            if self.rules[rule].is_match(line) {
+        self.gate.for_each_candidate(line, |rule, pos| {
+            if self.matches_rule(line, rule, pos) {
                 hits.push(rule);
             }
         });
@@ -344,7 +397,23 @@ impl RegexSet {
     /// bench split per-line time between the gate and the literal-free scans.
     pub fn gate_only_is_match(&self, line: &[u8]) -> bool {
         self.gate
-            .any_candidate(line, |rule| self.rules[rule].is_match(line))
+            .any_candidate(line, |rule, pos| self.matches_rule(line, rule, pos))
+    }
+
+    /// Profiling hook: runs only the seeded-literal prefilter, no fallback.
+    ///
+    /// What: the gate's prefilter presence test alone. Why: separates the prefilter's
+    /// cost from the per-rule counting fallback it triggers on a hit.
+    pub fn prefilter_only_is_match(&self, line: &[u8]) -> bool {
+        self.gate.prefilter_present(line)
+    }
+
+    /// Profiling hook: prefilter plus aho-corasick enumeration, no per-rule check.
+    ///
+    /// What: the gate path with the per-rule predicate stubbed to never match. Why:
+    /// isolates the which-rule enumeration cost from the per-rule counting cost.
+    pub fn candidates_only_is_match(&self, line: &[u8]) -> bool {
+        self.gate.any_candidate(line, |_rule, _pos| false)
     }
 
     /// Profiling hook: runs only the literal-free group DFAs.
@@ -353,6 +422,14 @@ impl RegexSet {
     /// per-line time split.
     pub fn seedless_only_is_match(&self, line: &[u8]) -> bool {
         self.seedless_groups.iter().any(|group| group.is_match(line))
+    }
+
+    /// Returns how many seeded rules have an anchored DFA fast-check.
+    ///
+    /// What: the count of rules whose seed is their leading literal. Why: a diagnostic
+    /// for how much of the gate fallback avoids the slow counting scan.
+    pub fn anchored_count(&self) -> usize {
+        self.anchored.iter().filter(|engine| engine.is_some()).count()
     }
 
     /// Returns how many union DFAs the seedless rules collapsed into.
@@ -405,7 +482,12 @@ impl RegexSet {
         })?;
         // What: validate the decoded graph, then rebuild its runtime prefilter. Why:
         // both must happen before any engine runs on untrusted input.
-        for engine in set.rules.iter_mut().chain(set.seedless_groups.iter_mut()) {
+        for engine in set
+            .rules
+            .iter_mut()
+            .chain(set.seedless_groups.iter_mut())
+            .chain(set.anchored.iter_mut().flatten())
+        {
             engine.validate()?;
             engine.prepare();
         }

@@ -73,34 +73,47 @@ impl SetGate {
     ///
     /// What: runs `check` on each rule whose literal is present, stopping at the first
     /// hit. Why: the boolean any-rule path over the seeded rules.
-    pub fn any_candidate(&self, line: &[u8], mut check: impl FnMut(usize) -> bool) -> bool {
+    pub fn any_candidate(&self, line: &[u8], mut check: impl FnMut(usize, usize) -> bool) -> bool {
         let Some(matcher) = &self.matcher else {
             return false;
         };
         // Fast reject: the SIMD prefilter rejects a line with no seed in one
         // accelerated pass; only on a hit do we enumerate the (overlapping) matches
-        // to find which rules to check.
+        // to find which rules to check, passing each match's start so a rule whose
+        // seed is its leading literal can be checked anchored at that position.
         if let Some(prefilter) = &self.prefilter
             && prefilter.find(line, Span::from(0..line.len())).is_none()
         {
             return false;
         }
         for found in matcher.find_overlapping_iter(line) {
-            if check(self.literal_rule[found.pattern().as_usize()]) {
+            if check(self.literal_rule[found.pattern().as_usize()], found.start()) {
                 return true;
             }
         }
         false
     }
 
+    /// Profiling hook: reports whether the SIMD prefilter alone flags a seed.
+    ///
+    /// What: just the prefilter find, with no aho-corasick or per-rule fallback. Why:
+    /// isolates the prefilter's own cost from the cost of the per-rule check it gates.
+    pub fn prefilter_present(&self, line: &[u8]) -> bool {
+        match &self.prefilter {
+            Some(prefilter) => prefilter.find(line, Span::from(0..line.len())).is_some(),
+            None => false,
+        }
+    }
+
     /// Calls `visit` for each seeded rule whose literal occurs in `line`.
     ///
-    /// What: visits every rule with a literal hit, possibly with repeats. Why: the
-    /// attribution path collects all seeded hits.
-    pub fn for_each_candidate(&self, line: &[u8], mut visit: impl FnMut(usize)) {
+    /// What: visits every rule with a literal hit and the hit's start, possibly with
+    /// repeats. Why: the attribution path collects all seeded hits and the position
+    /// lets an anchorable rule be checked anchored.
+    pub fn for_each_candidate(&self, line: &[u8], mut visit: impl FnMut(usize, usize)) {
         if let Some(matcher) = &self.matcher {
             for found in matcher.find_overlapping_iter(line) {
-                visit(self.literal_rule[found.pattern().as_usize()]);
+                visit(self.literal_rule[found.pattern().as_usize()], found.start());
             }
         }
     }

@@ -117,6 +117,82 @@ fn inter_literal(operands: &[Node]) -> Vec<Vec<u8>> {
     Vec::new()
 }
 
+/// Returns the literals every match of `node` must begin with, or empty when a match
+/// can start with a non-literal.
+///
+/// What: the leading singleton-class run of a concatenation, the union over an
+/// alternation's branches, or a positive intersection operand's leading literal. Why:
+/// when these equal the gate's seeds, every match starts at a seed position, so the
+/// rule can be checked by an anchored DFA at that position instead of a substring scan.
+pub(crate) fn leading_literals(node: &Node) -> Vec<Vec<u8>> {
+    match node {
+        Node::Class(set) => set.as_singleton().map(|b| vec![vec![b]]).unwrap_or_default(),
+        Node::Concat(parts) => concat_leading(parts),
+        Node::Alt(branches) => alt_leading(branches),
+        Node::Inter(operands) => inter_leading(operands),
+        _ => Vec::new(),
+    }
+}
+
+/// Returns the leading literal of a concatenation.
+///
+/// What: the maximal leading run of singleton classes, or the first part's own leading
+/// literal when the concatenation does not start with a singleton. Why: a match must
+/// begin with the concatenation's first element.
+fn concat_leading(parts: &[Node]) -> Vec<Vec<u8>> {
+    let mut run: Vec<u8> = Vec::new();
+    for part in parts {
+        if let Node::Class(set) = part
+            && let Some(b) = set.as_singleton()
+        {
+            run.push(b);
+            continue;
+        }
+        if run.is_empty() {
+            return leading_literals(part);
+        }
+        break;
+    }
+    if run.is_empty() { Vec::new() } else { vec![run] }
+}
+
+/// Unions the leading literals of every alternation branch.
+///
+/// What: collects each branch's leading literal, returning empty if any branch lacks
+/// one. Why: a match takes one branch, so the union covers every start only when every
+/// branch contributes a leading literal.
+fn alt_leading(branches: &[Node]) -> Vec<Vec<u8>> {
+    let mut all: Vec<Vec<u8>> = Vec::new();
+    for branch in branches {
+        let lits = leading_literals(branch);
+        if lits.is_empty() {
+            return Vec::new();
+        }
+        for lit in lits {
+            if !all.contains(&lit) {
+                all.push(lit);
+            }
+        }
+    }
+    all
+}
+
+/// Returns the leading literal of the first positive operand of an intersection.
+///
+/// What: scans operands for a non-complement with a leading literal. Why: a match
+/// satisfies every positive operand, so it begins with any positive's leading literal.
+fn inter_leading(operands: &[Node]) -> Vec<Vec<u8>> {
+    for operand in operands {
+        if !matches!(operand, Node::Comp(_)) {
+            let lits = leading_literals(operand);
+            if !lits.is_empty() {
+                return lits;
+            }
+        }
+    }
+    Vec::new()
+}
+
 /// Returns the most selective mandatory literal anywhere in a concatenation.
 ///
 /// What: accumulates maximal runs of singleton classes and also considers each
