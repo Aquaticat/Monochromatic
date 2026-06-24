@@ -10,6 +10,7 @@ import {
   type ExtensionAPI,
   type ExtensionFactory,
 } from '@earendil-works/pi-coding-agent';
+import type { ReadonlyDeep, } from 'type-fest';
 
 //region Constants
 
@@ -41,6 +42,25 @@ type AdvisorExtensionModule = {
    * Pi extension factory.
    */
   readonly default: ExtensionFactory;
+};
+
+/**
+ * Registered tool subset inspected by verification.
+ */
+type RegisteredTool = {
+  /**
+   * Tool name.
+   */
+  readonly name: string;
+  /**
+   * Tool parameter schema.
+   */
+  readonly parameters?: {
+    /**
+     * Object-schema properties.
+     */
+    readonly properties?: Record<string, unknown>;
+  };
 };
 
 //endregion Types
@@ -86,6 +106,8 @@ async function verifyBuiltExtension(): Promise<string> {
     > 0)
     throw new Error(`missing Advisor registrations: ${missing.join(', ',)}`,);
 
+  assertAdvisorQuestionParameter(fakeApi.tools(),);
+
   return `Advisor extension verified: ${registrations.join(', ',)}`;
 }
 
@@ -105,6 +127,35 @@ function isAdvisorExtensionModule(
 }
 
 /**
+ * Assert built Advisor tool exposes focused-question parameter.
+ *
+ * @param tools - registered tools
+ *
+ * @throws when Advisor tool or question parameter is missing
+ */
+function assertAdvisorQuestionParameter(
+  tools: readonly ReadonlyDeep<RegisteredTool>[],
+): void {
+  /**
+   * Registered Advisor tool definition.
+   */
+  const advisorTool = tools.find(function isAdvisorTool(tool,) {
+    return tool.name === 'advisor';
+  },);
+  if (advisorTool === undefined)
+    throw new Error('registered Advisor tool was not captured',);
+  /**
+   * Registered question parameter schema.
+   */
+  const questionParameter = advisorTool
+    .parameters
+    ?.properties
+    ?.question;
+  if (questionParameter === undefined)
+    throw new Error('registered Advisor tool is missing question parameter',);
+}
+
+/**
  * Build fake Pi API used to verify extension registration.
  *
  * @returns fake Pi extension API and registrations accessor
@@ -112,11 +163,16 @@ function isAdvisorExtensionModule(
 function fakePiApi(): {
   readonly api: ExtensionAPI;
   readonly registrations: () => readonly string[];
+  readonly tools: () => readonly ReadonlyDeep<RegisteredTool>[];
 } {
   /**
    * Locally-owned registration log accessed through closures.
    */
   const registrations: string[] = [];
+  /**
+   * Registered tool definitions accessed through closures.
+   */
+  const tools: RegisteredTool[] = [];
   /**
    * Fake extension API that records registration calls into the closure.
    */
@@ -124,8 +180,9 @@ function fakePiApi(): {
     on(event: string,) {
       registrations.push(`event:${event}`,);
     },
-    registerTool(tool: { readonly name: string; },) {
+    registerTool(tool: ReadonlyDeep<RegisteredTool>,) {
       registrations.push(`tool:${tool.name}`,);
+      tools.push(tool,);
     },
     registerCommand(name: string,) {
       registrations.push(`command:${name}`,);
@@ -209,8 +266,11 @@ function fakePiApi(): {
   };
   return {
     api,
-    registrations: function snapshot() {
+    registrations: function snapshotRegistrations() {
       return [...registrations,];
+    },
+    tools: function snapshotTools() {
+      return [...tools,];
     },
   };
 }

@@ -53,6 +53,11 @@ export type AdvisorSettingsFile = {
 //region Schemas
 
 /**
+ * String schema used inside settings arrays.
+ */
+const StringSchema: v.GenericSchema<string> = v.string();
+
+/**
  * Positive number schema used for budget and timeout fields.
  */
 const PositiveNumberSchema: v.GenericSchema<number> = v.pipe(
@@ -77,7 +82,7 @@ export const AdvisorConfigFileSchema: v.GenericSchema<AdvisorConfigFile> = v.obj
  */
 export const AdvisorSettingsFileSchema: v.GenericSchema<AdvisorSettingsFile> = v.object({
   enabledModels: v.exactOptional(
-    v.array(v.string(),),
+    v.array(StringSchema,),
   ),
 },);
 

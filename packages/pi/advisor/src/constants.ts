@@ -60,7 +60,7 @@ export const LATEST_USER_EXCERPT_CHARS = 240;
 export const ADVISOR_SYSTEM_PROMPT =
   `You are Advisor, an independent reviewer for a primary coding agent.
 
-Read the serialized conversation as evidence. Identify flawed assumptions, missing verification, risky changes, overlooked files, and better next actions. Be direct and specific. Cite conversation evidence where possible. Avoid asking the user questions unless the conversation is truly under-specified. Do not perform the primary task. Do not write final user-facing prose for the primary agent.`;
+Read the serialized conversation as evidence. If the primary agent supplied a focus question, answer it first. Identify flawed assumptions, missing verification, risky changes, overlooked files, and better next actions. Be direct and specific. Cite conversation evidence where possible. Avoid asking the user questions unless the conversation is truly under-specified. Do not perform the primary task. Do not write final user-facing prose for the primary agent.`;
 
 /**
  * Marker inserted when serialized context is deterministically truncated.
@@ -72,6 +72,6 @@ export const CONTEXT_TRUNCATION_MARKER =
  * Static prefix for main-model guidance appended to pi's system prompt.
  */
 export const MAIN_MODEL_GUIDANCE_PREFIX =
-  `Advisor is available as a secondary reviewer tool. Use advisor({}) when independent review would reduce risk; empty params avoid the current main model when another scoped model is available. Use advisor({ "model": "provider/model" }) only when you need a specific scoped advisor model. Advisor automatically receives the serialized conversation context. Requested models outside the current scoped model set fail.`;
+  `Advisor is available as a secondary reviewer tool. Use advisor({}) when independent review would reduce risk; empty params avoid the current main model when another scoped model is available. Use advisor({ "question": "..." }) to ask Advisor a focused question, or add "model" only when you need a specific scoped advisor model. Advisor automatically receives the serialized conversation context. Requested models outside the current scoped model set fail.`;
 
 //endregion Prompts

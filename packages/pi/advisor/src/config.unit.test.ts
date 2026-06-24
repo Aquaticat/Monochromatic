@@ -38,7 +38,7 @@ await describe({
           tmpdir(),
           'pi-advisor-test-',
         ),);
-        const config = loadMergedConfig({
+        const config = await loadMergedConfig({
           cwd: join(
             root,
             'repo',
@@ -101,7 +101,7 @@ await describe({
           ),
           JSON.stringify({ timeoutMs: PROJECT_TIMEOUT_MS, },),
         );
-        const config = loadMergedConfig({ cwd, home, },);
+        const config = await loadMergedConfig({ cwd, home, },);
         expect(config.timeoutMs,).toBe(PROJECT_TIMEOUT_MS,);
       },
     },),
@@ -135,7 +135,7 @@ await describe({
         );
         let caught: unknown;
         try {
-          loadMergedConfig({
+          await loadMergedConfig({
             cwd: join(
               root,
               'repo',

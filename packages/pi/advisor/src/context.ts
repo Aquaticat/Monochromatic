@@ -25,6 +25,7 @@ import {
   latestUserPromptExcerpt,
   NO_USER_PROMPT,
 } from './context-user.ts';
+import { buildAdvisorUserMessageText, } from './advisor-request.ts';
 import { estimateAdvisorInputTokens, } from '@monochromatic-dev/pi-shared-model-selection/ts';
 import type {
   AdvisorConfig,
@@ -64,6 +65,10 @@ export type BuildAdvisorContextOptions = {
    */
   readonly advisorSystemPrompt: string;
   /**
+   * Focused question supplied by the primary agent.
+   */
+  readonly question?: string;
+  /**
    * Effective serialized-context character budget.
    */
   readonly maxContextChars?: number;
@@ -89,6 +94,10 @@ export type MaxContextCharsForAdvisorModelOptions = {
    * Advisor-model system prompt used for token reserve estimate.
    */
   readonly advisorSystemPrompt: string;
+  /**
+   * Focused question supplied by the primary agent.
+   */
+  readonly question?: string;
 };
 
 /**
@@ -147,11 +156,18 @@ export function buildAdvisorContext(
     maxChars: maxContextChars,
   },);
   /**
+   * User-message text sent to Advisor after context truncation.
+   */
+  const advisorUserMessageText = buildAdvisorUserMessageText({
+    contextText: truncation.text,
+    ...(options.question === undefined ? {} : { question: options.question, }),
+  },);
+  /**
    * Estimated request input tokens.
    */
   const estimatedInputTokens = estimateAdvisorInputTokens({
     systemPrompt: options.advisorSystemPrompt,
-    contextText: truncation.text,
+    contextText: advisorUserMessageText,
   },);
 
   /**
@@ -188,11 +204,18 @@ export function maxContextCharsForAdvisorModel(
   options: MaxContextCharsForAdvisorModelOptions,
 ): number {
   /**
+   * Non-context user-message text reserved before serialized conversation content.
+   */
+  const reservedUserMessageText = buildAdvisorUserMessageText({
+    contextText: '',
+    ...(options.question === undefined ? {} : { question: options.question, }),
+  },);
+  /**
    * Input tokens consumed before serialized conversation content.
    */
   const reservedInputTokens = estimateAdvisorInputTokens({
     systemPrompt: options.advisorSystemPrompt,
-    contextText: '',
+    contextText: reservedUserMessageText,
   },)
     + DEFAULT_CONTEXT_OVERHEAD_TOKENS;
   /**

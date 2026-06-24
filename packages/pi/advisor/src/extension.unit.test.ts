@@ -207,7 +207,7 @@ await describe({
       name: 'registers tool, command, renderer, and lifecycle hooks',
       fn: async () => {
         const recorded = recordedPi();
-        advisor(recorded.api,);
+        await advisor(recorded.api,);
         expect(recorded.tools,).toEqual([ADVISOR_TOOL_NAME,],);
         expect(recorded.commands,).toEqual([ADVISOR_TOOL_NAME,],);
         expect(recorded.renderers,).toEqual([ADVISOR_MESSAGE_TYPE,],);

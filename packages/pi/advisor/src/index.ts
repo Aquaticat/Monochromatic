@@ -16,7 +16,6 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type { ReadonlyDeep, } from 'type-fest';
 import { buildAdvisorSystemPrompt, } from './advisor-client.ts';
 import {
-  buildAdvisorStatus,
   createAdvisorSessionState,
   registerAdvisorCommands,
   syncAdvisorActiveTool,
@@ -53,9 +52,9 @@ const l = tagged({
  * { "packages": ["./packages/pi/advisor"] }
  * ```
  */
-export default function advisor(
+export default async function advisor(
   pi: ExtensionAPI,
-): void {
+): Promise<void> {
   /**
    * Logger tagged with the extension factory name.
    */
@@ -66,7 +65,7 @@ export default function advisor(
   /**
    * Runtime config loaded at extension startup.
    */
-  const config = loadMergedConfig({ cwd: process.cwd(), },);
+  const config = await loadMergedConfig({ cwd: process.cwd(), },);
   /**
    * Mutable session state controlled by `/advisor on` and `/advisor off`.
    */
@@ -163,7 +162,7 @@ function buildMainModelGuidance(
     config,
   }: {
     readonly ctx: ReadonlyDeep<ExtensionContext>;
-    readonly config: ReturnType<typeof loadMergedConfig>;
+    readonly config: Awaited<ReturnType<typeof loadMergedConfig>>;
   },
 ): string {
   /**
@@ -214,7 +213,5 @@ function buildMainModelGuidance(
 
 //endregion Prompt guidance
 
-export {
-  buildAdvisorStatus,
-  buildMainModelGuidance,
-};
+export { buildAdvisorStatus, } from './commands.ts';
+export { buildMainModelGuidance, };

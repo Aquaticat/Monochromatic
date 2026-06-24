@@ -34,11 +34,16 @@ const typeString = Type.String;
  */
 export const AdvisorToolParametersSchema: TObject<{
   model: TOptional<TString>;
+  question: TOptional<TString>;
 }> = typeObject(
   {
     model: typeOptional(typeString({
       description:
         'Optional scoped model slug. Use provider/model for canonical slugs. Empty params select the highest expected-cost non-current scoped model when possible.',
+    },),),
+    question: typeOptional(typeString({
+      description:
+        'Optional focused question or review request for Advisor to answer using the conversation context.',
     },),),
   },
   { additionalProperties: false, },
@@ -47,6 +52,45 @@ export const AdvisorToolParametersSchema: TObject<{
 //endregion Schema
 
 //region Argument normalization
+
+/**
+ * Normalize optional model argument.
+ *
+ * @param rawModel - raw model value
+ *
+ * @returns model param when non-blank
+ */
+function normalizeModelArgument(
+  rawModel: unknown,
+): Pick<AdvisorToolParams, 'model'> {
+  if ((typeof rawModel) !== 'string')
+    return {};
+  if (rawModel.trim()
+    === '')
+    return {};
+  return { model: rawModel, };
+}
+
+/**
+ * Normalize optional focused-question argument.
+ *
+ * @param rawQuestion - raw focused-question value
+ *
+ * @returns question param when non-blank
+ */
+function normalizeQuestionArgument(
+  rawQuestion: unknown,
+): Pick<AdvisorToolParams, 'question'> {
+  if ((typeof rawQuestion) !== 'string')
+    return {};
+  /**
+   * Trimmed focused question text.
+   */
+  const question = rawQuestion.trim();
+  if (question === '')
+    return {};
+  return { question, };
+}
 
 /**
  * Normalize raw tool arguments before TypeBox validation.
@@ -79,20 +123,43 @@ export function prepareAdvisorArguments(
   const extraKeys = Object
     .keys(args,)
     .filter(function isExtraKey(key,) {
-    return key !== 'model';
+    return (key !== 'model') && (key !== 'question');
   },);
   if (extraKeys.length
     > 0)
     throw new Error(`advisor: unsupported argument fields: ${extraKeys.join(', ',)}`,);
 
-  if ((!('model' in args)) || (args.model
-    === undefined))
-    return {};
-  if ((typeof args.model) !== 'string')
+  /**
+   * Raw model value read after object narrowing.
+   */
+  const rawModel = 'model' in args
+    ? args.model
+    : undefined;
+  /**
+   * Raw question value read after object narrowing.
+   */
+  const rawQuestion = 'question' in args
+    ? args.question
+    : undefined;
+
+  if ((rawModel !== undefined) && ((typeof rawModel) !== 'string'))
     throw new Error('advisor: model must be a string when provided',);
-  return args.model
-    .trim()
-    === '' ? {} : { model: args.model, };
+  if ((rawQuestion !== undefined) && ((typeof rawQuestion) !== 'string'))
+    throw new Error('advisor: question must be a string when provided',);
+
+  /**
+   * Model parameter carried through after existing string compatibility rules.
+   */
+  const normalizedModel = normalizeModelArgument(rawModel,);
+  /**
+   * Trimmed focused question, omitted when blank.
+   */
+  const normalizedQuestion = normalizeQuestionArgument(rawQuestion,);
+
+  return {
+    ...normalizedModel,
+    ...normalizedQuestion,
+  };
 }
 
 //endregion Argument normalization

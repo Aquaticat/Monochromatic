@@ -74,8 +74,17 @@ export function renderAdvisorCall(
     'dim',
     target,
   );
+  /**
+   * Styled focused-question indicator.
+   */
+  const questionText = args.question === undefined
+    ? ''
+    : theme.fg(
+      'dim',
+      ' with question',
+    );
   return new Text(
-    `${title} ${action} ${targetText}`,
+    `${title} ${action} ${targetText}${questionText}`,
     0,
     0,
   );

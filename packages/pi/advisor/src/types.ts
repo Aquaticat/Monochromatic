@@ -206,6 +206,10 @@ export type AdvisorToolParams = {
    * Optional scoped model slug. Empty params select default non-current scoped model when possible.
    */
   readonly model?: string;
+  /**
+   * Optional focused question for Advisor to answer using conversation context.
+   */
+  readonly question?: string;
 };
 
 /**
@@ -300,6 +304,10 @@ export type AdvisorRunOptions = {
    * Optional user-requested model slug.
    */
   readonly requestedSlug?: string;
+  /**
+   * Optional focused question for Advisor to answer using conversation context.
+   */
+  readonly question?: string;
   /**
    * Current advisor tool call id, used to omit placeholder context.
    */

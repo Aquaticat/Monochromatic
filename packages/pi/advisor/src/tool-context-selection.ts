@@ -78,6 +78,10 @@ export type SelectAdvisorRunContextOptions = {
    */
   readonly requestedSlug?: string;
   /**
+   * Focused question supplied by the primary agent.
+   */
+  readonly question?: string;
+  /**
    * Current Advisor tool call id to omit.
    */
   readonly toolCallId?: string;
@@ -103,6 +107,10 @@ type BuildContextForScopedModelOptions = {
    * Scoped Advisor model.
    */
   readonly scopedModel: ScopedAdvisorModel;
+  /**
+   * Focused question supplied by the primary agent.
+   */
+  readonly question?: string;
   /**
    * Current Advisor tool call id to omit.
    */
@@ -160,6 +168,8 @@ export function selectAdvisorRunContext(
         config: options.config,
         advisorSystemPrompt: options.advisorSystemPrompt,
         scopedModel: selection.selected,
+        ...(options.question
+          === undefined ? {} : { question: options.question, }),
         ...(options.toolCallId
           === undefined ? {} : { toolCallId: options.toolCallId, }),
       },),
@@ -187,6 +197,8 @@ export function selectAdvisorRunContext(
         config: options.config,
         advisorSystemPrompt: options.advisorSystemPrompt,
         scopedModel,
+        ...(options.question
+          === undefined ? {} : { question: options.question, }),
         ...(options.toolCallId
           === undefined ? {} : { toolCallId: options.toolCallId, }),
       },),
@@ -261,12 +273,14 @@ function buildContextForScopedModel(
     model: options.scopedModel
       .model,
     advisorSystemPrompt: options.advisorSystemPrompt,
+    ...(options.question === undefined ? {} : { question: options.question, }),
   },);
   return buildAdvisorContext({
     branch: options.branch,
     config: options.config,
     advisorSystemPrompt: options.advisorSystemPrompt,
     maxContextChars,
+    ...(options.question === undefined ? {} : { question: options.question, }),
     ...(options.toolCallId
       === undefined ? {} : { toolCallId: options.toolCallId, }),
   },);

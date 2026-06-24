@@ -30,11 +30,27 @@ excluding the current main model when another scoped model is available:
 {}
 ```
 
+Use a focused question when the main model wants Advisor to answer a specific uncertainty,
+not only provide general review feedback:
+
+```json
+{ "question": "Did I miss any verification before declaring this done?" }
+```
+
 Use an explicit scoped model slug when a specific reviewer model is needed,
 including when you intentionally want the current main model:
 
 ```json
 { "model": "anthropic/claude-opus-4-7" }
+```
+
+Combine both fields when the question should go to a specific model:
+
+```json
+{
+  "model": "anthropic/claude-opus-4-7",
+  "question": "Which assumption in this plan is weakest?"
+}
 ```
 
 Accepted explicit forms are:

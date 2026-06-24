@@ -40,6 +40,9 @@ const LARGE_CONTEXT_WINDOW = 10_000;
 /** Fixture max output tokens. */
 const MAX_TOKENS = 1_000;
 
+/** Focused Advisor question fixture. */
+const FOCUS_QUESTION = 'Which assumption is weakest?';
+
 /** Output token budget used in context-budget tests. */
 const OUTPUT_TOKEN_BUDGET = 100;
 
@@ -141,6 +144,25 @@ await describe({
         expect(context.text,).toContain('other extension text',);
       },
     },),
+    it({
+      name: 'counts focused question in input token estimate',
+      fn: async () => {
+        const contextWithoutQuestion = buildAdvisorContext({
+          branch: [otherCustomMessage,],
+          config: omitPriorAdvisorConfig,
+          advisorSystemPrompt: 'review carefully',
+        },);
+        const contextWithQuestion = buildAdvisorContext({
+          branch: [otherCustomMessage,],
+          config: omitPriorAdvisorConfig,
+          advisorSystemPrompt: 'review carefully',
+          question: FOCUS_QUESTION,
+        },);
+        expect(contextWithQuestion.estimatedInputTokens,).toBeGreaterThan(
+          contextWithoutQuestion.estimatedInputTokens,
+        );
+      },
+    },),
   ],
 },);
 
@@ -191,6 +213,23 @@ await describe({
           advisorSystemPrompt: 'review carefully',
         },);
         expect(budget,).toBe(CONFIGURED_CONTEXT_CAP,);
+      },
+    },),
+    it({
+      name: 'reserves context budget for focused question',
+      fn: async () => {
+        const budgetWithoutQuestion = maxContextCharsForAdvisorModel({
+          config: dynamicBudgetConfig,
+          model: fixtureModel(LARGE_CONTEXT_WINDOW,),
+          advisorSystemPrompt: 'review carefully',
+        },);
+        const budgetWithQuestion = maxContextCharsForAdvisorModel({
+          config: dynamicBudgetConfig,
+          model: fixtureModel(LARGE_CONTEXT_WINDOW,),
+          advisorSystemPrompt: 'review carefully',
+          question: FOCUS_QUESTION,
+        },);
+        expect(budgetWithQuestion,).toBeLessThan(budgetWithoutQuestion,);
       },
     },),
   ],

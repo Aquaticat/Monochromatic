@@ -4,7 +4,7 @@
  * @module
  */
 
-import { readFileSync, } from 'node:fs';
+import { readFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 import * as v from 'valibot';
 import {
@@ -65,30 +65,29 @@ export type LoadConfigOptions = {
  *
  * @example
  * ```typescript
- * const config = loadMergedConfig({ cwd: process.cwd() });
+ * const config = await loadMergedConfig({ cwd: process.cwd() });
  * ```
  */
-export function loadMergedConfig(
+export async function loadMergedConfig(
   options: LoadConfigOptions,
-): AdvisorConfig {
+): Promise<AdvisorConfig> {
   /**
    * Path metadata for both config scopes.
    */
   const paths = getConfigPaths(options,);
   /**
-   * Global config file contents, when present.
+   * Global and project config file contents, when present.
    */
-  const global = loadConfigFile({
-    path: paths.globalPath,
-    label: 'global',
-  },);
-  /**
-   * Project config file contents, when present.
-   */
-  const project = loadConfigFile({
-    path: paths.projectPath,
-    label: 'project',
-  },);
+  const [global, project,] = await Promise.all([
+    loadConfigFile({
+      path: paths.globalPath,
+      label: 'global',
+    },),
+    loadConfigFile({
+      path: paths.projectPath,
+      label: 'project',
+    },),
+  ],);
   /**
    * Config values merged with project scalar overrides.
    */
@@ -222,7 +221,7 @@ function mergeConfigFiles(
  *
  * @returns parsed config file, or {@link NO_CONFIG_FILE} when absent
  */
-function loadConfigFile(
+async function loadConfigFile(
   {
     path,
     label,
@@ -230,11 +229,11 @@ function loadConfigFile(
     readonly path: string;
     readonly label: string;
   },
-): AdvisorConfigFile | typeof NO_CONFIG_FILE {
+): Promise<AdvisorConfigFile | typeof NO_CONFIG_FILE> {
   /**
    * Raw JSON data, or `undefined` when file is absent.
    */
-  const raw = readJsonFile({
+  const raw = await readJsonFile({
     path,
     label,
   },);
@@ -256,7 +255,7 @@ function loadConfigFile(
  *
  * @returns parsed JSON data, or `undefined` when absent
  */
-function readJsonFile(
+async function readJsonFile(
   {
     path,
     label,
@@ -264,12 +263,16 @@ function readJsonFile(
     readonly path: string;
     readonly label: string;
   },
-): unknown {
+): Promise<unknown> {
   try {
-    return JSON.parse(readFileSync(
+    /**
+     * UTF-8 JSON file contents.
+     */
+    const text = await readFile(
       path,
       'utf8',
-    ),);
+    );
+    return JSON.parse(text,);
   }
   catch (error) {
     if (isFileMissingError(error,))

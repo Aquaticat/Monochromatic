@@ -15,6 +15,7 @@ import {
 import type { ExtensionContext, } from '@earendil-works/pi-coding-agent';
 import type { ReadonlyDeep, } from 'type-fest';
 import { ADVISOR_SYSTEM_PROMPT, } from './constants.ts';
+import { buildAdvisorUserMessageText, } from './advisor-request.ts';
 import type {
   AdvisorConfig,
   AdvisorContext,
@@ -22,6 +23,11 @@ import type {
 } from './types.ts';
 
 //region Types
+
+/**
+ * Complete function used to call Advisor model.
+ */
+export type CompleteAdvisorModel = typeof complete;
 
 /**
  * Options for invoking the selected Advisor model.
@@ -44,9 +50,17 @@ export type CompleteAdvisorOptions = {
    */
   readonly advisorContext: AdvisorContext;
   /**
+   * Focused question supplied by the primary agent.
+   */
+  readonly question?: string;
+  /**
    * Abort signal from tool or command mode.
    */
   readonly signal?: ReadonlyDeep<AbortSignal>;
+  /**
+   * Override model completion implementation for focused tests.
+   */
+  readonly completeModel?: CompleteAdvisorModel;
 };
 
 //endregion Types
@@ -98,8 +112,11 @@ export async function completeAdvisor(
     role: 'user',
     content: [{
       type: 'text',
-      text: `## Serialized conversation\n\n${options.advisorContext
-        .text}`,
+      text: buildAdvisorUserMessageText({
+        contextText: options.advisorContext
+          .text,
+        ...(options.question === undefined ? {} : { question: options.question, }),
+      },),
     },],
     timestamp: Date.now(),
   };
@@ -124,8 +141,14 @@ export async function completeAdvisor(
       === undefined ? {} : { headers: auth.headers, }),
   };
 
+  /**
+   * Completion implementation for provider call.
+   */
+  const completeModel = options.completeModel
+    ?? complete;
+
   try {
-    return await complete(
+    return await completeModel(
       mutableModel,
       {
         systemPrompt: buildAdvisorSystemPrompt(options.config,),
