@@ -155,10 +155,11 @@ below (vectorized byte-class mapping, SWAR per-byte work) are CONTRAINDICATED fo
 ruleset: speeding up work that is not on the critical path will not move throughput. The
 batched across-lines API was built and measured (see "Batch API across lines" below). A
 vertical SIMD gather across lines LOSES on both arches, but the Sheng in-register transition
-kernel (`vpermb`/`vqtbl4q`) WINS for a single full-scan DFA up to 64 states: x86 1.45x to
-2.19x, arm64 1.13x to 1.64x, at every match rate, now the default for a seedless table
-pattern over a large batch. A length-bucketed branchless kernel is a smaller opt-in win for
-over-64-state DFAs. None of these help the gate-dominated `RegexSet` path (seedless groups
+kernel (`vpermb`/`vqtbl4q`) WINS for a single full-scan DFA up to 64 states, at every match
+rate, now the default for a seedless table pattern over a large batch. One-byte: x86 1.45 to
+2.19x, arm64 1.13 to 1.64x. Two-byte composed (one permute per two bytes, position-
+independent acceptance): x86 2.23 to 3.35x, arm64 1.49 to 2.19x. A length-bucketed branchless
+kernel is a smaller opt-in win for over-64-state DFAs. None of these help the gate-dominated `RegexSet` path (seedless groups
 empty, prefilter carries the load); they pay off for single-pattern scanning and any future
 ruleset with literal-free full-scan rules. Treat the remaining match-loop SIMD ideas here as
 a record, to revisit when the prefilter stops paying.
@@ -188,16 +189,21 @@ any rule ever has to stay on counting rather than the DFA.
 `is_match_batch` on `Regex`/`RegexSet` ships. Several batch layouts were raced against the
 per-line loop on the real corpus, single seedless full-scan DFA, both arches:
 
-- Sheng in-register transition (`Dfa::is_match_batch_sheng`): THE winner, and the default
-  for a seedless table pattern of at most 64 states over a large batch. Each input byte's
-  whole transition column is one 64-byte permute, so the per-byte step is `vpermb`
-  (AVX-512VBMI) / `vqtbl4q` (NEON) instead of a dependent table load; the state lives in a
-  register (all lanes equal), and acceptance accumulates in-register. Measured: x86 1.45x
-  ({8}, 47% match) to 2.08x ({20}) to 2.19x ({32}, 0.3% match); arm64/m1 1.13x to 1.54x to
-  1.64x. It wins at EVERY match rate (no early-exit dependence) and needs no sorting. It
-  must be the explicit intrinsic: portable SIMD's `swizzle_dyn` scalarizes a 64-byte
-  dynamic shuffle (0.03x, ~25x slower) instead of emitting `vpermb`. Over 64 states it
-  falls back to scalar (the permute addresses one lane per state).
+- Sheng in-register transition: THE winner, and the default for a seedless table pattern
+  over a large batch. Each input byte's transition column is one 64-byte permute, so the
+  per-byte step is `vpermb` (AVX-512VBMI) / `vqtbl4q` (NEON) instead of a dependent table
+  load; the state lives in a register (all lanes equal), acceptance accumulates in-register.
+  It wins at EVERY match rate (no early-exit dependence) and needs no sorting. It MUST be the
+  explicit intrinsic: portable SIMD's `swizzle_dyn` scalarizes a 64-byte dynamic shuffle
+  (0.03x, ~25x slower) instead of emitting `vpermb`. Two layers, dispatched
+  two-byte -> one-byte -> scalar by what the DFA and host support:
+  - One-byte (`is_match_batch_sheng`, up to 64 states): x86 1.45x ({8}, 47% match) /
+    2.08x ({20}) / 2.19x ({32}, 0.3% match); arm64 1.13x / 1.54x / 1.64x.
+  - Two-byte composed (`is_match_batch_sheng2`, position-independent acceptance, up to 64
+    states and 16 classes): one permute advances TWO bytes via a class-pair table, halving
+    the critical chain. x86 2.23x / 3.12x / 3.35x; arm64 1.49x / 2.06x / 2.19x. About 1.3x
+    to 1.5x over the one-byte kernel. Acceptance over the pair folds into a second table off
+    the chain; a trailing odd byte and end-of-input use one-byte steps.
 - Vertical SIMD across lines (one line per lane, gather the transition): LOSES on both
   arches (x86 0.15 to 0.85x, arm64 0.43 to 0.88x). x86 has no 16-bit gather so a `u16`
   table scalarizes; even a native u32 `vpgatherdd` (and NEON, which has no gather at all)

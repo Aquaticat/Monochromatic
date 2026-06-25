@@ -90,9 +90,19 @@ and keep scalar/interleaved/tight.
   It dominates the bucketed kernel everywhere, so the bucketed path stays only for the
   rarer over-64-state seedless DFAs.
 
-Still open if more is wanted: a one-permute Sheng specialization for position-independent
-acceptance (pack the accept bit into the next-state byte, halving permutes), and Sheng over
-64 states via paired permutes. None of this touches the gate-dominated `RegexSet` path.
+- Two-byte composed Sheng (`src/dfa/sheng2.rs`): the BEST kernel, and the first tier of the
+  `is_match_batch` default (cascades sheng2 -> sheng -> scalar). One `vpermb`/`vqtbl4q`
+  advances the state by TWO bytes via a class-pair transition table, halving the one-byte
+  Sheng's critical chain. Gated to position-independent acceptance (every accept mask all-set
+  or all-clear), at most 64 states and 16 classes (the pair table is `nc*nc` columns).
+  Acceptance over the pair folds into a second table off the chain; a trailing odd byte and
+  end-of-input use one-byte steps. Measured x86 2.23x ({8}) / 3.12x ({20}) / 3.35x ({32});
+  arm64 1.49x / 2.06x / 2.19x, about 1.3x to 1.5x over the one-byte kernel.
+
+Still open if more is wanted: the composition ladder continues (Sheng3/Sheng4 with `nc^k`
+class-tuple tables, each halving the chain again with diminishing returns and tighter class
+limits), and Sheng over 64 states via paired permutes. None of this touches the
+gate-dominated `RegexSet` path; it accelerates single-pattern / seedless-rule scanning.
 
 ## Correctness infrastructure (fuzzing + mutation testing) — IN PROGRESS
 
