@@ -1,5 +1,204 @@
 # Music-player true-peak parameter search handover
 
+## How to read this handover
+
+This document now has two layers:
+
+- The implementation guide below explains the shared true-peak behavior to build.
+- The later measurement record preserves the benchmark history and artifact paths that justify the constants.
+
+Keep both layers.
+The measurement record contains failed candidates and current-library labels that are useful audit evidence,
+but they are not all production rules.
+
+## Implementation guide
+
+Build the feature in the shared true-peak library that both desktop and Android import.
+Do not keep separate desktop and Android true-peak algorithms.
+Platform adapters should only supply decoded audio access and playback integration around one shared core policy.
+
+The shared policy has three conceptual outcomes for a track:
+
+- **Short enough for exact normalization**:
+  duration is at or below `window_seconds * window_count`.
+  Scan the whole track and compute exact gain from the full true peak.
+- **Probably does not need full scan**:
+  probe windows are enough for the policy to approximate gain safely for the current target envelope.
+  Apply probe-derived approximate gain.
+- **Needs full scan**:
+  probe evidence is not safe enough for the target envelope.
+  Scan the whole track and apply exact gain.
+
+The runtime policy must not depend on knowing a track's full true peak before classification.
+The verified exception lists in this file were produced by benchmarking against full-library truth.
+They prove the parameter set can meet the requested budget on the current library,
+but production still needs a probe-only way to decide which long tracks need full scans.
+If no probe-only exception classifier is accepted,
+then the implementor should treat the verified parameter sets as benchmark evidence,
+not as a complete production algorithm.
+
+## Shared true-peak concepts
+
+The true-peak meter is the same Catmull-Rom inter-sample estimator already used in the app experiments:
+feed decoded interleaved `f32` samples,
+keep a four-sample window per channel,
+probe the quarter,
+ half,
+ and three-quarter interpolated positions,
+and record the largest absolute sample or interpolated magnitude.
+Full scans and window probes must use this same meter so their numbers are comparable.
+
+Window probing means:
+
+```text
+threshold_seconds = window_seconds * window_count
+window_frames = floor(window_seconds * sample_rate)
+```
+
+For tracks longer than `threshold_seconds`,
+place `window_count` windows evenly across the track from the beginning to the final window position.
+For each window,
+measure true peak only inside that frame range.
+The probe result is the maximum measured window peak.
+The benchmark harness also recorded the minimum window peak to help design future spread-based classifiers,
+but the verified fixed-margin results below use the sampled maximum.
+
+The gain math is in decibels:
+
+```text
+full_peak_dbtp = 20 * log10(full_peak)
+sampled_max_dbtp = 20 * log10(sampled_max_peak)
+exact_gain_db = min(0, -1 - full_peak_dbtp)
+probe_estimated_peak_dbtp = sampled_max_dbtp + probe_margin_db
+probe_gain_db = min(0, -1 - probe_estimated_peak_dbtp)
+error_db = probe_gain_db - exact_gain_db
+```
+
+Positive `error_db` means the probe-derived gain is too loud.
+Negative `error_db` means it is too quiet.
+`0 dB` gain means unity playback gain,
+not silence.
+
+## Production classification contract
+
+Use the verified constants as benchmarked candidates,
+then design a runtime classifier that uses only duration and probe-window measurements.
+The classifier may use sampled maximum,
+sampled minimum,
+spread between windows,
+absolute peak level,
+or other probe-derived features.
+It must not use a hard-coded path list or full-track truth as an input.
+
+A valid production classifier should preserve these contracts:
+
+- Short tracks always full-scan when `duration <= window_seconds * window_count`.
+- Probably-no-full-scan tracks use probe-derived approximate gain.
+- Needs-full-scan tracks use exact full-scan gain.
+- If bounds need loosening,
+  loosen the too-quiet side before loosening the too-loud side.
+- Cache entries should be invalidated when the source fingerprint or true-peak policy version changes.
+- Cached data should distinguish exact full-scan results from probe-derived results,
+  or otherwise carry enough policy metadata to avoid reusing the wrong kind of gain after policy changes.
+
+## Engine behavior to preserve
+
+The shared true-peak library should own the measurement policy and gain decision.
+The platform engine should treat the policy result as a per-track gain decision plus metadata describing whether that
+result came from an exact full scan or a probe-derived estimate.
+The playback path still applies one constant gain scalar per track.
+The policy must never amplify a track above unity gain.
+
+For the current track,
+preserve the non-blocking behavior:
+a cached exact or compatible probe result can be used immediately,
+while an uncached result may start playback with a conservative temporary gain and replace it when the shared
+measurement policy finishes.
+If the probe classifies the track as probably not needing a full scan,
+the probe-derived gain is the finished result.
+If the probe classifies the track as needing a full scan,
+the exact full-scan gain is the finished result.
+
+For background warming,
+use the same shared policy as current-track playback.
+Background work should improve future cache hits,
+not create a second normalization algorithm.
+A track measured in the background and a track measured during playback should produce the same cacheable result when
+run under the same policy version.
+
+## What not to implement
+
+Do not reintroduce the old hot-or-no-gain contract.
+The clarified design allows probe-derived approximate gain for probably-no-full-scan tracks.
+Do not use the Android `1.26` window safety factor as the shared policy.
+Do not use `ffmpeg` measurements for runtime decisions or benchmark acceptance.
+Do not hard-code benchmark exception paths into the engine.
+Do not maintain separate desktop and Android true-peak constants or classifiers.
+
+## Verification checklist for implementors
+
+Verify the shared library before wiring platform adapters to it:
+
+- A full scan and a window scan use the same Catmull-Rom meter.
+- Tracks at or below `window_seconds * window_count` are classified into exact full scan.
+- Window placement covers the beginning and final possible window position for long tracks.
+- Probe-derived gain follows the dB formula in this document and never amplifies.
+- Exact full-scan gain and probe-derived gain are distinguishable in cached metadata.
+- Changing true-peak policy constants or classifier logic invalidates incompatible cached results.
+- Desktop and Android import the same shared implementation rather than reimplementing the classifier.
+- The HE-AAC/SBR decode failure is handled as a known unsupported decode limitation,
+  not as a parameter-search failure.
+
+## Candidate constants to carry forward
+
+Primary half-library target,
+`879779/2 = 439889.5` decoded seconds,
+with `+0.5 dB` too-loud and `-1.0 dB` too-quiet bounds:
+
+```text
+window_count = 14
+window_seconds = 8.1009877
+threshold_seconds = 113.4138278
+probe_margin_db = 0.996
+```
+
+Verified current-library result:
+
+```text
+decoded_seconds = 439889.03612373164
+probably_no_full_scan_count = 3678
+short_full_scan_count = 311
+needs_full_scan_exception_count = 2
+worst_too_loud_db = 0.49444464557405876
+worst_too_quiet_db = -0.9960000000000004
+```
+
+Follow-up quarter-library target,
+`439889.5/2 = 219944.75` decoded seconds,
+with `+0.5 dB` too-loud and `-2.0 dB` too-quiet bounds:
+
+```text
+window_count = 14
+window_seconds = 3.754228571428571
+threshold_seconds = 52.5592
+probe_margin_db = 0.683
+```
+
+Verified current-library result:
+
+```text
+decoded_seconds = 219943.7791356195
+probably_no_full_scan_count = 3860
+short_full_scan_count = 82
+needs_full_scan_exception_count = 49
+worst_too_loud_db = 0.4991655817434766
+worst_too_quiet_db = -0.6830000000000007
+```
+
+Treat these as implementation candidates,
+not as proof that the final shared policy is complete.
+The missing design step is the probe-only exception classifier.
+
 ## Current goal
 
 Find parameter sets for the current music library that decode about `879779/2` seconds of audio while keeping
