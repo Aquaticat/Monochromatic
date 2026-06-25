@@ -146,3 +146,27 @@ fn rejects_trailing_and_stray_operators() {
     syntax_err("|a");
     syntax_err("a&");
 }
+
+#[test]
+fn verbose_mode_ignores_unescaped_whitespace() {
+    // Whitespace outside classes is ignored, so these all parse to the same node.
+    let base = parse("abc").unwrap();
+    assert_eq!(parse("a b c").unwrap(), base);
+    assert_eq!(parse("a\tb\tc").unwrap(), base);
+    assert_eq!(parse("a\nb\nc").unwrap(), base);
+    assert_eq!(parse("  abc  ").unwrap(), base);
+}
+
+#[test]
+fn first_column_hash_is_a_comment_to_end_of_line() {
+    // A `#` at the start of a line comments out the rest of that line.
+    assert_eq!(parse("# a header comment\nabc").unwrap(), parse("abc").unwrap());
+    assert_eq!(parse("abc\n# trailing comment line\n").unwrap(), parse("abc").unwrap());
+}
+
+#[test]
+fn escaped_and_class_whitespace_stays_literal() {
+    // An escaped space and a space inside a class are real bytes, not ignored.
+    assert_ne!(parse("a\\ b").unwrap(), parse("ab").unwrap());
+    assert_ne!(parse("[ ]x").unwrap(), parse("x").unwrap());
+}

@@ -60,6 +60,64 @@ fn validate_accepts_a_built_dfa() {
 }
 
 #[test]
+fn validate_rejects_each_corruption() {
+    // A decoded DFA runs against attacker-influenced input, so validate must reject any
+    // out-of-range or inconsistent field. Corrupt each field of a good DFA in turn.
+    let good = anchored_dfa("abc");
+
+    let mut nclasses_zero = good.clone();
+    nclasses_zero.nclasses = 0;
+    assert!(nclasses_zero.validate().is_err());
+
+    let mut nclasses_big = good.clone();
+    nclasses_big.nclasses = 257;
+    assert!(nclasses_big.validate().is_err());
+
+    let mut short_class_map = good.clone();
+    short_class_map.class_map.truncate(255);
+    assert!(short_class_map.validate().is_err());
+
+    let mut bad_class_id = good.clone();
+    bad_class_id.class_map[0] = good.nclasses as u8; // class id == nclasses is out of range
+    assert!(bad_class_id.validate().is_err());
+
+    let mut short_flags = good.clone();
+    short_flags.class_word.pop();
+    assert!(short_flags.validate().is_err());
+
+    let mut start_oob = good.clone();
+    start_oob.start = good.num_states;
+    assert!(start_oob.validate().is_err());
+
+    let mut accept_len = good.clone();
+    accept_len.accept.push(0);
+    assert!(accept_len.validate().is_err());
+
+    let mut trans_len = good.clone();
+    trans_len.trans.push(0);
+    assert!(trans_len.validate().is_err());
+
+    let mut trans_target_oob = good.clone();
+    trans_target_oob.trans[0] = good.num_states;
+    assert!(trans_target_oob.validate().is_err());
+}
+
+#[test]
+fn validate_rejects_a_forged_dead_state() {
+    // A hostile blob could name an ACCEPTING state as the dead sink so the match loop
+    // early-exits false and misses a match; validate must reject that.
+    let good = anchored_dfa("abc");
+    let mut forged = good.clone();
+    // Point `dead` at the start state, which is not a non-accepting self-looping sink.
+    forged.dead = good.start;
+    assert!(forged.validate().is_err());
+
+    let mut out_of_range = good.clone();
+    out_of_range.dead = good.num_states + 1;
+    assert!(out_of_range.validate().is_err());
+}
+
+#[test]
 fn minimization_preserves_matching() {
     // Multi-byte alternation branches must each be wrapped as a single atom.
     let raw = build_dfa_within(parse("(?:(?:ab)|(?:ac))d").expect("parses"), 10_000).expect("builds");

@@ -104,3 +104,26 @@ fn counts_can_cross_a_word_boundary() {
     assert!(set.has_at_least(70));
     assert!(!set.has_at_least(71));
 }
+
+#[test]
+fn has_at_least_scans_higher_words_for_a_low_threshold() {
+    // A count parked in a higher word must satisfy a LOW threshold through the
+    // higher-words scan, not just the in-word shift test the boundary case exercises.
+    let mut set = CountSet::new(80);
+    set.words[1] = 1 << 6; // count 70 lives in word 1, bit 6
+    assert!(set.has_at_least(5)); // word 0 holds nothing; only the higher-words scan sees it
+    assert!(set.has_at_least(64));
+    assert!(set.has_at_least(70));
+    assert!(!set.has_at_least(71));
+}
+
+#[test]
+fn nwords_sizes_to_address_the_max_plus_one_bit() {
+    // Off-by-one or wrong arithmetic here mis-sizes every CountSet of that element.
+    assert_eq!(nwords(0), 1);
+    assert_eq!(nwords(62), 1);
+    assert_eq!(nwords(63), 2); // bit 64 needs a second word
+    assert_eq!(nwords(64), 2);
+    assert_eq!(nwords(80), 2);
+    assert_eq!(nwords(128), 3);
+}

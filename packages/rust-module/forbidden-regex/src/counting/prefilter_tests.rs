@@ -4,7 +4,10 @@
 //        the gate skip real matches (a missed secret). These tests pin the seeds the
 //        gate trusts; patterns are built through the real parser.
 
-use super::{Prefilter, leading_seeds, leading_seeds_min, seeds_from_node, seeds_from_node_min};
+use super::{
+    Prefilter, leading_literals, leading_seeds, leading_seeds_min, seeds_from_node,
+    seeds_from_node_min,
+};
 use crate::parse::parse;
 
 // Parses a pattern (panicking on a bad test input) for seed extraction.
@@ -59,6 +62,32 @@ fn one_byte_required_literal_only_at_the_weakest_floor() {
     assert!(seeds.contains(&b"%".to_vec()));
     // Nothing at the default floor.
     assert!(seeds_from_node(&node("\\d{15,16}(?:(?:\\|)|(?:%))[0-9a-z]{27,40}")).is_empty());
+}
+
+#[test]
+fn intersection_takes_a_positive_operands_required_literal() {
+    // A match must satisfy every positive operand, so a positive operand's required
+    // literal is a sound seed; the complement operand contributes none.
+    let pat = "(?:AKIA[A-Z2-7]{16})&~(AKIA2{16})";
+    assert!(seeds_from_node(&node(pat)).contains(&b"AKIA".to_vec()));
+    assert!(leading_literals(&node(pat)).contains(&b"AKIA".to_vec()));
+}
+
+#[test]
+fn complement_only_intersection_has_no_positive_seed() {
+    // Both positive operands are class-only, so the only literal lives in a complement,
+    // which is not required of a match; no seed.
+    let pat = "(?:[a-z]{4})&~(abcd)";
+    assert!(seeds_from_node_min(&node(pat), 1).is_empty());
+}
+
+#[test]
+fn best_inner_literal_keeps_the_first_of_equal_length() {
+    // Two equal-length mandatory runs ("ab" then "cd"); the first is kept (a later
+    // equal-length candidate does not displace it).
+    assert_eq!(seeds_from_node_min(&node("ab[0-9]cd"), 1), vec![b"ab".to_vec()]);
+    // A strictly longer later run does displace the shorter earlier one.
+    assert_eq!(seeds_from_node_min(&node("ab[0-9]cdef"), 1), vec![b"cdef".to_vec()]);
 }
 
 #[test]

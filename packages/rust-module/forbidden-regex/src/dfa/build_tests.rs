@@ -1,0 +1,53 @@
+// What:  unit tests for the DFA build's residual-size guard.
+// Why:   the guard is what turns a pathological nested-repetition compile from an OOM
+//        into a clean StateCap (fall back to counting / reject); its integration repro
+//        is #[ignore]d because it is slow, so the guard logic is pinned here directly
+//        on synthetic oversized residual nodes (fast).
+
+use super::{build_dfa_within, residual_too_large};
+use crate::ast::node::Node;
+use crate::charset::singleton;
+use crate::error::CompileError;
+
+// A node with `count` leaf children (count + 1 sub-nodes total).
+fn wide_concat(count: usize) -> Node {
+    Node::Concat((0..count).map(|_| Node::Class(singleton(b'a'))).collect())
+}
+
+#[test]
+fn small_residuals_are_under_the_cap() {
+    assert!(!residual_too_large(&Node::Class(singleton(b'a'))));
+    assert!(!residual_too_large(&Node::Empty));
+    assert!(!residual_too_large(&wide_concat(100)));
+}
+
+#[test]
+fn an_oversized_residual_is_flagged() {
+    assert!(residual_too_large(&wide_concat(5_000)));
+}
+
+#[test]
+fn the_guard_descends_into_every_recursive_arm() {
+    // Each recursive node kind must carry its child's size up, or a giant residual
+    // hidden inside it would slip past the guard.
+    let big = wide_concat(5_000);
+    assert!(residual_too_large(&Node::Alt(vec![big.clone()])));
+    assert!(residual_too_large(&Node::Inter(vec![big.clone()])));
+    assert!(residual_too_large(&Node::Comp(Box::new(big.clone()))));
+    assert!(residual_too_large(&Node::Repeat { node: Box::new(big), min: 1, max: 2 }));
+}
+
+#[test]
+fn build_bails_with_state_cap_on_an_oversized_root() {
+    // A root residual past the cap aborts the build as StateCap (the caller then falls
+    // back to the counting back-end instead of exhausting memory).
+    let result = build_dfa_within(wide_concat(5_000), 10_000);
+    assert!(matches!(result, Err(CompileError::StateCap { .. })));
+}
+
+#[test]
+fn build_succeeds_on_a_normal_pattern() {
+    // A normal pattern builds well under the cap.
+    let dfa = build_dfa_within(crate::parse::parse("AKIA[A-Z2-7]{4}").unwrap(), 10_000);
+    assert!(dfa.is_ok());
+}

@@ -75,6 +75,11 @@ fn residual_too_large(node: &Node) -> bool {
     spend(node, &mut budget)
 }
 
+/// Unit tests for the DFA build and its residual guard, in a sidecar (max-lines exempt).
+#[cfg(test)]
+#[path = "build_tests.rs"]
+mod tests;
+
 /// Builds a DFA from a (search-wrapped) node, abandoning past `cap` states.
 ///
 /// What: BFS over derivative states, computing per-class transitions and a
