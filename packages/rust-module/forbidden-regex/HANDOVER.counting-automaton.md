@@ -33,6 +33,38 @@ are DEFERRED until after fuzzing + mutation testing are set up (in progress, see
 `packages/fuzz/forbidden-regex` and the mutation task), so the risky CsA build lands on
 a hardened test suite.
 
+## Correctness infrastructure (fuzzing + mutation testing) — IN PROGRESS
+
+Being set up BEFORE the larger builds (cache-tighten, all-rules CsA) so the risky CsA
+lands on a hardened suite. User-directed order: fuzzing + mutation testing first.
+
+Fuzzing (`packages/fuzz/forbidden-regex`, mirrors `packages/fuzz/forbidden-strings`,
+cargo-fuzz / libFuzzer, nightly from the repo-root toolchain):
+- `fuzz_compile`: arbitrary bytes as pattern + ruleset; compile/`compile_lenient` must
+  reject, never panic or hang.
+- `fuzz_from_bytes`: arbitrary bytes through `Regex`/`RegexSet::from_bytes`; a decoded
+  automaton that passes `validate` must run without OOB/panic (the security boundary).
+- `fuzz_roundtrip`: a generated valid pattern compiled -> `to_bytes` -> `from_bytes`
+  must give the SAME verdict on the generated content (serialization preserves meaning).
+- `fuzz_differential`: a generated NON-algebra pattern vs `regex::bytes` with
+  `unicode(false)` (so `\d \w \s \b` are ASCII like ours) on single-line content; byte
+  verdicts must agree.
+- Structured generator in `src/generators.rs` (`PatternAndContent`, bounded depth/
+  repeat, records `uses_algebra` so the differential skips `&`/`~`).
+- mise tasks mirror the sibling: `list`, `build`, `smoke` (30s each, ASAN), `run`.
+- STATUS: targets written; need to build + smoke-run + triage findings. The differential
+  may surface benign semantic gaps (verbose/whitespace, anchors) to skip, or real bugs.
+
+Mutation testing (cargo-mutants on the engine crate):
+- MUST run inside a Podman container: mutation testing compiles and runs MUTATED code,
+  i.e. arbitrary/unpredictable code, which must not execute on the host (host-safety,
+  not just resource isolation). cargo-mutants is not yet installed (the repo's existing
+  `packages/dev-script/mutation-test` is Stryker for TypeScript, not Rust).
+- Plan: `cargo install cargo-mutants` available inside the container image; a mise task
+  runs `cargo mutants` in `podman run` over the engine crate; surviving mutants reveal
+  weak tests; add tests to kill them.
+- STATUS: not started.
+
 ## Earlier status: 1.07x of regex on the real-repo corpus (BEAT regex; was 0.20x)
 
 Honest stable bench (16 threads; forbidden-regex SHARED across threads because it is

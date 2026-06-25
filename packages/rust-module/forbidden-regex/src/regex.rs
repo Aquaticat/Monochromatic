@@ -475,6 +475,30 @@ impl RegexSet {
         self.rules.is_empty()
     }
 
+    /// Checks the decoded set's parallel-vector indices are mutually consistent.
+    ///
+    /// What: `anchored` must be one per rule, the line-start engines and ids must pair
+    /// up, and every attribution id (`seedless_ids`, `line_start_ids`) must index a real
+    /// rule. Why: matching indexes `anchored[rule]`/`rules[id]` from the gate and these
+    /// id lists, so a hostile or corrupt serialization with mismatched lengths would
+    /// read out of bounds; this rejects it before any match runs.
+    fn validate_structure(&self) -> Result<(), CompileError> {
+        let invalid = |message: &str| CompileError::Invalid {
+            message: message.to_string(),
+        };
+        let rules = self.rules.len();
+        if self.anchored.len() != rules {
+            return Err(invalid("anchored length does not match rule count"));
+        }
+        if self.line_start.len() != self.line_start_ids.len() {
+            return Err(invalid("line-start engines and ids length mismatch"));
+        }
+        if self.seedless_ids.iter().chain(&self.line_start_ids).any(|&id| id >= rules) {
+            return Err(invalid("attribution id out of range"));
+        }
+        Ok(())
+    }
+
     /// Serializes the compiled ruleset to bytes.
     ///
     /// What: bincode-encodes every rule engine. Why: the pre-serialized form the
@@ -493,6 +517,11 @@ impl RegexSet {
         let mut set: RegexSet = bincode::deserialize(bytes).map_err(|e| CompileError::Invalid {
             message: e.to_string(),
         })?;
+        // What: prove the cross-vector indices are consistent before anything indexes
+        // them. Why: the per-engine validation below cannot catch a decoded set whose
+        // parallel vectors disagree (e.g. a `seedless_id` past `rules`, or `anchored`
+        // shorter than `rules`), which would panic at match time on hostile bytes.
+        set.validate_structure()?;
         // What: validate the decoded graph, then rebuild its runtime prefilter. Why:
         // both must happen before any engine runs on untrusted input.
         for engine in set

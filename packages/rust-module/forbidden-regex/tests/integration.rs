@@ -126,3 +126,39 @@ fn from_ruleset_splits_on_delimiter() {
     assert_eq!(set.len(), 2);
     assert!(set.is_match(AKIA_KEY.as_bytes()));
 }
+
+// A serialized RegexSet whose parallel vectors disagree (a `seedless_id` past an empty
+// `rules`). libFuzzer minimized this from `fuzz_from_bytes`; before `validate_structure`
+// it panicked with an out-of-bounds index at match time. Now `from_bytes` must REJECT it
+// (return Err), never panic, because the decoded bytes are attacker-influenced. Embedded
+// inline (not a `.bin` fixture, which the root .gitignore excludes).
+const STRUCTURAL_CRASH: &[u8] = &[
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0,
+];
+
+#[test]
+fn from_bytes_rejects_inconsistent_structure() {
+    assert!(RegexSet::from_bytes(STRUCTURAL_CRASH).is_err());
+}
+
+#[test]
+fn from_bytes_rejects_garbage_without_panic() {
+    // Empty, truncated, and arbitrary bytes must all decode-fail cleanly, never panic.
+    assert!(RegexSet::from_bytes(b"").is_err());
+    assert!(forbidden_regex::Regex::from_bytes(b"").is_err());
+    assert!(RegexSet::from_bytes(b"not a serialized matcher").is_err());
+    for len in 0..STRUCTURAL_CRASH.len() {
+        // Truncations of the crash input must also reject, not panic.
+        let _ = RegexSet::from_bytes(&STRUCTURAL_CRASH[..len]);
+    }
+}
+
+#[test]
+fn from_bytes_roundtrips_a_built_set() {
+    let set = RegexSet::new(&["AKIA[A-Z2-7]{16}", "ghp_[A-Za-z0-9]{36}"]).unwrap();
+    let reloaded = RegexSet::from_bytes(&set.to_bytes().unwrap()).unwrap();
+    assert!(reloaded.is_match(AKIA_KEY.as_bytes()));
+    assert!(!reloaded.is_match(b"nothing here"));
+}
