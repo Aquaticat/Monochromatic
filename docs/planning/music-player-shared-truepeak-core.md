@@ -705,6 +705,16 @@ it must remain auditable:
 - Tests must fail if path text or full peak enters the production classifier input.
 - The generated artifact must be small enough for review.
 
+Search objective (decided 2026-06-25):
+among policies that satisfy the hard constraints,
+catching every violator,
+staying under the decoded-seconds budget,
+and keeping every track within `+0.5 / -2.0 dB`,
+the search minimizes worst-case too-quiet error first,
+then prefers the simplest classifier as the tie-break.
+Spare budget is spent pulling tracks up toward the ceiling,
+because the too-quiet side is the only audible cost inside the bounds.
+
 ## Bench sidecar
 
 `packages/music-player/truepeak-core.bench` should own corpus-scale measurement and parameter search.
