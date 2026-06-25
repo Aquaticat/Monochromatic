@@ -28,10 +28,6 @@ fn kernels_agree(pattern: &str, lines: &[&[u8]]) {
     dfa.is_match_batch_scalar(lines, &mut scalar);
     assert_eq!(scalar, oracle, "scalar batch disagrees for {pattern}");
 
-    let mut simd = vec![false; lines.len()];
-    dfa.is_match_batch_simd(lines, &mut simd);
-    assert_eq!(simd, oracle, "simd batch disagrees for {pattern}");
-
     let mut interleaved = vec![false; lines.len()];
     dfa.is_match_batch_interleaved(lines, &mut interleaved);
     assert_eq!(interleaved, oracle, "interleaved batch disagrees for {pattern}");

@@ -5,13 +5,10 @@
 //! The public surface is [`compile`] / [`Regex`] for a single pattern and
 //! [`RegexSet`] for a whole ruleset combined into one matcher. Input is matched
 //! as bytes (`&[u8]`); see the crate README for the supported dialect.
-
-// What: enable the nightly portable-SIMD API. Why: the batch (many-lines-at-once)
-// match kernels in `dfa::batch` advance several lines per gather/shuffle through one
-// DFA; `std::simd` expresses that once and lowers to AVX2 on x86 and NEON on arm64,
-// so no per-architecture intrinsics are hand-written. The crate already builds on
-// nightly (the fuzz and mutation tooling require it), so this adds no new constraint.
-#![feature(portable_simd)]
+//!
+//! The batch match kernels (`dfa::sheng`/`dfa::sheng2`) use explicit `std::arch` SIMD
+//! intrinsics (`vpermb` / `vqtbl4q`), runtime-detected, so the crate needs no nightly
+//! `portable_simd` feature.
 
 /// The byte-set leaf alphabet.
 mod charset;

@@ -1,11 +1,11 @@
 //! Batch-kernel sweep: bucket width and sorting strategy for the single-DFA kernels.
 //!
-//! What: races the scalar per-line loop against the interleaved and vertical-SIMD batch
-//! kernels at bucket widths 8/16/32/64, on length-sorted input, plus exact-length
-//! buckets, and reports the sort cost. Why: the scalar single-line scan is latency-bound
-//! on the dependent transition load, so a batch of equal-length lines should overlap
-//! several chains; this finds whether (and at what width / bucketing) it beats scalar,
-//! in the realistic low-match regime a secret scanner sees.
+//! What: races the scalar per-line loop against the interleaved batch kernel at bucket
+//! widths 8/16/32/64 on length-sorted input, the branchless tight kernel on exact-length
+//! buckets, the bucketed public API, and the one- and two-byte Sheng permute kernels, and
+//! reports the sort cost. Why: the scalar single-line scan is latency-bound on the
+//! dependent transition load; this finds which layout beats it, and by how much, in the
+//! realistic low-match regime a secret scanner sees.
 
 /// Imports the optimization barrier so verdicts are not elided.
 use std::hint::black_box;
@@ -78,19 +78,12 @@ pub fn bench_buckets(corpus: &[Vec<u8>], avg_len: f64) {
         let re = forbidden_regex::compile(pattern).expect("pattern compiles");
         let oracle = re.is_match_batch_scalar(&refs);
         assert_eq!(re.batch_inter_w::<16>(&refs), oracle, "inter disagrees for {pattern}");
-        assert_eq!(re.batch_simd_w::<16>(&refs), oracle, "simd disagrees for {pattern}");
         let scalar = rate(&refs, |lines| re.is_match_batch_scalar(lines));
         let inter = [
             rate(&sorted, |l| re.batch_inter_w::<8>(l)),
             rate(&sorted, |l| re.batch_inter_w::<16>(l)),
             rate(&sorted, |l| re.batch_inter_w::<32>(l)),
             rate(&sorted, |l| re.batch_inter_w::<64>(l)),
-        ];
-        let simd = [
-            rate(&sorted, |l| re.batch_simd_w::<8>(l)),
-            rate(&sorted, |l| re.batch_simd_w::<16>(l)),
-            rate(&sorted, |l| re.batch_simd_w::<32>(l)),
-            rate(&sorted, |l| re.batch_simd_w::<64>(l)),
         ];
         // Correctness: the branchless tight kernel must match scalar on an exact bucket.
         if let Some(bucket) = buckets.iter().find(|bucket| bucket.len() >= 64) {
@@ -114,10 +107,9 @@ pub fn bench_buckets(corpus: &[Vec<u8>], avg_len: f64) {
         let sheng = rate(&refs, |l| re.batch_sheng(l));
         let sheng2 = rate(&refs, |l| re.batch_sheng2(l));
         println!(
-            "  {pattern:20} table={} scalar {scalar:>11.0} | sorted inter[8/16/32/64] {:.2} {:.2} {:.2} {:.2} | simd {:.2} {:.2} {:.2} {:.2} | exact-tight[16/32/64] {:.2} {:.2} {:.2} | api-presorted {:.2} | sheng {:.2} | sheng2 {:.2}",
+            "  {pattern:20} table={} scalar {scalar:>11.0} | sorted inter[8/16/32/64] {:.2} {:.2} {:.2} {:.2} | exact-tight[16/32/64] {:.2} {:.2} {:.2} | api-presorted {:.2} | sheng {:.2} | sheng2 {:.2}",
             re.is_table(),
             inter[0] / scalar, inter[1] / scalar, inter[2] / scalar, inter[3] / scalar,
-            simd[0] / scalar, simd[1] / scalar, simd[2] / scalar, simd[3] / scalar,
             tight[0] / scalar, tight[1] / scalar, tight[2] / scalar,
             api_presorted / scalar,
             sheng / scalar,

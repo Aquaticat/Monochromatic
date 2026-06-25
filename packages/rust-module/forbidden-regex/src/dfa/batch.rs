@@ -1,24 +1,23 @@
-//! Batched multi-line match kernels for one DFA.
+//! Batched multi-line match kernels for one DFA: a scalar reference, an interleaved-scalar
+//! kernel, and a branchless equal-length kernel.
 //!
-//! What: a scalar reference, an interleaved-scalar kernel, and a lane-generic vertical
-//! SIMD kernel dispatched at runtime to the widest instruction set the CPU actually
-//! has (AVX-512, then AVX2, then NEON, then scalar). Why: a consumer scanning a whole
-//! file calls one DFA against many short lines; advancing several lines at once exposes
-//! the memory-level parallelism the per-line loop's serial state dependency hides. The
-//! kernels are built so the benchmark can decide which layout wins on each machine, and
-//! the SIMD path lights up AVX-512 at runtime without pinning the whole crate to it.
-
-/// Imports the portable SIMD vector for the lockstep transition gather.
-use std::simd::Simd;
+//! What: a per-line scalar baseline, an interleaved kernel advancing `N` lines in lockstep
+//! with independent scalar transition reads, and a branchless kernel for exact-length
+//! buckets. Why: a consumer scanning a whole file calls one DFA against many lines;
+//! advancing several at once exposes the memory-level parallelism the per-line loop's
+//! serial state dependency hides. The faster across-lines win is the Sheng permute kernel
+//! (see `dfa::sheng`/`dfa::sheng2`); the interleaved and tight kernels here reach parity to
+//! a small win and back the `is_match_batch_bucketed` opt-in for over-64-state DFAs. A
+//! vertical SIMD gather across lines was measured and removed: it lost on both arches
+//! (x86 has no 16-bit gather, even native u32 `vpgatherdd` and NEON lose to scalar loads).
 
 /// Imports the DFA table and its per-boundary acceptance-bit helper.
 use crate::dfa::table::{Dfa, accept_bit};
 
-/// Lines advanced together by the interleaved kernel and the SIMD fallback.
+/// Lines advanced together by the interleaved kernel at the default width.
 ///
-/// What: the default lane count, eight. Why: eight independent transition reads give
-/// the out-of-order core plenty to overlap, and eight 16-bit lanes fit one 128-bit
-/// register, so it is the natural width when no wider runtime path is chosen.
+/// What: the default lane count, eight. Why: eight independent transition reads give the
+/// out-of-order core plenty to overlap; the bucketed opt-in sweeps wider widths.
 pub const LANES: usize = 8;
 
 /// Acceptance-bit for the end-of-input boundary (no next byte, at line end).
@@ -32,8 +31,8 @@ fn end_bit() -> u8 {
 /// One chunk's per-lane cursors, generic over the lane count.
 ///
 /// What: parallel arrays of current DFA state, finished flag, and verdict per lane.
-/// Why: plain arrays keep the hot loop's bookkeeping in registers and let the SIMD
-/// kernel lift `state` straight into a gather index vector.
+/// Why: plain arrays keep the interleaved kernel's per-lane bookkeeping in registers so
+/// the `N` independent transition reads overlap.
 struct Lanes<const N: usize> {
     /// Current DFA state id per lane.
     state: [usize; N],
@@ -210,126 +209,6 @@ impl Dfa {
         }
     }
 
-    /// Vertical SIMD kernel at bucket width `N`, dispatched to the widest available ISA.
-    ///
-    /// What: runs [`Dfa::simd_width`] at `N` lanes, compiled for AVX-512, then AVX2, then
-    /// the baseline by runtime feature detection (NEON is baseline on arm64). Why: one
-    /// matcher uses the widest gather the host has without pinning the crate to a
-    /// target-cpu; `N` is the bucket width so the benchmark can sweep it.
-    pub fn is_match_batch_simd_w<const N: usize>(&self, lines: &[&[u8]], out: &mut [bool]) {
-        #[cfg(target_arch = "x86_64")]
-        {
-            if is_x86_feature_detected!("avx512f")
-                && is_x86_feature_detected!("avx512bw")
-                && is_x86_feature_detected!("avx512vl")
-            {
-                // Safety: guarded by the matching runtime feature detection above.
-                unsafe { self.simd_avx512_w::<N>(lines, out) };
-                return;
-            }
-            if is_x86_feature_detected!("avx2") {
-                // Safety: guarded by the AVX2 runtime feature detection above.
-                unsafe { self.simd_avx2_w::<N>(lines, out) };
-                return;
-            }
-        }
-        self.simd_width::<N>(lines, out);
-    }
-
-    /// Advances one full chunk of `N` lines through the vertical SIMD kernel.
-    ///
-    /// What: per column, tests acceptance and computes each lane's class scalar, then
-    /// gathers all `N` next-states in one SIMD op and retires lanes that reached the
-    /// dead sink. Why: the gather issues every lane's transition read together; marked
-    /// always-inline so it picks up the dispatching wrapper's target features.
-    #[inline(always)]
-    fn simd_chunk<const N: usize>(&self, chunk: &[&[u8]], trans32: &[u32], out: &mut [bool]) {
-        let nc = self.nclasses as usize;
-        let dead = self.dead as usize;
-        let lens: [usize; N] = std::array::from_fn(|lane| chunk[lane].len());
-        let max_len = lens.iter().copied().max().unwrap_or(0);
-        let mut lanes = Lanes::<N>::new(self.start as usize);
-        // Column-major scan: `pos` indexes each lane's own line (`chunk[lane][pos]`),
-        // not `chunk` itself, so there is no single collection to iterate; clippy's
-        // enumerate hint would walk the wrong axis.
-        #[allow(clippy::needless_range_loop)]
-        for pos in 0..max_len {
-            let mut class = [0usize; N];
-            for lane in 0..N {
-                if lanes.done[lane] || pos >= lens[lane] {
-                    continue;
-                }
-                class[lane] = self.step_accept(&mut lanes, lane, chunk[lane][pos]);
-            }
-            // Gather over a u32 transition copy: x86 has no 16-bit gather, so a u16
-            // gather scalarizes; the u32 copy lets the lockstep step issue one native
-            // gather (vpgatherdd on AVX2/AVX-512) for all lanes at once.
-            let index = Simd::<usize, N>::from_array(lanes.state) * Simd::splat(nc)
-                + Simd::<usize, N>::from_array(class);
-            let next = Simd::<u32, N>::gather_or(trans32, index, Simd::splat(0)).to_array();
-            for lane in 0..N {
-                if lanes.done[lane] || pos >= lens[lane] {
-                    continue;
-                }
-                lanes.state[lane] = next[lane] as usize;
-                if lanes.state[lane] == dead {
-                    lanes.done[lane] = true;
-                }
-            }
-        }
-        self.finish_chunk(&mut lanes);
-        out.copy_from_slice(&lanes.hit);
-    }
-
-    /// Fills `out` with the vertical SIMD kernel at lane width `N`.
-    ///
-    /// What: chunks the lines by `N`, runs each chunk through [`Dfa::simd_chunk`], and
-    /// scans the leftover lines scalar. Why: the shared driver behind every runtime
-    /// width, inlined into the feature-gated wrappers so each gets the right ISA.
-    #[inline(always)]
-    fn simd_width<const N: usize>(&self, lines: &[&[u8]], out: &mut [bool]) {
-        // Widen the transition table to u32 once per call (tiny: num_states * nclasses),
-        // so every chunk's gather is a native one; the cost amortizes over all lines.
-        let trans32: Vec<u32> = self.trans.iter().map(|&target| u32::from(target)).collect();
-        let mut chunks = lines.chunks_exact(N);
-        let mut base = 0;
-        for chunk in &mut chunks {
-            self.simd_chunk::<N>(chunk, &trans32, &mut out[base..base + N]);
-            base += N;
-        }
-        for (offset, line) in chunks.remainder().iter().enumerate() {
-            out[base + offset] = self.is_match(line);
-        }
-    }
-
-    /// Fills `out` with the vertical SIMD kernel at the default bucket width.
-    ///
-    /// What: [`Dfa::is_match_batch_simd_w`] at [`LANES`] lanes. Why: the production-shaped
-    /// entry; the width sweep uses the explicit-`N` form.
-    pub fn is_match_batch_simd(&self, lines: &[&[u8]], out: &mut [bool]) {
-        self.is_match_batch_simd_w::<LANES>(lines, out);
-    }
-
-    /// AVX-512 vertical kernel at bucket width `N`.
-    ///
-    /// What: [`Dfa::simd_width`] at `N` lanes, this function compiled with AVX-512 so the
-    /// inlined gather uses `vpgatherdd`. Why: the wide path the dispatcher calls once it
-    /// has confirmed the features at runtime.
-    #[cfg(target_arch = "x86_64")]
-    #[target_feature(enable = "avx512f,avx512bw,avx512vl")]
-    unsafe fn simd_avx512_w<const N: usize>(&self, lines: &[&[u8]], out: &mut [bool]) {
-        self.simd_width::<N>(lines, out);
-    }
-
-    /// AVX2 vertical kernel at bucket width `N`.
-    ///
-    /// What: [`Dfa::simd_width`] at `N` lanes, compiled with AVX2. Why: the wide path on
-    /// hosts without AVX-512, still issuing `N` transition reads per column together.
-    #[cfg(target_arch = "x86_64")]
-    #[target_feature(enable = "avx2")]
-    unsafe fn simd_avx2_w<const N: usize>(&self, lines: &[&[u8]], out: &mut [bool]) {
-        self.simd_width::<N>(lines, out);
-    }
 }
 
 /// Unit tests for the batch kernels, in a sidecar (max-lines exempt).

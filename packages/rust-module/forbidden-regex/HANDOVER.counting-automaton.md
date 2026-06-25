@@ -69,12 +69,13 @@ Scope: the win is for a single full-scan DFA (one `Regex`, or a ruleset's seedle
 DFAs). The shipped `RegexSet` is gate-dominated with the seedless groups empty, so the
 bucketed kernel does not help the current set path.
 
-Kernels live in `src/dfa/batch.rs` (scalar/interleaved/simd/tight, width-generic, runtime
-ISA dispatch via `#[target_feature]`) and `src/regex/batch.rs` (public plus `#[doc(hidden)]`
-per-kernel hooks); bench sweep in `forbidden-regex.bench/src/kernels.rs`. The lib now needs
-nightly (`#![feature(portable_simd)]`) only for the SIMD-gather kernel, which loses; if that
-pin is unwanted, delete the `simd_*` path (the winning tight kernel is plain scalar Rust)
-and keep scalar/interleaved/tight.
+Kernels live in `src/dfa/batch.rs` (scalar/interleaved/tight, width-generic), `src/dfa/sheng.rs`
+and `src/dfa/sheng2.rs` (the permute kernels), and `src/regex/batch.rs` (public plus
+`#[doc(hidden)]` per-kernel hooks); bench sweep in `forbidden-regex.bench/src/kernels.rs`.
+The losing vertical SIMD gather kernel was deleted along with its `#![feature(portable_simd)]`,
+so the lib now builds on stable Rust again (`cargo +stable check --lib` is clean); only the
+fuzz crate needs nightly. The Sheng kernels use explicit `std::arch` intrinsics, which are
+stable.
 
 - Sheng in-register transition (`src/dfa/sheng.rs`): THE winner, and the default for a
   seedless table pattern of at most 64 states over a batch of at least 512 lines (the floor

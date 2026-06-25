@@ -208,6 +208,8 @@ per-line loop on the real corpus, single seedless full-scan DFA, both arches:
   arches (x86 0.15 to 0.85x, arm64 0.43 to 0.88x). x86 has no 16-bit gather so a `u16`
   table scalarizes; even a native u32 `vpgatherdd` (and NEON, which has no gather at all)
   is slower than scalar loads. The SIMD gather is the wrong tool for a transition table.
+  Built, measured, then REMOVED (it was the only `portable_simd` user, pinning the lib to
+  nightly); the lib now builds on stable Rust.
 - Interleaved scalar (`N` independent transition chains, no gather): reaches parity only
   with length-sorting (best ~1.0x x86, ~1.1x arm64).
 - Branchless equal-length kernel on exact-length buckets, width 32: a smaller win, useful

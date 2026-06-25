@@ -33,13 +33,12 @@ fn regex_batch_equals_per_line_is_match() {
 
 #[test]
 fn regex_batch_kernels_all_agree() {
-    // The seedless full-scan path exercises the SIMD kernel; force each hook and
-    // confirm all three agree with the per-line oracle.
+    // The seedless full-scan path exercises the batch kernels; force each hook and
+    // confirm they agree with the per-line oracle.
     let re = compile(r"[A-Za-z0-9]{6}").expect("compiles");
     let lines = sample_lines();
     let oracle: Vec<bool> = lines.iter().map(|line| re.is_match(line)).collect();
     assert_eq!(re.is_match_batch_scalar(&lines), oracle, "scalar");
-    assert_eq!(re.is_match_batch_simd(&lines), oracle, "simd");
     assert_eq!(re.is_match_batch_interleaved(&lines), oracle, "interleaved");
     assert_eq!(re.is_match_batch(&lines), oracle, "default");
 }

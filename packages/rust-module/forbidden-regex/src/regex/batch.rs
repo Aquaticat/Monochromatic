@@ -100,20 +100,6 @@ impl Regex {
         out
     }
 
-    /// Benchmark hook: forces the vertical SIMD kernel.
-    ///
-    /// What: runs the runtime-dispatched SIMD batch on the table back-end, else the
-    /// per-line loop. Why: measures the gather/lockstep layout against the baseline.
-    #[doc(hidden)]
-    pub fn is_match_batch_simd(&self, lines: &[&[u8]]) -> Vec<bool> {
-        let mut out = vec![false; lines.len()];
-        match self.engine.table_dfa() {
-            Some(dfa) => dfa.is_match_batch_simd(lines, &mut out),
-            None => self.engine.is_match_batch(lines, &mut out),
-        }
-        out
-    }
-
     /// Benchmark hook: forces the interleaved-scalar kernel.
     ///
     /// What: runs the interleaved batch on the table back-end, else the per-line loop.
@@ -136,20 +122,6 @@ impl Regex {
     #[doc(hidden)]
     pub fn is_table(&self) -> bool {
         self.engine.table_dfa().is_some()
-    }
-
-    /// Benchmark hook: vertical SIMD kernel at an explicit bucket width `N`.
-    ///
-    /// What: forces the SIMD batch at `N` lanes on the table back-end, else the per-line
-    /// loop. Why: lets the bench sweep bucket size against the scalar baseline.
-    #[doc(hidden)]
-    pub fn batch_simd_w<const N: usize>(&self, lines: &[&[u8]]) -> Vec<bool> {
-        let mut out = vec![false; lines.len()];
-        match self.engine.table_dfa() {
-            Some(dfa) => dfa.is_match_batch_simd_w::<N>(lines, &mut out),
-            None => self.engine.is_match_batch(lines, &mut out),
-        }
-        out
     }
 
     /// Benchmark hook: interleaved-scalar kernel at an explicit bucket width `N`.
