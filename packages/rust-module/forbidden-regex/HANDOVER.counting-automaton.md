@@ -10,16 +10,28 @@ reuses ping-pong buffers, so matching never allocates per byte. Only a repetitio
 a non-class body (e.g. an optional group `(?:ab)?`) and nested set algebra inside an
 operand still route to the eager DFA. This file is the source of truth for resuming.
 
-## Throughput status: BEAT regex on BOTH arches (x86 1.25x, arm64/m1 1.11-1.16x)
+## Throughput status: BEAT regex on BOTH arches (x86 ~1.31x, arm64/m1 ~1.16-1.22x)
 
-Latest: x86 dev box ~1.25x (full ~87M vs regex ~69M), Apple m1 arm64 (hot,
-back-to-back) ~1.11 to 1.16x (full ~49-53M vs regex ~44-46M, win holds at the most
-throttled run). The decisive late trick was forcing the DFA aho-corasick kind for the
-gate's which-rule matcher: the default NFA chases failure links per byte on every
-flagged line, a hidden scalar bottleneck on both arches and the reason arm lost before.
-DFA-kind is one lookup per byte (x86 candidates 90->118M, full 72->87M; arm full
-41->53M, flipping the arm loss to a win). The historical milestones below trace the
-journey from 0.20x.
+Latest: x86 dev box ~1.31x (full ~93M vs regex ~71M), Apple m1 arm64 (hot,
+back-to-back) ~1.16 to 1.22x (full ~51-56M vs regex ~44-46M, win holds at the most
+throttled run). Two late tricks got here from the 1.07x single-pass fold:
+
+1. DFA aho-corasick kind for the gate's which-rule matcher (`gate.rs`): the default NFA
+   chases failure links per byte on every flagged line, a hidden scalar bottleneck on
+   BOTH arches and the reason arm lost before. DFA-kind is one lookup per byte (x86
+   candidates 90->118M, full 72->87M, 1.07->1.25x; arm full 41->53M, flipping the loss
+   to a win). This was the decisive cross-arch fix.
+2. Dedup non-anchored gate checks + skip their redundant prefilter (`regex.rs`,
+   `engine.rs`): a non-anchored rule's whole-line check ignores the hit position, so it
+   runs once per line via a stack-only `CheckedFull` 256-bit set even when its seed
+   recurs; and the gate already proved the seed present, so `matches_only` skips the
+   engine's own prefilter rescan. x86 1.25->1.31x, arm 1.16->1.22x.
+
+The historical milestones below trace the journey from 0.20x. Larger remaining levers
+(cache-tighten the transition tables to u16 states, the all-rules combined automaton)
+are DEFERRED until after fuzzing + mutation testing are set up (in progress, see
+`packages/fuzz/forbidden-regex` and the mutation task), so the risky CsA build lands on
+a hardened test suite.
 
 ## Earlier status: 1.07x of regex on the real-repo corpus (BEAT regex; was 0.20x)
 
