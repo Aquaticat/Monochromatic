@@ -91,3 +91,8 @@ impl fmt::Display for CompileError {
 
 /// Lets `CompileError` participate in the standard error ecosystem.
 impl std::error::Error for CompileError {}
+
+/// Unit tests for error rendering, in a sidecar (max-lines exempt).
+#[cfg(test)]
+#[path = "error_tests.rs"]
+mod tests;

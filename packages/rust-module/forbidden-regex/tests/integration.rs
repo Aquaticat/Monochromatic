@@ -290,6 +290,11 @@ fn profiling_hooks_track_their_components() {
     assert!(set.seedless_only_is_match(twenty));
     assert!(!set.seedless_only_is_match(key));
     assert!(set.csa_only_is_match(twenty));
+    assert!(!set.csa_only_is_match(b"short"));
+
+    // The anchored-only gate hook sees AKIA (anchored) but not a seedless line.
+    assert!(!set.gate_anchored_only_is_match(b"nothing seeded here"));
+    assert!(!set.gate_anchored_only_is_match(twenty));
 }
 
 #[test]

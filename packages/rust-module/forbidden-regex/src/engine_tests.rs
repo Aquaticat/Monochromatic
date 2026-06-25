@@ -65,6 +65,17 @@ fn validate_and_prepare_keep_a_built_engine_working() {
 }
 
 #[test]
+fn validate_rejects_a_corrupt_back_end() {
+    // Engine::validate must delegate into the back-end so a hostile decoded table is
+    // caught before it runs; corrupt the inner DFA and confirm rejection.
+    let mut engine = table_engine("abc", &[]);
+    if let EngineKind::Table(dfa) = &mut engine.kind {
+        dfa.start = dfa.num_states + 1; // out-of-range start state
+    }
+    assert!(engine.validate().is_err());
+}
+
+#[test]
 fn mark_first_bytes_delegates_to_the_table() {
     let engine = table_engine("abc", &[]);
     let mut set = crate::charset::ByteSet::empty();

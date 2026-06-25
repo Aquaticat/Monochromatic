@@ -111,6 +111,14 @@ fn rejects_bad_repetition_bounds() {
 }
 
 #[test]
+fn repetition_count_at_the_cap_is_allowed_but_beyond_is_rejected() {
+    // The desugared-count cap is 1024: exactly at the cap parses, one past is rejected.
+    ok("a{1024}");
+    syntax_err("a{1025}");
+    syntax_err("a{1,1025}"); // the upper bound is also capped
+}
+
+#[test]
 fn rejects_unbalanced_brackets() {
     syntax_err("(?:abc");
     syntax_err("[abc");
