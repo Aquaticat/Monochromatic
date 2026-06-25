@@ -62,28 +62,35 @@ repo-root toolchain):
      DFA build's residuals -> compile OOM -> `RESIDUAL_NODE_CAP` guard in `dfa/build.rs`
      (re-fuzzed clean: roundtrip 26k, differential 62k, compile 36k, from_bytes 1.2M, all
      exit 0, no OOM/crash/mismatch). Both have regression tests in `tests/integration.rs`.
-  Two clean campaigns (~millions of runs) = enough fuzzing; proceeding to mutation.
+  Two clean campaigns (~millions of runs) = enough fuzzing; proceeded to mutation.
 - User directive (satisfied): do ENOUGH fuzzing before starting mutation testing.
 
-Test suite: grew from ~20 ("laughably few") to 133, all sidecar `*_tests.rs` (max-lines
+Test suite: grew from ~20 ("laughably few") to 170, all sidecar `*_tests.rs` (max-lines
 exempt) per module: charset, countset, parse, ast/smart, nullable, prefilter, derivative,
-gate, dfa/table, counting/element, counting/build, engine, group, plus integration
-(from_bytes adversarial, fold routing, products). The pathological-compile repro is
-`#[ignore]`d so it does not slow the default suite or per-mutant mutation runs.
+gate, dfa/table, dfa/build, dfa/minimize, counting/element, counting/build, counting/nfa,
+engine, error, build (routing), group, plus integration (from_bytes adversarial, fold
+routing, products, regex public surface, dialect semantics). The pathological-compile
+repro is `#[ignore]`d so it does not slow the default suite or per-mutant mutation runs.
 
-Mutation testing (cargo-mutants on the engine crate) -- INFRA READY, RUN HELD:
-- MUST run inside a Podman container: mutation testing compiles and runs MUTATED code,
-  i.e. arbitrary/unpredictable code, which must not execute on the host (host-safety,
-  not just resource isolation).
-- DONE: `mutants.Containerfile` (FROM rust:1, `cargo install cargo-mutants --locked`),
-  image `forbidden-regex-mutants` built; mise tasks `test:mutation:image` (build, cached)
-  and `test:mutation` (podman run, crate mounted rw, registry volume cached, mem/cpu
-  capped, cargo-mutants flags after `--`). `mutants.out/` gitignored at root.
-- HELD per user: do not RUN `test:mutation` until fuzzing is sufficient. Then run it,
-  read surviving mutants (weak/missing tests), and add sidecar `_tests.rs` tests to kill
-  them. The suite is thin (~20 tests, "laughably few" per the user); mutation testing is
-  how we find the gaps. Tests go in sidecar `*_tests.rs` files (max-lines exempt) or the
-  exempt `tests/` dir, never inline `mod tests`.
+Mutation testing (cargo-mutants on the engine crate) -- DONE:
+- Runs inside the Podman container (mutated = arbitrary code, must not run on the host);
+  `mutants.Containerfile` + mise `test:mutation:image`/`test:mutation`. Mount the crate
+  with `--security-opt label=disable` (no host relabel); `mutants.out/` gitignored at root.
+- Three full runs (711 mutants, ~17 min each). First run 483 caught / 140 missed (75%);
+  after adding targeted sidecar tests, FINAL run 563 caught / 55 missed / 70 unviable /
+  23 timeouts = 88% caught, ~91% detected (timeouts are infinite-loop mutations, detected).
+- The 55 remaining survivors are deliberately left: behaviorally-EQUIVALENT mutants
+  (CheckedFull dedup is a per-line optimization with the same matched set; `empty()` vs
+  derived `Default::default()`; carry `|` vs `^` where the shifted bit is always 0;
+  `clear_above` boundary that is unreachable; `line_start_candidate`/`candidates_only`
+  whose result is unchanged), bench-only DIAGNOSTICS (lib `debug_seedless`), and
+  parser/validate-INTERNAL arm-routing and bound-arithmetic mutants that change an error
+  path or an internal index but not the observable accept/reject. None is a real bug.
+- Tests that killed survivors target: every `validate` decode rejection branch (Dfa, Nfa,
+  Product, Engine -- the decode security boundary), the residual guard, intersection-seed
+  extraction, countset higher-word scan + sizing, all rule-routing classifications, the
+  regex public surface + diagnostic hooks, minimize's distinct_count, error rendering, the
+  repetition cap, and dialect semantics.
 
 ## Earlier status: 1.07x of regex on the real-repo corpus (BEAT regex; was 0.20x)
 
