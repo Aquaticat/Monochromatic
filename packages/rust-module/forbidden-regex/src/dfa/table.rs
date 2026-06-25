@@ -36,20 +36,25 @@ pub struct Dfa {
     /// Per-class flag: is a byte of this class a newline (for `^`/`$`)?
     pub(crate) class_newline: Vec<bool>,
     /// Dense transition table of length `num_states * nclasses`.
-    pub(crate) trans: Vec<u32>,
+    ///
+    /// What: state ids are `u16`, so the table is half the width of a `u32` one. Why:
+    /// the hot match loop reads one entry per byte, so a denser table fits more of the
+    /// automaton in cache; the build caps states at 65534, well above any real rule's
+    /// (and the engine cap of 20000), so a `u16` id never overflows.
+    pub(crate) trans: Vec<u16>,
     /// Per-state acceptance mask over the four `(word_after, line_end)` contexts.
     pub(crate) accept: Vec<u8>,
     /// Start state id.
-    pub(crate) start: u32,
+    pub(crate) start: u16,
     /// Total number of states.
-    pub(crate) num_states: u32,
+    pub(crate) num_states: u16,
     /// A non-accepting self-looping sink, or `num_states` when there is none.
     ///
     /// What: the dead state the match loop early-exits on; `num_states` (no real id)
     /// disables the exit. Why: an anchored DFA dies on the first non-matching byte, so
     /// without this the loop walks the rest of the line for nothing; this is the bulk
     /// of the gate's per-hit and line-start cost.
-    pub(crate) dead: u32,
+    pub(crate) dead: u16,
 }
 
 /// Construction-from-parts and matching for `Dfa`.
@@ -70,6 +75,13 @@ impl Dfa {
         start: u32,
         num_states: u32,
     ) -> Self {
+        // What: narrow the builder's `u32` ids to the stored `u16` width. Why: callers
+        // build with `u32` ids, but the build caps states at 65534, so the ids fit `u16`
+        // and the stored table is half the size; this is the one place the narrowing
+        // happens, so no caller changes.
+        let trans: Vec<u16> = trans.into_iter().map(|t| t as u16).collect();
+        let start = start as u16;
+        let num_states = num_states as u16;
         let dead = find_dead(&trans, &accept, nclasses, num_states);
         Dfa {
             nclasses,
@@ -198,11 +210,11 @@ mod tests;
 /// byte-class transition returns to itself. Why: from such a state no input can ever
 /// accept, so the match loop can stop there; minimization collapses all such states
 /// into one, and `num_states` (no real id) signals there is none.
-fn find_dead(trans: &[u32], accept: &[u8], nclasses: u32, num_states: u32) -> u32 {
+fn find_dead(trans: &[u16], accept: &[u8], nclasses: u32, num_states: u16) -> u16 {
     let nc = nclasses as usize;
     for state in 0..num_states as usize {
         if accept[state] == 0 && (0..nc).all(|c| trans[state * nc + c] as usize == state) {
-            return state as u32;
+            return state as u16;
         }
     }
     num_states

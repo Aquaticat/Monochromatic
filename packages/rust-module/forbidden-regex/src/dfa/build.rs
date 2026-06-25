@@ -88,6 +88,12 @@ mod tests;
 /// allocation and no lazy-cache lock; a caller selecting a back-end passes a small
 /// `cap` so a blowup fails fast and it can fall back to the counting engine.
 pub fn build_dfa_within(root: Node, cap: usize) -> Result<Dfa, CompileError> {
+    // What: never let the build exceed what a u16 state id can address. Why: the table
+    // stores ids as u16 for cache density, so a state count past 65534 would truncate;
+    // clamping here makes any caller's larger cap (e.g. the oracle) fail fast as StateCap
+    // instead, and every real rule is far below this (the engine cap is 20000).
+    const MAX_U16_STATES: usize = 65_534;
+    let cap = cap.min(MAX_U16_STATES);
     let classes = compute_classes(&root);
     let nc = classes.nclasses;
     let mut index: HashMap<StateKey, u32> = HashMap::new();
