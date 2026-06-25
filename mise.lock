@@ -521,52 +521,52 @@ checksum = "sha256:3fd881acaf7fd4fbc5d07c3030ce79b965a4cb7128fe0eb1ebe725188ccd2
 url = "https://github.com/dprint/dprint/releases/download/0.54.0/dprint-x86_64-pc-windows-msvc.zip"
 
 [[tools.harper-cli]]
-version = "2.5.0"
+version = "2.6.0"
 backend = "aqua:Automattic/harper/harper-cli"
 
 [tools.harper-cli."platforms.linux-arm64"]
-checksum = "sha256:12a07467515c0646db67f93654e079093def77ffae1370489cc1449e26033455"
-url = "https://github.com/Automattic/harper/releases/download/v2.5.0/harper-cli-aarch64-unknown-linux-gnu.tar.gz"
+checksum = "sha256:e95271b44eafd5883878f49f231bbc2a4639a7cc4c3f5554039942dbbb9ec71d"
+url = "https://github.com/Automattic/harper/releases/download/v2.6.0/harper-cli-aarch64-unknown-linux-gnu.tar.gz"
 
 [tools.harper-cli."platforms.linux-arm64-musl"]
-checksum = "sha256:305b62e59103faab78bea1988d83c30aa0ba272e9cdcb94bf12d5634014bc406"
-url = "https://github.com/Automattic/harper/releases/download/v2.5.0/harper-cli-aarch64-unknown-linux-musl.tar.gz"
+checksum = "sha256:623c0b4e0614fab158f3efb872f1025acf859fa186a8a1347a42632e5ad54c7e"
+url = "https://github.com/Automattic/harper/releases/download/v2.6.0/harper-cli-aarch64-unknown-linux-musl.tar.gz"
 
 [tools.harper-cli."platforms.linux-x64"]
-checksum = "sha256:9ac54aa3983aa18b9474f50fdb0dfdf4c95197d5a42b093d971ceeae07fa7200"
-url = "https://github.com/Automattic/harper/releases/download/v2.5.0/harper-cli-x86_64-unknown-linux-gnu.tar.gz"
+checksum = "sha256:4c7706869d57e05861b08f1e0750835d6ac3eb16b9c333538ba425d05757725f"
+url = "https://github.com/Automattic/harper/releases/download/v2.6.0/harper-cli-x86_64-unknown-linux-gnu.tar.gz"
 
 [tools.harper-cli."platforms.linux-x64-baseline"]
-checksum = "sha256:9ac54aa3983aa18b9474f50fdb0dfdf4c95197d5a42b093d971ceeae07fa7200"
-url = "https://github.com/Automattic/harper/releases/download/v2.5.0/harper-cli-x86_64-unknown-linux-gnu.tar.gz"
+checksum = "sha256:4c7706869d57e05861b08f1e0750835d6ac3eb16b9c333538ba425d05757725f"
+url = "https://github.com/Automattic/harper/releases/download/v2.6.0/harper-cli-x86_64-unknown-linux-gnu.tar.gz"
 
 [tools.harper-cli."platforms.linux-x64-musl"]
-checksum = "sha256:7663f4ffa3933ff0b49299ab9e5e622b0bc8e71198647737c377fb103c2290df"
-url = "https://github.com/Automattic/harper/releases/download/v2.5.0/harper-cli-x86_64-unknown-linux-musl.tar.gz"
+checksum = "sha256:356071b8388e84e7865bc42d2a5981215df89674368b3d201219315c8e359a92"
+url = "https://github.com/Automattic/harper/releases/download/v2.6.0/harper-cli-x86_64-unknown-linux-musl.tar.gz"
 
 [tools.harper-cli."platforms.linux-x64-musl-baseline"]
-checksum = "sha256:7663f4ffa3933ff0b49299ab9e5e622b0bc8e71198647737c377fb103c2290df"
-url = "https://github.com/Automattic/harper/releases/download/v2.5.0/harper-cli-x86_64-unknown-linux-musl.tar.gz"
+checksum = "sha256:356071b8388e84e7865bc42d2a5981215df89674368b3d201219315c8e359a92"
+url = "https://github.com/Automattic/harper/releases/download/v2.6.0/harper-cli-x86_64-unknown-linux-musl.tar.gz"
 
 [tools.harper-cli."platforms.macos-arm64"]
-checksum = "sha256:f65e519b75acb7658e37afcf79284beee6073ca910c1bf24a04dba633ae9c7f7"
-url = "https://github.com/Automattic/harper/releases/download/v2.5.0/harper-cli-aarch64-apple-darwin.tar.gz"
+checksum = "sha256:4ff0a0aa1e845a7295d85ce70877cdd8bd9e917a7a0027b0ed57acd2bf13808f"
+url = "https://github.com/Automattic/harper/releases/download/v2.6.0/harper-cli-aarch64-apple-darwin.tar.gz"
 
 [tools.harper-cli."platforms.macos-x64"]
-checksum = "sha256:a9c0ae27b34498a1d8285dc1b6175bae0194effaca2dc5e644e6f5d72190d955"
-url = "https://github.com/Automattic/harper/releases/download/v2.5.0/harper-cli-x86_64-apple-darwin.tar.gz"
+checksum = "sha256:23d03f4482d11a72fa370b186322962e49093e88d7b13f3c9d43f5bb29ff9b43"
+url = "https://github.com/Automattic/harper/releases/download/v2.6.0/harper-cli-x86_64-apple-darwin.tar.gz"
 
 [tools.harper-cli."platforms.macos-x64-baseline"]
-checksum = "sha256:a9c0ae27b34498a1d8285dc1b6175bae0194effaca2dc5e644e6f5d72190d955"
-url = "https://github.com/Automattic/harper/releases/download/v2.5.0/harper-cli-x86_64-apple-darwin.tar.gz"
+checksum = "sha256:23d03f4482d11a72fa370b186322962e49093e88d7b13f3c9d43f5bb29ff9b43"
+url = "https://github.com/Automattic/harper/releases/download/v2.6.0/harper-cli-x86_64-apple-darwin.tar.gz"
 
 [tools.harper-cli."platforms.windows-x64"]
-checksum = "sha256:2dc726b2a6ea392427b5cdc4f1bf8582f23b058215c1be55aaf2adfb5343d101"
-url = "https://github.com/Automattic/harper/releases/download/v2.5.0/harper-cli-x86_64-pc-windows-msvc.zip"
+checksum = "sha256:1669fe72aef1ac31af8097e85b26f3d5f056c401316bdf43deea9923423227c7"
+url = "https://github.com/Automattic/harper/releases/download/v2.6.0/harper-cli-x86_64-pc-windows-msvc.zip"
 
 [tools.harper-cli."platforms.windows-x64-baseline"]
-checksum = "sha256:2dc726b2a6ea392427b5cdc4f1bf8582f23b058215c1be55aaf2adfb5343d101"
-url = "https://github.com/Automattic/harper/releases/download/v2.5.0/harper-cli-x86_64-pc-windows-msvc.zip"
+checksum = "sha256:1669fe72aef1ac31af8097e85b26f3d5f056c401316bdf43deea9923423227c7"
+url = "https://github.com/Automattic/harper/releases/download/v2.6.0/harper-cli-x86_64-pc-windows-msvc.zip"
 
 [[tools.hcloud]]
 version = "1.65.0"
@@ -971,52 +971,52 @@ checksum = "sha256:a8834481667325b44c539dbb758d7365a16389070f343c04b639bbe525ede
 url = "https://github.com/apple/pkl/releases/download/0.31.1/pkl-windows-amd64.exe"
 
 [[tools.pnpm]]
-version = "11.8.0"
+version = "11.9.0"
 backend = "aqua:pnpm/pnpm"
 
 [tools.pnpm."platforms.linux-arm64"]
-checksum = "sha256:251222a30b3dcf6bc1c30c44fe3fdcd0bd4b2b06dd29f6a549647e56fa51548c"
-url = "https://github.com/pnpm/pnpm/releases/download/v11.8.0/pnpm-linux-arm64.tar.gz"
+checksum = "sha256:7981d0109fffdf8f15b838243240c8c9f9114dd4b7111d4227c1453522d75b61"
+url = "https://github.com/pnpm/pnpm/releases/download/v11.9.0/pnpm-linux-arm64.tar.gz"
 provenance = "github-attestations"
 
 [tools.pnpm."platforms.linux-arm64-musl"]
-checksum = "sha256:dbc5077793d76d6318ea9a0b9c250327b12afaab4473b02549ee232f2d7b55b3"
-url = "https://github.com/pnpm/pnpm/releases/download/v11.8.0/pnpm-linux-arm64-musl.tar.gz"
+checksum = "sha256:3622d3010d6af601190e7b63994fb0fe297e805699145aec949f4879f2672fb5"
+url = "https://github.com/pnpm/pnpm/releases/download/v11.9.0/pnpm-linux-arm64-musl.tar.gz"
 provenance = "github-attestations"
 
 [tools.pnpm."platforms.linux-x64"]
-checksum = "sha256:86b9aa5362b06cc61f5e829e41614ffda2fbda09993b8e84176feaa3c97b9532"
-url = "https://github.com/pnpm/pnpm/releases/download/v11.8.0/pnpm-linux-x64.tar.gz"
+checksum = "sha256:8d987d82585453bcf260ea5d0bae346d298f1a5e71bcde8d99976521408ad895"
+url = "https://github.com/pnpm/pnpm/releases/download/v11.9.0/pnpm-linux-x64.tar.gz"
 provenance = "github-attestations"
 
 [tools.pnpm."platforms.linux-x64-baseline"]
-checksum = "sha256:86b9aa5362b06cc61f5e829e41614ffda2fbda09993b8e84176feaa3c97b9532"
-url = "https://github.com/pnpm/pnpm/releases/download/v11.8.0/pnpm-linux-x64.tar.gz"
+checksum = "sha256:8d987d82585453bcf260ea5d0bae346d298f1a5e71bcde8d99976521408ad895"
+url = "https://github.com/pnpm/pnpm/releases/download/v11.9.0/pnpm-linux-x64.tar.gz"
 provenance = "github-attestations"
 
 [tools.pnpm."platforms.linux-x64-musl"]
-checksum = "sha256:c22f99ca91ec4bab1f37114ed3eacc23e68da72573f42e72ebfafaeaa1131167"
-url = "https://github.com/pnpm/pnpm/releases/download/v11.8.0/pnpm-linux-x64-musl.tar.gz"
+checksum = "sha256:655fcf2609e3145cfd7c2f05113429523706d0a618f2957eaa6c3562f6a5998b"
+url = "https://github.com/pnpm/pnpm/releases/download/v11.9.0/pnpm-linux-x64-musl.tar.gz"
 provenance = "github-attestations"
 
 [tools.pnpm."platforms.linux-x64-musl-baseline"]
-checksum = "sha256:c22f99ca91ec4bab1f37114ed3eacc23e68da72573f42e72ebfafaeaa1131167"
-url = "https://github.com/pnpm/pnpm/releases/download/v11.8.0/pnpm-linux-x64-musl.tar.gz"
+checksum = "sha256:655fcf2609e3145cfd7c2f05113429523706d0a618f2957eaa6c3562f6a5998b"
+url = "https://github.com/pnpm/pnpm/releases/download/v11.9.0/pnpm-linux-x64-musl.tar.gz"
 provenance = "github-attestations"
 
 [tools.pnpm."platforms.macos-arm64"]
-checksum = "sha256:7c9ef7523abf1190a2fde2b81dd652260d1679ba471c09950e8a08fa772c06e2"
-url = "https://github.com/pnpm/pnpm/releases/download/v11.8.0/pnpm-darwin-arm64.tar.gz"
+checksum = "sha256:ca6f98a8911ec975509464026205e2b54aed74cecd36c5ae9932e5997bd7de2a"
+url = "https://github.com/pnpm/pnpm/releases/download/v11.9.0/pnpm-darwin-arm64.tar.gz"
 provenance = "github-attestations"
 
 [tools.pnpm."platforms.windows-x64"]
-checksum = "sha256:8cf6951ade777eeb7e4665fdcaefe77942724b217690eb3fa2f0b27c67b4310c"
-url = "https://github.com/pnpm/pnpm/releases/download/v11.8.0/pnpm-win32-x64.zip"
+checksum = "sha256:82c130717a59f237c49e8eaa8a7ed75c1d8d351a5b6dedeee3196b8e1b597c6e"
+url = "https://github.com/pnpm/pnpm/releases/download/v11.9.0/pnpm-win32-x64.zip"
 provenance = "github-attestations"
 
 [tools.pnpm."platforms.windows-x64-baseline"]
-checksum = "sha256:8cf6951ade777eeb7e4665fdcaefe77942724b217690eb3fa2f0b27c67b4310c"
-url = "https://github.com/pnpm/pnpm/releases/download/v11.8.0/pnpm-win32-x64.zip"
+checksum = "sha256:82c130717a59f237c49e8eaa8a7ed75c1d8d351a5b6dedeee3196b8e1b597c6e"
+url = "https://github.com/pnpm/pnpm/releases/download/v11.9.0/pnpm-win32-x64.zip"
 provenance = "github-attestations"
 
 [[tools.ripgrep]]
@@ -1071,62 +1071,62 @@ backend = "core:rust"
 components = "clippy,llvm-tools-preview,rust-src"
 
 [[tools.uv]]
-version = "0.11.23"
+version = "0.11.24"
 backend = "aqua:astral-sh/uv"
 
 [tools.uv."platforms.linux-arm64"]
-checksum = "sha256:80efb615b78c1e5721e5858135cd3499609b26741220332c843bd58936053bc6"
-url = "https://github.com/astral-sh/uv/releases/download/0.11.23/uv-aarch64-unknown-linux-musl.tar.gz"
+checksum = "sha256:222fcd9878ed6f5a8565d121d1a10e1f958e3c7b42e4ec5cbc6927b2be20cc1a"
+url = "https://github.com/astral-sh/uv/releases/download/0.11.24/uv-aarch64-unknown-linux-musl.tar.gz"
 provenance = "github-attestations"
 
 [tools.uv."platforms.linux-arm64-musl"]
-checksum = "sha256:80efb615b78c1e5721e5858135cd3499609b26741220332c843bd58936053bc6"
-url = "https://github.com/astral-sh/uv/releases/download/0.11.23/uv-aarch64-unknown-linux-musl.tar.gz"
+checksum = "sha256:222fcd9878ed6f5a8565d121d1a10e1f958e3c7b42e4ec5cbc6927b2be20cc1a"
+url = "https://github.com/astral-sh/uv/releases/download/0.11.24/uv-aarch64-unknown-linux-musl.tar.gz"
 provenance = "github-attestations"
 
 [tools.uv."platforms.linux-x64"]
-checksum = "sha256:6be47081100ff1ce0ac7e85ba2ac12e32f2ffa6f946d78bf7f24ee9ce3a46181"
-url = "https://github.com/astral-sh/uv/releases/download/0.11.23/uv-x86_64-unknown-linux-musl.tar.gz"
+checksum = "sha256:2f9eaa976cf8ad8574623dde6916fb87ec047524fe65b99dc11e44e33eae4bfb"
+url = "https://github.com/astral-sh/uv/releases/download/0.11.24/uv-x86_64-unknown-linux-musl.tar.gz"
 provenance = "github-attestations"
 
 [tools.uv."platforms.linux-x64-baseline"]
-checksum = "sha256:6be47081100ff1ce0ac7e85ba2ac12e32f2ffa6f946d78bf7f24ee9ce3a46181"
-url = "https://github.com/astral-sh/uv/releases/download/0.11.23/uv-x86_64-unknown-linux-musl.tar.gz"
+checksum = "sha256:2f9eaa976cf8ad8574623dde6916fb87ec047524fe65b99dc11e44e33eae4bfb"
+url = "https://github.com/astral-sh/uv/releases/download/0.11.24/uv-x86_64-unknown-linux-musl.tar.gz"
 provenance = "github-attestations"
 
 [tools.uv."platforms.linux-x64-musl"]
-checksum = "sha256:6be47081100ff1ce0ac7e85ba2ac12e32f2ffa6f946d78bf7f24ee9ce3a46181"
-url = "https://github.com/astral-sh/uv/releases/download/0.11.23/uv-x86_64-unknown-linux-musl.tar.gz"
+checksum = "sha256:2f9eaa976cf8ad8574623dde6916fb87ec047524fe65b99dc11e44e33eae4bfb"
+url = "https://github.com/astral-sh/uv/releases/download/0.11.24/uv-x86_64-unknown-linux-musl.tar.gz"
 provenance = "github-attestations"
 
 [tools.uv."platforms.linux-x64-musl-baseline"]
-checksum = "sha256:6be47081100ff1ce0ac7e85ba2ac12e32f2ffa6f946d78bf7f24ee9ce3a46181"
-url = "https://github.com/astral-sh/uv/releases/download/0.11.23/uv-x86_64-unknown-linux-musl.tar.gz"
+checksum = "sha256:2f9eaa976cf8ad8574623dde6916fb87ec047524fe65b99dc11e44e33eae4bfb"
+url = "https://github.com/astral-sh/uv/releases/download/0.11.24/uv-x86_64-unknown-linux-musl.tar.gz"
 provenance = "github-attestations"
 
 [tools.uv."platforms.macos-arm64"]
-checksum = "sha256:71ef9de85db820749b3b12b7585624ee279e9c5afcbc6f8236bc3d628c4305b0"
-url = "https://github.com/astral-sh/uv/releases/download/0.11.23/uv-aarch64-apple-darwin.tar.gz"
+checksum = "sha256:7578c6087c5cd76981732b1f5d126248101faebdf81016ba780a65ce03653cdf"
+url = "https://github.com/astral-sh/uv/releases/download/0.11.24/uv-aarch64-apple-darwin.tar.gz"
 provenance = "github-attestations"
 
 [tools.uv."platforms.macos-x64"]
-checksum = "sha256:7a88155033cc469bba5bd5a24212e355eb92e3e2a276320b669ec576296c1e25"
-url = "https://github.com/astral-sh/uv/releases/download/0.11.23/uv-x86_64-apple-darwin.tar.gz"
+checksum = "sha256:8e026ec796a2760c33c832298b0910bf07fb369d00cc075761c321923ac37522"
+url = "https://github.com/astral-sh/uv/releases/download/0.11.24/uv-x86_64-apple-darwin.tar.gz"
 provenance = "github-attestations"
 
 [tools.uv."platforms.macos-x64-baseline"]
-checksum = "sha256:7a88155033cc469bba5bd5a24212e355eb92e3e2a276320b669ec576296c1e25"
-url = "https://github.com/astral-sh/uv/releases/download/0.11.23/uv-x86_64-apple-darwin.tar.gz"
+checksum = "sha256:8e026ec796a2760c33c832298b0910bf07fb369d00cc075761c321923ac37522"
+url = "https://github.com/astral-sh/uv/releases/download/0.11.24/uv-x86_64-apple-darwin.tar.gz"
 provenance = "github-attestations"
 
 [tools.uv."platforms.windows-x64"]
-checksum = "sha256:02ad29f07e674d68726ba3bb1ff25b335d83515756e2b1a194bb56c3cc30e07c"
-url = "https://github.com/astral-sh/uv/releases/download/0.11.23/uv-x86_64-pc-windows-msvc.zip"
+checksum = "sha256:af9573a2e36f7020b18ec5fdde20117aae74bbad3f4acb3dc3fc03319f1aa083"
+url = "https://github.com/astral-sh/uv/releases/download/0.11.24/uv-x86_64-pc-windows-msvc.zip"
 provenance = "github-attestations"
 
 [tools.uv."platforms.windows-x64-baseline"]
-checksum = "sha256:02ad29f07e674d68726ba3bb1ff25b335d83515756e2b1a194bb56c3cc30e07c"
-url = "https://github.com/astral-sh/uv/releases/download/0.11.23/uv-x86_64-pc-windows-msvc.zip"
+checksum = "sha256:af9573a2e36f7020b18ec5fdde20117aae74bbad3f4acb3dc3fc03319f1aa083"
+url = "https://github.com/astral-sh/uv/releases/download/0.11.24/uv-x86_64-pc-windows-msvc.zip"
 provenance = "github-attestations"
 
 [[tools.watchexec]]

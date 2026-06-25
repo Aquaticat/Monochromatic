@@ -17,6 +17,9 @@
                   <Item>
                     <option name="path" value="mise.no-env.toml" />
                   </Item>
+                  <Item>
+                    <option name="path" value="packages/rust-module/forbidden-regex.bench/mise.toml" />
+                  </Item>
                 </list>
               </option>
             </SchemaInfo>
