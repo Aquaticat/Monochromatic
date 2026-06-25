@@ -21,12 +21,14 @@ use std::env;
 /// Imports the borrowed path type for the corpus location.
 use std::path::Path;
 
-/// Imports the corpus loader.
-use crate::corpus::load_tracks;
+/// Imports the corpus loader and the safe-provenance loader.
+use crate::corpus::{load_safe_paths, load_tracks};
 /// Imports the classifier search, the feature diagnostic, and the per-track dump.
 use crate::classify::{diagnose, fit_full_scan_rule, write_long_features};
-/// Imports the feasible no-classifier density search.
-use crate::feasible::best_feasible;
+/// Imports the feasible no-classifier density search and the provenance margin.
+use crate::feasible::{best_feasible, provenance_margin};
+/// Imports the candidate policy type for the provenance report.
+use crate::evaluate::Candidate;
 /// Imports the sweep and the objective ranking.
 use crate::search::{rank, sweep};
 
@@ -139,6 +141,26 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             point.worst_quiet_db,
             point.probe_decoded_secs,
             point.probe_decoded_secs - target_secs,
+        );
+    }
+
+    // Provenance-dependent margin: a smaller margin for reliably-not-hot sources. Pass the
+    // metadata pass (path, lossless, ytdlp JSONL) as the second argument to enable it.
+    if let Some(meta_path) = args.get(2) {
+        let safe = load_safe_paths(Path::new(meta_path))?;
+        let candidate = Candidate {
+            window_count: 28,
+            window_seconds: 56.0 / 28.0,
+            probe_margin_db: 0.0,
+        };
+        let split = provenance_margin(&tracks, candidate, &safe);
+        println!(
+            "\nprovenance-dependent margin at count=28 thr=56s ({} safe-provenance tracks):",
+            safe.len()
+        );
+        println!(
+            "  margin_safe={:.3}dB margin_unsafe={:.3}dB worst_quiet={:+.3}dB",
+            split.margin_safe_db, split.margin_unsafe_db, split.worst_quiet_db
         );
     }
 

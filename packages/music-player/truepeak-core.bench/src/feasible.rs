@@ -14,6 +14,8 @@
 use crate::corpus::Track;
 /// Imports the candidate policy and the shared per-window sampling.
 use crate::evaluate::{Candidate, sampled_windows};
+/// Imports the safe-provenance path set.
+use std::collections::HashSet;
 /// Imports the shared dB and policy math.
 use truepeak_core::{Policy, default_policy, peak_dbtp};
 
@@ -86,6 +88,59 @@ pub fn evaluate_density(
         worst_quiet_db,
         probe_decoded_secs: decoded,
         feasible,
+    }
+}
+
+/// A provenance-dependent margin: a smaller fixed margin for reliably-not-hot sources
+/// (lossless and yt-dlp) and a larger one for the rest.
+#[derive(Clone, Copy, Debug)]
+pub struct ProvenanceMargin {
+    /// Margin for safe-provenance tracks (lossless or yt-dlp).
+    pub margin_safe_db: f64,
+    /// Margin for the remaining (untagged lossy) tracks.
+    pub margin_unsafe_db: f64,
+    /// Worst-case too-quiet error, the negated larger margin.
+    pub worst_quiet_db: f64,
+}
+
+/// Compute the provenance-dependent margins for a probe density.
+///
+/// What: split the loud long tracks by provenance and take each group's worst under-read;
+/// each group's margin must cover its own worst gap-miss. Why: the safe group under-reads
+/// less on average, so a smaller margin keeps its tracks louder, lowering the average
+/// too-quiet error even though the worst case is still set by the louder margin.
+pub fn provenance_margin(
+    tracks: &[Track],
+    candidate: Candidate,
+    safe_paths: &HashSet<String>,
+) -> ProvenanceMargin {
+    let policy: Policy = default_policy();
+    let threshold = candidate.window_count as f64 * candidate.window_seconds;
+    let mut max_under_read_safe = 0.0f64;
+    let mut max_under_read_unsafe = 0.0f64;
+    for track in tracks {
+        if track.duration_secs <= threshold {
+            continue;
+        }
+        let full_db = db(f64::from(track.full_peak));
+        if full_db <= policy.ceiling_dbtp {
+            continue;
+        }
+        let windows = sampled_windows(track, candidate);
+        let sampled_max = windows.iter().fold(0.0_f64, |peak, &window| peak.max(window));
+        let under_read = full_db - db(sampled_max);
+        if safe_paths.contains(&track.path) {
+            max_under_read_safe = max_under_read_safe.max(under_read);
+        } else {
+            max_under_read_unsafe = max_under_read_unsafe.max(under_read);
+        }
+    }
+    let margin_safe_db = (max_under_read_safe - TOO_LOUD_DB).max(0.0);
+    let margin_unsafe_db = (max_under_read_unsafe - TOO_LOUD_DB).max(0.0);
+    ProvenanceMargin {
+        margin_safe_db,
+        margin_unsafe_db,
+        worst_quiet_db: -margin_safe_db.max(margin_unsafe_db),
     }
 }
 

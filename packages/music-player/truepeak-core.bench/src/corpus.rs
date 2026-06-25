@@ -4,6 +4,8 @@
 //! true peak and the per-second bin peaks. The bins let any window policy be simulated
 //! by re-slicing, so the parameter search never re-decodes audio.
 
+/// Imports the safe-provenance path set.
+use std::collections::HashSet;
 /// Imports the line-by-line file reader pieces.
 use std::fs::File;
 /// Imports buffered reading so a multi-megabyte corpus streams instead of loading whole.
@@ -51,4 +53,38 @@ pub fn load_tracks(path: &Path) -> Result<Vec<Track>, Box<dyn std::error::Error>
         tracks.push(track);
     }
     Ok(tracks)
+}
+
+/// One provenance metadata row: the path and whether it is a reliably-not-hot source.
+#[derive(Deserialize)]
+struct MetaRow {
+    /// Track path, the join key against the corpus.
+    path: String,
+    /// Whether the codec is lossless (FLAC and similar), which is never a violator here.
+    lossless: bool,
+    /// Whether a yt-dlp / youtube provenance tag is present, also never a violator.
+    ytdlp: bool,
+}
+
+/// Read the metadata pass and return the set of paths whose provenance is reliably safe.
+///
+/// What: a path is "safe" when it is lossless or carries a yt-dlp provenance tag, since
+/// the corpus never has a violator in either class. Why: the policy can apply a smaller
+/// margin to safe provenance, lowering the average too-quiet error.
+pub fn load_safe_paths(path: &Path) -> Result<HashSet<String>, Box<dyn std::error::Error>> {
+    // Read each metadata row and keep the safe paths.
+    let file = File::open(path)?;
+    let reader = BufReader::new(file);
+    let mut safe = HashSet::new();
+    for line in reader.lines() {
+        let line = line?;
+        if line.trim().is_empty() {
+            continue;
+        }
+        let row: MetaRow = serde_json::from_str(&line)?;
+        if row.lossless || row.ytdlp {
+            safe.insert(row.path);
+        }
+    }
+    Ok(safe)
 }
