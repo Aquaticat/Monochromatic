@@ -1156,7 +1156,10 @@ so they do not become local-only sidecars.
 Insert a platform-viability stage before the rest,
 because the service API depends on Turso being viable on Android:
 
-- Stage zero: platform viability. Prove `turso` builds and runs under the Android native targets, and settle the handle lifecycle. Build and `arm64`/`x86_64` runtime are already proven by the spike; the in-process `cdylib` against an app-private path remains.
+- Stage zero: platform viability.
+  Prove `turso` builds and runs under the Android native targets, and settle the handle lifecycle.
+  Build and `arm64`/`x86_64` runtime are already proven by the spike;
+  the in-process `cdylib` against an app-private path remains.
 - Stage one: shared meter crate. Meter, gain math, `TruePeakSource`, policy-identity skeleton.
 - Stage two: durable evidence. Build the bench sidecar on the shared meter and regenerate the corrected-target search.
 - Stage three: full shared service. Classifier, Turso schema, cache semantics, fake-source integration tests, warming.
@@ -1166,7 +1169,8 @@ because the service API depends on Turso being viable on Android:
 - Stage seven: decoder-sharing follow-up.
 
 This supersedes the stage list below.
-Stage zero plus the meter-first order keep benchmark evidence from being generated with code that later diverges from production.
+Stage zero plus the meter-first order keep benchmark evidence
+from being generated with code that later diverges from production.
 
 ## Suggested implementation stages
 
