@@ -11,6 +11,8 @@ mod corpus;
 mod evaluate;
 /// The classifier that routes risky long tracks to a full scan from probe features.
 mod classify;
+/// The feasible no-classifier model: minimize the fixed margin by probe density.
+mod feasible;
 /// The corrected-target parameter search and ranking.
 mod search;
 
@@ -23,6 +25,8 @@ use std::path::Path;
 use crate::corpus::load_tracks;
 /// Imports the classifier search, the feature diagnostic, and the per-track dump.
 use crate::classify::{diagnose, fit_full_scan_rule, write_long_features};
+/// Imports the feasible no-classifier density search.
+use crate::feasible::best_feasible;
 /// Imports the sweep and the objective ranking.
 use crate::search::{rank, sweep};
 
@@ -115,6 +119,27 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     } else {
         println!("\nno candidate fits the corrected target for any swept window count");
+    }
+
+    // The feasible no-classifier model: the budget cannot afford a full-scan router, so
+    // ship a single fixed margin and spend the budget on probe density to shrink it.
+    let quiet_bound_db = truepeak_core::default_policy().max_too_quiet_db;
+    let dense_counts = [20usize, 28, 40, 56, 80];
+    let dense_thresholds = frange(40.0, 56.0, 1.0);
+    let feasibles = best_feasible(&tracks, &dense_counts, &dense_thresholds, target_secs, quiet_bound_db);
+    println!("\nfeasible no-classifier model (no full scans; single fixed margin), best densities:");
+    for point in feasibles.iter().filter(|point| point.feasible).take(30) {
+        let threshold = point.candidate.window_count as f64 * point.candidate.window_seconds;
+        println!(
+            "  count={} thr={:.1}s ws={:.4}s | margin={:.3}dB worst_quiet={:+.3}dB | probe_decoded={:.0}s delta={:+.0}s",
+            point.candidate.window_count,
+            threshold,
+            point.candidate.window_seconds,
+            point.margin_db,
+            point.worst_quiet_db,
+            point.probe_decoded_secs,
+            point.probe_decoded_secs - target_secs,
+        );
     }
 
     Ok(())
