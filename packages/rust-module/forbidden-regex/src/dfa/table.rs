@@ -187,6 +187,11 @@ impl Dfa {
     }
 }
 
+/// Unit tests for the DFA table and match loop, in a sidecar (max-lines exempt).
+#[cfg(test)]
+#[path = "table_tests.rs"]
+mod tests;
+
 /// Finds a non-accepting, fully self-looping sink state, or `num_states` if none.
 ///
 /// What: scans for the first state whose acceptance mask is zero and whose every

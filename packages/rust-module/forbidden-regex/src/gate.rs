@@ -125,3 +125,8 @@ impl SetGate {
         }
     }
 }
+
+/// Unit tests for the set-level gate, in a sidecar (max-lines exempt).
+#[cfg(test)]
+#[path = "gate_tests.rs"]
+mod tests;
