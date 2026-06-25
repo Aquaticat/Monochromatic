@@ -1,8 +1,8 @@
 # forbidden-regex: further optimizations and speculation
 
 Where the engine stands and where it can go next. The matcher beats the `regex` crate
-on the honest real-repo throughput benchmark (~1.01 to 1.07x across runs on the x86
-dev box; `gate-only` ~76M is robustly above regex's ~68 to 73M band). This doc records
+on the honest real-repo throughput benchmark on BOTH arches: x86 ~95 to 96M lines/s
+(~1.30 to 1.32x of regex), m1 arm64 ~56M lines/s (~1.21 to 1.23x). This doc records
 the levers not yet pulled and speculates, explicitly as guesses, about the tricks the
 maintainer has said they are holding in reserve.
 
@@ -27,7 +27,19 @@ call per candidate line and closes the small remaining `full` (~72M) versus `gat
 only wrinkle is `matches` attribution: keep the per-rule engines for the rare
 attribution path and add the combined engine only for the boolean `is_match`.
 
-### Shrink the build, or the serialized matcher
+### Shrink the serialized matcher: DONE via u16 state ids
+
+The DFA transition table and state ids are now `u16` (`trans`/`start`/`num_states`/`dead`
+in `dfa/table.rs`). Engine DFAs cap at 20000 states, far under 65534, so ids always fit;
+`from_parts` narrows the builder's `u32` ids in one place (no caller changes) and
+`build_dfa_within` clamps its cap to 65534. Result: serialized matcher dropped 42%
+(2,376,598 -> 1,383,726 bytes) and the table's runtime memory halved. Throughput was
+verified neutral-to-slightly-better on BOTH arches by alternating A/B (x86 95.65M ->
+95.99M; m1 55.74M -> 56.30M), so this is a free size/memory win. The cache-tighten did
+NOT speed up matching: per-line cost is dominated by the gate's aho-corasick DFA
+prefilter, not the per-rule transition-table reads, which already fit cache.
+
+### Shrink the build time
 
 Routing the non-anchorable rules to the eager DFA raised build and serialize from ~9s
 to ~28s (the inner-keyword rules now determinize whole forward structures). It is under

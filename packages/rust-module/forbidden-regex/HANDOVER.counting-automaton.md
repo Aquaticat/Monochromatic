@@ -10,11 +10,18 @@ reuses ping-pong buffers, so matching never allocates per byte. Only a repetitio
 a non-class body (e.g. an optional group `(?:ab)?`) and nested set algebra inside an
 operand still route to the eager DFA. This file is the source of truth for resuming.
 
-## Throughput status: BEAT regex on BOTH arches (x86 ~1.31x, arm64/m1 ~1.16-1.22x)
+## Throughput status: BEAT regex on BOTH arches (x86 ~1.30-1.32x, arm64/m1 ~1.21-1.23x)
 
-Latest: x86 dev box ~1.31x (full ~93M vs regex ~71M), Apple m1 arm64 (hot,
-back-to-back) ~1.16 to 1.22x (full ~51-56M vs regex ~44-46M, win holds at the most
-throttled run). Two late tricks got here from the 1.07x single-pass fold:
+Latest (post-u16): x86 dev box ~95-96M lines/s vs regex ~72-74M = ~1.30 to 1.32x; Apple
+m1 arm64 (hot, back-to-back) ~56M vs regex ~46M = ~1.21 to 1.23x. The serialized matcher
+is 1,383,726 bytes (was 2,376,598; a 42% drop from the u16 state-id change, verified
+neutral-to-better on both arches). Three tricks got here from the 1.07x single-pass fold:
+
+0. u16 DFA state ids (`dfa/table.rs`): `trans`/`start`/`num_states`/`dead` are u16, so the
+   hot transition table is half the width. No throughput change (the gate's aho-corasick
+   DFA prefilter dominates, not the table reads) but 42% smaller serialized + half the
+   table memory, free. Engine DFAs cap at 20000 < 65534; `from_parts` narrows the
+   builder's u32 ids; `build_dfa_within` clamps its cap to 65534.
 
 1. DFA aho-corasick kind for the gate's which-rule matcher (`gate.rs`): the default NFA
    chases failure links per byte on every flagged line, a hidden scalar bottleneck on
