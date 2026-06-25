@@ -1,0 +1,977 @@
+# Shared true-peak core plan for the music player
+
+Status: planning only.
+No production code has been changed for this plan.
+
+Audience: a reviewer who has never seen this product.
+This document explains the product context, the problem, the agreed design, and the evidence that must exist before
+implementation is accepted.
+
+## What this document is
+
+The music player has two native flavors:
+
+- A desktop app, written in Rust.
+- An Android app, with Kotlin UI and service code calling a Rust native engine through JNI.
+
+Both flavors normalize tracks so playback does not exceed a true-peak ceiling.
+The current code got there through separate experiments,
+so the desktop and Android paths now disagree about measurement policy, cache shape, and cache storage.
+
+This plan replaces those separate paths with one shared Rust true-peak package:
+
+- `packages/music-player/truepeak-core`
+
+The package should own the true-peak meter, the probe policy, gain decisions, Turso cache I/O, and background warming
+orchestration.
+Desktop and Android should call the same shared service.
+Platform code may still provide decoded audio access at first,
+but the longer-term direction is to share more of the decode stack too.
+
+## Product background
+
+The app plays local music files.
+A track is decoded into interleaved `f32` PCM samples,
+then the output path multiplies every sample by one constant per-track gain.
+That gain exists to prevent clipping at the digital-to-analog converter.
+
+The app uses a `-1 dBTP` ceiling.
+`dBTP` means decibels true peak:
+it accounts for peaks that can appear between stored samples after reconstruction,
+not only the largest sample value in the file.
+
+True-peak measurement is expensive because the safe answer normally requires decoding the whole track.
+The current library contains thousands of files,
+so full-scanning everything is expensive enough that the app needs a selective policy:
+scan exactly when needed,
+probe when probing is good enough,
+and cache the result.
+
+## Current state
+
+### Desktop
+
+The desktop app has a Rust true-peak implementation in:
+
+- `packages/music-player/desktop-app/src/truepeak.rs`
+
+It uses a Catmull-Rom inter-sample estimator.
+It scans decoded interleaved `f32` samples,
+keeps a four-sample window per channel,
+checks the quarter, half, and three-quarter positions between samples,
+and records the largest absolute value.
+
+Desktop also already uses Turso for a peak cache:
+
+- `packages/music-player/desktop-app/src/peakcache.rs`
+- `packages/music-player/desktop-app/src/peakcache_service.rs`
+- `packages/music-player/desktop-app/src/peakcache_handle.rs`
+
+That cache currently stores raw peak rows keyed by an opaque fingerprint.
+It does not store a shared true-peak policy version,
+and it cannot distinguish an exact full scan from a probe-derived estimate.
+
+Desktop current-track behavior lives mainly in:
+
+- `packages/music-player/desktop-app/src/peak_swap.rs`
+
+On a cache miss,
+it starts playback with a conservative temporary gain,
+measures in a worker thread,
+then swaps to the measured gain when it arrives.
+
+Background warming lives in:
+
+- `packages/music-player/desktop-app/src/measure.rs`
+
+It scans uncached queue tracks in the background.
+
+### Android
+
+Android has a Rust true-peak implementation in:
+
+- `packages/music-player/android-app/rust/src/truepeak.rs`
+
+It shares the Catmull-Rom meter shape,
+but it also contains an Android-specific long-track window policy:
+
+- four windows,
+- fifteen seconds per window,
+- a `1.26` linear safety factor,
+- full scan below ninety seconds.
+
+That policy came from an older hot-or-no-gain optimization.
+It is not the policy this plan should ship.
+
+Android stores peaks through Kotlin JSON code:
+
+- `packages/music-player/android-app/app/src/main/kotlin/dev/monochromatic/musicplayer/PeakCacheStore.kt`
+- `packages/music-player/android-app/app/src/main/kotlin/dev/monochromatic/musicplayer/core/PeakCache.kt`
+
+Android gain math also still has Kotlin helpers in:
+
+- `packages/music-player/android-app/app/src/main/kotlin/dev/monochromatic/musicplayer/core/Normalization.kt`
+
+Current Android playback asks Kotlin to resolve a normalization gain in:
+
+- `packages/music-player/android-app/app/src/main/kotlin/dev/monochromatic/musicplayer/RustEngine.kt`
+
+Android measurement entry points call native Rust through:
+
+- `packages/music-player/android-app/app/src/main/kotlin/dev/monochromatic/musicplayer/PeakMeasurer.kt`
+- `packages/music-player/android-app/rust/src/lib.rs`
+
+The new design moves cache lookup, true-peak policy, and gain-decision ownership into shared Rust.
+Kotlin should no longer decide how a peak maps to a cacheable policy result.
+
+## The problem
+
+The current arrangement has several failure modes.
+
+First,
+there are separate true-peak algorithms.
+Desktop full-scans.
+Android may window-scan with an old safety factor.
+A track measured on one flavor is not necessarily measured under the same policy as the other flavor.
+
+Second,
+the cache shape is wrong for the new policy.
+A raw peak cache cannot represent:
+
+- an exact full-scan result,
+- a probe-derived approximate result,
+- which true-peak policy produced the result,
+- whether a later policy version can safely reuse it.
+
+Third,
+Android is not on Turso.
+Desktop has a Turso actor,
+but Android still has JSON cache storage.
+The goal is not two cache implementations that happen to use the same database brand.
+The goal is one shared cache implementation owned by the new true-peak package.
+
+Fourth,
+the handover target had a stale number.
+The old follow-up target used `439889.5 / 2 = 219944.75` seconds.
+The corrected target is the current decodable library total divided by four.
+
+The measured current decodable total is:
+
+```text
+887897.8663151221 seconds
+```
+
+So the corrected benchmark target is:
+
+```text
+887897.8663151221 / 4 = 221974.46657878053 seconds
+```
+
+The old `219944.75` target is now only historical evidence.
+It is not the target for the final plan.
+
+## Agreed design decisions
+
+These decisions came from the grilling session before this document was written.
+
+### Optimize for comprehensiveness
+
+The plan should be understandable to a reviewer who does not know the product.
+It should explain product behavior, current code shape, target behavior, migration shape, evidence, risks, and open
+review questions.
+
+### The corrected target is a benchmark target
+
+`total decodable library seconds / 4` is a benchmark acceptance target for the current library.
+It is not a runtime invariant.
+
+Runtime cannot know the denominator without measuring too much of the library first.
+The shipped policy should be fixed and versioned.
+The benchmark harness verifies that this fixed policy lands at the desired quarter-library budget on the current
+measured corpus.
+
+### Use decodable total only
+
+The denominator is the total duration of tracks the current decoder can measure.
+The known unsupported HE-AAC/SBR decode failure stays outside the target until decoder support changes.
+
+The current measurement summary was:
+
+- `3992` audio-extension files found.
+- `3991` files measured.
+- `1` decode failure.
+- `887897.8663151221` decodable seconds.
+
+If decoder support changes,
+the benchmark denominator changes and the policy needs a fresh verification pass.
+
+### Ship one versioned active policy
+
+The new package should expose one active policy,
+with a stable policy ID or policy version.
+
+The app should not expose multiple normalization profiles to users.
+Policy changes are code changes,
+and they must bump the policy identity so stale cache rows are ignored.
+
+### Fit the current corpus exactly
+
+The classifier acceptance goal is exact fit on the current corpus:
+
+- It uses only duration and probe-derived measurements at runtime.
+- It catches every current-library track whose probe-derived gain would violate the gain-error bounds.
+- It keeps total decoded seconds at or below the corrected quarter target.
+- It does not use full-track truth, paths, or hard-coded exception lists at runtime.
+
+The corpus is considered large and varied enough for this product's current acceptance target.
+
+### Do not use an opaque model
+
+The classifier may be whatever works best short of an opaque model.
+A small auditable decision tree is preferred,
+but a generated non-opaque rule set is acceptable if it is still reviewable and tests prove it depends only on probe
+features.
+
+Allowed runtime features include:
+
+- track duration,
+- sampled maximum peak,
+- sampled minimum peak,
+- spread between sampled windows,
+- per-window peak summaries if the production probe records them,
+- other values derived only from the probe windows and audio metadata.
+
+Disallowed runtime features include:
+
+- file paths,
+- artist names,
+- benchmark exception lists,
+- full-track true peak before classification,
+- any field that is just a disguised path list.
+
+### Keep the quarter-target error bounds
+
+For the corrected quarter-library target,
+keep the existing quarter-flavor gain-error envelope:
+
+```text
++0.5 dB too loud
+-2.0 dB too quiet
+```
+
+Positive error means playback is too loud compared with exact full-scan normalization.
+Negative error means playback is too quiet.
+
+If future tuning ever needs looser bounds,
+loosen the too-quiet side before loosening the too-loud side.
+
+### Reset legacy caches
+
+Do not import old desktop or Android peak caches.
+
+This is intentionally conservative.
+Desktop raw peaks are closer to reusable because they are exact full-scan peaks,
+but Android JSON entries may contain old windowed values with the `1.26` safety factor.
+The new cache schema must start clean rather than risk treating old values as compatible shared-policy decisions.
+
+### The shared package owns Turso I/O
+
+The shared true-peak crate should own the Turso service,
+schema,
+reads,
+writes,
+and policy-version matching.
+
+Desktop should delete its current `peakcache_*` actor in favor of the shared service.
+Android should stop using Kotlin JSON peak storage.
+
+### Android uses an explicit native service handle
+
+Android Kotlin should create a native true-peak service handle,
+passing an app-private database path.
+Kotlin then passes that handle to native decision calls and releases it when done.
+
+This avoids reopening Turso for every track,
+and it avoids a hidden process-global singleton.
+
+### Keep conservative playback fallback
+
+For an uncached current track,
+playback should keep the current conservative temporary gain while the shared policy measures:
+
+```text
+normalizationGain(1.0)
+```
+
+That is the `-1 dBTP` ceiling as a linear gain.
+It is slightly quiet for some tracks,
+but it preserves non-blocking playback and is safer than unity gain during cold measurement.
+
+### Shared warming engine with platform knobs
+
+Background warming should use the same shared policy as current-track playback.
+It should not be a second normalization algorithm.
+
+The shared crate should expose a warming engine,
+but platform code should still control platform-specific knobs:
+
+- concurrency limits,
+- thread priority or scheduler class,
+- cancellation or lifecycle integration,
+- Android WorkManager or service boundaries,
+- desktop worker-thread details.
+
+### Stage decoder sharing
+
+The endgame is to share almost everything,
+including more of the decode stack.
+
+Do not make the first true-peak extraction depend on moving all decoding at once.
+Stage the work:
+
+- First extract true-peak policy, metering, cache I/O, decisions, and warming orchestration.
+- Keep small platform adapters that open existing decoded audio sources.
+- Later move shared decode access into a shared crate once the true-peak service is stable.
+
+## Target math and stale evidence
+
+The corrected target is:
+
+```text
+full_decodable_seconds = 887897.8663151221
+target_seconds = full_decodable_seconds / 4
+target_seconds = 221974.46657878053
+```
+
+A useful starting threshold can be computed by solving:
+
+```text
+sum(min(track_duration, threshold_seconds)) = target_seconds
+```
+
+Using the existing `tracks.jsonl` measurement,
+that gives:
+
+```text
+threshold_seconds = 56.10006235347777
+window_count = 14
+window_seconds = 4.007147310962698
+short_full_scan_count = 89
+long_probe_candidate_count = 3902
+```
+
+This is only a starting point.
+It assumes no long-track exceptions.
+Once the classifier sends some long tracks to full scan,
+window seconds, classifier thresholds, or both may need retuning so the final decoded seconds stay at or below the
+corrected target.
+
+The old lower-target candidate remains useful as historical evidence,
+but it is not the final target:
+
+```text
+old_target_seconds = 219944.75
+window_count = 14
+window_seconds = 3.754228571428571
+threshold_seconds = 52.5592
+probe_margin_db = 0.683
+decoded_seconds = 219943.7791356195
+short_full_scan_count = 82
+probably_no_full_scan_count = 3860
+needs_full_scan_exception_count = 49
+worst_too_loud_db = 0.4991655817434766
+worst_too_quiet_db = -0.6830000000000007
+```
+
+Against the corrected target,
+that old candidate is under budget by:
+
+```text
+2030.687443161034 seconds
+```
+
+That means it is a conservative lower starting point,
+not a finished quarter-target policy.
+
+## True-peak policy behavior
+
+The shared policy has three outcomes for a track.
+
+### Short enough for exact normalization
+
+If:
+
+```text
+duration_seconds <= window_seconds * window_count
+```
+
+then the policy scans the full track and computes exact gain from the full true peak.
+
+### Probably does not need full scan
+
+For a longer track,
+the policy samples probe windows.
+If probe-only evidence says the probe-derived gain is safe for the active policy,
+the policy stores and returns the approximate gain.
+
+### Needs full scan
+
+If probe-only evidence is not safe enough,
+the policy scans the full track and stores exact gain.
+
+The policy must never require full-track truth to decide which branch to take.
+Full-track truth is allowed only in the benchmark harness,
+where it labels training and verification outcomes.
+
+## True-peak meter
+
+The meter should be shared exactly.
+Both full scans and window probes must use the same Catmull-Rom implementation.
+
+The meter logic is:
+
+- Read decoded interleaved `f32` samples.
+- Maintain a four-sample sliding window per channel.
+- Once a channel has four real samples,
+  evaluate Catmull-Rom interpolation between the two middle samples.
+- Probe positions at one quarter,
+  one half,
+  and three quarters.
+- Track the maximum absolute raw or interpolated sample.
+
+This is the measurement unit that makes full-scan peaks and window-probe peaks comparable.
+
+## Window placement
+
+The policy defines:
+
+```text
+threshold_seconds = window_seconds * window_count
+window_frames = floor(window_seconds * sample_rate)
+```
+
+For long tracks,
+place `window_count` windows evenly from the beginning to the final possible window start.
+That final-window coverage is important:
+a windowing implementation that misses the last possible start position can under-read endings.
+
+Each window should use its own meter instance.
+That avoids fabricating an inter-sample spike across a seek seam between unrelated audio regions.
+
+## Gain math
+
+The shared package should own gain math.
+Kotlin should no longer carry a separate `normalizationGain` policy for true-peak decisions.
+
+The dB formulas are:
+
+```text
+full_peak_dbtp = 20 * log10(full_peak)
+sampled_max_dbtp = 20 * log10(sampled_max_peak)
+exact_gain_db = min(0, -1 - full_peak_dbtp)
+probe_estimated_peak_dbtp = sampled_max_dbtp + probe_margin_db
+probe_gain_db = min(0, -1 - probe_estimated_peak_dbtp)
+error_db = probe_gain_db - exact_gain_db
+```
+
+The runtime returns a linear gain scalar to playback.
+That scalar must never exceed `1.0`.
+The policy never amplifies.
+
+## Proposed package layout
+
+The first implementation stage should add these packages:
+
+- `packages/music-player/truepeak-core`
+- `packages/music-player/truepeak-core.bench`
+- `packages/music-player/truepeak-core.fuzz`
+
+The core crate owns production behavior.
+The bench sidecar owns corpus measurement and parameter search.
+The fuzz sidecar owns adversarial and randomized checks of window placement, meter behavior, cache serialization, and
+classifier invariants.
+
+Each package should have its own `README.md`, `Cargo.toml`, and `mise.toml`.
+The repo rule for package completeness applies:
+README,
+lint,
+and tests are part of done.
+
+## Shared core surface
+
+The core crate should define a small decoded-audio abstraction.
+The current desktop and Android Rust `Source` traits are already close enough for adapters:
+
+```rust
+pub trait TruePeakSource: Send {
+    fn spec(&self) -> AudioSpec;
+    fn next_chunk(&mut self) -> Result<Vec<f32>, TruePeakError>;
+    fn seek(&mut self, seconds: f64) -> Result<(), TruePeakError>;
+}
+```
+
+The production API should not expose only raw peak measurement.
+It should expose gain decisions.
+
+Conceptually,
+the main service API is:
+
+```rust
+TruePeakService::open(database_path, active_policy)
+TruePeakService::cached_decision(fingerprint)
+TruePeakService::resolve_decision(fingerprint, source)
+TruePeakService::warm_library(track_descriptors, opener, warming_options)
+```
+
+Exact function names can change during implementation,
+but the ownership should not:
+
+- The shared service owns Turso.
+- The shared service owns policy version matching.
+- The shared service owns meter and classifier behavior.
+- Platform adapters provide decoded audio sources until decoder sharing is staged in.
+
+## Turso schema
+
+The new cache stores decision rows,
+not raw peak rows.
+
+Primary key:
+
+- `fingerprint`
+- `policy_id`
+
+Required row fields:
+
+- source fingerprint,
+- active policy ID,
+- decision kind,
+- final linear gain,
+- duration seconds,
+- whether the decision is exact or probe-derived,
+- exact peak when a full scan happened,
+- sampled maximum peak when probing happened,
+- sampled minimum peak when probing happened,
+- window count,
+- window seconds,
+- probe margin dB,
+- measured timestamp or monotonic schema metadata useful for debugging.
+
+Decision kinds should be explicit values,
+for example:
+
+- `exact_full_scan_short`
+- `exact_full_scan_classifier`
+- `probe_estimate`
+
+The row shape must let a future reader answer:
+
+- Was this gain exact or approximate?
+- Which policy produced it?
+- Which probe constants produced it?
+- Can this row be reused by the current policy?
+
+## Cache semantics
+
+A cache hit is valid only when both the source fingerprint and policy ID match.
+
+A source fingerprint changes when the file changes.
+A policy ID changes when constants, classifier logic, gain math, or cache interpretation changes.
+
+Old rows may remain in Turso.
+They should not be read by a newer policy.
+A cleanup task can delete old-policy rows later,
+but cleanup is not part of the correctness path.
+
+Legacy desktop and Android caches should not be imported.
+The first shared-policy run starts from a cold shared cache.
+
+## Desktop migration plan
+
+Desktop should stop using its local peak-cache actor.
+Remove or retire:
+
+- `packages/music-player/desktop-app/src/peakcache_service.rs`
+- `packages/music-player/desktop-app/src/peakcache_handle.rs`
+- raw-peak-only logic in `packages/music-player/desktop-app/src/peakcache.rs`
+
+Replace them with the shared true-peak service handle.
+
+The current-track flow in `peak_swap.rs` should become:
+
+- Ask the shared service for a cached decision by fingerprint and policy ID.
+- If present,
+  apply the cached final gain immediately.
+- If absent,
+  start a shared measurement decision in a worker.
+- Use conservative fallback gain while waiting.
+- When the shared decision arrives,
+  apply its final gain and cache row.
+
+The background sweep in `measure.rs` should become a call into the shared warming engine.
+Desktop can still supply worker priority hooks so background decode runs politely.
+
+Desktop playback should continue applying one constant gain scalar per track.
+No UI change is required.
+
+## Android migration plan
+
+Android should replace Kotlin peak-cache and normalization orchestration with native shared-service calls.
+
+Kotlin should create an explicit native true-peak service handle:
+
+```text
+nativeTruePeakServiceCreate(databasePath) -> handle
+nativeTruePeakServiceRelease(handle)
+```
+
+Kotlin decision calls should pass that handle.
+The exact JNI surface can be refined,
+but the important change is that native Rust returns a gain decision,
+not only a raw peak.
+
+Current Kotlin pieces to retire or narrow:
+
+- `PeakCacheStore.kt`, because Turso cache I/O moves to shared Rust.
+- `core/PeakCache.kt`, because the in-memory JSON-backed cache goes away.
+- true-peak decision use of `core/Normalization.kt`, because gain decisions move to shared Rust.
+
+Kotlin may keep sample clamp helpers if they are still useful as output-stage test or UI references,
+but they must not define the true-peak policy.
+
+The native Rust crate should depend on `packages/music-player/truepeak-core` by path.
+It should expose JNI functions that call the shared service.
+
+The Android native build must prove Turso cross-compiles for:
+
+- `arm64-v8a`,
+- `x86_64`.
+
+This should be an early spike,
+not a late surprise.
+The Android package already builds native Rust through `cargo-ndk`,
+so the verification belongs in the Android native build task and in the new core package tasks.
+
+## Background warming plan
+
+The shared warming engine should accept a list of track descriptors and an opener callback.
+A descriptor needs at least:
+
+- fingerprint material or a ready fingerprint,
+- enough platform data to open a fresh decoded source,
+- duration metadata if cheaply available,
+- display path only for logging or benchmark reporting,
+  not for classification.
+
+The shared engine should:
+
+- skip cache hits for the active policy,
+- probe or full-scan cache misses using the same policy as current playback,
+- store decision rows through the shared Turso service,
+- expose progress and error hooks for platform logs,
+- allow platform-specific concurrency and priority settings.
+
+Desktop can keep its idle thread priority behavior.
+Android can keep WorkManager or service scheduling behavior.
+The policy and cache writes must still go through the shared core.
+
+## Classifier search plan
+
+The corrected target requires a new parameter search.
+The old `14 x 3.754228571428571` result is below the corrected target and should not be copied into production as-is.
+
+The search should work like this:
+
+1.  Measure full-library truth with the shared Catmull-Rom meter.
+2.  Generate exact window measurements for candidate window counts and seconds.
+3.  Use full truth only in the harness to label tracks whose probe gain violates `+0.5 / -2.0 dB`.
+4.  Search for a non-opaque classifier that exactly catches those labels from probe-only features.
+5.  Retune window seconds and margin until decoded seconds are at or below `221974.46657878053`.
+6.  Verify every decodable track against full truth.
+7.  Commit the harness and summarized evidence.
+
+The classifier should prefer simple threshold rules when possible.
+If a generated rule list is necessary,
+it must remain auditable:
+
+- It must name every feature it reads.
+- It must be generated from probe metrics only.
+- Tests must fail if path text or full peak enters the production classifier input.
+- The generated artifact must be small enough for review.
+
+## Bench sidecar
+
+`packages/music-player/truepeak-core.bench` should own corpus-scale measurement and parameter search.
+
+It should be able to:
+
+- scan a music library root,
+- decode tracks through the same meter,
+- emit `tracks.jsonl`,
+- emit exact window probe files,
+- evaluate candidate policies,
+- report decoded seconds,
+- report gain-error bounds,
+- report exception paths,
+- report whether classifier inputs are production-legal.
+
+The sidecar should not require committing the user's music.
+It may write artifacts under a local ignored output directory.
+The planning and verification docs may include full paths because that was explicitly accepted for review.
+
+## Fuzz sidecar
+
+`packages/music-player/truepeak-core.fuzz` should test invariants that do not need the real library.
+
+Useful fuzz targets include:
+
+- Catmull-Rom meter never panics for arbitrary channel counts and sample chunks.
+- Zero-channel input is handled as silence or rejected predictably.
+- Window placement never seeks before start or beyond the final legal window.
+- Window placement includes the beginning and the final possible start.
+- Gain is never greater than unity.
+- Cache row serialization and deserialization round-trip policy IDs and decision kinds.
+- Classifier input type cannot carry path strings or full-track truth.
+
+Fuzzing is not a replacement for the corpus verifier.
+It complements it.
+
+## Required verification before implementation is accepted
+
+The implementation is not done until all these layers pass.
+
+### Core unit tests
+
+Cover:
+
+- Catmull-Rom control-point behavior.
+- Inter-sample peak detection on synthetic samples.
+- Silence and zero-channel behavior.
+- Exact gain math.
+- Probe-derived gain math.
+- No amplification above unity.
+- Short-track full-scan classification.
+- Long-track window placement.
+- Final-window coverage.
+
+### Core integration tests
+
+Use fake decoded sources and a throwaway Turso database.
+
+Cover:
+
+- Cache miss to exact decision row.
+- Cache miss to probe decision row.
+- Cache hit with matching policy.
+- Cache miss with mismatched policy.
+- Source fingerprint mismatch.
+- Decision kind persisted and read back.
+- Background warming skips active-policy hits.
+- Background warming writes the same decision current playback would write.
+
+### Desktop integration tests
+
+Cover:
+
+- Current-track cache hit applies gain immediately.
+- Current-track cache miss starts with conservative fallback.
+- Late measurement swaps to final shared decision gain.
+- Background warming uses shared service.
+- Legacy desktop raw-peak cache is not read as a shared-policy hit.
+
+### Android host and device tests
+
+Cover:
+
+- Native service handle create and release.
+- Native decision API returns a valid gain decision for a fixture.
+- Turso database path lives under app-private storage.
+- Kotlin no longer reads or writes `peaks.json` for true-peak policy.
+- Device build includes the shared true-peak crate for both native ABIs.
+- Instrumented synthetic true-peak tests still exercise the real shared meter.
+
+### Corpus verifier
+
+Run against the current decodable library.
+
+Acceptance:
+
+- Target denominator is `887897.8663151221` decodable seconds unless the library or decoder support changed.
+- Target budget is `221974.46657878053` decoded seconds.
+- Gain-error bounds are `+0.5 dB` too loud and `-2.0 dB` too quiet.
+- Production classifier uses no paths and no full-track truth.
+- Every decodable track stays inside the gain-error bounds.
+- Decoded seconds are at or below the target budget.
+- The report lists full exception paths for review.
+
+## Historical lower-target exception paths
+
+The following paths are from the old lower-target run.
+They are included as evidence of the prior search,
+not as a production exception list and not as the final corrected-target result.
+Some very long paths are wrapped across physical lines to keep this document readable.
+
+```text
+/home/user/Seafile/Plain/Music/3LAU/3LAU - Star Crossed.opus
+/home/user/Seafile/Plain/Music/Afrojack/Afrojack Martin Garrix - Turn Up The Speakers (Original Mix).opus
+/home/user/Seafile/Plain/Music/Alesso/Alesso Ryan Tedder - Scars.opus
+/home/user/Seafile/Plain/Music/Alesso/Falling.opus
+/home/user/Seafile/Plain/Music/Avicii/Avicii - Levels (Radio Edit).opus
+/home/user/Seafile/Plain/Music/Avicii/Avicii Audra Mae - Long Road to Hell.opus
+/home/user/Seafile/Plain/Music/Bassjackers/Bassjackers & KSHMR feat. Sidnie Tipton - Extreme.opus
+/home/user/Seafile/Plain/Music/Boyhood's end OST/The Old Days.opus
+/home/user/Seafile/Plain/Music/Calvin Harris/Calvin Harris - How Deep Is Your Love (Radio Edit).opus
+/home/user/Seafile/Plain/Music/Coldplay/Coldplay - Up&Up.opus
+/home/user/Seafile/Plain/Music/Coldplay/Parachutes/09 We Never Change.opus
+/home/user/Seafile/Plain/Music/David Guetta/David Guetta Sia - Titanium (Alesso Remix) - remix.opus
+/home/user/Seafile/Plain/Music/Don Diablo/Don Diablo BullySongs - Found You.opus
+/home/user/Seafile/Plain/Music/Don Diablo/Don Diablo Holly Winter - Don't Let Go.opus
+/home/user/Seafile/Plain/Music/Ed Sheeran/Ed Sheeran - Shape of You (Extended Mix).opus
+/home/user/Seafile/Plain/Music/Fun. Janelle Monáe - We Are Young.opus
+/home/user/Seafile/Plain/Music/Gloriana - (Kissed You) Good Night.opus
+/home/user/Seafile/Plain/Music/Halsey/Halsey - 01. So Good.opus
+/home/user/Seafile/Plain/Music/Halsey/Manic (Explicit)/Halsey - 06. Dominic's Interlude.opus
+/home/user/Seafile/Plain/Music/Halsey/Manic (Explicit)/Halsey - 08. 3am (Explicit).opus
+/home/user/Seafile/Plain/Music/Hardwell/Being Alive feat_JGUAR Extended Mix.opus
+/home/user/Seafile/Plain/Music/Hardwell/Hardwell - 2017 End of the Year Mix.opus
+/home/user/Seafile/Plain/Music/Hardwell/Hardwell feat. Jake Reese - Run Wild (extended mix).opus
+/home/user/Seafile/Plain/Music/Imagine Dragons/Imagine Dragons - 02. Boomerang.opus
+/home/user/Seafile/Plain/Music/Imagine Dragons/Night Visions (Deluxe)/Imagine Dragons - 09. Bleeding Out.opus
+/home/user/Seafile/Plain/Music/KLYMVX/KLYMVX - Lean On (KLYMVX Remix).opus
+/home/user/Seafile/Plain/Music/Kygo/Kygo & St. Lundi - To Die For.opus
+/home/user/Seafile/Plain/Music/Kygo/Kygo & Zac Brown - Someday.opus
+/home/user/Seafile/Plain/Music/Kygo/Kygo, Patrick Droney & Petey Martin - Say You Will.opus
+/home/user/Seafile/Plain/Music/Kygo/Kygo, Zara Larsson & Tyga - Like It Is.opus
+/home/user/Seafile/Plain/Music/Lost Frequencies/Are You With Me/Are You With Me (Dimaro radio edit).opus
+/home/user/Seafile/Plain/Music/Magnet マグネット (Magnet) - Hatsune Miku Megurine Luka 初音ミク
+(Hatsune Miku) 巡音ルカ (Megurine Luka) DIVA English lyrics romaji subtitles.opus
+/home/user/Seafile/Plain/Music/Maksim Mrvica - Somewhere in Time (Barry).opus
+/home/user/Seafile/Plain/Music/Martin Garrix/Midnight Sun Extended Version.opus
+/home/user/Seafile/Plain/Music/Medicine イガク (Igaku - Medicine) - 重音テト (Kasane Teto).opus
+/home/user/Seafile/Plain/Music/ONE OK ROCK/Ambitions/ONE OK ROCK - Bombs away.opus
+/home/user/Seafile/Plain/Music/ONE OK ROCK/Kanjo Effect/Break My Strings.opus
+/home/user/Seafile/Plain/Music/ONE OK ROCK/ONE OK ROCK (ワンオクロック) Avril Lavigne - Listen (Japanee Verion).opus
+/home/user/Seafile/Plain/Music/Retrograde Extended Mix.opus
+/home/user/Seafile/Plain/Music/Rihanna Eminem - Love The Way You Lie (Part II).opus
+/home/user/Seafile/Plain/Music/Riot Extended Mix.opus
+/home/user/Seafile/Plain/Music/Selena Gomez/Selena Gomez - Back to You.opus
+/home/user/Seafile/Plain/Music/Tetoris テトリス (Tetoris) - 重音テトSV (Kasane Teto SV).opus
+/home/user/Seafile/Plain/Music/Tsukihime/Tsukihime - Natsu no Ao (Summer Blue).opus
+/home/user/Seafile/Plain/Music/Zedd/Zedd Logic X Ambassadors - Transmission.opus
+/home/user/Seafile/Plain/Music/secret - Megurine Luka - sm11401862.opus
+/home/user/Seafile/Plain/Music/【なつうた (Natsu Uta - Summer Song) 2015】Meltdown
+ENGLISH_Piano ver. を 歌ってみた (Cover)【Lizz Robinett】.opus
+/home/user/Seafile/Plain/Music/李克勤 (Hacken Lee) - 红日 (Red Sun) (粤语).opus
+/home/user/Seafile/Plain/Music/水木年华 (Shui Mu Nian Hua) 老狼 (Lao Lang) 李健 (Li Jian)
+叶世荣 (Ye Shirong) - 青春再见 (Goodbye Youth).opus
+```
+
+## What not to implement
+
+Do not reintroduce the old Android hot-or-no-gain contract.
+Probe-derived approximate gain is allowed for tracks classified as safe.
+
+Do not use the Android `1.26` window safety factor as the shared policy.
+
+Do not keep separate desktop and Android true-peak constants.
+
+Do not hard-code path exceptions into production.
+The exception paths may appear in benchmark reports,
+but the classifier must use probe-derived features only.
+
+Do not reuse legacy caches as compatible shared-policy decisions.
+
+Do not treat a successful compile as enough verification.
+The user boundary is playback gain decisions and warm-cache behavior in both flavors.
+
+## Risks and review questions
+
+### Turso on Android
+
+Desktop already uses Turso,
+but the new shared package must prove Turso works in the Android native build.
+This includes `cargo-ndk` cross-compilation and runtime access to an app-private database path.
+
+If this fails,
+the plan should not quietly reintroduce a Kotlin JSON cache.
+It should stop and document the Turso blocker.
+
+### Exact classifier fit
+
+The plan deliberately asks for exact fit on the current corpus without an opaque model.
+That may require several search iterations.
+The benchmark harness is part of the plan because this is not a hand-tuned constant change.
+
+### Source reopening and seeks
+
+The shared service needs to probe windows and sometimes full-scan the same track.
+The first implementation can rely on the existing seekable decoded sources,
+but tests should cover sources that seek repeatedly and then scan from the beginning.
+
+If any real decoder cannot seek accurately enough for window probing,
+the plan needs a fallback:
+full scan that track or reopen the source.
+
+### Cache semantics after policy changes
+
+Composite cache keys protect correctness,
+but old rows can accumulate.
+A cleanup plan can come later.
+Correctness must not depend on cleanup.
+
+### Future decoder sharing
+
+This plan stages decoder sharing after true-peak core extraction.
+A reviewer should check that the first-stage adapter boundary does not make later decoder sharing harder.
+
+## Suggested implementation stages
+
+### Stage one: durable evidence
+
+Move the benchmark harness into repo sidecars.
+Regenerate the corrected quarter-target search from the current measured library.
+Produce a report proving exact corpus fit.
+
+### Stage two: shared core crate
+
+Create `packages/music-player/truepeak-core`.
+Implement the shared meter, gain math, window policy, classifier input types, policy identity, and Turso service.
+Use fake-source tests and throwaway Turso databases.
+
+### Stage three: desktop migration
+
+Replace desktop raw-peak cache I/O with the shared service.
+Update current-track swap and background warming to use shared decisions.
+Do not import legacy desktop cache rows.
+
+### Stage four: Android migration
+
+Add explicit native true-peak service handles.
+Replace Kotlin JSON cache use with shared Rust decisions.
+Verify Android native Turso build and device behavior.
+Do not import legacy Android JSON rows.
+
+### Stage five: cleanup
+
+Remove unused desktop and Android true-peak/cache code.
+Update docs that still describe old Android windowing or Kotlin peak cache ownership.
+
+### Stage six: decoder sharing follow-up
+
+After the shared true-peak service is stable,
+plan a second extraction that shares more decode code between desktop and Android.
+
+## Reviewer checklist
+
+A reviewer should challenge these points:
+
+- Is the product behavior clear without knowing the repo?
+- Does the corrected target use decodable total seconds divided by four?
+- Does the plan avoid using full-track truth in runtime classification?
+- Does the cache row shape clearly distinguish exact and probe-derived decisions?
+- Does policy versioning make stale cache reuse impossible?
+- Does Android really move cache I/O and gain decisions into native shared Rust?
+- Does desktop really delete its local Turso actor rather than wrapping it?
+- Is resetting legacy caches acceptable for both flavors?
+- Is the classifier evidence reproducible from repo sidecars?
+- Is the staged decoder-sharing path compatible with the first-stage adapter design?
