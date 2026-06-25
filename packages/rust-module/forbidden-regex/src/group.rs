@@ -78,3 +78,8 @@ fn grow_groups(nodes: Vec<Node>) -> Vec<Node> {
 pub(crate) fn group_seedless(nodes: Vec<Node>) -> Vec<Engine> {
     grow_groups(nodes).into_iter().filter_map(group_engine).collect()
 }
+
+/// Unit tests for seedless-rule grouping, in a sidecar (max-lines exempt).
+#[cfg(test)]
+#[path = "group_tests.rs"]
+mod tests;
