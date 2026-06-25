@@ -81,10 +81,14 @@ impl Builder {
         }
     }
 
-    // What:  a bounded repetition `atom{n}` or `atom{n,m}`.
-    // Why:   the dialect bans `*`/`+`/unbounded, so only counted forms appear.
-    fn repeat(&mut self, u: &mut Unstructured, depth: u32) -> Result<String> {
-        let base = self.operand(u, depth)?;
+    // What:  a bounded repetition `atom{n}` or `atom{n,m}` over a SIMPLE atom.
+    // Why:   the dialect bans `*`/`+`/unbounded, so only counted forms appear; the base
+    //        is a single-token atom (not a recursive group) on purpose, so the generator
+    //        never builds multiplicatively-nested repeats like `(?:(?:X{4}){4}){4}` whose
+    //        unrolled automaton explodes (the engine's residual guard bounds those, but
+    //        producing them just throttles the fuzzer with multi-second compiles).
+    fn repeat(&mut self, u: &mut Unstructured, _depth: u32) -> Result<String> {
+        let base = self.simple(u)?;
         let n = u.int_in_range(0u32..=MAX_REPEAT)?;
         if u.ratio(1, 2)? {
             Ok(format!("{base}{{{n}}}"))
