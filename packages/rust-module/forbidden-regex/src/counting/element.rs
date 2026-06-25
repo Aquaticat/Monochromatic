@@ -68,3 +68,8 @@ pub(crate) fn validate_element(element: &Element) -> Result<(), CompileError> {
     }
     Ok(())
 }
+
+/// Unit tests for element decode validation, in a sidecar (max-lines exempt).
+#[cfg(test)]
+#[path = "element_tests.rs"]
+mod tests;

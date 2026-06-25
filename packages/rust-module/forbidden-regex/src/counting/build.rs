@@ -237,3 +237,8 @@ fn push_unique(out: &mut Vec<u32>, extra: &[u32]) {
         }
     }
 }
+
+/// Unit tests for the counting-NFA builder, in a sidecar (max-lines exempt).
+#[cfg(test)]
+#[path = "build_tests.rs"]
+mod tests;
