@@ -779,12 +779,33 @@ The decided objective stands; the `-1.6 dB` worst-too-quiet is simply the honest
 floor once the infeasible perfect-classifier assumption is removed, and probe density (plus a
 provenance-dependent margin for the average) is the lever that lowers it.
 
+Fourth finding (why not a cheap probe plus a full-scan router):
+spending less on the probe and full-scanning the residual has a tempting oracle floor.
+A cheap twenty-second spread probe plus full-scanning exactly the tracks whose probe gain
+would violate reaches a worst-too-quiet near `-0.15 dB` and stays under budget, because the
+cheap probe frees roughly `140000` seconds for full scans.
+That floor is not reachable, because the router cannot be built from observable features.
+Some violators probe quiet (a loudest sampled window near `-4.5 dBTP`) yet hide a sharp
+transient in an undecoded gap whose true level is near `-0.5 dBTP`, a four-decibel under-read.
+No loudest-window threshold isolates them (routing to catch the quietest one routes nearly
+everything), and they are not a provenance class.
+A peak that lives in a gap the probe never decodes is invisible by definition, so guaranteed
+exact fit needs either a margin that covers the worst gap-miss or a probe dense enough that no
+gap can hide a damaging transient.
+Dense probing reduces that worst gap-miss (it fell from over four decibels at twenty seconds to
+about `2.18 dB` at the forty-five-second density), which is why density, not a router, is the
+lever, and why finer bins are the next step.
+
+The provenance-dependent margin is wired into the bench.
+At the forty-five-second density it gives the roughly `1250` safe-provenance tracks a `1.47 dB`
+margin and the rest `1.64 dB`, so it lowers the average too-quiet error while the worst case
+stays at the untagged group's `1.64 dB`.
+
 Remaining Stage-two work:
 
 - Regenerate the corpus with a shared-meter `collect` pass and finer bins (for example a tenth
-  of a second), so sub-second window densities can be evaluated honestly.
-- Add a provenance-dependent margin (lower for yt-dlp and lossless, higher for untagged lossy)
-  and re-measure the worst-case and average errors.
+  of a second), so sub-second window densities can be evaluated honestly; this is the path to a
+  margin below the current `1.6 dB` floor.
 - Verify the chosen density and margin against exact decoded windows, not only the bins.
 
 ## Bench sidecar
