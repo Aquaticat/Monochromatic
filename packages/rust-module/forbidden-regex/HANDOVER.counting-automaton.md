@@ -10,7 +10,18 @@ reuses ping-pong buffers, so matching never allocates per byte. Only a repetitio
 a non-class body (e.g. an optional group `(?:ab)?`) and nested set algebra inside an
 operand still route to the eager DFA. This file is the source of truth for resuming.
 
-## Throughput status: 1.07x of regex on the real-repo corpus (BEAT regex; was 0.20x)
+## Throughput status: BEAT regex on BOTH arches (x86 1.25x, arm64/m1 1.11-1.16x)
+
+Latest: x86 dev box ~1.25x (full ~87M vs regex ~69M), Apple m1 arm64 (hot,
+back-to-back) ~1.11 to 1.16x (full ~49-53M vs regex ~44-46M, win holds at the most
+throttled run). The decisive late trick was forcing the DFA aho-corasick kind for the
+gate's which-rule matcher: the default NFA chases failure links per byte on every
+flagged line, a hidden scalar bottleneck on both arches and the reason arm lost before.
+DFA-kind is one lookup per byte (x86 candidates 90->118M, full 72->87M; arm full
+41->53M, flipping the arm loss to a win). The historical milestones below trace the
+journey from 0.20x.
+
+## Earlier status: 1.07x of regex on the real-repo corpus (BEAT regex; was 0.20x)
 
 Honest stable bench (16 threads; forbidden-regex SHARED across threads because it is
 immutable, regex CLONED per-thread so its lazy-DFA cache scales not contends; both
@@ -47,27 +58,23 @@ seeds put every rule in the gate; non-anchorable rules use the eager DFA (not th
 counting NFA) for their on-hit full-line check; the DFA match loop early-exits on the
 dead sink; and the line-start marker checks are skipped by a first-byte set.
 
-### Cross-arch: WIN on x86, LOSE on arm64/m1 (thermally caveated)
+### Cross-arch: WIN on both (the arm loss was the AC NFA, now fixed)
 
-x86 dev box: full ~72-76M vs regex ~68-73M, 1.01-1.07x across 4 runs (win holds at
-regex's high end). Apple m1 (arm64, 8 cores): full ~41M vs regex ~45M, 0.90-0.92x
-(LOSE). m1 is NOT sufficiently cooled, so its absolute numbers throttle and are noisy;
-the back-to-back ratio is the usable signal, and our phases run BEFORE regex's in the
-bench, so throttling-over-time biases toward us, yet we still lose, so the arm
-disadvantage is real (likely worse cool).
+The arm loss was diagnosed and FIXED. Diagnosis (m1 profile, before the fix):
+prefilter-only 95M (2.08x regex, our SIMD prefilter wins on arm), but candidates 49M
+(the aho-corasick `find_overlapping` NFA walk ate the whole lead, a 95->49 cliff),
+gate-only 38M, full 41M (0.90x, LOSE). The scalar AC failure-link walk on every flagged
+line was the bottleneck (worst on arm, but it cost ~15M on x86 too). Fix: force the DFA
+aho-corasick kind (one lookup per byte). After: m1 candidates 66-75M, gate 46-50M, full
+49-53M, 1.11-1.16x (WIN, hot, across 3 back-to-back runs); x86 candidates 118M, full
+87M, 1.25x. So the same trick fixed both arches.
 
-m1 per-line profile (one run): prefilter-only 95M (2.08x regex 45.6M, our SIMD prefilter
-still wins on arm), candidates 49M (1.08x, the aho-corasick `find_overlapping_iter` walk
-eats the whole prefilter lead, a 95->49 cliff), gate-only 38M (0.82x, below regex),
-full 41M. So the arm loss is in the SCALAR automaton work: the AC enumeration on the
-87787 prefilter-flagged lines (the vault `s.` seed floods 35650 of them) and the
-per-rule DFA walks. regex's lazy DFA is NEON-tuned and wins that scalar work on Apple
-Silicon. Where we use SIMD (prefilter) we win on arm too. So the arm fix is the SIMD
-direction in OPTIMIZATIONS.md (vectorize/cheapen the which-rule mapping and the per-byte
-walk) and/or fewer flags. To verify a cooled m1 the bench would need to skip the in-run
-38s rebuild (load a cached blob) so the measurement is not right after a hot build. The
-m1 clone is at `/Volumes/MacData/Monochromatic-bench` (cloned from origin, which the
-auto-pushing `git` wrapper keeps current; m1's own `git` is stock `/usr/bin/git`).
+Methodology note: m1 is not sufficiently cooled, so keep it maximally HOT (no cooldown
+between runs) and read the back-to-back ratio, which is stable (~1.11-1.16x) even as
+absolute throughput throttles down over consecutive runs. The m1 clone is at
+`/Volumes/MacData/Monochromatic-bench` (cloned from origin, which the auto-pushing `git`
+wrapper keeps current, including FORCE pushes; m1's own `git` is stock `/usr/bin/git`,
+updated with `git fetch --depth 1 origin main && git reset --hard origin/main`).
 
 ### What got us from 0.20x to 0.55x (all committed)
 
