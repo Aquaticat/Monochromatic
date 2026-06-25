@@ -10,6 +10,9 @@
 /// The synthetic corpus generator.
 mod corpus;
 
+/// The single-DFA batch-kernel microbenchmark.
+mod kernels;
+
 /// The dialect normalizer.
 mod normalize;
 
@@ -170,6 +173,15 @@ fn main() {
     report("  csa-union-only", csa_rate, avg_len);
     report("regex          ", rrate, avg_len);
     println!("\nforbidden-regex is {:.2}x the throughput of regex", frate / rrate);
+
+    // Batch-kernel experiment: race the scalar, interleaved, and vertical SIMD layouts
+    // on a seedless single DFA over the same corpus (the one place a many-lines DFA
+    // kernel can pay off, since the set pipeline gates most lines before any DFA runs).
+    kernels::bench_buckets(&corpus, avg_len);
+
+    // Set-level batch experiment: one concatenated-buffer prefilter sweep over the whole
+    // corpus versus the per-line loop, on the real ruleset.
+    kernels::bench_set_batch(&fset, &corpus);
 }
 
 /// Scans the corpus on repeat for `BUDGET_SECS` across `threads`, returning total

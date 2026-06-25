@@ -115,20 +115,17 @@ impl Engine {
         }
     }
 
-    /// Fills `out[i]` with whether the engine matches `lines[i]`.
+    /// Fills `out[i]` with whether the engine matches `lines[i]`, line by line.
     ///
-    /// What: a seedless table engine (its DFA runs on every line) takes the vertical
-    /// SIMD batch kernel; any other engine loops the per-line match. Why: the SIMD
-    /// kernel only pays off when the DFA actually scans every line, whereas a seeded
-    /// engine's literal prefilter already rejects most lines before the DFA runs.
+    /// What: the per-line scalar match over every line. Why: the vertical SIMD and
+    /// interleaved batch kernels were measured 0.15x-0.79x of this on x86 (and similarly
+    /// on arm64): a 16-bit transition gather scalarizes on x86, and a batch chunk cannot
+    /// exploit `is_match`'s early exit on the first match or the dead sink, so it always
+    /// runs to the longest line in the group. The per-line loop stays the fast default;
+    /// the kernels remain reachable through the hidden hooks for the benchmark record.
     pub fn is_match_batch(&self, lines: &[&[u8]], out: &mut [bool]) {
-        match &self.kind {
-            EngineKind::Table(dfa) if self.seeds.is_empty() => dfa.is_match_batch_simd(lines, out),
-            _ => {
-                for (line, slot) in lines.iter().zip(out.iter_mut()) {
-                    *slot = self.is_match(line);
-                }
-            }
+        for (line, slot) in lines.iter().zip(out.iter_mut()) {
+            *slot = self.is_match(line);
         }
     }
 

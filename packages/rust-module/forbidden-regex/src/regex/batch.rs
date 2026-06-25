@@ -7,7 +7,10 @@
 //! kernel) instead of paying per-line call overhead.
 
 /// Imports the public matcher types this module extends.
-use super::{Regex, RegexSet};
+use super::{CheckedFull, Regex, RegexSet};
+
+/// Imports the anchored line-start match used by the per-line resolution.
+use crate::build::line_start_match;
 
 /// Many-lines matching for a single compiled pattern.
 impl Regex {
@@ -71,6 +74,60 @@ impl Regex {
         }
         out
     }
+
+    /// Benchmark hook: reports whether this pattern compiled to the table DFA back-end.
+    ///
+    /// What: true when the engine is `EngineKind::Table`. Why: the batch kernels only
+    /// diverge on a table back-end, so the benchmark confirms a microbench pattern is
+    /// one before trusting its kernel-versus-kernel numbers.
+    #[doc(hidden)]
+    pub fn is_table(&self) -> bool {
+        self.engine.table_dfa().is_some()
+    }
+
+    /// Benchmark hook: vertical SIMD kernel at an explicit bucket width `N`.
+    ///
+    /// What: forces the SIMD batch at `N` lanes on the table back-end, else the per-line
+    /// loop. Why: lets the bench sweep bucket size against the scalar baseline.
+    #[doc(hidden)]
+    pub fn batch_simd_w<const N: usize>(&self, lines: &[&[u8]]) -> Vec<bool> {
+        let mut out = vec![false; lines.len()];
+        match self.engine.table_dfa() {
+            Some(dfa) => dfa.is_match_batch_simd_w::<N>(lines, &mut out),
+            None => self.engine.is_match_batch(lines, &mut out),
+        }
+        out
+    }
+
+    /// Benchmark hook: interleaved-scalar kernel at an explicit bucket width `N`.
+    ///
+    /// What: forces the interleaved batch at `N` lanes on the table back-end, else the
+    /// per-line loop. Why: sweeps how bucket size trades memory-level parallelism against
+    /// per-chunk overhead, with no SIMD gather in the way.
+    #[doc(hidden)]
+    pub fn batch_inter_w<const N: usize>(&self, lines: &[&[u8]]) -> Vec<bool> {
+        let mut out = vec![false; lines.len()];
+        match self.engine.table_dfa() {
+            Some(dfa) => dfa.is_match_batch_interleaved_w::<N>(lines, &mut out),
+            None => self.engine.is_match_batch(lines, &mut out),
+        }
+        out
+    }
+
+    /// Benchmark hook: branchless equal-length kernel at bucket width `N`.
+    ///
+    /// What: forces the tight batch at `N` lanes on the table back-end; `lines` must all
+    /// share one byte length (an exact-length bucket). Why: measures the MLP ceiling once
+    /// the per-lane early-exit branches are removed.
+    #[doc(hidden)]
+    pub fn batch_tight_w<const N: usize>(&self, lines: &[&[u8]]) -> Vec<bool> {
+        let mut out = vec![false; lines.len()];
+        match self.engine.table_dfa() {
+            Some(dfa) => dfa.is_match_batch_tight_w::<N>(lines, &mut out),
+            None => self.engine.is_match_batch(lines, &mut out),
+        }
+        out
+    }
 }
 
 /// Many-lines matching for a whole ruleset.
@@ -90,6 +147,79 @@ impl RegexSet {
     /// ```
     pub fn is_match_batch(&self, lines: &[&[u8]]) -> Vec<bool> {
         lines.iter().map(|line| self.is_match(line)).collect()
+    }
+
+    /// Benchmark hook: batch via one concatenated-buffer gate sweep.
+    ///
+    /// What: joins the lines with `\n` separators, sweeps the SIMD prefilter once over
+    /// the whole buffer to mark which lines hold a seed, then resolves each line. Why:
+    /// the negative-line cost is the per-line prefilter, and short lines starve Teddy's
+    /// SIMD; one long-buffer sweep runs it at full width and skips the per-line gate on
+    /// every line with no seed. Equivalent to [`RegexSet::is_match_batch`] line for line.
+    #[doc(hidden)]
+    pub fn is_match_batch_concat(&self, lines: &[&[u8]]) -> Vec<bool> {
+        let count = lines.len();
+        if count == 0 {
+            return Vec::new();
+        }
+        let total: usize = lines.iter().map(|line| line.len() + 1).sum();
+        let mut buf = Vec::with_capacity(total);
+        let mut starts = Vec::with_capacity(count);
+        for line in lines {
+            starts.push(buf.len());
+            buf.extend_from_slice(line);
+            buf.push(b'\n');
+        }
+        let candidate = self.sweep_candidates(&buf, &starts);
+        (0..count)
+            .map(|index| {
+                let end = starts.get(index + 1).copied().unwrap_or(buf.len()) - 1;
+                self.resolve_line(&buf[starts[index]..end], candidate[index])
+            })
+            .collect()
+    }
+
+    /// Marks, by one prefilter sweep over `buf`, which lines contain a seeded literal.
+    ///
+    /// What: walks the prefilter from hit to hit, attributing each to its line and
+    /// jumping to the next line start. Why: one SIMD pass replaces a per-line prefilter
+    /// call, and jumping past a flagged line keeps the sweep over the negative gaps.
+    fn sweep_candidates(&self, buf: &[u8], starts: &[usize]) -> Vec<bool> {
+        let mut candidate = vec![false; starts.len()];
+        let mut at = 0;
+        while let Some(hit) = self.gate.prefilter_find_from(buf, at) {
+            let line = starts.partition_point(|&start| start <= hit) - 1;
+            candidate[line] = true;
+            at = starts.get(line + 1).copied().unwrap_or(buf.len());
+            if at >= buf.len() {
+                break;
+            }
+        }
+        candidate
+    }
+
+    /// Resolves one line's verdict given whether the sweep found a seed in it.
+    ///
+    /// What: runs the seeded-rule gate only when a seed is present, then the line-start
+    /// rules and the literal-free groups, mirroring [`RegexSet::is_match`]. Why: skipping
+    /// the gate on a seedless line is exactly what the prefilter would have done per
+    /// line, so the verdict is unchanged.
+    fn resolve_line(&self, line: &[u8], has_seed: bool) -> bool {
+        if has_seed {
+            let mut checked = CheckedFull::new();
+            if self
+                .gate
+                .any_candidate(line, |rule, pos| self.matches_rule(line, rule, pos, &mut checked))
+            {
+                return true;
+            }
+        }
+        if self.line_start_candidate(line)
+            && self.line_start.iter().any(|engine| line_start_match(engine, line))
+        {
+            return true;
+        }
+        self.seedless_groups.iter().any(|group| group.is_match(line))
     }
 }
 

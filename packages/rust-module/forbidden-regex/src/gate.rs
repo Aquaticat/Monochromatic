@@ -112,6 +112,18 @@ impl SetGate {
         }
     }
 
+    /// Reports the start of the next seeded literal at or after `at` in `buf`.
+    ///
+    /// What: a positional SIMD prefilter search over `buf[at..]`, `None` when no seed
+    /// occurs there (or no rule is seeded). Why: the batch path sweeps the whole
+    /// concatenated corpus in one pass to mark which lines hold a seed, so Teddy runs at
+    /// full SIMD width over a long buffer instead of paying per-line setup on each short
+    /// line, which is where the negative-line cost dominates.
+    pub fn prefilter_find_from(&self, buf: &[u8], at: usize) -> Option<usize> {
+        let prefilter = self.prefilter.as_ref()?;
+        prefilter.find(buf, Span::from(at..buf.len())).map(|span| span.start)
+    }
+
     /// Calls `visit` for each seeded rule whose literal occurs in `line`.
     ///
     /// What: visits every rule with a literal hit and the hit's start, possibly with

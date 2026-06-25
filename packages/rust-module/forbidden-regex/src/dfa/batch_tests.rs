@@ -103,3 +103,18 @@ fn empty_line_set_is_a_noop() {
     // No lines: every kernel must leave the (empty) output untouched without panic.
     kernels_agree("AKIA[A-Z2-7]{4}", &[]);
 }
+
+#[test]
+fn tight_kernel_matches_oracle_on_equal_length_lines() {
+    // The branchless tight kernel assumes every line shares one length (exact bucket);
+    // on such a set its accumulated verdict must equal the scalar oracle.
+    let dfa = search_dfa("AKIA[A-Z2-7]{4}");
+    let lines: &[&[u8]] = &[
+        b"AKIA2345", b"nomatch1", b"AKIAZ7Q9", b"xxxxxxxx", b"AKIA0000",
+        b"abcdefgh", b"AKIA6QZ7", b"zzzzzzzz", b"AKIA9999", b"plain---",
+    ];
+    let oracle: Vec<bool> = lines.iter().map(|line| dfa.is_match(line)).collect();
+    let mut out = vec![false; lines.len()];
+    dfa.is_match_batch_tight_w::<8>(lines, &mut out);
+    assert_eq!(out, oracle);
+}
