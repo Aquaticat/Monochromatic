@@ -6,6 +6,9 @@ use serde::{Deserialize, Serialize};
 /// Imports the error type for validation of a decoded automaton.
 use crate::error::CompileError;
 
+/// Imports the byte set used to report a DFA's possible first match bytes.
+use crate::charset::ByteSet;
+
 /// Returns the single-bit acceptance mask for one boundary context.
 ///
 /// What: encodes `(word_after, line_end)` into a bit index `0..=3` and shifts a
@@ -110,6 +113,24 @@ impl Dfa {
         // What: the end-of-input boundary has no next byte. Why: `word_after` is
         // false and `line_end` is true there.
         self.accept[state] & accept_bit(false, true) != 0
+    }
+
+    /// Adds to `set` every byte that could begin a match from the start state.
+    ///
+    /// What: marks byte `b` when the start already accepts (an empty match, so any byte
+    /// qualifies) or its start transition does not go straight to the dead sink. Why: a
+    /// line-start rule is checked only when `line[0]` is one of these, so a single byte
+    /// test skips the anchored DFA call on almost every line.
+    pub fn mark_first_bytes(&self, set: &mut ByteSet) {
+        let nc = self.nclasses as usize;
+        let start = self.start as usize;
+        let start_accepts = self.accept[start] != 0;
+        for b in 0u8..=u8::MAX {
+            let class = self.class_map[b as usize] as usize;
+            if start_accepts || self.trans[start * nc + class] as usize != self.dead as usize {
+                set.insert(b);
+            }
+        }
     }
 
     /// Validates a decoded automaton so the match loop cannot read out of bounds.

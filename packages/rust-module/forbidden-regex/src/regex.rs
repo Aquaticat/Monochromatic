@@ -6,6 +6,9 @@ use serde::{Deserialize, Serialize};
 /// Imports the node algebra used by the rule sink's node lists.
 use crate::ast::node::Node;
 
+/// Imports the byte set used for the line-start first-byte fast reject.
+use crate::charset::ByteSet;
+
 /// Imports the rule construction, the seedless fold, and the line-start matcher.
 use crate::build::{
     BuiltRule, build_engine, build_rule, build_seedless_union, line_start_match,
@@ -99,6 +102,13 @@ pub struct RegexSet {
     line_start: Vec<Engine>,
     /// Rule ids paired with `line_start`, for rule-id attribution.
     line_start_ids: Vec<usize>,
+    /// Bytes that could begin a line-start rule match; the per-line fast reject.
+    ///
+    /// What: the union of every line-start rule's possible first bytes, rebuilt on load
+    /// (not serialized). Why: a line-start rule matches only at position zero, so unless
+    /// `line[0]` is in this set the anchored checks are skipped in one byte test.
+    #[serde(skip)]
+    line_start_first: ByteSet,
     /// Ids of the literal-free rules, run against every line for rule-id attribution.
     seedless_ids: Vec<usize>,
     /// Union DFAs over groups of the literal-free rules, for the boolean fast path.
@@ -180,6 +190,7 @@ impl RuleSink {
             seedless_groups: group_seedless(self.seedless_nodes),
             seedless_union,
             gate: SetGate::default(),
+            line_start_first: ByteSet::empty(),
         };
         set.prepare();
         set
@@ -200,13 +211,19 @@ impl RegexSet {
         Ok(sink.assemble())
     }
 
-    /// Rebuilds the combined required-literal gate from the seeded rules' seeds.
+    /// Rebuilds the combined gate and the line-start first-byte set.
     ///
-    /// What: collects each rule's seeds and builds the set-level matcher. Why: the
-    /// gate is not serialized, so it is rebuilt after both compilation and decode.
+    /// What: builds the set-level literal matcher from each rule's seeds, then unions
+    /// every line-start rule's possible first bytes. Why: neither is serialized, so both
+    /// are rebuilt after compilation and after decode.
     fn prepare(&mut self) {
         let per_rule: Vec<Option<Vec<Vec<u8>>>> = self.rules.iter().map(Engine::seeds).collect();
         self.gate = SetGate::build(&per_rule);
+        let mut first = ByteSet::empty();
+        for engine in &self.line_start {
+            engine.mark_first_bytes(&mut first);
+        }
+        self.line_start_first = first;
     }
 
     /// Compiles patterns, skipping any that fail, with the kept input indices.
@@ -253,10 +270,21 @@ impl RegexSet {
         {
             return true;
         }
-        if self.line_start.iter().any(|engine| line_start_match(engine, line)) {
+        if self.line_start_candidate(line)
+            && self.line_start.iter().any(|engine| line_start_match(engine, line))
+        {
             return true;
         }
         self.seedless_groups.iter().any(|group| group.is_match(line))
+    }
+
+    /// Reports whether `line` could begin a line-start rule match.
+    ///
+    /// What: true when the first byte is one a line-start rule can begin with. Why: a
+    /// line-start rule matches only at position zero, so this one-byte test skips the
+    /// anchored checks on almost every line (the deny-code markers begin few lines).
+    fn line_start_candidate(&self, line: &[u8]) -> bool {
+        line.first().is_some_and(|&b| self.line_start_first.contains(b))
     }
 
     /// Checks one seeded rule against `line`, anchored at `pos` when possible.
@@ -282,9 +310,11 @@ impl RegexSet {
                 hits.push(rule);
             }
         });
-        for (engine, &id) in self.line_start.iter().zip(&self.line_start_ids) {
-            if line_start_match(engine, line) {
-                hits.push(id);
+        if self.line_start_candidate(line) {
+            for (engine, &id) in self.line_start.iter().zip(&self.line_start_ids) {
+                if line_start_match(engine, line) {
+                    hits.push(id);
+                }
             }
         }
         for &id in &self.seedless_ids {

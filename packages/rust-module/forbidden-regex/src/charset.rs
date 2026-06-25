@@ -14,7 +14,9 @@ const BITS_PER_WORD: usize = 64;
 /// What: `[u64; 4]` where bit `b` is set when byte `b` is a member. Why: byte
 /// classes, `.`, single literals, and the `\d \w \s` shorthands are all just
 /// byte sets; membership and complement are O(1) word operations.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[derive(
+    Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize,
+)]
 pub struct ByteSet {
     /// Bitmap words; `words[b / 64]`'s bit `b % 64` is set iff `b` is present.
     words: [u64; WORDS],
@@ -27,6 +29,14 @@ impl ByteSet {
     /// What: all words zero. Why: the starting point every class builds up from.
     pub fn empty() -> Self {
         ByteSet { words: [0; WORDS] }
+    }
+
+    /// Builds the full set of every byte value.
+    ///
+    /// What: all 256 bits set. Why: the conservative first-byte set for a back-end
+    /// whose first bytes are not enumerated, so its line-start check is never skipped.
+    pub fn all_bytes() -> Self {
+        ByteSet::empty().negate()
     }
 
     /// Adds a single byte to the set.

@@ -33,15 +33,6 @@ use crate::error::CompileError;
 /// bounds build time against a pathological structure.
 const ENGINE_DFA_CAP: usize = 20_000;
 
-/// Largest repetition bound a non-anchorable seeded rule may carry and still be tried
-/// as an eager DFA rather than the counting back-end.
-///
-/// What: a ceiling on any `{n,m}` bound for the DFA route. Why: the DFA blowup needs a
-/// literal overlapping a long counted run, so a rule with only small repetitions (a
-/// line-anchored marker alternation like `^(?:INF|PRO|...):`) builds a small fast DFA,
-/// while a long-counted value pattern stays on the build-fast counting back-end.
-const DFA_SAFE_MAX_REPEAT: usize = 3;
-
 /// Shortest leading literal the fold will gate an otherwise-seedless rule on.
 ///
 /// What: a two-byte floor for a weak LEADING seed (anchored at the hit). Why: a rule
@@ -66,21 +57,6 @@ const WEAK_INNER_SEED_LEN: usize = 1;
 /// which is exactly substring search; the counting back-end models the prefix itself.
 fn search_root(node: Node) -> Node {
     concat(vec![Node::Top, node])
-}
-
-/// Returns the largest repetition bound anywhere in a node.
-///
-/// What: the maximum `Repeat.max` over the whole tree, or zero when there is none.
-/// Why: it gauges whether an eager DFA could explode, deciding the back-end route.
-fn max_repeat(node: &Node) -> usize {
-    match node {
-        Node::Repeat { node, max, .. } => (*max).max(max_repeat(node)),
-        Node::Concat(parts) | Node::Alt(parts) | Node::Inter(parts) => {
-            parts.iter().map(max_repeat).max().unwrap_or(0)
-        }
-        Node::Comp(inner) => max_repeat(inner),
-        _ => 0,
-    }
 }
 
 /// Builds a bare anchored DFA engine for a rule, or `None` past the cap.
@@ -185,22 +161,13 @@ fn starts_with_line_anchor(node: &Node) -> bool {
     matches!(node, Node::Concat(parts) if parts.first() == Some(&Node::LineStart))
 }
 
-/// Routes a rule seedless at the default floor into the one gate pass.
+/// Routes a rule seedless at the default floor onto a weak seed.
 ///
-/// What: a `^`-anchored rule becomes a line-start check; otherwise gate on a weak
-/// leading literal (anchored at the hit) when present, else on any weak inner required
-/// literal (the full engine runs on a hit). Why: a second per-line pass caps the
-/// combined rate below regex, so every literal-free rule is folded into the gate; each
-/// route is sound because the seed is a required literal and `^` matches only at line
-/// starts.
+/// What: gate on a weak leading literal (anchored at the hit) when present, else on
+/// any weak inner required literal (the full engine runs on a hit). Why: a second
+/// per-line pass caps the combined rate below regex, so every literal-free rule is
+/// folded into the gate; each route is sound because the seed is a required literal.
 fn fold_seedless(node: &Node) -> Routing {
-    if starts_with_line_anchor(node) {
-        return Routing {
-            seeds: Vec::new(),
-            anchored: None,
-            line_start: anchored_engine(node),
-        };
-    }
     let weak_leading = leading_seeds_min(node, WEAK_LEADING_SEED_LEN);
     if !weak_leading.is_empty() {
         return Routing {
@@ -216,13 +183,22 @@ fn fold_seedless(node: &Node) -> Routing {
     }
 }
 
-/// Chooses how a rule is matched: default seeds, else the seedless fold.
+/// Chooses how a rule is matched: line-start, default seeds, else the seedless fold.
 ///
-/// What: gates on the leading literal when selective enough (anchored at the hit),
-/// else on the best inner literal; a rule seedless at the default floor is folded into
-/// the gate by [`fold_seedless`]. Why: anchoring at the hit replaces the slow per-rule
-/// counting scan, and folding deletes the second per-line pass.
+/// What: a `^`-anchored rule is checked at line starts (off the gate entirely); else
+/// gate on the leading literal when selective (anchored at the hit), else on the best
+/// inner literal, else the seedless fold. Why: a marker rule's common short codes make
+/// terrible gate seeds, but it matches only at line starts, so a cheap pos-zero check
+/// beats flagging it as a substring; anchoring at the hit replaces the slow counting
+/// scan, and folding deletes the second per-line pass.
 fn route_rule(node: &Node) -> Routing {
+    if starts_with_line_anchor(node) {
+        return Routing {
+            seeds: Vec::new(),
+            anchored: None,
+            line_start: anchored_engine(node),
+        };
+    }
     let leading = leading_seeds(node);
     if !leading.is_empty() {
         return Routing {
@@ -253,18 +229,16 @@ pub(crate) fn build_rule(node: Node) -> Result<BuiltRule, CompileError> {
     let routing = route_rule(&node);
     let anchorable = routing.anchored.is_some();
     let seedless = routing.seeds.is_empty() && routing.line_start.is_none();
-    // A rule with no literal prefix (seedless at the default floor) has no counted-run
-    // overlap to explode, so its eager DFA is small and gives a fast per-hit check; a
-    // non-anchorable rule with only small repetitions (a line-anchored marker
-    // alternation) likewise; everything else takes the build-fast counting back-end.
-    // The DFA route is what keeps a folded rule's on-hit check off the slow counting
-    // scan (facebook ran over whole 4 KiB lines on every `|`/`%` hit).
-    let dfa_route =
-        was_seedless || seedless || (!anchorable && max_repeat(&node) <= DFA_SAFE_MAX_REPEAT);
-    let kind = if dfa_route {
-        build_table_kind(node.clone())?
-    } else {
+    // An anchorable rule matches via its anchored DFA at the hit, so its own engine is
+    // unused and takes the build-fast counting back-end. A non-anchorable rule's engine
+    // IS its matcher, run over the whole line on every hit, so it takes the eager DFA
+    // for a fast per-byte check; `build_table_kind` falls back to counting if the DFA
+    // would explode. This keeps the inner-keyword rules off the slow counting scan they
+    // pay on common-keyword hits.
+    let kind = if anchorable {
         build_counting_kind(node.clone())?
+    } else {
+        build_table_kind(node.clone())?
     };
     Ok(BuiltRule {
         engine: Engine::new(kind, routing.seeds.clone()),

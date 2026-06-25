@@ -118,6 +118,19 @@ impl Engine {
         }
     }
 
+    /// Adds to `set` the bytes that could begin a match, for a line-start fast reject.
+    ///
+    /// What: a `Table` engine reports its DFA's first bytes; any other kind marks every
+    /// byte (conservative, so no match is ever skipped). Why: line-start rules compile
+    /// to anchored DFAs, so the precise table path is the one that matters; the
+    /// fallback keeps the reject sound for any back-end.
+    pub fn mark_first_bytes(&self, set: &mut crate::charset::ByteSet) {
+        match &self.kind {
+            EngineKind::Table(dfa) => dfa.mark_first_bytes(set),
+            _ => set.union_with(&crate::charset::ByteSet::all_bytes()),
+        }
+    }
+
     /// Rebuilds the prefilter searchers from the decoded seeds.
     ///
     /// What: regenerates `prefilter` from `seeds`. Why: the searchers are not
