@@ -30,3 +30,8 @@ pub fn nullable(node: &Node, ctx: Ctx) -> bool {
         Node::WordBoundary => ctx.word_before != ctx.word_after,
     }
 }
+
+/// Unit tests for nullability, in a sidecar (max-lines exempt).
+#[cfg(test)]
+#[path = "nullable_tests.rs"]
+mod tests;

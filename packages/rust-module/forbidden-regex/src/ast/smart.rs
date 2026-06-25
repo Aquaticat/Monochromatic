@@ -160,3 +160,8 @@ pub fn class(set: ByteSet) -> Node {
         Node::Class(set)
     }
 }
+
+/// Unit tests for the smart constructors, in a sidecar (max-lines exempt).
+#[cfg(test)]
+#[path = "smart_tests.rs"]
+mod tests;

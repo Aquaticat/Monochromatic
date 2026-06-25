@@ -280,3 +280,8 @@ fn better_seed(best: Vec<Vec<u8>>, candidate: Vec<Vec<u8>>) -> Vec<Vec<u8>> {
 fn min_len(seeds: &[Vec<u8>]) -> usize {
     seeds.iter().map(Vec::len).min().unwrap_or(0)
 }
+
+/// Unit tests for seed extraction and the prefilter, in a sidecar (max-lines exempt).
+#[cfg(test)]
+#[path = "prefilter_tests.rs"]
+mod tests;
