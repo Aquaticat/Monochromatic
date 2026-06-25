@@ -156,18 +156,28 @@ fn from_bytes_rejects_garbage_without_panic() {
 }
 
 #[test]
-fn deeply_nested_repetition_compiles_without_oom() {
-    // libFuzzer (roundtrip/differential) found that these deeply-nested bounded
-    // repetitions (and complement over them) blew up the DFA build's residuals and
-    // exhausted memory. Compile must now RETURN (reject or fall back to counting),
-    // never OOM or hang. We only require it terminates with a clean Result.
-    let nested = "(?:(?:(?:(?:[^0-9]a\\|?){3}){2}){3,4}){4,4}";
-    let _ = compile(nested);
-    let comp = "~((?:(?:(?:\\S{4,4}\\d{4,4})a?){4,4}a?){3}a)a";
-    let _ = compile(comp);
-    // A reasonable nested pattern still compiles and matches.
-    let ok = compile("(?:ab){3}").unwrap();
-    assert!(ok.is_match(b"ababab"));
+fn nested_group_repetition_compiles_and_matches() {
+    // Reasonable nested group repetition compiles fast and matches correctly.
+    let triple = compile("(?:ab){3}").unwrap();
+    assert!(triple.is_match(b"ababab"));
+    assert!(!triple.is_match(b"abab"));
+    let nested = compile("(?:[a-z]{2}){2}").unwrap();
+    assert!(nested.is_match(b"abcd"));
+    assert!(!nested.is_match(b"ab1d"));
+}
+
+// libFuzzer (roundtrip/differential) found these deeply-nested bounded repetitions
+// (and complement over them) blow up the DFA build's residuals. With the residual-size
+// guard, compile now TERMINATES (rejects or falls back to counting) instead of OOM.
+// Marked #[ignore]: even guarded, the worst case takes seconds (more in a debug build),
+// which would dominate the default suite and per-mutant mutation runs; run on demand
+// with `cargo test -- --ignored`. The engine guard plus the fuzz corpus are the live
+// regression protection.
+#[test]
+#[ignore = "slow pathological compile; the residual guard is exercised by fuzzing"]
+fn pathological_nested_repetition_terminates_without_oom() {
+    let _ = compile("(?:(?:(?:(?:[^0-9]a\\|?){3}){2}){3,4}){4,4}");
+    let _ = compile("~((?:(?:(?:\\S{4,4}\\d{4,4})a?){4,4}a?){3}a)a");
 }
 
 #[test]

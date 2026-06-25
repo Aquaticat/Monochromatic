@@ -102,3 +102,8 @@ fn derivative_concat(parts: &[Node], byte: u8, ctx: Ctx) -> Node {
     }
     alt(branches)
 }
+
+/// Unit tests for byte derivatives, in a sidecar (max-lines exempt).
+#[cfg(test)]
+#[path = "derivative_tests.rs"]
+mod tests;
