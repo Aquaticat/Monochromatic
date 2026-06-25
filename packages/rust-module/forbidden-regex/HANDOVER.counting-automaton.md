@@ -52,14 +52,24 @@ repo-root toolchain):
   verdicts must agree.
 - Structured generator in `src/generators.rs` (`PatternAndContent`, bounded depth/
   repeat, records `uses_algebra` so the differential skips `&`/`~`).
-- mise tasks mirror the sibling: `list`, `build`, `smoke` (30s each, ASAN), `run`.
-- STATUS: built + smoke-run (20s each). compile/roundtrip/differential CLEAN over 40-50k
-  runs each (the differential agreeing with `regex` and roundtrip preserving verdicts is
-  strong correctness evidence). `fuzz_from_bytes` FOUND a real bug in seconds: a decoded
-  RegexSet with inconsistent parallel vectors panicked at match time; fixed by
-  `RegexSet::validate_structure` (committed) with an inline-bytes regression test in
-  `tests/integration.rs`. Extended campaigns (240s each) running to surface deeper bugs.
-- User directive: do ENOUGH fuzzing before starting mutation testing.
+- mise tasks mirror the sibling: `list`, `build`, `smoke`, `run`; plus a `decode_artifact`
+  bin (reconstruct a pattern from a libFuzzer artifact). Generator caps repeats to
+  simple-atom bases so it explores realistic patterns fast.
+- STATUS: TWO real bugs found and fixed, then re-fuzzed CLEAN:
+  1. `fuzz_from_bytes`: a decoded RegexSet with inconsistent parallel vectors panicked at
+     match time -> `RegexSet::validate_structure` (1.2M runs clean after the fix).
+  2. `fuzz_roundtrip`/`fuzz_differential`: deeply nested bounded repetition blew up the
+     DFA build's residuals -> compile OOM -> `RESIDUAL_NODE_CAP` guard in `dfa/build.rs`
+     (re-fuzzed clean: roundtrip 26k, differential 62k, compile 36k, from_bytes 1.2M, all
+     exit 0, no OOM/crash/mismatch). Both have regression tests in `tests/integration.rs`.
+  Two clean campaigns (~millions of runs) = enough fuzzing; proceeding to mutation.
+- User directive (satisfied): do ENOUGH fuzzing before starting mutation testing.
+
+Test suite: grew from ~20 ("laughably few") to 133, all sidecar `*_tests.rs` (max-lines
+exempt) per module: charset, countset, parse, ast/smart, nullable, prefilter, derivative,
+gate, dfa/table, counting/element, counting/build, engine, group, plus integration
+(from_bytes adversarial, fold routing, products). The pathological-compile repro is
+`#[ignore]`d so it does not slow the default suite or per-mutant mutation runs.
 
 Mutation testing (cargo-mutants on the engine crate) -- INFRA READY, RUN HELD:
 - MUST run inside a Podman container: mutation testing compiles and runs MUTATED code,
