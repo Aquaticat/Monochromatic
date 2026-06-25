@@ -161,20 +161,24 @@ unsafe fn sheng_all_avx512(tables: &ShengTables, lines: &[&[u8]], out: &mut [boo
 #[cfg(target_arch = "aarch64")]
 #[inline]
 unsafe fn sheng_line_neon(tables: &ShengTables, line: &[u8]) -> bool {
-    let accept = unsafe { vld1q_u8_x4(tables.accept.as_ptr()) };
-    let mut state: uint8x16_t = vdupq_n_u8(tables.start);
-    let mut acc: uint8x16_t = vdupq_n_u8(0);
-    for &byte in line {
-        let column = unsafe { vld1q_u8_x4(tables.trans[byte as usize].as_ptr()) };
+    // Edition 2024: an `unsafe fn` body is not an implicit unsafe context, and every NEON
+    // intrinsic here is unsafe, so the whole scan runs inside one unsafe block.
+    unsafe {
+        let accept = vld1q_u8_x4(tables.accept.as_ptr());
+        let mut state: uint8x16_t = vdupq_n_u8(tables.start);
+        let mut acc: uint8x16_t = vdupq_n_u8(0);
+        for &byte in line {
+            let column = vld1q_u8_x4(tables.trans[byte as usize].as_ptr());
+            let masks = vqtbl4q_u8(accept, state);
+            let ctx = vdupq_n_u8(tables.ctx[byte as usize]);
+            acc = vorrq_u8(acc, vandq_u8(masks, ctx));
+            state = vqtbl4q_u8(column, state);
+        }
         let masks = vqtbl4q_u8(accept, state);
-        let ctx = vdupq_n_u8(tables.ctx[byte as usize]);
-        acc = vorrq_u8(acc, vandq_u8(masks, ctx));
-        state = vqtbl4q_u8(column, state);
+        let end = vdupq_n_u8(tables.end_bit);
+        acc = vorrq_u8(acc, vandq_u8(masks, end));
+        vmaxvq_u8(acc) != 0
     }
-    let masks = vqtbl4q_u8(accept, state);
-    let end = vdupq_n_u8(tables.end_bit);
-    acc = vorrq_u8(acc, vandq_u8(masks, end));
-    vmaxvq_u8(acc) != 0
 }
 
 /// Unit tests for the Sheng kernel, in a sidecar (max-lines exempt).
