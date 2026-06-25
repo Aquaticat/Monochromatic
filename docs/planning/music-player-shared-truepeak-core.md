@@ -2,6 +2,9 @@
 
 Status: planning only.
 No production code has been changed for this plan.
+One throwaway spike has run outside the repo to de-risk Turso on Android.
+It changed no production code,
+and its result is recorded in the Turso on Android risk note below.
 
 Audience: a reviewer who has never seen this product.
 This document explains the product context, the problem, the agreed design, and the evidence that must exist before
@@ -642,13 +645,16 @@ but they must not define the true-peak policy.
 The native Rust crate should depend on `packages/music-player/truepeak-core` by path.
 It should expose JNI functions that call the shared service.
 
-The Android native build must prove Turso cross-compiles for:
+The Android native build must prove Turso works for both native ABIs:
 
 - `arm64-v8a`,
 - `x86_64`.
 
-This should be an early spike,
-not a late surprise.
+An isolated spike has already cleared most of this; see the Turso on Android risk note.
+`turso` `0.6` cross-compiles for both ABIs through `cargo-ndk`,
+and the `arm64-v8a` build round-trips an on-disk decision row on a physical device.
+What remains is proving the same path from the real JNI `cdylib` against an app-private database path,
+plus an `x86_64` runtime check on an emulator.
 The Android package already builds native Rust through `cargo-ndk`,
 so the verification belongs in the Android native build task and in the new core package tasks.
 
@@ -888,13 +894,39 @@ The user boundary is playback gain decisions and warm-cache behavior in both fla
 
 ### Turso on Android
 
-Desktop already uses Turso,
-but the new shared package must prove Turso works in the Android native build.
-This includes `cargo-ndk` cross-compilation and runtime access to an app-private database path.
+Status: largely de-risked by an isolated spike on 2026-06-25.
 
-If this fails,
-the plan should not quietly reintroduce a Kotlin JSON cache.
-It should stop and document the Turso blocker.
+The crate desktop depends on is `turso` `0.6.1`,
+the pure-Rust SQLite rewrite (`turso_core`, `turso_parser`, `turso_macros`),
+not the libsql C fork.
+There is no bundled C SQLite to cross-compile,
+which is the usual source of Android native-database pain.
+
+A throwaway spike confirmed the build and runtime path.
+It changed no production code and ran outside the repo.
+The spike used the desktop pin,
+`turso` `0.6` with `default-features = false`.
+It cross-compiled for both named ABIs through `cargo-ndk`:
+`aarch64-linux-android` and `x86_64-linux-android`.
+The `aarch64` binary ran on a physical Pixel 6,
+arm64-v8a, API 36.
+On that device it opened an on-disk database,
+created a composite-key `(fingerprint, policy_id)` decision table,
+wrote a `probe_estimate` row with a `REAL` gain,
+read the row back unchanged,
+and returned a clean miss for an absent policy key.
+The database file persisted:
+a second process reopened it and read the same row.
+
+Remaining confirmation before the risk is fully closed:
+
+- Exercise `turso` from the real JNI `cdylib` loaded into the app process, not only a standalone binary.
+- Write to a real app-private path under the app data directory, not `/data/local/tmp`.
+- Run the `x86_64` build on an emulator; only its cross-compile is proven so far.
+
+If any remaining check fails,
+the plan should still stop and document the blocker,
+not quietly reintroduce a Kotlin JSON cache.
 
 ### Exact classifier fit
 
@@ -923,6 +955,73 @@ Correctness must not depend on cleanup.
 
 This plan stages decoder sharing after true-peak core extraction.
 A reviewer should check that the first-stage adapter boundary does not make later decoder sharing harder.
+
+### Conservative fallback and hot masters
+
+The fallback gain is `normalization_gain(1.0)`,
+which is `-1 dB` of attenuation (linear `0.8912509`),
+confirmed in `packages/music-player/desktop-app/src/peak_swap.rs`.
+That gain is correct only for a track whose true peak is `0 dBTP`.
+A hot master with inter-sample peaks above `+1 dBTP` (linear above `1.122`)
+still sits above `0 dBFS` after the fallback gain,
+so the realtime per-sample clamp distorts it during the cold-measurement window.
+The fallback never overflows the converter, because the clamp catches it,
+but it is not distortion-free for the loudest masters.
+The doc's "slightly quiet for some tracks" describes only one direction.
+This is a brief transient until the measured gain swaps in,
+so it is a limitation to document, not necessarily a blocker.
+
+### Source fingerprint definition
+
+The plan uses `fingerprint` throughout but never defines its inputs.
+Desktop currently derives it as a one-way hash of `(path, size, mtime)`
+in `packages/music-player/desktop-app/src/peakcache.rs`.
+The shared package should state the exact fingerprint inputs,
+because the choice has correctness consequences:
+
+- A content edit that preserves `mtime` would not invalidate a `(path, size, mtime)` row.
+- Including `path` means a renamed or moved file re-scans even when its bytes are unchanged.
+- Desktop and Android use different path roots for the same logical track,
+  so a path-based fingerprint never matches across flavors.
+
+### Concurrent writes and decision precedence
+
+Current-track measurement and background warming can both resolve the same track.
+The plan should define the write model,
+a single-writer actor or a serialized handle,
+plus upsert precedence when two decisions race.
+An `exact_full_scan` row must not be overwritten by a later `probe_estimate` for the same key,
+because the exact decision is strictly better evidence.
+
+### Meter truth is Catmull-Rom, not ITU true peak
+
+The plan calls a full scan "exact gain from the full true peak"
+and uses "full-track truth" as the benchmark label.
+The meter samples Catmull-Rom interpolation at one quarter, one half, and three quarters between samples
+in `packages/music-player/desktop-app/src/truepeak.rs`,
+not the oversampling filter of ITU-R BS.1770 true-peak metering.
+Both probe and full scan share that meter,
+so the system is internally consistent and the gain-error bounds hold against this meter.
+But "truth" here is the shared meter's estimate,
+not an absolute true-peak figure,
+and the meter can under-read a real inter-sample peak that falls between its three probe positions.
+
+### Generalization beyond the current corpus
+
+The shipped policy is fixed and versioned,
+but it is tuned for exact fit on the current corpus.
+New tracks the user adds later are not covered by that fit.
+The only protection for an unseen between-window peak is the fixed probe margin.
+The plan should state the expected behavior and safety margin for tracks outside the measured corpus,
+not only for the measured library.
+
+### Policy identity derivation
+
+The plan says a policy change must bump the policy ID,
+but it does not say how the ID is produced.
+A hand-maintained constant can be forgotten when a constant or the classifier artifact changes.
+Deriving `policy_id` from a hash of the policy parameters and the classifier artifact
+would make a stale-cache bug impossible rather than merely discouraged.
 
 ## Suggested implementation stages
 
