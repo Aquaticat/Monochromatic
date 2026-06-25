@@ -33,6 +33,9 @@ use truepeak_core::{Policy, default_policy, peak_dbtp, probe_estimated_peak};
 struct LongFeatures {
     /// Track path, carried only so the feature dump can be joined with metadata offline.
     path: String,
+    /// Per-window sampled peaks (linear), so offline analysis can compute any statistic
+    /// (variance, robust spread) over the probe windows.
+    windows: Vec<f64>,
     /// Loudest sampled window in dBTP (a legal classifier feature).
     sampled_max_db: f64,
     /// How far the true peak sits above the loudest sampled window in dB (harness label;
@@ -143,6 +146,7 @@ fn long_features(tracks: &[Track], candidate: Candidate, policy: &Policy) -> Vec
             let error = probe - exact;
             LongFeatures {
                 path: track.path.clone(),
+                windows,
                 sampled_max_db: db(sampled_max),
                 under_read_db: db(f64::from(track.full_peak)) - db(sampled_max),
                 duration_secs: track.duration_secs,
@@ -158,6 +162,8 @@ fn long_features(tracks: &[Track], candidate: Candidate, policy: &Policy) -> Vec
 struct LongFeatureRow<'a> {
     /// Track path, the join key against the metadata pass.
     path: &'a str,
+    /// Per-window sampled peaks (linear), for offline variance and spread statistics.
+    windows: &'a [f64],
     /// Loudest sampled window in dBTP.
     sampled_max_db: f64,
     /// True peak above the loudest sampled window in dB.
@@ -184,6 +190,7 @@ pub fn write_long_features(
     for feature in &features {
         let row = LongFeatureRow {
             path: &feature.path,
+            windows: &feature.windows,
             sampled_max_db: feature.sampled_max_db,
             under_read_db: feature.under_read_db,
             duration_secs: feature.duration_secs,

@@ -20,6 +20,13 @@ description = "Corpus evaluation and corrected-target parameter search for the s
 name = "truepeak-core-bench"
 path = "src/main.rs"
 
+# The corpus collector: decode the library through the SHARED truepeak-core meter (via
+# ffmpeg, so no decoder is ported here) and emit fine-grained cache bins. Separate bin so
+# the search tool stays decode-free.
+[[bin]]
+name = "truepeak-core-collect"
+path = "src/bin/collect.rs"
+
 [dependencies]
 # The production meter, gain math, window placement, and policy identity, by path so the
 # bench scores candidates with the exact code playback will run.
