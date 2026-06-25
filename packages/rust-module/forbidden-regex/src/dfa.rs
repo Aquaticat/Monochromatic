@@ -18,6 +18,9 @@ pub mod batch;
 /// Sheng-style in-register transition kernel (`vpermb`/`vqtbl4q`).
 pub mod sheng;
 
+/// Two-byte composed Sheng kernel (one permute per two input bytes).
+pub mod sheng2;
+
 /// Re-exports the capped builder entry point.
 pub use build::build_dfa_within;
 

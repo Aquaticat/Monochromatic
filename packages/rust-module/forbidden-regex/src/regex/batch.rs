@@ -196,6 +196,21 @@ impl Regex {
         }
         out
     }
+
+    /// Benchmark hook: two-byte composed Sheng kernel.
+    ///
+    /// What: forces the two-byte Sheng scan on a qualifying table back-end (position-
+    /// independent acceptance, at most 64 states and 16 classes), else the scalar batch.
+    /// Why: measures whether one permute per two bytes beats the one-byte Sheng.
+    #[doc(hidden)]
+    pub fn batch_sheng2(&self, lines: &[&[u8]]) -> Vec<bool> {
+        let mut out = vec![false; lines.len()];
+        match self.engine.table_dfa() {
+            Some(dfa) => dfa.is_match_batch_sheng2(lines, &mut out),
+            None => self.engine.is_match_batch(lines, &mut out),
+        }
+        out
+    }
 }
 
 /// Many-lines matching for a whole ruleset.
