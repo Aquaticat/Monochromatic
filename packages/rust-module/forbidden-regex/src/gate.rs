@@ -6,8 +6,8 @@
 //! Teddy pass) instead of every rule; the literal-free rules are handled separately
 //! by the set's union automaton.
 
-/// Imports the multi-pattern matcher used to map a hit back to its rules.
-use aho_corasick::AhoCorasick;
+/// Imports the multi-pattern matcher and its kind, to map a hit back to its rules.
+use aho_corasick::{AhoCorasick, AhoCorasickKind};
 
 /// Imports the leftmost match-kind for the SIMD prefilter.
 use regex_automata::MatchKind;
@@ -58,7 +58,14 @@ impl SetGate {
         } else {
             (
                 Prefilter::new(MatchKind::LeftmostFirst, &literals),
-                AhoCorasick::new(&literals).ok(),
+                // What: force the DFA back-end for the which-rule matcher. Why: the
+                // overlapping enumeration is a per-byte automaton walk on every flagged
+                // line; the DFA does one table lookup per byte instead of chasing the
+                // NFA's failure links, which is the dominant scalar cost on arm64.
+                AhoCorasick::builder()
+                    .kind(Some(AhoCorasickKind::DFA))
+                    .build(&literals)
+                    .ok(),
             )
         };
         SetGate {
