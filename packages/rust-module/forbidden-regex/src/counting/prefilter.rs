@@ -149,26 +149,33 @@ pub(crate) fn leading_seeds(node: &Node) -> Vec<Vec<u8>> {
     }
 }
 
-/// Returns the leading literal of a concatenation.
+/// Returns the leading literals of a concatenation, extended by the following run.
 ///
-/// What: the maximal leading run of singleton classes, or the first part's own leading
-/// literal when the concatenation does not start with a singleton. Why: a match must
-/// begin with the concatenation's first element.
+/// What: the first part's leading literals (a singleton byte, or each branch of a
+/// leading alternation), each extended by the maximal run of singleton classes that
+/// follows. Why: every match begins with the first element, so a leading
+/// alternation's branches plus the mandatory bytes after it (`(?:sk|rk)_` ->
+/// `sk_`/`rk_`) are a longer, more selective leading literal than the bare branches.
 fn concat_leading(parts: &[Node]) -> Vec<Vec<u8>> {
-    let mut run: Vec<u8> = Vec::new();
-    for part in parts {
-        if let Node::Class(set) = part
-            && let Some(b) = set.as_singleton()
-        {
-            run.push(b);
-            continue;
-        }
-        if run.is_empty() {
-            return leading_literals(part);
-        }
-        break;
+    let Some((first, rest)) = parts.split_first() else {
+        return Vec::new();
+    };
+    let mut prefixes = leading_literals(first);
+    if prefixes.is_empty() {
+        return Vec::new();
     }
-    if run.is_empty() { Vec::new() } else { vec![run] }
+    for part in rest {
+        let Node::Class(set) = part else {
+            break;
+        };
+        let Some(b) = set.as_singleton() else {
+            break;
+        };
+        for prefix in &mut prefixes {
+            prefix.push(b);
+        }
+    }
+    prefixes
 }
 
 /// Unions the leading literals of every alternation branch.

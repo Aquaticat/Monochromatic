@@ -23,7 +23,7 @@ use crate::engine::{Engine, EngineKind};
 /// What: a state ceiling on a group's union DFA; a trial union exceeding it starts a
 /// new group instead. Why: combining literal-free rules into one pass is the
 /// throughput lever, but `{n,m}` overlap blowup must cap, so explosive rules separate.
-const GROUP_DFA_CAP: usize = 1_500;
+const GROUP_DFA_CAP: usize = 6_000;
 
 /// Wraps a node with the `Σ*` prefix for unanchored substring search.
 ///
