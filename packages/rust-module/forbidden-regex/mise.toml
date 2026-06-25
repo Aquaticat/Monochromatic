@@ -53,6 +53,8 @@ depends = ["test:mutation:image"]
 # ONLY inside this disposable rootless Podman container, never on the host. The crate is
 # mounted read-write (cargo-mutants writes its build copies and mutants.out); a named
 # volume caches the crates.io registry so only the first run downloads deps. Memory and
-# cpu are capped per the repo's heavy-run isolation rule. Pass cargo-mutants flags after
-# `--` (e.g. `-- --file src/charset.rs` to scope, or `-- --list` to enumerate mutants).
-run = "podman run --rm --memory=6g --cpus=4 --volume $PWD:/work:Z --volume forbidden-regex-mutants-registry:/usr/local/cargo/registry --workdir /work forbidden-regex-mutants cargo mutants --colors=never"
+# cpu are capped per the repo's heavy-run isolation rule. `--security-opt label=disable`
+# avoids relabeling the host crate tree (the namespace isolation is what keeps mutated
+# code off the host). Pass cargo-mutants flags after `--` (e.g. `-- --file src/parse.rs`
+# to scope, or `-- --list` to enumerate mutants).
+run = "podman run --rm --security-opt label=disable --memory=6g --cpus=4 --volume $PWD:/work --volume forbidden-regex-mutants-registry:/usr/local/cargo/registry --workdir /work forbidden-regex-mutants cargo mutants --colors=never"
