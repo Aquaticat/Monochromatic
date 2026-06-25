@@ -801,11 +801,62 @@ At the forty-five-second density it gives the roughly `1250` safe-provenance tra
 margin and the rest `1.64 dB`, so it lowers the average too-quiet error while the worst case
 stays at the untagged group's `1.64 dB`.
 
+Fifth finding (the fine-bin collect pass, and why the worst case is irreducible by density):
+the shared-meter `collect` pass (`truepeak-core-collect`, decoding through the production meter
+via an ffmpeg pipe) regenerated the corpus at one-tenth-second bins.
+It matches the prior corpus to `0.0000 dB`, and ffmpeg decoded the formerly-unsupported HE-AAC
+track plus more files, so the current corpus is:
+
+```text
+tracks                 = 4114
+full decodable seconds = 916861
+corrected target (/4)  = 229215
+```
+
+Finer window granularity does NOT lower the margin.
+At `450` windows of one-tenth second (a forty-five-second probe) the margin is `1.78 dB`, no
+better than the coarse result, because the worst track is a LONG one: a forty-five-second probe
+is about one percent of an hour-long mix, so a transient in the unsampled remainder is missed
+regardless of how the probe seconds are sliced.
+The limit is coverage FRACTION, not window granularity.
+Switching to proportional coverage (probe a fixed fraction of every long track) at the budget
+fraction of about twenty percent still floors near `1.75 dB`, because a handful of tracks carry a
+single sharp sub-tenth-second transient that no sparse probe catches at any granularity or any
+coverage fraction up to thirty percent.
+
+But the under-read distribution is extremely skewed, which is the practical opening.
+At proportional twenty-percent coverage the loud long tracks distribute as:
+
+```text
+under-read dB: median 0.14  p90 0.63  p95 0.84  p99 1.33  p99.5 1.56  max 2.25
+```
+
+So almost every track is easy; a long tail of a few sharp-transient tracks sets the worst case.
+Guaranteeing the last one percent costs about a decibel of margin on every track.
+The margin-versus-clamp tradeoff makes that cost optional:
+
+```text
+margin 0.5 dB -> worst-quiet -0.5, 119 tracks (3.17%) exceed +0.5 and are clamped
+margin 0.8 dB -> worst-quiet -0.8,  43 tracks (1.14%) clamped
+margin 1.0 dB -> worst-quiet -1.0,  26 tracks (0.69%) clamped
+margin 1.2 dB -> worst-quiet -1.2,   7 tracks (0.19%) clamped
+```
+
+The realtime per-sample clamp already catches any too-loud transient (no converter overflow,
+only brief distortion on that sub-second peak), and background warming eventually full-scans
+every track to an exact cached gain, so a clamped transient is a cold-start-only effect on a
+handful of tracks, not a permanent error.
+This reframes the policy: "exact fit at the quarter budget" is disproportionately expensive in
+the last percent, so the recommended shape is a proportional probe with a moderate fixed margin
+(the margin sets the clamp count, a design choice), the album and provenance priors layered on
+to make the average gain louder than that margin, the realtime clamp as the safety net, and
+background warming converging the cache to exact over time.
+
 Remaining Stage-two work:
 
-- Regenerate the corpus with a shared-meter `collect` pass and finer bins (for example a tenth
-  of a second), so sub-second window densities can be evaluated honestly; this is the path to a
-  margin below the current `1.6 dB` floor.
+- Wire the proportional-coverage probe and the margin-versus-clamp tradeoff into the bench as a
+  committed search (the fine-bin findings above were measured in throwaway analysis scripts).
+- Pick the shipped margin with the user, given the clamp-count tradeoff above.
 - Verify the chosen density and margin against exact decoded windows, not only the bins.
 
 ## Bench sidecar
