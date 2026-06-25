@@ -1,10 +1,10 @@
 //! Batched, many-lines-at-once matching for the public matcher types.
 //!
 //! What: `is_match_batch` on [`Regex`] and [`RegexSet`], plus hidden per-kernel entry
-//! points the benchmark uses to race the scalar, interleaved, and SIMD layouts. Why: a
-//! consumer scanning a whole file hands every line at once; one call lets the engine
-//! pick the fastest layout (and, for a seedless single pattern, the vertical SIMD
-//! kernel) instead of paying per-line call overhead.
+//! points the benchmark uses to race the scalar, interleaved, tight, and Sheng layouts.
+//! Why: a consumer scanning a whole file hands every line at once; one call lets the engine
+//! pick the fastest layout (and, for a seedless single pattern, the Sheng permute kernel)
+//! instead of paying per-line call overhead.
 
 /// Imports the public matcher types this module extends.
 use super::{CheckedFull, Regex, RegexSet};
@@ -24,8 +24,8 @@ impl Regex {
     /// Reports, per line, whether the pattern matches a substring of that line.
     ///
     /// What: returns one verdict per input line. Why: the batch face of
-    /// [`Regex::is_match`]; a seedless table pattern runs the vertical SIMD kernel,
-    /// every other shape loops the per-line match.
+    /// [`Regex::is_match`]; a seedless table pattern over a large batch runs the Sheng
+    /// permute kernel, every other shape loops the per-line match.
     ///
     /// # Example
     ///
@@ -103,7 +103,8 @@ impl Regex {
     /// Benchmark hook: forces the interleaved-scalar kernel.
     ///
     /// What: runs the interleaved batch on the table back-end, else the per-line loop.
-    /// Why: isolates memory-level parallelism from the SIMD gather instruction.
+    /// Why: measures the memory-level parallelism of N independent scalar transition chains
+    /// against the scalar baseline.
     #[doc(hidden)]
     pub fn is_match_batch_interleaved(&self, lines: &[&[u8]]) -> Vec<bool> {
         let mut out = vec![false; lines.len()];
@@ -128,7 +129,7 @@ impl Regex {
     ///
     /// What: forces the interleaved batch at `N` lanes on the table back-end, else the
     /// per-line loop. Why: sweeps how bucket size trades memory-level parallelism against
-    /// per-chunk overhead, with no SIMD gather in the way.
+    /// per-chunk overhead.
     #[doc(hidden)]
     pub fn batch_inter_w<const N: usize>(&self, lines: &[&[u8]]) -> Vec<bool> {
         let mut out = vec![false; lines.len()];

@@ -58,10 +58,10 @@ fn exact_buckets<'a>(refs: &[&'a [u8]]) -> Vec<Vec<&'a [u8]>> {
 
 /// Runs the bucket-width and sorting-strategy sweep over the corpus.
 ///
-/// What: for each pattern, prints scalar lines/s and the interleaved/SIMD ratios at four
-/// bucket widths on length-sorted input, the sort cost, and an exact-length-bucket
-/// comparison. Why: answers whether a length-bucketed batch beats the per-line loop and
-/// at what width and bucketing.
+/// What: for each pattern, prints scalar lines/s and the ratios of the interleaved kernel
+/// (four bucket widths, length-sorted), the tight kernel (exact buckets), the bucketed
+/// public API, and the one- and two-byte Sheng kernels, plus the sort cost. Why: answers
+/// whether a length-bucketed batch and the permute kernels beat the per-line loop, and how.
 pub fn bench_buckets(corpus: &[Vec<u8>], avg_len: f64) {
     let refs: Vec<&[u8]> = corpus.iter().map(Vec::as_slice).collect();
     let mut sorted = refs.clone();

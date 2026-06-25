@@ -102,10 +102,9 @@ impl Dfa {
     /// Fills `out` advancing `N` lines in lockstep with plain scalar transition reads.
     ///
     /// What: chunks by `N`, advances each chunk one column at a time with independent
-    /// scalar table reads, and runs the leftover lines scalar. Why: this isolates the
-    /// benefit of overlapping `N` independent loads (memory-level parallelism the core
-    /// finds on its own) from the benefit of the SIMD gather instruction itself; `N` is
-    /// the bucket width so the benchmark can sweep it.
+    /// scalar table reads, and runs the leftover lines scalar. Why: overlapping `N`
+    /// independent transition loads exposes the memory-level parallelism the per-line
+    /// loop's serial dependency hides; `N` is the bucket width so the benchmark can sweep it.
     #[inline(always)]
     fn interleaved_width<const N: usize>(&self, lines: &[&[u8]], out: &mut [bool]) {
         let nc = self.nclasses as usize;

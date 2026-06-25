@@ -174,8 +174,8 @@ fn main() {
     report("regex          ", rrate, avg_len);
     println!("\nforbidden-regex is {:.2}x the throughput of regex", frate / rrate);
 
-    // Batch-kernel experiment: race the scalar, interleaved, and vertical SIMD layouts
-    // on a seedless single DFA over the same corpus (the one place a many-lines DFA
+    // Batch-kernel experiment: race the scalar, interleaved, tight, bucketed, and Sheng
+    // layouts on a seedless single DFA over the same corpus (the one place a many-lines DFA
     // kernel can pay off, since the set pipeline gates most lines before any DFA runs).
     kernels::bench_buckets(&corpus, avg_len);
 

@@ -131,8 +131,9 @@ impl Engine {
     /// 3.35x the per-line loop on x86 (one-byte ~2.2x on both arches), with no prefilter
     /// and no bucketing. A seeded engine keeps the per-line loop so its literal prefilter
     /// still rejects most lines first, and a small batch keeps it too, so the kernel's
-    /// one-time permute-table build stays amortized. (The across-lines gather and
-    /// interleaved kernels lost outright and survive only as the benchmark's hidden hooks.)
+    /// one-time permute-table build stays amortized. (A vertical SIMD gather across lines
+    /// lost outright and was removed; the interleaved and tight kernels reach parity to a
+    /// small win and back the `is_match_batch_bucketed` opt-in.)
     pub fn is_match_batch(&self, lines: &[&[u8]], out: &mut [bool]) {
         if self.seeds.is_empty() && lines.len() >= SHENG_BATCH_FLOOR
             && let EngineKind::Table(dfa) = &self.kind

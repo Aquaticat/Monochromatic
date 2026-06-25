@@ -78,6 +78,28 @@ let reloaded = RegexSet::from_bytes(&bytes).unwrap();
 assert!(reloaded.is_match(b"... AKIA0123456789ABCDEF7 ..."));
 ```
 
+## Batch matching
+
+For scanning many lines at once, `is_match_batch(&[&[u8]]) -> Vec<bool>` on `Regex` and
+`RegexSet` returns one verdict per line, equal to calling `is_match` on each.
+
+```rust
+let re = forbidden_regex::compile("[0-9a-f]{32}").unwrap();
+let lines: &[&[u8]] = &[b"deadbeefdeadbeefdeadbeefdeadbeef", b"nope"];
+assert_eq!(re.is_match_batch(lines), vec![true, false]);
+```
+
+On `Regex`, a seedless single pattern of at most 64 states over a large batch routes
+through the Sheng in-register transition kernel: one `vpermb` (AVX-512VBMI) or `vqtbl4q`
+(NEON) permute advances the DFA state, replacing the dependent transition load, and when
+acceptance is position-independent a composed table advances two bytes per permute. It is
+measured up to ~3.3x the per-line loop on x86 and ~2.2x on arm64, falls back to the
+per-line scan otherwise, and is runtime-detected (no nightly toolchain required).
+
+`Regex::is_match_batch_bucketed(&[&[u8]]) -> Vec<bool>` is an opt-in path that groups lines
+by exact length and runs a branchless equal-length kernel; it helps over-64-state seedless
+patterns and is fastest when the caller already feeds length-sorted lines.
+
 ## Tasks
 
 - `mise run //packages/rust-module/forbidden-regex:test` runs the unit and

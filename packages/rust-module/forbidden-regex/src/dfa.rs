@@ -12,7 +12,7 @@ mod minimize;
 /// The serializable `Dfa` table and its match loop.
 pub mod table;
 
-/// Batched multi-line match kernels (scalar, vertical SIMD, interleaved).
+/// Batched multi-line match kernels (scalar, interleaved, branchless tight).
 pub mod batch;
 
 /// Sheng-style in-register transition kernel (`vpermb`/`vqtbl4q`).
