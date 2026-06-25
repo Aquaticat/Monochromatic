@@ -84,6 +84,11 @@ fn distinct_count(color: &[u32]) -> usize {
     seen.len()
 }
 
+/// Unit tests for minimization helpers, in a sidecar (max-lines exempt).
+#[cfg(test)]
+#[path = "minimize_tests.rs"]
+mod tests;
+
 /// Rebuilds a DFA with one state per color.
 ///
 /// What: picks a representative state per color and remaps its transitions and

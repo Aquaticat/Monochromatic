@@ -205,6 +205,35 @@ fn mixed_ruleset_routes_each_rule_correctly() {
 }
 
 #[test]
+fn dialect_constructs_have_their_semantics() {
+    // `.` is any byte except newline.
+    let dot = compile(".").unwrap();
+    assert!(dot.is_match(b"x"));
+    assert!(dot.is_match(b"\t"));
+    assert!(!dot.is_match(b"\n"));
+    assert!(!dot.is_match(b""));
+
+    // `{n}` is an exact count, not a literal brace.
+    let three = compile("a{3}").unwrap();
+    assert!(three.is_match(b"aaa"));
+    assert!(three.is_match(b"aaaa")); // contains a 3-run
+    assert!(!three.is_match(b"aa"));
+    assert!(!three.is_match(b"a{3}"));
+
+    // `{n,m}` is a bounded range.
+    let range = compile("xa{2,3}").unwrap();
+    assert!(range.is_match(b"xaa"));
+    assert!(range.is_match(b"xaaa"));
+    assert!(!range.is_match(b"xa"));
+
+    // `?` is zero-or-one of the preceding atom.
+    let opt = compile("xa?b").unwrap();
+    assert!(opt.is_match(b"xb"));
+    assert!(opt.is_match(b"xab"));
+    assert!(!opt.is_match(b"xaab"));
+}
+
+#[test]
 fn single_regex_round_trips_through_bytes() {
     let regex = compile("AKIA[A-Z2-7]{16}").unwrap();
     let bytes = regex.to_bytes().unwrap();
