@@ -1023,6 +1023,151 @@ A hand-maintained constant can be forgotten when a constant or the classifier ar
 Deriving `policy_id` from a hash of the policy parameters and the classifier artifact
 would make a stale-cache bug impossible rather than merely discouraged.
 
+## Review amendments to fold in
+
+These came from a later review pass on 2026-06-25,
+an external review plus direct codebase verification.
+They extend the named sections above and should be merged in place during implementation.
+They do not reopen any agreed design decision.
+
+### Decoded-seconds accounting
+
+The benchmark budget must count actual decode work,
+including the probe windows that a probe-then-full-scan track decodes before its full scan.
+The starting-threshold model `sum(min(duration, threshold))` undercounts those tracks.
+Use:
+
+```text
+decoded_cost(track) =
+  duration                                   if short exact scan
+  window_count * window_seconds              if probe estimate
+  window_count * window_seconds + duration   if probe then full scan
+```
+
+Stage one does not reuse probe-decoded samples for the later full scan,
+so a needs-full-scan track pays both.
+A later optimization may cache probe windows to drop the double cost,
+but the benchmark must assume the double cost until that exists.
+
+### Cache validity beyond policy_id
+
+A row is reusable only when its production environment matches.
+Keep these as separate columns, not collapsed into `policy_id`:
+
+- `policy_id`: constants, classifier logic, gain math, cache interpretation.
+- `meter_id`: Catmull-Rom behavior, including boundary and end-of-track handling.
+- `decoder_stack_id`: Symphonia and libopus versions and their channel and sample-conversion behavior.
+- `schema_version`: row layout.
+
+Collapsing decoder identity into `policy_id` is rejected:
+it would churn `policy_id` on every decoder bump and needlessly invalidate unrelated rows.
+A read is a hit only when the full identity tuple matches.
+
+### Source seeking precision
+
+`seek(seconds: f64)` is too loose for reproducible window placement.
+Prefer frame-based seeking,
+or require the adapter to seek at or before the target frame then discard decoded frames to the exact frame.
+Otherwise the bench sidecar and runtime can measure different windows,
+especially near the final window start.
+
+### Unknown or contradicted duration
+
+Duration drives the policy branch,
+so define the degenerate cases:
+
+- unknown duration: full scan exact.
+- duration at or below zero with non-empty audio: full scan exact.
+- reported duration shorter than the decoded stream: use the decoded duration for stored metadata and verification.
+
+Cover these with fake sources.
+
+### Silence and degenerate frames
+
+- A fully silent or zero-peak track yields unity gain and a valid decision kind, never a `log10(0)` path.
+- `window_frames = max(1, floor(window_seconds * sample_rate))`.
+- `TruePeakSource` chunks may end mid-frame; the meter must preserve channel routing across chunk boundaries.
+- The meter interpolates only once four real samples exist and adds no synthetic end padding;
+  that boundary rule is part of `meter_id`.
+
+### Decode-failure handling
+
+Stage one does not cache decode failures;
+the known HE-AAC/SBR case may be retried on later runs.
+A later stage may add a failure row keyed by `fingerprint + policy_id + decoder_stack_id` with an error kind,
+never treated as a gain decision.
+
+### Foreground and background arbitration
+
+The shared service serves foreground current-track decisions and background warming from one cache.
+Foreground must win:
+
+- foreground cached reads and resolve requests take priority over warming writes,
+- duplicate in-flight `fingerprint + policy_id` work is coalesced where practical.
+
+This keeps the old "background sweep interferes with the current track" failure from returning.
+
+### Android service-handle concurrency
+
+The explicit native handle needs a stated concurrency contract:
+
+- whether `TruePeakService` is internally thread-safe and callable from multiple Kotlin dispatchers,
+- whether `release(handle)` drains in-flight work, cancels it, or only marks the handle closed,
+- what a late callback against a released handle does,
+- whether errors cross JNI as structured result codes rather than thrown exceptions or sentinels,
+- whether the service or Kotlin and WorkManager own the worker threads.
+
+### Android opener boundary
+
+Recommended shape:
+Kotlin opens each track source and calls a per-track native resolve or warm-one,
+with WorkManager driving iteration as the platform knob.
+Avoid Rust worker threads calling a Kotlin opener back over JNI,
+which needs JVM attach, careful local-reference handling, and strict file-descriptor lifetimes.
+The shared policy, meter, cache, and decision logic stay in the core either way.
+
+### Gain-change smoothing
+
+A late swap from the conservative fallback to the measured gain should ramp over a short interval
+to avoid an audible step.
+This lives in the platform output stage, not in truepeak-core,
+but the plan states it so the Android native move does not introduce a sudden mid-track jump.
+
+### Bench evidence hardening
+
+The bench sidecar should:
+
+- emit the exact `policy_id` and the git commit of the meter and classifier that produced the report,
+- report classifier complexity and the full feature list,
+- run perturbation tests on probe features,
+- run leave-one-artist or leave-one-directory sensitivity checks where metadata allows,
+- exercise synthetic adversarial cases near thresholds.
+
+This makes the "non-opaque, not a disguised path list" requirement reviewable.
+
+### CI wiring
+
+The new core, bench, and fuzz packages need CI wiring,
+not only local tasks,
+so they do not become local-only sidecars.
+
+### Revised staging
+
+Insert a platform-viability stage before the rest,
+because the service API depends on Turso being viable on Android:
+
+- Stage zero: platform viability. Prove `turso` builds and runs under the Android native targets, and settle the handle lifecycle. Build and `arm64`/`x86_64` runtime are already proven by the spike; the in-process `cdylib` against an app-private path remains.
+- Stage one: shared meter crate. Meter, gain math, `TruePeakSource`, policy-identity skeleton.
+- Stage two: durable evidence. Build the bench sidecar on the shared meter and regenerate the corrected-target search.
+- Stage three: full shared service. Classifier, Turso schema, cache semantics, fake-source integration tests, warming.
+- Stage four: desktop migration.
+- Stage five: Android migration.
+- Stage six: cleanup.
+- Stage seven: decoder-sharing follow-up.
+
+This supersedes the stage list below.
+Stage zero plus the meter-first order keep benchmark evidence from being generated with code that later diverges from production.
+
 ## Suggested implementation stages
 
 ### Stage one: durable evidence
