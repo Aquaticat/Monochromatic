@@ -653,8 +653,9 @@ The Android native build must prove Turso works for both native ABIs:
 An isolated spike has already cleared most of this; see the Turso on Android risk note.
 `turso` `0.6` cross-compiles for both ABIs through `cargo-ndk`,
 and the `arm64-v8a` build round-trips an on-disk decision row on a physical device.
-What remains is proving the same path from the real JNI `cdylib` against an app-private database path,
-plus an `x86_64` runtime check on an emulator.
+The in-process path is also proven:
+a spike JNI entry linked `turso` into `libmusicplayer_native.so` and ran an instrumented round-trip
+to the app-private `filesDir` on both the Pixel 6 (`arm64-v8a`) and the emulator (`x86_64`).
 The Android package already builds native Rust through `cargo-ndk`,
 so the verification belongs in the Android native build task and in the new core package tasks.
 
@@ -904,7 +905,7 @@ The user boundary is playback gain decisions and warm-cache behavior in both fla
 
 ### Turso on Android
 
-Status: largely de-risked by an isolated spike on 2026-06-25.
+Status: fully de-risked by an isolated spike on 2026-06-25.
 
 The crate desktop depends on is `turso` `0.6.1`,
 the pure-Rust SQLite rewrite (`turso_core`, `turso_parser`, `turso_macros`),
@@ -928,15 +929,20 @@ and returned a clean miss for an absent policy key.
 The database file persisted:
 a second process reopened it and read the same row.
 
-Remaining confirmation before the risk is fully closed:
+The in-process path is also proven.
+A spike JNI entry linked `turso` into the real `libmusicplayer_native.so` for both ABIs,
+and an instrumented `NativeBridgeTest` ran a round-trip to the app-private `filesDir`:
 
-- Exercise `turso` from the real JNI `cdylib` loaded into the app process, not only a standalone binary.
-- Write to a real app-private path under the app data directory, not `/data/local/tmp`.
-- Run the `x86_64` build on an emulator; only its cross-compile is proven so far.
+- `arm64-v8a` on the physical Pixel 6: `OK (10 tests)`.
+- `x86_64` on the emulator: `OK (10 tests)`.
 
-If any remaining check fails,
-the plan should still stop and document the blocker,
-not quietly reintroduce a Kotlin JSON cache.
+So Turso is confirmed end to end on Android:
+it cross-compiles for both ABIs,
+links into the app library,
+and round-trips a decision row to an app-private path under the JVM-loaded library,
+on both a real device and an emulator.
+No residual Turso-on-Android risk remains.
+The spike code was a throwaway in a forked worktree and is not part of the plan.
 
 ### Exact classifier fit
 
@@ -1168,8 +1174,8 @@ because the service API depends on Turso being viable on Android:
 
 - Stage zero: platform viability.
   Prove `turso` builds and runs under the Android native targets, and settle the handle lifecycle.
-  Build and `arm64`/`x86_64` runtime are already proven by the spike;
-  the in-process `cdylib` against an app-private path remains.
+  Build, `arm64`/`x86_64` standalone runtime, and the in-process `cdylib` round-trip to an
+  app-private path are all proven by the spike on the Pixel 6 and the emulator.
 - Stage one: shared meter crate. Meter, gain math, `TruePeakSource`, policy-identity skeleton.
 - Stage two: durable evidence. Build the bench sidecar on the shared meter and regenerate the corrected-target search.
 - Stage three: full shared service. Classifier, Turso schema, cache semantics, fake-source integration tests, warming.
