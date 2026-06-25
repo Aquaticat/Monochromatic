@@ -1,0 +1,37 @@
+# Bench sidecar for truepeak-core: corpus-scale evaluation and the corrected-target
+# parameter search. It reads a per-track measurement file (full true peak plus
+# per-second bin peaks) and simulates any window policy WITHOUT re-decoding, scoring it
+# with the SHARED truepeak-core gain, window-placement, and policy math so the evidence
+# cannot diverge from production behavior. See README.md and
+# ../../../docs/planning/music-player-shared-truepeak-core.md.
+[package]
+name = "truepeak-core-bench"
+version = "0.1.0"
+edition = "2024"
+license = "LGPL-3.0-or-later"
+publish = false
+description = "Corpus evaluation and corrected-target parameter search for the shared true-peak policy, scored with the production truepeak-core meter, gain, and window math."
+
+# Standalone crate, its own workspace root, matching the core crate and the Android
+# island so no ancestor Cargo.toml absorbs it.
+[workspace]
+
+[[bin]]
+name = "truepeak-core-bench"
+path = "src/main.rs"
+
+[dependencies]
+# The production meter, gain math, window placement, and policy identity, by path so the
+# bench scores candidates with the exact code playback will run.
+truepeak-core = { path = "../truepeak-core" }
+
+# Read the per-track measurement file (one JSON object per line) the corpus collector
+# emits: derive feature lets the track record declare its fields.
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# Whole-program optimization for the corpus sweep over thousands of tracks.
+[profile.release]
+lto = true
+codegen-units = 1
+opt-level = 3
