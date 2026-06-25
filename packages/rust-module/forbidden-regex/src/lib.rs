@@ -36,6 +36,9 @@ mod counting;
 /// The per-pattern back-end selector.
 mod engine;
 
+/// Per-rule back-end selection and the seedless-rule fold into the gate.
+mod build;
+
 /// The RegexSet-level combined literal prefilter.
 mod gate;
 

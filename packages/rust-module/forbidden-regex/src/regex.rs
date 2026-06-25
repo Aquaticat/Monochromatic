@@ -3,35 +3,22 @@
 /// Imports the serde derives for persisting compiled matchers.
 use serde::{Deserialize, Serialize};
 
-/// Imports the node algebra and the constructor used to wrap for search.
+/// Imports the node algebra used by the rule sink's node lists.
 use crate::ast::node::Node;
 
-/// Imports the concat constructor used to wrap a node for search.
-use crate::ast::smart::concat;
+/// Imports the rule construction, the seedless fold, and the line-start matcher.
+use crate::build::{
+    BuiltRule, build_engine, build_rule, build_seedless_union, line_start_match,
+};
 
 /// Imports the seedless-rule grouping into union DFAs.
 use crate::group::group_seedless;
 
-/// Imports the NFA builder that selects the counting back-end.
-use crate::counting::build_nfa;
-
-/// Imports the counting NFA type for the seedless-union measurement.
+/// Imports the counting NFA type for the seedless-union oracle.
 use crate::counting::CountingNfa;
 
-/// Imports the alternation constructor for the seedless union.
-use crate::ast::smart::alt;
-
-/// Imports the product builder that selects the `&`/`~` counting back-end.
-use crate::counting::build_product;
-
-/// Imports the node-based seed extractor and leading-seed probe.
-use crate::counting::{leading_seeds, seeds_from_node};
-
-/// Imports the DFA builder and minimizer for the general back-end.
-use crate::dfa::{build_dfa_within, minimize};
-
-/// Imports the per-pattern back-end and its kind.
-use crate::engine::{Engine, EngineKind};
+/// Imports the per-pattern back-end.
+use crate::engine::Engine;
 
 /// Imports the error type.
 use crate::error::CompileError;
@@ -41,107 +28,6 @@ use crate::gate::SetGate;
 
 /// Imports the parser entry point.
 use crate::parse::parse;
-
-/// Wraps a pattern node for unanchored search.
-///
-/// What: prefixes the node with `Top` (sigma star), giving `Σ*·R`. Why: a nullable
-/// residual of `Σ*·R` at any boundary means `R` matched some substring ending
-/// there, which is exactly substring search; the counting back-end models the same
-/// prefix itself, so it takes the bare node instead.
-fn search_root(node: Node) -> Node {
-    concat(vec![Node::Top, node])
-}
-
-/// Compiles one parsed node into the engine best suited to it.
-///
-/// What: a seedless rule runs against every line, so it gets the O(1)-per-byte DFA
-/// (with no literal prefix its DFA is only linear in any repetition bound, never the
-/// exponential overlap blowup); a seeded rule is gated and rarely matched, so it gets
-/// the build-fast counting back-end. Why: fast where it matters, small where it must
-/// be, both building quickly.
-fn build_engine(node: Node) -> Result<Engine, CompileError> {
-    let seeds = seeds_from_node(&node);
-    let kind = if seeds.is_empty() {
-        build_table_kind(node)?
-    } else {
-        build_counting_kind(node)?
-    };
-    Ok(Engine::new(kind, seeds))
-}
-
-/// Largest DFA the back-end selector makes before falling back to counting.
-///
-/// What: a state ceiling for a seedless rule's DFA and the seeded last resort. Why:
-/// bounds build time against a pathological structure.
-const ENGINE_DFA_CAP: usize = 20_000;
-
-/// Largest repetition bound a non-anchorable seeded rule may carry and still be tried
-/// as an eager DFA rather than the counting back-end.
-///
-/// What: a ceiling on any `{n,m}` bound for the DFA route. Why: the DFA blowup needs a
-/// literal overlapping a long counted run, so a rule with only small repetitions (a
-/// line-anchored marker alternation like `^(?:INF|PRO|...):`) builds a small fast DFA,
-/// while a long-counted value pattern stays on the build-fast counting back-end.
-const DFA_SAFE_MAX_REPEAT: usize = 3;
-
-/// Returns the largest repetition bound anywhere in a node.
-///
-/// What: the maximum `Repeat.max` over the whole tree, or zero when there is none.
-/// Why: it gauges whether an eager DFA could explode, deciding the back-end route.
-fn max_repeat(node: &Node) -> usize {
-    match node {
-        Node::Repeat { node, max, .. } => (*max).max(max_repeat(node)),
-        Node::Concat(parts) | Node::Alt(parts) | Node::Inter(parts) => {
-            parts.iter().map(max_repeat).max().unwrap_or(0)
-        }
-        Node::Comp(inner) => max_repeat(inner),
-        _ => 0,
-    }
-}
-
-/// Builds a bare anchored DFA engine for a rule, or `None` past the cap.
-///
-/// What: determinizes the node with no `Σ*` prefix and minimizes it. Why: anchored
-/// there is no overlap blowup, so even a literal-plus-counted rule (and `&`/`~`) is a
-/// small linear DFA the gate runs at the hit position, replacing the slow per-rule
-/// counting scan that real code triggers on every keyword hit.
-fn anchored_engine(node: &Node) -> Option<Engine> {
-    build_dfa_within(node.clone(), ENGINE_DFA_CAP)
-        .ok()
-        .map(|dfa| Engine::new(EngineKind::Table(minimize(&dfa)), Vec::new()))
-}
-
-/// Builds the eager-DFA back-end for a seedless node, or counting on overrun.
-///
-/// What: determinizes under the cap; on a cap overrun falls back to counting. Why:
-/// seedless rules want the fast DFA, but a rare overrun must still be representable.
-fn build_table_kind(node: Node) -> Result<EngineKind, CompileError> {
-    match build_dfa_within(search_root(node.clone()), ENGINE_DFA_CAP) {
-        Ok(dfa) => Ok(EngineKind::Table(minimize(&dfa))),
-        Err(CompileError::StateCap { .. }) => build_counting_kind(node),
-        Err(other) => Err(other),
-    }
-}
-
-/// Builds a counting back-end for a node.
-///
-/// What: a counting NFA for a node without `&`/`~`, a synchronized product for one
-/// with them, else the full-cap DFA as a last resort. Why: these stay small where
-/// the eager DFA explodes on bounded repetition.
-fn build_counting_kind(node: Node) -> Result<EngineKind, CompileError> {
-    if let Some(nfa) = build_nfa(&node) {
-        return Ok(EngineKind::Nfa(nfa));
-    }
-    if let Some(program) = build_product(&node) {
-        return Ok(EngineKind::Product(program));
-    }
-    // What: a capped DFA as the last resort. Why: nothing else expressed this node,
-    // and a capped build fails fast (the rule is dropped) rather than grinding.
-    Ok(EngineKind::Table(minimize(&build_dfa_within(
-        search_root(node),
-        ENGINE_DFA_CAP,
-    )?)))
-}
 
 /// A compiled single pattern.
 ///
@@ -209,6 +95,10 @@ pub struct RegexSet {
     rules: Vec<Engine>,
     /// Per-rule anchored DFA, when the seed is the rule's leading literal, else `None`.
     anchored: Vec<Option<Engine>>,
+    /// Anchored DFAs for `^`-anchored rules, checked at every line start.
+    line_start: Vec<Engine>,
+    /// Rule ids paired with `line_start`, for rule-id attribution.
+    line_start_ids: Vec<usize>,
     /// Ids of the literal-free rules, run against every line for rule-id attribution.
     seedless_ids: Vec<usize>,
     /// Union DFAs over groups of the literal-free rules, for the boolean fast path.
@@ -225,108 +115,75 @@ pub struct RegexSet {
     gate: SetGate,
 }
 
-/// One compiled rule plus whether it is literal-free.
+/// Accumulates the per-rule matching structures while a ruleset is compiled.
 ///
-/// What: the engine, a flag for whether it has no required literal, and the node kept
-/// for grouping when it is literal-free. Why: the builders share the per-rule work,
-/// and the seedless nodes are combined into union DFAs afterward.
-struct BuiltRule {
-    /// The compiled per-rule engine.
-    engine: Engine,
-    /// Whether the rule has no required-literal prefilter.
-    seedless: bool,
-    /// Parsed node, kept only for a seedless rule so it can join a union DFA.
-    node: Option<Node>,
-    /// Anchored DFA engine, when the seed is the rule's leading literal.
-    anchored: Option<Engine>,
-}
-
-/// Compiles one parsed node into a rule, choosing seeds that maximize anchorability.
-///
-/// What: gates on the leading literal when it is selective enough (so the rule gets a
-/// fast anchored DFA checked at the hit), else on the most selective literal anywhere
-/// (with a counting substring engine); a literal-free rule routes to the union DFA.
-/// Why: anchoring at the hit replaces the slow per-rule counting scan that real code
-/// triggers on every keyword hit, and gating on the leading literal is what makes it
-/// sound (every match begins there).
-fn build_rule(node: Node) -> Result<BuiltRule, CompileError> {
-    let leading = leading_seeds(&node);
-    let anchorable = !leading.is_empty();
-    let seeds = if anchorable { leading } else { seeds_from_node(&node) };
-    let seedless = seeds.is_empty();
-    let anchored = if anchorable { anchored_engine(&node) } else { None };
-    // A seedless rule, or a non-anchorable seeded rule with only small repetitions
-    // (a line-anchored marker alternation), takes the fast eager DFA; everything else
-    // takes the build-fast counting back-end.
-    let dfa_route = seedless || (!anchorable && max_repeat(&node) <= DFA_SAFE_MAX_REPEAT);
-    let kind = if dfa_route {
-        build_table_kind(node.clone())?
-    } else {
-        build_counting_kind(node.clone())?
-    };
-    Ok(BuiltRule {
-        engine: Engine::new(kind, seeds),
-        seedless,
-        node: if seedless { Some(node) } else { None },
-        anchored,
-    })
-}
-
-/// Records a built rule, tracking the literal-free ones and their nodes.
-///
-/// What: appends the engine and, when seedless, its id and node. Why: shared by the
-/// strict and lenient builders; seedless rules run against every line and are grouped.
-fn push_rule(
-    built: BuiltRule,
-    rules: &mut Vec<Engine>,
-    seedless_ids: &mut Vec<usize>,
-    seedless_nodes: &mut Vec<Node>,
-    anchored: &mut Vec<Option<Engine>>,
-) {
-    if built.seedless {
-        seedless_ids.push(rules.len());
-        if let Some(node) = built.node {
-            seedless_nodes.push(node);
-        }
-    }
-    rules.push(built.engine);
-    anchored.push(built.anchored);
-}
-
-/// Builds one counting automaton over every NFA-expressible seedless rule.
-///
-/// What: the counting NFA of the alternation of the seedless nodes, or `None` when
-/// there are none or any needs the product back-end. Why: a single counting pass is
-/// the CsA candidate that would replace the unrolled seedless DFA groups.
-fn build_seedless_union(nodes: &[Node]) -> Option<CountingNfa> {
-    if nodes.is_empty() {
-        return None;
-    }
-    build_nfa(&alt(nodes.to_vec()))
-}
-
-/// Assembles a `RegexSet` from its rules, the literal-free ids, and their nodes.
-///
-/// What: groups the seedless nodes into union DFAs, builds the single counting-union
-/// measurement automaton, stores everything, then builds the gate. Why: the one place
-/// that wires the matching structures together.
-fn assemble(
+/// What: the parallel per-rule vectors plus the node lists for the seedless union DFAs
+/// and the original-seedless oracle. Why: one sink keeps rule ids dense and aligned as
+/// each built rule is recorded, shared by the strict and lenient builders.
+#[derive(Default)]
+struct RuleSink {
+    /// Per-rule engines, indexed by rule id.
     rules: Vec<Engine>,
+    /// Per-rule anchored DFA at a leading-seed hit, or `None`.
     anchored: Vec<Option<Engine>>,
+    /// Anchored DFAs for `^`-anchored line-start rules.
+    line_start: Vec<Engine>,
+    /// Rule ids paired with `line_start`.
+    line_start_ids: Vec<usize>,
+    /// Ids of the truly-seedless rules (handled by the union DFAs).
     seedless_ids: Vec<usize>,
+    /// Nodes of the truly-seedless rules, combined into union DFAs.
     seedless_nodes: Vec<Node>,
-) -> RegexSet {
-    let seedless_union = build_seedless_union(&seedless_nodes);
-    let mut set = RegexSet {
-        rules,
-        anchored,
-        seedless_ids,
-        seedless_groups: group_seedless(seedless_nodes),
-        seedless_union,
-        gate: SetGate::default(),
-    };
-    set.prepare();
-    set
+    /// Nodes seedless at the default floor, combined into the oracle counting union.
+    reference_nodes: Vec<Node>,
+}
+
+/// Recording one built rule and finishing into a `RegexSet`.
+impl RuleSink {
+    /// Records a built rule, tracking its routing and oracle node by rule id.
+    ///
+    /// What: appends the engine and, by route, its anchored DFA, line-start DFA, or
+    /// seedless id and node, plus the original-seedless node for the oracle. Why: one
+    /// place keeps every parallel vector aligned with the rule id.
+    fn push(&mut self, built: BuiltRule) {
+        let id = self.rules.len();
+        if built.seedless {
+            self.seedless_ids.push(id);
+            if let Some(node) = built.node {
+                self.seedless_nodes.push(node);
+            }
+        }
+        if let Some(engine) = built.routing.line_start {
+            self.line_start.push(engine);
+            self.line_start_ids.push(id);
+        }
+        if let Some(node) = built.reference_node {
+            self.reference_nodes.push(node);
+        }
+        self.rules.push(built.engine);
+        self.anchored.push(built.routing.anchored);
+    }
+
+    /// Assembles the accumulated rules into a prepared `RegexSet`.
+    ///
+    /// What: groups the truly-seedless nodes into union DFAs, builds the oracle
+    /// counting union over the original-seedless nodes, stores everything, then builds
+    /// the gate. Why: the one place that wires the matching structures together.
+    fn assemble(self) -> RegexSet {
+        let seedless_union = build_seedless_union(&self.reference_nodes);
+        let mut set = RegexSet {
+            rules: self.rules,
+            anchored: self.anchored,
+            line_start: self.line_start,
+            line_start_ids: self.line_start_ids,
+            seedless_ids: self.seedless_ids,
+            seedless_groups: group_seedless(self.seedless_nodes),
+            seedless_union,
+            gate: SetGate::default(),
+        };
+        set.prepare();
+        set
+    }
 }
 
 /// Building, matching, and (de)serialization for a ruleset.
@@ -336,15 +193,11 @@ impl RegexSet {
     /// What: builds a rule per pattern and one union automaton over the literal-free
     /// ones. Why: seeded rules are gated and literal-free rules share a single pass.
     pub fn new<S: AsRef<str>>(patterns: &[S]) -> Result<RegexSet, CompileError> {
-        let mut rules: Vec<Engine> = Vec::new();
-        let mut seedless_ids: Vec<usize> = Vec::new();
-        let mut seedless_nodes: Vec<Node> = Vec::new();
-        let mut anchored: Vec<Option<Engine>> = Vec::new();
+        let mut sink = RuleSink::default();
         for pattern in patterns {
-            let built = parse(pattern.as_ref()).and_then(build_rule)?;
-            push_rule(built, &mut rules, &mut seedless_ids, &mut seedless_nodes, &mut anchored);
+            sink.push(parse(pattern.as_ref()).and_then(build_rule)?);
         }
-        Ok(assemble(rules, anchored, seedless_ids, seedless_nodes))
+        Ok(sink.assemble())
     }
 
     /// Rebuilds the combined required-literal gate from the seeded rules' seeds.
@@ -362,18 +215,15 @@ impl RegexSet {
     /// union automaton; returns the set and the kept original indices. Why: a real
     /// ruleset has rules this dialect cannot express, so the rest are kept in one pass.
     pub fn compile_lenient<S: AsRef<str>>(patterns: &[S]) -> (RegexSet, Vec<usize>) {
-        let mut rules: Vec<Engine> = Vec::new();
-        let mut seedless_ids: Vec<usize> = Vec::new();
-        let mut seedless_nodes: Vec<Node> = Vec::new();
-        let mut anchored: Vec<Option<Engine>> = Vec::new();
+        let mut sink = RuleSink::default();
         let mut kept: Vec<usize> = Vec::new();
         for (index, pattern) in patterns.iter().enumerate() {
             if let Ok(built) = parse(pattern.as_ref()).and_then(build_rule) {
-                push_rule(built, &mut rules, &mut seedless_ids, &mut seedless_nodes, &mut anchored);
+                sink.push(built);
                 kept.push(index);
             }
         }
-        (assemble(rules, anchored, seedless_ids, seedless_nodes), kept)
+        (sink.assemble(), kept)
     }
 
     /// Compiles a ruleset from one text, split on a delimiter.
@@ -392,14 +242,18 @@ impl RegexSet {
 
     /// Reports whether any rule matches a substring of `line`.
     ///
-    /// What: checks the seeded rules whose literal occurs (via the gate), then the
-    /// literal-free rules in one union pass (or individually if there is no union).
-    /// Why: a non-matching line costs one gate pass plus one union pass.
+    /// What: the one gate pass (seeded rules whose literal occurs, checked anchored or
+    /// in full), the `^`-anchored rules checked at every line start, and any remaining
+    /// truly-literal-free rules in a union pass. Why: the fold puts every rule in the
+    /// gate or the cheap line-start check, so for the shipped ruleset there is one pass.
     pub fn is_match(&self, line: &[u8]) -> bool {
         if self
             .gate
             .any_candidate(line, |rule, pos| self.matches_rule(line, rule, pos))
         {
+            return true;
+        }
+        if self.line_start.iter().any(|engine| line_start_match(engine, line)) {
             return true;
         }
         self.seedless_groups.iter().any(|group| group.is_match(line))
@@ -419,9 +273,8 @@ impl RegexSet {
 
     /// Returns the ids of the rules that match `line`.
     ///
-    /// What: collects seeded hits via the gate, then the literal-free hits by running
-    /// each seedless engine. Why: seedless rules have no literal to gate on, so they
-    /// are checked directly.
+    /// What: collects gate hits, then the `^`-anchored line-start hits, then any
+    /// truly-literal-free hits. Why: each routing path attributes its own rule ids.
     pub fn matches(&self, line: &[u8]) -> impl Iterator<Item = usize> {
         let mut hits: Vec<usize> = Vec::new();
         self.gate.for_each_candidate(line, |rule, pos| {
@@ -429,6 +282,11 @@ impl RegexSet {
                 hits.push(rule);
             }
         });
+        for (engine, &id) in self.line_start.iter().zip(&self.line_start_ids) {
+            if line_start_match(engine, line) {
+                hits.push(id);
+            }
+        }
         for &id in &self.seedless_ids {
             if self.rules[id].is_match(line) {
                 hits.push(id);
@@ -512,9 +370,17 @@ impl RegexSet {
     /// Returns how many union DFAs the seedless rules collapsed into.
     ///
     /// What: the group count. Why: a diagnostic for how well the literal-free rules
-    /// combine; one group means a single pass like regex's combined automaton.
+    /// combine; zero means every literal-free rule folded into the one gate pass.
     pub fn seedless_group_count(&self) -> usize {
         self.seedless_groups.len()
+    }
+
+    /// Returns how many `^`-anchored rules are checked at line starts.
+    ///
+    /// What: the line-start rule count. Why: a diagnostic for the fold, since these
+    /// rules left the per-line scan for a cheap anchored check at line starts.
+    pub fn line_start_count(&self) -> usize {
+        self.line_start.len()
     }
 
     /// Returns how many rules have no required-literal prefilter.
@@ -563,6 +429,7 @@ impl RegexSet {
             .rules
             .iter_mut()
             .chain(set.seedless_groups.iter_mut())
+            .chain(set.line_start.iter_mut())
             .chain(set.anchored.iter_mut().flatten())
         {
             engine.validate()?;

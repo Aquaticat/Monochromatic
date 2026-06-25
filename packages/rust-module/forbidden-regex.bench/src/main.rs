@@ -102,17 +102,23 @@ fn main() {
         eprintln!("WARNING: engines disagree on the sample; comparison is not apples to apples");
     }
 
-    // Oracle: the single counting union must agree with the unrolled DFA groups on
-    // every corpus line, or it is not a sound replacement.
-    eprintln!("[diag] seedless counting union: {} positions", fset.seedless_union_size());
-    let disagreements = corpus
+    // Oracle: the fold must not MISS any literal-free rule's match. The counting union
+    // over the original seedless rules is the independent reference (proven equal to the
+    // old DFA groups); every line it flags must still be flagged by the folded is_match.
+    eprintln!(
+        "[diag] fold: {} seedless DFA groups, {} line-start rules, oracle union {} positions",
+        fset.seedless_group_count(),
+        fset.line_start_count(),
+        fset.seedless_union_size()
+    );
+    let missed = corpus
         .iter()
-        .filter(|l| fset.csa_only_is_match(l) != fset.seedless_only_is_match(l))
+        .filter(|l| fset.csa_only_is_match(l) && !fset.is_match(l))
         .count();
-    if disagreements == 0 {
-        eprintln!("[oracle] counting union agrees with DFA groups on all {lines} lines");
+    if missed == 0 {
+        eprintln!("[oracle] fold misses no literal-free match across all {lines} lines");
     } else {
-        eprintln!("WARNING: counting union disagrees with DFA groups on {disagreements}/{lines} lines");
+        eprintln!("WARNING: fold MISSES {missed}/{lines} literal-free matches (false negatives)");
     }
 
     let prefilter_hits = corpus.iter().filter(|l| fset.prefilter_only_is_match(l)).count();

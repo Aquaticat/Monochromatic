@@ -40,6 +40,13 @@ pub struct Dfa {
     pub(crate) start: u32,
     /// Total number of states.
     pub(crate) num_states: u32,
+    /// A non-accepting self-looping sink, or `num_states` when there is none.
+    ///
+    /// What: the dead state the match loop early-exits on; `num_states` (no real id)
+    /// disables the exit. Why: an anchored DFA dies on the first non-matching byte, so
+    /// without this the loop walks the rest of the line for nothing; this is the bulk
+    /// of the gate's per-hit and line-start cost.
+    pub(crate) dead: u32,
 }
 
 /// Construction-from-parts and matching for `Dfa`.
@@ -60,6 +67,7 @@ impl Dfa {
         start: u32,
         num_states: u32,
     ) -> Self {
+        let dead = find_dead(&trans, &accept, nclasses, num_states);
         Dfa {
             nclasses,
             class_map,
@@ -69,6 +77,7 @@ impl Dfa {
             accept,
             start,
             num_states,
+            dead,
         }
     }
 
@@ -80,11 +89,17 @@ impl Dfa {
     /// allocates, and early exit makes a positive answer cheap.
     pub fn is_match(&self, line: &[u8]) -> bool {
         let nc = self.nclasses as usize;
+        let dead = self.dead as usize;
         let mut state = self.start as usize;
         // What: each iteration tests acceptance at the boundary before `b`, then
         // consumes `b`. Why: a match may end at any boundary; the upcoming byte
         // supplies `word_after` and `line_end` for `$`/`\b`.
         for &b in line {
+            // What: stop once the residual is the dead sink. Why: an anchored DFA dies
+            // on the first non-matching byte, and walking the rest cannot accept.
+            if state == dead {
+                return false;
+            }
             let class = self.class_map[b as usize] as usize;
             let mask = accept_bit(self.class_word[class], self.class_newline[class]);
             if self.accept[state] & mask != 0 {
@@ -134,6 +149,35 @@ impl Dfa {
         if self.trans.iter().any(|&t| t as usize >= ns) {
             return Err(invalid("transition target out of range"));
         }
+        // What: the dead id is either `num_states` (disabled) or a genuine sink. Why:
+        // a hostile blob could name an ACCEPTING state as dead, which would make the
+        // match loop early-exit false and miss a secret; require it be non-accepting
+        // and fully self-looping so the early-exit is provably sound.
+        let dead = self.dead as usize;
+        if dead != ns {
+            if dead > ns {
+                return Err(invalid("dead state out of range"));
+            }
+            if self.accept[dead] != 0 || (0..nc).any(|c| self.trans[dead * nc + c] as usize != dead) {
+                return Err(invalid("dead state is not a non-accepting sink"));
+            }
+        }
         Ok(())
     }
+}
+
+/// Finds a non-accepting, fully self-looping sink state, or `num_states` if none.
+///
+/// What: scans for the first state whose acceptance mask is zero and whose every
+/// byte-class transition returns to itself. Why: from such a state no input can ever
+/// accept, so the match loop can stop there; minimization collapses all such states
+/// into one, and `num_states` (no real id) signals there is none.
+fn find_dead(trans: &[u32], accept: &[u8], nclasses: u32, num_states: u32) -> u32 {
+    let nc = nclasses as usize;
+    for state in 0..num_states as usize {
+        if accept[state] == 0 && (0..nc).all(|c| trans[state * nc + c] as usize == state) {
+            return state as u32;
+        }
+    }
+    num_states
 }

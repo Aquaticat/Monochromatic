@@ -41,5 +41,7 @@ pub use nfa::CountingNfa;
 /// Re-exports the product program and its builder for the engine and compiler.
 pub use product::{ProductProgram, build_product};
 
-/// Re-exports the prefilter, seed extractor, and leading-seed probe for the engine.
-pub(crate) use prefilter::{Prefilter, leading_seeds, seeds_from_node};
+/// Re-exports the prefilter, seed extractors, and leading-seed probes for the engine.
+pub(crate) use prefilter::{
+    Prefilter, leading_seeds, leading_seeds_min, seeds_from_node, seeds_from_node_min,
+};

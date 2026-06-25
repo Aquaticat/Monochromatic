@@ -50,18 +50,36 @@ impl Prefilter {
     }
 }
 
+/// Keeps a seed set only when every seed is at least `min` bytes, else empty.
+///
+/// What: the shared length gate for the seed extractors. Why: soundness is in the
+/// extraction (every seed is required); length is purely a selectivity policy, so it
+/// lives in one place and the fold can ask for a shorter floor.
+fn filter_min(seeds: Vec<Vec<u8>>, min: usize) -> Vec<Vec<u8>> {
+    if seeds.is_empty() || min_len(&seeds) < min {
+        Vec::new()
+    } else {
+        seeds
+    }
+}
+
 /// Derives required-literal seeds from a node, or empty when none is usable.
 ///
 /// What: the most selective set of literals every match must contain, dropped if any
 /// seed is shorter than [`MIN_SEED_LEN`]. Why: soundness (never reject a matchable
 /// line) and selectivity (short seeds are not worth filtering on).
 pub(crate) fn seeds_from_node(node: &Node) -> Vec<Vec<u8>> {
-    let seeds = required_literal(node);
-    if seeds.is_empty() || seeds.iter().any(|seed| seed.len() < MIN_SEED_LEN) {
-        Vec::new()
-    } else {
-        seeds
-    }
+    seeds_from_node_min(node, MIN_SEED_LEN)
+}
+
+/// Derives required-literal seeds with a caller-chosen minimum length.
+///
+/// What: [`required_literal`] kept only when every seed is at least `min` bytes. Why:
+/// a rule that is seedless at the default floor can still be folded into the gate on a
+/// shorter required literal (azure's `Q~`, facebook's `|`/`%`), which beats a second
+/// per-line pass even when the literal is short.
+pub(crate) fn seeds_from_node_min(node: &Node, min: usize) -> Vec<Vec<u8>> {
+    filter_min(required_literal(node), min)
 }
 
 /// Returns a set of literals such that every match of `node` contains one.
@@ -141,12 +159,16 @@ pub(crate) fn leading_literals(node: &Node) -> Vec<Vec<u8>> {
 /// checked by an anchored DFA at the hit, but only when the leading literal is itself a
 /// worthwhile filter.
 pub(crate) fn leading_seeds(node: &Node) -> Vec<Vec<u8>> {
-    let leading = leading_literals(node);
-    if !leading.is_empty() && leading.iter().all(|seed| seed.len() >= MIN_SEED_LEN) {
-        leading
-    } else {
-        Vec::new()
-    }
+    leading_seeds_min(node, MIN_SEED_LEN)
+}
+
+/// Returns the leading literals with a caller-chosen minimum length.
+///
+/// What: [`leading_literals`] kept only when every one is at least `min` bytes. Why:
+/// the fold gates an otherwise-seedless rule on a short leading literal (`SK`, `s.`)
+/// so it is checked by an anchored DFA at the hit instead of a second per-line pass.
+pub(crate) fn leading_seeds_min(node: &Node, min: usize) -> Vec<Vec<u8>> {
+    filter_min(leading_literals(node), min)
 }
 
 /// Returns the leading literals of a concatenation, extended by the following run.
@@ -240,11 +262,11 @@ fn concat_literal(parts: &[Node]) -> Vec<Vec<u8>> {
 
 /// Picks the more selective of two candidate seed sets.
 ///
-/// What: keeps the candidate whose shortest seed is longer, ignoring empty or
-/// below-minimum candidates. Why: a longer required literal rejects more lines.
+/// What: keeps the candidate whose shortest seed is longer, ignoring empty candidates.
+/// Why: a longer required literal rejects more lines; the length floor is applied once
+/// by [`filter_min`] at the top, so this only compares selectivity.
 fn better_seed(best: Vec<Vec<u8>>, candidate: Vec<Vec<u8>>) -> Vec<Vec<u8>> {
-    let usable = !candidate.is_empty() && candidate.iter().all(|seed| seed.len() >= MIN_SEED_LEN);
-    if usable && min_len(&candidate) > min_len(&best) {
+    if !candidate.is_empty() && min_len(&candidate) > min_len(&best) {
         candidate
     } else {
         best
