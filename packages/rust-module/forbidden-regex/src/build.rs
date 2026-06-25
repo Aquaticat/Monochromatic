@@ -270,3 +270,8 @@ pub(crate) fn build_seedless_union(nodes: &[Node]) -> Option<CountingNfa> {
 pub(crate) fn line_start_match(engine: &Engine, line: &[u8]) -> bool {
     engine.is_match(line)
 }
+
+/// Unit tests for rule routing, in a sidecar (max-lines exempt).
+#[cfg(test)]
+#[path = "build_tests.rs"]
+mod tests;

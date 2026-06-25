@@ -205,6 +205,65 @@ fn mixed_ruleset_routes_each_rule_correctly() {
 }
 
 #[test]
+fn single_regex_round_trips_through_bytes() {
+    let regex = compile("AKIA[A-Z2-7]{16}").unwrap();
+    let bytes = regex.to_bytes().unwrap();
+    assert!(!bytes.is_empty());
+    let reloaded = forbidden_regex::Regex::from_bytes(&bytes).unwrap();
+    assert_eq!(regex.is_match(AKIA_KEY.as_bytes()), reloaded.is_match(AKIA_KEY.as_bytes()));
+    assert!(reloaded.is_match(AKIA_KEY.as_bytes()));
+    assert!(!reloaded.is_match(b"not a key"));
+}
+
+#[test]
+fn diagnostic_accessors_report_structure() {
+    // Two leading-literal rules: both gated and anchored, none seedless.
+    let anchored = RegexSet::new(&["AKIA[A-Z2-7]{16}", "ghp_[A-Za-z0-9]{36}"]).unwrap();
+    assert_eq!(anchored.len(), 2);
+    assert!(!anchored.is_empty());
+    assert_eq!(anchored.anchored_count(), 2);
+    assert_eq!(anchored.seedless_count(), 0);
+    assert_eq!(anchored.line_start_count(), 0);
+    assert_eq!(anchored.seedless_group_count(), 0);
+    assert_eq!(anchored.seedless_union_size(), 0);
+
+    // Two class-only rules: no seed, no leading literal, so truly seedless and grouped.
+    let seedless = RegexSet::new(&["[a-z]{20}", "[0-9]{18}"]).unwrap();
+    assert_eq!(seedless.seedless_count(), 2);
+    assert!(seedless.seedless_group_count() >= 1);
+    assert!(seedless.seedless_union_size() >= 2);
+
+    // One line-start marker rule.
+    let marker = RegexSet::new(&["^(?:(?:PR)|(?:TS))[0-9]:"]).unwrap();
+    assert_eq!(marker.line_start_count(), 1);
+
+    assert!(RegexSet::new::<&str>(&[]).unwrap().is_empty());
+}
+
+#[test]
+fn profiling_hooks_track_their_components() {
+    let set = RegexSet::new(&["AKIA[A-Z2-7]{16}", "[a-z]{20}"]).unwrap();
+    let key = AKIA_KEY.as_bytes();
+    let twenty = b"abcdefghijklmnopqrst";
+
+    // Gate / prefilter / candidate hooks see the seeded AKIA rule, not a bare line.
+    assert!(set.gate_only_is_match(key));
+    assert!(!set.gate_only_is_match(b"nothing seeded here"));
+    assert!(set.prefilter_only_is_match(key));
+    assert!(!set.prefilter_only_is_match(b"nothing seeded here"));
+    // candidates_only does the enumeration work but the stubbed predicate makes it
+    // always return false (a timing harness), so it must report false either way.
+    assert!(!set.candidates_only_is_match(key));
+    assert!(!set.candidates_only_is_match(b"nothing seeded here"));
+    assert!(set.gate_anchored_only_is_match(key));
+
+    // Seedless / counting-union hooks see the class-only rule, not the seeded one.
+    assert!(set.seedless_only_is_match(twenty));
+    assert!(!set.seedless_only_is_match(key));
+    assert!(set.csa_only_is_match(twenty));
+}
+
+#[test]
 fn nested_group_repetition_compiles_and_matches() {
     // Reasonable nested group repetition compiles fast and matches correctly.
     let triple = compile("(?:ab){3}").unwrap();

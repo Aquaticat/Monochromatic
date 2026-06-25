@@ -1,0 +1,80 @@
+// What:  unit tests for rule routing: which matching path (line-start, anchored gate,
+//        plain gate, weak fold) each rule shape takes, and the seedless/reference flags.
+// Why:   the fold is the whole performance story; if a rule routes wrong (a marker not
+//        sent to the line-start check, a leading literal not anchored at its hit) the
+//        engine still matches but pays the slow per-line scan the fold exists to avoid,
+//        and a wrong seedless flag changes which rules join the union oracle.
+
+use super::{build_rule, build_seedless_union, route_rule, starts_with_line_anchor};
+use crate::parse::parse;
+
+fn node(pattern: &str) -> crate::ast::node::Node {
+    parse(pattern).expect("test pattern parses")
+}
+
+#[test]
+fn line_anchor_is_detected_only_at_the_head() {
+    assert!(starts_with_line_anchor(&node("^abc")));
+    assert!(!starts_with_line_anchor(&node("abc")));
+    assert!(!starts_with_line_anchor(&node("abc$")));
+}
+
+#[test]
+fn marker_rule_routes_to_the_line_start_check() {
+    let routing = route_rule(&node("^(?:(?:PR)|(?:TS))[0-9]:"));
+    assert!(routing.line_start.is_some());
+    assert!(routing.seeds.is_empty());
+    assert!(routing.anchored.is_none());
+}
+
+#[test]
+fn leading_literal_rule_routes_to_an_anchored_gate() {
+    let routing = route_rule(&node("AKIA[A-Z2-7]{16}"));
+    assert_eq!(routing.seeds, vec![b"AKIA".to_vec()]);
+    assert!(routing.anchored.is_some());
+    assert!(routing.line_start.is_none());
+}
+
+#[test]
+fn inner_keyword_rule_routes_to_an_unanchored_gate() {
+    let routing = route_rule(&node("[a-z]{3}adafruit[a-z]{3}"));
+    assert_eq!(routing.seeds, vec![b"adafruit".to_vec()]);
+    assert!(routing.anchored.is_none());
+    assert!(routing.line_start.is_none());
+}
+
+#[test]
+fn short_leading_literal_folds_to_a_weak_anchored_seed() {
+    let routing = route_rule(&node("SK[0-9a-f]{32}"));
+    assert_eq!(routing.seeds, vec![b"SK".to_vec()]);
+    assert!(routing.anchored.is_some());
+}
+
+#[test]
+fn weak_inner_literal_folds_to_an_unanchored_seed() {
+    let routing = route_rule(&node("[a-z]{3}Q\\~[a-z]{3}"));
+    assert_eq!(routing.seeds, vec![b"Q~".to_vec()]);
+    assert!(routing.anchored.is_none());
+    assert!(routing.line_start.is_none());
+}
+
+#[test]
+fn build_rule_flags_seedless_and_reference_nodes() {
+    let akia = build_rule(node("AKIA[A-Z2-7]{16}")).unwrap();
+    assert!(!akia.seedless);
+    assert!(akia.reference_node.is_none()); // had a leading seed
+
+    let inner = build_rule(node("[a-z]{3}adafruit[a-z]{3}")).unwrap();
+    assert!(!inner.seedless);
+    assert!(inner.reference_node.is_none()); // had an inner seed (not seedless)
+
+    let bare = build_rule(node("[a-z]{20}")).unwrap();
+    assert!(bare.seedless);
+    assert!(bare.reference_node.is_some()); // truly literal-free
+}
+
+#[test]
+fn seedless_union_builds_only_for_nonempty_input() {
+    assert!(build_seedless_union(&[]).is_none());
+    assert!(build_seedless_union(&[node("[a-z]{20}")]).is_some());
+}

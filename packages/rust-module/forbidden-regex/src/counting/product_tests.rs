@@ -108,6 +108,21 @@ fn aws_key_complement_is_exact() {
     assert!(!prog.is_match(b"AKIA222222222222222"));
 }
 
+// A decoded product program runs on untrusted input, so validate must reject a
+// program with no positive operand (it would accept everywhere) or a corrupt operand.
+#[test]
+fn validate_rejects_an_unsafe_program() {
+    let empty = ProductProgram { positives: Vec::new(), negatives: Vec::new() };
+    assert!(empty.validate().is_err());
+
+    let good = product("(?:AKIA[A-Z2-7]{4}) & ~(AKIA2222)");
+    assert!(good.validate().is_ok());
+
+    let mut corrupt = product("(?:AKIA[A-Z2-7]{4}) & ~(AKIA2222)");
+    corrupt.positives[0].elements.clear();
+    assert!(corrupt.validate().is_err());
+}
+
 // The full AWS rule with an alternation prefix stays small and decides exactly.
 #[test]
 fn aws_rule_with_alternation_stays_small() {

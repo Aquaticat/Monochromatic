@@ -74,3 +74,8 @@ impl CountingNfa {
         Ok(())
     }
 }
+
+/// Unit tests for counting-NFA decode validation, in a sidecar (max-lines exempt).
+#[cfg(test)]
+#[path = "nfa_tests.rs"]
+mod tests;
