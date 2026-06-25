@@ -64,35 +64,74 @@ merge into one (the `{n,m}` overlap blows the eager DFA past any cap; measured a
 regex's ~73M. Both maxed (gate->~95M, seedless->~75M) caps at ~48M. The only way past
 is ONE automaton over ALL rules, one lookup/byte, like regex's combined lazy DFA.
 
-### CsA finding (read before building): seedless-only CsA is the WRONG target
+### CsA finding (MEASURED, settled): a seedless second pass cannot win, at all
 
-The literal-free (seedless) rules are counters AT THE START (`\d{15,16}`, `[..]{32}`,
-plus one `^`-anchored marker rule). There is no literal-prefix skeleton to
-determinize, so a counting-set automaton over them does per-counter register work
-every byte (~5 ops) while the current unrolled 2-group DFAs do 2 table lookups; the
-CsA likely REGRESSES seedless (the cache-tightness of a small structural table MIGHT
-win, which is why the user said build-and-measure rather than trust this analysis).
+Built and measured a single counting NFA over the union of all 5 seedless rules
+(`RegexSet.seedless_union`, `csa_only_is_match` hook, corpus-wide oracle check in the
+bench). Result: the union pass is 0.82M lines/s (90x SLOWER than the 75M DFA groups),
+and it agreed with the DFA groups on all 747479 corpus lines (correct, just slow). The
+46-position union is dominated by the per-byte closure over the `^`-anchored marker
+rule's ~25 literal positions.
 
-The real one-pass win is a CsA over ALL rules: the seeded rules' literal prefixes form
-an Aho-Corasick skeleton (one structural lookup/byte) with counter registers hung off
-the prefix-complete states for the counted value parts. On clean code that is ~1
-lookup + sparse counter ops/byte, matching regex's one combined pass. `&`/`~` rules
-(few) can stay anchored/gated outside the CsA. This is the major build.
+The determinized CsA would remove the closure-recompute but not the per-byte counter
+work, so at absolute best it MATCHES the DFA groups (a DFA is 1 lookup/byte; a CsA is 1
+lookup + counter ops/byte). And that ceiling is irrelevant, because the arithmetic
+forbids ANY second-pass win: with the measured gate at 82M and
+`full = 1/(1/gate + 1/seedless)`, beating regex (72M) needs
+`1/seedless < 1/72 - 1/82 = 0.001694`, i.e. seedless > 590M lines/s (~15.8 GB/s). No
+byte-scanning automaton reaches that (the SIMD literal prefilter, which only SKIPS,
+peaks at 5.6 GB/s; a real per-byte DFA tops ~3 GB/s). So the seedless CsA is a
+dead end for the goal, and so is a single union DFA, and so is any second pass.
 
-### NEXT (user-directed): build the seedless CsA and MEASURE it anyway
+### The only winning lever: fold all 5 seedless rules into the ONE gate pass
 
-User decision: build the seedless CsA, benchmark against the 2 DFAs (do not trust the
-"it regresses" analysis), then decide. Build as `src/counting/csa.rs`, oracle-gated:
-differential-test `is_match` against the counting-NFA `run` (the trusted oracle, see
-`run_tests.rs`) over the seedless union on a probe grid; only wire it into `RegexSet`
-(replacing the seedless group DFAs) if it AGREES with the oracle (no missed secrets,
-this is security-critical) AND beats the 2 DFAs. The seedless union has multiple
-counters and one `^`-anchored member; the simplest correct route is to determinize the
-anchor-free seedless rules into the CsA and leave the `^`-anchored marker rule on its
-small DFA. Determinization keeps counts in `CountSet` registers and branches
-transitions on the runtime exit guard (`CountSet::has_at_least(min)`); enumerate the
-guard outcomes per transition (few in-scope counters, so few combos). The user is
-holding additional tricks until after the CsA.
+The gate path alone (the 246 seeded rules with the SIMD prefilter) runs at 82M, which
+already EXCEEDS regex's 72M. The entire deficit is the second seedless pass. So the win
+is to make the 5 seedless rules cost ~nothing by checking them inside the single gate
+pass instead of a second per-line scan. The 5 rules and their weak signals (corpus
+line counts measured by `rg` over the repo):
+
+- azure `[delim][..]{3}\dQ~[..]{31,34}`: required literal `Q~` (rare, 8 lines). Seed it
+  (no leading literal, so on a hit run the full rule DFA). MIN_SEED_LEN is the blocker
+  (2 < 3); admit 2-char required literals for otherwise-seedless rules.
+- SK `SK[hex]{32}`: leading literal `SK` (393 lines) -> anchored-at-hit, dies fast.
+- vault `(hvs\.[..]{90,120})|(s\.[..]{24})`: leading literals `hvs.` (7) and `s.`
+  (35650). Both are LEADING, so anchored-at-hit (cheap, dies fast) even though `s.`
+  flags 4.8% of lines.
+- facebook `\d{15,16}(\||%)[..]{27,40}`: NO literal >= 2; its only required literal is
+  the 1-char alt `|`/`%` (|=6943, %=1039, ~1% of lines). Needs TARGETED 1-char seeding
+  (do NOT lower MIN to 1 globally; other seeded rules with a 1-char best literal would
+  get a useless prefilter). On a `|`/`%` hit run the full facebook DFA.
+- RULE_B `^(?:PR|TS|...)[0-9]:` (and RULE_A `^(?:INF|...):`): `^`-anchored markers. Do
+  NOT substring-seed them (their 2-3 char codes flag 30-50% of lines, and anchoring at
+  a mid-line hit would over-match because the anchored DFA treats its start as a line
+  start). Route them to a LINE-START check: one anchored-at-pos-0 DFA per line, which
+  dies on byte 0 for almost every line. Essentially free.
+
+If all 5 fold in, the seedless second pass is DELETED and `full = gate'` (one pass).
+Whether `gate'` clears 72M is UNMEASURED: it gains by dropping the markers' substring
+flags but pays for the new weak-seed flags (mostly cheap anchored checks; the 35650
+`s.` checks are the main risk). This is the next experiment, oracle-gated against the
+current (correct) `is_match` on the full corpus (identical verdicts required; this is a
+secret scanner, a false negative is a leaked secret).
+
+### Measurement scaffolding now in the tree (commit "measure single counting-union")
+
+- `RegexSet.seedless_union: Option<CountingNfa>` + `csa_only_is_match` + `seedless_union_size`
+  (profiling only; not in `is_match`; serialized, so it survives `from_bytes`; adds ~2.4KB).
+  Can be removed once the fold lands.
+- `forbidden_regex::debug_seedless(pattern)` (doc-hidden) + bench `bin/seedless.rs` dump
+  the exact seedless node shapes.
+- bench: `csa-union-only` row + a corpus-wide oracle assert (union vs DFA groups).
+
+### Fallback if the fold's `gate'` does not clear 72M
+
+The all-rules single-pass CsA: the seeded rules' literal prefixes form an Aho-Corasick
+skeleton (one structural lookup/byte) with counter registers on the prefix-complete
+states for the counted tails; facebook's leading counter rides the same pass. ~1 lookup
++ sparse counter ops/byte, like regex's one combined lazy DFA but eager and leaner.
+`&`/`~` rules (few) stay anchored/gated outside it. Major build; only if the cheap fold
+is insufficient. The user is holding additional tricks for this phase.
 
 ### Constraints (do not violate)
 
