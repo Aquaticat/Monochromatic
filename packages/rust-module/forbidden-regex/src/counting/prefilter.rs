@@ -134,6 +134,21 @@ pub(crate) fn leading_literals(node: &Node) -> Vec<Vec<u8>> {
     }
 }
 
+/// Returns the leading literals if they are all selective enough to gate on.
+///
+/// What: [`leading_literals`] when every one is at least [`MIN_SEED_LEN`], else empty.
+/// Why: gating on the leading literal (not the most selective inner one) lets a rule be
+/// checked by an anchored DFA at the hit, but only when the leading literal is itself a
+/// worthwhile filter.
+pub(crate) fn leading_seeds(node: &Node) -> Vec<Vec<u8>> {
+    let leading = leading_literals(node);
+    if !leading.is_empty() && leading.iter().all(|seed| seed.len() >= MIN_SEED_LEN) {
+        leading
+    } else {
+        Vec::new()
+    }
+}
+
 /// Returns the leading literal of a concatenation.
 ///
 /// What: the maximal leading run of singleton classes, or the first part's own leading

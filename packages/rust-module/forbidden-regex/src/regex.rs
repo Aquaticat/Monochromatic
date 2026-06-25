@@ -18,8 +18,8 @@ use crate::counting::build_nfa;
 /// Imports the product builder that selects the `&`/`~` counting back-end.
 use crate::counting::build_product;
 
-/// Imports the node-based seed extractor and leading-literal probe.
-use crate::counting::{leading_literals, seeds_from_node};
+/// Imports the node-based seed extractor and leading-seed probe.
+use crate::counting::{leading_seeds, seeds_from_node};
 
 /// Imports the DFA builder and minimizer for the general back-end.
 use crate::dfa::{build_dfa_within, minimize};
@@ -69,25 +69,37 @@ fn build_engine(node: Node) -> Result<Engine, CompileError> {
 /// bounds build time against a pathological structure.
 const ENGINE_DFA_CAP: usize = 20_000;
 
-/// Builds an anchored DFA engine for a seeded rule whose seed is its leading literal.
+/// Largest repetition bound a non-anchorable seeded rule may carry and still be tried
+/// as an eager DFA rather than the counting back-end.
 ///
-/// What: when the gate's seeds equal the node's leading literals, every match starts
-/// at a seed position, so the rule is compiled to a bare (no `Σ*`) DFA that the gate
-/// runs anchored at the hit; returns `None` when the seed is not leading or the
-/// anchored DFA overruns the cap. Why: anchored there is no `Σ*` overlap, so even a
-/// literal-plus-counted rule (and `&`/`~`) is a small linear DFA, replacing the slow
-/// per-rule counting scan that real code triggers on every keyword hit.
-fn anchored_engine(node: &Node, seeds: &[Vec<u8>]) -> Option<Engine> {
-    let mut leading = leading_literals(node);
-    if leading.is_empty() {
-        return None;
+/// What: a ceiling on any `{n,m}` bound for the DFA route. Why: the DFA blowup needs a
+/// literal overlapping a long counted run, so a rule with only small repetitions (a
+/// line-anchored marker alternation like `^(?:INF|PRO|...):`) builds a small fast DFA,
+/// while a long-counted value pattern stays on the build-fast counting back-end.
+const DFA_SAFE_MAX_REPEAT: usize = 3;
+
+/// Returns the largest repetition bound anywhere in a node.
+///
+/// What: the maximum `Repeat.max` over the whole tree, or zero when there is none.
+/// Why: it gauges whether an eager DFA could explode, deciding the back-end route.
+fn max_repeat(node: &Node) -> usize {
+    match node {
+        Node::Repeat { node, max, .. } => (*max).max(max_repeat(node)),
+        Node::Concat(parts) | Node::Alt(parts) | Node::Inter(parts) => {
+            parts.iter().map(max_repeat).max().unwrap_or(0)
+        }
+        Node::Comp(inner) => max_repeat(inner),
+        _ => 0,
     }
-    let mut wanted = seeds.to_vec();
-    leading.sort();
-    wanted.sort();
-    if leading != wanted {
-        return None;
-    }
+}
+
+/// Builds a bare anchored DFA engine for a rule, or `None` past the cap.
+///
+/// What: determinizes the node with no `Σ*` prefix and minimizes it. Why: anchored
+/// there is no overlap blowup, so even a literal-plus-counted rule (and `&`/`~`) is a
+/// small linear DFA the gate runs at the hit position, replacing the slow per-rule
+/// counting scan that real code triggers on every keyword hit.
+fn anchored_engine(node: &Node) -> Option<Engine> {
     build_dfa_within(node.clone(), ENGINE_DFA_CAP)
         .ok()
         .map(|dfa| Engine::new(EngineKind::Table(minimize(&dfa)), Vec::new()))
@@ -216,17 +228,25 @@ struct BuiltRule {
     anchored: Option<Engine>,
 }
 
-/// Compiles one parsed node into a rule, noting whether it is literal-free.
+/// Compiles one parsed node into a rule, choosing seeds that maximize anchorability.
 ///
-/// What: extracts seeds, builds the substring engine (DFA when seedless, counting when
-/// seeded), and for a seeded rule whose seed is its leading literal also builds an
-/// anchored DFA. Why: a literal-free rule runs against every line, so the caller
-/// records its id and node; the anchored DFA gives the gate a fast per-rule check.
+/// What: gates on the leading literal when it is selective enough (so the rule gets a
+/// fast anchored DFA checked at the hit), else on the most selective literal anywhere
+/// (with a counting substring engine); a literal-free rule routes to the union DFA.
+/// Why: anchoring at the hit replaces the slow per-rule counting scan that real code
+/// triggers on every keyword hit, and gating on the leading literal is what makes it
+/// sound (every match begins there).
 fn build_rule(node: Node) -> Result<BuiltRule, CompileError> {
-    let seeds = seeds_from_node(&node);
+    let leading = leading_seeds(&node);
+    let anchorable = !leading.is_empty();
+    let seeds = if anchorable { leading } else { seeds_from_node(&node) };
     let seedless = seeds.is_empty();
-    let anchored = if seedless { None } else { anchored_engine(&node, &seeds) };
-    let kind = if seedless {
+    let anchored = if anchorable { anchored_engine(&node) } else { None };
+    // A seedless rule, or a non-anchorable seeded rule with only small repetitions
+    // (a line-anchored marker alternation), takes the fast eager DFA; everything else
+    // takes the build-fast counting back-end.
+    let dfa_route = seedless || (!anchorable && max_repeat(&node) <= DFA_SAFE_MAX_REPEAT);
+    let kind = if dfa_route {
         build_table_kind(node.clone())?
     } else {
         build_counting_kind(node.clone())?
@@ -414,6 +434,18 @@ impl RegexSet {
     /// isolates the which-rule enumeration cost from the per-rule counting cost.
     pub fn candidates_only_is_match(&self, line: &[u8]) -> bool {
         self.gate.any_candidate(line, |_rule, _pos| false)
+    }
+
+    /// Profiling hook: the gate path but skipping rules without an anchored DFA.
+    ///
+    /// What: runs only anchored per-rule checks, treating counting-fallback rules as
+    /// non-matching. Why: isolates the anchored-check cost from the slow counting
+    /// fallback, to see which dominates the gate.
+    pub fn gate_anchored_only_is_match(&self, line: &[u8]) -> bool {
+        self.gate.any_candidate(line, |rule, pos| match &self.anchored[rule] {
+            Some(engine) => engine.is_match(&line[pos..]),
+            None => false,
+        })
     }
 
     /// Profiling hook: runs only the literal-free group DFAs.
