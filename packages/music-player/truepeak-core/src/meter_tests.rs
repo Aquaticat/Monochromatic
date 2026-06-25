@@ -76,6 +76,25 @@ fn channel_routing_survives_mid_frame_chunk_split() {
     assert!((whole - split).abs() < EPS, "whole {whole} vs mid-frame split {split}");
 }
 
+// take_peak reads and resets the running max while keeping the window continuous, so the
+// max of the per-segment peaks equals the continuous whole-buffer peak exactly.
+#[test]
+fn take_peak_segments_match_continuous_peak() {
+    let samples = [0.0_f32, 0.9, 0.9, 0.0];
+    let whole = true_peak_interleaved(&samples, 1);
+
+    let mut meter = TruePeakMeter::new(1);
+    meter.feed(&samples[0..2]);
+    let segment_one = meter.take_peak();
+    meter.feed(&samples[2..4]);
+    let segment_two = meter.take_peak();
+
+    // The inter-sample peak straddles the segment boundary; continuity must preserve it.
+    assert!((segment_one.max(segment_two) - whole).abs() < 1e-6);
+    // After a take, the running peak is cleared.
+    assert_eq!(meter.peak(), 0.0);
+}
+
 // Feeding sample-by-sample matches feeding the whole buffer (window state persists).
 #[test]
 fn per_sample_feeding_matches_whole_buffer() {

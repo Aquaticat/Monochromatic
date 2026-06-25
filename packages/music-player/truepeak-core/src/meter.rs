@@ -262,6 +262,51 @@ impl TruePeakMeter {
         self.peak
     }
 
+    /// What:     `pub fn take_peak(&mut self) -> f32`. Read the largest magnitude seen
+    ///           since the last take (or since construction) and RESET that running
+    ///           maximum to zero, while leaving the per-channel window, fill counts, and
+    ///           channel cursor untouched. `&mut self` borrows the meter mutably.
+    /// Why:      Segmented measurement: feed one segment (a bin or a window), take its
+    ///           peak, then continue feeding the next segment with no discontinuity in
+    ///           the sliding window. Resetting only the peak (not the window) keeps the
+    ///           inter-sample interpolation continuous across segment boundaries, so the
+    ///           union of segment peaks equals the continuous full-track peak exactly.
+    /// Gotcha:   This resets the running max; `peak()` after a take reflects only samples
+    ///           fed since. To keep a global maximum, fold the returned values yourself.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// takePeak(): number { const p = this.peak; this.peak = 0; return p; }
+    /// ```
+    pub fn take_peak(&mut self) -> f32 {
+        // What:     `let peak = self.peak;`. Copy the current running max out (f32 is
+        //           Copy) before clearing it.
+        // Why:      We return the pre-reset value.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const peak = this.peak;
+        // ```
+        let peak = self.peak;
+        // What:     `self.peak = 0.0;`. Clear the running max; the window and cursor stay.
+        // Why:      Start the next segment's peak fresh while keeping interpolation
+        //           continuous.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // this.peak = 0;
+        // ```
+        self.peak = 0.0;
+        // What:     `peak`. The pre-reset value as the tail expression.
+        // Why:      Hand the segment peak back to the caller.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // return peak;
+        // ```
+        peak
+    }
+
     /// What:     `fn push(&mut self, channel: usize, sample: f32)`. Slide one sample
     ///           into a channel's window, update the raw peak, and (once the window is
     ///           full) sample the interpolated curve between the two middle points.
