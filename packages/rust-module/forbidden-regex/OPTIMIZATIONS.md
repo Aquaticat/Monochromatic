@@ -50,14 +50,15 @@ heuristic or a corpus sample), or lower the per-rule DFA cap for the fallback so
 that would build a large table stays on counting. Counting is build-fast but slow per
 hit, so this is a direct build-time versus per-hit-speed trade.
 
-### Cache-tighten the transition tables
+### Cache-tighten the transition tables: TRIED (u16 done, no speed gain)
 
-`candidates` (prefilter plus aho-corasick, no per-rule work) runs ~94M while `gate`
-(with per-rule checks) runs ~76M. Part of that gap is the large inner-keyword DFAs
-thrashing cache on the lines their keyword hits. Narrowing state ids to `u16` where the
-state count allows, or packing the byte-class transition rows, would shrink the working
-set. The byte-class compression already exists; the win here is memory layout, not
-algorithm.
+Narrowing state ids to `u16` is DONE (see "Shrink the serialized matcher" above): it
+halved the table width and the serialized blob (42% smaller). Measured outcome: NO
+throughput change on either arch (x86 95.65M -> 95.99M; m1 55.74M -> 56.30M, both within
+noise). So the inner-keyword DFA tables were not actually cache-thrashing; the per-line
+cost is dominated by the gate's aho-corasick DFA prefilter, not the per-rule
+transition-table reads. Packing the byte-class rows further is unlikely to pay off for the
+same reason; the kept win from u16 is purely size/memory.
 
 ### Intra-line skip with the prefilter
 
@@ -199,8 +200,24 @@ counting advance and the first-byte gating are natural SWAR candidates.
 
 ## What is deliberately not pursued
 
-The all-rules single-pass counting-set automaton (an Aho-Corasick literal skeleton with
-counter registers on the prefix-complete states) is the theoretical ceiling, one lookup
-plus sparse counter work per byte, like regex's combined lazy DFA but eager and leaner.
-It is a large build and is not needed now that the fold wins. It stays on the table only
-if the cheaper levers above stop short on a harder ruleset or on slower hardware.
+### All-rules combined automaton: MEASURED, not viable
+
+Two forms of a single monolithic automaton over the whole ruleset were measured, both
+contraindicated:
+
+- Combined DFA. `forbidden_regex::try_combined_dfa` builds `Σ*·(alt of all 251 kept rule
+  roots)` and eagerly determinizes it. Result: NOT BUILDABLE -- it exceeds the state cap
+  instantly (the alternation node alone blows past the residual-size guard), confirming
+  that bounded-repetition plus `&`/`~` across hundreds of rules state-explodes. This is
+  exactly why the architecture is per-rule.
+- Combined counting-set automaton (an aho-corasick literal skeleton with counter
+  registers, the theoretical one-lookup-plus-sparse-counters ceiling). The seedless-union
+  counting variant was measured earlier at ~0.82M lines/s, roughly 100x slower than the
+  gate's ~95M, because a counting automaton has no SIMD literal prefilter and pays
+  per-byte counter work on every line; and it cannot even be a single NFA because the
+  `&`/`~` rules need the product back-end. A full all-rules version would be slower still.
+
+The per-rule gate-plus-fold architecture (one SIMD aho-corasick prefilter pass, then a
+cheap anchored or counting check only on a literal hit) is therefore not just a
+convenience but the only viable shape; the monolithic automaton stays off the table
+unless a future ruleset has so few usable literals that the prefilter stops paying off.

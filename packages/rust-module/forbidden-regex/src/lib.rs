@@ -70,3 +70,19 @@ pub fn debug_seedless(pattern: &str) -> Option<String> {
         None
     }
 }
+
+/// Diagnostic: tries to build ONE combined search DFA over every pattern.
+///
+/// What: parses each pattern, alternates them under a single `Σ*` search prefix, and
+/// eagerly determinizes the union; returns the state count on success or the
+/// `CompileError` (typically `StateCap`) on a blowup. Why: a measured probe of the
+/// "all-rules combined automaton" idea, to see whether a single monolithic DFA over the
+/// whole ruleset is even buildable (vs the per-rule gate-plus-fold architecture).
+#[doc(hidden)]
+pub fn try_combined_dfa(patterns: &[&str]) -> Result<usize, CompileError> {
+    use crate::ast::node::Node;
+    use crate::ast::smart::{alt, concat};
+    let roots: Vec<Node> = patterns.iter().filter_map(|p| crate::parse::parse(p).ok()).collect();
+    let combined = concat(vec![Node::Top, alt(roots)]);
+    Ok(crate::dfa::build_dfa_within(combined, 65_534)?.num_states as usize)
+}

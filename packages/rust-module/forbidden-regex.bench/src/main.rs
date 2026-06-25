@@ -76,6 +76,24 @@ fn main() {
         fset.seedless_group_count()
     );
 
+    // Diagnostic: probe the "all-rules combined automaton" idea -- can a single DFA over
+    // every kept rule even build, or does it state-explode (which is why the architecture
+    // is per-rule gate-plus-fold)?
+    let ours_kept: Vec<&str> = kept.iter().map(|&i| ours_all[i]).collect();
+    let combined_start = Instant::now();
+    match forbidden_regex::try_combined_dfa(&ours_kept) {
+        Ok(states) => eprintln!(
+            "[diag] all-rules combined DFA: {} states in {:.2}s",
+            states,
+            combined_start.elapsed().as_secs_f64()
+        ),
+        Err(error) => eprintln!(
+            "[diag] all-rules combined DFA: NOT BUILDABLE ({}) after {:.2}s",
+            error,
+            combined_start.elapsed().as_secs_f64()
+        ),
+    }
+
     // Build regex over exactly the rules ours kept, so both race the same set. The
     // size limits are raised because the stripped generic-shape rules compile to a
     // large automaton; serialized/compiled size is not a constraint here.
