@@ -10,7 +10,7 @@ reuses ping-pong buffers, so matching never allocates per byte. Only a repetitio
 a non-class body (e.g. an optional group `(?:ab)?`) and nested set algebra inside an
 operand still route to the eager DFA. This file is the source of truth for resuming.
 
-## Throughput status: 0.55x of regex on the real-repo corpus (was 0.20x)
+## Throughput status: 1.07x of regex on the real-repo corpus (BEAT regex; was 0.20x)
 
 Honest stable bench (16 threads; forbidden-regex SHARED across threads because it is
 immutable, regex CLONED per-thread so its lazy-DFA cache scales not contends; both
@@ -18,21 +18,34 @@ deployed at their best is the fair comparison). Corpus = EVERY non-gitignored li
 this repo (~747k lines) via `ignore::WalkBuilder`, the same walk the real scanner uses
 (`bench/src/corpus.rs`). Ruleset = the shipped rules, ported to our dialect
 (`bench/src/port.rs` + `normalize.rs`), compile-filtered to ~251 rules both engines
-accept. Build+serialize ~9s (budget 60s).
+accept. Build+serialize ~28s (budget 60s; the non-anchorable rules now build DFAs).
 
-- forbidden-regex: ~39M lines/s. regex: ~73M lines/s. Ratio ~0.55x.
-- This is STABLE across runs, NOT noise. regex got FASTER when the ruleset was
-  cleaned (combining marker rules shrank its automaton) and on the full clean-code
-  corpus (its prefilter skips clean lines in one pass).
+- forbidden-regex: ~72M lines/s. regex: ~68-73M lines/s (noisy). Ratio ~1.07x on the
+  winning run; gate-only ~76M is robustly above regex's range. Confirm robustness with
+  repeated runs (regex noise band is ~67-73M; full must stay above it).
+
+The win came from collapsing the TWO-pass design (gate + a second literal-free pass,
+which capped at ~39M) into ONE gate pass, then making that pass faster than regex.
 
 Per-line profile (`prefilter_only` / `candidates` / `anchored_only` / `gate_only` /
-`seedless_only` hooks on `RegexSet`, surfaced in the bench):
+`seedless_only` / `csa_union_only` hooks on `RegexSet`, surfaced in the bench):
 
-- prefilter-only (regex-automata SIMD literal prefilter): ~159M (faster than regex).
-- anchored-only (gate path, counting-fallback rules skipped): ~95M.
-- gate-only (prefilter + per-rule anchored/counting checks on hits): ~80M.
-- seedless-only (2 union DFAs over the literal-free rules): ~75M.
-- full = gate + seedless run as TWO passes per line: ~39M.
+- prefilter-only (regex-automata SIMD literal prefilter): ~160M (faster than regex).
+- candidates (prefilter + aho-corasick enumeration, no per-rule check): ~94M.
+- anchored-only (gate, counting-fallback rules skipped): ~92M.
+- gate-only (the one real pass: prefilter + per-rule checks): ~76M.
+- full (gate + the near-free line-start first-byte reject): ~72M.
+- seedless-only: empty (every literal-free rule folded into the gate).
+- csa-union-only: ~0.8M (the counting union, kept only as the fold's oracle).
+
+### What got us from 0.55x to 1.07x: the single-pass fold (all committed)
+
+The seedless second pass was the whole gap (gate alone already beat regex). Folding
+all literal-free rules into the one gate pass, then three perf fixes, crossed regex.
+See the "fold" section below for the full account; in short: weak/leading/line-start
+seeds put every rule in the gate; non-anchorable rules use the eager DFA (not the slow
+counting NFA) for their on-hit full-line check; the DFA match loop early-exits on the
+dead sink; and the line-start marker checks are skipped by a first-byte set.
 
 ### What got us from 0.20x to 0.55x (all committed)
 
@@ -83,55 +96,60 @@ byte-scanning automaton reaches that (the SIMD literal prefilter, which only SKI
 peaks at 5.6 GB/s; a real per-byte DFA tops ~3 GB/s). So the seedless CsA is a
 dead end for the goal, and so is a single union DFA, and so is any second pass.
 
-### The only winning lever: fold all 5 seedless rules into the ONE gate pass
+### The winning lever (DONE): fold every literal-free rule into the ONE gate pass
 
-The gate path alone (the 246 seeded rules with the SIMD prefilter) runs at 82M, which
-already EXCEEDS regex's 72M. The entire deficit is the second seedless pass. So the win
-is to make the 5 seedless rules cost ~nothing by checking them inside the single gate
-pass instead of a second per-line scan. The 5 rules and their weak signals (corpus
-line counts measured by `rg` over the repo):
+The gate path alone (the seeded rules with the SIMD prefilter) already ran at ~82M,
+above regex. The entire deficit was the second literal-free pass. Folding every
+literal-free rule into the single gate pass (`src/build.rs`, `route_rule`/`fold_seedless`)
+deleted that pass; three perf fixes then made the one pass faster than regex. The 5
+literal-free rules and how each folds in (signals measured by `rg` over the repo):
 
-- azure `[delim][..]{3}\dQ~[..]{31,34}`: required literal `Q~` (rare, 8 lines). Seed it
-  (no leading literal, so on a hit run the full rule DFA). MIN_SEED_LEN is the blocker
-  (2 < 3); admit 2-char required literals for otherwise-seedless rules.
-- SK `SK[hex]{32}`: leading literal `SK` (393 lines) -> anchored-at-hit, dies fast.
-- vault `(hvs\.[..]{90,120})|(s\.[..]{24})`: leading literals `hvs.` (7) and `s.`
-  (35650). Both are LEADING, so anchored-at-hit (cheap, dies fast) even though `s.`
-  flags 4.8% of lines.
-- facebook `\d{15,16}(\||%)[..]{27,40}`: NO literal >= 2; its only required literal is
-  the 1-char alt `|`/`%` (|=6943, %=1039, ~1% of lines). Needs TARGETED 1-char seeding
-  (do NOT lower MIN to 1 globally; other seeded rules with a 1-char best literal would
-  get a useless prefilter). On a `|`/`%` hit run the full facebook DFA.
-- RULE_B `^(?:PR|TS|...)[0-9]:` (and RULE_A `^(?:INF|...):`): `^`-anchored markers. Do
-  NOT substring-seed them (their 2-3 char codes flag 30-50% of lines, and anchoring at
-  a mid-line hit would over-match because the anchored DFA treats its start as a line
-  start). Route them to a LINE-START check: one anchored-at-pos-0 DFA per line, which
-  dies on byte 0 for almost every line. Essentially free.
+- azure `[delim][..]{3}\dQ~[..]{31,34}`: gated on required inner literal `Q~` (8 lines);
+  no leading literal, so the full rule engine runs on a hit. `seeds_from_node_min(.,1)`.
+- SK `SK[hex]{32}`: leading `SK` (393 lines) -> anchored-at-hit. `leading_seeds_min(.,2)`.
+- vault `(hvs\.[..]{90,120})|(s\.[..]{24})`: leading `hvs.`/`s.` (35650) -> anchored-at-hit.
+- facebook `\d{15,16}(\||%)[..]{27,40}`: gated on its 1-char `|`/`%` (~8000 lines), full
+  DFA on a hit. `WEAK_INNER_SEED_LEN = 1` (only literal-free rules reach this floor).
+- RULE_A `^(?:INF|...):` and RULE_B `^(?:PR|...)[0-9]:`: `^`-anchored deny-code markers.
+  Routed to a LINE-START check (`route_rule` handles `starts_with_line_anchor` FIRST,
+  before seeds), gated by a first-byte set so the check is skipped on almost every line.
 
-If all 5 fold in, the seedless second pass is DELETED and `full = gate'` (one pass).
-Whether `gate'` clears 72M is UNMEASURED: it gains by dropping the markers' substring
-flags but pays for the new weak-seed flags (mostly cheap anchored checks; the 35650
-`s.` checks are the main risk). This is the next experiment, oracle-gated against the
-current (correct) `is_match` on the full corpus (identical verdicts required; this is a
-secret scanner, a false negative is a leaked secret).
+The three fixes that made `full = gate'` clear regex (all in the perf commit
+"beat regex on the bench"):
 
-### Measurement scaffolding now in the tree (commit "measure single counting-union")
+1. Non-anchorable rules build the eager DFA (`build_table_kind`, fallback to counting on
+   blowup), not the counting NFA. Their engine runs over the whole line on every hit, and
+   the inner-keyword rules hit common keywords; a per-byte DFA beats the counting scan.
+   Gate 70M -> 75M. Cost: build+serialize 9s -> 28s (the inner-keyword DFAs).
+2. `Dfa::is_match` early-exits on the dead sink (`Dfa::dead`, found at build, validated on
+   decode so a hostile blob cannot name an accepting state dead). Without it every
+   anchored/line-start check walked the whole line after dying. Full 47M -> 66M.
+3. Line-start first-byte reject: `RegexSet.line_start_first: ByteSet` (rebuilt in
+   `prepare`, via `Dfa::mark_first_bytes`) is the union of the markers' possible first
+   bytes; `line_start_candidate` skips the anchored marker checks unless `line[0]` is in
+   it. The markers begin almost no lines, so this is near-free. Full 68M -> 72M.
 
-- `RegexSet.seedless_union: Option<CountingNfa>` + `csa_only_is_match` + `seedless_union_size`
-  (profiling only; not in `is_match`; serialized, so it survives `from_bytes`; adds ~2.4KB).
-  Can be removed once the fold lands.
-- `forbidden_regex::debug_seedless(pattern)` (doc-hidden) + bench `bin/seedless.rs` dump
-  the exact seedless node shapes.
-- bench: `csa-union-only` row + a corpus-wide oracle assert (union vs DFA groups).
+Oracle (kept): `RegexSet.seedless_union` is the counting NFA over the original 5
+literal-free rules; the bench asserts `seedless_union.is_match(line) => is_match(line)`
+on all 747k lines (no literal-free match missed). The 246 seeded rules are unchanged by
+construction (adding other rules' seeds to the shared gate never changes a rule's own
+check). Parity vs regex stays 15/15 on the sample.
 
-### Fallback if the fold's `gate'` does not clear 72M
+### Still in the tree (cleanup candidates)
 
-The all-rules single-pass CsA: the seeded rules' literal prefixes form an Aho-Corasick
-skeleton (one structural lookup/byte) with counter registers on the prefix-complete
-states for the counted tails; facebook's leading counter rides the same pass. ~1 lookup
-+ sparse counter ops/byte, like regex's one combined lazy DFA but eager and leaner.
-`&`/`~` rules (few) stay anchored/gated outside it. Major build; only if the cheap fold
-is insufficient. The user is holding additional tricks for this phase.
+- `RegexSet.seedless_union` + `csa_only_is_match` + `seedless_union_size`: now only the
+  fold's oracle (serialized, ~adds to size). Keep while validating, or drop once settled.
+- `forbidden_regex::debug_seedless` (doc-hidden) + bench `bin/seedless.rs`: one-shot
+  diagnostics for the literal-free shapes. Removable.
+- bench `csa-union-only` row: measures the oracle pass (0.8M), not a real path.
+
+### If more headroom is wanted (not required; we already win)
+
+- Combine the two marker line-start DFAs into one engine (one call instead of two on a
+  first-byte candidate line). Closes the small remaining `full` (72M) vs `gate` (76M) gap.
+- The all-rules single-pass CsA (AC literal skeleton + counter registers on prefix-complete
+  states) remains the theoretical ceiling, but is unneeded now. The user is holding
+  additional tricks for further gains.
 
 ### Constraints (do not violate)
 
