@@ -106,3 +106,12 @@ fn counted_bound_is_exact() {
     // A digit outside [A-Z2-7] breaks the run (0 and 1 are excluded).
     assert!(!prog.is_match(b"AKIAABCDEFGHIJKLMN0P"));
 }
+
+// A count of 64 needs bit 64, which spills past the first 64-bit word: count_set_for must
+// size each counted position's bitset to the element's own max, not a one-word placeholder.
+#[test]
+fn a_count_past_one_word_is_sized_correctly() {
+    let prog = linear("[a-z]{64}");
+    assert!(prog.is_match(&[b'a'; 64]), "exactly 64 letters must satisfy {{64}}");
+    assert!(!prog.is_match(&[b'a'; 63]), "63 letters fall one short of {{64}}");
+}

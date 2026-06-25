@@ -48,3 +48,23 @@ fn declines_intersection_and_complement() {
     assert!(build_nfa(&node("[a-z]&~(m)")).is_none());
     assert!(build_nfa(&node("(?:[a-z]{4})&~(abcd)")).is_none());
 }
+
+#[test]
+fn group_repetition_unrolls_up_to_the_limit_and_declines_beyond() {
+    // A non-class body is unrolled only when its max is at most the unroll limit (64): a max
+    // at the limit builds, one past it the builder declines so the caller routes elsewhere.
+    // (min is 1 so the repetition is not empty-matchable, which parse rejects outright.)
+    assert!(build_nfa(&node("(?:ab){1,64}")).is_some(), "a 64-copy max unroll is allowed");
+    assert!(build_nfa(&node("(?:ab){1,65}")).is_none(), "a 65-copy max unroll is declined");
+}
+
+#[test]
+fn a_nullable_alternation_branch_makes_the_alternation_skippable() {
+    // build_alt ORs nullability across branches, so a single nullable branch (`(?:xy)?`)
+    // makes the whole alternation nullable, letting the following `w` match with the
+    // alternation skipped. A wrong combiner (AND) would lose that and reject "w".
+    let prog = build_nfa(&node("(?:(?:xy)?|z)w")).expect("expressible as an NFA");
+    assert!(prog.is_match(b"w"), "the nullable branch lets the alternation be skipped");
+    assert!(prog.is_match(b"xyw"));
+    assert!(prog.is_match(b"zw"));
+}

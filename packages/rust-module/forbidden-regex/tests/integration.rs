@@ -329,3 +329,15 @@ fn from_bytes_roundtrips_a_built_set() {
     assert!(reloaded.is_match(AKIA_KEY.as_bytes()));
     assert!(!reloaded.is_match(b"nothing here"));
 }
+
+#[test]
+fn debug_seedless_reports_only_literal_free_patterns() {
+    // The diagnostic returns the node dump for a pattern with no usable seed (no leading
+    // literal AND no required inner literal), and None once either kind of seed exists. A
+    // class repetition is seedless; a leading or inner literal makes it seeded.
+    let dump = forbidden_regex::debug_seedless("[a-z]{5}").expect("a class repetition is seedless");
+    assert!(dump.len() > 10, "the dump must be the real parsed node, got {dump:?}");
+    assert_ne!(dump, "xyzzy");
+    assert!(forbidden_regex::debug_seedless("[a-z]{3}abc").is_none(), "an inner literal is a seed");
+    assert!(forbidden_regex::debug_seedless("AKIA[A-Z2-7]{16}").is_none(), "a leading literal is a seed");
+}

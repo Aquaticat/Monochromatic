@@ -224,3 +224,8 @@ pub(crate) fn step_into(
         }
     }
 }
+
+/// Unit tests for the counting-set simulation primitives, in a sidecar (max-lines exempt).
+#[cfg(test)]
+#[path = "sim_tests.rs"]
+mod tests;

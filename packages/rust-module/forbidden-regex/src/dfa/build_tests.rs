@@ -51,3 +51,19 @@ fn build_succeeds_on_a_normal_pattern() {
     let dfa = build_dfa_within(crate::parse::parse("AKIA[A-Z2-7]{4}").unwrap(), 10_000);
     assert!(dfa.is_ok());
 }
+
+#[test]
+fn the_determinization_state_cap_is_an_inclusive_ceiling() {
+    // Build once with a generous cap to learn the exact state count, then rebuild with the
+    // cap set to exactly that count. The check is `states.len() > cap`, so reaching the cap
+    // is allowed (Ok); a cap one below must abort as StateCap. This pins the boundary against
+    // off-by-one mutants (`>` becoming `==` or `>=`).
+    let node = crate::parse::parse("[a-z]{3}").expect("parses");
+    let exact = build_dfa_within(node.clone(), 10_000).expect("builds").num_states as usize;
+    assert!(exact >= 2, "the pattern should produce several states, got {exact}");
+    assert!(build_dfa_within(node.clone(), exact).is_ok(), "a cap equal to the count is allowed");
+    assert!(
+        matches!(build_dfa_within(node, exact - 1), Err(CompileError::StateCap { .. })),
+        "a cap one below the state count must abort as StateCap",
+    );
+}

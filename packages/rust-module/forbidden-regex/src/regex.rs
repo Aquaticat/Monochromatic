@@ -548,3 +548,8 @@ impl RegexSet {
         Ok(set)
     }
 }
+
+/// Unit tests for the public matchers' internals, in a sidecar (max-lines exempt).
+#[cfg(test)]
+#[path = "regex_tests.rs"]
+mod tests;

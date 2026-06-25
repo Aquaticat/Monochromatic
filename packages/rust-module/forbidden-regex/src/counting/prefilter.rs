@@ -48,6 +48,16 @@ impl Prefilter {
     pub(crate) fn allows(&self, line: &[u8]) -> bool {
         self.finders.is_empty() || self.finders.iter().any(|finder| finder.find(line).is_some())
     }
+
+    /// Returns how many seed searchers are prepared.
+    ///
+    /// What: the prepared-searcher count, zero before [`Prefilter::from_seeds`] runs. Why:
+    /// lets a test prove `Engine::prepare` actually rebuilds the searchers after a decode
+    /// drops them (the field is `#[serde(skip)]`), which no match-verdict can observe.
+    #[cfg(test)]
+    pub(crate) fn len(&self) -> usize {
+        self.finders.len()
+    }
 }
 
 /// Keeps a seed set only when every seed is at least `min` bytes, else empty.

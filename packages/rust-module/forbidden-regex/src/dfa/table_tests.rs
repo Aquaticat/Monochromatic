@@ -117,6 +117,74 @@ fn validate_rejects_a_forged_dead_state() {
     assert!(out_of_range.validate().is_err());
 }
 
+// A consistent self-looping single-state DFA over `nclasses` classes (all bytes class 0),
+// the minimal well-formed automaton for exercising the decode-validation bounds checks.
+fn uniform_dfa(nclasses: u32) -> Dfa {
+    let nc = nclasses as usize;
+    Dfa::from_parts(
+        nclasses,
+        vec![0u8; 256],  // every byte maps to class 0
+        vec![false; nc], // per-class word flags
+        vec![false; nc], // per-class newline flags
+        vec![0u16; nc],  // one state, self-looping on every class
+        vec![0u8; 1],    // the single state accepts nothing
+        0,               // start
+        1,               // num_states
+    )
+}
+
+#[test]
+fn mark_first_bytes_reads_the_start_states_row() {
+    // A hand-built DFA whose start state is NOT state 0: byte `a` (class 0) steps to a live
+    // state, every other byte (class 1) steps to the dead sink. `mark_first_bytes` must index
+    // the START state's transition row (`start * nclasses + class`); a wrong index (e.g.
+    // `start / nclasses`) reads a different row and reports the wrong first-byte set.
+    let mut class_map = vec![1u8; 256];
+    class_map[b'a' as usize] = 0;
+    let dfa = Dfa::from_parts(
+        2,
+        class_map,
+        vec![false; 2],
+        vec![false; 2],
+        // state0 (dead sink) self-loops; state1 is live; state2 (start): a->state1, else->dead.
+        vec![0, 0, 0, 0, 1, 0],
+        vec![0u8; 3],
+        2, // start = state 2
+        3, // num_states
+    );
+    let mut set = ByteSet::empty();
+    dfa.mark_first_bytes(&mut set);
+    assert!(set.contains(b'a'), "byte a steps off the dead sink from the start row");
+    assert!(!set.contains(b'b'), "byte b steps straight to the dead sink");
+}
+
+#[test]
+fn validate_class_count_bounds_are_inclusive_of_256_and_exclusive_above() {
+    // 256 classes is the inclusive maximum (a full byte alphabet), so a consistent 256-class
+    // DFA validates; 300 classes is over the limit and must be rejected even when every other
+    // field is internally consistent (so only the nclasses range check can catch it).
+    assert!(uniform_dfa(256).validate().is_ok(), "256 classes is the inclusive maximum");
+    assert!(uniform_dfa(300).validate().is_err(), "more than 256 classes is out of range");
+    assert!(uniform_dfa(1).validate().is_ok());
+}
+
+#[test]
+fn a_built_dfa_with_a_real_dead_sink_validates_and_the_sink_is_well_formed() {
+    // An anchored literal dies on the first non-matching byte, so its minimized DFA has a
+    // genuine dead sink (`dead != num_states`). validate must accept it (its dead-sink
+    // self-loop check reads `trans[dead * nclasses + class]`), and the sink `find_dead`
+    // located must really be non-accepting and fully self-looping.
+    let dfa = anchored_dfa("abc");
+    let dead = dfa.dead as usize;
+    let nc = dfa.nclasses as usize;
+    assert_ne!(dfa.dead, dfa.num_states, "an anchored literal must have a real dead sink");
+    assert!(dfa.validate().is_ok(), "a DFA with a sound dead sink must validate");
+    assert_eq!(dfa.accept[dead], 0, "the dead sink must be non-accepting");
+    for class in 0..nc {
+        assert_eq!(dfa.trans[dead * nc + class] as usize, dead, "the dead sink must self-loop");
+    }
+}
+
 #[test]
 fn minimization_preserves_matching() {
     // Multi-byte alternation branches must each be wrapped as a single atom.

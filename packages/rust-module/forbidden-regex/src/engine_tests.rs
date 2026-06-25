@@ -65,6 +65,20 @@ fn validate_and_prepare_keep_a_built_engine_working() {
 }
 
 #[test]
+fn prepare_rebuilds_the_prefilter_dropped_by_decode() {
+    // The prefilter is `#[serde(skip)]`, so a decoded engine starts with none and must be
+    // rebuilt by `prepare`. A match verdict cannot see this (an empty prefilter just allows
+    // every line, still sound), so pin it on the searcher count: zero after decode, one per
+    // seed after prepare. This proves `prepare` is not a no-op.
+    let engine = table_engine("AKIA[A-Z2-7]{4}", &[b"AKIA"]);
+    let bytes = bincode::serialize(&engine).expect("engine serializes");
+    let mut decoded: Engine = bincode::deserialize(&bytes).expect("engine deserializes");
+    assert_eq!(decoded.prefilter.len(), 0, "a decoded engine has no prefilter until prepared");
+    decoded.prepare();
+    assert_eq!(decoded.prefilter.len(), 1, "prepare rebuilds one searcher per seed");
+}
+
+#[test]
 fn validate_rejects_a_corrupt_back_end() {
     // Engine::validate must delegate into the back-end so a hostile decoded table is
     // caught before it runs; corrupt the inner DFA and confirm rejection.
