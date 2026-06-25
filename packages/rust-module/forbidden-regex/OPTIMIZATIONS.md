@@ -153,11 +153,12 @@ loop and its table reads are NOT the bottleneck. The hot per-line cost is the ga
 aho-corasick DFA prefilter (already SIMD via Teddy/memchr). So the match-loop SIMD levers
 below (vectorized byte-class mapping, SWAR per-byte work) are CONTRAINDICATED for this
 ruleset: speeding up work that is not on the critical path will not move throughput. The
-only SIMD lever with a plausible win left is a different axis entirely -- a batched,
-vertical-across-lines API that amortizes per-line dispatch overhead -- and that is a large
-API change whose consumer (the line-by-line scanner) does not yet exist. Treat the rest of
-this section as a record of ideas, to revisit only on a ruleset where the prefilter stops
-carrying the load.
+batched across-lines API was built and measured (see "Batch API across lines" below): a
+vertical SIMD gather across lines LOSES on both arches, but a length-bucketed branchless
+kernel WINS modestly for a single full-scan DFA (x86 ~1.05x, arm64 ~1.35x in the low-match
+regime), shipped opt-in as `Regex::is_match_batch_bucketed`. It does not help the
+gate-dominated `RegexSet` path, where the prefilter still carries the load. Treat the
+remaining ideas here as a record, to revisit on a ruleset where the prefilter stops paying.
 
 ### Vectorized byte-class mapping in the DFA loop
 
@@ -179,17 +180,37 @@ per byte, Glushkov / Hyperscan style. This vectorizes the one back-end that is c
 the slowest per byte (the counting `run` the oracle measures at ~0.8M), which matters if
 any rule ever has to stay on counting rather than the DFA.
 
-### Vertical SIMD across lines (a batch API)
+### Batch API across lines: MEASURED; length-bucketing wins, SIMD gather loses
 
-The biggest throughput lever, and the biggest change. The scanner calls `is_match` one
-line at a time, so each call is a scalar walk. A batch entry point that takes many lines
-and runs the DFA on, say, sixteen lines at once, one line per SIMD lane, steps all lanes
-per byte position and retires a lane when its line ends or accepts. Lines have uneven
-length, so lanes finish at different times and need refilling, which is the hard part,
-but this is how the highest-throughput scanners turn a sequential automaton into
-data-parallel work. It would also amortize the line-start first-byte check and the
-prefilter across the batch. This needs an `is_match_batch` on `RegexSet` and a scanner
-that feeds it line blocks.
+`is_match_batch` on `Regex`/`RegexSet` ships (scalar per-line by default). Several batch
+layouts were then raced against the per-line loop on the real corpus, single seedless
+full-scan DFA, both arches:
+
+- Vertical SIMD across lines (one line per lane, gather the transition): LOSES on both
+  arches (x86 0.15 to 0.85x, arm64 0.43 to 0.88x). x86 has no 16-bit gather so a `u16`
+  table scalarizes; even a native u32 `vpgatherdd` (and NEON, which has no gather at all)
+  is slower than scalar loads. The SIMD gather is the wrong tool for a transition table.
+- Interleaved scalar (`N` independent transition chains, no gather): reaches parity only
+  with length-sorting (best ~1.0x x86, ~1.1x arm64).
+- Branchless equal-length kernel on exact-length buckets, width 32: the winner. Dropping
+  the per-lane early-exit branches lets the `N` independent chains pipeline. Low-match
+  regime (a secret scanner's): x86 1.04x to 1.09x, arm64 1.32x to 1.37x. It LOSES when
+  most lines match (47% match: x86 0.75x) because the per-line loop early-exits on the
+  first match, so it is opt-in (`Regex::is_match_batch_bucketed`), not the default. arm64
+  wins far more: its wide out-of-order engine rewards the 32-lane memory-level parallelism.
+- Bucket-width sweep: 32 is the sweet spot on both arches (16 slightly behind, 64
+  regresses). Exact-length buckets ~= sort-then-chunk for interleaved; the branchless
+  kernel needs exact buckets. The sort is ~8ms over 751k refs (~0.5% of a scalar pass) and
+  near-linear on already-sorted input, so a scanner that pre-buckets pays almost nothing.
+- Set-level concat-buffer gate sweep (one prefilter pass over all lines joined): LOSES on
+  both (x86 0.79x, arm64 0.74x). `regex-automata`'s per-line prefilter is already
+  SIMD-optimal on short lines, so the buffer copy plus per-line resolution only adds cost.
+
+Scope caveat: the win is for a single full-scan DFA (one `Regex`, or a ruleset's seedless
+group DFAs). The shipped `RegexSet` is gate-dominated (Teddy prefilter plus fast-dying
+anchored DFAs) with the seedless groups empty, so the bucketed kernel does not help the
+current ruleset's set path; it pays off for single-pattern scanning and any future ruleset
+with literal-free full-scan rules.
 
 ### A combined rare-byte SIMD reject
 

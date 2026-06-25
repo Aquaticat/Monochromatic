@@ -56,6 +56,19 @@ fn regexset_batch_equals_per_line_is_match() {
 fn batch_handles_empty_input() {
     let re = compile("AKIA[A-Z2-7]{4}").expect("compiles");
     assert!(re.is_match_batch(&[]).is_empty());
+    assert!(re.is_match_batch_bucketed(&[]).is_empty());
     let set = RegexSet::new(&["secret"]).expect("compiles");
     assert!(set.is_match_batch(&[]).is_empty());
+}
+
+#[test]
+fn bucketed_batch_equals_per_line_across_lengths() {
+    // The bucketed path groups by exact length, runs the tight kernel per bucket, and
+    // scatters back; the result must equal per-line is_match regardless of input order.
+    for pattern in ["[0-9a-f]{8}", "AKIA[A-Z2-7]{4}", r"\bcat\b"] {
+        let re = compile(pattern).expect("compiles");
+        let lines = sample_lines();
+        let oracle: Vec<bool> = lines.iter().map(|line| re.is_match(line)).collect();
+        assert_eq!(re.is_match_batch_bucketed(&lines), oracle, "bucketed disagrees for {pattern}");
+    }
 }

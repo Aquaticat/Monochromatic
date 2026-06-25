@@ -20,8 +20,9 @@ neutral-to-better on both arches). Three tricks got here from the 1.07x single-p
 0. u16 DFA state ids (`dfa/table.rs`): `trans`/`start`/`num_states`/`dead` are u16, so the
    hot transition table is half the width. No throughput change (the gate's aho-corasick
    DFA prefilter dominates, not the table reads) but 42% smaller serialized + half the
-   table memory, free. Engine DFAs cap at 20000 < 65534; `from_parts` narrows the
-   builder's u32 ids; `build_dfa_within` clamps its cap to 65534.
+   table memory, free. Engine DFAs cap at 20000 < 65534; `from_parts` now takes u16 ids
+   directly (callers `build_dfa_within`/`minimize` narrow at the boundary the cap makes
+   safe); `build_dfa_within` clamps its cap to 65534.
 
 1. DFA aho-corasick kind for the gate's which-rule matcher (`gate.rs`): the default NFA
    chases failure links per byte on every flagged line, a hidden scalar bottleneck on
@@ -39,6 +40,48 @@ The historical milestones below trace the journey from 0.20x. Larger remaining l
 are DEFERRED until after fuzzing + mutation testing are set up (in progress, see
 `packages/fuzz/forbidden-regex` and the mutation task), so the risky CsA build lands on
 a hardened test suite.
+
+## Batch API + across-lines SIMD exploration (measured; one opt-in win)
+
+`is_match_batch(&[&[u8]]) -> Vec<bool>` on `Regex`/`RegexSet` ships, scalar per-line by
+default. On top of it every across-lines layout was raced against the per-line loop on the
+real corpus, single seedless full-scan DFA, on x86 (AVX-512) and arm64/m1 (NEON):
+
+- Vertical SIMD across lines (one line per lane, gather the transition): LOSES both arches
+  (x86 0.15 to 0.85x, m1 0.43 to 0.88x). x86 has no 16-bit gather (a u16 table scalarizes);
+  even native u32 `vpgatherdd`, and NEON which has no gather at all, lose to scalar loads.
+- Interleaved scalar (N independent chains, no gather): parity only with length sorting.
+- Branchless equal-length kernel on exact-length buckets, N=32: the winner. Dropping the
+  per-lane early-exit branches lets the N chains pipeline. Low-match regime: x86 1.04x
+  ({20}) / 1.09x ({32}); m1 1.32x / 1.37x. LOSES at 47% match (x86 0.75x) because the
+  per-line loop early-exits on first match, so it is opt-in not default. m1 wins far more
+  (wide out-of-order rewards the 32-lane memory-level parallelism).
+- Bucket-width sweep: N=32 sweet spot both arches (16 behind, 64 regresses).
+- Sorting: cost ~8ms / 751k refs (~0.5% of a scalar pass), near-linear on already-sorted
+  input. Public `Regex::is_match_batch_bucketed` sorts internally; it wins only when the
+  caller feeds length-sorted lines (x86 api presorted {32} 1.02x vs unsorted 0.81x: the
+  per-call sort on unsorted input eats x86's modest kernel win). m1's bigger kernel win
+  clears the sort. The scanner is expected to pre-bucket.
+- Set-level concat-buffer gate sweep: LOSES both (x86 0.79 to 0.80x, m1 0.74x);
+  `regex-automata`'s per-line prefilter is already SIMD-optimal on short lines.
+
+Scope: the win is for a single full-scan DFA (one `Regex`, or a ruleset's seedless group
+DFAs). The shipped `RegexSet` is gate-dominated with the seedless groups empty, so the
+bucketed kernel does not help the current set path.
+
+Kernels live in `src/dfa/batch.rs` (scalar/interleaved/simd/tight, width-generic, runtime
+ISA dispatch via `#[target_feature]`) and `src/regex/batch.rs` (public plus `#[doc(hidden)]`
+per-kernel hooks); bench sweep in `forbidden-regex.bench/src/kernels.rs`. The lib now needs
+nightly (`#![feature(portable_simd)]`) only for the SIMD-gather kernel, which loses; if that
+pin is unwanted, delete the `simd_*` path (the winning tight kernel is plain scalar Rust)
+and keep scalar/interleaved/tight.
+
+NEXT (in progress): Sheng/`vpermb` in-register transition, a different axis from batching.
+It cuts the per-byte critical chain from a dependent table load (~5 cyc) to a register
+permute (~3 cyc) for DFAs up to 64 states, via AVX-512VBMI `vpermb` on x86 and `vqtbl4q`
+on NEON, and needs no length sorting. Position-dependent acceptance is folded in by
+accumulating `acc |= accept_mask_shuf(state) & ctx_bit[byte]` in-vector (no per-byte
+extract).
 
 ## Correctness infrastructure (fuzzing + mutation testing) — IN PROGRESS
 

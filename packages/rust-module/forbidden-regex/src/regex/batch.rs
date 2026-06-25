@@ -12,6 +12,13 @@ use super::{CheckedFull, Regex, RegexSet};
 /// Imports the anchored line-start match used by the per-line resolution.
 use crate::build::line_start_match;
 
+/// Lines advanced together per exact-length bucket in [`Regex::is_match_batch_bucketed`].
+///
+/// What: the bucket width, thirty-two. Why: the cross-arch sweep found 32 the sweet
+/// spot, enough independent transition chains to saturate memory-level parallelism while
+/// the per-column bookkeeping stays small; 16 is slightly behind and 64 regresses.
+const BATCH_BUCKET: usize = 32;
+
 /// Many-lines matching for a single compiled pattern.
 impl Regex {
     /// Reports, per line, whether the pattern matches a substring of that line.
@@ -30,6 +37,52 @@ impl Regex {
     pub fn is_match_batch(&self, lines: &[&[u8]]) -> Vec<bool> {
         let mut out = vec![false; lines.len()];
         self.engine.is_match_batch(lines, &mut out);
+        out
+    }
+
+    /// Reports per line, grouping equal-length lines so the DFA advances many at once.
+    ///
+    /// What: for a table-backed pattern, sorts the line indices by length, runs the
+    /// branchless equal-length kernel over each exact-length bucket [`BATCH_BUCKET`] lines
+    /// at a time, and scatters verdicts back to input order; other back-ends fall through
+    /// to the per-line loop. Why: a single full-scan DFA is latency-bound per line, but a
+    /// bucket of equal-length lines exposes independent transition chains the core
+    /// overlaps. Measured 1.04x-1.09x on x86 and 1.32x-1.37x on arm64 over the per-line
+    /// loop in the low-match regime a secret scanner sees; it does not help when most
+    /// lines match (the per-line loop early-exits) so it is opt-in, not the default. The
+    /// internal sort is near-linear on already length-sorted input, so a caller that
+    /// pre-buckets pays almost nothing for it.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// let re = forbidden_regex::compile("[0-9a-f]{32}").unwrap();
+    /// let lines: &[&[u8]] = &[b"deadbeefdeadbeefdeadbeefdeadbeef", b"short", b"nope"];
+    /// assert_eq!(re.is_match_batch_bucketed(lines), re.is_match_batch(lines));
+    /// ```
+    pub fn is_match_batch_bucketed(&self, lines: &[&[u8]]) -> Vec<bool> {
+        let mut out = vec![false; lines.len()];
+        let Some(dfa) = self.engine.table_dfa() else {
+            self.engine.is_match_batch(lines, &mut out);
+            return out;
+        };
+        let mut order: Vec<usize> = (0..lines.len()).collect();
+        order.sort_by_key(|&index| lines[index].len());
+        let mut start = 0;
+        while start < order.len() {
+            let len = lines[order[start]].len();
+            let mut end = start + 1;
+            while end < order.len() && lines[order[end]].len() == len {
+                end += 1;
+            }
+            let bucket: Vec<&[u8]> = order[start..end].iter().map(|&index| lines[index]).collect();
+            let mut verdicts = vec![false; bucket.len()];
+            dfa.is_match_batch_tight_w::<BATCH_BUCKET>(&bucket, &mut verdicts);
+            for (slot, &index) in order[start..end].iter().enumerate() {
+                out[index] = verdicts[slot];
+            }
+            start = end;
+        }
         out
     }
 
