@@ -104,13 +104,25 @@ fn concat_batch_sweep_equals_per_line_is_match() {
 #[test]
 fn bucketed_batch_groups_only_equal_lengths() {
     // The bucketed kernel runs the branchless tight kernel, which assumes every line in a
-    // bucket shares one length. With all-distinct lengths each line is its own bucket; if the
-    // bucket-extend test mis-grouped different lengths, the tight kernel would scan a longer
-    // line for only the shortest line's bytes and miss a match in its tail.
+    // bucket shares one length. The grouping must extend a bucket over EQUAL lengths; if it
+    // instead grouped UNEQUAL lengths, every line (all distinct lengths) would fall into one
+    // bucket sized to the shortest, and the tight kernel would scan each longer line for only
+    // that one byte and miss its match. Use enough lines (> the 32-line tight chunk) that the
+    // mis-grouped bucket runs a real branchless chunk, not the scalar remainder fallback.
     let re = compile("[0-9]{3}").expect("compiles");
-    let lines: &[&[u8]] = &[b"x", b"123", b"ab123", b"abcd123", b"no", b"abcdefg99"];
+    // Length L line is `z`-padded then ends in `123`, so every line of length >= 3 matches.
+    let owned: Vec<Vec<u8>> = (1usize..=40)
+        .map(|len| {
+            let mut line = vec![b'z'; len];
+            if len >= 3 {
+                line[len - 3..].copy_from_slice(b"123");
+            }
+            line
+        })
+        .collect();
+    let lines: Vec<&[u8]> = owned.iter().map(Vec::as_slice).collect();
     let oracle: Vec<bool> = lines.iter().map(|line| re.is_match(line)).collect();
-    assert_eq!(re.is_match_batch_bucketed(lines), oracle, "a tail match in a longer line must be found");
+    assert_eq!(re.is_match_batch_bucketed(&lines), oracle, "unequal lengths must not share a bucket");
 }
 
 #[test]
