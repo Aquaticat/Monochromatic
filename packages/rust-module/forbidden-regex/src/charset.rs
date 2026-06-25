@@ -199,3 +199,8 @@ pub fn singleton(b: u8) -> ByteSet {
     set.insert(b);
     set
 }
+
+/// Unit tests for the byte-set primitives, in a sidecar (max-lines exempt).
+#[cfg(test)]
+#[path = "charset_tests.rs"]
+mod tests;

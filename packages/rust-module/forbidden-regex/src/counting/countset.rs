@@ -105,3 +105,8 @@ impl CountSet {
 fn nwords(max: usize) -> usize {
     (max + 1) / 64 + 1
 }
+
+/// Unit tests for the bounded-count bitset, in a sidecar (max-lines exempt).
+#[cfg(test)]
+#[path = "countset_tests.rs"]
+mod tests;

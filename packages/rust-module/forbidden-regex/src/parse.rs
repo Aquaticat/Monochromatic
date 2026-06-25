@@ -91,3 +91,8 @@ fn can_match_empty(node: &Node) -> bool {
     }
     false
 }
+
+/// Unit tests for the parser, in a sidecar (max-lines exempt).
+#[cfg(test)]
+#[path = "parse_tests.rs"]
+mod tests;
