@@ -12,12 +12,6 @@ use std::path::PathBuf;
 /// Imports the gitignore-aware walker the scanner uses.
 use ignore::WalkBuilder;
 
-/// Maximum lines gathered into the corpus.
-///
-/// What: a ceiling on the working set. Why: bounds memory and keeps each timed pass a
-/// fixed size regardless of repo growth.
-pub const CORPUS_LINES: usize = 50_000;
-
 /// Longest line admitted into the corpus.
 ///
 /// What: a per-line byte ceiling. Why: minified or generated megabyte lines would
@@ -59,7 +53,7 @@ fn non_ignored_files(root: &PathBuf) -> Vec<PathBuf> {
         .collect()
 }
 
-/// Appends one file's usable text lines to `lines`, stopping at the cap.
+/// Appends one file's usable text lines to `lines`.
 ///
 /// What: skips binary files (any NUL byte) and over-long or empty lines, trimming a
 /// trailing carriage return. Why: keeps the corpus to real, scannable text lines.
@@ -71,9 +65,6 @@ fn gather_file(path: &PathBuf, lines: &mut Vec<Vec<u8>>) {
         return;
     }
     for raw in bytes.split(|&b| b == b'\n') {
-        if lines.len() >= CORPUS_LINES {
-            return;
-        }
         let line = raw.strip_suffix(b"\r").unwrap_or(raw);
         if line.is_empty() || line.len() > MAX_LINE_LEN {
             continue;
@@ -82,21 +73,18 @@ fn gather_file(path: &PathBuf, lines: &mut Vec<Vec<u8>>) {
     }
 }
 
-/// Builds the corpus from this repo's own non-gitignored text lines.
+/// Builds the corpus from every non-gitignored text line in the repo.
 ///
-/// What: enumerates non-ignored files and gathers their lines up to the cap. Why: a
-/// faithful, reproducible stand-in for the real files a secret scanner processes;
-/// whatever credentials the repo genuinely contains are matched by both engines, so the
-/// parity check stays meaningful.
+/// What: enumerates non-ignored files and gathers all their lines. Why: a faithful,
+/// reproducible stand-in for the real files a secret scanner processes; whatever
+/// credentials the repo genuinely contains are matched by both engines, so the parity
+/// check stays meaningful.
 pub fn build_corpus() -> Vec<Vec<u8>> {
     let root = repo_root();
     let mut files = non_ignored_files(&root);
     files.sort();
     let mut lines: Vec<Vec<u8>> = Vec::new();
     for file in files {
-        if lines.len() >= CORPUS_LINES {
-            break;
-        }
         gather_file(&file, &mut lines);
     }
     if lines.is_empty() {

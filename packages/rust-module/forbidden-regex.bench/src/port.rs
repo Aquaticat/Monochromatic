@@ -39,26 +39,37 @@ pub fn port(inner: &str) -> (String, String) {
 /// (`(?:…|$)`). Why: a secret is just as leaky surrounded, so betterleaks' boundary
 /// and delimiter context is dropped while the keyword, gap, and value are kept.
 fn strip_context(s: &str) -> String {
-    let mut s = s;
+    let mut cur = s.to_string();
     loop {
-        let before = s.len();
-        s = strip_leading(s);
-        s = strip_trailing(s);
-        if s.len() == before {
-            return s.to_string();
+        let before = cur.len();
+        let trimmed = strip_trailing(&strip_leading(&cur));
+        if trimmed.len() == before {
+            return trimmed;
         }
+        cur = trimmed;
     }
 }
 
 /// Strips one leading context element.
 ///
-/// What: a leading `\b`, `^`, or nullable class-repeat `[...]{0,N}`. Why: these are
-/// the start-context idioms betterleaks prepends to a secret.
-fn strip_leading(s: &str) -> &str {
-    if let Some(rest) = s.strip_prefix("\\b").or_else(|| s.strip_prefix('^')) {
-        return rest;
+/// What: a leading `\b`, a nullable class-repeat `[...]{0,N}`, or such a class-repeat
+/// nested right after a leading `(?:` group open; a leading `^` is kept. Why: `\b` and
+/// the class-repeats are pure context (the engine flattens the kept `(?:` groups, so
+/// the keyword inside becomes the leading literal), but `^` is a real line-start
+/// anchor that lets the engine check the rule only at line starts.
+fn strip_leading(s: &str) -> String {
+    if let Some(rest) = s.strip_prefix("\\b") {
+        return rest.to_string();
     }
-    strip_leading_class_repeat(s).unwrap_or(s)
+    if let Some(rest) = strip_leading_class_repeat(s) {
+        return rest.to_string();
+    }
+    if let Some(rest) = s.strip_prefix("(?:")
+        && let Some(after) = strip_leading_class_repeat(rest)
+    {
+        return format!("(?:{after}");
+    }
+    s.to_string()
 }
 
 /// Strips a leading nullable class-repeat such as `[\w.-]{0,50}`.
@@ -100,16 +111,16 @@ fn class_span_end(b: &[u8]) -> Option<usize> {
 ///
 /// What: a trailing `\b`, `$`, or context group `(?:…|$)`. Why: these are the
 /// end-context idioms betterleaks appends to a secret.
-fn strip_trailing(s: &str) -> &str {
+fn strip_trailing(s: &str) -> String {
     if let Some(rest) = s.strip_suffix("\\b") {
-        return rest;
+        return rest.to_string();
     }
     if s.ends_with('$') && !s.ends_with("\\$") {
-        return &s[..s.len() - 1];
+        return s[..s.len() - 1].to_string();
     }
     match trailing_context_group(s) {
-        Some(open) => &s[..open],
-        None => s,
+        Some(open) => s[..open].to_string(),
+        None => s.to_string(),
     }
 }
 

@@ -120,11 +120,13 @@ fn main() {
     // per-line bottleneck (prefilter cost vs per-rule fallback vs literal-free scans).
     let prefilter_rate = throughput(&corpus, || (), |_, line| fset.prefilter_only_is_match(line), threads);
     let candidates_rate = throughput(&corpus, || (), |_, line| fset.candidates_only_is_match(line), threads);
+    let anchored_rate = throughput(&corpus, || (), |_, line| fset.gate_anchored_only_is_match(line), threads);
     let gate_rate = throughput(&corpus, || (), |_, line| fset.gate_only_is_match(line), threads);
     let seedless_rate = throughput(&corpus, || (), |_, line| fset.seedless_only_is_match(line), threads);
     report("forbidden-regex", frate, avg_len);
     report("  prefilter-only", prefilter_rate, avg_len);
     report("  candidates    ", candidates_rate, avg_len);
+    report("  anchored-only ", anchored_rate, avg_len);
     report("  gate-only     ", gate_rate, avg_len);
     report("  seedless-only ", seedless_rate, avg_len);
     report("regex          ", rrate, avg_len);
