@@ -17,6 +17,10 @@ use std::arch::x86_64::{
     _mm512_setzero_si512, _mm512_test_epi8_mask,
 };
 
+/// Imports the NEON table-lookup and reduce intrinsics for the arm64 path.
+#[cfg(target_arch = "aarch64")]
+use std::arch::aarch64::{vdupq_n_u8, vld1q_u8_x4, vmaxvq_u8, vorrq_u8, vqtbl4q_u8};
+
 /// Imports the DFA table.
 use crate::dfa::table::Dfa;
 
@@ -114,9 +118,19 @@ impl Dfa {
             unsafe { sheng2_all_avx512(&tables, lines, out) };
             return;
         }
-        #[cfg(not(target_arch = "x86_64"))]
+        #[cfg(target_arch = "aarch64")]
+        if let Some(tables) = qualifies {
+            for (line, slot) in lines.iter().zip(out.iter_mut()) {
+                // Safety: NEON (and vqtbl4q) is baseline on aarch64.
+                *slot = unsafe { sheng2_line_neon(&tables, line) };
+            }
+            return;
+        }
+        #[cfg(not(any(target_arch = "x86_64", target_arch = "aarch64")))]
         let _ = qualifies;
-        self.is_match_batch_scalar(lines, out);
+        // Did not qualify (position-dependent acceptance, too many classes) or no permute:
+        // cascade to the one-byte Sheng, which itself falls back to the scalar scan.
+        self.is_match_batch_sheng(lines, out);
     }
 }
 
@@ -158,6 +172,41 @@ unsafe fn sheng2_all_avx512(tables: &Sheng2Tables, lines: &[&[u8]], out: &mut [b
         }
         acc = _mm512_or_si512(acc, _mm512_permutexvar_epi8(state, accept));
         *slot = _mm512_test_epi8_mask(acc, acc) != 0;
+    }
+}
+
+/// Scans one line with the NEON two-byte composed kernel.
+///
+/// What: the same two-bytes-per-permute scan using a 64-byte NEON table lookup, with a
+/// trailing odd byte and the end-of-input boundary. Why: the arm64 equivalent of the
+/// AVX-512 path; `vqtbl4q_u8` indexes a four-register 64-byte table.
+///
+/// # Safety
+///
+/// NEON (and `vqtbl4q`) is baseline on aarch64, so this is always valid there.
+#[cfg(target_arch = "aarch64")]
+#[inline]
+unsafe fn sheng2_line_neon(tables: &Sheng2Tables, line: &[u8]) -> bool {
+    unsafe {
+        let accept = vld1q_u8_x4(tables.accept.as_ptr());
+        let nc = tables.nc;
+        let mut state = vdupq_n_u8(tables.start);
+        let mut acc = vdupq_n_u8(0);
+        let mut index = 0;
+        while index + 1 < line.len() {
+            let pair = tables.class_map[line[index] as usize] as usize * nc
+                + tables.class_map[line[index + 1] as usize] as usize;
+            acc = vorrq_u8(acc, vqtbl4q_u8(vld1q_u8_x4(tables.a2[pair].as_ptr()), state));
+            state = vqtbl4q_u8(vld1q_u8_x4(tables.t2[pair].as_ptr()), state);
+            index += 2;
+        }
+        if index < line.len() {
+            let class = tables.class_map[line[index] as usize] as usize;
+            acc = vorrq_u8(acc, vqtbl4q_u8(accept, state));
+            state = vqtbl4q_u8(vld1q_u8_x4(tables.trans1[class].as_ptr()), state);
+        }
+        acc = vorrq_u8(acc, vqtbl4q_u8(accept, state));
+        vmaxvq_u8(acc) != 0
     }
 }
 

@@ -124,20 +124,20 @@ impl Engine {
 
     /// Fills `out[i]` with whether the engine matches `lines[i]`.
     ///
-    /// What: a seedless table pattern over a large batch takes the Sheng permute kernel
-    /// (`is_match_batch_sheng`, which falls back internally for over-64-state DFAs or hosts
-    /// without the permute); everything else loops the per-line match. Why: a seedless
-    /// table pattern scans every line, and Sheng's in-register transition was measured
-    /// ~2.2x the per-line loop on both arches with no prefilter and no bucketing. A seeded
-    /// engine keeps the per-line loop so its literal prefilter still rejects most lines
-    /// first, and a small batch keeps it too, so the kernel's one-time 16 KiB table build
-    /// stays amortized. (The across-lines gather and interleaved kernels lost outright and
-    /// survive only as the benchmark's hidden hooks.)
+    /// What: a seedless table pattern over a large batch takes the Sheng permute kernels
+    /// (`is_match_batch_sheng2`, which cascades two-byte -> one-byte -> scalar by what the
+    /// DFA and host support); everything else loops the per-line match. Why: a seedless
+    /// table pattern scans every line, and the composed two-byte Sheng was measured up to
+    /// 3.35x the per-line loop on x86 (one-byte ~2.2x on both arches), with no prefilter
+    /// and no bucketing. A seeded engine keeps the per-line loop so its literal prefilter
+    /// still rejects most lines first, and a small batch keeps it too, so the kernel's
+    /// one-time permute-table build stays amortized. (The across-lines gather and
+    /// interleaved kernels lost outright and survive only as the benchmark's hidden hooks.)
     pub fn is_match_batch(&self, lines: &[&[u8]], out: &mut [bool]) {
         if self.seeds.is_empty() && lines.len() >= SHENG_BATCH_FLOOR
             && let EngineKind::Table(dfa) = &self.kind
         {
-            dfa.is_match_batch_sheng(lines, out);
+            dfa.is_match_batch_sheng2(lines, out);
             return;
         }
         for (line, slot) in lines.iter().zip(out.iter_mut()) {
