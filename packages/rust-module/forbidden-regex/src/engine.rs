@@ -82,6 +82,15 @@ impl Engine {
         self.prefilter.allows(line) && self.matches(line)
     }
 
+    /// Runs the back-end matcher on `line`, skipping the prefilter.
+    ///
+    /// What: the match without the required-literal pre-check. Why: the `RegexSet` gate
+    /// has already confirmed this rule's seed is present, so re-scanning the whole line
+    /// for it in the engine's own prefilter is redundant work on every flagged line.
+    pub fn matches_only(&self, line: &[u8]) -> bool {
+        self.matches(line)
+    }
+
     /// Runs the back-end matcher on `line`.
     ///
     /// What: dispatches to the chosen representation. Why: callers match without

@@ -197,6 +197,41 @@ impl RuleSink {
     }
 }
 
+/// A stack-only set of rule ids already fully checked on the current line.
+///
+/// What: a 256-bit set over rule ids, allocation-free. Why: a non-anchored rule's
+/// whole-line check ignores the hit position, so it need run only once per line even
+/// when its seed occurs many times; this records which have run.
+struct CheckedFull {
+    /// Bit `r` set means rule `r` has already had its whole-line check this line.
+    bits: [u64; 4],
+}
+
+/// Construction and the first-seen test for the per-line dedup set.
+impl CheckedFull {
+    /// Builds an empty set for one line.
+    ///
+    /// What: all bits clear. Why: a fresh set per `is_match`/`matches` call.
+    fn new() -> CheckedFull {
+        CheckedFull { bits: [0; 4] }
+    }
+
+    /// Reports whether `rule` is seen for the first time, recording it.
+    ///
+    /// What: true the first time a rule id is passed, false after; rule ids at or above
+    /// the set's 256 capacity always report true. Why: the caller runs the whole-line
+    /// check only on the first sighting; beyond capacity it simply re-runs, still sound.
+    fn first_time(&mut self, rule: usize) -> bool {
+        if rule >= 256 {
+            return true;
+        }
+        let (word, bit) = (rule / 64, 1u64 << (rule % 64));
+        let fresh = self.bits[word] & bit == 0;
+        self.bits[word] |= bit;
+        fresh
+    }
+}
+
 /// Building, matching, and (de)serialization for a ruleset.
 impl RegexSet {
     /// Compiles a slice of patterns into a `RegexSet`.
@@ -264,9 +299,10 @@ impl RegexSet {
     /// truly-literal-free rules in a union pass. Why: the fold puts every rule in the
     /// gate or the cheap line-start check, so for the shipped ruleset there is one pass.
     pub fn is_match(&self, line: &[u8]) -> bool {
+        let mut checked = CheckedFull::new();
         if self
             .gate
-            .any_candidate(line, |rule, pos| self.matches_rule(line, rule, pos))
+            .any_candidate(line, |rule, pos| self.matches_rule(line, rule, pos, &mut checked))
         {
             return true;
         }
@@ -289,13 +325,15 @@ impl RegexSet {
 
     /// Checks one seeded rule against `line`, anchored at `pos` when possible.
     ///
-    /// What: runs the rule's anchored DFA over `line[pos..]` when the seed is the
-    /// rule's leading literal, else the whole-line substring engine. Why: anchoring at
-    /// the seed hit replaces the slow per-rule counting scan with one small linear DFA.
-    fn matches_rule(&self, line: &[u8], rule: usize, pos: usize) -> bool {
+    /// What: runs the rule's anchored DFA over `line[pos..]` when the seed is the rule's
+    /// leading literal; otherwise runs the whole-line engine once per line (the result
+    /// ignores `pos`), skipping its now-redundant prefilter. Why: anchoring at the hit
+    /// replaces the slow per-rule scan, deduping a non-anchored rule avoids re-scanning
+    /// the line for each repeat of its seed, and the gate already proved the seed present.
+    fn matches_rule(&self, line: &[u8], rule: usize, pos: usize, checked: &mut CheckedFull) -> bool {
         match &self.anchored[rule] {
             Some(engine) => engine.is_match(&line[pos..]),
-            None => self.rules[rule].is_match(line),
+            None => checked.first_time(rule) && self.rules[rule].matches_only(line),
         }
     }
 
@@ -305,8 +343,9 @@ impl RegexSet {
     /// truly-literal-free hits. Why: each routing path attributes its own rule ids.
     pub fn matches(&self, line: &[u8]) -> impl Iterator<Item = usize> {
         let mut hits: Vec<usize> = Vec::new();
+        let mut checked = CheckedFull::new();
         self.gate.for_each_candidate(line, |rule, pos| {
-            if self.matches_rule(line, rule, pos) {
+            if self.matches_rule(line, rule, pos, &mut checked) {
                 hits.push(rule);
             }
         });
@@ -332,8 +371,9 @@ impl RegexSet {
     /// What: the gate candidates, skipping the literal-free rules. Why: lets the
     /// bench split per-line time between the gate and the literal-free scans.
     pub fn gate_only_is_match(&self, line: &[u8]) -> bool {
+        let mut checked = CheckedFull::new();
         self.gate
-            .any_candidate(line, |rule, pos| self.matches_rule(line, rule, pos))
+            .any_candidate(line, |rule, pos| self.matches_rule(line, rule, pos, &mut checked))
     }
 
     /// Profiling hook: runs only the seeded-literal prefilter, no fallback.
