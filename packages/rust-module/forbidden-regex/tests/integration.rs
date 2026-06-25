@@ -341,3 +341,11 @@ fn debug_seedless_reports_only_literal_free_patterns() {
     assert!(forbidden_regex::debug_seedless("[a-z]{3}abc").is_none(), "an inner literal is a seed");
     assert!(forbidden_regex::debug_seedless("AKIA[A-Z2-7]{16}").is_none(), "a leading literal is a seed");
 }
+
+#[test]
+fn try_combined_dfa_reports_a_real_state_count() {
+    // The diagnostic builds one combined search DFA over all patterns and returns its state
+    // count; that must be the genuine count (more than a couple of states), not a constant.
+    let count = forbidden_regex::try_combined_dfa(&["abc", "def", "[0-9]{3}"]).expect("builds");
+    assert!(count > 2, "a three-rule combined DFA has many states, got {count}");
+}

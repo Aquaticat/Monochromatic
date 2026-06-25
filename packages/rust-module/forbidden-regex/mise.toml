@@ -52,9 +52,29 @@ depends = ["test:mutation:image"]
 # cargo-mutants compiles and runs MUTATED source: arbitrary, unpredictable code that runs
 # ONLY inside this disposable rootless Podman container, never on the host. The crate is
 # mounted read-write (cargo-mutants writes its build copies and mutants.out); a named
-# volume caches the crates.io registry so only the first run downloads deps. Memory and
-# cpu are capped per the repo's heavy-run isolation rule. `--security-opt label=disable`
-# avoids relabeling the host crate tree (the namespace isolation is what keeps mutated
-# code off the host). Pass cargo-mutants flags after `--` (e.g. `-- --file src/parse.rs`
-# to scope, or `-- --list` to enumerate mutants).
-run = "podman run --rm --security-opt label=disable --memory=6g --cpus=4 --volume $PWD:/work --volume forbidden-regex-mutants-registry:/usr/local/cargo/registry --workdir /work forbidden-regex-mutants cargo mutants --colors=never"
+# volume caches the crates.io registry so only the first run downloads deps.
+#
+# cargo-mutants defaults to ONE mutant at a time, which left the box idle; this runs
+# `--jobs` mutants in parallel, scaled to the host (cores minus two, to keep the machine
+# responsive), and caps the container at the same core count and proportional memory per
+# the repo's heavy-run isolation rule (bounds stated explicitly). `--security-opt
+# label=disable` avoids relabeling the host crate tree (namespace isolation is what keeps
+# mutated code off the host). Extra cargo-mutants flags pass straight through (e.g.
+# `mise run test:mutation -- --file src/parse.rs` to scope, or `-- --list` to enumerate).
+shell = "node -e"
+run = """
+const os = await import('node:os')
+const { execFileSync } = await import('node:child_process')
+const cores = os.cpus().length
+const jobs = Math.max(1, cores - 2)
+const memGb = Math.max(6, Math.min(jobs * 2, 24))
+const extra = process.argv.slice(1)
+execFileSync('podman', [
+  'run', '--rm', '--security-opt', 'label=disable',
+  `--cpus=${jobs}`, `--memory=${memGb}g`,
+  '--volume', `${process.cwd()}:/work`,
+  '--volume', 'forbidden-regex-mutants-registry:/usr/local/cargo/registry',
+  '--workdir', '/work', 'forbidden-regex-mutants',
+  'cargo', 'mutants', '--colors=never', '--jobs', String(jobs), ...extra,
+], { stdio: 'inherit' })
+"""

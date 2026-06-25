@@ -62,3 +62,31 @@ fn hex_run_full_scan() {
     ];
     sheng_agrees("[0-9a-f]{32}", lines);
 }
+
+// A self-looping DFA with `num_states` states and `nclasses` classes, accepting nothing:
+// the minimal shape for exercising build_sheng's state-count eligibility gate at a chosen
+// size (the kernel's correctness on real DFAs is covered by the agreement tests above).
+fn flat_dfa(num_states: u16, nclasses: u32) -> Dfa {
+    let nc = nclasses as usize;
+    let class_map: Vec<u8> = (0..256usize).map(|b| (b % nc) as u8).collect();
+    Dfa::from_parts(
+        nclasses,
+        class_map,
+        vec![false; nc],
+        vec![false; nc],
+        vec![0u16; num_states as usize * nc],
+        vec![0u8; num_states as usize],
+        0,
+        num_states,
+    )
+}
+
+#[test]
+fn build_sheng_eligibility_is_bounded_at_64_states() {
+    // The permute table is 64 wide, so build_sheng yields tables only up to 64 states. A
+    // normal small DFA and an exactly-64-state DFA both qualify (inclusive ceiling); a
+    // 65-state DFA does not. This pins the bound against off-by-one and always-None mutants.
+    assert!(search_dfa("AKIA[A-Z2-7]{4}").build_sheng().is_some(), "a small DFA is eligible");
+    assert!(flat_dfa(64, 1).build_sheng().is_some(), "64 states is the inclusive maximum");
+    assert!(flat_dfa(65, 1).build_sheng().is_none(), "65 states is over the permute width");
+}

@@ -97,3 +97,12 @@ fn mark_first_bytes_delegates_to_the_table() {
     assert!(set.contains(b'a'));
     assert!(!set.contains(b'b'));
 }
+
+#[test]
+fn table_dfa_is_some_only_for_a_table_back_end() {
+    // The batch kernels run directly on a `Dfa`, so the routing must hand back the table for
+    // a Table engine and `None` otherwise; a Table engine here must yield its DFA.
+    let engine = table_engine("abc", &[]);
+    let dfa = engine.table_dfa().expect("a Table engine exposes its DFA");
+    assert!(dfa.is_match(b"abc"), "the returned DFA is the real matcher");
+}

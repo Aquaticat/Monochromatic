@@ -249,10 +249,12 @@ fn unsupported_quantifiers_carry_their_own_message() {
 
 #[test]
 fn metacharacters_without_an_operand_are_rejected() {
-    // A leading operator, a bare brace, and a mix of `&`/`|` at one level are all errors.
+    // A leading operator, a bare brace with no preceding atom, and a mix of `&`/`|` at one
+    // level are all errors. `{` is tested alone, not `{3}`: a trailing `}` would itself be
+    // rejected as unmatched, masking whether the `{` arm fired.
     syntax_err("|a");
     syntax_err("&a");
-    syntax_err("{3}");
+    syntax_err("{");
     syntax_msg("(?:a)|(?:b)&(?:c)", "mix");
 }
 

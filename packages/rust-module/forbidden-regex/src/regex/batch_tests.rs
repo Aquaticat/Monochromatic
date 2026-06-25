@@ -82,3 +82,15 @@ fn bucketed_batch_equals_per_line_across_lengths() {
         assert_eq!(re.is_match_batch_bucketed(&lines), oracle, "bucketed disagrees for {pattern}");
     }
 }
+
+#[test]
+fn concat_batch_sweep_equals_per_line_is_match() {
+    // The concatenated-buffer gate sweep marks candidate lines by walking the prefilter from
+    // hit to hit across one long buffer (`prefilter_find_from`); its per-line verdicts must
+    // equal per-line is_match. A sweep that never finds a seed misses every seeded match, and
+    // one that fails to advance past a hit never terminates, so this pins both.
+    let set = RegexSet::new(&["AKIA[A-Z2-7]{4}", "secret", "^#deny"]).expect("compiles");
+    let lines = sample_lines();
+    let oracle: Vec<bool> = lines.iter().map(|line| set.is_match(line)).collect();
+    assert_eq!(set.is_match_batch_concat(&lines), oracle);
+}

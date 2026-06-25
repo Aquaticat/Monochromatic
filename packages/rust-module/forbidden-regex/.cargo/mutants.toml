@@ -68,4 +68,18 @@ exclude_re = [
     # (which only flips that already-dead `if`) cannot change any observable result. It is a
     # defensive guard against future grammar changes, kept deliberately.
     "replace Cursor<'a>::eof -> bool with true",
+
+    # The Sheng batch floor (`lines.len() >= SHENG_BATCH_FLOOR`) only chooses BETWEEN the
+    # permute kernel and the per-line loop, which are verified to return identical verdicts
+    # (the Sheng tests pin that). Flipping `>=` to `<` reroutes some batches but cannot change
+    # any verdict, so it is a performance-only threshold no correctness test can observe.
+    "replace >= with < in Engine::is_match_batch",
+
+    # The AVX-512 dispatch guard in is_match_batch_sheng tests `avx512vbmi && avx512bw &&
+    # avx512f`. AVX-512 VBMI structurally implies BW and F (it is a later extension built on
+    # them), so on any real CPU all three are present together; on the AVX-512 host this runs
+    # on, `&&` and `||` give the identical (all-true) decision. Distinguishing them needs a CPU
+    # with BW/F but NOT VBMI, which does not exist, so the mutant is untestable here (it is a
+    # latent fault only on such a hypothetical CPU, where `||` would run vpermb illegally).
+    "replace && with || in Dfa::is_match_batch_sheng",
 ]

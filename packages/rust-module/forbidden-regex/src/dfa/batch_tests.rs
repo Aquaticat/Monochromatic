@@ -114,3 +114,37 @@ fn tight_kernel_matches_oracle_on_equal_length_lines() {
     dfa.is_match_batch_tight_w::<8>(lines, &mut out);
     assert_eq!(out, oracle);
 }
+
+#[test]
+fn end_of_input_acceptance_fires_on_a_line_end_anchor() {
+    // A `$`-anchored match accepts only at the end-of-input boundary, with a mask bit
+    // distinct from a mid-line accept. The kernels' end-of-input check must use that exact
+    // bit, so a `cat$` match at the end of a line must be found (not a different bit).
+    kernels_agree("cat$", &[b"cat", b"a black cat", b"cats", b"dogs", b"cat", b"scat", b"category"]);
+}
+
+#[test]
+fn interleaved_width_hook_fills_every_lane() {
+    // The benchmark width hook must actually run the kernel and fill the output, not no-op:
+    // its verdicts must equal the scalar oracle across a ragged line set.
+    let dfa = search_dfa("AKIA[A-Z2-7]{4}");
+    let lines: &[&[u8]] = &[b"AKIA2345", b"miss", b"x AKIAZ7Q9", b"", b"AKIA9999", b"nope", b"AKIA0000"];
+    let oracle: Vec<bool> = lines.iter().map(|line| dfa.is_match(line)).collect();
+    let mut out = vec![false; lines.len()];
+    dfa.is_match_batch_interleaved_w::<16>(lines, &mut out);
+    assert_eq!(out, oracle, "the width hook must fill every verdict");
+}
+
+#[test]
+fn tight_kernel_accumulates_a_match_that_ends_before_the_line() {
+    // When a match completes mid-line, the residual drops the empty match on the next byte,
+    // so the end-of-input check no longer sees it: only the per-position accumulation catches
+    // it. Equal-length lines whose `cat` match ends at offset 3 (before the trailing byte)
+    // must still be reported, which fails if that accumulation is dropped.
+    let dfa = search_dfa("cat");
+    let lines: &[&[u8]] = &[b"catx", b"dogx", b"caty", b"zzzz", b"acat", b"catz"];
+    let oracle: Vec<bool> = lines.iter().map(|line| dfa.is_match(line)).collect();
+    let mut out = vec![false; lines.len()];
+    dfa.is_match_batch_tight_w::<4>(lines, &mut out);
+    assert_eq!(out, oracle, "a mid-line match must be accumulated, not only the end boundary");
+}
