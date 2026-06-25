@@ -10,106 +10,101 @@ reuses ping-pong buffers, so matching never allocates per byte. Only a repetitio
 a non-class body (e.g. an optional group `(?:ab)?`) and nested set algebra inside an
 operand still route to the eager DFA. This file is the source of truth for resuming.
 
-## Throughput status: regex still wins ~5x (honest, fair parallel bench)
+## Throughput status: 0.55x of regex on the real-repo corpus (was 0.20x)
 
-The bench sidecar now loads the real shipped ruleset, ports each rule (strip the
-boundary/context around the secret, keep keyword+value+set-algebra; see
-`bench/src/port.rs` + `normalize.rs`), and compile-filters to ~358 rules both
-engines accept. Build+serialize of all rules is ~3.8s (budget is 60s). Fair parallel
-bench (16 threads; forbidden-regex shared because it is immutable, regex cloned
-per-thread so its lazy-DFA cache does not contend):
+Honest stable bench (16 threads; forbidden-regex SHARED across threads because it is
+immutable, regex CLONED per-thread so its lazy-DFA cache scales not contends; both
+deployed at their best is the fair comparison). Corpus = EVERY non-gitignored line in
+this repo (~747k lines) via `ignore::WalkBuilder`, the same walk the real scanner uses
+(`bench/src/corpus.rs`). Ruleset = the shipped rules, ported to our dialect
+(`bench/src/port.rs` + `normalize.rs`), compile-filtered to ~251 rules both engines
+accept. Build+serialize ~9s (budget 60s).
 
-- regex: ~20M lines/s (~1.2 GB/s). forbidden-regex: ~4M lines/s (~0.24 GB/s).
-- regex is ~5x faster parallel, ~7x single-threaded.
+- forbidden-regex: ~39M lines/s. regex: ~73M lines/s. Ratio ~0.55x.
+- This is STABLE across runs, NOT noise. regex got FASTER when the ruleset was
+  cleaned (combining marker rules shrank its automaton) and on the full clean-code
+  corpus (its prefilter skips clean lines in one pass).
 
-An earlier "1.42x win" was an artifact of sharing one regex `RegexSet` across
-threads (its cache pool serialized); do NOT do that, it is not a real win.
+Per-line profile (`prefilter_only` / `candidates` / `anchored_only` / `gate_only` /
+`seedless_only` hooks on `RegexSet`, surfaced in the bench):
 
-Per-line profile (16 threads, `gate_only_is_match` / `seedless_only_is_match`):
+- prefilter-only (regex-automata SIMD literal prefilter): ~159M (faster than regex).
+- anchored-only (gate path, counting-fallback rules skipped): ~95M.
+- gate-only (prefilter + per-rule anchored/counting checks on hits): ~80M.
+- seedless-only (2 union DFAs over the literal-free rules): ~75M.
+- full = gate + seedless run as TWO passes per line: ~39M.
 
-- gate-only (seeded prefilter, aho-corasick over ~343 literals): ~11M lines/s.
-- seedless-only (15 literal-free rules, each a separate scalar DFA scan): ~6M.
-- full = gate-time + seedless-time (they run in sequence per line): ~4M.
+### What got us from 0.20x to 0.55x (all committed)
 
-Two bottlenecks, both must be fixed to beat regex:
+1. Seedless grouping (`src/group.rs`): the literal-free rules collapse into a few
+   union DFAs (greedy, cap-bounded) instead of N scalar scans. 2 groups at cap 6000.
+2. SIMD gate (`src/gate.rs`): `regex_automata::util::prefilter::Prefilter` for the
+   negative-line fast reject; aho-corasick only maps a hit back to rules.
+3. Anchored DFA fast-check: a seeded rule whose seed is its LEADING literal compiles
+   to a bare (no-`Σ*`) anchored DFA, run at the gate's hit position instead of the slow
+   counting/product sim. `leading_seeds` (gate on the leading literal so the hit
+   position is the rule start); `anchored_engine`; `RegexSet.anchored: Vec<Option<Engine>>`;
+   gate passes the hit position to `matches_rule`.
+4. Leading-literal extension (`prefilter.rs::concat_leading`): extend a leading
+   alternation by the mandatory bytes after it, so `(?:sk|rk)_(?:test|live|prod)_...`
+   gates on `sk_`/`rk_` (rare, anchorable) not inner `test`/`live`/`prod` (common).
+5. DFA-safe routing (`regex.rs`): a non-anchorable seeded rule with only small
+   repetitions (`max_repeat <= 3`, e.g. the line-anchored marker alternations) routes
+   to the fast eager DFA, not counting.
+6. Bench: combined the ~109 shortcode-label marker rules in
+   `forbidden-strings.append.txt` into two `^(?:CODE|...):` alternation rules (one fast
+   automaton each, not 109 counting rules); porter keeps a leading `^` (line-start
+   anchor) and strips a class-repeat nested after a leading `(?:` group.
 
-1. The 15 literal-free rules run as 15 separate scalar DFA scans. regex runs all of
-   them in ONE combined lazy DFA. Fix: a determinized counting automaton (one
-   structural DFA over byte-classes + counter-set registers, O(1)/byte, no `{n,m}`
-   blowup) that unions the literal-free rules into one pass. The eager-DFA union
-   blows up (counts multiply, ground to the cap in 57s); the counting-NFA union sim
-   is slower than the 15 separate DFAs. The counting-set automaton (Turonova et al.,
-   "Regex Matching with Counting-Set Automata"; the resharp/RE# core) is the answer.
-2. Even with #1 free, gate-only (~11M) < regex (~20M): our prefilter is scalar
-   aho-corasick (343 literals exceed Teddy's bucket capacity, so no SIMD), while
-   regex's prefilter is SIMD. Fix: a SIMD byte-set/Teddy prefilter for the gate
-   (matching what `regex-automata`'s prefilter does), or depend on
-   `regex-automata`'s prefilter directly.
+### Why two passes cannot beat regex, and the one-pass path
 
-USER DECISIONS (this session): build the counting DFA (#1); the SIMD gate (#2) may
-depend on `regex-automata`'s prefilter. #2 IS DONE: `src/gate.rs` now uses
-`regex_automata::util::prefilter::Prefilter` for the negative-line fast reject, and
-aho-corasick only to map a hit back to rules. Gate-only rose ~11M to ~15M lines/s;
-the literal-free rules (now ~70% of per-line time) are the remaining bottleneck.
+`full = 1/(1/gate + 1/seedless)`. seedless is pinned at ~75M: the 2 union DFAs cannot
+merge into one (the `{n,m}` overlap blows the eager DFA past any cap; measured at cap
+60000 it still needs 2 groups). With seedless fixed at ~75M, NO gate value crosses
+regex's ~73M. Both maxed (gate->~95M, seedless->~75M) caps at ~48M. The only way past
+is ONE automaton over ALL rules, one lookup/byte, like regex's combined lazy DFA.
 
-### Counting-set automaton construction blueprint (#1, the remaining build)
+### CsA finding (read before building): seedless-only CsA is the WRONG target
 
-Goal: replace the N separate per-rule DFAs for the literal-free (seedless) rules
-with ONE counting-set automaton (CsA) run in a single O(1)-per-byte pass. Build it as
-a new `src/counting/csa.rs`, selected by `RegexSet` for the union of seedless rules.
+The literal-free (seedless) rules are counters AT THE START (`\d{15,16}`, `[..]{32}`,
+plus one `^`-anchored marker rule). There is no literal-prefix skeleton to
+determinize, so a counting-set automaton over them does per-counter register work
+every byte (~5 ops) while the current unrolled 2-group DFAs do 2 table lookups; the
+CsA likely REGRESSES seedless (the cache-tightness of a small structural table MIGHT
+win, which is why the user said build-and-measure rather than trust this analysis).
 
-Inputs: the seedless rules' `CountingNfa`s, combined as one node `alt(seedless)` and
-built into one `CountingNfa` via `build_nfa` (Glushkov; no blowup, alternation is
-just follow edges). It has positions (`Class`, `Counted{set,min,max}`, anchors),
-`follow` sets, `start`, and accept = `elements.len()`.
+The real one-pass win is a CsA over ALL rules: the seeded rules' literal prefixes form
+an Aho-Corasick skeleton (one structural lookup/byte) with counter registers hung off
+the prefix-complete states for the counted value parts. On clean code that is ~1
+lookup + sparse counter ops/byte, matching regex's one combined pass. `&`/`~` rules
+(few) can stay anchored/gated outside the CsA. This is the major build.
 
-The CsA determinizes the STRUCTURE (which positions are active) while counts stay in
-runtime registers. Construction (subset construction with counter awareness):
+### NEXT (user-directed): build the seedless CsA and MEASURE it anyway
 
-- A CsA structural state = the set of currently-active positions, PLUS, for each
-  active `Counted` position, a flag of whether its register is "live" (non-empty).
-  Anchors are resolved by context at runtime, so keep the four boundary-context
-  variants distinct only if a state's transitions differ under them (as the eager DFA
-  already does with its 2 incoming context bits; mirror that).
-- Each `Counted` position carries one register holding the live count SET (reuse
-  `CountSet`). Determinism comes from the structure; the register holds the data.
-- Transition on a byte-class `c` from structural state `S`:
-  1. For each active `Class(set)` with `c in set`: activate `follow`.
-  2. For each active `Counted{set,min,max}` with `c in set`: advance its register
-     (`copy_advanced_from`, the one-shift bitset op) and keep it active.
-  3. Zero-width closure: a `Counted` whose register has a value in `[min,max]`
-     activates `follow` (exit); anchors activate `follow` when the boundary context
-     permits; iterate to a fixpoint AT BUILD TIME, so runtime does one table lookup.
-  The successor structural state is the resulting active set; record per-transition
-  the register operations (which registers advance, which reset, where a fresh 0 is
-  inserted on entry).
-- Accept when the accept position is in the active set after closure (position-
-  dependent on `(word_after, line_end)`, like the eager DFA's accept mask).
-- Σ* search prefix: the start positions are re-seeded every boundary; fold this into
-  the start state's self-loop exactly as the eager DFA does (`search_root`).
+User decision: build the seedless CsA, benchmark against the 2 DFAs (do not trust the
+"it regresses" analysis), then decide. Build as `src/counting/csa.rs`, oracle-gated:
+differential-test `is_match` against the counting-NFA `run` (the trusted oracle, see
+`run_tests.rs`) over the seedless union on a probe grid; only wire it into `RegexSet`
+(replacing the seedless group DFAs) if it AGREES with the oracle (no missed secrets,
+this is security-critical) AND beats the 2 DFAs. The seedless union has multiple
+counters and one `^`-anchored member; the simplest correct route is to determinize the
+anchor-free seedless rules into the CsA and leave the `^`-anchored marker rule on its
+small DFA. Determinization keeps counts in `CountSet` registers and branches
+transitions on the runtime exit guard (`CountSet::has_at_least(min)`); enumerate the
+guard outcomes per transition (few in-scope counters, so few combos). The user is
+holding additional tricks until after the CsA.
 
-The subtlety is that a `Counted` position's exit depends on a runtime range check of
-its register, so the closure's "can this position exit" is data-dependent. Handle it
-the CsA way: the structural transition ALWAYS includes the exit edge, but the exit's
-target positions only become truly active when the register's range check passes at
-runtime; equivalently, keep the range check as a cheap per-transition guard
-(`CountSet::has_at_least(min)` already exists, O(1) amortized). The number of
-structural states stays small because it is bounded by subsets of positions, not by
-count values (counts live in registers). See Turonova et al. for the offset-list
-representation that makes register ops O(1) amortized; `CountSet` (fixed-width
-bitset) is a simpler stand-in that is O(max/64) per op, fine for our bounds.
+### Constraints (do not violate)
 
-Validate by: differential test the CsA's `is_match` against the existing NFA `run`
-(the trusted oracle) over the seedless union, on a probe grid (see
-`run_tests.rs`/`product_tests.rs` for the pattern). Then wire `RegexSet` to use the
-CsA for the seedless union instead of N individual engines, re-bench, and confirm
-seedless-only throughput approaches gate-only.
-
-Even with the CsA done and the SIMD gate done, beating regex is uncertain (regex is
-world-class and uses the same architecture); the honest target is parity-or-better.
-
-Remaining work: the counting DFA (#1), then differential tests vs `regex`, then the
-ARM (`ssh m1`) bench verification.
+- Immutable / `Send + Sync`: NO per-thread mutable state for our engine (the bench
+  shares one instance across threads; regex is cloned per-thread). A lazy DFA with a
+  per-thread cache is therefore disallowed; the CsA must be eager (built at compile,
+  serialized).
+- Win requirement: beat regex on this bench, on this machine and `ssh m1`, when
+  neither is under heavy load. Quiet-system regex is ~73M on the full corpus.
+- Build+serialize <= 60s. Bench is hard-bounded (10s/engine, bounded parity sample).
+- The forbidden-strings pre-commit hook is TEMPORARILY DISABLED repo-wide; AKIA-style
+  fixtures in the corpus are deliberate, not real secrets.
 
 ## What this crate is
 
