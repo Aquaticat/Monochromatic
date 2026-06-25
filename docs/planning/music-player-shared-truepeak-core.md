@@ -1,10 +1,13 @@
 # Shared true-peak core plan for the music player
 
-Status: planning only.
-No production code has been changed for this plan.
-One throwaway spike has run outside the repo to de-risk Turso on Android.
-It changed no production code,
-and its result is recorded in the Turso on Android risk note below.
+Status: implementation in progress.
+Stage zero (Turso on Android) is de-risked; see the Turso on Android risk note below.
+Stage one (the shared `truepeak-core` crate: meter, gain, source trait, window math, policy
+identity) is implemented, tested, and committed.
+Stage two (the `truepeak-core.bench` evidence engine on the shared meter) is implemented and
+committed, and its corpus run is recorded in the Stage-two evidence subsection.
+Stages three through seven (the full shared service, desktop migration, Android migration, and
+cleanup) are not started.
 
 Audience: a reviewer who has never seen this product.
 This document explains the product context, the problem, the agreed design, and the evidence that must exist before
@@ -716,6 +719,74 @@ then prefers the simplest classifier as the tie-break.
 Spare budget is spent pulling tracks up toward the ceiling,
 because the too-quiet side is the only audible cost inside the bounds.
 
+### Stage two evidence and the feasible no-classifier finding
+
+The Stage-two bench sidecar (`packages/music-player/truepeak-core.bench`) was built on the
+shared `truepeak-core` meter, gain, window-placement, and policy math, and run against the
+existing per-track corpus (full peak plus per-second bin peaks, whose meter is identical to
+`truepeak-core`'s, so the bins are valid for the shared meter).
+That run changes the classifier approach above, so the steps stay but their conclusion moves.
+
+The corpus and target:
+
+```text
+tracks measured        = 3991
+full decodable seconds = 887897.8663151221
+corrected target (/4)  = 221974.46657878053
+```
+
+First finding: a full-scan violator classifier is not feasible at this budget.
+The oracle sweep (a perfect classifier that full-scans exactly the violators) lands inside
+the target only because it routes nothing extra; its headroom is about `500` seconds, roughly
+two extra full scans.
+Any real probe-feature classifier over-routes far past that.
+The violators are hot masters whose loudest sampled window overlaps the non-violators in
+amplitude, so no loudest-window threshold separates them: routing every loud-enough track
+costs over `780000` decoded seconds, more than three times the budget.
+
+Second finding (the metadata signal): provenance metadata is a real but partial separator.
+A yt-dlp / youtube provenance tag appears in `0` of the `123` violators and about `21%` of the
+non-violators, and every lossless (FLAC) track is a non-violator, so a "lossless or yt-dlp"
+marker never mislabels a violator as safe.
+But the safe classes cover only part of the library; the remaining untagged lossy tracks hold
+all the violators, and metadata improves the average error, not the worst case (the safe group
+still has a worst under-read near `1.97 dB`).
+Provenance metadata is a legal classifier feature (it is encoding and origin, not a path or
+artist), and it is worth using to lower the average error, but it does not rescue the
+full-scan approach.
+
+Third finding (the feasible model): drop the violator classifier entirely.
+Probe every long track, and apply one fixed margin large enough to cover the worst under-read,
+which guarantees zero violators with no full scans.
+The objective then becomes spending the budget on probe density: more, shorter windows cover
+more distinct regions and shrink the gaps that cause under-read, so the required margin, and
+thus the worst-case too-quiet error, falls.
+Measured on the corpus (windows at or above one second, the reliable resolution of the current
+one-second bins):
+
+```text
+count=28, window~1.63s : margin 1.68 dB, worst-quiet -1.68 dB, decoded ~181000s (well under target)
+count=56, window~0.93s : margin 1.61 dB, worst-quiet -1.61 dB, decoded ~206000s (under target)
+```
+
+Sub-second windows (for example `count=80`, `window~0.69s`) report a margin near `1.23 dB`, but a
+one-second bin overestimates a sub-second window, so that figure is optimistic until the
+collector emits finer bins.
+This model satisfies every agreed design decision: zero violations inside `+0.5 / -2.0 dB`,
+decoded seconds under the corrected target, no opaque model (the simplest possible classifier
+is a single fixed margin), and no path or full-truth input at runtime.
+The decided objective stands; the `-1.6 dB` worst-too-quiet is simply the honest achievable
+floor once the infeasible perfect-classifier assumption is removed, and probe density (plus a
+provenance-dependent margin for the average) is the lever that lowers it.
+
+Remaining Stage-two work:
+
+- Regenerate the corpus with a shared-meter `collect` pass and finer bins (for example a tenth
+  of a second), so sub-second window densities can be evaluated honestly.
+- Add a provenance-dependent margin (lower for yt-dlp and lossless, higher for untagged lossy)
+  and re-measure the worst-case and average errors.
+- Verify the chosen density and margin against exact decoded windows, not only the bins.
+
 ## Bench sidecar
 
 `packages/music-player/truepeak-core.bench` should own corpus-scale measurement and parameter search.
@@ -1172,13 +1243,18 @@ so they do not become local-only sidecars.
 Insert a platform-viability stage before the rest,
 because the service API depends on Turso being viable on Android:
 
-- Stage zero: platform viability.
-  Prove `turso` builds and runs under the Android native targets, and settle the handle lifecycle.
+- Stage zero (done): platform viability.
   Build, `arm64`/`x86_64` standalone runtime, and the in-process `cdylib` round-trip to an
   app-private path are all proven by the spike on the Pixel 6 and the emulator.
-- Stage one: shared meter crate. Meter, gain math, `TruePeakSource`, policy-identity skeleton.
-- Stage two: durable evidence. Build the bench sidecar on the shared meter and regenerate the corrected-target search.
-- Stage three: full shared service. Classifier, Turso schema, cache semantics, fake-source integration tests, warming.
+- Stage one (done): shared meter crate.
+  `packages/music-player/truepeak-core` ships the meter, gain math, `TruePeakSource`, window
+  placement, and policy identity, with unit tests and a clean `lint:rust` and clippy run.
+- Stage two (engine done, search ongoing): durable evidence.
+  `packages/music-player/truepeak-core.bench` evaluates and searches on the shared meter; its
+  run produced the feasible no-classifier finding above.
+  The finer-bin shared-meter `collect` regeneration and exact-window verification remain.
+- Stage three: full shared service. Policy (the fixed-margin model above), Turso schema, cache
+  semantics, fake-source integration tests, warming.
 - Stage four: desktop migration.
 - Stage five: Android migration.
 - Stage six: cleanup.
