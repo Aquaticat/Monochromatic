@@ -50,3 +50,20 @@ pub use crate::error::CompileError;
 
 /// Re-exports the public matcher API.
 pub use crate::regex::{Regex, RegexSet, compile};
+
+/// Diagnostic: debug-prints the parsed node of a pattern that has no usable seed.
+///
+/// What: returns `Some(debug)` when the pattern parses and is seedless (no leading
+/// seed and no required-literal seed), else `None`. Why: a temporary probe for the
+/// CsA work to enumerate exactly which rules force the literal-free second pass.
+#[doc(hidden)]
+pub fn debug_seedless(pattern: &str) -> Option<String> {
+    let node = crate::parse::parse(pattern).ok()?;
+    let leading = crate::counting::leading_seeds(&node);
+    let seeds = crate::counting::seeds_from_node(&node);
+    if leading.is_empty() && seeds.is_empty() {
+        Some(format!("{node:?}"))
+    } else {
+        None
+    }
+}

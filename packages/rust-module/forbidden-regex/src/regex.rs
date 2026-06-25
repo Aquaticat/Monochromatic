@@ -15,6 +15,12 @@ use crate::group::group_seedless;
 /// Imports the NFA builder that selects the counting back-end.
 use crate::counting::build_nfa;
 
+/// Imports the counting NFA type for the seedless-union measurement.
+use crate::counting::CountingNfa;
+
+/// Imports the alternation constructor for the seedless union.
+use crate::ast::smart::alt;
+
 /// Imports the product builder that selects the `&`/`~` counting back-end.
 use crate::counting::build_product;
 
@@ -207,6 +213,13 @@ pub struct RegexSet {
     seedless_ids: Vec<usize>,
     /// Union DFAs over groups of the literal-free rules, for the boolean fast path.
     seedless_groups: Vec<Engine>,
+    /// Single counting automaton over the literal-free rules (CsA measurement path).
+    ///
+    /// What: one counting NFA over the alternation of every NFA-expressible seedless
+    /// rule, `None` when a seedless rule needs the product back-end. Why: lets the
+    /// bench measure one counting pass against the unrolled DFA groups, to see whether
+    /// folding the literal-free rules into a single counting traversal beats them.
+    seedless_union: Option<CountingNfa>,
     /// Combined required-literal gate over the seeded rules (never serialized).
     #[serde(skip)]
     gate: SetGate,
@@ -280,21 +293,36 @@ fn push_rule(
     anchored.push(built.anchored);
 }
 
+/// Builds one counting automaton over every NFA-expressible seedless rule.
+///
+/// What: the counting NFA of the alternation of the seedless nodes, or `None` when
+/// there are none or any needs the product back-end. Why: a single counting pass is
+/// the CsA candidate that would replace the unrolled seedless DFA groups.
+fn build_seedless_union(nodes: &[Node]) -> Option<CountingNfa> {
+    if nodes.is_empty() {
+        return None;
+    }
+    build_nfa(&alt(nodes.to_vec()))
+}
+
 /// Assembles a `RegexSet` from its rules, the literal-free ids, and their nodes.
 ///
-/// What: groups the seedless nodes into union DFAs, stores everything, then builds the
-/// gate. Why: the one place that wires the matching structures together.
+/// What: groups the seedless nodes into union DFAs, builds the single counting-union
+/// measurement automaton, stores everything, then builds the gate. Why: the one place
+/// that wires the matching structures together.
 fn assemble(
     rules: Vec<Engine>,
     anchored: Vec<Option<Engine>>,
     seedless_ids: Vec<usize>,
     seedless_nodes: Vec<Node>,
 ) -> RegexSet {
+    let seedless_union = build_seedless_union(&seedless_nodes);
     let mut set = RegexSet {
         rules,
         anchored,
         seedless_ids,
         seedless_groups: group_seedless(seedless_nodes),
+        seedless_union,
         gate: SetGate::default(),
     };
     set.prepare();
@@ -456,6 +484,23 @@ impl RegexSet {
         self.seedless_groups.iter().any(|group| group.is_match(line))
     }
 
+    /// Profiling hook: runs only the single counting-union automaton.
+    ///
+    /// What: the one counting NFA over every seedless rule, skipping the gate and the
+    /// unrolled DFA groups. Why: measures whether one counting pass over the
+    /// literal-free rules beats the unrolled DFA groups it would replace.
+    pub fn csa_only_is_match(&self, line: &[u8]) -> bool {
+        self.seedless_union.as_ref().is_some_and(|nfa| nfa.is_match(line))
+    }
+
+    /// Returns the position count of the seedless counting union, or zero when absent.
+    ///
+    /// What: how many NFA positions the single counting pass carries. Why: a
+    /// diagnostic for the per-byte cost of the counting union against the DFA groups.
+    pub fn seedless_union_size(&self) -> usize {
+        self.seedless_union.as_ref().map_or(0, |nfa| nfa.elements.len())
+    }
+
     /// Returns how many seeded rules have an anchored DFA fast-check.
     ///
     /// What: the count of rules whose seed is their leading literal. Why: a diagnostic
@@ -522,6 +567,11 @@ impl RegexSet {
         {
             engine.validate()?;
             engine.prepare();
+        }
+        // What: validate the decoded counting union before it runs. Why: it is
+        // executed against untrusted input like every other back-end.
+        if let Some(nfa) = &set.seedless_union {
+            nfa.validate()?;
         }
         // What: rebuild the combined gate from the prepared engines. Why: it is not
         // serialized, and the fast path depends on it.

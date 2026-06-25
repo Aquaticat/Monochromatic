@@ -102,6 +102,19 @@ fn main() {
         eprintln!("WARNING: engines disagree on the sample; comparison is not apples to apples");
     }
 
+    // Oracle: the single counting union must agree with the unrolled DFA groups on
+    // every corpus line, or it is not a sound replacement.
+    eprintln!("[diag] seedless counting union: {} positions", fset.seedless_union_size());
+    let disagreements = corpus
+        .iter()
+        .filter(|l| fset.csa_only_is_match(l) != fset.seedless_only_is_match(l))
+        .count();
+    if disagreements == 0 {
+        eprintln!("[oracle] counting union agrees with DFA groups on all {lines} lines");
+    } else {
+        eprintln!("WARNING: counting union disagrees with DFA groups on {disagreements}/{lines} lines");
+    }
+
     let prefilter_hits = corpus.iter().filter(|l| fset.prefilter_only_is_match(l)).count();
     eprintln!("[diag] prefilter flags {prefilter_hits}/{lines} lines (each triggers the per-rule fallback)");
     let seeded = fset.len() - fset.seedless_count();
@@ -123,12 +136,14 @@ fn main() {
     let anchored_rate = throughput(&corpus, || (), |_, line| fset.gate_anchored_only_is_match(line), threads);
     let gate_rate = throughput(&corpus, || (), |_, line| fset.gate_only_is_match(line), threads);
     let seedless_rate = throughput(&corpus, || (), |_, line| fset.seedless_only_is_match(line), threads);
+    let csa_rate = throughput(&corpus, || (), |_, line| fset.csa_only_is_match(line), threads);
     report("forbidden-regex", frate, avg_len);
     report("  prefilter-only", prefilter_rate, avg_len);
     report("  candidates    ", candidates_rate, avg_len);
     report("  anchored-only ", anchored_rate, avg_len);
     report("  gate-only     ", gate_rate, avg_len);
     report("  seedless-only ", seedless_rate, avg_len);
+    report("  csa-union-only", csa_rate, avg_len);
     report("regex          ", rrate, avg_len);
     println!("\nforbidden-regex is {:.2}x the throughput of regex", frate / rrate);
 }
