@@ -216,6 +216,8 @@ captures/
 # Fuzzing artifacts
 /packages/fuzz/forbidden-strings/corpus/*/*
 !/packages/fuzz/forbidden-strings/corpus/*/seed-*
+/packages/rust-module/forbidden-regex.fuzz/corpus/*/*
+!/packages/rust-module/forbidden-regex.fuzz/corpus/*/seed-*
 
 # Claude Code plugin bundles. Marketplace distribution requires committed built files.
 !/packages/claude-code-plugins/*/dist/
