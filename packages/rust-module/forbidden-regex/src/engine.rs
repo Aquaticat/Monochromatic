@@ -148,3 +148,8 @@ impl Engine {
         self.prefilter = Prefilter::from_seeds(&self.seeds);
     }
 }
+
+/// Unit tests for the per-pattern engine, in a sidecar (max-lines exempt).
+#[cfg(test)]
+#[path = "engine_tests.rs"]
+mod tests;

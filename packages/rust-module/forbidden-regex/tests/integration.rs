@@ -156,6 +156,55 @@ fn from_bytes_rejects_garbage_without_panic() {
 }
 
 #[test]
+fn line_start_marker_rule_matches_only_at_line_start() {
+    // A `^`-anchored marker (short codes) routes to the line-start check, not the gate.
+    let set = RegexSet::new(&["^(?:(?:PR)|(?:TS))[0-9]:"]).unwrap();
+    assert!(set.is_match(b"PR5: a note"));
+    assert!(set.is_match(b"TS0:"));
+    assert!(!set.is_match(b"xPR5:")); // not at line start
+    assert!(!set.is_match(b"PR: no digit"));
+    assert!(!set.is_match(b"nothing"));
+    let hits: Vec<usize> = set.matches(b"PR5:").collect();
+    assert_eq!(hits, vec![0]);
+}
+
+#[test]
+fn input_is_one_line_so_caret_is_position_zero() {
+    // Contract: the matcher is called with ONE content line per call, so `^` means
+    // position zero. A marker only at the start of the (single-line) input matches.
+    let set = RegexSet::new(&["^(?:(?:PR)|(?:TS))[0-9]:"]).unwrap();
+    assert!(set.is_match(b"PR9: at the start"));
+    // Mid-input occurrence (no real line break in one-line input) does not match.
+    assert!(!set.is_match(b"prefix PR9: not at start"));
+}
+
+#[test]
+fn weak_inner_seed_rule_matches_on_its_short_literal() {
+    // The only required literal is the 2-byte "Q~", below the default seed floor; the
+    // fold gates on it (weak inner seed) and runs the full engine on a hit.
+    let set = RegexSet::new(&["[a-z]{3}Q\\~[a-z]{3}"]).unwrap();
+    assert!(set.is_match(b"junk abcQ~def junk"));
+    assert!(!set.is_match(b"abcXdef"));
+    assert!(!set.is_match(b"no marker here"));
+}
+
+#[test]
+fn mixed_ruleset_routes_each_rule_correctly() {
+    // A line-start marker, a leading-literal rule, and a weak-inner-seed rule together.
+    let set = RegexSet::new(&[
+        "^(?:(?:PR)|(?:TS))[0-9]:",
+        "AKIA[A-Z2-7]{16}",
+        "[a-z]{3}Q\\~[a-z]{3}",
+    ])
+    .unwrap();
+    assert_eq!(set.len(), 3);
+    assert_eq!(set.matches(b"PR1:").collect::<Vec<_>>(), vec![0]);
+    assert_eq!(set.matches(AKIA_KEY.as_bytes()).collect::<Vec<_>>(), vec![1]);
+    assert_eq!(set.matches(b"abcQ~def").collect::<Vec<_>>(), vec![2]);
+    assert!(!set.is_match(b"unrelated content"));
+}
+
+#[test]
 fn nested_group_repetition_compiles_and_matches() {
     // Reasonable nested group repetition compiles fast and matches correctly.
     let triple = compile("(?:ab){3}").unwrap();
