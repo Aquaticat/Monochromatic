@@ -81,5 +81,5 @@ exclude_re = [
     # on, `&&` and `||` give the identical (all-true) decision. Distinguishing them needs a CPU
     # with BW/F but NOT VBMI, which does not exist, so the mutant is untestable here (it is a
     # latent fault only on such a hypothetical CPU, where `||` would run vpermb illegally).
-    "replace && with || in Dfa::is_match_batch_sheng",
+    "replace && with \\|\\| in Dfa::is_match_batch_sheng",
 ]
