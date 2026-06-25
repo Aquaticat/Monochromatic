@@ -117,10 +117,17 @@ fn tight_kernel_matches_oracle_on_equal_length_lines() {
 
 #[test]
 fn end_of_input_acceptance_fires_on_a_line_end_anchor() {
-    // A `$`-anchored match accepts only at the end-of-input boundary, with a mask bit
-    // distinct from a mid-line accept. The kernels' end-of-input check must use that exact
-    // bit, so a `cat$` match at the end of a line must be found (not a different bit).
-    kernels_agree("cat$", &[b"cat", b"a black cat", b"cats", b"dogs", b"cat", b"scat", b"category"]);
+    // A `$`-anchored match accepts only at the end-of-input boundary, whose mask bit differs
+    // from a mid-line accept, so the kernels' end-of-input check must use that exact bit. The
+    // tight kernel needs equal-length lines and at least a full lane chunk to run its
+    // branchless body (not the scalar remainder), so a `cat$` match at a line's end exercises
+    // the end-of-input bit directly.
+    let dfa = search_dfa("cat$");
+    let lines: &[&[u8]] = &[b"cat", b"dog", b"cat", b"act", b"cat", b"tac", b"cat", b"xyz", b"cat"];
+    let oracle: Vec<bool> = lines.iter().map(|line| dfa.is_match(line)).collect();
+    let mut out = vec![false; lines.len()];
+    dfa.is_match_batch_tight_w::<8>(lines, &mut out);
+    assert_eq!(out, oracle, "the end-of-input check must use the line-end accept bit");
 }
 
 #[test]

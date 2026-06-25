@@ -69,12 +69,18 @@ const cores = os.cpus().length
 const jobs = Math.max(1, cores - 2)
 const memGb = Math.max(6, Math.min(jobs * 2, 24))
 const extra = process.argv.slice(1)
-execFileSync('podman', [
-  'run', '--rm', '--security-opt', 'label=disable',
-  `--cpus=${jobs}`, `--memory=${memGb}g`,
-  '--volume', `${process.cwd()}:/work`,
-  '--volume', 'forbidden-regex-mutants-registry:/usr/local/cargo/registry',
-  '--workdir', '/work', 'forbidden-regex-mutants',
-  'cargo', 'mutants', '--colors=never', '--jobs', String(jobs), ...extra,
-], { stdio: 'inherit' })
+try {
+  execFileSync('podman', [
+    'run', '--rm', '--security-opt', 'label=disable',
+    `--cpus=${jobs}`, `--memory=${memGb}g`,
+    '--volume', `${process.cwd()}:/work`,
+    '--volume', 'forbidden-regex-mutants-registry:/usr/local/cargo/registry',
+    '--workdir', '/work', 'forbidden-regex-mutants',
+    'cargo', 'mutants', '--colors=never', '--jobs', String(jobs), ...extra,
+  ], { stdio: 'inherit' })
+} catch (err) {
+  // cargo-mutants exits non-zero when any mutant survives or times out; surface that exit
+  // code as the task's own (a CI gate) without a Node stack-trace dump over the report.
+  process.exitCode = err.status ?? 1
+}
 """

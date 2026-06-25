@@ -58,7 +58,7 @@ exclude_re = [
     # removed); deleting it cannot change observable behavior under the current grammar.
     # NB: the *other* `|`/`&` arm (parse_set_algebra, grammar.rs:66, the mix-of-operators
     # rejection) IS reachable and is killed by a test, so this exclusion is `parse_atom`-only.
-    "delete match arm Some\\(b'\\|'\\) \\| Some\\(b'&'\\) in parse_atom",
+    "delete match arm b'\\|' \\| b'&' in parse_atom",
 
     # `Cursor::eof` is called only at parse.rs:48, the trailing-input check. At the top
     # level (`parse_setexpr(.., None)`) `parse_concat_units` consumes every byte until it
@@ -82,4 +82,28 @@ exclude_re = [
     # with BW/F but NOT VBMI, which does not exist, so the mutant is untestable here (it is a
     # latent fault only on such a hypothetical CPU, where `||` would run vpermb illegally).
     "replace && with \\|\\| in Dfa::is_match_batch_sheng",
+
+    # is_match_batch_bucketed: `end = start + 1` then a while-loop extends `end` over equal-
+    # length lines. `start * 1` equals `start`, and the loop immediately re-checks index
+    # `start` (its own length matches) and advances to the identical `end`, so the bucket
+    # boundaries, and every verdict, are unchanged.
+    "replace \\+ with \\* in Regex::is_match_batch_bucketed",
+
+    # Same loop: `while end < order.len()`. Flipping `<` to `>` makes the extend-loop never
+    # run, so every bucket is a single line. The tight kernel is correct on a one-line
+    # bucket (it scans the remainder scalar), so bucketing into singletons changes only
+    # batch size, never a verdict.
+    "replace < with > in Regex::is_match_batch_bucketed",
+
+    # is_match_batch_concat sizes the scratch buffer with `Vec::with_capacity(sum of
+    # line.len() + 1)`. `* 1` gives a smaller capacity hint, but a Vec grows on demand, so
+    # the buffer contents (and every verdict) are identical; only an allocation hint differs.
+    "replace \\+ with \\* in RegexSet::is_match_batch_concat",
+
+    # is_match_batch_concat slices each line as `buf[start .. next_start - 1]`, the `- 1`
+    # dropping the `\\n` separator. `next_start / 1` equals `next_start`, so the slice keeps
+    # the trailing `\\n`. In this dialect a trailing newline can never change a verdict: match
+    # is substring search (a newline at the end adds no new substring), `.` excludes `\\n`,
+    # and `$`/`\\b` treat end-of-input and a trailing `\\n` boundary identically.
+    "replace - with / in RegexSet::is_match_batch_concat",
 ]
