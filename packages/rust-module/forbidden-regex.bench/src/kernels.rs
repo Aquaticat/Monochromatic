@@ -107,15 +107,18 @@ pub fn bench_buckets(corpus: &[Vec<u8>], avg_len: f64) {
         // already length-sorted input the internal sort is near-linear (the scanner case);
         // on unsorted input it pays the full sort (the convenience case).
         assert_eq!(re.is_match_batch_bucketed(&refs), oracle, "bucketed disagrees for {pattern}");
-        let api_unsorted = rate(&refs, |l| re.is_match_batch_bucketed(l));
+        assert_eq!(re.batch_sheng(&refs), oracle, "sheng disagrees for {pattern}");
         let api_presorted = rate(&sorted, |l| re.is_match_batch_bucketed(l));
+        // Sheng needs no bucketing or sorting: a per-line scan with permute transitions.
+        let sheng = rate(&refs, |l| re.batch_sheng(l));
         println!(
-            "  {pattern:20} table={} scalar {scalar:>11.0} | sorted inter[8/16/32/64] {:.2} {:.2} {:.2} {:.2} | simd {:.2} {:.2} {:.2} {:.2} | exact-tight[16/32/64] {:.2} {:.2} {:.2} | api[unsorted/presorted] {:.2} {:.2}",
+            "  {pattern:20} table={} scalar {scalar:>11.0} | sorted inter[8/16/32/64] {:.2} {:.2} {:.2} {:.2} | simd {:.2} {:.2} {:.2} {:.2} | exact-tight[16/32/64] {:.2} {:.2} {:.2} | api-presorted {:.2} | sheng {:.2}",
             re.is_table(),
             inter[0] / scalar, inter[1] / scalar, inter[2] / scalar, inter[3] / scalar,
             simd[0] / scalar, simd[1] / scalar, simd[2] / scalar, simd[3] / scalar,
             tight[0] / scalar, tight[1] / scalar, tight[2] / scalar,
-            api_unsorted / scalar, api_presorted / scalar,
+            api_presorted / scalar,
+            sheng / scalar,
         );
     }
     let start = Instant::now();

@@ -181,6 +181,21 @@ impl Regex {
         }
         out
     }
+
+    /// Benchmark hook: Sheng in-register transition kernel (no bucketing needed).
+    ///
+    /// What: forces the Sheng per-line scan on a table back-end of at most 64 states, else
+    /// the per-line loop. Why: measures the permute-transition path that attacks per-byte
+    /// latency directly, a different axis from the across-lines bucketed kernels.
+    #[doc(hidden)]
+    pub fn batch_sheng(&self, lines: &[&[u8]]) -> Vec<bool> {
+        let mut out = vec![false; lines.len()];
+        match self.engine.table_dfa() {
+            Some(dfa) => dfa.is_match_batch_sheng(lines, &mut out),
+            None => self.engine.is_match_batch(lines, &mut out),
+        }
+        out
+    }
 }
 
 /// Many-lines matching for a whole ruleset.
