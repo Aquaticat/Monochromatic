@@ -47,6 +47,28 @@ seeds put every rule in the gate; non-anchorable rules use the eager DFA (not th
 counting NFA) for their on-hit full-line check; the DFA match loop early-exits on the
 dead sink; and the line-start marker checks are skipped by a first-byte set.
 
+### Cross-arch: WIN on x86, LOSE on arm64/m1 (thermally caveated)
+
+x86 dev box: full ~72-76M vs regex ~68-73M, 1.01-1.07x across 4 runs (win holds at
+regex's high end). Apple m1 (arm64, 8 cores): full ~41M vs regex ~45M, 0.90-0.92x
+(LOSE). m1 is NOT sufficiently cooled, so its absolute numbers throttle and are noisy;
+the back-to-back ratio is the usable signal, and our phases run BEFORE regex's in the
+bench, so throttling-over-time biases toward us, yet we still lose, so the arm
+disadvantage is real (likely worse cool).
+
+m1 per-line profile (one run): prefilter-only 95M (2.08x regex 45.6M, our SIMD prefilter
+still wins on arm), candidates 49M (1.08x, the aho-corasick `find_overlapping_iter` walk
+eats the whole prefilter lead, a 95->49 cliff), gate-only 38M (0.82x, below regex),
+full 41M. So the arm loss is in the SCALAR automaton work: the AC enumeration on the
+87787 prefilter-flagged lines (the vault `s.` seed floods 35650 of them) and the
+per-rule DFA walks. regex's lazy DFA is NEON-tuned and wins that scalar work on Apple
+Silicon. Where we use SIMD (prefilter) we win on arm too. So the arm fix is the SIMD
+direction in OPTIMIZATIONS.md (vectorize/cheapen the which-rule mapping and the per-byte
+walk) and/or fewer flags. To verify a cooled m1 the bench would need to skip the in-run
+38s rebuild (load a cached blob) so the measurement is not right after a hot build. The
+m1 clone is at `/Volumes/MacData/Monochromatic-bench` (cloned from origin, which the
+auto-pushing `git` wrapper keeps current; m1's own `git` is stock `/usr/bin/git`).
+
 ### What got us from 0.20x to 0.55x (all committed)
 
 1. Seedless grouping (`src/group.rs`): the literal-free rules collapse into a few

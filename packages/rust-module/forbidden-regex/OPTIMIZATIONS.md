@@ -129,6 +129,16 @@ scans). The hot per-byte automaton loops, the counting back-end, and the per-lin
 boundary checks are scalar. There is real headroom here, listed from most tractable to
 most ambitious.
 
+This is also the arm64 story. On the Apple m1 (steady-state hot) the engine LOSES at
+~0.90x while winning ~1.0 to 1.07x on the x86 box. The m1 profile shows why: the SIMD
+prefilter still wins (prefilter-only 95M, ~2x regex's 45M), but the scalar
+aho-corasick `find_overlapping_iter` which-rule walk drops it to 49M (candidates), and
+the per-rule scalar DFA walks drop it to 38M (gate), below regex's NEON-tuned 45M. The
+vault `s.` seed flooding ~35650 lines is the dominant scalar load. So the same scalar
+work that x86 absorbs, arm cannot; the levers below (especially a cheaper or vectorized
+which-rule mapping, and fewer flagged lines) are what close the arm gap. Where the
+engine already uses SIMD it wins on arm too.
+
 ### Vectorized byte-class mapping in the DFA loop
 
 The match loop does, per byte: load, map byte to class, index the transition row,
