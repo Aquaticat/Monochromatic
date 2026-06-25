@@ -145,11 +145,19 @@ most ambitious.
 The arm64 gap that motivated this section was first closed not by SIMD but by fixing a
 scalar bottleneck: the gate's which-rule matcher used the default NFA aho-corasick kind,
 which chases failure links per byte on every flagged line. Forcing the DFA kind (one
-lookup per byte) flipped m1 from ~0.90x to ~1.11 to 1.16x and lifted x86 to ~1.25x. The
-lesson stands though: the prefilter SIMD already wins on arm (prefilter-only ~95M, ~2x
-regex), and the remaining headroom is in the per-byte automaton work. The SIMD levers
-below are for further gains on top of the win, and would matter most on a harder ruleset
-or if the scalar which-rule walk ever becomes the bottleneck again.
+lookup per byte) flipped m1 from ~0.90x to ~1.11 to 1.16x and lifted x86 to ~1.25x.
+
+IMPORTANT measured caveat (from the u16 cache-tighten): halving the transition-table
+width changed throughput by NOTHING on either arch, which means the per-rule DFA match
+loop and its table reads are NOT the bottleneck. The hot per-line cost is the gate's
+aho-corasick DFA prefilter (already SIMD via Teddy/memchr). So the match-loop SIMD levers
+below (vectorized byte-class mapping, SWAR per-byte work) are CONTRAINDICATED for this
+ruleset: speeding up work that is not on the critical path will not move throughput. The
+only SIMD lever with a plausible win left is a different axis entirely -- a batched,
+vertical-across-lines API that amortizes per-line dispatch overhead -- and that is a large
+API change whose consumer (the line-by-line scanner) does not yet exist. Treat the rest of
+this section as a record of ideas, to revisit only on a ruleset where the prefilter stops
+carrying the load.
 
 ### Vectorized byte-class mapping in the DFA loop
 
