@@ -103,14 +103,17 @@ fn rebuild(dfa: &Dfa, color: &[u32], count: usize, nc: usize) -> Dfa {
             rep[c as usize] = state;
         }
     }
-    let mut trans = vec![0u32; count * nc];
+    // What: emit the remapped ids at the `u16` width `from_parts` now takes. Why: each
+    // color id is below `count`, itself at most the input DFA's state count (capped at
+    // 65534), so every `color[..]` fits `u16` and no narrowing pass is needed.
+    let mut trans = vec![0u16; count * nc];
     let mut accept = vec![0u8; count];
     for c in 0..count {
         let state = rep[c];
         accept[c] = dfa.accept[state];
         for class in 0..nc {
             let target = dfa.trans[state * nc + class] as usize;
-            trans[c * nc + class] = color[target];
+            trans[c * nc + class] = color[target] as u16;
         }
     }
     Dfa::from_parts(
@@ -120,7 +123,7 @@ fn rebuild(dfa: &Dfa, color: &[u32], count: usize, nc: usize) -> Dfa {
         dfa.class_newline.clone(),
         trans,
         accept,
-        color[dfa.start as usize],
-        count as u32,
+        color[dfa.start as usize] as u16,
+        count as u16,
     )
 }

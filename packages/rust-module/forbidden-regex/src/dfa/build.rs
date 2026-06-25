@@ -155,6 +155,12 @@ pub fn build_dfa_within(root: Node, cap: usize) -> Result<Dfa, CompileError> {
         }
         i += 1;
     }
+    // What: narrow the builder's `u32` ids to the `u16` the table stores. Why: the
+    // build clamps the state cap to 65534 (MAX_U16_STATES) above, so every id and the
+    // state count fit `u16` here; the table holds them at half a `u32` table's width
+    // for cache density, and this is the one narrowing point now that `from_parts`
+    // takes `u16` directly.
+    let trans: Vec<u16> = trans.into_iter().map(|target| target as u16).collect();
     Ok(Dfa::from_parts(
         nc as u32,
         classes.class_map,
@@ -162,8 +168,8 @@ pub fn build_dfa_within(root: Node, cap: usize) -> Result<Dfa, CompileError> {
         classes.class_newline,
         trans,
         accept,
-        start,
-        states.len() as u32,
+        start as u16,
+        states.len() as u16,
     ))
 }
 

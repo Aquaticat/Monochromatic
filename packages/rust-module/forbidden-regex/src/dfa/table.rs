@@ -61,27 +61,21 @@ pub struct Dfa {
 impl Dfa {
     /// Assembles a `Dfa` from already-built tables.
     ///
-    /// What: the builder's only constructor; takes ownership of each table. Why:
-    /// fields stay private so a `Dfa` can only arise from the builder or a
-    /// validated decode.
+    /// What: the builder's only constructor; takes ownership of each `u16`-id table.
+    /// Why: fields stay private so a `Dfa` can only arise from the builder or a
+    /// validated decode; ids are `u16` because the build caps states at 65534, so each
+    /// caller narrows its own ids and the stored table is half a `u32` table's width.
     #[allow(clippy::too_many_arguments)]
     pub fn from_parts(
         nclasses: u32,
         class_map: Vec<u8>,
         class_word: Vec<bool>,
         class_newline: Vec<bool>,
-        trans: Vec<u32>,
+        trans: Vec<u16>,
         accept: Vec<u8>,
-        start: u32,
-        num_states: u32,
+        start: u16,
+        num_states: u16,
     ) -> Self {
-        // What: narrow the builder's `u32` ids to the stored `u16` width. Why: callers
-        // build with `u32` ids, but the build caps states at 65534, so the ids fit `u16`
-        // and the stored table is half the size; this is the one place the narrowing
-        // happens, so no caller changes.
-        let trans: Vec<u16> = trans.into_iter().map(|t| t as u16).collect();
-        let start = start as u16;
-        let num_states = num_states as u16;
         let dead = find_dead(&trans, &accept, nclasses, num_states);
         Dfa {
             nclasses,
