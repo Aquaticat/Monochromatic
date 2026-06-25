@@ -153,12 +153,15 @@ loop and its table reads are NOT the bottleneck. The hot per-line cost is the ga
 aho-corasick DFA prefilter (already SIMD via Teddy/memchr). So the match-loop SIMD levers
 below (vectorized byte-class mapping, SWAR per-byte work) are CONTRAINDICATED for this
 ruleset: speeding up work that is not on the critical path will not move throughput. The
-batched across-lines API was built and measured (see "Batch API across lines" below): a
-vertical SIMD gather across lines LOSES on both arches, but a length-bucketed branchless
-kernel WINS modestly for a single full-scan DFA (x86 ~1.05x, arm64 ~1.35x in the low-match
-regime), shipped opt-in as `Regex::is_match_batch_bucketed`. It does not help the
-gate-dominated `RegexSet` path, where the prefilter still carries the load. Treat the
-remaining ideas here as a record, to revisit on a ruleset where the prefilter stops paying.
+batched across-lines API was built and measured (see "Batch API across lines" below). A
+vertical SIMD gather across lines LOSES on both arches, but the Sheng in-register transition
+kernel (`vpermb`/`vqtbl4q`) WINS for a single full-scan DFA up to 64 states: x86 1.45x to
+2.19x, arm64 1.13x to 1.64x, at every match rate, now the default for a seedless table
+pattern over a large batch. A length-bucketed branchless kernel is a smaller opt-in win for
+over-64-state DFAs. None of these help the gate-dominated `RegexSet` path (seedless groups
+empty, prefilter carries the load); they pay off for single-pattern scanning and any future
+ruleset with literal-free full-scan rules. Treat the remaining match-loop SIMD ideas here as
+a record, to revisit when the prefilter stops paying.
 
 ### Vectorized byte-class mapping in the DFA loop
 
@@ -180,24 +183,32 @@ per byte, Glushkov / Hyperscan style. This vectorizes the one back-end that is c
 the slowest per byte (the counting `run` the oracle measures at ~0.8M), which matters if
 any rule ever has to stay on counting rather than the DFA.
 
-### Batch API across lines: MEASURED; length-bucketing wins, SIMD gather loses
+### Batch API across lines: MEASURED; the Sheng permute wins big, gather loses
 
-`is_match_batch` on `Regex`/`RegexSet` ships (scalar per-line by default). Several batch
-layouts were then raced against the per-line loop on the real corpus, single seedless
-full-scan DFA, both arches:
+`is_match_batch` on `Regex`/`RegexSet` ships. Several batch layouts were raced against the
+per-line loop on the real corpus, single seedless full-scan DFA, both arches:
 
+- Sheng in-register transition (`Dfa::is_match_batch_sheng`): THE winner, and the default
+  for a seedless table pattern of at most 64 states over a large batch. Each input byte's
+  whole transition column is one 64-byte permute, so the per-byte step is `vpermb`
+  (AVX-512VBMI) / `vqtbl4q` (NEON) instead of a dependent table load; the state lives in a
+  register (all lanes equal), and acceptance accumulates in-register. Measured: x86 1.45x
+  ({8}, 47% match) to 2.08x ({20}) to 2.19x ({32}, 0.3% match); arm64/m1 1.13x to 1.54x to
+  1.64x. It wins at EVERY match rate (no early-exit dependence) and needs no sorting. It
+  must be the explicit intrinsic: portable SIMD's `swizzle_dyn` scalarizes a 64-byte
+  dynamic shuffle (0.03x, ~25x slower) instead of emitting `vpermb`. Over 64 states it
+  falls back to scalar (the permute addresses one lane per state).
 - Vertical SIMD across lines (one line per lane, gather the transition): LOSES on both
   arches (x86 0.15 to 0.85x, arm64 0.43 to 0.88x). x86 has no 16-bit gather so a `u16`
   table scalarizes; even a native u32 `vpgatherdd` (and NEON, which has no gather at all)
   is slower than scalar loads. The SIMD gather is the wrong tool for a transition table.
 - Interleaved scalar (`N` independent transition chains, no gather): reaches parity only
   with length-sorting (best ~1.0x x86, ~1.1x arm64).
-- Branchless equal-length kernel on exact-length buckets, width 32: the winner. Dropping
-  the per-lane early-exit branches lets the `N` independent chains pipeline. Low-match
-  regime (a secret scanner's): x86 1.04x to 1.09x, arm64 1.32x to 1.37x. It LOSES when
-  most lines match (47% match: x86 0.75x) because the per-line loop early-exits on the
-  first match, so it is opt-in (`Regex::is_match_batch_bucketed`), not the default. arm64
-  wins far more: its wide out-of-order engine rewards the 32-lane memory-level parallelism.
+- Branchless equal-length kernel on exact-length buckets, width 32: a smaller win, useful
+  for OVER-64-state seedless DFAs where Sheng falls back. Dropping the per-lane early-exit
+  branches lets the `N` independent chains pipeline. Low-match regime: x86 1.04x to 1.09x,
+  arm64 1.32x to 1.37x. LOSES when most lines match (47%: x86 0.75x), so it is opt-in
+  (`Regex::is_match_batch_bucketed`), not the default.
 - Bucket-width sweep: 32 is the sweet spot on both arches (16 slightly behind, 64
   regresses). Exact-length buckets ~= sort-then-chunk for interleaved; the branchless
   kernel needs exact buckets. The sort is ~8ms over 751k refs (~0.5% of a scalar pass) and

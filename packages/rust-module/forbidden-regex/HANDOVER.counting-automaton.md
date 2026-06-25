@@ -76,12 +76,23 @@ nightly (`#![feature(portable_simd)]`) only for the SIMD-gather kernel, which lo
 pin is unwanted, delete the `simd_*` path (the winning tight kernel is plain scalar Rust)
 and keep scalar/interleaved/tight.
 
-NEXT (in progress): Sheng/`vpermb` in-register transition, a different axis from batching.
-It cuts the per-byte critical chain from a dependent table load (~5 cyc) to a register
-permute (~3 cyc) for DFAs up to 64 states, via AVX-512VBMI `vpermb` on x86 and `vqtbl4q`
-on NEON, and needs no length sorting. Position-dependent acceptance is folded in by
-accumulating `acc |= accept_mask_shuf(state) & ctx_bit[byte]` in-vector (no per-byte
-extract).
+- Sheng in-register transition (`src/dfa/sheng.rs`): THE winner, and the default for a
+  seedless table pattern of at most 64 states over a batch of at least 512 lines (the floor
+  amortizes a one-time 16 KiB permute-table build). Each input byte's transition column is
+  one 64-byte permute, so the per-byte step is `vpermb` (AVX-512VBMI) / `vqtbl4q` (NEON)
+  instead of a dependent table load. The state lives in a register (all lanes start equal
+  and share each permute, so they stay equal and lane 0 is the state); position-dependent
+  acceptance accumulates in-register as `acc |= accept_mask[state] & ctx_bit[byte]`, tested
+  once at the end. Measured x86 1.45x ({8}, 47% match) / 2.08x ({20}) / 2.19x ({32}); arm64
+  1.13x / 1.54x / 1.64x. Wins at every match rate, needs no sorting. MUST be the explicit
+  intrinsic: portable SIMD's `swizzle_dyn` scalarizes a 64-byte dynamic shuffle (0.03x).
+  Runtime-gated (AVX-512VBMI on x86, NEON baseline on arm64); scalar fallback otherwise.
+  It dominates the bucketed kernel everywhere, so the bucketed path stays only for the
+  rarer over-64-state seedless DFAs.
+
+Still open if more is wanted: a one-permute Sheng specialization for position-independent
+acceptance (pack the accept bit into the next-state byte, halving permutes), and Sheng over
+64 states via paired permutes. None of this touches the gate-dominated `RegexSet` path.
 
 ## Correctness infrastructure (fuzzing + mutation testing) — IN PROGRESS
 
