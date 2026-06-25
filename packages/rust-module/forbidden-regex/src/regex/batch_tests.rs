@@ -62,6 +62,17 @@ fn batch_handles_empty_input() {
 }
 
 #[test]
+fn default_batch_routes_large_seedless_batch_through_sheng() {
+    // Over the Sheng floor (512) and seedless + table + <=64 states, so the default
+    // is_match_batch takes the permute kernel; its verdicts must equal per-line is_match.
+    let re = compile("[0-9a-f]{8}").expect("compiles");
+    let base: Vec<&[u8]> = vec![b"deadbeef", b"not hex here", b"cafef00d", b"xyz", b"0123abcd", b""];
+    let lines: Vec<&[u8]> = base.iter().cycle().take(700).copied().collect();
+    let oracle: Vec<bool> = lines.iter().map(|line| re.is_match(line)).collect();
+    assert_eq!(re.is_match_batch(&lines), oracle);
+}
+
+#[test]
 fn bucketed_batch_equals_per_line_across_lengths() {
     // The bucketed path groups by exact length, runs the tight kernel per bucket, and
     // scatters back; the result must equal per-line is_match regardless of input order.

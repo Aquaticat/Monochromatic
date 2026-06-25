@@ -18,6 +18,13 @@ use crate::dfa::table::Dfa;
 /// Imports the error type for decode validation.
 use crate::error::CompileError;
 
+/// Smallest batch that routes a seedless table engine to the Sheng permute kernel.
+///
+/// What: the line-count floor below which `is_match_batch` stays on the per-line loop.
+/// Why: Sheng builds a one-time 16 KiB permute table per call, so a tiny batch would not
+/// scan enough bytes to amortize it; this floor keeps the kernel a win, never a regression.
+const SHENG_BATCH_FLOOR: usize = 512;
+
 /// The matcher back-end chosen for one pattern.
 ///
 /// What: a `Table` derivative DFA for the fast O(1)-per-byte path, a `Nfa` counting
@@ -115,15 +122,24 @@ impl Engine {
         }
     }
 
-    /// Fills `out[i]` with whether the engine matches `lines[i]`, line by line.
+    /// Fills `out[i]` with whether the engine matches `lines[i]`.
     ///
-    /// What: the per-line scalar match over every line. Why: the vertical SIMD and
-    /// interleaved batch kernels were measured 0.15x-0.79x of this on x86 (and similarly
-    /// on arm64): a 16-bit transition gather scalarizes on x86, and a batch chunk cannot
-    /// exploit `is_match`'s early exit on the first match or the dead sink, so it always
-    /// runs to the longest line in the group. The per-line loop stays the fast default;
-    /// the kernels remain reachable through the hidden hooks for the benchmark record.
+    /// What: a seedless table pattern over a large batch takes the Sheng permute kernel
+    /// (`is_match_batch_sheng`, which falls back internally for over-64-state DFAs or hosts
+    /// without the permute); everything else loops the per-line match. Why: a seedless
+    /// table pattern scans every line, and Sheng's in-register transition was measured
+    /// ~2.2x the per-line loop on both arches with no prefilter and no bucketing. A seeded
+    /// engine keeps the per-line loop so its literal prefilter still rejects most lines
+    /// first, and a small batch keeps it too, so the kernel's one-time 16 KiB table build
+    /// stays amortized. (The across-lines gather and interleaved kernels lost outright and
+    /// survive only as the benchmark's hidden hooks.)
     pub fn is_match_batch(&self, lines: &[&[u8]], out: &mut [bool]) {
+        if self.seeds.is_empty() && lines.len() >= SHENG_BATCH_FLOOR
+            && let EngineKind::Table(dfa) = &self.kind
+        {
+            dfa.is_match_batch_sheng(lines, out);
+            return;
+        }
         for (line, slot) in lines.iter().zip(out.iter_mut()) {
             *slot = self.is_match(line);
         }
