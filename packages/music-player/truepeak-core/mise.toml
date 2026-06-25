@@ -1,0 +1,33 @@
+[tasks.build]
+description = "Build the truepeak-core library in release mode"
+run = "cargo build --release"
+
+[tasks."build:debug"]
+description = "Build the truepeak-core library in debug mode"
+run = "cargo build"
+
+[tasks.lint]
+description = "cargo check (no codegen)"
+run = "cargo check"
+
+[tasks."lint:clippy"]
+description = "Run clippy with warnings denied"
+run = "cargo clippy --release -- -D warnings"
+
+[tasks."format:clippy"]
+description = "Apply clippy's machine-applicable suggestions in place"
+run = "cargo clippy --fix --allow-dirty --allow-staged"
+
+[tasks."lint:rust"]
+description = "Run monochromatic-rust-linter (max-lines + require-rustdoc) over this package's .rs"
+# The linter is a separate host crate with no system deps; run it over this
+# package. .gitignore-aware walking skips target/.
+run = "cargo run --quiet --manifest-path ../../linter/rust/Cargo.toml -- ."
+
+[tasks.test]
+description = "cargo nextest run"
+run = "cargo nextest run --release"
+
+[tasks."test:debug"]
+description = "cargo nextest run in debug mode for fast TDD iteration"
+run = "cargo nextest run"

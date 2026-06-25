@@ -1,0 +1,55 @@
+//! Shared true-peak core for the desktop and Android music players.
+//!
+//! "True peak" (a.k.a. inter-sample peak) is the highest level the analog waveform
+//! reaches AFTER a DAC reconstructs it between the stored samples; it can sit above
+//! the largest stored sample. This crate estimates it by oversampling each channel
+//! ~4x with a cubic (Catmull-Rom) interpolation and taking the largest magnitude
+//! seen, then turns that estimate into one constant per-track gain that brings the
+//! track down to a -1 dBTP ceiling (never up), so playback cannot overflow the
+//! converter.
+//!
+//! Both flavors used to carry their own copy of this logic, with the Android copy
+//! adding an older windowing policy and a `1.26` safety factor that this crate does
+//! NOT ship. The crate owns the meter, the gain math, the decoded-audio source
+//! contract, the window-placement math, and the versioned policy identity that keys
+//! the persistent decision cache. Platform crates supply decoded audio through
+//! [`TruePeakSource`] and drive the policy; the measurement and gain rules live here.
+//!
+//! The classifier, the Turso cache I/O, and the warming engine described in the plan
+//! land in later stages on top of this foundation.
+
+/// The shared Catmull-Rom true-peak meter and its whole-buffer helper.
+mod meter;
+
+/// The decoded-audio source contract and the `AudioSpec` describing a stream.
+mod source;
+
+/// The single error type the fallible source methods return.
+mod error;
+
+/// Attenuate-only normalization gain and the dB helpers around it.
+mod gain;
+
+/// Even window placement across a long track, in interleaved frames.
+mod window;
+
+/// The versioned policy and the identity tuple that keys cache rows.
+mod policy;
+
+/// Re-exports the meter type and its whole-buffer convenience function.
+pub use crate::meter::{TruePeakMeter, true_peak_interleaved};
+
+/// Re-exports the decoded-audio source contract and its stream descriptor.
+pub use crate::source::{AudioSpec, TruePeakSource};
+
+/// Re-exports the fallible-source error type.
+pub use crate::error::TruePeakError;
+
+/// Re-exports the ceiling constant and the gain and dB functions.
+pub use crate::gain::{CEILING, normalization_gain, peak_dbtp, probe_estimated_peak};
+
+/// Re-exports the window-placement helpers.
+pub use crate::window::{WindowPlacement, window_frame_starts};
+
+/// Re-exports the policy type, its identity tuple, and the shipped default policy.
+pub use crate::policy::{CacheIdentity, Policy, default_policy};

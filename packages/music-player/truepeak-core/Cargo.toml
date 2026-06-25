@@ -1,0 +1,33 @@
+# Shared true-peak core for the music player: the Catmull-Rom meter, the
+# attenuate-only gain math, the decoded-audio source trait, window-placement math,
+# and the versioned policy identity that keys the cache. Desktop and Android both
+# depend on this crate by path so a track is normalized under one shared policy on
+# either flavor. See README.md and ../../../docs/planning/music-player-shared-truepeak-core.md.
+[package]
+name = "truepeak-core"
+version = "0.1.0"
+edition = "2024"
+license = "LGPL-3.0-or-later"
+publish = false
+description = "Shared true-peak meter, attenuate-only gain math, and versioned policy identity for the desktop and Android music players. Catmull-Rom inter-sample peak estimation feeding a -1 dBTP normalization gain."
+
+# Standalone crate: there is no root Cargo workspace in this repo, and the Android
+# package is its own Gradle island with an empty [workspace] table. Pinning this
+# crate as its own workspace root keeps its target/ and Cargo.lock local and stops a
+# future ancestor Cargo.toml from silently absorbing it, exactly as the Android crate
+# does. Desktop and Android reach it as a plain path dependency, which does not
+# require workspace membership.
+[workspace]
+
+[lib]
+# Crate paths use the Rust identifier form (underscore), so a consumer writes
+# `use truepeak_core::...` while the package on disk stays kebab-case.
+name = "truepeak_core"
+path = "src/lib.rs"
+
+[dependencies]
+# Intentionally none. The meter, gain math, window math, and policy-identity hash
+# are all pure `core`/`std` float and integer arithmetic with a hand-rolled FNV-1a;
+# keeping the dependency set empty means this crate cross-compiles for the Android
+# native ABIs with nothing extra to clear (Turso, JNI, and the decoders are pulled in
+# by the platform crates, not here).
