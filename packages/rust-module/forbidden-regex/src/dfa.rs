@@ -12,6 +12,9 @@ mod minimize;
 /// The serializable `Dfa` table and its match loop.
 pub mod table;
 
+/// Batched multi-line match kernels (scalar, vertical SIMD, interleaved).
+pub mod batch;
+
 /// Re-exports the capped builder entry point.
 pub use build::build_dfa_within;
 

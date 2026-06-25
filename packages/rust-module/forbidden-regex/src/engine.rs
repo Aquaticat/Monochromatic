@@ -103,6 +103,35 @@ impl Engine {
         }
     }
 
+    /// Returns the table DFA when this engine is the table back-end.
+    ///
+    /// What: `Some` only for an `EngineKind::Table`, else `None`. Why: the batch
+    /// kernels run directly on a `Dfa`, so a caller comparing kernels needs the table
+    /// when one is present and falls back to the scalar path otherwise.
+    pub fn table_dfa(&self) -> Option<&Dfa> {
+        match &self.kind {
+            EngineKind::Table(dfa) => Some(dfa),
+            _ => None,
+        }
+    }
+
+    /// Fills `out[i]` with whether the engine matches `lines[i]`.
+    ///
+    /// What: a seedless table engine (its DFA runs on every line) takes the vertical
+    /// SIMD batch kernel; any other engine loops the per-line match. Why: the SIMD
+    /// kernel only pays off when the DFA actually scans every line, whereas a seeded
+    /// engine's literal prefilter already rejects most lines before the DFA runs.
+    pub fn is_match_batch(&self, lines: &[&[u8]], out: &mut [bool]) {
+        match &self.kind {
+            EngineKind::Table(dfa) if self.seeds.is_empty() => dfa.is_match_batch_simd(lines, out),
+            _ => {
+                for (line, slot) in lines.iter().zip(out.iter_mut()) {
+                    *slot = self.is_match(line);
+                }
+            }
+        }
+    }
+
     /// Returns the required-literal seeds, or `None` when the engine has none.
     ///
     /// What: a clone of the seeds when present. Why: the `RegexSet` gate unions every

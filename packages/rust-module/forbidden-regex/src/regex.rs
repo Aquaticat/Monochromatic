@@ -32,6 +32,9 @@ use crate::gate::SetGate;
 /// Imports the parser entry point.
 use crate::parse::parse;
 
+/// Batched, many-lines-at-once matching for `Regex` and `RegexSet`.
+mod batch;
+
 /// A compiled single pattern.
 ///
 /// What: wraps one back-end engine. Why: the reusable single-pattern face of the
