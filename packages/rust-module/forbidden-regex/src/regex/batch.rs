@@ -89,7 +89,7 @@ impl Regex {
     /// Benchmark hook: forces the scalar per-line kernel.
     ///
     /// What: runs the scalar batch on the table back-end, else the ordinary per-line
-    /// loop. Why: the baseline the SIMD and interleaved kernels are timed against.
+    /// loop. Why: the baseline the interleaved, tight, and Sheng kernels are timed against.
     #[doc(hidden)]
     pub fn is_match_batch_scalar(&self, lines: &[&[u8]]) -> Vec<bool> {
         let mut out = vec![false; lines.len()];

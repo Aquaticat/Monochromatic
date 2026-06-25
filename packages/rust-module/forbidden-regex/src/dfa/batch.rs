@@ -73,8 +73,8 @@ impl Dfa {
     /// Tests acceptance at one position for one lane, returning the byte's class.
     ///
     /// What: flips the lane's `hit`/`done` when its state accepts at the boundary before
-    /// `byte`, then returns that byte's class for the transition step. Why: the scalar,
-    /// interleaved, and SIMD kernels share this per-(lane, position) acceptance test.
+    /// `byte`, then returns that byte's class for the transition step. Why: the interleaved
+    /// kernel runs this per-(lane, position) acceptance test for each lane in a chunk.
     fn step_accept<const N: usize>(&self, lanes: &mut Lanes<N>, lane: usize, byte: u8) -> usize {
         let class = self.class_map[byte as usize] as usize;
         let mask = accept_bit(self.class_word[class], self.class_newline[class]);

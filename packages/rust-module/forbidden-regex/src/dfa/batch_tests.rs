@@ -1,5 +1,5 @@
 // What:  unit tests for the batched multi-line DFA kernels.
-// Why:   the SIMD and interleaved kernels reimplement the per-byte match loop across
+// Why:   the interleaved and tight kernels reimplement the per-byte match loop across
 //        several lines at once; the only thing that makes them safe to ship is that
 //        every verdict equals the scalar `is_match` the engine already trusts, so each
 //        test builds a real search DFA and asserts all three kernels agree with it on a

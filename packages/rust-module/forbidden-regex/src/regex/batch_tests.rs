@@ -1,8 +1,8 @@
 // What:  unit tests for the public batch API on Regex and RegexSet.
 // Why:   is_match_batch must return exactly what calling is_match on each line returns,
-//        including across the seedless single-pattern path that routes to the vertical
-//        SIMD kernel; these pin that equality and that every hidden per-kernel hook
-//        agrees, on a line set whose length is not a multiple of the SIMD lane count.
+//        including across the seedless single-pattern path that routes to the Sheng
+//        permute kernel; these pin that equality and that every hidden per-kernel hook
+//        agrees, on a line set whose length is not a multiple of the batch lane count.
 
 use crate::{RegexSet, compile};
 
