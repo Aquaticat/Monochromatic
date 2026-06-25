@@ -219,6 +219,10 @@ captures/
 /packages/rust-module/forbidden-regex.fuzz/corpus/*/*
 !/packages/rust-module/forbidden-regex.fuzz/corpus/*/seed-*
 
+# cargo-mutants report output (written into the crate dir by the containerized run)
+mutants.out/
+mutants.out.old/
+
 # Claude Code plugin bundles. Marketplace distribution requires committed built files.
 !/packages/claude-code-plugins/*/dist/
 !/packages/claude-code-plugins/*/dist/final/*.js

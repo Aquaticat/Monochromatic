@@ -38,8 +38,9 @@ a hardened test suite.
 Being set up BEFORE the larger builds (cache-tighten, all-rules CsA) so the risky CsA
 lands on a hardened suite. User-directed order: fuzzing + mutation testing first.
 
-Fuzzing (`packages/fuzz/forbidden-regex`, mirrors `packages/fuzz/forbidden-strings`,
-cargo-fuzz / libFuzzer, nightly from the repo-root toolchain):
+Fuzzing (`packages/rust-module/forbidden-regex.fuzz`, a SIBLING crate like `.bench`;
+mirrors `packages/fuzz/forbidden-strings`; cargo-fuzz / libFuzzer, nightly from the
+repo-root toolchain):
 - `fuzz_compile`: arbitrary bytes as pattern + ruleset; compile/`compile_lenient` must
   reject, never panic or hang.
 - `fuzz_from_bytes`: arbitrary bytes through `Regex`/`RegexSet::from_bytes`; a decoded
@@ -52,18 +53,27 @@ cargo-fuzz / libFuzzer, nightly from the repo-root toolchain):
 - Structured generator in `src/generators.rs` (`PatternAndContent`, bounded depth/
   repeat, records `uses_algebra` so the differential skips `&`/`~`).
 - mise tasks mirror the sibling: `list`, `build`, `smoke` (30s each, ASAN), `run`.
-- STATUS: targets written; need to build + smoke-run + triage findings. The differential
-  may surface benign semantic gaps (verbose/whitespace, anchors) to skip, or real bugs.
+- STATUS: built + smoke-run (20s each). compile/roundtrip/differential CLEAN over 40-50k
+  runs each (the differential agreeing with `regex` and roundtrip preserving verdicts is
+  strong correctness evidence). `fuzz_from_bytes` FOUND a real bug in seconds: a decoded
+  RegexSet with inconsistent parallel vectors panicked at match time; fixed by
+  `RegexSet::validate_structure` (committed) with an inline-bytes regression test in
+  `tests/integration.rs`. Extended campaigns (240s each) running to surface deeper bugs.
+- User directive: do ENOUGH fuzzing before starting mutation testing.
 
-Mutation testing (cargo-mutants on the engine crate):
+Mutation testing (cargo-mutants on the engine crate) -- INFRA READY, RUN HELD:
 - MUST run inside a Podman container: mutation testing compiles and runs MUTATED code,
   i.e. arbitrary/unpredictable code, which must not execute on the host (host-safety,
-  not just resource isolation). cargo-mutants is not yet installed (the repo's existing
-  `packages/dev-script/mutation-test` is Stryker for TypeScript, not Rust).
-- Plan: `cargo install cargo-mutants` available inside the container image; a mise task
-  runs `cargo mutants` in `podman run` over the engine crate; surviving mutants reveal
-  weak tests; add tests to kill them.
-- STATUS: not started.
+  not just resource isolation).
+- DONE: `mutants.Containerfile` (FROM rust:1, `cargo install cargo-mutants --locked`),
+  image `forbidden-regex-mutants` built; mise tasks `test:mutation:image` (build, cached)
+  and `test:mutation` (podman run, crate mounted rw, registry volume cached, mem/cpu
+  capped, cargo-mutants flags after `--`). `mutants.out/` gitignored at root.
+- HELD per user: do not RUN `test:mutation` until fuzzing is sufficient. Then run it,
+  read surviving mutants (weak/missing tests), and add sidecar `_tests.rs` tests to kill
+  them. The suite is thin (~20 tests, "laughably few" per the user); mutation testing is
+  how we find the gaps. Tests go in sidecar `*_tests.rs` files (max-lines exempt) or the
+  exempt `tests/` dir, never inline `mod tests`.
 
 ## Earlier status: 1.07x of regex on the real-repo corpus (BEAT regex; was 0.20x)
 

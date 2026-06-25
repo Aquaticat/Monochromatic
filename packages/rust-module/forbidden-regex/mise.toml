@@ -40,3 +40,19 @@ description = "Throughput (lines/second) comparison vs the regex crate on a pre-
 # dep never enters this published crate's own test/build graph. resharp is deferred
 # (its serialized matcher is too slow to be a useful baseline).
 run = "cargo run --release --manifest-path ../forbidden-regex.bench/Cargo.toml"
+
+[tasks."test:mutation:image"]
+description = "Build the Podman image that runs mutation testing (one-time; layer-cached)"
+# Single bare command; podman caches layers so re-runs are fast no-ops.
+run = "podman build --tag forbidden-regex-mutants --file mutants.Containerfile ."
+
+[tasks."test:mutation"]
+description = "Mutation-test the engine inside a Podman container (mutated code must not run on the host)"
+depends = ["test:mutation:image"]
+# cargo-mutants compiles and runs MUTATED source: arbitrary, unpredictable code that runs
+# ONLY inside this disposable rootless Podman container, never on the host. The crate is
+# mounted read-write (cargo-mutants writes its build copies and mutants.out); a named
+# volume caches the crates.io registry so only the first run downloads deps. Memory and
+# cpu are capped per the repo's heavy-run isolation rule. Pass cargo-mutants flags after
+# `--` (e.g. `-- --file src/charset.rs` to scope, or `-- --list` to enumerate mutants).
+run = "podman run --rm --memory=6g --cpus=4 --volume $PWD:/work:Z --volume forbidden-regex-mutants-registry:/usr/local/cargo/registry --workdir /work forbidden-regex-mutants cargo mutants --colors=never"
