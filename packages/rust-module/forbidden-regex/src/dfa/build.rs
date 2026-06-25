@@ -40,6 +40,41 @@ struct StateKey {
     prev_word: bool,
 }
 
+/// Largest number of sub-nodes a single derivative residual may hold before the
+/// build bails.
+///
+/// What: a ceiling on one residual regex's node count. Why: a real rule's residuals
+/// stay small (tens to a few hundred nodes, since bounded class repetition unrolls
+/// into STATES, not large residual NODES); only pathological nested repetition or
+/// complement-over-repetition grows a residual past this, and that explodes memory and
+/// time before the state-count cap fires, so a tight ceiling aborts it fast (to the
+/// counting back-end or a clean error) while leaving every real rule on the DFA.
+const RESIDUAL_NODE_CAP: usize = 2_000;
+
+/// Reports whether a node holds more than [`RESIDUAL_NODE_CAP`] sub-nodes.
+///
+/// What: a bounded structural walk that stops as soon as the budget is spent, so it
+/// is cheap on the common small residual and never itself walks an unbounded tree.
+/// Why: the build uses it to abort before a giant residual is cloned into a state.
+fn residual_too_large(node: &Node) -> bool {
+    fn spend(node: &Node, budget: &mut usize) -> bool {
+        if *budget == 0 {
+            return true;
+        }
+        *budget -= 1;
+        match node {
+            Node::Concat(parts) | Node::Alt(parts) | Node::Inter(parts) => {
+                parts.iter().any(|child| spend(child, budget))
+            }
+            Node::Comp(inner) => spend(inner, budget),
+            Node::Repeat { node, .. } => spend(node, budget),
+            _ => false,
+        }
+    }
+    let mut budget = RESIDUAL_NODE_CAP;
+    spend(node, &mut budget)
+}
+
 /// Builds a DFA from a (search-wrapped) node, abandoning past `cap` states.
 ///
 /// What: BFS over derivative states, computing per-class transitions and a
@@ -70,6 +105,15 @@ pub fn build_dfa_within(root: Node, cap: usize) -> Result<Dfa, CompileError> {
     let mut i = 0usize;
     while i < states.len() {
         let node = states[i].node.clone();
+        // What: bail when a residual regex grows past the node budget. Why: nested
+        // bounded repetition (and complement over it) makes derivative residuals
+        // explode in SIZE before the state COUNT cap fires, so without this the build
+        // exhausts memory; bailing as a StateCap lets the caller fall back to the
+        // counting back-end or reject, never OOM (found by the roundtrip/differential
+        // fuzz targets on deeply nested patterns).
+        if residual_too_large(&node) {
+            return Err(CompileError::StateCap { limit: cap });
+        }
         let at_ls = states[i].at_line_start;
         let pw = states[i].prev_word;
         accept.push(compute_accept(&node, at_ls, pw));

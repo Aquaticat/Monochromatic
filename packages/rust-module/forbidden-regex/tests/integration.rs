@@ -156,6 +156,21 @@ fn from_bytes_rejects_garbage_without_panic() {
 }
 
 #[test]
+fn deeply_nested_repetition_compiles_without_oom() {
+    // libFuzzer (roundtrip/differential) found that these deeply-nested bounded
+    // repetitions (and complement over them) blew up the DFA build's residuals and
+    // exhausted memory. Compile must now RETURN (reject or fall back to counting),
+    // never OOM or hang. We only require it terminates with a clean Result.
+    let nested = "(?:(?:(?:(?:[^0-9]a\\|?){3}){2}){3,4}){4,4}";
+    let _ = compile(nested);
+    let comp = "~((?:(?:(?:\\S{4,4}\\d{4,4})a?){4,4}a?){3}a)a";
+    let _ = compile(comp);
+    // A reasonable nested pattern still compiles and matches.
+    let ok = compile("(?:ab){3}").unwrap();
+    assert!(ok.is_match(b"ababab"));
+}
+
+#[test]
 fn from_bytes_roundtrips_a_built_set() {
     let set = RegexSet::new(&["AKIA[A-Z2-7]{16}", "ghp_[A-Za-z0-9]{36}"]).unwrap();
     let reloaded = RegexSet::from_bytes(&set.to_bytes().unwrap()).unwrap();
