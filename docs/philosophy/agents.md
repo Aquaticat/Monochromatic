@@ -21,6 +21,13 @@ Caveman compresses prose, never the strings the rules act on.
 
 ## What does not belong
 
+### Prose hook trigger inventories
+
+Do not list the phrases caught by prose-quality hooks in AGENTS.md.
+Naming exact triggers teaches agents a vocabulary game: avoid the literal string while keeping the same unsupported claim.
+Keep AGENTS.md focused on the underlying discipline: measure facts, cite sources, and state unresolved uncertainty after investigation.
+Put exact trigger strings in hook config and tests, where enforcement can change without becoming prompt material.
+
 ### Skill invocation pointers
 
 The harness auto-loads every skill's description, which already states when to use it.
