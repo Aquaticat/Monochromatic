@@ -27,10 +27,10 @@ const targets = resolveBrowserslist(
 The installed package under test is `browserslist@4.28.4`.
 `pnpm-lock.yaml:4370-4371` pins the tarball and integrity:
 
-```yaml
-browserslist@4.28.4:
-  resolution: {integrity: sha512-MTc8i/x9jBQd1iMw2CFGS+rwMa07eYjLR0CCTLDACl9xhxy+nIs3KeML/biicXtk9JrZ6dnnTatmc7ErPXIxqw==, tarball: https://registry.npmjs.org/browserslist/-/browserslist-4.28.4.tgz}
-```
+- Integrity:
+  `sha512-MTc8i/x9jBQd1iMw2CFGS+rwMa07eYjLR0CCTLDACl9xhxy+nIs3KeML/biicXtk9JrZ6dnnTatmc7ErPXIxqw==`.
+- Tarball:
+  `https://registry.npmjs.org/browserslist/-/browserslist-4.28.4.tgz`.
 
 Browserslist first normalizes options and defaults `opts.path` to the current directory when none is given.
 `node_modules/.pnpm/browserslist@4.28.4/node_modules/browserslist/index.js:372-379`:
@@ -181,8 +181,18 @@ Deno's permission layer sees that as `node:fs.existsSync('/')` and asks for read
 Version and source checks:
 
 - `deno --version`: `deno 2.8.3`, `typescript 6.0.3`.
-- `node -e "const p=require('./node_modules/.pnpm/browserslist@4.28.4/node_modules/browserslist/package.json'); console.log(p.version)"`:
-  `4.28.4`.
+- Package version command:
+
+  ```sh
+  node <<'JS'
+  const p = require(
+    './node_modules/.pnpm/browserslist@4.28.4/node_modules/browserslist/package.json',
+  );
+  console.log(p.version);
+  JS
+  ```
+
+  Output: `4.28.4`.
 - `test -e browserslist-stats.json && echo has-stats || echo no-stats`: `no-stats`.
 - Upstream source clone for comparison:
   `https://github.com/browserslist/browserslist.git` at
@@ -198,23 +208,25 @@ DENO_TRACE_PERMISSIONS=1 deno run \
   - <<'TS'
 import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
-const browserslist = require('/var/home/user/Monochromatic/node_modules/.pnpm/browserslist@4.28.4/node_modules/browserslist');
+const browserslist = require(
+  '/var/home/user/Monochromatic/node_modules/.pnpm/browserslist@4.28.4/node_modules/browserslist',
+);
 browserslist(undefined, { path: '/var/home/user/Monochromatic' });
 TS
 ```
 
-Observed failure:
+Observed failure, with `/var/home/user/Monochromatic` abbreviated to `$REPO` in stack paths:
 
 ```text
 error: Uncaught (in promise) NotCapable: Requires read access to "/", run again with the --allow-read flag
     stats = fs.existsSync(filepath) && fs.statSync(filepath)
                ^
     at Object.existsSync (ext:deno_node/_fs/_fs_exists.ts:55:10)
-    at getPathType (file:///var/home/user/Monochromatic/node_modules/.pnpm/browserslist@4.28.4/node_modules/browserslist/node.js:45:16)
-    at isDirectory (file:///var/home/user/Monochromatic/node_modules/.pnpm/browserslist@4.28.4/node_modules/browserslist/node.js:69:10)
-    at eachParent (file:///var/home/user/Monochromatic/node_modules/.pnpm/browserslist@4.28.4/node_modules/browserslist/node.js:86:10)
-    at Object.getStat (file:///var/home/user/Monochromatic/node_modules/.pnpm/browserslist@4.28.4/node_modules/browserslist/node.js:297:15)
-    at browserslist (file:///var/home/user/Monochromatic/node_modules/.pnpm/browserslist@4.28.4/node_modules/browserslist/index.js:427:19)
+    at getPathType (file://$REPO/node_modules/.pnpm/browserslist@4.28.4/node_modules/browserslist/node.js:45:16)
+    at isDirectory (file://$REPO/node_modules/.pnpm/browserslist@4.28.4/node_modules/browserslist/node.js:69:10)
+    at eachParent (file://$REPO/node_modules/.pnpm/browserslist@4.28.4/node_modules/browserslist/node.js:86:10)
+    at Object.getStat (file://$REPO/node_modules/.pnpm/browserslist@4.28.4/node_modules/browserslist/node.js:297:15)
+    at browserslist (file://$REPO/node_modules/.pnpm/browserslist@4.28.4/node_modules/browserslist/index.js:427:19)
 ```
 
 This also fails when the config file is explicit, because `prepareOpts` still supplies a default `path`,
@@ -227,7 +239,9 @@ DENO_TRACE_PERMISSIONS=1 deno run \
   - <<'TS'
 import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
-const browserslist = require('/var/home/user/Monochromatic/node_modules/.pnpm/browserslist@4.28.4/node_modules/browserslist');
+const browserslist = require(
+  '/var/home/user/Monochromatic/node_modules/.pnpm/browserslist@4.28.4/node_modules/browserslist',
+);
 browserslist(undefined, { config: '/var/home/user/Monochromatic/.browserslistrc' });
 TS
 ```
@@ -242,7 +256,9 @@ BROWSERSLIST_ROOT_PATH=/var/home/user/Monochromatic \
   - <<'TS'
 import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
-const browserslist = require('/var/home/user/Monochromatic/node_modules/.pnpm/browserslist@4.28.4/node_modules/browserslist');
+const browserslist = require(
+  '/var/home/user/Monochromatic/node_modules/.pnpm/browserslist@4.28.4/node_modules/browserslist',
+);
 browserslist(undefined, { path: '/var/home/user/Monochromatic' });
 TS
 ```
@@ -258,7 +274,9 @@ DENO_TRACE_PERMISSIONS=1 deno run \
   - <<'TS'
 import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
-const browserslist = require('/var/home/user/Monochromatic/node_modules/.pnpm/browserslist@4.28.4/node_modules/browserslist');
+const browserslist = require(
+  '/var/home/user/Monochromatic/node_modules/.pnpm/browserslist@4.28.4/node_modules/browserslist',
+);
 browserslist(undefined, { path: '/var/home/user/Monochromatic', stats: {} });
 TS
 ```
@@ -323,12 +341,18 @@ The maintainer comment says it was released in `4.23`, and this repo's installed
 
 The filing constraints:
 
-- Is it really upstream's fault? Yes for the ancestor-walk behavior, but upstream already treats it as valid and fixed.
-- Can upstream fix it? Yes, they added `BROWSERSLIST_ROOT_PATH`.
-- Are they supporting this use case? Yes, the README documents `BROWSERSLIST_ROOT_PATH` as preventing reads above the path.
-- Would the repo welcome our contribution? Historical evidence says yes for this exact issue, because PR #819 was merged.
-- Will they likely fix it? Already fixed.
-- Have we prototyped a minimal fix compatible with their architecture? Not needed for a new upstream filing, because the exact fix is already released and verified locally.
+- Is it really upstream's fault?
+  Yes for the ancestor-walk behavior, but upstream already treats it as valid and fixed.
+- Can upstream fix it?
+  Yes, they added `BROWSERSLIST_ROOT_PATH`.
+- Are they supporting this use case?
+  Yes, the README documents `BROWSERSLIST_ROOT_PATH` as preventing reads above the path.
+- Would the repo welcome our contribution?
+  Historical evidence says yes for this exact issue, because PR #819 was merged.
+- Will they likely fix it?
+  Already fixed.
+- Have we prototyped a minimal fix compatible with their architecture?
+  Not needed for a new upstream filing, because the exact fix is already released and verified locally.
 
 Decision: do not file a new issue and do not comment on #813.
 There is nothing additive: the upstream issue and PR already contain the Deno failure mode, stats search,
