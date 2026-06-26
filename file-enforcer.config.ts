@@ -27,6 +27,39 @@ import type browserslist from 'browserslist';
 const FORBIDDEN_ROOT_CONTEXT_PATH = './CONTEXT.md';
 
 /**
+ * Checked-in Browserslist policy file read directly by file-enforcer.
+ *
+ * @example
+ * ```ts
+ * console.log(BROWSERSLIST_CONFIG_PATH);
+ * ```
+ */
+const BROWSERSLIST_CONFIG_PATH = './.browserslistrc';
+
+/**
+ * Deterministic Browserslist environment section used when the config declares
+ * environment-specific blocks. Keeping this fixed prevents ambient shell env
+ * from changing generated files.
+ *
+ * @example
+ * ```ts
+ * console.log(BROWSERSLIST_CONFIG_ENVIRONMENT);
+ * ```
+ */
+const BROWSERSLIST_CONFIG_ENVIRONMENT = 'production';
+
+/**
+ * Explicit empty custom-usage statistics passed to Browserslist so it never
+ * searches ancestor directories for `browserslist-stats.json`.
+ *
+ * @example
+ * ```ts
+ * console.log(Object.keys(EMPTY_BROWSERSLIST_STATS));
+ * ```
+ */
+const EMPTY_BROWSERSLIST_STATS: browserslist.Stats = {};
+
+/**
  * Node filesystem error code for an absent path.
  *
  * @example
@@ -165,6 +198,28 @@ async function importBrowserslist(): Promise<BrowserslistResolver> {
 }
 
 /**
+ * Selects query lines from parsed Browserslist config without letting
+ * Browserslist search the filesystem for config files.
+ *
+ * @param config - parsed checked-in Browserslist config.
+ *
+ * @returns Production section when present, otherwise default query lines.
+ *
+ * @example
+ * ```ts
+ * const queries = selectBrowserslistQueries({
+ *   config: { defaults: ['last 1 Chrome version'] },
+ * });
+ * ```
+ */
+function selectBrowserslistQueries(
+  { config, }: { readonly config: browserslist.Config; },
+): readonly string[] {
+  return config[BROWSERSLIST_CONFIG_ENVIRONMENT]
+    ?? config.defaults;
+}
+
+/**
  * Generates mise.toml from mise.no-env.toml with a dynamic [env] section
  * containing _.path entries for all workspace package bin directories.
  */
@@ -274,11 +329,21 @@ async function generateResolvedBrowserslistTargets(): Promise<void> {
    */
   const resolveBrowserslist = await importBrowserslist();
   /**
-   * Target strings selected by the root `.browserslistrc` file.
+   * Parsed query groups from the checked-in Browserslist file.
+   */
+  const browserslistConfig = resolveBrowserslist.parseConfig(
+    await cat([BROWSERSLIST_CONFIG_PATH,],),
+  );
+  /**
+   * Target strings selected from explicit query lines, with both config and stats
+   * discovery disabled at the Browserslist API boundary.
    */
   const targets = resolveBrowserslist(
-    undefined,
-    { path: process.cwd(), },
+    selectBrowserslistQueries({ config: browserslistConfig, },),
+    {
+      path: false,
+      stats: EMPTY_BROWSERSLIST_STATS,
+    },
   );
 
   await overwrite({
