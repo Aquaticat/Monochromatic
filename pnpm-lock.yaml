@@ -23,14 +23,14 @@ catalogs:
       specifier: '>=9.3.2'
       version: 9.3.4
     '@earendil-works/pi-ai':
-      specifier: '>=0.79.9'
-      version: 0.79.9
+      specifier: '>=0.80.2'
+      version: 0.80.2
     '@earendil-works/pi-coding-agent':
-      specifier: '>=0.79.9'
-      version: 0.79.9
+      specifier: '>=0.80.2'
+      version: 0.80.2
     '@earendil-works/pi-tui':
-      specifier: '>=0.79.9'
-      version: 0.79.9
+      specifier: '>=0.80.2'
+      version: 0.80.2
     '@lezer/common':
       specifier: '>=1.2.0'
       version: 1.5.2
@@ -417,7 +417,7 @@ importers:
         version: 1.61.1
       '@types/node':
         specifier: 'catalog:'
-        version: 26.0.0
+        version: 26.0.1
       browserslist:
         specifier: 'catalog:'
         version: 4.28.4
@@ -441,7 +441,7 @@ importers:
         version: 1.8.1
       stylelint:
         specifier: 'catalog:'
-        version: 17.13.0(typescript@7.0.1-rc)
+        version: 17.14.0(typescript@7.0.1-rc)
       tsdown:
         specifier: 'catalog:'
         version: 0.22.3(typescript@7.0.1-rc)
@@ -2112,10 +2112,10 @@ importers:
     devDependencies:
       '@earendil-works/pi-ai':
         specifier: 'catalog:'
-        version: 0.79.9(zod@4.4.3)
+        version: 0.80.2(zod@4.4.3)
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
-        version: 0.79.9(zod@4.4.3)
+        version: 0.80.2(zod@4.4.3)
       '@monochromatic-dev/config-tsdown':
         specifier: workspace:*
         version: link:../../config/tsdown
@@ -2146,13 +2146,13 @@ importers:
     devDependencies:
       '@earendil-works/pi-ai':
         specifier: 'catalog:'
-        version: 0.79.9(zod@4.4.3)
+        version: 0.80.2(zod@4.4.3)
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
-        version: 0.79.9(zod@4.4.3)
+        version: 0.80.2(zod@4.4.3)
       '@earendil-works/pi-tui':
         specifier: 'catalog:'
-        version: 0.79.9
+        version: 0.80.2
       '@monochromatic-dev/config-tsdown':
         specifier: workspace:*
         version: link:../../config/tsdown
@@ -2186,10 +2186,10 @@ importers:
     devDependencies:
       '@earendil-works/pi-ai':
         specifier: 'catalog:'
-        version: 0.79.9(zod@4.4.3)
+        version: 0.80.2(zod@4.4.3)
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
-        version: 0.79.9(zod@4.4.3)
+        version: 0.80.2(zod@4.4.3)
       '@monochromatic-dev/config-tsdown':
         specifier: workspace:*
         version: link:../../config/tsdown
@@ -2214,7 +2214,7 @@ importers:
     devDependencies:
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
-        version: 0.79.9(zod@4.4.3)
+        version: 0.80.2(zod@4.4.3)
       '@monochromatic-dev/config-tsdown':
         specifier: workspace:*
         version: link:../../config/tsdown
@@ -2236,7 +2236,7 @@ importers:
     devDependencies:
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
-        version: 0.79.9(zod@4.4.3)
+        version: 0.80.2(zod@4.4.3)
       '@monochromatic-dev/config-tsdown':
         specifier: workspace:*
         version: link:../../config/tsdown
@@ -2257,10 +2257,10 @@ importers:
     devDependencies:
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
-        version: 0.79.9(zod@4.4.3)
+        version: 0.80.2(zod@4.4.3)
       '@earendil-works/pi-tui':
         specifier: 'catalog:'
-        version: 0.79.9
+        version: 0.80.2
       '@monochromatic-dev/config-tsdown':
         specifier: workspace:*
         version: link:../../config/tsdown
@@ -2288,7 +2288,7 @@ importers:
     devDependencies:
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
-        version: 0.79.9(zod@4.4.3)
+        version: 0.80.2(zod@4.4.3)
       '@monochromatic-dev/config-tsdown':
         specifier: workspace:*
         version: link:../../config/tsdown
@@ -2310,7 +2310,7 @@ importers:
     devDependencies:
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
-        version: 0.79.9(zod@4.4.3)
+        version: 0.80.2(zod@4.4.3)
       '@monochromatic-dev/config-tsdown':
         specifier: workspace:*
         version: link:../../config/tsdown
@@ -2328,7 +2328,7 @@ importers:
     devDependencies:
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
-        version: 0.79.9(zod@4.4.3)
+        version: 0.80.2(zod@4.4.3)
       '@monochromatic-dev/config-tsdown':
         specifier: workspace:*
         version: link:../../config/tsdown
@@ -2350,7 +2350,7 @@ importers:
     devDependencies:
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
-        version: 0.79.9(zod@4.4.3)
+        version: 0.80.2(zod@4.4.3)
       '@monochromatic-dev/config-tsdown':
         specifier: workspace:*
         version: link:../../config/tsdown
@@ -3060,22 +3060,22 @@ packages:
       '@luma.gl/core': ~9.3.3
       '@luma.gl/engine': ~9.3.3
 
-  '@earendil-works/pi-agent-core@0.79.9':
-    resolution: {integrity: sha512-GsFbPR85nhncKoU9++fTKa11PzwUkAmkrKXo97dBOzi10Td72rVV6vmfxKjwPLHTzRbJMa0byr12YhODZ59yLA==, tarball: https://registry.npmjs.org/@earendil-works/pi-agent-core/-/pi-agent-core-0.79.9.tgz}
+  '@earendil-works/pi-agent-core@0.80.2':
+    resolution: {integrity: sha512-BF9WPhixIFjT6Kp3Iz3H6ugkU+4AWotM8py96XE5pIK0arJbQKMWbR+dXSWWDEmR5yc/aFQODnuyowOEzMGO7Q==, tarball: https://registry.npmjs.org/@earendil-works/pi-agent-core/-/pi-agent-core-0.80.2.tgz}
     engines: {node: '>=22.19.0'}
 
-  '@earendil-works/pi-ai@0.79.9':
-    resolution: {integrity: sha512-fHmgNMONwCCE7bQAKbcz76sgm3iQuA7km1mpIc4H5xXd9+zhPh/faULz6ARkgjQE0EufHnfZPJY39+lNf8Sa9g==, tarball: https://registry.npmjs.org/@earendil-works/pi-ai/-/pi-ai-0.79.9.tgz}
-    engines: {node: '>=22.19.0'}
-    hasBin: true
-
-  '@earendil-works/pi-coding-agent@0.79.9':
-    resolution: {integrity: sha512-8TZ796Zn0NE4vmhxG9hv4ZtJDGJzhqMjlmFg8ZkUKxfqB7LJa4ums2jSJKtnyAZfAamN6VzqzN0A82RNDqv8Ag==, tarball: https://registry.npmjs.org/@earendil-works/pi-coding-agent/-/pi-coding-agent-0.79.9.tgz}
+  '@earendil-works/pi-ai@0.80.2':
+    resolution: {integrity: sha512-5GNKfdrRJ4uZ5Zd9iudoXggi/BbUcKnD/xfRHtdR+7q4vWqPvfx8auFuaT+ewGBVI8K4wj87eigFQ/iCSuy9RQ==, tarball: https://registry.npmjs.org/@earendil-works/pi-ai/-/pi-ai-0.80.2.tgz}
     engines: {node: '>=22.19.0'}
     hasBin: true
 
-  '@earendil-works/pi-tui@0.79.9':
-    resolution: {integrity: sha512-XcqfoGyoX64OSMQklMR1vG2MRi1TCPSUERRCmPDvYKCK6LtZoBqJ6idNCLRklNYveCj4gHDOzOsLhGqn04jmYw==, tarball: https://registry.npmjs.org/@earendil-works/pi-tui/-/pi-tui-0.79.9.tgz}
+  '@earendil-works/pi-coding-agent@0.80.2':
+    resolution: {integrity: sha512-m9v7OUit0s9LklWfh61ca/XY5INjUzjtYtNZwy3cNvyjOLk3IpBgghP8aAp0iH35rLaiRwuuWiJ8t88ODMWY+A==, tarball: https://registry.npmjs.org/@earendil-works/pi-coding-agent/-/pi-coding-agent-0.80.2.tgz}
+    engines: {node: '>=22.19.0'}
+    hasBin: true
+
+  '@earendil-works/pi-tui@0.80.2':
+    resolution: {integrity: sha512-OvOAMIbXiC9OSse17YMiXIsI9AS5XM/ZV8N/k+UzdlRpPILDQYmLElevgGW92kkXR8qHBClIdzhCjuzlBGvphA==, tarball: https://registry.npmjs.org/@earendil-works/pi-tui/-/pi-tui-0.80.2.tgz}
     engines: {node: '>=22.19.0'}
 
   '@emnapi/core@1.11.1':
@@ -4123,6 +4123,9 @@ packages:
   '@types/node@26.0.0':
     resolution: {integrity: sha512-vf2YFi1iY9lHGwNJMs01biZFbKJkrZR1T6/MlzjhJLPdntOHLhTrDSnSVcdtvjihi4VQNlrFRIxLsDBlQpAipA==, tarball: https://registry.npmjs.org/@types/node/-/node-26.0.0.tgz}
 
+  '@types/node@26.0.1':
+    resolution: {integrity: sha512-fc3KiUoBt6kie0N9bIW3E47vZsuaMf0PM2AaUpLCLT0s/LvX1nxAim6Fc049cNxODPpGm6qRAuUOB86SkRuPQw==, tarball: https://registry.npmjs.org/@types/node/-/node-26.0.1.tgz}
+
   '@types/offscreencanvas@2019.7.3':
     resolution: {integrity: sha512-ieXiYmgSRXUDeOntE1InxjWyvEelZGP63M+cGuquuRLuIKKT1osnkXjxev9B7d1nXSug5vpunx+gNlbVxMlC9A==, tarball: https://registry.npmjs.org/@types/offscreencanvas/-/offscreencanvas-2019.7.3.tgz}
 
@@ -4348,6 +4351,11 @@ packages:
 
   baseline-browser-mapping@2.10.38:
     resolution: {integrity: sha512-31/02mVB4yuQU6adKk5SlY6m+mxDwUq5KZkyYgnLrrKl7TEm1+3PyDtDBz2kOv/wxZz41GHsvV1A/u6RmiyBvw==, tarball: https://registry.npmjs.org/baseline-browser-mapping/-/baseline-browser-mapping-2.10.38.tgz}
+    engines: {node: '>=6.0.0'}
+    hasBin: true
+
+  baseline-browser-mapping@2.10.40:
+    resolution: {integrity: sha512-BSSLZ9/Cjjv7Gtj5B68ZzXcXUg8iOf3fme+FCuh8rC/Go+Kmh8cox7M3A8dolou16s64QjLPOSdngh7GxXvkSw==, tarball: https://registry.npmjs.org/baseline-browser-mapping/-/baseline-browser-mapping-2.10.40.tgz}
     engines: {node: '>=6.0.0'}
     hasBin: true
 
@@ -5396,8 +5404,8 @@ packages:
     resolution: {integrity: sha512-1uz8041X6LoI6ZSdZacM9lVY28vuzDlSKitnpbSNK0RfKoIJkX29NBPVEFXhnuSuEOA9Ww0xnPJ+ILWbGAv8DA==, tarball: https://registry.npmjs.org/node-releases/-/node-releases-2.0.48.tgz}
     engines: {node: '>=18'}
 
-  node-releases@2.0.49:
-    resolution: {integrity: sha512-f06bl1D+8ZDkn2oOQQKAh5/otFWqVnM1Q5oerA8Pex7UfT66Tx4IPHIqVVFKqFT3FUtaDstdgkM7yT7JWhqxfw==, tarball: https://registry.npmjs.org/node-releases/-/node-releases-2.0.49.tgz}
+  node-releases@2.0.50:
+    resolution: {integrity: sha512-J6l92tKHX6w8Jy5nO1Vuc01NoIiRGi/d6qBKVxh+IQ8Cr3b6HbVNfKiF8ZpFKufTwpwxMmce2W3iQZ861ZRyTg==, tarball: https://registry.npmjs.org/node-releases/-/node-releases-2.0.50.tgz}
     engines: {node: '>=18'}
 
   normalize-path@3.0.0:
@@ -5686,6 +5694,11 @@ packages:
     engines: {node: ^20.19.0 || >=22.12.0}
     hasBin: true
 
+  rolldown@1.1.3:
+    resolution: {integrity: sha512-1F1eEtUBtFvcGm1HQ9TiUIUHPQG7mSAODrhIzjxoUEFuo8OcbrGLiVLkevNgj84TE4lnHvnumwFjhJO5Eu135g==, tarball: https://registry.npmjs.org/rolldown/-/rolldown-1.1.3.tgz}
+    engines: {node: ^20.19.0 || >=22.12.0}
+    hasBin: true
+
   rou3@0.8.1:
     resolution: {integrity: sha512-ePa+XGk00/3HuCqrEnK3LxJW7I0SdNg6EFzKUJG73hMAdDcOUC/i/aSz7LSDwLrGr33kal/rqOGydzwl6U7zBA==, tarball: https://registry.npmjs.org/rou3/-/rou3-0.8.1.tgz}
 
@@ -5821,6 +5834,11 @@ packages:
 
   stylelint@17.13.0:
     resolution: {integrity: sha512-G1WYzMerp7ihOaIe9VJCHLt12MoAD2QLf1AFerYP37+BCRBUK5UCpq8e/mN+zCIaJPKQcaxhE4WlPmqdiOx/gw==, tarball: https://registry.npmjs.org/stylelint/-/stylelint-17.13.0.tgz}
+    engines: {node: '>=20.19.0'}
+    hasBin: true
+
+  stylelint@17.14.0:
+    resolution: {integrity: sha512-8xkHPpdqYryeIsOgfsYTmr6cIeC4nLYWk5S8BPxpodq8mIuepggkMljsHewWfuAjj/+qpRKou2QerhjMH3iasg==, tarball: https://registry.npmjs.org/stylelint/-/stylelint-17.14.0.tgz}
     engines: {node: '>=20.19.0'}
     hasBin: true
 
@@ -6502,9 +6520,9 @@ snapshots:
       - '@75lb/nature'
       - '@loaders.gl/core'
 
-  '@earendil-works/pi-agent-core@0.79.9(zod@4.4.3)':
+  '@earendil-works/pi-agent-core@0.80.2(zod@4.4.3)':
     dependencies:
-      '@earendil-works/pi-ai': 0.79.9(zod@4.4.3)
+      '@earendil-works/pi-ai': 0.80.2(zod@4.4.3)
       ignore: 7.0.5
       typebox: 1.1.38
       yaml: 2.9.0
@@ -6513,7 +6531,7 @@ snapshots:
       - ws
       - zod
 
-  '@earendil-works/pi-ai@0.79.9(zod@4.4.3)':
+  '@earendil-works/pi-ai@0.80.2(zod@4.4.3)':
     dependencies:
       '@anthropic-ai/sdk': 0.105.0(zod@4.4.3)
       '@opentelemetry/api': 1.9.0
@@ -6528,11 +6546,11 @@ snapshots:
       - ws
       - zod
 
-  '@earendil-works/pi-coding-agent@0.79.9(zod@4.4.3)':
+  '@earendil-works/pi-coding-agent@0.80.2(zod@4.4.3)':
     dependencies:
-      '@earendil-works/pi-agent-core': 0.79.9(zod@4.4.3)
-      '@earendil-works/pi-ai': 0.79.9(zod@4.4.3)
-      '@earendil-works/pi-tui': 0.79.9
+      '@earendil-works/pi-agent-core': 0.80.2(zod@4.4.3)
+      '@earendil-works/pi-ai': 0.80.2(zod@4.4.3)
+      '@earendil-works/pi-tui': 0.80.2
       '@silvia-odwyer/photon-node': 0.3.4
       chalk: 5.6.2
       cross-spawn: 7.0.6
@@ -6553,7 +6571,7 @@ snapshots:
       - ws
       - zod
 
-  '@earendil-works/pi-tui@0.79.9':
+  '@earendil-works/pi-tui@0.80.2':
     dependencies:
       get-east-asian-width: 1.6.0
       marked: 18.0.5
@@ -7495,6 +7513,10 @@ snapshots:
     dependencies:
       undici-types: 8.3.0
 
+  '@types/node@26.0.1':
+    dependencies:
+      undici-types: 8.3.0
+
   '@types/offscreencanvas@2019.7.3': {}
 
   '@types/pako@2.0.4': {}
@@ -7651,6 +7673,8 @@ snapshots:
 
   baseline-browser-mapping@2.10.38: {}
 
+  baseline-browser-mapping@2.10.40: {}
+
   birpc@4.0.0: {}
 
   brace-expansion@5.0.6:
@@ -7671,10 +7695,10 @@ snapshots:
 
   browserslist@4.28.4:
     dependencies:
-      baseline-browser-mapping: 2.10.38
+      baseline-browser-mapping: 2.10.40
       caniuse-lite: 1.0.30001799
       electron-to-chromium: 1.5.378
-      node-releases: 2.0.49
+      node-releases: 2.0.50
       update-browserslist-db: 1.2.3(browserslist@4.28.4)
 
   cac@7.0.0: {}
@@ -8953,7 +8977,7 @@ snapshots:
 
   node-releases@2.0.48: {}
 
-  node-releases@2.0.49: {}
+  node-releases@2.0.50: {}
 
   normalize-path@3.0.0: {}
 
@@ -9272,7 +9296,7 @@ snapshots:
 
   reusify@1.1.0: {}
 
-  rolldown-plugin-dts@0.26.0(rolldown@1.1.2)(typescript@7.0.1-rc):
+  rolldown-plugin-dts@0.26.0(rolldown@1.1.3)(typescript@7.0.1-rc):
     dependencies:
       '@babel/generator': 8.0.0
       '@babel/helper-validator-identifier': 8.0.2
@@ -9282,7 +9306,7 @@ snapshots:
       dts-resolver: 3.0.0
       get-tsconfig: 5.0.0-beta.5
       obug: 2.1.3
-      rolldown: 1.1.2
+      rolldown: 1.1.3
     optionalDependencies:
       typescript: 7.0.1-rc
     transitivePeerDependencies:
@@ -9308,6 +9332,11 @@ snapshots:
       '@rolldown/binding-wasm32-wasi': 1.1.2
       '@rolldown/binding-win32-arm64-msvc': 1.1.2
       '@rolldown/binding-win32-x64-msvc': 1.1.2
+
+  rolldown@1.1.3:
+    dependencies:
+      '@oxc-project/types': 0.137.0
+      '@rolldown/pluginutils': 1.0.1
 
   rou3@0.8.1: {}
 
@@ -9514,7 +9543,7 @@ snapshots:
       - supports-color
       - typescript
 
-  stylelint@17.13.0(typescript@7.0.1-rc):
+  stylelint@17.14.0(typescript@7.0.1-rc):
     dependencies:
       '@csstools/css-calc': 3.2.1(@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.0))(@csstools/css-tokenizer@4.0.0)
       '@csstools/css-parser-algorithms': 4.0.0(@csstools/css-tokenizer@4.0.0)
@@ -9642,8 +9671,8 @@ snapshots:
       import-without-cache: 0.4.0
       obug: 2.1.3
       picomatch: 4.0.4
-      rolldown: 1.1.2
-      rolldown-plugin-dts: 0.26.0(rolldown@1.1.2)(typescript@7.0.1-rc)
+      rolldown: 1.1.3
+      rolldown-plugin-dts: 0.26.0(rolldown@1.1.3)(typescript@7.0.1-rc)
       semver: 7.8.5
       tinyexec: 1.2.4
       tinyglobby: 0.2.17
