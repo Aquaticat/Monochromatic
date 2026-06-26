@@ -6,9 +6,10 @@ Tracks what we settled, why, what stays open, and the planned shape of the deliv
 
 ## Status
 
-Planning.
+Planning complete; ready to draft on the maintainer's go.
 `CONTRIBUTING.md` not yet written.
-Major decisions are settled (below); a few practical tensions stay open.
+All blocking decisions are settled;
+the code of conduct is deferred to a later pass after the maintainer's own deliberation.
 
 ## Goal
 
@@ -147,11 +148,10 @@ Each item is an attack the comic or its comment thread named, paired with this r
 
 ## Open items and tensions
 
-- Code of conduct:
-  not yet decided.
-  The machine-plus-judge design enforces constructiveness through gates, not social rules,
-  so a traditional code of conduct may be redundant;
-  flagged for an explicit keep-or-drop call before the policy ships.
+- Code of conduct (deferred, not blocking):
+  deliberately out of the first `CONTRIBUTING.md`.
+  Planned for a later pass after the maintainer's own deliberation;
+  the machine-plus-judge design enforces constructiveness through gates, so it is not urgent.
 - Visibility of this doc:
   it is committed, so it is repo-visible.
   The threat model is mild to expose, but if exposure is unwanted, rename to `.local.md`.
@@ -191,6 +191,9 @@ Each item is an attack the comic or its comment thread named, paired with this r
   Contributor supplies the passing mutation and fuzz result, CI re-runs to catch a faked green;
   harnesses are being rolled out toward almost every package.
   Added a code-of-conduct keep-or-drop open item.
+- 2026-06-26:
+  deferred the code of conduct out of the first `CONTRIBUTING.md`; it lands in a later pass.
+  Plan now complete and ready to draft.
 
 [xkcd-810]: https://xkcd.com/810/
 [explain-810]: https://www.explainxkcd.com/wiki/index.php/810:_Constructive
