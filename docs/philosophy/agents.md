@@ -16,7 +16,7 @@ Fragments beat sentences.
 This style binds AGENTS.md alone.
 This philosophy doc and every other doc under `docs/` stay normal prose: reference loaded rarely, where clarity outranks token thrift.
 
-Never compress away the load-bearing strings: tokens, paths, commands, identifiers; code blocks; section headings (external and internal cross-references resolve by name); the verbatim "Hedge phrases that signal a skipped step" list (a hook matches it literally).
+Never compress away the load-bearing strings: tokens, paths, commands, identifiers; code blocks; section headings (external and internal cross-references resolve by name); hook-matched literals.
 Caveman compresses prose, never the strings the rules act on.
 
 ## What does not belong
