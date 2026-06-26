@@ -163,6 +163,48 @@ resolutionMode: opts.save === false ? 'highest' : opts.resolutionMode,
 if (opts.save !== false && !opts.dryRun) {
 ```
 
+The `recursiveInstall` setting is not the update switch.
+The current settings page documents `recursiveInstall` under CLI settings,
+ but pnpm source applies it only after a command has opted into recursive-by-default handling.
+When that setting is `false`,
+ pnpm still marks the command recursive and narrows the install with the `{.}...` filter.
+That filter includes the current workspace project and its workspace dependency closure.
+
+`pnpm11/pnpm/src/main.ts:248`
+
+```ts
+if (
+  cmd != null && recursiveByDefaultCommands.has(cmd) &&
+  typeof workspaceDir === 'string'
+) {
+  cliOptions['recursive'] = true
+  config.recursive = true
+
+  if (!config.recursiveInstall && !config.filter && !config.filterProd) {
+    config.filter = ['{.}...']
+  }
+}
+```
+
+`pnpm update` is not a recursive-by-default command in pnpm 11.9.0.
+The update module exports command names only;
+ unlike the install module,
+ it does not export `recursiveByDefault = true`.
+
+`pnpm11/installing/commands/src/update/index.ts:94`
+
+```ts
+export const commandNames = ['update', 'up', 'upgrade']
+```
+
+`pnpm11/installing/commands/src/install.ts:109`
+
+```ts
+export const commandNames = ['install', 'i']
+
+export const recursiveByDefault = true
+```
+
 ## Verification
 
 Version under test:
@@ -171,6 +213,24 @@ Version under test:
 # /var/home/user/Monochromatic
 mise exec -- pnpm --version
 # 11.9.0
+```
+
+The current settings page was fetched on 2026-06-26.
+It documents `recursiveInstall` as a pnpm version 11 `pnpm-workspace.yaml` setting with default `true`.
+It also says `recursiveInstall: false` makes `pnpm install` exclusively build the package in the current directory.
+A disposable workspace shows the implementation is broader than that wording:
+ when `packages/a` depends on workspace package `b`,
+ `recursiveInstall: false` still selects both `a` and `b`.
+
+```shell
+# /tmp/pnpm-recursive-install-*/packages/a
+pnpm install --ignore-scripts --reporter=append-only
+# Scope: 2 of 3 workspace projects
+
+find /tmp/pnpm-recursive-install-* -maxdepth 4 -type d -name node_modules -print | sort
+# /tmp/pnpm-recursive-install-*/node_modules
+# /tmp/pnpm-recursive-install-*/packages/a/node_modules
+# /tmp/pnpm-recursive-install-*/packages/b/node_modules
 ```
 
 Root-only check,
@@ -294,6 +354,10 @@ It is useful when the root importer is the target,
 
 `pnpm update --no-save` from the repository root also does not inspect every workspace package.
 It selects the root package because the command is not recursive.
+
+Setting `recursiveInstall` does not make `pnpm update` recursive.
+That setting controls `pnpm install` behavior after install has opted into recursive-by-default handling.
+It is not consulted as a workspace-wide update default.
 
 The non-interactive `Already up to date` line is not proof that every workspace importer is current.
 It is the default reporter message when package add/remove counters are both absent.
