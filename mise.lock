@@ -569,52 +569,52 @@ checksum = "sha256:1669fe72aef1ac31af8097e85b26f3d5f056c401316bdf43deea992342322
 url = "https://github.com/Automattic/harper/releases/download/v2.6.0/harper-cli-x86_64-pc-windows-msvc.zip"
 
 [[tools.hcloud]]
-version = "1.65.0"
+version = "1.66.0"
 backend = "aqua:hetznercloud/cli"
 
 [tools.hcloud."platforms.linux-arm64"]
-checksum = "sha256:07de215486050692fe206368905dd677a1f2dd00f9b00af3a389ed301c2cca9b"
-url = "https://github.com/hetznercloud/cli/releases/download/v1.65.0/hcloud-linux-arm64.tar.gz"
+checksum = "sha256:f9d67b4a1e2a7d88e6360b3e9a5efe9ab6c4e1cf6d0fa45d2740adfa8528d55b"
+url = "https://github.com/hetznercloud/cli/releases/download/v1.66.0/hcloud-linux-arm64.tar.gz"
 
 [tools.hcloud."platforms.linux-arm64-musl"]
-checksum = "sha256:07de215486050692fe206368905dd677a1f2dd00f9b00af3a389ed301c2cca9b"
-url = "https://github.com/hetznercloud/cli/releases/download/v1.65.0/hcloud-linux-arm64.tar.gz"
+checksum = "sha256:f9d67b4a1e2a7d88e6360b3e9a5efe9ab6c4e1cf6d0fa45d2740adfa8528d55b"
+url = "https://github.com/hetznercloud/cli/releases/download/v1.66.0/hcloud-linux-arm64.tar.gz"
 
 [tools.hcloud."platforms.linux-x64"]
-checksum = "sha256:f78d2db65b7ab58603d343739cb4397e13acef23182e41692a06e147a8d4c011"
-url = "https://github.com/hetznercloud/cli/releases/download/v1.65.0/hcloud-linux-amd64.tar.gz"
+checksum = "sha256:8b1a8598858232c491f58cbf65ce1bd0ec6f725114bb62ec967a20ab03e29a86"
+url = "https://github.com/hetznercloud/cli/releases/download/v1.66.0/hcloud-linux-amd64.tar.gz"
 
 [tools.hcloud."platforms.linux-x64-baseline"]
-checksum = "sha256:f78d2db65b7ab58603d343739cb4397e13acef23182e41692a06e147a8d4c011"
-url = "https://github.com/hetznercloud/cli/releases/download/v1.65.0/hcloud-linux-amd64.tar.gz"
+checksum = "sha256:8b1a8598858232c491f58cbf65ce1bd0ec6f725114bb62ec967a20ab03e29a86"
+url = "https://github.com/hetznercloud/cli/releases/download/v1.66.0/hcloud-linux-amd64.tar.gz"
 
 [tools.hcloud."platforms.linux-x64-musl"]
-checksum = "sha256:f78d2db65b7ab58603d343739cb4397e13acef23182e41692a06e147a8d4c011"
-url = "https://github.com/hetznercloud/cli/releases/download/v1.65.0/hcloud-linux-amd64.tar.gz"
+checksum = "sha256:8b1a8598858232c491f58cbf65ce1bd0ec6f725114bb62ec967a20ab03e29a86"
+url = "https://github.com/hetznercloud/cli/releases/download/v1.66.0/hcloud-linux-amd64.tar.gz"
 
 [tools.hcloud."platforms.linux-x64-musl-baseline"]
-checksum = "sha256:f78d2db65b7ab58603d343739cb4397e13acef23182e41692a06e147a8d4c011"
-url = "https://github.com/hetznercloud/cli/releases/download/v1.65.0/hcloud-linux-amd64.tar.gz"
+checksum = "sha256:8b1a8598858232c491f58cbf65ce1bd0ec6f725114bb62ec967a20ab03e29a86"
+url = "https://github.com/hetznercloud/cli/releases/download/v1.66.0/hcloud-linux-amd64.tar.gz"
 
 [tools.hcloud."platforms.macos-arm64"]
-checksum = "sha256:d48c5cc9aecd6779658e859c136774ee6e5054baeaf91f087577feb05edef990"
-url = "https://github.com/hetznercloud/cli/releases/download/v1.65.0/hcloud-darwin-arm64.tar.gz"
+checksum = "sha256:b602f1e0d9d0ea6cb721e297688f61adb5508247ff8867c87778a2449fa2fcce"
+url = "https://github.com/hetznercloud/cli/releases/download/v1.66.0/hcloud-darwin-arm64.tar.gz"
 
 [tools.hcloud."platforms.macos-x64"]
-checksum = "sha256:939c5621146a48c369f850a00c461beb0abc059277a655cf4c27c021249b94ab"
-url = "https://github.com/hetznercloud/cli/releases/download/v1.65.0/hcloud-darwin-amd64.tar.gz"
+checksum = "sha256:3927d536d4c930dcd2a4e0826ec07f5feb341540a08254a7676bc60882bdfec2"
+url = "https://github.com/hetznercloud/cli/releases/download/v1.66.0/hcloud-darwin-amd64.tar.gz"
 
 [tools.hcloud."platforms.macos-x64-baseline"]
-checksum = "sha256:939c5621146a48c369f850a00c461beb0abc059277a655cf4c27c021249b94ab"
-url = "https://github.com/hetznercloud/cli/releases/download/v1.65.0/hcloud-darwin-amd64.tar.gz"
+checksum = "sha256:3927d536d4c930dcd2a4e0826ec07f5feb341540a08254a7676bc60882bdfec2"
+url = "https://github.com/hetznercloud/cli/releases/download/v1.66.0/hcloud-darwin-amd64.tar.gz"
 
 [tools.hcloud."platforms.windows-x64"]
-checksum = "sha256:7fc3783f70ecb57a4fdf81560871adefc8a6696c33f5b6fefc0efe1b0578e2a2"
-url = "https://github.com/hetznercloud/cli/releases/download/v1.65.0/hcloud-windows-amd64.zip"
+checksum = "sha256:15b4ecf8d57c993f6987530ad1910f1167edf71f702696710d5420bdf0de7639"
+url = "https://github.com/hetznercloud/cli/releases/download/v1.66.0/hcloud-windows-amd64.zip"
 
 [tools.hcloud."platforms.windows-x64-baseline"]
-checksum = "sha256:7fc3783f70ecb57a4fdf81560871adefc8a6696c33f5b6fefc0efe1b0578e2a2"
-url = "https://github.com/hetznercloud/cli/releases/download/v1.65.0/hcloud-windows-amd64.zip"
+checksum = "sha256:15b4ecf8d57c993f6987530ad1910f1167edf71f702696710d5420bdf0de7639"
+url = "https://github.com/hetznercloud/cli/releases/download/v1.66.0/hcloud-windows-amd64.zip"
 
 [[tools.hk]]
 version = "1.48.0"
@@ -811,52 +811,52 @@ url = "https://github.com/ggml-org/llama.cpp/releases/download/b9632/llama-b9632
 url_api = "https://api.github.com/repos/ggml-org/llama.cpp/releases/assets/447367944"
 
 [[tools.node]]
-version = "26.3.1"
+version = "26.4.0"
 backend = "core:node"
 
 [tools.node."platforms.linux-arm64"]
-checksum = "sha256:2f0829b201e9db20996ae15bce62138df1e3d317775b005778b05cf7b19714f1"
-url = "https://nodejs.org/dist/v26.3.1/node-v26.3.1-linux-arm64.tar.gz"
+checksum = "sha256:773d9ec67266838270ddc105c2548ae8aaff28bc8fe6f34c55d1094043c4165e"
+url = "https://nodejs.org/dist/v26.4.0/node-v26.4.0-linux-arm64.tar.gz"
 
 [tools.node."platforms.linux-arm64-musl"]
-checksum = "sha256:e9d31a59e9164ad4be47e3148fc54964a9c275394f367e127eed1a0b3009c706"
-url = "https://unofficial-builds.nodejs.org/download/release/v26.3.1/node-v26.3.1-linux-arm64-musl.tar.gz"
+checksum = "sha256:d2ad8c6e9fa955edf0337078c1d1acda345d36a84986b218cce3cfd1d2d26920"
+url = "https://unofficial-builds.nodejs.org/download/release/v26.4.0/node-v26.4.0-linux-arm64-musl.tar.gz"
 
 [tools.node."platforms.linux-x64"]
-checksum = "sha256:e892cd615e637edebcf22f9653d80fba63167ad6754d20881fd52cc37be81441"
-url = "https://nodejs.org/dist/v26.3.1/node-v26.3.1-linux-x64.tar.gz"
+checksum = "sha256:f221dab30d0e9d544332f06fbee2c62186c97d864d5cac8482dba34f1e38b8dc"
+url = "https://nodejs.org/dist/v26.4.0/node-v26.4.0-linux-x64.tar.gz"
 
 [tools.node."platforms.linux-x64-baseline"]
-checksum = "sha256:e892cd615e637edebcf22f9653d80fba63167ad6754d20881fd52cc37be81441"
-url = "https://nodejs.org/dist/v26.3.1/node-v26.3.1-linux-x64.tar.gz"
+checksum = "sha256:f221dab30d0e9d544332f06fbee2c62186c97d864d5cac8482dba34f1e38b8dc"
+url = "https://nodejs.org/dist/v26.4.0/node-v26.4.0-linux-x64.tar.gz"
 
 [tools.node."platforms.linux-x64-musl"]
-checksum = "sha256:4d1a7bebcc0ee2534edc2d5f93cad34435ed4b601766d26b706c043727d4cca5"
-url = "https://unofficial-builds.nodejs.org/download/release/v26.3.1/node-v26.3.1-linux-x64-musl.tar.gz"
+checksum = "sha256:554e960f6570bd3d1987f5170d8f2a373a21818581a8d307b697e7839988314a"
+url = "https://unofficial-builds.nodejs.org/download/release/v26.4.0/node-v26.4.0-linux-x64-musl.tar.gz"
 
 [tools.node."platforms.linux-x64-musl-baseline"]
-checksum = "sha256:4d1a7bebcc0ee2534edc2d5f93cad34435ed4b601766d26b706c043727d4cca5"
-url = "https://unofficial-builds.nodejs.org/download/release/v26.3.1/node-v26.3.1-linux-x64-musl.tar.gz"
+checksum = "sha256:554e960f6570bd3d1987f5170d8f2a373a21818581a8d307b697e7839988314a"
+url = "https://unofficial-builds.nodejs.org/download/release/v26.4.0/node-v26.4.0-linux-x64-musl.tar.gz"
 
 [tools.node."platforms.macos-arm64"]
-checksum = "sha256:3f624ab0d774553c0d28b968e141d8c676a35a2811fb0b7b356ba9cbdce15f74"
-url = "https://nodejs.org/dist/v26.3.1/node-v26.3.1-darwin-arm64.tar.gz"
+checksum = "sha256:4f4fbcacf6b1ff1a95deedba7bd7b2d79efecaa53a8ecb0530546dc9063fefbc"
+url = "https://nodejs.org/dist/v26.4.0/node-v26.4.0-darwin-arm64.tar.gz"
 
 [tools.node."platforms.macos-x64"]
-checksum = "sha256:3ec9e5a28c641c088f3d04ad38721bfdedb2f8aa8c031979fa93df08b5a92e58"
-url = "https://nodejs.org/dist/v26.3.1/node-v26.3.1-darwin-x64.tar.gz"
+checksum = "sha256:eb3bdd8dec3ff2558ee10e284da7d2a3865af0cbda21f06d397b0265837c641e"
+url = "https://nodejs.org/dist/v26.4.0/node-v26.4.0-darwin-x64.tar.gz"
 
 [tools.node."platforms.macos-x64-baseline"]
-checksum = "sha256:3ec9e5a28c641c088f3d04ad38721bfdedb2f8aa8c031979fa93df08b5a92e58"
-url = "https://nodejs.org/dist/v26.3.1/node-v26.3.1-darwin-x64.tar.gz"
+checksum = "sha256:eb3bdd8dec3ff2558ee10e284da7d2a3865af0cbda21f06d397b0265837c641e"
+url = "https://nodejs.org/dist/v26.4.0/node-v26.4.0-darwin-x64.tar.gz"
 
 [tools.node."platforms.windows-x64"]
-checksum = "sha256:45001b289ebffe7b22260898f3750059183d8246042b88e8ffa4337e65e6763e"
-url = "https://nodejs.org/dist/v26.3.1/node-v26.3.1-win-x64.zip"
+checksum = "sha256:5f87d038c6ec442aa46b9126f8ca170acbd2f3b9b9152ca798cf54596a31e214"
+url = "https://nodejs.org/dist/v26.4.0/node-v26.4.0-win-x64.zip"
 
 [tools.node."platforms.windows-x64-baseline"]
-checksum = "sha256:45001b289ebffe7b22260898f3750059183d8246042b88e8ffa4337e65e6763e"
-url = "https://nodejs.org/dist/v26.3.1/node-v26.3.1-win-x64.zip"
+checksum = "sha256:5f87d038c6ec442aa46b9126f8ca170acbd2f3b9b9152ca798cf54596a31e214"
+url = "https://nodejs.org/dist/v26.4.0/node-v26.4.0-win-x64.zip"
 
 [[tools."npm:pagefind"]]
 version = "1.5.2"
