@@ -100,6 +100,15 @@ Mutation testing and fuzzing are contributor requirements, not maintainer-only t
 External contributors run them
 and are held to at least the bar the maintainer holds for themselves.
 Rationale, in the maintainer's words: no point holding external contributors to a lower bar.
+
+Enforced twice over.
+The contributor runs the touched package's mutation and fuzz tasks and supplies the passing result,
+so the cost sits on the contributor, per the spine.
+CI then re-runs them,
+so a contributor who claims green falsely is caught by the machine, not taken on trust.
+Coverage is per-package today,
+but the plan is to make mutation and fuzz exist almost everywhere,
+so the bar trends universal rather than uneven.
 Background: [`docs/decisions/mutation-testing.md`](../decisions/mutation-testing.md).
 
 ### Provenance warranty
@@ -122,6 +131,8 @@ Each item is an attack the comic or its comment thread named, paired with this r
 - Tests that look like tests but assert nothing:
   Stryker mutation testing and fast-check fuzzing require that a test kill mutants
   and survive generated input, not merely execute lines.
+- Faked green (a contributor claims the tests pass but they do not):
+  CI re-runs mutation and fuzz, so a false claim is caught by the machine, not taken on trust.
 - Gameable crowd rating:
   there is no crowd, only one machine and one named judge, neither sockpuppetable.
 - Flood or denial-of-service against the gate (infinite LLM output, finite evaluation):
@@ -136,14 +147,11 @@ Each item is an attack the comic or its comment thread named, paired with this r
 
 ## Open items and tensions
 
-- Test-quality enforceability:
-  the mutation-testing decision doc describes mutation runs as opt-in and expensive
-  (Podman, baked runtime images, one Stryker session per source file).
-  Requiring every external contributor to run them needs a practical path:
-  what exactly contributors run, whether CI runs it,
-  and what "the same bar I hold myself to" means
-  when the maintainer's own mutation runs are opt-in.
-  Resolve before `CONTRIBUTING.md` claims it.
+- Code of conduct:
+  not yet decided.
+  The machine-plus-judge design enforces constructiveness through gates, not social rules,
+  so a traditional code of conduct may be redundant;
+  flagged for an explicit keep-or-drop call before the policy ships.
 - Visibility of this doc:
   it is committed, so it is repo-visible.
   The threat model is mild to expose, but if exposure is unwanted, rename to `.local.md`.
@@ -178,6 +186,11 @@ Each item is an attack the comic or its comment thread named, paired with this r
   Captured voice, placement, depth, bot stance, approval workflow, size,
   tiny-fix carve-out, rules-only public doc, warm maintainer obligation,
   mutation and fuzz contributor bar, provenance warranty, footnote.
+- 2026-06-26:
+  resolved the test-quality enforcement open item.
+  Contributor supplies the passing mutation and fuzz result, CI re-runs to catch a faked green;
+  harnesses are being rolled out toward almost every package.
+  Added a code-of-conduct keep-or-drop open item.
 
 [xkcd-810]: https://xkcd.com/810/
 [explain-810]: https://www.explainxkcd.com/wiki/index.php/810:_Constructive
