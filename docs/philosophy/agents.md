@@ -19,13 +19,6 @@ This philosophy doc and every other doc under `docs/` stay normal prose: referen
 Never compress away the load-bearing strings: tokens, paths, commands, identifiers; code blocks; section headings (external and internal cross-references resolve by name); the verbatim "Hedge phrases that signal a skipped step" list (a hook matches it literally).
 Caveman compresses prose, never the strings the rules act on.
 
-## Changelog policy
-
-Changelogs are transient here, not permanent.
-After an AGENTS.md change lands, add a `## Changelog` entry at the end of this doc describing what changed and why, commit the doc so git preserves the entry, then remove the entry and commit again.
-This keeps the doc short while git history retains every changelog for future readers (`git log -p docs/philosophy/agents.md`).
-Never let `## What was compressed`-style narratives accumulate here; the four prior ones were removed when this policy took effect and remain recoverable from history.
-
 ## What does not belong
 
 ### Skill invocation pointers
