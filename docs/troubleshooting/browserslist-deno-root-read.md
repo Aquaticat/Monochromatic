@@ -11,11 +11,59 @@ Requested by `node:fs.existsSync()` API.
 
 The prompt appears after Deno has already granted read access to the repo and its parent directories.
 It is not emitted by this repo's `existsSync` usage in generated mise tasks.
-It is emitted while resolving Browserslist targets from `file-enforcer.config.ts`.
+It was emitted while resolving Browserslist targets from `file-enforcer.config.ts`.
 
-## Root cause
+## Current repo status
 
-`file-enforcer.config.ts:279-282` calls Browserslist with no explicit query and with `path` set to the repo root:
+Fixed in `file-enforcer.config.ts`.
+The config now reads the checked-in `.browserslistrc` path directly:
+`file-enforcer.config.ts:29-37`.
+
+```ts
+const BROWSERSLIST_CONFIG_PATH = './.browserslistrc';
+```
+
+It parses that content without Browserslist config discovery, selects a deterministic section, and passes direct
+queries into Browserslist.
+`file-enforcer.config.ts:200-219`:
+
+```ts
+function selectBrowserslistQueries(
+  { config, }: { readonly config: browserslist.Config; },
+): readonly string[] {
+  return config[BROWSERSLIST_CONFIG_ENVIRONMENT]
+    ?? config.defaults;
+}
+```
+
+The Browserslist API call disables both path-based config discovery and stats-file discovery at the boundary.
+`file-enforcer.config.ts:326-347`:
+
+```ts
+const browserslistConfig = resolveBrowserslist.parseConfig(
+  await cat([BROWSERSLIST_CONFIG_PATH,],),
+);
+const targets = resolveBrowserslist(
+  selectBrowserslistQueries({ config: browserslistConfig, },),
+  {
+    path: false,
+    stats: EMPTY_BROWSERSLIST_STATS,
+  },
+);
+```
+
+`EMPTY_BROWSERSLIST_STATS` is an explicit empty stats object, so Browserslist has no reason to search ancestor
+folders for `browserslist-stats.json`.
+`file-enforcer.config.ts:51-60`:
+
+```ts
+const EMPTY_BROWSERSLIST_STATS: browserslist.Stats = {};
+```
+
+## Historical root cause
+
+Before the repo-side fix, `file-enforcer.config.ts` called Browserslist with no explicit query and with `path` set
+to the repo root:
 
 ```ts
 const targets = resolveBrowserslist(
@@ -246,7 +294,28 @@ browserslist(undefined, { config: '/var/home/user/Monochromatic/.browserslistrc'
 TS
 ```
 
-Working catalog:
+Working catalog for the current repo config:
+
+```sh
+cd /tmp/agent/monochromatic-file-enforcer-browserslist-20260626
+XDG_CONFIG_HOME=/tmp/agent/monochromatic-file-enforcer-browserslist-20260626/xdg-config \
+  DENO_TRACE_PERMISSIONS=1 deno run \
+  --no-prompt \
+  --allow-env \
+  --allow-sys=homedir \
+  --allow-read=/tmp/agent/monochromatic-file-enforcer-browserslist-20260626,/var/home/user/Monochromatic/node_modules \
+  --allow-write=/tmp/agent/monochromatic-file-enforcer-browserslist-20260626 \
+  file-enforcer.config.ts
+```
+
+The command exits successfully without read access to `/`.
+It generated the same `.browserslistrc.resolved.local.json` content as the main worktree:
+
+```text
+c41308d4c1442e25524d0d1732ea3472cf0ac8ddc82e72b3dbf9e6d76c4e79cc  .browserslistrc.resolved.local.json
+```
+
+Working catalog for the upstream-provided environment boundary:
 
 ```sh
 BROWSERSLIST_ROOT_PATH=/var/home/user/Monochromatic \
@@ -285,7 +354,10 @@ That command also exits successfully.
 
 ## Verified workarounds
 
-Use `BROWSERSLIST_ROOT_PATH` when invoking the Deno file-enforcer command:
+This repo now uses the consumer-side code fix from "Current repo status" rather than requiring a shell
+workaround.
+
+For callers that still use Browserslist discovery, set `BROWSERSLIST_ROOT_PATH`:
 
 ```sh
 BROWSERSLIST_ROOT_PATH=. deno file-enforcer.config.ts
