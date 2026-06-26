@@ -317,10 +317,6 @@ CK3:
  Estimated difficulty of fix you haven't built?
  Drop estimate.
 
-CK4:
- Used hedge phrase (see "Hedge phrases that signal a skipped step")?
- Verify or remove.
-
 CK5:
  Assumed measurable fact about user's environment (codebase size,
  deps,
@@ -469,93 +465,6 @@ OPI:
  B > A > C,
  because ..." line explaining each step of order,
  not just top pick.
-
-### Hedge phrases that signal a skipped step
-
-HDG:
- Don't write these;
- do the step instead.
- Catch before sending.
-
-HG1:
- "probably small/large/fast/slow",
- "the fix is probably small":
- run measurement,
- or read source path + drop estimate.
-
-HG2:
- "I think it's a...":
- verify or label guess.
-
-HG3:
- "the most likely cause is...":
- reproduce,
- or list candidates without ranking.
-
-HG4:
- "for a small codebase like yours":
- run `tokei` first.
-
-HG5:
- "better/worse than most/typical/average X",
- "the most likely X" / "the most common Y" as unnamed-population ranking:
- name comparison set or drop comparative.
-
-HG6:
- "almost certainly",
- "most likely X lives/is/exists in Y":
- fetch named target instead of stating probability about its contents.
-
-HG7:
- "this is a tractable PR":
- drop "tractable" or build fix.
-
-HG8:
- "should be straightforward":
- drop "straightforward" or test path.
-
-HG9:
- "no public diagnosis exists" as stopping point:
- drop,
- or follow `troubleshooting-doc` investigation path.
-
-HGA:
- "an afternoon" or any duration estimate:
- drop unless you built similar fix in this codebase before.
-
-HGB:
- "the project doesn't use X" / "we don't use X" / "the codebase doesn't have X" cutting off candidate:
- cite `rg`/`find`/config read (AGENTS.
-md + tsconfig count) or drop dismissal.
-
-HGC:
- "X is already handled by Y" / "X is already covered by Y":
- pair with Y's config/source path + line confirming overlap,
- or drop it.
-
-HGD:
- "I don't know your specific X" / "I'd need data on your Y" / "this depends on your specific Z that I don't have" deferring on working history,
- defect rate,
- throughput,
- hours,
- parallel sessions:
- `git log`,
- `gh issue list`,
- file mtimes record these;
- measure before concluding.
-
-HUC:
- **Exception:
- genuine uncertainty.
-** When honest answer is "I do not know,
- genuinely under-determined after investigation,
-" state it:
- name what you investigated + what stays unresolved.
-Target is hedging as substitute for research,
- not honest reporting after it.
-"I read X.
-ts:
-42 and the type is A or B depending on a runtime branch I cannot determine statically" is not a hedge.
 
 ### Exhaust evidence layers when assessing system usage
 
