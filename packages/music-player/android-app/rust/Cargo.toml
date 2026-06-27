@@ -4,6 +4,9 @@ version = "0.1.0"
 edition = "2021"
 publish = false
 
+[lints.clippy]
+disallowed_methods = "deny"
+
 # Standalone crate: this Android package is a Gradle island that no parent cargo
 # workspace owns. An empty [workspace] table pins this crate as its own root, so a
 # future ancestor Cargo.toml cannot silently absorb it.

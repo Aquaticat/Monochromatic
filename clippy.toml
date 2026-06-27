@@ -1,0 +1,6 @@
+# Clippy lint-parameter config.
+# What: ban panic-on-error Result::unwrap without also banning Option::unwrap.
+# Why: callers should propagate errors with ? or document intentional panics with expect.
+disallowed-methods = [
+  { path = "std::result::Result::unwrap", reason = "handle errors with ? or explain intentional panic with expect" },
+]

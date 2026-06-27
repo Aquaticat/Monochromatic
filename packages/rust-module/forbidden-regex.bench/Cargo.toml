@@ -8,6 +8,9 @@ description = "Throughput benchmark comparing forbidden-regex against the regex 
 # `cargo run` (the mise `bench` task) would be ambiguous; pin the throughput bench.
 default-run = "forbidden-regex-bench"
 
+[lints.clippy]
+disallowed_methods = "deny"
+
 [[bin]]
 name = "forbidden-regex-bench"
 path = "src/main.rs"

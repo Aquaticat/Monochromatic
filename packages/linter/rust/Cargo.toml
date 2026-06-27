@@ -16,6 +16,9 @@ readme = "README.md"
 repository = "https://github.com/Aquaticat/Monochromatic.git"
 description = "Pluggable Rust linter written in Rust. First rule: max-lines, a per-file code-line budget mirroring oxlint's eslint/max-lines for TypeScript."
 
+[lints.clippy]
+disallowed_methods = "deny"
+
 [lib]
 name = "monochromatic_rust_linter"
 path = "src/lib.rs"

@@ -11,6 +11,9 @@ license = "LGPL-3.0-or-later"
 publish = false
 description = "Shared true-peak meter, attenuate-only gain math, and versioned policy identity for the desktop and Android music players. Catmull-Rom inter-sample peak estimation feeding a -1 dBTP normalization gain."
 
+[lints.clippy]
+disallowed_methods = "deny"
+
 # Standalone crate: there is no root Cargo workspace in this repo, and the Android
 # package is its own Gradle island with an empty [workspace] table. Pinning this
 # crate as its own workspace root keeps its target/ and Cargo.lock local and stops a
