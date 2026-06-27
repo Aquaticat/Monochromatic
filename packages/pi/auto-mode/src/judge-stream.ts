@@ -115,7 +115,7 @@ class JudgeJsonNoTextError extends Error {
    */
   constructor() {
     super(JUDGE_JSON_NO_TEXT_ERROR_MESSAGE,);
-    this.name = JudgeJsonNoTextError.name;
+    this.name = 'JudgeJsonNoTextError';
   }
 }
 
