@@ -117,7 +117,7 @@ const ADVISOR_API_STREAMS: ReadonlyMap<string, ProviderStreams> = new Map([
  *
  * @param context - provider context
  *
- * @param options - provider stream options with resolved auth
+ * @param providerOptions - provider stream options with resolved auth
  *
  * @returns final assistant message from matching pi-ai API implementation
  *
@@ -125,7 +125,7 @@ const ADVISOR_API_STREAMS: ReadonlyMap<string, ProviderStreams> = new Map([
  *
  * @example
  * ```typescript
- * const message = await defaultCompleteAdvisorModel(model, context, options);
+ * const message = await defaultCompleteAdvisorModel({ model, context, providerOptions });
  * ```
  */
 async function defaultCompleteAdvisorModel(

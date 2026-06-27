@@ -22,15 +22,22 @@
  * ```
  */
 
-import type { DummyRule, } from 'oxlint';
+import type { DummyRuleMap, } from 'oxlint';
 
 import { libAllowSpecifiers, } from './prefer-readonly-parameter-types.allow-lib.ts';
 import { packageAllowSpecifiers, } from './prefer-readonly-parameter-types.allow-pkg.ts';
 
 /**
+ * Strong oxlint config entry type for `typescript/prefer-readonly-parameter-types`.
+ */
+type PreferReadonlyParameterTypesRule = NonNullable<
+  DummyRuleMap['typescript/prefer-readonly-parameter-types']
+>;
+
+/**
  * Rule entry for `typescript/prefer-readonly-parameter-types`.
  */
-export const preferReadonlyParameterTypesRule: DummyRule = [
+export const preferReadonlyParameterTypesRule: PreferReadonlyParameterTypesRule = [
   'warn',
   {
     allow: [
