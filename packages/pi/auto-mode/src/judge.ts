@@ -12,8 +12,17 @@ import type {
   Api,
   AssistantMessageEvent,
   Model,
+  ProviderStreams,
 } from '@earendil-works/pi-ai';
-import { streamSimple, } from '@earendil-works/pi-ai/compat';
+import { anthropicMessagesApi, } from '@earendil-works/pi-ai/api/anthropic-messages.lazy';
+import { azureOpenAIResponsesApi, } from '@earendil-works/pi-ai/api/azure-openai-responses.lazy';
+import { bedrockConverseStreamApi, } from '@earendil-works/pi-ai/api/bedrock-converse-stream.lazy';
+import { googleGenerativeAIApi, } from '@earendil-works/pi-ai/api/google-generative-ai.lazy';
+import { googleVertexApi, } from '@earendil-works/pi-ai/api/google-vertex.lazy';
+import { mistralConversationsApi, } from '@earendil-works/pi-ai/api/mistral-conversations.lazy';
+import { openAICodexResponsesApi, } from '@earendil-works/pi-ai/api/openai-codex-responses.lazy';
+import { openAICompletionsApi, } from '@earendil-works/pi-ai/api/openai-completions.lazy';
+import { openAIResponsesApi, } from '@earendil-works/pi-ai/api/openai-responses.lazy';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
   toolChoiceForApi,
@@ -50,10 +59,72 @@ const l = tagged({
  *
  * @example
  * ```typescript
- * const streamFn: JudgeStreamSimple = streamSimple;
+ * const streamFn: JudgeStreamSimple = defaultJudgeStreamSimple;
  * ```
  */
-type JudgeStreamSimple = typeof streamSimple;
+type JudgeStreamSimple = ProviderStreams['streamSimple'];
+
+/**
+ * Non-compat pi-ai API streams supported by the judge.
+ *
+ * Direct API dispatch preserves registry-selected custom model records because
+ * auto-mode already resolves API keys and headers before calling the judge.
+ *
+ * @example
+ * ```typescript
+ * const streams = JUDGE_API_STREAMS.get('openai-completions');
+ * ```
+ */
+const JUDGE_API_STREAMS: ReadonlyMap<string, ProviderStreams> = new Map([
+  ['anthropic-messages', anthropicMessagesApi(),],
+  ['azure-openai-responses', azureOpenAIResponsesApi(),],
+  ['bedrock-converse-stream', bedrockConverseStreamApi(),],
+  ['google-generative-ai', googleGenerativeAIApi(),],
+  ['google-vertex', googleVertexApi(),],
+  ['mistral-conversations', mistralConversationsApi(),],
+  ['openai-codex-responses', openAICodexResponsesApi(),],
+  ['openai-completions', openAICompletionsApi(),],
+  ['openai-responses', openAIResponsesApi(),],
+],);
+
+/**
+ * Stream through pi-ai's direct non-compat API implementation for the model API.
+ *
+ * @param model - selected judge model
+ *
+ * @param context - context handed to pi-ai streamSimple
+ *
+ * @param options - simple stream options with resolved auth
+ *
+ * @returns assistant event stream from matching pi-ai API implementation
+ *
+ * @throws when model API has no direct implementation registered for auto-mode
+ *
+ * @example
+ * ```typescript
+ * const stream = defaultJudgeStreamSimple(model, context, options);
+ * ```
+ */
+const defaultJudgeStreamSimple: JudgeStreamSimple = function defaultJudgeStreamSimple(
+  model,
+  context,
+  options,
+) {
+  /**
+   * Direct API stream implementation matching the selected judge model.
+   */
+  const streams = JUDGE_API_STREAMS.get(model.api,);
+  if (streams === undefined) {
+    throw new Error(
+      `No pi-ai API implementation available for judge model api "${model.api}" (${model.provider}/${model.id})`,
+    );
+  }
+  return streams.streamSimple(
+    model,
+    context,
+    options,
+  );
+};
 
 //region Public API
 
@@ -111,7 +182,7 @@ async function callJudge(
     timeoutMs,
     systemPrompt,
     batchContext,
-    streamSimpleFn = streamSimple,
+    streamSimpleFn = defaultJudgeStreamSimple,
   }: {
     readonly model: Model<Api>;
     readonly auth: BudgetModelAuth;
