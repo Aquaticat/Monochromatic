@@ -7,11 +7,11 @@
 import {
   type Api,
   type AssistantMessage,
-  complete,
   type Message,
   type Model,
   type ProviderStreamOptions,
 } from '@earendil-works/pi-ai';
+import { complete, } from '@earendil-works/pi-ai/compat';
 import type { ExtensionContext, } from '@earendil-works/pi-coding-agent';
 import type { ReadonlyDeep, } from 'type-fest';
 import { ADVISOR_SYSTEM_PROMPT, } from './constants.ts';
