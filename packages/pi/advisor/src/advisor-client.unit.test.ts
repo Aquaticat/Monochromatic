@@ -44,6 +44,9 @@ const ADVISOR_OUTPUT_TOKENS = 100;
 /** Focused question fixture. */
 const FOCUS_QUESTION = 'Which assumption is weakest?';
 
+/** Provider call count expected after one no-text retry. */
+const RETRY_PROVIDER_CALL_COUNT = 2;
+
 //endregion Constants
 
 //region Fixtures
@@ -122,6 +125,12 @@ const assistantMessage: AssistantMessage = {
   timestamp: 0,
 };
 
+/** Fixture assistant message without text content. */
+const emptyAssistantMessage: AssistantMessage = {
+  ...assistantMessage,
+  content: [],
+};
+
 /** Fixture extension context with auth lookup. */
 const extensionContext: ExtensionContext = {
   modelRegistry: {
@@ -159,6 +168,45 @@ function createCapturingCompleteModel(
     void model;
     contexts.push(context,);
     return assistantMessage;
+  };
+}
+
+/**
+ * Build fake complete implementation returning responses in call order.
+ *
+ * @param contexts - mutable capture sink for provider contexts
+ *
+ * @param responses - provider responses returned in order
+ *
+ * @returns fake complete implementation
+ */
+function createSequencedCompleteModel(
+  {
+    contexts,
+    responses,
+  }: {
+    readonly contexts: Context[];
+    readonly responses: readonly AssistantMessage[];
+  },
+): CompleteAdvisorModel {
+  /**
+   * Next response index to return.
+   */
+  let callIndex = 0;
+  return async function completeModel(
+    model,
+    context,
+  ) {
+    void model;
+    contexts.push(context,);
+    /**
+     * Response selected for this provider invocation.
+     */
+    const response = responses[callIndex];
+    callIndex += 1;
+    if (response === undefined)
+      throw new Error('fake complete was called too many times',);
+    return response;
   };
 }
 
@@ -200,6 +248,32 @@ await describe({
         expect(firstBlock.text,).toContain(FOCUS_QUESTION,);
         expect(firstBlock.text,).toContain('## Serialized conversation',);
         expect(firstBlock.text,).toContain(advisorContext.text,);
+      },
+    },),
+    it({
+      name: 'retries once when provider returns no text',
+      fn: async function testNoTextRetry() {
+        /** Captured provider contexts. */
+        const contexts: Context[] = [];
+        /** Fake complete implementation returning no text then text. */
+        const completeModel = createSequencedCompleteModel({
+          contexts,
+          responses: [
+            emptyAssistantMessage,
+            assistantMessage,
+          ],
+        },);
+
+        const result = await completeAdvisor({
+          ctx: extensionContext,
+          model: fixtureModel,
+          config: advisorConfig,
+          advisorContext,
+          completeModel,
+        },);
+
+        expect(result,).toEqual(assistantMessage,);
+        expect(contexts.length,).toBe(RETRY_PROVIDER_CALL_COUNT,);
       },
     },),
   ],

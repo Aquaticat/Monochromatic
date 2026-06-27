@@ -147,13 +147,33 @@ export async function completeAdvisor(
   const completeModel = options.completeModel
     ?? complete;
 
+  /**
+   * Provider context shared by initial call and retry.
+   */
+  const providerContext = {
+    systemPrompt: buildAdvisorSystemPrompt(options.config,),
+    messages: [userMessage,],
+  };
+
   try {
+    /**
+     * Initial provider response from selected Advisor model.
+     */
+    const firstResponse = await completeModel(
+      mutableModel,
+      providerContext,
+      providerOptions,
+    );
+    if (firstResponse.content.some(function hasTextContent(block,) {
+      return block.type
+        === 'text'
+        && block.text !== '';
+    },))
+      return firstResponse;
+
     return await completeModel(
       mutableModel,
-      {
-        systemPrompt: buildAdvisorSystemPrompt(options.config,),
-        messages: [userMessage,],
-      },
+      providerContext,
       providerOptions,
     );
   }
