@@ -11,8 +11,11 @@
 import type {
   Api,
   AssistantMessageEvent,
+  AssistantMessageEventStream,
+  Context,
   Model,
   ProviderStreams,
+  SimpleStreamOptions,
 } from '@earendil-works/pi-ai';
 import { anthropicMessagesApi, } from '@earendil-works/pi-ai/api/anthropic-messages.lazy';
 import { azureOpenAIResponsesApi, } from '@earendil-works/pi-ai/api/azure-openai-responses.lazy';
@@ -76,15 +79,42 @@ type JudgeStreamSimple = ProviderStreams['streamSimple'];
  * ```
  */
 const JUDGE_API_STREAMS: ReadonlyMap<string, ProviderStreams> = new Map([
-  ['anthropic-messages', anthropicMessagesApi(),],
-  ['azure-openai-responses', azureOpenAIResponsesApi(),],
-  ['bedrock-converse-stream', bedrockConverseStreamApi(),],
-  ['google-generative-ai', googleGenerativeAIApi(),],
-  ['google-vertex', googleVertexApi(),],
-  ['mistral-conversations', mistralConversationsApi(),],
-  ['openai-codex-responses', openAICodexResponsesApi(),],
-  ['openai-completions', openAICompletionsApi(),],
-  ['openai-responses', openAIResponsesApi(),],
+  [
+    'anthropic-messages',
+    anthropicMessagesApi(),
+  ],
+  [
+    'azure-openai-responses',
+    azureOpenAIResponsesApi(),
+  ],
+  [
+    'bedrock-converse-stream',
+    bedrockConverseStreamApi(),
+  ],
+  [
+    'google-generative-ai',
+    googleGenerativeAIApi(),
+  ],
+  [
+    'google-vertex',
+    googleVertexApi(),
+  ],
+  [
+    'mistral-conversations',
+    mistralConversationsApi(),
+  ],
+  [
+    'openai-codex-responses',
+    openAICodexResponsesApi(),
+  ],
+  [
+    'openai-completions',
+    openAICompletionsApi(),
+  ],
+  [
+    'openai-responses',
+    openAIResponsesApi(),
+  ],
 ],);
 
 /**
@@ -105,11 +135,11 @@ const JUDGE_API_STREAMS: ReadonlyMap<string, ProviderStreams> = new Map([
  * const stream = defaultJudgeStreamSimple(model, context, options);
  * ```
  */
-const defaultJudgeStreamSimple: JudgeStreamSimple = function defaultJudgeStreamSimple(
-  model,
-  context,
-  options,
-) {
+function defaultJudgeStreamSimple(
+  model: Model<Api>,
+  context: Context,
+  options?: SimpleStreamOptions,
+): AssistantMessageEventStream {
   /**
    * Direct API stream implementation matching the selected judge model.
    */
@@ -124,7 +154,7 @@ const defaultJudgeStreamSimple: JudgeStreamSimple = function defaultJudgeStreamS
     context,
     options,
   );
-};
+}
 
 //region Public API
 
