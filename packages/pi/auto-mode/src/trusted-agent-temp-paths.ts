@@ -8,7 +8,7 @@
  * @module
  */
 
-import { realpathSync, } from 'node:fs';
+import { realpath, } from 'node:fs/promises';
 import * as nodePath from 'node:path';
 
 import { SECRET_VAR_PATTERN, } from './constants.ts';
@@ -54,7 +54,7 @@ type RealpathResult = string | typeof REALPATH_UNAVAILABLE;
  * isExistingNonSecretTrustedAgentTempPath({ filePath, ctx, trustedAgentTempDirs });
  * ```
  */
-function isExistingNonSecretTrustedAgentTempPath(
+async function isExistingNonSecretTrustedAgentTempPath(
   {
     filePath,
     ctx,
@@ -64,20 +64,20 @@ function isExistingNonSecretTrustedAgentTempPath(
     readonly ctx: SignalContext;
     readonly trustedAgentTempDirs: readonly string[];
   },
-): boolean {
-  if (!isExistingPathUnderTrustedAgentTemp({
+): Promise<boolean> {
+  if (!(await isExistingPathUnderTrustedAgentTemp({
     filePath,
     ctx,
     trustedAgentTempDirs,
-  },)) {
+  },))) {
     return false;
   }
 
-  return !pathSignals({
+  return !(await pathSignals({
     filePath,
     ctx,
     allowlistedDirs: trustedAgentTempDirs,
-  },);
+  },));
 }
 
 /**
@@ -96,7 +96,7 @@ function isExistingNonSecretTrustedAgentTempPath(
  * isExistingPathUnderTrustedAgentTemp({ filePath, ctx, trustedAgentTempDirs });
  * ```
  */
-function isExistingPathUnderTrustedAgentTemp(
+async function isExistingPathUnderTrustedAgentTemp(
   {
     filePath,
     ctx,
@@ -106,26 +106,29 @@ function isExistingPathUnderTrustedAgentTemp(
     readonly ctx: SignalContext;
     readonly trustedAgentTempDirs: readonly string[];
   },
-): boolean {
+): Promise<boolean> {
   if (filePath === '')
     return false;
 
   /**
    * Canonical target path for command token.
    */
-  const canonicalPath = realpathOrUnavailable(resolvePath({
+  const canonicalPath = await realpathOrUnavailable(resolvePath({
     filePath,
     cwd: ctx.cwd,
   },),);
   if (canonicalPath === REALPATH_UNAVAILABLE)
     return false;
 
-  return trustedAgentTempDirs.some(
-    function trustedDirContainsPath(trustedDir,) {
+  /**
+   * Trusted-root containment decisions for the canonical path.
+   */
+  const containmentDecisions = await Promise.all(
+    trustedAgentTempDirs.map(async function trustedDirContainsPath(trustedDir,) {
       /**
        * Canonical trusted root used to block symlink escapes.
        */
-      const canonicalTrustedDir = realpathOrUnavailable(nodePath.resolve(
+      const canonicalTrustedDir = await realpathOrUnavailable(nodePath.resolve(
         ctx.cwd,
         trustedDir,
       ),);
@@ -134,8 +137,9 @@ function isExistingPathUnderTrustedAgentTemp(
           resolved: canonicalPath,
           dir: canonicalTrustedDir,
         },);
-    },
+    },),
   );
+  return containmentDecisions.some(Boolean,);
 }
 
 /**
@@ -154,7 +158,7 @@ function isExistingPathUnderTrustedAgentTemp(
  * isProjectDotenvCredentialExtractionPath({ command, filePath: '.env.local', ctx });
  * ```
  */
-function isProjectDotenvCredentialExtractionPath(
+async function isProjectDotenvCredentialExtractionPath(
   {
     command,
     filePath,
@@ -164,7 +168,7 @@ function isProjectDotenvCredentialExtractionPath(
     readonly filePath: string;
     readonly ctx: SignalContext;
   },
-): boolean {
+): Promise<boolean> {
   if (command.name
     !== 'grep')
     return false;
@@ -179,7 +183,7 @@ function isProjectDotenvCredentialExtractionPath(
     return false;
   }
 
-  return isExistingProjectDotenvPath({
+  return await isExistingProjectDotenvPath({
     filePath,
     ctx,
   },);
@@ -203,7 +207,7 @@ function isProjectDotenvCredentialExtractionPath(
  * isExistingProjectDotenvPath({ filePath: '.env.local', ctx });
  * ```
  */
-function isExistingProjectDotenvPath(
+async function isExistingProjectDotenvPath(
   {
     filePath,
     ctx,
@@ -211,11 +215,11 @@ function isExistingProjectDotenvPath(
     readonly filePath: string;
     readonly ctx: SignalContext;
   },
-): boolean {
+): Promise<boolean> {
   /**
    * Canonical source path to ensure missing files fail closed.
    */
-  const canonicalPath = realpathOrUnavailable(resolvePath({
+  const canonicalPath = await realpathOrUnavailable(resolvePath({
     filePath,
     cwd: ctx.cwd,
   },),);
@@ -225,7 +229,7 @@ function isExistingProjectDotenvPath(
   /**
    * Canonical project root to keep home dotfiles and sibling repos blocked.
    */
-  const canonicalCwd = realpathOrUnavailable(ctx.cwd,);
+  const canonicalCwd = await realpathOrUnavailable(ctx.cwd,);
   if (canonicalCwd === REALPATH_UNAVAILABLE)
     return false;
 
@@ -272,11 +276,11 @@ function isDotenvBasename(
  * realpathOrUnavailable('/tmp/agent');
  * ```
  */
-function realpathOrUnavailable(
+async function realpathOrUnavailable(
   path: string,
-): RealpathResult {
+): Promise<RealpathResult> {
   try {
-    return realpathSync.native(path,);
+    return await realpath(path,);
   }
   catch {
     return REALPATH_UNAVAILABLE;

@@ -14,7 +14,7 @@
  * @module
  */
 
-import { realpathSync, } from 'node:fs';
+import { realpath, } from 'node:fs/promises';
 import * as nodePath from 'node:path';
 import { SECRET_PATH_PATTERN, } from './constants.ts';
 import type { SignalContext, } from './types.ts';
@@ -66,7 +66,7 @@ type RealpathResult = string | typeof REALPATH_UNAVAILABLE;
  * }); // true
  * ```
  */
-function pathSignals(
+async function pathSignals(
   {
     filePath,
     ctx,
@@ -79,7 +79,7 @@ function pathSignals(
      */
     readonly allowlistedDirs?: readonly string[];
   },
-): boolean {
+): Promise<boolean> {
   /**
    * Cached lexical resolution shared by cwd containment, allowlist, dotfile, and secret checks.
    */
@@ -90,7 +90,7 @@ function pathSignals(
   /**
    * Canonical target path when `filePath` exists; missing paths fall back to lexical checks.
    */
-  const canonicalResolved = tryRealpath(resolved,);
+  const canonicalResolved = await tryRealpath(resolved,);
   /**
    * Path used for location checks; canonical targets prevent symlink escape bypasses.
    */
@@ -102,18 +102,18 @@ function pathSignals(
    */
   const signalCwd = canonicalResolved === REALPATH_UNAVAILABLE
     ? ctx.cwd
-    : realpathOrLexical(ctx.cwd,);
+    : await realpathOrLexical(ctx.cwd,);
   /**
    * Home used for dotfile checks; canonicalised when the target was canonicalised too.
    */
   const signalHome = canonicalResolved === REALPATH_UNAVAILABLE
     ? ctx.home
-    : realpathOrLexical(ctx.home,);
+    : await realpathOrLexical(ctx.home,);
 
   /**
    * Whether this call targets a per-call allowlisted directory such as a loaded skill root.
    */
-  const allowlisted = isAllowlistedPath({
+  const allowlisted = await isAllowlistedPath({
     canonicalResolved,
     cwd: ctx.cwd,
     allowlistedDirs,
@@ -166,7 +166,7 @@ function pathSignals(
  * }); // true
  * ```
  */
-function isAllowlistedPath(
+async function isAllowlistedPath(
   {
     canonicalResolved,
     cwd,
@@ -176,15 +176,19 @@ function isAllowlistedPath(
     readonly cwd: string;
     readonly allowlistedDirs: readonly string[];
   },
-): boolean {
+): Promise<boolean> {
   if (canonicalResolved === REALPATH_UNAVAILABLE)
     return false;
-  return allowlistedDirs.some(
-    function allowlistedDirContainsCanonicalPath(dir,) {
+
+  /**
+   * Per-allowlist containment decisions for this canonical target.
+   */
+  const containmentDecisions = await Promise.all(
+    allowlistedDirs.map(async function allowlistedDirContainsCanonicalPath(dir,) {
       /**
        * Canonical allowlisted root; missing roots fail closed.
        */
-      const canonicalDir = tryRealpath(nodePath.resolve(
+      const canonicalDir = await tryRealpath(nodePath.resolve(
         cwd,
         dir,
       ),);
@@ -193,8 +197,9 @@ function isAllowlistedPath(
           resolved: canonicalResolved,
           dir: canonicalDir,
         },);
-    },
+    },),
   );
+  return containmentDecisions.some(Boolean,);
 }
 
 /**
@@ -255,11 +260,11 @@ function hasSecretPathSignal(
  * const canonical = tryRealpath("/tmp/agent/repo");
  * ```
  */
-function tryRealpath(
+async function tryRealpath(
   path: string,
-): RealpathResult {
+): Promise<RealpathResult> {
   try {
-    return realpathSync.native(path,);
+    return await realpath(path,);
   }
   catch {
     return REALPATH_UNAVAILABLE;
@@ -278,13 +283,13 @@ function tryRealpath(
  * const path = realpathOrLexical("/tmp/agent/repo");
  * ```
  */
-function realpathOrLexical(
+async function realpathOrLexical(
   path: string,
-): string {
+): Promise<string> {
   /**
    * Result from realpath probe before sentinel fallback.
    */
-  const result = tryRealpath(path,);
+  const result = await tryRealpath(path,);
   if (result === REALPATH_UNAVAILABLE)
     return path;
   return result;

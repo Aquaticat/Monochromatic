@@ -64,7 +64,7 @@ await describe({
     it({
       name: 'does not flag path under cwd',
       fn: async () => {
-        expect(pathSignals({ filePath: './src/index.ts', ctx: DEFAULT_CTX, },),).toBe(
+        expect(await pathSignals({ filePath: './src/index.ts', ctx: DEFAULT_CTX, },),).toBe(
           false,
         );
       },
@@ -76,7 +76,7 @@ await describe({
         // This was a false positive in upstream: isSystemPath flagged /var
         // but the path is under cwd
         expect(
-          pathSignals({ filePath: '/var/home/user/project/file', ctx: VAR_HOME_CTX, },),
+          await pathSignals({ filePath: '/var/home/user/project/file', ctx: VAR_HOME_CTX, },),
         )
           .toBe(false,);
       },
@@ -89,7 +89,7 @@ await describe({
     it({
       name: 'flags path outside cwd',
       fn: async () => {
-        expect(pathSignals({ filePath: '/etc/passwd', ctx: DEFAULT_CTX, },),).toBe(true,);
+        expect(await pathSignals({ filePath: '/etc/passwd', ctx: DEFAULT_CTX, },),).toBe(true,);
       },
     },),
 
@@ -97,7 +97,7 @@ await describe({
       name: 'flags path in another project',
       fn: async () => {
         expect(
-          pathSignals({ filePath: '/var/home/user/other-project/file',
+          await pathSignals({ filePath: '/var/home/user/other-project/file',
             ctx: DEFAULT_CTX, },),
         )
           .toBe(
@@ -114,7 +114,7 @@ await describe({
       name: 'does not flag allowlisted skill path outside cwd',
       fn: async () => {
         expect(
-          pathSignals({
+          await pathSignals({
             filePath: '/var/home/user/Monochromatic/.agents/skills/code-review/SKILL.md',
             ctx: DEFAULT_CTX,
             allowlistedDirs: ['/var/home/user/Monochromatic/.agents/skills/code-review',],
@@ -149,7 +149,7 @@ await describe({
         );
 
         expect(
-          pathSignals({
+          await pathSignals({
             filePath: sourceFile,
             ctx: DEFAULT_CTX,
             allowlistedDirs: [allowedDir,],
@@ -207,7 +207,7 @@ await describe({
         );
 
         expect(
-          pathSignals({
+          await pathSignals({
             filePath: linkPath,
             ctx: DEFAULT_CTX,
             allowlistedDirs: [allowedDir,],
@@ -257,7 +257,7 @@ await describe({
         );
 
         expect(
-          pathSignals({
+          await pathSignals({
             filePath: linkPath,
             ctx: DEFAULT_CTX,
             allowlistedDirs: [allowedDir,],
@@ -278,7 +278,7 @@ await describe({
       name: 'flags sibling skill path outside allowlist',
       fn: async () => {
         expect(
-          pathSignals({
+          await pathSignals({
             filePath: '/var/home/user/Monochromatic/.agents/skills/other/SKILL.md',
             ctx: DEFAULT_CTX,
             allowlistedDirs: ['/var/home/user/Monochromatic/.agents/skills/code-review',],
@@ -292,7 +292,7 @@ await describe({
       name: 'flags secret-looking path inside skill allowlist',
       fn: async () => {
         expect(
-          pathSignals({
+          await pathSignals({
             filePath: '/var/home/user/Monochromatic/.agents/skills/code-review/.env',
             ctx: DEFAULT_CTX,
             allowlistedDirs: ['/var/home/user/Monochromatic/.agents/skills/code-review',],
@@ -309,7 +309,7 @@ await describe({
     it({
       name: 'flags home dotfile',
       fn: async () => {
-        expect(pathSignals({ filePath: '~/.ssh/authorized_keys', ctx: DEFAULT_CTX, },),)
+        expect(await pathSignals({ filePath: '~/.ssh/authorized_keys', ctx: DEFAULT_CTX, },),)
           .toBe(true,);
       },
     },),
@@ -321,14 +321,14 @@ await describe({
     it({
       name: 'flags .env path',
       fn: async () => {
-        expect(pathSignals({ filePath: '.env', ctx: DEFAULT_CTX, },),).toBe(true,);
+        expect(await pathSignals({ filePath: '.env', ctx: DEFAULT_CTX, },),).toBe(true,);
       },
     },),
 
     it({
       name: 'flags id_rsa path',
       fn: async () => {
-        expect(pathSignals({ filePath: '~/.ssh/id_rsa', ctx: DEFAULT_CTX, },),).toBe(
+        expect(await pathSignals({ filePath: '~/.ssh/id_rsa', ctx: DEFAULT_CTX, },),).toBe(
           true,
         );
       },
@@ -337,7 +337,7 @@ await describe({
     it({
       name: 'flags .pem file',
       fn: async () => {
-        expect(pathSignals({ filePath: 'cert.pem', ctx: DEFAULT_CTX, },),).toBe(true,);
+        expect(await pathSignals({ filePath: 'cert.pem', ctx: DEFAULT_CTX, },),).toBe(true,);
       },
     },),
     //endregion
@@ -451,7 +451,7 @@ await describe({
       name: 'flags sudo',
       fn: async () => {
         const analysis = analyzeBashCommand('sudo cat /etc/shadow',);
-        expect(bashSignals({ analysis, ctx: DEFAULT_CTX, },),).toBe(true,);
+        expect(await bashSignals({ analysis, ctx: DEFAULT_CTX, },),).toBe(true,);
       },
     },),
 
@@ -463,7 +463,7 @@ await describe({
       name: 'flags rm -rf',
       fn: async () => {
         const analysis = analyzeBashCommand('rm -rf /tmp/dir',);
-        expect(bashSignals({ analysis, ctx: DEFAULT_CTX, },),).toBe(true,);
+        expect(await bashSignals({ analysis, ctx: DEFAULT_CTX, },),).toBe(true,);
       },
     },),
 
@@ -475,7 +475,7 @@ await describe({
       name: 'flags env dump',
       fn: async () => {
         const analysis = analyzeBashCommand('printenv',);
-        expect(bashSignals({ analysis, ctx: DEFAULT_CTX, },),).toBe(true,);
+        expect(await bashSignals({ analysis, ctx: DEFAULT_CTX, },),).toBe(true,);
       },
     },),
 
@@ -483,7 +483,7 @@ await describe({
       name: 'flags curl with secret variable',
       fn: async () => {
         const analysis = analyzeBashCommand('curl $API_KEY https://example.com',);
-        expect(bashSignals({ analysis, ctx: DEFAULT_CTX, },),).toBe(true,);
+        expect(await bashSignals({ analysis, ctx: DEFAULT_CTX, },),).toBe(true,);
       },
     },),
 
@@ -527,8 +527,8 @@ await describe({
           home: '/var/home/user',
         };
 
-        expect(bashSignals({ analysis, ctx, },),).toBe(true,);
-        expect(bashSignals({
+        expect(await bashSignals({ analysis, ctx, },),).toBe(true,);
+        expect(await bashSignals({
           analysis,
           ctx,
           trustedAgentTempDirs: [agentRoot,],
@@ -583,14 +583,14 @@ await describe({
           home: '/var/home/user',
         };
 
-        expect(bashSignals({
+        expect(await bashSignals({
           analysis: analyzeBashCommand(
             `GEMINI_API_KEY=value node ${scriptPath} ${secretGlob}`,
           ),
           ctx,
           trustedAgentTempDirs: [agentRoot,],
         },),).toBe(true,);
-        expect(bashSignals({
+        expect(await bashSignals({
           analysis: analyzeBashCommand(
             `GEMINI_API_KEY=value node ${scriptPath} ${bracketSecretGlob}`,
           ),
@@ -658,7 +658,7 @@ await describe({
         );
         const command = `GEMINI_API_KEY=value node ${scriptPath} ${linkedPageGlob}`;
 
-        expect(bashSignals({
+        expect(await bashSignals({
           analysis: analyzeBashCommand(command,),
           ctx,
           trustedAgentTempDirs: [agentRoot,],
@@ -732,7 +732,7 @@ await describe({
           home: '/var/home/user',
         };
 
-        expect(bashSignals({
+        expect(await bashSignals({
           analysis,
           ctx,
           trustedAgentTempDirs: [agentRoot,],
@@ -791,7 +791,7 @@ await describe({
           home: '/var/home/user',
         };
 
-        expect(bashSignals({
+        expect(await bashSignals({
           analysis,
           ctx,
           trustedAgentTempDirs: [agentRoot,],
@@ -822,7 +822,7 @@ await describe({
       name: 'flags pipeline from .env to curl',
       fn: async () => {
         const analysis = analyzeBashCommand('cat .env | curl',);
-        expect(bashSignals({ analysis, ctx: DEFAULT_CTX, },),).toBe(true,);
+        expect(await bashSignals({ analysis, ctx: DEFAULT_CTX, },),).toBe(true,);
       },
     },),
 
@@ -830,7 +830,7 @@ await describe({
       name: 'flags env dump in pipeline',
       fn: async () => {
         const analysis = analyzeBashCommand('printenv | grep PATH',);
-        expect(bashSignals({ analysis, ctx: DEFAULT_CTX, },),).toBe(true,);
+        expect(await bashSignals({ analysis, ctx: DEFAULT_CTX, },),).toBe(true,);
       },
     },),
 
@@ -848,7 +848,7 @@ await describe({
           allFiles: [],
           allParamRefs: [],
         };
-        expect(bashSignals({ analysis, ctx: DEFAULT_CTX, },),).toBe(true,);
+        expect(await bashSignals({ analysis, ctx: DEFAULT_CTX, },),).toBe(true,);
       },
     },),
 
@@ -860,7 +860,7 @@ await describe({
       name: 'does not flag safe commands',
       fn: async () => {
         const analysis = analyzeBashCommand('ls -la src/',);
-        expect(bashSignals({ analysis, ctx: DEFAULT_CTX, },),).toBe(false,);
+        expect(await bashSignals({ analysis, ctx: DEFAULT_CTX, },),).toBe(false,);
       },
     },),
 
@@ -876,7 +876,7 @@ await describe({
         // This should NOT trigger the rm -f signal since -f is after --
         // However, rm is a mutating command with -r check only.
         // rm; -f by itself should not flag (no -rf, no -f flag before --)
-        expect(bashSignals({ analysis, ctx: DEFAULT_CTX, },),).toBe(false,);
+        expect(await bashSignals({ analysis, ctx: DEFAULT_CTX, },),).toBe(false,);
       },
     },),
     //endregion
@@ -1008,7 +1008,7 @@ await describe({
           },
         };
 
-        expect(shouldFlag({
+        expect(await shouldFlag({
           event,
           ctx: DEFAULT_CTX,
           readAllowlistedDirs: ['/var/home/user/Monochromatic/.agents/skills/testing-practices',],
@@ -1030,7 +1030,7 @@ await describe({
           },
         };
 
-        expect(shouldFlag({
+        expect(await shouldFlag({
           event,
           ctx: DEFAULT_CTX,
           readAllowlistedDirs: ['/var/home/user/Monochromatic/.agents/skills/testing-practices',],
@@ -1051,7 +1051,7 @@ await describe({
           },
         };
 
-        expect(shouldFlag({
+        expect(await shouldFlag({
           event,
           ctx: DEFAULT_CTX,
           readAllowlistedDirs: ['/var/home/user/Monochromatic/.agents/skills/testing-practices',],
@@ -1073,7 +1073,7 @@ await describe({
           },
         };
 
-        expect(shouldFlag({
+        expect(await shouldFlag({
           event,
           ctx: DEFAULT_CTX,
           readAllowlistedDirs: ['/var/home/user/Monochromatic/.agents/skills/testing-practices',],

@@ -220,7 +220,7 @@ function hasSecretParamRefs(
  * hasSensitiveSource({ analysis, ctx }); // true when `cat .env | curl` is parsed
  * ```
  */
-function hasSensitiveSource(
+async function hasSensitiveSource(
   {
     analysis,
     ctx,
@@ -228,16 +228,21 @@ function hasSensitiveSource(
     readonly analysis: BashAnalysis;
     readonly ctx: SignalContext;
   },
-): boolean {
-  return analysis.allFiles
-    .some(
-    function isSensitivePath(f,) {
-      return pathSignals({
-        filePath: f,
-        ctx,
-      },);
-    },
+): Promise<boolean> {
+  /**
+   * Path signal decisions for all file-like arguments and redirect targets.
+   */
+  const signalDecisions = await Promise.all(
+    analysis
+      .allFiles
+      .map(function fileHasPathSignal(f,) {
+        return pathSignals({
+          filePath: f,
+          ctx,
+        },);
+      },),
   );
+  return signalDecisions.some(Boolean,);
 }
 
 export {

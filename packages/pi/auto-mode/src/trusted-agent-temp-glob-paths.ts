@@ -42,7 +42,7 @@ import type { SignalContext, } from './types.ts';
  * isNonSecretTrustedAgentTempBashPath({ filePath: '/tmp/agent/page-*.png', ctx, trustedAgentTempDirs: ['/tmp/agent'] });
  * ```
  */
-function isNonSecretTrustedAgentTempBashPath(
+async function isNonSecretTrustedAgentTempBashPath(
   {
     filePath,
     ctx,
@@ -52,12 +52,15 @@ function isNonSecretTrustedAgentTempBashPath(
     readonly ctx: SignalContext;
     readonly trustedAgentTempDirs: readonly string[];
   },
-): boolean {
-  return isExistingNonSecretTrustedAgentTempPath({
+): Promise<boolean> {
+  if (await isExistingNonSecretTrustedAgentTempPath({
     filePath,
     ctx,
     trustedAgentTempDirs,
-  },) || isNonSecretTrustedAgentTempGlobPath({
+  },)) {
+    return true;
+  }
+  return await isNonSecretTrustedAgentTempGlobPath({
     filePath,
     ctx,
     trustedAgentTempDirs,
@@ -84,7 +87,7 @@ function isNonSecretTrustedAgentTempBashPath(
  * isNonSecretTrustedAgentTempGlobPath({ filePath: '/tmp/agent/page-*.png', ctx, trustedAgentTempDirs });
  * ```
  */
-function isNonSecretTrustedAgentTempGlobPath(
+async function isNonSecretTrustedAgentTempGlobPath(
   {
     filePath,
     ctx,
@@ -94,7 +97,7 @@ function isNonSecretTrustedAgentTempGlobPath(
     readonly ctx: SignalContext;
     readonly trustedAgentTempDirs: readonly string[];
   },
-): boolean {
+): Promise<boolean> {
   if (!hasSupportedShellGlobSyntax(filePath,))
     return false;
 
@@ -115,19 +118,23 @@ function isNonSecretTrustedAgentTempGlobPath(
   /**
    * Canonical existing literal parent before first glob metacharacter.
    */
-  const canonicalParent = realpathOrUnavailable(globParentDirectory(resolved,),);
+  const canonicalParent = await realpathOrUnavailable(globParentDirectory(resolved,),);
   if (canonicalParent === REALPATH_UNAVAILABLE)
     return false;
 
-  return trustedAgentTempDirs.some(
-    function trustedDirContainsGlobParent(trustedDir,) {
+  /**
+   * Trusted-root containment decisions for the canonical glob parent.
+   */
+  const containmentDecisions = await Promise.all(
+    trustedAgentTempDirs.map(function trustedDirContainsGlobParent(trustedDir,) {
       return trustedDirContainsCanonicalPath({
         canonicalPath: canonicalParent,
         cwd: ctx.cwd,
         trustedDir,
       },);
-    },
+    },),
   );
+  return containmentDecisions.some(Boolean,);
 }
 
 //endregion Glob paths

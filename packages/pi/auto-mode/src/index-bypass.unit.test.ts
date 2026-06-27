@@ -281,7 +281,7 @@ await describe({
       fn: async function registersShiftTabShortcut() {
         const { api, shortcuts, } = createMockApi();
 
-        autoMode(api,);
+        await autoMode(api,);
 
         expect(shortcuts.has(BYPASS_SHORTCUT,),).toBe(true,);
       },
@@ -295,7 +295,7 @@ await describe({
           shortcuts,
           entries,
         } = createMockApi();
-        autoMode(api,);
+        await autoMode(api,);
         const shortcut = getBypassShortcut({ shortcuts, },);
         const {
           ctx,
@@ -342,7 +342,7 @@ await describe({
       name: 'restores status from latest session toggle',
       fn: async function restoresStatusFromLatestSessionToggle() {
         const { api, registrations, } = createMockApi();
-        autoMode(api,);
+        await autoMode(api,);
         const sessionStart = getHandler({
           registrations,
           event: 'session_start',
@@ -412,7 +412,7 @@ await describe({
           shortcuts,
           entries,
         } = createMockApi();
-        autoMode(api,);
+        await autoMode(api,);
         const shortcut = getBypassShortcut({ shortcuts, },);
         const toolCallHandler = getHandler({
           registrations,

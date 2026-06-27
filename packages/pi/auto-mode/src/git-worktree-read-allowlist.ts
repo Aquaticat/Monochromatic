@@ -1,16 +1,16 @@
-import { execFileSync, } from 'node:child_process';
+import { constants, } from 'node:fs';
 import {
-  accessSync,
-  constants,
-  readFileSync,
-  realpathSync,
-} from 'node:fs';
+  access,
+  readFile,
+  realpath,
+} from 'node:fs/promises';
 import {
   delimiter,
   resolve,
 } from 'node:path';
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
+import nanoSpawn from 'nano-spawn';
 
 import { l as parentLogger, } from './log.ts';
 
@@ -56,9 +56,19 @@ const GIT_METADATA_QUERY_TIMEOUT_MS = 2_000;
 const GIT_STDOUT_UNAVAILABLE = Symbol('git worktree stdout unavailable during read allowlist',);
 
 /**
+ * Sentinel returned when PATH candidate cannot be executed as real git.
+ */
+const GIT_CANDIDATE_UNAVAILABLE = Symbol('PATH entry missing executable or points at cli-git wrapper',);
+
+/**
  * Result from read-only git stdout query.
  */
 type GitStdoutResult = string | typeof GIT_STDOUT_UNAVAILABLE;
+
+/**
+ * Result from testing one PATH entry as a real git candidate.
+ */
+type GitCandidateResult = string | typeof GIT_CANDIDATE_UNAVAILABLE;
 
 /**
  * Options for resolving real git from a PATH-like value.
@@ -169,16 +179,16 @@ function stripTrailingLineBreak(output: string,): string {
  *
  * @example
  * ```ts
- * isCliGitShimForSelfSync('/repo/node_modules/.bin/git');
+ * await isCliGitShimForSelf('/repo/node_modules/.bin/git');
  * // => true when the shim points at \@monochromatic-dev/cli-git
  * ```
  */
-function isCliGitShimForSelfSync(candidatePath: string,): boolean {
+async function isCliGitShimForSelf(candidatePath: string,): Promise<boolean> {
   try {
     /**
      * Candidate executable bytes decoded as text for wrapper marker scanning.
      */
-    const content = readFileSync(
+    const content = await readFile(
       candidatePath,
       'utf8',
     );
@@ -205,52 +215,84 @@ function isCliGitShimForSelfSync(candidatePath: string,): boolean {
  *
  * @example
  * ```ts
- * const gitPath = resolveRealGitSync();
+ * const gitPath = await resolveRealGit();
  * ```
  */
-export function resolveRealGitSync({
+export async function resolveRealGit({
   pathEnv = process.env
     .PATH
     ?? '',
-}: ResolveRealGitOptions = {},): string {
+}: ResolveRealGitOptions = {},): Promise<string> {
   moduleLogger.debug('resolving real git for linked worktree read allowlist',);
 
   /**
    * Individual PATH entries, scanned in shell lookup order.
    */
   const pathDirs = pathEnv.split(delimiter,);
+  /**
+   * Candidate paths after parallel executable and shim checks, kept in PATH order.
+   */
+  const candidateResults = await Promise.all(
+    pathDirs.map(function resolveGitCandidateForDir(dir,) {
+      return resolveGitCandidate(dir,);
+    },),
+  );
+  /**
+   * First usable git candidate in shell lookup order.
+   */
+  const gitPath = candidateResults.find(function candidateIsAvailable(
+    candidate,
+  ): candidate is string {
+    return candidate !== GIT_CANDIDATE_UNAVAILABLE;
+  },);
 
-  for (const dir of pathDirs) {
-    /**
-     * Absolute candidate path for `git` inside this PATH entry.
-     */
-    const candidatePath = resolve(
-      dir === ''
-        ? process.cwd()
-        : dir,
-      'git',
-    );
-
-    try {
-      accessSync(
-        candidatePath,
-        constants.X_OK,
-      );
-    }
-    catch {
-      continue;
-    }
-
-    if (isCliGitShimForSelfSync(candidatePath,)) {
-      moduleLogger.debug(`skipping cli-git wrapper shim at ${candidatePath}`,);
-      continue;
-    }
-
-    moduleLogger.debug(`resolved real git at ${candidatePath}`,);
-    return candidatePath;
+  if (gitPath !== undefined) {
+    moduleLogger.debug(`resolved real git at ${gitPath}`,);
+    return gitPath;
   }
 
   throw new Error('auto-mode: could not find real git binary on PATH.',);
+}
+
+/**
+ * Resolve one PATH directory to a real git executable candidate.
+ *
+ * @param dir - PATH entry to inspect.
+ *
+ * @returns Candidate path, or sentinel when unavailable or self-shimmed.
+ *
+ * @example
+ * ```ts
+ * await resolveGitCandidate('/usr/bin');
+ * ```
+ */
+async function resolveGitCandidate(dir: string,): Promise<GitCandidateResult> {
+  /**
+   * Absolute candidate path for `git` inside this PATH entry.
+   */
+  const candidatePath = resolve(
+    dir === ''
+      ? process.cwd()
+      : dir,
+    'git',
+  );
+
+  try {
+    await access(
+      candidatePath,
+      constants.X_OK,
+    );
+  }
+  catch {
+    return GIT_CANDIDATE_UNAVAILABLE;
+  }
+
+  if (await isCliGitShimForSelf(candidatePath,)) {
+    moduleLogger.debug(`skipping cli-git wrapper shim at ${candidatePath}`,);
+    return GIT_CANDIDATE_UNAVAILABLE;
+  }
+
+  return candidatePath;
 }
 
 /**
@@ -266,29 +308,29 @@ export function resolveRealGitSync({
  *
  * @example
  * ```ts
- * readGitStdout({ gitPath: '/usr/bin/git', args: ['status', '--porcelain'], cwd: '/repo' });
+ * await readGitStdout({ gitPath: '/usr/bin/git', args: ['status', '--porcelain'], cwd: '/repo' });
  * ```
  */
-function readGitStdout({
+async function readGitStdout({
   gitPath,
   args,
   cwd,
-}: ReadGitStdoutOptions,): GitStdoutResult {
+}: ReadGitStdoutOptions,): Promise<GitStdoutResult> {
   try {
-    return execFileSync(
+    /**
+     * Stdout returned by git metadata subprocess.
+     */
+    const { stdout, } = await nanoSpawn(
       gitPath,
       [...args,],
       {
         cwd,
-        encoding: 'utf8',
-        stdio: [
-          'ignore',
-          'pipe',
-          'ignore',
-        ],
+        stdin: 'ignore',
+        stderr: 'ignore',
         timeout: GIT_METADATA_QUERY_TIMEOUT_MS,
       },
     );
+    return stdout;
   }
   catch (error) {
     moduleLogger.debug(
@@ -336,17 +378,17 @@ function extractWorktreePaths(output: string,): readonly string[] {
  *
  * @example
  * ```ts
- * isLinkedWorktreeRoot({ gitPath: '/usr/bin/git', worktreeRoot: '/repo-linked' });
+ * await isLinkedWorktreeRoot({ gitPath: '/usr/bin/git', worktreeRoot: '/repo-linked' });
  * ```
  */
-function isLinkedWorktreeRoot({
+async function isLinkedWorktreeRoot({
   gitPath,
   worktreeRoot,
-}: IsLinkedWorktreeRootOptions,): boolean {
+}: IsLinkedWorktreeRootOptions,): Promise<boolean> {
   /**
    * Raw rev-parse metadata for candidate worktree root.
    */
-  const metadata = readGitStdout({
+  const metadata = await readGitStdout({
     gitPath,
     cwd: worktreeRoot,
     args: [
@@ -380,11 +422,11 @@ function isLinkedWorktreeRoot({
     /**
      * Symlink-stable git-dir path.
      */
-    const resolvedGitDir = realpathSync.native(gitDir,);
+    const resolvedGitDir = await realpath(gitDir,);
     /**
      * Symlink-stable common git-dir path.
      */
-    const resolvedGitCommonDir = realpathSync.native(gitCommonDir,);
+    const resolvedGitCommonDir = await realpath(gitCommonDir,);
     return resolvedGitDir !== resolvedGitCommonDir;
   }
   catch (error) {
@@ -410,23 +452,23 @@ function isLinkedWorktreeRoot({
  *
  * @example
  * ```ts
- * const dirs = linkedWorktreeReadAllowlistedDirs({ cwd: '/repo' });
+ * const dirs = await linkedWorktreeReadAllowlistedDirs({ cwd: '/repo' });
  * ```
  */
-export function linkedWorktreeReadAllowlistedDirs({
+export async function linkedWorktreeReadAllowlistedDirs({
   cwd,
-}: LinkedWorktreeReadAllowlistedDirsOptions,): readonly string[] {
+}: LinkedWorktreeReadAllowlistedDirsOptions,): Promise<readonly string[]> {
   moduleLogger.debug(`collecting linked worktree read allowlist from ${cwd}`,);
 
   try {
     /**
      * Absolute path to real git binary used for read-only metadata queries.
      */
-    const gitPath = resolveRealGitSync();
+    const gitPath = await resolveRealGit();
     /**
      * Raw worktree-list output for repository containing cwd.
      */
-    const worktreeList = readGitStdout({
+    const worktreeList = await readGitStdout({
       gitPath,
       cwd,
       args: [
@@ -440,15 +482,29 @@ export function linkedWorktreeReadAllowlistedDirs({
       return [];
 
     /**
-     * Linked worktree roots reported by git and confirmed via rev-parse metadata.
+     * Worktree roots reported by git before linked-worktree classification.
      */
-    const linkedRoots = extractWorktreePaths(worktreeList,)
-      .filter(function keepLinkedWorktreeRoot(worktreeRoot,) {
+    const worktreeRoots = extractWorktreePaths(worktreeList,);
+    /**
+     * Per-root linked-worktree decisions in the same order as `worktreeRoots`.
+     */
+    const linkedRootDecisions = await Promise.all(
+      worktreeRoots.map(function classifyWorktreeRoot(worktreeRoot,) {
         return isLinkedWorktreeRoot({
           gitPath,
           worktreeRoot,
         },);
-      },);
+      },),
+    );
+    /**
+     * Linked worktree roots reported by git and confirmed via rev-parse metadata.
+     */
+    const linkedRoots = worktreeRoots.filter(function keepLinkedWorktreeRoot(
+      _worktreeRoot,
+      index,
+    ) {
+      return linkedRootDecisions[index] === true;
+    },);
 
     moduleLogger.debug(
       `linked worktree read allowlist contains ${String(linkedRoots.length,)} roots`,

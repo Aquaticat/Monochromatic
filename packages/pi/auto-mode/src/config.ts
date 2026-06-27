@@ -8,7 +8,7 @@
  */
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
-import { readFileSync, } from 'node:fs';
+import { readFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 import * as v from 'valibot';
 import {
@@ -52,9 +52,9 @@ const l = tagged({
  * const config = loadMergedConfig(process.cwd());
  * ```
  */
-function loadMergedConfig(
+async function loadMergedConfig(
   cwd: string,
-): MergedConfig {
+): Promise<MergedConfig> {
   /**
    * Per-call sub-logger so log lines from this entry point carry the function name as a tag.
    */
@@ -66,11 +66,11 @@ function loadMergedConfig(
   /**
    * Validated global config (or `GLOBAL_DEFAULTS` when the file is absent).
    */
-  const global = loadGlobalConfig();
+  const global = await loadGlobalConfig();
   /**
    * Project config lookup result; `found` discriminates whether a project-level file exists.
    */
-  const project = loadProjectConfig(cwd,);
+  const project = await loadProjectConfig(cwd,);
   innerL.debug(
     `loaded global=${String(true,)} project=${String(project.found,)} enabled=${
       String(global.enabled,)
@@ -259,7 +259,7 @@ function projectConfigPath(
  * const data = readJsonFile({ path: '/home/user/.pi/agent/extensions/pi-auto-mode.json', label: 'global' });
  * ```
  */
-function readJsonFile(
+async function readJsonFile(
   {
     path,
     label,
@@ -267,9 +267,9 @@ function readJsonFile(
     readonly path: string;
     readonly label: string;
   },
-): unknown {
+): Promise<unknown> {
   try {
-    return JSON.parse(readFileSync(
+    return JSON.parse(await readFile(
       path,
       'utf8',
     ),);
@@ -339,7 +339,7 @@ function compilePatterns(
  *
  * @returns the parsed global config
  */
-function loadGlobalConfig(): AutoModeConfig {
+async function loadGlobalConfig(): Promise<AutoModeConfig> {
   /**
    * Absolute path to `~/.pi/agent/extensions/pi-auto-mode.json`.
    */
@@ -347,7 +347,7 @@ function loadGlobalConfig(): AutoModeConfig {
   /**
    * Parsed JSON contents, or `undefined` when the file is absent so the caller can fall back to defaults.
    */
-  const raw = readJsonFile({
+  const raw = await readJsonFile({
     path,
     label: 'global',
   },);
@@ -399,12 +399,12 @@ function loadGlobalConfig(): AutoModeConfig {
  * @returns `{ found: true, config }` when a project file exists, otherwise
  *   `{ found: false }`
  */
-function loadProjectConfig(
+async function loadProjectConfig(
   cwd: string,
-): {
+): Promise<{
   found: true;
   config: ProjectConfig;
-} | { found: false } {
+} | { found: false }> {
   /**
    * Absolute path to `<cwd>/.pi/extensions/pi-auto-mode.json`.
    */
@@ -412,7 +412,7 @@ function loadProjectConfig(
   /**
    * Parsed JSON contents, or `undefined` when the project file is absent.
    */
-  const raw = readJsonFile({
+  const raw = await readJsonFile({
     path,
     label: 'project',
   },);

@@ -95,9 +95,9 @@ type SkillPromptEvent = {
  * // { "packages": ["./packages/pi/auto-mode"] }
  * ```
  */
-export default function autoMode(
+export default async function autoMode(
   pi: ExtensionAPI,
-): void {
+): Promise<void> {
   /**
    * Per-call sub-logger so registration log lines carry the entry-point name as a tag.
    */
@@ -108,7 +108,7 @@ export default function autoMode(
   /**
    * Resolved configuration; downstream handlers and the system prompt are derived from this.
    */
-  const config = loadMergedConfig(process.cwd(),);
+  const config = await loadMergedConfig(process.cwd(),);
 
   if (!config.enabled) {
     innerL.debug('auto-mode disabled in config; not registering handlers',);
@@ -298,7 +298,7 @@ export default function autoMode(
 
   pi.on(
     'tool_call',
-    function handleToolCall(
+    async function handleToolCall(
       event: ToolCallEvent,
       ctx: ExtensionContext,
     ) {
@@ -327,14 +327,14 @@ export default function autoMode(
       /**
        * Private agent temp roots shared by structured reads and trusted bash helper execution.
        */
-      const trustedAgentTempDirs = agentTempAllowlistedDirs();
+      const trustedAgentTempDirs = await agentTempAllowlistedDirs();
       /**
        * Read-only roots whose existing non-secret contents bypass location prompts.
        */
       const readAllowlistedDirs: readonly string[] = event.toolName === 'read'
         ? [
           ...trustedAgentTempDirs,
-          ...linkedWorktreeReadAllowlistedDirs({ cwd: ctx.cwd, },),
+          ...(await linkedWorktreeReadAllowlistedDirs({ cwd: ctx.cwd, },)),
           ...currentSkillReadDirs,
         ]
         : [];
@@ -348,7 +348,7 @@ export default function autoMode(
       /**
        * True when the tool call trips a static rule, or when a previous-turn denial promotes a relevant follow-up.
        */
-      const flagged = shouldFlag({
+      const flagged = await shouldFlag({
         event,
         ctx: signalCtx,
         config,

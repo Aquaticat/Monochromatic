@@ -75,7 +75,7 @@ const TRUSTED_AGENT_TEMP_SCRIPT_RUNNERS = new Set([
  * }); // true for existing non-secret helper path
  * ```
  */
-function isTrustedAgentTempBashPathAllowed(
+async function isTrustedAgentTempBashPathAllowed(
   {
     filePath,
     ctx,
@@ -89,12 +89,12 @@ function isTrustedAgentTempBashPathAllowed(
     readonly command: CommandInfo;
     readonly allowProjectDotenvCredentialSource: boolean;
   },
-): boolean {
+): Promise<boolean> {
   if (trustedAgentTempDirs.length
     === 0)
     return false;
 
-  if (isNonSecretTrustedAgentTempBashPath({
+  if (await isNonSecretTrustedAgentTempBashPath({
     filePath,
     ctx,
     trustedAgentTempDirs,
@@ -103,7 +103,7 @@ function isTrustedAgentTempBashPathAllowed(
   }
 
   return allowProjectDotenvCredentialSource
-    && isProjectDotenvCredentialExtractionPath({
+    && await isProjectDotenvCredentialExtractionPath({
       command,
       filePath,
       ctx,
@@ -126,7 +126,7 @@ function isTrustedAgentTempBashPathAllowed(
  * hasTrustedAgentTempCredentialHandoff({ analysis, ctx, trustedAgentTempDirs });
  * ```
  */
-function hasTrustedAgentTempCredentialHandoff(
+async function hasTrustedAgentTempCredentialHandoff(
   {
     analysis,
     ctx,
@@ -136,23 +136,32 @@ function hasTrustedAgentTempCredentialHandoff(
     readonly ctx: SignalContext;
     readonly trustedAgentTempDirs: readonly string[];
   },
-): boolean {
+): Promise<boolean> {
   if (trustedAgentTempDirs.length
     === 0)
     return false;
 
-  return analysis
+  /**
+   * Commands that could hand a credential to a helper path.
+   */
+  const credentialCommands = analysis
     .commands
-    .some(
-      function commandHandsCredentialToTrustedHelper(command,) {
-        return commandContainsSecretAssignment(command,)
-          && commandInvokesTrustedAgentTempHelper({
-            command,
-            ctx,
-            trustedAgentTempDirs,
-          },);
-      },
-    );
+    .filter(function commandHasSecretAssignment(command,) {
+      return commandContainsSecretAssignment(command,);
+    },);
+  /**
+   * Trusted-helper invocation decisions for credential-bearing commands.
+   */
+  const helperDecisions = await Promise.all(
+    credentialCommands.map(function commandHandsCredentialToTrustedHelper(command,) {
+      return commandInvokesTrustedAgentTempHelper({
+        command,
+        ctx,
+        trustedAgentTempDirs,
+      },);
+    },),
+  );
+  return helperDecisions.some(Boolean,);
 }
 
 //endregion Public API
@@ -231,7 +240,7 @@ function commandWords(
  * commandInvokesTrustedAgentTempHelper({ command, ctx, trustedAgentTempDirs });
  * ```
  */
-function commandInvokesTrustedAgentTempHelper(
+async function commandInvokesTrustedAgentTempHelper(
   {
     command,
     ctx,
@@ -241,8 +250,8 @@ function commandInvokesTrustedAgentTempHelper(
     readonly ctx: SignalContext;
     readonly trustedAgentTempDirs: readonly string[];
   },
-): boolean {
-  if (isExistingPathUnderTrustedAgentTemp({
+): Promise<boolean> {
+  if (await isExistingPathUnderTrustedAgentTemp({
     filePath: command.name,
     ctx,
     trustedAgentTempDirs,
@@ -251,41 +260,55 @@ function commandInvokesTrustedAgentTempHelper(
   }
 
   if (TRUSTED_AGENT_TEMP_SCRIPT_RUNNERS.has(command.name,)) {
-    return command
-      .args
-      .some(
-        function argumentIsTrustedHelperPath(argument,) {
+    /**
+     * Direct script-runner argument path decisions.
+     */
+    const argumentDecisions = await Promise.all(
+      command
+        .args
+        .map(function argumentIsTrustedHelperPath(argument,) {
           return isExistingPathUnderTrustedAgentTemp({
             filePath: argument,
             ctx,
             trustedAgentTempDirs,
           },);
-        },
-      );
+        },),
+    );
+    return argumentDecisions.some(Boolean,);
   }
 
-  return command
+  /**
+   * Argument indexes for runner words inside wrapper commands.
+   */
+  const runnerIndexes = [...command
     .args
-    .some(
-      function runnerWordHasTrustedHelperAfter(
-        argument,
-        index,
-      ) {
-        if (!TRUSTED_AGENT_TEMP_SCRIPT_RUNNERS.has(argument,))
-          return false;
-        return command.args
-          .slice(index + 1,)
-          .some(
-            function followingArgumentIsTrustedHelperPath(followingArgument,) {
-              return isExistingPathUnderTrustedAgentTemp({
-                filePath: followingArgument,
-                ctx,
-                trustedAgentTempDirs,
-              },);
-            },
-          );
-      },
-    );
+    .entries(),]
+    .filter(function entryHasRunnerArgument(entry,) {
+      return TRUSTED_AGENT_TEMP_SCRIPT_RUNNERS.has(entry[1],);
+    },)
+    .map(function pickEntryIndex(entry,) {
+      return entry[0];
+    },);
+  /**
+   * Arguments after runner words that could be helper paths.
+   */
+  const followingArguments = runnerIndexes.flatMap(function followingArgumentsAfterRunner(index,) {
+    return command.args
+      .slice(index + 1,);
+  },);
+  /**
+   * Trusted-helper decisions for arguments following runner words.
+   */
+  const followingArgumentDecisions = await Promise.all(
+    followingArguments.map(function followingArgumentIsTrustedHelperPath(followingArgument,) {
+      return isExistingPathUnderTrustedAgentTemp({
+        filePath: followingArgument,
+        ctx,
+        trustedAgentTempDirs,
+      },);
+    },),
+  );
+  return followingArgumentDecisions.some(Boolean,);
 }
 
 //endregion Credential handoff detection

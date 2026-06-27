@@ -93,7 +93,7 @@ export type MergedConfig = {
  * });
  * ```
  */
-function shouldFlag(
+async function shouldFlag(
   {
     event,
     ctx,
@@ -113,7 +113,7 @@ function shouldFlag(
      */
     readonly bashAllowlistedDirs?: readonly string[];
   },
-): boolean {
+): Promise<boolean> {
   if (isToolCallEventType(
     'bash',
     event,
@@ -123,7 +123,7 @@ function shouldFlag(
      */
     const analysis = analyzeBashCommand(event.input
       .command,);
-    if (bashSignals({
+    if (await bashSignals({
       analysis,
       ctx,
       ...(config !== undefined ? { config, } : {}),
@@ -156,7 +156,7 @@ function shouldFlag(
     : [];
   if (
     (filePath !== '')
-      && pathSignals({
+      && await pathSignals({
       filePath,
       ctx,
       allowlistedDirs: pathAllowlistedDirs,
@@ -198,7 +198,7 @@ function shouldFlag(
  * bashSignals({ analysis, ctx }); // true
  * ```
  */
-function bashSignals(
+async function bashSignals(
   {
     analysis,
     ctx,
@@ -213,14 +213,14 @@ function bashSignals(
      */
     readonly trustedAgentTempDirs?: readonly string[];
   },
-): boolean {
+): Promise<boolean> {
   if (!analysis.parsed)
     return true;
 
   /**
    * Whether this command can read project dotenv only to feed trusted temp helper credentials.
    */
-  const allowProjectDotenvCredentialSource = hasTrustedAgentTempCredentialHandoff({
+  const allowProjectDotenvCredentialSource = await hasTrustedAgentTempCredentialHandoff({
     analysis,
     ctx,
     trustedAgentTempDirs,
@@ -300,32 +300,6 @@ function bashSignals(
       return true;
     }
 
-    /**
-     * Path-shaped arguments plus redirect targets, each tested for sensitive paths below.
-     */
-    const files = [
-      ...cmd.args
-        .filter(looksLikePath,),
-      ...cmd.redirectTargets,
-    ];
-    for (const f of files) {
-      if (pathSignals({
-        filePath: f,
-        ctx,
-      },)) {
-        if (isTrustedAgentTempBashPathAllowed({
-          filePath: f,
-          ctx,
-          trustedAgentTempDirs,
-          command: cmd,
-          allowProjectDotenvCredentialSource,
-        },)) {
-          continue;
-        }
-        return true;
-      }
-    }
-
     if (
       (cmd.name
         === 'docker')
@@ -339,13 +313,54 @@ function bashSignals(
     }
   }
 
+  /**
+   * Whether any path-shaped command word has a signal not covered by trusted temp policy.
+   */
+  const commandPathSignalDecisions = await Promise.all(
+    analysis
+      .commands
+      .map(async function commandHasUnallowedPathSignal(cmd,) {
+        /**
+         * Path-shaped arguments plus redirect targets, each tested for sensitive paths below.
+         */
+        const files = [
+          ...cmd.args
+            .filter(looksLikePath,),
+          ...cmd.redirectTargets,
+        ];
+        /**
+         * Path signal decisions for this command's file-like words.
+         */
+        const fileSignalDecisions = await Promise.all(
+          files.map(async function fileHasUnallowedPathSignal(f,) {
+            if (!(await pathSignals({
+              filePath: f,
+              ctx,
+            },))) {
+              return false;
+            }
+            return !(await isTrustedAgentTempBashPathAllowed({
+              filePath: f,
+              ctx,
+              trustedAgentTempDirs,
+              command: cmd,
+              allowProjectDotenvCredentialSource,
+            },));
+          },),
+        );
+        return fileSignalDecisions.some(Boolean,);
+      },),
+  );
+  if (commandPathSignalDecisions.some(Boolean,))
+    return true;
+
   if (hasNetworkCommand(analysis,)
     && hasSecretParamRefs(analysis,))
     return true;
 
   if (
     analysis.isPipeline
-      && hasSensitiveSource({
+      && await hasSensitiveSource({
       analysis,
       ctx,
     },)

@@ -172,7 +172,7 @@ await describe({
       name: 'registers all seven event handlers',
       fn: async () => {
         const { api, registrations, } = createMockApi();
-        autoMode(api,);
+        await autoMode(api,);
 
         const expectedEvents = [
           'session_start',
@@ -200,7 +200,7 @@ await describe({
       name: 'allows read tool calls inside loaded skill directories',
       fn: async () => {
         const { api, registrations, } = createMockApi();
-        autoMode(api,);
+        await autoMode(api,);
 
         const beforeAgentStartHandler = getHandler({
           registrations,
@@ -229,7 +229,7 @@ await describe({
           },
         },);
 
-        const result = toolCallHandler(
+        const result = await toolCallHandler(
           {
             type: 'tool_call',
             toolName: 'read',
@@ -273,14 +273,14 @@ await describe({
         );
 
         const { api, registrations, } = createMockApi();
-        autoMode(api,);
+        await autoMode(api,);
 
         const toolCallHandler = getHandler({
           registrations,
           event: 'tool_call',
         },);
 
-        const result = toolCallHandler(
+        const result = await toolCallHandler(
           {
             type: 'tool_call',
             toolName: 'read',
@@ -346,7 +346,7 @@ await describe({
         );
 
         const { api, registrations, } = createMockApi();
-        autoMode(api,);
+        await autoMode(api,);
 
         const toolCallHandler = getHandler({
           registrations,
@@ -398,7 +398,7 @@ await describe({
           registrations,
           entries,
         } = createMockApi();
-        autoMode(api,);
+        await autoMode(api,);
 
         /** Registered tool-call handler under test. */
         const toolCallHandler = getHandler({
@@ -469,7 +469,7 @@ await describe({
           registrations,
           entries,
         } = createMockApi();
-        autoMode(api,);
+        await autoMode(api,);
 
         /** Registered tool-call handler under test. */
         const toolCallHandler = getHandler({
@@ -553,7 +553,7 @@ await describe({
       name: 'registers /guard command',
       fn: async () => {
         const { api, commands, } = createMockApi();
-        autoMode(api,);
+        await autoMode(api,);
 
         expect(commands.has('guard',),).toBe(true,);
       },
@@ -567,7 +567,7 @@ await describe({
       name: 'registers propose_trust tool',
       fn: async () => {
         const { api, tools, } = createMockApi();
-        autoMode(api,);
+        await autoMode(api,);
 
         expect(tools.has('propose_trust',),).toBe(true,);
       },
@@ -581,7 +581,7 @@ await describe({
       name: 'appendEntry is called for trust directives',
       fn: async () => {
         const { api, commands, entries, } = createMockApi();
-        autoMode(api,);
+        await autoMode(api,);
 
         const guardHandler = commands.get('guard',)?.handler;
         if (guardHandler === undefined)
@@ -606,7 +606,7 @@ await describe({
       name: 'appendEntry resets trust directives with null',
       fn: async () => {
         const { api, commands, entries, } = createMockApi();
-        autoMode(api,);
+        await autoMode(api,);
 
         const guardHandler = commands.get('guard',)?.handler;
         if (guardHandler === undefined)

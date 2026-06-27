@@ -5,7 +5,6 @@
  * main worktree to linked worktree without weakening write guards.
  */
 
-import { execFileSync, } from 'node:child_process';
 import {
   mkdir,
   mkdtemp,
@@ -24,11 +23,12 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
+import nanoSpawn from 'nano-spawn';
 
 import autoMode from './index.ts';
 import {
   linkedWorktreeReadAllowlistedDirs,
-  resolveRealGitSync,
+  resolveRealGit,
 } from './git-worktree-read-allowlist.ts';
 import { shouldFlag, } from './signals.ts';
 import type { SignalContext, } from './types.ts';
@@ -36,7 +36,7 @@ import type { SignalContext, } from './types.ts';
 //region Git fixture helpers
 
 /** Absolute path to real git binary used for disposable fixture setup. */
-const realGitPath = resolveRealGitSync();
+const realGitPath = await resolveRealGit();
 
 /** Git author email used in disposable repositories. */
 const TEST_USER_EMAIL = 'pi-auto-mode@example.invalid';
@@ -118,24 +118,19 @@ async function createTempDirectory(): Promise<TempDirectory> {
  *
  * @example
  * ```ts
- * runRealGit({ cwd: '/repo', args: ['init', '--quiet'] });
+ * await runRealGit({ cwd: '/repo', args: ['init', '--quiet'] });
  * ```
  */
-function runRealGit({
+async function runRealGit({
   cwd,
   args,
-}: RunGitOptions,): void {
-  execFileSync(
+}: RunGitOptions,): Promise<void> {
+  await nanoSpawn(
     realGitPath,
     [...args,],
     {
       cwd,
-      encoding: 'utf8',
-      stdio: [
-        'ignore',
-        'pipe',
-        'pipe',
-      ],
+      stdin: 'ignore',
     },
   );
 }
@@ -162,14 +157,14 @@ async function initializeRepository({
     repoPath,
     { recursive: true, },
   );
-  runRealGit({
+  await runRealGit({
     cwd: repoPath,
     args: [
       'init',
       '--quiet',
     ],
   },);
-  runRealGit({
+  await runRealGit({
     cwd: repoPath,
     args: [
       'config',
@@ -177,7 +172,7 @@ async function initializeRepository({
       TEST_USER_EMAIL,
     ],
   },);
-  runRealGit({
+  await runRealGit({
     cwd: repoPath,
     args: [
       'config',
@@ -196,16 +191,16 @@ async function initializeRepository({
  *
  * @example
  * ```ts
- * createInitialCommit({ repoPath: '/tmp/repo' });
+ * await createInitialCommit({ repoPath: '/tmp/repo' });
  * ```
  */
-function createInitialCommit({
+async function createInitialCommit({
   repoPath,
 }: {
   /** Repository root to seed. */
   readonly repoPath: string;
-},): void {
-  runRealGit({
+},): Promise<void> {
+  await runRealGit({
     cwd: repoPath,
     args: [
       'commit',
@@ -228,10 +223,10 @@ function createInitialCommit({
  *
  * @example
  * ```ts
- * createLinkedWorktree({ repoPath: '/repo', linkedPath: '/linked' });
+ * await createLinkedWorktree({ repoPath: '/repo', linkedPath: '/linked' });
  * ```
  */
-function createLinkedWorktree({
+async function createLinkedWorktree({
   repoPath,
   linkedPath,
 }: {
@@ -239,8 +234,8 @@ function createLinkedWorktree({
   readonly repoPath: string;
   /** Linked worktree root. */
   readonly linkedPath: string;
-},): void {
-  runRealGit({
+},): Promise<void> {
+  await runRealGit({
     cwd: repoPath,
     args: [
       'worktree',
@@ -287,8 +282,8 @@ async function createWorktreeFixture({
   );
 
   await initializeRepository({ repoPath, },);
-  createInitialCommit({ repoPath, },);
-  createLinkedWorktree({
+  await createInitialCommit({ repoPath, },);
+  await createLinkedWorktree({
     repoPath,
     linkedPath,
   },);
@@ -408,7 +403,7 @@ await describe({
         /** Disposable repository with one linked worktree. */
         const fixture = await createWorktreeFixture({ tempPath: tempDirectory.path, },);
         /** Auto-mode read allowlist computed from main worktree root. */
-        const readAllowlistedDirs = linkedWorktreeReadAllowlistedDirs({
+        const readAllowlistedDirs = await linkedWorktreeReadAllowlistedDirs({
           cwd: fixture.repoPath,
         },);
 
@@ -422,7 +417,7 @@ await describe({
       fn: async function returnsEmptyOutsideGitWorktrees() {
         await using tempDirectory = await createTempDirectory();
 
-        expect(linkedWorktreeReadAllowlistedDirs({ cwd: tempDirectory.path, },),)
+        expect(await linkedWorktreeReadAllowlistedDirs({ cwd: tempDirectory.path, },),)
           .toEqual([],);
       },
     },),
@@ -439,7 +434,7 @@ await describe({
           home: tempDirectory.path,
         };
         /** Linked worktree roots passed into read-only allowlist. */
-        const readAllowlistedDirs = linkedWorktreeReadAllowlistedDirs({
+        const readAllowlistedDirs = await linkedWorktreeReadAllowlistedDirs({
           cwd: fixture.repoPath,
         },);
         /** Secret-looking file inside linked worktree. */
@@ -480,19 +475,19 @@ await describe({
           },
         };
 
-        expect(shouldFlag({
+        expect(await shouldFlag({
           event: readEvent,
           ctx,
           readAllowlistedDirs,
         },),)
           .toBe(false,);
-        expect(shouldFlag({
+        expect(await shouldFlag({
           event: writeEvent,
           ctx,
           readAllowlistedDirs,
         },),)
           .toBe(true,);
-        expect(shouldFlag({
+        expect(await shouldFlag({
           event: secretReadEvent,
           ctx,
           readAllowlistedDirs,
@@ -514,14 +509,14 @@ await describe({
         const fixture = await createWorktreeFixture({ tempPath: tempDirectory.path, },);
         /** Mock extension API and event registrations. */
         const { api, registrations, } = createMockApi();
-        autoMode(api,);
+        await autoMode(api,);
         /** Registered tool-call handler under test. */
         const toolCallHandler = getHandler({
           registrations,
           event: 'tool_call',
         },);
         /** Handler result for read into linked worktree. */
-        const result = toolCallHandler(
+        const result = await toolCallHandler(
           {
             type: 'tool_call',
             toolName: 'read',

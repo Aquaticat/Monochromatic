@@ -9,7 +9,7 @@
  * @module
  */
 
-import { statSync, } from 'node:fs';
+import { stat, } from 'node:fs/promises';
 
 import { AGENT_TEMP_READ_DIR, } from './constants.ts';
 
@@ -35,14 +35,14 @@ const GROUP_OR_OTHER_PERMISSION_BITS = 0o077;
  * const trusted = isTrustedReadAllowlistDir('/tmp/agent');
  * ```
  */
-function isTrustedReadAllowlistDir(
+async function isTrustedReadAllowlistDir(
   dir: string,
-): boolean {
+): Promise<boolean> {
   try {
     /**
      * Filesystem metadata for candidate allowlist root.
      */
-    const stats = statSync(dir,);
+    const stats = await stat(dir,);
     if (!stats.isDirectory())
       return false;
     if (process.getuid === undefined)
@@ -66,8 +66,8 @@ function isTrustedReadAllowlistDir(
  * const dirs = agentTempAllowlistedDirs();
  * ```
  */
-function agentTempAllowlistedDirs(): readonly string[] {
-  if (!isTrustedReadAllowlistDir(AGENT_TEMP_READ_DIR,))
+async function agentTempAllowlistedDirs(): Promise<readonly string[]> {
+  if (!(await isTrustedReadAllowlistDir(AGENT_TEMP_READ_DIR,)))
     return [];
   return [AGENT_TEMP_READ_DIR,];
 }
@@ -82,8 +82,8 @@ function agentTempAllowlistedDirs(): readonly string[] {
  * const dirs = agentTempReadAllowlistedDirs();
  * ```
  */
-function agentTempReadAllowlistedDirs(): readonly string[] {
-  return agentTempAllowlistedDirs();
+async function agentTempReadAllowlistedDirs(): Promise<readonly string[]> {
+  return await agentTempAllowlistedDirs();
 }
 
 export {

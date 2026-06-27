@@ -39,7 +39,7 @@ await describe({
           PRIVATE_DIRECTORY_MODE,
         );
 
-        expect(isTrustedReadAllowlistDir(root,),).toBe(true,);
+        expect(await isTrustedReadAllowlistDir(root,),).toBe(true,);
         await rm(
           root,
           {
@@ -62,7 +62,7 @@ await describe({
           GROUP_READABLE_DIRECTORY_MODE,
         );
 
-        expect(isTrustedReadAllowlistDir(root,),).toBe(false,);
+        expect(await isTrustedReadAllowlistDir(root,),).toBe(false,);
         await rm(
           root,
           {
@@ -76,7 +76,7 @@ await describe({
     it({
       name: 'rejects missing directory',
       fn: async () => {
-        expect(isTrustedReadAllowlistDir('/tmp/agent-missing-for-auto-mode-test',),)
+        expect(await isTrustedReadAllowlistDir('/tmp/agent-missing-for-auto-mode-test',),)
           .toBe(false,);
       },
     },),

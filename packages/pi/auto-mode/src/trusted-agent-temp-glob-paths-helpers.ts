@@ -4,7 +4,7 @@
  * @module
  */
 
-import { realpathSync, } from 'node:fs';
+import { realpath, } from 'node:fs/promises';
 import * as nodePath from 'node:path';
 
 import { SECRET_PATH_PATTERN, } from './constants.ts';
@@ -197,7 +197,7 @@ function pathTextHasSecretMarker(
  * trustedDirContainsCanonicalPath({ canonicalPath: '/tmp/agent', cwd: '/repo', trustedDir: '/tmp/agent' });
  * ```
  */
-function trustedDirContainsCanonicalPath(
+async function trustedDirContainsCanonicalPath(
   {
     canonicalPath,
     cwd,
@@ -207,11 +207,11 @@ function trustedDirContainsCanonicalPath(
     readonly cwd: string;
     readonly trustedDir: string;
   },
-): boolean {
+): Promise<boolean> {
   /**
    * Canonical trusted root used to block symlink escapes.
    */
-  const canonicalTrustedDir = realpathOrUnavailable(nodePath.resolve(
+  const canonicalTrustedDir = await realpathOrUnavailable(nodePath.resolve(
     cwd,
     trustedDir,
   ),);
@@ -234,11 +234,11 @@ function trustedDirContainsCanonicalPath(
  * realpathOrUnavailable('/tmp/agent');
  * ```
  */
-function realpathOrUnavailable(
+async function realpathOrUnavailable(
   path: string,
-): RealpathResult {
+): Promise<RealpathResult> {
   try {
-    return realpathSync.native(path,);
+    return await realpath(path,);
   }
   catch {
     return REALPATH_UNAVAILABLE;
