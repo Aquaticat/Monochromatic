@@ -670,9 +670,7 @@ diff --git a/book/src/configuration.md b/book/src/configuration.md
 index cb2ac67..abca254 100644
 --- a/book/src/configuration.md
 +++ b/book/src/configuration.md
-@@ -1,4 +1,6 @@
- # Configuring Clippy
- 
+@@ -3 +3,3 @@
 -> **Note:** The configuration file is unstable and may be deprecated in the future.
 +> **Note:** The configuration file described in this section (`clippy.toml` / `.clippy.toml`) is unstable and may be
 +> deprecated in the future. Use the [`Cargo.toml` lints section](#lints-section-in-cargotoml) below for stable
@@ -734,9 +732,7 @@ diff --git a/book/src/configuration.md b/book/src/configuration.md
 index cb2ac67..abca254 100644
 --- a/book/src/configuration.md
 +++ b/book/src/configuration.md
-@@ -1,4 +1,6 @@
- # Configuring Clippy
- 
+@@ -3 +3,3 @@
 -> **Note:** The configuration file is unstable and may be deprecated in the future.
 +> **Note:** The configuration file described in this section (`clippy.toml` / `.clippy.toml`) is unstable and may be
 +> deprecated in the future. Use the [`Cargo.toml` lints section](#lints-section-in-cargotoml) below for stable
