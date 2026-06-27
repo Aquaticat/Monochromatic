@@ -306,14 +306,21 @@ export const packageAllowSpecifiers: readonly PackageSpecifier[] = [
     from: "package",
     package: "@earendil-works/pi-ai",
     name: [
-      // pi-ai provider/message types are dictated by the upstream SDK;
+      // pi-ai provider/message/stream types are dictated by the upstream SDK;
       // AssistantMessage carries a mutable `content` array of TextContent/
       // ThinkingContent/ToolCall blocks that the upstream type does not
-      // mark readonly. Model<TApi> likewise carries mutable fields
-      // (`input: (...)[]`, `cost`, `thinkingLevelMap`) and is forwarded to
-      // host registry/stream calls that require the writable shape.
+      // mark readonly. Context and stream-option types likewise carry mutable
+      // message arrays, tool arrays, headers, and provider option maps that
+      // are forwarded to host registry/stream calls requiring writable shape.
+      // Model<TApi> carries mutable fields (`input: (...)[]`, `cost`,
+      // `thinkingLevelMap`) for the same host-owned stream boundary.
       "AssistantMessage",
+      "Context",
       "Model",
+      "ProviderStreamOptions",
+      "ProviderStreams",
+      "SimpleStreamOptions",
+      "StreamOptions",
     ],
   },
   {
