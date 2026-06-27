@@ -107,6 +107,16 @@ Override the default level of lints from different tools by assigning them to a 
 To know which table under `[lints]` a particular lint belongs under, it is the part before `::` in the lint
 ```
 
+The Cargo changelog records that `[lints]` stabilized in Rust 1.74 for reporting levels.
+This source line is wrapped here for markdown width.
+
+`cargo/src/doc/src/CHANGELOG.md:3797`
+
+```md
+- 🎉 The `[lints]` table has been stabilized, allowing you to configure reporting levels for rustc and
+  other tool lints in `Cargo.toml`.
+```
+
 Cargo's manifest schema has a place for per-lint config data,
 but Cargo currently treats almost all such data as unexpected.
 The schema accepts a lint either as a plain level or as a config object.
@@ -300,10 +310,16 @@ if allow_unwrap_in_tests && is_in_test(cx.tcx, expr.hir_id) {
 }
 ```
 
-Earlier reading to avoid:
-Cargo `[lints.clippy]` is not a stable drop-in replacement for `clippy.toml`.
-It is stable for lint levels.
-It currently does not carry arbitrary Clippy option payloads such as the `disallowed-methods` list.
+Earlier wrong hypothesis to avoid:
+Rust is not expecting projects to avoid lint configuration.
+The harness below disproves that reading because `[lints.clippy] unwrap_used = "deny"` caused
+`clippy::unwrap_used` diagnostics for `Result::unwrap`, `Result::unwrap_err`, and `Option::unwrap`.
+
+A second wrong hypothesis to avoid:
+Cargo `[lints.clippy]` has not absorbed all `clippy.toml` functionality.
+The harness below disproves that reading because putting `disallowed-methods` under
+`[lints.clippy.disallowed_methods]` produced
+`unused manifest key: lints.clippy.disallowed_methods.disallowed-methods` and no method ban was enforced.
 
 ## Verification
 
@@ -444,9 +460,9 @@ Stable Cargo lint levels catch all forms covered by `clippy::unwrap_used`.
 The `stable-lints` crate failed with these diagnostics:
 
 ```text
-src/main.rs:10:13: error: used `unwrap()` on a `Result` value
-src/main.rs:11:13: error: used `unwrap_err()` on a `Result` value
-src/main.rs:12:13: error: used `unwrap()` on an `Option` value
+src/main.rs:4:13: error: used `unwrap()` on a `Result` value
+src/main.rs:5:13: error: used `unwrap_err()` on a `Result` value
+src/main.rs:6:13: error: used `unwrap()` on an `Option` value
 status=101
 ```
 
@@ -458,7 +474,7 @@ Cargo warned about the unused payload key and Clippy finished successfully:
 
 ```text
 warning: Cargo.toml: unused manifest key: `lints.clippy.disallowed_methods.disallowed-methods`
-Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.07s
+Finished `dev` profile [unoptimized + debuginfo] target(s) in [ELAPSED]s
 status=0
 ```
 
@@ -470,7 +486,7 @@ The `clippy.toml` configuration for `disallowed-methods` only flagged `std::resu
 It did not flag `Option::unwrap` or `Result::expect`:
 
 ```text
-src/main.rs:10:28: error: use of a disallowed method `std::result::Result::unwrap`
+src/main.rs:4:28: error: use of a disallowed method `std::result::Result::unwrap`
 status=101
 ```
 
@@ -478,8 +494,8 @@ The `clippy.toml` option `allow-unwrap-in-tests = true` suppressed `unwrap_used`
 manifest still denied the lint level:
 
 ```text
-Checking test_allow v0.1.0 (/tmp/agent/clippy-config-harness-rdncMuDuOK/test-allow)
-Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.07s
+Checking test_allow v0.1.0 ([SCRATCH]/test-allow)
+Finished `dev` profile [unoptimized + debuginfo] target(s) in [ELAPSED]s
 status=0
 ```
 
@@ -663,7 +679,8 @@ patched note distinguishes clippy.toml options from stable Cargo lint levels
 post_status=0
 ```
 
-Prototype diff:
+Prototype diff,
+captured with `git diff --unified=0` to avoid fenced-diff trailing whitespace on blank context lines:
 
 ```diff
 diff --git a/book/src/configuration.md b/book/src/configuration.md
@@ -700,8 +717,8 @@ Source trace:
 
 - `book/src/configuration.md:3` contains the warning.
 - `book/src/configuration.md:5` then introduces `clippy.toml` and `.clippy.toml`.
-- `book/src/configuration.md:89` to `book/src/configuration.md:101` later links Cargo's `[lints]` section for
-  `allow` / `warn` / `deny` lint levels.
+- `book/src/configuration.md:89` names the Cargo.toml lints subsection.
+- `book/src/configuration.md:91` links Cargo's `[lints]` section for `allow` / `warn` / `deny` lint levels.
 
 The warning is true for the Clippy configuration file described by the page,
 but the placement makes it easy to read as applying to all Clippy lint policy.
@@ -725,7 +742,8 @@ Expected docs behavior:
 the warning should say it applies to the `clippy.toml` / `.clippy.toml` file format,
 and it should point readers who only need lint levels to Cargo's stable `[lints]` section.
 
-Suggested fix:
+Suggested fix,
+captured with `git diff --unified=0`:
 
 ```diff
 diff --git a/book/src/configuration.md b/book/src/configuration.md
