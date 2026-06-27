@@ -306,6 +306,67 @@ await describe({
         expect(result.guidance,).toBe('use propose_trust',);
       },
     },),
+
+    it({
+      name: 'retries direct JSON once more when retry emits no text',
+      fn: async () => {
+        /** Captured first-attempt text passed to each direct JSON retry. */
+        const retryAttempts: string[] = [];
+
+        async function* firstStream(): AsyncIterable<unknown> {
+          yield {
+            type: 'text_end',
+            contentIndex: 0,
+            content: 'I did not use the tool.',
+            partial: {},
+          };
+        }
+
+        async function* emptyJsonRetryStream(): AsyncIterable<unknown> {
+          yield {
+            type: 'text_end',
+            contentIndex: 0,
+            content: '',
+            partial: {},
+          };
+        }
+
+        async function* successfulJsonRetryStream(): AsyncIterable<unknown> {
+          yield {
+            type: 'text_end',
+            contentIndex: 0,
+            content: '{"verdict":"approve","reason":"second retry","guidance":""}',
+            partial: {},
+          };
+        }
+
+        function createJsonRetryStream(
+          {
+            firstAttemptTextContent,
+          }: {
+            readonly firstAttemptTextContent: string;
+          },
+        ): AsyncIterable<unknown> {
+          retryAttempts.push(firstAttemptTextContent,);
+          if (retryAttempts.length === 1)
+            return emptyJsonRetryStream();
+          if (retryAttempts.length === 2)
+            return successfulJsonRetryStream();
+          throw new Error('unexpected extra retry',);
+        }
+
+        const result = await collectJudgeVerdictArgs({
+          toolCallStream: firstStream() as never,
+          createJsonRetryStream: createJsonRetryStream as never,
+        },);
+        expect(result.verdict,).toBe('approve',);
+        expect(result.reason,).toBe('second retry',);
+        expect(retryAttempts,).toEqual([
+          'I did not use the tool.',
+          'I did not use the tool.',
+        ],);
+      },
+    },),
   ],
 },);
 

@@ -86,8 +86,20 @@ type JsonRetryStreamFactory = (
 const NO_TOOL_CALL = Symbol('judge stream render verdict tool call absent',);
 
 /**
- * Collect verdict arguments from the first tool-call stream, retrying once
- * with direct JSON when the judge emits no tool call.
+ * Error text used when a direct JSON retry emits no content.
+ *
+ * @example
+ * ```typescript
+ * throw new Error(JUDGE_JSON_NO_TEXT_ERROR_MESSAGE);
+ * ```
+ */
+const JUDGE_JSON_NO_TEXT_ERROR_MESSAGE =
+  'Judge JSON returned no text to parse';
+
+/**
+ * Collect verdict arguments from the first tool-call stream, retrying with
+ * direct JSON when the judge emits no tool call, then retrying an empty direct
+ * JSON response once more.
  *
  * @param toolCallStream - first stream created with `render_verdict` tools
  *
@@ -125,11 +137,26 @@ async function collectJudgeVerdictArgs(
     l,
   },);
   innerL.error('judge did not call render_verdict; retrying with direct JSON output',);
-  return collectJsonVerdict(
-    createJsonRetryStream({
-      firstAttemptTextContent: firstResult.textContent,
-    },),
-  );
+  try {
+    return await collectJsonVerdict(
+      createJsonRetryStream({
+        firstAttemptTextContent: firstResult.textContent,
+      },),
+    );
+  }
+  catch (error) {
+    if (!((error instanceof Error)
+      && (error.message === JUDGE_JSON_NO_TEXT_ERROR_MESSAGE))) {
+      throw error;
+    }
+
+    innerL.error('judge direct JSON retry returned no text; retrying direct JSON once more',);
+    return collectJsonVerdict(
+      createJsonRetryStream({
+        firstAttemptTextContent: firstResult.textContent,
+      },),
+    );
+  }
 }
 
 /**
@@ -217,7 +244,7 @@ async function collectJsonVerdict(
 
   if (result.textContent === '') {
     throw new Error(
-      'Judge JSON retry returned no text to parse',
+      JUDGE_JSON_NO_TEXT_ERROR_MESSAGE,
     );
   }
 
