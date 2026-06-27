@@ -53,13 +53,6 @@ type CompleteAdvisorModelOptions = {
 };
 
 /**
- * Complete function used to call Advisor model.
- */
-export type CompleteAdvisorModel = (
-  options: CompleteAdvisorModelOptions,
-) => Promise<AssistantMessage>;
-
-/**
  * Non-compat pi-ai API streams supported by Advisor.
  *
  * Direct API dispatch preserves registry-selected custom model records because
@@ -160,6 +153,11 @@ async function defaultCompleteAdvisorModel(
     .result();
 }
 /* oxlint-enable typescript/prefer-readonly-parameter-types */
+
+/**
+ * Complete function used to call Advisor model.
+ */
+export type CompleteAdvisorModel = typeof defaultCompleteAdvisorModel;
 
 /**
  * Options for invoking the selected Advisor model.
