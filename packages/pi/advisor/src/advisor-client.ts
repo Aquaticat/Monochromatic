@@ -35,12 +35,28 @@ import type {
 //region Types
 
 /**
+ * Options handed to Advisor model completion seams.
+ */
+type CompleteAdvisorModelOptions = {
+  /**
+   * Selected Advisor model.
+   */
+  readonly model: Readonly<Model<Api>>;
+  /**
+   * Provider context.
+   */
+  readonly context: Readonly<Context>;
+  /**
+   * Provider stream options with resolved auth.
+   */
+  readonly providerOptions?: Readonly<ProviderStreamOptions>;
+};
+
+/**
  * Complete function used to call Advisor model.
  */
 export type CompleteAdvisorModel = (
-  model: Model<Api>,
-  context: Context,
-  options?: ProviderStreamOptions,
+  options: CompleteAdvisorModelOptions,
 ) => Promise<AssistantMessage>;
 
 /**
@@ -113,9 +129,11 @@ const ADVISOR_API_STREAMS: ReadonlyMap<string, ProviderStreams> = new Map([
  * ```
  */
 async function defaultCompleteAdvisorModel(
-  model: Model<Api>,
-  context: Context,
-  options?: ProviderStreamOptions,
+  {
+    model,
+    context,
+    providerOptions,
+  }: CompleteAdvisorModelOptions,
 ): Promise<AssistantMessage> {
   /**
    * Direct API stream implementation matching the selected Advisor model.
@@ -126,12 +144,12 @@ async function defaultCompleteAdvisorModel(
       `No pi-ai API implementation available for advisor model api "${model.api}" (${model.provider}/${model.id})`,
     );
   }
-  if (options !== undefined)
+  if (providerOptions !== undefined)
     return await streams
       .stream(
         model,
         context,
-        options,
+        providerOptions,
       )
       .result();
   return await streams
@@ -286,11 +304,11 @@ export async function completeAdvisor(
     /**
      * Initial provider response from selected Advisor model.
      */
-    const firstResponse = await completeModel(
-      mutableModel,
-      providerContext,
-      createProviderOptions(),
-    );
+    const firstResponse = await completeModel({
+      model: mutableModel,
+      context: providerContext,
+      providerOptions: createProviderOptions(),
+    },);
     /**
      * Whether the initial response contains user-visible text.
      */
@@ -304,11 +322,11 @@ export async function completeAdvisor(
     if (responseHasText)
       return firstResponse;
 
-    return await completeModel(
-      mutableModel,
-      providerContext,
-      createProviderOptions(),
-    );
+    return await completeModel({
+      model: mutableModel,
+      context: providerContext,
+      providerOptions: createProviderOptions(),
+    },);
   }
   catch (error) {
     throw new Error(

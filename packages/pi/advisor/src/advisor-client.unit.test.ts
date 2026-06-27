@@ -159,12 +159,14 @@ function createCapturingCompleteModel(
   {
     contexts,
   }: {
-    readonly contexts: Context[];
+    readonly contexts: Readonly<Context>[];
   },
 ): CompleteAdvisorModel {
   return async function completeModel(
-    model,
-    context,
+    {
+      model,
+      context,
+    },
   ) {
     void model;
     contexts.push(context,);
@@ -187,9 +189,9 @@ function createSequencedCompleteModel(
     responses,
     options,
   }: {
-    readonly contexts: Context[];
+    readonly contexts: Readonly<Context>[];
     readonly responses: readonly AssistantMessage[];
-    readonly options?: ProviderStreamOptions[];
+    readonly options?: Readonly<ProviderStreamOptions>[];
   },
 ): CompleteAdvisorModel {
   /**
@@ -197,9 +199,11 @@ function createSequencedCompleteModel(
    */
   const remainingResponses = [...responses,];
   return async function completeModel(
-    model,
-    context,
-    providerOptions,
+    {
+      model,
+      context,
+      providerOptions,
+    },
   ) {
     void model;
     contexts.push(context,);
@@ -227,7 +231,7 @@ await describe({
       name: 'passes focused question into provider user message',
       fn: async function testFocusedQuestionProviderMessage() {
         /** Captured provider contexts. */
-        const contexts: Context[] = [];
+        const contexts: Readonly<Context>[] = [];
         /** Fake complete implementation capturing context. */
         const completeModel = createCapturingCompleteModel({ contexts, });
 
@@ -262,9 +266,9 @@ await describe({
       name: 'retries once when provider returns no text',
       fn: async function testNoTextRetry() {
         /** Captured provider contexts. */
-        const contexts: Context[] = [];
+        const contexts: Readonly<Context>[] = [];
         /** Captured provider options. */
-        const options: ProviderStreamOptions[] = [];
+        const options: Readonly<ProviderStreamOptions>[] = [];
         /** Fake complete implementation returning no text then text. */
         const completeModel = createSequencedCompleteModel({
           contexts,
@@ -297,7 +301,7 @@ await describe({
       name: 'returns no text after retry also returns no text',
       fn: async function testNoTextRetryExhausted() {
         /** Captured provider contexts. */
-        const contexts: Context[] = [];
+        const contexts: Readonly<Context>[] = [];
         /** Fake complete implementation returning no text twice. */
         const completeModel = createSequencedCompleteModel({
           contexts,
