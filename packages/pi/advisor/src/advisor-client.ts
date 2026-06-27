@@ -122,24 +122,28 @@ export async function completeAdvisor(
   };
 
   /**
-   * Provider options built field-by-field for exact optional property types.
+   * Build provider options for one provider attempt.
+   *
+   * @returns provider options with fresh timeout signal
    */
-  const providerOptions: ProviderStreamOptions = {
-    signal: combinedSignal({
-      ...(options.signal
-        === undefined ? {} : { signal: options.signal, }),
+  function createProviderOptions(): ProviderStreamOptions {
+    return {
+      signal: combinedSignal({
+        ...(options.signal
+          === undefined ? {} : { signal: options.signal, }),
+        timeoutMs: options.config
+          .timeoutMs,
+      },),
       timeoutMs: options.config
         .timeoutMs,
-    },),
-    timeoutMs: options.config
-      .timeoutMs,
-    maxTokens: options.config
-      .maxAdvisorOutputTokens,
-    ...(auth.apiKey
-      === undefined ? {} : { apiKey: auth.apiKey, }),
-    ...(auth.headers
-      === undefined ? {} : { headers: auth.headers, }),
-  };
+      maxTokens: options.config
+        .maxAdvisorOutputTokens,
+      ...(auth.apiKey
+        === undefined ? {} : { apiKey: auth.apiKey, }),
+      ...(auth.headers
+        === undefined ? {} : { headers: auth.headers, }),
+    };
+  }
 
   /**
    * Completion implementation for provider call.
@@ -162,7 +166,7 @@ export async function completeAdvisor(
     const firstResponse = await completeModel(
       mutableModel,
       providerContext,
-      providerOptions,
+      createProviderOptions(),
     );
     /**
      * Whether the initial response contains user-visible text.
@@ -180,7 +184,7 @@ export async function completeAdvisor(
     return await completeModel(
       mutableModel,
       providerContext,
-      providerOptions,
+      createProviderOptions(),
     );
   }
   catch (error) {

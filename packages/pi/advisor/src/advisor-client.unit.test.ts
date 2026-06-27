@@ -9,6 +9,7 @@ import type {
   AssistantMessage,
   Context,
   Model,
+  ProviderStreamOptions,
   Usage,
 } from '@earendil-works/pi-ai';
 import type { ExtensionContext, } from '@earendil-works/pi-coding-agent';
@@ -184,9 +185,11 @@ function createSequencedCompleteModel(
   {
     contexts,
     responses,
+    options,
   }: {
     readonly contexts: Context[];
     readonly responses: readonly AssistantMessage[];
+    readonly options?: (ProviderStreamOptions | undefined)[];
   },
 ): CompleteAdvisorModel {
   /**
@@ -196,9 +199,12 @@ function createSequencedCompleteModel(
   return async function completeModel(
     model,
     context,
+    providerOptions,
   ) {
     void model;
     contexts.push(context,);
+    if (options !== undefined)
+      options.push(providerOptions,);
     /**
      * Response selected for this provider invocation.
      */
@@ -254,6 +260,8 @@ await describe({
       fn: async function testNoTextRetry() {
         /** Captured provider contexts. */
         const contexts: Context[] = [];
+        /** Captured provider options. */
+        const options: (ProviderStreamOptions | undefined)[] = [];
         /** Fake complete implementation returning no text then text. */
         const completeModel = createSequencedCompleteModel({
           contexts,
@@ -261,6 +269,7 @@ await describe({
             emptyAssistantMessage,
             assistantMessage,
           ],
+          options,
         },);
 
         const result = await completeAdvisor({
@@ -272,6 +281,38 @@ await describe({
         },);
 
         expect(result,).toEqual(assistantMessage,);
+        expect(contexts.length,).toBe(RETRY_PROVIDER_CALL_COUNT,);
+        expect(options.length,).toBe(RETRY_PROVIDER_CALL_COUNT,);
+        const [firstOptions, retryOptions,] = options;
+        if ((firstOptions === undefined) || (retryOptions === undefined))
+          throw new Error('provider options were not captured',);
+        expect(firstOptions,).not.toBe(retryOptions,);
+        expect(firstOptions.signal,).not.toBe(retryOptions.signal,);
+      },
+    },),
+    it({
+      name: 'returns no text after retry also returns no text',
+      fn: async function testNoTextRetryExhausted() {
+        /** Captured provider contexts. */
+        const contexts: Context[] = [];
+        /** Fake complete implementation returning no text twice. */
+        const completeModel = createSequencedCompleteModel({
+          contexts,
+          responses: [
+            emptyAssistantMessage,
+            emptyAssistantMessage,
+          ],
+        },);
+
+        const result = await completeAdvisor({
+          ctx: extensionContext,
+          model: fixtureModel,
+          config: advisorConfig,
+          advisorContext,
+          completeModel,
+        },);
+
+        expect(result,).toEqual(emptyAssistantMessage,);
         expect(contexts.length,).toBe(RETRY_PROVIDER_CALL_COUNT,);
       },
     },),
