@@ -35,12 +35,12 @@ function extractParamRefs(
    * Separate from `simplePattern` because `${VAR}` has no surrounding-character constraints.
    */
   // oxlint-disable-next-line no-restricted-syntax/no-regex -- shell parameter reference grammar (`${VAR}` form); the character class is the exact POSIX identifier rule. Input is bounded command string; no nested quantifiers means linear matching.
-  const bracedPattern = /\$\{([A-Za-z_][A-Za-z0-9_]*)\}/gu;
+  const bracedPattern = /\$\{(?<braced>[A-Za-z_][A-Za-z0-9_]*)\}/gu;
   /**
    * Negative lookbehind/lookahead skip `$$` (escape) and `${`/`$(` (substitutions/subshells), which need different handling.
    */
   // oxlint-disable-next-line no-restricted-syntax/no-regex -- shell parameter reference grammar (`$VAR` form with negative lookbehind/lookahead for $$/${/$( disambiguation); the boundary conditions need lookarounds to be expressed without false positives. Input is bounded command string; no nested quantifiers.
-  const simplePattern = /(?<!\$)\$([A-Za-z_][A-Za-z0-9_]*)(?![{(])/gu;
+  const simplePattern = /(?<!\$)\$(?<simple>[A-Za-z_][A-Za-z0-9_]*)(?![{(])/gu;
 
   /**
    * Captured variable names from `${VAR}` matches; `undefined` capture groups are filtered out.
@@ -48,7 +48,8 @@ function extractParamRefs(
   const bracedRefs = [...cmd.matchAll(bracedPattern,),]
     .map(
       function pickCapture(m,) {
-        return m[1];
+        return m.groups
+          ?.braced;
       },
     )
     .filter(
@@ -62,7 +63,8 @@ function extractParamRefs(
   const simpleRefs = [...cmd.matchAll(simplePattern,),]
     .map(
       function pickCapture(m,) {
-        return m[1];
+        return m.groups
+          ?.simple;
       },
     )
     .filter(

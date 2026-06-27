@@ -378,10 +378,10 @@ function bashSignals(
 
 //endregion
 
+export { hasFlag, } from './bash-helpers.ts';
+export { matchUserCommands, } from './command-matchers.ts';
 export {
   bashSignals,
-  hasFlag,
-  matchUserCommands,
   shouldFlag,
 };
-export type { CommandMatcher, };
+export type { CommandMatcher, } from './command-matchers.ts';

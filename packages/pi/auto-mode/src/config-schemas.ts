@@ -92,16 +92,29 @@ const CommandMatcherSchema: v.GenericSchema<string | string[]> = v.union([
 ],);
 
 /**
+ * Header-name schema for model override auth headers.
+ */
+const HeaderNameSchema: v.GenericSchema<string> = v.string();
+
+/**
+ * Header-value schema for model override auth headers.
+ */
+const HeaderValueSchema: v.GenericSchema<string> = v.string();
+
+/**
+ * Auth-header map schema for model override.
+ */
+const AuthHeadersSchema: v.GenericSchema<Record<string, string>> = v.record(
+  HeaderNameSchema,
+  HeaderValueSchema,
+);
+
+/**
  * Auth schema for model override.
  */
 const AuthSchema: v.GenericSchema<AuthShape> = v.object({
   apiKey: v.exactOptional(v.string(),),
-  headers: v.exactOptional(
-    v.record(
-      v.string(),
-      v.string(),
-    ),
-  ),
+  headers: v.exactOptional(AuthHeadersSchema,),
 },);
 
 /**

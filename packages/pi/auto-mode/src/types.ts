@@ -14,7 +14,6 @@ import type {
 } from '@earendil-works/pi-ai';
 import type {
   BudgetModel as SharedBudgetModel,
-  BudgetModelAuth,
   BudgetModelOverride,
   BudgetModelStrategy,
 } from '@monochromatic-dev/pi-shared-model-selection/ts';
@@ -516,7 +515,6 @@ export type {
   BashAnalysis,
   BatchEntry,
   BudgetModel,
-  BudgetModelAuth,
   BudgetModelOptions,
   CommandInfo,
   EnvAssignment,
@@ -530,3 +528,4 @@ export type {
   Verdict,
   VerdictData,
 };
+export type { BudgetModelAuth, } from '@monochromatic-dev/pi-shared-model-selection/ts';

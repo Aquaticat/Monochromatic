@@ -57,6 +57,24 @@ type ProposeTrustParams = {
 type ProposeTrustResult = AgentToolResult<unknown>;
 
 /**
+ * Required trust-rule parameter schema.
+ */
+const trustRuleParameterSchema = Type.String({
+  description:
+    "Brief, explicit trust rule stating what is allowed (e.g. 'Allow .env file access', 'Allow terraform commands', 'Allow editing safeguard source')",
+},);
+
+/**
+ * Optional trust-rule rationale parameter schema.
+ */
+// oxlint-disable-next-line new-cap -- typebox API naming convention
+const trustReasonParameterSchema = Type.Optional(
+  Type.String({
+    description: "Only if the rule isn't self-explanatory. Don't repeat the rule.",
+  },),
+);
+
+/**
  * Register the `propose_trust` tool on the extension API.
  *
  * Split out of the entry point so `index.ts` stays within the per-file line
@@ -86,16 +104,8 @@ function registerProposeTrust(
       "The reason field is optional. Only include it if the rule isn't self-explanatory. Don't repeat information from the rule.",
     ],
     parameters: Type.Object({
-      rule: Type.String({
-        description:
-          "Brief, explicit trust rule stating what is allowed (e.g. 'Allow .env file access', 'Allow terraform commands', 'Allow editing safeguard source')",
-      },),
-      // oxlint-disable-next-line new-cap -- typebox API naming convention
-      reason: Type.Optional(
-        Type.String({
-          description: "Only if the rule isn't self-explanatory. Don't repeat the rule.",
-        },),
-      ),
+      rule: trustRuleParameterSchema,
+      reason: trustReasonParameterSchema,
     },),
     async execute(
       _toolCallId: string,

@@ -652,10 +652,14 @@ await describe({
           home: '/var/home/user',
         };
 
+        const linkedPageGlob = join(
+          linkRoot,
+          'page-*.png',
+        );
+        const command = `GEMINI_API_KEY=value node ${scriptPath} ${linkedPageGlob}`;
+
         expect(bashSignals({
-          analysis: analyzeBashCommand(
-            `GEMINI_API_KEY=value node ${scriptPath} ${join(linkRoot, 'page-*.png',)}`,
-          ),
+          analysis: analyzeBashCommand(command,),
           ctx,
           trustedAgentTempDirs: [agentRoot,],
         },),).toBe(true,);

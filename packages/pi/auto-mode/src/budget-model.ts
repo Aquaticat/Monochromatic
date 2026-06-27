@@ -226,7 +226,5 @@ async function findBudgetModel(
 
 //endregion Public API
 
-export {
-  findBudgetModel,
-  NoBudgetModelError,
-};
+export { NoBudgetModelError, } from '@monochromatic-dev/pi-shared-model-selection/ts';
+export { findBudgetModel, };
