@@ -62,7 +62,7 @@ const l = tagged({
  *
  * @example
  * ```typescript
- * const streamFn: JudgeStreamSimple = defaultJudgeStreamSimple;
+ * const streamFn: JudgeStreamSimple = streams.streamSimple;
  * ```
  */
 type JudgeStreamSimple = ProviderStreams['streamSimple'];
@@ -117,7 +117,34 @@ const JUDGE_API_STREAMS: ReadonlyMap<string, ProviderStreams> = new Map([
   ],
 ],);
 
-/* oxlint-disable no-restricted-syntax/require-destructured-params, typescript/prefer-readonly-parameter-types -- implements pi-ai ProviderStreams['streamSimple'] positional signature with its library-owned mutable Context and options types */
+/**
+ * Direct pi-ai stream dispatch options.
+ */
+type DirectJudgeStreamOptions = {
+  /**
+   * Selected judge model.
+   */
+  readonly model: Readonly<Model<Api>>;
+  /**
+   * Context handed to pi-ai streamSimple.
+   */
+  readonly context: Readonly<Context>;
+  /**
+   * Simple stream options with resolved auth.
+   */
+  readonly options?: Readonly<SimpleStreamOptions>;
+};
+
+/**
+ * Judge stream dispatch options, optionally overriding the default stream implementation.
+ */
+type JudgeStreamCallOptions = DirectJudgeStreamOptions & {
+  /**
+   * Test seam or caller-supplied stream implementation.
+   */
+  readonly streamSimpleFn?: JudgeStreamSimple;
+};
+
 /**
  * Stream through pi-ai's direct non-compat API implementation for the model API.
  *
@@ -133,13 +160,15 @@ const JUDGE_API_STREAMS: ReadonlyMap<string, ProviderStreams> = new Map([
  *
  * @example
  * ```typescript
- * const stream = defaultJudgeStreamSimple(model, context, options);
+ * const stream = defaultJudgeStreamSimple({ model, context, options });
  * ```
  */
 function defaultJudgeStreamSimple(
-  model: Model<Api>,
-  context: Context,
-  options?: SimpleStreamOptions,
+  {
+    model,
+    context,
+    options,
+  }: DirectJudgeStreamOptions,
 ): AssistantMessageEventStream {
   /**
    * Direct API stream implementation matching the selected judge model.
@@ -156,7 +185,47 @@ function defaultJudgeStreamSimple(
     options,
   );
 }
-/* oxlint-enable no-restricted-syntax/require-destructured-params, typescript/prefer-readonly-parameter-types */
+
+/**
+ * Route judge streaming through a supplied test seam or the direct pi-ai API map.
+ *
+ * @param streamSimpleFn - optional caller-supplied stream implementation
+ *
+ * @param model - selected judge model
+ *
+ * @param context - context handed to pi-ai streamSimple
+ *
+ * @param options - simple stream options with resolved auth
+ *
+ * @returns assistant event stream from supplied or default implementation
+ *
+ * @example
+ * ```typescript
+ * const stream = streamJudgeSimple({ model, context, options });
+ * ```
+ */
+function streamJudgeSimple(
+  {
+    streamSimpleFn,
+    model,
+    context,
+    options,
+  }: JudgeStreamCallOptions,
+): AssistantMessageEventStream {
+  if (streamSimpleFn
+    !== undefined) {
+    return streamSimpleFn(
+      model,
+      context,
+      options,
+    );
+  }
+  return defaultJudgeStreamSimple({
+    model,
+    context,
+    options,
+  },);
+}
 
 //region Public API
 
@@ -214,7 +283,7 @@ async function callJudge(
     timeoutMs,
     systemPrompt,
     batchContext,
-    streamSimpleFn = defaultJudgeStreamSimple,
+    streamSimpleFn,
   }: {
     readonly model: Model<Api>;
     readonly auth: BudgetModelAuth;
@@ -281,19 +350,20 @@ async function callJudge(
   /**
    * Streaming event source for the initial forced-tool judge invocation.
    */
-  const toolCallStream = streamSimpleFn(
+  const toolCallStream = streamJudgeSimple({
+    streamSimpleFn,
     model,
-    {
+    context: {
       systemPrompt,
       messages,
       tools: [VERDICT_TOOL,],
     },
-    buildStreamOptions({
+    options: buildStreamOptions({
       auth,
       controller,
       toolChoice,
     },),
-  );
+  },);
 
   /**
    * Lazily create the direct JSON retry stream only after the first response omits `render_verdict`.
@@ -314,9 +384,10 @@ async function callJudge(
       readonly firstAttemptTextContent: string;
     },
   ): AsyncIterable<AssistantMessageEvent> {
-    return streamSimpleFn(
+    return streamJudgeSimple({
+      streamSimpleFn,
       model,
-      {
+      context: {
         systemPrompt: buildJsonRetrySystemPrompt({ systemPrompt, },),
         messages: [
           {
@@ -329,11 +400,11 @@ async function callJudge(
           },
         ],
       },
-      buildStreamOptions({
+      options: buildStreamOptions({
         auth,
         controller,
       },),
-    );
+    },);
   }
 
   /**
