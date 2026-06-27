@@ -132,7 +132,7 @@ type DirectJudgeStreamOptions = {
   /**
    * Simple stream options with resolved auth.
    */
-  readonly options?: Readonly<SimpleStreamOptions>;
+  readonly options?: Readonly<SimpleStreamOptions> | undefined;
 };
 
 /**
@@ -142,7 +142,7 @@ type JudgeStreamCallOptions = DirectJudgeStreamOptions & {
   /**
    * Test seam or caller-supplied stream implementation.
    */
-  readonly streamSimpleFn?: JudgeStreamSimple;
+  readonly streamSimpleFn?: JudgeStreamSimple | undefined;
 };
 
 /**
@@ -168,7 +168,7 @@ function defaultJudgeStreamSimple(
     model,
     context,
     options,
-  }: DirectJudgeStreamOptions,
+  }: Readonly<DirectJudgeStreamOptions>,
 ): AssistantMessageEventStream {
   /**
    * Direct API stream implementation matching the selected judge model.
@@ -210,7 +210,7 @@ function streamJudgeSimple(
     model,
     context,
     options,
-  }: JudgeStreamCallOptions,
+  }: Readonly<JudgeStreamCallOptions>,
 ): AssistantMessageEventStream {
   if (streamSimpleFn
     !== undefined) {
