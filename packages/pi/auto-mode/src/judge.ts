@@ -12,8 +12,8 @@ import {
   type Api,
   type AssistantMessageEvent,
   type Model,
-  streamSimple,
 } from '@earendil-works/pi-ai';
+import { streamSimple, } from '@earendil-works/pi-ai/compat';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
   toolChoiceForApi,
