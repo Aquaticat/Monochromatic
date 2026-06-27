@@ -132,7 +132,7 @@ type DirectJudgeStreamOptions = {
   /**
    * Simple stream options with resolved auth.
    */
-  readonly options?: Readonly<SimpleStreamOptions> | undefined;
+  readonly options?: Readonly<SimpleStreamOptions>;
 };
 
 /**
@@ -142,9 +142,10 @@ type JudgeStreamCallOptions = DirectJudgeStreamOptions & {
   /**
    * Test seam or caller-supplied stream implementation.
    */
-  readonly streamSimpleFn?: JudgeStreamSimple | undefined;
+  readonly streamSimpleFn?: JudgeStreamSimple;
 };
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- pi-ai model, context, and stream option types are library-owned mutable API shapes; this adapter only reads them before handing them back to pi-ai */
 /**
  * Stream through pi-ai's direct non-compat API implementation for the model API.
  *
@@ -185,7 +186,9 @@ function defaultJudgeStreamSimple(
     options,
   );
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- pi-ai model, context, and stream option types are library-owned mutable API shapes; this adapter only reads them before handing them back to pi-ai */
 /**
  * Route judge streaming through a supplied test seam or the direct pi-ai API map.
  *
@@ -220,12 +223,19 @@ function streamJudgeSimple(
       options,
     );
   }
+  if (options !== undefined) {
+    return defaultJudgeStreamSimple({
+      model,
+      context,
+      options,
+    },);
+  }
   return defaultJudgeStreamSimple({
     model,
     context,
-    options,
   },);
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 //region Public API
 
@@ -351,7 +361,7 @@ async function callJudge(
    * Streaming event source for the initial forced-tool judge invocation.
    */
   const toolCallStream = streamJudgeSimple({
-    streamSimpleFn,
+    ...(streamSimpleFn !== undefined ? { streamSimpleFn, } : {}),
     model,
     context: {
       systemPrompt,
@@ -385,7 +395,7 @@ async function callJudge(
     },
   ): AsyncIterable<AssistantMessageEvent> {
     return streamJudgeSimple({
-      streamSimpleFn,
+      ...(streamSimpleFn !== undefined ? { streamSimpleFn, } : {}),
       model,
       context: {
         systemPrompt: buildJsonRetrySystemPrompt({ systemPrompt, },),
