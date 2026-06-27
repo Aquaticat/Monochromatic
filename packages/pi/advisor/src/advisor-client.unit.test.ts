@@ -190,9 +190,9 @@ function createSequencedCompleteModel(
   },
 ): CompleteAdvisorModel {
   /**
-   * Next response index to return.
+   * Queue of provider responses not yet returned.
    */
-  let callIndex = 0;
+  const remainingResponses = [...responses,];
   return async function completeModel(
     model,
     context,
@@ -202,8 +202,7 @@ function createSequencedCompleteModel(
     /**
      * Response selected for this provider invocation.
      */
-    const response = responses[callIndex];
-    callIndex += 1;
+    const response = remainingResponses.shift();
     if (response === undefined)
       throw new Error('fake complete was called too many times',);
     return response;

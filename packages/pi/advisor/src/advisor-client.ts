@@ -4,12 +4,12 @@
  * @module
  */
 
-import {
-  type Api,
-  type AssistantMessage,
-  type Message,
-  type Model,
-  type ProviderStreamOptions,
+import type {
+  Api,
+  AssistantMessage,
+  Message,
+  Model,
+  ProviderStreamOptions,
 } from '@earendil-works/pi-ai';
 import { complete, } from '@earendil-works/pi-ai/compat';
 import type { ExtensionContext, } from '@earendil-works/pi-coding-agent';
@@ -164,11 +164,17 @@ export async function completeAdvisor(
       providerContext,
       providerOptions,
     );
-    if (firstResponse.content.some(function hasTextContent(block,) {
-      return block.type
-        === 'text'
-        && block.text !== '';
-    },))
+    /**
+     * Whether the initial response contains user-visible text.
+     */
+    const responseHasText = firstResponse
+      .content
+      .some(function hasTextContent(block,) {
+        return (block.type
+          === 'text')
+          && (block.text !== '');
+      },);
+    if (responseHasText)
       return firstResponse;
 
     return await completeModel(
