@@ -117,6 +117,7 @@ const JUDGE_API_STREAMS: ReadonlyMap<string, ProviderStreams> = new Map([
   ],
 ],);
 
+/* oxlint-disable no-restricted-syntax/require-destructured-params, typescript/prefer-readonly-parameter-types -- implements pi-ai ProviderStreams['streamSimple'] positional signature with its library-owned mutable Context and options types */
 /**
  * Stream through pi-ai's direct non-compat API implementation for the model API.
  *
@@ -155,6 +156,7 @@ function defaultJudgeStreamSimple(
     options,
   );
 }
+/* oxlint-enable no-restricted-syntax/require-destructured-params, typescript/prefer-readonly-parameter-types */
 
 //region Public API
 
