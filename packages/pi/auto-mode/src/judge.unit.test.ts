@@ -367,6 +367,65 @@ await describe({
         ],);
       },
     },),
+
+    it({
+      name: 'throws no-text error after extra direct JSON retry is also empty',
+      fn: async () => {
+        /** Captured first-attempt text passed to each direct JSON retry. */
+        const retryAttempts: string[] = [];
+        /** Error captured from the failed retry sequence. */
+        const capturedErrors: unknown[] = [];
+
+        async function* firstStream(): AsyncIterable<unknown> {
+          yield {
+            type: 'text_end',
+            contentIndex: 0,
+            content: 'I did not use the tool.',
+            partial: {},
+          };
+        }
+
+        async function* emptyJsonRetryStream(): AsyncIterable<unknown> {
+          yield {
+            type: 'text_end',
+            contentIndex: 0,
+            content: '',
+            partial: {},
+          };
+        }
+
+        function createJsonRetryStream(
+          {
+            firstAttemptTextContent,
+          }: {
+            readonly firstAttemptTextContent: string;
+          },
+        ): AsyncIterable<unknown> {
+          retryAttempts.push(firstAttemptTextContent,);
+          return emptyJsonRetryStream();
+        }
+
+        try {
+          await collectJudgeVerdictArgs({
+            toolCallStream: firstStream() as never,
+            createJsonRetryStream: createJsonRetryStream as never,
+          },);
+        }
+        catch (error) {
+          capturedErrors.push(error,);
+        }
+
+        expect(retryAttempts,).toEqual([
+          'I did not use the tool.',
+          'I did not use the tool.',
+        ],);
+        expect(capturedErrors,).toHaveLength(1,);
+        const [capturedError,] = capturedErrors;
+        if (!(capturedError instanceof Error))
+          throw new Error('expected no-text retry failure to throw Error instance',);
+        expect(capturedError.message,).toBe('Judge JSON returned no text to parse',);
+      },
+    },),
   ],
 },);
 

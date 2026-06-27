@@ -97,6 +97,29 @@ const JUDGE_JSON_NO_TEXT_ERROR_MESSAGE =
   'Judge JSON returned no text to parse';
 
 /**
+ * Error raised when direct JSON retry transport returns no text blocks.
+ *
+ * @example
+ * ```typescript
+ * throw new JudgeJsonNoTextError();
+ * ```
+ */
+class JudgeJsonNoTextError extends Error {
+  /**
+   * Create a no-text retry error with stable user-facing message text.
+   *
+   * @example
+   * ```typescript
+   * const error = new JudgeJsonNoTextError();
+   * ```
+   */
+  constructor() {
+    super(JUDGE_JSON_NO_TEXT_ERROR_MESSAGE,);
+    this.name = JudgeJsonNoTextError.name;
+  }
+}
+
+/**
  * Collect verdict arguments from the first tool-call stream, retrying with
  * direct JSON when the judge emits no tool call, then retrying an empty direct
  * JSON response once more.
@@ -145,10 +168,8 @@ async function collectJudgeVerdictArgs(
     );
   }
   catch (error) {
-    if (!((error instanceof Error)
-      && (error.message === JUDGE_JSON_NO_TEXT_ERROR_MESSAGE))) {
+    if (!(error instanceof JudgeJsonNoTextError))
       throw error;
-    }
 
     innerL.error('judge direct JSON retry returned no text; retrying direct JSON once more',);
     return collectJsonVerdict(
@@ -243,9 +264,7 @@ async function collectJsonVerdict(
     return result.args;
 
   if (result.textContent === '') {
-    throw new Error(
-      JUDGE_JSON_NO_TEXT_ERROR_MESSAGE,
-    );
+    throw new JudgeJsonNoTextError();
   }
 
   return extractJsonVerdict(result.textContent,);
