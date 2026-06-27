@@ -35,15 +35,31 @@ type PreferReadonlyParameterTypesRule = NonNullable<
 >;
 
 /**
+ * Mutable specifier copies matching oxlint's generated option schema.
+ */
+const allowSpecifiers = [
+  ...libAllowSpecifiers.map(function copyLibSpecifier(specifier,) {
+    return {
+      from: specifier.from,
+      name: [...specifier.name,],
+    };
+  },),
+  ...packageAllowSpecifiers.map(function copyPackageSpecifier(specifier,) {
+    return {
+      from: specifier.from,
+      package: specifier.package,
+      name: [...specifier.name,],
+    };
+  },),
+];
+
+/**
  * Rule entry for `typescript/prefer-readonly-parameter-types`.
  */
 export const preferReadonlyParameterTypesRule: PreferReadonlyParameterTypesRule = [
   'warn',
   {
-    allow: [
-      ...libAllowSpecifiers,
-      ...packageAllowSpecifiers,
-    ],
+    allow: allowSpecifiers,
     ignoreInferredTypes: true,
   },
 ];
