@@ -7,11 +7,21 @@
 import type {
   Api,
   AssistantMessage,
+  Context,
   Message,
   Model,
   ProviderStreamOptions,
+  ProviderStreams,
 } from '@earendil-works/pi-ai';
-import { complete, } from '@earendil-works/pi-ai/compat';
+import { anthropicMessagesApi, } from '@earendil-works/pi-ai/api/anthropic-messages.lazy';
+import { azureOpenAIResponsesApi, } from '@earendil-works/pi-ai/api/azure-openai-responses.lazy';
+import { bedrockConverseStreamApi, } from '@earendil-works/pi-ai/api/bedrock-converse-stream.lazy';
+import { googleGenerativeAIApi, } from '@earendil-works/pi-ai/api/google-generative-ai.lazy';
+import { googleVertexApi, } from '@earendil-works/pi-ai/api/google-vertex.lazy';
+import { mistralConversationsApi, } from '@earendil-works/pi-ai/api/mistral-conversations.lazy';
+import { openAICodexResponsesApi, } from '@earendil-works/pi-ai/api/openai-codex-responses.lazy';
+import { openAICompletionsApi, } from '@earendil-works/pi-ai/api/openai-completions.lazy';
+import { openAIResponsesApi, } from '@earendil-works/pi-ai/api/openai-responses.lazy';
 import type { ExtensionContext, } from '@earendil-works/pi-coding-agent';
 import type { ReadonlyDeep, } from 'type-fest';
 import { ADVISOR_SYSTEM_PROMPT, } from './constants.ts';
@@ -27,7 +37,111 @@ import type {
 /**
  * Complete function used to call Advisor model.
  */
-export type CompleteAdvisorModel = typeof complete;
+export type CompleteAdvisorModel = (
+  model: Model<Api>,
+  context: Context,
+  options?: ProviderStreamOptions,
+) => Promise<AssistantMessage>;
+
+/**
+ * Non-compat pi-ai API streams supported by Advisor.
+ *
+ * Direct API dispatch preserves registry-selected custom model records because
+ * Advisor already resolves API keys and headers before calling the model.
+ *
+ * @example
+ * ```typescript
+ * const streams = ADVISOR_API_STREAMS.get('openai-completions');
+ * ```
+ */
+const ADVISOR_API_STREAMS: ReadonlyMap<string, ProviderStreams> = new Map([
+  [
+    'anthropic-messages',
+    anthropicMessagesApi(),
+  ],
+  [
+    'azure-openai-responses',
+    azureOpenAIResponsesApi(),
+  ],
+  [
+    'bedrock-converse-stream',
+    bedrockConverseStreamApi(),
+  ],
+  [
+    'google-generative-ai',
+    googleGenerativeAIApi(),
+  ],
+  [
+    'google-vertex',
+    googleVertexApi(),
+  ],
+  [
+    'mistral-conversations',
+    mistralConversationsApi(),
+  ],
+  [
+    'openai-codex-responses',
+    openAICodexResponsesApi(),
+  ],
+  [
+    'openai-completions',
+    openAICompletionsApi(),
+  ],
+  [
+    'openai-responses',
+    openAIResponsesApi(),
+  ],
+],);
+
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- pi-ai model, context, and stream option types are library-owned mutable API shapes; this adapter only reads them before handing them back to pi-ai. */
+/**
+ * Complete through pi-ai's direct non-compat API implementation for the model API.
+ *
+ * @param model - selected Advisor model
+ *
+ * @param context - provider context
+ *
+ * @param options - provider stream options with resolved auth
+ *
+ * @returns final assistant message from matching pi-ai API implementation
+ *
+ * @throws when model API has no direct implementation registered for Advisor
+ *
+ * @example
+ * ```typescript
+ * const message = await defaultCompleteAdvisorModel(model, context, options);
+ * ```
+ */
+async function defaultCompleteAdvisorModel(
+  model: Model<Api>,
+  context: Context,
+  options?: ProviderStreamOptions,
+): Promise<AssistantMessage> {
+  /**
+   * Direct API stream implementation matching the selected Advisor model.
+   */
+  const streams = ADVISOR_API_STREAMS.get(model.api,);
+  if (streams === undefined) {
+    throw new Error(
+      `No pi-ai API implementation available for advisor model api "${model.api}" (${model.provider}/${model.id})`,
+    );
+  }
+  if (options !== undefined)
+    return await streams
+      .stream(
+        model,
+        context,
+        options,
+      )
+      .result();
+  return await streams
+    .stream(
+      model,
+      context,
+    )
+    .result();
+}
+/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 /**
  * Options for invoking the selected Advisor model.
@@ -158,7 +272,7 @@ export async function completeAdvisor(
    * Completion implementation for provider call.
    */
   const completeModel = options.completeModel
-    ?? complete;
+    ?? defaultCompleteAdvisorModel;
 
   /**
    * Provider context shared by initial call and retry.
