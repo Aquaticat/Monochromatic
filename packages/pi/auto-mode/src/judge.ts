@@ -8,10 +8,10 @@
  * @module
  */
 
-import {
-  type Api,
-  type AssistantMessageEvent,
-  type Model,
+import type {
+  Api,
+  AssistantMessageEvent,
+  Model,
 } from '@earendil-works/pi-ai';
 import { streamSimple, } from '@earendil-works/pi-ai/compat';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
@@ -171,6 +171,11 @@ async function callJudge(
   },);
 
   /**
+   * API-specific forced tool-call selector for the initial judge invocation.
+   */
+  const toolChoice = toolChoiceForApi(String(model.api,),);
+
+  /**
    * Streaming event source for the initial forced-tool judge invocation.
    */
   const toolCallStream = streamSimpleFn(
@@ -183,7 +188,7 @@ async function callJudge(
     buildStreamOptions({
       auth,
       controller,
-      toolChoice: toolChoiceForApi(String(model.api,),),
+      toolChoice,
     },),
   );
 
