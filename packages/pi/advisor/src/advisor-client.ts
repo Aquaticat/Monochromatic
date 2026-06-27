@@ -122,6 +122,15 @@ export async function completeAdvisor(
   };
 
   /**
+   * Provider API key, when the selected model registry supplies one.
+   */
+  const providerApiKey = auth.apiKey;
+  /**
+   * Provider headers, when the selected model registry supplies them.
+   */
+  const providerHeaders = auth.headers;
+
+  /**
    * Build provider options for one provider attempt.
    *
    * @returns provider options with fresh timeout signal
@@ -138,10 +147,10 @@ export async function completeAdvisor(
         .timeoutMs,
       maxTokens: options.config
         .maxAdvisorOutputTokens,
-      ...(auth.apiKey
-        === undefined ? {} : { apiKey: auth.apiKey, }),
-      ...(auth.headers
-        === undefined ? {} : { headers: auth.headers, }),
+      ...(providerApiKey
+        === undefined ? {} : { apiKey: providerApiKey, }),
+      ...(providerHeaders
+        === undefined ? {} : { headers: providerHeaders, }),
     };
   }
 

@@ -189,7 +189,7 @@ function createSequencedCompleteModel(
   }: {
     readonly contexts: Context[];
     readonly responses: readonly AssistantMessage[];
-    readonly options?: (ProviderStreamOptions | undefined)[];
+    readonly options?: ProviderStreamOptions[];
   },
 ): CompleteAdvisorModel {
   /**
@@ -203,8 +203,11 @@ function createSequencedCompleteModel(
   ) {
     void model;
     contexts.push(context,);
-    if (options !== undefined)
+    if (options !== undefined) {
+      if (providerOptions === undefined)
+        throw new Error('provider options were not supplied',);
       options.push(providerOptions,);
+    }
     /**
      * Response selected for this provider invocation.
      */
@@ -261,7 +264,7 @@ await describe({
         /** Captured provider contexts. */
         const contexts: Context[] = [];
         /** Captured provider options. */
-        const options: (ProviderStreamOptions | undefined)[] = [];
+        const options: ProviderStreamOptions[] = [];
         /** Fake complete implementation returning no text then text. */
         const completeModel = createSequencedCompleteModel({
           contexts,
