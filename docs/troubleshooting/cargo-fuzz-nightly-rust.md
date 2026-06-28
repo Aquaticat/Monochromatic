@@ -176,7 +176,7 @@ $ cargo +stable fuzz run --target x86_64-unknown-linux-gnuasan fuzz_target_1 -- 
 error: the option `Z` is only accepted on the nightly compiler
 ```
 
-Patterns that work cleanly:
+Patterns that build and run:
 
 ```text
 $ cargo +nightly fuzz run --target x86_64-unknown-linux-gnu fuzz_target_1 -- -runs=0
@@ -188,6 +188,9 @@ Done 2 runs in 0 second(s)
 ```text
 $ cargo +stable fuzz run --sanitizer none --target x86_64-unknown-linux-gnu fuzz_target_1 -- -runs=0
 Finished `release` profile [optimized + debuginfo] target(s) in 5.72s
+WARNING: Failed to find function "__sanitizer_acquire_crash_state".
+WARNING: Failed to find function "__sanitizer_print_stack_trace".
+WARNING: Failed to find function "__sanitizer_set_death_callback".
 INFO: Loaded 1 modules   (151 inline 8-bit counters): 151 [...]
 Done 2 runs in 0 second(s)
 ```
@@ -221,9 +224,13 @@ cargo +stable fuzz run --sanitizer none --target x86_64-unknown-linux-gnu fuzz_t
 Tradeoff:
  coverage-guided fuzzing still runs,
  but sanitizer diagnostics are absent.
+ libFuzzer also reports missing
+sanitizer crash-state,
+ stack-trace,
+ and death-callback hooks.
  This is suitable for panic,
-assertion,
- parser-invariant,
+ assertion,
+parser-invariant,
  and corpus-generation fuzzing,
  not for catching unsafe-code memory bugs.
 
@@ -249,6 +256,11 @@ nightly default path.
    The 0.13.2 source already has a stable-sanitizer branch,
    but the version gate is a
   placeholder until Rust stabilization lands.
+- Omitting `--target` when testing stable workarounds.
+   cargo-fuzz's default target is environment-dependent;
+  in this verification it picked `x86_64-unknown-linux-musl`,
+   which failed before the sanitizer question because that
+  stable target was not installed.
 - Selecting `--target x86_64-unknown-linux-gnuasan` by itself.
    cargo-fuzz still defaults to `--sanitizer address`,
   so it still emits `-Zsanitizer=address` on stable.
