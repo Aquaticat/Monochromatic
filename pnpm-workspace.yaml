@@ -8,6 +8,7 @@ autoInstallPeers: false
 
 catalog:
   '@anthropic-ai/sdk': '>=0.99.0'
+  '@clack/prompts': '>=1.6.0'
   '@csstools/css-tokenizer': '>=4.0.0'
   '@deck.gl/core': '>=9.3.2'
   '@deck.gl/layers': '>=9.3.2'

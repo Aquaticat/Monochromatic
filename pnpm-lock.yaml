@@ -10,6 +10,9 @@ catalogs:
       specifier: npm:@typescript/typescript6@^6.0.0
       version: 6.0.1
   default:
+    '@clack/prompts':
+      specifier: '>=1.6.0'
+      version: 1.6.0
     '@csstools/css-tokenizer':
       specifier: '>=4.0.0'
       version: 4.0.0
@@ -638,6 +641,31 @@ importers:
       '@monochromatic-dev/config-typescript':
         specifier: workspace:*
         version: link:../../config/typescript
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.0.1
+
+  packages/cli/android-exempt-unused:
+    dependencies:
+      '@clack/prompts':
+        specifier: 'catalog:'
+        version: 1.6.0
+      '@monochromatic-dev/module-logger':
+        specifier: workspace:*
+        version: link:../../module/logger
+      nano-spawn:
+        specifier: 'catalog:'
+        version: 2.1.0
+    devDependencies:
+      '@monochromatic-dev/config-tsdown':
+        specifier: workspace:*
+        version: link:../../config/tsdown
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
       '@types/node':
         specifier: 'catalog:'
         version: 26.0.1
@@ -3000,6 +3028,14 @@ packages:
 
   '@cacheable/utils@2.4.1':
     resolution: {integrity: sha512-eiFgzCbIneyMlLOmNG4g9xzF7Hv3Mga4LjxjcSC/ues6VYq2+gUbQI8JqNuw/ZM8tJIeIaBGpswAsqV2V7ApgA==, tarball: https://registry.npmjs.org/@cacheable/utils/-/utils-2.4.1.tgz}
+
+  '@clack/core@1.4.2':
+    resolution: {integrity: sha512-0Ty/1Gfm+Kb07sXcuESjyKfwEhSy4Ns1AgeEisHb/bDY5fWme0tTeTkU14T1Gmcs17YIjB/teiDe4uaCghbYqQ==, tarball: https://registry.npmjs.org/@clack/core/-/core-1.4.2.tgz}
+    engines: {node: '>= 20.12.0'}
+
+  '@clack/prompts@1.6.0':
+    resolution: {integrity: sha512-EYlRokl8szrP9Z25qT5aepMdBjzBvHF9ZEhzIiUBc9guz/T31EqRgvD0QSgZcpE93xiwrr+OkB4nz0BZyF6fSA==, tarball: https://registry.npmjs.org/@clack/prompts/-/prompts-1.6.0.tgz}
+    engines: {node: '>= 20.12.0'}
 
   '@csstools/css-calc@3.2.1':
     resolution: {integrity: sha512-DtdHlgXh5ZkA43cwBcAm+huzgJiwx3ZTWVjBs94kwz2xKqSimDA3lBgCjphYgwgVUMWatSM0pDd8TILB1yrVVg==, tarball: https://registry.npmjs.org/@csstools/css-calc/-/css-calc-3.2.1.tgz}
@@ -5596,6 +5632,9 @@ packages:
   sinon@22.0.0:
     resolution: {integrity: sha512-sq/6DpdXOrLyfbKlXLg/Usc7xu8YXPeLkOFZRvA3bNUSA2lhbrZ06yuXbH1fkzBPCbz9O10+7hznzUsjaYNm0Q==, tarball: https://registry.npmjs.org/sinon/-/sinon-22.0.0.tgz}
 
+  sisteransi@1.0.5:
+    resolution: {integrity: sha512-bLGGlR1QxBcynn2d5YmDX4MGjlZvy2MRBDRNHLJ8VI6l6+9FUiyTFNJ0IveOSP0bcXgVDPRcfGqA0pjaqUpfVg==, tarball: https://registry.npmjs.org/sisteransi/-/sisteransi-1.0.5.tgz}
+
   slash@5.1.0:
     resolution: {integrity: sha512-ZA6oR3T/pEyuqwMgAKT0/hAv8oAXckzbkmR0UkUosQ+Mc4RxGoJkRmwHgHufaenlyAgE1Mxgpdcrf75y6XcnDg==, tarball: https://registry.npmjs.org/slash/-/slash-5.1.0.tgz}
     engines: {node: '>=14.16'}
@@ -6274,6 +6313,18 @@ snapshots:
     dependencies:
       hashery: 1.5.1
       keyv: 5.6.0
+
+  '@clack/core@1.4.2':
+    dependencies:
+      fast-wrap-ansi: 0.2.2
+      sisteransi: 1.0.5
+
+  '@clack/prompts@1.6.0':
+    dependencies:
+      '@clack/core': 1.4.2
+      fast-string-width: 3.0.2
+      fast-wrap-ansi: 0.2.2
+      sisteransi: 1.0.5
 
   '@csstools/css-calc@3.2.1(@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.0))(@csstools/css-tokenizer@4.0.0)':
     dependencies:
@@ -9161,6 +9212,8 @@ snapshots:
       '@sinonjs/fake-timers': 15.4.0
       '@sinonjs/samsam': 10.0.2
       diff: 9.0.0
+
+  sisteransi@1.0.5: {}
 
   slash@5.1.0: {}
 
