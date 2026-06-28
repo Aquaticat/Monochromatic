@@ -403,7 +403,7 @@ version = "0.29.0"
 backend = "cargo:apple-codesign"
 
 [[tools."cargo:cargo-fuzz"]]
-version = "0.13.1"
+version = "0.13.2"
 backend = "cargo:cargo-fuzz"
 
 [[tools."cargo:cargo-ndk"]]
@@ -749,66 +749,66 @@ checksum = "sha256:d3625e7cadf23787ea540229544b6e2ab494b3b54da1801879e583e1dfee0
 url = "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.11%2B10/OpenJDK21U-jdk_x64_windows_hotspot_21.0.11_10.zip"
 
 [[tools."llama.cpp"]]
-version = "b9632"
+version = "b9829"
 backend = "github:ggml-org/llama.cpp"
 
 [tools."llama.cpp".options]
 version_prefix = "b"
 
 [tools."llama.cpp"."platforms.linux-arm64"]
-checksum = "sha256:6ad93855bce7a74d701706e47f68c6edbdb35d6d74d3786ef4eea66390676106"
-url = "https://github.com/ggml-org/llama.cpp/releases/download/b9632/llama-b9632-bin-ubuntu-arm64.tar.gz"
-url_api = "https://api.github.com/repos/ggml-org/llama.cpp/releases/assets/447367793"
+checksum = "sha256:684f2f4c3e449cf65b560f866905ff38c27e0645615aa36a217e8d1d86df0e55"
+url = "https://github.com/ggml-org/llama.cpp/releases/download/b9829/llama-b9829-bin-ubuntu-arm64.tar.gz"
+url_api = "https://api.github.com/repos/ggml-org/llama.cpp/releases/assets/460047920"
 
 [tools."llama.cpp"."platforms.linux-arm64-musl"]
-checksum = "sha256:6ad93855bce7a74d701706e47f68c6edbdb35d6d74d3786ef4eea66390676106"
-url = "https://github.com/ggml-org/llama.cpp/releases/download/b9632/llama-b9632-bin-ubuntu-arm64.tar.gz"
-url_api = "https://api.github.com/repos/ggml-org/llama.cpp/releases/assets/447367793"
+checksum = "sha256:684f2f4c3e449cf65b560f866905ff38c27e0645615aa36a217e8d1d86df0e55"
+url = "https://github.com/ggml-org/llama.cpp/releases/download/b9829/llama-b9829-bin-ubuntu-arm64.tar.gz"
+url_api = "https://api.github.com/repos/ggml-org/llama.cpp/releases/assets/460047920"
 
 [tools."llama.cpp"."platforms.linux-x64"]
-checksum = "sha256:6453261957c3665617d4d58be4749e2e09fd1f8a5b25b497f4c9c55d273ee38c"
-url = "https://github.com/ggml-org/llama.cpp/releases/download/b9632/llama-b9632-bin-ubuntu-x64.tar.gz"
-url_api = "https://api.github.com/repos/ggml-org/llama.cpp/releases/assets/447367930"
+checksum = "sha256:be52668d34106d1fccf4ddff63ad7be7c938c3cb3bdaf565eaeff01200810e5f"
+url = "https://github.com/ggml-org/llama.cpp/releases/download/b9829/llama-b9829-bin-ubuntu-x64.tar.gz"
+url_api = "https://api.github.com/repos/ggml-org/llama.cpp/releases/assets/460048052"
 
 [tools."llama.cpp"."platforms.linux-x64-baseline"]
-checksum = "sha256:6453261957c3665617d4d58be4749e2e09fd1f8a5b25b497f4c9c55d273ee38c"
-url = "https://github.com/ggml-org/llama.cpp/releases/download/b9632/llama-b9632-bin-ubuntu-x64.tar.gz"
-url_api = "https://api.github.com/repos/ggml-org/llama.cpp/releases/assets/447367930"
+checksum = "sha256:be52668d34106d1fccf4ddff63ad7be7c938c3cb3bdaf565eaeff01200810e5f"
+url = "https://github.com/ggml-org/llama.cpp/releases/download/b9829/llama-b9829-bin-ubuntu-x64.tar.gz"
+url_api = "https://api.github.com/repos/ggml-org/llama.cpp/releases/assets/460048052"
 
 [tools."llama.cpp"."platforms.linux-x64-musl"]
-checksum = "sha256:6453261957c3665617d4d58be4749e2e09fd1f8a5b25b497f4c9c55d273ee38c"
-url = "https://github.com/ggml-org/llama.cpp/releases/download/b9632/llama-b9632-bin-ubuntu-x64.tar.gz"
-url_api = "https://api.github.com/repos/ggml-org/llama.cpp/releases/assets/447367930"
+checksum = "sha256:be52668d34106d1fccf4ddff63ad7be7c938c3cb3bdaf565eaeff01200810e5f"
+url = "https://github.com/ggml-org/llama.cpp/releases/download/b9829/llama-b9829-bin-ubuntu-x64.tar.gz"
+url_api = "https://api.github.com/repos/ggml-org/llama.cpp/releases/assets/460048052"
 
 [tools."llama.cpp"."platforms.linux-x64-musl-baseline"]
-checksum = "sha256:6453261957c3665617d4d58be4749e2e09fd1f8a5b25b497f4c9c55d273ee38c"
-url = "https://github.com/ggml-org/llama.cpp/releases/download/b9632/llama-b9632-bin-ubuntu-x64.tar.gz"
-url_api = "https://api.github.com/repos/ggml-org/llama.cpp/releases/assets/447367930"
+checksum = "sha256:be52668d34106d1fccf4ddff63ad7be7c938c3cb3bdaf565eaeff01200810e5f"
+url = "https://github.com/ggml-org/llama.cpp/releases/download/b9829/llama-b9829-bin-ubuntu-x64.tar.gz"
+url_api = "https://api.github.com/repos/ggml-org/llama.cpp/releases/assets/460048052"
 
 [tools."llama.cpp"."platforms.macos-arm64"]
-checksum = "sha256:dcdc393cb2cca4a23423f3eeed9f2dba4462c98c58191c6ce6a2c65d4bdd4d92"
-url = "https://github.com/ggml-org/llama.cpp/releases/download/b9632/llama-b9632-bin-macos-arm64.tar.gz"
-url_api = "https://api.github.com/repos/ggml-org/llama.cpp/releases/assets/447367774"
+checksum = "sha256:11ccfba6c46eafc597e0c9eda4a44587254fdf096607194c54b46b42de24c523"
+url = "https://github.com/ggml-org/llama.cpp/releases/download/b9829/llama-b9829-bin-macos-arm64.tar.gz"
+url_api = "https://api.github.com/repos/ggml-org/llama.cpp/releases/assets/460047911"
 
 [tools."llama.cpp"."platforms.macos-x64"]
-checksum = "sha256:7c40760ec7a1c9b843b2d197d60aa50a22f4826406cf6271c2cc910409856a5f"
-url = "https://github.com/ggml-org/llama.cpp/releases/download/b9632/llama-b9632-bin-macos-x64.tar.gz"
-url_api = "https://api.github.com/repos/ggml-org/llama.cpp/releases/assets/447367787"
+checksum = "sha256:39331d930ffdd0ac499d8373833e2ed90ae477f39967e95f0d71892b117c02ad"
+url = "https://github.com/ggml-org/llama.cpp/releases/download/b9829/llama-b9829-bin-macos-x64.tar.gz"
+url_api = "https://api.github.com/repos/ggml-org/llama.cpp/releases/assets/460047915"
 
 [tools."llama.cpp"."platforms.macos-x64-baseline"]
-checksum = "sha256:7c40760ec7a1c9b843b2d197d60aa50a22f4826406cf6271c2cc910409856a5f"
-url = "https://github.com/ggml-org/llama.cpp/releases/download/b9632/llama-b9632-bin-macos-x64.tar.gz"
-url_api = "https://api.github.com/repos/ggml-org/llama.cpp/releases/assets/447367787"
+checksum = "sha256:39331d930ffdd0ac499d8373833e2ed90ae477f39967e95f0d71892b117c02ad"
+url = "https://github.com/ggml-org/llama.cpp/releases/download/b9829/llama-b9829-bin-macos-x64.tar.gz"
+url_api = "https://api.github.com/repos/ggml-org/llama.cpp/releases/assets/460047915"
 
 [tools."llama.cpp"."platforms.windows-x64"]
-checksum = "sha256:b835d5c5155dd2a5ed748a0351debf2ede0dc9f808757e0429f8700a11832dcd"
-url = "https://github.com/ggml-org/llama.cpp/releases/download/b9632/llama-b9632-bin-win-cpu-x64.zip"
-url_api = "https://api.github.com/repos/ggml-org/llama.cpp/releases/assets/447367944"
+checksum = "sha256:df162d7d630c4cbebf187716f8e42e77e2ac2a15d155ebe13245ec65ffb97ccd"
+url = "https://github.com/ggml-org/llama.cpp/releases/download/b9829/llama-b9829-bin-win-cpu-x64.zip"
+url_api = "https://api.github.com/repos/ggml-org/llama.cpp/releases/assets/460048064"
 
 [tools."llama.cpp"."platforms.windows-x64-baseline"]
-checksum = "sha256:b835d5c5155dd2a5ed748a0351debf2ede0dc9f808757e0429f8700a11832dcd"
-url = "https://github.com/ggml-org/llama.cpp/releases/download/b9632/llama-b9632-bin-win-cpu-x64.zip"
-url_api = "https://api.github.com/repos/ggml-org/llama.cpp/releases/assets/447367944"
+checksum = "sha256:df162d7d630c4cbebf187716f8e42e77e2ac2a15d155ebe13245ec65ffb97ccd"
+url = "https://github.com/ggml-org/llama.cpp/releases/download/b9829/llama-b9829-bin-win-cpu-x64.zip"
+url_api = "https://api.github.com/repos/ggml-org/llama.cpp/releases/assets/460048064"
 
 [[tools.node]]
 version = "26.4.0"
@@ -1071,62 +1071,62 @@ backend = "core:rust"
 components = "clippy,llvm-tools-preview,rust-src"
 
 [[tools.uv]]
-version = "0.11.24"
+version = "0.11.25"
 backend = "aqua:astral-sh/uv"
 
 [tools.uv."platforms.linux-arm64"]
-checksum = "sha256:222fcd9878ed6f5a8565d121d1a10e1f958e3c7b42e4ec5cbc6927b2be20cc1a"
-url = "https://github.com/astral-sh/uv/releases/download/0.11.24/uv-aarch64-unknown-linux-musl.tar.gz"
+checksum = "sha256:3d9c9a95f1868ff20ac880712f3a337d710ea4b65f135184b7a35635d1acbf84"
+url = "https://github.com/astral-sh/uv/releases/download/0.11.25/uv-aarch64-unknown-linux-musl.tar.gz"
 provenance = "github-attestations"
 
 [tools.uv."platforms.linux-arm64-musl"]
-checksum = "sha256:222fcd9878ed6f5a8565d121d1a10e1f958e3c7b42e4ec5cbc6927b2be20cc1a"
-url = "https://github.com/astral-sh/uv/releases/download/0.11.24/uv-aarch64-unknown-linux-musl.tar.gz"
+checksum = "sha256:3d9c9a95f1868ff20ac880712f3a337d710ea4b65f135184b7a35635d1acbf84"
+url = "https://github.com/astral-sh/uv/releases/download/0.11.25/uv-aarch64-unknown-linux-musl.tar.gz"
 provenance = "github-attestations"
 
 [tools.uv."platforms.linux-x64"]
-checksum = "sha256:2f9eaa976cf8ad8574623dde6916fb87ec047524fe65b99dc11e44e33eae4bfb"
-url = "https://github.com/astral-sh/uv/releases/download/0.11.24/uv-x86_64-unknown-linux-musl.tar.gz"
+checksum = "sha256:7195cfcc1785d0c559d4682ad9109f26664b8db4d828d42d66078ef454061891"
+url = "https://github.com/astral-sh/uv/releases/download/0.11.25/uv-x86_64-unknown-linux-musl.tar.gz"
 provenance = "github-attestations"
 
 [tools.uv."platforms.linux-x64-baseline"]
-checksum = "sha256:2f9eaa976cf8ad8574623dde6916fb87ec047524fe65b99dc11e44e33eae4bfb"
-url = "https://github.com/astral-sh/uv/releases/download/0.11.24/uv-x86_64-unknown-linux-musl.tar.gz"
+checksum = "sha256:7195cfcc1785d0c559d4682ad9109f26664b8db4d828d42d66078ef454061891"
+url = "https://github.com/astral-sh/uv/releases/download/0.11.25/uv-x86_64-unknown-linux-musl.tar.gz"
 provenance = "github-attestations"
 
 [tools.uv."platforms.linux-x64-musl"]
-checksum = "sha256:2f9eaa976cf8ad8574623dde6916fb87ec047524fe65b99dc11e44e33eae4bfb"
-url = "https://github.com/astral-sh/uv/releases/download/0.11.24/uv-x86_64-unknown-linux-musl.tar.gz"
+checksum = "sha256:7195cfcc1785d0c559d4682ad9109f26664b8db4d828d42d66078ef454061891"
+url = "https://github.com/astral-sh/uv/releases/download/0.11.25/uv-x86_64-unknown-linux-musl.tar.gz"
 provenance = "github-attestations"
 
 [tools.uv."platforms.linux-x64-musl-baseline"]
-checksum = "sha256:2f9eaa976cf8ad8574623dde6916fb87ec047524fe65b99dc11e44e33eae4bfb"
-url = "https://github.com/astral-sh/uv/releases/download/0.11.24/uv-x86_64-unknown-linux-musl.tar.gz"
+checksum = "sha256:7195cfcc1785d0c559d4682ad9109f26664b8db4d828d42d66078ef454061891"
+url = "https://github.com/astral-sh/uv/releases/download/0.11.25/uv-x86_64-unknown-linux-musl.tar.gz"
 provenance = "github-attestations"
 
 [tools.uv."platforms.macos-arm64"]
-checksum = "sha256:7578c6087c5cd76981732b1f5d126248101faebdf81016ba780a65ce03653cdf"
-url = "https://github.com/astral-sh/uv/releases/download/0.11.24/uv-aarch64-apple-darwin.tar.gz"
+checksum = "sha256:5fc334bb25d19806262efd1f6e7d380155c7e817d89bf426df4ba7ae873c9471"
+url = "https://github.com/astral-sh/uv/releases/download/0.11.25/uv-aarch64-apple-darwin.tar.gz"
 provenance = "github-attestations"
 
 [tools.uv."platforms.macos-x64"]
-checksum = "sha256:8e026ec796a2760c33c832298b0910bf07fb369d00cc075761c321923ac37522"
-url = "https://github.com/astral-sh/uv/releases/download/0.11.24/uv-x86_64-apple-darwin.tar.gz"
+checksum = "sha256:65ff85b33212f75d34d7c0f0724aba9a742c74f62559f67dc0d6c543dc2fc52f"
+url = "https://github.com/astral-sh/uv/releases/download/0.11.25/uv-x86_64-apple-darwin.tar.gz"
 provenance = "github-attestations"
 
 [tools.uv."platforms.macos-x64-baseline"]
-checksum = "sha256:8e026ec796a2760c33c832298b0910bf07fb369d00cc075761c321923ac37522"
-url = "https://github.com/astral-sh/uv/releases/download/0.11.24/uv-x86_64-apple-darwin.tar.gz"
+checksum = "sha256:65ff85b33212f75d34d7c0f0724aba9a742c74f62559f67dc0d6c543dc2fc52f"
+url = "https://github.com/astral-sh/uv/releases/download/0.11.25/uv-x86_64-apple-darwin.tar.gz"
 provenance = "github-attestations"
 
 [tools.uv."platforms.windows-x64"]
-checksum = "sha256:af9573a2e36f7020b18ec5fdde20117aae74bbad3f4acb3dc3fc03319f1aa083"
-url = "https://github.com/astral-sh/uv/releases/download/0.11.24/uv-x86_64-pc-windows-msvc.zip"
+checksum = "sha256:15bfd1423b7eaa7aae949922d4712ebaac2bb44a81af64ab59bbe007090cb0d0"
+url = "https://github.com/astral-sh/uv/releases/download/0.11.25/uv-x86_64-pc-windows-msvc.zip"
 provenance = "github-attestations"
 
 [tools.uv."platforms.windows-x64-baseline"]
-checksum = "sha256:af9573a2e36f7020b18ec5fdde20117aae74bbad3f4acb3dc3fc03319f1aa083"
-url = "https://github.com/astral-sh/uv/releases/download/0.11.24/uv-x86_64-pc-windows-msvc.zip"
+checksum = "sha256:15bfd1423b7eaa7aae949922d4712ebaac2bb44a81af64ab59bbe007090cb0d0"
+url = "https://github.com/astral-sh/uv/releases/download/0.11.25/uv-x86_64-pc-windows-msvc.zip"
 provenance = "github-attestations"
 
 [[tools.watchexec]]

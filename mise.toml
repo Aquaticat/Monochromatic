@@ -33,7 +33,7 @@ config_roots = [
 bun = "1.3.14"
 
 # Package manager
-pnpm = "11"
+pnpm = "latest"
 
 # aqua:sharkdp/fd broken as of 2026-03-07, falling back to cargo
 "cargo:fd-find" = "latest"
@@ -43,10 +43,10 @@ ripgrep = "latest"
 "cargo:fastmod" = "latest"
 
 # Coverage-guided fuzzing for forbidden-strings (see packages/fuzz/forbidden-strings/).
-# Pinned to 0.13.1 because the API around `--fuzzing-workspace=true` and
+# Pinned to 0.13.2 because the API around `--fuzzing-workspace=true` and
 # the libfuzzer-sys integration has shifted across point releases; this
 # version is what was verified locally for the rollout.
-"cargo:cargo-fuzz" = "0.13.1"
+"cargo:cargo-fuzz" = "0.13.2"
 
 # Primary runtime
 # Runs mise task logic (tasks set shell = "node -e") and the packages that
@@ -134,19 +134,19 @@ zig = "0.15.2"
 # the Flickable wheel animation that previously required a git pin. Keep this
 # tool on the same Slint release family as the desktop app crates so the LSP's
 # compiler and live preview match the runtime they build against.
-"cargo:slint-lsp" = "1.17.0"
+"cargo:slint-lsp" = "latest"
 
 # Slint standalone live previewer (renders a .slint file in a window without an
 # editor). Also installed from crates.io so it matches slint-lsp without using
 # the old cargo-git rev/ref path that made mise.lock oscillate.
-"cargo:slint-viewer" = "1.17.0"
+"cargo:slint-viewer" = "latest"
 
 # AI inference server for local development (packages/webapp-productivity/done).
 # Pinned (not "latest") because llama.cpp's release pipeline tags before the
 # Linux build finishes uploading, so any "latest" install run during that
 # window fails to find a ubuntu-x64 asset. Bump manually after verifying the
 # target tag has all 28 assets (including llama-bNNNN-bin-ubuntu-x64.tar.gz).
-"llama.cpp" = "b9632"
+"llama.cpp" = "b9829"
 
 opentofu = "latest"
 hcloud = "latest"
@@ -200,9 +200,9 @@ java = "temurin-21"
 # the build:native task derives and exports that itself for the bundled-C opusic-sys
 # libopus build; see that task.) Installed through the cargo backend, which resolves
 # via cargo-binstall (above) to a prebuilt binary with a from-source fallback,
-# consistent with the other Rust CLIs here. Pinned to 4.1.2. Needs `cargo` on PATH
+# consistent with the other Rust CLIs here. Needs `cargo` on PATH
 # (the rust tool above) to register as a cargo subcommand.
-"cargo:cargo-ndk" = "4.1.2"
+"cargo:cargo-ndk" = "latest"
 
 [settings]
 # Generate mise.lock
@@ -218,16 +218,20 @@ auto_install = true
 experimental = true
 
 disable_backends = [
-  # asdf -> Doesn't support Windows.
+  #region Not Cross platform
+  # Doesn't support Windows.
   "asdf",
+  #endregion
 
-  # Weak validation
+  #region Weak validation
   "forgejo",
-  "github",
+  # GitHub has to be allowed for llama.cpp
+  # "github",
   "gitlab",
   "http",
   "s3",
   "ubi",
+  #endregion
 ]
 
 # Per task timeout not implemented yet in Mise.
@@ -1051,7 +1055,6 @@ _.path = [
   "packages/dev-script/file-enforcer/node_modules/.bin",
   "packages/dev-script/deps-cube/node_modules/.bin",
   "packages/config/stylelint/node_modules/.bin",
-  "packages/config/oxlint/node_modules/.bin",
   "packages/claude-code-plugins/terminal-title/node_modules/.bin",
   "packages/claude-code-plugins/stop-reminders/node_modules/.bin",
   "packages/claude-code-plugins/session-start-housekeeping/node_modules/.bin",
