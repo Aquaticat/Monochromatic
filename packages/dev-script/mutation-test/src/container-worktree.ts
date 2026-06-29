@@ -21,6 +21,7 @@ import {
   SOURCE_MOUNT,
   WORK_MOUNT,
 } from './container-args.ts';
+import { caughtErrorMessage, } from './error-format.ts';
 
 /**
  * Baked dependency tree path inside the runtime image.
@@ -113,6 +114,9 @@ async function pathExists(path: string,): Promise<boolean> {
     return true;
   }
   catch (error) {
+    console.warn(
+      `[mutation-test] path existence probe failed for ${path}: ${caughtErrorMessage(error,)}`,
+    );
     return false;
   }
 }

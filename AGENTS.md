@@ -1079,6 +1079,13 @@ LG1:
  Never embed tags in message strings;
  use `tagged` wrapper.
 
+LG2:
+ Catch bindings added for lint must be used in the catch body:
+ log the caught value,
+ even when the error is expected,
+ or rethrow it.
+ Never satisfy `catch-binding` by writing an unused `catch (error)`.
+
 ### Security
 
 SYB:

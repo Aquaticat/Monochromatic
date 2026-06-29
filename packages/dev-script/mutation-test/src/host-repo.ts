@@ -14,6 +14,8 @@ import {
   sep,
 } from 'node:path';
 
+import { caughtErrorMessage, } from './error-format.ts';
+
 /**
  * Computes ancestor directories from nearest to filesystem root.
  *
@@ -80,6 +82,9 @@ async function hasWorkspaceFile(candidate: string,): Promise<boolean> {
     return true;
   }
   catch (error) {
+    console.warn(
+      `[mutation-test] workspace marker probe failed under ${candidate}: ${caughtErrorMessage(error,)}`,
+    );
     return false;
   }
 }

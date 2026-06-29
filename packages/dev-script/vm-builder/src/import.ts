@@ -23,6 +23,7 @@ import {
 } from 'node:path';
 
 import { generateDomainXml, } from './domain-xml.ts';
+import { caughtErrorMessage, } from './error-format.ts';
 
 /**
  * Libvirt domain name.
@@ -143,6 +144,9 @@ async function undefineVmIfExists(name: string,): Promise<void> {
     },);
   }
   catch (error) {
+    console.warn(
+      `[vm-builder] libvirt domain '${name}' existence probe failed; skipping removal: ${caughtErrorMessage(error,)}`,
+    );
     return;
   }
   console.log(`[vm-builder] removing existing VM '${name}'...`,);
@@ -235,6 +239,9 @@ async function grantFlatpakAccess(): Promise<void> {
     },);
   }
   catch (error) {
+    console.warn(
+      `[vm-builder] virt-manager Flatpak probe failed; skipping filesystem override: ${caughtErrorMessage(error,)}`,
+    );
     return;
   }
   console.log(

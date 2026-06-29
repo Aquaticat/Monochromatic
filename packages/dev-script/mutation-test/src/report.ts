@@ -9,6 +9,7 @@
 
 import { readFile, } from 'node:fs/promises';
 
+import { caughtErrorMessage, } from './error-format.ts';
 import {
   addStatus,
   mutantsFromReport,
@@ -225,6 +226,9 @@ async function readReportResult(reportFile: string,): Promise<ReportReadResult> 
     };
   }
   catch (error) {
+    console.warn(
+      `[mutation-test] report read failed for ${reportFile}: ${caughtErrorMessage(error,)}`,
+    );
     return {
       ok: false,
       path: reportFile,

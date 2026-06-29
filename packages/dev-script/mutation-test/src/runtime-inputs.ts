@@ -18,6 +18,7 @@ import {
   relative,
 } from 'node:path';
 
+import { caughtErrorMessage, } from './error-format.ts';
 import {
   sortStrings,
   toPosixPath,
@@ -130,6 +131,9 @@ async function fileExists(path: string,): Promise<boolean> {
     return true;
   }
   catch (error) {
+    console.warn(
+      `[mutation-test] file existence probe failed for ${path}: ${caughtErrorMessage(error,)}`,
+    );
     return false;
   }
 }

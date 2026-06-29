@@ -35,6 +35,7 @@ import {
 } from 'node:path';
 
 import { generateDomainXml, } from './domain-xml.ts';
+import { caughtErrorMessage, } from './error-format.ts';
 
 /**
  * OCI image tag produced by the podman build step.
@@ -288,6 +289,9 @@ async function undefineVmIfExists(name: string,): Promise<void> {
     },);
   }
   catch (error) {
+    console.warn(
+      `[vm-builder] libvirt domain '${name}' existence probe failed; skipping removal: ${caughtErrorMessage(error,)}`,
+    );
     // Domain not defined; nothing to remove.
     return;
   }
@@ -385,6 +389,9 @@ async function grantFlatpakAccess(): Promise<void> {
     },);
   }
   catch (error) {
+    console.warn(
+      `[vm-builder] virt-manager Flatpak probe failed; skipping filesystem override: ${caughtErrorMessage(error,)}`,
+    );
     // virt-manager is not a Flatpak; no override needed.
     return;
   }

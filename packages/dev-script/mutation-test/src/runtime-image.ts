@@ -17,6 +17,7 @@ import { createHash, } from 'node:crypto';
 
 import spawn from 'nano-spawn';
 
+import { caughtErrorMessage, } from './error-format.ts';
 import { sanitizeTagFragment, } from './path-utils.ts';
 import { stageRuntimeBuildContext, } from './runtime-context.ts';
 import { runtimeInputHash, } from './runtime-inputs.ts';
@@ -158,6 +159,9 @@ export async function imageExists(image: string,): Promise<boolean> {
     return true;
   }
   catch (error) {
+    console.warn(
+      `[mutation-test] Podman image existence probe failed for ${image}: ${caughtErrorMessage(error,)}`,
+    );
     return false;
   }
 }
