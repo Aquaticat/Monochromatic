@@ -21,6 +21,51 @@ const ALL_CAPS_SNAKE = /^[A-Z][A-Z0-9_]*$/u;
 /* oxlint-enable no-restricted-syntax/no-regex */
 
 /**
+ * Imported source text cache keyed by resolved absolute path.
+ */
+const sourceTextByPath = new Map<string, string>();
+
+/**
+ * Reads imported source text, returning an empty string when the file cannot
+ * be read.
+ *
+ * Oxlint rule visitors are synchronous, so relative-import classification
+ * cannot await filesystem I/O. Cache each path so one lint pass reads every
+ * inspected import at most once.
+ *
+ * @param sourcePath - Resolved absolute path of imported source.
+ *
+ * @returns Source text, or empty string when reading fails.
+ *
+ * @example
+ * ```ts
+ * const text = readSourceTextOrEmpty('/repo/packages/example/src/index.ts');
+ * ```
+ */
+function readSourceTextOrEmpty(sourcePath: string,): string {
+  /**
+   * Cached source text, or `undefined` when this path has not been read.
+   */
+  const cached = sourceTextByPath.get(sourcePath,);
+  if (cached !== undefined)
+    return cached;
+  try {
+    // oxlint-disable-next-line node/no-sync -- sync oxlint visitor; classification must finish before report.
+    const content = readFileSync(
+      sourcePath,
+      'utf8',
+    );
+    sourceTextByPath.set(sourcePath, content,);
+    return content;
+  }
+  catch (readError: unknown) {
+    void readError;
+    sourceTextByPath.set(sourcePath, '',);
+    return '';
+  }
+}
+
+/**
  * Reads an imported source file and reports whether `<name>` is declared
  * as a function, class, or some other shape there.
  *
@@ -69,19 +114,7 @@ function classifyExportedName(
   /**
    * Source text of the imported file; empty when the read fails so callers can short-circuit.
    */
-  const content = (function readOrEmpty(): string {
-    try {
-      // oxlint-disable-next-line node/no-sync -- sync visitor API; local import heuristic needs source text before report.
-      return readFileSync(
-        sourcePath,
-        'utf8',
-      );
-    }
-    catch (readError: unknown) {
-      void readError;
-      return '';
-    }
-  })();
+  const content = readSourceTextOrEmpty(sourcePath,);
   if (content === '')
     return 'unknown';
   /* oxlint-disable no-restricted-syntax/no-regex, eslint/require-unicode-regexp -- sourceName is a parser-produced identifier and the scan is limited to one imported source file; this heuristic is simpler than parsing a second AST here. The 'u' flag is omitted deliberately: the pattern interpolates the dynamic name identifier, and u-mode's code-point semantics plus stricter escape parsing could alter how that interpolated value matches the scanned source. This package defines the workspace-wide no-restricted-syntax rules, so the un-flagged form preserves the exact matching the rule's classification (and the diagnostics the sweep depends on) currently relies on. */
