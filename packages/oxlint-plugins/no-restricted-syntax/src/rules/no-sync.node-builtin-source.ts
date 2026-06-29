@@ -54,6 +54,8 @@ export function seenWith(
 /**
  * Returns `true` when a call expression directly loads a Node builtin source.
  *
+ * @param context - Oxlint rule context.
+ *
  * @param call - Call expression to inspect.
  *
  * @returns Whether call is `require('<node builtin>')` or
@@ -61,11 +63,17 @@ export function seenWith(
  *
  * @example
  * ```ts
- * isNodeBuiltinSourceLoadCall({ call: requireCall });
+ * isNodeBuiltinSourceLoadCall({ context, call: requireCall });
  * ```
  */
 function isNodeBuiltinSourceLoadCall(
-  { call, }: { readonly call: ESTree.CallExpression; },
+  {
+    context,
+    call,
+  }: {
+    readonly context: Context;
+    readonly call: ESTree.CallExpression;
+  },
 ): boolean {
   /**
    * Static source argument shared by both accepted call shapes.
@@ -78,7 +86,12 @@ function isNodeBuiltinSourceLoadCall(
     === 'Identifier')
     return (call.callee
       .name
-      === 'require') && isNodeBuiltinSource({ source, },);
+      === 'require')
+      && isUnshadowedGlobalIdentifier({
+        context,
+        identifier: call.callee,
+      },)
+      && isNodeBuiltinSource({ source, },);
   if (call.callee
     .type
     !== 'MemberExpression')
@@ -97,7 +110,51 @@ function isNodeBuiltinSourceLoadCall(
   return (call.callee
     .object
     .name
-    === 'process') && isNodeBuiltinSource({ source, },);
+    === 'process')
+    && isUnshadowedGlobalIdentifier({
+      context,
+      identifier: call.callee
+        .object,
+    },)
+    && isNodeBuiltinSource({ source, },);
+}
+
+/**
+ * Returns whether identifier is not shadowed by a local declaration.
+ *
+ * @param context - Oxlint rule context.
+ *
+ * @param identifier - Identifier reference to classify.
+ *
+ * @returns Whether identifier is unresolved or a global variable without local definitions.
+ *
+ * @example
+ * ```ts
+ * isUnshadowedGlobalIdentifier({ context, identifier: requireIdentifier });
+ * ```
+ */
+function isUnshadowedGlobalIdentifier(
+  {
+    context,
+    identifier,
+  }: {
+    readonly context: Context;
+    readonly identifier: ESTree.IdentifierReference;
+  },
+): boolean {
+  /**
+   * Scope variable behind the identifier, if oxlint scope metadata has one.
+   */
+  const variable = findVariable({
+    context,
+    node: identifier,
+    name: identifier.name,
+  },);
+  if ((typeof variable) === 'symbol')
+    return true;
+  return variable.defs
+    .length
+    === 0;
 }
 
 //endregion Node builtin loader calls
@@ -132,7 +189,10 @@ export function isNodeBuiltinSourceExpression(
   },
 ): boolean {
   if (expression.type === 'CallExpression')
-    return isNodeBuiltinSourceLoadCall({ call: expression, },);
+    return isNodeBuiltinSourceLoadCall({
+      context,
+      call: expression,
+    },);
   if (expression.type !== 'Identifier')
     return false;
   /**

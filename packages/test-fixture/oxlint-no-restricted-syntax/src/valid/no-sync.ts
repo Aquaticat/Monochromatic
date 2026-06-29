@@ -5,6 +5,25 @@ import { parseSync, } from '@optique/core/parser';
 
 const parser = {};
 const args: readonly string[] = [];
+
+function require(source: string,): { readonly readFileSync: (path: string,) => string; } {
+  return {
+    readFileSync(path: string,): string {
+      return `${source}:${path}`;
+    },
+  };
+}
+
+const process = {
+  getBuiltinModule(source: string,): { readonly readFileSync: (path: string,) => string; } {
+    return {
+      readFileSync(path: string,): string {
+        return `${source}:${path}`;
+      },
+    };
+  },
+};
+
 const localParser = {
   parseSync(): string {
     return 'parsed';
@@ -16,5 +35,9 @@ void parseSync(
   args,
 );
 void localParser.parseSync();
+void require('node:fs',)
+  .readFileSync('/tmp/input',);
+void process.getBuiltinModule('node:fs',)
+  .readFileSync('/tmp/input',);
 
 export {};
