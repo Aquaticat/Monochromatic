@@ -24,6 +24,8 @@ export const styleRules: DummyRuleMap = {
 
   // unicorn/no-negated-condition isn't enabled because early fail is the practice.
   'unicorn/no-negated-condition': 'off',
+  // Nested calls keep transformations readable in this codebase.
+  'unicorn/max-nested-calls': 'off',
   // Same preference as the unicorn variant above.
   'eslint/no-negated-condition': 'off',
 
