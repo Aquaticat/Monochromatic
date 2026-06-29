@@ -23,7 +23,7 @@ import { classifySymbolDescription, } from './classify.ts';
  * `${tooFewWordsMessage} ${IMMEDIATE_UNDERSTANDABILITY_HINT}`;
  * ```
  */
-const IMMEDIATE_UNDERSTANDABILITY_HINT = 'Every Symbol description should be immediately understandable by anyone, even if they have never seen this repo before.';
+const IMMEDIATE_UNDERSTANDABILITY_HINT = 'Every Symbol description must stand on its own: assume this exact string is the only clue a reader has, with no repo, variable name, call site, or surrounding comments.';
 
 /**
  * Requires static Symbol descriptions to carry enough debugging information.
