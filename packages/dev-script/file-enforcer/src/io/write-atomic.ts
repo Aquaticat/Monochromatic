@@ -1,14 +1,11 @@
 import { randomUUID, } from 'node:crypto';
 import {
-  closeSync,
-  fsyncSync,
-  mkdirSync,
-  openSync,
-  renameSync,
-  rmSync,
-  statSync,
-  writeFileSync,
-} from 'node:fs';
+  mkdir,
+  open,
+  rename,
+  rm,
+  stat,
+} from 'node:fs/promises';
 import { dirname, } from 'node:path';
 
 import { caughtErrorHasCode, } from './error.ts';
@@ -33,16 +30,6 @@ const UNSUPPORTED_DIRECTORY_FSYNC_ERROR_CODES = [
 ] as const;
 
 /**
- * Disposable file descriptor used for synchronous durability helpers.
- */
-type DisposableFileDescriptor = Disposable & Readonly<{
-  /**
-   * Open file descriptor.
-   */
-  readonly fd: number;
-}>;
-
-/**
  * Writes content to same-directory temp file before atomic rename.
  */
 export type AtomicTempFileWriter = (
@@ -57,7 +44,7 @@ export type AtomicTempFileWriter = (
      */
     readonly content: string;
   },
-) => void;
+) => Promise<void>;
 
 //endregion Atomic write constants and types
 
@@ -85,48 +72,6 @@ export function directoryFsyncUnsupported(error: unknown,): boolean {
 }
 
 /**
- * Wraps file descriptor in disposable close handle.
- *
- * @param fd - Open file descriptor.
- *
- * @returns Disposable file descriptor wrapper.
- *
- * @example
- * ```ts
- * using file = disposableFileDescriptor({ fd });
- * ```
- */
-function disposableFileDescriptor({ fd, }: { readonly fd: number; },): DisposableFileDescriptor {
-  return {
-    fd,
-    [Symbol.dispose](): void {
-      closeSync(fd,);
-    },
-  };
-}
-
-/**
- * Opens writable file as disposable descriptor.
- *
- * @param path - Path to open for writing.
- *
- * @returns Disposable writable descriptor.
- *
- * @example
- * ```ts
- * using file = openWritableFile('/tmp/output.tmp');
- * ```
- */
-function openWritableFile(path: string,): DisposableFileDescriptor {
-  return disposableFileDescriptor({
-    fd: openSync(
-      path,
-      'w',
-    ),
-  },);
-}
-
-/**
  * Writes and fsyncs destination temp file before rename.
  *
  * @param tempPath - Same-directory temp path.
@@ -135,10 +80,10 @@ function openWritableFile(path: string,): DisposableFileDescriptor {
  *
  * @example
  * ```ts
- * writeTempFileDurably({ tempPath, content });
+ * await writeTempFileDurably({ tempPath, content });
  * ```
  */
-export function writeTempFileDurably(
+export async function writeTempFileDurably(
   {
     tempPath,
     content,
@@ -146,18 +91,16 @@ export function writeTempFileDurably(
     readonly content: string;
     readonly tempPath: string;
   },
-): void {
-  {
-    /**
-     * Writable temp-file descriptor fsynced before rename.
-     */
-    using tempFile = openWritableFile(tempPath,);
-    writeFileSync(
-      tempFile.fd,
-      content,
-    );
-    fsyncSync(tempFile.fd,);
-  }
+): Promise<void> {
+  /**
+   * Writable temp-file handle fsynced before rename.
+   */
+  await using tempFile = await open(
+    tempPath,
+    'w',
+  );
+  await tempFile.writeFile(content,);
+  await tempFile.sync();
 }
 
 /**
@@ -167,21 +110,19 @@ export function writeTempFileDurably(
  *
  * @example
  * ```ts
- * fsyncDirectory('/tmp/output-directory');
+ * await fsyncDirectory('/tmp/output-directory');
  * ```
  */
-export function fsyncDirectory(directoryPath: string,): void {
+export async function fsyncDirectory(directoryPath: string,): Promise<void> {
   try {
     /**
-     * Directory descriptor fsynced after destination rename.
+     * Directory handle fsynced after destination rename.
      */
-    using directory = disposableFileDescriptor({
-      fd: openSync(
-        directoryPath,
-        'r',
-      ),
-    },);
-    fsyncSync(directory.fd,);
+    await using directory = await open(
+      directoryPath,
+      'r',
+    );
+    await directory.sync();
   }
   catch (directoryFsyncError: unknown) {
     if (directoryFsyncUnsupported(directoryFsyncError,))
@@ -208,10 +149,10 @@ export function fsyncDirectory(directoryPath: string,): void {
  *
  * @example
  * ```ts
- * writeFileAtomically({ filePath: './CLAUDE.md', content: '# Generated' });
+ * await writeFileAtomically({ filePath: './CLAUDE.md', content: '# Generated' });
  * ```
  */
-export function writeFileAtomically(
+export async function writeFileAtomically(
   {
     filePath,
     content,
@@ -221,12 +162,12 @@ export function writeFileAtomically(
     readonly filePath: string;
     readonly tempFileWriter?: AtomicTempFileWriter;
   },
-): number {
+): Promise<number> {
   /**
    * Directory containing final destination and same-directory temp file.
    */
   const destinationDirectory = dirname(filePath,);
-  mkdirSync(
+  await mkdir(
     destinationDirectory,
     { recursive: true, },
   );
@@ -237,27 +178,27 @@ export function writeFileAtomically(
   /**
    * Cleanup handle for temp file when write or rename fails.
    */
-  using _tempCleanup = {
-    [Symbol.dispose](): void {
-      rmSync(
+  await using _tempCleanup = {
+    async [Symbol.asyncDispose](): Promise<void> {
+      await rm(
         tempPath,
         { force: true, },
       );
     },
   };
-  tempFileWriter({
+  await tempFileWriter({
     tempPath,
     content,
   },);
-  renameSync(
+  await rename(
     tempPath,
     filePath,
   );
-  fsyncDirectory(destinationDirectory,);
+  await fsyncDirectory(destinationDirectory,);
   /**
    * Actual post-rename mtime used by watch echo suppression.
    */
-  const destinationStat = statSync(filePath,);
+  const destinationStat = await stat(filePath,);
   return Math.floor(destinationStat.mtimeMs,);
 }
 
