@@ -523,6 +523,15 @@ ensureOxlintConfig()
 runWorkspaceNode('packages/dev-script/task-util', 'oxlint-wrapper', ['--type-aware'])
 """
 
+[task_templates."format:oxlint"]
+description = "Auto-fix this package with Oxlint using its package-local tsconfig"
+shell = "node -e"
+run = """
+{{vars.dispatch_workspace_node}}
+ensureOxlintConfig()
+runWorkspaceNode('packages/dev-script/task-util', 'oxlint-wrapper', ['--type-aware', '--fix'])
+"""
+
 [task_templates."lint:types"]
 description = "TypeScript"
 shell = "node -e"
@@ -796,17 +805,8 @@ run = 'stylelint --fix --ignore-path .gitignore "**/*.{css,astro,html}"'
 
 [tasks."format:oxlint"]
 hide = true
-# Runs from the monorepo root without --type-aware, so type-aware rules
-# (e.g. typescript/no-unnecessary-condition) are not auto-fixed.
-# A proper fix would require per-package fan-out like lint:oxlint,
-# but the format task is not the right place for that complexity.
-description = "Auto-fix with Oxlint (non-type-aware only)"
-shell = "node -e"
-run = """
-{{vars.dispatch_workspace_node}}
-ensureOxlintConfig()
-runWorkspaceNode('packages/dev-script/task-util', 'oxlint-wrapper', ['--fix'])
-"""
+description = "Auto-fix each package with Oxlint using package-local tsconfig"
+run = "mise '//packages/...:format:oxlint'"
 
 # Applies cli-markdown-lint autofixes (e.g. no-pipe-tables converting pipe
 # tables to HTML, semantic-line-breaks inserting breaks) over the whole tree or
