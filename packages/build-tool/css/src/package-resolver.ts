@@ -125,8 +125,11 @@ export function readPackageJson(
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- JSON.parse returns unknown; package.json shape is Record<string, unknown>
     return JSON.parse(raw,) as Record<string, unknown>;
   }
-  catch {
-    return PACKAGE_JSON_ABSENT;
+  catch (error: unknown) {
+    if (error instanceof Error)
+      return PACKAGE_JSON_ABSENT;
+
+    throw error;
   }
 }
 

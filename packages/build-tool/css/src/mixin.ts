@@ -2,17 +2,14 @@ import type {
   AtRule,
   Root,
 } from 'postcss';
-import {
-  expandMixinBodies,
-  mixins,
-} from './mixin-registry.ts';
+import { mixins, } from './mixin-registry.ts';
 
 // Re-export from the registry so consumers import from mixin.ts only:
 // mixin-registry.ts is a private implementation detail.
 export {
   expandMixinBodies,
   mixins,
-};
+} from './mixin-registry.ts';
 
 //region Mixin Processing
 
