@@ -129,7 +129,9 @@ async function loadBaseline({ baselinePath, }: { readonly baselinePath: string; 
     return parsed;
   }
   catch (error: unknown) {
-    if (Error.isError(error,) && ('code' in error) && (error.code === 'ENOENT'))
+    if (Error.isError(error,)
+      && ('code' in error)
+      && (error.code === 'ENOENT'))
       return {};
     throw error;
   }

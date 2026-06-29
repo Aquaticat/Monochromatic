@@ -387,9 +387,211 @@ function fileCoverageFrom(
  * Per-target accumulation across coverage files before line projection.
  */
 type TargetAccumulator = {
+  /**
+   * On-disk source text for the target file.
+   */
   readonly source: string;
+  /**
+   * Covered line numbers unioned across coverage files.
+   */
   readonly covered: Set<number>;
 };
+
+/**
+ * Coverage target extracted from one V8 coverage JSON file.
+ */
+type CoverageTarget = {
+  /**
+   * Package-relative target path used as the coverage map key.
+   */
+  readonly relPath: string;
+  /**
+   * Absolute path to the target source file.
+   */
+  readonly absPath: string;
+  /**
+   * V8 function coverage ranges for this target occurrence.
+   */
+  readonly functions: readonly V8Function[];
+};
+
+/**
+ * Target projected onto covered line numbers after source loading.
+ */
+type ProjectedTarget = {
+  /**
+   * Package-relative target path used as the coverage map key.
+   */
+  readonly relPath: string;
+  /**
+   * On-disk source text for the target file.
+   */
+  readonly source: string;
+  /**
+   * Covered line numbers for this target occurrence.
+   */
+  readonly covered: ReadonlySet<number>;
+};
+
+/**
+ * Reads one V8 coverage JSON file and returns its package target scripts.
+ *
+ * @param coverageDir - directory holding V8 coverage JSON files
+ *
+ * @param file - coverage JSON filename inside `coverageDir`
+ *
+ * @param packageRoot - absolute package root used for target classification
+ *
+ * @returns coverage targets extracted from the file
+ */
+async function readCoverageTargets(
+  {
+    coverageDir,
+    file,
+    packageRoot,
+  }: {
+    readonly coverageDir: string;
+    readonly file: string;
+    readonly packageRoot: string;
+  },
+): Promise<readonly CoverageTarget[]> {
+  /**
+   * Parsed coverage file, narrowed by assertion from `unknown`.
+   */
+  const parsed: unknown = JSON.parse(await readFile(
+    join(
+      coverageDir,
+      file,
+    ),
+    'utf8',
+  ),);
+  if (!isCoverageFile(parsed,)) throw new Error('Malformed V8 coverage JSON: expected a result array',);
+
+  return parsed.result.flatMap(function targetFromScript(script,): readonly CoverageTarget[] {
+    /**
+     * Target classification for this script's URL.
+     */
+    const cls = classifyUrl({
+      url: script.url,
+      packageRoot,
+    },);
+    if (cls.kind !== 'target') return [];
+    return [{
+      relPath: cls.relPath,
+      absPath: cls.absPath,
+      functions: script.functions,
+    },];
+  },);
+}
+
+/**
+ * Reads target source text through a cache so each file is loaded once.
+ *
+ * @param sourceCache - promise cache keyed by absolute source path
+ *
+ * @param absPath - source file path to read
+ *
+ * @returns promise resolving to source text
+ */
+function sourcePromiseFor(
+  {
+    sourceCache,
+    absPath,
+  }: {
+    readonly sourceCache: Map<string, Promise<string>>;
+    readonly absPath: string;
+  },
+): Promise<string> {
+  /**
+   * Existing in-flight or fulfilled read for this source file.
+   */
+  const existing = sourceCache.get(absPath,);
+  if (existing !== undefined)
+    return existing;
+
+  /**
+   * New source read stored immediately so concurrent target projections share it.
+   */
+  const sourcePromise = readFile(
+    absPath,
+    'utf8',
+  );
+  sourceCache.set(
+    absPath,
+    sourcePromise,
+  );
+  return sourcePromise;
+}
+
+/**
+ * Projects one target's V8 ranges onto covered line numbers.
+ *
+ * @param target - coverage target to project
+ *
+ * @param sourceCache - shared source read cache
+ *
+ * @returns projected target with source and covered lines
+ */
+async function projectTarget(
+  {
+    target,
+    sourceCache,
+  }: {
+    readonly target: CoverageTarget;
+    readonly sourceCache: Map<string, Promise<string>>;
+  },
+): Promise<ProjectedTarget> {
+  /**
+   * Source text loaded through the shared cache.
+   */
+  const source = await sourcePromiseFor({
+    sourceCache,
+    absPath: target.absPath,
+  },);
+  return {
+    relPath: target.relPath,
+    source,
+    covered: projectCovered({
+      source,
+      functions: target.functions,
+    },),
+  };
+}
+
+/**
+ * Unions projected target coverage by package-relative path.
+ *
+ * @param targets - projected target occurrences across all coverage files
+ *
+ * @returns accumulator map keyed by package-relative target path
+ */
+function mergeProjectedTargets(targets: readonly ProjectedTarget[],): Map<string, TargetAccumulator> {
+  return targets.reduce<Map<string, TargetAccumulator>>(
+    function merge(perFile, target,) {
+      /**
+       * Existing file accumulator, when another coverage script already reached the file.
+       */
+      const existing = perFile.get(target.relPath,);
+      if (existing === undefined) {
+        perFile.set(
+          target.relPath,
+          {
+            source: target.source,
+            covered: new Set(target.covered,),
+          },
+        );
+        return perFile;
+      }
+
+      for (const lineNumber of target.covered) {
+        existing.covered
+          .add(lineNumber,);
+      }
+      return perFile;
+    },
+    new Map<string, TargetAccumulator>(),
+  );
+}
 
 /**
  * Read every `NODE_V8_COVERAGE` JSON file in `coverageDir` and project the
@@ -412,65 +614,41 @@ export async function aggregateCoverage(
   },
 ): Promise<CoverageMap> {
   /**
-   * Per-target accumulation: source read once, covered-line set unioned across
-   * every coverage process file. Local, so no mutable map crosses a boundary.
+   * Coverage JSON filenames, filtered before parallel reading.
    */
-  const perFile = new Map<string, TargetAccumulator>();
-  for (const file of await readdir(coverageDir,)) {
-    if (!file.endsWith('.json',)) continue;
-    /**
-     * One parsed coverage file, narrowed by assertion from `unknown`.
-     */
-    const parsed: unknown = JSON.parse(await readFile(
-      join(
-        coverageDir,
-        file,
-      ),
-      'utf8',
-    ),);
-    if (!isCoverageFile(parsed,)) throw new Error('Malformed V8 coverage JSON: expected a result array',);
-    for (const script of parsed.result) {
-      /**
-       * Target classification for this script's URL.
-       */
-      const cls = classifyUrl({
-        url: script.url,
-        packageRoot,
-      },);
-      if (cls.kind !== 'target') continue;
-      /**
-       * Prior accumulation for this file, if another script already added it.
-       */
-      const existing = perFile.get(cls.relPath,);
-      if (existing === undefined) {
-        /**
-         * On-disk source, read once per target file.
-         */
-        const source = await readFile(
-          cls.absPath,
-          'utf8',
-        );
-        perFile.set(
-          cls.relPath,
-          {
-          source,
-          covered: new Set(projectCovered({
-            source,
-            functions: script.functions,
-          },),),
-        },
-        );
-        continue;
-      }
-      for (const lineNumber of projectCovered({
-        source: existing.source,
-        functions: script.functions,
-      },)) {
-        existing.covered
-          .add(lineNumber,);
-      }
-    }
-  }
+  const coverageFiles = (await readdir(coverageDir,))
+    .filter(function isCoverageJson(file,) {
+      return file.endsWith('.json',);
+    },);
+  /**
+   * Target script records extracted from every coverage file.
+   */
+  const targets = (await Promise.all(coverageFiles.map(function readTargets(file,) {
+    return readCoverageTargets({
+      coverageDir,
+      file,
+      packageRoot,
+    },);
+  },)))
+    .flat();
+  /**
+   * Source read cache shared across target projections.
+   */
+  const sourceCache = new Map<string, Promise<string>>();
+  /**
+   * Per-target covered-line projections, run concurrently once targets are known.
+   */
+  const projectedTargets = await Promise.all(targets.map(function project(target,) {
+    return projectTarget({
+      target,
+      sourceCache,
+    },);
+  },));
+  /**
+   * Per-file accumulation of covered lines across all projected targets.
+   */
+  const perFile = mergeProjectedTargets(projectedTargets,);
+
   return Object.fromEntries(
     [...perFile.entries(),].map(function project([relPath, info,],) {
       return [
