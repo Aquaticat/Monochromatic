@@ -162,6 +162,7 @@ export const packageAllowSpecifiers: readonly PackageSpecifier[] = [
       // without forking the @oxlint/plugins type tree.
       "ArrowFunctionExpression",
       "CallExpression",
+      "CatchClause",
       "Class",
       "Comment",
       "Context",
