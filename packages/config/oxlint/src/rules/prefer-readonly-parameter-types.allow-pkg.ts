@@ -208,6 +208,8 @@ export const packageAllowSpecifiers: readonly PackageSpecifier[] = [
       "Node$1",
       "Function$1",
       "PropertyKey$1",
+      "ObjectPattern",
+      "Scope",
     ],
   },
   {

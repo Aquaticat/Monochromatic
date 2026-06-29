@@ -30,11 +30,11 @@ export type NodeSyncCalleeName = string | typeof NOT_NODE_SYNC_CALLEE;
  * ```
  */
 export const NO_STATIC_SOURCE: unique symbol = Symbol(
-  'module source is not statically known',
+  'import source is not statically known',
 );
 
 /**
- * Result of extracting a module source string from syntax.
+ * Result of extracting an import source string from syntax.
  */
 export type StaticSource = string | typeof NO_STATIC_SOURCE;
 
@@ -58,7 +58,7 @@ export type VariableLookup = Variable | typeof NO_VARIABLE;
 
 //endregion Classification sentinels
 
-//region Node module constants
+//region Node builtin source constants
 
 /**
  * Suffix used by Node's synchronous twin APIs.
@@ -66,9 +66,9 @@ export type VariableLookup = Variable | typeof NO_VARIABLE;
 export const SYNC_SUFFIX = 'Sync';
 
 /**
- * Node builtin module roots accepted with or without the `node:` prefix.
+ * Node builtin source roots accepted with or without the `node:` prefix.
  */
-const NODE_BUILTIN_MODULE_ROOTS = [
+const NODE_BUILTIN_SOURCE_ROOTS = [
   '_http_agent',
   '_http_client',
   '_http_common',
@@ -128,33 +128,33 @@ const NODE_BUILTIN_MODULE_ROOTS = [
 ] as const;
 
 /**
- * Set form of {@link NODE_BUILTIN_MODULE_ROOTS} for constant-time membership.
+ * Set form of {@link NODE_BUILTIN_SOURCE_ROOTS} for constant-time membership.
  */
-const NODE_BUILTIN_MODULE_ROOT_SET: ReadonlySet<string> = new Set(
-  NODE_BUILTIN_MODULE_ROOTS,
+const NODE_BUILTIN_SOURCE_ROOT_SET: ReadonlySet<string> = new Set(
+  NODE_BUILTIN_SOURCE_ROOTS,
 );
 
 /**
- * Returns `true` when a module source names a Node builtin module.
+ * Returns `true` when an import source names a Node builtin source.
  *
  * Accepts both `fs` and `node:fs`, and treats subpaths such as
  * `fs/promises` as belonging to the builtin root.
  *
- * @param source - Literal module source from import, require, or getBuiltinModule.
+ * @param source - Literal source from import, require, or getBuiltinModule.
  *
- * @returns Whether source names a Node builtin module root.
+ * @returns Whether source names a Node builtin source root.
  *
  * @example
  * ```ts
  * isNodeBuiltinSource({ source: 'node:fs' }); // true
- * isNodeBuiltinSource({ source: '@optique/core/parser' }); // false
+ * isNodeBuiltinSource({ source: '\@optique/core/parser' }); // false
  * ```
  */
 export function isNodeBuiltinSource(
   { source, }: { readonly source: string; },
 ): boolean {
   /**
-   * Module source without optional `node:` scheme.
+   * Import source without optional `node:` scheme.
    */
   const sourceWithoutProtocol = source.startsWith('node:',)
     ? source.slice('node:'.length,)
@@ -172,7 +172,7 @@ export function isNodeBuiltinSource(
       0,
       slashIndex,
     );
-  return NODE_BUILTIN_MODULE_ROOT_SET.has(root,);
+  return NODE_BUILTIN_SOURCE_ROOT_SET.has(root,);
 }
 
-//endregion Node module constants
+//endregion Node builtin source constants

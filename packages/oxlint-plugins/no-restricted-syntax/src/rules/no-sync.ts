@@ -20,7 +20,7 @@ import { getNodeSyncCalleeName, } from './no-sync.provenance.ts';
  * readFileSync(path);
  *
  * // Good
- * import { parseSync } from '@optique/core/parser';
+ * import { parseSync } from '\@optique/core/parser';
  * parseSync(parser, args);
  * ```
  */
@@ -47,7 +47,7 @@ export const noSync: CreateOnceRule = {
           context,
           expression: node.callee,
         },);
-        if (typeof calleeName === 'symbol')
+        if ((typeof calleeName) === 'symbol')
           return;
         context.report({
           node,

@@ -1,0 +1,63 @@
+import type {
+  Context,
+  ESTree,
+  Variable,
+} from '@oxlint/plugins';
+
+import {
+  NOT_NODE_SYNC_CALLEE,
+  SYNC_SUFFIX,
+  type NodeSyncCalleeName,
+} from './no-sync.constants.ts';
+import { isNodeBuiltinSourceExpression, } from './no-sync.node-builtin-source.ts';
+import { getMemberName, } from './no-sync.syntax.ts';
+
+//region Sync API from member expressions
+
+/**
+ * Finds sync API name from a Node builtin source member expression.
+ *
+ * @param context - Oxlint rule context.
+ *
+ * @param expression - Initializer or call-callee expression.
+ *
+ * @param seen - Variables already inspected, preventing alias cycles.
+ *
+ * @returns Node sync API name, or sentinel when expression is not a sync member.
+ *
+ * @example
+ * ```ts
+ * getNodeSyncMemberName({ context, expression: init, seen: new Set() });
+ * ```
+ */
+export function getNodeSyncMemberName(
+  {
+    context,
+    expression,
+    seen,
+  }: {
+    readonly context: Context;
+    readonly expression: ESTree.Expression;
+    readonly seen: ReadonlySet<Variable>;
+  },
+): NodeSyncCalleeName {
+  if (expression.type !== 'MemberExpression')
+    return NOT_NODE_SYNC_CALLEE;
+  /**
+   * Member property name being called or aliased.
+   */
+  const propertyName = getMemberName({ member: expression, },);
+  if ((typeof propertyName) === 'symbol')
+    return NOT_NODE_SYNC_CALLEE;
+  if (!propertyName.endsWith(SYNC_SUFFIX,))
+    return NOT_NODE_SYNC_CALLEE;
+  if (!isNodeBuiltinSourceExpression({
+    context,
+    expression: expression.object,
+    seen,
+  }))
+    return NOT_NODE_SYNC_CALLEE;
+  return propertyName;
+}
+
+//endregion Sync API from member expressions

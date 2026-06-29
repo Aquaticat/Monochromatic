@@ -2,6 +2,7 @@ import type {
   Context,
   Definition,
   ESTree,
+  Scope,
 } from '@oxlint/plugins';
 
 import {
@@ -28,11 +29,9 @@ import {
 export function getStaticString(
   { expression, }: { readonly expression: ESTree.Expression; },
 ): StaticSource {
-  if (expression.type
-    !== 'Literal')
+  if (expression.type !== 'Literal')
     return NO_STATIC_SOURCE;
-  if ((typeof expression.value)
-    !== 'string')
+  if ((typeof expression.value) !== 'string')
     return NO_STATIC_SOURCE;
   return expression.value;
 }
@@ -52,14 +51,11 @@ export function getStaticString(
 export function getStaticPropertyName(
   { key, }: { readonly key: ESTree.Node; },
 ): StaticSource {
-  if (key.type
-    === 'Identifier')
+  if (key.type === 'Identifier')
     return key.name;
-  if (key.type
-    !== 'Literal')
+  if (key.type !== 'Literal')
     return NO_STATIC_SOURCE;
-  if ((typeof key.value)
-    !== 'string')
+  if ((typeof key.value) !== 'string')
     return NO_STATIC_SOURCE;
   return key.value;
 }
@@ -79,7 +75,8 @@ export function getStaticPropertyName(
 export function getMemberName(
   { member, }: { readonly member: ESTree.MemberExpression; },
 ): StaticSource {
-  if (member.property.type
+  if (member.property
+    .type
     === 'PrivateIdentifier')
     return NO_STATIC_SOURCE;
   return getStaticPropertyName({ key: member.property, },);
@@ -100,7 +97,8 @@ export function getMemberName(
 export function getSingleStringArgument(
   { call, }: { readonly call: ESTree.CallExpression; },
 ): StaticSource {
-  if (call.arguments.length
+  if (call.arguments
+    .length
     !== 1)
     return NO_STATIC_SOURCE;
   /**
@@ -109,8 +107,7 @@ export function getSingleStringArgument(
   const [argument,] = call.arguments;
   if (argument === undefined)
     return NO_STATIC_SOURCE;
-  if (argument.type
-    === 'SpreadElement')
+  if (argument.type === 'SpreadElement')
     return NO_STATIC_SOURCE;
   return getStaticString({ expression: argument, },);
 }
@@ -118,6 +115,48 @@ export function getSingleStringArgument(
 //endregion Static syntax extraction
 
 //region Scope metadata extraction
+
+/**
+ * Finds a variable in a scope or one of its parents.
+ *
+ * @param scope - Scope lookup starts from.
+ *
+ * @param name - Identifier name to resolve.
+ *
+ * @returns Scope variable, or sentinel when no binding exists.
+ *
+ * @example
+ * ```ts
+ * findVariableInScope({ scope, name: 'fs' });
+ * ```
+ */
+function findVariableInScope(
+  {
+    scope,
+    name,
+  }: {
+    readonly scope: Scope;
+    readonly name: string;
+  },
+): VariableLookup {
+  /**
+   * Binding registered in this scope, or absent when lookup must continue upward.
+   */
+  const variable = scope.set
+    .get(name,);
+  if (variable !== undefined)
+    return variable;
+  /**
+   * Parent scope, or `null` above global scope per oxlint's scope API.
+   */
+  const { upper, } = scope;
+  if (upper === null)
+    return NO_VARIABLE;
+  return findVariableInScope({
+    scope: upper,
+    name,
+  },);
+}
 
 /**
  * Finds a variable visible at a node by walking lexical scopes outward.
@@ -146,26 +185,11 @@ export function findVariable(
     readonly name: string;
   },
 ): VariableLookup {
-  /**
-   * Current lexical scope cursor.
-   */
-  let scope = context.sourceCode
-    .getScope(node,);
-  while (true) {
-    /**
-     * Binding registered in this scope, or absent when lookup must continue upward.
-     */
-    const variable = scope.set.get(name,);
-    if (variable !== undefined)
-      return variable;
-    /**
-     * Parent scope, or `null` above global scope per oxlint's scope API.
-     */
-    const upperScope = scope.upper;
-    if (upperScope === null)
-      return NO_VARIABLE;
-    scope = upperScope;
-  }
+  return findVariableInScope({
+    scope: context.sourceCode
+      .getScope(node,),
+    name,
+  },);
 }
 
 /**
@@ -187,14 +211,15 @@ export function getImportDeclaration(
    * Definition node itself for whole-declaration imports,
    * or parent for individual specifiers.
    */
-  const declaration = definition.node.type
+  const declaration = definition.node
+    .type
     === 'ImportDeclaration'
     ? definition.node
-    : definition.node.parent;
+    : definition.node
+      .parent;
   if (declaration === null)
     return NO_VARIABLE;
-  if (declaration.type
-    !== 'ImportDeclaration')
+  if (declaration.type !== 'ImportDeclaration')
     return NO_VARIABLE;
   return declaration;
 }
@@ -214,12 +239,14 @@ export function getImportDeclaration(
 export function getVariableDeclarator(
   { definition, }: { readonly definition: Definition; },
 ): ESTree.VariableDeclarator | typeof NO_VARIABLE {
-  if (definition.node.type
+  if (definition.node
+    .type
     === 'VariableDeclarator')
     return definition.node;
   if (definition.parent === null)
     return NO_VARIABLE;
-  if (definition.parent.type
+  if (definition.parent
+    .type
     !== 'VariableDeclarator')
     return NO_VARIABLE;
   return definition.parent;
