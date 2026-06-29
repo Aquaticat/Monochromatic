@@ -1,5 +1,6 @@
 import type {
   Context,
+  Definition,
   ESTree,
 } from '@oxlint/plugins';
 
@@ -180,7 +181,7 @@ export function findVariable(
  * ```
  */
 export function getImportDeclaration(
-  { definition, }: { readonly definition: ESTree.Definition; },
+  { definition, }: { readonly definition: Definition; },
 ): ESTree.ImportDeclaration | typeof NO_VARIABLE {
   /**
    * Definition node itself for whole-declaration imports,
@@ -211,7 +212,7 @@ export function getImportDeclaration(
  * ```
  */
 export function getVariableDeclarator(
-  { definition, }: { readonly definition: ESTree.Definition; },
+  { definition, }: { readonly definition: Definition; },
 ): ESTree.VariableDeclarator | typeof NO_VARIABLE {
   if (definition.node.type
     === 'VariableDeclarator')
