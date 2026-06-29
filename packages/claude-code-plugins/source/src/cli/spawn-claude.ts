@@ -14,9 +14,9 @@
 import { spawn, } from 'node:child_process';
 import { randomUUID, } from 'node:crypto';
 import {
-  mkdirSync,
-  writeFileSync,
-} from 'node:fs';
+  mkdir,
+  writeFile,
+} from 'node:fs/promises';
 import { join, } from 'node:path';
 
 import { object, } from '@optique/core/constructs';
@@ -90,7 +90,7 @@ const args = runSync(
 /**
  * Resolved session identity of the calling Claude instance.
  */
-const identity = findCallingSession();
+const identity = await findCallingSession();
 
 if (identity === SESSION_NOT_FOUND) {
   console.error(
@@ -116,7 +116,7 @@ else {
   const extraArgs = splitWhitespace(args.extraArguments
     ?? '',);
 
-  mkdirSync(
+  await mkdir(
     SPAWNS_DIR,
     { recursive: true, },
   );
@@ -137,7 +137,7 @@ else {
     lastMessage: '',
   };
 
-  writeFileSync(
+  await writeFile(
     join(
       SPAWNS_DIR,
       `${spawnId}.json`,

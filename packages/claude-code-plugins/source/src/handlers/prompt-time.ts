@@ -87,8 +87,9 @@ function promptTimeWriter(output: ReadonlyDeep<PromptTimeOutput>,): string {
 
 export type { PromptTimeOutput, };
 
+export { formatTimeContext, } from '@monochromatic-dev/module-current-time-context/ts';
+
 export {
-  formatTimeContext,
   promptTimeHandler,
   promptTimeParser,
   promptTimeWriter,

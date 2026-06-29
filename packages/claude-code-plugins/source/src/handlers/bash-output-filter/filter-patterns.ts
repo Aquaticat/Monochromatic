@@ -9,7 +9,7 @@
  * @module
  */
 
-import { realpathSync, } from 'node:fs';
+import { realpath, } from 'node:fs/promises';
 
 import {
   isDigit,
@@ -36,69 +36,111 @@ const DEDUP_THRESHOLD = 3;
 const MAX_REPEATED_CHARS = 3;
 
 /**
- * Resolved absolute path to the user's home directory. Falls back to empty
- * string if `$HOME` is unset, which disables path collapsing without breaking
- * the filter.
+ * Sentinel for path prefixes that are unavailable in the current environment.
+ * A unique symbol avoids using an empty string as an out-of-band value.
  */
-const HOME_DIR: string = process.env
-  .HOME
-  ?? '';
+const PATH_PREFIX_ABSENT: unique symbol = Symbol('bash-output-filter/path-prefix-absent',);
 
 /**
- * Canonical (real) path to the home directory, following symlinks. Resolved
- * synchronously at startup via `fs.realpathSync`. On Fedora Atomic, `/home`
- * is a symlink to `/var/home`, so `$HOME=/home/user` but the real path is
- * `/var/home/user`. Tools differ on which form they emit.
+ * Path prefix used by path-collapsing transforms, or {@link PATH_PREFIX_ABSENT}
+ * when no safe prefix is available.
  */
-const REAL_HOME_DIR: string = (function resolveRealHome(): string {
+type PathPrefix = string | typeof PATH_PREFIX_ABSENT;
+
+/**
+ * Resolved absolute path to the user's home directory. Missing `$HOME` disables
+ * home-path collapsing via the explicit sentinel.
+ */
+const HOME_DIR: PathPrefix = process.env
+  .HOME
+  ?? PATH_PREFIX_ABSENT;
+
+/**
+ * Adds a trailing slash to a directory path when absent.
+ *
+ * @param path - directory path to normalize
+ *
+ * @returns path with a trailing slash
+ */
+function withTrailingSlash(path: string,): string {
+  return path.endsWith('/',) ? path : `${path}/`;
+}
+
+/**
+ * Resolves the canonical home directory path, following symlinks. On Fedora
+ * Atomic, `/home` is a symlink to `/var/home`, so `$HOME=/home/user` while the
+ * real path is `/var/home/user`. Tools differ on which form they emit.
+ *
+ * @returns alternate real home path, or {@link PATH_PREFIX_ABSENT} when absent
+ */
+async function resolveRealHome(): Promise<PathPrefix> {
+  if (HOME_DIR === PATH_PREFIX_ABSENT)
+    return PATH_PREFIX_ABSENT;
   try {
-    if (HOME_DIR === '')
-      return '';
     /**
-     * Canonical home path; equal to `HOME_DIR` when there is no symlink, so the IIFE returns ''.
+     * Canonical home path resolved through filesystem metadata.
      */
-    const resolved = realpathSync(HOME_DIR,);
-    return resolved === HOME_DIR ? '' : resolved;
+    const resolved = await realpath(HOME_DIR,);
+    return resolved === HOME_DIR ? PATH_PREFIX_ABSENT : resolved;
   }
-  catch {
-    return '';
+  catch (_error: unknown) {
+    return PATH_PREFIX_ABSENT;
   }
-})();
+}
+
+/**
+ * Canonical (real) path to the home directory, following symlinks.
+ */
+const REAL_HOME_DIR: PathPrefix = await resolveRealHome();
+
+/**
+ * Resolves current working directory with a trailing slash.
+ *
+ * @returns cwd prefix, or {@link PATH_PREFIX_ABSENT} when cwd cannot be read
+ */
+function resolveCwdPrefix(): PathPrefix {
+  try {
+    /**
+     * Current working directory before normalisation.
+     */
+    const cwd = process.cwd();
+    return withTrailingSlash(cwd,);
+  }
+  catch (_error: unknown) {
+    return PATH_PREFIX_ABSENT;
+  }
+}
 
 /**
  * Current working directory with trailing slash. The filter inherits the piped
  * command's cwd, which matches the sandbox's tracked cwd. Used to convert
  * absolute paths in tool output to relative paths.
  */
-const CWD_PREFIX: string = (function resolveCwdPrefix(): string {
-  try {
-    /**
-     * Current working directory before normalisation; trailing slash is enforced in the return.
-     */
-    const cwd = process.cwd();
-    return cwd.endsWith('/',) ? cwd : `${cwd}/`;
-  }
-  catch {
-    return '';
-  }
-})();
+const CWD_PREFIX: PathPrefix = resolveCwdPrefix();
 
 /**
  * Alternate CWD prefix using the other home directory form. `process.cwd()`
  * returns the real path, but some tool output uses the `$HOME` symlink form;
  * this computes the alternate by swapping the home-directory prefix.
+ *
+ * @returns alternate cwd prefix, or {@link PATH_PREFIX_ABSENT} when unavailable
  */
-const ALT_CWD_PREFIX: string = (function resolveAltCwdPrefix(): string {
-  if ((CWD_PREFIX === '') || (REAL_HOME_DIR === '')
-    || (HOME_DIR === ''))
-    return '';
+function resolveAltCwdPrefix(): PathPrefix {
+  if ((CWD_PREFIX === PATH_PREFIX_ABSENT) || (REAL_HOME_DIR === PATH_PREFIX_ABSENT)
+    || (HOME_DIR === PATH_PREFIX_ABSENT))
+    return PATH_PREFIX_ABSENT;
 
   if (CWD_PREFIX.startsWith(`${REAL_HOME_DIR}/`,))
     return `${HOME_DIR}${CWD_PREFIX.slice(REAL_HOME_DIR.length,)}`;
   if (CWD_PREFIX.startsWith(`${HOME_DIR}/`,))
     return `${REAL_HOME_DIR}${CWD_PREFIX.slice(HOME_DIR.length,)}`;
-  return '';
-})();
+  return PATH_PREFIX_ABSENT;
+}
+
+/**
+ * Alternate CWD prefix using the other home directory form.
+ */
+const ALT_CWD_PREFIX: PathPrefix = resolveAltCwdPrefix();
 
 //endregion
 
@@ -398,6 +440,9 @@ export {
   isGitFileModeLine,
   MAX_LINE_LENGTH,
   MAX_REPEATED_CHARS,
+  PATH_PREFIX_ABSENT,
   REAL_HOME_DIR,
   SANDBOX_NOISE_PREDICATES,
 };
+
+export type { PathPrefix, };

@@ -1,6 +1,18 @@
 import { text, } from 'node:stream/consumers';
 
 /**
+ * Sentinel returned by writers for hook outputs that intentionally emit no stdout.
+ * A unique symbol avoids treating an empty string as an out-of-band signal.
+ */
+const NO_STDOUT: unique symbol = Symbol('claude-code-plugin-runtime/hook-intentionally-emits-no-stdout-bytes',);
+
+/**
+ * Serialized writer result, or {@link NO_STDOUT} when the hook protocol should
+ * receive no stdout bytes.
+ */
+type WriterOutput = string | typeof NO_STDOUT;
+
+/**
  * Parser converts the raw stdin string into the typed event the handler consumes.
  *
  * Each parser asserts the trusted JSON shape at its own boundary; inputs come
@@ -28,10 +40,11 @@ type HookHandler<TInput, TOutput,> = (input: TInput,) => TOutput | Promise<TOutp
 /**
  * Writer serializes the handler output for stdout.
  *
- * Returns a string written verbatim; no trailing newline is appended,
- * matching the wire convention Claude Code expects.
+ * Returns a string written verbatim, or {@link NO_STDOUT} for intentional
+ * silence. String outputs receive no trailing newline, matching the wire
+ * convention Claude Code expects.
  */
-type Writer<TOutput,> = (output: TOutput,) => string;
+type Writer<TOutput,> = (output: TOutput,) => WriterOutput;
 
 /**
  * Runtime shell for a hook plugin entry script.
@@ -78,16 +91,25 @@ async function runHookPlugin<TInput, TOutput,>(
    * Handler response; serialized by the writer for stdout.
    */
   const output = await handler(event,);
-  process.stdout
-    .write(writer(output,),);
+  /**
+   * Serialized payload from the writer; the sentinel means the hook intentionally
+   * emits no stdout bytes.
+   */
+  const serialized = writer(output,);
+  if (serialized !== NO_STDOUT) {
+    process.stdout
+      .write(serialized,);
+  }
 }
 
 export type {
   HookHandler,
   Parser,
   Writer,
+  WriterOutput,
 };
 
 export {
+  NO_STDOUT,
   runHookPlugin,
 };

@@ -20,6 +20,12 @@ import {
 } from './filter-transforms.ts';
 
 /**
+ * Sentinel returned when stdin cannot be read. A unique symbol keeps unavailable
+ * input distinct from a legitimately empty Bash output stream.
+ */
+const STDIN_UNAVAILABLE: unique symbol = Symbol('bash-output-filter/stdin-stream-could-not-be-read',);
+
+/**
  * Applies all filter transformations to raw tool output.
  *
  * @param input - raw stdout/stderr text from the Bash tool
@@ -119,10 +125,24 @@ function collapseLines(lines: readonly string[],): string[] {
 }
 
 /**
+ * Reads stdin to EOF, returning an explicit sentinel when the stream fails.
+ *
+ * @returns stdin text, or {@link STDIN_UNAVAILABLE} when unavailable
+ */
+async function readStdin(): Promise<string | typeof STDIN_UNAVAILABLE> {
+  try {
+    return await text(process.stdin,);
+  }
+  catch (_error: unknown) {
+    return STDIN_UNAVAILABLE;
+  }
+}
+
+/**
  * Entry-point for the filter script. Reads stdin to EOF, applies the filter
- * pipeline, and writes the result to stdout. On any failure, writes the
- * unfiltered stdin content as a fallthrough; losing output is worse than
- * failing to filter.
+ * pipeline, and writes the result to stdout. On transform failure, writes the
+ * already-read stdin content unchanged; losing output is worse than failing to
+ * filter.
  *
  * @example
  * ```ts
@@ -130,11 +150,14 @@ function collapseLines(lines: readonly string[],): string[] {
  * ```
  */
 async function runFilter(): Promise<void> {
+  /**
+   * Full stdin payload from the Bash tool, awaited to EOF before transforms run.
+   */
+  const input = await readStdin();
+  if (input === STDIN_UNAVAILABLE)
+    return;
+
   try {
-    /**
-     * Full stdin payload from the Bash tool, awaited to EOF before transforms run.
-     */
-    const input = await text(process.stdin,);
     /**
      * Filtered text written back to stdout in the happy path.
      */
@@ -142,18 +165,9 @@ async function runFilter(): Promise<void> {
     process.stdout
       .write(filtered,);
   }
-  catch {
-    try {
-      /**
-       * Original stdin payload re-read after a filter failure; preserves output rather than losing it.
-       */
-      const fallback = await text(process.stdin,);
-      process.stdout
-        .write(fallback,);
-    }
-    catch {
-      /* stdin already consumed or unavailable: nothing to pass through */
-    }
+  catch (_error: unknown) {
+    process.stdout
+      .write(input,);
   }
 }
 

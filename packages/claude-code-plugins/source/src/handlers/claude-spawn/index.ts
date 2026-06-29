@@ -17,9 +17,9 @@ import type {
 } from '@monochromatic-dev/claude-code-plugins-hook-types/ts';
 import type { ReadonlyDeep, } from 'type-fest';
 import {
-  readFileSync,
-  writeFileSync,
-} from 'node:fs';
+  readFile,
+  writeFile,
+} from 'node:fs/promises';
 import { join, } from 'node:path';
 
 import { handleSessionStart, } from './hook-session-start.ts';
@@ -64,7 +64,7 @@ type ClaudeSpawnOutput =
  *
  * @param lastMessage - text of the child's last assistant message
  */
-function updateChildOnStop(
+async function updateChildOnStop(
   {
     sessionId,
     lastMessage,
@@ -72,7 +72,7 @@ function updateChildOnStop(
     readonly sessionId: string;
     readonly lastMessage: string;
   },
-): void {
+): Promise<void> {
   /**
    * Spawn correlation id injected by the CLI when this Claude was a child; absent in normal runs.
    */
@@ -93,7 +93,7 @@ function updateChildOnStop(
     /**
      * Current on-disk state text, parsed below to confirm ownership before rewriting.
      */
-    const existing = readFileSync(
+    const existing = await readFile(
       filePath,
       'utf8',
     );
@@ -114,13 +114,13 @@ function updateChildOnStop(
         lastMessage,
         status: 'stopped',
       };
-      writeFileSync(
+      await writeFile(
         filePath,
         JSON.stringify(updated,),
       );
     }
   }
-  catch {
+  catch (_error: unknown) {
     /**
      * File missing (already `.reported`) or unreadable: skip.
      */
@@ -139,14 +139,14 @@ function updateChildOnStop(
  *
  * @returns block decision with child results, or empty pass-through
  */
-function stopResponse(
+async function stopResponse(
   event: ReadonlyDeep<Extract<HookInput, { hook_event_name: 'Stop'; }>>,
-): ClaudeSpawnOutput {
+): Promise<ClaudeSpawnOutput> {
   if (!event.stop_hook_active) {
     /**
      * Formatted child-result text consumed atomically; `NOTHING_TO_REPORT` when nothing pending.
      */
-    const context = checkCompletedChildren({
+    const context = await checkCompletedChildren({
       parentSessionId: event.session_id,
       consume: true,
     },);
@@ -178,11 +178,11 @@ function stopResponse(
  *
  * @returns hook response carrying child-result text, or empty pass-through
  */
-function additionalContextResponse(event: ReadonlyDeep<HookInput>,): ClaudeSpawnOutput {
+async function additionalContextResponse(event: ReadonlyDeep<HookInput>,): Promise<ClaudeSpawnOutput> {
   /**
    * Formatted child-result text consumed atomically; `NOTHING_TO_REPORT` when no completion is pending.
    */
-  const context = checkCompletedChildren({
+  const context = await checkCompletedChildren({
     parentSessionId: event.session_id,
     consume: true,
   },);
@@ -222,13 +222,13 @@ function additionalContextResponse(event: ReadonlyDeep<HookInput>,): ClaudeSpawn
  * claudeSpawnHandler({ hook_event_name: 'SessionEnd', session_id: 'abc', ... });
  * ```
  */
-function claudeSpawnHandler(event: ReadonlyDeep<HookInput>,): ClaudeSpawnOutput {
+async function claudeSpawnHandler(event: ReadonlyDeep<HookInput>,): Promise<ClaudeSpawnOutput> {
   if (event.hook_event_name
     === 'SessionStart') {
     /**
      * Raw SessionStart warning text emitted directly to stdout.
      */
-    const text = handleSessionStart({
+    const text = await handleSessionStart({
       sessionId: event.session_id,
       transcriptPath: event.transcript_path,
       hookDir: HOOK_DIR,
@@ -241,7 +241,7 @@ function claudeSpawnHandler(event: ReadonlyDeep<HookInput>,): ClaudeSpawnOutput 
   if (event.hook_event_name
     === 'Stop') {
     if (event.last_assistant_message !== undefined) {
-      updateChildOnStop({
+      await updateChildOnStop({
         sessionId: event.session_id,
         lastMessage: event.last_assistant_message,
       },);

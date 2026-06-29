@@ -13,7 +13,6 @@ import {
   quotedFormat,
   shortCommand,
   type ToolTitleEntry,
-  truncate,
 } from './formatter-utils.ts';
 import { EXTENDED_TOOL_TITLES, } from './tool-titles-extended.ts';
 import { SEARCH_TOOL_TITLES, } from './tool-titles-search.ts';
@@ -115,9 +114,8 @@ const TOOL_TITLES: Record<string, ToolTitleEntry> = {
   ...EXTENDED_TOOL_TITLES,
 };
 
-export type { ToolTitleEntry, };
+export type { ToolTitleEntry, } from './formatter-utils.ts';
 
-export {
-  TOOL_TITLES,
-  truncate,
-};
+export { truncate, } from './formatter-utils.ts';
+
+export { TOOL_TITLES, };

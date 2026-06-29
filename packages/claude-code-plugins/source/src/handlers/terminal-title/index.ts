@@ -4,13 +4,13 @@ import type {
   PreToolUseInput,
 } from '@monochromatic-dev/claude-code-plugins-hook-types/ts';
 import type { ReadonlyDeep, } from 'type-fest';
-import {
-  closeSync,
-  openSync,
-  writeSync,
-} from 'node:fs';
+import { open, } from 'node:fs/promises';
 import { basename, } from 'node:path';
 
+import {
+  NO_STDOUT,
+  type WriterOutput,
+} from '../../runtime/handler-runtime.ts';
 import { FIELD_ABSENT, } from './formatter-utils.ts';
 import {
   TOOL_TITLES,
@@ -151,27 +151,18 @@ function titleForEvent(hookEvent: ReadonlyDeep<HookInput>,): string {
  *
  * @param title - title string to display in the terminal tab
  */
-function setTerminalTitle(title: string,): void {
+async function setTerminalTitle(title: string,): Promise<void> {
   try {
     /**
-     * Write-mode file descriptor for `/dev/tty`; closed by `_cleanup` on scope exit.
+     * Write-mode file handle for `/dev/tty`; closed by async disposal on scope exit.
      */
-    const fd = openSync(
+    await using tty = await open(
       '/dev/tty',
       'w',
     );
-    /**
-     * Disposable that closes `fd` when this block ends, even if `writeSync` throws.
-     */
-    using _cleanup = { [Symbol.dispose](): void {
-      closeSync(fd,);
-    }, };
-    writeSync(
-      fd,
-      `]0;${title}`,
-    );
+    await tty.write(`]0;${title}`,);
   }
-  catch {
+  catch (_error: unknown) {
     /* /dev/tty unavailable: running inside sandbox or non-interactive context. */
   }
 }
@@ -197,12 +188,12 @@ type TerminalTitleOutput = void;
  * terminalTitleHandler({ hook_event_name: 'PreToolUse', tool_name: 'Read', ... });
  * ```
  */
-function terminalTitleHandler(event: ReadonlyDeep<HookInput>,): TerminalTitleOutput {
+async function terminalTitleHandler(event: ReadonlyDeep<HookInput>,): Promise<TerminalTitleOutput> {
   /**
    * Title text derived from the event before prefixing and truncation.
    */
   const title = titleForEvent(event,);
-  setTerminalTitle(truncate({
+  await setTerminalTitle(truncate({
     value: `${TITLE_PREFIX} ${title}`,
     maxLength: MAX_TITLE_LENGTH,
   },),);
@@ -229,20 +220,20 @@ function terminalTitleParser(raw: string,): HookInput {
 }
 
 /**
- * Returns an empty string; the legacy hook produced no stdout, and the
- * runtime shell writes whatever this returns verbatim.
+ * Returns {@link NO_STDOUT}; the legacy hook produced no stdout, and the
+ * runtime shell treats the sentinel as intentional silence.
  *
  * @param _output - ignored handler result (title is set as a side effect)
  *
- * @returns empty string
+ * @returns sentinel instructing the runtime to emit no stdout bytes
  *
  * @example
  * ```ts
- * terminalTitleWriter(); // ''
+ * terminalTitleWriter(); // NO_STDOUT
  * ```
  */
-function terminalTitleWriter(_output: TerminalTitleOutput,): string {
-  return '';
+function terminalTitleWriter(_output: TerminalTitleOutput,): WriterOutput {
+  return NO_STDOUT;
 }
 
 export type { TerminalTitleOutput, };

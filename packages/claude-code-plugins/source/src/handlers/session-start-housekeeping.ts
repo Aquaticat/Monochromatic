@@ -9,6 +9,11 @@ import {
   rm,
 } from 'node:fs/promises';
 
+import {
+  NO_STDOUT,
+  type WriterOutput,
+} from '../runtime/handler-runtime.ts';
+
 /**
  * Stale artifact names that git metadata or Claude config can leak into nested
  * `dist/final/` directories. Removed on session start to prevent build contamination.
@@ -178,8 +183,8 @@ async function removeMcpJson(workspaceRoot: string,): Promise<void> {
 
 /**
  * Output is `void`: the housekeeping handler performs filesystem side effects
- * and writes nothing to stdout. The runtime invokes `sessionStartHousekeepingWriter`
- * which returns an empty string, matching the legacy hook's wire behavior.
+ * and writes nothing to stdout. The runtime invokes `sessionStartHousekeepingWriter`,
+ * which returns {@link NO_STDOUT} to preserve the legacy hook's wire behavior.
  */
 type SessionStartHousekeepingOutput = void;
 
@@ -239,22 +244,22 @@ function sessionStartHousekeepingParser(raw: string,): SessionStartInput {
 }
 
 /**
- * Returns an empty string; the legacy hook produced no stdout, and the runtime
- * shell writes whatever this returns verbatim.
+ * Returns {@link NO_STDOUT}; the legacy hook produced no stdout, and the
+ * runtime shell treats the sentinel as intentional silence.
  *
  * @param _output - ignored handler result (housekeeping has no stdout)
  *
- * @returns empty string
+ * @returns sentinel instructing the runtime to emit no stdout bytes
  *
  * @example
  * ```ts
- * sessionStartHousekeepingWriter(); // ''
+ * sessionStartHousekeepingWriter(); // NO_STDOUT
  * ```
  */
 function sessionStartHousekeepingWriter(
   _output: SessionStartHousekeepingOutput,
-): string {
-  return '';
+): WriterOutput {
+  return NO_STDOUT;
 }
 
 export type { SessionStartHousekeepingOutput, };

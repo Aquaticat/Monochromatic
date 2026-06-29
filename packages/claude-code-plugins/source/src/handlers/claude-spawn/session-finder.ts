@@ -8,10 +8,10 @@
  */
 
 import {
-  readdirSync,
-  readFileSync,
-  statSync,
-} from 'node:fs';
+  readFile,
+  readdir,
+  stat,
+} from 'node:fs/promises';
 import { join, } from 'node:path';
 
 import { splitWhitespace, } from '../../lib/text-scan.ts';
@@ -42,12 +42,12 @@ const SESSION_NOT_FOUND: unique symbol = Symbol('claude-spawn/session-not-found'
  * const parent = readParentPid(1234);
  * ```
  */
-function readParentPid(pid: number,): number | typeof SESSION_NOT_FOUND {
+async function readParentPid(pid: number,): Promise<number | typeof SESSION_NOT_FOUND> {
   try {
     /**
      * Raw `/proc/<pid>/status` text whose `PPid:` line carries the parent PID.
      */
-    const statusContent = readFileSync(
+    const statusContent = await readFile(
       `/proc/${String(pid,)}/status`,
       'utf8',
     );
@@ -62,13 +62,12 @@ function readParentPid(pid: number,): number | typeof SESSION_NOT_FOUND {
     if (ppidLine === undefined)
       return SESSION_NOT_FOUND;
 
-    return Number.parseInt(
+    return Math.trunc(Number(
       splitWhitespace(ppidLine,)[1]
         ?? '0',
-      10,
-    );
+    ),);
   }
-  catch {
+  catch (_error: unknown) {
     // Cannot read /proc: platform limitation or process already exited.
     return SESSION_NOT_FOUND;
   }
@@ -86,7 +85,7 @@ function readParentPid(pid: number,): number | typeof SESSION_NOT_FOUND {
  * const mapping = readPidMapping(1234);
  * ```
  */
-function readPidMapping(pid: number,): PidMapping | typeof SESSION_NOT_FOUND {
+async function readPidMapping(pid: number,): Promise<PidMapping | typeof SESSION_NOT_FOUND> {
   /**
    * Path under `.by-pid/` where the SessionStart hook would have recorded this PID.
    */
@@ -98,14 +97,14 @@ function readPidMapping(pid: number,): PidMapping | typeof SESSION_NOT_FOUND {
     /**
      * File contents on disk; parsed below as the mapping JSON.
      */
-    const raw = readFileSync(
+    const raw = await readFile(
       pidFilePath,
       'utf8',
     );
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- trusted file written by our own SessionStart hook
     return JSON.parse(raw,) as PidMapping;
   }
-  catch {
+  catch (_error: unknown) {
     return SESSION_NOT_FOUND;
   }
 }
@@ -124,19 +123,19 @@ function readPidMapping(pid: number,): PidMapping | typeof SESSION_NOT_FOUND {
  * const m = walkProcessTreeFrom(process.ppid);
  * ```
  */
-function walkProcessTreeFrom(pid: number,): PidMapping | typeof SESSION_NOT_FOUND {
+async function walkProcessTreeFrom(pid: number,): Promise<PidMapping | typeof SESSION_NOT_FOUND> {
   if (pid <= 1)
     return SESSION_NOT_FOUND;
   /**
-   * Mapping for `pid` itself; short-circuits the recursion when present.
+   * Mapping for `pid` itself; short-circuits the process-tree walk when present.
    */
-  const direct = readPidMapping(pid,);
+  const direct = await readPidMapping(pid,);
   if (direct !== SESSION_NOT_FOUND)
     return direct;
   /**
-   * Parent PID continuing the walk; `SESSION_NOT_FOUND` ends recursion when `/proc` is unreadable.
+   * Parent PID continuing the walk; `SESSION_NOT_FOUND` ends when `/proc` is unreadable.
    */
-  const parentPid = readParentPid(pid,);
+  const parentPid = await readParentPid(pid,);
   if (parentPid === SESSION_NOT_FOUND)
     return SESSION_NOT_FOUND;
   return walkProcessTreeFrom(parentPid,);
@@ -160,7 +159,7 @@ function walkProcessTreeFrom(pid: number,): PidMapping | typeof SESSION_NOT_FOUN
  * if (identity !== SESSION_NOT_FOUND) console.log(identity.sessionId);
  * ```
  */
-function findByProcessTree(): PidMapping | typeof SESSION_NOT_FOUND {
+function findByProcessTree(): Promise<PidMapping | typeof SESSION_NOT_FOUND> {
   return walkProcessTreeFrom(process.ppid,);
 }
 
@@ -175,11 +174,63 @@ function findByProcessTree(): PidMapping | typeof SESSION_NOT_FOUND {
  * const entries = readByPidDir();
  * ```
  */
-function readByPidDir(): readonly string[] | typeof SESSION_NOT_FOUND {
+async function readByPidDir(): Promise<readonly string[] | typeof SESSION_NOT_FOUND> {
   try {
-    return readdirSync(BY_PID_DIR,);
+    return await readdir(BY_PID_DIR,);
   }
-  catch {
+  catch (_error: unknown) {
+    return SESSION_NOT_FOUND;
+  }
+}
+
+/**
+ * Candidate mapping paired with file modification time for fallback ranking.
+ */
+type NewestMapping = {
+  readonly mapping: PidMapping;
+  readonly mtime: number;
+} | typeof SESSION_NOT_FOUND;
+
+/**
+ * Reads and scores one `.by-pid/` entry for most-recent fallback lookup.
+ *
+ * @param filename - directory entry name under {@link BY_PID_DIR}
+ *
+ * @returns mapping with modification time, or {@link SESSION_NOT_FOUND} when unreadable
+ */
+async function readNewestCandidate(filename: string,): Promise<NewestMapping> {
+  /**
+   * Absolute path to the candidate `.by-pid/` entry being scored.
+   */
+  const filePath = join(
+    BY_PID_DIR,
+    filename,
+  );
+
+  try {
+    /**
+     * File metadata and contents read concurrently for the candidate mapping.
+     */
+    const [stats, raw,] = await Promise.all([
+      stat(filePath,),
+      readFile(
+        filePath,
+        'utf8',
+      ),
+    ],);
+    /* oxlint-disable typescript/no-unsafe-type-assertion -- trusted file written by our own SessionStart hook */
+    /**
+     * Parsed mapping that can replace the accumulator when its `mtime` is newer.
+     */
+    const mapping = JSON.parse(raw,) as PidMapping;
+    /* oxlint-enable typescript/no-unsafe-type-assertion */
+    return {
+      mapping,
+      mtime: stats.mtimeMs,
+    };
+  }
+  catch (_error: unknown) {
+    // Skip unreadable files.
     return SESSION_NOT_FOUND;
   }
 }
@@ -195,76 +246,40 @@ function readByPidDir(): readonly string[] | typeof SESSION_NOT_FOUND {
  *
  * @example
  * ```ts
- * const identity = findByMostRecent();
+ * const identity = await findByMostRecent();
  * if (identity !== SESSION_NOT_FOUND) console.log(identity.sessionId);
  * ```
  */
-function findByMostRecent(): PidMapping | typeof SESSION_NOT_FOUND {
+async function findByMostRecent(): Promise<PidMapping | typeof SESSION_NOT_FOUND> {
   /**
    * Filenames in `.by-pid/`, or `SESSION_NOT_FOUND` when the directory cannot be read.
    */
-  const entries = readByPidDir();
+  const entries = await readByPidDir();
 
   if (entries === SESSION_NOT_FOUND)
     return SESSION_NOT_FOUND;
 
   /**
-   * Folds the entries to the most recently modified mapping, skipping unreadable files.
+   * Candidate mappings for every entry; unreadable files become the sentinel.
    */
-  type NewestMapping = {
-    mapping: PidMapping;
-    mtime: number;
-  } | typeof SESSION_NOT_FOUND;
-
+  const candidates = await Promise.all(
+    entries.map(function readEntry(filename,): Promise<NewestMapping> {
+      return readNewestCandidate(filename,);
+    },),
+  );
   /**
    * Accumulator that ends with the latest valid mapping after scanning every entry.
    */
-  const newest = entries.reduce<NewestMapping>(
-    function pickNewer(
+  const newest = candidates.reduce<NewestMapping>(
+    function chooseNewer(
       current,
-      filename,
+      candidate,
     ) {
-      /**
-       * Absolute path to the candidate `.by-pid/` entry being scored.
-       */
-      const filePath = join(
-        BY_PID_DIR,
-        filename,
-      );
-
-      try {
-        /**
-         * Modification time used to rank against the running accumulator.
-         */
-        const mtime = statSync(filePath,)
-          .mtimeMs;
-        /**
-         * Raw file contents parsed below into the candidate mapping.
-         */
-        const raw = readFileSync(
-          filePath,
-          'utf8',
-        );
-        /* oxlint-disable typescript/no-unsafe-type-assertion -- trusted file written by our own SessionStart hook */
-        /**
-         * Parsed mapping that replaces the accumulator when its `mtime` is newer.
-         */
-        const mapping = JSON.parse(raw,) as PidMapping;
-        /* oxlint-enable typescript/no-unsafe-type-assertion */
-
-        if ((current === SESSION_NOT_FOUND) || (mtime > current
-          .mtime)) {
-          return {
-            mapping,
-            mtime,
-          };
-        }
+      if (candidate === SESSION_NOT_FOUND)
         return current;
-      }
-      catch {
-        // Skip unreadable files.
-        return current;
-      }
+      if ((current === SESSION_NOT_FOUND) || (candidate.mtime > current.mtime))
+        return candidate;
+      return current;
     },
     SESSION_NOT_FOUND,
   );
@@ -289,13 +304,13 @@ function findByMostRecent(): PidMapping | typeof SESSION_NOT_FOUND {
  * if (identity === SESSION_NOT_FOUND) throw new Error('No Claude session found');
  * ```
  */
-function findCallingSession(): PidMapping | typeof SESSION_NOT_FOUND {
+async function findCallingSession(): Promise<PidMapping | typeof SESSION_NOT_FOUND> {
   /**
    * Process-tree walk result; falls through to the most-recent scan when not found.
    */
-  const fromTree = findByProcessTree();
+  const fromTree = await findByProcessTree();
   return fromTree === SESSION_NOT_FOUND
-    ? findByMostRecent()
+    ? await findByMostRecent()
     : fromTree;
 }
 

@@ -85,7 +85,7 @@ const SEARCH_TOOL_TITLES: Record<string, ToolTitleEntry> = {
       try {
         return `${verb} ${new URL(v,).hostname}`;
       }
-      catch {
+      catch (_error: unknown) {
         return `${verb} URL`;
       }
     },

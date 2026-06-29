@@ -22,8 +22,6 @@ import {
   normaliseApostrophes,
   UNCERTAINTY_PHRASES,
 } from './uncertainty-phrases.ts';
-import { stripNonProseRegions, } from './uncertainty-strip.ts';
-
 //region Types
 
 /**
@@ -359,8 +357,9 @@ export {
   findTrailingQuestion,
   findUncertainty,
   NO_MATCH,
-  stripNonProseRegions,
 };
+
+export { stripNonProseRegions, } from './uncertainty-strip.ts';
 
 export type {
   QuestionMatch,

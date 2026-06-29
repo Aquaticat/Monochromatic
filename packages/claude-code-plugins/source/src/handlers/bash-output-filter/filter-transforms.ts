@@ -21,8 +21,10 @@ import {
   isGitFileModeLine,
   MAX_LINE_LENGTH,
   MAX_REPEATED_CHARS,
+  PATH_PREFIX_ABSENT,
   REAL_HOME_DIR,
   SANDBOX_NOISE_PREDICATES,
+  type PathPrefix,
 } from './filter-patterns.ts';
 
 //region Line stripping
@@ -148,6 +150,17 @@ function collapseRepeatedChars(line: string,): string {
 //region Path collapsing
 
 /**
+ * Narrows a path prefix from sentinel-bearing form to a usable string.
+ *
+ * @param prefix - candidate path prefix
+ *
+ * @returns whether the prefix is available
+ */
+function hasPathPrefix(prefix: PathPrefix,): prefix is string {
+  return prefix !== PATH_PREFIX_ABSENT;
+}
+
+/**
  * Replaces working-directory paths with relative equivalents, only when the
  * path appears at the beginning of a line. Restricts replacement to line-initial
  * position to avoid mangling paths embedded in error messages or JSON.
@@ -164,10 +177,10 @@ function collapseRepeatedChars(line: string,): string {
  * ```
  */
 function collapseCwdPaths(line: string,): string {
-  if (CWD_PREFIX === '')
+  if (!hasPathPrefix(CWD_PREFIX,))
     return line;
 
-  if (ALT_CWD_PREFIX !== '') {
+  if (hasPathPrefix(ALT_CWD_PREFIX,)) {
     if (ALT_CWD_PREFIX.length
       >= CWD_PREFIX
       .length) {
@@ -204,10 +217,10 @@ function collapseCwdPaths(line: string,): string {
  * ```
  */
 function collapseHomePaths(line: string,): string {
-  if (HOME_DIR === '')
+  if (!hasPathPrefix(HOME_DIR,))
     return line;
 
-  if (REAL_HOME_DIR !== '') {
+  if (hasPathPrefix(REAL_HOME_DIR,)) {
     if (REAL_HOME_DIR.length
       >= HOME_DIR
       .length) {

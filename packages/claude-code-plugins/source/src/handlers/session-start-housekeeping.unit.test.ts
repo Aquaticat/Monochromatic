@@ -70,7 +70,7 @@ async function pathExists(path: string,): Promise<boolean> {
     await access(path,);
     return true;
   }
-  catch {
+  catch (_error: unknown) {
     return false;
   }
 }

@@ -15,6 +15,14 @@ import {
 } from './formatter-utils.ts';
 
 /**
+ * Throws when a formatter is called for an entry whose extractor never returns
+ * text. The fallback path should handle these entries before formatting.
+ */
+function absentFieldFormatter(): never {
+  throw new Error('terminal-title formatter called for absent field entry',);
+}
+
+/**
  * Title entries for plan mode, worktree, task, and cron tools. Merged into the
  * main `TOOL_TITLES` registry by `tool-titles.ts`.
  */
@@ -23,9 +31,7 @@ const EXTENDED_TOOL_TITLES: Record<string, ToolTitleEntry> = {
     extract() {
       return FIELD_ABSENT;
     },
-    format() {
-      return '';
-    },
+    format: absentFieldFormatter,
     fallback: {
       pre: 'Entering plan mode',
       post: 'In plan mode',
@@ -35,9 +41,7 @@ const EXTENDED_TOOL_TITLES: Record<string, ToolTitleEntry> = {
     extract() {
       return FIELD_ABSENT;
     },
-    format() {
-      return '';
-    },
+    format: absentFieldFormatter,
     fallback: {
       pre: 'Exiting plan mode',
       post: 'Exited plan mode',
@@ -88,9 +92,7 @@ const EXTENDED_TOOL_TITLES: Record<string, ToolTitleEntry> = {
     extract() {
       return FIELD_ABSENT;
     },
-    format() {
-      return '';
-    },
+    format: absentFieldFormatter,
     fallback: {
       pre: 'Listing tasks',
       post: 'Listed tasks',
@@ -170,9 +172,7 @@ const EXTENDED_TOOL_TITLES: Record<string, ToolTitleEntry> = {
     extract() {
       return FIELD_ABSENT;
     },
-    format() {
-      return '';
-    },
+    format: absentFieldFormatter,
     fallback: {
       pre: 'Listing cron jobs',
       post: 'Listed cron jobs',

@@ -7,15 +7,16 @@
  * @module
  */
 
-import { execFileSync, } from 'node:child_process';
+import { constants, } from 'node:fs';
 import {
-  chmodSync,
-  mkdirSync,
-  readFileSync,
-  symlinkSync,
-  unlinkSync,
-  writeFileSync,
-} from 'node:fs';
+  access,
+  chmod,
+  mkdir,
+  readFile,
+  symlink,
+  unlink,
+  writeFile,
+} from 'node:fs/promises';
 import {
   join,
   resolve,
@@ -62,7 +63,7 @@ const NO_WARNING: unique symbol = Symbol('claude-spawn/cli-setup-ok',);
  * process.stdout.write(output);
  * ```
  */
-function handleSessionStart({
+async function handleSessionStart({
   sessionId,
   transcriptPath,
   hookDir,
@@ -70,8 +71,8 @@ function handleSessionStart({
   readonly sessionId: string;
   readonly transcriptPath: string;
   readonly hookDir: string;
-},): string {
-  mkdirSync(
+},): Promise<string> {
+  await mkdir(
     BY_PID_DIR,
     { recursive: true, },
   );
@@ -84,7 +85,7 @@ function handleSessionStart({
     transcriptPath,
   };
 
-  writeFileSync(
+  await writeFile(
     join(
       BY_PID_DIR,
       String(process.ppid,),
@@ -116,7 +117,7 @@ function handleSessionStart({
       /**
        * Existing spawn-state text on disk; parsed below before deciding to claim.
        */
-      const raw = readFileSync(
+      const raw = await readFile(
         jsonPath,
         'utf8',
       );
@@ -137,13 +138,13 @@ function handleSessionStart({
           sessionId,
           transcriptPath,
         };
-        writeFileSync(
+        await writeFile(
           jsonPath,
           JSON.stringify(updated,),
         );
       }
     }
-    catch {
+    catch (_error: unknown) {
       /**
        * File missing (stale env, already `.reported`) or unreadable: skip.
        */
@@ -153,7 +154,7 @@ function handleSessionStart({
   /**
    * Warning text from CLI auto-setup, or `NO_WARNING` when setup succeeded or was unnecessary.
    */
-  const cliWarning = autoSetupCli(hookDir,);
+  const cliWarning = await autoSetupCli(hookDir,);
   if (cliWarning !== NO_WARNING)
     return cliWarning;
 
@@ -161,27 +162,54 @@ function handleSessionStart({
 }
 
 /**
- * Detects whether `spawn-claude` is already discoverable on PATH.
+ * Tests whether a path points to an executable file.
  *
- * @returns `true` if `which` finds `spawn-claude`, `false` otherwise
+ * @param path - candidate executable path
  *
- * @example
- * ```ts
- * if (cliIsOnPath()) skipAutoSetup();
- * ```
+ * @returns true when the process can execute the path
  */
-function cliIsOnPath(): boolean {
+async function isExecutablePath(path: string,): Promise<boolean> {
   try {
-    execFileSync(
-      'which',
-      ['spawn-claude',],
-      { stdio: 'ignore', },
+    await access(
+      path,
+      constants.X_OK,
     );
     return true;
   }
-  catch {
+  catch (_error: unknown) {
     return false;
   }
+}
+
+/**
+ * Detects whether `spawn-claude` is already discoverable on PATH.
+ *
+ * @returns true when an executable `spawn-claude` exists in any PATH directory
+ *
+ * @example
+ * ```ts
+ * if (await cliIsOnPath()) skipAutoSetup();
+ * ```
+ */
+async function cliIsOnPath(): Promise<boolean> {
+  /**
+   * PATH entries searched for the spawn-claude executable.
+   */
+  const pathDirs = (process.env
+    .PATH
+    ?? '').split(':',);
+  /**
+   * Executable checks for every PATH entry.
+   */
+  const checks = await Promise.all(
+    pathDirs.map(function checkDir(dir,): Promise<boolean> {
+      return isExecutablePath(join(
+        dir,
+        'spawn-claude',
+      ),);
+    },),
+  );
+  return checks.includes(true,);
 }
 
 /**
@@ -199,8 +227,8 @@ function cliIsOnPath(): boolean {
  * if (warning !== NO_WARNING) console.warn(warning);
  * ```
  */
-function autoSetupCli(hookDir: string,): string | typeof NO_WARNING {
-  if (cliIsOnPath())
+async function autoSetupCli(hookDir: string,): Promise<string | typeof NO_WARNING> {
+  if (await cliIsOnPath())
     return NO_WARNING;
 
   /**
@@ -242,7 +270,7 @@ function autoSetupCli(hookDir: string,): string | typeof NO_WARNING {
   );
 
   try {
-    mkdirSync(
+    await mkdir(
       localBin,
       { recursive: true, },
     );
@@ -254,7 +282,7 @@ function autoSetupCli(hookDir: string,): string | typeof NO_WARNING {
     /**
      * Ensure CLI source is executable (shebang: #!/usr/bin/env node).
      */
-    chmodSync(
+    await chmod(
       cliSource,
       EXECUTABLE_PERMISSION,
     );
@@ -263,10 +291,12 @@ function autoSetupCli(hookDir: string,): string | typeof NO_WARNING {
      * Remove stale symlink if it exists, then create a fresh one.
      */
     try {
-      unlinkSync(symlinkPath,);
+      await unlink(symlinkPath,);
     }
-    catch { /* Does not exist yet. */ }
-    symlinkSync(
+    catch (_error: unknown) {
+      /* Does not exist yet. */
+    }
+    await symlink(
       cliSource,
       symlinkPath,
     );
@@ -286,11 +316,12 @@ function autoSetupCli(hookDir: string,): string | typeof NO_WARNING {
       ]
         .join('\n',);
   }
-  catch {
+  catch (error: unknown) {
     return [
       '[claude-spawn] Could not auto-setup spawn-claude CLI.',
       `Symlink target: ${cliSource}`,
       `Symlink path: ${symlinkPath}`,
+      `Setup error: ${String(error,)}`,
       'Create the symlink manually or add the plugin directory to PATH.',
     ]
       .join('\n',);

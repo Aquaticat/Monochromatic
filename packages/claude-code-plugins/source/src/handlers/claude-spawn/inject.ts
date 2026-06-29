@@ -14,10 +14,10 @@
  */
 
 import {
-  readdirSync,
-  readFileSync,
-  renameSync,
-} from 'node:fs';
+  readFile,
+  readdir,
+  rename,
+} from 'node:fs/promises';
 import { join, } from 'node:path';
 
 import {
@@ -72,11 +72,113 @@ const NOTHING_TO_REPORT: unique symbol = Symbol('claude-spawn/nothing-to-report'
  * const entries = readSpawnsDir();
  * ```
  */
-function readSpawnsDir(): readonly string[] | typeof NOTHING_TO_REPORT {
+async function readSpawnsDir(): Promise<readonly string[] | typeof NOTHING_TO_REPORT> {
   try {
-    return readdirSync(SPAWNS_DIR,);
+    return await readdir(SPAWNS_DIR,);
   }
-  catch {
+  catch (_error: unknown) {
+    return NOTHING_TO_REPORT;
+  }
+}
+
+/**
+ * Whether a per-file scan produced deliverable context.
+ *
+ * @param result - scan result for one file
+ *
+ * @returns true when the result contains context text
+ */
+function hasReport(result: string | typeof NOTHING_TO_REPORT,): result is string {
+  return result !== NOTHING_TO_REPORT;
+}
+
+/**
+ * Reads one spawn-state file and consumes it when it belongs to a stopped child.
+ *
+ * @param filename - candidate filename under {@link SPAWNS_DIR}
+ *
+ * @param parentSessionId - session identifier of calling session
+ *
+ * @param consume - whether to rename matched files to `.reported`
+ *
+ * @returns formatted child result, or {@link NOTHING_TO_REPORT} when not deliverable
+ */
+async function readCompletedChild(
+  {
+    filename,
+    parentSessionId,
+    consume,
+  }: {
+    readonly filename: string;
+    readonly parentSessionId: string;
+    readonly consume: boolean;
+  },
+): Promise<string | typeof NOTHING_TO_REPORT> {
+  if (!filename.endsWith('.json',))
+    return NOTHING_TO_REPORT;
+
+  /**
+   * Absolute path to the candidate spawn-state file.
+   */
+  const filePath = join(
+    SPAWNS_DIR,
+    filename,
+  );
+  /**
+   * Sibling `.reported` path used to consume the entry atomically via rename.
+   * The `.json` suffix guard above means the slice always drops the suffix.
+   */
+  const reportedPath = join(
+    SPAWNS_DIR,
+    `${
+      filename.slice(
+        0,
+        -'.json'.length,
+      )
+    }.reported`,
+  );
+
+  try {
+    /**
+     * Raw JSON for the candidate; parsed below to recover the spawn state.
+     */
+    const raw = await readFile(
+      filePath,
+      'utf8',
+    );
+    /* oxlint-disable typescript/no-unsafe-type-assertion -- trusted file written by our own CLI */
+    /**
+     * Parsed spawn state used to filter by parent session and stopped status.
+     */
+    const state = JSON.parse(raw,) as SpawnState;
+    /* oxlint-enable typescript/no-unsafe-type-assertion */
+
+    if (state.parentSessionId
+      !== parentSessionId)
+      return NOTHING_TO_REPORT;
+
+    if (state.status
+      !== 'stopped')
+      return NOTHING_TO_REPORT;
+
+    if (consume) {
+      try {
+        await rename(
+          filePath,
+          reportedPath,
+        );
+      }
+      catch (_error: unknown) {
+        /**
+         * Another hook invocation already renamed this file.
+         */
+        return NOTHING_TO_REPORT;
+      }
+    }
+
+    return formatSpawnResult(state,);
+  }
+  catch (_error: unknown) {
     return NOTHING_TO_REPORT;
   }
 }
@@ -101,10 +203,10 @@ function readSpawnsDir(): readonly string[] | typeof NOTHING_TO_REPORT {
  *
  * @example
  * ```ts
- * const context = checkCompletedChildren({ parentSessionId: 'abc', consume: true });
+ * const context = await checkCompletedChildren({ parentSessionId: 'abc', consume: true });
  * ```
  */
-function checkCompletedChildren(
+async function checkCompletedChildren(
   {
     parentSessionId,
     consume,
@@ -112,90 +214,29 @@ function checkCompletedChildren(
     readonly parentSessionId: string;
     readonly consume: boolean;
   },
-): string | typeof NOTHING_TO_REPORT {
+): Promise<string | typeof NOTHING_TO_REPORT> {
   /**
    * Filenames in `SPAWNS_DIR`, or `NOTHING_TO_REPORT` when the directory is missing or unreadable.
    */
-  const entries = readSpawnsDir();
+  const entries = await readSpawnsDir();
 
   if (entries === NOTHING_TO_REPORT)
     return NOTHING_TO_REPORT;
 
   /**
-   * Formatted result strings for each completed child belonging to this parent.
+   * Per-file completed-child results in directory order.
    */
-  const results: string[] = [];
-
-  for (const filename of entries) {
-    if (!filename.endsWith('.json',))
-      continue;
-
-    /**
-     * Absolute path to the candidate spawn-state file.
-     */
-    const filePath = join(
-      SPAWNS_DIR,
-      filename,
-    );
-    /**
-     * Sibling `.reported` path used to consume the entry atomically via rename.
-     * The `if (!filename.endsWith('.json')) continue;` guard above means the
-     * slice always drops the `.json` suffix.
-     */
-    const reportedPath = join(
-      SPAWNS_DIR,
-      `${
-        filename.slice(
-          0,
-          -'.json'.length,
-        )
-      }.reported`,
-    );
-
-    try {
-      /**
-       * Raw JSON for the candidate; parsed below to recover the spawn state.
-       */
-      const raw = readFileSync(
-        filePath,
-        'utf8',
-      );
-      /* oxlint-disable typescript/no-unsafe-type-assertion -- trusted file written by our own CLI */
-      /**
-       * Parsed spawn state used to filter by parent session and stopped status.
-       */
-      const state = JSON.parse(raw,) as SpawnState;
-      /* oxlint-enable typescript/no-unsafe-type-assertion */
-
-      if (state.parentSessionId
-        !== parentSessionId)
-        continue;
-
-      if (state.status
-        !== 'stopped')
-        continue;
-
-      if (consume) {
-        try {
-          renameSync(
-            filePath,
-            reportedPath,
-          );
-        }
-        catch {
-          /**
-           * Another hook invocation already renamed this file.
-           */
-          continue;
-        }
-      }
-
-      results.push(formatSpawnResult(state,),);
-    }
-    catch {
-      continue;
-    }
-  }
+  const results = (await Promise.all(
+    entries.map(function readEntry(filename,): Promise<string | typeof NOTHING_TO_REPORT> {
+      return readCompletedChild({
+        filename,
+        parentSessionId,
+        consume,
+      },);
+    },),
+  )).filter(function keepReport(result,): result is string {
+    return hasReport(result,);
+  },);
 
   if (results.length
     === 0)
