@@ -161,6 +161,7 @@ export const packageAllowSpecifiers: readonly PackageSpecifier[] = [
       // are passed to visitor callbacks and cannot be wrapped readonly
       // without forking the @oxlint/plugins type tree.
       "ArrowFunctionExpression",
+      "AssignmentExpression",
       "CallExpression",
       "CatchClause",
       "Class",
@@ -169,6 +170,7 @@ export const packageAllowSpecifiers: readonly PackageSpecifier[] = [
       "Definition",
       "Directive",
       "Expression",
+      "ExpressionStatement",
       "ForInStatement",
       "Function",
       "FunctionBody",
@@ -177,6 +179,7 @@ export const packageAllowSpecifiers: readonly PackageSpecifier[] = [
       "IdentifierReference",
       "ImportDeclaration",
       "MemberExpression",
+      "NewExpression",
       "Node",
       "Program",
       "RegExpLiteral",

@@ -112,6 +112,11 @@ export const restrictionRules: DummyRuleMap = {
   // Use Object.hasOwn(obj, key) instead of obj.hasOwnProperty(key).
   'no-restricted-syntax/no-hasownproperty': 'error',
 
+  // Upstream unicorn/no-immediate-mutation reports efficient Set/Map clone-plus-mutate patterns.
+  // The project rule keeps normal initializer folding while allowing clone cases that would need a spread temp.
+  'unicorn/no-immediate-mutation': 'off',
+  'no-restricted-syntax/no-immediate-mutation': 'warn',
+
   // Upstream node/no-sync is suffix-only and reports non-Node APIs like Optique parseSync.
   // The project rule below enforces the narrower policy: Node sync APIs only.
   'node/no-sync': 'off',

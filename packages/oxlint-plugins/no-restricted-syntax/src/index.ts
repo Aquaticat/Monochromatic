@@ -34,6 +34,7 @@ import { noEnum, } from './rules/no-enum.ts';
 import { noForIn, } from './rules/no-for-in.ts';
 import { noFunctionRootLet, } from './rules/no-function-root-let.ts';
 import { noHasownproperty, } from './rules/no-hasownproperty.ts';
+import { noImmediateMutation, } from './rules/no-immediate-mutation.ts';
 import {
   noLowInformationSymbolDescription,
 } from './rules/no-low-information-symbol-description/index.ts';
@@ -91,6 +92,7 @@ const plugin: Plugin = eslintCompatPlugin({
     'no-for-in': noForIn,
     'no-function-root-let': noFunctionRootLet,
     'no-hasownproperty': noHasownproperty,
+    'no-immediate-mutation': noImmediateMutation,
     'no-low-information-symbol-description': noLowInformationSymbolDescription,
     'no-module-root-let': noModuleRootLet,
     'no-nullish-union': noNullishUnion,

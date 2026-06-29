@@ -42,7 +42,6 @@ export function seenWith(
    * Fresh alias-visited set; keeps O(1) membership while isolating sibling branches.
    */
   const nextSeen = new Set(seen,);
-  // oxlint-disable-next-line unicorn/no-immediate-mutation -- Existing seen values already arrive as a Set; array-spread initialization would add avoidable linear allocation in alias-resolution code, while mutating this fresh local Set preserves Set membership behavior.
   nextSeen.add(variable,);
   return nextSeen;
 }

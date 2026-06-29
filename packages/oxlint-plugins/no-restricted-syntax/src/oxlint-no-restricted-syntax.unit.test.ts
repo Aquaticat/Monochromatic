@@ -260,6 +260,7 @@ const SUBSTANTIVE_RULES = [
   'no-for-in',
   'no-function-root-let',
   'no-hasownproperty',
+  'no-immediate-mutation',
   'no-low-information-symbol-description',
   'no-module-root-let',
   'no-nullish-union',
@@ -383,6 +384,15 @@ await describe({
           },
         },),
         it({
+          name: 'no-immediate-mutation accepts Set and Map clone-plus-mutate patterns',
+          fn: async () => {
+            const diagnostics = await lint(
+              'valid/no-immediate-mutation.ts',
+            );
+            expect(diagnostics,).toEqual([],);
+          },
+        },),
+        it({
           name:
             'no-optional-escape accepts void returns, real tuples, Symbol sentinels, literal domains, and Required',
           fn: async () => {
@@ -390,6 +400,23 @@ await describe({
               'valid/no-optional-escape.ts',
             );
             expect(diagnostics,).toEqual([],);
+          },
+        },),
+      ],
+    },),
+    describe({
+      name: 'no-immediate-mutation forms',
+      children: [
+        it({
+          name: 'reports each initializer kind except Set and Map clone exceptions',
+          fn: async () => {
+            const diagnostics = await lint('invalid/no-immediate-mutation.ts',);
+            const immediateMutation = diagnostics.filter(
+              function isImmediateMutation(diagnostic,): boolean {
+                return diagnostic.code === 'no-restricted-syntax(no-immediate-mutation)';
+              },
+            );
+            expect(immediateMutation.length,).toBe(6,);
           },
         },),
       ],
