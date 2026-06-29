@@ -252,22 +252,75 @@ Interpretation:
   exclusive data,
   and retained rolldown package/binding directories with zero exclusive data.
 
+## Fourth benchmark result: true branch-switch oxlint toggles
+
+Benchmark root:
+
+```txt
+/home/user/temp/pnpm-branch-switch-bench-20260629-121207
+```
+
+Result files:
+
+```txt
+/home/user/temp/pnpm-branch-switch-bench-20260629-121207/branch-results.json
+/home/user/temp/pnpm-branch-switch-bench-20260629-121207/branch-results.csv
+```
+
+Notes:
+
+- The first attempt failed because the benchmark commits triggered the repo's pre-commit hook and
+  `hk` was not on `PATH` in the scratch worktree environment.
+- The rerun used `HK=0` for scratch benchmark commits only.
+- Each benchmark worktree created two commits with exact oxlint catalog/lockfile states:
+  `1.71.0` and `1.70.0`.
+- The measured loop alternated `git checkout --detach <commit>` plus
+  `pnpm install --ignore-scripts --prefer-offline --reporter=append-only`.
+
+Branch-switch timing means across five switches:
+
+- checkout time:
+  `default-cache` 56.6 ms,
+  `zero-cache` 56.8 ms.
+- install time:
+  `default-cache` 882.6 ms,
+  `zero-cache` 873.4 ms.
+- total checkout plus install time:
+  `default-cache` 939.0 ms,
+  `zero-cache` 930.6 ms.
+
+Interpretation:
+
+- In the realistic branch-switch shape,
+  `modulesCacheMaxAge: 0` was about 8 ms faster overall,
+  a 0.9% difference and well inside run noise.
+- `default-cache` retained both oxlint versions throughout,
+  with 718 virtual-store entries and 12 oxlint binding entries.
+- `zero-cache` stayed at 710 virtual-store entries and six oxlint binding entries,
+  matching only the active branch's oxlint version.
+
 ## Cross-benchmark summary
 
 Switch-only mean timings:
 
-- `oxlint`: default-cache 3826 ms,
+- catalog-edit `oxlint`: default-cache 3826 ms,
   zero-cache 3837 ms.
-- `stylelint`: default-cache 3766 ms,
+- catalog-edit `stylelint`: default-cache 3766 ms,
   zero-cache 3903 ms.
-- `rolldown`: default-cache 3794 ms,
+- catalog-edit `rolldown`: default-cache 3794 ms,
   zero-cache 3802 ms.
+- true branch-switch `oxlint`: default-cache 939 ms total checkout plus install,
+  zero-cache 931 ms total checkout plus install.
 
 Overall interpretation:
 
 - In this repo on Btrfs with `packageImportMethod: clone-or-copy`, retaining stale virtual-store
-  entries produced no meaningful speedup for oxlint and rolldown toggles,
-  and a small stylelint speedup around 137 ms per switch.
+  entries produced no meaningful speedup for oxlint,
+  rolldown,
+  or true branch-switch oxlint toggles,
+  and a small stylelint speedup around 137 ms per install switch.
+- The stylelint result is suggestive rather than statistically conclusive;
+  the run count is small.
 - Retention consistently increased visible `.pnpm` entry counts and left stale versions visible.
 - `du` inflated the apparent cost of stale entries by about 4 MB to 115 MB depending on package
   family,
@@ -297,10 +350,10 @@ Overall interpretation:
 For this repo,
  recommend setting `modulesCacheMaxAge: 0` if the goal is deterministic and less confusing
 `node_modules/.pnpm` state.
-The measured performance cost was negligible in two benchmark families and about 137 ms per install
-switch in one family.
-That small benefit does not look worth stale-version noise and TypeScript/path-cache risk for this
-workspace.
+The measured performance cost was negligible in three benchmark shapes and showed only a suggestive
+about-137 ms benefit in one small-sample stylelint run.
+That small possible benefit does not look worth stale-version noise and TypeScript/path-cache risk
+for this workspace.
 Do not apply this setting unless the user asks for an action edit,
  because the current task is investigation plus benchmarking.
 
