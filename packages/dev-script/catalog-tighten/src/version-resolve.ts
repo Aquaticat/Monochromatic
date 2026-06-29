@@ -1,18 +1,25 @@
 /**
- * Version resolution utilities for catalog-tighten.
+ * Version resolution for catalog-tighten.
  *
- * Handles npm alias resolution and installed version lookup
- * across node_modules, workspace roots, and the Bun store.
+ * Resolves the installed version of a catalog package from the actual on-disk
+ * install layout. Reads `node_modules/<name>/package.json` directly from the
+ * monorepo root and every workspace package, following the pnpm symlink farm
+ * and bypassing exports-gated `require.resolve` (which throws
+ * `ERR_PACKAGE_PATH_NOT_EXPORTED` for packages whose `exports` map omits
+ * `./package.json`, the failure that left most catalog entries unresolved).
+ * Also resolves `npm:` alias names.
  */
 
-import { readdir, } from 'node:fs/promises';
-import { createRequire, } from 'node:module';
-import { join, } from 'node:path';
+import {
+  readdir,
+} from 'node:fs/promises';
+import {
+  join,
+} from 'node:path';
 
 import {
-  type NO_INSTALLED_VERSION,
+  NO_INSTALLED_VERSION,
   NO_MANIFEST_VERSION,
-  readVersionFromBunStore,
   readVersionFromPackageJson,
 } from './version-read.ts';
 
@@ -20,9 +27,9 @@ import {
 
 /**
  * Resolves candidate npm package names to look up in node_modules.
- * Bun installs `npm:` aliased packages under the **key** name (e.g. `zod`),
- * not the registry target (e.g. `@jsr/zod__zod`). Returns the key first,
- * then the alias target as fallback.
+ * Bun and pnpm install `npm:` aliased packages under the **key** name
+ * (e.g. `zod`), not the registry target (e.g. `@jsr/zod__zod`). Returns the key
+ * first, then the alias target as fallback.
  *
  * @param catalogKey - package name key in catalog, e.g. `"zod"`
  *
@@ -60,7 +67,7 @@ export function resolveNpmNames(
      */
     const lastAt = withoutNpm.lastIndexOf('@',);
     /**
-     * Registry-target name without the version suffix; the actual install lives here when bun honours the alias.
+     * Registry-target name without the version suffix; the actual install lives here when the alias is honoured.
      */
     const aliasTarget = lastAt > 0
       ? withoutNpm.slice(
@@ -68,7 +75,7 @@ export function resolveNpmNames(
         lastAt,
       )
       : withoutNpm;
-    // Key first (bun installs under alias name), then registry target as fallback
+    // Key first (installed under alias name), then registry target as fallback
     if (aliasTarget !== catalogKey) {
       return [
         catalogKey,
@@ -179,12 +186,15 @@ async function discoverWorkspaceRoots(monorepoRoot: string,): Promise<string[]> 
 }
 
 /**
- * Reads the installed version of a package from node_modules.
- * Tries resolution in this order:
- * 1. Root `node_modules/<name>/package.json`
- * 2. `createRequire().resolve()` from monorepo root
- * 3. `createRequire().resolve()` from each workspace package directory
- * 4. Bun store (`node_modules/.bun/`) directory name scan for transitive deps
+ * Reads the installed version of a package from the on-disk install layout.
+ *
+ * Reads `node_modules/<name>/package.json` directly from the monorepo root and
+ * every workspace package, following the pnpm symlink farm and bypassing the
+ * package's `exports` map. Returns the first version found: a catalog pins one
+ * version across all importers, so the first on-disk hit is the active version.
+ * Returns {@link NO_INSTALLED_VERSION} when the package is installed nowhere
+ * (for example a dependency of a paused package that was never installed),
+ * which the caller reports as MISS and skips.
  *
  * @param npmName - npm package name to look up
  *
@@ -194,7 +204,7 @@ async function discoverWorkspaceRoots(monorepoRoot: string,): Promise<string[]> 
  *
  * @example
  * ```ts
- * await readInstalledVersion({ npmName: "oxlint", monorepoRoot: "/home/user/Monochromatic" }) // "0.21.0"
+ * await readInstalledVersion({ npmName: "oxlint", monorepoRoot: "/home/user/Monochromatic" }) // "1.71.0"
  * ```
  */
 export async function readInstalledVersion(
@@ -206,98 +216,39 @@ export async function readInstalledVersion(
     readonly monorepoRoot: string;
   },
 ): Promise<string | typeof NO_INSTALLED_VERSION> {
-  // Try root node_modules first
   /**
-   * Expected hoisted location of the package's `package.json` directly under the monorepo root.
-   */
-  const rootPkgJson = join(
-    monorepoRoot,
-    'node_modules',
-    npmName,
-    'package.json',
-  );
-  /**
-   * Version found at the hoisted root location, if any; short-circuits before slower fallbacks.
-   */
-  const version = await readVersionFromPackageJson(rootPkgJson,);
-  if (version !== NO_MANIFEST_VERSION)
-    return version;
-
-  // Try resolving from monorepo root via createRequire
-  try {
-    /**
-     * Node-style require anchored at the monorepo root, used to walk the resolution chain from there.
-     */
-    const require = createRequire(join(
-      monorepoRoot,
-      'package.json',
-    ),);
-    /**
-     * Resolved absolute path to the package's `package.json` via Node resolution from the monorepo root.
-     */
-    const resolved = require.resolve(`${npmName}/package.json`,);
-    /**
-     * Version read from the require-resolved `package.json`; second attempt after the hoisted lookup.
-     */
-    const rootVersion = await readVersionFromPackageJson(resolved,);
-    if (rootVersion !== NO_MANIFEST_VERSION)
-      return rootVersion;
-  }
-  catch (error) {
-    if (!(error instanceof Error))
-      throw error;
-
-    // Not resolvable from root
-  }
-
-  // Walk workspace packages and try resolving from each
-  /**
-   * Every workspace package directory, used as alternate require anchors when root resolution fails.
+   * Workspace package directories; each may hold a per-importer `node_modules/<name>` symlink.
    */
   const workspaceRoots = await discoverWorkspaceRoots(monorepoRoot,);
   /**
-   * Versions resolved from each workspace package anchor.
+   * Importer directories to probe: the monorepo root (hoisted deps) plus every workspace package.
    */
-  const workspaceVersions = await Promise.all(workspaceRoots.map(async function readWorkspaceVersion(
-    wsRoot,
+  const candidateDirs = [
+    monorepoRoot,
+    ...workspaceRoots,
+  ];
+  /**
+   * Version read from each candidate's `node_modules/<name>/package.json`; `NO_MANIFEST_VERSION` when absent.
+   */
+  const versions = await Promise.all(candidateDirs.map(async function readCandidate(
+    dir,
   ): Promise<string | typeof NO_MANIFEST_VERSION> {
-    try {
-      /**
-       * Node-style require anchored at one workspace package, picking up its locally hoisted deps.
-       */
-      const require = createRequire(join(
-        wsRoot,
-        'package.json',
-      ),);
-      /**
-       * Resolved absolute path to the package's `package.json` via require from this workspace anchor.
-       */
-      const resolved = require.resolve(`${npmName}/package.json`,);
-      return await readVersionFromPackageJson(resolved,);
-    }
-    catch (error) {
-      if (!(error instanceof Error))
-        throw error;
-
-      return NO_MANIFEST_VERSION;
-    }
+    return await readVersionFromPackageJson(join(
+      dir,
+      'node_modules',
+      npmName,
+      'package.json',
+    ),);
   },),);
   /**
-   * First installed version found through workspace package resolution.
+   * First candidate that resolved to a real installed version.
    */
-  const wsVersion = workspaceVersions.find(function hasVersion(
-    candidate,
-  ): candidate is string {
-    return candidate !== NO_MANIFEST_VERSION;
+  const found = versions.find(function hasVersion(
+    version,
+  ): version is string {
+    return version !== NO_MANIFEST_VERSION;
   },);
-  if (wsVersion !== undefined)
-    return wsVersion;
-
-  // Last resort: scan bun store directory names for transitive deps
-  return await readVersionFromBunStore({
-    npmName,
-    monorepoRoot,
-  },);
+  return found ?? NO_INSTALLED_VERSION;
 }
 
 //endregion Version resolution

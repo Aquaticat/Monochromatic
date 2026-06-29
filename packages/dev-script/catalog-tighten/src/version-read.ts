@@ -1,17 +1,16 @@
 /**
- * Low-level version reading utilities for catalog-tighten.
+ * Low-level version reading for catalog-tighten.
  *
- * Reads installed package versions from `package.json` files
- * and from the Bun store directory structure.
+ * Reads installed package versions from `package.json` files on disk. The tool
+ * resolves the actual installed version, never the lockfile (a lockfile
+ * survives a deleted `node_modules` and would report uninstalled versions), so
+ * every read here targets a real `package.json` reachable through the install
+ * layout.
  */
 
 import {
   readFile,
-  readdir,
 } from 'node:fs/promises';
-import { join, } from 'node:path';
-
-import { isStrictlyGreater, } from './version-parse.ts';
 
 //region Version reading
 
@@ -23,38 +22,17 @@ import { isStrictlyGreater, } from './version-parse.ts';
 export const NO_MANIFEST_VERSION: unique symbol = Symbol('catalog-tighten/no-manifest-version',);
 
 /**
- * Sentinel returned by {@link readVersionFromBunStore} (and propagated by
- * `readInstalledVersion`) when no installed version is found. A `unique symbol`;
- * callers narrow with `=== NO_INSTALLED_VERSION`.
+ * Sentinel returned by `readInstalledVersion` when no installed version is
+ * found through any layout. A `unique symbol`; callers narrow with
+ * `=== NO_INSTALLED_VERSION`.
  */
 export const NO_INSTALLED_VERSION: unique symbol = Symbol('catalog-tighten/no-installed-version',);
 
 /**
- * Reads Bun store directory entries, returning the installed-version sentinel when absent.
- *
- * @param bunStoreDir - absolute path to `node_modules/.bun`
- *
- * @returns Bun store entries, or {@link NO_INSTALLED_VERSION} when the store cannot be read
- *
- * @example
- * ```ts
- * const entries = await readBunStoreEntries('/repo/node_modules/.bun');
- * ```
- */
-async function readBunStoreEntries(bunStoreDir: string,): Promise<readonly string[] | typeof NO_INSTALLED_VERSION> {
-  try {
-    return await readdir(bunStoreDir,);
-  }
-  catch (error) {
-    if (!(error instanceof Error))
-      throw error;
-
-    return NO_INSTALLED_VERSION;
-  }
-}
-
-/**
- * Reads the `version` field from a `package.json` file path.
+ * Reads the `version` field from a `package.json` file path. Following a
+ * symlink (the pnpm isolated store links `node_modules/<name>` into `.pnpm`)
+ * and bypassing the package's `exports` map, since this reads the file
+ * directly rather than resolving a subpath.
  *
  * @param pkgJsonPath - absolute path to a package.json file
  *
@@ -62,7 +40,7 @@ async function readBunStoreEntries(bunStoreDir: string,): Promise<readonly strin
  *
  * @example
  * ```ts
- * await readVersionFromPackageJson("/path/to/node_modules/oxlint/package.json") // "0.21.0"
+ * await readVersionFromPackageJson("/repo/node_modules/oxlint/package.json") // "1.71.0"
  * ```
  */
 export async function readVersionFromPackageJson(pkgJsonPath: string,): Promise<string | typeof NO_MANIFEST_VERSION> {
@@ -87,114 +65,6 @@ export async function readVersionFromPackageJson(pkgJsonPath: string,): Promise<
 
     return NO_MANIFEST_VERSION;
   }
-}
-
-/**
- * Scans `node_modules/.bun/` directory names for a package version.
- * Bun stores packages as `name@version` (unscoped) or `@scope+name@version` (scoped),
- * optionally with a `+hash` dedup suffix. When multiple versions exist, returns
- * the highest by reading each candidate's `package.json`.
- *
- * @param npmName - npm package name, e.g. `"@oxc-project/runtime"` or `"chokidar"`
- *
- * @param monorepoRoot - absolute path to the monorepo root
- *
- * @returns installed version string, or {@link NO_INSTALLED_VERSION} if not found in store
- *
- * @example
- * ```ts
- * await readVersionFromBunStore({ npmName: "\@oxc-project/runtime", monorepoRoot: "/home/user/Monochromatic" }) // "1.1.0"
- * await readVersionFromBunStore({ npmName: "chokidar", monorepoRoot: "/home/user/Monochromatic" }) // "5.0.0"
- * ```
- */
-export async function readVersionFromBunStore(
-  {
-    npmName,
-    monorepoRoot,
-  }: {
-    readonly npmName: string;
-    readonly monorepoRoot: string;
-  },
-): Promise<string | typeof NO_INSTALLED_VERSION> {
-  /**
-   * Top-level bun store directory holding all installed package versions for the monorepo.
-   */
-  const bunStoreDir = join(
-    monorepoRoot,
-    'node_modules',
-    '.bun',
-  );
-  // Bun encodes `@scope/name` as `@scope+name` in store directory names
-  /**
-   * Package name rewritten with `/` → `+` so it matches bun's encoded store directory prefix.
-   */
-  const storePrefix = npmName.includes('/',)
-    ? npmName.replace(
-      '/',
-      '+',
-    )
-    : npmName;
-
-  /**
-   * Direct children of the bun store directory.
-   */
-  const entries = await readBunStoreEntries(bunStoreDir,);
-  if (entries === NO_INSTALLED_VERSION)
-    return NO_INSTALLED_VERSION;
-
-  // Match directories starting with `prefix@` (the @ separates name from version)
-  /**
-   * Exact prefix used to filter store entries: encoded name plus the version separator `@`.
-   */
-  const matchPrefix = `${storePrefix}@`;
-  /**
-   * Store entries whose directory name starts with `<name>@`; each holds one installed version.
-   */
-  const candidates = entries.filter(function filterBunStoreEntry(entry,): boolean {
-    return entry.startsWith(matchPrefix,);
-  },);
-
-  if (candidates.length
-    === 0)
-    return NO_INSTALLED_VERSION;
-
-  // Read package.json from each candidate and pick the highest version
-  /**
-   * Versions read from every candidate store entry.
-   */
-  const candidateVersions = await Promise.all(candidates.map(async function readCandidateVersion(candidate,): Promise<string | typeof NO_MANIFEST_VERSION> {
-    /**
-     * Absolute path to the candidate's nested `package.json`; bun stores the real package under `node_modules/<name>`.
-     */
-    const pkgJsonPath = join(
-      bunStoreDir,
-      candidate,
-      'node_modules',
-      npmName,
-      'package.json',
-    );
-    return await readVersionFromPackageJson(pkgJsonPath,);
-  },),);
-
-  /**
-   * Highest semver seen across the candidate store entries.
-   */
-  return candidateVersions.reduce(
-    function chooseHighest(
-      bestVersion: string | typeof NO_INSTALLED_VERSION,
-      candidateVersion,
-    ): string | typeof NO_INSTALLED_VERSION {
-      if (candidateVersion === NO_MANIFEST_VERSION)
-        return bestVersion;
-      if ((bestVersion === NO_INSTALLED_VERSION) || isStrictlyGreater({
-        cataloged: bestVersion,
-        installed: candidateVersion,
-      },))
-        return candidateVersion;
-      return bestVersion;
-    },
-    NO_INSTALLED_VERSION,
-  );
 }
 
 //endregion Version reading
