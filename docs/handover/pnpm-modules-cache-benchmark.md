@@ -126,13 +126,90 @@ Interpretation so far:
 - Ban all scripts in benchmark worktrees after creating them.
 - Changing dependency specs to exact versions inside benchmark worktrees is allowed.
 
+## First benchmark result: oxlint 1.70.0 to 1.71.0 toggles
+
+The first attempted runner under `/home/user/temp/pnpm-cache-bench-20260629-120008` failed because it
+picked a pnpm executable that treated the lockfile as incompatible and then failed resolving a
+`catalog:` dependency. A fresh run pinned the pnpm executable to
+`/home/user/.local/share/mise/installs/pnpm/11.9.0/pnpm`.
+
+Successful benchmark root:
+
+```txt
+/home/user/temp/pnpm-cache-bench-20260629-120304-fresh
+```
+
+Result files:
+
+```txt
+/home/user/temp/pnpm-cache-bench-20260629-120304-fresh/results.json
+/home/user/temp/pnpm-cache-bench-20260629-120304-fresh/results.csv
+```
+
+Observed switch timings after the initial install:
+
+- `default-cache`: 3798 ms,
+  3843 ms,
+  3830 ms,
+  3834 ms.
+- `zero-cache`: 3826 ms,
+  3761 ms,
+  3895 ms,
+  3864 ms.
+
+Interpretation:
+
+- Mean switch time was effectively identical for this workload:
+  about 3826 ms with default cache and about 3837 ms with zero cache.
+- `default-cache` retained both oxlint versions after the first downgrade:
+  virtual-store entry count rose from 710 to 718.
+- `zero-cache` stayed at 710 entries and had only the active oxlint version each time.
+- `du --block-size=1 node_modules/.pnpm` reported roughly 1.36 GB for `default-cache` after both
+  versions were retained, versus roughly 1.25 GB or 1.246 GB for `zero-cache` depending on active
+  oxlint version.
+- `btrfs filesystem du -s` reported only 372 KiB exclusive data for each `.pnpm` directory, because
+  most file extents are shared with the store or between reflinked copies.
+- For this exact workload, `modulesCacheMaxAge: 0` removed stale-version noise with no measured
+  install-time loss.
+
+## Second benchmark in progress: stylelint 17.13.0 to 17.14.0 toggles
+
+Benchmark root:
+
+```txt
+/home/user/temp/pnpm-stylelint-bench-20260629-120538
+```
+
+Worktrees:
+
+- `/home/user/temp/pnpm-stylelint-bench-20260629-120538/default-cache`
+- `/home/user/temp/pnpm-stylelint-bench-20260629-120538/zero-cache`
+
+The same script-ban setup is applied:
+
+- `ignoreScripts: true`
+- pnpm invoked with `--ignore-scripts`
+- `npm_config_ignore_scripts=true`
+
+The benchmark toggles the `stylelint` catalog entry between exact `17.13.0` and `17.14.0`.
+Runner:
+
+```txt
+/home/user/temp/pnpm-stylelint-bench-20260629-120538/bench.mjs
+```
+
+Expected output paths:
+
+```txt
+/home/user/temp/pnpm-stylelint-bench-20260629-120538/results.json
+/home/user/temp/pnpm-stylelint-bench-20260629-120538/results.csv
+```
+
 ## Next steps
 
-- Run `node /home/user/temp/pnpm-cache-bench-20260629-120008/bench.mjs /home/user/temp/pnpm-cache-bench-20260629-120008`.
-- If the benchmark fails because exact catalog pins conflict with overrides or lockfile state,
-  adjust only the benchmark worktrees.
-- Record elapsed times, virtual-store entry counts, `du`, apparent size, and oxlint-related entries.
-- Consider a second benchmark with a dependency family larger than `@oxlint/plugins`, because the
-  plugin package is tiny and mostly unchanged between versions.
+- Wait for the stylelint benchmark to finish and record timing plus retained-entry behavior.
+- If stylelint also shows no benefit,
+  decide whether a third benchmark should target a native-heavy package like `tsdown`/`rolldown` or
+  whether the evidence is already enough for a repo-local recommendation.
 - Synthesize whether setting `modulesCacheMaxAge: 0` in this repo would materially hurt realistic
   install flows.
