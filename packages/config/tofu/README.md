@@ -4,18 +4,27 @@ OpenTofu configuration for managing Hetzner Cloud firewalls with dynamic IP rang
 
 ## Overview
 
-Manages firewall rules on Hetzner Cloud, with support for:
+Manages firewall rules on Hetzner Cloud,
+ with support for:
 
-- Dynamic IP range fetching from multiple sources (Cloudflare, CloudFront, Fastly, GitHub, YouTube, etc.)
-- ASN-based IP lookups via ipinfo.io
+- Dynamic IP range fetching from multiple sources (Cloudflare,
+   CloudFront,
+   Fastly,
+   GitHub,
+   YouTube,
+   etc.)
+- ASN-based IP lookups via ipinfo.
+  io
 - CIDR block summarization to reduce rule counts
-- Home ISP ranges for ssh/ping access (supplied locally, never committed)
+- Home ISP ranges for ssh/ping access (supplied locally,
+   never committed)
 
 ## Components
 
 ### `fetch_ips.ts`
 
-TypeScript script that fetches and caches IP ranges for a specific ASN from ipinfo.io.
+TypeScript script that fetches and caches IP ranges for a specific ASN from ipinfo.
+io.
 Features:
 
 - Streaming JSON parsing with minimal memory usage
@@ -28,7 +37,8 @@ TypeScript script that fetches the top Tor guard relays from Onionoo and emits
 their `ORPort 443` IPs as `/32` and `/128` CIDRs.
 Features:
 
-- Filter to `ORPort 443` only, so the firewall rules use a single port and the per-IP-per-port effective-rule count stays predictable
+- Filter to `ORPort 443` only,
+   so the firewall rules use a single port and the per-IP-per-port effective-rule count stays predictable
 - 1-hour cache (the Tor guard set rotates on a different cadence than ASN data)
 - Graceful fallback to expired cache on failure
 - Feeds the balanced firewall rule list without consuming a separate descriptive firewall slot
@@ -37,8 +47,14 @@ Features:
 
 Main Terraform configuration that:
 
-- Fetches IP ranges from multiple CDN APIs (Cloudflare, CloudFront, Fastly, GitHub, Coolify, YouTube)
-- Looks up ASNs (Ubuntu, home ISP) via external data source
+- Fetches IP ranges from multiple CDN APIs (Cloudflare,
+   CloudFront,
+   Fastly,
+   GitHub,
+   Coolify,
+   YouTube)
+- Looks up ASNs (Ubuntu,
+   home ISP) via external data source
 - Aggregates and summarizes IP blocks to minimize firewall rules
 - Splits large source and destination CIDR lists into per-rule chunks
 - Creates five generic Hetzner Cloud firewalls with balanced effective rule counts
@@ -86,14 +102,25 @@ all generated firewalls without using the Hetzner web UI.
 
 ### Balancing decision
 
-Rules are balanced by effective-rule cost, not by traffic category.
+Rules are balanced by effective-rule cost,
+ not by traffic category.
 Hetzner counts one rule with many source or destination CIDRs as many effective rules,
 so descriptive firewalls such as `web_out` and `ubuntu_http` can exceed the 500-effective-rule cap
 while other firewalls still have spare capacity.
 
-The balancer sorts generated rules by effective-rule cost, heaviest first,
+The balancer sorts generated rules by effective-rule cost,
+ heaviest first,
 then assigns them in a snake pattern across the five firewalls:
-`tofu-0`, `tofu-1`, `tofu-2`, `tofu-3`, `tofu-4`, `tofu-4`, `tofu-3`, `tofu-2`, `tofu-1`, `tofu-0`.
+`tofu-0`,
+ `tofu-1`,
+ `tofu-2`,
+ `tofu-3`,
+ `tofu-4`,
+ `tofu-4`,
+ `tofu-3`,
+ `tofu-2`,
+ `tofu-1`,
+ `tofu-0`.
 This keeps large rules from accumulating on one firewall while staying deterministic and readable in HCL.
 
 A true greedy bin-packer could produce a marginally tighter distribution,
@@ -104,19 +131,30 @@ without adding another helper script to the OpenTofu plan path.
 
 ### Inbound
 
-- HTTP (80): from all
-- HTTPS TCP/UDP (443): from all
-- SSH (22): from home ISP and Coolify IPs
-- ICMP; from home ISP IPs
-- Syncthing (21027/22000/22067/22070): from all
+- HTTP (80):
+   from all
+- HTTPS TCP/UDP (443):
+   from all
+- SSH (22):
+   from home ISP and Coolify IPs
+- ICMP;
+   from home ISP IPs
+- Syncthing (21027/22000/22067/22070):
+   from all
 
 ### Outbound
 
 - DHCP (67-68)
 - DNS to Hetzner (53)
 - HTTPS TCP/UDP to CDN IPs (chunked to respect rule limits)
-- HTTP TCP to package repository ranges for Ubuntu APT, archive.ubuntu.com, and nginx.org
-- HTTPS TCP (443) to top Tor guards by consensus weight, filtered to ORPort 443 (for the v3 onion service)
+- HTTP TCP to package repository ranges for Ubuntu APT,
+   archive.
+  ubuntu.
+  com,
+   and nginx.
+  org
+- HTTPS TCP (443) to top Tor guards by consensus weight,
+   filtered to ORPort 443 (for the v3 onion service)
 - SMB/CIFS TCP (445) to configured Hetzner Storage Box hostnames or CIDRs
 
 ## IP sources
@@ -128,13 +166,22 @@ The configuration aggregates IPs from:
 - Fastly (via API)
 - GitHub (via meta API)
 - Ubuntu (ASN AS41231)
-- archive.ubuntu.com DNS edge IPs for HTTP APT bootstrap
-- nginx.org DNS edge IPs for HTTP and HTTPS package access
+- archive.
+  ubuntu.
+  com DNS edge IPs for HTTP APT bootstrap
+- nginx.
+  org DNS edge IPs for HTTP and HTTPS package access
 - YouTube (via GitHub repo)
 - Coolify (via API)
-- Tor guards advertising ORPort 443 (via Onionoo, refreshed hourly)
+- Tor guards advertising ORPort 443 (via Onionoo,
+   refreshed hourly)
 - Hetzner Storage Box destinations (`*.your-storagebox.de`) via configured concrete hostnames or explicit CIDRs
-- Various static IPs (LetsEncrypt, pCloud, Linkup, Resend, OpenRouter, etc.)
+- Various static IPs (LetsEncrypt,
+   pCloud,
+   Linkup,
+   Resend,
+   OpenRouter,
+   etc.)
 
 ## Caddy
 
@@ -153,14 +200,26 @@ xcaddy build v2.11.2 \
 
 Provides these Caddy modules:
 
-- `github.com/mholt/caddy-l4`: all `layer4.*`, `caddy.listeners.layer4`, `tls.handshake_match.alpn`
-- `github.com/caddyserver/cache-handler`: `http.handlers.cache`, `admin.api.souin`
-- `github.com/darkweak/storages/otter/caddy`: `storages.cache.otter`
-- `github.com/greenpau/caddy-security`: `security`, `http.authentication.providers.authorizer`, `http.handlers.authenticator`
-- `github.com/mholt/caddy-ratelimit`: `http.handlers.rate_limit`
-- `github.com/mholt/caddy-webdav`: `http.handlers.webdav`
+- `github.com/mholt/caddy-l4`:
+   all `layer4.*`,
+   `caddy.listeners.layer4`,
+   `tls.handshake_match.alpn`
+- `github.com/caddyserver/cache-handler`:
+   `http.handlers.cache`,
+   `admin.api.souin`
+- `github.com/darkweak/storages/otter/caddy`:
+   `storages.cache.otter`
+- `github.com/greenpau/caddy-security`:
+   `security`,
+   `http.authentication.providers.authorizer`,
+   `http.handlers.authenticator`
+- `github.com/mholt/caddy-ratelimit`:
+   `http.handlers.rate_limit`
+- `github.com/mholt/caddy-webdav`:
+   `http.handlers.webdav`
 
-Verify after building: `./caddy list-modules` and `./caddy version`.
+Verify after building:
+ `./caddy list-modules` and `./caddy version`.
 
 ## SSH authentication
 
@@ -175,16 +234,23 @@ PasswordAuthentication no
 ```
 
 This eliminates brute-force password attacks entirely.
-SSH access is further restricted at the firewall level to home ISP and Coolify IP ranges only (see `hetzner.tf`, port 22 rule).
+SSH access is further restricted at the firewall level to home ISP and Coolify IP ranges only (see `hetzner.tf`,
+ port 22 rule).
 
-For emergency access without the SSH key, use Hetzner Cloud Console's **Rescue** tab to boot a rescue system
+For emergency access without the SSH key,
+ use Hetzner Cloud Console's **Rescue** tab to boot a rescue system
 and reset credentials or mount the filesystem.
 
 ## Local-only files
 
 The following are gitignored and must be created manually:
 
-- `*.auto.tfvars`: API tokens and home ISP ASN
-- `.env.local`: ipinfo token for fetch_ips.ts
-- `cache_*.json`: ASN lookup caches
-- `terraform.tfstate*`: Terraform state
+- `*.auto.tfvars`:
+   API tokens and home ISP ASN
+- `.env.local`:
+   ipinfo token for fetch_ips.
+  ts
+- `cache_*.json`:
+   ASN lookup caches
+- `terraform.tfstate*`:
+   Terraform state

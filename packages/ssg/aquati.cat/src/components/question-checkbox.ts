@@ -164,9 +164,11 @@ function deriveQuestionId(props: QuestionProps,): string {
    */
   const parts = [toHtmlString(props.scenario,),];
   for (const opt of props.options) {
-    parts.push(toHtmlString(opt.label,),);
-    parts.push(opt.correct
-      === true ? '1' : '0',);
+    parts.push(
+      toHtmlString(opt.label,),
+      opt.correct
+      === true ? '1' : '0'
+    );
   }
   return fnv1a32(parts.join('\u0000',),);
 }

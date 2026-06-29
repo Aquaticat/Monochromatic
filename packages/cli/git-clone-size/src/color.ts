@@ -202,6 +202,7 @@ function peekNonSpace({
  * deterministic during tests that temporarily mutate color environment variables.
  *
  * @param format - ANSI style names accepted by {@link styleText}
+ *
  * @param text - JSON token text to wrap
  *
  * @returns ANSI-styled text without another environment-variable check

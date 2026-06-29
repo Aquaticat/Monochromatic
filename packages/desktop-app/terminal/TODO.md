@@ -3,12 +3,14 @@
 ## Fix severe input stutter
 
 Typing in the terminal stutters extremely.
-Investigate the input path from Slint key events through PTY writes and Ghostty rendering, then reduce latency at the user boundary.
+Investigate the input path from Slint key events through PTY writes and Ghostty rendering,
+ then reduce latency at the user boundary.
 
 ## FIXME: Ghostty resize crash on package run
 
 Running the package task can panic inside Ghostty page-list resize integrity checks.
-Reproduce with `mise run //packages/desktop-app/terminal:run`, then inspect the resize path that sends Slint-measured
+Reproduce with `mise run //packages/desktop-app/terminal:run`,
+ then inspect the resize path that sends Slint-measured
 rows and columns into Ghostty.
 
 ```txt

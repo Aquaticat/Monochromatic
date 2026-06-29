@@ -284,17 +284,22 @@ time by `resolve_hosts.ts` (driven by `local.resolvable_hostnames`),
 which unions fresh DNS with `seed_resolved_hosts.json` and a local
 accumulation cache so a moved host keeps its previously-seen IPs.
 Published or broad ranges that do not map to one host (Anthropic,
-Hetzner DNS, Syncthing/Oracle, Chrome) stay hardcoded as locals.
+Hetzner DNS,
+ Syncthing/Oracle,
+ Chrome) stay hardcoded as locals.
 
 ### Verified workaround
 
-For a single-host service, add its hostname to
+For a single-host service,
+ add its hostname to
 `local.resolvable_hostnames` in `hetzner.tf` and run `tofu apply`;
 `resolve_hosts.ts` resolves it to `/32` and `/128` CIDRs and
-accumulates them, so a later address change does not silently break
+accumulates them,
+ so a later address change does not silently break
 egress.
  For a destination that is a published or broad range rather
-than one host, add the CIDRs to the relevant hardcoded local (or to
+than one host,
+ add the CIDRs to the relevant hardcoded local (or to
 `seed_resolved_hosts.json` under the closest hostname).
  Tradeoff:
  new
@@ -315,7 +320,8 @@ destinations still require a deploy,
   rules take IPs or CIDRs,
    not hostnames;
    `resolve_hosts.ts`
-  bridges this by resolving names to CIDRs at plan time, but the rule
+  bridges this by resolving names to CIDRs at plan time,
+   but the rule
   itself still carries only the resolved CIDRs.
 
 ### Why we do not file this upstream

@@ -1,24 +1,42 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project version="4">
-  <component name="JsonSchemaMappingsProjectConfiguration">
+<?xml version='1.0' encoding='UTF-8'?>
+<project version='4'>
+  <component name='JsonSchemaMappingsProjectConfiguration'>
     <state>
       <map>
-        <entry key="mise">
+        <entry key='mise'>
           <value>
             <SchemaInfo>
-              <option name="name" value="mise" />
-              <option name="relativePathToSchema" value="https://mise.jdx.dev/schema/mise.json" />
-              <option name="applicationDefined" value="true" />
-              <option name="patterns">
+              <option
+                name='name'
+                value='mise'
+              />
+              <option
+                name='relativePathToSchema'
+                value='https://mise.jdx.dev/schema/mise.json'
+              />
+              <option
+                name='applicationDefined'
+                value='true'
+              />
+              <option name='patterns'>
                 <list>
                   <Item>
-                    <option name="path" value="mise.toml" />
+                    <option
+                      name='path'
+                      value='mise.toml'
+                    />
                   </Item>
                   <Item>
-                    <option name="path" value="mise.no-env.toml" />
+                    <option
+                      name='path'
+                      value='mise.no-env.toml'
+                    />
                   </Item>
                   <Item>
-                    <option name="path" value="packages/rust-module/forbidden-regex.bench/mise.toml" />
+                    <option
+                      name='path'
+                      value='packages/rust-module/forbidden-regex.bench/mise.toml'
+                    />
                   </Item>
                 </list>
               </option>

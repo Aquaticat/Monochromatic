@@ -1,6 +1,9 @@
 # pi-terminal-title
 
-Terminal tab title extension for pi: shows current tool, session state, and user prompt in the terminal window title.
+Terminal tab title extension for pi:
+ shows current tool,
+ session state,
+ and user prompt in the terminal window title.
 
 ## Installation
 
@@ -26,9 +29,11 @@ pi -e ./packages/pi/terminal-title/src/index.ts
 
 ## How it works
 
-Subscribes to pi agent lifecycle events and updates the terminal window/tab title via `ctx.ui.setTitle()`. Titles use a `π` prefix and are capped at 60 characters.
+Subscribes to pi agent lifecycle events and updates the terminal window/tab title via `ctx.ui.setTitle()`.
+ Titles use a `π` prefix and are capped at 60 characters.
 
-**Event → title mapping:**
+**Event → title mapping:
+**
 
 <table>
 <thead>
@@ -65,7 +70,8 @@ Subscribes to pi agent lifecycle events and updates the terminal window/tab titl
 </tbody>
 </table>
 
-**Tool registry:**
+**Tool registry:
+**
 
 <table>
 <thead>
@@ -119,7 +125,7 @@ Custom/MCP tools that are not in the registry display generically:
 
 ## Source structure
 
-```
+```text
 src/
   index.ts           # Extension entry point, event handlers
   title-builder.ts   # titleForEvent(), titleForTool(): maps events to titles

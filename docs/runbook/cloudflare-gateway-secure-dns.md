@@ -5,7 +5,8 @@ location over DNS-over-TLS (DoT).
 systemd-resolved provides the encrypted transport;
 NetworkManager is told to stop handing the network's DHCP DNS to the resolver,
 so nothing competes with the Gateway servers.
-Written on Bazzite 44 (Fedora atomic, KDE),
+Written on Bazzite 44 (Fedora atomic,
+ KDE),
 it applies to any host using systemd-resolved with NetworkManager.
 
 What this proves:
@@ -17,20 +18,28 @@ and the change survives reconnect and reboot.
 
 Bridges tried,
  so this is not an unconsidered handoff:
-the whole configuration is file and CLI driven (`tee`/`printf`, `nmcli`, `resolvectl`),
+the whole configuration is file and CLI driven (`tee`/`printf`,
+ `nmcli`,
+ `resolvectl`),
 with no UI automation.
 Two points genuinely cannot be automated and are called out where they occur:
 
 - A full NetworkManager reactivation (`nmcli connection up <name>`) needs the Wi-Fi
-  pre-shared key, which the desktop stores agent-owned in the keyring and `nmcli` cannot
+  pre-shared key,
+   which the desktop stores agent-owned in the keyring and `nmcli` cannot
   read non-interactively (it fails with `Secrets were required, but not provided`).
   Bridged for the live session with `resolvectl revert`,
   and the saved profile reaches the same state on the next reconnect or reboot.
 - Confirming the queries land under the right Gateway location reads the authenticated
-  Cloudflare dashboard, which no local tool can reach;
-  that is the only UI step, in "What to check".
+  Cloudflare dashboard,
+   which no local tool can reach;
+  that is the only UI step,
+   in "What to check".
 
-All host-specific addresses, the location id, the interface, and the connection names below
+All host-specific addresses,
+ the location id,
+ the interface,
+ and the connection names below
 are placeholders.
 Substitute your own values (see Setup).
 
@@ -42,7 +51,9 @@ TODO
 Prerequisites for a fresh machine:
 
 - A Linux host using systemd-resolved as the resolver and NetworkManager for connections
-  (verified on Bazzite 44 / Fedora atomic, KDE; the steps are distro-agnostic).
+  (verified on Bazzite 44 / Fedora atomic,
+   KDE;
+   the steps are distro-agnostic).
   On Fedora atomic the `/etc` files edited here persist across image updates.
 - `sudo` (root) on the host.
 - A Cloudflare One (Zero Trust) account with a Gateway DNS **location** already created,
@@ -52,23 +63,35 @@ Prerequisites for a fresh machine:
 Gather these values from that dashboard panel and from your system,
 then substitute them everywhere a placeholder appears:
 
-- `<LOCATION_NAME>`: the location's display name in the dashboard.
-- `<LOCATION_ID>`: the unique label inside the DoT/DoH hostname.
+- `<LOCATION_NAME>`:
+   the location's display name in the dashboard.
+- `<LOCATION_ID>`:
+   the unique label inside the DoT/DoH hostname.
   The **DNS over TLS (DoT)** row reads `<LOCATION_ID>.cloudflare-gateway.com`;
   the **DNS over HTTPS (DoH)** row reads
   `https://<LOCATION_ID>.cloudflare-gateway.com/dns-query`.
-- `<IPV4_DNS_1>`, `<IPV4_DNS_2>`: the two **IPv4 DNS** endpoint addresses.
-- `<IPV6_DNS>`: the **IPv6 DNS** endpoint address (omit if the host has no global IPv6).
-- `<WIFI_IFACE>`: the wireless interface name (step 2 finds it, for example `wlp9s0`).
-- `<WIFI_CONNECTION>`: the NetworkManager connection (profile) name (step 2 finds it).
+- `<IPV4_DNS_1>`,
+   `<IPV4_DNS_2>`:
+   the two **IPv4 DNS** endpoint addresses.
+- `<IPV6_DNS>`:
+   the **IPv6 DNS** endpoint address (omit if the host has no global IPv6).
+- `<WIFI_IFACE>`:
+   the wireless interface name (step 2 finds it,
+   for example `wlp9s0`).
+- `<WIFI_CONNECTION>`:
+   the NetworkManager connection (profile) name (step 2 finds it).
 
 ## Steps
 
 Status:
 TODO
 
-1.  Confirm the resolver stack: systemd-resolved active, NetworkManager present, and
-    resolv.conf owned by the resolver stub.
+1.  Confirm the resolver stack:
+     systemd-resolved active,
+     NetworkManager present,
+     and
+    resolv.
+    conf owned by the resolver stub.
 
     ```sh
     systemctl is-active systemd-resolved
@@ -91,7 +114,8 @@ TODO
     ```
 
     Expected:
-     a `wifi` device in state `connected`, whose DEVICE column is your `<WIFI_IFACE>`;
+     a `wifi` device in state `connected`,
+     whose DEVICE column is your `<WIFI_IFACE>`;
      and an active `802-11-wireless` row whose NAME is your `<WIFI_CONNECTION>`.
     Note both;
      the steps below substitute them.
@@ -121,7 +145,8 @@ TODO
     ```
 
     The `IP#hostname` form connects to the IP on port 853 and uses the hostname for TLS SNI
-    and certificate verification, which is what ties the queries to your Gateway location.
+    and certificate verification,
+     which is what ties the queries to your Gateway location.
     `DNSOverTLS=yes` is strict (no plaintext fallback);
     `Domains=~.` makes this the catch-all resolver for every name.
 
@@ -153,7 +178,8 @@ TODO
      `Connection successfully reapplied to device '<WIFI_IFACE>'.`,
      then `resolvectl revert` returns with no output and no error.
     `device reapply` activates the profile change without a reconnect (so it needs no
-    Wi-Fi password), but on some NetworkManager versions it does not drop the DNS already
+    Wi-Fi password),
+     but on some NetworkManager versions it does not drop the DNS already
     pushed to the live link;
     `resolvectl revert` clears that link's DNS at runtime so the global config takes over now.
     A full reconnect or reboot reaches the same state from the saved profile.
@@ -163,13 +189,15 @@ TODO
 Status:
 TODO
 
-1.  The global resolver is the Gateway DoT servers, and the link has no DNS scope of its own.
+1.  The global resolver is the Gateway DoT servers,
+     and the link has no DNS scope of its own.
 
     ```sh
     resolvectl status
     ```
 
-    Expected, under `Global`:
+    Expected,
+     under `Global`:
      `Protocols: ... +DNSOverTLS`,
      a `DNS Servers:` block listing the three `...#<LOCATION_ID>.cloudflare-gateway.com`
      entries,
@@ -201,10 +229,12 @@ TODO
      owned by `users:(("systemd-resolve",...))`,
      and no `ESTAB` to your router on `:53`.
 
-4.  Authenticated UI (the one manual step): confirm Cloudflare attributes the queries to
+4.  Authenticated UI (the one manual step):
+     confirm Cloudflare attributes the queries to
     your location.
 
-    1.  In a browser, open `https://one.dash.cloudflare.com` and select your account.
+    1.  In a browser,
+         open `https://one.dash.cloudflare.com` and select your account.
 
         Expected:
          the Zero Trust overview loads.
@@ -212,13 +242,18 @@ TODO
     2.  Open **Gateway** -> **DNS locations** and click your location **<LOCATION_NAME>**.
 
         Expected:
-         the endpoints shown match the `<IPV4_DNS_1>`, `<IPV4_DNS_2>`, `<IPV6_DNS>`, and
+         the endpoints shown match the `<IPV4_DNS_1>`,
+         `<IPV4_DNS_2>`,
+         `<IPV6_DNS>`,
+         and
          `<LOCATION_ID>.cloudflare-gateway.com` values you configured.
 
     3.  Open **Logs** -> **Gateway** -> **DNS** (or **Gateway** -> **Analytics**).
 
         Expected:
-         your recent test lookups (`example.com`, `github.com`) appear, tagged with the
+         your recent test lookups (`example.com`,
+         `github.com`) appear,
+         tagged with the
          location **<LOCATION_NAME>**.
 
     Optional stronger proof:
@@ -262,9 +297,12 @@ TODO
    A network you have not run step 4 on stays leak-safe anyway (strict global DoT means the
    network's plaintext resolver is never used),
    but `resolvectl status` lists its DHCP servers as inert entries until you run step 4 for it.
-- Captive portals (hotel, airport sign-in pages) and split-horizon corporate DNS will not
+- Captive portals (hotel,
+   airport sign-in pages) and split-horizon corporate DNS will not
   resolve while this is active;
-   restore temporarily, sign in, then reapply.
+   restore temporarily,
+   sign in,
+   then reapply.
 - IPv6 endpoint:
    include `<IPV6_DNS>` only when the host has global IPv6 reachability
    (`ping -6 -c 2 <IPV6_DNS>` succeeds).

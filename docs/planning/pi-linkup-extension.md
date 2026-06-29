@@ -38,9 +38,15 @@ and not a Linkup account-management UI.
 - Pi extension docs describe `pi.registerTool()` and `prepareArguments()`;
   `prepareArguments()` runs before schema validation and can normalize legacy tool-call shapes.
 - Linkup's search reference documents `POST https://api.linkup.so/v1/search`
-  with required `q`, `depth`, and `outputType`,
-  plus optional `excludeDomains`, `fromDate`, `includeDomains`, `toDate`,
-  `includeImages`, and `maxResults`.
+  with required `q`,
+   `depth`,
+   and `outputType`,
+  plus optional `excludeDomains`,
+   `fromDate`,
+   `includeDomains`,
+   `toDate`,
+  `includeImages`,
+   and `maxResults`.
 - Linkup's max-results changelog says `maxResults` is a first-class `/search`
   parameter for controlling the amount of context passed downstream.
 - Linkup's source-filtering guide documents `excludeDomains` for excluding
@@ -48,7 +54,9 @@ and not a Linkup account-management UI.
   but does not specify whether a domain entry matches subdomains by suffix.
 - Linkup's fetch reference documents `POST https://api.linkup.so/v1/fetch`
   with required `url`,
-  plus optional `renderJs`, `extractImages`, and `includeRawHtml`.
+  plus optional `renderJs`,
+   `extractImages`,
+   and `includeRawHtml`.
 - Linkup fetch has no `excludeDomains` parameter,
   so fetch blocklist enforcement must happen locally before the network call.
 - Existing repo Pi package tests are colocated as `src/*.unit.test.ts`
@@ -67,12 +75,18 @@ and not a Linkup account-management UI.
 
 Create `packages/pi/linkup/` with these package properties:
 
-- Package name: `@monochromatic-dev/pi-linkup`.
-- Entry point: `src/index.ts`.
-- Built extension: `dist/final/node/index.mjs`.
-- `package.json#pi.extensions`: `['./dist/final/node/index.mjs']`.
-- Runtime dependencies: `@monochromatic-dev/module-logger` plus Node built-ins.
-- Peer dependencies: `@earendil-works/pi-coding-agent` and `typebox`.
+- Package name:
+   `@monochromatic-dev/pi-linkup`.
+- Entry point:
+   `src/index.ts`.
+- Built extension:
+   `dist/final/node/index.mjs`.
+- `package.json#pi.extensions`:
+   `['./dist/final/node/index.mjs']`.
+- Runtime dependencies:
+   `@monochromatic-dev/module-logger` plus Node built-ins.
+- Peer dependencies:
+   `@earendil-works/pi-coding-agent` and `typebox`.
 - Dev dependencies follow sibling Pi packages:
   `@earendil-works/pi-coding-agent`,
   `@monochromatic-dev/config-tsdown`,
@@ -252,8 +266,10 @@ it has this flat shape:
 
 API key precedence:
 
-- First: `LINKUP_API_KEY` environment variable.
-- Second: `apiKey` in `pi-linkup.json`.
+- First:
+   `LINKUP_API_KEY` environment variable.
+- Second:
+   `apiKey` in `pi-linkup.json`.
 
 Do not read project config.
 This is deliberate:
@@ -312,9 +328,11 @@ return the filtered Linkup-shaped response as JSON text instead.
 
 Details should store both forms:
 
-- `details.linkupResponse`: the model-visible response object,
+- `details.linkupResponse`:
+   the model-visible response object,
   after policy filtering when filtering occurred.
-- `details.rawLinkupResponse`: the untouched parsed Linkup response object.
+- `details.rawLinkupResponse`:
+   the untouched parsed Linkup response object.
 
 Do not surface `details.rawLinkupResponse` to the model when it contains blocked
 search results.
@@ -378,15 +396,26 @@ Domain policy tests:
 - subdomain suffix match
 - non-boundary suffix does not match
 - uppercase and trailing-dot normalization
-- schemes, ports, slashes, wildcards, and empty labels are rejected
+- schemes,
+   ports,
+   slashes,
+   wildcards,
+   and empty labels are rejected
 
 Client tests with mocked `fetch`:
 
-- search sends `q`, fixed `standard`, fixed `searchResults`, and global `excludeDomains`
-- search includes `fromDate`, `includeDomains`, and `toDate` when provided
+- search sends `q`,
+   fixed `standard`,
+   fixed `searchResults`,
+   and global `excludeDomains`
+- search includes `fromDate`,
+   `includeDomains`,
+   and `toDate` when provided
 - search does not send extension-unsupported per-call options,
   including Linkup-supported `maxResults`
-- fetch sends fixed `renderJs: true`, `extractImages: false`, and `includeRawHtml: false`
+- fetch sends fixed `renderJs: true`,
+   `extractImages: false`,
+   and `includeRawHtml: false`
 - non-2xx response throws without leaking secrets
 
 Tool tests:

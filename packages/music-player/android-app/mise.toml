@@ -195,9 +195,9 @@ description = "Non-destructive on-device instrumented run (install -r + am instr
 dir = "{{config_root}}"
 depends = ["test:instrumented:build"]
 run = [
-    "adb install -r app/build/outputs/apk/debug/app-debug.apk",
-    "adb install -r app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk",
-    "adb shell am instrument -w -e class {{arg(name='class', default='dev.monochromatic.musicplayer.PeakSweepWorkerTest')}} dev.monochromatic.musicplayer.test/androidx.test.runner.AndroidJUnitRunner",
+  "adb install -r app/build/outputs/apk/debug/app-debug.apk",
+  "adb install -r app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk",
+  "adb shell am instrument -w -e class {{arg(name='class', default='dev.monochromatic.musicplayer.PeakSweepWorkerTest')}} dev.monochromatic.musicplayer.test/androidx.test.runner.AndroidJUnitRunner",
 ]
 
 [tasks.lint]

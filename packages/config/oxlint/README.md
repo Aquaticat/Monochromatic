@@ -18,19 +18,26 @@ export default defineConfig({ ...base, },);
 ```
 
 Uses spread instead of `extends` because `extends` only merges rules:
-top-level fields like `categories`, `env`, `ignorePatterns`, `overrides`,
+top-level fields like `categories`,
+ `env`,
+ `ignorePatterns`,
+ `overrides`,
 and `plugins` are not inherited through `extends`.
 
-The package default export resolves to the prebuilt, self-contained
-`dist/final/node/index.mjs`, which bundles the config and references three
-co-located plugin sidecars (`plugin-*.mjs`) by relative `file://` URL. Build it
+The package default export resolves to the prebuilt,
+ self-contained
+`dist/final/node/index.mjs`,
+ which bundles the config and references three
+co-located plugin sidecars (`plugin-*.mjs`) by relative `file://` URL.
+ Build it
 with `mise run //packages/config/oxlint:build` before linting (the root
-`oxlint.config.ts` imports this built entry). TypeScript source is available at the
+`oxlint.config.ts` imports this built entry).
+ TypeScript source is available at the
 `/ts` subpath (`/ts/*` for individual files) for development.
 
 ## Structure
 
-```
+```text
 src/
   config-base.ts    -- config shape minus jsPlugins, shared by both entries
   index.ts          -- dev entry (./ts): spreads base, resolves plugins to /ts source
@@ -49,13 +56,18 @@ src/
 ## jsPlugin resolution
 
 The built entry (`index.node.ts` -> `dist/final/node/index.mjs`) points `jsPlugins`
-at co-located sidecar `.mjs` files via relative `file://` URLs, so no plugin
+at co-located sidecar `.mjs` files via relative `file://` URLs,
+ so no plugin
 resolution happens at lint time (the optimization in issue #238).
 
-The development entry (`index.ts`, the `./ts` export) instead resolves each plugin's
-`/ts` source subpath with `import.meta.resolve()` at config evaluation time, because
-oxlint's Rust resolver doesn't understand pnpm workspace package names (Node.js
-handles workspace resolution). This lets development linting track live plugin source
+The development entry (`index.ts`,
+ the `./ts` export) instead resolves each plugin's
+`/ts` source subpath with `import.meta.resolve()` at config evaluation time,
+ because
+oxlint's Rust resolver doesn't understand pnpm workspace package names (Node.
+js
+handles workspace resolution).
+ This lets development linting track live plugin source
 without a rebuild.
 
 ## Root-only options
@@ -67,11 +79,22 @@ The `--type-aware` flag is passed via the CLI in the mise task template
 
 ## Related packages
 
-- **@monochromatic-dev/config-oxlint-tsdoc**: jsPlugin providing TSDoc validation rules
-- **@monochromatic-dev/config-oxlint-no-restricted-syntax**: jsPlugin for banned syntax patterns
-- **@monochromatic-dev/config-oxlint-stylistic**: jsPlugin for one-item-per-line, semicolon, and expression-structure formatting
+- **@monochromatic-dev/config-oxlint-tsdoc**:
+   jsPlugin providing TSDoc validation rules
+- **@monochromatic-dev/config-oxlint-no-restricted-syntax**:
+   jsPlugin for banned syntax patterns
+- **@monochromatic-dev/config-oxlint-stylistic**:
+   jsPlugin for one-item-per-line,
+   semicolon,
+   and expression-structure formatting
 
-These are JS plugins (`jsPlugins`), not config packages. They implement rule
-logic; this package configures rule severity and options. All three are declared
-as dependencies of this package: the development entry resolves their `/ts` source
-via `import.meta.resolve()`, and the build bundles that source into the sidecars.
+These are JS plugins (`jsPlugins`),
+ not config packages.
+ They implement rule
+logic;
+ this package configures rule severity and options.
+ All three are declared
+as dependencies of this package:
+ the development entry resolves their `/ts` source
+via `import.meta.resolve()`,
+ and the build bundles that source into the sidecars.

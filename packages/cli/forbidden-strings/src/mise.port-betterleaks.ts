@@ -471,32 +471,28 @@ function renderRule({ rule, }: { rule: RawRule; },): string {
    * Accumulator for the output block; joined with newlines at the end.
    */
   const lines: string[] = [];
-  lines.push(`# === ${rule.id} ===`,);
-  lines.push(`# ${rule.description}`,);
+  lines.push(
+    `# === ${rule.id} ===`,
+    `# ${rule.description}`
+  );
   if (rule.pathScope
     !== undefined) {
     lines.push(
       `# NOTE: upstream restricts this rule to files matching: ${rule.pathScope}`,
-    );
-    lines.push(
-      '#       Forbidden-strings has no per-rule path scoping; the rule fires on every scanned file.',
+      '#       Forbidden-strings has no per-rule path scoping; the rule fires on every scanned file.'
     );
   }
   if (rule.secretGroup
     !== undefined) {
     lines.push(
       `# NOTE: upstream extracts capture group ${rule.secretGroup} as the secret for redaction.`,
-    );
-    lines.push(
-      '#       Forbidden-strings reports the full match span; the narrowing is lost.',
+      '#       Forbidden-strings reports the full match span; the narrowing is lost.'
     );
   }
   if (rule.hasRequired) {
     lines.push(
       "# NOTE: upstream requires another rule's match nearby ([[rules.required]]).",
-    );
-    lines.push(
-      '#       Forbidden-strings cannot enforce composite proximity rules; the regex fires standalone.',
+      '#       Forbidden-strings cannot enforce composite proximity rules; the regex fires standalone.'
     );
   }
   /**
@@ -524,8 +520,10 @@ function renderRule({ rule, }: { rule: RawRule; },): string {
    */
   const converted = relaxation?.convertedTransform?.(convertedBase,)
     ?? convertedBase;
-  lines.push(`/${converted}/`,);
-  lines.push('',);
+  lines.push(
+    `/${converted}/`,
+    ''
+  );
   return lines.join('\n',);
 }
 

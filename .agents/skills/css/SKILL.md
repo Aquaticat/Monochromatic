@@ -5,23 +5,41 @@ description: Use when editing CSS, writing component styles, or reviewing CSS in
 
 # CSS in Monochromatic
 
-Fires when editing CSS files, writing component styles, picking between CSS approaches,
-reviewing CSS in a PR, choosing sizing units, deciding on a selector strategy,
+Fires when editing CSS files,
+ writing component styles,
+ picking between CSS approaches,
+reviewing CSS in a PR,
+ choosing sizing units,
+ deciding on a selector strategy,
 or adding inline styles to a component.
 
 Other surface phrases that should trigger the skill:
-"edit this CSS", "style this", "write a stylesheet", "add CSS to",
-"review CSS", "what's the right CSS for", "this component needs styles".
-The skill applies to `.css` files, CSS-in-JS, inline `style` attributes,
+"edit this CSS",
+ "style this",
+ "write a stylesheet",
+ "add CSS to",
+"review CSS",
+ "what's the right CSS for",
+ "this component needs styles".
+The skill applies to `.css` files,
+ CSS-in-JS,
+ inline `style` attributes,
 and any styling work in the repo.
 
 Single source of truth for the browser baseline:
 see `PHILOSOPHY.browser-support.md` at the repo root.
 
 The skill encodes the platform-feature defaults,
-browser baseline, sizing rules, logical properties, shorthand rules,
-design-token colors, declaration discipline, accessibility minima, mixin shape,
-nesting depth, and state-attribute conventions.
+browser baseline,
+ sizing rules,
+ logical properties,
+ shorthand rules,
+design-token colors,
+ declaration discipline,
+ accessibility minima,
+ mixin shape,
+nesting depth,
+ and state-attribute conventions.
 
 ## Browser baseline
 
@@ -30,7 +48,8 @@ All CSS features must be supported by this baseline.
 Newer features that the baseline lacks need a feature query (`@supports`) and a fallback,
 or they need to be deferred.
 
-When in doubt about a feature, check the Firefox ESR 140 caniuse percentage
+When in doubt about a feature,
+ check the Firefox ESR 140 caniuse percentage
 before reaching for it.
 Anything supported in evergreen Firefox but not ESR 140
 is off-limits without a feature query.
@@ -40,8 +59,10 @@ is off-limits without a feature query.
 Pick the native option before reaching for a library:
 
 - `<dialog>` for modals.
-- Popover API (`popover` attribute, `::backdrop` pseudo-element).
-- CSS nesting (native, not Sass).
+- Popover API (`popover` attribute,
+   `::backdrop` pseudo-element).
+- CSS nesting (native,
+   not Sass).
 - `@layer` for cascade control.
 - `@scope` for scoped selectors.
 - Container queries (`@container`).
@@ -64,7 +85,9 @@ Derive related sizes with `calc()`:
 ```
 
 Never use `px` except in device-pixel-dependent contexts
-(1px borders, hairline dividers, sub-pixel positioning).
+(1px borders,
+ hairline dividers,
+ sub-pixel positioning).
 Even those cases should be audited;
 a 0.0625rem hairline is usually the right call.
 
@@ -77,7 +100,10 @@ Logical properties everywhere:
 - `inset-block-start` instead of `top`.
 - `inset-inline-end` instead of `right`.
 - `text-align: start` instead of `text-align: left`.
-- `padding-inline`, `padding-block`, `margin-inline`, `margin-block`.
+- `padding-inline`,
+   `padding-block`,
+   `margin-inline`,
+   `margin-block`.
 
 Logical properties adapt to writing direction and language
 without per-locale overrides.
@@ -101,15 +127,23 @@ Physical properties are forbidden in new code.
 
 No shorthand properties that combine unrelated axes or sub-properties:
 
-- Forbidden: `margin`, `padding`, `border`, `background`.
-- Reason: longhand is easier to scan and diff.
+- Forbidden:
+   `margin`,
+   `padding`,
+   `border`,
+   `background`.
+- Reason:
+   longhand is easier to scan and diff.
   `margin: 1rem 2rem 3rem 4rem` hides which value lands on which axis;
   four longhand declarations make it explicit.
 
 Single-axis or single-concept shorthands are fine:
 
-- `padding-inline`, `margin-block` (single-axis).
-- `border-radius`, `inset`, `gap` (single-concept).
+- `padding-inline`,
+   `margin-block` (single-axis).
+- `border-radius`,
+   `inset`,
+   `gap` (single-concept).
 
 ## Colors via design tokens
 
@@ -132,30 +166,36 @@ No `var()` fallbacks (`var(--x, red)`).
 Fallbacks hide missing tokens;
 without them a missing token surfaces as an invalid declaration
 which is easier to spot in DevTools.
-The single exception: user-configurable properties
+The single exception:
+ user-configurable properties
 where the fallback represents the default user choice.
 
 ## Declarations and !important
 
 Keep declarations minimal.
 Each property appears once per rule
-(the cascade resolves duplicates, but the diff churns).
+(the cascade resolves duplicates,
+ but the diff churns).
 
 No `!important`.
 If a rule needs `!important` to win the cascade,
 the cascade structure is wrong;
 fix `@layer` ordering or selector specificity instead.
 
-Prefer fluid approaches (`clamp()`, container queries, `calc()` with viewport units)
+Prefer fluid approaches (`clamp()`,
+ container queries,
+ `calc()` with viewport units)
 over breakpoints.
-Breakpoints jump at specific widths; fluid scales smoothly.
+Breakpoints jump at specific widths;
+ fluid scales smoothly.
 
 ## Accessibility minima
 
 `:focus-visible` on every interactive element.
 Never remove the default focus ring without replacing it with a visible alternative.
 
-Touch targets: minimum 48px via `min-inline-size` and `min-block-size`
+Touch targets:
+ minimum 48px via `min-inline-size` and `min-block-size`
 (logical equivalents of `min-width` and `min-height`).
 
 ```css
@@ -172,10 +212,17 @@ button:focus-visible {
 
 ## Mixins
 
-Small composable mixins named by what they do, not what they style:
+Small composable mixins named by what they do,
+ not what they style:
 
-- Good: `mixin-truncate-line`, `mixin-card-elevation`, `mixin-scroll-snap-x`.
-- Bad: `mixin-card`, `mixin-header`, `mixin-product-tile`.
+- Good:
+   `mixin-truncate-line`,
+   `mixin-card-elevation`,
+   `mixin-scroll-snap-x`.
+- Bad:
+   `mixin-card`,
+   `mixin-header`,
+   `mixin-product-tile`.
 
 Style-named mixins fragment as soon as a non-card needs the elevation;
 the mixin name should describe the behaviour so it composes.
@@ -183,7 +230,8 @@ the mixin name should describe the behaviour so it composes.
 ## Nesting depth and state attributes
 
 Native CSS nesting only.
-Shallow depth, 3 levels maximum:
+Shallow depth,
+ 3 levels maximum:
 
 ```css
 .card {
@@ -200,7 +248,8 @@ Shallow depth, 3 levels maximum:
 Deeper nesting becomes unreadable in the rendered selector
 and harder to override.
 
-Use data attributes for state and variant styling, not BEM modifiers:
+Use data attributes for state and variant styling,
+ not BEM modifiers:
 
 ```css
 /* Wrong */
@@ -225,14 +274,24 @@ and do not require coordinated class-name updates across markup and CSS.
 
 ## Quality check before submitting CSS
 
-- All sizes in `rem` (or `calc()` of `rem`); no `px` outside device-pixel contexts.
-- Logical properties for every margin, padding, inset, and text-align.
-- No forbidden shorthands (`margin`, `padding`, `border`, `background`).
-- All colors from `var(--color-*)`; no literals.
+- All sizes in `rem` (or `calc()` of `rem`);
+   no `px` outside device-pixel contexts.
+- Logical properties for every margin,
+   padding,
+   inset,
+   and text-align.
+- No forbidden shorthands (`margin`,
+   `padding`,
+   `border`,
+   `background`).
+- All colors from `var(--color-*)`;
+   no literals.
 - No `!important`.
 - `:focus-visible` styled on every interactive element.
 - Touch targets meet the 48px minimum via `min-inline-size`/`min-block-size`.
 - Nesting depth 3 or fewer.
-- State and variant styling uses `[data-*]`, not BEM modifiers.
+- State and variant styling uses `[data-*]`,
+   not BEM modifiers.
 
-If any item is unmet, fix before merging.
+If any item is unmet,
+ fix before merging.

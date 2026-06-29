@@ -1018,7 +1018,9 @@ recent,
 or all-prior target scopes.
 Every active rule scans all eligible provider-context text until disabled or expired by compaction.
 User answered this on 2026-06-15:
-"Why do we even have previous_* and recent_* ? Don't the rules apply to everything?"
+"Why do we even have previous_* and recent_* ?
+ Don't the rules apply to everything?
+"
 Then the user chose the all-eligible model.
 
 Pros:
@@ -1105,7 +1107,9 @@ Decision:
 empty strings are valid,
 and the marker renders that escaped string between `<omitted>` and `</omitted>`.
 User clarified this on 2026-06-15:
-"It's just a string models pass to the toolcall. And in js/json strings can be empty."
+"It's just a string models pass to the toolcall.
+ And in js/json strings can be empty.
+"
 
 Pros:
 matches the user's example `<omitted></omitted>`,
@@ -1666,7 +1670,8 @@ regex pattern length,
 inspected text,
 replacement count,
 or active rules.
-User answered this on 2026-06-15 by saying "No caps."
+User answered this on 2026-06-15 by saying "No caps.
+"
 
 Pros:
 avoids arbitrary limits,
@@ -1802,13 +1807,21 @@ zero-current-match substitutions install active rules with warnings.
 Question 19 is resolved:
 adding an already active normalized matcher replaces the prior active rule.
 Question 20 is resolved:
-exact normalized matcher means `kind`, exact `value`, and sorted unique regex `flags`.
+exact normalized matcher means `kind`,
+ exact `value`,
+ and sorted unique regex `flags`.
 Question 21 is resolved:
-shorthand keys parse as slash-regex when they start with `/`, otherwise as literals.
+shorthand keys parse as slash-regex when they start with `/`,
+ otherwise as literals.
 Question 22 is resolved:
 `substitute` and `disable` tool result content include compact matcher summaries without snippets.
 Question 23 is resolved:
-ACM defines no custom caps for descriptions, literals, patterns, inspected text, replacements, or active rules.
+ACM defines no custom caps for descriptions,
+ literals,
+ patterns,
+ inspected text,
+ replacements,
+ or active rules.
 Question 24 is resolved:
 ACM makes no load-order guarantee relative to other context-mutating extensions.
 Before implementation,

@@ -9,7 +9,8 @@ where JavaScript syntax requires an expression.
 
 Defined in `src/throws.ts`:
 
-- `throws(error: Error): never`: throws the same `Error` instance and never returns.
+- `throws(error: Error): never`:
+   throws the same `Error` instance and never returns.
 
 ## Usage
 
@@ -19,7 +20,8 @@ import { throws, } from '@monochromatic-dev/module-throws';
 const token = maybeToken ?? throws(new MissingTokenError(),);
 ```
 
-The return type is `never`, so TypeScript keeps the non-nullish branch type:
+The return type is `never`,
+ so TypeScript keeps the non-nullish branch type:
 
 ```ts
 declare const maybeToken: string | undefined;
@@ -30,7 +32,9 @@ const token: string = maybeToken ?? throws(new MissingTokenError(),);
 Use this helper when statement `throw` cannot preserve the surrounding expression semantics:
 
 - Nullish fallback expressions where the fallback must throw a domain-specific error.
-- Default parameter initializers where `function.length`, parameter scope, or evaluation order matters.
+- Default parameter initializers where `function.length`,
+   parameter scope,
+   or evaluation order matters.
 - Destructuring defaults that intentionally trigger only on `undefined`.
 - Class field initializers where declaration order or private-field initialization matters.
 - Declarative object literals whose contextual typing should remain inline.
@@ -58,9 +62,13 @@ and TypeScript's structural `Error` type means a plain `{ name, message }` objec
 Callers should still construct real `Error` instances.
 The TypeScript API deliberately omits string and descriptor overloads:
 
-- `Error` preserves stack, message, cause, and subclass identity for catch sites.
+- `Error` preserves stack,
+   message,
+   cause,
+   and subclass identity for catch sites.
 - Prebuilt errors let callers decide the concrete domain subclass.
-- String overloads would force this helper to construct `new Error`, moving stack capture into the helper.
+- String overloads would force this helper to construct `new Error`,
+   moving stack capture into the helper.
 - Descriptor objects would recreate ad hoc mapping from strings to constructors.
 - `unknown` would make non-`Error` throws easy and catch-side handling worse.
 
@@ -70,7 +78,8 @@ It does not log the error because error messages can contain secrets and callers
 ## Prefer statement throw when possible
 
 Do not use this helper as a blanket replacement for statement `throw`.
-When a block can express the control flow clearly, use direct statements:
+When a block can express the control flow clearly,
+ use direct statements:
 
 ```ts
 if (token === undefined)

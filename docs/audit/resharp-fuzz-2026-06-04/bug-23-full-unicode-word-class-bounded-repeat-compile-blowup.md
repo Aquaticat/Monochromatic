@@ -2,11 +2,21 @@
 
 ## Classification
 
-- Type: performance, compile-time algorithmic complexity.
-- Phase: compile (`Regex::with_options`), full-unicode mode only.
-- Severity: bug. `\w{12}` takes 9.6 s and `\w{16}` 15.6 s to compile under the full
-  config, crossing ieviev's 10 s invariant on a trivial, everyday pattern with limits
-  enabled. `\w{8}` is already 4.7 s. The same patterns compile in well under a
+- Type:
+   performance,
+   compile-time algorithmic complexity.
+- Phase:
+   compile (`Regex::with_options`),
+   full-unicode mode only.
+- Severity:
+   bug.
+   `\w{12}` takes 9.6 s and `\w{16}` 15.6 s to compile under the full
+  config,
+   crossing ieviev's 10 s invariant on a trivial,
+   everyday pattern with limits
+  enabled.
+   `\w{8}` is already 4.7 s.
+   The same patterns compile in well under a
   millisecond in the default and ascii configs.
 
 ## Minimal reproducer
@@ -18,12 +28,17 @@ let _ = Regex::with_options(r"\w{16}", full).unwrap(); // ~15.6 s to COMPILE
 // default/ascii compile the same pattern in ~0.03 s.
 ```
 
-`\w{16}` is a flat bounded repeat of the single shorthand class `\w`; no nesting,
-intersection, complement, or lookaround is involved.
+`\w{16}` is a flat bounded repeat of the single shorthand class `\w`;
+ no nesting,
+intersection,
+ complement,
+ or lookaround is involved.
 
 ## Observed behaviour
 
-Compile time, full config (cfg2), `--compile1`:
+Compile time,
+ full config (cfg2),
+ `--compile1`:
 
 ```text
 \w{2}    0.647 s
@@ -33,7 +48,9 @@ Compile time, full config (cfg2), `--compile1`:
 \w{16}   15.610 s
 ```
 
-Roughly O(count^1.6): a 2x increase in the repeat count near triples the time. Across
+Roughly O(count^1.6):
+ a 2x increase in the repeat count near triples the time.
+ Across
 configs:
 
 ```text
@@ -51,20 +68,33 @@ Class specificity at `{8}` in full mode:
 .{8}     0.003 s     [a-z]{8} 0.0002 s
 ```
 
-Only `\w` (and to a lesser degree `\W`) is affected. `\d`, `\s`, `.`, and ASCII
-ranges bounded-repeated the same way are instant in full mode. The trigger is the
+Only `\w` (and to a lesser degree `\W`) is affected.
+ `\d`,
+ `\s`,
+ `.`,
+ and ASCII
+ranges bounded-repeated the same way are instant in full mode.
+ The trigger is the
 full-unicode word-character class specifically.
 
 ## Expected behaviour
 
-Compiling `\w{16}` is trivial in every other mode and engine; it should take
-milliseconds. The full-unicode word class is large but fixed; bounded-repeating it
+Compiling `\w{16}` is trivial in every other mode and engine;
+ it should take
+milliseconds.
+ The full-unicode word class is large but fixed;
+ bounded-repeating it
 must not multiply compile cost super-linearly with the repeat count.
 
 ## Root cause
 
-The parser lowers `{n}`, `{n,}`, and `{n,m}` through `mk_repeat`
-(`resharp-parser/src/lib.rs:2030`, `:2032`, `:2037`), which fully unrolls the
+The parser lowers `{n}`,
+ `{n,}`,
+ and `{n,m}` through `mk_repeat`
+(`resharp-parser/src/lib.rs:2030`,
+ `:2032`,
+ `:2037`),
+ which fully unrolls the
 quantifier:
 
 ```rust
@@ -78,50 +108,92 @@ pub fn mk_repeat(&mut self, body_id: NodeId, lower: u32, upper: u32) -> NodeId {
 }
 ```
 
-The unrolled node itself is cheap (the copies are interned to one `NodeId`, and
-`collect_sets` dedups them, so the minterm partition stays ~2: `\w` vs `\W`). The
-blowup is in DFA construction: the derivative of `\w{16}` walks through
-`\w{15}`, `\w{14}`, ..., one distinct state per remaining count, and each state's
+The unrolled node itself is cheap (the copies are interned to one `NodeId`,
+ and
+`collect_sets` dedups them,
+ so the minterm partition stays ~2:
+ `\w` vs `\W`).
+ The
+blowup is in DFA construction:
+ the derivative of `\w{16}` walks through
+`\w{15}`,
+ `\w{14}`,
+ ...,
+ one distinct state per remaining count,
+ and each state's
 `der` / `prune_fwd` / `transition_term` performs set operations over the full-unicode
-`\w` set, a large multi-byte BDD. With a cheap class (`\d`, `\s`, ASCII) those set
-operations are negligible, so only `\w`/`\W` show the cost. Empirically the per-state
-cost also grows with the count (0.33 s/state at `\w{2}`, ~1.0 s/state at `\w{16}`),
-so the total is super-linear, not merely `count x constant`.
+`\w` set,
+ a large multi-byte BDD.
+ With a cheap class (`\d`,
+ `\s`,
+ ASCII) those set
+operations are negligible,
+ so only `\w`/`\W` show the cost.
+ Empirically the per-state
+cost also grows with the count (0.33 s/state at `\w{2}`,
+ ~1.0 s/state at `\w{16}`),
+so the total is super-linear,
+ not merely `count x constant`.
 
-The algebra already has a native counted-repetition node, `Kind::Counted` with
-`mk_counted` (`resharp-algebra/src/lib.rs:3490`, used by the derivative machinery at
-`:1524` and `:4523`), which represents a bounded repeat as one node with a count
-rather than N unrolled copies. Routing bounded repeats of an expensive class through
-`mk_counted` instead of `mk_repeat`, or memoizing the per-count set operations so the
-full-unicode `\w` transition is computed once and reused across counts, removes the
-multiplication. The fix lives at the parser lowering (`lib.rs:2030-2037`) or in
+The algebra already has a native counted-repetition node,
+ `Kind::Counted` with
+`mk_counted` (`resharp-algebra/src/lib.rs:3490`,
+ used by the derivative machinery at
+`:1524` and `:4523`),
+ which represents a bounded repeat as one node with a count
+rather than N unrolled copies.
+ Routing bounded repeats of an expensive class through
+`mk_counted` instead of `mk_repeat`,
+ or memoizing the per-count set operations so the
+full-unicode `\w` transition is computed once and reused across counts,
+ removes the
+multiplication.
+ The fix lives at the parser lowering (`lib.rs:2030-2037`) or in
 `mk_repeat`.
 
 ## Affected configurations
 
-Full only. Default and ascii compile these in microseconds because their `\w` is the
-small ASCII word set. The limits-disabling `unbounded_size` config is exempt by
+Full only.
+ Default and ascii compile these in microseconds because their `\w` is the
+small ASCII word set.
+ The limits-disabling `unbounded_size` config is exempt by
 policy and would be no faster.
 
 ## Relationship to other findings
 
-- Distinct from BUG-17 (`([\w]{3,5}){3,3}` compile blowup): that is the bracketed
+- Distinct from BUG-17 (`([\w]{3,5}){3,3}` compile blowup):
+   that is the bracketed
   perl class `[\w]` lowering to an un-canonicalized class-set union and is slow in the
-  DEFAULT config too (`([\w]{2,4}){2,4}` = 4.0 s default, `[\w]{16}` = 17.1 s
-  default). BUG-23 is the BARE shorthand `\w` and is fast in default (0.013 s,
-  0.028 s); it is slow only in full mode, driven by the full-unicode class size, not
-  by bracket canonicalization. Confirmed side by side: `\w{16}` is 0.028 s default /
-  15.6 s full, while `[\w]{16}` is 17.1 s default / 17.3 s full.
-- Distinct from BUG-19 (full-mode `$?\w` construction cost): that is a match-time DFA
-  construction cost on diverse input; BUG-23 is compile-time and scales with the
+  DEFAULT config too (`([\w]{2,4}){2,4}` = 4.0 s default,
+   `[\w]{16}` = 17.1 s
+  default).
+   BUG-23 is the BARE shorthand `\w` and is fast in default (0.013 s,
+  0.028 s);
+   it is slow only in full mode,
+   driven by the full-unicode class size,
+   not
+  by bracket canonicalization.
+   Confirmed side by side:
+   `\w{16}` is 0.028 s default /
+  15.6 s full,
+   while `[\w]{16}` is 17.1 s default / 17.3 s full.
+- Distinct from BUG-19 (full-mode `$?\w` construction cost):
+   that is a match-time DFA
+  construction cost on diverse input;
+   BUG-23 is compile-time and scales with the
   bounded-repeat count.
 
 ## Code quality
 
 `mk_repeat` unrolling a bounded quantifier into N concatenated copies is the kind of
 choice a reasonable author revisits once a `Kind::Counted` node already exists in the
-same module: the unroll is correct but trades a compact counted representation for one
-that multiplies downstream derivative work by the count. For cheap classes the trade
-is invisible; for an expensive set it is the whole bug. Worth lowering bounded repeats
+same module:
+ the unroll is correct but trades a compact counted representation for one
+that multiplies downstream derivative work by the count.
+ For cheap classes the trade
+is invisible;
+ for an expensive set it is the whole bug.
+ Worth lowering bounded repeats
 to `mk_counted` (or memoizing the per-count transition) so compile cost tracks the
-class once, not once per repetition.
+class once,
+ not once per repetition.

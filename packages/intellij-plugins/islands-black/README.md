@@ -3,15 +3,21 @@
 OLED black variant of the JetBrains Islands Dark theme for IntelliJ-based IDEs.
 
 Extends Islands Dark by overriding its four base gray tokens (`gray-10` through `gray-40`) to `#000000`,
-producing true black backgrounds across all UI panels, toolbars, borders, and editor areas.
+producing true black backgrounds across all UI panels,
+ toolbars,
+ borders,
+ and editor areas.
 Warnings retain their yellow underline but lose the olive background fill.
 
 ![Islands Black theme](screenshots/islands-black.png)
 
 ## Installation
 
-1. From this directory, build the JAR: `mise run build`
-2. In your IDE, open **Settings > Plugins > gear icon > Install Plugin from Disk...**
+1. From this directory,
+    build the JAR:
+    `mise run build`
+2. In your IDE,
+    open **Settings > Plugins > gear icon > Install Plugin from Disk...**
 3. Select the `islands-black.jar` file
 4. Restart the IDE
 5. Go to **Settings > Appearance & Behavior > Appearance > Theme** and select **Islands Black**
@@ -25,10 +31,16 @@ Tested with WebStorm but works with any JetBrains IDE that ships the Islands Dar
 
 The theme JSON overrides four color tokens in the Islands Dark color system:
 
-- `gray-10`: base background for editors and tool windows
-- `gray-20`: tool window headers and island borders
-- `gray-30`: main window background between panels and panel borders
-- `gray-40`: toolbar, status bar, and stripe backgrounds
+- `gray-10`:
+   base background for editors and tool windows
+- `gray-20`:
+   tool window headers and island borders
+- `gray-30`:
+   main window background between panels and panel borders
+- `gray-40`:
+   toolbar,
+   status bar,
+   and stripe backgrounds
 
 The editor color scheme extends Darcula and overrides:
 

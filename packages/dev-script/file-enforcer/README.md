@@ -1,16 +1,21 @@
 # file-enforcer
 
 Declarative TypeScript tool for keeping derived files in sync across a monorepo.
-Uses direct async function calls instead of a descriptor/engine pattern; each call reads and writes immediately.
+Uses direct async function calls instead of a descriptor/engine pattern;
+ each call reads and writes immediately.
 
 ## Motivation
 
 Two problems prompted this package:
 
-- Claude Code's `@AGENTS.md` include syntax is unreliable, so `CLAUDE.md` must be a literal copy of `AGENTS.md`
+- Claude Code's `@AGENTS.md` include syntax is unreliable,
+   so `CLAUDE.md` must be a literal copy of `AGENTS.md`
 - Oxlint config files live in a config package but need to appear at the monorepo root
 
-Generic file-sync GitHub Actions exist, but they target cross-repo sync and lack operations like concatenation, deduplication, and property extraction.
+Generic file-sync GitHub Actions exist,
+ but they target cross-repo sync and lack operations like concatenation,
+ deduplication,
+ and property extraction.
 
 ## Usage
 
@@ -45,52 +50,94 @@ node packages/dev-script/file-enforcer/src/index.ts --watch
 
 ### Reading
 
-- `cat(files: string[])`: reads and concatenates files into a single string; paths containing `*` or `?` are auto-expanded as globs
-- `cat(glob: string)`: reads files matching a glob pattern, returns `GlobResults` (a `GlobResult[]` carrying the source pattern)
+- `cat(files: string[])`:
+   reads and concatenates files into a single string;
+   paths containing `*` or `?` are auto-expanded as globs
+- `cat(glob: string)`:
+   reads files matching a glob pattern,
+   returns `GlobResults` (a `GlobResult[]` carrying the source pattern)
 
 ### Writing
 
-- `overwrite({ dest, content })`: writes content to dest; skips when existing content is identical.
-- `overwriteIfNotExists({ dest, content })`: writes only if the file does not exist
-- `overwriteEach({ destGlob, files })`: mirrors each `GlobResults` entry to a destination using positional
-  wildcard substitution; source glob is read from the array.
-- `overwriteTomlKey({ dest, path, value })`: updates a single key in an existing TOML file, preserving comments
-  and unmutated whitespace via splice mode; throws when dest does not exist
+- `overwrite({ dest, content })`:
+   writes content to dest;
+   skips when existing content is identical.
+- `overwriteIfNotExists({ dest, content })`:
+   writes only if the file does not exist
+- `overwriteEach({ destGlob, files })`:
+   mirrors each `GlobResults` entry to a destination using positional
+  wildcard substitution;
+   source glob is read from the array.
+- `overwriteTomlKey({ dest, path, value })`:
+   updates a single key in an existing TOML file,
+   preserving comments
+  and unmutated whitespace via splice mode;
+   throws when dest does not exist
 
 ### Staleness cache
 
 One-shot runs persist a manifest at `node_modules/.cache/file-enforcer/staleness-manifest.json`.
-The default manifest path walks up from the current directory until it finds `node_modules`, then writes under that root.
-The manifest records the config file, files read through `cat()` or `addWatchedPaths()`, glob expansions,
+The default manifest path walks up from the current directory until it finds `node_modules`,
+ then writes under that root.
+The manifest records the config file,
+ files read through `cat()` or `addWatchedPaths()`,
+ glob expansions,
 and managed destination metadata plus content hashes.
 Config code still executes on every run so new or untracked effects can be discovered.
 Lazy `overwrite()` and `overwriteEach()` builders can skip their content callbacks when captured sources,
-glob expansions, and destination hashes still match.
+glob expansions,
+ and destination hashes still match.
 
 Pass `manifestPath` only for throwaway fixtures or benchmarks that should not share the default cache.
 
 ### Transforms
 
-- `dedup(content)`: removes duplicate lines, preserving first occurrence order
-- `getJsonProperty({ path, content })`: extracts a nested value from JSON; `path` is an array of segments (string keys and numeric array indices), avoiding ambiguity for keys that contain literal dots
-- `getTomlProperty({ path, content })`: same shape as `getJsonProperty` but for TOML; backed by `@monochromatic-dev/module-toml-edit`, supports section headers, inline tables, and array-of-tables indexing
-- `editTomlKey({ content, path, value })`: returns TOML text with a single key set or replaced; splice mode keeps unmutated regions byte-identical. Each call parses and stringifies, so for multiple edits to the same source, compose `parseTomlEdit + tomlSet + tomlStringify` from `@monochromatic-dev/module-toml-edit` directly
-- `exec(cmd, args)`: runs a command and captures stdout
-- `exec(platformCommands)`: platform-aware exec; evaluates `[predicate, command]` tuples top-to-bottom and runs the first match (see [Platform-aware exec](#platform-aware-exec) below)
-- `evaluatePredicate(predicate)`: runs a predicate and returns whether it succeeded (exit 0); results cached per-session
-- `inspect(value)`: debug tap that logs and returns the value unchanged
+- `dedup(content)`:
+   removes duplicate lines,
+   preserving first occurrence order
+- `getJsonProperty({ path, content })`:
+   extracts a nested value from JSON;
+   `path` is an array of segments (string keys and numeric array indices),
+   avoiding ambiguity for keys that contain literal dots
+- `getTomlProperty({ path, content })`:
+   same shape as `getJsonProperty` but for TOML;
+   backed by `@monochromatic-dev/module-toml-edit`,
+   supports section headers,
+   inline tables,
+   and array-of-tables indexing
+- `editTomlKey({ content, path, value })`:
+   returns TOML text with a single key set or replaced;
+   splice mode keeps unmutated regions byte-identical.
+   Each call parses and stringifies,
+   so for multiple edits to the same source,
+   compose `parseTomlEdit + tomlSet + tomlStringify` from `@monochromatic-dev/module-toml-edit` directly
+- `exec(cmd, args)`:
+   runs a command and captures stdout
+- `exec(platformCommands)`:
+   platform-aware exec;
+   evaluates `[predicate, command]` tuples top-to-bottom and runs the first match (see [Platform-aware exec](#platform-aware-exec) below)
+- `evaluatePredicate(predicate)`:
+   runs a predicate and returns whether it succeeded (exit 0);
+   results cached per-session
+- `inspect(value)`:
+   debug tap that logs and returns the value unchanged
 
 ### Watch mode utilities
 
-- `addWatchedPaths(paths)`: registers additional paths for watch mode to monitor (for `exec()` dependencies)
-- `invalidatePaths(paths)`: surgically removes specific entries from the in-memory read cache
-- `reset()`: clears read/write tracking sets between re-runs (preserves cache and write timestamps)
+- `addWatchedPaths(paths)`:
+   registers additional paths for watch mode to monitor (for `exec()` dependencies)
+- `invalidatePaths(paths)`:
+   surgically removes specific entries from the in-memory read cache
+- `reset()`:
+   clears read/write tracking sets between re-runs (preserves cache and write timestamps)
 
 ## Platform-aware exec
 
 `exec()` accepts an array of `[predicate, command]` tuples for platform-dependent command dispatch.
-Predicates are direct commands (no shell involved); exit code 0 means the predicate matched.
-Tuples are evaluated top-to-bottom; the first match wins.
+Predicates are direct commands (no shell involved);
+ exit code 0 means the predicate matched.
+Tuples are evaluated top-to-bottom;
+ the first match wins.
 
 ```ts
 import { exec, } from '@monochromatic-dev/dev-script-file-enforcer/ts';
@@ -131,7 +178,8 @@ await exec([[HAS_MISE, ['mise', 'exec', '--', 'git', 'status',],],],);
 
 ### Manual dispatch with `evaluatePredicate()`
 
-For complex logic that doesn't fit the tuple pattern, use `evaluatePredicate()` directly:
+For complex logic that doesn't fit the tuple pattern,
+ use `evaluatePredicate()` directly:
 
 ```ts
 import {
@@ -185,7 +233,9 @@ await exec([
 ### Negation via noop fallthrough
 
 Predicates only express positive checks (exit 0 = match).
-To express "if X is NOT available, do Y", match the positive case with a noop command and let the negative case fall through:
+To express "if X is NOT available,
+ do Y",
+ match the positive case with a noop command and let the negative case fall through:
 
 ```ts
 await exec([
@@ -194,7 +244,8 @@ await exec([
 ],);
 ```
 
-For complex negation logic, use `evaluatePredicate()` with control flow instead:
+For complex negation logic,
+ use `evaluatePredicate()` with control flow instead:
 
 ```ts
 const hasPython = await evaluatePredicate(['python3', '--version',],);
@@ -212,16 +263,24 @@ mise run //packages/dev-script/file-enforcer:test:mutation -- src/io/glob-mirror
 mise run //packages/dev-script/file-enforcer:test:mutation -- --full-suite
 ```
 
-The task dynamically enumerates production `src/**/*.ts` files, excludes tests,
-declaration files, and fixtures, and prints the resolved count. Reports are written
-to a host temp directory printed by the run. The aggregate score is weighted from
+The task dynamically enumerates production `src/**/*.ts` files,
+ excludes tests,
+declaration files,
+ and fixtures,
+ and prints the resolved count.
+ Reports are written
+to a host temp directory printed by the run.
+ The aggregate score is weighted from
 raw Stryker mutant counts.
 
 ## Package management
 
 `ensurePackage()` ensures a system-level binary exists on the current machine,
 installing it via the platform's native package manager if absent.
-Designed for packages that mise cannot manage (system libraries, servers, desktop apps, core OS utilities).
+Designed for packages that mise cannot manage (system libraries,
+ servers,
+ desktop apps,
+ core OS utilities).
 
 ### Basic usage
 
@@ -244,8 +303,18 @@ await ensurePackage('rg',); // not found → installs ripgrep via detected manag
 
 1. Check if the binary exists on PATH (runs `<binary> --version` or a custom check flag)
 2. Look up the binary in the registered package index
-3. Detect the system's package manager (apt, dnf, pacman, apk, zypper, brew, winget, scoop, choco)
-4. Verify the package exists in the manager's repository (`apt-cache show`, `dnf info`, etc.)
+3. Detect the system's package manager (apt,
+    dnf,
+    pacman,
+    apk,
+    zypper,
+    brew,
+    winget,
+    scoop,
+    choco)
+4. Verify the package exists in the manager's repository (`apt-cache show`,
+    `dnf info`,
+    etc.)
 5. Install the package (with auto-detected privilege escalation)
 6. Verify the binary now exists on PATH
 
@@ -262,12 +331,18 @@ p({ bin: 'openssl', check: 'version', effname: 'openssl', },); // custom existen
 
 The index is split into two files:
 
-- `data/packages.generated.ts`: auto-generated from Repology database dump (7,332 entries).
-  Freely rebuilt; contains effname and per-manager package name mappings.
-- `data/packages.overrides.ts`: hand-maintained.
-  Contains binary names, custom check flags, and corrections that Repology cannot infer.
+- `data/packages.generated.ts`:
+   auto-generated from Repology database dump (7,332 entries).
+  Freely rebuilt;
+   contains effname and per-manager package name mappings.
+- `data/packages.overrides.ts`:
+   hand-maintained.
+  Contains binary names,
+   custom check flags,
+   and corrections that Repology cannot infer.
   Survives index regeneration.
-- `data/packages.ts`: merges both files into the final index.
+- `data/packages.ts`:
+   merges both files into the final index.
 
 ### Supported package managers
 
@@ -348,7 +423,8 @@ The index is split into two files:
 </tbody>
 </table>
 
-Privilege escalation is auto-detected: `sudo` is prepended for managers that need root,
+Privilege escalation is auto-detected:
+ `sudo` is prepended for managers that need root,
 skipped when already running as root (UID 0 / container context).
 
 ## Architecture
@@ -362,14 +438,18 @@ Users control sequencing and parallelism with `await` and `Promise.all`.
 
 ### In-memory read cache
 
-After the first run, file contents are cached in memory.
-On watch-mode re-runs, only the file that triggered the event is invalidated and re-read.
-All other files return cached content, turning ~300 file reads into ~1.
+After the first run,
+ file contents are cached in memory.
+On watch-mode re-runs,
+ only the file that triggered the event is invalidated and re-read.
+All other files return cached content,
+ turning ~300 file reads into ~1.
 
 ### Content-based write skipping
 
 `overwrite()` reads the existing destination content before writing.
-If the content is identical, the write is skipped entirely.
+If the content is identical,
+ the write is skipped entirely.
 This makes full re-runs cheap even without knowing which source changed.
 
 ### Watch mode
@@ -377,9 +457,14 @@ This makes full re-runs cheap even without knowing which source changed.
 The CLI's `--watch` flag uses `fs.watch` on directories derived from tracked reads and writes.
 Events are classified into three categories:
 
-- **source**: a tracked source file or the config changed; triggers re-run
-- **protected**: a managed destination was modified externally; triggers re-run + system notification via `notify-send`
-- **ignore**: unrelated file or our own write echoing through `fs.watch`
+- **source**:
+   a tracked source file or the config changed;
+   triggers re-run
+- **protected**:
+   a managed destination was modified externally;
+   triggers re-run + system notification via `notify-send`
+- **ignore**:
+   unrelated file or our own write echoing through `fs.watch`
 
 Echo detection compares the file's `mtime` against the recorded write timestamp.
 
@@ -392,32 +477,70 @@ Echo detection compares the file's `mtime` against the recorded write timestamp.
 
 All production source files are under 100 lines per the monorepo coding guidelines.
 
-- `cache.ts`: in-memory read cache with invalidation and post-write updates
-- `cat.ts`: overloaded file reading (array concatenation vs glob expansion)
-- `ensure-package.ts`: `ensurePackage()` function, index lookup, binary check, install dispatch
-- `evaluate-predicate.ts`: shell predicate evaluation with per-session caching
-- `exec.ts`: child process execution with stdout capture and platform-aware tuple dispatch
-- `glob.ts`: glob expansion and mirror-glob path mapping
-- `inspect.ts`: generic debug tap
-- `manager.ts`: package manager detection, `binaryExists`, `canProvide`, `installPackage`
-- `merge.ts`: merge generated index with hand-maintained overrides
-- `mod.ts`: re-exports for the public API
-- `index.ts`: CLI entry point with find-up and --watch flag
-- `notify.ts`: terminal warning + platform-aware desktop notification dispatch
-- `p.ts`: `p()` builder for `PackageEntry` values
-- `tracker.ts`: read/write/timestamp tracking for watch mode
-- `toml.ts`: getTomlProperty and editTomlKey backed by @monochromatic-dev/module-toml-edit
-- `transform.ts`: dedup and dot-prop getJsonProperty (array-path form)
-- `types.ts`: `PackageManager`, `PackageSpec`, `PackageEntry`, and the local `Path` alias
-- `watch.ts`: main watch loop with debounce and cache-busting re-import
-- `watch-dir.ts`: per-directory fs.watch wrapper with AbortController
-- `watch-filter.ts`: event classification (source/protected/ignore)
-- `write.ts`: overwrite, overwriteIfNotExists, overwriteEach, readExisting with content-skip
-- `write-toml.ts`: overwriteTomlKey -- read existing TOML, apply one key edit, write back through writeIfChanged
+- `cache.ts`:
+   in-memory read cache with invalidation and post-write updates
+- `cat.ts`:
+   overloaded file reading (array concatenation vs glob expansion)
+- `ensure-package.ts`:
+   `ensurePackage()` function,
+   index lookup,
+   binary check,
+   install dispatch
+- `evaluate-predicate.ts`:
+   shell predicate evaluation with per-session caching
+- `exec.ts`:
+   child process execution with stdout capture and platform-aware tuple dispatch
+- `glob.ts`:
+   glob expansion and mirror-glob path mapping
+- `inspect.ts`:
+   generic debug tap
+- `manager.ts`:
+   package manager detection,
+   `binaryExists`,
+   `canProvide`,
+   `installPackage`
+- `merge.ts`:
+   merge generated index with hand-maintained overrides
+- `mod.ts`:
+   re-exports for the public API
+- `index.ts`:
+   CLI entry point with find-up and --watch flag
+- `notify.ts`:
+   terminal warning + platform-aware desktop notification dispatch
+- `p.ts`:
+   `p()` builder for `PackageEntry` values
+- `tracker.ts`:
+   read/write/timestamp tracking for watch mode
+- `toml.ts`:
+   getTomlProperty and editTomlKey backed by @monochromatic-dev/module-toml-edit
+- `transform.ts`:
+   dedup and dot-prop getJsonProperty (array-path form)
+- `types.ts`:
+   `PackageManager`,
+   `PackageSpec`,
+   `PackageEntry`,
+   and the local `Path` alias
+- `watch.ts`:
+   main watch loop with debounce and cache-busting re-import
+- `watch-dir.ts`:
+   per-directory fs.
+  watch wrapper with AbortController
+- `watch-filter.ts`:
+   event classification (source/protected/ignore)
+- `write.ts`:
+   overwrite,
+   overwriteIfNotExists,
+   overwriteEach,
+   readExisting with content-skip
+- `write-toml.ts`:
+   overwriteTomlKey -- read existing TOML,
+   apply one key edit,
+   write back through writeIfChanged
 
 ## Tests
 
-145 unit and integration tests covering all modules. Run via the mise task (preferred) or by invoking individual `*.unit.test.ts` files directly with `bun`:
+145 unit and integration tests covering all modules.
+ Run via the mise task (preferred) or by invoking individual `*.unit.test.ts` files directly with `bun`:
 
 ```bash
 mise run //packages/dev-script/file-enforcer:test:unit

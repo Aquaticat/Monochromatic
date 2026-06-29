@@ -4,8 +4,14 @@ Source-only workspace package that owns the runtime,
 per-plugin handler modules,
 and CLI used by every Claude Code plugin in the `packages/claude-code-plugins/` cluster.
 The per-plugin packages
-(`guardrail`, `bash-output-filter`, `terminal-title`, `claude-spawn`,
-`stop-reminders`, `session-start-housekeeping`, `prompt-time`, `correction-reminder`)
+(`guardrail`,
+ `bash-output-filter`,
+ `terminal-title`,
+ `claude-spawn`,
+`stop-reminders`,
+ `session-start-housekeeping`,
+ `prompt-time`,
+ `correction-reminder`)
 are thin shims that import a handler trio from here and call the runtime;
 the cluster-level README documents that shim pattern and the migration history.
 
@@ -23,16 +29,22 @@ src/
 
 `handler-runtime.ts` exports `runHookPlugin`,
 the async shell each plugin entry script calls once at top level.
-It reads stdin to EOF, runs the parser, awaits the handler,
+It reads stdin to EOF,
+ runs the parser,
+ awaits the handler,
 and writes the writer's serialised result to stdout (no trailing newline).
 It also exports `parseHookJson` (the trusted-JSON cast used by every plugin parser)
-and the `HookHandler`, `Parser`, `Writer` types.
+and the `HookHandler`,
+ `Parser`,
+ `Writer` types.
 
 ### handlers/
 
 One handler module per plugin.
 Each module exports three named functions following the convention
-`{plugin}Handler`, `{plugin}Parser`, `{plugin}Writer`:
+`{plugin}Handler`,
+ `{plugin}Parser`,
+ `{plugin}Writer`:
 
 - `Parser` turns the raw stdin string into the typed hook event.
 - `Handler` (sync or async) maps the event to the response payload.
@@ -81,7 +93,8 @@ that Claude Code's marketplace install can execute directly.
 
 ## Running the CLI
 
-After `pnpm install`, the `spawn-claude` bin is hoisted to `node_modules/.bin/spawn-claude`:
+After `pnpm install`,
+ the `spawn-claude` bin is hoisted to `node_modules/.bin/spawn-claude`:
 
 ```sh
 spawn-claude "implement feature X"
@@ -97,10 +110,14 @@ so the plugin must be installed and active for the CLI to work.
 
 The `exports` map in `package.json` is the package's full public surface:
 
-- `./runtime`: the runtime shell and types.
-- `./handlers/{plugin}`: the per-plugin handler trio for every cluster plugin.
-- `./handlers/bash-output-filter/filter`: the standalone filter function used by the `ccbof-filter` pipe target.
-- `./cli/spawn-claude`: the CLI module (also exposed as the `spawn-claude` bin).
+- `./runtime`:
+   the runtime shell and types.
+- `./handlers/{plugin}`:
+   the per-plugin handler trio for every cluster plugin.
+- `./handlers/bash-output-filter/filter`:
+   the standalone filter function used by the `ccbof-filter` pipe target.
+- `./cli/spawn-claude`:
+   the CLI module (also exposed as the `spawn-claude` bin).
 
 External consumers should import only via these subpaths;
 the internal layout under `src/handlers/{plugin}/` is private and may change.

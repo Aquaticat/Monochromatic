@@ -244,8 +244,10 @@ export function domainXml(
   }
 
   // IDE CDROMs for Windows template creation (Windows ISO, autounattend, virtio-win)
-  devices.push(...ideCdromDevices(cdroms,),);
-  devices.push(...commonDevices(osFamily,),);
+  devices.push(
+    ...ideCdromDevices(cdroms,),
+    ...commonDevices(osFamily,)
+  );
 
   /**
    * Top-level domain children before devices.

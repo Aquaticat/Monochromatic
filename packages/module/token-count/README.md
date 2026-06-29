@@ -5,7 +5,8 @@ Token counting for Claude models using the Anthropic API.
 Wraps the Anthropic `messages.countTokens` endpoint into a minimal library
 with file-reading conveniences and an optique-based CLI.
 
-**No inference costs.**
+**No inference costs.
+**
 This uses the dedicated token counting endpoint (`POST /v1/messages/count_tokens`),
 not the messages endpoint.
 Content is never sent to a model for generation:
@@ -60,15 +61,16 @@ token-count CLAUDE.md
 token-count --model claude-haiku-4-5 file1.md file2.md
 ```
 
-Output follows `wc`-style formatting (right-aligned count, path):
+Output follows `wc`-style formatting (right-aligned count,
+ path):
 
-```
+```text
 4700 CLAUDE.md
 ```
 
 Multiple files include a total:
 
-```
+```text
 4700 CLAUDE.md
 1200 README.md
 5900 total
@@ -80,9 +82,16 @@ Multiple files include a total:
 
 Count input tokens for a text string.
 
-- **content**: text to tokenize
-- **config.model**: Claude model (default: `claude-sonnet-4-6`)
-- **config.apiKey**: Anthropic API key (default: env var fallback chain above)
+- **content**:
+   text to tokenize
+- **config.
+  model**:
+   Claude model (default:
+   `claude-sonnet-4-6`)
+- **config.
+  apiKey**:
+   Anthropic API key (default:
+   env var fallback chain above)
 
 Returns `{ inputTokens, model }`.
 

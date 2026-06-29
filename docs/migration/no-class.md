@@ -1,27 +1,36 @@
 # Migrate classes to factory functions
 
-Tracks the migration to `no-restricted-syntax/no-class`. The rule is shipped
+Tracks the migration to `no-restricted-syntax/no-class`.
+ The rule is shipped
 at severity `'warn'` so the current footprint shows in lint output without
-blocking CI. After every file in this document has been migrated or
-justified, flip the severity to `'error'` in
+blocking CI.
+ After every file in this document has been migrated or
+justified,
+ flip the severity to `'error'` in
 `packages/config/oxlint/src/rules/restriction.ts`.
 
 ## Rule summary
 
 A `class` declaration or expression passes when **either**:
 
-- The direct superclass identifier ends with a configured suffix, **or**
+- The direct superclass identifier ends with a configured suffix,
+   **or**
 - The class's own name ends with a configured suffix.
 
-Default suffixes: `Error`, `Element`. They cover:
+Default suffixes:
+ `Error`,
+ `Element`.
+ They cover:
 
 - Direct `extends Error` (the global ends in `Error`).
 - Direct `extends HTMLElement` / `extends LitElement` (both end in `Element`).
 - Transitive chains like `class TomlPathNotFoundError extends TomlEditError`
   where the child class is named `*Error`.
-- `declare class` in ambient `.d.ts` files (skipped entirely; no runtime).
+- `declare class` in ambient `.d.ts` files (skipped entirely;
+   no runtime).
 
-Anything else is forbidden. Replace with a factory function returning a
+Anything else is forbidden.
+ Replace with a factory function returning a
 frozen object.
 
 ## Migration recipe: stateful coordinator
@@ -85,19 +94,23 @@ export function createHashCache(
 Notes:
 
 - The explicit `Readonly<{ ... }>` return type closes the leak path the
-  user's correction flagged: `map` is captured but not referenced in the
-  return shape, so no consumer can reach it.
+  user's correction flagged:
+   `map` is captured but not referenced in the
+  return shape,
+   so no consumer can reach it.
 - `delete` (reserved word) becomes `function deleteFn() {}` aliased as
   `delete: deleteFn` in the returned literal when that name is needed.
 - Getters are written `get size() { return map.size }` directly inside
   the returned object literal.
-- Method-to-method calls go through the closure binding, not `this`:
+- Method-to-method calls go through the closure binding,
+   not `this`:
   `set(...)` instead of `this.set(...)`.
 
 ## Migration recipe: Disposable
 
 `Symbol.dispose` and `Symbol.asyncDispose` belong as keys on the returned
-literal. The `using` syntax does not require class membership.
+literal.
+ The `using` syntax does not require class membership.
 
 Before:
 
@@ -129,8 +142,12 @@ The same shape works for `AsyncDisposable` with
 ## File inventory
 
 Each file below contains at least one class flagged by the rule under the
-default suffix list. Migrate one file per commit, following the per-file
-recipe in the section above. Group A is production code; group B is test
+default suffix list.
+ Migrate one file per commit,
+ following the per-file
+recipe in the section above.
+ Group A is production code;
+ group B is test
 fixtures.
 
 ### Group A: stateful coordinators (production)
@@ -168,23 +185,33 @@ Migrated on 2026-05-20:
 
 ## Lint blind spot
 
-`packages/figma-parsers/kiwi` does not declare a `lint:oxlint` mise task; its
-`mise.toml` only wires up `build`, `watch:build`, `lint`, and `lint:types`.
+`packages/figma-parsers/kiwi` does not declare a `lint:oxlint` mise task;
+ its
+`mise.toml` only wires up `build`,
+ `watch:build`,
+ `lint`,
+ and `lint:types`.
 The class in `src/index.ts` (`BinaryReader`) is therefore not caught by the
-no-class rule today. Two options:
+no-class rule today.
+ Two options:
 
 - Migrate `BinaryReader` to a factory manually and verify by reading the
-  source, since lint won't flag it.
+  source,
+   since lint won't flag it.
 - Add a `[tasks."lint:oxlint"] extends = "lint:oxlint"` entry to the
   package's `mise.toml` and let lint catch it.
 
-Choose during migration; either way the class needs to go.
+Choose during migration;
+ either way the class needs to go.
 
 ## Per-file workflow
 
 For each file:
 
-1. Read the class top to bottom; note every field, every method, every
+1. Read the class top to bottom;
+    note every field,
+    every method,
+    every
    place `this` is captured by a callback.
 1. Draft the factory shape (`type Foo = Readonly<{ ... }>` then
    `function createFoo(): Foo`).
@@ -192,15 +219,20 @@ For each file:
 1. Rewrite each method as a named function inside the factory body.
 1. Replace `this.foo(...)` with `foo(...)` and `this.#bar` with `bar`.
 1. Return `Object.freeze({ ... })`.
-1. Update all call sites: `new Foo(...)` becomes `createFoo(...)`.
-1. Run the package's tests: `mise run //packages/<path>:test:unit`.
-1. Run the package's lint: `mise run //packages/<path>:lint`.
-1. Commit (one logical unit per AGENTS.md).
+1. Update all call sites:
+    `new Foo(...)` becomes `createFoo(...)`.
+1. Run the package's tests:
+    `mise run //packages/<path>:test:unit`.
+1. Run the package's lint:
+    `mise run //packages/<path>:lint`.
+1. Commit (one logical unit per AGENTS.
+   md).
 
 ## Escape hatch
 
 When a class genuinely cannot be migrated (e.g. a third-party API mandates
-a class shape via decorator metadata), wrap the declaration with a scoped
+a class shape via decorator metadata),
+ wrap the declaration with a scoped
 disable plus justification:
 
 ```ts
@@ -211,25 +243,45 @@ export class Surface extends ThirdPartyBase {
 }
 ```
 
-The disable applies to the literal next physical line only; place it
-immediately above the `class` keyword, not above the TSDoc block.
+The disable applies to the literal next physical line only;
+ place it
+immediately above the `class` keyword,
+ not above the TSDoc block.
 
 ## Verified scope
 
 Counts produced by running `mise run //<pkg>:lint:oxlint` against each
-package below, sum = 15 remaining caught warnings plus 1 unlinted class (BinaryReader):
+package below,
+ sum = 15 remaining caught warnings plus 1 unlinted class (BinaryReader):
 
-- `packages/dev-script/watch-restart`: 5 (`Watcher`, `Child`, `HashCache`, `FakeChild` x2)
-- `packages/pi/morph-compact`: 5 (`MorphCompactClient`, `EnvRestore`, `FileDisposable`, `TcpServerDisposable`, `SocketServerDisposable`)
-- `packages/webapp-productivity/done`: 1 (`AutofillManager`)
-- `packages/webapp-productivity/done-postcss`: 1 (`AutofillController`)
-- `packages/module/zip-writer`: 1 (`ZipWriter`)
-- `packages/module/test`: 1 (`Greeter`)
-- `packages/webapp-forge/server`: 1 (`DisposableServer`)
-- `packages/figma-parsers/kiwi`: 1 (`BinaryReader`, lint-blind)
+- `packages/dev-script/watch-restart`:
+   5 (`Watcher`,
+   `Child`,
+   `HashCache`,
+   `FakeChild` x2)
+- `packages/pi/morph-compact`:
+   5 (`MorphCompactClient`,
+   `EnvRestore`,
+   `FileDisposable`,
+   `TcpServerDisposable`,
+   `SocketServerDisposable`)
+- `packages/webapp-productivity/done`:
+   1 (`AutofillManager`)
+- `packages/webapp-productivity/done-postcss`:
+   1 (`AutofillController`)
+- `packages/module/zip-writer`:
+   1 (`ZipWriter`)
+- `packages/module/test`:
+   1 (`Greeter`)
+- `packages/webapp-forge/server`:
+   1 (`DisposableServer`)
+- `packages/figma-parsers/kiwi`:
+   1 (`BinaryReader`,
+   lint-blind)
 
 Existing `*Error` classes in `packages/module/toml-edit/src/errors.ts` pass
-via the suffix allowlist and are not in scope. The 32 web-component
+via the suffix allowlist and are not in scope.
+ The 32 web-component
 classes across `editord` and `webapp-productivity` pass via `Element`
 on the superclass name.
 
@@ -240,8 +292,10 @@ disable comment:
 
 1. Run `mise run lint` from the repo root and confirm zero warnings from
    `no-restricted-syntax/no-class`.
-1. Edit `packages/config/oxlint/src/rules/restriction.ts`: change
-   `'no-restricted-syntax/no-class': 'warn'` to `'error'`. Remove the
+1. Edit `packages/config/oxlint/src/rules/restriction.ts`:
+    change
+   `'no-restricted-syntax/no-class': 'warn'` to `'error'`.
+    Remove the
    `MIGRATION.no-class.md` reference in the comment.
 1. Run `mise run lint; mise run buildAndTest` to confirm no regression.
 1. Delete this file in the same commit.
@@ -251,7 +305,8 @@ disable comment:
 ## Suffix configuration
 
 If a future case needs an additional allowlist suffix (e.g. a project
-adopts `EventTarget` subclassing as a pattern), override the rule's
+adopts `EventTarget` subclassing as a pattern),
+ override the rule's
 options in `packages/config/oxlint/src/rules/restriction.ts`:
 
 ```ts

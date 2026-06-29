@@ -14,7 +14,10 @@ inline in the terminal without corruption.
 ### Problem
 
 Claude Code's "verbose output" setting controls turn-by-turn agentic flow visibility
-but does not display the actual content returned by tools (Read, Grep, Bash, etc.).
+but does not display the actual content returned by tools (Read,
+ Grep,
+ Bash,
+ etc.).
 The user sees "Read 200 lines" but never the 200 lines themselves.
 
 ### Attempted solution
@@ -24,45 +27,60 @@ to the terminal so the user can see what Claude sees.
 
 ### Channels tested
 
-**`/dev/tty` (direct terminal write)**
+#### `/dev/tty` (direct terminal write)
 
-- Result: **garbled output**
-- The write reaches the terminal content area, but ink repaints over it immediately.
-  The hook's output gets interleaved with ink's render pass, producing corrupted text.
-  Observed: `Readi5ilines1m 36s` instead of `Read 5 lines`: the tty marker text
+- Result:
+   **garbled output**
+- The write reaches the terminal content area,
+   but ink repaints over it immediately.
+  The hook's output gets interleaved with ink's render pass,
+   producing corrupted text.
+  Observed:
+   `Readi5ilines1m 36s` instead of `Read 5 lines`:
+   the tty marker text
   was spliced into the middle of ink's summary line.
 - OSC escape sequences (used by `terminal-title`) work because they modify the
-  terminal title bar, not the content area. Arbitrary visible text does not survive.
+  terminal title bar,
+   not the content area.
+   Arbitrary visible text does not survive.
 
-**stderr**
+#### stderr
 
-- Result: **completely swallowed**
+- Result:
+   **completely swallowed**
 - No trace of stderr output appeared in the terminal.
   ink likely captures or redirects stderr from child processes.
 
 ### Channels not tested (and why)
 
-**`systemMessage` (hook JSON output)**
+#### `systemMessage` (hook JSON output)
 
 - The hook can return `{"systemMessage": "..."}` which Claude Code displays in its UI.
-- Not suitable for full file contents: designed for short status messages,
+- Not suitable for full file contents:
+   designed for short status messages,
   likely truncated or poorly formatted for multi-hundred-line output.
 
-**`additionalContext` (hook JSON output)**
+#### `additionalContext` (hook JSON output)
 
 - Injects text back into Claude's context budget.
-- Defeats the purpose: the goal was to show content to the user
+- Defeats the purpose:
+   the goal was to show content to the user
   without polluting the model's context.
 
 ### Workarounds that would work but aren't worth a plugin
 
-- **Log file + tail -f** in a split pane: hook appends to a file, user watches it.
+- **Log file + tail -f** in a split pane:
+   hook appends to a file,
+   user watches it.
   Simple but requires manual terminal setup on every session.
-- **Named pipe (FIFO)**: same idea with slightly better ergonomics.
-- **Dedicated side-channel terminal**: hook writes to a specific pts.
+- **Named pipe (FIFO)**:
+   same idea with slightly better ergonomics.
+- **Dedicated side-channel terminal**:
+   hook writes to a specific pts.
   Fragile and platform-specific.
 
-All of these shift the problem to "user must maintain a second terminal,"
+All of these shift the problem to "user must maintain a second terminal,
+"
 which is not meaningfully better than reading the conversation JSON logs.
 
 ### Root cause
@@ -78,19 +96,25 @@ not a bug that can be worked around from a hook.
 ### What would actually fix this
 
 An upstream change to Claude Code's renderer that optionally displays
-tool output inline, controlled by a setting or verbosity level.
-The data is already present in the conversation; only the renderer suppresses it.
+tool output inline,
+ controlled by a setting or verbosity level.
+The data is already present in the conversation;
+ only the renderer suppresses it.
 
 ## Original plan (preserved for reference)
 
 ### Motivation
 
-A PostToolUse hook plugin covering Read, Grep, and Bash tools,
+A PostToolUse hook plugin covering Read,
+ Grep,
+ and Bash tools,
 writing formatted tool responses to `/dev/tty` with ANSI dim headers,
-line numbers, and configurable truncation.
+line numbers,
+ and configurable truncation.
 
 ### Package structure
 
 Would have followed the `terminal-title` plugin pattern:
-TypeScript entry point built with tsdown, distributed as a compiled JS hook,
+TypeScript entry point built with tsdown,
+ distributed as a compiled JS hook,
 using `hook-types` and `hook-utils` workspace dependencies.

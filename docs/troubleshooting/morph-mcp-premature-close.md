@@ -2,10 +2,12 @@
 
 ## Symptom
 
-Morph MCP tools are registered and callable, but local file editing and codebase search fail before returning
+Morph MCP tools are registered and callable,
+ but local file editing and codebase search fail before returning
 Morph content.
 
-The Pi MCP server is named `morph` and lists three tools. The edit tool still failed after the Morph key was
+The Pi MCP server is named `morph` and lists three tools.
+ The edit tool still failed after the Morph key was
 rotated and the MCP server metadata was reconnected:
 
 ```text
@@ -22,13 +24,16 @@ Error: Invalid response body while trying to fetch
 https://api.morphllm.com/v1/chat/completions: Premature close
 ```
 
-This is not the local missing-key or bad-key-format symptom. The same key from `/home/user/.pi/agent/mcp.json`
-works with native `fetch`, and both `morph-v3-fast` and `morph-v3-large` return `HTTP 200` when called outside
+This is not the local missing-key or bad-key-format symptom.
+ The same key from `/home/user/.pi/agent/mcp.json`
+works with native `fetch`,
+ and both `morph-v3-fast` and `morph-v3-large` return `HTTP 200` when called outside
 MCP.
 
 ## Root cause
 
-The failure is in the Node client transport used by Morph MCP, not in the rotated key and not in basic API
+The failure is in the Node client transport used by Morph MCP,
+ not in the rotated key and not in basic API
 reachability.
 
 The running Pi Morph MCP installation is:
@@ -38,11 +43,15 @@ The running Pi Morph MCP installation is:
 - `openai` 4.104.0.
 
 `@morphllm/morphsdk` 0.2.183 constructs a single OpenAI-compatible chat-completions request for Fast Apply.
-It chooses `morph-v3-large` unless `large` is disabled, defaults the base API URL to
-`https://api.morphllm.com`, creates an OpenAI client with `baseURL: ${apiUrl}/v1`, and calls
+It chooses `morph-v3-large` unless `large` is disabled,
+ defaults the base API URL to
+`https://api.morphllm.com`,
+ creates an OpenAI client with `baseURL: ${apiUrl}/v1`,
+ and calls
 `client.chat.completions.create(...)`.
 
-Installed Morph SDK file, package-relative path
+Installed Morph SDK file,
+ package-relative path
 `node_modules/@morphllm/morphsdk/dist/tools/index.cjs:401 to 430`:
 
 ```js
@@ -78,7 +87,8 @@ async function callMorphAPI(originalCode, codeEdit, instructions, filepath, conf
 
 The same call creates the OpenAI client without a `fetch` override:
 
-Installed Morph SDK file, package-relative path
+Installed Morph SDK file,
+ package-relative path
 `node_modules/@morphllm/morphsdk/dist/tools/index.cjs:426 to 431`:
 
 ```js
@@ -92,9 +102,13 @@ Installed Morph SDK file, package-relative path
   });
 ```
 
-OpenAI 4.104.0 documents that, on Node.js, it uses `node-fetch` when no custom `fetch` function is provided:
+OpenAI 4.104.0 documents that,
+ on Node.
+js,
+ it uses `node-fetch` when no custom `fetch` function is provided:
 
-Installed OpenAI package file, package-relative path
+Installed OpenAI package file,
+ package-relative path
 `node_modules/openai/index.d.ts:61 to 66`:
 
 ```ts
@@ -108,8 +122,10 @@ Installed OpenAI package file, package-relative path
     fetch?: Core.Fetch | undefined;
 ```
 
-The OpenAI client parses JSON responses by awaiting `response.json()`. When its default Node `node-fetch`
-transport reads Morph's 200 response body, `node-fetch` raises `ERR_STREAM_PREMATURE_CLOSE`.
+The OpenAI client parses JSON responses by awaiting `response.json()`.
+ When its default Node `node-fetch`
+transport reads Morph's 200 response body,
+ `node-fetch` raises `ERR_STREAM_PREMATURE_CLOSE`.
 
 `/tmp/agent/openai-4.104.0/src/core.ts:82 to 91`:
 
@@ -127,29 +143,42 @@ transport reads Morph's 200 response body, `node-fetch` raises `ERR_STREAM_PREMA
   }
 ```
 
-That matches the observed MCP error shape: no HTTP status-specific Morph message, just
+That matches the observed MCP error shape:
+ no HTTP status-specific Morph message,
+ just
 `Invalid response body while trying to fetch ... Premature close`.
 
 ## Verification
 
 Versions and package artifacts checked:
 
-- Running Pi installation: `@morphllm/morphmcp` 0.8.193, `@morphllm/morphsdk` 0.2.183, `openai` 4.104.0.
-- Latest npm package inspected earlier: `@morphllm/morphmcp` 0.8.194, npm integrity
+- Running Pi installation:
+   `@morphllm/morphmcp` 0.8.193,
+   `@morphllm/morphsdk` 0.2.183,
+   `openai` 4.104.0.
+- Latest npm package inspected earlier:
+   `@morphllm/morphmcp` 0.8.194,
+   npm integrity
   `sha512-Wn1z3pAFN33uP7gDSeSrGN7jcuIhpXqm/mdFjlockqEgBvtnsudJTnxUREOjY6zgBofFZ3Enlz6jt/Eoz2+4wA==`.
-- Latest npm package inspected earlier: `@morphllm/morphsdk` 0.2.184, npm integrity
+- Latest npm package inspected earlier:
+   `@morphllm/morphsdk` 0.2.184,
+   npm integrity
   `sha512-v3ZEPQEY3xoAH3yxQX6c88RQ/9zwQXFxOAwvSg4TRPCGn1Z1PKjIyuia7z5LMNIF17koQ2elgPj5MXQCM1e2sw==`.
-- `openai` 4.104.0, npm integrity
+- `openai` 4.104.0,
+   npm integrity
   `sha512-p99EFNsA/yX6UhVO93f5kJsDRLAg+CTA2RBqdHK4RtK8u5IJw32Hyb2dTGKbnnFmnuoBv5r7Z2CURI9sGZpSuA==`.
 
-The configured Pi MCP key lives in `/home/user/.pi/agent/mcp.json` under server `morph`. The raw test printed
-only a SHA-256 fingerprint prefix, not the key value.
+The configured Pi MCP key lives in `/home/user/.pi/agent/mcp.json` under server `morph`.
+ The raw test printed
+only a SHA-256 fingerprint prefix,
+ not the key value.
 
 ### Version bump check
 
 Bumping the Pi installation from `@morphllm/morphmcp` 0.8.193 to 0.8.194 is not expected to fix this failure.
 `npm view @morphllm/morphmcp@latest version dependencies --json` returned 0.8.194 with
-`@morphllm/morphsdk` pinned to 0.2.184. `npm view @morphllm/morphsdk@latest version dependencies --json`
+`@morphllm/morphsdk` pinned to 0.2.184.
+ `npm view @morphllm/morphsdk@latest version dependencies --json`
 returned 0.2.184 with `openai` `^4.52.7`.
 
 The latest `@morphllm/morphsdk` 0.2.184 tarball was inspected under `/tmp/agent/morphsdk-0.2.184`.
@@ -163,13 +192,17 @@ Its Fast Apply code still constructs `new OpenAI(...)` without `fetch: globalThi
   defaultHeaders: { "X-Morph-SDK-Version": SDK_VERSION }
 ```
 
-So the latest published MCP package moves from SDK 0.2.183 to 0.2.184, but the relevant transport path remains
-OpenAI's default Node transport. Unless Morph publishes a newer package that passes a native fetch override or
-moves off OpenAI's `node-fetch` default, the bump alone leaves the reproduced failure path intact.
+So the latest published MCP package moves from SDK 0.2.183 to 0.2.184,
+ but the relevant transport path remains
+OpenAI's default Node transport.
+ Unless Morph publishes a newer package that passes a native fetch override or
+moves off OpenAI's `node-fetch` default,
+ the bump alone leaves the reproduced failure path intact.
 
 ### API host and auth behavior
 
-The API host is reachable from this machine. An unauthenticated models request returned a structured Morph
+The API host is reachable from this machine.
+ An unauthenticated models request returned a structured Morph
 401 JSON error through Cloudflare:
 
 ```bash
@@ -188,7 +221,8 @@ Message: API key required. Please provide a valid API key in the Authorization h
 Dashboard: https://morphllm.com/dashboard
 ```
 
-A chat-completions request with an invalid test key also returns a structured 401, not `Premature close`:
+A chat-completions request with an invalid test key also returns a structured 401,
+ not `Premature close`:
 
 ```bash
 # /var/home/user/Monochromatic
@@ -273,8 +307,10 @@ Content: const a = 2;\n
 
 ### Status host
 
-The public status hostname was not usable as an outage oracle. TLS verification failed because the wildcard
-certificate expired on 2025-11-05, and an insecure fetch returned Vercel `DEPLOYMENT_NOT_FOUND`:
+The public status hostname was not usable as an outage oracle.
+ TLS verification failed because the wildcard
+certificate expired on 2025-11-05,
+ and an insecure fetch returned Vercel `DEPLOYMENT_NOT_FOUND`:
 
 ```bash
 # /var/home/user/Monochromatic
@@ -304,7 +340,9 @@ Morph documentation confirms the expected MCP configuration and endpoint:
 
 ### Patterns that work cleanly
 
-- DNS, TLS, and HTTP connectivity to `https://api.morphllm.com/v1/models` work from this machine.
+- DNS,
+   TLS,
+   and HTTP connectivity to `https://api.morphllm.com/v1/models` work from this machine.
 - Missing or invalid credentials produce structured 401 JSON responses from Morph.
 - Native `fetch` with the rotated Pi MCP key succeeds against `morph-v3-fast` and `morph-v3-large`.
 - OpenAI 4.104.0 succeeds against Morph when constructed with `fetch: globalThis.fetch`.
@@ -320,7 +358,8 @@ Morph documentation confirms the expected MCP configuration and endpoint:
 
 ### Consumer code using OpenAI directly can pass native `fetch`
 
-When constructing the OpenAI client directly, pass `fetch: globalThis.fetch`:
+When constructing the OpenAI client directly,
+ pass `fetch: globalThis.fetch`:
 
 ```ts
 // consumer-side workaround
@@ -331,15 +370,21 @@ const client = new OpenAI({
 });
 ```
 
-Tradeoff: this helps consumer code that owns OpenAI client construction. It does not fix the current Morph MCP
+Tradeoff:
+ this helps consumer code that owns OpenAI client construction.
+ It does not fix the current Morph MCP
 server because `@morphllm/morphsdk` constructs the OpenAI client internally without exposing a `fetch` option.
 
 ### Use Pi's non-Morph file tools while this persists
 
-Use `morph_edit_file` only as the attempted fast path. If it returns `Premature close`, fall back to exact `edit`
+Use `morph_edit_file` only as the attempted fast path.
+ If it returns `Premature close`,
+ fall back to exact `edit`
 or full `write` when creating new files.
 
-Tradeoff: this loses Morph's semantic merge behavior and can cost more context. It avoids blocking work on a
+Tradeoff:
+ this loses Morph's semantic merge behavior and can cost more context.
+ It avoids blocking work on a
 remote body-read failure.
 
 ## What does not work
@@ -348,15 +393,21 @@ remote body-read failure.
 - Reconnecting Morph MCP metadata did not fix MCP tool calls.
 - Changing the lazy edit snippet from a full replacement to `// ... existing code ...` markers did not change the
   failure.
-- Treating this as a missing API key does not match the evidence. The same configured key succeeds with native
-  `fetch`, and invalid credentials return structured 401 JSON from the public API.
+- Treating this as a missing API key does not match the evidence.
+   The same configured key succeeds with native
+  `fetch`,
+   and invalid credentials return structured 401 JSON from the public API.
 - The public `status.morphllm.com` hostname does not currently provide status data from this workstation.
 
 ## Upstream filing artifact
 
 ### Out-of-scope check
 
-No `.out-of-scope/` file names Morph, Morph MCP, Morph SDK, OpenAI's Node client, or `node-fetch`.
+No `.out-of-scope/` file names Morph,
+ Morph MCP,
+ Morph SDK,
+ OpenAI's Node client,
+ or `node-fetch`.
 
 ### Duplicate search
 
@@ -376,23 +427,47 @@ gh search prs --owner morphllm --state closed --limit 20 \
 
 ### Upstream filing decision
 
-- **Is it really upstream's fault?** Yes, but the responsible boundary is split. Morph MCP and Morph SDK rely on
-  OpenAI's default Node `node-fetch` transport. Native `fetch` works, and OpenAI with `fetch: globalThis.fetch`
-  works. Morph can fix the user-facing MCP failure by passing a native fetch override or exposing one.
-- **Can upstream fix it?** Yes. Morph SDK's OpenAI client construction can include `fetch: globalThis.fetch` on
-  runtimes where native fetch exists, or expose a `fetch` option through the SDK and MCP server.
-- **Are they supporting this use case?** Yes. Morph's MCP quickstart documents `edit_file`, `codebase_search`,
-  `MORPH_API_KEY`, and the `https://api.morphllm.com` default.
-- **Would the repo welcome our contribution?** Unknown. The npm package metadata points `bugs` at
-  `https://github.com/modelcontextprotocol/servers/issues`, which does not appear to be the Morph API issue
-  tracker. Public Morph repos did not expose an obvious `morphmcp` source repository during this investigation.
-- **Will they likely fix it?** Unknown. There is not enough public issue-tracker signal for this exact transport
+- **Is it really upstream's fault?
+  ** Yes,
+   but the responsible boundary is split.
+   Morph MCP and Morph SDK rely on
+  OpenAI's default Node `node-fetch` transport.
+   Native `fetch` works,
+   and OpenAI with `fetch: globalThis.fetch`
+  works.
+   Morph can fix the user-facing MCP failure by passing a native fetch override or exposing one.
+- **Can upstream fix it?
+  ** Yes.
+   Morph SDK's OpenAI client construction can include `fetch: globalThis.fetch` on
+  runtimes where native fetch exists,
+   or expose a `fetch` option through the SDK and MCP server.
+- **Are they supporting this use case?
+  ** Yes.
+   Morph's MCP quickstart documents `edit_file`,
+   `codebase_search`,
+  `MORPH_API_KEY`,
+   and the `https://api.morphllm.com` default.
+- **Would the repo welcome our contribution?
+  ** Unknown.
+   The npm package metadata points `bugs` at
+  `https://github.com/modelcontextprotocol/servers/issues`,
+   which does not appear to be the Morph API issue
+  tracker.
+   Public Morph repos did not expose an obvious `morphmcp` source repository during this investigation.
+- **Will they likely fix it?
+  ** Unknown.
+   There is not enough public issue-tracker signal for this exact transport
   failure.
-- **Have we prototyped a minimal fix compatible with their architecture?** Partly. A direct OpenAI client using
-  `fetch: globalThis.fetch` succeeds with the configured Pi MCP key. This proves the transport substitution.
+- **Have we prototyped a minimal fix compatible with their architecture?
+  ** Partly.
+   A direct OpenAI client using
+  `fetch: globalThis.fetch` succeeds with the configured Pi MCP key.
+   This proves the transport substitution.
   It is not yet a patch against Morph SDK because the package source repository was not located.
 
-Decision: do not file as-is. Keep this as a local troubleshooting record until the correct Morph MCP or SDK issue
+Decision:
+ do not file as-is.
+ Keep this as a local troubleshooting record until the correct Morph MCP or SDK issue
 tracker is known.
 
 ~~~md

@@ -339,8 +339,10 @@ function generateTypeScript(projects: readonly RepologyProject[],): string {
     lines.push(`  ${entry},`,);
   }
 
-  lines.push('] as const;',);
-  lines.push('',);
+  lines.push(
+    '] as const;',
+    ''
+  );
   return lines.join('\n',);
 }
 

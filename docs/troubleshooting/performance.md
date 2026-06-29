@@ -17,7 +17,8 @@ Build system performance optimizations
 Why tsdown builds take 360+ms despite benchmarks showing 36ms
 
 - DTS bundling via `rolldown-plugin-dts` is the bottleneck (~340ms for module-es)
-- OXC isolated declarations already active; no faster code path available
+- OXC isolated declarations already active;
+   no faster code path available
 - JS event loop serialization of NAPI callbacks during the DTS second pass
 - Packages that are not libraries should set `dts: false`
 
@@ -25,7 +26,9 @@ Why tsdown builds take 360+ms despite benchmarks showing 36ms
 
 Runtime logging performance issues
 
-- Function entry tracing migration (l.trace → l.debug)
+- Function entry tracing migration (l.
+  trace → l.
+  debug)
 - Stack trace generation overhead
 - Performance impact benchmarks
 - Migration strategies and alternatives
@@ -36,11 +39,17 @@ Runtime logging performance issues
 
 ### Performance Optimization Key Takeaways
 
-1. **WSL Environments**: Avoid executing binaries when file system checks suffice
-2. **Logging**: Use `l.debug()` for function entry, reserve `l.trace()` only when stack traces are needed
-3. **Build Scripts**: Replace shell commands with TypeScript scripts for better performance and cross-platform compatibility
-4. **Caching**: Implement file-based checks before expensive operations
-5. **Process Creation**: Minimize subprocess execution in performance-critical paths
+1. **WSL Environments**:
+    Avoid executing binaries when file system checks suffice
+2. **Logging**:
+    Use `l.debug()` for function entry,
+    reserve `l.trace()` only when stack traces are needed
+3. **Build Scripts**:
+    Replace shell commands with TypeScript scripts for better performance and cross-platform compatibility
+4. **Caching**:
+    Implement file-based checks before expensive operations
+5. **Process Creation**:
+    Minimize subprocess execution in performance-critical paths
 
 ### Common Performance Anti-Patterns
 

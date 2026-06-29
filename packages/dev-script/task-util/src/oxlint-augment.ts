@@ -673,9 +673,11 @@ export function augmentOxlintOutput(output: string,): string {
     // Inject after help line when guidance is pending
     if ((activeGuidance !== NO_RULE) && (!injected)
       && isHelpLine(line,)) {
-      result.push(line,);
-      result.push(formatGuidanceLine(RULE_GUIDANCE[activeGuidance]
-        ?? '',),);
+      result.push(
+        line,
+        formatGuidanceLine(RULE_GUIDANCE[activeGuidance]
+        ?? '',)
+      );
       injected = true;
       continue;
     }

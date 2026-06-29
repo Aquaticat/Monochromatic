@@ -33,6 +33,14 @@ const SENTENCE_PUNCTUATION: ReadonlySet<string> = new Set([
 ],);
 
 /**
+ * Ancestors where a strong/emphasis-only paragraph is a label or term rather
+ * than a heading substitute.
+ */
+const SKIP_ANCESTORS: ReadonlySet<string> = new Set([
+  'listItem',
+],);
+
+/**
  * Whether emphasized text ends with sentence punctuation.
  *
  * @param text - emphasized text
@@ -51,7 +59,7 @@ function endsWithSentencePunctuation(text: string,): boolean {
  * Flag a paragraph whose sole child is `emphasis` or `strong` and whose text
  * does not end in sentence punctuation: such a paragraph reads as a heading
  * substitute. A genuinely emphasized sentence (ending in punctuation) is left
- * alone.
+ * alone, as is an emphasized-only list item label.
  *
  * @param tree - mdast tree under lint
  *
@@ -62,8 +70,16 @@ function checkNoEmphasisAsHeading({ tree, }: RuleContext,): readonly Diagnostic[
    * Diagnostics collected across the walk.
    */
   const diagnostics: Diagnostic[] = [];
-  for (const { node, } of walk(tree,)) {
+  for (const {
+    node,
+    ancestors,
+  } of walk(tree,)) {
     if (node.type !== 'paragraph') {
+      continue;
+    }
+    if (ancestors.some(function shouldSkip(ancestor,): boolean {
+      return SKIP_ANCESTORS.has(ancestor.type,);
+    },)) {
       continue;
     }
     /**

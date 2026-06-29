@@ -1,7 +1,8 @@
 # pi-safeguard 2.0.1: `/var/home` false-positive blocks everything; pi-budget-model 1.0.1 cannot find judge model on latest-major-version-only default; pi-budget-model 1.0.1 calls `ModelRegistry.getApiKey` that no longer exists on pi-coding-agent 0.70.6
 
 This file groups three independent pi-safeguard / pi-budget-model
-bugs that block the guardrail on this workspace. Each gets its
+bugs that block the guardrail on this workspace.
+ Each gets its
 own canonical section.
 
 Upstream:
@@ -11,16 +12,26 @@ Upstream:
 
 ## Bug 1: `pathSignals` flags every file under `/var/home/` as a system path
 
-Pi-safeguard version: 2.0.1. Source:
-`packages/safeguard/src/signals.ts`. Date 2026-04-28.
+Pi-safeguard version:
+ 2.0.1.
+ Source:
+`packages/safeguard/src/signals.ts`.
+ Date 2026-04-28.
 
 ### Symptom
 
 On systems where the home directory is under `/var/home/`
-(Fedora/SELinux, NixOS, others), pi-safeguard flags every
-file read/write/edit as a security risk, even files inside
-the project working directory. The judge model denies or
-prompts for every `read`, `write`, `edit` tool call,
+(Fedora/SELinux,
+ NixOS,
+ others),
+ pi-safeguard flags every
+file read/write/edit as a security risk,
+ even files inside
+the project working directory.
+ The judge model denies or
+prompts for every `read`,
+ `write`,
+ `edit` tool call,
 rendering the guardrail unusable:
 
 ```bash
@@ -52,22 +63,30 @@ function pathSignals(filePath, ctx,) {
 ```
 
 The `isSystemPath` check fires **after** the `isUnder` check
-confirms the path is inside cwd. On systems where `$HOME` is
-`/var/home/user`, every resolved project path starts with
-`/var/...`, and `isSystemPath` returns `true` for all of
+confirms the path is inside cwd.
+ On systems where `$HOME` is
+`/var/home/user`,
+ every resolved project path starts with
+`/var/...`,
+ and `isSystemPath` returns `true` for all of
 them.
 
 The `isSystemPath` check is redundant once `isUnder` has
-returned: the `!isUnder` check on the line above already
-flags any path outside the project directory, including
-actual system paths like `/etc/passwd`. The `isSystemPath`
-check adds no value for paths confirmed under cwd, but it
+returned:
+ the `!isUnder` check on the line above already
+flags any path outside the project directory,
+ including
+actual system paths like `/etc/passwd`.
+ The `isSystemPath`
+check adds no value for paths confirmed under cwd,
+ but it
 causes a false positive when the project itself lives under
 a `SYSTEM_PREFIXES` entry.
 
 Source citations in the yapp monorepo:
 
-- `packages/safeguard/src/signals.ts:95-101`: `pathSignals`
+- `packages/safeguard/src/signals.ts:95-101`:
+   `pathSignals`
   function.
 - `packages/safeguard/src/signals.ts:122-125`:
   `SYSTEM_PREFIXES` array.
@@ -76,7 +95,9 @@ Source citations in the yapp monorepo:
 
 ### Verification
 
-Version under test: pi-safeguard 2.0.1. Reproduce on any
+Version under test:
+ pi-safeguard 2.0.1.
+ Reproduce on any
 system with `$HOME` under `/var/home/`.
 
 ### Verified workaround: monkey-patch the installed dist
@@ -105,41 +126,63 @@ function pathSignals(filePath, ctx,) {
 }
 ```
 
-Tradeoff: the patch is lost when `pi update` reinstalls
-pi-safeguard. Re-apply after updating, or install from a
+Tradeoff:
+ the patch is lost when `pi update` reinstalls
+pi-safeguard.
+ Re-apply after updating,
+ or install from a
 forked version.
 
 ### What does not work
 
 - Setting `judgeModel.instructions` to explain that
-  `/var/home/user` is a home directory: the flagger sends
-  the action to the judge regardless, and the judge only
-  sees the raw action description, not why it was flagged.
+  `/var/home/user` is a home directory:
+   the flagger sends
+  the action to the judge regardless,
+   and the judge only
+  sees the raw action description,
+   not why it was flagged.
   Judge instructions cannot override the flagger.
-- Adding `/var/home` to allowed paths: no such config option
-  exists in pi-safeguard. The `allowedPaths` concept exists
+- Adding `/var/home` to allowed paths:
+   no such config option
+  exists in pi-safeguard.
+   The `allowedPaths` concept exists
   in pi-guardrails but not in pi-safeguard.
-- Using `strategy: "any-provider"` in `judgeModel`: changes
-  which model the judge uses, not which signals fire. The
+- Using `strategy: "any-provider"` in `judgeModel`:
+   changes
+  which model the judge uses,
+   not which signals fire.
+   The
   flagger is model-agnostic.
 
 ### Why we would file this upstream
 
 All 5 constraints hold:
 
-1. **Is it really upstream's fault?** Yes; the redundant
+1. **Is it really upstream's fault?
+   ** Yes;
+    the redundant
    check is the source.
-2. **Can upstream fix it?** Yes; one-line removal in
+2. **Can upstream fix it?
+   ** Yes;
+    one-line removal in
    `pathSignals`.
-3. **Are they supporting this use case?** Implicit yes;
+3. **Are they supporting this use case?
+   ** Implicit yes;
    pi-safeguard's promise is to block destructive actions,
    not to break on Fedora.
-4. **Will they likely fix it?** Plausible; a small, targeted
+4. **Will they likely fix it?
+   ** Plausible;
+    a small,
+    targeted
    bug.
-5. **Have we prototyped a minimal fix?** Yes; the patched
+5. **Have we prototyped a minimal fix?
+   ** Yes;
+    the patched
    dist runs cleanly on this workspace.
 
-Decision: worth filing.
+Decision:
+ worth filing.
 
 ### Draft upstream issue (kept as reference; revise before filing)
 
@@ -171,7 +214,10 @@ Remove `if (isSystemPath(resolved)) return true;` from `pathSignals` in `package
 
 ## Bug 2: pi-budget-model 1.0.1 default `majorVersions: 1` excludes cheaper models from older major versions, surfacing as `NoBudgetModelError`
 
-Pi-safeguard version: 2.0.1. Pi-budget-model version: 1.0.1.
+Pi-safeguard version:
+ 2.0.1.
+ Pi-budget-model version:
+ 1.0.1.
 Date 2026-04-28.
 
 ### Symptom
@@ -179,31 +225,46 @@ Date 2026-04-28.
 When the active model is the latest major version in its
 provider and is already relatively cheap,
 pi-budget-model's auto-selection fails with
-`NoBudgetModelError`. Every flagged action then falls back to
-user confirmation, making the "auto" behaviour equivalent to a
+`NoBudgetModelError`.
+ Every flagged action then falls back to
+user confirmation,
+ making the "auto" behaviour equivalent to a
 manual permission gate.
 
 ### Root cause
 
-`pi-budget-model` defaults to `majorVersions: 1`, meaning it
-only considers models in the latest major version group. If
+`pi-budget-model` defaults to `majorVersions: 1`,
+ meaning it
+only considers models in the latest major version group.
+ If
 the active model is in that group and no cheaper model exists
-within it, the cost-ratio check (`activeCost * costRatio`)
+within it,
+ the cost-ratio check (`activeCost * costRatio`)
 rejects all candidates.
 
-For the synthetic provider, the active model
-`synthetic/hf:zai-org/GLM-5.1` costs $1/M input. With
-`costRatio: 0.5`, the budget selector looks for models under
-$0.50/M input in major version 5. Both GLM-5 models cost
-$1/M, so none qualify. Cheaper models (GLM-4.7-Flash at
-$0.10/M, Nemotron at $0.30/M) are in major versions 4 and 3
-respectively, and are excluded by the default `majorVersions:
+For the synthetic provider,
+ the active model
+`synthetic/hf:zai-org/GLM-5.1` costs $1/M input.
+ With
+`costRatio: 0.5`,
+ the budget selector looks for models under
+$0.50/M input in major version 5.
+ Both GLM-5 models cost
+$1/M,
+ so none qualify.
+ Cheaper models (GLM-4.7-Flash at
+$0.10/M,
+ Nemotron at $0.30/M) are in major versions 4 and 3
+respectively,
+ and are excluded by the default `majorVersions:
 1`.
 
 ### Verification
 
-Version under test: pi-safeguard 2.0.1 + pi-budget-model
-1.0.1. Reproduce by configuring pi-safeguard with an
+Version under test:
+ pi-safeguard 2.0.1 + pi-budget-model
+1.0.1.
+ Reproduce by configuring pi-safeguard with an
 expensive active model and observing `NoBudgetModelError` on
 the first flagged action.
 
@@ -221,55 +282,85 @@ major versions:
 }
 ```
 
-With this setting, pi-budget-model finds GLM-4.7-Flash at
+With this setting,
+ pi-budget-model finds GLM-4.7-Flash at
 $0.10/M input and uses it as the judge.
 
-Tradeoff: cross-major-version candidates may use different
-prompt formats or token economies; the budget selector trusts
+Tradeoff:
+ cross-major-version candidates may use different
+prompt formats or token economies;
+ the budget selector trusts
 the cost numbers but does not validate format compatibility.
-For the synthetic provider, the cross-major candidates remain
+For the synthetic provider,
+ the cross-major candidates remain
 suitable.
 
 ### What does not work
 
-- Setting `costRatio: 1`: allows the budget selector to pick
+- Setting `costRatio: 1`:
+   allows the budget selector to pick
   a model that costs the same as the active model,
   defeating the point of using a cheaper model.
-- Setting `strategy: "any-provider"`: unless other providers
-  have API keys configured, there are no candidates to find.
+- Setting `strategy: "any-provider"`:
+   unless other providers
+  have API keys configured,
+   there are no candidates to find.
 
 ### Why we would file this upstream
 
-1. **Is it really upstream's fault?** Borderline. The
-   default is documented; users can override. But
+1. **Is it really upstream's fault?
+   ** Borderline.
+    The
+   default is documented;
+    users can override.
+    But
    "latest-only" is an unfriendly default when the active
    model is already latest.
-2. **Can upstream fix it?** Yes; default could be 0
-   (consider all majors), or 2 (latest plus one back), or
+2. **Can upstream fix it?
+   ** Yes;
+    default could be 0
+   (consider all majors),
+    or 2 (latest plus one back),
+    or
    bias toward "latest with cheaper fallback".
-3. **Are they supporting this use case?** Yes; the option
+3. **Are they supporting this use case?
+   ** Yes;
+    the option
    exists.
-4. **Will they likely fix it?** Possibly; depends on default
+4. **Will they likely fix it?
+   ** Possibly;
+    depends on default
    philosophy.
-5. **Have we prototyped a minimal fix?** No; just the
+5. **Have we prototyped a minimal fix?
+   ** No;
+    just the
    user-side override.
 
-Decision: worth raising as a defaults-discussion issue.
+Decision:
+ worth raising as a defaults-discussion issue.
 
 ---
 
 ## Bug 3: pi-budget-model 1.0.1 calls `ModelRegistry.getApiKey(model)` which was removed in pi-coding-agent 0.70.6, crashing silently into "No judge model available"
 
-Pi-safeguard version: 2.0.1. Pi-budget-model version: 1.0.1.
-Pi-coding-agent version: 0.70.6. Source:
-`packages/budget-model/src/index.ts`. Date 2026-04-28.
+Pi-safeguard version:
+ 2.0.1.
+ Pi-budget-model version:
+ 1.0.1.
+Pi-coding-agent version:
+ 0.70.6.
+ Source:
+`packages/budget-model/src/index.ts`.
+ Date 2026-04-28.
 
 ### Symptom
 
 Every flagged action shows "No judge model available;
 manual approval required" regardless of judge-model
-configuration. Setting `majorVersions: 0` or
-`strategy: "any-provider"` has no effect. The judge is never
+configuration.
+ Setting `majorVersions: 0` or
+`strategy: "any-provider"` has no effect.
+ The judge is never
 reached.
 
 ```bash
@@ -292,7 +383,8 @@ const apiKey = await ctx.modelRegistry.getApiKey(candidate,);
 
 The `ModelRegistry` class in
 `@earendil-works/pi-coding-agent` 0.70.6 does **not** have a
-`getApiKey(model)` method. It was replaced by
+`getApiKey(model)` method.
+ It was replaced by
 `getApiKeyAndHeaders(model)`:
 
 ```ts
@@ -308,7 +400,8 @@ getApiKeyForProvider(provider: string): Promise<string | undefined>;
 | { ok: false; error: string }
 ```
 
-When `findBudgetModel` reaches the first `getApiKey` call, it
+When `findBudgetModel` reaches the first `getApiKey` call,
+ it
 throws:
 
 ```text
@@ -335,26 +428,33 @@ async function evaluate(pi, ctx, config, systemPrompt, action, batchContext,
 }
 ```
 
-The TypeError is silently swallowed. The user sees the
+The TypeError is silently swallowed.
+ The user sees the
 generic "No judge model available" message with no
-indication that the real problem is a missing method, not a
+indication that the real problem is a missing method,
+ not a
 missing model.
 
 Source locations:
 
-- `packages/budget-model/src/index.ts`: four calls to
+- `packages/budget-model/src/index.ts`:
+   four calls to
   `ctx.modelRegistry.getApiKey(model)`.
 - `@earendil-works/pi-coding-agent`
-  `core/model-registry.ts`: `ModelRegistry` class has
+  `core/model-registry.ts`:
+   `ModelRegistry` class has
   `getApiKeyAndHeaders` and `getApiKeyForProvider` but no
   `getApiKey`.
-- `packages/safeguard/src/index.ts`: bare `catch` block in
+- `packages/safeguard/src/index.ts`:
+   bare `catch` block in
   `evaluate` that swallows the TypeError.
 
 ### Verification
 
-Version under test: pi-safeguard 2.0.1 + pi-budget-model
-1.0.1 + pi-coding-agent 0.70.6. Reproduce any flagged action;
+Version under test:
+ pi-safeguard 2.0.1 + pi-budget-model
+1.0.1 + pi-coding-agent 0.70.6.
+ Reproduce any flagged action;
 the "No judge model available" message surfaces every time.
 
 ### Verified workarounds
@@ -376,8 +476,11 @@ if (!ModelRegistry.prototype.getApiKey) {
 }
 ```
 
-Tradeoff: monkey-patching prototypes is fragile across
-upgrades. The shim is small and limited; safer than nothing.
+Tradeoff:
+ monkey-patching prototypes is fragile across
+upgrades.
+ The shim is small and limited;
+ safer than nothing.
 
 #### Option B: edit the pi-budget-model dist to call `getApiKeyAndHeaders`
 
@@ -396,56 +499,84 @@ const apiKey = (await ctx.modelRegistry.getApiKeyAndHeaders(candidate,)).apiKey;
 (and similarly for the call sites that use `model` instead
 of `candidate`).
 
-Tradeoff: patches the dist directly; lost on update. Cleaner
+Tradeoff:
+ patches the dist directly;
+ lost on update.
+ Cleaner
 than the prototype shim but loses portability.
 
-Caveat for both options: lost when `pi update` reinstalls
-pi-safeguard. Re-apply after updating, or install from a
+Caveat for both options:
+ lost when `pi update` reinstalls
+pi-safeguard.
+ Re-apply after updating,
+ or install from a
 forked version.
 
 ### What does not work
 
-- Setting `majorVersions: 0`: the code crashes before
-  reaching the version filtering logic. The method does not
+- Setting `majorVersions: 0`:
+   the code crashes before
+  reaching the version filtering logic.
+   The method does not
   exist regardless of config.
-- Setting `strategy: "any-provider"`: same crash, different
+- Setting `strategy: "any-provider"`:
+   same crash,
+   different
   code path (the `getApiKey` calls in `findAnyProvider` and
   `resolveModelOverride` are also broken).
 - Setting `modelOverride` to pin a specific judge model:
-  calls `getApiKey` in `resolveModelOverride`, which also
+  calls `getApiKey` in `resolveModelOverride`,
+   which also
   crashes.
-- Configuring `judgeModel.instructions`: the judge is never
-  called; the crash happens during model resolution.
+- Configuring `judgeModel.instructions`:
+   the judge is never
+  called;
+   the crash happens during model resolution.
 
 ### Why the `majorVersions: 0` workaround from Bug 2 does not help
 
 The `majorVersions: 0` workaround targets a different
 (earlier) bug where the budget selector excluded older major
-versions. That fix is correct for its specific scenario, but
+versions.
+ That fix is correct for its specific scenario,
+ but
 it cannot help here because the `getApiKey` TypeError
 crashes the function **before** the version filtering logic
-runs. The `majorVersions` setting is never evaluated.
+runs.
+ The `majorVersions` setting is never evaluated.
 
 ### Why we would file this upstream
 
 All 5 constraints hold:
 
-1. **Is it really upstream's fault?** Yes; pi-budget-model
+1. **Is it really upstream's fault?
+   ** Yes;
+    pi-budget-model
    1.0.1 was published against an older pi-coding-agent
    ModelRegistry shape and was not updated when the method
    was renamed.
-2. **Can upstream fix it?** Yes; replace four call sites
-   with `getApiKeyAndHeaders`, or add a `getApiKey`
+2. **Can upstream fix it?
+   ** Yes;
+    replace four call sites
+   with `getApiKeyAndHeaders`,
+    or add a `getApiKey`
    compatibility method to `ModelRegistry`.
-3. **Are they supporting this use case?** Yes; pi-budget-model
+3. **Are they supporting this use case?
+   ** Yes;
+    pi-budget-model
    is a documented pi-safeguard companion.
-4. **Will they likely fix it?** Plausible; the fix is small
+4. **Will they likely fix it?
+   ** Plausible;
+    the fix is small
    and the failure mode is total (every flagged action
    broken).
-5. **Have we prototyped a minimal fix?** Yes; both Option A
+5. **Have we prototyped a minimal fix?
+   ** Yes;
+    both Option A
    and Option B run cleanly on this workspace.
 
-Decision: worth filing.
+Decision:
+ worth filing.
 
 ### Draft upstream issue (kept as reference; revise before filing)
 

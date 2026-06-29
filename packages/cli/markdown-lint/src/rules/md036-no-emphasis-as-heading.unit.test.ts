@@ -50,5 +50,11 @@ await describe({
         expect(lint('This is **important** text.\n',).length,).toBe(0,);
       },
     },),
+    it({
+      name: 'allows strong-only list item labels',
+      fn: async function listLabel() {
+        expect(lint('1. **CSS Nesting**\n',).length,).toBe(0,);
+      },
+    },),
   ],
 },);

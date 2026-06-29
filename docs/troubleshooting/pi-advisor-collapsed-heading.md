@@ -20,8 +20,11 @@ The collapsed renderer intentionally shows a header plus one summary line.
 const firstLine = firstAdvisoryLine(text,);
 ```
 
-Before the fix, `firstAdvisoryLine` returned the first non-empty line.
-For Markdown-shaped advisor responses, that first line was often the document title, `## Advisor review`,
+Before the fix,
+ `firstAdvisoryLine` returned the first non-empty line.
+For Markdown-shaped advisor responses,
+ that first line was often the document title,
+ `## Advisor review`,
 not an actual finding.
 
 The fixed implementation keeps the collapsed behavior but skips Markdown ATX headings before choosing the summary line.
@@ -46,7 +49,8 @@ return (firstNonMarkerIndex > 0)
 
 ## Verification
 
-Version under test: commit `058b16777`.
+Version under test:
+ commit `058b16777`.
 
 The regression test is `packages/pi/advisor/src/rendering-summary.unit.test.ts`.
 It reproduces the old behavior with this input:
@@ -87,17 +91,20 @@ mise run //packages/pi/advisor:verify:extension
 ## Verified workaround
 
 Expand the Advisor tool result in the TUI.
-Expanded rendering returns the full text path from `renderAdvisorSummary`, so the hidden body is visible.
+Expanded rendering returns the full text path from `renderAdvisorSummary`,
+ so the hidden body is visible.
 
 ## What does not work
 
 Rerunning Advisor does not address this display issue when the next response starts with the same heading shape.
-The provider call may have succeeded; the collapsed renderer chose a low-information first line.
+The provider call may have succeeded;
+ the collapsed renderer chose a low-information first line.
 
 Treating the result as an empty provider response is also wrong.
 The failing regression shows non-empty body text was present but not selected for the collapsed line.
 
 ## Upstream filing decision
 
-This is repo-local Pi Advisor behavior, not an upstream pi-coding-agent bug.
+This is repo-local Pi Advisor behavior,
+ not an upstream pi-coding-agent bug.
 No upstream issue is appropriate.

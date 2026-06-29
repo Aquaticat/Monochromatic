@@ -3,7 +3,8 @@
 This was diagnosed while `music-player` pinned Slint commit
 `85e3eb76819762cdcaa732fa87533ff896546bac`.
  The app now uses the Slint
-1.17.0 crates.io release,
+1.17.0 crates.
+io release,
  but it keeps the same breakpoint workaround because the
 problem shape is a `Flickable` whose implicit layout width comes from a wrapped
 `FlexboxLayout` child.

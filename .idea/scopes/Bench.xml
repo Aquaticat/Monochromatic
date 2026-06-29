@@ -1,3 +1,6 @@
-<component name="DependencyValidationManager">
-  <scope name="Bench" pattern="file:*.bench.ts" />
+<component name='DependencyValidationManager'>
+  <scope
+    name='Bench'
+    pattern='file:*.bench.ts'
+  />
 </component>

@@ -2,11 +2,21 @@
 
 ## Classification
 
-- Type: correctness, wrong match length, over-long `find_all` span.
-- Phase: match time, `find_all` span computation.
-- Severity: soundness. `is_match` is correct (a zero-width match does exist), so
-  the `is_match` vs `find_all` self-consistency oracle does not fire. The defect
-  is purely in the reported span length. Found by the Lean ground-truth oracle
+- Type:
+   correctness,
+   wrong match length,
+   over-long `find_all` span.
+- Phase:
+   match time,
+   `find_all` span computation.
+- Severity:
+   soundness.
+   `is_match` is correct (a zero-width match does exist),
+   so
+  the `is_match` vs `find_all` self-consistency oracle does not fire.
+   The defect
+  is purely in the reported span length.
+   Found by the Lean ground-truth oracle
   (the non-anchor leftmost-longest position round) and corroborated by the dotnet
   engine and by resharp's own `find_anchored`.
 
@@ -31,11 +41,14 @@ repro --pair "$(printf '%s' '(?=(?=c)c{1,3})' | xxd -p | tr -d '\n')" "$(printf 
 
 ## Observed behaviour
 
-The whole pattern `(?=(?=c)c{1,3})` is a single lookahead, so a successful match
+The whole pattern `(?=(?=c)c{1,3})` is a single lookahead,
+ so a successful match
 consumes nothing and must be zero-width wherever the lookahead body succeeds.
 resharp's `find_all` instead returns a span whose end is advanced past the start
-by the length the lookahead body consumed internally. On longer input the error
-is systematic, one extra unit per span:
+by the length the lookahead body consumed internally.
+ On longer input the error
+is systematic,
+ one extra unit per span:
 
 ```text
 hay="c"    rust fa=0:1        dotnet fa=0:0
@@ -44,18 +57,23 @@ hay="ccc"  rust fa=0:1,1:2,2:3 dotnet fa=0:0,1:1,2:2
 ```
 
 resharp's own `find_anchored` returns end 0 for `"c"` (the correct zero-width
-end), so `find_anchored` and `find_all` disagree on the end of the same match
+end),
+ so `find_anchored` and `find_all` disagree on the end of the same match
 that both place at offset 0.
 
 ## Expected behaviour
 
-A pattern that is entirely a lookahead matches the empty string, so every span is
-`(p, p)`. Lean and the dotnet engine both return zero-width spans.
+A pattern that is entirely a lookahead matches the empty string,
+ so every span is
+`(p, p)`.
+ Lean and the dotnet engine both return zero-width spans.
 
 ## Distinct triggers and isolation
 
-The leak needs two ingredients in the lookahead body: a leading nested lookahead,
-and a following factor that can match a variable length. Removing either makes
+The leak needs two ingredients in the lookahead body:
+ a leading nested lookahead,
+and a following factor that can match a variable length.
+ Removing either makes
 `find_all` correct again.
 
 ```text
@@ -78,19 +96,38 @@ correct (no leak):
 
 The match-end computation for a top-level lookaround treats the lookaround as if
 it consumes its body when the body begins with a nested zero-width assertion
-followed by a nullable-prefixed factor. The lookaround node handling lives around
+followed by a nullable-prefixed factor.
+ The lookaround node handling lives around
 `resharp-engine/src/engine.rs:128` (`Kind::Lookahead | Kind::Lookbehind`) and the
-reverse-scan match-end machinery (`collect_rev_inner`, `handle_rev_end`,
-`scan_rev_from`). `find_anchored` computes the same match's end as 0, so the two
-end-finding paths diverge; the exact divergent line is not yet pinned.
+reverse-scan match-end machinery (`collect_rev_inner`,
+ `handle_rev_end`,
+`scan_rev_from`).
+ `find_anchored` computes the same match's end as 0,
+ so the two
+end-finding paths diverge;
+ the exact divergent line is not yet pinned.
 
 ## Notes
 
-- This is a ground-truth-only find, like BUG-12: `is_match` is right and the two
-  `find_all` spans are internally consistent with each other, so the INCONSIST,
-  BOUNDS, OVERLAP, HARDDIFF, and STREAM oracles all stay silent. Only the verified
-  Lean semantics and the dotnet reference expose the wrong span length. The one
+- This is a ground-truth-only find,
+   like BUG-12:
+   `is_match` is right and the two
+  `find_all` spans are internally consistent with each other,
+   so the INCONSIST,
+  BOUNDS,
+   OVERLAP,
+   HARDDIFF,
+   and STREAM oracles all stay silent.
+   Only the verified
+  Lean semantics and the dotnet reference expose the wrong span length.
+   The one
   internal signal is `find_anchored` end (0) disagreeing with `find_all` end (1).
-- Distinct from BUG-3 (existence disagreement), BUG-10 (a dropped trailing
-  zero-width match), and BUG-12 (wrong nullability). Here the match exists, is
-  found, and is at the right offset; only its length is wrong.
+- Distinct from BUG-3 (existence disagreement),
+   BUG-10 (a dropped trailing
+  zero-width match),
+   and BUG-12 (wrong nullability).
+   Here the match exists,
+   is
+  found,
+   and is at the right offset;
+   only its length is wrong.

@@ -1,11 +1,24 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project version="4">
-  <component name="AhkProjectSettings">
-    <option name="defaultAhkSdk" value="AutoHotkey v2.0.18" />
+<?xml version='1.0' encoding='UTF-8'?>
+<project version='4'>
+  <component name='AhkProjectSettings'>
+    <option
+      name='defaultAhkSdk'
+      value='AutoHotkey v2.0.18'
+    />
   </component>
-  <component name="ExternalStorageConfigurationManager" enabled="true" />
-  <component name="ProjectResources">
+  <component
+    name='ExternalStorageConfigurationManager'
+    enabled='true'
+  />
+  <component name='ProjectResources'>
     <xml-schema-version>XMLSchema_1_1</xml-schema-version>
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_21" default="true" project-jdk-name="temurin-21 (mise)" project-jdk-type="JavaSDK" />
+  <component
+    name='ProjectRootManager'
+    version='2'
+    languageLevel='JDK_21'
+    default='true'
+    project-jdk-name='temurin-21 (mise)'
+    project-jdk-type='JavaSDK'
+  />
 </project>

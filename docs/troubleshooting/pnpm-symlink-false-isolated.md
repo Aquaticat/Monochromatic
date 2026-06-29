@@ -6,10 +6,14 @@ The behavior is intentional enough to explain from pnpm's docs and source,
 but it is surprising because the resulting `node_modules` is not a drop-in,
 symlink-free replacement for the default isolated layout.
 
-Current status (2026-06-22, pnpm 11.8.0): `symlink: false` suppresses the symlink layer that
+Current status (2026-06-22,
+ pnpm 11.8.0):
+ `symlink: false` suppresses the symlink layer that
 makes the isolated virtual store resolvable by Node.
-It still imports package files into `node_modules/.pnpm`, writes metadata,
-and may write command shims in `node_modules/.bin`, but it does not expose direct dependencies at
+It still imports package files into `node_modules/.pnpm`,
+ writes metadata,
+and may write command shims in `node_modules/.bin`,
+ but it does not expose direct dependencies at
 `node_modules/<name>`.
 Use `nodeLinker: hoisted` when the requirement is a runnable `node_modules` tree without symlinks.
 
@@ -23,7 +27,8 @@ nodeLinker: isolated
 symlink: false
 ```
 
-After `pnpm install`, the project has package contents under `node_modules/.pnpm`,
+After `pnpm install`,
+ the project has package contents under `node_modules/.pnpm`,
 but no direct dependency entry such as `node_modules/is-odd`.
 Normal Node resolution from the project root fails:
 
@@ -84,13 +89,15 @@ if (!config.symlink) {
 
 This is why explicit `hoistPattern` or `publicHoistPattern` does not rescue the isolated layout
 when `symlink: false` is set.
-The hoist linker creates symlinks, so pnpm removes that path too.
+The hoist linker creates symlinks,
+ so pnpm removes that path too.
 
 ### Step 3: fresh installs skip both child dependency symlinks and direct dependency symlinks
 
 Fresh isolated installs route through `linkPackages`.
 `pnpm11/installing/deps-installer/src/install/link.ts:441-447` skips the child dependency
-symlink pass when `opts.symlink` is false, but still runs package import into the virtual store:
+symlink pass when `opts.symlink` is false,
+ but still runs package import into the virtual store:
 
 ```ts
 // /tmp/agent/pnpm-symlink-20260622/pnpm11/installing/deps-installer/src/install/link.ts
@@ -125,14 +132,16 @@ let linkedToRoot = 0
 if (opts.symlink && !opts.virtualStoreOnly) {
 ```
 
-So with `nodeLinker: isolated` and `symlink: false`, package files exist inside the virtual store,
+So with `nodeLinker: isolated` and `symlink: false`,
+ package files exist inside the virtual store,
 but neither the transitive graph symlinks nor the root direct dependency symlinks are created.
 
 ### Step 4: headless installs make the same choice
 
 Frozen and headless installs use the same meaning.
 `pnpm11/installing/deps-restorer/src/index.ts:456-461` skips `linkAllModules` when
-`opts.symlink === false`, while still running `linkAllPkgs`:
+`opts.symlink === false`,
+ while still running `linkAllPkgs`:
 
 ```ts
 // /tmp/agent/pnpm-symlink-20260622/pnpm11/installing/deps-restorer/src/index.ts
@@ -175,7 +184,8 @@ if (opts.enablePnp) {
   await writePnpFile(result.currentLockfile, {
 ```
 
-With `nodeLinker: isolated`, no PnP resolver replaces the missing symlink graph.
+With `nodeLinker: isolated`,
+ no PnP resolver replaces the missing symlink graph.
 That is why normal project-root imports fail.
 
 ## Verification
@@ -224,7 +234,8 @@ require result:
 ERR_MODULE_NOT_FOUND
 ```
 
-The virtual store is populated and contains no symlinks, but the direct dependency is not reachable
+The virtual store is populated and contains no symlinks,
+ but the direct dependency is not reachable
 from project-root Node resolution.
 
 ### Working catalog: isolated with default symlinks
@@ -244,7 +255,8 @@ This verifies that the missing symlink graph is what breaks project-root imports
 
 ### Working catalog: hoisted linker for a symlink-free runnable tree
 
-For a runnable `node_modules` tree without symlinks, use the hoisted linker:
+For a runnable `node_modules` tree without symlinks,
+ use the hoisted linker:
 
 ```yaml
 # pnpm-workspace.yaml
@@ -262,7 +274,10 @@ true
 ### Partial working catalog: bins are still command shims
 
 A package with binaries still gets non-symlink shim files in `node_modules/.bin`.
-With `cowsay@1.6.0`, `nodeLinker: isolated`, and `symlink: false`, the harness found zero symlinks
+With `cowsay@1.6.0`,
+ `nodeLinker: isolated`,
+ and `symlink: false`,
+ the harness found zero symlinks
 and these file entries:
 
 ```text
@@ -285,7 +300,8 @@ nodeLinker: isolated
 symlink: true
 ```
 
-Tradeoff: this preserves pnpm's strict isolated layout,
+Tradeoff:
+ this preserves pnpm's strict isolated layout,
 but it requires tools and deployment targets to tolerate symlinks.
 
 ### Use the hoisted linker when symlinks are forbidden
@@ -297,7 +313,8 @@ Use:
 nodeLinker: hoisted
 ```
 
-Tradeoff: this creates a flat `node_modules` that is compatible with tools and platforms that reject
+Tradeoff:
+ this creates a flat `node_modules` that is compatible with tools and platforms that reject
 symlinks,
 but it gives up the stricter isolated graph shape.
 The pnpm settings page names serverless deployments,
@@ -315,7 +332,8 @@ nodeLinker: pnp
 symlink: false
 ```
 
-Tradeoff: PnP is the documented companion for `symlink: false`,
+Tradeoff:
+ PnP is the documented companion for `symlink: false`,
 but it changes runtime resolution and tool compatibility.
 Do not treat it as a `node_modules` layout.
 
@@ -328,7 +346,8 @@ Use:
 virtualStoreOnly: true
 ```
 
-Tradeoff: pnpm 11 documents this as a way to populate the virtual store without importer symlinks,
+Tradeoff:
+ pnpm 11 documents this as a way to populate the virtual store without importer symlinks,
 hoisting,
 bin links,
 or lifecycle scripts.
@@ -340,7 +359,8 @@ not for a runnable project dependency tree.
 ### `symlink: false` is not a no-symlink isolated install
 
 It removes the symlink graph that makes isolated mode work with Node's normal resolver.
-The package files stay in `node_modules/.pnpm`, but the import path from the project root is absent.
+The package files stay in `node_modules/.pnpm`,
+ but the import path from the project root is absent.
 
 ### Explicit hoist patterns do not restore links
 
@@ -356,7 +376,8 @@ publicHoistPattern:
   - "is-number"
 ```
 
-The source explains why: pnpm deletes hoist patterns when `symlink` is false.
+The source explains why:
+ pnpm deletes hoist patterns when `symlink` is false.
 
 ### `packageImportMethod` is the wrong knob
 
@@ -374,7 +395,8 @@ but it does not create a runnable isolated tree without dependency symlinks.
 
 1.  Is it really upstream's fault?
     No.
-    The behavior matches pnpm's documented meaning: isolated mode is symlink-based,
+    The behavior matches pnpm's documented meaning:
+     isolated mode is symlink-based,
     and `symlink: false` is documented as useful with PnP.
 2.  Can upstream fix it?
     A documentation clarification could make the isolated case more explicit,

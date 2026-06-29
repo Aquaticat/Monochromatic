@@ -29,13 +29,18 @@ A normal prompt then receives hidden context for the current local hour and minu
 ## Behavior
 
 The extension subscribes to pi's `before_agent_start` event.
-For each agent turn, it returns a hidden custom message with `customType: "current-time-context"`.
+For each agent turn,
+ it returns a hidden custom message with `customType: "current-time-context"`.
 
 `display: false` keeps the message out of the visible transcript UI.
-Pi still includes hidden custom messages in LLM context, so the model can use local wall-clock time.
+Pi still includes hidden custom messages in LLM context,
+ so the model can use local wall-clock time.
 
 Local wall-clock time is used because the agent answers in the user's active working context.
-The payload includes only hour and minute, with no seconds, date, or timezone.
+The payload includes only hour and minute,
+ with no seconds,
+ date,
+ or timezone.
 That keeps the context coarse and avoids unrelated temporal detail.
 
 ## Validation

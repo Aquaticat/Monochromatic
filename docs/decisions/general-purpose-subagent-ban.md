@@ -1,26 +1,35 @@
 # General-purpose subagent ban
 
 Decision record for whether Claude Code may use the general-purpose (catch-all) Agent subagent.
-Decision: lifted on 2026-06-12.
-General-purpose subagents are allowed, as a peer to `spawn-claude` child sessions,
+Decision:
+ lifted on 2026-06-12.
+General-purpose subagents are allowed,
+ as a peer to `spawn-claude` child sessions,
 and should be used only in interactive sessions where a human supervises in the Claude Code UI.
 
 ## Background
 
 The repo previously blocked general-purpose Agent subagents at three layers:
 
-- `.claude/settings.local.json` permission deny `Agent(general-purpose)`, the hard gate.
+- `.claude/settings.local.json` permission deny `Agent(general-purpose)`,
+   the hard gate.
 - The `ccgr` PreToolUse guardrail (`packages/claude-code-plugins/source/src/handlers/guardrail.ts`),
   which denied the call and redirected to `spawn-claude`.
 - A line in the generated `CLAUDE.md` preamble (source `file-enforcer.config.ts`):
-  "General purpose agents are banned because of bugs."
+  "General purpose agents are banned because of bugs.
+  "
 
-Specialized subagents (Explore, Plan, and peers, selected by a named `subagent_type`)
-were never banned; only the catch-all type was.
+Specialized subagents (Explore,
+ Plan,
+ and peers,
+ selected by a named `subagent_type`)
+were never banned;
+ only the catch-all type was.
 
 ## Why the ban existed
 
-The "bugs" were never written down anywhere; this reconstruction comes from the people who set the ban:
+The "bugs" were never written down anywhere;
+ this reconstruction comes from the people who set the ban:
 
 - The parent agent is blind to how many and which subagents are running,
   and Claude Code provides no tool for the agent to enumerate them.
@@ -35,28 +44,41 @@ The "bugs" were never written down anywhere; this reconstruction comes from the 
 ## Why it is lifted now
 
 The Claude Code UI now lets a human navigate to a running subagent session,
-see how many are running, and message them directly.
+see how many are running,
+ and message them directly.
 This does not fix the agent-side blindness and does not make `SendMessage` work;
 it moves the observe-and-steer role to the human.
-With a human supervising in the UI, general-purpose subagents are no riskier than
-`spawn-claude` child sessions, and they forward results reliably, which `spawn-claude` does not.
+With a human supervising in the UI,
+ general-purpose subagents are no riskier than
+`spawn-claude` child sessions,
+ and they forward results reliably,
+ which `spawn-claude` does not.
 
 ## Scope and boundary
 
 - Allowed in interactive sessions where a human watches the Claude Code UI.
 - Autonomous and headless contexts are out of scope and unsupported in this repo:
   Anthropic now bills autonomous Claude Code contexts at very high rates,
-  so the repo does not run them, and the agent-side blindness there is moot because the contexts are unused.
-- Re-banning should require a concrete, reproducible bug, not a vague "buggy",
+  so the repo does not run them,
+   and the agent-side blindness there is moot because the contexts are unused.
+- Re-banning should require a concrete,
+   reproducible bug,
+   not a vague "buggy",
   so the repo does not oscillate on undocumented grounds.
 
 ## Terminology
 
-- **General-purpose subagent**: the catch-all in-process delegate Claude Code runs
+- **General-purpose subagent**:
+   the catch-all in-process delegate Claude Code runs
   when no specialized subagent type is named.
-- **Specialized subagent**: a named in-process delegate (Explore, Plan, and peers) selected by type.
-- **Child Claude session**: an independent Claude Code session launched in a visible terminal
-  via `spawn-claude`, monitored manually for its results.
+- **Specialized subagent**:
+   a named in-process delegate (Explore,
+   Plan,
+   and peers) selected by type.
+- **Child Claude session**:
+   an independent Claude Code session launched in a visible terminal
+  via `spawn-claude`,
+   monitored manually for its results.
 
 ## What changed
 
@@ -64,5 +86,6 @@ With a human supervising in the UI, general-purpose subagents are no riskier tha
 - Removed the general-purpose deny branch and its `isGeneralPurpose` helper from `ccgr`;
   the guardrail still blocks Agent `resume` polling and `bun test` invocations.
 - Rewrote the `CLAUDE.md` preamble to present in-process subagents and `spawn-claude` child sessions
-  as peer mechanisms, noting that in-process subagents forward results reliably
+  as peer mechanisms,
+   noting that in-process subagents forward results reliably
   while `spawn-claude` child sessions need manual monitoring.

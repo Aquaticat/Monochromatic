@@ -24,13 +24,16 @@ The project settings file currently documents that user-specific workflow packag
 ## Behavior
 
 The extension applies the policy when pi starts or reloads a session,
-and whenever the active model changes through `/model`, Ctrl+P cycling, or session restore.
+and whenever the active model changes through `/model`,
+ Ctrl+P cycling,
+ or session restore.
 
 Manual thinking changes remain in effect until the next session start or model selection.
 The extension skips `pi.setThinkingLevel()` when the current level already matches the policy target.
 
 Pi persists `pi.setThinkingLevel()` calls to global `defaultThinkingLevel`.
-After each model-aware application, this extension rewrites the persisted scalar default back to `high`.
+After each model-aware application,
+ this extension rewrites the persisted scalar default back to `high`.
 That keeps non-GPT startup paths on the project-approved fallback while still allowing GPT sessions to run at `xhigh`.
 
 Pi clamps requested thinking levels to the selected model capabilities.

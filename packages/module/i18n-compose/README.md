@@ -1,35 +1,53 @@
 # @monochromatic-dev/module-i18n-compose
 
-Type-safe, no-codegen i18n composition library.
+Type-safe,
+ no-codegen i18n composition library.
 
-Renders localized UI text from explicit semantic grammar nodes for `ca`, `en`, and `zh`.
-The library owns language mechanics; the consumer owns application semantics.
+Renders localized UI text from explicit semantic grammar nodes for `ca`,
+ `en`,
+ and `zh`.
+The library owns language mechanics;
+ the consumer owns application semantics.
 
 ## Ownership boundary
 
 The shared package owns:
 
 - grammar AST types
-- vocabulary entry shapes (subjects, nouns, verbs with locale-specific forms)
+- vocabulary entry shapes (subjects,
+   nouns,
+   verbs with locale-specific forms)
 - locale renderers and locale builders
-- locale registry helpers (`isLocale`, `assertLocale`)
+- locale registry helpers (`isLocale`,
+   `assertLocale`)
 - generic rendering primitives
 
 The consumer owns:
 
 - labels (static UI strings)
-- nouns, verbs, subjects (and any adjective vocabulary)
-- route/page concepts, confirmation flows, item names, timestamps
+- nouns,
+   verbs,
+   subjects (and any adjective vocabulary)
+- route/page concepts,
+   confirmation flows,
+   item names,
+   timestamps
 - every domain-specific message shape
 
 The shared package never exports product-message APIs such as `confirmDelete`,
-`selectedCount`, `postedAt`, `siteName`, or `noResults`.
-Those belong in the consuming app, if they exist at all.
+`selectedCount`,
+ `postedAt`,
+ `siteName`,
+ or `noResults`.
+Those belong in the consuming app,
+ if they exist at all.
 
 ## Shared vocabulary across locales
 
-Every locale spec passed to `createI18n` must expose the same label, subject,
-verb, and noun keys.
+Every locale spec passed to `createI18n` must expose the same label,
+ subject,
+verb,
+ and noun keys.
 The package rejects mismatched spec records at the factory boundary,
 so adding `cat` to English without adding `cat` to Catalan and Chinese fails type checking.
 
@@ -63,14 +81,21 @@ i18n.fragment(locale, fragmentAst,);
 
 The library does not remember the current locale.
 Every render is a pure operation over explicit inputs.
-No `forLocale`, `bindLocale`, or `t(locale)` accessor is exported.
+No `forLocale`,
+ `bindLocale`,
+ or `t(locale)` accessor is exported.
 
 ## Labels are not nouns
 
-Static UI strings such as `siteName`, `noResults`, or `chooseALang`
-belong in the `label` vocabulary, not the `noun` vocabulary.
+Static UI strings such as `siteName`,
+ `noResults`,
+ or `chooseALang`
+belong in the `label` vocabulary,
+ not the `noun` vocabulary.
 Putting them in `noun` makes them available in grammatical slots
-(counted, definite, possessed),
+(counted,
+ definite,
+ possessed),
 which defeats the purpose of a typed composition API.
 
 ```ts
@@ -92,9 +117,13 @@ No `i18n.message(locale, 'Posted at {time}', { time })` and no `postedAt` method
 ## Generic grammar composition
 
 A consuming app composes generic grammar nodes directly;
-the library does not know what a confirmation, route, or product workflow is.
+the library does not know what a confirmation,
+ route,
+ or product workflow is.
 Nested complements preserve the full nested phrase,
-including objects, complements, and adverbials.
+including objects,
+ complements,
+ and adverbials.
 
 ```ts
 i18n.sentence(locale, {
@@ -140,9 +169,14 @@ i18n.np('en', { kind: 'noun.counted', count: 2, noun: 'water', },); // throws
 English verb entries may set `auxiliaryStrategy` for question and complement construction.
 Omitting the field uses `do-support`.
 
-- `do-support` emits `do`, `does`, or `did`, then keeps the lexical verb in base form.
-- `copula` fronts the finite verb itself, such as `Are you ready?`.
-- `modal` fronts the modal surface and renders nested complements bare, such as `Can you save?`.
+- `do-support` emits `do`,
+   `does`,
+   or `did`,
+   then keeps the lexical verb in base form.
+- `copula` fronts the finite verb itself,
+   such as `Are you ready?`.
+- `modal` fronts the modal surface and renders nested complements bare,
+   such as `Can you save?`.
 - `none` skips do-insertion and renders complements bare for caller-supplied special cases.
 
 ```ts
@@ -174,7 +208,11 @@ i18n.sentence('en', {
 
 ## Locale scope
 
-Initial scope: `ca`, `en`, `zh`. All three are first-class v1 locales.
+Initial scope:
+ `ca`,
+ `en`,
+ `zh`.
+ All three are first-class v1 locales.
 
 ```ts
 import {

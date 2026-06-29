@@ -6,160 +6,362 @@ description: Use when writing or editing source files in non-TypeScript general-
 # Dum-dum non-TS
 
 Fires when writing or editing source files in non-TypeScript general-purpose
-programming languages: C, C++, Rust, Go, Python, Java, Kotlin, Swift, Ruby,
-PHP, Lua, Zig, Nim, Haskell, OCaml, Elixir, Clojure, Scala, F#, or any other.
+programming languages:
+ C,
+ C++,
+ Rust,
+ Go,
+ Python,
+ Java,
+ Kotlin,
+ Swift,
+ Ruby,
+PHP,
+ Lua,
+ Zig,
+ Nim,
+ Haskell,
+ OCaml,
+ Elixir,
+ Clojure,
+ Scala,
+ F#,
+ or any other.
 
-The skill encodes two rules (simplest possible constructs; comments on every
-concept-introducing line) and a comment template (What, Why, optional Gotcha)
+The skill encodes two rules (simplest possible constructs;
+ comments on every
+concept-introducing line) and a comment template (What,
+ Why,
+ optional Gotcha)
 with a TypeScript pseudocode equivalent above every concept-introducing line.
 
 See "Out of scope" at the bottom for file types this skill does not apply to.
 
 ## Audience
 
-The human reader knows **only TypeScript**. Optimise comments and code shape
-for them, not for an experienced practitioner of the target language. The
-compiler does not read the comments; the user does.
+The human reader knows **only TypeScript**.
+ Optimise comments and code shape
+for them,
+ not for an experienced practitioner of the target language.
+ The
+compiler does not read the comments;
+ the user does.
 
 ## Two rules
 
 ### Rule 1 — Simplest possible constructs
 
-Write boring, beginner-level code. Forbidden by default:
+Write boring,
+ beginner-level code.
+ Forbidden by default:
 
-- macros, metaprogramming, reflection, code generation
-- operator overloading, custom conversion operators
+- macros,
+   metaprogramming,
+   reflection,
+   code generation
+- operator overloading,
+   custom conversion operators
 - template / generic gymnastics beyond a single type parameter
-- point-free chains, monad stacks, `do`-notation
-- decorators, mixins, multiple inheritance
+- point-free chains,
+   monad stacks,
+   `do`-notation
+- decorators,
+   mixins,
+   multiple inheritance
 - comprehensions / generators when their syntax differs from TS
 - pattern matching used for control flow that an `if`/`else` chain handles
-- "clever" one-liners, ternaries longer than `cond ? a : b`
+- "clever" one-liners,
+   ternaries longer than `cond ? a : b`
 
-Prefer: plain named functions, named local variables, explicit type
-annotations where the language allows them, `if`/`else`, `for` loops, early
-`return`s, one statement per line. **If two ways exist, pick the one whose
-translation to TS is mechanical.**
+Prefer:
+ plain named functions,
+ named local variables,
+ explicit type
+annotations where the language allows them,
+ `if`/`else`,
+ `for` loops,
+ early
+`return`s,
+ one statement per line.
+ **If two ways exist,
+ pick the one whose
+translation to TS is mechanical.
+**
 
 If the task genuinely needs a construct with no clean TS analogue (manual
-memory management, lifetimes, async runtimes, FFI, channels), stop and ask
+memory management,
+ lifetimes,
+ async runtimes,
+ FFI,
+ channels),
+ stop and ask
 the user whether to (a) proceed with a verbose comment that admits the
-analogy is loose, (b) wrap the gnarly bit in a tiny helper and only use the
-helper from then on, or (c) pick a different language for this piece.
+analogy is loose,
+ (b) wrap the gnarly bit in a tiny helper and only use the
+helper from then on,
+ or (c) pick a different language for this piece.
 
 ### Rule 2 — Comments on every concept-introducing line
 
 A line is **concept-introducing** if it is any of:
 
 - an import / `#include` / `use` / `require`
-- a function, method, type, struct, class, trait, interface, or enum
+- a function,
+   method,
+   type,
+   struct,
+   class,
+   trait,
+   interface,
+   or enum
   declaration
-- a **wrapper or variant constructor**: `Some(...)`, `None`, `Ok(...)`,
-  `Err(...)`, `Box::new(...)`, `Rc::new(...)`, `Arc::new(...)`,
-  `Cell::new(...)`, `RefCell::new(...)`, `Vec::new()`, `String::new()`,
-  Haskell's `Just x` / `Nothing`, Python's `Optional[X]` annotation, etc.
-  These exist precisely because the language lacks `null` / `throw`. Every
+- a **wrapper or variant constructor**:
+   `Some(...)`,
+   `None`,
+   `Ok(...)`,
+  `Err(...)`,
+   `Box::new(...)`,
+   `Rc::new(...)`,
+   `Arc::new(...)`,
+  `Cell::new(...)`,
+   `RefCell::new(...)`,
+   `Vec::new()`,
+   `String::new()`,
+  Haskell's `Just x` / `Nothing`,
+   Python's `Optional[X]` annotation,
+   etc.
+  These exist precisely because the language lacks `null` / `throw`.
+   Every
   appearance is concept-introducing for a TS reader — **including bare
   one-token tails like `Ok(rules)` or `None`**.
-- a **type-conversion or wrapper-unwrap method call**: `.to_string()`,
-  `.to_owned()`, `.into()`, `.from(...)`, `.clone()`, `.as_str()`,
-  `.as_bytes()`, `.unwrap()`, `.unwrap_or(...)`, `.unwrap_or_else(...)`,
-  `.unwrap_or_default()`, `.expect(...)`, `.ok()`, `.ok_or(...)`,
-  `.collect()`, `.into_iter()`, the `?` propagation operator. (Same idea
-  in other languages: Python's `dict.get(k, default)`, Go's `, ok` comma-ok
-  pattern, Kotlin's `?:` Elvis, Swift's `as!` / `as?`.)
-- a **borrow / reference / deref expression**: `&x`, `&mut x`, `*x`,
-  Rust lifetimes `'a`, C/C++ pointer arithmetic, Go's `&v` / `*v`. Even
-  if the line looks like a plain function call, **every `&` / `&mut`
+- a **type-conversion or wrapper-unwrap method call**:
+   `.to_string()`,
+  `.to_owned()`,
+   `.into()`,
+   `.from(...)`,
+   `.clone()`,
+   `.as_str()`,
+  `.as_bytes()`,
+   `.unwrap()`,
+   `.unwrap_or(...)`,
+   `.unwrap_or_else(...)`,
+  `.unwrap_or_default()`,
+   `.expect(...)`,
+   `.ok()`,
+   `.ok_or(...)`,
+  `.collect()`,
+   `.into_iter()`,
+   the `?` propagation operator.
+   (Same idea
+  in other languages:
+   Python's `dict.get(k, default)`,
+   Go's `, ok` comma-ok
+  pattern,
+   Kotlin's `?:` Elvis,
+   Swift's `as!` / `as?`.
+  )
+- a **borrow / reference / deref expression**:
+   `&x`,
+   `&mut x`,
+   `*x`,
+  Rust lifetimes `'a`,
+   C/C++ pointer arithmetic,
+   Go's `&v` / `*v`.
+   Even
+  if the line looks like a plain function call,
+   **every `&` / `&mut`
   argument is concept-introducing** because it states ownership intent
   ("I am only lending this to you").
-- a **closure / lambda** with non-TS-arrow syntax: Rust `|x| ...` /
-  `|&x| ...`, Ruby `do |x| ... end`, Haskell `\x -> ...`, etc.
+- a **closure / lambda** with non-TS-arrow syntax:
+   Rust `|x| ...` /
+  `|&x| ...`,
+   Ruby `do |x| ... end`,
+   Haskell `\x -> ...`,
+   etc.
 - a **`match` / pattern-match expression** used to extract from
   `Option` / `Result` / sum types (`match x { Some(v) => ..., None => ... }`,
-  `match r { Ok(v) => ..., Err(e) => ... }`). Even one-arm `if let
+  `match r { Ok(v) => ..., Err(e) => ... }`).
+   Even one-arm `if let
   Some(v) = x` counts.
-- an **implicit-return tail expression**: a line at the end of a function
+- an **implicit-return tail expression**:
+   a line at the end of a function
   body whose value becomes the return because there's no trailing `;`.
-  Examples: `Ok(rules)`, `Some(escape_literal(trimmed))`, `(line, col)`,
-  `if cond { a } else { b }`. The reader has to know **both** that this is
-  a return AND understand the value being constructed. Mark it with the
+  Examples:
+   `Ok(rules)`,
+   `Some(escape_literal(trimmed))`,
+   `(line, col)`,
+  `if cond { a } else { b }`.
+   The reader has to know **both** that this is
+  a return AND understand the value being constructed.
+   Mark it with the
   same comment block as any other concept-introducing line.
 - a **statement inside a function body** that uses any language feature
-  without a 1:1 TS analogue (pointers, lifetimes, channels, `defer`,
-  `with`, list comprehensions, destructors, ownership moves, `await` on a
-  non-Promise type, range-indexing like `s[1..n]`, byte literals `b'/'`,
-  type-annotated `let` bindings like `let x: Vec<T> = ...`, `let _ = ...`
-  discard, etc.)
-- a line containing punctuation a TS dev would not recognise: `<<`, `::`,
-  `&`, `*`, `?`, `!`, `<...>` template args, `mut`, `'a` lifetimes,
-  `->` return type arrows in non-TS positions, etc.
+  without a 1:1 TS analogue (pointers,
+   lifetimes,
+   channels,
+   `defer`,
+  `with`,
+   list comprehensions,
+   destructors,
+   ownership moves,
+   `await` on a
+  non-Promise type,
+   range-indexing like `s[1..n]`,
+   byte literals `b'/'`,
+  type-annotated `let` bindings like `let x: Vec<T> = ...`,
+   `let _ = ...`
+  discard,
+   etc.)
+- a line containing punctuation a TS dev would not recognise:
+   `<<`,
+   `::`,
+  `&`,
+   `*`,
+   `?`,
+   `!`,
+   `<...>` template args,
+   `mut`,
+   `'a` lifetimes,
+  `->` return type arrows in non-TS positions,
+   etc.
 
-Lines that **do not** need a comment: closing braces, blank lines, plain
-arithmetic whose TS equivalent is character-identical (`x + 1`), and
+Lines that **do not** need a comment:
+ closing braces,
+ blank lines,
+ plain
+arithmetic whose TS equivalent is character-identical (`x + 1`),
+ and
 re-assignments to an already-commented variable using only TS-native
 operators.
 
-**Comment every recurrence.** Do not drop the comment block on the second,
-third, or tenth appearance of the same pattern (`?`, `Some(...)`,
-`.to_string()`, `&` arguments, `match r { Ok(_) => ..., Err(_) => ... }`,
+**Comment every recurrence.
+** Do not drop the comment block on the second,
+third,
+ or tenth appearance of the same pattern (`?`,
+ `Some(...)`,
+`.to_string()`,
+ `&` arguments,
+ `match r { Ok(_) => ..., Err(_) => ... }`,
 …) unless the user has explicitly said "you can stop commenting X in this
-file". Repetition is the cost; clarity is the deliverable. If a file
-becomes unreadable from the comment density, **make the file smaller**, do
+file".
+ Repetition is the cost;
+ clarity is the deliverable.
+ If a file
+becomes unreadable from the comment density,
+ **make the file smaller**,
+ do
 not thin out the comments.
 
 ## Comment template
 
-Every concept-introducing line gets a comment block above it, written in
-whichever of the language's comment forms fits the line's role. Do not assume a
+Every concept-introducing line gets a comment block above it,
+ written in
+whichever of the language's comment forms fits the line's role.
+ Do not assume a
 plain line comment:
 
-- A **documentable declaration** (function, type, field, variant, module,
-  constant, import, and so on) in a language that has **doc comments** takes the
-  block AS a doc comment, so the one block is also the item's API documentation:
-  in Rust, `///` above the item and `//!` at the top of the file; the equivalent
-  in other languages. Write the block once, in the doc-comment form. Never leave
-  it as a plain comment and bolt a separate one-line summary on top, and never
+- A **documentable declaration** (function,
+   type,
+   field,
+   variant,
+   module,
+  constant,
+   import,
+   and so on) in a language that has **doc comments** takes the
+  block AS a doc comment,
+   so the one block is also the item's API documentation:
+  in Rust,
+   `///` above the item and `//!` at the top of the file;
+   the equivalent
+  in other languages.
+   Write the block once,
+   in the doc-comment form.
+   Never leave
+  it as a plain comment and bolt a separate one-line summary on top,
+   and never
   keep both a plain block and a doc-comment summary for the same item.
-- **Everything else** (statements and expressions inside a body, and languages
-  with no doc comments) takes an ordinary comment: `//` in C / C++ / Rust / Go /
-  Java / Swift / Kotlin, `#` in Python / Ruby / Elixir, `--` in Haskell / Lua /
-  SQL, `;` in Lisp / Clojure. Where a doc comment on a non-item is an error
-  (Rust `///` on a statement), this ordinary comment is the only legal choice.
+- **Everything else** (statements and expressions inside a body,
+   and languages
+  with no doc comments) takes an ordinary comment:
+   `//` in C / C++ / Rust / Go /
+  Java / Swift / Kotlin,
+   `#` in Python / Ruby / Elixir,
+   `--` in Haskell / Lua /
+  SQL,
+   `;` in Lisp / Clojure.
+   Where a doc comment on a non-item is an error
+  (Rust `///` on a statement),
+   this ordinary comment is the only legal choice.
 
 The block's fields are the same whichever comment form carries it:
 
-- **What:** name the construct in plain English. No jargon. If jargon is
-  unavoidable (e.g. "preprocessor", "namespace"), define it in the same
-  sentence. Two or three lines is fine — exhaustively name every symbol on
+- **What:
+  ** name the construct in plain English.
+   No jargon.
+   If jargon is
+  unavoidable (e.g. "preprocessor",
+   "namespace"),
+   define it in the same
+  sentence.
+   Two or three lines is fine — exhaustively name every symbol on
   the line and what each one means.
-  - **When the line introduces a type from a family of siblings,** the
+  - **When the line introduces a type from a family of siblings,
+    ** the
     What field must explicitly **list the siblings the reader might have
-    expected**. Examples: `usize` → name `u32` / `u64` / `i32` / `i64` as
-    siblings; `String` → name `&str` as the sibling; `Vec<T>` → name
-    `&[T]` and `[T; N]`; `Box<T>` → name `Rc<T>` and `Arc<T>`; `i32` →
-    name `u32` / `i64`. Just naming the type is not enough; the dum-dum
+    expected**.
+     Examples:
+     `usize` → name `u32` / `u64` / `i32` / `i64` as
+    siblings;
+     `String` → name `&str` as the sibling;
+     `Vec<T>` → name
+    `&[T]` and `[T; N]`;
+     `Box<T>` → name `Rc<T>` and `Arc<T>`;
+     `i32` →
+    name `u32` / `i64`.
+     Just naming the type is not enough;
+     the dum-dum
     reader has no way to know what alternatives even exist.
-- **Why:** one sentence on what the **program** gains from this line. Not
+- **Why:
+  ** one sentence on what the **program** gains from this line.
+   Not
   "declares X" — "we need this so the next line can do Y".
-  - **When the line introduces a type from a family of siblings,** the Why
+  - **When the line introduces a type from a family of siblings,
+    ** the Why
     field must explicitly **justify this type over the siblings named in
-    What**. "Why `usize` and not `u64`?" "Why `String` and not `&str`?"
-    "Why `Box<T>` and not `Rc<T>`?" One sentence each is enough; silence
+    What**.
+     "Why `usize` and not `u64`?
+    " "Why `String` and not `&str`?
+    "
+    "Why `Box<T>` and not `Rc<T>`?
+    " One sentence each is enough;
+     silence
     is not.
-- **Gotcha** *(optional, only when warranted):* one line warning the reader
+- **Gotcha** *(optional,
+   only when warranted):
+  * one line warning the reader
   when the construct **looks like** something familiar from TS but behaves
-  differently (operator overloading, value-vs-reference, integer overflow,
-  hoisting, GIL, ownership moves, …). Skip if there is no trap.
+  differently (operator overloading,
+   value-vs-reference,
+   integer overflow,
+  hoisting,
+   GIL,
+   ownership moves,
+   …).
+   Skip if there is no trap.
 - A blank comment line.
 - The literal lead-in `In TS you'd write (pseudocode):` — always TS,
-  regardless of which language the surrounding file is in. The pseudocode
-  block IS the TypeScript translation; that's the whole point.
+  regardless of which language the surrounding file is in.
+   The pseudocode
+  block IS the TypeScript translation;
+   that's the whole point.
 - A fenced `` ```ts `` block (inside the language's comment syntax) holding
-  the closest TS translation. Comments inside the block may further narrate.
+  the closest TS translation.
+   Comments inside the block may further narrate.
 
 Comments **never** describe the next line in the target language's own
-jargon ("declares a `unique_ptr<T>`"). Translate to TS-thinking: "an owning
+jargon ("declares a `unique_ptr<T>`").
+ Translate to TS-thinking:
+ "an owning
 reference to a heap-allocated `T` — when this variable goes out of scope,
 the `T` is freed automatically".
 
@@ -231,27 +433,41 @@ int main() {
 }
 ````
 
-In this 4-line program the comments outweigh the code roughly 15:1. **That
-is the intended ratio.** Other languages follow the same template by
-analogy; only the comment form changes: a plain `//` / `#` / `--` / `;`
-comment, or the language's doc-comment form when the block sits above a
-documentable declaration. The lead-in stays `In TS you'd write (pseudocode):`
-regardless of source language, because the pseudocode block always contains
+In this 4-line program the comments outweigh the code roughly 15:1.
+ **That
+is the intended ratio.
+** Other languages follow the same template by
+analogy;
+ only the comment form changes:
+ a plain `//` / `#` / `--` / `;`
+comment,
+ or the language's doc-comment form when the block sits above a
+documentable declaration.
+ The lead-in stays `In TS you'd write (pseudocode):`
+regardless of source language,
+ because the pseudocode block always contains
 TypeScript.
 
-If a real file feels too verbose, the answer is to make the file smaller
-(split into more functions, more files), **not** to thin out the comments.
+If a real file feels too verbose,
+ the answer is to make the file smaller
+(split into more functions,
+ more files),
+ **not** to thin out the comments.
 
 ## Anti-patterns drawn from real failures
 
 These cases are taken from a real session where the skill was followed
-loosely. Each shows the **bad** output the agent produced and the **good**
-output the skill demands. Internalise the pattern, not just the specific
+loosely.
+ Each shows the **bad** output the agent produced and the **good**
+output the skill demands.
+ Internalise the pattern,
+ not just the specific
 construct.
 
 ### Plain comment block with a stub doc comment bolted on (the rustdoc case)
 
-Bad — the dum-dum block is written as plain `//` comments, then a separate,
+Bad — the dum-dum block is written as plain `//` comments,
+ then a separate,
 name-derived doc comment is bolted on only to satisfy a "every item needs a doc
 comment" lint:
 
@@ -267,8 +483,10 @@ comment" lint:
 const CEILING: f32 = 0.8912509;
 ````
 
-Good — the block itself is the doc comment (`///`), so the one block both
-satisfies the lint and documents the item; there is no second summary:
+Good — the block itself is the doc comment (`///`),
+ so the one block both
+satisfies the lint and documents the item;
+ there is no second summary:
 
 ````rust
 /// What:     `const CEILING: f32 = ...` is the -1 dBTP linear-amplitude ceiling.
@@ -282,8 +500,10 @@ const CEILING: f32 = 0.8912509;
 ````
 
 The `/// Ceiling.` line only restates the name and splits the documentation into
-a real block plus a hollow summary. For a statement inside a function body (not a
-documentable item) the block stays plain `//`, because a doc comment there is a
+a real block plus a hollow summary.
+ For a statement inside a function body (not a
+documentable item) the block stays plain `//`,
+ because a doc comment there is a
 compile error.
 
 ### Bare wrapper-constructor tail (the `Ok(rules)` case)
@@ -454,44 +674,99 @@ struct Rule { index: usize, src: String, regex: Regex }
 ## Anti-patterns
 
 - Reaching for an idiomatic-but-opaque construct because it is "the way" in
-  that language (Rust iterator chains, Python list comprehensions, Go
-  interface satisfaction by name, Kotlin scope functions).
-- Dropping the **pseudocode** block because "the code is obvious". It is
-  not obvious to this user, and it is mandatory on every block.
-- Skipping **What** on a symbol-heavy line. If the line contains `<<`,
-  `::`, `&`, `*`, `?`, `!`, `<...>`, `mut`, lifetimes, or any punctuation a
-  TS dev would not recognise, name and explain each piece individually.
+  that language (Rust iterator chains,
+   Python list comprehensions,
+   Go
+  interface satisfaction by name,
+   Kotlin scope functions).
+- Dropping the **pseudocode** block because "the code is obvious".
+   It is
+  not obvious to this user,
+   and it is mandatory on every block.
+- Skipping **What** on a symbol-heavy line.
+   If the line contains `<<`,
+  `::`,
+   `&`,
+   `*`,
+   `?`,
+   `!`,
+   `<...>`,
+   `mut`,
+   lifetimes,
+   or any punctuation a
+  TS dev would not recognise,
+   name and explain each piece individually.
 - Skipping a comment block on a **bare tail expression** (`Ok(rules)`,
-  `Some(x)`, `(line, col)`, `if ... { a } else { b }` at end of fn). The
-  tail IS the return; it always needs the full block.
+  `Some(x)`,
+   `(line, col)`,
+   `if ... { a } else { b }` at end of fn).
+   The
+  tail IS the return;
+   it always needs the full block.
 - Skipping a comment block on a **wrapper constructor or unwrap chain**
-  (`Some(...)`, `None`, `Ok(...)`, `Err(...)`, `.to_string()`,
-  `.unwrap_or(...)`, `.ok()`, `.clone()`, `?`) because it appeared a few
-  lines up. **Comment every recurrence** until the user explicitly says
+  (`Some(...)`,
+   `None`,
+   `Ok(...)`,
+   `Err(...)`,
+   `.to_string()`,
+  `.unwrap_or(...)`,
+   `.ok()`,
+   `.clone()`,
+   `?`) because it appeared a few
+  lines up.
+   **Comment every recurrence** until the user explicitly says
   to stop.
 - Naming a type without **naming its siblings and justifying the choice**.
-  `usize` without "(not `u32`/`u64`/`i64`)"; `String` without "(not
-  `&str`)"; `Box<T>` without "(not `Rc<T>`/`Arc<T>`)". The dum-dum reader
+  `usize` without "(not `u32`/`u64`/`i64`)";
+   `String` without "(not
+  `&str`)";
+   `Box<T>` without "(not `Rc<T>`/`Arc<T>`)".
+   The dum-dum reader
   has no way to know a sibling exists.
 - Comments that describe the next line in the target language's own jargon
-  ("declares a `unique_ptr<T>`"). Translate to TS-thinking instead.
-- Combining several lines under one comment block. One concept-introducing
-  line ↔ one comment block, even if it gets repetitive.
-- Removing comments later to "tidy up". The comments **are** the
+  ("declares a `unique_ptr<T>`").
+   Translate to TS-thinking instead.
+- Combining several lines under one comment block.
+   One concept-introducing
+  line ↔ one comment block,
+   even if it gets repetitive.
+- Removing comments later to "tidy up".
+   The comments **are** the
   deliverable.
-- Padding **Why** with a restatement of **What**. If `Why:` does not say
-  what the program gains, delete it and write a real one.
+- Padding **Why** with a restatement of **What**.
+   If `Why:` does not say
+  what the program gains,
+   delete it and write a real one.
 
 ## Out of scope
 
 This skill does not apply when:
 
-- the file is `.ts`, `.tsx`, `.js`, `.jsx`, `.mjs`, `.cjs`
-- the file is a declarative or data format: `.html`, `.css`, `.scss`,
-  `.json`, `.yaml`, `.yml`, `.toml`, `.sql`, `Dockerfile`, `mise.toml`,
-  `package.json`, etc.
-- the file is generated (auto-produced by a tool, marked `DO NOT EDIT`,
+- the file is `.ts`,
+   `.tsx`,
+   `.js`,
+   `.jsx`,
+   `.mjs`,
+   `.cjs`
+- the file is a declarative or data format:
+   `.html`,
+   `.css`,
+   `.scss`,
+  `.json`,
+   `.yaml`,
+   `.yml`,
+   `.toml`,
+   `.sql`,
+   `Dockerfile`,
+   `mise.toml`,
+  `package.json`,
+   etc.
+- the file is generated (auto-produced by a tool,
+   marked `DO NOT EDIT`,
   vendored from a third party)
 - the change is a single-character or mechanical edit in an existing non-TS
-  file (rename, typo fix) where adding the comment template would dwarf
-  the change. In that case, match the surrounding comment density instead.
+  file (rename,
+   typo fix) where adding the comment template would dwarf
+  the change.
+   In that case,
+   match the surrounding comment density instead.

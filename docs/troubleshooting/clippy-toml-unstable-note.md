@@ -17,27 +17,36 @@ A reader trying to decide where to put a lint policy can reasonably infer one of
 
 The actual split is narrower:
 
-- Cargo's `[lints.clippy]` table is stable for lint levels such as `allow`, `warn`, `deny`, and `forbid`.
+- Cargo's `[lints.clippy]` table is stable for lint levels such as `allow`,
+   `warn`,
+   `deny`,
+   and `forbid`.
 - Clippy's `clippy.toml` or `.clippy.toml` file still supplies lint-specific parameters such as
-  `disallowed-methods`, `allow-unwrap-in-tests`, and `allow-unwrap-types`.
+  `disallowed-methods`,
+   `allow-unwrap-in-tests`,
+   and `allow-unwrap-types`.
 - Cargo currently does not forward arbitrary Clippy lint parameters from `[lints.clippy]`.
 
 The surface error variants in a runnable harness are:
 
 - `clippy::unwrap_used` errors when `[lints.clippy] unwrap_used = "deny"` sees `Result::unwrap`,
-  `Result::unwrap_err`, or `Option::unwrap`.
+  `Result::unwrap_err`,
+   or `Option::unwrap`.
 - `clippy::disallowed_methods` errors when `clippy.toml` configures `std::result::Result::unwrap`.
 - Cargo warns `unused manifest key` when `disallowed-methods` is put under
-  `[lints.clippy.disallowed_methods]`, and then no method ban is enforced.
+  `[lints.clippy.disallowed_methods]`,
+   and then no method ban is enforced.
 
 ## Root cause
 
-The confusion is documentation wording, not an indication that Clippy configuration has stopped working.
+The confusion is documentation wording,
+ not an indication that Clippy configuration has stopped working.
 The page titled "Configuring Clippy" starts with an unstable-file warning before saying that the file is
 `clippy.toml` or `.clippy.toml`.
 
 From rust-clippy source,
-commit `64c7431d6cd823d1a7663165c7e59d78e6dc726a`, cloned from
+commit `64c7431d6cd823d1a7663165c7e59d78e6dc726a`,
+ cloned from
 `https://github.com/rust-lang/rust-clippy.git`:
 
 `rust-clippy/book/src/configuration.md:1`
@@ -80,7 +89,8 @@ Cargo's own docs describe `[lints]` as a level override mechanism.
 They do not describe it as a general Clippy parameter file.
 
 From Cargo source,
-commit `a335d47ff8036918d3d548dabd513dc0444096a9`, cloned from
+commit `a335d47ff8036918d3d548dabd513dc0444096a9`,
+ cloned from
 `https://github.com/rust-lang/cargo.git`:
 
 `cargo/src/doc/src/reference/manifest.md:526`
@@ -313,7 +323,9 @@ if allow_unwrap_in_tests && is_in_test(cx.tcx, expr.hir_id) {
 Earlier wrong hypothesis to avoid:
 Rust is not expecting projects to avoid lint configuration.
 The harness below disproves that reading because `[lints.clippy] unwrap_used = "deny"` caused
-`clippy::unwrap_used` diagnostics for `Result::unwrap`, `Result::unwrap_err`, and `Option::unwrap`.
+`clippy::unwrap_used` diagnostics for `Result::unwrap`,
+ `Result::unwrap_err`,
+ and `Option::unwrap`.
 
 A second wrong hypothesis to avoid:
 Cargo `[lints.clippy]` has not absorbed all `clippy.toml` functionality.
@@ -515,7 +527,9 @@ This is the stable path for lint levels.
 The harness above verifies that Clippy 0.1.98 enforces it.
 
 Tradeoff:
-`clippy::unwrap_used` covers `Result::unwrap`, `Result::unwrap_err`, and `Option::unwrap`.
+`clippy::unwrap_used` covers `Result::unwrap`,
+ `Result::unwrap_err`,
+ and `Option::unwrap`.
 It is not suitable when the policy is only "ban `Result::unwrap`".
 
 ### Use `clippy.toml` for lint parameters that Cargo does not forward
@@ -640,7 +654,8 @@ No duplicate thread was found.
 Constraint check:
 
 - Is it really upstream's fault?
-  Yes, but as wording rather than behavior.
+  Yes,
+   but as wording rather than behavior.
   The Clippy source page puts a broad unstable-file warning at
   `rust-clippy/book/src/configuration.md:3` and only later links Cargo `[lints]` at line 91.
 - Can upstream fix it?
@@ -653,8 +668,12 @@ Constraint check:
   Yes.
   `CONTRIBUTING.md:5` says to ask or submit an issue or pull request anyway,
   `CONTRIBUTING.md:9` says Clippy welcomes contributions from everyone,
-  and `.github/PULL_REQUEST_TEMPLATE.md:1` says "Thank you for making Clippy better!".
-  Searches of `README.md`, `CONTRIBUTING.md`, `.github`, and `book/src/development` found no ban on
+  and `.github/PULL_REQUEST_TEMPLATE.md:1` says "Thank you for making Clippy better!
+  ".
+  Searches of `README.md`,
+   `CONTRIBUTING.md`,
+   `.github`,
+   and `book/src/development` found no ban on
   AI-assisted reports or patches.
 - Will they likely fix it?
   Plausibly yes.

@@ -3,23 +3,31 @@
 ## Status: replaced by cli-markdown-lint
 
 `markdownlint-cli2` has been retired from this repo in favour of
-`@monochromatic-dev/cli-markdown-lint` (`packages/cli/markdown-lint`), a
-purpose-built Markdown and MDX linter. The root `lint`/`format` tasks now call
-`lint:markdown`/`format:markdown`, which run the new tool from TypeScript source
+`@monochromatic-dev/cli-markdown-lint` (`packages/cli/markdown-lint`),
+ a
+purpose-built Markdown and MDX linter.
+ The root `lint`/`format` tasks now call
+`lint:markdown`/`format:markdown`,
+ which run the new tool from TypeScript source
 under Bun.
 
 The replacement removes the failure modes documented below by construction:
 
-- It only ever opens `.md` and `.mdx` files, so a multi-gigabyte binary can
+- It only ever opens `.md` and `.mdx` files,
+   so a multi-gigabyte binary can
   never be read as Markdown (no OOM).
 - Its internal walk filters by extension and honours `.gitignore` directly,
   with no dot-remap footgun and no fast-glob symlink traversal.
-- It runs TypeScript source directly under Bun, so there is no build-dist-before-lint
+- It runs TypeScript source directly under Bun,
+   so there is no build-dist-before-lint
   step (issue #231 is closed).
-- It lints `.mdx`, which `markdownlint-cli2` never covered.
+- It lints `.mdx`,
+   which `markdownlint-cli2` never covered.
 
-Measured runtime: the new tool lints the whole tree (457 `.md`/`.mdx` files) in
-one process in about 3.2 seconds, versus `markdownlint-cli2`'s chunked
+Measured runtime:
+ the new tool lints the whole tree (457 `.md`/`.mdx` files) in
+one process in about 3.2 seconds,
+ versus `markdownlint-cli2`'s chunked
 0.4 to 0.7 seconds per 25-file batch (and the hangs and OOMs below for the
 no-arg and dot-plus-arg shapes).
 
@@ -32,7 +40,8 @@ Two slow paths have appeared in this repo.
 ### Hard-coded dot plus forwarded args reads non-markdown files
 
 A mise task whose `run` field hard-codes `markdownlint-cli2 .` works when invoked
-with no extra arguments, but OOMs after 30 to 50 seconds when invoked with
+with no extra arguments,
+ but OOMs after 30 to 50 seconds when invoked with
 positional arguments via `mise run lint:markdownlint -- <path>`:
 
 ```text
@@ -45,7 +54,8 @@ Finding: . packages/oxlint-plugins/stylistic/README.md !node_modules/** !dist/**
 FATAL ERROR: Ineffective mark-compacts near heap limit Allocation failed - JavaScript heap out of memory
 ```
 
-Reproducible with the binary directly, no mise involvement needed:
+Reproducible with the binary directly,
+ no mise involvement needed:
 
 ```sh
 markdownlint-cli2 . packages/oxlint-plugins/stylistic/README.md  # OOMs
@@ -60,7 +70,8 @@ The failure shape is any time `.` appears alongside another positional argument.
 ### Config recursive glob hangs in discovery
 
 After this repo moved whole-tree coverage into `.markdownlint-cli2.jsonc` via
-`globs: ["**/*.md"]`, no-arg linting reached a different slow path:
+`globs: ["**/*.md"]`,
+ no-arg linting reached a different slow path:
 `markdownlint-cli2` spends more than 60 seconds in globby discovery before it
 prints `Linting:`.
 
@@ -94,7 +105,8 @@ The two symptoms come from two related globbing traps.
 
 ### 1. The dot-only remap is gated on `globPatterns.length === 1`
 
-`markdownlint-cli2.mjs:28` defines the substitute pattern, and
+`markdownlint-cli2.mjs:28` defines the substitute pattern,
+ and
 `markdownlint-cli2.mjs:219` gates the remap on the patterns array having exactly
 one element:
 
@@ -120,15 +132,22 @@ Dot-only glob:
 ```
 
 When mise's `run = "markdownlint-cli2 ."` is invoked with `--`-forwarded args,
-mise appends them, producing `markdownlint-cli2 . <path>`. Now `length === 2`,
-the guard fails, and `.` is passed verbatim to globby. globby then walks every
-file in the working tree, not just markdown files. The substitute pattern was
+mise appends them,
+ producing `markdownlint-cli2 . <path>`.
+ Now `length === 2`,
+the guard fails,
+ and `.` is passed verbatim to globby.
+ globby then walks every
+file in the working tree,
+ not just markdown files.
+ The substitute pattern was
 the only thing limiting the match to `*.{md,markdown}`.
 
 ### 2. Matched files are read into memory and parsed as markdown
 
 `markdownlint-cli2.mjs:478-481` collects all matches into a single in-memory
-array, and each file is later read fully into a string for parsing:
+array,
+ and each file is later read fully into a string for parsing:
 
 ```js
 const files = [
@@ -137,10 +156,13 @@ const files = [
 ];
 ```
 
-In this repo, the dot-plus-arg walk pulled in a 3.97 GB qcow2 VM disk image at
+In this repo,
+ the dot-plus-arg walk pulled in a 3.97 GB qcow2 VM disk image at
 `packages/dev-script/vm-builder/output/qcow2/disk.qcow2` plus other
-multi-megabyte binaries. Reading the qcow2 into a string allocates about 4 GB on
-V8's heap, which hits Node's default heap limit before the file is fully loaded.
+multi-megabyte binaries.
+ Reading the qcow2 into a string allocates about 4 GB on
+V8's heap,
+ which hits Node's default heap limit before the file is fully loaded.
 The mark-compact loops in the OOM trace are V8 trying to reclaim space inside
 that single string allocation.
 
@@ -178,7 +200,9 @@ const globbyOptions = {
 };
 ```
 
-`fast-glob/out/settings.js:31`, used by globby, defaults symlink following to
+`fast-glob/out/settings.js:31`,
+ used by globby,
+ defaults symlink following to
 true:
 
 ```js
@@ -213,7 +237,8 @@ sets `gitignore: true`:
 const gitignore = (baseMarkdownlintOptions.gitignore === true);
 ```
 
-This repo does set `gitignore: true`, but `.gitignore:34` contains a negation:
+This repo does set `gitignore: true`,
+ but `.gitignore:34` contains a negation:
 
 ```gitignore
 !*.config.js
@@ -253,13 +278,16 @@ export const convertPatternsForFastGlob = (patterns, usingGitRoot, normalizeDire
 };
 ```
 
-The gitignore matcher still filters results, but it cannot stop fast-glob from
-walking symlinked directories first. The markdownlint config needs its own
+The gitignore matcher still filters results,
+ but it cannot stop fast-glob from
+walking symlinked directories first.
+ The markdownlint config needs its own
 positive ignore pattern that fast-glob can use while traversing.
 
 ### 6. `--version` is parsed as a glob
 
-`markdownlint-cli2.mjs:905-910` recognizes `--help` and `--no-globs`, then
+`markdownlint-cli2.mjs:905-910` recognizes `--help` and `--no-globs`,
+ then
 returns unknown args as glob patterns:
 
 ```js
@@ -272,7 +300,8 @@ returns unknown args as glob patterns:
 }
 ```
 
-There is no `--version` branch in that argument parser, so `--version` becomes a
+There is no `--version` branch in that argument parser,
+ so `--version` becomes a
 literal glob pattern and the configured `**/*.md` glob is appended.
 
 ## Verification
@@ -282,33 +311,44 @@ Tested against:
 - `markdownlint-cli2@0.22.1` (commit `996abf6` in this repo's clone of
   `DavidAnson/markdownlint-cli2`)
 - `markdownlint@0.40.0` (the bundled engine version)
-- Node 22.x via the mise-managed toolchain
+- Node 22.
+  x via the mise-managed toolchain
 
 Patterns that work cleanly:
 
-- `markdownlint-cli2 .` (lone argument, remap applies)
+- `markdownlint-cli2 .` (lone argument,
+   remap applies)
 - `markdownlint-cli2 packages/oxlint-plugins/stylistic/README.md`
 - `markdownlint-cli2 README.md AGENTS.md`
 - `markdownlint-cli2 --no-globs README.md`
-- `mise run lint:markdownlint -- README.md`, measured at 0.383 seconds
+- `mise run lint:markdownlint -- README.md`,
+   measured at 0.383 seconds
 - 329 git-unignored Markdown files through `mise run lint:markdownlint -- <files>`,
-  chunked in 25-file batches, measured at 0.402 to 0.744 seconds per chunk
+  chunked in 25-file batches,
+   measured at 0.402 to 0.744 seconds per chunk
 
 Patterns that fail with OOM in this repo:
 
-- `markdownlint-cli2 . <any-other-arg>` (remap bypassed, full walk)
-- `markdownlint-cli2 . .` (same, the second `.` does not collapse)
-- `markdownlint-cli2 packages` (directory arg, full sub-walk)
+- `markdownlint-cli2 . <any-other-arg>` (remap bypassed,
+   full walk)
+- `markdownlint-cli2 . .` (same,
+   the second `.` does not collapse)
+- `markdownlint-cli2 packages` (directory arg,
+   full sub-walk)
 
 Patterns that hung in recursive discovery before the nested `node_modules` fix:
 
-- `markdownlint-cli2` with config `globs: ["**/*.md"]`, `gitignore: true`, and
+- `markdownlint-cli2` with config `globs: ["**/*.md"]`,
+   `gitignore: true`,
+   and
   only root-level `node_modules/**` in `ignores`
-- `markdownlint-cli2 --version` with the same config, because `--version` is an
+- `markdownlint-cli2 --version` with the same config,
+   because `--version` is an
   input pattern
 - direct globby probe with `['**/*.md', '!node_modules/**', '!dist/**',
   '!.dist/**', '!bak/**', '!packages-paused/**', '!packages-deprecated/**',
-  '!.out-of-scope/**']`, which timed out at 60 to 120 seconds
+  '!.out-of-scope/**']`,
+   which timed out at 60 to 120 seconds
 
 Bounded probes that isolate the symlink cause:
 
@@ -318,17 +358,23 @@ globby followSymbolicLinks: false with current old ignores: 0.158 seconds, 328 f
 globby default followSymbolicLinks plus !**/node_modules/**: 0.148 seconds, 328 files
 ```
 
-The OOM is environment-dependent: a tree without multi-gigabyte files would
-still get the wrong file set, including binaries and lockfiles linted as
-markdown, but would not necessarily crash the process. The symlink traversal
-slowdown is workspace-layout-dependent: a tree without symlinked package
+The OOM is environment-dependent:
+ a tree without multi-gigabyte files would
+still get the wrong file set,
+ including binaries and lockfiles linted as
+markdown,
+ but would not necessarily crash the process.
+ The symlink traversal
+slowdown is workspace-layout-dependent:
+ a tree without symlinked package
 `node_modules` directories would not hit that recursive discovery cost.
 
 ## Verified workarounds
 
 ### A. Make the mise task argument-aware and use config globs for no-arg linting
 
-`mise.no-env.toml` is the source file; `mise.toml` is generated from it by
+`mise.no-env.toml` is the source file;
+ `mise.toml` is generated from it by
 file-enforcer.
 
 ```toml
@@ -349,13 +395,19 @@ if ($args | is-empty) {
 Tradeoffs:
 
 - File paths with spaces break because the split is on the literal space
-  character. Source-tree markdown paths in this repo do contain spaces under
-  package type-test fixtures. Passing those paths through this task still needs
+  character.
+   Source-tree markdown paths in this repo do contain spaces under
+  package type-test fixtures.
+   Passing those paths through this task still needs
   the same quoting repair used by the root `test` task.
-- No-arg linting now covers the configured recursive `**/*.md` tree, not only
-  root-level `*.{md,markdown}`. That is the desired coverage, but it makes the
+- No-arg linting now covers the configured recursive `**/*.md` tree,
+   not only
+  root-level `*.{md,markdown}`.
+   That is the desired coverage,
+   but it makes the
   ignore rules performance-critical.
-- Explicit file linting does not load config `globs`; this is intentional so
+- Explicit file linting does not load config `globs`;
+   this is intentional so
   focused lint invocations stay focused.
 
 ### B. Add an explicit nested `node_modules` ignore to markdownlint-cli2 config
@@ -382,7 +434,8 @@ Tradeoffs:
 Tradeoffs:
 
 - The ignore is explicit because gitignore cannot prune this traversal when
-  negations are present. Future generated package-install directories with a
+  negations are present.
+   Future generated package-install directories with a
   different name need their own markdownlint ignore.
 - The root-level `node_modules/**` entry remains for readability and for older
   tooling that does not interpret `**/node_modules/**` the same way.
@@ -396,62 +449,102 @@ For task definitions that need to accept arbitrary file lists,
 Tradeoffs:
 
 - Loses positive globs configured in `.markdownlint-cli2.jsonc` for that
-  invocation. This is desired for focused file linting.
-- Does not protect against a literal `.` argument. `markdownlint-cli2 --no-globs .
+  invocation.
+   This is desired for focused file linting.
+- Does not protect against a literal `.` argument.
+   `markdownlint-cli2 --no-globs .
   README.md` still asks globby to expand `.`.
 
 ## What does not work
 
 - Adding `!packages/dev-script/vm-builder/output/**` and `!**/*.qcow2` to the
-  config `ignores`: tested, still OOMs. Other large binaries in the tree,
-  including Rust debug binaries at 43 to 94 MB each and a 37 MB git pack, keep
+  config `ignores`:
+   tested,
+   still OOMs.
+   Other large binaries in the tree,
+  including Rust debug binaries at 43 to 94 MB each and a 37 MB git pack,
+   keep
   heap pressure high enough to crash even without the qcow2.
 - Expecting `markdownlint-cli2` to filter to text files by extension before
-  reading: it does not. globby's match is filename-pattern only; files that
+  reading:
+   it does not.
+   globby's match is filename-pattern only;
+   files that
   match positive globs and miss negative globs are opened regardless of content
   type.
 - Setting `gitignore: true` without an explicit nested `**/node_modules/**`
-  ignore: `.gitignore` negations keep globby from pushing ignore patterns into
-  fast-glob traversal, so symlinked package directories can still be walked
+  ignore:
+   `.gitignore` negations keep globby from pushing ignore patterns into
+  fast-glob traversal,
+   so symlinked package directories can still be walked
   before filtering.
-- Calling `markdownlint-cli2 --version`: that is not a version option in
-  `markdownlint-cli2@0.22.1`; it becomes an input pattern.
+- Calling `markdownlint-cli2 --version`:
+   that is not a version option in
+  `markdownlint-cli2@0.22.1`;
+   it becomes an input pattern.
 
 ## Why we do not file this upstream
 
 Walking the five constraints:
 
-1. **Is it really upstream's fault?** Partly. The
-   `globPatterns.length === 1` guard is intentional; the `--help` output
-   documents it. The recursive symlink traversal is a composition of
-   markdownlint-cli2 not exposing globby's `followSymbolicLinks`, fast-glob's
-   default, globby's correctness-preserving handling of negated gitignore
-   patterns, and this repo's symlinked workspace layout.
-2. **Can upstream fix it?** Only by changing documented or default behaviour.
-   The dot remap could fire whenever `.` appears in positional patterns, but
-   that changes `markdownlint-cli2 . <file>` semantics. markdownlint-cli2 could
-   expose a `followSymbolicLinks` option or default it to false, but that changes
+1. **Is it really upstream's fault?
+   ** Partly.
+    The
+   `globPatterns.length === 1` guard is intentional;
+    the `--help` output
+   documents it.
+    The recursive symlink traversal is a composition of
+   markdownlint-cli2 not exposing globby's `followSymbolicLinks`,
+    fast-glob's
+   default,
+    globby's correctness-preserving handling of negated gitignore
+   patterns,
+    and this repo's symlinked workspace layout.
+2. **Can upstream fix it?
+   ** Only by changing documented or default behaviour.
+   The dot remap could fire whenever `.` appears in positional patterns,
+    but
+   that changes `markdownlint-cli2 . <file>` semantics.
+    markdownlint-cli2 could
+   expose a `followSymbolicLinks` option or default it to false,
+    but that changes
    recursive glob coverage for users who intentionally lint symlink targets.
-3. **Are they supporting this use case?** No for the dot-plus-arg wrapper shape.
+3. **Are they supporting this use case?
+   ** No for the dot-plus-arg wrapper shape.
    The `--help` text explicitly warns that `.` means every file unless the
-   special one-argument remap fires. The recursive config glob is supported, but
+   special one-argument remap fires.
+    The recursive config glob is supported,
+    but
    this repo's symlink cycle is a consumer workspace concern.
-4. **Will they likely fix it?** Not from current signals. The maintainer already
-   chose to document the dot-only behaviour rather than broaden the remap, and
+4. **Will they likely fix it?
+   ** Not from current signals.
+    The maintainer already
+   chose to document the dot-only behaviour rather than broaden the remap,
+    and
    globby's negation handling is a correctness guard rather than a missed
    optimization.
-5. **Have we prototyped a minimal fix compatible with their architecture?** No.
-   For the dot case, the minimal patch is easy but semantically breaking. For
-   the symlink case, a compatible fix needs new markdownlint-cli2 option surface
-   or a globby default change, both broader than this repo's immediate failure.
+5. **Have we prototyped a minimal fix compatible with their architecture?
+   ** No.
+   For the dot case,
+    the minimal patch is easy but semantically breaking.
+    For
+   the symlink case,
+    a compatible fix needs new markdownlint-cli2 option surface
+   or a globby default change,
+    both broader than this repo's immediate failure.
 
-All five do not hold. The workaround belongs at this repo's boundary and is
-applied in `.markdownlint-cli2.jsonc`, `mise.no-env.toml`, and generated
+All five do not hold.
+ The workaround belongs at this repo's boundary and is
+applied in `.markdownlint-cli2.jsonc`,
+ `mise.no-env.toml`,
+ and generated
 `mise.toml`.
 
 ## Draft upstream issue (do not file as-is)
 
-Kept for audit. If upstream signals change on constraints 3 or 4, re-evaluate
+Kept for audit.
+ If upstream signals change on constraints 3 or 4,
+ re-evaluate
 before filing.
 
 ````md

@@ -373,9 +373,12 @@ The substitution unifies `instanceof` identity across the workspace (every consu
    The checksum does not follow the imported `.pnpmfile.policies.json`,
     so a data-only edit (the common case now) may leave the checksum unchanged and pnpm may reuse the cached resolution.
    After editing only the JSON,
-    change `.pnpmfile.mjs`'s bytes to force re-resolution (the checksum hashes the hook source, so a byte change is what re-triggers it).
+    change `.pnpmfile.mjs`'s bytes to force re-resolution (the checksum hashes the hook source,
+    so a byte change is what re-triggers it).
    `pnpm install --force` alone was observed not to re-run the hook on pnpm 11.6.0 while the checksum was unchanged,
-    so the byte change, not `--force`, is the reliable trigger.
+    so the byte change,
+    not `--force`,
+    is the reliable trigger.
    See `docs/troubleshooting/pnpm-minimum-release-age-exclude-first-match.md` ("What does not work") for the session that established this.
 2. Read stderr for the `[blocked-dep]` lines.
    Confirm the dependent names you expected appear;

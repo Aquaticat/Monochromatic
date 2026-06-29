@@ -294,7 +294,8 @@ Works cleanly:
    regenerating `mise.toml`,
    and running
   `mise lock` prunes that stale tool.
-- Moving the Slint tools to crates.io entries avoids the cargo-git `rev:` / `ref:` identity split.
+- Moving the Slint tools to crates.
+  io entries avoids the cargo-git `rev:` / `ref:` identity split.
   `mise lock --dry-run 'cargo:slint-lsp' 'cargo:slint-viewer'` processes exactly
   `cargo:slint-lsp@1.17.0` and `cargo:slint-viewer@1.17.0`.
 
@@ -331,7 +332,8 @@ Tradeoffs:
   cargo-git tool key.
 - This removes both Slint cargo-git tool keys from config and lockfile,
   so future lock churn cannot include the `rev:` / `ref:` Slint entries.
-- This became available only after Slint 1.17.0 shipped matching crates.io
+- This became available only after Slint 1.17.0 shipped matching crates.
+  io
   releases for the runtime crates and the tools.
 
 ## What does not work

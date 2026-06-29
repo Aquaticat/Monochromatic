@@ -7,8 +7,16 @@ Claude Code `SessionStart` hook that performs housekeeping tasks when a session 
 Runs these cleanup steps in parallel on every session startup or resume:
 
 - Creates `/tmp/claude` and `/tmp/claude-1000` directories
-- Removes stale git metadata (`HEAD`, `config`, `hooks`, `objects`, `refs`) and `.claude` directories leaked into `packages/*/*/dist/final/`
-- Removes zero-byte Claude Code sandbox sentinels (`HEAD`, `config`, `hooks`, `objects`, `refs`) from the workspace root when they are regular files
+- Removes stale git metadata (`HEAD`,
+   `config`,
+   `hooks`,
+   `objects`,
+   `refs`) and `.claude` directories leaked into `packages/*/*/dist/final/`
+- Removes zero-byte Claude Code sandbox sentinels (`HEAD`,
+   `config`,
+   `hooks`,
+   `objects`,
+   `refs`) from the workspace root when they are regular files
 - Removes the ephemeral `.mcp.json` file from the workspace root
 
 ## Hook configuration

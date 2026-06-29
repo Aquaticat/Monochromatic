@@ -130,7 +130,7 @@ cfc33f68 refactor(forbidden-strings): extract library boundary with run_cli_from
 
 ## What's in the scaffolded fuzz/ directory right now
 
-```
+```text
 packages/cli/forbidden-strings/fuzz/
 ├── .gitignore          # ignores target, artifacts, coverage, corpus/*/* (except seed-*)
 ├── Cargo.lock          # ✅ tracked directly; Cargo lockfiles are not gitignored
@@ -361,7 +361,7 @@ Run in order:
  most recent first:
 **
 
-```
+```text
 cbc1616e fix(forbidden-strings): widen intersection+quant hang detector
 3d996936 docs(forbidden-strings): trace resharp hang to prefix.rs visited-set bug
 e5ab8c6f fix(forbidden-strings): pre-validate resharp algebra-hang shape
@@ -474,7 +474,7 @@ prototypes and stay deferred.
  most recent first:
 **
 
-```
+```text
 29f5f495 fix(forbidden-strings): tighten Bug F validator + emit pre-validator warnings
 241286f8 fix(forbidden-strings): widen Bug F validator for trailing-content shape
 ```
@@ -750,7 +750,7 @@ exec/s from 175 to ~83.
  most recent first:
 **
 
-```
+```text
 a08b45ed fuzz(forbidden-strings): bias synth_content for Unicode case-flip
 214c03b1 fix(forbidden-strings): widen alt-lookaround validator threshold
 6ff333f1 fix(forbidden-strings): pre-validate Bug F nested-lookahead overflow
@@ -981,7 +981,7 @@ quant + trailing literal" case.
  most recent first:
 **
 
-```
+```text
 f5bc49c6 fix(forbidden-strings): pre-validate nested complement `~(~(...))`
 9c3e06cd fix(forbidden-strings): pre-validate two slow-compile resharp shapes
 ```
@@ -1121,7 +1121,7 @@ catches a distinct upstream-bug shape;
  most recent first:
 **
 
-```
+```text
 099bfe84 fuzz(forbidden-strings): fix Unicode-literal renderer mojibake
 97aa1bf2 docs(handover): record three new pre-validators landed this session
 f5bc49c6 fix(forbidden-strings): pre-validate nested complement `~(~(...))`

@@ -1,11 +1,12 @@
 # Claude Code plugins cluster
 
-Workspace packages for Claude Code plugins, plus the source package that owns
+Workspace packages for Claude Code plugins,
+ plus the source package that owns
 their handler logic.
 
 ## Layout
 
-```
+```text
 packages/claude-code-plugins/
   source/                              Workspace package; owns handler logic, runtime, types
     src/
@@ -37,9 +38,12 @@ this cluster.
 The handler logic for each plugin lives in `source/src/handlers/{plugin}.ts`,
 exported as three named functions:
 
-- `{plugin}Handler`: pure function from parsed event to typed response.
-- `{plugin}Parser`: raw stdin string to typed event.
-- `{plugin}Writer`: typed response to stdout string.
+- `{plugin}Handler`:
+   pure function from parsed event to typed response.
+- `{plugin}Parser`:
+   raw stdin string to typed event.
+- `{plugin}Writer`:
+   typed response to stdout string.
 
 The per-plugin directory's `src/index.ts` is a four-line shim:
 
@@ -64,8 +68,10 @@ await runHookPlugin({
 
 The standard tsdown build bundles the shim with the source package contents
 inlined via `alwaysBundle: [/^@monochromatic-dev\//]` in
-`@monochromatic-dev/config-tsdown/.node.ts`. The bundled output goes to
-`dist/final/node/index.mjs`, which is the path declared in
+`@monochromatic-dev/config-tsdown/.node.ts`.
+ The bundled output goes to
+`dist/final/node/index.mjs`,
+ which is the path declared in
 `.claude-plugin/plugin.json`.
 
 ## Adding or porting a plugin
@@ -76,40 +82,78 @@ source package:
 1. Build the current plugin with `mise run //packages/claude-code-plugins/{plugin}:build:js:node`
    so a baseline `dist/final/node/index.mjs` exists.
 2. Capture stdin -> stdout fixtures from the baseline binary covering every
-   distinct decision-tree path in the handler. Store them under
+   distinct decision-tree path in the handler.
+    Store them under
    `$TMPDIR/{plugin}-baseline/{NN-name}.in.json` and `.out.json`.
-3. In the source package, create `src/handlers/{plugin}.ts` exporting three
-   named functions: `{plugin}Handler`, `{plugin}Parser`, `{plugin}Writer`.
-   Move all handler logic, helper modules, and constants here.
+3. In the source package,
+    create `src/handlers/{plugin}.ts` exporting three
+   named functions:
+    `{plugin}Handler`,
+    `{plugin}Parser`,
+    `{plugin}Writer`.
+   Move all handler logic,
+    helper modules,
+    and constants here.
 4. Add `"./handlers/{plugin}": "./src/handlers/{plugin}.ts"` to the source
    package's `exports` map.
-5. In the per-plugin directory, replace `src/index.ts` with the four-line shim
+5. In the per-plugin directory,
+    replace `src/index.ts` with the four-line shim
    pattern shown above.
-6. Update the per-plugin `package.json`: replace `hook-types` and `hook-utils`
+6. Update the per-plugin `package.json`:
+    replace `hook-types` and `hook-utils`
    dependencies with `"@monochromatic-dev/claude-code-plugins-source": "workspace:*"`.
 7. Run `pnpm install --strict-peer-dependencies=false` to wire the new dep.
 8. Run `mise run //packages/claude-code-plugins/{plugin}:build:js:node` to
    rebuild the bundled entry.
 9. Replay every captured fixture through the new entry and confirm byte-equal
-   stdout against the baseline `.out.json` files. This is the migration's exit
+   stdout against the baseline `.out.json` files.
+    This is the migration's exit
    criterion.
 
 ### Migration order
 
-1. session-start-housekeeping: single event, single file, simplest. **Done.**
-2. stop-reminders: single event, multi-file logic. **Done.**
-3. bash-output-filter: single event, multi-file logic. **Done.**
-4. terminal-title: multi-event, multi-file logic. **Done.**
-5. claude-spawn: six events plus the user-facing `spawn-claude` CLI bin.
-   CLI bin lives in source's `bin` field; the per-plugin keeps a four-line
+1. session-start-housekeeping:
+    single event,
+    single file,
+    simplest.
+    **Done.
+   **
+2. stop-reminders:
+    single event,
+    multi-file logic.
+    **Done.
+   **
+3. bash-output-filter:
+    single event,
+    multi-file logic.
+    **Done.
+   **
+4. terminal-title:
+    multi-event,
+    multi-file logic.
+    **Done.
+   **
+5. claude-spawn:
+    six events plus the user-facing `spawn-claude` CLI bin.
+   CLI bin lives in source's `bin` field;
+    the per-plugin keeps a four-line
    `src/cli.ts` shim so the SessionStart hook's auto-symlink target
    (`${PLUGIN_ROOT}/src/cli.ts`) still resolves for marketplace installs.
    Root `package.json` lists the source package as a devDependency so its
-   bin hoists to `node_modules/.bin/spawn-claude`. **Done.**
-6. research-agent: not a hook handler; ships only an agent definition. Its
-   directory stays as-is; no shim or handler module needed. **No work needed.**
+   bin hoists to `node_modules/.bin/spawn-claude`.
+    **Done.
+   **
+6. research-agent:
+    not a hook handler;
+    ships only an agent definition.
+    Its
+   directory stays as-is;
+    no shim or handler module needed.
+    **No work needed.
+   **
 
-`hook-utils` deleted. The runtime in
+`hook-utils` deleted.
+ The runtime in
 `source/src/runtime/handler-runtime.ts` absorbs the equivalent
 `readStdin`/`writeOutput` logic.
 
@@ -117,86 +161,146 @@ source package:
 
 ### Decision
 
-Each plugin keeps its own `tsdown.node.config.ts` (one line, re-exporting the
-shared `@monochromatic-dev/config-tsdown/.node.ts`). The source package is
-source-only; it does not own a build orchestrator. A full build runs N tsdown
+Each plugin keeps its own `tsdown.node.config.ts` (one line,
+ re-exporting the
+shared `@monochromatic-dev/config-tsdown/.node.ts`).
+ The source package is
+source-only;
+ it does not own a build orchestrator.
+ A full build runs N tsdown
 invocations in parallel via `mise`'s task fanout.
 
 ### Context
 
 Three layouts were considered for bundling N plugins from one source package:
 
-1. **Per-plugin tsdown wrappers (chosen).** Each plugin has its own one-line
-   tsdown config. Build runs N tsdown invocations in parallel. Per-plugin
-   directory contains: minimal `package.json`, `mise.toml`, `tsconfig.json`,
-   `tsdown.node.config.ts`, `.claude-plugin/plugin.json`, `README.md`,
-   `src/index.ts` (shim), `dist/`. About six files of trivial scaffolding per
+1. **Per-plugin tsdown wrappers (chosen).
+   ** Each plugin has its own one-line
+   tsdown config.
+    Build runs N tsdown invocations in parallel.
+    Per-plugin
+   directory contains:
+    minimal `package.json`,
+    `mise.toml`,
+    `tsconfig.json`,
+   `tsdown.node.config.ts`,
+    `.claude-plugin/plugin.json`,
+    `README.md`,
+   `src/index.ts` (shim),
+    `dist/`.
+    About six files of trivial scaffolding per
    plugin in addition to the marketplace-required and content files.
-2. **Multi-entry tsdown from source with `outDir: '..'`.** One config file in
-   the source package, one tsdown invocation, output fanned into per-plugin
+2. **Multi-entry tsdown from source with `outDir: '..'`.
+   ** One config file in
+   the source package,
+    one tsdown invocation,
+    output fanned into per-plugin
    `dist/` directories via entry-name path segments (e.g.
    `'guardrail/dist/final/node/index': './src/entries/guardrail.ts'`).
-3. **Generated install roots (M4).** A Rolldown plugin in the source's tsdown
-   config generates `.claude-plugin/plugin.json`, per-plugin `package.json`,
-   and `README.md` from per-plugin metadata modules. tsdown owns the entire
-   install-root tree. Marketplace.json paths change.
+3. **Generated install roots (M4).
+   ** A Rolldown plugin in the source's tsdown
+   config generates `.claude-plugin/plugin.json`,
+    per-plugin `package.json`,
+   and `README.md` from per-plugin metadata modules.
+    tsdown owns the entire
+   install-root tree.
+    Marketplace.
+   json paths change.
 
 ### Why not multi-entry (option 2)
 
 Tsdown's default `clean: true` recursively walks `outDir` and wipes
-hand-maintained sibling files. With `outDir: '..'`, it wiped not only
-`packages/claude-code-plugins/{plugin}/.claude-plugin/`, `README.md`, and
-sibling source trees, but also `packages/config/tsdown/src/`: the workspace
-package the build itself depended on. Recovery via `git checkout HEAD --` was
-clean, but the footgun is severe.
+hand-maintained sibling files.
+ With `outDir: '..'`,
+ it wiped not only
+`packages/claude-code-plugins/{plugin}/.claude-plugin/`,
+ `README.md`,
+ and
+sibling source trees,
+ but also `packages/config/tsdown/src/`:
+ the workspace
+package the build itself depended on.
+ Recovery via `git checkout HEAD --` was
+clean,
+ but the footgun is severe.
 
 Two workarounds exist:
 
-- `clean: false`: prevents the wipe but accumulates orphan files when entries
-  are renamed or removed. The cleanup safety net stops working.
-- `clean: ['**/dist/final/node/*.mjs']`: restricts clean to a glob covering
-  only generated artifacts. Tsdown supports this, but the principle that
+- `clean: false`:
+   prevents the wipe but accumulates orphan files when entries
+  are renamed or removed.
+   The cleanup safety net stops working.
+- `clean: ['**/dist/final/node/*.mjs']`:
+   restricts clean to a glob covering
+  only generated artifacts.
+   Tsdown supports this,
+   but the principle that
   `clean: true` defaults exist because "you never know what your build actually
-  generates" still applies in spirit: a future contributor adding a new
+  generates" still applies in spirit:
+   a future contributor adding a new
   generated file format would bypass the glob and silently leak orphans.
 
 ### Why not generated install roots (option 3)
 
 Honors the `clean: true` principle by making the install root entirely
-tsdown-owned, with `.claude-plugin/plugin.json`, `README.md`, and per-plugin
-`package.json` all generated from per-plugin metadata modules. The trade is a
-custom Rolldown plugin (~30 to 50 lines) shipping inside the tsdown config, a
+tsdown-owned,
+ with `.claude-plugin/plugin.json`,
+ `README.md`,
+ and per-plugin
+`package.json` all generated from per-plugin metadata modules.
+ The trade is a
+custom Rolldown plugin (~30 to 50 lines) shipping inside the tsdown config,
+ a
 new metadata source file per plugin (`source/src/plugin-config/{plugin}.ts`),
-marketplace.json path changes, and loss of git history for the plugin.json and
-README files. Functionally a build pipeline maintained inside the cluster.
+marketplace.
+json path changes,
+ and loss of git history for the plugin.
+json and
+README files.
+ Functionally a build pipeline maintained inside the cluster.
 
 The trade saved roughly 14 trivial lines per plugin (the tsdown wrapper,
-tsconfig, and shim location) at the cost of about 30 to 50 lines of Rolldown
-plugin code plus a metadata module per plugin. Net cost increased; the design
-got bigger, not smaller.
+tsconfig,
+ and shim location) at the cost of about 30 to 50 lines of Rolldown
+plugin code plus a metadata module per plugin.
+ Net cost increased;
+ the design
+got bigger,
+ not smaller.
 
 ### Why option 1 wins
 
 The maintained-logic-per-plugin in option 1 is the `bin` name in the
-`package.json` and the import names in the shim. About four lines of genuine
-content; the rest is mechanical scaffolding that does not drift. The N parallel
-tsdown invocations cost a few seconds of total build time, which the mise
+`package.json` and the import names in the shim.
+ About four lines of genuine
+content;
+ the rest is mechanical scaffolding that does not drift.
+ The N parallel
+tsdown invocations cost a few seconds of total build time,
+ which the mise
 fanout already absorbs.
 
 The deepening that matters (handler logic centralized in one source package,
-runtime shared across plugins, tests colocated with handlers) is achieved
+runtime shared across plugins,
+ tests colocated with handlers) is achieved
 without any of the trade-offs of options 2 or 3.
 
 ### Consequences
 
 - Per-plugin directories continue to contain their own `tsdown.node.config.ts`,
-  `tsconfig.json`, `mise.toml`, and `package.json`. New plugins follow the
+  `tsconfig.json`,
+   `mise.toml`,
+   and `package.json`.
+   New plugins follow the
   pattern documented above.
 - Each plugin's standard tsdown build produces a self-contained bundle with
   source-package contents inlined via `alwaysBundle: [/^@monochromatic-dev\//]`.
 - Future architecture reviews that suggest "consolidate the per-plugin
-  packages into one" should be referred to this ADR. The logical consolidation
-  has already happened in the source package; the per-plugin directories are
+  packages into one" should be referred to this ADR.
+   The logical consolidation
+  has already happened in the source package;
+   the per-plugin directories are
   install containers with cherry-pickable marketplace boundaries.
-- If a future contributor wants to attempt multi-entry again, the failure modes
+- If a future contributor wants to attempt multi-entry again,
+   the failure modes
   of `clean: true` with `outDir: '..'` are documented above.

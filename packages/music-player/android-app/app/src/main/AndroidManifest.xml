@@ -1,56 +1,56 @@
-<?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
-
-    <!-- Read the shared audio library: the granular media permission on API 33+, the broad storage
+<?xml version='1.0' encoding='utf-8'?>
+<manifest xmlns:android='http://schemas.android.com/apk/res/android'>
+  <!-- Read the shared audio library: the granular media permission on API 33+, the broad storage
          permission (capped so it is not requested on API 33+) on API 26-32. -->
-    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
-    <uses-permission
-        android:name="android.permission.READ_EXTERNAL_STORAGE"
-        android:maxSdkVersion="32" />
+  <uses-permission android:name='android.permission.READ_MEDIA_AUDIO' />
+  <uses-permission
+    android:name='android.permission.READ_EXTERNAL_STORAGE'
+    android:maxSdkVersion='32'
+  />
 
-    <!-- Background playback runs in a mediaPlayback foreground service. At targetSdk 36 (>= 34) both
+  <!-- Background playback runs in a mediaPlayback foreground service. At targetSdk 36 (>= 34) both
          the base permission and the typed FOREGROUND_SERVICE_MEDIA_PLAYBACK are mandatory or
          startForeground throws. POST_NOTIFICATIONS is requested for completeness; the media-session
          notification itself is exempt from that gate and shows without it. -->
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
-    <!-- The initial parallel peak index runs as a dataSync foreground service (PeakSweepService). -->
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+  <uses-permission android:name='android.permission.FOREGROUND_SERVICE' />
+  <uses-permission android:name='android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK' />
+  <!-- The initial parallel peak index runs as a dataSync foreground service (PeakSweepService). -->
+  <uses-permission android:name='android.permission.FOREGROUND_SERVICE_DATA_SYNC' />
+  <uses-permission android:name='android.permission.POST_NOTIFICATIONS' />
 
-    <application
-        android:allowBackup="true"
-        android:label="Music Player"
-        android:supportsRtl="true"
-        android:theme="@android:style/Theme.Material.NoActionBar">
-        <activity
-            android:name=".MainActivity"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
+  <application
+    android:allowBackup='true'
+    android:label='Music Player'
+    android:supportsRtl='true'
+    android:theme='@android:style/Theme.Material.NoActionBar'>
+    <activity
+      android:name='.MainActivity'
+      android:exported='true'>
+      <intent-filter>
+        <action android:name='android.intent.action.MAIN' />
+        <category android:name='android.intent.category.LAUNCHER' />
+      </intent-filter>
+    </activity>
 
-        <!-- Hosts the player so audio survives the activity being backgrounded or destroyed. The
+    <!-- Hosts the player so audio survives the activity being backgrounded or destroyed. The
              intent-filter action lets external controllers (system media controls, Android Auto,
              Wear) discover the session; the in-app UI binds with a private action for a direct
              handle to the same service-owned controller. -->
-        <service
-            android:name=".PlaybackService"
-            android:exported="true"
-            android:foregroundServiceType="mediaPlayback">
-            <intent-filter>
-                <action android:name="androidx.media3.session.MediaSessionService" />
-            </intent-filter>
-        </service>
+    <service
+      android:name='.PlaybackService'
+      android:exported='true'
+      android:foregroundServiceType='mediaPlayback'>
+      <intent-filter>
+        <action android:name='androidx.media3.session.MediaSessionService' />
+      </intent-filter>
+    </service>
 
-        <!-- The auto-started initial true-peak index: a dataSync foreground service that runs the
+    <!-- The auto-started initial true-peak index: a dataSync foreground service that runs the
              bulk parallel sweep once and self-stops. Not exported; started only in-process. -->
-        <service
-            android:name=".PeakSweepService"
-            android:exported="false"
-            android:foregroundServiceType="dataSync" />
-    </application>
-
+    <service
+      android:name='.PeakSweepService'
+      android:exported='false'
+      android:foregroundServiceType='dataSync'
+    />
+  </application>
 </manifest>

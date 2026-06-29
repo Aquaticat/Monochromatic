@@ -1,7 +1,9 @@
 # @monochromatic-dev/dev-script-task-util
 
-CLI utilities for mise task orchestration: a command executor with `allowFailure` support,
-a file append helper, a make-style dependency checker,
+CLI utilities for mise task orchestration:
+ a command executor with `allowFailure` support,
+a file append helper,
+ a make-style dependency checker,
 a `tsc` wrapper that filters `node_modules` diagnostics,
 and an `oxlint` wrapper that augments diagnostics and suppresses documented false positives.
 
@@ -10,7 +12,8 @@ and an `oxlint` wrapper that augments diagnostics and suppresses documented fals
 ### task-command
 
 Wraps command execution to work around task runner limitations where tasks with
-`allowFailure: true` can't be dependencies. Controls exit codes while preserving
+`allowFailure: true` can't be dependencies.
+ Controls exit codes while preserving
 all output and errors.
 
 ```sh
@@ -37,7 +40,8 @@ The `--` separator is required to distinguish script flags from command argument
 
 ### task-append
 
-Appends text lines to a file. Validates that the target file exists and has write
+Appends text lines to a file.
+ Validates that the target file exists and has write
 permissions before appending.
 
 ```sh
@@ -54,13 +58,19 @@ task-append "new line" -t output.md
 ### task-depends
 
 Make-style dependency checker that replaces mise's built-in `depends`.
-Runs the command only when dependencies are stale, and collapses command output
-(hidden on success, shown on failure).
+Runs the command only when dependencies are stale,
+ and collapses command output
+(hidden on success,
+ shown on failure).
 
 Both `-s` and `-o` accept file globs or `sh:` prefixed shell commands.
 `sh:` commands must output a parseable timestamp on stdout
-(`Infinity`, `-Infinity`, unix epoch, or ISO 8601).
-Non-zero exit codes are errors, not silent staleness signals.
+(`Infinity`,
+ `-Infinity`,
+ unix epoch,
+ or ISO 8601).
+Non-zero exit codes are errors,
+ not silent staleness signals.
 
 ```sh
 # File-based: run build only when sources changed
@@ -87,23 +97,32 @@ task-depends -a -s "src/**" -o "dist/**" -- mise run build
 Wrapper for `tsc` that cleans stale incremental caches and
 filters out diagnostics originating from `node_modules/` paths.
 
-**Incremental cache cleanup.**
-The shared tsconfig sets `composite: true`, which implies `incremental: true`.
-This is intentional; `composite` provides valuable constraints
-(rootDir defaults to the tsconfig directory, all source files must be matched by `include`,
+**Incremental cache cleanup.
+**
+The shared tsconfig sets `composite: true`,
+ which implies `incremental: true`.
+This is intentional;
+ `composite` provides valuable constraints
+(rootDir defaults to the tsconfig directory,
+ all source files must be matched by `include`,
 and `declaration` defaults to true).
-However, tsc's `--build` mode has a cache invalidation bug
+However,
+ tsc's `--build` mode has a cache invalidation bug
 ([#2666](https://github.com/nicolo-ribaudo/tc39-proposal-structs/issues/2666))
 where stale `.tsbuildinfo` files cause false negatives after dependency updates.
-To work around this, `task-tsc` deletes all `dist/**/*.tsbuildinfo` files
-before each invocation, forcing a clean check every time.
+To work around this,
+ `task-tsc` deletes all `dist/**/*.tsbuildinfo` files
+before each invocation,
+ forcing a clean check every time.
 
-**`node_modules` diagnostic filtering.**
+**`node_modules` diagnostic filtering.
+**
 JSR packages ship `.ts` source files instead of `.d.ts` declarations.
 TypeScript's resolver prefers `.ts` siblings over `.js` exports,
 and `skipLibCheck` only covers `.d.ts` files.
 This causes `tsc --build` to type-check JSR package source
-under the consumer's tsconfig, producing false positives
+under the consumer's tsconfig,
+ producing false positives
 (e.g. `noUncheckedIndexedAccess` violations in `@jsr/zod__zod`).
 The wrapper drops diagnostic lines whose file path contains `/node_modules/`
 along with their continuation lines (indented context lines),
@@ -129,8 +148,10 @@ for the full root cause analysis.
 
 Wrapper for `oxlint` that augments diagnostics with extra guidance
 (`oxlint-augment.ts`) and suppresses documented false positives the linter cannot
-be configured to ignore (`oxlint-suppress.ts`). The repo runs lint through this
-wrapper, so the mise `lint:oxlint` task is the boundary that matters.
+be configured to ignore (`oxlint-suppress.ts`).
+ The repo runs lint through this
+wrapper,
+ so the mise `lint:oxlint` task is the boundary that matters.
 
 ```sh
 # Type-aware lint (what the mise lint:oxlint task runs)
@@ -143,42 +164,72 @@ task-oxlint --fix
 task-oxlint --type-aware src/
 ```
 
-Several behaviors differ from invoking `oxlint` directly. They are intentional;
+Several behaviors differ from invoking `oxlint` directly.
+ They are intentional;
 this list exists so they are not mistaken for bugs.
 
-**Forces `--format=default`.**
+**Forces `--format=default`.
+**
 The wrapper prepends `--format=default` unless the caller passes an explicit
-`--format`/`-f`. oxlint's piped default reporter is not stable across versions
-(1.65 emitted the graphical block format when piped, 1.67 emits a compact
-one-line `path:line:col: severity plugin(rule): message` format), and the
-suppression filter parses the graphical block format. Pinning keeps suppression
-working regardless of oxlint version or TTY state. Consequence: `task-oxlint`
-output is always the graphical reporter, even when piped, where raw `oxlint`
+`--format`/`-f`.
+ oxlint's piped default reporter is not stable across versions
+(1.65 emitted the graphical block format when piped,
+ 1.67 emits a compact
+one-line `path:line:col: severity plugin(rule): message` format),
+ and the
+suppression filter parses the graphical block format.
+ Pinning keeps suppression
+working regardless of oxlint version or TTY state.
+ Consequence:
+ `task-oxlint`
+output is always the graphical reporter,
+ even when piped,
+ where raw `oxlint`
 would emit the compact form.
 
-**Suppression only applies to the graphical format.**
-Because the filter parses graphical blocks, passing an explicit non-graphical
-format (`task-oxlint --format=json`) bypasses suppression: the suppressed false
-positive reappears and the run exits non-zero. The `lint:oxlint` task passes no
-`--format`, so it receives the pin and suppression fires.
+**Suppression only applies to the graphical format.
+**
+Because the filter parses graphical blocks,
+ passing an explicit non-graphical
+format (`task-oxlint --format=json`) bypasses suppression:
+ the suppressed false
+positive reappears and the run exits non-zero.
+ The `lint:oxlint` task passes no
+`--format`,
+ so it receives the pin and suppression fires.
 
-**Diverges from raw oxlint.**
+**Diverges from raw oxlint.
+**
 A direct `oxlint` invocation (or CI not routed through `task-oxlint`) still
-reports the suppressed diagnostic. The `Found N warnings and M errors.` summary is
-recomputed from post-suppression counts, so it can differ from what oxlint
+reports the suppressed diagnostic.
+ The `Found N warnings and M errors.` summary is
+recomputed from post-suppression counts,
+ so it can differ from what oxlint
 originally printed.
 
-**Converts failure to success only for purely-suppressed runs.**
+**Converts failure to success only for purely-suppressed runs.
+**
 The wrapper substitutes exit 0 for oxlint's non-zero exit only when every parsed
-diagnostic block was suppressed, oxlint exited with its ordinary diagnostics code
-(`1`), and stderr was empty. If real diagnostics survive, nothing was suppressed,
-oxlint exited with another code, or anything reached stderr (a config error or
-panic that coincides with a suppressible block), the original failure is
-preserved. A suppressed false positive can never hide a real fault.
+diagnostic block was suppressed,
+ oxlint exited with its ordinary diagnostics code
+(`1`),
+ and stderr was empty.
+ If real diagnostics survive,
+ nothing was suppressed,
+oxlint exited with another code,
+ or anything reached stderr (a config error or
+panic that coincides with a suppressible block),
+ the original failure is
+preserved.
+ A suppressed false positive can never hide a real fault.
 
-**`OXLINT_THREADS` overrides thread count.**
-When set, the wrapper injects `--threads <value>`. oxlint ignores
-`RAYON_NUM_THREADS`, so this env var is the only way to pin threads without
+**`OXLINT_THREADS` overrides thread count.
+**
+When set,
+ the wrapper injects `--threads <value>`.
+ oxlint ignores
+`RAYON_NUM_THREADS`,
+ so this env var is the only way to pin threads without
 editing every call site.
 
 The only suppressed false positive today is the `CssValue` branded-nesting case;
@@ -189,54 +240,80 @@ see `docs/troubleshooting/oxlint-prefer-readonly-branded-nesting.md`.
 Mise's built-in `depends` has three problems that make it unsuitable for
 environment prerequisites like container image builds.
 
-**`depends` always re-runs.**
+**`depends` always re-runs.
+**
 Mise's `depends` field unconditionally re-executes every listed task on every invocation.
-A `podman build` that takes 30 seconds runs before every test, even when the image already exists.
-Mise does offer `sources`/`outputs` for staleness checking, but these only work with files;
-they cannot check whether a container image, a system package, or a running service exists.
+A `podman build` that takes 30 seconds runs before every test,
+ even when the image already exists.
+Mise does offer `sources`/`outputs` for staleness checking,
+ but these only work with files;
+they cannot check whether a container image,
+ a system package,
+ or a running service exists.
 
-**`sources`/`outputs` is file-only.**
+**`sources`/`outputs` is file-only.
+**
 Mise's staleness detection compares file modification times and metadata hashes.
 This works for source-to-artifact builds but cannot express conditions like
 "does this container image exist" (`podman image exists`) or
 "is this service healthy" (`curl --fail http://localhost:8080/health`).
 `task-depends` accepts `sh:` prefixed shell commands in both `-s` and `-o`.
-Commands must output a parseable timestamp (`Infinity`, `-Infinity`,
-unix epoch seconds/ms, or ISO 8601). Non-zero exit codes are treated as errors,
+Commands must output a parseable timestamp (`Infinity`,
+ `-Infinity`,
+unix epoch seconds/ms,
+ or ISO 8601).
+ Non-zero exit codes are treated as errors,
 preventing silent misinterpretation when commands fail unexpectedly.
 
-**`depends` output is noisy.**
-When a depended-on task runs, its full stdout/stderr streams into the parent task's output.
+**`depends` output is noisy.
+**
+When a depended-on task runs,
+ its full stdout/stderr streams into the parent task's output.
 For long-running builds this drowns out the actual task output.
 `task-depends` captures the command's output and only shows it when the command fails,
 keeping the happy path clean.
 
 ### Staleness model
 
-Everything resolves to timestamps. Stale when `strategy(sources) > strategy(outputs)`.
+Everything resolves to timestamps.
+ Stale when `strategy(sources) > strategy(outputs)`.
 
 **File globs** resolve to file modification times.
-Empty globs contribute no timestamps; the aggregation strategy returns `-Infinity`
-("no information"), which means empty sources never trigger and empty outputs always trigger.
+Empty globs contribute no timestamps;
+ the aggregation strategy returns `-Infinity`
+("no information"),
+ which means empty sources never trigger and empty outputs always trigger.
 
 **`sh:` commands** must output a parseable timestamp on stdout:
 
-- `Infinity` or `-Infinity` (gate pattern: exists/missing)
+- `Infinity` or `-Infinity` (gate pattern:
+   exists/missing)
 - Unix epoch seconds or milliseconds
 - ISO 8601 date string
 
-Non-zero exit codes throw an error. To handle command failures gracefully,
-use the shell gate pattern: `sh:command && echo Infinity || echo -Infinity`.
+Non-zero exit codes throw an error.
+ To handle command failures gracefully,
+use the shell gate pattern:
+ `sh:command && echo Infinity || echo -Infinity`.
 
 **Aggregation strategies** reduce multiple timestamps per side to one value:
 
-- `newest` (default): `Math.max`; any new source or any fresh output dominates
-- `oldest`: `Math.min`; catches the oldest/missing item in mixed lists
-- `mean`: arithmetic mean of all timestamps
-- `median`: middle value, robust to outliers
-- `sh:command`: custom shell command that receives millisecond timestamps
+- `newest` (default):
+   `Math.max`;
+   any new source or any fresh output dominates
+- `oldest`:
+   `Math.min`;
+   catches the oldest/missing item in mixed lists
+- `mean`:
+   arithmetic mean of all timestamps
+- `median`:
+   middle value,
+   robust to outliers
+- `sh:command`:
+   custom shell command that receives millisecond timestamps
   on stdin (one per line) and must output a single millisecond timestamp,
-  `Infinity`, or `-Infinity`
+  `Infinity`,
+   or `-Infinity`
 
 ```sh
 # Custom strategy using Unix sort (minimum = oldest)
@@ -246,38 +323,71 @@ task-depends --output-time-strategy "sh:sort -n | head -1" -s "src/**" -o "dist/
 task-depends --source-time-strategy "sh:awk '{s+=$1;n++} END{print s/n}'" -s "src/**" -o "dist/**" -- mise run build
 ```
 
-Commands run via `/bin/sh` (Node.js `child_process` with `shell: true`).
+Commands run via `/bin/sh` (Node.
+js `child_process` with `shell: true`).
 
 ## Flags
 
 ### task-command
 
-- **-a, --allowFailure**: suppress the command's non-zero exit code (always exit 0)
-- **-s, --shell**: execute the command string through the system shell
-- **-t, --timeout \<ms\>**: kill the command after the given number of milliseconds
+- **-a,
+   --allowFailure**:
+   suppress the command's non-zero exit code (always exit 0)
+- **-s,
+   --shell**:
+   execute the command string through the system shell
+- **-t,
+   --timeout \<ms\>**:
+   kill the command after the given number of milliseconds
 
 ### task-append
 
-- **-t, --to \<file\>**: target file to append to (required)
+- **-t,
+   --to \<file\>**:
+   target file to append to (required)
 
 ### task-depends
 
-- **-s, --sources \<glob | sh:command\>**: source item (repeatable, optional)
-- **-o, --outputs \<glob | sh:command\>**: output item (repeatable, at least one required)
-- **--source-time-strategy \<strategy\>**: aggregation for source timestamps (default: `newest`)
-- **--output-time-strategy \<strategy\>**: aggregation for output timestamps (default: `newest`)
-- **-a, --allowFailure**: suppress the command's non-zero exit code (always exit 0)
-- **-v, --verbose**: log staleness decision details to stderr
+- **-s,
+   --sources \<glob | sh:
+  command\>**:
+   source item (repeatable,
+   optional)
+- **-o,
+   --outputs \<glob | sh:
+  command\>**:
+   output item (repeatable,
+   at least one required)
+- **--source-time-strategy \<strategy\>**:
+   aggregation for source timestamps (default:
+   `newest`)
+- **--output-time-strategy \<strategy\>**:
+   aggregation for output timestamps (default:
+   `newest`)
+- **-a,
+   --allowFailure**:
+   suppress the command's non-zero exit code (always exit 0)
+- **-v,
+   --verbose**:
+   log staleness decision details to stderr
 
-Strategies: `newest`, `oldest`, `mean`, `median`, or `sh:command`.
+Strategies:
+ `newest`,
+ `oldest`,
+ `mean`,
+ `median`,
+ or `sh:command`.
 
 ### task-tsc
 
-No flags of its own. All arguments are forwarded directly to `tsc`.
+No flags of its own.
+ All arguments are forwarded directly to `tsc`.
 Defaults to `--build` when no arguments are provided.
 
 ### task-oxlint
 
-No flags of its own; all arguments are forwarded to `oxlint`. The wrapper
+No flags of its own;
+ all arguments are forwarded to `oxlint`.
+ The wrapper
 prepends `--format=default` unless an explicit `--format`/`-f` is present,
 and reads the `OXLINT_THREADS` env var to inject `--threads <value>`.

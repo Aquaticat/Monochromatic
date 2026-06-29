@@ -261,10 +261,12 @@ export function buildMorphInput({
    */
   const previous = previousSummary?.trim();
   if ((previous !== undefined) && (previous !== '')) {
-    parts.push('<keepContext>',);
-    parts.push('[Previous compacted context]',);
-    parts.push(previous,);
-    parts.push('</keepContext>',);
+    parts.push(
+      '<keepContext>',
+      '[Previous compacted context]',
+      previous,
+      '</keepContext>'
+    );
   }
   if (serializedConversation.trim()
     !== '')

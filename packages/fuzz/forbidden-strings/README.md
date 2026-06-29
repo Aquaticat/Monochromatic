@@ -1,73 +1,106 @@
 # Fuzzing forbidden-strings
 
-Coverage-guided fuzzing for the scanner's regex routing, AC-gate
-extractor, walker helpers, residual-shard partitioner, and hit
-formatter. CI integration is **deferred**; targets are exercised
-locally and on demand only. The rationale and rejected
+Coverage-guided fuzzing for the scanner's regex routing,
+ AC-gate
+extractor,
+ walker helpers,
+ residual-shard partitioner,
+ and hit
+formatter.
+ CI integration is **deferred**;
+ targets are exercised
+locally and on demand only.
+ The rationale and rejected
 alternatives are recorded in
 [`docs/decisions/forbidden-strings-fuzzing.md`](../../../docs/decisions/forbidden-strings-fuzzing.md).
 
 ## Prerequisites
 
-- Nightly Rust toolchain. `cargo-fuzz` injects
+- Nightly Rust toolchain.
+   `cargo-fuzz` injects
   `-Cllvm-args=-sanitizer-coverage-*` flags that only work on
-  nightly. The toolchain is managed repo-wide in the root
+  nightly.
+   The toolchain is managed repo-wide in the root
   [`mise.no-env.toml`](../../../mise.no-env.toml) `[tools]` entry
   (`rust = { version = "nightly", components = "rust-src,llvm-tools-preview" }`),
   so `mise install` provisions nightly (with std sources and the
-  llvm coverage tools) for every crate, and tasks run here inherit
-  it. `llvm-tools-preview` supplies `llvm-cov` / `llvm-profdata` for
+  llvm coverage tools) for every crate,
+   and tasks run here inherit
+  it.
+   `llvm-tools-preview` supplies `llvm-cov` / `llvm-profdata` for
   `cargo fuzz coverage`.
-- `cargo-fuzz` 0.13.1. Installed automatically by `mise install`
+- `cargo-fuzz` 0.13.1.
+   Installed automatically by `mise install`
   from the root [`mise.no-env.toml`](../../../mise.no-env.toml)
   `[tools]` entry.
-- A C++ toolchain (clang or gcc). `libfuzzer-sys` builds a small
+- A C++ toolchain (clang or gcc).
+   `libfuzzer-sys` builds a small
   C++ runtime that the targets link against.
 - `podman` (or `docker`) for the bounded-container wrapper
   described below.
-- `resharp = "0.6"` is the pinned engine version (was 0.5.2). Replays of every
+- `resharp = "0.6"` is the pinned engine version (was 0.5.2).
+   Replays of every
   0.5.2-era crash are recorded in
   [`docs/decisions/forbidden-strings-fuzzing.md`](../../../docs/decisions/forbidden-strings-fuzzing.md).
 
 ## Target list
 
-Each target encodes one invariant. Failures are libFuzzer crashes
-with a redacted reproducer (pattern source + content SHA-256, no
+Each target encodes one invariant.
+ Failures are libFuzzer crashes
+with a redacted reproducer (pattern source + content SHA-256,
+ no
 raw bytes).
 
 All seven targets share a single tuned dictionary at
-`dictionaries/forbidden-strings.dict` (one dictionary, not per-target). Each
-target has its own per-target seed corpus under `corpus/<target>/`. Crash
+`dictionaries/forbidden-strings.dict` (one dictionary,
+ not per-target).
+ Each
+target has its own per-target seed corpus under `corpus/<target>/`.
+ Crash
 output uses a Unicode-literal-aware printable renderer (the May 2026 mojibake fix
 in commit `099bfe84`).
 
 - **`fuzz_extract_gate_soundness`** -- load-bearing primary.
-  For every successful regex match, at least one extracted gate
+  For every successful regex match,
+   at least one extracted gate
   substring must appear in the content under the gate's
-  case-sensitivity flag. Catches the AC-gate disable bug class
+  case-sensitivity flag.
+   Catches the AC-gate disable bug class
   behind commits e49d8694 / e100659f / 9b41fca0.
-- **`fuzz_ruleset_scan_invariants`** -- hit-format shape, UTF-8
-  column boundaries, position-in-content, rayon thread-count
-  invariance, rule-order invariance.
+- **`fuzz_ruleset_scan_invariants`** -- hit-format shape,
+   UTF-8
+  column boundaries,
+   position-in-content,
+   rayon thread-count
+  invariance,
+   rule-order invariance.
 - **`fuzz_regex_engine_dispatch`** -- routing correctness.
   AST resharp-only features imply `requires_resharp` returns
-  true; `compile_rule_src`'s chosen `CompiledRegex` variant
+  true;
+   `compile_rule_src`'s chosen `CompiledRegex` variant
   matches the classifier.
 - **`fuzz_regex_syntax_walkers`** -- six index-walking helpers:
-  panic-freedom, UTF-8 boundary on returned offsets, returned
+  panic-freedom,
+   UTF-8 boundary on returned offsets,
+   returned
   suffixes are address-and-length suffixes of the input.
-- **`fuzz_scan_format`** -- line-index monotonicity, 1-indexed
-  cols, hit-end clipping, redaction (formatted hit never contains
+- **`fuzz_scan_format`** -- line-index monotonicity,
+   1-indexed
+  cols,
+   hit-end clipping,
+   redaction (formatted hit never contains
   the matched byte range).
 - **`fuzz_residual_shards`** -- partition (every position in
   exactly one shard) and combined-gate non-false-negative (if any
-  member matches, gate is not `Ok(false)`).
+  member matches,
+   gate is not `Ok(false)`).
 - **`fuzz_literal_roundtrip`** -- `escape_literal` -> walker
   recovers original bytes.
 
 ## Local commands (via mise)
 
-All commands run on nightly automatically: the repo-root
+All commands run on nightly automatically:
+ the repo-root
 `rust = nightly` tool applies its toolchain to every task.
 
 ```bash
@@ -89,9 +122,11 @@ mise run //packages/fuzz/forbidden-strings:seed
 
 ## Bounded-container wrapper (resource-exhaustion rule)
 
-The repo's resource-exhaustion-isolation policy applies: every
+The repo's resource-exhaustion-isolation policy applies:
+ every
 fuzz command must run inside a memory-and-CPU-bounded container.
-Past authorisation does not transfer; each heavy run requires the
+Past authorisation does not transfer;
+ each heavy run requires the
 wrapper.
 
 ```bash
@@ -105,37 +140,54 @@ podman run \
   mise run //packages/fuzz/forbidden-strings:smoke
 ```
 
-The image needs nightly Rust, cargo-fuzz 0.13.1, and clang. A
+The image needs nightly Rust,
+ cargo-fuzz 0.13.1,
+ and clang.
+ A
 local builder VM (`mvm`) is the recommended alternative when a
 prebuilt image isn't handy.
 
 ## Corpus and artifact policy
 
 - `corpus/<target>/seed-*` -- curated seed files committed
-  to the repo (re-included via `.gitignore`). 192 unique
-  literals per target, extracted from
+  to the repo (re-included via `.gitignore`).
+   192 unique
+  literals per target,
+   extracted from
   `rules/{extract,atom,engine,algebra}_tests.rs` by
   `seed-from-tests`.
 - `corpus/<target>/<other>` -- libFuzzer's corpus growth.
   Ignored.
-- `artifacts/` -- libFuzzer's crash reproducers. Always
-  ignored. Open one with `cat artifacts/<target>/crash-*`
-  ONLY in a private session; the artifact bytes are the exact
+- `artifacts/` -- libFuzzer's crash reproducers.
+   Always
+  ignored.
+   Open one with `cat artifacts/<target>/crash-*`
+  ONLY in a private session;
+   the artifact bytes are the exact
   fuzzer-mutated input that triggered the crash and may contain
   secret-shaped bytes.
-- `coverage/` -- coverage data. Ignored.
+- `coverage/` -- coverage data.
+   Ignored.
 - `Cargo.lock`:
   Committed so the fuzz toolchain stays reproducible.
   Root `.gitignore` does not ignore Cargo lockfiles.
 
 The local deny-list (`/forbidden-strings.local.txt`) must NEVER
-enter the corpus, dictionary, or reproducer text. The seeder's
-guard is narrower than that policy: it runs `git check-ignore -v` on
-`../../cli/forbidden-strings/forbidden-strings.local.txt` before reading anything, and bails
+enter the corpus,
+ dictionary,
+ or reproducer text.
+ The seeder's
+guard is narrower than that policy:
+ it runs `git check-ignore -v` on
+`../../cli/forbidden-strings/forbidden-strings.local.txt` before reading anything,
+ and bails
 if the file exists and is NOT gitignored (see
-`src/bin/seed-from-tests.rs`). The seeder itself only
-reads files in `TEST_FILES`, so the guard is defence-in-depth against a
-future edit that adds the deny-list to that list. Hand-curated
+`src/bin/seed-from-tests.rs`).
+ The seeder itself only
+reads files in `TEST_FILES`,
+ so the guard is defence-in-depth against a
+future edit that adds the deny-list to that list.
+ Hand-curated
 corpus / dictionary / reproducer edits remain entirely the
 contributor's responsibility — the guard cannot detect a deny-list
 byte sequence copied into one of those artifacts by hand.
@@ -145,7 +197,8 @@ byte sequence copied into one of those artifacts by hand.
 When a target reports a crash:
 
 1. The reproducer lives at
-   `artifacts/<target>/crash-<sha>`. Note its path.
+   `artifacts/<target>/crash-<sha>`.
+    Note its path.
 2. Re-run the exact input to confirm:
    ```bash
    mise run //packages/fuzz/forbidden-strings:run \
@@ -158,8 +211,11 @@ When a target reports a crash:
    `cargo +nightly fuzz fmt <target> <path>` (decodes the bytes
    through the target's `Arbitrary` impl and prints the
    structured form).
-5. **Redaction**: when filing an issue or commit message about
-   the crash, NEVER paste raw reproducer bytes. The panic
+5. **Redaction**:
+    when filing an issue or commit message about
+   the crash,
+    NEVER paste raw reproducer bytes.
+    The panic
    message printed by every target already includes pattern
    source + content length + SHA-256 -- that is the reproducer
    shape to share.
@@ -168,25 +224,32 @@ When a target reports a crash:
 
 Each fuzz target installs a `std::panic::set_hook` that catches resharp engine
 panics matching known upstream bug shapes (Bug B at `resharp/src/engine.rs:1020`,
-Bug F at `resharp-algebra/src/lib.rs:2470`, plus the intersection-quant hang
+Bug F at `resharp-algebra/src/lib.rs:2470`,
+ plus the intersection-quant hang
 shapes) and lets them unwind quietly so `compile_rule_src`'s `catch_unwind` can
-intercept them and the fuzz run can move on to the next input. Genuine panics
+intercept them and the fuzz run can move on to the next input.
+ Genuine panics
 in our own code still call the default hook and `abort()` so libFuzzer records a
-crash. The installation is `Once`-guarded so the hook installs exactly once per
-process. See `fuzz_targets/fuzz_extract_gate_soundness.rs:147-192` for the
+crash.
+ The installation is `Once`-guarded so the hook installs exactly once per
+process.
+ See `fuzz_targets/fuzz_extract_gate_soundness.rs:147-192` for the
 implementation and
 [`docs/decisions/forbidden-strings-fuzzing.md`](../../../docs/decisions/forbidden-strings-fuzzing.md)
 for the full bug list.
 
 The pre-validators added on top of resharp catch most of these shapes before
-resharp sees them; the panic filter is belt-and-suspenders for new shapes the
+resharp sees them;
+ the panic filter is belt-and-suspenders for new shapes the
 pre-validators do not yet cover.
 
 ## Corpus refresh trigger
 
 Re-run the seeder whenever a test file under
 `packages/cli/forbidden-strings/src/rules/` changes (specifically
-the `extract_tests.rs`, `atom_tests.rs`, `engine_tests.rs`,
+the `extract_tests.rs`,
+ `atom_tests.rs`,
+ `engine_tests.rs`,
 `algebra_tests.rs` files):
 
 ```bash
@@ -194,13 +257,15 @@ mise run //packages/fuzz/forbidden-strings:seed
 git add packages/fuzz/forbidden-strings/corpus/
 ```
 
-Without the refresh, the curated seed corpus rots and libFuzzer
+Without the refresh,
+ the curated seed corpus rots and libFuzzer
 loses the fixture-derived coverage starting point.
 
 ## Soundness-by-revert validation
 
 The primary target `fuzz_extract_gate_soundness` is meant to fire
-on the AC-gate disable bug class. To verify it would catch a real
+on the AC-gate disable bug class.
+ To verify it would catch a real
 bug:
 
 1. Create a disposable git worktree from current `main`.
@@ -212,9 +277,11 @@ bug:
      fuzz_extract_gate_soundness -- -max_total_time=120
    ```
 4. Confirm libFuzzer reports a soundness failure with the
-   redacted reproducer shape (pattern source, content length,
+   redacted reproducer shape (pattern source,
+    content length,
    content SHA-256 -- no raw bytes).
 5. Remove the worktree.
 
-This is the final verification step; without it the target's
+This is the final verification step;
+ without it the target's
 load-bearing claim is unproven.

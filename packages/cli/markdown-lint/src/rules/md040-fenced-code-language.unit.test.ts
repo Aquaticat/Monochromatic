@@ -4,6 +4,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
+import { applyFixes, } from '../fix.ts';
 import { runRules, } from '../lint.ts';
 import type { Diagnostic, } from '../types.ts';
 import { fencedCodeLanguage, } from './md040-fenced-code-language.ts';
@@ -42,6 +43,20 @@ await describe({
       name: 'ignores indented code blocks',
       fn: async function indented() {
         expect(lint('Paragraph.\n\n    indented code line\n',).length,).toBe(0,);
+      },
+    },),
+    it({
+      name: 'fix inserts a text language label and is idempotent',
+      fn: async function fixes() {
+        /**
+         * Source after inserting the default language label.
+         */
+        const fixed = applyFixes({
+          source: '````\nplain\n````\n',
+          diagnostics: lint('````\nplain\n````\n',),
+        },);
+        expect(fixed,).toBe('````text\nplain\n````\n',);
+        expect(lint(fixed,).length,).toBe(0,);
       },
     },),
   ],

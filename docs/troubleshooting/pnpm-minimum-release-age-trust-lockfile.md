@@ -135,7 +135,8 @@ reviewed,
 Add the rejected packages to `minimumReleaseAgeExclude` in `pnpm-workspace.yaml`,
  then rerun the normal install.
 
-Use one entry per package, not one entry per version.
+Use one entry per package,
+ not one entry per version.
 A bare name (`@scope/pkg`) exempts every version;
  a single `||` union (`@scope/pkg@1.0.0 || 1.1.0`) exempts the listed versions.
 Listing the same name on multiple `name@version` lines does not work:

@@ -6,8 +6,10 @@ It registers only two model-callable tools:
 - `linkup_web_search`
 - `linkup_web_fetch`
 
-The package deliberately does not provide `linkup_web_answer`, balance commands,
-research tools, or per-call search-depth controls.
+The package deliberately does not provide `linkup_web_answer`,
+ balance commands,
+research tools,
+ or per-call search-depth controls.
 
 ## Configuration
 
@@ -39,8 +41,12 @@ and every fetch attempt before Linkup is called.
 - `outputType: "searchResults"`
 - `excludeDomains` set to the normalized global blocklist
 
-Legacy or unsupported keys such as `depth`, `limit`, `maxResults`,
-`excludeDomains`, `includeImages`, and `outputType` are ignored.
+Legacy or unsupported keys such as `depth`,
+ `limit`,
+ `maxResults`,
+`excludeDomains`,
+ `includeImages`,
+ and `outputType` are ignored.
 The tool returns a warning text item before the response when that happens.
 
 When a search response is exactly `{ "results": [...] }`,

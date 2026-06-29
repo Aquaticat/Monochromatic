@@ -25,7 +25,8 @@ rgffplay "Sweet Devil"
 1. Builds a glob pattern from the name words
 2. Resolves the music directory from `$XDG_MUSIC_DIR` or `xdg-user-dir MUSIC`
 3. Runs `rg --files -g <glob> <music_dir> --null` to find matching files
-4. Plays matched files with `ffplay -loop 0 -nodisp` (loops indefinitely, no video window)
+4. Plays matched files with `ffplay -loop 0 -nodisp` (loops indefinitely,
+    no video window)
 
 ## Why not a bash function?
 
@@ -43,15 +44,21 @@ rgffplay() {
 ```
 
 The bracket-case loop with substring extraction and parameter expansion
-(`${c^^}`, `${c,,}`, `${w:1}`) reads like line noise to anyone not fluent in bash-isms.
+(`${c^^}`,
+ `${c,,}`,
+ `${w:1}`) reads like line noise to anyone not fluent in bash-isms.
 Add error handling for zero or ambiguous matches and it gets worse fast.
 
 Bash `${c^^}` and `${c,,}` also rely on the C locale's `toupper`/`tolower`,
-so accented characters (`é`, `ç`, `ü`) may not case-fold correctly depending on locale settings.
+so accented characters (`é`,
+ `ç`,
+ `ü`) may not case-fold correctly depending on locale settings.
 JavaScript's `toUpperCase()`/`toLowerCase()` uses Unicode-aware case mapping by default.
 
 The TypeScript version is more verbose,
-but `bracketFirst`, `buildGlob`, `findFiles` are self-documenting.
+but `bracketFirst`,
+ `buildGlob`,
+ `findFiles` are self-documenting.
 You can skim the function names and understand the pipeline
 without parsing cryptic sigils.
 
@@ -60,7 +67,9 @@ without parsing cryptic sigils.
 ffplay's in-place progress line (the `\r`-updating time position) does not display.
 Bun's `child_process.spawn` does not preserve TTY characteristics even with `stdio: 'inherit'`,
 so ffplay sees a pipe instead of a terminal and suppresses the progress output.
-The banner, metadata, and audio playback work normally.
+The banner,
+ metadata,
+ and audio playback work normally.
 
 ## Dependencies
 

@@ -7,7 +7,8 @@ Runtime assertions that pass the value through or throw.
 Each helper narrows the static type when the runtime check passes,
 and throws an `Error` describing the offending value when the check fails.
 Use these wherever the non-null assertion operator (`!`) would otherwise be reached for:
-the runtime check turns a silent type lie into a loud, debuggable failure.
+the runtime check turns a silent type lie into a loud,
+ debuggable failure.
 
 ## Helpers
 
@@ -57,7 +58,12 @@ the runtime check turns a silent type lie into a loud, debuggable failure.
 </tbody>
 </table>
 
-Recognized size shapes: strings, arrays, `Set`, `Map`, plain objects.
+Recognized size shapes:
+ strings,
+ arrays,
+ `Set`,
+ `Map`,
+ plain objects.
 `WeakSet` and `WeakMap` are intentionally rejected (no enumerable size).
 Bare iterables and async iterables are rejected (sizing requires consumption).
 
@@ -196,7 +202,9 @@ Objects must have `Symbol.iterator` or `Symbol.asyncIterator` to pass.
 </tbody>
 </table>
 
-Boxed-primitive wrappers (`new String(...)`, `new Number(...)`, etc.) are intentionally rejected.
+Boxed-primitive wrappers (`new String(...)`,
+ `new Number(...)`,
+ etc.) are intentionally rejected.
 
 ### Numeric union
 
@@ -224,24 +232,29 @@ Boxed-primitive wrappers (`new String(...)`, `new Number(...)`, etc.) are intent
 - `satisfiesOrThrowAsync({ value, predicate? })(candidate)` throws when the async-capable
   satisfaction check fails.
 
-When `predicate` is omitted, both helpers use `Object.is(candidate, value)`.
+When `predicate` is omitted,
+ both helpers use `Object.is(candidate, value)`.
 Default equality narrows the successful return type to the intersection of the candidate type
 and the configured value type.
 
-When `predicate` is present, it receives one object parameter:
+When `predicate` is present,
+ it receives one object parameter:
 `{ candidate, value }`.
 A `true` result returns `candidate` unchanged.
 A `false` result throws an `Error`.
 Predicates may also throw their own error.
-That is a supported use case: the helper does not wrap or replace predicate-thrown errors,
+That is a supported use case:
+ the helper does not wrap or replace predicate-thrown errors,
 so predicates can provide domain-specific diagnostics.
 Predicates must return literal booleans.
 The synchronous helper rejects Promise-returning predicates at runtime and points callers to
 `satisfiesOrThrowAsync`.
-The async helper accepts `boolean` or `Promise<boolean>`, then rejects resolved non-boolean values.
+The async helper accepts `boolean` or `Promise<boolean>`,
+ then rejects resolved non-boolean values.
 Async predicate rejections also propagate unchanged.
 Custom predicates deliberately return the candidate type as-is because predicates can be fuzzy:
-for example, a case-insensitive predicate can accept `'READY'` for configured value `'ready'`,
+for example,
+ a case-insensitive predicate can accept `'READY'` for configured value `'ready'`,
 so typing the result as literal `'ready'` would lie about the runtime value.
 
 ## Usage
@@ -309,15 +322,20 @@ import type {
 } from '@monochromatic-dev/module-or-throw';
 ```
 
-- `Falsy`: union of `false | 0 | 0n | '' | null | undefined`.
+- `Falsy`:
+   union of `false | 0 | 0n | '' | null | undefined`.
   `NaN` is falsy at runtime but cannot be represented as a literal type.
-- `ExtractOrUnknown<T, U>`: variant of `Extract<T, U>` that returns `U` when `T` is `unknown`,
+- `ExtractOrUnknown<T, U>`:
+   variant of `Extract<T, U>` that returns `U` when `T` is `unknown`,
   instead of collapsing to `never`.
   Used internally by every `Extract`-based narrowing helper so `unknown` inputs
   (e.g. parsed JSON) narrow correctly.
-- `SatisfiesOrThrowPredicateParameters<Candidate, Value>`: object passed into custom predicates.
-- `SatisfiesOrThrowPredicate<Value, Candidate = unknown>`: synchronous predicate type returning `boolean`.
-- `SatisfiesOrThrowAsyncPredicate<Value, Candidate = unknown>`: async-capable predicate type returning `boolean`
+- `SatisfiesOrThrowPredicateParameters<Candidate, Value>`:
+   object passed into custom predicates.
+- `SatisfiesOrThrowPredicate<Value, Candidate = unknown>`:
+   synchronous predicate type returning `boolean`.
+- `SatisfiesOrThrowAsyncPredicate<Value, Candidate = unknown>`:
+   async-capable predicate type returning `boolean`
   or `Promise<boolean>`.
 
 ## NaN caveat
@@ -326,19 +344,32 @@ import type {
 `truthyOrThrow(NaN,)` throws at runtime,
 but TypeScript cannot statically exclude `NaN` from a `number` parameter,
 so the returned type is the same `number`.
-`numberOrThrow` accepts `NaN`: it is a number-typed value.
+`numberOrThrow` accepts `NaN`:
+ it is a number-typed value.
 Callers that need a NaN-narrowed type must use `Number.isNaN` separately.
 
 ## Design decisions
 
-- **Source-only.** The package has no build step; consumers import directly from `src/index.ts`.
-- **Direct named exports.** No `$` aliasing. Consumers write `import { nonNullishOrThrow }` and call the function by its real name.
-- **One file per helper.** Each helper owns a sibling file; `index.ts` is a pure re-export barrel.
-- **Family convention.** Every helper in this package uses the `<predicate>OrThrow` suffix
+- **Source-only.
+  ** The package has no build step;
+   consumers import directly from `src/index.ts`.
+- **Direct named exports.
+  ** No `$` aliasing.
+   Consumers write `import { nonNullishOrThrow }` and call the function by its real name.
+- **One file per helper.
+  ** Each helper owns a sibling file;
+   `index.ts` is a pure re-export barrel.
+- **Family convention.
+  ** Every helper in this package uses the `<predicate>OrThrow` suffix
   so the throw semantics are explicit at every call site,
   even when the import line is folded or out of view.
-- **`ExtractOrUnknown` over `Extract`.** Plain `Extract<unknown, X>` evaluates to `never`,
+- **`ExtractOrUnknown` over `Extract`.
+  ** Plain `Extract<unknown, X>` evaluates to `never`,
   silently breaking the most common call shape (a value typed `unknown` from parsed JSON or
-  a fetched payload). Every narrowing helper uses `ExtractOrUnknown` instead.
-- **Skipped categories.** Value-range refinements (`positiveOrThrow`, `finiteOrThrow`,
-  `integerOrThrow`) are intentionally out of scope; add them when a call site needs them.
+  a fetched payload).
+   Every narrowing helper uses `ExtractOrUnknown` instead.
+- **Skipped categories.
+  ** Value-range refinements (`positiveOrThrow`,
+   `finiteOrThrow`,
+  `integerOrThrow`) are intentionally out of scope;
+   add them when a call site needs them.

@@ -8,8 +8,10 @@ Call any ESM export from the command line.
 cli-fy <specifier> <export> [args...]
 ```
 
-Dynamically imports `<specifier>`, accesses its named `<export>`,
-calls it with the provided arguments (if it is a function), and prints the result.
+Dynamically imports `<specifier>`,
+ accesses its named `<export>`,
+calls it with the provided arguments (if it is a function),
+ and prints the result.
 
 ## Examples
 
@@ -53,6 +55,9 @@ Specifiers are resolved in this order:
 
 ## Error handling
 
-- Non-existent export: lists all available exports from the module
-- Non-function export with arguments: throws an error explaining the type mismatch
-- Unresolvable specifier: lists all directories that were searched
+- Non-existent export:
+   lists all available exports from the module
+- Non-function export with arguments:
+   throws an error explaining the type mismatch
+- Unresolvable specifier:
+   lists all directories that were searched

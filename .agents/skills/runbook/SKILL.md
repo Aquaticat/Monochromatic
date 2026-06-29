@@ -8,48 +8,69 @@ description: Use when writing manual steps a user must execute (clicks, keys) af
 Fires only after bridging paths have been tried and confirmed not to work.
 Never the first move.
 Walk this skill end-to-end whenever the task involves writing instructions for a user
-to execute UI clicks, key presses, file edits,
+to execute UI clicks,
+ key presses,
+ file edits,
 or any other manual action that automation could not perform.
 
 Other surface phrases that should trigger the skill:
-"you'll need to", "please open", "manually click",
-"write a runbook", "verification script", "steps for the user",
+"you'll need to",
+ "please open",
+ "manually click",
+"write a runbook",
+ "verification script",
+ "steps for the user",
 "what should I tell the user to do".
 The earliest cue is the moment you catch yourself about to write
 "you'll need to" or "please open" in chat.
 If you have reached that moment without naming the bridges you tried,
-stop, try the bridges, then come back.
+stop,
+ try the bridges,
+ then come back.
 
 The skill encodes five pieces:
-required sections (Setup, Steps, What to check, Restore),
-element-level rules (bold UI elements, expected outcomes, exact strings),
+required sections (Setup,
+ Steps,
+ What to check,
+ Restore),
+element-level rules (bold UI elements,
+ expected outcomes,
+ exact strings),
 fresh-context completeness,
 the canonical example,
 and the cues that signal you are violating the rules.
 
 Recorded dances (verified multi-step procedures kept beside this skill):
 
-- `copilot-review-draft-pr.md`: getting a Copilot code review onto a PR that
-  must stay draft (Copilot skips drafts; the ready window can be seconds).
+- `copilot-review-draft-pr.md`:
+   getting a Copilot code review onto a PR that
+  must stay draft (Copilot skips drafts;
+   the ready window can be seconds).
 
 ## Bridges to try before writing a runbook
 
 This skill is the fallback.
-Before reaching it, try at least one of:
+Before reaching it,
+ try at least one of:
 
 - `agent-browser` for web UIs;
   most clicks have a backing HTTP/IPC endpoint or keyboard shortcut.
-- `xdotool`, `wtype`, or `ydotool` for native UI clicks.
+- `xdotool`,
+   `wtype`,
+   or `ydotool` for native UI clicks.
 - `expect` for interactive auth flows.
 - A CLI flag or API token for actions the UI exposes.
 - A keyboard shortcut to synthesise the click
-  (most menu items have one; check the UI before drafting steps).
+  (most menu items have one;
+   check the UI before drafting steps).
 
 State the bridges you tried in the runbook's prelude
 so the user can tell an unconsidered handoff from a real obstacle.
 
-See AGENTS.md "Before claiming inability" and "Handing off manual actions" lead paragraph
-for the broader rule: a capability claim about the whole toolset,
+See AGENTS.
+md "Before claiming inability" and "Handing off manual actions" lead paragraph
+for the broader rule:
+ a capability claim about the whole toolset,
 not about any single tool.
 
 ## Fresh-context completeness
@@ -158,23 +179,38 @@ Multi-section runbooks survive interruption this way.
 Each numbered step does exactly one observable thing.
 If a step bundles "open the menu and click Settings and then click Save",
 split into three steps.
-The reader scans by number; bundling defeats the scan.
+The reader scans by number;
+ bundling defeats the scan.
 
 ### Bold every UI element
 
-Every keystroke, menu label, button label, and tab name gets `**bold**`:
+Every keystroke,
+ menu label,
+ button label,
+ and tab name gets `**bold**`:
 
-- Keystroke: `**F12**`, `**Ctrl+L**`, `**Shift+F6**`.
-- Menu or button label: `**Console**`, `**Delete**`, `**New File**`.
-- Tab name: `**Network**`, `**Application**`.
+- Keystroke:
+   `**F12**`,
+   `**Ctrl+L**`,
+   `**Shift+F6**`.
+- Menu or button label:
+   `**Console**`,
+   `**Delete**`,
+   `**New File**`.
+- Tab name:
+   `**Network**`,
+   `**Application**`.
 
 Name both the key and the menu when both exist.
-Write `Open Chrome DevTools (**F12**)`, not just `open DevTools`.
+Write `Open Chrome DevTools (**F12**)`,
+ not just `open DevTools`.
 The bold visually anchors the eye to the exact thing to press or click.
 
 ### Expected outcome after every state-changing step
 
-After every step that changes state (click, key, type),
+After every step that changes state (click,
+ key,
+ type),
 state what the user should see:
 
 - A logged line in the console.
@@ -193,9 +229,12 @@ Use the exact string the user should see or filter for.
 Paraphrasing forces the user to re-derive the exact string
 when their eyes scan the output.
 
-- Filter for `"type":"fileChanged"`, not "the rename event".
-- Expect `editord listening on port 4400`, not "the daemon should start".
-- Expect `{ "zeroSize": 0, "zeroMatch": 0 }`, not "the size check passes".
+- Filter for `"type":"fileChanged"`,
+   not "the rename event".
+- Expect `editord listening on port 4400`,
+   not "the daemon should start".
+- Expect `{ "zeroSize": 0, "zeroMatch": 0 }`,
+   not "the size check passes".
 
 ## Pull-request-opening steps
 
@@ -205,7 +244,8 @@ Any runbook step (or direct action) that opens a PR follows this lifecycle:
    Never open ready-for-review directly.
 2. Wait a few minutes for auto reviewers (e.g. Copilot) to post their comments.
 3. Address every reviewer comment:
-   fix what is right (follow-up commits, no amend or force-push),
+   fix what is right (follow-up commits,
+    no amend or force-push),
    reply with verified reasoning where a change is not warranted,
    and resolve each thread.
 4. Only then convert the PR to ready for review (`gh pr ready <number>`).
@@ -218,20 +258,26 @@ and the final conversion.
 ## File placement
 
 A runbook (manual-step procedure) that spans the whole repo lives in `docs/runbook/<topic>.md`,
-kebab-case, with no prefix (the directory names the family). A cross-session state handover lives in
-`docs/handover/<topic>.md`. A runbook or handover tied to one package stays beside that package's code
-and keeps the `HANDOVER.<topic>.md` form, where the prefix still namespaces it among source files.
+kebab-case,
+ with no prefix (the directory names the family).
+ A cross-session state handover lives in
+`docs/handover/<topic>.md`.
+ A runbook or handover tied to one package stays beside that package's code
+and keeps the `HANDOVER.<topic>.md` form,
+ where the prefix still namespaces it among source files.
 
 ## Canonical example
 
 `packages/desktop-daemon/editord/HANDOVER.chokidar-atomic-migration.md` is the reference runbook.
-Match its shape: status markers per section,
+Match its shape:
+ status markers per section,
 what-this-proves intent at the top,
 numbered steps with bold UI elements,
 what-to-check with exact filter strings,
 restore section.
 
-The reference's section headers, copied verbatim
+The reference's section headers,
+ copied verbatim
 so the skill is self-contained if the example file moves:
 
 ```md
@@ -262,7 +308,8 @@ TODO
 
 - "you'll need to" or "please open" without naming the bridges you tried.
 - "open DevTools" instead of "Open DevTools (**F12**)".
-- "find the menu" instead of "right-click an entry, pick **New File**".
+- "find the menu" instead of "right-click an entry,
+   pick **New File**".
 - A step without an expected outcome.
 - A paraphrase ("look for the rename event")
   instead of an exact filter string (`"type":"fileChanged"`).
@@ -279,11 +326,15 @@ Scan once before handing it to the user.
 - At least one bridge tried and named in the prelude.
 - Fresh-context completeness satisfied:
   a new person on a new machine can reach the required starting state from the runbook alone.
-- All four sections present (Setup, Steps, What to check, Restore)
+- All four sections present (Setup,
+   Steps,
+   What to check,
+   Restore)
   with `Status: TODO | DONE` markers.
 - Every UI element bold.
 - Every state-changing step has an expected outcome.
 - Every filter or expected string is concrete
   (the exact bytes the user will see).
 
-If any item is unmet, do not hand the runbook off.
+If any item is unmet,
+ do not hand the runbook off.

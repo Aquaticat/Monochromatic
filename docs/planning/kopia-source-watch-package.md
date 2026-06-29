@@ -1,14 +1,20 @@
 # Planning: Kopia source watch package
 
-Status: design plan only. The earlier per-source systemd unit generator shape is rejected. The
+Status:
+ design plan only.
+ The earlier per-source systemd unit generator shape is rejected.
+ The
 package should be one supervised daemon using Chokidar directly.
 
-Date of plan: 2026-05-31.
+Date of plan:
+ 2026-05-31.
 
 ## Problem
 
-Kopia supports policy schedules through `kopia server start`, but that command starts an
-HTTP and gRPC server. That is more surface area than needed for local automatic snapshots.
+Kopia supports policy schedules through `kopia server start`,
+ but that command starts an
+HTTP and gRPC server.
+ That is more surface area than needed for local automatic snapshots.
 
 The current operational baseline is a user systemd timer that runs:
 
@@ -16,10 +22,13 @@ The current operational baseline is a user systemd timer that runs:
 kopia snapshot create --all
 ```
 
-That baseline is robust and simple, but it has two limitations:
+That baseline is robust and simple,
+ but it has two limitations:
 
-- Every run rescans all local Kopia sources, even when only one source changed.
-- The cadence is time-based, not file-change-based.
+- Every run rescans all local Kopia sources,
+   even when only one source changed.
+- The cadence is time-based,
+   not file-change-based.
 
 An event-triggered layer should reduce unnecessary rescans without turning Kopia into a
 network listener or generating systemd units for every source.
@@ -37,12 +46,16 @@ network listener or generating systemd units for every source.
 
 ## Non-goals
 
-- Do not replace Kopia's retention, ignore, compression, or maintenance policies.
+- Do not replace Kopia's retention,
+   ignore,
+   compression,
+   or maintenance policies.
 - Do not run `kopia server start`.
 - Do not expose a local HTTP service.
 - Do not generate per-source systemd units.
 - Do not spawn one watcher process per source.
-- Do not attempt real-time backup on every write. Backups should run after a debounce window.
+- Do not attempt real-time backup on every write.
+   Backups should run after a debounce window.
 - Do not watch sources that do not exist locally.
 
 ## Current measured shape
@@ -55,14 +68,22 @@ Current local Kopia sources discovered from `kopia snapshot list --json --max-re
 
 Current recursive watch cost estimate:
 
-- Watched directories: 10,406.
-- Kernel `fs.inotify.max_user_watches`: 524,288.
-- Watch usage: about 2 percent of the current kernel watch limit.
-- `watchexec` trial RSS: about 55 MB.
-- Settled idle CPU over a 5 second interval: 0.0 percent.
+- Watched directories:
+   10,406.
+- Kernel `fs.inotify.max_user_watches`:
+   524,288.
+- Watch usage:
+   about 2 percent of the current kernel watch limit.
+- `watchexec` trial RSS:
+   about 55 MB.
+- Settled idle CPU over a 5 second interval:
+   0.0 percent.
 
-The watcher cost tracks directory count, not file count. The expensive action remains the Kopia
-snapshot scan, so debouncing matters more than watcher overhead for the current source set.
+The watcher cost tracks directory count,
+ not file count.
+ The expensive action remains the Kopia
+snapshot scan,
+ so debouncing matters more than watcher overhead for the current source set.
 
 ## Package shape
 
@@ -70,22 +91,38 @@ Create `packages/cli/kopia-source-watch/`.
 
 The package exposes a CLI named `kopia-source-watch` with these commands:
 
-- `kopia-source-watch daemon`: run the long-lived watcher and snapshot scheduler.
-- `kopia-source-watch list`: print discovered local Kopia sources and current watch eligibility.
-- `kopia-source-watch run-source <path>`: run one source snapshot through the same command builder
+- `kopia-source-watch daemon`:
+   run the long-lived watcher and snapshot scheduler.
+- `kopia-source-watch list`:
+   print discovered local Kopia sources and current watch eligibility.
+- `kopia-source-watch run-source <path>`:
+   run one source snapshot through the same command builder
   used by the daemon.
-- `kopia-source-watch run-all`: run `kopia snapshot create --all` through the same command builder
+- `kopia-source-watch run-all`:
+   run `kopia snapshot create --all` through the same command builder
   used by the daemon.
-- `kopia-source-watch check`: validate Kopia, Chokidar configuration, source discovery, and system
+- `kopia-source-watch check`:
+   validate Kopia,
+   Chokidar configuration,
+   source discovery,
+   and system
   limits.
 
 The package should follow normal workspace package requirements:
 
 - `package.json` with a `bin` entry.
-- `mise.toml` with lint, type, test, and build tasks matching sibling CLI packages.
+- `mise.toml` with lint,
+   type,
+   test,
+   and build tasks matching sibling CLI packages.
 - `README.md` before the package is considered complete.
-- Unit tests for source discovery, source matching, debounce state, queue behavior, Chokidar event
-  handling, and command rendering.
+- Unit tests for source discovery,
+   source matching,
+   debounce state,
+   queue behavior,
+   Chokidar event
+  handling,
+   and command rendering.
 
 ## Daemon responsibilities
 
@@ -96,7 +133,8 @@ The daemon owns four loops:
 3. Debounce timer loop.
 4. Snapshot worker loop.
 
-The daemon should not ask systemd to represent each source. Systemd supervises only the daemon.
+The daemon should not ask systemd to represent each source.
+ Systemd supervises only the daemon.
 The daemon represents sources as in-memory state:
 
 ```text
@@ -105,19 +143,25 @@ source path -> idle | debounce-pending | queued | snapshot-running | rerun-queue
 
 When a filesystem event maps to a source:
 
-1. If the source is idle, start its debounce timer.
-2. If debounce is already pending, extend or keep the pending deadline.
-3. If the source is running, mark one rerun as queued.
-4. If the source is disabled, ignore the event and log the reason.
+1. If the source is idle,
+    start its debounce timer.
+2. If debounce is already pending,
+    extend or keep the pending deadline.
+3. If the source is running,
+    mark one rerun as queued.
+4. If the source is disabled,
+    ignore the event and log the reason.
 
 When a debounce deadline fires:
 
 1. Add the source to the snapshot queue.
 2. Run at most one Kopia snapshot by default.
 3. Execute `kopia snapshot create <source>`.
-4. If changes arrived while the snapshot ran, schedule exactly one follow-up debounce.
+4. If changes arrived while the snapshot ran,
+    schedule exactly one follow-up debounce.
 
-Default global snapshot concurrency: 1.
+Default global snapshot concurrency:
+ 1.
 
 Reasoning:
 
@@ -136,8 +180,10 @@ kopia snapshot list --json --max-results=1
 ```
 
 The daemon should parse each JSON item and keep entries whose `source.host` and `source.userName`
-match the current client. If Kopia's default filtering already restricts output to the current
-client, the explicit filter still protects future command changes.
+match the current client.
+ If Kopia's default filtering already restricts output to the current
+client,
+ the explicit filter still protects future command changes.
 
 Source candidates must be validated before watching:
 
@@ -159,11 +205,14 @@ Discovery cadence:
 - Run once at daemon start.
 - Run every 15 minutes while the daemon is active.
 - Run after `SIGHUP`.
-- Run after any successful `run-all` safety-net snapshot, if the daemon can observe that action in
+- Run after any successful `run-all` safety-net snapshot,
+   if the daemon can observe that action in
   a future integration.
 
-Future enhancement: include per-path policies from `kopia policy list --json` when a path policy
-exists before the first snapshot. The first implementation can rely on snapshot sources because
+Future enhancement:
+ include per-path policies from `kopia policy list --json` when a path policy
+exists before the first snapshot.
+ The first implementation can rely on snapshot sources because
 `kopia snapshot create --all` also operates on files or directories previously backed up by this
 user on this computer.
 
@@ -175,24 +224,44 @@ Use Chokidar as a library inside the daemon.
 
 Source-audited facts from Chokidar 5.0.0:
 
-- `package.json` declares MIT license, ESM-only package shape, one runtime dependency
-  (`readdirp`), and Node `>= 20.19.0`.
-- README documents recursive watching for path arrays, `ignoreInitial`, `followSymlinks`,
-  `usePolling`, `alwaysStat`, `depth`, `awaitWriteFinish`, `ignorePermissionErrors`, `atomic`,
-  `.add()`, `.unwatch()`, `.close()`, and `.getWatched()`.
-- Source `src/index.ts` exposes `.add()`, `.unwatch()`, async `.close()`, and `.getWatched()` on
+- `package.json` declares MIT license,
+   ESM-only package shape,
+   one runtime dependency
+  (`readdirp`),
+   and Node `>= 20.19.0`.
+- README documents recursive watching for path arrays,
+   `ignoreInitial`,
+   `followSymlinks`,
+  `usePolling`,
+   `alwaysStat`,
+   `depth`,
+   `awaitWriteFinish`,
+   `ignorePermissionErrors`,
+   `atomic`,
+  `.add()`,
+   `.unwatch()`,
+   `.close()`,
+   and `.getWatched()`.
+- Source `src/index.ts` exposes `.add()`,
+   `.unwatch()`,
+   async `.close()`,
+   and `.getWatched()` on
   `FSWatcher`.
 - Source `src/handler.ts` follows the configured `followSymlinks` behavior and recursively adds
   directory watches through the Node filesystem handler.
 - README warns that Chokidar creates recursive watchers for everything in scope and recommends
   avoiding broader watch roots than needed.
 - README troubleshooting names `EMFILE` and `ENOSPC` as file-handle and inotify-watch exhaustion
-  cases, and names `fs.inotify.max_user_watches` as the Linux watch limit to inspect or tune.
+  cases,
+   and names `fs.inotify.max_user_watches` as the Linux watch limit to inspect or tune.
 
 Pros:
 
 - Open source.
-- Library integration keeps source reconciliation, event routing, debouncing, and snapshot queuing
+- Library integration keeps source reconciliation,
+   event routing,
+   debouncing,
+   and snapshot queuing
   in one process.
 - No generated per-source systemd units.
 - No watcher child process.
@@ -202,12 +271,14 @@ Pros:
 
 Cons:
 
-- Chokidar 5 requires Node `>= 20.19.0`; runtime compatibility with the repo's Node CLI path
+- Chokidar 5 requires Node `>= 20.19.0`;
+   runtime compatibility with the repo's Node CLI path
   must be tested before implementation commits to Node execution.
 - Recursive watching still consumes one or more underlying watches per directory on Linux.
 - `awaitWriteFinish` uses polling of file size for pending writes and can reduce responsiveness
   when the stability threshold is high.
-- Network or unusual filesystems may need `usePolling: true`, which Chokidar documents as more
+- Network or unusual filesystems may need `usePolling: true`,
+   which Chokidar documents as more
   resource intensive.
 
 ### Alternative: raw Node `fs.watch`
@@ -221,7 +292,10 @@ Pros:
 Cons:
 
 - Chokidar exists specifically to normalize raw `fs.watch` and `fs.watchFile` behavior.
-- Raw events would push atomic-write, chunked-write, duplicate-event, and recursive edge cases into
+- Raw events would push atomic-write,
+   chunked-write,
+   duplicate-event,
+   and recursive edge cases into
   this package.
 - This package would need to rebuild features Chokidar already exposes.
 
@@ -252,7 +326,8 @@ Cons:
 - systemd path units use inotify and are not recursive for deep source trees.
 - systemd documentation says hidden files whose names start with a dot are generally ignored when
   monitoring paths.
-- It pushes source reconciliation back into systemd unit generation, which is the rejected shape.
+- It pushes source reconciliation back into systemd unit generation,
+   which is the rejected shape.
 
 ### Rejected: raw inotifywait loop
 
@@ -264,7 +339,10 @@ Pros:
 
 Cons:
 
-- Requires custom debounce, queueing, event parsing, and shutdown handling.
+- Requires custom debounce,
+   queueing,
+   event parsing,
+   and shutdown handling.
 - Adds low-level process and text-output parsing around behavior Chokidar exposes as a library.
 
 ### Rejected as event layer: periodic timer only
@@ -313,7 +391,8 @@ Rationale:
 - `ignorePermissionErrors: false` surfaces watch coverage problems instead of silently hiding them.
 
 The daemon should still apply its own source-level debounce after Chokidar emits an event.
-Chokidar's `awaitWriteFinish` protects file completeness; daemon debounce protects repository and
+Chokidar's `awaitWriteFinish` protects file completeness;
+ daemon debounce protects repository and
 disk load.
 
 ## Systemd integration
@@ -338,7 +417,8 @@ IOSchedulingPriority=7
 WantedBy=default.target
 ```
 
-This unit can live in package documentation or packaging output. It should not be generated once
+This unit can live in package documentation or packaging output.
+ It should not be generated once
 per source.
 
 The hourly safety net remains separate:
@@ -360,14 +440,16 @@ The safety net covers:
 
 ## Debounce and concurrency defaults
 
-Chokidar write-finish threshold: 30 seconds.
+Chokidar write-finish threshold:
+ 30 seconds.
 
 Reasoning:
 
 - The watcher should avoid events for obvious partial writes.
 - The daemon still owns source-level backup debounce.
 
-Source backup debounce: 10 minutes.
+Source backup debounce:
+ 10 minutes.
 
 Reasoning:
 
@@ -375,7 +457,8 @@ Reasoning:
 - Longer windows reduce repository and disk churn.
 - The hourly `--all` timer remains the upper-bound safety net.
 
-Busy behavior: queue one rerun per source.
+Busy behavior:
+ queue one rerun per source.
 
 Reasoning:
 
@@ -408,16 +491,30 @@ Use `$XDG_STATE_HOME/kopia-source-watch/state.json` or `$HOME/.local/state/kopia
 
 Tests must cover:
 
-- Parsing `kopia snapshot list --json` output with one source, multiple sources, duplicate sources,
+- Parsing `kopia snapshot list --json` output with one source,
+   multiple sources,
+   duplicate sources,
   and non-local host or user entries.
-- Rejection of relative paths, missing paths, files, and duplicate paths.
+- Rejection of relative paths,
+   missing paths,
+   files,
+   and duplicate paths.
 - Parent and child source overlap detection.
 - Mapping event paths to the most specific source root.
-- Source state transitions for idle, debounce-pending, queued, snapshot-running, rerun-queued, and
+- Source state transitions for idle,
+   debounce-pending,
+   queued,
+   snapshot-running,
+   rerun-queued,
+   and
   disabled.
 - Snapshot worker behavior with global concurrency 1.
 - Chokidar `.add()` and `.unwatch()` calls when sources change.
-- Chokidar `add`, `addDir`, `change`, `unlink`, and `unlinkDir` event handling.
+- Chokidar `add`,
+   `addDir`,
+   `change`,
+   `unlink`,
+   and `unlinkDir` event handling.
 - Command rendering with argument boundaries preserved.
 - Dry-run source discovery and check output.
 - Runtime compatibility under the package's selected execution runtime.
@@ -440,10 +537,13 @@ repository.
 
 ## Open questions
 
-- Should `kopia-source-watch` live under `packages/cli/` or `packages/dev-script/`? Current plan
+- Should `kopia-source-watch` live under `packages/cli/` or `packages/dev-script/`?
+   Current plan
   uses `packages/cli/` because the result is an operator-facing command.
-- Should the daemon include its own periodic `run-all` loop later, or should systemd keep owning
+- Should the daemon include its own periodic `run-all` loop later,
+   or should systemd keep owning
   the safety-net timer?
 - Should the daemon expose a polling mode for network or FUSE filesystems?
-- Should source-specific snapshots suppress identical snapshot manifests through Kopia policy, or
+- Should source-specific snapshots suppress identical snapshot manifests through Kopia policy,
+   or
   should the package leave that entirely to user policy?

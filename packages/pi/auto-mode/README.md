@@ -1,6 +1,7 @@
 # @monochromatic-dev/pi-auto-mode
 
-LLM-as-judge guardrail for pi. Replaces pi-safeguard with fixed path handling and a structured-output judge.
+LLM-as-judge guardrail for pi.
+ Replaces pi-safeguard with fixed path handling and a structured-output judge.
 
 ## Architecture
 
@@ -16,59 +17,94 @@ tool_call -> flagger (signals.ts, wide-net boolean predicates)
 
 ### Session approval reuse
 
-Before resolving a judge model, auto-mode checks the current session branch for
-an earlier verdict with the same action text and approval fingerprint. The
-fingerprint hashes the tool name, current working directory, and permission
-scope. For `read`, the scope is the path only, so a user approval for one
+Before resolving a judge model,
+ auto-mode checks the current session branch for
+an earlier verdict with the same action text and approval fingerprint.
+ The
+fingerprint hashes the tool name,
+ current working directory,
+ and permission
+scope.
+ For `read`,
+ the scope is the path only,
+ so a user approval for one
 `offset` or `limit` range also covers later reads of another range in the same
-file. For other tools, the scope is the full tool input, so a later write or
-edit to the same path with different content does not match. Only the
-fingerprint digest is stored; full write or edit payloads are not added to
-custom entries. Older verdict entries without an approval fingerprint fail
-closed: they are not reused, and the newest same-action unkeyed verdict prevents
+file.
+ For other tools,
+ the scope is the full tool input,
+ so a later write or
+edit to the same path with different content does not match.
+ Only the
+fingerprint digest is stored;
+ full write or edit payloads are not added to
+custom entries.
+ Older verdict entries without an approval fingerprint fail
+closed:
+ they are not reused,
+ and the newest same-action unkeyed verdict prevents
 older fingerprinted approvals from being reused.
 
-If the latest matching verdict is `approve` or `user-approve`, auto-mode allows
+If the latest matching verdict is `approve` or `user-approve`,
+ auto-mode allows
 the action immediately and records a fresh `approve` verdict with the original
-approval reason plus `reusedFromVerdict` metadata for auditability. A later
-`deny`, `user-deny`, or `ask` verdict for the same
-action and fingerprint disables reuse, so stale approvals do not override newer
+approval reason plus `reusedFromVerdict` metadata for auditability.
+ A later
+`deny`,
+ `user-deny`,
+ or `ask` verdict for the same
+action and fingerprint disables reuse,
+ so stale approvals do not override newer
 decisions.
 
-The flagger and judge are strictly separated: the flagger never provides reasons,
+The flagger and judge are strictly separated:
+ the flagger never provides reasons,
 the judge sees only raw action plus context.
 
 ### Judge context
 
 The recent activity sent to the judge uses the larger of the latest user-message
-activity span and the newest five rendered activity lines. Short latest-user
+activity span and the newest five rendered activity lines.
+ Short latest-user
 spans backfill older activity until the five-line floor is reached when enough
-history exists; longer latest-user spans are not capped. Messages are not
+history exists;
+ longer latest-user spans are not capped.
+ Messages are not
 abbreviated.
 
-For bash tool results, the context line includes the execution outcome and the
+For bash tool results,
+ the context line includes the execution outcome and the
 full final non-empty line of bash output.
 
 ### Verdict extraction
 
-Primary path: the judge is invoked with forced `tool_choice` (`render_verdict`).
+Primary path:
+ the judge is invoked with forced `tool_choice` (`render_verdict`).
 The pi-ai event stream's `toolcall_end` event carries the parsed `arguments`,
 which are translated to a `Verdict` by `parseVerdict`.
 
-Retry path: if the model finishes without calling `render_verdict`,
-`callJudge` retries once without tools and asks for direct JSON. The retry
-uses the same safety context, then parses the retry response with
+Retry path:
+ if the model finishes without calling `render_verdict`,
+`callJudge` retries once without tools and asks for direct JSON.
+ The retry
+uses the same safety context,
+ then parses the retry response with
 `extractJsonVerdict`.
 
-Compatibility fallback: `collectToolCall` can still parse first-pass text
-for tests and direct helper usage. The parser first tries `JSON.parse(text)`
-for the whole-text case, then falls back to a balanced-brace scan that
+Compatibility fallback:
+ `collectToolCall` can still parse first-pass text
+for tests and direct helper usage.
+ The parser first tries `JSON.parse(text)`
+for the whole-text case,
+ then falls back to a balanced-brace scan that
 respects string-literal escapes (so a `"reason"` field containing `{` or `}`
 does not skew the boundaries).
 
-When either fallback path fires, the judge logs an error so an operator can
-see the contract violation. The primary contract remains "MUST call the
-tool"; the retry exists so an unexpected provider response degrades
+When either fallback path fires,
+ the judge logs an error so an operator can
+see the contract violation.
+ The primary contract remains "MUST call the
+tool";
+ the retry exists so an unexpected provider response degrades
 gracefully rather than throwing.
 
 ## Bug fixes vs upstream pi-safeguard
@@ -127,8 +163,10 @@ gracefully rather than throwing.
 
 ## Configuration
 
-- Global: `~/.pi/agent/extensions/pi-auto-mode.json`
-- Project: `.pi/extensions/pi-auto-mode.json` (additive only)
+- Global:
+   `~/.pi/agent/extensions/pi-auto-mode.json`
+- Project:
+   `.pi/extensions/pi-auto-mode.json` (additive only)
 
 ```json
 {
@@ -146,67 +184,104 @@ gracefully rather than throwing.
 ```
 
 The `judgeModel` defaults to `{strategy: "same-provider", majorVersions: 1}` when the config is absent
-or `judgeModel` is unset; defined once in `src/constants.ts` as `JUDGE_MODEL_DEFAULTS` and referenced from
-the loader, the global defaults, and the judge-model selector.
+or `judgeModel` is unset;
+ defined once in `src/constants.ts` as `JUDGE_MODEL_DEFAULTS` and referenced from
+the loader,
+ the global defaults,
+ and the judge-model selector.
 Automatic judge selection first keeps the configured major-version families,
 then ranks candidates by local speed-name heuristic:
 `highspeed` or `high-speed` > `fast` > `flash` or `spark` > `turbo` > `nano` >
 `mini` > `haiku` > `lite` or `light` > no signal.
-When no speed signal separates candidates, selection falls back to input cost and version.
+When no speed signal separates candidates,
+ selection falls back to input cost and version.
 
 ## Skill read allowlist
 
-Before each agent run, auto-mode reads Pi's loaded skill metadata from
+Before each agent run,
+ auto-mode reads Pi's loaded skill metadata from
 `before_agent_start` and allows `read` tool access to every loaded skill
-directory. This prevents guard prompts when the model loads `SKILL.md` or
-referenced files from global, project, or package skills.
+directory.
+ This prevents guard prompts when the model loads `SKILL.md` or
+referenced files from global,
+ project,
+ or package skills.
 
 Auto-mode also allows `read` tool access to existing files under `/tmp/agent`
-when that directory exists, is owned by the current process user, and has no
-group or other permission bits. Agents should place third-party source clones
-there when they need repeated inspection outside the current project. The
-allowlist uses canonical filesystem paths, so symlinks that resolve outside
+when that directory exists,
+ is owned by the current process user,
+ and has no
+group or other permission bits.
+ Agents should place third-party source clones
+there when they need repeated inspection outside the current project.
+ The
+allowlist uses canonical filesystem paths,
+ so symlinks that resolve outside
 `/tmp/agent` still go through the normal signal and judge pipeline.
 
-For bash tool calls, the same private `/tmp/agent` root is trusted for existing
-non-secret helper paths. Running an inspected helper script from there does not
-trigger a location-only prompt. Bash calls still flag destructive commands,
-secret-looking paths inside `/tmp/agent`, and paths outside the trusted root.
+For bash tool calls,
+ the same private `/tmp/agent` root is trusted for existing
+non-secret helper paths.
+ Running an inspected helper script from there does not
+trigger a location-only prompt.
+ Bash calls still flag destructive commands,
+secret-looking paths inside `/tmp/agent`,
+ and paths outside the trusted root.
 
 When a bash command passes a secret-looking environment variable to a trusted
-`/tmp/agent` script or interpreter command, auto-mode permits `grep` to source
-that key from a project-local `.env` file. This covers image-diff or model-check
-helpers such as `GEMINI_API_KEY="$KEY" node /tmp/agent/...`. It does not allow
-arbitrary secret files, unrelated dotenv reads, home dotfiles, direct network
-commands with secret parameter references, or untrusted script paths.
+`/tmp/agent` script or interpreter command,
+ auto-mode permits `grep` to source
+that key from a project-local `.env` file.
+ This covers image-diff or model-check
+helpers such as `GEMINI_API_KEY="$KEY" node /tmp/agent/...`.
+ It does not allow
+arbitrary secret files,
+ unrelated dotenv reads,
+ home dotfiles,
+ direct network
+commands with secret parameter references,
+ or untrusted script paths.
 
 Auto-mode also allows `read` tool access to existing files in linked git
-worktrees attached to the current repository. The worktree list comes from real
-git metadata, and each candidate root is classified with `rev-parse` so the main
+worktrees attached to the current repository.
+ The worktree list comes from real
+git metadata,
+ and each candidate root is classified with `rev-parse` so the main
 worktree is not added to this cross-worktree allowlist.
 
-The allowlist preserves secret-path checks. `write` and `edit` calls targeting
-skill directories, linked worktrees, or `/tmp/agent` still go through the normal
+The allowlist preserves secret-path checks.
+ `write` and `edit` calls targeting
+skill directories,
+ linked worktrees,
+ or `/tmp/agent` still go through the normal
 signal and judge pipeline.
 
 ## Logging
 
 The package uses tagged loggers from `@monochromatic-dev/module-logger`.
-The root tag is `auto-mode`; each module composes a deeper tag
-(`auto-mode -> evaluate`, `auto-mode -> judge`, ...). At function entry
+The root tag is `auto-mode`;
+ each module composes a deeper tag
+(`auto-mode -> evaluate`,
+ `auto-mode -> judge`,
+ ...).
+ At function entry
 and at branch decisions the log lines describe the flow so operators
 can audit verdicts without instrumenting the code further.
 
 ## Commands
 
-- `/guard <directive>`: add a session-scoped trust directive
-- `/guard reset`: clear all trust directives
-- `/guard`: list active trust directives
+- `/guard <directive>`:
+   add a session-scoped trust directive
+- `/guard reset`:
+   clear all trust directives
+- `/guard`:
+   list active trust directives
 
 ## Bypass mode
 
 `Shift+Tab` toggles bypass mode when pi has no built-in binding on that key.
-Stock pi binds `Shift+Tab` to `app.thinking.cycle`, so users who want the
+Stock pi binds `Shift+Tab` to `app.thinking.cycle`,
+ so users who want the
 bypass shortcut must unbind or remap that action in `~/.pi/agent/keybindings.json`:
 
 ```json
@@ -215,15 +290,22 @@ bypass shortcut must unbind or remap that action in `~/.pi/agent/keybindings.jso
 }
 ```
 
-While bypass is enabled, auto-mode allows tool calls without flagger or judge
-evaluation. The footer shows `auto-mode: bypass`, toggles are written as
-`auto-mode:bypass` session entries, and each tool call allowed while bypass is
-active is written as a bypass audit entry. Press `Shift+Tab` again to restore
+While bypass is enabled,
+ auto-mode allows tool calls without flagger or judge
+evaluation.
+ The footer shows `auto-mode: bypass`,
+ toggles are written as
+`auto-mode:bypass` session entries,
+ and each tool call allowed while bypass is
+active is written as a bypass audit entry.
+ Press `Shift+Tab` again to restore
 guardrail checks.
 
 ## Tools
 
-- `propose_trust`: request permission for something the guardrail blocked.
+- `propose_trust`:
+   request permission for something the guardrail blocked.
   If the proposed rule exactly matches an active session trust directive,
-  auto-mode accepts it without a UI prompt. New or reset-cleared rules still
+  auto-mode accepts it without a UI prompt.
+   New or reset-cleared rules still
   prompt the user.

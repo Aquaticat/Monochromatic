@@ -2,7 +2,8 @@
 
 Formatter for hidden current local wall-clock time context payloads.
 
-The package exports `formatTimeContext()`, which turns a `Date` into:
+The package exports `formatTimeContext()`,
+ which turns a `Date` into:
 
 ```text
 <time>HH:MM</time>
@@ -11,12 +12,15 @@ The package exports `formatTimeContext()`, which turns a `Date` into:
 ## Why this exists
 
 Claude Code hooks and pi extensions both inject the same coarse local time context.
-This package keeps the pure formatting rule in one neutral module, separate from either host runtime.
+This package keeps the pure formatting rule in one neutral module,
+ separate from either host runtime.
 
 ## Behavior
 
 `formatTimeContext()` uses local 24-hour clock fields from the supplied `Date`.
-It zero-pads hour and minute and omits seconds, date, and timezone.
+It zero-pads hour and minute and omits seconds,
+ date,
+ and timezone.
 
 ## Usage
 

@@ -23,6 +23,11 @@ path = "src/main.rs"
 # needs the former master-revision pin. Keep slint, i-slint-backend-winit, and
 # slint-build on the same release family because the runtime, explicit winit
 # backend, and markup compiler are versioned together.
+# Command-line argument parsing (src/cli.rs). The `derive` feature lets the `Cli`
+# struct declare the `--start-playing` flag and the file/folder positionals via
+# `#[derive(Parser)]`, replacing hand-rolled argv scanning and generating
+# `--help` / `--version` for free. 4.x is the current major line.
+clap = { version = "4", features = ["derive"] }
 directories = "5"
 # True-peak cache fingerprint hashing (src/peakcache.rs). We call the one-shot
 # `gxhash64(bytes, seed)` to derive the opaque cache key from (path, size, mtime),
@@ -38,11 +43,6 @@ directories = "5"
 # default (non-hybrid) build compiles on STABLE Rust; the `hybrid`/AVX2 feature is
 # nightly-only and left OFF. See docs/troubleshooting/gxhash-aes-target-feature.md.
 gxhash = "3"
-# Command-line argument parsing (src/cli.rs). The `derive` feature lets the `Cli`
-# struct declare the `--start-playing` flag and the file/folder positionals via
-# `#[derive(Parser)]`, replacing hand-rolled argv scanning and generating
-# `--help` / `--version` for free. 4.x is the current major line.
-clap = { version = "4", features = ["derive"] }
 # Same Slint release family as above: the winit backend is constructed
 # explicitly (not via the default backend selector) so a window-attributes hook
 # can set the Wayland app_id, which KDE needs to attach taskbar progress to the
@@ -65,6 +65,13 @@ i-slint-backend-winit = "1.17.0"
 # version must stay compatible with the transitive pin so cargo unifies, not
 # duplicates. See docs/troubleshooting/slint-parley-icu-cjk-segmentation.md.
 icu_provider = { version = "2", features = ["logging"] }
+# Recursive Source Root file watcher (src/watch.rs). debouncer-mini coalesces raw
+# notify events into a debounced batch; we ignore the event details and just send
+# Command::Rescan (the queue is re-derived by scanning the root), so the mini
+# debouncer (no rename pairing / file-id cache) is sufficient. Cross-platform:
+# inotify on Linux, FSEvents on macOS, ReadDirectoryChangesW on Windows. Pulls
+# notify as a transitive dep.
+notify-debouncer-mini = "0.7"
 # Pinned to opus-rs git HEAD (post-0.3.1) instead of the crates.io 0.3.1 release.
 # 0.3.1 depends on audiopus_sys 0.2.2, whose BUNDLED libopus (commit 7b05f44)
 # declares cmake_minimum_required(VERSION 3.1); CMake 4.x removed compatibility
@@ -82,13 +89,6 @@ icu_provider = { version = "2", features = ["logging"] }
 # See ../../../docs/troubleshooting/audiopus-cmake4-libopus-min-version.md.
 opus = { git = "https://github.com/SpaceManiac/opus-rs", rev = "559876660603dc8079a053e03e6438766f669e69" }
 rfd = "0.15"
-# Recursive Source Root file watcher (src/watch.rs). debouncer-mini coalesces raw
-# notify events into a debounced batch; we ignore the event details and just send
-# Command::Rescan (the queue is re-derived by scanning the root), so the mini
-# debouncer (no rename pairing / file-id cache) is sufficient. Cross-platform:
-# inotify on Linux, FSEvents on macOS, ReadDirectoryChangesW on Windows. Pulls
-# notify as a transitive dep.
-notify-debouncer-mini = "0.7"
 ringbuf = "0.4"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"

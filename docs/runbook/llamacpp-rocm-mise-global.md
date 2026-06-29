@@ -1,13 +1,16 @@
 # Installing llamacpp-rocm globally with mise
 
 This runbook installs the lemonade-sdk `llamacpp-rocm` prebuild,
-a llama.cpp distribution with the AMD ROCm runtime libraries bundled in,
+a llama.
+cpp distribution with the AMD ROCm runtime libraries bundled in,
 as a global mise tool through `~/.config/mise/config.toml`.
-The default target here is the `gfx110X` GPU family (RDNA3: RX 7600/7700/7800/7900 class);
+The default target here is the `gfx110X` GPU family (RDNA3:
+ RX 7600/7700/7800/7900 class);
 the asset name is the only thing that changes for another target.
 
 What this proves:
- after the procedure, `llama-server` runs from the global tool install
+ after the procedure,
+ `llama-server` runs from the global tool install
 and resolves its co-located ROCm `.so` libraries on its own,
 so the bundle is usable outside the Monochromatic checkout.
 
@@ -20,7 +23,8 @@ Two non-obvious obstacles are baked into the config rather than left for the ope
 - The monorepo `mise.toml` sets `disable_backends` (it lists `github` among others),
   so a `mise install` run with the working directory inside the checkout fails with
   `backend github is disabled by disable_backends`.
-  The install must run from a directory outside the checkout, where that setting does not apply.
+  The install must run from a directory outside the checkout,
+   where that setting does not apply.
 - The release `.zip` stores every entry as mode `0644` (no executable bit),
   and mise preserves the archive's stored modes when it extracts,
   so the launchers land non-executable.
@@ -67,7 +71,8 @@ TODO
 
 2.  Add the tool entry to the global config `~/.config/mise/config.toml` under its `[tools]` table.
     Use exactly this entry (single-quote the `postinstall` value so the shell expands
-    `$MISE_TOOL_INSTALL_PATH` at hook time, and the inner double quotes survive intact):
+    `$MISE_TOOL_INSTALL_PATH` at hook time,
+     and the inner double quotes survive intact):
 
     ```toml
     # ~/.config/mise/config.toml
@@ -140,7 +145,8 @@ TODO
     Expected:
      a path ending in `/llama-server` under the install tree.
     Inside the Monochromatic checkout this command instead resolves to the repo's own
-     `llama.cpp` tool (the CPU build), because the `github` backend is disabled there;
+     `llama.cpp` tool (the CPU build),
+     because the `github` backend is disabled there;
      that is expected and not a fault.
 
 ## Restore

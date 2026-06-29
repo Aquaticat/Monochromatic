@@ -37,7 +37,7 @@ await describe({
     it({
       name: 'rounds to the requested decimals',
       fn: async ({ expect, }) => {
-        expect(roundTo({ value: 0.044_21, decimals: 4, })).toBe(0.044_2);
+        expect(roundTo({ value: 0.04421, decimals: 4, })).toBe(0.0442);
         expect(roundTo({ value: 95.64, decimals: 1, })).toBe(95.6);
       },
     }),

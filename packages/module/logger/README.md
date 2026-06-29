@@ -1,9 +1,11 @@
 # module-logger
 
 Zero-config multi-sink logger with tagged composition.
-Works immediately at import: auto-discovers available backends for the current runtime,
+Works immediately at import:
+ auto-discovers available backends for the current runtime,
 and records emitted while async backend verification is still pending replay to those
-backends as soon as they verify. Consumers do not await `initPromise` before logging.
+backends as soon as they verify.
+ Consumers do not await `initPromise` before logging.
 
 ## Usage
 
@@ -28,7 +30,8 @@ rl.warn('attempt 3 failed',);
 
 Composed tags render root-first because each wrapper prepends before delegating to its parent logger.
 
-Convention: use `myFn.name` as the tag so prefixes stay in sync with refactors.
+Convention:
+ use `myFn.name` as the tag so prefixes stay in sync with refactors.
 
 ```ts
 function handleRequest({ l, }: { l: Logger; },): void {
@@ -49,10 +52,18 @@ logger.error('unexpected shutdown',);
 
 ## Log levels
 
-Six levels, each mapping to a dedicated method: `trace`, `debug`, `info`, `warn`, `error`, `fatal`.
+Six levels,
+ each mapping to a dedicated method:
+ `trace`,
+ `debug`,
+ `info`,
+ `warn`,
+ `error`,
+ `fatal`.
 
 All methods accept a single `string` argument.
-The caller owns serialization; template literals cover the common case
+The caller owns serialization;
+ template literals cover the common case
 and keep the logger free of stringify opinions.
 
 ```ts
@@ -61,41 +72,69 @@ l.info(`status ${code} for ${url}`,);
 
 The console sink silences `debug` and `trace` by default in non-browser environments.
 Set `DEBUG=true` or pass `--verbose` to enable them.
-In browsers, verbose mode is enabled automatically because DevTools
+In browsers,
+ verbose mode is enabled automatically because DevTools
 already provides its own log-level filtering.
 
 ## Sinks
 
 The default logger writes to **all** available sinks simultaneously.
-Availability is verified at module load; records emitted while an async sink is
+Availability is verified at module load;
+ records emitted while an async sink is
 still being verified are replayed to that sink when it becomes available.
 
-- **console**: formats as `[level] [ISO timestamp] message`;
+- **console**:
+   formats as `[level] [ISO timestamp] message`;
   maps levels to corresponding `console.*` methods,
   except `debug` writes to `process.stderr` when `process.stderr.write` is available
-- **file**: Node.js only; walks up from `process.cwd()` to the nearest
-  ancestor `node_modules/`, then appends JSONL records to
+- **file**:
+   Node.
+  js only;
+   walks up from `process.cwd()` to the nearest
+  ancestor `node_modules/`,
+   then appends JSONL records to
   `<that dir>/node_modules/.monochromatic/{timestamp}.log.jsonl` via
-  `node:fs/promises`. When no ancestor `node_modules/` exists, the sink
-  is marked unavailable rather than creating one at cwd; this prevents
+  `node:fs/promises`.
+   When no ancestor `node_modules/` exists,
+   the sink
+  is marked unavailable rather than creating one at cwd;
+   this prevents
   stray log directories from landing inside build output or other
   non-project trees when a script is invoked from an unexpected cwd
-- **OPFS**: browser only; appends JSONL records to Origin Private File System;
+- **OPFS**:
+   browser only;
+   appends JSONL records to Origin Private File System;
   keeps a `FileSystemWritableFileStream` open for the session
-- **sessionStorage**: browser only; stores JSONL records under `monochromatic.log.{n}` keys
+- **sessionStorage**:
+   browser only;
+   stores JSONL records under `monochromatic.log.{n}` keys
   with an auto-incrementing counter
-- **noop**: discards all records; a stand-in that disables logging without removing log calls
+- **noop**:
+   discards all records;
+   a stand-in that disables logging without removing log calls
 
-Each sink is a factory, `createConsoleSink()`, `createFileSink()`, `createOpfsSink()`,
-`createSessionStorageSink()`, and `createNoopSink()`, exported under the `sinks` namespace.
-A sink instance keeps its own buffers, streams, and counters, so independent loggers never
+Each sink is a factory,
+ `createConsoleSink()`,
+ `createFileSink()`,
+ `createOpfsSink()`,
+`createSessionStorageSink()`,
+ and `createNoopSink()`,
+ exported under the `sinks` namespace.
+A sink instance keeps its own buffers,
+ streams,
+ and counters,
+ so independent loggers never
 share state.
 
-Async sinks are fire-and-forget; the log call never blocks the caller.
+Async sinks are fire-and-forget;
+ the log call never blocks the caller.
 Call `logger.flush()` before assertions or process shutdown to wait for startup
-verification, pending sink writes, and sink-owned flush hooks.
+verification,
+ pending sink writes,
+ and sink-owned flush hooks.
 A sink is dropped only when its `verify` reports the backend unavailable (resolves
-`false` or rejects); a sink whose `flush` hook rejects is also dropped.
+`false` or rejects);
+ a sink whose `flush` hook rejects is also dropped.
 Individual `write` failures are the sink's own concern and do not disable the backend,
 so one transient I/O hiccup never silently kills a sink for the rest of the run.
 
@@ -111,21 +150,30 @@ type LogRecord = {
 };
 ```
 
-File, OPFS, and sessionStorage sinks write records as one JSON object per line (JSONL).
+File,
+ OPFS,
+ and sessionStorage sinks write records as one JSON object per line (JSONL).
 
 ## Error handling
 
-- `initPromise` resolves after eager verification and startup replay; consumers do not await it before logging
-- `logger.flush()` awaits startup verification, pending sink writes, and sink-owned flush hooks
+- `initPromise` resolves after eager verification and startup replay;
+   consumers do not await it before logging
+- `logger.flush()` awaits startup verification,
+   pending sink writes,
+   and sink-owned flush hooks
 - Throws at log time once initialization has completed with no available backend
-- A sink is dropped when its `verify` reports unavailable (or its flush hook rejects); remaining sinks continue
+- A sink is dropped when its `verify` reports unavailable (or its flush hook rejects);
+   remaining sinks continue
 - Individual `write` failures are handled per sink and do not disable the backend
 
 ## Custom loggers
 
-The default `logger` is `createLogger` applied to the default sink set, and it stays
-zero-config. `createLogger` is also exported for building a logger over an explicit sink
-list, for example to write to a fixed subset of backends or to inject a fake in tests.
+The default `logger` is `createLogger` applied to the default sink set,
+ and it stays
+zero-config.
+ `createLogger` is also exported for building a logger over an explicit sink
+list,
+ for example to write to a fixed subset of backends or to inject a fake in tests.
 
 ```ts
 import { createLogger, sinks, } from '@monochromatic-dev/module-logger';
@@ -135,8 +183,11 @@ logger.info('goes nowhere');
 await initPromise; // optional; flush() awaits it internally
 ```
 
-A custom sink is any object satisfying the `Sink` interface, a single self-describing
-adapter carrying `verify`, `write`, and an optional `flush`:
+A custom sink is any object satisfying the `Sink` interface,
+ a single self-describing
+adapter carrying `verify`,
+ `write`,
+ and an optional `flush`:
 
 ```ts
 import type { LogRecord, Sink, } from '@monochromatic-dev/module-logger';
@@ -154,24 +205,51 @@ function createArraySink(): { records: LogRecord[]; sink: Sink; } {
 }
 ```
 
-`verify`, `write`, and `flush` are all async (returning `Promise`) so the logger awaits
+`verify`,
+ `write`,
+ and `flush` are all async (returning `Promise`) so the logger awaits
 them uniformly.
 
 ## Design decisions
 
 See [DECISIONS.md](DECISIONS.md) for rationale on:
 
-- No sub-logger hierarchy; per-component filtering is a log viewer problem
-- String-only messages; callers own serialization; no auto-stringify
+- No sub-logger hierarchy;
+   per-component filtering is a log viewer problem
+- String-only messages;
+   callers own serialization;
+   no auto-stringify
 
 ## Source files
 
-- `src/types.ts`: `Logger`, `LogRecord`, `Sink`, `SinkFlush`, `Verify`, `Level` type definitions
-- `src/create-logger.ts`: `createLogger({ sinks })` orchestration (verify, startup replay, flush)
-- `src/logger.ts`: default singleton built by applying `createLogger` to the default sinks
-- `src/tagged.ts`: `tagged()` wrapper for composable prefixes
-- `src/sinks/console.ts`: `createConsoleSink()`, verbose-mode gating and microtask batching
-- `src/sinks/file.ts`: `createFileSink()`, Node.js file sink (JSONL via `appendFile`)
-- `src/sinks/opfs.ts`: `createOpfsSink()`, browser OPFS sink with persistent writable stream
-- `src/sinks/session-storage.ts`: `createSessionStorageSink()`, browser sessionStorage sink
-- `src/sinks/noop.ts`: `createNoopSink()`, discards all records
+- `src/types.ts`:
+   `Logger`,
+   `LogRecord`,
+   `Sink`,
+   `SinkFlush`,
+   `Verify`,
+   `Level` type definitions
+- `src/create-logger.ts`:
+   `createLogger({ sinks })` orchestration (verify,
+   startup replay,
+   flush)
+- `src/logger.ts`:
+   default singleton built by applying `createLogger` to the default sinks
+- `src/tagged.ts`:
+   `tagged()` wrapper for composable prefixes
+- `src/sinks/console.ts`:
+   `createConsoleSink()`,
+   verbose-mode gating and microtask batching
+- `src/sinks/file.ts`:
+   `createFileSink()`,
+   Node.
+  js file sink (JSONL via `appendFile`)
+- `src/sinks/opfs.ts`:
+   `createOpfsSink()`,
+   browser OPFS sink with persistent writable stream
+- `src/sinks/session-storage.ts`:
+   `createSessionStorageSink()`,
+   browser sessionStorage sink
+- `src/sinks/noop.ts`:
+   `createNoopSink()`,
+   discards all records

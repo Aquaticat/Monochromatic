@@ -4,12 +4,16 @@ Records the decision not to strip the `dist/` carve-out in `.gitignore` that all
 under `packages/claude-code-plugins/` to ship their built bundles inside this repo.
 Future sessions consult this before re-proposing a clean-up of "dist in git" against this carve-out.
 
-This document is appended to, not rewritten.
-When new constraints force re-evaluation, mark this decision superseded; do not delete it.
+This document is appended to,
+ not rewritten.
+When new constraints force re-evaluation,
+ mark this decision superseded;
+ do not delete it.
 
 ## Context
 
-The repo distributes Claude Code plugins through `.claude-plugin/marketplace.json`, which points consumers at
+The repo distributes Claude Code plugins through `.claude-plugin/marketplace.json`,
+ which points consumers at
 directories such as `./packages/claude-code-plugins/terminal-title`.
 Each plugin's `.claude-plugin/plugin.json` declares hooks of the form:
 
@@ -20,24 +24,39 @@ Each plugin's `.claude-plugin/plugin.json` declares hooks of the form:
 }
 ```
 
-When a user installs the plugin, Claude Code copies the plugin source into a per-user cache
-(`~/.claude/plugins/cache`, per the Plugins reference at
+When a user installs the plugin,
+ Claude Code copies the plugin source into a per-user cache
+(`~/.claude/plugins/cache`,
+ per the Plugins reference at
 <https://code.claude.com/docs/en/plugins-reference> under "Plugin caching and file resolution") and resolves
 `${CLAUDE_PLUGIN_ROOT}` to that cache path.
-Claude Code does not automatically run `npm install`, `pnpm install`, a `prepare` script, or any other
+Claude Code does not automatically run `npm install`,
+ `pnpm install`,
+ a `prepare` script,
+ or any other
 package manager step on the cached copy.
 
 The hook `command` field accepts a full shell command in shell form
 (per <https://code.claude.com/docs/en/hooks> under "Exec form and shell form"):
 
-> Shell form runs when `args` is absent. The `command` string is passed to a shell: `sh -c` on macOS and
-> Linux, Git Bash on Windows, or PowerShell when Git Bash isn't installed.
+> Shell form runs when `args` is absent.
+>  The `command` string is passed to a shell:
+>  `sh -c` on macOS and
+> Linux,
+>  Git Bash on Windows,
+>  or PowerShell when Git Bash isn't installed.
 
-Shell features such as environment variable expansion, pipes, `&&`, `;`, globs, and redirects are supported.
+Shell features such as environment variable expansion,
+ pipes,
+ `&&`,
+ `;`,
+ globs,
+ and redirects are supported.
 This means the `command` field is not restricted to pointing at a pre-built artifact;
 it can also invoke a TypeScript-capable runtime against source.
 
-Claude Code also provides `${CLAUDE_PLUGIN_DATA}`, a persistent per-plugin directory documented at
+Claude Code also provides `${CLAUDE_PLUGIN_DATA}`,
+ a persistent per-plugin directory documented at
 <https://code.claude.com/docs/en/plugins-reference> under "Persistent data directory".
 The reference includes a canonical example of a SessionStart hook that runs `npm install` into
 `${CLAUDE_PLUGIN_DATA}` when the plugin's bundled `package.json` differs from the persisted copy:
@@ -60,7 +79,8 @@ The reference includes a canonical example of a SessionStart hook that runs `npm
 ```
 
 So a no-dist-in-git plugin workflow is officially supported when (a) the plugin's dependencies are
-resolvable through a public package manager, or (b) the plugin can run from source through an interpreter
+resolvable through a public package manager,
+ or (b) the plugin can run from source through an interpreter
 the user already has on PATH.
 
 The `.gitignore` carve-out for the workspace currently looks like this:
@@ -81,14 +101,18 @@ The carve-out covers 21 files across eight plugins:
 `stop-reminders`,
 `terminal-title`,
 and the standalone CLI bundles
-(`ccssh.js`, `ccsr.js`, `cctt.js`) that those plugins reference.
+(`ccssh.js`,
+ `ccsr.js`,
+ `cctt.js`) that those plugins reference.
 
 Each plugin's `package.json` (verified at e.g. `packages/claude-code-plugins/terminal-title/package.json:18`)
 depends on:
 
 - `@monochromatic-dev/claude-code-plugins-source` via `workspace:*` (runtime).
-- `@monochromatic-dev/config-tsdown` via `workspace:*` (devDependency, build).
-- `@monochromatic-dev/config-typescript` via `workspace:*` (devDependency, build).
+- `@monochromatic-dev/config-tsdown` via `workspace:*` (devDependency,
+   build).
+- `@monochromatic-dev/config-typescript` via `workspace:*` (devDependency,
+   build).
 
 None of these workspace packages are published to npm.
 The committed `dist/final/node/index.mjs` files are `tsdown` bundles that inline all workspace dependencies
@@ -101,28 +125,37 @@ Do not strip the committed `dist/` files for the eight Claude Code plugins.
 Do not introduce new committed `dist/` paths outside this carve-out without amending this document.
 
 The decision applies only to plugins distributed through `.claude-plugin/marketplace.json`.
-All other packages (libraries, web apps, dev scripts) continue to keep `dist/` out of git, per the default
+All other packages (libraries,
+ web apps,
+ dev scripts) continue to keep `dist/` out of git,
+ per the default
 `.gitignore` rule.
 
 ## Reasoning
 
 A no-dist-in-git workflow is technically available for Claude Code plugins.
-The specific blocker for this workspace is the dependency shape of its plugins, not the Claude Code contract.
+The specific blocker for this workspace is the dependency shape of its plugins,
+ not the Claude Code contract.
 
 The current bundled `dist/final/node/index.mjs` files do two things that no individual move replicates
 without other costs:
 
 1. Inline the workspace's shared plugin source (`@monochromatic-dev/claude-code-plugins-source`) into each
    plugin without that source needing to exist on npm.
-2. Inline the rest of the runtime dependency tree so the consumer needs only the Node binary, with no
-   package manager step, no network access, and no per-machine build toolchain.
+2. Inline the rest of the runtime dependency tree so the consumer needs only the Node binary,
+    with no
+   package manager step,
+    no network access,
+    and no per-machine build toolchain.
 
 Every alternative trades one of those properties for fewer committed files.
-For an eight-plugin scope, the trade is not worth it (see "Rejected alternatives" below).
+For an eight-plugin scope,
+ the trade is not worth it (see "Rejected alternatives" below).
 
 The cost the carve-out is paying is also bounded:
 
-- The 21 committed files live under a single namespaced subtree, isolated from human-edited code.
+- The 21 committed files live under a single namespaced subtree,
+   isolated from human-edited code.
 - Each plugin's `dist/final/` is a deterministic `tsdown` bundle.
 - `.gitignore` denies new `dist/` paths anywhere else.
   The carve-out stays scoped to `packages/claude-code-plugins/*/dist/`,
@@ -135,8 +168,10 @@ The cost the carve-out is paying is also bounded:
 ### Source-only plugins with SessionStart-installs-dependencies
 
 Ship `src/` only.
-Each plugin's plugin.json declares a SessionStart hook that runs `npm install` into `${CLAUDE_PLUGIN_DATA}`
-when `package.json` changes, mirroring the canonical pattern in the Claude Code plugin docs.
+Each plugin's plugin.
+json declares a SessionStart hook that runs `npm install` into `${CLAUDE_PLUGIN_DATA}`
+when `package.json` changes,
+ mirroring the canonical pattern in the Claude Code plugin docs.
 Runtime hooks then invoke `node` against either the installed package or the source through `tsx`.
 
 Rejected because:
@@ -146,13 +181,21 @@ Rejected because:
   None are on npm.
   `npm install` from the cached plugin directory would fail to resolve them.
 - Publishing those workspace packages to npm to unblock this path means adding three new release surfaces
-  (the shared plugin source, the tsdown config, the typescript config), each with its own version bump,
-  changelog, and supply-chain considerations.
+  (the shared plugin source,
+   the tsdown config,
+   the typescript config),
+   each with its own version bump,
+  changelog,
+   and supply-chain considerations.
   The workspace's philosophy (`PHILOSOPHY.tool-choices.md` and the broader monorepo design) explicitly
   avoids that kind of release plumbing.
-- Even if the deps were on npm, every consumer would need a working Node and `npm`/`pnpm`,
-  plus network access on first run, plus the ability for `npm install` to succeed on their machine.
-  Native-module compile failures, registry outages, and proxy/firewall environments turn into
+- Even if the deps were on npm,
+   every consumer would need a working Node and `npm`/`pnpm`,
+  plus network access on first run,
+   plus the ability for `npm install` to succeed on their machine.
+  Native-module compile failures,
+   registry outages,
+   and proxy/firewall environments turn into
   user-visible plugin failures with no in-tree signal.
 
 ### Source-only plugins with `bun run` as the hook command
@@ -166,14 +209,18 @@ Rejected because:
 - The plugins' imports still resolve to workspace-only packages.
   Bun cannot pull `@monochromatic-dev/claude-code-plugins-source` out of thin air.
   The same workspace-publishing or source-inlining problem from the previous alternative applies.
-- Even if the imports resolved, every consumer would need Bun on `PATH`.
-  The workspace itself now prefers Node, so pushing a Bun requirement onto plugin consumers (who may not be
+- Even if the imports resolved,
+   every consumer would need Bun on `PATH`.
+  The workspace itself now prefers Node,
+   so pushing a Bun requirement onto plugin consumers (who may not be
   Bun users at all) is a new constraint imposed by the distribution choice.
   The current Node-only `.mjs` bundle has none of this friction.
 
 ### Pre-bundle to a single `.ts` file instead of `.mjs`
 
-Run `tsdown` to produce one self-contained `.ts` file per plugin, commit that, and have the hook command
+Run `tsdown` to produce one self-contained `.ts` file per plugin,
+ commit that,
+ and have the hook command
 invoke `bun run` (or `tsx`) against the committed file.
 
 Rejected because:
@@ -184,31 +231,43 @@ Rejected because:
 
 ### Compile each plugin to native binaries
 
-Use `bun build --compile` to produce platform-specific binaries (linux-x64, macos-arm64, etc.) per plugin
+Use `bun build --compile` to produce platform-specific binaries (linux-x64,
+ macos-arm64,
+ etc.) per plugin
 and commit those.
 
 Rejected because:
 
 - Native binaries are megabytes each.
   Committing one per platform per plugin multiplies the carve-out's footprint by an order of magnitude.
-- The artefacts are still committed; the original concern is unchanged.
+- The artefacts are still committed;
+   the original concern is unchanged.
 - Cross-compiling at release time still needs CI plumbing the workspace has not built.
 
 ### Move the plugins to a separate distribution repo
 
-Split `packages/claude-code-plugins/` into its own repository, publish dist there, keep this monorepo
+Split `packages/claude-code-plugins/` into its own repository,
+ publish dist there,
+ keep this monorepo
 free of any committed dist.
 
 Rejected because:
 
 - The plugins depend on workspace packages
-  (`@monochromatic-dev/module-logger`, internal config packages, shared types) that exist only in this
+  (`@monochromatic-dev/module-logger`,
+   internal config packages,
+   shared types) that exist only in this
   monorepo.
   A separate repo would need to either vendor these dependencies or publish them to a registry.
-- Plugin development currently benefits from the monorepo's lint, type, and build infrastructure
-  (`mise run buildAndTest`, the lint hooks, the shared `tsdown` config).
+- Plugin development currently benefits from the monorepo's lint,
+   type,
+   and build infrastructure
+  (`mise run buildAndTest`,
+   the lint hooks,
+   the shared `tsdown` config).
   A standalone repo would duplicate these or accept divergence.
-- The current arrangement keeps plugin source and consumer-facing dist co-located, so a contributor sees
+- The current arrangement keeps plugin source and consumer-facing dist co-located,
+   so a contributor sees
   the build output diff alongside the source change in a single PR.
   Splitting hides that signal.
 
@@ -217,15 +276,20 @@ Rejected because:
 Reconsider this decision only if at least one of the following becomes true:
 
 1. The workspace begins publishing `@monochromatic-dev/claude-code-plugins-source` and its build-config
-   peers to npm, eliminating the workspace-only dependency blocker.
+   peers to npm,
+    eliminating the workspace-only dependency blocker.
    At that point the SessionStart-install pattern becomes practical and the trade reopens.
 2. Claude Code's plugin contract adds a richer install-time phase (a documented "package manager run on
-   the cache directory" step, or a pluggable build pipeline) that does not require `npm install` to
+   the cache directory" step,
+    or a pluggable build pipeline) that does not require `npm install` to
    succeed inside `${CLAUDE_PLUGIN_DATA}`.
-3. The plugins migrate out of this monorepo into a dedicated distribution repo, at which point this
+3. The plugins migrate out of this monorepo into a dedicated distribution repo,
+    at which point this
    decision is superseded by the new repo's policy.
-4. The committed `dist/` footprint grows past the eight-plugin scope (for example, by adding new plugin
-   categories), and the carve-out starts catching files it should not.
+4. The committed `dist/` footprint grows past the eight-plugin scope (for example,
+    by adding new plugin
+   categories),
+    and the carve-out starts catching files it should not.
 5. A bug class emerges where stale committed dist drifts from source in ways that confuse contributors,
    despite the session-start-housekeeping cleanup.
 

@@ -57,7 +57,7 @@ const DEG_TO_RAD = Math.PI
 /**
  * sRGB encoding piecewise boundary; values below take the linear segment.
  */
-const SRGB_LINEAR_THRESHOLD = 0.003_130_8;
+const SRGB_LINEAR_THRESHOLD = 0.0031308;
 /**
  * sRGB encoding linear-segment slope (standard).
  */

@@ -12,38 +12,58 @@ tags:
 
 Monochromatic és un ecosistema monorepo de TypeScript de codi obert
 que mantinc des del 2023.
-Comprèn un sistema de disseny CSS, una biblioteca d'utilitats funcionals
+Comprèn un sistema de disseny CSS,
+ una biblioteca d'utilitats funcionals
 i el generador de llocs estàtics que impulsa aquest mateix lloc web.
 
 [Veure a GitHub](https://github.com/Aquaticat/Monochromatic)
 
 ## El meu paper i les meves contribucions
 
-Sóc el **mantenidor principal i únic arquitecte**, responsable de:
+Sóc el **mantenidor principal i únic arquitecte**,
+ responsable de:
 
-- **Arquitectura**: disseny de l'estructura del monorepo, els límits dels paquets
+- **Arquitectura**:
+   disseny de l'estructura del monorepo,
+   els límits dels paquets
   i el graf de dependències entre desenes de paquets
-- **Sistema de disseny CSS**: construcció d'un sistema de disseny basat en tokens amb colors OKLCH,
+- **Sistema de disseny CSS**:
+   construcció d'un sistema de disseny basat en tokens amb colors OKLCH,
   propietats lògiques i suport per als modes clar i fosc
-- **Biblioteca d'utilitats**: utilitats funcionals de TypeScript per a patrons comuns
-- **Predefinits de configuració**: configuracions compartibles per a Dprint, Oxlint i TypeScript
-- **Documentació**: escriptura de documentació amb Astro
-- **Tests**: aplicació d'estàndards mitjançant proves automatitzades
-- **Generador de llocs estàtics**: construcció de l'SSG que impulsa aquati.cat,
-  amb compilacions incrementals, processament d'MDX, i18n i ressaltat de sintaxi
+- **Biblioteca d'utilitats**:
+   utilitats funcionals de TypeScript per a patrons comuns
+- **Predefinits de configuració**:
+   configuracions compartibles per a Dprint,
+   Oxlint i TypeScript
+- **Documentació**:
+   escriptura de documentació amb Astro
+- **Tests**:
+   aplicació d'estàndards mitjançant proves automatitzades
+- **Generador de llocs estàtics**:
+   construcció de l'SSG que impulsa aquati.
+  cat,
+  amb compilacions incrementals,
+   processament d'MDX,
+   i18n i ressaltat de sintaxi
   en temps de compilació amb la CSS Custom Highlight API
 
 ## Aspectes tècnics destacats
 
-- **Eines de monorepo**: pnpm workspaces, executor de tasques mise,
+- **Eines de monorepo**:
+   pnpm workspaces,
+   executor de tasques mise,
   dependències amb protocol workspace
-- **Ressaltat de sintaxi en temps de compilació**: els analitzadors Lezer s'executen en temps de compilació;
+- **Ressaltat de sintaxi en temps de compilació**:
+   els analitzadors Lezer s'executen en temps de compilació;
   només es lliuren al navegador desplaçaments de caràcters precomputats,
   amb una reducció del 99,4 % del JavaScript del client
-- **Compilacions incrementals**: hashing de contingut SHA-256 amb una memòria cau basada en manifest
+- **Compilacions incrementals**:
+   hashing de contingut SHA-256 amb una memòria cau basada en manifest
   per saltar el reprocessament dels fitxers no modificats
-- **i18n amb seguretat de tipus**: typesafe-i18n per a seguretat de traducció en temps de compilació
-- **Sistema de colors OKLCH**: propietats personalitzades de CSS amb espais de color
+- **i18n amb seguretat de tipus**:
+   typesafe-i18n per a seguretat de traducció en temps de compilació
+- **Sistema de colors OKLCH**:
+   propietats personalitzades de CSS amb espais de color
   uniformes des del punt de vista perceptiu per a temes clar i fosc consistents
 
 ## Habilitats i eines demostrades

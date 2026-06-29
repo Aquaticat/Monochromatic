@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version='1.0' encoding='UTF-8'?>
 <!--
   Placeholder app icon for music-player (macOS .icns + Windows .ico are generated
   from this by the `gen:icons` mise task). Deliberately simple and monochromatic
@@ -9,11 +9,33 @@
   1024x1024 is the largest size macOS/Windows icon containers carry, so the
   source is authored at that resolution and downscaled.
 -->
-<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
-  <rect x="96" y="96" width="832" height="832" rx="184" fill="#18181b"/>
-  <g fill="#fafafa">
-    <ellipse cx="468" cy="704" rx="132" ry="102" transform="rotate(-20 468 704)"/>
-    <rect x="586" y="296" width="46" height="414"/>
-    <path d="M632 296 C 744 320 768 432 700 500 C 742 432 716 356 632 360 Z"/>
+<svg
+  xmlns='http://www.w3.org/2000/svg'
+  width='1024'
+  height='1024'
+  viewBox='0 0 1024 1024'>
+  <rect
+    x='96'
+    y='96'
+    width='832'
+    height='832'
+    rx='184'
+    fill='#18181b'
+  />
+  <g fill='#fafafa'>
+    <ellipse
+      cx='468'
+      cy='704'
+      rx='132'
+      ry='102'
+      transform='rotate(-20 468 704)'
+    />
+    <rect
+      x='586'
+      y='296'
+      width='46'
+      height='414'
+    />
+    <path d='M632 296 C 744 320 768 432 700 500 C 742 432 716 356 632 360 Z' />
   </g>
 </svg>

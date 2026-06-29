@@ -4,20 +4,32 @@ Shared TypeScript compiler configuration for Monochromatic packages.
 
 ## Presets
 
-Three entry points are exported, each extending the next:
+Three entry points are exported,
+ each extending the next:
 
-- `.` (default): environment-agnostic baseline.
-  `lib: ['ESNext']`, `types: ['node']`.
-  Use for pure-logic packages, stubs, shims, and test fixtures.
-- `./dom`: adds `lib: ['ESNext', 'DOM', 'WebWorker']`.
+- `.` (default):
+   environment-agnostic baseline.
+  `lib: ['ESNext']`,
+   `types: ['node']`.
+  Use for pure-logic packages,
+   stubs,
+   shims,
+   and test fixtures.
+- `./dom`:
+   adds `lib: ['ESNext', 'DOM', 'WebWorker']`.
   Use for any package that touches browser or worker globals;
   the default choice for application code.
-- `./astro`: extends `./dom` and adds Astro-specific overrides
-  (`allowJs`, `checkJs`, `types: ['astro/client', 'mdx']`, `isolatedDeclarations: false`).
+- `./astro`:
+   extends `./dom` and adds Astro-specific overrides
+  (`allowJs`,
+   `checkJs`,
+   `types: ['astro/client', 'mdx']`,
+   `isolatedDeclarations: false`).
   Use only inside Astro projects.
 
 Pick the narrowest preset that covers your runtime surface.
-Most packages in this monorepo use `./dom`; agnostic libraries use `.`.
+Most packages in this monorepo use `./dom`;
+ agnostic libraries use `.`.
 
 ## Usage
 
@@ -53,7 +65,11 @@ and `astro.example.tsconfig.json`.
 ## Local overrides
 
 The base config uses `${configDir}` substitution (TypeScript 5.5+)
-throughout (`include`, `exclude`, `rootDirs`, `paths`, `outDir`),
+throughout (`include`,
+ `exclude`,
+ `rootDirs`,
+ `paths`,
+ `outDir`),
 so these resolve to your consuming directory automatically.
 You do **not** need to repeat the default `paths` mappings:
 
@@ -87,9 +103,12 @@ and for tools that read tsconfig to locate declarations.
 
 ## Project references
 
-`composite: true` is inherited from the base, but no package in this monorepo uses
-TypeScript project references and we have no plans to adopt them. `tsgo` reads source
-directly via the `./ts` entry in each package's `exports` map, which short-circuits the
+`composite: true` is inherited from the base,
+ but no package in this monorepo uses
+TypeScript project references and we have no plans to adopt them.
+ `tsgo` reads source
+directly via the `./ts` entry in each package's `exports` map,
+ which short-circuits the
 cold-rebuild cost references are meant to solve in classic-tsc workflows.
 
 See [`.out-of-scope/typescript-project-references.md`](../../../.out-of-scope/typescript-project-references.md)

@@ -90,7 +90,7 @@ const RADIUS_MAX_PX = 30;
  * each other in dense regions and so per-glyph name labels have room to
  * breathe.
  */
-const RADIUS_MIN_WORLD_FRACTION = 0.002_5;
+const RADIUS_MIN_WORLD_FRACTION = 0.0025;
 /**
  * Maximum glyph radius in world units, as a fraction of the bounds diagonal.
  *

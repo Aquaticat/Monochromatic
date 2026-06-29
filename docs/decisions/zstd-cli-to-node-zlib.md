@@ -11,89 +11,176 @@ nested lists or code fences. This is a deliberate, documented exception.
 
 Two places in the workspace shell out to the external `zstd` command-line tool:
 
-- `packages/figma-parsers/kiwi/src/index.ts`, function `decompressZstd`, decompresses the
-  zstd-compressed document section of a Figma `.fig` / `.deck` / `.jam` export. It first tries an
-  optional native module (`@bokuwatch/zstd`, never declared as a dependency) and otherwise spawns
-  `zstd -d` through `nano-spawn`, shuttling data through temp files.
-- `packages/ssg/aquati.cat/mise.toml`, task `build:compress`, runs
+- `packages/figma-parsers/kiwi/src/index.ts`,
+   function `decompressZstd`,
+   decompresses the
+  zstd-compressed document section of a Figma `.fig` / `.deck` / `.jam` export.
+   It first tries an
+  optional native module (`@bokuwatch/zstd`,
+   never declared as a dependency) and otherwise spawns
+  `zstd -d` through `nano-spawn`,
+   shuttling data through temp files.
+- `packages/ssg/aquati.cat/mise.toml`,
+   task `build:compress`,
+   runs
   `zstd -z -f --no-check -T0 --exclude-compressed --no-content-size -r --adapt dist` to write a
-  `<file>.zst` companion next to every compressible asset in `dist/`. The companions are read by
+  `<file>.zst` companion next to every compressible asset in `dist/`.
+   The companions are read by
   `packages/dev-script/page-weight/src/size.ts` (`wireSize`) and exist for precompressed serving.
 
-Both depend on the `zstd` binary being installed, which the workspace declares as a mise tool
+Both depend on the `zstd` binary being installed,
+ which the workspace declares as a mise tool
 (`"github:facebook/zstd" = "latest"` in `mise.toml` and `mise.no-env.toml`).
 
 Node 22.15+ and Bun 1.3+ ship native Zstandard support directly in `node:zlib`
-(`zstdCompressSync`, `zstdDecompressSync`, `zstdCompress`, `zstdDecompress`, and the streaming
-`createZstd*` constructors). The workspace runs Bun 1.3.14 and Node 26.3.0, both of which expose
-the full API. Replacing the subprocess and the external tool dependency with the platform built-in
-removes a tool from the install set, removes the temp-file dance and the undeclared optional
-dependency in the Figma parser, and makes the compression step a normal in-process build script.
+(`zstdCompressSync`,
+ `zstdDecompressSync`,
+ `zstdCompress`,
+ `zstdDecompress`,
+ and the streaming
+`createZstd*` constructors).
+ The workspace runs Bun 1.3.14 and Node 26.3.0,
+ both of which expose
+the full API.
+ Replacing the subprocess and the external tool dependency with the platform built-in
+removes a tool from the install set,
+ removes the temp-file dance and the undeclared optional
+dependency in the Figma parser,
+ and makes the compression step a normal in-process build script.
 
-The decompression swap is mechanically trivial and is treated as an independent change. The
-compression swap raises real choices (compression level, threading model, which `.zst` to keep),
-because the CLI flags being replaced (`--adapt`, `-T0`, `--exclude-compressed`) have no one-to-one
-`node:zlib` equivalent. Those choices were settled by benchmarking, documented in full below.
+The decompression swap is mechanically trivial and is treated as an independent change.
+ The
+compression swap raises real choices (compression level,
+ threading model,
+ which `.zst` to keep),
+because the CLI flags being replaced (`--adapt`,
+ `-T0`,
+ `--exclude-compressed`) have no one-to-one
+`node:zlib` equivalent.
+ Those choices were settled by benchmarking,
+ documented in full below.
 
-This document records the decision and the complete evidence behind it. It does not itself land the
-change; the code edits await go-ahead.
+This document records the decision and the complete evidence behind it.
+ It does not itself land the
+change;
+ the code edits await go-ahead.
 
 ## Decision
 
-1. **Figma `decompressZstd`** becomes a one-line call to `node:zlib`'s `zstdDecompressSync`. The
-   optional `@bokuwatch/zstd` path and the `zstd` CLI fallback are removed, and `nano-spawn` is
-   dropped from the package's dependencies (it has no other use there). This is correctness-only:
-   one-shot decompression of a single frame, no level or threading concerns. Validated by full
+1. **Figma `decompressZstd`** becomes a one-line call to `node:zlib`'s `zstdDecompressSync`.
+    The
+   optional `@bokuwatch/zstd` path and the `zstd` CLI fallback are removed,
+    and `nano-spawn` is
+   dropped from the package's dependencies (it has no other use there).
+    This is correctness-only:
+   one-shot decompression of a single frame,
+    no level or threading concerns.
+    Validated by full
    interop (every produced frame round-trips byte-identically) and by the package's existing
    integration test that decodes real `.fig` / `.deck` / `.jam` files.
 
-2. **The ssg `build:compress` task** becomes a build script (`src/build/compress.ts`, alongside the
-   existing `postprocess.ts`) that walks `dist/`, compresses each file with `node:zlib`, and writes
-   `<file>.zst`. The workspace has migrated off Bun, so this script must run under **Node**; the
-   engine choice is made for Node, with Bun numbers kept only as reference. Specifics, each justified
+2. **The ssg `build:compress` task** becomes a build script (`src/build/compress.ts`,
+    alongside the
+   existing `postprocess.ts`) that walks `dist/`,
+    compresses each file with `node:zlib`,
+    and writes
+   `<file>.zst`.
+    The workspace has migrated off Bun,
+    so this script must run under **Node**;
+    the
+   engine choice is made for Node,
+    with Bun numbers kept only as reference.
+    Specifics,
+    each justified
    by the benchmark:
-   - **Engine + threading:** shard the file list across **`node:worker_threads` (about 8 workers,
-     matching the physical-core count)**, each worker running synchronous `zstdCompressSync`. This is
-     the fastest Node approach measured, and at matched ratio (level 19) it is faster than the zstd
-     CLI itself (168 ms versus 217 ms on tmpfs for the real `dist/`). Three other approaches were
-     measured and rejected: Node's **async** `zstdCompress` via `Promise.all` is pathologically slow
-     (about 1 second at level 19, 7.8 seconds at level 22) because Node's async zlib carries a large
-     fixed per-call overhead; the CLI's in-frame `-T0` multithreading is useless for many small
-     files; the CLI's cross-file process parallelism is catastrophic (process-spawn bound, seconds to
-     tens of seconds). Node sequential `zstdCompressSync` is the simple fallback (243 ms) if the
-     worker_threads machinery is judged not worth it, but it does not scale with file count the way
-     worker_threads does (2,000 files: 787 ms sequential versus 253 ms with 8 workers). Over-
-     subscribing to all 16 logical threads is slightly slower than 8 for CPU-bound zstd. Bun's async
+   - **Engine + threading:
+     ** shard the file list across **`node:worker_threads` (about 8 workers,
+     matching the physical-core count)**,
+      each worker running synchronous `zstdCompressSync`.
+      This is
+     the fastest Node approach measured,
+      and at matched ratio (level 19) it is faster than the zstd
+     CLI itself (168 ms versus 217 ms on tmpfs for the real `dist/`).
+      Three other approaches were
+     measured and rejected:
+      Node's **async** `zstdCompress` via `Promise.all` is pathologically slow
+     (about 1 second at level 19,
+      7.8 seconds at level 22) because Node's async zlib carries a large
+     fixed per-call overhead;
+      the CLI's in-frame `-T0` multithreading is useless for many small
+     files;
+      the CLI's cross-file process parallelism is catastrophic (process-spawn bound,
+      seconds to
+     tens of seconds).
+      Node sequential `zstdCompressSync` is the simple fallback (243 ms) if the
+     worker_threads machinery is judged not worth it,
+      but it does not scale with file count the way
+     worker_threads does (2,000 files:
+      787 ms sequential versus 253 ms with 8 workers).
+      Over-
+     subscribing to all 16 logical threads is slightly slower than 8 for CPU-bound zstd.
+      Bun's async
      parallel path is faster still (72 ms) but Bun is no longer the target runtime.
-   - **Level:** fixed **level 19**. `node:zlib` has no equivalent of `--adapt`, so a fixed level is
-     required, and a fixed level also makes the build's output reproducible (`--adapt` is not; see
-     caveats). Level 19 is the best practical ratio; under the chosen Node worker_threads engine its
-     full wall time on the real `dist/` is ~168 ms (tmpfs) / ~177 ms (SSD). Level 15 is the knee of
-     the ratio curve (within 0.1 percentage points of level 19's ratio at ~20% less time: ~141 ms /
-     ~146 ms) and is the better pick only if dev-rebuild latency is ever a felt pain; since
-     precompressed assets are paid for once and served repeatedly, level 19 is preferred.
-   - **Exclusion policy ("keep if smaller" + extension skip):** write `<file>.zst` only when it is
-     strictly smaller than the original, and skip known-incompressible extensions
-     (images, fonts, video, already-compressed) without reading them. This is stricter and more
+   - **Level:
+     ** fixed **level 19**.
+      `node:zlib` has no equivalent of `--adapt`,
+      so a fixed level is
+     required,
+      and a fixed level also makes the build's output reproducible (`--adapt` is not;
+      see
+     caveats).
+      Level 19 is the best practical ratio;
+      under the chosen Node worker_threads engine its
+     full wall time on the real `dist/` is ~168 ms (tmpfs) / ~177 ms (SSD).
+      Level 15 is the knee of
+     the ratio curve (within 0.1 percentage points of level 19's ratio at ~20% less time:
+      ~141 ms /
+     ~146 ms) and is the better pick only if dev-rebuild latency is ever a felt pain;
+      since
+     precompressed assets are paid for once and served repeatedly,
+      level 19 is preferred.
+   - **Exclusion policy ("keep if smaller" + extension skip):
+     ** write `<file>.zst` only when it is
+     strictly smaller than the original,
+      and skip known-incompressible extensions
+     (images,
+      fonts,
+      video,
+      already-compressed) without reading them.
+      This is stricter and more
      correct than the CLI's `--exclude-compressed` (which is extension-only and can leave a `.zst`
-     larger than its source); incompressible input always grows under zstd (frame overhead), so
+     larger than its source);
+      incompressible input always grows under zstd (frame overhead),
+      so
      keeping the raw bytes is the right behavior for `wireSize` and for any precompressed server.
      The set of produced `.zst` files therefore differs from the CLI's by design.
 
-3. **Remove the external tool.** Drop `"github:facebook/zstd" = "latest"` from `mise.toml` and
-   `mise.no-env.toml` once both call sites are migrated. No other workspace code invokes the `zstd`
+3. **Remove the external tool.
+   ** Drop `"github:facebook/zstd" = "latest"` from `mise.toml` and
+   `mise.no-env.toml` once both call sites are migrated.
+    No other workspace code invokes the `zstd`
    binary (the lone remaining textual reference is a tool-name entry in the bash-output-filter
-   allowlist, which is generic and harmless).
+   allowlist,
+    which is generic and harmless).
 
-The decompression change (1) is unconditionally safe. The compression change (2) is the one the
+The decompression change (1) is unconditionally safe.
+ The compression change (2) is the one the
 benchmark exists to justify.
 
 ## Head-to-head: the current task versus the proposal
 
-The single most decision-relevant measurement, framed for the **Node** target (the workspace is
-after the Bun-to-Node migration. Real `dist/` text assets (138 files, 1,257,418 bytes raw), full wall time
-including process startup and file writes, output dir cleared before each run. Times are mean +/-
-stddev. The key comparison is at *matched* compression (level 19), since the current `--adapt`
+The single most decision-relevant measurement,
+ framed for the **Node** target (the workspace is
+after the Bun-to-Node migration.
+ Real `dist/` text assets (138 files,
+ 1,257,418 bytes raw),
+ full wall time
+including process startup and file writes,
+ output dir cleared before each run.
+ Times are mean +/-
+stddev.
+ The key comparison is at *matched* compression (level 19),
+ since the current `--adapt`
 command's speed comes entirely from it choosing a weak level.
 
 <table>
@@ -114,21 +201,32 @@ command's speed comes entirely from it choosing a weak level.
 Reading this table:
 
 - The current `--adapt` task looks fastest (14 ms / 33 ms) only because `--adapt` settled on a low
-  effort level (its output, 404,644 bytes, equals level 3 exactly) and is nondeterministic (the SSD
-  run has stddev 35 ms because `--adapt` tunes its level to observed I/O speed). It is not a fair
-  comparison: it produces 7.4% larger, irreproducible output.
+  effort level (its output,
+   404,644 bytes,
+   equals level 3 exactly) and is nondeterministic (the SSD
+  run has stddev 35 ms because `--adapt` tunes its level to observed I/O speed).
+   It is not a fair
+  comparison:
+   it produces 7.4% larger,
+   irreproducible output.
 - At **matched ratio (level 19)** the proposed Node worker_threads engine (168 ms / 177 ms) is
-  **faster than the zstd CLI at the same level** (217 ms / 232 ms), while removing the external tool
+  **faster than the zstd CLI at the same level** (217 ms / 232 ms),
+   while removing the external tool
   and producing reproducible output.
 - worker_threads (8 workers) beats Node sequential (243 ms / 257 ms) by ~1.5x here and by ~3x on
-  larger file counts (see the Node parallelism section), and beats Node's async parallel path (~1 s)
+  larger file counts (see the Node parallelism section),
+   and beats Node's async parallel path (~1 s)
   by ~6x.
-- Bun's async parallel path (74 ms) is the fastest of all, but Bun is no longer the
-  target; it is listed only to anchor the Node numbers.
+- Bun's async parallel path (74 ms) is the fastest of all,
+   but Bun is no longer the
+  target;
+   it is listed only to anchor the Node numbers.
 
 ## Environment
 
-All measurements were taken on one machine. Numbers are specific to it; see caveats.
+All measurements were taken on one machine.
+ Numbers are specific to it;
+ see caveats.
 
 <table>
   <tbody>
@@ -145,22 +243,35 @@ All measurements were taken on one machine. Numbers are specific to it; see cave
   </tbody>
 </table>
 
-The SSD path is encrypted (LUKS) and copy-on-write (btrfs). Writing many small `.zst` files there
-costs real metadata, CoW, and encryption work that tmpfs does not incur. Running on both backends
-isolates compute cost (tmpfs) from realistic build cost (SSD, where the real `dist/` lives).
+The SSD path is encrypted (LUKS) and copy-on-write (btrfs).
+ Writing many small `.zst` files there
+costs real metadata,
+ CoW,
+ and encryption work that tmpfs does not incur.
+ Running on both backends
+isolates compute cost (tmpfs) from realistic build cost (SSD,
+ where the real `dist/` lives).
 
 The `node:zlib` advanced-parameter constants are identical across Bun and Node:
-`ZSTD_c_compressionLevel = 100`, `ZSTD_c_windowLog = 101`, `ZSTD_c_enableLongDistanceMatching = 160`,
-`ZSTD_c_nbWorkers = 400`, `ZSTD_c_contentSizeFlag = 200`, `ZSTD_c_checksumFlag = 201`. Neither
-runtime exposes a `ZSTD_VERSION` constant, so the libzstd version was characterized empirically by
+`ZSTD_c_compressionLevel = 100`,
+ `ZSTD_c_windowLog = 101`,
+ `ZSTD_c_enableLongDistanceMatching = 160`,
+`ZSTD_c_nbWorkers = 400`,
+ `ZSTD_c_contentSizeFlag = 200`,
+ `ZSTD_c_checksumFlag = 201`.
+ Neither
+runtime exposes a `ZSTD_VERSION` constant,
+ so the libzstd version was characterized empirically by
 comparing output bytes (see correctness).
 
 ## Methodology
 
 ### Datasets
 
-Four datasets, generated deterministically (seeded PRNG) so the tmpfs and SSD copies are
-byte-identical. Per-file content verified identical across backends by path-sorted SHA-256.
+Four datasets,
+ generated deterministically (seeded PRNG) so the tmpfs and SSD copies are
+byte-identical.
+ Per-file content verified identical across backends by path-sorted SHA-256.
 
 <table>
   <thead><tr><th>Dataset</th><th>Files</th><th>Raw bytes</th><th>Purpose</th></tr></thead>
@@ -174,75 +285,149 @@ byte-identical. Per-file content verified identical across backends by path-sort
 
 ### Engines and the threading vocabulary
 
-"Threading" means different mechanisms for different engines; the benchmark separates them
+"Threading" means different mechanisms for different engines;
+ the benchmark separates them
 deliberately because they behave very differently.
 
-- **zstd CLI, in-frame multithreading** (`-T<n>`, with `-T0` meaning all cores): splits a *single*
-  file into jobs across worker threads. When compressing a directory recursively, the CLI processes
-  files one at a time, each with in-frame MT. This is exactly what the current `build:compress`
-  does (`-T0 -r`). For files smaller than zstd's job size it gives no benefit.
-- **zstd CLI, cross-file process parallelism** (`xargs -P<n>`): launches one `zstd` process per
-  file, up to `n` at a time. This is the only way to parallelize the CLI across many files.
-- **node:zlib sequential** (`zstdCompressSync` in a loop): one thread.
-- **node:zlib async parallel** (`Promise.all` over async `zstdCompress`, bounded concurrency `n`):
-  the async calls run on the runtime's internal thread pool, giving cross-file parallelism
-  in-process. This is the path that turns out pathological under Node.
-- **node:zlib worker_threads** (shard files across `n` `node:worker_threads`, each running
-  synchronous `zstdCompressSync`): real OS-thread, cross-file parallelism that bypasses the async
-  zlib path entirely. This is the chosen Node engine. It was added to the matrix as a follow-up once
+- **zstd CLI,
+   in-frame multithreading** (`-T<n>`,
+   with `-T0` meaning all cores):
+   splits a *single*
+  file into jobs across worker threads.
+   When compressing a directory recursively,
+   the CLI processes
+  files one at a time,
+   each with in-frame MT.
+   This is exactly what the current `build:compress`
+  does (`-T0 -r`).
+   For files smaller than zstd's job size it gives no benefit.
+- **zstd CLI,
+   cross-file process parallelism** (`xargs -P<n>`):
+   launches one `zstd` process per
+  file,
+   up to `n` at a time.
+   This is the only way to parallelize the CLI across many files.
+- **node:
+  zlib sequential** (`zstdCompressSync` in a loop):
+   one thread.
+- **node:
+  zlib async parallel** (`Promise.all` over async `zstdCompress`,
+   bounded concurrency `n`):
+  the async calls run on the runtime's internal thread pool,
+   giving cross-file parallelism
+  in-process.
+   This is the path that turns out pathological under Node.
+- **node:
+  zlib worker_threads** (shard files across `n` `node:worker_threads`,
+   each running
+  synchronous `zstdCompressSync`):
+   real OS-thread,
+   cross-file parallelism that bypasses the async
+  zlib path entirely.
+   This is the chosen Node engine.
+   It was added to the matrix as a follow-up once
   the constraint that the build must run under Node made the async path's
   pathology disqualifying.
-- **node:zlib in-frame multithreading** (`ZSTD_c_nbWorkers`): the direct analogue of the CLI's
-  `-T<n>`, splitting a single file.
+- **node:
+  zlib in-frame multithreading** (`ZSTD_c_nbWorkers`):
+   the direct analogue of the CLI's
+  `-T<n>`,
+   splitting a single file.
 
-Bun does not honor `UV_THREADPOOL_SIZE` (verified: 4, 8, 16 are indistinguishable); it uses its own
-pool. Node does honor it, and the async-parallel Node runs set it to match the concurrency.
+Bun does not honor `UV_THREADPOOL_SIZE` (verified:
+ 4,
+ 8,
+ 16 are indistinguishable);
+ it uses its own
+pool.
+ Node does honor it,
+ and the async-parallel Node runs set it to match the concurrency.
 
-The async/sequential candidate is `compress-worker.ts` (run under both `bun` and `node`); the chosen
-Node engine is `compress-node-wt.ts` (worker_threads). Both are reproduced below and use only
+The async/sequential candidate is `compress-worker.ts` (run under both `bun` and `node`);
+ the chosen
+Node engine is `compress-node-wt.ts` (worker_threads).
+ Both are reproduced below and use only
 `node:` APIs so the bun-vs-node comparison is fair.
 
 ### Measurement
 
-- **Ratio** (compressed size) is storage-independent and deterministic, so it was measured once, in
-  memory, on the tmpfs copy, under both Bun and Node, and cross-checked against the system CLI.
-- **Time** was measured with hyperfine on both backends. Each hyperfine benchmark clears its output
-  directory before every run via `--prepare`, mirroring the real pipeline (the `build` task runs
-  `build:clean` = `rm -rf dist` before each build, so `.zst` files are always freshly created, never
-  warm overwrites). Run counts: Exp A (level sweep) `--warmup 2 --runs 5`; Exp B (threading)
-  `--warmup 1 --runs 5` (3 for the 2000-process `many` + cli-xargs case); Exp C/D `--warmup 1
-  --runs 4`; Exp E `--warmup 2 --runs 6`; Exp F (head-to-head) `--warmup 3 --runs 12`.
+- **Ratio** (compressed size) is storage-independent and deterministic,
+   so it was measured once,
+   in
+  memory,
+   on the tmpfs copy,
+   under both Bun and Node,
+   and cross-checked against the system CLI.
+- **Time** was measured with hyperfine on both backends.
+   Each hyperfine benchmark clears its output
+  directory before every run via `--prepare`,
+   mirroring the real pipeline (the `build` task runs
+  `build:clean` = `rm -rf dist` before each build,
+   so `.zst` files are always freshly created,
+   never
+  warm overwrites).
+   Run counts:
+   Exp A (level sweep) `--warmup 2 --runs 5`;
+   Exp B (threading)
+  `--warmup 1 --runs 5` (3 for the 2000-process `many` + cli-xargs case);
+   Exp C/D `--warmup 1
+  --runs 4`;
+   Exp E `--warmup 2 --runs 6`;
+   Exp F (head-to-head) `--warmup 3 --runs 12`.
 
 All compression used `--no-check` / `ZSTD_c_checksumFlag = 0` (zstd's default is already no
 checksum) and `--no-content-size` / `ZSTD_c_contentSizeFlag = 0` to match the current task's frame
-options. Ultra levels (20 to 22) require `--ultra` on the CLI; `node:zlib` reaches them directly via
+options.
+ Ultra levels (20 to 22) require `--ultra` on the CLI;
+ `node:zlib` reaches them directly via
 the level parameter.
 
 ## Correctness and engine equivalence
 
-Before any timing, the engines were checked for byte-level agreement. These are the load-bearing
+Before any timing,
+ the engines were checked for byte-level agreement.
+ These are the load-bearing
 correctness facts for the swap.
 
-- **Bun and Node produce byte-identical output at every level on every dataset.** All 110+ rows of
+- **Bun and Node produce byte-identical output at every level on every dataset.
+  ** All 110+ rows of
   the ratio sweep matched exactly between the two runtimes.
-- **node:zlib matches the system zstd CLI v1.5.7 byte-for-byte at every level 1 to 19** on the real
-  dataset (per-file totals: L1 419,904; L3 404,644; L6 387,591; L9 384,350; L12 381,095; L15
-  375,774; L19 374,726). The Figma round-trip was also exhaustively verified: every one of the 138
-  files, compressed by the Bun worker and by the CLI, decompresses to the exact original bytes (0
+- **node:
+  zlib matches the system zstd CLI v1.5.7 byte-for-byte at every level 1 to 19** on the real
+  dataset (per-file totals:
+   L1 419,904;
+   L3 404,644;
+   L6 387,591;
+   L9 384,350;
+   L12 381,095;
+   L15
+  375,774;
+   L19 374,726).
+   The Figma round-trip was also exhaustively verified:
+   every one of the 138
+  files,
+   compressed by the Bun worker and by the CLI,
+   decompresses to the exact original bytes (0
   mismatches across all files and both producers).
 - **At ultra levels the CLI silently caps at 19 without `--ultra`** (CLI "level 22" returned 374,726,
-  identical to its level 19), whereas `node:zlib` applies the ultra level directly and reaches
-  374,698. So `node:zlib` is not merely equivalent; it can produce marginally smaller output than a
+  identical to its level 19),
+   whereas `node:zlib` applies the ultra level directly and reaches
+  374,698.
+   So `node:zlib` is not merely equivalent;
+   it can produce marginally smaller output than a
   bare CLI invocation.
 
-The decompression direction is symmetric: a frame produced by the system CLI decodes correctly under
-Bun's `zstdDecompressSync`, and a frame produced by `node:zlib` decodes correctly under the CLI.
+The decompression direction is symmetric:
+ a frame produced by the system CLI decodes correctly under
+Bun's `zstdDecompressSync`,
+ and a frame produced by `node:zlib` decodes correctly under the CLI.
 
 ## Ratio results
 
 ### real (1,257,418 bytes raw)
 
-All 138 files compress smaller at every level, so "kept if smaller" equals the compressed total here.
+All 138 files compress smaller at every level,
+ so "kept if smaller" equals the compressed total here.
 
 <table>
   <thead><tr><th>Level</th><th>Compressed bytes</th><th>Ratio</th><th>Level</th><th>Compressed bytes</th><th>Ratio</th></tr></thead>
@@ -264,11 +449,17 @@ All 138 files compress smaller at every level, so "kept if smaller" equals the c
   </tbody>
 </table>
 
-The curve drops steeply through level 6, flattens after level 12, and is essentially flat from level
-16 onward. Level 15 (375,774) is within 1,048 bytes (0.08 percentage points) of level 19 (374,726).
+The curve drops steeply through level 6,
+ flattens after level 12,
+ and is essentially flat from level
+16 onward.
+ Level 15 (375,774) is within 1,048 bytes (0.08 percentage points) of level 19 (374,726).
 Negative ("fast") levels trade a lot of ratio for speed and are not useful for precompressed,
-served-many-times assets. Note that the committed `dist/.zst` baseline of 404,644 bytes equals level
-3, but that figure came from a prior `--adapt` run and is environment-specific, not a fixed property
+served-many-times assets.
+ Note that the committed `dist/.zst` baseline of 404,644 bytes equals level
+3,
+ but that figure came from a prior `--adapt` run and is environment-specific,
+ not a fixed property
 of `--adapt`.
 
 ### many (5,791,137 bytes raw, 2,000 files)
@@ -286,12 +477,17 @@ of `--adapt`.
   </tbody>
 </table>
 
-Same shape: a knee around level 12 to 16, flat thereafter.
+Same shape:
+ a knee around level 12 to 16,
+ flat thereafter.
 
 ### large (33,554,432 bytes raw, 1 file) and long-distance matching
 
-The large file is repeated blog text, so it is hugely compressible. This dataset is where
-long-distance matching (LDM) can matter, because LDM needs a large window over a large input.
+The large file is repeated blog text,
+ so it is hugely compressible.
+ This dataset is where
+long-distance matching (LDM) can matter,
+ because LDM needs a large window over a large input.
 
 <table>
   <thead><tr><th>Level</th><th>No LDM bytes</th><th>No LDM ratio</th><th>LDM bytes</th><th>LDM ratio</th></tr></thead>
@@ -306,28 +502,47 @@ long-distance matching (LDM) can matter, because LDM needs a large window over a
   </tbody>
 </table>
 
-LDM dramatically helps *low* levels on a large redundant file (level 1: 14.95% to 0.57%) but is
-neutral or slightly worse at high levels (whose windows are already large), and it does nothing for
-small files. Since the ssg assets are small per-file, LDM is irrelevant to the decision; it is
+LDM dramatically helps *low* levels on a large redundant file (level 1:
+ 14.95% to 0.57%) but is
+neutral or slightly worse at high levels (whose windows are already large),
+ and it does nothing for
+small files.
+ Since the ssg assets are small per-file,
+ LDM is irrelevant to the decision;
+ it is
 measured here only to rule it out.
 
 ### incompressible (8,388,608 bytes raw, 1 file)
 
-At every level the compressed output is 8,388,806 bytes, which is 198 bytes *larger* than the raw
-input (zstd frame overhead on already-random data). The keep-if-smaller policy therefore keeps the
-raw 8,388,608 bytes and writes no `.zst`. This is the concrete justification for keep-if-smaller:
-without it, the build would emit `.zst` companions that are larger than their sources, which
+At every level the compressed output is 8,388,806 bytes,
+ which is 198 bytes *larger* than the raw
+input (zstd frame overhead on already-random data).
+ The keep-if-smaller policy therefore keeps the
+raw 8,388,608 bytes and writes no `.zst`.
+ This is the concrete justification for keep-if-smaller:
+without it,
+ the build would emit `.zst` companions that are larger than their sources,
+ which
 `wireSize` would then report as the (inflated) wire size.
 
 ## Timing results
 
 ### Experiment A: level sweep on real, per engine
 
-Mean wall time in milliseconds, real dataset, output cleared before each run. This experiment
-predates the Bun-removal constraint, so it sweeps `bun-par` and `node-par` (async); the chosen Node
-worker_threads engine is benchmarked separately in the Node parallelism section. `cli-rec-T0` is the
-current style, `node-par` (async) is shown to be pathological, and `node-seq` is the Node sequential
-baseline that worker_threads improves on. Bun numbers are reference only.
+Mean wall time in milliseconds,
+ real dataset,
+ output cleared before each run.
+ This experiment
+predates the Bun-removal constraint,
+ so it sweeps `bun-par` and `node-par` (async);
+ the chosen Node
+worker_threads engine is benchmarked separately in the Node parallelism section.
+ `cli-rec-T0` is the
+current style,
+ `node-par` (async) is shown to be pathological,
+ and `node-seq` is the Node sequential
+baseline that worker_threads improves on.
+ Bun numbers are reference only.
 
 tmpfs backend:
 
@@ -376,28 +591,45 @@ SSD backend:
   </tbody>
 </table>
 
-Rows marked `*` had a large standard deviation (a transient outlier run); see caveats. The SSD table
-is abridged to representative levels; the full 22-level SSD data was collected and matches the tmpfs
+Rows marked `*` had a large standard deviation (a transient outlier run);
+ see caveats.
+ The SSD table
+is abridged to representative levels;
+ the full 22-level SSD data was collected and matches the tmpfs
 shape offset by roughly 10 to 20 ms of I/O.
 
 What this shows:
 
-- **`bun-par` is nearly flat and far cheaper at the levels that matter.** It has a higher floor
-  (~35 ms, from Bun startup plus thread-pool spin-up) but barely rises with level: level 19 is 72 ms
+- **`bun-par` is nearly flat and far cheaper at the levels that matter.
+  ** It has a higher floor
+  (~35 ms,
+   from Bun startup plus thread-pool spin-up) but barely rises with level:
+   level 19 is 72 ms
   versus `cli-rec-T0` 217 ms and `bun-seq` 215 ms. From level 16 to 22 it is essentially flat
   (72 to 75 ms).
-- **The CLI is cheapest only at trivial levels** (level 1, 12 ms), where the work is so small that
-  process startup dominates and parallelism cannot pay for its floor. The crossover with `bun-par`
-  is around level 11 to 12; above it, `bun-par` wins decisively.
-- **`node-par` is pathological** and gets worse with level, exploding to 7.8 seconds at level 22.
-  This is discussed in its own section; it is the reason Node is not used for the parallel path.
+- **The CLI is cheapest only at trivial levels** (level 1,
+   12 ms),
+   where the work is so small that
+  process startup dominates and parallelism cannot pay for its floor.
+   The crossover with `bun-par`
+  is around level 11 to 12;
+   above it,
+   `bun-par` wins decisively.
+- **`node-par` is pathological** and gets worse with level,
+   exploding to 7.8 seconds at level 22.
+  This is discussed in its own section;
+   it is the reason Node is not used for the parallel path.
 
 ### Experiment B: threading scaling at level 19
 
-Mean ms, level 19, varying the thread/concurrency count. This isolates how each parallelism
+Mean ms,
+ level 19,
+ varying the thread/concurrency count.
+ This isolates how each parallelism
 mechanism scales.
 
-real dataset, tmpfs:
+real dataset,
+ tmpfs:
 
 <table>
   <thead><tr><th>Threads</th><th>bun-par</th><th>cli-rec (in-frame)</th><th>cli-xargs (cross-file procs)</th><th>node-par</th></tr></thead>
@@ -408,7 +640,8 @@ real dataset, tmpfs:
   </tbody>
 </table>
 
-real dataset, SSD:
+real dataset,
+ SSD:
 
 <table>
   <thead><tr><th>Threads</th><th>bun-par</th><th>cli-rec (in-frame)</th><th>cli-xargs (cross-file procs)</th><th>node-par</th></tr></thead>
@@ -419,7 +652,8 @@ real dataset, SSD:
   </tbody>
 </table>
 
-many dataset (2,000 files), tmpfs:
+many dataset (2,000 files),
+ tmpfs:
 
 <table>
   <thead><tr><th>Threads</th><th>bun-par</th><th>cli-xargs (cross-file procs)</th><th>node-par</th></tr></thead>
@@ -430,7 +664,8 @@ many dataset (2,000 files), tmpfs:
   </tbody>
 </table>
 
-many dataset (2,000 files), SSD:
+many dataset (2,000 files),
+ SSD:
 
 <table>
   <thead><tr><th>Threads</th><th>bun-par</th><th>cli-xargs (cross-file procs)</th><th>node-par</th></tr></thead>
@@ -443,20 +678,34 @@ many dataset (2,000 files), SSD:
 
 What this shows:
 
-- **`bun-par` scales well across files** (real: 275 ms at T1 to ~60 ms at T8/T16, ~4.5x; many: 823 ms
-  to 155 ms, ~5.3x) and is the fastest everywhere it is measured.
-- **The CLI's in-frame `-T<n>` does not scale for small files** (real: 244 to 215 ms from T1 to T16),
+- **`bun-par` scales well across files** (real:
+   275 ms at T1 to ~60 ms at T8/T16,
+   ~4.5x;
+   many:
+   823 ms
+  to 155 ms,
+   ~5.3x) and is the fastest everywhere it is measured.
+- **The CLI's in-frame `-T<n>` does not scale for small files** (real:
+   244 to 215 ms from T1 to T16),
   confirming that the current task's `-T0` buys nothing on this workload.
-- **The CLI's cross-file process parallelism is catastrophic for many files.** On the 2,000-file set
-  it takes ~23 to 28 seconds and does not improve with more processes, because spawning 2,000 `zstd`
-  processes dominates everything. On the 138-file `real` set it is ~1.5 to 2.2 seconds, still ~25x
-  slower than `bun-par`. Process-per-file is simply the wrong model.
-- **`node-par` is slow and erratic**: on `many` it ranges from 13 seconds (T16) to 60 seconds (T1).
-  Notably its *slowest* point is concurrency 1, which rules out a "too much concurrency" explanation.
+- **The CLI's cross-file process parallelism is catastrophic for many files.
+  ** On the 2,000-file set
+  it takes ~23 to 28 seconds and does not improve with more processes,
+   because spawning 2,000 `zstd`
+  processes dominates everything.
+   On the 138-file `real` set it is ~1.5 to 2.2 seconds,
+   still ~25x
+  slower than `bun-par`.
+   Process-per-file is simply the wrong model.
+- **`node-par` is slow and erratic**:
+   on `many` it ranges from 13 seconds (T16) to 60 seconds (T1).
+  Notably its *slowest* point is concurrency 1,
+   which rules out a "too much concurrency" explanation.
 
 ### Experiment C: in-frame multithreading on the 32 MiB file
 
-Does the CLI's `-T<n>` (and `node:zlib`'s `nbWorkers`) help when the file is actually large? Mean ms,
+Does the CLI's `-T<n>` (and `node:zlib`'s `nbWorkers`) help when the file is actually large?
+ Mean ms,
 single 32 MiB file.
 
 <table>
@@ -469,10 +718,15 @@ single 32 MiB file.
   </tbody>
 </table>
 
-Even on a 32 MiB file, in-frame MT gives only a mild speedup at level 12 (1.26x for the CLI) and
-essentially nothing at level 19 (the window already spans most of the file, so there is little to
-parallelize). This confirms that in-frame MT is not a useful lever for the ssg workload, whose files
-are three orders of magnitude smaller. SSD numbers match within noise.
+Even on a 32 MiB file,
+ in-frame MT gives only a mild speedup at level 12 (1.26x for the CLI) and
+essentially nothing at level 19 (the window already spans most of the file,
+ so there is little to
+parallelize).
+ This confirms that in-frame MT is not a useful lever for the ssg workload,
+ whose files
+are three orders of magnitude smaller.
+ SSD numbers match within noise.
 
 ### Experiment D: long-distance matching wall time (32 MiB file)
 
@@ -489,12 +743,17 @@ are three orders of magnitude smaller. SSD numbers match within noise.
 </table>
 
 LDM is both faster and far smaller at level 1 on a large redundant file (it finds the long-range
-repeats cheaply), but it is pure overhead at level 19 (slower, same size). Irrelevant for small ssg
-assets; measured to rule out.
+repeats cheaply),
+ but it is pure overhead at level 19 (slower,
+ same size).
+ Irrelevant for small ssg
+assets;
+ measured to rule out.
 
 ### Experiment E: incompressible worst case and keep-if-smaller cost
 
-8 MiB random file, level 19.
+8 MiB random file,
+ level 19.
 
 <table>
   <thead><tr><th>Config</th><th>tmpfs</th><th>SSD</th></tr></thead>
@@ -505,19 +764,34 @@ assets; measured to rule out.
   </tbody>
 </table>
 
-Incompressible data is the slowest per byte (no early exit; ~0.8 to 0.9 s for 8 MiB). The
-keep-if-smaller check costs ~10 ms (under 1%) and, more importantly, prevents writing a `.zst` that
-is larger than its source. In the real build this branch is only reached for the rare text file that
-fails to compress; the common incompressible assets (images, fonts) are skipped by extension before
+Incompressible data is the slowest per byte (no early exit;
+ ~0.8 to 0.9 s for 8 MiB).
+ The
+keep-if-smaller check costs ~10 ms (under 1%) and,
+ more importantly,
+ prevents writing a `.zst` that
+is larger than its source.
+ In the real build this branch is only reached for the rare text file that
+fails to compress;
+ the common incompressible assets (images,
+ fonts) are skipped by extension before
 any compression is attempted.
 
 ## Node parallelism: worker_threads is the best optimized implementation
 
-Because the workspace has migrated off Bun, the parallel engine must work well under Node, and Node's
-async `zstdCompress` does not (see the pathology section). The fast Node path is to shard files
-across `node:worker_threads`, each worker running synchronous `zstdCompressSync`. This avoids Node's
-async zlib per-call overhead entirely and uses real OS threads. The worker_threads compressor was
-validated for correctness (138 files, all decode to the exact originals, total 374,726 bytes = level
+Because the workspace has migrated off Bun,
+ the parallel engine must work well under Node,
+ and Node's
+async `zstdCompress` does not (see the pathology section).
+ The fast Node path is to shard files
+across `node:worker_threads`,
+ each worker running synchronous `zstdCompressSync`.
+ This avoids Node's
+async zlib per-call overhead entirely and uses real OS threads.
+ The worker_threads compressor was
+validated for correctness (138 files,
+ all decode to the exact originals,
+ total 374,726 bytes = level
 19).
 
 Node engines compared at level 19 (mean ms):
@@ -534,11 +808,18 @@ Node engines compared at level 19 (mean ms):
 </table>
 
 worker_threads with 8 workers is ~1.5x faster than sequential on the 138-file real set and ~3.1x
-faster on the 2,000-file set, which matters as the blog grows.
+faster on the 2,000-file set,
+ which matters as the blog grows.
 
 A full worker-count sweep (1 to 32 workers) on the real set at level 19 shows the optimum is a
-**plateau, not a single point**: workers 4, 8, and 10 are statistically tied, and performance
-degrades steadily above ~12 as extra V8 isolates cost more than they return (zstd is CPU-bound, so
+**plateau,
+ not a single point**:
+ workers 4,
+ 8,
+ and 10 are statistically tied,
+ and performance
+degrades steadily above ~12 as extra V8 isolates cost more than they return (zstd is CPU-bound,
+ so
 SMT past the 8 physical cores gives little).
 
 <table>
@@ -549,85 +830,176 @@ SMT past the 8 physical cores gives little).
   </tbody>
 </table>
 
-(* the W2 tmpfs cell had an outlier run, stddev +/- 406 ms; treat it as noise.) The practical rule is
-**workers in the 4 to 10 range, around the physical-core count (8 here); never oversubscribe past
-~12**. A naive `os.availableParallelism()` returns 16 on this chip, which is already ~25% past the
-optimum, so the implementation should cap at roughly the physical-core count rather than use the
-logical count directly. There is also a fixed worker-spawn floor of roughly 120 ms (V8 isolate
-startup), which is why worker_threads helps at high levels and on large file counts but not at
-trivial levels, where sequential or the CLI's lower startup wins.
+(* the W2 tmpfs cell had an outlier run,
+ stddev +/- 406 ms;
+ treat it as noise.
+) The practical rule is
+**workers in the 4 to 10 range,
+ around the physical-core count (8 here);
+ never oversubscribe past
+~12**.
+ A naive `os.availableParallelism()` returns 16 on this chip,
+ which is already ~25% past the
+optimum,
+ so the implementation should cap at roughly the physical-core count rather than use the
+logical count directly.
+ There is also a fixed worker-spawn floor of roughly 120 ms (V8 isolate
+startup),
+ which is why worker_threads helps at high levels and on large file counts but not at
+trivial levels,
+ where sequential or the CLI's lower startup wins.
 
 The SSD `many` numbers are omitted from the table because parallel writers contending on btrfs
 copy-on-write plus LUKS encryption produced very high variance there (stddev up to +/- 458 ms across
-worker counts); the tmpfs `many` numbers isolate the compute scaling cleanly.
+worker counts);
+ the tmpfs `many` numbers isolate the compute scaling cleanly.
 
-worker_threads level curve (real, tmpfs, 8 workers): level 12 = 130.4 ms, level 15 = 136.5 ms, level
-19 = 169.1 ms, level 22 = 177.2 ms. Flatter than the sequential curve (the per-file work overlaps
-across workers), and level 15 saves ~33 ms over level 19 for 0.08 ratio points.
+worker_threads level curve (real,
+ tmpfs,
+ 8 workers):
+ level 12 = 130.4 ms,
+ level 15 = 136.5 ms,
+ level
+19 = 169.1 ms,
+ level 22 = 177.2 ms. Flatter than the sequential curve (the per-file work overlaps
+across workers),
+ and level 15 saves ~33 ms over level 19 for 0.08 ratio points.
 
 ## The Node async parallel pathology (observation, mechanism not isolated)
 
-Node's async `zstdCompress` driven by `Promise.all` is anomalously slow in this benchmark, and the
-cause was not isolated. Reporting the observation, not a mechanism:
+Node's async `zstdCompress` driven by `Promise.all` is anomalously slow in this benchmark,
+ and the
+cause was not isolated.
+ Reporting the observation,
+ not a mechanism:
 
-- At level 19 on the 138-file `real` set it takes ~1.0 second, versus Bun's 72 ms (about 14x slower)
+- At level 19 on the 138-file `real` set it takes ~1.0 second,
+   versus Bun's 72 ms (about 14x slower)
   and Node's own *sequential* `zstdCompressSync` at 257 ms (so parallel is ~4x slower than
   sequential on the same runtime).
-- It worsens sharply with level: tmpfs `real` goes 580 ms (L12), 1007 ms (L19), 1966 ms (L20),
-  3654 ms (L21), 7838 ms (L22). The sequential path on Node does not do this (267 ms at L22).
-- In the threading scan its slowest point is concurrency 1 (4.7 s), with more concurrency making it
-  faster, which contradicts an "oversubscription / too many large contexts" explanation.
+- It worsens sharply with level:
+   tmpfs `real` goes 580 ms (L12),
+   1007 ms (L19),
+   1966 ms (L20),
+  3654 ms (L21),
+   7838 ms (L22).
+   The sequential path on Node does not do this (267 ms at L22).
+- In the threading scan its slowest point is concurrency 1 (4.7 s),
+   with more concurrency making it
+  faster,
+   which contradicts an "oversubscription / too many large contexts" explanation.
 
 A plausible-sounding memory-pressure story was considered and rejected because the concurrency-1
-data contradicts it. The honest characterization is that Node's async zstd dispatch carries a large
-per-call overhead here that compounds at high levels, but the benchmark did not instrument the
-runtime to prove the mechanism. It does not affect the decision: the build runs under Node, where the
-synchronous worker path avoids the async overhead measured here. It is documented so a future reader does not
+data contradicts it.
+ The honest characterization is that Node's async zstd dispatch carries a large
+per-call overhead here that compounds at high levels,
+ but the benchmark did not instrument the
+runtime to prove the mechanism.
+ It does not affect the decision:
+ the build runs under Node,
+ where the
+synchronous worker path avoids the async overhead measured here.
+ It is documented so a future reader does not
 "optimize" the build by switching it to Node async parallel.
 
 ## Caveats and threats to validity
 
-- **Single machine, single run of the suite.** All numbers are from one AMD Ryzen 7 8700F. Absolute
-  times will differ elsewhere; the *relative* conclusions (Bun parallel beats the CLI at high
-  levels; CLI cross-file and Node parallel are catastrophic; in-frame MT is useless for small files)
+- **Single machine,
+   single run of the suite.
+  ** All numbers are from one AMD Ryzen 7 8700F.
+   Absolute
+  times will differ elsewhere;
+   the *relative* conclusions (Bun parallel beats the CLI at high
+  levels;
+   CLI cross-file and Node parallel are catastrophic;
+   in-frame MT is useless for small files)
   are large enough to travel.
-- **CPU governor was not pinned.** It reported 83% scaling, not locked to performance. Combined with
-  background activity, this produced occasional outlier runs (rows marked `*` above, e.g. `bun-par`
-  L3 on SSD at 178 ms +/- 290, and the current-task SSD head-to-head at 88 ms +/- 121). For those
-  rows, prefer the minimum or median over the mean. The headline `bun-par` numbers are tight
-  (stddev ~1 to 2 ms) and trustworthy; only flagged rows are noisy.
-- **`--adapt` is nondeterministic.** It tunes its compression level to observed I/O throughput, so
+- **CPU governor was not pinned.
+  ** It reported 83% scaling,
+   not locked to performance.
+   Combined with
+  background activity,
+   this produced occasional outlier runs (rows marked `*` above,
+   e.g. `bun-par`
+  L3 on SSD at 178 ms +/- 290,
+   and the current-task SSD head-to-head at 88 ms +/- 121).
+   For those
+  rows,
+   prefer the minimum or median over the mean.
+   The headline `bun-par` numbers are tight
+  (stddev ~1 to 2 ms) and trustworthy;
+   only flagged rows are noisy.
+- **`--adapt` is nondeterministic.
+  ** It tunes its compression level to observed I/O throughput,
+   so
   the current task produces different output sizes and different wall times on different disks (13 ms
-  / level-3-equivalent on tmpfs versus 88 ms +/- 121 on SSD here). This means the current build's
-  output is not reproducible across environments. A fixed level is, which is an independent argument
+  / level-3-equivalent on tmpfs versus 88 ms +/- 121 on SSD here).
+   This means the current build's
+  output is not reproducible across environments.
+   A fixed level is,
+   which is an independent argument
   for the change beyond ratio and speed.
-- **Page cache.** Inputs were warm in cache (realistic: `dist/` was just written by earlier build
-  phases). The SSD cost captured is dominated by writing and creating `.zst` files (CoW + LUKS +
-  metadata), not cold input reads. This matches the real pipeline, where compression immediately
+- **Page cache.
+  ** Inputs were warm in cache (realistic:
+   `dist/` was just written by earlier build
+  phases).
+   The SSD cost captured is dominated by writing and creating `.zst` files (CoW + LUKS +
+  metadata),
+   not cold input reads.
+   This matches the real pipeline,
+   where compression immediately
   follows generation.
-- **Worker startup is included** in every node timing (Bun/Node process launch, ~10 to 80 ms). This
+- **Worker startup is included** in every node timing (Bun/Node process launch,
+   ~10 to 80 ms).
+   This
   is correct for the build (the task spawns one process) and is the main reason `bun-par` has a
-  ~35 ms floor; it does not affect the per-level deltas, which are dominated by compression work.
-- **tmpfs is RAM.** The tmpfs numbers isolate compute and are not representative of the real build's
-  I/O; the SSD numbers are. Both are reported so the compute-versus-I/O split is visible.
+  ~35 ms floor;
+   it does not affect the per-level deltas,
+   which are dominated by compression work.
+- **tmpfs is RAM.
+  ** The tmpfs numbers isolate compute and are not representative of the real build's
+  I/O;
+   the SSD numbers are.
+   Both are reported so the compute-versus-I/O split is visible.
 
 ## Which precompressed extensions still benefit from zstd
 
-The compressor skips a blocklist of already-compressed extensions without reading them. The blocklist
-is purely an optimization: keep-if-smaller (write `.zst` only when strictly smaller) is the real
-safety net, so the only cost of a wrong "skip" is a missed saving, and the only cost of a wrong
-"compress" is wasted CPU. The question is therefore empirical: which "already compressed" formats does
+The compressor skips a blocklist of already-compressed extensions without reading them.
+ The blocklist
+is purely an optimization:
+ keep-if-smaller (write `.zst` only when strictly smaller) is the real
+safety net,
+ so the only cost of a wrong "skip" is a missed saving,
+ and the only cost of a wrong
+"compress" is wasted CPU.
+ The question is therefore empirical:
+ which "already compressed" formats does
 a level-19 zstd pass still shrink on real content?
 
 ### Methodology
 
-Representative real content, not synthetic tones (a pure sine compresses pathologically and would
-mislead). Three frames, a 20-second audio clip at three timestamps, and a 6-second video clip were
-taken from a 1920x816 AV1 cartoon (`ffmpeg`), plus this site's own `dist/` assets. Each frame was
-re-encoded to every image format (`cwebp`, `magick`, `ffmpeg` with `libjxl` / `libaom-av1`); the audio
-clips to every audio codec; the video clip to h264 / vp9. Every output was compressed with the exact
-production settings (level 19, content-size off, checksum off) and compared to its source size. Audio
-codecs were measured across three independent clips; the spread was within 0.3 points.
+Representative real content,
+ not synthetic tones (a pure sine compresses pathologically and would
+mislead).
+ Three frames,
+ a 20-second audio clip at three timestamps,
+ and a 6-second video clip were
+taken from a 1920x816 AV1 cartoon (`ffmpeg`),
+ plus this site's own `dist/` assets.
+ Each frame was
+re-encoded to every image format (`cwebp`,
+ `magick`,
+ `ffmpeg` with `libjxl` / `libaom-av1`);
+ the audio
+clips to every audio codec;
+ the video clip to h264 / vp9.
+ Every output was compressed with the exact
+production settings (level 19,
+ content-size off,
+ checksum off) and compared to its source size.
+ Audio
+codecs were measured across three independent clips;
+ the spread was within 0.3 points.
 
 ### Results
 
@@ -649,21 +1021,29 @@ codecs were measured across three independent clips; the spread was within 0.3 p
 <tr><td>webm (vp9)</td><td>cartoon video</td><td>+0.1%</td><td>keep (skip)</td></tr>
 </table>
 
-`woff`, `gz`, and `br` were not sampled (no source on hand) and are kept on first principles: WOFF
-stores deflate-compressed font tables (like woff2's brotli), and gzip / brotli are compression formats
-by definition. `zst` is always skipped so a `.zst` is never recompressed.
+`woff`,
+ `gz`,
+ and `br` were not sampled (no source on hand) and are kept on first principles:
+ WOFF
+stores deflate-compressed font tables (like woff2's brotli),
+ and gzip / brotli are compression formats
+by definition.
+ `zst` is always skipped so a `.zst` is never recompressed.
 
 Removing png / jpg / jpeg / ogg / aac / m4a from the blocklist raised this site's compressed count
-from 176 to 185 files and total savings from 1.18 MB to 1.28 MB, with every produced `.zst` still
+from 176 to 185 files and total savings from 1.18 MB to 1.28 MB,
+ with every produced `.zst` still
 round-tripping to its source.
 
 ## Proposed implementation
 
-Not yet applied. Sketch for when it is.
+Not yet applied.
+ Sketch for when it is.
 
 ### Figma decompression
 
-In `packages/figma-parsers/kiwi/src/index.ts`, `decompressZstd` collapses to:
+In `packages/figma-parsers/kiwi/src/index.ts`,
+ `decompressZstd` collapses to:
 
 ```ts
 async function decompressZstd(data: Uint8Array,): Promise<Uint8Array> {
@@ -674,22 +1054,41 @@ async function decompressZstd(data: Uint8Array,): Promise<Uint8Array> {
 }
 ```
 
-It stays `async` to preserve the public call contract, mirroring the `inflateRawSync` schema decode
-already in the same function. Remove `nano-spawn` from `packages/figma-parsers/kiwi/package.json`
-(its only use was the removed fallback). Verify with the package's existing integration test, which
+It stays `async` to preserve the public call contract,
+ mirroring the `inflateRawSync` schema decode
+already in the same function.
+ Remove `nano-spawn` from `packages/figma-parsers/kiwi/package.json`
+(its only use was the removed fallback).
+ Verify with the package's existing integration test,
+ which
 decodes real `.fig` / `.deck` / `.jam` files (`bun packages/figma-parsers/kiwi/src/index.unit.test.ts`).
 
 ### ssg compression
 
-Add `packages/ssg/aquati.cat/src/build/compress.ts` beside `postprocess.ts`, and change the
-`build:compress` task from the `zstd` shell command to `node src/build/compress.ts` (Node, since Bun
-is being removed). The script: on the main thread, walk `dist/`, skip known-incompressible extensions
-without reading them, shard the remaining files across `node:worker_threads` (worker count = physical
-cores, roughly 8; cap below the logical count), and in each worker compress with synchronous
-`zstdCompressSync` at level 19 (`ZSTD_c_contentSizeFlag = 0`), writing `<file>.zst` only when strictly
-smaller than the source. The core engine is exactly the `compress-node-wt.ts` used in this benchmark
-(reproduced below), adapted into the package's logging and module conventions. If the worker_threads
-machinery is judged not worth its complexity for the current `dist/` size, the sequential
+Add `packages/ssg/aquati.cat/src/build/compress.ts` beside `postprocess.ts`,
+ and change the
+`build:compress` task from the `zstd` shell command to `node src/build/compress.ts` (Node,
+ since Bun
+is being removed).
+ The script:
+ on the main thread,
+ walk `dist/`,
+ skip known-incompressible extensions
+without reading them,
+ shard the remaining files across `node:worker_threads` (worker count = physical
+cores,
+ roughly 8;
+ cap below the logical count),
+ and in each worker compress with synchronous
+`zstdCompressSync` at level 19 (`ZSTD_c_contentSizeFlag = 0`),
+ writing `<file>.zst` only when strictly
+smaller than the source.
+ The core engine is exactly the `compress-node-wt.ts` used in this benchmark
+(reproduced below),
+ adapted into the package's logging and module conventions.
+ If the worker_threads
+machinery is judged not worth its complexity for the current `dist/` size,
+ the sequential
 `zstdCompressSync` fallback is a one-file change away and costs ~75 ms more on today's `dist/` (but
 ~3x more as the file count grows).
 
@@ -699,11 +1098,15 @@ Remove `"github:facebook/zstd" = "latest"` from `mise.toml` and `mise.no-env.tom
 
 ## Reproduction
 
-The benchmark scripts were scratch artifacts under `/tmp/agent/zbench/` (ephemeral, RAM-backed) and
-a throwaway SSD data dir under `/var/home/user/.cache/agent-zstd-bench/`. The two load-bearing units
+The benchmark scripts were scratch artifacts under `/tmp/agent/zbench/` (ephemeral,
+ RAM-backed) and
+a throwaway SSD data dir under `/var/home/user/.cache/agent-zstd-bench/`.
+ The two load-bearing units
 are reproduced here in full so the measurement can be rebuilt.
 
-`compress-node-wt.ts`, the chosen Node engine (worker_threads + synchronous zstd; run under `node`):
+`compress-node-wt.ts`,
+ the chosen Node engine (worker_threads + synchronous zstd;
+ run under `node`):
 
 ```ts
 import { Worker, isMainThread, workerData, parentPort, } from 'node:worker_threads';
@@ -750,7 +1153,8 @@ else {
 }
 ```
 
-`compress-worker.ts`, the cross-runtime sequential/async unit used to measure the sequential and
+`compress-worker.ts`,
+ the cross-runtime sequential/async unit used to measure the sequential and
 (rejected) async paths under both `bun` and `node`:
 
 ```ts
@@ -806,11 +1210,20 @@ else {
 }
 ```
 
-The full suite consisted of: `prep.ts` (deterministic dataset generation on both backends),
-`ratio.ts` (in-memory level sweep under bun and node, plus a CLI cross-check), and `time-matrix.ts`
-(the hyperfine orchestrator implementing experiments A through F over both backends, clearing the
-output dir before each run). Re-running requires only `hyperfine`, `zstd`, `bun`, and `node` at the
-versions in the environment table; the datasets rebuild deterministically from the ssg `dist/`.
+The full suite consisted of:
+ `prep.ts` (deterministic dataset generation on both backends),
+`ratio.ts` (in-memory level sweep under bun and node,
+ plus a CLI cross-check),
+ and `time-matrix.ts`
+(the hyperfine orchestrator implementing experiments A through F over both backends,
+ clearing the
+output dir before each run).
+ Re-running requires only `hyperfine`,
+ `zstd`,
+ `bun`,
+ and `node` at the
+versions in the environment table;
+ the datasets rebuild deterministically from the ssg `dist/`.
 
 To reproduce the headline comparison directly:
 

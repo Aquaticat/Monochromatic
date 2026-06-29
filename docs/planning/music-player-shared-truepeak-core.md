@@ -1,34 +1,59 @@
 # Shared true-peak core plan for the music player
 
-Status: implementation in progress.
-Stage zero (Turso on Android) is de-risked; see the Turso on Android risk note below.
-Stage one (the shared `truepeak-core` crate: meter, gain, source trait, window math, policy
-identity) is implemented, tested, and committed.
+Status:
+ implementation in progress.
+Stage zero (Turso on Android) is de-risked;
+ see the Turso on Android risk note below.
+Stage one (the shared `truepeak-core` crate:
+ meter,
+ gain,
+ source trait,
+ window math,
+ policy
+identity) is implemented,
+ tested,
+ and committed.
 Stage two (the `truepeak-core.bench` evidence engine on the shared meter) is implemented and
-committed, and its corpus run is recorded in the Stage-two evidence subsection.
-Stages three through seven (the full shared service, desktop migration, Android migration, and
+committed,
+ and its corpus run is recorded in the Stage-two evidence subsection.
+Stages three through seven (the full shared service,
+ desktop migration,
+ Android migration,
+ and
 cleanup) are not started.
 
-Audience: a reviewer who has never seen this product.
-This document explains the product context, the problem, the agreed design, and the evidence that must exist before
+Audience:
+ a reviewer who has never seen this product.
+This document explains the product context,
+ the problem,
+ the agreed design,
+ and the evidence that must exist before
 implementation is accepted.
 
 ## What this document is
 
 The music player has two native flavors:
 
-- A desktop app, written in Rust.
-- An Android app, with Kotlin UI and service code calling a Rust native engine through JNI.
+- A desktop app,
+   written in Rust.
+- An Android app,
+   with Kotlin UI and service code calling a Rust native engine through JNI.
 
 Both flavors normalize tracks so playback does not exceed a true-peak ceiling.
 The current code got there through separate experiments,
-so the desktop and Android paths now disagree about measurement policy, cache shape, and cache storage.
+so the desktop and Android paths now disagree about measurement policy,
+ cache shape,
+ and cache storage.
 
 This plan replaces those separate paths with one shared Rust true-peak package:
 
 - `packages/music-player/truepeak-core`
 
-The package should own the true-peak meter, the probe policy, gain decisions, Turso cache I/O, and background warming
+The package should own the true-peak meter,
+ the probe policy,
+ gain decisions,
+ Turso cache I/O,
+ and background warming
 orchestration.
 Desktop and Android should call the same shared service.
 Platform code may still provide decoded audio access at first,
@@ -64,7 +89,9 @@ The desktop app has a Rust true-peak implementation in:
 It uses a Catmull-Rom inter-sample estimator.
 It scans decoded interleaved `f32` samples,
 keeps a four-sample window per channel,
-checks the quarter, half, and three-quarter positions between samples,
+checks the quarter,
+ half,
+ and three-quarter positions between samples,
 and records the largest absolute value.
 
 Desktop also already uses Turso for a peak cache:
@@ -127,7 +154,9 @@ Android measurement entry points call native Rust through:
 - `packages/music-player/android-app/app/src/main/kotlin/dev/monochromatic/musicplayer/PeakMeasurer.kt`
 - `packages/music-player/android-app/rust/src/lib.rs`
 
-The new design moves cache lookup, true-peak policy, and gain-decision ownership into shared Rust.
+The new design moves cache lookup,
+ true-peak policy,
+ and gain-decision ownership into shared Rust.
 Kotlin should no longer decide how a peak maps to a cacheable policy result.
 
 ## The problem
@@ -183,7 +212,13 @@ These decisions came from the grilling session before this document was written.
 ### Optimize for comprehensiveness
 
 The plan should be understandable to a reviewer who does not know the product.
-It should explain product behavior, current code shape, target behavior, migration shape, evidence, risks, and open
+It should explain product behavior,
+ current code shape,
+ target behavior,
+ migration shape,
+ evidence,
+ risks,
+ and open
 review questions.
 
 ### The corrected target is a benchmark target
@@ -227,7 +262,9 @@ The classifier acceptance goal is exact fit on the current corpus:
 - It uses only duration and probe-derived measurements at runtime.
 - It catches every current-library track whose probe-derived gain would violate the gain-error bounds.
 - It keeps total decoded seconds at or below the corrected quarter target.
-- It does not use full-track truth, paths, or hard-coded exception lists at runtime.
+- It does not use full-track truth,
+   paths,
+   or hard-coded exception lists at runtime.
 
 The corpus is considered large and varied enough for this product's current acceptance target.
 
@@ -335,7 +372,11 @@ including more of the decode stack.
 Do not make the first true-peak extraction depend on moving all decoding at once.
 Stage the work:
 
-- First extract true-peak policy, metering, cache I/O, decisions, and warming orchestration.
+- First extract true-peak policy,
+   metering,
+   cache I/O,
+   decisions,
+   and warming orchestration.
 - Keep small platform adapters that open existing decoded audio sources.
 - Later move shared decode access into a shared crate once the true-peak service is stable.
 
@@ -369,7 +410,9 @@ long_probe_candidate_count = 3902
 This is only a starting point.
 It assumes no long-track exceptions.
 Once the classifier sends some long tracks to full scan,
-window seconds, classifier thresholds, or both may need retuning so the final decoded seconds stay at or below the
+window seconds,
+ classifier thresholds,
+ or both may need retuning so the final decoded seconds stay at or below the
 corrected target.
 
 The old lower-target candidate remains useful as historical evidence,
@@ -494,10 +537,15 @@ The first implementation stage should add these packages:
 
 The core crate owns production behavior.
 The bench sidecar owns corpus measurement and parameter search.
-The fuzz sidecar owns adversarial and randomized checks of window placement, meter behavior, cache serialization, and
+The fuzz sidecar owns adversarial and randomized checks of window placement,
+ meter behavior,
+ cache serialization,
+ and
 classifier invariants.
 
-Each package should have its own `README.md`, `Cargo.toml`, and `mise.toml`.
+Each package should have its own `README.md`,
+ `Cargo.toml`,
+ and `mise.toml`.
 The repo rule for package completeness applies:
 README,
 lint,
@@ -582,7 +630,10 @@ The row shape must let a future reader answer:
 A cache hit is valid only when both the source fingerprint and policy ID match.
 
 A source fingerprint changes when the file changes.
-A policy ID changes when constants, classifier logic, gain math, or cache interpretation changes.
+A policy ID changes when constants,
+ classifier logic,
+ gain math,
+ or cache interpretation changes.
 
 Old rows may remain in Turso.
 They should not be read by a newer policy.
@@ -638,9 +689,12 @@ not only a raw peak.
 
 Current Kotlin pieces to retire or narrow:
 
-- `PeakCacheStore.kt`, because Turso cache I/O moves to shared Rust.
-- `core/PeakCache.kt`, because the in-memory JSON-backed cache goes away.
-- true-peak decision use of `core/Normalization.kt`, because gain decisions move to shared Rust.
+- `PeakCacheStore.kt`,
+   because Turso cache I/O moves to shared Rust.
+- `core/PeakCache.kt`,
+   because the in-memory JSON-backed cache goes away.
+- true-peak decision use of `core/Normalization.kt`,
+   because gain decisions move to shared Rust.
 
 Kotlin may keep sample clamp helpers if they are still useful as output-stage test or UI references,
 but they must not define the true-peak policy.
@@ -653,7 +707,8 @@ The Android native build must prove Turso works for both native ABIs:
 - `arm64-v8a`,
 - `x86_64`.
 
-An isolated spike has already cleared most of this; see the Turso on Android risk note.
+An isolated spike has already cleared most of this;
+ see the Turso on Android risk note.
 `turso` `0.6` cross-compiles for both ABIs through `cargo-ndk`,
 and the `arm64-v8a` build round-trips an on-disk decision row on a physical device.
 The in-process path is also proven:
@@ -722,10 +777,17 @@ because the too-quiet side is the only audible cost inside the bounds.
 ### Stage two evidence and the feasible no-classifier finding
 
 The Stage-two bench sidecar (`packages/music-player/truepeak-core.bench`) was built on the
-shared `truepeak-core` meter, gain, window-placement, and policy math, and run against the
-existing per-track corpus (full peak plus per-second bin peaks, whose meter is identical to
-`truepeak-core`'s, so the bins are valid for the shared meter).
-That run changes the classifier approach above, so the steps stay but their conclusion moves.
+shared `truepeak-core` meter,
+ gain,
+ window-placement,
+ and policy math,
+ and run against the
+existing per-track corpus (full peak plus per-second bin peaks,
+ whose meter is identical to
+`truepeak-core`'s,
+ so the bins are valid for the shared meter).
+That run changes the classifier approach above,
+ so the steps stay but their conclusion moves.
 
 The corpus and target:
 
@@ -735,33 +797,56 @@ full decodable seconds = 887897.8663151221
 corrected target (/4)  = 221974.46657878053
 ```
 
-First finding: a full-scan violator classifier is not feasible at this budget.
+First finding:
+ a full-scan violator classifier is not feasible at this budget.
 The oracle sweep (a perfect classifier that full-scans exactly the violators) lands inside
-the target only because it routes nothing extra; its headroom is about `500` seconds, roughly
+the target only because it routes nothing extra;
+ its headroom is about `500` seconds,
+ roughly
 two extra full scans.
 Any real probe-feature classifier over-routes far past that.
 The violators are hot masters whose loudest sampled window overlaps the non-violators in
-amplitude, so no loudest-window threshold separates them: routing every loud-enough track
-costs over `780000` decoded seconds, more than three times the budget.
+amplitude,
+ so no loudest-window threshold separates them:
+ routing every loud-enough track
+costs over `780000` decoded seconds,
+ more than three times the budget.
 
-Second finding (the metadata signal): provenance metadata is a real but partial separator.
+Second finding (the metadata signal):
+ provenance metadata is a real but partial separator.
 A yt-dlp / youtube provenance tag appears in `0` of the `123` violators and about `21%` of the
-non-violators, and every lossless (FLAC) track is a non-violator, so a "lossless or yt-dlp"
+non-violators,
+ and every lossless (FLAC) track is a non-violator,
+ so a "lossless or yt-dlp"
 marker never mislabels a violator as safe.
-But the safe classes cover only part of the library; the remaining untagged lossy tracks hold
-all the violators, and metadata improves the average error, not the worst case (the safe group
+But the safe classes cover only part of the library;
+ the remaining untagged lossy tracks hold
+all the violators,
+ and metadata improves the average error,
+ not the worst case (the safe group
 still has a worst under-read near `1.97 dB`).
-Provenance metadata is a legal classifier feature (it is encoding and origin, not a path or
-artist), and it is worth using to lower the average error, but it does not rescue the
+Provenance metadata is a legal classifier feature (it is encoding and origin,
+ not a path or
+artist),
+ and it is worth using to lower the average error,
+ but it does not rescue the
 full-scan approach.
 
-Third finding (the feasible model): drop the violator classifier entirely.
-Probe every long track, and apply one fixed margin large enough to cover the worst under-read,
+Third finding (the feasible model):
+ drop the violator classifier entirely.
+Probe every long track,
+ and apply one fixed margin large enough to cover the worst under-read,
 which guarantees zero violators with no full scans.
-The objective then becomes spending the budget on probe density: more, shorter windows cover
-more distinct regions and shrink the gaps that cause under-read, so the required margin, and
-thus the worst-case too-quiet error, falls.
-Measured on the corpus (windows at or above one second, the reliable resolution of the current
+The objective then becomes spending the budget on probe density:
+ more,
+ shorter windows cover
+more distinct regions and shrink the gaps that cause under-read,
+ so the required margin,
+ and
+thus the worst-case too-quiet error,
+ falls.
+Measured on the corpus (windows at or above one second,
+ the reliable resolution of the current
 one-second bins):
 
 ```text
@@ -769,43 +854,65 @@ count=28, window~1.63s : margin 1.68 dB, worst-quiet -1.68 dB, decoded ~181000s 
 count=56, window~0.93s : margin 1.61 dB, worst-quiet -1.61 dB, decoded ~206000s (under target)
 ```
 
-Sub-second windows (for example `count=80`, `window~0.69s`) report a margin near `1.23 dB`, but a
-one-second bin overestimates a sub-second window, so that figure is optimistic until the
+Sub-second windows (for example `count=80`,
+ `window~0.69s`) report a margin near `1.23 dB`,
+ but a
+one-second bin overestimates a sub-second window,
+ so that figure is optimistic until the
 collector emits finer bins.
-This model satisfies every agreed design decision: zero violations inside `+0.5 / -2.0 dB`,
-decoded seconds under the corrected target, no opaque model (the simplest possible classifier
-is a single fixed margin), and no path or full-truth input at runtime.
-The decided objective stands; the `-1.6 dB` worst-too-quiet is simply the honest achievable
-floor once the infeasible perfect-classifier assumption is removed, and probe density (plus a
+This model satisfies every agreed design decision:
+ zero violations inside `+0.5 / -2.0 dB`,
+decoded seconds under the corrected target,
+ no opaque model (the simplest possible classifier
+is a single fixed margin),
+ and no path or full-truth input at runtime.
+The decided objective stands;
+ the `-1.6 dB` worst-too-quiet is simply the honest achievable
+floor once the infeasible perfect-classifier assumption is removed,
+ and probe density (plus a
 provenance-dependent margin for the average) is the lever that lowers it.
 
 Fourth finding (why not a cheap probe plus a full-scan router):
 spending less on the probe and full-scanning the residual has a tempting oracle floor.
 A cheap twenty-second spread probe plus full-scanning exactly the tracks whose probe gain
-would violate reaches a worst-too-quiet near `-0.15 dB` and stays under budget, because the
+would violate reaches a worst-too-quiet near `-0.15 dB` and stays under budget,
+ because the
 cheap probe frees roughly `140000` seconds for full scans.
-That floor is not reachable, because the router cannot be built from observable features.
+That floor is not reachable,
+ because the router cannot be built from observable features.
 Some violators probe quiet (a loudest sampled window near `-4.5 dBTP`) yet hide a sharp
-transient in an undecoded gap whose true level is near `-0.5 dBTP`, a four-decibel under-read.
+transient in an undecoded gap whose true level is near `-0.5 dBTP`,
+ a four-decibel under-read.
 No loudest-window threshold isolates them (routing to catch the quietest one routes nearly
-everything), and they are not a provenance class.
-A peak that lives in a gap the probe never decodes is invisible by definition, so guaranteed
+everything),
+ and they are not a provenance class.
+A peak that lives in a gap the probe never decodes is invisible by definition,
+ so guaranteed
 exact fit needs either a margin that covers the worst gap-miss or a probe dense enough that no
 gap can hide a damaging transient.
 Dense probing reduces that worst gap-miss (it fell from over four decibels at twenty seconds to
-about `2.18 dB` at the forty-five-second density), which is why density, not a router, is the
-lever, and why finer bins are the next step.
+about `2.18 dB` at the forty-five-second density),
+ which is why density,
+ not a router,
+ is the
+lever,
+ and why finer bins are the next step.
 
 The provenance-dependent margin is wired into the bench.
 At the forty-five-second density it gives the roughly `1250` safe-provenance tracks a `1.47 dB`
-margin and the rest `1.64 dB`, so it lowers the average too-quiet error while the worst case
+margin and the rest `1.64 dB`,
+ so it lowers the average too-quiet error while the worst case
 stays at the untagged group's `1.64 dB`.
 
-Fifth finding (the fine-bin collect pass, and why the worst case is irreducible by density):
-the shared-meter `collect` pass (`truepeak-core-collect`, decoding through the production meter
+Fifth finding (the fine-bin collect pass,
+ and why the worst case is irreducible by density):
+the shared-meter `collect` pass (`truepeak-core-collect`,
+ decoding through the production meter
 via an ffmpeg pipe) regenerated the corpus at one-tenth-second bins.
-It matches the prior corpus to `0.0000 dB`, and ffmpeg decoded the formerly-unsupported HE-AAC
-track plus more files, so the current corpus is:
+It matches the prior corpus to `0.0000 dB`,
+ and ffmpeg decoded the formerly-unsupported HE-AAC
+track plus more files,
+ so the current corpus is:
 
 ```text
 tracks                 = 4114
@@ -814,24 +921,32 @@ corrected target (/4)  = 229215
 ```
 
 Finer window granularity does NOT lower the margin.
-At `450` windows of one-tenth second (a forty-five-second probe) the margin is `1.78 dB`, no
-better than the coarse result, because the worst track is a LONG one: a forty-five-second probe
-is about one percent of an hour-long mix, so a transient in the unsampled remainder is missed
+At `450` windows of one-tenth second (a forty-five-second probe) the margin is `1.78 dB`,
+ no
+better than the coarse result,
+ because the worst track is a LONG one:
+ a forty-five-second probe
+is about one percent of an hour-long mix,
+ so a transient in the unsampled remainder is missed
 regardless of how the probe seconds are sliced.
-The limit is coverage FRACTION, not window granularity.
+The limit is coverage FRACTION,
+ not window granularity.
 Switching to proportional coverage (probe a fixed fraction of every long track) at the budget
-fraction of about twenty percent still floors near `1.75 dB`, because a handful of tracks carry a
+fraction of about twenty percent still floors near `1.75 dB`,
+ because a handful of tracks carry a
 single sharp sub-tenth-second transient that no sparse probe catches at any granularity or any
 coverage fraction up to thirty percent.
 
-But the under-read distribution is extremely skewed, which is the practical opening.
+But the under-read distribution is extremely skewed,
+ which is the practical opening.
 At proportional twenty-percent coverage the loud long tracks distribute as:
 
 ```text
 under-read dB: median 0.14  p90 0.63  p95 0.84  p99 1.33  p99.5 1.56  max 2.25
 ```
 
-So almost every track is easy; a long tail of a few sharp-transient tracks sets the worst case.
+So almost every track is easy;
+ a long tail of a few sharp-transient tracks sets the worst case.
 Guaranteeing the last one percent costs about a decibel of margin on every track.
 The margin-versus-clamp tradeoff makes that cost optional:
 
@@ -843,21 +958,32 @@ margin 1.2 dB -> worst-quiet -1.2,   7 tracks (0.19%) clamped
 ```
 
 The realtime per-sample clamp already catches any too-loud transient (no converter overflow,
-only brief distortion on that sub-second peak), and background warming eventually full-scans
-every track to an exact cached gain, so a clamped transient is a cold-start-only effect on a
-handful of tracks, not a permanent error.
-This reframes the policy: "exact fit at the quarter budget" is disproportionately expensive in
-the last percent, so the recommended shape is a proportional probe with a moderate fixed margin
-(the margin sets the clamp count, a design choice), the album and provenance priors layered on
-to make the average gain louder than that margin, the realtime clamp as the safety net, and
+only brief distortion on that sub-second peak),
+ and background warming eventually full-scans
+every track to an exact cached gain,
+ so a clamped transient is a cold-start-only effect on a
+handful of tracks,
+ not a permanent error.
+This reframes the policy:
+ "exact fit at the quarter budget" is disproportionately expensive in
+the last percent,
+ so the recommended shape is a proportional probe with a moderate fixed margin
+(the margin sets the clamp count,
+ a design choice),
+ the album and provenance priors layered on
+to make the average gain louder than that margin,
+ the realtime clamp as the safety net,
+ and
 background warming converging the cache to exact over time.
 
 Remaining Stage-two work:
 
 - Wire the proportional-coverage probe and the margin-versus-clamp tradeoff into the bench as a
   committed search (the fine-bin findings above were measured in throwaway analysis scripts).
-- Pick the shipped margin with the user, given the clamp-count tradeoff above.
-- Verify the chosen density and margin against exact decoded windows, not only the bins.
+- Pick the shipped margin with the user,
+   given the clamp-count tradeoff above.
+- Verify the chosen density and margin against exact decoded windows,
+   not only the bins.
 
 ## Bench sidecar
 
@@ -1048,10 +1174,13 @@ The user boundary is playback gain decisions and warm-cache behavior in both fla
 
 ### Turso on Android
 
-Status: fully de-risked by an isolated spike on 2026-06-25.
+Status:
+ fully de-risked by an isolated spike on 2026-06-25.
 
 The crate desktop depends on is `turso` `0.6.1`,
-the pure-Rust SQLite rewrite (`turso_core`, `turso_parser`, `turso_macros`),
+the pure-Rust SQLite rewrite (`turso_core`,
+ `turso_parser`,
+ `turso_macros`),
 not the libsql C fork.
 There is no bundled C SQLite to cross-compile,
 which is the usual source of Android native-database pain.
@@ -1063,7 +1192,8 @@ The spike used the desktop pin,
 It cross-compiled for both named ABIs through `cargo-ndk`:
 `aarch64-linux-android` and `x86_64-linux-android`.
 The `aarch64` binary ran on a physical Pixel 6,
-arm64-v8a, API 36.
+arm64-v8a,
+ API 36.
 On that device it opened an on-disk database,
 created a composite-key `(fingerprint, policy_id)` decision table,
 wrote a `probe_estimate` row with a `REAL` gain,
@@ -1076,8 +1206,10 @@ The in-process path is also proven.
 A spike JNI entry linked `turso` into the real `libmusicplayer_native.so` for both ABIs,
 and an instrumented `NativeBridgeTest` ran a round-trip to the app-private `filesDir`:
 
-- `arm64-v8a` on the physical Pixel 6: `OK (10 tests)`.
-- `x86_64` on the emulator: `OK (10 tests)`.
+- `arm64-v8a` on the physical Pixel 6:
+   `OK (10 tests)`.
+- `x86_64` on the emulator:
+   `OK (10 tests)`.
 
 So Turso is confirmed end to end on Android:
 it cross-compiles for both ABIs,
@@ -1124,11 +1256,13 @@ That gain is correct only for a track whose true peak is `0 dBTP`.
 A hot master with inter-sample peaks above `+1 dBTP` (linear above `1.122`)
 still sits above `0 dBFS` after the fallback gain,
 so the realtime per-sample clamp distorts it during the cold-measurement window.
-The fallback never overflows the converter, because the clamp catches it,
+The fallback never overflows the converter,
+ because the clamp catches it,
 but it is not distortion-free for the loudest masters.
 The doc's "slightly quiet for some tracks" describes only one direction.
 This is a brief transient until the measured gain swaps in,
-so it is a limitation to document, not necessarily a blocker.
+so it is a limitation to document,
+ not necessarily a blocker.
 
 ### Source fingerprint definition
 
@@ -1156,9 +1290,12 @@ because the exact decision is strictly better evidence.
 
 The plan calls a full scan "exact gain from the full true peak"
 and uses "full-track truth" as the benchmark label.
-The meter samples Catmull-Rom interpolation at one quarter, one half, and three quarters between samples
+The meter samples Catmull-Rom interpolation at one quarter,
+ one half,
+ and three quarters between samples
 in `packages/music-player/desktop-app/src/truepeak.rs`,
-not the oversampling filter of ITU-R BS.1770 true-peak metering.
+not the oversampling filter of ITU-R BS.
+1770 true-peak metering.
 Both probe and full scan share that meter,
 so the system is internally consistent and the gain-error bounds hold against this meter.
 But "truth" here is the shared meter's estimate,
@@ -1211,12 +1348,21 @@ but the benchmark must assume the double cost until that exists.
 ### Cache validity beyond policy_id
 
 A row is reusable only when its production environment matches.
-Keep these as separate columns, not collapsed into `policy_id`:
+Keep these as separate columns,
+ not collapsed into `policy_id`:
 
-- `policy_id`: constants, classifier logic, gain math, cache interpretation.
-- `meter_id`: Catmull-Rom behavior, including boundary and end-of-track handling.
-- `decoder_stack_id`: Symphonia and libopus versions and their channel and sample-conversion behavior.
-- `schema_version`: row layout.
+- `policy_id`:
+   constants,
+   classifier logic,
+   gain math,
+   cache interpretation.
+- `meter_id`:
+   Catmull-Rom behavior,
+   including boundary and end-of-track handling.
+- `decoder_stack_id`:
+   Symphonia and libopus versions and their channel and sample-conversion behavior.
+- `schema_version`:
+   row layout.
 
 Collapsing decoder identity into `policy_id` is rejected:
 it would churn `policy_id` on every decoder bump and needlessly invalidate unrelated rows.
@@ -1235,17 +1381,22 @@ especially near the final window start.
 Duration drives the policy branch,
 so define the degenerate cases:
 
-- unknown duration: full scan exact.
-- duration at or below zero with non-empty audio: full scan exact.
-- reported duration shorter than the decoded stream: use the decoded duration for stored metadata and verification.
+- unknown duration:
+   full scan exact.
+- duration at or below zero with non-empty audio:
+   full scan exact.
+- reported duration shorter than the decoded stream:
+   use the decoded duration for stored metadata and verification.
 
 Cover these with fake sources.
 
 ### Silence and degenerate frames
 
-- A fully silent or zero-peak track yields unity gain and a valid decision kind, never a `log10(0)` path.
+- A fully silent or zero-peak track yields unity gain and a valid decision kind,
+   never a `log10(0)` path.
 - `window_frames = max(1, floor(window_seconds * sample_rate))`.
-- `TruePeakSource` chunks may end mid-frame; the meter must preserve channel routing across chunk boundaries.
+- `TruePeakSource` chunks may end mid-frame;
+   the meter must preserve channel routing across chunk boundaries.
 - The meter interpolates only once four real samples exist and adds no synthetic end padding;
   that boundary rule is part of `meter_id`.
 
@@ -1271,7 +1422,9 @@ This keeps the old "background sweep interferes with the current track" failure 
 The explicit native handle needs a stated concurrency contract:
 
 - whether `TruePeakService` is internally thread-safe and callable from multiple Kotlin dispatchers,
-- whether `release(handle)` drains in-flight work, cancels it, or only marks the handle closed,
+- whether `release(handle)` drains in-flight work,
+   cancels it,
+   or only marks the handle closed,
 - what a late callback against a released handle does,
 - whether errors cross JNI as structured result codes rather than thrown exceptions or sentinels,
 - whether the service or Kotlin and WorkManager own the worker threads.
@@ -1282,14 +1435,20 @@ Recommended shape:
 Kotlin opens each track source and calls a per-track native resolve or warm-one,
 with WorkManager driving iteration as the platform knob.
 Avoid Rust worker threads calling a Kotlin opener back over JNI,
-which needs JVM attach, careful local-reference handling, and strict file-descriptor lifetimes.
-The shared policy, meter, cache, and decision logic stay in the core either way.
+which needs JVM attach,
+ careful local-reference handling,
+ and strict file-descriptor lifetimes.
+The shared policy,
+ meter,
+ cache,
+ and decision logic stay in the core either way.
 
 ### Gain-change smoothing
 
 A late swap from the conservative fallback to the measured gain should ramp over a short interval
 to avoid an audible step.
-This lives in the platform output stage, not in truepeak-core,
+This lives in the platform output stage,
+ not in truepeak-core,
 but the plan states it so the Android native move does not introduce a sudden mid-track jump.
 
 ### Bench evidence hardening
@@ -1302,11 +1461,14 @@ The bench sidecar should:
 - run leave-one-artist or leave-one-directory sensitivity checks where metadata allows,
 - exercise synthetic adversarial cases near thresholds.
 
-This makes the "non-opaque, not a disguised path list" requirement reviewable.
+This makes the "non-opaque,
+ not a disguised path list" requirement reviewable.
 
 ### CI wiring
 
-The new core, bench, and fuzz packages need CI wiring,
+The new core,
+ bench,
+ and fuzz packages need CI wiring,
 not only local tasks,
 so they do not become local-only sidecars.
 
@@ -1315,22 +1477,44 @@ so they do not become local-only sidecars.
 Insert a platform-viability stage before the rest,
 because the service API depends on Turso being viable on Android:
 
-- Stage zero (done): platform viability.
-  Build, `arm64`/`x86_64` standalone runtime, and the in-process `cdylib` round-trip to an
+- Stage zero (done):
+   platform viability.
+  Build,
+   `arm64`/`x86_64` standalone runtime,
+   and the in-process `cdylib` round-trip to an
   app-private path are all proven by the spike on the Pixel 6 and the emulator.
-- Stage one (done): shared meter crate.
-  `packages/music-player/truepeak-core` ships the meter, gain math, `TruePeakSource`, window
-  placement, and policy identity, with unit tests and a clean `lint:rust` and clippy run.
-- Stage two (engine done, search ongoing): durable evidence.
-  `packages/music-player/truepeak-core.bench` evaluates and searches on the shared meter; its
+- Stage one (done):
+   shared meter crate.
+  `packages/music-player/truepeak-core` ships the meter,
+   gain math,
+   `TruePeakSource`,
+   window
+  placement,
+   and policy identity,
+   with unit tests and a clean `lint:rust` and clippy run.
+- Stage two (engine done,
+   search ongoing):
+   durable evidence.
+  `packages/music-player/truepeak-core.bench` evaluates and searches on the shared meter;
+   its
   run produced the feasible no-classifier finding above.
   The finer-bin shared-meter `collect` regeneration and exact-window verification remain.
-- Stage three: full shared service. Policy (the fixed-margin model above), Turso schema, cache
-  semantics, fake-source integration tests, warming.
-- Stage four: desktop migration.
-- Stage five: Android migration.
-- Stage six: cleanup.
-- Stage seven: decoder-sharing follow-up.
+- Stage three:
+   full shared service.
+   Policy (the fixed-margin model above),
+   Turso schema,
+   cache
+  semantics,
+   fake-source integration tests,
+   warming.
+- Stage four:
+   desktop migration.
+- Stage five:
+   Android migration.
+- Stage six:
+   cleanup.
+- Stage seven:
+   decoder-sharing follow-up.
 
 This supersedes the stage list below.
 Stage zero plus the meter-first order keep benchmark evidence
@@ -1347,7 +1531,12 @@ Produce a report proving exact corpus fit.
 ### Stage two: shared core crate
 
 Create `packages/music-player/truepeak-core`.
-Implement the shared meter, gain math, window policy, classifier input types, policy identity, and Turso service.
+Implement the shared meter,
+ gain math,
+ window policy,
+ classifier input types,
+ policy identity,
+ and Turso service.
 Use fake-source tests and throwaway Turso databases.
 
 ### Stage three: desktop migration

@@ -133,9 +133,9 @@ function errorHasCode(
     readonly code: string;
   },
 ): boolean {
-  return error instanceof Error
-    && 'code' in error
-    && (error as NodeErrorCodeCarrier).code === code;
+  return (error instanceof Error)
+    && ('code' in error)
+    && ((error as NodeErrorCodeCarrier).code === code);
 }
 
 /**

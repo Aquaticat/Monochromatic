@@ -12,98 +12,98 @@
 # The proof of equivalence is in the comment above each pattern.
 
 exclude_re = [
-    # `ByteSet::empty()` returns `Self { words: [0; WORDS] }`, and `ByteSet` derives
-    # `Default`, whose value is the same all-zero words. `empty()` and `default()` are
-    # byte-for-byte identical, so no observation can tell them apart.
-    "replace ByteSet::empty -> Self with Default::default",
+  # `ByteSet::empty()` returns `Self { words: [0; WORDS] }`, and `ByteSet` derives
+  # `Default`, whose value is the same all-zero words. `empty()` and `default()` are
+  # byte-for-byte identical, so no observation can tell them apart.
+  "replace ByteSet::empty -> Self with Default::default",
 
-    # `accept_bit` computes `((line_end as u8) << 1) | (word_after as u8)`. The left
-    # operand always has bit 0 clear (it is a value shifted left by one) and the right
-    # operand is only ever 0 or 1, so the two operands never share a set bit: `|` and
-    # `^` produce the identical result for every (line_end, word_after).
-    "replace \\| with \\^ in accept_bit",
+  # `accept_bit` computes `((line_end as u8) << 1) | (word_after as u8)`. The left
+  # operand always has bit 0 clear (it is a value shifted left by one) and the right
+  # operand is only ever 0 or 1, so the two operands never share a set bit: `|` and
+  # `^` produce the identical result for every (line_end, word_after).
+  "replace \\| with \\^ in accept_bit",
 
-    # `CountSet::copy_advanced_from` computes `*dst = (word << 1) | carry`, where
-    # `word << 1` always has bit 0 clear and `carry` is `prev >> 63` (0 or 1). The
-    # operands are bit-disjoint, so `|` and `^` are identical here.
-    "replace \\| with \\^ in CountSet::copy_advanced_from",
+  # `CountSet::copy_advanced_from` computes `*dst = (word << 1) | carry`, where
+  # `word << 1` always has bit 0 clear and `carry` is `prev >> 63` (0 or 1). The
+  # operands are bit-disjoint, so `|` and `^` are identical here.
+  "replace \\| with \\^ in CountSet::copy_advanced_from",
 
-    # `clear_above` tests `if wi < self.words.len()` where `wi = (max + 1) / 64` and the
-    # set was sized by `nwords(max) = (max + 1) / 64 + 1`. Thus `wi` is always exactly
-    # `words.len() - 1`, so `wi < len` and `wi <= len` are both always true: the `<` and
-    # `<=` forms can never differ on any reachable call.
-    "replace < with <= in CountSet::clear_above",
+  # `clear_above` tests `if wi < self.words.len()` where `wi = (max + 1) / 64` and the
+  # set was sized by `nwords(max) = (max + 1) / 64 + 1`. Thus `wi` is always exactly
+  # `words.len() - 1`, so `wi < len` and `wi <= len` are both always true: the `<` and
+  # `<=` forms can never differ on any reachable call.
+  "replace < with <= in CountSet::clear_above",
 
-    # `byte_signature` pushes `b == b'\\n'` as one column of a per-byte signature used
-    # ONLY to partition bytes into classes by signature EQUALITY. Replacing `==` with
-    # `!=` inverts that one column uniformly for every byte, which leaves the induced
-    # partition (and therefore every class, transition, and match) identical. The
-    # semantic newline flag the matcher reads is built separately at classes.rs:62.
-    "replace == with != in byte_signature",
+  # `byte_signature` pushes `b == b'\\n'` as one column of a per-byte signature used
+  # ONLY to partition bytes into classes by signature EQUALITY. Replacing `==` with
+  # `!=` inverts that one column uniformly for every byte, which leaves the induced
+  # partition (and therefore every class, transition, and match) identical. The
+  # semantic newline flag the matcher reads is built separately at classes.rs:62.
+  "replace == with != in byte_signature",
 
-    # `validate` guards the dead-state block with `if dead != ns`, then checks
-    # `if dead > ns`. Inside `dead != ns`, `dead >= ns` is equivalent to `dead > ns`
-    # (the `== ns` case is already excluded by the outer guard), so `>` and `>=` agree.
-    "replace > with >= in Dfa::validate",
+  # `validate` guards the dead-state block with `if dead != ns`, then checks
+  # `if dead > ns`. Inside `dead != ns`, `dead >= ns` is equivalent to `dead > ns`
+  # (the `== ns` case is already excluded by the outer guard), so `>` and `>=` agree.
+  "replace > with >= in Dfa::validate",
 
-    # `candidates_only_is_match` is a profiling hook: `gate.any_candidate(line, |_,_| false)`.
-    # `any_candidate` returns true only if the predicate returns true for some candidate;
-    # with a predicate that is always false it returns false for every input, so the
-    # function already returns `false` unconditionally and `-> false` changes nothing.
-    "replace RegexSet::candidates_only_is_match -> bool with false",
+  # `candidates_only_is_match` is a profiling hook: `gate.any_candidate(line, |_,_| false)`.
+  # `any_candidate` returns true only if the predicate returns true for some candidate;
+  # with a predicate that is always false it returns false for every input, so the
+  # function already returns `false` unconditionally and `-> false` changes nothing.
+  "replace RegexSet::candidates_only_is_match -> bool with false",
 
-    # `parse_atom`'s `b'|' | b'&'` arm is unreachable: `parse_concat_units` (grammar.rs:110)
-    # breaks on `|`/`&` BEFORE ever calling `parse_postfix -> parse_atom`, so those bytes
-    # never reach `parse_atom`. The arm is defensive (it would matter if that guard were
-    # removed); deleting it cannot change observable behavior under the current grammar.
-    # NB: the *other* `|`/`&` arm (parse_set_algebra, grammar.rs:66, the mix-of-operators
-    # rejection) IS reachable and is killed by a test, so this exclusion is `parse_atom`-only.
-    "delete match arm b'\\|' \\| b'&' in parse_atom",
+  # `parse_atom`'s `b'|' | b'&'` arm is unreachable: `parse_concat_units` (grammar.rs:110)
+  # breaks on `|`/`&` BEFORE ever calling `parse_postfix -> parse_atom`, so those bytes
+  # never reach `parse_atom`. The arm is defensive (it would matter if that guard were
+  # removed); deleting it cannot change observable behavior under the current grammar.
+  # NB: the *other* `|`/`&` arm (parse_set_algebra, grammar.rs:66, the mix-of-operators
+  # rejection) IS reachable and is killed by a test, so this exclusion is `parse_atom`-only.
+  "delete match arm b'\\|' \\| b'&' in parse_atom",
 
-    # `Cursor::eof` is called only at parse.rs:48, the trailing-input check. At the top
-    # level (`parse_setexpr(.., None)`) `parse_concat_units` consumes every byte until it
-    # breaks on end-of-input or `|`/`&` (which route to `parse_set_algebra`, itself ending
-    # only on end-of-input at this level), so `parse_setexpr` always returns with the cursor
-    # at EOF or it errors first. The trailing block is therefore unreachable and `eof -> true`
-    # (which only flips that already-dead `if`) cannot change any observable result. It is a
-    # defensive guard against future grammar changes, kept deliberately.
-    "replace Cursor<'a>::eof -> bool with true",
+  # `Cursor::eof` is called only at parse.rs:48, the trailing-input check. At the top
+  # level (`parse_setexpr(.., None)`) `parse_concat_units` consumes every byte until it
+  # breaks on end-of-input or `|`/`&` (which route to `parse_set_algebra`, itself ending
+  # only on end-of-input at this level), so `parse_setexpr` always returns with the cursor
+  # at EOF or it errors first. The trailing block is therefore unreachable and `eof -> true`
+  # (which only flips that already-dead `if`) cannot change any observable result. It is a
+  # defensive guard against future grammar changes, kept deliberately.
+  "replace Cursor<'a>::eof -> bool with true",
 
-    # The Sheng batch floor (`lines.len() >= SHENG_BATCH_FLOOR`) only chooses BETWEEN the
-    # permute kernel and the per-line loop, which are verified to return identical verdicts
-    # (the Sheng tests pin that). Flipping `>=` to `<` reroutes some batches but cannot change
-    # any verdict, so it is a performance-only threshold no correctness test can observe.
-    "replace >= with < in Engine::is_match_batch",
+  # The Sheng batch floor (`lines.len() >= SHENG_BATCH_FLOOR`) only chooses BETWEEN the
+  # permute kernel and the per-line loop, which are verified to return identical verdicts
+  # (the Sheng tests pin that). Flipping `>=` to `<` reroutes some batches but cannot change
+  # any verdict, so it is a performance-only threshold no correctness test can observe.
+  "replace >= with < in Engine::is_match_batch",
 
-    # The AVX-512 dispatch guard in is_match_batch_sheng tests `avx512vbmi && avx512bw &&
-    # avx512f`. AVX-512 VBMI structurally implies BW and F (it is a later extension built on
-    # them), so on any real CPU all three are present together; on the AVX-512 host this runs
-    # on, `&&` and `||` give the identical (all-true) decision. Distinguishing them needs a CPU
-    # with BW/F but NOT VBMI, which does not exist, so the mutant is untestable here (it is a
-    # latent fault only on such a hypothetical CPU, where `||` would run vpermb illegally).
-    "replace && with \\|\\| in Dfa::is_match_batch_sheng",
+  # The AVX-512 dispatch guard in is_match_batch_sheng tests `avx512vbmi && avx512bw &&
+  # avx512f`. AVX-512 VBMI structurally implies BW and F (it is a later extension built on
+  # them), so on any real CPU all three are present together; on the AVX-512 host this runs
+  # on, `&&` and `||` give the identical (all-true) decision. Distinguishing them needs a CPU
+  # with BW/F but NOT VBMI, which does not exist, so the mutant is untestable here (it is a
+  # latent fault only on such a hypothetical CPU, where `||` would run vpermb illegally).
+  "replace && with \\|\\| in Dfa::is_match_batch_sheng",
 
-    # is_match_batch_bucketed: `end = start + 1` then a while-loop extends `end` over equal-
-    # length lines. `start * 1` equals `start`, and the loop immediately re-checks index
-    # `start` (its own length matches) and advances to the identical `end`, so the bucket
-    # boundaries, and every verdict, are unchanged.
-    "replace \\+ with \\* in Regex::is_match_batch_bucketed",
+  # is_match_batch_bucketed: `end = start + 1` then a while-loop extends `end` over equal-
+  # length lines. `start * 1` equals `start`, and the loop immediately re-checks index
+  # `start` (its own length matches) and advances to the identical `end`, so the bucket
+  # boundaries, and every verdict, are unchanged.
+  "replace \\+ with \\* in Regex::is_match_batch_bucketed",
 
-    # Same loop: `while end < order.len()`. Flipping `<` to `>` makes the extend-loop never
-    # run, so every bucket is a single line. The tight kernel is correct on a one-line
-    # bucket (it scans the remainder scalar), so bucketing into singletons changes only
-    # batch size, never a verdict.
-    "replace < with > in Regex::is_match_batch_bucketed",
+  # Same loop: `while end < order.len()`. Flipping `<` to `>` makes the extend-loop never
+  # run, so every bucket is a single line. The tight kernel is correct on a one-line
+  # bucket (it scans the remainder scalar), so bucketing into singletons changes only
+  # batch size, never a verdict.
+  "replace < with > in Regex::is_match_batch_bucketed",
 
-    # is_match_batch_concat sizes the scratch buffer with `Vec::with_capacity(sum of
-    # line.len() + 1)`. `* 1` gives a smaller capacity hint, but a Vec grows on demand, so
-    # the buffer contents (and every verdict) are identical; only an allocation hint differs.
-    "replace \\+ with \\* in RegexSet::is_match_batch_concat",
+  # is_match_batch_concat sizes the scratch buffer with `Vec::with_capacity(sum of
+  # line.len() + 1)`. `* 1` gives a smaller capacity hint, but a Vec grows on demand, so
+  # the buffer contents (and every verdict) are identical; only an allocation hint differs.
+  "replace \\+ with \\* in RegexSet::is_match_batch_concat",
 
-    # is_match_batch_concat slices each line as `buf[start .. next_start - 1]`, the `- 1`
-    # dropping the `\\n` separator. `next_start / 1` equals `next_start`, so the slice keeps
-    # the trailing `\\n`. In this dialect a trailing newline can never change a verdict: match
-    # is substring search (a newline at the end adds no new substring), `.` excludes `\\n`,
-    # and `$`/`\\b` treat end-of-input and a trailing `\\n` boundary identically.
-    "replace - with / in RegexSet::is_match_batch_concat",
+  # is_match_batch_concat slices each line as `buf[start .. next_start - 1]`, the `- 1`
+  # dropping the `\\n` separator. `next_start / 1` equals `next_start`, so the slice keeps
+  # the trailing `\\n`. In this dialect a trailing newline can never change a verdict: match
+  # is substring search (a newline at the end adds no new substring), `.` excludes `\\n`,
+  # and `$`/`\\b` treat end-of-input and a trailing `\\n` boundary identically.
+  "replace - with / in RegexSet::is_match_batch_concat",
 ]

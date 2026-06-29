@@ -2,8 +2,11 @@
 
 Decision record for regex safety in the agentic context-management Pi extension plan.
 
-Status: strategy chosen, exact dependency unchosen.
-Date: 2026-06-15.
+Status:
+ strategy chosen,
+ exact dependency unchosen.
+Date:
+ 2026-06-15.
 
 ## Context-fork answers
 

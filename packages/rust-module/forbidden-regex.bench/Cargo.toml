@@ -1,12 +1,12 @@
 [package]
 name = "forbidden-regex-bench"
 version = "0.1.0"
-edition = "2024"
-publish = false
-description = "Throughput benchmark comparing forbidden-regex against the regex crate on a pre-serialized RegexSet."
 # The crate also carries the `seedless` diagnostic bin under src/bin, so a bare
 # `cargo run` (the mise `bench` task) would be ambiguous; pin the throughput bench.
 default-run = "forbidden-regex-bench"
+edition = "2024"
+publish = false
+description = "Throughput benchmark comparing forbidden-regex against the regex crate on a pre-serialized RegexSet."
 
 [lints.clippy]
 disallowed_methods = "deny"

@@ -64,124 +64,69 @@ function buildMinimalSchemaBytes(): number[] {
   bytes.push(...encodeVarUint(7,),);
 
   // Def 0: MessageType (ENUM)
-  bytes.push(...encodeString('MessageType',),);
-  bytes.push(0,); // kind = ENUM
+  bytes.push(...encodeString('MessageType',), 0); // kind = ENUM
   bytes.push(...encodeVarUint(2,),); // 2 values
-  bytes.push(...encodeString('NODE_CHANGES',),);
-  bytes.push(...encodeVarInt(0,),); // type (unused, 0 in Figma)
+  bytes.push(...encodeString('NODE_CHANGES',), ...encodeVarInt(0,)); // type (unused, 0 in Figma)
   bytes.push(0,); // isArray
   bytes.push(...encodeVarUint(1,),); // value = 1
-  bytes.push(...encodeString('JOIN_START',),);
-  bytes.push(...encodeVarInt(0,),);
-  bytes.push(0,);
-  bytes.push(...encodeVarUint(0,),); // value = 0
+  bytes.push(...encodeString('JOIN_START',), ...encodeVarInt(0,), 0, ...encodeVarUint(0,)); // value = 0
 
   // Def 1: NodePhase (ENUM)
-  bytes.push(...encodeString('NodePhase',),);
-  bytes.push(0,); // ENUM
-  bytes.push(...encodeVarUint(2,),);
-  bytes.push(...encodeString('CREATED',),);
-  bytes.push(...encodeVarInt(0,),);
-  bytes.push(0,);
-  bytes.push(...encodeVarUint(0,),); // value = 0
-  bytes.push(...encodeString('REMOVED',),);
-  bytes.push(...encodeVarInt(0,),);
-  bytes.push(0,);
-  bytes.push(...encodeVarUint(1,),); // value = 1
+  bytes.push(...encodeString('NodePhase',), 0); // ENUM
+  bytes.push(...encodeVarUint(2,), ...encodeString('CREATED',), ...encodeVarInt(0,), 0, ...encodeVarUint(0,)); // value = 0
+  bytes.push(...encodeString('REMOVED',), ...encodeVarInt(0,), 0, ...encodeVarUint(1,)); // value = 1
 
   // Def 2: NodeType (ENUM)
-  bytes.push(...encodeString('NodeType',),);
-  bytes.push(0,); // ENUM
-  bytes.push(...encodeVarUint(3,),);
-  bytes.push(...encodeString('NONE',),);
-  bytes.push(...encodeVarInt(0,),);
-  bytes.push(0,);
-  bytes.push(...encodeVarUint(0,),);
-  bytes.push(...encodeString('DOCUMENT',),);
-  bytes.push(...encodeVarInt(0,),);
-  bytes.push(0,);
-  bytes.push(...encodeVarUint(1,),);
-  bytes.push(...encodeString('CANVAS',),);
-  bytes.push(...encodeVarInt(0,),);
-  bytes.push(0,);
-  bytes.push(...encodeVarUint(2,),);
+  bytes.push(...encodeString('NodeType',), 0); // ENUM
+  bytes.push(...encodeVarUint(3,), ...encodeString('NONE',), ...encodeVarInt(0,), 0, ...encodeVarUint(0,), ...encodeString('DOCUMENT',), ...encodeVarInt(0,), 0, ...encodeVarUint(1,), ...encodeString('CANVAS',), ...encodeVarInt(0,), 0, ...encodeVarUint(2,));
 
   // Def 3: Matrix (STRUCT): 6 float fields
-  bytes.push(...encodeString('Matrix',),);
-  bytes.push(1,); // STRUCT
+  bytes.push(...encodeString('Matrix',), 1); // STRUCT
   bytes.push(...encodeVarUint(6,),);
   for (const name of ['m00', 'm01', 'm02', 'm10', 'm11', 'm12',]) {
-    bytes.push(...encodeString(name,),);
-    bytes.push(...encodeVarInt(-5,),); // float (type_raw = ~4 = -5)
+    bytes.push(...encodeString(name,), ...encodeVarInt(-5,)); // float (type_raw = ~4 = -5)
     bytes.push(0,); // not array
     bytes.push(...encodeVarUint(0,),); // tag (unused for struct field order)
   }
 
   // Def 4: GUID (STRUCT): sessionID(uint), localID(uint)
-  bytes.push(...encodeString('GUID',),);
-  bytes.push(1,); // STRUCT
-  bytes.push(...encodeVarUint(2,),);
-  bytes.push(...encodeString('sessionID',),);
-  bytes.push(...encodeVarInt(-4,),); // uint (type_raw = ~3 = -4)
-  bytes.push(0,);
-  bytes.push(...encodeVarUint(1,),); // tag = 1
-  bytes.push(...encodeString('localID',),);
-  bytes.push(...encodeVarInt(-4,),); // uint
-  bytes.push(0,);
-  bytes.push(...encodeVarUint(2,),); // tag = 2
+  bytes.push(...encodeString('GUID',), 1); // STRUCT
+  bytes.push(...encodeVarUint(2,), ...encodeString('sessionID',), ...encodeVarInt(-4,)); // uint (type_raw = ~3 = -4)
+  bytes.push(0, ...encodeVarUint(1,)); // tag = 1
+  bytes.push(...encodeString('localID',), ...encodeVarInt(-4,)); // uint
+  bytes.push(0, ...encodeVarUint(2,)); // tag = 2
 
   // Def 5: ParentIndex (STRUCT): guid(GUID ref), position(string)
-  bytes.push(...encodeString('ParentIndex',),);
-  bytes.push(1,); // STRUCT
-  bytes.push(...encodeVarUint(2,),);
-  bytes.push(...encodeString('guid',),);
-  bytes.push(...encodeVarInt(4,),); // ref to def[4] = GUID
-  bytes.push(0,);
-  bytes.push(...encodeVarUint(1,),); // tag = 1
-  bytes.push(...encodeString('position',),);
-  bytes.push(...encodeVarInt(-6,),); // string (type_raw = ~5 = -6)
-  bytes.push(0,);
-  bytes.push(...encodeVarUint(2,),); // tag = 2
+  bytes.push(...encodeString('ParentIndex',), 1); // STRUCT
+  bytes.push(...encodeVarUint(2,), ...encodeString('guid',), ...encodeVarInt(4,)); // ref to def[4] = GUID
+  bytes.push(0, ...encodeVarUint(1,)); // tag = 1
+  bytes.push(...encodeString('position',), ...encodeVarInt(-6,)); // string (type_raw = ~5 = -6)
+  bytes.push(0, ...encodeVarUint(2,)); // tag = 2
 
   // Def 6: NodeChange (MESSAGE): guid, phase, parentIndex, type, name, visible, opacity
-  bytes.push(...encodeString('NodeChange',),);
-  bytes.push(2,); // MESSAGE
+  bytes.push(...encodeString('NodeChange',), 2); // MESSAGE
   bytes.push(...encodeVarUint(7,),);
   // tag 1: guid (GUID ref)
-  bytes.push(...encodeString('guid',),);
-  bytes.push(...encodeVarInt(4,),); // ref to def[4] = GUID
-  bytes.push(0,);
-  bytes.push(...encodeVarUint(1,),); // tag = 1
+  bytes.push(...encodeString('guid',), ...encodeVarInt(4,)); // ref to def[4] = GUID
+  bytes.push(0, ...encodeVarUint(1,)); // tag = 1
   // tag 2: phase (NodePhase ref)
-  bytes.push(...encodeString('phase',),);
-  bytes.push(...encodeVarInt(1,),); // ref to def[1] = NodePhase
-  bytes.push(0,);
-  bytes.push(...encodeVarUint(2,),); // tag = 2
+  bytes.push(...encodeString('phase',), ...encodeVarInt(1,)); // ref to def[1] = NodePhase
+  bytes.push(0, ...encodeVarUint(2,)); // tag = 2
   // tag 3: parentIndex (ParentIndex ref)
-  bytes.push(...encodeString('parentIndex',),);
-  bytes.push(...encodeVarInt(5,),); // ref to def[5] = ParentIndex
-  bytes.push(0,);
-  bytes.push(...encodeVarUint(3,),); // tag = 3
+  bytes.push(...encodeString('parentIndex',), ...encodeVarInt(5,)); // ref to def[5] = ParentIndex
+  bytes.push(0, ...encodeVarUint(3,)); // tag = 3
   // tag 4: type (NodeType ref)
-  bytes.push(...encodeString('type',),);
-  bytes.push(...encodeVarInt(2,),); // ref to def[2] = NodeType
-  bytes.push(0,);
-  bytes.push(...encodeVarUint(4,),); // tag = 4
+  bytes.push(...encodeString('type',), ...encodeVarInt(2,)); // ref to def[2] = NodeType
+  bytes.push(0, ...encodeVarUint(4,)); // tag = 4
   // tag 5: name (string)
-  bytes.push(...encodeString('name',),);
-  bytes.push(...encodeVarInt(-6,),); // string
-  bytes.push(0,);
-  bytes.push(...encodeVarUint(5,),); // tag = 5
+  bytes.push(...encodeString('name',), ...encodeVarInt(-6,)); // string
+  bytes.push(0, ...encodeVarUint(5,)); // tag = 5
   // tag 6: visible (bool)
-  bytes.push(...encodeString('visible',),);
-  bytes.push(...encodeVarInt(-1,),); // bool (type_raw = ~0 = -1)
-  bytes.push(0,);
-  bytes.push(...encodeVarUint(6,),); // tag = 6
+  bytes.push(...encodeString('visible',), ...encodeVarInt(-1,)); // bool (type_raw = ~0 = -1)
+  bytes.push(0, ...encodeVarUint(6,)); // tag = 6
   // tag 8: opacity (float)
-  bytes.push(...encodeString('opacity',),);
-  bytes.push(...encodeVarInt(-5,),); // float
-  bytes.push(0,);
-  bytes.push(...encodeVarUint(8,),); // tag = 8
+  bytes.push(...encodeString('opacity',), ...encodeVarInt(-5,)); // float
+  bytes.push(0, ...encodeVarUint(8,)); // tag = 8
 
   return bytes;
 }
@@ -450,114 +395,44 @@ await describe({
             completeSchema.push(...encodeVarUint(8,),); // 8 definitions
 
             // Def 0: MessageType (ENUM)
-            completeSchema.push(...encodeString('MessageType',),);
-            completeSchema.push(0,); // ENUM
+            completeSchema.push(...encodeString('MessageType',), 0); // ENUM
             completeSchema.push(...encodeVarUint(1,),); // 1 value
-            completeSchema.push(...encodeString('NODE_CHANGES',),);
-            completeSchema.push(...encodeVarInt(0,),);
-            completeSchema.push(0,);
-            completeSchema.push(...encodeVarUint(1,),);
+            completeSchema.push(...encodeString('NODE_CHANGES',), ...encodeVarInt(0,), 0, ...encodeVarUint(1,));
 
             // Def 1: NodePhase (ENUM)
-            completeSchema.push(...encodeString('NodePhase',),);
-            completeSchema.push(0,);
-            completeSchema.push(...encodeVarUint(1,),);
-            completeSchema.push(...encodeString('CREATED',),);
-            completeSchema.push(...encodeVarInt(0,),);
-            completeSchema.push(0,);
-            completeSchema.push(...encodeVarUint(0,),);
+            completeSchema.push(...encodeString('NodePhase',), 0, ...encodeVarUint(1,), ...encodeString('CREATED',), ...encodeVarInt(0,), 0, ...encodeVarUint(0,));
 
             // Def 2: NodeType (ENUM)
-            completeSchema.push(...encodeString('NodeType',),);
-            completeSchema.push(0,);
-            completeSchema.push(...encodeVarUint(2,),);
-            completeSchema.push(...encodeString('DOCUMENT',),);
-            completeSchema.push(...encodeVarInt(0,),);
-            completeSchema.push(0,);
-            completeSchema.push(...encodeVarUint(1,),);
-            completeSchema.push(...encodeString('CANVAS',),);
-            completeSchema.push(...encodeVarInt(0,),);
-            completeSchema.push(0,);
-            completeSchema.push(...encodeVarUint(2,),);
+            completeSchema.push(...encodeString('NodeType',), 0, ...encodeVarUint(2,), ...encodeString('DOCUMENT',), ...encodeVarInt(0,), 0, ...encodeVarUint(1,), ...encodeString('CANVAS',), ...encodeVarInt(0,), 0, ...encodeVarUint(2,));
 
             // Def 3: Matrix (STRUCT)
-            completeSchema.push(...encodeString('Matrix',),);
-            completeSchema.push(1,); // STRUCT
+            completeSchema.push(...encodeString('Matrix',), 1); // STRUCT
             completeSchema.push(...encodeVarUint(6,),);
             for (const n of ['m00', 'm01', 'm02', 'm10', 'm11', 'm12',]) {
-              completeSchema.push(...encodeString(n,),);
-              completeSchema.push(...encodeVarInt(-5,),);
-              completeSchema.push(0,);
-              completeSchema.push(...encodeVarUint(0,),);
+              completeSchema.push(...encodeString(n,), ...encodeVarInt(-5,), 0, ...encodeVarUint(0,));
             }
 
             // Def 4: GUID (STRUCT)
-            completeSchema.push(...encodeString('GUID',),);
-            completeSchema.push(1,);
-            completeSchema.push(...encodeVarUint(2,),);
-            completeSchema.push(...encodeString('sessionID',),);
-            completeSchema.push(...encodeVarInt(-4,),);
-            completeSchema.push(0,);
-            completeSchema.push(...encodeVarUint(1,),);
-            completeSchema.push(...encodeString('localID',),);
-            completeSchema.push(...encodeVarInt(-4,),);
-            completeSchema.push(0,);
-            completeSchema.push(...encodeVarUint(2,),);
+            completeSchema.push(...encodeString('GUID',), 1, ...encodeVarUint(2,), ...encodeString('sessionID',), ...encodeVarInt(-4,), 0, ...encodeVarUint(1,), ...encodeString('localID',), ...encodeVarInt(-4,), 0, ...encodeVarUint(2,));
 
             // Def 5: ParentIndex (STRUCT)
-            completeSchema.push(...encodeString('ParentIndex',),);
-            completeSchema.push(1,);
-            completeSchema.push(...encodeVarUint(2,),);
-            completeSchema.push(...encodeString('guid',),);
-            completeSchema.push(...encodeVarInt(4,),);
-            completeSchema.push(0,);
-            completeSchema.push(...encodeVarUint(1,),);
-            completeSchema.push(...encodeString('position',),);
-            completeSchema.push(...encodeVarInt(-6,),);
-            completeSchema.push(0,);
-            completeSchema.push(...encodeVarUint(2,),);
+            completeSchema.push(...encodeString('ParentIndex',), 1, ...encodeVarUint(2,), ...encodeString('guid',), ...encodeVarInt(4,), 0, ...encodeVarUint(1,), ...encodeString('position',), ...encodeVarInt(-6,), 0, ...encodeVarUint(2,));
 
             // Def 6: NodeChange (MESSAGE)
-            completeSchema.push(...encodeString('NodeChange',),);
-            completeSchema.push(2,); // MESSAGE
-            completeSchema.push(...encodeVarUint(3,),);
-            completeSchema.push(...encodeString('guid',),);
-            completeSchema.push(...encodeVarInt(4,),);
-            completeSchema.push(0,);
-            completeSchema.push(...encodeVarUint(1,),);
-            completeSchema.push(...encodeString('type',),);
-            completeSchema.push(...encodeVarInt(2,),);
-            completeSchema.push(0,);
-            completeSchema.push(...encodeVarUint(4,),);
-            completeSchema.push(...encodeString('name',),);
-            completeSchema.push(...encodeVarInt(-6,),);
-            completeSchema.push(0,);
-            completeSchema.push(...encodeVarUint(5,),);
+            completeSchema.push(...encodeString('NodeChange',), 2); // MESSAGE
+            completeSchema.push(...encodeVarUint(3,), ...encodeString('guid',), ...encodeVarInt(4,), 0, ...encodeVarUint(1,), ...encodeString('type',), ...encodeVarInt(2,), 0, ...encodeVarUint(4,), ...encodeString('name',), ...encodeVarInt(-6,), 0, ...encodeVarUint(5,));
 
             // Def 7: Message (MESSAGE)
-            completeSchema.push(...encodeString('Message',),);
-            completeSchema.push(2,); // MESSAGE
+            completeSchema.push(...encodeString('Message',), 2); // MESSAGE
             completeSchema.push(...encodeVarUint(4,),);
             // tag 1: type (MessageType ref)
-            completeSchema.push(...encodeString('type',),);
-            completeSchema.push(...encodeVarInt(0,),);
-            completeSchema.push(0,);
-            completeSchema.push(...encodeVarUint(1,),);
+            completeSchema.push(...encodeString('type',), ...encodeVarInt(0,), 0, ...encodeVarUint(1,));
             // tag 2: sessionID (uint)
-            completeSchema.push(...encodeString('sessionID',),);
-            completeSchema.push(...encodeVarInt(-4,),);
-            completeSchema.push(0,);
-            completeSchema.push(...encodeVarUint(2,),);
+            completeSchema.push(...encodeString('sessionID',), ...encodeVarInt(-4,), 0, ...encodeVarUint(2,));
             // tag 3: ackID (uint)
-            completeSchema.push(...encodeString('ackID',),);
-            completeSchema.push(...encodeVarInt(-4,),);
-            completeSchema.push(0,);
-            completeSchema.push(...encodeVarUint(3,),);
+            completeSchema.push(...encodeString('ackID',), ...encodeVarInt(-4,), 0, ...encodeVarUint(3,));
             // tag 4: nodeChanges (repeated NodeChange)
-            completeSchema.push(...encodeString('nodeChanges',),);
-            completeSchema.push(...encodeVarInt(6,),);
-            completeSchema.push(1,);
-            completeSchema.push(...encodeVarUint(4,),);
+            completeSchema.push(...encodeString('nodeChanges',), ...encodeVarInt(6,), 1, ...encodeVarUint(4,));
 
             const schema = parseKiwiSchema(new Uint8Array(completeSchema,),);
 
@@ -567,14 +442,11 @@ await describe({
             doc.push(...encodeVarUint(1,),); // tag
             doc.push(...encodeVarUint(1,),); // MessageType.NODE_CHANGES = 1
             // Message tag 2 (sessionID) = 0
-            doc.push(...encodeVarUint(2,),);
-            doc.push(...encodeVarUint(0,),);
+            doc.push(...encodeVarUint(2,), ...encodeVarUint(0,));
             // Message tag 3 (ackID) = 0
-            doc.push(...encodeVarUint(3,),);
-            doc.push(...encodeVarUint(0,),);
+            doc.push(...encodeVarUint(3,), ...encodeVarUint(0,));
             // Message tag 4 (nodeChanges): repeated, count prefix
-            doc.push(...encodeVarUint(4,),);
-            doc.push(...encodeVarUint(1,),); // 1 node change
+            doc.push(...encodeVarUint(4,), ...encodeVarUint(1,)); // 1 node change
             // NodeChange message:
             //   tag 1 (guid): GUID struct = sessionID=0, localID=5
             doc.push(...encodeVarUint(1,),); // tag

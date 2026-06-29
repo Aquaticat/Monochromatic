@@ -36,36 +36,53 @@ vmsync config alpine --memory 8G --cpus 8
 
 ### Boot + incremental sync
 
-**On Linux (KVM):**
+**On Linux (KVM):
+**
 
 1. Creates a qcow2 overlay backed by `base.qcow2`
-2. QEMU boots from the overlay; all writes go to the overlay, reads fall through to the base
-3. After shutdown, the overlay contains only changed blocks
+2. QEMU boots from the overlay;
+    all writes go to the overlay,
+    reads fall through to the base
+3. After shutdown,
+    the overlay contains only changed blocks
 4. `qemu-img map` identifies which blocks were written (depth 0 in the overlay)
 5. Changed blocks are copied to `base.vhdx` via NBD block-level patching
 6. The overlay is committed back into `base.qcow2` and deleted
 
-For a 100 GB disk with 2 GB of changes, sync takes ~4 seconds instead of ~5 minutes.
+For a 100 GB disk with 2 GB of changes,
+ sync takes ~4 seconds instead of ~5 minutes.
 
-**On Windows (Hyper-V):**
+**On Windows (Hyper-V):
+**
 
 1. Creates a temporary Gen2 VM pointing to `base.vhdx`
 2. Hyper-V boots and writes directly to the vhdx
-3. After shutdown, the vhdx is compared by checksum
-4. If changed, a full conversion to qcow2 is performed
+3. After shutdown,
+    the vhdx is compared by checksum
+4. If changed,
+    a full conversion to qcow2 is performed
 
 Hyper-V checkpoint-based differencing (`.avhdx`) for incremental sync is a future optimization.
 
 ### Architecture constraints
 
-- **UEFI only**: images must contain an EFI System Partition. BIOS/Gen1 is not supported.
-- **NAT networking**: user-mode networking on KVM (`-netdev user`), Default Switch on Hyper-V.
-- **Virtio devices**: GPU, NIC, keyboard, and mouse use virtio drivers on KVM.
-- **Generation 2**: Hyper-V VMs are created as Gen2 with Secure Boot disabled.
+- **UEFI only**:
+   images must contain an EFI System Partition.
+   BIOS/Gen1 is not supported.
+- **NAT networking**:
+   user-mode networking on KVM (`-netdev user`),
+   Default Switch on Hyper-V.
+- **Virtio devices**:
+   GPU,
+   NIC,
+   keyboard,
+   and mouse use virtio drivers on KVM.
+- **Generation 2**:
+   Hyper-V VMs are created as Gen2 with Secure Boot disabled.
 
 ## Data layout
 
-```
+```text
 ~/.local/share/vmsync/
   alpine/
     vmsync.jsonc       # config and sync state
@@ -76,12 +93,22 @@ Hyper-V checkpoint-based differencing (`.avhdx`) for incremental sync is a futur
 
 ## Dependencies
 
-- `qemu-img`, `qemu-system-x86_64`, `qemu-nbd`: image conversion, KVM boot, block patching
-- `nbd` kernel module: Linux block device access for incremental sync
-- `fdisk`: UEFI validation at import time
-- `sha256sum` (Linux) / `certutil` (Windows): checksum computation
-- `powershell`: Hyper-V VM management on Windows
-- OVMF firmware (`edk2-ovmf` or equivalent): UEFI boot on KVM
+- `qemu-img`,
+   `qemu-system-x86_64`,
+   `qemu-nbd`:
+   image conversion,
+   KVM boot,
+   block patching
+- `nbd` kernel module:
+   Linux block device access for incremental sync
+- `fdisk`:
+   UEFI validation at import time
+- `sha256sum` (Linux) / `certutil` (Windows):
+   checksum computation
+- `powershell`:
+   Hyper-V VM management on Windows
+- OVMF firmware (`edk2-ovmf` or equivalent):
+   UEFI boot on KVM
 
 ## Configuration
 

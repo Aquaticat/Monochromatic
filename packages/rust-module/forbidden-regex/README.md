@@ -1,58 +1,121 @@
 # forbidden-regex
 
 A restricted regular-expression engine built on Brzozowski derivatives and
-compiled eagerly to a serializable, byte-class-compressed DFA.
+compiled eagerly to a serializable,
+ byte-class-compressed DFA.
 
-It exists to power the `forbidden-strings` secret scanner: one matcher is run on
-every content line, with no separate literal prefilter, and a whole ruleset is
-combined into a single `RegexSet` that is checked in one pass per line. Unlike
-classic NFA or backtracking engines, derivatives make intersection (`&`) and
+It exists to power the `forbidden-strings` secret scanner:
+ one matcher is run on
+every content line,
+ with no separate literal prefilter,
+ and a whole ruleset is
+combined into a single `RegexSet` that is checked in one pass per line.
+ Unlike
+classic NFA or backtracking engines,
+ derivatives make intersection (`&`) and
 complement (`~(...)`) first-class operators.
 
 ## Match model
 
-- Input is a single non-empty line, matched as raw bytes (`&[u8]`).
-- Matching is unanchored search: a pattern matches if it matches any substring.
-- `^`, `$`, and `\b` anchor to line and word boundaries; the word set is ASCII
+- Input is a single non-empty line,
+   matched as raw bytes (`&[u8]`).
+- Matching is unanchored search:
+   a pattern matches if it matches any substring.
+- `^`,
+   `$`,
+   and `\b` anchor to line and word boundaries;
+   the word set is ASCII
   `[A-Za-z0-9_]`.
-- `multiline` and verbose (`x`) mode are always on. There are no flags to pass.
+- `multiline` and verbose (`x`) mode are always on.
+   There are no flags to pass.
 
 ## Supported constructs
 
-- Literals, and the escapes `\t`, `\b` (word boundary), backslash-escaped
-  metacharacters, and backslash-escaped whitespace.
-- Character classes: `[abc]`, `[a-z]`, `[a-zA-Z]`, negated `[^...]`, and the
+- Literals,
+   and the escapes `\t`,
+   `\b` (word boundary),
+   backslash-escaped
+  metacharacters,
+   and backslash-escaped whitespace.
+- Character classes:
+   `[abc]`,
+   `[a-z]`,
+   `[a-zA-Z]`,
+   negated `[^...]`,
+   and the
   shorthands `\d \w \s \D \W \S` (usable inside classes too).
 - `.` matches any byte except a newline.
-- Grouping and alternation: `(?:a|b)`. Groups are non-capturing only.
-- Bounded repetition: `a?`, `a{3}`, `a{3,6}`.
-- Anchors: `^`, `$`, `\b`.
-- Set algebra: intersection `&`, complement `~(...)`.
+- Grouping and alternation:
+   `(?:a|b)`.
+   Groups are non-capturing only.
+- Bounded repetition:
+   `a?`,
+   `a{3}`,
+   `a{3,6}`.
+- Anchors:
+   `^`,
+   `$`,
+   `\b`.
+- Set algebra:
+   intersection `&`,
+   complement `~(...)`.
 
-Operators `&` and `|` take single-atom operands: a literal, a class, `.`, an
-anchor, a `(?:...)` group, or a `~(...)`. A concatenation or a quantified atom
-must be wrapped in `(?:...)` to be an operand, so there is no operator precedence
-to remember and operators never mix with concatenation at one level. `~(...)` is
+Operators `&` and `|` take single-atom operands:
+ a literal,
+ a class,
+ `.`,
+ an
+anchor,
+ a `(?:...)` group,
+ or a `~(...)`.
+ A concatenation or a quantified atom
+must be wrapped in `(?:...)` to be an operand,
+ so there is no operator precedence
+to remember and operators never mix with concatenation at one level.
+ `~(...)` is
 always parenthesized.
 
 ## Verbose mode
 
-Because verbose mode is always on, unescaped whitespace outside character classes
-is ignored, so a single rule may be written across many lines. To match a literal
-space use `\<space>`, `\t`, or `[ ]`. A line whose first character is `#` is a
-comment to end-of-line; a `#` anywhere else is a literal. Whitespace and `#`
+Because verbose mode is always on,
+ unescaped whitespace outside character classes
+is ignored,
+ so a single rule may be written across many lines.
+ To match a literal
+space use `\<space>`,
+ `\t`,
+ or `[ ]`.
+ A line whose first character is `#` is a
+comment to end-of-line;
+ a `#` anywhere else is a literal.
+ Whitespace and `#`
 inside `[...]` are literal.
 
 ## Rejected at compile time
 
 Everything outside the supported set is a hard `CompileError` with the offending
-position: `*`, `+`, unbounded `{n,}`, `\xNN`, capturing `(`, lookaround and inline
-flags (`(?` not followed by `:`), backreferences, unknown escapes, unbalanced
-brackets, stacked quantifiers, `{n,m}` with `n` greater than `m`, and repetition
+position:
+ `*`,
+ `+`,
+ unbounded `{n,}`,
+ `\xNN`,
+ capturing `(`,
+ lookaround and inline
+flags (`(?` not followed by `:`),
+ backreferences,
+ unknown escapes,
+ unbalanced
+brackets,
+ stacked quantifiers,
+ `{n,m}` with `n` greater than `m`,
+ and repetition
 whose expansion exceeds the configured cap.
 
-A pattern that can match the empty string is also rejected, because under
-unanchored search it would match every input. So `~(Y)` alone is rejected, while
+A pattern that can match the empty string is also rejected,
+ because under
+unanchored search it would match every input.
+ So `~(Y)` alone is rejected,
+ while
 `(?:X) & ~(Y)` with a concrete `X` compiles.
 
 ## Usage
@@ -80,8 +143,10 @@ assert!(reloaded.is_match(b"... AKIA0123456789ABCDEF7 ..."));
 
 ## Batch matching
 
-For scanning many lines at once, `is_match_batch(&[&[u8]]) -> Vec<bool>` on `Regex` and
-`RegexSet` returns one verdict per line, equal to calling `is_match` on each.
+For scanning many lines at once,
+ `is_match_batch(&[&[u8]]) -> Vec<bool>` on `Regex` and
+`RegexSet` returns one verdict per line,
+ equal to calling `is_match` on each.
 
 ```rust
 let re = forbidden_regex::compile("[0-9a-f]{32}").unwrap();
@@ -89,15 +154,23 @@ let lines: &[&[u8]] = &[b"deadbeefdeadbeefdeadbeefdeadbeef", b"nope"];
 assert_eq!(re.is_match_batch(lines), vec![true, false]);
 ```
 
-On `Regex`, a seedless single pattern of at most 64 states over a large batch routes
-through the Sheng in-register transition kernel: one `vpermb` (AVX-512VBMI) or `vqtbl4q`
-(NEON) permute advances the DFA state, replacing the dependent transition load, and when
-acceptance is position-independent a composed table advances two bytes per permute. It is
-measured up to ~3.3x the per-line loop on x86 and ~2.2x on arm64, falls back to the
-per-line scan otherwise, and is runtime-detected (no nightly toolchain required).
+On `Regex`,
+ a seedless single pattern of at most 64 states over a large batch routes
+through the Sheng in-register transition kernel:
+ one `vpermb` (AVX-512VBMI) or `vqtbl4q`
+(NEON) permute advances the DFA state,
+ replacing the dependent transition load,
+ and when
+acceptance is position-independent a composed table advances two bytes per permute.
+ It is
+measured up to ~3.3x the per-line loop on x86 and ~2.2x on arm64,
+ falls back to the
+per-line scan otherwise,
+ and is runtime-detected (no nightly toolchain required).
 
 `Regex::is_match_batch_bucketed(&[&[u8]]) -> Vec<bool>` is an opt-in path that groups lines
-by exact length and runs a branchless equal-length kernel; it helps over-64-state seedless
+by exact length and runs a branchless equal-length kernel;
+ it helps over-64-state seedless
 patterns and is fastest when the caller already feeds length-sorted lines.
 
 ## Tasks

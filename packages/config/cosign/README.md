@@ -4,9 +4,14 @@ Cosign key pair for signing OCI container images built by vm-builder.
 
 ## Files
 
-- `cosign.pub`: public key (committed, used for verification)
-- `cosign.key`: private key (gitignored, empty passphrase)
-- `.gitignore`: prevents private key from being committed
+- `cosign.pub`:
+   public key (committed,
+   used for verification)
+- `cosign.key`:
+   private key (gitignored,
+   empty passphrase)
+- `.gitignore`:
+   prevents private key from being committed
 
 ## Regenerating the key pair
 

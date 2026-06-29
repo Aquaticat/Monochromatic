@@ -4,5 +4,7 @@ export default {
   ignoreFiles: [
     'packages/test-fixture/**',
     'packages/audit/**',
+    'packages-paused/**',
+    'packages-deprecated/**',
   ],
 };

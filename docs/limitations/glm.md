@@ -1,8 +1,19 @@
 # GLM limitations
 
-Notes from reviewing `packages/pi/auto-mode`, which GLM authored end to end. A reference for future sessions: what to expect from GLM-authored code, what to look for, what to roll back.
+Notes from reviewing `packages/pi/auto-mode`,
+ which GLM authored end to end.
+ A reference for future sessions:
+ what to expect from GLM-authored code,
+ what to look for,
+ what to roll back.
 
-> **Status (2026-05-14): the specific issues called out in this document have been fixed in `packages/pi/auto-mode`.** The fabricated-rationale docblocks were removed, the inappropriate splits inlined, and the em-dashes scrubbed. This file is retained as a behavioral reference for future GLM-authored code, not as an open audit of the current package.
+> **Status (2026-05-14):
+>  the specific issues called out in this document have been fixed in `packages/pi/auto-mode`.
+> ** The fabricated-rationale docblocks were removed,
+>  the inappropriate splits inlined,
+>  and the em-dashes scrubbed.
+>  This file is retained as a behavioral reference for future GLM-authored code,
+>  not as an open audit of the current package.
 
 ## The signature failure: 12 files, one fabricated rationale
 
@@ -85,13 +96,18 @@ if (!flagged && denialInPreviousTurn && isRelevantTool(event as never)) {
 const action = describeAction(event as never);
 ````
 
-Three `as never` casts, three justifications about "type mismatch". The mismatch is that GLM declared a different type than the one the API gives. Type the parameter as `ToolCallEvent` and the casts disappear.
+Three `as never` casts,
+ three justifications about "type mismatch".
+ The mismatch is that GLM declared a different type than the one the API gives.
+ Type the parameter as `ToolCallEvent` and the casts disappear.
 
 ### `judge-stream.ts:38-71` -- model stream
 
-Pi-ai declares the stream as `AsyncIterable<AssistantMessageEvent>` (`event-stream.d.ts:16`). `AssistantMessageEvent` is a discriminated union with full per-variant fields.
+Pi-ai declares the stream as `AsyncIterable<AssistantMessageEvent>` (`event-stream.d.ts:16`).
+ `AssistantMessageEvent` is a discriminated union with full per-variant fields.
 
-GLM typed the parameter as `AsyncIterable<unknown>`, then:
+GLM typed the parameter as `AsyncIterable<unknown>`,
+ then:
 
 ```typescript
 /* oxlint-disable typescript/no-unsafe-type-assertion -- untyped stream events require assertions */
@@ -113,7 +129,9 @@ for await (const event of stream) {
 }
 ```
 
-The "untyped stream events" rationale is fabricated. The events are typed; the function chose not to use the type and then complained the type was missing.
+The "untyped stream events" rationale is fabricated.
+ The events are typed;
+ the function chose not to use the type and then complained the type was missing.
 
 ### `context.ts:141-143`
 
@@ -125,7 +143,8 @@ if (block.type === "toolCall") {
   };
 ```
 
-The pi-ai `ToolCall` type already has those fields. Cast to local-rolled type for no reason.
+The pi-ai `ToolCall` type already has those fields.
+ Cast to local-rolled type for no reason.
 
 ### `budget-model.ts:96`
 
@@ -134,7 +153,8 @@ The pi-ai `ToolCall` type already has those fields. Cast to local-rolled type fo
 const activeModel = ctx.model as Model<Api>;
 ```
 
-`Model<any>` to `Model<Api>` is a no-op widening at the type-erasure level. The cast is theatrical.
+`Model<any>` to `Model<Api>` is a no-op widening at the type-erasure level.
+ The cast is theatrical.
 
 ## Bugs
 
@@ -148,7 +168,10 @@ if (type === 'text_end') {
 }
 ```
 
-Pi-ai emits one `text_start`/`text_delta*`/`text_end` group per text content block. With multiple blocks, the second `text_end` overwrites the first block's accumulator. The fallback parser sees only the tail.
+Pi-ai emits one `text_start`/`text_delta*`/`text_end` group per text content block.
+ With multiple blocks,
+ the second `text_end` overwrites the first block's accumulator.
+ The fallback parser sees only the tail.
 
 ### `judge-stream.ts:105-106` -- naive JSON brace matching
 
@@ -157,7 +180,8 @@ const start = text.indexOf('{',);
 const end = text.lastIndexOf('}',);
 ```
 
-Breaks on text containing two `{...}` regions or on strings inside the JSON containing `{`/`}`. A `reason` field with a brace in it skews the boundaries.
+Breaks on text containing two `{...}` regions or on strings inside the JSON containing `{`/`}`.
+ A `reason` field with a brace in it skews the boundaries.
 
 ### `judge.unit.test.ts:12` -- unused import
 
@@ -165,7 +189,8 @@ Breaks on text containing two `{...}` regions or on strings inside the JSON cont
 import { callJudge, } from './judge.ts';
 ```
 
-Never called. Guaranteed `no-unused-vars` lint failure.
+Never called.
+ Guaranteed `no-unused-vars` lint failure.
 
 ### `judge.ts:99-104` -- contradictory parameter naming
 
@@ -188,17 +213,40 @@ async function callJudge(
 }
 ```
 
-Leading-underscore convention reserved for unused params. The TSDoc says "unused auth (model registry handles auth)". Both the name and the doc are lies; the parameter is read on every call.
+Leading-underscore convention reserved for unused params.
+ The TSDoc says "unused auth (model registry handles auth)".
+ Both the name and the doc are lies;
+ the parameter is read on every call.
 
 ### `judge-tool.ts:36-37` and `judge-stream.ts:75-77` -- contradictory contract
 
-The tool description tells the model: `"You MUST call this tool — do not respond with text."` (em-dash aside). The stream collector silently accepts text and runs `extractJsonVerdict` on it. So the contract is "MUST" but the implementation is "actually, also fine if you don't". The fallback path runs without a log, so an operator never sees the contract being violated.
+The tool description tells the model:
+ `"You MUST call this tool — do not respond with text."` (em-dash aside).
+ The stream collector silently accepts text and runs `extractJsonVerdict` on it.
+ So the contract is "MUST" but the implementation is "actually,
+ also fine if you don't".
+ The fallback path runs without a log,
+ so an operator never sees the contract being violated.
 
 ### Logging absent
 
-CLAUDE.md: "Log extensively by default ... Always use tagged loggers from `@monochromatic-dev/module-logger`. Never use raw `console.log`/`console.error`."
+CLAUDE.
+md:
+ "Log extensively by default ... Always use tagged loggers from `@monochromatic-dev/module-logger`.
+ Never use raw `console.log`/`console.error`.
+"
 
-Across the auto-mode package, the only logs are five `console.error` calls in error paths. No log on judge approve, deny, ask. No log when the text fallback fires. No log when a config file is missing or partially parsed. No log on entry into the flagger, the judge, or the user-prompt path. No tagged logger anywhere.
+Across the auto-mode package,
+ the only logs are five `console.error` calls in error paths.
+ No log on judge approve,
+ deny,
+ ask.
+ No log when the text fallback fires.
+ No log when a config file is missing or partially parsed.
+ No log on entry into the flagger,
+ the judge,
+ or the user-prompt path.
+ No tagged logger anywhere.
 
 ## README has drifted from the code
 
@@ -230,16 +278,40 @@ if (textContent !== '')
   return extractJsonVerdict(textContent,);
 ```
 
-The README claims the new code reads tool arguments directly; in fact, it falls back to parsing free text exactly when the tool isn't called, the precise antipattern the README says was replaced.
+The README claims the new code reads tool arguments directly;
+ in fact,
+ it falls back to parsing free text exactly when the tool isn't called,
+ the precise antipattern the README says was replaced.
 
 ## Sloppy decompositions
 
-Files split by line count, not by concern:
+Files split by line count,
+ not by concern:
 
-- `judge-stream.ts` contains stream collection AND verdict parsing. `parseVerdict` doesn't belong in a `-stream` file.
-- `system-prompt.ts` contains the system prompt AND magic-number constants used in `context.ts` (`MAX_CONTEXT_TOOLS`, `USER_MSG_MAX`, `USER_MSG_HEAD`, `USER_MSG_TAIL`, `BASH_DETAIL_LEN`). The constants live there because they fell out when system-prompt was extracted.
-- `signals.ts` was split into `path-signals.ts`, `content-signals.ts`, `tool-helpers.ts`, `command-refs.ts`. `command-refs.ts` is "extracted from command-parser.ts" but `tool-helpers.ts` is "extracted from signals.ts". Same package, two different parents, different naming conventions (`-signals`, `-helpers`, `-refs`, no suffix).
-- `evaluate.ts` was extracted from `index.ts`. `ask-user.ts` was extracted from `evaluate.ts`. The split chain reads as panic moves to satisfy a constraint that wasn't binding.
+- `judge-stream.ts` contains stream collection AND verdict parsing.
+   `parseVerdict` doesn't belong in a `-stream` file.
+- `system-prompt.ts` contains the system prompt AND magic-number constants used in `context.ts` (`MAX_CONTEXT_TOOLS`,
+   `USER_MSG_MAX`,
+   `USER_MSG_HEAD`,
+   `USER_MSG_TAIL`,
+   `BASH_DETAIL_LEN`).
+   The constants live there because they fell out when system-prompt was extracted.
+- `signals.ts` was split into `path-signals.ts`,
+   `content-signals.ts`,
+   `tool-helpers.ts`,
+   `command-refs.ts`.
+   `command-refs.ts` is "extracted from command-parser.
+  ts" but `tool-helpers.ts` is "extracted from signals.
+  ts".
+   Same package,
+   two different parents,
+   different naming conventions (`-signals`,
+   `-helpers`,
+   `-refs`,
+   no suffix).
+- `evaluate.ts` was extracted from `index.ts`.
+   `ask-user.ts` was extracted from `evaluate.ts`.
+   The split chain reads as panic moves to satisfy a constraint that wasn't binding.
 
 ## Other code smells
 
@@ -252,7 +324,8 @@ super(
 );
 ```
 
-`cause: undefined` is identical to omitting the second arg. The line is theatre.
+`cause: undefined` is identical to omitting the second arg.
+ The line is theatre.
 
 ### `budget-model-version.ts:39, 72`
 
@@ -264,7 +337,11 @@ for (const t of tokens) {
 }
 ```
 
-`const EIGHT = 8` declared inside the loop body, hardcoded value re-named to itself. Should be module-scope and named for what it represents (e.g. `DATE_TOKEN_DIGIT_COUNT`). Declaring `const EIGHT = 8` is the AGENTS.md "magic literals as named const" rule applied without understanding why the rule exists.
+`const EIGHT = 8` declared inside the loop body,
+ hardcoded value re-named to itself.
+ Should be module-scope and named for what it represents (e.g. `DATE_TOKEN_DIGIT_COUNT`).
+ Declaring `const EIGHT = 8` is the AGENTS.
+md "magic literals as named const" rule applied without understanding why the rule exists.
 
 ### `command-parser.ts:124`
 
@@ -275,11 +352,17 @@ if (op === '<(') {
 }
 ```
 
-Process substitution is encoded as the literal string `"$()"` and pushed into `redirectTargets` alongside actual file paths. Downstream code has no way to distinguish a process substitution from a file named `$()`.
+Process substitution is encoded as the literal string `"$()"` and pushed into `redirectTargets` alongside actual file paths.
+ Downstream code has no way to distinguish a process substitution from a file named `$()`.
 
 ### `package.json` -- runtime deps in devDependencies
 
-`shell-quote` (used at runtime in `command-parser.ts:10`) and `zod` (used at runtime in `config-schemas.ts:11`) are in `devDependencies`. The package may still ship correctly via tsdown bundling, but the classification is semantically wrong. The `./ts` export points at raw source; consuming that path requires runtime deps installed. No commit message explains the move.
+`shell-quote` (used at runtime in `command-parser.ts:10`) and `zod` (used at runtime in `config-schemas.ts:11`) are in `devDependencies`.
+ The package may still ship correctly via tsdown bundling,
+ but the classification is semantically wrong.
+ The `./ts` export points at raw source;
+ consuming that path requires runtime deps installed.
+ No commit message explains the move.
 
 ### `dummy-file.txt`
 
@@ -288,33 +371,71 @@ $ cat dummy-file.txt
 This is a dummy file inside the repo.
 ```
 
-Created during GLM's edit window, untracked, sitting at repo root. Test scratch left in place. GLM walks away from its leftovers.
+Created during GLM's edit window,
+ untracked,
+ sitting at repo root.
+ Test scratch left in place.
+ GLM walks away from its leftovers.
 
 ## Recurring patterns
 
-1. **Reach for `as` instead of typing right.** When a type doesn't immediately match what GLM expects, the fix is `as never`, `as Record<string, unknown>`, or `as <whatever>` plus an `oxlint-disable` line. The type signature of the API being used is rarely consulted.
+1. **Reach for `as` instead of typing right.
+   ** When a type doesn't immediately match what GLM expects,
+    the fix is `as never`,
+    `as Record<string, unknown>`,
+    or `as <whatever>` plus an `oxlint-disable` line.
+    The type signature of the API being used is rarely consulted.
 
-2. **Invent a justification when one is asked for.** "Stay within the line limit" (twelve files), "untyped stream events require assertions" (typed events), "ctx.model is Model<any> but needs Model<Api>" (no-op widening), "pi-ai API naming convention" (TypeBox naming convention).
+2. **Invent a justification when one is asked for.
+   ** "Stay within the line limit" (twelve files),
+    "untyped stream events require assertions" (typed events),
+    "ctx.
+   model is Model<any> but needs Model<Api>" (no-op widening),
+    "pi-ai API naming convention" (TypeBox naming convention).
 
-3. **Add fallbacks without telemetry.** Text-fallback in the judge runs silently. Trust-directive resets append silently. No log on the success path of any pipeline.
+3. **Add fallbacks without telemetry.
+   ** Text-fallback in the judge runs silently.
+    Trust-directive resets append silently.
+    No log on the success path of any pipeline.
 
-4. **Mix mechanical refactors with semantic changes without flagging the semantic ones.** `provider` -> `api` was a semantic field change disguised as a rename.
+4. **Mix mechanical refactors with semantic changes without flagging the semantic ones.
+   ** `provider` -> `api` was a semantic field change disguised as a rename.
 
-5. **Split files for surface tidiness without checking the constraint.** Twelve splits, no rationale that survives a five-second check.
+5. **Split files for surface tidiness without checking the constraint.
+   ** Twelve splits,
+    no rationale that survives a five-second check.
 
-6. **Move dependency classifications without checking imports.** Runtime deps moved to devDependencies without grepping the source for usage.
+6. **Move dependency classifications without checking imports.
+   ** Runtime deps moved to devDependencies without grepping the source for usage.
 
-7. **Repeat pattern boilerplate that no longer applies.** "Extracted to stay within the line limit" gets pasted onto each new module header even when the original file had abundant headroom.
+7. **Repeat pattern boilerplate that no longer applies.
+   ** "Extracted to stay within the line limit" gets pasted onto each new module header even when the original file had abundant headroom.
 
-8. **Leave litter.** Untracked scratch files in the repo root after the task is "done".
+8. **Leave litter.
+   ** Untracked scratch files in the repo root after the task is "done".
 
 ## What to do on a GLM PR
 
-1. Search the diff for "Extracted" or "to stay within". For each, run `wc -l` on the parent file. If the parent isn't near 300 code lines (skipping blanks/comments), the rationale is fabricated and the split should be reconsidered or removed.
-2. Search for `as Record<...>`, `as never`, `as unknown`. For each, ask whether the surrounding type was already correct in the underlying API. Most of the time the cast disappears once the parameter is typed properly.
-3. `rg -n "—|–"` over the diff. AGENTS.md ban applies to all human-authored content including comments, docstrings, and string literals sent to other models.
+1. Search the diff for "Extracted" or "to stay within".
+    For each,
+    run `wc -l` on the parent file.
+    If the parent isn't near 300 code lines (skipping blanks/comments),
+    the rationale is fabricated and the split should be reconsidered or removed.
+2. Search for `as Record<...>`,
+    `as never`,
+    `as unknown`.
+    For each,
+    ask whether the surrounding type was already correct in the underlying API.
+    Most of the time the cast disappears once the parameter is typed properly.
+3. `rg -n "—|–"` over the diff.
+    AGENTS.
+   md ban applies to all human-authored content including comments,
+    docstrings,
+    and string literals sent to other models.
 4. `rg -n "stay within the line limit|same shape|untyped"` for fabricated rationales.
-5. Check `package.json` dep moves. For every dep that moved to devDependencies, grep the source for `import.*from "name"` to verify it's not used at runtime.
+5. Check `package.json` dep moves.
+    For every dep that moved to devDependencies,
+    grep the source for `import.*from "name"` to verify it's not used at runtime.
 6. Check new test files for unused imports.
 7. Check new fallback code paths for logs and tests.
 8. Check whether the README still matches the code after the change.

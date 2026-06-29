@@ -6,7 +6,9 @@ This troubleshooting guide has been organized into focused categories for easier
 
 ### [TypeScript & Configuration](typescript.md)
 
-Issues related to TypeScript configuration, dprint, and other development tools:
+Issues related to TypeScript configuration,
+ dprint,
+ and other development tools:
 
 - TypeScript path warnings with dprint
 - Stylelint and postcss-html resolution
@@ -57,15 +59,20 @@ Problems with configuration file formats and why TOML can be problematic:
 
 - TOML table repetition and silent overwrites
 - Configuration debugging nightmares
-- Better alternatives to TOML (JSON, YAML, JSON5)
+- Better alternatives to TOML (JSON,
+   YAML,
+   JSON5)
 - Real-world examples of TOML-caused production incidents
 
 ### [Figma and browser automation](figma-browser-automation.md)
 
-The WebGL wall: why AI agents cannot meaningfully automate Figma through browser tools:
+The WebGL wall:
+ why AI agents cannot meaningfully automate Figma through browser tools:
 
 - Canvas content is invisible to DOM inspection and browser automation
-- Figma MCP covers node structure but not comments, prototypes, or annotations
+- Figma MCP covers node structure but not comments,
+   prototypes,
+   or annotations
 - No automated solution exists for prototype review or comment extraction
 - Workarounds require human-in-the-loop screenshotting
 
@@ -73,7 +80,8 @@ The WebGL wall: why AI agents cannot meaningfully automate Figma through browser
 
 Security guardrail false positives and judge model selection:
 
-- `pathSignals` flags every file as a system path when home is under `/var/home/` (Fedora, NixOS)
+- `pathSignals` flags every file as a system path when home is under `/var/home/` (Fedora,
+   NixOS)
 - pi-budget-model fails to find a judge model when the active model is the latest major version
 
 ### [C-Like Comment Syntax](c-like-comments.md)
@@ -91,12 +99,16 @@ iOS Safari claims `touch-action: none` support but does not reliably honor it:
 
 - `pointercancel` fires despite `touch-action: none` on the target element
 - Long-press triggers system context menu instead of application gesture
-- Three-part workaround: `touchstart`/`touchmove` preventDefault, `pointerdown` preventDefault, `-webkit-touch-callout: none`
+- Three-part workaround:
+   `touchstart`/`touchmove` preventDefault,
+   `pointerdown` preventDefault,
+   `-webkit-touch-callout: none`
 - Twelve years of WebKit bug 133112 and counting
 
 ### [Bundling](bundling.md)
 
-Client-side bundling issues where Node.js code leaks into browser bundles:
+Client-side bundling issues where Node.
+js code leaks into browser bundles:
 
 - `node:` protocol dynamic imports cause CORS errors in browser consoles
 - Environment guards for dual-target modules
@@ -105,9 +117,11 @@ Client-side bundling issues where Node.js code leaks into browser bundles:
 
 Why the exec plugin silently does nothing and why certain tools are incompatible:
 
-- Plugin name resolution selects only one plugin per extension; chaining requires `associations`
+- Plugin name resolution selects only one plugin per extension;
+   chaining requires `associations`
 - Include-only associations exclude extension matches for unlisted extensions
-- Exec reads stdout as formatted content; in-place file modifiers (oxlint --fix) are incompatible
+- Exec reads stdout as formatted content;
+   in-place file modifiers (oxlint --fix) are incompatible
 - `cacheKeyFilesHash: null` in resolved config is expected (hash is moved to global `cacheKey`)
 
 ### [mise watch](mise-watch.md)
@@ -116,20 +130,23 @@ mise watch flag forwarding bugs and dev-mode restart suppression:
 
 - `mise watch` silently drops `--no-meta` and `-J` (filter-prog) flags
 - Unnecessary restarts on metadata-only or same-content file writes
-- Server restart generates fresh auth token, breaking client reconnection
+- Server restart generates fresh auth token,
+   breaking client reconnection
 
 ### [Bash and CLI](bash.md)
 
 Bash shell and CLI tool quirks that cause confusing behavior:
 
-- `2>&1 > file` splits stderr and stdout instead of merging them, producing interleaved output that misrepresents execution order
+- `2>&1 > file` splits stderr and stdout instead of merging them,
+   producing interleaved output that misrepresents execution order
 - rg `--glob` finds files but `-l` with a content pattern does not -- content-vs-filename search confusion
 
 ### [CLI bin entries](cli-bin.md)
 
 Problems with CLI tools installed via `node_modules/.bin/`:
 
-- Missing shebang causes Unix to fall back to `/bin/sh`, triggering ImageMagick `import` hangs
+- Missing shebang causes Unix to fall back to `/bin/sh`,
+   triggering ImageMagick `import` hangs
 - Cross-platform shebang and `.cmd` wrapper interaction
 
 ### [VSCode-Specific](vscode.md)
@@ -144,22 +161,40 @@ VSCode-specific troubleshooting (already exists):
 
 For common issues:
 
-- **Slow builds?** → [Build performance](performance.build.md)
-- **Test failures not showing?** → [Duplicate describe blocks](testing.md#duplicate-describe-blocks-causing-missing-or-misattributed-test-output)
-- **TypeScript path warnings?** → [dprint configuration](typescript.md#typescript-path-warnings-with-dprint)
-- **`Cannot find name` for DOM types in a non-browser package?** → [All packages must extend config-typescript/dom](typescript.md#all-packages-must-extend-config-typescriptdom)
-- **Type errors from `node_modules` JSR packages?** → [JSR `.ts` files and `skipLibCheck`](typescript.md#jsr-packages-ship-ts-source-files-that-skiplibcheck-cannot-skip)
-- **Configuration not working as expected?** → [TOML issues and alternatives](toml.md#silent-overwrites-the-configuration-killer)
-- **Figma automation not working?** → [The WebGL wall](figma-browser-automation.md)
-- **CORS errors for `node:` imports in browser?** → [node: protocol in bundles](bundling.md#node-protocol-imports-cause-cors-errors-in-browser-bundles)
-- **CLI hangs with ImageMagick errors?** → [Missing shebang](cli-bin.md#cli-command-hangs-on-unix-with-imagemagick-errors)
-- **pi-safeguard blocks every file?** → [pathSignals false positive on /var/home](pi-safeguard.md#pi-safeguard-flags-every-file-under-varhome-as-a-system-path)
-- **Touch gestures broken on iPhone?** → [iOS Safari touch-action betrayal](ios-safari-touch.md)
-- **dprint exec plugin not running?** → [Plugin silently does nothing](dprint-exec.md#exec-plugin-silently-does-nothing)
-- **Dev server restarts on every save?** → [mise watch flag dropping + content-hash filter](mise-watch.md)
-- **Output order looks wrong with `2>&1 > file`?** → [Redirect ordering splits streams](bash.md#2>&1--file-splits-stderr-and-stdout-producing-interleaved-output)
-- **rg missing files with spaces in paths?** → [Content-vs-filename search confusion](bash.md#rg---glob-finds-files-but--l-with-a-content-pattern-does-not)
-- **`pi update` reintroduces `@google/genai`, `koffi`, or `protobufjs`?** →
+- **Slow builds?
+  ** → [Build performance](performance.build.md)
+- **Test failures not showing?
+  ** → [Duplicate describe blocks](testing.md#duplicate-describe-blocks-causing-missing-or-misattributed-test-output)
+- **TypeScript path warnings?
+  ** → [dprint configuration](typescript.md#typescript-path-warnings-with-dprint)
+- **`Cannot find name` for DOM types in a non-browser package?
+  ** → [All packages must extend config-typescript/dom](typescript.md#all-packages-must-extend-config-typescriptdom)
+- **Type errors from `node_modules` JSR packages?
+  ** → [JSR `.ts` files and `skipLibCheck`](typescript.md#jsr-packages-ship-ts-source-files-that-skiplibcheck-cannot-skip)
+- **Configuration not working as expected?
+  ** → [TOML issues and alternatives](toml.md#silent-overwrites-the-configuration-killer)
+- **Figma automation not working?
+  ** → [The WebGL wall](figma-browser-automation.md)
+- **CORS errors for `node:` imports in browser?
+  ** → [node: protocol in bundles](bundling.md#node-protocol-imports-cause-cors-errors-in-browser-bundles)
+- **CLI hangs with ImageMagick errors?
+  ** → [Missing shebang](cli-bin.md#cli-command-hangs-on-unix-with-imagemagick-errors)
+- **pi-safeguard blocks every file?
+  ** → [pathSignals false positive on /var/home](pi-safeguard.md#pi-safeguard-flags-every-file-under-varhome-as-a-system-path)
+- **Touch gestures broken on iPhone?
+  ** → [iOS Safari touch-action betrayal](ios-safari-touch.md)
+- **dprint exec plugin not running?
+  ** → [Plugin silently does nothing](dprint-exec.md#exec-plugin-silently-does-nothing)
+- **Dev server restarts on every save?
+  ** → [mise watch flag dropping + content-hash filter](mise-watch.md)
+- **Output order looks wrong with `2>&1 > file`?
+  ** → [Redirect ordering splits streams](bash.md#2>&1--file-splits-stderr-and-stdout-producing-interleaved-output)
+- **rg missing files with spaces in paths?
+  ** → [Content-vs-filename search confusion](bash.md#rg---glob-finds-files-but--l-with-a-content-pattern-does-not)
+- **`pi update` reintroduces `@google/genai`,
+   `koffi`,
+   or `protobufjs`?
+  ** →
   [Pi update allowScripts warnings](pi-update-allow-scripts.md)
 
 ## Contributing

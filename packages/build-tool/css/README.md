@@ -6,12 +6,24 @@ CSS build tool that bundles `@import` statements across monorepo packages and pr
 
 No single CSS tool handles all three requirements at once:
 
-1. **Monorepo-aware `@import` resolution**: PostCSS only resolves relative paths out of the box, not `node_modules` or package.json `exports`
-2. **Custom `@mixin`/`@apply` processing**: no standard PostCSS plugin provides the mixin semantics this monorepo needs
-3. **Browser-compatible**: the entire pipeline runs in both Node.js and browser environments (no native binary dependencies)
+1. **Monorepo-aware `@import` resolution**:
+    PostCSS only resolves relative paths out of the box,
+    not `node_modules` or package.
+   json `exports`
+2. **Custom `@mixin`/`@apply` processing**:
+    no standard PostCSS plugin provides the mixin semantics this monorepo needs
+3. **Browser-compatible**:
+    the entire pipeline runs in both Node.
+   js and browser environments (no native binary dependencies)
 
-The package uses only **PostCSS** for all CSS processing: AST walking for `@import` inlining, `@mixin` collection, and `@apply` expansion.
-A custom `@import` plugin handles monorepo-aware resolution (package.json `exports`, `node_modules`, workspace packages).
+The package uses only **PostCSS** for all CSS processing:
+ AST walking for `@import` inlining,
+ `@mixin` collection,
+ and `@apply` expansion.
+A custom `@import` plugin handles monorepo-aware resolution (package.
+json `exports`,
+ `node_modules`,
+ workspace packages).
 
 See [docs/troubleshooting/css-tooling.md](../../../docs/troubleshooting/css-tooling.md) for the full chronicle.
 
@@ -62,7 +74,8 @@ Definitions are removed from the output.
 ### Nested mixins
 
 Mixins can reference other mixins via `@apply`.
-The build expands nested references in multiple passes until stable, with a safety limit to detect circular references.
+The build expands nested references in multiple passes until stable,
+ with a safety limit to detect circular references.
 
 ```css
 @mixin --card {
@@ -74,7 +87,11 @@ The build expands nested references in multiple passes until stable, with a safe
 
 ### Cross-package imports
 
-Imports resolve through a custom PostCSS plugin, supporting package.json `exports` mappings, `node_modules` lookup, and direct file paths:
+Imports resolve through a custom PostCSS plugin,
+ supporting package.
+json `exports` mappings,
+ `node_modules` lookup,
+ and direct file paths:
 
 ```css
 /* Via exports field */
@@ -87,7 +104,8 @@ Imports resolve through a custom PostCSS plugin, supporting package.json `export
 ## Using mixins in JavaScript (Shadow DOM, runtime)
 
 The `build()` function processes standalone `.css` files on disk.
-For consumers that already have CSS text in memory (such as web components with Shadow DOM styles defined as JavaScript strings), use `applyMixins()`:
+For consumers that already have CSS text in memory (such as web components with Shadow DOM styles defined as JavaScript strings),
+ use `applyMixins()`:
 
 ```ts
 import { applyMixins, } from '@monochromatic-dev/build-css/ts';
@@ -102,8 +120,12 @@ const expanded = applyMixins({
 },);
 ```
 
-`applyMixins({ cssText, mixinCssText })` encapsulates the full pipeline (parse mixin definitions, expand nested mixin bodies, inline `@apply` rules, serialize) and returns the expanded CSS string.
-No filesystem access, no postcss import needed by the caller.
+`applyMixins({ cssText, mixinCssText })` encapsulates the full pipeline (parse mixin definitions,
+ expand nested mixin bodies,
+ inline `@apply` rules,
+ serialize) and returns the expanded CSS string.
+No filesystem access,
+ no postcss import needed by the caller.
 
 ### Browser environments
 
@@ -117,11 +139,23 @@ import { applyMixins, } from '@monochromatic-dev/build-css/ts';
 
 ## Build pipeline
 
-1. **Resolve and bundle**: a custom PostCSS plugin walks `@import` statements, resolves specifiers (relative paths, package.json `exports`, bare `node_modules`), and inlines the resolved files
-2. **Collect mixins**: PostCSS walks the bundled AST, extracts `@mixin` definitions into a registry, removes them from the tree
-3. **Expand mixin bodies**: nested `@apply` rules inside mixin definitions are resolved via fixed-point iteration
-4. **Inline `@apply`**: remaining `@apply` rules in the document are replaced with cloned mixin body nodes
-5. **Write output**: final CSS string written to disk
+1. **Resolve and bundle**:
+    a custom PostCSS plugin walks `@import` statements,
+    resolves specifiers (relative paths,
+    package.
+   json `exports`,
+    bare `node_modules`),
+    and inlines the resolved files
+2. **Collect mixins**:
+    PostCSS walks the bundled AST,
+    extracts `@mixin` definitions into a registry,
+    removes them from the tree
+3. **Expand mixin bodies**:
+    nested `@apply` rules inside mixin definitions are resolved via fixed-point iteration
+4. **Inline `@apply`**:
+    remaining `@apply` rules in the document are replaced with cloned mixin body nodes
+5. **Write output**:
+    final CSS string written to disk
 
 ## Module structure
 
@@ -177,7 +211,15 @@ mise run //packages/build-tool/css:test:unit
 
 Integration tests exercise two CSS import resolution strategies using fixture packages:
 
-- **`exports` field**: `test-css-importing` imports from `test-css-imported` (has `exports` in package.json)
-- **Direct file path**: `test-css-importing-filepath` imports from `test-css-imported-no-exports` (no `exports` field)
+- **`exports` field**:
+   `test-css-importing` imports from `test-css-imported` (has `exports` in package.
+  json)
+- **Direct file path**:
+   `test-css-importing-filepath` imports from `test-css-imported-no-exports` (no `exports` field)
 
-Both strategies run identical assertions: import resolution, mixin removal, `@apply` expansion, nested mixin inlining, and output file writing.
+Both strategies run identical assertions:
+ import resolution,
+ mixin removal,
+ `@apply` expansion,
+ nested mixin inlining,
+ and output file writing.

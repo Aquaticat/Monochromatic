@@ -2,13 +2,24 @@
 
 ## Classification
 
-- Type: correctness, wrong match length, `find_all` returns a span a lookbehind
+- Type:
+   correctness,
+   wrong match length,
+   `find_all` returns a span a lookbehind
   forbids.
-- Phase: match time, `find_all` longest-end determination.
-- Severity: soundness. `is_match` is correct (the nullable branch genuinely
-  matches), so the `is_match` vs `find_all` self-consistency oracle stays silent.
-  The defect is the reported span length. Found by the Lean leftmost-longest
-  position round and corroborated two ways: the Lean verified semantics, and
+- Phase:
+   match time,
+   `find_all` longest-end determination.
+- Severity:
+   soundness.
+   `is_match` is correct (the nullable branch genuinely
+  matches),
+   so the `is_match` vs `find_all` self-consistency oracle stays silent.
+  The defect is the reported span length.
+   Found by the Lean leftmost-longest
+  position round and corroborated two ways:
+   the Lean verified semantics,
+   and
   resharp's own behaviour on the lookbehind branch in isolation.
 
 ## Minimal reproducer
@@ -33,36 +44,63 @@ repro --pair "$(printf '%s' '(|(?<=[a-z])b)' | xxd -p | tr -d '\n')" "$(printf '
 
 ## Observed behaviour
 
-`(|(?<=[a-z])b)` is `(empty | (?<=[a-z])b)`. On `"b"` the second branch needs a
-letter immediately before offset 0; there is none, so that branch cannot match at
-offset 0 and the only match there is the empty branch, a zero-width match. resharp
-instead returns the span `0:1`, the length of the second branch, as if the
-lookbehind held. The same pattern on `"xb"` is handled correctly (`0:0` then
-`1:2`), because at offset 1 the lookbehind genuinely holds; only the
-start-of-input position, where the gate must reject the longer branch, is wrong.
+`(|(?<=[a-z])b)` is `(empty | (?<=[a-z])b)`.
+ On `"b"` the second branch needs a
+letter immediately before offset 0;
+ there is none,
+ so that branch cannot match at
+offset 0 and the only match there is the empty branch,
+ a zero-width match.
+ resharp
+instead returns the span `0:1`,
+ the length of the second branch,
+ as if the
+lookbehind held.
+ The same pattern on `"xb"` is handled correctly (`0:0` then
+`1:2`),
+ because at offset 1 the lookbehind genuinely holds;
+ only the
+start-of-input position,
+ where the gate must reject the longer branch,
+ is wrong.
 
 ## Expected behaviour
 
-Leftmost-longest still has to honour the lookbehind. The longest legal match at
-offset 0 is the empty branch, so `find_all`'s first span is `0:0`.
+Leftmost-longest still has to honour the lookbehind.
+ The longest legal match at
+offset 0 is the empty branch,
+ so `find_all`'s first span is `0:0`.
 
 ## Why this is a real bug, two independent confirmations
 
-- Lean ground truth, with a longest-preference control that rules out the
-  alternative explanation. `(ε | b)` on `"b"` is `0:1` in Lean (it does prefer the
-  longer branch), while `(ε | (?<=[a-z]) b)` on `"b"` is `0:0` (the lookbehind
-  makes the longer branch illegal). So Lean prefers longest in general yet returns
+- Lean ground truth,
+   with a longest-preference control that rules out the
+  alternative explanation.
+   `(ε | b)` on `"b"` is `0:1` in Lean (it does prefer the
+  longer branch),
+   while `(ε | (?<=[a-z]) b)` on `"b"` is `0:0` (the lookbehind
+  makes the longer branch illegal).
+   So Lean prefers longest in general yet returns
   the empty match here precisely because of the gate.
-- resharp self-consistency. The branch in isolation, `(?<=[a-z])b` on `"b"`,
-  returns no match (`im=0`, empty `find_all`), so resharp itself enforces the
-  lookbehind there. Only inside the alternation, where a nullable sibling makes
-  offset 0 a valid match origin, does the gate get dropped. The composition
+- resharp self-consistency.
+   The branch in isolation,
+   `(?<=[a-z])b` on `"b"`,
+  returns no match (`im=0`,
+   empty `find_all`),
+   so resharp itself enforces the
+  lookbehind there.
+   Only inside the alternation,
+   where a nullable sibling makes
+  offset 0 a valid match origin,
+   does the gate get dropped.
+   The composition
   changes a sub-result that should not change.
 
 ## Distinct triggers and boundary
 
 The trigger needs a nullable or empty sibling branch next to a branch that begins
-with a lookbehind. A non-nullable sibling does not trigger it.
+with a lookbehind.
+ A non-nullable sibling does not trigger it.
 
 ```text
 trigger (find_all takes the longer span, dropping the lookbehind):
@@ -83,20 +121,32 @@ not a trigger:
 
 `find_all`'s longest-end search from a start position does not re-apply the
 lookbehind that gates the longer branch when a nullable sibling branch has already
-made that position a valid match origin. The engine finds the longest reachable
-end (here offset 1, via the `b` literal) without enforcing that the path reaching
-it satisfies its lookbehind. The lookbehind and lookahead node handling lives
+made that position a valid match origin.
+ The engine finds the longest reachable
+end (here offset 1,
+ via the `b` literal) without enforcing that the path reaching
+it satisfies its lookbehind.
+ The lookbehind and lookahead node handling lives
 around `resharp-engine/src/engine.rs:128` (`Kind::Lookahead | Kind::Lookbehind`);
 the exact longest-end site that skips the gate is not yet pinned.
 
 ## Notes
 
-- Same underlying defect as the BUG-3 lookbehind trigger `(?<=\D?[a-c]+0?)b`, seen
-  from the other side. When no nullable sibling exists, `is_match` is false while
-  `find_all` still emits the lookbehind-forbidden span, so it surfaces as an
-  INCONSIST (is_match vs find_all). When a nullable sibling makes `is_match` true,
-  the same dropped-gate defect surfaces here as a wrong span length instead, which
+- Same underlying defect as the BUG-3 lookbehind trigger `(?<=\D?[a-c]+0?)b`,
+   seen
+  from the other side.
+   When no nullable sibling exists,
+   `is_match` is false while
+  `find_all` still emits the lookbehind-forbidden span,
+   so it surfaces as an
+  INCONSIST (is_match vs find_all).
+   When a nullable sibling makes `is_match` true,
+  the same dropped-gate defect surfaces here as a wrong span length instead,
+   which
   no internal oracle catches.
-- Ground-truth-only at the span level, like BUG-12 and BUG-13: `is_match` is right
-  and the two `find_all` spans are mutually consistent, so only the verified Lean
+- Ground-truth-only at the span level,
+   like BUG-12 and BUG-13:
+   `is_match` is right
+  and the two `find_all` spans are mutually consistent,
+   so only the verified Lean
   semantics (plus the isolation argument) expose it.

@@ -11,7 +11,8 @@ instantly with no animation.
  fixing #11312).
  It diverged from the 1.16 release line,
  so every published 1.16 release lacks it.
- `music-player` now uses the Slint 1.17.0 crates.io release instead of the former master-revision pin.
+ `music-player` now uses the Slint 1.17.0 crates.
+io release instead of the former master-revision pin.
 
 ## Symptom
 
@@ -178,7 +179,8 @@ Upstream state of the wheel fix:
 
 ## Verified workaround
 
-Use the Slint 1.17.0 crates.io release.
+Use the Slint 1.17.0 crates.
+io release.
  `music-player` and `terminal` depend on
 `slint`,
  `i-slint-backend-winit`,
@@ -193,7 +195,8 @@ rustup instead of the distro `rust` package.
 (`SLINT_ENABLE_EXPERIMENTAL_FEATURES=1` in the `Containerfile`) is unrelated to
 scrolling and continues to apply.
 
-Verification after switching from the git pin to crates.io Slint 1.17.0 and
+Verification after switching from the git pin to crates.
+io Slint 1.17.0 and
 renaming `FlexboxLayout.align-items` to `cross-axis-alignment`:
 
 - `mise run //packages/music-player/desktop-app:lint` passes.
@@ -205,7 +208,8 @@ renaming `FlexboxLayout.align-items` to `cross-axis-alignment`:
 
 Trade-offs:
 
-- Crates.io release artifacts replace the former git source build for Slint,
+- Crates.
+  io release artifacts replace the former git source build for Slint,
   which removes the need for a moving master-revision rationale.
 - The Slint direct dependencies remain versioned together,
   because the runtime,
@@ -269,5 +273,6 @@ all five held.
 
 There is nothing to report:
  upstream already shipped the fix in Slint 1.17.0.
- The local action is to use the crates.io release,
+ The local action is to use the crates.
+io release,
  not a new issue.

@@ -5,23 +5,32 @@ description: Review code
 
 # Code review
 
-Structured code review that checks changes for correctness, type safety, security, style, and maintainability.
+Structured code review that checks changes for correctness,
+ type safety,
+ security,
+ style,
+ and maintainability.
 Produces actionable findings categorized by severity.
 
-All underlying rules referenced below are defined in AGENTS.md.
+All underlying rules referenced below are defined in AGENTS.
+md.
 
 ## Process
 
-Read the diff or files under review, then evaluate each category below.
+Read the diff or files under review,
+ then evaluate each category below.
 Skip categories that do not apply to the language or change.
 
 ### Correctness
 
-- Logic errors, off-by-one, unhandled edge cases
+- Logic errors,
+   off-by-one,
+   unhandled edge cases
 - Missing null/undefined checks
 - Race conditions in async code
 - Incorrect use of APIs or library methods
-- Broken error propagation (swallowed exceptions, silent catch blocks)
+- Broken error propagation (swallowed exceptions,
+   silent catch blocks)
 
 #### Off-by-one and boundary errors
 
@@ -98,12 +107,16 @@ catch (error) {
 ### Type safety (TypeScript)
 
 - Explicit return types on all functions
-- `unknown` over `any`; no bare `Function` type
-- No non-null assertions (`!`); use assertion functions or narrowing
+- `unknown` over `any`;
+   no bare `Function` type
+- No non-null assertions (`!`);
+   use assertion functions or narrowing
 - Branded types for domain primitives where appropriate
 - `satisfies` over `as` when validating shape without widening
-- `const` generic parameters; `readonly` array parameters
-- Proper discriminated unions; narrow `typeof === 'symbol'` before identity checks
+- `const` generic parameters;
+   `readonly` array parameters
+- Proper discriminated unions;
+   narrow `typeof === 'symbol'` before identity checks
 
 #### Explicit return types
 
@@ -229,10 +242,14 @@ Flag non-descriptive generic names:
 ### Function signatures
 
 - Functions with 2+ parameters must use a single destructured object parameter (named params)
-- No rest parameters (`...args`) in functions we control; accept an array parameter instead
+- No rest parameters (`...args`) in functions we control;
+   accept an array parameter instead
 - No `const x = function() {}` -- use a function declaration instead
 - No calling functions before their declaration in source order
-- Exempt: callbacks whose signature is dictated by an external API or library (e.g. `.map()`, `.sort()`, event handlers)
+- Exempt:
+   callbacks whose signature is dictated by an external API or library (e.g. `.map()`,
+   `.sort()`,
+   event handlers)
 
 #### No variable function expressions
 
@@ -322,12 +339,24 @@ function logMessages({ messages }: { messages: readonly string[] }): void { ... 
 
 ### Immutability and style
 
-- `const` over `let`; no unnecessary mutation
-- **Justify or refactor**: any deviation from the preferred pattern must have a comment explaining why refactoring to the preferred approach is not feasible; if no justification is given, flag it as WARNING
+- `const` over `let`;
+   no unnecessary mutation
+- **Justify or refactor**:
+   any deviation from the preferred pattern must have a comment explaining why refactoring to the preferred approach is not feasible;
+   if no justification is given,
+   flag it as WARNING
 - Functional patterns (`map`/`filter`/`reduce`) over imperative loops
-- `for...of` when iteration is unavoidable, never classic `for` loops
+- `for...of` when iteration is unavoidable,
+   never classic `for` loops
 - No single-letter variables (except math formulas)
-- Magic numbers/strings extracted to named constants (0, 1, 2, -1, -2 exempt); when a named constant's value is composed from exempt-range arithmetic (e.g. `1 / (2 * 2)` for 1/4, `(16 - 2 - 1) / 16` for 13/16), do not flag the expression as a readability issue
+- Magic numbers/strings extracted to named constants (0,
+   1,
+   2,
+   -1,
+   -2 exempt);
+   when a named constant's value is composed from exempt-range arithmetic (e.g. `1 / (2 * 2)` for 1/4,
+   `(16 - 2 - 1) / 16` for 13/16),
+   do not flag the expression as a readability issue
 - Extract and name complex conditions
 
 #### `const` over `let`
@@ -433,11 +462,15 @@ const result = Object.fromEntries(
 
 #### No `switch` statements
 
-Flag all `switch` statements. Use if/else chains for branching or `Record` lookups for mapping a discriminant to a value.
+Flag all `switch` statements.
+ Use if/else chains for branching or `Record` lookups for mapping a discriminant to a value.
 
-`switch` adds `break` boilerplate, risks accidental fallthrough, and encourages large blocks.
+`switch` adds `break` boilerplate,
+ risks accidental fallthrough,
+ and encourages large blocks.
 If/else works naturally with early returns and needs no special syntax.
-When the logic is a pure mapping from key to value, a `Record` is more declarative and type-safe.
+When the logic is a pure mapping from key to value,
+ a `Record` is more declarative and type-safe.
 
 ```ts
 // Bad -- flag as WARNING: switch statement
@@ -516,10 +549,17 @@ items.forEach(function processItem(item, itemIndex) { ... })
 
 ### Security
 
-- No hardcoded secrets, API keys, or credentials
-- No unsanitized user input in SQL, shell commands, or HTML
-- No overly permissive CORS, file permissions, or network exposure
-- Secrets not logged, even at debug level
+- No hardcoded secrets,
+   API keys,
+   or credentials
+- No unsanitized user input in SQL,
+   shell commands,
+   or HTML
+- No overly permissive CORS,
+   file permissions,
+   or network exposure
+- Secrets not logged,
+   even at debug level
 
 #### Hardcoded secrets
 
@@ -563,18 +603,33 @@ console.log('Authenticating with token:',
 
 ### Naming and readability
 
-- Semantic, descriptive names for variables, functions, types
-- Comments explain WHY, not WHAT
-- TSDoc on **all** declarations (functions, types, constants, classes -- including locals inside function bodies) with `@param`, `@returns`, `@example`; do not skip declarations that seem "obvious from context"
-- `@throws` only on functions that actually throw; do not add `@throws` to functions that never throw
-- Comments on their own line above code, never inline after code
+- Semantic,
+   descriptive names for variables,
+   functions,
+   types
+- Comments explain WHY,
+   not WHAT
+- TSDoc on **all** declarations (functions,
+   types,
+   constants,
+   classes -- including locals inside function bodies) with `@param`,
+   `@returns`,
+   `@example`;
+   do not skip declarations that seem "obvious from context"
+- `@throws` only on functions that actually throw;
+   do not add `@throws` to functions that never throw
+- Comments on their own line above code,
+   never inline after code
 - No narrative or promotional language in docs
-- Region markers for substantial code blocks; flag missing markers as WARNING for substantial blocks and NIT for smaller ones
+- Region markers for substantial code blocks;
+   flag missing markers as WARNING for substantial blocks and NIT for smaller ones
 
 #### Comments inside template literals
 
 Embed comments inside template literals using the `${''}` trick.
-Do not use target-language comments (XML, HTML, etc.) or move the comment outside the template.
+Do not use target-language comments (XML,
+ HTML,
+ etc.) or move the comment outside the template.
 
 Reasons:
 
@@ -650,7 +705,9 @@ Flag unescaped `*/` inside TSDoc blocks:
 ### Async patterns
 
 - `async`/`await` over raw promises or callbacks
-- No `.then()`, `.catch()`, `.finally()` -- use `async`/`await` with `try`/`catch` or let errors propagate naturally by throwing
+- No `.then()`,
+   `.catch()`,
+   `.finally()` -- use `async`/`await` with `try`/`catch` or let errors propagate naturally by throwing
 - `Promise.all` for independent concurrent operations
 - `Promise.allSettled` when partial failure is acceptable
 - No `await` in loops without justification and eslint-disable comment
@@ -714,7 +771,12 @@ import { wait, } from '@monochromatic-dev/module-es';
 
 ### Imports and modules
 
-- Grouped: builtins, external deps, workspace packages, relative, type-only
+- Grouped:
+   builtins,
+   external deps,
+   workspace packages,
+   relative,
+   type-only
 - Named imports over default imports
 - `import type` for type-only imports
 - File extensions in relative imports when required by config
@@ -746,9 +808,11 @@ import type { Config, } from './types.ts';
 - Prefer letting errors propagate by throwing
 - No `try...finally` -- use `using`/`await using` with `Symbol.dispose`/`Symbol.asyncDispose` for cleanup
 - Custom error classes extending `Error` for domain errors
-- No `process.exit()`; throw instead
+- No `process.exit()`;
+   throw instead
 - Multi-line error messages use `outdent` from `@cspotcode/outdent`
-- `@throws` in TSDoc only for functions that actually throw; flag `@throws` on non-throwing functions as NIT
+- `@throws` in TSDoc only for functions that actually throw;
+   flag `@throws` on non-throwing functions as NIT
 - `notNullishOrThrow` instead of non-null assertion (`!`)
 - Every catch block must log the error with `console.error()`
 
@@ -900,19 +964,36 @@ if (!(event instanceof CustomEvent))
 ### Testing gaps
 
 - New logic paths missing corresponding test cases
-- Edge cases not covered (empty input, boundary values, error paths)
+- Edge cases not covered (empty input,
+   boundary values,
+   error paths)
 - Mocking that hides real integration issues
-- Flaky patterns (timing dependencies, shared mutable state)
+- Flaky patterns (timing dependencies,
+   shared mutable state)
 
 ### Commit messages
 
-When reviewing PRs or multi-commit bundles, also review commit messages.
+When reviewing PRs or multi-commit bundles,
+ also review commit messages.
 
 #### Format
 
-Conventional Commits: `<type>(<scope>): <subject>` with optional body and footer.
-Types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `revert`.
-Scope: package name or `*` for multi-package changes.
+Conventional Commits:
+ `<type>(<scope>): <subject>` with optional body and footer.
+Types:
+ `feat`,
+ `fix`,
+ `docs`,
+ `style`,
+ `refactor`,
+ `perf`,
+ `test`,
+ `build`,
+ `ci`,
+ `chore`,
+ `revert`.
+Scope:
+ package name or `*` for multi-package changes.
 
 #### Single type and scope
 
@@ -944,25 +1025,43 @@ test(module-es): achieve 100% coverage for error utilities
 
 #### Rules
 
-- Group related changes by type (feat, fix, test, etc.)
+- Group related changes by type (feat,
+   fix,
+   test,
+   etc.)
 - Do not mix different types in the same scope section
-- Be specific about what changed, not just which files
+- Be specific about what changed,
+   not just which files
 - Focus on "what" and "why"
 - Flag partial commit messages (describing only some changes) as WARNING
 
 ### CSS quality
 
-When changes include CSS, check:
+When changes include CSS,
+ check:
 
-- Native platform features over JS reimplementations (`<dialog>`, Popover API, CSS nesting)
-- `rem` for all sizing; `calc()` for derivation; no `px` except device-pixel contexts
+- Native platform features over JS reimplementations (`<dialog>`,
+   Popover API,
+   CSS nesting)
+- `rem` for all sizing;
+   `calc()` for derivation;
+   no `px` except device-pixel contexts
 - Logical properties everywhere (no physical `left`/`right`/`top`/`bottom`)
-- No shorthand properties that combine unrelated axes or sub-properties; single-axis/single-concept shorthands are fine (`padding-inline`, `margin-block`, `border-radius`, `inset`, `gap`)
-- Colors via CSS custom properties; no `var()` fallbacks (exception: user-configurable)
+- No shorthand properties that combine unrelated axes or sub-properties;
+   single-axis/single-concept shorthands are fine (`padding-inline`,
+   `margin-block`,
+   `border-radius`,
+   `inset`,
+   `gap`)
+- Colors via CSS custom properties;
+   no `var()` fallbacks (exception:
+   user-configurable)
 - No `!important`
-- `:focus-visible` on interactive elements; `48px` minimum touch targets
+- `:focus-visible` on interactive elements;
+   `48px` minimum touch targets
 - Shallow native nesting (3 levels max)
-- Data attributes for state/variant styling, not BEM modifiers
+- Data attributes for state/variant styling,
+   not BEM modifiers
 
 #### Logical properties
 
@@ -1107,7 +1206,8 @@ border-color: var(--error-fg);
 
 ### Logging
 
-- All loggers must use the `tagged` wrapper; no raw `console.*` or untagged logger instances
+- All loggers must use the `tagged` wrapper;
+   no raw `console.*` or untagged logger instances
 - Tags at every function/module boundary using `myFn.name` or subsystem name
 - Composed tags for nested calls -- pass `tagged({ tag, l })` down the call chain
 - No manual tag prefixes in message strings
@@ -1154,8 +1254,11 @@ function processItem(
 
 ### Script conventions
 
-- No bash/shell scripts -- TypeScript only, executed with Node
-- Top-level code, no `main()` wrapper; top-level await for async
+- No bash/shell scripts -- TypeScript only,
+   executed with Node
+- Top-level code,
+   no `main()` wrapper;
+   top-level await for async
 - No `process.exit()` -- throw errors instead
 
 #### No `main()` wrapper
@@ -1194,7 +1297,7 @@ function registerUser(details: UserDetails,): UserProfile {
 
 ## Output format
 
-```
+```text
 Summary: <one-line description of the change and overall assessment>
 
 Findings:
@@ -1213,7 +1316,12 @@ NON-ACTIONABLE:
 ```
 
 Omit empty severity sections.
-If no issues found, write "No issues found" under Findings.
+If no issues found,
+ write "No issues found" under Findings.
 
-Every item in BLOCKER, WARNING, and NIT must include a concrete suggested action.
-If you spot a real problem but cannot determine a specific fix, place it under NON-ACTIONABLE with best-effort ideas -- still report it, just be honest about uncertainty.
+Every item in BLOCKER,
+ WARNING,
+ and NIT must include a concrete suggested action.
+If you spot a real problem but cannot determine a specific fix,
+ place it under NON-ACTIONABLE with best-effort ideas -- still report it,
+ just be honest about uncertainty.

@@ -5,20 +5,35 @@ description: Use when writing or reviewing tests in this monorepo using the modu
 
 # Testing practices
 
-Fires when writing or modifying tests, picking a test pattern, or reviewing
+Fires when writing or modifying tests,
+ picking a test pattern,
+ or reviewing
 test code in this monorepo.
 
-The skill covers the module-test harness, the describe/it API, test file
-conventions, coverage, parameterized tests, async patterns, and sinon
+The skill covers the module-test harness,
+ the describe/it API,
+ test file
+conventions,
+ coverage,
+ parameterized tests,
+ async patterns,
+ and sinon
 integration.
 
 ## Test framework
 
-- Unit tests use `@monochromatic-dev/module-test/ts`, a custom harness built on chai, sinon, and expect-type
-- Unit tests import package behavior from built `dist`, never from sibling source files
-- Browser and e2e tests use Playwright, executed inside a podman container
-- All tests run through `mise run`; never invoke `bun test` or `playwright` directly
-- Each test file is self-contained with top-level `await describe(...)`; no external test runner needed
+- Unit tests use `@monochromatic-dev/module-test/ts`,
+   a custom harness built on chai,
+   sinon,
+   and expect-type
+- Unit tests import package behavior from built `dist`,
+   never from sibling source files
+- Browser and e2e tests use Playwright,
+   executed inside a podman container
+- All tests run through `mise run`;
+   never invoke `bun test` or `playwright` directly
+- Each test file is self-contained with top-level `await describe(...)`;
+   no external test runner needed
 
 ## Running tests
 
@@ -36,10 +51,14 @@ mise run test          # alias: t
 mise run watch:test    # alias: tW
 ```
 
-**Required for unit tests**: unit tests import package code from built `dist`.
-Run `mise run buildAndTest` after source changes, including when narrowing to one file,
-because `mise run test` alone can exercise stale artifacts. Use `mise run test`
-only when the same verification sequence already rebuilt `dist`, or when the
+**Required for unit tests**:
+ unit tests import package code from built `dist`.
+Run `mise run buildAndTest` after source changes,
+ including when narrowing to one file,
+because `mise run test` alone can exercise stale artifacts.
+ Use `mise run test`
+only when the same verification sequence already rebuilt `dist`,
+ or when the
 file tests the test harness itself instead of package output.
 
 ## Browser and e2e tests
@@ -64,9 +83,12 @@ The browser test server (`playwright/serve.ts`) uses h3.
 
 ## Test file naming
 
-- Unit tests: `{name}.unit.test.ts` -- co-located alongside source
-- Browser tests: `{name}.browser.test.ts`
-- E2E tests: `{name}.e2e.test.ts`
+- Unit tests:
+   `{name}.unit.test.ts` -- co-located alongside source
+- Browser tests:
+   `{name}.browser.test.ts`
+- E2E tests:
+   `{name}.e2e.test.ts`
 
 Test discovery uses `rg --files --glob '**/*.unit.test.*'` -- no configuration file needed.
 
@@ -95,28 +117,41 @@ await describe({
 },);
 ```
 
-Key differences from bun:test / Jest:
+Key differences from bun:
+test / Jest:
 
-- Import `describe`, `it`, `expect` from `@monochromatic-dev/module-test/ts` (not `bun:test`)
-- Import package code under test from built `dist`, not from sibling `src` files
+- Import `describe`,
+   `it`,
+   `expect` from `@monochromatic-dev/module-test/ts` (not `bun:test`)
+- Import package code under test from built `dist`,
+   not from sibling `src` files
 - Use `it` (not `test`)
-- `describe` and `it` take an options object `{ name, children/fn }`, not positional `(name, callback)` arguments
+- `describe` and `it` take an options object `{ name, children/fn }`,
+   not positional `(name, callback)` arguments
 - `describe` returns a promise -- use `await describe(...)` at the top level
 - Children are concurrent by default via `Promise.allSettled`
 
 ## Importing code under test
 
-Treat direct imports from sibling source files as a test bug. Tests for exported
-package behavior must import from the built `dist` entry point, for example
-`../dist/final/neutral/index.mjs` from a `src/*.unit.test.ts` file. This verifies
-the artifact users consume and catches export-map, build, and bundling errors.
+Treat direct imports from sibling source files as a test bug.
+ Tests for exported
+package behavior must import from the built `dist` entry point,
+ for example
+`../dist/final/neutral/index.mjs` from a `src/*.unit.test.ts` file.
+ This verifies
+the artifact users consume and catches export-map,
+ build,
+ and bundling errors.
 
-Relative source imports are allowed only for fixtures, mock data, or test-only
+Relative source imports are allowed only for fixtures,
+ mock data,
+ or test-only
 helpers that are not part of package behavior.
 
 ## Describe name conventions
 
-When a describe block names a specific **imported function**, use `functionName.name` instead of a string literal.
+When a describe block names a specific **imported function**,
+ use `functionName.name` instead of a string literal.
 This keeps names in sync with refactors.
 
 ```ts
@@ -129,7 +164,8 @@ describe({ name: 'error code constants', ... })
 describe({ name: 'valid fixtures', ... })
 ```
 
-For the top-level describe in a file, use an empty string `name: ''` when the file tests a single module.
+For the top-level describe in a file,
+ use an empty string `name: ''` when the file tests a single module.
 The empty-name suite is invisible in output -- the filename already identifies what is being tested.
 Nest the real function-named describes as children.
 
@@ -151,7 +187,9 @@ await describe({
 
 ## Coverage requirements
 
-Target 100% test coverage. When certain lines or branches cannot be tested (e.g. error handling for impossible states), use V8 ignore comments:
+Target 100% test coverage.
+ When certain lines or branches cannot be tested (e.g. error handling for impossible states),
+ use V8 ignore comments:
 
 ```ts
 /* v8 ignore next -- @preserve */
@@ -176,7 +214,8 @@ if (untestableCondition) {
 
 ### Parameterized tests with `.map()`
 
-Since there is no `test.each`, generate `it` entries with `.map()` and spread into `children`:
+Since there is no `test.each`,
+ generate `it` entries with `.map()` and spread into `children`:
 
 ```ts
 await describe({
@@ -234,7 +273,8 @@ it({
 ### Expected failures
 
 Pass `fails: true` to mark a test that is expected to throw.
-A throwing test is PASS; a passing test is FAIL:
+A throwing test is PASS;
+ a passing test is FAIL:
 
 ```ts
 it({
@@ -260,7 +300,8 @@ it({
 
 ### Sequential execution
 
-Children run concurrently by default. Set `concurrency: 1` on describe
+Children run concurrently by default.
+ Set `concurrency: 1` on describe
 to run children one at a time in array order:
 
 ```ts
@@ -275,9 +316,12 @@ describe({
 ```
 
 Children are lazy descriptors and do not run until the parent dispatches
-them, so `concurrency: 1` sequences execution without any wrapping. The
+them,
+ so `concurrency: 1` sequences execution without any wrapping.
+ The
 parent's effective concurrency is inherited by nested describes that
-don't set their own, so a single `concurrency: 1` at the top sequences
+don't set their own,
+ so a single `concurrency: 1` at the top sequences
 all descendants.
 
 ### Region markers
@@ -357,11 +401,13 @@ it({
 
 ## Async error assertions
 
-Await the async operation first, then assert on the caught error.
+Await the async operation first,
+ then assert on the caught error.
 `.rejects` and `.resolves` are legacy APIs -- avoid them in new test code.
 
 `.rejects.toThrow()` passes the rejected value to chai's `.throw()`,
-which expects a function to call. The harness patches around this mismatch,
+which expects a function to call.
+ The harness patches around this mismatch,
 but the indirection obscures stack traces and is inherently fragile.
 `.resolves.toBe(x)` adds nothing over `const v = await p; expect(v).toBe(x)`.
 
@@ -394,7 +440,8 @@ it({
 
 ## Type-level testing
 
-Use `expectTypeOf` from `expect-type`, re-exported by `@monochromatic-dev/module-test/ts`:
+Use `expectTypeOf` from `expect-type`,
+ re-exported by `@monochromatic-dev/module-test/ts`:
 
 ```ts
 import {
@@ -422,45 +469,88 @@ await describe({
 
 The `expect` function provides Jest-compatible matchers backed by chai:
 
-**Value matchers**: `toBe`, `toEqual`, `toStrictEqual`, `toContain`, `toContainEqual`,
-`toMatch`, `toMatchObject`, `toSatisfy`, `toBeCloseTo`
+**Value matchers**:
+ `toBe`,
+ `toEqual`,
+ `toStrictEqual`,
+ `toContain`,
+ `toContainEqual`,
+`toMatch`,
+ `toMatchObject`,
+ `toSatisfy`,
+ `toBeCloseTo`
 
-**Type/state matchers**: `toBeDefined`, `toBeUndefined`, `toBeNull`, `toBeTruthy`,
-`toBeFalsy`, `toBeNaN`, `toBeTypeOf`, `toBeInstanceOf`
+**Type/state matchers**:
+ `toBeDefined`,
+ `toBeUndefined`,
+ `toBeNull`,
+ `toBeTruthy`,
+`toBeFalsy`,
+ `toBeNaN`,
+ `toBeTypeOf`,
+ `toBeInstanceOf`
 
-**Comparison matchers**: `toBeGreaterThan`, `toBeGreaterThanOrEqual`,
-`toBeLessThan`, `toBeLessThanOrEqual`
+**Comparison matchers**:
+ `toBeGreaterThan`,
+ `toBeGreaterThanOrEqual`,
+`toBeLessThan`,
+ `toBeLessThanOrEqual`
 
-**Collection matchers**: `toHaveLength`, `toHaveProperty`
+**Collection matchers**:
+ `toHaveLength`,
+ `toHaveProperty`
 
-**Error matcher**: `toThrow`
+**Error matcher**:
+ `toThrow`
 
-**Spy matchers** (sinon-chai): `toHaveBeenCalled`, `toHaveBeenCalledTimes`,
-`toHaveBeenCalledWith`, `toHaveBeenCalledExactlyOnceWith`,
-`toHaveBeenLastCalledWith`, `toHaveBeenNthCalledWith`,
-`toHaveReturned`, `toHaveReturnedTimes`, `toHaveReturnedWith`,
-`toHaveLastReturnedWith`, `toHaveNthReturnedWith`
+**Spy matchers** (sinon-chai):
+ `toHaveBeenCalled`,
+ `toHaveBeenCalledTimes`,
+`toHaveBeenCalledWith`,
+ `toHaveBeenCalledExactlyOnceWith`,
+`toHaveBeenLastCalledWith`,
+ `toHaveBeenNthCalledWith`,
+`toHaveReturned`,
+ `toHaveReturnedTimes`,
+ `toHaveReturnedWith`,
+`toHaveLastReturnedWith`,
+ `toHaveNthReturnedWith`
 
-**Negation**: `expect(x).not.toBe(y)`
+**Negation**:
+ `expect(x).not.toBe(y)`
 
-**Promise matchers** (legacy, avoid in new code): `expect(promise).rejects.toThrow()`, `expect(promise).resolves.toBe(42)`.
-Prefer awaiting the promise first, then asserting on the result or caught error directly.
+**Promise matchers** (legacy,
+ avoid in new code):
+ `expect(promise).rejects.toThrow()`,
+ `expect(promise).resolves.toBe(42)`.
+Prefer awaiting the promise first,
+ then asserting on the result or caught error directly.
 
 **Asymmetric matchers** (for use inside `toHaveBeenCalledWith`):
-`expect.stringContaining`, `expect.stringMatching`, `expect.objectContaining`,
-`expect.arrayContaining`, `expect.anything`, `expect.any`
+`expect.stringContaining`,
+ `expect.stringMatching`,
+ `expect.objectContaining`,
+`expect.arrayContaining`,
+ `expect.anything`,
+ `expect.any`
 
 ## Test output format
 
-Every log line carries the full suite hierarchy as a tag chain. The leftmost tag
-is the outermost `describe`, the rightmost tag is the current `it` (or innermost
-`describe`); empty-name suites contribute no tag.
+Every log line carries the full suite hierarchy as a tag chain.
+ The leftmost tag
+is the outermost `describe`,
+ the rightmost tag is the current `it` (or innermost
+`describe`);
+ empty-name suites contribute no tag.
 
-Default verbosity is compact: each `describe` emits one info-level line listing
-its fulfilled children's names. Per-test `PASS` lines are at `debug` (hidden
-unless `DEBUG=true`). Failures remain at `error` and are always visible.
+Default verbosity is compact:
+ each `describe` emits one info-level line listing
+its fulfilled children's names.
+ Per-test `PASS` lines are at `debug` (hidden
+unless `DEBUG=true`).
+ Failures remain at `error` and are always visible.
 
-```
+```text
 [info]  [iso] [outer] [inner] PASS childA, childB, ... (Nms)   -- happy-path enumeration
 [info]  [iso] [outer] [inner] PASS childA                       -- mixed-result: passing siblings only
 [error] [iso] [outer] [inner] [bad] FAIL (Nms)                  -- per-test failure with full hierarchy
@@ -468,20 +558,30 @@ unless `DEBUG=true`). Failures remain at `error` and are always visible.
 [debug] [iso] [outer] [inner] [test-name] PASS (Nms)            -- per-test detail with DEBUG=true
 ```
 
-Parent-children relationships are visible per line by default; no `DEBUG` flag
-needed. Levels:
+Parent-children relationships are visible per line by default;
+ no `DEBUG` flag
+needed.
+ Levels:
 
 - **`info`** -- per-suite `PASS childA, childB (Nms)` enumeration line and
   `SKIP` notices from `it`.
-- **`error`** -- `FAIL` for tests and suites; always visible regardless of
+- **`error`** -- `FAIL` for tests and suites;
+   always visible regardless of
   verbosity.
-- **`debug`** -- per-test `PASS (Nms)`, per-suite `start (concurrency: N)`
-  traces, and the rollup line for empty-name (invisible) suites. Hidden by
-  default; set `DEBUG=true` or pass `--verbose` to surface.
+- **`debug`** -- per-test `PASS (Nms)`,
+   per-suite `start (concurrency: N)`
+  traces,
+   and the rollup line for empty-name (invisible) suites.
+   Hidden by
+  default;
+   set `DEBUG=true` or pass `--verbose` to surface.
 
-When a failure surfaces, read the rightmost (deepest) tag plus the `FAIL` line
-to identify the failing test; walk leftward through tags to follow the suite
-nesting back to the file's top-level `describe`. The full `Error.cause` chain
+When a failure surfaces,
+ read the rightmost (deepest) tag plus the `FAIL` line
+to identify the failing test;
+ walk leftward through tags to follow the suite
+nesting back to the file's top-level `describe`.
+ The full `Error.cause` chain
 mirrors the tag chain.
 
 ## Linting test code
@@ -499,5 +599,7 @@ expect(isError(new Error('test message',),),).toBe(true,);
 expect(isError(new Error(),),).toBe(true,);
 ```
 
-For known testing issues (duplicate describe blocks, missing test output, misattributed logs),
+For known testing issues (duplicate describe blocks,
+ missing test output,
+ misattributed logs),
 see `TROUBLESHOOTING.testing.md` in the repository root.

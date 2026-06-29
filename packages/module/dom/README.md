@@ -5,18 +5,24 @@ Browser DOM utilities that require a live `document` context.
 Each helper either reads from or writes to the page that already exists.
 None of them construct or own a document;
 they reach into one that is already mounted
-(`document.body`, `document.documentElement`, an element looked up by selector,
+(`document.body`,
+ `document.documentElement`,
+ an element looked up by selector,
 or an element handed in by the caller).
 Importing this package from a non-DOM runtime
-(Node without a `document` shim, a service worker, a Bun script with no JSDOM)
-compiles, but every helper throws at call time.
+(Node without a `document` shim,
+ a service worker,
+ a Bun script with no JSDOM)
+compiles,
+ but every helper throws at call time.
 
 Public exports are source-only:
 `./ts` resolves to `./src/index.ts` (the barrel),
 `./ts/*` resolves to individual modules for consumers that only need one helper.
 A browser-target build under `dist/` is produced by
 `mise run //packages/module/dom:build:js:browser` and is for the local
-Playwright e2e fixtures only; it is not part of the public surface.
+Playwright e2e fixtures only;
+ it is not part of the public surface.
 
 ## Exports
 
@@ -26,8 +32,11 @@ Async replacement for `globalThis.prompt` that uses an HTML `<dialog>`,
 so the dialog can be styled with CSS instead of locked to the browser's native chrome.
 Return shape mirrors native `globalThis.prompt`:
 the entered string when the user clicks OK (including `''` for an empty field),
-or `null` when the user cancels (Esc, backdrop click, or the Cancel button).
-Unlike `globalThis.prompt`, it never blocks the main thread;
+or `null` when the user cancels (Esc,
+ backdrop click,
+ or the Cancel button).
+Unlike `globalThis.prompt`,
+ it never blocks the main thread;
 the returned promise lets other work continue while the dialog is open.
 
 ```ts
@@ -39,8 +48,11 @@ if (newApiKey !== null)
 ```
 
 The dialog elements receive default class names
-(`prompt-polyfill-dialog`, `prompt-polyfill-cancel`, `prompt-polyfill-ok`)
-so a global stylesheet can theme them; no styles are bundled.
+(`prompt-polyfill-dialog`,
+ `prompt-polyfill-cancel`,
+ `prompt-polyfill-ok`)
+so a global stylesheet can theme them;
+ no styles are bundled.
 Pass `classes` to override any subset of those names per call,
 useful when two prompts on the same page need distinct styling:
 
@@ -97,7 +109,9 @@ The parent is passed in explicitly;
 the template element does not need to live inside it,
 and is not removed from wherever it currently sits.
 Use when the template lives in one tree
-(a `<template>` element, an off-DOM scratch element, a fixture in another container)
+(a `<template>` element,
+ an off-DOM scratch element,
+ a fixture in another container)
 and you need to fill a separate parent with copies.
 
 ```ts
@@ -133,14 +147,17 @@ The two helpers differ only in how the parent is supplied:
   takes the parent explicitly and **leaves the template alone**,
   so the same template can fill several parents.
 
-When in doubt, reach for `replicateElementAsContentOf`:
+When in doubt,
+ reach for `replicateElementAsContentOf`:
 it is the more explicit shape,
-and works for the cases the other one cannot (detached templates, cross-container reuse).
+and works for the cases the other one cannot (detached templates,
+ cross-container reuse).
 
 ### `deepCloneNode(node)`
 
 Type-preserving wrapper around `Node.prototype.cloneNode(true)`.
-`Node.cloneNode` returns `Node`, which forces a cast at every call site;
+`Node.cloneNode` returns `Node`,
+ which forces a cast at every call site;
 `deepCloneNode<T extends Node>(node: T): T` preserves the concrete element type,
 so a cloned `HTMLAnchorElement` stays an `HTMLAnchorElement` without a manual `as`.
 
@@ -163,7 +180,8 @@ calls `location.replace(anchor.href)`.
 `location.replace` is used instead of `location.assign`,
 so the redirect does not add a history entry;
 users pressing Back skip past the intermediate page.
-When no element matches, the function is a no-op,
+When no element matches,
+ the function is a no-op,
 so it is safe to call unconditionally on every page.
 
 Expected markup:
@@ -207,8 +225,10 @@ everything else is dropped.
 Each key passes through unchanged.
 A `--`-prefixed key (`--brand`) sets a CSS custom property on `:root`,
 visible to every `var(--brand)` read on the page.
-A standard CSS property name (`color`, `background-image`) sets an inline style on
-`<html>` itself, the same as writing it in a `<style>` block on the root element.
+A standard CSS property name (`color`,
+ `background-image`) sets an inline style on
+`<html>` itself,
+ the same as writing it in a `<style>` block on the root element.
 A key that is neither a valid custom property nor a known CSS property is silently
 discarded by `setProperty`.
 
@@ -223,7 +243,8 @@ Pass an allowlist whenever the URL is user-controllable;
 an open-ended call accepts every key in the query string,
 and is therefore an attack surface for crafted links
 that overwrite layout-critical properties on `:root`
-(custom properties used by stylesheets, or standard properties like `display`
+(custom properties used by stylesheets,
+ or standard properties like `display`
 that affect the entire document).
 
 ```ts
@@ -243,26 +264,35 @@ onLoadSetCssFromUrlParams([
 
 ## Design decisions
 
-- **Source-only public exports.**
+- **Source-only public exports.
+  **
   Consumers import directly from `src/` via `./ts` and `./ts/*`.
   A local browser-target build exists only to back the Playwright e2e
   fixtures and is not part of the public surface.
-- **Named-params API.**
+- **Named-params API.
+  **
   Every helper with more than one parameter takes a single destructured
   object so call sites are self-describing and parameter additions stay
   backwards-compatible (per the project-wide
   `no-restricted-syntax/require-destructured-params` rule).
-- **One file per concern.**
-  `prompt.ts`, `redirectingTo.ts`, `duplicateElement.ts`, `set/cssFromParam.ts`;
+- **One file per concern.
+  **
+  `prompt.ts`,
+   `redirectingTo.ts`,
+   `duplicateElement.ts`,
+   `set/cssFromParam.ts`;
   `index.ts` re-exports.
-- **`document` is the contract.**
+- **`document` is the contract.
+  **
   Every helper assumes a live document at call time.
   Helpers do not feature-detect or fall back to a stub;
   calling them in a non-DOM runtime is a bug in the consumer,
   not a case the package handles.
-- **`onLoad*` naming.**
+- **`onLoad*` naming.
+  **
   Helpers that scan the document on call
-  (`onLoadRedirectingTo`, `onLoadSetCssFromUrlParams`)
+  (`onLoadRedirectingTo`,
+   `onLoadSetCssFromUrlParams`)
   are named for their intended call site:
   a script run after the document is parsed,
   typically at the end of `<body>` or inside a `DOMContentLoaded` listener.

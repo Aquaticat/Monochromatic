@@ -2,13 +2,16 @@
 
 Upstream:
 [earendil-works/pi-coding-agent](https://github.com/earendil-works/pi-coding-agent),
-`src/core/compaction/compaction.ts`. Date 2026-04-28.
+`src/core/compaction/compaction.ts`.
+ Date 2026-04-28.
 
 ## Symptom
 
-Running `/compact` on a small pi session, or auto-compaction
+Running `/compact` on a small pi session,
+ or auto-compaction
 firing when the entire conversation fits within
-`keepRecentTokens`, produces a blank summary with "(none)" in
+`keepRecentTokens`,
+ produces a blank summary with "(none)" in
 every section and writes a useless compaction entry to the
 session file:
 
@@ -35,11 +38,14 @@ Compacted from 10,857 tokens
 ```
 
 The entry is written with `fromHook: false` and empty
-`details` (`readFiles: []`, `modifiedFiles: []`), polluting the
+`details` (`readFiles: []`,
+ `modifiedFiles: []`),
+ polluting the
 session with a useless compaction record.
 
 Morph Compact extensions also fail silently in this scenario
-because `messagesToSummarize` is empty, causing the extension
+because `messagesToSummarize` is empty,
+ causing the extension
 to fall through to pi's default summariser.
 
 ## Root cause
@@ -48,14 +54,18 @@ Two bugs in pi's compaction pipeline:
 
 ### Bug A: `prepareCompaction` returns a preparation with empty `messagesToSummarize`
 
-Source: `src/core/compaction/compaction.ts`,
+Source:
+ `src/core/compaction/compaction.ts`,
 `prepareCompaction()` function.
 
 When the total session tokens are below `keepRecentTokens`
-(default 20,000), `findCutPoint()` sets
+(default 20,000),
+ `findCutPoint()` sets
 `firstKeptEntryIndex` to 0 (keep everything from the
-beginning). This makes `historyEnd` equal to
-`firstKeptEntryIndex` (0), so the loop that populates
+beginning).
+ This makes `historyEnd` equal to
+`firstKeptEntryIndex` (0),
+ so the loop that populates
 `messagesToSummarize` never executes:
 
 ```ts
@@ -75,7 +85,8 @@ for (let i = boundaryStart; i < historyEnd; i++) {
 
 `prepareCompaction` returns a valid `CompactionPreparation`
 object with `messagesToSummarize: []` and
-`tokensBefore > 0`. The caller in `agent-session.ts` does not
+`tokensBefore > 0`.
+ The caller in `agent-session.ts` does not
 check whether `messagesToSummarize` is empty before
 proceeding with compaction.
 
@@ -98,15 +109,21 @@ empty messages.
 
 ### Bug B: `compact()` calls `generateSummary([])` without an empty guard
 
-Source: `src/core/compaction/compaction.ts`, `compact()`
-function, line 574.
+Source:
+ `src/core/compaction/compaction.ts`,
+ `compact()`
+function,
+ line 574.
 
 When `messagesToSummarize` is empty and the compaction is
-not a split turn, `compact()` unconditionally calls
+not a split turn,
+ `compact()` unconditionally calls
 `generateSummary(messagesToSummarize, ...)` with an empty
-array. The summariser serialises an empty conversation
+array.
+ The summariser serialises an empty conversation
 (`<conversation>\n\n</conversation>`) and asks the LLM to
-summarise it, producing the "(none)" template.
+summarise it,
+ producing the "(none)" template.
 
 The split-turn branch already has a guard for this case at
 line 565:
@@ -122,7 +139,9 @@ summary = await generateSummary(messagesToSummarize, ...);
 ```
 
 The non-split path should have the same `"No prior history."`
-fallback, or better yet, compaction should not proceed at all
+fallback,
+ or better yet,
+ compaction should not proceed at all
 when there is nothing to summarise.
 
 ## Verification
@@ -130,7 +149,8 @@ when there is nothing to summarise.
 Version under test:
 
 - pi 0.70.6
-- Upstream source examined: `earendil-works/pi-coding-agent`,
+- Upstream source examined:
+   `earendil-works/pi-coding-agent`,
   `src/core/compaction/compaction.ts`
 
 Reproduce:
@@ -150,8 +170,10 @@ pi
 
 Auto-compaction also triggers this when
 `contextTokens > contextWindow - reserveTokens` but the
-entire session fits within `keepRecentTokens` (20K). This
-can happen with models that have small context windows, or
+entire session fits within `keepRecentTokens` (20K).
+ This
+can happen with models that have small context windows,
+ or
 sessions where system-prompt tokens dominate but
 conversation tokens are minimal.
 
@@ -176,52 +198,75 @@ if (!hasMessages && previousSummary === undefined) {
 }
 ```
 
-For manual `/compact`, pi throws "Compaction cancelled". For
-auto-compaction, pi silently skips the compaction cycle.
+For manual `/compact`,
+ pi throws "Compaction cancelled".
+ For
+auto-compaction,
+ pi silently skips the compaction cycle.
 Both are correct behaviours when there is nothing meaningful
 to compact.
 
-Tradeoff: requires the Morph Compact extension to be
-installed and active. Without the extension, the workaround
+Tradeoff:
+ requires the Morph Compact extension to be
+installed and active.
+ Without the extension,
+ the workaround
 is to avoid running `/compact` on sessions that are too
 small to compact.
 
 ## What does not work
 
 - Returning `undefined` from a `session_before_compact`
-  extension handler: falls through to pi's default
-  summariser, which hits the same bug.
+  extension handler:
+   falls through to pi's default
+  summariser,
+   which hits the same bug.
 - Setting `compressionRatio` to any value in Morph Compact:
   the issue is that `messagesToSummarize` is empty **before**
   Morph is ever called.
 - Manually deleting the useless compaction entry after the
-  fact: removes the entry but does not prevent the next
+  fact:
+   removes the entry but does not prevent the next
   compaction from creating another.
 
 ## Why we would file this upstream
 
 All 5 constraints hold:
 
-1. **Is it really upstream's fault?** Yes; both
+1. **Is it really upstream's fault?
+   ** Yes;
+    both
    `prepareCompaction` and `compact()` should reject empty
    message lists.
-2. **Can upstream fix it?** Yes; two small patches sketched
-   below; either alone would resolve the symptom.
-3. **Are they supporting this use case?** Yes; small
+2. **Can upstream fix it?
+   ** Yes;
+    two small patches sketched
+   below;
+    either alone would resolve the symptom.
+3. **Are they supporting this use case?
+   ** Yes;
+    small
    sessions are explicitly in scope for compaction.
-4. **Will they likely fix it?** Plausible; pi is actively
+4. **Will they likely fix it?
+   ** Plausible;
+    pi is actively
    maintained.
-5. **Have we prototyped a minimal fix?** Yes; both patches
+5. **Have we prototyped a minimal fix?
+   ** Yes;
+    both patches
    below are minimal and exercise the same code paths the
    workaround in Morph Compact already validates.
 
-Decision: worth filing.
+Decision:
+ worth filing.
 
 ### Suggested upstream fix
 
-Option A: `prepareCompaction` returns `undefined` when
+Option A:
+ `prepareCompaction` returns `undefined` when
 `messagesToSummarize` is empty and no `previousSummary`
-exists, matching the caller's expectation that `undefined`
+exists,
+ matching the caller's expectation that `undefined`
 means "nothing to compact":
 
 ```ts
@@ -234,8 +279,10 @@ if (messagesToSummarize.length === 0
 }
 ```
 
-Option B: `compact()` guards against empty
-`messagesToSummarize` in the non-split-turn path, mirroring
+Option B:
+ `compact()` guards against empty
+`messagesToSummarize` in the non-split-turn path,
+ mirroring
 the split-turn guard:
 
 ```ts
@@ -248,7 +295,8 @@ else {
 ```
 
 Option A is preferred because it prevents the empty
-compaction entry from being written at all; Option B fixes
+compaction entry from being written at all;
+ Option B fixes
 the summary content but still writes the entry.
 
 ## Draft upstream issue (kept as reference; revise before filing)

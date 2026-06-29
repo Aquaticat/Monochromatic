@@ -4,7 +4,8 @@ IntelliJ IDEA 2026.2 EAP Build `IU-262.8117.19` can keep Gradle Kotlin DSL scrip
 classpath state on a different filesystem spelling from the editor file when this repo is opened through
 `/home/user/Monochromatic` while Gradle and VCS state canonicalize to
 `/var/home/user/Monochromatic`.
-In that split state, `packages/linter/kotlin/build.gradle.kts` can show red imports even though Gradle
+In that split state,
+ `packages/linter/kotlin/build.gradle.kts` can show red imports even though Gradle
 CLI compilation succeeds.
 
 ## Symptom
@@ -14,11 +15,13 @@ The user-visible symptoms in this repo were:
 - `packages/linter/kotlin/build.gradle.kts` showed
   `Unresolved reference 'CommandLineArgumentProvider'` for
   `org.gradle.process.CommandLineArgumentProvider`.
-- After the Gradle API import recovered, the same file still showed red
+- After the Gradle API import recovered,
+   the same file still showed red
   `org.jetbrains.kotlin` in `import org.jetbrains.kotlin.gradle.dsl.JvmTarget`.
 - The Gradle tool window showed duplicate `kotlin-linter` entries during part of the recovery.
 - Running `idea invalidateCaches --help` did not print help.
-  It executed cache invalidation, and IDEA restored default configuration.
+  It executed cache invalidation,
+   and IDEA restored default configuration.
   The plugin install path then contained only part of the previous plugin set until restored from backup.
 
 The command-line build was not broken.
@@ -38,7 +41,8 @@ BUILD SUCCESSFUL in 3s
 
 This is not a custom user-created path alias.
 The host reports itself as Bazzite.
-Bazzite's manual partitioning documentation lists `/var/home` as the home subvolume mount point, and this
+Bazzite's manual partitioning documentation lists `/var/home` as the home subvolume mount point,
+ and this
 Bazzite host presents `/home` as a symlink into `/var/home`:
 
 ```shell
@@ -70,7 +74,8 @@ That means these platform-normal path strings name the same files on this host b
 ```
 
 IDEA exposed that split in its own log.
-Before the final fix, the editor was opened on the symlink spelling while Gradle and VCS state used the
+Before the final fix,
+ the editor was opened on the symlink spelling while Gradle and VCS state used the
 canonical spelling:
 
 ```text
@@ -82,7 +87,8 @@ Symlink mapping for VCS is used,
   canonical file: file:///var/home/user/Monochromatic/...
 ```
 
-After reopening the root project with the canonical spelling, the editor and Gradle sync used the same path:
+After reopening the root project with the canonical spelling,
+ the editor and Gradle sync used the same path:
 
 ```text
 Opening existing project with .idea at /var/home/user/Monochromatic
@@ -96,8 +102,10 @@ InlinePromptListener is installed to editor=EditorImpl[
 
 The IntelliJ VCS symlink resolver explicitly canonicalizes symlinked virtual files and logs when it does so.
 The public source trace used `JetBrains/intellij-community@f10b97f07f9add4ab0bfe55e16dce1aa37581d3c`.
-That is a current upstream snapshot, not a proven exact source match for installed build `IU-262.8117.19`.
-In that snapshot, `platform/vcs-impl/src/com/intellij/vcs/DefaultVcsSymlinkResolver.java:41-45` returns a
+That is a current upstream snapshot,
+ not a proven exact source match for installed build `IU-262.8117.19`.
+In that snapshot,
+ `platform/vcs-impl/src/com/intellij/vcs/DefaultVcsSymlinkResolver.java:41-45` returns a
 canonical file when one exists:
 
 ```java
@@ -131,7 +139,8 @@ suspend fun openOrImportAsync(file: Path, options: OpenProjectTask = OpenProject
       LOG.info("Reusing already opened project $file")
 ```
 
-When the path is a valid project directory, `ProjectUtil.kt:224-230` opens that path as an existing `.idea`
+When the path is a valid project directory,
+ `ProjectUtil.kt:224-230` opens that path as an existing `.idea`
 project:
 
 ```kotlin
@@ -171,7 +180,9 @@ plugins/kotlin/base/scripting/scripting.k2/src/org/jetbrains/kotlin/idea/core/sc
 DefinitionFromDependenciesProvider.kt:47-52
 ```
 
-That source combines explicit, discovered, and guessed classpath values:
+That source combines explicit,
+ discovered,
+ and guessed classpath values:
 
 ```kotlin
 // plugins/kotlin/base/scripting/scripting.k2/src/org/jetbrains/kotlin/idea/core/script/k2/definitions/
@@ -185,7 +196,8 @@ override fun getDefinitionsClassPath(): Iterable<File> {
 ```
 
 The same file reads class roots from order entries at `DefinitionFromDependenciesProvider.kt:113-130`.
-That matches the observed behavior: when the editor file and imported Gradle model used different path strings,
+That matches the observed behavior:
+ when the editor file and imported Gradle model used different path strings,
 script classpath resolution could stay stale for the editor even while Gradle itself compiled the script.
 
 ## What fixed it
@@ -210,7 +222,8 @@ The committed project metadata now keeps the nested Gradle build linked from the
 <option name="externalProjectPath" value="$PROJECT_DIR$/packages/linter/kotlin" />
 ```
 
-The final VCS mapping also records the canonical root, which is the path spelling IDEA used after recovery:
+The final VCS mapping also records the canonical root,
+ which is the path spelling IDEA used after recovery:
 
 ```xml
 <!-- .idea/vcs.xml -->
@@ -226,15 +239,19 @@ A temporary worktree tested source-side alternatives:
 
 - Removing `JvmTarget` made Gradle report a Kotlin and Java JVM target mismatch.
 - Adding `jvmToolchain(17)` failed on this machine because no JDK 17 installation was available.
-- A reflection-based workaround compiled, but it only hid the IDE issue and made the build script worse.
+- A reflection-based workaround compiled,
+   but it only hid the IDE issue and made the build script worse.
 
 Do not open the nested package as its own IDEA project while debugging this root project.
 That created `packages/linter/kotlin/.idea` and duplicate Gradle entries.
 Remove that nested `.idea` directory and link the package Gradle build from the root project instead.
 
 Do not use `idea invalidateCaches --help` to inspect the command.
-In this environment it executed cache invalidation rather than printing help, then IDEA restored default settings.
-If that happens again, treat it as configuration recovery, not as a Kotlin or Gradle problem.
+In this environment it executed cache invalidation rather than printing help,
+ then IDEA restored default settings.
+If that happens again,
+ treat it as configuration recovery,
+ not as a Kotlin or Gradle problem.
 
 ## Plugin recovery after accidental cache invalidation
 
@@ -250,11 +267,13 @@ The configuration backup lived at:
 /var/home/user/.config/JetBrains/IntelliJIdea2026.2-backup/2026-06-18-14-44
 ```
 
-Copying configuration files alone did not restore plugins, because IDEA loads plugins from the active plugin
+Copying configuration files alone did not restore plugins,
+ because IDEA loads plugins from the active plugin
 path above.
 The successful recovery copied plugin directories from the backup into the active plugin path while IDEA was
 closed.
-After recovery, this check found 56 plugin directories and confirmed the expected plugins existed:
+After recovery,
+ this check found 56 plugin directories and confirmed the expected plugins existed:
 
 ```shell
 # /var/home/user/Monochromatic
@@ -269,7 +288,8 @@ Snapshot first if recovery is approved.
 
 ## Verification checklist
 
-After recovering IDEA, verify the repo and the nested Gradle build from the command line:
+After recovering IDEA,
+ verify the repo and the nested Gradle build from the command line:
 
 ```shell
 # /var/home/user/Monochromatic
@@ -286,7 +306,8 @@ Expected results:
 
 Also verify the user boundary in IDEA:
 
-- Open `/var/home/user/Monochromatic`, not `/home/user/Monochromatic`.
+- Open `/var/home/user/Monochromatic`,
+   not `/home/user/Monochromatic`.
 - Open `packages/linter/kotlin/build.gradle.kts`.
 - Confirm `org.gradle.process.CommandLineArgumentProvider` and
   `org.jetbrains.kotlin.gradle.dsl.JvmTarget` are not red.
@@ -294,14 +315,20 @@ Also verify the user boundary in IDEA:
 
 ## Upstream filing decision
 
-The corrected decision is: this is upstream-worthy behavior, not merely local path hygiene.
-The user-facing workaround is still to open the project through `/var/home/user/Monochromatic`, but Bazzite
-provides `/home -> /var/home`, so opening the repo through `/home/user/Monochromatic` is a normal platform path.
+The corrected decision is:
+ this is upstream-worthy behavior,
+ not merely local path hygiene.
+The user-facing workaround is still to open the project through `/var/home/user/Monochromatic`,
+ but Bazzite
+provides `/home -> /var/home`,
+ so opening the repo through `/home/user/Monochromatic` is a normal platform path.
 It is surprising for that normal path spelling to make Gradle Kotlin DSL imports red while the Gradle CLI build
 succeeds.
 
 Do not post the draft below as-is from an automated session.
-It is a YouTrack draft, not a GitHub issue draft, because JetBrains has GitHub issues disabled for
+It is a YouTrack draft,
+ not a GitHub issue draft,
+ because JetBrains has GitHub issues disabled for
 `JetBrains/intellij-community` and `CONTRIBUTING.md` asks contributors to use YouTrack tickets.
 It is marked not-ready only because this troubleshooting policy requires a prototyped upstream fix before a fully
 fileable artifact.
@@ -309,7 +336,11 @@ A human may still decide that a bug-only YouTrack report is appropriate.
 
 ### Out-of-scope check
 
-The local `.out-of-scope/` exemption directory had no IntelliJ, JetBrains, Kotlin, Gradle, or Bazzite entry for
+The local `.out-of-scope/` exemption directory had no IntelliJ,
+ JetBrains,
+ Kotlin,
+ Gradle,
+ or Bazzite entry for
 this case.
 Files checked included:
 
@@ -387,76 +418,129 @@ PY
 
 Closest hits were read through their descriptions and public comments via the YouTrack API:
 
-- `KTIJ-768`, open, Gradle Kotlin DSL unresolved references when `.gradle` is ignored.
-  This is the same symptom class, but a different trigger.
-  Its comments discuss `.gradle` ignoring, config and system directory resets, and persistent unresolved
+- `KTIJ-768`,
+   open,
+   Gradle Kotlin DSL unresolved references when `.gradle` is ignored.
+  This is the same symptom class,
+   but a different trigger.
+  Its comments discuss `.gradle` ignoring,
+   config and system directory resets,
+   and persistent unresolved
   `build.gradle.kts` symbols.
-- `IJPL-222918`, open, duplicated changed files for a Git symlinked project.
-  This is a symlink path-identity issue, but in VCS change display, not Gradle Kotlin DSL script classpath.
+- `IJPL-222918`,
+   open,
+   duplicated changed files for a Git symlinked project.
+  This is a symlink path-identity issue,
+   but in VCS change display,
+   not Gradle Kotlin DSL script classpath.
   Its comments mention duplicate Git views and 2025-era symlink regressions.
-- `IJPL-80700`, resolved, symlinked directory treated as a separate Git root.
-  This is a related VCS path-identity issue, not this Gradle Kotlin DSL red-import behavior.
+- `IJPL-80700`,
+   resolved,
+   symlinked directory treated as a separate Git root.
+  This is a related VCS path-identity issue,
+   not this Gradle Kotlin DSL red-import behavior.
   Its comments focus on duplicate VCS roots and version-control mapping.
-- `IDEA-367587`, resolved, WSL Gradle daemon toolchain import failure involving SDKMAN symlinks.
-  This is Gradle plus symlink-adjacent, but it is a WSL toolchain failure, not Bazzite `/home` aliasing.
+- `IDEA-367587`,
+   resolved,
+   WSL Gradle daemon toolchain import failure involving SDKMAN symlinks.
+  This is Gradle plus symlink-adjacent,
+   but it is a WSL toolchain failure,
+   not Bazzite `/home` aliasing.
   Its comments focus on WSL Gradle JDK/toolchain import failures.
 
 No searched ticket matched this exact combination:
-Bazzite or Fedora Atomic `/home -> /var/home`, IDEA opened through `/home`, VCS or Gradle state canonicalized to
-`/var/home`, and valid Gradle Kotlin DSL imports shown red while CLI Gradle succeeds.
+Bazzite or Fedora Atomic `/home -> /var/home`,
+ IDEA opened through `/home`,
+ VCS or Gradle state canonicalized to
+`/var/home`,
+ and valid Gradle Kotlin DSL imports shown red while CLI Gradle succeeds.
 
 ### Constraint check
 
-1.  **Is it really upstream's fault?**
+1.  **Is it really upstream's fault?
+    **
     Yes.
-    Bazzite supplies the `/home -> /var/home` alias, and IDEA owns the project-open, VFS, VCS, Gradle sync, and
+    Bazzite supplies the `/home -> /var/home` alias,
+     and IDEA owns the project-open,
+     VFS,
+     VCS,
+     Gradle sync,
+     and
     Kotlin script-classpath state that diverged across those path spellings.
-    Gradle CLI compiled the script successfully, so the failure was IDE code insight state, not Gradle source.
+    Gradle CLI compiled the script successfully,
+     so the failure was IDE code insight state,
+     not Gradle source.
 
-2.  **Can upstream fix it?**
+2.  **Can upstream fix it?
+    **
     Yes.
-    Upstream controls `DefaultVcsSymlinkResolver`, `ProjectUtil.openOrImportAsync`, Gradle script model import,
+    Upstream controls `DefaultVcsSymlinkResolver`,
+     `ProjectUtil.openOrImportAsync`,
+     Gradle script model import,
     and Kotlin script definition classpath resolution.
     A valid fix could ensure those systems use one project-root identity when a project is opened through a
     symlinked path.
 
-3.  **Are they supporting this use case?**
+3.  **Are they supporting this use case?
+    **
     Yes.
-    IntelliJ IDEA supports Linux projects, Gradle Kotlin DSL, and VCS symlink resolution.
+    IntelliJ IDEA supports Linux projects,
+     Gradle Kotlin DSL,
+     and VCS symlink resolution.
     The source already contains an explicit VCS symlink resolver and Gradle build-script classpath provider.
     A platform-normal home-directory symlink should not make valid Gradle imports red.
 
-4.  **Would the repo welcome our contribution?**
-    Yes, with JetBrains' process constraints.
-    `CONTRIBUTING.md` says bug fixes are preferred, most accepted contributions are fixes for reproducible issues,
-    tests should supply fixes if possible, and contributors should have or create a YouTrack ticket.
-    GitHub issues are disabled, so YouTrack is the right filing surface.
-    No policy banning AI-assisted investigation was found in `CONTRIBUTING.md`, `README.md`, repository metadata,
+4.  **Would the repo welcome our contribution?
+    **
+    Yes,
+     with JetBrains' process constraints.
+    `CONTRIBUTING.md` says bug fixes are preferred,
+     most accepted contributions are fixes for reproducible issues,
+    tests should supply fixes if possible,
+     and contributors should have or create a YouTrack ticket.
+    GitHub issues are disabled,
+     so YouTrack is the right filing surface.
+    No policy banning AI-assisted investigation was found in `CONTRIBUTING.md`,
+     `README.md`,
+     repository metadata,
     or the searched tracker results.
 
-5.  **Will they likely fix it?**
+5.  **Will they likely fix it?
+    **
     Soft yes.
     No matching duplicate or won't-fix signal was found.
-    Related symlink path-identity issues exist, including open `IJPL-222918` and resolved `IJPL-80700`, which shows
+    Related symlink path-identity issues exist,
+     including open `IJPL-222918` and resolved `IJPL-80700`,
+     which shows
     the general class is within JetBrains' tracker scope.
 
-6.  **Have we prototyped a minimal fix compatible with their architecture?**
+6.  **Have we prototyped a minimal fix compatible with their architecture?
+    **
     No.
-    Prototype attempt recorded: a fresh source clone was created at
-    `/tmp/agent/intellij-symlink-prototype-FlHf0uP1`, with origin
+    Prototype attempt recorded:
+     a fresh source clone was created at
+    `/tmp/agent/intellij-symlink-prototype-FlHf0uP1`,
+     with origin
     `https://github.com/JetBrains/intellij-community.git` and commit
     `f10b97f07f9add4ab0bfe55e16dce1aa37581d3c`.
-    The trace found the relevant boundary spans project opening, VCS symlink resolution, Gradle script model
-    import, and Kotlin script definition classpath resolution.
-    A patch that simply canonicalizes every opened project path would be speculative, because some users may
+    The trace found the relevant boundary spans project opening,
+     VCS symlink resolution,
+     Gradle script model
+    import,
+     and Kotlin script definition classpath resolution.
+    A patch that simply canonicalizes every opened project path would be speculative,
+     because some users may
     intentionally open symlinked roots and expect that spelling to remain meaningful.
     A safe prototype needs a small integration reproduction that opens a Gradle Kotlin DSL project through the
-    symlink spelling, lets script models import, and asserts the editor-visible script classpath uses the same
+    symlink spelling,
+     lets script models import,
+     and asserts the editor-visible script classpath uses the same
     root identity as the imported Gradle model.
     That verification would require running IDEA or an IntelliJ integration test harness against IDE config and
     cache state.
     This session must not touch `/var/home/user/.config/JetBrains` or `/var/home/user/.cache/JetBrains` again
-    without explicit approval, so the prototype was abandoned before writing an unverified patch.
+    without explicit approval,
+     so the prototype was abandoned before writing an unverified patch.
 
 ### YouTrack draft, do not file as-is
 

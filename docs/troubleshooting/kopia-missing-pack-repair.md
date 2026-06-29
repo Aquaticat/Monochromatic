@@ -1,12 +1,14 @@
 # Kopia 0.23.1 snapshot auto-maintenance fails rewriting short packs after pack blobs disappear
 
 This note records the 2026-06-18 repair of the local Kopia repository at
-`/mnt/pcloud/rclone`, exposed through the `pCloud.fs` FUSE mount.
+`/mnt/pcloud/rclone`,
+ exposed through the `pCloud.fs` FUSE mount.
 Historical snapshots were explicitly disposable for this repair.
 
 ## Symptom
 
-`kopia snapshot create --all` created snapshots, then failed after snapshotting
+`kopia snapshot create --all` created snapshots,
+ then failed after snapshotting
 when automatic maintenance ran:
 
 ```text
@@ -19,8 +21,11 @@ The confusing part was this earlier line:
 Finished full maintenance.
 ```
 
-That line is not a success marker. It is always printed when the maintenance
-function exits, including error exits. The actual command result is the final
+That line is not a success marker.
+ It is always printed when the maintenance
+function exits,
+ including error exits.
+ The actual command result is the final
 `running auto-maintenance` error.
 
 The content log for the failing session showed the direct read failures:
@@ -52,17 +57,22 @@ pefc57c24f9bae94c82c897b92c6c23b8-se22db7c102705cab141 1
 ## Root cause
 
 The immediate cause was repository indexes pointing to pack blobs that the
-storage backend no longer exposed. The investigation did not prove why those
-pack blobs disappeared. Current evidence is consistent with storage or FUSE
-visibility corruption, because `kopia repository status` reported filesystem
-storage at `/mnt/pcloud/rclone`, and `findmnt` reported the backing mount as
+storage backend no longer exposed.
+ The investigation did not prove why those
+pack blobs disappeared.
+ Current evidence is consistent with storage or FUSE
+visibility corruption,
+ because `kopia repository status` reported filesystem
+storage at `/mnt/pcloud/rclone`,
+ and `findmnt` reported the backing mount as
 `pCloud.fs fuse`.
 
 The Kopia source trace below explains why a successful snapshot ended with a
 maintenance error.
 
 `cli/app.go:523` to `cli/app.go:527` runs auto-maintenance only after the main
-command action succeeds, then wraps maintenance failure as `running auto-maintenance`:
+command action succeeds,
+ then wraps maintenance failure as `running auto-maintenance`:
 
 ```go
 err = act(ctx, rep)
@@ -75,7 +85,8 @@ if rep != nil && err == nil && mode.allowMaintenance {
 ```
 
 `repo/maintenance/maintenance_run.go:219` to `repo/maintenance/maintenance_run.go:220`
-prints `Finished full maintenance.` via a deferred log call, so the line prints
+prints `Finished full maintenance.` via a deferred log call,
+ so the line prints
 on both success and failure exits:
 
 ```go
@@ -274,8 +285,10 @@ while IFS= read -r path; do
 done < /tmp/agent/kopia-sources-before-repair.txt
 ```
 
-Run one purge maintenance pass. The environment variable was included as a
-belt-and-suspenders guard for already-deleted content rewrite failures, and
+Run one purge maintenance pass.
+ The environment variable was included as a
+belt-and-suspenders guard for already-deleted content rewrite failures,
+ and
 `--safety=none` was acceptable here because the local repair session was the
 only writer and previous snapshots were disposable:
 
@@ -290,7 +303,8 @@ Verify the purge removed missing-pack references:
 kopia --no-auto-maintenance --no-progress content verify
 ```
 
-Recreate fresh snapshots from recorded sources, forcing file hashing so Kopia
+Recreate fresh snapshots from recorded sources,
+ forcing file hashing so Kopia
 repopulates content instead of trusting stale cache state:
 
 ```bash
@@ -301,42 +315,53 @@ kopia --no-auto-maintenance --no-progress snapshot create --force-hash=100 "${so
 Tradeoffs:
 
 - All previous snapshots are intentionally lost.
-- Upload work can be large. This repair produced fresh snapshots covering
+- Upload work can be large.
+   This repair produced fresh snapshots covering
   894.2 GB of snapshot-visible objects and 867.1 GB of in-use content.
 - `--safety=none` must not be used when any other Kopia client can write to the
   same repository or when the backend may still be out of sync.
 
 ### Run with auto-maintenance disabled during investigation
 
-When snapshots must continue before repair, this command avoids re-triggering
+When snapshots must continue before repair,
+ this command avoids re-triggering
 the failing maintenance path:
 
 ```bash
 kopia --no-auto-maintenance snapshot create --all
 ```
 
-Tradeoff: this does not repair corruption. It only keeps snapshot creation from
+Tradeoff:
+ this does not repair corruption.
+ It only keeps snapshot creation from
 being converted into a failing auto-maintenance command.
 
 ## What does not work
 
 - Rerunning `kopia snapshot create --all` with auto-maintenance enabled does not
-  fix the missing pack references. It creates snapshots, then re-enters the same
+  fix the missing pack references.
+   It creates snapshots,
+   then re-enters the same
   maintenance path.
-- `kopia content verify --prefix=<id>` is diagnostic only. It confirms a content
-  ID depends on a missing pack, but it does not remove or restore that pack.
+- `kopia content verify --prefix=<id>` is diagnostic only.
+   It confirms a content
+  ID depends on a missing pack,
+   but it does not remove or restore that pack.
 - Checking the FUSE mount with `find /mnt/pcloud/rclone ...` is diagnostic only.
-  It showed that the six pack filenames were not visible through the mount, but
+  It showed that the six pack filenames were not visible through the mount,
+   but
   it does not prove whether pCloud still had recoverable trash or history copies.
 - Low-level `content delete` or `index optimize --drop-contents` was not used in
-  this repair. Those commands can make data loss permanent and were unnecessary
+  this repair.
+   Those commands can make data loss permanent and were unnecessary
   because all historical snapshots were disposable.
 
 ## Upstream filing artifact
 
 ### Upstream filing decision
 
-`.out-of-scope/` was checked before considering upstream filing. No Kopia-specific
+`.out-of-scope/` was checked before considering upstream filing.
+ No Kopia-specific
 exemption was present.
 
 Duplicate search found related upstream reports:
@@ -346,26 +371,39 @@ Duplicate search found related upstream reports:
   maintainer note that deleted-content rewrite inconsistencies may be safe to
   ignore after successful verification.
 - [kopia/kopia#4885](https://github.com/kopia/kopia/issues/4885) covers
-  maintenance rewrite failures caused by missing or corrupt pack blobs, with
+  maintenance rewrite failures caused by missing or corrupt pack blobs,
+   with
   `kopia content verify` as the recommended first damage assessment.
 
 The six-constraint check:
 
-- Is it really upstream's fault? No. The local evidence shows missing pack blobs
-  behind a FUSE-backed filesystem repository. It does not prove a Kopia defect.
-- Can upstream fix it? Not established. Kopia cannot restore pack blobs that the
+- Is it really upstream's fault?
+   No. The local evidence shows missing pack blobs
+  behind a FUSE-backed filesystem repository.
+   It does not prove a Kopia defect.
+- Can upstream fix it?
+   Not established.
+   Kopia cannot restore pack blobs that the
   storage backend no longer exposes.
-- Are they supporting this use case? Partly. Kopia supports filesystem
+- Are they supporting this use case?
+   Partly.
+   Kopia supports filesystem
   repositories and documents that unsupported or inconsistent filesystems can
   corrupt repositories.
-- Would the repo welcome our contribution? Not evaluated further because the
+- Would the repo welcome our contribution?
+   Not evaluated further because the
   first constraint failed.
-- Will they likely fix it? Not evaluated further because the first constraint
+- Will they likely fix it?
+   Not evaluated further because the first constraint
   failed.
-- Have we prototyped a minimal fix compatible with their architecture? No. A
+- Have we prototyped a minimal fix compatible with their architecture?
+   No. A
   code fix is not identified because the demonstrated repair was repository
-  data repair, not a Kopia source change.
+  data repair,
+   not a Kopia source change.
 
-Decision: do not file a new upstream issue. There is no additive comment for the
+Decision:
+ do not file a new upstream issue.
+ There is no additive comment for the
 existing issues because this incident matches the already documented missing-pack
 class and adds no source-level Kopia defect.

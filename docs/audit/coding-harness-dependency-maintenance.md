@@ -1,6 +1,7 @@
 # Coding harness dependency maintenance audit
 
-Last updated: 2026-06-24.
+Last updated:
+ 2026-06-24.
 
 ## Purpose
 
@@ -10,25 +11,36 @@ and whether that changes `pi`'s standing as a coding harness.
 
 Keep dependency hygiene separate from overall harness quality.
 This file is the live handover for continuing the audit.
-Update it whenever evidence, conclusions, or next steps change.
+Update it whenever evidence,
+ conclusions,
+ or next steps change.
 
 ## Candidate repositories
 
-- `pi`: `/tmp/agent/pi-repo-deps-audit`
-- Aider: `/tmp/agent/harness-aider-20260624`
-- Gemini CLI: `/tmp/agent/harness-gemini-cli-20260624`
-- Codex: `/tmp/agent/harness-codex-20260624`
-- OpenCode: `/tmp/agent/harness-opencode-20260624`
-- Goose: `/tmp/agent/harness-goose-20260624`
-- Crush: `/tmp/agent/harness-crush-20260624`
-- ForgeCode: `/tmp/agent/harness-forgecode-20260624`
+- `pi`:
+   `/tmp/agent/pi-repo-deps-audit`
+- Aider:
+   `/tmp/agent/harness-aider-20260624`
+- Gemini CLI:
+   `/tmp/agent/harness-gemini-cli-20260624`
+- Codex:
+   `/tmp/agent/harness-codex-20260624`
+- OpenCode:
+   `/tmp/agent/harness-opencode-20260624`
+- Goose:
+   `/tmp/agent/harness-goose-20260624`
+- Crush:
+   `/tmp/agent/harness-crush-20260624`
+- ForgeCode:
+   `/tmp/agent/harness-forgecode-20260624`
 
 ## Completed evidence
 
 ### Pi baseline
 
 - Upstream `pi` intentionally pins exact external dependency versions.
-  Evidence: `/tmp/agent/pi-repo-deps-audit/scripts/check-pinned-deps.mjs` rejects non-exact external versions.
+  Evidence:
+   `/tmp/agent/pi-repo-deps-audit/scripts/check-pinned-deps.mjs` rejects non-exact external versions.
 - Upstream `pi` has CI and audit workflows.
   Evidence:
   `/tmp/agent/pi-repo-deps-audit/.github/workflows/ci.yml` and
@@ -56,13 +68,24 @@ ForgeCode had roughly 7.4k stars when checked and describes itself as an AI-enab
 ### Dependency automation scan
 
 - Gemini CLI has Dependabot for npm and GitHub Actions.
-  Evidence: `/tmp/agent/harness-gemini-cli-20260624/.github/dependabot.yml`.
-- Codex has Dependabot for bun, cargo, devcontainers, docker, GitHub Actions, and rust-toolchain.
-  Evidence: `/tmp/agent/harness-codex-20260624/.github/dependabot.yaml`.
-- Goose has Dependabot for `/ui` npm, root cargo, and GitHub Actions.
-  Evidence: `/tmp/agent/harness-goose-20260624/.github/dependabot.yml`.
+  Evidence:
+   `/tmp/agent/harness-gemini-cli-20260624/.github/dependabot.yml`.
+- Codex has Dependabot for bun,
+   cargo,
+   devcontainers,
+   docker,
+   GitHub Actions,
+   and rust-toolchain.
+  Evidence:
+   `/tmp/agent/harness-codex-20260624/.github/dependabot.yaml`.
+- Goose has Dependabot for `/ui` npm,
+   root cargo,
+   and GitHub Actions.
+  Evidence:
+   `/tmp/agent/harness-goose-20260624/.github/dependabot.yml`.
 - Crush has Dependabot for Go modules and GitHub Actions.
-  Evidence: `/tmp/agent/harness-crush-20260624/.github/dependabot.yml`.
+  Evidence:
+   `/tmp/agent/harness-crush-20260624/.github/dependabot.yml`.
 - ForgeCode has Dependabot for cargo and GitHub Actions,
   plus Renovate with `config:recommended` and automerge enabled.
   Evidence:
@@ -96,18 +119,22 @@ A local Python scan of cloned manifests counted dependency spec styles.
 These numbers are evidence for posture only,
 not a complete vulnerability or freshness audit.
 
-- `pi`: npm manifests had 70 dependency specs,
+- `pi`:
+   npm manifests had 70 dependency specs,
   66 exact and 4 ranged.
   No update bot config found.
-- Aider: no npm or cargo manifests in scope.
+- Aider:
+   no npm or cargo manifests in scope.
   `requirements.txt` is the published dependency source and pins resolved packages exactly.
   No update bot config found.
-- Gemini CLI: npm manifests had 265 dependency specs,
+- Gemini CLI:
+   npm manifests had 265 dependency specs,
   256 exact,
   6 workspace or catalog specs,
   and no ranged specs.
   Dependabot is configured.
-- Codex: npm manifests had 19 dependency specs,
+- Codex:
+   npm manifests had 19 dependency specs,
   mostly ranged.
   Cargo manifests had 60 semver specs,
   9 exact `=` pins,
@@ -115,14 +142,16 @@ not a complete vulnerability or freshness audit.
   10 path specs,
   and 2 git specs.
   Dependabot is configured across several ecosystems.
-- OpenCode: npm manifests had 711 dependency specs,
+- OpenCode:
+   npm manifests had 711 dependency specs,
   313 exact,
   33 ranged,
   363 workspace or catalog specs,
   1 URL or git spec,
   and 1 other spec.
   No update bot config found.
-- Goose: npm manifests had 191 dependency specs,
+- Goose:
+   npm manifests had 191 dependency specs,
   9 exact,
   176 ranged,
   and 6 workspace or catalog specs.
@@ -132,9 +161,13 @@ not a complete vulnerability or freshness audit.
   12 path specs,
   and 2 git specs.
   Dependabot is configured.
-- Crush: Go module only in this scan.
-  It has `go.mod`, `go.sum`, and Dependabot for Go modules plus GitHub Actions.
-- ForgeCode: npm manifest had 19 dependency specs,
+- Crush:
+   Go module only in this scan.
+  It has `go.mod`,
+   `go.sum`,
+   and Dependabot for Go modules plus GitHub Actions.
+- ForgeCode:
+   npm manifest had 19 dependency specs,
   all ranged.
   Cargo manifests had 76 semver specs,
   409 workspace specs,
@@ -155,43 +188,71 @@ Security and audit workflow scan:
   and GitHub dependency review.
 - ForgeCode's generated CI builds and tests with coverage,
   but no dependency vulnerability workflow was found in the scan so far.
-- Codex, Aider, and OpenCode did not show an obvious dependency-audit workflow in the scanned output.
+- Codex,
+   Aider,
+   and OpenCode did not show an obvious dependency-audit workflow in the scanned output.
 
 Registry spot-check for high-signal npm AI dependencies:
 
-- `pi` pins `@google/genai` to `1.52.0`, while `npm view @google/genai version` returned `2.10.0`.
-- Gemini CLI pins `@google/genai` to `1.30.0`, while latest was `2.10.0`.
-- `pi` pins `openai` to `6.26.0`, while latest was `6.44.0`.
+- `pi` pins `@google/genai` to `1.52.0`,
+   while `npm view @google/genai version` returned `2.10.0`.
+- Gemini CLI pins `@google/genai` to `1.30.0`,
+   while latest was `2.10.0`.
+- `pi` pins `openai` to `6.26.0`,
+   while latest was `6.44.0`.
 - OpenCode had `openai` `5.11.0` in one package and `ai` `6.0.168` in its catalog,
   while latest `ai` was `6.0.209`.
-- ForgeCode uses `ai` as `^6.0.77`, so its manifest permits compatible updates,
+- ForgeCode uses `ai` as `^6.0.77`,
+   so its manifest permits compatible updates,
   though the lockfile still determines installed versions.
 
 Latest release check with `gh release view`:
 
-- `pi`: `v0.80.2`, published 2026-06-23.
-- Aider: `v0.86.0`, published 2025-08-09.
-- Gemini CLI: `v0.47.0`, published 2026-06-18.
-- Codex: `rust-v0.142.0`, published 2026-06-22.
-- OpenCode: `v1.17.9`, published 2026-06-21.
-- Goose: `v1.38.0`, published 2026-06-17.
-- Crush: `v0.79.1`, published 2026-06-20.
-- ForgeCode: `v2.13.14`, published 2026-06-23.
+- `pi`:
+   `v0.80.2`,
+   published 2026-06-23.
+- Aider:
+   `v0.86.0`,
+   published 2025-08-09.
+- Gemini CLI:
+   `v0.47.0`,
+   published 2026-06-18.
+- Codex:
+   `rust-v0.142.0`,
+   published 2026-06-22.
+- OpenCode:
+   `v1.17.9`,
+   published 2026-06-21.
+- Goose:
+   `v1.38.0`,
+   published 2026-06-17.
+- Crush:
+   `v0.79.1`,
+   published 2026-06-20.
+- ForgeCode:
+   `v2.13.14`,
+   published 2026-06-23.
 
 ## Current tentative reading
 
 The comparison is now clearer:
 
-- Best automation signals: ForgeCode,
+- Best automation signals:
+   ForgeCode,
   Goose,
   Crush,
   Codex,
   and Gemini CLI.
-- Best security-workflow signals: Crush and Goose,
+- Best security-workflow signals:
+   Crush and Goose,
   with `pi` having a narrower but real npm audit workflow.
-- Most conservative exact-pin posture: `pi`, Gemini CLI, Aider,
+- Most conservative exact-pin posture:
+   `pi`,
+   Gemini CLI,
+   Aider,
   and much of OpenCode's catalog.
-- Most flexible manifest posture: ForgeCode,
+- Most flexible manifest posture:
+   ForgeCode,
   Goose,
   Codex,
   and Crush's Go module setup.
@@ -214,8 +275,13 @@ I checked recent merged PRs with `gh pr list` for Dependabot and Renovate author
 - Crush has merged Dependabot PRs as recently as 2026-06-08.
 - ForgeCode has merged Dependabot PRs and Renovate PRs.
   Returned Renovate examples included 2026-06-24 updates for `@ai-sdk/google-vertex`,
-  `ai`, `posthog-rs`, `rmcp`, and `gix`.
-- `pi`, Aider, and OpenCode returned no merged Dependabot or Renovate PRs from that query.
+  `ai`,
+   `posthog-rs`,
+   `rmcp`,
+   and `gix`.
+- `pi`,
+   Aider,
+   and OpenCode returned no merged Dependabot or Renovate PRs from that query.
 
 ForgeCode clarification:
 
@@ -264,7 +330,9 @@ Answer the user with this judgment:
   and the latest release checked was 2026-06-23.
 - Dependency hygiene should affect `pi`'s standing as one factor,
   but it should not determine overall coding-harness ranking.
-  It counts against `pi` compared with Goose, Crush, and ForgeCode on maintenance automation,
+  It counts against `pi` compared with Goose,
+   Crush,
+   and ForgeCode on maintenance automation,
   but not enough to conclude those are better harnesses overall without evaluating UX,
   agent loop quality,
   extensibility,
@@ -289,5 +357,7 @@ not a harness-quality verdict.
 
 ## Suggested skills for continuation
 
-- `choosing-technology`, because the user wants a comparative practical judgment.
-- `source-audited-report`, if the final answer becomes a cited reader-facing report.
+- `choosing-technology`,
+   because the user wants a comparative practical judgment.
+- `source-audited-report`,
+   if the final answer becomes a cited reader-facing report.

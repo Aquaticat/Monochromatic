@@ -17,27 +17,38 @@ amb eines modernes i optimització del rendiment.
 
 ## El meu paper i les meves contribucions
 
-Vaig ser l'**únic desenvolupador**, responsable de:
+Vaig ser l'**únic desenvolupador**,
+ responsable de:
 
-- **Desenvolupament**: vaig construir el lloc amb Bootstrap, variables SCSS personalitzades,
+- **Desenvolupament**:
+   vaig construir el lloc amb Bootstrap,
+   variables SCSS personalitzades,
   Vite i Bun
-- **Optimització d'imatges**: vaig convertir totes les imatges al format AVIF
+- **Optimització d'imatges**:
+   vaig convertir totes les imatges al format AVIF
   amb `srcset` responsiu per a diferents mides de finestra
-- **Suport per a impressió**: vaig afegir un full d'estil per imprimir amb la biblioteca CSS Gutenberg
-- **Desplegament**: desplegament a GitHub Pages
+- **Suport per a impressió**:
+   vaig afegir un full d'estil per imprimir amb la biblioteca CSS Gutenberg
+- **Desplegament**:
+   desplegament a GitHub Pages
 
 ## Aspectes tècnics destacats
 
-- **Bootstrap amb SCSS personalitzat**: vaig ampliar el tema per defecte de Bootstrap
+- **Bootstrap amb SCSS personalitzat**:
+   vaig ampliar el tema per defecte de Bootstrap
   amb variables personalitzades per a un aspecte propi
   mantenint la graella responsiva del framework
-- **Vite i Bun**: eines de construcció modernes per a un desenvolupament ràpid
+- **Vite i Bun**:
+   eines de construcció modernes per a un desenvolupament ràpid
   i paquets de producció optimitzats
-- **Optimització d'imatges AVIF**: totes les imatges rasteritzades convertides a AVIF,
+- **Optimització d'imatges AVIF**:
+   totes les imatges rasteritzades convertides a AVIF,
   reduint la mida dels fitxers mantenint la qualitat visual
-- **srcset responsiu**: les imatges serveixen variants de mida adequada
+- **srcset responsiu**:
+   les imatges serveixen variants de mida adequada
   segons la finestra del visitant
-- **Full d'estil per imprimir**: la biblioteca CSS Gutenberg garanteix que el portafoli
+- **Full d'estil per imprimir**:
+   la biblioteca CSS Gutenberg garanteix que el portafoli
   s'imprimeix de manera neta per a còpies físiques
 
 ![Pàgina d'inici del lloc web de portafoli](../portfolio-website-homepage.avif)
@@ -52,16 +63,20 @@ No feu servir mai Bootstrap en producció.
 
 </CalloutAlert>
 
-Bootstrap té components, però molts aspectes d'aquests no es poden personalitzar
+Bootstrap té components,
+ però molts aspectes d'aquests no es poden personalitzar
 amb variables CSS.
 La recomanació oficial és afegir classes utilitàries a aquests components,
 cosa que disminueix els beneficis de fer servir components en primer lloc.
 
 Bootstrap promou un enfocament basat en classes utilitàries,
 però li falten moltes classes utilitàries bàsiques
-(per exemple, `backdrop-filter: blur(...)`)
+(per exemple,
+ `backdrop-filter: blur(...)`)
 forçant els usuaris a afegir-les mitjançant l'API d'utilitats.
-Aquesta API és, en si mateixa, molt limitada:
+Aquesta API és,
+ en si mateixa,
+ molt limitada:
 no permet afegir dues propietats CSS dins d'una sola classe utilitària.
 
 <CalloutAlert data-type="note">
@@ -94,7 +109,8 @@ Un SSG de debò gestiona tot això automàticament.
 - Personalització del framework Bootstrap
 - Eines de construcció Vite
 - Runtime Bun
-- Optimització d'imatges (AVIF, srcset)
+- Optimització d'imatges (AVIF,
+   srcset)
 - Disseny web responsiu
 - Disseny de full d'estil per imprimir
 - Desplegament a GitHub Pages

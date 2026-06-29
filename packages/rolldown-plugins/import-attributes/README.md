@@ -41,21 +41,26 @@ All three forms produce a module whose default export is the file content as a s
 
 ## Supported types
 
-- **`text`**: exports raw file content as a default string export
+- **`text`**:
+   exports raw file content as a default string export
 
 ## How it works
 
 The plugin uses two mechanisms to intercept imports before rolldown tries to parse
 non-JavaScript files:
 
-1. **`transform` hook**: rewrites `with { type: '...' }` clauses into query parameters
+1. **`transform` hook**:
+    rewrites `with { type: '...' }` clauses into query parameters
    on the specifier (e.g. `'./file.sql?__importattr=text'`).
    Handles static imports and re-exports reliably.
 
-2. **`resolveId` hook**: for dynamic imports, rolldown's Rust scanner discovers
+2. **`resolveId` hook**:
+    for dynamic imports,
+    rolldown's Rust scanner discovers
    dependencies from the original AST before `transform` runs.
    The plugin reads the importer's source to detect the attribute clause
    and tags the resolved ID with the appropriate query parameter.
 
-The `load` hook then intercepts tagged IDs, reads the file,
+The `load` hook then intercepts tagged IDs,
+ reads the file,
 and returns the handler's output as a JavaScript module.

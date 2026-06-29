@@ -26,4 +26,3 @@ run = "./gradlew test --no-daemon --console=plain"
 description = "Dogfood: run require-kdoc over this package's own Kotlin sources"
 dir = "{{config_root}}"
 run = "./gradlew detektCheck -PdetektInput={{config_root}}/src/main/kotlin --no-daemon --console=plain"
-

@@ -27,7 +27,7 @@ function isOid(value) {
     return false;
   }
   for (const ch of value) {
-    const hexDigit = (ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'f');
+    const hexDigit = ((ch >= '0') && (ch <= '9')) || ((ch >= 'a') && (ch <= 'f'));
     if (!hexDigit) {
       return false;
     }
@@ -45,12 +45,17 @@ function isOid(value) {
  * @example
  * authorized(req, { LFS_WRITE_TOKEN: 's3cr3t' })
  */
-function authorized(request, env) {
+function authorized(
+  request,
+  env
+) {
   const token = env.LFS_WRITE_TOKEN;
   if (!token) {
     return false;
   }
-  const header = request.headers.get('Authorization') ?? '';
+  const header = request.headers
+    .get('Authorization')
+    ?? '';
   if (!header.startsWith('Basic ')) {
     return false;
   }
@@ -67,11 +72,17 @@ function authorized(request, env) {
  * @example
  * lfsJson({ objects: [] }, 200)
  */
-function lfsJson(body, status) {
-  return new Response(JSON.stringify(body), {
+function lfsJson(
+  body,
+  status
+) {
+  return new Response(
+    JSON.stringify(body),
+    {
     status,
     headers: { 'Content-Type': LFS_JSON },
-  });
+  }
+  );
 }
 
 // endregion
@@ -90,25 +101,42 @@ function lfsJson(body, status) {
  * @example
  * handleBatch(req, env, new URL(req.url))
  */
-async function handleBatch(request, env, url) {
+async function handleBatch(
+  request,
+  env,
+  url
+) {
   const payload = await request.json();
-  const operation = payload.operation;
+  const {operation} = payload;
   const objects = payload.objects ?? [];
 
-  if (operation === 'upload' && !authorized(request, env)) {
-    return new Response('Unauthorized', {
+  if ((operation === 'upload') && (!authorized(
+    request,
+    env
+  ))) {
+    return new Response(
+      'Unauthorized',
+      {
       status: 401,
       headers: { 'LFS-Authenticate': 'Basic realm="monochromatic-lfs"' },
-    });
+    }
+    );
   }
 
   const results = await Promise.all(
-    objects.map(async ({ oid, size }) => {
+    objects.map(async ({
+      oid,
+      size
+    }) => {
       const href = `${url.origin}/${oid}`;
-      const head = await env.BUCKET.head(oid);
+      const head = await env.BUCKET
+        .head(oid);
       if (operation === 'upload') {
         if (head) {
-          return { oid, size };
+          return {
+            oid,
+            size
+          };
         }
         return {
           oid,
@@ -116,19 +144,37 @@ async function handleBatch(request, env, url) {
           actions: {
             upload: {
               href,
-              header: { Authorization: request.headers.get('Authorization') },
+              header: { Authorization: request.headers
+                .get('Authorization') },
             },
           },
         };
       }
       if (!head) {
-        return { oid, size, error: { code: 404, message: 'Object not found' } };
+        return {
+          oid,
+          size,
+          error: {
+            code: 404,
+            message: 'Object not found'
+          }
+        };
       }
-      return { oid, size, actions: { download: { href } } };
+      return {
+        oid,
+        size,
+        actions: { download: { href } }
+      };
     }),
   );
 
-  return lfsJson({ transfer: 'basic', objects: results }, 200);
+  return lfsJson(
+    {
+      transfer: 'basic',
+      objects: results
+    },
+    200
+  );
 }
 
 /**
@@ -139,17 +185,27 @@ async function handleBatch(request, env, url) {
  * @example
  * getObject('a'.repeat(64), env)
  */
-async function getObject(oid, env) {
-  const object = await env.BUCKET.get(oid);
+async function getObject(
+  oid,
+  env
+) {
+  const object = await env.BUCKET
+    .get(oid);
   if (!object) {
-    return new Response('Not found', { status: 404 });
+    return new Response(
+      'Not found',
+      { status: 404 }
+    );
   }
-  return new Response(object.body, {
+  return new Response(
+    object.body,
+    {
     headers: {
       'Content-Type': 'application/octet-stream',
       'Content-Length': String(object.size),
     },
-  });
+  }
+  );
 }
 
 /**
@@ -161,12 +217,29 @@ async function getObject(oid, env) {
  * @example
  * putObject('a'.repeat(64), req, env)
  */
-async function putObject(oid, request, env) {
-  if (!authorized(request, env)) {
-    return new Response('Unauthorized', { status: 401 });
+async function putObject(
+  oid,
+  request,
+  env
+) {
+  if (!authorized(
+    request,
+    env
+  )) {
+    return new Response(
+      'Unauthorized',
+      { status: 401 }
+    );
   }
-  await env.BUCKET.put(oid, request.body);
-  return new Response(null, { status: 200 });
+  await env.BUCKET
+    .put(
+      oid,
+      request.body
+    );
+  return new Response(
+    null,
+    { status: 200 }
+  );
 }
 
 // endregion
@@ -180,23 +253,43 @@ export default {
    * @example
    * export default { fetch }
    */
-  async fetch(request, env) {
+  async fetch(
+    request,
+    env
+  ) {
     const url = new URL(request.url);
 
-    if (request.method === 'POST' && url.pathname.endsWith('/objects/batch')) {
-      return handleBatch(request, env, url);
+    if ((request.method === 'POST')
+      && url.pathname
+      .endsWith('/objects/batch')) {
+      return handleBatch(
+        request,
+        env,
+        url
+      );
     }
 
-    const oid = url.pathname.slice(1);
+    const oid = url.pathname
+      .slice(1);
     if (isOid(oid)) {
       if (request.method === 'GET') {
-        return getObject(oid, env);
+        return getObject(
+          oid,
+          env
+        );
       }
       if (request.method === 'PUT') {
-        return putObject(oid, request, env);
+        return putObject(
+          oid,
+          request,
+          env
+        );
       }
     }
 
-    return new Response('Not found', { status: 404 });
+    return new Response(
+      'Not found',
+      { status: 404 }
+    );
   },
 };

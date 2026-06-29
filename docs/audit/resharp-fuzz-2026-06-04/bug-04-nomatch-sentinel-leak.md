@@ -2,11 +2,18 @@
 
 ## Classification
 
-- Type: correctness, out-of-bounds match result.
-- Phase: match time.
-- Severity: high. `find_all` returns a `Match` whose `end` is `usize::MAX`. Any
+- Type:
+   correctness,
+   out-of-bounds match result.
+- Phase:
+   match time.
+- Severity:
+   high.
+   `find_all` returns a `Match` whose `end` is `usize::MAX`.
+   Any
   caller that slices `haystack[m.start..m.end]` panics or reads out of bounds.
-  This is the silent-leak sibling of BUG-2 (same sentinel, no assertion).
+  This is the silent-leak sibling of BUG-2 (same sentinel,
+   no assertion).
 
 ## Minimal reproducer
 
@@ -38,9 +45,13 @@ repro '~(_*\z)' --sweep | grep BOUNDS
 BOUNDS|flags|m=1..18446744073709551615|len=2|hay=6162|pat="~(_*$)"
 ```
 
-The match end is `18446744073709551615`, which is `usize::MAX`, which is the
-engine's `NO_MATCH` sentinel. It appears for `~(_*$)` in the flags mode on
-2-byte and 3-byte haystacks; `~(_*\z)` triggers it far more often.
+The match end is `18446744073709551615`,
+ which is `usize::MAX`,
+ which is the
+engine's `NO_MATCH` sentinel.
+ It appears for `~(_*$)` in the flags mode on
+2-byte and 3-byte haystacks;
+ `~(_*\z)` triggers it far more often.
 
 ## Expected behaviour
 
@@ -48,8 +59,10 @@ Every returned `Match` satisfies `start <= end <= haystack.len()`.
 
 ## Root cause
 
-`resharp-engine/src/engine.rs`, the reverse-collect plus forward-verify
-`find_all` path. Two push sites emit `Match { end: l_max_end }` where
+`resharp-engine/src/engine.rs`,
+ the reverse-collect plus forward-verify
+`find_all` path.
+ Two push sites emit `Match { end: l_max_end }` where
 `l_max_end` can still be `NO_MATCH`:
 
 ```rust
@@ -59,30 +72,49 @@ matches.push(Match { start: nulls[i], end: l_max_end });
 matches.push(Match { start: nulls[i], end: l_max_end });
 ```
 
-`NO_MATCH` is `usize::MAX` (`engine.rs:12`). The forward scan from a candidate
-start found no valid end (it stayed at the sentinel), but a `Match` is pushed
-anyway. The parallel path at `engine.rs:960` guards the same condition with an
-assertion (BUG-2); these two push sites do not, so the sentinel escapes into the
-public result. The pattern shape is the complement of "any string ending at end
-of input", `~(_*$)` and `~(_*\z)`, which makes the forward language empty at the
+`NO_MATCH` is `usize::MAX` (`engine.rs:12`).
+ The forward scan from a candidate
+start found no valid end (it stayed at the sentinel),
+ but a `Match` is pushed
+anyway.
+ The parallel path at `engine.rs:960` guards the same condition with an
+assertion (BUG-2);
+ these two push sites do not,
+ so the sentinel escapes into the
+public result.
+ The pattern shape is the complement of "any string ending at end
+of input",
+ `~(_*$)` and `~(_*\z)`,
+ which makes the forward language empty at the
 chosen start while the reverse pass still proposed that start.
 
 ## Distinct triggers
 
-The `usize::MAX` end leaks from several prefix shapes, not just the
+The `usize::MAX` end leaks from several prefix shapes,
+ not just the
 end-anchor-complement one:
 
-- end-anchor complement, default-off-multiline: `~(_*$)`, `~(_*\z)` (flags mode).
-- non-word-boundary prefix: `\Bb+` on `ba` returns `1..usize::MAX` (default mode).
-- lookbehind prefix: `(?<=[^a])b+` on `ba` returns `1..usize::MAX` (default mode).
-- intersection: `\b\W{0}(b&\S{0,2})(c|1{0})`.
+- end-anchor complement,
+   default-off-multiline:
+   `~(_*$)`,
+   `~(_*\z)` (flags mode).
+- non-word-boundary prefix:
+   `\Bb+` on `ba` returns `1..usize::MAX` (default mode).
+- lookbehind prefix:
+   `(?<=[^a])b+` on `ba` returns `1..usize::MAX` (default mode).
+- intersection:
+   `\b\W{0}(b&\S{0,2})(c|1{0})`.
 
-The `\B` and lookbehind triggers fire in the default option mode, so this is not
-flags-only. dotnet rejects `\Bb+` (fail closed) and returns a normal result for
-`(?<=[^a])b+`; rust accepts both and leaks the sentinel.
+The `\B` and lookbehind triggers fire in the default option mode,
+ so this is not
+flags-only.
+ dotnet rejects `\Bb+` (fail closed) and returns a normal result for
+`(?<=[^a])b+`;
+ rust accepts both and leaks the sentinel.
 
 ## Notes
 
 - Fixing BUG-2 and BUG-4 together likely means making the reverse-proposed start
-  and the forward-verified end agree, or dropping the candidate when the forward
+  and the forward-verified end agree,
+   or dropping the candidate when the forward
   end is `NO_MATCH`.

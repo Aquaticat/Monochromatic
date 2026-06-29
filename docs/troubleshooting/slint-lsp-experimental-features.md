@@ -2,24 +2,31 @@
 
 `FlexboxLayout` and the other experimental Slint builtins are fully implemented
 in the slint-lsp shipped at the git rev the desktop apps pin
-(`slint-ui/slint@85e3eb76819762cdcaa732fa87533ff896546bac`, crate version
-`1.17.0`), but the compiler strips them from the default type register and only
+(`slint-ui/slint@85e3eb76819762cdcaa732fa87533ff896546bac`,
+ crate version
+`1.17.0`),
+ but the compiler strips them from the default type register and only
 restores them when `SLINT_ENABLE_EXPERIMENTAL_FEATURES` is present in the LSP
-process environment. The slint-lsp binary has no CLI flag for this. In IntelliJ
-IDEA via the third-party `kizeevov/slint-idea-plugin`, the element shows as
+process environment.
+ The slint-lsp binary has no CLI flag for this.
+ In IntelliJ
+IDEA via the third-party `kizeevov/slint-idea-plugin`,
+ the element shows as
 "Unknown Element" because the plugin (a) bundles an older slint-lsp by default
 and (b) never sets that env var and exposes no field to set it.
 
 ## Symptom
 
-Editing a `.slint` file that uses an experimental builtin, the editor underlines
+Editing a `.slint` file that uses an experimental builtin,
+ the editor underlines
 the element with a diagnostic from the Slint compiler:
 
 ```text
 Unknown element 'FlexboxLayout'
 ```
 
-This is the bare variant (no trailing parenthetical). A sibling variant exists
+This is the bare variant (no trailing parenthetical).
+ A sibling variant exists
 for a type that is in scope but internal:
 
 ```text
@@ -27,25 +34,41 @@ Unknown element 'FlexboxLayout'. (The type exists as an internal type, but canno
 ```
 
 Affected names are the experimental builtins removed from the default register:
-`FlexboxLayout`, `ComponentContainer`, and the `FlexboxLayout*` enums
-(`FlexboxLayoutDirection`, `FlexboxLayoutAlignContent`, `FlexboxLayoutWrap`,
-`FlexboxLayoutAlignSelf`). The two desktop-app packages
-(`packages/desktop-app/terminal`, `packages/music-player/desktop-app`) already
+`FlexboxLayout`,
+ `ComponentContainer`,
+ and the `FlexboxLayout*` enums
+(`FlexboxLayoutDirection`,
+ `FlexboxLayoutAlignContent`,
+ `FlexboxLayoutWrap`,
+`FlexboxLayoutAlignSelf`).
+ The two desktop-app packages
+(`packages/desktop-app/terminal`,
+ `packages/music-player/desktop-app`) already
 set `SLINT_ENABLE_EXPERIMENTAL_FEATURES = "1"` in their `mise.toml [env]` for the
-build, so `FlexboxLayout` compiles there; the editor is a separate process that
+build,
+ so `FlexboxLayout` compiles there;
+ the editor is a separate process that
 does not inherit that build env.
 
-The gate is compiler-level (`lib.rs:248` below), so it also affects the
-standalone `slint-viewer` previewer, not just the LSP. Verified at the pinned rev:
+The gate is compiler-level (`lib.rs:248` below),
+ so it also affects the
+standalone `slint-viewer` previewer,
+ not just the LSP.
+ Verified at the pinned rev:
 `slint-viewer flex.slint` with the env unset prints `error: Unknown element
-'FlexboxLayout'`, while `mise exec -- slint-viewer flex.slint` (the repo root
+'FlexboxLayout'`,
+ while `mise exec -- slint-viewer flex.slint` (the repo root
 `mise.toml [env]` injects the var) compiles past it and fails only at window
-backend init under headless. Run the previewer via `mise exec -- slint-viewer ...`
+backend init under headless.
+ Run the previewer via `mise exec -- slint-viewer ...`
 so it inherits the var.
 
 ## Root cause
 
-The element is defined and implemented; it is gated, not missing. Walking the
+The element is defined and implemented;
+ it is gated,
+ not missing.
+ Walking the
 chain in `slint-ui/slint@85e3eb76`:
 
 1. `FlexboxLayout` is a real exported builtin component.
@@ -55,7 +78,8 @@ chain in `slint-ui/slint@85e3eb76`:
    export component FlexboxLayout {
    ```
 
-2. The non-experimental type register explicitly removes it, while the
+2. The non-experimental type register explicitly removes it,
+    while the
    experimental register keeps everything.
 
    ```rust
@@ -90,7 +114,8 @@ chain in `slint-ui/slint@85e3eb76`:
    The parenthetical sibling variant lives at
    `internal/compiler/langtype.rs:587` and `:605`.
 
-4. Which register is used is decided by `enable_experimental`, read from the
+4. Which register is used is decided by `enable_experimental`,
+    read from the
    environment when the default compiler configuration is constructed.
 
    ```rust
@@ -99,7 +124,8 @@ chain in `slint-ui/slint@85e3eb76`:
    ```
 
 5. The LSP deliberately leaves its own flag `false` and relies on that env-var
-   path; there is no CLI flag and no other runtime switch.
+   path;
+    there is no CLI flag and no other runtime switch.
 
    ```rust
    // tools/lsp/main.rs:451
@@ -107,9 +133,15 @@ chain in `slint-ui/slint@85e3eb76`:
    enable_experimental: false,
    ```
 
-   The LSP's `Cli` struct (`tools/lsp/main.rs:69`) defines only `-I`, `-L`,
-   `--style`, `--backend`, `--no-toolbar`, and subcommands. No `--experimental`.
-   When experimental is on, the document cache swaps in the experimental
+   The LSP's `Cli` struct (`tools/lsp/main.rs:69`) defines only `-I`,
+    `-L`,
+   `--style`,
+    `--backend`,
+    `--no-toolbar`,
+    and subcommands.
+    No `--experimental`.
+   When experimental is on,
+    the document cache swaps in the experimental
    register:
 
    ```rust
@@ -119,15 +151,23 @@ chain in `slint-ui/slint@85e3eb76`:
    Rc::into_inner(TypeRegister::builtin_experimental()).unwrap().into_inner();
    ```
 
-On the editor side, the IntelliJ plugin `kizeevov/slint-idea-plugin` launches the
+On the editor side,
+ the IntelliJ plugin `kizeevov/slint-idea-plugin` launches the
 LSP without that env var and provides no way to add one:
 
-- It bundles its own slint-lsp, version `1.16.0` by default (its `CHANGELOG.md`,
-  plugin release 1.5.0), which predates `FlexboxLayout` entirely. An external LSP
-  path is configurable (`README.md`: Settings, Languages and Frameworks, Slint,
+- It bundles its own slint-lsp,
+   version `1.16.0` by default (its `CHANGELOG.md`,
+  plugin release 1.5.0),
+   which predates `FlexboxLayout` entirely.
+   An external LSP
+  path is configurable (`README.md`:
+   Settings,
+   Languages and Frameworks,
+   Slint,
   Slint-lsp path).
 - It builds the process with `ParentEnvironmentType.CONSOLE` and never calls
-  `withEnvironment`, so the LSP only inherits the login-shell environment
+  `withEnvironment`,
+   so the LSP only inherits the login-shell environment
   IntelliJ captured at startup.
 
   ```kotlin
@@ -141,17 +181,30 @@ LSP without that env var and provides no way to add one:
 
 - Its settings model has no environment field
   (`src/main/kotlin/dev/slint/ideaplugin/ide/settings/SlintLspSettings.kt`:
-  `path`, `args`, `style`, `backend`, `noToolbar`, `includePaths`,
-  `useExternalLsp`, `providedByEditor`). The user-supplied `args` are split on
+  `path`,
+   `args`,
+   `style`,
+   `backend`,
+   `noToolbar`,
+   `includePaths`,
+  `useExternalLsp`,
+   `providedByEditor`).
+   The user-supplied `args` are split on
   whitespace and prepended before the plugin's own flags
-  (`CommandLineHandler.kt:22`), which is the lever the workaround uses.
+  (`CommandLineHandler.kt:22`),
+   which is the lever the workaround uses.
 
 ## Verification
 
-Version under test: `slint-ui/slint@85e3eb76819762cdcaa732fa87533ff896546bac`,
-`slint-lsp 1.17.0`, installed via mise (`cargo:https://github.com/slint-ui/slint`
-at `rev:85e3eb76...`). `slint-lsp --version` prints `slint-lsp 1.17.0`, which
-distinguishes the pinned master build from a crates.io 1.16 release.
+Version under test:
+ `slint-ui/slint@85e3eb76819762cdcaa732fa87533ff896546bac`,
+`slint-lsp 1.17.0`,
+ installed via mise (`cargo:https://github.com/slint-ui/slint`
+at `rev:85e3eb76...`).
+ `slint-lsp --version` prints `slint-lsp 1.17.0`,
+ which
+distinguishes the pinned master build from a crates.
+io 1.16 release.
 
 Fixture (`flex.slint`):
 
@@ -163,10 +216,15 @@ export component Demo inherits Window {
 }
 ```
 
-Harness (`lsp-flex.ts`, run with `bun lsp-flex.ts <rootDir> <docPath> <cmd...>`).
+Harness (`lsp-flex.ts`,
+ run with `bun lsp-flex.ts <rootDir> <docPath> <cmd...>`).
 It drives one LSP session over stdio and prints the `publishDiagnostics`
-messages. `<cmd...>` is the command to launch, so the same harness tests the raw
-binary, an `env`-prefixed launch, or a `mise exec` launch.
+messages.
+ `<cmd...>` is the command to launch,
+ so the same harness tests the raw
+binary,
+ an `env`-prefixed launch,
+ or a `mise exec` launch.
 
 ```ts
 const rootDir = Bun.argv[2]; const docPath = Bun.argv[3]; const cmd = Bun.argv.slice(4);
@@ -200,7 +258,8 @@ env -u SLINT_ENABLE_EXPERIMENTAL_FEATURES bun lsp-flex.ts "$PWD" "$PWD/flex.slin
 # => diagnostics (1): Unknown element 'FlexboxLayout'
 ```
 
-Patterns that work cleanly (recognised, zero diagnostics):
+Patterns that work cleanly (recognised,
+ zero diagnostics):
 
 ```bash
 # Env var set in the LSP process environment
@@ -221,10 +280,17 @@ env -u SLINT_ENABLE_EXPERIMENTAL_FEATURES \
 
 ## Verified workarounds
 
-The editor must satisfy two conditions at once: run a slint-lsp new enough to know
-the element (the pinned 1.17.0, not the plugin's bundled 1.16.0), and run it with
-`SLINT_ENABLE_EXPERIMENTAL_FEATURES` in its environment. Point the plugin at the
-external LSP (Settings, Languages and Frameworks, Slint, enable external LSP),
+The editor must satisfy two conditions at once:
+ run a slint-lsp new enough to know
+the element (the pinned 1.17.0,
+ not the plugin's bundled 1.16.0),
+ and run it with
+`SLINT_ENABLE_EXPERIMENTAL_FEATURES` in its environment.
+ Point the plugin at the
+external LSP (Settings,
+ Languages and Frameworks,
+ Slint,
+ enable external LSP),
 then choose one injection method.
 
 1. `env` launcher through the plugin's existing path and args fields (confirmed
@@ -236,11 +302,16 @@ then choose one injection method.
    ```
 
    The plugin runs `env SLINT_ENABLE_EXPERIMENTAL_FEATURES=1 <slint-lsp> <its own
-   -I/--style/...>`; `env` sets the var then execs slint-lsp with the rest.
-   Tradeoffs: the LSP path is a machine-specific absolute path baked into IDE
-   settings; using the mise shim (`.../mise/shims/slint-lsp`) keeps it tracking
-   the mise tool pin instead of a frozen install path; this bypasses mise `[env]`
-   entirely, so it does not depend on the LSP's working directory.
+   -I/--style/...>`;
+    `env` sets the var then execs slint-lsp with the rest.
+   Tradeoffs:
+    the LSP path is a machine-specific absolute path baked into IDE
+   settings;
+    using the mise shim (`.../mise/shims/slint-lsp`) keeps it tracking
+   the mise tool pin instead of a frozen install path;
+    this bypasses mise `[env]`
+   entirely,
+    so it does not depend on the LSP's working directory.
 
 2. mise launcher so a mise `[env]` is the source of truth.
 
@@ -250,79 +321,138 @@ then choose one injection method.
    ```
 
    with `SLINT_ENABLE_EXPERIMENTAL_FEATURES = "1"` in a mise `[env]` active at the
-   LSP's working directory. Tradeoff: mise `[env]` is directory-activated, so this
+   LSP's working directory.
+    Tradeoff:
+    mise `[env]` is directory-activated,
+    so this
    only works if the plugin gives the LSP the directory whose mise config carries
-   the var (the monorepo root). In practice this did not take effect in IntelliJ,
-   consistent with the plugin's LSP cwd not being the repo root; prefer method 1
-   unless that cwd is confirmed. The repo sets this var in the generated root
+   the var (the monorepo root).
+    In practice this did not take effect in IntelliJ,
+   consistent with the plugin's LSP cwd not being the repo root;
+    prefer method 1
+   unless that cwd is confirmed.
+    The repo sets this var in the generated root
    `mise.toml [env]` (via the `envSection` template in `file-enforcer.config.ts`),
    which covers `mise exec` and builds run from the repo root.
 
-3. systemd user environment, for a session-wide setting independent of the editor.
+3. systemd user environment,
+    for a session-wide setting independent of the editor.
 
    ```ini
    # ~/.config/environment.d/slint.conf
    SLINT_ENABLE_EXPERIMENTAL_FEATURES=1
    ```
 
-   Then log out and back in. Tradeoff: global to the whole graphical session
-   (every app inherits it; harmless here), and it needs a relogin.
+   Then log out and back in.
+    Tradeoff:
+    global to the whole graphical session
+   (every app inherits it;
+    harmless here),
+    and it needs a relogin.
 
 ## What does not work
 
 - Setting the var only in mise config and pointing the plugin at the raw binary:
-  mise `[env]` is directory-activated, not a persistent system variable, so a
-  desktop-launched IntelliJ does not inherit it. Verified: the mise-launcher
-  route (method 2) produced no effect in IntelliJ, while `mise exec` from the
-  repo root in a shell did inject the var, isolating the cause to the LSP's
+  mise `[env]` is directory-activated,
+   not a persistent system variable,
+   so a
+  desktop-launched IntelliJ does not inherit it.
+   Verified:
+   the mise-launcher
+  route (method 2) produced no effect in IntelliJ,
+   while `mise exec` from the
+  repo root in a shell did inject the var,
+   isolating the cause to the LSP's
   working directory rather than mise.
-- A plugin setting for the env var: none exists. `SlintLspSettings` has no
+- A plugin setting for the env var:
+   none exists.
+   `SlintLspSettings` has no
   environment field and `CommandLineHandler` never calls `withEnvironment`.
-- A slint-lsp CLI flag: there is no `--experimental`. The only runtime gate is
+- A slint-lsp CLI flag:
+   there is no `--experimental`.
+   The only runtime gate is
   the env var.
-- Keeping the plugin's bundled slint-lsp (1.16.0): it lacks `FlexboxLayout`
-  regardless of the env var; an external 1.17 LSP is required.
+- Keeping the plugin's bundled slint-lsp (1.16.0):
+   it lacks `FlexboxLayout`
+  regardless of the env var;
+   an external 1.17 LSP is required.
 
 ## Why we do not file this upstream
 
-Default policy is do not file. Both involved tools are checked against the five
-constraints; neither qualifies.
+Default policy is do not file.
+ Both involved tools are checked against the five
+constraints;
+ neither qualifies.
 
 slint-lsp (`slint-ui/slint`):
 
-1. Upstream's fault? No. Stripping experimental builtins from the default
+1. Upstream's fault?
+    No. Stripping experimental builtins from the default
    register (`typeregister.rs:660`) and gating restoration on
-   `SLINT_ENABLE_EXPERIMENTAL_FEATURES` (`lib.rs:248`, `main.rs:451`) is
-   deliberate design, not a defect. The feature is experimental by intent.
-2. Can they fix? Not applicable; there is nothing to fix.
-3. Supporting the use case? The env var is the documented switch for exactly
-   this; it works as designed.
-4. Will they fix? Not applicable.
-5. Minimal fix prototyped? Not applicable; no defect to fix.
+   `SLINT_ENABLE_EXPERIMENTAL_FEATURES` (`lib.rs:248`,
+    `main.rs:451`) is
+   deliberate design,
+    not a defect.
+    The feature is experimental by intent.
+2. Can they fix?
+    Not applicable;
+    there is nothing to fix.
+3. Supporting the use case?
+    The env var is the documented switch for exactly
+   this;
+    it works as designed.
+4. Will they fix?
+    Not applicable.
+5. Minimal fix prototyped?
+    Not applicable;
+    no defect to fix.
 
-Constraint 1 fails, so no prototype and no issue.
+Constraint 1 fails,
+ so no prototype and no issue.
 
 `kizeevov/slint-idea-plugin`:
 
-1. Upstream's fault? Soft no. The plugin already exposes `path` and `args`, and
+1. Upstream's fault?
+    Soft no. The plugin already exposes `path` and `args`,
+    and
    the `/usr/bin/env` launcher (workaround 1) injects the env var through those
-   existing fields. The use case is achievable today, so the absent dedicated
-   env field is a convenience gap, not a fault. Bundling a stable 1.16 release as
+   existing fields.
+    The use case is achievable today,
+    so the absent dedicated
+   env field is a convenience gap,
+    not a fault.
+    Bundling a stable 1.16 release as
    the default is reasonable.
-2. Can they fix? Yes, trivially (add a settings map and a `withEnvironment`
-   call), but see constraint 1.
-3. Supporting the use case? Yes, through external-LSP path plus args.
-4. Will they fix? No signal either way.
-5. Minimal fix prototyped? Not warranted, because the workaround uses shipped
+2. Can they fix?
+    Yes,
+    trivially (add a settings map and a `withEnvironment`
+   call),
+    but see constraint 1.
+3. Supporting the use case?
+    Yes,
+    through external-LSP path plus args.
+4. Will they fix?
+    No signal either way.
+5. Minimal fix prototyped?
+    Not warranted,
+    because the workaround uses shipped
    features and constraint 1 does not hold.
 
-Constraint 1 does not hold, so the auto-prototype trigger (constraints 1 to 4
-holding or sorta-holding) is not met. No prototype, no issue.
+Constraint 1 does not hold,
+ so the auto-prototype trigger (constraints 1 to 4
+holding or sorta-holding) is not met.
+ No prototype,
+ no issue.
 
-Duplicate search (recorded per policy): `gh search issues --repo slint-ui/slint
+Duplicate search (recorded per policy):
+ `gh search issues --repo slint-ui/slint
 'FlexboxLayout LSP experimental' --state all` and
 `gh search issues --repo kizeevov/slint-idea-plugin 'environment variable
 experimental'` (and a broader `env` query) both returned no matches on
-2026-06-04. No existing thread to comment on. No new issue is drafted, because
-neither tool has a fileable defect; the user-facing problem is solved at our
+2026-06-04.
+ No existing thread to comment on.
+ No new issue is drafted,
+ because
+neither tool has a fileable defect;
+ the user-facing problem is solved at our
 boundary by the editor configuration above.

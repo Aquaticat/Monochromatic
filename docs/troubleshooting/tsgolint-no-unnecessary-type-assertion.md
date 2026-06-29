@@ -68,7 +68,7 @@ Empirical verification (this entry's prototype step):
 
 At HEAD the same reproducer produces a different diagnostic from a sibling rule:
 
-```
+```text
 no-unsafe-type-assertion - Unsafe assertion from `any` detected: consider using
 type guards or a safer assertion.
 ```

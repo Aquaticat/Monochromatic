@@ -1,11 +1,13 @@
 # config-oxlint-tsdoc
 
 Oxlint JS plugin providing TSDoc validation rules adapted from eslint-plugin-jsdoc's recommended-typescript config.
-Uses an in-house TSDoc comment scanner; no external dependency on `@microsoft/tsdoc`.
+Uses an in-house TSDoc comment scanner;
+ no external dependency on `@microsoft/tsdoc`.
 
 ## Motivation
 
-eslint-plugin-jsdoc only runs inside ESLint, which is slow and cannot participate in oxlint's single-pass architecture.
+eslint-plugin-jsdoc only runs inside ESLint,
+ which is slow and cannot participate in oxlint's single-pass architecture.
 This plugin reimplements the recommended-typescript ruleset as an oxlint JS plugin,
 adapting all rules to conform to TSDoc (not JSDoc) conventions used in the monorepo.
 
@@ -23,7 +25,8 @@ export default defineConfig({
 
 All rules are enabled by default at `"warn"` severity with `recommended: true`.
 
-The package default export resolves to the prebuilt, self-contained
+The package default export resolves to the prebuilt,
+ self-contained
 `dist/final/node/index.mjs` (run `mise run //packages/oxlint-plugins/tsdoc:build` first).
 TypeScript source is available at the `/ts` subpath (`/ts/*` for individual files) for
 development.
@@ -32,68 +35,133 @@ development.
 
 ### Presence
 
-- **require-tsdoc**: requires TSDoc comments on module-level documentable declarations
-  (functions, classes, interfaces, type aliases, enums, variables, properties, enum members, getters, setters);
+- **require-tsdoc**:
+   requires TSDoc comments on module-level documentable declarations
+  (functions,
+   classes,
+   interfaces,
+   type aliases,
+   enums,
+   variables,
+   properties,
+   enum members,
+   getters,
+   setters);
   skips VariableDeclaration nodes inside function bodies
 
 ### Structural formatting
 
-- **check-alignment**: enforces consistent asterisk alignment in multiline TSDoc blocks
-- **multiline-blocks**: requires multiline format for all TSDoc comments and auto-fixes single-line blocks
-- **no-multi-asterisks**: disallows `** text` lines (doubled leading asterisks)
-- **tag-lines**: requires blank comment lines before block tags
-- **empty-tags**: enforces that modifier tags (`@public`, `@readonly`, `@override`, etc.) have no content
-- **escape-inline-tags**: detects unescaped `*/` inside comment content
+- **check-alignment**:
+   enforces consistent asterisk alignment in multiline TSDoc blocks
+- **multiline-blocks**:
+   requires multiline format for all TSDoc comments and auto-fixes single-line blocks
+- **no-multi-asterisks**:
+   disallows `** text` lines (doubled leading asterisks)
+- **tag-lines**:
+   requires blank comment lines before block tags
+- **empty-tags**:
+   enforces that modifier tags (`@public`,
+   `@readonly`,
+   `@override`,
+   etc.) have no content
+- **escape-inline-tags**:
+   detects unescaped `*/` inside comment content
 
 ### Tag validation
 
-- **check-tag-names**: validates that tags are recognized TSDoc standard tags;
+- **check-tag-names**:
+   validates that tags are recognized TSDoc standard tags;
   reports JSDoc-only tags with migration suggestions;
   skips fenced code blocks and backtick-wrapped inline code
-- **check-access**: detects conflicting access modifier tags
-- **valid-types**: reports best-effort structural problems from the in-house scanner
-  (`@param` tag missing its hyphen separator, unclosed `{@link`, empty `{@link}`)
-- **no-types**: disallows JSDoc-style `{Type}` annotations in TSDoc
+- **check-access**:
+   detects conflicting access modifier tags
+- **valid-types**:
+   reports best-effort structural problems from the in-house scanner
+  (`@param` tag missing its hyphen separator,
+   unclosed `{@link`,
+   empty `{@link}`)
+- **no-types**:
+   disallows JSDoc-style `{Type}` annotations in TSDoc
 
 ### Parameter documentation
 
-- **check-param-names**: validates `@param` names against the function signature;
+- **check-param-names**:
+   validates `@param` names against the function signature;
   allows property names from destructured parameters
-- **require-param**: requires `@param` tags for all function parameters
-- **require-param-name**: requires every `@param` tag to specify a parameter name
-- **require-param-description**: requires descriptions on `@param` tags
+- **require-param**:
+   requires `@param` tags for all function parameters
+- **require-param-name**:
+   requires every `@param` tag to specify a parameter name
+- **require-param-description**:
+   requires descriptions on `@param` tags
 
 ### Return documentation
 
-- **require-returns**: requires `@returns` tag for functions with non-void return types;
+- **require-returns**:
+   requires `@returns` tag for functions with non-void return types;
   skips constructors and setters
-- **require-returns-check**: reports `@returns` on void functions
-- **require-returns-description**: requires descriptions on `@returns` tags
+- **require-returns-check**:
+   reports `@returns` on void functions
+- **require-returns-description**:
+   requires descriptions on `@returns` tags
 
 ### Yield documentation
 
-- **require-yields**: requires `@yields` tag for generator functions
-- **require-yields-check**: reports `@yields` on non-generator functions
+- **require-yields**:
+   requires `@yields` tag for generator functions
+- **require-yields-check**:
+   reports `@yields` on non-generator functions
 
 ## Ignored files
 
 Files matching these extensions are skipped by all rules:
-`.test.ts`, `.spec.ts`, `.bench.ts`, `.js`, `.d.ts`, `.mjs`, `.cjs`, `.d.mts`, `.d.cts`
+`.test.ts`,
+ `.spec.ts`,
+ `.bench.ts`,
+ `.js`,
+ `.d.ts`,
+ `.mjs`,
+ `.cjs`,
+ `.d.mts`,
+ `.d.cts`
 
 ## Source files
 
-- `index.ts`: plugin entry point; assembles all rules into the oxlint plugin object
-- `tsdoc-utils.ts`: barrel for comment lookup, file filtering, parameter extraction utilities
-- `comment-text.ts`: leaf text-scanning primitives (line normalization, tag/code scanning)
-- `tsdoc-blocks.ts`: in-house scanner producing the parsed `@param`/`@returns` model
-- `tsdoc-structural-messages.ts`: best-effort structural diagnostics for `valid-types`
-- `tsdoc-doc-model.ts`: parsed doc-model and message types
-- `rules/require-tsdoc.ts`: require-tsdoc rule with scope-depth tracking
-- `rules/structural.ts`: structural formatting rules (alignment, multiline, asterisks, tag spacing, escaping)
-- `rules/tag-validation.ts`: tag name validation, access checks, parse error reporting, type annotation detection
-- `rules/params.ts`: parameter documentation rules
-- `rules/returns.ts`: return documentation rules
-- `rules/yields.ts`: yield documentation rules
+- `index.ts`:
+   plugin entry point;
+   assembles all rules into the oxlint plugin object
+- `tsdoc-utils.ts`:
+   barrel for comment lookup,
+   file filtering,
+   parameter extraction utilities
+- `comment-text.ts`:
+   leaf text-scanning primitives (line normalization,
+   tag/code scanning)
+- `tsdoc-blocks.ts`:
+   in-house scanner producing the parsed `@param`/`@returns` model
+- `tsdoc-structural-messages.ts`:
+   best-effort structural diagnostics for `valid-types`
+- `tsdoc-doc-model.ts`:
+   parsed doc-model and message types
+- `rules/require-tsdoc.ts`:
+   require-tsdoc rule with scope-depth tracking
+- `rules/structural.ts`:
+   structural formatting rules (alignment,
+   multiline,
+   asterisks,
+   tag spacing,
+   escaping)
+- `rules/tag-validation.ts`:
+   tag name validation,
+   access checks,
+   parse error reporting,
+   type annotation detection
+- `rules/params.ts`:
+   parameter documentation rules
+- `rules/returns.ts`:
+   return documentation rules
+- `rules/yields.ts`:
+   yield documentation rules
 
 ## Tests
 

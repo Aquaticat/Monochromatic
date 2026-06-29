@@ -1,7 +1,8 @@
 # Oxlint type-aware mode silently skips type checks when run from monorepo root, plus disable-comment prefix stripping accepting unknown plugin namespaces
 
 This file groups two independent oxlint issues that surface across the
-workspace. Each gets its own canonical section.
+workspace.
+ Each gets its own canonical section.
 
 ---
 
@@ -11,29 +12,39 @@ workspace. Each gets its own canonical section.
 
 Running `oxlint --type-aware .` from the monorepo root finishes with
 no type-aware diagnostics for files that should clearly trigger them
-(e.g. an obvious `no-floating-promises` violation). The same files
+(e.g. an obvious `no-floating-promises` violation).
+ The same files
 report the diagnostic when oxlint runs from inside the package
 directory.
 
-No error is printed; the type-aware check simply produces no findings.
+No error is printed;
+ the type-aware check simply produces no findings.
 
 ### Root cause
 
 Oxlint discovers the nearest `tsconfig.json` by walking upward from
-the working directory. From the monorepo root the search resolves
-`./tsconfig.json` (the root config), whose `include`/`references`
-configuration does not enumerate every package's `src/` tree. Files
+the working directory.
+ From the monorepo root the search resolves
+`./tsconfig.json` (the root config),
+ whose `include`/`references`
+configuration does not enumerate every package's `src/` tree.
+ Files
 outside the root config's surface are not analysed by the type-aware
-backend; oxlint treats them as untyped and skips the rules that
+backend;
+ oxlint treats them as untyped and skips the rules that
 require type information.
 
-This is a configuration-discovery choice in oxlint, not a defect: it
+This is a configuration-discovery choice in oxlint,
+ not a defect:
+ it
 loads the config it finds and reports diagnostics for the files that
-config covers. The trap is silence rather than error.
+config covers.
+ The trap is silence rather than error.
 
 ### Verification
 
-Version under test: oxlint as pinned in `mise.toml` (commit `main` as
+Version under test:
+ oxlint as pinned in `mise.toml` (commit `main` as
 of 2026-03-13).
 
 Reproduce:
@@ -51,41 +62,64 @@ the source tree is identical.
 
 ### Verified workaround
 
-Run oxlint from each package independently. The `lint:oxlint` task
-template in `mise.toml` already does this: the root `lint:oxlint` task
-fans out across packages via `mise '/packages/...:lint:oxlint'`, so
+Run oxlint from each package independently.
+ The `lint:oxlint` task
+template in `mise.toml` already does this:
+ the root `lint:oxlint` task
+fans out across packages via `mise '/packages/...:lint:oxlint'`,
+ so
 every package executes with its own `tsconfig.json` in scope.
 
-Tradeoff: parallel fan-out across many packages spends more
-wall-clock startup time than a single invocation would; in practice
+Tradeoff:
+ parallel fan-out across many packages spends more
+wall-clock startup time than a single invocation would;
+ in practice
 the per-package runs parallelise well and the additional cost is
-small. Type correctness wins over throughput.
+small.
+ Type correctness wins over throughput.
 
 ### What does not work
 
 - Adding every package to the root `tsconfig.json`'s
-  `include`/`references`: the workspace prefers per-package configs to
-  avoid coupling unrelated packages' type checks. The change would
+  `include`/`references`:
+   the workspace prefers per-package configs to
+  avoid coupling unrelated packages' type checks.
+   The change would
   invalidate isolated package builds.
-- Passing `--tsconfig` on the root invocation: oxlint accepts the
+- Passing `--tsconfig` on the root invocation:
+   oxlint accepts the
   flag but the resolved config still misses package-local
-  `paths`/`baseUrl` overrides, so per-package type info is incomplete.
+  `paths`/`baseUrl` overrides,
+   so per-package type info is incomplete.
 
 ### Why we do not file this upstream
 
-1. **Is it really upstream's fault?** Borderline. Oxlint resolves
-   what it is told to resolve; the silent-skip behaviour is a UX
-   wart, not an algorithmic defect.
-2. **Can upstream fix it?** They could emit a warning when running
+1. **Is it really upstream's fault?
+   ** Borderline.
+    Oxlint resolves
+   what it is told to resolve;
+    the silent-skip behaviour is a UX
+   wart,
+    not an algorithmic defect.
+2. **Can upstream fix it?
+   ** They could emit a warning when running
    `--type-aware` and the discovered `tsconfig.json` does not cover
-   some of the files under analysis. That is a UX patch.
-3. **Are they supporting this use case?** Monorepos are a documented
-   target; the per-package run is the documented pattern.
-4. **Will they likely fix it?** Unknown. A "no type info for X files"
+   some of the files under analysis.
+    That is a UX patch.
+3. **Are they supporting this use case?
+   ** Monorepos are a documented
+   target;
+    the per-package run is the documented pattern.
+4. **Will they likely fix it?
+   ** Unknown.
+    A "no type info for X files"
    warning would be a small change.
-5. **Have we prototyped a minimal fix?** No.
+5. **Have we prototyped a minimal fix?
+   ** No.
 
-Decision: no upstream report at this time. The per-package run pattern
+Decision:
+ no upstream report at this time.
+ The per-package run pattern
 is the documented escape hatch.
 
 ---
@@ -102,14 +136,18 @@ await something();
 ```
 
 The reviewer expects oxlint to ignore the comment (because oxlint
-rules do not use the `eslint/` prefix). It does not: the rule is
-suppressed. The same is true for arbitrary prefixes:
+rules do not use the `eslint/` prefix).
+ It does not:
+ the rule is
+suppressed.
+ The same is true for arbitrary prefixes:
 
 ```ts
 // oxlint-disable-next-line xyzzy/no-await-in-loop
 ```
 
-This is misleading rather than broken; it masks copy-paste mistakes
+This is misleading rather than broken;
+ it masks copy-paste mistakes
 from ESLint configs and produces inconsistent codebases.
 
 ### Root cause
@@ -117,33 +155,47 @@ from ESLint configs and produces inconsistent codebases.
 The substring `.contains()` form documented in the original
 2026-03-13 snapshot of this file has since been closed upstream by an
 explicit `==` comparison after stripping the plugin prefix from the
-directive's stored rule name. A regression test at
+directive's stored rule name.
+ A regression test at
 `crates/oxc_linter/src/disable_directives.rs:2048-2086`
 (`directive_rule_name_is_matched_on_full_rule_name_not_substring`)
 locks the old `no-re-export` substring case shut.
 
 What survives is a different defect with the same surface symptom:
-the prefix is stripped **unconditionally**, without checking that the
-prefix names a recognized oxlint plugin. So `eslint/no-await-in-loop`,
-`xyzzy/no-await-in-loop`, and any other made-up prefix still strip
+the prefix is stripped **unconditionally**,
+ without checking that the
+prefix names a recognized oxlint plugin.
+ So `eslint/no-await-in-loop`,
+`xyzzy/no-await-in-loop`,
+ and any other made-up prefix still strip
 down to the bare rule name and equality-check successfully.
 
 Source citations against oxc commit
 `e182aee2599c275dc0bd93f52b4ddda70ff2c93b` (HEAD of `main` on
-2026-05-17, the snapshot used for the prototype below):
+2026-05-17,
+ the snapshot used for the prototype below):
 
-- `crates/oxc_linter/src/disable_directives.rs:281-340`: `contains()`
-  method. Lines 304-306 contain an explicit comment about the
-  substring fix; the active match arm at lines 307-313 reads
+- `crates/oxc_linter/src/disable_directives.rs:281-340`:
+   `contains()`
+  method.
+   Lines 304-306 contain an explicit comment about the
+  substring fix;
+   the active match arm at lines 307-313 reads
   `name.rsplit_once('/').map_or(name.as_str(), |(_, rule)| rule) ==
-  rule_name`, which strips any prefix without validating it.
+  rule_name`,
+   which strips any prefix without validating it.
 - `crates/oxc_linter/src/disable_directives.rs:832-871`:
-  `get_rule_names()` parser (splits on `,`, trims whitespace, strips
-  `--`/`-` description suffixes); produces the `name` values that
+  `get_rule_names()` parser (splits on `,`,
+   trims whitespace,
+   strips
+  `--`/`-` description suffixes);
+   produces the `name` values that
   feed into the prefix-strip above.
 - `crates/oxc_linter/src/tsgolint.rs:1158-1185`:
-  `should_skip_diagnostic()` calls the same `contains()` method, so a
-  fix at the method body automatically reaches tsgo rules. The
+  `should_skip_diagnostic()` calls the same `contains()` method,
+   so a
+  fix at the method body automatically reaches tsgo rules.
+   The
   surrounding `typescript-eslint/{rule}` and `@typescript-eslint/{rule}`
   fallback calls remain belt-and-braces against canonical-prefix
   authoring.
@@ -151,7 +203,8 @@ Source citations against oxc commit
   `LintPlugins::try_from` is the authoritative parsed prefix table.
   Maps recognized plugin namespaces (canonical names plus the
   `eslint-plugin-` and `@scope/eslint-plugin-foo` alias normalizations)
-  to the bitflag set. `LintPlugins::ESLINT` is the empty bitflag
+  to the bitflag set.
+   `LintPlugins::ESLINT` is the empty bitflag
   because eslint-core rules are addressed without a prefix in oxlint's
   canonical naming.
 
@@ -161,9 +214,11 @@ regardless of what prefix was used.
 
 ### Verification
 
-Version under test: oxc commit
+Version under test:
+ oxc commit
 `e182aee2599c275dc0bd93f52b4ddda70ff2c93b` (HEAD of `main`,
-2026-05-17), built with the toolchain pinned in
+2026-05-17),
+ built with the toolchain pinned in
 `rust-toolchain.toml` (rustc 1.95.0).
 
 Reproduce:
@@ -182,106 +237,166 @@ await x();
 await x();
 ```
 
-Running oxlint over all three produces no diagnostics. The diagnostic
+Running oxlint over all three produces no diagnostics.
+ The diagnostic
 returns only when the comment is removed entirely or when the rule
 name itself is mistyped (the unguarded prefix-strip then has nothing
 to compare against).
 
 Canonical prefixes (matching `parse_rule_key` in `config/rules.rs`):
 
-- eslint core: bare name, no prefix (e.g. `no-await-in-loop`,
+- eslint core:
+   bare name,
+   no prefix (e.g. `no-await-in-loop`,
   `require-await`)
-- TypeScript: `typescript/` (e.g.
+- TypeScript:
+   `typescript/` (e.g.
   `typescript/no-unsafe-type-assertion`)
-- Import: `import/` (e.g. `import/no-unassigned-import`)
-- Promise: `promise/` (e.g. `promise/avoid-new`)
-- Unicorn: `unicorn/` (e.g. `unicorn/prefer-top-level-await`)
-- Node: `node/` (e.g. `node/no-sync`)
+- Import:
+   `import/` (e.g. `import/no-unassigned-import`)
+- Promise:
+   `promise/` (e.g. `promise/avoid-new`)
+- Unicorn:
+   `unicorn/` (e.g. `unicorn/prefer-top-level-await`)
+- Node:
+   `node/` (e.g. `node/no-sync`)
 
 ### Verified workaround
 
-When authoring a new disable comment, use the canonical prefix list
-above. When reviewing existing code, normalise non-canonical prefixes
+When authoring a new disable comment,
+ use the canonical prefix list
+above.
+ When reviewing existing code,
+ normalise non-canonical prefixes
 to the canonical form during the next touch of the file.
 
-Tradeoff: the existing tree contains many non-canonical prefixes
-inherited from the pre-oxlint era (ESLint-style, parentheses-style
-such as `eslint(rule-name)`). A sweep-replace is feasible but would
-churn the history of every package; normalising opportunistically is
+Tradeoff:
+ the existing tree contains many non-canonical prefixes
+inherited from the pre-oxlint era (ESLint-style,
+ parentheses-style
+such as `eslint(rule-name)`).
+ A sweep-replace is feasible but would
+churn the history of every package;
+ normalising opportunistically is
 the lower-risk path.
 
 ### What does not work
 
-- Configuring oxlint to enforce canonical prefixes: there is no such
+- Configuring oxlint to enforce canonical prefixes:
+   there is no such
   option (the prefix-strip behaviour is built into the directive
-  matcher, not a setting).
+  matcher,
+   not a setting).
 - Writing a project linter rule to flag non-canonical prefixes:
-  possible, but adds yet another tool. Not justified for the current
+  possible,
+   but adds yet another tool.
+   Not justified for the current
   rate of new disable comments.
 
 ### Why we file this upstream
 
-1. **Is it really upstream's fault?** Yes; unconditional prefix
-   stripping is the source of the wart. Validating the prefix against
+1. **Is it really upstream's fault?
+   ** Yes;
+    unconditional prefix
+   stripping is the source of the wart.
+    Validating the prefix against
    the parsed plugin table would be the correct behaviour.
-2. **Can upstream fix it?** Yes; replace the unguarded
+2. **Can upstream fix it?
+   ** Yes;
+    replace the unguarded
    `name.rsplit_once('/').map_or(...)` strip with a guarded
    `name.split_once('/')` plus `LintPlugins::try_from(prefix)` check.
    The change is local to the `contains()` method in
-   `disable_directives.rs`; `tsgolint::should_skip_diagnostic` calls
+   `disable_directives.rs`;
+    `tsgolint::should_skip_diagnostic` calls
    the same method and inherits the fix for free.
-3. **Are they supporting this use case?** Yes; canonical prefixes are
+3. **Are they supporting this use case?
+   ** Yes;
+    canonical prefixes are
    the authoritative configuration form (`LintPlugins::try_from` and
    `parse_rule_key` both reject unknown plugin names with an explicit
-   error). The disable-directive matcher is the only path that
+   error).
+    The disable-directive matcher is the only path that
    silently accepts unknown prefixes.
-4. **Will they likely fix it?** Probably worth filing. The closed
+4. **Will they likely fix it?
+   ** Probably worth filing.
+    The closed
    substring regression (`directive_rule_name_is_matched_on_full_rule_name_not_substring`,
    line 2048) shows the maintainers care about disable-directive
-   correctness. The remaining permissive behaviour is the natural
-   next correction, but it does shift semantics for any disable
+   correctness.
+    The remaining permissive behaviour is the natural
+   next correction,
+    but it does shift semantics for any disable
    comment that relies on a bogus prefix today.
-5. **Have we prototyped a minimal fix?** Yes; patch + tests below.
+5. **Have we prototyped a minimal fix?
+   ** Yes;
+    patch + tests below.
 
 #### Prototype result
 
-Clone (private, throwaway): `/tmp/oxc-bug2-prototype.*/oxc`.
-Origin verified at `https://github.com/oxc-project/oxc.git`, HEAD
+Clone (private,
+ throwaway):
+ `/tmp/oxc-bug2-prototype.*/oxc`.
+Origin verified at `https://github.com/oxc-project/oxc.git`,
+ HEAD
 `e182aee2599c275dc0bd93f52b4ddda70ff2c93b`.
 
-Patch file: [oxlint.patch](oxlint.patch).
-The diff is 110 lines (one source hunk, one tests hunk); the file
+Patch file:
+ [oxlint.patch](oxlint.patch).
+The diff is 110 lines (one source hunk,
+ one tests hunk);
+ the file
 header in the patch records the apply-and-verify commands.
 
 Test verification:
 
 - Added four targeted tests (the four `*_post_fix` names listed in
-  the patch). Pre-patch run: 2 pass (`bare_canonical_prefix_*` and
-  `canonical_typescript_prefix_*`), 2 fail
-  (`non_canonical_eslint_prefix_*`, `bogus_xyzzy_prefix_*`),
-  reproducing the bug. Post-patch run: 4 pass.
-- Full suite: `cargo test -p oxc_linter --lib` → 1129 passed, 1
-  failed (1 ignored, unchanged). The single casualty is
-  `directive_rule_lists_parse_rules_and_descriptions`, which uses a
+  the patch).
+   Pre-patch run:
+   2 pass (`bare_canonical_prefix_*` and
+  `canonical_typescript_prefix_*`),
+   2 fail
+  (`non_canonical_eslint_prefix_*`,
+   `bogus_xyzzy_prefix_*`),
+  reproducing the bug.
+   Post-patch run:
+   4 pass.
+- Full suite:
+   `cargo test -p oxc_linter --lib` → 1129 passed,
+   1
+  failed (1 ignored,
+   unchanged).
+   The single casualty is
+  `directive_rule_lists_parse_rules_and_descriptions`,
+   which uses a
   `// oxlint-disable-next-line @scope/plugin/rule-name no-debugger`
   directive in `test_directive` and relies on the lenient invariant
   that any `/`-containing rule's bare suffix also suppresses the rule.
-  After the patch, only canonical-plugin prefixes may strip; the
-  `@scope/plugin` namespace is not a recognized oxlint plugin, so the
-  bare `rule-name` suffix no longer matches. The casualty is intended
-  semantically (it is the very behaviour the fix corrects). Upstream
+  After the patch,
+   only canonical-plugin prefixes may strip;
+   the
+  `@scope/plugin` namespace is not a recognized oxlint plugin,
+   so the
+  bare `rule-name` suffix no longer matches.
+   The casualty is intended
+  semantically (it is the very behaviour the fix corrects).
+   Upstream
   should either drop that case from the `cases` array or replace it
   with a canonical-prefix example such as
-  `typescript/unbound-method`, which already appears earlier in the
+  `typescript/unbound-method`,
+   which already appears earlier in the
   same array.
 
-Decision: file upstream with the patch and the candidate test edit.
+Decision:
+ file upstream with the patch and the candidate test edit.
 The 5-constraint audit now reads all-yes.
 
 ### Draft upstream issue
 
-Do not file as-is; review against the latest upstream `main` before
-opening, and re-run the verification harness against that HEAD to
+Do not file as-is;
+ review against the latest upstream `main` before
+opening,
+ and re-run the verification harness against that HEAD to
 confirm the patch still applies and the casualty list has not grown.
 
 ````md
@@ -428,32 +543,41 @@ a canonical-plugin prefix. The remaining 1129 unit tests in
 - Verified on Linux x86_64.
 ````
 
-Decision: ready to file upstream once a maintainer re-runs the
+Decision:
+ ready to file upstream once a maintainer re-runs the
 verification harness against the latest `main` (no issue has been
-opened yet from this repository). The casualty is documented and
-intended. Re-evaluate constraint 4 if the maintainers reject the
-breaking-change cost; in that case the lint-disable-comments
+opened yet from this repository).
+ The casualty is documented and
+intended.
+ Re-evaluate constraint 4 if the maintainers reject the
+breaking-change cost;
+ in that case the lint-disable-comments
 alternative becomes the next probe.
 
 ---
 
 ## Cross-reference
 
-ESLint was fully replaced by oxlint on 2026-03-13. The project will not
-re-adopt ESLint; the disable-comment prefix sweep applies only to the
+ESLint was fully replaced by oxlint on 2026-03-13.
+ The project will not
+re-adopt ESLint;
+ the disable-comment prefix sweep applies only to the
 non-canonical residue from the pre-oxlint era.
 
 ## Upstream bug: ignorePatterns resolved from CWD
 
-**Note:** The monorepo has since migrated from `.oxlintrc.json` to `oxlint.config.ts`.
+**Note:
+** The monorepo has since migrated from `.oxlintrc.json` to `oxlint.config.ts`.
 The bug report below is preserved as-is since it documents a real upstream issue.
 
 ---
 
 ## oxlint bug: `ignorePatterns` resolved from CWD instead of config file directory
 
-**oxlint version:** 1.55.0
-**Severity:** incorrect file filtering when `-c` config is in a different directory than CWD
+**oxlint version:
+** 1.55.0
+**Severity:
+** incorrect file filtering when `-c` config is in a different directory than CWD
 
 ### Summary
 
@@ -517,7 +641,8 @@ let mut builder = GitignoreBuilder::new(base_root);
 `GitignoreBuilder::new(root)` resolves all patterns relative to `root`.
 When `root` is CWD (e.g. `packages/test-fixture/my-pkg/`),
 the discovered file path `src/file.ts` is matched against `**/test-fixture/**`
-relative to that CWD. Since `src/file.ts` does not contain `test-fixture/`,
+relative to that CWD.
+ Since `src/file.ts` does not contain `test-fixture/`,
 the pattern never matches.
 
 When `root` is the config file's parent directory (the repo root),
@@ -558,7 +683,10 @@ so `parent()` already equals CWD).
 ### Impact
 
 Any monorepo that runs per-package lint tasks from subdirectories
-(e.g. mise, moon, turborepo, nx) with a shared root `.oxlintrc.json`
+(e.g. mise,
+ moon,
+ turborepo,
+ nx) with a shared root `.oxlintrc.json`
 will have all `ignorePatterns` silently ignored.
 This is especially common in monorepo setups like:
 

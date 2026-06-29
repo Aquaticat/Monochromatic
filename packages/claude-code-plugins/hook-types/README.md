@@ -28,14 +28,31 @@ giving you typed access to event-specific fields after a type guard.
 
 ## Covered events
 
-SessionStart, InstructionsLoaded, UserPromptSubmit, PreToolUse, PermissionRequest,
-PostToolUse, PostToolUseFailure, Notification, SubagentStart, SubagentStop, Stop,
-TeammateIdle, TaskCompleted, ConfigChange, WorktreeCreate, WorktreeRemove,
-PreCompact, SessionEnd.
+SessionStart,
+ InstructionsLoaded,
+ UserPromptSubmit,
+ PreToolUse,
+ PermissionRequest,
+PostToolUse,
+ PostToolUseFailure,
+ Notification,
+ SubagentStart,
+ SubagentStop,
+ Stop,
+TeammateIdle,
+ TaskCompleted,
+ ConfigChange,
+ WorktreeCreate,
+ WorktreeRemove,
+PreCompact,
+ SessionEnd.
 
 ## Tool input types
 
 Built-in tool input shapes are exported individually
-(`BashToolInput`, `EditToolInput`, `ReadToolInput`, etc.)
+(`BashToolInput`,
+ `EditToolInput`,
+ `ReadToolInput`,
+ etc.)
 and as a `BuiltInToolInputMap` for indexed access by tool name.
 MCP tool inputs remain `Record<string, unknown>`.

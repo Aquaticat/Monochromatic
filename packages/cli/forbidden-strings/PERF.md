@@ -1,31 +1,50 @@
 # Performance
 
 Measured wall-clock budget for the `forbidden-strings` scanner.
-Numbers below are not aspirational targets; they are reproducible measurements
+Numbers below are not aspirational targets;
+ they are reproducible measurements
 against the binary built from this package's `src/`.
 
 ## Headline numbers
 
-Post-emit-hit-consolidation, 2026-05-16. On AMD Ryzen 7 8700F (16 threads),
+Post-emit-hit-consolidation,
+ 2026-05-16.
+ On AMD Ryzen 7 8700F (16 threads),
 hyperfine 1.20.0:
 
-- This repo cold start: **9.4 ms ± 0.8 ms**
-- This repo full `--all`: **56.6 ms ± 3.1 ms**
-- Linux kernel full `--all`: **1.989 s ± 0.246 s**
+- This repo cold start:
+   **9.4 ms ± 0.8 ms**
+- This repo full `--all`:
+   **56.6 ms ± 3.1 ms**
+- Linux kernel full `--all`:
+   **1.989 s ± 0.246 s**
 
-These are the same numbers quoted in README.md. If you change them, change README.md too.
+These are the same numbers quoted in README.
+md.
+ If you change them,
+ change README.
+md too.
 
-The release profile is `lto = true`, `codegen-units = 1`, `opt-level = 3`,
-`panic = "unwind"`, `overflow-checks = true`, `strip = true`. The unwind +
+The release profile is `lto = true`,
+ `codegen-units = 1`,
+ `opt-level = 3`,
+`panic = "unwind"`,
+ `overflow-checks = true`,
+ `strip = true`.
+ The unwind +
 overflow-checks pair is load-bearing for the resharp-panic safety wrapper in
-`src/rules/engine.rs` and `src/rules.rs`: under `panic = "abort"` the process
+`src/rules/engine.rs` and `src/rules.rs`:
+ under `panic = "abort"` the process
 dies before `catch_unwind` runs (silent fail-open on a corrupt rule);
 without overflow checks Rust's `+` silently wraps and resharp builds a wrong
-DFA (also silent fail-open). See `Cargo.toml:49-97` for the full rationale.
+DFA (also silent fail-open).
+ See `Cargo.toml:49-97` for the full rationale.
 
-The `--all` walker reads `.git/index` in process via `gix-index`; the
+The `--all` walker reads `.git/index` in process via `gix-index`;
+ the
 previous `git ls-files --cached --ignored --exclude-standard -z` subprocess
-was removed on 2026-05-16 (recovered ~167 ms on Mono, ~433 ms on Linux).
+was removed on 2026-05-16 (recovered ~167 ms on Mono,
+ ~433 ms on Linux).
 Historical blocks below still describe the subprocess as the contemporary
 implementation — that wording is preserved deliberately as the regression
 history is the file's reason for existing.
@@ -33,20 +52,30 @@ history is the file's reason for existing.
 ## Last benched
 
 **2026-06-19 (abandoned resharp-only serialize-cache experiment)**,
-hyperfine 1.20.0. Main binary:
+hyperfine 1.20.0.
+ Main binary:
 `/var/home/user/Monochromatic/packages/cli/forbidden-strings/target/release/forbidden-strings`.
 Experiment binary:
 `/tmp/agent/forbidden-strings-resharp-cache-20260619/packages/cli/forbidden-strings/target/release/forbidden-strings`.
 Both scanned `/var/home/user/Monochromatic` with
-`forbidden-strings.local.example.txt`. The `--all` runs used
+`forbidden-strings.local.example.txt`.
+ The `--all` runs used
 `--ignore-failure` because rule 404 already fires on
 `docs/troubleshooting/mise-env-redacted-values.patch` in the main worktree.
 
-Experiment summary: migrating every regex rule to resharp and using resharp's
-`serialize` feature as an on-disk ruleset cache was abandoned. Warm cache loads
-were still much slower than main's hybrid engine, and cold cache writes were
-seconds slower. Do not revive this exact design unless the cache format changes
-substantially, for example per-entry files, a size cap, mmap, or a smaller
+Experiment summary:
+ migrating every regex rule to resharp and using resharp's
+`serialize` feature as an on-disk ruleset cache was abandoned.
+ Warm cache loads
+were still much slower than main's hybrid engine,
+ and cold cache writes were
+seconds slower.
+ Do not revive this exact design unless the cache format changes
+substantially,
+ for example per-entry files,
+ a size cap,
+ mmap,
+ or a smaller
 upstream dump representation.
 
 ```text
@@ -59,23 +88,37 @@ startup, resharp cache cold            4.329 s ± 0.128 s  5 runs
 ```
 
 The warm experiment cache file for the example ruleset was 255,270,294 bytes
-(244 MiB from `du --summarize`). The warm serialize cache cut cold resharp
-startup by about 17.7x, but main still beat the warm-cache experiment by
+(244 MiB from `du --summarize`).
+ The warm serialize cache cut cold resharp
+startup by about 17.7x,
+ but main still beat the warm-cache experiment by
 23.8x on startup and 4.55x on `--all`.
 
 ---
 
-**2026-05-16 (post-emit-hit-consolidation, A/B vs immediate predecessor)**,
-hyperfine 1.20.0, same hardware. Apples-to-apples A/B between two binaries
-built from the same commit modulo the `scan.rs` consolidation: the
-"baseline" is HEAD pre-refactor (the post-perf-fix block below); the
+**2026-05-16 (post-emit-hit-consolidation,
+ A/B vs immediate predecessor)**,
+hyperfine 1.20.0,
+ same hardware.
+ Apples-to-apples A/B between two binaries
+built from the same commit modulo the `scan.rs` consolidation:
+ the
+"baseline" is HEAD pre-refactor (the post-perf-fix block below);
+ the
 "refactor" extracts a private `emit_hit(li, path, start, end, rule_idx)`
 helper in `scan_format.rs` and replaces the four near-identical
 line/col-compute + push sequences in `scan.rs::scan_content` (AC literal
-phase, prefix-matched par_iter, residual Single shard, residual Combined
-par_iter) with one call each. The helper is `#[inline]`; with
-`lto = true` and `codegen-units = 1`, LTO already inlines tiny crate-
-internal helpers, so the attribute is belt-and-suspenders.
+phase,
+ prefix-matched par_iter,
+ residual Single shard,
+ residual Combined
+par_iter) with one call each.
+ The helper is `#[inline]`;
+ with
+`lto = true` and `codegen-units = 1`,
+ LTO already inlines tiny crate-
+internal helpers,
+ so the attribute is belt-and-suspenders.
 
 ```text
                    baseline           refactor           delta
@@ -84,7 +127,11 @@ Mono --all         60.3 ms ± 4.3 ms   56.6 ms ± 3.1 ms   within sigma
 Linux --all        2.024 s ± 0.109 s  1.989 s ± 0.246 s  within sigma
 ```
 
-Mono runs: 30 per binary. Linux runs: 15 per binary. The `--all` benches
+Mono runs:
+ 30 per binary.
+ Linux runs:
+ 15 per binary.
+ The `--all` benches
 used `--ignore-failure` to absorb the one rule that fires on existing
 test-fixture content (AWS access key prefix in `algebra_tests.rs:119`)
 on Mono and three pre-existing kernel-fixture rule hits on Linux.
@@ -93,40 +140,62 @@ Notes from the bench:
 
 - A sporadic large-outlier event (single ~750-950 ms wall on Mono `--all`)
   hit whichever binary ran second in the back-to-back hyperfine session,
-  regardless of which one. Order-reversed reruns reproduced the outlier
-  on the other binary, confirming it is system noise unrelated to the
-  refactor (hyperfine itself flagged it: "Statistical outliers were
-  detected. Consider re-running this benchmark on a quiet system").
+  regardless of which one.
+   Order-reversed reruns reproduced the outlier
+  on the other binary,
+   confirming it is system noise unrelated to the
+  refactor (hyperfine itself flagged it:
+   "Statistical outliers were
+  detected.
+   Consider re-running this benchmark on a quiet system").
   Numbers reported above are from clean runs.
 - All three deltas trend slightly faster post-refactor but every delta is
-  smaller than the combined sigma; treat the refactor as null-cost.
+  smaller than the combined sigma;
+   treat the refactor as null-cost.
 
 ---
 
-**2026-05-16 (post-perf-fix: gix-index + binary-tail-cap)**, hyperfine
-1.20.0, same hardware (AMD Ryzen 7 8700F, 16 threads). Binary:
+**2026-05-16 (post-perf-fix:
+ gix-index + binary-tail-cap)**,
+ hyperfine
+1.20.0,
+ same hardware (AMD Ryzen 7 8700F,
+ 16 threads).
+ Binary:
 `packages/cli/forbidden-strings/target/release/forbidden-strings` built
 from this package's `src/` after two perf changes landed on top of the
 soundness audit:
 
 - `walk.rs` now reads `.git/index` in-process via `gix-index` instead of
-  forking `git ls-files --cached --ignored --exclude-standard -z`. The
-  subprocess cost (88.7 ± 0.8 ms standalone on Mono, 350.7 ± 3.6 ms on
+  forking `git ls-files --cached --ignored --exclude-standard -z`.
+   The
+  subprocess cost (88.7 ± 0.8 ms standalone on Mono,
+   350.7 ± 3.6 ms on
   Linux per invocation) is replaced with a single-digit-millisecond
   index read.
 - `main.rs::read_with_binary_check` caps per-file scan at 8 KiB for
-  files larger than that whose first 8 KiB contains a NUL byte. The
-  first 8 KiB is always scanned, so secrets in the leading window still
-  fire (closes BUG 5's soundness intent); the tail past 8 KiB is
+  files larger than that whose first 8 KiB contains a NUL byte.
+   The
+  first 8 KiB is always scanned,
+   so secrets in the leading window still
+  fire (closes BUG 5's soundness intent);
+   the tail past 8 KiB is
   skipped for binary files (recovers the ~65 ms binary-scan cost on
   Mono).
 
 ### 2026-05-16 (post-perf-fix) realistic ruleset on Monochromatic, 30 runs
 
-Corpus: Monochromatic git-tracked content, 3,471 files, 57 MiB. Same
-example ruleset (`forbidden-strings.local.example.txt`, 259 regex
-rules). One rule fires on existing test-fixture content (AWS access key
-prefix in `algebra_tests.rs:119`); bench used `--ignore-failure`.
+Corpus:
+ Monochromatic git-tracked content,
+ 3,471 files,
+ 57 MiB.
+ Same
+example ruleset (`forbidden-strings.local.example.txt`,
+ 259 regex
+rules).
+ One rule fires on existing test-fixture content (AWS access key
+prefix in `algebra_tests.rs:119`);
+ bench used `--ignore-failure`.
 
 ```text
 example-startup    8.8 ms ±  0.5 ms    (user 44.1 ms,  sys 13.0 ms)
@@ -137,7 +206,10 @@ example-all       58.6 ms ±  3.4 ms    (user 371.0 ms, sys 139.1 ms)
 ### 2026-05-16 (post-perf-fix) Linux kernel corpus, 15 runs
 
 Same shallow clone of `torvalds/linux` to `/tmp/claude/linux`,
-93,696 files, 2.0 GiB. Same binary, same example ruleset.
+93,696 files,
+ 2.0 GiB.
+ Same binary,
+ same example ruleset.
 
 ```text
 linux-all         1.901 s ± 0.190 s    (user 23.310 s, sys 2.096 s)
@@ -155,28 +227,46 @@ Linux --all            2.334 ± 0.112 s    1.901 ± 0.190 s  -433 ms (1.23x)
 
 Mono `--all` now sits 7 ms above the pre-audit baseline (51.3 ± 3.6 ms
 on 2026-05-15) -- the residual gap is the binary-scan cost on files
-≤ 8 KiB (BUG 5 soundness is preserved for that range). The audit's
+≤ 8 KiB (BUG 5 soundness is preserved for that range).
+ The audit's
 ten remaining soundness fixes ride for free in wall-time terms.
 
 ---
 
-**2026-05-16 (post-soundness-audit + post-\s-byte-alt-expansion)**, hyperfine
-1.20.0, same hardware (AMD Ryzen 7 8700F, 16 threads). Binary:
+**2026-05-16 (post-soundness-audit + post-\s-byte-alt-expansion)**,
+ hyperfine
+1.20.0,
+ same hardware (AMD Ryzen 7 8700F,
+ 16 threads).
+ Binary:
 `packages/cli/forbidden-strings/target/release/forbidden-strings` built from
 this package's `src/` after the 12-commit soundness audit (commits 468fcf73
-to 4289cdb3) closed BUGs 1 through 11 from `/tmp/fs-bug-brief.md`. The
-audit produced one perf-relevant change: BUG 8's fix expands `\s` in the
+to 4289cdb3) closed BUGs 1 through 11 from `/tmp/fs-bug-brief.md`.
+ The
+audit produced one perf-relevant change:
+ BUG 8's fix expands `\s` in the
 rule source to a non-capturing alternation `(?:\s|<Unicode-WS bytes>)` so
-NBSP (U+00A0), em-spaces, ideographic space, and the rest of the Unicode
+NBSP (U+00A0),
+ em-spaces,
+ ideographic space,
+ and the rest of the Unicode
 whitespace set match `\s` under the `unicode(false)` fast-compile path.
 
 ### 2026-05-16 realistic ruleset on Monochromatic, 30 runs
 
-Corpus: Monochromatic git-tracked content, 3,471 files, 57 MiB. Same example
-ruleset (`forbidden-strings.local.example.txt`, 259 regex rules, 853 total
-lines). One rule fired on existing test fixture content
+Corpus:
+ Monochromatic git-tracked content,
+ 3,471 files,
+ 57 MiB.
+ Same example
+ruleset (`forbidden-strings.local.example.txt`,
+ 259 regex rules,
+ 853 total
+lines).
+ One rule fired on existing test fixture content
 (`./packages/cli/forbidden-strings/src/rules/algebra_tests.rs:119:32..43 rule=849`,
-an AWS access key prefix in an assertion); bench used `--ignore-failure` to
+an AWS access key prefix in an assertion);
+ bench used `--ignore-failure` to
 absorb the resulting non-zero exit.
 
 ```text
@@ -185,7 +275,8 @@ example-all      225.7 ms ± 11.5 ms    (user 774.0 ms, sys 190.5 ms)
                                        3.4x parallelism, ~253 MiB/s wall
 ```
 
-Phase-timing breakdown (`FORBIDDEN_STRINGS_DEBUG_TIMING=1`, 3 runs):
+Phase-timing breakdown (`FORBIDDEN_STRINGS_DEBUG_TIMING=1`,
+ 3 runs):
 
 ```text
 phase 0 read_rules_file:           0.0 to 0.1 ms
@@ -207,8 +298,13 @@ regex_rules_total=259
 
 ### 2026-05-16 Linux kernel corpus, 5 runs each
 
-Fresh shallow clone of `torvalds/linux` to `/tmp/claude/linux`, commit
-`6916d570`, 93,696 git-tracked files, 2.0 GiB. Same binary, same example
+Fresh shallow clone of `torvalds/linux` to `/tmp/claude/linux`,
+ commit
+`6916d570`,
+ 93,696 git-tracked files,
+ 2.0 GiB.
+ Same binary,
+ same example
 ruleset.
 
 ```text
@@ -218,7 +314,8 @@ linux-all        2.334 s ± 0.112 s    (user 25.151 s,  sys 2.280 s)
 ```
 
 Three rule hits were present in the kernel test fixtures (each
-matches its own example ruleset entry, not regressions from the
+matches its own example ruleset entry,
+ not regressions from the
 audit):
 
 ```text
@@ -237,12 +334,17 @@ Linux startup          9.1 ms ± 0.9 ms      9.8 ms ± 0.4 ms      within sigma
 Linux --all            1.836 s ± 0.051 s    2.334 s ± 0.112 s    +498 ms (+27%)
 ```
 
-Both `--all` benches regressed. The cause is **not** BUG 8's
+Both `--all` benches regressed.
+ The cause is **not** BUG 8's
 source-level expansion of `\s` to `(?:\s|<Unicode-WS-bytes>)`,
-despite the temporal correlation; an earlier draft of this section
-attributed the regression there in error. The expansion is within
-sigma of zero on Mono, confirmed by empirical A/B bisect (30 runs
-each, the shipped binary vs the same binary with
+despite the temporal correlation;
+ an earlier draft of this section
+attributed the regression there in error.
+ The expansion is within
+sigma of zero on Mono,
+ confirmed by empirical A/B bisect (30 runs
+each,
+ the shipped binary vs the same binary with
 `expand_unicode_whitespace` patched to return its input verbatim):
 
 ```text
@@ -252,7 +354,8 @@ HEAD with expand_unicode_whitespace no-op'd   222.5 ± 12.5 ms
                                               1.02x ± 0.07 (within sigma)
 ```
 
-Per-commit bisect on Mono `--all` (hyperfine 30 runs, same hardware)
+Per-commit bisect on Mono `--all` (hyperfine 30 runs,
+ same hardware)
 attributes the regression to earlier audit commits:
 
 ```text
@@ -266,9 +369,12 @@ HEAD (4289cdb3 = expansion shipped)               220.8 ± 9.3 ms  +18 ms more
 
 Decomposition of the three audit-era costs:
 
-- **+84 ms (BUG 3, commit 7377c6f6)**: the `--all` walker now unions
+- **+84 ms (BUG 3,
+   commit 7377c6f6)**:
+   the `--all` walker now unions
   with `git ls-files --cached --ignored --exclude-standard -z` to
-  recover force-added gitignored files. Standalone hyperfine on
+  recover force-added gitignored files.
+   Standalone hyperfine on
   the Mono repo:
 
   ```text
@@ -276,32 +382,46 @@ Decomposition of the three audit-era costs:
                                             88.7 ± 0.8 ms (10 runs)
   ```
 
-  The walker pass itself is ~10 ms on Mono; the cost is the
-  subprocess fork+exec+index-walk inside git, not the walker.
-  Standalone Linux kernel measurement: 350.7 ± 3.6 ms (accounts
+  The walker pass itself is ~10 ms on Mono;
+   the cost is the
+  subprocess fork+exec+index-walk inside git,
+   not the walker.
+  Standalone Linux kernel measurement:
+   350.7 ± 3.6 ms (accounts
   for most of the +498 ms Linux regression below).
 
-- **+65 ms (BUG 5, commit 559123c3)**: removing `is_likely_binary`
+- **+65 ms (BUG 5,
+   commit 559123c3)**:
+   removing `is_likely_binary`
   short-circuit means binary content (50 files / 31.8 MiB on Mono)
-  now flows through AC + per-prefix `find_all`. AC scan over the
-  binary volume is ~6 ms; the rest is regex `find_all` triggered
+  now flows through AC + per-prefix `find_all`.
+   AC scan over the
+  binary volume is ~6 ms;
+   the rest is regex `find_all` triggered
   by coincidental short-prefix hits in random bytes.
 
-- **+18 ms residual**: extractor changes for `(?u)` / `(?x:)` /
-  bare `_`, engine-error surface, plus measurement noise from
+- **+18 ms residual**:
+   extractor changes for `(?u)` / `(?x:)` /
+  bare `_`,
+   engine-error surface,
+   plus measurement noise from
   the expansion (the expansion itself is within sigma of zero).
 
 Corpus-magnitude difference is therefore about binary-scan ratio
-(BUG 5) and subprocess wall under file-count load (BUG 3), not
-NFA growth. Linux's larger `--all` regression (+498 ms vs Mono's
+(BUG 5) and subprocess wall under file-count load (BUG 3),
+ not
+NFA growth.
+ Linux's larger `--all` regression (+498 ms vs Mono's
 +175 ms) tracks its larger subprocess time (350 ms standalone
 vs Mono's 89 ms) and its much larger binary content surface.
 
 The original BUG 8 fix (commit 0479371a) forced rules containing
 `\s/\S/\w/\W/\d/\D/\b/\B` shorthand onto `unicode(true)` compile;
 that was ~95x in phase 1 and 64x in startup wall (575 ms on Mono),
-which exceeds the re-bench threshold for "20 ms startup, 150 ms
---all". The source-level expansion that shipped on 2026-05-16 (commit
+which exceeds the re-bench threshold for "20 ms startup,
+ 150 ms
+--all".
+ The source-level expansion that shipped on 2026-05-16 (commit
 4289cdb3) restores startup to within-sigma of baseline and keeps
 `--all` under 300 ms on Mono with full Unicode whitespace coverage.
 
@@ -309,7 +429,8 @@ which exceeds the re-bench threshold for "20 ms startup, 150 ms
 
 Parallelising the walker pass and `git ls-files` subprocess via
 `rayon::join` was investigated under the hypothesis that the ~88 ms
-subprocess could hide behind walker time. Instrumentation showed:
+subprocess could hide behind walker time.
+ Instrumentation showed:
 
 ```text
 walker_arm:        10 ms
@@ -317,9 +438,13 @@ git_arm:           92 ms
 rayon::join total: 94 ms      (max(walker, git) + ~2 ms join overhead)
 ```
 
-`rayon::join` did parallelise (total ≈ max not sum), but the walker
-is too fast (~10 ms) to fill the subprocess runtime span. The ceiling for
-savings is ~10 ms, within measurement sigma. Apples-to-apples bench:
+`rayon::join` did parallelise (total ≈ max not sum),
+ but the walker
+is too fast (~10 ms) to fill the subprocess runtime span.
+ The ceiling for
+savings is ~10 ms,
+ within measurement sigma.
+ Apples-to-apples bench:
 
 ```text
                        Mono --all (30 runs)
@@ -328,62 +453,118 @@ HEAD + rayon::join     223.8 ± 9.0 ms
                        1.01x ± 0.05 (within sigma)
 ```
 
-The change added a `move ||` wrapper, a paired closure, and a
+The change added a `move ||` wrapper,
+ a paired closure,
+ and a
 `rayon::join` call to `walk.rs::list_files` for no measurable win.
-Reverted; not shipped.
+Reverted;
+ not shipped.
 
 The actual lever to remove BUG 3's +84 ms is replacing the
-subprocess with an in-process git-index reader. Shipped as a
+subprocess with an in-process git-index reader.
+ Shipped as a
 follow-up commit using `gix-index` (`default-features = false` +
 `sha1` only) -- see the "post-perf-fix" block at the top for the
-new numbers; the subprocess is gone.
+new numbers;
+ the subprocess is gone.
 
 ### Soundness tradeoff: shorthand atom semantics
 
-The `regex` crate's `unicode(false)` mode interprets `\s`, `\S`,
-`\w`, `\W`, `\d`, `\D`, `\b`, `\B` as ASCII-only. Closing BUG 8
+The `regex` crate's `unicode(false)` mode interprets `\s`,
+ `\S`,
+`\w`,
+ `\W`,
+ `\d`,
+ `\D`,
+ `\b`,
+ `\B` as ASCII-only.
+ Closing BUG 8
 ("`\s` should match NBSP") without paying the unicode-on compile
 cost required choosing per-atom semantics:
 
-- **`\s`: Unicode-aware via source rewrite.** Each `\s` in the rule
+- **`\s`:
+   Unicode-aware via source rewrite.
+  ** Each `\s` in the rule
   source becomes `(?:\s|<UNICODE_WS_ALT>)` (free) or
-  `(?:[...\s...]|<UNICODE_WS_ALT>)` (inside a character class). The
+  `(?:[...\s...]|<UNICODE_WS_ALT>)` (inside a character class).
+   The
   alternation covers every Unicode whitespace code point's UTF-8
-  bytes (U+00A0, U+1680, U+180E, U+2000..U+200A, U+2028..U+2029,
-  U+202F, U+205F, U+3000, U+FEFF). Sound for the NBSP repro and the
-  rest of the Unicode whitespace set. Wall cost: within measurement
+  bytes (U+00A0,
+   U+1680,
+   U+180E,
+   U+2000..U+200A,
+   U+2028..U+2029,
+  U+202F,
+   U+205F,
+   U+3000,
+   U+FEFF).
+   Sound for the NBSP repro and the
+  rest of the Unicode whitespace set.
+   Wall cost:
+   within measurement
   sigma per the A/B bisect above (1.02x ± 0.07 vs no-op'd expansion).
-- **`\S`, `\w`, `\W`, `\d`, `\D`, `\b`, `\B`: byte-level under
-  `unicode(false)`.** Behaviour matches PCRE's default (ASCII-only).
+- **`\S`,
+   `\w`,
+   `\W`,
+   `\d`,
+   `\D`,
+   `\b`,
+   `\B`:
+   byte-level under
+  `unicode(false)`.
+  ** Behaviour matches PCRE's default (ASCII-only).
   Practical scope on the betterleaks corpus:
-  - `\S` (2 rules): used as `[\S]{N}` capture or `[\s\S]` "any
-    byte" idiom. Neither is a silent miss under byte mode; the
+  - `\S` (2 rules):
+     used as `[\S]{N}` capture or `[\s\S]` "any
+    byte" idiom.
+     Neither is a silent miss under byte mode;
+     the
     second is correct ("any byte" is what `[\s\S]` always meant
     under byte semantics).
-  - `\w` (133 rules): always in non-required positions like
-    `[\w.-]{0,50}` or inside captures. The `{0,N}` quantifier
+  - `\w` (133 rules):
+     always in non-required positions like
+    `[\w.-]{0,50}` or inside captures.
+     The `{0,N}` quantifier
     means a Unicode-character preface still matches via the
-    "zero" lower bound; no silent miss in real-world rules.
-  - `\d` (12 rules): used for numeric IDs like `\d{15,16}`
-    (credit cards) where the author wants ASCII digits, not
-    Bengali numerals. Byte mode matches author intent.
-  - `\b` (93 rules): boundary anchors against literal prefixes
-    like `\bA3-`, `\b(p8e-`. Under byte mode, position between a
+    "zero" lower bound;
+     no silent miss in real-world rules.
+  - `\d` (12 rules):
+     used for numeric IDs like `\d{15,16}`
+    (credit cards) where the author wants ASCII digits,
+     not
+    Bengali numerals.
+     Byte mode matches author intent.
+  - `\b` (93 rules):
+     boundary anchors against literal prefixes
+    like `\bA3-`,
+     `\b(p8e-`.
+     Under byte mode,
+     position between a
     non-ASCII byte and an ASCII word byte is still a boundary
-    (because non-ASCII bytes are non-word in ASCII mode), so the
+    (because non-ASCII bytes are non-word in ASCII mode),
+     so the
     rule fires when it should.
-  - `\W`, `\D`, `\B`: zero uses in the example ruleset.
+  - `\W`,
+     `\D`,
+     `\B`:
+     zero uses in the example ruleset.
 
 For a future rule that genuinely requires Unicode-aware `\w/\d/\b`,
-the author can opt in via the `(?u)` flag, which the scanner already
+the author can opt in via the `(?u)` flag,
+ which the scanner already
 rejects from the AC fast path and routes to residual with
-`unicode(true)` compile (see BUG 2's leading-flag check). The
+`unicode(true)` compile (see BUG 2's leading-flag check).
+ The
 expansion at this level is byte-mode-only.
 
 ---
 
-**2026-05-15 (post-algebra-complement-gate-fix)**, hyperfine 1.20.0, same
-hardware (AMD Ryzen 7 8700F, 16 threads). Binary:
+**2026-05-15 (post-algebra-complement-gate-fix)**,
+ hyperfine 1.20.0,
+ same
+hardware (AMD Ryzen 7 8700F,
+ 16 threads).
+ Binary:
 `packages/cli/forbidden-strings/target/release/forbidden-strings` built from
 this package's `src/` after `src/rules/atom.rs` started treating `~(...)`
 complement operands as non-contributing gates and `src/rules/walker.rs`
@@ -391,9 +572,16 @@ started treating `&` as a transparent intersection separator.
 
 ### 2026-05-15 realistic ruleset on Monochromatic, 30 runs
 
-Corpus: Monochromatic git-tracked content, 3,454 files, 47.2 MiB. Same example
-ruleset (`forbidden-strings.local.example.txt`, 259 regex rules, 853 total
-lines). The scan produced no rule hits.
+Corpus:
+ Monochromatic git-tracked content,
+ 3,454 files,
+ 47.2 MiB.
+ Same example
+ruleset (`forbidden-strings.local.example.txt`,
+ 259 regex rules,
+ 853 total
+lines).
+ The scan produced no rule hits.
 
 ```text
 example-startup    9.4 ms ± 0.8 ms     (user 37.9 ms,  sys 12.7 ms)
@@ -401,7 +589,8 @@ example-all       50.4 ms ± 2.6 ms     (user 331.4 ms, sys 95.4 ms)
                                       8.5x parallelism, ~936 MiB/s wall
 ```
 
-Phase-timing breakdown (`FORBIDDEN_STRINGS_DEBUG_TIMING=1`, 3 runs):
+Phase-timing breakdown (`FORBIDDEN_STRINGS_DEBUG_TIMING=1`,
+ 3 runs):
 
 ```text
 phase 0 read_rules_file:           0.0 to 0.1 ms
@@ -423,8 +612,12 @@ regex_rules_total=259
 
 ### 2026-05-15 Linux kernel corpus, 5 runs each
 
-Fresh shallow clone of `torvalds/linux` to `/tmp/claude/linux`, commit
-`70eda6866` (92,549 git-tracked files, 1.47 GiB). Same binary, same example
+Fresh shallow clone of `torvalds/linux` to `/tmp/claude/linux`,
+ commit
+`70eda6866` (92,549 git-tracked files,
+ 1.47 GiB).
+ Same binary,
+ same example
 ruleset.
 
 ```text
@@ -433,7 +626,8 @@ linux-all        1.836 s ± 0.051 s    (user 22.975 s,  sys 1.284 s)
                                       13.2x parallelism, ~822 MiB/s wall
 ```
 
-Phase-timing breakdown (`FORBIDDEN_STRINGS_DEBUG_TIMING=1`, 2 runs):
+Phase-timing breakdown (`FORBIDDEN_STRINGS_DEBUG_TIMING=1`,
+ 2 runs):
 
 ```text
 phase 0 read_rules_file:           0.1 ms
@@ -450,7 +644,8 @@ Two rule hits were present in the kernel test fixtures:
 ./tools/testing/selftests/sgx/sign_key.pem:1:1..31 rule=621
 ```
 
-These are corpus fixtures matching the example ruleset, not regressions from
+These are corpus fixtures matching the example ruleset,
+ not regressions from
 the algebra extractor fix.
 
 ### Comparison with 2026-05-10
@@ -462,21 +657,32 @@ Linux startup           8.9 ms ± 0.7 ms     9.1 ms ± 0.9 ms     within sigma
 Linux --all             2.250 s ± 0.253 s   1.836 s ± 0.051 s   -414 ms
 ```
 
-The algebra extractor change runs in Phase 2, which remains 0.2 ms on both
-corpora. The current Linux shallow clone has 92,549 files and 1.47 GiB, versus
-the 2026-05-10 clone's 93,697 files and 1.48 GiB; this bench did not isolate
+The algebra extractor change runs in Phase 2,
+ which remains 0.2 ms on both
+corpora.
+ The current Linux shallow clone has 92,549 files and 1.47 GiB,
+ versus
+the 2026-05-10 clone's 93,697 files and 1.48 GiB;
+ this bench did not isolate
 which corpus or cache differences account for the lower `linux-all` wall time.
 Monochromatic `--all` remains near the previous wall time despite tracked content
 growing to 47.2 MiB.
 
 ---
 
-**2026-05-10 (post-utf8-walker-fix)**, hyperfine 1.20.0, same hardware
-(AMD Ryzen 7 8700F, 16 threads). The walker fix in `src/rules/atom.rs`
+**2026-05-10 (post-utf8-walker-fix)**,
+ hyperfine 1.20.0,
+ same hardware
+(AMD Ryzen 7 8700F,
+ 16 threads).
+ The walker fix in `src/rules/atom.rs`
 rewrites `walk_literal_bytes` to iterate by `char` rather than casting
 each `u8` to `char` (the former silently mojibake'd non-ASCII multi-byte
-UTF-8 into wrong codepoints). The fix's code path runs in
-`extract_gating_substrings` (Phase 2, the rule-load path); the per-file
+UTF-8 into wrong codepoints).
+ The fix's code path runs in
+`extract_gating_substrings` (Phase 2,
+ the rule-load path);
+ the per-file
 scan hot path is unchanged.
 
 ### Realistic ruleset on Monochromatic, 30 runs
@@ -486,7 +692,8 @@ example-startup    9.0 ms ± 0.7 ms     (user 34.5 ms, sys 13.8 ms)
 example-all       47.3 ms ± 2.9 ms     (user 277.1 ms, sys 93.7 ms)
 ```
 
-Phase-timing breakdown (`FORBIDDEN_STRINGS_DEBUG_TIMING=1`, 3 runs):
+Phase-timing breakdown (`FORBIDDEN_STRINGS_DEBUG_TIMING=1`,
+ 3 runs):
 
 ```text
 phase 0 read_rules_file:           0.0 to 0.1 ms
@@ -508,26 +715,37 @@ example-all 37.2 ms ± 3.6 ms   47.3 ms ± 2.9 ms   +10.1 ms (+27%)
 
 The shift is **unrelated to the walker fix**:
 
-- Phase 2 (`extract_gating_substrings`, the only phase the walker fix
+- Phase 2 (`extract_gating_substrings`,
+   the only phase the walker fix
   runs in) is identical at 0.2 to 0.3 ms across both benches.
-- Repo content changed between benches: tracked file count grew from
-  ~2700 to 2860 (+5%); tracked byte volume shifted from ~21 MiB to
-  19.8 MiB. New content under `packages/pi/auto-mode/src/` triggers
+- Repo content changed between benches:
+   tracked file count grew from
+  ~2700 to 2860 (+5%);
+   tracked byte volume shifted from ~21 MiB to
+  19.8 MiB.
+   New content under `packages/pi/auto-mode/src/` triggers
   two true rule violations (rules 104 and 319 in
   `signals.unit.test.ts`) and apparently more AC prefix-match queueing
   that drives extra per-file `find_all` invocations.
-- Math sanity: even if the walker fix had doubled Phase 2, the absolute
-  delta would be ~0.3 ms, not 10 ms. The +10 ms must come from
+- Math sanity:
+   even if the walker fix had doubled Phase 2,
+   the absolute
+  delta would be ~0.3 ms,
+   not 10 ms. The +10 ms must come from
   per-file work the walker doesn't touch.
 
 The two reported hits should be triaged separately (they are
-pre-existing rule violations against pre-existing content, just newly
+pre-existing rule violations against pre-existing content,
+ just newly
 visible in this bench's output).
 
 ### Linux kernel corpus, 5 runs each
 
 Fresh shallow clone of `torvalds/linux` to `/tmp/claude/linux`
-(93,697 git-tracked files, 1.48 GiB). Same binary, same example
+(93,697 git-tracked files,
+ 1.48 GiB).
+ Same binary,
+ same example
 ruleset.
 
 ```text
@@ -536,7 +754,8 @@ linux-all        2.250 s ± 0.253 s    (user 24.826 s,  sys 1.569 s)
                                       11x parallelism, ~660 MiB/s wall
 ```
 
-Phase-timing breakdown (`FORBIDDEN_STRINGS_DEBUG_TIMING=1`, 2 runs):
+Phase-timing breakdown (`FORBIDDEN_STRINGS_DEBUG_TIMING=1`,
+ 2 runs):
 
 ```text
 phase 0 read_rules_file:           0.0 to 0.1 ms
@@ -546,7 +765,8 @@ phase 3 ac_build:                  0.6 to 0.7 ms
 phase 4 residual_shards:           0.0 ms
 ```
 
-Comparison with 2026-05-03 baseline (same corpus, same ruleset):
+Comparison with 2026-05-03 baseline (same corpus,
+ same ruleset):
 
 ```text
                   2026-05-03         2026-05-10         delta
@@ -554,9 +774,12 @@ linux-startup     8.5 ms ± 0.8 ms    8.9 ms ± 0.7 ms    +0.4 ms (within sigma)
 linux-all         2.153 s ± 0.367 s  2.250 s ± 0.253 s  +97 ms (within sigma)
 ```
 
-Both differences sit within overlapping standard deviations. The
-walker fix has no measurable impact on the Linux corpus, which is
-expected: the per-file scan path the Linux benchmark stresses is
+Both differences sit within overlapping standard deviations.
+ The
+walker fix has no measurable impact on the Linux corpus,
+ which is
+expected:
+ the per-file scan path the Linux benchmark stresses is
 independent of `walk_literal_bytes` (called only in Phase 2).
 
 Two pre-existing rule violations visible in the Linux corpus:
@@ -566,7 +789,8 @@ Two pre-existing rule violations visible in the Linux corpus:
 ./drivers/of/unittest-data/tests-phandle.dtsi:9:3..33 rule=402
 ```
 
-These are kernel test fixtures matching the example ruleset; not
+These are kernel test fixtures matching the example ruleset;
+ not
 introduced or affected by the walker fix.
 
 Corpus drift vs 2026-05-03 baseline:
@@ -577,7 +801,8 @@ file count      93,694          93,697          +3
 byte volume     1.58 GiB        1.48 GiB        -100 MiB (~6%)
 ```
 
-Slight shrinkage offsets the file-count growth; net per-byte
+Slight shrinkage offsets the file-count growth;
+ net per-byte
 throughput is essentially unchanged.
 
 ### Audit blast radius of the walker fix
@@ -585,35 +810,57 @@ throughput is essentially unchanged.
 `rg -nP '[\xe2-\xf4]' forbidden-strings.local.txt
 forbidden-strings.append.local.txt forbidden-strings.local.example.txt
 data/betterleaks-default-config.toml` returned no non-ASCII leading
-literals in any active regex rule. The fix is preventive: future rules
-containing em-dashes, smart quotes, ellipsis, or emoji as a leading
+literals in any active regex rule.
+ The fix is preventive:
+ future rules
+containing em-dashes,
+ smart quotes,
+ ellipsis,
+ or emoji as a leading
 literal will now gate correctly through Aho-Corasick instead of
-silently dropping into the residual gate (or worse, registering a
+silently dropping into the residual gate (or worse,
+ registering a
 mojibake pattern that AC never matches).
 
-Test coverage: 22 tests in `src/rules/atom_tests.rs` and
+Test coverage:
+ 22 tests in `src/rules/atom_tests.rs` and
 `src/rules/extract_tests.rs` cover 1 / 2 / 3 / 4-byte UTF-8 widths,
-the escape branch, the alternation branch, anchor strip, the
-`MIN_PREFIX_LEN` byte-length semantic, and end-to-end
-`extract -> AhoCorasick -> match` round-trips for 2-byte, 3-byte, and
+the escape branch,
+ the alternation branch,
+ anchor strip,
+ the
+`MIN_PREFIX_LEN` byte-length semantic,
+ and end-to-end
+`extract -> AhoCorasick -> match` round-trips for 2-byte,
+ 3-byte,
+ and
 4-byte leading characters.
 
 ---
 
 **2026-05-03 (post-unicode-off + post-greedy-combine + post-source-split)**,
-with `hyperfine 1.20.0`. Binary: `target/release/forbidden-strings` built
+with `hyperfine 1.20.0`.
+ Binary:
+ `target/release/forbidden-strings` built
 with `mise run //packages/cli/forbidden-strings:build`.
 
-The "realistic" ruleset is the betterleaks-port baseline: 259 regex
+The "realistic" ruleset is the betterleaks-port baseline:
+ 259 regex
 rules + 3 literals (851 total lines).
 
 The current numbers reflect the hybrid engine (`CompiledRegex::{Resharp,Plain}`
-in `src/rules/engine.rs`: 257 of 259 rules compile via the standard `regex`
-crate, ~100x faster than resharp; 2 rules use resharp's set-algebra
-operators), the regex-crate `unicode(false)` mode with try-and-fallback
+in `src/rules/engine.rs`:
+ 257 of 259 rules compile via the standard `regex`
+crate,
+ ~100x faster than resharp;
+ 2 rules use resharp's set-algebra
+operators),
+ the regex-crate `unicode(false)` mode with try-and-fallback
 to `unicode(true)` for rules that need unicode-property classes (a 17x
-wall-time win on its own), the file-split refactor (every source file
-under 500 lines), and greedy combine-partition for residual shards (see
+wall-time win on its own),
+ the file-split refactor (every source file
+under 500 lines),
+ and greedy combine-partition for residual shards (see
 Architecture summary).
 
 ### Realistic ruleset (259 rules, betterleaks port) on Monochromatic, 15 runs
@@ -646,14 +893,16 @@ regex_rules_total=259
 
 ### Linux kernel corpus (93,694 files, 1799.2 MiB tracked bytes)
 
-Startup-only, 30 runs each:
+Startup-only,
+ 30 runs each:
 
 ```text
 example ruleset (851 rules)        8.5 ms ± 0.8 ms    (user 35.8 ms, sys 11.9 ms)
 synth-1k ruleset (1000 rules)      9.0 ms ± 0.6 ms    (user 18.0 ms, sys 32.9 ms)
 ```
 
-`--all` (full corpus walk + scan), 5 runs each:
+`--all` (full corpus walk + scan),
+ 5 runs each:
 
 ```text
 example ruleset    (851 rules; 4 residuals)   2153 ms ± 367 ms   (user 22.5 s, sys 0.9 s, 10.5x parallelism, ~836 MiB/s wall)
@@ -665,41 +914,70 @@ synth-1000-0pct    (1000 rules; 0 residuals)  139  ms ±   9 ms   (user 0.55 s, 
 Observations:
 
 - The production-shape ~2 s headline is bounded by **4 betterleaks-shape
-  residuals** (L114 beamer, L251 facebook, L769 twitch, L796 vercel-ai)
-  each running per-rule `find_all` across 1.8 GiB. Linux kernel source
+  residuals** (L114 beamer,
+   L251 facebook,
+   L769 twitch,
+   L796 vercel-ai)
+  each running per-rule `find_all` across 1.8 GiB.
+   Linux kernel source
   triggers many false-positive prefix hits on these rules
-  (`SK`, `Q~`, `\d{15,16}`, `hvs.`), so the regex crate's literal-prefix
+  (`SK`,
+   `Q~`,
+   `\d{15,16}`,
+   `hvs.`),
+   so the regex crate's literal-prefix
   fast path runs on the prefixes but the full regex is then evaluated
-  on every prefix hit. With 4 rules × 1.8 GiB workload distributed
-  over 10.5x cores, the floor is the regex engine's per-byte throughput
+  on every prefix hit.
+   With 4 rules × 1.8 GiB workload distributed
+  over 10.5x cores,
+   the floor is the regex engine's per-byte throughput
   on the captured prefix-hit windows.
 - The synth-residual-20 case is **faster than the 4-residual production
-  case** despite having 5x more residual rules. The synthetic residuals
-  use `_RESID_<tag>_` substrings that fire rarely on real source, so
+  case** despite having 5x more residual rules.
+   The synthetic residuals
+  use `_RESID_<tag>_` substrings that fire rarely on real source,
+   so
   the residual-bucket combined gate triggers per-rule scans only on a
-  handful of files. The production residuals have shorter, more common
+  handful of files.
+   The production residuals have shorter,
+   more common
   prefixes that fire on hundreds of files.
 - The 0-residual case (synth-1000-0pct) shows the no-residual ceiling:
-  12.9 GiB/s end-to-end on the Linux corpus, single-AC-pass dominated.
-- Per-byte slowdown vs Mono: Mono `--all` is 37 ms over 21.4 MiB
-  (~580 MiB/s), Linux `--all` is ~2 s over 1799 MiB (~900 MiB/s).
+  12.9 GiB/s end-to-end on the Linux corpus,
+   single-AC-pass dominated.
+- Per-byte slowdown vs Mono:
+   Mono `--all` is 37 ms over 21.4 MiB
+  (~580 MiB/s),
+   Linux `--all` is ~2 s over 1799 MiB (~900 MiB/s).
   Linux is faster per-byte because fixed setup amortizes over more
   files and the AC + regex hot path benefits from longer contiguous
   scans per file.
 
 ## Ceiling analysis (2026-05-03, post-Linux-bench)
 
-After the Linux corpus bench (above), the question "is more optimisation
-worth pursuing?" was investigated. The conclusion: **production-shape
-rulesets are at the practical floor on Linux scale**, bounded by rule-
+After the Linux corpus bench (above),
+ the question "is more optimisation
+worth pursuing?
+" was investigated.
+ The conclusion:
+ **production-shape
+rulesets are at the practical floor on Linux scale**,
+ bounded by rule-
 grammar realities (false-positive rate of literal anchors against kernel
-source), memory bandwidth (AC fast path), and the regex engine's
-per-byte throughput on betterleaks-shape patterns. Mono (the actual
-CI workload) is at 37 ms, ~14x under any reasonable budget.
+source),
+ memory bandwidth (AC fast path),
+ and the regex engine's
+per-byte throughput on betterleaks-shape patterns.
+ Mono (the actual
+CI workload) is at 37 ms,
+ ~14x under any reasonable budget.
 
 ### The 4 production residuals: source-pattern analysis
 
-`forbidden-strings.local.example.txt` lines 114, 251, 769, 796:
+`forbidden-strings.local.example.txt` lines 114,
+ 251,
+ 769,
+ 796:
 
 ```text
 L114  /(?:[\\'"`\s>=:(,)])([a-zA-Z0-9_~.]{3}\dQ\~[a-zA-Z0-9_~.-]{31,34})(?:$|[\\'"`\s<),])/
@@ -710,44 +988,76 @@ L796  /\b((?:hvs\.[\w-]{90,120}|s\.(?i:[a-z0-9]{24})))(?:\\?['"`]|[\s;]|\\[nr]|$
 
 Per-rule promotion analysis:
 
-- **L114**: single required substring `Q~` (2 chars, below
-  `MIN_PREFIX_LEN = 4`), no top-level alternation. The regex crate's
+- **L114**:
+   single required substring `Q~` (2 chars,
+   below
+  `MIN_PREFIX_LEN = 4`),
+   no top-level alternation.
+   The regex crate's
   literal-prefix optimisation already memchr-scans for `Q~` internally.
-  Promoting to AC moves the same filter earlier in the pipeline; the
+  Promoting to AC moves the same filter earlier in the pipeline;
+   the
   expensive part (full regex verification on each candidate window) is
-  unchanged. Not promotable without lowering MIN_PREFIX_LEN, which
+  unchanged.
+   Not promotable without lowering MIN_PREFIX_LEN,
+   which
   would create AC false-positive storms on `Q~` in arbitrary source.
-- **L251**: no usable literal substring at all. The required content
-  is `\d{15,16}` (numeric only) followed by `|` or `%`. Not promotable.
-- **L769**: single required substring `SK` (2 chars). Same conclusion
+- **L251**:
+   no usable literal substring at all.
+   The required content
+  is `\d{15,16}` (numeric only) followed by `|` or `%`.
+   Not promotable.
+- **L769**:
+   single required substring `SK` (2 chars).
+   Same conclusion
   as L114.
-- **L796**: top-level alternation between `hvs\.[\w-]{90,120}` and
-  `s\.(?i:[a-z0-9]{24})`. Branch 1 has the 4-char anchor `hvs.`;
-  Branch 2 has only `s.` (2 chars before flag scope). Multi-substring
-  AC gating could route Branch 1 to AC, but the regex crate is already
-  internally memchr-optimising on `hvs.`: the gain is moving the
-  filter from regex-internal to our AC bucket, not changing the work.
+- **L796**:
+   top-level alternation between `hvs\.[\w-]{90,120}` and
+  `s\.(?i:[a-z0-9]{24})`.
+   Branch 1 has the 4-char anchor `hvs.`;
+  Branch 2 has only `s.` (2 chars before flag scope).
+   Multi-substring
+  AC gating could route Branch 1 to AC,
+   but the regex crate is already
+  internally memchr-optimising on `hvs.`:
+   the gain is moving the
+  filter from regex-internal to our AC bucket,
+   not changing the work.
   Branch 2 stays on the regex engine regardless.
 
-The actual bottleneck on Linux: **the production residuals' literal
-anchors are too common in Linux kernel source.** Hundreds of
-`SK`/`hvs.`/`Q~`/`\d{15,16}` occurrences in test fixtures, hex
-constants, sample payloads. Each occurrence triggers a full regex
-verification on the surrounding byte span. That cost is bounded by the
-regex engine's per-byte throughput, not by anything optimiser-side.
+The actual bottleneck on Linux:
+ **the production residuals' literal
+anchors are too common in Linux kernel source.
+** Hundreds of
+`SK`/`hvs.`/`Q~`/`\d{15,16}` occurrences in test fixtures,
+ hex
+constants,
+ sample payloads.
+ Each occurrence triggers a full regex
+verification on the surrounding byte span.
+ That cost is bounded by the
+regex engine's per-byte throughput,
+ not by anything optimiser-side.
 
 ### Rayon batching tested and rejected (2026-05-03)
 
-Hypothesis: `synth-1000-0pct --all` on Linux gets 4.0x parallelism on
-16 cores (139 ms wall, 553 ms user) because per-file AC work is
+Hypothesis:
+ `synth-1000-0pct --all` on Linux gets 4.0x parallelism on
+16 cores (139 ms wall,
+ 553 ms user) because per-file AC work is
 ~1 us at 19 KB/file and rayon's task-creation overhead is comparable.
 `with_min_len(N)` would amortise that overhead by batching N files
 per task.
 
 Tested by adding `.with_min_len(64)` to the outer `par_iter` in
-`main.rs` (single-line change, rebuilt, measured, reverted).
+`main.rs` (single-line change,
+ rebuilt,
+ measured,
+ reverted).
 
-Apples-to-apples results, hyperfine 5 runs per Linux config, 15 runs
+Apples-to-apples results,
+ hyperfine 5 runs per Linux config,
+ 15 runs
 for Mono:
 
 ```text
@@ -757,57 +1067,89 @@ Linux example --all           2153 ms ± 367      2204 ms ± 111        within s
 Mono example --all            43 ms ± 3          44 ms ± 4            within sigma
 ```
 
-No measurable change on any workload. Reverted; not shipped.
+No measurable change on any workload.
+ Reverted;
+ not shipped.
 
 The hypothesis was wrong because the synth-1000-0pct's 4.0x
-parallelism is **memory-bandwidth bound, not scheduler-overhead
-bound**. Aggregate AC throughput at 12.9 GiB/s is in striking
+parallelism is **memory-bandwidth bound,
+ not scheduler-overhead
+bound**.
+ Aggregate AC throughput at 12.9 GiB/s is in striking
 distance of practical commodity-machine memory bandwidth (DDR5
-sequential-read ~10-20 GB/s when L3-cold). With 16 threads each
-streaming bytes through SIMD AC, the memory bus saturates well
-before scheduler overhead becomes the bottleneck. Batching frees
-scheduler capacity, but there's no scheduler-capacity bottleneck
+sequential-read ~10-20 GB/s when L3-cold).
+ With 16 threads each
+streaming bytes through SIMD AC,
+ the memory bus saturates well
+before scheduler overhead becomes the bottleneck.
+ Batching frees
+scheduler capacity,
+ but there's no scheduler-capacity bottleneck
 to relieve.
 
 ### Combine-residuals-on-Linux: not tested, math-rejected
 
 Combining the 4 residual rules into one Combined-shard gate was
 tested on Mono earlier (handover round 1) and regressed +86 ms (650
-ms -> 736 ms). The mechanism: each individual rule has a strong
+ms -> 736 ms).
+ The mechanism:
+ each individual rule has a strong
 literal-prefix anchor that the regex crate accelerates with
-memchr/Teddy; combined into one alternation, the union of disparate
-prefixes loses that optimisation, and per-byte scan cost goes up by
+memchr/Teddy;
+ combined into one alternation,
+ the union of disparate
+prefixes loses that optimisation,
+ and per-byte scan cost goes up by
 ~32 us per file.
 
-Per-file overhead × Linux file count: 32 us × 93,694 files =
-**3.0 s of additional cost on Linux**. The current Linux --all is
-2.0 s; combining would push it to ~5 s. Not worth running.
+Per-file overhead × Linux file count:
+ 32 us × 93,694 files =
+**3.0 s of additional cost on Linux**.
+ The current Linux --all is
+2.0 s;
+ combining would push it to ~5 s.
+ Not worth running.
 
 A per-corpus heuristic to choose between Combined and All-Singles
 (based on file count or byte volume) would itself need a stat-walk
-pass to gather metadata before scanning starts, adding ~30 ms tax
-on Linux. The current code's "all-Singles below threshold, Combined
+pass to gather metadata before scanning starts,
+ adding ~30 ms tax
+on Linux.
+ The current code's "all-Singles below threshold,
+ Combined
 above" decision is bench-derived for Mono's residual count (4 < 16,
-all-Singles); it would be incorrect to apply the same threshold to
+all-Singles);
+ it would be incorrect to apply the same threshold to
 Linux without knowing whether the corpus is Mono-like or kernel-like.
 The simplest correct rule is "all-Singles when total residual count
-is small," which is what we have.
+is small,
+" which is what we have.
 
 ### Genuinely still open (low priority)
 
-- **Multi-substring AC gating per rule.** Would help if a future
+- **Multi-substring AC gating per rule.
+  ** Would help if a future
   ruleset has alternation-bearing residuals where each branch's
-  required literal is >= MIN_PREFIX_LEN. The current 4 production
-  residuals do not match this profile (analysed above). Not worth
+  required literal is >= MIN_PREFIX_LEN.
+   The current 4 production
+  residuals do not match this profile (analysed above).
+   Not worth
   building speculatively.
-- **Per-file residual contention reduction.** Currently the residual
-  scan runs each shard's `is_match` sequentially within a file. With
-  4 single-shards on Mono and 4 on Linux, parallelising across shards
+- **Per-file residual contention reduction.
+  ** Currently the residual
+  scan runs each shard's `is_match` sequentially within a file.
+   With
+  4 single-shards on Mono and 4 on Linux,
+   parallelising across shards
   inside a file might win on Linux (4 shards × per-rule find_all
-  could fan out across cores). Bench-untested. Marginal ceiling
+  could fan out across cores).
+   Bench-untested.
+   Marginal ceiling
   since wall is already at 2 s with 10.5x parallelism across files.
-- **Walker pseudo-required quantifier detection.** The walker doesn't
-  detect `={0,3}` as making the preceding `=` optional; minor
+- **Walker pseudo-required quantifier detection.
+  ** The walker doesn't
+  detect `={0,3}` as making the preceding `=` optional;
+   minor
   unsoundness hazard but no observed false negatives in the
   betterleaks corpus.
 
@@ -815,91 +1157,163 @@ is small," which is what we have.
 
 The hot path runs **two** Aho-Corasick `find_overlapping_iter` passes per file:
 
-1. **Case-sensitive AC**: emits user-authored literal-rule hits AND queues
+1. **Case-sensitive AC**:
+    emits user-authored literal-rule hits AND queues
    regex-rule prefix matches whose required substring is case-sensitive
-   (e.g. `\b(p8e-(?i)[a-z0-9]{32})`: the leading `p8e-` is case-sensitive).
+   (e.g. `\b(p8e-(?i)[a-z0-9]{32})`:
+    the leading `p8e-` is case-sensitive).
 2. **Case-insensitive AC** (`AhoCorasickBuilder::ascii_case_insensitive(true)`):
    queues regex-rule prefix matches whose required substring is case-insensitive
    (e.g. the betterleaks shape `(?i)[\w.-]{0,50}(?:adafruit)...` puts `adafruit`
-   here). Literal rules NEVER live in this bucket; user literals are always
+   here).
+    Literal rules NEVER live in this bucket;
+    user literals are always
    case-sensitive.
 
 Shipped optimisations in load order:
 
-- **Substring-extracting prefix walker.** `rules.rs::extract_required_prefix`
+- **Substring-extracting prefix walker.
+  ** `rules.rs::extract_required_prefix`
   walks the regex source past optional/required atoms (character classes,
-  perl-classes, `(?:...)` groups), recursing into required group bodies to
-  pull out literal substrings that must appear in any match. Examples:
+  perl-classes,
+   `(?:...)` groups),
+   recursing into required group bodies to
+  pull out literal substrings that must appear in any match.
+   Examples:
   `[a-z]{4}_RESID_<tag>_[A-Za-z0-9]{12}` extracts `_RESID_<tag>_`;
   `(?i)[\w.-]{0,50}(?:adafruit)...` extracts `adafruit` (ci=true).
-- **`(?i)` flag handling.** Leading `(?i)` flag groups and `(?i)` inline
-  flag changes set the extracted substring's case-insensitive bit; the
+- **`(?i)` flag handling.
+  ** Leading `(?i)` flag groups and `(?i)` inline
+  flag changes set the extracted substring's case-insensitive bit;
+   the
   loader routes the substring onto the case-insensitive AC bucket.
-- **Escape-character soundness.** The walker treats `\<non-alphanumeric>`
-  as a literal of the second char (`\_` -> `_`, `\=` -> `=`, etc.).
-  Previously `\_` ended the walk; ~25 betterleaks-shape rules with
+- **Escape-character soundness.
+  ** The walker treats `\<non-alphanumeric>`
+  as a literal of the second char (`\_` -> `_`,
+   `\=` -> `=`,
+   etc.).
+  Previously `\_` ended the walk;
+   ~25 betterleaks-shape rules with
   `doo\_v1\_` style bodies now route onto AC.
-- **Alternation-soundness bail.** When the walker encounters a top-level
-  `|` (alternation in the current scope), it returns `None`. Without
-  this, `/foobar|barfoo/` would extract "foobar" and AC-gate on it,
+- **Alternation-soundness bail.
+  ** When the walker encounters a top-level
+  `|` (alternation in the current scope),
+   it returns `None`.
+   Without
+  this,
+   `/foobar|barfoo/` would extract "foobar" and AC-gate on it,
   silently missing files that contain only "barfoo".
-- **Scoped flag-group skip.** `(?flags:body)` and `(?-flags:body)` are
+- **Scoped flag-group skip.
+  ** `(?flags:body)` and `(?-flags:body)` are
   skipped without extraction (the body's flag context may invert outer
-  ci; merging into the outer accumulator would require multi-ci
-  tracking). Rules whose only required substring lives inside a scoped
+  ci;
+   merging into the outer accumulator would require multi-ci
+  tracking).
+   Rules whose only required substring lives inside a scoped
   flag group land in residual.
-- **Hybrid engine (`CompiledRegex::{Resharp, Plain}`).** Each rule
+- **Hybrid engine (`CompiledRegex::{Resharp, Plain}`).
+  ** Each rule
   compiles via the standard `regex` crate when its source contains no
-  set-algebra operators (`A&B` intersection, `~(A)` complement, class-
-  level `[A&&B]` / `[A~~B]`). Rules using set-algebra fall back to
-  resharp. The combined gate for residual shards picks the engine per
-  chunk via `uses_set_algebra`, a shallow string scan over the chunk's
-  rules. On the betterleaks corpus this routes 257 of 259 rules to
-  the regex crate; phase 1 (classify + per-rule compile) drops from
-  ~2 s on resharp-only to ~440 ms on hybrid. Live in
+  set-algebra operators (`A&B` intersection,
+   `~(A)` complement,
+   class-
+  level `[A&&B]` / `[A~~B]`).
+   Rules using set-algebra fall back to
+  resharp.
+   The combined gate for residual shards picks the engine per
+  chunk via `uses_set_algebra`,
+   a shallow string scan over the chunk's
+  rules.
+   On the betterleaks corpus this routes 257 of 259 rules to
+  the regex crate;
+   phase 1 (classify + per-rule compile) drops from
+  ~2 s on resharp-only to ~440 ms on hybrid.
+   Live in
   `src/rules/engine.rs`.
-- **Unicode-off compile with try-and-fallback.** Each non-set-algebra
-  rule compiles first with `unicode(false)`; on failure the loader
-  retries with `unicode(true)`. Disabling unicode strips case-folding
-  tables, codepoint-range expansion, and unicode-aware `\b`/`\d`/`\w`
-  semantics from the compile and per-byte scan. Bench-verified 90x
+- **Unicode-off compile with try-and-fallback.
+  ** Each non-set-algebra
+  rule compiles first with `unicode(false)`;
+   on failure the loader
+  retries with `unicode(true)`.
+   Disabling unicode strips case-folding
+  tables,
+   codepoint-range expansion,
+   and unicode-aware `\b`/`\d`/`\w`
+  semantics from the compile and per-byte scan.
+   Bench-verified 90x
   Phase 1 speedup AND 17x Mono `--all` wall-time speedup (641 ms ->
-  37 ms). Soundness preserved: rules using unicode-property classes
-  (`\p{Han}`, etc.), multi-byte chars inside `[...]` classes, or the
-  `(?u)` flag transparently fall through to unicode-on. Literal
+  37 ms).
+   Soundness preserved:
+   rules using unicode-property classes
+  (`\p{Han}`,
+   etc.),
+   multi-byte chars inside `[...]` classes,
+   or the
+  `(?u)` flag transparently fall through to unicode-on.
+   Literal
   multi-byte UTF-8 sequences in the regex source compile fine in
-  bytes-mode without unicode: the parser treats them as the matching
-  byte sequence, so they take the fast path. Lives in
+  bytes-mode without unicode:
+   the parser treats them as the matching
+  byte sequence,
+   so they take the fast path.
+   Lives in
   `src/rules.rs::compile_plain_rule` and the matching combined-gate
   fallback in `src/rules/shards.rs::try_compile_combined`.
-- **Greedy combine-partition for residual shards.**
+- **Greedy combine-partition for residual shards.
+  **
   `src/rules/shards.rs::build_residual_shards` now uses divide-and-
-  conquer: try compiling all positions into one combined-alternation
-  gate; on success emit one Combined shard; on failure split in half
-  and recurse via `rayon::join`. Bottom-out at len=1 emits a Single
+  conquer:
+   try compiling all positions into one combined-alternation
+  gate;
+   on success emit one Combined shard;
+   on failure split in half
+  and recurse via `rayon::join`.
+   Bottom-out at len=1 emits a Single
   shard reusing the Phase-2a-compiled per-rule regex (no fresh
-  Regex::new). Threshold guard `GREEDY_COMBINE_THRESHOLD=16`: below
-  it, all positions are emitted as Singles directly. The threshold
-  is bench-derived on Mono's 4-residual case, where each rule has a
-  strong literal-prefix anchor (`SK`, `Q~`, `\d{15,16}`, `hvs.`) that
-  the regex crate accelerates with memchr/Teddy; combined into one
-  gate, that optimisation is lost and per-byte scan cost rises
-  ~24 us per file (+86 ms across 2700 files). For larger residual
+  Regex:
+  :
+  new).
+   Threshold guard `GREEDY_COMBINE_THRESHOLD=16`:
+   below
+  it,
+   all positions are emitted as Singles directly.
+   The threshold
+  is bench-derived on Mono's 4-residual case,
+   where each rule has a
+  strong literal-prefix anchor (`SK`,
+   `Q~`,
+   `\d{15,16}`,
+   `hvs.`) that
+  the regex crate accelerates with memchr/Teddy;
+   combined into one
+  gate,
+   that optimisation is lost and per-byte scan cost rises
+  ~24 us per file (+86 ms across 2700 files).
+   For larger residual
   buckets where individual rules already lack a usable literal
-  prefix, the trade flips and Combined wins.
+  prefix,
+   the trade flips and Combined wins.
 
 ## L2 line-start index (shipped)
 
 `scan.rs` builds a `Vec<usize>` of newline byte offsets via
-`memchr::memchr_iter` the first time any hit fires, and shares it through
-a `OnceLock` across the AC literal-emit path, the prefix-matched
-`par_iter`, and every residual-shard `par_iter`. `line_and_col` and
+`memchr::memchr_iter` the first time any hit fires,
+ and shares it through
+a `OnceLock` across the AC literal-emit path,
+ the prefix-matched
+`par_iter`,
+ and every residual-shard `par_iter`.
+ `line_and_col` and
 `end_in_line` are now `partition_point` lookups on that vec instead of
 walks from byte 0.
 
-Why this matters in the worst case: a single file with **N hits**
-previously paid 2 walks per hit, each O(file_size), so total cost was
-O(N * file_size). The pathological case "rogue agent wrote one forbidden
+Why this matters in the worst case:
+ a single file with **N hits**
+previously paid 2 walks per hit,
+ each O(file_size),
+ so total cost was
+O(N * file_size).
+ The pathological case "rogue agent wrote one forbidden
 literal a million times in one 43 MB file" would have taken ~18 minutes
 of pure column-counting at 10 GiB/s memory bandwidth.
 
@@ -910,9 +1324,13 @@ With L2:
                             outputs 1M correct redacted lines
 ```
 
-The clean-path numbers are unchanged: in 99% of files no hit fires, so
-`build_line_index` never runs and the pre-L2 cost shape holds. The L2
-build itself is SIMD memchr + an `i + 1` push per newline, and lookups
+The clean-path numbers are unchanged:
+ in 99% of files no hit fires,
+ so
+`build_line_index` never runs and the pre-L2 cost shape holds.
+ The L2
+build itself is SIMD memchr + an `i + 1` push per newline,
+ and lookups
 are `partition_point` (O(log L)).
 
 ## Mmap experiment (rejected)
@@ -920,11 +1338,13 @@ are `partition_point` (O(log L)).
 The plan's E2 entry hypothesised that swapping `fs::read` for
 `memmap2::Mmap::map` in the per-thread fused scan loop would save one
 alloc + memcpy per file and let the kernel readahead-pipeline page
-faults across `--all`. Tested apples-to-apples against `fs::read`
+faults across `--all`.
+ Tested apples-to-apples against `fs::read`
 (both binaries built from the same source modulo the read-vs-mmap
 swap) on **2026-05-02**:
 
-Monochromatic, 30 runs each:
+Monochromatic,
+ 30 runs each:
 
 ```text
                     fs::read              mmap                  delta
@@ -932,7 +1352,9 @@ example-all         15.7 ms ± 1.6 ms      21.2 ms ± 1.0 ms      mmap +35% wall
 synth1k-all         26.5 ms ± 2.3 ms      32.8 ms ± 1.2 ms      mmap +24% wall
 ```
 
-Linux kernel (93693 files, 1.5 GiB), 5 runs each:
+Linux kernel (93693 files,
+ 1.5 GiB),
+ 5 runs each:
 
 ```text
                     fs::read              mmap                  delta
@@ -950,24 +1372,38 @@ Linux 10k+0% residual:
   mmap nearly tripled kernel time, +2300 ms aggregate sys time.
 ```
 
-Why mmap loses for our workload: per-file mmap setup creates a
-`vm_area_struct` and corresponding page table entries; per-file
-unmap tears them down. The Linux kernel corpus hits this path 93693
-times, the Mono repo 2699 times. With files averaging 16 KB, the
+Why mmap loses for our workload:
+ per-file mmap setup creates a
+`vm_area_struct` and corresponding page table entries;
+ per-file
+unmap tears them down.
+ The Linux kernel corpus hits this path 93693
+times,
+ the Mono repo 2699 times.
+ With files averaging 16 KB,
+ the
 saved alloc + memcpy (≈ tens of microseconds per file) is dwarfed
-by the VMA bookkeeping and page-fault handling. `madvise(SEQUENTIAL)`
-made the regression worse, not better, because each `madvise` is an
+by the VMA bookkeeping and page-fault handling.
+ `madvise(SEQUENTIAL)`
+made the regression worse,
+ not better,
+ because each `madvise` is an
 extra syscall per file.
 
-Rejection criteria: every measured workload regressed by ≥ 24% wall;
-no workload showed any improvement. The dependency (`memmap2`) and
-the `unsafe { Mmap::map(...) }` block were removed. Don't re-attempt
+Rejection criteria:
+ every measured workload regressed by ≥ 24% wall;
+no workload showed any improvement.
+ The dependency (`memmap2`) and
+the `unsafe { Mmap::map(...) }` block were removed.
+ Don't re-attempt
 on this code base unless input file sizes shift to averages well
 above ~1 MiB per file (the threshold where saved memcpy outweighs
 VMA setup is roughly that order on Linux).
 
 This is the kind of optimisation that "should" win on paper and
-empirically does not. Future "mmap is faster, just use mmap" PRs
+empirically does not.
+ Future "mmap is faster,
+ just use mmap" PRs
 should be challenged with the apples-to-apples bench reproduced
 in `## Reproduce`.
 
@@ -1022,13 +1458,15 @@ hyperfine --warmup 3 --runs 30 --ignore-failure \
 `/tmp/claude/clean.txt` is a single-line plain-text file;
 `/tmp/claude/violating.txt` contains one literal taken from `synth-rules.txt`;
 `/tmp/claude/violating-10k.txt` contains one set-algebra hit and one residual hit
-for the 10k ruleset. Generators for synthetic rulesets and the sweep variants live
+for the 10k ruleset.
+ Generators for synthetic rulesets and the sweep variants live
 under `/tmp/claude/gen-*.ts` (Bun TypeScript).
 
 ## Engine constraint
 
 The scanner uses [resharp][resharp] for regex matching.
-Resharp is **load-bearing for the rule grammar**, not just a performance choice:
+Resharp is **load-bearing for the rule grammar**,
+ not just a performance choice:
 
 - `A&B` set intersection
 - `~(A)` complement
@@ -1037,10 +1475,12 @@ Resharp is **load-bearing for the rule grammar**, not just a performance choice:
 These operators have no equivalent in `regex` / `regex-automata` / PCRE.
 The package README documents the worked example `/key_[0-9]{5}&~(key_0{5})/`,
 which flags any five-digit `key_` value except the all-zeros placeholder
-without lookaround. Switching engines would require either dropping support
+without lookaround.
+ Switching engines would require either dropping support
 for these rule shapes or maintaining two parsers and routing rules between them.
 
-Concretely: any plan or rationale that proposes "swap the combined gate to
+Concretely:
+ any plan or rationale that proposes "swap the combined gate to
 `regex-automata` to enable DFA serialization" is rejected.
 The combined-regex compile cost is bounded by sharding (see Architecture summary)
 and is now a small fraction of overall runtime.
@@ -1050,25 +1490,42 @@ and is now a small fraction of overall runtime.
 ## Comparison with betterleaks v1.1.2
 
 Betterleaks is the upstream source for the ported rule corpus (see
-`src/mise.port-betterleaks.ts`). Measuring against it is informative
-because both tools scan for secrets, but the comparison is not a
-horse race; the tools serve different use cases and the numbers
-reflect architectural choices, not engine quality in the abstract.
+`src/mise.port-betterleaks.ts`).
+ Measuring against it is informative
+because both tools scan for secrets,
+ but the comparison is not a
+horse race;
+ the tools serve different use cases and the numbers
+reflect architectural choices,
+ not engine quality in the abstract.
 
-**Betterleaks v1.1.2**, Go binary, RE2 engine, Aho-Corasick keyword
-prefilters, CEL-based post-match filtering, `dir` mode (no git history).
-Installed via mise/aqua. Tested 2026-05-03 on the same machine as all
-other benches (AMD Ryzen 7 8700F, 16 threads).
+**Betterleaks v1.1.2**,
+ Go binary,
+ RE2 engine,
+ Aho-Corasick keyword
+prefilters,
+ CEL-based post-match filtering,
+ `dir` mode (no git history).
+Installed via mise/aqua.
+ Tested 2026-05-03 on the same machine as all
+other benches (AMD Ryzen 7 8700F,
+ 16 threads).
 
 ### Same-content comparison (git-tracked files only)
 
-To isolate engine throughput from file-walking differences, both tools
-were run on identical file sets: Monochromatic's git-tracked content
-(~21 MiB, ~2700 files) and the Linux kernel (torvalds/linux, ~1.58 GiB,
+To isolate engine throughput from file-walking differences,
+ both tools
+were run on identical file sets:
+ Monochromatic's git-tracked content
+(~21 MiB,
+ ~2700 files) and the Linux kernel (torvalds/linux,
+ ~1.58 GiB,
 ~93k files).
 
-Monochromatic, git-tracked content via `/tmp` copy (betterleaks) and
-`--all` (forbidden-strings), 5 runs each:
+Monochromatic,
+ git-tracked content via `/tmp` copy (betterleaks) and
+`--all` (forbidden-strings),
+ 5 runs each:
 
 ```text
 forbidden-strings   startup-only     7.3 ms ±  0.6 ms
@@ -1077,10 +1534,15 @@ betterleaks         startup-only   174 ms             (scanned 0 bytes)
 betterleaks         dir              557 ms             (6.61 MiB in 557 ms)
 ```
 
-Startup ratio: **~24x**. Full-scan ratio: **~20x**.
+Startup ratio:
+ **~24x**.
+ Full-scan ratio:
+ **~20x**.
 
-Linux kernel, `--all` vs `dir` (betterleaks `dir` also walks git-tracked
-files in this corpus since there are no node_modules-like subtrees), single
+Linux kernel,
+ `--all` vs `dir` (betterleaks `dir` also walks git-tracked
+files in this corpus since there are no node_modules-like subtrees),
+ single
 run each:
 
 ```text
@@ -1088,14 +1550,23 @@ forbidden-strings   --all          1.6 s    (user 22 s,  sys 0.8 s, 13x parallel
 betterleaks         dir            5.3 s    (user 66 s,  sys 1.8 s, 12x parallelism)
 ```
 
-Scan ratio: **~3.3x**. Per-byte throughput: forbidden-strings ~1.0 GB/s,
+Scan ratio:
+ **~3.3x**.
+ Per-byte throughput:
+ forbidden-strings ~1.0 GB/s,
 betterleaks ~0.3 GB/s.
 
 ### Why the gap widens on monorepos
 
-Betterleaks `dir` walks the entire directory tree; it does not respect
-`.gitignore`. On the Monochromatic monorepo (which contains
-`node_modules/`, `dist/`, `target/`, etc.), this means scanning 4.28 GB
+Betterleaks `dir` walks the entire directory tree;
+ it does not respect
+`.gitignore`.
+ On the Monochromatic monorepo (which contains
+`node_modules/`,
+ `dist/`,
+ `target/`,
+ etc.),
+ this means scanning 4.28 GB
 of content instead of the 21 MiB of git-tracked source:
 
 ```text
@@ -1103,85 +1574,141 @@ forbidden-strings   --all            43 ms    (working tree + .gitignore + gix-i
 betterleaks         dir              86.5 s   (full tree walk; 4.28 GB)
 ```
 
-Wall-clock ratio: **~2000x**. The ratio is dominated by the 200x data
-volume difference, not the engine; but the data volume difference is
-real and user-observable. Forbidden-strings walks the working tree via
+Wall-clock ratio:
+ **~2000x**.
+ The ratio is dominated by the 200x data
+volume difference,
+ not the engine;
+ but the data volume difference is
+real and user-observable.
+ Forbidden-strings walks the working tree via
 the `ignore` crate (which honours `.gitignore`) and unions with an
 in-process `.git/index` read (`gix-index`) to recover force-added
-gitignored files, so it skips generated and vendored content by
-default. Betterleaks' `git` command scans git history (patches), which
-is a different (and more expensive) workflow; its `dir` command is the
+gitignored files,
+ so it skips generated and vendored content by
+default.
+ Betterleaks' `git` command scans git history (patches),
+ which
+is a different (and more expensive) workflow;
+ its `dir` command is the
 closest comparable mode for working-tree-only scanning.
 
 ### Why forbidden-strings is faster per byte
 
 Three architectural choices account for most of the per-byte gap:
 
-1. **Dual AC gate with lazy regex dispatch.** On the 99%-clean file
-   path, forbidden-strings runs two Aho-Corasick passes and, finding
-   zero hits, skips the regex engine entirely. RE2 (betterleaks' engine)
-   also uses Aho-Corasick keyword prefilters, but the RE2 match path
+1. **Dual AC gate with lazy regex dispatch.
+   ** On the 99%-clean file
+   path,
+    forbidden-strings runs two Aho-Corasick passes and,
+    finding
+   zero hits,
+    skips the regex engine entirely.
+    RE2 (betterleaks' engine)
+   also uses Aho-Corasick keyword prefilters,
+    but the RE2 match path
    is heavier per file even on no-match content because the prefilter
-   hit must be verified against the full DFA. Forbidden-strings' AC
-   only queues a `find_all` when the prefix is seen; on a clean file,
+   hit must be verified against the full DFA.
+    Forbidden-strings' AC
+   only queues a `find_all` when the prefix is seen;
+    on a clean file,
    no `find_all` runs at all.
 
-2. **Hybrid engine dispatch.** 257 of 259 ported rules compile via the
+2. **Hybrid engine dispatch.
+   ** 257 of 259 ported rules compile via the
    `regex` crate (which applies memchr/Teddy literal-prefix acceleration
-   per-rule). RE2 compiles all rules into a shared DFA that cannot
-   apply per-rule literal-prefix fast paths. The per-rule acceleration
+   per-rule).
+    RE2 compiles all rules into a shared DFA that cannot
+   apply per-rule literal-prefix fast paths.
+    The per-rule acceleration
    matters on large corpora where many files contain a short prefix hit
    but don't match the full rule.
 
-3. **Native binary startup.** The Rust binary (LTO + `codegen-units = 1` +
+3. **Native binary startup.
+   ** The Rust binary (LTO + `codegen-units = 1` +
    `panic = "unwind"` + `overflow-checks = true` + `strip = true`) starts
-   in ~9 ms. The Go binary starts in ~174 ms (GC init, goroutine scheduler,
-   config parse). For the pre-commit hook use case (scan a handful of
-   staged files, sub-5 ms budget), the startup gap alone makes betterleaks
-   unsuitable regardless of per-byte throughput. The unwind +
+   in ~9 ms. The Go binary starts in ~174 ms (GC init,
+    goroutine scheduler,
+   config parse).
+    For the pre-commit hook use case (scan a handful of
+   staged files,
+    sub-5 ms budget),
+    the startup gap alone makes betterleaks
+   unsuitable regardless of per-byte throughput.
+    The unwind +
    overflow-checks pair is load-bearing for the resharp-panic safety
-   wrapper; see `Cargo.toml:49-97`.
+   wrapper;
+    see `Cargo.toml:49-97`.
 
 ### What betterleaks does that forbidden-strings does not
 
-The speed gap is not free. Betterleaks provides capabilities that
+The speed gap is not free.
+ Betterleaks provides capabilities that
 forbidden-strings deliberately omits (see README "When to pick
 something else"):
 
-- **CEL-based filtering.** Post-match filters evaluate entropy, BPE
-  token efficiency, git author, file path, and string-allowlist
-  membership. Forbidden-strings has no post-match filtering; the port
+- **CEL-based filtering.
+  ** Post-match filters evaluate entropy,
+   BPE
+  token efficiency,
+   git author,
+   file path,
+   and string-allowlist
+  membership.
+   Forbidden-strings has no post-match filtering;
+   the port
   drops these filters and documents the resulting false-positive
   increase.
-- **Async HTTP validation.** `validate` blocks call provider APIs to
-  check if a detected secret is live. No equivalent in
+- **Async HTTP validation.
+  ** `validate` blocks call provider APIs to
+  check if a detected secret is live.
+   No equivalent in
   forbidden-strings.
-- **Git history scanning.** `betterleaks git` walks every diff in
-  every commit. Forbidden-strings only scans the working tree.
-- **SARIF/JSON/CSV output.** Machine-readable reports for GitHub code
-  scanning upload, CI dashboards, etc. Forbidden-strings only emits
+- **Git history scanning.
+  ** `betterleaks git` walks every diff in
+  every commit.
+   Forbidden-strings only scans the working tree.
+- **SARIF/JSON/CSV output.
+  ** Machine-readable reports for GitHub code
+  scanning upload,
+   CI dashboards,
+   etc. Forbidden-strings only emits
   `path:line:cols rule=N` to stderr.
-- **Per-rule path scoping.** `path = '''(?i)\.ya?ml$'''` restricts a
-  rule to matching files. Forbidden-strings scans every file
+- **Per-rule path scoping.
+  ** `path = '''(?i)\.ya?ml$'''` restricts a
+  rule to matching files.
+   Forbidden-strings scans every file
   unconditionally (by policy).
-- **Allowlists.** Per-rule `[[rules.allowlists]]` with regex-based
-  exceptions. No equivalent.
+- **Allowlists.
+  ** Per-rule `[[rules.allowlists]]` with regex-based
+  exceptions.
+   No equivalent.
 
-These features are part of why betterleaks is slower per byte: CEL
-evaluation, entropy/token-efficiency scoring, and validation all add
+These features are part of why betterleaks is slower per byte:
+ CEL
+evaluation,
+ entropy/token-efficiency scoring,
+ and validation all add
 per-match cost that forbidden-strings avoids by not having them.
 
 ### When the comparison is not relevant
 
 - If the rule set can ship in the repo and set-algebra is unnecessary,
-  betterleaks is the better tool (larger ecosystem, real validation,
-  SARIF output). Forbidden-strings' niche is rules that cannot be
+  betterleaks is the better tool (larger ecosystem,
+   real validation,
+  SARIF output).
+   Forbidden-strings' niche is rules that cannot be
   committed.
 - Betterleaks' `git` command (scanning commit history) has no
-  forbidden-strings equivalent. The per-byte comparison only covers
+  forbidden-strings equivalent.
+   The per-byte comparison only covers
   working-tree scanning.
-- The rule corpora are not identical: the port is lossy (CEL filters,
-  entropy, allowlists, path scoping all dropped). Betterleaks produces
+- The rule corpora are not identical:
+   the port is lossy (CEL filters,
+  entropy,
+   allowlists,
+   path scoping all dropped).
+   Betterleaks produces
   fewer false positives on the same rules because it has more filtering.
 
 ### Reproduce
@@ -1214,31 +1741,44 @@ cd /path/to/monochromatic && time betterleaks dir .
 ## When to re-bench
 
 Re-run the commands above and append a dated block to **Last benched** /
-**Results** (do not overwrite: regressions need history) when **any** of:
+**Results** (do not overwrite:
+ regressions need history) when **any** of:
 
-- A change touches `src/lib.rs` (CLI dispatch + file fan-out; `src/main.rs` is a
-  five-line wrapper around `run_cli_from_env`), `src/scan.rs` (per-file scan logic),
-  `src/walk.rs` (walker + gix-index union), or `src/rules.rs` (rule loading and
+- A change touches `src/lib.rs` (CLI dispatch + file fan-out;
+   `src/main.rs` is a
+  five-line wrapper around `run_cli_from_env`),
+   `src/scan.rs` (per-file scan logic),
+  `src/walk.rs` (walker + gix-index union),
+   or `src/rules.rs` (rule loading and
   bucketing)
 - A change touches `Cargo.toml` profile or dependency versions
 - The repo grows past ~5000 tracked files or ~100 MiB total
 - Realistic `--all` exceeds **180 ms** in casual use (~3x current 58.6 ms),
-  startup-only exceeds **30 ms** (~3x current 8.8 ms), or synthetic-1k
+  startup-only exceeds **30 ms** (~3x current 8.8 ms),
+   or synthetic-1k
   `--all` exceeds **500 ms** (~3.5x current 139 ms)
 
-If none of the above hold, the numbers in this file are still trustworthy.
+If none of the above hold,
+ the numbers in this file are still trustworthy.
 
-The deferred opportunity catalog (extension/size pre-filter, chunked-concat,
+The deferred opportunity catalog (extension/size pre-filter,
+ chunked-concat,
 bucketed alternation) lives in `~/.claude/plans/dapper-coalescing-horizon.md`.
-Do not re-derive that analysis on every session: read the plan, then decide.
+Do not re-derive that analysis on every session:
+ read the plan,
+ then decide.
 
 Items already resolved in this code base:
 
-- **L2 (line-start index for `line_and_col`)**: shipped 2026-05-02 evening.
+- **L2 (line-start index for `line_and_col`)**:
+   shipped 2026-05-02 evening.
   See `## L2 line-start index (shipped)` above.
-- **E2 (`mmap` for `--all`)**: tested and rejected 2026-05-02 evening with
-  apples-to-apples bench data. See `## Mmap experiment (rejected)` above.
+- **E2 (`mmap` for `--all`)**:
+   tested and rejected 2026-05-02 evening with
+  apples-to-apples bench data.
+   See `## Mmap experiment (rejected)` above.
   Do not re-attempt without input file sizes shifting to >> 1 MiB averages.
-- **E1 (extension/size pre-filter)**: rejected by user policy
+- **E1 (extension/size pre-filter)**:
+   rejected by user policy
   (rule must scan files regardless of extension/size to catch
   accidentally renamed files and adversarial agent-generated content).
