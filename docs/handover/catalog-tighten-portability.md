@@ -10,11 +10,14 @@ and the planned shape of the deliverable.
 
 ## Status
 
-Grilling and investigation in progress.
-Resolver direction, the #195 hardening shape, phasing, and the test-isolation policy are settled.
-Container mechanism (reuse `module-matrix` vs bespoke Containerfile) and the fixture/commit plan are still open.
+Grilling complete on all major branches; ready to implement on the maintainer's go.
+Resolver direction, the #195 hardening shape, phasing, the test-isolation policy,
+and the container mechanism are settled.
+Remaining are implementation details: the sidecar package's exact name and placement,
+the fixture workspace shape, the pnp reader's exact PnP-API calls, and commit slicing.
 No code has been written in the main worktree yet;
 all measurement happened in a throwaway git worktree.
+Work commits to `main` (maintainer confirmed); the handover doc already landed there.
 
 ## The two issues
 
@@ -116,8 +119,16 @@ The layouts that break any `node_modules`-reading strategy: Yarn Berry PnP and D
 
 ## E2e test infrastructure
 
-- Placement: inside `packages/dev-script/catalog-tighten/`, mirroring
-  `packages/module/matrix` and `packages/dev-script/mutation-test` conventions.
+- Mechanism: a bespoke sidecar package (working name `catalog-tighten-matrix`),
+  borrowing `packages/module/matrix`'s cartesian-product and `describe`/`it` reporting shape
+  and `packages/dev-script/mutation-test`'s isolation
+  (baked node+pnpm image, fixture mounted read-only, tmpfs `node_modules`, dropped caps, no network).
+- Why not reuse `module-matrix` directly: its model mounts the real monorepo read-write
+  (`-v ${monorepoRoot}:/workspace:Z`) and runs a file with a curl-installed bun/deno runtime,
+  with no package-manager/settings axis.
+  Our e2e needs the opposite: a throwaway fixture installed with pnpm under a chosen setting,
+  `catalog-tighten` run via node, never touching the real tree.
+  Extract a shared pm-install-matrix module later, once a second manager proves the pattern.
 - Test isolation policy: containerise the install-based resolution tests only
   (the host's own install would contaminate a hoisted or stale-orphan fixture).
   Pure-function tests (parser, name-validator, write-back) stay as fast host unit tests
@@ -130,12 +141,13 @@ The layouts that break any `node_modules`-reading strategy: Yarn Berry PnP and D
 
 ## Open items
 
-- Container mechanism: reuse `@monochromatic-dev/module-matrix`
-  (its axes are os/user/runtime, would need a package-manager-settings axis)
-  versus a bespoke Containerfile in the package (mutation-test style).
+- Sidecar package exact name, category, and placement
+  (e.g. `packages/dev-script/catalog-tighten-matrix` or a `test-fixture` sibling).
 - Fixture workspace shape and how pnpm settings are applied per container combo.
 - pnpm pnp reader: exact PnP-API call sequence.
-- Branch name and commit slicing for the pnpm PR.
+- Commit slicing for the pnpm work (committing to `main`, eagerly).
+- Default catalog only: named `catalogs:` are out of scope for the fix
+  (the one named entry here, `classic.typescript`, is a `^` range and is skipped anyway).
 
 ## Key files
 
