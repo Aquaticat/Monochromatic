@@ -283,7 +283,10 @@ const entrySummaries = await Promise.all(catalogEntries.map(
  * Aggregated outcome merged from per-entry summaries.
  */
 const summary: CatalogSummary = entrySummaries.reduce(
-  function mergeSummary(acc, entrySummary,): CatalogSummary {
+  function mergeSummary(
+    acc,
+    entrySummary,
+  ): CatalogSummary {
     return {
       results: [
         ...acc.results,

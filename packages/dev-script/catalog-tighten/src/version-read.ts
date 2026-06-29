@@ -30,6 +30,30 @@ export const NO_MANIFEST_VERSION: unique symbol = Symbol('catalog-tighten/no-man
 export const NO_INSTALLED_VERSION: unique symbol = Symbol('catalog-tighten/no-installed-version',);
 
 /**
+ * Reads Bun store directory entries, returning the installed-version sentinel when absent.
+ *
+ * @param bunStoreDir - absolute path to `node_modules/.bun`
+ *
+ * @returns Bun store entries, or {@link NO_INSTALLED_VERSION} when the store cannot be read
+ *
+ * @example
+ * ```ts
+ * const entries = await readBunStoreEntries('/repo/node_modules/.bun');
+ * ```
+ */
+async function readBunStoreEntries(bunStoreDir: string,): Promise<readonly string[] | typeof NO_INSTALLED_VERSION> {
+  try {
+    return await readdir(bunStoreDir,);
+  }
+  catch (error) {
+    if (!(error instanceof Error))
+      throw error;
+
+    return NO_INSTALLED_VERSION;
+  }
+}
+
+/**
  * Reads the `version` field from a `package.json` file path.
  *
  * @param pkgJsonPath - absolute path to a package.json file
@@ -114,16 +138,9 @@ export async function readVersionFromBunStore(
   /**
    * Direct children of the bun store directory.
    */
-  let entries: string[] = [];
-  try {
-    entries = await readdir(bunStoreDir,);
-  }
-  catch (error) {
-    if (!(error instanceof Error))
-      throw error;
-
+  const entries = await readBunStoreEntries(bunStoreDir,);
+  if (entries === NO_INSTALLED_VERSION)
     return NO_INSTALLED_VERSION;
-  }
 
   // Match directories starting with `prefix@` (the @ separates name from version)
   /**
@@ -162,19 +179,22 @@ export async function readVersionFromBunStore(
   /**
    * Highest semver seen across the candidate store entries.
    */
-  return candidateVersions.reduce(function chooseHighest(
-    bestVersion: string | typeof NO_INSTALLED_VERSION,
-    candidateVersion,
-  ): string | typeof NO_INSTALLED_VERSION {
-    if (candidateVersion === NO_MANIFEST_VERSION)
+  return candidateVersions.reduce(
+    function chooseHighest(
+      bestVersion: string | typeof NO_INSTALLED_VERSION,
+      candidateVersion,
+    ): string | typeof NO_INSTALLED_VERSION {
+      if (candidateVersion === NO_MANIFEST_VERSION)
+        return bestVersion;
+      if ((bestVersion === NO_INSTALLED_VERSION) || isStrictlyGreater({
+        cataloged: bestVersion,
+        installed: candidateVersion,
+      },))
+        return candidateVersion;
       return bestVersion;
-    if ((bestVersion === NO_INSTALLED_VERSION) || isStrictlyGreater({
-      cataloged: bestVersion,
-      installed: candidateVersion,
-    },))
-      return candidateVersion;
-    return bestVersion;
-  }, NO_INSTALLED_VERSION,);
+    },
+    NO_INSTALLED_VERSION,
+  );
 }
 
 //endregion Version reading

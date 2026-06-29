@@ -285,7 +285,9 @@ export async function readInstalledVersion(
   /**
    * First installed version found through workspace package resolution.
    */
-  const wsVersion = workspaceVersions.find(function hasVersion(candidate,): boolean {
+  const wsVersion = workspaceVersions.find(function hasVersion(
+    candidate,
+  ): candidate is string {
     return candidate !== NO_MANIFEST_VERSION;
   },);
   if (wsVersion !== undefined)
