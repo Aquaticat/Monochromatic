@@ -3,7 +3,7 @@
   <component name='OxcSettings'>
     <option
       name='fixAllOnSave'
-      value='true'
+      value='false'
     />
     <option
       name='typeAware'
