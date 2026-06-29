@@ -5,7 +5,6 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import { HashCache, } from '../hash-cache.ts';
-import { l as defaultLogger, } from '../log.ts';
 import type {
   WatchCtx,
   WatchEvent,
@@ -15,6 +14,10 @@ import {
   anyFilter,
   composeFilters,
 } from './compose.ts';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
+/** Logger root for watch-restart after removing the package log shim. */
+const defaultLogger = tagged({ tag: 'watch-restart', },);
 
 /**
  * Milliseconds the "async filter resolves correctly" test holds before

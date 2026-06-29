@@ -8,7 +8,7 @@ import type {
 import type { CaptureSet, } from './analyze/memory.ts';
 
 import { API_URL, } from './analyze/llama.ts';
-import { log, } from './log.ts';
+import { log, } from './infra/syslog.ts';
 
 /**
  * Maximum number of capture sets sent to the LLM in a single request.

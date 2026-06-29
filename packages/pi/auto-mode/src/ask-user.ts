@@ -13,7 +13,6 @@ import type {
   ExtensionContext,
 } from '@earendil-works/pi-coding-agent';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
-import { l as parentLogger, } from './log.ts';
 import { formatModelBlockReason, } from './model-feedback.ts';
 import { DEFAULT_DENY_GUIDANCE, } from './system-prompt.ts';
 import {
@@ -21,6 +20,9 @@ import {
   VERDICT_ENTRY_TYPE,
   type VerdictData,
 } from './types.ts';
+
+/** Logger root for auto-mode after removing the package log shim. */
+const parentLogger = tagged({ tag: 'auto-mode', },);
 
 /**
  * Tagged logger for the ask-user module.

@@ -8,7 +8,7 @@ import {
   type Server,
 } from 'node:net';
 
-import { log, } from '../log.ts';
+import { log, } from './syslog.ts';
 
 /**
  * Abstract Unix socket name used for single-instance enforcement.

@@ -14,10 +14,6 @@ import {
   writeConfig,
 } from './config.ts';
 import {
-  l,
-  tagged,
-} from './log.ts';
-import {
   connectDisposable,
   ensureNbdModule,
   findFreeNbdDevice,
@@ -35,6 +31,10 @@ import {
   type QemuMapRegion,
   VHDX_FILENAME,
 } from './types.ts';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
+/** Logger root for vmsync after removing the package log shim. */
+const l = tagged({ tag: 'vmsync', },);
 
 /**
  * Syncs changes from a KVM boot session (qcow2 overlay) to the vhdx base image.

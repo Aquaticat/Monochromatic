@@ -14,10 +14,6 @@ import {
 } from './config.ts';
 import { domainXml, } from './domain-xml.ts';
 import { exec, } from './exec.ts';
-import {
-  l,
-  tagged,
-} from './log.ts';
 import { writeVmMeta, } from './meta.ts';
 import {
   CUSTOM_GUEST_DEFAULTS,
@@ -31,6 +27,10 @@ import {
   defineVm,
   startVm,
 } from './virsh.ts';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
+/** Logger root for mvm after removing the package log shim. */
+const l = tagged({ tag: 'mvm', },);
 
 //region Windows post-boot provisioning
 

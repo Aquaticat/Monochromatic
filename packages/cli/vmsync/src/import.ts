@@ -20,11 +20,6 @@ import {
   writeConfig,
 } from './config.ts';
 import {
-  l,
-  type Logger,
-  tagged,
-} from './log.ts';
-import {
   connectDisposable,
   ensureNbdModule,
   findFreeNbdDevice,
@@ -40,6 +35,13 @@ import {
   VHDX_FILENAME,
   type VmsyncConfig,
 } from './types.ts';
+import {
+  tagged,
+  type Logger,
+} from '@monochromatic-dev/module-logger/ts';
+
+/** Logger root for vmsync after removing the package log shim. */
+const l = tagged({ tag: 'vmsync', },);
 
 /**
  * Validates that a disk image contains an EFI System Partition.

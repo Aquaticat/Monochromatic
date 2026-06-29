@@ -1,12 +1,12 @@
-import {
-  l,
-  tagged,
-} from '../log.ts';
 import { parseGlobalOptions, } from '../parse-global-options.ts';
 import {
   ADD_ESCAPE_HATCH,
   parseAddRegion,
 } from '../parsers/add.ts';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
+/** Logger root for cli-git after removing the package log shim. */
+const l = tagged({ tag: 'cli-git', },);
 
 //region Add-explicit rule
 

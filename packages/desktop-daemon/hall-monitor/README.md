@@ -144,7 +144,6 @@ journalctl -t hall-monitor -f
 src/
   index.ts            Entry point, argument parsing, main loop, signal handling
   cycle.ts            Orchestrates one capture-analyze-notify cycle
-  log.ts              Thin syslog wrapper (logger)
   analyze.ts          LLM prompt construction, API call, verdict parsing
   analyze/
     llama.ts          llama-server lifecycle (start/stop/health check)
@@ -153,6 +152,7 @@ src/
     capture.ts        Screenshot (Spectacle) and webcam (ffmpeg) capture
     lock.ts           Single-instance enforcement via abstract Unix socket
     notification.ts   Desktop notifications (notify-send)
+    syslog.ts         Thin syslog wrapper (logger)
     screenlock.ts     D-Bus session lock check
     blackdetect.ts    Webcam privacy cover detection
 ```

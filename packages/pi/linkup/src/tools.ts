@@ -31,12 +31,14 @@ import {
   filterBlockedSearchResults,
   findBlockedUrlMatch,
 } from './domain-policy.ts';
-import { linkupLogger, } from './log.ts';
 import {
   createLinkupToolOutput,
   LINKUP_VISIBLE_JSON_MAX_BYTES,
   type LinkupToolDetails,
 } from './tool-output.ts';
+
+/** Logger root for pi-linkup after removing the package log shim. */
+const linkupLogger = tagged({ tag: 'pi-linkup', },);
 
 //region Constants
 

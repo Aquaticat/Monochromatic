@@ -5,7 +5,6 @@
  */
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
-import { linkupLogger, } from './log.ts';
 
 import {
   DEFAULT_LINKUP_BASE_URL,
@@ -30,6 +29,9 @@ import type {
   SearchOptions,
 } from './client-types.ts';
 import { postJson, } from './client-http.ts';
+
+/** Logger root for pi-linkup after removing the package log shim. */
+const linkupLogger = tagged({ tag: 'pi-linkup', },);
 
 /**
  * Module logger.

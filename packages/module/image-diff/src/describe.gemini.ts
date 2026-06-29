@@ -1,11 +1,11 @@
 import { ABSENT, } from './describe.absent.ts';
 import { toGeminiInlineData, } from './encoding.gemini.ts';
 import { GEMINI_API_BASE, } from './gemini.config.ts';
-import {
-  l,
-  tagged,
-} from './log.ts';
 import type { ImageInput, } from './types.ts';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
+/** Logger root for image-diff after removing the package log shim. */
+const l = tagged({ tag: 'image-diff', },);
 
 //region Gemini generateContent API types
 

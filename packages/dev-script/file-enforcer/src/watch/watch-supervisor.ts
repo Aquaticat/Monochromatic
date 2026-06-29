@@ -1,8 +1,8 @@
 import { setTimeout as wait, } from 'node:timers/promises';
 
-import type { Logger, } from '../log.ts';
 import { watchDirectory, } from './watch-dir.ts';
 import type { EventKind, } from './watch-filter.ts';
+import { type Logger, } from '@monochromatic-dev/module-logger/ts';
 
 //region Watcher restart policy
 

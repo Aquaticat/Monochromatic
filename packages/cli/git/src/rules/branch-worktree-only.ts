@@ -6,12 +6,12 @@ import {
 } from '../parsers/branch-create.ts';
 import { parseGlobalOptions, } from '../parse-global-options.ts';
 import { resolveGit, } from '../resolve-git.ts';
-import {
-  l,
-  tagged,
-} from '../log.ts';
 import { branchCreationMessage, } from './branch-worktree-messages.ts';
 import { implicitRemoteGuessCreatesBranch, } from './branch-worktree-remote-guess.ts';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
+/** Logger root for cli-git after removing the package log shim. */
+const l = tagged({ tag: 'cli-git', },);
 
 //region Branch worktree policy facts
 

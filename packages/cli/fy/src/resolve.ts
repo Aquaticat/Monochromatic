@@ -5,10 +5,10 @@ import { join, } from 'node:path';
 import {
   findMiseMonorepoRootCached,
 } from '@monochromatic-dev/module-fs-path/ts';
-import {
-  l,
-  tagged,
-} from './log.ts';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
+/** Logger root for cli-fy after removing the package log shim. */
+const l = tagged({ tag: 'cli-fy', },);
 
 /**
  * Sentinel marking "not found here", returned by the resolution helpers below.

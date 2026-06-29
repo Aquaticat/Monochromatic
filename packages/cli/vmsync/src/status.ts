@@ -7,10 +7,10 @@
 import { BYTES_PER_GIB, } from '@monochromatic-dev/module-const/ts';
 
 import { readConfig, } from './config.ts';
-import {
-  l,
-  tagged,
-} from './log.ts';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
+/** Logger root for vmsync after removing the package log shim. */
+const l = tagged({ tag: 'vmsync', },);
 
 /**
  * Prints the status of a named VM to stdout.

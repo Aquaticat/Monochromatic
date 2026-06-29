@@ -22,10 +22,6 @@ import {
   vmDir,
   writeConfig,
 } from './config.ts';
-import {
-  l,
-  tagged,
-} from './log.ts';
 import { createOverlay, } from './qemu-img.ts';
 import { spawn, } from './spawn.ts';
 import {
@@ -37,6 +33,10 @@ import {
   QCOW2_FILENAME,
   VHDX_FILENAME,
 } from './types.ts';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
+/** Logger root for vmsync after removing the package log shim. */
+const l = tagged({ tag: 'vmsync', },);
 
 //region OVMF firmware discovery
 

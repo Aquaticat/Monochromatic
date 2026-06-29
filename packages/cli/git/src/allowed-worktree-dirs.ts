@@ -6,11 +6,11 @@ import {
   relative,
   sep,
 } from 'node:path';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
-import {
-  l,
-  tagged,
-} from './log.ts';
+/** Logger root for cli-git after removing the package log shim. */
+const l = tagged({ tag: 'cli-git', },);
+
 
 //region Baked-in tool-cache allowlist
 

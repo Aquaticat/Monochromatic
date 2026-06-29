@@ -6,7 +6,7 @@ import { setTimeout, } from 'node:timers/promises';
 
 import spawn from 'nano-spawn';
 
-import { log, } from '../log.ts';
+import { log, } from '../infra/syslog.ts';
 
 // LFM2.5-VL-1.6B: smaller/faster than Qwen3-VL-2B while still vision-capable
 /**

@@ -16,10 +16,12 @@ import { getIndexHtmlBody, } from './html.ts';
 import { getIgnoreContent, } from './ignore.ts';
 import { getFetchSalt, } from './interval.ts';
 import { getSortedItems, } from './item.ts';
-import { l as parentLogger, } from './log.ts';
 import { getOpmls, } from './opmls.ts';
 import { getOutlinesFromOpmls, } from './outline.ts';
 import { PORT, } from './port.ts';
+
+/** Logger root for rss after removing the package log shim. */
+const parentLogger = tagged({ tag: 'rss', },);
 
 /**
  * Tagged logger for the server entry module.

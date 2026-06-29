@@ -12,7 +12,7 @@ import {
   closeLock,
   killExisting,
 } from './infra/lock.ts';
-import { log, } from './log.ts';
+import { log, } from './infra/syslog.ts';
 
 export {};
 

@@ -8,11 +8,11 @@ import type {
 import { ABSENT, } from './describe.absent.ts';
 import { describeViaGemini, } from './describe.gemini.ts';
 import { toImageUri, } from './encoding.uri.ts';
-import {
-  l,
-  tagged,
-} from './log.ts';
 import type { ImageInput, } from './types.ts';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
+/** Logger root for image-diff after removing the package log shim. */
+const l = tagged({ tag: 'image-diff', },);
 
 /**
  * OpenRouter chat completions endpoint URL.

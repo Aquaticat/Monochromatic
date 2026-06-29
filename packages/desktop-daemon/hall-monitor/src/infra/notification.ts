@@ -1,6 +1,6 @@
 import spawn from 'nano-spawn';
 
-import { log, } from '../log.ts';
+import { log, } from './syslog.ts';
 
 /**
  * Sends a critical desktop notification via `notify-send` to alert the user

@@ -28,7 +28,6 @@ import { loadMergedConfig, } from './config.ts';
 import { evaluate, } from './evaluate.ts';
 import { linkedWorktreeReadAllowlistedDirs, } from './git-worktree-read-allowlist.ts';
 import { registerGuardCommand, } from './guard-command.ts';
-import { l as parentLogger, } from './log.ts';
 import { registerProposeTrust, } from './register-propose-trust.ts';
 import {
   type MergedConfig,
@@ -45,6 +44,9 @@ import type {
   BatchEntry,
   SignalContext,
 } from './types.ts';
+
+/** Logger root for auto-mode after removing the package log shim. */
+const parentLogger = tagged({ tag: 'auto-mode', },);
 
 /**
  * Tagged logger for the auto-mode entry point.

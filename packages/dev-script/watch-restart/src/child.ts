@@ -1,10 +1,12 @@
 import { wait, } from '@monochromatic-dev/module-async-time/ts';
 import { spawn as nodeSpawn, } from 'node:child_process';
 import {
-  l as defaultLogger,
-  type Logger,
   tagged,
-} from './log.ts';
+  type Logger,
+} from '@monochromatic-dev/module-logger/ts';
+
+/** Logger root for watch-restart after removing the package log shim. */
+const defaultLogger = tagged({ tag: 'watch-restart', },);
 
 /**
  * Default grace period (ms) between SIGTERM and SIGKILL during {@link Child.stop}.

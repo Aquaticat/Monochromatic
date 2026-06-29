@@ -10,16 +10,15 @@ import type {
   ExtensionAPI,
   ExtensionContext,
 } from '@earendil-works/pi-coding-agent';
-import {
-  tagged,
-  type Logger,
-} from '@monochromatic-dev/module-logger/ts';
-import { statuslineLogger, } from './log.ts';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
   PLAIN_USAGE_WARNING_STYLE,
   type UsageWarningStyle,
 } from './rate-limit-types.ts';
 import { formatUsageWarningStatus, } from './usage-warning.ts';
+
+/** Logger root for pi-statusline after removing the package log shim. */
+const statuslineLogger = tagged({ tag: 'pi-statusline', },);
 
 //region Constants
 

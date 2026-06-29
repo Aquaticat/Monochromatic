@@ -9,15 +9,15 @@ import type { MultiProviderComparisonEntry, } from './client.multi.types.ts';
 import { compareEmbeddings, } from './client.ts';
 import { ABSENT, } from './describe.absent.ts';
 import { describeImageDifference, } from './describe.ts';
-import {
-  l,
-  tagged,
-} from './log.ts';
 import type {
   ComparisonResult,
   ImageInput,
   Provider,
 } from './types.ts';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
+/** Logger root for image-diff after removing the package log shim. */
+const l = tagged({ tag: 'image-diff', },);
 
 /**
  * All available provider names, used when dispatching to all providers.

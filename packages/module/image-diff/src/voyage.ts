@@ -1,9 +1,5 @@
 // oxlint-disable typescript/no-unsafe-type-assertion, prefer-destructuring -- API response types require assertions
 import { toVoyageContentItem, } from './encoding.voyage.ts';
-import {
-  l,
-  tagged,
-} from './log.ts';
 import type {
   BatchEmbeddingResult,
   EmbeddingProvider,
@@ -17,6 +13,10 @@ import {
   callVoyageApi,
   resolveVoyageApiKey,
 } from './voyage.api.ts';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
+/** Logger root for image-diff after removing the package log shim. */
+const l = tagged({ tag: 'image-diff', },);
 
 /**
  * Default Voyage model; latest and highest quality.

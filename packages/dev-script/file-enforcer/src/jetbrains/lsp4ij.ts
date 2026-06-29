@@ -5,10 +5,6 @@ import {
   overwrite,
   readExisting,
 } from '../io/write.ts';
-import {
-  l,
-  tagged,
-} from '../log.ts';
 import { ABSENT_XML_ENTRY, } from '../pipeline/xml.ts';
 import { trackRead, } from '../tracker.ts';
 import {
@@ -25,6 +21,10 @@ import type {
   Lsp4ijOptionsFiles,
   Lsp4ijServerSettings,
 } from './lsp4ij-types.ts';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
+/** Logger root for file-enforcer after removing the package log shim. */
+const l = tagged({ tag: 'file-enforcer', },);
 
 //region Helpers: read tracked files
 

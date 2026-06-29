@@ -6,14 +6,14 @@ import {
   vmAutologin,
 } from './cloud-init-init-systems.ts';
 import { createIso, } from './iso9660.ts';
-import {
-  l,
-  tagged,
-} from './log.ts';
 import type {
   GuestConfig,
   LinuxGuestConfig,
 } from './registry.ts';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
+/** Logger root for mvm after removing the package log shim. */
+const l = tagged({ tag: 'mvm', },);
 
 /**
  * Sentinel returned by {@link createSeedIso} for Windows guests, which

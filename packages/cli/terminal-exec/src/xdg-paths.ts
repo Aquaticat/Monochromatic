@@ -1,3 +1,7 @@
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
+/** Logger root for terminal-exec after removing the package log shim. */
+const parentLogger = tagged({ tag: 'terminal-exec', },);
 /**
  * Builds XDG-compliant search paths for terminal config files and application directories.
  *
@@ -8,10 +12,6 @@
  * @module
  */
 
-import {
-  l as parentLogger,
-  tagged,
-} from './log.ts';
 
 /**
  * Tagged logger for this module.

@@ -23,13 +23,13 @@ import { wait, } from '@monochromatic-dev/module-async-time/ts';
 import nanoSpawn from 'nano-spawn';
 
 import type { ExecResult, } from '../../exec.ts';
-import {
-  l,
-  tagged,
-} from '../../log.ts';
 import { spawn, } from '../../spawn.ts';
 import { SSH_USER, } from './config.ts';
 import { PRIVATE_KEY_PATH, } from './ssh-key.ts';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
+/** Logger root for mvm after removing the package log shim. */
+const l = tagged({ tag: 'mvm', },);
 
 //region Constants
 

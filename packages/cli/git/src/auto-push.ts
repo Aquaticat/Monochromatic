@@ -1,9 +1,9 @@
 import nanoSpawn, { SubprocessError, } from 'nano-spawn';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
-import {
-  l,
-  tagged,
-} from './log.ts';
+/** Logger root for cli-git after removing the package log shim. */
+const l = tagged({ tag: 'cli-git', },);
+
 
 //region Auto-push output filter
 

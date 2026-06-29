@@ -5,16 +5,16 @@ import {
 import { join, } from 'node:path';
 
 import {
-  l,
-  tagged,
-} from './log.ts';
-import {
   CUSTOM_GUEST_DEFAULTS,
   DEFAULT_IMAGE,
   type GuestConfig,
   type OsFamily,
   resolveImage,
 } from './registry.ts';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
+/** Logger root for mvm after removing the package log shim. */
+const l = tagged({ tag: 'mvm', },);
 
 //region VM metadata type
 

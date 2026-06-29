@@ -8,10 +8,10 @@ import {
   readConfig,
   writeConfig,
 } from './config.ts';
-import {
-  l,
-  tagged,
-} from './log.ts';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
+/** Logger root for vmsync after removing the package log shim. */
+const l = tagged({ tag: 'vmsync', },);
 
 /**
  * Updates the boot configuration for a named VM.

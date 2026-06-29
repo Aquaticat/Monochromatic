@@ -3,10 +3,6 @@ import {
   type EffectiveTarget,
 } from '../effective-target.ts';
 import { stripEscapeHatch, } from '../escape-hatch.ts';
-import {
-  l,
-  tagged,
-} from '../log.ts';
 import { parseGlobalOptions, } from '../parse-global-options.ts';
 import {
   cleanChangesWorktree,
@@ -27,6 +23,10 @@ import {
   mainWorktreeMessage,
   outsideWorktreeMessage,
 } from './linked-worktree-messages.ts';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
+/** Logger root for cli-git after removing the package log shim. */
+const l = tagged({ tag: 'cli-git', },);
 
 //region Guarded command predicates and policy facts
 

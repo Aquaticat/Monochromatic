@@ -12,7 +12,9 @@ import {
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import nanoSpawn from 'nano-spawn';
 
-import { l as parentLogger, } from './log.ts';
+/** Logger root for auto-mode after removing the package log shim. */
+const parentLogger = tagged({ tag: 'auto-mode', },);
+
 
 /**
  * Tagged logger for git worktree read allowlist helpers.

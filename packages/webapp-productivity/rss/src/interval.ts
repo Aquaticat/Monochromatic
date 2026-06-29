@@ -4,7 +4,9 @@ import {
   SECONDS_PER_MINUTE,
 } from '@monochromatic-dev/module-const/ts';
 import * as v from 'valibot';
-import { l as parentLogger, } from './log.ts';
+
+/** Logger root for rss after removing the package log shim. */
+const parentLogger = tagged({ tag: 'rss', },);
 
 /**
  * Tagged logger for the interval module.

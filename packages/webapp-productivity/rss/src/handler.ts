@@ -9,8 +9,10 @@ import {
 import { join, } from 'node:path';
 import { indexHtmlStart, } from './asset.ts';
 import { INDEX_HTML_END, } from './html.ts';
-import { l as parentLogger, } from './log.ts';
 import { IGNORE_PATH, } from './path.ts';
+
+/** Logger root for rss after removing the package log shim. */
+const parentLogger = tagged({ tag: 'rss', },);
 
 /**
  * Tagged logger for the handler module.

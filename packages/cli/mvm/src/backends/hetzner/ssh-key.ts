@@ -17,16 +17,16 @@ import {
 import { join, } from 'node:path';
 
 import { splitOnWhitespace, } from '../../list.ts';
-import {
-  l,
-  tagged,
-} from '../../log.ts';
 import { spawn, } from '../../spawn.ts';
 import {
   createSshKey,
   listSshKeys,
 } from './api-resources.ts';
 import { HETZNER_DATA_DIR, } from './config.ts';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
+/** Logger root for mvm after removing the package log shim. */
+const l = tagged({ tag: 'mvm', },);
 
 //region Key paths
 

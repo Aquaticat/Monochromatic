@@ -1,7 +1,10 @@
 import { findUp, } from 'find-up';
 import { setActiveConfigPath, } from './context.ts';
-import { l, } from './log.ts';
 import { startWatching, } from './watch/watch.ts';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
+/** Logger root for file-enforcer after removing the package log shim. */
+const l = tagged({ tag: 'file-enforcer', },);
 
 //region CLI entry point: finds and imports file-enforcer.config.ts, optionally watches
 

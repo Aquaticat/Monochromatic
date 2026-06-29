@@ -28,11 +28,6 @@ import {
   ensureVirtioWin,
   ensureWinFsp,
 } from './image.ts';
-import {
-  l,
-  type Logger,
-  tagged,
-} from './log.ts';
 import type { WindowsImageSpec, } from './registry.ts';
 import { spawn, } from './spawn.ts';
 import {
@@ -46,6 +41,13 @@ import {
   startVm,
   virsh,
 } from './virsh.ts';
+import {
+  tagged,
+  type Logger,
+} from '@monochromatic-dev/module-logger/ts';
+
+/** Logger root for mvm after removing the package log shim. */
+const l = tagged({ tag: 'mvm', },);
 
 /**
  * Creates a Windows template by booting from an evaluation ISO with an

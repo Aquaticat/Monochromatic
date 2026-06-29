@@ -14,11 +14,13 @@ import {
   loadLinkupConfig,
   type LinkupConfig,
 } from './config.ts';
-import { linkupLogger, } from './log.ts';
 import {
   createLinkupTools,
   type LinkupToolClient,
 } from './tools.ts';
+
+/** Logger root for pi-linkup after removing the package log shim. */
+const linkupLogger = tagged({ tag: 'pi-linkup', },);
 
 /**
  * Module logger.

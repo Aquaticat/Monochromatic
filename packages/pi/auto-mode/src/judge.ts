@@ -42,12 +42,14 @@ import {
   disposableTimeout,
 } from './judge-runtime.ts';
 import { collectJudgeVerdictArgs, } from './judge-stream.ts';
-import { l as parentLogger, } from './log.ts';
 import type {
   BatchEntry,
   BudgetModelAuth,
   Verdict,
 } from './types.ts';
+
+/** Logger root for auto-mode after removing the package log shim. */
+const parentLogger = tagged({ tag: 'auto-mode', },);
 
 /**
  * Tagged logger for the judge module.

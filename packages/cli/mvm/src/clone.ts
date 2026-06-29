@@ -17,10 +17,6 @@ import {
 import { domainXml, } from './domain-xml.ts';
 import { exec, } from './exec.ts';
 import {
-  l,
-  tagged,
-} from './log.ts';
-import {
   readVmMeta,
   writeVmMeta,
 } from './meta.ts';
@@ -34,6 +30,10 @@ import {
   defineVm,
   startVm,
 } from './virsh.ts';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
+/** Logger root for mvm after removing the package log shim. */
+const l = tagged({ tag: 'mvm', },);
 
 /**
  * Clones an existing VM by copying its disk and creating a new cloud-init seed.

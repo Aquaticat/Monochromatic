@@ -7,11 +7,11 @@ import {
   delimiter,
   join,
 } from 'node:path';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
-import {
-  l,
-  tagged,
-} from './log.ts';
+/** Logger root for cli-git after removing the package log shim. */
+const l = tagged({ tag: 'cli-git', },);
+
 
 /**
  * Package name used to detect shims that delegate to this wrapper.

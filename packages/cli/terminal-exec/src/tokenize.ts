@@ -1,3 +1,7 @@
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
+/** Logger root for terminal-exec after removing the package log shim. */
+const parentLogger = tagged({ tag: 'terminal-exec', },);
 /**
  * Tokenizes desktop entry `Exec` values following the freedesktop Desktop Entry Specification.
  * Handles double-quote escaping, `%` field code stripping, and rejects unquoted shell metacharacters.
@@ -5,10 +9,6 @@
  * @module
  */
 
-import {
-  l as parentLogger,
-  tagged,
-} from './log.ts';
 /**
  * Tagged logger for this module.
  */

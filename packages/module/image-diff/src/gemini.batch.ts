@@ -5,10 +5,6 @@ import {
   GEMINI_API_BASE,
   resolveGeminiApiKey,
 } from './gemini.config.ts';
-import {
-  l,
-  tagged,
-} from './log.ts';
 import type {
   GeminiBatchEmbedRequest,
   GeminiBatchEmbedResponse,
@@ -19,6 +15,10 @@ import type {
   ImageDiffConfig,
   ImageInput,
 } from './types.ts';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
+/** Logger root for image-diff after removing the package log shim. */
+const l = tagged({ tag: 'image-diff', },);
 
 /**
  * Compute embeddings for multiple images via the Gemini batchEmbedContents API.

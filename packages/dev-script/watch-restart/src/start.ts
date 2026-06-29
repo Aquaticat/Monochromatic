@@ -14,11 +14,6 @@ import {
   DEFAULT_MAX_HASH_SIZE_BYTES,
   HashCache,
 } from './hash-cache.ts';
-import {
-  l as defaultLogger,
-  type Logger,
-  tagged,
-} from './log.ts';
 import type {
   WatchCtx,
   WatchEntityType,
@@ -27,6 +22,13 @@ import type {
   WatchFilter,
 } from './types.ts';
 import { Watcher, } from './watcher.ts';
+import {
+  tagged,
+  type Logger,
+} from '@monochromatic-dev/module-logger/ts';
+
+/** Logger root for watch-restart after removing the package log shim. */
+const defaultLogger = tagged({ tag: 'watch-restart', },);
 
 /**
  * Default debounce window (ms) between the last qualifying event and the

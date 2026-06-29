@@ -26,11 +26,11 @@ import {
   VMS_DIR,
   WINDOWS_GUEST_MOUNT_POINT,
 } from './config.ts';
-import {
-  l,
-  tagged,
-} from './log.ts';
 import { readVmMeta, } from './meta.ts';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
+/** Logger root for mvm after removing the package log shim. */
+const l = tagged({ tag: 'mvm', },);
 
 //region Push (host -> guest)
 

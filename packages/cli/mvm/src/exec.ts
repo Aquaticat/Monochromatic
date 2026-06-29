@@ -9,12 +9,12 @@ import {
   decodeBase64,
   execArgs,
 } from './exec-shell.ts';
-import {
-  l,
-  tagged,
-} from './log.ts';
 import { readVmMeta, } from './meta.ts';
 import { virsh, } from './virsh.ts';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
+/** Logger root for mvm after removing the package log shim. */
+const l = tagged({ tag: 'mvm', },);
 
 /**
  * Milliseconds to wait between polling for guest-exec completion.

@@ -12,11 +12,11 @@
 import { randomBytes, } from 'node:crypto';
 
 import type { ExecResult, } from '../exec.ts';
-import {
-  l,
-  tagged,
-} from '../log.ts';
 import type { Backend, } from './types.ts';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
+/** Logger root for mvm after removing the package log shim. */
+const l = tagged({ tag: 'mvm', },);
 
 /**
  * Number of random bytes used to generate the ephemeral VM name suffix.

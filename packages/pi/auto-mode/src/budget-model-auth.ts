@@ -15,7 +15,9 @@ import {
   NO_OVERRIDE_MODEL,
 } from '@monochromatic-dev/pi-shared-model-selection/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
-import { l as parentLogger, } from './log.ts';
+
+/** Logger root for auto-mode after removing the package log shim. */
+const parentLogger = tagged({ tag: 'auto-mode', },);
 
 /**
  * Tagged logger for budget-model auth adapters.

@@ -1,7 +1,3 @@
-import {
-  l,
-  tagged,
-} from '../log.ts';
 import { parseGlobalOptions, } from '../parse-global-options.ts';
 import {
   COMMIT_ESCAPE_HATCH,
@@ -15,6 +11,10 @@ import {
   type CheckSequencerInProgress,
   sequencerInProgress,
 } from './commit-sequencer-check.ts';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
+/** Logger root for cli-git after removing the package log shim. */
+const l = tagged({ tag: 'cli-git', },);
 
 //region Commit-only rule
 

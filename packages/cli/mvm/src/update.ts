@@ -4,14 +4,14 @@ import { join, } from 'node:path';
 
 import { IMAGES_DIR, } from './config.ts';
 import {
-  l,
-  tagged,
-} from './log.ts';
-import {
   IMAGES,
   VIRTIO_WIN_FILENAME,
 } from './registry.ts';
 import { ensureTemplate, } from './template.ts';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
+/** Logger root for mvm after removing the package log shim. */
+const l = tagged({ tag: 'mvm', },);
 
 /**
  * Updates all template images unconditionally by deleting cached base images

@@ -18,8 +18,10 @@ import type {
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { Type, } from 'typebox';
 import { getTrustDirectives, } from './context.ts';
-import { l as parentLogger, } from './log.ts';
 import { TRUST_ENTRY_TYPE, } from './types.ts';
+
+/** Logger root for auto-mode after removing the package log shim. */
+const parentLogger = tagged({ tag: 'auto-mode', },);
 
 /**
  * Tagged logger for propose_trust registration and execution.

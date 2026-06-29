@@ -21,8 +21,10 @@ import {
   type TruncationResult,
 } from '@earendil-works/pi-coding-agent';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
-import { linkupLogger, } from './log.ts';
 import { modelTextForLinkupResponse, } from './tool-output-format.ts';
+
+/** Logger root for pi-linkup after removing the package log shim. */
+const linkupLogger = tagged({ tag: 'pi-linkup', },);
 
 //region Constants
 

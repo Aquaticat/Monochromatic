@@ -5,11 +5,11 @@
  */
 
 import nanoSpawn from 'nano-spawn';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
-import {
-  l,
-  tagged,
-} from './log.ts';
+/** Logger root for vmsync after removing the package log shim. */
+const l = tagged({ tag: 'vmsync', },);
+
 
 /**
  * Spawns a command and returns its trimmed stdout.

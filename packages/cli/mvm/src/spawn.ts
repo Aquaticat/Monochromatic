@@ -1,9 +1,9 @@
 import nanoSpawn from 'nano-spawn';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
-import {
-  l,
-  tagged,
-} from './log.ts';
+/** Logger root for mvm after removing the package log shim. */
+const l = tagged({ tag: 'mvm', },);
+
 
 /**
  * Spawns a command and returns its trimmed stdout.

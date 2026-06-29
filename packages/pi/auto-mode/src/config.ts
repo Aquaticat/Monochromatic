@@ -18,7 +18,6 @@ import {
   ProjectConfigSchema,
 } from './config-schemas.ts';
 import { JUDGE_MODEL_DEFAULTS, } from './constants.ts';
-import { l as parentLogger, } from './log.ts';
 import type {
   CommandMatcher,
   MergedConfig,
@@ -27,6 +26,9 @@ import type {
   BudgetModelAuth,
   ModelOverride,
 } from './types.ts';
+
+/** Logger root for auto-mode after removing the package log shim. */
+const parentLogger = tagged({ tag: 'auto-mode', },);
 
 /**
  * Tagged logger for the config module.

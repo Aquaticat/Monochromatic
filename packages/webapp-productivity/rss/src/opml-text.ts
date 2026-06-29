@@ -6,11 +6,13 @@ import {
   resolve,
 } from 'node:path';
 import { fileURLToPath, } from 'node:url';
-import { l as parentLogger, } from './log.ts';
 import {
   DOT_ENV_ABSENT,
   DOT_ENV_PATH,
 } from './opmls.ts';
+
+/** Logger root for rss after removing the package log shim. */
+const parentLogger = tagged({ tag: 'rss', },);
 
 /**
  * Tagged logger for the opml-text module.

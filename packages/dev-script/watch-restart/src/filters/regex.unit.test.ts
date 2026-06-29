@@ -5,12 +5,15 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import { compileRegex, } from '../cli-helpers.ts';
 import { HashCache, } from '../hash-cache.ts';
-import { l as defaultLogger, } from '../log.ts';
 import type {
   WatchCtx,
   WatchEvent,
 } from '../types.ts';
 import { regexFilter, } from './regex.ts';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
+/** Logger root for watch-restart after removing the package log shim. */
+const defaultLogger = tagged({ tag: 'watch-restart', },);
 
 /**
  * Builds a minimal {@link WatchCtx}; regexFilter ignores everything but

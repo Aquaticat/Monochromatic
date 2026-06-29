@@ -15,12 +15,15 @@ import {
   HashCache,
   OVERSIZED,
 } from '../hash-cache.ts';
-import { l as defaultLogger, } from '../log.ts';
 import type {
   WatchCtx,
   WatchEvent,
 } from '../types.ts';
 import { contentHashFilter, } from './content-hash.ts';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
+/** Logger root for watch-restart after removing the package log shim. */
+const defaultLogger = tagged({ tag: 'watch-restart', },);
 
 /**
  * Tiny size cap exercised by the "file too large" case; 4 bytes is below

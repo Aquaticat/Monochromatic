@@ -2,11 +2,11 @@ import { access, } from 'node:fs/promises';
 
 import nanoSpawn, { SubprocessError, } from 'nano-spawn';
 
-import {
-  l,
-  tagged,
-} from '../log.ts';
 import { resolveGit, } from '../resolve-git.ts';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
+/** Logger root for cli-git after removing the package log shim. */
+const l = tagged({ tag: 'cli-git', },);
 
 //region Sequencer-state check
 

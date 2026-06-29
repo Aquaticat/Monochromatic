@@ -5,10 +5,10 @@ import {
   validateName,
   VM_PREFIX,
 } from './config.ts';
-import {
-  l,
-  tagged,
-} from './log.ts';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
+/** Logger root for mvm after removing the package log shim. */
+const l = tagged({ tag: 'mvm', },);
 
 /**
  * Opens an interactive serial console session to a running VM via `virsh console`.

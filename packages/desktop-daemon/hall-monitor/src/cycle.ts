@@ -19,7 +19,7 @@ import {
 } from './infra/capture.ts';
 import { sendNotification, } from './infra/notification.ts';
 import { isScreenLocked, } from './infra/screenlock.ts';
-import { log, } from './log.ts';
+import { log, } from './infra/syslog.ts';
 
 //region Decision tracking
 // Sliding window of last 5 verdicts. A ring buffer would work here, but a

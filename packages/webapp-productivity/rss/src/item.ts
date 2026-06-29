@@ -11,7 +11,9 @@ import type {
   ItemWDate,
   NormalizedItem,
 } from './item-type.ts';
-import { l as parentLogger, } from './log.ts';
+
+/** Logger root for rss after removing the package log shim. */
+const parentLogger = tagged({ tag: 'rss', },);
 
 export type { ItemWDate, } from './item-type.ts';
 

@@ -4,10 +4,10 @@ import {
 } from './autounattend-virtio.ts';
 import { windowsPeSection, } from './autounattend-winpe.ts';
 import { createIso, } from './iso9660.ts';
-import {
-  l,
-  tagged,
-} from './log.ts';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
+/** Logger root for mvm after removing the package log shim. */
+const l = tagged({ tag: 'mvm', },);
 
 //region Autounattend XML generation
 

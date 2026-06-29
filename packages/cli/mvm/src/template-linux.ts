@@ -19,10 +19,6 @@ import {
 } from './config.ts';
 import { domainXml, } from './domain-xml.ts';
 import { ensureImage, } from './image.ts';
-import {
-  l,
-  tagged,
-} from './log.ts';
 import type { LinuxImageSpec, } from './registry.ts';
 import { spawn, } from './spawn.ts';
 import {
@@ -38,6 +34,10 @@ import {
   defineVm,
   startVm,
 } from './virsh.ts';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
+/** Logger root for mvm after removing the package log shim. */
+const l = tagged({ tag: 'mvm', },);
 
 /**
  * Timeout for guest agent during Linux template creation.

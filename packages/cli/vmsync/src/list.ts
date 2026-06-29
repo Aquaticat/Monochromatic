@@ -14,12 +14,14 @@ import {
   DATA_DIR,
   readConfig,
 } from './config.ts';
-import {
-  l,
-  type Logger,
-  tagged,
-} from './log.ts';
 import { CONFIG_FILENAME, } from './types.ts';
+import {
+  tagged,
+  type Logger,
+} from '@monochromatic-dev/module-logger/ts';
+
+/** Logger root for vmsync after removing the package log shim. */
+const l = tagged({ tag: 'vmsync', },);
 
 /**
  * Reads the data directory, returning an empty array if it does not exist.

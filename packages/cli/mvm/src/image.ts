@@ -15,15 +15,15 @@ import { join, } from 'node:path';
 import { IMAGES_DIR, } from './config.ts';
 import { writeWithProgress, } from './download-progress.ts';
 import {
-  l,
-  tagged,
-} from './log.ts';
-import {
   type ImageSpec,
   VIRTIO_WIN_FILENAME,
   VIRTIO_WIN_URL,
 } from './registry.ts';
 import { spawn, } from './spawn.ts';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
+/** Logger root for mvm after removing the package log shim. */
+const l = tagged({ tag: 'mvm', },);
 
 /**
  * Downloads a file from a URL to a destination path if not already cached.

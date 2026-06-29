@@ -11,12 +11,12 @@
 
 import { wait, } from '@monochromatic-dev/module-async-time/ts';
 
-import {
-  l,
-  tagged,
-} from '../../log.ts';
 import { requireToken, } from './config.ts';
 import type { HetznerAction, } from './types.ts';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
+/** Logger root for mvm after removing the package log shim. */
+const l = tagged({ tag: 'mvm', },);
 
 //region Constants and errors
 

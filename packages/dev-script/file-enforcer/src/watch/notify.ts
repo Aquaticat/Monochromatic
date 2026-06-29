@@ -1,10 +1,10 @@
 import { lazyOnceAsync, } from '../lazy-once.ts';
-import {
-  l,
-  tagged,
-} from '../log.ts';
 import { exec, } from '../pipeline/exec.ts';
 import { evaluatePredicate, } from '../platform/evaluate-predicate.ts';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
+/** Logger root for file-enforcer after removing the package log shim. */
+const l = tagged({ tag: 'file-enforcer', },);
 
 //region Notification tool detection
 

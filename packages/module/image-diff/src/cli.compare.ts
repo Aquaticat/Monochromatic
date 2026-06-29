@@ -1,14 +1,14 @@
 import { parseImageArg, } from './cli.image.ts';
 import { compareAll, } from './client.multi.compare.ts';
 import { compare, } from './client.ts';
-import {
-  l,
-  tagged,
-} from './log.ts';
 import type {
   EmbeddingModel,
   Provider,
 } from './types.ts';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
+/** Logger root for image-diff after removing the package log shim. */
+const l = tagged({ tag: 'image-diff', },);
 
 /**
  * Handle the `compare` subcommand.

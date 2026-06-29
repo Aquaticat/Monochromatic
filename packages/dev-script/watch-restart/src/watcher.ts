@@ -8,11 +8,6 @@ import {
   type HashCache,
   OVERSIZED,
 } from './hash-cache.ts';
-import {
-  l as defaultLogger,
-  type Logger,
-  tagged,
-} from './log.ts';
 import type {
   WatchEntityType,
   WatchEvent,
@@ -27,6 +22,13 @@ import {
   DEFAULT_AWAIT_WRITE_FINISH,
   type WatcherOptions,
 } from './watcher-types.ts';
+import {
+  tagged,
+  type Logger,
+} from '@monochromatic-dev/module-logger/ts';
+
+/** Logger root for watch-restart after removing the package log shim. */
+const defaultLogger = tagged({ tag: 'watch-restart', },);
 
 /* oxlint-disable no-restricted-syntax/no-class -- per-instance watcher state: one Watcher (owning one chokidar FSWatcher and its pre-populate set) lives per `startWatchRestart()` call, state is `#private`-encapsulated, and the class is an exported library primitive consumers instantiate via `new`; module-level state cannot model multiple concurrent watch sessions. */
 /**

@@ -19,9 +19,12 @@
 import { buildCommand, } from './build-command.ts';
 import { parseArgs, } from './cli.ts';
 import { execvp, } from './exec.ts';
-import { l, } from './log.ts';
 import { resolveTerminal, } from './resolve.ts';
 import { NO_TERMINAL, } from './validate.ts';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
+/** Logger root for terminal-exec after removing the package log shim. */
+const l = tagged({ tag: 'terminal-exec', },);
 
 /**
  * Parsed CLI options from process arguments.

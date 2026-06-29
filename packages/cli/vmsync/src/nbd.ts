@@ -9,13 +9,15 @@
 
 import { access, } from 'node:fs/promises';
 
-import {
-  l,
-  type Logger,
-  tagged,
-} from './log.ts';
 import { spawn, } from './spawn.ts';
 import type { QemuMapRegion, } from './types.ts';
+import {
+  tagged,
+  type Logger,
+} from '@monochromatic-dev/module-logger/ts';
+
+/** Logger root for vmsync after removing the package log shim. */
+const l = tagged({ tag: 'vmsync', },);
 
 /**
  * Maximum NBD devices to search when finding a free slot.

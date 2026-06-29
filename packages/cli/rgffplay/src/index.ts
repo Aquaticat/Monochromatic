@@ -17,11 +17,11 @@
  */
 
 import spawn from 'nano-spawn';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
-import {
-  l,
-  tagged,
-} from './log.ts';
+/** Logger root for rgffplay after removing the package log shim. */
+const l = tagged({ tag: 'rgffplay', },);
+
 
 export {};
 

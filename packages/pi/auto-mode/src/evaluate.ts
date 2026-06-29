@@ -22,7 +22,6 @@ import {
   getTrustDirectives,
 } from './context.ts';
 import { callJudge, } from './judge.ts';
-import { l as parentLogger, } from './log.ts';
 import { formatModelBlockReason, } from './model-feedback.ts';
 import type { MergedConfig, } from './signals.ts';
 import {
@@ -35,6 +34,9 @@ import {
   type Verdict,
   type VerdictData,
 } from './types.ts';
+
+/** Logger root for auto-mode after removing the package log shim. */
+const parentLogger = tagged({ tag: 'auto-mode', },);
 
 /**
  * Tagged logger for the evaluate module.

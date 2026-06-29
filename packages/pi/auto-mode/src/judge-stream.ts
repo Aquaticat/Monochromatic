@@ -10,7 +10,9 @@ import type {
 } from '@earendil-works/pi-ai';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { extractJsonVerdict, } from './judge-json.ts';
-import { l as parentLogger, } from './log.ts';
+
+/** Logger root for auto-mode after removing the package log shim. */
+const parentLogger = tagged({ tag: 'auto-mode', },);
 
 /**
  * Tagged logger for judge stream collection.

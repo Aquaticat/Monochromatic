@@ -15,15 +15,15 @@ import { join, } from 'node:path';
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
 import {
-  l,
-  tagged,
-} from './log.ts';
-import {
   CONFIG_FILENAME,
   type Hypervisor,
   type SyncState,
   type VmsyncConfig,
 } from './types.ts';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
+/** Logger root for vmsync after removing the package log shim. */
+const l = tagged({ tag: 'vmsync', },);
 
 //region Data directories
 

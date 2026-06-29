@@ -25,11 +25,13 @@ import {
   ADVISOR_MESSAGE_TYPE,
   MAIN_MODEL_GUIDANCE_PREFIX,
 } from './constants.ts';
-import { l as parentLogger, } from './log.ts';
 import { resolveEffectiveScope, } from '@monochromatic-dev/pi-shared-model-selection/ts';
 import { selectAdvisorModel, } from './advisor-selection.ts';
 import { renderAdvisorMessage, } from './rendering.ts';
 import { createAdvisorTool, } from './tool.ts';
+
+/** Logger root for pi-advisor after removing the package log shim. */
+const parentLogger = tagged({ tag: 'pi-advisor', },);
 
 /**
  * Tagged logger for the Advisor entry point.
