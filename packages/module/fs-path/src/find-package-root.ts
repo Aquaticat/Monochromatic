@@ -96,7 +96,7 @@ export async function findPackageRoot(
       return dir;
   }
   catch (error: unknown) {
-    findPackageRootLogger.debug(`skipping package manifest candidate ${candidate}: ${(error instanceof Error) ? error.message : String(error,)}`,);
+    findPackageRootLogger.debug(`skipping package manifest candidate ${candidate}: ${(Error.isError(error,)) ? error.message : String(error,)}`,);
   }
   /**
    * Next directory to inspect; equal to `dir` only at the filesystem root, which terminates recursion.

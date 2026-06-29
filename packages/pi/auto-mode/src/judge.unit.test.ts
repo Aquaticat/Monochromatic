@@ -421,7 +421,7 @@ await describe({
         ],);
         expect(capturedErrors,).toHaveLength(1,);
         const [capturedError,] = capturedErrors;
-        if (!(capturedError instanceof Error))
+        if (!(Error.isError(capturedError,)))
           throw new Error('expected no-text retry failure to throw Error instance',);
         expect(capturedError.message,).toBe('Judge JSON returned no text to parse',);
       },

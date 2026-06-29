@@ -344,7 +344,7 @@ async function subsetOne(
       return await readFile(inputPath,);
     }
     catch (error) {
-      if ((error instanceof Error) && ('code' in error)
+      if ((Error.isError(error,)) && ('code' in error)
         && (error.code
           === 'ENOENT')) {
         throw new Error(

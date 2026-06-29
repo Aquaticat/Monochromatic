@@ -331,7 +331,7 @@ export async function completeAdvisor(
       `advisor: provider call failed for ${options.model
         .provider}/${options.model
           .id}: ${
-        error instanceof Error ? error.message : String(error,)
+        Error.isError(error,) ? error.message : String(error,)
       }`,
       { cause: error, },
     );

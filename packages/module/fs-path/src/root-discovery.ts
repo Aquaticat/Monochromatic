@@ -367,7 +367,7 @@ export async function resolveRootFilesystem(): Promise<RootFilesystem> {
     }
   }
   catch (error: unknown) {
-    rootDiscoveryLogger.debug(`happy-opfs import failed during root discovery setup: ${(error instanceof Error) ? error.message : String(error,)}`,);
+    rootDiscoveryLogger.debug(`happy-opfs import failed during root discovery setup: ${(Error.isError(error,)) ? error.message : String(error,)}`,);
   }
 
   backendCache.fs = resolveEmptyRootFilesystem();

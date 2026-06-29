@@ -453,7 +453,7 @@ function parsePolicyUrl(url: string,): URL {
     /**
      * Local value for detail.
      */
-    const detail = error instanceof Error
+    const detail = Error.isError(error,)
       ? error.message
       : String(error,);
     throw new Error(

@@ -289,7 +289,7 @@ async function readJsonFile(
     /**
      * Node-style errno (`ENOENT`, etc.) when the error originated in `fs`; `undefined` for anything else.
      */
-    const errCode = ((err instanceof Error) && ('code' in err))
+    const errCode = ((Error.isError(err,)) && ('code' in err))
       ? (err as NodeJS.ErrnoException).code
       : undefined;
     /* oxlint-enable typescript/no-unsafe-type-assertion */
@@ -297,7 +297,7 @@ async function readJsonFile(
       return undefined;
     throw new Error(
       `auto-mode: failed to read ${label} config at ${path}: ${
-        err instanceof Error ? err.message : String(err,)
+        Error.isError(err,) ? err.message : String(err,)
       }`,
       { cause: err, },
     );
@@ -332,7 +332,7 @@ function compilePatterns(
       catch (err) {
         throw new Error(
           `auto-mode: invalid regex in ${label} patterns: "${p}": ${
-            err instanceof Error ? err.message : String(err,)
+            Error.isError(err,) ? err.message : String(err,)
           }`,
           { cause: err, },
         );

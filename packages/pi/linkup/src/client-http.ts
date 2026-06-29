@@ -314,7 +314,7 @@ function isAbortError(
 ): boolean {
   if (signal?.aborted === true)
     return true;
-  return (error instanceof Error)
+  return (Error.isError(error,))
     && (error.name === ABORT_ERROR_NAME);
 }
 
@@ -326,7 +326,7 @@ function isAbortError(
  * @returns error message text
  */
 function errorMessage(error: unknown,): string {
-  return error instanceof Error
+  return Error.isError(error,)
     ? error.message
     : String(error,);
 }

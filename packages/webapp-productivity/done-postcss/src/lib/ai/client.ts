@@ -236,7 +236,7 @@ export async function chatCompletion(
     /**
      * Display string extracted from the thrown value, with a `String()` fallback for non-Errors.
      */
-    const message = caughtError instanceof Error
+    const message = Error.isError(caughtError,)
       ? caughtError.message
       : String(caughtError,);
     console.error(

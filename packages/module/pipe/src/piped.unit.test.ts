@@ -41,7 +41,7 @@ function runAndCatch(fn: () => void,): Error {
   try {
     fn();
   } catch (error) {
-    if (error instanceof Error)
+    if (Error.isError(error,))
       return error;
     throw new Error(`expected an Error, got ${String(error,)}`, { cause: error, },);
   }

@@ -343,7 +343,7 @@ function parseConfigJson(
     /**
      * Local value for detail.
      */
-    const detail = error instanceof Error
+    const detail = Error.isError(error,)
       ? error.message
       : String(error,);
     throw new Error(
@@ -373,7 +373,7 @@ function isMissingFileError(error: unknown,): boolean {
  * @returns whether error has a code property
  */
 function isErrorWithCode(error: unknown,): error is ErrorWithCode {
-  return (error instanceof Error)
+  return (Error.isError(error,))
     && ('code' in error);
 }
 
@@ -524,7 +524,7 @@ function normalizeConfigBlocklist(
     /**
      * Local value for detail.
      */
-    const detail = error instanceof Error
+    const detail = Error.isError(error,)
       ? error.message
       : String(error,);
     throw new Error(

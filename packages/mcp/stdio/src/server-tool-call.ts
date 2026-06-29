@@ -105,7 +105,7 @@ export async function handleToolCall(
     /**
      * Human-readable error text; falls back to `String(error)` when the thrown value is not an `Error`.
      */
-    const message = (error instanceof Error) ? error.message : String(error,);
+    const message = (Error.isError(error,)) ? error.message : String(error,);
     console.error(
       `[mcp-stdio] tool "${toolName}" threw:`,
       error,

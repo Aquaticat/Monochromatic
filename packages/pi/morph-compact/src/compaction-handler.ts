@@ -212,7 +212,7 @@ export async function handleBeforeCompact({
     /**
      * Best-effort diagnostic forwarded into the UI notify body.
      */
-    const message = error instanceof Error
+    const message = Error.isError(error,)
       ? error.message
       : 'Unknown Morph compaction error';
     ctx.ui

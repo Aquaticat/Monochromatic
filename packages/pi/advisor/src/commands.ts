@@ -438,7 +438,7 @@ async function runImmediateAdvisor(
     }
     ctx.ui
       .notify(
-      `Advisor review failed: ${error instanceof Error ? error.message : String(error,)}`,
+      `Advisor review failed: ${Error.isError(error,) ? error.message : String(error,)}`,
       'error',
     );
   }

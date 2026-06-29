@@ -56,7 +56,7 @@ test.describe('replicateElementAsParentContent', () => {
         return false;
       }
       catch (error) {
-        return (error instanceof Error) && error.message.includes('has no parent',);
+        return (Error.isError(error,)) && error.message.includes('has no parent',);
       }
     },);
 

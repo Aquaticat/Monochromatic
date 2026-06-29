@@ -105,7 +105,7 @@ export async function ensureDir(path: string,): Promise<string> {
     l.info(`${path} is accessible`,);
   }
   catch (error: unknown) {
-    l.info(`${path} not accessible (${(error instanceof Error) ? error.message : String(error,)}), adjusting permissions`,);
+    l.info(`${path} not accessible (${(Error.isError(error,)) ? error.message : String(error,)}), adjusting permissions`,);
     await chmod(
       path,
       constants.R_OK
@@ -175,7 +175,7 @@ export async function ensureFile(path: string,): Promise<string> {
     l.info(`${path} is accessible`,);
   }
   catch (error: unknown) {
-    l.info(`${path} not accessible (${(error instanceof Error) ? error.message : String(error,)}), adjusting permissions`,);
+    l.info(`${path} not accessible (${(Error.isError(error,)) ? error.message : String(error,)}), adjusting permissions`,);
     await chmod(
       path,
       constants.R_OK

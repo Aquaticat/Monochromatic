@@ -163,7 +163,7 @@ async function handleMorphCompactCommand({
     /**
      * Best-effort diagnostic surfaced to the user via UI notify.
      */
-    const message = error instanceof Error
+    const message = Error.isError(error,)
       ? error.message
       : String(error,);
     ctx.ui

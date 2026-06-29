@@ -96,7 +96,7 @@ async function resolveBudgetAuth(
     },);
     innerL.error(
       `getApiKeyAndHeaders failed for ${model.provider}/${model.id}: ${
-        error instanceof Error ? error.message : String(error,)
+        Error.isError(error,) ? error.message : String(error,)
       }`,
     );
     return NO_AUTH;

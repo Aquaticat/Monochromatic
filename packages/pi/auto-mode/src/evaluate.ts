@@ -206,8 +206,7 @@ async function evaluate(
   if (!judgeResult.ok) {
     innerL.error(
       `judge model resolution failed: ${
-        judgeResult.err
-          instanceof Error
+        Error.isError(judgeResult.err,)
           ? judgeResult.err
             .message
           : String(judgeResult.err,)
@@ -314,7 +313,7 @@ async function evaluate(
     /**
      * Normalised error message so both `Error` instances and non-`Error` throws produce a string.
      */
-    const msg = err instanceof Error ? err.message : String(err,);
+    const msg = Error.isError(err,) ? err.message : String(err,);
     innerL.error(`judge error: ${msg}`,);
     return {
       decision: await askUser({

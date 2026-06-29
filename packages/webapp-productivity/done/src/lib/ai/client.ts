@@ -230,7 +230,7 @@ export async function chatCompletion(
     /**
      * Human-readable error text extracted whether the cause is an Error or a raw throw.
      */
-    const message = caughtError instanceof Error
+    const message = Error.isError(caughtError,)
       ? caughtError.message
       : String(caughtError,);
     console.error(

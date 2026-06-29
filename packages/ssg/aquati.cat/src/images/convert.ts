@@ -26,7 +26,7 @@ export const AVIF_EFFORT = 9;
  * @returns `true` if the error is an `Error` instance carrying a string `code`
  */
 function isNodeError(error: unknown,): error is Error & { code: string; } {
-  return (error instanceof Error)
+  return (Error.isError(error,))
     && ('code' in error)
     && ((typeof error.code) === 'string');
 }

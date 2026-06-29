@@ -143,7 +143,7 @@ export async function readCache(
     /**
      * Distinguishes the benign first-build case from genuine failures so logs stay quiet on the happy path.
      */
-    const isFileNotFound = (error instanceof Error)
+    const isFileNotFound = (Error.isError(error,))
       && ('code' in error)
       && (error.code
         === 'ENOENT');

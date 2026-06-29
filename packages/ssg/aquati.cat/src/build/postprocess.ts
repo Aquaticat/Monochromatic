@@ -214,7 +214,7 @@ async function fingerprintCss(
       );
     }
     catch (error) {
-      if ((error instanceof Error) && ('code' in error)
+      if ((Error.isError(error,)) && ('code' in error)
         && (error.code
           === 'ENOENT')) {
         l.info(

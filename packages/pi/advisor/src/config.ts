@@ -279,7 +279,7 @@ async function readJsonFile(
       return undefined;
     throw new Error(
       `advisor: failed to read ${label} config at ${path}: ${
-        error instanceof Error ? error.message : String(error,)
+        Error.isError(error,) ? error.message : String(error,)
       }`,
       { cause: error, },
     );
@@ -332,7 +332,7 @@ function parseConfigFile(
 function isFileMissingError(
   error: unknown,
 ): boolean {
-  if ((!(error instanceof Error)) || (!('code' in error)))
+  if ((!(Error.isError(error,))) || (!('code' in error)))
     return false;
   return error.code === 'ENOENT';
 }

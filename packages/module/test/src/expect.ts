@@ -187,7 +187,7 @@ function buildRejectsMatchers(promise: Promise<unknown>,): AsyncMatcherSet {
       /**
        * Stringified rejection used for substring containment when an expected string was supplied.
        */
-      const message = error instanceof Error ? error.message : String(error,);
+      const message = Error.isError(error,) ? error.message : String(error,);
       chaiExpect(message,)
         .to
         .include(expected,);
@@ -196,7 +196,7 @@ function buildRejectsMatchers(promise: Promise<unknown>,): AsyncMatcherSet {
       /**
        * Stringified rejection used for regex matching when an expected pattern was supplied.
        */
-      const message = error instanceof Error ? error.message : String(error,);
+      const message = Error.isError(error,) ? error.message : String(error,);
       chaiExpect(message,)
         .to
         .match(expected,);
