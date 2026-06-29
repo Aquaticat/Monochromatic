@@ -7,6 +7,10 @@
  * `index.ts`, whose top-level body reads and rewrites the workspace file.
  */
 
+import {
+  isValidPackageName,
+} from './package-name.ts';
+
 //region Catalog YAML parsing
 
 /**
@@ -98,21 +102,27 @@ type CatalogEntry = {
 };
 
 /**
- * Strips a single layer of matching ASCII double quotes from `s`. Returns
- * `s` unchanged when the wrapping quotes are not present.
+ * Strips a single layer of matching ASCII quotes from `s`, single or double.
+ * `pnpm-workspace.yaml` quotes catalog keys and values with single quotes
+ * (`'oxlint': '>=1.71.0'`), so a double-quote-only strip (issue #258) left the
+ * quotes embedded in every key and value and broke resolution. Returns `s`
+ * unchanged when no matching wrapping quote pair is present.
  *
  * @param s - candidate token
  *
  * @returns token with the wrapping quotes removed if any
  */
 function unquote(s: string,): string {
+  /**
+   * Leading character; the wrapping quote must be this exact char on both ends.
+   */
+  const first = s.charAt(0,);
   if (
     (s.length
       >= 2)
+    && ((first === '"') || (first === '\''))
     && s
-      .startsWith('"',)
-      && s
-      .endsWith('"',)
+      .endsWith(first,)
   ) {
     return s.slice(
       1,
@@ -217,9 +227,12 @@ export function parseCatalogFromYaml(content: string,): Record<string, string> {
     from: headerIdx + 1,
   },);
   /**
-   * Seed record mutated in place as each parsed entry is appended; typed so `acc` infers a writable map.
+   * Prototype-less seed mutated in place as each parsed entry is appended.
+   * `Object.create(null)` means a crafted `__proto__:` key becomes an ordinary
+   * own property instead of mutating the map's prototype (issue #195 guard).
    */
-  const seed: Record<string, string> = {};
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Object.create(null) returns `any`; the cast narrows it to the prototype-less catalog string map
+  const seed = Object.create(null,) as Record<string, string>;
   return block.reduce(
     function appendEntry(
       acc,
@@ -231,6 +244,13 @@ export function parseCatalogFromYaml(content: string,): Record<string, string> {
       const entry = parseCatalogEntry(line,);
       if (entry === MALFORMED_ENTRY)
         return acc;
+      if (!isValidPackageName(entry.key,)) {
+        // JSON.stringify escapes control chars (including terminal ESC) so a crafted key cannot inject terminal sequences (rule SYB)
+        console.warn(
+          `Rejected catalog key ${JSON.stringify(entry.key,)}: not a valid npm package name; skipping (issue #195).`,
+        );
+        return acc;
+      }
       acc[entry.key] = entry.value;
       return acc;
     },
