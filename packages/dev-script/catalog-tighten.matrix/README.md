@@ -7,17 +7,29 @@ install layout, in isolated containers.
 
 ## What it covers
 
-Each combination installs a tiny fixture workspace under one pnpm layout and
-asserts catalog-tighten tightens `picomatch` from `>=4.0.0` to `>=4.0.2` (the
-version the fixture pins via an override):
+Each scenario installs a tiny fixture workspace (two consumer packages, both
+depending on a pinned `picomatch`) under one pnpm layout, applies an optional
+post-install mutation, then asserts the tool tightens `picomatch` from `>=4.0.0`
+to `>=4.0.2`, reports a MISS, or fails cleanly.
+
+Layout and settings (expect tighten):
 
 - `nodeLinker: isolated`, hoist on and off.
 - `nodeLinker: hoisted`, hoist on and off.
-- `nodeLinker: pnp` (no `node_modules`; resolved through `.pnp.cjs`).
-- A stale-orphan case: a higher `picomatch@4.0.4` is seeded into the virtual
-  store with no symlink pointing at it; the tool must still tighten to the
-  active `4.0.2`, never the orphan. This is the regression that proves removing
-  the old store-scan was correct (see `docs/troubleshooting/pnpm-modules-cache.md`).
+- `nodeLinker: pnp` (pnpm's pnp is a hybrid that keeps per-importer `node_modules` symlinks).
+- `modulesDir` renamed, `virtualStoreDir` relocated, `enableGlobalVirtualStore`, `storeDir` relocated.
+- Stale orphan: a higher `picomatch@4.0.4` is seeded into the virtual store with
+  no symlink; the tool must tighten to the active `4.0.2`, never the orphan. This
+  is the regression proving the old store-scan removal was correct
+  (see `docs/troubleshooting/pnpm-modules-cache.md`).
+
+Missing-X robustness:
+
+- Missing lockfile, missing store, missing some `node_modules` (one consumer),
+  missing pnpm (`pnpm config get` unavailable), missing `.pnp.cjs`: still tighten,
+  because resolution reads on-disk state and follows the surviving symlinks.
+- Missing virtual store (`node_modules/.pnpm` deleted, symlinks left dangling): MISS.
+- Missing all `node_modules`, missing `pnpm-workspace.yaml`: fail cleanly with a clear error.
 
 ## How it runs
 

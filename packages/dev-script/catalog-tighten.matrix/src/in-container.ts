@@ -1,12 +1,12 @@
 /**
- * In-container entrypoint for one catalog-tighten matrix combination.
+ * In-container entrypoint for one catalog-tighten matrix scenario.
  *
  * Runs inside a podman container with the monorepo mounted read-only at `/repo`
- * and a writable tmpfs at `/work`. Reads a {@link LayoutCombo} from argv, writes
- * the fixture workspace into `/work`, installs it with pnpm (via corepack) under
- * the combination's baked-in layout, seeds a stale orphan when asked, runs
- * catalog-tighten against the fixture, and asserts the catalog floor was
- * tightened to the active installed version. Throws (non-zero exit) on mismatch.
+ * and a writable tmpfs at `/work`. Reads a {@link Scenario} from argv, writes the
+ * fixture workspace into `/work`, installs it with pnpm (via corepack) under the
+ * scenario's layout, provisions pnpm on PATH, applies the scenario's post-install
+ * mutation, runs catalog-tighten against the fixture, and asserts the tool
+ * tightens, reports a MISS, or fails cleanly as the scenario expects.
  */
 
 import {
@@ -21,85 +21,62 @@ import spawn from 'nano-spawn';
 
 import {
   buildWorkspaceYaml,
+  CONSUMER_DIRS,
+  consumerPackageJson,
   EXPECTED_TIGHTENED,
-  FIXTURE_CONSUMER_PACKAGE_JSON,
-  FIXTURE_ORPHAN,
   FIXTURE_PACKAGE,
   FIXTURE_ROOT_PACKAGE_JSON,
-  type LayoutCombo,
   PINNED_PNPM,
+  type Scenario,
 } from './combos.ts';
+import {
+  PNPM_BIN_DIR,
+  TOOL_ENTRY,
+  WORK_DIR,
+} from './container-paths.ts';
+import {
+  applyMutation,
+} from './mutations.ts';
 
-//region Container paths
+//region Types
 
 /**
- * Writable fixture work directory (tmpfs) inside the container.
+ * Outcome of running the tool: whether it exited zero, and its combined output.
  */
-const WORK_DIR = '/work';
+type ToolResult = {
+  /**
+   * Whether the tool exited zero.
+   */
+  readonly ok: boolean;
+  /**
+   * Combined stdout and stderr; the tighten line is on stdout, the MISS line on stderr.
+   */
+  readonly output: string;
+};
+
+//endregion Types
+
+//region Setup steps
 
 /**
- * Read-only monorepo mount inside the container; the tool and its deps resolve here.
- */
-const REPO_DIR = '/repo';
-
-/**
- * catalog-tighten entrypoint inside the mounted repo.
- */
-const TOOL_ENTRY = join(
-  REPO_DIR,
-  'packages',
-  'dev-script',
-  'catalog-tighten',
-  'src',
-  'index.ts',
-);
-
-/**
- * Writable tmpfs directory the corepack `pnpm` shim is installed into, since the rootfs is read-only.
- */
-const PNPM_BIN_DIR = '/tmp/cbin';
-
-/**
- * Indentation passed to `JSON.stringify` for the seeded orphan manifest.
- */
-const JSON_INDENT = 2;
-
-//endregion Container paths
-
-//region Steps
-
-/**
- * Writes the fixture workspace for `combo` into {@link WORK_DIR}: the workspace
- * file with the combination's settings, the root manifest, and one consumer
- * package depending on the catalog entry.
+ * Writes the fixture workspace for `scenario` into {@link WORK_DIR}: the
+ * workspace file with the scenario's settings, the root manifest, and both
+ * consumer packages depending on the catalog entry.
  *
- * @param combo - combination whose settings shape the workspace file
+ * @param scenario - scenario whose settings shape the workspace file
  *
  * @example
  * ```ts
- * await writeFixture({ label: 'pnp', nodeLinker: 'pnp', hoist: false, staleOrphan: false });
+ * await writeFixture(SCENARIOS[0]);
  * ```
  */
-async function writeFixture(combo: LayoutCombo,): Promise<void> {
-  /**
-   * Consumer package directory under the `packages/*\/*` glob the tool discovers.
-   */
-  const consumerDir = join(
-    WORK_DIR,
-    'packages',
-    'grp',
-    'consumer',
-  );
-  await mkdir(
-    consumerDir,
-    { recursive: true, },
-  );
+async function writeFixture(scenario: Scenario,): Promise<void> {
   await writeFile(
     join(
       WORK_DIR,
       'pnpm-workspace.yaml',
     ),
-    buildWorkspaceYaml(combo,),
+    buildWorkspaceYaml(scenario,),
   );
   await writeFile(
     join(
@@ -108,13 +85,26 @@ async function writeFixture(combo: LayoutCombo,): Promise<void> {
     ),
     FIXTURE_ROOT_PACKAGE_JSON,
   );
-  await writeFile(
-    join(
-      consumerDir,
-      'package.json',
-    ),
-    FIXTURE_CONSUMER_PACKAGE_JSON,
-  );
+  await Promise.all(CONSUMER_DIRS.map(async function writeConsumer(dir,): Promise<void> {
+    /**
+     * Absolute consumer directory; created before its manifest is written.
+     */
+    const absoluteDir = join(
+      WORK_DIR,
+      dir,
+    );
+    await mkdir(
+      absoluteDir,
+      { recursive: true, },
+    );
+    await writeFile(
+      join(
+        absoluteDir,
+        'package.json',
+      ),
+      consumerPackageJson(dir,),
+    );
+  },),);
 }
 
 /**
@@ -148,54 +138,10 @@ async function installFixture(): Promise<void> {
 }
 
 /**
- * Seeds a higher-version stale orphan into the virtual store, with no symlink
- * pointing at it, reproducing the post-downgrade leftover from
- * `docs/troubleshooting/pnpm-modules-cache.md`. The resolver must ignore it.
- *
- * @example
- * ```ts
- * await seedStaleOrphan();
- * ```
- */
-async function seedStaleOrphan(): Promise<void> {
-  /**
-   * Virtual-store package directory for the orphan version, mirroring pnpm's `.pnpm` layout.
-   */
-  const orphanDir = join(
-    WORK_DIR,
-    'node_modules',
-    '.pnpm',
-    `${FIXTURE_PACKAGE}@${FIXTURE_ORPHAN}`,
-    'node_modules',
-    FIXTURE_PACKAGE,
-  );
-  await mkdir(
-    orphanDir,
-    { recursive: true, },
-  );
-  await writeFile(
-    join(
-      orphanDir,
-      'package.json',
-    ),
-    `${
-      JSON.stringify(
-        {
-          name: FIXTURE_PACKAGE,
-          version: FIXTURE_ORPHAN,
-        },
-        undefined,
-        JSON_INDENT,
-      )
-    }\n`,
-  );
-}
-
-/**
- * Installs the corepack `pnpm` shim into a writable tmpfs directory, so the
- * tool's `pnpm config get modules-dir` finds `pnpm` on PATH under the read-only
- * rootfs. The shim resolves the pinned version from the fixture's
- * `packageManager` field, reusing the cached install offline.
+ * Installs the corepack `pnpm` shim into {@link PNPM_BIN_DIR}, so the tool's
+ * `pnpm config get modules-dir` finds `pnpm` on PATH under the read-only rootfs.
+ * The shim resolves the pinned version from the fixture's `packageManager`
+ * field, reusing the cached install offline.
  *
  * @example
  * ```ts
@@ -225,18 +171,23 @@ async function enablePnpm(): Promise<void> {
   );
 }
 
+//endregion Setup steps
+
+//region Run and assert
+
 /**
- * Runs catalog-tighten `--dry-run` against the fixture and returns its stdout.
- * The pnpm shim directory is prepended to PATH so the tool can read `modulesDir`.
+ * Runs catalog-tighten `--dry-run` against the fixture, prepending the pnpm
+ * shim directory to PATH. Captures a non-zero exit as `ok: false` rather than
+ * throwing, so the caller can assert the error scenarios.
  *
- * @returns combined tool stdout
+ * @returns whether the tool exited zero, and its stdout
  *
  * @example
  * ```ts
- * const out = await runTool();
+ * const result = await runTool();
  * ```
  */
-async function runTool(): Promise<string> {
+async function runTool(): Promise<ToolResult> {
   /**
    * Current container PATH value; may be unset.
    */
@@ -250,64 +201,132 @@ async function runTool(): Promise<string> {
    * PATH with the pnpm shim directory prepended, so the tool finds `pnpm`.
    */
   const toolPath = `${PNPM_BIN_DIR}:${basePath}`;
-  /**
-   * Tool invocation result; nano-spawn rejects on a non-zero exit, surfacing tool failures.
-   */
-  const result = await spawn(
-    'node',
-    [
-      TOOL_ENTRY,
-      '--dry-run',
-    ],
-    {
-      cwd: WORK_DIR,
-      env: {
-        ...process.env,
-        PATH: toolPath,
+  try {
+    /**
+     * Tool result on a zero exit; stdout carries the per-entry status lines.
+     */
+    const result = await spawn(
+      'node',
+      [
+        TOOL_ENTRY,
+        '--dry-run',
+      ],
+      {
+        cwd: WORK_DIR,
+        env: {
+          ...process.env,
+          PATH: toolPath,
+        },
       },
-    },
-  );
-  return result.stdout;
+    );
+    return {
+      ok: true,
+      output: `${result.stdout}\n${result.stderr}`,
+    };
+  }
+  catch (error) {
+    if (!(error instanceof Error))
+      throw error;
+
+    return {
+      ok: false,
+      output: '',
+    };
+  }
 }
 
-//endregion Steps
+/**
+ * Asserts the tool result matches the scenario's expectation, throwing a
+ * labelled error on mismatch.
+ *
+ * @param scenario - scenario under test
+ *
+ * @param result - tool result to check
+ *
+ * @example
+ * ```ts
+ * assertOutcome({ scenario: SCENARIOS[0], result: { ok: true, stdout: '...' } });
+ * ```
+ */
+function assertOutcome(
+  {
+    scenario,
+    result,
+  }: {
+    readonly scenario: Scenario;
+    readonly result: ToolResult;
+  },
+): void {
+  /**
+   * Tool exit status and combined output for this scenario.
+   */
+  const {
+    ok,
+    output,
+  } = result;
+  /**
+   * Whether the output reports a MISS for the fixture package (the MISS line is on stderr).
+   */
+  const reportedMiss = output.includes(`MISS  ${FIXTURE_PACKAGE}`,);
+  /**
+   * Whether the output reports the expected tightened line (on stdout).
+   */
+  const tightened = output.includes(EXPECTED_TIGHTENED,);
+
+  if (scenario.expect
+    === 'error') {
+    if (ok)
+      throw new Error(`[${scenario.label}] expected the tool to fail, but it exited 0:\n${output}`,);
+    return;
+  }
+  if (scenario.expect
+    === 'miss') {
+    if (!ok)
+      throw new Error(`[${scenario.label}] tool failed unexpectedly:\n${output}`,);
+    if ((!reportedMiss) || tightened)
+      throw new Error(`[${scenario.label}] expected a MISS, got:\n${output}`,);
+    return;
+  }
+  if ((!ok) || (!tightened))
+    throw new Error(`[${scenario.label}] expected "${EXPECTED_TIGHTENED}", got:\n${output}`,);
+}
+
+//endregion Run and assert
 
 //region Main
 
 /**
- * argv index of the combination JSON the orchestrator passes.
+ * argv index of the scenario JSON the orchestrator passes.
  */
-const COMBO_ARG_INDEX = 2;
+const SCENARIO_ARG_INDEX = 2;
 
 /**
- * Raw combination JSON argument; absent only on misuse.
+ * Raw scenario JSON argument; absent only on misuse.
  */
-const comboJson = process.argv[COMBO_ARG_INDEX];
-if (comboJson === undefined)
-  throw new Error('Usage: in-container.ts <combo-json>',);
+const scenarioJson = process.argv[SCENARIO_ARG_INDEX];
+if (scenarioJson === undefined)
+  throw new Error('Usage: in-container.ts <scenario-json>',);
 
 /**
- * Combination to run, deserialised from the orchestrator's argument.
+ * Scenario to run, deserialised from the orchestrator's argument.
  */
-// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- the orchestrator serialises a LayoutCombo it owns
-const combo = JSON.parse(comboJson,) as LayoutCombo;
+// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- the orchestrator serialises a Scenario it owns
+const scenario = JSON.parse(scenarioJson,) as Scenario;
 
-await writeFixture(combo,);
+await writeFixture(scenario,);
 await installFixture();
 await enablePnpm();
-if (combo.staleOrphan)
-  await seedStaleOrphan();
+await applyMutation(scenario,);
 
 /**
- * Tool output to assert against the expected tightened line.
+ * Tool outcome to assert against the scenario's expectation.
  */
-const output = await runTool();
-if (!output.includes(EXPECTED_TIGHTENED,)) {
-  throw new Error(
-    `[${combo.label}] expected "${EXPECTED_TIGHTENED}" in tool output, got:\n${output}`,
-  );
-}
-console.info(`[${combo.label}] PASS: ${EXPECTED_TIGHTENED}`,);
+const result = await runTool();
+assertOutcome({
+  scenario,
+  result,
+},);
+console.info(`[${scenario.label}] PASS (${scenario.expect})`,);
 
 export {};
 

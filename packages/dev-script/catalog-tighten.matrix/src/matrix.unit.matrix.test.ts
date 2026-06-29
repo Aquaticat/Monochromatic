@@ -23,8 +23,8 @@ import {
 import spawn from 'nano-spawn';
 
 import {
-  COMBOS,
-  type LayoutCombo,
+  SCENARIOS,
+  type Scenario,
 } from './combos.ts';
 
 //region Container configuration
@@ -89,16 +89,16 @@ const MATRIX_CONCURRENCY = 2;
 /**
  * Builds the `podman run` argv for one combination.
  *
- * @param combo - combination to execute; serialised as the entrypoint argument
+ * @param scenario - scenario to execute; serialised as the entrypoint argument
  *
  * @returns argument vector excluding the `podman` executable
  *
  * @example
  * ```ts
- * buildPodmanArgs(COMBOS[0]).at(0) // 'run'
+ * buildPodmanArgs(SCENARIOS[0]).at(0) // 'run'
  * ```
  */
-function buildPodmanArgs(combo: LayoutCombo,): readonly string[] {
+function buildPodmanArgs(scenario: Scenario,): readonly string[] {
   return [
     'run',
     '--rm',
@@ -123,7 +123,7 @@ function buildPodmanArgs(combo: LayoutCombo,): readonly string[] {
     NODE_IMAGE,
     'node',
     IN_CONTAINER_ENTRY,
-    JSON.stringify(combo,),
+    JSON.stringify(scenario,),
   ];
 }
 
@@ -135,27 +135,27 @@ function buildPodmanArgs(combo: LayoutCombo,): readonly string[] {
  * Runs one combination in a container and fails the test on a non-zero exit or
  * a missing PASS marker.
  *
- * @param combo - combination to run
+ * @param scenario - scenario to run
  *
  * @throws Error when the container exits non-zero or does not report PASS
  *
  * @example
  * ```ts
- * await runCombo(COMBOS[0]);
+ * await runScenario(SCENARIOS[0]);
  * ```
  */
-async function runCombo(combo: LayoutCombo,): Promise<void> {
+async function runScenario(scenario: Scenario,): Promise<void> {
   /**
    * Container result; nano-spawn rejects on a non-zero exit, surfacing a failed assertion.
    */
   const result = await spawn(
     'podman',
-    buildPodmanArgs(combo,),
+    buildPodmanArgs(scenario,),
   );
   if (!result.stdout
     .includes('PASS',)) {
     throw new Error(
-      `[${combo.label}] container did not report PASS:\n${result.stdout}\n${result.stderr}`,
+      `[${scenario.label}] container did not report PASS:\n${result.stdout}\n${result.stderr}`,
     );
   }
 }
@@ -163,11 +163,11 @@ async function runCombo(combo: LayoutCombo,): Promise<void> {
 await describe({
   name: 'catalog-tighten install-layout matrix',
   concurrency: MATRIX_CONCURRENCY,
-  children: COMBOS.map(function comboCase(combo,) {
+  children: SCENARIOS.map(function scenarioCase(scenario,) {
     return it({
-      name: combo.label,
+      name: scenario.label,
       fn: async () => {
-        await runCombo(combo,);
+        await runScenario(scenario,);
       },
     },);
   },),

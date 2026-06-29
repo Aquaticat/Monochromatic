@@ -1,11 +1,13 @@
 /**
- * Matrix combinations and fixture content for the catalog-tighten e2e.
+ * Scenarios and fixture content for the catalog-tighten e2e matrix.
  *
- * Each combination installs a tiny fixture workspace under one pnpm layout, then
- * asserts catalog-tighten tightens the catalog floor to the active installed
- * version. The fixture pins {@link FIXTURE_PACKAGE} to {@link FIXTURE_ACTIVE} via
- * an override, so the active version is predictable and below the package's
- * latest, making the expected tightened range deterministic across layouts.
+ * Each scenario installs a tiny fixture workspace under one pnpm layout, applies
+ * an optional post-install mutation (removing a file or directory, seeding a
+ * stale orphan), then asserts catalog-tighten behaves correctly: tightening the
+ * catalog floor to the active version, reporting a MISS, or failing cleanly.
+ * The fixture pins {@link FIXTURE_PACKAGE} to {@link FIXTURE_ACTIVE} via an
+ * override so the expected tightened range is deterministic across layouts, and
+ * declares two consumer packages so "only some node_modules missing" is testable.
  */
 
 //region Fixture constants
@@ -31,14 +33,35 @@ export const FIXTURE_ACTIVE = '4.0.2';
 export const FIXTURE_ORPHAN = '4.0.4';
 
 /**
- * pnpm version corepack provisions in the container, pinned to match the monorepo's pnpm so the
- * fixture install layout mirrors production and the cached version is reused offline.
+ * pnpm version corepack provisions in the container, pinned to match the monorepo's pnpm.
  */
 export const PINNED_PNPM = 'pnpm@11.9.0';
 
+/**
+ * Relocatable content-addressable store path used by the remove-store scenario, so the mutation
+ * can delete a known directory and prove the store is irrelevant once files are in the virtual store.
+ */
+export const FIXTURE_STORE_DIR = '/tmp/ct-removable-store';
+
+/**
+ * Consumer package directories under the `packages/*\/*` glob, both depending on the catalog entry.
+ */
+export const CONSUMER_DIRS: readonly [
+  string,
+  string,
+] = [
+  'packages/grp/consumer-a',
+  'packages/grp/consumer-b',
+];
+
+/**
+ * Expected catalog line after a successful tighten, asserted by the in-container run.
+ */
+export const EXPECTED_TIGHTENED: string = `${FIXTURE_PACKAGE}: >=${FIXTURE_FLOOR} -> >=${FIXTURE_ACTIVE}`;
+
 //endregion Fixture constants
 
-//region Combinations
+//region Scenarios
 
 /**
  * pnpm node-linker mode under test.
@@ -46,9 +69,43 @@ export const PINNED_PNPM = 'pnpm@11.9.0';
 type NodeLinker = 'isolated' | 'hoisted' | 'pnp';
 
 /**
- * One matrix combination: a pnpm layout plus whether to seed a stale orphan.
+ * Post-install mutation applied before running the tool.
+ * - `none`: install left intact.
+ * - `stale-orphan`: seed a higher orphan in the virtual store, with no symlink.
+ * - `remove-lockfile`: delete `pnpm-lock.yaml`.
+ * - `remove-workspace-yaml`: delete `pnpm-workspace.yaml`.
+ * - `remove-all-modules`: delete every `node_modules`.
+ * - `remove-some-modules`: delete one consumer's `node_modules`.
+ * - `remove-virtual-store`: delete `node_modules/.pnpm`, leaving dangling symlinks.
+ * - `remove-store`: delete the relocated content-addressable store.
+ * - `remove-pnp-cjs`: delete `.pnp.cjs` under the pnp linker; pnpm's pnp is a hybrid that also keeps
+ *   per-importer `node_modules` symlinks, so resolution survives via those (the tool still tightens).
+ * - `remove-pnpm`: delete the provisioned pnpm shim, simulating pnpm absent from PATH.
  */
-export type LayoutCombo = {
+type Mutation =
+  | 'none'
+  | 'stale-orphan'
+  | 'remove-lockfile'
+  | 'remove-workspace-yaml'
+  | 'remove-all-modules'
+  | 'remove-some-modules'
+  | 'remove-virtual-store'
+  | 'remove-store'
+  | 'remove-pnp-cjs'
+  | 'remove-pnpm';
+
+/**
+ * Expected tool behaviour for a scenario.
+ * - `tighten`: exits zero and tightens the floor to the active version.
+ * - `miss`: exits zero, reports a MISS, and tightens nothing.
+ * - `error`: exits non-zero with a clear message.
+ */
+type Expectation = 'tighten' | 'miss' | 'error';
+
+/**
+ * One matrix scenario: a pnpm layout, a mutation, and the expected tool behaviour.
+ */
+export type Scenario = {
   /**
    * Human-readable label used in the test name and container diagnostics.
    */
@@ -62,116 +119,187 @@ export type LayoutCombo = {
    */
   readonly hoist: boolean;
   /**
-   * Whether to seed a higher-version stale orphan in the virtual store after install.
-   */
-  readonly staleOrphan: boolean;
-  /**
-   * Extra `pnpm-workspace.yaml` lines for this combination (store-relocating settings).
+   * Extra `pnpm-workspace.yaml` lines for this scenario (store-relocating settings).
    */
   readonly extraSettings?: readonly string[];
+  /**
+   * Post-install mutation applied before running the tool.
+   */
+  readonly mutation: Mutation;
+  /**
+   * Expected tool behaviour.
+   */
+  readonly expect: Expectation;
 };
 
 /**
- * Every combination the matrix runs: the three node-linker modes (hoist toggled
- * for the node-modules linkers) plus the stale-orphan regression.
+ * Every scenario the matrix runs: the node-linker and layout-settings coverage,
+ * plus the missing-X robustness cases.
  */
-export const COMBOS: readonly LayoutCombo[] = [
+export const SCENARIOS: readonly Scenario[] = [
   {
     label: 'isolated, hoist on',
     nodeLinker: 'isolated',
     hoist: true,
-    staleOrphan: false,
+    mutation: 'none',
+    expect: 'tighten',
   },
   {
     label: 'isolated, hoist off',
     nodeLinker: 'isolated',
     hoist: false,
-    staleOrphan: false,
+    mutation: 'none',
+    expect: 'tighten',
   },
   {
     label: 'hoisted, hoist on',
     nodeLinker: 'hoisted',
     hoist: true,
-    staleOrphan: false,
+    mutation: 'none',
+    expect: 'tighten',
   },
   {
     label: 'hoisted, hoist off',
     nodeLinker: 'hoisted',
     hoist: false,
-    staleOrphan: false,
+    mutation: 'none',
+    expect: 'tighten',
   },
   {
     label: 'pnp',
     nodeLinker: 'pnp',
     hoist: false,
-    staleOrphan: false,
+    mutation: 'none',
+    expect: 'tighten',
   },
   {
-    label: 'isolated, stale orphan',
+    label: 'modulesDir renamed',
     nodeLinker: 'isolated',
     hoist: false,
-    staleOrphan: true,
-  },
-  {
-    label: 'isolated, modulesDir renamed',
-    nodeLinker: 'isolated',
-    hoist: false,
-    staleOrphan: false,
     extraSettings: ['modulesDir: node_modules_alt',],
+    mutation: 'none',
+    expect: 'tighten',
   },
   {
-    label: 'isolated, virtualStoreDir relocated',
+    label: 'virtualStoreDir relocated',
     nodeLinker: 'isolated',
     hoist: false,
-    staleOrphan: false,
     extraSettings: ['virtualStoreDir: .vstore',],
+    mutation: 'none',
+    expect: 'tighten',
   },
   {
-    label: 'isolated, global virtual store',
+    label: 'global virtual store',
     nodeLinker: 'isolated',
     hoist: false,
-    staleOrphan: false,
     extraSettings: ['enableGlobalVirtualStore: true',],
+    mutation: 'none',
+    expect: 'tighten',
   },
   {
-    label: 'isolated, storeDir relocated',
+    label: 'storeDir relocated',
     nodeLinker: 'isolated',
     hoist: false,
-    staleOrphan: false,
-    extraSettings: ['storeDir: /tmp/ct-store',],
+    extraSettings: [`storeDir: ${FIXTURE_STORE_DIR}`,],
+    mutation: 'none',
+    expect: 'tighten',
+  },
+  {
+    label: 'stale orphan',
+    nodeLinker: 'isolated',
+    hoist: false,
+    mutation: 'stale-orphan',
+    expect: 'tighten',
+  },
+  {
+    label: 'missing lockfile',
+    nodeLinker: 'isolated',
+    hoist: false,
+    mutation: 'remove-lockfile',
+    expect: 'tighten',
+  },
+  {
+    label: 'missing store',
+    nodeLinker: 'isolated',
+    hoist: false,
+    extraSettings: [`storeDir: ${FIXTURE_STORE_DIR}`,],
+    mutation: 'remove-store',
+    expect: 'tighten',
+  },
+  {
+    label: 'missing some node_modules',
+    nodeLinker: 'isolated',
+    hoist: false,
+    mutation: 'remove-some-modules',
+    expect: 'tighten',
+  },
+  {
+    label: 'missing pnpm',
+    nodeLinker: 'isolated',
+    hoist: false,
+    mutation: 'remove-pnpm',
+    expect: 'tighten',
+  },
+  {
+    label: 'missing virtual store',
+    nodeLinker: 'isolated',
+    hoist: false,
+    mutation: 'remove-virtual-store',
+    expect: 'miss',
+  },
+  {
+    label: 'missing all node_modules',
+    nodeLinker: 'isolated',
+    hoist: false,
+    mutation: 'remove-all-modules',
+    expect: 'error',
+  },
+  {
+    label: 'missing workspace yaml',
+    nodeLinker: 'isolated',
+    hoist: false,
+    mutation: 'remove-workspace-yaml',
+    expect: 'error',
+  },
+  {
+    label: 'missing pnp cjs',
+    nodeLinker: 'pnp',
+    hoist: false,
+    mutation: 'remove-pnp-cjs',
+    expect: 'tighten',
   },
 ];
 
-//endregion Combinations
+//endregion Scenarios
 
 //region Fixture files
 
 /**
- * Builds the `pnpm-workspace.yaml` for one combination: the `packages/*\/*` glob
+ * Builds the `pnpm-workspace.yaml` for one scenario: the `packages/*\/*` glob
  * matching catalog-tighten's workspace discovery, the catalog floor, the
- * combination's linker and hoist settings, and an override pinning the active
- * version. The `hoist` line is omitted under pnp, where it does not apply.
+ * scenario's linker, hoist, and extra settings, and an override pinning the
+ * active version. The `hoist:` line is omitted under pnp, where it does not apply.
  *
- * @param combo - combination whose pnpm settings to encode
+ * @param scenario - scenario whose pnpm settings to encode
  *
  * @returns `pnpm-workspace.yaml` text for the fixture
  *
  * @example
  * ```ts
- * buildWorkspaceYaml({ label: 'pnp', nodeLinker: 'pnp', hoist: false, staleOrphan: false })
+ * buildWorkspaceYaml(SCENARIOS[0])
  * ```
  */
-export function buildWorkspaceYaml(combo: LayoutCombo,): string {
+export function buildWorkspaceYaml(scenario: Scenario,): string {
   /**
    * `hoist:` line, present only for node-modules linkers where the setting is meaningful.
    */
-  const hoistLine = combo.nodeLinker === 'pnp'
+  const hoistLine = scenario.nodeLinker === 'pnp'
     ? ''
-    : `hoist: ${String(combo.hoist,)}\n`;
+    : `hoist: ${String(scenario.hoist,)}\n`;
   /**
-   * Store-relocating settings for this combination, each on its own line.
+   * Store-relocating settings for this scenario, each on its own line.
    */
-  const extraLines = (combo.extraSettings
+  const extraLines = (scenario.extraSettings
     ?? [])
     .map(function toLine(setting,): string {
       return `${setting}\n`;
@@ -182,7 +310,7 @@ export function buildWorkspaceYaml(combo: LayoutCombo,): string {
     '  - \'packages/*/*\'',
     'catalog:',
     `  '${FIXTURE_PACKAGE}': '>=${FIXTURE_FLOOR}'`,
-    `nodeLinker: ${combo.nodeLinker}`,
+    `nodeLinker: ${scenario.nodeLinker}`,
     `${hoistLine}${extraLines}overrides:`,
     `  ${FIXTURE_PACKAGE}: ${FIXTURE_ACTIVE}`,
     '',
@@ -190,7 +318,8 @@ export function buildWorkspaceYaml(combo: LayoutCombo,): string {
 }
 
 /**
- * Root `package.json` for the fixture workspace.
+ * Root `package.json` for the fixture workspace, pinning the package manager so
+ * the corepack pnpm shim resolves the cached version offline.
  */
 export const FIXTURE_ROOT_PACKAGE_JSON: string = `${JSON.stringify(
   {
@@ -204,24 +333,30 @@ export const FIXTURE_ROOT_PACKAGE_JSON: string = `${JSON.stringify(
 )}\n`;
 
 /**
- * Consumer `package.json` at `packages/grp/consumer`, depending on the catalog entry.
+ * Builds a consumer `package.json` depending on the catalog entry.
+ *
+ * @param name - consumer package name
+ *
+ * @returns consumer `package.json` text
+ *
+ * @example
+ * ```ts
+ * consumerPackageJson('consumer-a')
+ * ```
  */
-export const FIXTURE_CONSUMER_PACKAGE_JSON: string = `${JSON.stringify(
-  {
-    name: 'catalog-tighten-fixture-consumer',
-    private: true,
-    version: '0.0.0',
-    dependencies: {
-      [FIXTURE_PACKAGE]: 'catalog:',
+export function consumerPackageJson(name: string,): string {
+  return `${JSON.stringify(
+    {
+      name,
+      private: true,
+      version: '0.0.0',
+      dependencies: {
+        [FIXTURE_PACKAGE]: 'catalog:',
+      },
     },
-  },
-  undefined,
-  2,
-)}\n`;
-
-/**
- * Expected catalog line after a successful tighten, asserted by the in-container run.
- */
-export const EXPECTED_TIGHTENED: string = `${FIXTURE_PACKAGE}: >=${FIXTURE_FLOOR} -> >=${FIXTURE_ACTIVE}`;
+    undefined,
+    2,
+  )}\n`;
+}
 
 //endregion Fixture files

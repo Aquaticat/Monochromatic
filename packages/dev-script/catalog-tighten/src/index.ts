@@ -109,12 +109,42 @@ const workspaceYamlPath = join(
 );
 
 /**
+ * Reads pnpm-workspace.yaml, failing with a clear message when it is absent
+ * (run outside a pnpm workspace) instead of surfacing a raw `ENOENT`.
+ *
+ * @param path - absolute path to pnpm-workspace.yaml
+ *
+ * @returns file content
+ *
+ * @throws Error when the file cannot be read
+ *
+ * @example
+ * ```ts
+ * await readWorkspaceYaml("/repo/pnpm-workspace.yaml")
+ * ```
+ */
+async function readWorkspaceYaml(path: string,): Promise<string> {
+  try {
+    return await readFile(
+      path,
+      'utf8',
+    );
+  }
+  catch (error) {
+    if (!(error instanceof Error))
+      throw error;
+
+    throw new Error(
+      `pnpm-workspace.yaml not found at ${path}; run catalog-tighten from a pnpm workspace root.`,
+      { cause: error, },
+    );
+  }
+}
+
+/**
  * Raw content of pnpm-workspace.yaml, preserved for minimal-diff rewriting.
  */
-const workspaceYamlContent = await readFile(
-  workspaceYamlPath,
-  'utf8',
-);
+const workspaceYamlContent = await readWorkspaceYaml(workspaceYamlPath,);
 
 /**
  * Per-importer modules directory (the effective `modulesDir` setting; usually `node_modules`).

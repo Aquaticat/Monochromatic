@@ -1,9 +1,10 @@
 /**
- * Unit tests for the matrix fixture builder.
+ * Unit tests for the matrix fixture builder and scenario set.
  *
  * Pure host tests (no containers): pin that `buildWorkspaceYaml` encodes the
- * catalog floor, override, and per-combination linker and hoist settings, and
- * that the `hoist:` line is omitted under the pnp linker where it does not apply.
+ * catalog floor, override, and per-scenario linker, hoist, and extra settings,
+ * that the `hoist:` line is omitted under the pnp linker, and that the scenario
+ * set covers the expected behaviours.
  *
  * @module
  */
@@ -16,11 +17,11 @@ import {
 
 import {
   buildWorkspaceYaml,
-  COMBOS,
   EXPECTED_TIGHTENED,
   FIXTURE_ACTIVE,
   FIXTURE_FLOOR,
   FIXTURE_PACKAGE,
+  SCENARIOS,
 } from './combos.ts';
 
 await describe({
@@ -29,12 +30,13 @@ await describe({
     it({
       name: 'encodes the catalog floor and the pinning override',
       fn: async () => {
-        /** Workspace file for the first (isolated) combination. */
+        /** Workspace file for an isolated scenario. */
         const yaml = buildWorkspaceYaml({
-          label: 'isolated, hoist on',
+          label: 'isolated',
           nodeLinker: 'isolated',
           hoist: true,
-          staleOrphan: false,
+          mutation: 'none',
+          expect: 'tighten',
         },);
         expect(yaml.includes(`'${FIXTURE_PACKAGE}': '>=${FIXTURE_FLOOR}'`,),).toBe(true,);
         expect(yaml.includes('nodeLinker: isolated',),).toBe(true,);
@@ -46,12 +48,13 @@ await describe({
     it({
       name: 'omits the hoist line under the pnp linker',
       fn: async () => {
-        /** Workspace file for the pnp combination, where hoist does not apply. */
+        /** Workspace file for the pnp scenario, where hoist does not apply. */
         const yaml = buildWorkspaceYaml({
           label: 'pnp',
           nodeLinker: 'pnp',
           hoist: false,
-          staleOrphan: false,
+          mutation: 'none',
+          expect: 'tighten',
         },);
         expect(yaml.includes('nodeLinker: pnp',),).toBe(true,);
         expect(yaml.includes('hoist:',),).toBe(false,);
@@ -61,13 +64,14 @@ await describe({
     it({
       name: 'appends extraSettings lines (store-relocating settings)',
       fn: async () => {
-        /** Workspace file for a combination that renames the modules directory. */
+        /** Workspace file for a scenario that renames the modules directory. */
         const yaml = buildWorkspaceYaml({
-          label: 'isolated, modulesDir renamed',
+          label: 'modulesDir renamed',
           nodeLinker: 'isolated',
           hoist: false,
-          staleOrphan: false,
           extraSettings: ['modulesDir: node_modules_alt',],
+          mutation: 'none',
+          expect: 'tighten',
         },);
         expect(yaml.includes('modulesDir: node_modules_alt',),).toBe(true,);
         expect(yaml.includes('overrides:',),).toBe(true,);
@@ -75,13 +79,20 @@ await describe({
     },),
 
     it({
-      name: 'covers exactly one stale-orphan combination',
+      name: 'covers each missing-X scenario as an error or miss',
       fn: async () => {
-        /** Combinations flagged to seed a stale orphan. */
-        const orphanCombos = COMBOS.filter(function isOrphan(combo,): boolean {
-          return combo.staleOrphan;
+        /** Scenarios that delete a required file or directory. */
+        const removalScenarios = SCENARIOS.filter(function isRemoval(scenario,): boolean {
+          return scenario.mutation
+            .startsWith('remove-',);
         },);
-        expect(orphanCombos.length,).toBe(1,);
+        /** Labels of removal scenarios that expect a clean tighten despite the removal. */
+        const tightenAnyway = removalScenarios.filter(function isTighten(scenario,): boolean {
+          return scenario.expect
+            === 'tighten';
+        },);
+        // remove-lockfile, remove-store, remove-some-modules, remove-pnpm, and remove-pnp-cjs still tighten.
+        expect(tightenAnyway.length,).toBe(5,);
       },
     },),
 
