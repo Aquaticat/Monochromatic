@@ -25,15 +25,22 @@ Next sessions pick those up; nothing else is in flight here.
 
 - Done: yaml-library reader; string-scan name validator + `Object.create(null)` map (#195);
   on-disk resolver (root + workspace `node_modules`, exports-bypassing), Bun-store scan removed;
-  surgical single-quote-preserving write-back; no-install guard; README rewrite; host unit tests.
-- Deferred to the e2e build: pnpm pnp reader (no `node_modules`, needs the `.pnp` artifacts read
-  against a real install).
+  surgical single-quote-preserving write-back; no-install guard; clear error on a missing
+  `pnpm-workspace.yaml`; README rewrite; host unit tests.
 - Done: pnpm pnp reader (`version-pnp.ts`, via the `.pnp.cjs` Yarn-style API), verified against a
-  real pnpm pnp install and in the container matrix.
-- Done: the `catalog-tighten.matrix` sidecar (`packages/dev-script/catalog-tighten.matrix`).
-- Filed as issues: Bun (#260), Yarn Berry (#261), Deno (#262), vlt (#263).
-- Still only a note (no issue filed yet): consolidating the catalog reader with `deps-cube`, which
-  now also parses `pnpm-workspace.yaml` with the `yaml` library.
+  real pnpm pnp install. Note: pnpm's pnp is a hybrid that also keeps per-importer `node_modules`
+  symlinks, so the node_modules walk-up usually resolves pnpm-pnp deps; the `.pnp.cjs` reader is the
+  fallback and the path for true no-node_modules layouts (Yarn PnP).
+- Done: effective `modulesDir` support via `pnpm config get modules-dir` (covers cli/env/workspace/
+  global config). `virtualStoreDir`, `enableGlobalVirtualStore`, and `storeDir` need no code: the
+  resolver follows the active symlink wherever the store moved, including the global store. All four
+  verified in the matrix.
+- Done: the `catalog-tighten.matrix` sidecar, now 18 containerised scenarios: five layouts, four
+  store-settings, stale-orphan, and eight missing-X robustness cases (missing lockfile / store /
+  some-node_modules / pnpm / .pnp.cjs still tighten; missing virtual store -> MISS; missing all
+  node_modules / missing workspace yaml -> clean error).
+- Filed as issues: Bun (#260), Yarn Berry (#261), Deno (#262), vlt (#263), and the deps-cube reader
+  consolidation (#264).
 
 ## The two issues
 
