@@ -52,6 +52,15 @@ function pick(): HTMLInputElement {
   return found;
 }
 
+function parseFallback(value: string,): unknown {
+  try {
+    return JSON.parse(value,) as unknown;
+  }
+  catch (caughtValue) {
+    return caughtValue;
+  }
+}
+
 // no-class allowlist: direct Error subclass passes via the `Error` suffix on the superclass name.
 class DirectError extends Error {}
 
@@ -71,6 +80,7 @@ void classify;
 void clean;
 void has;
 void pick;
+void parseFallback;
 void DirectError;
 void TransitiveError;
 void WebComponent;

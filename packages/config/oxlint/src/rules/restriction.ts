@@ -71,6 +71,9 @@ export const restrictionRules: DummyRuleMap = {
   // Use using/await using for cleanup instead of try...finally.
   'no-restricted-syntax/no-try-finally': 'error',
 
+  // Bind catch values instead of using `catch {}` so failures stay inspectable.
+  'no-restricted-syntax/no-optional-catch-binding': 'error',
+
   // Use union types with `as const` instead of enum declarations.
   'no-restricted-syntax/no-enum': 'error',
 

@@ -9,8 +9,8 @@ import type {
  * Bans optional `catch` bindings.
  *
  * `catch {}` hides the thrown value at the boundary where the failure is
- * observed. Bind the value as `error` so code can log it, rethrow it, or make
- * the intentional ignore visible in the block.
+ * observed. Bind the value, usually as `error`, so code can log it, rethrow it,
+ * or make the intentional ignore visible in the block.
  *
  * @example
  * ```ts
@@ -24,8 +24,8 @@ import type {
  * // Good
  * try {
  *   await run();
- * } catch (error) {
- *   logger.error(error);
+ * } catch (caughtError) {
+ *   logger.error(caughtError);
  *   recover();
  * }
  * ```
@@ -35,12 +35,14 @@ export const noOptionalCatchBinding: CreateOnceRule = {
     type: 'problem',
     docs: {
       description:
-        'Disallow optional catch bindings. Use catch (error) so the thrown value stays available.',
+        'Disallow optional catch bindings. Use a named catch binding so the thrown value stays available.',
       recommended: true,
     },
     messages: {
-      forbidden:
-        'catch without a binding is banned. Use `catch (error) {}` so the thrown value stays available.',
+      forbidden: [
+        'catch without a binding is banned. Use `catch (error) {}` or another ',
+        'named binding so the thrown value stays available.',
+      ].join('',),
     },
   },
   createOnce(context: Context,): VisitorWithHooks {

@@ -76,7 +76,8 @@ function classifyExportedName(
         'utf8',
       );
     }
-    catch {
+    catch (readError: unknown) {
+      void readError;
       return '';
     }
   })();
