@@ -10,15 +10,16 @@ and the planned shape of the deliverable.
 
 ## Status
 
-Core fix landed and verified; the e2e sidecar is the remaining work.
-The #258 three defects and the #195 hardening are fixed, linted, type-checked, unit-tested,
-and verified end-to-end on the real repo (38 entries tighten, minimal single-quoted diff).
-Reading switched to the `yaml` library; resolution reads on-disk `node_modules` only.
-Work commits to `main` (maintainer confirmed).
+pnpm phase complete; paused as planned.
+The #258 three defects and the #195 hardening are fixed, linted, type-checked, unit-tested, and
+verified end-to-end on the real repo (38 entries tighten, minimal single-quoted diff). Reading uses
+the `yaml` library; resolution reads on-disk install state only (node_modules linkers plus a pnp
+reader), never the lockfile. The `catalog-tighten.matrix` sidecar runs all six layout combinations
+in containers and passes (isolated and hoisted with hoist on/off, pnp, and the stale-orphan
+regression). All work is committed and pushed to `main`.
 
-Remaining: the `catalog-tighten.matrix` e2e sidecar (containers) and the pnpm pnp reader
-(developed against a real pnpm-pnp install during the e2e build, per the test-the-claim rule),
-then file the four deferred-manager issues and pause.
+The four deferred-manager issues are filed: Bun (#260), Yarn Berry (#261), Deno (#262), vlt (#263).
+Next sessions pick those up; nothing else is in flight here.
 
 ## Progress
 
@@ -27,8 +28,12 @@ then file the four deferred-manager issues and pause.
   surgical single-quote-preserving write-back; no-install guard; README rewrite; host unit tests.
 - Deferred to the e2e build: pnpm pnp reader (no `node_modules`, needs the `.pnp` artifacts read
   against a real install).
-- Deferred to follow-up issues: Bun, Yarn Berry, Deno, vlt; consolidating the catalog reader with
-  `deps-cube` (both now parse `pnpm-workspace.yaml` with the `yaml` library).
+- Done: pnpm pnp reader (`version-pnp.ts`, via the `.pnp.cjs` Yarn-style API), verified against a
+  real pnpm pnp install and in the container matrix.
+- Done: the `catalog-tighten.matrix` sidecar (`packages/dev-script/catalog-tighten.matrix`).
+- Filed as issues: Bun (#260), Yarn Berry (#261), Deno (#262), vlt (#263).
+- Still only a note (no issue filed yet): consolidating the catalog reader with `deps-cube`, which
+  now also parses `pnpm-workspace.yaml` with the `yaml` library.
 
 ## The two issues
 
