@@ -1,4 +1,10 @@
-import type { ESTree, } from '@oxlint/plugins';
+import type {
+  Context,
+  ESTree,
+} from '@oxlint/plugins';
+
+import { NO_VARIABLE, } from './no-sync.constants.ts';
+import { findVariable, } from './no-sync.syntax.ts';
 
 //region Sentinels and types
 
@@ -301,7 +307,13 @@ function collectionNeedsSpreadTemp(
  * ```
  */
 function initializerKind(
-  { expression, }: { readonly expression: ESTree.Expression; },
+  {
+    context,
+    expression,
+  }: {
+    readonly context: Context;
+    readonly expression: ESTree.Expression;
+  },
 ): InitializerKindResult {
   /**
    * Transparent wrappers removed before syntax classification.
@@ -321,6 +333,18 @@ function initializerKind(
    * NewExpression callee after Identifier narrowing.
    */
   const { callee, } = unwrapped;
+  /**
+   * Local variable shadowing the global Set or Map constructor.
+   */
+  const shadowingVariable = findVariable({
+    context,
+    node: callee,
+    name: callee.name,
+  },);
+  if ((shadowingVariable !== NO_VARIABLE) && (shadowingVariable.defs
+    .length
+    > 0))
+    return NO_INITIALIZER_KIND;
   /**
    * Whether Set/Map constructor consumes a non-array iterable.
    */
@@ -345,7 +369,13 @@ function initializerKind(
  * ```
  */
 function initInfoFromDeclaration(
-  { declaration, }: { readonly declaration: ESTree.VariableDeclaration; },
+  {
+    context,
+    declaration,
+  }: {
+    readonly context: Context;
+    readonly declaration: ESTree.VariableDeclaration;
+  },
 ): InitInfoResult {
   /**
    * Last declarator only, matching upstream unicorn/no-immediate-mutation behavior.
@@ -363,7 +393,10 @@ function initInfoFromDeclaration(
   /**
    * Initializer syntax category for last declarator.
    */
-  const kind = initializerKind({ expression: declarator.init, },);
+  const kind = initializerKind({
+    context,
+    expression: declarator.init,
+  },);
   if (kind === NO_INITIALIZER_KIND)
     return NO_INIT_INFO;
   return {
@@ -386,7 +419,13 @@ function initInfoFromDeclaration(
  * ```
  */
 function initInfoFromAssignment(
-  { assignment, }: { readonly assignment: ESTree.AssignmentExpression; },
+  {
+    assignment,
+    context,
+  }: {
+    readonly assignment: ESTree.AssignmentExpression;
+    readonly context: Context;
+  },
 ): InitInfoResult {
   if (assignment.operator !== '=')
     return NO_INIT_INFO;
@@ -407,7 +446,10 @@ function initInfoFromAssignment(
   /**
    * Initializer syntax category for assigned expression.
    */
-  const kind = initializerKind({ expression: right, },);
+  const kind = initializerKind({
+    context,
+    expression: right,
+  },);
   if (kind === NO_INITIALIZER_KIND)
     return NO_INIT_INFO;
   return {
@@ -429,10 +471,19 @@ function initInfoFromAssignment(
  * ```
  */
 export function previousInitInfo(
-  { statement, }: { readonly statement: ESTree.Node; },
+  {
+    context,
+    statement,
+  }: {
+    readonly context: Context;
+    readonly statement: ESTree.Node;
+  },
 ): InitInfoResult {
   if (statement.type === 'VariableDeclaration')
-    return initInfoFromDeclaration({ declaration: statement, },);
+    return initInfoFromDeclaration({
+      context,
+      declaration: statement,
+    },);
   if (statement.type !== 'ExpressionStatement')
     return NO_INIT_INFO;
   /**
@@ -441,7 +492,10 @@ export function previousInitInfo(
   const expression = unwrapExpression({ expression: statement.expression, },);
   if (expression.type !== 'AssignmentExpression')
     return NO_INIT_INFO;
-  return initInfoFromAssignment({ assignment: expression, },);
+  return initInfoFromAssignment({
+    assignment: expression,
+    context,
+  },);
 }
 
 //endregion Initializer classification
@@ -498,7 +552,9 @@ export function previousSiblingStatement(
   /**
    * Current statement index by object identity.
    */
-  const currentIndex = statements.indexOf(node,);
+  const currentIndex = statements.findIndex(function hasSameSpan(statement,): boolean {
+    return (statement.start === node.start) && (statement.end === node.end);
+  },);
   if (currentIndex <= 0)
     return NO_PREVIOUS_STATEMENT;
   /**

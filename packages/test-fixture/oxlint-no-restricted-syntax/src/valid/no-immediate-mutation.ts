@@ -42,4 +42,31 @@ const laterValues = [
 void laterValues;
 laterValues.push(2,);
 
+function seenWith(
+  {
+    seen,
+    variable,
+  }: {
+    readonly seen: ReadonlySet<object>;
+    readonly variable: object;
+  },
+): ReadonlySet<object> {
+  const nextSeen = new Set(seen,);
+  nextSeen.add(variable,);
+  return nextSeen;
+}
+
+const Set = globalThis.Set;
+const localShadowedSet = new Set();
+localShadowedSet.add(1,);
+
+const Map = globalThis.Map;
+const localShadowedMap = new Map();
+localShadowedMap.set(
+  'shadowed',
+  1,
+);
+
+void seenWith;
+
 export {};

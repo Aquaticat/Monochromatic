@@ -128,6 +128,9 @@ The custom rule currently:
    Set `add`,
    and Map `set`.
 - Allows Set/Map clone-plus-mutate when the constructor has exactly one non-array-literal iterable argument.
+- Uses span comparison for previous-sibling lookup,
+   matching upstream's span-based approach.
+- Skips locally shadowed `Set` and `Map` constructors when scope metadata exposes a local definition.
 
 The custom rule was wired into:
 
@@ -147,19 +150,29 @@ Repo commit `079cef1aa` records this checkpoint.
 
 ## Next steps
 
-1. Final verification passed after the documentation commit:
-   `mise run //packages/oxlint-plugins/no-restricted-syntax:build:js:node`,
+1. Additional advisor-identified hardening was applied after commit `129c56371`:
+   span-based sibling lookup,
+    locally-shadowed Set/Map fixture coverage,
+    and an exact `seenWith` fixture shape.
+2. Latest focused verification passed:
+   `mise run //packages/oxlint-plugins/no-restricted-syntax:format:oxlint`,
    `mise run //packages/oxlint-plugins/no-restricted-syntax:lint:types`,
    `mise run //packages/oxlint-plugins/no-restricted-syntax:lint:oxlint`,
-   `mise run //packages/oxlint-plugins/no-restricted-syntax:test:unit`,
-   and `mise run lint:markdown -- docs/troubleshooting/oxlint-no-immediate-mutation-set-clone.md docs/handover/oxlint-no-immediate-mutation.md`.
-2. Commits recorded so far:
-   `079cef1aa feat(no-restricted-syntax): add no-immediate-mutation clone exception` and
-   `b47aecc04 docs(troubleshooting): record oxlint Set clone mutation behavior`.
-3. Keep avoiding unrelated `mise.lock`,
+    and
+   `mise run //packages/oxlint-plugins/no-restricted-syntax:test:unit`.
+3. Config package verification also passed after the config changes:
+   `mise run //packages/config/oxlint:lint:types` and
+   `mise run //packages/config/oxlint:lint:oxlint`.
+4. Grep for `unicorn/no-immediate-mutation` outside the new docs found no remaining disable directives.
+5. Commits recorded so far:
+   `079cef1aa feat(no-restricted-syntax): add no-immediate-mutation clone exception`,
+   `b47aecc04 docs(troubleshooting): record oxlint Set clone mutation behavior`,
+    and
+   `129c56371 docs(handover): update oxlint no-immediate-mutation status`.
+6. Keep avoiding unrelated `mise.lock`,
    which remains modified by external work.
-4. Before final response,
-   audit that only unrelated `mise.lock` remains dirty.
+7. Before final response,
+   commit this final hardening and audit that only unrelated `mise.lock` remains dirty.
 
 ## Keep updated
 

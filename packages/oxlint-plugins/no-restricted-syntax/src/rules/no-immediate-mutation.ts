@@ -273,7 +273,10 @@ function checkExpressionStatement(
   /**
    * Initializer information from previous statement.
    */
-  const info = previousInitInfo({ statement: previous, },);
+  const info = previousInitInfo({
+    context,
+    statement: previous,
+  },);
   if (info === NO_INIT_INFO)
     return;
   /**
