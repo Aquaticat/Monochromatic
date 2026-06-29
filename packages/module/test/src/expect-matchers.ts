@@ -13,7 +13,6 @@ import {
   expect as chaiExpect,
   use,
 } from 'chai';
-export { expect as chaiExpect, } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import type { SinonSpy, } from 'sinon';
 import sinonChai from 'sinon-chai';
@@ -23,6 +22,8 @@ import {
   collectionMatchersPlugin,
 } from './expect-matchers-collection.ts';
 import { buildCoreMatchers, } from './expect-matchers-core.ts';
+
+export { expect as chaiExpect, } from 'chai';
 
 use(chaiAsPromised,);
 use(sinonChai,);
