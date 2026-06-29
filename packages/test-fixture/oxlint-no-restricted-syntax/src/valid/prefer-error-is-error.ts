@@ -7,6 +7,7 @@ import * as nonNodeUtilTypes from 'not-node-util/types';
 function detections(error: unknown,): readonly boolean[] {
   return [
     Error.isError(error,),
+    Object.prototype.toString.call(error,).endsWith(' Promise]',),
     nonNodeTypes.isNativeError(error,),
     nonNodeUtilTypes.isNativeError(error,),
   ];

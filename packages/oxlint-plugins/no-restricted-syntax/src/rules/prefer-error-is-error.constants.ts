@@ -65,9 +65,19 @@ export const IS_NATIVE_ERROR_PROPERTY_NAME = 'isNativeError';
 export const ERROR_OBJECT_TAG = '[object Error]';
 
 /**
+ * Object.prototype.toString tag suffix for Error objects.
+ */
+export const ERROR_OBJECT_TAG_SUFFIX = ' Error]';
+
+/**
  * Parsed Object.prototype.toString type name for Error objects.
  */
 export const ERROR_OBJECT_TAG_TYPE_NAME = 'Error';
+
+/**
+ * endsWith property name used by Object.prototype.toString suffix checks.
+ */
+export const ENDS_WITH_PROPERTY_NAME = 'endsWith';
 
 /**
  * slice property name used by parsed Object.prototype.toString checks.

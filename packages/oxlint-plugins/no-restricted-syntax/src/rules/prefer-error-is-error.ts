@@ -13,6 +13,7 @@ import {
   isNegatedEqualityOperator,
 } from './prefer-error-is-error.detectors.ts';
 import { getIsNativeErrorArgumentText, } from './prefer-error-is-error.node-util.ts';
+import { getObjectTagEndsWithArgumentText, } from './prefer-error-is-error.object-tag.ts';
 import { buildErrorIsErrorCall, } from './prefer-error-is-error.syntax.ts';
 
 //region Reporting
@@ -171,16 +172,33 @@ export const preferErrorIsError: CreateOnceRule = {
         /**
          * Node isNativeError detector argument text, if matched.
          */
-        const argumentText = getIsNativeErrorArgumentText({
+        const isNativeErrorArgumentText = getIsNativeErrorArgumentText({
           context,
           call: node,
         },);
-        if ((typeof argumentText) === 'symbol')
+        if ((typeof isNativeErrorArgumentText) !== 'symbol') {
+          reportReplacement({
+            context,
+            node,
+            argumentText: isNativeErrorArgumentText,
+            negated: false,
+            fixKind: 'fix',
+          },);
+          return;
+        }
+        /**
+         * Object.prototype.toString suffix detector argument text, if matched.
+         */
+        const objectTagEndsWithArgumentText = getObjectTagEndsWithArgumentText({
+          context,
+          call: node,
+        },);
+        if ((typeof objectTagEndsWithArgumentText) === 'symbol')
           return;
         reportReplacement({
           context,
           node,
-          argumentText,
+          argumentText: objectTagEndsWithArgumentText,
           negated: false,
           fixKind: 'fix',
         },);

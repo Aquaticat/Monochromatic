@@ -5,7 +5,9 @@ import type {
 
 import {
   CALL_PROPERTY_NAME,
+  ENDS_WITH_PROPERTY_NAME,
   ERROR_OBJECT_TAG,
+  ERROR_OBJECT_TAG_SUFFIX,
   ERROR_OBJECT_TAG_TYPE_NAME,
   NOT_ERROR_DETECTION,
   OBJECT_TAG_TYPE_END_OFFSET,
@@ -149,6 +151,94 @@ function getWholeObjectTagComparisonArgumentText(
 }
 
 //endregion Whole tag comparison detection
+
+//region Suffix tag call detection
+
+/**
+ * Checks whether a call uses Error Object tag suffix argument.
+ *
+ * @param call - Candidate endsWith call expression.
+ *
+ * @returns Whether call uses `' Error]'`.
+ *
+ * @example
+ * ```ts
+ * hasErrorObjectTagSuffixArgument({ call: node });
+ * ```
+ */
+function hasErrorObjectTagSuffixArgument(
+  { call, }: { readonly call: ESTree.CallExpression; },
+): boolean {
+  if (call.arguments
+    .length
+    !== 1)
+    return false;
+  /**
+   * Suffix supplied to the candidate detector.
+   */
+  const [suffix,] = call.arguments;
+  if (suffix === undefined)
+    return false;
+  if (suffix.type === 'SpreadElement')
+    return false;
+  /**
+   * Suffix expression without redundant parentheses.
+   */
+  const unwrappedSuffix = unwrapParentheses({ expression: suffix, },);
+  return (unwrappedSuffix.type === 'Literal')
+    && (unwrappedSuffix.value === ERROR_OBJECT_TAG_SUFFIX);
+}
+
+/**
+ * Extracts argument text from `Object.prototype.toString.call(value).endsWith(' Error]')`.
+ *
+ * @param context - Oxlint rule context.
+ *
+ * @param call - Candidate suffix-check call expression.
+ *
+ * @returns Tested value text, or sentinel when call expression does not match.
+ *
+ * @example
+ * ```ts
+ * getObjectTagEndsWithArgumentText({ context, call: node });
+ * ```
+ */
+export function getObjectTagEndsWithArgumentText(
+  {
+    context,
+    call,
+  }: {
+    readonly context: Context;
+    readonly call: ESTree.CallExpression;
+  },
+): ErrorDetectionArgumentText {
+  if (call.optional)
+    return NOT_ERROR_DETECTION;
+  if (call.callee
+    .type
+    !== 'MemberExpression')
+    return NOT_ERROR_DETECTION;
+  if (!isStaticMemberNamed({
+    member: call.callee,
+    name: ENDS_WITH_PROPERTY_NAME,
+  }))
+    return NOT_ERROR_DETECTION;
+  if (!hasErrorObjectTagSuffixArgument({ call, }))
+    return NOT_ERROR_DETECTION;
+  /**
+   * Candidate Object.prototype.toString.call(value) source call.
+   */
+  const sourceCall = unwrapParentheses({ expression: call.callee
+    .object, },);
+  if (sourceCall.type !== 'CallExpression')
+    return NOT_ERROR_DETECTION;
+  return getObjectPrototypeToStringArgumentText({
+    context,
+    call: sourceCall,
+  },);
+}
+
+//endregion Suffix tag call detection
 
 //region Parsed tag comparison detection
 
