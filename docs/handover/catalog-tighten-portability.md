@@ -27,18 +27,20 @@ Next sessions pick those up; nothing else is in flight here.
   on-disk resolver (root + workspace `node_modules`, exports-bypassing), Bun-store scan removed;
   surgical single-quote-preserving write-back; no-install guard; clear error on a missing
   `pnpm-workspace.yaml`; README rewrite; host unit tests.
-- Done: pnpm pnp reader (`version-pnp.ts`, via the `.pnp.cjs` Yarn-style API), verified against a
-  real pnpm pnp install. Note: pnpm's pnp is a hybrid that also keeps per-importer `node_modules`
-  symlinks, so the node_modules walk-up usually resolves pnpm-pnp deps; the `.pnp.cjs` reader is the
-  fallback and the path for true no-node_modules layouts (Yarn PnP).
+- Done: pnpm pnp reader (`version-pnp.ts`, via the `.pnp.cjs` Yarn-style API). Note: default pnpm pnp
+  is a hybrid that also keeps per-importer `node_modules` symlinks, so the node_modules walk-up
+  resolves it. With `symlink: false` (pnpm's recommended pnp config) the symlinks are gone and it is a
+  true no-node_modules layout, where the `.pnp.cjs` reader is the only resolution path; that scenario
+  exercises `version-pnp.ts` through the matrix.
 - Done: effective `modulesDir` support via `pnpm config get modules-dir` (covers cli/env/workspace/
   global config). `virtualStoreDir`, `enableGlobalVirtualStore`, and `storeDir` need no code: the
   resolver follows the active symlink wherever the store moved, including the global store. All four
   verified in the matrix.
-- Done: the `catalog-tighten.matrix` sidecar, now 18 containerised scenarios: five layouts, four
-  store-settings, stale-orphan, and eight missing-X robustness cases (missing lockfile / store /
-  some-node_modules / pnpm / .pnp.cjs still tighten; missing virtual store -> MISS; missing all
-  node_modules / missing workspace yaml -> clean error).
+- Done: the `catalog-tighten.matrix` sidecar, now 20 containerised scenarios: five layouts, two
+  pnp `symlink: false` shapes, four store-settings, stale-orphan, and eight missing-X robustness
+  cases (missing lockfile / store / some-node_modules / pnpm / default-pnp .pnp.cjs still tighten;
+  missing virtual store and symlink-off .pnp.cjs -> MISS; missing all node_modules / missing
+  workspace yaml -> clean error).
 - Filed as issues: Bun (#260), Yarn Berry (#261), Deno (#262), vlt (#263), and the deps-cube reader
   consolidation (#264).
 
