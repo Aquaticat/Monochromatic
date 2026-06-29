@@ -31,7 +31,14 @@ import { selectAdvisorModel, } from './advisor-selection.ts';
 import { renderAdvisorMessage, } from './rendering.ts';
 import { createAdvisorTool, } from './tool.ts';
 
-/** Logger root for pi-advisor after removing the package log shim. */
+/**
+ * Logger root for pi-advisor after removing the package log shim.
+ *
+ * @example
+ * ```ts
+ * const rl = tagged({ tag: someFunction.name, l: parentLogger, },);
+ * ```
+ */
 const parentLogger = tagged({ tag: 'pi-advisor', },);
 
 /**

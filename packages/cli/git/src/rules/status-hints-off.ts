@@ -3,7 +3,14 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { parseGlobalOptions, } from '../parse-global-options.ts';
 import { parseStatusPreRegion, } from '../parsers/status.ts';
 
-/** Logger root for cli-git after removing the package log shim. */
+/**
+ * Logger root for cli-git after removing the package log shim.
+ *
+ * @example
+ * ```ts
+ * const rl = tagged({ tag: someFunction.name, l, },);
+ * ```
+ */
 const l = tagged({ tag: 'cli-git', },);
 
 //region Status hints-off rule

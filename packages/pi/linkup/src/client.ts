@@ -29,7 +29,14 @@ import type {
 } from './client-types.ts';
 import { postJson, } from './client-http.ts';
 
-/** Logger root for pi-linkup after removing the package log shim. */
+/**
+ * Logger root for pi-linkup after removing the package log shim.
+ *
+ * @example
+ * ```ts
+ * const rl = tagged({ tag: someFunction.name, l: linkupLogger, },);
+ * ```
+ */
 const linkupLogger = tagged({ tag: 'pi-linkup', },);
 
 /**

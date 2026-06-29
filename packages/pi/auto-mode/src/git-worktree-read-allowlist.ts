@@ -12,7 +12,14 @@ import {
 import nanoSpawn from 'nano-spawn';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
-/** Logger root for auto-mode after removing the package log shim. */
+/**
+ * Logger root for auto-mode after removing the package log shim.
+ *
+ * @example
+ * ```ts
+ * const rl = tagged({ tag: someFunction.name, l: parentLogger, },);
+ * ```
+ */
 const parentLogger = tagged({ tag: 'auto-mode', },);
 
 /**

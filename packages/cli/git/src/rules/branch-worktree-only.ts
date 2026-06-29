@@ -11,7 +11,14 @@ import { resolveGit, } from '../resolve-git.ts';
 import { branchCreationMessage, } from './branch-worktree-messages.ts';
 import { implicitRemoteGuessCreatesBranch, } from './branch-worktree-remote-guess.ts';
 
-/** Logger root for cli-git after removing the package log shim. */
+/**
+ * Logger root for cli-git after removing the package log shim.
+ *
+ * @example
+ * ```ts
+ * const rl = tagged({ tag: someFunction.name, l, },);
+ * ```
+ */
 const l = tagged({ tag: 'cli-git', },);
 
 //region Branch worktree policy facts

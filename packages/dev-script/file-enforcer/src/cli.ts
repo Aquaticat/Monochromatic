@@ -4,7 +4,14 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { setActiveConfigPath, } from './context.ts';
 import { startWatching, } from './watch/watch.ts';
 
-/** Logger root for file-enforcer after removing the package log shim. */
+/**
+ * Logger root for file-enforcer after removing the package log shim.
+ *
+ * @example
+ * ```ts
+ * const rl = tagged({ tag: someFunction.name, l, },);
+ * ```
+ */
 const l = tagged({ tag: 'file-enforcer', },);
 
 //region CLI entry point: finds and imports file-enforcer.config.ts, optionally watches

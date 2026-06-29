@@ -28,7 +28,14 @@ import type {
 } from './types.ts';
 import { Watcher, } from './watcher.ts';
 
-/** Logger root for watch-restart after removing the package log shim. */
+/**
+ * Logger root for watch-restart after removing the package log shim.
+ *
+ * @example
+ * ```ts
+ * const rl = tagged({ tag: someFunction.name, l: defaultLogger, },);
+ * ```
+ */
 const defaultLogger = tagged({ tag: 'watch-restart', },);
 
 /**

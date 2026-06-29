@@ -7,7 +7,14 @@ import type { ImageSpec, } from './registry.ts';
 import { ensureLinuxTemplate, } from './template-linux.ts';
 import { ensureWindowsTemplate, } from './template-windows.ts';
 
-/** Logger root for mvm after removing the package log shim. */
+/**
+ * Logger root for mvm after removing the package log shim.
+ *
+ * @example
+ * ```ts
+ * const rl = tagged({ tag: someFunction.name, l, },);
+ * ```
+ */
 const l = tagged({ tag: 'mvm', },);
 
 export {

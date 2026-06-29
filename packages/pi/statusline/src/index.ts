@@ -18,7 +18,14 @@ import {
 } from './rate-limit-types.ts';
 import { formatUsageWarningStatus, } from './usage-warning.ts';
 
-/** Logger root for pi-statusline after removing the package log shim. */
+/**
+ * Logger root for pi-statusline after removing the package log shim.
+ *
+ * @example
+ * ```ts
+ * const rl = tagged({ tag: someFunction.name, l: statuslineLogger, },);
+ * ```
+ */
 const statuslineLogger = tagged({ tag: 'pi-statusline', },);
 
 //region Constants

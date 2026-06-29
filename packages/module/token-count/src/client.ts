@@ -8,7 +8,14 @@ import type {
   TokenCountResult,
 } from './types.ts';
 
-/** Logger root for token-count after removing the package log shim. */
+/**
+ * Logger root for token-count after removing the package log shim.
+ *
+ * @example
+ * ```ts
+ * const rl = tagged({ tag: someFunction.name, l, },);
+ * ```
+ */
 const l = tagged({ tag: 'token-count', },);
 
 /**

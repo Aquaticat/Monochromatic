@@ -21,7 +21,14 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { getTrustDirectives, } from './context.ts';
 import { TRUST_ENTRY_TYPE, } from './types.ts';
 
-/** Logger root for auto-mode after removing the package log shim. */
+/**
+ * Logger root for auto-mode after removing the package log shim.
+ *
+ * @example
+ * ```ts
+ * const rl = tagged({ tag: someFunction.name, l: parentLogger, },);
+ * ```
+ */
 const parentLogger = tagged({ tag: 'auto-mode', },);
 
 /**

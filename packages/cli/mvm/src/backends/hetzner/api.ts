@@ -15,7 +15,14 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { requireToken, } from './config.ts';
 import type { HetznerAction, } from './types.ts';
 
-/** Logger root for mvm after removing the package log shim. */
+/**
+ * Logger root for mvm after removing the package log shim.
+ *
+ * @example
+ * ```ts
+ * const rl = tagged({ tag: someFunction.name, l, },);
+ * ```
+ */
 const l = tagged({ tag: 'mvm', },);
 
 //region Constants and errors

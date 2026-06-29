@@ -15,7 +15,14 @@ import { buildCommand, } from './build-command.ts';
 import { resolveTerminal, } from './resolve.ts';
 import { NO_TERMINAL, } from './validate.ts';
 
-/** Logger root for terminal-exec after removing the package log shim. */
+/**
+ * Logger root for terminal-exec after removing the package log shim.
+ *
+ * @example
+ * ```ts
+ * const rl = tagged({ tag: someFunction.name, l: parentLogger, },);
+ * ```
+ */
 const parentLogger = tagged({ tag: 'terminal-exec', },);
 
 /**

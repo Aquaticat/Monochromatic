@@ -1,7 +1,14 @@
 import { readFile, } from 'node:fs/promises';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
-/** Logger root for rss after removing the package log shim. */
+/**
+ * Logger root for rss after removing the package log shim.
+ *
+ * @example
+ * ```ts
+ * const rl = tagged({ tag: someFunction.name, l, },);
+ * ```
+ */
 const l = tagged({ tag: 'rss', },);
 
 l.debug(`asset module loading`,);

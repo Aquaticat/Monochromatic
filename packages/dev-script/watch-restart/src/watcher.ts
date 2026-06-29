@@ -28,7 +28,14 @@ import {
   type WatcherOptions,
 } from './watcher-types.ts';
 
-/** Logger root for watch-restart after removing the package log shim. */
+/**
+ * Logger root for watch-restart after removing the package log shim.
+ *
+ * @example
+ * ```ts
+ * const rl = tagged({ tag: someFunction.name, l: defaultLogger, },);
+ * ```
+ */
 const defaultLogger = tagged({ tag: 'watch-restart', },);
 
 /* oxlint-disable no-restricted-syntax/no-class -- per-instance watcher state: one Watcher (owning one chokidar FSWatcher and its pre-populate set) lives per `startWatchRestart()` call, state is `#private`-encapsulated, and the class is an exported library primitive consumers instantiate via `new`; module-level state cannot model multiple concurrent watch sessions. */

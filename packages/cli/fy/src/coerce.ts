@@ -1,6 +1,13 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
-/** Logger root for cli-fy after removing the package log shim. */
+/**
+ * Logger root for cli-fy after removing the package log shim.
+ *
+ * @example
+ * ```ts
+ * const rl = tagged({ tag: someFunction.name, l, },);
+ * ```
+ */
 const l = tagged({ tag: 'cli-fy', },);
 
 /**
@@ -35,8 +42,8 @@ export function coerceArg({ arg, }: { readonly arg: string; },): unknown {
     rl.info(`"${arg}" => ${typeof parsed} ${String(parsed,)}`,);
     return parsed;
   }
-  catch {
-    rl.info(`"${arg}" => string (raw)`,);
+  catch (parseError: unknown) {
+    rl.info(`"${arg}" => string (raw), JSON parse failed: ${String(parseError,)}`,);
     return arg;
   }
 }

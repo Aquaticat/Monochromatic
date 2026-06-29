@@ -1,4 +1,4 @@
-import { statSync, } from 'node:fs';
+import { stat, } from 'node:fs/promises';
 import { createRequire, } from 'node:module';
 import { join, } from 'node:path';
 
@@ -7,7 +7,14 @@ import {
 } from '@monochromatic-dev/module-fs-path/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
-/** Logger root for cli-fy after removing the package log shim. */
+/**
+ * Logger root for cli-fy after removing the package log shim.
+ *
+ * @example
+ * ```ts
+ * const rl = tagged({ tag: someFunction.name, l, },);
+ * ```
+ */
 const l = tagged({ tag: 'cli-fy', },);
 
 /**
@@ -67,8 +74,8 @@ function resolveFrom(
     rl.info(`resolved to ${resolved}`,);
     return resolved;
   }
-  catch {
-    rl.info(`not found in ${baseDir}`,);
+  catch (resolutionError: unknown) {
+    rl.info(`not found in ${baseDir}: ${String(resolutionError,)}`,);
     return NOT_FOUND;
   }
 }
@@ -85,7 +92,7 @@ function resolveFrom(
  * // => '/home/user/.bun/install/global/node_modules'
  * ```
  */
-function findGlobalNodeModules(): string | typeof NOT_FOUND {
+async function findGlobalNodeModules(): Promise<string | typeof NOT_FOUND> {
   /**
    * Tagged logger scoped to this function so log lines identify the call site.
    */
@@ -125,26 +132,41 @@ function findGlobalNodeModules(): string | typeof NOT_FOUND {
     '/usr/local/lib/node_modules',
     '/usr/lib/node_modules',
   ];
-  for (const candidate of candidates) {
-    try {
-      /**
-       * Size of the candidate's `.package-lock.json`; a non-zero size confirms a real global install lives at this path. `statSync` throws `ENOENT` when the file is absent, handled by the surrounding catch.
-       */
-      const lockFileSize = statSync(join(
-        candidate,
-        '.package-lock.json',
-      ),)
-        .size;
-      if (lockFileSize
-        > 0) {
-        rl.info(`found global node_modules at ${candidate}`,);
-        return candidate;
+  /**
+   * Candidate check results in the same order as {@link candidates}; all stats run concurrently while preserving priority for the final match.
+   */
+  const candidateResults = await Promise.all(
+    candidates.map(async function inspectCandidate(candidate,): Promise<string | typeof NOT_FOUND> {
+      try {
+        /**
+         * Size of the candidate's `.package-lock.json`; a non-zero size confirms a real global install lives at this path.
+         */
+        const lockFileSize = (await stat(join(
+          candidate,
+          '.package-lock.json',
+        ),))
+          .size;
+        if (lockFileSize
+          > 0)
+          return candidate;
       }
-    }
-    catch {
-      // Not here
-    }
+      catch (statError: unknown) {
+        rl.debug(`global node_modules candidate rejected: ${candidate}: ${String(statError,)}`,);
+      }
+      return NOT_FOUND;
+    },),
+  );
+  /**
+   * First candidate that had a non-empty package-lock marker.
+   */
+  const globalNodeModules = candidateResults.find(function isFound(candidateResult,) {
+    return candidateResult !== NOT_FOUND;
+  },);
+  if (globalNodeModules !== undefined) {
+    rl.info(`found global node_modules at ${globalNodeModules}`,);
+    return globalNodeModules;
   }
+
   rl.info('no global node_modules found',);
   return NOT_FOUND;
 }
@@ -173,8 +195,8 @@ async function tryFindMiseMonorepoRoot(): Promise<string | typeof NOT_FOUND> {
   try {
     return await findMiseMonorepoRootCached();
   }
-  catch {
-    rl.info('no monorepo root found',);
+  catch (discoveryError: unknown) {
+    rl.info(`no monorepo root found: ${String(discoveryError,)}`,);
     return NOT_FOUND;
   }
 }
@@ -249,7 +271,7 @@ export async function resolveSpecifier(
   /**
    * Detected global `node_modules` path; final fallback when project-local resolution fails.
    */
-  const globalDir = findGlobalNodeModules();
+  const globalDir = await findGlobalNodeModules();
   if (globalDir !== NOT_FOUND) {
     rl.info(`trying global: ${globalDir}`,);
     /**

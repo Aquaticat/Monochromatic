@@ -33,7 +33,14 @@ import {
   VHDX_FILENAME,
 } from './types.ts';
 
-/** Logger root for vmsync after removing the package log shim. */
+/**
+ * Logger root for vmsync after removing the package log shim.
+ *
+ * @example
+ * ```ts
+ * const rl = tagged({ tag: someFunction.name, l, },);
+ * ```
+ */
 const l = tagged({ tag: 'vmsync', },);
 
 /**

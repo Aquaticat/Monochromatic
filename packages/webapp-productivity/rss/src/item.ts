@@ -13,7 +13,14 @@ import type {
   NormalizedItem,
 } from './item-type.ts';
 
-/** Logger root for rss after removing the package log shim. */
+/**
+ * Logger root for rss after removing the package log shim.
+ *
+ * @example
+ * ```ts
+ * const rl = tagged({ tag: someFunction.name, l: parentLogger, },);
+ * ```
+ */
 const parentLogger = tagged({ tag: 'rss', },);
 
 export type { ItemWDate, } from './item-type.ts';

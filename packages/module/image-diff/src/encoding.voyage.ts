@@ -12,7 +12,14 @@ import {
 import type { ImageInput, } from './types.ts';
 import type { VoyageContentItem, } from './types.voyage-api.ts';
 
-/** Logger root for image-diff after removing the package log shim. */
+/**
+ * Logger root for image-diff after removing the package log shim.
+ *
+ * @example
+ * ```ts
+ * const rl = tagged({ tag: someFunction.name, l, },);
+ * ```
+ */
 const l = tagged({ tag: 'image-diff', },);
 
 /**

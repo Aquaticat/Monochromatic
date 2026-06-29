@@ -21,7 +21,14 @@ import { getOpmls, } from './opmls.ts';
 import { getOutlinesFromOpmls, } from './outline.ts';
 import { PORT, } from './port.ts';
 
-/** Logger root for rss after removing the package log shim. */
+/**
+ * Logger root for rss after removing the package log shim.
+ *
+ * @example
+ * ```ts
+ * const rl = tagged({ tag: someFunction.name, l: parentLogger, },);
+ * ```
+ */
 const parentLogger = tagged({ tag: 'rss', },);
 
 /**

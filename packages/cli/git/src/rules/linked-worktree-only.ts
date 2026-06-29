@@ -26,7 +26,14 @@ import {
   outsideWorktreeMessage,
 } from './linked-worktree-messages.ts';
 
-/** Logger root for cli-git after removing the package log shim. */
+/**
+ * Logger root for cli-git after removing the package log shim.
+ *
+ * @example
+ * ```ts
+ * const rl = tagged({ tag: someFunction.name, l, },);
+ * ```
+ */
 const l = tagged({ tag: 'cli-git', },);
 
 //region Guarded command predicates and policy facts

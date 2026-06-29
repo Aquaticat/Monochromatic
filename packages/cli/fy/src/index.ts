@@ -7,13 +7,20 @@ import {
 } from '@optique/core/modifiers';
 import { argument, } from '@optique/core/primitives';
 import { string, } from '@optique/core/valueparser';
-import { runSync, } from '@optique/run';
+import { run, } from '@optique/run';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { coerceArg, } from './coerce.ts';
 import { resolveSpecifier, } from './resolve.ts';
 
-/** Logger root for cli-fy after removing the package log shim. */
+/**
+ * Logger root for cli-fy after removing the package log shim.
+ *
+ * @example
+ * ```ts
+ * const rl = tagged({ tag: someFunction.name, l, },);
+ * ```
+ */
 const l = tagged({ tag: 'cli-fy', },);
 
 export {};
@@ -61,7 +68,7 @@ const parser = map(
 /**
  * Parsed result from process.argv
  */
-const args = runSync(
+const args = run(
   parser,
   {
     programName: 'cli-fy',

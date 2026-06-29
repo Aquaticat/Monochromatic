@@ -9,7 +9,14 @@ import {
 } from 'node:path';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
-/** Logger root for cli-git after removing the package log shim. */
+/**
+ * Logger root for cli-git after removing the package log shim.
+ *
+ * @example
+ * ```ts
+ * const rl = tagged({ tag: someFunction.name, l, },);
+ * ```
+ */
 const l = tagged({ tag: 'cli-git', },);
 
 /**

@@ -6,7 +6,14 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
  * @module
  */
 
-/** Logger root for pi-linkup after removing the package log shim. */
+/**
+ * Logger root for pi-linkup after removing the package log shim.
+ *
+ * @example
+ * ```ts
+ * const rl = tagged({ tag: someFunction.name, l: linkupLogger, },);
+ * ```
+ */
 const linkupLogger = tagged({ tag: 'pi-linkup', },);
 
 //region Constants
