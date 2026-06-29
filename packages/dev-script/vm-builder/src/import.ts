@@ -142,7 +142,7 @@ async function undefineVmIfExists(name: string,): Promise<void> {
       ],
     },);
   }
-  catch {
+  catch (error) {
     return;
   }
   console.log(`[vm-builder] removing existing VM '${name}'...`,);
@@ -234,7 +234,7 @@ async function grantFlatpakAccess(): Promise<void> {
       ],
     },);
   }
-  catch {
+  catch (error) {
     return;
   }
   console.log(

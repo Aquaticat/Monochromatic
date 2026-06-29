@@ -287,7 +287,7 @@ async function undefineVmIfExists(name: string,): Promise<void> {
       ],
     },);
   }
-  catch {
+  catch (error) {
     // Domain not defined; nothing to remove.
     return;
   }
@@ -384,7 +384,7 @@ async function grantFlatpakAccess(): Promise<void> {
       ],
     },);
   }
-  catch {
+  catch (error) {
     // virt-manager is not a Flatpak; no override needed.
     return;
   }
