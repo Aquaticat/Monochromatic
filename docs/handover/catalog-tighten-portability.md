@@ -10,14 +10,25 @@ and the planned shape of the deliverable.
 
 ## Status
 
-Grilling complete on all major branches; ready to implement on the maintainer's go.
-Resolver direction, the #195 hardening shape, phasing, the test-isolation policy,
-and the container mechanism are settled.
-Remaining are implementation details: the sidecar package's exact name and placement,
-the fixture workspace shape, the pnp reader's exact PnP-API calls, and commit slicing.
-No code has been written in the main worktree yet;
-all measurement happened in a throwaway git worktree.
-Work commits to `main` (maintainer confirmed); the handover doc already landed there.
+Core fix landed and verified; the e2e sidecar is the remaining work.
+The #258 three defects and the #195 hardening are fixed, linted, type-checked, unit-tested,
+and verified end-to-end on the real repo (38 entries tighten, minimal single-quoted diff).
+Reading switched to the `yaml` library; resolution reads on-disk `node_modules` only.
+Work commits to `main` (maintainer confirmed).
+
+Remaining: the `catalog-tighten.matrix` e2e sidecar (containers) and the pnpm pnp reader
+(developed against a real pnpm-pnp install during the e2e build, per the test-the-claim rule),
+then file the four deferred-manager issues and pause.
+
+## Progress
+
+- Done: yaml-library reader; string-scan name validator + `Object.create(null)` map (#195);
+  on-disk resolver (root + workspace `node_modules`, exports-bypassing), Bun-store scan removed;
+  surgical single-quote-preserving write-back; no-install guard; README rewrite; host unit tests.
+- Deferred to the e2e build: pnpm pnp reader (no `node_modules`, needs the `.pnp` artifacts read
+  against a real install).
+- Deferred to follow-up issues: Bun, Yarn Berry, Deno, vlt; consolidating the catalog reader with
+  `deps-cube` (both now parse `pnpm-workspace.yaml` with the `yaml` library).
 
 ## The two issues
 
