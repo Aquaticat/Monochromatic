@@ -72,6 +72,12 @@ This plugin provides individual rules for each banned syntax pattern instead.
 - **no-variable-function-expression**:
    bans `const x = function() {}`,
    use a function declaration instead
+- **prefer-error-is-error**:
+   bans legacy Error detection (`instanceof Error`,
+   `Object.prototype.toString` tags,
+   constructor comparisons,
+   and Node `util.types.isNativeError()`),
+   autofixing them to `Error.isError(value,)`
 - **require-destructured-params**:
    function declarations with 2+ params must use a single destructured object
 - **require-queryselector-generic**:

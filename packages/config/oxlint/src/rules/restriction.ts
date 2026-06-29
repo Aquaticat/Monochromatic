@@ -74,6 +74,12 @@ export const restrictionRules: DummyRuleMap = {
   // Bind catch values instead of using `catch {}` so failures stay inspectable.
   'no-restricted-syntax/catch-binding': 'error',
 
+  // Prefer Error.isError() over realm-fragile instanceof checks, string tag
+  // checks, constructor comparisons, and deprecated Node util.types.isNativeError().
+  // Initial severity is warn because the workspace has existing violations;
+  // the rule autofixes ordinary cases for migration.
+  'no-restricted-syntax/prefer-error-is-error': 'warn',
+
   // Use union types with `as const` instead of enum declarations.
   'no-restricted-syntax/no-enum': 'error',
 

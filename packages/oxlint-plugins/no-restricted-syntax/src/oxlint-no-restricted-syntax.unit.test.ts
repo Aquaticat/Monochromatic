@@ -250,6 +250,47 @@ function createGeneratedSource(
 }
 
 /**
+ * Runs oxlint --fix against disposable generated source and returns fixed text.
+ *
+ * @param source - Source text to write to a temp fixture.
+ *
+ * @returns Source text after oxlint fixers run.
+ *
+ * @example
+ * ```ts
+ * const fixed = await fixGeneratedSource('value instanceof Error;');
+ * ```
+ */
+async function fixGeneratedSource(source: string,): Promise<string> {
+  using fixture = createGeneratedSource({
+    fileName: 'prefer-error-is-error.fix.ts',
+    source,
+  },);
+  try {
+    await spawn(
+      'oxlint',
+      [
+        '--fix',
+        '--format',
+        'json',
+        '-c',
+        FIXTURE_CONFIG,
+        fixture.filePath,
+      ],
+      { cwd: ROOT, },
+    );
+  }
+  catch (error: unknown) {
+    if (!((typeof error) === 'object') || (error === null) || !('stdout' in error))
+      throw error;
+  }
+  return readFileSync(
+    fixture.filePath,
+    'utf8',
+  );
+}
+
+/**
  * Names of the substantive syntax rules; each has a fixture in `invalid/`
  * that triggers the rule.
  */
@@ -276,6 +317,7 @@ const SUBSTANTIVE_RULES = [
   'no-try-finally',
   'no-variable-function-expression',
   'prefer-describe-function-ref-name',
+  'prefer-error-is-error',
   'require-destructured-params',
   'require-queryselector-generic',
 ] as const;
@@ -388,6 +430,15 @@ await describe({
           fn: async () => {
             const diagnostics = await lint(
               'valid/no-immediate-mutation.ts',
+            );
+            expect(diagnostics,).toEqual([],);
+          },
+        },),
+        it({
+          name: 'prefer-error-is-error accepts Error.isError and non-Node lookalikes',
+          fn: async () => {
+            const diagnostics = await lint(
+              'valid/prefer-error-is-error.ts',
             );
             expect(diagnostics,).toEqual([],);
           },
@@ -509,6 +560,73 @@ await describe({
               ),
             );
             expect(actualCounts,).toEqual(expectedCounts,);
+          },
+        },),
+      ],
+    },),
+    describe({
+      name: 'prefer-error-is-error forms',
+      children: [
+        it({
+          name: 'reports every legacy Error detector in the fixture',
+          fn: async () => {
+            const diagnostics = await lint('invalid/prefer-error-is-error.ts',);
+            const preferErrorIsError = diagnostics.filter(
+              function isPreferErrorIsError(diagnostic,): boolean {
+                return diagnostic.code === 'no-restricted-syntax(prefer-error-is-error)';
+              },
+            );
+            expect(preferErrorIsError.length,).toBe(10,);
+          },
+        },),
+        it({
+          name: 'autofixes legacy Error detectors to Error.isError',
+          fn: async () => {
+            const source = [
+              "import util from 'node:util';",
+              "import { types, } from 'node:util';",
+              "import * as utilTypes from 'node:util/types';",
+              "import { isNativeError, } from 'node:util/types';",
+              '',
+              'function detections(error: unknown,): readonly boolean[] {',
+              '  return [',
+              '    error instanceof Error,',
+              '    error instanceof globalThis.Error,',
+              "    Object.prototype.toString.call(error,) === '[object Error]',",
+              "    '[object Error]' !== Object.prototype.toString.call(error,),",
+              '    error.constructor === Error,',
+              '    Error === error.constructor,',
+              '    util.types.isNativeError(error,),',
+              '    types.isNativeError(error,),',
+              '    utilTypes.isNativeError(error,),',
+              '    isNativeError(error,),',
+              '  ];',
+              '}',
+              '',
+            ].join('\n',);
+            const fixed = await fixGeneratedSource(source,);
+            expect(fixed,).toBe([
+              "import util from 'node:util';",
+              "import { types, } from 'node:util';",
+              "import * as utilTypes from 'node:util/types';",
+              "import { isNativeError, } from 'node:util/types';",
+              '',
+              'function detections(error: unknown,): readonly boolean[] {',
+              '  return [',
+              '    Error.isError(error,),',
+              '    Error.isError(error,),',
+              '    Error.isError(error,),',
+              '    !Error.isError(error,),',
+              '    Error.isError(error,),',
+              '    Error.isError(error,),',
+              '    Error.isError(error,),',
+              '    Error.isError(error,),',
+              '    Error.isError(error,),',
+              '    Error.isError(error,),',
+              '  ];',
+              '}',
+              '',
+            ].join('\n',),);
           },
         },),
       ],
