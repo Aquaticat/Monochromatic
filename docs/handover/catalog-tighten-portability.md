@@ -119,7 +119,10 @@ The layouts that break any `node_modules`-reading strategy: Yarn Berry PnP and D
 
 ## E2e test infrastructure
 
-- Mechanism: a bespoke sidecar package (working name `catalog-tighten-matrix`),
+- Mechanism: a bespoke sidecar package `packages/dev-script/catalog-tighten.matrix`
+  (`.<suffix>` is the repo's sidecar convention, as in `forbidden-regex.fuzz` and `truepeak-core.bench`;
+  those are Rust with no `package.json`, so this is the first TypeScript sidecar
+  and gets a `package.json` with `workspace:*` deps per AP1 to AP5),
   borrowing `packages/module/matrix`'s cartesian-product and `describe`/`it` reporting shape
   and `packages/dev-script/mutation-test`'s isolation
   (baked node+pnpm image, fixture mounted read-only, tmpfs `node_modules`, dropped caps, no network).
@@ -141,8 +144,6 @@ The layouts that break any `node_modules`-reading strategy: Yarn Berry PnP and D
 
 ## Open items
 
-- Sidecar package exact name, category, and placement
-  (e.g. `packages/dev-script/catalog-tighten-matrix` or a `test-fixture` sibling).
 - Fixture workspace shape and how pnpm settings are applied per container combo.
 - pnpm pnp reader: exact PnP-API call sequence.
 - Commit slicing for the pnpm work (committing to `main`, eagerly).
