@@ -132,7 +132,10 @@ export async function stop(): Promise<void> {
       ],
     );
   }
-  catch {
+  catch (error) {
+    if (!(error instanceof Error))
+      throw error;
+
     // process may already be gone, or pkill exits non-zero if no match
   }
 
@@ -180,7 +183,10 @@ export async function forceCleanup(): Promise<void> {
       ],
     );
   }
-  catch {
+  catch (error) {
+    if (!(error instanceof Error))
+      throw error;
+
     // process may already be gone, or pkill exits non-zero if no match
   }
   delete state.server;
@@ -215,7 +221,10 @@ async function waitForHealth(): Promise<void> {
           return;
       }
     }
-    catch {
+    catch (error) {
+      if (!(error instanceof Error))
+        throw error;
+
       // server not up yet
     }
     // oxlint-disable-next-line no-await-in-loop -- sequential poll delay

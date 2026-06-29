@@ -63,7 +63,12 @@ export async function captureScreenshot(): Promise<Buffer> {
       try {
         await unlink(tmp,);
       }
-      catch { /* temp file cleanup is best-effort */ }
+      catch (error) {
+        if (!(error instanceof Error))
+          throw error;
+
+        /* temp file cleanup is best-effort */
+      }
     },
   } as AsyncDisposable;
 

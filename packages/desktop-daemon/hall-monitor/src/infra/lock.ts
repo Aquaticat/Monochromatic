@@ -234,14 +234,14 @@ async function findSocketOwnerPid(): Promise<number> {
         // oxlint-disable-next-line no-await-in-loop -- sequential readlink for each fd
         const link = await readlink(`/proc/${pid}/fd/${fd}`,);
         if (link === `socket:[${inode}]`) {
-          return Number.parseInt(
-            pid,
-            10,
-          );
+          return Math.trunc(Number(pid,));
         }
       }
     }
-    catch {
+    catch (error) {
+      if (!(error instanceof Error))
+        throw error;
+
       // permission denied or process exited between readdir and readlink
     }
   }
@@ -293,7 +293,10 @@ export async function killExisting(): Promise<void> {
       'SIGKILL',
     );
   }
-  catch {
+  catch (error) {
+    if (!(error instanceof Error))
+      throw error;
+
     // process may already be gone
   }
 

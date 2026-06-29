@@ -185,8 +185,14 @@ export async function cycle(): Promise<void> {
     try {
       await stopLlama();
     }
-    catch {
-      // best-effort cleanup of GPU process
+    catch (cleanupError) {
+      /**
+       * Cleanup failure string for best-effort GPU process shutdown logging.
+       */
+      const cleanupMessage = cleanupError instanceof Error
+        ? cleanupError.message
+        : String(cleanupError,);
+      log.debug(`[cleanup] ${cleanupMessage}`,);
     }
   }
 }
