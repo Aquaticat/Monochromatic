@@ -69,6 +69,18 @@ const PIPE_TABLE = [
   '',
 ].join('\n',);
 
+/**
+ * MDX that fails during parsing, representative of a future rule producing
+ * invalid MDX during a fixpoint pass.
+ */
+const INVALID_MDX = '<https://example.com>\n';
+
+/**
+ * A file whose only lint finding is an unused reference definition. The raw
+ * rule fix would remove every byte, so the CLI boundary must refuse the write.
+ */
+const UNUSED_REFERENCE_ONLY = '[unused]: https://example.com\n';
+
 await describe({
   name: 'run (CLI boundary)',
   children: [
@@ -162,6 +174,92 @@ await describe({
         );
         expect(fixed.includes('<table>',),).toBe(true,);
         expect(fixed.includes('| A | B |',),).toBe(false,);
+      },
+    },),
+    it({
+      name: 'reports one bad file without aborting sibling fixes',
+      fn: async function reportsBadFile() {
+        await using dir = await makeTempDir();
+        /**
+         * Fixable Markdown file that should still be rewritten.
+         */
+        const goodFile = join(
+          dir.path,
+          'good.md',
+        );
+        /**
+         * Invalid MDX file that should be reported, not thrown past the run.
+         */
+        const badFile = join(
+          dir.path,
+          'bad.mdx',
+        );
+        await writeFile(
+          goodFile,
+          PIPE_TABLE,
+        );
+        await writeFile(
+          badFile,
+          INVALID_MDX,
+        );
+        /**
+         * Fix result over a mixed-validity directory.
+         */
+        const result = await run({
+          paths: [dir.path,],
+          fix: true,
+          reporter: 'pretty',
+          cwd: dir.path,
+        },);
+        expect(result.fixedFiles,).toBe(1,);
+        expect(result.hadViolations,).toBe(true,);
+        expect(result.output.includes('markdown-lint-error',),).toBe(true,);
+        /**
+         * The sibling file was fixed despite the bad file.
+         */
+        const fixed = await readFile(
+          goodFile,
+          'utf8',
+        );
+        expect(fixed.includes('<table>',),).toBe(true,);
+        expect(fixed.length,).toBeGreaterThan(0,);
+        expect(await readFile(
+          badFile,
+          'utf8',
+        ),).toBe(INVALID_MDX,);
+      },
+    },),
+    it({
+      name: 'refuses to write an empty fix result over a non-empty file',
+      fn: async function refusesEmptyRewrite() {
+        await using dir = await makeTempDir();
+        /**
+         * Path of the file whose raw rule fixes would remove all content.
+         */
+        const file = join(
+          dir.path,
+          'reference-only.md',
+        );
+        await writeFile(
+          file,
+          UNUSED_REFERENCE_ONLY,
+        );
+        /**
+         * Fix result for the risky file.
+         */
+        const result = await run({
+          paths: [file,],
+          fix: true,
+          reporter: 'pretty',
+          cwd: dir.path,
+        },);
+        expect(result.fixedFiles,).toBe(0,);
+        expect(result.hadViolations,).toBe(true,);
+        expect(result.output.includes('markdown-lint-safety',),).toBe(true,);
+        expect(await readFile(
+          file,
+          'utf8',
+        ),).toBe(UNUSED_REFERENCE_ONLY,);
       },
     },),
   ],

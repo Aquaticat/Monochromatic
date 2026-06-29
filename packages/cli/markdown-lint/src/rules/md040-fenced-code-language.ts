@@ -32,6 +32,26 @@ type LanguageInsertOffsetParams = {
 };
 
 /**
+ * Measure the run of opening fence marker characters.
+ *
+ * @param markerAndRest - opening line from the first fence marker onward
+ *
+ * @returns number of marker characters in the opening fence
+ */
+function fenceMarkerLength(markerAndRest: string,): number {
+  /**
+   * Fence marker character, either backtick or tilde.
+   */
+  const marker = markerAndRest.charAt(0,);
+  for (let offset = 0; offset < markerAndRest.length; offset += 1) {
+    if (markerAndRest.charAt(offset,) !== marker) {
+      return offset;
+    }
+  }
+  return markerAndRest.length;
+}
+
+/**
  * Offset immediately after the opening fence marker. The info string belongs
  * there, before any trailing whitespace on the opening line.
  *
@@ -76,21 +96,12 @@ function languageInsertOffset({
    */
   const markerAndRest = opener.slice(indentLength,);
   /**
-   * Fence marker character, either backtick or tilde.
-   */
-  const marker = markerAndRest[0];
-  /**
    * Full marker length; CommonMark allows fences longer than three chars.
    */
-  const markerLength = [...markerAndRest,]
-    .findIndex(function isNotMarker(ch: string,): boolean {
-      return ch !== marker;
-    },);
+  const markerLength = fenceMarkerLength(markerAndRest,);
   return start
     + indentLength
-    + (markerLength === (-1)
-      ? markerAndRest.length
-      : markerLength);
+    + markerLength;
 }
 
 /**

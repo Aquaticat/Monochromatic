@@ -1,9 +1,17 @@
+import { randomUUID, } from 'node:crypto';
 import {
   readFile,
+  rename,
+  rm,
   stat,
   writeFile,
 } from 'node:fs/promises';
-import { relative, } from 'node:path';
+import {
+  basename,
+  dirname,
+  join,
+  relative,
+} from 'node:path';
 
 import { fixSource, } from './fix.ts';
 import { runRules, } from './lint.ts';
@@ -38,6 +46,23 @@ const MAX_FILE_KIB = 5_120;
 const MAX_FILE_BYTES = MAX_FILE_KIB * BYTES_PER_KIB;
 
 /**
+ * Permission bits preserved when atomically replacing a file. `stat.mode` also
+ * includes file-type bits, but `writeFile` expects only the permission mask.
+ */
+const FILE_PERMISSION_BITS = 0o777;
+
+/**
+ * Synthetic rule ID for a file that could not be processed. Reporting it as a
+ * diagnostic lets one bad file fail the run without aborting sibling writes.
+ */
+const PROCESSING_ERROR_RULE_ID = 'markdown-lint-error';
+
+/**
+ * Synthetic rule ID for safety checks that block a risky autofix write.
+ */
+const SAFETY_RULE_ID = 'markdown-lint-safety';
+
+/**
  * One path argument classified into the directory roots and explicit files it
  * contributes. A path is exactly one or the other, but both lists keep the
  * shape uniform so callers `flatMap` without a nullish union.
@@ -67,6 +92,53 @@ type ProcessedEntry = {
    * Whether the file was rewritten by `--fix`.
    */
   readonly fixed: boolean;
+};
+
+/**
+ * Source read from a file plus the mode that should be preserved if the file is
+ * atomically replaced after fixes.
+ */
+type ReadSource = {
+  /**
+   * File contents.
+   */
+  readonly source: string;
+  /**
+   * Original file mode, including permission bits.
+   */
+  readonly mode: number;
+};
+
+/**
+ * Parameters for {@link writeFileAtomically}.
+ */
+type WriteFileAtomicallyParams = {
+  /**
+   * Destination file.
+   */
+  readonly path: string;
+  /**
+   * Fixed contents to write.
+   */
+  readonly source: string;
+  /**
+   * Original file mode to preserve on the replacement.
+   */
+  readonly mode: number;
+};
+
+/**
+ * Parameters for {@link fileStartDiagnostic}.
+ */
+type FileStartDiagnosticParams = {
+  /**
+   * Synthetic rule identifier.
+   */
+  readonly ruleId: string;
+  /**
+   * Diagnostic message.
+   */
+  readonly message: string;
 };
 
 /**
@@ -148,20 +220,78 @@ async function resolveFiles(paths: readonly string[],): Promise<readonly Discove
  *
  * @returns the source as a one-element list, or empty when over the size cap
  */
-async function readBoundedSource(path: string,): Promise<readonly string[]> {
+async function readBoundedSource(path: string,): Promise<readonly ReadSource[]> {
   /**
-   * File size in bytes.
+   * File metadata used for the size guard and mode preservation.
    */
-  const { size, } = await stat(path,);
-  if (size > MAX_FILE_BYTES) {
+  const fileStat = await stat(path,);
+  if (fileStat.size > MAX_FILE_BYTES) {
     return [];
   }
-  return [
-    await readFile(
+  return [{
+    source: await readFile(
       path,
       'utf8',
     ),
-  ];
+    mode: fileStat.mode,
+  },];
+}
+
+/**
+ * Write fixed contents through a same-directory temporary file and atomic
+ * rename. `fs.writeFile(path, ...)` opens with truncation, so a process crash or
+ * uncaught sibling error can leave the target at zero bytes. A temp file keeps
+ * the original intact until the complete replacement is ready.
+ *
+ * @param path - destination file
+ *
+ * @param source - fixed contents to write
+ *
+ * @param mode - original file mode to preserve on the replacement
+ */
+async function writeFileAtomically({
+  path,
+  source,
+  mode,
+}: WriteFileAtomicallyParams,): Promise<void> {
+  /**
+   * Same-directory temporary path, so the final rename is on the same device.
+   */
+  const tempPath = join(
+    dirname(path,),
+    `.${basename(path,)}.markdown-lint-${process.pid}-${randomUUID()}.tmp`,
+  );
+  try {
+    await writeFile(
+      tempPath,
+      source,
+      { mode: mode & FILE_PERMISSION_BITS, },
+    );
+    await rename(
+      tempPath,
+      path,
+    );
+  } catch (error) {
+    await removeTempFile(tempPath,);
+    throw error;
+  }
+}
+
+/**
+ * Remove a temporary file, intentionally ignoring cleanup failure so the
+ * original write error remains the reported failure.
+ *
+ * @param path - temporary file path
+ */
+async function removeTempFile(path: string,): Promise<void> {
+  try {
+    await rm(
+      path,
+      { force: true, },
+    );
+  } catch {
+    // Cleanup failure intentionally ignored.
+  }
 }
 
 /**
@@ -178,6 +308,74 @@ function byPosition(diagnostics: readonly Diagnostic[],): readonly Diagnostic[] 
     right: Diagnostic,
   ): number {
     return (left.line - right.line) || (left.column - right.column);
+  },);
+}
+
+/**
+ * Create a synthetic diagnostic at the start of a file.
+ *
+ * @param ruleId - synthetic rule identifier
+ *
+ * @param message - diagnostic message
+ *
+ * @returns diagnostic anchored at line 1, column 1
+ */
+function fileStartDiagnostic({
+  ruleId,
+  message,
+}: FileStartDiagnosticParams,): Diagnostic {
+  return {
+    ruleId,
+    message,
+    line: 1,
+    column: 1,
+  };
+}
+
+/**
+ * Render an unknown thrown value into a stable one-line message.
+ *
+ * @param error - value caught from file processing
+ *
+ * @returns human-readable message
+ */
+function errorMessage(error: unknown,): string {
+  if (error instanceof Error) {
+    /**
+     * Error class name used when the message is empty.
+     */
+    const errorName = error.constructor
+      .name;
+    return error.message === ''
+      ? errorName
+      : error.message;
+  }
+  return String(error,);
+}
+
+/**
+ * Diagnostic for a file-processing failure.
+ *
+ * @param error - value caught from file processing
+ *
+ * @returns synthetic diagnostic for the report
+ */
+function processingErrorDiagnostic(error: unknown,): Diagnostic {
+  return fileStartDiagnostic({
+    ruleId: PROCESSING_ERROR_RULE_ID,
+    message: `Could not process file: ${errorMessage(error,)}`,
+  },);
+}
+
+/**
+ * Diagnostic for a fixpoint result that would erase a non-empty file.
+ *
+ * @returns synthetic diagnostic for the report
+ */
+function emptyRewriteDiagnostic(): Diagnostic {
+  return fileStartDiagnostic({
+    ruleId: SAFETY_RULE_ID,
+    message: 'Autofix would replace non-empty file with empty output; leaving file unchanged.',
   },);
 }
 
@@ -258,53 +456,80 @@ export async function run({
   const present = (await Promise.all(files.map(
     async function processFile(file: DiscoveredFile,): Promise<readonly ProcessedEntry[]> {
       /**
-       * File source as a one-element list, empty when skipped for size.
-       */
-      const [source,] = await readBoundedSource(file.path,);
-      if (source === undefined) {
-        return [];
-      }
-      /**
        * Display path relative to the working directory.
        */
       const displayPath = relative(
         cwd,
         file.path,
       );
-      if (!fix) {
+      try {
+        /**
+         * File source as a one-element list, empty when skipped for size.
+         */
+        const [readSource,] = await readBoundedSource(file.path,);
+        if (readSource === undefined) {
+          return [];
+        }
+        /**
+         * Source text and mode for the file being processed.
+         */
+        const {
+          source,
+          mode,
+        } = readSource;
+        if (!fix) {
+          return [{
+            report: {
+              path: displayPath,
+              diagnostics: byPosition(runRules({
+                rules,
+                source,
+                mdx: file.mdx,
+              },),),
+            },
+            fixed: false,
+          },];
+        }
+        /**
+         * Source and remaining diagnostics after the fixpoint loop.
+         */
+        const fixed = fixSource({
+          rules,
+          source,
+          mdx: file.mdx,
+        },);
+        if ((source !== '') && (fixed.source === '')) {
+          return [{
+            report: {
+              path: displayPath,
+              diagnostics: [emptyRewriteDiagnostic(),],
+            },
+            fixed: false,
+          },];
+        }
+        if (fixed.source !== source) {
+          await writeFileAtomically({
+            path: file.path,
+            source: fixed.source,
+            mode,
+          },);
+        }
         return [{
           report: {
             path: displayPath,
-            diagnostics: byPosition(runRules({
-              rules,
-              source,
-              mdx: file.mdx,
-            },),),
+            diagnostics: byPosition(fixed.diagnostics,),
+          },
+          fixed: fixed.source !== source,
+        },];
+      } catch (error) {
+        return [{
+          report: {
+            path: displayPath,
+            diagnostics: [processingErrorDiagnostic(error,),],
           },
           fixed: false,
         },];
       }
-      /**
-       * Source and remaining diagnostics after the fixpoint loop.
-       */
-      const fixed = fixSource({
-        rules,
-        source,
-        mdx: file.mdx,
-      },);
-      if (fixed.source !== source) {
-        await writeFile(
-          file.path,
-          fixed.source,
-        );
-      }
-      return [{
-        report: {
-          path: displayPath,
-          diagnostics: byPosition(fixed.diagnostics,),
-        },
-        fixed: fixed.source !== source,
-      },];
     },
   ),)).flat();
   /**
