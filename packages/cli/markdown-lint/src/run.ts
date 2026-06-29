@@ -1,17 +1,8 @@
-import { randomUUID, } from 'node:crypto';
 import {
   readFile,
-  rename,
-  rm,
   stat,
-  writeFile,
 } from 'node:fs/promises';
-import {
-  basename,
-  dirname,
-  join,
-  relative,
-} from 'node:path';
+import { relative, } from 'node:path';
 
 import { fixSource, } from './fix.ts';
 import { runRules, } from './lint.ts';
@@ -27,6 +18,7 @@ import {
   type DiscoveredFile,
   explicitFile,
 } from './walk-files.ts';
+import { writeFileAtomically, } from './write-file-atomically.ts';
 
 /**
  * Bytes per kibibyte, for the size cap.
@@ -46,12 +38,6 @@ const MAX_FILE_KIB = 5_120;
 const MAX_FILE_BYTES = MAX_FILE_KIB * BYTES_PER_KIB;
 
 /**
- * Permission bits preserved when atomically replacing a file. `stat.mode` also
- * includes file-type bits, but `writeFile` expects only the permission mask.
- */
-const FILE_PERMISSION_BITS = 0o777;
-
-/**
  * Synthetic rule ID for a file that could not be processed. Reporting it as a
  * diagnostic lets one bad file fail the run without aborting sibling writes.
  */
@@ -61,11 +47,6 @@ const PROCESSING_ERROR_RULE_ID = 'markdown-lint-error';
  * Synthetic rule ID for safety checks that block a risky autofix write.
  */
 const SAFETY_RULE_ID = 'markdown-lint-safety';
-
-/**
- * Aggregate error message when fixed-file write and temporary cleanup both fail.
- */
-const WRITE_CLEANUP_ERROR_MESSAGE = 'Failed to write file and clean up temporary replacement.';
 
 /**
  * One path argument classified into the directory roots and explicit files it
@@ -110,24 +91,6 @@ type ReadSource = {
   readonly source: string;
   /**
    * Original file mode, including permission bits.
-   */
-  readonly mode: number;
-};
-
-/**
- * Parameters for {@link writeFileAtomically}.
- */
-type WriteFileAtomicallyParams = {
-  /**
-   * Destination file.
-   */
-  readonly path: string;
-  /**
-   * Fixed contents to write.
-   */
-  readonly source: string;
-  /**
-   * Original file mode to preserve on the replacement.
    */
   readonly mode: number;
 };
@@ -240,68 +203,6 @@ async function readBoundedSource(path: string,): Promise<readonly ReadSource[]> 
     ),
     mode: fileStat.mode,
   },];
-}
-
-/**
- * Write fixed contents through a same-directory temporary file and atomic
- * rename. `fs.writeFile(path, ...)` opens with truncation, so a process crash or
- * uncaught sibling error can leave the target at zero bytes. A temp file keeps
- * the original intact until the complete replacement is ready.
- *
- * @param path - destination file
- *
- * @param source - fixed contents to write
- *
- * @param mode - original file mode to preserve on the replacement
- */
-async function writeFileAtomically({
-  path,
-  source,
-  mode,
-}: WriteFileAtomicallyParams,): Promise<void> {
-  /**
-   * Same-directory temporary path, so the final rename is on the same device.
-   */
-  const tempPath = join(
-    dirname(path,),
-    `.${basename(path,)}.markdown-lint-${process.pid}-${randomUUID()}.tmp`,
-  );
-  try {
-    await writeFile(
-      tempPath,
-      source,
-      { mode: mode & FILE_PERMISSION_BITS, },
-    );
-    await rename(
-      tempPath,
-      path,
-    );
-  } catch (error) {
-    try {
-      await removeTempFile(tempPath,);
-    } catch (cleanupError) {
-      throw new AggregateError(
-        [
-          error,
-          cleanupError,
-        ],
-        WRITE_CLEANUP_ERROR_MESSAGE,
-      );
-    }
-    throw error;
-  }
-}
-
-/**
- * Remove a temporary file created during atomic replacement.
- *
- * @param path - temporary file path
- */
-async function removeTempFile(path: string,): Promise<void> {
-  await rm(
-    path,
-    { force: true, },
-  );
 }
 
 /**

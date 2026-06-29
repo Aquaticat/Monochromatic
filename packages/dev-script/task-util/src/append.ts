@@ -79,14 +79,32 @@ async function validateFile(filePath: string,): Promise<void> {
     );
   }
   catch (error) {
-    if (
-      error instanceof Error
-      && 'code' in error
-      && (error as { readonly code: unknown; }).code === FILE_NOT_FOUND_ERROR_CODE
-    )
-      throw new Error(ERROR_MESSAGES.fileNotFound(filePath,),);
+    if (!(error instanceof Error))
+      throw new Error(
+        ERROR_MESSAGES.noWritePermission(filePath,),
+        { cause: error, },
+      );
 
-    throw new Error(ERROR_MESSAGES.noWritePermission(filePath,),);
+    if (!('code' in error))
+      throw new Error(
+        ERROR_MESSAGES.noWritePermission(filePath,),
+        { cause: error, },
+      );
+
+    /**
+     * Node filesystem error code attached to the failed permission check.
+     */
+    const { code, } = error as { readonly code: unknown; };
+    if (code === FILE_NOT_FOUND_ERROR_CODE)
+      throw new Error(
+        ERROR_MESSAGES.fileNotFound(filePath,),
+        { cause: error, },
+      );
+
+    throw new Error(
+      ERROR_MESSAGES.noWritePermission(filePath,),
+      { cause: error, },
+    );
   }
 }
 

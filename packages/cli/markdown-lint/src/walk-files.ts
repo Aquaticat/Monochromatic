@@ -95,14 +95,20 @@ async function readGitignore(dir: string,): Promise<string> {
       'utf8',
     );
   } catch (error) {
-    if (
-      error instanceof Error
-      && 'code' in error
-      && (error as { readonly code: unknown; }).code === FILE_NOT_FOUND_ERROR_CODE
-    ) {
-      return '';
+    if (!(error instanceof Error)) {
+      throw error;
     }
-    throw error;
+    if (!('code' in error)) {
+      throw error;
+    }
+    /**
+     * Node filesystem error code attached to the failed `.gitignore` read.
+     */
+    const { code, } = error as { readonly code: unknown; };
+    if (code !== FILE_NOT_FOUND_ERROR_CODE) {
+      throw error;
+    }
+    return '';
   }
 }
 
