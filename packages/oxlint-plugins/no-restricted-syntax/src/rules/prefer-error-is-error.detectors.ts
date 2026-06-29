@@ -11,6 +11,7 @@ import {
   PROTOTYPE_PROPERTY_NAME,
   TO_STRING_PROPERTY_NAME,
   type ErrorDetectionArgumentText,
+  type ErrorDetectionReplacementResult,
 } from './prefer-error-is-error.constants.ts';
 import {
   isGlobalErrorConstructor,
@@ -298,20 +299,20 @@ export function isNegatedEqualityOperator(
 }
 
 /**
- * Extracts Error detector argument text from legacy equality checks.
+ * Extracts Error detector replacement metadata from legacy equality checks.
  *
  * @param context - Oxlint rule context.
  *
  * @param binary - Binary expression to inspect.
  *
- * @returns Tested value text, or sentinel when binary expression does not match.
+ * @returns Replacement metadata, or sentinel when binary expression does not match.
  *
  * @example
  * ```ts
- * getEqualityDetectorArgumentText({ context, binary: node });
+ * getEqualityDetectorReplacement({ context, binary: node });
  * ```
  */
-export function getEqualityDetectorArgumentText(
+export function getEqualityDetectorReplacement(
   {
     context,
     binary,
@@ -319,7 +320,7 @@ export function getEqualityDetectorArgumentText(
     readonly context: Context;
     readonly binary: ESTree.BinaryExpression;
   },
-): ErrorDetectionArgumentText {
+): ErrorDetectionReplacementResult {
   if (!isEqualityOperator({ operator: binary.operator, }))
     return NOT_ERROR_DETECTION;
   /**
@@ -331,12 +332,24 @@ export function getEqualityDetectorArgumentText(
     right: binary.right,
   },);
   if ((typeof objectTagArgumentText) !== 'symbol')
-    return objectTagArgumentText;
-  return getConstructorComparisonArgumentText({
+    return {
+      argumentText: objectTagArgumentText,
+      fixKind: 'fix',
+    };
+  /**
+   * Constructor-comparison detection argument, if matched.
+   */
+  const constructorArgumentText = getConstructorComparisonArgumentText({
     context,
     left: binary.left,
     right: binary.right,
   },);
+  if ((typeof constructorArgumentText) === 'symbol')
+    return NOT_ERROR_DETECTION;
+  return {
+    argumentText: constructorArgumentText,
+    fixKind: 'suggestion',
+  };
 }
 
 //endregion Equality detection

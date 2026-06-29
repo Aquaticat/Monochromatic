@@ -6,8 +6,9 @@ import type {
   VisitorWithHooks,
 } from '@oxlint/plugins';
 
+import type { ErrorDetectionFixKind, } from './prefer-error-is-error.constants.ts';
 import {
-  getEqualityDetectorArgumentText,
+  getEqualityDetectorReplacement,
   getInstanceofErrorArgumentText,
   isNegatedEqualityOperator,
 } from './prefer-error-is-error.detectors.ts';
@@ -27,9 +28,17 @@ import { buildErrorIsErrorCall, } from './prefer-error-is-error.syntax.ts';
  *
  * @param negated - Whether replacement should be negated.
  *
+ * @param fixKind - Fix channel to use for this replacement.
+ *
  * @example
  * ```ts
- * reportReplacement({ context, node, argumentText: 'error', negated: false });
+ * reportReplacement({
+ *   context,
+ *   node,
+ *   argumentText: 'error',
+ *   negated: false,
+ *   fixKind: 'fix',
+ * });
  * ```
  */
 function reportReplacement(
@@ -38,11 +47,13 @@ function reportReplacement(
     node,
     argumentText,
     negated,
+    fixKind,
   }: {
     readonly context: Context;
     readonly node: ESTree.Node;
     readonly argumentText: string;
     readonly negated: boolean;
+    readonly fixKind: ErrorDetectionFixKind;
   },
 ): void {
   /**
@@ -53,6 +64,24 @@ function reportReplacement(
    * Final replacement, optionally preserving a negated detector.
    */
   const replacement = negated ? `!${callText}` : callText;
+  if (fixKind === 'suggestion') {
+    context.report({
+      node,
+      messageId: 'forbidden',
+      suggest: [
+        {
+          desc: 'Replace with Error.isError(value).',
+          fix(fixer: Fixer,): ReturnType<Fixer['replaceText']> {
+            return fixer.replaceText(
+              node,
+              replacement,
+            );
+          },
+        },
+      ],
+    },);
+    return;
+  }
   context.report({
     node,
     messageId: 'forbidden',
@@ -90,6 +119,7 @@ export const preferErrorIsError: CreateOnceRule = {
   meta: {
     type: 'suggestion',
     fixable: 'code',
+    hasSuggestions: true,
     docs: {
       description:
         'Disallow legacy Error detection. Use Error.isError() instead.',
@@ -116,23 +146,25 @@ export const preferErrorIsError: CreateOnceRule = {
             node,
             argumentText: instanceofArgumentText,
             negated: false,
+            fixKind: 'fix',
           },);
           return;
         }
         /**
-         * Equality-based detector argument text, if matched.
+         * Equality-based detector replacement metadata, if matched.
          */
-        const equalityArgumentText = getEqualityDetectorArgumentText({
+        const equalityReplacement = getEqualityDetectorReplacement({
           context,
           binary: node,
         },);
-        if ((typeof equalityArgumentText) === 'symbol')
+        if ((typeof equalityReplacement) === 'symbol')
           return;
         reportReplacement({
           context,
           node,
-          argumentText: equalityArgumentText,
+          argumentText: equalityReplacement.argumentText,
           negated: isNegatedEqualityOperator({ operator: node.operator, }),
+          fixKind: equalityReplacement.fixKind,
         },);
       },
       CallExpression(node: ESTree.CallExpression,): void {
@@ -150,6 +182,7 @@ export const preferErrorIsError: CreateOnceRule = {
           node,
           argumentText,
           negated: false,
+          fixKind: 'fix',
         },);
       },
     };

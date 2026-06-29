@@ -254,23 +254,40 @@ function createGeneratedSource(
  *
  * @param source - Source text to write to a temp fixture.
  *
+ * @param fixSuggestions - Whether to also apply suggestion-level fixes.
+ *
  * @returns Source text after oxlint fixers run.
  *
  * @example
  * ```ts
- * const fixed = await fixGeneratedSource('value instanceof Error;');
+ * const fixed = await fixGeneratedSource({ source: 'value instanceof Error;' });
  * ```
  */
-async function fixGeneratedSource(source: string,): Promise<string> {
+async function fixGeneratedSource(
+  {
+    source,
+    fixSuggestions = false,
+  }: {
+    readonly source: string;
+    readonly fixSuggestions?: boolean;
+  },
+): Promise<string> {
   using fixture = createGeneratedSource({
     fileName: 'prefer-error-is-error.fix.ts',
     source,
   },);
+  /**
+   * Fix flags passed to oxlint.
+   */
+  const fixFlags = fixSuggestions ? [
+    '--fix',
+    '--fix-suggestions',
+  ] : ['--fix',];
   try {
     await spawn(
       'oxlint',
       [
-        '--fix',
+        ...fixFlags,
         '--format',
         'json',
         '-c',
@@ -580,7 +597,7 @@ await describe({
           },
         },),
         it({
-          name: 'autofixes legacy Error detectors to Error.isError',
+          name: 'autofixes safe legacy Error detectors to Error.isError',
           fn: async () => {
             const source = [
               "import util from 'node:util';",
@@ -604,7 +621,7 @@ await describe({
               '}',
               '',
             ].join('\n',);
-            const fixed = await fixGeneratedSource(source,);
+            const fixed = await fixGeneratedSource({ source, },);
             expect(fixed,).toBe([
               "import util from 'node:util';",
               "import { types, } from 'node:util';",
@@ -617,12 +634,39 @@ await describe({
               '    Error.isError(error,),',
               '    Error.isError(error,),',
               '    !Error.isError(error,),',
+              '    error.constructor === Error,',
+              '    Error === error.constructor,',
               '    Error.isError(error,),',
               '    Error.isError(error,),',
               '    Error.isError(error,),',
               '    Error.isError(error,),',
+              '  ];',
+              '}',
+              '',
+            ].join('\n',),);
+          },
+        },),
+        it({
+          name: 'applies constructor comparisons as suggestion-level fixes',
+          fn: async () => {
+            const source = [
+              'function detections(error: unknown,): readonly boolean[] {',
+              '  return [',
+              '    error.constructor === Error,',
+              '    Error !== error.constructor,',
+              '  ];',
+              '}',
+              '',
+            ].join('\n',);
+            const fixed = await fixGeneratedSource({
+              source,
+              fixSuggestions: true,
+            },);
+            expect(fixed,).toBe([
+              'function detections(error: unknown,): readonly boolean[] {',
+              '  return [',
               '    Error.isError(error,),',
-              '    Error.isError(error,),',
+              '    !Error.isError(error,),',
               '  ];',
               '}',
               '',

@@ -110,4 +110,30 @@ export const NOT_ERROR_DETECTION: unique symbol = Symbol(
  */
 export type ErrorDetectionArgumentText = string | typeof NOT_ERROR_DETECTION;
 
+/**
+ * Fix channel for a detected Error value expression.
+ */
+export type ErrorDetectionFixKind = 'fix' | 'suggestion';
+
+/**
+ * Detected Error expression replacement metadata.
+ */
+export type ErrorDetectionReplacement = {
+  /**
+   * Source text for value being tested.
+   */
+  readonly argumentText: string;
+  /**
+   * Fix channel used for the replacement.
+   */
+  readonly fixKind: ErrorDetectionFixKind;
+};
+
+/**
+ * Replacement metadata, or a sentinel when no match exists.
+ */
+export type ErrorDetectionReplacementResult =
+  | ErrorDetectionReplacement
+  | typeof NOT_ERROR_DETECTION;
+
 //endregion Detection sentinel
