@@ -345,17 +345,53 @@ Overall interpretation:
   cleanup philosophy: avoid pruning constantly,
   but the tradeoff is extra state users may need to reason about.
 
+## Applied follow-up
+
+The user asked to write a troubleshooting doc and flip `modulesCacheMaxAge` to zero.
+Completed changes:
+
+- `docs/troubleshooting/pnpm-modules-cache.md` documents symptoms,
+  pnpm source trace,
+  benchmark verification,
+  workarounds,
+  and upstream filing decision.
+- `pnpm-workspace.yaml` now sets `modulesCacheMaxAge: 0` near the top-level pnpm settings.
+
+Verification after the config edit:
+
+```txt
+# /var/home/user/Monochromatic
+pnpm config get modules-cache-max-age
+0
+
+pnpm install --lockfile-only --frozen-lockfile --ignore-scripts --reporter=append-only
+Done in 231ms using pnpm v11.9.0
+
+pnpm install --ignore-scripts --frozen-lockfile --prefer-offline --reporter=append-only \
+  --config.confirmModulesPurge=false
+Done in 727ms using pnpm v11.9.0
+
+find node_modules/.pnpm -maxdepth 1 -type d \
+  \( -name 'oxlint@1.70.0*' -o -name '@oxlint+plugins@1.70.0' -o \
+  -name '@oxlint+binding-*1.70.0' \) -printf '%f\n' | sort | wc --lines
+0
+```
+
+Relevant commits:
+
+- `bf4bfee44 docs(pnpm): document modules cache retention`
+- `7ae77227d build(pnpm): prune modules cache on install`
+
+Main worktree still has unrelated dirty `mise.lock`.
+
 ## Current recommendation
 
 For this repo,
- recommend setting `modulesCacheMaxAge: 0` if the goal is deterministic and less confusing
-`node_modules/.pnpm` state.
+ `modulesCacheMaxAge: 0` is now applied.
 The measured performance cost was negligible in three benchmark shapes and showed only a suggestive
 about-137 ms benefit in one small-sample stylelint run.
-That small possible benefit does not look worth stale-version noise and TypeScript/path-cache risk
+That small possible benefit did not look worth stale-version noise and TypeScript/path-cache risk
 for this workspace.
-Do not apply this setting unless the user asks for an action edit,
- because the current task is investigation plus benchmarking.
 
 ## Next steps
 
