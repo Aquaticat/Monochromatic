@@ -442,35 +442,35 @@ version = "0.1.0"
 backend = "cargo:timeout-cli"
 
 [[tools.cmake]]
-version = "4.3.3"
+version = "4.3.4"
 backend = "vfox:cmake"
 
 [tools.cmake."platforms.linux-x64"]
-url = "https://cmake.org/files/v4.3/cmake-4.3.3-linux-x86_64.tar.gz"
+url = "https://cmake.org/files/v4.3/cmake-4.3.4-linux-x86_64.tar.gz"
 
 [tools.cmake."platforms.linux-x64-baseline"]
-url = "https://cmake.org/files/v4.3/cmake-4.3.3-linux-x86_64.tar.gz"
+url = "https://cmake.org/files/v4.3/cmake-4.3.4-linux-x86_64.tar.gz"
 
 [tools.cmake."platforms.linux-x64-musl"]
-url = "https://cmake.org/files/v4.3/cmake-4.3.3-linux-x86_64.tar.gz"
+url = "https://cmake.org/files/v4.3/cmake-4.3.4-linux-x86_64.tar.gz"
 
 [tools.cmake."platforms.linux-x64-musl-baseline"]
-url = "https://cmake.org/files/v4.3/cmake-4.3.3-linux-x86_64.tar.gz"
+url = "https://cmake.org/files/v4.3/cmake-4.3.4-linux-x86_64.tar.gz"
 
 [tools.cmake."platforms.macos-arm64"]
-url = "https://cmake.org/files/v4.3/cmake-4.3.3-macos-universal.tar.gz"
+url = "https://cmake.org/files/v4.3/cmake-4.3.4-macos-universal.tar.gz"
 
 [tools.cmake."platforms.macos-x64"]
-url = "https://cmake.org/files/v4.3/cmake-4.3.3-macos-universal.tar.gz"
+url = "https://cmake.org/files/v4.3/cmake-4.3.4-macos-universal.tar.gz"
 
 [tools.cmake."platforms.macos-x64-baseline"]
-url = "https://cmake.org/files/v4.3/cmake-4.3.3-macos-universal.tar.gz"
+url = "https://cmake.org/files/v4.3/cmake-4.3.4-macos-universal.tar.gz"
 
 [tools.cmake."platforms.windows-x64"]
-url = "https://cmake.org/files/v4.3/cmake-4.3.3-windows-x86_64.zip"
+url = "https://cmake.org/files/v4.3/cmake-4.3.4-windows-x86_64.zip"
 
 [tools.cmake."platforms.windows-x64-baseline"]
-url = "https://cmake.org/files/v4.3/cmake-4.3.3-windows-x86_64.zip"
+url = "https://cmake.org/files/v4.3/cmake-4.3.4-windows-x86_64.zip"
 
 [[tools.dprint]]
 version = "0.55.1"
