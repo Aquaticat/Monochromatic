@@ -46,7 +46,10 @@ function isAlphanumeric(c: string,): boolean {
  * ```
  */
 function isSegmentChar(c: string,): boolean {
-  return isAlphanumeric(c,) || (c === '-') || (c === '.') || (c === '_');
+  return isAlphanumeric(c,)
+    || (c === '-')
+    || (c === '.')
+    || (c === '_');
 }
 
 /**
@@ -78,7 +81,7 @@ function isNameSegment(segment: string,): boolean {
 }
 
 /**
- * Validates an npm package name: an optional `@scope/` prefix plus a name,
+ * Validates an npm package name: an optional `\@scope/` prefix plus a name,
  * each an {@link isNameSegment}. Unscoped names carry no `/`; scoped names
  * carry exactly one, splitting a non-empty scope from a non-empty name (a
  * second `/` lands in the name segment, where {@link isSegmentChar} rejects it).
@@ -93,14 +96,14 @@ function isNameSegment(segment: string,): boolean {
  *
  * @example
  * ```ts
- * isValidPackageName('@anthropic-ai/sdk') // true
+ * isValidPackageName('\@anthropic-ai/sdk') // true
  * isValidPackageName('oxlint') // true
  * isValidPackageName('__proto__') // false
  * ```
  */
 export function isValidPackageName(name: string,): boolean {
   /**
-   * Whether the name carries an `@scope/` prefix; drives the slash handling below.
+   * Whether the name carries an `\@scope/` prefix; drives the slash handling below.
    */
   const scoped = name.startsWith('@',);
   /**

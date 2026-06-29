@@ -1,13 +1,10 @@
 /**
- * Equivalence tests for the line-oriented `catalog:` block parser.
+ * Tests for the yaml-library catalog reader.
  *
- * `collectIndentedBlock` is the function under refactor (recursive cursor +
- * `[...acc, line]` accumulator to a single linear pass); these cases pin its
- * exact behaviour across the edge cases that distinguish a faithful scan:
- * empty input, cursor past the end, no leading match, both indent characters
- * (space and tab), whitespace-only bodies, indent-only lines with no body,
- * blank-line and non-indented terminators, a mid-array start, and a long run.
- * `parseCatalogFromYaml` exercises the same scan through its real caller.
+ * Covers the YAML shapes the prior hand-rolled scanner mis-handled: single
+ * quotes (#258), comment lines inside the block, and named `catalogs:` that
+ * must be ignored. Also pins the issue #195 guard: crafted keys are dropped
+ * and the result map carries no prototype, so `__proto__` cannot pollute.
  *
  * @module
  */
@@ -19,234 +16,119 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  collectIndentedBlock,
   parseCatalogFromYaml,
 } from './yaml-parse.ts';
-
-/** Line count for the long-run stack-safety case; one linear pass must collect every line. */
-const LONG_BLOCK_LINES = 100_000;
 
 await describe({
   name: 'yaml-parse',
   children: [
-    //region collectIndentedBlock
+    //region catalog shapes
     it({
-      name: 'collectIndentedBlock returns empty for an empty line array',
+      name: 'reads single-quoted keys and values (the pnpm-workspace.yaml shape, #258)',
       fn: async () => {
-        expect(collectIndentedBlock({
-          lines: [],
-          from: 0,
-        },),).toEqual([],);
-      },
-    },),
-
-    it({
-      name: 'collectIndentedBlock returns empty when from is at or past the end',
-      fn: async () => {
-        expect(collectIndentedBlock({
-          lines: ['  a: 1',],
-          from: 1,
-        },),).toEqual([],);
-      },
-    },),
-
-    it({
-      name: 'collectIndentedBlock returns empty when the first line is not indented',
-      fn: async () => {
-        expect(collectIndentedBlock({
-          lines: [
-            'catalog:',
-            '  a: 1',
-          ],
-          from: 0,
-        },),).toEqual([],);
-      },
-    },),
-
-    it({
-      name: 'collectIndentedBlock collects a run of space-indented lines and stops at a non-indented line',
-      fn: async () => {
-        expect(collectIndentedBlock({
-          lines: [
-            '  a: 1',
-            '  b: 2',
-            'next:',
-          ],
-          from: 0,
-        },),).toEqual([
-          '  a: 1',
-          '  b: 2',
-        ],);
-      },
-    },),
-
-    it({
-      name: 'collectIndentedBlock collects tab-indented lines',
-      fn: async () => {
-        expect(collectIndentedBlock({
-          lines: [
-            '\ta: 1',
-            '\tb: 2',
-          ],
-          from: 0,
-        },),).toEqual([
-          '\ta: 1',
-          '\tb: 2',
-        ],);
-      },
-    },),
-
-    it({
-      name: 'collectIndentedBlock collects both space- and tab-indented lines in one block',
-      fn: async () => {
-        expect(collectIndentedBlock({
-          lines: [
-            '  a: 1',
-            '\tb: 2',
-          ],
-          from: 0,
-        },),).toEqual([
-          '  a: 1',
-          '\tb: 2',
-        ],);
-      },
-    },),
-
-    it({
-      name: 'collectIndentedBlock stops at a blank line inside the block',
-      fn: async () => {
-        expect(collectIndentedBlock({
-          lines: [
-            '  a: 1',
-            '',
-            '  b: 2',
-          ],
-          from: 0,
-        },),).toEqual(['  a: 1',],);
-      },
-    },),
-
-    it({
-      name: 'collectIndentedBlock stops at an indent-only line that has no body',
-      fn: async () => {
-        expect(collectIndentedBlock({
-          lines: [
-            ' ',
-            '  a: 1',
-          ],
-          from: 0,
-        },),).toEqual([],);
-      },
-    },),
-
-    it({
-      name: 'collectIndentedBlock collects a whitespace-only line that has a further character',
-      fn: async () => {
-        expect(collectIndentedBlock({
-          lines: [
-            '   ',
-            '  a: 1',
-          ],
-          from: 0,
-        },),).toEqual([
-          '   ',
-          '  a: 1',
-        ],);
-      },
-    },),
-
-    it({
-      name: 'collectIndentedBlock starts collecting from the given index',
-      fn: async () => {
-        expect(collectIndentedBlock({
-          lines: [
-            'catalog:',
-            '  a: 1',
-            '  b: 2',
-          ],
-          from: 1,
-        },),).toEqual([
-          '  a: 1',
-          '  b: 2',
-        ],);
-      },
-    },),
-
-    it({
-      name: 'collectIndentedBlock excludes indented lines that follow a terminator',
-      fn: async () => {
-        expect(collectIndentedBlock({
-          lines: [
-            '  a: 1',
-            'after:',
-            '  b: 2',
-          ],
-          from: 0,
-        },),).toEqual(['  a: 1',],);
-      },
-    },),
-
-    it({
-      name: 'collectIndentedBlock collects a long contiguous run without overflowing',
-      fn: async () => {
-        /** Long block of identical indented lines; the recursive predecessor overflowed and copied O(n^2). */
-        const longLines: readonly string[] = Array.from(
-          { length: LONG_BLOCK_LINES, },
-          function indentedLine(): string {
-            return '  x';
-          },
-        );
-        expect(collectIndentedBlock({
-          lines: longLines,
-          from: 0,
-        },).length,).toBe(LONG_BLOCK_LINES,);
-      },
-    },),
-    //endregion collectIndentedBlock
-
-    //region parseCatalogFromYaml
-    it({
-      name: 'parseCatalogFromYaml reads the indented entries under catalog:',
-      fn: async () => {
-        /** Fixture with a leading packages: block, a catalog: block, and a trailing key. */
+        /** Fixture using the single-quoted shape that broke the prior parser. */
         const content = [
-          'packages:',
-          '  - "packages/*"',
           'catalog:',
-          '  foo: ">=1.2.3"',
-          '  bar: "*"',
-          'other:',
+          '  \'oxlint\': \'>=1.71.0\'',
+          '  \'@types/node\': \'>=24.0.0\'',
         ].join('\n',);
         expect(parseCatalogFromYaml(content,),).toEqual({
-          foo: '>=1.2.3',
-          bar: '*',
+          'oxlint': '>=1.71.0',
+          '@types/node': '>=24.0.0',
         },);
       },
     },),
 
     it({
-      name: 'parseCatalogFromYaml returns empty when there is no catalog: header',
+      name: 'reads double-quoted and bare values (>= must be quoted; bare > is a YAML block scalar)',
       fn: async () => {
-        /** Fixture without any catalog: header line. */
+        /** Fixture mixing a double-quoted range and a bare exact version (a valid YAML plain scalar). */
         const content = [
-          'packages:',
-          '  - "packages/*"',
+          'catalog:',
+          '  foo: ">=1.2.3"',
+          '  bar: 1.0.0',
         ].join('\n',);
-        expect(parseCatalogFromYaml(content,),).toEqual({},);
+        expect(parseCatalogFromYaml(content,),).toEqual({
+          foo: '>=1.2.3',
+          bar: '1.0.0',
+        },);
       },
     },),
 
     it({
-      name: 'parseCatalogFromYaml reads unquoted values',
+      name: 'skips comment lines inside the catalog block',
       fn: async () => {
-        /** Fixture whose single entry uses an unquoted range value. */
+        /** Fixture with a comment line between entries, as the real file has. */
         const content = [
           'catalog:',
-          '  foo: >=1.0.0',
+          '  # pinned exact, see note',
+          '  foo: \'>=1.2.3\'',
         ].join('\n',);
-        expect(parseCatalogFromYaml(content,),).toEqual({ foo: '>=1.0.0', },);
+        expect(parseCatalogFromYaml(content,),).toEqual({ foo: '>=1.2.3', },);
       },
     },),
-    //endregion parseCatalogFromYaml
+
+    it({
+      name: 'ignores named catalogs: and reads only the default catalog:',
+      fn: async () => {
+        /** Fixture with both a default catalog and a named catalog block. */
+        const content = [
+          'catalog:',
+          '  foo: \'>=1.2.3\'',
+          'catalogs:',
+          '  classic:',
+          '    bar: \'>=2.0.0\'',
+        ].join('\n',);
+        expect(parseCatalogFromYaml(content,),).toEqual({ foo: '>=1.2.3', },);
+      },
+    },),
+
+    it({
+      name: 'returns empty when there is no catalog: block',
+      fn: async () => {
+        /** Fixture declaring only packages:, no catalog. */
+        const content = [
+          'packages:',
+          '  - \'packages/*\'',
+        ].join('\n',);
+        expect(parseCatalogFromYaml(content,),).toEqual({},);
+      },
+    },),
+    //endregion catalog shapes
+
+    //region issue #195 guard
+    it({
+      name: 'drops a crafted __proto__ key and never pollutes the prototype',
+      fn: async () => {
+        /** Fixture with a crafted prototype-pollution key alongside a real entry. */
+        const content = [
+          'catalog:',
+          '  \'__proto__\': \'>=9.9.9\'',
+          '  foo: \'>=1.2.3\'',
+        ].join('\n',);
+        /** Parsed result; the crafted key must not survive as a usable entry. */
+        const result = parseCatalogFromYaml(content,);
+        expect(result.foo,).toBe('>=1.2.3',);
+        expect(Object.getPrototypeOf(result,),).toBe(null,);
+        // Object.prototype must be untouched by the crafted key.
+        expect(({} as Record<string, unknown>).polluted,).toBe(undefined,);
+      },
+    },),
+
+    it({
+      name: 'result map has a null prototype so even name-shaped keys are inert',
+      fn: async () => {
+        /** Fixture whose only entry is the name-shaped reserved word `constructor`. */
+        const content = [
+          'catalog:',
+          '  constructor: \'>=1.0.0\'',
+        ].join('\n',);
+        /** Parsed result; `constructor` is a plain own property on a prototype-less map. */
+        const result = parseCatalogFromYaml(content,);
+        expect(Object.getPrototypeOf(result,),).toBe(null,);
+        expect(Object.keys(result,),).toEqual(['constructor',],);
+      },
+    },),
+    //endregion issue #195 guard
   ],
 },);

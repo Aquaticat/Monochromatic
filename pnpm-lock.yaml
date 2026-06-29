@@ -1081,6 +1081,10 @@ importers:
         version: 26.0.1
 
   packages/dev-script/catalog-tighten:
+    dependencies:
+      yaml:
+        specifier: 'catalog:'
+        version: 3.0.0-1
     devDependencies:
       '@monochromatic-dev/config-typescript':
         specifier: workspace:*

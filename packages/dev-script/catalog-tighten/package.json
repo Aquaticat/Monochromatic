@@ -9,7 +9,9 @@
     "@monochromatic-dev/module-test": "workspace:*",
     "@types/node": "catalog:"
   },
-  "dependencies": {},
+  "dependencies": {
+    "yaml": "catalog:"
+  },
   "version": "0.0.1",
   "repository": {
     "type": "git",
