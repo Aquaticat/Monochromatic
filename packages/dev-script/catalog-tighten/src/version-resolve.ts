@@ -18,7 +18,10 @@ import {
 } from 'node:path';
 
 import {
-  NO_INSTALLED_VERSION,
+  readVersionFromPnp,
+} from './version-pnp.ts';
+import {
+  type NO_INSTALLED_VERSION,
   NO_MANIFEST_VERSION,
   readVersionFromPackageJson,
 } from './version-read.ts';
@@ -248,7 +251,14 @@ export async function readInstalledVersion(
   ): version is string {
     return version !== NO_MANIFEST_VERSION;
   },);
-  return found ?? NO_INSTALLED_VERSION;
+  if (found !== undefined)
+    return found;
+
+  // No node_modules entry resolved; fall back to the PnP layout (no node_modules at all).
+  return await readVersionFromPnp({
+    npmName,
+    monorepoRoot,
+  },);
 }
 
 //endregion Version resolution
