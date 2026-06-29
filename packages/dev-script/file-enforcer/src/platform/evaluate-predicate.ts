@@ -96,7 +96,8 @@ export async function evaluatePredicate(predicate: Predicate,): Promise<boolean>
     );
     return true;
   }
-  catch {
+  catch (predicateError: unknown) {
+    void predicateError;
     return false;
   }
 }

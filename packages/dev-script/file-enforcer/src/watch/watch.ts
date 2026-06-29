@@ -233,7 +233,7 @@ export function startWatching(configPath: string,): Promise<never> {
     /**
      * Directories to watch, derived from current tracked reads + writes
      */
-    const dirs = watchDirs(absoluteConfig,);
+    const dirs = await watchDirs(absoluteConfig,);
     rl.info(`watching ${String(dirs.size,)} directories`,);
 
     /**

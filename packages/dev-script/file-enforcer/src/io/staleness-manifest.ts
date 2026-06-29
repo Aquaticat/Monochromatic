@@ -67,10 +67,10 @@ const dirtyManifestPaths: Set<string> = new Set<string>();
  *
  * @example
  * ```ts
- * flushManifestPath('/repo/node_modules/.cache/file-enforcer/staleness-manifest.json');
+ * await flushManifestPath('/repo/node_modules/.cache/file-enforcer/staleness-manifest.json');
  * ```
  */
-function flushManifestPath(manifestPath: string,): void {
+async function flushManifestPath(manifestPath: string,): Promise<void> {
   /**
    * Cached manifest to flush.
    */
@@ -81,7 +81,7 @@ function flushManifestPath(manifestPath: string,): void {
   /**
    * Manifest merged with any entries other processes wrote while this process ran.
    */
-  const mergedManifest = writeMergedManifest({
+  const mergedManifest = await writeMergedManifest({
     manifestPath,
     manifest,
   },);
@@ -96,19 +96,56 @@ function flushManifestPath(manifestPath: string,): void {
  *
  * @example
  * ```ts
- * flushDirtyManifests();
+ * await flushDirtyManifests();
  * ```
  */
-function flushDirtyManifests(): void {
-  dirtyManifestPaths.forEach(function flushDirtyManifest(manifestPath,): void {
-    flushManifestPath(manifestPath,);
-  },);
+async function flushDirtyManifests(): Promise<void> {
+  await Promise.all(
+    [...dirtyManifestPaths,].map(async function flushDirtyManifest(manifestPath,): Promise<void> {
+      await flushManifestPath(manifestPath,);
+    },),
+  );
   dirtyManifestPaths.clear();
 }
 
+/**
+ * Flushes dirty manifests from the beforeExit hook and reports best-effort failures.
+ *
+ * @example
+ * ```ts
+ * await flushDirtyManifestsAndWarn();
+ * ```
+ */
+async function flushDirtyManifestsAndWarn(): Promise<void> {
+  try {
+    await flushDirtyManifests();
+  }
+  catch (flushError: unknown) {
+    dirtyManifestPaths.clear();
+    process.emitWarning(
+      `Could not flush file-enforcer staleness manifests before exit: ${String(flushError,)}`,
+    );
+  }
+}
+
+/**
+ * Starts best-effort dirty manifest flushing when Node is otherwise ready to exit.
+ *
+ * @example
+ * ```ts
+ * flushDirtyManifestsBeforeExit();
+ * ```
+ */
+function flushDirtyManifestsBeforeExit(): void {
+  if (dirtyManifestPaths.size === 0)
+    return;
+
+  void flushDirtyManifestsAndWarn();
+}
+
 process.on(
-  'exit',
-  flushDirtyManifests,
+  'beforeExit',
+  flushDirtyManifestsBeforeExit,
 );
 
 /**
@@ -120,21 +157,21 @@ process.on(
  *
  * @example
  * ```ts
- * const path = resolveManifestPath({ manifestPath: './cache.json' });
+ * const path = await resolveManifestPath({ manifestPath: './cache.json' });
  * ```
  */
-export function resolveManifestPath(
+export async function resolveManifestPath(
   {
     manifestPath,
   }: StalenessOptions,
-): string {
+): Promise<string> {
   if (manifestPath !== undefined)
     return resolve(manifestPath,);
 
   /**
    * Workspace root discovered by walking up until `node_modules` exists.
    */
-  const nodeModulesRoot = findNodeModulesRoot(process.cwd(),);
+  const nodeModulesRoot = await findNodeModulesRoot(process.cwd(),);
   return join(
     nodeModulesRoot,
     NODE_MODULES_DIRECTORY_NAME,
@@ -185,10 +222,10 @@ export function stalenessKeyForDestGlob(destGlob: string,): string {
  *
  * @example
  * ```ts
- * const manifest = loadManifest('/tmp/manifest.json');
+ * const manifest = await loadManifest('/tmp/manifest.json');
  * ```
  */
-export function loadManifest(manifestPath: string,): StalenessManifest {
+export async function loadManifest(manifestPath: string,): Promise<StalenessManifest> {
   /**
    * Cached manifest for this path.
    */
@@ -199,7 +236,7 @@ export function loadManifest(manifestPath: string,): StalenessManifest {
   /**
    * Manifest loaded from disk or initialized empty.
    */
-  const manifest = readManifestFromDisk(manifestPath,);
+  const manifest = await readManifestFromDisk(manifestPath,);
   manifestCache.set(
     manifestPath,
     manifest,
@@ -208,7 +245,7 @@ export function loadManifest(manifestPath: string,): StalenessManifest {
 }
 
 /**
- * Persists a manifest synchronously so async builders cannot race stale writes.
+ * Persists a manifest so async builders cannot race stale writes.
  *
  * @param manifestPath - Absolute manifest path.
  *
@@ -216,15 +253,15 @@ export function loadManifest(manifestPath: string,): StalenessManifest {
  *
  * @example
  * ```ts
- * writeManifest({ manifestPath: '/tmp/manifest.json', manifest });
+ * await writeManifest({ manifestPath: '/tmp/manifest.json', manifest });
  * ```
  */
-export function writeManifest(
+export async function writeManifest(
   {
     manifestPath,
     manifest,
   }: WriteManifestOptions,
-): void {
+): Promise<void> {
   manifestCache.set(
     manifestPath,
     {
@@ -242,5 +279,5 @@ export function writeManifest(
       dirtyManifestPaths.delete(manifestPath,);
     },
   };
-  flushManifestPath(manifestPath,);
+  await flushManifestPath(manifestPath,);
 }

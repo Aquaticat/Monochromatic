@@ -5,12 +5,12 @@ type LazyOnce<T> = Readonly<{
   /**
    * Returns the cached value, computing and storing it on the first call.
    */
-  get(): T;
+  get: () => T;
 
   /**
    * Drops the cached value so the next `get` recomputes.
    */
-  reset(): void;
+  reset: () => void;
 }>;
 
 /**
@@ -20,12 +20,12 @@ type LazyOnceAsync<T> = Readonly<{
   /**
    * Returns the cached value, awaiting and storing it on the first call.
    */
-  get(): Promise<T>;
+  get: () => Promise<T>;
 
   /**
    * Drops the cached value so the next `get` recomputes.
    */
-  reset(): void;
+  reset: () => void;
 }>;
 
 /**

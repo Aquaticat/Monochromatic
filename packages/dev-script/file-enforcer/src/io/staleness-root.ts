@@ -1,4 +1,4 @@
-import { statSync, } from 'node:fs';
+import { stat, } from 'node:fs/promises';
 import {
   dirname,
   join,
@@ -20,10 +20,10 @@ export const NODE_MODULES_DIRECTORY_NAME = 'node_modules';
  *
  * @example
  * ```ts
- * const hasNodeModules = hasNodeModulesDirectory(process.cwd());
+ * const hasNodeModules = await hasNodeModulesDirectory(process.cwd());
  * ```
  */
-function hasNodeModulesDirectory(directory: string,): boolean {
+async function hasNodeModulesDirectory(directory: string,): Promise<boolean> {
   try {
     /**
      * Candidate dependency directory.
@@ -32,7 +32,7 @@ function hasNodeModulesDirectory(directory: string,): boolean {
       directory,
       NODE_MODULES_DIRECTORY_NAME,
     );
-    return statSync(nodeModulesPath,)
+    return (await stat(nodeModulesPath,))
       .isDirectory();
   }
   catch (statError: unknown) {
@@ -55,12 +55,17 @@ function hasNodeModulesDirectory(directory: string,): boolean {
  *
  * @example
  * ```ts
- * const root = findNodeModulesRoot(process.cwd());
+ * const root = await findNodeModulesRoot(process.cwd());
  * ```
  */
-export function findNodeModulesRoot(startDirectory: string,): string {
-  for (let directory = resolve(startDirectory,); ; directory = dirname(directory,)) {
-    if (hasNodeModulesDirectory(directory,))
+export async function findNodeModulesRoot(startDirectory: string,): Promise<string> {
+  /**
+   * Candidate directory that moves upward until dependency root or filesystem root.
+   */
+  let directory = resolve(startDirectory,);
+  while (true) {
+    // oxlint-disable-next-line eslint/no-await-in-loop -- ancestor walk must inspect one directory before deciding the next parent.
+    if (await hasNodeModulesDirectory(directory,))
       return directory;
 
     /**
@@ -69,5 +74,6 @@ export function findNodeModulesRoot(startDirectory: string,): string {
     const parentDirectory = dirname(directory,);
     if (parentDirectory === directory)
       return resolve(startDirectory,);
+    directory = parentDirectory;
   }
 }

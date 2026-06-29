@@ -49,17 +49,17 @@ export type WatchDirectoryLifecycle = Readonly<{
   /**
    * Records active chokidar watcher for later teardown.
    */
-  setWatcher(args: { readonly watcher: FSWatcher; }): void;
+  setWatcher: (args: { readonly watcher: FSWatcher; }) => void;
 
   /**
    * Resolves completion after closing chokidar for normal abort teardown.
    */
-  resolveAfterClose(): Promise<void>;
+  resolveAfterClose: () => Promise<void>;
 
   /**
    * Rejects completion after closing chokidar for watcher failure paths.
    */
-  rejectAfterClose(args: { readonly watchError: unknown; }): Promise<void>;
+  rejectAfterClose: (args: { readonly watchError: unknown; }) => Promise<void>;
 }>;
 
 /**

@@ -101,7 +101,7 @@ await describe({
         /**
          * Directories watched after recording an empty glob expansion.
          */
-        const watchedDirectories = watchDirs(configPath,);
+        const watchedDirectories = await watchDirs(configPath,);
         /**
          * Absolute source directory expected to be monitored for future files.
          */
@@ -154,7 +154,7 @@ await describe({
         /**
          * Directories watched after recording an empty glob with missing static root.
          */
-        const watchedDirectories = watchDirs(configPath,);
+        const watchedDirectories = await watchDirs(configPath,);
         expect(watchedDirectories.has(tempDir,),).toBe(true,);
         /**
          * Missing glob root that should not be watched directly until it exists.
@@ -208,7 +208,7 @@ await describe({
         /**
          * Directories watched before any missing glob-root ancestors exist.
          */
-        const initiallyWatchedDirectories = watchDirs(configPath,);
+        const initiallyWatchedDirectories = await watchDirs(configPath,);
         expect(initiallyWatchedDirectories.has(tempDir,),).toBe(true,);
 
         await mkdir(futureDirectory,);
@@ -223,7 +223,7 @@ await describe({
         /**
          * Directories watched after first missing ancestor exists.
          */
-        const futureWatchedDirectories = watchDirs(configPath,);
+        const futureWatchedDirectories = await watchDirs(configPath,);
         expect(futureWatchedDirectories.has(futureDirectory,),).toBe(true,);
         await mkdir(sourceDirectory,);
         expect(await classifyEvent({
@@ -237,7 +237,7 @@ await describe({
         /**
          * Directories watched after static glob root exists.
          */
-        const sourceWatchedDirectories = watchDirs(configPath,);
+        const sourceWatchedDirectories = await watchDirs(configPath,);
         expect(sourceWatchedDirectories.has(sourceDirectory,),).toBe(true,);
         await writeFile(
           join(

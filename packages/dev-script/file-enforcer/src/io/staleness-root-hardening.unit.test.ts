@@ -67,12 +67,12 @@ async function teardown(tempDir: string,): Promise<void> {
  *
  * @example
  * ```ts
- * const error = findNodeModulesRootError('/tmp/project/packages/app');
+ * const error = await findNodeModulesRootError('/tmp/project/packages/app');
  * ```
  */
-function findNodeModulesRootError(startDirectory: string,): unknown {
+async function findNodeModulesRootError(startDirectory: string,): Promise<unknown> {
   try {
-    findNodeModulesRoot(startDirectory,);
+    await findNodeModulesRoot(startDirectory,);
   }
   catch (error: unknown) {
     return error;
@@ -116,7 +116,7 @@ await describe({
           ),
         );
 
-        const caught = findNodeModulesRootError(packageDirectory,);
+        const caught = await findNodeModulesRootError(packageDirectory,);
         expect(caught,).toMatchObject({
           code: 'ELOOP',
         },);

@@ -37,7 +37,7 @@ await describe({
           fn: async () => {
             reset();
             resetWriteTimestamps();
-            const dirs = watchDirs('/project/file-enforcer.config.ts',);
+            const dirs = await watchDirs('/project/file-enforcer.config.ts',);
             expect(dirs.has('/project',),).toBe(true,);
           },
         },),
@@ -49,7 +49,7 @@ await describe({
             trackRead('/repo/AGENTS.md',);
             trackRead('/repo/packages/config/oxlint.json',);
 
-            const dirs = watchDirs('/repo/config.ts',);
+            const dirs = await watchDirs('/repo/config.ts',);
             expect(dirs.has('/repo',),).toBe(true,);
             expect(dirs.has('/repo/packages/config',),).toBe(true,);
           },
@@ -61,7 +61,7 @@ await describe({
             resetWriteTimestamps();
             trackDest('/repo/CLAUDE.md',);
 
-            const dirs = watchDirs('/repo/config.ts',);
+            const dirs = await watchDirs('/repo/config.ts',);
             expect(dirs.has('/repo',),).toBe(true,);
           },
         },),
@@ -73,7 +73,7 @@ await describe({
             trackRead('/repo/a.md',);
             trackDest('/repo/b.md',);
 
-            const dirs = watchDirs('/repo/config.ts',);
+            const dirs = await watchDirs('/repo/config.ts',);
             expect(dirs.size,).toBe(1,);
           },
         },),
@@ -82,7 +82,7 @@ await describe({
           fn: async () => {
             reset();
             resetWriteTimestamps();
-            const dirs = watchDirs('/project/config.ts',);
+            const dirs = await watchDirs('/project/config.ts',);
             expect(dirs.size,).toBe(1,);
           },
         },),

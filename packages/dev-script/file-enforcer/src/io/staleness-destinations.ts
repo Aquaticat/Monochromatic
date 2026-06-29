@@ -19,9 +19,9 @@ import {
  * const stamps = await destinationStamps([{ path: './out', content: 'x' }]);
  * ```
  */
-export function destinationStamps(
+export async function destinationStamps(
   destinations: readonly StalenessDestination[],
-): readonly DestinationStamp[] | typeof ABSENT_FILE_STAMPS {
+): Promise<readonly DestinationStamp[] | typeof ABSENT_FILE_STAMPS> {
   /**
    * Metadata for each destination path.
    */
@@ -31,7 +31,7 @@ export function destinationStamps(
   /**
    * Filesystem metadata for destination paths.
    */
-  const stamps = readFileStamps(destinationPaths,);
+  const stamps = await readFileStamps(destinationPaths,);
   if (stamps === ABSENT_FILE_STAMPS)
     return ABSENT_FILE_STAMPS;
 

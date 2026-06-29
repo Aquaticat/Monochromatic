@@ -140,7 +140,7 @@ export async function writeLazyIfChanged(
       sourcePath,
       recordStaleness: false,
     },);
-  rememberFreshStalenessEntry({
+  await rememberFreshStalenessEntry({
     manifestPath,
     key,
     kind: 'single',
@@ -210,7 +210,7 @@ export async function writeLazyEach(
     manifestPath,
     recordStaleness: false,
   },);
-  rememberFreshStalenessEntry({
+  await rememberFreshStalenessEntry({
     manifestPath,
     key,
     kind: 'each',

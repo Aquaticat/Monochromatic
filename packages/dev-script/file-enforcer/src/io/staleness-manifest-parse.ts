@@ -1,4 +1,4 @@
-import { readFileSync, } from 'node:fs';
+import { readFile, } from 'node:fs/promises';
 
 import { isStalenessManifest, } from './staleness-guards.ts';
 import {
@@ -77,14 +77,14 @@ export function serializeManifest(manifest: PersistableStalenessManifest,): stri
  *
  * @example
  * ```ts
- * const manifest = readManifestFromDisk('/tmp/manifest.json');
+ * const manifest = await readManifestFromDisk('/tmp/manifest.json');
  * ```
  */
-export function readManifestFromDisk(manifestPath: string,): StalenessManifest {
+export async function readManifestFromDisk(manifestPath: string,): Promise<StalenessManifest> {
   /**
    * Raw manifest JSON content read from disk.
    */
-  const rawManifest = readManifestContent(manifestPath,);
+  const rawManifest = await readManifestContent(manifestPath,);
   /**
    * Parsed manifest JSON value.
    */
@@ -112,12 +112,12 @@ export function readManifestFromDisk(manifestPath: string,): StalenessManifest {
  *
  * @example
  * ```ts
- * const raw = readManifestContent('/tmp/manifest.json');
+ * const raw = await readManifestContent('/tmp/manifest.json');
  * ```
  */
-function readManifestContent(manifestPath: string,): string {
+async function readManifestContent(manifestPath: string,): Promise<string> {
   try {
-    return readFileSync(
+    return await readFile(
       manifestPath,
       'utf8',
     );

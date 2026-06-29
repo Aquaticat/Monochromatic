@@ -1,4 +1,3 @@
-import { writeFileSync, } from 'node:fs';
 import {
   mkdtemp,
   readFile,
@@ -75,10 +74,10 @@ async function teardown(tempDir: string,): Promise<void> {
  *
  * @example
  * ```ts
- * const error = captureAtomicWriteError({ filePath, content: 'new', tempFileWriter });
+ * const error = await captureAtomicWriteError({ filePath, content: 'new', tempFileWriter });
  * ```
  */
-function captureAtomicWriteError(
+async function captureAtomicWriteError(
   {
     filePath,
     content,
@@ -88,9 +87,9 @@ function captureAtomicWriteError(
     readonly filePath: string;
     readonly tempFileWriter: AtomicTempFileWriter;
   },
-): unknown {
+): Promise<unknown> {
   try {
-    writeFileAtomically({
+    await writeFileAtomically({
       filePath,
       content,
       tempFileWriter,
@@ -158,19 +157,19 @@ await describe({
          * failAfterPartialTempWrite({ tempPath, content: 'new' });
          * ```
          */
-        function failAfterPartialTempWrite(
+        async function failAfterPartialTempWrite(
           {
             tempPath,
           }: Parameters<AtomicTempFileWriter>[0],
-        ): void {
-          writeFileSync(
+        ): Promise<void> {
+          await writeFile(
             tempPath,
             'partial new content',
           );
           throw new Error('intentional atomic temp write failure',);
         }
 
-        const atomicWriteError = captureAtomicWriteError({
+        const atomicWriteError = await captureAtomicWriteError({
           filePath: dest,
           content: 'new content',
           tempFileWriter: failAfterPartialTempWrite,

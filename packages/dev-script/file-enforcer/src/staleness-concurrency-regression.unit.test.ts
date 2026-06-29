@@ -115,7 +115,8 @@ async function waitForPaths(paths: readonly string[],): Promise<void> {
         await access(path,);
         return true;
       }
-      catch {
+      catch (accessError: unknown) {
+        void accessError;
         return false;
       }
     },),);

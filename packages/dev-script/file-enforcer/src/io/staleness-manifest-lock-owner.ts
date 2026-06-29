@@ -1,7 +1,7 @@
 import {
-  readFileSync,
-  writeFileSync,
-} from 'node:fs';
+  readFile,
+  writeFile,
+} from 'node:fs/promises';
 import { join, } from 'node:path';
 
 import {
@@ -28,9 +28,9 @@ const MINIMUM_PROCESS_ID = 1;
 const PROCESS_EXISTS_SIGNAL = 0;
 
 /**
- * Sentinel for absent lock owner metadata.
+ * Sentinel for a missing pid record while checking stale writer liveness.
  */
-const ABSENT_MANIFEST_LOCK_OWNER: unique symbol = Symbol('file-enforcer/io/staleness-manifest-lock-owner: absent lock owner metadata',);
+const ABSENT_MANIFEST_LOCK_OWNER: unique symbol = Symbol('file-enforcer/io/staleness-manifest-lock-owner: pid record missing while checking writer liveness',);
 
 /**
  * Metadata stored in lock owner file.
@@ -126,10 +126,10 @@ function isManifestLockOwner(value: unknown,): value is ManifestLockOwner {
  *
  * @example
  * ```ts
- * writeLockOwner('/tmp/manifest.json.lock');
+ * await writeLockOwner('/tmp/manifest.json.lock');
  * ```
  */
-export function writeLockOwner(lockPath: string,): void {
+export async function writeLockOwner(lockPath: string,): Promise<void> {
   /**
    * Metadata describing current lock holder.
    */
@@ -137,7 +137,7 @@ export function writeLockOwner(lockPath: string,): void {
     pid: process.pid,
     createdAt: new Date().toISOString(),
   };
-  writeFileSync(
+  await writeFile(
     lockOwnerPath(lockPath,),
     `${JSON.stringify(
       owner,
@@ -158,15 +158,15 @@ export function writeLockOwner(lockPath: string,): void {
  *
  * @example
  * ```ts
- * const owner = readLockOwner('/tmp/manifest.json.lock');
+ * const owner = await readLockOwner('/tmp/manifest.json.lock');
  * ```
  */
-function readLockOwner(lockPath: string,): ManifestLockOwnerRead {
+async function readLockOwner(lockPath: string,): Promise<ManifestLockOwnerRead> {
   try {
     /**
      * Parsed owner metadata JSON.
      */
-    const owner: unknown = JSON.parse(readFileSync(
+    const owner: unknown = JSON.parse(await readFile(
       lockOwnerPath(lockPath,),
       'utf8',
     ),);
@@ -243,14 +243,14 @@ function processAppearsAlive(pid: number,): boolean {
  *
  * @example
  * ```ts
- * const state = lockOwnerState('/tmp/manifest.json.lock');
+ * const state = await lockOwnerState('/tmp/manifest.json.lock');
  * ```
  */
-export function lockOwnerState(lockPath: string,): ManifestLockOwnerState {
+export async function lockOwnerState(lockPath: string,): Promise<ManifestLockOwnerState> {
   /**
    * Owner metadata read from lock directory.
    */
-  const owner = readLockOwner(lockPath,);
+  const owner = await readLockOwner(lockPath,);
   if (owner === ABSENT_MANIFEST_LOCK_OWNER)
     return 'absent';
   if (processAppearsAlive(owner.pid,))

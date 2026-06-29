@@ -15,7 +15,7 @@
  */
 
 import spawn from 'nano-spawn';
-import { writeFileSync, } from 'node:fs';
+import { writeFile, } from 'node:fs/promises';
 import { resolve, } from 'node:path';
 import { firstWhitespaceToken, } from './registry-parse.ts';
 
@@ -155,7 +155,8 @@ async function ensureVolumes(): Promise<void> {
               ],
             );
           }
-          catch {
+          catch (inspectError: unknown) {
+            void inspectError;
             console.log(`[generate-index] creating volume: ${vol}`,);
             await spawn(
               'podman',
@@ -495,7 +496,7 @@ console.log(`[generate-index] ${filtered.length} packages remaining`,);
  * Step 7: Generate and write TypeScript
  */
 const source = generateTypeScript(filtered,);
-writeFileSync(
+await writeFile(
   OUTPUT_PATH,
   source,
   'utf8',

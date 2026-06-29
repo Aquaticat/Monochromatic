@@ -10,38 +10,38 @@ export type WatchModeLifecycle = Readonly<{
   /**
    * Returns whether watch mode has already failed closed.
    */
-  hasFailed(): boolean;
+  hasFailed: () => boolean;
 
   /**
    * Fails watch mode closed and tears down active state.
    */
-  fail(failureError: unknown): void;
+  fail: (failureError: unknown) => void;
 
   /**
    * Registers watcher abort controller for later teardown.
    */
-  registerController(args: {
+  registerController: (args: {
     readonly controller: AbortController;
     readonly dir: string;
-  }): void;
+  }) => void;
 
   /**
    * Aborts all active watchers and clears their registry.
    */
-  closeAllWatchers(): void;
+  closeAllWatchers: () => void;
 
   /**
    * Schedules one debounce timer, clearing any older timer first.
    */
-  scheduleDebounce(args: {
+  scheduleDebounce: (args: {
     readonly callback: () => void;
     readonly delayMs: number;
-  }): void;
+  }) => void;
 
   /**
    * Clears pending debounce timer state.
    */
-  clearDebounceTimer(): void;
+  clearDebounceTimer: () => void;
 }>;
 
 //region Lifecycle factory

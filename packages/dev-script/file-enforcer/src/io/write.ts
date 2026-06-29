@@ -135,7 +135,7 @@ async function writeIfChanged(
       `skip (unchanged): ${sourcePath !== undefined ? `${sourcePath} -> ` : ''}${dest}`,
     );
     if (recordStaleness !== false) {
-      rememberEagerWrite({
+      await rememberEagerWrite({
         dest,
         content,
         manifestPath,
@@ -146,7 +146,7 @@ async function writeIfChanged(
   /**
    * Actual post-rename destination timestamp used for watch echo suppression.
    */
-  const writeTimestamp = writeFileAtomically({
+  const writeTimestamp = await writeFileAtomically({
     filePath: dest,
     content,
   },);
@@ -159,7 +159,7 @@ async function writeIfChanged(
     timestamp: writeTimestamp,
   },);
   if (recordStaleness !== false) {
-    rememberEagerWrite({
+    await rememberEagerWrite({
       dest,
       content,
       manifestPath,
@@ -209,7 +209,7 @@ export async function overwrite(
   /**
    * Manifest path resolved once so internal staleness helpers receive a concrete path.
    */
-  const resolvedManifestPath = resolveManifestPath(manifestPath === undefined
+  const resolvedManifestPath = await resolveManifestPath(manifestPath === undefined
     ? {}
     : { manifestPath, },);
   if (isContentBuilder(content,)) {
@@ -271,7 +271,7 @@ export async function overwriteIfNotExists(
    * Actual post-create destination timestamp used for watch echo suppression,
    * or a sentinel when another directory entry won the final path first.
    */
-  const writeTimestamp = writeFileIfAbsentAtomically({
+  const writeTimestamp = await writeFileIfAbsentAtomically({
     filePath: dest,
     content,
   },);
@@ -287,10 +287,10 @@ export async function overwriteIfNotExists(
     filePath: dest,
     timestamp: writeTimestamp,
   },);
-  rememberEagerWrite({
+  await rememberEagerWrite({
     dest,
     content,
-    manifestPath: resolveManifestPath({},),
+    manifestPath: await resolveManifestPath({},),
   },);
   l.info(`-> ${dest}`,);
 }
@@ -326,7 +326,7 @@ export async function overwriteEach(
   /**
    * Manifest path resolved once so internal staleness helpers receive a concrete path.
    */
-  const resolvedManifestPath = resolveManifestPath(manifestPath === undefined
+  const resolvedManifestPath = await resolveManifestPath(manifestPath === undefined
     ? {}
     : { manifestPath, },);
   if (isGlobResultsBuilder(files,)) {
@@ -352,7 +352,7 @@ export async function overwriteEach(
     writeIfChanged: writeIfChangedForLazy,
     manifestPath: resolvedManifestPath,
   },);
-  rememberEagerEach({
+  await rememberEagerEach({
     destGlob,
     destinations,
     manifestPath: resolvedManifestPath,

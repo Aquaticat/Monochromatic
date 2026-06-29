@@ -35,10 +35,10 @@ export type EventKind = 'source' | 'protected' | 'ignore';
  *
  * @example
  * ```ts
- * const dirs = watchDirs('/abs/path/to/config.ts');
+ * const dirs = await watchDirs('/abs/path/to/config.ts');
  * ```
  */
-export function watchDirs(configPath: string,): Set<string> {
+export async function watchDirs(configPath: string,): Promise<Set<string>> {
   /**
    * All paths that need monitoring: reads, writes, and the config
    */
@@ -47,13 +47,19 @@ export function watchDirs(configPath: string,): Set<string> {
     ...writes,
     resolve(configPath,),
   ];
+  /**
+   * Nearest existing directories covering tracked glob static roots.
+   */
+  const globDirectories = await Promise.all(
+    [...globs.keys(),].map(async function toGlobWatchDirectory(pattern,): Promise<string> {
+      return await nearestExistingDirectory(globWatchDirectory(pattern,),);
+    },),
+  );
   return new Set([
     ...allPaths.map(function toDir(filePath,): string {
       return dirname(filePath,);
     },),
-    ...[...globs.keys(),].map(function toGlobWatchDirectory(pattern,): string {
-      return nearestExistingDirectory(globWatchDirectory(pattern,),);
-    },),
+    ...globDirectories,
   ],);
 }
 
@@ -157,7 +163,8 @@ export async function classifyEvent(
         > ourWriteTime)
         return 'protected';
     }
-    catch {
+    catch (statError: unknown) {
+      void statError;
       // File may have been deleted externally
       return 'protected';
     }

@@ -46,7 +46,7 @@ function fillTemplate(
  * A unique `Symbol` keeps the absent case out of a banned `T | null` union
  * while staying distinguishable from every real {@link PackageManager} value.
  */
-export const NO_PACKAGE_MANAGER: unique symbol = Symbol('file-enforcer/package: detection ran but found no supported package manager',);
+export const NO_PACKAGE_MANAGER: unique symbol = Symbol('file-enforcer/package: host has no supported system installer available for automatic setup',);
 
 /**
  * Probes every registered manager concurrently and returns the highest-priority

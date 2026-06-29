@@ -7,9 +7,6 @@ import {
 } from './staleness-freshness.ts';
 import {
   loadManifest,
-  resolveManifestPath,
-  stalenessKeyForDest,
-  stalenessKeyForDestGlob,
   writeManifest,
 } from './staleness-manifest.ts';
 import { hashSourceSet, } from './staleness-hash.ts';
@@ -33,7 +30,7 @@ export {
   resolveManifestPath,
   stalenessKeyForDest,
   stalenessKeyForDestGlob,
-};
+} from './staleness-manifest.ts';
 
 /**
  * Checks whether a cached manifest entry is fresh and registers its tracked paths.
@@ -65,7 +62,7 @@ export async function freshStalenessEntryExists(
   /**
    * Persisted entry for this builder.
    */
-  const entry = loadManifest(manifestPath,)
+  const entry = (await loadManifest(manifestPath,))
     .entries[key];
   if (entry === undefined)
     return false;
@@ -102,10 +99,10 @@ export async function freshStalenessEntryExists(
  * const sourceFiles = await sourceStampsForReads(['./AGENTS.md']);
  * ```
  */
-function sourceStampsForReads(
+async function sourceStampsForReads(
   trackedReads: readonly string[],
-): StalenessEntry['sourceFiles'] | typeof ABSENT_FILE_STAMPS {
-  return readFileStamps([
+): Promise<StalenessEntry['sourceFiles'] | typeof ABSENT_FILE_STAMPS> {
+  return await readFileStamps([
     ...configDependencyPaths(),
     ...trackedReads,
   ],);
@@ -128,10 +125,10 @@ function sourceStampsForReads(
  *
  * @example
  * ```ts
- * rememberFreshStalenessEntry({ manifestPath, key, kind: 'single', trackedReads, trackedGlobs, destinations });
+ * await rememberFreshStalenessEntry({ manifestPath, key, kind: 'single', trackedReads, trackedGlobs, destinations });
  * ```
  */
-export function rememberFreshStalenessEntry(
+export async function rememberFreshStalenessEntry(
   {
     manifestPath,
     key,
@@ -147,18 +144,18 @@ export function rememberFreshStalenessEntry(
     readonly trackedGlobs: readonly TrackedGlob[];
     readonly destinations: readonly StalenessDestination[];
   },
-): void {
+): Promise<void> {
   /**
    * Source file metadata, including the config file as an implicit dependency.
    */
-  const sourceFiles = sourceStampsForReads(trackedReads,);
+  const sourceFiles = await sourceStampsForReads(trackedReads,);
   if (sourceFiles === ABSENT_FILE_STAMPS)
     return;
 
   /**
    * Destination metadata after reconciliation.
    */
-  const destinationFiles = destinationStamps(destinations,);
+  const destinationFiles = await destinationStamps(destinations,);
   if (destinationFiles === ABSENT_FILE_STAMPS)
     return;
 
@@ -183,9 +180,9 @@ export function rememberFreshStalenessEntry(
   /**
    * Mutable manifest object for this path.
    */
-  const manifest = loadManifest(manifestPath,);
+  const manifest = await loadManifest(manifestPath,);
   manifest.entries[key] = entry;
-  writeManifest({
+  await writeManifest({
     manifestPath,
     manifest,
   },);

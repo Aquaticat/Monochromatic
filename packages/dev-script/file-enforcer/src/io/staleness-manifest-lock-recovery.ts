@@ -1,7 +1,7 @@
 import {
-  rmSync,
-  statSync,
-} from 'node:fs';
+  rm,
+  stat,
+} from 'node:fs/promises';
 
 import { caughtErrorHasCode, } from './staleness-manifest-error.ts';
 import { lockOwnerState, } from './staleness-manifest-lock-owner.ts';
@@ -16,9 +16,9 @@ const LOCK_STALE_AFTER_MS = 60_000;
 //endregion Stale lock recovery constants
 
 /**
- * Sentinel for lock directory disappearing during recovery checks.
+ * Sentinel for a coordination path missing before its mtime can be read.
  */
-const ABSENT_LOCK_DIRECTORY_AGE: unique symbol = Symbol('file-enforcer/io/staleness-manifest-lock-recovery: absent lock directory age',);
+const ABSENT_LOCK_DIRECTORY_AGE: unique symbol = Symbol('file-enforcer/io/staleness-manifest-lock-recovery: coordination path missing before mtime read',);
 
 /**
  * Result of reading lock directory age.
@@ -38,15 +38,15 @@ type LockDirectoryAge = number | typeof ABSENT_LOCK_DIRECTORY_AGE;
  *
  * @example
  * ```ts
- * const age = lockDirectoryAgeMs('/tmp/manifest.json.lock');
+ * const age = await lockDirectoryAgeMs('/tmp/manifest.json.lock');
  * ```
  */
-function lockDirectoryAgeMs(lockPath: string,): LockDirectoryAge {
+async function lockDirectoryAgeMs(lockPath: string,): Promise<LockDirectoryAge> {
   try {
     /**
      * Filesystem metadata for existing lock directory.
      */
-    const lockStat = statSync(lockPath,);
+    const lockStat = await stat(lockPath,);
     return Date.now() - lockStat.mtimeMs;
   }
   catch (statError: unknown) {
@@ -69,14 +69,14 @@ function lockDirectoryAgeMs(lockPath: string,): LockDirectoryAge {
  *
  * @example
  * ```ts
- * const stale = lockDirectoryIsRecoverable('/tmp/manifest.json.lock');
+ * const stale = await lockDirectoryIsRecoverable('/tmp/manifest.json.lock');
  * ```
  */
-function lockDirectoryIsRecoverable(lockPath: string,): boolean {
+async function lockDirectoryIsRecoverable(lockPath: string,): Promise<boolean> {
   /**
    * Liveness state reported by lock owner metadata.
    */
-  const ownerState = lockOwnerState(lockPath,);
+  const ownerState = await lockOwnerState(lockPath,);
   if (ownerState === 'dead')
     return true;
   if (ownerState === 'live')
@@ -85,7 +85,7 @@ function lockDirectoryIsRecoverable(lockPath: string,): boolean {
   /**
    * Lock age from directory metadata.
    */
-  const ageMs = lockDirectoryAgeMs(lockPath,);
+  const ageMs = await lockDirectoryAgeMs(lockPath,);
   if (ageMs === ABSENT_LOCK_DIRECTORY_AGE)
     return true;
 
@@ -101,13 +101,13 @@ function lockDirectoryIsRecoverable(lockPath: string,): boolean {
  *
  * @example
  * ```ts
- * const retry = recoverStaleManifestLock('/tmp/manifest.json.lock');
+ * const retry = await recoverStaleManifestLock('/tmp/manifest.json.lock');
  * ```
  */
-export function recoverStaleManifestLock(lockPath: string,): boolean {
-  if (!lockDirectoryIsRecoverable(lockPath,))
+export async function recoverStaleManifestLock(lockPath: string,): Promise<boolean> {
+  if (!await lockDirectoryIsRecoverable(lockPath,))
     return false;
-  rmSync(
+  await rm(
     lockPath,
     {
       recursive: true,

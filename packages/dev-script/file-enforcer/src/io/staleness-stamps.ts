@@ -1,4 +1,4 @@
-import { statSync, } from 'node:fs';
+import { stat, } from 'node:fs/promises';
 import { resolve, } from 'node:path';
 import type { TrackedGlob, } from '../tracker.ts';
 import { caughtErrorHasCode, } from './error.ts';
@@ -72,12 +72,12 @@ export function normalizeGlobStamps(globs: readonly TrackedGlob[],): readonly Gl
  * const stamp = await readFileStamp('./AGENTS.md');
  * ```
  */
-function readFileStamp(path: string,): FileStamp | typeof ABSENT_FILE_STAMPS {
+async function readFileStamp(path: string,): Promise<FileStamp | typeof ABSENT_FILE_STAMPS> {
   try {
     /**
      * Filesystem metadata for the path.
      */
-    const fileStat = statSync(path,);
+    const fileStat = await stat(path,);
     return {
       path: resolve(path,),
       size: fileStat.size,
@@ -125,16 +125,18 @@ function isPresentFileStamp(value: FileStamp | typeof ABSENT_FILE_STAMPS,): valu
  * const stamps = await readFileStamps(['./AGENTS.md']);
  * ```
  */
-export function readFileStamps(
+export async function readFileStamps(
   paths: readonly string[],
-): readonly FileStamp[] | typeof ABSENT_FILE_STAMPS {
+): Promise<readonly FileStamp[] | typeof ABSENT_FILE_STAMPS> {
   /**
    * Metadata results in input order.
    */
-  const stamps = normalizePaths(paths,)
-    .map(function readPathStamp(path,): FileStamp | typeof ABSENT_FILE_STAMPS {
-      return readFileStamp(path,);
-    },);
+  const stamps = await Promise.all(
+    normalizePaths(paths,)
+      .map(async function readPathStamp(path,): Promise<FileStamp | typeof ABSENT_FILE_STAMPS> {
+        return await readFileStamp(path,);
+      },),
+  );
   /**
    * Present metadata results.
    */

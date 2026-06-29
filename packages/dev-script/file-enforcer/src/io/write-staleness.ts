@@ -45,10 +45,10 @@ function currentTrackedGlobs(): readonly TrackedGlob[] {
  *
  * @example
  * ```ts
- * rememberEagerWrite({ dest: './CLAUDE.md', content: '...', manifestPath });
+ * await rememberEagerWrite({ dest: './CLAUDE.md', content: '...', manifestPath });
  * ```
  */
-export function rememberEagerWrite(
+export async function rememberEagerWrite(
   {
     dest,
     content,
@@ -58,8 +58,8 @@ export function rememberEagerWrite(
     readonly content: string;
     readonly manifestPath: string;
   },
-): void {
-  rememberFreshStalenessEntry({
+): Promise<void> {
+  await rememberFreshStalenessEntry({
     manifestPath,
     key: stalenessKeyForDest(dest,),
     kind: 'single',
@@ -83,10 +83,10 @@ export function rememberEagerWrite(
  *
  * @example
  * ```ts
- * rememberEagerEach({ destGlob: './out/*.md', destinations, manifestPath });
+ * await rememberEagerEach({ destGlob: './out/*.md', destinations, manifestPath });
  * ```
  */
-export function rememberEagerEach(
+export async function rememberEagerEach(
   {
     destGlob,
     destinations,
@@ -96,8 +96,8 @@ export function rememberEagerEach(
     readonly destinations: readonly GlobDestination[];
     readonly manifestPath: string;
   },
-): void {
-  rememberFreshStalenessEntry({
+): Promise<void> {
+  await rememberFreshStalenessEntry({
     manifestPath,
     key: stalenessKeyForDestGlob(destGlob,),
     kind: 'each',

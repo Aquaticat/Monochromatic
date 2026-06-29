@@ -68,7 +68,8 @@ function decodeXmlCodePoint({
   try {
     return String.fromCodePoint(codePoint,);
   }
-  catch {
+  catch (codePointError: unknown) {
+    void codePointError;
     return `&#${text};`;
   }
 }

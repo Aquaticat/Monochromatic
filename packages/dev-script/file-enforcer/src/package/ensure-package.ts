@@ -86,7 +86,7 @@ export function registerPackages(entries: readonly PackageEntry[],): void {
  * the absent case out of a banned `string | undefined` union while staying
  * distinguishable from any real package name (including the empty string).
  */
-const UNPROVIDABLE_PACKAGE = Symbol('file-enforcer/package: package unavailable on the detected manager per Repology data',);
+const UNPROVIDABLE_PACKAGE = Symbol('file-enforcer/package: detected manager cannot supply requested binary according to Repology data',);
 
 /**
  * Resolves the package name for a given entry and manager.

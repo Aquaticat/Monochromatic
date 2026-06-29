@@ -1,8 +1,9 @@
 import {
-  mkdirSync,
-  rmSync,
-} from 'node:fs';
+  mkdir,
+  rm,
+} from 'node:fs/promises';
 import { dirname, } from 'node:path';
+import { setTimeout as wait, } from 'node:timers/promises';
 
 import { recoverStaleManifestLock, } from './staleness-manifest-lock-recovery.ts';
 import { writeLockOwner, } from './staleness-manifest-lock-owner.ts';
@@ -11,7 +12,7 @@ import {
   StalenessManifestPersistenceError,
 } from './staleness-manifest-error.ts';
 
-//region Locking and synchronous sleep constants
+//region Locking constants
 
 /**
  * Suffix appended to manifest path for directory locks.
@@ -28,55 +29,9 @@ const LOCK_RETRY_MS = 10;
  */
 const LOCK_TIMEOUT_MS = 5_000;
 
-/**
- * Length of synchronous sleep buffer.
- */
-const SLEEP_BUFFER_LENGTH = 1;
-
-/**
- * Index used for synchronous Atomics wait.
- */
-const SLEEP_WAIT_INDEX = 0;
-
-/**
- * Expected value used for synchronous Atomics wait.
- */
-const SLEEP_EXPECTED_VALUE = 0;
-
-/**
- * Shared buffer backing synchronous lock-poll sleeps.
- */
-const sleepBuffer = new SharedArrayBuffer(
-  Int32Array.BYTES_PER_ELEMENT * SLEEP_BUFFER_LENGTH,
-);
-
-/**
- * Int32 view used by Atomics.wait for short synchronous sleeps.
- */
-const sleepArray = new Int32Array(sleepBuffer,);
-
-//endregion Locking and synchronous sleep constants
+//endregion Locking constants
 
 //region Lock acquisition helpers
-
-/**
- * Sleeps synchronously while polling manifest lock.
- *
- * @param durationMs - Sleep duration in milliseconds.
- *
- * @example
- * ```ts
- * sleepSync({ durationMs: LOCK_RETRY_MS });
- * ```
- */
-function sleepSync({ durationMs, }: { readonly durationMs: number; },): void {
-  Atomics.wait(
-    sleepArray,
-    SLEEP_WAIT_INDEX,
-    SLEEP_EXPECTED_VALUE,
-    durationMs,
-  );
-}
 
 /**
  * Removes lock directory if owner metadata cannot be written.
@@ -89,10 +44,10 @@ function sleepSync({ durationMs, }: { readonly durationMs: number; },): void {
  *
  * @example
  * ```ts
- * cleanupFailedOwnerWrite({ lockPath, ownerError });
+ * await cleanupFailedOwnerWrite({ lockPath, ownerError });
  * ```
  */
-function cleanupFailedOwnerWrite(
+async function cleanupFailedOwnerWrite(
   {
     lockPath,
     ownerError,
@@ -100,8 +55,8 @@ function cleanupFailedOwnerWrite(
     readonly lockPath: string;
     readonly ownerError: unknown;
   },
-): never {
-  rmSync(
+): Promise<never> {
+  await rm(
     lockPath,
     {
       recursive: true,
@@ -118,15 +73,15 @@ function cleanupFailedOwnerWrite(
  *
  * @example
  * ```ts
- * recordLockOwner('/tmp/manifest.json.lock');
+ * await recordLockOwner('/tmp/manifest.json.lock');
  * ```
  */
-function recordLockOwner(lockPath: string,): void {
+async function recordLockOwner(lockPath: string,): Promise<void> {
   try {
-    writeLockOwner(lockPath,);
+    await writeLockOwner(lockPath,);
   }
   catch (ownerError: unknown) {
-    cleanupFailedOwnerWrite({
+    await cleanupFailedOwnerWrite({
       lockPath,
       ownerError,
     },);
@@ -134,21 +89,21 @@ function recordLockOwner(lockPath: string,): void {
 }
 
 /**
- * Returns disposable handle that releases lock directory.
+ * Returns async disposable handle that releases lock directory.
  *
  * @param lockPath - Lock directory path.
  *
- * @returns Disposable release handle.
+ * @returns Async disposable release handle.
  *
  * @example
  * ```ts
- * using lock = lockReleaseHandle('/tmp/manifest.json.lock');
+ * await using lock = lockReleaseHandle('/tmp/manifest.json.lock');
  * ```
  */
-function lockReleaseHandle(lockPath: string,): Disposable {
+function lockReleaseHandle(lockPath: string,): AsyncDisposable {
   return {
-    [Symbol.dispose](): void {
-      rmSync(
+    async [Symbol.asyncDispose](): Promise<void> {
+      await rm(
         lockPath,
         {
           recursive: true,
@@ -164,21 +119,21 @@ function lockReleaseHandle(lockPath: string,): Disposable {
 //region Lock acquisition
 
 /**
- * Acquires manifest directory lock and returns disposable release handle.
+ * Acquires manifest directory lock and returns async disposable release handle.
  *
  * @param manifestPath - Absolute manifest path whose lock should be held.
  *
- * @returns Disposable lock release handle.
+ * @returns Async disposable lock release handle.
  *
  * @throws When lock cannot be acquired before timeout.
  *
  * @example
  * ```ts
- * using lock = acquireManifestLock('/tmp/manifest.json');
+ * await using lock = await acquireManifestLock('/tmp/manifest.json');
  * ```
  */
-export function acquireManifestLock(manifestPath: string,): Disposable {
-  mkdirSync(
+export async function acquireManifestLock(manifestPath: string,): Promise<AsyncDisposable> {
+  await mkdir(
     dirname(manifestPath,),
     { recursive: true, },
   );
@@ -193,8 +148,10 @@ export function acquireManifestLock(manifestPath: string,): Disposable {
 
   while (true) {
     try {
-      mkdirSync(lockPath,);
-      recordLockOwner(lockPath,);
+      // oxlint-disable-next-line eslint/no-await-in-loop -- lock acquisition must observe each create attempt before deciding whether to retry.
+      await mkdir(lockPath,);
+      // oxlint-disable-next-line eslint/no-await-in-loop -- owner metadata belongs to the directory acquired by the immediately preceding mkdir.
+      await recordLockOwner(lockPath,);
       return lockReleaseHandle(lockPath,);
     }
     catch (lockError: unknown) {
@@ -203,7 +160,8 @@ export function acquireManifestLock(manifestPath: string,): Disposable {
         code: 'EEXIST',
       },))
         throw lockError;
-      if (recoverStaleManifestLock(lockPath,))
+      // oxlint-disable-next-line eslint/no-await-in-loop -- stale recovery must run against the currently observed contended lock.
+      if (await recoverStaleManifestLock(lockPath,))
         continue;
       if (Date.now() > deadline) {
         throw new StalenessManifestPersistenceError(
@@ -211,7 +169,8 @@ export function acquireManifestLock(manifestPath: string,): Disposable {
           { cause: lockError, },
         );
       }
-      sleepSync({ durationMs: LOCK_RETRY_MS, },);
+      // oxlint-disable-next-line eslint/no-await-in-loop -- retries intentionally poll one lock state snapshot per delay.
+      await wait(LOCK_RETRY_MS,);
     }
   }
 }

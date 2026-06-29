@@ -22,7 +22,7 @@ export type XmlEntry = {
 /**
  * Sentinel returned by attribute and option readers when the value is absent.
  */
-export const ABSENT_XML_VALUE: unique symbol = Symbol('file-enforcer/pipeline/xml: requested XML attribute or option value is absent',);
+export const ABSENT_XML_VALUE: unique symbol = Symbol('file-enforcer/pipeline/xml: requested setting has no associated text in parsed markup',);
 
 /**
  * Sentinel returned by entry lookups when no map entry matches the key.

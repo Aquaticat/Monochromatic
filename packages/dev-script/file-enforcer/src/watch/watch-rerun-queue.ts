@@ -50,17 +50,17 @@ export type WatchRerunQueue = Readonly<{
   /**
    * Adds one rerun batch and resolves when that batch has been processed.
    */
-  enqueue(batch: WatchRerunBatch): Promise<void>;
+  enqueue: (batch: WatchRerunBatch) => Promise<void>;
 
   /**
    * Returns number of batches waiting behind any active rerun.
    */
-  pendingCount(): number;
+  pendingCount: () => number;
 
   /**
    * Returns whether a rerun is currently active.
    */
-  running(): boolean;
+  running: () => boolean;
 }>;
 
 //region Watch rerun queue internals

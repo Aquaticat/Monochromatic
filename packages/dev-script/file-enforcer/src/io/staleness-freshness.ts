@@ -50,7 +50,7 @@ export async function stampsAreFresh(
   /**
    * Current metadata for the recorded source paths.
    */
-  const currentSources = readFileStamps(sourceFiles.map(function sourcePath(sourceFile,): string {
+  const currentSources = await readFileStamps(sourceFiles.map(function sourcePath(sourceFile,): string {
     return sourceFile.path;
   },),);
   if (currentSources === ABSENT_FILE_STAMPS)
@@ -60,7 +60,7 @@ export async function stampsAreFresh(
     recordedStamps: sourceFiles,
   }))
     return false;
-  if (!destinationStampListsMatch({ recordedStamps: destinationFiles, }))
+  if (!await destinationStampListsMatch({ recordedStamps: destinationFiles, }))
     return false;
 
   return await globStampsMatch(sourceGlobs,);

@@ -1,4 +1,4 @@
-import { readFileSync, } from 'node:fs';
+import { readFile, } from 'node:fs/promises';
 import { caughtErrorHasCode, } from './error.ts';
 import { hashContent, } from './staleness-hash.ts';
 import {
@@ -21,20 +21,20 @@ import {
  *
  * @example
  * ```ts
- * const fresh = destinationStampListsMatch({ recordedStamps });
+ * const fresh = await destinationStampListsMatch({ recordedStamps });
  * ```
  */
-export function destinationStampListsMatch(
+export async function destinationStampListsMatch(
   {
     recordedStamps,
   }: {
     readonly recordedStamps: readonly DestinationStamp[];
   },
-): boolean {
+): Promise<boolean> {
   /**
    * Current filesystem metadata for every recorded destination.
    */
-  const currentStamps = readFileStamps(recordedStamps.map(function destinationPath(stamp,): string {
+  const currentStamps = await readFileStamps(recordedStamps.map(function destinationPath(stamp,): string {
     return stamp.path;
   },),);
   if (currentStamps === ABSENT_FILE_STAMPS)
@@ -45,21 +45,29 @@ export function destinationStampListsMatch(
   },))
     return false;
 
-  return recordedStamps.every(function destinationHashMatches(stamp,): boolean {
-    try {
-      return hashContent(readFileSync(
-        stamp.path,
-        'utf8',
-      ),) === stamp.hash;
-    }
-    catch (hashReadError: unknown) {
-      if (caughtErrorHasCode({
-        error: hashReadError,
-        code: 'ENOENT',
-      },))
-        return false;
+  /**
+   * Content hash comparison results for every recorded destination.
+   */
+  const hashMatches = await Promise.all(
+    recordedStamps.map(async function destinationHashMatches(stamp,): Promise<boolean> {
+      try {
+        return hashContent(await readFile(
+          stamp.path,
+          'utf8',
+        ),) === stamp.hash;
+      }
+      catch (hashReadError: unknown) {
+        if (caughtErrorHasCode({
+          error: hashReadError,
+          code: 'ENOENT',
+        },))
+          return false;
 
-      throw hashReadError;
-    }
+        throw hashReadError;
+      }
+    },),
+  );
+  return hashMatches.every(function hashMatched(hashMatch,): boolean {
+    return hashMatch;
   },);
 }

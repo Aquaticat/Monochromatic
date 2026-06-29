@@ -70,13 +70,13 @@ export async function freshStalenessManifest(
   /**
    * Absolute manifest path selected the same way writer calls select it.
    */
-  const resolvedManifestPath = resolveManifestPath(manifestPath === undefined
+  const resolvedManifestPath = await resolveManifestPath(manifestPath === undefined
     ? {}
     : { manifestPath, },);
   /**
    * Manifest loaded from the selected path.
    */
-  const manifest = loadManifest(resolvedManifestPath,);
+  const manifest = await loadManifest(resolvedManifestPath,);
   /**
    * Active config dependency paths for this process invocation.
    */
