@@ -17,7 +17,7 @@
  * expressed with a unique `Symbol` rather than a nullish value; callers compare
  * with `=== SKIP` instead of a truthiness check.
  */
-export const SKIP: unique symbol = Symbol('penpot:skip',);
+export const SKIP: unique symbol = Symbol('Penpot input has no convertible counterpart',);
 
 /**
  * Read-only view of a decoded Figma node or struct.

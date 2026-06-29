@@ -19,7 +19,7 @@ import type {
  * A unique `Symbol` rather than `undefined`/`null`: notifications are a real protocol state
  * ("handled, nothing to send"), distinct from any value the transport could mistake for a reply.
  */
-export const NO_RESPONSE: unique symbol = Symbol('mcp-stdio:no-response',);
+export const NO_RESPONSE: unique symbol = Symbol('MCP notification produced no response message',);
 
 /**
  * Outcome of dispatching one inbound message: either an outbound JSON-RPC reply,

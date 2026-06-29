@@ -4,7 +4,10 @@
  * @module figma-to-penpot-document
  */
 
-import type { FigmaFile, } from '@monochromatic-dev/figma-kiwi/ts';
+import {
+  FIGMA_DOCUMENT_ABSENT,
+  type FigmaFile,
+} from '@monochromatic-dev/figma-kiwi/ts';
 
 import { figmaColorToHex, } from './color.ts';
 import {
@@ -394,8 +397,10 @@ export function convertFigmaToPenpot(
   /**
    * Raw NodeChange entries lifted from the Figma document.
    */
-  const nodeChanges = recordArray(figmaFile.document
-    ?.nodeChanges,);
+  const nodeChanges = figmaFile.document === FIGMA_DOCUMENT_ABSENT
+    ? []
+    : recordArray(figmaFile.document
+      .nodeChanges,);
   /**
    * Conversion context with GUID, parent, and shape maps populated.
    */

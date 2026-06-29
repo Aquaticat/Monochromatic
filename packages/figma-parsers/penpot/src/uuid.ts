@@ -31,6 +31,25 @@ function nextSyntheticCounter(): number {
   return syntheticCounter.value;
 }
 
+/**
+ * Formats unknown caught value for fallback logging.
+ *
+ * @param error - Unknown caught value.
+ *
+ * @returns Human-readable error message.
+ *
+ * @example
+ * ```ts
+ * caughtErrorMessage(new Error('missing crypto'));
+ * // 'missing crypto'
+ * ```
+ */
+function caughtErrorMessage(error: unknown,): string {
+  if (error instanceof Error)
+    return error.message;
+  return String(error,);
+}
+
 /* oxlint-disable eslint/no-magic-numbers, unicorn/prefer-math-trunc -- UUID v4 bit-layout: the masks, shifts, segment widths, hex radix, and the `>>> 0` uint32 coercion below are the literal RFC 4122 field geometry; Math.trunc would drop the unsigned wrap, and naming each constant would obscure the byte layout */
 
 /**
@@ -84,7 +103,8 @@ export function nextUuid(): Uuid {
   try {
     return crypto.randomUUID();
   }
-  catch {
+  catch (error) {
+    console.warn(`[figma-penpot] crypto.randomUUID failed, using deterministic fallback: ${caughtErrorMessage(error,)}`,);
     /**
      * First 8-hex segment (low 32 bits of the counter).
      */

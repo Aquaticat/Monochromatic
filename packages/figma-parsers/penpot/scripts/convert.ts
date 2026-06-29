@@ -8,7 +8,10 @@
 import { writeFile, } from 'node:fs/promises';
 import process from 'node:process';
 
-import { parseFigmaFile, } from '@monochromatic-dev/figma-kiwi/ts';
+import {
+  FIGMA_DOCUMENT_ABSENT,
+  parseFigmaFile,
+} from '@monochromatic-dev/figma-kiwi/ts';
 
 import {
   convertFigmaToPenpot,
@@ -73,7 +76,7 @@ const figmaFile = await parseFigmaFile(inputPath,);
 /**
  * Figma's own file name, used as the Penpot file name when present.
  */
-const {fileName} = figmaFile.meta;
+const { fileName, } = figmaFile.meta;
 /**
  * Intermediate Penpot document model produced by the converter.
  */
@@ -101,8 +104,10 @@ await writeFile(
 /**
  * Raw NodeChange list from the decoded document, when present.
  */
-const nodeChanges = figmaFile.document
-  ?.nodeChanges;
+const nodeChanges = figmaFile.document === FIGMA_DOCUMENT_ABSENT
+  ? []
+  : figmaFile.document
+    .nodeChanges;
 /**
  * Count of NodeChange entries logged as a quick sanity-check of conversion scope.
  */
