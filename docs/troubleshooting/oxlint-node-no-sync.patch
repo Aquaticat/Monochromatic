@@ -1,0 +1,448 @@
+diff --git a/crates/oxc_linter/src/rules/node/no_sync.rs b/crates/oxc_linter/src/rules/node/no_sync.rs
+index d25c248..97f10cd 100644
+--- a/crates/oxc_linter/src/rules/node/no_sync.rs
++++ b/crates/oxc_linter/src/rules/node/no_sync.rs
+@@ -2,11 +2,17 @@ use rustc_hash::FxHashSet;
+ use schemars::JsonSchema;
+ use serde::Deserialize;
+ 
+-use oxc_ast::{AstKind, ast::Expression};
++use nodejs_built_in_modules::is_nodejs_builtin_module;
++use oxc_ast::{
++    AstKind,
++    ast::{BindingPattern, CallExpression, Expression, IdentifierReference, VariableDeclarator},
++};
+ use oxc_diagnostics::OxcDiagnostic;
+ use oxc_macros::declare_oxc_lint;
+ use oxc_span::Span;
+ use oxc_str::CompactStr;
++use oxc_syntax::node::NodeId;
++use oxc_syntax::symbol::SymbolId;
+ 
+ use crate::{
+     AstNode,
+@@ -81,7 +87,7 @@ impl Rule for NoSync {
+             return;
+         };
+ 
+-        let Some(property_name) = get_sync_property_name(&call_expr.callee) else {
++        let Some(property_name) = get_node_sync_property_name(&call_expr.callee, ctx) else {
+             return;
+         };
+ 
+@@ -97,30 +103,262 @@ impl Rule for NoSync {
+     }
+ }
+ 
+-fn get_sync_property_name<'a>(expr: &'a Expression<'a>) -> Option<&'a str> {
++fn get_node_sync_property_name<'a>(
++    expr: &'a Expression<'a>,
++    ctx: &LintContext<'a>,
++) -> Option<&'a str> {
++    let mut visited = FxHashSet::default();
++    get_node_sync_property_name_with_seen(expr, ctx, &mut visited)
++}
++
++fn get_node_sync_property_name_with_seen<'a>(
++    expr: &'a Expression<'a>,
++    ctx: &LintContext<'a>,
++    visited: &mut FxHashSet<SymbolId>,
++) -> Option<&'a str> {
+     match expr.get_inner_expression() {
+         Expression::Identifier(ident) if ident.name.as_str().ends_with("Sync") => {
+-            Some(ident.name.as_str())
++            let property_name = ident.name.as_str();
++            if is_node_builtin_function_identifier(ident, property_name, ctx, visited) {
++                Some(property_name)
++            } else {
++                None
++            }
+         }
+         Expression::StaticMemberExpression(member) => {
+-            if member.property.name.as_str().ends_with("Sync") {
+-                Some(member.property.name.as_str())
++            let property_name = member.property.name.as_str();
++            if property_name.ends_with("Sync")
++                && is_node_builtin_module_expression(&member.object, ctx, visited)
++            {
++                Some(property_name)
+             } else {
+-                get_sync_property_name(&member.object)
++                get_node_sync_property_name_with_seen(&member.object, ctx, visited)
+             }
+         }
+         Expression::ComputedMemberExpression(member) => {
+             if let Some(name) = member.static_property_name()
+                 && name.as_str().ends_with("Sync")
++                && is_node_builtin_module_expression(&member.object, ctx, visited)
+             {
+                 return Some(name.as_str());
+             }
+-            get_sync_property_name(&member.object)
++            get_node_sync_property_name_with_seen(&member.object, ctx, visited)
+         }
+         _ => None,
+     }
+ }
+ 
++fn is_node_builtin_function_identifier(
++    ident: &IdentifierReference<'_>,
++    property_name: &str,
++    ctx: &LintContext<'_>,
++    visited: &mut FxHashSet<SymbolId>,
++) -> bool {
++    let reference = ctx.scoping().get_reference(ident.reference_id());
++    let Some(symbol_id) = reference.symbol_id() else {
++        return false;
++    };
++    if !visited.insert(symbol_id) {
++        return false;
++    }
++    is_node_builtin_function_definition(symbol_id, property_name, ctx, visited)
++}
++
++fn is_node_builtin_module_expression(
++    expr: &Expression<'_>,
++    ctx: &LintContext<'_>,
++    visited: &mut FxHashSet<SymbolId>,
++) -> bool {
++    match expr.get_inner_expression() {
++        Expression::CallExpression(call_expr) => is_node_builtin_module_call(call_expr),
++        Expression::Identifier(ident) => {
++            let reference = ctx.scoping().get_reference(ident.reference_id());
++            let Some(symbol_id) = reference.symbol_id() else {
++                return false;
++            };
++            if !visited.insert(symbol_id) {
++                return false;
++            }
++            is_node_builtin_module_definition(symbol_id, ctx, visited)
++        }
++        _ => false,
++    }
++}
++
++fn is_node_builtin_function_definition(
++    symbol_id: SymbolId,
++    property_name: &str,
++    ctx: &LintContext<'_>,
++    visited: &mut FxHashSet<SymbolId>,
++) -> bool {
++    let declaration_id = ctx.scoping().symbol_declaration(symbol_id);
++    match ctx.nodes().kind(declaration_id) {
++        AstKind::ImportSpecifier(import_specifier) => {
++            import_declaration_source(declaration_id, ctx).is_some_and(is_node_builtin_module)
++                && import_specifier.imported.name() == property_name
++        }
++        AstKind::VariableDeclarator(variable_declarator) => is_node_builtin_function_declarator(
++            variable_declarator,
++            symbol_id,
++            property_name,
++            ctx,
++            visited,
++        ),
++        _ => false,
++    }
++}
++
++fn is_node_builtin_module_definition(
++    symbol_id: SymbolId,
++    ctx: &LintContext<'_>,
++    visited: &mut FxHashSet<SymbolId>,
++) -> bool {
++    let declaration_id = ctx.scoping().symbol_declaration(symbol_id);
++    match ctx.nodes().kind(declaration_id) {
++        AstKind::ImportDefaultSpecifier(_) | AstKind::ImportNamespaceSpecifier(_) => {
++            import_declaration_source(declaration_id, ctx).is_some_and(is_node_builtin_module)
++        }
++        AstKind::VariableDeclarator(variable_declarator) => is_node_builtin_module_declarator(
++            variable_declarator,
++            symbol_id,
++            ctx,
++            visited,
++        ),
++        _ => false,
++    }
++}
++
++fn is_node_builtin_function_declarator(
++    variable_declarator: &VariableDeclarator<'_>,
++    symbol_id: SymbolId,
++    property_name: &str,
++    ctx: &LintContext<'_>,
++    visited: &mut FxHashSet<SymbolId>,
++) -> bool {
++    if !variable_declarator.kind.is_const() {
++        return false;
++    }
++    let Some(init) = &variable_declarator.init else {
++        return false;
++    };
++    match &variable_declarator.id {
++        BindingPattern::BindingIdentifier(binding_identifier)
++            if binding_identifier.symbol_id() == symbol_id =>
++        {
++            is_node_builtin_member_expression(init, property_name, ctx, visited)
++        }
++        BindingPattern::ObjectPattern(object_pattern) => {
++            for property in &object_pattern.properties {
++                if property.computed {
++                    continue;
++                }
++                let BindingPattern::BindingIdentifier(binding_identifier) = &property.value else {
++                    continue;
++                };
++                if binding_identifier.symbol_id() != symbol_id {
++                    continue;
++                }
++                let Some(static_name) = property.key.static_name() else {
++                    return false;
++                };
++                if static_name != property_name {
++                    return false;
++                }
++                return is_node_builtin_module_expression(init, ctx, visited);
++            }
++            false
++        }
++        _ => false,
++    }
++}
++
++fn is_node_builtin_module_declarator(
++    variable_declarator: &VariableDeclarator<'_>,
++    symbol_id: SymbolId,
++    ctx: &LintContext<'_>,
++    visited: &mut FxHashSet<SymbolId>,
++) -> bool {
++    if !variable_declarator.kind.is_const() {
++        return false;
++    }
++    let BindingPattern::BindingIdentifier(binding_identifier) = &variable_declarator.id else {
++        return false;
++    };
++    if binding_identifier.symbol_id() != symbol_id {
++        return false;
++    }
++    let Some(init) = &variable_declarator.init else {
++        return false;
++    };
++    is_node_builtin_module_expression(init, ctx, visited)
++}
++
++fn is_node_builtin_member_expression(
++    expr: &Expression<'_>,
++    property_name: &str,
++    ctx: &LintContext<'_>,
++    visited: &mut FxHashSet<SymbolId>,
++) -> bool {
++    match expr.get_inner_expression() {
++        Expression::StaticMemberExpression(member) => {
++            member.property.name == property_name
++                && is_node_builtin_module_expression(&member.object, ctx, visited)
++        }
++        Expression::ComputedMemberExpression(member) => {
++            member.static_property_name().is_some_and(|name| name == property_name)
++                && is_node_builtin_module_expression(&member.object, ctx, visited)
++        }
++        _ => false,
++    }
++}
++
++fn is_node_builtin_module_call(call_expr: &CallExpression<'_>) -> bool {
++    if call_expr.optional || call_expr.arguments.len() != 1 || call_expr.arguments[0].is_spread() {
++        return false;
++    }
++    if call_expr.common_js_require().is_some_and(|source| is_node_builtin_module(source.value.as_str())) {
++        return true;
++    }
++    is_process_get_builtin_module_call(call_expr)
++}
++
++fn is_process_get_builtin_module_call(call_expr: &CallExpression<'_>) -> bool {
++    let Expression::StaticMemberExpression(callee) = &call_expr.callee else {
++        return false;
++    };
++    let Expression::Identifier(process_ident) = &callee.object else {
++        return false;
++    };
++    if process_ident.name != "process" || callee.property.name != "getBuiltinModule" {
++        return false;
++    }
++    matches!(
++        &call_expr.arguments[0],
++        oxc_ast::ast::Argument::StringLiteral(source) if is_node_builtin_module(source.value.as_str())
++    )
++}
++
++fn import_declaration_source<'a>(
++    declaration_id: NodeId,
++    ctx: &'a LintContext<'_>,
++) -> Option<&'a str> {
++    let AstKind::ImportDeclaration(import_declaration) = ctx.nodes().parent_kind(declaration_id)
++    else {
++        return None;
++    };
++    Some(import_declaration.source.value.as_str())
++}
++
++fn is_node_builtin_module(source: &str) -> bool {
++    let source = source.strip_prefix("node:").unwrap_or(source);
++    let module_name = if let Some((prefix, postfix)) = source.split_once('/') {
++        if postfix.is_empty() { source } else { prefix }
++    } else {
++        source
++    };
++    is_nodejs_builtin_module(module_name)
++}
++
+ #[test]
+ fn test() {
+     use crate::tester::Tester;
+@@ -130,33 +368,25 @@ fn test() {
+         ("fs.fooSync;", None),
+         ("fooSync;", None),
+         ("() => fooSync;", None),
++        (r#"import { parseSync } from "@optique/core/parser"; parseSync(parser, args);"#, None),
++        (r#"const parseSync = parser.parseSync; parseSync(args);"#, None),
++        (r#"const parser = { parseSync() {} }; parser.parseSync();"#, None),
+         ("var foo = fs.fooSync;", Some(serde_json::json!([{ "allowAtRootLevel": true }]))),
+         ("var foo = fooSync;", Some(serde_json::json!([{ "allowAtRootLevel": true }]))),
+-        ("if (true) {fs.fooSync();}", Some(serde_json::json!([{ "allowAtRootLevel": true }]))),
+-        ("if (true) {fooSync();}", Some(serde_json::json!([{ "allowAtRootLevel": true }]))),
+-        ("fooSync();", Some(serde_json::json!([{ "ignores": ["fooSync"] }]))),
++        (r#"import fs from "node:fs"; fs.readFileSync(path);"#, Some(serde_json::json!([{ "allowAtRootLevel": true }]))),
++        (r#"import { readFileSync } from "node:fs"; readFileSync(path);"#, Some(serde_json::json!([{ "allowAtRootLevel": true }]))),
++        (r#"import { readFileSync } from "node:fs"; readFileSync(path);"#, Some(serde_json::json!([{ "ignores": ["readFileSync"] }]))),
+     ];
+ 
+     let fail = vec![
+-        ("var foo = fs.fooSync();", None),
+-        ("var foo = fs.fooSync.apply();", None),
+-        ("var foo = fooSync();", None),
+-        ("var foo = fooSync.apply();", None),
+-        ("var foo = fs.fooSync();", Some(serde_json::json!([{ "allowAtRootLevel": false }]))),
+-        ("if (true) {fs.fooSync();}", None),
+-        ("function someFunction() {fs.fooSync();}", None),
+-        (
+-            "function someFunction() {fs.fooSync();}",
+-            Some(serde_json::json!([{ "allowAtRootLevel": true }])),
+-        ),
+-        (
+-            "var a = function someFunction() {fs.fooSync();}",
+-            Some(serde_json::json!([{ "allowAtRootLevel": true }])),
+-        ),
+-        (
+-            "() => {fs.fooSync();}",
+-            Some(serde_json::json!([{ "allowAtRootLevel": true, "ignores": ["barSync"] }])),
+-        ),
++        (r#"import fs from "node:fs"; fs.readFileSync(path);"#, None),
++        (r#"import * as fs from "fs"; fs.readFileSync(path);"#, None),
++        (r#"import { readFileSync } from "node:fs"; readFileSync(path);"#, None),
++        (r#"const fs = require("fs"); fs.readFileSync(path);"#, None),
++        (r#"const { readFileSync } = require("node:fs"); readFileSync(path);"#, None),
++        (r#"const fs = process.getBuiltinModule("node:fs"); fs.readFileSync(path);"#, None),
++        (r#"const { readFileSync } = process.getBuiltinModule("fs"); readFileSync(path);"#, None),
++        (r#"import fs from "node:fs"; fs.readFileSync.apply(fs, [path]);"#, None),
+     ];
+ 
+     Tester::new(NoSync::NAME, NoSync::PLUGIN, pass, fail).test_and_snapshot();
+diff --git a/crates/oxc_linter/src/snapshots/node_no_sync.snap b/crates/oxc_linter/src/snapshots/node_no_sync.snap
+index 89a8fcc..e03bcdb 100644
+--- a/crates/oxc_linter/src/snapshots/node_no_sync.snap
++++ b/crates/oxc_linter/src/snapshots/node_no_sync.snap
+@@ -2,62 +2,50 @@
+ source: crates/oxc_linter/src/tester.rs
+ ---
+ 
+-  ⚠ node(no-sync): Unexpected sync method: 'fooSync'.
+-   ╭─[no_sync.tsx:1:11]
+- 1 │ var foo = fs.fooSync();
+-   ·           ────────────
++  ⚠ node(no-sync): Unexpected sync method: 'readFileSync'.
++   ╭─[no_sync.tsx:1:27]
++ 1 │ import fs from "node:fs"; fs.readFileSync(path);
++   ·                           ─────────────────────
+    ╰────
+ 
+-  ⚠ node(no-sync): Unexpected sync method: 'fooSync'.
+-   ╭─[no_sync.tsx:1:11]
+- 1 │ var foo = fs.fooSync.apply();
+-   ·           ──────────────────
++  ⚠ node(no-sync): Unexpected sync method: 'readFileSync'.
++   ╭─[no_sync.tsx:1:27]
++ 1 │ import * as fs from "fs"; fs.readFileSync(path);
++   ·                           ─────────────────────
+    ╰────
+ 
+-  ⚠ node(no-sync): Unexpected sync method: 'fooSync'.
+-   ╭─[no_sync.tsx:1:11]
+- 1 │ var foo = fooSync();
+-   ·           ─────────
++  ⚠ node(no-sync): Unexpected sync method: 'readFileSync'.
++   ╭─[no_sync.tsx:1:41]
++ 1 │ import { readFileSync } from "node:fs"; readFileSync(path);
++   ·                                         ──────────────────
+    ╰────
+ 
+-  ⚠ node(no-sync): Unexpected sync method: 'fooSync'.
+-   ╭─[no_sync.tsx:1:11]
+- 1 │ var foo = fooSync.apply();
+-   ·           ───────────────
++  ⚠ node(no-sync): Unexpected sync method: 'readFileSync'.
++   ╭─[no_sync.tsx:1:27]
++ 1 │ const fs = require("fs"); fs.readFileSync(path);
++   ·                           ─────────────────────
+    ╰────
+ 
+-  ⚠ node(no-sync): Unexpected sync method: 'fooSync'.
+-   ╭─[no_sync.tsx:1:11]
+- 1 │ var foo = fs.fooSync();
+-   ·           ────────────
++  ⚠ node(no-sync): Unexpected sync method: 'readFileSync'.
++   ╭─[no_sync.tsx:1:46]
++ 1 │ const { readFileSync } = require("node:fs"); readFileSync(path);
++   ·                                              ──────────────────
+    ╰────
+ 
+-  ⚠ node(no-sync): Unexpected sync method: 'fooSync'.
+-   ╭─[no_sync.tsx:1:12]
+- 1 │ if (true) {fs.fooSync();}
+-   ·            ────────────
++  ⚠ node(no-sync): Unexpected sync method: 'readFileSync'.
++   ╭─[no_sync.tsx:1:49]
++ 1 │ const fs = process.getBuiltinModule("node:fs"); fs.readFileSync(path);
++   ·                                                 ─────────────────────
+    ╰────
+ 
+-  ⚠ node(no-sync): Unexpected sync method: 'fooSync'.
+-   ╭─[no_sync.tsx:1:26]
+- 1 │ function someFunction() {fs.fooSync();}
+-   ·                          ────────────
++  ⚠ node(no-sync): Unexpected sync method: 'readFileSync'.
++   ╭─[no_sync.tsx:1:58]
++ 1 │ const { readFileSync } = process.getBuiltinModule("fs"); readFileSync(path);
++   ·                                                          ──────────────────
+    ╰────
+ 
+-  ⚠ node(no-sync): Unexpected sync method: 'fooSync'.
+-   ╭─[no_sync.tsx:1:26]
+- 1 │ function someFunction() {fs.fooSync();}
+-   ·                          ────────────
+-   ╰────
+-
+-  ⚠ node(no-sync): Unexpected sync method: 'fooSync'.
+-   ╭─[no_sync.tsx:1:34]
+- 1 │ var a = function someFunction() {fs.fooSync();}
+-   ·                                  ────────────
+-   ╰────
+-
+-  ⚠ node(no-sync): Unexpected sync method: 'fooSync'.
+-   ╭─[no_sync.tsx:1:8]
+- 1 │ () => {fs.fooSync();}
+-   ·        ────────────
++  ⚠ node(no-sync): Unexpected sync method: 'readFileSync'.
++   ╭─[no_sync.tsx:1:27]
++ 1 │ import fs from "node:fs"; fs.readFileSync.apply(fs, [path]);
++   ·                           ─────────────────────────────────
+    ╰────

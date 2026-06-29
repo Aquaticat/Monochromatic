@@ -16,33 +16,38 @@ so do not change the current `parseSync` callsites in `packages/cli/git/src/pars
 - Created `docs/troubleshooting/oxlint-node-no-sync.md`.
 - Committed it as `4df2be188` with message `docs(oxlint): document node no-sync suffix false positive`.
 
-## Current correction
-
-User pointed out that troubleshooting-doc constraints sorta-hold,
-so the auto-prototype step must run.
-The committed troubleshooting doc currently says no prototype was run.
-That must be corrected after the prototype.
-
 ## Prototype state
 
-Fresh disposable upstream clone was created for the auto-prototype:
+User pointed out that troubleshooting-doc constraints sorta-hold,
+so the auto-prototype step had to run.
+That is now done.
+
+Fresh disposable upstream clone:
 
 ```text
 /tmp/agent/oxc-no-sync-prototype-LmG4Snov
 ```
 
-Clone command used:
+Origin and commit:
 
-```bash
-gh repo clone oxc-project/oxc /tmp/agent/oxc-no-sync-prototype-LmG4Snov -- --depth 1
+```text
+https://github.com/oxc-project/oxc.git
+d8c6b550c8802cc68f8e404f279cdc603692b3b6
 ```
 
-Next steps:
+Prototype artifacts:
 
-- Verify clone origin and commit.
-- Prototype the smallest upstream-compatible change that prevents `parseSync()` imported from `@optique/core/parser` from triggering `node/no-sync`, while keeping Node sync APIs reported.
-- Record the patch and verification in `docs/troubleshooting/oxlint-node-no-sync.md`.
-- Commit the troubleshooting doc update.
+- `docs/troubleshooting/oxlint-node-no-sync.patch`
+- Updated but not yet committed `docs/troubleshooting/oxlint-node-no-sync.md`
+
+Verification command passed:
+
+```bash
+cargo test --manifest-path /tmp/agent/oxc-no-sync-prototype-LmG4Snov/Cargo.toml --package oxc_linter node::no_sync::test
+```
+
+Next step:
+commit the troubleshooting doc and patch update.
 
 ## Local rule plan
 

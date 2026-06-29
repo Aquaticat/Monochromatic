@@ -234,36 +234,80 @@ gh search prs --repo oxc-project/oxc "no-sync Sync false positive" --state close
 Constraint check:
 
 - Is it really upstream's fault?
-  Partly.
+  Yes.
   The diagnostic is emitted by upstream oxlint and the suffix-only implementation causes this repo's false positive.
-  But the implementation appears intentionally suffix-based rather than an accidental import-resolution bug.
+  The current behavior is explainable,
+  but the rule name and examples are Node-focused while the implementation reports non-Node callees.
 - Can upstream fix it?
   Yes.
-  A stricter implementation could resolve bindings to Node builtin modules before reporting.
+  A stricter implementation can resolve bindings to Node builtin modules before reporting.
 - Are they supporting this use case?
-  Not clearly.
-  The rule currently supports banning sync-looking calls and offers `ignores`,
-  not precise Node builtin API provenance.
+  Soft yes.
+  The docs frame the rule as Node.js sync API policy,
+  and the examples use `fs.existsSync()` and `fs.readFileSync()`.
+  The existing `ignores` option covers false positives,
+  but it is a workaround rather than the rule's core meaning.
 - Would the repo welcome our contribution?
-  Maybe.
+  Yes with care.
   `CONTRIBUTING.md` welcomes contributions and allows AI assistance with disclosure,
   but requires human review and tested submissions.
 - Will they likely fix it?
-  Unknown.
+  Soft yes.
   No matching issue or PR was found,
   and no recent `no_sync.rs` path-specific history was present in the shallow source clone.
+  There is no explicit maintainer signal against a narrower Node-provenance interpretation.
 - Have we prototyped a minimal fix compatible with their architecture?
-  No.
-  Because the supported-use-case constraint is not met,
-  the auto-prototype gate does not fire.
+  Yes.
+  The prototype patch is recorded in [oxlint-node-no-sync.patch](oxlint-node-no-sync.patch).
+
+### Prototype
+
+Fresh disposable upstream clone:
+`/tmp/agent/oxc-no-sync-prototype-LmG4Snov`.
+
+Origin and commit:
+
+```text
+https://github.com/oxc-project/oxc.git
+d8c6b550c8802cc68f8e404f279cdc603692b3b6
+```
+
+Prototype summary:
+
+- Replaced suffix-only reporting with provenance-aware reporting.
+- Continued to report sync APIs reached through Node builtin imports,
+  CommonJS `require()`,
+  `process.getBuiltinModule()`,
+  namespace/default module imports,
+  destructured sync API bindings,
+  and `.apply()` chaining through a sync member.
+- Added a pass case for `parseSync()` imported from `@optique/core/parser`.
+- Updated `crates/oxc_linter/src/snapshots/node_no_sync.snap` for the new fixture catalog.
+
+Patch:
+[oxlint-node-no-sync.patch](oxlint-node-no-sync.patch).
+
+Verification command:
+
+```bash
+cargo test --manifest-path /tmp/agent/oxc-no-sync-prototype-LmG4Snov/Cargo.toml --package oxc_linter node::no_sync::test
+```
+
+Verification output:
+
+```text
+running 1 test
+test rules::node::no_sync::test ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1162 filtered out; finished in 0.05s
+```
 
 Decision:
-do not file upstream as-is.
-Keep the project-local rule and revisit upstream only if oxlint documents `node/no-sync` as Node-builtin-provenance-aware or maintainers ask for that behavior.
+fileable after human review and AI disclosure.
+We are not filing it from this session;
+the repo-local rule below is still the chosen immediate workaround.
 
 ## Upstream filing artifact
-
-Do not file as-is.
 
 ~~~md
 Title: linter: node/no-sync reports non-Node parseSync imports by suffix alone
@@ -271,6 +315,14 @@ Title: linter: node/no-sync reports non-Node parseSync imports by suffix alone
 Labels: A-linter
 
 Oxlint version: 1.71.0
+
+AI assistance disclosure:
+
+This report was drafted with AI assistance.
+A human should verify the reproduction,
+source trace,
+prototype patch,
+and workaround before filing.
 
 Command:
 
@@ -304,8 +356,20 @@ Source trace:
 `crates/oxc_linter/src/rules/node/no_sync.rs:100-120` checks identifiers and member properties with `.ends_with("Sync")`.
 It does not inspect import declarations or module provenance before reporting.
 
+Prototype:
+
+A working prototype is recorded in `docs/troubleshooting/oxlint-node-no-sync.patch`.
+It resolves sync-looking calls through Node builtin imports,
+CommonJS `require()`,
+and `process.getBuiltinModule()` before reporting.
+The targeted upstream test passes with:
+
+```bash
+cargo test --manifest-path /tmp/agent/oxc-no-sync-prototype-LmG4Snov/Cargo.toml --package oxc_linter node::no_sync::test
+```
+
 Suggested fix:
 
-If the desired semantics are Node-builtin-only,
-collect bindings imported or required from Node builtin modules and report sync-looking calls only when the callee resolves to those bindings.
+Use the prototype shape in `crates/oxc_linter/src/rules/node/no_sync.rs`:
+collect or resolve bindings from Node builtin modules and report sync-looking calls only when the callee resolves to those bindings.
 ~~~
