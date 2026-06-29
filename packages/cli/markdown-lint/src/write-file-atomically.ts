@@ -110,7 +110,7 @@ export async function writeFileAtomically({
           cleanupError,
         ],
         WRITE_CLEANUP_ERROR_MESSAGE,
-        { cause: error, },
+        { cause: cleanupError, },
       );
     }
     throw error;
