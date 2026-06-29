@@ -112,6 +112,11 @@ export const restrictionRules: DummyRuleMap = {
   // Use Object.hasOwn(obj, key) instead of obj.hasOwnProperty(key).
   'no-restricted-syntax/no-hasownproperty': 'error',
 
+  // Upstream node/no-sync is suffix-only and reports non-Node APIs like Optique parseSync.
+  // The project rule below enforces the narrower policy: Node sync APIs only.
+  'node/no-sync': 'off',
+  'no-restricted-syntax/no-sync': 'error',
+
   // Rest parameters (...args) are banned. Accept an explicit array parameter instead.
   // Spread syntax in call expressions and array literals is not affected.
   'no-restricted-syntax/no-rest-params': 'error',

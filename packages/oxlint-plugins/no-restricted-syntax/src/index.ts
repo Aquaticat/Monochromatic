@@ -46,6 +46,7 @@ import { noPromiseFinally, } from './rules/no-promise-finally.ts';
 import { noRegex, } from './rules/no-regex.ts';
 import { noRestParams, } from './rules/no-rest-params.ts';
 import { noSwitch, } from './rules/no-switch.ts';
+import { noSync, } from './rules/no-sync.ts';
 import { noTrimLeftRight, } from './rules/no-trim-left-right.ts';
 import { noTryFinally, } from './rules/no-try-finally.ts';
 import {
@@ -100,6 +101,7 @@ const plugin: Plugin = eslintCompatPlugin({
     'no-regex': noRegex,
     'no-rest-params': noRestParams,
     'no-switch': noSwitch,
+    'no-sync': noSync,
     'no-trim-left-right': noTrimLeftRight,
     'no-try-finally': noTryFinally,
     'no-variable-function-expression': noVariableFunctionExpression,

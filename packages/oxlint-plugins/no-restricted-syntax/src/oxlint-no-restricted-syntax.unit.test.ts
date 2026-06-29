@@ -270,6 +270,7 @@ const SUBSTANTIVE_RULES = [
   'no-regex',
   'no-rest-params',
   'no-switch',
+  'no-sync',
   'no-trim-left-right',
   'no-try-finally',
   'no-variable-function-expression',
@@ -368,6 +369,15 @@ await describe({
           fn: async () => {
             const diagnostics = await lint(
               'valid/no-nullish-union.ts',
+            );
+            expect(diagnostics,).toEqual([],);
+          },
+        },),
+        it({
+          name: 'no-sync accepts non-Node Sync-named APIs',
+          fn: async () => {
+            const diagnostics = await lint(
+              'valid/no-sync.ts',
             );
             expect(diagnostics,).toEqual([],);
           },

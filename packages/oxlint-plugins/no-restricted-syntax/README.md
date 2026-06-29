@@ -43,6 +43,8 @@ This plugin provides individual rules for each banned syntax pattern instead.
    bans rest parameters (`...args`) in favor of explicit array parameters
 - **no-switch**:
    bans `switch` statements in favor of if/else chains or `Record` lookups
+- **no-sync**:
+   bans Node sync APIs while allowing non-Node `Sync`-named APIs
 - **no-trim-left-right**:
    bans `.trimLeft()`/`.trimRight()` in favor of `.trimStart()`/`.trimEnd()`
 - **no-try-finally**:

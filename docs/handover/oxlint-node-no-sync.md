@@ -49,16 +49,34 @@ cargo test --manifest-path /tmp/agent/oxc-no-sync-prototype-LmG4Snov/Cargo.toml 
 Next step:
 commit the troubleshooting doc and patch update.
 
-## Local rule plan
+## Local rule state
 
-After the troubleshooting doc is corrected:
+Initial custom rule implementation is present but not yet verified.
 
-- Add a new rule file under `packages/oxlint-plugins/no-restricted-syntax/src/rules/no-sync.ts`.
-- Register `no-sync` in `packages/oxlint-plugins/no-restricted-syntax/src/index.ts`.
-- Enable it in fixture config and shared oxlint restriction rules.
-- Disable upstream `node/no-sync` in shared restriction rules so the custom rule owns the policy.
-- Add invalid and valid fixture coverage.
-- Do not alter existing `parseSync` usages.
+Changed files:
+
+- `packages/oxlint-plugins/no-restricted-syntax/src/rules/no-sync.ts`
+- `packages/oxlint-plugins/no-restricted-syntax/src/rules/no-sync.constants.ts`
+- `packages/oxlint-plugins/no-restricted-syntax/src/rules/no-sync.syntax.ts`
+- `packages/oxlint-plugins/no-restricted-syntax/src/rules/no-sync.provenance.ts`
+- `packages/oxlint-plugins/no-restricted-syntax/src/index.ts`
+- `packages/oxlint-plugins/no-restricted-syntax/src/oxlint-no-restricted-syntax.unit.test.ts`
+- `packages/test-fixture/oxlint-no-restricted-syntax/.oxlintrc.fixture.json`
+- `packages/test-fixture/oxlint-no-restricted-syntax/src/invalid/no-sync.ts`
+- `packages/test-fixture/oxlint-no-restricted-syntax/src/valid/no-sync.ts`
+- `packages/config/oxlint/src/rules/restriction.ts`
+- `packages/oxlint-plugins/no-restricted-syntax/README.md`
+
+Policy shape:
+
+- `no-restricted-syntax/no-sync` reports Node builtin sync APIs resolved through imports,
+  `require()`,
+  `process.getBuiltinModule()`,
+  destructuring,
+  simple aliases,
+  and `.apply()`/`.call()` from a sync member.
+- Shared oxlint config disables upstream `node/no-sync` and enables the project rule.
+- Existing `parseSync` callsites are untouched.
 
 ## Verification reminders
 
