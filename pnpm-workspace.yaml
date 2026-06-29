@@ -5,6 +5,11 @@ allowBuilds:
   sharp: true
 
 autoInstallPeers: false
+# Prune stale project-local virtual-store entries on every install. Benchmarks in
+# docs/troubleshooting/pnpm-modules-cache.md showed negligible branch-switch
+# benefit from the default seven-day orphan retention in this Btrfs workspace,
+# while stale .pnpm paths create confusing inspection and TypeScript-cache risk.
+modulesCacheMaxAge: 0
 
 catalog:
   '@anthropic-ai/sdk': '>=0.99.0'
