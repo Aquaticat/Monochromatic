@@ -216,7 +216,7 @@ export const styleRules: DummyRuleMap = {
   // Some libraries require null.
   'unicorn/no-null': 'off',
 
-  // no-restricted-syntax/no-optional-catch-binding owns the opposite convention:
+  // no-restricted-syntax/catch-binding owns the opposite convention:
   // every catch must bind the thrown value.
   'unicorn/prefer-optional-catch-binding': 'off',
 

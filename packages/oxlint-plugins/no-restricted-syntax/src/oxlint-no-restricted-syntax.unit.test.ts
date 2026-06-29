@@ -263,7 +263,7 @@ const SUBSTANTIVE_RULES = [
   'no-low-information-symbol-description',
   'no-module-root-let',
   'no-nullish-union',
-  'no-optional-catch-binding',
+  'catch-binding',
   'no-optional-escape',
   'no-promise-catch',
   'no-promise-finally',

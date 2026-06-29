@@ -20,7 +20,7 @@
     "no-restricted-syntax/no-low-information-symbol-description": "error",
     "no-restricted-syntax/no-module-root-let": "error",
     "no-restricted-syntax/no-nullish-union": "error",
-    "no-restricted-syntax/no-optional-catch-binding": "error",
+    "no-restricted-syntax/catch-binding": "error",
     "no-restricted-syntax/no-optional-escape": "error",
     "no-restricted-syntax/no-promise-catch": "error",
     "no-restricted-syntax/no-promise-finally": "error",

@@ -39,9 +39,7 @@ import {
 } from './rules/no-low-information-symbol-description/index.ts';
 import { noModuleRootLet, } from './rules/no-module-root-let.ts';
 import { noNullishUnion, } from './rules/no-nullish-union.ts';
-import {
-  noOptionalCatchBinding,
-} from './rules/no-optional-catch-binding.ts';
+import { catchBinding, } from './rules/catch-binding.ts';
 import { noOptionalEscape, } from './rules/no-optional-escape.ts';
 import { noPromiseCatch, } from './rules/no-promise-catch.ts';
 import { noPromiseFinally, } from './rules/no-promise-finally.ts';
@@ -95,7 +93,7 @@ const plugin: Plugin = eslintCompatPlugin({
     'no-low-information-symbol-description': noLowInformationSymbolDescription,
     'no-module-root-let': noModuleRootLet,
     'no-nullish-union': noNullishUnion,
-    'no-optional-catch-binding': noOptionalCatchBinding,
+    'catch-binding': catchBinding,
     'no-optional-escape': noOptionalEscape,
     'no-promise-catch': noPromiseCatch,
     'no-promise-finally': noPromiseFinally,

@@ -67,5 +67,5 @@ mise run //packages/oxlint-plugins/no-restricted-syntax:lint:types
 mise run //packages/config/oxlint:lint:types
 ```
 
-`mise run //packages/cli/git:lint:oxlint` currently has unrelated existing `no-optional-catch-binding` errors,
+`mise run //packages/cli/git:lint:oxlint` currently has unrelated existing `catch-binding` errors,
 so it is useful for observing the old false-positive shape but not a clean final verification target unless those external errors are separately addressed.

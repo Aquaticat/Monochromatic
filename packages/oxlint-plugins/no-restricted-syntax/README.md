@@ -26,7 +26,7 @@ This plugin provides individual rules for each banned syntax pattern instead.
    rejects generic identifiers,
    absence labels,
    and repeated low-information phrases
-- **no-optional-catch-binding**:
+- **catch-binding**:
    bans `catch {}`;
    bind the caught value with `catch (error) {}` or another named binding
 - **no-module-root-let**:

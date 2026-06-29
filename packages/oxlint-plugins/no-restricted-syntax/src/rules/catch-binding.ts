@@ -6,7 +6,7 @@ import type {
 } from '@oxlint/plugins';
 
 /**
- * Bans optional `catch` bindings.
+ * Requires `catch` clauses to bind caught values.
  *
  * `catch {}` hides the thrown value at the boundary where the failure is
  * observed. Bind the value, usually as `error`, so code can log it, rethrow it,
@@ -30,12 +30,12 @@ import type {
  * }
  * ```
  */
-export const noOptionalCatchBinding: CreateOnceRule = {
+export const catchBinding: CreateOnceRule = {
   meta: {
     type: 'problem',
     docs: {
       description:
-        'Disallow optional catch bindings. Use a named catch binding so the thrown value stays available.',
+        'Disallow catch clauses without bindings. Use a named catch binding so the thrown value stays available.',
       recommended: true,
     },
     messages: {

@@ -132,7 +132,7 @@ mise run //packages/cli/git:lint:oxlint
 ```
 
 Observed output includes eight `node(no-sync)` warnings for Optique `parseSync` calls,
-plus unrelated existing `no-optional-catch-binding` errors in the same package.
+plus unrelated existing `catch-binding` errors in the same package.
 One representative warning:
 
 ```text

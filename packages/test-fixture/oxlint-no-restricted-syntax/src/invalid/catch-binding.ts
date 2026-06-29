@@ -1,5 +1,5 @@
 // Fixture: catch without a binding should be banned.
-// Expected violation: no-restricted-syntax(no-optional-catch-binding)
+// Expected violation: no-restricted-syntax(catch-binding)
 
 function parseFallback(value: string,): unknown {
   try {
