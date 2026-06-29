@@ -63,6 +63,14 @@ type ResolveGitOptions = {
  * @returns `true` if the candidate is a shim for this package.
  */
 async function isShimForSelf(candidatePath: string,): Promise<boolean> {
+  /**
+   * Tagged logger for candidate self-shim detection.
+   */
+  const rl = tagged({
+    tag: isShimForSelf.name,
+    l,
+  },);
+
   try {
     /**
      * Raw file bytes decoded as UTF-8; scanned below for self-shim markers.
@@ -75,7 +83,8 @@ async function isShimForSelf(candidatePath: string,): Promise<boolean> {
       return content.includes(marker,);
     },);
   }
-  catch {
+  catch (error: unknown) {
+    rl.debug(`could not read ${candidatePath} as a self-shim candidate: ${String(error,)}`,);
     return false;
   }
 }
@@ -139,7 +148,8 @@ export async function resolveGit({
       rl.debug(`resolved real git at ${candidate}`,);
       return candidate;
     }
-    catch {
+    catch (error: unknown) {
+      rl.debug(`candidate ${candidate} is not usable as real git: ${String(error,)}`,);
       continue;
     }
   }
