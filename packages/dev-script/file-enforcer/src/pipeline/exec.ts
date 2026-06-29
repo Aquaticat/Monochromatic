@@ -1,22 +1,13 @@
 import spawn from 'nano-spawn';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
+import { l, } from '../logger.ts';
 import {
   type Command,
   evaluatePredicate,
   type PlatformCommands,
   type PlatformEntry,
 } from '../platform/evaluate-predicate.ts';
-
-/**
- * Logger root for file-enforcer after removing the package log shim.
- *
- * @example
- * ```ts
- * const rl = tagged({ tag: someFunction.name, l, },);
- * ```
- */
-const l = tagged({ tag: 'file-enforcer', },);
 
 //region exec
 

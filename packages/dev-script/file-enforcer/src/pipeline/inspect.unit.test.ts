@@ -3,9 +3,10 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { logger, } from '@monochromatic-dev/module-logger/ts';
-
-import { inspect, } from '../../dist/final/node/index.mjs';
+import {
+  inspect,
+  l,
+} from '../../dist/final/node/index.mjs';
 
 //region inspect
 
@@ -61,7 +62,7 @@ await describe({
     it({
       name: 'logs string content via tagged logger',
       fn: async ({ sinon, },) => {
-        const infoSpy = sinon.spy(logger, 'info',);
+        const infoSpy = sinon.spy(l, 'info',);
         inspect('test-content',);
         expect(infoSpy,).toHaveBeenCalledWith(
           expect.stringContaining('test-content',),
@@ -71,7 +72,7 @@ await describe({
     it({
       name: 'logs non-string content as JSON',
       fn: async ({ sinon, },) => {
-        const infoSpy = sinon.spy(logger, 'info',);
+        const infoSpy = sinon.spy(l, 'info',);
         inspect({ a: 1, },);
         /** Non-string values should be JSON-stringified in the log */
         const loggedMessage = infoSpy.args[0]?.[0] as string;
@@ -81,7 +82,7 @@ await describe({
     it({
       name: 'truncates long string content in log output',
       fn: async ({ sinon, },) => {
-        const infoSpy = sinon.spy(logger, 'info',);
+        const infoSpy = sinon.spy(l, 'info',);
         /** Content longer than the 200-char preview limit */
         const longContent = 'x'.repeat(300,);
         /** Return value should still be the full content */
@@ -95,7 +96,7 @@ await describe({
     it({
       name: 'does not truncate content exactly at preview limit',
       fn: async ({ sinon, },) => {
-        const infoSpy = sinon.spy(logger, 'info',);
+        const infoSpy = sinon.spy(l, 'info',);
         /** Content exactly at the 200-char boundary */
         const exactContent = 'y'.repeat(200,);
         inspect(exactContent,);
@@ -107,7 +108,7 @@ await describe({
     it({
       name: 'handles empty string',
       fn: async ({ sinon, },) => {
-        const infoSpy = sinon.spy(logger, 'info',);
+        const infoSpy = sinon.spy(l, 'info',);
         expect(inspect('',),).toBe('',);
         expect(infoSpy,).toHaveBeenCalled();
       },
@@ -127,7 +128,7 @@ await describe({
     it({
       name: 'truncates large JSON objects in log output',
       fn: async ({ sinon, },) => {
-        const infoSpy = sinon.spy(logger, 'info',);
+        const infoSpy = sinon.spy(l, 'info',);
         /** Large object whose JSON is over the preview limit */
         const largeObj = Object.fromEntries(
           Array.from({ length: 50, },

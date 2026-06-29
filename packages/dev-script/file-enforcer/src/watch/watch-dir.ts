@@ -1,6 +1,7 @@
 import { watch as chokidarWatch, } from 'chokidar';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
+import { l, } from '../logger.ts';
 import {
   assertExistingWatchDirectory,
   createWatchDirectoryLifecycle,
@@ -8,16 +9,6 @@ import {
   type WatchDirectoryOptions,
 } from './watch-dir-helpers.ts';
 import { classifyEvent, } from './watch-filter.ts';
-
-/**
- * Logger root for file-enforcer after removing the package log shim.
- *
- * @example
- * ```ts
- * const rl = tagged({ tag: someFunction.name, l, },);
- * ```
- */
-const l = tagged({ tag: 'file-enforcer', },);
 
 /**
  * Chokidar path-level events that can affect tracked sources or protected destinations.

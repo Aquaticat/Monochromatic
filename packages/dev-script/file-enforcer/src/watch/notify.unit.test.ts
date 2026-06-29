@@ -3,9 +3,10 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { logger, } from '@monochromatic-dev/module-logger/ts';
-
-import { notifyWriteProtection, } from '../../dist/final/node/index.mjs';
+import {
+  l,
+  notifyWriteProtection,
+} from '../../dist/final/node/index.mjs';
 
 //region notifyWriteProtection
 
@@ -19,7 +20,7 @@ await describe({
     it({
       name: 'logs a warning via tagged logger',
       fn: async ({ sinon, },) => {
-        const warnSpy = sinon.spy(logger, 'warn',);
+        const warnSpy = sinon.spy(l, 'warn',);
         await notifyWriteProtection('/repo/CLAUDE.md',);
         /** Should have logged with the PROTECTED prefix */
         expect(warnSpy,).toHaveBeenCalledWith(
@@ -30,7 +31,7 @@ await describe({
     it({
       name: 'includes the file path in the warning',
       fn: async ({ sinon, },) => {
-        const warnSpy = sinon.spy(logger, 'warn',);
+        const warnSpy = sinon.spy(l, 'warn',);
         await notifyWriteProtection('/repo/output.txt',);
         expect(warnSpy,).toHaveBeenCalledWith(
           expect.stringContaining('/repo/output.txt',),

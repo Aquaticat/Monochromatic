@@ -3,15 +3,7 @@ import {
   type Logger,
 } from '@monochromatic-dev/module-logger/ts';
 
-/**
- * Logger root for file-enforcer after removing the package log shim.
- *
- * @example
- * ```ts
- * const rl = tagged({ tag: someFunction.name, l, },);
- * ```
- */
-const l = tagged({ tag: 'file-enforcer', },);
+import { l, } from '../logger.ts';
 
 /**
  * Batch of debounced watch events ready for one config rerun.

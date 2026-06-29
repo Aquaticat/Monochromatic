@@ -1,6 +1,7 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { lazyOnce, } from '../lazy-once.ts';
+import { l, } from '../logger.ts';
 import {
   binaryExists,
   canProvide,
@@ -12,16 +13,6 @@ import type {
   PackageEntry,
   PackageManager,
 } from './types.ts';
-
-/**
- * Logger root for file-enforcer after removing the package log shim.
- *
- * @example
- * ```ts
- * const rl = tagged({ tag: someFunction.name, l, },);
- * ```
- */
-const l = tagged({ tag: 'file-enforcer', },);
 
 //region Package index
 

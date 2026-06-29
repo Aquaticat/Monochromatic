@@ -1,17 +1,3 @@
-import {
-  tagged,
-  type Logger,
-} from '@monochromatic-dev/module-logger/ts';
-
-/**
- * Logger root for file-enforcer after removing the package log shim.
- *
- * @example
- * ```ts
- * const rl = tagged({ tag: someFunction.name, l, },);
- * ```
- */
-const l: Logger = tagged({ tag: 'file-enforcer', },);
 
 export {
   invalidatePaths,
@@ -67,7 +53,7 @@ export {
   NO_JETBRAINS_OPTIONS_DIRECTORY,
 } from './jetbrains/options-dir.ts';
 export type { JetbrainsOptionsDirectory, } from './jetbrains/options-dir.ts';
-export { l, };
+export { l, } from './logger.ts';
 export { tagged, } from '@monochromatic-dev/module-logger/ts';
 export type { Logger, } from '@monochromatic-dev/module-logger/ts';
 export {

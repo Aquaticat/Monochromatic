@@ -1,6 +1,7 @@
 import { join, } from 'node:path';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
+import { l, } from '../logger.ts';
 import {
   ABSENT_FILE_CONTENT,
   overwrite,
@@ -22,16 +23,6 @@ import type {
   Lsp4ijOptionsFiles,
   Lsp4ijServerSettings,
 } from './lsp4ij-types.ts';
-
-/**
- * Logger root for file-enforcer after removing the package log shim.
- *
- * @example
- * ```ts
- * const rl = tagged({ tag: someFunction.name, l, },);
- * ```
- */
-const l = tagged({ tag: 'file-enforcer', },);
 
 //region Helpers: read tracked files
 

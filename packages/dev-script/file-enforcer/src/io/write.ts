@@ -1,5 +1,6 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
+import { l, } from '../logger.ts';
 import {
   setWriteTimestamp,
   trackDest,
@@ -35,16 +36,6 @@ import {
   rememberEagerEach,
   rememberEagerWrite,
 } from './write-staleness.ts';
-
-/**
- * Logger root for file-enforcer after removing the package log shim.
- *
- * @example
- * ```ts
- * const rl = tagged({ tag: someFunction.name, l, },);
- * ```
- */
-const l = tagged({ tag: 'file-enforcer', },);
 
 /**
  * Sentinel for "file does not exist" returned by {@link readExisting}.

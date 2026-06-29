@@ -1,14 +1,6 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
-/**
- * Logger root for file-enforcer after removing the package log shim.
- *
- * @example
- * ```ts
- * const rl = tagged({ tag: someFunction.name, l, },);
- * ```
- */
-const l = tagged({ tag: 'file-enforcer', },);
+import { l, } from '../logger.ts';
 
 /**
  * Maximum preview length for inspect output
