@@ -170,6 +170,7 @@ const testOverride = {
     'eslint/no-array-constructor': 'off',
     'promise/prefer-await-to-then': 'off',
     'node/no-sync': 'off',
+    'no-restricted-syntax/no-sync': 'off',
 
     // Some test files just have too many TypeScript errors.
     'typescript/ban-ts-comment': [
