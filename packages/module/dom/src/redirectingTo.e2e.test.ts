@@ -32,7 +32,6 @@ test.describe('onLoadRedirectingTo', () => {
     },);
 
     // Wait long enough for the redirect timer to fire if it were going to.
-    // oxlint-disable-next-line -- timing-dependent test of a no-op path
     await page.waitForTimeout(100,);
 
     expect(page.url(),).toBe(urlBefore,);

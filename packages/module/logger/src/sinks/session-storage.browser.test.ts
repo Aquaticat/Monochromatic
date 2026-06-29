@@ -69,7 +69,8 @@ test.describe('sessionStorage sink', () => {
               timestamp: Date.now(),
             },);
           }
-          catch {
+          catch (error: unknown) {
+            console.warn('sessionStorage sink browser test write failed', error,);
             return false;
           }
         }

@@ -19,9 +19,9 @@ await describe({
     it({
       name: 'returns symbols unchanged',
       fn: async () => {
-        const s = Symbol('test',);
+        const s = Symbol('local test symbol returned unchanged',);
         expect(symbolOrThrow(s,),).toBe(s,);
-        const registered = Symbol.for('shared',);
+        const registered = Symbol.for('global shared symbol returned unchanged',);
         expect(symbolOrThrow(registered,),).toBe(registered,);
       },
     },),
@@ -40,7 +40,7 @@ await describe({
     it({
       name: 'narrows unknown to symbol',
       fn: async () => {
-        const input: unknown = Symbol('x',);
+        const input: unknown = Symbol('unknown symbol value narrowed',);
         const output = symbolOrThrow(input,);
         expectTypeOf(output,).toEqualTypeOf<symbol>();
       },

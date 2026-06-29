@@ -123,7 +123,7 @@ function isWordChar(c: string,): boolean {
  * `export { ... }` clause is missing or malformed. A unique `Symbol` keeps
  * "no clause" distinct from any parsed result without a nullish escape.
  */
-const NO_CLAUSE: unique symbol = Symbol('no-trailing-export-clause',);
+const NO_CLAUSE: unique symbol = Symbol('module-dom trailing export clause absent',);
 
 /**
  * Locates the trailing `export { ... }` clause of a rolldown bundle and

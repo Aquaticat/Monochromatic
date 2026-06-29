@@ -112,7 +112,7 @@ type RootFilesystemCache = {
  * A unique `Symbol` distinguishes "file missing" from empty content without a
  * nullish union; matchers narrow with `content !== ABSENT` before inspecting it.
  */
-export const ABSENT: unique symbol = Symbol('absent',);
+export const ABSENT: unique symbol = Symbol('root discovery path content absent on filesystem',);
 
 /**
  * Tagged logger for root discovery diagnostics.
@@ -366,8 +366,8 @@ export async function resolveRootFilesystem(): Promise<RootFilesystem> {
       return backendCache.fs;
     }
   }
-  catch {
-    rootDiscoveryLogger.debug('happy-opfs import failed during root discovery setup',);
+  catch (error: unknown) {
+    rootDiscoveryLogger.debug(`happy-opfs import failed during root discovery setup: ${(error instanceof Error) ? error.message : String(error,)}`,);
   }
 
   backendCache.fs = resolveEmptyRootFilesystem();

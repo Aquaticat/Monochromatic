@@ -1,3 +1,5 @@
+import { reportLoggerInternalError, } from '../error-format.ts';
+
 import type {
   LogRecord,
   Sink,
@@ -87,7 +89,11 @@ export function createOpfsSink(): Sink {
 
       return available;
     }
-    catch {
+    catch (error: unknown) {
+      reportLoggerInternalError({
+        context: 'OPFS sink verification failed',
+        error,
+      },);
       return false;
     }
   }
@@ -105,8 +111,11 @@ export function createOpfsSink(): Sink {
       await state.writable
         .write(`${JSON.stringify(record,)}\n`,);
     }
-    catch {
-      // Silently fail.
+    catch (error: unknown) {
+      reportLoggerInternalError({
+        context: 'OPFS sink record write failed',
+        error,
+      },);
     }
   }
 

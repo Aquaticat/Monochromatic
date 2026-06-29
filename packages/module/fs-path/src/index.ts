@@ -68,7 +68,7 @@ const nodePathSpecifier = `node${':path'}`;
  * A unique `Symbol` keeps the absent case out of a nullish union; consumers
  * narrow with `nodePath !== NODE_PATH_ABSENT` before delegating.
  */
-const NODE_PATH_ABSENT = Symbol('nodePathAbsent',);
+const NODE_PATH_ABSENT = Symbol('node path posix module absent in browser runtime',);
 
 /**
  * Lazily loaded `node:path/posix` module, or {@link NODE_PATH_ABSENT} in browser.

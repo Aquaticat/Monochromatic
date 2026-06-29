@@ -1,3 +1,5 @@
+import { reportLoggerInternalError, } from '../error-format.ts';
+
 import type {
   LogRecord,
   Sink,
@@ -46,7 +48,11 @@ function verifySessionStorage(): Promise<boolean> {
       .removeItem(testKey,);
     return Promise.resolve(readBack === testValue,);
   }
-  catch {
+  catch (error: unknown) {
+    reportLoggerInternalError({
+      context: 'sessionStorage sink verification failed',
+      error,
+    },);
     return Promise.resolve(false,);
   }
 }
@@ -91,8 +97,11 @@ export function createSessionStorageSink(): Sink {
         JSON.stringify(record,),
       );
     }
-    catch {
-      // Silently fail if storage is full or unavailable.
+    catch (error: unknown) {
+      reportLoggerInternalError({
+        context: 'sessionStorage sink record write failed',
+        error,
+      },);
     }
 
     return Promise.resolve();

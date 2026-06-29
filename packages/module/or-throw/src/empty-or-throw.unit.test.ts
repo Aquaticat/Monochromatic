@@ -49,7 +49,7 @@ await describe({
         expect(() => emptyOrThrow(42,)).toThrow('sized container',);
         expect(() => emptyOrThrow(true,)).toThrow('sized container',);
         expect(() => emptyOrThrow(1n,)).toThrow('sized container',);
-        expect(() => emptyOrThrow(Symbol('s',),)).toThrow('sized container',);
+        expect(() => emptyOrThrow(Symbol('non container symbol value',),)).toThrow('sized container',);
       },
     },),
   ],

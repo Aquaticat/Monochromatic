@@ -34,27 +34,27 @@ export type LocaleSpec<
   /**
    * Resolves a static UI label key to its rendered surface.
    */
-  renderLabel(key: Label,): string;
+  readonly renderLabel: (key: Label,) => string;
   /**
    * Resolves a bare noun key to its rendered surface, without any article or count.
    */
-  renderNoun(key: Noun,): string;
+  readonly renderNoun: (key: Noun,) => string;
   /**
    * Renders a complete noun phrase AST.
    */
-  renderNounPhrase(phrase: NounPhrase<Subject, Noun>,): string;
+  readonly renderNounPhrase: (phrase: NounPhrase<Subject, Noun>,) => string;
   /**
    * Renders a complete verb phrase AST, using the locale's tense and agreement strategy.
    */
-  renderVerbPhrase(phrase: VerbPhrase<Subject, Verb, Noun>,): string;
+  readonly renderVerbPhrase: (phrase: VerbPhrase<Subject, Verb, Noun>,) => string;
   /**
    * Renders a sentence AST (declarative, yes/no, wh, or imperative).
    */
-  renderSentence(sentence: Sentence<Subject, Verb, Noun>,): string;
+  readonly renderSentence: (sentence: Sentence<Subject, Verb, Noun>,) => string;
   /**
    * Renders a fragment AST (sub-sentence text such as headings or button labels).
    */
-  renderFragment(fragment: Fragment<Label, Subject, Verb, Noun>,): string;
+  readonly renderFragment: (fragment: Fragment<Label, Subject, Verb, Noun>,) => string;
 };
 
 /**

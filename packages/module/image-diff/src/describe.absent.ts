@@ -21,4 +21,4 @@
  * if (description !== ABSENT) console.log(description);
  * ```
  */
-export const ABSENT: unique symbol = Symbol('descriptionAbsent',);
+export const ABSENT: unique symbol = Symbol('image difference description absent because no backend key configured',);

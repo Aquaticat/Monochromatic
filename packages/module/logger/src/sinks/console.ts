@@ -1,3 +1,5 @@
+import { reportLoggerInternalError, } from '../error-format.ts';
+
 import type {
   Level,
   LogRecord,
@@ -56,8 +58,11 @@ function detectVerbose(): boolean {
       === 'true'))
       return true;
   }
-  catch {
-    // process may be restricted or unavailable - intentionally didn't log to reduce noise.
+  catch (error: unknown) {
+    reportLoggerInternalError({
+      context: 'DEBUG environment probe failed during verbose detection',
+      error,
+    },);
   }
 
   try {
@@ -71,8 +76,11 @@ function detectVerbose(): boolean {
       return true;
     }
   }
-  catch {
-    // process.argv may be restricted or unavailable - intentionally didn't log to reduce noise.
+  catch (error: unknown) {
+    reportLoggerInternalError({
+      context: 'process argv probe failed during verbose detection',
+      error,
+    },);
   }
 
   try {
@@ -81,8 +89,11 @@ function detectVerbose(): boolean {
     if ('window' in globalThis)
       return true;
   }
-  catch {
-    // window access may throw in restricted contexts - intentionally didn't log to reduce noise.
+  catch (error: unknown) {
+    reportLoggerInternalError({
+      context: 'window probe failed during verbose detection',
+      error,
+    },);
   }
 
   return false;
@@ -111,8 +122,11 @@ function isWarnSuppressed(): boolean {
       .WARN
       === 'false');
   }
-  catch {
-    // process may be restricted or unavailable - leave warn enabled.
+  catch (error: unknown) {
+    reportLoggerInternalError({
+      context: 'WARN environment probe failed during warn suppression detection',
+      error,
+    },);
     return false;
   }
 }
@@ -176,7 +190,11 @@ function hasProcessStderr(): boolean {
       .stderr
       .write) === 'function';
   }
-  catch {
+  catch (error: unknown) {
+    reportLoggerInternalError({
+      context: 'process stderr availability probe failed',
+      error,
+    },);
     return false;
   }
 }
@@ -205,7 +223,11 @@ function writeDebugRunToProcessStderr(text: string,): boolean {
       .write(`${text}\n`,);
     return true;
   }
-  catch {
+  catch (error: unknown) {
+    reportLoggerInternalError({
+      context: 'debug run process stderr write failed',
+      error,
+    },);
     return false;
   }
 }
@@ -261,8 +283,11 @@ function emitRun(
       );
     }
   }
-  catch {
-    // Silently fail if console throws.
+  catch (error: unknown) {
+    reportLoggerInternalError({
+      context: 'console method call failed while emitting log run',
+      error,
+    },);
   }
 }
 
@@ -358,7 +383,11 @@ function verifyConsole(): Promise<boolean> {
 
     return Promise.resolve(true,);
   }
-  catch {
+  catch (error: unknown) {
+    reportLoggerInternalError({
+      context: 'console sink verification failed',
+      error,
+    },);
     return Promise.resolve(false,);
   }
 }

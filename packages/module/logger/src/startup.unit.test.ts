@@ -41,7 +41,7 @@ const DEBUG_MESSAGE = 'debug before consumer init await';
 type TempProject = {
   readonly path: string;
   readonly scriptPath: string;
-  [Symbol.asyncDispose](): Promise<void>;
+  readonly [Symbol.asyncDispose]: () => Promise<void>;
 };
 
 /** Result captured from the probe subprocess. */

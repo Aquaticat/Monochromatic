@@ -42,7 +42,7 @@ await describe({
         expect(() => objectOrThrow('abc',)).toThrow('non-null object',);
         expect(() => objectOrThrow(true,)).toThrow('non-null object',);
         expect(() => objectOrThrow(undefined,)).toThrow('non-null object',);
-        expect(() => objectOrThrow(Symbol('s',),)).toThrow('non-null object',);
+        expect(() => objectOrThrow(Symbol('non object symbol value',),)).toThrow('non-null object',);
         expect(() => objectOrThrow(1n,)).toThrow('non-null object',);
       },
     },),

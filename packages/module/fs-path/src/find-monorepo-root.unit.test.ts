@@ -48,7 +48,7 @@ type RootFixture = {
   readonly nested: string;
 
   /** Removes fixture tree after test completion. */
-  [Symbol.asyncDispose](): Promise<void>;
+  readonly [Symbol.asyncDispose]: () => Promise<void>;
 };
 
 /**

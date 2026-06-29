@@ -1,3 +1,5 @@
+import { reportLoggerInternalError, } from './error-format.ts';
+
 import type {
   Level,
   Logger,
@@ -30,8 +32,11 @@ async function trackWrite(
   try {
     await writePromise;
   }
-  catch {
-    // Per-sink write failures stay the sink's concern; see above.
+  catch (error: unknown) {
+    reportLoggerInternalError({
+      context: 'sink write promise rejected while being tracked',
+      error,
+    },);
   }
 }
 
@@ -192,9 +197,11 @@ export function createLogger(
       pendingWrites.add(trackedWrite,);
       void removePendingWriteWhenSettled({ trackedWrite, },);
     }
-    catch {
-      // A synchronous throw from `write` is the sink's concern, like a
-      // rejection; swallow it without retiring the backend.
+    catch (error: unknown) {
+      reportLoggerInternalError({
+        context: 'sink write threw synchronously while dispatching record',
+        error,
+      },);
     }
   }
 
@@ -258,7 +265,11 @@ export function createLogger(
         entryIndex,
       },);
     }
-    catch {
+    catch (error: unknown) {
+      reportLoggerInternalError({
+        context: `sink verification failed for entry ${entryIndex}`,
+        error,
+      },);
       markEntryUnavailable({ entryIndex, },);
     }
   }
@@ -373,7 +384,11 @@ export function createLogger(
         try {
           await sinkFlush();
         }
-        catch {
+        catch (error: unknown) {
+          reportLoggerInternalError({
+            context: `sink flush failed for entry ${entryIndex}`,
+            error,
+          },);
           markEntryUnavailable({ entryIndex, },);
         }
       },),

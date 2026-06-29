@@ -4,6 +4,8 @@ import type {
   join as Join,
 } from 'node:path';
 
+import { reportLoggerInternalError, } from '../error-format.ts';
+
 import type {
   LogRecord,
   Sink,
@@ -83,8 +85,11 @@ export async function findNodeModulesUp(
     if (entry.isDirectory())
       return candidate;
   }
-  catch {
-    /* ENOENT or similar; keep walking up */
+  catch (error: unknown) {
+    reportLoggerInternalError({
+      context: `node_modules candidate ${candidate} unavailable during file sink search`,
+      error,
+    },);
   }
   /**
    * Parent directory used by the next recursive step; equal to `cwd` only at the filesystem root, which terminates the walk.
@@ -226,7 +231,11 @@ export function createFileSink(): Sink {
       );
       return content.includes('"test":true',);
     }
-    catch {
+    catch (error: unknown) {
+      reportLoggerInternalError({
+        context: 'file sink verification failed',
+        error,
+      },);
       return false;
     }
   }
@@ -262,14 +271,11 @@ export function createFileSink(): Sink {
         `${JSON.stringify(record,)}\n`,
       );
     }
-    catch (error) {
-      console.error(
-        `logger internal error in fs sink ${
-          (Error.isError(error,))
-            ? error.message
-            : 'unknown non-Error error'
-        }`,
-      );
+    catch (error: unknown) {
+      reportLoggerInternalError({
+        context: 'file sink record append failed',
+        error,
+      },);
     }
   }
 

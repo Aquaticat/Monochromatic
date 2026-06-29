@@ -22,6 +22,8 @@
 
 import { readFile, } from 'node:fs/promises';
 
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
 /* oxlint-disable import/no-cycle -- barrel re-export cycle; dirname and resolve are fully initialized before findPackageRoot runs */
 import {
   dirname,
@@ -30,6 +32,11 @@ import {
 /* oxlint-enable import/no-cycle */
 
 //region Walk
+
+/**
+ * Tagged logger for package-root discovery diagnostics.
+ */
+const findPackageRootLogger = tagged({ tag: 'findPackageRoot', },);
 
 /**
  * Walks up from `dir` searching for a `package.json` whose `name`
@@ -88,8 +95,8 @@ export async function findPackageRoot(
       === name)
       return dir;
   }
-  catch {
-    /* candidate file missing, unreadable, or malformed JSON: keep walking upward */
+  catch (error: unknown) {
+    findPackageRootLogger.debug(`skipping package manifest candidate ${candidate}: ${(error instanceof Error) ? error.message : String(error,)}`,);
   }
   /**
    * Next directory to inspect; equal to `dir` only at the filesystem root, which terminates recursion.

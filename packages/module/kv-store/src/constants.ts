@@ -17,4 +17,4 @@
  * }
  * ```
  */
-export const ABSENT: unique symbol = Symbol('kv-store/absent',);
+export const ABSENT: unique symbol = Symbol('kv-store/value absent from every backend',);

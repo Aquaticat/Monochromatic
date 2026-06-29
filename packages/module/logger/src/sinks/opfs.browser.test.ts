@@ -71,7 +71,8 @@ test.describe('OPFS sink', () => {
               timestamp: Date.now(),
             },),);
           }
-          catch {
+          catch (error: unknown) {
+            console.warn('OPFS sink browser test write failed', error,);
             return false;
           }
         }
