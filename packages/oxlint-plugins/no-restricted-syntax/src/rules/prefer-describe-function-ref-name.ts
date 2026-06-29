@@ -71,6 +71,7 @@ function classifyExportedName(
    */
   const content = (function readOrEmpty(): string {
     try {
+      // oxlint-disable-next-line node/no-sync -- sync visitor API; local import heuristic needs source text before report.
       return readFileSync(
         sourcePath,
         'utf8',

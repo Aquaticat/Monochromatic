@@ -171,7 +171,7 @@ type GeneratedSource = {
   /** Absolute path to the generated source file. */
   readonly filePath: string;
   /** Removes the temp directory holding the generated source. */
-  [Symbol.dispose](): void;
+  readonly [Symbol.dispose]: () => void;
 };
 
 /**
