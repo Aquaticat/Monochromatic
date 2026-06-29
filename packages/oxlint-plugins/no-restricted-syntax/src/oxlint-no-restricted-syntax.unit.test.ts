@@ -164,7 +164,7 @@ const LOW_INFO_RULE = 'no-low-information-symbol-description';
 const LOW_INFO_RULE_CODE = `no-restricted-syntax(${LOW_INFO_RULE})`;
 
 /** User-facing hint every low-information Symbol diagnostic must carry. */
-const LOW_INFO_IMMEDIATE_UNDERSTANDABILITY_HINT = 'Every Symbol description should be immediately understandable by anyone, even if they have no context whatsoever.';
+const LOW_INFO_IMMEDIATE_UNDERSTANDABILITY_HINT = 'Every Symbol description must explain the Symbol in plain language by itself: someone seeing only this string, with no repo, code, variable name, or comments, should understand what the Symbol represents and when it appears.';
 
 /** Disposable temp TypeScript source generated from calibration rows. */
 type GeneratedSource = {
