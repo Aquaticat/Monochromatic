@@ -35,20 +35,20 @@ declare global {
        * (mirrors `toBe`). Throws when the actual is not an array or has fewer
        * than two elements.
        */
-      allStrictEqual(): Assertion;
+      readonly allStrictEqual: () => Assertion;
 
       /**
        * Asserts every element of an array actual deep-equals the first
        * (mirrors `toEqual`). Throws when the actual is not an array or has fewer
        * than two elements.
        */
-      allDeepEqual(): Assertion;
+      readonly allDeepEqual: () => Assertion;
 
       /**
        * Asserts a predicate holds for every element of an array actual. An empty
        * array passes vacuously, mirroring `Array.prototype.every`.
        */
-      satisfyAll(predicate: (value: unknown,) => boolean,): Assertion;
+      readonly satisfyAll: (predicate: (value: unknown,) => boolean,) => Assertion;
     }
     /* oxlint-enable typescript/consistent-type-definitions */
   }

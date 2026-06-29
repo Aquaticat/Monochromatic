@@ -73,7 +73,9 @@ function parsesUnderDefault(source: string,): boolean {
     parseTomlEdit({ source, },);
     return true;
   }
-  catch {
+  catch (error: unknown) {
+    if (!Error.isError(error,))
+      throw error;
     return false;
   }
 }

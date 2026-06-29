@@ -17,10 +17,9 @@
  */
 
 import {
-  existsSync,
-  readFileSync,
-  writeFileSync,
-} from 'node:fs';
+  readFile,
+  writeFile,
+} from 'node:fs/promises';
 import { dirname, } from 'node:path';
 
 import {
@@ -117,17 +116,23 @@ function serializeBaseline({ baseline, }: { readonly baseline: Baseline; },): st
  *
  * @returns Parsed baseline; an empty baseline when the file is absent.
  */
-function loadBaseline({ baselinePath, }: { readonly baselinePath: string; },): Baseline {
-  if (!existsSync(baselinePath,)) return {};
-  /**
-   * Parsed baseline JSON, narrowed by assertion from `unknown`.
-   */
-  const parsed: unknown = JSON.parse(readFileSync(
-    baselinePath,
-    'utf8',
-  ),);
-  if (!isBaseline(parsed,)) throw new Error('Malformed baseline JSON: expected an object',);
-  return parsed;
+async function loadBaseline({ baselinePath, }: { readonly baselinePath: string; },): Promise<Baseline> {
+  try {
+    /**
+     * Parsed baseline JSON, narrowed by assertion from `unknown`.
+     */
+    const parsed: unknown = JSON.parse(await readFile(
+      baselinePath,
+      'utf8',
+    ),);
+    if (!isBaseline(parsed,)) throw new Error('Malformed baseline JSON: expected an object',);
+    return parsed;
+  }
+  catch (error: unknown) {
+    if (Error.isError(error,) && ('code' in error) && (error.code === 'ENOENT'))
+      return {};
+    throw error;
+  }
 }
 
 //endregion Baseline derivation and IO
@@ -299,7 +304,7 @@ function formatSummary(
  *
  * @throws Error when `mode` is unknown, or when `check` finds a regression.
  */
-function main(): void {
+async function main(): Promise<void> {
   /**
    * Positional arguments: mode, coverage directory, baseline path.
    */
@@ -321,7 +326,7 @@ function main(): void {
   /**
    * Current per-file coverage from the driver run.
    */
-  const map = aggregateCoverage({
+  const map = await aggregateCoverage({
     coverageDir,
     packageRoot,
   },);
@@ -331,7 +336,7 @@ function main(): void {
     throw new Error(`No target coverage found under ${coverageDir}; did the driver run with NODE_V8_COVERAGE set?`,);
   }
   if (mode === 'write') {
-    writeFileSync(
+    await writeFile(
       baselinePath,
       serializeBaseline({ baseline: toBaseline({ map, }), },),
     );
@@ -348,7 +353,7 @@ function main(): void {
   /**
    * Committed baseline to gate against.
    */
-  const baseline = loadBaseline({ baselinePath, },);
+  const baseline = await loadBaseline({ baselinePath, },);
   console.log(formatSummary({
     map,
     baseline,
@@ -373,6 +378,6 @@ function main(): void {
   }
 }
 
-if (process.argv[1] === import.meta.filename) main();
+if (process.argv[1] === import.meta.filename) await main();
 
 //endregion CLI

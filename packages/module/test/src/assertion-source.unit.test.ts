@@ -84,7 +84,9 @@ async function removeTempSource(path: string,): Promise<void> {
   try {
     await rm(path,);
   }
-  catch {
+  catch (error: unknown) {
+    if (!Error.isError(error,))
+      throw error;
     // best-effort cleanup; the OS reclaims tmp regardless
   }
 }

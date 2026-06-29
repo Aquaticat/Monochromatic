@@ -61,7 +61,9 @@ async function resolveWorkspacePrefix(): Promise<string> {
     const root = await findMiseMonorepoRootCached();
     return `${root}/`;
   }
-  catch {
+  catch (error: unknown) {
+    if (!Error.isError(error,))
+      throw error;
     /**
      * The cached variant rejected (no mise.toml with [monorepo],
      * browser without OPFS, etc.) and caches the rejection, so the
@@ -73,7 +75,9 @@ async function resolveWorkspacePrefix(): Promise<string> {
     try {
       return `${process.cwd()}/`;
     }
-    catch {
+    catch (cwdError: unknown) {
+      if (!Error.isError(cwdError,))
+        throw cwdError;
       return '';
     }
   }
@@ -102,7 +106,9 @@ function safeString(value: unknown,): string {
   try {
     return String(value,);
   }
-  catch {
+  catch (error: unknown) {
+    if (!Error.isError(error,))
+      throw error;
     return '<unrepresentable>';
   }
 }

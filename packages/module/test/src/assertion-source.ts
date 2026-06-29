@@ -482,7 +482,9 @@ async function readSourceText({
       'utf8',
     );
   }
-  catch {
+  catch (error: unknown) {
+    if (!Error.isError(error,))
+      throw error;
     return '';
   }
 }

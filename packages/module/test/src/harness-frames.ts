@@ -50,7 +50,9 @@ export function readProperty({
       key,
     );
   }
-  catch {
+  catch (error: unknown) {
+    if (!Error.isError(error,))
+      throw error;
     return undefined;
   }
 }

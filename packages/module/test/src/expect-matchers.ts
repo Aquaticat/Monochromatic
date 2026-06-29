@@ -13,6 +13,7 @@ import {
   expect as chaiExpect,
   use,
 } from 'chai';
+export { expect as chaiExpect, } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import type { SinonSpy, } from 'sinon';
 import sinonChai from 'sinon-chai';
@@ -347,5 +348,3 @@ export function buildMatchers(
 /* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 //endregion Matcher set builder
-
-export { chaiExpect, };

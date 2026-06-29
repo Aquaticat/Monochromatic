@@ -20,9 +20,9 @@
  */
 
 import {
-  readFileSync,
-  readdirSync,
-} from 'node:fs';
+  readFile,
+  readdir,
+} from 'node:fs/promises';
 import {
   join,
   relative,
@@ -399,10 +399,10 @@ type TargetAccumulator = {
  *
  * @example
  * ```ts
- * const map = aggregateCoverage({ coverageDir, packageRoot, },);
+ * const map = await aggregateCoverage({ coverageDir, packageRoot, },);
  * ```
  */
-export function aggregateCoverage(
+export async function aggregateCoverage(
   {
     coverageDir,
     packageRoot,
@@ -410,18 +410,18 @@ export function aggregateCoverage(
     readonly coverageDir: string;
     readonly packageRoot: string;
   },
-): CoverageMap {
+): Promise<CoverageMap> {
   /**
    * Per-target accumulation: source read once, covered-line set unioned across
    * every coverage process file. Local, so no mutable map crosses a boundary.
    */
   const perFile = new Map<string, TargetAccumulator>();
-  for (const file of readdirSync(coverageDir,)) {
+  for (const file of await readdir(coverageDir,)) {
     if (!file.endsWith('.json',)) continue;
     /**
      * One parsed coverage file, narrowed by assertion from `unknown`.
      */
-    const parsed: unknown = JSON.parse(readFileSync(
+    const parsed: unknown = JSON.parse(await readFile(
       join(
         coverageDir,
         file,
@@ -446,7 +446,7 @@ export function aggregateCoverage(
         /**
          * On-disk source, read once per target file.
          */
-        const source = readFileSync(
+        const source = await readFile(
           cls.absPath,
           'utf8',
         );

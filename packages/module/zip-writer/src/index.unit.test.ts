@@ -23,7 +23,7 @@ import {
 /** Async-disposable temp directory; cleaned up on scope exit. */
 type DisposableTempDir = {
   readonly path: string;
-  [Symbol.asyncDispose](): Promise<void>;
+  readonly [Symbol.asyncDispose]: () => Promise<void>;
 };
 
 /**
