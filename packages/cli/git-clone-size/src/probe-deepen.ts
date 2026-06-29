@@ -65,10 +65,7 @@ async function countCommits({ clonePath, }: { readonly clonePath: string; },): P
   /**
    * Parsed commit count; 0 on any parse or command failure.
    */
-  const count = Number.parseInt(
-    stdout,
-    10,
-  );
+  const count = Math.trunc(Number(stdout,),);
   return (exitCode === 0) && Number.isFinite(count,) ? count : 0;
 }
 

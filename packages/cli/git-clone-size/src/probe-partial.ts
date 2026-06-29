@@ -118,10 +118,7 @@ export async function partialCommitCount(
   /**
    * Parsed commit count across all refs.
    */
-  const count = Number.parseInt(
-    stdout,
-    10,
-  );
+  const count = Math.trunc(Number(stdout,),);
   if ((exitCode !== 0) || (!Number.isFinite(count,)))
     return NO_TREE0;
   rl.debug(`tree:0 commit count: ${String(count,)}`,);

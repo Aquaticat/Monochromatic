@@ -174,6 +174,13 @@ function assembleRemote(
  * ```
  */
 export function parseRemoteUrl({ url, }: { readonly url: string; },): RemoteSource {
+  /**
+   * Tagged logger naming remote URL parsing.
+   */
+  const rl = tagged({
+    tag: parseRemoteUrl.name,
+    l: logger,
+  },);
   if (url.includes('://',)) {
     try {
       /**
@@ -186,7 +193,8 @@ export function parseRemoteUrl({ url, }: { readonly url: string; },): RemoteSour
         url,
       },);
     }
-    catch {
+    catch (error: unknown) {
+      rl.debug(`scheme remote URL parse failed: ${String(error,)}`,);
       return {
         kind: 'remote',
         url,
@@ -336,11 +344,19 @@ export async function originUrl(
  * ```
  */
 async function pathExists({ path, }: { readonly path: string; },): Promise<boolean> {
+  /**
+   * Tagged logger naming path existence checks.
+   */
+  const rl = tagged({
+    tag: pathExists.name,
+    l: logger,
+  },);
   try {
     await stat(path,);
     return true;
   }
-  catch {
+  catch (error: unknown) {
+    rl.debug(`path existence check failed: ${String(error,)}`,);
     return false;
   }
 }

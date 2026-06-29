@@ -200,10 +200,7 @@ export async function hostStorageBytes(
     /**
      * GitHub `.size` is KiB; convert to bytes.
      */
-    const kib = Number.parseInt(
-      result.stdout,
-      10,
-    );
+    const kib = Math.trunc(Number(result.stdout,),);
     if ((result.exitCode === 0) && Number.isFinite(kib,)) {
       rl.debug(`github storage proxy: ${String(kib,)} KiB`,);
       return { bytes: kib * BYTES_PER_KIB, };
@@ -231,10 +228,7 @@ export async function hostStorageBytes(
     /**
      * GitLab `repository_size` is already bytes.
      */
-    const bytes = Number.parseInt(
-      result.stdout,
-      10,
-    );
+    const bytes = Math.trunc(Number(result.stdout,),);
     if ((result.exitCode === 0) && Number.isFinite(bytes,)) {
       rl.debug(`gitlab storage proxy: ${String(bytes,)} bytes`,);
       return { bytes, };
@@ -253,6 +247,13 @@ export async function hostStorageBytes(
  * @returns last-page number, or {@link NO_LAST_PAGE} when no `rel="last"` segment exists
  */
 function parseLastPage(linkHeader: string,): number | typeof NO_LAST_PAGE {
+  /**
+   * Tagged logger naming GitHub Link header pagination parsing.
+   */
+  const rl = tagged({
+    tag: parseLastPage.name,
+    l: logger,
+  },);
   /**
    * Comma-separated `<url>; rel="x"` segment naming the last page.
    */
@@ -273,17 +274,20 @@ function parseLastPage(linkHeader: string,): number | typeof NO_LAST_PAGE {
     return NO_LAST_PAGE;
   try {
     /**
+     * Textual `page` query parameter from the pagination URL.
+     */
+    const pageText = new URL(urlText,).searchParams
+      .get('page',);
+    if ((pageText === null) || (pageText === ''))
+      return NO_LAST_PAGE;
+    /**
      * Parsed last-page number from the `page` query parameter.
      */
-    const page = Number.parseInt(
-      new URL(urlText,).searchParams
-        .get('page',)
-        ?? '',
-      10,
-    );
+    const page = Math.trunc(Number(pageText,),);
     return Number.isFinite(page,) ? page : NO_LAST_PAGE;
   }
-  catch {
+  catch (error: unknown) {
+    rl.debug(`github Link header page URL parse failed: ${String(error,)}`,);
     return NO_LAST_PAGE;
   }
 }

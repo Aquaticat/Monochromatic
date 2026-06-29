@@ -5,6 +5,10 @@ import {
 } from 'node:fs/promises';
 import { join, } from 'node:path';
 
+import {
+  logger,
+  tagged,
+} from '@monochromatic-dev/module-logger/ts';
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
 import {
@@ -28,13 +32,21 @@ import { spawnResult, } from './spawn.ts';
  * ```
  */
 async function readEntries({ dir, }: { readonly dir: string; },): Promise<readonly Dirent[] | typeof UNMEASURED> {
+  /**
+   * Tagged logger naming directory read attempts.
+   */
+  const rl = tagged({
+    tag: readEntries.name,
+    l: logger,
+  },);
   try {
     return await readdir(
       dir,
       { withFileTypes: true, },
     );
   }
-  catch {
+  catch (error: unknown) {
+    rl.debug(`directory read failed: ${String(error,)}`,);
     return UNMEASURED;
   }
 }

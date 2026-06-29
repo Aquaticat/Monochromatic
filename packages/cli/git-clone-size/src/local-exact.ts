@@ -107,12 +107,11 @@ export async function countObjectsSizePack({ path, }: { readonly path: string; }
   /**
    * KiB figure after the colon.
    */
-  const kib = Number.parseInt(
+  const kib = Math.trunc(Number(
     (line.split(':',)
       .at(1,)
       ?? '').trim(),
-    10,
-  );
+  ),);
   return Number.isFinite(kib,) ? kib * BYTES_PER_KIB : UNMEASURED;
 }
 
