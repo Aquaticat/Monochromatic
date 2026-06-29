@@ -224,7 +224,7 @@ async function readReportResult(reportFile: string,): Promise<ReportReadResult> 
       report: await readReport(reportFile,),
     };
   }
-  catch {
+  catch (error) {
     return {
       ok: false,
       path: reportFile,

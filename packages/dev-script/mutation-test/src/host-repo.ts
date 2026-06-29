@@ -79,7 +79,7 @@ async function hasWorkspaceFile(candidate: string,): Promise<boolean> {
     ),);
     return true;
   }
-  catch {
+  catch (error) {
     return false;
   }
 }

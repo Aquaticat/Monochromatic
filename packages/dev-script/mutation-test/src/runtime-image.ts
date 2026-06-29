@@ -157,7 +157,7 @@ export async function imageExists(image: string,): Promise<boolean> {
     );
     return true;
   }
-  catch {
+  catch (error) {
     return false;
   }
 }

@@ -45,7 +45,7 @@ export type ParsedMutant = {
 /**
  * Sentinel returned when a JSON value is not a mutant record.
  */
-const NO_MUTANT = Symbol('no mutant');
+const NO_MUTANT = Symbol('value lacks mutant record');
 
 /**
  * Parsed mutant or sentinel for invalid JSON shapes.

@@ -54,7 +54,7 @@ const TEST_SUFFIXES = [
 /**
  * Sentinel marking files that remain mutation targets.
  */
-const INCLUDED_SOURCE = Symbol('included source');
+const INCLUDED_SOURCE = Symbol('source file remains mutation target');
 
 /**
  * Exclusion reason or inclusion sentinel for source selection.

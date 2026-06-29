@@ -112,7 +112,7 @@ async function pathExists(path: string,): Promise<boolean> {
     await access(path,);
     return true;
   }
-  catch {
+  catch (error) {
     return false;
   }
 }
