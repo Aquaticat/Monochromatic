@@ -28,6 +28,9 @@ extends = "test:unit"
 [tasks."lint:oxlint"]
 extends = "lint:oxlint"
 
+[tasks."format:oxlint"]
+extends = "format:oxlint"
+
 [tasks."test:container"]
 description = "Run ensurePackage container tests across OS/user matrix"
 run = "node src/package/mise.container-test.ts"

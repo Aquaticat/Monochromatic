@@ -26,13 +26,7 @@ extends = "lint:types"
 extends = "lint:oxlint"
 
 [tasks."format:oxlint"]
-description = "Auto-fix this package with Oxlint (non-type-aware fixes)"
-shell = "node -e"
-run = """
-{{vars.dispatch_workspace_node}}
-ensureOxlintConfig()
-runWorkspaceNode('packages/dev-script/task-util', 'oxlint-wrapper', ['--fix'])
-"""
+extends = "format:oxlint"
 
 [tasks."test:unit"]
 extends = "test:unit"

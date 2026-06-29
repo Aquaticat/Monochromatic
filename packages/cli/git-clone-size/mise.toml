@@ -29,14 +29,8 @@ extends = "lint:types"
 [tasks.'lint:oxlint']
 extends = "lint:oxlint"
 
-[tasks.'format:oxlint']
-description = "Auto-fix this package with Oxlint (non-type-aware)"
-shell = "node -e"
-run = """
-{{vars.dispatch_workspace_node}}
-ensureOxlintConfig()
-runWorkspaceNode('packages/dev-script/task-util', 'oxlint-wrapper', ['--fix'])
-"""
+[tasks."format:oxlint"]
+extends = "format:oxlint"
 
 [tasks.'format:dprint']
 description = "Format this package's files with dprint"
