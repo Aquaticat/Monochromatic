@@ -16,6 +16,24 @@ import type {
 } from './ast.ts';
 
 /**
+ * Function property type with method-level bivariance preserved deliberately.
+ *
+ * Locale specs are stored under a loose `AnyLocaleSpec` constraint inside
+ * `createI18n`, and concrete specs with literal vocabulary keys must remain
+ * assignable to that upper bound while still exposing property signatures.
+ * TypeScript only models that safe legacy method variance through method
+ * signatures, so the helper isolates the method-signature exception in one
+ * reusable type instead of repeating methods on the public `LocaleSpec` shape.
+ */
+type BivariantRenderer<Parameter, Output,> = {
+  /**
+   * Method-signature variance anchor used only through indexed access below.
+   */
+  // oxlint-disable-next-line typescript/method-signature-style -- method syntax is required here to preserve LocaleSpec's historical bivariant assignability while public fields stay property signatures.
+  bivarianceHack(parameter: Parameter,): Output;
+}['bivarianceHack'];
+
+/**
  * Render-time interface every locale builder produces.
  *
  * Each method takes the same AST shape regardless of locale; the
@@ -34,27 +52,27 @@ export type LocaleSpec<
   /**
    * Resolves a static UI label key to its rendered surface.
    */
-  readonly renderLabel: (key: Label,) => string;
+  readonly renderLabel: BivariantRenderer<Label, string>;
   /**
    * Resolves a bare noun key to its rendered surface, without any article or count.
    */
-  readonly renderNoun: (key: Noun,) => string;
+  readonly renderNoun: BivariantRenderer<Noun, string>;
   /**
    * Renders a complete noun phrase AST.
    */
-  readonly renderNounPhrase: (phrase: NounPhrase<Subject, Noun>,) => string;
+  readonly renderNounPhrase: BivariantRenderer<NounPhrase<Subject, Noun>, string>;
   /**
    * Renders a complete verb phrase AST, using the locale's tense and agreement strategy.
    */
-  readonly renderVerbPhrase: (phrase: VerbPhrase<Subject, Verb, Noun>,) => string;
+  readonly renderVerbPhrase: BivariantRenderer<VerbPhrase<Subject, Verb, Noun>, string>;
   /**
    * Renders a sentence AST (declarative, yes/no, wh, or imperative).
    */
-  readonly renderSentence: (sentence: Sentence<Subject, Verb, Noun>,) => string;
+  readonly renderSentence: BivariantRenderer<Sentence<Subject, Verb, Noun>, string>;
   /**
    * Renders a fragment AST (sub-sentence text such as headings or button labels).
    */
-  readonly renderFragment: (fragment: Fragment<Label, Subject, Verb, Noun>,) => string;
+  readonly renderFragment: BivariantRenderer<Fragment<Label, Subject, Verb, Noun>, string>;
 };
 
 /**

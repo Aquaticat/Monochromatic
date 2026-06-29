@@ -25,7 +25,8 @@ import type {
 } from './locale-spec.ts';
 
 /**
- * Loose `LocaleSpec` upper bound used as the constraint for `Spec` inference; bivariant methods make this a valid supertype of any concrete spec.
+ * Loose `LocaleSpec` upper bound used as the constraint for `Spec` inference;
+ * bivariant renderer properties make this a valid supertype of any concrete spec.
  */
 type AnyLocaleSpec = LocaleSpec<string, string, string, string>;
 
