@@ -17,6 +17,7 @@ so do not change the current `parseSync` callsites in `packages/cli/git/src/pars
 - Committed it as `4df2be188` with message `docs(oxlint): document node no-sync suffix false positive`.
 - Recorded the upstream prototype patch and verification in `docs/troubleshooting/oxlint-node-no-sync.patch` and committed it as `264548a5b`.
 - Added project rule `no-restricted-syntax/no-sync`, fixtures, config wiring, and readonly allowlist updates across follow-up commits through `6ad8bbac0`.
+- Added namespace, `.apply()`, `.call()`, and shadowed-global fixture coverage in `a363eff67` while keeping Set-based alias tracking.
 
 ## Prototype state
 
@@ -81,6 +82,11 @@ Policy shape:
   destructuring,
   simple aliases,
   and `.apply()`/`.call()` from a sync member.
+- Fixture coverage includes namespace imports,
+  named-import aliases,
+  member aliases,
+  `.apply()`/`.call()`,
+  and local `require`/`process` shadows.
 - Shared oxlint config disables upstream `node/no-sync` and enables the project rule.
 - Existing `parseSync` callsites are untouched.
 
