@@ -293,6 +293,42 @@ const exits = await Promise.all(processes.map((proc) => once(proc, 'exit')))
 const failed = children.filter((name, index) => exits[index][0] !== 0)
 if (failed.length > 0) { throw new Error(`fanout child tasks failed: ${failed.join(', ')}`) }
 """
+# node -e cross-package fanout: the JS replacement for the native `mise
+# '//packages/...:<task>'` monorepo glob, which is unreliable (aborts the
+# aggregate while child fanout work is still in flight; see
+# docs/handover/lint-fix-2026-06.md). Mirrors the intra-package `fanout` var
+# above, but selects every PACKAGE task whose suffix matches, rather than the
+# current task's direct children. The target suffix is `FANOUT_TASK` when set
+# (used by wrapper tasks whose own name differs from the fanned-out suffix),
+# else derived from MISE_TASK_NAME by stripping the root `//:` prefix (mise
+# names the root config's tasks `//:build`, `//:lint:rust`, etc.). Enumerating
+# real tasks means packages lacking the task are skipped, exactly like the
+# native glob. A bounded worker pool (availableParallelism) keeps ~90 package
+# linter subtrees from spawning at once; `watch:*` fans out unbounded so every
+# long-running watcher starts and stays alive. Interpolated into the
+# cross-package fanout tasks, each of which sets `shell = "node -e"`.
+fanout_packages = """
+const { execFileSync, spawn } = await import('node:child_process')
+const { once } = await import('node:events')
+const { availableParallelism } = await import('node:os')
+const taskName = process.env.MISE_TASK_NAME ?? ''
+const suffix = process.env.FANOUT_TASK ?? (taskName.startsWith('//:') ? taskName.slice(3) : taskName)
+const tasks = JSON.parse(execFileSync('mise', ['tasks', '--all', '--hidden', '--json'], { encoding: 'utf8' }))
+const targets = tasks.map((task) => task.name).filter((name) => name.startsWith('//packages/') && name.slice(name.indexOf(':') + 1) === suffix)
+if (targets.length === 0) { throw new Error(`no package tasks matched ${suffix}`) }
+const limit = suffix.startsWith('watch') ? targets.length : Math.max(1, Math.min(availableParallelism(), targets.length))
+const failed = []
+let next = 0
+const worker = async () => {
+  while (next < targets.length) {
+    const name = targets[next++]
+    const [code] = await once(spawn('mise', ['run', name], { stdio: 'inherit' }), 'exit')
+    if (code !== 0) { failed.push(name) }
+  }
+}
+await Promise.all(Array.from({ length: limit }, worker))
+if (failed.length > 0) { throw new Error(`package fanout failed: ${failed.join(', ')}`) }
+"""
 # Bootstrap-safe dispatch to any workspace package's node entry. Resolves the
 # monorepo root (mise sets MISE_MONOREPO_ROOT in monorepo mode; the fallback
 # covers non-monorepo invocations), then runs the entry's built dist when present,
@@ -572,14 +608,13 @@ try { execFileSync('mise', ['run', process.env.usage_task], { stdio: 'inherit' }
 
 [tasks.build]
 description = "Build all packages, fanout to every package's 'build' task"
-run = "mise '//packages/...:build'"
-
-# Monorepo glob syntax: // = absolute from root, ... = all config roots, :task = task name.
-# https://mise.jdx.dev/tasks/monorepo.html
+shell = "node -e"
+run = "{{vars.fanout_packages}}"
 
 [tasks."watch:build"]
 description = "Build all packages in watch mode, fanout to every package's 'watch:build' task"
-run = "mise '//packages/...:watch:build'"
+shell = "node -e"
+run = "{{vars.fanout_packages}}"
 
 #endregion Build Tasks
 
@@ -725,11 +760,19 @@ run = [{ tasks = ["watch:build", "watch:test"] }]
 
 #region Linting Tasks
 
+# Step 1 fans out (via the JS cross-package fanout, not the native glob) to every
+# package's own `lint`, whose intra-package fanout already runs that package's
+# lint:oxlint, lint:types, lint:rust, lint:detekt, lint:clippy, lint:tofu. Step 2
+# runs only the repo-wide linters that have NO per-package task (dprint, stylelint,
+# markdown). lint:rust / lint:detekt are deliberately absent from step 2: every
+# package carrying them also has a `lint` reached by step 1, so listing them here
+# too would invoke each package's lint:rust / lint:detekt twice.
 [tasks."lint"]
 description = "Lint"
+shell = "node -e"
 run = [
-  "mise '//packages/...:lint'",
-  { tasks = ["lint:dprint", "lint:stylelint", "lint:markdown", "lint:rust", "lint:detekt"] },
+  "{{vars.fanout_packages}}",
+  { tasks = ["lint:dprint", "lint:stylelint", "lint:markdown"] },
 ]
 [tasks."lint".env]
 OXLINT_THREADS = "1"
@@ -766,19 +809,25 @@ run = "node packages/cli/markdown-lint/src/cli.ts"
 
 [tasks."lint:rust"]
 description = "Enforce the code-line budget and required rustdoc on .rs via monochromatic-rust-linter, fanned out per package"
-# Part of the `lint` aggregate. Fans out to each package's own `lint:rust`, which
+# Standalone convenience task (documented in package READMEs), NOT part of the `lint`
+# aggregate: `mise run lint` already reaches every package's lint:rust through step 1.
+# Fans out (via the JS cross-package fanout) to each package's own `lint:rust`, which
 # runs the rust-linter (max-lines + require-rustdoc) over only that package's Rust
 # source, mirroring `lint:detekt`'s per-package fanout. Pre-existing over-budget
 # files keep this red until they are split; tracked in issue #235.
-run = "mise '//packages/...:lint:rust'"
+shell = "node -e"
+run = "{{vars.fanout_packages}}"
 
 [tasks."lint:detekt"]
 description = "Enforce KDoc on Kotlin via the custom detekt rule set (kotlin-linter), fanned out per package"
-# Part of the `lint` aggregate. Fans out to each package's own `lint:detekt`, which
+# Standalone convenience task (documented in package READMEs), NOT part of the `lint`
+# aggregate: `mise run lint` already reaches every package's lint:detekt through step 1.
+# Fans out (via the JS cross-package fanout) to each package's own `lint:detekt`, which
 # scans only that package's Kotlin source root. detekt-cli is not gitignore-aware, so
 # a single scan over packages/ would walk ~200k node_modules/build files to find ~50
 # .kt; per-package scans keep the input tiny.
-run = "mise '//packages/...:lint:detekt'"
+shell = "node -e"
+run = "{{vars.fanout_packages}}"
 
 #endregion Linting Tasks
 
@@ -806,7 +855,8 @@ run = 'stylelint --fix --ignore-path .gitignore "**/*.{css,astro,html}"'
 [tasks."format:oxlint"]
 hide = true
 description = "Auto-fix each package with Oxlint using package-local tsconfig"
-run = "mise '//packages/...:format:oxlint'"
+shell = "node -e"
+run = "{{vars.fanout_packages}}"
 
 # Applies cli-markdown-lint autofixes (e.g. no-pipe-tables converting pipe
 # tables to HTML, semantic-line-breaks inserting breaks) over the whole tree or
