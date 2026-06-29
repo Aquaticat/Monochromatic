@@ -103,11 +103,12 @@ test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1162 filtered out; f
 
 ## Main worktree status
 
-New main-worktree file written but not yet verified:
+Main custom rule files were implemented and verified:
 
 - `packages/oxlint-plugins/no-restricted-syntax/src/rules/no-immediate-mutation.ts`
+- `packages/oxlint-plugins/no-restricted-syntax/src/rules/no-immediate-mutation.syntax.ts`
 
-The draft custom rule currently:
+The custom rule currently:
 
 - Visits `ExpressionStatement` nodes.
 - Looks at the immediate previous sibling statement in `Program`,
@@ -146,19 +147,19 @@ Repo commit `079cef1aa` records this checkpoint.
 
 ## Next steps
 
-1. Run markdown lint or formatting for the new troubleshooting and handover docs.
-2. Re-run final package verification after documentation edits if any source files change.
-3. Commit `docs/troubleshooting/oxlint-no-immediate-mutation-set-clone.md`,
-   `docs/troubleshooting/oxlint-no-immediate-mutation-set-clone.patch`,
-    and this updated handover.
-4. Keep avoiding unrelated `mise.lock`,
-    which remains modified by external work.
-5. Before final response,
-    audit that the troubleshooting doc,
-    custom plugin rule,
-    config change,
-    tests,
-   and commits are all present and verified.
+1. Final verification passed after the documentation commit:
+   `mise run //packages/oxlint-plugins/no-restricted-syntax:build:js:node`,
+   `mise run //packages/oxlint-plugins/no-restricted-syntax:lint:types`,
+   `mise run //packages/oxlint-plugins/no-restricted-syntax:lint:oxlint`,
+   `mise run //packages/oxlint-plugins/no-restricted-syntax:test:unit`,
+   and `mise run lint:markdown -- docs/troubleshooting/oxlint-no-immediate-mutation-set-clone.md docs/handover/oxlint-no-immediate-mutation.md`.
+2. Commits recorded so far:
+   `079cef1aa feat(no-restricted-syntax): add no-immediate-mutation clone exception` and
+   `b47aecc04 docs(troubleshooting): record oxlint Set clone mutation behavior`.
+3. Keep avoiding unrelated `mise.lock`,
+   which remains modified by external work.
+4. Before final response,
+   audit that only unrelated `mise.lock` remains dirty.
 
 ## Keep updated
 
