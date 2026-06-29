@@ -1096,6 +1096,25 @@ importers:
         specifier: 'catalog:'
         version: 26.0.1
 
+  packages/dev-script/catalog-tighten.matrix:
+    dependencies:
+      '@monochromatic-dev/module-logger':
+        specifier: workspace:*
+        version: link:../../module/logger
+      nano-spawn:
+        specifier: 'catalog:'
+        version: 2.1.0
+    devDependencies:
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.0.1
+
   packages/dev-script/deps-cube:
     dependencies:
       '@deck.gl/core':
