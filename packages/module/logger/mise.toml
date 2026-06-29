@@ -37,4 +37,3 @@ hide = true
 extends = "lint:oxlint"
 [tasks."format:oxlint"]
 extends = "format:oxlint"
-

@@ -7,4 +7,3 @@ extends = "lint:oxlint"
 # No lint:types -- this package has no TypeScript source files.
 [tasks."format:oxlint"]
 extends = "format:oxlint"
-

@@ -29,4 +29,3 @@ extends = "test:unit"
 extends = "lint:oxlint"
 [tasks."format:oxlint"]
 extends = "format:oxlint"
-

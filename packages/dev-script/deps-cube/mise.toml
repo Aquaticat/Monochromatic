@@ -33,4 +33,3 @@ extends = "lint:types"
 extends = "lint:oxlint"
 [tasks."format:oxlint"]
 extends = "format:oxlint"
-
