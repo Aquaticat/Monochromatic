@@ -62,7 +62,7 @@ async function readdirOrAbsent(
     );
   }
   catch (error) {
-    if (!(error instanceof Error))
+    if (!(Error.isError(error,)))
       throw error;
 
     return DIR_UNREADABLE;

@@ -60,7 +60,7 @@ export async function readVersionFromPackageJson(pkgJsonPath: string,): Promise<
     return parsed.version ?? NO_MANIFEST_VERSION;
   }
   catch (error) {
-    if (!(error instanceof Error))
+    if (!(Error.isError(error,)))
       throw error;
 
     return NO_MANIFEST_VERSION;

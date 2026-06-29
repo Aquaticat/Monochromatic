@@ -149,7 +149,7 @@ async function parseApiError(
     };
   }
   catch (error) {
-    if (!(error instanceof Error))
+    if (!(Error.isError(error,)))
       throw error;
 
     rl.debug('error response body was not JSON',);

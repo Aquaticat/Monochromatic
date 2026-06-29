@@ -55,7 +55,7 @@ async function destroyOne(
     await destroyVm({ name, },);
   }
   catch (error) {
-    if (!(error instanceof Error))
+    if (!(Error.isError(error,)))
       throw error;
 
     rl.debug('VM was not running, proceeding with undefine',);

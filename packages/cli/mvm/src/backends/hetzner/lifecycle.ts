@@ -314,7 +314,7 @@ async function safeDeleteImage(
   catch (error: unknown) {
     rl.info(
       `snapshot ${String(id,)} cleanup failed: ${
-        error instanceof Error ? error.message : String(error,)
+        Error.isError(error,) ? error.message : String(error,)
       }`,
     );
   }

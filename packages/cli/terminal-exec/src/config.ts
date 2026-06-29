@@ -101,7 +101,7 @@ export async function parseConfigFiles(
       );
     }
     catch (error) {
-      if (!(error instanceof Error))
+      if (!(Error.isError(error,)))
         throw error;
 
       continue;

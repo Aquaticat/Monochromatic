@@ -123,7 +123,7 @@ export async function ephemeralRun(
     catch (err: unknown) {
       rl.info(
         `cleanup failed for ${name}: ${
-          err instanceof Error ? err.message : String(err,)
+          Error.isError(err,) ? err.message : String(err,)
         }`,
       );
     }
@@ -141,7 +141,7 @@ export async function ephemeralRun(
         await cleanup();
       }
       catch (error) {
-        if (!(error instanceof Error))
+        if (!(Error.isError(error,)))
           throw error;
 
         // cleanup() already logs errors internally

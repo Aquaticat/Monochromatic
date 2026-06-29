@@ -117,7 +117,7 @@ function watcherAttemptOrdinals(
  * ```
  */
 function watcherErrorIsAbort(error: unknown,): boolean {
-  return (error instanceof Error) && (error.name === 'AbortError');
+  return (Error.isError(error,)) && (error.name === 'AbortError');
 }
 
 /**

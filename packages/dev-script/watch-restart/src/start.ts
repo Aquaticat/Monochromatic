@@ -507,7 +507,7 @@ export async function startWatchRestart(
             /**
              * Human-readable error string used in the restart-failure log line.
              */
-            const message = error instanceof Error
+            const message = Error.isError(error,)
               ? error.message
               : String(error,);
             startLogger.error(`restart failed: ${message}`,);
@@ -542,7 +542,7 @@ export async function startWatchRestart(
       /**
        * Human-readable error string used in the filter-failure log line.
        */
-      const message = error instanceof Error
+      const message = Error.isError(error,)
         ? error.message
         : String(error,);
       startLogger.error(

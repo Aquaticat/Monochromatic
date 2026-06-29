@@ -254,7 +254,7 @@ catch (error) {
   if (error instanceof SubprocessError)
     process.exitCode = error.exitCode
       ?? 1;
-  else if (error instanceof Error) {
+  else if (Error.isError(error,)) {
     console.error(error.message,);
     process.exitCode = 1;
   }

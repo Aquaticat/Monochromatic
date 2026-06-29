@@ -191,7 +191,7 @@ export async function readVmMeta(vmDir: string,): Promise<VmMeta> {
     return meta;
   }
   catch (error) {
-    if (!(error instanceof Error))
+    if (!(Error.isError(error,)))
       throw error;
 
     rl.debug('meta.json not found, falling back to legacy image file',);
@@ -216,7 +216,7 @@ export async function readVmMeta(vmDir: string,): Promise<VmMeta> {
       return content.trim();
     }
     catch (error) {
-      if (!(error instanceof Error))
+      if (!(Error.isError(error,)))
         throw error;
 
       rl.debug('legacy image file not found, assuming ubuntu',);

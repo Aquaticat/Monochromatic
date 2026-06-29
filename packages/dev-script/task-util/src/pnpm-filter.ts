@@ -141,7 +141,7 @@ catch (error) {
   else {
     console.error(
       `[task-pnpm] failed to execute pnpm: ${
-        error instanceof Error ? error.message : String(error,)
+        Error.isError(error,) ? error.message : String(error,)
       }`,
     );
     process.exitCode = 1;

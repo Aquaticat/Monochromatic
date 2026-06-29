@@ -38,7 +38,7 @@ export function installShutdownHandler(
           /**
            * Human-readable error string used in the shutdown-failure stderr line.
            */
-          const message = error instanceof Error
+          const message = Error.isError(error,)
             ? error.message
             : String(error,);
           console.error(`shutdown failed: ${message}`,);

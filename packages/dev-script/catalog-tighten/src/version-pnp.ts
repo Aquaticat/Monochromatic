@@ -101,7 +101,7 @@ function loadPnpApi(monorepoRoot: string,): PnpApi | typeof NO_PNP {
     ),) as PnpApi;
   }
   catch (error) {
-    if (!(error instanceof Error))
+    if (!(Error.isError(error,)))
       throw error;
 
     return NO_PNP;

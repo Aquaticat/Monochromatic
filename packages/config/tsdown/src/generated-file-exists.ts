@@ -19,7 +19,7 @@ export async function generatedFileExists(fileUrl: URL,): Promise<boolean> {
     return true;
   }
   catch (error) {
-    if (!(error instanceof Error))
+    if (!(Error.isError(error,)))
       throw error;
 
     return false;

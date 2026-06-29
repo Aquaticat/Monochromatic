@@ -95,7 +95,7 @@ async function readGitignore(dir: string,): Promise<string> {
       'utf8',
     );
   } catch (error) {
-    if (!(error instanceof Error)) {
+    if (!(Error.isError(error,))) {
       throw error;
     }
     if (!('code' in error)) {

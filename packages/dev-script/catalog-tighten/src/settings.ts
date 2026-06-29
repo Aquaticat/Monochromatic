@@ -70,7 +70,7 @@ export async function readModulesDir(monorepoRoot: string,): Promise<string> {
     return value;
   }
   catch (error) {
-    if (!(error instanceof Error))
+    if (!(Error.isError(error,)))
       throw error;
 
     // pnpm not on PATH or config read failed; the default modules directory is the safe assumption.

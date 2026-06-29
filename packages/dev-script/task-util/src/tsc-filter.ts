@@ -544,7 +544,7 @@ async function main(): Promise<void> {
       // Non-subprocess error (e.g. tsc not found)
       console.error(
         `[task-tsc] failed to execute tsc: ${
-          error instanceof Error ? error.message : String(error,)
+          Error.isError(error,) ? error.message : String(error,)
         }`,
       );
       process.exitCode = 1;

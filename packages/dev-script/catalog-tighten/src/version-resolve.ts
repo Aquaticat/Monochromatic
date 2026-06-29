@@ -177,7 +177,7 @@ async function discoverWorkspaceRoots(monorepoRoot: string,): Promise<string[]> 
     return roots;
   }
   catch (error) {
-    if (!(error instanceof Error))
+    if (!(Error.isError(error,)))
       throw error;
 
     workspaceRootsCache.set(

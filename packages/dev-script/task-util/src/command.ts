@@ -170,7 +170,7 @@ catch (error) {
     .otherwise(function handleUnknownError(): void {
       console.error(
         `Failed to execute command: ${
-          error instanceof Error ? error.message : String(error,)
+          Error.isError(error,) ? error.message : String(error,)
         }`,
       );
       match(args.allowFailure,)

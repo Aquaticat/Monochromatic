@@ -518,7 +518,7 @@ export async function probeAll(
       catch (err) {
         return failedProbe({
           entry,
-          err: err instanceof Error ? err : new Error(String(err,),),
+          err: Error.isError(err,) ? err : new Error(String(err,),),
         },);
       }
     },);

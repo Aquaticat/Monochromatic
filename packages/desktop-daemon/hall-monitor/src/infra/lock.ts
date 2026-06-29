@@ -239,7 +239,7 @@ async function findSocketOwnerPid(): Promise<number> {
       }
     }
     catch (error) {
-      if (!(error instanceof Error))
+      if (!(Error.isError(error,)))
         throw error;
 
       // permission denied or process exited between readdir and readlink
@@ -294,7 +294,7 @@ export async function killExisting(): Promise<void> {
     );
   }
   catch (error) {
-    if (!(error instanceof Error))
+    if (!(Error.isError(error,)))
       throw error;
 
     // process may already be gone

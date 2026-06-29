@@ -144,5 +144,5 @@ export function relativePathForRoots(
  * ```
  */
 export function describeError(error: unknown,): string {
-  return error instanceof Error ? error.message : String(error,);
+  return Error.isError(error,) ? error.message : String(error,);
 }

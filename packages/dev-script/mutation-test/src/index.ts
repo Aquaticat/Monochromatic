@@ -107,7 +107,7 @@ function cliExitCode(error: unknown,): number {
  * ```
  */
 function cliErrorMessage(error: unknown,): string {
-  if (error instanceof Error)
+  if (Error.isError(error,))
     return `${error.name}: ${error.message}`;
 
   return `Error: ${String(error,)}`;

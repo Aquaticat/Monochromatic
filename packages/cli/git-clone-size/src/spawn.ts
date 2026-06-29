@@ -117,7 +117,7 @@ export async function spawnResult(
      * Abort or other non-subprocess failure: report as a failed result so the
      * probe degrades to a wider range rather than crashing.
      */
-    const message = error instanceof Error ? error.message : String(error,);
+    const message = Error.isError(error,) ? error.message : String(error,);
     rl.debug(`aborted/failed: ${message}`,);
     return {
       exitCode: FAILED_EXIT_CODE,

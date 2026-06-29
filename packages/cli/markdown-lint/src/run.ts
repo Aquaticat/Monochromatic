@@ -251,7 +251,7 @@ function fileStartDiagnostic({
  * @returns human-readable message
  */
 function errorMessage(error: unknown,): string {
-  if (error instanceof Error) {
+  if (Error.isError(error,)) {
     /**
      * Error class name used when the message is empty.
      */

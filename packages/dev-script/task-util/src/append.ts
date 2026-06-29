@@ -79,7 +79,7 @@ async function validateFile(filePath: string,): Promise<void> {
     );
   }
   catch (error) {
-    if (!(error instanceof Error))
+    if (!(Error.isError(error,)))
       throw new Error(
         ERROR_MESSAGES.noWritePermission(filePath,),
         { cause: error, },

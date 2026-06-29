@@ -156,7 +156,7 @@ async function checkDeviceFree(
       === '0';
   }
   catch (error) {
-    if (!(error instanceof Error))
+    if (!(Error.isError(error,)))
       throw error;
 
     rl.debug(`no sysfs entry for ${sysfsSize}, assuming free`,);
@@ -446,7 +446,7 @@ export async function ensureNbdModule(): Promise<void> {
     rl.info('nbd module already loaded',);
   }
   catch (error) {
-    if (!(error instanceof Error))
+    if (!(Error.isError(error,)))
       throw error;
 
     rl.info('loading nbd kernel module',);

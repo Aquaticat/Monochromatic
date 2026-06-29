@@ -126,7 +126,7 @@ export function readPackageJson(
     return JSON.parse(raw,) as Record<string, unknown>;
   }
   catch (error: unknown) {
-    if (error instanceof Error)
+    if (Error.isError(error,))
       return PACKAGE_JSON_ABSENT;
 
     throw error;

@@ -131,7 +131,7 @@ async function readWorkspaceYaml(path: string,): Promise<string> {
     );
   }
   catch (error) {
-    if (!(error instanceof Error))
+    if (!(Error.isError(error,)))
       throw error;
 
     throw new Error(
@@ -197,7 +197,7 @@ async function pathExists(path: string,): Promise<boolean> {
     return true;
   }
   catch (error) {
-    if (!(error instanceof Error))
+    if (!(Error.isError(error,)))
       throw error;
 
     return false;

@@ -45,7 +45,7 @@ function nextSyntheticCounter(): number {
  * ```
  */
 function caughtErrorMessage(error: unknown,): string {
-  if (error instanceof Error)
+  if (Error.isError(error,))
     return error.message;
   return String(error,);
 }

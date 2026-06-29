@@ -82,7 +82,7 @@ export function contentHashFilter(): WatchFilter {
       /**
        * Human-readable error string used in the fire-on-failure warning log.
        */
-      const message = error instanceof Error ? error.message : String(error,);
+      const message = Error.isError(error,) ? error.message : String(error,);
       ctx.logger
         .warn(
         `content-hash filter failed for ${event.path}: ${message}; firing`,

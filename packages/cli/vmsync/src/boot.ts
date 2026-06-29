@@ -92,7 +92,7 @@ async function findOvmf(): Promise<string> {
           return candidate;
         }
         catch (error) {
-          if (!(error instanceof Error))
+          if (!(Error.isError(error,)))
             throw error;
 
           rl.debug(`not found: ${candidate}`,);

@@ -181,7 +181,7 @@ async function runOxlint(args: readonly string[],): Promise<OxlintRunResult> {
     return {
       stdout: '',
       stderr: '',
-      executionError: error instanceof Error ? error.message : String(error,),
+      executionError: Error.isError(error,) ? error.message : String(error,),
     };
   }
 }

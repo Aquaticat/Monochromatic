@@ -133,7 +133,7 @@ export async function stop(): Promise<void> {
     );
   }
   catch (error) {
-    if (!(error instanceof Error))
+    if (!(Error.isError(error,)))
       throw error;
 
     // process may already be gone, or pkill exits non-zero if no match
@@ -184,7 +184,7 @@ export async function forceCleanup(): Promise<void> {
     );
   }
   catch (error) {
-    if (!(error instanceof Error))
+    if (!(Error.isError(error,)))
       throw error;
 
     // process may already be gone, or pkill exits non-zero if no match
@@ -222,7 +222,7 @@ async function waitForHealth(): Promise<void> {
       }
     }
     catch (error) {
-      if (!(error instanceof Error))
+      if (!(Error.isError(error,)))
         throw error;
 
       // server not up yet

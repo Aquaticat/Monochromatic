@@ -100,7 +100,7 @@ export async function waitForGuestAgent({
       return;
     }
     catch (error) {
-      if (!(error instanceof Error))
+      if (!(Error.isError(error,)))
         throw error;
 
       /**
@@ -166,7 +166,7 @@ export async function shutdownVm({ name, }: { readonly name: string; },): Promis
     ], },);
   }
   catch (error) {
-    if (!(error instanceof Error))
+    if (!(Error.isError(error,)))
       throw error;
 
     // Guest agent often disconnects before sending a response during shutdown.

@@ -70,7 +70,7 @@ type ExecFileExitError = Error & {
  * ```
  */
 function isExecFileExitError(error: unknown,): error is ExecFileExitError {
-  return (error instanceof Error)
+  return (Error.isError(error,))
     && ('code' in error)
     && ((typeof error.code) === 'number');
 }

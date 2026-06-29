@@ -79,7 +79,7 @@ export function errorResponse({
   /**
    * Human-readable error text extracted from `Error.message` when available, stringified otherwise.
    */
-  const message = (err instanceof Error) ? err.message : String(err,);
+  const message = (Error.isError(err,)) ? err.message : String(err,);
   console.error(
     `[mcp-mvm] ${tag} failed:`,
     err,

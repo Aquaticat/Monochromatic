@@ -194,7 +194,7 @@ function dumpAndHandleError({
   // Non-subprocess error (e.g. command not found)
   console.error(
     `[task-depends] failed to execute command: ${
-      error instanceof Error ? error.message : String(error,)
+      Error.isError(error,) ? error.message : String(error,)
     }`,
   );
 

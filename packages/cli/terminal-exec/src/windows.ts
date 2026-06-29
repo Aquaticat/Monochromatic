@@ -74,7 +74,7 @@ async function which(name: string,): Promise<string | typeof EXECUTABLE_NOT_ON_P
       return candidate;
     }
     catch (error) {
-      if (!(error instanceof Error))
+      if (!(Error.isError(error,)))
         throw error;
 
       continue;

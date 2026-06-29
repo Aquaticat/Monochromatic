@@ -225,7 +225,7 @@ async function runTool(): Promise<ToolResult> {
     };
   }
   catch (error) {
-    if (!(error instanceof Error))
+    if (!(Error.isError(error,)))
       throw error;
 
     return {

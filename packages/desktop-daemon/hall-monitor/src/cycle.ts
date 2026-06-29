@@ -179,7 +179,7 @@ export async function cycle(): Promise<void> {
     /**
      * Normalised error string so both Error instances and arbitrary throws log readable output.
      */
-    const message = err instanceof Error ? err.message : String(err,);
+    const message = Error.isError(err,) ? err.message : String(err,);
     console.error(`[error] ${message}`,);
     log.error(`[error] ${message}`,);
     try {
@@ -189,7 +189,7 @@ export async function cycle(): Promise<void> {
       /**
        * Cleanup failure string for best-effort GPU process shutdown logging.
        */
-      const cleanupMessage = cleanupError instanceof Error
+      const cleanupMessage = Error.isError(cleanupError,)
         ? cleanupError.message
         : String(cleanupError,);
       log.debug(`[cleanup] ${cleanupMessage}`,);

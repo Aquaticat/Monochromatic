@@ -64,7 +64,7 @@ export async function captureScreenshot(): Promise<Buffer> {
         await unlink(tmp,);
       }
       catch (error) {
-        if (!(error instanceof Error))
+        if (!(Error.isError(error,)))
           throw error;
 
         /* temp file cleanup is best-effort */

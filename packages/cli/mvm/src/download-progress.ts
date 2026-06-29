@@ -91,7 +91,7 @@ async function pollProgress({
       }
     }
     catch (error) {
-      if (!(error instanceof Error))
+      if (!(Error.isError(error,)))
         throw error;
 
       // File may not exist yet during initial write setup

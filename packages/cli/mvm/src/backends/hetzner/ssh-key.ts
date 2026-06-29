@@ -80,7 +80,7 @@ async function ensureKeypair(): Promise<void> {
     return;
   }
   catch (error) {
-    if (!(error instanceof Error))
+    if (!(Error.isError(error,)))
       throw error;
 
     rl.info('generating managed ed25519 keypair for hetzner backend',);

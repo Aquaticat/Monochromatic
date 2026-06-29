@@ -72,7 +72,7 @@ export async function parseDesktopEntry(
     );
   }
   catch (error) {
-    if (!(error instanceof Error))
+    if (!(Error.isError(error,)))
       throw error;
 
     return DESKTOP_ENTRY_UNREADABLE;

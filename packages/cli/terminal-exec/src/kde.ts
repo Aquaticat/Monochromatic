@@ -63,7 +63,7 @@ async function readFileOrAbsent(
     );
   }
   catch (error) {
-    if (!(error instanceof Error))
+    if (!(Error.isError(error,)))
       throw error;
 
     return KDEGLOBALS_UNREADABLE;
