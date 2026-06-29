@@ -116,7 +116,7 @@ function isBlankLine(line: string,): boolean {
  * A unique `Symbol` keeps "not a header" out of a nullish union (banned by
  * `no-nullish-union`); callers narrow with `=== NOT_DIAGNOSTIC_HEADER`.
  */
-export const NOT_DIAGNOSTIC_HEADER: unique symbol = Symbol('not-diagnostic-header',);
+export const NOT_DIAGNOSTIC_HEADER: unique symbol = Symbol('line lacks oxlint diagnostic header',);
 
 /**
  * Classifies an oxlint diagnostic header line.

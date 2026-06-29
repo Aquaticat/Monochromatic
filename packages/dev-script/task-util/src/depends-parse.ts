@@ -28,7 +28,7 @@ export const SH_PREFIX = 'sh:';
  * parseTimestamp('') === UNPARSEABLE_TIMESTAMP // true
  * ```
  */
-export const UNPARSEABLE_TIMESTAMP: unique symbol = Symbol('unparseable-timestamp',);
+export const UNPARSEABLE_TIMESTAMP: unique symbol = Symbol('timestamp input cannot be parsed',);
 
 /**
  * Boundary for distinguishing unix seconds from milliseconds.

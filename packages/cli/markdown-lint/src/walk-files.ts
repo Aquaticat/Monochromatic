@@ -43,6 +43,11 @@ const DEFAULT_IGNORES: readonly string[] = [
 ];
 
 /**
+ * Node filesystem error code for absent paths.
+ */
+const FILE_NOT_FOUND_ERROR_CODE = 'ENOENT';
+
+/**
  * One `.gitignore` scope: a base directory and the matcher built from the
  * patterns declared there. A path is tested relative to the base.
  */
@@ -73,8 +78,8 @@ export type DiscoveredFile = {
 
 /**
  * Read a directory's `.gitignore`, returning its contents or an empty string
- * when absent. Absence is the common case, so the read error is swallowed
- * rather than thrown.
+ * when absent. Absence is the common case, but other read failures surface
+ * instead of being silently swallowed.
  *
  * @param dir - directory to read `.gitignore` from
  *
@@ -89,8 +94,15 @@ async function readGitignore(dir: string,): Promise<string> {
       ),
       'utf8',
     );
-  } catch {
-    return '';
+  } catch (error) {
+    if (
+      error instanceof Error
+      && 'code' in error
+      && (error as { readonly code: unknown; }).code === FILE_NOT_FOUND_ERROR_CODE
+    ) {
+      return '';
+    }
+    throw error;
   }
 }
 

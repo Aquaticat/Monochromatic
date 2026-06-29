@@ -63,6 +63,11 @@ const PROCESSING_ERROR_RULE_ID = 'markdown-lint-error';
 const SAFETY_RULE_ID = 'markdown-lint-safety';
 
 /**
+ * Aggregate error message when fixed-file write and temporary cleanup both fail.
+ */
+const WRITE_CLEANUP_ERROR_MESSAGE = 'Failed to write file and clean up temporary replacement.';
+
+/**
  * One path argument classified into the directory roots and explicit files it
  * contributes. A path is exactly one or the other, but both lists keep the
  * shape uniform so callers `flatMap` without a nullish union.
@@ -272,26 +277,31 @@ async function writeFileAtomically({
       path,
     );
   } catch (error) {
-    await removeTempFile(tempPath,);
+    try {
+      await removeTempFile(tempPath,);
+    } catch (cleanupError) {
+      throw new AggregateError(
+        [
+          error,
+          cleanupError,
+        ],
+        WRITE_CLEANUP_ERROR_MESSAGE,
+      );
+    }
     throw error;
   }
 }
 
 /**
- * Remove a temporary file, intentionally ignoring cleanup failure so the
- * original write error remains the reported failure.
+ * Remove a temporary file created during atomic replacement.
  *
  * @param path - temporary file path
  */
 async function removeTempFile(path: string,): Promise<void> {
-  try {
-    await rm(
-      path,
-      { force: true, },
-    );
-  } catch {
-    // Cleanup failure intentionally ignored.
-  }
+  await rm(
+    path,
+    { force: true, },
+  );
 }
 
 /**

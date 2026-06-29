@@ -33,10 +33,7 @@ import {
 } from '@optique/core/primitives';
 import { string, } from '@optique/core/valueparser';
 import { runSync, } from '@optique/run';
-import {
-  constants,
-  existsSync,
-} from 'node:fs';
+import { constants, } from 'node:fs';
 import {
   access,
   appendFile,
@@ -58,6 +55,11 @@ const ERROR_MESSAGES = {
 } as const;
 
 /**
+ * Node filesystem error code for absent paths.
+ */
+const FILE_NOT_FOUND_ERROR_CODE = 'ENOENT';
+
+/**
  * Validates that a file exists and has write permissions.
  *
  * @param filePath - Absolute or relative path to validate
@@ -70,16 +72,20 @@ const ERROR_MESSAGES = {
  * ```
  */
 async function validateFile(filePath: string,): Promise<void> {
-  if (!existsSync(filePath,))
-    throw new Error(ERROR_MESSAGES.fileNotFound(filePath,),);
-
   try {
     await access(
       filePath,
       constants.W_OK,
     );
   }
-  catch {
+  catch (error) {
+    if (
+      error instanceof Error
+      && 'code' in error
+      && (error as { readonly code: unknown; }).code === FILE_NOT_FOUND_ERROR_CODE
+    )
+      throw new Error(ERROR_MESSAGES.fileNotFound(filePath,),);
+
     throw new Error(ERROR_MESSAGES.noWritePermission(filePath,),);
   }
 }

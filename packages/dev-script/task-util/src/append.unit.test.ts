@@ -194,7 +194,8 @@ await describe({
           teardown(fixtures,);
           return;
         }
-        catch {
+        catch (error) {
+          expect(error,).toBeInstanceOf(Error,);
           // Permissions enforced, proceed with test
         }
 
