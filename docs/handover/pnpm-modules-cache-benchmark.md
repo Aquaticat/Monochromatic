@@ -172,7 +172,7 @@ Interpretation:
 - For this exact workload, `modulesCacheMaxAge: 0` removed stale-version noise with no measured
   install-time loss.
 
-## Second benchmark in progress: stylelint 17.13.0 to 17.14.0 toggles
+## Second benchmark result: stylelint 17.13.0 to 17.14.0 toggles
 
 Benchmark root:
 
@@ -180,10 +180,49 @@ Benchmark root:
 /home/user/temp/pnpm-stylelint-bench-20260629-120538
 ```
 
+Result files:
+
+```txt
+/home/user/temp/pnpm-stylelint-bench-20260629-120538/results.json
+/home/user/temp/pnpm-stylelint-bench-20260629-120538/results.csv
+```
+
+Observed switch timings after the initial install:
+
+- `default-cache`: 3813 ms,
+  3733 ms,
+  3742 ms,
+  3776 ms.
+- `zero-cache`: 3941 ms,
+  3836 ms,
+  3981 ms,
+  3854 ms.
+
+Interpretation:
+
+- Mean switch time: about 3766 ms with default cache and about 3903 ms with zero cache.
+  The retained virtual-store entries saved about 137 ms per switch in this run,
+  about 3.5% of the install step.
+- `default-cache` retained both stylelint versions and both TypeScript peer variants:
+  virtual-store entry count rose from 710 to 714.
+- `zero-cache` stayed at 710 entries and had only the active stylelint version each time.
+- `du --block-size=1 node_modules/.pnpm` showed default-cache about 4.16 MB above zero-cache
+  when both stylelint versions were retained.
+- `btrfs filesystem du -s` showed both worktree `.pnpm` directories with only 372 KiB exclusive
+  data. The extra stylelint copies were shared extents.
+
+## Third benchmark in progress: rolldown 1.1.2 to 1.1.3 toggles
+
+Benchmark root:
+
+```txt
+/home/user/temp/pnpm-rolldown-bench-20260629-120805
+```
+
 Worktrees:
 
-- `/home/user/temp/pnpm-stylelint-bench-20260629-120538/default-cache`
-- `/home/user/temp/pnpm-stylelint-bench-20260629-120538/zero-cache`
+- `/home/user/temp/pnpm-rolldown-bench-20260629-120805/default-cache`
+- `/home/user/temp/pnpm-rolldown-bench-20260629-120805/zero-cache`
 
 The same script-ban setup is applied:
 
@@ -191,25 +230,32 @@ The same script-ban setup is applied:
 - pnpm invoked with `--ignore-scripts`
 - `npm_config_ignore_scripts=true`
 
-The benchmark toggles the `stylelint` catalog entry between exact `17.13.0` and `17.14.0`.
-Runner:
-
-```txt
-/home/user/temp/pnpm-stylelint-bench-20260629-120538/bench.mjs
-```
+The benchmark toggles the `rolldown` catalog entry between exact `1.1.2` and `1.1.3`.
+This targets a native-heavy dependency family with supported-architecture optional bindings.
 
 Expected output paths:
 
 ```txt
-/home/user/temp/pnpm-stylelint-bench-20260629-120538/results.json
-/home/user/temp/pnpm-stylelint-bench-20260629-120538/results.csv
+/home/user/temp/pnpm-rolldown-bench-20260629-120805/results.json
+/home/user/temp/pnpm-rolldown-bench-20260629-120805/results.csv
 ```
+
+## Relevant upstream issue evidence
+
+- `pnpm/pnpm#3115` is the original closed feature issue for not pruning the modules directory on
+  every install. It states the intended benefit:
+  avoid recreating hardlinks when switching branches,
+  and adds the automatic prune-frequency option.
+- `pnpm/pnpm#11011` is an open issue reporting stale packages or links requiring recursive
+  `node_modules` deletion in large TypeScript monorepos. A pnpm maintainer suggested setting
+  `modulesCacheMaxAge` to `0`, explicitly saying stale packages inside `.pnpm` have no symlinks
+  leading to them but TypeScript may have cached their locations.
+- `pnpm/pnpm#2694` is an open issue about automatic global-store pruning. It shows the broader pnpm
+  cleanup philosophy: avoid pruning constantly,
+  but the tradeoff is extra state users may need to reason about.
 
 ## Next steps
 
-- Wait for the stylelint benchmark to finish and record timing plus retained-entry behavior.
-- If stylelint also shows no benefit,
-  decide whether a third benchmark should target a native-heavy package like `tsdown`/`rolldown` or
-  whether the evidence is already enough for a repo-local recommendation.
+- Wait for the rolldown benchmark to finish and record timing plus retained-entry behavior.
 - Synthesize whether setting `modulesCacheMaxAge: 0` in this repo would materially hurt realistic
   install flows.
