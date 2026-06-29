@@ -29,7 +29,7 @@ const l = tagged({
  * invalid syntax (unquoted shell metacharacter or unterminated quote). A
  * `unique symbol`; callers narrow with `=== INVALID_EXEC`.
  */
-export const INVALID_EXEC: unique symbol = Symbol('terminal-exec/invalid-exec',);
+export const INVALID_EXEC: unique symbol = Symbol('terminal-exec/exec value contains invalid syntax',);
 
 /**
  * Shell metacharacters that are invalid unquoted in Exec values.

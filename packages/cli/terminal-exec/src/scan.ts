@@ -36,7 +36,7 @@ const l = tagged({
  * Sentinel returned by {@link readdirOrAbsent} when a directory cannot be read.
  * A `unique symbol`; the walker narrows with `=== DIR_UNREADABLE` and skips it.
  */
-const DIR_UNREADABLE: unique symbol = Symbol('terminal-exec/dir-unreadable',);
+const DIR_UNREADABLE: unique symbol = Symbol('terminal-exec/application directory cannot be read',);
 
 /**
  * Lists directory entries with type info, returning {@link DIR_UNREADABLE} when the directory cannot be read.
@@ -61,7 +61,10 @@ async function readdirOrAbsent(
       { withFileTypes: true, },
     );
   }
-  catch {
+  catch (error) {
+    if (!(error instanceof Error))
+      throw error;
+
     return DIR_UNREADABLE;
   }
 }

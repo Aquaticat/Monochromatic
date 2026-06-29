@@ -31,7 +31,7 @@ const l = tagged({
  * well-formed `/execarg_default:` directive. A `unique symbol`; callers narrow
  * with `=== MALFORMED_DIRECTIVE`.
  */
-const MALFORMED_DIRECTIVE: unique symbol = Symbol('terminal-exec/malformed-directive',);
+const MALFORMED_DIRECTIVE: unique symbol = Symbol('terminal-exec/config directive cannot be parsed',);
 
 /**
  * Result of parsing all config files.
@@ -100,7 +100,10 @@ export async function parseConfigFiles(
         'utf8',
       );
     }
-    catch {
+    catch (error) {
+      if (!(error instanceof Error))
+        throw error;
+
       continue;
     }
 

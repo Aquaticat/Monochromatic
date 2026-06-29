@@ -73,7 +73,10 @@ async function which(name: string,): Promise<string | typeof EXECUTABLE_NOT_ON_P
       await access(candidate,);
       return candidate;
     }
-    catch {
+    catch (error) {
+      if (!(error instanceof Error))
+        throw error;
+
       continue;
     }
   }

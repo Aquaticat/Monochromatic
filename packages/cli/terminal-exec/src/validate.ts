@@ -50,7 +50,7 @@ const EXECUTABLE_NOT_ON_PATH: unique symbol = Symbol('terminal-exec/executable-n
  * ({@link validateEntry} to `tryEntry` to `resolveTerminal`) and re-exported
  * by `resolve.ts`. A `unique symbol`; consumers narrow with `=== NO_TERMINAL`.
  */
-export const NO_TERMINAL: unique symbol = Symbol('terminal-exec/no-terminal',);
+export const NO_TERMINAL: unique symbol = Symbol('terminal-exec/no usable terminal could be resolved',);
 
 /**
  * Checks if an executable exists in `$PATH` using platform-native resolution.
@@ -65,7 +65,10 @@ async function executableExists({ name, }: { readonly name: string; },): Promise
       await stat(name,);
       return true;
     }
-    catch {
+    catch (error) {
+      if (!(error instanceof Error))
+        throw error;
+
       return false;
     }
   }
@@ -104,7 +107,10 @@ async function which(name: string,): Promise<string | typeof EXECUTABLE_NOT_ON_P
       await access(candidate,);
       return candidate;
     }
-    catch {
+    catch (error) {
+      if (!(error instanceof Error))
+        throw error;
+
       continue;
     }
   }

@@ -41,7 +41,7 @@ const l = tagged({
  * cannot be read. A `unique symbol`; the resolver narrows with
  * `=== DESKTOP_ENTRY_UNREADABLE` and skips the entry.
  */
-export const DESKTOP_ENTRY_UNREADABLE: unique symbol = Symbol('terminal-exec/desktop-entry-unreadable',);
+export const DESKTOP_ENTRY_UNREADABLE: unique symbol = Symbol('terminal-exec/desktop entry file cannot be read',);
 
 /**
  * Parses a `.desktop` file and extracts terminal-relevant keys.
@@ -71,7 +71,10 @@ export async function parseDesktopEntry(
       'utf8',
     );
   }
-  catch {
+  catch (error) {
+    if (!(error instanceof Error))
+      throw error;
+
     return DESKTOP_ENTRY_UNREADABLE;
   }
 

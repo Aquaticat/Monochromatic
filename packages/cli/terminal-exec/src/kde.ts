@@ -30,7 +30,7 @@ const l = tagged({
  * unreadable. A `unique symbol`; {@link kdeTerminalService} narrows with
  * `=== KDEGLOBALS_UNREADABLE`.
  */
-const KDEGLOBALS_UNREADABLE: unique symbol = Symbol('terminal-exec/kdeglobals-unreadable',);
+const KDEGLOBALS_UNREADABLE: unique symbol = Symbol('terminal-exec/kdeglobals file cannot be read',);
 
 /**
  * Sentinel returned by {@link kdeTerminalService} when no `TerminalService` is
@@ -62,7 +62,10 @@ async function readFileOrAbsent(
       'utf8',
     );
   }
-  catch {
+  catch (error) {
+    if (!(error instanceof Error))
+      throw error;
+
     return KDEGLOBALS_UNREADABLE;
   }
 }
