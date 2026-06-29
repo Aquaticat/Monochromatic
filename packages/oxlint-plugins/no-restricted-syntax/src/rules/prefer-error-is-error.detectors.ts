@@ -4,21 +4,14 @@ import type {
 } from '@oxlint/plugins';
 
 import {
-  CALL_PROPERTY_NAME,
   CONSTRUCTOR_PROPERTY_NAME,
-  ERROR_OBJECT_TAG,
   NOT_ERROR_DETECTION,
-  PROTOTYPE_PROPERTY_NAME,
-  TO_STRING_PROPERTY_NAME,
   type ErrorDetectionArgumentText,
   type ErrorDetectionReplacementResult,
 } from './prefer-error-is-error.constants.ts';
+import { isGlobalErrorConstructor, } from './prefer-error-is-error.globals.ts';
+import { getObjectTagComparisonArgumentText, } from './prefer-error-is-error.object-tag.ts';
 import {
-  isGlobalErrorConstructor,
-  isGlobalObjectConstructor,
-} from './prefer-error-is-error.globals.ts';
-import {
-  getSingleArgumentText,
   isStaticMemberNamed,
   unwrapParentheses,
 } from './prefer-error-is-error.syntax.ts';
@@ -60,138 +53,6 @@ export function getInstanceofErrorArgumentText(
 }
 
 //endregion instanceof Error detection
-
-//region Object.prototype.toString detection
-
-/**
- * Extracts argument text from `Object.prototype.toString.call(value)`.
- *
- * @param context - Oxlint rule context.
- *
- * @param call - Call expression to inspect.
- *
- * @returns Tested value text, or sentinel when call expression does not match.
- *
- * @example
- * ```ts
- * getObjectPrototypeToStringArgumentText({ context, call: node });
- * ```
- */
-function getObjectPrototypeToStringArgumentText(
-  {
-    context,
-    call,
-  }: {
-    readonly context: Context;
-    readonly call: ESTree.CallExpression;
-  },
-): ErrorDetectionArgumentText {
-  if (call.optional)
-    return NOT_ERROR_DETECTION;
-  if (call.callee
-    .type
-    !== 'MemberExpression')
-    return NOT_ERROR_DETECTION;
-  if (!isStaticMemberNamed({
-    member: call.callee,
-    name: CALL_PROPERTY_NAME,
-  }))
-    return NOT_ERROR_DETECTION;
-  /**
-   * Source text of value passed to Object.prototype.toString.call.
-   */
-  const argumentText = getSingleArgumentText({
-    context,
-    call,
-  },);
-  if ((typeof argumentText) === 'symbol')
-    return NOT_ERROR_DETECTION;
-  /**
-   * Candidate `Object.prototype.toString` member expression.
-   */
-  const toStringMember = unwrapParentheses({ expression: call.callee
-    .object, },);
-  if (toStringMember.type !== 'MemberExpression')
-    return NOT_ERROR_DETECTION;
-  if (!isStaticMemberNamed({
-    member: toStringMember,
-    name: TO_STRING_PROPERTY_NAME,
-  }))
-    return NOT_ERROR_DETECTION;
-  /**
-   * Candidate `Object.prototype` member expression.
-   */
-  const prototypeMember = unwrapParentheses({ expression: toStringMember.object, },);
-  if (prototypeMember.type !== 'MemberExpression')
-    return NOT_ERROR_DETECTION;
-  if (!isStaticMemberNamed({
-    member: prototypeMember,
-    name: PROTOTYPE_PROPERTY_NAME,
-  }))
-    return NOT_ERROR_DETECTION;
-  if (!isGlobalObjectConstructor({
-    context,
-    expression: prototypeMember.object,
-  }))
-    return NOT_ERROR_DETECTION;
-  return argumentText;
-}
-
-/**
- * Extracts Error detector argument text from an Object tag equality check.
- *
- * @param context - Oxlint rule context.
- *
- * @param left - Left side of equality comparison.
- *
- * @param right - Right side of equality comparison.
- *
- * @returns Tested value text, or sentinel when sides do not form an Error tag check.
- *
- * @example
- * ```ts
- * getObjectTagComparisonArgumentText({ context, left: node.left, right: node.right });
- * ```
- */
-function getObjectTagComparisonArgumentText(
-  {
-    context,
-    left,
-    right,
-  }: {
-    readonly context: Context;
-    readonly left: ESTree.Expression;
-    readonly right: ESTree.Expression;
-  },
-): ErrorDetectionArgumentText {
-  /**
-   * Unwrapped left side for literal and call-shape inspection.
-   */
-  const unwrappedLeft = unwrapParentheses({ expression: left, },);
-  /**
-   * Unwrapped right side for literal and call-shape inspection.
-   */
-  const unwrappedRight = unwrapParentheses({ expression: right, },);
-  if ((unwrappedLeft.type === 'Literal') && (unwrappedLeft.value === ERROR_OBJECT_TAG)) {
-    if (unwrappedRight.type !== 'CallExpression')
-      return NOT_ERROR_DETECTION;
-    return getObjectPrototypeToStringArgumentText({
-      context,
-      call: unwrappedRight,
-    },);
-  }
-  if ((unwrappedRight.type === 'Literal') && (unwrappedRight.value === ERROR_OBJECT_TAG)) {
-    if (unwrappedLeft.type !== 'CallExpression')
-      return NOT_ERROR_DETECTION;
-    return getObjectPrototypeToStringArgumentText({
-      context,
-      call: unwrappedLeft,
-    },);
-  }
-  return NOT_ERROR_DETECTION;
-}
-
-//endregion Object.prototype.toString detection
 
 //region constructor-property detection
 

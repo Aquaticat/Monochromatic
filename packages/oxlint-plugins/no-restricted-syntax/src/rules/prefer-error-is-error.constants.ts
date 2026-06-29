@@ -64,6 +64,26 @@ export const IS_NATIVE_ERROR_PROPERTY_NAME = 'isNativeError';
  */
 export const ERROR_OBJECT_TAG = '[object Error]';
 
+/**
+ * Parsed Object.prototype.toString type name for Error objects.
+ */
+export const ERROR_OBJECT_TAG_TYPE_NAME = 'Error';
+
+/**
+ * slice property name used by parsed Object.prototype.toString checks.
+ */
+export const SLICE_PROPERTY_NAME = 'slice';
+
+/**
+ * Number of characters before Object.prototype.toString's embedded type name.
+ */
+export const OBJECT_TAG_TYPE_PREFIX_LENGTH = 8;
+
+/**
+ * slice end offset that removes Object.prototype.toString's closing bracket.
+ */
+export const OBJECT_TAG_TYPE_END_OFFSET = -1;
+
 //endregion Global and property names
 
 //region Node util sources

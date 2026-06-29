@@ -593,7 +593,7 @@ await describe({
                 return diagnostic.code === 'no-restricted-syntax(prefer-error-is-error)';
               },
             );
-            expect(preferErrorIsError.length,).toBe(10,);
+            expect(preferErrorIsError.length,).toBe(12,);
           },
         },),
         it({
@@ -611,6 +611,8 @@ await describe({
               '    error instanceof globalThis.Error,',
               "    Object.prototype.toString.call(error,) === '[object Error]',",
               "    '[object Error]' !== Object.prototype.toString.call(error,),",
+              "    Object.prototype.toString.call(error,).slice(8, -1,) === 'Error',",
+              "    'Error' !== Object.prototype.toString.call(error,).slice(8, -1,),",
               '    error.constructor === Error,',
               '    Error === error.constructor,',
               '    util.types.isNativeError(error,),',
@@ -632,6 +634,8 @@ await describe({
               '  return [',
               '    Error.isError(error,),',
               '    Error.isError(error,),',
+              '    Error.isError(error,),',
+              '    !Error.isError(error,),',
               '    Error.isError(error,),',
               '    !Error.isError(error,),',
               '    error.constructor === Error,',
