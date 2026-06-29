@@ -56,7 +56,9 @@ export function getIdentifierNamed(
     readonly name: string;
   },
 ): ESTree.IdentifierReference | typeof NOT_ERROR_DETECTION {
-  /** Expression without redundant parentheses. */
+  /**
+   * Expression without redundant parentheses.
+   */
   const unwrapped = unwrapParentheses({ expression, },);
   if (unwrapped.type !== 'Identifier')
     return NOT_ERROR_DETECTION;
@@ -80,15 +82,24 @@ export function getIdentifierNamed(
 export function getStaticMemberName(
   { member, }: { readonly member: ESTree.MemberExpression; },
 ): string | typeof NOT_ERROR_DETECTION {
-  if (member.property.type === 'PrivateIdentifier')
+  if (member.property
+    .type
+    === 'PrivateIdentifier')
     return NOT_ERROR_DETECTION;
-  if (member.property.type === 'Identifier')
-    return member.property.name;
-  if (member.property.type !== 'Literal')
+  if (member.property
+    .type
+    === 'Identifier')
+    return member.property
+      .name;
+  if (member.property
+    .type
+    !== 'Literal')
     return NOT_ERROR_DETECTION;
-  if ((typeof member.property.value) !== 'string')
+  if ((typeof member.property
+    .value) !== 'string')
     return NOT_ERROR_DETECTION;
-  return member.property.value;
+  return member.property
+    .value;
 }
 
 /**
@@ -146,7 +157,9 @@ export function isUnshadowedGlobalIdentifier(
     readonly identifier: ESTree.IdentifierReference;
   },
 ): boolean {
-  /** Scope variable visible for the identifier. */
+  /**
+   * Scope variable visible for the identifier.
+   */
   const variable = findVariable({
     context,
     node: identifier,
@@ -154,7 +167,9 @@ export function isUnshadowedGlobalIdentifier(
   },);
   if ((typeof variable) === 'symbol')
     return true;
-  return variable.defs.length === 0;
+  return variable.defs
+    .length
+    === 0;
 }
 
 /**
@@ -180,7 +195,9 @@ export function getImportDefinition(
     readonly identifier: ESTree.IdentifierReference;
   },
 ): Definition | typeof NOT_ERROR_DETECTION {
-  /** Scope variable for the identifier. */
+  /**
+   * Scope variable for the identifier.
+   */
   const variable = findVariable({
     context,
     node: identifier,
@@ -188,7 +205,9 @@ export function getImportDefinition(
   },);
   if ((typeof variable) === 'symbol')
     return NOT_ERROR_DETECTION;
-  /** First definition for the resolved variable. */
+  /**
+   * First definition for the resolved variable.
+   */
   const [definition,] = variable.defs;
   if (definition === undefined)
     return NOT_ERROR_DETECTION;
@@ -212,15 +231,21 @@ export function getImportDefinition(
 export function getImportSource(
   { definition, }: { readonly definition: Definition; },
 ): string | typeof NOT_ERROR_DETECTION {
-  /** Import declaration owning the binding definition. */
-  const declaration = definition.node.type === 'ImportDeclaration'
+  /**
+   * Import declaration owning the binding definition.
+   */
+  const declaration = definition.node
+    .type
+    === 'ImportDeclaration'
     ? definition.node
-    : definition.node.parent;
+    : definition.node
+      .parent;
   if (declaration === null)
     return NOT_ERROR_DETECTION;
   if (declaration.type !== 'ImportDeclaration')
     return NOT_ERROR_DETECTION;
-  return declaration.source.value;
+  return declaration.source
+    .value;
 }
 
 /**
@@ -246,13 +271,27 @@ export function isNamedImport(
     readonly importedName: string;
   },
 ): boolean {
-  if (definition.node.type !== 'ImportSpecifier')
+  if (definition.node
+    .type
+    !== 'ImportSpecifier')
     return false;
-  if (definition.node.imported.type === 'Identifier')
-    return definition.node.imported.name === importedName;
-  if (definition.node.imported.type !== 'Literal')
+  if (definition.node
+    .imported
+    .type
+    === 'Identifier')
+    return definition.node
+      .imported
+      .name
+      === importedName;
+  if (definition.node
+    .imported
+    .type
+    !== 'Literal')
     return false;
-  return definition.node.imported.value === importedName;
+  return definition.node
+    .imported
+    .value
+    === importedName;
 }
 
 //endregion Scope and import helpers
@@ -282,15 +321,20 @@ export function getSingleArgumentText(
     readonly call: ESTree.CallExpression;
   },
 ): ErrorDetectionArgumentText {
-  if (call.arguments.length !== 1)
+  if (call.arguments
+    .length
+    !== 1)
     return NOT_ERROR_DETECTION;
-  /** Sole argument supplied to the candidate detector. */
+  /**
+   * Sole argument supplied to the candidate detector.
+   */
   const [argument,] = call.arguments;
   if (argument === undefined)
     return NOT_ERROR_DETECTION;
   if (argument.type === 'SpreadElement')
     return NOT_ERROR_DETECTION;
-  return context.sourceCode.getText(argument,);
+  return context.sourceCode
+    .getText(argument,);
 }
 
 /**

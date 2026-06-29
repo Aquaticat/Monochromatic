@@ -88,14 +88,25 @@ function isNodeUtilImportIdentifier(
     readonly identifier: ESTree.IdentifierReference;
   },
 ): boolean {
-  /** Import definition behind the identifier. */
-  const definition = getImportDefinition({ context, identifier, },);
+  /**
+   * Import definition behind the identifier.
+   */
+  const definition = getImportDefinition({
+    context,
+    identifier,
+  },);
   if ((typeof definition) === 'symbol')
     return false;
-  if ((definition.node.type !== 'ImportDefaultSpecifier')
-    && (definition.node.type !== 'ImportNamespaceSpecifier'))
+  if ((definition.node
+    .type
+    !== 'ImportDefaultSpecifier')
+    && (definition.node
+      .type
+      !== 'ImportNamespaceSpecifier'))
     return false;
-  /** Source string for the import declaration. */
+  /**
+   * Source string for the import declaration.
+   */
   const source = getImportSource({ definition, },);
   return ((typeof source) !== 'symbol') && isNodeUtilSource({ source, });
 }
@@ -123,19 +134,33 @@ function isNodeUtilTypesImportIdentifier(
     readonly identifier: ESTree.IdentifierReference;
   },
 ): boolean {
-  /** Import definition behind the identifier. */
-  const definition = getImportDefinition({ context, identifier, },);
+  /**
+   * Import definition behind the identifier.
+   */
+  const definition = getImportDefinition({
+    context,
+    identifier,
+  },);
   if ((typeof definition) === 'symbol')
     return false;
-  /** Source string for the import declaration. */
+  /**
+   * Source string for the import declaration.
+   */
   const source = getImportSource({ definition, },);
   if ((typeof source) === 'symbol')
     return false;
   if (isNodeUtilTypesSource({ source, }))
-    return (definition.node.type === 'ImportDefaultSpecifier')
-      || (definition.node.type === 'ImportNamespaceSpecifier');
+    return (definition.node
+      .type
+      === 'ImportDefaultSpecifier')
+      || (definition.node
+        .type
+        === 'ImportNamespaceSpecifier');
   return isNodeUtilSource({ source, })
-    && isNamedImport({ definition, importedName: TYPES_PROPERTY_NAME, });
+    && isNamedImport({
+      definition,
+      importedName: TYPES_PROPERTY_NAME,
+    });
 }
 
 /**
@@ -161,19 +186,32 @@ function isNodeUtilTypesExpression(
     readonly expression: ESTree.Expression;
   },
 ): boolean {
-  /** Expression without redundant parentheses. */
+  /**
+   * Expression without redundant parentheses.
+   */
   const unwrapped = unwrapParentheses({ expression, },);
   if (unwrapped.type === 'Identifier')
-    return isNodeUtilTypesImportIdentifier({ context, identifier: unwrapped, });
+    return isNodeUtilTypesImportIdentifier({
+      context,
+      identifier: unwrapped,
+    });
   if (unwrapped.type !== 'MemberExpression')
     return false;
-  if (!isStaticMemberNamed({ member: unwrapped, name: TYPES_PROPERTY_NAME, }))
+  if (!isStaticMemberNamed({
+    member: unwrapped,
+    name: TYPES_PROPERTY_NAME,
+  }))
     return false;
-  /** Member object without redundant parentheses. */
+  /**
+   * Member object without redundant parentheses.
+   */
   const object = unwrapParentheses({ expression: unwrapped.object, },);
   if (object.type !== 'Identifier')
     return false;
-  return isNodeUtilImportIdentifier({ context, identifier: object, });
+  return isNodeUtilImportIdentifier({
+    context,
+    identifier: object,
+  });
 }
 
 /**
@@ -199,15 +237,25 @@ function isDirectIsNativeErrorImport(
     readonly identifier: ESTree.IdentifierReference;
   },
 ): boolean {
-  /** Import definition behind the direct callee. */
-  const definition = getImportDefinition({ context, identifier, },);
+  /**
+   * Import definition behind the direct callee.
+   */
+  const definition = getImportDefinition({
+    context,
+    identifier,
+  },);
   if ((typeof definition) === 'symbol')
     return false;
-  /** Source string for the direct import. */
+  /**
+   * Source string for the direct import.
+   */
   const source = getImportSource({ definition, },);
   return ((typeof source) !== 'symbol')
     && isNodeUtilTypesSource({ source, })
-    && isNamedImport({ definition, importedName: IS_NATIVE_ERROR_PROPERTY_NAME, });
+    && isNamedImport({
+      definition,
+      importedName: IS_NATIVE_ERROR_PROPERTY_NAME,
+    });
 }
 
 //endregion Node util import classification
@@ -239,22 +287,38 @@ export function getIsNativeErrorArgumentText(
 ): ErrorDetectionArgumentText {
   if (call.optional)
     return NOT_ERROR_DETECTION;
-  /** Source text of value passed to isNativeError. */
-  const argumentText = getSingleArgumentText({ context, call, },);
+  /**
+   * Source text of value passed to isNativeError.
+   */
+  const argumentText = getSingleArgumentText({
+    context,
+    call,
+  },);
   if ((typeof argumentText) === 'symbol')
     return NOT_ERROR_DETECTION;
-  /** Call target without redundant parentheses. */
+  /**
+   * Call target without redundant parentheses.
+   */
   const callee = unwrapParentheses({ expression: call.callee, },);
   if (callee.type === 'Identifier') {
-    if (isDirectIsNativeErrorImport({ context, identifier: callee, }))
+    if (isDirectIsNativeErrorImport({
+      context,
+      identifier: callee,
+    }))
       return argumentText;
     return NOT_ERROR_DETECTION;
   }
   if (callee.type !== 'MemberExpression')
     return NOT_ERROR_DETECTION;
-  if (!isStaticMemberNamed({ member: callee, name: IS_NATIVE_ERROR_PROPERTY_NAME, }))
+  if (!isStaticMemberNamed({
+    member: callee,
+    name: IS_NATIVE_ERROR_PROPERTY_NAME,
+  }))
     return NOT_ERROR_DETECTION;
-  if (!isNodeUtilTypesExpression({ context, expression: callee.object, }))
+  if (!isNodeUtilTypesExpression({
+    context,
+    expression: callee.object,
+  }))
     return NOT_ERROR_DETECTION;
   return argumentText;
 }

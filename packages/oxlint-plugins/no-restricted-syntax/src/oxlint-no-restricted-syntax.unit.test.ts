@@ -281,7 +281,7 @@ async function fixGeneratedSource(source: string,): Promise<string> {
     );
   }
   catch (error: unknown) {
-    if (!((typeof error) === 'object') || (error === null) || !('stdout' in error))
+    if ((!((typeof error) === 'object')) || (error === null) || (!('stdout' in error)))
       throw error;
   }
   return readFileSync(

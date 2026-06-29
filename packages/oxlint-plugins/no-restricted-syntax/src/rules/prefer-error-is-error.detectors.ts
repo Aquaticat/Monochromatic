@@ -49,9 +49,13 @@ export function getInstanceofErrorArgumentText(
 ): ErrorDetectionArgumentText {
   if (binary.operator !== 'instanceof')
     return NOT_ERROR_DETECTION;
-  if (!isGlobalErrorConstructor({ context, expression: binary.right, }))
+  if (!isGlobalErrorConstructor({
+    context,
+    expression: binary.right,
+  }))
     return NOT_ERROR_DETECTION;
-  return context.sourceCode.getText(binary.left,);
+  return context.sourceCode
+    .getText(binary.left,);
 }
 
 //endregion instanceof Error detection
@@ -83,27 +87,51 @@ function getObjectPrototypeToStringArgumentText(
 ): ErrorDetectionArgumentText {
   if (call.optional)
     return NOT_ERROR_DETECTION;
-  if (call.callee.type !== 'MemberExpression')
+  if (call.callee
+    .type
+    !== 'MemberExpression')
     return NOT_ERROR_DETECTION;
-  if (!isStaticMemberNamed({ member: call.callee, name: CALL_PROPERTY_NAME, }))
+  if (!isStaticMemberNamed({
+    member: call.callee,
+    name: CALL_PROPERTY_NAME,
+  }))
     return NOT_ERROR_DETECTION;
-  /** Source text of value passed to Object.prototype.toString.call. */
-  const argumentText = getSingleArgumentText({ context, call, },);
+  /**
+   * Source text of value passed to Object.prototype.toString.call.
+   */
+  const argumentText = getSingleArgumentText({
+    context,
+    call,
+  },);
   if ((typeof argumentText) === 'symbol')
     return NOT_ERROR_DETECTION;
-  /** Candidate `Object.prototype.toString` member expression. */
-  const toStringMember = unwrapParentheses({ expression: call.callee.object, },);
+  /**
+   * Candidate `Object.prototype.toString` member expression.
+   */
+  const toStringMember = unwrapParentheses({ expression: call.callee
+    .object, },);
   if (toStringMember.type !== 'MemberExpression')
     return NOT_ERROR_DETECTION;
-  if (!isStaticMemberNamed({ member: toStringMember, name: TO_STRING_PROPERTY_NAME, }))
+  if (!isStaticMemberNamed({
+    member: toStringMember,
+    name: TO_STRING_PROPERTY_NAME,
+  }))
     return NOT_ERROR_DETECTION;
-  /** Candidate `Object.prototype` member expression. */
+  /**
+   * Candidate `Object.prototype` member expression.
+   */
   const prototypeMember = unwrapParentheses({ expression: toStringMember.object, },);
   if (prototypeMember.type !== 'MemberExpression')
     return NOT_ERROR_DETECTION;
-  if (!isStaticMemberNamed({ member: prototypeMember, name: PROTOTYPE_PROPERTY_NAME, }))
+  if (!isStaticMemberNamed({
+    member: prototypeMember,
+    name: PROTOTYPE_PROPERTY_NAME,
+  }))
     return NOT_ERROR_DETECTION;
-  if (!isGlobalObjectConstructor({ context, expression: prototypeMember.object, }))
+  if (!isGlobalObjectConstructor({
+    context,
+    expression: prototypeMember.object,
+  }))
     return NOT_ERROR_DETECTION;
   return argumentText;
 }
@@ -135,19 +163,29 @@ function getObjectTagComparisonArgumentText(
     readonly right: ESTree.Expression;
   },
 ): ErrorDetectionArgumentText {
-  /** Unwrapped left side for literal and call-shape inspection. */
+  /**
+   * Unwrapped left side for literal and call-shape inspection.
+   */
   const unwrappedLeft = unwrapParentheses({ expression: left, },);
-  /** Unwrapped right side for literal and call-shape inspection. */
+  /**
+   * Unwrapped right side for literal and call-shape inspection.
+   */
   const unwrappedRight = unwrapParentheses({ expression: right, },);
   if ((unwrappedLeft.type === 'Literal') && (unwrappedLeft.value === ERROR_OBJECT_TAG)) {
     if (unwrappedRight.type !== 'CallExpression')
       return NOT_ERROR_DETECTION;
-    return getObjectPrototypeToStringArgumentText({ context, call: unwrappedRight, },);
+    return getObjectPrototypeToStringArgumentText({
+      context,
+      call: unwrappedRight,
+    },);
   }
   if ((unwrappedRight.type === 'Literal') && (unwrappedRight.value === ERROR_OBJECT_TAG)) {
     if (unwrappedLeft.type !== 'CallExpression')
       return NOT_ERROR_DETECTION;
-    return getObjectPrototypeToStringArgumentText({ context, call: unwrappedLeft, },);
+    return getObjectPrototypeToStringArgumentText({
+      context,
+      call: unwrappedLeft,
+    },);
   }
   return NOT_ERROR_DETECTION;
 }
@@ -183,18 +221,36 @@ function getConstructorComparisonArgumentText(
     readonly right: ESTree.Expression;
   },
 ): ErrorDetectionArgumentText {
-  /** Unwrapped left side for member and constructor inspection. */
+  /**
+   * Unwrapped left side for member and constructor inspection.
+   */
   const unwrappedLeft = unwrapParentheses({ expression: left, },);
-  /** Unwrapped right side for member and constructor inspection. */
+  /**
+   * Unwrapped right side for member and constructor inspection.
+   */
   const unwrappedRight = unwrapParentheses({ expression: right, },);
   if ((unwrappedLeft.type === 'MemberExpression')
-    && isStaticMemberNamed({ member: unwrappedLeft, name: CONSTRUCTOR_PROPERTY_NAME, })
-    && isGlobalErrorConstructor({ context, expression: unwrappedRight, }))
-    return context.sourceCode.getText(unwrappedLeft.object,);
+    && isStaticMemberNamed({
+      member: unwrappedLeft,
+      name: CONSTRUCTOR_PROPERTY_NAME,
+    })
+    && isGlobalErrorConstructor({
+      context,
+      expression: unwrappedRight,
+    }))
+    return context.sourceCode
+      .getText(unwrappedLeft.object,);
   if ((unwrappedRight.type === 'MemberExpression')
-    && isStaticMemberNamed({ member: unwrappedRight, name: CONSTRUCTOR_PROPERTY_NAME, })
-    && isGlobalErrorConstructor({ context, expression: unwrappedLeft, }))
-    return context.sourceCode.getText(unwrappedRight.object,);
+    && isStaticMemberNamed({
+      member: unwrappedRight,
+      name: CONSTRUCTOR_PROPERTY_NAME,
+    })
+    && isGlobalErrorConstructor({
+      context,
+      expression: unwrappedLeft,
+    }))
+    return context.sourceCode
+      .getText(unwrappedRight.object,);
   return NOT_ERROR_DETECTION;
 }
 
@@ -266,7 +322,9 @@ export function getEqualityDetectorArgumentText(
 ): ErrorDetectionArgumentText {
   if (!isEqualityOperator({ operator: binary.operator, }))
     return NOT_ERROR_DETECTION;
-  /** Object.prototype.toString-based detection argument, if matched. */
+  /**
+   * Object.prototype.toString-based detection argument, if matched.
+   */
   const objectTagArgumentText = getObjectTagComparisonArgumentText({
     context,
     left: binary.left,

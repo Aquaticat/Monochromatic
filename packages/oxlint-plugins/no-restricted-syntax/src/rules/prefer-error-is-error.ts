@@ -45,9 +45,13 @@ function reportReplacement(
     readonly negated: boolean;
   },
 ): void {
-  /** Canonical Error.isError call replacement. */
+  /**
+   * Canonical Error.isError call replacement.
+   */
   const callText = buildErrorIsErrorCall({ argumentText, },);
-  /** Final replacement, optionally preserving a negated detector. */
+  /**
+   * Final replacement, optionally preserving a negated detector.
+   */
   const replacement = negated ? `!${callText}` : callText;
   context.report({
     node,
@@ -99,7 +103,9 @@ export const preferErrorIsError: CreateOnceRule = {
   createOnce(context: Context,): VisitorWithHooks {
     return {
       BinaryExpression(node: ESTree.BinaryExpression,): void {
-        /** `value instanceof Error` argument text, if matched. */
+        /**
+         * `value instanceof Error` argument text, if matched.
+         */
         const instanceofArgumentText = getInstanceofErrorArgumentText({
           context,
           binary: node,
@@ -113,7 +119,9 @@ export const preferErrorIsError: CreateOnceRule = {
           },);
           return;
         }
-        /** Equality-based detector argument text, if matched. */
+        /**
+         * Equality-based detector argument text, if matched.
+         */
         const equalityArgumentText = getEqualityDetectorArgumentText({
           context,
           binary: node,
@@ -128,7 +136,9 @@ export const preferErrorIsError: CreateOnceRule = {
         },);
       },
       CallExpression(node: ESTree.CallExpression,): void {
-        /** Node isNativeError detector argument text, if matched. */
+        /**
+         * Node isNativeError detector argument text, if matched.
+         */
         const argumentText = getIsNativeErrorArgumentText({
           context,
           call: node,
