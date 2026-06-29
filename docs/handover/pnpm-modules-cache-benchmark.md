@@ -211,7 +211,7 @@ Interpretation:
 - `btrfs filesystem du -s` showed both worktree `.pnpm` directories with only 372 KiB exclusive
   data. The extra stylelint copies were shared extents.
 
-## Third benchmark in progress: rolldown 1.1.2 to 1.1.3 toggles
+## Third benchmark result: rolldown 1.1.2 to 1.1.3 toggles
 
 Benchmark root:
 
@@ -219,26 +219,64 @@ Benchmark root:
 /home/user/temp/pnpm-rolldown-bench-20260629-120805
 ```
 
-Worktrees:
-
-- `/home/user/temp/pnpm-rolldown-bench-20260629-120805/default-cache`
-- `/home/user/temp/pnpm-rolldown-bench-20260629-120805/zero-cache`
-
-The same script-ban setup is applied:
-
-- `ignoreScripts: true`
-- pnpm invoked with `--ignore-scripts`
-- `npm_config_ignore_scripts=true`
-
-The benchmark toggles the `rolldown` catalog entry between exact `1.1.2` and `1.1.3`.
-This targets a native-heavy dependency family with supported-architecture optional bindings.
-
-Expected output paths:
+Result files:
 
 ```txt
 /home/user/temp/pnpm-rolldown-bench-20260629-120805/results.json
 /home/user/temp/pnpm-rolldown-bench-20260629-120805/results.csv
 ```
+
+Observed switch timings after the initial install:
+
+- `default-cache`: 3820 ms,
+  3738 ms,
+  3819 ms,
+  3797 ms.
+- `zero-cache`: 3811 ms,
+  3792 ms,
+  3841 ms,
+  3763 ms.
+
+Interpretation:
+
+- Mean switch time was effectively identical:
+  about 3794 ms with default cache and about 3802 ms with zero cache.
+- The `1.1.2` state contains both `rolldown@1.1.2` and `rolldown@1.1.3` even under
+  `modulesCacheMaxAge: 0`, because `1.1.3` remains active through another dependency path.
+  The `1.1.3` state is the valid prune comparison:
+  `default-cache` retained both versions,
+  while `zero-cache` pruned back to only `1.1.3`.
+- `du --block-size=1 node_modules/.pnpm` showed about 1.36 GB for default-cache when both rolldown
+  versions were retained versus about 1.246 GB for zero-cache after pruning back to `1.1.3`.
+- `btrfs filesystem du -s` again showed both worktree `.pnpm` directories with only 372 KiB
+  exclusive data,
+  and retained rolldown package/binding directories with zero exclusive data.
+
+## Cross-benchmark summary
+
+Switch-only mean timings:
+
+- `oxlint`: default-cache 3826 ms,
+  zero-cache 3837 ms.
+- `stylelint`: default-cache 3766 ms,
+  zero-cache 3903 ms.
+- `rolldown`: default-cache 3794 ms,
+  zero-cache 3802 ms.
+
+Overall interpretation:
+
+- In this repo on Btrfs with `packageImportMethod: clone-or-copy`, retaining stale virtual-store
+  entries produced no meaningful speedup for oxlint and rolldown toggles,
+  and a small stylelint speedup around 137 ms per switch.
+- Retention consistently increased visible `.pnpm` entry counts and left stale versions visible.
+- `du` inflated the apparent cost of stale entries by about 4 MB to 115 MB depending on package
+  family,
+  while Btrfs exclusive-data accounting showed the extra retained entries consumed effectively no
+  unique file data in these runs.
+- The main cost is therefore not physical disk blocks on this machine;
+  it is stale-version noise,
+  confusing disk accounting,
+  and bug surface with tools that cache paths into `.pnpm`.
 
 ## Relevant upstream issue evidence
 
@@ -254,8 +292,25 @@ Expected output paths:
   cleanup philosophy: avoid pruning constantly,
   but the tradeoff is extra state users may need to reason about.
 
+## Current recommendation
+
+For this repo,
+ recommend setting `modulesCacheMaxAge: 0` if the goal is deterministic and less confusing
+`node_modules/.pnpm` state.
+The measured performance cost was negligible in two benchmark families and about 137 ms per install
+switch in one family.
+That small benefit does not look worth stale-version noise and TypeScript/path-cache risk for this
+workspace.
+Do not apply this setting unless the user asks for an action edit,
+ because the current task is investigation plus benchmarking.
+
 ## Next steps
 
-- Wait for the rolldown benchmark to finish and record timing plus retained-entry behavior.
-- Synthesize whether setting `modulesCacheMaxAge: 0` in this repo would materially hurt realistic
-  install flows.
+- If continuing the investigation,
+  test a true branch-switch benchmark rather than catalog edits,
+  for example create two branches with committed `pnpm-workspace.yaml` changes and alternate
+  `git checkout` plus `pnpm install` inside one worktree.
+- If the user asks to apply the recommendation,
+  edit `pnpm-workspace.yaml` in the main worktree to add `modulesCacheMaxAge: 0`,
+  run the relevant install/check command,
+  and commit the change separately from this handover.
