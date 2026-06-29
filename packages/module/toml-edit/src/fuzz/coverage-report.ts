@@ -22,10 +22,8 @@ import {
 } from 'node:fs/promises';
 import { dirname, } from 'node:path';
 
-import {
-  aggregateCoverage,
-  type CoverageMap,
-} from './coverage-v8.ts';
+import { aggregateCoverage, } from './coverage-aggregate.ts';
+import type { CoverageMap, } from './coverage-v8.ts';
 
 //region Baseline shapes
 

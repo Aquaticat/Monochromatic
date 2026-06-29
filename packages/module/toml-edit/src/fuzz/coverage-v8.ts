@@ -19,14 +19,7 @@
  * @module
  */
 
-import {
-  readFile,
-  readdir,
-} from 'node:fs/promises';
-import {
-  join,
-  relative,
-} from 'node:path';
+import { relative, } from 'node:path';
 import { fileURLToPath, } from 'node:url';
 
 //region V8 JSON shapes
@@ -34,7 +27,7 @@ import { fileURLToPath, } from 'node:url';
 /**
  * One V8 source range: a half-open character span and its execution count.
  */
-type V8Range = {
+export type V8Range = {
   readonly startOffset: number;
   readonly endOffset: number;
   readonly count: number;
@@ -43,7 +36,7 @@ type V8Range = {
 /**
  * One V8 function coverage entry: the function's own range plus block ranges.
  */
-type V8Function = {
+export type V8Function = {
   readonly functionName: string;
   readonly ranges: readonly V8Range[];
   readonly isBlockCoverage: boolean;
@@ -52,7 +45,7 @@ type V8Function = {
 /**
  * One covered script: its source URL and the function coverage entries.
  */
-type V8Script = {
+export type V8Script = {
   readonly url: string;
   readonly functions: readonly V8Function[];
 };
@@ -60,7 +53,7 @@ type V8Script = {
 /**
  * One `NODE_V8_COVERAGE` output file: the array of covered scripts.
  */
-type V8CoverageFile = {
+export type V8CoverageFile = {
   readonly result: readonly V8Script[];
 };
 
@@ -71,8 +64,15 @@ type V8CoverageFile = {
  * @param value - Parsed JSON to test before reading as coverage.
  *
  * @returns Whether `value` can be read as a coverage file.
+ *
+ * @example
+ * ```ts
+ * if (isCoverageFile(parsed)) {
+ *   parsed.result.length;
+ * }
+ * ```
  */
-function isCoverageFile(value: unknown,): value is V8CoverageFile {
+export function isCoverageFile(value: unknown,): value is V8CoverageFile {
   return ((typeof value) === 'object')
     && (value !== null)
     && ('result' in value)
@@ -124,7 +124,7 @@ const NON_TARGET_FRAGMENTS: readonly string[] = [
 /**
  * Classification of one V8 script URL against the coverage-target rule.
  */
-type UrlClass =
+export type UrlClass =
   | {
     readonly kind: 'target';
     readonly relPath: string;
@@ -143,7 +143,7 @@ type UrlClass =
  * const cls = classifyUrl({ url: script.url, packageRoot, },);
  * ```
  */
-function classifyUrl(
+export function classifyUrl(
   {
     url,
     packageRoot,
@@ -281,8 +281,13 @@ function lineHasCoveredCode(
  * Project one script's ranges onto the set of covered one-based line numbers.
  *
  * @returns Covered code-line numbers for this script.
+ *
+ * @example
+ * ```ts
+ * const covered = projectCovered({ source: 'x = 1\n', functions: [] });
+ * ```
  */
-function projectCovered(
+export function projectCovered(
   {
     source,
     functions,
@@ -326,8 +331,13 @@ function projectCovered(
  * Project a covered-line set onto per-file coverage counts.
  *
  * @returns Covered and total code-line counts plus the uncovered line numbers.
+ *
+ * @example
+ * ```ts
+ * const coverage = fileCoverageFrom({ source: 'x = 1\n', coveredLines: new Set([1]) });
+ * ```
  */
-function fileCoverageFrom(
+export function fileCoverageFrom(
   {
     source,
     coveredLines,
@@ -381,285 +391,3 @@ function fileCoverageFrom(
 
 //endregion Bitmap painting and line projection
 
-//region Aggregation
-
-/**
- * Per-target accumulation across coverage files before line projection.
- */
-type TargetAccumulator = {
-  /**
-   * On-disk source text for the target file.
-   */
-  readonly source: string;
-  /**
-   * Covered line numbers unioned across coverage files.
-   */
-  readonly covered: Set<number>;
-};
-
-/**
- * Coverage target extracted from one V8 coverage JSON file.
- */
-type CoverageTarget = {
-  /**
-   * Package-relative target path used as the coverage map key.
-   */
-  readonly relPath: string;
-  /**
-   * Absolute path to the target source file.
-   */
-  readonly absPath: string;
-  /**
-   * V8 function coverage ranges for this target occurrence.
-   */
-  readonly functions: readonly V8Function[];
-};
-
-/**
- * Target projected onto covered line numbers after source loading.
- */
-type ProjectedTarget = {
-  /**
-   * Package-relative target path used as the coverage map key.
-   */
-  readonly relPath: string;
-  /**
-   * On-disk source text for the target file.
-   */
-  readonly source: string;
-  /**
-   * Covered line numbers for this target occurrence.
-   */
-  readonly covered: ReadonlySet<number>;
-};
-
-/**
- * Reads one V8 coverage JSON file and returns its package target scripts.
- *
- * @param coverageDir - directory holding V8 coverage JSON files
- *
- * @param file - coverage JSON filename inside `coverageDir`
- *
- * @param packageRoot - absolute package root used for target classification
- *
- * @returns coverage targets extracted from the file
- */
-async function readCoverageTargets(
-  {
-    coverageDir,
-    file,
-    packageRoot,
-  }: {
-    readonly coverageDir: string;
-    readonly file: string;
-    readonly packageRoot: string;
-  },
-): Promise<readonly CoverageTarget[]> {
-  /**
-   * Parsed coverage file, narrowed by assertion from `unknown`.
-   */
-  const parsed: unknown = JSON.parse(await readFile(
-    join(
-      coverageDir,
-      file,
-    ),
-    'utf8',
-  ),);
-  if (!isCoverageFile(parsed,)) throw new Error('Malformed V8 coverage JSON: expected a result array',);
-
-  return parsed.result.flatMap(function targetFromScript(script,): readonly CoverageTarget[] {
-    /**
-     * Target classification for this script's URL.
-     */
-    const cls = classifyUrl({
-      url: script.url,
-      packageRoot,
-    },);
-    if (cls.kind !== 'target') return [];
-    return [{
-      relPath: cls.relPath,
-      absPath: cls.absPath,
-      functions: script.functions,
-    },];
-  },);
-}
-
-/**
- * Reads target source text through a cache so each file is loaded once.
- *
- * @param sourceCache - promise cache keyed by absolute source path
- *
- * @param absPath - source file path to read
- *
- * @returns promise resolving to source text
- */
-function sourcePromiseFor(
-  {
-    sourceCache,
-    absPath,
-  }: {
-    readonly sourceCache: Map<string, Promise<string>>;
-    readonly absPath: string;
-  },
-): Promise<string> {
-  /**
-   * Existing in-flight or fulfilled read for this source file.
-   */
-  const existing = sourceCache.get(absPath,);
-  if (existing !== undefined)
-    return existing;
-
-  /**
-   * New source read stored immediately so concurrent target projections share it.
-   */
-  const sourcePromise = readFile(
-    absPath,
-    'utf8',
-  );
-  sourceCache.set(
-    absPath,
-    sourcePromise,
-  );
-  return sourcePromise;
-}
-
-/**
- * Projects one target's V8 ranges onto covered line numbers.
- *
- * @param target - coverage target to project
- *
- * @param sourceCache - shared source read cache
- *
- * @returns projected target with source and covered lines
- */
-async function projectTarget(
-  {
-    target,
-    sourceCache,
-  }: {
-    readonly target: CoverageTarget;
-    readonly sourceCache: Map<string, Promise<string>>;
-  },
-): Promise<ProjectedTarget> {
-  /**
-   * Source text loaded through the shared cache.
-   */
-  const source = await sourcePromiseFor({
-    sourceCache,
-    absPath: target.absPath,
-  },);
-  return {
-    relPath: target.relPath,
-    source,
-    covered: projectCovered({
-      source,
-      functions: target.functions,
-    },),
-  };
-}
-
-/**
- * Unions projected target coverage by package-relative path.
- *
- * @param targets - projected target occurrences across all coverage files
- *
- * @returns accumulator map keyed by package-relative target path
- */
-function mergeProjectedTargets(targets: readonly ProjectedTarget[],): Map<string, TargetAccumulator> {
-  return targets.reduce<Map<string, TargetAccumulator>>(
-    function merge(perFile, target,) {
-      /**
-       * Existing file accumulator, when another coverage script already reached the file.
-       */
-      const existing = perFile.get(target.relPath,);
-      if (existing === undefined) {
-        perFile.set(
-          target.relPath,
-          {
-            source: target.source,
-            covered: new Set(target.covered,),
-          },
-        );
-        return perFile;
-      }
-
-      for (const lineNumber of target.covered) {
-        existing.covered
-          .add(lineNumber,);
-      }
-      return perFile;
-    },
-    new Map<string, TargetAccumulator>(),
-  );
-}
-
-/**
- * Read every `NODE_V8_COVERAGE` JSON file in `coverageDir` and project the
- * target files' ranges onto per-file line coverage.
- *
- * @returns Coverage keyed by package-relative path; only target files appear.
- *
- * @example
- * ```ts
- * const map = await aggregateCoverage({ coverageDir, packageRoot, },);
- * ```
- */
-export async function aggregateCoverage(
-  {
-    coverageDir,
-    packageRoot,
-  }: {
-    readonly coverageDir: string;
-    readonly packageRoot: string;
-  },
-): Promise<CoverageMap> {
-  /**
-   * Coverage JSON filenames, filtered before parallel reading.
-   */
-  const coverageFiles = (await readdir(coverageDir,))
-    .filter(function isCoverageJson(file,) {
-      return file.endsWith('.json',);
-    },);
-  /**
-   * Target script records extracted from every coverage file.
-   */
-  const targets = (await Promise.all(coverageFiles.map(function readTargets(file,) {
-    return readCoverageTargets({
-      coverageDir,
-      file,
-      packageRoot,
-    },);
-  },)))
-    .flat();
-  /**
-   * Source read cache shared across target projections.
-   */
-  const sourceCache = new Map<string, Promise<string>>();
-  /**
-   * Per-target covered-line projections, run concurrently once targets are known.
-   */
-  const projectedTargets = await Promise.all(targets.map(function project(target,) {
-    return projectTarget({
-      target,
-      sourceCache,
-    },);
-  },));
-  /**
-   * Per-file accumulation of covered lines across all projected targets.
-   */
-  const perFile = mergeProjectedTargets(projectedTargets,);
-
-  return Object.fromEntries(
-    [...perFile.entries(),].map(function project([relPath, info,],) {
-      return [
-        relPath,
-        fileCoverageFrom({
-          source: info.source,
-          coveredLines: info.covered,
-        },),
-      ] as const;
-    },),
-  );
-}
-
-//endregion Aggregation
