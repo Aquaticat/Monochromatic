@@ -17,6 +17,7 @@
 
 import {
   readFile,
+  stat,
   writeFile,
 } from 'node:fs/promises';
 import {
@@ -36,6 +37,9 @@ import {
 import {
   parseCatalogFromYaml,
 } from './yaml-parse.ts';
+import {
+  rewriteCatalogRanges,
+} from './yaml-rewrite.ts';
 
 export {};
 
@@ -137,6 +141,31 @@ function isWhitespaceOnly(s: string,): boolean {
 }
 
 /**
+ * Reports whether `path` exists on disk, async (the repo bans sync fs).
+ *
+ * @param path - absolute filesystem path to probe
+ *
+ * @returns whether an entry exists at `path`
+ *
+ * @example
+ * ```ts
+ * await pathExists("/repo/node_modules") // true
+ * ```
+ */
+async function pathExists(path: string,): Promise<boolean> {
+  try {
+    await stat(path,);
+    return true;
+  }
+  catch (error) {
+    if (!(error instanceof Error))
+      throw error;
+
+    return false;
+  }
+}
+
+/**
  * Workspace catalog mapping package names to version ranges.
  */
 const catalog = parseCatalogFromYaml(workspaceYamlContent,);
@@ -146,6 +175,24 @@ if (Object.keys(catalog,)
   console.error('No catalog found in pnpm-workspace.yaml',);
   process.exitCode = 1;
   throw new Error('No catalog found in pnpm-workspace.yaml',);
+}
+
+/**
+ * Whether an install exists to resolve against: `node_modules` (node-modules linkers) or `.pnp.cjs` (PnP).
+ * Without one every entry would report MISS, so failing loud here points at the real cause.
+ */
+const hasInstall = (await pathExists(join(
+  monorepoRoot,
+  'node_modules',
+),))
+  || (await pathExists(join(
+    monorepoRoot,
+    '.pnp.cjs',
+  ),));
+if (!hasInstall) {
+  throw new Error(
+    'No install found (node_modules and .pnp.cjs both absent). Run `pnpm install` before catalog-tighten.',
+  );
 }
 
 /**
@@ -314,32 +361,13 @@ else if (dryRun) {
 }
 else {
   /**
-   * Rewrite pnpm-workspace.yaml using string replacement to preserve formatting.
-   * Each catalog entry is replaced individually to avoid touching unrelated content.
-   * Handles both quoted (`">=1.2.3"`) and unquoted (`>=1.2.3`) YAML values.
+   * Rewritten file with tightened ranges; surgical string replacement preserves
+   * formatting, comments, ordering, and the file's single-quote style.
    */
-  const rewritten = summary.results
-    .reduce(
-    function applyTightening(
-      acc,
-      {
-        name,
-        oldRange,
-        newRange,
-      },
-    ) {
-      return acc
-        .replace(
-          `"${name}": "${oldRange}"`,
-          `"${name}": "${newRange}"`,
-        )
-        .replace(
-          `"${name}": ${oldRange}`,
-          `"${name}": "${newRange}"`,
-        );
-    },
-    workspaceYamlContent,
-  );
+  const rewritten = rewriteCatalogRanges({
+    content: workspaceYamlContent,
+    results: summary.results,
+  },);
 
   await writeFile(
     workspaceYamlPath,
