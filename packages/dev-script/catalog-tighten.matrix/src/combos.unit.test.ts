@@ -59,6 +59,22 @@ await describe({
     },),
 
     it({
+      name: 'appends extraSettings lines (store-relocating settings)',
+      fn: async () => {
+        /** Workspace file for a combination that renames the modules directory. */
+        const yaml = buildWorkspaceYaml({
+          label: 'isolated, modulesDir renamed',
+          nodeLinker: 'isolated',
+          hoist: false,
+          staleOrphan: false,
+          extraSettings: ['modulesDir: node_modules_alt',],
+        },);
+        expect(yaml.includes('modulesDir: node_modules_alt',),).toBe(true,);
+        expect(yaml.includes('overrides:',),).toBe(true,);
+      },
+    },),
+
+    it({
       name: 'covers exactly one stale-orphan combination',
       fn: async () => {
         /** Combinations flagged to seed a stale orphan. */

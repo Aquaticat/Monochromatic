@@ -35,6 +35,9 @@ import {
   resolveNpmNames,
 } from './version.ts';
 import {
+  readModulesDir,
+} from './settings.ts';
+import {
   parseCatalogFromYaml,
 } from './yaml-parse.ts';
 import {
@@ -114,6 +117,12 @@ const workspaceYamlContent = await readFile(
 );
 
 /**
+ * Per-importer modules directory (the effective `modulesDir` setting; usually `node_modules`).
+ * Queried through pnpm so env and global config apply, then used by the install guard and resolver.
+ */
+const modulesDir = await readModulesDir(monorepoRoot,);
+
+/**
  * Returns true when every char in `s` is ASCII whitespace (space, tab,
  * newline, carriage return, form feed, vertical tab). Empty strings are
  * vacuously whitespace-only, matching `\s*$` semantics for a blank trailing
@@ -183,7 +192,7 @@ if (Object.keys(catalog,)
  */
 const hasInstall = (await pathExists(join(
   monorepoRoot,
-  'node_modules',
+  modulesDir,
 ),))
   || (await pathExists(join(
     monorepoRoot,
@@ -269,6 +278,7 @@ const entrySummaries = await Promise.all(catalogEntries.map(
       const installed = await readInstalledVersion({
         npmName: candidate,
         monorepoRoot,
+        modulesDir,
       },);
       return installed === NO_INSTALLED_VERSION
         ? { name: candidate, }

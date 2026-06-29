@@ -27,6 +27,7 @@ import {
   FIXTURE_PACKAGE,
   FIXTURE_ROOT_PACKAGE_JSON,
   type LayoutCombo,
+  PINNED_PNPM,
 } from './combos.ts';
 
 //region Container paths
@@ -54,9 +55,9 @@ const TOOL_ENTRY = join(
 );
 
 /**
- * Pinned pnpm version matching the monorepo, so the fixture install layout mirrors production.
+ * Writable tmpfs directory the corepack `pnpm` shim is installed into, since the rootfs is read-only.
  */
-const PINNED_PNPM = 'pnpm@11.9.0';
+const PNPM_BIN_DIR = '/tmp/cbin';
 
 /**
  * Indentation passed to `JSON.stringify` for the seeded orphan manifest.
@@ -191,7 +192,42 @@ async function seedStaleOrphan(): Promise<void> {
 }
 
 /**
+ * Installs the corepack `pnpm` shim into a writable tmpfs directory, so the
+ * tool's `pnpm config get modules-dir` finds `pnpm` on PATH under the read-only
+ * rootfs. The shim resolves the pinned version from the fixture's
+ * `packageManager` field, reusing the cached install offline.
+ *
+ * @example
+ * ```ts
+ * await enablePnpm();
+ * ```
+ */
+async function enablePnpm(): Promise<void> {
+  await mkdir(
+    PNPM_BIN_DIR,
+    { recursive: true, },
+  );
+  await spawn(
+    'corepack',
+    [
+      'enable',
+      '--install-directory',
+      PNPM_BIN_DIR,
+      'pnpm',
+    ],
+    {
+      env: {
+        ...process.env,
+        COREPACK_ENABLE_DOWNLOAD_PROMPT: '0',
+        HOME: '/tmp',
+      },
+    },
+  );
+}
+
+/**
  * Runs catalog-tighten `--dry-run` against the fixture and returns its stdout.
+ * The pnpm shim directory is prepended to PATH so the tool can read `modulesDir`.
  *
  * @returns combined tool stdout
  *
@@ -202,6 +238,19 @@ async function seedStaleOrphan(): Promise<void> {
  */
 async function runTool(): Promise<string> {
   /**
+   * Current container PATH value; may be unset.
+   */
+  const { PATH: rawPath, } = process.env;
+  /**
+   * PATH defaulted to empty when unset.
+   */
+  const basePath = rawPath
+    ?? '';
+  /**
+   * PATH with the pnpm shim directory prepended, so the tool finds `pnpm`.
+   */
+  const toolPath = `${PNPM_BIN_DIR}:${basePath}`;
+  /**
    * Tool invocation result; nano-spawn rejects on a non-zero exit, surfacing tool failures.
    */
   const result = await spawn(
@@ -210,7 +259,13 @@ async function runTool(): Promise<string> {
       TOOL_ENTRY,
       '--dry-run',
     ],
-    { cwd: WORK_DIR, },
+    {
+      cwd: WORK_DIR,
+      env: {
+        ...process.env,
+        PATH: toolPath,
+      },
+    },
   );
   return result.stdout;
 }
@@ -239,6 +294,7 @@ const combo = JSON.parse(comboJson,) as LayoutCombo;
 
 await writeFixture(combo,);
 await installFixture();
+await enablePnpm();
 if (combo.staleOrphan)
   await seedStaleOrphan();
 

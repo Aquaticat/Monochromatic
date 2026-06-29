@@ -30,6 +30,12 @@ export const FIXTURE_ACTIVE = '4.0.2';
  */
 export const FIXTURE_ORPHAN = '4.0.4';
 
+/**
+ * pnpm version corepack provisions in the container, pinned to match the monorepo's pnpm so the
+ * fixture install layout mirrors production and the cached version is reused offline.
+ */
+export const PINNED_PNPM = 'pnpm@11.9.0';
+
 //endregion Fixture constants
 
 //region Combinations
@@ -59,6 +65,10 @@ export type LayoutCombo = {
    * Whether to seed a higher-version stale orphan in the virtual store after install.
    */
   readonly staleOrphan: boolean;
+  /**
+   * Extra `pnpm-workspace.yaml` lines for this combination (store-relocating settings).
+   */
+  readonly extraSettings?: readonly string[];
 };
 
 /**
@@ -102,6 +112,34 @@ export const COMBOS: readonly LayoutCombo[] = [
     hoist: false,
     staleOrphan: true,
   },
+  {
+    label: 'isolated, modulesDir renamed',
+    nodeLinker: 'isolated',
+    hoist: false,
+    staleOrphan: false,
+    extraSettings: ['modulesDir: node_modules_alt',],
+  },
+  {
+    label: 'isolated, virtualStoreDir relocated',
+    nodeLinker: 'isolated',
+    hoist: false,
+    staleOrphan: false,
+    extraSettings: ['virtualStoreDir: .vstore',],
+  },
+  {
+    label: 'isolated, global virtual store',
+    nodeLinker: 'isolated',
+    hoist: false,
+    staleOrphan: false,
+    extraSettings: ['enableGlobalVirtualStore: true',],
+  },
+  {
+    label: 'isolated, storeDir relocated',
+    nodeLinker: 'isolated',
+    hoist: false,
+    staleOrphan: false,
+    extraSettings: ['storeDir: /tmp/ct-store',],
+  },
 ];
 
 //endregion Combinations
@@ -130,13 +168,22 @@ export function buildWorkspaceYaml(combo: LayoutCombo,): string {
   const hoistLine = combo.nodeLinker === 'pnp'
     ? ''
     : `hoist: ${String(combo.hoist,)}\n`;
+  /**
+   * Store-relocating settings for this combination, each on its own line.
+   */
+  const extraLines = (combo.extraSettings
+    ?? [])
+    .map(function toLine(setting,): string {
+      return `${setting}\n`;
+    },)
+    .join('',);
   return [
     'packages:',
     '  - \'packages/*/*\'',
     'catalog:',
     `  '${FIXTURE_PACKAGE}': '>=${FIXTURE_FLOOR}'`,
     `nodeLinker: ${combo.nodeLinker}`,
-    `${hoistLine}overrides:`,
+    `${hoistLine}${extraLines}overrides:`,
     `  ${FIXTURE_PACKAGE}: ${FIXTURE_ACTIVE}`,
     '',
   ].join('\n',);
@@ -150,6 +197,7 @@ export const FIXTURE_ROOT_PACKAGE_JSON: string = `${JSON.stringify(
     name: 'catalog-tighten-fixture-root',
     private: true,
     version: '0.0.0',
+    packageManager: PINNED_PNPM,
   },
   undefined,
   2,

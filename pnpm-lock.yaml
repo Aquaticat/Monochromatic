@@ -1082,6 +1082,9 @@ importers:
 
   packages/dev-script/catalog-tighten:
     dependencies:
+      nano-spawn:
+        specifier: 'catalog:'
+        version: 2.1.0
       yaml:
         specifier: 'catalog:'
         version: 3.0.0-1

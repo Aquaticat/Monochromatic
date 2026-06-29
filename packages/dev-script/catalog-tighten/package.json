@@ -10,6 +10,7 @@
     "@types/node": "catalog:"
   },
   "dependencies": {
+    "nano-spawn": "catalog:",
     "yaml": "catalog:"
   },
   "version": "0.0.1",

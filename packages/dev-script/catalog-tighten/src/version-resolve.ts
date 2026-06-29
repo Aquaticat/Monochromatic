@@ -203,24 +203,28 @@ async function discoverWorkspaceRoots(monorepoRoot: string,): Promise<string[]> 
  *
  * @param monorepoRoot - absolute path to the monorepo root
  *
+ * @param modulesDir - per-importer modules directory name (the `modulesDir` setting; usually `node_modules`)
+ *
  * @returns installed version string, or {@link NO_INSTALLED_VERSION} if not found
  *
  * @example
  * ```ts
- * await readInstalledVersion({ npmName: "oxlint", monorepoRoot: "/home/user/Monochromatic" }) // "1.71.0"
+ * await readInstalledVersion({ npmName: "oxlint", monorepoRoot: "/home/user/Monochromatic", modulesDir: "node_modules" }) // "1.71.0"
  * ```
  */
 export async function readInstalledVersion(
   {
     npmName,
     monorepoRoot,
+    modulesDir,
   }: {
     readonly npmName: string;
     readonly monorepoRoot: string;
+    readonly modulesDir: string;
   },
 ): Promise<string | typeof NO_INSTALLED_VERSION> {
   /**
-   * Workspace package directories; each may hold a per-importer `node_modules/<name>` symlink.
+   * Workspace package directories; each may hold a per-importer `<modulesDir>/<name>` symlink.
    */
   const workspaceRoots = await discoverWorkspaceRoots(monorepoRoot,);
   /**
@@ -231,14 +235,14 @@ export async function readInstalledVersion(
     ...workspaceRoots,
   ];
   /**
-   * Version read from each candidate's `node_modules/<name>/package.json`; `NO_MANIFEST_VERSION` when absent.
+   * Version read from each candidate's `<modulesDir>/<name>/package.json`; `NO_MANIFEST_VERSION` when absent.
    */
   const versions = await Promise.all(candidateDirs.map(async function readCandidate(
     dir,
   ): Promise<string | typeof NO_MANIFEST_VERSION> {
     return await readVersionFromPackageJson(join(
       dir,
-      'node_modules',
+      modulesDir,
       npmName,
       'package.json',
     ),);
