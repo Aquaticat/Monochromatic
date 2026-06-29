@@ -10,6 +10,7 @@ import { extname, } from 'node:path';
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
 import { extractCssUrls, } from './css.ts';
+import { caughtErrorMessage, } from './error-format.ts';
 import { extractHtmlRefs, } from './html.ts';
 import {
   resolveReference,
@@ -61,7 +62,7 @@ function readText(absolutePath: string,): Promise<string> {
  * (missing, permissions, I/O). A `unique symbol`; callers narrow with
  * `=== CSS_UNREADABLE` to skip dead links without aborting the walk.
  */
-const CSS_UNREADABLE: unique symbol = Symbol('page-weight/css-unreadable',);
+const CSS_UNREADABLE: unique symbol = Symbol('page-weight CSS file cannot be read',);
 
 /**
  * Reads a CSS file and returns the raw source, or {@link CSS_UNREADABLE} if it
@@ -78,7 +79,10 @@ async function readCssOrAbsent(absolutePath: string,): Promise<string | typeof C
   try {
     return await readText(absolutePath,);
   }
-  catch {
+  catch (error) {
+    console.warn(
+      `[page-weight] CSS read failed for ${absolutePath}: ${caughtErrorMessage(error,)}`,
+    );
     return CSS_UNREADABLE;
   }
 }

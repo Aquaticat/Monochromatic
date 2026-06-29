@@ -23,7 +23,7 @@ import { startsWithUriScheme, } from './url-detect.ts';
  * the root via `..` or an absolute target. A `unique symbol`; callers narrow
  * with `=== UNRESOLVABLE_REFERENCE`.
  */
-export const UNRESOLVABLE_REFERENCE: unique symbol = Symbol('page-weight/unresolvable-reference',);
+export const UNRESOLVABLE_REFERENCE: unique symbol = Symbol('page-weight reference cannot resolve under root',);
 
 /**
  * Resolves a reference string to an absolute path under the dist root.

@@ -8,13 +8,15 @@
  */
 import { stat, } from 'node:fs/promises';
 
+import { caughtErrorMessage, } from './error-format.ts';
+
 /**
  * Sentinel returned by {@link wireSize} when neither the requested asset nor
  * its `.zst` companion exists. A `unique symbol` rather than a falsy default
  * because `0` is a valid wire size (an empty file); callers narrow with
  * `=== WIRE_SIZE_UNAVAILABLE`.
  */
-export const WIRE_SIZE_UNAVAILABLE: unique symbol = Symbol('page-weight/wire-size-unavailable',);
+export const WIRE_SIZE_UNAVAILABLE: unique symbol = Symbol('page-weight wire size cannot be resolved',);
 
 /**
  * Returns `true` if the path exists and is a regular file, `false` otherwise.
@@ -40,7 +42,10 @@ async function fileReadable(
     const info = await stat(absolutePath,);
     return info.isFile();
   }
-  catch {
+  catch (error) {
+    console.warn(
+      `[page-weight] file readability probe failed for ${absolutePath}: ${caughtErrorMessage(error,)}`,
+    );
     return false;
   }
 }

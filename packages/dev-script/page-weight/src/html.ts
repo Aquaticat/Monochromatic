@@ -31,14 +31,14 @@ const NO_ASSET_URL: unique symbol = Symbol('page-weight/no-asset-url',);
  * local reference: absent, external scheme, protocol-relative, data URI, or
  * fragment-only. A `unique symbol`; callers narrow with `=== NON_LOCAL_REF`.
  */
-const NON_LOCAL_REF: unique symbol = Symbol('page-weight/non-local-ref',);
+const NON_LOCAL_REF: unique symbol = Symbol('page-weight reference is not local',);
 
 /**
  * Sentinel returned by {@link inlineStyleText} when a `<style>` block has no
  * non-blank text content. A `unique symbol`; callers narrow with
  * `=== BLANK_STYLE`.
  */
-const BLANK_STYLE: unique symbol = Symbol('page-weight/blank-style',);
+const BLANK_STYLE: unique symbol = Symbol('page-weight style block has no text',);
 
 /**
  * Reusable unified parser configured for full HTML documents.
