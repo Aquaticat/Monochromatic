@@ -1,7 +1,6 @@
-import { access, } from 'node:fs/promises';
-import { fileURLToPath, } from 'node:url';
-
 import type browserslist from 'browserslist';
+
+import { generatedFileExists, } from './generated-file-exists.ts';
 
 //region Types: dependency import shapes and injectable IO
 
@@ -338,31 +337,6 @@ const NOT_FOUND_INDEX = -1;
 //endregion Constants: generated file location and target mappings
 
 //region IO helpers: generated JSON and package fallback
-
-/**
- * Checks whether generated Browserslist target JSON exists.
- *
- * @param fileUrl - Generated JSON file URL to check.
- *
- * @returns Whether generated file exists on disk.
- *
- * @example
- * ```ts
- * await generatedFileExists(new URL('file:///tmp/targets.json'));
- * ```
- */
-async function generatedFileExists(fileUrl: URL,): Promise<boolean> {
-  try {
-    await access(fileURLToPath(fileUrl,),);
-    return true;
-  }
-  catch (error) {
-    if (!(error instanceof Error))
-      throw error;
-
-    return false;
-  }
-}
 
 /**
  * Extracts default export from dynamic JSON module namespace.
