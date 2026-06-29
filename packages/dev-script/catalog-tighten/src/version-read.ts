@@ -6,9 +6,9 @@
  */
 
 import {
-  readdirSync,
-  readFileSync,
-} from 'node:fs';
+  readFile,
+  readdir,
+} from 'node:fs/promises';
 import { join, } from 'node:path';
 
 import { isStrictlyGreater, } from './version-parse.ts';
@@ -38,15 +38,15 @@ export const NO_INSTALLED_VERSION: unique symbol = Symbol('catalog-tighten/no-in
  *
  * @example
  * ```ts
- * readVersionFromPackageJson("/path/to/node_modules/oxlint/package.json") // "0.21.0"
+ * await readVersionFromPackageJson("/path/to/node_modules/oxlint/package.json") // "0.21.0"
  * ```
  */
-export function readVersionFromPackageJson(pkgJsonPath: string,): string | typeof NO_MANIFEST_VERSION {
+export async function readVersionFromPackageJson(pkgJsonPath: string,): Promise<string | typeof NO_MANIFEST_VERSION> {
   try {
     /**
-     * Raw `package.json` text read from disk; deliberately read synchronously so callers stay sync.
+     * Raw `package.json` text read from disk.
      */
-    const content = readFileSync(
+    const content = await readFile(
       pkgJsonPath,
       'utf8',
     );
@@ -57,7 +57,10 @@ export function readVersionFromPackageJson(pkgJsonPath: string,): string | typeo
     const parsed = JSON.parse(content,) as { version?: string; };
     return parsed.version ?? NO_MANIFEST_VERSION;
   }
-  catch {
+  catch (error) {
+    if (!(error instanceof Error))
+      throw error;
+
     return NO_MANIFEST_VERSION;
   }
 }
@@ -76,11 +79,11 @@ export function readVersionFromPackageJson(pkgJsonPath: string,): string | typeo
  *
  * @example
  * ```ts
- * readVersionFromBunStore({ npmName: "\@oxc-project/runtime", monorepoRoot: "/home/user/Monochromatic" }) // "1.1.0"
- * readVersionFromBunStore({ npmName: "chokidar", monorepoRoot: "/home/user/Monochromatic" }) // "5.0.0"
+ * await readVersionFromBunStore({ npmName: "\@oxc-project/runtime", monorepoRoot: "/home/user/Monochromatic" }) // "1.1.0"
+ * await readVersionFromBunStore({ npmName: "chokidar", monorepoRoot: "/home/user/Monochromatic" }) // "5.0.0"
  * ```
  */
-export function readVersionFromBunStore(
+export async function readVersionFromBunStore(
   {
     npmName,
     monorepoRoot,
@@ -88,7 +91,7 @@ export function readVersionFromBunStore(
     readonly npmName: string;
     readonly monorepoRoot: string;
   },
-): string | typeof NO_INSTALLED_VERSION {
+): Promise<string | typeof NO_INSTALLED_VERSION> {
   /**
    * Top-level bun store directory holding all installed package versions for the monorepo.
    */
@@ -110,15 +113,15 @@ export function readVersionFromBunStore(
 
   /**
    * Direct children of the bun store directory.
-   *
-   * Initialised empty and populated only on successful read so the catch
-   * branch falls through cleanly without leaking an undefined state.
    */
   let entries: string[] = [];
   try {
-    entries = readdirSync(bunStoreDir,);
+    entries = await readdir(bunStoreDir,);
   }
-  catch {
+  catch (error) {
+    if (!(error instanceof Error))
+      throw error;
+
     return NO_INSTALLED_VERSION;
   }
 
@@ -130,7 +133,7 @@ export function readVersionFromBunStore(
   /**
    * Store entries whose directory name starts with `<name>@`; each holds one installed version.
    */
-  const candidates = entries.filter(function filterBunStoreEntry(entry,) {
+  const candidates = entries.filter(function filterBunStoreEntry(entry,): boolean {
     return entry.startsWith(matchPrefix,);
   },);
 
@@ -140,13 +143,9 @@ export function readVersionFromBunStore(
 
   // Read package.json from each candidate and pick the highest version
   /**
-   * Highest semver seen across the candidate store entries.
-   *
-   * Accumulator pattern: starts {@link NO_INSTALLED_VERSION} so the first valid
-   * candidate seeds the value, then later candidates only overwrite when strictly greater.
+   * Versions read from every candidate store entry.
    */
-  let bestVersion: string | typeof NO_INSTALLED_VERSION = NO_INSTALLED_VERSION;
-  for (const candidate of candidates) {
+  const candidateVersions = await Promise.all(candidates.map(async function readCandidateVersion(candidate,): Promise<string | typeof NO_MANIFEST_VERSION> {
     /**
      * Absolute path to the candidate's nested `package.json`; bun stores the real package under `node_modules/<name>`.
      */
@@ -157,21 +156,25 @@ export function readVersionFromBunStore(
       npmName,
       'package.json',
     );
-    /**
-     * Version of one candidate; `NO_MANIFEST_VERSION` skips this iteration without touching `bestVersion`.
-     */
-    const candidateVersion = readVersionFromPackageJson(pkgJsonPath,);
+    return await readVersionFromPackageJson(pkgJsonPath,);
+  },),);
+
+  /**
+   * Highest semver seen across the candidate store entries.
+   */
+  return candidateVersions.reduce(function chooseHighest(
+    bestVersion: string | typeof NO_INSTALLED_VERSION,
+    candidateVersion,
+  ): string | typeof NO_INSTALLED_VERSION {
     if (candidateVersion === NO_MANIFEST_VERSION)
-      continue;
+      return bestVersion;
     if ((bestVersion === NO_INSTALLED_VERSION) || isStrictlyGreater({
       cataloged: bestVersion,
       installed: candidateVersion,
-    },)) {
-      bestVersion = candidateVersion;
-    }
-  }
-
-  return bestVersion;
+    },))
+      return candidateVersion;
+    return bestVersion;
+  }, NO_INSTALLED_VERSION,);
 }
 
 //endregion Version reading

@@ -16,9 +16,9 @@
  */
 
 import {
-  readFileSync,
-  writeFileSync,
-} from 'node:fs';
+  readFile,
+  writeFile,
+} from 'node:fs/promises';
 import {
   join,
   resolve,
@@ -104,7 +104,7 @@ const workspaceYamlPath = join(
 /**
  * Raw content of pnpm-workspace.yaml, preserved for minimal-diff rewriting.
  */
-const workspaceYamlContent = readFileSync(
+const workspaceYamlContent = await readFile(
   workspaceYamlPath,
   'utf8',
 );
@@ -191,19 +191,18 @@ const catalogEntries = Object.entries(catalog,);
 /**
  * Classifies and processes each catalog entry for tightening.
  */
-const summary: CatalogSummary = catalogEntries.reduce(
-  function processEntry(
-    acc,
-    [name, value,],
-  ): CatalogSummary {
+const entrySummaries = await Promise.all(catalogEntries.map(
+  async function processEntry([name, value,],): Promise<CatalogSummary> {
     /**
      * Parsed range prefix and version, or `NOT_A_RANGE` if not a `>=` range.
      */
     const parsed = parseRange(value,);
     if (parsed === NOT_A_RANGE) {
       console.info(`SKIP  ${name}: ${value} (not a >= range)`,);
-      acc.skippedCount += 1;
-      return acc;
+      return {
+        ...initialSummary,
+        skippedCount: 1,
+      };
     }
 
     /**
@@ -214,36 +213,40 @@ const summary: CatalogSummary = catalogEntries.reduce(
       catalogValue: value,
     },);
     /**
+     * Installed-version probes for every candidate npm name.
+     */
+    const probes = await Promise.all(npmNames.map(async function probeCandidate(candidate,): Promise<ProbedCandidate> {
+      /**
+       * Installed version for this candidate; `NO_INSTALLED_VERSION` when it did not resolve.
+       */
+      const installed = await readInstalledVersion({
+        npmName: candidate,
+        monorepoRoot,
+      },);
+      return installed === NO_INSTALLED_VERSION
+        ? { name: candidate, }
+        : {
+          name: candidate,
+          version: installed,
+        };
+    },),);
+    /**
      * First npm name candidate whose installed version resolves.
      */
-    const resolved = npmNames
-      .map(function probeCandidate(candidate,): ProbedCandidate {
-        /**
-         * Installed version for this candidate; `NO_INSTALLED_VERSION` when it did not resolve.
-         */
-        const installed = readInstalledVersion({
-          npmName: candidate,
-          monorepoRoot,
-        },);
-        return installed === NO_INSTALLED_VERSION
-          ? { name: candidate, }
-          : {
-            name: candidate,
-            version: installed,
-          };
-      },)
-      .find(function hasVersion(r,) {
-        return r.version
-          !== undefined;
-      },);
+    const resolved = probes.find(function hasVersion(r,): boolean {
+      return r.version
+        !== undefined;
+    },);
 
     if ((resolved === undefined) || (resolved.version
       === undefined)) {
       console.warn(
         `MISS  ${name}: not found in node_modules (tried ${npmNames.join(', ',)})`,
       );
-      acc.notFoundCount += 1;
-      return acc;
+      return {
+        ...initialSummary,
+        notFoundCount: 1,
+      };
     }
 
     if (!isStrictlyGreater({
@@ -253,8 +256,10 @@ const summary: CatalogSummary = catalogEntries.reduce(
       console.info(
         `OK    ${name}: >=${parsed.version} -- installed ${resolved.version} (already tight)`,
       );
-      acc.alreadyTightCount += 1;
-      return acc;
+      return {
+        ...initialSummary,
+        alreadyTightCount: 1,
+      };
     }
 
     /**
@@ -264,13 +269,30 @@ const summary: CatalogSummary = catalogEntries.reduce(
     console.info(
       `TIGHT ${name}: ${value} -> ${newRange} (installed ${resolved.version})`,
     );
-    acc.results
-      .push({
-      name,
-      oldRange: value,
-      newRange,
-    },);
-    return acc;
+    return {
+      ...initialSummary,
+      results: [{
+        name,
+        oldRange: value,
+        newRange,
+      },],
+    };
+  },
+),);
+/**
+ * Aggregated outcome merged from per-entry summaries.
+ */
+const summary: CatalogSummary = entrySummaries.reduce(
+  function mergeSummary(acc, entrySummary,): CatalogSummary {
+    return {
+      results: [
+        ...acc.results,
+        ...entrySummary.results,
+      ],
+      skippedCount: acc.skippedCount + entrySummary.skippedCount,
+      alreadyTightCount: acc.alreadyTightCount + entrySummary.alreadyTightCount,
+      notFoundCount: acc.notFoundCount + entrySummary.notFoundCount,
+    };
   },
   initialSummary,
 );
@@ -316,7 +338,7 @@ else {
     workspaceYamlContent,
   );
 
-  writeFileSync(
+  await writeFile(
     workspaceYamlPath,
     rewritten,
   );

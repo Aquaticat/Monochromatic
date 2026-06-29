@@ -5,7 +5,7 @@
  * across node_modules, workspace roots, and the Bun store.
  */
 
-import { readdirSync, } from 'node:fs';
+import { readdir, } from 'node:fs/promises';
 import { createRequire, } from 'node:module';
 import { join, } from 'node:path';
 
@@ -95,11 +95,11 @@ const workspaceRootsCache = new Map<string, string[]>();
  *
  * @example
  * ```ts
- * discoverWorkspaceRoots("/home/user/Monochromatic")
+ * await discoverWorkspaceRoots("/home/user/Monochromatic")
  * // ["/home/user/Monochromatic/packages/dev-script/file-enforcer", ...]
  * ```
  */
-function discoverWorkspaceRoots(monorepoRoot: string,): string[] {
+async function discoverWorkspaceRoots(monorepoRoot: string,): Promise<string[]> {
   /**
    * Previously-computed roots for this `monorepoRoot`, if any; short-circuits the directory scan.
    */
@@ -114,55 +114,68 @@ function discoverWorkspaceRoots(monorepoRoot: string,): string[] {
     monorepoRoot,
     'packages',
   );
-  /**
-   * Accumulator that collects each discovered workspace package directory before caching.
-   */
-  const roots: string[] = [];
 
   try {
     /**
      * Direct children of `packages/`, expected to be category directories (e.g. `module`, `dev-script`).
      */
-    const categories = readdirSync(
+    const categories = await readdir(
       packagesDir,
       { withFileTypes: true, },
     );
-    for (const cat of categories) {
-      if (!cat.isDirectory())
-        continue;
-      /**
-       * Absolute path to one category directory, scanned for the actual package folders.
-       */
-      const catPath = join(
-        packagesDir,
-        cat.name,
-      );
-      /**
-       * Individual workspace packages nested under the category; each becomes one entry in `roots`.
-       */
-      const pkgs = readdirSync(
-        catPath,
-        { withFileTypes: true, },
-      );
-      for (const pkg of pkgs) {
-        if (!pkg.isDirectory())
-          continue;
-        roots.push(join(
+    /**
+     * Workspace package roots discovered per package category.
+     */
+    const rootsByCategory = await Promise.all(categories
+      .filter(function isDirectory(cat,): boolean {
+        return cat.isDirectory();
+      },)
+      .map(async function readPackageCategory(cat,): Promise<readonly string[]> {
+        /**
+         * Absolute path to one category directory, scanned for the actual package folders.
+         */
+        const catPath = join(
+          packagesDir,
+          cat.name,
+        );
+        /**
+         * Individual workspace packages nested under the category; each becomes one entry in `roots`.
+         */
+        const pkgs = await readdir(
           catPath,
-          pkg.name,
-        ),);
-      }
-    }
+          { withFileTypes: true, },
+        );
+        return pkgs
+          .filter(function isPackageDirectory(pkg,): boolean {
+            return pkg.isDirectory();
+          },)
+          .map(function toPackageRoot(pkg,): string {
+            return join(
+              catPath,
+              pkg.name,
+            );
+          },);
+      },),);
+    /**
+     * Flattened workspace package roots cached for the current monorepo.
+     */
+    const roots = rootsByCategory.flat();
+    workspaceRootsCache.set(
+      monorepoRoot,
+      roots,
+    );
+    return roots;
   }
-  catch {
-    // packages/ dir not found: return empty
-  }
+  catch (error) {
+    if (!(error instanceof Error))
+      throw error;
 
-  workspaceRootsCache.set(
-    monorepoRoot,
-    roots,
-  );
-  return roots;
+    workspaceRootsCache.set(
+      monorepoRoot,
+      [],
+    );
+    return [];
+  }
 }
 
 /**
@@ -181,10 +194,10 @@ function discoverWorkspaceRoots(monorepoRoot: string,): string[] {
  *
  * @example
  * ```ts
- * readInstalledVersion({ npmName: "oxlint", monorepoRoot: "/home/user/Monochromatic" }) // "0.21.0"
+ * await readInstalledVersion({ npmName: "oxlint", monorepoRoot: "/home/user/Monochromatic" }) // "0.21.0"
  * ```
  */
-export function readInstalledVersion(
+export async function readInstalledVersion(
   {
     npmName,
     monorepoRoot,
@@ -192,7 +205,7 @@ export function readInstalledVersion(
     readonly npmName: string;
     readonly monorepoRoot: string;
   },
-): string | typeof NO_INSTALLED_VERSION {
+): Promise<string | typeof NO_INSTALLED_VERSION> {
   // Try root node_modules first
   /**
    * Expected hoisted location of the package's `package.json` directly under the monorepo root.
@@ -206,7 +219,7 @@ export function readInstalledVersion(
   /**
    * Version found at the hoisted root location, if any; short-circuits before slower fallbacks.
    */
-  const version = readVersionFromPackageJson(rootPkgJson,);
+  const version = await readVersionFromPackageJson(rootPkgJson,);
   if (version !== NO_MANIFEST_VERSION)
     return version;
 
@@ -226,11 +239,14 @@ export function readInstalledVersion(
     /**
      * Version read from the require-resolved `package.json`; second attempt after the hoisted lookup.
      */
-    const rootVersion = readVersionFromPackageJson(resolved,);
+    const rootVersion = await readVersionFromPackageJson(resolved,);
     if (rootVersion !== NO_MANIFEST_VERSION)
       return rootVersion;
   }
-  catch {
+  catch (error) {
+    if (!(error instanceof Error))
+      throw error;
+
     // Not resolvable from root
   }
 
@@ -238,8 +254,13 @@ export function readInstalledVersion(
   /**
    * Every workspace package directory, used as alternate require anchors when root resolution fails.
    */
-  const workspaceRoots = discoverWorkspaceRoots(monorepoRoot,);
-  for (const wsRoot of workspaceRoots) {
+  const workspaceRoots = await discoverWorkspaceRoots(monorepoRoot,);
+  /**
+   * Versions resolved from each workspace package anchor.
+   */
+  const workspaceVersions = await Promise.all(workspaceRoots.map(async function readWorkspaceVersion(
+    wsRoot,
+  ): Promise<string | typeof NO_MANIFEST_VERSION> {
     try {
       /**
        * Node-style require anchored at one workspace package, picking up its locally hoisted deps.
@@ -252,20 +273,26 @@ export function readInstalledVersion(
        * Resolved absolute path to the package's `package.json` via require from this workspace anchor.
        */
       const resolved = require.resolve(`${npmName}/package.json`,);
-      /**
-       * Version read via the workspace-anchored resolution; tried per package before falling through to the bun store.
-       */
-      const wsVersion = readVersionFromPackageJson(resolved,);
-      if (wsVersion !== NO_MANIFEST_VERSION)
-        return wsVersion;
+      return await readVersionFromPackageJson(resolved,);
     }
-    catch {
-      // Not resolvable from this workspace root
+    catch (error) {
+      if (!(error instanceof Error))
+        throw error;
+
+      return NO_MANIFEST_VERSION;
     }
-  }
+  },),);
+  /**
+   * First installed version found through workspace package resolution.
+   */
+  const wsVersion = workspaceVersions.find(function hasVersion(candidate,): boolean {
+    return candidate !== NO_MANIFEST_VERSION;
+  },);
+  if (wsVersion !== undefined)
+    return wsVersion;
 
   // Last resort: scan bun store directory names for transitive deps
-  return readVersionFromBunStore({
+  return await readVersionFromBunStore({
     npmName,
     monorepoRoot,
   },);

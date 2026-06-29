@@ -14,7 +14,7 @@
  * the indented `key: value` catalog shape. A `unique symbol`; callers narrow
  * with `=== MALFORMED_ENTRY`.
  */
-const MALFORMED_ENTRY: unique symbol = Symbol('catalog-tighten/malformed-entry',);
+const MALFORMED_ENTRY: unique symbol = Symbol('catalog-tighten/catalog entry cannot be parsed',);
 
 /**
  * Returns true when `c` is a space or tab character.
