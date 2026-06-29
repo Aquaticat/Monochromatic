@@ -17,6 +17,8 @@ Layout and settings (expect tighten):
 - `nodeLinker: isolated`, hoist on and off.
 - `nodeLinker: hoisted`, hoist on and off.
 - `nodeLinker: pnp` (pnpm's pnp is a hybrid that keeps per-importer `node_modules` symlinks).
+- `nodeLinker: pnp` with `symlink: false` (pnpm's recommended pnp config): a true no-`node_modules`
+  layout, resolved through `.pnp.cjs`; this is the case that exercises the PnP reader.
 - `modulesDir` renamed, `virtualStoreDir` relocated, `enableGlobalVirtualStore`, `storeDir` relocated.
 - Stale orphan: a higher `picomatch@4.0.4` is seeded into the virtual store with
   no symlink; the tool must tighten to the active `4.0.2`, never the orphan. This
@@ -26,9 +28,10 @@ Layout and settings (expect tighten):
 Missing-X robustness:
 
 - Missing lockfile, missing store, missing some `node_modules` (one consumer),
-  missing pnpm (`pnpm config get` unavailable), missing `.pnp.cjs`: still tighten,
-  because resolution reads on-disk state and follows the surviving symlinks.
-- Missing virtual store (`node_modules/.pnpm` deleted, symlinks left dangling): MISS.
+  missing pnpm (`pnpm config get` unavailable), and missing `.pnp.cjs` under the default pnp linker
+  (its symlinks survive): still tighten, because resolution reads on-disk state.
+- Missing virtual store (`node_modules/.pnpm` deleted, symlinks left dangling): MISS. Missing
+  `.pnp.cjs` under `symlink: false` (no symlinks left to fall back on): MISS.
 - Missing all `node_modules`, missing `pnpm-workspace.yaml`: fail cleanly with a clear error.
 
 ## How it runs

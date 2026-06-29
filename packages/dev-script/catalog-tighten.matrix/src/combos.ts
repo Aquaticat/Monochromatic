@@ -268,6 +268,22 @@ export const SCENARIOS: readonly Scenario[] = [
     mutation: 'remove-pnp-cjs',
     expect: 'tighten',
   },
+  {
+    label: 'pnp, symlink off',
+    nodeLinker: 'pnp',
+    hoist: false,
+    extraSettings: ['symlink: false',],
+    mutation: 'none',
+    expect: 'tighten',
+  },
+  {
+    label: 'pnp, symlink off, missing pnp cjs',
+    nodeLinker: 'pnp',
+    hoist: false,
+    extraSettings: ['symlink: false',],
+    mutation: 'remove-pnp-cjs',
+    expect: 'miss',
+  },
 ];
 
 //endregion Scenarios
@@ -279,6 +295,10 @@ export const SCENARIOS: readonly Scenario[] = [
  * matching catalog-tighten's workspace discovery, the catalog floor, the
  * scenario's linker, hoist, and extra settings, and an override pinning the
  * active version. The `hoist:` line is omitted under pnp, where it does not apply.
+ *
+ * Under the pnp linker, pnpm keeps per-importer `node_modules` symlinks unless
+ * `symlink: false` is set (pnpm's recommended pnp config), which removes them and
+ * makes resolution depend on `.pnp.cjs` alone; both shapes are covered.
  *
  * @param scenario - scenario whose pnpm settings to encode
  *
