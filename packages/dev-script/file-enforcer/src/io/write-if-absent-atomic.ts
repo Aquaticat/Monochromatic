@@ -1,10 +1,10 @@
 import { randomUUID, } from 'node:crypto';
 import {
-  linkSync,
-  mkdirSync,
-  rmSync,
-  statSync,
-} from 'node:fs';
+  link,
+  mkdir,
+  rm,
+  stat,
+} from 'node:fs/promises';
 import { dirname, } from 'node:path';
 
 import { caughtErrorHasCode, } from './error.ts';
@@ -79,10 +79,10 @@ function destinationAlreadyExists(error: unknown,): boolean {
  *
  * @example
  * ```ts
- * const result = writeFileIfAbsentAtomically({ filePath: './defaults.json', content: '{}' });
+ * const result = await writeFileIfAbsentAtomically({ filePath: './defaults.json', content: '{}' });
  * ```
  */
-export function writeFileIfAbsentAtomically(
+export async function writeFileIfAbsentAtomically(
   {
     filePath,
     content,
@@ -92,12 +92,12 @@ export function writeFileIfAbsentAtomically(
     readonly filePath: string;
     readonly tempFileWriter?: AtomicTempFileWriter;
   },
-): WriteFileIfAbsentAtomicallyResult {
+): Promise<WriteFileIfAbsentAtomicallyResult> {
   /**
    * Directory containing final destination and same-directory temp file.
    */
   const destinationDirectory = dirname(filePath,);
-  mkdirSync(
+  await mkdir(
     destinationDirectory,
     { recursive: true, },
   );
@@ -108,20 +108,20 @@ export function writeFileIfAbsentAtomically(
   /**
    * Cleanup handle for temp file when write, link, or cleanup fsync fails.
    */
-  using _tempCleanup = {
-    [Symbol.dispose](): void {
-      rmSync(
+  await using _tempCleanup = {
+    async [Symbol.asyncDispose](): Promise<void> {
+      await rm(
         tempPath,
         { force: true, },
       );
     },
   };
-  tempFileWriter({
+  await tempFileWriter({
     tempPath,
     content,
   },);
   try {
-    linkSync(
+    await link(
       tempPath,
       filePath,
     );
@@ -132,15 +132,15 @@ export function writeFileIfAbsentAtomically(
 
     throw linkError;
   }
-  rmSync(
+  await rm(
     tempPath,
     { force: true, },
   );
-  fsyncDirectory(destinationDirectory,);
+  await fsyncDirectory(destinationDirectory,);
   /**
    * Actual post-link mtime used by watch echo suppression.
    */
-  const destinationStat = statSync(filePath,);
+  const destinationStat = await stat(filePath,);
   return Math.floor(destinationStat.mtimeMs,);
 }
 
