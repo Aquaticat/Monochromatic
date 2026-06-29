@@ -1,0 +1,576 @@
+---
+title: "Link vs Button: Tricky Questions"
+description: "Scenarios where choosing between <a> and <button> is harder than it looks. Pick an option to see the answer and why."
+tags:
+  - "accessibility"
+  - "html"
+  - "interactive"
+---
+
+`<a>` and `<button>` look interchangeable:
+ both are clickable,
+ both can run JavaScript,
+ both can be styled to look like whichever the designer prefers.
+ The actual choice between them is a semantic and security decision,
+ not a visual one.
+ `<a>` means "go somewhere I can bookmark and share.
+" `<button>` means "do something right now on this page.
+" Get it wrong and you break the back button,
+ break middle-click,
+ break screen readers,
+ or,
+ in the worst case,
+ open a hole that lets any page on the internet silently trigger destructive actions against your users.
+
+The scenarios below are the ones that trip people up.
+ A few have a clean right answer,
+ a few have more than one right answer,
+ and some come down to how the feature actually behaves at runtime rather than how it looks in a mockup.
+ Pick what you'd reach for:
+ the explanation reveals as soon as you click,
+ and you can change your pick at any time.
+ Most questions expect a single choice;
+ one question (the shuffle toggle) accepts multiple answers and uses checkboxes instead.
+
+<QuestionRadio
+  scenario={<>A "Sign out" option in the top navigation bar.</>}
+  options={[
+    {
+      label: <>Link</>,
+      explanation: <>If you write this as <code>{`<a href="/logout">`}</code>, any other website can sign your users out without them knowing. They just put <code>{`<img src="/logout">`}</code> on their page; when your user visits, their browser loads that URL and the sign-out happens. This is called CSRF (Cross-Site Request Forgery): one site forging a request to another. Actions that change something on the server should never happen from a plain URL request (called a <code>GET</code> request).</>,
+    },
+    {
+      label: <>Button</>,
+      correct: true,
+      explanation: <>Signing out changes something important: it ends the user's session. Actions like that should send a <code>POST</code> or <code>DELETE</code> request (the HTTP methods that mean "do something on the server," as opposed to <code>GET</code>, which means "show me something"). A <code>{`<button>`}</code> inside a <code>{`<form method="post">`}</code> does exactly this. A link can't; links can only send <code>GET</code> requests.</>,
+    },
+    {
+      label: <>Both (as separate elements)</>,
+      explanation: <>You don't need two controls here. As long as one of them is a link pointing at <code>/logout</code>, the CSRF problem is still there: any other site can trigger it with an <code>{`<img>`}</code> tag.</>,
+    },
+    {
+      label: <>Something else</>,
+      explanation: <>There's no better-fit element for sign-out than a button inside a form. Other inputs like <code>{`<input type="checkbox">`}</code> or <code>{`<select>`}</code> are for picking a value or toggling a state, not for triggering a one-time action.</>,
+    },
+    {
+      label: <>Depends</>,
+      explanation: <>This rule doesn't change based on surrounding context. Sign-out always needs to be a button that submits a form, never a link.</>,
+    },
+  ]}
+/>
+
+<QuestionCheckbox
+  scenario={<>A "Shuffle" toggle in a music player that turns random playback on and off.</>}
+  options={[
+    {
+      label: <>Link</>,
+      explanation: <>A link is for sending the user to a new URL. Turning shuffle on doesn't change the URL and doesn't reload the page; it just flips an on/off switch inside the player. No navigation means no link.</>,
+    },
+    {
+      label: <>Button</>,
+      correct: true,
+      explanation: <>A <code>{`<button>`}</code> works for a toggle, but a plain button can't tell a screen reader whether shuffle is currently on or off. Add <code>{`aria-pressed="true"`}</code> when shuffle is on and <code>{`aria-pressed="false"`}</code> when it's off. <code>aria-pressed</code> is a WAI-ARIA attribute (ARIA is a set of extra HTML attributes that help assistive tech like screen readers understand the page) and it announces the toggle state out loud to users who can't see the visual change.</>,
+    },
+    {
+      label: <>Both (as separate elements)</>,
+      explanation: <>Only one control toggles shuffle. Showing two would confuse users and assistive tech: they wouldn't know which one to click or how two controls are supposed to work together.</>,
+    },
+    {
+      label: <>Something else</>,
+      correct: true,
+      explanation: <>Another good fit is <code>{`<input type="checkbox">`}</code>. A checkbox is designed for exactly this kind of two-state on/off choice. You can style it to look like a switch or a toggle button with CSS; the visual style is independent of the underlying element. Screen readers announce the checked/unchecked state automatically, so you don't need any extra ARIA attributes.</>,
+    },
+    {
+      label: <>Depends</>,
+      explanation: <>Shuffle is always an on/off state regardless of the music player's layout. The answer doesn't change with context.</>,
+    },
+  ]}
+/>
+
+<QuestionRadio
+  scenario={<>A "Name" column header in a data table that sorts rows when clicked, with no URL change.</>}
+  options={[
+    {
+      label: <>Link</>,
+      explanation: <>A link sends the user somewhere: it changes the URL or jumps to a spot on the page. In this scenario the URL stays the same and the table just re-orders its existing rows. There's no destination for a link to point at.</>,
+    },
+    {
+      label: <>Button</>,
+      correct: true,
+      explanation: <>Clicking the header triggers an action (sorting) that rearranges what's already on the screen. A <code>{`<button>`}</code> fits that exactly. Put the <code>{`<button>`}</code> inside the <code>{`<th>`}</code> (the table header cell), and add <code>aria-sort</code> to the <code>{`<th>`}</code>. <code>aria-sort</code> is a WAI-ARIA attribute (ARIA adds extra information for assistive tech like screen readers) that tells them whether the column is currently sorted <code>"ascending"</code>, <code>"descending"</code>, or <code>"none"</code>. Without it, a sighted user sees a little arrow icon but a screen reader user gets no cue at all.</>,
+    },
+    {
+      label: <>Both (as separate elements)</>,
+      explanation: <>A column header has one clickable area: the header itself. Adding a second control next to it would clutter the layout without giving the user anything new to do.</>,
+    },
+    {
+      label: <>Something else</>,
+      explanation: <>No other built-in HTML element fits sorting better than a button. A <code>{`<select>`}</code> could work if you wanted the user to pick a sort column from a dropdown, but clicking the header itself is a button-shaped action.</>,
+    },
+    {
+      label: <>Depends</>,
+      explanation: <>The scenario pins down that the URL doesn't change, which removes the ambiguity. Without a URL to link to, the answer has to be button.</>,
+    },
+  ]}
+/>
+
+<QuestionRadio
+  scenario={<>A "Learn more about our pricing" option next to a plan selector on a signup form.</>}
+  options={[
+    {
+      label: <>Link</>,
+      explanation: <>Right if clicking this takes the user to a full pricing page like <code>/pricing</code>. That's exactly what a link with an <code>href</code> does. Wrong if clicking it opens a little popup or tooltip on the same page without leaving.</>,
+    },
+    {
+      label: <>Button</>,
+      explanation: <>Right if clicking opens a tooltip or popover (a small floating box of extra info) on the same page. Wrong if clicking takes the user to a separate pricing page: a button has no URL to go to.</>,
+    },
+    {
+      label: <>Both (as separate elements)</>,
+      explanation: <>A single well-chosen control is enough. Two "learn more" affordances side by side would just clutter the form without teaching the user anything new.</>,
+    },
+    {
+      label: <>Something else</>,
+      explanation: <>Worth knowing about: the <code>{`<details>`}</code> element. Combined with a <code>{`<summary>`}</code> inside it, <code>{`<details>`}</code> creates a native expandable section: click the summary, and the hidden content unfolds inline. No JavaScript needed. It can fit a "learn more" pattern when the extra info is short and belongs right next to the question. But for the classic link-vs-button call in this scenario, the answer really does depend on what the click does.</>,
+    },
+    {
+      label: <>Depends</>,
+      correct: true,
+      explanation: <>The right element depends entirely on what happens when the user clicks. Opens a popover on this page → button. Takes the user to a separate pricing page → link. "Learn more" is notoriously ambiguous: a clearer label like "Show pricing details" or "View full pricing" would tell the user which behavior to expect before clicking.</>,
+    },
+  ]}
+/>
+
+<QuestionRadio
+  scenario={<>A "Continue to payment" option at the bottom of the delivery address step in a multi-step checkout.</>}
+  options={[
+    {
+      label: <>Link</>,
+      explanation: <>A link can't send the user's form data to the server. If they right-clicked and chose "Open in new tab," the browser would just visit the next URL without the address they typed; the data would be lost. Links only know how to fetch a URL (a <code>GET</code> request); they can't carry form contents.</>,
+    },
+    {
+      label: <>Button</>,
+      correct: true,
+      explanation: <>Even though it feels like moving to the next page, the button is doing something first: sending the delivery address to the server. A <code>{`<button type="submit">`}</code> inside the <code>{`<form>`}</code> submits the form data (via <code>POST</code>), and the server responds by showing the next step. The URL changing afterward is a result of the submission, not the point of the button.</>,
+    },
+    {
+      label: <>Both (as separate elements)</>,
+      explanation: <>One submit button per form step. Two buttons that both submit the same form would let the user click both by accident, and a double submit on a checkout can mean being charged twice.</>,
+    },
+    {
+      label: <>Something else</>,
+      explanation: <>A form-submit <code>{`<button>`}</code> is the clearest HTML element for advancing a form. <code>{`<input type="submit">`}</code> is older syntax that does the same thing, but <code>{`<button>`}</code> is more flexible because you can put icons or other content inside it.</>,
+    },
+    {
+      label: <>Depends</>,
+      explanation: <>A multi-step form always needs to send the current step's data to the server before moving on. The right element doesn't change based on layout or styling.</>,
+    },
+  ]}
+/>
+
+<QuestionRadio
+  scenario={<>You want a whole product card to link to <code>/product/42</code>, with a "Save for later" button inside the card that saves to a wishlist without navigating away.</>}
+  options={[
+    {
+      label: <>Link</>,
+      explanation: <>Wrapping the whole card in <code>{`<a href="/product/42">`}</code> seems to cover the navigation, but it breaks the Save button. The HTML spec forbids putting interactive elements (like <code>{`<button>`}</code>) inside other interactive elements (like <code>{`<a>`}</code>). Browsers will try to repair the invalid markup in unpredictable ways, and screen readers announce the mess inconsistently.</>,
+    },
+    {
+      label: <>Button</>,
+      explanation: <>A button alone can't navigate to <code>/product/42</code>: buttons have no <code>href</code>. The Save action does need a button, but we also need something to handle the page-level link to the product detail page.</>,
+    },
+    {
+      label: <>Both (as separate elements)</>,
+      correct: true,
+      explanation: <>You need both, but not nested. Use the "stretched-link" pattern: put a plain <code>{`<a href="/product/42">`}</code> on just the product title, then use CSS to make that link cover the whole card. The trick: give the card <code>position: relative</code>, and put <code>{`::after { content: ""; position: absolute; inset: 0; }`}</code> on the link. The <code>::after</code> is a pseudo-element (a CSS-generated fake element), and setting <code>inset: 0</code> stretches it to fill the card, so clicking anywhere on the card triggers the link. The Save button sits on top with its own <code>z-index</code> and stays independently clickable.</>,
+    },
+    {
+      label: <>Something else</>,
+      explanation: <>No single HTML element can both navigate to a URL and trigger a non-navigating action at the same time. You genuinely need a link element and a button element: the question is just how to arrange them so they don't nest.</>,
+    },
+    {
+      label: <>Depends</>,
+      explanation: <>The no-nesting rule is universal: it's an HTML spec rule, not a styling choice. The stretched-link solution works in any card layout, so the answer doesn't depend on context.</>,
+    },
+  ]}
+/>
+
+<QuestionRadio
+  scenario={<>A "Back to top" control that scrolls the user to the top of a long page.</>}
+  options={[
+    {
+      label: <>Link</>,
+      correct: true,
+      explanation: <><code>{`<a href="#top">`}</code> works without any JavaScript. When the user clicks it, the browser scrolls to the top of the page because <code>#top</code> is a special URL fragment (if there's no element on the page with <code>{`id="top"`}</code>, the browser falls back to scrolling to the top of the document). Screen readers announce it as a link that jumps somewhere, which is exactly what the user expects.</>,
+    },
+    {
+      label: <>Button</>,
+      explanation: <>A button would need JavaScript (like <code>globalThis.scrollTo(0, 0)</code>) to do the scroll. You'd be rebuilding something the browser already does for free using a link and a URL fragment.</>,
+    },
+    {
+      label: <>Both (as separate elements)</>,
+      explanation: <>One control is all the user needs. A second "back to top" would just add visual noise without giving the user any new ability.</>,
+    },
+    {
+      label: <>Something else</>,
+      explanation: <>No other built-in HTML element does fragment navigation as cleanly as <code>{`<a>`}</code>. You could rig something up with pure CSS (like <code>scroll-margin</code> or container queries), but for a simple "go to top" control the link is the simplest and most accessible choice.</>,
+    },
+    {
+      label: <>Depends</>,
+      explanation: <>The <code>#top</code> fragment trick works in every browser in every context. No surrounding layout or styling changes this answer.</>,
+    },
+  ]}
+/>
+
+<QuestionRadio
+  scenario={<>A "Clear form" option that resets all fields to empty.</>}
+  options={[
+    {
+      label: <>Link</>,
+      explanation: <>Clearing the form doesn't change the URL; the user stays on the same page. Links are for navigation, not for resetting inputs.</>,
+    },
+    {
+      label: <>Button</>,
+      correct: true,
+      explanation: <><code>{`<button type="reset">`}</code> is built into HTML. Put it inside a <code>{`<form>`}</code>, and clicking it automatically resets every input in that form back to its default value. No JavaScript needed. One real-world warning: most designers advise against including a Clear button at all. It sits right next to Submit, users click it by accident, lose their work, and get furious. If you must include one, place it far from Submit and style it to look less prominent (smaller, less bold).</>,
+    },
+    {
+      label: <>Both (as separate elements)</>,
+      explanation: <>A form has one Clear at most. More than one just multiplies the chance the user hits one by accident.</>,
+    },
+    {
+      label: <>Something else</>,
+      explanation: <>No other built-in HTML element fits "reset every field in this form" as directly as <code>{`<button type="reset">`}</code>. <code>{`<input type="reset">`}</code> is the older syntax and does exactly the same thing; either one works.</>,
+    },
+    {
+      label: <>Depends</>,
+      explanation: <>Reset behavior is the same regardless of which form, layout, or styling. The answer doesn't change with context.</>,
+    },
+  ]}
+/>
+
+<QuestionRadio
+  scenario={<>A tab interface switching between "Overview", "Reviews", and "Specs" panels, with no URL changes.</>}
+  options={[
+    {
+      label: <>Link</>,
+      explanation: <>Without URLs there's nothing for a link to point at. If each tab loaded a real URL like <code>/reviews</code> or <code>#reviews</code>, using links with a tab role would be reasonable. But the scenario says "no URL changes," so a link has no destination.</>,
+    },
+    {
+      label: <>Button</>,
+      correct: true,
+      explanation: <>Tabs that only change what's shown on the current page are buttons with ARIA roles. The full ARIA tab pattern looks like this: put <code>{`role="tablist"`}</code> on the container, <code>{`role="tab"`}</code> on each button, and <code>{`role="tabpanel"`}</code> on each content section. Add <code>{`aria-selected="true"`}</code> to the active tab and <code>{`aria-selected="false"`}</code> to the others. A screen reader then announces something like "Tab 2 of 3, Reviews, selected" when the user navigates through.</>,
+    },
+    {
+      label: <>Both (as separate elements)</>,
+      explanation: <>Each panel has exactly one tab. Mixing links and buttons inside the same tablist would confuse both users and screen readers; they expect every tab in a set to behave the same way.</>,
+    },
+    {
+      label: <>Something else</>,
+      explanation: <>No better built-in element exists for on-page tab switching than buttons with ARIA roles. Some UI libraries ship a custom tab component, but under the hood those are just buttons with the same ARIA roles applied.</>,
+    },
+    {
+      label: <>Depends</>,
+      explanation: <>The scenario says "no URL changes" directly, which pins the answer down. With no URL to link to, it has to be button.</>,
+    },
+  ]}
+/>
+
+<QuestionRadio
+  scenario={<>A top-level nav item "Products" that both navigates to <code>/products</code> AND expands a dropdown submenu when clicked.</>}
+  options={[
+    {
+      label: <>Link</>,
+      explanation: <>A plain link can't toggle a submenu without JavaScript that overrides the link's normal click behavior. You'd end up breaking either the navigation or the toggle, and right-clicking "Open in new tab" would probably misbehave too.</>,
+    },
+    {
+      label: <>Button</>,
+      explanation: <>A plain button has no URL destination. Right-click "Open in new tab" wouldn't work because there's nothing to open. The user also can't bookmark or share the <code>/products</code> page straight from the button.</>,
+    },
+    {
+      label: <>Both (as separate elements)</>,
+      correct: true,
+      explanation: <>A single HTML element can't do two different jobs at once; you can't be both a destination and a toggle. Split them into two controls sitting side by side: the "Products" text as an <code>{`<a href="/products">`}</code>, and a separate small chevron <code>{`<button>`}</code> next to it for expanding the submenu. Give the chevron button <code>{`aria-expanded="false"`}</code> (set it to <code>"true"</code> in JavaScript when the submenu is open) so screen readers announce its state. GOV.UK and the ARIA Authoring Practices Guide both recommend this split.</>,
+    },
+    {
+      label: <>Something else</>,
+      explanation: <>No single HTML element fits "navigate and toggle" at the same time. The answer really is both a link and a button; the only question is how to arrange them.</>,
+    },
+    {
+      label: <>Depends</>,
+      explanation: <>The two jobs, navigating and toggling, are always two separate things. No layout or styling context collapses them back into one element.</>,
+    },
+  ]}
+/>
+
+<QuestionRadio
+  scenario={<>A video player's progress bar that lets the user click or drag to scrub to a specific timestamp.</>}
+  options={[
+    {
+      label: <>Link</>,
+      explanation: <>Nothing to link to; the progress bar doesn't navigate to a URL. And there's no discrete list of timestamps you could enumerate as separate links.</>,
+    },
+    {
+      label: <>Button</>,
+      explanation: <>A button is for a single discrete action: one click, one thing happens. Scrubbing is continuous along a range; the user picks any position between the start and the end of the video. A button can't express "pick a value along this range."</>,
+    },
+    {
+      label: <>Both (as separate elements)</>,
+      explanation: <>Neither link nor button fits individually, so combining them doesn't help either.</>,
+    },
+    {
+      label: <>Something else</>,
+      correct: true,
+      explanation: <>This is a slider. Use <code>{`<input type="range">`}</code>: that's the built-in HTML element for picking a numeric value along a continuous range. The browser handles the visual track, the thumb, and the drag behavior for you. If you really can't use <code>{`<input type="range">`}</code> (maybe the visual design can't be achieved with CSS alone), fall back to <code>{`<div role="slider">`}</code> and add four ARIA attributes: <code>aria-valuemin</code> (usually <code>0</code>), <code>aria-valuemax</code> (usually the total seconds), <code>aria-valuenow</code> (the current position), and, most importantly, <code>{`aria-valuetext="2 minutes 34 seconds"`}</code>. Raw numbers in <code>aria-valuenow</code> don't mean anything useful to a screen reader user; <code>aria-valuetext</code> is the human-readable version that actually gets announced out loud.</>,
+    },
+    {
+      label: <>Depends</>,
+      explanation: <>Scrubbing is always a continuous range control regardless of the player's layout or styling. The answer doesn't depend on context.</>,
+    },
+  ]}
+/>
+
+<QuestionRadio
+  scenario={<>A language selector in the footer showing EN, FR, and DE.</>}
+  options={[
+    {
+      label: <>Link</>,
+      explanation: <>Right if each language corresponds to a real URL, like <code>/fr</code> or <code>/de</code>, and clicking changes the page to that URL. The user can then share <code>/fr</code> with a friend who reads French, or bookmark it to come back to the French version later.</>,
+    },
+    {
+      label: <>Button</>,
+      explanation: <>Right only if the language switch is purely client-side with no URL change; the page stays at the same URL but the text re-renders in another language. Many single-page applications do this without URL support, which means users can't share or bookmark a specific language. A common mistake.</>,
+    },
+    {
+      label: <>Both (as separate elements)</>,
+      explanation: <>One control per language is what the interface calls for. A link and a button for each language would just clutter the footer.</>,
+    },
+    {
+      label: <>Something else</>,
+      explanation: <>A <code>{`<select>`}</code> with an <code>{`<option>`}</code> for each language is another solid choice, especially when you support many languages and listing them all as buttons or links would take too much space. Screen readers handle <code>{`<select>`}</code> natively.</>,
+    },
+    {
+      label: <>Depends</>,
+      correct: true,
+      explanation: <>The right element depends on how language switching is implemented. Per-language URLs like <code>/fr</code> → links (so the user can share and bookmark them). Client-side state with no URL change → buttons (or a <code>{`<select>`}</code>). Many SPAs choose the second route without ever adding URL support, which makes localized versions unshareable; worth checking before you pick.</>,
+    },
+  ]}
+/>
+
+<QuestionRadio
+  scenario={<>A "Delete account" option at the bottom of a settings page.</>}
+  options={[
+    {
+      label: <>Link</>,
+      explanation: <>Same problem as sign-out: a link pointing at <code>/delete-account</code> is a CSRF (Cross-Site Request Forgery) vulnerability. Any malicious site could include <code>{`<img src="https://yoursite.com/delete-account">`}</code> and silently delete your user's account when they visit. Destructive actions must never be triggered by a simple URL request (a <code>GET</code> request).</>,
+    },
+    {
+      label: <>Button</>,
+      correct: true,
+      explanation: <>A destructive action should send a <code>DELETE</code> request (the HTTP method whose job is removing a resource) or a <code>POST</code> request. Put the button inside a <code>{`<form method="post">`}</code>, or trigger the request from JavaScript. The typical flow: user clicks the button → a confirmation dialog appears asking "Are you sure?" → user confirms → the <code>DELETE</code> request goes out. Keep the confirmation in a dialog on the same page; sending the user to a separate <code>/confirm-delete</code> page just to ask "are you sure?" is unnecessary friction.</>,
+    },
+    {
+      label: <>Both (as separate elements)</>,
+      explanation: <>Only one delete control. Duplicating a destructive action is exactly how accidents happen; two buttons double the odds of a wrong click.</>,
+    },
+    {
+      label: <>Something else</>,
+      explanation: <>No other built-in HTML element fits "trigger a destructive action after confirmation" better than a button inside a form. <code>{`<input type="submit">`}</code> would work too, but <code>{`<button>`}</code> is more flexible for styling and for including icons.</>,
+    },
+    {
+      label: <>Depends</>,
+      explanation: <>The security rule (don't expose destructive actions as GET-addressable URLs) is the same regardless of what the rest of the settings page looks like.</>,
+    },
+  ]}
+/>
+
+<QuestionRadio
+  scenario={<>A filter chip "Shoes" that narrows search results and updates the URL to <code>?category=shoes</code>.</>}
+  options={[
+    {
+      label: <>Link</>,
+      correct: true,
+      explanation: <>The filtered state is part of the URL, which makes it shareable, bookmarkable, and survives a page reload. Right-clicking "Open in new tab" should give the same filtered view; links handle that for free. This is the same pattern as pagination: each filter state is a real URL the user can return to. Many e-commerce sites build filter chips with JavaScript that don't update the URL, which breaks the back button and makes filtered views impossible to share.</>,
+    },
+    {
+      label: <>Button</>,
+      explanation: <>A button would run JavaScript that changes what's on screen but leaves the URL alone. The scenario explicitly says the URL updates, so a plain button isn't the right tool; the filter state needs to be part of the URL.</>,
+    },
+    {
+      label: <>Both (as separate elements)</>,
+      explanation: <>One control per filter. Showing a link and a button for each chip would just clutter the page.</>,
+    },
+    {
+      label: <>Something else</>,
+      explanation: <>A styled link is the simplest fit. If the design called for picking several filters at once with a dropdown feel, a <code>{`<select multiple>`}</code> or a group of <code>{`<input type="checkbox">`}</code> could fit, but each individual chip is still a clickable thing that changes the URL, which is a link.</>,
+    },
+    {
+      label: <>Depends</>,
+      explanation: <>The scenario pins down that the URL updates, which removes the ambiguity. URL change → link.</>,
+    },
+  ]}
+/>
+
+{/*
+  Commented out: "In stock only" filter chip with no URL change.
+
+  Problems with this question:
+  - In-stock status is volatile data. An e-commerce site can't and
+    shouldn't ship stock status to the client as a static dataset for
+    client-side filtering; inventory changes minute-to-minute, and a
+    stale client-side filter would show sold-out products as available.
+    Even if the site did ship stock data, toggling the chip should
+    re-fetch per product to guarantee freshness, which defeats the
+    point of a "client-side only" filter.
+  - Independent of the stock-freshness issue: real e-commerce filters
+    should live in the URL so users can share, bookmark, and use the
+    back button on filtered views. A client-side-only filter is almost
+    always a mistake, not a legitimate design choice.
+  - The previous question (URL-updating filter chip) already teaches
+    "filters with URL state are links." Teaching "filters without URL
+    state are buttons" as a sibling question just endorses the wrong
+    pattern as a normal option.
+  - If kept, the correct answer (Button with aria-pressed) would apply
+    only to genuinely ephemeral filters, like a filter inside a modal
+    or an embedded widget that doesn't own the page URL. The original
+    scenario ("narrows search results") doesn't fit that exception.
+
+  Revisit: replace with a scenario where client-side-only filtering is
+  actually defensible (e.g. a filter inside a modal dialog that closes
+  without navigating), or drop the question entirely.
+
+<QuestionRadio
+  scenario={<>A filter chip "In stock only" that filters a product list client-side with no URL change.</>}
+  options={[
+    {
+      label: <>Link</>,
+      explanation: <>Nothing to link to; the filter state never reaches the URL, so there's no destination a link could point at.</>,
+    },
+    {
+      label: <>Button</>,
+      correct: true,
+      explanation: <>No URL change, no navigation; the chip just toggles a UI state on the current page. Use a <code>{`<button>`}</code> with <code>{`aria-pressed="true"`}</code> when the filter is active and <code>{`aria-pressed="false"`}</code> when it isn't. <code>aria-pressed</code> announces the on/off state to screen readers.</>,
+    },
+    {
+      label: <>Both (as separate elements)</>,
+      explanation: <>A single control per filter is enough. Two elements toggling the same state would just create confusion.</>,
+    },
+    {
+      label: <>Something else</>,
+      explanation: <><code>{`<input type="checkbox">`}</code> is another valid choice; it's designed for on/off state, and screen readers announce the checked state automatically.</>,
+    },
+    {
+      label: <>Depends</>,
+      explanation: <>The scenario pins down "no URL change," so the answer stays button (or checkbox). No surrounding context flips the result.</>,
+    },
+  ]}
+/>
+*/}
+
+<QuestionRadio
+  scenario={<>A "Copy link" option that copies the current URL to the clipboard.</>}
+  options={[
+    {
+      label: <>Link</>,
+      explanation: <>Nothing to navigate to; copying a URL doesn't take the user anywhere. A link without a destination doesn't make sense here.</>,
+    },
+    {
+      label: <>Button</>,
+      correct: true,
+      explanation: <>A pure action: no navigation, no persistent state. The browser's <code>navigator.clipboard.writeText(url)</code> does the actual copying; a <code>{`<button>`}</code> triggers it. A common pattern: temporarily change the label to "Copied!" for a second or two after the copy succeeds, then revert. That's still a button, just with a bit of state for feedback.</>,
+    },
+    {
+      label: <>Both (as separate elements)</>,
+      explanation: <>One control to copy is all the user needs. A second copy button next to the first would just add clutter.</>,
+    },
+    {
+      label: <>Something else</>,
+      explanation: <>No other built-in HTML element fits this more naturally than a button. An <code>{`<input type="text" readonly>`}</code> showing the URL lets users select and copy manually, but that's a fallback for situations where JavaScript can't run, not a replacement for a proper Copy button.</>,
+    },
+    {
+      label: <>Depends</>,
+      explanation: <>Copying to the clipboard is the same kind of action everywhere. No surrounding context flips this to a link or another element.</>,
+    },
+  ]}
+/>
+
+<QuestionRadio
+  scenario={<>The last item in a breadcrumb trail (Home › Products › Laptops), representing the page the user is currently viewing.</>}
+  options={[
+    {
+      label: <>Link</>,
+      correct: true,
+      explanation: <>Make it a link to its own URL (<code>{`<a href="/products/laptops" aria-current="page">Laptops</a>`}</code>). A link lets users right-click "Copy link address," drag the item to the bookmarks bar, or share the URL: all things they genuinely do with breadcrumbs. <code>{`aria-current="page"`}</code> is a WAI-ARIA attribute (ARIA adds information for screen readers) that tells assistive tech "this is the current page," so screen readers announce it correctly even though it's still a link. Many sites visually style the current item without an underline so sighted users don't mistake it for something they should click.</>,
+    },
+    {
+      label: <>Button</>,
+      explanation: <>A button implies there's an action to perform, but there's nothing to do; the user is already on this page. No click behavior makes sense for a button here.</>,
+    },
+    {
+      label: <>Both (as separate elements)</>,
+      explanation: <>One item in the breadcrumb trail represents the current page. A link plus a button for the same item would just confuse the user.</>,
+    },
+    {
+      label: <>Something else</>,
+      explanation: <>A <code>{`<span>`}</code> with <code>{`aria-current="page"`}</code> is the stricter pattern some sites use. Screen readers announce it correctly, and sighted users can't click it by mistake. The downside: users can't right-click to copy the URL, drag it to bookmarks, or share it: all real behaviors people use on breadcrumbs. The link version wins on utility.</>,
+    },
+    {
+      label: <>Depends</>,
+      explanation: <>Either the link version or the non-interactive <code>{`<span>`}</code> version is defensible. Neither changes because of surrounding context; the choice is about which utility tradeoff (bookmarkable vs. unclickable) matters more to your users.</>,
+    },
+  ]}
+/>
+
+<QuestionRadio
+  scenario={<>A "Skip to main content" option at the very top of the page, visually hidden at rest but shown when it receives keyboard focus.</>}
+  options={[
+    {
+      label: <>Link</>,
+      correct: true,
+      explanation: <><code>{`<a href="#main">Skip to main content</a>`}</code> is the standard pattern. It navigates to a page fragment (the <code>{`<main>`}</code> element, or whatever element has <code>{`id="main"`}</code>) using the browser's native fragment behavior. No JavaScript needed. This is a critical accessibility feature for keyboard users: without it, every page load forces them to Tab through every nav link before they can reach the content. Requirements: make it the very first focusable element in the DOM, and use CSS to hide it visually at rest but reveal it when it receives <code>:focus</code> so keyboard users can see it as they Tab to it.</>,
+    },
+    {
+      label: <>Button</>,
+      explanation: <>A button would need JavaScript to scroll the page or move focus. That's more code to maintain and it breaks if scripts fail to load. A link with a fragment does the same job natively: built into the browser, works everywhere.</>,
+    },
+    {
+      label: <>Both (as separate elements)</>,
+      explanation: <>One skip link is the established convention. Duplicating it just confuses keyboard users who learn to expect exactly one at the top of the page.</>,
+    },
+    {
+      label: <>Something else</>,
+      explanation: <>No other built-in HTML element does fragment navigation this cleanly. A well-styled <code>{`<a>`}</code> with <code>href</code> pointing at <code>#main</code> is the entire solution.</>,
+    },
+    {
+      label: <>Depends</>,
+      explanation: <>The skip-link pattern is the same on every page of every site. No surrounding context changes the answer.</>,
+    },
+  ]}
+/>
+
+<QuestionRadio
+  scenario={<>A notification bell icon in the top nav that, when clicked, opens a dropdown showing recent notifications.</>}
+  options={[
+    {
+      label: <>Link</>,
+      explanation: <>No URL change; clicking the bell just reveals a dropdown on the current page. The URL stays the same, the page doesn't navigate, so a link has no destination to point at.</>,
+    },
+    {
+      label: <>Button</>,
+      correct: true,
+      explanation: <>Clicking the bell triggers a UI change (showing or hiding a dropdown), which is exactly a button's job. Two attributes matter here: <code>{`aria-expanded="false"`}</code> when the dropdown is closed and <code>{`aria-expanded="true"`}</code> when it's open, so screen readers announce the current state. And <code>{`aria-label="Notifications"`}</code>: because the button's only visible content is an icon, without an <code>aria-label</code> a screen reader would just announce "button" with no idea what it's for. A common beginner mistake: forgetting <code>aria-expanded</code>, which leaves screen reader users with no way to tell whether they've opened the dropdown.</>,
+    },
+    {
+      label: <>Both (as separate elements)</>,
+      explanation: <>One trigger per dropdown. A second control that opens the same dropdown would just add noise without adding capability.</>,
+    },
+    {
+      label: <>Something else</>,
+      explanation: <>No other built-in HTML element fits "reveal a dropdown on click" better than a button. The newer Popover API (adding <code>popovertarget</code> to a button and <code>popover</code> to a <code>{`<div>`}</code>) is a modern way to wire them together without any JavaScript, but you still need a button as the trigger.</>,
+    },
+    {
+      label: <>Depends</>,
+      explanation: <>A trigger for an in-page dropdown is always a button, regardless of the icon, the position in the nav, or the surrounding styling. No context flips this to a link.</>,
+    },
+  ]}
+/>
