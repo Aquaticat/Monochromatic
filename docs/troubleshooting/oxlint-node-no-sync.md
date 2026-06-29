@@ -304,9 +304,10 @@ cargo test --manifest-path /tmp/agent/oxc-no-sync-prototype-LmG4Snov/Cargo.toml 
 ```
 
 `cargo clippy --manifest-path /tmp/agent/oxc-no-sync-prototype-LmG4Snov/Cargo.toml --package oxc_linter --lib --tests`
-was also attempted.
-It hit existing unrelated workspace warnings and then a local disk-quota write failure;
-a grep of the captured output after fixing the prototype warnings showed no `no_sync.rs` warnings.
+was also run after increasing local `/tmp` quota.
+It exited successfully.
+It still prints existing upstream warnings outside the prototype `no_sync.rs` changes,
+but no `no_sync.rs` clippy warning remains.
 
 Verification output:
 
