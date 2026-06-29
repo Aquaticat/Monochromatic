@@ -5,7 +5,8 @@
 User wants two outcomes:
 
 - A troubleshooting doc focused on oxlint `node/no-sync` flagging Optique `parseSync`.
-- A custom `no-restricted-syntax/no-sync` rule that bans only sync APIs for constructs that are inherently async but exposed as sync APIs.
+- A custom `no-restricted-syntax/no-sync` rule that bans only sync APIs for constructs that are inherently async
+  but exposed as sync APIs.
   For now this includes only Node sync methods.
 
 User explicitly said not to fix existing code,
@@ -15,9 +16,18 @@ so do not change the current `parseSync` callsites in `packages/cli/git/src/pars
 
 - Created `docs/troubleshooting/oxlint-node-no-sync.md`.
 - Committed it as `4df2be188` with message `docs(oxlint): document node no-sync suffix false positive`.
-- Recorded the upstream prototype patch and verification in `docs/troubleshooting/oxlint-node-no-sync.patch` and committed it as `264548a5b`.
-- Added project rule `no-restricted-syntax/no-sync`, fixtures, config wiring, and readonly allowlist updates across follow-up commits through `6ad8bbac0`.
-- Added namespace, `.apply()`, `.call()`, and shadowed-global fixture coverage in `a363eff67` while keeping Set-based alias tracking.
+- Recorded the upstream prototype patch and verification in `docs/troubleshooting/oxlint-node-no-sync.patch`
+  and committed it as `264548a5b`.
+  Later refreshed the patch so the upstream prototype handles aliased imports,
+  destructuring aliases,
+  variable aliases,
+  dynamic `await import()`,
+  `.apply()`/`.call()`,
+  and local `require`/`process` shadows.
+- Added project rule `no-restricted-syntax/no-sync`, fixtures, config wiring, and readonly allowlist updates across
+  follow-up commits through `6ad8bbac0`.
+- Added namespace, `.apply()`, `.call()`, and shadowed-global fixture coverage in `a363eff67` while keeping Set-based
+  alias tracking.
 
 ## Prototype state
 
@@ -41,13 +51,21 @@ d8c6b550c8802cc68f8e404f279cdc603692b3b6
 Prototype artifacts:
 
 - `docs/troubleshooting/oxlint-node-no-sync.patch`
-- Updated and committed `docs/troubleshooting/oxlint-node-no-sync.md`
+- Updated `docs/troubleshooting/oxlint-node-no-sync.md`
 
-Verification command passed:
+Verification commands passed:
 
 ```bash
+cargo fmt --manifest-path /tmp/agent/oxc-no-sync-prototype-LmG4Snov/Cargo.toml --package oxc_linter --check
+git -C /tmp/agent/oxc-no-sync-prototype-LmG4Snov diff --check
 cargo test --manifest-path /tmp/agent/oxc-no-sync-prototype-LmG4Snov/Cargo.toml --package oxc_linter node::no_sync::test
 ```
+
+`cargo clippy --manifest-path /tmp/agent/oxc-no-sync-prototype-LmG4Snov/Cargo.toml --package oxc_linter --lib --tests`
+was attempted.
+With `-D warnings` it failed on existing `oxc_allocator` warnings.
+Without `-D warnings` it later failed writing query cache because of local disk quota,
+but the captured output had no remaining `no_sync.rs` warnings after fixes.
 
 Prototype doc work is complete.
 
@@ -116,4 +134,7 @@ It still fails on two unrelated existing `catch-binding` errors in `packages/cli
 Dirty unrelated files left for caller awareness:
 
 - `mise.lock` has a CMake `4.3.3` to `4.3.4` update from mise tool resolution.
-- `docs/troubleshooting/pnpm-modules-cache.md` exists untracked and was not created for this task.
+- `packages/oxlint-plugins/no-restricted-syntax/src/rules/no-immediate-mutation.syntax.ts`,
+  `packages/oxlint-plugins/no-restricted-syntax/src/rules/no-immediate-mutation.ts`,
+  and `packages/test-fixture/oxlint-no-restricted-syntax/src/valid/no-immediate-mutation.ts`
+  are modified by concurrent work and were not touched for this task.

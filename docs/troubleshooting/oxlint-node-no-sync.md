@@ -170,7 +170,8 @@ Patterns that work cleanly under upstream `node/no-sync`:
 
 ### Replace upstream rule with a project-specific rule
 
-Disable `node/no-sync` and enable a custom `no-restricted-syntax/no-sync` rule that only reports sync APIs reached through Node builtin modules.
+Disable `node/no-sync` and enable a custom `no-restricted-syntax/no-sync` rule that only reports sync APIs
+reached through Node builtin modules.
 This is the chosen repo-local workaround.
 
 Tradeoff:
@@ -280,18 +281,32 @@ Prototype summary:
   `process.getBuiltinModule()`,
   namespace/default module imports,
   destructured sync API bindings,
-  and `.apply()` chaining through a sync member.
-- Added a pass case for `parseSync()` imported from `@optique/core/parser`.
+  variable aliases,
+  dynamic `await import()`,
+  and `.apply()`/`.call()` chaining through a sync member.
+- Reports aliased named imports and destructuring aliases by the imported Node API name,
+  so `ignores: ["readFileSync"]` still works when local code calls `read()`.
+- Added pass cases for `parseSync()` imported from `@optique/core/parser`,
+  non-Node local `parseSync`,
+  type-only imports,
+  and local `require`/`process` shadows.
 - Updated `crates/oxc_linter/src/snapshots/node_no_sync.snap` for the new fixture catalog.
 
 Patch:
 [oxlint-node-no-sync.patch](oxlint-node-no-sync.patch).
 
-Verification command:
+Verification commands:
 
 ```bash
+cargo fmt --manifest-path /tmp/agent/oxc-no-sync-prototype-LmG4Snov/Cargo.toml --package oxc_linter --check
+git -C /tmp/agent/oxc-no-sync-prototype-LmG4Snov diff --check
 cargo test --manifest-path /tmp/agent/oxc-no-sync-prototype-LmG4Snov/Cargo.toml --package oxc_linter node::no_sync::test
 ```
+
+`cargo clippy --manifest-path /tmp/agent/oxc-no-sync-prototype-LmG4Snov/Cargo.toml --package oxc_linter --lib --tests`
+was also attempted.
+It hit existing unrelated workspace warnings and then a local disk-quota write failure;
+a grep of the captured output after fixing the prototype warnings showed no `no_sync.rs` warnings.
 
 Verification output:
 
@@ -353,7 +368,8 @@ but would not report unrelated library APIs that merely end in `Sync`.
 
 Source trace:
 
-`crates/oxc_linter/src/rules/node/no_sync.rs:100-120` checks identifiers and member properties with `.ends_with("Sync")`.
+`crates/oxc_linter/src/rules/node/no_sync.rs:100-120` checks identifiers and member properties with
+`.ends_with("Sync")`.
 It does not inspect import declarations or module provenance before reporting.
 
 Prototype:
@@ -361,15 +377,23 @@ Prototype:
 A working prototype is recorded in `docs/troubleshooting/oxlint-node-no-sync.patch`.
 It resolves sync-looking calls through Node builtin imports,
 CommonJS `require()`,
-and `process.getBuiltinModule()` before reporting.
+`process.getBuiltinModule()`,
+variable aliases,
+destructuring aliases,
+dynamic `await import()`,
+and `.apply()`/`.call()` before reporting.
 The targeted upstream test passes with:
 
 ```bash
-cargo test --manifest-path /tmp/agent/oxc-no-sync-prototype-LmG4Snov/Cargo.toml --package oxc_linter node::no_sync::test
+cargo test \
+  --manifest-path /tmp/agent/oxc-no-sync-prototype-LmG4Snov/Cargo.toml \
+  --package oxc_linter \
+  node::no_sync::test
 ```
 
 Suggested fix:
 
 Use the prototype shape in `crates/oxc_linter/src/rules/node/no_sync.rs`:
-collect or resolve bindings from Node builtin modules and report sync-looking calls only when the callee resolves to those bindings.
+collect or resolve bindings from Node builtin modules and report sync-looking calls only when the callee resolves to
+those bindings.
 ~~~
