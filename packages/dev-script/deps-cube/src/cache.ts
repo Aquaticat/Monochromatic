@@ -40,6 +40,8 @@ import {
   join,
 } from 'node:path';
 
+import { caughtErrorMessage, } from './error-format.ts';
+
 //region Types
 
 /**
@@ -47,7 +49,7 @@ import {
  * unreadable. A distinct named value (not `undefined`) so a genuine cache miss
  * is never confused with a stored value and never widens a slot to `T | undefined`.
  */
-export const CACHE_MISS: unique symbol = Symbol('cache-miss',);
+export const CACHE_MISS: unique symbol = Symbol('deps-cube cache field is missing or unreadable',);
 
 /**
  * One stored field's payload.
@@ -212,7 +214,10 @@ async function readFileOrEmpty(path: string,): Promise<CacheFile> {
     // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- JSON.parse returns `any`; cache files are written only by us.
     return JSON.parse(raw,) as CacheFile;
   }
-  catch {
+  catch (error) {
+    console.warn(
+      `[deps-cube] cache file read failed for ${path}: ${caughtErrorMessage(error,)}`,
+    );
     return {};
   }
 }

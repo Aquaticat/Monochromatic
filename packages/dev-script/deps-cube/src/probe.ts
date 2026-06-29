@@ -28,7 +28,6 @@ import {
   classifyLicense,
   LANGUAGES_UNKNOWN,
   LAST_COMMIT_UNKNOWN,
-  type LicenseClass,
   parseRepository,
   probeDownloads,
   probeLanguages,
@@ -39,6 +38,7 @@ import {
   resolveVersion,
   VERSION_UNRESOLVED,
 } from './probe-fields.ts';
+import type { LicenseClass, } from './probe-field-types.ts';
 import { probeTransitive, } from './probe-transitive.ts';
 
 //region Types
@@ -51,7 +51,7 @@ export type UnknownReason = 'no-repo' | 'non-github' | 'monorepo' | 'private-or-
 /**
  * Re-exported license-class type for downstream consumers.
  */
-export type { LicenseClass, };
+export type { LicenseClass, } from './probe-field-types.ts';
 
 /**
  * Fully-resolved attribute vector for one catalog entry.

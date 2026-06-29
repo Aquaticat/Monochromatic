@@ -25,6 +25,7 @@ import {
   type Cache,
   CACHE_MISS,
 } from './cache.ts';
+import { caughtErrorMessage, } from './error-format.ts';
 import type { NpmPackage, } from './probe-field-types.ts';
 
 export {
@@ -235,7 +236,10 @@ export async function probeDownloads(
     },);
     return fetched.downloads;
   }
-  catch {
+  catch (error) {
+    console.warn(
+      `[deps-cube] npm downloads probe failed for ${npmName}: ${caughtErrorMessage(error,)}`,
+    );
     return 0;
   }
 }
@@ -251,7 +255,7 @@ export async function probeDownloads(
  *   return;
  * ```
  */
-export const LANGUAGES_UNKNOWN: unique symbol = Symbol('deps-cube/languages-unknown',);
+export const LANGUAGES_UNKNOWN: unique symbol = Symbol('deps-cube repository languages cannot be fetched',);
 
 /**
  * Calls Linguist for a GitHub repo, returning language byte counts.
@@ -310,7 +314,10 @@ export async function probeLanguages(
     },);
     return fetched;
   }
-  catch {
+  catch (error) {
+    console.warn(
+      `[deps-cube] GitHub languages probe failed for ${owner}/${repo}: ${caughtErrorMessage(error,)}`,
+    );
     return LANGUAGES_UNKNOWN;
   }
 }
@@ -326,7 +333,7 @@ export async function probeLanguages(
  *   return;
  * ```
  */
-export const LAST_COMMIT_UNKNOWN: unique symbol = Symbol('deps-cube/last-commit-unknown',);
+export const LAST_COMMIT_UNKNOWN: unique symbol = Symbol('deps-cube last commit date cannot be fetched',);
 
 /**
  * Fetches whole-repo `pushed_at`, or most recent commit date in `directory`.
@@ -418,7 +425,10 @@ export async function probeLastCommit(
     },);
     return date;
   }
-  catch {
+  catch (error) {
+    console.warn(
+      `[deps-cube] GitHub last-commit probe failed for ${owner}/${repo}: ${caughtErrorMessage(error,)}`,
+    );
     return LAST_COMMIT_UNKNOWN;
   }
 }

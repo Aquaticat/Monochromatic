@@ -172,7 +172,7 @@ function normalise(
  *   draw(pos,);
  * ```
  */
-export const POSITION_UNKNOWN: unique symbol = Symbol('deps-cube/position-unknown',);
+export const POSITION_UNKNOWN: unique symbol = Symbol('deps-cube spatial position cannot be computed',);
 
 /**
  * Returns the 3D scene-space position of a probe, or {@link POSITION_UNKNOWN}

@@ -20,6 +20,7 @@
  * ```
  */
 
+import { caughtErrorMessage, } from '../error-format.ts';
 import type { PackageProbe, } from '../probe.ts';
 import {
   type ChannelKey,
@@ -325,7 +326,7 @@ export function encodeState(
  *   return fallback;
  * ```
  */
-export const STATE_INVALID: unique symbol = Symbol('deps-cube/state-invalid',);
+export const STATE_INVALID: unique symbol = Symbol('deps-cube encoded state cannot be restored',);
 
 /**
  * Shallow shape check; every top-level field present and of the right
@@ -396,7 +397,10 @@ export function decodeState(
     const parsed = JSON.parse(json,) as unknown;
     return validateAppState(parsed,);
   }
-  catch {
+  catch (error) {
+    console.warn(
+      `[deps-cube] encoded state decode failed: ${caughtErrorMessage(error,)}`,
+    );
     return STATE_INVALID;
   }
 }

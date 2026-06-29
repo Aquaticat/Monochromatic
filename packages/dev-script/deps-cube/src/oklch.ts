@@ -163,7 +163,7 @@ export function oklchToSrgb(color: Oklch,): Rgb8 {
   const b = C * Math
     .sin(H * DEG_TO_RAD,);
 
-  /* oxlint-disable eslint/no-magic-numbers, eslint-plugin-unicorn/numeric-separators-style, stylistic/no-mixed-operators -- Ottosson 2020 OKLab→linear-sRGB matrix coefficients; naming or regrouping each obscures the math. */
+  /* oxlint-disable eslint/no-magic-numbers, stylistic/no-mixed-operators -- Ottosson 2020 OKLab→linear-sRGB matrix coefficients; naming or regrouping each obscures the math. */
   /**
    * Ottosson stage 1: long-cone response in pre-cube-root form.
    */
@@ -226,7 +226,7 @@ export function oklchToSrgb(color: Oklch,): Rgb8 {
     * mCubed
     + 1.707614701
     * sCubed;
-  /* oxlint-enable eslint/no-magic-numbers, eslint-plugin-unicorn/numeric-separators-style, stylistic/no-mixed-operators */
+  /* oxlint-enable eslint/no-magic-numbers, stylistic/no-mixed-operators */
 
   return [
     to8Bit(linearToSrgb(rLin,),),

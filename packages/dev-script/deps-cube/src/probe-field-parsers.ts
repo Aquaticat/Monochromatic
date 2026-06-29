@@ -87,7 +87,7 @@ const NOT_GITHUB_URL: unique symbol = Symbol('deps-cube/not-github-url',);
  *   return;
  * ```
  */
-export const REPO_UNPARSEABLE: unique symbol = Symbol('deps-cube/repo-unparseable',);
+export const REPO_UNPARSEABLE: unique symbol = Symbol('deps-cube repository field cannot be parsed',);
 
 /**
  * Parses the `github:owner/repo` shorthand string. Returns
@@ -364,7 +364,7 @@ export function parseRepository(repoField: NpmVersion['repository'],): Repositor
  * const version = resolved === VERSION_UNRESOLVED ? entry.range : resolved;
  * ```
  */
-export const VERSION_UNRESOLVED: unique symbol = Symbol('deps-cube/version-unresolved',);
+export const VERSION_UNRESOLVED: unique symbol = Symbol('deps-cube version range cannot resolve',);
 
 /**
  * Picks a concrete version that satisfies the catalog range.

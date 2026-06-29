@@ -25,6 +25,7 @@ import {
   type Cache,
   CACHE_MISS,
 } from './cache.ts';
+import { caughtErrorMessage, } from './error-format.ts';
 import {
   type NpmPackage,
   probePackageManifest,
@@ -53,7 +54,7 @@ const TTL_MS = TTL_DAYS * MS_PER_DAY;
  * Absence marker for {@link readManifestSilent} meaning "registry fetch failed
  * for this package"; never an {@link NpmPackage} manifest.
  */
-const MANIFEST_FETCH_FAILED: unique symbol = Symbol('deps-cube/manifest-fetch-failed',);
+const MANIFEST_FETCH_FAILED: unique symbol = Symbol('deps-cube manifest fetch failed during transitive walk',);
 
 /**
  * Wraps {@link probePackageManifest} so registry-fetch failures during the
@@ -80,7 +81,10 @@ async function readManifestSilent(
       cache,
     },);
   }
-  catch {
+  catch (error) {
+    console.warn(
+      `[deps-cube] transitive manifest probe failed for ${npmName}: ${caughtErrorMessage(error,)}`,
+    );
     return MANIFEST_FETCH_FAILED;
   }
 }

@@ -23,6 +23,7 @@
  * ```
  */
 
+import { caughtErrorMessage, } from '../error-format.ts';
 import type { PackageProbe, } from '../probe.ts';
 
 //region Types
@@ -152,7 +153,7 @@ const LICENSE_CODES: Record<PackageProbe['licenseClass'], number> = {
  * }
  * ```
  */
-export const DIM_UNKNOWN: unique symbol = Symbol('deps-cube/dim-unknown',);
+export const DIM_UNKNOWN: unique symbol = Symbol('deps-cube dimension value cannot be extracted',);
 
 /**
  * Returns the displayed value of one probe along one data dimension.
@@ -514,7 +515,10 @@ export function searchMatches(
       );
       return pattern.test(name,);
     }
-    catch {
+    catch (error) {
+      console.warn(
+        `[deps-cube] search regex parse failed for ${search}: ${caughtErrorMessage(error,)}`,
+      );
       return false;
     }
   }

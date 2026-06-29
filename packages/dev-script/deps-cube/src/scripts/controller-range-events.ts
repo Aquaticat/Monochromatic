@@ -229,11 +229,11 @@ export function wireRanges(
       /**
        * Numeric form of min-slider's current value.
        */
-      const minVal = Number.parseFloat(minSlider.value,);
+      const minVal = Number(minSlider.value,);
       /**
        * Numeric form of max-slider's current value.
        */
-      const maxVal = Number.parseFloat(maxSlider.value,);
+      const maxVal = Number(maxSlider.value,);
       session.state = {
         ...session.state,
         ranges: {
