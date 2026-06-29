@@ -120,7 +120,7 @@ export async function clone(
   try {
     await access(srcDiskPath,);
   }
-  catch {
+  catch (error) {
     /**
      * Listing of `VMS_DIR` so the error message can surface known VM names to the user.
      */
@@ -129,6 +129,7 @@ export async function clone(
       `source VM "${source}" not found (no disk at ${srcDiskPath}). Available VMs: ${
         entries.join(', ',)
       }`,
+      { cause: error, },
     );
   }
 
@@ -151,7 +152,7 @@ export async function clone(
   /**
    * Resolved image record; either a registry spec or a fall-through for custom images.
    */
-  const resolved = resolveImage(meta.image,);
+  const resolved = await resolveImage(meta.image,);
   /**
    * Guest config used for cloud-init seeding; defaults applied when the image isn't in the registry.
    */

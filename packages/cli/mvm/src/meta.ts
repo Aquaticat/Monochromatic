@@ -190,7 +190,10 @@ export async function readVmMeta(vmDir: string,): Promise<VmMeta> {
     rl.debug(`read VM metadata from ${vmDir}/meta.json`,);
     return meta;
   }
-  catch {
+  catch (error) {
+    if (!(error instanceof Error))
+      throw error;
+
     rl.debug('meta.json not found, falling back to legacy image file',);
   }
 
@@ -212,7 +215,10 @@ export async function readVmMeta(vmDir: string,): Promise<VmMeta> {
       );
       return content.trim();
     }
-    catch {
+    catch (error) {
+      if (!(error instanceof Error))
+        throw error;
+
       rl.debug('legacy image file not found, assuming ubuntu',);
       return DEFAULT_IMAGE;
     }
@@ -221,7 +227,7 @@ export async function readVmMeta(vmDir: string,): Promise<VmMeta> {
   /**
    * Image record resolved from the legacy identifier; registry or custom.
    */
-  const resolved = resolveImage(image,);
+  const resolved = await resolveImage(image,);
   /**
    * Guest config used to fill the synthetic `VmMeta`; defaults for custom images.
    */

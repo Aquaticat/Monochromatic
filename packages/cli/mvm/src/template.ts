@@ -1,8 +1,8 @@
-import { existsSync, } from 'node:fs';
 import { join, } from 'node:path';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { IMAGES_DIR, } from './config.ts';
+import { pathExists, } from './path-exists.ts';
 import type { ImageSpec, } from './registry.ts';
 import { ensureLinuxTemplate, } from './template-linux.ts';
 import { ensureWindowsTemplate, } from './template-windows.ts';
@@ -64,7 +64,7 @@ export async function ensureTemplate(spec: ImageSpec,): Promise<string> {
     spec.templateFileName,
   );
 
-  if (existsSync(templatePath,)) {
+  if (await pathExists(templatePath,)) {
     rl.info(`using cached template ${templatePath}`,);
     return templatePath;
   }

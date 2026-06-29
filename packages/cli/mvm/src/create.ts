@@ -138,7 +138,7 @@ export async function create({
   /**
    * Resolved image record from registry or custom-template lookup; drives the rest of the pipeline.
    */
-  const resolved = resolveImage(image,);
+  const resolved = await resolveImage(image,);
   rl.info(`creating VM ${name} (image: ${image})`,);
   await mkdir(
     vmDir,

@@ -90,7 +90,10 @@ async function pollProgress({
           .write(`\r  downloading: ${downloadedStr}`,);
       }
     }
-    catch {
+    catch (error) {
+      if (!(error instanceof Error))
+        throw error;
+
       // File may not exist yet during initial write setup
     }
   }

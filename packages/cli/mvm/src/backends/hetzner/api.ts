@@ -148,7 +148,10 @@ async function parseApiError(
         ?? res.statusText,
     };
   }
-  catch {
+  catch (error) {
+    if (!(error instanceof Error))
+      throw error;
+
     rl.debug('error response body was not JSON',);
     return {
       code: 'unknown',

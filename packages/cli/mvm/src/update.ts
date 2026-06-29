@@ -1,4 +1,3 @@
-import { existsSync, } from 'node:fs';
 import { rm, } from 'node:fs/promises';
 import { join, } from 'node:path';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
@@ -8,6 +7,7 @@ import {
   IMAGES,
   VIRTIO_WIN_FILENAME,
 } from './registry.ts';
+import { pathExists, } from './path-exists.ts';
 import { ensureTemplate, } from './template.ts';
 
 /**
@@ -57,40 +57,42 @@ export async function update(): Promise<void> {
    * Flat list of `rm()` promises across every registered image; awaited concurrently below.
    */
   // Delete all cached base images and templates
-  const removePromises = Object.entries(IMAGES,)
-    .flatMap(
-    function buildRemoveOps([name, spec,],) {
-      /**
-       * Pending remove operations for this image; collected so `flatMap` returns a flat array.
-       */
-      const ops: Promise<void>[] = [];
-      /**
-       * On-disk path of the cached base image for this registry entry.
-       */
-      const imagePath = join(
-        IMAGES_DIR,
-        spec.fileName,
-      );
-      /**
-       * On-disk path of the cached template qcow2 for this registry entry.
-       */
-      const templatePath = join(
-        IMAGES_DIR,
-        spec.templateFileName,
-      );
+  const removePromises = (await Promise.all(
+    Object.entries(IMAGES,)
+      .map(
+        async function buildRemoveOps([name, spec,],): Promise<readonly Promise<void>[]> {
+          /**
+           * Pending remove operations for this image; collected so `flat()` returns a flat array.
+           */
+          const ops: Promise<void>[] = [];
+          /**
+           * On-disk path of the cached base image for this registry entry.
+           */
+          const imagePath = join(
+            IMAGES_DIR,
+            spec.fileName,
+          );
+          /**
+           * On-disk path of the cached template qcow2 for this registry entry.
+           */
+          const templatePath = join(
+            IMAGES_DIR,
+            spec.templateFileName,
+          );
 
-      if (existsSync(imagePath,)) {
-        rl.info(`removing cached base image for ${name}: ${spec.fileName}`,);
-        ops.push(rm(imagePath,),);
-      }
+          if (await pathExists(imagePath,)) {
+            rl.info(`removing cached base image for ${name}: ${spec.fileName}`,);
+            ops.push(rm(imagePath,),);
+          }
 
-      if (existsSync(templatePath,)) {
-        rl.info(`removing cached template for ${name}: ${spec.templateFileName}`,);
-        ops.push(rm(templatePath,),);
-      }
-      return ops;
-    },
-  );
+          if (await pathExists(templatePath,)) {
+            rl.info(`removing cached template for ${name}: ${spec.templateFileName}`,);
+            ops.push(rm(templatePath,),);
+          }
+          return ops;
+        },
+      ),
+  )).flat();
   await Promise.all(removePromises,);
 
   /**
@@ -101,7 +103,7 @@ export async function update(): Promise<void> {
     IMAGES_DIR,
     VIRTIO_WIN_FILENAME,
   );
-  if (existsSync(virtioPath,)) {
+  if (await pathExists(virtioPath,)) {
     rl.info(`removing cached virtio-win ISO: ${VIRTIO_WIN_FILENAME}`,);
     await rm(virtioPath,);
   }

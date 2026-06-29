@@ -79,7 +79,10 @@ async function ensureKeypair(): Promise<void> {
     await access(PRIVATE_KEY_PATH,);
     return;
   }
-  catch {
+  catch (error) {
+    if (!(error instanceof Error))
+      throw error;
+
     rl.info('generating managed ed25519 keypair for hetzner backend',);
   }
   await mkdir(

@@ -4,7 +4,6 @@
  * @module
  */
 
-import { existsSync, } from 'node:fs';
 import {
   mkdir,
   unlink,
@@ -14,6 +13,7 @@ import { join, } from 'node:path';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { IMAGES_DIR, } from './config.ts';
+import { pathExists, } from './path-exists.ts';
 import { writeWithProgress, } from './download-progress.ts';
 import {
   type ImageSpec,
@@ -72,7 +72,7 @@ async function downloadIfMissing({
     l,
   },);
 
-  if (existsSync(destPath,)) {
+  if (await pathExists(destPath,)) {
     rl.info(`using cached file ${destPath}`,);
     return destPath;
   }
@@ -194,7 +194,7 @@ export async function ensureWinFsp(): Promise<string> {
     WINFSP_FILENAME,
   );
 
-  if (existsSync(destPath,)) {
+  if (await pathExists(destPath,)) {
     rl.info(`using cached WinFsp MSI at ${destPath}`,);
     return destPath;
   }
@@ -317,7 +317,7 @@ export async function ensureMiseWindows(): Promise<string> {
     'mise.exe',
   );
 
-  if (existsSync(destPath,)) {
+  if (await pathExists(destPath,)) {
     rl.info(`using cached mise.exe at ${destPath}`,);
     return destPath;
   }

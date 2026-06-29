@@ -140,7 +140,10 @@ export async function ephemeralRun(
       try {
         await cleanup();
       }
-      catch {
+      catch (error) {
+        if (!(error instanceof Error))
+          throw error;
+
         // cleanup() already logs errors internally
       }
       process.kill(

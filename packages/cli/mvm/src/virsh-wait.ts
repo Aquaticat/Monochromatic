@@ -99,7 +99,10 @@ export async function waitForGuestAgent({
       rl.info(`guest agent on ${name} is ready`,);
       return;
     }
-    catch {
+    catch (error) {
+      if (!(error instanceof Error))
+        throw error;
+
       /**
        * Milliseconds since polling began; compared against `timeoutMs` to give up.
        */
@@ -110,6 +113,7 @@ export async function waitForGuestAgent({
           `guest agent on ${name} did not respond within ${
             String(timeoutMs / MS_PER_SECOND,)
           }s`,
+          { cause: error, },
         );
       }
       rl.debug(
@@ -161,7 +165,10 @@ export async function shutdownVm({ name, }: { readonly name: string; },): Promis
       payload,
     ], },);
   }
-  catch {
+  catch (error) {
+    if (!(error instanceof Error))
+      throw error;
+
     // Guest agent often disconnects before sending a response during shutdown.
     // This is expected behavior: the VM is shutting down.
     rl.debug('guest agent disconnected during shutdown (expected)',);

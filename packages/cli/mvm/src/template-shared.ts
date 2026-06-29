@@ -58,13 +58,19 @@ async function cleanupTemplateVm(rl: { readonly debug: (msg: string,) => void; }
   try {
     await destroyVm({ name: TEMPLATE_VM_NAME, },);
   }
-  catch {
+  catch (error) {
+    if (!(error instanceof Error))
+      throw error;
+
     rl.debug('template VM was already stopped',);
   }
   try {
     await undefineVm({ name: TEMPLATE_VM_NAME, },);
   }
-  catch {
+  catch (error) {
+    if (!(error instanceof Error))
+      throw error;
+
     rl.debug('template VM was not defined, skipping undefine',);
   }
   await rm(

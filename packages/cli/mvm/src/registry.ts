@@ -1,7 +1,7 @@
-import { existsSync, } from 'node:fs';
 import { join, } from 'node:path';
 
 import { IMAGES_DIR, } from './config.ts';
+import { pathExists, } from './path-exists.ts';
 
 //region OS family and guest config types
 
@@ -292,17 +292,17 @@ export const CUSTOM_GUEST_DEFAULTS: LinuxGuestConfig = {
  *
  * @example
  * ```ts
- * const result = resolveImage('ubuntu');
+ * const result = await resolveImage('ubuntu');
  * // => { kind: 'registry', spec: { url: '...', ... } }
  *
- * const win = resolveImage('windows');
+ * const win = await resolveImage('windows');
  * // => { kind: 'registry', spec: { osFamily: 'windows', imageIndex: 1, ... } }
  *
- * const custom = resolveImage('my-custom');
+ * const custom = await resolveImage('my-custom');
  * // => { kind: 'custom', customTemplatePath: '/home/user/.local/share/mvm/images/my-custom.qcow2' }
  * ```
  */
-export function resolveImage(identifier: string,): ResolvedImage {
+export async function resolveImage(identifier: string,): Promise<ResolvedImage> {
   /**
    * Registry lookup; primary resolution path before the custom-template fallback.
    */
@@ -321,7 +321,7 @@ export function resolveImage(identifier: string,): ResolvedImage {
     IMAGES_DIR,
     `${identifier}.qcow2`,
   );
-  if (existsSync(customPath,)) {
+  if (await pathExists(customPath,)) {
     return {
       customTemplatePath: customPath,
       kind: 'custom',
@@ -346,7 +346,7 @@ export function resolveImage(identifier: string,): ResolvedImage {
  *
  * @example
  * ```ts
- * const resolved = resolveImage('ubuntu');
+ * const resolved = await resolveImage('ubuntu');
  * if (resolved.kind === 'registry') {
  *   resolved.spec.url; // download URL
  * }
