@@ -12,16 +12,23 @@ import {
   NO_RULE,
   stripAnsi,
 } from './oxlint-augment.ts';
-import {
-  EXISTS_SYNC_ACCESS_HELP,
-  RULE_HELP_GUIDANCE,
-  RULE_NOTE_GUIDANCE,
-} from './oxlint-guidance.ts';
+import { RULE_GUIDANCE, } from './oxlint-guidance.ts';
 
 /** Iteration count for long-run equivalence cases; large enough to exercise the linear scan, fast to compare. */
 const LONG_RUN = 100_000;
 /** Sequence count for O(n^2)-sensitive accumulator cases; modest so the pre-refactor array-spread stays fast. */
 const MANY_SEQUENCES = 5_000;
+
+/** Returns configured guidance text for a rule in assertions. */
+function getRuleGuidance(ruleName: string,): string {
+  /**
+   * Guidance entry configured for the requested rule.
+   */
+  const ruleGuidance = RULE_GUIDANCE[ruleName];
+  if (ruleGuidance === undefined)
+    return '';
+  return ruleGuidance.guidance;
+}
 
 //region augmentOxlintOutput helpers
 
@@ -395,13 +402,8 @@ await describe({
 
             const result = augmentOxlintOutput(input,);
 
-            expect(result,).toContain('  help: Expected void return type.',);
-            expect(result,).toContain(`  note: ${RULE_NOTE_GUIDANCE['no-misused-promises']}`,);
-
-            // Note should appear after help
-            const helpIdx = result.indexOf('help:',);
-            const noteIdx = result.indexOf('note:',);
-            expect(noteIdx,).toBeGreaterThan(helpIdx,);
+            expect(result,).toContain(`  help: Expected void return type. ${getRuleGuidance('no-misused-promises',)}`,);
+            expect(result,).not.toContain('note:',);
           },
         },),
         it({
@@ -422,12 +424,8 @@ await describe({
 
             const result = augmentOxlintOutput(input,);
 
-            expect(result,).toContain(`  note: ${RULE_NOTE_GUIDANCE['no-array-callback-reference']}`,);
-
-            // Note should appear after help
-            const helpIdx = result.indexOf('help:',);
-            const noteIdx = result.indexOf('note:',);
-            expect(noteIdx,).toBeGreaterThan(helpIdx,);
+            expect(result,).toContain(`  help: Wrap the function in an arrow function to explicitly pass only the element argument. ${getRuleGuidance('no-array-callback-reference',)}`,);
+            expect(result,).not.toContain('note:',);
           },
         },),
         it({
@@ -448,7 +446,7 @@ await describe({
 
             const result = augmentOxlintOutput(input,);
 
-            expect(result,).toContain(`  help: ${helpText} ${RULE_HELP_GUIDANCE['no-misused-spread']}`,);
+            expect(result,).toContain(`  help: ${helpText} ${getRuleGuidance('no-misused-spread',)}`,);
             expect(result,).not.toContain('note:',);
             expect(result.split('help:',).length - 1,).toBe(1,);
           },
@@ -469,12 +467,12 @@ await describe({
 
             const result = augmentOxlintOutput(input,);
 
-            expect(result,).toContain(`  help: ${EXISTS_SYNC_ACCESS_HELP}`,);
+            expect(result,).toContain(`  help: ${getRuleGuidance('no-sync',)}`,);
             expect(result,).not.toContain('note:',);
 
             const lines = result.split('\n',);
             const helpLine = lines.findIndex(
-              l => l.includes(EXISTS_SYNC_ACCESS_HELP,),
+              l => l.includes(getRuleGuidance('no-sync',),),
             );
             expect(lines[helpLine + 1],).toBe('',);
           },
@@ -495,7 +493,7 @@ await describe({
 
             const result = augmentOxlintOutput(input,);
 
-            expect(result,).not.toContain(EXISTS_SYNC_ACCESS_HELP,);
+            expect(result,).not.toContain(getRuleGuidance('no-sync',),);
             expect(result,).toBe(input,);
           },
         },),
@@ -515,14 +513,14 @@ await describe({
 
             const result = augmentOxlintOutput(input,);
 
-            expect(result,).toContain(`  note: ${RULE_NOTE_GUIDANCE['no-misused-promises']}`,);
+            expect(result,).toContain(`  help: ${getRuleGuidance('no-misused-promises',)}`,);
 
-            // Note should appear before the trailing blank line
+            // Help should appear before the trailing blank line
             const lines = result.split('\n',);
-            const noteLine = lines.findIndex(
-              l => l.includes('note:',),
+            const helpLine = lines.findIndex(
+              l => l.includes(getRuleGuidance('no-misused-promises',),),
             );
-            expect(lines[noteLine + 1],).toBe('',);
+            expect(lines[helpLine + 1],).toBe('',);
           },
         },),
         it({
@@ -578,11 +576,9 @@ await describe({
               .join('\n',);
 
             const result = augmentOxlintOutput(input,);
-            const noteOccurrences = result.split('note:',).length - 1;
 
-            // Only one note injected: for no-misused-promises
-            expect(noteOccurrences,).toBe(1,);
-            expect(result,).toContain(RULE_NOTE_GUIDANCE['no-misused-promises'] ?? '',);
+            expect(result,).not.toContain('note:',);
+            expect(result,).toContain(`  help: Expected void return type. ${getRuleGuidance('no-misused-promises',)}`,);
           },
         },),
         it({
@@ -615,7 +611,7 @@ await describe({
 
             const result = augmentOxlintOutput(input,);
 
-            expect(result,).toContain(`  note: ${RULE_NOTE_GUIDANCE['no-misused-promises']}`,);
+            expect(result,).toContain(`  help: ${getRuleGuidance('no-misused-promises',)}`,);
           },
         },),
         it({
@@ -636,7 +632,8 @@ await describe({
             expect(result,).toContain('\u001B[31m',);
             expect(result,).toContain('\u001B[33m',);
             // Guidance injected
-            expect(result,).toContain('note:',);
+            expect(result,).toContain(getRuleGuidance('no-misused-promises',),);
+            expect(result,).not.toContain('note:',);
           },
         },),
       ],

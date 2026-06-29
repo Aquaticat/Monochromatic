@@ -9,7 +9,6 @@
  */
 
 import {
-  type DiagnosticGuidance,
   NO_DIAGNOSTIC_GUIDANCE,
   resolveDiagnosticGuidance,
 } from './oxlint-guidance.ts';
@@ -546,7 +545,7 @@ export function isHelpLine(line: string,): boolean {
 /**
  * Indentation prefix for injected guidance lines, matching oxlint's `help:` alignment.
  */
-const NOTE_PREFIX = '  ';
+const GUIDANCE_PREFIX = '  ';
 
 /**
  * Formats a guidance entry into an indented `note:` line for terminal output.
@@ -562,28 +561,25 @@ const NOTE_PREFIX = '  ';
  * ```
  */
 export function formatGuidanceLine(guidance: string,): string {
-  return `${NOTE_PREFIX}note: ${guidance}`;
+  return `${GUIDANCE_PREFIX}note: ${guidance}`;
 }
 
 /**
- * Formats resolved diagnostic guidance as an indented output line.
+ * Formats a guidance entry into an indented `help:` line for terminal output.
  *
- * @param guidance - resolved diagnostic guidance
+ * @param guidance - guidance text
  *
- * @returns formatted guidance line ready to inject into oxlint output
+ * @returns formatted help line ready to inject into oxlint output
  */
-function formatDiagnosticGuidanceLine(guidance: DiagnosticGuidance,): string {
-  if ('helpText' in guidance)
-    return `${NOTE_PREFIX}help: ${guidance.helpText}`;
-
-  return formatGuidanceLine(guidance.noteText,);
+function formatHelpLine(guidance: string,): string {
+  return `${GUIDANCE_PREFIX}help: ${guidance}`;
 }
 
 /**
  * Augments oxlint text output with configured diagnostic guidance.
  *
- * Scans diagnostic headers, resolves configured guidance, appends help text to
- * an existing `help:` line when present, and otherwise injects a guidance line
+ * Scans diagnostic headers, resolves configured guidance, appends it to an
+ * existing `help:` line when present, and otherwise injects a `help:` line
  * before the diagnostic boundary.
  *
  * Preserves all original output including ANSI codes and formatting.
@@ -601,7 +597,7 @@ function formatDiagnosticGuidanceLine(guidance: DiagnosticGuidance,): string {
  *   '  help: Expected void return type.',
  *   '',
  * ].join('\n'));
- * // Contains '  note: Async callbacks silently drop ...'
+ * // Contains '  help: Expected void return type. Async callbacks silently drop ...'
  * ```
  */
 export function augmentOxlintOutput(output: string,): string {
@@ -622,7 +618,7 @@ export function augmentOxlintOutput(output: string,): string {
   /**
    * Guidance for the current diagnostic block, `NO_RULE` when unmatched.
    */
-  let activeGuidance: DiagnosticGuidance | typeof NO_RULE = NO_RULE;
+  let activeGuidance: string | typeof NO_RULE = NO_RULE;
   /**
    * Whether guidance has been injected for the current diagnostic block.
    */
@@ -652,16 +648,10 @@ export function augmentOxlintOutput(output: string,): string {
       injected = false;
     }
 
-    // Inject after help line when guidance is pending
+    // Append to help line when guidance is pending
     if ((activeGuidance !== NO_RULE) && (!injected)
       && isHelpLine(line,)) {
-      if ('helpText' in activeGuidance)
-        result.push(`${line} ${activeGuidance.helpText}`,);
-      else
-        result.push(
-          line,
-          formatDiagnosticGuidanceLine(activeGuidance,),
-        );
+      result.push(`${line} ${activeGuidance}`,);
       injected = true;
       continue;
     }
@@ -671,7 +661,7 @@ export function augmentOxlintOutput(output: string,): string {
       && (stripAnsi(line,)
         .trim()
         === '')) {
-      result.push(formatDiagnosticGuidanceLine(activeGuidance,),);
+      result.push(formatHelpLine(activeGuidance,),);
       injected = true;
       activeGuidance = NO_RULE;
     }
@@ -681,7 +671,7 @@ export function augmentOxlintOutput(output: string,): string {
 
   // Handle trailing diagnostic with no blank line at end
   if ((activeGuidance !== NO_RULE) && (!injected))
-    result.push(formatDiagnosticGuidanceLine(activeGuidance,),);
+    result.push(formatHelpLine(activeGuidance,),);
 
   return result.join('\n',);
 }
