@@ -203,10 +203,18 @@ type IsAllowedWorktreeDirOptions = {
  * ```
  */
 async function safeRealpath(path: string,): Promise<string | typeof REALPATH_ABSENT> {
+  /**
+   * Tagged logger for allowlist realpath resolution.
+   */
+  const rl = tagged({
+    tag: safeRealpath.name,
+    l,
+  },);
   try {
     return await realpath(path,);
   }
-  catch {
+  catch (error: unknown) {
+    rl.debug(`allowlist directory realpath failed: ${String(error,)}`,);
     return REALPATH_ABSENT;
   }
 }

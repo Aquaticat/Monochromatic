@@ -70,11 +70,19 @@ const SEQUENCER_HEAD_FILES: readonly string[] = [
  * ```
  */
 async function pathExists(path: string,): Promise<boolean> {
+  /**
+   * Tagged logger for sequencer head existence checks.
+   */
+  const rl = tagged({
+    tag: pathExists.name,
+    l,
+  },);
   try {
     await access(path,);
     return true;
   }
-  catch {
+  catch (error: unknown) {
+    rl.debug(`sequencer head path is absent or inaccessible: ${String(error,)}`,);
     return false;
   }
 }
