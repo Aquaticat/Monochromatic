@@ -122,7 +122,10 @@ async function safeDestroy(vmName: string,): Promise<void> {
   try {
     await mvm({ args: ['destroy', vmName,], },);
   }
-  catch {
+  catch (error) {
+    if (!(error instanceof Error))
+      throw error;
+
     // VM may not exist
   }
 }

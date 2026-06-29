@@ -155,7 +155,10 @@ async function checkDeviceFree(
     return sizeStr.trim()
       === '0';
   }
-  catch {
+  catch (error) {
+    if (!(error instanceof Error))
+      throw error;
+
     rl.debug(`no sysfs entry for ${sysfsSize}, assuming free`,);
     return true;
   }
@@ -442,7 +445,10 @@ export async function ensureNbdModule(): Promise<void> {
     await access('/dev/nbd0',);
     rl.info('nbd module already loaded',);
   }
-  catch {
+  catch (error) {
+    if (!(error instanceof Error))
+      throw error;
+
     rl.info('loading nbd kernel module',);
     await spawn({
       command: 'modprobe',

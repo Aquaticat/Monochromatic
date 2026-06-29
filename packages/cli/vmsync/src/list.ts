@@ -41,7 +41,10 @@ async function safeReaddir(rl: Logger,): Promise<string[]> {
   try {
     return await readdir(DATA_DIR,);
   }
-  catch {
+  catch (error) {
+    if (!(error instanceof Error))
+      throw error;
+
     rl.info('data directory does not exist, no VMs managed',);
     return [];
   }
@@ -90,7 +93,10 @@ export async function listVms(): Promise<readonly string[]> {
           );
           return entry;
         }
-        catch {
+        catch (error) {
+          if (!(error instanceof Error))
+            throw error;
+
           rl.debug(`skipping ${entry} (no config file)`,);
           return undefined;
         }

@@ -91,7 +91,10 @@ async function findOvmf(): Promise<string> {
           await access(candidate,);
           return candidate;
         }
-        catch {
+        catch (error) {
+          if (!(error instanceof Error))
+            throw error;
+
           rl.debug(`not found: ${candidate}`,);
           return undefined;
         }
