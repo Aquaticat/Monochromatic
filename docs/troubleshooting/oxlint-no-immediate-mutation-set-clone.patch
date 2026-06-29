@@ -1,0 +1,96 @@
+diff --git a/crates/oxc_linter/src/rules/unicorn/no_immediate_mutation.rs b/crates/oxc_linter/src/rules/unicorn/no_immediate_mutation.rs
+index b994f87..32aa760 100644
+--- a/crates/oxc_linter/src/rules/unicorn/no_immediate_mutation.rs
++++ b/crates/oxc_linter/src/rules/unicorn/no_immediate_mutation.rs
+@@ -101,8 +101,8 @@ declare_oxc_lint!(
+ enum InitType {
+     Array,
+     Object,
+-    Set,
+-    Map,
++    Set { needs_spread_temp: bool },
++    Map { needs_spread_temp: bool },
+ }
+ 
+ impl Rule for NoImmediateMutation {
+@@ -223,7 +223,7 @@ fn check_call_mutation<'a>(
+             }
+             ctx.diagnostic(array_mutation_diagnostic(call.span, method_name));
+         }
+-        (InitType::Set, "add") => {
++        (InitType::Set { needs_spread_temp: false }, "add") => {
+             // add() must have exactly one argument (not spread, not empty)
+             if call.arguments.len() != 1 {
+                 return;
+@@ -233,7 +233,8 @@ fn check_call_mutation<'a>(
+             }
+             ctx.diagnostic(set_add_diagnostic(call.span));
+         }
+-        (InitType::Map, "set") => {
++        (InitType::Set { needs_spread_temp: true }, "add") => {}
++        (InitType::Map { needs_spread_temp: false }, "set") => {
+             // set() must have exactly two arguments (not spread)
+             if call.arguments.len() != 2 {
+                 return;
+@@ -243,6 +244,7 @@ fn check_call_mutation<'a>(
+             }
+             ctx.diagnostic(map_set_diagnostic(call.span));
+         }
++        (InitType::Map { needs_spread_temp: true }, "set") => {}
+         _ => {}
+     }
+ }
+@@ -372,13 +374,29 @@ fn get_new_expression_type<'a>(
+         return None;
+     }
+ 
++    let needs_spread_temp = collection_init_needs_spread_temp(new_expr);
++
+     match id.name.as_str() {
+-        "Set" | "WeakSet" => Some(InitType::Set),
+-        "Map" | "WeakMap" => Some(InitType::Map),
++        "Set" | "WeakSet" => Some(InitType::Set { needs_spread_temp }),
++        "Map" | "WeakMap" => Some(InitType::Map { needs_spread_temp }),
+         _ => None,
+     }
+ }
+ 
++/// Check whether folding a later Set.add()/Map.set() into this initializer would require
++/// spreading an existing iterable into a temporary array.
++fn collection_init_needs_spread_temp(new_expr: &NewExpression<'_>) -> bool {
++    if new_expr.arguments.len() != 1 {
++        return false;
++    }
++
++    let Some(arg) = new_expr.arguments.first().and_then(Argument::as_expression) else {
++        return false;
++    };
++
++    !matches!(arg.get_inner_expression(), Expression::ArrayExpression(_))
++}
++
+ /// Get variable name and init type from an assignment expression
+ fn get_assignment_info<'a>(
+     assign: &'a AssignmentExpression<'a>,
+@@ -783,6 +801,10 @@ fn test() {
+             bar.add(3);",
+         "const set = new Set([1, 2]);
+             set.add(set.size);",
++        "const set = new Set(existingSet);
++            set.add(3);",
++        "const set = new Set(getValues());
++            set.add(3);",
+         "const set = new Set([1, 2]);
+             set.add(((foo) => foo(set.size))());",
+         "let set;
+@@ -835,6 +857,10 @@ fn test() {
+             bar.set("bar", 2);"#,
+         r#"const map = new Map([["foo", 1]]);
+             map.set(map.size, 2);"#,
++        r#"const map = new Map(existingMap);
++            map.set("bar", 2);"#,
++        r#"const map = new Map(getEntries());
++            map.set("bar", 2);"#,
+         r#"const map = new Map([["foo", 1]]);
+             map.set("bar", map.size);"#,
+         r#"const map = new Map([["foo", 1]]);

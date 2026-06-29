@@ -12,32 +12,50 @@ Implement the oxlint `unicorn/no-immediate-mutation` replacement work:
 
 ## Required skills
 
-- `troubleshooting-doc`, because this is an external oxlint behavior diagnosis and needs the required source trace,
-  verification catalogs, workarounds, upstream filing decision, and Rust prototype evidence.
-- `testing-practices`, because the no-restricted-syntax plugin tests use `@monochromatic-dev/module-test/ts`.
-- `code-review`, for final implementation review before reporting completion.
+- `troubleshooting-doc`,
+   because this is an external oxlint behavior diagnosis and needs the required source trace,
+  verification catalogs,
+   workarounds,
+   upstream filing decision,
+   and Rust prototype evidence.
+- `testing-practices`,
+   because the no-restricted-syntax plugin tests use `@monochromatic-dev/module-test/ts`.
+- `code-review`,
+   for final implementation review before reporting completion.
 
 ## Important repo rules in play
 
-- Use `mise run` for repo package builds, lint, type checks, and tests.
-- Do not touch unrelated external worktree changes. `git status --short` showed only `mise.lock` modified before main edits,
+- Use `mise run` for repo package builds,
+   lint,
+   type checks,
+   and tests.
+- Do not touch unrelated external worktree changes.
+   `git status --short` showed only `mise.lock` modified before main edits,
   and that file was not touched by this work.
 - Commit scoped changes eagerly with explicit pathspecs once a meaningful checkpoint is ready.
-- Troubleshooting docs must include source citations, reproductions, workarounds, and upstream filing artifact decisions.
+- Troubleshooting docs must include source citations,
+   reproductions,
+   workarounds,
+   and upstream filing artifact decisions.
 
 ## Current evidence and decisions
 
-- Installed repo oxlint version checked via `node_modules/oxlint/package.json`: `1.71.0`.
+- Installed repo oxlint version checked via `node_modules/oxlint/package.json`:
+   `1.71.0`.
 - Oxc upstream docs for `unicorn/no-immediate-mutation` say auto-fix is planned but not implemented.
 - A scratch local invocation showed `oxlint --fix --allow all --warn unicorn/no-immediate-mutation` reports
   `const nextSeen = new Set(seen); nextSeen.add(variable);` and leaves the file unchanged.
 - Upstream `eslint-plugin-unicorn` docs state its version of the rule is fixable.
 - Upstream oxlint source was cloned under `/tmp/agent/oxc-no-immediate-mutation-prototype.ufNRqZu4` for the Rust prototype.
 - Fresh clone origin and commit were verified:
-  - origin: `https://github.com/oxc-project/oxc.git`
-  - commit: `d8c6b550c8802cc68f8e404f279cdc603692b3b6`
-  - commit subject: `fix(linter/unicorn/custom-error-definition): handle non-ascii class names (#23939)`
-- Prototype intent: skip reports for `new Set(existing); set.add(value)` and
+  - origin:
+     `https://github.com/oxc-project/oxc.git`
+  - commit:
+     `d8c6b550c8802cc68f8e404f279cdc603692b3b6`
+  - commit subject:
+     `fix(linter/unicorn/custom-error-definition): handle non-ascii class names (#23939)`
+- Prototype intent:
+   skip reports for `new Set(existing); set.add(value)` and
   `new Map(existing); map.set(key, value)` when folding the mutation into the initializer would require
   `[...existing, value]` or `[...existing, [key, value]]`.
 - Desired behavior:
@@ -65,13 +83,23 @@ Prototype verification command started with process tool:
 cargo test --package oxc_linter no_immediate_mutation::test
 ```
 
-The process exited with code `101`. The failure output still needs inspection with:
+The first process exited with code `101` because `/tmp` hit a disk-quota failure while compiling `oxc_linter`:
 
 ```text
-process output proc_1
+rustc-LLVM ERROR: IO failure on output stream: Disk quota exceeded
+error: could not compile `oxc_linter` (lib test)
 ```
 
-or by reading the process log files from the process tool.
+The clone's `target/` directory was removed and the verification was rerun with
+`CARGO_TARGET_DIR=/var/home/user/temp/oxc-no-immediate-mutation-target`.
+That second process completed successfully:
+
+```text
+running 1 test
+test rules::unicorn::no_immediate_mutation::test ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1162 filtered out; finished in 0.09s
+```
 
 ## Main worktree status
 
@@ -82,35 +110,60 @@ New main-worktree file written but not yet verified:
 The draft custom rule currently:
 
 - Visits `ExpressionStatement` nodes.
-- Looks at the immediate previous sibling statement in `Program`, `BlockStatement`, `StaticBlock`, or `SwitchCase` bodies.
-- Classifies previous `const x = []`, `x = []`, object literals, `new Set`, `new WeakSet`, `new Map`, and `new WeakMap` initializers.
-- Reports immediate array `push` and `unshift`, object property assignment, `Object.assign`, Set `add`, and Map `set`.
+- Looks at the immediate previous sibling statement in `Program`,
+   `BlockStatement`,
+   `StaticBlock`,
+   or `SwitchCase` bodies.
+- Classifies previous `const x = []`,
+   `x = []`,
+   object literals,
+   `new Set`,
+   `new WeakSet`,
+   `new Map`,
+   and `new WeakMap` initializers.
+- Reports immediate array `push` and `unshift`,
+   object property assignment,
+   `Object.assign`,
+   Set `add`,
+   and Map `set`.
 - Allows Set/Map clone-plus-mutate when the constructor has exactly one non-array-literal iterable argument.
 
-This file has not yet been wired into:
+The custom rule was wired into:
 
 - `packages/oxlint-plugins/no-restricted-syntax/src/index.ts`
 - `packages/test-fixture/oxlint-no-restricted-syntax/.oxlintrc.fixture.json`
-- `packages/config/oxlint/src/rules/restriction.ts` or `style.ts`
-- fixture files and unit tests
+- `packages/config/oxlint/src/rules/restriction.ts`
+- `packages/oxlint-plugins/no-restricted-syntax/src/oxlint-no-restricted-syntax.unit.test.ts`
+- `packages/test-fixture/oxlint-no-restricted-syntax/src/invalid/no-immediate-mutation.ts`
+- `packages/test-fixture/oxlint-no-restricted-syntax/src/valid/no-immediate-mutation.ts`
+
+Implementation was split across:
+
+- `packages/oxlint-plugins/no-restricted-syntax/src/rules/no-immediate-mutation.ts`
+- `packages/oxlint-plugins/no-restricted-syntax/src/rules/no-immediate-mutation.syntax.ts`
+
+Repo commit `079cef1aa` records this checkpoint.
 
 ## Next steps
 
-1. Inspect the failed Rust prototype process output and fix the prototype if needed.
-2. Re-run the targeted upstream Rust prototype test until it proves failure becomes pass and existing literal cases still fail.
-3. Save the prototype diff or patch details for the troubleshooting doc.
-4. Finish wiring `noImmediateMutation` into the plugin index and fixture config.
-5. Disable built-in `unicorn/no-immediate-mutation` in repo config and enable `no-restricted-syntax/no-immediate-mutation` at the intended severity.
-6. Add invalid and valid fixtures for the new rule.
-7. Add focused unit assertions for the Set/Map clone exception and literal initializer reports.
-8. Run package verification with `mise run //packages/oxlint-plugins/no-restricted-syntax:lint:types`,
-   `mise run //packages/oxlint-plugins/no-restricted-syntax:lint:oxlint`, and the package unit test task.
-9. Write `docs/troubleshooting/oxlint-no-immediate-mutation-set-clone.md` with full required sections.
-10. Commit scoped paths with Conventional Commit messages, avoiding unrelated `mise.lock`.
+1. Run markdown lint or formatting for the new troubleshooting and handover docs.
+2. Re-run final package verification after documentation edits if any source files change.
+3. Commit `docs/troubleshooting/oxlint-no-immediate-mutation-set-clone.md`,
+   `docs/troubleshooting/oxlint-no-immediate-mutation-set-clone.patch`,
+    and this updated handover.
+4. Keep avoiding unrelated `mise.lock`,
+    which remains modified by external work.
+5. Before final response,
+    audit that the troubleshooting doc,
+    custom plugin rule,
+    config change,
+    tests,
+   and commits are all present and verified.
 
 ## Keep updated
 
-Update this file after each major change, especially after:
+Update this file after each major change,
+ especially after:
 
 - Rust prototype verification result.
 - Main plugin wiring.
