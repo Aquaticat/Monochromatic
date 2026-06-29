@@ -1,4 +1,4 @@
-import { existsSync, } from 'node:fs';
+import { access, } from 'node:fs/promises';
 import { fileURLToPath, } from 'node:url';
 
 import type browserslist from 'browserslist';
@@ -63,7 +63,7 @@ export type TsdownTargetRuntime = 'browser' | 'node';
  * const exists: FileExists = generatedFileExists;
  * ```
  */
-export type FileExists = (fileUrl: URL) => boolean;
+export type FileExists = (fileUrl: URL) => Promise<boolean>;
 
 /**
  * Dynamic JSON importer used for generated Browserslist targets.
@@ -348,11 +348,20 @@ const NOT_FOUND_INDEX = -1;
  *
  * @example
  * ```ts
- * generatedFileExists(new URL('file:///tmp/targets.json'));
+ * await generatedFileExists(new URL('file:///tmp/targets.json'));
  * ```
  */
-function generatedFileExists(fileUrl: URL,): boolean {
-  return existsSync(fileURLToPath(fileUrl,),);
+async function generatedFileExists(fileUrl: URL,): Promise<boolean> {
+  try {
+    await access(fileURLToPath(fileUrl,),);
+    return true;
+  }
+  catch (error) {
+    if (!(error instanceof Error))
+      throw error;
+
+    return false;
+  }
 }
 
 /**
@@ -919,7 +928,7 @@ export async function browserslistTargets({
   importBrowserslist = importBrowserslistPackage,
   runtime = 'browser',
 }: BrowserslistTargetsOptions = {},): Promise<string[]> {
-  if (exists(generatedFileUrl,)) {
+  if (await exists(generatedFileUrl,)) {
     /**
      * Generated JSON default export.
      */

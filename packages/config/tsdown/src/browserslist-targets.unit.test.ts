@@ -87,10 +87,10 @@ const EXPECTED_FALLBACK_TARGETS = [
  * @returns Always true for generated-file branch tests.
  * @example
  * ```ts
- * generatedExists(GENERATED_URL);
+ * await generatedExists(GENERATED_URL);
  * ```
  */
-function generatedExists(_fileUrl: URL,): boolean {
+async function generatedExists(_fileUrl: URL,): Promise<boolean> {
   return true;
 }
 
@@ -101,10 +101,10 @@ function generatedExists(_fileUrl: URL,): boolean {
  * @returns Always false for fallback branch tests.
  * @example
  * ```ts
- * generatedMissing(GENERATED_URL);
+ * await generatedMissing(GENERATED_URL);
  * ```
  */
-function generatedMissing(_fileUrl: URL,): boolean {
+async function generatedMissing(_fileUrl: URL,): Promise<boolean> {
   return false;
 }
 
