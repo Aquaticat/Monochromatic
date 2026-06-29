@@ -1,5 +1,7 @@
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
-import type { Logger, } from '@monochromatic-dev/module-logger/ts';
+import {
+  tagged,
+  type Logger,
+} from '@monochromatic-dev/module-logger/ts';
 
 /**
  * Logger root for file-enforcer after removing the package log shim.

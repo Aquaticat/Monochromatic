@@ -59,21 +59,46 @@ async function hasNodeModulesDirectory(directory: string,): Promise<boolean> {
  * ```
  */
 export async function findNodeModulesRoot(startDirectory: string,): Promise<string> {
-  /**
-   * Candidate directory that moves upward until dependency root or filesystem root.
-   */
-  let directory = resolve(startDirectory,);
-  while (true) {
-    // oxlint-disable-next-line eslint/no-await-in-loop -- ancestor walk must inspect one directory before deciding the next parent.
-    if (await hasNodeModulesDirectory(directory,))
-      return directory;
+  return await findNodeModulesRootFromDirectory({
+    directory: resolve(startDirectory,),
+    startDirectory,
+  },);
+}
 
-    /**
-     * Parent directory used to detect filesystem root.
-     */
-    const parentDirectory = dirname(directory,);
-    if (parentDirectory === directory)
-      return resolve(startDirectory,);
-    directory = parentDirectory;
-  }
+/**
+ * Walks parent directories until a dependency root or filesystem root is reached.
+ *
+ * @param directory - Directory currently being inspected.
+ *
+ * @param startDirectory - Original directory used as fallback.
+ *
+ * @returns First ancestor containing `node_modules`, or resolved original directory when none exists.
+ *
+ * @example
+ * ```ts
+ * const root = await findNodeModulesRootFromDirectory({ directory: process.cwd(), startDirectory: process.cwd() });
+ * ```
+ */
+async function findNodeModulesRootFromDirectory(
+  {
+    directory,
+    startDirectory,
+  }: {
+    readonly directory: string;
+    readonly startDirectory: string;
+  },
+): Promise<string> {
+  if (await hasNodeModulesDirectory(directory,))
+    return directory;
+
+  /**
+   * Parent directory used to detect filesystem root.
+   */
+  const parentDirectory = dirname(directory,);
+  if (parentDirectory === directory)
+    return resolve(startDirectory,);
+  return await findNodeModulesRootFromDirectory({
+    directory: parentDirectory,
+    startDirectory,
+  },);
 }

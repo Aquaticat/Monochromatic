@@ -58,22 +58,31 @@ async function pathIsDirectory(path: string,): Promise<boolean> {
  * ```
  */
 export async function nearestExistingDirectory(directoryPath: string,): Promise<string> {
+  return await nearestExistingDirectoryFromCandidate(resolve(directoryPath,),);
+}
+
+/**
+ * Walks parent directories until one exists.
+ *
+ * @param candidate - Directory path currently being inspected.
+ *
+ * @returns Existing directory path suitable for watching.
+ *
+ * @example
+ * ```ts
+ * const dir = await nearestExistingDirectoryFromCandidate('/repo/missing/generated');
+ * ```
+ */
+async function nearestExistingDirectoryFromCandidate(candidate: string,): Promise<string> {
+  if (await pathIsDirectory(candidate,))
+    return candidate;
   /**
-   * Candidate directory that moves upward until an existing directory is found.
+   * Parent directory for next lookup attempt.
    */
-  let candidate = resolve(directoryPath,);
-  while (true) {
-    // oxlint-disable-next-line eslint/no-await-in-loop -- ancestor walk must inspect one candidate before choosing its parent.
-    if (await pathIsDirectory(candidate,))
-      return candidate;
-    /**
-     * Parent directory for next lookup attempt.
-     */
-    const parent = dirname(candidate,);
-    if (parent === candidate)
-      return candidate;
-    candidate = parent;
-  }
+  const parent = dirname(candidate,);
+  if (parent === candidate)
+    return candidate;
+  return await nearestExistingDirectoryFromCandidate(parent,);
 }
 
 /**
