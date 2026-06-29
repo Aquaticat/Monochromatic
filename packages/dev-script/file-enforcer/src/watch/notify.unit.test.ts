@@ -3,33 +3,23 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
+import { logger, } from '@monochromatic-dev/module-logger/ts';
 
-import { notifyWriteProtection, } from './notify.ts';
-
-/**
- * Logger root for file-enforcer after removing the package log shim.
- *
- * @example
- * ```ts
- * const rl = tagged({ tag: someFunction.name, l, },);
- * ```
- */
-const l = tagged({ tag: 'file-enforcer', },);
+import { notifyWriteProtection, } from '../../dist/final/node/index.mjs';
 
 //region notifyWriteProtection
 
 await describe({
   name: notifyWriteProtection.name,
   // Sequential execution required: tests spy on the shared module-level
-  // logger `l`, and sinon refuses to wrap an already-wrapped method.
+  // logger, and sinon refuses to wrap an already-wrapped method.
   // Matches the convention in module/test/src/sinon.unit.test.ts.
   concurrency: 1,
   children: [
     it({
       name: 'logs a warning via tagged logger',
       fn: async ({ sinon, },) => {
-        const warnSpy = sinon.spy(l, 'warn',);
+        const warnSpy = sinon.spy(logger, 'warn',);
         await notifyWriteProtection('/repo/CLAUDE.md',);
         /** Should have logged with the PROTECTED prefix */
         expect(warnSpy,).toHaveBeenCalledWith(
@@ -40,7 +30,7 @@ await describe({
     it({
       name: 'includes the file path in the warning',
       fn: async ({ sinon, },) => {
-        const warnSpy = sinon.spy(l, 'warn',);
+        const warnSpy = sinon.spy(logger, 'warn',);
         await notifyWriteProtection('/repo/output.txt',);
         expect(warnSpy,).toHaveBeenCalledWith(
           expect.stringContaining('/repo/output.txt',),
