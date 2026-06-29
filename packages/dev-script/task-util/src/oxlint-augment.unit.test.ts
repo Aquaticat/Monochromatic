@@ -10,9 +10,13 @@ import {
   formatGuidanceLine,
   isHelpLine,
   NO_RULE,
-  RULE_GUIDANCE,
   stripAnsi,
 } from './oxlint-augment.ts';
+import {
+  EXISTS_SYNC_ACCESS_HELP,
+  RULE_HELP_GUIDANCE,
+  RULE_NOTE_GUIDANCE,
+} from './oxlint-guidance.ts';
 
 /** Iteration count for long-run equivalence cases; large enough to exercise the linear scan, fast to compare. */
 const LONG_RUN = 100_000;
@@ -392,7 +396,7 @@ await describe({
             const result = augmentOxlintOutput(input,);
 
             expect(result,).toContain('  help: Expected void return type.',);
-            expect(result,).toContain(`  note: ${RULE_GUIDANCE['no-misused-promises']}`,);
+            expect(result,).toContain(`  note: ${RULE_NOTE_GUIDANCE['no-misused-promises']}`,);
 
             // Note should appear after help
             const helpIdx = result.indexOf('help:',);
@@ -418,7 +422,7 @@ await describe({
 
             const result = augmentOxlintOutput(input,);
 
-            expect(result,).toContain(`  note: ${RULE_GUIDANCE['no-array-callback-reference']}`,);
+            expect(result,).toContain(`  note: ${RULE_NOTE_GUIDANCE['no-array-callback-reference']}`,);
 
             // Note should appear after help
             const helpIdx = result.indexOf('help:',);
@@ -427,15 +431,16 @@ await describe({
           },
         },),
         it({
-          name: 'injects guidance for no-misused-spread after help line',
+          name: 'combines no-misused-spread guidance with help line',
           fn: async () => {
+            const helpText = 'Consider using `Intl.Segmenter` for locale-aware string decomposition.';
             const input = [
               ...buildDiagnostic({
                 rule: 'no-misused-spread',
                 plugin: 'typescript',
                 message: 'Using the spread operator on a string can mishandle special characters.',
                 file: 'src/rules/tokenize.ts',
-                helpText: 'Consider using `Intl.Segmenter` for locale-aware string decomposition.',
+                helpText,
               },),
               '',
             ]
@@ -443,12 +448,55 @@ await describe({
 
             const result = augmentOxlintOutput(input,);
 
-            expect(result,).toContain(`  note: ${RULE_GUIDANCE['no-misused-spread']}`,);
+            expect(result,).toContain(`  help: ${helpText} ${RULE_HELP_GUIDANCE['no-misused-spread']}`,);
+            expect(result,).not.toContain('note:',);
+            expect(result.split('help:',).length - 1,).toBe(1,);
+          },
+        },),
+        it({
+          name: 'injects access help for node no-sync existsSync diagnostics',
+          fn: async () => {
+            const input = [
+              ...buildDiagnostic({
+                rule: 'no-sync',
+                plugin: 'node',
+                message: "Unexpected sync method: 'existsSync'.",
+                file: 'src/cache.ts',
+              },),
+              '',
+            ]
+              .join('\n',);
 
-            // Note should appear after help
-            const helpIdx = result.indexOf('help:',);
-            const noteIdx = result.indexOf('note:',);
-            expect(noteIdx,).toBeGreaterThan(helpIdx,);
+            const result = augmentOxlintOutput(input,);
+
+            expect(result,).toContain(`  help: ${EXISTS_SYNC_ACCESS_HELP}`,);
+            expect(result,).not.toContain('note:',);
+
+            const lines = result.split('\n',);
+            const helpLine = lines.findIndex(
+              l => l.includes(EXISTS_SYNC_ACCESS_HELP,),
+            );
+            expect(lines[helpLine + 1],).toBe('',);
+          },
+        },),
+        it({
+          name: 'does not inject access help for other node no-sync methods',
+          fn: async () => {
+            const input = [
+              ...buildDiagnostic({
+                rule: 'no-sync',
+                plugin: 'node',
+                message: "Unexpected sync method: 'readFileSync'.",
+                file: 'src/cache.ts',
+              },),
+              '',
+            ]
+              .join('\n',);
+
+            const result = augmentOxlintOutput(input,);
+
+            expect(result,).not.toContain(EXISTS_SYNC_ACCESS_HELP,);
+            expect(result,).toBe(input,);
           },
         },),
         it({
@@ -467,7 +515,7 @@ await describe({
 
             const result = augmentOxlintOutput(input,);
 
-            expect(result,).toContain(`  note: ${RULE_GUIDANCE['no-misused-promises']}`,);
+            expect(result,).toContain(`  note: ${RULE_NOTE_GUIDANCE['no-misused-promises']}`,);
 
             // Note should appear before the trailing blank line
             const lines = result.split('\n',);
@@ -534,7 +582,7 @@ await describe({
 
             // Only one note injected: for no-misused-promises
             expect(noteOccurrences,).toBe(1,);
-            expect(result,).toContain(RULE_GUIDANCE['no-misused-promises'] ?? '',);
+            expect(result,).toContain(RULE_NOTE_GUIDANCE['no-misused-promises'] ?? '',);
           },
         },),
         it({
@@ -567,7 +615,7 @@ await describe({
 
             const result = augmentOxlintOutput(input,);
 
-            expect(result,).toContain(`  note: ${RULE_GUIDANCE['no-misused-promises']}`,);
+            expect(result,).toContain(`  note: ${RULE_NOTE_GUIDANCE['no-misused-promises']}`,);
           },
         },),
         it({

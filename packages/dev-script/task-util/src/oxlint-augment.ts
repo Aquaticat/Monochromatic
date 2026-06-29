@@ -1,16 +1,18 @@
 /**
- * Oxlint output augmentation with enhanced diagnostic guidance.
+ * Generic oxlint output augmentation for configured diagnostic guidance.
  *
- * Some oxlint rules produce technically correct but misleading diagnostic messages.
- * For example, `typescript/no-misused-promises` tells users to add `void`
- * when the real fix is ensuring Promise rejections are handled.
- *
- * This module provides pure functions that scan oxlint text output,
- * detect specific rule diagnostics, and inject actionable `note:` lines
- * with better guidance.
+ * This module provides pure functions that scan oxlint text output, detect
+ * diagnostic boundaries, and inject guidance resolved by the guidance
+ * configuration module.
  *
  * @module
  */
+
+import {
+  type DiagnosticGuidance,
+  NO_DIAGNOSTIC_GUIDANCE,
+  resolveDiagnosticGuidance,
+} from './oxlint-guidance.ts';
 
 //region Character predicates
 
@@ -254,52 +256,6 @@ export function stripAnsi(text: string,): string {
 
 //endregion ANSI handling
 
-//region Rule guidance: enhanced messages for specific lint rules
-
-/**
- * Maps oxlint rule names to enhanced guidance text.
- *
- * Each entry provides actionable advice that supplements
- * the rule's built-in `help:` message. The guidance focuses on the
- * underlying problem rather than the type-level symptom.
- *
- * @example
- * ```ts
- * RULE_GUIDANCE['no-misused-promises'];
- * // 'Async callbacks silently drop ...'
- * ```
- */
-export const RULE_GUIDANCE: Record<string, string> = {
-  'no-misused-promises': [
-    'Async callbacks silently drop Promise rejections because the caller ignores the return value.',
-    'Fix: make the outer listener synchronous, call `void (async function name() { try { ... } catch (e) { console.error(e); } })()` inside it.',
-    'Adding `void` alone only silences the type error without handling rejections.',
-  ]
-    .join(' ',),
-  'no-array-callback-reference': [
-    'oxlint suggests wrapping the callback in an arrow function, but the local no-arrow-function lint rule rejects arrow functions.',
-    'Fix: pass an inline named function expression, e.g. `items.map(function name(item,) { return f(item,); },)`; an inline expression is not a flagged reference, so the rule passes.',
-    'For an existing reference such as `Number.parseInt`, wrap it with `unary` or `binary` from `@monochromatic-dev/module-function-arity` to cap the arity safely.',
-  ]
-    .join(' ',),
-  'no-misused-spread': [
-    'Spreading a string splits it into code points, which silently breaks grapheme clusters such as emoji and combining marks.',
-    'Fix: use a string API instead. `str !== str.toLowerCase()` detects an uppercase letter; `[allowed,].some(function has(c,) { return str.includes(c,); },)` tests character membership; `str.charAt(i,)` inside a counted `for` loop scans by index.',
-    'Do not switch to `Array.from(str)` or `for (const c of str)`: both share the grapheme problem, and unicorn/prefer-spread rewrites `Array.from` straight back into a spread.',
-    'If code-point iteration is genuinely needed and grapheme-incorrectness is acceptable, add a scoped `oxlint-disable-next-line typescript/no-misused-spread -- <why code points, why graphemes are irrelevant here>`.',
-  ]
-    .join(' ',),
-  'prefer-spread': [
-    'On an array or arguments object this spread autofix is correct and needs no further action.',
-    'On a string, the resulting `[...str]` then trips typescript/no-misused-spread because code-point spreading breaks grapheme clusters.',
-    'Fix for strings: use a string API (`toLowerCase`/`toUpperCase` comparisons, `includes`, or `charAt` index scans) rather than Array.from, spread, or `for...of` over the string.',
-    'When code-point iteration is genuinely required, keep the spread and add a scoped `oxlint-disable-next-line typescript/no-misused-spread` with justification.',
-  ]
-    .join(' ',),
-};
-
-//endregion Rule guidance
-
 //region Diagnostic detection
 
 /**
@@ -315,7 +271,7 @@ export const RULE_GUIDANCE: Record<string, string> = {
  * extractRuleName('context line') === NO_RULE // true
  * ```
  */
-export const NO_RULE: unique symbol = Symbol('no-rule-name',);
+export const NO_RULE: unique symbol = Symbol('diagnostic_header_absent',);
 
 /**
  * Walks consecutive whitespace chars starting at `idx`, returning the
@@ -588,14 +544,14 @@ export function isHelpLine(line: string,): boolean {
 //region Output augmentation
 
 /**
- * Indentation prefix for injected note lines, matching oxlint's `help:` alignment.
+ * Indentation prefix for injected guidance lines, matching oxlint's `help:` alignment.
  */
 const NOTE_PREFIX = '  ';
 
 /**
  * Formats a guidance entry into an indented `note:` line for terminal output.
  *
- * @param guidance - guidance text from {@link RULE_GUIDANCE}
+ * @param guidance - guidance text
  *
  * @returns formatted note line ready to inject into oxlint output
  *
@@ -610,17 +566,31 @@ export function formatGuidanceLine(guidance: string,): string {
 }
 
 /**
- * Augments oxlint text output with enhanced guidance for specific rules.
+ * Formats resolved diagnostic guidance as an indented output line.
  *
- * Scans diagnostic headers for rule names in {@link RULE_GUIDANCE}
- * and injects a `note:` line after the diagnostic's `help:` line
- * (or before the next blank line if no `help:` line exists).
+ * @param guidance - resolved diagnostic guidance
+ *
+ * @returns formatted guidance line ready to inject into oxlint output
+ */
+function formatDiagnosticGuidanceLine(guidance: DiagnosticGuidance,): string {
+  if ('helpText' in guidance)
+    return `${NOTE_PREFIX}help: ${guidance.helpText}`;
+
+  return formatGuidanceLine(guidance.noteText,);
+}
+
+/**
+ * Augments oxlint text output with configured diagnostic guidance.
+ *
+ * Scans diagnostic headers, resolves configured guidance, appends help text to
+ * an existing `help:` line when present, and otherwise injects a guidance line
+ * before the diagnostic boundary.
  *
  * Preserves all original output including ANSI codes and formatting.
  *
  * @param output - raw oxlint stdout or stderr text
  *
- * @returns augmented text with guidance notes injected
+ * @returns augmented text with guidance lines injected
  *
  * @example
  * ```ts
@@ -650,9 +620,9 @@ export function augmentOxlintOutput(output: string,): string {
 
   /* oxlint-disable no-restricted-syntax/no-function-root-let -- multi-statement state machine: activeGuidance and injected are mutated by four branches across loop iterations, with side effects on `result`. */
   /**
-   * Rule name from the current diagnostic block, `NO_RULE` when unmatched.
+   * Guidance for the current diagnostic block, `NO_RULE` when unmatched.
    */
-  let activeGuidance: string | typeof NO_RULE = NO_RULE;
+  let activeGuidance: DiagnosticGuidance | typeof NO_RULE = NO_RULE;
   /**
    * Whether guidance has been injected for the current diagnostic block.
    */
@@ -665,19 +635,33 @@ export function augmentOxlintOutput(output: string,): string {
      */
     const ruleName = extractRuleName(line,);
     if (ruleName !== NO_RULE) {
-      activeGuidance = (RULE_GUIDANCE[ruleName]
-        !== undefined) ? ruleName : NO_RULE;
+      /**
+       * ANSI-stripped header line supplied to the guidance resolver.
+       */
+      const strippedLine = stripAnsi(line,);
+      /**
+       * Guidance resolved for this diagnostic header, or a guidance sentinel.
+       */
+      const guidance = resolveDiagnosticGuidance({
+        ruleName,
+        strippedHeaderLine: strippedLine,
+      },);
+      activeGuidance = (guidance === NO_DIAGNOSTIC_GUIDANCE)
+        ? NO_RULE
+        : guidance;
       injected = false;
     }
 
     // Inject after help line when guidance is pending
     if ((activeGuidance !== NO_RULE) && (!injected)
       && isHelpLine(line,)) {
-      result.push(
-        line,
-        formatGuidanceLine(RULE_GUIDANCE[activeGuidance]
-        ?? '',)
-      );
+      if ('helpText' in activeGuidance)
+        result.push(`${line} ${activeGuidance.helpText}`,);
+      else
+        result.push(
+          line,
+          formatDiagnosticGuidanceLine(activeGuidance,),
+        );
       injected = true;
       continue;
     }
@@ -687,8 +671,7 @@ export function augmentOxlintOutput(output: string,): string {
       && (stripAnsi(line,)
         .trim()
         === '')) {
-      result.push(formatGuidanceLine(RULE_GUIDANCE[activeGuidance]
-        ?? '',),);
+      result.push(formatDiagnosticGuidanceLine(activeGuidance,),);
       injected = true;
       activeGuidance = NO_RULE;
     }
@@ -698,8 +681,7 @@ export function augmentOxlintOutput(output: string,): string {
 
   // Handle trailing diagnostic with no blank line at end
   if ((activeGuidance !== NO_RULE) && (!injected))
-    result.push(formatGuidanceLine(RULE_GUIDANCE[activeGuidance]
-      ?? '',),);
+    result.push(formatDiagnosticGuidanceLine(activeGuidance,),);
 
   return result.join('\n',);
 }
