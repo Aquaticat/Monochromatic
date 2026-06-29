@@ -22,11 +22,6 @@ const FILE_PERMISSION_BITS = 0o777;
 const TEMPORARY_FILE_NAME_MARKER = 'markdown-lint';
 
 /**
- * Aggregate error message when fixed-file write and temporary cleanup both fail.
- */
-const WRITE_CLEANUP_ERROR_MESSAGE = 'Failed to write file and clean up temporary replacement.';
-
-/**
  * Parameters for {@link writeFileAtomically}.
  */
 type WriteFileAtomicallyParams = {
@@ -101,18 +96,7 @@ export async function writeFileAtomically({
       path,
     );
   } catch (error) {
-    try {
-      await removeTempFile(tempPath,);
-    } catch (cleanupError) {
-      throw new AggregateError(
-        [
-          error,
-          cleanupError,
-        ],
-        WRITE_CLEANUP_ERROR_MESSAGE,
-        { cause: cleanupError, },
-      );
-    }
+    await removeTempFile(tempPath,);
     throw error;
   }
 }
