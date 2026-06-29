@@ -215,7 +215,10 @@ async function safeStop(handle: WatchRestartHandle,): Promise<void> {
   try {
     await handle.stop();
   }
-  catch {
+  catch (error) {
+    if (!(error instanceof Error))
+      throw error;
+
     // Test teardown; suppress.
   }
 }

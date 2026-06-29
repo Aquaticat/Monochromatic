@@ -38,7 +38,7 @@ export const DEFAULT_STOP_TIMEOUT_MS = 5_000;
  * }
  * ```
  */
-export const NO_CHILD: unique symbol = Symbol('no-child',);
+export const NO_CHILD: unique symbol = Symbol('child process handle is not running',);
 
 /**
  * State of the {@link Child}'s underlying process.
@@ -129,21 +129,21 @@ export type SpawnedChildHandle = {
   /**
    * Sends a signal to the child; mirrors `ChildProcess.kill`.
    */
-  kill(signal?: NodeJS.Signals | number,): boolean;
+  readonly kill: (signal?: NodeJS.Signals | number,) => boolean;
   /**
    * Registers a one-shot exit listener; mirrors `ChildProcess.once('exit', ...)`.
    */
-  once(
+  readonly once: (
     event: 'exit',
     listener: ExitListener,
-  ): void;
+  ) => void;
   /**
    * Removes a previously-registered exit listener; mirrors `ChildProcess.off`.
    */
-  off(
+  readonly off: (
     event: 'exit',
     listener: ExitListener,
-  ): void;
+  ) => void;
 };
 /* oxlint-enable no-restricted-syntax/no-nullish-union */
 

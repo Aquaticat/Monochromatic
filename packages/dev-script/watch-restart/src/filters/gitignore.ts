@@ -34,7 +34,7 @@ function isErrnoException(error: unknown,): error is NodeJS.ErrnoException {
  * distinct value the optionality-ban rules accept and an empty `.gitignore`
  * (legitimate zero-pattern content) stays distinguishable from a missing one.
  */
-const ABSENT: unique symbol = Symbol('gitignore-file-absent',);
+const ABSENT: unique symbol = Symbol('gitignore file missing on disk',);
 
 /**
  * Reads a file's UTF-8 contents; returns {@link ABSENT} if the file does

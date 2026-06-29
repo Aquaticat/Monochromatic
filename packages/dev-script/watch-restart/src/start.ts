@@ -52,7 +52,7 @@ export const DEFAULT_DEBOUNCE_MS = 100;
  * of a nullish union; the orchestrator compares against it to decide whether
  * a pending timer must be cleared.
  */
-const NO_TIMER: unique symbol = Symbol('no-debounce-timer',);
+const NO_TIMER: unique symbol = Symbol('watch restart debounce timer is not armed',);
 
 /**
  * Options for {@link startWatchRestart}.

@@ -189,7 +189,7 @@ export function compileRegex(pattern: string,): RegExp {
  * if (hidden !== FLAG_UNSET) options.hidden = hidden;
  * ```
  */
-export const FLAG_UNSET: unique symbol = Symbol('flag-unset',);
+export const FLAG_UNSET: unique symbol = Symbol('cli boolean flag pair not provided',);
 
 /**
  * Collapses a `--flag` / `--no-flag` pair into a single tri-state.

@@ -40,7 +40,7 @@ export const DEFAULT_MAX_HASH_SIZE_BYTES: number = DEFAULT_MAX_HASH_SIZE_MIB
  * if (hash === OVERSIZED) return true; // fire; do not compare
  * ```
  */
-export const OVERSIZED: unique symbol = Symbol('hash-oversized',);
+export const OVERSIZED: unique symbol = Symbol('hash input exceeds size cap',);
 
 /**
  * Options for constructing a {@link HashCache}.
