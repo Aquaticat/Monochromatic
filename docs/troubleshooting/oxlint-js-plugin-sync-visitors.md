@@ -276,9 +276,13 @@ getText(node?: Ranged | null, beforeCount?: number | null, afterCount?: number |
 
 Versions under test:
 
-- Installed oxlint: `1.71.0`, verified with `/var/home/user/Monochromatic/node_modules/.bin/oxlint --version`.
-- Source trace: Oxc commit `da0e5bf6687b4bc5f376898f2d59832c6419ce15`.
-- Probe directory: `/tmp/agent/oxlint-js-plugin-sync-probe-gXBdqD`.
+- Installed oxlint:
+  `1.71.0`.
+  Verified with `/var/home/user/Monochromatic/node_modules/.bin/oxlint --version`.
+- Source trace:
+  Oxc commit `da0e5bf6687b4bc5f376898f2d59832c6419ce15`.
+- Probe directory:
+  `/tmp/agent/oxlint-js-plugin-sync-probe-gXBdqD`.
 
 The probe plugin had two rules.
 The `sync` rule reports in `Program` before returning.
@@ -465,35 +469,46 @@ returned no matching issues or PRs.
 
 Constraint check:
 
-- **Is it really upstream's fault?**
-  No.
-  The evidence above shows a synchronous API boundary,
-  not a bug.
-  Oxlint advertises ESLint plugin compatibility,
-  and ESLint-style visitors are synchronous.
-- **Can upstream fix it?**
-  They could add a new async JS plugin mode,
-  but that would be a feature request and likely a large runtime contract change.
-- **Are they supporting this use case?**
-  Partly.
-  They support JS plugins,
-  but the public docs say JS plugin rules that rely on TypeScript type-awareness are not supported,
-  and the source shows no parser services or cross-file resolver service.
-- **Would the repo welcome our contribution?**
-  `CONTRIBUTING.md` says contributions are welcome and AI use is allowed with disclosure,
-  but low-quality or unreviewed AI content is closed immediately.
-  `.github/ISSUE_TEMPLATE/linter_bug_report.yaml` asks for version,
-  command,
-  config,
-  and what happened.
-- **Will they likely fix it?**
-  Unknown for a feature request,
-  but this is not a demonstrated bug.
-- **Have we prototyped a minimal fix compatible with their architecture?**
-  No.
-  Because constraint one fails,
-  there is no upstream bug fix to prototype.
-  The consumer-side workaround is implemented in this repo instead.
+### Is it really upstream's fault?
+
+No.
+The evidence above shows a synchronous API boundary,
+not a bug.
+Oxlint advertises ESLint plugin compatibility,
+and ESLint-style visitors are synchronous.
+
+### Can upstream fix it?
+
+They could add a new async JS plugin mode,
+but that would be a feature request and likely a large runtime contract change.
+
+### Are they supporting this use case?
+
+Partly.
+They support JS plugins,
+but the public docs say JS plugin rules that rely on TypeScript type-awareness are not supported,
+and the source shows no parser services or cross-file resolver service.
+
+### Would the repo welcome our contribution?
+
+`CONTRIBUTING.md` says contributions are welcome and AI use is allowed with disclosure,
+but low-quality or unreviewed AI content is closed immediately.
+`.github/ISSUE_TEMPLATE/linter_bug_report.yaml` asks for version,
+command,
+config,
+and what happened.
+
+### Will they likely fix it?
+
+Unknown for a feature request,
+but this is not a demonstrated bug.
+
+### Have we prototyped a minimal fix compatible with their architecture?
+
+No.
+Because constraint one fails,
+there is no upstream bug fix to prototype.
+The consumer-side workaround is implemented in this repo instead.
 
 Decision:
 do not file upstream.

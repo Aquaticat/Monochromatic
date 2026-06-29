@@ -51,16 +51,25 @@ function readSourceTextOrEmpty(sourcePath: string,): string {
     return cached;
   try {
     // oxlint-disable-next-line node/no-sync -- sync oxlint visitor; classification must finish before report.
+    /**
+     * Source text read from the imported file.
+     */
     const content = readFileSync(
       sourcePath,
       'utf8',
     );
-    sourceTextByPath.set(sourcePath, content,);
+    sourceTextByPath.set(
+      sourcePath,
+      content,
+    );
     return content;
   }
   catch (readError: unknown) {
     void readError;
-    sourceTextByPath.set(sourcePath, '',);
+    sourceTextByPath.set(
+      sourcePath,
+      '',
+    );
     return '';
   }
 }
