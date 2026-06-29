@@ -1,4 +1,5 @@
 import { extname, } from 'node:path';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import type {
   ImageBase64,
@@ -8,7 +9,6 @@ import type {
   ImagePath,
   ImageUrl,
 } from './types.ts';
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 /** Logger root for image-diff after removing the package log shim. */
 const l = tagged({ tag: 'image-diff', },);

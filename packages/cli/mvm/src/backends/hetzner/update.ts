@@ -7,10 +7,10 @@
  *
  * @module
  */
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { listImages, } from './api-resources.ts';
 import { requireToken, } from './config.ts';
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 /** Logger root for mvm after removing the package log shim. */
 const l = tagged({ tag: 'mvm', },);

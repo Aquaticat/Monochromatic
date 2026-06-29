@@ -11,7 +11,6 @@ import {
   type ExtensionContext,
   type ToolDefinition,
 } from '@earendil-works/pi-coding-agent';
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
   type TArray,
   type TObject,
@@ -19,6 +18,8 @@ import {
   type TString,
   Type,
 } from 'typebox';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
 import type {
   LinkupConfig,
 } from './config.ts';

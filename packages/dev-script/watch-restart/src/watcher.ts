@@ -5,6 +5,11 @@ import {
 import { once, } from 'node:events';
 import { extname, } from 'node:path';
 import {
+  tagged,
+  type Logger,
+} from '@monochromatic-dev/module-logger/ts';
+
+import {
   type HashCache,
   OVERSIZED,
 } from './hash-cache.ts';
@@ -22,10 +27,6 @@ import {
   DEFAULT_AWAIT_WRITE_FINISH,
   type WatcherOptions,
 } from './watcher-types.ts';
-import {
-  tagged,
-  type Logger,
-} from '@monochromatic-dev/module-logger/ts';
 
 /** Logger root for watch-restart after removing the package log shim. */
 const defaultLogger = tagged({ tag: 'watch-restart', },);

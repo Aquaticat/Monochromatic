@@ -1,5 +1,6 @@
-import type { GeminiModel, } from './types.ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
+import type { GeminiModel, } from './types.ts';
 
 /** Logger root for image-diff after removing the package log shim. */
 const l = tagged({ tag: 'image-diff', },);

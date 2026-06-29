@@ -1,5 +1,6 @@
 import { mkdir, } from 'node:fs/promises';
 import { join, } from 'node:path';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import {
   createSeedIso,
@@ -27,7 +28,6 @@ import {
   defineVm,
   startVm,
 } from './virsh.ts';
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 /** Logger root for mvm after removing the package log shim. */
 const l = tagged({ tag: 'mvm', },);

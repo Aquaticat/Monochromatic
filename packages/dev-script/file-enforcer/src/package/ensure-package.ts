@@ -1,3 +1,5 @@
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
 import { lazyOnce, } from '../lazy-once.ts';
 import {
   binaryExists,
@@ -55,7 +57,6 @@ const packageIndex = lazyOnce({ compute: buildIndex, },);
  * @example
  * ```ts
  * import { packages } from './data/packages.ts';
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 /** Logger root for file-enforcer after removing the package log shim. */
 const l = tagged({ tag: 'file-enforcer', },);

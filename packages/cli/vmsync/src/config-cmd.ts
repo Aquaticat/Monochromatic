@@ -3,12 +3,12 @@
  *
  * @module
  */
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import {
   readConfig,
   writeConfig,
 } from './config.ts';
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 /** Logger root for vmsync after removing the package log shim. */
 const l = tagged({ tag: 'vmsync', },);

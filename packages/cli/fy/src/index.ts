@@ -8,10 +8,10 @@ import {
 import { argument, } from '@optique/core/primitives';
 import { string, } from '@optique/core/valueparser';
 import { runSync, } from '@optique/run';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { coerceArg, } from './coerce.ts';
 import { resolveSpecifier, } from './resolve.ts';
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 /** Logger root for cli-fy after removing the package log shim. */
 const l = tagged({ tag: 'cli-fy', },);

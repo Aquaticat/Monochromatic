@@ -1,4 +1,6 @@
 import { readFile, } from 'node:fs/promises';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
 import {
   bufferToDataUri,
   inferFormat,
@@ -8,7 +10,6 @@ import {
   isImageUrl,
 } from './encoding.ts';
 import type { ImageInput, } from './types.ts';
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 /** Logger root for image-diff after removing the package log shim. */
 const l = tagged({ tag: 'image-diff', },);

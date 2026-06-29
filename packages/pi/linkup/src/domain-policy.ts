@@ -1,10 +1,10 @@
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
 /**
  * Host-suffix blocklist normalization and matching for Pi Linkup.
  *
  * @module
  */
-
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 /** Logger root for pi-linkup after removing the package log shim. */
 const linkupLogger = tagged({ tag: 'pi-linkup', },);

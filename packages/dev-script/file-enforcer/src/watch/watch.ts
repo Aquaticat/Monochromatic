@@ -2,6 +2,8 @@ import {
   join,
   resolve,
 } from 'node:path';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
 import { setActiveConfigPath, } from '../context.ts';
 import { invalidatePaths, } from '../io/cache.ts';
 import { reset, } from '../tracker.ts';
@@ -19,7 +21,6 @@ import {
 } from './watch-rerun-queue.ts';
 import { createWatchModeLifecycle, } from './watch-lifecycle.ts';
 import { watchDirectoryWithRestarts, } from './watch-supervisor.ts';
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 /** Logger root for file-enforcer after removing the package log shim. */
 const l = tagged({ tag: 'file-enforcer', },);

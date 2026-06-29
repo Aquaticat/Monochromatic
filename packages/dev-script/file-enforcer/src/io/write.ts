@@ -1,3 +1,5 @@
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
 import {
   setWriteTimestamp,
   trackDest,
@@ -33,7 +35,6 @@ import {
   rememberEagerEach,
   rememberEagerWrite,
 } from './write-staleness.ts';
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 /** Logger root for file-enforcer after removing the package log shim. */
 const l = tagged({ tag: 'file-enforcer', },);

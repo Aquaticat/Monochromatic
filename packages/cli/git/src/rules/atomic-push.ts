@@ -1,6 +1,7 @@
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
 import { parseGlobalOptions, } from '../parse-global-options.ts';
 import { parsePushRegion, } from '../parsers/push.ts';
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 /** Logger root for cli-git after removing the package log shim. */
 const l = tagged({ tag: 'cli-git', },);

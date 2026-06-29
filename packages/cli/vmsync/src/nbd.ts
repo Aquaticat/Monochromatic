@@ -8,13 +8,13 @@
  */
 
 import { access, } from 'node:fs/promises';
-
-import { spawn, } from './spawn.ts';
-import type { QemuMapRegion, } from './types.ts';
 import {
   tagged,
   type Logger,
 } from '@monochromatic-dev/module-logger/ts';
+
+import { spawn, } from './spawn.ts';
+import type { QemuMapRegion, } from './types.ts';
 
 /** Logger root for vmsync after removing the package log shim. */
 const l = tagged({ tag: 'vmsync', },);

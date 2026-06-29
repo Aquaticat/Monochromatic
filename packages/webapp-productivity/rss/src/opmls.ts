@@ -1,6 +1,6 @@
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { findUp, } from 'find-up';
 import * as v from 'valibot';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 /** Logger root for rss after removing the package log shim. */
 const parentLogger = tagged({ tag: 'rss', },);

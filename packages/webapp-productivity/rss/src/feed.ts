@@ -1,6 +1,5 @@
 // 105 lines: fetch, parse, and sort are a single pipeline; splitting obscures the data flow
 import { mapIterableAsync, } from '@monochromatic-dev/module-async-iter/ts';
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
   type Atom,
   type Opml,
@@ -9,6 +8,8 @@ import {
   type Rss,
 } from 'feedsmith';
 import * as v from 'valibot';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
 import type { InnerOutlineWUrl, } from './outline.ts';
 import type { DeepReadonly, } from './types.ts';
 

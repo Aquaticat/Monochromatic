@@ -11,6 +11,10 @@ import {
   join,
   resolve,
 } from 'node:path';
+import {
+  tagged,
+  type Logger,
+} from '@monochromatic-dev/module-logger/ts';
 
 import {
   DEFAULT_CPUS,
@@ -35,10 +39,6 @@ import {
   VHDX_FILENAME,
   type VmsyncConfig,
 } from './types.ts';
-import {
-  tagged,
-  type Logger,
-} from '@monochromatic-dev/module-logger/ts';
 
 /** Logger root for vmsync after removing the package log shim. */
 const l = tagged({ tag: 'vmsync', },);

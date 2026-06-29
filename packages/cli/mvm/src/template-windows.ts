@@ -13,6 +13,10 @@ import {
 import { join, } from 'node:path';
 
 import { BYTES_PER_KIB, } from '@monochromatic-dev/module-const/ts';
+import {
+  tagged,
+  type Logger,
+} from '@monochromatic-dev/module-logger/ts';
 
 import { createAutounattendIso, } from './autounattend.ts';
 import {
@@ -41,10 +45,6 @@ import {
   startVm,
   virsh,
 } from './virsh.ts';
-import {
-  tagged,
-  type Logger,
-} from '@monochromatic-dev/module-logger/ts';
 
 /** Logger root for mvm after removing the package log shim. */
 const l = tagged({ tag: 'mvm', },);

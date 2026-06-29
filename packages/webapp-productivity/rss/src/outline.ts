@@ -1,9 +1,10 @@
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
   type Opml,
   parseOpml,
 } from 'feedsmith';
 import * as v from 'valibot';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
 import { getOPMLTexts, } from './opml-text.ts';
 
 /** Logger root for rss after removing the package log shim. */

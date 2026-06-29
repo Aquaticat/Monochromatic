@@ -9,6 +9,7 @@ import type {
   ToolCall,
 } from '@earendil-works/pi-ai';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
 import { extractJsonVerdict, } from './judge-json.ts';
 
 /** Logger root for auto-mode after removing the package log shim. */

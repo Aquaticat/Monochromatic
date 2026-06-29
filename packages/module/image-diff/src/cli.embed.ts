@@ -1,3 +1,5 @@
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
 import { parseImageArg, } from './cli.image.ts';
 import { embedAll, } from './client.multi.ts';
 import { embed, } from './client.ts';
@@ -5,7 +7,6 @@ import type {
   EmbeddingModel,
   Provider,
 } from './types.ts';
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 /** Logger root for image-diff after removing the package log shim. */
 const l = tagged({ tag: 'image-diff', },);

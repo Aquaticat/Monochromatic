@@ -11,7 +11,6 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 /** Logger root for terminal-exec after removing the package log shim. */
 const parentLogger = tagged({ tag: 'terminal-exec', },);
 
-
 /**
  * Tagged logger for this module.
  */

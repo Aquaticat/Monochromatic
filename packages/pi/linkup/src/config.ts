@@ -8,6 +8,7 @@ import { readFileSync, } from 'node:fs';
 import { homedir, } from 'node:os';
 import { join, } from 'node:path';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
 import { normalizeBlocklist, } from './domain-policy.ts';
 
 /** Logger root for pi-linkup after removing the package log shim. */

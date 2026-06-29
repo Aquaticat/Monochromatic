@@ -10,6 +10,7 @@
  *
  * @module
  */
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { VM_PREFIX, } from '../../config.ts';
 import type { VmInfo, } from '../../list.ts';
@@ -43,7 +44,6 @@ import type {
   HetznerAction,
   HetznerServer,
 } from './types.ts';
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 /** Logger root for mvm after removing the package log shim. */
 const l = tagged({ tag: 'mvm', },);

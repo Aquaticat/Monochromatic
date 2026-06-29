@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import nanoSpawn, { SubprocessError, } from 'nano-spawn';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { autoPush, } from './auto-push.ts';
 import { parseGlobalOptions, } from './parse-global-options.ts';
@@ -15,7 +16,6 @@ import {
   hasExplicitStatusHintsOverride,
   statusHintsOff,
 } from './rules/status-hints-off.ts';
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 /** Logger root for cli-git after removing the package log shim. */
 const l = tagged({ tag: 'cli-git', },);

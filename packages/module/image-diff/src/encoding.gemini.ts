@@ -1,4 +1,6 @@
 import { readFile, } from 'node:fs/promises';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
 import {
   bufferToBase64,
   inferFormat,
@@ -10,7 +12,6 @@ import {
 } from './encoding.ts';
 import type { GeminiInlineData, } from './types.gemini-api.ts';
 import type { ImageInput, } from './types.ts';
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 /** Logger root for image-diff after removing the package log shim. */
 const l = tagged({ tag: 'image-diff', },);

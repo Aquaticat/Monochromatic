@@ -15,8 +15,9 @@ import type {
   ExtensionAPI,
   ExtensionContext,
 } from '@earendil-works/pi-coding-agent';
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { Type, } from 'typebox';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
 import { getTrustDirectives, } from './context.ts';
 import { TRUST_ENTRY_TYPE, } from './types.ts';
 

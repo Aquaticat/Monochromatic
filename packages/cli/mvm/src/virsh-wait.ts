@@ -8,10 +8,10 @@
  */
 
 import { MS_PER_SECOND, } from '@monochromatic-dev/module-const/ts';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { VM_PREFIX, } from './config.ts';
 import { virsh, } from './virsh.ts';
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 /** Logger root for mvm after removing the package log shim. */
 const l = tagged({ tag: 'mvm', },);

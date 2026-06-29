@@ -7,6 +7,7 @@
 
 import { unlink, } from 'node:fs/promises';
 import { join, } from 'node:path';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import {
   readConfig,
@@ -31,7 +32,6 @@ import {
   type QemuMapRegion,
   VHDX_FILENAME,
 } from './types.ts';
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 /** Logger root for vmsync after removing the package log shim. */
 const l = tagged({ tag: 'vmsync', },);

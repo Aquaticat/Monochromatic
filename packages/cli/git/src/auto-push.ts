@@ -4,7 +4,6 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 /** Logger root for cli-git after removing the package log shim. */
 const l = tagged({ tag: 'cli-git', },);
 
-
 //region Auto-push output filter
 
 /**

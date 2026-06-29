@@ -11,6 +11,7 @@ import type {
   ExtensionContext,
 } from '@earendil-works/pi-coding-agent';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
 import {
   PLAIN_USAGE_WARNING_STYLE,
   type UsageWarningStyle,

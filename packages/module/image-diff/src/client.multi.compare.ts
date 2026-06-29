@@ -5,6 +5,8 @@
  * @module
  */
 // oxlint-disable typescript/no-unsafe-type-assertion -- Promise.allSettled values require type assertions
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
 import type { MultiProviderComparisonEntry, } from './client.multi.types.ts';
 import { compareEmbeddings, } from './client.ts';
 import { ABSENT, } from './describe.absent.ts';
@@ -14,7 +16,6 @@ import type {
   ImageInput,
   Provider,
 } from './types.ts';
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 /** Logger root for image-diff after removing the package log shim. */
 const l = tagged({ tag: 'image-diff', },);

@@ -4,7 +4,6 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 /** Logger root for rss after removing the package log shim. */
 const l = tagged({ tag: 'rss', },);
 
-
 l.debug(`asset module loading`,);
 
 /**

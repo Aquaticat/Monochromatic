@@ -104,17 +104,13 @@ The package should include these files at minimum:
 - `src/client.ts`
 - `src/config.ts`
 - `src/domain-policy.ts`
-- `src/log.ts`
 - `src/mise.verify-extension.ts`
 - `src/tool-output.ts`
 - `src/tools.ts`
 - colocated unit tests for each module with branch logic
 
-`src/log.ts` should be only the package root logger module:
-import `logger` and `tagged`,
-tag the root logger as `pi-linkup`,
-and export that tagged logger for submodules to wrap with narrower tags.
-Do not import or await `initPromise` there;
+Modules should import `tagged` from `@monochromatic-dev/module-logger` directly.
+Do not add a package root logger module or await `initPromise`;
 `@monochromatic-dev/module-logger` buffers startup records until sinks verify.
 
 ## Public tools

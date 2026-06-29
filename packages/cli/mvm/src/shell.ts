@@ -1,11 +1,11 @@
 import nanoSpawn from 'nano-spawn';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import {
   LIBVIRT_URI,
   validateName,
   VM_PREFIX,
 } from './config.ts';
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 /** Logger root for mvm after removing the package log shim. */
 const l = tagged({ tag: 'mvm', },);

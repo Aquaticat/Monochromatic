@@ -9,11 +9,11 @@
  */
 
 import { spawn, } from 'node:child_process';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { buildCommand, } from './build-command.ts';
 import { resolveTerminal, } from './resolve.ts';
 import { NO_TERMINAL, } from './validate.ts';
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 /** Logger root for terminal-exec after removing the package log shim. */
 const parentLogger = tagged({ tag: 'terminal-exec', },);

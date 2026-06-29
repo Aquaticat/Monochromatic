@@ -1,3 +1,5 @@
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
 import {
   classifyEffectiveTarget,
   type EffectiveTarget,
@@ -23,7 +25,6 @@ import {
   mainWorktreeMessage,
   outsideWorktreeMessage,
 } from './linked-worktree-messages.ts';
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 /** Logger root for cli-git after removing the package log shim. */
 const l = tagged({ tag: 'cli-git', },);

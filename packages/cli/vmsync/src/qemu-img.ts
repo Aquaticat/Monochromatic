@@ -7,13 +7,13 @@
  */
 
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { spawn, } from './spawn.ts';
 import type {
   QemuImgInfo,
   QemuMapRegion,
 } from './types.ts';
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 /** Logger root for vmsync after removing the package log shim. */
 const l = tagged({ tag: 'vmsync', },);

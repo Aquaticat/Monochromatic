@@ -1,5 +1,6 @@
 import { writeFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import {
   templateRuncmd,
@@ -10,7 +11,6 @@ import type {
   GuestConfig,
   LinuxGuestConfig,
 } from './registry.ts';
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 /** Logger root for mvm after removing the package log shim. */
 const l = tagged({ tag: 'mvm', },);

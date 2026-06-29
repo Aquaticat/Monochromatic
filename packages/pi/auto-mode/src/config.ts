@@ -7,10 +7,11 @@
  * @module
  */
 
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { readFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 import * as v from 'valibot';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
 import {
   type AutoModeConfig,
   AutoModeConfigSchema,

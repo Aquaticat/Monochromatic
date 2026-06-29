@@ -15,6 +15,7 @@ import {
   readFile,
 } from 'node:fs/promises';
 import { join, } from 'node:path';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { splitOnWhitespace, } from '../../list.ts';
 import { spawn, } from '../../spawn.ts';
@@ -23,7 +24,6 @@ import {
   listSshKeys,
 } from './api-resources.ts';
 import { HETZNER_DATA_DIR, } from './config.ts';
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 /** Logger root for mvm after removing the package log shim. */
 const l = tagged({ tag: 'mvm', },);

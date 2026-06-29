@@ -4,6 +4,8 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
 import { HashCache, } from '../hash-cache.ts';
 import type {
   WatchCtx,
@@ -14,7 +16,6 @@ import {
   anyFilter,
   composeFilters,
 } from './compose.ts';
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 /** Logger root for watch-restart after removing the package log shim. */
 const defaultLogger = tagged({ tag: 'watch-restart', },);

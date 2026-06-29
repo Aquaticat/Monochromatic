@@ -1,11 +1,12 @@
 import { mapIterableAsync, } from '@monochromatic-dev/module-async-iter/ts';
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type { Dirent, } from 'node:fs';
 import {
   readdir,
   readFile,
 } from 'node:fs/promises';
 import { join, } from 'node:path';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
 import { IGNORE_PATH, } from './path.ts';
 import type { DeepReadonly, } from './types.ts';
 

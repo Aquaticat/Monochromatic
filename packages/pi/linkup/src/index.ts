@@ -9,6 +9,7 @@
 
 import type { ExtensionAPI, } from '@earendil-works/pi-coding-agent';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
 import { createLinkupClient, } from './client.ts';
 import {
   loadLinkupConfig,

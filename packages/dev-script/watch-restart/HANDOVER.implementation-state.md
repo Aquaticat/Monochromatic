@@ -298,7 +298,6 @@ packages/dev-script/watch-restart/
 │   ├── hash-cache.ts                  ← HashCache class (sha256 hex; default 16 MiB cap via BYTES_PER_MIB)
 │   ├── hash-cache.unit.test.ts        ← 13 tests covering round-trip, boundary, mutation isolation, Map ops
 │   ├── index.ts                       ← re-exports HashCache, Watcher, Child, all filters, types
-│   ├── log.ts                         ← root tagged logger `l`
 │   ├── picomatch.d.ts                 ← ambient declaration: picomatch ships no types, @types/picomatch absent
 │   ├── start.ts                       ← startWatchRestart orchestrator (HashCache + Watcher + Child + filter chain + debounce); buildInternalFilter is async (awaits gitignoreFilter)
 │   ├── start.unit.test.ts             ← 9 tests covering initial / no-initial, byte-identical skip, no-content-changed, debounce coalesce, ext, exclude, stop teardown, idempotent stop
@@ -421,7 +420,7 @@ The task list IDs match `TaskList` entries.
 
 ~~3. Implement `hash-cache.ts` + tests.~~ **Done.** Class `HashCache` lives at `src/hash-cache.ts`; 13 tests pass.
 
-~~4. Implement `watcher.ts` + tests.~~ **Done.** Class `Watcher` lives at `src/watcher.ts`; supporting `src/types.ts` and `src/log.ts`. 8 tests pass + 1 skipped (atomic-save flake; see handover notes).
+~~4. Implement `watcher.ts` + tests.~~ **Done.** Class `Watcher` lives at `src/watcher.ts`; supporting types live in `src/types.ts`. 8 tests pass + 1 skipped (atomic-save flake; see handover notes).
 
 ~~5. Implement `child.ts` + tests.~~ **Done.** Class `Child` lives at `src/child.ts`; injectable `SpawnFn` factory keeps the state-machine tests pure. 13 tests pass.
 
@@ -439,7 +438,7 @@ The task list IDs match `TaskList` entries.
 
 These rules come from `AGENTS.md`; the implementer should re-read it but these specifically apply to this work:
 
-- Tagged loggers from `@monochromatic-dev/module-logger`. Compose tags at every module/function boundary. See `packages/dev-script/file-enforcer/src/log.ts` for the root-tag pattern.
+- Tagged loggers from `@monochromatic-dev/module-logger`. Compose tags at every module/function boundary by importing `tagged` directly; do not add a package `log.ts` shim.
 - Function declarations only; no arrow functions, no const-bound function expressions. Class methods are fine. Callbacks dictated by external APIs (chokidar event handlers, `child_process.on('exit', ...)`) get named function expressions: `function handleAdd(path) { ... }`.
 - 2+ parameter functions use a destructured object parameter: `set({path, hash})`, not `set(path, hash)`. Exception: external-API callback shapes.
 - Trailing commas everywhere per dprint. Match the style in `packages/dev-script/file-enforcer/src/io/cache.ts`.

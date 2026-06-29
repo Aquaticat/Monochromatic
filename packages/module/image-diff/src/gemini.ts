@@ -1,4 +1,6 @@
 // oxlint-disable typescript/no-unsafe-type-assertion -- API response types require assertions; provider interface requires async
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
 import { toGeminiInlineData, } from './encoding.gemini.ts';
 import { geminiEmbedBatch, } from './gemini.batch.ts';
 import {
@@ -17,7 +19,6 @@ import type {
   ImageDiffConfig,
   ImageInput,
 } from './types.ts';
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 /** Logger root for image-diff after removing the package log shim. */
 const l = tagged({ tag: 'image-diff', },);

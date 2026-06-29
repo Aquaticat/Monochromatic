@@ -1,4 +1,3 @@
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { existsSync, } from 'node:fs';
 import {
   appendFile,
@@ -7,6 +6,8 @@ import {
   writeFile,
 } from 'node:fs/promises';
 import { join, } from 'node:path';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
 import { indexHtmlStart, } from './asset.ts';
 import { INDEX_HTML_END, } from './html.ts';
 import { IGNORE_PATH, } from './path.ts';

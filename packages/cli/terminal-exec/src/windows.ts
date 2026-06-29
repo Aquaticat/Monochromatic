@@ -9,8 +9,9 @@ import {
   delimiter,
   resolve,
 } from 'node:path';
-import type { ResolvedTerminal, } from './resolve.ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
+import type { ResolvedTerminal, } from './resolve.ts';
 
 /** Logger root for terminal-exec after removing the package log shim. */
 const parentLogger = tagged({ tag: 'terminal-exec', },);

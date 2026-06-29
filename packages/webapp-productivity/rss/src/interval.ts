@@ -1,9 +1,9 @@
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
   MS_PER_SECOND,
   SECONDS_PER_MINUTE,
 } from '@monochromatic-dev/module-const/ts';
 import * as v from 'valibot';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 /** Logger root for rss after removing the package log shim. */
 const parentLogger = tagged({ tag: 'rss', },);

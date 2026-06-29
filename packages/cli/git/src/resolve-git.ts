@@ -12,7 +12,6 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 /** Logger root for cli-git after removing the package log shim. */
 const l = tagged({ tag: 'cli-git', },);
 
-
 /**
  * Package name used to detect shims that delegate to this wrapper.
  * Any candidate whose file content contains this string is a shim for us,

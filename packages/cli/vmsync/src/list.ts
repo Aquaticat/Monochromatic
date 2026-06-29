@@ -9,16 +9,16 @@ import {
   readdir,
 } from 'node:fs/promises';
 import { join, } from 'node:path';
+import {
+  tagged,
+  type Logger,
+} from '@monochromatic-dev/module-logger/ts';
 
 import {
   DATA_DIR,
   readConfig,
 } from './config.ts';
 import { CONFIG_FILENAME, } from './types.ts';
-import {
-  tagged,
-  type Logger,
-} from '@monochromatic-dev/module-logger/ts';
 
 /** Logger root for vmsync after removing the package log shim. */
 const l = tagged({ tag: 'vmsync', },);

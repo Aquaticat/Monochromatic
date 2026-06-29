@@ -5,9 +5,9 @@
  */
 
 import { BYTES_PER_GIB, } from '@monochromatic-dev/module-const/ts';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { readConfig, } from './config.ts';
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 /** Logger root for vmsync after removing the package log shim. */
 const l = tagged({ tag: 'vmsync', },);

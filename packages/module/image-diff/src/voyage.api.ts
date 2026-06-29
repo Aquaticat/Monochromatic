@@ -1,9 +1,10 @@
 // oxlint-disable typescript/no-unsafe-type-assertion -- API response types require assertions
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
 import type {
   VoyageApiRequest,
   VoyageApiResponse,
 } from './types.voyage-api.ts';
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 /** Logger root for image-diff after removing the package log shim. */
 const l = tagged({ tag: 'image-diff', },);

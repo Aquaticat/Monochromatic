@@ -3,8 +3,9 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { notifyWriteProtection, } from './notify.ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
+import { notifyWriteProtection, } from './notify.ts';
 
 /** Logger root for file-enforcer after removing the package log shim. */
 const l = tagged({ tag: 'file-enforcer', },);

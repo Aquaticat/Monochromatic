@@ -15,6 +15,7 @@ import {
   BYTES_PER_GIB,
   BYTES_PER_MIB,
 } from '@monochromatic-dev/module-const/ts';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import {
   detectHypervisor,
@@ -33,7 +34,6 @@ import {
   QCOW2_FILENAME,
   VHDX_FILENAME,
 } from './types.ts';
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 /** Logger root for vmsync after removing the package log shim. */
 const l = tagged({ tag: 'vmsync', },);

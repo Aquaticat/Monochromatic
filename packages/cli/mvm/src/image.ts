@@ -11,6 +11,7 @@ import {
   writeFile as fsWriteFile,
 } from 'node:fs/promises';
 import { join, } from 'node:path';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { IMAGES_DIR, } from './config.ts';
 import { writeWithProgress, } from './download-progress.ts';
@@ -20,7 +21,6 @@ import {
   VIRTIO_WIN_URL,
 } from './registry.ts';
 import { spawn, } from './spawn.ts';
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 /** Logger root for mvm after removing the package log shim. */
 const l = tagged({ tag: 'mvm', },);

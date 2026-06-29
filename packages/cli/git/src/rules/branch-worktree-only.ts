@@ -1,3 +1,5 @@
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
 import {
   BRANCH_WORKTREE_ESCAPE_HATCH,
   parseBranchCreationRegion,
@@ -8,7 +10,6 @@ import { parseGlobalOptions, } from '../parse-global-options.ts';
 import { resolveGit, } from '../resolve-git.ts';
 import { branchCreationMessage, } from './branch-worktree-messages.ts';
 import { implicitRemoteGuessCreatesBranch, } from './branch-worktree-remote-guess.ts';
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 /** Logger root for cli-git after removing the package log shim. */
 const l = tagged({ tag: 'cli-git', },);

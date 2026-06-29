@@ -10,7 +10,6 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 /** Logger root for vmsync after removing the package log shim. */
 const l = tagged({ tag: 'vmsync', },);
 
-
 /**
  * Spawns a command and returns its trimmed stdout.
  * Logs the command at debug level before execution.

@@ -1,4 +1,9 @@
 import {
+  tagged,
+  type Logger,
+} from '@monochromatic-dev/module-logger/ts';
+
+import {
   Child,
   type SpawnFn,
 } from './child.ts';
@@ -22,10 +27,6 @@ import type {
   WatchFilter,
 } from './types.ts';
 import { Watcher, } from './watcher.ts';
-import {
-  tagged,
-  type Logger,
-} from '@monochromatic-dev/module-logger/ts';
 
 /** Logger root for watch-restart after removing the package log shim. */
 const defaultLogger = tagged({ tag: 'watch-restart', },);

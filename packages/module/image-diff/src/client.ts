@@ -1,4 +1,6 @@
 // oxlint-disable require-await -- Promise.allSettled values require type assertions; async functions return provider promises directly
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
 import { ABSENT, } from './describe.absent.ts';
 import { describeImageDifference, } from './describe.ts';
 import { geminiProvider, } from './gemini.ts';
@@ -13,7 +15,6 @@ import type {
   Provider,
 } from './types.ts';
 import { voyageProvider, } from './voyage.ts';
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 /** Logger root for image-diff after removing the package log shim. */
 const l = tagged({ tag: 'image-diff', },);

@@ -22,7 +22,6 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 /** Logger root for rgffplay after removing the package log shim. */
 const l = tagged({ tag: 'rgffplay', },);
 
-
 export {};
 
 //region Glob pattern construction: case-insensitive first letter per word

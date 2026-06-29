@@ -1,4 +1,3 @@
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { memoizeAsync, } from '@monochromatic-dev/module-memoize/ts';
 import {
   defineHandler,
@@ -7,6 +6,8 @@ import {
   HTTPError,
   serve,
 } from 'h3';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
 import { getSortedFeeds, } from './feed.ts';
 import {
   ignore,

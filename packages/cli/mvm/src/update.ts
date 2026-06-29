@@ -1,6 +1,7 @@
 import { existsSync, } from 'node:fs';
 import { rm, } from 'node:fs/promises';
 import { join, } from 'node:path';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { IMAGES_DIR, } from './config.ts';
 import {
@@ -8,7 +9,6 @@ import {
   VIRTIO_WIN_FILENAME,
 } from './registry.ts';
 import { ensureTemplate, } from './template.ts';
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 /** Logger root for mvm after removing the package log shim. */
 const l = tagged({ tag: 'mvm', },);
