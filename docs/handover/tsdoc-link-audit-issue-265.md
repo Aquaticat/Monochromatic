@@ -260,7 +260,7 @@ with scoped pathspecs (`fix(<package>): restore TSDoc inline links (issue #265)`
 
 | Batch | Packages (short) | Agent ID | Status |
 | --- | --- | --- | --- |
-| f01a | file-enforcer (data, io, package, watch) | | queued |
+| f01a | file-enforcer (data, io, package, watch) | adeafb1c9d4434f30 | done, 132 findings, 45 files, commits a445a386e/642a31733 |
 | f01b | file-enforcer (pipeline, jetbrains, root) | a026a84a78b0975f2 | done, 17 files, commit a24250b7b |
 | f02 | mvm, mutation-test, async-time, claude-spawn | a55c638b0ae14975e | done, 42/42 findings, 27 files, commits 3236c3186/25f0d78cb/0323683d1 |
 | f03 | toml-edit, linkup, throws | | queued |
