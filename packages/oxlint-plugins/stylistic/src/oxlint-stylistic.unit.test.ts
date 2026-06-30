@@ -130,8 +130,9 @@ async function fixUntilStable(filePath: string,): Promise<void> {
         { cwd: ROOT, },
       );
     }
-    catch {
+    catch (error: unknown) {
       // --fix may exit non-zero while later passes or unfixable rules remain.
+    expect(error,).toBeDefined();
     }
     if (readFileSync(filePath, 'utf8',) === before)
       return;
@@ -813,8 +814,9 @@ await describe({
                 { cwd: ROOT, },
               );
             }
-            catch {
+            catch (error: unknown) {
               // --fix may still exit non-zero if unfixable issues remain
+            expect(error,).toBeDefined();
             }
 
             const fixedContent = readFileSync(semiCopy.filePath, 'utf8',);
@@ -937,8 +939,9 @@ await describe({
                 { cwd: ROOT, },
               );
             }
-            catch {
+            catch (error: unknown) {
               // --fix may still exit non-zero
+            expect(error,).toBeDefined();
             }
 
             const fixedContent = readFileSync(trailingCopy.filePath, 'utf8',);
@@ -1086,8 +1089,9 @@ await describe({
                 { cwd: ROOT, },
               );
             }
-            catch {
+            catch (error: unknown) {
               // --fix may exit non-zero when unfixable issues remain
+            expect(error,).toBeDefined();
             }
             expect(readFileSync(commentCopy.filePath, 'utf8',),).toBe(before,);
           },
@@ -1122,8 +1126,9 @@ await describe({
                 { cwd: ROOT, },
               );
             }
-            catch {
+            catch (error: unknown) {
               // --fix may exit non-zero when unfixable issues remain
+            expect(error,).toBeDefined();
             }
             /** Content after the fix: the chain broke at the member step. */
             const after = readFileSync(argsCopy.filePath, 'utf8',);
@@ -1177,8 +1182,9 @@ await describe({
                   { cwd: ROOT, },
                 );
               }
-              catch {
+              catch (error: unknown) {
                 // --fix may exit non-zero when unfixable issues remain
+              expect(error,).toBeDefined();
               }
               if (readFileSync(combinedCopy.filePath, 'utf8',)
                 === before) {
@@ -1311,8 +1317,9 @@ await describe({
                   { cwd: ROOT, },
                 );
               }
-              catch {
+              catch (error: unknown) {
                 // --fix may exit non-zero when unfixable issues remain
+              expect(error,).toBeDefined();
               }
               if (readFileSync(convergeCopy.filePath, 'utf8',)
                 === before) {

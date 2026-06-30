@@ -117,6 +117,9 @@ export function checkItemsPerLine({
   const sourceText = context.sourceCode
     .getText();
 
+  /**
+   * Whether any adjacent items or delimiters share a line.
+   */
   const needsFix = boundary === undefined
     ? needsPerLineFix({
       sourceText,

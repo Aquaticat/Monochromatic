@@ -1,7 +1,5 @@
 import { isWhitespaceChar, } from '@monochromatic-dev/config-oxlint-shared/ts';
 
-export { isWhitespaceChar, };
-
 /**
  * Returns the leading run of ASCII whitespace from `s`.
  *

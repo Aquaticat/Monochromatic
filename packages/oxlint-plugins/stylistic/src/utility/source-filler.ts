@@ -1,4 +1,4 @@
-import { isWhitespaceChar, } from './indent.ts';
+import { isWhitespaceChar, } from '@monochromatic-dev/config-oxlint-shared/ts';
 
 /**
  * Parameters for {@link isOnlyWhitespaceOrSeparator}.
@@ -29,10 +29,16 @@ export type IsOnlyWhitespaceOrSeparatorParams = {
  * isOnlyWhitespaceOrSeparator({ text: ', ', separator: ',' });
  * ```
  */
-export function isOnlyWhitespaceOrSeparator({
-  text,
-  separator,
-}: IsOnlyWhitespaceOrSeparatorParams,): boolean {
+export function isOnlyWhitespaceOrSeparator(
+  params: IsOnlyWhitespaceOrSeparatorParams,
+): boolean {
+  /**
+   * Source slice and allowed separator.
+   */
+  const {
+    text,
+    separator,
+  } = params;
   for (const char of text) {
     if ((!isWhitespaceChar(char,)) && (char !== separator))
       return false;
