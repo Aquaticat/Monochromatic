@@ -16,7 +16,8 @@ export const NOT_NODE_SYNC_CALLEE: unique symbol = Symbol(
 );
 
 /**
- * Result of classifying a callee expression.
+ * Result of classifying a callee expression: a name, or
+ * {@link NOT_NODE_SYNC_CALLEE}.
  */
 export type NodeSyncCalleeName = string | typeof NOT_NODE_SYNC_CALLEE;
 
@@ -34,7 +35,8 @@ export const NO_STATIC_SOURCE: unique symbol = Symbol(
 );
 
 /**
- * Result of extracting an import source string from syntax.
+ * Result of extracting an import source string from syntax: a source, or
+ * {@link NO_STATIC_SOURCE}.
  */
 export type StaticSource = string | typeof NO_STATIC_SOURCE;
 
@@ -52,7 +54,8 @@ export const NO_VARIABLE: unique symbol = Symbol(
 );
 
 /**
- * Result of looking up an identifier in the current scope chain.
+ * Result of looking up an identifier in the current scope chain: a
+ * variable, or {@link NO_VARIABLE}.
  */
 export type VariableLookup = Variable | typeof NO_VARIABLE;
 
@@ -135,7 +138,8 @@ const NODE_BUILTIN_SOURCE_ROOT_SET: ReadonlySet<string> = new Set(
 );
 
 /**
- * Returns `true` when an import source names a Node builtin source.
+ * Returns `true` when an import source names a Node builtin source, tested
+ * against {@link NODE_BUILTIN_SOURCE_ROOT_SET}.
  *
  * Accepts both `fs` and `node:fs`, and treats subpaths such as
  * `fs/promises` as belonging to the builtin root.

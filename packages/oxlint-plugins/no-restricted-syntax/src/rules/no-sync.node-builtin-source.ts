@@ -51,7 +51,12 @@ export function seenWith(
 //region Node builtin loader calls
 
 /**
- * Returns `true` when a call expression directly loads a Node builtin source.
+ * Returns `true` when a call expression directly loads a Node builtin
+ * source: the static source argument is read via
+ * {@link getSingleStringArgument} (or, for the member-call shape, via
+ * {@link getMemberName} and {@link getSingleStringArgument}), the receiver
+ * is checked with {@link isUnshadowedGlobalIdentifier}, and the source with
+ * {@link isNodeBuiltinSource}.
  *
  * @param context - Oxlint rule context.
  *
@@ -119,7 +124,8 @@ function isNodeBuiltinSourceLoadCall(
 }
 
 /**
- * Returns whether identifier is not shadowed by a local declaration.
+ * Returns whether identifier is not shadowed by a local declaration,
+ * resolved via {@link findVariable}.
  *
  * @param context - Oxlint rule context.
  *
@@ -161,7 +167,10 @@ function isUnshadowedGlobalIdentifier(
 //region Node builtin source provenance
 
 /**
- * Returns `true` when expression resolves to a Node builtin source object.
+ * Returns `true` when expression resolves to a Node builtin source object,
+ * via {@link isNodeBuiltinSourceLoadCall} for call expressions or, after
+ * resolving the identifier's binding with {@link findVariable}, via
+ * {@link isNodeBuiltinSourceVariable}.
  *
  * @param context - Oxlint rule context.
  *
@@ -213,6 +222,10 @@ export function isNodeBuiltinSourceExpression(
 
 /**
  * Returns `true` when scope variable is a Node builtin source object.
+ * Marks the variable visited via {@link seenWith}, then resolves an import
+ * binding via {@link getImportDeclaration} and {@link isNodeBuiltinSource},
+ * or a local declarator via {@link getVariableDeclarator} and a recursive
+ * {@link isNodeBuiltinSourceExpression} call on its initializer.
  *
  * @param context - Oxlint rule context.
  *

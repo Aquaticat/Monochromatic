@@ -25,7 +25,8 @@ import {
  *
  * @param expression - Expression that may be a string literal.
  *
- * @returns Literal string, or sentinel when expression is not a string literal.
+ * @returns Literal string, or {@link NO_STATIC_SOURCE} when expression is
+ * not a string literal.
  *
  * @example
  * ```ts
@@ -47,7 +48,7 @@ export function getStaticString(
  *
  * @param key - Property key node from member access, import, or object pattern syntax.
  *
- * @returns Static property name, or sentinel when key is dynamic.
+ * @returns Static property name, or {@link NO_STATIC_SOURCE} when key is dynamic.
  *
  * @example
  * ```ts
@@ -67,11 +68,13 @@ export function getStaticPropertyName(
 }
 
 /**
- * Extracts a static member property name.
+ * Extracts a static member property name, delegating non-private members to
+ * {@link getStaticPropertyName}.
  *
  * @param member - Member expression being inspected.
  *
- * @returns Member property name, or sentinel when member is private or dynamic.
+ * @returns Member property name, or {@link NO_STATIC_SOURCE} when member is
+ * private or dynamic.
  *
  * @example
  * ```ts
@@ -89,11 +92,14 @@ export function getMemberName(
 }
 
 /**
- * Returns first function argument when it is a string literal.
+ * Returns first function argument when it is a string literal: the sole
+ * argument is read via {@link getSingleNonSpreadArgument} and the literal
+ * value via {@link getStaticString}.
  *
  * @param call - Call expression to inspect.
  *
- * @returns Static source string, or sentinel when call shape is not supported.
+ * @returns Static source string, or {@link NO_STATIC_SOURCE} when call
+ * shape is not supported (including {@link NO_SINGLE_ARGUMENT}).
  *
  * @example
  * ```ts
@@ -123,7 +129,7 @@ export function getSingleStringArgument(
  *
  * @param name - Identifier name to resolve.
  *
- * @returns Scope variable, or sentinel when no binding exists.
+ * @returns Scope variable, or {@link NO_VARIABLE} when no binding exists.
  *
  * @example
  * ```ts
@@ -159,7 +165,8 @@ function findVariableInScope(
 }
 
 /**
- * Finds a variable visible at a node by walking lexical scopes outward.
+ * Finds a variable visible at a node by walking lexical scopes outward via
+ * {@link findVariableInScope}.
  *
  * @param context - Oxlint rule context.
  *
@@ -167,7 +174,7 @@ function findVariableInScope(
  *
  * @param name - Identifier name to resolve.
  *
- * @returns Scope variable, or sentinel when no binding exists.
+ * @returns Scope variable, or {@link NO_VARIABLE} when no binding exists.
  *
  * @example
  * ```ts
@@ -193,11 +200,14 @@ export function findVariable(
 }
 
 /**
- * Resolves enclosing import declaration for an import definition.
+ * Resolves enclosing import declaration for an import definition via
+ * {@link getImportDeclarationForDefinition}, translating its
+ * {@link NO_IMPORT_DECLARATION} sentinel to {@link NO_VARIABLE}.
  *
  * @param definition - Scope-manager definition produced for an import binding.
  *
- * @returns Import declaration, or sentinel when scope metadata is unexpected.
+ * @returns Import declaration, or {@link NO_VARIABLE} when scope metadata
+ * is unexpected.
  *
  * @example
  * ```ts
@@ -221,7 +231,8 @@ export function getImportDeclaration(
  *
  * @param definition - Scope-manager definition produced for a local variable.
  *
- * @returns Variable declarator, or sentinel when scope metadata is unexpected.
+ * @returns Variable declarator, or {@link NO_VARIABLE} when scope metadata
+ * is unexpected.
  *
  * @example
  * ```ts

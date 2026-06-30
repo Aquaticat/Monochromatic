@@ -25,7 +25,9 @@ import {
 //region Sync API from object-pattern bindings
 
 /**
- * Finds sync API name bound by an object pattern variable.
+ * Finds sync API name bound by an object pattern variable: checks the
+ * initializer via {@link isNodeBuiltinSourceExpression}, then delegates to
+ * {@link getObjectPatternNodeSyncPropertyName}.
  *
  * @param context - Oxlint rule context.
  *
@@ -35,7 +37,8 @@ import {
  *
  * @param seen - Variables already inspected, preventing alias cycles.
  *
- * @returns Node sync API name, or sentinel when pattern does not bind one.
+ * @returns Node sync API name, or {@link NOT_NODE_SYNC_CALLEE} when pattern
+ * does not bind one.
  *
  * @example
  * ```ts
@@ -74,13 +77,16 @@ function getObjectPatternNodeSyncName(
 }
 
 /**
- * Finds sync API name among object-pattern properties.
+ * Finds sync API name among object-pattern properties: reads each property
+ * key via {@link getStaticPropertyName} and keeps it only when it ends in
+ * {@link SYNC_SUFFIX}.
  *
  * @param pattern - Object pattern being inspected.
  *
  * @param variable - Variable being classified.
  *
- * @returns Node sync API name, or sentinel when no property matches.
+ * @returns Node sync API name, or {@link NOT_NODE_SYNC_CALLEE} when no
+ * property matches.
  *
  * @example
  * ```ts
@@ -125,11 +131,16 @@ function getObjectPatternNodeSyncPropertyName(
 //region Sync API from variable bindings
 
 /**
- * Finds Node sync API name imported from a Node builtin source.
+ * Finds Node sync API name imported from a Node builtin source: resolves the
+ * owning declaration via {@link getImportDeclaration}, checks its source via
+ * {@link isNodeBuiltinSource}, reads the imported name via
+ * {@link getStaticPropertyName}, and keeps it only when it ends in
+ * {@link SYNC_SUFFIX}.
  *
  * @param definition - Import definition being classified.
  *
- * @returns Node sync API name, or sentinel when import is not a sync API.
+ * @returns Node sync API name, or {@link NOT_NODE_SYNC_CALLEE} when import
+ * is not a sync API.
  *
  * @example
  * ```ts
@@ -165,7 +176,9 @@ function getImportedNodeSyncName(
 }
 
 /**
- * Finds Node sync API name represented by a local variable declarator.
+ * Finds Node sync API name represented by a local variable declarator: tries
+ * {@link getObjectPatternNodeSyncName} first, then falls back to
+ * {@link getNodeSyncMemberName} on the initializer.
  *
  * @param context - Oxlint rule context.
  *
@@ -175,7 +188,8 @@ function getImportedNodeSyncName(
  *
  * @param seen - Variables already inspected, preventing alias cycles.
  *
- * @returns Node sync API name, or sentinel when variable is not a sync API.
+ * @returns Node sync API name, or {@link NOT_NODE_SYNC_CALLEE} when
+ * variable is not a sync API.
  *
  * @example
  * ```ts
@@ -224,7 +238,10 @@ function getNodeSyncDeclaratorName(
 }
 
 /**
- * Finds Node sync API name represented by a scope variable.
+ * Finds Node sync API name represented by a scope variable. Marks the
+ * variable visited via {@link seenWith}, then resolves an import binding via
+ * {@link getImportedNodeSyncName} or a local declarator via
+ * {@link getVariableDeclarator} and {@link getNodeSyncDeclaratorName}.
  *
  * @param context - Oxlint rule context.
  *
@@ -232,7 +249,8 @@ function getNodeSyncDeclaratorName(
  *
  * @param seen - Variables already inspected, preventing alias cycles.
  *
- * @returns Node sync API name, or sentinel when variable is not a sync API.
+ * @returns Node sync API name, or {@link NOT_NODE_SYNC_CALLEE} when
+ * variable is not a sync API.
  *
  * @example
  * ```ts

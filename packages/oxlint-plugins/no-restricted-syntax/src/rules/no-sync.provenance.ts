@@ -18,7 +18,9 @@ import {
 //region Sync API from call callees
 
 /**
- * Finds Node sync API name represented by a direct identifier callee.
+ * Finds Node sync API name represented by a direct identifier callee:
+ * resolves the binding via {@link findVariable}, then delegates to
+ * {@link getNodeSyncFunctionVariableName}.
  *
  * @param context - Oxlint rule context.
  *
@@ -26,7 +28,8 @@ import {
  *
  * @param seen - Variables already inspected, preventing alias cycles.
  *
- * @returns Node sync API name, or sentinel when callee is not a sync API.
+ * @returns Node sync API name, or {@link NOT_NODE_SYNC_CALLEE} when callee
+ * is not a sync API.
  *
  * @example
  * ```ts
@@ -62,7 +65,10 @@ function getIdentifierNodeSyncCalleeName(
 }
 
 /**
- * Finds Node sync API name represented by a member-expression callee.
+ * Finds Node sync API name represented by a member-expression callee: tries
+ * {@link getNodeSyncMemberName} directly, then, for an `apply`/`call`
+ * outer member read via {@link getMemberName}, retries
+ * {@link getNodeSyncMemberName} on the receiver.
  *
  * @param context - Oxlint rule context.
  *
@@ -70,7 +76,8 @@ function getIdentifierNodeSyncCalleeName(
  *
  * @param seen - Variables already inspected, preventing alias cycles.
  *
- * @returns Node sync API name, or sentinel when callee is not a sync API.
+ * @returns Node sync API name, or {@link NOT_NODE_SYNC_CALLEE} when callee
+ * is not a sync API.
  *
  * @example
  * ```ts
@@ -113,13 +120,15 @@ function getMemberNodeSyncCalleeName(
 }
 
 /**
- * Finds Node sync API name represented by a call callee expression.
+ * Finds Node sync API name represented by a call callee expression, via
+ * {@link getIdentifierNodeSyncCalleeName} or {@link getMemberNodeSyncCalleeName}.
  *
  * @param context - Oxlint rule context.
  *
  * @param expression - Call callee expression.
  *
- * @returns Node sync API name, or sentinel when callee is not a sync API.
+ * @returns Node sync API name, or {@link NOT_NODE_SYNC_CALLEE} when callee
+ * is not a sync API.
  *
  * @example
  * ```ts

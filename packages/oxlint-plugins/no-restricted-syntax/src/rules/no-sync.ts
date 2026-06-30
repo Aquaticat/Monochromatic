@@ -11,7 +11,8 @@ import { getNodeSyncCalleeName, } from './no-sync.provenance.ts';
 
 /**
  * Bans Node synchronous APIs while allowing non-Node libraries whose API names
- * merely end in `Sync`.
+ * merely end in `Sync`. Classifies each call callee via
+ * {@link getNodeSyncCalleeName}.
  *
  * @example
  * ```ts
