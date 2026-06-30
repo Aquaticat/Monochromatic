@@ -1,7 +1,7 @@
 /**
  * Expression-position throwing helper.
  *
- * Use `throws(error,)` when JavaScript syntax requires an expression but the
+ * Use {@link throws}`(error,)` when JavaScript syntax requires an expression but the
  * domain model requires throwing a prebuilt `Error`. Prefer statement `throw`
  * in ordinary control flow, and prefer `module-or-throw` validators when the
  * desired operation is checking a value and returning that same value.
