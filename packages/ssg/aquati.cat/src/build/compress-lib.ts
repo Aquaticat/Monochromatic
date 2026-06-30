@@ -46,7 +46,7 @@ export type Tally = {
 };
 
 /**
- * Sentinel returned by `physicalCoreCount` when the host's physical-core
+ * Sentinel returned by {@link physicalCoreCount} when the host's physical-core
  * topology can't be read (non-Linux, or /proc/cpuinfo absent or lacking the
  * fields). A `unique symbol`, never 0/undefined, so a real count of any value
  * can never be mistaken for absence; callers narrow with `typeof === 'symbol'`.
@@ -127,7 +127,7 @@ export const EMPTY_TALLY: Tally = {
 //region Branded-count construction
 
 /**
- * Brands a caller-validated integer as a `PhysicalCores` count.
+ * Brands a caller-validated integer as a {@link PhysicalCores} count.
  *
  * A brand adds no runtime shape, only a compile-time tag, so an assertion is the
  * only way to mint one.
@@ -149,7 +149,7 @@ function asPhysicalCores(
 }
 
 /**
- * Brands a caller-validated integer as a `WorkerCount`.
+ * Brands a caller-validated integer as a {@link WorkerCount}.
  *
  * A brand adds no runtime shape, only a compile-time tag, so an assertion is the
  * only way to mint one.
@@ -179,11 +179,11 @@ function asWorkerCount(
  *
  * Physical cores (distinct (physical id, core id) pairs) track the benchmark's
  * 4-to-10-worker plateau better than the logical count. Returns the
- * `CORES_UNDETECTED` sentinel off Linux, when /proc/cpuinfo is absent, or when
+ * {@link CORES_UNDETECTED} sentinel off Linux, when /proc/cpuinfo is absent, or when
  * the topology fields are missing (e.g. ARM cpuinfo), so the caller falls back
  * to a parallelism-derived estimate.
  *
- * @returns physical-core count, or `CORES_UNDETECTED` when undetectable
+ * @returns physical-core count, or {@link CORES_UNDETECTED} when undetectable
  *
  * @example
  * ```ts
@@ -245,10 +245,10 @@ function physicalCoreCount(): PhysicalCores | typeof CORES_UNDETECTED {
  *
  * Precedence: an explicit `ZSTD_WORKERS` env override (escape hatch), else a
  * heuristic of physical cores, falling back to half the available parallelism
- * when cores are undetectable. Both paths are capped by `availableParallelism()`
- * and the file count. The `availableParallelism()` cap is mandatory:
+ * when cores are undetectable. Both paths are capped by {@link availableParallelism}
+ * and the file count. The {@link availableParallelism} cap is mandatory:
  * /proc/cpuinfo reports host topology and would oversubscribe a CPU-limited
- * container or CI runner, whereas `availableParallelism()` respects cgroup
+ * container or CI runner, whereas {@link availableParallelism} respects cgroup
  * quotas.
  *
  * @param fileCount - candidate count; >= 1 (callers handle the empty case) and an upper bound on useful workers
@@ -288,7 +288,7 @@ export function resolveWorkerCount(
     },);
   }
   /**
-   * Detected physical cores, or the `CORES_UNDETECTED` sentinel.
+   * Detected physical cores, or the {@link CORES_UNDETECTED} sentinel.
    */
   const detected = physicalCoreCount();
   /**

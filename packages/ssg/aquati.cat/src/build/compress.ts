@@ -85,7 +85,7 @@ async function runWorker(
   );
   /* oxlint-disable typescript/no-unsafe-type-assertion -- node:events once() is typed Promise<any[]>; widen through unknown then assert the worker's single Tally message payload */
   /**
-   * Worker's posted message arguments; exactly one `Tally` for a `message` event.
+   * Worker's posted message arguments; exactly one {@link Tally} for a `message` event.
    */
   const messages = await once(
     worker,

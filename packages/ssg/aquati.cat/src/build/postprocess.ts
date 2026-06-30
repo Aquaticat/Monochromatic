@@ -88,7 +88,7 @@ const STALE_HASH_ZST_PATTERN = /\.[0-9a-f]{10}\.[^.]+\.zst$/u;
 /* oxlint-enable no-restricted-syntax/no-regex */
 
 /**
- * Sentinel returned by `fingerprintCss` when no `styles.css` exists to
+ * Sentinel returned by {@link fingerprintCss} when no `styles.css` exists to
  * fingerprint (already renamed). A genuine `Symbol` rather than
  * `null`/`undefined`, which the `no-nullish-union` rule rejects.
  */
@@ -131,7 +131,7 @@ async function fingerprintLeafAssets(
      */
     const original = basename(filePath,);
     /**
-     * Hashed basename produced by `insertHash`.
+     * Hashed basename produced by {@link insertHash}.
      */
     const hashed = insertHash({
       name: original,
@@ -174,7 +174,7 @@ async function fingerprintLeafAssets(
  * @param replacements - phase 1 replacement map (read-only; CSS entry returned, not added)
  *
  * @returns `styles.css` to hashed-basename mapping for the caller to record, or
- * `CSS_ABSENT` when the CSS file is absent (already fingerprinted)
+ * {@link CSS_ABSENT} when the CSS file is absent (already fingerprinted)
  *
  * @example
  * ```ts
@@ -202,9 +202,9 @@ async function fingerprintCss(
   );
 
   /**
-   * Reads the CSS file, returning `CSS_ABSENT` when missing (already fingerprinted).
+   * Reads the CSS file, returning {@link CSS_ABSENT} when missing (already fingerprinted).
    *
-   * @returns CSS file contents, or `CSS_ABSENT` when the file does not exist
+   * @returns CSS file contents, or {@link CSS_ABSENT} when the file does not exist
    */
   async function readCss(): Promise<string | typeof CSS_ABSENT> {
     try {
@@ -227,7 +227,7 @@ async function fingerprintCss(
   }
 
   /**
-   * Pre-fingerprint CSS body; `CSS_ABSENT` when the file is already renamed.
+   * Pre-fingerprint CSS body; {@link CSS_ABSENT} when the file is already renamed.
    */
   const initialCss = await readCss();
   if (initialCss === CSS_ABSENT)
@@ -257,7 +257,7 @@ async function fingerprintCss(
    */
   const hash = sha256(cssContent,);
   /**
-   * Hashed basename produced by `insertHash`.
+   * Hashed basename produced by {@link insertHash}.
    */
   const hashedName = insertHash({
     name: 'styles.css',
@@ -502,7 +502,7 @@ const leafAssetFiles = fullScan
  * rewrite and hash `styles.css`. Returns the replacements map so phase
  * 3 can consume it.
  *
- * Split out so it can be awaited in a `Promise.all` with `runPagefind`;
+ * Split out so it can be awaited in a `Promise.all` with {@link runPagefind};
  * neither branch touches HTML, so they race on disjoint files.
  *
  * @returns basename → hashed-basename map covering every hashed asset
@@ -522,7 +522,7 @@ async function fingerprintAssets(): Promise<Map<string, string>> {
   l.info(`phase 1: fingerprinted ${replacements.size} leaf assets`,);
 
   /**
-   * `styles.css` mapping returned by phase 2, or `CSS_ABSENT` when the CSS file is absent.
+   * `styles.css` mapping returned by phase 2, or {@link CSS_ABSENT} when the CSS file is absent.
    */
   const cssEntry = await fingerprintCss({
     distDir: DIST,

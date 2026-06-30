@@ -118,8 +118,8 @@ const ASCII_PRINTABLE_MAX = 0x7E;
 /**
  * Matches an `icon('NAME')` or `icon("NAME")` call site in source.
  *
- * Components resolve Material Symbols icons via the `icon(name)` helper
- * (`src/lib/icons/icon.ts`). Call arguments must be string literals,
+ * Components resolve Material Symbols icons via the {@link icon} helper.
+ * Call arguments must be string literals,
  * never variables, so this regex can enumerate the exact set of icons
  * in use. The match group is the bare icon name.
  */
@@ -143,7 +143,7 @@ const LINE_COMMENT_REGEX = /\/\/[^\n]*/gu;
  *
  * Seeds the set with printable ASCII so runtime-rendered strings that
  * do not appear verbatim in any source file still render. Then adds
- * every code point found in every source file under `SOURCE_GLOB`.
+ * every code point found in every source file under {@link SOURCE_GLOB}.
  *
  * TypeScript syntax noise (operators, identifiers, keywords) is all
  * ASCII and therefore free under the seed. Non-ASCII code points
@@ -284,7 +284,9 @@ async function collectIconCodepoints(
 //region Targets
 
 /**
- * Map from font basename to the function that builds its charset.
+ * Map from font basename to the function that builds its charset:
+ * {@link collectBodyCharset} for body/code fonts, {@link collectIconCodepoints}
+ * for the icon font.
  */
 const FONT_CHARSET_BUILDERS: Record<
   string,
