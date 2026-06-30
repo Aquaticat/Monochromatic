@@ -737,7 +737,39 @@ packages/mcp/stdio/src/transport.ts:80 | missing-reference | current: not mentio
 
 ## Batch 10 (morph-compact, advisor, module/test, image-diff, test-support)
 
-(pending)
+TOTAL FINDINGS: 23. `module/test` and most of `image-diff`/`advisor` are
+already very well documented, with consistent `{@link}` usage even for
+sibling-file sentinel symbols; findings cluster in a few specific files.
+
+Systematic pattern: clearest case is `morph-compact/src/morph-client.ts`,
+which defines three custom error classes (`MorphApiKeyMissingError`,
+`MorphInvalidInputError`, `MorphApiError`) each with its own
+well-documented TSDoc, but every consuming function's `@throws`
+describes the failure condition in generic prose instead of
+naming/linking the actual class -- and that omission propagates upward
+into `compaction.ts` and `compress-branch.ts`, whose own `@throws` (or
+missing `@throws`) never names the Morph error classes either, despite
+calling straight into `createMorphCompactClient`/`client.compact()`. A
+smaller pattern: sentinel symbols (`ABSENT`, `NO_CONFIG_FILE`,
+`filterMessage`, `ALL_PROVIDERS`) correctly `{@link}`-linked at most
+call sites but falling back to a bare backtick or no mention in one or
+two inline local-variable docs in the same file, suggesting copy-paste
+lapses rather than the linter-bug downgrade pattern.
+
+```
+packages/module/image-diff/src/client.multi.compare.ts:113 | downgraded-link | current: "`ABSENT` on rejection" | target: ABSENT (packages/module/image-diff/src/describe.absent.ts)
+packages/module/image-diff/src/client.multi.ts:69,121 | downgraded-link | current: "`ALL_PROVIDERS` member" | target: ALL_PROVIDERS (same file)
+packages/module/image-diff/src/client.ts:220 | missing-reference | current: not mentioned (no @throws tag at all) | target: ABSENT (describe.absent.ts)
+packages/module/image-diff/src/describe.gemini.ts:125, describe.ts:152 | downgraded-link | current: "`ABSENT` return" | target: ABSENT (describe.absent.ts)
+packages/pi/advisor/src/config.ts:22,165 | downgraded-link/missing-reference | current: "Sentinel returned by `loadConfigFile`"; NO_CONFIG_FILE only in type, not @param prose | target: loadConfigFile, NO_CONFIG_FILE (same file)
+packages/pi/advisor/src/context.ts:40,45 | missing-reference/downgraded-link | current: "pi's LLM conversion helper" paraphrased; backtick filterMessage | target: convertToLlm (external @earendil-works/pi-coding-agent), filterMessage (same file)
+packages/pi/morph-compact/src/compaction-handler.ts:41 | missing-reference | current: not mentioned | target: NO_MORPH_KEY (api-key.ts), attemptMorphCompaction (compaction.ts)
+packages/pi/morph-compact/src/compaction.ts:117 | missing-reference | current: not mentioned (no @throws tag at all) | target: MorphApiError (morph-client.ts)
+packages/pi/morph-compact/src/compress-branch.ts:9,10,153 | downgraded-link/missing-reference | current: backtick computeFileLists/formatFileOperations/FileOperations mentions; Morph error classes not named | target: computeFileLists/formatFileOperations (file-tracking.ts), FileOperations (external), MorphApiError/MorphApiKeyMissingError/MorphInvalidInputError (morph-client.ts)
+packages/pi/morph-compact/src/morph-client.ts:333,362,467 | missing-reference | current: not mentioned | target: MorphApiKeyMissingError, MorphInvalidInputError, MorphApiError (same file, own class definitions)
+packages/pi/morph-compact/src/pi-message-types.ts:89,147 | missing-reference | current: not mentioned; only role-string literals quoted | target: UserMessage/AssistantMessage/ToolResultMessage, BashExecutionAgentMessage/CustomAgentMessage/BranchSummaryAgentMessage/CompactionSummaryAgentMessage (same file)
+packages/pi/morph-compact/src/types.ts:54 | downgraded-link | current: "`SessionBeforeCompactResult`" | target: SessionBeforeCompactResult (external @earendil-works/pi-coding-agent)
+```
 
 ## Batch 11 (doodle-widget, claude-code-plugins/source, catalog-tighten)
 
