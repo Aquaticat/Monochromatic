@@ -2,6 +2,11 @@
 // Why:   after the fold this path is rarely used (most literal-free rules join the gate),
 //        but it remains the fallback for a rule with no usable filter, and a union DFA
 //        must match if ANY of its members matches as a substring.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { /* names from this Rust use line */ } from "./module";
+// ```
 
 use super::group_seedless;
 use crate::parse::parse;
@@ -20,9 +25,33 @@ fn a_group_matches_any_of_its_members_as_a_substring() {
     let engines = group_seedless(vec![node("[0-9]{4}"), node("[a-z]{4}")]);
     assert!(!engines.is_empty());
     let any = |line: &[u8]| engines.iter().any(|engine| engine.is_match(line));
-    assert!(any(b"xx 1234 xx")); // a 4-digit run
-    assert!(any(b"xx abcd xx")); // a 4-letter run
-    assert!(!any(b"xx 12 ab xx")); // neither run reaches length 4
+    // What:    a 4-digit run.
+    // Why:     The nearby assertion or value needs this note so the test records the exact
+    //          behavior being pinned.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same assertion or value, with the important expectation named above.
+    // ```
+    assert!(any(b"xx 1234 xx"));
+    // What:    a 4-letter run.
+    // Why:     The nearby assertion or value needs this note so the test records the exact
+    //          behavior being pinned.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same assertion or value, with the important expectation named above.
+    // ```
+    assert!(any(b"xx abcd xx"));
+    // What:    neither run reaches length 4.
+    // Why:     The nearby assertion or value needs this note so the test records the exact
+    //          behavior being pinned.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same assertion or value, with the important expectation named above.
+    // ```
+    assert!(!any(b"xx 12 ab xx"));
 }
 
 #[test]

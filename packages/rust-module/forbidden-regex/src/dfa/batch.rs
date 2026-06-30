@@ -10,20 +10,44 @@
 //! a small win and back the `is_match_batch_bucketed` opt-in for over-64-state DFAs. A
 //! vertical SIMD gather across lines was measured and removed: it lost on both arches
 //! (x86 has no 16-bit gather, even native u32 `vpgatherdd` and NEON lose to scalar loads).
+//!
+//! In TS you'd write (pseudocode):
+//! ```ts
+//! // module batch: see exported functions and types below.
+//! ```
 
-/// Imports the DFA table and its per-boundary acceptance-bit helper.
+/// What:    Imports the DFA table and its per-boundary acceptance-bit helper.
+/// Why:     This file needs these names in scope so the implementation below can use short
+///          names instead of long crate paths.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { /* names from this Rust use line */ } from "./module";
+/// ```
 use crate::dfa::table::{Dfa, accept_bit};
 
 /// Lines advanced together by the interleaved kernel at the default width.
 ///
 /// What: the default lane count, eight. Why: eight independent transition reads give the
 /// out-of-order core plenty to overlap; the bucketed opt-in sweeps wider widths.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const const: unknown = /* value below */;
+/// ```
 pub const LANES: usize = 8;
 
 /// Acceptance-bit for the end-of-input boundary (no next byte, at line end).
 ///
 /// What: the mask bit tested once a line's bytes are exhausted. Why: `$` and `\b` can
 /// accept at end of input, where `word_after` is false and `line_end` is true.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function end_bit(/* args */) {
+///   // body documented in Rust
+/// }
+/// ```
 fn end_bit() -> u8 {
     accept_bit(false, true)
 }
@@ -33,21 +57,63 @@ fn end_bit() -> u8 {
 /// What: parallel arrays of current DFA state, finished flag, and verdict per lane.
 /// Why: plain arrays keep the interleaved kernel's per-lane bookkeeping in registers so
 /// the `N` independent transition reads overlap.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type Lanes = {
+///   // fields documented in Rust above
+/// };
+/// ```
 struct Lanes<const N: usize> {
-    /// Current DFA state id per lane.
+    /// What:    Current DFA state id per lane.
+    /// Why:     The surrounding record stores this value by name so later code can read the
+    ///          same piece of state.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// state: unknown[];
+    /// ```
     state: [usize; N],
-    /// Whether a lane has reached a verdict (matched, or fell into the dead sink).
+    /// What:    Whether a lane has reached a verdict (matched, or fell into the dead sink).
+    /// Why:     The surrounding record stores this value by name so later code can read the
+    ///          same piece of state.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// done: unknown[];
+    /// ```
     done: [bool; N],
-    /// Whether a lane's pattern matched.
+    /// What:    Whether a lane's pattern matched.
+    /// Why:     The surrounding record stores this value by name so later code can read the
+    ///          same piece of state.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// hit: unknown[];
+    /// ```
     hit: [bool; N],
 }
 
-/// Construction of a fresh chunk cursor.
+/// What:    Construction of a fresh chunk cursor.
+/// Why:     The program attaches these functions to the named Rust type so callers can use
+///          method syntax.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // Methods are written inside a class or as functions that take the value.
+/// ```
 impl<const N: usize> Lanes<N> {
     /// Builds a cursor with every lane at `start` and no verdict yet.
     ///
     /// What: all lanes start at the DFA start state, unfinished, not hit. Why: each
     /// chunk begins a fresh independent scan per line.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// function new(/* args */) {
+    ///   // body documented in Rust
+    /// }
+    /// ```
     fn new(start: usize) -> Lanes<N> {
         Lanes {
             state: [start; N],
@@ -57,13 +123,27 @@ impl<const N: usize> Lanes<N> {
     }
 }
 
-/// Batch matching over many lines through one DFA.
+/// What:    Batch matching over many lines through one DFA.
+/// Why:     The program attaches these functions to the named Rust type so callers can use
+///          method syntax.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // Methods are written inside a class or as functions that take the value.
+/// ```
 impl Dfa {
     /// Fills `out[i]` with whether the DFA matches `lines[i]`, line by line.
     ///
     /// What: the scalar reference, one [`Dfa::is_match`] per line. Why: the correctness
     /// oracle every batch kernel must match, and the baseline the others are timed
     /// against.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// function is_match_batch_scalar(/* args */) {
+    ///   // body documented in Rust
+    /// }
+    /// ```
     pub fn is_match_batch_scalar(&self, lines: &[&[u8]], out: &mut [bool]) {
         for (line, slot) in lines.iter().zip(out.iter_mut()) {
             *slot = self.is_match(line);
@@ -75,6 +155,13 @@ impl Dfa {
     /// What: flips the lane's `hit`/`done` when its state accepts at the boundary before
     /// `byte`, then returns that byte's class for the transition step. Why: the interleaved
     /// kernel runs this per-(lane, position) acceptance test for each lane in a chunk.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// function step_accept(/* args */) {
+    ///   // body documented in Rust
+    /// }
+    /// ```
     fn step_accept<const N: usize>(&self, lanes: &mut Lanes<N>, lane: usize, byte: u8) -> usize {
         let class = self.class_map[byte as usize] as usize;
         let mask = accept_bit(self.class_word[class], self.class_newline[class]);
@@ -90,6 +177,13 @@ impl Dfa {
     /// What: marks `hit` on any lane whose state accepts at end of input. Why: a line
     /// whose bytes ran out without matching can still match at `$`/`\b`, exactly as the
     /// scalar loop's post-loop check.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// function finish_chunk(/* args */) {
+    ///   // body documented in Rust
+    /// }
+    /// ```
     fn finish_chunk<const N: usize>(&self, lanes: &mut Lanes<N>) {
         let end = end_bit();
         for lane in 0..N {
@@ -105,6 +199,13 @@ impl Dfa {
     /// scalar table reads, and runs the leftover lines scalar. Why: overlapping `N`
     /// independent transition loads exposes the memory-level parallelism the per-line
     /// loop's serial dependency hides; `N` is the bucket width so the benchmark can sweep it.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// function interleaved_width(/* args */) {
+    ///   // body documented in Rust
+    /// }
+    /// ```
     #[inline(always)]
     fn interleaved_width<const N: usize>(&self, lines: &[&[u8]], out: &mut [bool]) {
         let nc = self.nclasses as usize;
@@ -116,9 +217,17 @@ impl Dfa {
             let lens: [usize; N] = std::array::from_fn(|lane| chunk[lane].len());
             let max_len = lens.iter().copied().max().unwrap_or(0);
             let mut lanes = Lanes::<N>::new(start);
-            // Column-major scan: `pos` indexes each lane's own line (`chunk[lane][pos]`),
-            // not `chunk` itself, so there is no single collection to iterate; clippy's
-            // enumerate hint would walk the wrong axis.
+            // What:    Column-major scan: `pos` indexes each lane's own line
+            //          (`chunk[lane][pos]`), not `chunk` itself, so there is no single
+            //          collection to iterate; clippy's enumerate hint would walk the wrong
+            //          axis.
+            // Why:     The surrounding function uses this step to keep the matcher behavior
+            //          correct at this point.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+            // ```
             #[allow(clippy::needless_range_loop)]
             for pos in 0..max_len {
                 for lane in 0..N {
@@ -147,6 +256,13 @@ impl Dfa {
     ///
     /// What: [`Dfa::interleaved_width`] at [`LANES`] lanes. Why: the production-shaped
     /// entry; the width sweep uses [`Dfa::is_match_batch_interleaved_w`].
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// function is_match_batch_interleaved(/* args */) {
+    ///   // body documented in Rust
+    /// }
+    /// ```
     pub fn is_match_batch_interleaved(&self, lines: &[&[u8]], out: &mut [bool]) {
         self.interleaved_width::<LANES>(lines, out);
     }
@@ -155,6 +271,13 @@ impl Dfa {
     ///
     /// What: [`Dfa::interleaved_width`] at the caller-chosen `N`. Why: lets the bench
     /// sweep how bucket size trades memory-level parallelism against per-chunk overhead.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// function is_match_batch_interleaved_w(/* args */) {
+    ///   // body documented in Rust
+    /// }
+    /// ```
     pub fn is_match_batch_interleaved_w<const N: usize>(&self, lines: &[&[u8]], out: &mut [bool]) {
         self.interleaved_width::<N>(lines, out);
     }
@@ -167,13 +290,27 @@ impl Dfa {
     /// capped the interleaved kernel at parity; dropping them (sound, since the verdict
     /// only accumulates) lets the `N` independent transition chains pipeline fully. The
     /// rare matched lane scans a few extra bytes, negligible at a scanner's match rate.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// function tight_chunk(/* args */) {
+    ///   // body documented in Rust
+    /// }
+    /// ```
     #[inline(always)]
     fn tight_chunk<const N: usize>(&self, chunk: &[&[u8]], len: usize, out: &mut [bool]) {
         let nc = self.nclasses as usize;
         let mut state = [self.start as usize; N];
         let mut hit = [false; N];
-        // `pos` indexes each lane's own line (`chunk[lane][pos]`), not `chunk`; the loop
-        // is the column walk, so clippy's enumerate hint targets the wrong axis.
+        // What:    `pos` indexes each lane's own line (`chunk[lane][pos]`), not `chunk`; the
+        //          loop is the column walk, so clippy's enumerate hint targets the wrong axis.
+        // Why:     The surrounding function uses this step to keep the matcher behavior
+        //          correct at this point.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+        // ```
         #[allow(clippy::needless_range_loop)]
         for pos in 0..len {
             for lane in 0..N {
@@ -195,6 +332,13 @@ impl Dfa {
     /// What: runs [`Dfa::tight_chunk`] over `lines`, which must all share one byte length
     /// (an exact-length bucket), with the leftover lines scanned scalar. Why: measures
     /// the memory-level-parallelism ceiling once the per-lane branches are gone.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// function is_match_batch_tight_w(/* args */) {
+    ///   // body documented in Rust
+    /// }
+    /// ```
     pub fn is_match_batch_tight_w<const N: usize>(&self, lines: &[&[u8]], out: &mut [bool]) {
         let len = lines.first().map_or(0, |line| line.len());
         let mut chunks = lines.chunks_exact(N);
@@ -210,7 +354,14 @@ impl Dfa {
 
 }
 
-/// Unit tests for the batch kernels, in a sidecar (max-lines exempt).
+/// What:    Unit tests for the batch kernels, in a sidecar (max-lines exempt).
+/// Why:     The package keeps that concept in a separate Rust file so this module can refer to
+///          it by name.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import "./tests";
+/// ```
 #[cfg(test)]
 #[path = "batch_tests.rs"]
 mod tests;

@@ -2,6 +2,11 @@
 // Why:   Display is what the scanner surfaces to a human when a rule is rejected; an
 //        empty or wrong message would make a rejected rule undiagnosable, so each
 //        variant must render a non-empty, descriptive line.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { /* names from this Rust use line */ } from "./module";
+// ```
 
 use super::CompileError;
 

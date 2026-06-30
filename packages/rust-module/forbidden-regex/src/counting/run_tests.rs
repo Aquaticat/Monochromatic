@@ -1,6 +1,13 @@
-//! Tests for the counting-set simulation: differential vs the eager DFA, and a
-//! serialized-size proof that bounded repetition no longer blows up. Exempt from
-//! the max-lines and rustdoc budgets as a `*_tests.rs` file.
+//! What:    Tests for the counting-set simulation: differential vs the eager DFA, and a
+//!          serialized-size proof that bounded repetition no longer blows up. Exempt from the
+//!          max-lines and rustdoc budgets as a `*_tests.rs` file.
+//! Why:     This file is the Rust module that groups the run_tests implementation, so a reader
+//!          can enter the package through one named area.
+//!
+//! In TS you'd write (pseudocode):
+//! ```ts
+//! // module run_tests: see exported functions and types below.
+//! ```
 
 use crate::ast::node::Node;
 use crate::ast::smart::concat;
@@ -9,20 +16,47 @@ use crate::counting::nfa::CountingNfa;
 use crate::dfa::build_dfa_within;
 use crate::parse::parse;
 
-// Builds the eager-DFA oracle for a pattern: the trusted (if large) reference.
+// What:    Builds the eager-DFA oracle for a pattern: the trusted (if large) reference.
+// Why:     The program needs this named step so callers can reuse the behavior without copying
+//          its body.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function oracle(/* args */) {
+//   // body documented in Rust
+// }
+// ```
 fn oracle(pattern: &str) -> impl Fn(&[u8]) -> bool {
     let node = parse(pattern).expect("oracle pattern parses");
     let dfa = build_dfa_within(concat(vec![Node::Top, node]), 200_000).expect("oracle dfa builds");
     move |line: &[u8]| dfa.is_match(line)
 }
 
-// Builds the counting NFA for a pattern, asserting it takes the counting back-end.
+// What:    Builds the counting NFA for a pattern, asserting it takes the counting back-end.
+// Why:     The program needs this named step so callers can reuse the behavior without copying
+//          its body.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function linear(/* args */) {
+//   // body documented in Rust
+// }
+// ```
 fn linear(pattern: &str) -> CountingNfa {
     let node = parse(pattern).expect("pattern parses");
     build_nfa(&node).expect("pattern builds an nfa")
 }
 
-// Every counting-NFA pattern must agree with the eager DFA on every probe input.
+// What:    Every counting-NFA pattern must agree with the eager DFA on every probe input.
+// Why:     The program needs this named step so callers can reuse the behavior without copying
+//          its body.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function linear_agrees_with_oracle(/* args */) {
+//   // body documented in Rust
+// }
+// ```
 #[test]
 fn linear_agrees_with_oracle() {
     let patterns = [
@@ -82,11 +116,27 @@ fn linear_agrees_with_oracle() {
     }
 }
 
-// The AWS-key shape that blew the eager DFA to 72 KB must stay tiny here.
+// What:    The AWS-key shape that blew the eager DFA to 72 KB must stay tiny here.
+// Why:     The program needs this named step so callers can reuse the behavior without copying
+//          its body.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function counted_key_stays_small(/* args */) {
+//   // body documented in Rust
+// }
+// ```
 #[test]
 fn counted_key_stays_small() {
     let prog = linear("AKIA[A-Z2-7]{16}");
-    // Four literal classes plus one counted element.
+    // What:    Four literal classes plus one counted element.
+    // Why:     The test uses this setup or assertion to pin the behavior named by the test
+    //          function.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    // ```
     assert_eq!(prog.elements.len(), 5);
     let bytes = bincode::serialize(&prog).expect("serializes");
     assert!(
@@ -96,19 +146,45 @@ fn counted_key_stays_small() {
     );
 }
 
-// The counted bound must match exactly: 16 trailing chars accept, 15 reject.
+// What:    The counted bound must match exactly: 16 trailing chars accept, 15 reject.
+// Why:     The program needs this named step so callers can reuse the behavior without copying
+//          its body.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function counted_bound_is_exact(/* args */) {
+//   // body documented in Rust
+// }
+// ```
 #[test]
 fn counted_bound_is_exact() {
     let prog = linear("AKIA[A-Z2-7]{16}");
     assert!(prog.is_match(b"AKIAABCDEFGHIJKLMNOP"));
     assert!(prog.is_match(b"prefix AKIAABCDEFGHIJKLMNOP suffix"));
     assert!(!prog.is_match(b"AKIAABCDEFGHIJKLMNO"));
-    // A digit outside [A-Z2-7] breaks the run (0 and 1 are excluded).
+    // What:    A digit outside [A-Z2-7] breaks the run (0 and 1 are excluded).
+    // Why:     The test uses this setup or assertion to pin the behavior named by the test
+    //          function.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    // ```
     assert!(!prog.is_match(b"AKIAABCDEFGHIJKLMN0P"));
 }
 
-// A count of 64 needs bit 64, which spills past the first 64-bit word: count_set_for must
-// size each counted position's bitset to the element's own max, not a one-word placeholder.
+// What:    A count of 64 needs bit 64, which spills past the first 64-bit word: count_set_for
+//          must size each counted position's bitset to the element's own max, not a one-word
+//          placeholder.
+// Why:     The program needs this named step so callers can reuse the behavior without copying
+//          its body.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function a_count_past_one_word_is_sized_correctly(/* args */) {
+//   // body documented in Rust
+// }
+// ```
 #[test]
 fn a_count_past_one_word_is_sized_correctly() {
     let prog = linear("[a-z]{64}");

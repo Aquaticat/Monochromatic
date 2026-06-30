@@ -3,16 +3,39 @@
 // Why:   the parser is the widest branch surface in the engine and the security gate
 //        that turns hostile rule text into either a bounded node or a clean error; a
 //        regressed accept/reject decision is how unsupported or footgun patterns slip in.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { /* names from this Rust use line */ } from "./module";
+// ```
 
 use super::parse;
 use crate::error::CompileError;
 
-// Asserts a pattern parses successfully.
+// What:    Asserts a pattern parses successfully.
+// Why:     The program needs this named step so callers can reuse the behavior without copying
+//          its body.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function ok(/* args */) {
+//   // body documented in Rust
+// }
+// ```
 fn ok(pattern: &str) {
     assert!(parse(pattern).is_ok(), "expected {pattern:?} to parse, got {:?}", parse(pattern));
 }
 
-// Asserts a pattern is rejected as a syntax / unsupported-construct error.
+// What:    Asserts a pattern is rejected as a syntax / unsupported-construct error.
+// Why:     The program needs this named step so callers can reuse the behavior without copying
+//          its body.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function syntax_err(/* args */) {
+//   // body documented in Rust
+// }
+// ```
 fn syntax_err(pattern: &str) {
     assert!(
         matches!(parse(pattern), Err(CompileError::Syntax { .. })),
@@ -42,7 +65,15 @@ fn accepts_classes() {
     ok("[a-zA-Z0-9_]");
     ok("[^0-9]");
     ok("[a-f0-9]");
-    ok("x[]a]"); // a leading `]` is a class member, not a close
+    // What:    a leading `]` is a class member, not a close.
+    // Why:     The nearby assertion or value needs this note so the test records the exact
+    //          behavior being pinned.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same assertion or value, with the important expectation named above.
+    // ```
+    ok("x[]a]");
 }
 
 #[test]
@@ -69,7 +100,15 @@ fn accepts_bounded_repetition() {
     ok("a{3}");
     ok("a{3,6}");
     ok("[a-z]{16}");
-    ok("xa?"); // optional needs a mandatory neighbour to stay non-nullable
+    // What:    optional needs a mandatory neighbour to stay non-nullable.
+    // Why:     The nearby assertion or value needs this note so the test records the exact
+    //          behavior being pinned.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same assertion or value, with the important expectation named above.
+    // ```
+    ok("xa?");
     ok("AKIA[A-Z2-7]{16}");
 }
 
@@ -112,10 +151,26 @@ fn rejects_bad_repetition_bounds() {
 
 #[test]
 fn repetition_count_at_the_cap_is_allowed_but_beyond_is_rejected() {
-    // The desugared-count cap is 1024: exactly at the cap parses, one past is rejected.
+    // What:    The desugared-count cap is 1024: exactly at the cap parses, one past is
+    //          rejected.
+    // Why:     The test uses this setup or assertion to pin the behavior named by the test
+    //          function.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    // ```
     ok("a{1024}");
     syntax_err("a{1025}");
-    syntax_err("a{1,1025}"); // the upper bound is also capped
+    // What:    the upper bound is also capped.
+    // Why:     The nearby assertion or value needs this note so the test records the exact
+    //          behavior being pinned.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same assertion or value, with the important expectation named above.
+    // ```
+    syntax_err("a{1,1025}");
 }
 
 #[test]
@@ -128,10 +183,42 @@ fn rejects_unbalanced_brackets() {
 
 #[test]
 fn rejects_unsupported_groups() {
-    syntax_err("(abc)"); // capturing group
-    syntax_err("(?=a)"); // lookahead
-    syntax_err("(?<=a)"); // lookbehind
-    syntax_err("(?P<n>a)"); // named capture
+    // What:    capturing group.
+    // Why:     The nearby assertion or value needs this note so the test records the exact
+    //          behavior being pinned.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same assertion or value, with the important expectation named above.
+    // ```
+    syntax_err("(abc)");
+    // What:    lookahead.
+    // Why:     The nearby assertion or value needs this note so the test records the exact
+    //          behavior being pinned.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same assertion or value, with the important expectation named above.
+    // ```
+    syntax_err("(?=a)");
+    // What:    lookbehind.
+    // Why:     The nearby assertion or value needs this note so the test records the exact
+    //          behavior being pinned.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same assertion or value, with the important expectation named above.
+    // ```
+    syntax_err("(?<=a)");
+    // What:    named capture.
+    // Why:     The nearby assertion or value needs this note so the test records the exact
+    //          behavior being pinned.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same assertion or value, with the important expectation named above.
+    // ```
+    syntax_err("(?P<n>a)");
 }
 
 #[test]
@@ -157,7 +244,14 @@ fn rejects_trailing_and_stray_operators() {
 
 #[test]
 fn verbose_mode_ignores_unescaped_whitespace() {
-    // Whitespace outside classes is ignored, so these all parse to the same node.
+    // What:    Whitespace outside classes is ignored, so these all parse to the same node.
+    // Why:     The test uses this setup or assertion to pin the behavior named by the test
+    //          function.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    // ```
     let base = parse("abc").unwrap();
     assert_eq!(parse("a b c").unwrap(), base);
     assert_eq!(parse("a\tb\tc").unwrap(), base);
@@ -167,19 +261,42 @@ fn verbose_mode_ignores_unescaped_whitespace() {
 
 #[test]
 fn first_column_hash_is_a_comment_to_end_of_line() {
-    // A `#` at the start of a line comments out the rest of that line.
+    // What:    A `#` at the start of a line comments out the rest of that line.
+    // Why:     The test uses this setup or assertion to pin the behavior named by the test
+    //          function.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    // ```
     assert_eq!(parse("# a header comment\nabc").unwrap(), parse("abc").unwrap());
     assert_eq!(parse("abc\n# trailing comment line\n").unwrap(), parse("abc").unwrap());
 }
 
 #[test]
 fn escaped_and_class_whitespace_stays_literal() {
-    // An escaped space and a space inside a class are real bytes, not ignored.
+    // What:    An escaped space and a space inside a class are real bytes, not ignored.
+    // Why:     The test uses this setup or assertion to pin the behavior named by the test
+    //          function.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    // ```
     assert_ne!(parse("a\\ b").unwrap(), parse("ab").unwrap());
     assert_ne!(parse("[ ]x").unwrap(), parse("x").unwrap());
 }
 
-// Asserts a pattern is a syntax error reported at exactly `pos`.
+// What:    Asserts a pattern is a syntax error reported at exactly `pos`.
+// Why:     The program needs this named step so callers can reuse the behavior without copying
+//          its body.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function syntax_at(/* args */) {
+//   // body documented in Rust
+// }
+// ```
 fn syntax_at(pattern: &str, pos: usize) {
     match parse(pattern) {
         Err(CompileError::Syntax { pos: got, .. }) => {
@@ -189,7 +306,16 @@ fn syntax_at(pattern: &str, pos: usize) {
     }
 }
 
-// Asserts a pattern is a syntax error whose message contains `needle`.
+// What:    Asserts a pattern is a syntax error whose message contains `needle`.
+// Why:     The program needs this named step so callers can reuse the behavior without copying
+//          its body.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function syntax_msg(/* args */) {
+//   // body documented in Rust
+// }
+// ```
 fn syntax_msg(pattern: &str, needle: &str) {
     match parse(pattern) {
         Err(CompileError::Syntax { message, .. }) => {
@@ -201,36 +327,74 @@ fn syntax_msg(pattern: &str, needle: &str) {
 
 #[test]
 fn syntax_errors_report_the_offending_offset() {
-    // The cursor's reported position must be the real byte offset of the problem, not a
-    // constant: a `*` after `abc` is at offset 3, and a `+` after a five-byte group at 5.
+    // What:    The cursor's reported position must be the real byte offset of the problem, not
+    //          a constant: a `*` after `abc` is at offset 3, and a `+` after a five-byte group
+    //          at 5.
+    // Why:     The test uses this setup or assertion to pin the behavior named by the test
+    //          function.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    // ```
     syntax_at("abc*", 3);
     syntax_at("(?:a)+", 5);
 }
 
 #[test]
 fn trailing_and_unmatched_input_is_rejected() {
-    // A stray close after a complete expression is a syntax error, never silently dropped.
+    // What:    A stray close after a complete expression is a syntax error, never silently
+    //          dropped.
+    // Why:     The test uses this setup or assertion to pin the behavior named by the test
+    //          function.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    // ```
     syntax_err("a)");
     syntax_err("(?:a)b]");
 }
 
 #[test]
 fn class_range_endpoints_and_lookahead() {
-    // A trailing `-` before `]` is a literal (the range lookahead must read the `]` exactly
-    // one byte ahead), and an equal-endpoint range `[a-a]` is the single byte, not "out of
-    // order"; only a genuinely descending range is rejected.
+    // What:    A trailing `-` before `]` is a literal (the range lookahead must read the `]`
+    //          exactly one byte ahead), and an equal-endpoint range `[a-a]` is the single
+    //          byte, not "out of order"; only a genuinely descending range is rejected.
+    // Why:     The test uses this setup or assertion to pin the behavior named by the test
+    //          function.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    // ```
     ok("[a-]");
     ok("[a-a]");
     ok("[-a]");
     syntax_err("[z-a]");
-    // `[a-]` and `[-a]` are both the set {`a`, `-`}, regardless of where the `-` sits.
+    // What:    `[a-]` and `[-a]` are both the set {`a`, `-`}, regardless of where the `-`
+    //          sits.
+    // Why:     The test uses this setup or assertion to pin the behavior named by the test
+    //          function.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    // ```
     assert_eq!(parse("[a-]").unwrap(), parse("[-a]").unwrap());
 }
 
 #[test]
 fn repetition_bounds_accept_equal_and_reject_descending() {
-    // `{n,n}` is a valid exact count; the bound test is strict `<`, so `m == n` is allowed
-    // and only `n > m` is rejected.
+    // What:    `{n,n}` is a valid exact count; the bound test is strict `<`, so `m == n` is
+    //          allowed and only `n > m` is rejected.
+    // Why:     The test uses this setup or assertion to pin the behavior named by the test
+    //          function.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    // ```
     ok("a{2,2}");
     syntax_err("a{3,2}");
     syntax_msg("a{1,}", "unbounded");
@@ -238,8 +402,16 @@ fn repetition_bounds_accept_equal_and_reject_descending() {
 
 #[test]
 fn unsupported_quantifiers_carry_their_own_message() {
-    // `*`/`+` are rejected in postfix position (after an atom) with a message pointing at
-    // the `{m,n}` replacement, and in atom position (no preceding atom) as plain errors.
+    // What:    `*`/`+` are rejected in postfix position (after an atom) with a message
+    //          pointing at the `{m,n}` replacement, and in atom position (no preceding atom)
+    //          as plain errors.
+    // Why:     The test uses this setup or assertion to pin the behavior named by the test
+    //          function.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    // ```
     syntax_msg("a*", "{0,n}");
     syntax_msg("a+", "{1,n}");
     syntax_err("*");
@@ -249,9 +421,16 @@ fn unsupported_quantifiers_carry_their_own_message() {
 
 #[test]
 fn metacharacters_without_an_operand_are_rejected() {
-    // A leading operator, a bare brace with no preceding atom, and a mix of `&`/`|` at one
-    // level are all errors. `{` is tested alone, not `{3}`: a trailing `}` would itself be
-    // rejected as unmatched, masking whether the `{` arm fired.
+    // What:    A leading operator, a bare brace with no preceding atom, and a mix of `&`/`|`
+    //          at one level are all errors. `{` is tested alone, not `{3}`: a trailing `}`
+    //          would itself be rejected as unmatched, masking whether the `{` arm fired.
+    // Why:     The test uses this setup or assertion to pin the behavior named by the test
+    //          function.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    // ```
     syntax_err("|a");
     syntax_err("&a");
     syntax_err("{");
@@ -260,20 +439,58 @@ fn metacharacters_without_an_operand_are_rejected() {
 
 #[test]
 fn empty_matchable_patterns_are_rejected_only_when_realizable() {
-    // `^$` matches the empty line, so it is empty-matchable and rejected. `^\b$` is nullable
-    // only in the impossible context (a word boundary at an empty line, which has no word
-    // byte on either side), so it is NOT empty-matchable and must compile.
+    // What:    `^$` matches the empty line, so it is empty-matchable and rejected. `^\b$` is
+    //          nullable only in the impossible context (a word boundary at an empty line,
+    //          which has no word byte on either side), so it is NOT empty-matchable and must
+    //          compile.
+    // Why:     The test uses this setup or assertion to pin the behavior named by the test
+    //          function.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    // ```
     assert!(matches!(parse("^$"), Err(CompileError::EmptyMatchable)), "^$ should be rejected");
     assert!(parse("^\\b$").is_ok(), "^\\b$ is not realizably empty-matchable: {:?}", parse("^\\b$"));
-    // A bare word boundary is realizably empty and stays rejected.
+    // What:    A bare word boundary is realizably empty and stays rejected.
+    // Why:     The test uses this setup or assertion to pin the behavior named by the test
+    //          function.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    // ```
     assert!(matches!(parse("\\b"), Err(CompileError::EmptyMatchable)));
 }
 
 #[test]
 fn mid_line_hash_is_a_literal_not_a_comment() {
-    // A `#` that is not the first column of its line is a literal byte; only the
-    // first-column comment rule (guarded by `at_line_start`) strips to end of line.
+    // What:    A `#` that is not the first column of its line is a literal byte; only the
+    //          first-column comment rule (guarded by `at_line_start`) strips to end of line.
+    // Why:     The test uses this setup or assertion to pin the behavior named by the test
+    //          function.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    // ```
     let with_hash = parse("a#b").unwrap();
-    assert_eq!(with_hash, parse("a\\#b").unwrap()); // identical to the explicitly-escaped form
-    assert_ne!(with_hash, parse("a").unwrap()); // the `#b` was NOT comment-stripped away
+    // What:    identical to the explicitly-escaped form.
+    // Why:     The nearby assertion or value needs this note so the test records the exact
+    //          behavior being pinned.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same assertion or value, with the important expectation named above.
+    // ```
+    assert_eq!(with_hash, parse("a\\#b").unwrap());
+    // What:    the `#b` was NOT comment-stripped away.
+    // Why:     The nearby assertion or value needs this note so the test records the exact
+    //          behavior being pinned.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same assertion or value, with the important expectation named above.
+    // ```
+    assert_ne!(with_hash, parse("a").unwrap());
 }

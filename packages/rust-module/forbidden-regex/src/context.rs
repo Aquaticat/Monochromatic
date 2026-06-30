@@ -1,4 +1,11 @@
-//! Position context that resolves the zero-width assertions `^`, `$`, and `\b`.
+//! What:    Position context that resolves the zero-width assertions `^`, `$`, and `\b`.
+//! Why:     This file is the Rust module that groups the context implementation, so a reader
+//!          can enter the package through one named area.
+//!
+//! In TS you'd write (pseudocode):
+//! ```ts
+//! // module context: see exported functions and types below.
+//! ```
 
 /// The boundary context at one position between (or at the ends of) the input.
 ///
@@ -7,14 +14,49 @@
 /// `word_before`/`word_after` are the word-ness of the adjacent bytes and answer
 /// `\b`. Why: anchors consume no byte, so their meaning depends entirely on this
 /// context rather than on the node alone.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type Ctx = {
+///   // fields documented in Rust above
+/// };
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Ctx {
-    /// True at the start of the input or just after a newline.
+    /// What:    True at the start of the input or just after a newline.
+    /// Why:     The surrounding record stores this value by name so later code can read the
+    ///          same piece of state.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// line_start: boolean;
+    /// ```
     pub line_start: bool,
-    /// True at the end of the input or just before a newline.
+    /// What:    True at the end of the input or just before a newline.
+    /// Why:     The surrounding record stores this value by name so later code can read the
+    ///          same piece of state.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// line_end: boolean;
+    /// ```
     pub line_end: bool,
-    /// True when the byte immediately before this position is a word byte.
+    /// What:    True when the byte immediately before this position is a word byte.
+    /// Why:     The surrounding record stores this value by name so later code can read the
+    ///          same piece of state.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// word_before: boolean;
+    /// ```
     pub word_before: bool,
-    /// True when the byte immediately after this position is a word byte.
+    /// What:    True when the byte immediately after this position is a word byte.
+    /// Why:     The surrounding record stores this value by name so later code can read the
+    ///          same piece of state.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// word_after: boolean;
+    /// ```
     pub word_after: bool,
 }

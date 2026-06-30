@@ -14,10 +14,24 @@
 //! export function isMatchBatch(lines: Uint8Array[]): boolean[];
 //! ```
 
-/// Imports the public matcher types this module extends.
+/// What:    Imports the public matcher types this module extends.
+/// Why:     This file needs these names in scope so the implementation below can use short
+///          names instead of long crate paths.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { /* names from this Rust use line */ } from "./module";
+/// ```
 use super::{CheckedFull, Regex, RegexSet};
 
-/// Imports the anchored line-start match used by the per-line resolution.
+/// What:    Imports the anchored line-start match used by the per-line resolution.
+/// Why:     This file needs these names in scope so the implementation below can use short
+///          names instead of long crate paths.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { /* names from this Rust use line */ } from "./module";
+/// ```
 use crate::build::line_start_match;
 
 /// Lines advanced together per exact-length bucket in [`Regex::is_match_batch_bucketed`].
@@ -25,15 +39,34 @@ use crate::build::line_start_match;
 /// What: the bucket width, thirty-two. Why: the cross-arch sweep found 32 the sweet
 /// spot, enough independent transition chains to saturate memory-level parallelism while
 /// the per-column bookkeeping stays small; 16 is slightly behind and 64 regresses.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const BATCH_BUCKET: unknown = /* value below */;
+/// ```
 const BATCH_BUCKET: usize = 32;
 
-/// Many-lines matching for a single compiled pattern.
+/// What:    Many-lines matching for a single compiled pattern.
+/// Why:     The program attaches these functions to the named Rust type so callers can use
+///          method syntax.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // Methods are written inside a class or as functions that take the value.
+/// ```
 impl Regex {
     /// Reports, per line, whether the pattern matches a substring of that line.
     ///
     /// What: returns one verdict per input line. Why: the batch face of
-    /// [`Regex::is_match`]; a seedless table pattern over a large batch runs the Sheng
-    /// permute kernel, every other shape loops the per-line match.
+    /// [`Regex::is_match`]; a table-backed pattern with no required literal over a large
+    /// batch runs the Sheng permute kernel, every other shape loops the per-line match.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// function isMatchBatch(lines: Uint8Array[]): boolean[] {
+    ///   return lines.map((line) => this.isMatch(line));
+    /// }
+    /// ```
     ///
     /// # Example
     ///
@@ -60,6 +93,13 @@ impl Regex {
     /// lines match (the per-line loop early-exits) so it is opt-in, not the default. The
     /// internal sort is near-linear on already length-sorted input, so a caller that
     /// pre-buckets pays almost nothing for it.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// function isMatchBatchBucketed(lines: Uint8Array[]): boolean[] {
+    ///   return batchByLengthThenMatch(lines);
+    /// }
+    /// ```
     ///
     /// # Example
     ///
@@ -98,6 +138,13 @@ impl Regex {
     ///
     /// What: runs the scalar batch on the table back-end, else the ordinary per-line
     /// loop. Why: the baseline the interleaved, tight, and Sheng kernels are timed against.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// function is_match_batch_scalar(/* args */) {
+    ///   // body documented in Rust
+    /// }
+    /// ```
     #[doc(hidden)]
     pub fn is_match_batch_scalar(&self, lines: &[&[u8]]) -> Vec<bool> {
         let mut out = vec![false; lines.len()];
@@ -113,6 +160,13 @@ impl Regex {
     /// What: runs the interleaved batch on the table back-end, else the per-line loop.
     /// Why: measures the memory-level parallelism of N independent scalar transition chains
     /// against the scalar baseline.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// function is_match_batch_interleaved(/* args */) {
+    ///   // body documented in Rust
+    /// }
+    /// ```
     #[doc(hidden)]
     pub fn is_match_batch_interleaved(&self, lines: &[&[u8]]) -> Vec<bool> {
         let mut out = vec![false; lines.len()];
@@ -128,6 +182,13 @@ impl Regex {
     /// What: true when the engine is `EngineKind::Table`. Why: the batch kernels only
     /// diverge on a table back-end, so the benchmark confirms a microbench pattern is
     /// one before trusting its kernel-versus-kernel numbers.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// function is_table(/* args */) {
+    ///   // body documented in Rust
+    /// }
+    /// ```
     #[doc(hidden)]
     pub fn is_table(&self) -> bool {
         self.engine.table_dfa().is_some()
@@ -138,6 +199,13 @@ impl Regex {
     /// What: forces the interleaved batch at `N` lanes on the table back-end, else the
     /// per-line loop. Why: sweeps how bucket size trades memory-level parallelism against
     /// per-chunk overhead.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// function batch_inter_w(/* args */) {
+    ///   // body documented in Rust
+    /// }
+    /// ```
     #[doc(hidden)]
     pub fn batch_inter_w<const N: usize>(&self, lines: &[&[u8]]) -> Vec<bool> {
         let mut out = vec![false; lines.len()];
@@ -153,6 +221,13 @@ impl Regex {
     /// What: forces the tight batch at `N` lanes on the table back-end; `lines` must all
     /// share one byte length (an exact-length bucket). Why: measures the MLP ceiling once
     /// the per-lane early-exit branches are removed.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// function batch_tight_w(/* args */) {
+    ///   // body documented in Rust
+    /// }
+    /// ```
     #[doc(hidden)]
     pub fn batch_tight_w<const N: usize>(&self, lines: &[&[u8]]) -> Vec<bool> {
         let mut out = vec![false; lines.len()];
@@ -168,6 +243,13 @@ impl Regex {
     /// What: forces the Sheng per-line scan on a table back-end of at most 64 states, else
     /// the per-line loop. Why: measures the permute-transition path that attacks per-byte
     /// latency directly, a different axis from the across-lines bucketed kernels.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// function batch_sheng(/* args */) {
+    ///   // body documented in Rust
+    /// }
+    /// ```
     #[doc(hidden)]
     pub fn batch_sheng(&self, lines: &[&[u8]]) -> Vec<bool> {
         let mut out = vec![false; lines.len()];
@@ -183,6 +265,13 @@ impl Regex {
     /// What: forces the two-byte Sheng scan on a qualifying table back-end (position-
     /// independent acceptance, at most 64 states and 16 classes), else the scalar batch.
     /// Why: measures whether one permute per two bytes beats the one-byte Sheng.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// function batch_sheng2(/* args */) {
+    ///   // body documented in Rust
+    /// }
+    /// ```
     #[doc(hidden)]
     pub fn batch_sheng2(&self, lines: &[&[u8]]) -> Vec<bool> {
         let mut out = vec![false; lines.len()];
@@ -194,13 +283,27 @@ impl Regex {
     }
 }
 
-/// Many-lines matching for a whole ruleset.
+/// What:    Many-lines matching for a whole ruleset.
+/// Why:     The program attaches these functions to the named Rust type so callers can use
+///          method syntax.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // Methods are written inside a class or as functions that take the value.
+/// ```
 impl RegexSet {
     /// Reports, per line, whether any rule matches a substring of that line.
     ///
     /// What: one verdict per input line, equal to calling [`RegexSet::is_match`] on
     /// each. Why: the batch face of the set matcher; the consumer scans a file by
     /// handing every line at once.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// function isMatchBatch(lines: Uint8Array[]): boolean[] {
+    ///   return lines.map((line) => this.isMatch(line));
+    /// }
+    /// ```
     ///
     /// # Example
     ///
@@ -220,6 +323,13 @@ impl RegexSet {
     /// the negative-line cost is the per-line prefilter, and short lines starve Teddy's
     /// SIMD; one long-buffer sweep runs it at full width and skips the per-line gate on
     /// every line with no seed. Equivalent to [`RegexSet::is_match_batch`] line for line.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// function is_match_batch_concat(/* args */) {
+    ///   // body documented in Rust
+    /// }
+    /// ```
     #[doc(hidden)]
     pub fn is_match_batch_concat(&self, lines: &[&[u8]]) -> Vec<bool> {
         let count = lines.len();
@@ -248,6 +358,13 @@ impl RegexSet {
     /// What: walks the prefilter from hit to hit, attributing each to its line and
     /// jumping to the next line start. Why: one SIMD pass replaces a per-line prefilter
     /// call, and jumping past a flagged line keeps the sweep over the negative gaps.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// function sweep_candidates(/* args */) {
+    ///   // body documented in Rust
+    /// }
+    /// ```
     fn sweep_candidates(&self, buf: &[u8], starts: &[usize]) -> Vec<bool> {
         let mut candidate = vec![false; starts.len()];
         let mut at = 0;
@@ -268,6 +385,13 @@ impl RegexSet {
     /// rules and the literal-free groups, mirroring [`RegexSet::is_match`]. Why: skipping
     /// the gate on a seedless line is exactly what the prefilter would have done per
     /// line, so the verdict is unchanged.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// function resolve_line(/* args */) {
+    ///   // body documented in Rust
+    /// }
+    /// ```
     fn resolve_line(&self, line: &[u8], has_seed: bool) -> bool {
         if has_seed {
             let mut checked = CheckedFull::new();
@@ -287,7 +411,14 @@ impl RegexSet {
     }
 }
 
-/// Unit tests for the batch API, in a sidecar (max-lines exempt).
+/// What:    Unit tests for the batch API, in a sidecar (max-lines exempt).
+/// Why:     The package keeps that concept in a separate Rust file so this module can refer to
+///          it by name.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import "./tests";
+/// ```
 #[cfg(test)]
 #[path = "batch_tests.rs"]
 mod tests;

@@ -4,6 +4,11 @@
 //        corrupt serialized bound must be rejected before the simulation allocates; this
 //        pins each rejection (empty set, min>max, oversized max) and the always-valid
 //        leaf kinds.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { /* names from this Rust use line */ } from "./module";
+// ```
 
 use super::{Element, MAX_DECODED_COUNT, validate_element};
 use crate::charset::{ByteSet, singleton};
@@ -20,7 +25,14 @@ fn class_and_anchors_always_validate() {
 fn well_formed_counted_validates() {
     let counted = Element::Counted { set: singleton(b'x'), min: 2, max: 5 };
     assert!(validate_element(&counted).is_ok());
-    // min == max and min == 0 are both fine.
+    // What:    min == max and min == 0 are both fine.
+    // Why:     The test uses this setup or assertion to pin the behavior named by the test
+    //          function.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    // ```
     assert!(validate_element(&Element::Counted { set: singleton(b'x'), min: 4, max: 4 }).is_ok());
     assert!(validate_element(&Element::Counted { set: singleton(b'x'), min: 0, max: 3 }).is_ok());
 }

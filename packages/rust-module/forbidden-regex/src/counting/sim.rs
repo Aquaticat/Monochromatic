@@ -5,17 +5,50 @@
 //! over an element list and its follow sets. Why: the single-pattern search and the
 //! synchronized product run the same per-operand simulation, so its core lives here
 //! once; states are reused as ping-pong buffers so the byte step never allocates.
+//!
+//! In TS you'd write (pseudocode):
+//! ```ts
+//! // module sim: see exported functions and types below.
+//! ```
 
-/// Imports the word predicate used to build the boundary context.
+/// What:    Imports the word predicate used to build the boundary context.
+/// Why:     This file needs these names in scope so the implementation below can use short
+///          names instead of long crate paths.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { /* names from this Rust use line */ } from "./module";
+/// ```
 use crate::charset::is_word_byte;
 
-/// Imports the boundary context that resolves anchors.
+/// What:    Imports the boundary context that resolves anchors.
+/// Why:     This file needs these names in scope so the implementation below can use short
+///          names instead of long crate paths.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { /* names from this Rust use line */ } from "./module";
+/// ```
 use crate::context::Ctx;
 
-/// Imports the bitset that holds a counted position's live counts.
+/// What:    Imports the bitset that holds a counted position's live counts.
+/// Why:     This file needs these names in scope so the implementation below can use short
+///          names instead of long crate paths.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { /* names from this Rust use line */ } from "./module";
+/// ```
 use crate::counting::countset::CountSet;
 
-/// Imports the position kind being simulated.
+/// What:    Imports the position kind being simulated.
+/// Why:     This file needs these names in scope so the implementation below can use short
+///          names instead of long crate paths.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { /* names from this Rust use line */ } from "./module";
+/// ```
 use crate::counting::element::Element;
 
 /// Live simulation state: which positions are active and each counter's set.
@@ -25,20 +58,55 @@ use crate::counting::element::Element;
 /// the live repetition counts of a `Counted` position and is empty otherwise. Why:
 /// grouping counts into one per-position bitset is the whole device, it keeps
 /// overlapping repetitions in one word-addressable set instead of exploding states.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type State = {
+///   // fields documented in Rust above
+/// };
+/// ```
 pub(crate) struct State {
-    /// One active-flag per position `0..len` plus the accept index `len`.
+    /// What:    One active-flag per position `0..len` plus the accept index `len`.
+    /// Why:     The surrounding record stores this value by name so later code can read the
+    ///          same piece of state.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// active: boolean[];
+    /// ```
     active: Vec<bool>,
-    /// One count bitset per position index `0..len`.
+    /// What:    One count bitset per position index `0..len`.
+    /// Why:     The surrounding record stores this value by name so later code can read the
+    ///          same piece of state.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// counts: unknown[];
+    /// ```
     counts: Vec<CountSet>,
 }
 
-/// Construction, reuse, and predicates over a simulation state.
+/// What:    Construction, reuse, and predicates over a simulation state.
+/// Why:     The program attaches these functions to the named Rust type so callers can use
+///          method syntax.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // Methods are written inside a class or as functions that take the value.
+/// ```
 impl State {
     /// Builds an empty state shaped for `elements`.
     ///
     /// What: `len + 1` active-flags (the extra one is the accept index) and one
     /// count bitset per position, each sized to its bound. Why: sizing the bitsets
     /// once lets them be cleared and reused without reallocation.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// function new(/* args */) {
+    ///   // body documented in Rust
+    /// }
+    /// ```
     pub(crate) fn new(elements: &[Element]) -> State {
         State {
             active: vec![false; elements.len() + 1],
@@ -50,6 +118,13 @@ impl State {
     ///
     /// What: clears every active-flag and count bitset without reallocating. Why:
     /// the byte step fills a cleared destination buffer, so no allocation per byte.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// function clear(/* args */) {
+    ///   // body documented in Rust
+    /// }
+    /// ```
     pub(crate) fn clear(&mut self) {
         self.active.iter_mut().for_each(|on| *on = false);
         self.counts.iter_mut().for_each(CountSet::clear);
@@ -59,6 +134,13 @@ impl State {
     ///
     /// What: marks each id in `start` active. Why: the search loop re-seeds the
     /// starts every boundary for the `Σ*` prefix; a product thread seeds once.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// function seed(/* args */) {
+    ///   // body documented in Rust
+    /// }
+    /// ```
     pub(crate) fn seed(&mut self, start: &[u32]) {
         for &s in start {
             self.active[s as usize] = true;
@@ -69,6 +151,13 @@ impl State {
     ///
     /// What: the active-flag at the accept index (`len`). Why: reaching past the
     /// last position is acceptance.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// function accepts(/* args */) {
+    ///   // body documented in Rust
+    /// }
+    /// ```
     pub(crate) fn accepts(&self) -> bool {
         self.active.last().copied().unwrap_or(false)
     }
@@ -78,6 +167,13 @@ impl State {
     /// What: no position is active and every count bitset is empty. Why: a product
     /// thread whose required operand has gone dead can be dropped, bounding the live
     /// thread count by the longest operand.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// function is_dead(/* args */) {
+    ///   // body documented in Rust
+    /// }
+    /// ```
     pub(crate) fn is_dead(&self) -> bool {
         self.active.iter().all(|&on| !on) && self.counts.iter().all(CountSet::is_empty)
     }
@@ -88,6 +184,13 @@ impl State {
 /// What: a `Counted` position gets a set holding `[0, max]`; any other gets a
 /// minimal placeholder never used. Why: only counted positions carry counts, but a
 /// uniform per-index vector keeps the simulation's indexing simple.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function count_set_for(/* args */) {
+///   // body documented in Rust
+/// }
+/// ```
 fn count_set_for(element: &Element) -> CountSet {
     match element {
         Element::Counted { max, .. } => CountSet::new(*max),
@@ -100,6 +203,13 @@ fn count_set_for(element: &Element) -> CountSet {
 /// What: line starts after a newline or at the front; line ends before a newline or
 /// at the back; word flags read the adjacent bytes. Why: mirrors exactly the
 /// context the eager DFA uses, so both back-ends agree on anchors.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function boundary_ctx(/* args */) {
+///   // body documented in Rust
+/// }
+/// ```
 pub(crate) fn boundary_ctx(line: &[u8], i: usize) -> Ctx {
     let len = line.len();
     Ctx {
@@ -116,6 +226,13 @@ pub(crate) fn boundary_ctx(line: &[u8], i: usize) -> Ctx {
 /// its bound, and passes an anchor when `ctx` permits, following each to its
 /// successors; loops until stable. Why: zero-width moves chain (alternation into an
 /// anchor, a skippable repetition), so one pass is not enough.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function closure(/* args */) {
+///   // body documented in Rust
+/// }
+/// ```
 pub(crate) fn closure(elements: &[Element], follow: &[Vec<u32>], state: &mut State, ctx: Ctx) {
     let mut changed = true;
     while changed {
@@ -134,6 +251,13 @@ pub(crate) fn closure(elements: &[Element], follow: &[Vec<u32>], state: &mut Sta
 /// meets `min` follows on, and a reached anchor follows on when `ctx` allows. Why:
 /// counted entry depends on the position being freshly active, but counted exit
 /// depends only on the carried counts, so both are tested here.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function zero_width_move(/* args */) {
+///   // body documented in Rust
+/// }
+/// ```
 fn zero_width_move(
     element: &Element,
     p: usize,
@@ -155,6 +279,13 @@ fn zero_width_move(
 /// What: insert count 0 when active, then follow on when any count is at least
 /// `min`. Why: entry is one-shot per activation; exit fires every pass the carried
 /// counts allow, independent of activation.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function counted_move(/* args */) {
+///   // body documented in Rust
+/// }
+/// ```
 fn counted_move(p: usize, min: usize, follow: &[Vec<u32>], state: &mut State) -> bool {
     let mut changed = false;
     if state.active[p] && state.counts[p].insert_zero() {
@@ -170,6 +301,13 @@ fn counted_move(p: usize, min: usize, follow: &[Vec<u32>], state: &mut State) ->
 ///
 /// What: activate the successors when the anchor is active and `cond` is true. Why:
 /// anchors are zero-width and pass only in the right boundary context.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function anchor_move(/* args */) {
+///   // body documented in Rust
+/// }
+/// ```
 fn anchor_move(p: usize, cond: bool, follow: &[Vec<u32>], state: &mut State) -> bool {
     if state.active[p] && cond {
         activate(&follow[p], &mut state.active)
@@ -182,6 +320,13 @@ fn anchor_move(p: usize, cond: bool, follow: &[Vec<u32>], state: &mut State) -> 
 ///
 /// What: a guarded set over a follow list. Why: the closure fixpoint needs to know
 /// when a pass made progress.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function activate(/* args */) {
+///   // body documented in Rust
+/// }
+/// ```
 fn activate(targets: &[u32], active: &mut [bool]) -> bool {
     let mut changed = false;
     for &t in targets {
@@ -200,6 +345,13 @@ fn activate(targets: &[u32], active: &mut [bool]) -> bool {
 /// anchors are zero-width and drop. Why: this is the only place input is consumed;
 /// filling a reused buffer keeps the byte step allocation-free and the counted
 /// update a single word-level shift.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function step_into(/* args */) {
+///   // body documented in Rust
+/// }
+/// ```
 pub(crate) fn step_into(
     elements: &[Element],
     follow: &[Vec<u32>],
@@ -225,7 +377,15 @@ pub(crate) fn step_into(
     }
 }
 
-/// Unit tests for the counting-set simulation primitives, in a sidecar (max-lines exempt).
+/// What:    Unit tests for the counting-set simulation primitives, in a sidecar (max-lines
+///          exempt).
+/// Why:     The package keeps that concept in a separate Rust file so this module can refer to
+///          it by name.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import "./tests";
+/// ```
 #[cfg(test)]
 #[path = "sim_tests.rs"]
 mod tests;

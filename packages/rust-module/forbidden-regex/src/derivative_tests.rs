@@ -3,6 +3,11 @@
 // Why:   membership is "derive every byte, then test nullability", so the derivative
 //        is the heart of matching; a wrong arm (e.g. Concat not summing over a nullable
 //        prefix) silently changes which strings match.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { /* names from this Rust use line */ } from "./module";
+// ```
 
 use super::derivative;
 use crate::ast::node::Node;
@@ -18,7 +23,16 @@ fn lit(b: u8) -> Node {
     Node::Class(singleton(b))
 }
 
-// Derives `input` byte by byte (interior context) and reports final nullability.
+// What:    Derives `input` byte by byte (interior context) and reports final nullability.
+// Why:     The program needs this named step so callers can reuse the behavior without copying
+//          its body.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function matches_interior(/* args */) {
+//   // body documented in Rust
+// }
+// ```
 fn matches_interior(node: &Node, input: &[u8]) -> bool {
     let mut residual = node.clone();
     for &b in input {
@@ -46,7 +60,14 @@ fn class_consumes_only_members() {
 #[test]
 fn concat_uses_the_nullable_prefix_rule() {
     let ab = Node::Concat(vec![lit(b'a'), lit(b'b')]);
-    // D_a(ab) = b ; D_b(ab) = Fail.
+    // What:    D_a(ab) = b ; D_b(ab) = Fail.
+    // Why:     The test uses this setup or assertion to pin the behavior named by the test
+    //          function.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    // ```
     assert_eq!(derivative(&ab, b'a', off()), lit(b'b'));
     assert_eq!(derivative(&ab, b'b', off()), Node::Fail);
 }
@@ -61,7 +82,14 @@ fn alt_distributes_over_the_derivative() {
 
 #[test]
 fn comp_negates_the_derivative() {
-    // D_a(~a) = ~(D_a a) = ~Empty.
+    // What:    D_a(~a) = ~(D_a a) = ~Empty.
+    // Why:     The test uses this setup or assertion to pin the behavior named by the test
+    //          function.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    // ```
     assert_eq!(derivative(&Node::Comp(Box::new(lit(b'a'))), b'a', off()), Node::Comp(Box::new(Node::Empty)));
 }
 
@@ -76,7 +104,14 @@ fn derive_a_string_decides_membership() {
 
 #[test]
 fn repeat_matches_the_allowed_counts() {
-    // a{2,3} interior: 2 or 3 a's match, 1 or 4 do not.
+    // What:    a{2,3} interior: 2 or 3 a's match, 1 or 4 do not.
+    // Why:     The test uses this setup or assertion to pin the behavior named by the test
+    //          function.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    // ```
     let rep = Node::Repeat { node: Box::new(lit(b'a')), min: 2, max: 3 };
     assert!(!matches_interior(&rep, b"a"));
     assert!(matches_interior(&rep, b"aa"));
@@ -86,7 +121,14 @@ fn repeat_matches_the_allowed_counts() {
 
 #[test]
 fn intersection_requires_both_sides() {
-    // [a-c] & [b-d] interior matches exactly 'b' or 'c'.
+    // What:    [a-c] & [b-d] interior matches exactly 'b' or 'c'.
+    // Why:     The test uses this setup or assertion to pin the behavior named by the test
+    //          function.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    // ```
     let mut left = crate::charset::ByteSet::empty();
     left.insert_range(b'a', b'c');
     let mut right = crate::charset::ByteSet::empty();

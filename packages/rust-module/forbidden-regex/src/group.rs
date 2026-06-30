@@ -5,17 +5,50 @@
 //! O(1)-per-byte pass over a union covers many rules at once; growing a group rule by
 //! rule lets the smart `alt` constructor share structure across members, so compatible
 //! rules fold together while the per-group state cap keeps the explosive ones apart.
+//!
+//! In TS you'd write (pseudocode):
+//! ```ts
+//! // module group: see exported functions and types below.
+//! ```
 
-/// Imports the node algebra combined into each group.
+/// What:    Imports the node algebra combined into each group.
+/// Why:     This file needs these names in scope so the implementation below can use short
+///          names instead of long crate paths.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { /* names from this Rust use line */ } from "./module";
+/// ```
 use crate::ast::node::Node;
 
-/// Imports the constructors that wrap a group for unanchored search.
+/// What:    Imports the constructors that wrap a group for unanchored search.
+/// Why:     This file needs these names in scope so the implementation below can use short
+///          names instead of long crate paths.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { /* names from this Rust use line */ } from "./module";
+/// ```
 use crate::ast::smart::{alt, concat};
 
-/// Imports the DFA builder and minimizer for each group.
+/// What:    Imports the DFA builder and minimizer for each group.
+/// Why:     This file needs these names in scope so the implementation below can use short
+///          names instead of long crate paths.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { /* names from this Rust use line */ } from "./module";
+/// ```
 use crate::dfa::{build_dfa_within, minimize};
 
-/// Imports the engine wrapper each group DFA becomes.
+/// What:    Imports the engine wrapper each group DFA becomes.
+/// Why:     This file needs these names in scope so the implementation below can use short
+///          names instead of long crate paths.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { /* names from this Rust use line */ } from "./module";
+/// ```
 use crate::engine::{Engine, EngineKind};
 
 /// Largest combined DFA a group of seedless rules may form.
@@ -23,12 +56,24 @@ use crate::engine::{Engine, EngineKind};
 /// What: a state ceiling on a group's union DFA; a trial union exceeding it starts a
 /// new group instead. Why: combining literal-free rules into one pass is the
 /// throughput lever, but `{n,m}` overlap blowup must cap, so explosive rules separate.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const GROUP_DFA_CAP: unknown = /* value below */;
+/// ```
 const GROUP_DFA_CAP: usize = 6_000;
 
 /// Wraps a node with the `Σ*` prefix for unanchored substring search.
 ///
 /// What: prefixes `Top` so a nullable residual at any boundary means a substring
 /// matched. Why: every group DFA matches anywhere in the line.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function search_wrap(/* args */) {
+///   // body documented in Rust
+/// }
+/// ```
 fn search_wrap(node: Node) -> Node {
     concat(vec![Node::Top, node])
 }
@@ -37,6 +82,13 @@ fn search_wrap(node: Node) -> Node {
 ///
 /// What: determinizes the search-wrapped node under the cap and minimizes it. Why: a
 /// node that exceeds the cap is rejected so the caller can keep it separate.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function group_engine(/* args */) {
+///   // body documented in Rust
+/// }
+/// ```
 fn group_engine(node: Node) -> Option<Engine> {
     build_dfa_within(search_wrap(node), GROUP_DFA_CAP)
         .ok()
@@ -49,6 +101,13 @@ fn group_engine(node: Node) -> Option<Engine> {
 /// union that builds under the cap; otherwise the rule opens a new group. Why: growing
 /// a group lets `alt` share structure across members, so far more rules combine than a
 /// pairwise test would admit.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function grow_groups(/* args */) {
+///   // body documented in Rust
+/// }
+/// ```
 fn grow_groups(nodes: Vec<Node>) -> Vec<Node> {
     let mut groups: Vec<Node> = Vec::new();
     'rule: for node in nodes {
@@ -70,6 +129,13 @@ fn grow_groups(nodes: Vec<Node>) -> Vec<Node> {
 /// literal-free rules dominate per-line cost, so fewer passes over them is the main
 /// throughput lever.
 ///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function groupSeedless(nodes: Node[]): Engine[] {
+///   return growGroups(nodes).map(groupEngine).filter(Boolean);
+/// }
+/// ```
+///
 /// @example
 /// ```ignore
 /// let engines = group_seedless(vec![parse("[0-9]{15,16}").unwrap()]);
@@ -79,7 +145,14 @@ pub(crate) fn group_seedless(nodes: Vec<Node>) -> Vec<Engine> {
     grow_groups(nodes).into_iter().filter_map(group_engine).collect()
 }
 
-/// Unit tests for seedless-rule grouping, in a sidecar (max-lines exempt).
+/// What:    Unit tests for seedless-rule grouping, in a sidecar (max-lines exempt).
+/// Why:     The package keeps that concept in a separate Rust file so this module can refer to
+///          it by name.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import "./tests";
+/// ```
 #[cfg(test)]
 #[path = "group_tests.rs"]
 mod tests;

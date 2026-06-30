@@ -4,13 +4,27 @@
 // Why:   this is the hot match path and a decode security boundary; a wrong accept bit,
 //        a missed dead-state exit, or a too-loose validate would corrupt matching or let
 //        a hostile serialized DFA run out of bounds.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { /* names from this Rust use line */ } from "./module";
+// ```
 
 use super::{Dfa, accept_bit};
 use crate::charset::ByteSet;
 use crate::dfa::{build_dfa_within, minimize};
 use crate::parse::parse;
 
-// Builds a minimized anchored DFA for a pattern (no Sigma* prefix, matches a prefix).
+// What:    Builds a minimized anchored DFA for a pattern (no Sigma* prefix, matches a prefix).
+// Why:     The program needs this named step so callers can reuse the behavior without copying
+//          its body.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function anchored_dfa(/* args */) {
+//   // body documented in Rust
+// }
+// ```
 fn anchored_dfa(pattern: &str) -> Dfa {
     let node = parse(pattern).expect("test pattern parses");
     minimize(&build_dfa_within(node, 10_000).expect("builds under cap"))
@@ -28,9 +42,33 @@ fn accept_bit_encodes_four_distinct_contexts() {
 fn anchored_dfa_matches_a_prefix_only() {
     let dfa = anchored_dfa("abc");
     assert!(dfa.is_match(b"abc"));
-    assert!(dfa.is_match(b"abcd")); // the prefix "abc" matches
-    assert!(!dfa.is_match(b"ab")); // incomplete
-    assert!(!dfa.is_match(b"xabc")); // anchored: nothing matches at offset 0
+    // What:    the prefix "abc" matches.
+    // Why:     The nearby assertion or value needs this note so the test records the exact
+    //          behavior being pinned.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same assertion or value, with the important expectation named above.
+    // ```
+    assert!(dfa.is_match(b"abcd"));
+    // What:    incomplete.
+    // Why:     The nearby assertion or value needs this note so the test records the exact
+    //          behavior being pinned.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same assertion or value, with the important expectation named above.
+    // ```
+    assert!(!dfa.is_match(b"ab"));
+    // What:    anchored: nothing matches at offset 0.
+    // Why:     The nearby assertion or value needs this note so the test records the exact
+    //          behavior being pinned.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same assertion or value, with the important expectation named above.
+    // ```
+    assert!(!dfa.is_match(b"xabc"));
     assert!(!dfa.is_match(b""));
 }
 
@@ -38,7 +76,15 @@ fn anchored_dfa_matches_a_prefix_only() {
 fn class_repetition_dfa_counts_correctly() {
     let dfa = anchored_dfa("[a-z]{3}");
     assert!(dfa.is_match(b"abc"));
-    assert!(dfa.is_match(b"abcd")); // first three match
+    // What:    first three match.
+    // Why:     The nearby assertion or value needs this note so the test records the exact
+    //          behavior being pinned.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same assertion or value, with the important expectation named above.
+    // ```
+    assert!(dfa.is_match(b"abcd"));
     assert!(!dfa.is_match(b"ab"));
     assert!(!dfa.is_match(b"a1c"));
 }
@@ -61,8 +107,16 @@ fn validate_accepts_a_built_dfa() {
 
 #[test]
 fn validate_rejects_each_corruption() {
-    // A decoded DFA runs against attacker-influenced input, so validate must reject any
-    // out-of-range or inconsistent field. Corrupt each field of a good DFA in turn.
+    // What:    A decoded DFA runs against attacker-influenced input, so validate must reject
+    //          any out-of-range or inconsistent field. Corrupt each field of a good DFA in
+    //          turn.
+    // Why:     The test uses this setup or assertion to pin the behavior named by the test
+    //          function.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    // ```
     let good = anchored_dfa("abc");
 
     let mut nclasses_zero = good.clone();
@@ -78,7 +132,15 @@ fn validate_rejects_each_corruption() {
     assert!(short_class_map.validate().is_err());
 
     let mut bad_class_id = good.clone();
-    bad_class_id.class_map[0] = good.nclasses as u8; // class id == nclasses is out of range
+    // What:    class id == nclasses is out of range.
+    // Why:     The nearby assertion or value needs this note so the test records the exact
+    //          behavior being pinned.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same assertion or value, with the important expectation named above.
+    // ```
+    bad_class_id.class_map[0] = good.nclasses as u8;
     assert!(bad_class_id.validate().is_err());
 
     let mut short_flags = good.clone();
@@ -104,11 +166,26 @@ fn validate_rejects_each_corruption() {
 
 #[test]
 fn validate_rejects_a_forged_dead_state() {
-    // A hostile blob could name an ACCEPTING state as the dead sink so the match loop
-    // early-exits false and misses a match; validate must reject that.
+    // What:    A hostile blob could name an ACCEPTING state as the dead sink so the match loop
+    //          early-exits false and misses a match; validate must reject that.
+    // Why:     The test uses this setup or assertion to pin the behavior named by the test
+    //          function.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    // ```
     let good = anchored_dfa("abc");
     let mut forged = good.clone();
-    // Point `dead` at the start state, which is not a non-accepting self-looping sink.
+    // What:    Point `dead` at the start state, which is not a non-accepting self-looping
+    //          sink.
+    // Why:     The test uses this setup or assertion to pin the behavior named by the test
+    //          function.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    // ```
     forged.dead = good.start;
     assert!(forged.validate().is_err());
 
@@ -117,28 +194,102 @@ fn validate_rejects_a_forged_dead_state() {
     assert!(out_of_range.validate().is_err());
 }
 
-// A consistent self-looping single-state DFA over `nclasses` classes (all bytes class 0),
-// the minimal well-formed automaton for exercising the decode-validation bounds checks.
+// What:    A consistent self-looping single-state DFA over `nclasses` classes (all bytes class
+//          0), the minimal well-formed automaton for exercising the decode-validation bounds
+//          checks.
+// Why:     The program needs this named step so callers can reuse the behavior without copying
+//          its body.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function uniform_dfa(/* args */) {
+//   // body documented in Rust
+// }
+// ```
 fn uniform_dfa(nclasses: u32) -> Dfa {
     let nc = nclasses as usize;
     Dfa::from_parts(
         nclasses,
-        vec![0u8; 256],  // every byte maps to class 0
-        vec![false; nc], // per-class word flags
-        vec![false; nc], // per-class newline flags
-        vec![0u16; nc],  // one state, self-looping on every class
-        vec![0u8; 1],    // the single state accepts nothing
-        0,               // start
-        1,               // num_states
+        // What:    every byte maps to class 0.
+        // Why:     The nearby assertion or value needs this note so the test records the
+        //          exact behavior being pinned.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // // Same assertion or value, with the important expectation named above.
+        // ```
+        vec![0u8; 256],
+        // What:    per-class word flags.
+        // Why:     The nearby assertion or value needs this note so the test records the
+        //          exact behavior being pinned.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // // Same assertion or value, with the important expectation named above.
+        // ```
+        vec![false; nc],
+        // What:    per-class newline flags.
+        // Why:     The nearby assertion or value needs this note so the test records the
+        //          exact behavior being pinned.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // // Same assertion or value, with the important expectation named above.
+        // ```
+        vec![false; nc],
+        // What:    one state, self-looping on every class.
+        // Why:     The nearby assertion or value needs this note so the test records the
+        //          exact behavior being pinned.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // // Same assertion or value, with the important expectation named above.
+        // ```
+        vec![0u16; nc],
+        // What:    the single state accepts nothing.
+        // Why:     The nearby assertion or value needs this note so the test records the
+        //          exact behavior being pinned.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // // Same assertion or value, with the important expectation named above.
+        // ```
+        vec![0u8; 1],
+        // What:    start.
+        // Why:     The nearby assertion or value needs this note so the test records the
+        //          exact behavior being pinned.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // // Same assertion or value, with the important expectation named above.
+        // ```
+        0,
+        // What:    num_states.
+        // Why:     The nearby assertion or value needs this note so the test records the
+        //          exact behavior being pinned.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // // Same assertion or value, with the important expectation named above.
+        // ```
+        1,
     )
 }
 
 #[test]
 fn mark_first_bytes_reads_the_start_states_row() {
-    // A hand-built DFA whose start state is NOT state 0: byte `a` (class 0) steps to a live
-    // state, every other byte (class 1) steps to the dead sink. `mark_first_bytes` must index
-    // the START state's transition row (`start * nclasses + class`); a wrong index (e.g.
-    // `start / nclasses`) reads a different row and reports the wrong first-byte set.
+    // What:    A hand-built DFA whose start state is NOT state 0: byte `a` (class 0) steps to
+    //          a live state, every other byte (class 1) steps to the dead sink.
+    //          `mark_first_bytes` must index the START state's transition row (`start *
+    //          nclasses + class`); a wrong index (e.g. `start / nclasses`) reads a different
+    //          row and reports the wrong first-byte set.
+    // Why:     The test uses this setup or assertion to pin the behavior named by the test
+    //          function.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    // ```
     let mut class_map = vec![1u8; 256];
     class_map[b'a' as usize] = 0;
     let dfa = Dfa::from_parts(
@@ -146,11 +297,35 @@ fn mark_first_bytes_reads_the_start_states_row() {
         class_map,
         vec![false; 2],
         vec![false; 2],
-        // state0 (dead sink) self-loops; state1 is live; state2 (start): a->state1, else->dead.
+        // What:    state0 (dead sink) self-loops; state1 is live; state2 (start): a->state1,
+        //          else->dead.
+        // Why:     The test uses this setup or assertion to pin the behavior named by the test
+        //          function.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+        // ```
         vec![0, 0, 0, 0, 1, 0],
         vec![0u8; 3],
-        2, // start = state 2
-        3, // num_states
+        // What:    start = state 2.
+        // Why:     The nearby assertion or value needs this note so the test records the
+        //          exact behavior being pinned.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // // Same assertion or value, with the important expectation named above.
+        // ```
+        2,
+        // What:    num_states.
+        // Why:     The nearby assertion or value needs this note so the test records the
+        //          exact behavior being pinned.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // // Same assertion or value, with the important expectation named above.
+        // ```
+        3,
     );
     let mut set = ByteSet::empty();
     dfa.mark_first_bytes(&mut set);
@@ -160,9 +335,17 @@ fn mark_first_bytes_reads_the_start_states_row() {
 
 #[test]
 fn validate_class_count_bounds_are_inclusive_of_256_and_exclusive_above() {
-    // 256 classes is the inclusive maximum (a full byte alphabet), so a consistent 256-class
-    // DFA validates; 300 classes is over the limit and must be rejected even when every other
-    // field is internally consistent (so only the nclasses range check can catch it).
+    // What:    256 classes is the inclusive maximum (a full byte alphabet), so a consistent
+    //          256-class DFA validates; 300 classes is over the limit and must be rejected
+    //          even when every other field is internally consistent (so only the nclasses
+    //          range check can catch it).
+    // Why:     The test uses this setup or assertion to pin the behavior named by the test
+    //          function.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    // ```
     assert!(uniform_dfa(256).validate().is_ok(), "256 classes is the inclusive maximum");
     assert!(uniform_dfa(300).validate().is_err(), "more than 256 classes is out of range");
     assert!(uniform_dfa(1).validate().is_ok());
@@ -170,10 +353,17 @@ fn validate_class_count_bounds_are_inclusive_of_256_and_exclusive_above() {
 
 #[test]
 fn a_built_dfa_with_a_real_dead_sink_validates_and_the_sink_is_well_formed() {
-    // An anchored literal dies on the first non-matching byte, so its minimized DFA has a
-    // genuine dead sink (`dead != num_states`). validate must accept it (its dead-sink
-    // self-loop check reads `trans[dead * nclasses + class]`), and the sink `find_dead`
-    // located must really be non-accepting and fully self-looping.
+    // What:    An anchored literal dies on the first non-matching byte, so its minimized DFA
+    //          has a genuine dead sink (`dead != num_states`). validate must accept it (its
+    //          dead-sink self-loop check reads `trans[dead * nclasses + class]`), and the sink
+    //          `find_dead` located must really be non-accepting and fully self-looping.
+    // Why:     The test uses this setup or assertion to pin the behavior named by the test
+    //          function.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    // ```
     let dfa = anchored_dfa("abc");
     let dead = dfa.dead as usize;
     let nc = dfa.nclasses as usize;
@@ -187,12 +377,26 @@ fn a_built_dfa_with_a_real_dead_sink_validates_and_the_sink_is_well_formed() {
 
 #[test]
 fn minimization_preserves_matching() {
-    // Multi-byte alternation branches must each be wrapped as a single atom.
+    // What:    Multi-byte alternation branches must each be wrapped as a single atom.
+    // Why:     The test uses this setup or assertion to pin the behavior named by the test
+    //          function.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    // ```
     let raw = build_dfa_within(parse("(?:(?:ab)|(?:ac))d").expect("parses"), 10_000).expect("builds");
     let min = minimize(&raw);
     for input in [&b"abd"[..], b"acd", b"abc", b"ad", b"abdx"] {
         assert_eq!(raw.is_match(input), min.is_match(input), "input {input:?}");
     }
-    // The minimized automaton is no larger than the raw one.
+    // What:    The minimized automaton is no larger than the raw one.
+    // Why:     The test uses this setup or assertion to pin the behavior named by the test
+    //          function.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    // ```
     assert!(min.num_states <= raw.num_states);
 }

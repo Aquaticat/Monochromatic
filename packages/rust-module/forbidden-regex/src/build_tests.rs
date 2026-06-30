@@ -4,6 +4,11 @@
 //        sent to the line-start check, a leading literal not anchored at its hit) the
 //        engine still matches but pays the slow per-line scan the fold exists to avoid,
 //        and a wrong seedless flag changes which rules join the union oracle.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { /* names from this Rust use line */ } from "./module";
+// ```
 
 use super::{build_rule, build_seedless_union, route_rule, starts_with_line_anchor};
 use crate::parse::parse;
@@ -62,15 +67,39 @@ fn weak_inner_literal_folds_to_an_unanchored_seed() {
 fn build_rule_flags_seedless_and_reference_nodes() {
     let akia = build_rule(node("AKIA[A-Z2-7]{16}")).unwrap();
     assert!(!akia.seedless);
-    assert!(akia.reference_node.is_none()); // had a leading seed
+    // What:    had a leading seed.
+    // Why:     The nearby assertion or value needs this note so the test records the exact
+    //          behavior being pinned.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same assertion or value, with the important expectation named above.
+    // ```
+    assert!(akia.reference_node.is_none());
 
     let inner = build_rule(node("[a-z]{3}adafruit[a-z]{3}")).unwrap();
     assert!(!inner.seedless);
-    assert!(inner.reference_node.is_none()); // had an inner seed (not seedless)
+    // What:    had an inner seed (not seedless).
+    // Why:     The nearby assertion or value needs this note so the test records the exact
+    //          behavior being pinned.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same assertion or value, with the important expectation named above.
+    // ```
+    assert!(inner.reference_node.is_none());
 
     let bare = build_rule(node("[a-z]{20}")).unwrap();
     assert!(bare.seedless);
-    assert!(bare.reference_node.is_some()); // truly literal-free
+    // What:    truly literal-free.
+    // Why:     The nearby assertion or value needs this note so the test records the exact
+    //          behavior being pinned.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same assertion or value, with the important expectation named above.
+    // ```
+    assert!(bare.reference_node.is_some());
 }
 
 #[test]

@@ -1,15 +1,50 @@
-//! Bounded repetition `{n}` and `{n,m}`, kept as a `Repeat` node.
+//! What:    Bounded repetition `{n}` and `{n,m}`, kept as a `Repeat` node.
+//! Why:     This file is the Rust module that groups the repeat implementation, so a reader
+//!          can enter the package through one named area.
+//!
+//! In TS you'd write (pseudocode):
+//! ```ts
+//! // module repeat: see exported functions and types below.
+//! ```
 
-/// Imports the node algebra being repeated.
+/// What:    Imports the node algebra being repeated.
+/// Why:     This file needs these names in scope so the implementation below can use short
+///          names instead of long crate paths.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { /* names from this Rust use line */ } from "./module";
+/// ```
 use crate::ast::node::Node;
 
-/// Imports the smart constructor that builds the `Repeat` node.
+/// What:    Imports the smart constructor that builds the `Repeat` node.
+/// Why:     This file needs these names in scope so the implementation below can use short
+///          names instead of long crate paths.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { /* names from this Rust use line */ } from "./module";
+/// ```
 use crate::ast::smart::repeat;
 
-/// Imports the error type for malformed or oversized repetitions.
+/// What:    Imports the error type for malformed or oversized repetitions.
+/// Why:     This file needs these names in scope so the implementation below can use short
+///          names instead of long crate paths.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { /* names from this Rust use line */ } from "./module";
+/// ```
 use crate::error::CompileError;
 
-/// Imports the cursor.
+/// What:    Imports the cursor.
+/// Why:     This file needs these names in scope so the implementation below can use short
+///          names instead of long crate paths.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { /* names from this Rust use line */ } from "./module";
+/// ```
 use crate::parse::cursor::Cursor;
 
 /// Largest repetition count accepted, bounding the counter range.
@@ -17,6 +52,11 @@ use crate::parse::cursor::Cursor;
 /// What: an upper limit on `n` and `m`. Why: the count becomes a runtime counter
 /// register, so `{1000000}` would demand a huge counter domain; capping turns that
 /// into a clean error instead of an unbounded counter.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const REPEAT_CAP: unknown = /* value below */;
+/// ```
 const REPEAT_CAP: usize = 1024;
 
 /// Parses a `{n}` or `{n,m}` quantifier and applies it to `atom`.
@@ -24,12 +64,24 @@ const REPEAT_CAP: usize = 1024;
 /// What: reads the counts after `{`, rejects unbounded `{n,}` and `n > m`, caps
 /// the magnitude, and builds a `Repeat` node. Why: the count stays symbolic on the
 /// node (later a counter register) rather than being unrolled into states.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function parse_repeat(/* args */) {
+///   // body documented in Rust
+/// }
+/// ```
 pub fn parse_repeat(cur: &mut Cursor, atom: Node) -> Result<Node, CompileError> {
     let pos = cur.pos();
     cur.bump();
     let n = parse_number(cur, pos)?;
     // What: branch on what follows the first number. Why: `}` is exact, `,`
     // begins a range, anything else is malformed.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    // ```
     match cur.peek() {
         Some(b'}') => {
             cur.bump();
@@ -52,9 +104,21 @@ pub fn parse_repeat(cur: &mut Cursor, atom: Node) -> Result<Node, CompileError> 
 /// What: rejects the unbounded `{n,}` form, reads `m`, checks ordering and the
 /// cap, and builds the range. Why: keeps `parse_repeat` short and isolates the
 /// range-specific validation.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function parse_repeat_upper(/* args */) {
+///   // body documented in Rust
+/// }
+/// ```
 fn parse_repeat_upper(cur: &mut Cursor, atom: Node, n: usize, pos: usize) -> Result<Node, CompileError> {
     // What: a `}` here means `{n,}`, which is unbounded and unsupported.
     // Why: the engine only admits finite bounded repetition.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    // ```
     if cur.peek() == Some(b'}') {
         return Err(CompileError::Syntax {
             pos,
@@ -83,11 +147,23 @@ fn parse_repeat_upper(cur: &mut Cursor, atom: Node, n: usize, pos: usize) -> Res
 ///
 /// What: folds digits left to right with checked arithmetic. Why: a missing or
 /// overflowing count is a syntax error, not a panic.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function parse_number(/* args */) {
+///   // body documented in Rust
+/// }
+/// ```
 fn parse_number(cur: &mut Cursor, pos: usize) -> Result<usize, CompileError> {
     let mut value: usize = 0;
     let mut any = false;
     // What: consume while the next byte is a digit. Why: bounded linear scan of
     // the count; not recursion over the input.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    // ```
     while let Some(c) = cur.peek() {
         if !c.is_ascii_digit() {
             break;
@@ -114,6 +190,13 @@ fn parse_number(cur: &mut Cursor, pos: usize) -> Result<usize, CompileError> {
 /// Rejects a count above the cap.
 ///
 /// What: compares against `REPEAT_CAP`. Why: bounds desugared expansion size.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function check_cap(/* args */) {
+///   // body documented in Rust
+/// }
+/// ```
 fn check_cap(count: usize, pos: usize) -> Result<(), CompileError> {
     if count > REPEAT_CAP {
         Err(CompileError::Syntax {

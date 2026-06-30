@@ -8,26 +8,80 @@
 //! cannot be run as independent search automata (they would match different spans);
 //! one thread per start keeps them synchronized while each operand's counts still
 //! live in a counter-set, so alternation and bounded repetition never blow up.
+//!
+//! In TS you'd write (pseudocode):
+//! ```ts
+//! // module product: see exported functions and types below.
+//! ```
 
-/// Imports the serde derives so a product program can be persisted.
+/// What:    Imports the serde derives so a product program can be persisted.
+/// Why:     This file needs these names in scope so the implementation below can use short
+///          names instead of long crate paths.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { /* names from this Rust use line */ } from "./module";
+/// ```
 use serde::{Deserialize, Serialize};
 
-/// Imports the node algebra the builder reads.
+/// What:    Imports the node algebra the builder reads.
+/// Why:     This file needs these names in scope so the implementation below can use short
+///          names instead of long crate paths.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { /* names from this Rust use line */ } from "./module";
+/// ```
 use crate::ast::node::Node;
 
-/// Imports the boundary context threaded through the closure.
+/// What:    Imports the boundary context threaded through the closure.
+/// Why:     This file needs these names in scope so the implementation below can use short
+///          names instead of long crate paths.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { /* names from this Rust use line */ } from "./module";
+/// ```
 use crate::context::Ctx;
 
-/// Imports the NFA builder for each operand.
+/// What:    Imports the NFA builder for each operand.
+/// Why:     This file needs these names in scope so the implementation below can use short
+///          names instead of long crate paths.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { /* names from this Rust use line */ } from "./module";
+/// ```
 use crate::counting::build::build_nfa;
 
-/// Imports the counting NFA each operand compiles to.
+/// What:    Imports the counting NFA each operand compiles to.
+/// Why:     This file needs these names in scope so the implementation below can use short
+///          names instead of long crate paths.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { /* names from this Rust use line */ } from "./module";
+/// ```
 use crate::counting::nfa::CountingNfa;
 
-/// Imports the shared simulation core.
+/// What:    Imports the shared simulation core.
+/// Why:     This file needs these names in scope so the implementation below can use short
+///          names instead of long crate paths.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { /* names from this Rust use line */ } from "./module";
+/// ```
 use crate::counting::sim::{State, boundary_ctx, closure, step_into};
 
-/// Imports the error type for validating a decoded program.
+/// What:    Imports the error type for validating a decoded program.
+/// Why:     This file needs these names in scope so the implementation below can use short
+///          names instead of long crate paths.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { /* names from this Rust use line */ } from "./module";
+/// ```
 use crate::error::CompileError;
 
 /// An intersection of counting-NFA operands, some of them complemented.
@@ -35,20 +89,55 @@ use crate::error::CompileError;
 /// What: the positives that must all match one span and the negatives that must all
 /// fail that same span. Why: the serializable, counter-aware back-end for `&`/`~`
 /// patterns; its size is linear in the pattern, never in any repetition bound.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type ProductProgram = {
+///   // fields documented in Rust above
+/// };
+/// ```
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ProductProgram {
-    /// Operands that must each match the same span.
+    /// What:    Operands that must each match the same span.
+    /// Why:     The surrounding record stores this value by name so later code can read the
+    ///          same piece of state.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// positives: unknown[];
+    /// ```
     pub positives: Vec<CountingNfa>,
-    /// Operands whose match would veto the span (the `~(...)` operands).
+    /// What:    Operands whose match would veto the span (the `~(...)` operands).
+    /// Why:     The surrounding record stores this value by name so later code can read the
+    ///          same piece of state.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// negatives: unknown[];
+    /// ```
     pub negatives: Vec<CountingNfa>,
 }
 
-/// Matching and decode validation for a product program.
+/// What:    Matching and decode validation for a product program.
+/// Why:     The program attaches these functions to the named Rust type so callers can use
+///          method syntax.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // Methods are written inside a class or as functions that take the value.
+/// ```
 impl ProductProgram {
     /// Reports whether some span satisfies every positive and no negative.
     ///
     /// What: runs the synchronized-product simulation. Why: the boolean answer for an
     /// intersection-with-complement pattern; the prefilter lives one level up.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// function is_match(/* args */) {
+    ///   // body documented in Rust
+    /// }
+    /// ```
     pub fn is_match(&self, line: &[u8]) -> bool {
         run_product(self, line)
     }
@@ -58,6 +147,13 @@ impl ProductProgram {
     /// What: requires at least one positive operand and validates every operand.
     /// Why: a program with no positive would accept on the empty span everywhere,
     /// and each operand allocates counter-sets sized by its decoded bound.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// function validate(/* args */) {
+    ///   // body documented in Rust
+    /// }
+    /// ```
     pub fn validate(&self) -> Result<(), CompileError> {
         if self.positives.is_empty() {
             return Err(CompileError::Invalid {
@@ -77,6 +173,13 @@ impl ProductProgram {
 /// operands into the negatives and the rest into the positives; returns `None` for
 /// anything else or when no positive remains. Why: those shapes need the eager DFA,
 /// so the caller falls back to it; this back-end claims only the NFA `&`/`~` cases.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function buildProduct(node: Node): ProductProgram | null {
+///   return node.kind === "intersection" ? splitPositiveAndNegativeOperands(node) : null;
+/// }
+/// ```
 ///
 /// @example
 /// ```ignore
@@ -107,10 +210,31 @@ pub fn build_product(node: &Node) -> Option<ProductProgram> {
 /// What: one `State` per positive operand and one per negative operand, in their
 /// program order. Why: a thread keeps two of these as ping-pong buffers so the byte
 /// step writes into the spare and swaps, never allocating per byte.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type Operands = {
+///   // fields documented in Rust above
+/// };
+/// ```
 struct Operands {
-    /// Per-positive-operand simulation state, in `positives` order.
+    /// What:    Per-positive-operand simulation state, in `positives` order.
+    /// Why:     The surrounding record stores this value by name so later code can read the
+    ///          same piece of state.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// positives: unknown[];
+    /// ```
     positives: Vec<State>,
-    /// Per-negative-operand simulation state, in `negatives` order.
+    /// What:    Per-negative-operand simulation state, in `negatives` order.
+    /// Why:     The surrounding record stores this value by name so later code can read the
+    ///          same piece of state.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// negatives: unknown[];
+    /// ```
     negatives: Vec<State>,
 }
 
@@ -119,10 +243,31 @@ struct Operands {
 /// What: the current operand states plus a spare buffer the byte step fills. Why:
 /// keeping every operand of one start together enforces the same-span requirement,
 /// and reusing the spare keeps the step allocation-free.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type Thread = {
+///   // fields documented in Rust above
+/// };
+/// ```
 struct Thread {
-    /// Live operand states for this start.
+    /// What:    Live operand states for this start.
+    /// Why:     The surrounding record stores this value by name so later code can read the
+    ///          same piece of state.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// cur: unknown;
+    /// ```
     cur: Operands,
-    /// Spare buffer the byte step writes into, then swaps with `cur`.
+    /// What:    Spare buffer the byte step writes into, then swaps with `cur`.
+    /// Why:     The surrounding record stores this value by name so later code can read the
+    ///          same piece of state.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// next: unknown;
+    /// ```
     next: Operands,
 }
 
@@ -132,6 +277,13 @@ struct Thread {
 /// thread, test acceptance, then advance all threads by the next byte. Why: a match
 /// may begin at any position, and each thread carries the joint operand state for
 /// its own start so acceptance tests one shared span.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function run_product(/* args */) {
+///   // body documented in Rust
+/// }
+/// ```
 fn run_product(prog: &ProductProgram, line: &[u8]) -> bool {
     let mut threads: Vec<Thread> = Vec::new();
     for i in 0..=line.len() {
@@ -156,6 +308,13 @@ fn run_product(prog: &ProductProgram, line: &[u8]) -> bool {
 ///
 /// What: seeded current states plus empty spare buffers, one per operand. Why: each
 /// start gets its own anchored run, seeded once; the spare is reused every byte.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function new_thread(/* args */) {
+///   // body documented in Rust
+/// }
+/// ```
 fn new_thread(prog: &ProductProgram) -> Thread {
     Thread {
         cur: Operands {
@@ -173,6 +332,13 @@ fn new_thread(prog: &ProductProgram) -> Thread {
 ///
 /// What: one `State` per operand with its start positions active. Why: the current
 /// side of a fresh thread starts poised at every operand's start set.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function seeded_states(/* args */) {
+///   // body documented in Rust
+/// }
+/// ```
 fn seeded_states(operands: &[CountingNfa]) -> Vec<State> {
     operands
         .iter()
@@ -188,6 +354,13 @@ fn seeded_states(operands: &[CountingNfa]) -> Vec<State> {
 ///
 /// What: one `State::new` sized to each operand's positions. Why: the spare side of
 /// a fresh thread is the reusable byte-step destination.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function empty_states(/* args */) {
+///   // body documented in Rust
+/// }
+/// ```
 fn empty_states(operands: &[CountingNfa]) -> Vec<State> {
     operands.iter().map(|nfa| State::new(&nfa.elements)).collect()
 }
@@ -196,6 +369,13 @@ fn empty_states(operands: &[CountingNfa]) -> Vec<State> {
 ///
 /// What: closes each positive and negative state under the boundary context. Why:
 /// anchors and skippable repetitions must settle before the accept test.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function close_operands(/* args */) {
+///   // body documented in Rust
+/// }
+/// ```
 fn close_operands(prog: &ProductProgram, ops: &mut Operands, ctx: Ctx) {
     for (state, nfa) in ops.positives.iter_mut().zip(&prog.positives) {
         closure(&nfa.elements, &nfa.follow, state, ctx);
@@ -209,6 +389,13 @@ fn close_operands(prog: &ProductProgram, ops: &mut Operands, ctx: Ctx) {
 ///
 /// What: conjunction over positives with a negation over negatives. Why: this is
 /// `A & ~B` evaluated on the one span the thread represents.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function accepts(/* args */) {
+///   // body documented in Rust
+/// }
+/// ```
 fn accepts(ops: &Operands) -> bool {
     ops.positives.iter().all(State::accepts) && ops.negatives.iter().all(|state| !state.accepts())
 }
@@ -219,6 +406,13 @@ fn accepts(ops: &Operands) -> bool {
 /// and swaps the buffers. Why: a dead positive can never match again so the thread
 /// is dropped, which bounds the live-thread count by the longest positive; negatives
 /// are kept even when dead (a dead negative means `~B` holds).
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function advance_thread(/* args */) {
+///   // body documented in Rust
+/// }
+/// ```
 fn advance_thread(prog: &ProductProgram, thread: &mut Thread, b: u8) -> bool {
     step_states(&prog.positives, &thread.cur.positives, &mut thread.next.positives, b);
     if thread.next.positives.iter().any(State::is_dead) {
@@ -233,6 +427,13 @@ fn advance_thread(prog: &ProductProgram, thread: &mut Thread, b: u8) -> bool {
 ///
 /// What: runs the byte step per operand, source to reused destination. Why: the
 /// shared advance for both the positive and negative lists.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function step_states(/* args */) {
+///   // body documented in Rust
+/// }
+/// ```
 fn step_states(operands: &[CountingNfa], src: &[State], dst: &mut [State], b: u8) {
     for ((nfa, source), destination) in operands.iter().zip(src).zip(dst.iter_mut()) {
         step_into(&nfa.elements, &nfa.follow, source, b, destination);
@@ -244,6 +445,11 @@ fn step_states(operands: &[CountingNfa], src: &[State], dst: &mut [State], b: u8
 /// What: lives in a separate `*_tests.rs` file (exempt from the line and rustdoc
 /// budgets). Why: keeps the product file within budget while proving it against the
 /// trusted oracle.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import "./tests";
+/// ```
 #[cfg(test)]
 #[path = "product_tests.rs"]
 mod tests;

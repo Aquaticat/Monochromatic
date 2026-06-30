@@ -9,28 +9,72 @@
 //! is folded into a second table `a2[c0,c1][s]` (did the state or the in-between state
 //! accept), kept off the critical chain. Position-independence lets acceptance be a single
 //! bit, so the pair table stays one byte per entry.
+//!
+//! In TS you'd write (pseudocode):
+//! ```ts
+//! // module sheng2: see exported functions and types below.
+//! ```
 
-/// Imports the AVX-512 permute and bitwise intrinsics for the x86 path.
+/// What:    Imports the AVX-512 permute and bitwise intrinsics for the x86 path.
+/// Why:     This file needs these names in scope so the implementation below can use short
+///          names instead of long crate paths.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { /* names from this Rust use line */ } from "./module";
+/// ```
 #[cfg(target_arch = "x86_64")]
 use std::arch::x86_64::{
     __m512i, _mm512_loadu_si512, _mm512_or_si512, _mm512_permutexvar_epi8, _mm512_set1_epi8,
     _mm512_setzero_si512, _mm512_test_epi8_mask,
 };
 
-/// Imports the NEON table-lookup and reduce intrinsics for the arm64 path.
+/// What:    Imports the NEON table-lookup and reduce intrinsics for the arm64 path.
+/// Why:     This file needs these names in scope so the implementation below can use short
+///          names instead of long crate paths.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { /* names from this Rust use line */ } from "./module";
+/// ```
 #[cfg(target_arch = "aarch64")]
 use std::arch::aarch64::{vdupq_n_u8, vld1q_u8_x4, vmaxvq_u8, vorrq_u8, vqtbl4q_u8};
 
-/// Imports the DFA table.
+/// What:    Imports the DFA table.
+/// Why:     This file needs these names in scope so the implementation below can use short
+///          names instead of long crate paths.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { /* names from this Rust use line */ } from "./module";
+/// ```
 use crate::dfa::table::Dfa;
 
-/// Largest state count the permute addresses (one lane per state).
+/// What:    Largest state count the permute addresses (one lane per state).
+/// Why:     The program gives this fixed value a name so every caller uses the same setting.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const SHENG2_MAX_STATES: unknown = /* value below */;
+/// ```
 const SHENG2_MAX_STATES: usize = 64;
 
-/// Largest class count whose pair table (`nc * nc` columns) stays cache-friendly.
+/// What:    Largest class count whose pair table (`nc * nc` columns) stays cache-friendly.
+/// Why:     The program gives this fixed value a name so every caller uses the same setting.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const SHENG2_MAX_CLASSES: unknown = /* value below */;
+/// ```
 const SHENG2_MAX_CLASSES: usize = 16;
 
-/// Acceptance mask of a state that accepts in every boundary context.
+/// What:    Acceptance mask of a state that accepts in every boundary context.
+/// Why:     The program gives this fixed value a name so every caller uses the same setting.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const ACCEPT_ALL: unknown = /* value below */;
+/// ```
 const ACCEPT_ALL: u8 = 0x0F;
 
 /// Precomputed two-byte composed tables for one position-independent DFA.
@@ -39,24 +83,87 @@ const ACCEPT_ALL: u8 = 0x0F;
 /// one-byte column per class for the trailing odd byte, the per-state accept flags, the
 /// byte-to-class map, the class count, and the start state. Why: built once per batch call
 /// and reused for every line.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type Sheng2Tables = {
+///   // fields documented in Rust above
+/// };
+/// ```
 struct Sheng2Tables {
-    /// `t2[c0 * nc + c1][s]` = state after consuming class `c0` then `c1` from `s`.
+    /// What:    `t2[c0 * nc + c1][s]` = state after consuming class `c0` then `c1` from `s`.
+    /// Why:     The surrounding record stores this value by name so later code can read the
+    ///          same piece of state.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// t2: unknown[][];
+    /// ```
     t2: Vec<[u8; SHENG2_MAX_STATES]>,
-    /// `a2[c0 * nc + c1][s]` = 0xFF if `s` or the in-between state accepts, else 0.
+    /// What:    `a2[c0 * nc + c1][s]` = 0xFF if `s` or the in-between state accepts, else 0.
+    /// Why:     The surrounding record stores this value by name so later code can read the
+    ///          same piece of state.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// a2: unknown[][];
+    /// ```
     a2: Vec<[u8; SHENG2_MAX_STATES]>,
-    /// `trans1[c][s]` = state after one byte of class `c`, for a trailing odd byte.
+    /// What:    `trans1[c][s]` = state after one byte of class `c`, for a trailing odd byte.
+    /// Why:     The surrounding record stores this value by name so later code can read the
+    ///          same piece of state.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// trans1: unknown[][];
+    /// ```
     trans1: Vec<[u8; SHENG2_MAX_STATES]>,
-    /// `accept[s]` = 0xFF if state `s` accepts (position-independent, so one bit).
+    /// What:    `accept[s]` = 0xFF if state `s` accepts (position-independent, so one bit).
+    /// Why:     The surrounding record stores this value by name so later code can read the
+    ///          same piece of state.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// accept: unknown[];
+    /// ```
     accept: [u8; SHENG2_MAX_STATES],
-    /// Byte-to-class map copied for the scan.
+    /// What:    Byte-to-class map copied for the scan.
+    /// Why:     The surrounding record stores this value by name so later code can read the
+    ///          same piece of state.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// class_map: unknown[];
+    /// ```
     class_map: [u8; 256],
-    /// Number of byte classes.
+    /// What:    Number of byte classes.
+    /// Why:     The surrounding record stores this value by name so later code can read the
+    ///          same piece of state.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// nc: number;
+    /// ```
     nc: usize,
-    /// Start state id.
+    /// What:    Start state id.
+    /// Why:     The surrounding record stores this value by name so later code can read the
+    ///          same piece of state.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// start: number;
+    /// ```
     start: u8,
 }
 
-/// Building the two-byte tables and scanning lines with them.
+/// What:    Building the two-byte tables and scanning lines with them.
+/// Why:     The program attaches these functions to the named Rust type so callers can use
+///          method syntax.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // Methods are written inside a class or as functions that take the value.
+/// ```
 impl Dfa {
     /// Builds the composed tables, or `None` when the DFA does not qualify.
     ///
@@ -64,6 +171,13 @@ impl Dfa {
     /// classes; then fills the pair transition, pair acceptance, single-byte transition,
     /// and accept-flag tables. Why: the composition is only sound when acceptance does not
     /// depend on the byte after the boundary, and the pair table is `nc*nc` wide.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// function build_sheng2(/* args */) {
+    ///   // body documented in Rust
+    /// }
+    /// ```
     fn build_sheng2(&self) -> Option<Sheng2Tables> {
         let states = self.num_states as usize;
         let nc = self.nclasses as usize;
@@ -106,6 +220,13 @@ impl Dfa {
     /// What: builds the composed tables once (scalar fallback when the DFA does not qualify
     /// or the host lacks AVX-512VBMI), then scans each line. Why: the entry the benchmark
     /// hook drives; arm64 and other hosts use the scalar batch until a NEON path is added.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// function is_match_batch_sheng2(/* args */) {
+    ///   // body documented in Rust
+    /// }
+    /// ```
     pub fn is_match_batch_sheng2(&self, lines: &[&[u8]], out: &mut [bool]) {
         let qualifies = self.build_sheng2();
         #[cfg(target_arch = "x86_64")]
@@ -114,22 +235,44 @@ impl Dfa {
             && is_x86_feature_detected!("avx512bw")
             && is_x86_feature_detected!("avx512f")
         {
-            // Safety: guarded by the matching runtime feature detection above.
+            // What:    Safety: guarded by the matching runtime feature detection above.
+            // Why:     This explains the exact invariant that makes the unsafe Rust operation
+            //          valid.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+            // ```
             unsafe { sheng2_all_avx512(&tables, lines, out) };
             return;
         }
         #[cfg(target_arch = "aarch64")]
         if let Some(tables) = qualifies {
             for (line, slot) in lines.iter().zip(out.iter_mut()) {
-                // Safety: NEON (and vqtbl4q) is baseline on aarch64.
+                // What:    Safety: NEON (and vqtbl4q) is baseline on aarch64.
+                // Why:     This explains the exact invariant that makes the unsafe Rust
+                //          operation valid.
+                //
+                // In TS you'd write (pseudocode):
+                // ```ts
+                // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+                // ```
                 *slot = unsafe { sheng2_line_neon(&tables, line) };
             }
             return;
         }
         #[cfg(not(any(target_arch = "x86_64", target_arch = "aarch64")))]
         let _ = qualifies;
-        // Did not qualify (position-dependent acceptance, too many classes) or no permute:
-        // cascade to the one-byte Sheng, which itself falls back to the scalar scan.
+        // What:    Did not qualify (position-dependent acceptance, too many classes) or no
+        //          permute: cascade to the one-byte Sheng, which itself falls back to the
+        //          scalar scan.
+        // Why:     The surrounding function uses this step to keep the matcher behavior
+        //          correct at this point.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+        // ```
         self.is_match_batch_sheng(lines, out);
     }
 }
@@ -144,6 +287,13 @@ impl Dfa {
 /// # Safety
 ///
 /// The caller must have confirmed AVX-512F, AVX-512BW, and AVX-512VBMI at runtime.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function sheng2_all_avx512(/* args */) {
+///   // body documented in Rust
+/// }
+/// ```
 #[cfg(target_arch = "x86_64")]
 #[target_feature(enable = "avx512f,avx512bw,avx512vbmi")]
 unsafe fn sheng2_all_avx512(tables: &Sheng2Tables, lines: &[&[u8]], out: &mut [bool]) {
@@ -184,6 +334,13 @@ unsafe fn sheng2_all_avx512(tables: &Sheng2Tables, lines: &[&[u8]], out: &mut [b
 /// # Safety
 ///
 /// NEON (and `vqtbl4q`) is baseline on aarch64, so this is always valid there.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function sheng2_line_neon(/* args */) {
+///   // body documented in Rust
+/// }
+/// ```
 #[cfg(target_arch = "aarch64")]
 #[inline]
 unsafe fn sheng2_line_neon(tables: &Sheng2Tables, line: &[u8]) -> bool {
@@ -210,7 +367,14 @@ unsafe fn sheng2_line_neon(tables: &Sheng2Tables, line: &[u8]) -> bool {
     }
 }
 
-/// Unit tests for the two-byte composed kernel, in a sidecar (max-lines exempt).
+/// What:    Unit tests for the two-byte composed kernel, in a sidecar (max-lines exempt).
+/// Why:     The package keeps that concept in a separate Rust file so this module can refer to
+///          it by name.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import "./tests";
+/// ```
 #[cfg(test)]
 #[path = "sheng2_tests.rs"]
 mod tests;

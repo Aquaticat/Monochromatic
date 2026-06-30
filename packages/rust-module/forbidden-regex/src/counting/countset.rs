@@ -6,24 +6,57 @@
 //! so a fixed-width bitset replaces a heap `BTreeSet`; entry is one bit-or, the
 //! exit guard is one shift-and-test, and a matched byte advances every count at
 //! once with a single multi-word left shift, with no per-byte allocation.
+//!
+//! In TS you'd write (pseudocode):
+//! ```ts
+//! // module countset: see exported functions and types below.
+//! ```
 
 /// Live counts of one counted element as a bitset, one bit per count value.
 ///
 /// What: `words` is a little-endian bit array where bit `p` (word `p / 64`, bit
 /// `p % 64`) marks count `p` as live. Why: counts stay in `[0, max]`, so the array
 /// is sized once and reused; set operations become word ops.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type CountSet = {
+///   // fields documented in Rust above
+/// };
+/// ```
 pub(crate) struct CountSet {
-    /// Bit array of live counts, sized to address bit `max + 1`.
+    /// What:    Bit array of live counts, sized to address bit `max + 1`.
+    /// Why:     The surrounding record stores this value by name so later code can read the
+    ///          same piece of state.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// words: number[];
+    /// ```
     words: Vec<u64>,
 }
 
-/// Construction and the bounded-count set operations the simulation needs.
+/// What:    Construction and the bounded-count set operations the simulation needs.
+/// Why:     The program attaches these functions to the named Rust type so callers can use
+///          method syntax.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // Methods are written inside a class or as functions that take the value.
+/// ```
 impl CountSet {
     /// Builds an empty set able to hold counts in `[0, max]`.
     ///
     /// What: zeroed words sized to address bit `max + 1`. Why: a left shift can
     /// momentarily set bit `max + 1`, which the advance then clears, so that bit
     /// must be representable.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// function new(/* args */) {
+    ///   // body documented in Rust
+    /// }
+    /// ```
     pub(crate) fn new(max: usize) -> CountSet {
         CountSet {
             words: vec![0u64; nwords(max)],
@@ -34,6 +67,13 @@ impl CountSet {
     ///
     /// What: zeroes every word. Why: a reused buffer is cleared before the byte
     /// step refills it, which is what removes per-byte allocation.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// function clear(/* args */) {
+    ///   // body documented in Rust
+    /// }
+    /// ```
     pub(crate) fn clear(&mut self) {
         self.words.iter_mut().for_each(|word| *word = 0);
     }
@@ -42,6 +82,13 @@ impl CountSet {
     ///
     /// What: sets bit 0. Why: entering a counted element seeds a fresh repetition
     /// at count 0; the changed flag drives the closure fixpoint.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// function insert_zero(/* args */) {
+    ///   // body documented in Rust
+    /// }
+    /// ```
     pub(crate) fn insert_zero(&mut self) -> bool {
         let changed = self.words[0] & 1 == 0;
         self.words[0] |= 1;
@@ -52,6 +99,13 @@ impl CountSet {
     ///
     /// What: tests every bit at position `>= min`. Why: counts never exceed `max`,
     /// so "at least `min`" is exactly the exit guard's `[min, max]` membership.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// function has_at_least(/* args */) {
+    ///   // body documented in Rust
+    /// }
+    /// ```
     pub(crate) fn has_at_least(&self, min: usize) -> bool {
         let wi = min / 64;
         if wi >= self.words.len() {
@@ -67,6 +121,13 @@ impl CountSet {
     ///
     /// What: every word is zero. Why: a dead counted element contributes nothing,
     /// part of the thread-prune test.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// function is_empty(/* args */) {
+    ///   // body documented in Rust
+    /// }
+    /// ```
     pub(crate) fn is_empty(&self) -> bool {
         self.words.iter().all(|&word| word == 0)
     }
@@ -76,6 +137,13 @@ impl CountSet {
     /// What: a multi-word left shift of `src` into `self`, then drop the count that
     /// would exceed `max`. Why: a matched byte advances all live repetitions at
     /// once; a count already at `max` has exited and is dropped.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// function copy_advanced_from(/* args */) {
+    ///   // body documented in Rust
+    /// }
+    /// ```
     pub(crate) fn copy_advanced_from(&mut self, src: &CountSet, max: usize) {
         let mut carry = 0u64;
         for (dst, &word) in self.words.iter_mut().zip(&src.words) {
@@ -89,6 +157,13 @@ impl CountSet {
     ///
     /// What: clears bit `max + 1`. Why: counts stay in `[0, max]` by induction, so
     /// after a shift only that one position can be out of range.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// function clear_above(/* args */) {
+    ///   // body documented in Rust
+    /// }
+    /// ```
     fn clear_above(&mut self, max: usize) {
         let pos = max + 1;
         let wi = pos / 64;
@@ -102,11 +177,25 @@ impl CountSet {
 ///
 /// What: enough 64-bit words for positions `0..=max + 1`. Why: sizing once here
 /// keeps every `CountSet` of one element identically shaped for word-wise ops.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function nwords(/* args */) {
+///   // body documented in Rust
+/// }
+/// ```
 fn nwords(max: usize) -> usize {
     (max + 1) / 64 + 1
 }
 
-/// Unit tests for the bounded-count bitset, in a sidecar (max-lines exempt).
+/// What:    Unit tests for the bounded-count bitset, in a sidecar (max-lines exempt).
+/// Why:     The package keeps that concept in a separate Rust file so this module can refer to
+///          it by name.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import "./tests";
+/// ```
 #[cfg(test)]
 #[path = "countset_tests.rs"]
 mod tests;

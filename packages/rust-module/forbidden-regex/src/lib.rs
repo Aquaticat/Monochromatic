@@ -19,52 +19,164 @@
 //! intrinsics (`vpermb` / `vqtbl4q`), runtime-detected, so the crate needs no nightly
 //! `portable_simd` feature.
 
-/// The byte-set leaf alphabet.
+/// What:    The byte-set leaf alphabet.
+/// Why:     The package keeps that concept in a separate Rust file so this module can refer to
+///          it by name.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import "./charset";
+/// ```
 mod charset;
 
-/// The compile-time error type.
+/// What:    The compile-time error type.
+/// Why:     The package keeps that concept in a separate Rust file so this module can refer to
+///          it by name.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import "./error";
+/// ```
 mod error;
 
-/// The regex node algebra and its smart constructors.
+/// What:    The regex node algebra and its smart constructors.
+/// Why:     The package keeps that concept in a separate Rust file so this module can refer to
+///          it by name.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import "./ast";
+/// ```
 mod ast;
 
-/// The boundary context resolving zero-width assertions.
+/// What:    The boundary context resolving zero-width assertions.
+/// Why:     The package keeps that concept in a separate Rust file so this module can refer to
+///          it by name.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import "./context";
+/// ```
 mod context;
 
-/// Position-dependent nullability.
+/// What:    Position-dependent nullability.
+/// Why:     The package keeps that concept in a separate Rust file so this module can refer to
+///          it by name.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import "./nullable";
+/// ```
 mod nullable;
 
-/// Brzozowski byte derivatives.
+/// What:    Brzozowski byte derivatives.
+/// Why:     The package keeps that concept in a separate Rust file so this module can refer to
+///          it by name.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import "./derivative";
+/// ```
 mod derivative;
 
-/// Pattern parsing into the node algebra.
+/// What:    Pattern parsing into the node algebra.
+/// Why:     The package keeps that concept in a separate Rust file so this module can refer to
+///          it by name.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import "./parse";
+/// ```
 mod parse;
 
-/// Determinization and the compiled table.
+/// What:    Determinization and the compiled table.
+/// Why:     The package keeps that concept in a separate Rust file so this module can refer to
+///          it by name.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import "./dfa";
+/// ```
 mod dfa;
 
-/// The counting back-end for bounded repetition.
+/// What:    The counting back-end for bounded repetition.
+/// Why:     The package keeps that concept in a separate Rust file so this module can refer to
+///          it by name.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import "./counting";
+/// ```
 mod counting;
 
-/// The per-pattern back-end selector.
+/// What:    The per-pattern back-end selector.
+/// Why:     The package keeps that concept in a separate Rust file so this module can refer to
+///          it by name.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import "./engine";
+/// ```
 mod engine;
 
-/// Per-rule back-end selection and the seedless-rule fold into the gate.
+/// What:    Per-rule back-end selection and the seedless-rule fold into the gate.
+/// Why:     The package keeps that concept in a separate Rust file so this module can refer to
+///          it by name.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import "./build";
+/// ```
 mod build;
 
-/// The RegexSet-level combined literal prefilter.
+/// What:    The RegexSet-level combined literal prefilter.
+/// Why:     The package keeps that concept in a separate Rust file so this module can refer to
+///          it by name.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import "./gate";
+/// ```
 mod gate;
 
-/// Greedy combination of literal-free rules into union DFAs.
+/// What:    Greedy combination of literal-free rules into union DFAs.
+/// Why:     The package keeps that concept in a separate Rust file so this module can refer to
+///          it by name.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import "./group";
+/// ```
 mod group;
 
-/// Public matcher types.
+/// What:    Public matcher types.
+/// Why:     The package keeps that concept in a separate Rust file so this module can refer to
+///          it by name.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import "./regex";
+/// ```
 mod regex;
 
-/// Re-exports the compile-time error type.
+/// What:    Re-exports the compile-time error type.
+/// Why:     The surrounding function uses this step to keep the matcher behavior correct at
+///          this point.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // Same step as the Rust statement below, written with ordinary TS objects/functions.
+/// ```
 pub use crate::error::CompileError;
 
-/// Re-exports the public matcher API.
+/// What:    Re-exports the public matcher API.
+/// Why:     The surrounding function uses this step to keep the matcher behavior correct at
+///          this point.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // Same step as the Rust statement below, written with ordinary TS objects/functions.
+/// ```
 pub use crate::regex::{Regex, RegexSet, compile};
 
 /// Diagnostic: debug-prints the parsed node of a pattern that has no usable seed.
@@ -72,6 +184,13 @@ pub use crate::regex::{Regex, RegexSet, compile};
 /// What: returns `Some(debug)` when the pattern parses and is seedless (no leading
 /// seed and no required-literal seed), else `None`. Why: a temporary probe for the
 /// CsA work to enumerate exactly which rules force the literal-free second pass.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function debug_seedless(/* args */) {
+///   // body documented in Rust
+/// }
+/// ```
 #[doc(hidden)]
 pub fn debug_seedless(pattern: &str) -> Option<String> {
     let node = crate::parse::parse(pattern).ok()?;
@@ -91,6 +210,13 @@ pub fn debug_seedless(pattern: &str) -> Option<String> {
 /// `CompileError` (typically `StateCap`) on a blowup. Why: a measured probe of the
 /// "all-rules combined automaton" idea, to see whether a single monolithic DFA over the
 /// whole ruleset is even buildable (vs the per-rule gate-plus-fold architecture).
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function try_combined_dfa(/* args */) {
+///   // body documented in Rust
+/// }
+/// ```
 #[doc(hidden)]
 pub fn try_combined_dfa(patterns: &[&str]) -> Result<usize, CompileError> {
     let roots: Vec<crate::ast::node::Node> =

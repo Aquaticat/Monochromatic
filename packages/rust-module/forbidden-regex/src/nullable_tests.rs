@@ -3,13 +3,27 @@
 // Why:   acceptance is "the residual is nullable here", so the matcher and the DFA's
 //        accept masks both rest on this function; a flipped case (e.g. Concat using
 //        `any` instead of `all`) would accept or miss empty matches everywhere.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { /* names from this Rust use line */ } from "./module";
+// ```
 
 use super::nullable;
 use crate::ast::node::Node;
 use crate::charset::singleton;
 use crate::context::Ctx;
 
-// A context with all four boundary flags off (mid-input, between non-word bytes).
+// What:    A context with all four boundary flags off (mid-input, between non-word bytes).
+// Why:     The program needs this named step so callers can reuse the behavior without copying
+//          its body.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function off(/* args */) {
+//   // body documented in Rust
+// }
+// ```
 fn off() -> Ctx {
     Ctx { line_start: false, line_end: false, word_before: false, word_after: false }
 }

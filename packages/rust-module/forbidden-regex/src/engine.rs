@@ -1,21 +1,70 @@
-//! The per-pattern back-end: a matcher plus its required-literal prefilter.
+//! What:    The per-pattern back-end: a matcher plus its required-literal prefilter.
+//! Why:     This file is the Rust module that groups the engine implementation, so a reader
+//!          can enter the package through one named area.
+//!
+//! In TS you'd write (pseudocode):
+//! ```ts
+//! // module engine: see exported functions and types below.
+//! ```
 
-/// Imports the serde derives so a compiled engine can be persisted.
+/// What:    Imports the serde derives so a compiled engine can be persisted.
+/// Why:     This file needs these names in scope so the implementation below can use short
+///          names instead of long crate paths.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { /* names from this Rust use line */ } from "./module";
+/// ```
 use serde::{Deserialize, Serialize};
 
-/// Imports the counting NFA back-end.
+/// What:    Imports the counting NFA back-end.
+/// Why:     This file needs these names in scope so the implementation below can use short
+///          names instead of long crate paths.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { /* names from this Rust use line */ } from "./module";
+/// ```
 use crate::counting::CountingNfa;
 
-/// Imports the required-literal prefilter.
+/// What:    Imports the required-literal prefilter.
+/// Why:     This file needs these names in scope so the implementation below can use short
+///          names instead of long crate paths.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { /* names from this Rust use line */ } from "./module";
+/// ```
 use crate::counting::Prefilter;
 
-/// Imports the synchronized-product back-end for `&` and `~`.
+/// What:    Imports the synchronized-product back-end for `&` and `~`.
+/// Why:     This file needs these names in scope so the implementation below can use short
+///          names instead of long crate paths.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { /* names from this Rust use line */ } from "./module";
+/// ```
 use crate::counting::ProductProgram;
 
-/// Imports the general derivative DFA.
+/// What:    Imports the general derivative DFA.
+/// Why:     This file needs these names in scope so the implementation below can use short
+///          names instead of long crate paths.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { /* names from this Rust use line */ } from "./module";
+/// ```
 use crate::dfa::table::Dfa;
 
-/// Imports the error type for decode validation.
+/// What:    Imports the error type for decode validation.
+/// Why:     This file needs these names in scope so the implementation below can use short
+///          names instead of long crate paths.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { /* names from this Rust use line */ } from "./module";
+/// ```
 use crate::error::CompileError;
 
 /// Smallest batch that routes a seedless table engine to the Sheng permute kernel.
@@ -23,6 +72,11 @@ use crate::error::CompileError;
 /// What: the line-count floor below which `is_match_batch` stays on the per-line loop.
 /// Why: Sheng builds a one-time 16 KiB permute table per call, so a tiny batch would not
 /// scan enough bytes to amortize it; this floor keeps the kernel a win, never a regression.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const SHENG_BATCH_FLOOR: unknown = /* value below */;
+/// ```
 const SHENG_BATCH_FLOOR: usize = 512;
 
 /// The matcher back-end chosen for one pattern.
@@ -30,21 +84,69 @@ const SHENG_BATCH_FLOOR: usize = 512;
 /// What: a `Table` derivative DFA for the fast O(1)-per-byte path, a `Nfa` counting
 /// automaton for patterns whose DFA would explode, or a `Product` for `&`/`~`. Why:
 /// the selector picks the fastest representation that does not blow up.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type EngineKind =
+///   | { kind: "variant" };
+/// ```
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum EngineKind {
-    /// General derivative DFA; matches in O(1) per byte.
+    /// What:    General derivative DFA; matches in O(1) per byte.
+    /// Why:     The surrounding function uses this step to keep the matcher behavior correct
+    ///          at this point.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    /// ```
     Table(
-        /// Flat transition-table automaton.
+        /// What:    Flat transition-table automaton.
+        /// Why:     The surrounding function uses this step to keep the matcher behavior
+        ///          correct at this point.
+        ///
+        /// In TS you'd write (pseudocode):
+        /// ```ts
+        /// // Same step as the Rust statement below, written with ordinary TS objects/functions.
+        /// ```
         Dfa,
     ),
-    /// Counting NFA; small where the DFA would explode on bounded repetition.
+    /// What:    Counting NFA; small where the DFA would explode on bounded repetition.
+    /// Why:     The surrounding function uses this step to keep the matcher behavior correct
+    ///          at this point.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    /// ```
     Nfa(
-        /// Counting automaton over byte-class positions.
+        /// What:    Counting automaton over byte-class positions.
+        /// Why:     The surrounding function uses this step to keep the matcher behavior
+        ///          correct at this point.
+        ///
+        /// In TS you'd write (pseudocode):
+        /// ```ts
+        /// // Same step as the Rust statement below, written with ordinary TS objects/functions.
+        /// ```
         CountingNfa,
     ),
-    /// Synchronized-product counting back-end for `&` and `~`.
+    /// What:    Synchronized-product counting back-end for `&` and `~`.
+    /// Why:     The surrounding function uses this step to keep the matcher behavior correct
+    ///          at this point.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    /// ```
     Product(
-        /// Product of counting NFAs.
+        /// What:    Product of counting NFAs.
+        /// Why:     The surrounding function uses this step to keep the matcher behavior
+        ///          correct at this point.
+        ///
+        /// In TS you'd write (pseudocode):
+        /// ```ts
+        /// // Same step as the Rust statement below, written with ordinary TS objects/functions.
+        /// ```
         ProductProgram,
     ),
 }
@@ -55,23 +157,65 @@ pub enum EngineKind {
 /// pattern has no usable required literal), and the rebuilt searchers. Why: holding
 /// the seeds at this level lets both the single-pattern fast path and the
 /// `RegexSet` gate prefilter regardless of which back-end matches.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type Engine = {
+///   // fields documented in Rust above
+/// };
+/// ```
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Engine {
-    /// The matcher back-end.
+    /// What:    The matcher back-end.
+    /// Why:     The surrounding record stores this value by name so later code can read the
+    ///          same piece of state.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// kind: unknown;
+    /// ```
     kind: EngineKind,
-    /// Required-literal seeds for the prefilter and the set gate.
+    /// What:    Required-literal seeds for the prefilter and the set gate.
+    /// Why:     The surrounding record stores this value by name so later code can read the
+    ///          same piece of state.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// seeds: number[][];
+    /// ```
     seeds: Vec<Vec<u8>>,
-    /// Searchers rebuilt from `seeds`; never serialized.
+    /// What:    Searchers rebuilt from `seeds`; never serialized.
+    /// Why:     The surrounding record stores this value by name so later code can read the
+    ///          same piece of state.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// prefilter: unknown;
+    /// ```
     #[serde(skip)]
     prefilter: Prefilter,
 }
 
-/// Construction, matching, and decode handling for an engine.
+/// What:    Construction, matching, and decode handling for an engine.
+/// Why:     The program attaches these functions to the named Rust type so callers can use
+///          method syntax.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // Methods are written inside a class or as functions that take the value.
+/// ```
 impl Engine {
     /// Builds an engine from a back-end and its required-literal seeds.
     ///
     /// What: stores both and builds the prefilter searchers. Why: the only
     /// constructor, so a built engine always has a prepared prefilter.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// function new(/* args */) {
+    ///   // body documented in Rust
+    /// }
+    /// ```
     pub fn new(kind: EngineKind, seeds: Vec<Vec<u8>>) -> Engine {
         let prefilter = Prefilter::from_seeds(&seeds);
         Engine {
@@ -85,6 +229,13 @@ impl Engine {
     ///
     /// What: rejects on the prefilter, then runs the back-end. Why: most scanned
     /// lines carry no required literal, so the cheap scan skips the matcher.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// function is_match(/* args */) {
+    ///   // body documented in Rust
+    /// }
+    /// ```
     pub fn is_match(&self, line: &[u8]) -> bool {
         self.prefilter.allows(line) && self.matches(line)
     }
@@ -94,6 +245,13 @@ impl Engine {
     /// What: the match without the required-literal pre-check. Why: the `RegexSet` gate
     /// has already confirmed this rule's seed is present, so re-scanning the whole line
     /// for it in the engine's own prefilter is redundant work on every flagged line.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// function matches_only(/* args */) {
+    ///   // body documented in Rust
+    /// }
+    /// ```
     pub fn matches_only(&self, line: &[u8]) -> bool {
         self.matches(line)
     }
@@ -102,6 +260,13 @@ impl Engine {
     ///
     /// What: dispatches to the chosen representation. Why: callers match without
     /// caring which one was selected.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// function matches(/* args */) {
+    ///   // body documented in Rust
+    /// }
+    /// ```
     fn matches(&self, line: &[u8]) -> bool {
         match &self.kind {
             EngineKind::Table(dfa) => dfa.is_match(line),
@@ -115,6 +280,13 @@ impl Engine {
     /// What: `Some` only for an `EngineKind::Table`, else `None`. Why: the batch
     /// kernels run directly on a `Dfa`, so a caller comparing kernels needs the table
     /// when one is present and falls back to the scalar path otherwise.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// function table_dfa(/* args */) {
+    ///   // body documented in Rust
+    /// }
+    /// ```
     pub fn table_dfa(&self) -> Option<&Dfa> {
         match &self.kind {
             EngineKind::Table(dfa) => Some(dfa),
@@ -134,6 +306,13 @@ impl Engine {
     /// one-time permute-table build stays amortized. (A vertical SIMD gather across lines
     /// lost outright and was removed; the interleaved and tight kernels reach parity to a
     /// small win and back the `is_match_batch_bucketed` opt-in.)
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// function is_match_batch(/* args */) {
+    ///   // body documented in Rust
+    /// }
+    /// ```
     pub fn is_match_batch(&self, lines: &[&[u8]], out: &mut [bool]) {
         if self.seeds.is_empty() && lines.len() >= SHENG_BATCH_FLOOR
             && let EngineKind::Table(dfa) = &self.kind
@@ -150,6 +329,13 @@ impl Engine {
     ///
     /// What: a clone of the seeds when present. Why: the `RegexSet` gate unions every
     /// rule's seeds; a seedless engine is always a candidate.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// function seeds(/* args */) {
+    ///   // body documented in Rust
+    /// }
+    /// ```
     pub fn seeds(&self) -> Option<Vec<Vec<u8>>> {
         if self.seeds.is_empty() {
             None
@@ -162,6 +348,13 @@ impl Engine {
     ///
     /// What: defers to the back-end's structural check. Why: a decoded automaton is
     /// executed on attacker-influenced input, so it must be proven in-bounds first.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// function validate(/* args */) {
+    ///   // body documented in Rust
+    /// }
+    /// ```
     pub fn validate(&self) -> Result<(), CompileError> {
         match &self.kind {
             EngineKind::Table(dfa) => dfa.validate(),
@@ -176,6 +369,13 @@ impl Engine {
     /// byte (conservative, so no match is ever skipped). Why: line-start rules compile
     /// to anchored DFAs, so the precise table path is the one that matters; the
     /// fallback keeps the reject sound for any back-end.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// function mark_first_bytes(/* args */) {
+    ///   // body documented in Rust
+    /// }
+    /// ```
     pub fn mark_first_bytes(&self, set: &mut crate::charset::ByteSet) {
         match &self.kind {
             EngineKind::Table(dfa) => dfa.mark_first_bytes(set),
@@ -187,12 +387,26 @@ impl Engine {
     ///
     /// What: regenerates `prefilter` from `seeds`. Why: the searchers are not
     /// serialized, so a reloaded engine must rebuild them before matching.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// function prepare(/* args */) {
+    ///   // body documented in Rust
+    /// }
+    /// ```
     pub fn prepare(&mut self) {
         self.prefilter = Prefilter::from_seeds(&self.seeds);
     }
 }
 
-/// Unit tests for the per-pattern engine, in a sidecar (max-lines exempt).
+/// What:    Unit tests for the per-pattern engine, in a sidecar (max-lines exempt).
+/// Why:     The package keeps that concept in a separate Rust file so this module can refer to
+///          it by name.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import "./tests";
+/// ```
 #[cfg(test)]
 #[path = "engine_tests.rs"]
 mod tests;

@@ -1,27 +1,90 @@
-//! Recursive-descent grammar with single-atom operands for `&` and `|`.
+//! What:    Recursive-descent grammar with single-atom operands for `&` and `|`.
+//! Why:     This file is the Rust module that groups the grammar implementation, so a reader
+//!          can enter the package through one named area.
+//!
+//! In TS you'd write (pseudocode):
+//! ```ts
+//! // module grammar: see exported functions and types below.
+//! ```
 
-/// Imports the byte-set helpers for `.` and literal bytes.
+/// What:    Imports the byte-set helpers for `.` and literal bytes.
+/// Why:     This file needs these names in scope so the implementation below can use short
+///          names instead of long crate paths.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { /* names from this Rust use line */ } from "./module";
+/// ```
 use crate::charset::{dot_set, singleton};
 
-/// Imports the node algebra and constructors.
+/// What:    Imports the node algebra and constructors.
+/// Why:     This file needs these names in scope so the implementation below can use short
+///          names instead of long crate paths.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { /* names from this Rust use line */ } from "./module";
+/// ```
 use crate::ast::node::Node;
 
-/// Imports the set-algebra and class constructors.
+/// What:    Imports the set-algebra and class constructors.
+/// Why:     This file needs these names in scope so the implementation below can use short
+///          names instead of long crate paths.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { /* names from this Rust use line */ } from "./module";
+/// ```
 use crate::ast::smart::{alt, class, comp, concat, inter, optional};
 
-/// Imports the error type.
+/// What:    Imports the error type.
+/// Why:     This file needs these names in scope so the implementation below can use short
+///          names instead of long crate paths.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { /* names from this Rust use line */ } from "./module";
+/// ```
 use crate::error::CompileError;
 
-/// Imports the cursor.
+/// What:    Imports the cursor.
+/// Why:     This file needs these names in scope so the implementation below can use short
+///          names instead of long crate paths.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { /* names from this Rust use line */ } from "./module";
+/// ```
 use crate::parse::cursor::Cursor;
 
-/// Imports the atom-position escape parser.
+/// What:    Imports the atom-position escape parser.
+/// Why:     This file needs these names in scope so the implementation below can use short
+///          names instead of long crate paths.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { /* names from this Rust use line */ } from "./module";
+/// ```
 use crate::parse::escape::parse_escape_atom;
 
-/// Imports the character-class parser.
+/// What:    Imports the character-class parser.
+/// Why:     This file needs these names in scope so the implementation below can use short
+///          names instead of long crate paths.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { /* names from this Rust use line */ } from "./module";
+/// ```
 use crate::parse::class::parse_class;
 
-/// Imports the repetition parser.
+/// What:    Imports the repetition parser.
+/// Why:     This file needs these names in scope so the implementation below can use short
+///          names instead of long crate paths.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { /* names from this Rust use line */ } from "./module";
+/// ```
 use crate::parse::repeat::parse_repeat;
 
 /// Parses a full expression at one nesting level, up to `close` or end.
@@ -30,11 +93,23 @@ use crate::parse::repeat::parse_repeat;
 /// set-algebra form where every operand must be exactly one atom. Why: this is
 /// the chosen grammar with no operator precedence; operators never mix with
 /// concatenation at one level without explicit `(?:...)` grouping.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function parse_setexpr(/* args */) {
+///   // body documented in Rust
+/// }
+/// ```
 pub fn parse_setexpr(cur: &mut Cursor, close: Option<u8>) -> Result<Node, CompileError> {
     let units = parse_concat_units(cur, close)?;
     cur.skip_ignorable();
     // What: peek for a set-algebra operator. Why: its presence changes how the
     // already-parsed left side must be interpreted (single atom, not concat).
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    // ```
     match cur.peek() {
         Some(op @ (b'|' | b'&')) => parse_set_algebra(cur, close, units, op),
         _ => Ok(concat(units)),
@@ -46,6 +121,13 @@ pub fn parse_setexpr(cur: &mut Cursor, close: Option<u8>) -> Result<Node, Compil
 /// What: requires the left side to be a single atom, then reads each further
 /// operand as a single atom, rejecting any mix of `&` and `|`. Why: enforces the
 /// fully-wrapped-operand rule that removes precedence.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function parse_set_algebra(/* args */) {
+///   // body documented in Rust
+/// }
+/// ```
 fn parse_set_algebra(
     cur: &mut Cursor,
     close: Option<u8>,
@@ -63,6 +145,11 @@ fn parse_set_algebra(
             }
             // What: the other operator at this level is illegal. Why: mixing `&`
             // and `|` needs an explicit `(?:...)` wrapper.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+            // ```
             Some(b'|') | Some(b'&') => {
                 return Err(CompileError::Syntax {
                     pos: cur.pos(),
@@ -73,6 +160,11 @@ fn parse_set_algebra(
         }
     }
     // What: build the matching node. Why: `op` selects union or intersection.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    // ```
     if op == b'|' {
         Ok(alt(operands))
     } else {
@@ -84,6 +176,13 @@ fn parse_set_algebra(
 ///
 /// What: an operand of `&`/`|` must be a single atom. Why: a bare concatenation
 /// (or empty) operand is rejected so the author wraps it in `(?:...)`.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function single_atom(/* args */) {
+///   // body documented in Rust
+/// }
+/// ```
 fn single_atom(units: Vec<Node>, pos: usize) -> Result<Node, CompileError> {
     if units.len() == 1 {
         Ok(units.into_iter().next().unwrap())
@@ -100,6 +199,13 @@ fn single_atom(units: Vec<Node>, pos: usize) -> Result<Node, CompileError> {
 /// What: stops at end, the closing delimiter, or a set-algebra operator. Why:
 /// the caller decides whether the run is a plain concatenation or one operand of
 /// an operator chain.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function parse_concat_units(/* args */) {
+///   // body documented in Rust
+/// }
+/// ```
 fn parse_concat_units(cur: &mut Cursor, close: Option<u8>) -> Result<Vec<Node>, CompileError> {
     let mut units = Vec::new();
     loop {
@@ -119,10 +225,22 @@ fn parse_concat_units(cur: &mut Cursor, close: Option<u8>) -> Result<Vec<Node>, 
 /// What: applies `?`, `{n}`, or `{n,m}`, rejects `*`/`+`, and forbids a stacked
 /// second quantifier. Why: one quantifier per atom keeps the grammar simple and
 /// the language finite.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function parse_postfix(/* args */) {
+///   // body documented in Rust
+/// }
+/// ```
 fn parse_postfix(cur: &mut Cursor) -> Result<Node, CompileError> {
     let atom = parse_atom(cur)?;
     cur.skip_ignorable();
     // What: dispatch on the quantifier byte. Why: each maps to a distinct shape.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    // ```
     let quantified = match cur.peek() {
         Some(b'?') => {
             cur.bump();
@@ -151,6 +269,13 @@ fn parse_postfix(cur: &mut Cursor) -> Result<Node, CompileError> {
 ///
 /// What: after one quantifier, another `?`/`{`/`*`/`+` is an error. Why: stacked
 /// quantifiers are ambiguous and unsupported.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function reject_stacked(/* args */) {
+///   // body documented in Rust
+/// }
+/// ```
 fn reject_stacked(cur: &mut Cursor) -> Result<(), CompileError> {
     cur.skip_ignorable();
     match cur.peek() {
@@ -167,6 +292,13 @@ fn reject_stacked(cur: &mut Cursor) -> Result<(), CompileError> {
 /// What: groups, complements, classes, `.`, anchors, escapes, or a literal byte;
 /// every other metacharacter in atom position is an error. Why: atoms are the
 /// leaves the rest of the grammar combines.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function parse_atom(/* args */) {
+///   // body documented in Rust
+/// }
+/// ```
 fn parse_atom(cur: &mut Cursor) -> Result<Node, CompileError> {
     cur.skip_ignorable();
     let pos = cur.pos();
@@ -218,11 +350,23 @@ fn parse_atom(cur: &mut Cursor) -> Result<Node, CompileError> {
 ///
 /// What: requires the `(?:` prefix and rejects capturing groups, lookaround, and
 /// inline flags. Why: only non-capturing grouping is supported.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function parse_group(/* args */) {
+///   // body documented in Rust
+/// }
+/// ```
 fn parse_group(cur: &mut Cursor) -> Result<Node, CompileError> {
     let pos = cur.pos();
     cur.bump();
     // What: only `(?:` is accepted after `(`. Why: `(` alone is a capture and
     // `(?` followed by anything but `:` is lookaround or an inline flag.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    // ```
     if cur.peek() != Some(b'?') {
         return Err(CompileError::Syntax {
             pos,
@@ -246,6 +390,13 @@ fn parse_group(cur: &mut Cursor) -> Result<Node, CompileError> {
 ///
 /// What: requires `~(` then a full subexpression then `)`. Why: complement is
 /// always explicitly parenthesized per the engine's grammar.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function parse_complement(/* args */) {
+///   // body documented in Rust
+/// }
+/// ```
 fn parse_complement(cur: &mut Cursor) -> Result<Node, CompileError> {
     let pos = cur.pos();
     cur.bump();
@@ -266,6 +417,13 @@ fn parse_complement(cur: &mut Cursor) -> Result<Node, CompileError> {
 ///
 /// What: skips verbose noise then requires `)`. Why: a missing close is an
 /// unbalanced-parenthesis error reported at the opener.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function expect_close(/* args */) {
+///   // body documented in Rust
+/// }
+/// ```
 fn expect_close(cur: &mut Cursor, open_pos: usize) -> Result<(), CompileError> {
     cur.skip_ignorable();
     if cur.peek() == Some(b')') {

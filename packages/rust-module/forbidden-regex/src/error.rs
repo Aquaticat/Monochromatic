@@ -1,6 +1,20 @@
-//! Compile-time error type for the forbidden-regex engine.
+//! What:    Compile-time error type for the forbidden-regex engine.
+//! Why:     This file is the Rust module that groups the error implementation, so a reader can
+//!          enter the package through one named area.
+//!
+//! In TS you'd write (pseudocode):
+//! ```ts
+//! // module error: see exported functions and types below.
+//! ```
 
-/// Imports the formatter pieces used to render a human-readable error message.
+/// What:    Imports the formatter pieces used to render a human-readable error message.
+/// Why:     This file needs these names in scope so the implementation below can use short
+///          names instead of long crate paths.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { /* names from this Rust use line */ } from "./module";
+/// ```
 use std::fmt;
 
 /// Reasons a pattern (or a serialized DFA) is rejected before it can match.
@@ -9,6 +23,12 @@ use std::fmt;
 /// cap, and (de)serialization funnels into one of these variants.
 /// Why: callers (the scanner, tests) get a single typed error to match on, and
 /// `compile`/`new` never panic on bad input; they return one of these instead.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type CompileError =
+///   | { kind: "variant" };
+/// ```
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum CompileError {
     /// A syntax or unsupported-construct rejection at a byte offset.
@@ -18,10 +38,29 @@ pub enum CompileError {
     /// a single atom, mixed operators, stacked quantifier, bad repetition).
     /// Why: one variant covers every parse rejection so the surface stays small
     /// while still pointing the rule author at the exact spot.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    /// ```
     Syntax {
-        /// Byte offset into the pattern where the problem was detected.
+        /// What:    Byte offset into the pattern where the problem was detected.
+        /// Why:     The surrounding record stores this value by name so later code can read
+        ///          the same piece of state.
+        ///
+        /// In TS you'd write (pseudocode):
+        /// ```ts
+        /// pos: number;
+        /// ```
         pos: usize,
-        /// Human-readable description of what was rejected.
+        /// What:    Human-readable description of what was rejected.
+        /// Why:     The surrounding record stores this value by name so later code can read
+        ///          the same piece of state.
+        ///
+        /// In TS you'd write (pseudocode):
+        /// ```ts
+        /// message: string;
+        /// ```
         message: String,
     },
     /// The pattern can match the empty string, so under unanchored search it
@@ -30,22 +69,51 @@ pub enum CompileError {
     /// What: raised when the parsed root is nullable in some realizable anchor
     /// context. Why: such a rule is a footgun (flags every line); rejecting it
     /// at compile time is safer than silently matching everything.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    /// ```
     EmptyMatchable,
     /// Determinization produced more states than the configured cap.
     ///
     /// What: complement and intersection can blow up the state count on
     /// pathological patterns. Why: a hard cap turns that into a clean error
     /// instead of unbounded memory use.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    /// ```
     StateCap {
-        /// State-count limit that was exceeded.
+        /// What:    State-count limit that was exceeded.
+        /// Why:     The surrounding record stores this value by name so later code can read
+        ///          the same piece of state.
+        ///
+        /// In TS you'd write (pseudocode):
+        /// ```ts
+        /// limit: number;
+        /// ```
         limit: usize,
     },
     /// Encoding a compiled automaton to bytes failed.
     ///
     /// What: wraps a bincode serialization failure as a string. Why: keeps the
     /// public error free of a bincode type in its signature.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    /// ```
     Serialize {
-        /// Underlying codec failure rendered as text.
+        /// What:    Underlying codec failure rendered as text.
+        /// Why:     The surrounding record stores this value by name so later code can read
+        ///          the same piece of state.
+        ///
+        /// In TS you'd write (pseudocode):
+        /// ```ts
+        /// message: string;
+        /// ```
         message: String,
     },
     /// A deserialized automaton failed structural validation.
@@ -54,21 +122,52 @@ pub enum CompileError {
     /// lengths are inconsistent. Why: a hostile or corrupt blob must be rejected
     /// before it is ever executed, so the match loop can never read out of
     /// bounds.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    /// ```
     Invalid {
-        /// Description of which invariant the decoded automaton violated.
+        /// What:    Description of which invariant the decoded automaton violated.
+        /// Why:     The surrounding record stores this value by name so later code can read
+        ///          the same piece of state.
+        ///
+        /// In TS you'd write (pseudocode):
+        /// ```ts
+        /// message: string;
+        /// ```
         message: String,
     },
 }
 
-/// Renders a `CompileError` for end users and logs.
+/// What:    Renders a `CompileError` for end users and logs.
+/// Why:     The program attaches these functions to the named Rust type so callers can use
+///          method syntax.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // Methods are written inside a class or as functions that take the value.
+/// ```
 impl fmt::Display for CompileError {
     /// Writes a one-line description of the error.
     ///
     /// What: matches each variant to a sentence. Why: `Display` is what the
     /// scanner surfaces and what `Error` builds on.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// function fmt(/* args */) {
+    ///   // body documented in Rust
+    /// }
+    /// ```
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         // What: branch per variant; no `match` value is discarded.
         // Why: each variant carries different fields to interpolate.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+        // ```
         match self {
             CompileError::Syntax { pos, message } => {
                 write!(f, "syntax error at byte {pos}: {message}")
@@ -89,10 +188,24 @@ impl fmt::Display for CompileError {
     }
 }
 
-/// Lets `CompileError` participate in the standard error ecosystem.
+/// What:    Lets `CompileError` participate in the standard error ecosystem.
+/// Why:     The program attaches these functions to the named Rust type so callers can use
+///          method syntax.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // Methods are written inside a class or as functions that take the value.
+/// ```
 impl std::error::Error for CompileError {}
 
-/// Unit tests for error rendering, in a sidecar (max-lines exempt).
+/// What:    Unit tests for error rendering, in a sidecar (max-lines exempt).
+/// Why:     The package keeps that concept in a separate Rust file so this module can refer to
+///          it by name.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import "./tests";
+/// ```
 #[cfg(test)]
 #[path = "error_tests.rs"]
 mod tests;

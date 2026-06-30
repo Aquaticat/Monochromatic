@@ -1,6 +1,20 @@
-//! The derivative-regex node algebra.
+//! What:    The derivative-regex node algebra.
+//! Why:     This file is the Rust module that groups the node implementation, so a reader can
+//!          enter the package through one named area.
+//!
+//! In TS you'd write (pseudocode):
+//! ```ts
+//! // module node: see exported functions and types below.
+//! ```
 
-/// Imports the byte-set leaf type used by `Class` nodes.
+/// What:    Imports the byte-set leaf type used by `Class` nodes.
+/// Why:     This file needs these names in scope so the implementation below can use short
+///          names instead of long crate paths.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { /* names from this Rust use line */ } from "./module";
+/// ```
 use crate::charset::ByteSet;
 
 /// A regular expression as a value that derivatives transform.
@@ -12,40 +26,136 @@ use crate::charset::ByteSet;
 /// the same type represents both the parsed pattern and every residual state;
 /// `Eq`/`Ord`/`Hash` let smart constructors dedup and sort, and let the DFA
 /// builder intern states.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type Node =
+///   | { kind: "variant" };
+/// ```
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum Node {
-    /// Matches the empty string (epsilon).
-    Empty,
-    /// Matches nothing (the empty language); arises as a dead derivative.
-    Fail,
-    /// Matches every string (sigma star); arises from complement and as the
-    /// unanchored-search prefix.
-    Top,
-    /// Matches one byte drawn from the set.
+    /// What:    Matches the empty string (epsilon).
+    /// Why:     The surrounding function uses this step to keep the matcher behavior correct
+    ///          at this point.
     ///
-    /// What: literals, `.`, `[...]`, and the shorthands all reduce to this.
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    /// ```
+    Empty,
+    /// What:    Matches nothing (the empty language); arises as a dead derivative.
+    /// Why:     The surrounding function uses this step to keep the matcher behavior correct
+    ///          at this point.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    /// ```
+    Fail,
+    /// What:    Matches every string (sigma star); arises from complement and as the
+    ///          unanchored-search prefix.
+    /// Why:     The surrounding function uses this step to keep the matcher behavior correct
+    ///          at this point.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    /// ```
+    Top,
+    /// What:    Matches one byte drawn from the set. What: literals, `.`, `[...]`, and the
+    ///          shorthands all reduce to this.
+    /// Why:     The surrounding function uses this step to keep the matcher behavior correct
+    ///          at this point.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    /// ```
     Class(
-        /// Byte set the matched byte must belong to.
+        /// What:    Byte set the matched byte must belong to.
+        /// Why:     The surrounding function uses this step to keep the matcher behavior
+        ///          correct at this point.
+        ///
+        /// In TS you'd write (pseudocode):
+        /// ```ts
+        /// // Same step as the Rust statement below, written with ordinary TS objects/functions.
+        /// ```
         ByteSet,
     ),
-    /// Sequence: each child matches in order.
+    /// What:    Sequence: each child matches in order.
+    /// Why:     The surrounding function uses this step to keep the matcher behavior correct
+    ///          at this point.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    /// ```
     Concat(
-        /// Ordered factors matched one after another.
+        /// What:    Ordered factors matched one after another.
+        /// Why:     The surrounding function uses this step to keep the matcher behavior
+        ///          correct at this point.
+        ///
+        /// In TS you'd write (pseudocode):
+        /// ```ts
+        /// // Same step as the Rust statement below, written with ordinary TS objects/functions.
+        /// ```
         Vec<Node>,
     ),
-    /// Alternation: any one child matches.
+    /// What:    Alternation: any one child matches.
+    /// Why:     The surrounding function uses this step to keep the matcher behavior correct
+    ///          at this point.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    /// ```
     Alt(
-        /// Branches, any one of which may match.
+        /// What:    Branches, any one of which may match.
+        /// Why:     The surrounding function uses this step to keep the matcher behavior
+        ///          correct at this point.
+        ///
+        /// In TS you'd write (pseudocode):
+        /// ```ts
+        /// // Same step as the Rust statement below, written with ordinary TS objects/functions.
+        /// ```
         Vec<Node>,
     ),
-    /// Intersection: every child must match the same input.
+    /// What:    Intersection: every child must match the same input.
+    /// Why:     The surrounding function uses this step to keep the matcher behavior correct
+    ///          at this point.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    /// ```
     Inter(
-        /// Operands that must all match the same input.
+        /// What:    Operands that must all match the same input.
+        /// Why:     The surrounding function uses this step to keep the matcher behavior
+        ///          correct at this point.
+        ///
+        /// In TS you'd write (pseudocode):
+        /// ```ts
+        /// // Same step as the Rust statement below, written with ordinary TS objects/functions.
+        /// ```
         Vec<Node>,
     ),
-    /// Complement: matches exactly the strings the child does not.
+    /// What:    Complement: matches exactly the strings the child does not.
+    /// Why:     The surrounding function uses this step to keep the matcher behavior correct
+    ///          at this point.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    /// ```
     Comp(
-        /// Inner expression whose language is complemented.
+        /// What:    Inner expression whose language is complemented.
+        /// Why:     The surrounding function uses this step to keep the matcher behavior
+        ///          correct at this point.
+        ///
+        /// In TS you'd write (pseudocode):
+        /// ```ts
+        /// // Same step as the Rust statement below, written with ordinary TS objects/functions.
+        /// ```
         Box<Node>,
     ),
     /// Bounded repetition: match the child between `min` and `max` times.
@@ -53,18 +163,65 @@ pub enum Node {
     /// What: kept un-unrolled so a counter register, not DFA states, carries the
     /// count. Why: unrolling `{n,m}` bakes the count into the automaton and blows
     /// it up exponentially under unanchored search.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    /// ```
     Repeat {
-        /// Repeated sub-expression.
+        /// What:    Repeated sub-expression.
+        /// Why:     The surrounding record stores this value by name so later code can read
+        ///          the same piece of state.
+        ///
+        /// In TS you'd write (pseudocode):
+        /// ```ts
+        /// node: unknown;
+        /// ```
         node: Box<Node>,
-        /// Minimum number of repetitions still required.
+        /// What:    Minimum number of repetitions still required.
+        /// Why:     The surrounding record stores this value by name so later code can read
+        ///          the same piece of state.
+        ///
+        /// In TS you'd write (pseudocode):
+        /// ```ts
+        /// min: number;
+        /// ```
         min: usize,
-        /// Maximum number of repetitions still allowed.
+        /// What:    Maximum number of repetitions still allowed.
+        /// Why:     The surrounding record stores this value by name so later code can read
+        ///          the same piece of state.
+        ///
+        /// In TS you'd write (pseudocode):
+        /// ```ts
+        /// max: number;
+        /// ```
         max: usize,
     },
-    /// Zero-width `^`: nullable only at a line start.
+    /// What:    Zero-width `^`: nullable only at a line start.
+    /// Why:     The surrounding function uses this step to keep the matcher behavior correct
+    ///          at this point.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    /// ```
     LineStart,
-    /// Zero-width `$`: nullable only at a line end.
+    /// What:    Zero-width `$`: nullable only at a line end.
+    /// Why:     The surrounding function uses this step to keep the matcher behavior correct
+    ///          at this point.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    /// ```
     LineEnd,
-    /// Zero-width `\b`: nullable only where word-ness changes.
+    /// What:    Zero-width `\b`: nullable only where word-ness changes.
+    /// Why:     The surrounding function uses this step to keep the matcher behavior correct
+    ///          at this point.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    /// ```
     WordBoundary,
 }

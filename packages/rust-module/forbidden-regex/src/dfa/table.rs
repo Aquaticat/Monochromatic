@@ -1,12 +1,40 @@
-//! The serializable DFA table and its allocation-free match loop.
+//! What:    The serializable DFA table and its allocation-free match loop.
+//! Why:     This file is the Rust module that groups the table implementation, so a reader can
+//!          enter the package through one named area.
+//!
+//! In TS you'd write (pseudocode):
+//! ```ts
+//! // module table: see exported functions and types below.
+//! ```
 
-/// Imports the serde derives for persisting a compiled automaton.
+/// What:    Imports the serde derives for persisting a compiled automaton.
+/// Why:     This file needs these names in scope so the implementation below can use short
+///          names instead of long crate paths.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { /* names from this Rust use line */ } from "./module";
+/// ```
 use serde::{Deserialize, Serialize};
 
-/// Imports the error type for validation of a decoded automaton.
+/// What:    Imports the error type for validation of a decoded automaton.
+/// Why:     This file needs these names in scope so the implementation below can use short
+///          names instead of long crate paths.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { /* names from this Rust use line */ } from "./module";
+/// ```
 use crate::error::CompileError;
 
-/// Imports the byte set used to report a DFA's possible first match bytes.
+/// What:    Imports the byte set used to report a DFA's possible first match bytes.
+/// Why:     This file needs these names in scope so the implementation below can use short
+///          names instead of long crate paths.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { /* names from this Rust use line */ } from "./module";
+/// ```
 use crate::charset::ByteSet;
 
 /// Returns the single-bit acceptance mask for one boundary context.
@@ -14,6 +42,13 @@ use crate::charset::ByteSet;
 /// What: encodes `(word_after, line_end)` into a bit index `0..=3` and shifts a
 /// `1` into it. Why: each state stores which of these four boundary contexts make
 /// it accepting, so the matcher tests acceptance with one mask-and.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function accept_bit(/* args */) {
+///   // body documented in Rust
+/// }
+/// ```
 pub fn accept_bit(word_after: bool, line_end: bool) -> u8 {
     let index = ((line_end as u8) << 1) | (word_after as u8);
     1u8 << index
@@ -25,15 +60,50 @@ pub fn accept_bit(word_after: bool, line_end: bool) -> u8 {
 /// table, a per-state 4-bit acceptance mask, and the start state. Why: this flat
 /// shape serializes directly with serde and matches in a tight per-byte loop with
 /// no allocation, which is what beats the lazy, lock-guarded alternatives.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type Dfa = {
+///   // fields documented in Rust above
+/// };
+/// ```
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Dfa {
-    /// Number of distinct byte classes.
+    /// What:    Number of distinct byte classes.
+    /// Why:     The surrounding record stores this value by name so later code can read the
+    ///          same piece of state.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// nclasses: number;
+    /// ```
     pub(crate) nclasses: u32,
-    /// Length-256 map from a byte to its class id.
+    /// What:    Length-256 map from a byte to its class id.
+    /// Why:     The surrounding record stores this value by name so later code can read the
+    ///          same piece of state.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// class_map: number[];
+    /// ```
     pub(crate) class_map: Vec<u8>,
-    /// Per-class flag: is a byte of this class a word byte (for `\b`)?
+    /// What:    Per-class flag: is a byte of this class a word byte (for `\b`)?
+    /// Why:     The surrounding record stores this value by name so later code can read the
+    ///          same piece of state.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// class_word: boolean[];
+    /// ```
     pub(crate) class_word: Vec<bool>,
-    /// Per-class flag: is a byte of this class a newline (for `^`/`$`)?
+    /// What:    Per-class flag: is a byte of this class a newline (for `^`/`$`)?
+    /// Why:     The surrounding record stores this value by name so later code can read the
+    ///          same piece of state.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// class_newline: boolean[];
+    /// ```
     pub(crate) class_newline: Vec<bool>,
     /// Dense transition table of length `num_states * nclasses`.
     ///
@@ -41,12 +111,40 @@ pub struct Dfa {
     /// the hot match loop reads one entry per byte, so a denser table fits more of the
     /// automaton in cache; the build caps states at 65534, well above any real rule's
     /// (and the engine cap of 20000), so a `u16` id never overflows.
+    /// Why:     The surrounding record stores this value by name so later code can read the
+    ///          same piece of state.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// trans: number[];
+    /// ```
     pub(crate) trans: Vec<u16>,
-    /// Per-state acceptance mask over the four `(word_after, line_end)` contexts.
+    /// What:    Per-state acceptance mask over the four `(word_after, line_end)` contexts.
+    /// Why:     The surrounding record stores this value by name so later code can read the
+    ///          same piece of state.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// accept: number[];
+    /// ```
     pub(crate) accept: Vec<u8>,
-    /// Start state id.
+    /// What:    Start state id.
+    /// Why:     The surrounding record stores this value by name so later code can read the
+    ///          same piece of state.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// start: number;
+    /// ```
     pub(crate) start: u16,
-    /// Total number of states.
+    /// What:    Total number of states.
+    /// Why:     The surrounding record stores this value by name so later code can read the
+    ///          same piece of state.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// num_states: number;
+    /// ```
     pub(crate) num_states: u16,
     /// A non-accepting self-looping sink, or `num_states` when there is none.
     ///
@@ -54,10 +152,24 @@ pub struct Dfa {
     /// disables the exit. Why: an anchored DFA dies on the first non-matching byte, so
     /// without this the loop walks the rest of the line for nothing; this is the bulk
     /// of the gate's per-hit and line-start cost.
+    /// Why:     The surrounding record stores this value by name so later code can read the
+    ///          same piece of state.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// dead: number;
+    /// ```
     pub(crate) dead: u16,
 }
 
-/// Construction-from-parts and matching for `Dfa`.
+/// What:    Construction-from-parts and matching for `Dfa`.
+/// Why:     The program attaches these functions to the named Rust type so callers can use
+///          method syntax.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // Methods are written inside a class or as functions that take the value.
+/// ```
 impl Dfa {
     /// Assembles a `Dfa` from already-built tables.
     ///
@@ -65,6 +177,13 @@ impl Dfa {
     /// Why: fields stay private so a `Dfa` can only arise from the builder or a
     /// validated decode; ids are `u16` because the build caps states at 65534, so each
     /// caller narrows its own ids and the stored table is half a `u32` table's width.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// function from_parts(/* args */) {
+    ///   // body documented in Rust
+    /// }
+    /// ```
     #[allow(clippy::too_many_arguments)]
     pub fn from_parts(
         nclasses: u32,
@@ -96,6 +215,13 @@ impl Dfa {
     /// each boundary against the upcoming byte's context, and returns on the
     /// first match. Why: this is the hot path; it is branch-light and never
     /// allocates, and early exit makes a positive answer cheap.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// function is_match(/* args */) {
+    ///   // body documented in Rust
+    /// }
+    /// ```
     pub fn is_match(&self, line: &[u8]) -> bool {
         let nc = self.nclasses as usize;
         let dead = self.dead as usize;
@@ -103,9 +229,19 @@ impl Dfa {
         // What: each iteration tests acceptance at the boundary before `b`, then
         // consumes `b`. Why: a match may end at any boundary; the upcoming byte
         // supplies `word_after` and `line_end` for `$`/`\b`.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+        // ```
         for &b in line {
             // What: stop once the residual is the dead sink. Why: an anchored DFA dies
             // on the first non-matching byte, and walking the rest cannot accept.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+            // ```
             if state == dead {
                 return false;
             }
@@ -118,6 +254,11 @@ impl Dfa {
         }
         // What: the end-of-input boundary has no next byte. Why: `word_after` is
         // false and `line_end` is true there.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+        // ```
         self.accept[state] & accept_bit(false, true) != 0
     }
 
@@ -127,6 +268,13 @@ impl Dfa {
     /// qualifies) or its start transition does not go straight to the dead sink. Why: a
     /// line-start rule is checked only when `line[0]` is one of these, so a single byte
     /// test skips the anchored DFA call on almost every line.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// function mark_first_bytes(/* args */) {
+    ///   // body documented in Rust
+    /// }
+    /// ```
     pub fn mark_first_bytes(&self, set: &mut ByteSet) {
         let nc = self.nclasses as usize;
         let start = self.start as usize;
@@ -145,8 +293,20 @@ impl Dfa {
     /// the start id are in range. Why: a serialized DFA may be hostile or
     /// corrupt, and it is executed against attacker-influenced input, so it must
     /// be proven well-formed before first use.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// function validate(/* args */) {
+    ///   // body documented in Rust
+    /// }
+    /// ```
     pub fn validate(&self) -> Result<(), CompileError> {
         // What: a small helper to build the error. Why: keeps each check terse.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+        // ```
         let invalid = |message: &str| CompileError::Invalid {
             message: message.to_string(),
         };
@@ -180,6 +340,11 @@ impl Dfa {
         // a hostile blob could name an ACCEPTING state as dead, which would make the
         // match loop early-exit false and miss a secret; require it be non-accepting
         // and fully self-looping so the early-exit is provably sound.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+        // ```
         let dead = self.dead as usize;
         if dead != ns {
             if dead > ns {
@@ -193,7 +358,14 @@ impl Dfa {
     }
 }
 
-/// Unit tests for the DFA table and match loop, in a sidecar (max-lines exempt).
+/// What:    Unit tests for the DFA table and match loop, in a sidecar (max-lines exempt).
+/// Why:     The package keeps that concept in a separate Rust file so this module can refer to
+///          it by name.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import "./tests";
+/// ```
 #[cfg(test)]
 #[path = "table_tests.rs"]
 mod tests;
@@ -204,6 +376,13 @@ mod tests;
 /// byte-class transition returns to itself. Why: from such a state no input can ever
 /// accept, so the match loop can stop there; minimization collapses all such states
 /// into one, and `num_states` (no real id) signals there is none.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function find_dead(/* args */) {
+///   // body documented in Rust
+/// }
+/// ```
 fn find_dead(trans: &[u16], accept: &[u8], nclasses: u32, num_states: u16) -> u16 {
     let nc = nclasses as usize;
     for state in 0..num_states as usize {

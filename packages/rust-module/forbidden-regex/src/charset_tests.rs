@@ -2,6 +2,11 @@
 // Why:   these are tiny, pure functions the rest of the engine trusts; a flipped range
 //        bound or a wrong shorthand would silently corrupt every class, so each gets a
 //        direct membership assertion (and mutation testing leans on exactly this).
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { /* names from this Rust use line */ } from "./module";
+// ```
 
 use super::*;
 
@@ -72,7 +77,14 @@ fn negate_flips_every_bit() {
     let complement = set.negate();
     assert!(!complement.contains(b'x'));
     assert!(complement.contains(b'y'));
-    // Double negation is identity.
+    // What:    Double negation is identity.
+    // Why:     The test uses this setup or assertion to pin the behavior named by the test
+    //          function.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    // ```
     assert_eq!(set, complement.negate());
 }
 
@@ -150,7 +162,14 @@ fn space_set_is_the_six_ascii_whitespace_bytes() {
 #[test]
 fn shorthand_negations_are_complements() {
     assert_eq!(digit_set().negate(), digit_set().negate());
-    // A negated digit set excludes digits and includes letters.
+    // What:    A negated digit set excludes digits and includes letters.
+    // Why:     The test uses this setup or assertion to pin the behavior named by the test
+    //          function.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    // ```
     let non_digit = digit_set().negate();
     assert!(!non_digit.contains(b'5'));
     assert!(non_digit.contains(b'a'));

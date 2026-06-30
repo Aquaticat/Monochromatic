@@ -4,10 +4,24 @@
 //        required literal is present (soundness) and skip literal-free rules (they are
 //        handled elsewhere), and it must report the hit position so an anchored rule is
 //        checked at the right offset.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { /* names from this Rust use line */ } from "./module";
+// ```
 
 use super::SetGate;
 
-// Builds a three-rule gate: rule 0 on "AKIA", rule 1 on "ghp_", rule 2 literal-free.
+// What:    Builds a three-rule gate: rule 0 on "AKIA", rule 1 on "ghp_", rule 2 literal-free.
+// Why:     The program needs this named step so callers can reuse the behavior without copying
+//          its body.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function three_rule_gate(/* args */) {
+//   // body documented in Rust
+// }
+// ```
 fn three_rule_gate() -> SetGate {
     let seeds = vec![
         Some(vec![b"AKIA".to_vec()]),
@@ -41,7 +55,14 @@ fn rejects_lines_without_any_seed() {
 fn seedless_rule_is_never_a_gate_candidate() {
     let gate = three_rule_gate();
     let mut seen = Vec::new();
-    // Rule 2 is literal-free; even on a line it cannot be flagged by the gate.
+    // What:    Rule 2 is literal-free; even on a line it cannot be flagged by the gate.
+    // Why:     The test uses this setup or assertion to pin the behavior named by the test
+    //          function.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    // ```
     gate.for_each_candidate(b"AKIA ghp_", |rule, _pos| seen.push(rule));
     assert!(!seen.contains(&2));
     assert!(seen.contains(&0));
@@ -64,7 +85,15 @@ fn reports_the_hit_position() {
 fn any_candidate_short_circuits_on_the_first_check_hit() {
     let gate = three_rule_gate();
     assert!(gate.any_candidate(b"has AKIA", |rule, _pos| rule == 0));
-    // A check that never accepts means no candidate "matches" even when a seed is present.
+    // What:    A check that never accepts means no candidate "matches" even when a seed is
+    //          present.
+    // Why:     The test uses this setup or assertion to pin the behavior named by the test
+    //          function.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    // ```
     assert!(!gate.any_candidate(b"has AKIA", |_rule, _pos| false));
 }
 

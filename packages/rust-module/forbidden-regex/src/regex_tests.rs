@@ -5,14 +5,26 @@
 //        sound) and `line_start_candidate` only gates an anchored check, so both are
 //        invisible to a correctness oracle; their contracts are pinned here directly so a
 //        wrong word/bit computation or an always-true gate cannot slip through.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { /* names from this Rust use line */ } from "./module";
+// ```
 
 use super::{CheckedFull, RegexSet};
 
 #[test]
 fn checked_full_reports_each_rule_exactly_once() {
-    // Each in-range rule is fresh on first sight and deduped after; the ids span several
-    // 64-bit words and bit positions so a wrong word (`/64`) or bit (`<<`, `%64`) would
-    // alias two distinct rules and be caught.
+    // What:    Each in-range rule is fresh on first sight and deduped after; the ids span
+    //          several 64-bit words and bit positions so a wrong word (`/64`) or bit (`<<`,
+    //          `%64`) would alias two distinct rules and be caught.
+    // Why:     The test uses this setup or assertion to pin the behavior named by the test
+    //          function.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    // ```
     let mut checked = CheckedFull::new();
     for rule in [0usize, 1, 5, 63, 64, 65, 127, 128, 191, 255] {
         assert!(checked.first_time(rule), "rule {rule} should be fresh on first sight");
@@ -22,8 +34,16 @@ fn checked_full_reports_each_rule_exactly_once() {
 
 #[test]
 fn checked_full_keeps_distinct_rules_independent() {
-    // Recording one rule must not mark another: rule 64 sits in a different word than 0,
-    // and rules 0/1/65 in different bits, so a word/bit miscalculation collapses them.
+    // What:    Recording one rule must not mark another: rule 64 sits in a different word than
+    //          0, and rules 0/1/65 in different bits, so a word/bit miscalculation collapses
+    //          them.
+    // Why:     The test uses this setup or assertion to pin the behavior named by the test
+    //          function.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    // ```
     let mut checked = CheckedFull::new();
     assert!(checked.first_time(0));
     assert!(checked.first_time(64), "rule 64 is a different word than rule 0");
@@ -33,8 +53,16 @@ fn checked_full_keeps_distinct_rules_independent() {
 
 #[test]
 fn checked_full_treats_ids_beyond_capacity_as_always_fresh() {
-    // The set holds 256 bits; ids at or above that always report fresh (sound: the caller
-    // simply re-runs the whole-line check), and must never index out of bounds.
+    // What:    The set holds 256 bits; ids at or above that always report fresh (sound: the
+    //          caller simply re-runs the whole-line check), and must never index out of
+    //          bounds.
+    // Why:     The test uses this setup or assertion to pin the behavior named by the test
+    //          function.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    // ```
     let mut checked = CheckedFull::new();
     assert!(checked.first_time(256));
     assert!(checked.first_time(256));
@@ -43,8 +71,16 @@ fn checked_full_treats_ids_beyond_capacity_as_always_fresh() {
 
 #[test]
 fn line_start_candidate_gates_on_the_first_byte() {
-    // A `^`-anchored rule matches only at offset zero, so the one-byte fast reject must say
-    // "candidate" exactly when the first byte is one the line-start rules can begin with.
+    // What:    A `^`-anchored rule matches only at offset zero, so the one-byte fast reject
+    //          must say "candidate" exactly when the first byte is one the line-start rules
+    //          can begin with.
+    // Why:     The test uses this setup or assertion to pin the behavior named by the test
+    //          function.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    // ```
     let set = RegexSet::new(&["^#deny this"]).expect("compiles");
     assert!(set.line_start_candidate(b"#deny this row"), "'#' begins the line-start rule");
     assert!(!set.line_start_candidate(b"deny this row"), "'d' cannot begin the line-start rule");

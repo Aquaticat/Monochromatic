@@ -1,12 +1,40 @@
-//! Byte-class equivalence: collapse the 256 bytes into transition-equivalent groups.
+//! What:    Byte-class equivalence: collapse the 256 bytes into transition-equivalent groups.
+//! Why:     This file is the Rust module that groups the classes implementation, so a reader
+//!          can enter the package through one named area.
+//!
+//! In TS you'd write (pseudocode):
+//! ```ts
+//! // module classes: see exported functions and types below.
+//! ```
 
-/// Imports the hash map used to deduplicate byte signatures.
+/// What:    Imports the hash map used to deduplicate byte signatures.
+/// Why:     This file needs these names in scope so the implementation below can use short
+///          names instead of long crate paths.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { /* names from this Rust use line */ } from "./module";
+/// ```
 use std::collections::HashMap;
 
-/// Imports the byte-set leaf type and the word predicate.
+/// What:    Imports the byte-set leaf type and the word predicate.
+/// Why:     This file needs these names in scope so the implementation below can use short
+///          names instead of long crate paths.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { /* names from this Rust use line */ } from "./module";
+/// ```
 use crate::charset::{ByteSet, is_word_byte};
 
-/// Imports the node algebra walked to gather classes.
+/// What:    Imports the node algebra walked to gather classes.
+/// Why:     This file needs these names in scope so the implementation below can use short
+///          names instead of long crate paths.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { /* names from this Rust use line */ } from "./module";
+/// ```
 use crate::ast::node::Node;
 
 /// The byte-class partition derived from a pattern.
@@ -15,16 +43,58 @@ use crate::ast::node::Node;
 /// per class (for computing transitions), and per-class word/newline flags. Why:
 /// transitions and acceptance depend on a byte only through its class, so the
 /// transition table can be `num_states * nclasses` wide instead of `* 256`.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type Classes = {
+///   // fields documented in Rust above
+/// };
+/// ```
 pub struct Classes {
-    /// Number of distinct classes.
+    /// What:    Number of distinct classes.
+    /// Why:     The surrounding record stores this value by name so later code can read the
+    ///          same piece of state.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// nclasses: number;
+    /// ```
     pub nclasses: usize,
-    /// Length-256 map from a byte to its class id.
+    /// What:    Length-256 map from a byte to its class id.
+    /// Why:     The surrounding record stores this value by name so later code can read the
+    ///          same piece of state.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// class_map: number[];
+    /// ```
     pub class_map: Vec<u8>,
-    /// One representative byte per class id.
+    /// What:    One representative byte per class id.
+    /// Why:     The surrounding record stores this value by name so later code can read the
+    ///          same piece of state.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// reps: number[];
+    /// ```
     pub reps: Vec<u8>,
-    /// Per-class word-byte flag.
+    /// What:    Per-class word-byte flag.
+    /// Why:     The surrounding record stores this value by name so later code can read the
+    ///          same piece of state.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// class_word: boolean[];
+    /// ```
     pub class_word: Vec<bool>,
-    /// Per-class newline flag.
+    /// What:    Per-class newline flag.
+    /// Why:     The surrounding record stores this value by name so later code can read the
+    ///          same piece of state.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// class_newline: boolean[];
+    /// ```
     pub class_newline: Vec<bool>,
 }
 
@@ -34,14 +104,31 @@ pub struct Classes {
 /// whose `(is_word, is_newline, membership-in-each-set)` signature is identical.
 /// Why: two bytes with the same signature drive identical derivatives and the
 /// same boundary context, so they are interchangeable in the DFA.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function compute_classes(/* args */) {
+///   // body documented in Rust
+/// }
+/// ```
 pub fn compute_classes(root: &Node) -> Classes {
     // What: collect the distinct leaf sets. Why: set membership is what makes two
     // bytes behave differently under a `Class` derivative.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    // ```
     let mut sets: Vec<ByteSet> = Vec::new();
     collect_sets(root, &mut sets);
 
     // What: assign a class id to each distinct byte signature.
     // Why: the signature captures every byte-dependent behavior.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    // ```
     let mut signature_to_id: HashMap<Vec<bool>, u8> = HashMap::new();
     let mut class_map: Vec<u8> = vec![0; 256];
     let mut reps: Vec<u8> = Vec::new();
@@ -52,6 +139,11 @@ pub fn compute_classes(root: &Node) -> Classes {
         let signature = byte_signature(b, &sets);
         // What: reuse an existing id or mint a new one. Why: the first byte of a
         // signature becomes that class's representative.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+        // ```
         let id = match signature_to_id.get(&signature) {
             Some(&id) => id,
             None => {
@@ -79,9 +171,21 @@ pub fn compute_classes(root: &Node) -> Classes {
 ///
 /// What: word-ness, newline-ness, then membership in each collected set. Why:
 /// bytes sharing this vector produce identical transitions everywhere.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function byte_signature(/* args */) {
+///   // body documented in Rust
+/// }
+/// ```
 fn byte_signature(b: u8, sets: &[ByteSet]) -> Vec<bool> {
     // What: start with the two context bits, then one bit per set.
     // Why: order is fixed so equal signatures hash and compare equal.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    // ```
     let mut signature = Vec::with_capacity(2 + sets.len());
     signature.push(is_word_byte(b));
     signature.push(b == b'\n');
@@ -95,9 +199,21 @@ fn byte_signature(b: u8, sets: &[ByteSet]) -> Vec<bool> {
 ///
 /// What: a structural recursion over the node tree, adding each unseen set. Why:
 /// only `Class` nodes constrain bytes; the constants and anchors do not.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function collect_sets(/* args */) {
+///   // body documented in Rust
+/// }
+/// ```
 fn collect_sets(node: &Node, out: &mut Vec<ByteSet>) {
     // What: recurse into children; record sets at the leaves. Why: bounded walk
     // of the AST, never of input bytes.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    // ```
     match node {
         Node::Class(set) => {
             if !out.contains(set) {

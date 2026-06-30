@@ -3,6 +3,11 @@
 //        wrong count would either stop refinement early (under-minimized) or mis-size
 //        the rebuild, so it is pinned directly here, with the matching-preservation
 //        property covered in table_tests.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { /* names from this Rust use line */ } from "./module";
+// ```
 
 use super::distinct_count;
 

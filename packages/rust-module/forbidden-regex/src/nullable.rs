@@ -1,9 +1,30 @@
-//! Position-dependent nullability: does a node match the empty string here?
+//! What:    Position-dependent nullability: does a node match the empty string here?
+//! Why:     This file is the Rust module that groups the nullable implementation, so a reader
+//!          can enter the package through one named area.
+//!
+//! In TS you'd write (pseudocode):
+//! ```ts
+//! // module nullable: see exported functions and types below.
+//! ```
 
-/// Imports the node algebra being tested.
+/// What:    Imports the node algebra being tested.
+/// Why:     This file needs these names in scope so the implementation below can use short
+///          names instead of long crate paths.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { /* names from this Rust use line */ } from "./module";
+/// ```
 use crate::ast::node::Node;
 
-/// Imports the boundary context that resolves anchors.
+/// What:    Imports the boundary context that resolves anchors.
+/// Why:     This file needs these names in scope so the implementation below can use short
+///          names instead of long crate paths.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { /* names from this Rust use line */ } from "./module";
+/// ```
 use crate::context::Ctx;
 
 /// Reports whether `node` accepts the empty string at the given boundary.
@@ -15,9 +36,21 @@ use crate::context::Ctx;
 /// nullable; the anchors consult the context. Why: a string is accepted exactly
 /// when the residual after consuming it is nullable, so this is the acceptance
 /// test the matcher and DFA builder both rely on.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function nullable(/* args */) {
+///   // body documented in Rust
+/// }
+/// ```
 pub fn nullable(node: &Node, ctx: Ctx) -> bool {
     // What: one arm per variant; structural recursion over the node tree (a
     // bounded walk, never over flat input). Why: nullability is defined by case.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    // ```
     match node {
         Node::Empty | Node::Top => true,
         Node::Fail | Node::Class(_) => false,
@@ -31,7 +64,14 @@ pub fn nullable(node: &Node, ctx: Ctx) -> bool {
     }
 }
 
-/// Unit tests for nullability, in a sidecar (max-lines exempt).
+/// What:    Unit tests for nullability, in a sidecar (max-lines exempt).
+/// Why:     The package keeps that concept in a separate Rust file so this module can refer to
+///          it by name.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import "./tests";
+/// ```
 #[cfg(test)]
 #[path = "nullable_tests.rs"]
 mod tests;

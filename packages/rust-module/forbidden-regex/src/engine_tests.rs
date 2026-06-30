@@ -5,12 +5,26 @@
 //        back-end without the prefilter it would be slow, and if matches_only kept the
 //        prefilter the set gate's already-confirmed hit would be rescanned. Both
 //        behaviours are pinned here.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { /* names from this Rust use line */ } from "./module";
+// ```
 
 use super::{Engine, EngineKind};
 use crate::dfa::{build_dfa_within, minimize};
 use crate::parse::parse;
 
-// A Table engine over a pattern's anchored DFA, carrying the given seeds.
+// What:    A Table engine over a pattern's anchored DFA, carrying the given seeds.
+// Why:     The program needs this named step so callers can reuse the behavior without copying
+//          its body.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function table_engine(/* args */) {
+//   // body documented in Rust
+// }
+// ```
 fn table_engine(pattern: &str, seeds: &[&[u8]]) -> Engine {
     let dfa = minimize(&build_dfa_within(parse(pattern).expect("parses"), 10_000).expect("builds"));
     let seeds = seeds.iter().map(|s| s.to_vec()).collect();
@@ -19,16 +33,30 @@ fn table_engine(pattern: &str, seeds: &[&[u8]]) -> Engine {
 
 #[test]
 fn is_match_rejects_when_the_seed_is_absent() {
-    // The back-end would match "abc", but the seed "zzz" is not present, so the
-    // prefilter short-circuits to a non-match.
+    // What:    The back-end would match "abc", but the seed "zzz" is not present, so the
+    //          prefilter short-circuits to a non-match.
+    // Why:     The test uses this setup or assertion to pin the behavior named by the test
+    //          function.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    // ```
     let engine = table_engine("abc", &[b"zzz"]);
     assert!(!engine.is_match(b"abc"));
 }
 
 #[test]
 fn matches_only_skips_the_prefilter() {
-    // Same engine: matches_only ignores the prefilter and runs the back-end, which
-    // matches the "abc" prefix.
+    // What:    Same engine: matches_only ignores the prefilter and runs the back-end, which
+    //          matches the "abc" prefix.
+    // Why:     The test uses this setup or assertion to pin the behavior named by the test
+    //          function.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    // ```
     let engine = table_engine("abc", &[b"zzz"]);
     assert!(engine.matches_only(b"abc"));
     assert!(!engine.matches_only(b"xbc"));
@@ -59,17 +87,32 @@ fn seeds_are_reported_when_present() {
 fn validate_and_prepare_keep_a_built_engine_working() {
     let mut engine = table_engine("AKIA[A-Z2-7]{4}", &[b"AKIA"]);
     assert!(engine.validate().is_ok());
-    // prepare rebuilds the prefilter searchers; matching still works afterwards.
+    // What:    prepare rebuilds the prefilter searchers; matching still works afterwards.
+    // Why:     The test uses this setup or assertion to pin the behavior named by the test
+    //          function.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    // ```
     engine.prepare();
     assert!(engine.is_match(b"AKIAB2C7"));
 }
 
 #[test]
 fn prepare_rebuilds_the_prefilter_dropped_by_decode() {
-    // The prefilter is `#[serde(skip)]`, so a decoded engine starts with none and must be
-    // rebuilt by `prepare`. A match verdict cannot see this (an empty prefilter just allows
-    // every line, still sound), so pin it on the searcher count: zero after decode, one per
-    // seed after prepare. This proves `prepare` is not a no-op.
+    // What:    The prefilter is `#[serde(skip)]`, so a decoded engine starts with none and
+    //          must be rebuilt by `prepare`. A match verdict cannot see this (an empty
+    //          prefilter just allows every line, still sound), so pin it on the searcher
+    //          count: zero after decode, one per seed after prepare. This proves `prepare` is
+    //          not a no-op.
+    // Why:     The test uses this setup or assertion to pin the behavior named by the test
+    //          function.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    // ```
     let engine = table_engine("AKIA[A-Z2-7]{4}", &[b"AKIA"]);
     let bytes = bincode::serialize(&engine).expect("engine serializes");
     let mut decoded: Engine = bincode::deserialize(&bytes).expect("engine deserializes");
@@ -80,11 +123,26 @@ fn prepare_rebuilds_the_prefilter_dropped_by_decode() {
 
 #[test]
 fn validate_rejects_a_corrupt_back_end() {
-    // Engine::validate must delegate into the back-end so a hostile decoded table is
-    // caught before it runs; corrupt the inner DFA and confirm rejection.
+    // What:    Engine::validate must delegate into the back-end so a hostile decoded table is
+    //          caught before it runs; corrupt the inner DFA and confirm rejection.
+    // Why:     The test uses this setup or assertion to pin the behavior named by the test
+    //          function.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    // ```
     let mut engine = table_engine("abc", &[]);
     if let EngineKind::Table(dfa) = &mut engine.kind {
-        dfa.start = dfa.num_states + 1; // out-of-range start state
+        // What:    out-of-range start state.
+        // Why:     The nearby assertion or value needs this note so the test records the
+        //          exact behavior being pinned.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // // Same assertion or value, with the important expectation named above.
+        // ```
+        dfa.start = dfa.num_states + 1;
     }
     assert!(engine.validate().is_err());
 }
@@ -100,8 +158,16 @@ fn mark_first_bytes_delegates_to_the_table() {
 
 #[test]
 fn table_dfa_is_some_only_for_a_table_back_end() {
-    // The batch kernels run directly on a `Dfa`, so the routing must hand back the table for
-    // a Table engine and `None` otherwise; a Table engine here must yield its DFA.
+    // What:    The batch kernels run directly on a `Dfa`, so the routing must hand back the
+    //          table for a Table engine and `None` otherwise; a Table engine here must yield
+    //          its DFA.
+    // Why:     The test uses this setup or assertion to pin the behavior named by the test
+    //          function.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    // ```
     let engine = table_engine("abc", &[]);
     let dfa = engine.table_dfa().expect("a Table engine exposes its DFA");
     assert!(dfa.is_match(b"abc"), "the returned DFA is the real matcher");

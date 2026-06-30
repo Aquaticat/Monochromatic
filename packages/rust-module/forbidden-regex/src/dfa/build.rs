@@ -1,27 +1,90 @@
-//! Eager determinization: turn a node into a `Dfa` by enumerating derivative states.
+//! What:    Eager determinization: turn a node into a `Dfa` by enumerating derivative states.
+//! Why:     This file is the Rust module that groups the build implementation, so a reader can
+//!          enter the package through one named area.
+//!
+//! In TS you'd write (pseudocode):
+//! ```ts
+//! // module build: see exported functions and types below.
+//! ```
 
-/// Imports the hash map used to intern states.
+/// What:    Imports the hash map used to intern states.
+/// Why:     This file needs these names in scope so the implementation below can use short
+///          names instead of long crate paths.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { /* names from this Rust use line */ } from "./module";
+/// ```
 use std::collections::HashMap;
 
-/// Imports the node algebra being determinized.
+/// What:    Imports the node algebra being determinized.
+/// Why:     This file needs these names in scope so the implementation below can use short
+///          names instead of long crate paths.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { /* names from this Rust use line */ } from "./module";
+/// ```
 use crate::ast::node::Node;
 
-/// Imports the boundary context driving derivatives and acceptance.
+/// What:    Imports the boundary context driving derivatives and acceptance.
+/// Why:     This file needs these names in scope so the implementation below can use short
+///          names instead of long crate paths.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { /* names from this Rust use line */ } from "./module";
+/// ```
 use crate::context::Ctx;
 
-/// Imports the byte derivative.
+/// What:    Imports the byte derivative.
+/// Why:     This file needs these names in scope so the implementation below can use short
+///          names instead of long crate paths.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { /* names from this Rust use line */ } from "./module";
+/// ```
 use crate::derivative::derivative;
 
-/// Imports the error type for the state cap.
+/// What:    Imports the error type for the state cap.
+/// Why:     This file needs these names in scope so the implementation below can use short
+///          names instead of long crate paths.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { /* names from this Rust use line */ } from "./module";
+/// ```
 use crate::error::CompileError;
 
-/// Imports nullability for acceptance masks.
+/// What:    Imports nullability for acceptance masks.
+/// Why:     This file needs these names in scope so the implementation below can use short
+///          names instead of long crate paths.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { /* names from this Rust use line */ } from "./module";
+/// ```
 use crate::nullable::nullable;
 
-/// Imports the byte-class computation.
+/// What:    Imports the byte-class computation.
+/// Why:     This file needs these names in scope so the implementation below can use short
+///          names instead of long crate paths.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { /* names from this Rust use line */ } from "./module";
+/// ```
 use crate::dfa::classes::compute_classes;
 
-/// Imports the table type and its acceptance-bit helper.
+/// What:    Imports the table type and its acceptance-bit helper.
+/// Why:     This file needs these names in scope so the implementation below can use short
+///          names instead of long crate paths.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { /* names from this Rust use line */ } from "./module";
+/// ```
 use crate::dfa::table::{Dfa, accept_bit};
 
 /// A determinization state: a residual node plus its incoming boundary bits.
@@ -30,13 +93,41 @@ use crate::dfa::table::{Dfa, accept_bit};
 /// newline (`at_line_start`) and a word byte (`prev_word`). Why: those two bits
 /// are the parts of the boundary context that a residual cannot recover on its
 /// own, so they must be part of the state's identity.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type StateKey = {
+///   // fields documented in Rust above
+/// };
+/// ```
 #[derive(Clone, PartialEq, Eq, Hash)]
 struct StateKey {
-    /// The residual regex after the bytes that lead to this state.
+    /// What:    The residual regex after the bytes that lead to this state.
+    /// Why:     The surrounding record stores this value by name so later code can read the
+    ///          same piece of state.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// node: unknown;
+    /// ```
     node: Node,
-    /// Whether this position is a line start (previous byte was a newline).
+    /// What:    Whether this position is a line start (previous byte was a newline).
+    /// Why:     The surrounding record stores this value by name so later code can read the
+    ///          same piece of state.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// at_line_start: boolean;
+    /// ```
     at_line_start: bool,
-    /// Whether the previous byte was a word byte.
+    /// What:    Whether the previous byte was a word byte.
+    /// Why:     The surrounding record stores this value by name so later code can read the
+    ///          same piece of state.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// prev_word: boolean;
+    /// ```
     prev_word: bool,
 }
 
@@ -49,6 +140,11 @@ struct StateKey {
 /// complement-over-repetition grows a residual past this, and that explodes memory and
 /// time before the state-count cap fires, so a tight ceiling aborts it fast (to the
 /// counting back-end or a clean error) while leaving every real rule on the DFA.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const RESIDUAL_NODE_CAP: unknown = /* value below */;
+/// ```
 const RESIDUAL_NODE_CAP: usize = 2_000;
 
 /// Reports whether a node holds more than [`RESIDUAL_NODE_CAP`] sub-nodes.
@@ -56,6 +152,13 @@ const RESIDUAL_NODE_CAP: usize = 2_000;
 /// What: a bounded structural walk that stops as soon as the budget is spent, so it
 /// is cheap on the common small residual and never itself walks an unbounded tree.
 /// Why: the build uses it to abort before a giant residual is cloned into a state.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function residual_too_large(/* args */) {
+///   // body documented in Rust
+/// }
+/// ```
 fn residual_too_large(node: &Node) -> bool {
     fn spend(node: &Node, budget: &mut usize) -> bool {
         if *budget == 0 {
@@ -75,7 +178,15 @@ fn residual_too_large(node: &Node) -> bool {
     spend(node, &mut budget)
 }
 
-/// Unit tests for the DFA build and its residual guard, in a sidecar (max-lines exempt).
+/// What:    Unit tests for the DFA build and its residual guard, in a sidecar (max-lines
+///          exempt).
+/// Why:     The package keeps that concept in a separate Rust file so this module can refer to
+///          it by name.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import "./tests";
+/// ```
 #[cfg(test)]
 #[path = "build_tests.rs"]
 mod tests;
@@ -87,11 +198,23 @@ mod tests;
 /// eager determinization yields a flat table that matches with no per-byte
 /// allocation and no lazy-cache lock; a caller selecting a back-end passes a small
 /// `cap` so a blowup fails fast and it can fall back to the counting engine.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function build_dfa_within(/* args */) {
+///   // body documented in Rust
+/// }
+/// ```
 pub fn build_dfa_within(root: Node, cap: usize) -> Result<Dfa, CompileError> {
     // What: never let the build exceed what a u16 state id can address. Why: the table
     // stores ids as u16 for cache density, so a state count past 65534 would truncate;
     // clamping here makes any caller's larger cap (e.g. the oracle) fail fast as StateCap
     // instead, and every real rule is far below this (the engine cap is 20000).
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const MAX_U16_STATES: unknown = /* value below */;
+    // ```
     const MAX_U16_STATES: usize = 65_534;
     let cap = cap.min(MAX_U16_STATES);
     let classes = compute_classes(&root);
@@ -102,6 +225,11 @@ pub fn build_dfa_within(root: Node, cap: usize) -> Result<Dfa, CompileError> {
     let mut accept: Vec<u8> = Vec::new();
     // What: the start sits at a line start with no preceding word byte. Why:
     // position zero of the input has nothing before it.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    // ```
     let start = intern(
         &mut index,
         &mut states,
@@ -113,6 +241,11 @@ pub fn build_dfa_within(root: Node, cap: usize) -> Result<Dfa, CompileError> {
     );
     // What: process states in discovery order; interning may append more. Why:
     // appending in id order keeps `trans`/`accept` aligned with state ids.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    // ```
     let mut i = 0usize;
     while i < states.len() {
         let node = states[i].node.clone();
@@ -122,6 +255,11 @@ pub fn build_dfa_within(root: Node, cap: usize) -> Result<Dfa, CompileError> {
         // exhausts memory; bailing as a StateCap lets the caller fall back to the
         // counting back-end or reject, never OOM (found by the roundtrip/differential
         // fuzz targets on deeply nested patterns).
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+        // ```
         if residual_too_large(&node) {
             return Err(CompileError::StateCap { limit: cap });
         }
@@ -160,6 +298,11 @@ pub fn build_dfa_within(root: Node, cap: usize) -> Result<Dfa, CompileError> {
     // state count fit `u16` here; the table holds them at half a `u32` table's width
     // for cache density, and this is the one narrowing point now that `from_parts`
     // takes `u16` directly.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    // ```
     let trans: Vec<u16> = trans.into_iter().map(|target| target as u16).collect();
     Ok(Dfa::from_parts(
         nc as u32,
@@ -177,6 +320,13 @@ pub fn build_dfa_within(root: Node, cap: usize) -> Result<Dfa, CompileError> {
 ///
 /// What: hash-map lookup with append-on-miss. Why: equal residual states must
 /// collapse to one id so the automaton stays finite.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function intern(/* args */) {
+///   // body documented in Rust
+/// }
+/// ```
 fn intern(index: &mut HashMap<StateKey, u32>, states: &mut Vec<StateKey>, key: StateKey) -> u32 {
     if let Some(&id) = index.get(&key) {
         return id;
@@ -192,9 +342,21 @@ fn intern(index: &mut HashMap<StateKey, u32>, states: &mut Vec<StateKey>, key: S
 /// What: tests nullability under each `(word_after, line_end)` boundary, with the
 /// state's own `line_start`/`word_before` fixed. Why: acceptance depends on the
 /// upcoming byte, so the matcher needs all four answers precomputed per state.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function compute_accept(/* args */) {
+///   // body documented in Rust
+/// }
+/// ```
 fn compute_accept(node: &Node, at_line_start: bool, prev_word: bool) -> u8 {
     // What: fold the four boundary contexts into a bitmask. Why: one mask-and at
     // match time then replaces four nullability checks.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    // ```
     let mut mask = 0u8;
     for line_end in [false, true] {
         for word_after in [false, true] {

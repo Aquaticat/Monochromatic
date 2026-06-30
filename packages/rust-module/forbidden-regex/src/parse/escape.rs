@@ -1,15 +1,50 @@
-//! Backslash escapes, shared by atom parsing and character-class parsing.
+//! What:    Backslash escapes, shared by atom parsing and character-class parsing.
+//! Why:     This file is the Rust module that groups the escape implementation, so a reader
+//!          can enter the package through one named area.
+//!
+//! In TS you'd write (pseudocode):
+//! ```ts
+//! // module escape: see exported functions and types below.
+//! ```
 
-/// Imports the byte-set type for shorthand escapes.
+/// What:    Imports the byte-set type for shorthand escapes.
+/// Why:     This file needs these names in scope so the implementation below can use short
+///          names instead of long crate paths.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { /* names from this Rust use line */ } from "./module";
+/// ```
 use crate::charset::{ByteSet, digit_set, singleton, space_set, word_set};
 
-/// Imports the node algebra produced by an atom-position escape.
+/// What:    Imports the node algebra produced by an atom-position escape.
+/// Why:     This file needs these names in scope so the implementation below can use short
+///          names instead of long crate paths.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { /* names from this Rust use line */ } from "./module";
+/// ```
 use crate::ast::node::Node;
 
-/// Imports the error type for unsupported escapes.
+/// What:    Imports the error type for unsupported escapes.
+/// Why:     This file needs these names in scope so the implementation below can use short
+///          names instead of long crate paths.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { /* names from this Rust use line */ } from "./module";
+/// ```
 use crate::error::CompileError;
 
-/// Imports the cursor read by the escape parser.
+/// What:    Imports the cursor read by the escape parser.
+/// Why:     This file needs these names in scope so the implementation below can use short
+///          names instead of long crate paths.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { /* names from this Rust use line */ } from "./module";
+/// ```
 use crate::parse::cursor::Cursor;
 
 /// What a backslash escape denotes.
@@ -17,19 +52,60 @@ use crate::parse::cursor::Cursor;
 /// What: either one literal byte, a shorthand byte set, or the `\b` word-boundary
 /// assertion. Why: the same escape grammar is reused inside a class (where only
 /// `Byte`/`Set` are legal) and in atom position (where `Boundary` is also legal).
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type EscapeResult =
+///   | { kind: "variant" };
+/// ```
 pub enum EscapeResult {
-    /// A single literal byte (`\t`, `\#`, an escaped metacharacter, escaped
-    /// whitespace).
+    /// What:    A single literal byte (`\t`, `\#`, an escaped metacharacter, escaped
+    ///          whitespace).
+    /// Why:     The surrounding function uses this step to keep the matcher behavior correct
+    ///          at this point.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    /// ```
     Byte(
-        /// Literal byte value the escape denotes.
+        /// What:    Literal byte value the escape denotes.
+        /// Why:     The surrounding function uses this step to keep the matcher behavior
+        ///          correct at this point.
+        ///
+        /// In TS you'd write (pseudocode):
+        /// ```ts
+        /// // Same step as the Rust statement below, written with ordinary TS objects/functions.
+        /// ```
         u8,
     ),
-    /// A shorthand byte set (`\d \w \s` and their negations).
+    /// What:    A shorthand byte set (`\d \w \s` and their negations).
+    /// Why:     The surrounding function uses this step to keep the matcher behavior correct
+    ///          at this point.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    /// ```
     Set(
-        /// Byte set the shorthand expands to.
+        /// What:    Byte set the shorthand expands to.
+        /// Why:     The surrounding function uses this step to keep the matcher behavior
+        ///          correct at this point.
+        ///
+        /// In TS you'd write (pseudocode):
+        /// ```ts
+        /// // Same step as the Rust statement below, written with ordinary TS objects/functions.
+        /// ```
         ByteSet,
     ),
-    /// The `\b` word-boundary assertion.
+    /// What:    The `\b` word-boundary assertion.
+    /// Why:     The surrounding function uses this step to keep the matcher behavior correct
+    ///          at this point.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    /// ```
     Boundary,
 }
 
@@ -39,11 +115,23 @@ pub enum EscapeResult {
 /// is a boundary only outside a class and an error inside one. Why: the engine's
 /// escape vocabulary is deliberately small, and unknown escapes must fail loudly
 /// rather than silently become literals.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function parse_escape(/* args */) {
+///   // body documented in Rust
+/// }
+/// ```
 pub fn parse_escape(cur: &mut Cursor, in_class: bool) -> Result<EscapeResult, CompileError> {
     let pos = cur.pos();
     cur.bump();
     // What: read the escaped byte; a dangling backslash is an error.
     // Why: `\` must always introduce a concrete escape.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    // ```
     let e = cur.bump().ok_or(CompileError::Syntax {
         pos,
         message: "trailing backslash".to_string(),
@@ -53,6 +141,11 @@ pub fn parse_escape(cur: &mut Cursor, in_class: bool) -> Result<EscapeResult, Co
         b'b' => {
             // What: `\b` is the boundary assertion, illegal inside `[...]`.
             // Why: inside a class `\b` would mean backspace, which is unsupported.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+            // ```
             if in_class {
                 Err(CompileError::Syntax {
                     pos,
@@ -72,6 +165,11 @@ pub fn parse_escape(cur: &mut Cursor, in_class: bool) -> Result<EscapeResult, Co
         | b'$' | b'\\' | b'#' | b'-' | b'/' | b'*' | b'+' => Ok(EscapeResult::Byte(e)),
         // What: a backslash before whitespace yields that literal whitespace byte.
         // Why: in always-on verbose mode this is how a literal space is written.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+        // ```
         e if e.is_ascii_whitespace() => Ok(EscapeResult::Byte(e)),
         _ => Err(CompileError::Syntax {
             pos,
@@ -85,8 +183,20 @@ pub fn parse_escape(cur: &mut Cursor, in_class: bool) -> Result<EscapeResult, Co
 /// What: `Byte`/`Set` become one-byte classes; `Boundary` becomes the
 /// `WordBoundary` node. Why: atom parsing wants a `Node`, not the intermediate
 /// escape classification.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function parse_escape_atom(/* args */) {
+///   // body documented in Rust
+/// }
+/// ```
 pub fn parse_escape_atom(cur: &mut Cursor) -> Result<Node, CompileError> {
     // What: dispatch on the escape kind. Why: each kind maps to a distinct node.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    // ```
     match parse_escape(cur, false)? {
         EscapeResult::Byte(b) => Ok(crate::ast::smart::class(singleton(b))),
         EscapeResult::Set(set) => Ok(crate::ast::smart::class(set)),

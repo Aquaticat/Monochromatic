@@ -1,9 +1,30 @@
-//! Smart constructors that keep nodes canonical so derivative states stay finite.
+//! What:    Smart constructors that keep nodes canonical so derivative states stay finite.
+//! Why:     This file is the Rust module that groups the smart implementation, so a reader can
+//!          enter the package through one named area.
+//!
+//! In TS you'd write (pseudocode):
+//! ```ts
+//! // module smart: see exported functions and types below.
+//! ```
 
-/// Imports the byte-set leaf type for the `class` constructor.
+/// What:    Imports the byte-set leaf type for the `class` constructor.
+/// Why:     This file needs these names in scope so the implementation below can use short
+///          names instead of long crate paths.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { /* names from this Rust use line */ } from "./module";
+/// ```
 use crate::charset::ByteSet;
 
-/// Imports the node algebra these constructors build.
+/// What:    Imports the node algebra these constructors build.
+/// Why:     This file needs these names in scope so the implementation below can use short
+///          names instead of long crate paths.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { /* names from this Rust use line */ } from "./module";
+/// ```
 use crate::ast::node::Node;
 
 /// Builds a sequence, dropping `Empty`, absorbing `Fail`, and flattening.
@@ -11,13 +32,30 @@ use crate::ast::node::Node;
 /// What: concatenation is associative with `Empty` as identity and `Fail` as a
 /// zero. Why: normalizing here means equal languages produce equal nodes, which
 /// bounds the number of derivative states.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function concat(/* args */) {
+///   // body documented in Rust
+/// }
+/// ```
 pub fn concat(parts: Vec<Node>) -> Node {
     // What: flatten one level of nested `Concat` and drop `Empty` children.
     // Why: associativity and identity, applied as the parts are collected.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    // ```
     let mut flat: Vec<Node> = Vec::new();
     for part in parts {
         // What: a `Fail` anywhere makes the whole sequence unmatchable.
         // Why: `Fail` is the multiplicative zero of concatenation.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+        // ```
         if part == Node::Fail {
             return Node::Fail;
         }
@@ -29,6 +67,11 @@ pub fn concat(parts: Vec<Node>) -> Node {
     }
     // What: collapse the degenerate arities. Why: a 0- or 1-element sequence is
     // not a `Concat`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    // ```
     if flat.is_empty() {
         Node::Empty
     } else if flat.len() == 1 {
@@ -44,9 +87,21 @@ pub fn concat(parts: Vec<Node>) -> Node {
 /// What: union is associative, commutative, and idempotent, with `Fail` as
 /// identity and `Top` as the absorbing element. Why: sorting plus dedup gives a
 /// canonical form so two equal unions are the same node.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function alt(/* args */) {
+///   // body documented in Rust
+/// }
+/// ```
 pub fn alt(parts: Vec<Node>) -> Node {
     // What: flatten nested `Alt`, drop `Fail`, and short-circuit on `Top`.
     // Why: union identities applied while collecting.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    // ```
     let mut flat: Vec<Node> = Vec::new();
     for part in parts {
         if part == Node::Top {
@@ -60,6 +115,11 @@ pub fn alt(parts: Vec<Node>) -> Node {
     }
     // What: sort then dedup for the commutative-idempotent canonical form.
     // Why: `Ord`/`Eq` on `Node` make this a stable canonicalization.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    // ```
     flat.sort();
     flat.dedup();
     if flat.is_empty() {
@@ -77,9 +137,21 @@ pub fn alt(parts: Vec<Node>) -> Node {
 /// What: intersection is associative, commutative, idempotent, with `Top` as
 /// identity and `Fail` as the absorbing element. Why: canonical form bounds
 /// state growth from `&` and complement.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function inter(/* args */) {
+///   // body documented in Rust
+/// }
+/// ```
 pub fn inter(parts: Vec<Node>) -> Node {
     // What: flatten nested `Inter`, drop `Top`, short-circuit on `Fail`.
     // Why: intersection identities applied while collecting.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    // ```
     let mut flat: Vec<Node> = Vec::new();
     for part in parts {
         if part == Node::Fail {
@@ -95,6 +167,11 @@ pub fn inter(parts: Vec<Node>) -> Node {
     flat.dedup();
     // What: an empty intersection is the universe. Why: `Top` is the identity,
     // so intersecting nothing constrains nothing.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    // ```
     if flat.is_empty() {
         Node::Top
     } else if flat.len() == 1 {
@@ -108,6 +185,13 @@ pub fn inter(parts: Vec<Node>) -> Node {
 ///
 /// What: `~~x = x`, `~Fail = Top`, `~Top = Fail`. Why: keeps complement nodes
 /// from stacking and resolves the constant cases immediately.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function comp(/* args */) {
+///   // body documented in Rust
+/// }
+/// ```
 pub fn comp(inner: Node) -> Node {
     match inner {
         Node::Comp(x) => *x,
@@ -123,6 +207,13 @@ pub fn comp(inner: Node) -> Node {
 /// `Empty` when zero reps are allowed else `Fail`; exactly-one becomes the body.
 /// Why: keeps the count in a `Repeat` node (later a counter register) rather than
 /// unrolling it into states, and removes degenerate nodes.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function repeat(/* args */) {
+///   // body documented in Rust
+/// }
+/// ```
 pub fn repeat(node: Node, min: usize, max: usize) -> Node {
     if max == 0 {
         return Node::Empty;
@@ -144,6 +235,13 @@ pub fn repeat(node: Node, min: usize, max: usize) -> Node {
 ///
 /// What: optional is repetition between zero and one. Why: a single spelling for
 /// the optional tail used by `?` and by `{n,m}` upper bounds.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function optional(/* args */) {
+///   // body documented in Rust
+/// }
+/// ```
 pub fn optional(node: Node) -> Node {
     repeat(node, 0, 1)
 }
@@ -153,6 +251,13 @@ pub fn optional(node: Node) -> Node {
 /// What: a class matching no byte matches nothing. Why: keeps `Fail` as the sole
 /// representation of the empty language so nullability and derivatives stay
 /// simple.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function class(/* args */) {
+///   // body documented in Rust
+/// }
+/// ```
 pub fn class(set: ByteSet) -> Node {
     if set.is_empty() {
         Node::Fail
@@ -161,7 +266,14 @@ pub fn class(set: ByteSet) -> Node {
     }
 }
 
-/// Unit tests for the smart constructors, in a sidecar (max-lines exempt).
+/// What:    Unit tests for the smart constructors, in a sidecar (max-lines exempt).
+/// Why:     The package keeps that concept in a separate Rust file so this module can refer to
+///          it by name.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import "./tests";
+/// ```
 #[cfg(test)]
 #[path = "smart_tests.rs"]
 mod tests;

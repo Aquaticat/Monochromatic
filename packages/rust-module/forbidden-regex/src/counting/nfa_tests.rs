@@ -2,6 +2,11 @@
 // Why:   a decoded NFA is executed on attacker-influenced input, so validate must reject
 //        any structurally inconsistent or out-of-range NFA before it runs; these corrupt
 //        a good NFA one field at a time and assert rejection.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { /* names from this Rust use line */ } from "./module";
+// ```
 
 use super::CountingNfa;
 use crate::counting::build_nfa;

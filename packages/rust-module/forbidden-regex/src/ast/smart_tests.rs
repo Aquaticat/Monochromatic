@@ -2,12 +2,26 @@
 // Why:   determinization terminates only because equal languages map to equal nodes;
 //        a broken identity/absorb/flatten/sort/dedup would either blow up the state
 //        space or change a language, so each algebraic law gets a direct assertion.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { /* names from this Rust use line */ } from "./module";
+// ```
 
 use super::{alt, class, comp, concat, inter, optional, repeat};
 use crate::ast::node::Node;
 use crate::charset::singleton;
 
-// A distinct one-byte class leaf, for building composite nodes.
+// What:    A distinct one-byte class leaf, for building composite nodes.
+// Why:     The program needs this named step so callers can reuse the behavior without copying
+//          its body.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function lit(/* args */) {
+//   // body documented in Rust
+// }
+// ```
 fn lit(b: u8) -> Node {
     Node::Class(singleton(b))
 }
@@ -34,7 +48,14 @@ fn concat_flattens_nested() {
 
 #[test]
 fn alt_is_commutative_idempotent_and_sorted() {
-    // Order-independent and deduped: {a,b} from either order, and {a,a} == a.
+    // What:    Order-independent and deduped: {a,b} from either order, and {a,a} == a.
+    // Why:     The test uses this setup or assertion to pin the behavior named by the test
+    //          function.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    // ```
     assert_eq!(alt(vec![lit(b'b'), lit(b'a')]), alt(vec![lit(b'a'), lit(b'b')]));
     assert_eq!(alt(vec![lit(b'a'), lit(b'a')]), lit(b'a'));
 }

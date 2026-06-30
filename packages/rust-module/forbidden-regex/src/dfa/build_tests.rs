@@ -3,13 +3,27 @@
 //        into a clean StateCap (fall back to counting / reject); its integration repro
 //        is #[ignore]d because it is slow, so the guard logic is pinned here directly
 //        on synthetic oversized residual nodes (fast).
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { /* names from this Rust use line */ } from "./module";
+// ```
 
 use super::{build_dfa_within, residual_too_large};
 use crate::ast::node::Node;
 use crate::charset::singleton;
 use crate::error::CompileError;
 
-// A node with `count` leaf children (count + 1 sub-nodes total).
+// What:    A node with `count` leaf children (count + 1 sub-nodes total).
+// Why:     The program needs this named step so callers can reuse the behavior without copying
+//          its body.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function wide_concat(/* args */) {
+//   // body documented in Rust
+// }
+// ```
 fn wide_concat(count: usize) -> Node {
     Node::Concat((0..count).map(|_| Node::Class(singleton(b'a'))).collect())
 }
@@ -28,8 +42,15 @@ fn an_oversized_residual_is_flagged() {
 
 #[test]
 fn the_guard_descends_into_every_recursive_arm() {
-    // Each recursive node kind must carry its child's size up, or a giant residual
-    // hidden inside it would slip past the guard.
+    // What:    Each recursive node kind must carry its child's size up, or a giant residual
+    //          hidden inside it would slip past the guard.
+    // Why:     The test uses this setup or assertion to pin the behavior named by the test
+    //          function.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    // ```
     let big = wide_concat(5_000);
     assert!(residual_too_large(&Node::Alt(vec![big.clone()])));
     assert!(residual_too_large(&Node::Inter(vec![big.clone()])));
@@ -39,25 +60,46 @@ fn the_guard_descends_into_every_recursive_arm() {
 
 #[test]
 fn build_bails_with_state_cap_on_an_oversized_root() {
-    // A root residual past the cap aborts the build as StateCap (the caller then falls
-    // back to the counting back-end instead of exhausting memory).
+    // What:    A root residual past the cap aborts the build as StateCap (the caller then
+    //          falls back to the counting back-end instead of exhausting memory).
+    // Why:     The test uses this setup or assertion to pin the behavior named by the test
+    //          function.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    // ```
     let result = build_dfa_within(wide_concat(5_000), 10_000);
     assert!(matches!(result, Err(CompileError::StateCap { .. })));
 }
 
 #[test]
 fn build_succeeds_on_a_normal_pattern() {
-    // A normal pattern builds well under the cap.
+    // What:    A normal pattern builds well under the cap.
+    // Why:     The test uses this setup or assertion to pin the behavior named by the test
+    //          function.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    // ```
     let dfa = build_dfa_within(crate::parse::parse("AKIA[A-Z2-7]{4}").unwrap(), 10_000);
     assert!(dfa.is_ok());
 }
 
 #[test]
 fn the_determinization_state_cap_is_an_inclusive_ceiling() {
-    // Build once with a generous cap to learn the exact state count, then rebuild with the
-    // cap set to exactly that count. The check is `states.len() > cap`, so reaching the cap
-    // is allowed (Ok); a cap one below must abort as StateCap. This pins the boundary against
-    // off-by-one mutants (`>` becoming `==` or `>=`).
+    // What:    Build once with a generous cap to learn the exact state count, then rebuild
+    //          with the cap set to exactly that count. The check is `states.len() > cap`, so
+    //          reaching the cap is allowed (Ok); a cap one below must abort as StateCap. This
+    //          pins the boundary against off-by-one mutants (`>` becoming `==` or `>=`).
+    // Why:     The test uses this setup or assertion to pin the behavior named by the test
+    //          function.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    // ```
     let node = crate::parse::parse("[a-z]{3}").expect("parses");
     let exact = build_dfa_within(node.clone(), 10_000).expect("builds").num_states as usize;
     assert!(exact >= 2, "the pattern should produce several states, got {exact}");

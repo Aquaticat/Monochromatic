@@ -1,4 +1,11 @@
-//! A byte cursor over the pattern that skips verbose-mode whitespace and comments.
+//! What:    A byte cursor over the pattern that skips verbose-mode whitespace and comments.
+//! Why:     This file is the Rust module that groups the cursor implementation, so a reader
+//!          can enter the package through one named area.
+//!
+//! In TS you'd write (pseudocode):
+//! ```ts
+//! // module cursor: see exported functions and types below.
+//! ```
 
 /// A forward cursor over the pattern bytes.
 ///
@@ -6,18 +13,53 @@
 /// always-on verbose-mode noise (unescaped whitespace and first-column `#`
 /// comments). Why: every grammar rule reads through this one cursor, so the
 /// verbose-mode rules live in exactly one place.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type Cursor = {
+///   // fields documented in Rust above
+/// };
+/// ```
 pub struct Cursor<'a> {
-    /// The pattern as raw bytes; matching and parsing are both byte-oriented.
+    /// What:    The pattern as raw bytes; matching and parsing are both byte-oriented.
+    /// Why:     The surrounding record stores this value by name so later code can read the
+    ///          same piece of state.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// src: unknown;
+    /// ```
     src: &'a [u8],
-    /// Current read offset into `src`.
+    /// What:    Current read offset into `src`.
+    /// Why:     The surrounding record stores this value by name so later code can read the
+    ///          same piece of state.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// pos: number;
+    /// ```
     pos: usize,
 }
 
-/// Reading and verbose-mode skipping over the pattern bytes.
+/// What:    Reading and verbose-mode skipping over the pattern bytes.
+/// Why:     The program attaches these functions to the named Rust type so callers can use
+///          method syntax.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // Methods are written inside a class or as functions that take the value.
+/// ```
 impl<'a> Cursor<'a> {
     /// Builds a cursor at the start of `src`.
     ///
     /// What: offset zero over the given bytes. Why: parsing begins at the front.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// function new(/* args */) {
+    ///   // body documented in Rust
+    /// }
+    /// ```
     pub fn new(src: &'a [u8]) -> Self {
         Cursor { src, pos: 0 }
     }
@@ -26,6 +68,13 @@ impl<'a> Cursor<'a> {
     ///
     /// What: the index used for error positions. Why: `CompileError::Syntax`
     /// reports where a problem was found.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// function pos(/* args */) {
+    ///   // body documented in Rust
+    /// }
+    /// ```
     pub fn pos(&self) -> usize {
         self.pos
     }
@@ -33,6 +82,13 @@ impl<'a> Cursor<'a> {
     /// Reports whether the cursor is at or past the end.
     ///
     /// What: `pos >= len`. Why: loops stop when input is exhausted.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// function eof(/* args */) {
+    ///   // body documented in Rust
+    /// }
+    /// ```
     pub fn eof(&self) -> bool {
         self.pos >= self.src.len()
     }
@@ -40,6 +96,13 @@ impl<'a> Cursor<'a> {
     /// Returns the current byte without advancing.
     ///
     /// What: `src.get(pos)`. Why: lookahead to decide which rule applies.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// function peek(/* args */) {
+    ///   // body documented in Rust
+    /// }
+    /// ```
     pub fn peek(&self) -> Option<u8> {
         self.src.get(self.pos).copied()
     }
@@ -48,6 +111,13 @@ impl<'a> Cursor<'a> {
     ///
     /// What: `src.get(pos + offset)`. Why: range detection in classes and the
     /// `{n,` form need one byte of extra lookahead.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// function peek_at(/* args */) {
+    ///   // body documented in Rust
+    /// }
+    /// ```
     pub fn peek_at(&self, offset: usize) -> Option<u8> {
         self.src.get(self.pos + offset).copied()
     }
@@ -56,6 +126,13 @@ impl<'a> Cursor<'a> {
     ///
     /// What: reads then increments `pos`. Why: the consuming primitive every
     /// rule builds on.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// function bump(/* args */) {
+    ///   // body documented in Rust
+    /// }
+    /// ```
     pub fn bump(&mut self) -> Option<u8> {
         let b = self.peek();
         if b.is_some() {
@@ -68,6 +145,13 @@ impl<'a> Cursor<'a> {
     ///
     /// What: true at offset zero or right after a newline. Why: a `#` comment is
     /// only a comment when it is the first character of its line.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// function at_line_start(/* args */) {
+    ///   // body documented in Rust
+    /// }
+    /// ```
     fn at_line_start(&self) -> bool {
         self.pos == 0 || self.src.get(self.pos - 1) == Some(&b'\n')
     }
@@ -78,9 +162,21 @@ impl<'a> Cursor<'a> {
     /// the rest of that line. Why: verbose mode is always on, so a rule may span
     /// many lines and carry first-column comment lines; this is where both are
     /// consumed before any token is read.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// function skip_ignorable(/* args */) {
+    ///   // body documented in Rust
+    /// }
+    /// ```
     pub fn skip_ignorable(&mut self) {
         // What: loop until neither whitespace nor a comment is next.
         // Why: whitespace and a following comment line can alternate.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+        // ```
         loop {
             match self.peek() {
                 Some(b) if b.is_ascii_whitespace() => {
@@ -90,6 +186,11 @@ impl<'a> Cursor<'a> {
                     // What: drop bytes up to but not including the newline.
                     // Why: the newline is left for the whitespace arm to consume,
                     // keeping `at_line_start` correct for the next line.
+                    //
+                    // In TS you'd write (pseudocode):
+                    // ```ts
+                    // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+                    // ```
                     while let Some(c) = self.peek() {
                         if c == b'\n' {
                             break;
