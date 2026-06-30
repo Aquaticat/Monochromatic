@@ -3,7 +3,7 @@
  *
  * Field names stay snake_case to match the wire format, so a parsed response
  * body satisfies the type without remapping. A consumer that needs usage
- * intersects it onto the response, for example
+ * intersects it onto a {@link ChatCompletionResponse}, for example
  * `ChatCompletionResponse & { readonly usage: CompletionUsage }`.
  *
  * @example

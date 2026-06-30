@@ -9,7 +9,7 @@
  * - Text chat sends {@link ChatMessage} (`role` + string `content`).
  * - Vision chat composes a message over {@link ContentPart} arrays.
  * - A usage-aware response intersects {@link ChatCompletionResponse} with
- *   `{ usage: CompletionUsage }`.
+ *   {@link CompletionUsage} (`{ usage: CompletionUsage }`).
  *
  * Streaming chunk types and a single client implementation are deliberately
  * out of scope: no consumer streams through a shared type today, and each

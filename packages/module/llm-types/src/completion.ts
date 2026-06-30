@@ -5,7 +5,8 @@
  * `choices[].message.content` is optional, so a consumer's unchecked
  * `as ChatCompletionResponse` cast keeps compiling and `message.content`
  * stays a non-null `string`. A consumer that also needs token usage composes
- * `ChatCompletionResponse & { readonly usage: CompletionUsage }` rather than
+ * {@link ChatCompletionResponse} with {@link CompletionUsage}, for example
+ * `ChatCompletionResponse & { readonly usage: CompletionUsage }`, rather than
  * redeclaring the response.
  *
  * @example
@@ -40,7 +41,7 @@ export type ChatCompletionChoice = {
    */
   readonly message: {
     /**
-     * Author role echoed by the API, absent when a consumer does not read it.
+     * Author role ({@link ChatRole}) echoed by the API, absent when a consumer does not read it.
      */
     readonly role?: ChatRole;
     /**
