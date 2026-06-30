@@ -862,16 +862,145 @@ packages/pi/current-time-context/src/mise.verify-extension.ts:63 | missing-refer
 
 ## Batch 13 (page-weight, logger, hall-monitor, android-exempt-unused, build-tool/css, pipe, matrix, tofu, typeface/aquaticat, import-attributes, config/tsdown, rgffplay, prompt-time)
 
-(pending)
+TOTAL FINDINGS: 159.
+
+Systematic pattern: strongest signal is in packages whose public API
+throws custom error classes (`module/pipe`'s `PipeStepGapError`/
+`PipeStepOverflowError`, `cli/android-exempt-unused`'s `AdbError`
+family, `PromptCancelledError`, `NoDevicesError`) -- virtually every
+`@throws <ErrorClassName>` tag across these packages names the class as
+bare text instead of `{@link}`, even though `{@link}` is used correctly
+elsewhere in the same files, strongly matching the linter-regression
+story. A second pattern is "sentinel-comparison amnesia": many functions
+compare a return value against a `unique symbol` sentinel
+(`NO_QUERY_ATTR`, `PACKAGE_NOT_FOUND`, `CSS_UNREADABLE`,
+`NO_NODE_MODULES_FOUND`, etc.) without linking it in their own doc,
+even though the sentinel's own declaration is usually well-linked back
+to its producer -- the link exists in one direction but not the other.
+A third, lower-confidence pattern is orchestrator/pipeline functions
+(`cycle()`, `matrix()`, `buildContainerCommand()`, `weighPage()`) whose
+prose narrates a multi-step algorithm that maps one-to-one onto named
+collaborator functions, none of which are ever named or linked.
+
+```
+packages/dev-script/page-weight/src/collect.ts:105,215 | missing-reference | current: not mentioned | target: CSS_UNREADABLE (collect.ts), UNRESOLVABLE_REFERENCE (resolve.ts), WIRE_SIZE_UNAVAILABLE/wireSize (size.ts), extractHtmlRefs (html.ts), walkCss (collect.ts)
+packages/dev-script/page-weight/src/css.ts:53,80, html.ts:148,237, resolve.ts:53, index.ts:82,156,187 | missing-reference | current: not mentioned | target: TOKEN_DATA_INDEX/firstNonWhitespaceToken/startsWithUriScheme (url-detect.ts), BYTES_PER_KIB (module/const/src/byte.ts), weighPage (collect.ts), summarize (stats.ts)
+packages/module/logger/src/create-logger.ts:29,191,369 | downgraded-link/missing-reference | current: backtick trackWrite; reportLoggerInternalError/drainPendingWrites not named | target: reportLoggerInternalError (error-format.ts), trackWrite/drainPendingWrites (same file)
+packages/module/logger/src/error-format.ts:46 | missing-reference | current: not mentioned | target: caughtErrorMessage (same file)
+packages/module/logger/src/logger.ts:18,36 | downgraded-link/missing-reference | current: backtick flush(); sink factory functions not named | target: createConsoleSink/createOpfsSink/createSessionStorageSink/createFileSink/createNoopSink (sinks/*.ts), Logger.flush (types.ts)
+packages/module/logger/src/sinks/console.ts:296,437,460,491,515 | downgraded-link/missing-reference | current: backtick groupRuns/flushBuffer mentions; detectVerbose/emitRun/getVerbose/isWarnSuppressed not named | target: same-file functions
+packages/module/logger/src/sinks/file.ts:147,249 | missing-reference | current: not mentioned | target: NO_NODE_MODULES_FOUND, runVerify (same file)
+packages/module/logger/src/tagged.ts:11 | missing-reference | current: "defaults to the module-level singleton" | target: logger (logger.ts)
+packages/module/logger/src/types.ts:17,56,67 | downgraded-link | current: backtick flush()/SinkFlush mentions | target: Logger.flush, SinkFlush (same file)
+packages/desktop-daemon/hall-monitor/src/analyze.ts:161,194, analyze/llama.ts:70, analyze/memory.ts:62,86 | missing-reference | current: not mentioned | target: findVerdictToken (same file), API_URL/waitForHealth (analyze/llama.ts), prune (analyze/memory.ts)
+packages/desktop-daemon/hall-monitor/src/cycle.ts:83 | missing-reference | current: not mentioned (11 unlinked collaborators in one doc block) | target: isScreenLocked, isBlackFrame, captureScreenshot, analyze, sendNotification, captureWebcam, store, getRecent, startLlama, stopLlama, parseVerdict (infra/*.ts, analyze.ts)
+packages/desktop-daemon/hall-monitor/src/index.ts:51,80, infra/lock.ts:264 | missing-reference | current: not mentioned | target: closeLock/forceCleanup/acquireLock/killExisting (infra/lock.ts, analyze/llama.ts), cycle (cycle.ts), findSocketOwnerPid (infra/lock.ts)
+packages/cli/android-exempt-unused/src/adb.ts:56,58 | downgraded-link | current: "@throws AdbNotFoundError/AdbCommandError when..." | target: AdbNotFoundError, AdbCommandError (errors.ts)
+packages/cli/android-exempt-unused/src/apply.ts:63, devices.ts:34, packages.ts:54,85,118,167,245, parse.ts:144,198 | missing-reference | current: not mentioned | target: setAutoRevoke, AdbError, runAdb, parseDevices, parsePackageList, AdbCommandError, isExemptedViaGet/getExemptedViaGet, isValidPackageName (same-package siblings)
+packages/cli/android-exempt-unused/src/index.ts:98,100,251 | downgraded-link | current: "@throws NoDevicesError/PromptCancelledError when..." | target: NoDevicesError, PromptCancelledError (errors.ts)
+packages/cli/android-exempt-unused/src/parse.ts:137, prompts.ts:36,80,138 | downgraded-link | current: "@throws AdbCommandError/PromptCancelledError when..." | target: AdbCommandError, PromptCancelledError (errors.ts)
+packages/build-tool/css/src/import.ts:56,129,173, index.ts:73,121, mixin-registry.ts:117, package-resolver.ts:218 | missing-reference | current: not mentioned | target: resolvePackage, inlineImports, resolveSpecifier, readCssFileSync, collectMixins/expandApplyRules (mixin.ts), postcssInlineImport, expandApplyInNodes, PACKAGE_NOT_FOUND/PACKAGE_JSON_ABSENT/NO_EXPORT_MATCH (same-file sentinels)
+packages/module/pipe/src/pipe-async.ts:130,145, pipe.ts:130,145, piped-async.ts:139,154, piped.ts:139,154, run-steps.ts:26,61, run.ts:24,26,204,206 | downgraded-link/missing-reference, ~16 instances | current: "@throws PipeStepGapError or PipeStepOverflowError..." repeated across all 6 entrypoint files; runPipe/runPipeAsync not named | target: PipeStepGapError, PipeStepOverflowError (errors.ts), runPipe/runPipeAsync (run.ts)
+packages/module/matrix/src/container.ts:114,252, host.ts:85, matrix.ts:239,281,305 | missing-reference/downgraded-link | current: not mentioned; backtick describe/it mentions | target: prerequisiteCommand/userCreationCommand (distro.ts), runtimeInstallCommand/runtimeExecCommand (runtime.ts), buildContainerCommand, runtimeArgs, runHost/runContainer, executeCombination (same files), describe/it (module/test)
+packages/config/tofu/fetch_ips.ts:148, fetch_tor_relays.ts:182, resolve_storagebox_hosts.ts:164 | missing-reference | current: "or sentinel for non-matching..." | target: NO_MATCHING_NETWORK, NO_ORPORT_443_CIDR, assertStorageboxHostname (same files)
+packages/typeface/aquaticat/src/build-font-paths-stroked.ts:39, build-font-paths.ts:40, expand-stroke.ts:96, parse-svg.ts:116 | missing-reference | current: not mentioned | target: offsetPolygon (expand-stroke.ts), resolveAbsolutePoints (build-font-resolve-points.ts), lineIntersection (same file), ATTRIBUTE_ABSENT (same file)
+packages/rolldown-plugins/import-attributes/src/ast-extract.ts:98,137, index.ts:111,236, scan-importer.ts:50, transform-helpers.ts:91,167, transform.ts:58 | missing-reference, ~12 instances | current: not mentioned | target: HANDLERS (handlers.ts), NO_QUERY_ATTR (patterns.ts), NO_ATTR_TYPE/NON_STRING_NODE/extractTypeFromAttributes/extractTypeFromOptions (ast-extract.ts), scanImporterForAttribute, skipWithClauseWhitespace/findWithClauseStart/findWithClauseEnd, collectStaticReplacements (transform-helpers.ts)
+packages/config/tsdown/src/browserslist-targets.ts:385,679,819,898, index.client.ts:10, index.node.ts:8, index.ts:8 | missing-reference, ~7 instances | current: not mentioned | target: jsonModuleDefault, splitBrowserslistTarget/rolldownBrowserName, lowestTargetsByBrowser, normalizeBrowserslistTargets, browserslistTargets (same file/sibling)
+packages/cli/rgffplay/src/index.ts:72,274,280,285 | missing-reference | current: not mentioned | target: bracketFirst, buildGlob, resolveMusicDir, findFiles (same file)
+```
 
 ## Batch 14 (terminal-exec, hyperscript, rss, config/oxlint, kv-store, fs-path, hook-types, or-throw, session-start-housekeeping)
 
-(pending)
+TOTAL FINDINGS: 139. No findings in `config/oxlint`, `claude-code-plugins/hook-types`,
+or `session-start-housekeeping`: oxlint config docs are mostly
+file-purpose statements with little inter-declaration narration, and
+hook-types backtick mentions almost universally name Claude Code's
+external tool/hook-event concepts rather than real TypeScript
+declarations in this repo, correctly excluded.
+
+Systematic pattern: dominant in `or-throw`, nearly every `*OrThrow.ts`
+file documents its return-type mechanism via `ExtractOrUnknown` either
+as plain-text/backtick (9 files) or not at all despite using it in the
+signature (7 files), and the package's own barrel `index.ts` lists every
+sibling export by name in backticks without a single `{@link}`. A second
+recurring shape across `rss`, `terminal-exec`, `fs-path`, and
+`hyperscript`: "orchestrator never names its own helpers" -- a public
+function's TSDoc describes its algorithm in prose while the
+sibling/internal functions that perform each step go unmentioned, even
+though those helpers usually have thorough TSDoc of their own waiting to
+be linked. `kv-store`'s `create-store.ts`/`create-sync-store.ts` stand
+out as the positive counterexample, extensive consistent `{@link}` use.
+
+```
+packages/cli/terminal-exec/src/desktop-entry-apply.ts:17,36 | downgraded-link/missing-reference | current: backtick DesktopEntry mention; expandEscapes not named (6 call sites) | target: DesktopEntry, expandEscapes (desktop-entry-types.ts)
+packages/cli/terminal-exec/src/build-command.ts:133, config.ts:71, scan.ts:151, resolve.ts:81,99, launch.ts:53, validate.ts:173, windows.ts:101 | missing-reference, ~8 instances | current: not mentioned | target: appendArg, parseDirective, findDesktopFiles, resolveXdgTerminal/resolveWindowsTerminal, parseConfigFiles/scanEntries/resolveExplicitIds/tryEntry, resolveTerminal/buildCommand/NO_TERMINAL, tokenizeExec/INVALID_EXEC, which (same-package siblings)
+packages/module/hyperscript/src/css/index.builders.ts:24,63,178,208 | downgraded-link/missing-reference | current: backtick StrictCssDeclarations/AtRuleOptions mentions; renderBody/hasBlock not named | target: StrictCssDeclarations (properties.ts), AtRuleOptions (index.types.ts), renderBody/hasBlock (same file)
+packages/module/hyperscript/src/css/index.ts:18,126 | downgraded-link/missing-reference | current: backtick cssRem/cssVar/cssOklch mentions; buildRule/buildAtRule not named | target: values.constructors.ts, index.builders.ts
+packages/module/hyperscript/src/css/properties.ts:78,107 | downgraded-link | current: backtick PropertiesHyphen/AtRules mentions | target: PropertiesHyphen, AtRules (external csstype)
+packages/module/hyperscript/src/css/values.ts:7, values.constructors.ts:5 | downgraded-link | current: backtick CssDeclarations mentions | target: CssDeclarations (properties.ts)
+packages/module/hyperscript/src/html/index.ts:209, xml/index.ts:144 | missing-reference | current: not mentioned | target: escapeHtml/camelToKebab, escapeXml (same files)
+packages/webapp-productivity/rss/src/asset.ts:19,21,35,46,48 | downgraded-link | current: "@see" tags backticking itemToFeed/indexHtmlStart/css/js instead of linking | target: itemToFeed (html-item.ts), indexHtmlStart/css/js (same file)
+packages/webapp-productivity/rss/src/client.ts:59,150 | missing-reference/downgraded-link | current: resolveThreshold not named; @see backtick addScrollEvents | target: resolveThreshold, addScrollEvents (same file)
+packages/webapp-productivity/rss/src/feed.ts:59,96,193 | missing-reference | current: not mentioned | target: fetchAndParseFeeds/extractDate (same file), parseAtomFeed/parseRssFeed (external feedsmith), coerceDateSchema (same file)
+packages/webapp-productivity/rss/src/handler.ts:47,91, html.ts:55, ignore.ts:96 | missing-reference | current: not mentioned | target: indexHtmlStart (asset.ts), INDEX_HTML_END (html.ts), IGNORE_PATH (path.ts), getIgnoreContent/parseIgnoredLinks (ignore.ts), itemToFeed (html-item.ts), readIgnoreDir/readIgnoreFile (same file)
+packages/webapp-productivity/rss/src/interval.ts:43,70, item.ts:50 | downgraded-link/missing-reference | current: @see backtick getFetchSalt; FETCH_INTERVAL_MS/extractItems/getNormalizedItem not named | target: getFetchSalt, FETCH_INTERVAL_MS (same file), extractItems/getNormalizedItem (same file)
+packages/webapp-productivity/rss/src/opml-text.ts:48, opmls.ts:90,97, outline.ts:32,51, port.ts:6,14 | downgraded-link/missing-reference | current: @throws backtick ValiError; @see backtick Opml/PORT/DEFAULT_PORT; OPMLS_SCHEMA/getOPMLTexts/parseSafe not named | target: DOT_ENV_PATH/DOT_ENV_ABSENT (opmls.ts), ValiError (external valibot), OPMLS_SCHEMA (same file), Opml (external feedsmith), getOPMLTexts (opml-text.ts), parseSafe/PORT/DEFAULT_PORT (same file)
+packages/webapp-productivity/rss/src/index.ts:48,88,128 | missing-reference | current: not mentioned | target: getOpmls/getOutlinesFromOpmls/getSortedFeeds/getSortedItems, getIndexHtmlBody (html.ts), getFetchSalt (interval.ts), getIgnoreContent (ignore.ts), memoizedGetHtmlBody (same file)
+packages/module/kv-store/src/serialize.ts:93, backends-async.ts:130 | missing-reference/downgraded-link | current: hasCycle not named; backtick configureDefaultBackendsBuilder | target: hasCycle (has-cycle.ts), configureDefaultBackendsBuilder (same file)
+packages/module/fs-path/src/find-package-root.ts:17, find-monorepo-root.ts:121, root-discovery.ts:260,270 | downgraded-link | current: backtick findMiseMonorepoRoot/ABSENT/AsyncIOResult mentions | target: findMiseMonorepoRoot (find-monorepo-root.ts), ABSENT (root-discovery.ts), AsyncIOResult (external happy-opfs)
+packages/module/fs-path/src/empty.ts:40, ensure.ts:42,135 | missing-reference | current: not mentioned | target: emptyFile/emptyDir, ensureFile/ensureDir (same files)
+packages/module/or-throw/src/falsy.ts:2, falsy-or-throw.ts:14,15, truthy-or-throw.ts:14 | downgraded-link | current: backtick truthyOrThrow/falsyOrThrow/Falsy/ExtractOrUnknown mentions | target: truthy-or-throw.ts, falsy-or-throw.ts, falsy.ts, extract-or-unknown.ts
+packages/module/or-throw/src/empty-or-throw.ts:12, nonempty-or-throw.ts:13, numeric-or-throw.ts:15,18, number-or-throw.ts:19, bigint-or-throw.ts:17, boolean-or-throw.ts:18, symbol-or-throw.ts:16, string-or-throw.ts:17, array-or-throw.ts:16, function-or-throw.ts:22, object-or-throw.ts:16,18, async-iterable-or-throw.ts:14 | downgraded-link, ~14 instances | current: "see `getSize`"; "reach for `numberOrThrow`/`bigintOrThrow`"; "return type uses `ExtractOrUnknown`" repeated across nearly every *OrThrow.ts file | target: getSize (size.ts), numberOrThrow/bigintOrThrow, ExtractOrUnknown (extract-or-unknown.ts), functionOrThrow, maybeAsyncIterableOrThrow
+packages/module/or-throw/src/promise-or-throw.ts:33, date-or-throw.ts:31, map-or-throw.ts:30, set-or-throw.ts:30, regexp-or-throw.ts:30, weak-map-or-throw.ts:31, weak-set-or-throw.ts:31 | missing-reference, 7 instances | current: ExtractOrUnknown used in signature, never explained in prose | target: ExtractOrUnknown (extract-or-unknown.ts)
+packages/module/or-throw/src/index.ts:11-18 | downgraded-link, 25 occurrences across 8 lines | current: categorized bullet list naming ~25 exported functions in backticks | target: every exported function of the package, each with its own file in the same directory
+```
 
 ## Batch 15 (vmsync, spawn, figma kiwi, figma penpot, pi/statusline, llm-types)
 
 (pending)
 
-## Batch 16 (terminal-title, vm-builder, catalog-tighten.matrix, forbidden-strings, dom, claude-code-plugins/statusline, thinking-defaults, mcp/mvm, syllable-break-demo, const, memoize, token-count, observable, runtime-error/bun, function-arity, pi/current-time-context, guardrail, root config files)
+## Batch 16 (terminal-title, vm-builder, catalog-tighten.matrix, forbidden-strings, dom, claude-code-plugins/statusline, thinking-defaults, mcp/mvm, syllable-break-demo, const, memoize, token-count, observable, runtime-error/bun, function-arity, module/current-time-context, guardrail, root config files)
 
-(pending)
+TOTAL FINDINGS: 122.
+
+Systematic pattern: error-formatting and lookup helpers are the most
+consistently unlinked dependency type (`caughtErrorMessage`,
+`resolveClient`/`countTokens`, `errorHasCode`/
+`ForbiddenRootContextFileError`, `hasTsdoc`) -- called from a sibling
+function's body but essentially never named in that caller's own
+TSDoc, even when the rest of the doc block is otherwise well-written.
+A second strong pattern: dispatcher/orchestrator functions whose entire
+body is a sequence of calls to sibling helpers, with the orchestrator's
+doc describing only high-level intent and never naming any delegate. By
+contrast, `module/const`, `module/dom/src/prompt.ts`, and
+`cli/forbidden-strings/src/port-betterleaks-relaxations.ts` are
+exemplary, zero findings, consistently using `{@link}` even across file
+boundaries. The MCP tool-definition files (`mcp/mvm/src/tools-*.ts`)
+show a narrower, mechanical gap: all 8 `defineTool({...})` declarations
+omit `backendFromArgs` even though it's the first call in every handler.
+
+```
+packages/pi/terminal-title/src/formatter-utils.ts:153,176,203,243 | missing-reference | current: not mentioned | target: stringField, shortPath, truncate, COMMAND_NOISE_RE (same file)
+packages/pi/terminal-title/src/index.ts:95,124 | missing-reference | current: not mentioned | target: isToolArgs (same file), titleForEvent (title-builder.ts)
+packages/pi/terminal-title/src/mise.verify-extension.ts:217,240 | missing-reference | current: not mentioned | target: TerminalTitleExtensionModule, isTerminalTitleExtensionModule, createFakePiApi, createTitleContext, getHandler (same file)
+packages/pi/terminal-title/src/title-builder.ts:65,108,191 | missing-reference | current: not mentioned | target: NO_STRING_FIELD/truncate (formatter-utils.ts), titleForTool, EVENT_BODY_BUILDERS (same file)
+packages/pi/terminal-title/src/tool-titles.ts:32 | downgraded-link | current: "`titleForTool()`" | target: titleForTool (title-builder.ts)
+packages/dev-script/vm-builder/src/build-and-import.ts:279,343,381,416 | missing-reference/downgraded-link | current: caughtErrorMessage/generateDomainXml not named; backtick "/var/lib/libvirt/images/" literal path | target: caughtErrorMessage (error-format.ts), generateDomainXml (domain-xml.ts), LIBVIRT_IMAGES_DIR (same file)
+packages/dev-script/vm-builder/src/domain-xml.ts:32 | missing-reference | current: not mentioned | target: hXml (module/hyperscript/src/index.ts)
+packages/dev-script/vm-builder/src/import.ts:134,194,231,267 | missing-reference/downgraded-link | current: same caughtErrorMessage/generateDomainXml pattern; backtick literal path | target: error-format.ts, domain-xml.ts, LIBVIRT_IMAGES_DIR (same file)
+packages/dev-script/vm-builder/src/sign-and-push.ts:90,117 | missing-reference/downgraded-link | current: IMAGE_TAG/GHCR_TAG/COSIGN_KEY not named; "GHCR repository" unlinked | target: same file constants
+packages/dev-script/catalog-tighten.matrix/src/combos.ts:139,312,367, in-container.ts:73,190,251, mutations.ts:68,110,135 | missing-reference/downgraded-link, ~10 instances | current: not mentioned; backtick "catalog-tighten" | target: Scenario, FIXTURE_PACKAGE, buildWorkspaceYaml/consumerPackageJson, TOOL_ENTRY (container-paths.ts), EXPECTED_TIGHTENED, FIXTURE_ORPHAN/CONSUMER_DIRS, seedStaleOrphan/removeAllModules (same files)
+packages/cli/forbidden-strings/src/mise.port-betterleaks.ts:185,217,469,613 | missing-reference | current: not mentioned | target: escapeResharpOnlyMeta, RawRule, RELAXATIONS (port-betterleaks-relaxations.ts)/pcreToResharp, parseRules/renderRule (same file)
+packages/module/dom/src/duplicateElement.ts:31,110 | missing-reference | current: not mentioned | target: deepCloneNode (same file)
+packages/module/dom/src/test-setup.ts:89,142,235,319 | missing-reference | current: not mentioned | target: isWhitespaceChar, lastNonWhitespaceIndex/isWordChar, parseTrailingExportClause/NO_CLAUSE, bundleAsGlobalAssignment/HARNESS_URL (same file)
+packages/claude-code-plugins/statusline/statusline.ts:138,626,671 | missing-reference | current: not mentioned | target: MODEL_DEFAULTS/DISPLAY_NAME_RE, NOISE_GERUNDS, findGerundInText (same file)
+packages/pi/thinking-defaults/src/apply-thinking-default.ts:80, global-settings.ts:162,194, index.ts:46,139, mise.verify-extension.ts:59,107, model-policy.ts:60,89 | missing-reference, ~9 instances | current: not mentioned | target: getThinkingDefaultForModel (model-policy.ts), getAgentDir (external pi-coding-agent), getGlobalSettingsPath/PERSISTED_DEFAULT_THINKING_LEVEL, applyThinkingDefault/restoreGlobalDefaultThinkingLevel/registerThinkingDefaults, isThinkingDefaultsExtensionModule/fakePiApi/ThinkingDefaultsExtensionModule, getModelIdLeaf (pi-shared/model-selection)/isGptModelId
+packages/mcp/mvm/src/backend.ts:50, index.ts:35, tools-exec.ts:25,85, tools-lifecycle-mutate.ts:24,116, tools-lifecycle.ts:24,69, tools-transfer.ts:24,90 | missing-reference, ~10 instances | current: not mentioned | target: resolveBackendKind/selectBackend (cli/mvm/src/backends/registry.ts), createMcpServer (mcp/stdio/src/server.ts), backendFromArgs (backend.ts) -- all 8 defineTool() handlers omit it
+packages/webapp-productivity/syllable-break-demo/src/build.ts:45,63, client/main.ts:32,44, page.ts:135,176, styles.ts:63 | missing-reference/downgraded-link, ~9 instances | current: not mentioned; "the `hyphen` library" unlinked | target: renderStyles/renderPage, hyphenateSync (external hyphen/en-us), ZWS/insertBreakOpportunities, renderColumn/renderControls/renderColumns, COLOR_MUTED/COLOR_MUTED_LIGHT/COLOR_FAINT/COLOR_OUTLINE (same files)
+packages/module/memoize/src/memoize-async.ts:72,172,209, memoize.ts:74,109, types.ts:188,216 | missing-reference, ~7 instances | current: not mentioned | target: createStore/createSyncStore (module/kv-store), resolveValue/dispatch/buildCacheKey (cache-key.ts), MemoizeOptions/MemoizeAsyncOptions (same file)
+packages/module/token-count/src/client.ts:62,97,163 | missing-reference/downgraded-link | current: API_KEY_ENV_VARS/resolveClient/countTokens not named; "Anthropic.AuthenticationError"/"Anthropic.BadRequestError" unlinked | target: same file, AuthenticationError/BadRequestError (external @anthropic-ai/sdk)
+packages/module/observable/src/create-observable-async.ts:64, create-observable.ts:50 | missing-reference | current: not mentioned | target: ObservableAsync, Observable (same files)
+packages/module/current-time-context/src/index.ts:66 | missing-reference | current: not mentioned | target: padTwoDigits (same file)
+file-enforcer.config.ts:127,149,189,326,415 | missing-reference, 7 instances | current: not mentioned | target: NodeErrorCodeCarrier, errorHasCode/ForbiddenRootContextFileError, BrowserslistResolver, importBrowserslist/selectBrowserslistQueries, harperLintersDisabled/manageLsp4ijServerSettings (file-enforcer/src/jetbrains/lsp4ij.ts)
+oxlint-require-tsdoc.ts:34,69 | missing-reference/downgraded-link | current: hasTsdoc not named; backtick eslintCompatPlugin | target: hasTsdoc (same file), eslintCompatPlugin (external @oxlint/plugins)
+```
