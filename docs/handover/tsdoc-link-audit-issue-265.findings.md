@@ -205,7 +205,54 @@ packages/module/throws/src/index.ts:4 | downgraded-link | current: "Use `throws(
 
 ## Batch 04 (no-restricted-syntax, git, numeric-format, correction-reminder)
 
-(pending)
+TOTAL FINDINGS: 485 (oxlint-plugins/no-restricted-syntax rules: 330;
+cli/git: 135; numeric-format: 20). Largest single batch by far. Full
+per-line listing kept in the agent transcript only; condensed below.
+
+Systematic pattern: dominant failure mode is `missing-reference`, not
+`downgraded-link` -- comments that never named a real dependency, far
+more often than comments that had a link stripped. Two shapes recur
+constantly: (1) "sentinel-of-absence" union return types
+(`NOT_NODE_SYNC_CALLEE`, `NO_STATIC_SOURCE`, `NO_VARIABLE`,
+`NOT_ERROR_DETECTION`, `NO_INIT_INFO`, `GIT_QUERY_FAILED`, etc.)
+documented in `@returns` only as generic prose instead of `{@link}`-ing
+the actual constant; (2) helper functions that call several
+sibling/cross-file functions but document only externally observable
+behavior, never naming the called helpers -- heaviest in the
+`no-sync.*` and `prefer-error-is-error.*` rule families in
+oxlint-plugins, and the `branch-create-*`/`commit-*` parser family in
+cli/git, where dozens of functions share common helpers
+(`expandAbbreviations`, `hasShortOption`/`matchesLongOption`,
+`parseGlobalOptions`) never linked at any call site. Genuine
+`downgraded-link` cases cluster around named string/numeric constants
+standing in for literal values in code (`ERROR_OBJECT_TAG_SUFFIX`,
+`ALL_CAPS_SNAKE`, `ERROR_IS_ERROR_CALLEE`) and cross-rule references
+between sibling oxlint rules mentioning each other by name in prose
+(`no-nullish-union` <-> `no-optional-escape`, `makeCommitOnly` in
+cli/git's commit-sequencer checks) -- these read most like the issue's
+described linter-bug-driven downgrades. A minor pattern unique to
+`numeric-format`: documentation narrating a calculation's value ("below
+10ms") instead of the name of the constant defining that threshold.
+
+```
+packages/oxlint-plugins/no-restricted-syntax/src/rules/_ban-disable-factory.ts:13,32 | missing-reference | current: not mentioned | target: DISABLE_DIRECTIVE_PREFIX, hasOxlintDisableDirective (same file)
+packages/oxlint-plugins/no-restricted-syntax/src/rules/no-disable-*.ts (15 files: max-lines, no-arrow-function, no-enum, no-for-in, no-hasownproperty, no-misused-promises, no-non-null-assertion, no-promise-catch, no-promise-finally, no-rest-params, no-switch, no-trim-left-right, no-try-finally, no-useless-return, no-variable-function-expression, prefer-regexp-exec, require-destructured-params, require-returns, require-tsdoc) | missing-reference (15 instances) | current: not mentioned in each file | target: banDisableRule (packages/oxlint-plugins/no-restricted-syntax/src/rules/_ban-disable-factory.ts), the factory each file's only call uses
+packages/oxlint-plugins/no-restricted-syntax/src/rules/no-class.ts:51,86,197 | downgraded-link/missing-reference | current: backtick DEFAULT_SUFFIXES mention; isFirstOption/readSuffixes/matchesSuffix not named | target: DEFAULT_SUFFIXES, isFirstOption, readSuffixes, matchesSuffix (same file)
+packages/oxlint-plugins/no-restricted-syntax/src/rules/no-immediate-mutation.syntax.ts | missing-reference, 23 instances | current: sentinel constants and sibling helpers never named | target: NO_INIT_INFO, NO_STATEMENT_LIST, NO_STATIC_MEMBER_NAME, NO_PREVIOUS_STATEMENT, isIdentifierNamed, unwrapExpression, findVariable, collectionNeedsSpreadTemp, initializerKind, initInfoFromDeclaration, initInfoFromAssignment (same file)
+packages/oxlint-plugins/no-restricted-syntax/src/rules/no-low-information-symbol-description/*.ts (ast.ts, classify.ts, index.ts, markers.ts, repetition.ts, tokenize.ts, types.ts) | missing-reference/downgraded-link, ~50 instances | current: classifier delegates to 9 helpers never named at classify.ts:43; index.ts:92 never names classifySymbolDescription/isSymbolCall/isSymbolForCall/staticDescription; constants (DIGIT_CHARACTERS, VOWEL_CHARACTERS, MAX_INSIGNIFICANT_WORD_LENGTH, BECAUSE_CONNECTIVE, NAMESPACE_DELIMITERS) and helpers (charKind, charKindAt, isWordBoundary, wordHasLetter, meaningfulWords) repeatedly unnamed | target: see file-local constants.ts, markers.ts, repetition.ts, tokenize.ts
+packages/oxlint-plugins/no-restricted-syntax/src/rules/no-module-root-let.ts:21, no-nullish-union.ts:26,93,104, no-optional-escape.ts:13,174,331,353 | downgraded-link | current: backtick "memoize()", "no-low-information-symbol-description", "nonNullishOrThrow", cross-references between "no-nullish-union" and "no-optional-escape" by rule name in prose | target: memoize (module/memoize), noLowInformationSymbolDescription, nonNullishOrThrow (module/or-throw), noNullishUnion/noOptionalEscape (siblings) -- clearest linter-bug-style downgrades in this batch
+packages/oxlint-plugins/no-restricted-syntax/src/rules/no-regex.ts:31,61,125,147,164,203,229 | downgraded-link/missing-reference, 11 instances | current: backtick "no-restricted-syntax/no-nullish-union"; isRegExpLiteral/isRegExpConstructorExpression/getStaticMethodName/isRegexAcceptingStringMethod never named | target: noNullishUnion (sibling), local AST helpers (same file)
+packages/oxlint-plugins/no-restricted-syntax/src/rules/no-sync.*.ts (constants, node-builtin-source, node-sync-binding, node-sync-member, provenance, syntax, no-sync.ts itself) | missing-reference, ~85 instances total | current: recurring sentinel constants (NOT_NODE_SYNC_CALLEE, NO_STATIC_SOURCE, NO_VARIABLE, SYNC_SUFFIX) and helper-chain functions (getMemberName, getStaticPropertyName, getImportDeclaration, getVariableDeclarator, findVariable, isNodeBuiltinSource*) never named across this entire rule family's 7 files | target: see no-sync.constants.ts and no-sync.syntax.ts for the shared definitions
+packages/oxlint-plugins/no-restricted-syntax/src/rules/prefer-describe-function-ref-name.ts:33,79,178,183,315,323,330,388 | downgraded-link/missing-reference | current: sourceTextByPath/readSourceTextOrEmpty/classifyExportedName/isCallableBinding not named; ALL_CAPS_SNAKE backticked 3x | target: same file's own sentinel/helpers
+packages/oxlint-plugins/no-restricted-syntax/src/rules/prefer-error-is-error.*.ts (constants, detectors, globals, node-util, object-tag, syntax, prefer-error-is-error.ts itself) | downgraded-link/missing-reference, ~75 instances | current: recurring NOT_ERROR_DETECTION sentinel and constant-name backticks (ERROR_IS_ERROR_CALLEE, CONSTRUCTOR_PROPERTY_NAME, OBJECT_TAG_TYPE_PREFIX_LENGTH) plus cross-file detector functions never named | target: see prefer-error-is-error.constants.ts for shared definitions
+packages/oxlint-plugins/no-restricted-syntax/src/rules/require-destructured-params.ts:25, require-queryselector-generic.ts:32 | missing-reference | current: not mentioned | target: simpleBanRule (_simple-ban-rule.ts), getStaticCallMemberName/SELECTOR_METHODS (ast-shared.ts/same file)
+packages/cli/git/src/allowed-worktree-dirs.ts:98,244, auto-push.ts:171,231, effective-target.ts:159,228, escape-hatch.ts:66, index.ts:96, parse-global-options.ts:85, resolve-git.ts:109, parsers/add.ts:274 | missing-reference, ~16 instances | current: not mentioned | target: resolveUvCacheDir/safeRealpath/isPathUnder (same file), SubprocessError (nano-spawn), gitQuerySucceeds/filterPushOutput (same file), isExecFileExitError (same file), resolveGit/readGitWorktreeMetadata/isAllowedWorktreeDir, requireRoot/linkedWorktreeOnly (rules/), applyChdir, isShimForSelf, scanBulkTokens/optionRegion/pathspecRegion
+packages/cli/git/src/parsers/branch-create-*.ts (7 files: branch-options, checkout-options, dispatch, shared, strip, switch-options, branch-create.ts itself) | missing-reference, ~38 instances | current: hasShortOption/matchesLongOption/isExactShortOption (branch-create-shared.ts) never named at dozens of call sites across the family; branch-create.ts:99 alone omits 10 sibling predicate functions | target: branch-create-shared.ts, branch-create-{branch,checkout,switch}-options.ts
+packages/cli/git/src/parsers/clean-option-order.ts, clean-options.ts, clean.ts, commit-flag-aliases.ts, commit-normalise.ts, commit.ts, reset.ts, stash.ts | missing-reference, ~26 instances | current: expandAbbreviations (abbrev.ts) never named at 11 separate call sites; optionRegion, PATHSPEC_SEPARATOR, scanCleanOptionOrder, normaliseCommitArgs/hasCommitPathspec similarly unnamed | target: abbrev.ts, escape-hatch.ts, same-file siblings
+packages/cli/git/src/rules/add-explicit.ts:62, atomic-push.ts:47, branch-worktree-messages.ts:37, branch-worktree-only.ts:80, branch-worktree-remote-guess.ts:49,83,116,149, commit-index-check.ts:39,63, commit-only.ts:193, commit-sequencer-check.ts:41,108, linked-worktree-only.ts:132,211, require-root.ts:67, status-hints-off.ts:55,102 | downgraded-link/missing-reference, ~25 instances | current: backtick "makeCommitOnly" cross-references (clearest linter-bug-style downgrade in cli/git); large rule-orchestrator functions (e.g. linked-worktree-only.ts:211, 11 dependencies) never name their delegates | target: makeCommitOnly (commit-only.ts), parseGlobalOptions (parse-global-options.ts), and other rules/ + parsers/ siblings
+packages/module/numeric-format/src/byte.ts:22 | missing-reference | current: not mentioned | target: BYTES_PER_GIB, BYTES_PER_MIB, BYTES_PER_KIB (module/const/src/byte.ts)
+packages/module/numeric-format/src/duration.ts:42,95,99,156,160,168,172,176,180,184,188,192,196,200,246,255 | missing-reference/downgraded-link, 17 instances | current: thresholds narrated by value ("below 10ms", "1000ms and above") instead of naming the constant; formatTrackedDuration's step variables divide/mod by SECONDS_PER_* constants never named; nonNullishOrThrow uncalled-out at two more @throws-less sites | target: DECIMAL_BELOW_MS (same file), MS_PER_SECOND/DAYS_PER_YEAR/SECONDS_PER_{YEAR,MONTH,WEEK,DAY,HOUR,MINUTE} (module/const/src/time.ts), nonNullishOrThrow (module/or-throw)
+```
 
 ## Batch 05 (done-postcss, i18n-compose, fy, backup-path)
 

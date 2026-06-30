@@ -177,7 +177,7 @@ them from the package-to-batch mapping below plus
 | 01 | file-enforcer | a1c00c2bf9c3b21d1 | done, 294 findings |
 | 02 | mvm, mutation-test, async-time, claude-spawn | a95c3884bfa6c3316 | done, 44 findings |
 | 03 | toml-edit, linkup, throws | a37e6ff13e12bbda0 | done, 153 findings |
-| 04 | no-restricted-syntax, git, numeric-format, correction-reminder | a2e4ea7abc709c2d0 | running |
+| 04 | no-restricted-syntax, git, numeric-format, correction-reminder | a2e4ea7abc709c2d0 | done, 485 findings |
 | 05 | done-postcss, i18n-compose, fy, backup-path | a125f0fc146d11e83 | done, 68 findings |
 | 06 | aquati.cat, markdown-lint, islands-black, async-iter | a2790fd594c501e06 | done, 81 findings |
 | 07 | stylistic, model-selection, watch-restart, zip-writer, stop-reminders, terminal-title | a344cc088ad287c9e | done, 82 findings |
