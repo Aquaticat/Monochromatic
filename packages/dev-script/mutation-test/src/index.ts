@@ -114,7 +114,7 @@ function cliErrorMessage(error: unknown,): string {
 }
 
 /**
- * Runs the direct CLI entrypoint and reports concise failures.
+ * Runs the direct CLI entrypoint via {@link runCli} and reports concise failures.
  *
  * @param argv - CLI arguments after executable and script path.
  *
