@@ -330,7 +330,7 @@ export class MorphInvalidInputError extends Error {
  *
  * @returns resolved API key string
  *
- * @throws when no key is found in config or environment.
+ * @throws {@link MorphApiKeyMissingError} when no key is found in config or environment.
  *
  * @example
  * ```typescript
@@ -359,7 +359,7 @@ function resolveApiKey(explicit?: string,): string {
  *
  * @returns wire-format JSON body ready for `fetch`
  *
- * @throws when neither `input` nor `messages` is supplied.
+ * @throws {@link MorphInvalidInputError} when neither `input` nor `messages` is supplied.
  *
  * @example
  * ```typescript
@@ -464,7 +464,8 @@ export type MorphCompactClient = {
  *
  * @returns frozen client exposing {@link MorphCompactClient.compact}
  *
- * @throws when no API key is available, neither `input` nor `messages` is set, or API responds with non-2xx status.
+ * @throws {@link MorphApiKeyMissingError} when no API key is available, {@link MorphInvalidInputError} when neither
+ *   `input` nor `messages` is set, or {@link MorphApiError} when the API responds with a non-2xx status.
  *
  * @example
  * ```typescript

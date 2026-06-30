@@ -40,9 +40,10 @@ export function resetMissingKeyWarning(): void {
 
 /**
  * Handle the `session_before_compact` event.
- * Checks preconditions, attempts Morph compaction, and either
+ * Checks preconditions, attempts Morph compaction via {@link attemptMorphCompaction}, and either
  * returns the compaction result, cancels the compaction, or
- * returns `undefined` to fall through to pi's default summarization.
+ * returns `undefined` to fall through to pi's default summarization
+ * (including when the resolved key is {@link NO_MORPH_KEY}).
  *
  * Compaction is cancelled (not fallen through) when the session is
  * too small to compact: all messages fit within pi's keepRecentTokens

@@ -6,8 +6,8 @@
  * this module works directly from branch entries, making it suitable for
  * the `/morph-compact` slash command which reads the session read-only.
  *
- * File tracking XML is intentionally omitted because `computeFileLists` /
- * `formatFileOperations` require `FileOperations` from the compaction event,
+ * File tracking XML is intentionally omitted because {@link computeFileLists} /
+ * {@link formatFileOperations} require {@link FileOperations} from the compaction event,
  * which is unavailable outside it. The new session starts fresh without it.
  */
 
@@ -150,7 +150,8 @@ function walkBranch(branchEntries: readonly SessionEntry[],): {
  *
  * @returns the full compressed text string (wrapped with Morph XML tags)
  *
- * @throws when there is nothing to compress, the API call fails, or
+ * @throws when there is nothing to compress, the API call fails (as
+ *   {@link MorphApiKeyMissingError}, {@link MorphInvalidInputError}, or {@link MorphApiError}), or
  *   the compressed output is empty
  *
  * @example

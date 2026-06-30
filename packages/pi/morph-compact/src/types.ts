@@ -51,7 +51,7 @@ export type MorphCompactionAttempt =
 /**
  * Outcome of {@link handleBeforeCompact}, kept as a closed discriminated union
  * (no `undefined`) so the bridge can translate it into pi's
- * `SessionBeforeCompactResult` (`{ compaction }`, `{ cancel }`, or a bare
+ * {@link SessionBeforeCompactResult} (`{ compaction }`, `{ cancel }`, or a bare
  * `undefined` that lets other extensions keep their result).
  */
 export type MorphBeforeCompactOutcome =

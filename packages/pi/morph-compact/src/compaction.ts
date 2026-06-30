@@ -127,6 +127,8 @@ export function chooseCompressionRatio(
  *
  * @returns compaction attempt result
  *
+ * @throws {@link MorphApiError} when the Morph Compact API call fails
+ *
  * @example
  * ```typescript
  * const attempt = await attemptMorphCompaction({

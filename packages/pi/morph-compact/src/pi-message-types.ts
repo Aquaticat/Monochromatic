@@ -87,7 +87,8 @@ export type ToolResultMessage = {
 };
 
 /**
- * Union of LLM-compatible message roles, equivalent to `pi-ai`'s `Message`.
+ * Union of LLM-compatible message roles ({@link UserMessage}, {@link AssistantMessage},
+ * {@link ToolResultMessage}), equivalent to `pi-ai`'s `Message`.
  */
 export type Message = UserMessage | AssistantMessage | ToolResultMessage;
 
@@ -147,8 +148,8 @@ export type CompactionSummaryAgentMessage = {
 /**
  * Discriminated union of every `AgentMessage` role this module handles. Wider
  * than `pi-ai`'s `Message`: covers the custom roles pi-coding-agent layers on
- * top via module augmentation (`bashExecution`, `custom`, `branchSummary`,
- * `compactionSummary`).
+ * top via module augmentation ({@link BashExecutionAgentMessage}, {@link CustomAgentMessage},
+ * {@link BranchSummaryAgentMessage}, {@link CompactionSummaryAgentMessage}).
  */
 export type AgentMessage =
   | Message
