@@ -17,8 +17,9 @@ import { extractParamsText, } from './arrow-function-params.ts';
  * ordering, and signal intent more explicitly.
  *
  * Auto-fix handles the common `const name = (...) => ...` pattern by converting
- * it to a `function name(...) { ... }` declaration. `export const` is similarly
- * converted to `export function`. Other contexts (callbacks, object properties)
+ * it to a `function name(...) { ... }` declaration, extracting the parameter
+ * list via {@link extractParamsText}. `export const` is similarly converted
+ * to `export function`. Other contexts (callbacks, object properties)
  * are reported but not auto-fixed because naming them requires human judgment.
  *
  * @example

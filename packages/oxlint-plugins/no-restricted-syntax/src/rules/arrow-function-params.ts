@@ -52,10 +52,11 @@ function indexAfterAsyncPrefix({ fullText, }: { readonly fullText: string; },): 
  * Extracts the parameter list text (including parentheses) from an arrow
  * function's source text.
  *
- * The arrow function source may start with `async `, then optional type
- * parameters `<T>`, then the parameter list `(...)`. This function finds the
- * parenthesized parameter list by scanning for balanced parentheses while
- * ignoring string content.
+ * The arrow function source may start with `async ` (skipped via
+ * {@link indexAfterAsyncPrefix}), then optional type parameters `<T>`, then
+ * the parameter list `(...)`. This function finds the parenthesized
+ * parameter list by scanning for balanced parentheses while ignoring string
+ * content.
  *
  * @param fullText - complete source text of the ArrowFunctionExpression node
  *

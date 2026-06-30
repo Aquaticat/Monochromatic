@@ -3,7 +3,8 @@ import type { CreateOnceRule, } from '@oxlint/plugins';
 import { methodCallBanRule, } from './_method-call-ban-rule.ts';
 
 /**
- * Bans `.catch()` method calls on promises.
+ * Bans `.catch()` method calls on promises. Built via
+ * {@link methodCallBanRule}.
  *
  * Promise `.catch()` encourages imperative error handling alongside `.then()`.
  * Use `try`/`catch` with `async`/`await` instead for consistent, readable

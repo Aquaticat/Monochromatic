@@ -6,7 +6,8 @@ import type {
 import { simpleBanRule, } from './_simple-ban-rule.ts';
 
 /**
- * Requires `catch` clauses to bind caught values.
+ * Requires `catch` clauses to bind caught values. Built via
+ * {@link simpleBanRule}.
  *
  * `catch {}` hides the thrown value at the boundary where the failure is
  * observed. Bind the value, usually as `error`, so code can log it, rethrow it,

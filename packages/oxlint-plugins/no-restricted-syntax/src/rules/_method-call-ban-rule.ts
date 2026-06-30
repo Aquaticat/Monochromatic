@@ -12,7 +12,8 @@ import {
 
 /**
  * Creates an oxlint rule that bans calling any of a set of method names
- * as `x.methodName()`, regardless of receiver type.
+ * as `x.methodName()`, regardless of receiver type. Method names are read
+ * via {@link getStaticCallMemberName}.
  *
  * Config-level overrides in `oxlint.config.ts` are unaffected;
  * this only flags member-call expressions matching `methodNames`.

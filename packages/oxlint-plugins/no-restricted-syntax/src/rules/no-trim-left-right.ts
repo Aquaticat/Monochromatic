@@ -11,7 +11,8 @@ import {
 } from './ast-shared.ts';
 
 /**
- * Bans `.trimLeft()` and `.trimRight()` in favor of `.trimStart()` and `.trimEnd()`.
+ * Bans `.trimLeft()` and `.trimRight()` in favor of `.trimStart()` and
+ * `.trimEnd()`, matched via {@link getStaticCallMemberName}.
  *
  * `trimLeft()` and `trimRight()` are deprecated aliases introduced before
  * the language adopted logical naming conventions. The standard names

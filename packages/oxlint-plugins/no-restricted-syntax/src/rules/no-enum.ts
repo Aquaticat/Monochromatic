@@ -4,6 +4,7 @@ import { simpleBanRule, } from './_simple-ban-rule.ts';
 
 /**
  * Bans `enum` declarations in favor of union types and `as const` literals.
+ * Built via {@link simpleBanRule}.
  *
  * Enums generate runtime code, have surprising structural typing behavior,
  * and are less composable than union types. Union types with `as const`

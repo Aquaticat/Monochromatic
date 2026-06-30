@@ -3,7 +3,8 @@ import type { CreateOnceRule, } from '@oxlint/plugins';
 import { methodCallBanRule, } from './_method-call-ban-rule.ts';
 
 /**
- * Bans `.finally()` method calls on promises.
+ * Bans `.finally()` method calls on promises. Built via
+ * {@link methodCallBanRule}.
  *
  * Promise `.finally()` is the chaining equivalent of `try...finally`,
  * which is already banned in favor of `using`/`await using` for cleanup.

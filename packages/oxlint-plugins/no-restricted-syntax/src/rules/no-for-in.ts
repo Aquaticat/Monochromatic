@@ -4,6 +4,7 @@ import { simpleBanRule, } from './_simple-ban-rule.ts';
 
 /**
  * Bans `for...in` loops in favor of `Object.entries` and functional methods.
+ * Built via {@link simpleBanRule}.
  *
  * `for...in` iterates over inherited properties and requires `hasOwnProperty`
  * guards. `Object.entries`/`Object.keys`/`Object.values` with functional

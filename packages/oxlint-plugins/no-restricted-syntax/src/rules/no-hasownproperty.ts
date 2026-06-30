@@ -3,7 +3,8 @@ import type { CreateOnceRule, } from '@oxlint/plugins';
 import { methodCallBanRule, } from './_method-call-ban-rule.ts';
 
 /**
- * Bans `.hasOwnProperty()` method calls in favor of `Object.hasOwn()`.
+ * Bans `.hasOwnProperty()` method calls in favor of `Object.hasOwn()`. Built
+ * via {@link methodCallBanRule}.
  *
  * `Object.hasOwn(obj, key)` was introduced in ES2022 as the modern replacement
  * for `Object.prototype.hasOwnProperty.call(obj, key)` and `obj.hasOwnProperty(key)`.

@@ -159,7 +159,8 @@ export const noFunctionRootLet: CreateOnceRule = {
      * Inspects a function node for `let` declarations at body-root scope.
      *
      * Returns early when the function is an IIFE callee or matches the
-     * helper-function shape; otherwise reports every root-level `let`.
+     * helper-function shape (tested via {@link isHelperShape}); otherwise
+     * reports every root-level `let`.
      *
      * @param node - Function declaration or expression AST node.
      */

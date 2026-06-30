@@ -84,7 +84,8 @@ export function getStaticMemberName(
 }
 
 /**
- * Returns static member name for calls shaped like `receiver.method()`.
+ * Returns static member name for calls shaped like `receiver.method()`, via
+ * {@link getStaticMemberName}.
  *
  * @param call - call expression to inspect
  *

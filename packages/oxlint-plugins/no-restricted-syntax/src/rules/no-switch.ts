@@ -4,6 +4,7 @@ import { simpleBanRule, } from './_simple-ban-rule.ts';
 
 /**
  * Bans `switch` statements in favor of if/else chains or `Record` lookups.
+ * Built via {@link simpleBanRule}.
  *
  * If/else avoids `break` boilerplate and fallthrough bugs.
  * `Record` is preferred when mapping a discriminant to a value.

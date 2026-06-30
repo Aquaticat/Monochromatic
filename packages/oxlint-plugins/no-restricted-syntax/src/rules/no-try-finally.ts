@@ -7,6 +7,7 @@ import { simpleBanRule, } from './_simple-ban-rule.ts';
 
 /**
  * Bans `try...finally` blocks in favor of `using`/`await using` for cleanup.
+ * Built via {@link simpleBanRule}.
  *
  * The `using` declaration with `Symbol.dispose`/`Symbol.asyncDispose` provides
  * deterministic cleanup without the nesting and control flow complexity of
