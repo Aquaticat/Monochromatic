@@ -19,7 +19,7 @@ import type {
 } from './types.ts';
 
 /**
- * Sentinel returned by internal `readLiveScope` when the runtime exposes no
+ * Sentinel returned by internal {@link readLiveScope} when the runtime exposes no
  * usable live model scope. A `unique symbol`; narrowed with
  * `=== NO_LIVE_SCOPE`.
  */

@@ -118,7 +118,7 @@ export function compareVersions<TModel extends Pick<ModelPricing, 'id'>,>(
    */
   const leftVersions = extractVersionNumbers(a.id,);
   /**
-   * Version vector for `b`, compared positionally against `leftVersions`.
+   * Version vector for `b`, compared positionally against {@link leftVersions}.
    */
   const rightVersions = extractVersionNumbers(b.id,);
   /**

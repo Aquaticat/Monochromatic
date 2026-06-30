@@ -9,7 +9,7 @@ import type { ModelIdentity, } from './types.ts';
 
 /**
  * Sentinel returned by {@link findExactModelReferenceMatch} (and internal
- * `matchProviderModelReference`) when no unambiguous exact model match exists:
+ * {@link matchProviderModelReference}) when no unambiguous exact model match exists:
  * empty reference, ambiguous matches, or no match. A `unique symbol`; callers
  * narrow with `=== NO_EXACT_MATCH`. Exported because `pattern-match`'s
  * `tryMatchModel` consumes it across the module seam.

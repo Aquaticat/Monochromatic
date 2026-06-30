@@ -24,7 +24,7 @@ import {
 /**
  * Sentinel returned by {@link findFastestCandidate} when no provider yields a
  * candidate (empty registry). A `unique symbol`; narrowed with
- * `=== NO_CANDIDATE`. Exported because `findFastestCandidate` is public.
+ * `=== NO_CANDIDATE`. Exported because {@link findFastestCandidate} is public.
  */
 export const NO_CANDIDATE: unique symbol = Symbol('model selection fast candidate absent after version filtering',);
 
@@ -49,7 +49,7 @@ type BudgetStrategyOptions<TModel extends ModelPricing,> = Omit<
  *
  * @returns selected budget model with auth
  *
- * @throws NoBudgetModelError when no suitable model is found
+ * @throws {@link NoBudgetModelError} when no suitable model is found
  *
  * @example
  * ```typescript
@@ -194,6 +194,8 @@ export const findCheapestCandidate: typeof findFastestCandidate = findFastestCan
  * @param hasConfiguredAuth - host auth predicate for reporting
  *
  * @returns selected budget model
+ *
+ * @throws {@link NoBudgetModelError} when no suitable same-provider model is found
  */
 async function findSameProvider<TModel extends ModelPricing,>(
   {
@@ -316,6 +318,8 @@ async function findSameProvider<TModel extends ModelPricing,>(
  * @param resolveAuth - host auth resolver
  *
  * @returns selected budget model
+ *
+ * @throws {@link NoBudgetModelError} when no suitable model is found across any provider
  */
 async function findAnyProvider<TModel extends ModelPricing,>(
   {

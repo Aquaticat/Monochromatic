@@ -309,12 +309,12 @@ export type BudgetModelCandidate = {
 
 /**
  * Sentinel returned by a {@link ResolveBudgetAuth} implementation (and by
- * `ResolveBudgetOverrideAuth`) when no usable auth exists for a model.
+ * {@link ResolveBudgetOverrideAuth}) when no usable auth exists for a model.
  * A `unique symbol`; budget selection narrows with `=== NO_AUTH`. Shared
  * across the package boundary so host auth resolvers return the same identity
  * the selectors check. Lives here, the only internal-import-free module after
- * `maybe.ts` was removed, so `ResolveBudgetAuth` can reference both
- * `typeof NO_AUTH` and `BudgetModelAuth` without a module cycle.
+ * `maybe.ts` was removed, so {@link ResolveBudgetAuth} can reference both
+ * `typeof NO_AUTH` and {@link BudgetModelAuth} without a module cycle.
  */
 export const NO_AUTH: unique symbol = Symbol('model selection budget auth credentials absent',);
 

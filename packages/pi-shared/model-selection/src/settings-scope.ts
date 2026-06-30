@@ -9,7 +9,7 @@ import { join, } from 'node:path';
 import * as v from 'valibot';
 
 /**
- * Sentinel returned by internal `loadSettingsFile` when a settings file is
+ * Sentinel returned by internal {@link loadSettingsFile} when a settings file is
  * absent. A `unique symbol`; narrowed with `=== NO_SETTINGS_FILE`.
  */
 const NO_SETTINGS_FILE: unique symbol = Symbol('model-selection/no-settings-file',);

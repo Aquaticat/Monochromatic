@@ -16,7 +16,7 @@ import type {
 } from './types.ts';
 
 /**
- * Sentinel returned by internal `tryMatchModel` when no exact or fuzzy model
+ * Sentinel returned by internal {@link tryMatchModel} when no exact or fuzzy model
  * matches a pattern body. A `unique symbol`; narrowed with
  * `=== NO_PATTERN_MATCH`.
  */

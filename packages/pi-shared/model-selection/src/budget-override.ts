@@ -79,7 +79,7 @@ export type ResolveBudgetModelOverrideOptions<TModel extends ModelIdentity = Mod
  *
  * @returns budget model with auth credentials
  *
- * @throws NoBudgetModelError when override is malformed, missing, or lacks auth
+ * @throws {@link NoBudgetModelError} when override is malformed, missing, or lacks auth
  *
  * @example
  * ```typescript
