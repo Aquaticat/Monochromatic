@@ -2153,6 +2153,9 @@ importers:
 
   packages/oxlint-plugins/test-support:
     dependencies:
+      '@monochromatic-dev/module-fs-path':
+        specifier: workspace:*
+        version: link:../../module/fs-path
       nano-spawn:
         specifier: 'catalog:'
         version: 2.1.0

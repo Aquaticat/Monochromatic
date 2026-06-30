@@ -10,6 +10,7 @@ import {
   resolve,
 } from 'node:path';
 
+import { findMiseMonorepoRoot, } from '@monochromatic-dev/module-fs-path/ts';
 import spawn from 'nano-spawn';
 
 /**
@@ -30,13 +31,9 @@ import spawn from 'nano-spawn';
  * OXLINT_PLUGIN_TEST_ROOT;
  * ```
  */
-export const OXLINT_PLUGIN_TEST_ROOT: string = resolve(
-  import.meta.dirname,
-  '..',
-  '..',
-  '..',
-  '..',
-);
+export const OXLINT_PLUGIN_TEST_ROOT: string = await findMiseMonorepoRoot({
+  cwd: import.meta.dirname,
+},);
 
 /**
  * Single diagnostic from oxlint JSON output after plugin filtering.
