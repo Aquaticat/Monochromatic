@@ -81,7 +81,8 @@ function isToolArgs(value: unknown,): value is Readonly<Record<string, unknown>>
 }
 
 /**
- * Converts unknown pi event args into a read-only argument record.
+ * Converts unknown pi event args into a read-only argument record, narrowing
+ * with {@link isToolArgs}.
  *
  * @param args - because pi may omit args on completion events
  *
@@ -106,7 +107,8 @@ function toolArgsFromUnknown(args: unknown,): Readonly<Record<string, unknown>> 
  * Terminal Title pi extension.
  *
  * Subscribes to agent lifecycle events and updates the terminal window/tab
- * title to reflect the current activity.
+ * title to reflect the current activity, delegating title text to
+ * {@link titleForEvent}.
  *
  * Handler types for `tool_execution_start` and `tool_execution_end` are
  * inferred by the `pi.on()` overload signatures; those event types are not

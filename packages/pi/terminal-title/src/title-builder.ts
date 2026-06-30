@@ -42,7 +42,8 @@ type HandledEventType =
  *
  * Looks up the tool name in the {@link TOOL_TITLES} registry. If found,
  * extracts a display value from the tool input and formats it with the
- * appropriate tense. Falls back to the tool name itself if not registered.
+ * appropriate tense, falling back to the tool name itself when extraction
+ * returns {@link NO_STRING_FIELD} or the tool is not registered.
  *
  * For custom/MCP tools not in the registry, displays the raw tool name
  * with tense-appropriate wording.
@@ -103,7 +104,8 @@ function titleForTool(
  * Maps event types to their title body strings.
  *
  * Each key matches a {@link HandledEventType}; the function produces
- * the body text (before prefix) for that event.
+ * the body text (before prefix) for that event, delegating to
+ * {@link titleForTool} for the tool execution events.
  */
 const EVENT_BODY_BUILDERS: Record<HandledEventType, (data: EventData,) => string> = {
   tool_execution_start(data,) {
@@ -162,7 +164,8 @@ type EventData = {
 /**
  * Builds a terminal title from a pi extension event.
  *
- * Maps each handled event type to its title logic via a record lookup:
+ * Maps each handled event type to its title logic via the
+ * {@link EVENT_BODY_BUILDERS} record lookup:
  * - `tool_execution_start` → look up tool, use `pre` tense
  * - `tool_execution_end` → look up tool, use `post` tense
  * - `session_start` → "Session \{reason\}"
@@ -174,7 +177,7 @@ type EventData = {
  *
  * @param data - event-specific data (toolName, args, reason, prompt, etc.)
  *
- * @returns final title string with prefix, truncated to {@link MAX_TITLE_LENGTH}
+ * @returns final title string with prefix, {@link truncate}d to {@link MAX_TITLE_LENGTH}
  *
  * @example
  * ```ts

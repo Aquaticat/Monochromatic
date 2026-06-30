@@ -207,7 +207,7 @@ function getHandler(
  *
  * @param value - imported module namespace from built package output
  *
- * @returns whether module exports Pi extension factory
+ * @returns whether module matches {@link TerminalTitleExtensionModule}, exporting a Pi extension factory
  *
  * @example
  * ```ts
@@ -227,6 +227,10 @@ function isTerminalTitleExtensionModule(
 
 /**
  * Verifies built extension preserves command details from start to end titles.
+ *
+ * Confirms the import via {@link isTerminalTitleExtensionModule}, registers
+ * handlers through {@link createFakePiApi}, captures titles with
+ * {@link createTitleContext}, and looks up handlers with {@link getHandler}.
  *
  * @returns verification result text
  *

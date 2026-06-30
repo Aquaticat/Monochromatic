@@ -138,7 +138,7 @@ function stringField(
 }
 
 /**
- * Creates an extractor that reads a named string field from tool input.
+ * Creates an extractor that reads a named string field from tool input via {@link stringField}.
  *
  * @param key - property name to extract
  *
@@ -160,7 +160,7 @@ function field(key: string,): (input: ToolArgs,) => string | typeof NO_STRING_FI
 }
 
 /**
- * Builds a tense-aware file path formatter.
+ * Builds a tense-aware file path formatter using {@link shortPath} to shorten the displayed path.
  *
  * @param labels - present and past tense verbs
  *
@@ -188,7 +188,7 @@ function pathFormat(
 }
 
 /**
- * Builds a tense-aware pattern/query formatter with quoting and truncation.
+ * Builds a tense-aware pattern/query formatter with quoting and {@link truncate}-based truncation.
  *
  * @param labels - present and past tense verbs
  *
@@ -228,7 +228,8 @@ function quotedFormat(
 const COMMAND_NOISE_RE = /^(?:(?!-)\S+=\S*\s+|(?:timeout|env|nice|nohup)\s+\S+\s+)*/u;
 
 /**
- * Extracts first meaningful token from a bash command for display.
+ * Extracts first meaningful token from a bash command for display, stripping
+ * leading noise matched by {@link COMMAND_NOISE_RE}.
  *
  * @param command - full bash command string
  *
