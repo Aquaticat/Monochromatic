@@ -45,10 +45,10 @@ const API_KEY_ENV_VARS = [
 /**
  * Resolve an Anthropic client from an optional API key.
  *
- * Checks the explicit key first, then `TOKEN_COUNT_CLAUDE_API_KEY`,
- * `CLAUDE_API_KEY`, and `ANTHROPIC_API_KEY` env vars in priority order,
- * treating empty-string env vars as unset. When nothing is found, builds
- * the client with no key so the SDK falls through to its own default.
+ * Checks the explicit key first, then the {@link API_KEY_ENV_VARS} env vars
+ * in priority order, treating empty-string env vars as unset. When nothing
+ * is found, builds the client with no key so the SDK falls through to its
+ * own default.
  *
  * @param apiKey - explicit API key, checked before the env var chain
  *
@@ -76,7 +76,8 @@ function resolveClient(apiKey?: string,): Anthropic {
 }
 
 /**
- * Count input tokens for a text string using the Anthropic token counting API.
+ * Count input tokens for a text string using the Anthropic token counting API,
+ * via a client resolved by {@link resolveClient}.
  *
  * @param content - text string whose tokens to count
  *
@@ -84,9 +85,9 @@ function resolveClient(apiKey?: string,): Anthropic {
  *
  * @returns token count and model used
  *
- * @throws Anthropic.AuthenticationError when API key is invalid or missing
+ * @throws {@link Anthropic.AuthenticationError} when API key is invalid or missing
  *
- * @throws Anthropic.BadRequestError when model is invalid
+ * @throws {@link Anthropic.BadRequestError} when model is invalid
  *
  * @example
  * ```ts
@@ -141,8 +142,8 @@ export async function countTokens({
 }
 
 /**
- * Count input tokens for a file by reading it and passing its content
- * to the Anthropic token counting API.
+ * Count input tokens for a file by reading it and delegating to
+ * {@link countTokens} for the actual API call.
  *
  * @param filePath - path to the file to read and count tokens for
  *
@@ -152,7 +153,7 @@ export async function countTokens({
  *
  * @throws Error when file cannot be read (ENOENT, EACCES, etc.)
  *
- * @throws Anthropic.AuthenticationError when API key is invalid or missing
+ * @throws {@link Anthropic.AuthenticationError} when API key is invalid or missing
  *
  * @example
  * ```ts
