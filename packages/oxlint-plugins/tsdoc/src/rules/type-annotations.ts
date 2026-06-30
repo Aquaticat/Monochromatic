@@ -40,13 +40,22 @@ const INLINE_TAG_MARKER = '@';
  * ```
  */
 function isInlineTagOpener(params: {
-  /** Source text containing the candidate brace. */
+  /**
+   * Source text containing the candidate brace.
+   */
   readonly text: string;
-  /** Index of the candidate opening brace. */
+  /**
+   * Index of the candidate opening brace.
+   */
   readonly braceIndex: number;
 },): boolean {
-  /** Source text containing the candidate brace. */
-  const { text, braceIndex, } = params;
+  /**
+   * Source text and brace index used to test the character after `{`.
+   */
+  const {
+    text,
+    braceIndex,
+  } = params;
   return text.charAt(braceIndex + 1,) === INLINE_TAG_MARKER;
 }
 
