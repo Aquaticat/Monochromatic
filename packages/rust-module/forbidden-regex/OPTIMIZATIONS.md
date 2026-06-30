@@ -12,7 +12,7 @@ the levers not yet pulled and speculates,
  about the tricks the
 maintainer has said they are holding in reserve.
 
-See `HANDOVER.counting-automaton.md` for the architecture and the journey to the win.
+See `counting-automaton.md` for the architecture and the journey to the win.
 The one-line model:
  there is a single per-line pass,
  the gate (SIMD literal prefilter,

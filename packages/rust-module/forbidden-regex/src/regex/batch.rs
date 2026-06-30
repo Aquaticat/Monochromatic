@@ -1,10 +1,18 @@
-//! Batched, many-lines-at-once matching for the public matcher types.
+//! What:     This Rust module adds batch methods to [`Regex`] and [`RegexSet`]. A Rust
+//!           module is closest to a private TypeScript file inside a package. The public
+//!           methods return `Vec<bool>` values (owned growable arrays of booleans, not
+//!           borrowed `&[bool]` slices or fixed `[bool; N]` arrays), and the hidden hooks
+//!           let the benchmark force scalar, interleaved, tight, and Sheng layouts.
+//! Why:      A consumer scanning a whole file hands every line at once, so one call lets
+//!           the engine pick the fastest layout. Table-backed patterns with no required
+//!           literal can use the Sheng permute kernel instead of paying per-line call
+//!           overhead. `Vec<bool>` is owned because the method creates fresh verdicts;
+//!           borrowed or fixed arrays would require caller-managed storage and length.
 //!
-//! What: `is_match_batch` on [`Regex`] and [`RegexSet`], plus hidden per-kernel entry
-//! points the benchmark uses to race the scalar, interleaved, tight, and Sheng layouts.
-//! Why: a consumer scanning a whole file hands every line at once; one call lets the engine
-//! pick the fastest layout (and, for a seedless single pattern, the Sheng permute kernel)
-//! instead of paying per-line call overhead.
+//! In TS you'd write (pseudocode):
+//! ```ts
+//! export function isMatchBatch(lines: Uint8Array[]): boolean[];
+//! ```
 
 /// Imports the public matcher types this module extends.
 use super::{CheckedFull, Regex, RegexSet};

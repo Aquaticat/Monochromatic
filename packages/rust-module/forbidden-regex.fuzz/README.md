@@ -41,10 +41,10 @@ differential target skips set algebra `regex` cannot express).
 
 ## Commands
 
-- `mise run //packages/fuzz/forbidden-regex:list` lists targets.
-- `mise run //packages/fuzz/forbidden-regex:build` builds all targets (ASAN).
-- `mise run //packages/fuzz/forbidden-regex:smoke` runs each target 30s.
-- `mise run //packages/fuzz/forbidden-regex:run <target> -- -max_total_time=60` runs one,
+- `mise run //packages/rust-module/forbidden-regex.fuzz:list` lists targets.
+- `mise run //packages/rust-module/forbidden-regex.fuzz:build` builds all targets (ASAN).
+- `mise run //packages/rust-module/forbidden-regex.fuzz:smoke` runs each target 30s.
+- `mise run //packages/rust-module/forbidden-regex.fuzz:run <target> -- -max_total_time=60` runs one,
   or replays a crash artifact passed before `--`.
 
 All tasks pin `--target x86_64-unknown-linux-gnu --sanitizer address`;

@@ -1,19 +1,27 @@
 # forbidden-regex
 
-A restricted regular-expression engine built on Brzozowski derivatives and
-compiled eagerly to a serializable,
- byte-class-compressed DFA.
+A restricted regular-expression engine for byte-oriented,
+ line-at-a-time secret
+scanning.
+ It parses a deliberately limited dialect,
+ then chooses between counting
+NFAs for bounded repetition,
+ synchronized products for `&`/`~`,
+ and capped
+derivative DFAs when a transition table is the fastest safe representation.
 
-It exists to power the `forbidden-strings` secret scanner:
- one matcher is run on
-every content line,
- with no separate literal prefilter,
- and a whole ruleset is
-combined into a single `RegexSet` that is checked in one pass per line.
- Unlike
-classic NFA or backtracking engines,
- derivatives make intersection (`&`) and
-complement (`~(...)`) first-class operators.
+It exists to power the `forbidden-strings` secret scanner.
+ A `RegexSet` builds one
+set-level gate over required literals,
+ checks leading-literal rules anchored at the
+literal hit,
+ checks `^` rules at line start,
+ and keeps any truly literal-free rules in
+capped union DFAs.
+ Clean lines avoid per-rule scans through the SIMD prefilter.
+Unlike classic NFA or backtracking engines,
+ the derivative and product back-ends make
+intersection (`&`) and complement (`~(...)`) first-class operators.
 
 ## Match model
 
@@ -155,22 +163,23 @@ assert_eq!(re.is_match_batch(lines), vec![true, false]);
 ```
 
 On `Regex`,
- a seedless single pattern of at most 64 states over a large batch routes
-through the Sheng in-register transition kernel:
- one `vpermb` (AVX-512VBMI) or `vqtbl4q`
-(NEON) permute advances the DFA state,
- replacing the dependent transition load,
- and when
-acceptance is position-independent a composed table advances two bytes per permute.
- It is
-measured up to ~3.3x the per-line loop on x86 and ~2.2x on arm64,
- falls back to the
-per-line scan otherwise,
- and is runtime-detected (no nightly toolchain required).
+ a table-backed pattern with no required literal and at most 64 states over a large
+batch routes through the Sheng in-register transition kernel:
+ one `vpermb`
+(AVX-512VBMI) or `vqtbl4q` (NEON) permute advances the DFA state,
+ replacing
+the dependent transition load,
+ and when acceptance is position-independent a composed
+table advances two bytes per permute.
+ It is measured up to ~3.3x the per-line loop
+on x86 and ~2.2x on arm64,
+ falls back to the per-line scan otherwise,
+ and is
+runtime-detected (no nightly toolchain required).
 
 `Regex::is_match_batch_bucketed(&[&[u8]]) -> Vec<bool>` is an opt-in path that groups lines
 by exact length and runs a branchless equal-length kernel;
- it helps over-64-state seedless
+ it helps over-64-state table
 patterns and is fastest when the caller already feeds length-sorted lines.
 
 ## Tasks

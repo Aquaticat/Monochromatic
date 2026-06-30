@@ -90,11 +90,23 @@ pub fn compile(pattern: &str) -> Result<Regex, CompileError> {
     })
 }
 
-/// A whole ruleset compiled into one matcher per rule.
+/// What:     `pub struct RegexSet { ... }` declares an exported Rust record type.
+///           `pub` makes the type name public while its fields stay private. The record
+///           owns `Vec<Engine>` values (growable owned arrays, not borrowed `&[Engine]`
+///           slices or fixed `[Engine; N]` arrays), optional anchored engines, line-start
+///           engines, seedless groups, and the rebuilt set-level gate.
+/// Why:      The shared gate finds only rules whose required literal occurs, while each
+///           small owned engine keeps exact rule semantics without reintroducing
+///           all-rules blowup. Owned `Vec` storage is used instead of borrowed slices
+///           because a compiled ruleset must outlive the input pattern list, and fixed
+///           arrays cannot represent a caller-chosen rule count.
 ///
-/// What: one back-end engine per rule, in rule-id order. Why: each rule is matched
-/// on its own small engine; combining them into a single gate without reintroducing
-/// the counting blowup is a later step, so the set iterates its rules for now.
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export type RegexSet = {
+///   // Private matcher state: exact engines, gates, line-start checks, and groups.
+/// };
+/// ```
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RegexSet {
     /// Per-rule substring engines, indexed by rule id.

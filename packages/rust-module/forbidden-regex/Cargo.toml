@@ -14,7 +14,7 @@ keywords = ["regex", "derivative", "dfa", "intersection", "complement"]
 license = "LGPL-3.0-or-later"
 readme = "README.md"
 repository = "https://github.com/Aquaticat/Monochromatic.git"
-description = "Restricted Brzozowski-derivative regex engine compiled to a serializable byte-class DFA. Supports intersection (&) and complement (~), matches a single line as bytes, and combines a whole ruleset into one RegexSet pass. Built for the forbidden-strings secret scanner."
+description = "Restricted byte-oriented regex engine for line-at-a-time secret scanning, with counting, product, and DFA back-ends, set-level literal gating, intersection (&), and complement (~)."
 
 [lints.clippy]
 disallowed_methods = "deny"

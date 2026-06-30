@@ -1,9 +1,10 @@
-# Handover: forbidden-regex counting-automaton rebuild
+# Counting-automaton architecture for forbidden-regex
 
-The crate compiles,
- lints clean (`lint:rust`,
- `lint:clippy`),
- and all tests pass.
+This note records the counting-automaton rebuild and the performance work that
+followed.
+ It is historical architecture context,
+ not an active handover.
+
 The counting back-end is a Glushkov-style counting NFA (`CountingNfa`):
  it covers
 concatenation,
@@ -23,7 +24,6 @@ reuses ping-pong buffers,
  Only a repetition of
 a non-class body (e.g. an optional group `(?:ab)?`) and nested set algebra inside an
 operand still route to the eager DFA.
- This file is the source of truth for resuming.
 
 ## Throughput status: BEAT regex on BOTH arches (x86 ~1.30-1.32x, arm64/m1 ~1.21-1.23x)
 
@@ -80,14 +80,15 @@ neutral-to-better on both arches).
     arm 1.16->1.22x.
 
 The historical milestones below trace the journey from 0.20x.
- Larger remaining levers
-(cache-tighten the transition tables to u16 states,
- the all-rules combined automaton)
-are DEFERRED until after fuzzing + mutation testing are set up (in progress,
- see
-`packages/fuzz/forbidden-regex` and the mutation task),
- so the risky CsA build lands on
-a hardened test suite.
+ The u16 state-id
+shrink,
+ fuzzing,
+ and mutation testing are already done.
+ The remaining practical
+optimization from this note is combining the marker line-start DFAs for the boolean
+path;
+ the all-rules monolithic automaton was measured and rejected in "What is
+deliberately not pursued".
 
 ## Batch API + across-lines SIMD exploration (measured; one opt-in win)
 
@@ -228,13 +229,15 @@ limits),
 gate-dominated `RegexSet` path;
  it accelerates single-pattern / seedless-rule scanning.
 
-## Correctness infrastructure (fuzzing + mutation testing) — IN PROGRESS
+## Correctness infrastructure (fuzzing + mutation testing) complete
 
-Being set up BEFORE the larger builds (cache-tighten,
- all-rules CsA) so the risky CsA
-lands on a hardened suite.
- User-directed order:
- fuzzing + mutation testing first.
+Fuzzing and mutation testing were completed before later risky changes,
+ so future
+larger builds inherit a hardened suite.
+ User-directed order,
+ fuzzing plus mutation
+testing first,
+ is satisfied.
 
 Fuzzing (`packages/rust-module/forbidden-regex.fuzz`,
  a SIBLING crate like `.bench`;
@@ -1021,25 +1024,33 @@ Back-ends:
    `Engine { Nfa(CountingNfa), Product(ProductProgram), Table(Dfa) }`
   picks the back-end (`is_match`,
    `validate`).
+- `src/build.rs`:
+   selects back-ends for single patterns and routes set rules into the gate,
+  anchored-at-hit checks,
+   line-start checks,
+   or seedless union groups.
+- `src/gate.rs`:
+   `SetGate` owns the SIMD literal prefilter plus DFA aho-corasick which-rule
+  matcher over seeded rules.
 - `src/regex.rs`:
    `Regex` wraps one `Engine`;
-   `RegexSet` holds `Vec<Engine>` and
-  iterates per-rule (no gate yet).
-   `build_engine` tries `build_nfa`,
-   then
-  `build_product`,
-   then the eager DFA.
+   `RegexSet` stores per-rule engines for exact
+  checks plus `anchored`,
+   `line_start`,
+   `seedless_groups`,
+   `seedless_union`,
+  and the rebuilt `SetGate`.
    `compile`,
    `new`,
-   `from_ruleset`,
+   `compile_lenient`,
+  `from_ruleset`,
    `is_match`,
-  `matches`,
+   `matches`,
    `to_bytes`,
-   `from_bytes`.
-   Public surface unchanged.
+   and `from_bytes` are
+  the public surface.
 
-Tests (all green;
- `cargo nextest run` ~0.01s):
+Core regression coverage:
 
 - `tests/integration.rs`:
    end-to-end (literals,
@@ -1056,47 +1067,23 @@ Tests (all green;
   serialized-size proof,
    and exact `{16}` bound checks.
 
-## How to work from here: TDD, debug builds
+## Working notes
 
-Difficulty is high,
- so go test-driven.
- Write a failing test for each counting
-behavior,
- then implement.
+Use mise tasks when editing this crate.
+ Direct `cargo` commands drift from the repo task
+contracts and should not be used for normal iteration.
 
-- Use `cargo nextest` but with DEBUG builds for fast iteration.
-   The existing
-  `test` mise task is `cargo nextest run --release`;
-   release LTO is slow.
-   During
-  this rebuild,
-   add and use a debug task,
-   for example in `mise.toml`:
-  `[tasks."test:debug"]` running `cargo nextest run` (no `--release`).
-   Run it via
-  `mise run //packages/rust-module/forbidden-regex:test:debug`.
-   Direct
-  `cargo nextest run` in the package dir is acceptable for iteration here.
-- Keep `cargo build` (debug) green at every step.
+- Fast tests:
+   `mise run //packages/rust-module/forbidden-regex:test:debug`.
+- Debug build:
+   `mise run //packages/rust-module/forbidden-regex:build:debug`.
+- Release test gate:
+   `mise run //packages/rust-module/forbidden-regex:test`.
+- Lint gates before declaring a milestone done:
+   `mise run //packages/rust-module/forbidden-regex:lint:rust` and
+  `mise run //packages/rust-module/forbidden-regex:lint:clippy`.
 - Stage scoped pathspecs (`git commit packages/rust-module/forbidden-regex ...`),
-  never `-A`/`.` (per AGENTS.
-  md CLG).
-   The `forbidden-strings` pre-commit hook,
-  which would otherwise flag this crate's own test fixtures (AWS-style keys like
-  `AKIA...`,
-   rule 111) as secrets,
-   is currently disabled repo-wide,
-   so commits
-  here need no `--no-verify`.
-   If that hook is re-enabled,
-   those fixtures are
-  deliberate test inputs,
-   not leaks,
-   so bypass it for this package.
-- Before declaring any milestone done:
-   `mise run //packages/rust-module/forbidden-regex:lint:rust`
-  (max-lines 300 per file,
-   rustdoc on every item) and `:lint:clippy`.
+  never `-A`/`.`.
 
 TDD targets:
 
@@ -1151,19 +1138,17 @@ TDD targets:
     falling back to the eager DFA when
    the bound is large;
     the counter-set trick does not apply to a multi-position body.
-6. NEXT.
-    `RegexSet` gate over counting automata without the product blowup (the
-   removed `union.rs` did a product of per-rule DFAs and exploded).
-    `RegexSet` today
-   holds `Vec<Engine>` and iterates per rule,
-    which is already correct and
-   blowup-free;
-    the open question is whether a shared structural automaton with
-   per-rule accept sets beats the per-rule loop on throughput.
-    Measure before
-   building:
-    the per-rule loop may already win,
-    in which case this is just the bench.
+6. DONE.
+    `RegexSet` gate and seedless fold.
+    The current set path uses one SIMD
+   required-literal gate for seeded rules,
+    anchored-at-hit DFAs for leading-literal
+   rules,
+    line-start DFAs for marker rules,
+    and capped union DFAs only for rules that
+   remain truly literal-free.
+    The all-rules monolithic automaton was measured and
+   rejected because it state-explodes or loses the prefilter advantage.
 
 ## Lint and style reminders specific to this crate
 

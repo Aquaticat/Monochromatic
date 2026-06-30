@@ -1,10 +1,19 @@
-//! forbidden-regex: a restricted Brzozowski-derivative regex engine compiled to a
-//! serializable byte-class DFA, supporting intersection (`&`) and complement
-//! (`~(...)`).
+//! What:     This Rust crate exports [`compile`], [`Regex`], and [`RegexSet`].
+//!           A Rust crate is closest to a TypeScript package module: it has private
+//!           implementation files and a public API surface. The implementation matches
+//!           byte slices (`&[u8]`, a borrowed read-only view of bytes, not an owned
+//!           `Vec<u8>` or fixed `[u8; N]` array), and internally chooses counting,
+//!           product, or derivative-DFA matcher back-ends plus set-level literal gating.
+//! Why:      The crate-level docs must tell callers the current architecture so they do
+//!           not expect the old eager-DFA-only matcher or a monolithic all-rules DFA.
+//!           `&[u8]` is used instead of `Vec<u8>` because callers keep ownership of each
+//!           scanned line; it is used instead of `[u8; N]` because line lengths vary.
 //!
-//! The public surface is [`compile`] / [`Regex`] for a single pattern and
-//! [`RegexSet`] for a whole ruleset combined into one matcher. Input is matched
-//! as bytes (`&[u8]`); see the crate README for the supported dialect.
+//! In TS you'd write (pseudocode):
+//! ```ts
+//! export { compile, Regex, RegexSet };
+//! // The matcher accepts Uint8Array views and picks internal strategies itself.
+//! ```
 //!
 //! The batch match kernels (`dfa::sheng`/`dfa::sheng2`) use explicit `std::arch` SIMD
 //! intrinsics (`vpermb` / `vqtbl4q`), runtime-detected, so the crate needs no nightly
