@@ -641,7 +641,49 @@ packages/claude-code-plugins/bash-output-filter/tsdown.node.config.ts:4 | missin
 
 ## Batch 12 (deps-cube, git-clone-size, current-time-context, oxlint-plugins/shared)
 
-(pending)
+TOTAL FINDINGS: 50 (counting each individual target name; several listed
+lines cover multiple targets). No findings in `oxlint-plugins/shared`.
+
+Systematic pattern: every `catch` block that formats its warning via
+`caughtErrorMessage(error)` (7 instances across `cache.ts`,
+`probe-fields.ts` x3, `probe-transitive.ts`, `filter.ts`, `state.ts`)
+never names that helper in the enclosing function's TSDoc, despite being
+a real, directly-called sibling import. A much larger pattern is
+specific to `AppState`: referenced in backtick prose (never `{@link}`)
+in eight separate spots across `deck-accessors.ts`, `deck-config.ts`,
+`controller.ts`, and especially `state.ts` (five occurrences in one
+file), while sibling types like `CatalogEntry` and `Cache` are
+consistently `{@link}`-wrapped elsewhere in the same package, suggesting
+`AppState` was never updated when the package's linking convention was
+established. `git-clone-size` shows the textbook case the issue
+describes: both `@throws CloneSizeError` tags use plain text instead of
+`{@link CloneSizeError}`, while every other `@throws` (generic `Error`)
+is fine as-is.
+
+```
+packages/cli/git-clone-size/src/assemble.ts:127 | missing-reference | current: not mentioned | target: churnEstimate, deepenEstimate, hostProxyEstimate, localExactEstimate, priorAbsentEstimate, priorEstimate (packages/cli/git-clone-size/src/estimators.ts), buildEstimates calls all six but names none
+packages/cli/git-clone-size/src/combine.ts:245 | downgraded-link | current: "@throws CloneSizeError when called with no estimators" | target: CloneSizeError (packages/cli/git-clone-size/src/errors.ts)
+packages/cli/git-clone-size/src/measure.ts:8 | downgraded-link | current: "`NO_DEEPEN`, `NO_TREE0`, and `NO_CHURN`" | target: NO_DEEPEN (packages/cli/git-clone-size/src/probe-deepen.ts), NO_TREE0/NO_CHURN (packages/cli/git-clone-size/src/probe-partial.ts)
+packages/cli/git-clone-size/src/pack-bytes.ts:30 | downgraded-link | current: "@throws CloneSizeError when either git process exits non-zero" | target: CloneSizeError (packages/cli/git-clone-size/src/errors.ts)
+packages/dev-script/deps-cube/src/cache.ts:205 | missing-reference | current: not mentioned | target: caughtErrorMessage (packages/dev-script/deps-cube/src/error-format.ts)
+packages/dev-script/deps-cube/src/catalog.ts:133 | missing-reference | current: not mentioned | target: decodeAlias (same file)
+packages/dev-script/deps-cube/src/catalog.ts:186 | missing-reference | current: not mentioned | target: entriesFromBlock (same file, called twice)
+packages/dev-script/deps-cube/src/deck-accessors.ts:4 | downgraded-link | current: "the current `AppState`" | target: AppState (packages/dev-script/deps-cube/src/scripts/state.ts)
+packages/dev-script/deps-cube/src/deck-config.ts:212 | downgraded-link | current: "@param state - Current `AppState`." | target: AppState (packages/dev-script/deps-cube/src/scripts/state.ts)
+packages/dev-script/deps-cube/src/deck-geometries.ts:48,249 | downgraded-link | current: "matches `SPHERE_NLAT`"; "x `SQRT_3_INV`" | target: SPHERE_NLAT, SQRT_3_INV (same file)
+packages/dev-script/deps-cube/src/deck-layers-ticks.ts:6,63 | downgraded-link/missing-reference | current: "`PathDatum` accessor from deck-layers.ts"; computeAxisGeometry not named | target: PathDatum, computeAxisGeometry (packages/dev-script/deps-cube/src/deck-layers.ts)
+packages/dev-script/deps-cube/src/deck-textures.ts:290,344 | downgraded-link | current: backtick MIN_FONT_SIZE_PX/FONT_SIZE_PX/SPHERE_SLOT_FILL_FRACTION/SPHERE_REPETITIONS mentions | target: same names (same file)
+packages/dev-script/deps-cube/src/probe-field-types.ts:41 | downgraded-link | current: "yields `REPO_UNPARSEABLE` rather than a nullish union" | target: REPO_UNPARSEABLE (packages/dev-script/deps-cube/src/probe-field-parsers.ts)
+packages/dev-script/deps-cube/src/probe-fields.ts:79,149,196,276,356 | downgraded-link/missing-reference | current: backtick HTTP_TIMEOUT_MS/CACHE_MISS mentions (TTL_MS right beside is already a proper {@link}); caughtErrorMessage not named at 3 sites | target: HTTP_TIMEOUT_MS (same file), CACHE_MISS (packages/dev-script/deps-cube/src/cache.ts), caughtErrorMessage (packages/dev-script/deps-cube/src/error-format.ts)
+packages/dev-script/deps-cube/src/probe-transitive.ts:69 | missing-reference | current: not mentioned | target: caughtErrorMessage (packages/dev-script/deps-cube/src/error-format.ts)
+packages/dev-script/deps-cube/src/render-controls.ts:361 | downgraded-link | current: "String form of `RANGE_STEP`" | target: RANGE_STEP (same file)
+packages/dev-script/deps-cube/src/scripts/controller-range-events.ts:131 | downgraded-link | current: "Narrowed `DataDimKey` matching raw" | target: DataDimKey (packages/dev-script/deps-cube/src/scripts/filter.ts)
+packages/dev-script/deps-cube/src/scripts/controller.ts:297,310 | downgraded-link | current: "Builds the initial `Session`..."; "Initial `AppState`..." | target: Session (same file), AppState (packages/dev-script/deps-cube/src/scripts/state.ts)
+packages/dev-script/deps-cube/src/scripts/filter.ts:11,418,467 | downgraded-link/missing-reference | current: backtick PackageProbe/ChannelKey mentions; caughtErrorMessage not named | target: PackageProbe (packages/dev-script/deps-cube/src/probe.ts), ChannelKey (same file), caughtErrorMessage (packages/dev-script/deps-cube/src/error-format.ts)
+packages/dev-script/deps-cube/src/scripts/state.ts:260,266,294,339,345,368,386 | downgraded-link/missing-reference | current: backtick DEFAULT_TOGGLES/AppState mentions (5x AppState in this file alone); caughtErrorMessage not named | target: DEFAULT_TOGGLES, AppState (same file), caughtErrorMessage (packages/dev-script/deps-cube/src/error-format.ts)
+packages/pi/current-time-context/src/format-time-context.ts:29 | missing-reference | current: "delegating to the shared formatter" (unnamed) | target: formatTimeContext (packages/module/current-time-context/src)
+packages/pi/current-time-context/src/mise.verify-extension.ts:63 | missing-reference | current: not mentioned | target: fakePiApi, createBeforeAgentStartEvent, createExtensionContext, getBeforeAgentStartHandler (packages/pi/current-time-context/src/pi-test-harness.ts), isTimeContextContent (packages/pi/current-time-context/src/time-context-shape.ts)
+```
 
 ## Batch 13 (page-weight, logger, hall-monitor, android-exempt-unused, build-tool/css, pipe, matrix, tofu, typeface/aquaticat, import-attributes, config/tsdown, rgffplay, prompt-time)
 

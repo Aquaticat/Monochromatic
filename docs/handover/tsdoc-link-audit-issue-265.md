@@ -185,11 +185,11 @@ them from the package-to-batch mapping below plus
 | 09 | done, task-util, mcp/stdio | a102680557ea5e8a9 | running |
 | 10 | morph-compact, advisor, module/test, image-diff, test-support | a45d6464be450676a | running |
 | 11 | doodle-widget, claude-code-plugins/source, catalog-tighten | a43019c52544dcb94 | running |
-| 12 | deps-cube, git-clone-size, current-time-context, oxlint-plugins/shared | a67f97dc2d73bf0d2 | running |
+| 12 | deps-cube, git-clone-size, current-time-context, oxlint-plugins/shared | a67f97dc2d73bf0d2 | done, 50 findings |
 | 13 | page-weight, logger, hall-monitor, android-exempt-unused, build-tool/css, pipe, matrix, tofu, aquaticat (typeface), import-attributes, config/tsdown, rgffplay, prompt-time | a7c1304125f5a7feb | running |
 | 14 | terminal-exec, hyperscript, rss, config/oxlint, kv-store, fs-path, hook-types, or-throw, session-start-housekeeping | a310a6a4a89c3ec6f | running |
 | 15 | vmsync, spawn, figma kiwi, figma penpot, pi/statusline, llm-types | a7c2305b8b17293df | running |
-| 16 | terminal-title, vm-builder, catalog-tighten.matrix, forbidden-strings, dom, claude-code-plugins/statusline, thinking-defaults, mcp/mvm, syllable-break-demo, const, memoize, token-count, observable, runtime-error/bun, function-arity, pi/current-time-context, guardrail, root config files | not yet launched | pending |
+| 16 | terminal-title, vm-builder, catalog-tighten.matrix, forbidden-strings, dom, claude-code-plugins/statusline, thinking-defaults, mcp/mvm, syllable-break-demo, const, memoize, token-count, observable, runtime-error/bun, function-arity, module/current-time-context, guardrail, root config files | abe1a6f6fcb46d1cf | running |
 
 Rule: never have more than 8 batches running at once. Launch the next
 queued batch as soon as a running one completes.
