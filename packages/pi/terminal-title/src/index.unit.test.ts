@@ -199,6 +199,72 @@ await describe({
       },
     },),
 
+    it({
+      name: 'keeps out-of-order tool endings tied to call ids',
+      fn: async () => {
+        const { api, registrations, } = createMockApi();
+        terminalTitle(api,);
+        const { ctx, titles, } = createMockContext();
+
+        const startHandler = getHandler({ registrations, event: 'tool_execution_start', },);
+        const endHandler = getHandler({ registrations, event: 'tool_execution_end', },);
+        startHandler(
+          { toolCallId: 'call-1', toolName: 'bash', args: { command: 'ls -l', }, },
+          ctx,
+        );
+        startHandler(
+          { toolCallId: 'call-2', toolName: 'bash', args: { command: 'pwd', }, },
+          ctx,
+        );
+        endHandler(
+          { toolCallId: 'call-2', toolName: 'bash', result: {}, isError: false, },
+          ctx,
+        );
+        endHandler(
+          { toolCallId: 'call-1', toolName: 'bash', result: {}, isError: false, },
+          ctx,
+        );
+
+        expect(titles,).toStrictEqual([
+          'π ls -l',
+          'π pwd',
+          'π pwd',
+          'π ls -l',
+        ],);
+      },
+    },),
+
+    it({
+      name: 'clears cached args on session shutdown',
+      fn: async () => {
+        const { api, registrations, } = createMockApi();
+        terminalTitle(api,);
+        const { ctx, titles, } = createMockContext();
+
+        const startHandler = getHandler({ registrations, event: 'tool_execution_start', },);
+        const shutdownHandler = getHandler({ registrations, event: 'session_shutdown', },);
+        const endHandler = getHandler({ registrations, event: 'tool_execution_end', },);
+        startHandler(
+          { toolCallId: 'call-1', toolName: 'bash', args: { command: 'ls -l', }, },
+          ctx,
+        );
+        shutdownHandler(
+          { type: 'session_shutdown', reason: 'quit', } as SessionShutdownEvent,
+          ctx,
+        );
+        endHandler(
+          { toolCallId: 'call-1', toolName: 'bash', result: {}, isError: false, },
+          ctx,
+        );
+
+        expect(titles,).toStrictEqual([
+          'π ls -l',
+          'π Session ended',
+          'π Ran command',
+        ],);
+      },
+    },),
+
     //endregion tool_execution_end handler
 
     //region session_start handler

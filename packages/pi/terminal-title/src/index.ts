@@ -56,7 +56,6 @@ type ToolExecutionStartEvent = {
 type ToolExecutionEndEvent = {
   readonly toolCallId?: string;
   readonly toolName: string;
-  readonly args?: unknown;
 };
 
 //region Tool argument helpers
@@ -171,12 +170,10 @@ export default function terminalTitle(pi: ExtensionAPI,): void {
         ? undefined
         : toolArgsByCallId.get(event.toolCallId,);
       /**
-       * Completion args when present, otherwise cached start args, otherwise empty fallback.
+       * Completion title args from start-event cache, or empty fallback when no matching start exists.
        */
-      const args = event.args === undefined
-        ? cachedArgs
-          ?? EMPTY_TOOL_ARGS
-        : toolArgsFromUnknown(event.args,);
+      const args = cachedArgs
+        ?? EMPTY_TOOL_ARGS;
       if (event.toolCallId !== undefined)
         toolArgsByCallId.delete(event.toolCallId,);
       ctx.ui
@@ -197,6 +194,7 @@ export default function terminalTitle(pi: ExtensionAPI,): void {
       event: Readonly<Pick<SessionStartEvent, 'reason'>>,
       ctx: TitleContext,
     ) {
+      toolArgsByCallId.clear();
       ctx.ui
         .setTitle(
         titleForEvent({
@@ -214,6 +212,7 @@ export default function terminalTitle(pi: ExtensionAPI,): void {
       _event: Readonly<Pick<SessionShutdownEvent, 'type'>>,
       ctx: TitleContext,
     ) {
+      toolArgsByCallId.clear();
       ctx.ui
         .setTitle(
         titleForEvent({
@@ -229,6 +228,7 @@ export default function terminalTitle(pi: ExtensionAPI,): void {
       _event: Readonly<Pick<AgentEndEvent, 'type'>>,
       ctx: TitleContext,
     ) {
+      toolArgsByCallId.clear();
       ctx.ui
         .setTitle(
         titleForEvent({
