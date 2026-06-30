@@ -36,12 +36,12 @@ import type {
 //region Public API
 
 /**
- * Agent message type accepted by pi's LLM conversion helper.
+ * Agent message type accepted by {@link convertToLlm}, pi's LLM conversion helper.
  */
 type AdvisorAgentMessage = Parameters<typeof convertToLlm>[0][number];
 
 /**
- * Sentinel returned by {@link entryToMessage} / `filterMessage` when a session
+ * Sentinel returned by {@link entryToMessage} / {@link filterMessage} when a session
  * entry contributes no message to Advisor context (filtered Advisor artifact,
  * current tool call, or empty content). A `unique symbol`; callers narrow with
  * `=== MESSAGE_EXCLUDED`.

@@ -19,7 +19,7 @@ import {
 import type { AdvisorConfig, } from './types.ts';
 
 /**
- * Sentinel returned by `loadConfigFile` when a config scope's file is absent.
+ * Sentinel returned by {@link loadConfigFile} when a config scope's file is absent.
  * A `unique symbol`; callers narrow with `=== NO_CONFIG_FILE`.
  */
 const NO_CONFIG_FILE: unique symbol = Symbol('advisor/no-config-file',);
@@ -162,7 +162,7 @@ export function getConfigPaths(
  *
  * @param defaults - default runtime config
  *
- * @param configs - config files in merge order
+ * @param configs - config files in merge order, with {@link NO_CONFIG_FILE} entries skipped
  *
  * @returns merged runtime config without source metadata
  */
