@@ -51,7 +51,9 @@ const COLOR_OUTLINE = cssOklch({
 },);
 
 /**
- * Generates the complete CSS stylesheet for the syllable break demo.
+ * Generates the complete CSS stylesheet for the syllable break demo, using
+ * {@link COLOR_MUTED}, {@link COLOR_MUTED_LIGHT}, {@link COLOR_FAINT}, and
+ * {@link COLOR_OUTLINE} for its palette.
  *
  * @returns minified CSS string
  *

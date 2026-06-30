@@ -128,7 +128,7 @@ function renderColumn(
 }
 
 /**
- * Renders the three side-by-side comparison columns.
+ * Renders the three side-by-side comparison columns, each via {@link renderColumn}.
  *
  * @returns HTML string for the columns section
  */
@@ -160,7 +160,8 @@ function renderColumns(): string {
 }
 
 /**
- * Renders the complete HTML document with all content inlined.
+ * Renders the complete HTML document with all content inlined, combining
+ * {@link renderControls} and {@link renderColumns}.
  *
  * @param css - CSS stylesheet string
  *

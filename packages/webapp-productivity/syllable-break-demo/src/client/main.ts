@@ -15,9 +15,9 @@ const ZWS = '\u200B';
 /**
  * Inserts zero-width spaces at syllable boundaries in the given text.
  *
- * Uses TeX hyphenation patterns (via the `hyphen` library) to find syllable
- * boundaries, but replaces the default soft hyphen with a zero-width space
- * so the browser can break there without rendering a visible hyphen.
+ * Uses TeX hyphenation patterns (via {@link hyphenateSync}) to find syllable
+ * boundaries, but replaces the default soft hyphen with a {@link ZWS} so the
+ * browser can break there without rendering a visible hyphen.
  *
  * @param text - plain text to process
  *
@@ -37,7 +37,8 @@ function insertBreakOpportunities(text: string,): string {
 }
 
 /**
- * Updates all output containers with hyphenated and plain versions of the input text.
+ * Updates all output containers with hyphenated (via {@link insertBreakOpportunities})
+ * and plain versions of the input text.
  *
  * @param text - raw user input
  */
