@@ -6,7 +6,7 @@ import { hXml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
 /**
  * Generates libvirt domain XML for the dev VM.
- * Uses h-xml with SPICE graphics, virtio disk and NIC, UEFI boot,
+ * Uses {@link hXml} with SPICE graphics, virtio disk and NIC, UEFI boot,
  * and host-passthrough CPU.
  *
  * @param name - Libvirt domain name

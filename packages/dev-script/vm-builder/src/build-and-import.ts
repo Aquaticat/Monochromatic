@@ -271,7 +271,8 @@ async function fixOwnership(): Promise<void> {
 
 /**
  * Destroys and undefines an existing libvirt domain if it exists.
- * No-op when the domain is not defined.
+ * No-op when the domain is not defined; the existence probe's failure is
+ * logged via {@link caughtErrorMessage}.
  * Forcibly destroys a running domain before undefining to avoid an "active domain" error.
  *
  * @param name - Libvirt domain name to remove
@@ -334,7 +335,8 @@ async function undefineVmIfExists(name: string,): Promise<void> {
 
 /**
  * Imports the qcow2 disk image into libvirt as a new domain.
- * Writes domain XML to a file and defines it via `virsh define`.
+ * Writes domain XML rendered by {@link generateDomainXml} to a file and
+ * defines it via `virsh define`.
  * The VM is registered but not started; open virt-manager or run
  * `virsh --connect qemu:///session start <name>` to boot it.
  *
@@ -376,7 +378,8 @@ async function importVm(name: string,): Promise<void> {
 /**
  * Grants the virt-manager Flatpak read-write access to {@link OUTPUT_DIR}
  * so QEMU (launched by the Flatpak) can open and write to the qcow2 disk image.
- * No-op if virt-manager is not installed as a Flatpak.
+ * No-op if virt-manager is not installed as a Flatpak; the probe's failure
+ * is logged via {@link caughtErrorMessage}.
  */
 async function grantFlatpakAccess(): Promise<void> {
   try {
@@ -410,7 +413,7 @@ async function grantFlatpakAccess(): Promise<void> {
 }
 
 /**
- * Copies the built qcow2 to `/var/lib/libvirt/images/` where SELinux
+ * Copies the built qcow2 to {@link LIBVIRT_IMAGES_DIR} where SELinux
  * labels it `virt_image_t`, allowing QEMU to access it.
  */
 async function copyToLibvirtImages(): Promise<void> {

@@ -127,7 +127,8 @@ async function run(
 
 /**
  * Destroys and undefines an existing libvirt domain if it exists.
- * No-op when the domain is not defined.
+ * No-op when the domain is not defined; the existence probe's failure is
+ * logged via {@link caughtErrorMessage}.
  *
  * @param name - Libvirt domain name to remove
  */
@@ -187,7 +188,8 @@ async function undefineVmIfExists(name: string,): Promise<void> {
 }
 
 /**
- * Imports the qcow2 disk image into libvirt.
+ * Imports the qcow2 disk image into libvirt using XML rendered by
+ * {@link generateDomainXml}.
  *
  * @param name - Libvirt domain name to create
  */
@@ -226,7 +228,8 @@ async function importVm(name: string,): Promise<void> {
 
 /**
  * Grants the virt-manager Flatpak read-write access to {@link OUTPUT_DIR}.
- * No-op if virt-manager is not installed as a Flatpak.
+ * No-op if virt-manager is not installed as a Flatpak; the probe's failure
+ * is logged via {@link caughtErrorMessage}.
  */
 async function grantFlatpakAccess(): Promise<void> {
   try {
@@ -259,9 +262,9 @@ async function grantFlatpakAccess(): Promise<void> {
 }
 
 /**
- * Copies the built qcow2 to `/var/lib/libvirt/images/` where SELinux
+ * Copies the built qcow2 to {@link LIBVIRT_IMAGES_DIR} where SELinux
  * labels it `virt_image_t`, allowing QEMU to access it.
- * Uses `sudo cp` because `/var/lib/libvirt/images/` is root-owned,
+ * Uses `sudo cp` because {@link LIBVIRT_IMAGES_DIR} is root-owned,
  * then restores ownership to the current user.
  */
 async function copyToLibvirtImages(): Promise<void> {

@@ -85,7 +85,7 @@ async function run(
 }
 
 /**
- * Tags the local image for GHCR and pushes it.
+ * Tags the local {@link IMAGE_TAG} image as {@link GHCR_TAG} and pushes it.
  */
 async function pushImage(): Promise<void> {
   console.log(`[vm-builder] tagging ${IMAGE_TAG} as ${GHCR_TAG}...`,);
@@ -111,8 +111,8 @@ async function pushImage(): Promise<void> {
 }
 
 /**
- * Signs the pushed image with cosign.
- * The signature is stored as an OCI artifact in the same GHCR repository.
+ * Signs the pushed image with cosign using {@link COSIGN_KEY}.
+ * The signature is stored as an OCI artifact in the same {@link GHCR_TAG} repository.
  */
 async function signImage(): Promise<void> {
   console.log('[vm-builder] signing image with cosign...',);
