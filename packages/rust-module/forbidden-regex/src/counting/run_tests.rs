@@ -22,8 +22,8 @@ use crate::parse::parse;
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function oracle(/* args */) {
-//   // body documented in Rust
+// function oracle(pattern: string): impl Fn(&[u8]) -> bool {
+//   // Rust body below is the implementation.
 // }
 // ```
 fn oracle(pattern: &str) -> impl Fn(&[u8]) -> bool {
@@ -38,8 +38,8 @@ fn oracle(pattern: &str) -> impl Fn(&[u8]) -> bool {
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function linear(/* args */) {
-//   // body documented in Rust
+// function linear(pattern: string): CountingNfa {
+//   // Rust body below is the implementation.
 // }
 // ```
 fn linear(pattern: &str) -> CountingNfa {
@@ -53,8 +53,8 @@ fn linear(pattern: &str) -> CountingNfa {
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function linear_agrees_with_oracle(/* args */) {
-//   // body documented in Rust
+// function linear_agrees_with_oracle(): void {
+//   // Rust body below is the implementation.
 // }
 // ```
 #[test]
@@ -122,8 +122,8 @@ fn linear_agrees_with_oracle() {
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function counted_key_stays_small(/* args */) {
-//   // body documented in Rust
+// function counted_key_stays_small(): void {
+//   // Rust body below is the implementation.
 // }
 // ```
 #[test]
@@ -152,8 +152,8 @@ fn counted_key_stays_small() {
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function counted_bound_is_exact(/* args */) {
-//   // body documented in Rust
+// function counted_bound_is_exact(): void {
+//   // Rust body below is the implementation.
 // }
 // ```
 #[test]
@@ -181,8 +181,8 @@ fn counted_bound_is_exact() {
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function a_count_past_one_word_is_sized_correctly(/* args */) {
-//   // body documented in Rust
+// function a_count_past_one_word_is_sized_correctly(): void {
+//   // Rust body below is the implementation.
 // }
 // ```
 #[test]

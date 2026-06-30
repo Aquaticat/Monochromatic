@@ -1,11 +1,12 @@
 // What:  unit tests for grouping literal-free rules into union DFAs.
-// Why:   after the fold this path is rarely used (most literal-free rules join the gate),
-//        but it remains the fallback for a rule with no usable filter, and a union DFA
-//        must match if ANY of its members matches as a substring.
+// Why:     This file groups the group test cases so behavior changes fail near the code path
+//          they protect.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// import { /* names from this Rust use line */ } from "./module";
+// describe("group", () => {
+//   // test cases below
+// });
 // ```
 
 use super::group_seedless;

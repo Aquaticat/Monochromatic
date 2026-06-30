@@ -1,11 +1,12 @@
 // What:  unit tests for CompileError's Display rendering.
-// Why:   Display is what the scanner surfaces to a human when a rule is rejected; an
-//        empty or wrong message would make a rejected rule undiagnosable, so each
-//        variant must render a non-empty, descriptive line.
+// Why:     This file groups the error test cases so behavior changes fail near the code path
+//          they protect.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// import { /* names from this Rust use line */ } from "./module";
+// describe("error", () => {
+//   // test cases below
+// });
 // ```
 
 use super::CompileError;

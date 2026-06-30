@@ -1,13 +1,12 @@
 // What:  unit tests for the two-byte composed Sheng kernel.
-// Why:   the kernel advances two bytes per permute and folds both positions' acceptance
-//        into one pair table, with a trailing-odd-byte and end-of-input tail; the only
-//        thing that makes it safe is that every verdict equals the scalar is_match, so
-//        each test builds a real position-independent search DFA and checks agreement on
-//        even- and odd-length lines, substring hits, misses, and the empty line.
+// Why:     This file groups the sheng2 test cases so behavior changes fail near the code path
+//          they protect.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// import { /* names from this Rust use line */ } from "./module";
+// describe("sheng2", () => {
+//   // test cases below
+// });
 // ```
 
 use crate::ast::node::Node;
@@ -22,8 +21,8 @@ use crate::parse::parse;
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function search_dfa(/* args */) {
-//   // body documented in Rust
+// function search_dfa(pattern: string): Dfa {
+//   // Rust body below is the implementation.
 // }
 // ```
 fn search_dfa(pattern: &str) -> Dfa {
@@ -37,8 +36,8 @@ fn search_dfa(pattern: &str) -> Dfa {
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function sheng2_agrees(/* args */) {
-//   // body documented in Rust
+// function sheng2_agrees(pattern: string, lines: Uint8Array[]): void {
+//   // Rust body below is the implementation.
 // }
 // ```
 fn sheng2_agrees(pattern: &str, lines: &[&[u8]]) {
@@ -117,8 +116,8 @@ fn a_match_ending_at_an_odd_offset_is_accumulated() {
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function flat_dfa(/* args */) {
-//   // body documented in Rust
+// function flat_dfa(num_states: number, nclasses: number): Dfa {
+//   // Rust body below is the implementation.
 // }
 // ```
 fn flat_dfa(num_states: u16, nclasses: u32) -> Dfa {

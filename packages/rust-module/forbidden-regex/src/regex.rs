@@ -8,104 +8,111 @@
 //! ```
 
 /// What:    Imports the serde derives for persisting compiled matchers.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `Deserialize`, `Serialize` directly; importing from `serde`
+///          keeps each call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { Deserialize, Serialize } from "serde";
 /// ```
 use serde::{Deserialize, Serialize};
 
 /// What:    Imports the node algebra used by the rule sink's node lists.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `Node` directly; importing from `crate/ast/node` keeps each call
+///          site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { Node } from "crate/ast/node";
 /// ```
 use crate::ast::node::Node;
 
 /// What:    Imports the byte set used for the line-start first-byte fast reject.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `ByteSet` directly; importing from `crate/charset` keeps each
+///          call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { ByteSet } from "crate/charset";
 /// ```
 use crate::charset::ByteSet;
 
 /// What:    Imports the rule construction, the seedless fold, and the line-start matcher.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `BuiltRule`, `build_engine`, `build_rule`,
+///          `build_seedless_union`, `line_start_match` directly; importing from `crate/build`
+///          keeps each call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import {
+///   BuiltRule,
+///   build_engine,
+///   build_rule,
+///   build_seedless_union,
+///   line_start_match,
+/// } from "crate/build";
 /// ```
 use crate::build::{
     BuiltRule, build_engine, build_rule, build_seedless_union, line_start_match,
 };
 
 /// What:    Imports the seedless-rule grouping into union DFAs.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `group_seedless` directly; importing from `crate/group` keeps
+///          each call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { group_seedless } from "crate/group";
 /// ```
 use crate::group::group_seedless;
 
 /// What:    Imports the counting NFA type for the seedless-union oracle.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `CountingNfa` directly; importing from `crate/counting` keeps
+///          each call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { CountingNfa } from "crate/counting";
 /// ```
 use crate::counting::CountingNfa;
 
 /// What:    Imports the per-pattern back-end.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `Engine` directly; importing from `crate/engine` keeps each call
+///          site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { Engine } from "crate/engine";
 /// ```
 use crate::engine::Engine;
 
 /// What:    Imports the error type.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `CompileError` directly; importing from `crate/error` keeps each
+///          call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { CompileError } from "crate/error";
 /// ```
 use crate::error::CompileError;
 
 /// What:    Imports the RegexSet-level combined literal prefilter.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `SetGate` directly; importing from `crate/gate` keeps each call
+///          site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { SetGate } from "crate/gate";
 /// ```
 use crate::gate::SetGate;
 
 /// What:    Imports the parser entry point.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `parse` directly; importing from `crate/parse` keeps each call
+///          site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { parse } from "crate/parse";
 /// ```
 use crate::parse::parse;
 
@@ -133,12 +140,12 @@ mod batch;
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Regex {
     /// What:    The compiled back-end for this pattern.
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `engine` stores the compiled back-end for this pattern, so matcher code reads
+    ///          that precomputed state by name instead of recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// engine: unknown;
+    /// engine: Engine;
     /// ```
     engine: Engine,
 }
@@ -158,8 +165,8 @@ impl Regex {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function is_match(/* args */) {
-    ///   // body documented in Rust
+    /// function is_match(line: Uint8Array): boolean {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     pub fn is_match(&self, line: &[u8]) -> bool {
@@ -173,8 +180,8 @@ impl Regex {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function to_bytes(/* args */) {
-    ///   // body documented in Rust
+    /// function to_bytes(): number[] {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     pub fn to_bytes(&self) -> Result<Vec<u8>, CompileError> {
@@ -190,8 +197,8 @@ impl Regex {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function from_bytes(/* args */) {
-    ///   // body documented in Rust
+    /// function from_bytes(bytes: Uint8Array): Regex {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     pub fn from_bytes(bytes: &[u8]) -> Result<Regex, CompileError> {
@@ -217,8 +224,8 @@ impl Regex {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function compile(/* args */) {
-///   // body documented in Rust
+/// function compile(pattern: string): Regex {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 pub fn compile(pattern: &str) -> Result<Regex, CompileError> {
@@ -248,36 +255,40 @@ pub fn compile(pattern: &str) -> Result<Regex, CompileError> {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RegexSet {
     /// What:    Per-rule substring engines, indexed by rule id.
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `rules` stores per-rule substring engines, indexed by rule id, so matcher code
+    ///          reads that precomputed state by name instead of recomputing or passing it
+    ///          separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// rules: unknown[];
+    /// rules: Engine[];
     /// ```
     rules: Vec<Engine>,
     /// What:    Per-rule anchored DFA, when the seed is the rule's leading literal, else
     ///          `None`.
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `anchored` stores per-rule anchored DFA, when the seed is the rule's leading
+    ///          literal, else `None`, so matcher code reads that precomputed state by name
+    ///          instead of recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// anchored: unknown | null[];
+    /// anchored: Engine | null[];
     /// ```
     anchored: Vec<Option<Engine>>,
     /// What:    Anchored DFAs for `^`-anchored rules, checked at every line start.
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `line_start` stores anchored DFAs for `^`-anchored rules, checked at every line
+    ///          start, so matcher code reads that precomputed state by name instead of
+    ///          recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// line_start: unknown[];
+    /// line_start: Engine[];
     /// ```
     line_start: Vec<Engine>,
     /// What:    Rule ids paired with `line_start`, for rule-id attribution.
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `line_start_ids` stores rule ids paired with `line_start`, for rule-id
+    ///          attribution, so matcher code reads that precomputed state by name instead of
+    ///          recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -289,18 +300,22 @@ pub struct RegexSet {
     /// What: the union of every line-start rule's possible first bytes, rebuilt on load
     /// (not serialized). Why: a line-start rule matches only at position zero, so unless
     /// `line[0]` is in this set the anchored checks are skipped in one byte test.
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `line_start_first` stores the union of every line-start rule's possible first
+    ///          bytes, rebuilt on load (not serialized). Why: a line-start rule matches only at
+    ///          position zero, so unless `line[0]` is in this set the anchored checks are
+    ///          skipped in one byte test, so matcher code reads that precomputed state by name
+    ///          instead of recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// line_start_first: unknown;
+    /// line_start_first: ByteSet;
     /// ```
     #[serde(skip)]
     line_start_first: ByteSet,
     /// What:    Ids of the literal-free rules, run against every line for rule-id attribution.
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `seedless_ids` stores ids of the literal-free rules, run against every line for
+    ///          rule-id attribution, so matcher code reads that precomputed state by name
+    ///          instead of recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -308,12 +323,13 @@ pub struct RegexSet {
     /// ```
     seedless_ids: Vec<usize>,
     /// What:    Union DFAs over groups of the literal-free rules, for the boolean fast path.
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `seedless_groups` stores union DFAs over groups of the literal-free rules, for
+    ///          the boolean fast path, so matcher code reads that precomputed state by name
+    ///          instead of recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// seedless_groups: unknown[];
+    /// seedless_groups: Engine[];
     /// ```
     seedless_groups: Vec<Engine>,
     /// Single counting automaton over the literal-free rules (CsA measurement path).
@@ -322,21 +338,26 @@ pub struct RegexSet {
     /// rule, `None` when a seedless rule needs the product back-end. Why: lets the
     /// bench measure one counting pass against the unrolled DFA groups, to see whether
     /// folding the literal-free rules into a single counting traversal beats them.
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `seedless_union` stores one counting NFA over the alternation of every
+    ///          NFA-expressible seedless rule, `None` when a seedless rule needs the product
+    ///          back-end. Why: lets the bench measure one counting pass against the unrolled DFA
+    ///          groups, to see whether folding the literal-free rules into a single counting
+    ///          traversal beats them, so matcher code reads that precomputed state by name
+    ///          instead of recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// seedless_union: unknown | null;
+    /// seedless_union: CountingNfa | null;
     /// ```
     seedless_union: Option<CountingNfa>,
     /// What:    Combined required-literal gate over the seeded rules (never serialized).
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `gate` stores combined required-literal gate over the seeded rules (never
+    ///          serialized), so matcher code reads that precomputed state by name instead of
+    ///          recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// gate: unknown;
+    /// gate: SetGate;
     /// ```
     #[serde(skip)]
     gate: SetGate,
@@ -357,35 +378,37 @@ pub struct RegexSet {
 #[derive(Default)]
 struct RuleSink {
     /// What:    Per-rule engines, indexed by rule id.
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `rules` stores per-rule engines, indexed by rule id, so matcher code reads that
+    ///          precomputed state by name instead of recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// rules: unknown[];
+    /// rules: Engine[];
     /// ```
     rules: Vec<Engine>,
     /// What:    Per-rule anchored DFA at a leading-seed hit, or `None`.
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `anchored` stores per-rule anchored DFA at a leading-seed hit, or `None`, so
+    ///          matcher code reads that precomputed state by name instead of recomputing or
+    ///          passing it separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// anchored: unknown | null[];
+    /// anchored: Engine | null[];
     /// ```
     anchored: Vec<Option<Engine>>,
     /// What:    Anchored DFAs for `^`-anchored line-start rules.
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `line_start` stores anchored DFAs for `^`-anchored line-start rules, so matcher
+    ///          code reads that precomputed state by name instead of recomputing or passing it
+    ///          separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// line_start: unknown[];
+    /// line_start: Engine[];
     /// ```
     line_start: Vec<Engine>,
     /// What:    Rule ids paired with `line_start`.
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `line_start_ids` stores rule ids paired with `line_start`, so matcher code reads
+    ///          that precomputed state by name instead of recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -393,8 +416,9 @@ struct RuleSink {
     /// ```
     line_start_ids: Vec<usize>,
     /// What:    Ids of the truly-seedless rules (handled by the union DFAs).
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `seedless_ids` stores ids of the truly-seedless rules (handled by the union
+    ///          DFAs), so matcher code reads that precomputed state by name instead of
+    ///          recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -402,21 +426,23 @@ struct RuleSink {
     /// ```
     seedless_ids: Vec<usize>,
     /// What:    Nodes of the truly-seedless rules, combined into union DFAs.
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `seedless_nodes` stores nodes of the truly-seedless rules, combined into union
+    ///          DFAs, so matcher code reads that precomputed state by name instead of
+    ///          recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// seedless_nodes: unknown[];
+    /// seedless_nodes: Node[];
     /// ```
     seedless_nodes: Vec<Node>,
     /// What:    Nodes seedless at the default floor, combined into the oracle counting union.
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `reference_nodes` stores nodes seedless at the default floor, combined into the
+    ///          oracle counting union, so matcher code reads that precomputed state by name
+    ///          instead of recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// reference_nodes: unknown[];
+    /// reference_nodes: Node[];
     /// ```
     reference_nodes: Vec<Node>,
 }
@@ -438,8 +464,8 @@ impl RuleSink {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function push(/* args */) {
-    ///   // body documented in Rust
+    /// function push(built: BuiltRule): void {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     fn push(&mut self, built: BuiltRule) {
@@ -469,8 +495,8 @@ impl RuleSink {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function assemble(/* args */) {
-    ///   // body documented in Rust
+    /// function assemble(): RegexSet {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     fn assemble(self) -> RegexSet {
@@ -505,12 +531,13 @@ impl RuleSink {
 /// ```
 struct CheckedFull {
     /// What:    Bit `r` set means rule `r` has already had its whole-line check this line.
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `bits` stores bit `r` set means rule `r` has already had its whole-line check
+    ///          this line, so matcher code reads that precomputed state by name instead of
+    ///          recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// bits: unknown[];
+    /// bits: number[];
     /// ```
     bits: [u64; 4],
 }
@@ -530,8 +557,8 @@ impl CheckedFull {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function new(/* args */) {
-    ///   // body documented in Rust
+    /// function new(): CheckedFull {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     fn new() -> CheckedFull {
@@ -546,8 +573,8 @@ impl CheckedFull {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function first_time(/* args */) {
-    ///   // body documented in Rust
+    /// function first_time(rule: number): boolean {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     fn first_time(&mut self, rule: usize) -> bool {
@@ -577,8 +604,8 @@ impl RegexSet {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function new(/* args */) {
-    ///   // body documented in Rust
+    /// function new(patterns: S[]): RegexSet {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     pub fn new<S: AsRef<str>>(patterns: &[S]) -> Result<RegexSet, CompileError> {
@@ -597,8 +624,8 @@ impl RegexSet {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function prepare(/* args */) {
-    ///   // body documented in Rust
+    /// function prepare(): void {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     fn prepare(&mut self) {
@@ -619,8 +646,8 @@ impl RegexSet {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function compile_lenient(/* args */) {
-    ///   // body documented in Rust
+    /// function compile_lenient(patterns: S[]): (RegexSet, Vec<usize>) {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     pub fn compile_lenient<S: AsRef<str>>(patterns: &[S]) -> (RegexSet, Vec<usize>) {
@@ -643,8 +670,8 @@ impl RegexSet {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function from_ruleset(/* args */) {
-    ///   // body documented in Rust
+    /// function from_ruleset(text: string, delimiter: string): RegexSet {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     pub fn from_ruleset(text: &str, delimiter: &str) -> Result<RegexSet, CompileError> {
@@ -665,8 +692,8 @@ impl RegexSet {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function is_match(/* args */) {
-    ///   // body documented in Rust
+    /// function is_match(line: Uint8Array): boolean {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     pub fn is_match(&self, line: &[u8]) -> bool {
@@ -693,8 +720,8 @@ impl RegexSet {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function line_start_candidate(/* args */) {
-    ///   // body documented in Rust
+    /// function line_start_candidate(line: Uint8Array): boolean {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     fn line_start_candidate(&self, line: &[u8]) -> bool {
@@ -711,8 +738,8 @@ impl RegexSet {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function matches_rule(/* args */) {
-    ///   // body documented in Rust
+    /// function matches_rule(line: Uint8Array, rule: number, pos: number, checked: CheckedFull): boolean {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     fn matches_rule(&self, line: &[u8], rule: usize, pos: usize, checked: &mut CheckedFull) -> bool {
@@ -729,8 +756,8 @@ impl RegexSet {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function matches(/* args */) {
-    ///   // body documented in Rust
+    /// function matches(line: Uint8Array): Iterable<number> {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     pub fn matches(&self, line: &[u8]) -> impl Iterator<Item = usize> {
@@ -765,8 +792,8 @@ impl RegexSet {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function gate_only_is_match(/* args */) {
-    ///   // body documented in Rust
+    /// function gate_only_is_match(line: Uint8Array): boolean {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     pub fn gate_only_is_match(&self, line: &[u8]) -> bool {
@@ -782,8 +809,8 @@ impl RegexSet {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function prefilter_only_is_match(/* args */) {
-    ///   // body documented in Rust
+    /// function prefilter_only_is_match(line: Uint8Array): boolean {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     pub fn prefilter_only_is_match(&self, line: &[u8]) -> bool {
@@ -797,8 +824,8 @@ impl RegexSet {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function candidates_only_is_match(/* args */) {
-    ///   // body documented in Rust
+    /// function candidates_only_is_match(line: Uint8Array): boolean {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     pub fn candidates_only_is_match(&self, line: &[u8]) -> bool {
@@ -813,8 +840,8 @@ impl RegexSet {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function gate_anchored_only_is_match(/* args */) {
-    ///   // body documented in Rust
+    /// function gate_anchored_only_is_match(line: Uint8Array): boolean {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     pub fn gate_anchored_only_is_match(&self, line: &[u8]) -> bool {
@@ -831,8 +858,8 @@ impl RegexSet {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function seedless_only_is_match(/* args */) {
-    ///   // body documented in Rust
+    /// function seedless_only_is_match(line: Uint8Array): boolean {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     pub fn seedless_only_is_match(&self, line: &[u8]) -> bool {
@@ -847,8 +874,8 @@ impl RegexSet {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function csa_only_is_match(/* args */) {
-    ///   // body documented in Rust
+    /// function csa_only_is_match(line: Uint8Array): boolean {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     pub fn csa_only_is_match(&self, line: &[u8]) -> bool {
@@ -862,8 +889,8 @@ impl RegexSet {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function seedless_union_size(/* args */) {
-    ///   // body documented in Rust
+    /// function seedless_union_size(): number {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     pub fn seedless_union_size(&self) -> usize {
@@ -877,8 +904,8 @@ impl RegexSet {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function anchored_count(/* args */) {
-    ///   // body documented in Rust
+    /// function anchored_count(): number {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     pub fn anchored_count(&self) -> usize {
@@ -892,8 +919,8 @@ impl RegexSet {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function seedless_group_count(/* args */) {
-    ///   // body documented in Rust
+    /// function seedless_group_count(): number {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     pub fn seedless_group_count(&self) -> usize {
@@ -907,8 +934,8 @@ impl RegexSet {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function line_start_count(/* args */) {
-    ///   // body documented in Rust
+    /// function line_start_count(): number {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     pub fn line_start_count(&self) -> usize {
@@ -922,8 +949,8 @@ impl RegexSet {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function seedless_count(/* args */) {
-    ///   // body documented in Rust
+    /// function seedless_count(): number {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     pub fn seedless_count(&self) -> usize {
@@ -936,8 +963,8 @@ impl RegexSet {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function len(/* args */) {
-    ///   // body documented in Rust
+    /// function len(): number {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     pub fn len(&self) -> usize {
@@ -950,8 +977,8 @@ impl RegexSet {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function is_empty(/* args */) {
-    ///   // body documented in Rust
+    /// function is_empty(): boolean {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     pub fn is_empty(&self) -> bool {
@@ -968,8 +995,8 @@ impl RegexSet {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function validate_structure(/* args */) {
-    ///   // body documented in Rust
+    /// function validate_structure(): void {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     fn validate_structure(&self) -> Result<(), CompileError> {
@@ -996,8 +1023,8 @@ impl RegexSet {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function to_bytes(/* args */) {
-    ///   // body documented in Rust
+    /// function to_bytes(): number[] {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     pub fn to_bytes(&self) -> Result<Vec<u8>, CompileError> {
@@ -1013,8 +1040,8 @@ impl RegexSet {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function from_bytes(/* args */) {
-    ///   // body documented in Rust
+    /// function from_bytes(bytes: Uint8Array): RegexSet {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     pub fn from_bytes(bytes: &[u8]) -> Result<RegexSet, CompileError> {

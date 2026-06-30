@@ -1,12 +1,12 @@
 // What:  unit tests for the public batch API on Regex and RegexSet.
-// Why:   is_match_batch must return exactly what calling is_match on each line returns,
-//        including across the seedless single-pattern path that routes to the Sheng
-//        permute kernel; these pin that equality and that every hidden per-kernel hook
-//        agrees, on a line set whose length is not a multiple of the batch lane count.
+// Why:     This file groups the batch test cases so behavior changes fail near the code path
+//          they protect.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// import { /* names from this Rust use line */ } from "./module";
+// describe("batch", () => {
+//   // test cases below
+// });
 // ```
 
 use crate::{RegexSet, compile};
@@ -17,8 +17,8 @@ use crate::{RegexSet, compile};
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function sample_lines(/* args */) {
-//   // body documented in Rust
+// function sample_lines(): Uint8Array[] {
+//   // Rust body below is the implementation.
 // }
 // ```
 fn sample_lines() -> Vec<&'static [u8]> {

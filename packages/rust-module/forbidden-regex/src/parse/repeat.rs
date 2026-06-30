@@ -1,6 +1,6 @@
 //! What:    Bounded repetition `{n}` and `{n,m}`, kept as a `Repeat` node.
-//! Why:     This file is the Rust module that groups the repeat implementation, so a reader
-//!          can enter the package through one named area.
+//! Why:     This file is the Rust module that groups the repeat implementation, so a reader can
+//!          enter the package through one named area.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -8,42 +8,42 @@
 //! ```
 
 /// What:    Imports the node algebra being repeated.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `Node` directly; importing from `crate/ast/node` keeps each call
+///          site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { Node } from "crate/ast/node";
 /// ```
 use crate::ast::node::Node;
 
 /// What:    Imports the smart constructor that builds the `Repeat` node.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `repeat` directly; importing from `crate/ast/smart` keeps each
+///          call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { repeat } from "crate/ast/smart";
 /// ```
 use crate::ast::smart::repeat;
 
 /// What:    Imports the error type for malformed or oversized repetitions.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `CompileError` directly; importing from `crate/error` keeps each
+///          call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { CompileError } from "crate/error";
 /// ```
 use crate::error::CompileError;
 
 /// What:    Imports the cursor.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `Cursor` directly; importing from `crate/parse/cursor` keeps
+///          each call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { Cursor } from "crate/parse/cursor";
 /// ```
 use crate::parse::cursor::Cursor;
 
@@ -55,7 +55,7 @@ use crate::parse::cursor::Cursor;
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// const REPEAT_CAP: unknown = /* value below */;
+/// const REPEAT_CAP: number = 1024;
 /// ```
 const REPEAT_CAP: usize = 1024;
 
@@ -67,8 +67,8 @@ const REPEAT_CAP: usize = 1024;
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function parse_repeat(/* args */) {
-///   // body documented in Rust
+/// function parse_repeat(cur: Cursor, atom: Node): Node {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 pub fn parse_repeat(cur: &mut Cursor, atom: Node) -> Result<Node, CompileError> {
@@ -107,8 +107,8 @@ pub fn parse_repeat(cur: &mut Cursor, atom: Node) -> Result<Node, CompileError> 
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function parse_repeat_upper(/* args */) {
-///   // body documented in Rust
+/// function parse_repeat_upper(cur: Cursor, atom: Node, n: number, pos: number): Node {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 fn parse_repeat_upper(cur: &mut Cursor, atom: Node, n: usize, pos: usize) -> Result<Node, CompileError> {
@@ -150,8 +150,8 @@ fn parse_repeat_upper(cur: &mut Cursor, atom: Node, n: usize, pos: usize) -> Res
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function parse_number(/* args */) {
-///   // body documented in Rust
+/// function parse_number(cur: Cursor, pos: number): number {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 fn parse_number(cur: &mut Cursor, pos: usize) -> Result<usize, CompileError> {
@@ -193,8 +193,8 @@ fn parse_number(cur: &mut Cursor, pos: usize) -> Result<usize, CompileError> {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function check_cap(/* args */) {
-///   // body documented in Rust
+/// function check_cap(count: number, pos: number): void {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 fn check_cap(count: usize, pos: usize) -> Result<(), CompileError> {

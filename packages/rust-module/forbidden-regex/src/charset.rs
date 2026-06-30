@@ -1,6 +1,6 @@
 //! What:    A 256-bit set of bytes, the leaf alphabet of the engine.
-//! Why:     This file is the Rust module that groups the charset implementation, so a reader
-//!          can enter the package through one named area.
+//! Why:     This file is the Rust module that groups the charset implementation, so a reader can
+//!          enter the package through one named area.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -8,12 +8,12 @@
 //! ```
 
 /// What:    Imports the serde derives so byte sets can be persisted inside a compiled program.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `Deserialize`, `Serialize` directly; importing from `serde`
+///          keeps each call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { Deserialize, Serialize } from "serde";
 /// ```
 use serde::{Deserialize, Serialize};
 
@@ -22,7 +22,7 @@ use serde::{Deserialize, Serialize};
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// const WORDS: unknown = /* value below */;
+/// const WORDS: number = 4;
 /// ```
 const WORDS: usize = 4;
 
@@ -31,7 +31,7 @@ const WORDS: usize = 4;
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// const BITS_PER_WORD: unknown = /* value below */;
+/// const BITS_PER_WORD: number = 64;
 /// ```
 const BITS_PER_WORD: usize = 64;
 
@@ -50,12 +50,13 @@ const BITS_PER_WORD: usize = 64;
 )]
 pub struct ByteSet {
     /// What:    Bitmap words; `words[b / 64]`'s bit `b % 64` is set iff `b` is present.
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `words` stores bitmap words; `words[b / 64]`'s bit `b % 64` is set iff `b` is
+    ///          present, so matcher code reads that precomputed state by name instead of
+    ///          recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// words: unknown[];
+    /// words: number[];
     /// ```
     words: [u64; WORDS],
 }
@@ -75,8 +76,8 @@ impl ByteSet {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function empty(/* args */) {
-    ///   // body documented in Rust
+    /// function empty(): Self {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     pub fn empty() -> Self {
@@ -90,8 +91,8 @@ impl ByteSet {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function all_bytes(/* args */) {
-    ///   // body documented in Rust
+    /// function all_bytes(): Self {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     pub fn all_bytes() -> Self {
@@ -104,8 +105,8 @@ impl ByteSet {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function insert(/* args */) {
-    ///   // body documented in Rust
+    /// function insert(b: number): void {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     pub fn insert(&mut self, b: u8) {
@@ -126,8 +127,8 @@ impl ByteSet {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function insert_range(/* args */) {
-    ///   // body documented in Rust
+    /// function insert_range(lo: number, hi: number): void {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     pub fn insert_range(&mut self, lo: u8, hi: u8) {
@@ -150,8 +151,8 @@ impl ByteSet {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function union_with(/* args */) {
-    ///   // body documented in Rust
+    /// function union_with(other: ByteSet): void {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     pub fn union_with(&mut self, other: &ByteSet) {
@@ -173,8 +174,8 @@ impl ByteSet {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function negate(/* args */) {
-    ///   // body documented in Rust
+    /// function negate(): ByteSet {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     pub fn negate(&self) -> ByteSet {
@@ -198,8 +199,8 @@ impl ByteSet {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function contains(/* args */) {
-    ///   // body documented in Rust
+    /// function contains(b: number): boolean {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     pub fn contains(&self, b: u8) -> bool {
@@ -213,8 +214,8 @@ impl ByteSet {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function is_empty(/* args */) {
-    ///   // body documented in Rust
+    /// function is_empty(): boolean {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     pub fn is_empty(&self) -> bool {
@@ -229,8 +230,8 @@ impl ByteSet {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function as_singleton(/* args */) {
-    ///   // body documented in Rust
+    /// function as_singleton(): number | null {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     pub fn as_singleton(&self) -> Option<u8> {
@@ -261,8 +262,8 @@ impl ByteSet {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function is_word_byte(/* args */) {
-///   // body documented in Rust
+/// function is_word_byte(b: number): boolean {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 pub fn is_word_byte(b: u8) -> bool {
@@ -276,8 +277,8 @@ pub fn is_word_byte(b: u8) -> bool {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function dot_set(/* args */) {
-///   // body documented in Rust
+/// function dot_set(): ByteSet {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 pub fn dot_set() -> ByteSet {
@@ -301,8 +302,8 @@ pub fn dot_set() -> ByteSet {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function intersect_complement(/* args */) {
-///   // body documented in Rust
+/// function intersect_complement(a: ByteSet, b: ByteSet): ByteSet {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 fn intersect_complement(a: &ByteSet, b: &ByteSet) -> ByteSet {
@@ -319,8 +320,8 @@ fn intersect_complement(a: &ByteSet, b: &ByteSet) -> ByteSet {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function digit_set(/* args */) {
-///   // body documented in Rust
+/// function digit_set(): ByteSet {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 pub fn digit_set() -> ByteSet {
@@ -336,8 +337,8 @@ pub fn digit_set() -> ByteSet {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function word_set(/* args */) {
-///   // body documented in Rust
+/// function word_set(): ByteSet {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 pub fn word_set() -> ByteSet {
@@ -356,8 +357,8 @@ pub fn word_set() -> ByteSet {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function space_set(/* args */) {
-///   // body documented in Rust
+/// function space_set(): ByteSet {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 pub fn space_set() -> ByteSet {
@@ -377,8 +378,8 @@ pub fn space_set() -> ByteSet {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function singleton(/* args */) {
-///   // body documented in Rust
+/// function singleton(b: number): ByteSet {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 pub fn singleton(b: u8) -> ByteSet {

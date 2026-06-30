@@ -15,72 +15,78 @@
 //! ```
 
 /// What:    Imports the serde derives so a product program can be persisted.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `Deserialize`, `Serialize` directly; importing from `serde`
+///          keeps each call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { Deserialize, Serialize } from "serde";
 /// ```
 use serde::{Deserialize, Serialize};
 
 /// What:    Imports the node algebra the builder reads.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `Node` directly; importing from `crate/ast/node` keeps each call
+///          site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { Node } from "crate/ast/node";
 /// ```
 use crate::ast::node::Node;
 
 /// What:    Imports the boundary context threaded through the closure.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `Ctx` directly; importing from `crate/context` keeps each call
+///          site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { Ctx } from "crate/context";
 /// ```
 use crate::context::Ctx;
 
 /// What:    Imports the NFA builder for each operand.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `build_nfa` directly; importing from `crate/counting/build`
+///          keeps each call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { build_nfa } from "crate/counting/build";
 /// ```
 use crate::counting::build::build_nfa;
 
 /// What:    Imports the counting NFA each operand compiles to.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `CountingNfa` directly; importing from `crate/counting/nfa`
+///          keeps each call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { CountingNfa } from "crate/counting/nfa";
 /// ```
 use crate::counting::nfa::CountingNfa;
 
 /// What:    Imports the shared simulation core.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `State`, `boundary_ctx`, `closure`, `step_into` directly;
+///          importing from `crate/counting/sim` keeps each call site focused on the matcher
+///          logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import {
+///   State,
+///   boundary_ctx,
+///   closure,
+///   step_into,
+/// } from "crate/counting/sim";
 /// ```
 use crate::counting::sim::{State, boundary_ctx, closure, step_into};
 
 /// What:    Imports the error type for validating a decoded program.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `CompileError` directly; importing from `crate/error` keeps each
+///          call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { CompileError } from "crate/error";
 /// ```
 use crate::error::CompileError;
 
@@ -99,21 +105,23 @@ use crate::error::CompileError;
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ProductProgram {
     /// What:    Operands that must each match the same span.
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `positives` stores operands that must each match the same span, so matcher code
+    ///          reads that precomputed state by name instead of recomputing or passing it
+    ///          separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// positives: unknown[];
+    /// positives: CountingNfa[];
     /// ```
     pub positives: Vec<CountingNfa>,
     /// What:    Operands whose match would veto the span (the `~(...)` operands).
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `negatives` stores operands whose match would veto the span (the `~(...)`
+    ///          operands), so matcher code reads that precomputed state by name instead of
+    ///          recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// negatives: unknown[];
+    /// negatives: CountingNfa[];
     /// ```
     pub negatives: Vec<CountingNfa>,
 }
@@ -134,8 +142,8 @@ impl ProductProgram {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function is_match(/* args */) {
-    ///   // body documented in Rust
+    /// function is_match(line: Uint8Array): boolean {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     pub fn is_match(&self, line: &[u8]) -> bool {
@@ -150,8 +158,8 @@ impl ProductProgram {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function validate(/* args */) {
-    ///   // body documented in Rust
+    /// function validate(): void {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     pub fn validate(&self) -> Result<(), CompileError> {
@@ -176,8 +184,8 @@ impl ProductProgram {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function buildProduct(node: Node): ProductProgram | null {
-///   return node.kind === "intersection" ? splitPositiveAndNegativeOperands(node) : null;
+/// function build_product(node: Node): ProductProgram | null {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 ///
@@ -219,21 +227,23 @@ pub fn build_product(node: &Node) -> Option<ProductProgram> {
 /// ```
 struct Operands {
     /// What:    Per-positive-operand simulation state, in `positives` order.
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `positives` stores per-positive-operand simulation state, in `positives` order,
+    ///          so matcher code reads that precomputed state by name instead of recomputing or
+    ///          passing it separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// positives: unknown[];
+    /// positives: State[];
     /// ```
     positives: Vec<State>,
     /// What:    Per-negative-operand simulation state, in `negatives` order.
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `negatives` stores per-negative-operand simulation state, in `negatives` order,
+    ///          so matcher code reads that precomputed state by name instead of recomputing or
+    ///          passing it separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// negatives: unknown[];
+    /// negatives: State[];
     /// ```
     negatives: Vec<State>,
 }
@@ -252,21 +262,22 @@ struct Operands {
 /// ```
 struct Thread {
     /// What:    Live operand states for this start.
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `cur` stores live operand states for this start, so matcher code reads that
+    ///          precomputed state by name instead of recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// cur: unknown;
+    /// cur: Operands;
     /// ```
     cur: Operands,
     /// What:    Spare buffer the byte step writes into, then swaps with `cur`.
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `next` stores spare buffer the byte step writes into, then swaps with `cur`, so
+    ///          matcher code reads that precomputed state by name instead of recomputing or
+    ///          passing it separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// next: unknown;
+    /// next: Operands;
     /// ```
     next: Operands,
 }
@@ -280,8 +291,8 @@ struct Thread {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function run_product(/* args */) {
-///   // body documented in Rust
+/// function run_product(prog: ProductProgram, line: Uint8Array): boolean {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 fn run_product(prog: &ProductProgram, line: &[u8]) -> bool {
@@ -311,8 +322,8 @@ fn run_product(prog: &ProductProgram, line: &[u8]) -> bool {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function new_thread(/* args */) {
-///   // body documented in Rust
+/// function new_thread(prog: ProductProgram): Thread {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 fn new_thread(prog: &ProductProgram) -> Thread {
@@ -335,8 +346,8 @@ fn new_thread(prog: &ProductProgram) -> Thread {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function seeded_states(/* args */) {
-///   // body documented in Rust
+/// function seeded_states(operands: CountingNfa[]): State[] {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 fn seeded_states(operands: &[CountingNfa]) -> Vec<State> {
@@ -357,8 +368,8 @@ fn seeded_states(operands: &[CountingNfa]) -> Vec<State> {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function empty_states(/* args */) {
-///   // body documented in Rust
+/// function empty_states(operands: CountingNfa[]): State[] {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 fn empty_states(operands: &[CountingNfa]) -> Vec<State> {
@@ -372,8 +383,8 @@ fn empty_states(operands: &[CountingNfa]) -> Vec<State> {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function close_operands(/* args */) {
-///   // body documented in Rust
+/// function close_operands(prog: ProductProgram, ops: Operands, ctx: Ctx): void {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 fn close_operands(prog: &ProductProgram, ops: &mut Operands, ctx: Ctx) {
@@ -392,8 +403,8 @@ fn close_operands(prog: &ProductProgram, ops: &mut Operands, ctx: Ctx) {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function accepts(/* args */) {
-///   // body documented in Rust
+/// function accepts(ops: Operands): boolean {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 fn accepts(ops: &Operands) -> bool {
@@ -409,8 +420,8 @@ fn accepts(ops: &Operands) -> bool {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function advance_thread(/* args */) {
-///   // body documented in Rust
+/// function advance_thread(prog: ProductProgram, thread: Thread, b: number): boolean {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 fn advance_thread(prog: &ProductProgram, thread: &mut Thread, b: u8) -> bool {
@@ -430,8 +441,8 @@ fn advance_thread(prog: &ProductProgram, thread: &mut Thread, b: u8) -> bool {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function step_states(/* args */) {
-///   // body documented in Rust
+/// function step_states(operands: CountingNfa[], src: State[], dst: State[], b: number): void {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 fn step_states(operands: &[CountingNfa], src: &[State], dst: &mut [State], b: u8) {

@@ -1,6 +1,6 @@
 //! What:    Position context that resolves the zero-width assertions `^`, `$`, and `\b`.
-//! Why:     This file is the Rust module that groups the context implementation, so a reader
-//!          can enter the package through one named area.
+//! Why:     This file is the Rust module that groups the context implementation, so a reader can
+//!          enter the package through one named area.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -24,8 +24,9 @@
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Ctx {
     /// What:    True at the start of the input or just after a newline.
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `line_start` stores true at the start of the input or just after a newline, so
+    ///          matcher code reads that precomputed state by name instead of recomputing or
+    ///          passing it separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -33,8 +34,9 @@ pub struct Ctx {
     /// ```
     pub line_start: bool,
     /// What:    True at the end of the input or just before a newline.
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `line_end` stores true at the end of the input or just before a newline, so
+    ///          matcher code reads that precomputed state by name instead of recomputing or
+    ///          passing it separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -42,8 +44,9 @@ pub struct Ctx {
     /// ```
     pub line_end: bool,
     /// What:    True when the byte immediately before this position is a word byte.
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `word_before` stores true when the byte immediately before this position is a
+    ///          word byte, so matcher code reads that precomputed state by name instead of
+    ///          recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -51,8 +54,9 @@ pub struct Ctx {
     /// ```
     pub word_before: bool,
     /// What:    True when the byte immediately after this position is a word byte.
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `word_after` stores true when the byte immediately after this position is a word
+    ///          byte, so matcher code reads that precomputed state by name instead of
+    ///          recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts

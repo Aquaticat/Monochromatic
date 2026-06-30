@@ -1,6 +1,6 @@
 //! What:    Byte-class equivalence: collapse the 256 bytes into transition-equivalent groups.
-//! Why:     This file is the Rust module that groups the classes implementation, so a reader
-//!          can enter the package through one named area.
+//! Why:     This file is the Rust module that groups the classes implementation, so a reader can
+//!          enter the package through one named area.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -8,32 +8,33 @@
 //! ```
 
 /// What:    Imports the hash map used to deduplicate byte signatures.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `HashMap` directly; importing from `std/collections` keeps each
+///          call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { HashMap } from "std/collections";
 /// ```
 use std::collections::HashMap;
 
 /// What:    Imports the byte-set leaf type and the word predicate.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `ByteSet`, `is_word_byte` directly; importing from
+///          `crate/charset` keeps each call site focused on the matcher logic instead of the
+///          full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { ByteSet, is_word_byte } from "crate/charset";
 /// ```
 use crate::charset::{ByteSet, is_word_byte};
 
 /// What:    Imports the node algebra walked to gather classes.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `Node` directly; importing from `crate/ast/node` keeps each call
+///          site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { Node } from "crate/ast/node";
 /// ```
 use crate::ast::node::Node;
 
@@ -52,8 +53,8 @@ use crate::ast::node::Node;
 /// ```
 pub struct Classes {
     /// What:    Number of distinct classes.
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `nclasses` stores number of distinct classes, so matcher code reads that
+    ///          precomputed state by name instead of recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -61,8 +62,9 @@ pub struct Classes {
     /// ```
     pub nclasses: usize,
     /// What:    Length-256 map from a byte to its class id.
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `class_map` stores length-256 map from a byte to its class id, so matcher code
+    ///          reads that precomputed state by name instead of recomputing or passing it
+    ///          separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -70,8 +72,8 @@ pub struct Classes {
     /// ```
     pub class_map: Vec<u8>,
     /// What:    One representative byte per class id.
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `reps` stores one representative byte per class id, so matcher code reads that
+    ///          precomputed state by name instead of recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -79,8 +81,8 @@ pub struct Classes {
     /// ```
     pub reps: Vec<u8>,
     /// What:    Per-class word-byte flag.
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `class_word` stores per-class word-byte flag, so matcher code reads that
+    ///          precomputed state by name instead of recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -88,8 +90,8 @@ pub struct Classes {
     /// ```
     pub class_word: Vec<bool>,
     /// What:    Per-class newline flag.
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `class_newline` stores per-class newline flag, so matcher code reads that
+    ///          precomputed state by name instead of recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -107,8 +109,8 @@ pub struct Classes {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function compute_classes(/* args */) {
-///   // body documented in Rust
+/// function compute_classes(root: Node): Classes {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 pub fn compute_classes(root: &Node) -> Classes {
@@ -174,8 +176,8 @@ pub fn compute_classes(root: &Node) -> Classes {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function byte_signature(/* args */) {
-///   // body documented in Rust
+/// function byte_signature(b: number, sets: ByteSet[]): boolean[] {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 fn byte_signature(b: u8, sets: &[ByteSet]) -> Vec<bool> {
@@ -202,8 +204,8 @@ fn byte_signature(b: u8, sets: &[ByteSet]) -> Vec<bool> {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function collect_sets(/* args */) {
-///   // body documented in Rust
+/// function collect_sets(node: Node, out: ByteSet[]): void {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 fn collect_sets(node: &Node, out: &mut Vec<ByteSet>) {

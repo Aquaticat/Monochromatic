@@ -1,12 +1,13 @@
 // What:  unit tests for the parser front door: every accepted construct parses, and
 //        every rejection path returns the right `CompileError` variant.
-// Why:   the parser is the widest branch surface in the engine and the security gate
-//        that turns hostile rule text into either a bounded node or a clean error; a
-//        regressed accept/reject decision is how unsupported or footgun patterns slip in.
+// Why:     This file groups the parse test cases so behavior changes fail near the code path
+//          they protect.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// import { /* names from this Rust use line */ } from "./module";
+// describe("parse", () => {
+//   // test cases below
+// });
 // ```
 
 use super::parse;
@@ -18,8 +19,8 @@ use crate::error::CompileError;
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function ok(/* args */) {
-//   // body documented in Rust
+// function ok(pattern: string): void {
+//   // Rust body below is the implementation.
 // }
 // ```
 fn ok(pattern: &str) {
@@ -32,8 +33,8 @@ fn ok(pattern: &str) {
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function syntax_err(/* args */) {
-//   // body documented in Rust
+// function syntax_err(pattern: string): void {
+//   // Rust body below is the implementation.
 // }
 // ```
 fn syntax_err(pattern: &str) {
@@ -293,8 +294,8 @@ fn escaped_and_class_whitespace_stays_literal() {
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function syntax_at(/* args */) {
-//   // body documented in Rust
+// function syntax_at(pattern: string, pos: number): void {
+//   // Rust body below is the implementation.
 // }
 // ```
 fn syntax_at(pattern: &str, pos: usize) {
@@ -312,8 +313,8 @@ fn syntax_at(pattern: &str, pos: usize) {
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function syntax_msg(/* args */) {
-//   // body documented in Rust
+// function syntax_msg(pattern: string, needle: string): void {
+//   // Rust body below is the implementation.
 // }
 // ```
 fn syntax_msg(pattern: &str, needle: &str) {

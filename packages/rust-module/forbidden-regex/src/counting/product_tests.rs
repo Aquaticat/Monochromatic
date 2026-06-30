@@ -22,8 +22,8 @@ use crate::parse::parse;
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function oracle(/* args */) {
-//   // body documented in Rust
+// function oracle(pattern: string): impl Fn(&[u8]) -> bool {
+//   // Rust body below is the implementation.
 // }
 // ```
 fn oracle(pattern: &str) -> impl Fn(&[u8]) -> bool {
@@ -38,8 +38,8 @@ fn oracle(pattern: &str) -> impl Fn(&[u8]) -> bool {
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function product(/* args */) {
-//   // body documented in Rust
+// function product(pattern: string): ProductProgram {
+//   // Rust body below is the implementation.
 // }
 // ```
 fn product(pattern: &str) -> ProductProgram {
@@ -53,8 +53,8 @@ fn product(pattern: &str) -> ProductProgram {
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function product_agrees_with_oracle(/* args */) {
-//   // body documented in Rust
+// function product_agrees_with_oracle(): void {
+//   // Rust body below is the implementation.
 // }
 // ```
 #[test]
@@ -115,8 +115,8 @@ fn product_agrees_with_oracle() {
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function aws_key_complement_stays_small(/* args */) {
-//   // body documented in Rust
+// function aws_key_complement_stays_small(): void {
+//   // Rust body below is the implementation.
 // }
 // ```
 #[test]
@@ -148,8 +148,8 @@ fn aws_key_complement_stays_small() {
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function aws_key_complement_is_exact(/* args */) {
-//   // body documented in Rust
+// function aws_key_complement_is_exact(): void {
+//   // Rust body below is the implementation.
 // }
 // ```
 #[test]
@@ -202,8 +202,8 @@ fn aws_key_complement_is_exact() {
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function validate_rejects_an_unsafe_program(/* args */) {
-//   // body documented in Rust
+// function validate_rejects_an_unsafe_program(): void {
+//   // Rust body below is the implementation.
 // }
 // ```
 #[test]
@@ -225,8 +225,8 @@ fn validate_rejects_an_unsafe_program() {
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function aws_rule_with_alternation_stays_small(/* args */) {
-//   // body documented in Rust
+// function aws_rule_with_alternation_stays_small(): void {
+//   // Rust body below is the implementation.
 // }
 // ```
 #[test]

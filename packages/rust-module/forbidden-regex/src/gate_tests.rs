@@ -1,13 +1,13 @@
 // What:  unit tests for the SetGate: which rules a line is a candidate for, the hit
 //        position handed to the per-rule check, and the seedless-rule skip.
-// Why:   the gate is the one per-line pass; it must flag a rule exactly when the rule's
-//        required literal is present (soundness) and skip literal-free rules (they are
-//        handled elsewhere), and it must report the hit position so an anchored rule is
-//        checked at the right offset.
+// Why:     This file groups the gate test cases so behavior changes fail near the code path they
+//          protect.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// import { /* names from this Rust use line */ } from "./module";
+// describe("gate", () => {
+//   // test cases below
+// });
 // ```
 
 use super::SetGate;
@@ -18,8 +18,8 @@ use super::SetGate;
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function three_rule_gate(/* args */) {
-//   // body documented in Rust
+// function three_rule_gate(): SetGate {
+//   // Rust body below is the implementation.
 // }
 // ```
 fn three_rule_gate() -> SetGate {

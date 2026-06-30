@@ -1,6 +1,6 @@
 //! What:    Backslash escapes, shared by atom parsing and character-class parsing.
-//! Why:     This file is the Rust module that groups the escape implementation, so a reader
-//!          can enter the package through one named area.
+//! Why:     This file is the Rust module that groups the escape implementation, so a reader can
+//!          enter the package through one named area.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -8,42 +8,49 @@
 //! ```
 
 /// What:    Imports the byte-set type for shorthand escapes.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `ByteSet`, `digit_set`, `singleton`, `space_set`, `word_set`
+///          directly; importing from `crate/charset` keeps each call site focused on the matcher
+///          logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import {
+///   ByteSet,
+///   digit_set,
+///   singleton,
+///   space_set,
+///   word_set,
+/// } from "crate/charset";
 /// ```
 use crate::charset::{ByteSet, digit_set, singleton, space_set, word_set};
 
 /// What:    Imports the node algebra produced by an atom-position escape.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `Node` directly; importing from `crate/ast/node` keeps each call
+///          site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { Node } from "crate/ast/node";
 /// ```
 use crate::ast::node::Node;
 
 /// What:    Imports the error type for unsupported escapes.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `CompileError` directly; importing from `crate/error` keeps each
+///          call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { CompileError } from "crate/error";
 /// ```
 use crate::error::CompileError;
 
 /// What:    Imports the cursor read by the escape parser.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `Cursor` directly; importing from `crate/parse/cursor` keeps
+///          each call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { Cursor } from "crate/parse/cursor";
 /// ```
 use crate::parse::cursor::Cursor;
 
@@ -118,8 +125,8 @@ pub enum EscapeResult {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function parse_escape(/* args */) {
-///   // body documented in Rust
+/// function parse_escape(cur: Cursor, in_class: boolean): EscapeResult {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 pub fn parse_escape(cur: &mut Cursor, in_class: bool) -> Result<EscapeResult, CompileError> {
@@ -186,8 +193,8 @@ pub fn parse_escape(cur: &mut Cursor, in_class: bool) -> Result<EscapeResult, Co
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function parse_escape_atom(/* args */) {
-///   // body documented in Rust
+/// function parse_escape_atom(cur: Cursor): Node {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 pub fn parse_escape_atom(cur: &mut Cursor) -> Result<Node, CompileError> {

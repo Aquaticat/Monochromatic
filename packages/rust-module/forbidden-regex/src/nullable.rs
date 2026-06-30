@@ -8,22 +8,22 @@
 //! ```
 
 /// What:    Imports the node algebra being tested.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `Node` directly; importing from `crate/ast/node` keeps each call
+///          site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { Node } from "crate/ast/node";
 /// ```
 use crate::ast::node::Node;
 
 /// What:    Imports the boundary context that resolves anchors.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `Ctx` directly; importing from `crate/context` keeps each call
+///          site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { Ctx } from "crate/context";
 /// ```
 use crate::context::Ctx;
 
@@ -39,8 +39,8 @@ use crate::context::Ctx;
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function nullable(/* args */) {
-///   // body documented in Rust
+/// function nullable(node: Node, ctx: Ctx): boolean {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 pub fn nullable(node: &Node, ctx: Ctx) -> bool {

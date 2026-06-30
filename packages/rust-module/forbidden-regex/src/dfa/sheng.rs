@@ -18,12 +18,24 @@
 //! ```
 
 /// What:    Imports the AVX-512 permute and bitwise intrinsics for the x86 path.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `__m512i`, `_mm512_and_si512`, `_mm512_loadu_si512`,
+///          `_mm512_or_si512`, `_mm512_permutexvar_epi8`, `_mm512_set1_epi8`,
+///          `_mm512_setzero_si512`, `_mm512_test_epi8_mask` directly; importing from
+///          `std/arch/x86_64` keeps each call site focused on the matcher logic instead of the
+///          full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import {
+///   __m512i,
+///   _mm512_and_si512,
+///   _mm512_loadu_si512,
+///   _mm512_or_si512,
+///   _mm512_permutexvar_epi8,
+///   _mm512_set1_epi8,
+///   _mm512_setzero_si512,
+///   _mm512_test_epi8_mask,
+/// } from "std/arch/x86_64";
 /// ```
 #[cfg(target_arch = "x86_64")]
 use std::arch::x86_64::{
@@ -32,12 +44,21 @@ use std::arch::x86_64::{
 };
 
 /// What:    Imports the NEON table-lookup and reduce intrinsics for the arm64 path.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `uint8x16_t`, `vandq_u8`, `vdupq_n_u8`, `vld1q_u8_x4`,
+///          `vmaxvq_u8`, `vorrq_u8`, `vqtbl4q_u8` directly; importing from `std/arch/aarch64`
+///          keeps each call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import {
+///   uint8x16_t,
+///   vandq_u8,
+///   vdupq_n_u8,
+///   vld1q_u8_x4,
+///   vmaxvq_u8,
+///   vorrq_u8,
+///   vqtbl4q_u8,
+/// } from "std/arch/aarch64";
 /// ```
 #[cfg(target_arch = "aarch64")]
 use std::arch::aarch64::{
@@ -45,12 +66,12 @@ use std::arch::aarch64::{
 };
 
 /// What:    Imports the DFA table and its per-boundary acceptance-bit helper.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `Dfa`, `accept_bit` directly; importing from `crate/dfa/table`
+///          keeps each call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { Dfa, accept_bit } from "crate/dfa/table";
 /// ```
 use crate::dfa::table::{Dfa, accept_bit};
 
@@ -59,7 +80,7 @@ use crate::dfa::table::{Dfa, accept_bit};
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// const SHENG_MAX_STATES: unknown = /* value below */;
+/// const SHENG_MAX_STATES: number = 64;
 /// ```
 const SHENG_MAX_STATES: usize = 64;
 
@@ -78,35 +99,38 @@ const SHENG_MAX_STATES: usize = 64;
 struct ShengTables {
     /// What:    `trans[byte][state]` = next state after `byte` from `state` (other lanes
     ///          unused).
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `trans` stores `trans[byte][state]` = next state after `byte` from `state`
+    ///          (other lanes unused), so matcher code reads that precomputed state by name
+    ///          instead of recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// trans: unknown[][];
+    /// trans: number[][];
     /// ```
     trans: Vec<[u8; SHENG_MAX_STATES]>,
     /// What:    `accept[state]` = the state's 4-bit acceptance mask.
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `accept` stores `accept[state]` = the state's 4-bit acceptance mask, so matcher
+    ///          code reads that precomputed state by name instead of recomputing or passing it
+    ///          separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// accept: unknown[];
+    /// accept: number[];
     /// ```
     accept: [u8; SHENG_MAX_STATES],
     /// What:    `ctx[byte]` = the acceptance bit a match would need given that byte follows.
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `ctx` stores `ctx[byte]` = the acceptance bit a match would need given that byte
+    ///          follows, so matcher code reads that precomputed state by name instead of
+    ///          recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// ctx: unknown[];
+    /// ctx: number[];
     /// ```
     ctx: [u8; 256],
     /// What:    Start state id.
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `start` stores start state id, so matcher code reads that precomputed state by
+    ///          name instead of recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -114,8 +138,9 @@ struct ShengTables {
     /// ```
     start: u8,
     /// What:    Acceptance bit for the end-of-input boundary.
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `end_bit` stores acceptance bit for the end-of-input boundary, so matcher code
+    ///          reads that precomputed state by name instead of recomputing or passing it
+    ///          separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -141,8 +166,8 @@ impl Dfa {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function build_sheng(/* args */) {
-    ///   // body documented in Rust
+    /// function build_sheng(): ShengTables | null {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     fn build_sheng(&self) -> Option<ShengTables> {
@@ -190,8 +215,8 @@ impl Dfa {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function is_match_batch_sheng(/* args */) {
-    ///   // body documented in Rust
+    /// function is_match_batch_sheng(lines: Uint8Array[], out: boolean[]): void {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     pub fn is_match_batch_sheng(&self, lines: &[&[u8]], out: &mut [bool]) {
@@ -248,8 +273,8 @@ impl Dfa {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function sheng_all_avx512(/* args */) {
-///   // body documented in Rust
+/// function sheng_all_avx512(tables: ShengTables, lines: Uint8Array[], out: boolean[]): void {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 #[cfg(target_arch = "x86_64")]
@@ -285,8 +310,8 @@ unsafe fn sheng_all_avx512(tables: &ShengTables, lines: &[&[u8]], out: &mut [boo
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function sheng_line_neon(/* args */) {
-///   // body documented in Rust
+/// function sheng_line_neon(tables: ShengTables, line: Uint8Array): boolean {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 #[cfg(target_arch = "aarch64")]

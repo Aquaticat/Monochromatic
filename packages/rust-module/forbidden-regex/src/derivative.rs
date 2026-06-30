@@ -1,6 +1,6 @@
 //! What:    Brzozowski byte derivatives over the node algebra.
-//! Why:     This file is the Rust module that groups the derivative implementation, so a
-//!          reader can enter the package through one named area.
+//! Why:     This file is the Rust module that groups the derivative implementation, so a reader
+//!          can enter the package through one named area.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -8,42 +8,49 @@
 //! ```
 
 /// What:    Imports the node algebra being differentiated.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `Node` directly; importing from `crate/ast/node` keeps each call
+///          site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { Node } from "crate/ast/node";
 /// ```
 use crate::ast::node::Node;
 
 /// What:    Imports the smart constructors that keep results canonical.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `alt`, `comp`, `concat`, `inter`, `repeat` directly; importing
+///          from `crate/ast/smart` keeps each call site focused on the matcher logic instead of
+///          the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import {
+///   alt,
+///   comp,
+///   concat,
+///   inter,
+///   repeat,
+/// } from "crate/ast/smart";
 /// ```
 use crate::ast::smart::{alt, comp, concat, inter, repeat};
 
 /// What:    Imports the boundary context used when a sequence steps past a nullable anchor.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `Ctx` directly; importing from `crate/context` keeps each call
+///          site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { Ctx } from "crate/context";
 /// ```
 use crate::context::Ctx;
 
 /// What:    Imports nullability, needed by the concatenation rule.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `nullable` directly; importing from `crate/nullable` keeps each
+///          call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { nullable } from "crate/nullable";
 /// ```
 use crate::nullable::nullable;
 
@@ -58,8 +65,8 @@ use crate::nullable::nullable;
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function derivative(/* args */) {
-///   // body documented in Rust
+/// function derivative(node: Node, byte: number, ctx: Ctx): Node {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 pub fn derivative(node: &Node, byte: u8, ctx: Ctx) -> Node {
@@ -107,8 +114,8 @@ pub fn derivative(node: &Node, byte: u8, ctx: Ctx) -> Node {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function derivative_repeat(/* args */) {
-///   // body documented in Rust
+/// function derivative_repeat(node: Node, min: number, max: number, byte: number, ctx: Ctx): Node {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 fn derivative_repeat(node: &Node, min: usize, max: usize, byte: u8, ctx: Ctx) -> Node {
@@ -162,8 +169,8 @@ fn derivative_repeat(node: &Node, min: usize, max: usize, byte: u8, ctx: Ctx) ->
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function derivative_concat(/* args */) {
-///   // body documented in Rust
+/// function derivative_concat(parts: Node[], byte: number, ctx: Ctx): Node {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 fn derivative_concat(parts: &[Node], byte: u8, ctx: Ctx) -> Node {

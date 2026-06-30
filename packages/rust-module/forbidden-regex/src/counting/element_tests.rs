@@ -1,13 +1,13 @@
 // What:  unit tests for `validate_element`, the decode-time check on a counting-NFA
 //        position's repetition bound.
-// Why:   a decoded `Counted` element sizes a counter-set by its `max`, so a hostile or
-//        corrupt serialized bound must be rejected before the simulation allocates; this
-//        pins each rejection (empty set, min>max, oversized max) and the always-valid
-//        leaf kinds.
+// Why:     This file groups the element test cases so behavior changes fail near the code path
+//          they protect.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// import { /* names from this Rust use line */ } from "./module";
+// describe("element", () => {
+//   // test cases below
+// });
 // ```
 
 use super::{Element, MAX_DECODED_COUNT, validate_element};

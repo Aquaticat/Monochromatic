@@ -12,32 +12,32 @@
 //! ```
 
 /// What:    Imports the node algebra the builder reads.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `Node` directly; importing from `crate/ast/node` keeps each call
+///          site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { Node } from "crate/ast/node";
 /// ```
 use crate::ast::node::Node;
 
 /// What:    Imports the position kind emitted per leaf.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `Element` directly; importing from `crate/counting/element`
+///          keeps each call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { Element } from "crate/counting/element";
 /// ```
 use crate::counting::element::Element;
 
 /// What:    Imports the counting NFA being built.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `CountingNfa` directly; importing from `crate/counting/nfa`
+///          keeps each call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { CountingNfa } from "crate/counting/nfa";
 /// ```
 use crate::counting::nfa::CountingNfa;
 
@@ -49,7 +49,7 @@ use crate::counting::nfa::CountingNfa;
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// const REPEAT_UNROLL_LIMIT: unknown = /* value below */;
+/// const REPEAT_UNROLL_LIMIT: number = 64;
 /// ```
 const REPEAT_UNROLL_LIMIT: usize = 64;
 
@@ -67,8 +67,9 @@ const REPEAT_UNROLL_LIMIT: usize = 64;
 /// ```
 struct Frag {
     /// What:    Whether the subexpression can match without consuming a position.
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `nullable` stores whether the subexpression can match without consuming a
+    ///          position, so matcher code reads that precomputed state by name instead of
+    ///          recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -76,8 +77,8 @@ struct Frag {
     /// ```
     nullable: bool,
     /// What:    Positions that may be entered first.
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `first` stores positions that may be entered first, so matcher code reads that
+    ///          precomputed state by name instead of recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -85,8 +86,8 @@ struct Frag {
     /// ```
     first: Vec<u32>,
     /// What:    Positions that may be the last completed.
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `last` stores positions that may be the last completed, so matcher code reads
+    ///          that precomputed state by name instead of recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -109,17 +110,18 @@ struct Frag {
 /// ```
 struct Builder {
     /// What:    Position kinds in emission order.
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `elements` stores position kinds in emission order, so matcher code reads that
+    ///          precomputed state by name instead of recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// elements: unknown[];
+    /// elements: Element[];
     /// ```
     elements: Vec<Element>,
     /// What:    Successor ids per position, grown alongside `elements`.
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `follow` stores successor ids per position, grown alongside `elements`, so
+    ///          matcher code reads that precomputed state by name instead of recomputing or
+    ///          passing it separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -144,8 +146,8 @@ impl Builder {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function leaf(/* args */) {
-    ///   // body documented in Rust
+    /// function leaf(element: Element, nullable: boolean): Frag {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     fn leaf(&mut self, element: Element, nullable: bool) -> Frag {
@@ -166,8 +168,8 @@ impl Builder {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function link(/* args */) {
-    ///   // body documented in Rust
+    /// function link(from: number[], to: number[]): void {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     fn link(&mut self, from: &[u32], to: &[u32]) {
@@ -187,8 +189,8 @@ impl Builder {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function build(/* args */) {
-    ///   // body documented in Rust
+    /// function build(node: Node): Frag | null {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     fn build(&mut self, node: &Node) -> Option<Frag> {
@@ -215,8 +217,8 @@ impl Builder {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function build_repeat(/* args */) {
-    ///   // body documented in Rust
+    /// function build_repeat(body: Node, min: number, max: number): Frag | null {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     fn build_repeat(&mut self, body: &Node, min: usize, max: usize) -> Option<Frag> {
@@ -254,8 +256,8 @@ impl Builder {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function build_concat(/* args */) {
-    ///   // body documented in Rust
+    /// function build_concat(parts: Node[]): Frag | null {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     fn build_concat(&mut self, parts: &[Node]) -> Option<Frag> {
@@ -274,8 +276,8 @@ impl Builder {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function link_frags(/* args */) {
-    ///   // body documented in Rust
+    /// function link_frags(acc: Frag, next: Frag): Frag {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     fn link_frags(&mut self, acc: Frag, next: Frag) -> Frag {
@@ -296,8 +298,8 @@ impl Builder {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function build_alt(/* args */) {
-    ///   // body documented in Rust
+    /// function build_alt(parts: Node[]): Frag | null {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     fn build_alt(&mut self, parts: &[Node]) -> Option<Frag> {
@@ -325,8 +327,8 @@ impl Builder {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function build_nfa(/* args */) {
-///   // body documented in Rust
+/// function build_nfa(node: Node): CountingNfa | null {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 pub fn build_nfa(node: &Node) -> Option<CountingNfa> {
@@ -357,8 +359,8 @@ pub fn build_nfa(node: &Node) -> Option<CountingNfa> {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function empty_frag(/* args */) {
-///   // body documented in Rust
+/// function empty_frag(): Frag {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 fn empty_frag() -> Frag {
@@ -376,8 +378,8 @@ fn empty_frag() -> Frag {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function extend_if(/* args */) {
-///   // body documented in Rust
+/// function extend_if(cond: boolean, base: number[], extra: number[]): number[] {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 fn extend_if(cond: bool, base: &[u32], extra: &[u32]) -> Vec<u32> {
@@ -395,8 +397,8 @@ fn extend_if(cond: bool, base: &[u32], extra: &[u32]) -> Vec<u32> {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function push_unique(/* args */) {
-///   // body documented in Rust
+/// function push_unique(out: number[], extra: number[]): void {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 fn push_unique(out: &mut Vec<u32>, extra: &[u32]) {

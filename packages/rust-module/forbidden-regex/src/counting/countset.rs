@@ -26,8 +26,9 @@
 /// ```
 pub(crate) struct CountSet {
     /// What:    Bit array of live counts, sized to address bit `max + 1`.
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `words` stores bit array of live counts, sized to address bit `max + 1`, so
+    ///          matcher code reads that precomputed state by name instead of recomputing or
+    ///          passing it separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -53,8 +54,8 @@ impl CountSet {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function new(/* args */) {
-    ///   // body documented in Rust
+    /// function new(max: number): CountSet {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     pub(crate) fn new(max: usize) -> CountSet {
@@ -70,8 +71,8 @@ impl CountSet {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function clear(/* args */) {
-    ///   // body documented in Rust
+    /// function clear(): void {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     pub(crate) fn clear(&mut self) {
@@ -85,8 +86,8 @@ impl CountSet {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function insert_zero(/* args */) {
-    ///   // body documented in Rust
+    /// function insert_zero(): boolean {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     pub(crate) fn insert_zero(&mut self) -> bool {
@@ -102,8 +103,8 @@ impl CountSet {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function has_at_least(/* args */) {
-    ///   // body documented in Rust
+    /// function has_at_least(min: number): boolean {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     pub(crate) fn has_at_least(&self, min: usize) -> bool {
@@ -124,8 +125,8 @@ impl CountSet {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function is_empty(/* args */) {
-    ///   // body documented in Rust
+    /// function is_empty(): boolean {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     pub(crate) fn is_empty(&self) -> bool {
@@ -140,8 +141,8 @@ impl CountSet {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function copy_advanced_from(/* args */) {
-    ///   // body documented in Rust
+    /// function copy_advanced_from(src: CountSet, max: number): void {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     pub(crate) fn copy_advanced_from(&mut self, src: &CountSet, max: usize) {
@@ -160,8 +161,8 @@ impl CountSet {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function clear_above(/* args */) {
-    ///   // body documented in Rust
+    /// function clear_above(max: number): void {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     fn clear_above(&mut self, max: usize) {
@@ -180,8 +181,8 @@ impl CountSet {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function nwords(/* args */) {
-///   // body documented in Rust
+/// function nwords(max: number): number {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 fn nwords(max: usize) -> usize {

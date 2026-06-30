@@ -8,12 +8,12 @@
 //! ```
 
 /// What:    Imports the byte-set leaf type used by `Class` nodes.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `ByteSet` directly; importing from `crate/charset` keeps each
+///          call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { ByteSet } from "crate/charset";
 /// ```
 use crate::charset::ByteSet;
 
@@ -170,17 +170,18 @@ pub enum Node {
     /// ```
     Repeat {
         /// What:    Repeated sub-expression.
-        /// Why:     The surrounding record stores this value by name so later code can read
-        ///          the same piece of state.
+        /// Why:     `node` stores repeated sub-expression, so matcher code reads that
+        ///          precomputed state by name instead of recomputing or passing it separately.
         ///
         /// In TS you'd write (pseudocode):
         /// ```ts
-        /// node: unknown;
+        /// node: Node;
         /// ```
         node: Box<Node>,
         /// What:    Minimum number of repetitions still required.
-        /// Why:     The surrounding record stores this value by name so later code can read
-        ///          the same piece of state.
+        /// Why:     `min` stores minimum number of repetitions still required, so matcher code
+        ///          reads that precomputed state by name instead of recomputing or passing it
+        ///          separately.
         ///
         /// In TS you'd write (pseudocode):
         /// ```ts
@@ -188,8 +189,9 @@ pub enum Node {
         /// ```
         min: usize,
         /// What:    Maximum number of repetitions still allowed.
-        /// Why:     The surrounding record stores this value by name so later code can read
-        ///          the same piece of state.
+        /// Why:     `max` stores maximum number of repetitions still allowed, so matcher code
+        ///          reads that precomputed state by name instead of recomputing or passing it
+        ///          separately.
         ///
         /// In TS you'd write (pseudocode):
         /// ```ts

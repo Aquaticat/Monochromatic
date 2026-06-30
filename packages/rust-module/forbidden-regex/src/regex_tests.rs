@@ -1,14 +1,14 @@
 // What:  unit tests for the RegexSet internals that the public match paths rely on but
 //        that no end-to-end verdict pins precisely: the per-line rule-dedup bitset
 //        (`CheckedFull`) and the one-byte line-start fast-reject (`line_start_candidate`).
-// Why:   `CheckedFull` only ever changes performance (a deduped rule re-run is still
-//        sound) and `line_start_candidate` only gates an anchored check, so both are
-//        invisible to a correctness oracle; their contracts are pinned here directly so a
-//        wrong word/bit computation or an always-true gate cannot slip through.
+// Why:     This file groups the regex test cases so behavior changes fail near the code path
+//          they protect.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// import { /* names from this Rust use line */ } from "./module";
+// describe("regex", () => {
+//   // test cases below
+// });
 // ```
 
 use super::{CheckedFull, RegexSet};

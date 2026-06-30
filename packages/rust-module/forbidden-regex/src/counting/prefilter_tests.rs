@@ -1,12 +1,12 @@
 // What:  unit tests for required-literal seed extraction and the SIMD prefilter.
-// Why:   the RegexSet gate prefilters on these seeds and only runs a rule when its seed
-//        is present, so a seed that is NOT actually required by every match would make
-//        the gate skip real matches (a missed secret). These tests pin the seeds the
-//        gate trusts; patterns are built through the real parser.
+// Why:     This file groups the prefilter test cases so behavior changes fail near the code path
+//          they protect.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// import { /* names from this Rust use line */ } from "./module";
+// describe("prefilter", () => {
+//   // test cases below
+// });
 // ```
 
 use super::{
@@ -21,8 +21,8 @@ use crate::parse::parse;
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function node(/* args */) {
-//   // body documented in Rust
+// function node(pattern: string): crate.ast.node.Node {
+//   // Rust body below is the implementation.
 // }
 // ```
 fn node(pattern: &str) -> crate::ast::node::Node {

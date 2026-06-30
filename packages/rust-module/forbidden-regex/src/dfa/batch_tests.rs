@@ -1,14 +1,12 @@
 // What:  unit tests for the batched multi-line DFA kernels.
-// Why:   the interleaved and tight kernels reimplement the per-byte match loop across
-//        several lines at once; the only thing that makes them safe to ship is that
-//        every verdict equals the scalar `is_match` the engine already trusts, so each
-//        test builds a real search DFA and asserts all three kernels agree with it on a
-//        deliberately awkward line set (varied lengths, matches and misses, a count not
-//        divisible by LANES so the scalar remainder path runs).
+// Why:     This file groups the batch test cases so behavior changes fail near the code path
+//          they protect.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// import { /* names from this Rust use line */ } from "./module";
+// describe("batch", () => {
+//   // test cases below
+// });
 // ```
 
 use super::LANES;
@@ -24,8 +22,8 @@ use crate::parse::parse;
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function search_dfa(/* args */) {
-//   // body documented in Rust
+// function search_dfa(pattern: string): Dfa {
+//   // Rust body below is the implementation.
 // }
 // ```
 fn search_dfa(pattern: &str) -> Dfa {
@@ -39,8 +37,8 @@ fn search_dfa(pattern: &str) -> Dfa {
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function kernels_agree(/* args */) {
-//   // body documented in Rust
+// function kernels_agree(pattern: string, lines: Uint8Array[]): void {
+//   // Rust body below is the implementation.
 // }
 // ```
 fn kernels_agree(pattern: &str, lines: &[&[u8]]) {

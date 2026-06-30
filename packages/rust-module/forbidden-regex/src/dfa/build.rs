@@ -8,82 +8,82 @@
 //! ```
 
 /// What:    Imports the hash map used to intern states.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `HashMap` directly; importing from `std/collections` keeps each
+///          call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { HashMap } from "std/collections";
 /// ```
 use std::collections::HashMap;
 
 /// What:    Imports the node algebra being determinized.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `Node` directly; importing from `crate/ast/node` keeps each call
+///          site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { Node } from "crate/ast/node";
 /// ```
 use crate::ast::node::Node;
 
 /// What:    Imports the boundary context driving derivatives and acceptance.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `Ctx` directly; importing from `crate/context` keeps each call
+///          site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { Ctx } from "crate/context";
 /// ```
 use crate::context::Ctx;
 
 /// What:    Imports the byte derivative.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `derivative` directly; importing from `crate/derivative` keeps
+///          each call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { derivative } from "crate/derivative";
 /// ```
 use crate::derivative::derivative;
 
 /// What:    Imports the error type for the state cap.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `CompileError` directly; importing from `crate/error` keeps each
+///          call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { CompileError } from "crate/error";
 /// ```
 use crate::error::CompileError;
 
 /// What:    Imports nullability for acceptance masks.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `nullable` directly; importing from `crate/nullable` keeps each
+///          call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { nullable } from "crate/nullable";
 /// ```
 use crate::nullable::nullable;
 
 /// What:    Imports the byte-class computation.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `compute_classes` directly; importing from `crate/dfa/classes`
+///          keeps each call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { compute_classes } from "crate/dfa/classes";
 /// ```
 use crate::dfa::classes::compute_classes;
 
 /// What:    Imports the table type and its acceptance-bit helper.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `Dfa`, `accept_bit` directly; importing from `crate/dfa/table`
+///          keeps each call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { Dfa, accept_bit } from "crate/dfa/table";
 /// ```
 use crate::dfa::table::{Dfa, accept_bit};
 
@@ -103,17 +103,19 @@ use crate::dfa::table::{Dfa, accept_bit};
 #[derive(Clone, PartialEq, Eq, Hash)]
 struct StateKey {
     /// What:    The residual regex after the bytes that lead to this state.
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `node` stores the residual regex after the bytes that lead to this state, so
+    ///          matcher code reads that precomputed state by name instead of recomputing or
+    ///          passing it separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// node: unknown;
+    /// node: Node;
     /// ```
     node: Node,
     /// What:    Whether this position is a line start (previous byte was a newline).
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `at_line_start` stores whether this position is a line start (previous byte was
+    ///          a newline), so matcher code reads that precomputed state by name instead of
+    ///          recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -121,8 +123,9 @@ struct StateKey {
     /// ```
     at_line_start: bool,
     /// What:    Whether the previous byte was a word byte.
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `prev_word` stores whether the previous byte was a word byte, so matcher code
+    ///          reads that precomputed state by name instead of recomputing or passing it
+    ///          separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -143,7 +146,7 @@ struct StateKey {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// const RESIDUAL_NODE_CAP: unknown = /* value below */;
+/// const RESIDUAL_NODE_CAP: number = 2_000;
 /// ```
 const RESIDUAL_NODE_CAP: usize = 2_000;
 
@@ -155,8 +158,8 @@ const RESIDUAL_NODE_CAP: usize = 2_000;
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function residual_too_large(/* args */) {
-///   // body documented in Rust
+/// function residual_too_large(node: Node): boolean {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 fn residual_too_large(node: &Node) -> bool {
@@ -201,8 +204,8 @@ mod tests;
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function build_dfa_within(/* args */) {
-///   // body documented in Rust
+/// function build_dfa_within(root: Node, cap: number): Dfa {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 pub fn build_dfa_within(root: Node, cap: usize) -> Result<Dfa, CompileError> {
@@ -213,7 +216,7 @@ pub fn build_dfa_within(root: Node, cap: usize) -> Result<Dfa, CompileError> {
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // const MAX_U16_STATES: unknown = /* value below */;
+    // const MAX_U16_STATES: number = 65_534;
     // ```
     const MAX_U16_STATES: usize = 65_534;
     let cap = cap.min(MAX_U16_STATES);
@@ -323,8 +326,8 @@ pub fn build_dfa_within(root: Node, cap: usize) -> Result<Dfa, CompileError> {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function intern(/* args */) {
-///   // body documented in Rust
+/// function intern(index: HashMap<StateKey, u32>, states: StateKey[], key: StateKey): number {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 fn intern(index: &mut HashMap<StateKey, u32>, states: &mut Vec<StateKey>, key: StateKey) -> u32 {
@@ -345,8 +348,8 @@ fn intern(index: &mut HashMap<StateKey, u32>, states: &mut Vec<StateKey>, key: S
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function compute_accept(/* args */) {
-///   // body documented in Rust
+/// function compute_accept(node: Node, at_line_start: boolean, prev_word: boolean): number {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 fn compute_accept(node: &Node, at_line_start: bool, prev_word: bool) -> u8 {

@@ -1,13 +1,14 @@
 // What:  unit tests for the compiled DFA table: the acceptance-bit encoding, the match
 //        loop on a built automaton, the first-byte set used by the line-start reject,
 //        decode validation, and that minimization preserves matching.
-// Why:   this is the hot match path and a decode security boundary; a wrong accept bit,
-//        a missed dead-state exit, or a too-loose validate would corrupt matching or let
-//        a hostile serialized DFA run out of bounds.
+// Why:     This file groups the table test cases so behavior changes fail near the code path
+//          they protect.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// import { /* names from this Rust use line */ } from "./module";
+// describe("table", () => {
+//   // test cases below
+// });
 // ```
 
 use super::{Dfa, accept_bit};
@@ -21,8 +22,8 @@ use crate::parse::parse;
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function anchored_dfa(/* args */) {
-//   // body documented in Rust
+// function anchored_dfa(pattern: string): Dfa {
+//   // Rust body below is the implementation.
 // }
 // ```
 fn anchored_dfa(pattern: &str) -> Dfa {
@@ -202,8 +203,8 @@ fn validate_rejects_a_forged_dead_state() {
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function uniform_dfa(/* args */) {
-//   // body documented in Rust
+// function uniform_dfa(nclasses: number): Dfa {
+//   // Rust body below is the implementation.
 // }
 // ```
 fn uniform_dfa(nclasses: u32) -> Dfa {

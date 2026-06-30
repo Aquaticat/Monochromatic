@@ -8,22 +8,28 @@
 //! ```
 
 /// What:    Imports the counting NFA being run.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `CountingNfa` directly; importing from `crate/counting/nfa`
+///          keeps each call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { CountingNfa } from "crate/counting/nfa";
 /// ```
 use crate::counting::nfa::CountingNfa;
 
 /// What:    Imports the shared simulation core.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `State`, `boundary_ctx`, `closure`, `step_into` directly;
+///          importing from `crate/counting/sim` keeps each call site focused on the matcher
+///          logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import {
+///   State,
+///   boundary_ctx,
+///   closure,
+///   step_into,
+/// } from "crate/counting/sim";
 /// ```
 use crate::counting::sim::{State, boundary_ctx, closure, step_into};
 
@@ -37,8 +43,8 @@ use crate::counting::sim::{State, boundary_ctx, closure, step_into};
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function run(/* args */) {
-///   // body documented in Rust
+/// function run(nfa: CountingNfa, line: Uint8Array): boolean {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 pub(crate) fn run(nfa: &CountingNfa, line: &[u8]) -> bool {

@@ -1,11 +1,12 @@
 // What:  unit tests for `CountSet`, the per-position bitset of live repetition counts.
-// Why:   the counting back-end's correctness rests on this set advancing counts by one
-//        per matched byte and capping at the repetition bound; an off-by-one in the
-//        shift or the cap would accept the wrong lengths, so each op is asserted.
+// Why:     This file groups the countset test cases so behavior changes fail near the code path
+//          they protect.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// import { /* names from this Rust use line */ } from "./module";
+// describe("countset", () => {
+//   // test cases below
+// });
 // ```
 
 use super::*;

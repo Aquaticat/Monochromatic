@@ -1,6 +1,6 @@
 //! What:    Recursive-descent grammar with single-atom operands for `&` and `|`.
-//! Why:     This file is the Rust module that groups the grammar implementation, so a reader
-//!          can enter the package through one named area.
+//! Why:     This file is the Rust module that groups the grammar implementation, so a reader can
+//!          enter the package through one named area.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -8,82 +8,91 @@
 //! ```
 
 /// What:    Imports the byte-set helpers for `.` and literal bytes.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `dot_set`, `singleton` directly; importing from `crate/charset`
+///          keeps each call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { dot_set, singleton } from "crate/charset";
 /// ```
 use crate::charset::{dot_set, singleton};
 
 /// What:    Imports the node algebra and constructors.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `Node` directly; importing from `crate/ast/node` keeps each call
+///          site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { Node } from "crate/ast/node";
 /// ```
 use crate::ast::node::Node;
 
 /// What:    Imports the set-algebra and class constructors.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `alt`, `class`, `comp`, `concat`, `inter`, `optional` directly;
+///          importing from `crate/ast/smart` keeps each call site focused on the matcher logic
+///          instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import {
+///   alt,
+///   class,
+///   comp,
+///   concat,
+///   inter,
+///   optional,
+/// } from "crate/ast/smart";
 /// ```
 use crate::ast::smart::{alt, class, comp, concat, inter, optional};
 
 /// What:    Imports the error type.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `CompileError` directly; importing from `crate/error` keeps each
+///          call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { CompileError } from "crate/error";
 /// ```
 use crate::error::CompileError;
 
 /// What:    Imports the cursor.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `Cursor` directly; importing from `crate/parse/cursor` keeps
+///          each call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { Cursor } from "crate/parse/cursor";
 /// ```
 use crate::parse::cursor::Cursor;
 
 /// What:    Imports the atom-position escape parser.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `parse_escape_atom` directly; importing from
+///          `crate/parse/escape` keeps each call site focused on the matcher logic instead of
+///          the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { parse_escape_atom } from "crate/parse/escape";
 /// ```
 use crate::parse::escape::parse_escape_atom;
 
 /// What:    Imports the character-class parser.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `parse_class` directly; importing from `crate/parse/class` keeps
+///          each call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { parse_class } from "crate/parse/class";
 /// ```
 use crate::parse::class::parse_class;
 
 /// What:    Imports the repetition parser.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `parse_repeat` directly; importing from `crate/parse/repeat`
+///          keeps each call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { parse_repeat } from "crate/parse/repeat";
 /// ```
 use crate::parse::repeat::parse_repeat;
 
@@ -96,8 +105,8 @@ use crate::parse::repeat::parse_repeat;
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function parse_setexpr(/* args */) {
-///   // body documented in Rust
+/// function parse_setexpr(cur: Cursor, close: number | null): Node {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 pub fn parse_setexpr(cur: &mut Cursor, close: Option<u8>) -> Result<Node, CompileError> {
@@ -124,8 +133,8 @@ pub fn parse_setexpr(cur: &mut Cursor, close: Option<u8>) -> Result<Node, Compil
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function parse_set_algebra(/* args */) {
-///   // body documented in Rust
+/// function parse_set_algebra(cur: Cursor, close: number | null, left: Node[], op: number): Node {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 fn parse_set_algebra(
@@ -179,8 +188,8 @@ fn parse_set_algebra(
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function single_atom(/* args */) {
-///   // body documented in Rust
+/// function single_atom(units: Node[], pos: number): Node {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 fn single_atom(units: Vec<Node>, pos: usize) -> Result<Node, CompileError> {
@@ -202,8 +211,8 @@ fn single_atom(units: Vec<Node>, pos: usize) -> Result<Node, CompileError> {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function parse_concat_units(/* args */) {
-///   // body documented in Rust
+/// function parse_concat_units(cur: Cursor, close: number | null): Node[] {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 fn parse_concat_units(cur: &mut Cursor, close: Option<u8>) -> Result<Vec<Node>, CompileError> {
@@ -228,8 +237,8 @@ fn parse_concat_units(cur: &mut Cursor, close: Option<u8>) -> Result<Vec<Node>, 
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function parse_postfix(/* args */) {
-///   // body documented in Rust
+/// function parse_postfix(cur: Cursor): Node {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 fn parse_postfix(cur: &mut Cursor) -> Result<Node, CompileError> {
@@ -272,8 +281,8 @@ fn parse_postfix(cur: &mut Cursor) -> Result<Node, CompileError> {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function reject_stacked(/* args */) {
-///   // body documented in Rust
+/// function reject_stacked(cur: Cursor): void {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 fn reject_stacked(cur: &mut Cursor) -> Result<(), CompileError> {
@@ -295,8 +304,8 @@ fn reject_stacked(cur: &mut Cursor) -> Result<(), CompileError> {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function parse_atom(/* args */) {
-///   // body documented in Rust
+/// function parse_atom(cur: Cursor): Node {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 fn parse_atom(cur: &mut Cursor) -> Result<Node, CompileError> {
@@ -353,8 +362,8 @@ fn parse_atom(cur: &mut Cursor) -> Result<Node, CompileError> {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function parse_group(/* args */) {
-///   // body documented in Rust
+/// function parse_group(cur: Cursor): Node {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 fn parse_group(cur: &mut Cursor) -> Result<Node, CompileError> {
@@ -393,8 +402,8 @@ fn parse_group(cur: &mut Cursor) -> Result<Node, CompileError> {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function parse_complement(/* args */) {
-///   // body documented in Rust
+/// function parse_complement(cur: Cursor): Node {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 fn parse_complement(cur: &mut Cursor) -> Result<Node, CompileError> {
@@ -420,8 +429,8 @@ fn parse_complement(cur: &mut Cursor) -> Result<Node, CompileError> {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function expect_close(/* args */) {
-///   // body documented in Rust
+/// function expect_close(cur: Cursor, open_pos: number): void {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 fn expect_close(cur: &mut Cursor, open_pos: usize) -> Result<(), CompileError> {

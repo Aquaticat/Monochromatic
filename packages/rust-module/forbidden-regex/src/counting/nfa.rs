@@ -8,32 +8,33 @@
 //! ```
 
 /// What:    Imports the serde derives so a counting NFA can be persisted.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `Deserialize`, `Serialize` directly; importing from `serde`
+///          keeps each call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { Deserialize, Serialize } from "serde";
 /// ```
 use serde::{Deserialize, Serialize};
 
 /// What:    Imports the position kind and its decode-time check.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `Element`, `validate_element` directly; importing from
+///          `crate/counting/element` keeps each call site focused on the matcher logic instead
+///          of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { Element, validate_element } from "crate/counting/element";
 /// ```
 use crate::counting::element::{Element, validate_element};
 
 /// What:    Imports the error type for validating a decoded NFA.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `CompileError` directly; importing from `crate/error` keeps each
+///          call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { CompileError } from "crate/error";
 /// ```
 use crate::error::CompileError;
 
@@ -54,17 +55,18 @@ use crate::error::CompileError;
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CountingNfa {
     /// What:    Position kinds, indexed by position id.
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `elements` stores position kinds, indexed by position id, so matcher code reads
+    ///          that precomputed state by name instead of recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// elements: unknown[];
+    /// elements: Element[];
     /// ```
     pub elements: Vec<Element>,
     /// What:    Successor ids per position; the id `elements.len()` is the accept sink.
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `follow` stores successor ids per position; the id `elements.len()` is the
+    ///          accept sink, so matcher code reads that precomputed state by name instead of
+    ///          recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -72,8 +74,8 @@ pub struct CountingNfa {
     /// ```
     pub follow: Vec<Vec<u32>>,
     /// What:    Positions active before any input is read.
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `start` stores positions active before any input is read, so matcher code reads
+    ///          that precomputed state by name instead of recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -99,8 +101,8 @@ impl CountingNfa {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function isMatch(line: Uint8Array): boolean {
-    ///   return runCountingNfa(this, line);
+    /// function is_match(line: Uint8Array): boolean {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     ///
@@ -122,8 +124,8 @@ impl CountingNfa {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function validate(/* args */) {
-    ///   // body documented in Rust
+    /// function validate(): void {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     pub fn validate(&self) -> Result<(), CompileError> {

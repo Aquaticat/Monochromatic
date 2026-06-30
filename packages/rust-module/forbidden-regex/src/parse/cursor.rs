@@ -1,6 +1,6 @@
 //! What:    A byte cursor over the pattern that skips verbose-mode whitespace and comments.
-//! Why:     This file is the Rust module that groups the cursor implementation, so a reader
-//!          can enter the package through one named area.
+//! Why:     This file is the Rust module that groups the cursor implementation, so a reader can
+//!          enter the package through one named area.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -22,17 +22,18 @@
 /// ```
 pub struct Cursor<'a> {
     /// What:    The pattern as raw bytes; matching and parsing are both byte-oriented.
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `src` stores the pattern as raw bytes; matching and parsing are both
+    ///          byte-oriented, so matcher code reads that precomputed state by name instead of
+    ///          recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// src: unknown;
+    /// src: 'a [u8];
     /// ```
     src: &'a [u8],
     /// What:    Current read offset into `src`.
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `pos` stores current read offset into `src`, so matcher code reads that
+    ///          precomputed state by name instead of recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -56,8 +57,8 @@ impl<'a> Cursor<'a> {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function new(/* args */) {
-    ///   // body documented in Rust
+    /// function new(src: 'a [u8]): Self {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     pub fn new(src: &'a [u8]) -> Self {
@@ -71,8 +72,8 @@ impl<'a> Cursor<'a> {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function pos(/* args */) {
-    ///   // body documented in Rust
+    /// function pos(): number {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     pub fn pos(&self) -> usize {
@@ -85,8 +86,8 @@ impl<'a> Cursor<'a> {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function eof(/* args */) {
-    ///   // body documented in Rust
+    /// function eof(): boolean {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     pub fn eof(&self) -> bool {
@@ -99,8 +100,8 @@ impl<'a> Cursor<'a> {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function peek(/* args */) {
-    ///   // body documented in Rust
+    /// function peek(): number | null {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     pub fn peek(&self) -> Option<u8> {
@@ -114,8 +115,8 @@ impl<'a> Cursor<'a> {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function peek_at(/* args */) {
-    ///   // body documented in Rust
+    /// function peek_at(offset: number): number | null {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     pub fn peek_at(&self, offset: usize) -> Option<u8> {
@@ -129,8 +130,8 @@ impl<'a> Cursor<'a> {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function bump(/* args */) {
-    ///   // body documented in Rust
+    /// function bump(): number | null {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     pub fn bump(&mut self) -> Option<u8> {
@@ -148,8 +149,8 @@ impl<'a> Cursor<'a> {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function at_line_start(/* args */) {
-    ///   // body documented in Rust
+    /// function at_line_start(): boolean {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     fn at_line_start(&self) -> bool {
@@ -165,8 +166,8 @@ impl<'a> Cursor<'a> {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function skip_ignorable(/* args */) {
-    ///   // body documented in Rust
+    /// function skip_ignorable(): void {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     pub fn skip_ignorable(&mut self) {

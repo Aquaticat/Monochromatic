@@ -1,6 +1,6 @@
 //! What:    The per-pattern back-end: a matcher plus its required-literal prefilter.
-//! Why:     This file is the Rust module that groups the engine implementation, so a reader
-//!          can enter the package through one named area.
+//! Why:     This file is the Rust module that groups the engine implementation, so a reader can
+//!          enter the package through one named area.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -8,62 +8,62 @@
 //! ```
 
 /// What:    Imports the serde derives so a compiled engine can be persisted.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `Deserialize`, `Serialize` directly; importing from `serde`
+///          keeps each call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { Deserialize, Serialize } from "serde";
 /// ```
 use serde::{Deserialize, Serialize};
 
 /// What:    Imports the counting NFA back-end.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `CountingNfa` directly; importing from `crate/counting` keeps
+///          each call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { CountingNfa } from "crate/counting";
 /// ```
 use crate::counting::CountingNfa;
 
 /// What:    Imports the required-literal prefilter.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `Prefilter` directly; importing from `crate/counting` keeps each
+///          call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { Prefilter } from "crate/counting";
 /// ```
 use crate::counting::Prefilter;
 
 /// What:    Imports the synchronized-product back-end for `&` and `~`.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `ProductProgram` directly; importing from `crate/counting` keeps
+///          each call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { ProductProgram } from "crate/counting";
 /// ```
 use crate::counting::ProductProgram;
 
 /// What:    Imports the general derivative DFA.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `Dfa` directly; importing from `crate/dfa/table` keeps each call
+///          site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { Dfa } from "crate/dfa/table";
 /// ```
 use crate::dfa::table::Dfa;
 
 /// What:    Imports the error type for decode validation.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `CompileError` directly; importing from `crate/error` keeps each
+///          call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { CompileError } from "crate/error";
 /// ```
 use crate::error::CompileError;
 
@@ -75,7 +75,7 @@ use crate::error::CompileError;
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// const SHENG_BATCH_FLOOR: unknown = /* value below */;
+/// const SHENG_BATCH_FLOOR: number = 512;
 /// ```
 const SHENG_BATCH_FLOOR: usize = 512;
 
@@ -167,17 +167,18 @@ pub enum EngineKind {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Engine {
     /// What:    The matcher back-end.
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `kind` stores the matcher back-end, so matcher code reads that precomputed state
+    ///          by name instead of recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// kind: unknown;
+    /// kind: EngineKind;
     /// ```
     kind: EngineKind,
     /// What:    Required-literal seeds for the prefilter and the set gate.
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `seeds` stores required-literal seeds for the prefilter and the set gate, so
+    ///          matcher code reads that precomputed state by name instead of recomputing or
+    ///          passing it separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -185,12 +186,13 @@ pub struct Engine {
     /// ```
     seeds: Vec<Vec<u8>>,
     /// What:    Searchers rebuilt from `seeds`; never serialized.
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `prefilter` stores searchers rebuilt from `seeds`; never serialized, so matcher
+    ///          code reads that precomputed state by name instead of recomputing or passing it
+    ///          separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// prefilter: unknown;
+    /// prefilter: Prefilter;
     /// ```
     #[serde(skip)]
     prefilter: Prefilter,
@@ -212,8 +214,8 @@ impl Engine {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function new(/* args */) {
-    ///   // body documented in Rust
+    /// function new(kind: EngineKind, seeds: number[][]): Engine {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     pub fn new(kind: EngineKind, seeds: Vec<Vec<u8>>) -> Engine {
@@ -232,8 +234,8 @@ impl Engine {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function is_match(/* args */) {
-    ///   // body documented in Rust
+    /// function is_match(line: Uint8Array): boolean {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     pub fn is_match(&self, line: &[u8]) -> bool {
@@ -248,8 +250,8 @@ impl Engine {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function matches_only(/* args */) {
-    ///   // body documented in Rust
+    /// function matches_only(line: Uint8Array): boolean {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     pub fn matches_only(&self, line: &[u8]) -> bool {
@@ -263,8 +265,8 @@ impl Engine {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function matches(/* args */) {
-    ///   // body documented in Rust
+    /// function matches(line: Uint8Array): boolean {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     fn matches(&self, line: &[u8]) -> bool {
@@ -283,8 +285,8 @@ impl Engine {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function table_dfa(/* args */) {
-    ///   // body documented in Rust
+    /// function table_dfa(): Dfa | null {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     pub fn table_dfa(&self) -> Option<&Dfa> {
@@ -309,8 +311,8 @@ impl Engine {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function is_match_batch(/* args */) {
-    ///   // body documented in Rust
+    /// function is_match_batch(lines: Uint8Array[], out: boolean[]): void {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     pub fn is_match_batch(&self, lines: &[&[u8]], out: &mut [bool]) {
@@ -332,8 +334,8 @@ impl Engine {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function seeds(/* args */) {
-    ///   // body documented in Rust
+    /// function seeds(): number[][] | null {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     pub fn seeds(&self) -> Option<Vec<Vec<u8>>> {
@@ -351,8 +353,8 @@ impl Engine {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function validate(/* args */) {
-    ///   // body documented in Rust
+    /// function validate(): void {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     pub fn validate(&self) -> Result<(), CompileError> {
@@ -372,8 +374,8 @@ impl Engine {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function mark_first_bytes(/* args */) {
-    ///   // body documented in Rust
+    /// function mark_first_bytes(set: crate.charset.ByteSet): void {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     pub fn mark_first_bytes(&self, set: &mut crate::charset::ByteSet) {
@@ -390,8 +392,8 @@ impl Engine {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function prepare(/* args */) {
-    ///   // body documented in Rust
+    /// function prepare(): void {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     pub fn prepare(&mut self) {

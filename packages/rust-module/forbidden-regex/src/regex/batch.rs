@@ -3,34 +3,32 @@
 //!           methods return `Vec<bool>` values (owned growable arrays of booleans, not
 //!           borrowed `&[bool]` slices or fixed `[bool; N]` arrays), and the hidden hooks
 //!           let the benchmark force scalar, interleaved, tight, and Sheng layouts.
-//! Why:      A consumer scanning a whole file hands every line at once, so one call lets
-//!           the engine pick the fastest layout. Table-backed patterns with no required
-//!           literal can use the Sheng permute kernel instead of paying per-line call
-//!           overhead. `Vec<bool>` is owned because the method creates fresh verdicts;
-//!           borrowed or fixed arrays would require caller-managed storage and length.
+//! Why:     This file is the Rust module that groups the batch implementation, so a reader can
+//!          enter the package through one named area.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
-//! export function isMatchBatch(lines: Uint8Array[]): boolean[];
+//! // module batch: see exported functions and types below.
 //! ```
 
 /// What:    Imports the public matcher types this module extends.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `CheckedFull`, `Regex`, `RegexSet` directly; importing from
+///          `./super` keeps each call site focused on the matcher logic instead of the full Rust
+///          path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { CheckedFull, Regex, RegexSet } from "./super";
 /// ```
 use super::{CheckedFull, Regex, RegexSet};
 
 /// What:    Imports the anchored line-start match used by the per-line resolution.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `line_start_match` directly; importing from `crate/build` keeps
+///          each call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { line_start_match } from "crate/build";
 /// ```
 use crate::build::line_start_match;
 
@@ -42,7 +40,7 @@ use crate::build::line_start_match;
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// const BATCH_BUCKET: unknown = /* value below */;
+/// const BATCH_BUCKET: number = 32;
 /// ```
 const BATCH_BUCKET: usize = 32;
 
@@ -63,8 +61,8 @@ impl Regex {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function isMatchBatch(lines: Uint8Array[]): boolean[] {
-    ///   return lines.map((line) => this.isMatch(line));
+    /// function is_match_batch(lines: Uint8Array[]): boolean[] {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     ///
@@ -96,8 +94,8 @@ impl Regex {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function isMatchBatchBucketed(lines: Uint8Array[]): boolean[] {
-    ///   return batchByLengthThenMatch(lines);
+    /// function is_match_batch_bucketed(lines: Uint8Array[]): boolean[] {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     ///
@@ -141,8 +139,8 @@ impl Regex {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function is_match_batch_scalar(/* args */) {
-    ///   // body documented in Rust
+    /// function is_match_batch_scalar(lines: Uint8Array[]): boolean[] {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     #[doc(hidden)]
@@ -163,8 +161,8 @@ impl Regex {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function is_match_batch_interleaved(/* args */) {
-    ///   // body documented in Rust
+    /// function is_match_batch_interleaved(lines: Uint8Array[]): boolean[] {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     #[doc(hidden)]
@@ -185,8 +183,8 @@ impl Regex {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function is_table(/* args */) {
-    ///   // body documented in Rust
+    /// function is_table(): boolean {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     #[doc(hidden)]
@@ -202,8 +200,8 @@ impl Regex {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function batch_inter_w(/* args */) {
-    ///   // body documented in Rust
+    /// function batch_inter_w(lines: Uint8Array[]): boolean[] {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     #[doc(hidden)]
@@ -224,8 +222,8 @@ impl Regex {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function batch_tight_w(/* args */) {
-    ///   // body documented in Rust
+    /// function batch_tight_w(lines: Uint8Array[]): boolean[] {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     #[doc(hidden)]
@@ -246,8 +244,8 @@ impl Regex {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function batch_sheng(/* args */) {
-    ///   // body documented in Rust
+    /// function batch_sheng(lines: Uint8Array[]): boolean[] {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     #[doc(hidden)]
@@ -268,8 +266,8 @@ impl Regex {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function batch_sheng2(/* args */) {
-    ///   // body documented in Rust
+    /// function batch_sheng2(lines: Uint8Array[]): boolean[] {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     #[doc(hidden)]
@@ -300,8 +298,8 @@ impl RegexSet {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function isMatchBatch(lines: Uint8Array[]): boolean[] {
-    ///   return lines.map((line) => this.isMatch(line));
+    /// function is_match_batch(lines: Uint8Array[]): boolean[] {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     ///
@@ -326,8 +324,8 @@ impl RegexSet {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function is_match_batch_concat(/* args */) {
-    ///   // body documented in Rust
+    /// function is_match_batch_concat(lines: Uint8Array[]): boolean[] {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     #[doc(hidden)]
@@ -361,8 +359,8 @@ impl RegexSet {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function sweep_candidates(/* args */) {
-    ///   // body documented in Rust
+    /// function sweep_candidates(buf: Uint8Array, starts: number[]): boolean[] {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     fn sweep_candidates(&self, buf: &[u8], starts: &[usize]) -> Vec<bool> {
@@ -388,8 +386,8 @@ impl RegexSet {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function resolve_line(/* args */) {
-    ///   // body documented in Rust
+    /// function resolve_line(line: Uint8Array, has_seed: boolean): boolean {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     fn resolve_line(&self, line: &[u8], has_seed: bool) -> bool {

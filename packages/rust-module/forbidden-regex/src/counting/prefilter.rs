@@ -2,9 +2,8 @@
 //!
 //! What: [`seeds_from_node`] derives literal seeds such that every match of a node
 //! contains one as a substring, and [`Prefilter`] turns seeds into SIMD searchers.
-//! Why: a secret scanner mostly sees lines with no secret, so rejecting them on a
-//! cheap literal scan before the matcher is the dominant throughput win, and the
-//! `RegexSet` gate unions every rule's seeds into one combined pass.
+//! Why:     This file is the Rust module that groups the prefilter implementation, so a reader
+//!          can enter the package through one named area.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -12,22 +11,22 @@
 //! ```
 
 /// What:    Imports the SIMD substring searcher used to test each seed.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `Finder` directly; importing from `memchr/memmem` keeps each
+///          call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { Finder } from "memchr/memmem";
 /// ```
 use memchr::memmem::Finder;
 
 /// What:    Imports the node algebra the seed extractor reads.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `Node` directly; importing from `crate/ast/node` keeps each call
+///          site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { Node } from "crate/ast/node";
 /// ```
 use crate::ast::node::Node;
 
@@ -39,7 +38,7 @@ use crate::ast::node::Node;
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// const MIN_SEED_LEN: unknown = /* value below */;
+/// const MIN_SEED_LEN: number = 3;
 /// ```
 const MIN_SEED_LEN: usize = 3;
 
@@ -57,12 +56,13 @@ const MIN_SEED_LEN: usize = 3;
 #[derive(Debug, Clone, Default)]
 pub(crate) struct Prefilter {
     /// What:    One SIMD searcher per required seed; empty disables filtering.
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `finders` stores one SIMD searcher per required seed; empty disables filtering,
+    ///          so matcher code reads that precomputed state by name instead of recomputing or
+    ///          passing it separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// finders: unknown[];
+    /// finders: Finder<'static>[];
     /// ```
     finders: Vec<Finder<'static>>,
 }
@@ -83,8 +83,8 @@ impl Prefilter {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function from_seeds(/* args */) {
-    ///   // body documented in Rust
+    /// function from_seeds(seeds: number[][]): Prefilter {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     pub(crate) fn from_seeds(seeds: &[Vec<u8>]) -> Prefilter {
@@ -100,8 +100,8 @@ impl Prefilter {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function allows(/* args */) {
-    ///   // body documented in Rust
+    /// function allows(line: Uint8Array): boolean {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     pub(crate) fn allows(&self, line: &[u8]) -> bool {
@@ -116,8 +116,8 @@ impl Prefilter {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function len(/* args */) {
-    ///   // body documented in Rust
+    /// function len(): number {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     #[cfg(test)]
@@ -134,8 +134,8 @@ impl Prefilter {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function filter_min(/* args */) {
-///   // body documented in Rust
+/// function filter_min(seeds: number[][], min: number): number[][] {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 fn filter_min(seeds: Vec<Vec<u8>>, min: usize) -> Vec<Vec<u8>> {
@@ -154,8 +154,8 @@ fn filter_min(seeds: Vec<Vec<u8>>, min: usize) -> Vec<Vec<u8>> {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function seeds_from_node(/* args */) {
-///   // body documented in Rust
+/// function seeds_from_node(node: Node): number[][] {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 pub(crate) fn seeds_from_node(node: &Node) -> Vec<Vec<u8>> {
@@ -171,8 +171,8 @@ pub(crate) fn seeds_from_node(node: &Node) -> Vec<Vec<u8>> {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function seeds_from_node_min(/* args */) {
-///   // body documented in Rust
+/// function seeds_from_node_min(node: Node, min: number): number[][] {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 pub(crate) fn seeds_from_node_min(node: &Node, min: usize) -> Vec<Vec<u8>> {
@@ -189,8 +189,8 @@ pub(crate) fn seeds_from_node_min(node: &Node, min: usize) -> Vec<Vec<u8>> {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function required_literal(/* args */) {
-///   // body documented in Rust
+/// function required_literal(node: Node): number[][] {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 fn required_literal(node: &Node) -> Vec<Vec<u8>> {
@@ -210,8 +210,8 @@ fn required_literal(node: &Node) -> Vec<Vec<u8>> {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function alt_literal(/* args */) {
-///   // body documented in Rust
+/// function alt_literal(branches: Node[]): number[][] {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 fn alt_literal(branches: &[Node]) -> Vec<Vec<u8>> {
@@ -237,8 +237,8 @@ fn alt_literal(branches: &[Node]) -> Vec<Vec<u8>> {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function inter_literal(/* args */) {
-///   // body documented in Rust
+/// function inter_literal(operands: Node[]): number[][] {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 fn inter_literal(operands: &[Node]) -> Vec<Vec<u8>> {
@@ -263,8 +263,8 @@ fn inter_literal(operands: &[Node]) -> Vec<Vec<u8>> {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function leading_literals(/* args */) {
-///   // body documented in Rust
+/// function leading_literals(node: Node): number[][] {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 pub(crate) fn leading_literals(node: &Node) -> Vec<Vec<u8>> {
@@ -286,8 +286,8 @@ pub(crate) fn leading_literals(node: &Node) -> Vec<Vec<u8>> {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function leading_seeds(/* args */) {
-///   // body documented in Rust
+/// function leading_seeds(node: Node): number[][] {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 pub(crate) fn leading_seeds(node: &Node) -> Vec<Vec<u8>> {
@@ -302,8 +302,8 @@ pub(crate) fn leading_seeds(node: &Node) -> Vec<Vec<u8>> {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function leading_seeds_min(/* args */) {
-///   // body documented in Rust
+/// function leading_seeds_min(node: Node, min: number): number[][] {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 pub(crate) fn leading_seeds_min(node: &Node, min: usize) -> Vec<Vec<u8>> {
@@ -320,8 +320,8 @@ pub(crate) fn leading_seeds_min(node: &Node, min: usize) -> Vec<Vec<u8>> {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function concat_leading(/* args */) {
-///   // body documented in Rust
+/// function concat_leading(parts: Node[]): number[][] {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 fn concat_leading(parts: &[Node]) -> Vec<Vec<u8>> {
@@ -354,8 +354,8 @@ fn concat_leading(parts: &[Node]) -> Vec<Vec<u8>> {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function alt_leading(/* args */) {
-///   // body documented in Rust
+/// function alt_leading(branches: Node[]): number[][] {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 fn alt_leading(branches: &[Node]) -> Vec<Vec<u8>> {
@@ -381,8 +381,8 @@ fn alt_leading(branches: &[Node]) -> Vec<Vec<u8>> {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function inter_leading(/* args */) {
-///   // body documented in Rust
+/// function inter_leading(operands: Node[]): number[][] {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 fn inter_leading(operands: &[Node]) -> Vec<Vec<u8>> {
@@ -406,8 +406,8 @@ fn inter_leading(operands: &[Node]) -> Vec<Vec<u8>> {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function concat_literal(/* args */) {
-///   // body documented in Rust
+/// function concat_literal(parts: Node[]): number[][] {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 fn concat_literal(parts: &[Node]) -> Vec<Vec<u8>> {
@@ -435,8 +435,8 @@ fn concat_literal(parts: &[Node]) -> Vec<Vec<u8>> {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function better_seed(/* args */) {
-///   // body documented in Rust
+/// function better_seed(best: number[][], candidate: number[][]): number[][] {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 fn better_seed(best: Vec<Vec<u8>>, candidate: Vec<Vec<u8>>) -> Vec<Vec<u8>> {
@@ -454,8 +454,8 @@ fn better_seed(best: Vec<Vec<u8>>, candidate: Vec<Vec<u8>>) -> Vec<Vec<u8>> {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function min_len(/* args */) {
-///   // body documented in Rust
+/// function min_len(seeds: number[][]): number {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 fn min_len(seeds: &[Vec<u8>]) -> usize {

@@ -1,12 +1,13 @@
 // What:  unit tests for position-dependent nullability across every node variant and
 //        the anchor contexts.
-// Why:   acceptance is "the residual is nullable here", so the matcher and the DFA's
-//        accept masks both rest on this function; a flipped case (e.g. Concat using
-//        `any` instead of `all`) would accept or miss empty matches everywhere.
+// Why:     This file groups the nullable test cases so behavior changes fail near the code path
+//          they protect.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// import { /* names from this Rust use line */ } from "./module";
+// describe("nullable", () => {
+//   // test cases below
+// });
 // ```
 
 use super::nullable;
@@ -20,8 +21,8 @@ use crate::context::Ctx;
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function off(/* args */) {
-//   // body documented in Rust
+// function off(): Ctx {
+//   // Rust body below is the implementation.
 // }
 // ```
 fn off() -> Ctx {

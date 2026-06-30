@@ -1,12 +1,13 @@
 // What:  unit tests for Brzozowski byte derivatives, per node variant plus a few
 //        end-to-end derive-a-string checks.
-// Why:   membership is "derive every byte, then test nullability", so the derivative
-//        is the heart of matching; a wrong arm (e.g. Concat not summing over a nullable
-//        prefix) silently changes which strings match.
+// Why:     This file groups the derivative test cases so behavior changes fail near the code
+//          path they protect.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// import { /* names from this Rust use line */ } from "./module";
+// describe("derivative", () => {
+//   // test cases below
+// });
 // ```
 
 use super::derivative;
@@ -29,8 +30,8 @@ fn lit(b: u8) -> Node {
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function matches_interior(/* args */) {
-//   // body documented in Rust
+// function matches_interior(node: Node, input: Uint8Array): boolean {
+//   // Rust body below is the implementation.
 // }
 // ```
 fn matches_interior(node: &Node, input: &[u8]) -> bool {

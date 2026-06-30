@@ -1,11 +1,12 @@
 // What:  unit tests for the smart constructors that keep nodes canonical.
-// Why:   determinization terminates only because equal languages map to equal nodes;
-//        a broken identity/absorb/flatten/sort/dedup would either blow up the state
-//        space or change a language, so each algebraic law gets a direct assertion.
+// Why:     This file groups the smart test cases so behavior changes fail near the code path
+//          they protect.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// import { /* names from this Rust use line */ } from "./module";
+// describe("smart", () => {
+//   // test cases below
+// });
 // ```
 
 use super::{alt, class, comp, concat, inter, optional, repeat};
@@ -18,8 +19,8 @@ use crate::charset::singleton;
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function lit(/* args */) {
-//   // body documented in Rust
+// function lit(b: number): Node {
+//   // Rust body below is the implementation.
 // }
 // ```
 fn lit(b: u8) -> Node {

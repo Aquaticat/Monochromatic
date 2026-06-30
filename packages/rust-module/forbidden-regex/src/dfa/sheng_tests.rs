@@ -1,12 +1,12 @@
 // What:  unit tests for the Sheng in-register transition kernel.
-// Why:   the kernel reimplements the per-byte match loop with a permute and accumulated
-//        acceptance; the only thing that makes it safe to ship is that every verdict
-//        equals the scalar is_match, so each test builds a real <=64-state search DFA and
-//        checks agreement on matches, misses, substring hits, anchors, and the empty line.
+// Why:     This file groups the sheng test cases so behavior changes fail near the code path
+//          they protect.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// import { /* names from this Rust use line */ } from "./module";
+// describe("sheng", () => {
+//   // test cases below
+// });
 // ```
 
 use crate::ast::node::Node;
@@ -21,8 +21,8 @@ use crate::parse::parse;
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function search_dfa(/* args */) {
-//   // body documented in Rust
+// function search_dfa(pattern: string): Dfa {
+//   // Rust body below is the implementation.
 // }
 // ```
 fn search_dfa(pattern: &str) -> Dfa {
@@ -36,8 +36,8 @@ fn search_dfa(pattern: &str) -> Dfa {
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function sheng_agrees(/* args */) {
-//   // body documented in Rust
+// function sheng_agrees(pattern: string, lines: Uint8Array[]): void {
+//   // Rust body below is the implementation.
 // }
 // ```
 fn sheng_agrees(pattern: &str, lines: &[&[u8]]) {
@@ -103,8 +103,8 @@ fn hex_run_full_scan() {
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function flat_dfa(/* args */) {
-//   // body documented in Rust
+// function flat_dfa(num_states: number, nclasses: number): Dfa {
+//   // Rust body below is the implementation.
 // }
 // ```
 fn flat_dfa(num_states: u16, nclasses: u32) -> Dfa {

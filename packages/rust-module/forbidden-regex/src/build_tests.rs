@@ -1,13 +1,13 @@
 // What:  unit tests for rule routing: which matching path (line-start, anchored gate,
 //        plain gate, weak fold) each rule shape takes, and the seedless/reference flags.
-// Why:   the fold is the whole performance story; if a rule routes wrong (a marker not
-//        sent to the line-start check, a leading literal not anchored at its hit) the
-//        engine still matches but pays the slow per-line scan the fold exists to avoid,
-//        and a wrong seedless flag changes which rules join the union oracle.
+// Why:     This file groups the build test cases so behavior changes fail near the code path
+//          they protect.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// import { /* names from this Rust use line */ } from "./module";
+// describe("build", () => {
+//   // test cases below
+// });
 // ```
 
 use super::{build_rule, build_seedless_union, route_rule, starts_with_line_anchor};

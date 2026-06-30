@@ -4,15 +4,12 @@
 //!           byte slices (`&[u8]`, a borrowed read-only view of bytes, not an owned
 //!           `Vec<u8>` or fixed `[u8; N]` array), and internally chooses counting,
 //!           product, or derivative-DFA matcher back-ends plus set-level literal gating.
-//! Why:      The crate-level docs must tell callers the current architecture so they do
-//!           not expect the old eager-DFA-only matcher or a monolithic all-rules DFA.
-//!           `&[u8]` is used instead of `Vec<u8>` because callers keep ownership of each
-//!           scanned line; it is used instead of `[u8; N]` because line lengths vary.
+//! Why:     This file is the Rust module that groups the lib implementation, so a reader can
+//!          enter the package through one named area.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
-//! export { compile, Regex, RegexSet };
-//! // The matcher accepts Uint8Array views and picks internal strategies itself.
+//! // module lib: see exported functions and types below.
 //! ```
 //!
 //! The batch match kernels (`dfa::sheng`/`dfa::sheng2`) use explicit `std::arch` SIMD
@@ -187,8 +184,8 @@ pub use crate::regex::{Regex, RegexSet, compile};
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function debug_seedless(/* args */) {
-///   // body documented in Rust
+/// function debug_seedless(pattern: string): string | null {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 #[doc(hidden)]
@@ -213,8 +210,8 @@ pub fn debug_seedless(pattern: &str) -> Option<String> {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function try_combined_dfa(/* args */) {
-///   // body documented in Rust
+/// function try_combined_dfa(patterns: string[]): number {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 #[doc(hidden)]

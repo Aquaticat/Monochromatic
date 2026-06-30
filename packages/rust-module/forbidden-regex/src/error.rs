@@ -8,12 +8,12 @@
 //! ```
 
 /// What:    Imports the formatter pieces used to render a human-readable error message.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `fmt` directly; importing from `std` keeps each call site
+///          focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { fmt } from "std";
 /// ```
 use std::fmt;
 
@@ -45,8 +45,9 @@ pub enum CompileError {
     /// ```
     Syntax {
         /// What:    Byte offset into the pattern where the problem was detected.
-        /// Why:     The surrounding record stores this value by name so later code can read
-        ///          the same piece of state.
+        /// Why:     `pos` stores byte offset into the pattern where the problem was detected, so
+        ///          matcher code reads that precomputed state by name instead of recomputing or
+        ///          passing it separately.
         ///
         /// In TS you'd write (pseudocode):
         /// ```ts
@@ -54,8 +55,9 @@ pub enum CompileError {
         /// ```
         pos: usize,
         /// What:    Human-readable description of what was rejected.
-        /// Why:     The surrounding record stores this value by name so later code can read
-        ///          the same piece of state.
+        /// Why:     `message` stores human-readable description of what was rejected, so matcher
+        ///          code reads that precomputed state by name instead of recomputing or passing
+        ///          it separately.
         ///
         /// In TS you'd write (pseudocode):
         /// ```ts
@@ -87,8 +89,9 @@ pub enum CompileError {
     /// ```
     StateCap {
         /// What:    State-count limit that was exceeded.
-        /// Why:     The surrounding record stores this value by name so later code can read
-        ///          the same piece of state.
+        /// Why:     `limit` stores state-count limit that was exceeded, so matcher code reads
+        ///          that precomputed state by name instead of recomputing or passing it
+        ///          separately.
         ///
         /// In TS you'd write (pseudocode):
         /// ```ts
@@ -107,8 +110,9 @@ pub enum CompileError {
     /// ```
     Serialize {
         /// What:    Underlying codec failure rendered as text.
-        /// Why:     The surrounding record stores this value by name so later code can read
-        ///          the same piece of state.
+        /// Why:     `message` stores underlying codec failure rendered as text, so matcher code
+        ///          reads that precomputed state by name instead of recomputing or passing it
+        ///          separately.
         ///
         /// In TS you'd write (pseudocode):
         /// ```ts
@@ -129,8 +133,9 @@ pub enum CompileError {
     /// ```
     Invalid {
         /// What:    Description of which invariant the decoded automaton violated.
-        /// Why:     The surrounding record stores this value by name so later code can read
-        ///          the same piece of state.
+        /// Why:     `message` stores description of which invariant the decoded automaton
+        ///          violated, so matcher code reads that precomputed state by name instead of
+        ///          recomputing or passing it separately.
         ///
         /// In TS you'd write (pseudocode):
         /// ```ts
@@ -156,8 +161,8 @@ impl fmt::Display for CompileError {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function fmt(/* args */) {
-    ///   // body documented in Rust
+    /// function fmt(f: fmt.Formatter<'_>): fmt.Result {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {

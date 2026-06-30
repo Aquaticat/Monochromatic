@@ -1,12 +1,12 @@
 // What:  unit tests for the counting simulation's State predicates.
-// Why:   `is_dead` is a thread-prune optimization: a never-pruned thread still yields the
-//        right verdict, so the differential-vs-oracle tests cannot observe it. Its
-//        contract (a fresh state is dead, a seeded one is not) is pinned here directly,
-//        so an inverted or constant predicate cannot pass unnoticed.
+// Why:     This file groups the sim test cases so behavior changes fail near the code path they
+//          protect.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// import { /* names from this Rust use line */ } from "./module";
+// describe("sim", () => {
+//   // test cases below
+// });
 // ```
 
 use super::State;

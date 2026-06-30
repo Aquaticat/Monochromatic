@@ -1,11 +1,12 @@
 // What:  unit tests for the `ByteSet` 256-bit alphabet and the shorthand set builders.
-// Why:   these are tiny, pure functions the rest of the engine trusts; a flipped range
-//        bound or a wrong shorthand would silently corrupt every class, so each gets a
-//        direct membership assertion (and mutation testing leans on exactly this).
+// Why:     This file groups the charset test cases so behavior changes fail near the code path
+//          they protect.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// import { /* names from this Rust use line */ } from "./module";
+// describe("charset", () => {
+//   // test cases below
+// });
 // ```
 
 use super::*;

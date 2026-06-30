@@ -1,12 +1,12 @@
 // What:  unit tests for DFA minimization helpers.
-// Why:   distinct_count drives the refinement fixpoint and sizes the rebuilt table; a
-//        wrong count would either stop refinement early (under-minimized) or mis-size
-//        the rebuild, so it is pinned directly here, with the matching-preservation
-//        property covered in table_tests.
+// Why:     This file groups the minimize test cases so behavior changes fail near the code path
+//          they protect.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// import { /* names from this Rust use line */ } from "./module";
+// describe("minimize", () => {
+//   // test cases below
+// });
 // ```
 
 use super::distinct_count;

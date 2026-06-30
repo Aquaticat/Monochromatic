@@ -8,32 +8,32 @@
 //! ```
 
 /// What:    Imports the serde derives for persisting a compiled automaton.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `Deserialize`, `Serialize` directly; importing from `serde`
+///          keeps each call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { Deserialize, Serialize } from "serde";
 /// ```
 use serde::{Deserialize, Serialize};
 
 /// What:    Imports the error type for validation of a decoded automaton.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `CompileError` directly; importing from `crate/error` keeps each
+///          call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { CompileError } from "crate/error";
 /// ```
 use crate::error::CompileError;
 
 /// What:    Imports the byte set used to report a DFA's possible first match bytes.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `ByteSet` directly; importing from `crate/charset` keeps each
+///          call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { ByteSet } from "crate/charset";
 /// ```
 use crate::charset::ByteSet;
 
@@ -45,8 +45,8 @@ use crate::charset::ByteSet;
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function accept_bit(/* args */) {
-///   // body documented in Rust
+/// function accept_bit(word_after: boolean, line_end: boolean): number {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 pub fn accept_bit(word_after: bool, line_end: bool) -> u8 {
@@ -70,8 +70,8 @@ pub fn accept_bit(word_after: bool, line_end: bool) -> u8 {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Dfa {
     /// What:    Number of distinct byte classes.
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `nclasses` stores number of distinct byte classes, so matcher code reads that
+    ///          precomputed state by name instead of recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -79,8 +79,9 @@ pub struct Dfa {
     /// ```
     pub(crate) nclasses: u32,
     /// What:    Length-256 map from a byte to its class id.
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `class_map` stores length-256 map from a byte to its class id, so matcher code
+    ///          reads that precomputed state by name instead of recomputing or passing it
+    ///          separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -88,8 +89,9 @@ pub struct Dfa {
     /// ```
     pub(crate) class_map: Vec<u8>,
     /// What:    Per-class flag: is a byte of this class a word byte (for `\b`)?
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `class_word` stores per-class flag: is a byte of this class a word byte (for
+    ///          `\b`)?, so matcher code reads that precomputed state by name instead of
+    ///          recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -97,8 +99,9 @@ pub struct Dfa {
     /// ```
     pub(crate) class_word: Vec<bool>,
     /// What:    Per-class flag: is a byte of this class a newline (for `^`/`$`)?
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `class_newline` stores per-class flag: is a byte of this class a newline (for
+    ///          `^`/`$`)?, so matcher code reads that precomputed state by name instead of
+    ///          recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -111,8 +114,12 @@ pub struct Dfa {
     /// the hot match loop reads one entry per byte, so a denser table fits more of the
     /// automaton in cache; the build caps states at 65534, well above any real rule's
     /// (and the engine cap of 20000), so a `u16` id never overflows.
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `trans` stores state ids are `u16`, so the table is half the width of a `u32`
+    ///          one. Why: the hot match loop reads one entry per byte, so a denser table fits
+    ///          more of the automaton in cache; the build caps states at 65534, well above any
+    ///          real rule's (and the engine cap of 20000), so a `u16` id never overflows, so
+    ///          matcher code reads that precomputed state by name instead of recomputing or
+    ///          passing it separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -120,8 +127,9 @@ pub struct Dfa {
     /// ```
     pub(crate) trans: Vec<u16>,
     /// What:    Per-state acceptance mask over the four `(word_after, line_end)` contexts.
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `accept` stores per-state acceptance mask over the four `(word_after, line_end)`
+    ///          contexts, so matcher code reads that precomputed state by name instead of
+    ///          recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -129,8 +137,8 @@ pub struct Dfa {
     /// ```
     pub(crate) accept: Vec<u8>,
     /// What:    Start state id.
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `start` stores start state id, so matcher code reads that precomputed state by
+    ///          name instead of recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -138,8 +146,8 @@ pub struct Dfa {
     /// ```
     pub(crate) start: u16,
     /// What:    Total number of states.
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `num_states` stores total number of states, so matcher code reads that
+    ///          precomputed state by name instead of recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -152,8 +160,11 @@ pub struct Dfa {
     /// disables the exit. Why: an anchored DFA dies on the first non-matching byte, so
     /// without this the loop walks the rest of the line for nothing; this is the bulk
     /// of the gate's per-hit and line-start cost.
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `dead` stores the dead state the match loop early-exits on; `num_states` (no
+    ///          real id) disables the exit. Why: an anchored DFA dies on the first non-matching
+    ///          byte, so without this the loop walks the rest of the line for nothing; this is
+    ///          the bulk of the gate's per-hit and line-start cost, so matcher code reads that
+    ///          precomputed state by name instead of recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -180,8 +191,8 @@ impl Dfa {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function from_parts(/* args */) {
-    ///   // body documented in Rust
+    /// function from_parts(nclasses: number, class_map: number[], class_word: boolean[], class_newline: boolean[], trans: number[], accept: number[], start: number, num_states: number): Dfa {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     #[allow(clippy::too_many_arguments)]
@@ -218,8 +229,8 @@ impl Dfa {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function is_match(/* args */) {
-    ///   // body documented in Rust
+    /// function is_match(line: Uint8Array): boolean {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     pub fn is_match(&self, line: &[u8]) -> bool {
@@ -271,8 +282,8 @@ impl Dfa {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function mark_first_bytes(/* args */) {
-    ///   // body documented in Rust
+    /// function mark_first_bytes(set: ByteSet): void {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     pub fn mark_first_bytes(&self, set: &mut ByteSet) {
@@ -296,8 +307,8 @@ impl Dfa {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function validate(/* args */) {
-    ///   // body documented in Rust
+    /// function validate(): void {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     pub fn validate(&self) -> Result<(), CompileError> {
@@ -379,8 +390,8 @@ mod tests;
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function find_dead(/* args */) {
-///   // body documented in Rust
+/// function find_dead(trans: number[], accept: Uint8Array, nclasses: number, num_states: number): number {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 fn find_dead(trans: &[u16], accept: &[u8], nclasses: u32, num_states: u16) -> u16 {

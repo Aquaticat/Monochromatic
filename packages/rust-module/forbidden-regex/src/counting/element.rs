@@ -1,6 +1,6 @@
 //! What:    The element leaf type and its decode-time validation.
-//! Why:     This file is the Rust module that groups the element implementation, so a reader
-//!          can enter the package through one named area.
+//! Why:     This file is the Rust module that groups the element implementation, so a reader can
+//!          enter the package through one named area.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -8,32 +8,32 @@
 //! ```
 
 /// What:    Imports the serde derives so an element can be persisted.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `Deserialize`, `Serialize` directly; importing from `serde`
+///          keeps each call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { Deserialize, Serialize } from "serde";
 /// ```
 use serde::{Deserialize, Serialize};
 
 /// What:    Imports the byte-set leaf type carried by class and counted elements.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `ByteSet` directly; importing from `crate/charset` keeps each
+///          call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { ByteSet } from "crate/charset";
 /// ```
 use crate::charset::ByteSet;
 
 /// What:    Imports the error type for validating a decoded element.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `CompileError` directly; importing from `crate/error` keeps each
+///          call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { CompileError } from "crate/error";
 /// ```
 use crate::error::CompileError;
 
@@ -45,7 +45,7 @@ use crate::error::CompileError;
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// const const: unknown = /* value below */;
+/// const MAX_DECODED_COUNT: number = 1 << 16;
 /// ```
 pub(crate) const MAX_DECODED_COUNT: usize = 1 << 16;
 
@@ -92,17 +92,18 @@ pub enum Element {
     /// ```
     Counted {
         /// What:    Byte set each repetition must match.
-        /// Why:     The surrounding record stores this value by name so later code can read
-        ///          the same piece of state.
+        /// Why:     `set` stores byte set each repetition must match, so matcher code reads that
+        ///          precomputed state by name instead of recomputing or passing it separately.
         ///
         /// In TS you'd write (pseudocode):
         /// ```ts
-        /// set: unknown;
+        /// set: ByteSet;
         /// ```
         set: ByteSet,
         /// What:    Fewest repetitions that satisfy the element.
-        /// Why:     The surrounding record stores this value by name so later code can read
-        ///          the same piece of state.
+        /// Why:     `min` stores fewest repetitions that satisfy the element, so matcher code
+        ///          reads that precomputed state by name instead of recomputing or passing it
+        ///          separately.
         ///
         /// In TS you'd write (pseudocode):
         /// ```ts
@@ -110,8 +111,8 @@ pub enum Element {
         /// ```
         min: usize,
         /// What:    Most repetitions the element admits.
-        /// Why:     The surrounding record stores this value by name so later code can read
-        ///          the same piece of state.
+        /// Why:     `max` stores most repetitions the element admits, so matcher code reads that
+        ///          precomputed state by name instead of recomputing or passing it separately.
         ///
         /// In TS you'd write (pseudocode):
         /// ```ts
@@ -156,8 +157,8 @@ pub enum Element {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function validate_element(/* args */) {
-///   // body documented in Rust
+/// function validate_element(element: Element): void {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 pub(crate) fn validate_element(element: &Element) -> Result<(), CompileError> {

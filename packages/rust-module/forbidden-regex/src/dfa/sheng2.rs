@@ -16,12 +16,22 @@
 //! ```
 
 /// What:    Imports the AVX-512 permute and bitwise intrinsics for the x86 path.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `__m512i`, `_mm512_loadu_si512`, `_mm512_or_si512`,
+///          `_mm512_permutexvar_epi8`, `_mm512_set1_epi8`, `_mm512_setzero_si512`,
+///          `_mm512_test_epi8_mask` directly; importing from `std/arch/x86_64` keeps each call
+///          site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import {
+///   __m512i,
+///   _mm512_loadu_si512,
+///   _mm512_or_si512,
+///   _mm512_permutexvar_epi8,
+///   _mm512_set1_epi8,
+///   _mm512_setzero_si512,
+///   _mm512_test_epi8_mask,
+/// } from "std/arch/x86_64";
 /// ```
 #[cfg(target_arch = "x86_64")]
 use std::arch::x86_64::{
@@ -30,23 +40,30 @@ use std::arch::x86_64::{
 };
 
 /// What:    Imports the NEON table-lookup and reduce intrinsics for the arm64 path.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `vdupq_n_u8`, `vld1q_u8_x4`, `vmaxvq_u8`, `vorrq_u8`,
+///          `vqtbl4q_u8` directly; importing from `std/arch/aarch64` keeps each call site
+///          focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import {
+///   vdupq_n_u8,
+///   vld1q_u8_x4,
+///   vmaxvq_u8,
+///   vorrq_u8,
+///   vqtbl4q_u8,
+/// } from "std/arch/aarch64";
 /// ```
 #[cfg(target_arch = "aarch64")]
 use std::arch::aarch64::{vdupq_n_u8, vld1q_u8_x4, vmaxvq_u8, vorrq_u8, vqtbl4q_u8};
 
 /// What:    Imports the DFA table.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `Dfa` directly; importing from `crate/dfa/table` keeps each call
+///          site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { Dfa } from "crate/dfa/table";
 /// ```
 use crate::dfa::table::Dfa;
 
@@ -55,7 +72,7 @@ use crate::dfa::table::Dfa;
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// const SHENG2_MAX_STATES: unknown = /* value below */;
+/// const SHENG2_MAX_STATES: number = 64;
 /// ```
 const SHENG2_MAX_STATES: usize = 64;
 
@@ -64,7 +81,7 @@ const SHENG2_MAX_STATES: usize = 64;
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// const SHENG2_MAX_CLASSES: unknown = /* value below */;
+/// const SHENG2_MAX_CLASSES: number = 16;
 /// ```
 const SHENG2_MAX_CLASSES: usize = 16;
 
@@ -73,7 +90,7 @@ const SHENG2_MAX_CLASSES: usize = 16;
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// const ACCEPT_ALL: unknown = /* value below */;
+/// const ACCEPT_ALL: number = 0x0F;
 /// ```
 const ACCEPT_ALL: u8 = 0x0F;
 
@@ -92,53 +109,57 @@ const ACCEPT_ALL: u8 = 0x0F;
 /// ```
 struct Sheng2Tables {
     /// What:    `t2[c0 * nc + c1][s]` = state after consuming class `c0` then `c1` from `s`.
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `t2` stores `t2[c0 * nc + c1][s]` = state after consuming class `c0` then `c1`
+    ///          from `s`, so matcher code reads that precomputed state by name instead of
+    ///          recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// t2: unknown[][];
+    /// t2: number[][];
     /// ```
     t2: Vec<[u8; SHENG2_MAX_STATES]>,
     /// What:    `a2[c0 * nc + c1][s]` = 0xFF if `s` or the in-between state accepts, else 0.
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `a2` stores `a2[c0 * nc + c1][s]` = 0xFF if `s` or the in-between state accepts,
+    ///          else 0, so matcher code reads that precomputed state by name instead of
+    ///          recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// a2: unknown[][];
+    /// a2: number[][];
     /// ```
     a2: Vec<[u8; SHENG2_MAX_STATES]>,
     /// What:    `trans1[c][s]` = state after one byte of class `c`, for a trailing odd byte.
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `trans1` stores `trans1[c][s]` = state after one byte of class `c`, for a
+    ///          trailing odd byte, so matcher code reads that precomputed state by name instead
+    ///          of recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// trans1: unknown[][];
+    /// trans1: number[][];
     /// ```
     trans1: Vec<[u8; SHENG2_MAX_STATES]>,
     /// What:    `accept[s]` = 0xFF if state `s` accepts (position-independent, so one bit).
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `accept` stores `accept[s]` = 0xFF if state `s` accepts (position-independent,
+    ///          so one bit), so matcher code reads that precomputed state by name instead of
+    ///          recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// accept: unknown[];
+    /// accept: number[];
     /// ```
     accept: [u8; SHENG2_MAX_STATES],
     /// What:    Byte-to-class map copied for the scan.
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `class_map` stores byte-to-class map copied for the scan, so matcher code reads
+    ///          that precomputed state by name instead of recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// class_map: unknown[];
+    /// class_map: number[];
     /// ```
     class_map: [u8; 256],
     /// What:    Number of byte classes.
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `nc` stores number of byte classes, so matcher code reads that precomputed state
+    ///          by name instead of recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -146,8 +167,8 @@ struct Sheng2Tables {
     /// ```
     nc: usize,
     /// What:    Start state id.
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `start` stores start state id, so matcher code reads that precomputed state by
+    ///          name instead of recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -174,8 +195,8 @@ impl Dfa {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function build_sheng2(/* args */) {
-    ///   // body documented in Rust
+    /// function build_sheng2(): Sheng2Tables | null {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     fn build_sheng2(&self) -> Option<Sheng2Tables> {
@@ -223,8 +244,8 @@ impl Dfa {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function is_match_batch_sheng2(/* args */) {
-    ///   // body documented in Rust
+    /// function is_match_batch_sheng2(lines: Uint8Array[], out: boolean[]): void {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     pub fn is_match_batch_sheng2(&self, lines: &[&[u8]], out: &mut [bool]) {
@@ -290,8 +311,8 @@ impl Dfa {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function sheng2_all_avx512(/* args */) {
-///   // body documented in Rust
+/// function sheng2_all_avx512(tables: Sheng2Tables, lines: Uint8Array[], out: boolean[]): void {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 #[cfg(target_arch = "x86_64")]
@@ -337,8 +358,8 @@ unsafe fn sheng2_all_avx512(tables: &Sheng2Tables, lines: &[&[u8]], out: &mut [b
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function sheng2_line_neon(/* args */) {
-///   // body documented in Rust
+/// function sheng2_line_neon(tables: Sheng2Tables, line: Uint8Array): boolean {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 #[cfg(target_arch = "aarch64")]

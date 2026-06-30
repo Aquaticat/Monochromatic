@@ -1,11 +1,12 @@
 // What:  unit tests for counting-NFA decode validation.
-// Why:   a decoded NFA is executed on attacker-influenced input, so validate must reject
-//        any structurally inconsistent or out-of-range NFA before it runs; these corrupt
-//        a good NFA one field at a time and assert rejection.
+// Why:     This file groups the nfa test cases so behavior changes fail near the code path they
+//          protect.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// import { /* names from this Rust use line */ } from "./module";
+// describe("nfa", () => {
+//   // test cases below
+// });
 // ```
 
 use super::CountingNfa;

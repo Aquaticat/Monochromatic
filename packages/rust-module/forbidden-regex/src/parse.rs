@@ -58,62 +58,62 @@ mod repeat;
 mod grammar;
 
 /// What:    Imports the node algebra produced by parsing.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `Node` directly; importing from `crate/ast/node` keeps each call
+///          site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { Node } from "crate/ast/node";
 /// ```
 use crate::ast::node::Node;
 
 /// What:    Imports the boundary context used by the empty-match guard.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `Ctx` directly; importing from `crate/context` keeps each call
+///          site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { Ctx } from "crate/context";
 /// ```
 use crate::context::Ctx;
 
 /// What:    Imports the error type.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `CompileError` directly; importing from `crate/error` keeps each
+///          call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { CompileError } from "crate/error";
 /// ```
 use crate::error::CompileError;
 
 /// What:    Imports nullability for the empty-match guard.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `nullable` directly; importing from `crate/nullable` keeps each
+///          call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { nullable } from "crate/nullable";
 /// ```
 use crate::nullable::nullable;
 
 /// What:    Imports the cursor.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `Cursor` directly; importing from `cursor` keeps each call site
+///          focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { Cursor } from "cursor";
 /// ```
 use cursor::Cursor;
 
 /// What:    Imports the grammar entry point.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `parse_setexpr` directly; importing from `grammar` keeps each
+///          call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { parse_setexpr } from "grammar";
 /// ```
 use grammar::parse_setexpr;
 
@@ -126,8 +126,8 @@ use grammar::parse_setexpr;
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function parse(/* args */) {
-///   // body documented in Rust
+/// function parse(pattern: string): Node {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 pub fn parse(pattern: &str) -> Result<Node, CompileError> {
@@ -162,8 +162,8 @@ pub fn parse(pattern: &str) -> Result<Node, CompileError> {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function can_match_empty(/* args */) {
-///   // body documented in Rust
+/// function can_match_empty(node: Node): boolean {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 fn can_match_empty(node: &Node) -> bool {

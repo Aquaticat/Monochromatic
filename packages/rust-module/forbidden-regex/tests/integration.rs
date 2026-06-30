@@ -1,6 +1,6 @@
 //! What:    End-to-end tests exercising the public API across the compilation boundary.
-//! Why:     This file is the Rust module that groups the integration implementation, so a
-//!          reader can enter the package through one named area.
+//! Why:     This file is the Rust module that groups the integration implementation, so a reader
+//!          can enter the package through one named area.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -14,7 +14,7 @@ use forbidden_regex::{CompileError, RegexSet, compile};
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// const AKIA_KEY: unknown = /* value below */;
+/// const AKIA_KEY: string = "AKIAABCDEFGHIJKLMNOP";
 /// ```
 const AKIA_KEY: &str = "AKIAABCDEFGHIJKLMNOP";
 
@@ -199,7 +199,7 @@ fn from_ruleset_splits_on_delimiter() {
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// const STRUCTURAL_CRASH: unknown = /* value below */;
+// const STRUCTURAL_CRASH: Uint8Array = &[;
 // ```
 const STRUCTURAL_CRASH: &[u8] = &[
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -542,8 +542,8 @@ fn nested_group_repetition_compiles_and_matches() {
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function pathological_nested_repetition_terminates_without_oom(/* args */) {
-//   // body documented in Rust
+// function pathological_nested_repetition_terminates_without_oom(): void {
+//   // Rust body below is the implementation.
 // }
 // ```
 #[test]

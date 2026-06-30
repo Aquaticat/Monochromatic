@@ -8,22 +8,22 @@
 //! ```
 
 /// What:    Imports the byte-set leaf type for the `class` constructor.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `ByteSet` directly; importing from `crate/charset` keeps each
+///          call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { ByteSet } from "crate/charset";
 /// ```
 use crate::charset::ByteSet;
 
 /// What:    Imports the node algebra these constructors build.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `Node` directly; importing from `crate/ast/node` keeps each call
+///          site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { Node } from "crate/ast/node";
 /// ```
 use crate::ast::node::Node;
 
@@ -35,8 +35,8 @@ use crate::ast::node::Node;
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function concat(/* args */) {
-///   // body documented in Rust
+/// function concat(parts: Node[]): Node {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 pub fn concat(parts: Vec<Node>) -> Node {
@@ -90,8 +90,8 @@ pub fn concat(parts: Vec<Node>) -> Node {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function alt(/* args */) {
-///   // body documented in Rust
+/// function alt(parts: Node[]): Node {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 pub fn alt(parts: Vec<Node>) -> Node {
@@ -140,8 +140,8 @@ pub fn alt(parts: Vec<Node>) -> Node {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function inter(/* args */) {
-///   // body documented in Rust
+/// function inter(parts: Node[]): Node {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 pub fn inter(parts: Vec<Node>) -> Node {
@@ -188,8 +188,8 @@ pub fn inter(parts: Vec<Node>) -> Node {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function comp(/* args */) {
-///   // body documented in Rust
+/// function comp(inner: Node): Node {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 pub fn comp(inner: Node) -> Node {
@@ -210,8 +210,8 @@ pub fn comp(inner: Node) -> Node {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function repeat(/* args */) {
-///   // body documented in Rust
+/// function repeat(node: Node, min: number, max: number): Node {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 pub fn repeat(node: Node, min: usize, max: usize) -> Node {
@@ -238,8 +238,8 @@ pub fn repeat(node: Node, min: usize, max: usize) -> Node {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function optional(/* args */) {
-///   // body documented in Rust
+/// function optional(node: Node): Node {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 pub fn optional(node: Node) -> Node {
@@ -254,8 +254,8 @@ pub fn optional(node: Node) -> Node {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function class(/* args */) {
-///   // body documented in Rust
+/// function class(set: ByteSet): Node {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 pub fn class(set: ByteSet) -> Node {

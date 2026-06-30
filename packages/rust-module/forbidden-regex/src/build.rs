@@ -12,72 +12,80 @@
 //! ```
 
 /// What:    Imports the node algebra the builders read.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `Node` directly; importing from `crate/ast/node` keeps each call
+///          site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { Node } from "crate/ast/node";
 /// ```
 use crate::ast::node::Node;
 
 /// What:    Imports the alternation and concatenation constructors.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `alt`, `concat` directly; importing from `crate/ast/smart` keeps
+///          each call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { alt, concat } from "crate/ast/smart";
 /// ```
 use crate::ast::smart::{alt, concat};
 
 /// What:    Imports the NFA, product, and counting-NFA types for the back-end selection.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `CountingNfa`, `build_nfa`, `build_product` directly; importing
+///          from `crate/counting` keeps each call site focused on the matcher logic instead of
+///          the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { CountingNfa, build_nfa, build_product } from "crate/counting";
 /// ```
 use crate::counting::{CountingNfa, build_nfa, build_product};
 
 /// What:    Imports the seed extractors and leading-seed probes (default and weak floors).
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `leading_seeds`, `leading_seeds_min`, `seeds_from_node`,
+///          `seeds_from_node_min` directly; importing from `crate/counting` keeps each call site
+///          focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import {
+///   leading_seeds,
+///   leading_seeds_min,
+///   seeds_from_node,
+///   seeds_from_node_min,
+/// } from "crate/counting";
 /// ```
 use crate::counting::{leading_seeds, leading_seeds_min, seeds_from_node, seeds_from_node_min};
 
 /// What:    Imports the DFA builder and minimizer for the general back-end.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `build_dfa_within`, `minimize` directly; importing from
+///          `crate/dfa` keeps each call site focused on the matcher logic instead of the full
+///          Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { build_dfa_within, minimize } from "crate/dfa";
 /// ```
 use crate::dfa::{build_dfa_within, minimize};
 
 /// What:    Imports the per-pattern back-end and its kind.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `Engine`, `EngineKind` directly; importing from `crate/engine`
+///          keeps each call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { Engine, EngineKind } from "crate/engine";
 /// ```
 use crate::engine::{Engine, EngineKind};
 
 /// What:    Imports the error type.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `CompileError` directly; importing from `crate/error` keeps each
+///          call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { CompileError } from "crate/error";
 /// ```
 use crate::error::CompileError;
 
@@ -88,7 +96,7 @@ use crate::error::CompileError;
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// const ENGINE_DFA_CAP: unknown = /* value below */;
+/// const ENGINE_DFA_CAP: number = 20_000;
 /// ```
 const ENGINE_DFA_CAP: usize = 20_000;
 
@@ -101,7 +109,7 @@ const ENGINE_DFA_CAP: usize = 20_000;
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// const WEAK_LEADING_SEED_LEN: unknown = /* value below */;
+/// const WEAK_LEADING_SEED_LEN: number = 2;
 /// ```
 const WEAK_LEADING_SEED_LEN: usize = 2;
 
@@ -115,7 +123,7 @@ const WEAK_LEADING_SEED_LEN: usize = 2;
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// const WEAK_INNER_SEED_LEN: unknown = /* value below */;
+/// const WEAK_INNER_SEED_LEN: number = 1;
 /// ```
 const WEAK_INNER_SEED_LEN: usize = 1;
 
@@ -127,8 +135,8 @@ const WEAK_INNER_SEED_LEN: usize = 1;
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function search_root(/* args */) {
-///   // body documented in Rust
+/// function search_root(node: Node): Node {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 fn search_root(node: Node) -> Node {
@@ -144,8 +152,8 @@ fn search_root(node: Node) -> Node {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function anchored_engine(/* args */) {
-///   // body documented in Rust
+/// function anchored_engine(node: Node): Engine | null {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 fn anchored_engine(node: &Node) -> Option<Engine> {
@@ -161,8 +169,8 @@ fn anchored_engine(node: &Node) -> Option<Engine> {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function build_table_kind(/* args */) {
-///   // body documented in Rust
+/// function build_table_kind(node: Node): EngineKind {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 fn build_table_kind(node: Node) -> Result<EngineKind, CompileError> {
@@ -181,8 +189,8 @@ fn build_table_kind(node: Node) -> Result<EngineKind, CompileError> {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function build_counting_kind(/* args */) {
-///   // body documented in Rust
+/// function build_counting_kind(node: Node): EngineKind {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 fn build_counting_kind(node: Node) -> Result<EngineKind, CompileError> {
@@ -213,8 +221,8 @@ fn build_counting_kind(node: Node) -> Result<EngineKind, CompileError> {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function build_engine(/* args */) {
-///   // body documented in Rust
+/// function build_engine(node: Node): Engine {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 pub(crate) fn build_engine(node: Node) -> Result<Engine, CompileError> {
@@ -242,8 +250,9 @@ pub(crate) fn build_engine(node: Node) -> Result<Engine, CompileError> {
 /// ```
 pub(crate) struct Routing {
     /// What:    Required-literal seeds the gate prefilters and attributes on; empty when none.
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `seeds` stores required-literal seeds the gate prefilters and attributes on;
+    ///          empty when none, so matcher code reads that precomputed state by name instead of
+    ///          recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -251,22 +260,24 @@ pub(crate) struct Routing {
     /// ```
     pub(crate) seeds: Vec<Vec<u8>>,
     /// What:    Anchored DFA run at a leading-seed hit, when the rule has a leading literal.
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `anchored` stores anchored DFA run at a leading-seed hit, when the rule has a
+    ///          leading literal, so matcher code reads that precomputed state by name instead of
+    ///          recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// anchored: unknown | null;
+    /// anchored: Engine | null;
     /// ```
     pub(crate) anchored: Option<Engine>,
     /// What:    Anchored DFA run at every line start, for a `^`-anchored otherwise-seedless
     ///          rule.
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `line_start` stores anchored DFA run at every line start, for a `^`-anchored
+    ///          otherwise-seedless rule, so matcher code reads that precomputed state by name
+    ///          instead of recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// line_start: unknown | null;
+    /// line_start: Engine | null;
     /// ```
     pub(crate) line_start: Option<Engine>,
 }
@@ -286,26 +297,27 @@ pub(crate) struct Routing {
 /// ```
 pub(crate) struct BuiltRule {
     /// What:    The compiled per-rule engine.
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `engine` stores the compiled per-rule engine, so matcher code reads that
+    ///          precomputed state by name instead of recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// engine: unknown;
+    /// engine: Engine;
     /// ```
     pub(crate) engine: Engine,
     /// What:    How the rule is matched after the fold.
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `routing` stores how the rule is matched after the fold, so matcher code reads
+    ///          that precomputed state by name instead of recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// routing: unknown;
+    /// routing: Routing;
     /// ```
     pub(crate) routing: Routing,
     /// What:    Whether the rule still has no usable filter (gate, anchor, nor line-start).
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `seedless` stores whether the rule still has no usable filter (gate, anchor, nor
+    ///          line-start), so matcher code reads that precomputed state by name instead of
+    ///          recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -313,21 +325,23 @@ pub(crate) struct BuiltRule {
     /// ```
     pub(crate) seedless: bool,
     /// What:    Parsed node, kept for a truly-seedless rule so it can join a union DFA.
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `node` stores parsed node, kept for a truly-seedless rule so it can join a union
+    ///          DFA, so matcher code reads that precomputed state by name instead of recomputing
+    ///          or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// node: unknown | null;
+    /// node: Node | null;
     /// ```
     pub(crate) node: Option<Node>,
     /// What:    Parsed node, kept for any rule seedless at the default floor, for the oracle.
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `reference_node` stores parsed node, kept for any rule seedless at the default
+    ///          floor, for the oracle, so matcher code reads that precomputed state by name
+    ///          instead of recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// reference_node: unknown | null;
+    /// reference_node: Node | null;
     /// ```
     pub(crate) reference_node: Option<Node>,
 }
@@ -340,8 +354,8 @@ pub(crate) struct BuiltRule {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function starts_with_line_anchor(/* args */) {
-///   // body documented in Rust
+/// function starts_with_line_anchor(node: Node): boolean {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 fn starts_with_line_anchor(node: &Node) -> bool {
@@ -357,8 +371,8 @@ fn starts_with_line_anchor(node: &Node) -> bool {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function fold_seedless(/* args */) {
-///   // body documented in Rust
+/// function fold_seedless(node: Node): Routing {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 fn fold_seedless(node: &Node) -> Routing {
@@ -388,8 +402,8 @@ fn fold_seedless(node: &Node) -> Routing {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function route_rule(/* args */) {
-///   // body documented in Rust
+/// function route_rule(node: Node): Routing {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 fn route_rule(node: &Node) -> Routing {
@@ -428,8 +442,8 @@ fn route_rule(node: &Node) -> Routing {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function build_rule(/* args */) {
-///   // body documented in Rust
+/// function build_rule(node: Node): BuiltRule {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 pub(crate) fn build_rule(node: Node) -> Result<BuiltRule, CompileError> {
@@ -472,8 +486,8 @@ pub(crate) fn build_rule(node: Node) -> Result<BuiltRule, CompileError> {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function build_seedless_union(/* args */) {
-///   // body documented in Rust
+/// function build_seedless_union(nodes: Node[]): CountingNfa | null {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 pub(crate) fn build_seedless_union(nodes: &[Node]) -> Option<CountingNfa> {
@@ -492,8 +506,8 @@ pub(crate) fn build_seedless_union(nodes: &[Node]) -> Option<CountingNfa> {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function line_start_match(/* args */) {
-///   // body documented in Rust
+/// function line_start_match(engine: Engine, line: Uint8Array): boolean {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 pub(crate) fn line_start_match(engine: &Engine, line: &[u8]) -> bool {

@@ -8,62 +8,63 @@
 //! ```
 
 /// What:    Imports the byte-set accumulator and node constructor.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `ByteSet` directly; importing from `crate/charset` keeps each
+///          call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { ByteSet } from "crate/charset";
 /// ```
 use crate::charset::ByteSet;
 
 /// What:    Imports the node algebra produced by a class.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `Node` directly; importing from `crate/ast/node` keeps each call
+///          site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { Node } from "crate/ast/node";
 /// ```
 use crate::ast::node::Node;
 
 /// What:    Imports the class smart constructor (collapses an empty set to `Fail`).
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `class` directly; importing from `crate/ast/smart` keeps each
+///          call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { class } from "crate/ast/smart";
 /// ```
 use crate::ast::smart::class;
 
 /// What:    Imports the error type for malformed classes.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `CompileError` directly; importing from `crate/error` keeps each
+///          call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { CompileError } from "crate/error";
 /// ```
 use crate::error::CompileError;
 
 /// What:    Imports the cursor.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `Cursor` directly; importing from `crate/parse/cursor` keeps
+///          each call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { Cursor } from "crate/parse/cursor";
 /// ```
 use crate::parse::cursor::Cursor;
 
 /// What:    Imports the escape parser and its result kind.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `EscapeResult`, `parse_escape` directly; importing from
+///          `crate/parse/escape` keeps each call site focused on the matcher logic instead of
+///          the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { EscapeResult, parse_escape } from "crate/parse/escape";
 /// ```
 use crate::parse::escape::{EscapeResult, parse_escape};
 
@@ -129,8 +130,8 @@ enum ClassAtom {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function parse_class(/* args */) {
-///   // body documented in Rust
+/// function parse_class(cur: Cursor): Node {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 pub fn parse_class(cur: &mut Cursor) -> Result<Node, CompileError> {
@@ -189,8 +190,8 @@ pub fn parse_class(cur: &mut Cursor) -> Result<Node, CompileError> {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function read_class_element(/* args */) {
-///   // body documented in Rust
+/// function read_class_element(cur: Cursor, pos: number, set: ByteSet): void {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 fn read_class_element(cur: &mut Cursor, pos: usize, set: &mut ByteSet) -> Result<(), CompileError> {
@@ -249,8 +250,8 @@ fn read_class_element(cur: &mut Cursor, pos: usize, set: &mut ByteSet) -> Result
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function parse_class_atom(/* args */) {
-///   // body documented in Rust
+/// function parse_class_atom(cur: Cursor): ClassAtom {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 fn parse_class_atom(cur: &mut Cursor) -> Result<ClassAtom, CompileError> {

@@ -8,22 +8,22 @@
 //! ```
 
 /// What:    Imports the hash map used to assign colors from signatures.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `HashMap` directly; importing from `std/collections` keeps each
+///          call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { HashMap } from "std/collections";
 /// ```
 use std::collections::HashMap;
 
 /// What:    Imports the table type being minimized.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `Dfa` directly; importing from `crate/dfa/table` keeps each call
+///          site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { Dfa } from "crate/dfa/table";
 /// ```
 use crate::dfa::table::Dfa;
 
@@ -39,8 +39,8 @@ use crate::dfa::table::Dfa;
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function minimize(/* args */) {
-///   // body documented in Rust
+/// function minimize(dfa: Dfa): Dfa {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 pub fn minimize(dfa: &Dfa) -> Dfa {
@@ -81,8 +81,8 @@ pub fn minimize(dfa: &Dfa) -> Dfa {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function initial_colors(/* args */) {
-///   // body documented in Rust
+/// function initial_colors(dfa: Dfa, n: number): number[] {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 fn initial_colors(dfa: &Dfa, n: usize) -> Vec<u32> {
@@ -103,8 +103,8 @@ fn initial_colors(dfa: &Dfa, n: usize) -> Vec<u32> {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function refine(/* args */) {
-///   // body documented in Rust
+/// function refine(dfa: Dfa, color: number[], n: number, nc: number): (Vec<u32>, usize) {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 fn refine(dfa: &Dfa, color: &[u32], n: usize, nc: usize) -> (Vec<u32>, usize) {
@@ -137,8 +137,8 @@ fn refine(dfa: &Dfa, color: &[u32], n: usize, nc: usize) -> (Vec<u32>, usize) {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function distinct_count(/* args */) {
-///   // body documented in Rust
+/// function distinct_count(color: number[]): number {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 fn distinct_count(color: &[u32]) -> usize {
@@ -168,8 +168,8 @@ mod tests;
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function rebuild(/* args */) {
-///   // body documented in Rust
+/// function rebuild(dfa: Dfa, color: number[], count: number, nc: number): Dfa {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 fn rebuild(dfa: &Dfa, color: &[u32], count: usize, nc: usize) -> Dfa {

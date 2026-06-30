@@ -12,42 +12,43 @@
 //! ```
 
 /// What:    Imports the node algebra combined into each group.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `Node` directly; importing from `crate/ast/node` keeps each call
+///          site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { Node } from "crate/ast/node";
 /// ```
 use crate::ast::node::Node;
 
 /// What:    Imports the constructors that wrap a group for unanchored search.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `alt`, `concat` directly; importing from `crate/ast/smart` keeps
+///          each call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { alt, concat } from "crate/ast/smart";
 /// ```
 use crate::ast::smart::{alt, concat};
 
 /// What:    Imports the DFA builder and minimizer for each group.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `build_dfa_within`, `minimize` directly; importing from
+///          `crate/dfa` keeps each call site focused on the matcher logic instead of the full
+///          Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { build_dfa_within, minimize } from "crate/dfa";
 /// ```
 use crate::dfa::{build_dfa_within, minimize};
 
 /// What:    Imports the engine wrapper each group DFA becomes.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `Engine`, `EngineKind` directly; importing from `crate/engine`
+///          keeps each call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { Engine, EngineKind } from "crate/engine";
 /// ```
 use crate::engine::{Engine, EngineKind};
 
@@ -59,7 +60,7 @@ use crate::engine::{Engine, EngineKind};
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// const GROUP_DFA_CAP: unknown = /* value below */;
+/// const GROUP_DFA_CAP: number = 6_000;
 /// ```
 const GROUP_DFA_CAP: usize = 6_000;
 
@@ -70,8 +71,8 @@ const GROUP_DFA_CAP: usize = 6_000;
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function search_wrap(/* args */) {
-///   // body documented in Rust
+/// function search_wrap(node: Node): Node {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 fn search_wrap(node: Node) -> Node {
@@ -85,8 +86,8 @@ fn search_wrap(node: Node) -> Node {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function group_engine(/* args */) {
-///   // body documented in Rust
+/// function group_engine(node: Node): Engine | null {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 fn group_engine(node: Node) -> Option<Engine> {
@@ -104,8 +105,8 @@ fn group_engine(node: Node) -> Option<Engine> {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function grow_groups(/* args */) {
-///   // body documented in Rust
+/// function grow_groups(nodes: Node[]): Node[] {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 fn grow_groups(nodes: Vec<Node>) -> Vec<Node> {
@@ -131,8 +132,8 @@ fn grow_groups(nodes: Vec<Node>) -> Vec<Node> {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function groupSeedless(nodes: Node[]): Engine[] {
-///   return growGroups(nodes).map(groupEngine).filter(Boolean);
+/// function group_seedless(nodes: Node[]): Engine[] {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 ///

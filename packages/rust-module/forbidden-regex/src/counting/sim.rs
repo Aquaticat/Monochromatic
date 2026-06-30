@@ -12,42 +12,42 @@
 //! ```
 
 /// What:    Imports the word predicate used to build the boundary context.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `is_word_byte` directly; importing from `crate/charset` keeps
+///          each call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { is_word_byte } from "crate/charset";
 /// ```
 use crate::charset::is_word_byte;
 
 /// What:    Imports the boundary context that resolves anchors.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `Ctx` directly; importing from `crate/context` keeps each call
+///          site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { Ctx } from "crate/context";
 /// ```
 use crate::context::Ctx;
 
 /// What:    Imports the bitset that holds a counted position's live counts.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `CountSet` directly; importing from `crate/counting/countset`
+///          keeps each call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { CountSet } from "crate/counting/countset";
 /// ```
 use crate::counting::countset::CountSet;
 
 /// What:    Imports the position kind being simulated.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `Element` directly; importing from `crate/counting/element`
+///          keeps each call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { Element } from "crate/counting/element";
 /// ```
 use crate::counting::element::Element;
 
@@ -67,8 +67,9 @@ use crate::counting::element::Element;
 /// ```
 pub(crate) struct State {
     /// What:    One active-flag per position `0..len` plus the accept index `len`.
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `active` stores one active-flag per position `0..len` plus the accept index
+    ///          `len`, so matcher code reads that precomputed state by name instead of
+    ///          recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -76,12 +77,13 @@ pub(crate) struct State {
     /// ```
     active: Vec<bool>,
     /// What:    One count bitset per position index `0..len`.
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `counts` stores one count bitset per position index `0..len`, so matcher code
+    ///          reads that precomputed state by name instead of recomputing or passing it
+    ///          separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// counts: unknown[];
+    /// counts: CountSet[];
     /// ```
     counts: Vec<CountSet>,
 }
@@ -103,8 +105,8 @@ impl State {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function new(/* args */) {
-    ///   // body documented in Rust
+    /// function new(elements: Element[]): State {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     pub(crate) fn new(elements: &[Element]) -> State {
@@ -121,8 +123,8 @@ impl State {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function clear(/* args */) {
-    ///   // body documented in Rust
+    /// function clear(): void {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     pub(crate) fn clear(&mut self) {
@@ -137,8 +139,8 @@ impl State {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function seed(/* args */) {
-    ///   // body documented in Rust
+    /// function seed(start: number[]): void {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     pub(crate) fn seed(&mut self, start: &[u32]) {
@@ -154,8 +156,8 @@ impl State {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function accepts(/* args */) {
-    ///   // body documented in Rust
+    /// function accepts(): boolean {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     pub(crate) fn accepts(&self) -> bool {
@@ -170,8 +172,8 @@ impl State {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function is_dead(/* args */) {
-    ///   // body documented in Rust
+    /// function is_dead(): boolean {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     pub(crate) fn is_dead(&self) -> bool {
@@ -187,8 +189,8 @@ impl State {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function count_set_for(/* args */) {
-///   // body documented in Rust
+/// function count_set_for(element: Element): CountSet {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 fn count_set_for(element: &Element) -> CountSet {
@@ -206,8 +208,8 @@ fn count_set_for(element: &Element) -> CountSet {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function boundary_ctx(/* args */) {
-///   // body documented in Rust
+/// function boundary_ctx(line: Uint8Array, i: number): Ctx {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 pub(crate) fn boundary_ctx(line: &[u8], i: usize) -> Ctx {
@@ -229,8 +231,8 @@ pub(crate) fn boundary_ctx(line: &[u8], i: usize) -> Ctx {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function closure(/* args */) {
-///   // body documented in Rust
+/// function closure(elements: Element[], follow: number[][], state: State, ctx: Ctx): void {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 pub(crate) fn closure(elements: &[Element], follow: &[Vec<u32>], state: &mut State, ctx: Ctx) {
@@ -254,8 +256,8 @@ pub(crate) fn closure(elements: &[Element], follow: &[Vec<u32>], state: &mut Sta
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function zero_width_move(/* args */) {
-///   // body documented in Rust
+/// function zero_width_move(element: Element, p: number, follow: number[][], state: State, ctx: Ctx): boolean {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 fn zero_width_move(
@@ -282,8 +284,8 @@ fn zero_width_move(
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function counted_move(/* args */) {
-///   // body documented in Rust
+/// function counted_move(p: number, min: number, follow: number[][], state: State): boolean {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 fn counted_move(p: usize, min: usize, follow: &[Vec<u32>], state: &mut State) -> bool {
@@ -304,8 +306,8 @@ fn counted_move(p: usize, min: usize, follow: &[Vec<u32>], state: &mut State) ->
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function anchor_move(/* args */) {
-///   // body documented in Rust
+/// function anchor_move(p: number, cond: boolean, follow: number[][], state: State): boolean {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 fn anchor_move(p: usize, cond: bool, follow: &[Vec<u32>], state: &mut State) -> bool {
@@ -323,8 +325,8 @@ fn anchor_move(p: usize, cond: bool, follow: &[Vec<u32>], state: &mut State) -> 
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function activate(/* args */) {
-///   // body documented in Rust
+/// function activate(targets: number[], active: boolean[]): boolean {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 fn activate(targets: &[u32], active: &mut [bool]) -> bool {
@@ -348,8 +350,8 @@ fn activate(targets: &[u32], active: &mut [bool]) -> bool {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function step_into(/* args */) {
-///   // body documented in Rust
+/// function step_into(elements: Element[], follow: number[][], src: State, b: number, dst: State): void {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 pub(crate) fn step_into(

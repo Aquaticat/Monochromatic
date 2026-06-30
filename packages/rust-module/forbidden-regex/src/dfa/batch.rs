@@ -17,12 +17,12 @@
 //! ```
 
 /// What:    Imports the DFA table and its per-boundary acceptance-bit helper.
-/// Why:     This file needs these names in scope so the implementation below can use short
-///          names instead of long crate paths.
+/// Why:     The code below uses `Dfa`, `accept_bit` directly; importing from `crate/dfa/table`
+///          keeps each call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { /* names from this Rust use line */ } from "./module";
+/// import { Dfa, accept_bit } from "crate/dfa/table";
 /// ```
 use crate::dfa::table::{Dfa, accept_bit};
 
@@ -33,7 +33,7 @@ use crate::dfa::table::{Dfa, accept_bit};
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// const const: unknown = /* value below */;
+/// const LANES: number = 8;
 /// ```
 pub const LANES: usize = 8;
 
@@ -44,8 +44,8 @@ pub const LANES: usize = 8;
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function end_bit(/* args */) {
-///   // body documented in Rust
+/// function end_bit(): number {
+///   // Rust body below is the implementation.
 /// }
 /// ```
 fn end_bit() -> u8 {
@@ -66,30 +66,31 @@ fn end_bit() -> u8 {
 /// ```
 struct Lanes<const N: usize> {
     /// What:    Current DFA state id per lane.
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `state` stores current DFA state id per lane, so matcher code reads that
+    ///          precomputed state by name instead of recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// state: unknown[];
+    /// state: number[];
     /// ```
     state: [usize; N],
     /// What:    Whether a lane has reached a verdict (matched, or fell into the dead sink).
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `done` stores whether a lane has reached a verdict (matched, or fell into the
+    ///          dead sink), so matcher code reads that precomputed state by name instead of
+    ///          recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// done: unknown[];
+    /// done: boolean[];
     /// ```
     done: [bool; N],
     /// What:    Whether a lane's pattern matched.
-    /// Why:     The surrounding record stores this value by name so later code can read the
-    ///          same piece of state.
+    /// Why:     `hit` stores whether a lane's pattern matched, so matcher code reads that
+    ///          precomputed state by name instead of recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// hit: unknown[];
+    /// hit: boolean[];
     /// ```
     hit: [bool; N],
 }
@@ -110,8 +111,8 @@ impl<const N: usize> Lanes<N> {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function new(/* args */) {
-    ///   // body documented in Rust
+    /// function new(start: number): Lanes<N> {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     fn new(start: usize) -> Lanes<N> {
@@ -140,8 +141,8 @@ impl Dfa {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function is_match_batch_scalar(/* args */) {
-    ///   // body documented in Rust
+    /// function is_match_batch_scalar(lines: Uint8Array[], out: boolean[]): void {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     pub fn is_match_batch_scalar(&self, lines: &[&[u8]], out: &mut [bool]) {
@@ -158,8 +159,8 @@ impl Dfa {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function step_accept(/* args */) {
-    ///   // body documented in Rust
+    /// function step_accept(lanes: Lanes<N>, lane: number, byte: number): number {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     fn step_accept<const N: usize>(&self, lanes: &mut Lanes<N>, lane: usize, byte: u8) -> usize {
@@ -180,8 +181,8 @@ impl Dfa {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function finish_chunk(/* args */) {
-    ///   // body documented in Rust
+    /// function finish_chunk(lanes: Lanes<N>): void {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     fn finish_chunk<const N: usize>(&self, lanes: &mut Lanes<N>) {
@@ -202,8 +203,8 @@ impl Dfa {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function interleaved_width(/* args */) {
-    ///   // body documented in Rust
+    /// function interleaved_width(lines: Uint8Array[], out: boolean[]): void {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     #[inline(always)]
@@ -259,8 +260,8 @@ impl Dfa {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function is_match_batch_interleaved(/* args */) {
-    ///   // body documented in Rust
+    /// function is_match_batch_interleaved(lines: Uint8Array[], out: boolean[]): void {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     pub fn is_match_batch_interleaved(&self, lines: &[&[u8]], out: &mut [bool]) {
@@ -274,8 +275,8 @@ impl Dfa {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function is_match_batch_interleaved_w(/* args */) {
-    ///   // body documented in Rust
+    /// function is_match_batch_interleaved_w(lines: Uint8Array[], out: boolean[]): void {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     pub fn is_match_batch_interleaved_w<const N: usize>(&self, lines: &[&[u8]], out: &mut [bool]) {
@@ -293,8 +294,8 @@ impl Dfa {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function tight_chunk(/* args */) {
-    ///   // body documented in Rust
+    /// function tight_chunk(chunk: Uint8Array[], len: number, out: boolean[]): void {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     #[inline(always)]
@@ -335,8 +336,8 @@ impl Dfa {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function is_match_batch_tight_w(/* args */) {
-    ///   // body documented in Rust
+    /// function is_match_batch_tight_w(lines: Uint8Array[], out: boolean[]): void {
+    ///   // Rust body below is the implementation.
     /// }
     /// ```
     pub fn is_match_batch_tight_w<const N: usize>(&self, lines: &[&[u8]], out: &mut [bool]) {

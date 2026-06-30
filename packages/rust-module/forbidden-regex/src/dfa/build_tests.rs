@@ -1,12 +1,12 @@
 // What:  unit tests for the DFA build's residual-size guard.
-// Why:   the guard is what turns a pathological nested-repetition compile from an OOM
-//        into a clean StateCap (fall back to counting / reject); its integration repro
-//        is #[ignore]d because it is slow, so the guard logic is pinned here directly
-//        on synthetic oversized residual nodes (fast).
+// Why:     This file groups the build test cases so behavior changes fail near the code path
+//          they protect.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// import { /* names from this Rust use line */ } from "./module";
+// describe("build", () => {
+//   // test cases below
+// });
 // ```
 
 use super::{build_dfa_within, residual_too_large};
@@ -20,8 +20,8 @@ use crate::error::CompileError;
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function wide_concat(/* args */) {
-//   // body documented in Rust
+// function wide_concat(count: number): Node {
+//   // Rust body below is the implementation.
 // }
 // ```
 fn wide_concat(count: usize) -> Node {

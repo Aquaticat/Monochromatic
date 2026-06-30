@@ -1,14 +1,14 @@
 // What:  unit tests for the per-pattern Engine: the prefilter gate in front of the
 //        back-end, the prefilter-skipping match the set gate uses, seed reporting, and
 //        the first-byte set.
-// Why:   Engine wires the required-literal prefilter to the matcher; if is_match ran the
-//        back-end without the prefilter it would be slow, and if matches_only kept the
-//        prefilter the set gate's already-confirmed hit would be rescanned. Both
-//        behaviours are pinned here.
+// Why:     This file groups the engine test cases so behavior changes fail near the code path
+//          they protect.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// import { /* names from this Rust use line */ } from "./module";
+// describe("engine", () => {
+//   // test cases below
+// });
 // ```
 
 use super::{Engine, EngineKind};
@@ -21,8 +21,8 @@ use crate::parse::parse;
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function table_engine(/* args */) {
-//   // body documented in Rust
+// function table_engine(pattern: string, seeds: Uint8Array[]): Engine {
+//   // Rust body below is the implementation.
 // }
 // ```
 fn table_engine(pattern: &str, seeds: &[&[u8]]) -> Engine {

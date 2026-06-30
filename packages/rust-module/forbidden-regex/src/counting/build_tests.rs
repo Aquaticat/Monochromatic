@@ -1,13 +1,13 @@
 // What:  unit tests for the Glushkov counting-NFA builder: which node shapes it can
 //        express, and that the NFA it builds matches as a substring search.
-// Why:   build_nfa is the back-end selector's first choice for counted patterns; if it
-//        wrongly claimed a shape it cannot express (or matched the wrong spans) the
-//        engine would silently misbehave. The differential-vs-oracle tests live in
-//        run_tests; these pin the builder's accept/reject and a few direct matches.
+// Why:     This file groups the build test cases so behavior changes fail near the code path
+//          they protect.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// import { /* names from this Rust use line */ } from "./module";
+// describe("build", () => {
+//   // test cases below
+// });
 // ```
 
 use super::build_nfa;
