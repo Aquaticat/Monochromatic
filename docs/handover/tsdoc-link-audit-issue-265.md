@@ -175,17 +175,17 @@ them from the package-to-batch mapping below plus
 | Batch | Packages (short) | Agent ID | Status |
 | --- | --- | --- | --- |
 | 01 | file-enforcer | a1c00c2bf9c3b21d1 | running |
-| 02 | mvm, mutation-test, async-time, claude-spawn | a95c3884bfa6c3316 | running |
+| 02 | mvm, mutation-test, async-time, claude-spawn | a95c3884bfa6c3316 | done, 44 findings |
 | 03 | toml-edit, linkup, throws | a37e6ff13e12bbda0 | running |
 | 04 | no-restricted-syntax, git, numeric-format, correction-reminder | a2e4ea7abc709c2d0 | running |
-| 05 | done-postcss, i18n-compose, fy, backup-path | a125f0fc146d11e83 | running |
+| 05 | done-postcss, i18n-compose, fy, backup-path | a125f0fc146d11e83 | done, 68 findings |
 | 06 | aquati.cat, markdown-lint, islands-black, async-iter | a2790fd594c501e06 | running |
-| 07 | stylistic, model-selection, watch-restart, zip-writer, stop-reminders, terminal-title | a344cc088ad287c9e | running |
-| 08 | auto-mode, tsdoc, bash-output-filter | a5d335e4e5b8860af | running |
-| 09 | done, task-util, mcp/stdio | not yet launched (8-agent cap) | pending |
-| 10 | morph-compact, advisor, module/test, image-diff, test-support | not yet launched | pending |
-| 11 | doodle-widget, claude-code-plugins/source, catalog-tighten | not yet launched | pending |
-| 12 | deps-cube, git-clone-size, current-time-context, oxlint-plugins/shared | not yet launched | pending |
+| 07 | stylistic, model-selection, watch-restart, zip-writer, stop-reminders, terminal-title | a344cc088ad287c9e | done, 82 findings |
+| 08 | auto-mode, tsdoc, bash-output-filter | a5d335e4e5b8860af | done, 281 findings |
+| 09 | done, task-util, mcp/stdio | a102680557ea5e8a9 | running |
+| 10 | morph-compact, advisor, module/test, image-diff, test-support | a45d6464be450676a | running |
+| 11 | doodle-widget, claude-code-plugins/source, catalog-tighten | a43019c52544dcb94 | running |
+| 12 | deps-cube, git-clone-size, current-time-context, oxlint-plugins/shared | a67f97dc2d73bf0d2 | running |
 | 13 | page-weight, logger, hall-monitor, android-exempt-unused, build-tool/css, pipe, matrix, tofu, aquaticat (typeface), import-attributes, config/tsdown, rgffplay, prompt-time | not yet launched | pending |
 | 14 | terminal-exec, hyperscript, rss, config/oxlint, kv-store, fs-path, hook-types, or-throw, session-start-housekeeping | not yet launched | pending |
 | 15 | vmsync, spawn, figma kiwi, figma penpot, pi/statusline, llm-types | not yet launched | pending |
