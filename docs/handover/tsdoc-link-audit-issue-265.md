@@ -265,7 +265,7 @@ with scoped pathspecs (`fix(<package>): restore TSDoc inline links (issue #265)`
 | f02 | mvm, mutation-test, async-time, claude-spawn | a55c638b0ae14975e | done, 42/42 findings, 27 files, commits 3236c3186/25f0d78cb/0323683d1 |
 | f03 | toml-edit, linkup, throws | | queued |
 | f04a | oxlint-plugins/no-restricted-syntax | | queued |
-| f04b | git, numeric-format, correction-reminder | | queued |
+| f04b | git, numeric-format, correction-reminder | a8287a03d6364d612 | done, 26 files, commits d39c01303/0d64b82dd/568a6f59d/5055ca8af |
 | f05 | done-postcss, i18n-compose, fy, backup-path | acfac2ca064b22aa2 | done, 68/68 findings, 34 files, commits fc4aecc76/0accc0700 |
 | f06 | aquati.cat, markdown-lint, islands-black, async-iter | a8650684bc0cf2bdb | done, 81/81 findings, 18 files, commits 9d25283be/4fc7f8033/4dd06f75a |
 | f07 | stylistic, model-selection, watch-restart, zip-writer, stop-reminders, terminal-title | | queued |
