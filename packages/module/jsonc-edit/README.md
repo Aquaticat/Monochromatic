@@ -14,8 +14,32 @@ See `docs/decisions/jsonc-edit-parser-foundation.md` for why no off-the-shelf pa
 ## Status
 
 Implemented: parser, canonical serializer, immutable edit API, and comment-as-data API,
-with unit, property, conformance, and benchmark suites and a coverage gate.
+with unit tests co-located in this package and property, conformance, benchmark, and
+coverage-gate tooling in sidecar packages (see below).
 See `docs/handover/jsonc-edit.md` for the build history.
+
+## Tooling sidecars
+
+This package's `src/` is kept pure runtime code so a whole-package mutation run stays scoped
+to real runtime files. The non-runtime tooling lives in per-concern sidecar packages beside it:
+
+- `@monochromatic-dev/module-jsonc-edit.fuzz`: fast-check property tests (round-trip and the STB
+  comment-safety guard), the run budget, and the deterministic V8 coverage-reachability gate.
+- `@monochromatic-dev/module-jsonc-edit.bench`: the parse benchmark against microsoft
+  `jsonc-parser` and `jsonc-eslint-parser`.
+- `@monochromatic-dev/module-jsonc-edit.conformance`: the curated JSONC conformance corpus.
+
+Each sidecar is private and imports this package through its `/ts` source subpath.
+
+Mutation testing runs against this package via container-isolated Stryker:
+
+```sh
+mise run //packages/module/jsonc-edit:test:mutation -- --full-suite
+```
+
+`--full-suite` is required here because the unit tests are organized by API surface
+(`parse`, `stringify`, `edit`, `comment`), not per source file, so every source file must run
+against the whole unit suite rather than a filename-stem-matched subset.
 
 ## Why JSONC, and why canonical
 
@@ -57,7 +81,7 @@ exported for callers that do not need the edit state.
 
 ## Performance
 
-The `mise run //packages/module/jsonc-edit:bench` task compares parsing against
+The `mise run //packages/module/jsonc-edit.bench:bench` task compares parsing against
 microsoft `jsonc-parser` and `jsonc-eslint-parser`.
 On a representative run (300 entries, 3000 iterations):
 

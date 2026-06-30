@@ -241,6 +241,26 @@ files.
  Stryker's initial run failed with `spawn bun ENOENT`.
 The consumer-side fix is to update those tests to spawn `node` for temporary TypeScript config files.
 
+### Fresh image rebuild fails: mise installs pnpm with pnpm
+
+This surfaced later, when wiring a second consumer (`packages/module/jsonc-edit`) forced a fresh
+runtime image build (the runtime-inputs hash had drifted, so no cached image matched).
+The `Containerfile` bootstrap runs `mise trust /baked/mise.toml` then
+`mise install --yes node npm:pnpm`.
+The baked `mise.toml` sets `npm.package_manager = "pnpm"`, so once trusted, mise installs the
+`npm:pnpm` tool by running `pnpm add --global pnpm@<version> ... --config.minimumReleaseAge=1440`.
+In a fresh container pnpm does not exist yet, so that command fails:
+
+```text
+mise ERROR Failed to install npm:pnpm@latest: failed to execute command:
+  pnpm add --global pnpm@11.9.0 ... --config.minimumReleaseAge=1440: No such file or directory (os error 2)
+```
+
+The image build aborts at that `RUN` step, so no consumer can run mutation testing until a fresh
+image builds.
+The pnpm-installs-pnpm bootstrap is circular only during the very first install; once pnpm exists,
+the later `pnpm install --frozen-lockfile` step is fine.
+
 ## Verification
 
 Source versions inspected:
@@ -350,6 +370,26 @@ Tradeoff:
  config fixtures now follow the repository's migration direction.
  Tests that are explicitly about
 Bun behavior should stay out of mutation runtime selection or be rewritten separately.
+
+### Force npm for the in-container pnpm bootstrap
+
+`packages/dev-script/mutation-test/runtime/Containerfile` exports
+`MISE_NPM_PACKAGE_MANAGER=npm` for the bootstrap `RUN` step, overriding the baked
+`npm.package_manager = "pnpm"` setting so mise installs `npm:pnpm` with npm (bundled with
+node) instead of the not-yet-present pnpm:
+
+```dockerfile
+RUN export MISE_NPM_PACKAGE_MANAGER=npm \
+  && mise trust /baked/mise.toml \
+  && mise install --yes node npm:pnpm \
+  && ...
+```
+
+The override is scoped to that one `RUN` step, so the host config (which legitimately prefers
+pnpm where pnpm already exists) is unchanged.
+Verified by a fresh image build followed by a Stryker dry run: the in-container
+`pnpm install --frozen-lockfile` completes, and `Initial test run succeeded` /
+`The dry-run has been completed successfully`.
 
 ## `convert-source-map` is carried transitively but never loaded
 

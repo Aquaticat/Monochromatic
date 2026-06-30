@@ -5,6 +5,11 @@
 Accepted.
 First consumer:
  `packages/dev-script/file-enforcer`.
+Second consumer:
+ `packages/module/jsonc-edit` (parser, serializer, immutable edit API, comment-as-data API).
+ Its unit tests are organized by API surface, not per source file, so it runs with
+ `--full-suite`; its non-runtime tooling lives in sidecar packages so a whole-package run
+ stays scoped to real runtime files.
 Reusable package:
  `packages/dev-script/mutation-test`.
 
