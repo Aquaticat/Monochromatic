@@ -41,9 +41,10 @@ export type SerializeOptions = {
 /**
  * Serialize a value for storage, handling cyclic graphs based on configuration.
  *
- * When the value contains circular references and `lossyForCircular` is `true`,
- * the value is decycled (lossy) and a warning is logged. When `lossyForCircular`
- * is `false`, a `TypeError` is thrown instead.
+ * Cycles are detected with {@link hasCycle}. When the value contains circular
+ * references and `lossyForCircular` is `true`, the value is decycled (lossy)
+ * and a warning is logged. When `lossyForCircular` is `false`, a `TypeError`
+ * is thrown instead.
  *
  * Internal helper shared by both store variants; not part of the package public API.
  *

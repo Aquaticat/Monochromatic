@@ -127,7 +127,7 @@ export async function buildDefaultBackends({
   ...StorageBackend[],
 ]> {
   /**
-   * Platform-specific factory registered via `configureDefaultBackendsBuilder`, present only when an entry file set it.
+   * Platform-specific factory registered via {@link configureDefaultBackendsBuilder}, present only when an entry file set it.
    */
   const builder = builderRegistry.get('default',);
   if (builder !== undefined) {
