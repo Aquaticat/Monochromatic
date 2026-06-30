@@ -272,7 +272,7 @@ with scoped pathspecs (`fix(<package>): restore TSDoc inline links (issue #265)`
 | f08a | auto-mode | a91bc92778e72e1b1 | done, ~250 link insertions, 38 files, commits 3f9800c5e/794064be5/457404352/a5e720415 |
 | f08b | tsdoc, bash-output-filter | a4a6b817e212274ea | done, 43 findings, 23 files, commits 3cab138f8/a87959e62 |
 | f09 | done, task-util, mcp/stdio | | queued |
-| f10 | morph-compact, advisor, module/test, image-diff, test-support | | queued |
+| f10 | morph-compact, advisor, module/test, image-diff, test-support | a96731bd848cdd929 | done, 32 link restorations, 13 files, commits 6c529d5bb/42a3249d7/3f4d20813 |
 | f11 | doodle-widget, claude-code-plugins/source, catalog-tighten | | queued |
 | f12 | deps-cube, git-clone-size, current-time-context, oxlint-plugins/shared | | queued |
 | f13 | page-weight, logger, hall-monitor, android-exempt-unused, build-tool/css, pipe, matrix, tofu, aquaticat, import-attributes, config/tsdown, rgffplay, prompt-time | | queued |
