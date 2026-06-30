@@ -174,7 +174,7 @@ them from the package-to-batch mapping below plus
 
 | Batch | Packages (short) | Agent ID | Status |
 | --- | --- | --- | --- |
-| 01 | file-enforcer | a1c00c2bf9c3b21d1 | running |
+| 01 | file-enforcer | a1c00c2bf9c3b21d1 | done, 294 findings |
 | 02 | mvm, mutation-test, async-time, claude-spawn | a95c3884bfa6c3316 | done, 44 findings |
 | 03 | toml-edit, linkup, throws | a37e6ff13e12bbda0 | running |
 | 04 | no-restricted-syntax, git, numeric-format, correction-reminder | a2e4ea7abc709c2d0 | running |
@@ -186,7 +186,7 @@ them from the package-to-batch mapping below plus
 | 10 | morph-compact, advisor, module/test, image-diff, test-support | a45d6464be450676a | running |
 | 11 | doodle-widget, claude-code-plugins/source, catalog-tighten | a43019c52544dcb94 | running |
 | 12 | deps-cube, git-clone-size, current-time-context, oxlint-plugins/shared | a67f97dc2d73bf0d2 | running |
-| 13 | page-weight, logger, hall-monitor, android-exempt-unused, build-tool/css, pipe, matrix, tofu, aquaticat (typeface), import-attributes, config/tsdown, rgffplay, prompt-time | not yet launched | pending |
+| 13 | page-weight, logger, hall-monitor, android-exempt-unused, build-tool/css, pipe, matrix, tofu, aquaticat (typeface), import-attributes, config/tsdown, rgffplay, prompt-time | a7c1304125f5a7feb | running |
 | 14 | terminal-exec, hyperscript, rss, config/oxlint, kv-store, fs-path, hook-types, or-throw, session-start-housekeeping | not yet launched | pending |
 | 15 | vmsync, spawn, figma kiwi, figma penpot, pi/statusline, llm-types | not yet launched | pending |
 | 16 | terminal-title, vm-builder, catalog-tighten.matrix, forbidden-strings, dom, claude-code-plugins/statusline, thinking-defaults, mcp/mvm, syllable-break-demo, const, memoize, token-count, observable, runtime-error/bun, function-arity, pi/current-time-context, guardrail, root config files | not yet launched | pending |

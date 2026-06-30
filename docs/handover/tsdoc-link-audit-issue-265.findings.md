@@ -8,7 +8,70 @@ Format: `<path>:<line> | <downgraded-link|missing-reference> | current: "<snippe
 
 ## Batch 01 (file-enforcer)
 
-(pending)
+TOTAL FINDINGS: 294.
+
+Systematic patterns: this package's error-handling layer almost never
+links its own custom error classes in `@throws` tags (every custom error
+class found -- `StalenessManifestPersistenceError`, `NoManagerError`,
+`PackageNotFoundError`, `VerificationError`, `PlatformMatchError` -- is
+thrown with the `@throws` line describing the condition in plain English
+without naming the class). Dozens of pure-orchestration functions (call
+2-6 sibling/imported helpers and nothing else) name none of their
+collaborators in the doc summary, even when the collaborator is the
+entire reason the function exists. The `pipeline/toml.ts`/`io/write-toml.ts`
+pair downgrades essentially every reference to the external
+`@monochromatic-dev/module-toml-edit` API to backtick or bare prose,
+never `{@link}` -- the clearest direct evidence of the linter-bug-driven
+downgrade the issue describes. A few files (`io/staleness-guards.ts`,
+`package/manager-defs.ts`, `pipeline/exec.ts`'s `execCommand`/
+`isNestedPlatformCommands`, `lazy-once.ts`) show the intended style with
+correct `{@link}` usage throughout, confirming the gap is inconsistency,
+not an unsupported pattern. Full per-line listing (294 entries) kept in
+the agent transcript only; representative subset below covers every
+distinct file and the clearest `@throws`/external-API cases.
+
+```
+packages/dev-script/file-enforcer/data/packages.overrides.ts:23 | missing-reference | current: not mentioned | target: p (packages/dev-script/file-enforcer/src/package/p.ts)
+packages/dev-script/file-enforcer/data/packages.ts:19 | missing-reference | current: not mentioned | target: mergeOverrides (packages/dev-script/file-enforcer/src/package/merge.ts)
+packages/dev-script/file-enforcer/src/io/cache.ts:12 | downgraded-link | current: "`readCached()`" | target: readCached (same file)
+packages/dev-script/file-enforcer/src/io/cat.ts:72 | downgraded-link | current: "`overwriteEach()`" | target: overwriteEach (packages/dev-script/file-enforcer/src/io/write.ts)
+packages/dev-script/file-enforcer/src/io/staleness-manifest-parse.ts:69 | missing-reference | current: not mentioned | target: StalenessManifestPersistenceError (packages/dev-script/file-enforcer/src/io/staleness-manifest-error.ts), readManifestContent, parseManifestJson (same file), isStalenessManifest (packages/dev-script/file-enforcer/src/io/staleness-guards.ts)
+packages/dev-script/file-enforcer/src/io/staleness-manifest-lock.ts:121 | missing-reference | current: not mentioned | target: StalenessManifestPersistenceError (packages/dev-script/file-enforcer/src/io/staleness-manifest-error.ts), recoverStaleManifestLock (packages/dev-script/file-enforcer/src/io/staleness-manifest-lock-recovery.ts), lockReleaseHandle (same file)
+packages/dev-script/file-enforcer/src/io/write-lazy.ts:16 | downgraded-link | current: "`overwrite()`" | target: overwrite (packages/dev-script/file-enforcer/src/io/write.ts)
+packages/dev-script/file-enforcer/src/io/write-toml.ts:14 | downgraded-link | current: "`parseTomlEdit`, `tomlSet`, `tomlStringify`, `emptyTomlEdit`" | target: parseTomlEdit, tomlSet, tomlStringify, emptyTomlEdit (external: @monochromatic-dev/module-toml-edit)
+packages/dev-script/file-enforcer/src/io/write.ts:223 | missing-reference | current: not mentioned | target: writeFileIfAbsentAtomically (packages/dev-script/file-enforcer/src/io/write-if-absent-atomic.ts), FILE_ALREADY_EXISTS (same file)
+packages/dev-script/file-enforcer/src/jetbrains/lsp4ij-apply.ts:356 | missing-reference | current: not mentioned | target: replaceOrInsertXmlEntry (packages/dev-script/file-enforcer/src/pipeline/xml.ts), buildUserDefinedEntry (packages/dev-script/file-enforcer/src/jetbrains/lsp4ij-entries.ts)
+packages/dev-script/file-enforcer/src/jetbrains/lsp4ij.ts:60 | missing-reference | current: not mentioned | target: latestJetbrainsOptionsDirectory (packages/dev-script/file-enforcer/src/jetbrains/options-dir.ts), findBaseServerEntry/updatedLanguageSettingsXml/updatedUserDefinedXml (packages/dev-script/file-enforcer/src/jetbrains/lsp4ij-apply.ts), overwrite (packages/dev-script/file-enforcer/src/io/write.ts)
+packages/dev-script/file-enforcer/src/package/ensure-package.ts:117 | missing-reference | current: not mentioned | target: NoManagerError, PackageNotFoundError, VerificationError (same file), installPackage/detectManager/binaryExists (packages/dev-script/file-enforcer/src/package/manager.ts)
+packages/dev-script/file-enforcer/src/pipeline/exec.ts:120 | missing-reference | current: not mentioned | target: PlatformMatchError, execCommand (same file), evaluatePredicate (packages/dev-script/file-enforcer/src/platform/evaluate-predicate.ts)
+packages/dev-script/file-enforcer/src/pipeline/toml.ts:62 | downgraded-link | current: "TomlTypeError when value type mismatches", "TomlImmutableNodeError when path-create would violate" | target: TomlTypeError, TomlImmutableNodeError, parseTomlEdit, tomlSet, tomlStringify (external: @monochromatic-dev/module-toml-edit)
+packages/dev-script/file-enforcer/src/tracker.ts:59 | downgraded-link | current: "`classifyEvent`" | target: classifyEvent (packages/dev-script/file-enforcer/src/watch/watch-filter.ts)
+packages/dev-script/file-enforcer/src/types.ts:1 | downgraded-link | current: "`TomlPath`" | target: TomlPath (external: @monochromatic-dev/module-toml-edit)
+packages/dev-script/file-enforcer/src/watch/watch-dir-helpers.ts:94 | downgraded-link | current: "classifyEvent and existing watchDirectory callers" | target: classifyEvent (packages/dev-script/file-enforcer/src/watch/watch-filter.ts), watchDirectory (packages/dev-script/file-enforcer/src/watch/watch-dir.ts)
+packages/dev-script/file-enforcer/src/watch/watch-supervisor.ts:196 | missing-reference | current: not mentioned | target: watcherRestartLimitError (same file), watchDirectory (packages/dev-script/file-enforcer/src/watch/watch-dir.ts)
+packages/dev-script/file-enforcer/src/watch/watch.ts:26 | missing-reference | current: not mentioned | target: createWatchModeLifecycle, createWatchRerunQueue, watchDirs, watchDirectoryWithRestarts, notifyWriteProtection (siblings across watch/ and io/)
+```
+
+(remaining files with findings, counts only, see agent transcript for full
+line-level detail: `context.ts` 5, `fuzz-budget.ts` 3, `glob-expand.ts` 4,
+`glob-mirror.ts` 2, `glob-split.ts` 1, `staleness-destination-match.ts` 4,
+`staleness-destinations.ts` 3, `staleness-freshness.ts` 7,
+`staleness-guards.ts` 1, `staleness-hash.ts` 1,
+`staleness-manifest-lock-owner.ts` 7, `staleness-manifest-lock-recovery.ts` 4,
+`staleness-manifest-persist.ts` 6, `staleness-manifest.ts` 6,
+`staleness-root.ts` 2, `staleness-run.ts` 4, `staleness-stamps.ts` 9,
+`staleness-types.ts` 1, `staleness.ts` 8, `write-atomic.ts` 3,
+`write-each-destinations.ts` 3, `write-if-absent-atomic.ts` 3,
+`write-staleness.ts` 4, `jetbrains/lsp4ij-entries.ts` 7,
+`jetbrains/options-dir.ts` 5, `package/manager.ts` 6, `package/merge.ts` 1,
+`package/mise.generate-index.ts` 3, `package/p.ts` 4,
+`package/registry-parse.ts` 1, `pipeline/json.ts` 4,
+`pipeline/transform.ts` 1, `pipeline/xml-coding.ts` 3, `pipeline/xml.ts` 8,
+`platform/evaluate-predicate.ts` 1, `staleness-lock-regression-fixture.ts` 1,
+`tracker-capture.ts` 1, `tracker.ts` 3, `watch/notify.ts` 3,
+`watch/watch-dir.ts` 5, `watch/watch-filter.ts` 6,
+`watch/watch-lifecycle.ts` 2, `watch/watch-path.ts` 3,
+`watch/watch-rerun-queue.ts` 2)
 
 ## Batch 02 (mvm, mutation-test, async-time, claude-spawn)
 
