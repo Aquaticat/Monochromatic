@@ -122,7 +122,7 @@ export type SearchTask = Task & {
 };
 
 /**
- * Payload accepted by `createTask()`: only `title` is required; all others default.
+ * Payload accepted by {@link createTask}: only `title` is required; all others default.
  */
 export type TaskCreateInput = {
   readonly title: string;
@@ -137,7 +137,7 @@ export type TaskCreateInput = {
 };
 
 /**
- * Partial update payload accepted by `updateTask()`: omitted fields stay unchanged.
+ * Partial update payload accepted by {@link updateTask}: omitted fields stay unchanged.
  */
 export type TaskUpdateInput = {
   readonly title?: string;

@@ -51,12 +51,12 @@ class TaskDetail extends HTMLElement {
   #locations: readonly string[] = [];
 
   /**
-   * Mutable priority state; `METADATA_UNSET` until a value is selected.
+   * Mutable priority state; {@link METADATA_UNSET} until a value is selected.
    */
   #priority: TaskPriority | typeof METADATA_UNSET = METADATA_UNSET;
 
   /**
-   * Mutable complexity state; `METADATA_UNSET` until a value is selected.
+   * Mutable complexity state; {@link METADATA_UNSET} until a value is selected.
    */
   #complexity: TaskComplexity | typeof METADATA_UNSET = METADATA_UNSET;
 
@@ -187,7 +187,7 @@ class TaskDetail extends HTMLElement {
     if (pillsContainer === null)
       return;
     /**
-     * Task data extracted from `#data`; updates are skipped until `configure()` has run.
+     * Task data extracted from `#data`; updates are skipped until {@link TaskDetail.configure} has run.
      */
     const task = this.#data
       ?.task;

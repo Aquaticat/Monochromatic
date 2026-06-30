@@ -7,7 +7,7 @@ import { css, } from '../css.ts';
 const TOAST_Z_INDEX = 1_000;
 
 /**
- * Shadow DOM styles for the `\<toast-message\>` component.
+ * Shadow DOM styles for the `\<toast-message\>` component, positioned using {@link TOAST_Z_INDEX}.
  */
 const STYLES = css(`
   :host {
@@ -46,7 +46,7 @@ class ToastMessage extends HTMLElement {
   readonly #shadow: ShadowRoot;
 
   /**
-   * Handle for the auto-dismiss timer; `NO_TIMER` when not scheduled.
+   * Handle for the auto-dismiss timer; {@link NO_TIMER} when not scheduled.
    */
   #timer: ReturnType<typeof setTimeout> | typeof NO_TIMER = NO_TIMER;
 
@@ -59,7 +59,7 @@ class ToastMessage extends HTMLElement {
   }
 
   /**
-   * Renders content and schedules auto-removal after `DISMISS_MS`.
+   * Renders content and schedules auto-removal after {@link DISMISS_MS}.
    */
   connectedCallback(): void {
     this.#render();

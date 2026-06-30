@@ -78,7 +78,7 @@ export function normalizeStringArray(values?: readonly string[],): string[] {
 }
 
 /**
- * Converts a raw SQLite `TaskRow` to the application-level `Task` shape.
+ * Converts a raw SQLite {@link TaskRow} to the application-level {@link Task} shape.
  *
  * @param row - Raw database row
  *

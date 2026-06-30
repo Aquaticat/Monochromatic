@@ -32,7 +32,7 @@ import {
  */
 export async function handleStartTimer(id: string,): Promise<Response> {
   /**
-   * Updated task with the freshly set `timerStartedAt`; `TASK_NOT_FOUND` triggers a 404 response.
+   * Updated task with the freshly set `timerStartedAt`; {@link TASK_NOT_FOUND} triggers a 404 response.
    */
   const task = await startTaskTimer(id,);
   if (task === TASK_NOT_FOUND) {
@@ -58,7 +58,7 @@ export async function handleStartTimer(id: string,): Promise<Response> {
  */
 export async function handleStopTimer(id: string,): Promise<Response> {
   /**
-   * Updated task with accumulated tracked time; `TASK_NOT_FOUND` triggers a 404 response.
+   * Updated task with accumulated tracked time; {@link TASK_NOT_FOUND} triggers a 404 response.
    */
   const task = await stopTaskTimer(id,);
   if (task === TASK_NOT_FOUND) {

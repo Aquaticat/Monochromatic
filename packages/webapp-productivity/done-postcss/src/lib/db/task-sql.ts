@@ -14,7 +14,7 @@ import type {
 
 /* oxlint-disable no-restricted-syntax/no-nullish-union -- mirrors `@tursodatabase/database` `.get()/.all()` raw row shape: SQLite NULL columns materialize as JS `null` values on the returned row object, so the honest type for a nullable column is `T | null`. `mapTask` converts these to absent (`?:`) at the application boundary. */
 /**
- * Raw SQLite row shape before mapping to the application-level `Task` type.
+ * Raw SQLite row shape before mapping to the application-level {@link Task} type.
  */
 export type TaskRow = {
   /**

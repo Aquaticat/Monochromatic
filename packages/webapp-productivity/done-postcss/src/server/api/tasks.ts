@@ -182,7 +182,7 @@ export async function handleUpdateTask(
     }
 
     /**
-     * Updated task; `TASK_NOT_FOUND` triggers a 404 when the row was removed concurrently.
+     * Updated task; {@link TASK_NOT_FOUND} triggers a 404 when the row was removed concurrently.
      */
     const task = await updateTask({
       id,

@@ -211,7 +211,7 @@ export async function chatCompletion(
 
     /* oxlint-disable typescript/no-unsafe-type-assertion -- API response shape matches ChatCompletionResponse */
     /**
-     * Parsed completion payload; shape matches `ChatCompletionResponse`.
+     * Parsed completion payload; shape matches {@link ChatCompletionResponse}.
      */
     const data = (await response.json()) as ChatCompletionResponse;
     /* oxlint-enable typescript/no-unsafe-type-assertion */

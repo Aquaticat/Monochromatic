@@ -7,7 +7,7 @@ import { css, } from '../css.ts';
 const FAB_Z_INDEX = 50;
 
 /**
- * Shadow DOM styles for the `\<fab-button\>` component.
+ * Shadow DOM styles for the `\<fab-button\>` component, positioned using {@link FAB_Z_INDEX}.
  */
 const STYLES = css(`
   :host {

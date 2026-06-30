@@ -11,7 +11,7 @@
 const PANEL_Z_INDEX = 100;
 
 /**
- * CSS for the popover panel portion of `\<side-drawer\>`.
+ * CSS for the popover panel portion of `\<side-drawer\>`, layered at {@link PANEL_Z_INDEX}.
  */
 export const SIDE_DRAWER_PANEL_STYLES: string = `
   .panel {

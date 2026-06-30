@@ -42,7 +42,7 @@ function normalizeDatabasePath(value: string,): string {
 
 /**
  * Resolves the database file path from CLI arguments, environment, or default.
- * Priority: `--db=PATH` \> `DB_PATH` env var \> `DEFAULT_DATABASE_PATH`.
+ * Priority: `--db=PATH` \> `DB_PATH` env var \> {@link DEFAULT_DATABASE_PATH}.
  *
  * @returns Resolved database path
  */

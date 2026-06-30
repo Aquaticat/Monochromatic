@@ -35,7 +35,7 @@ export type BlockerSummary = {
 };
 
 /**
- * Outcome of a `completeTask()` call: carries blockers when completion is refused.
+ * Outcome of a {@link completeTask} call: carries blockers when completion is refused.
  */
 export type CompleteTaskResult = {
   /**
@@ -92,7 +92,7 @@ export async function startTaskTimer(id: string,): Promise<Task | typeof TASK_NO
  */
 export async function stopTaskTimer(id: string,): Promise<Task | typeof TASK_NOT_FOUND> {
   /**
-   * Existing task; absent task short-circuits with `TASK_NOT_FOUND`.
+   * Existing task; absent task short-circuits with {@link TASK_NOT_FOUND}.
    */
   const currentTask = await getTaskById(id,);
   if (currentTask === TASK_NOT_FOUND)

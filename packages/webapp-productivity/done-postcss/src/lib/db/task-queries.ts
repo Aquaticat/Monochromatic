@@ -214,7 +214,7 @@ export async function searchTasks(searchQuery: string,): Promise<SearchTask[]> {
   try {
     /* oxlint-disable typescript/no-unsafe-type-assertion -- database FTS query */
     /**
-     * FTS-matched rows joined with the blocked flag; mapped to `SearchTask` below.
+     * FTS-matched rows joined with the blocked flag; mapped to {@link SearchTask} below.
      */
     const rows = await db.prepare(SQL_SEARCH_FTS,)
       .all(

@@ -63,7 +63,7 @@ export type AutofillResult = {
 export type TaskDetailMode = 'create' | 'edit';
 
 /**
- * Configuration payload passed to `TaskDetail.configure()`.
+ * Configuration payload passed to {@link TaskDetail.configure}.
  */
 export type TaskDetailData = {
   /**

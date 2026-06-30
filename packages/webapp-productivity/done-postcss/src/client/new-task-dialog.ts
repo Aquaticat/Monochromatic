@@ -35,7 +35,7 @@ const emptyTask: Task = {
 };
 
 /**
- * Return value of `createNewTaskDialog`.
+ * Return value of {@link createNewTaskDialog}.
  */
 type NewTaskDialog = {
   /**

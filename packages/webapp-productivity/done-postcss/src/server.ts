@@ -74,7 +74,7 @@ function resolvePort(): number {
   if (rawPort === undefined)
     return DEFAULT_PORT;
   /**
-   * Numeric port after `parseInt`; `NaN` falls back to `DEFAULT_PORT`.
+   * Numeric port after `parseInt`; `NaN` falls back to {@link DEFAULT_PORT}.
    */
   const parsedPort = Number.parseInt(
     rawPort,
@@ -92,7 +92,7 @@ function resolvePort(): number {
  *
  * @returns Parameter value
  *
- * @throws HTTPError 400 when parameter is missing
+ * @throws {@link HTTPError} 400 when parameter is missing
  *
  * @example
  * ```ts

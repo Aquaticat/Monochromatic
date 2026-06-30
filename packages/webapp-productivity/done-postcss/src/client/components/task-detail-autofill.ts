@@ -59,7 +59,7 @@ export type AutofillCallbacks = {
 };
 
 /**
- * Public surface returned by `createAutofillController`.
+ * Public surface returned by {@link createAutofillController}.
  */
 export type AutofillController = {
   /**
@@ -143,7 +143,7 @@ export function createAutofillController(callbacks: AutofillCallbacks,): Autofil
       if (response.ok) {
         /* oxlint-disable typescript/no-unsafe-type-assertion -- API response shape enforced by the server endpoint contract */
         /**
-         * Parsed autofill payload; shape is enforced by the server endpoint contract.
+         * Parsed autofill payload, cast to {@link AutofillResult}; shape is enforced by the server endpoint contract.
          */
         const result = (await response.json()) as AutofillResult;
         /* oxlint-enable typescript/no-unsafe-type-assertion */

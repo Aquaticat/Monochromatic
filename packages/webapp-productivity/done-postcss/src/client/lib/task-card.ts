@@ -15,7 +15,7 @@ import {
 export { formatRunningTrackedTime, } from './format-tracked-time.ts';
 
 /**
- * Sentinel returned by `getChipElement` when no chip matches the prefix.
+ * Sentinel returned by {@link TaskCard.getChipElement} when no chip matches the prefix.
  */
 const CHIP_NOT_FOUND: unique symbol = Symbol('chip-not-found',);
 
@@ -67,7 +67,7 @@ class TaskCard extends HTMLElement {
    *
    * @param prefix - Text prefix to match (e.g. `"tracked:"`)
    *
-   * @returns Matching chip element, or `CHIP_NOT_FOUND` when none matches
+   * @returns Matching chip element, or {@link CHIP_NOT_FOUND} when none matches
    */
   getChipElement(prefix: string,): HTMLSpanElement | typeof CHIP_NOT_FOUND {
     for (const chip of this.#shadow
@@ -114,7 +114,7 @@ customElements.define(
  *
  * @param options - Callbacks for open/complete interactions
  *
- * @returns Configured TaskCard element
+ * @returns Configured {@link TaskCard} element
  *
  * @example
  * ```ts
