@@ -1,5 +1,6 @@
 import type { Span, } from '@oxlint/plugins';
 
+import type { PerLineBoundaryOffsets, } from './per-line-boundary.ts';
 import { lineAt, } from './line-at.ts';
 import {
   at,
@@ -18,6 +19,10 @@ export type NeedsPerLineFixParams = {
    * Container AST node.
    */
   readonly container: Span;
+  /**
+   * Explicit delimiter offsets when the container span is wider than the list.
+   */
+  readonly boundary?: PerLineBoundaryOffsets;
   /**
    * Child items to check (must be non-empty).
    */
@@ -38,12 +43,20 @@ export type NeedsPerLineFixParams = {
 export function needsPerLineFix({
   sourceText,
   container,
+  boundary,
   items,
 }: NeedsPerLineFixParams,): boolean {
   /**
-   * Container span boundaries; compared against item lines to detect inline first/last items.
+   * Container span boundaries; fallback delimiter offsets when no explicit boundary is supplied.
    */
   const containerRange = rangeOf(container,);
+  /**
+   * Delimiter offsets compared against item lines to detect inline first/last items.
+   */
+  const boundaryOffsets = boundary ?? {
+    openOffset: containerRange[0],
+    closeOffset: containerRange[1],
+  };
   /**
    * First item's range; used to test whether it shares a line with the opening delimiter.
    */
@@ -54,7 +67,7 @@ export function needsPerLineFix({
 
   if (lineAt({
     sourceText,
-    offset: containerRange[0],
+    offset: boundaryOffsets.openOffset,
   },)
     === lineAt({
     sourceText,
@@ -77,7 +90,7 @@ export function needsPerLineFix({
   },)
     === lineAt({
     sourceText,
-    offset: containerRange[1],
+    offset: boundaryOffsets.closeOffset,
   },)) {
     return true;
   }

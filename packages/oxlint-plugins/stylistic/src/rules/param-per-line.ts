@@ -1,15 +1,11 @@
 import type {
   Context,
   CreateOnceRule,
-  Fixer,
   Span,
   VisitorWithHooks,
 } from '@oxlint/plugins';
 
-import {
-  buildParamFix,
-  paramsNeedFix,
-} from '../utility/param-fix.ts';
+import { checkItemsPerLine, } from '../utility/item-per-line.ts';
 import {
   at,
   rangeOf,
@@ -33,9 +29,9 @@ type FunctionParamListNode = Span & {
  * `TSConstructorType`, and `TSEmptyBodyFunctionExpression`.
  *
  * In ESTree (used by oxlint JS plugins), `node.params` is a plain array
- * of parameter nodes without a wrapper container. This rule handles the
- * detection and fix logic directly instead of delegating to
- * `checkItemsPerLine`, which expects a container node with delimiters.
+ * of parameter nodes without a wrapper container. This rule locates the
+ * surrounding parentheses, then delegates to `checkItemsPerLine` with those
+ * explicit delimiter offsets.
  *
  * The autofix replaces only the source range `[openParen, closeParen + 1]`,
  * so syntactic prefixes (`new` for constructor types and construct signatures)
@@ -137,27 +133,18 @@ export const paramPerLine: CreateOnceRule = {
       if ((openParen === (-1)) || (closeParen === (-1)))
         return;
 
-      if (!paramsNeedFix({
-        sourceText,
-        openParen,
-        closeParen,
-        params,
-      },)) {
-        return;
-      }
-
-      context.report({
-        node,
+      checkItemsPerLine({
+        context,
+        container: node,
+        items: params,
         messageId: 'paramPerLine',
-        fix(fixer: Fixer,) {
-          return buildParamFix({
-            fixer,
-            sourceText,
-            openParen,
-            closeParen,
-            params,
-            context,
-          },);
+        bracketPair: {
+          open: '(',
+          close: ')',
+        },
+        boundary: {
+          openOffset: openParen,
+          closeOffset: closeParen,
         },
       },);
     }

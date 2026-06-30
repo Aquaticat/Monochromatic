@@ -5,6 +5,7 @@ import type {
 } from '@oxlint/plugins';
 
 import { leadingWhitespace, } from './indent.ts';
+import type { PerLineBoundaryOffsets, } from './per-line-boundary.ts';
 import {
   at,
   rangeOf,
@@ -65,6 +66,10 @@ export type PerLineFixConfig = {
    */
   readonly bracketPair: BracketPair;
   /**
+   * Explicit delimiter offsets when the caller already located the list.
+   */
+  readonly boundary?: PerLineBoundaryOffsets;
+  /**
    * Delimiter to place after each item.
    *
    * Defaults to `','` for comma-separated constructs.
@@ -110,6 +115,7 @@ export function buildPerLineFix({
   items,
   sourceText,
   bracketPair,
+  boundary,
   delimiter = ',',
 }: PerLineFixConfig,): ReturnType<Fixer['replaceText']> {
   /**
@@ -129,25 +135,29 @@ export function buildPerLineFix({
   },),);
 
   /**
-   * Scan backward from first item to find the opening bracket.
+   * Opening bracket position, either supplied by caller or scanned backward from first item.
    */
-  const openPos = sourceText.lastIndexOf(
-    bracketPair.open,
-    firstRange[0]
-      - 1,
-  );
+  const openPos = boundary === undefined
+    ? sourceText.lastIndexOf(
+      bracketPair.open,
+      firstRange[0]
+        - 1,
+    )
+    : boundary.openOffset;
 
   /**
-   * Scan forward from last item to find the closing bracket.
+   * Scan forward from last item to find the closing bracket when no explicit boundary is supplied.
    */
   const [, lastRangeEnd,] = lastRange;
   /**
-   * Closing bracket position scanned from the last item's end; -1 sentinel handled below.
+   * Closing bracket position, either supplied by caller or scanned from the last item's end.
    */
-  const closePos = sourceText.indexOf(
-    bracketPair.close,
-    lastRangeEnd,
-  );
+  const closePos = boundary === undefined
+    ? sourceText.indexOf(
+      bracketPair.close,
+      lastRangeEnd,
+    )
+    : boundary.closeOffset;
 
   if ((openPos === (-1)) || (closePos === (-1))) {
     return fixer.replaceTextRange(
