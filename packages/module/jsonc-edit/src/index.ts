@@ -10,6 +10,16 @@
  * @packageDocumentation
  */
 
+//region Parsing
+export { parseJsonc, } from './parse-jsonc.ts';
+export { mergeComments, } from './merge-comments.ts';
+export {
+  JsoncParseError,
+  JsoncPathNotFoundError,
+  JsoncTypeError,
+} from './errors.ts';
+//endregion Parsing
+
 //region Types: the parsed value model surfaced to callers
 export type { JsoncComment, } from './comment.ts';
 export type {

@@ -68,9 +68,48 @@ mise run //packages/module/jsonc-edit:test:conformance
 
 Progress (newest first):
 
+- 2026-06-30 (later):
+  Package scaffolded and building. Value model (`comment.ts`, `brand.ts`,
+  `value.ts`) done, type-checks and lints clean. Parser core written:
+  `errors.ts`, `merge-comments.ts`, `scan.ts`, `parse-trivia.ts`, `parse.ts`,
+  `parse-jsonc.ts`. The parser type-checks but does NOT yet pass oxlint:
+  it is written in an imperative cursor style that violates the repo's
+  functional rules. Committed as WIP. Lint remediation is the next step,
+  before the serializer.
 - 2026-06-30:
   worktree created, toolchain installed, decision doc written, task list set up.
-  Scaffolding next.
+
+## Lint remediation plan for the parser core
+
+The parser logic is correct and type-checks; only its style needs reshaping to
+satisfy these rules (learned from the rule sources and fixtures):
+
+- `no-restricted-syntax/no-function-root-let`:
+  a root-level `let` is allowed only in the "helper shape" where the function
+  ends with `return <thatIdentifier>`. Otherwise move the cursor into a
+  `for (let cursor = start; cursor < source.length; )` init (empty increment,
+  advance inside), which is not a function-root `let`. Accumulators (`comment`,
+  `commaSeen`) should become a `const` array pushed to in the loop, then reduced
+  or derived at the single return.
+- `no-restricted-syntax/no-nullish-union` (shortcode `l`):
+  no `T | undefined` or `T | null` annotations. Use `?:` optionals, plain `T`,
+  or a `Symbol` sentinel. So `TriviaScan`, `TrailingScan`, `ScalarScan`, and the
+  helper params that read `comment?: JsoncComment | undefined` drop the
+  `| undefined`; locals typed `X | undefined` get restructured away (collect into
+  a `const` array, conditionally include the property at return so no `undefined`
+  is ever assigned to an optional).
+- `eslint(init-declarations)`:
+  every binding initialized at declaration.
+- `exactOptionalPropertyTypes`:
+  never assign `undefined` to an optional property; build the return object with
+  the property present only when defined (`length === 0 ? { end } : { comment, end }`).
+
+Concretely, restructure `scan.ts` (`scanString`, `scanNumber`),
+`parse-trivia.ts` (`skipTrivia`, `captureTrailing`), and the loops in `parse.ts`
+to the for-init-cursor plus const-accumulator shape. Also one file trips
+`max-lines` (300 code lines): split `parse.ts` (move `closeArray`/`closeRecord`
+and the entry helpers to a sibling, keep the mutually-recursive
+`parseValue`/`parseArray`/`parseRecord`/`parseEntry` together).
 
 ## Task map
 
