@@ -67,14 +67,18 @@ export type SimpleBanRuleParams = {
  * });
  * ```
  */
-export function simpleBanRule({
-  type,
-  nodeType,
-  description,
-  messageId,
-  message,
-  shouldReport,
-}: SimpleBanRuleParams,): CreateOnceRule {
+export function simpleBanRule(params: SimpleBanRuleParams,): CreateOnceRule {
+  /**
+   * Rule metadata, visitor key, and optional predicate.
+   */
+  const {
+    type,
+    nodeType,
+    description,
+    messageId,
+    message,
+    shouldReport,
+  } = params;
   /**
    * Predicate used for every visited node; defaults to reporting all matches.
    *

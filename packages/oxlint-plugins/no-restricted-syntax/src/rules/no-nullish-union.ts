@@ -137,6 +137,9 @@ export const noNullishUnion: CreateOnceRule = simpleBanRule({
   messageId: 'forbidden',
   message: NO_NULLISH_UNION_MESSAGE,
   shouldReport(node: ESTree.Node,): boolean {
-    return (node.type === 'TSUnionType') && node.types.some(isNullishMember,);
+    if (node.type !== 'TSUnionType')
+      return false;
+    return node.types
+      .some(isNullishMember,);
   },
 },);

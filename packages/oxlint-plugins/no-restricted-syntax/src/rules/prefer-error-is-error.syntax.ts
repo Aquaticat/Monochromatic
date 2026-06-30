@@ -90,6 +90,9 @@ export function getIdentifierNamed(
 export function getStaticMemberName(
   { member, }: { readonly member: ESTree.MemberExpression; },
 ): string | typeof NOT_ERROR_DETECTION {
+  /**
+   * Shared static member name result; mapped to this rule's sentinel below.
+   */
   const memberName = getSharedStaticMemberName({ member, },);
   if (memberName === NO_STATIC_MEMBER_NAME)
     return NOT_ERROR_DETECTION;
@@ -308,6 +311,9 @@ export function getSingleArgumentText(
     readonly call: ESTree.CallExpression;
   },
 ): ErrorDetectionArgumentText {
+  /**
+   * Sole ordinary argument of the call, when the detector shape is supported.
+   */
   const argument = getSingleNonSpreadArgument({ call, },);
   if (argument === NO_SINGLE_ARGUMENT)
     return NOT_ERROR_DETECTION;

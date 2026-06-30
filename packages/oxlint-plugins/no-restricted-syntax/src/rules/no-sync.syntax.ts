@@ -103,6 +103,9 @@ export function getMemberName(
 export function getSingleStringArgument(
   { call, }: { readonly call: ESTree.CallExpression; },
 ): StaticSource {
+  /**
+   * Sole ordinary argument of the call, when the call shape is supported.
+   */
   const argument = getSingleNonSpreadArgument({ call, },);
   if (argument === NO_SINGLE_ARGUMENT)
     return NO_STATIC_SOURCE;
@@ -204,6 +207,9 @@ export function findVariable(
 export function getImportDeclaration(
   { definition, }: { readonly definition: Definition; },
 ): ESTree.ImportDeclaration | typeof NO_VARIABLE {
+  /**
+   * Import declaration resolved from scope-manager definition metadata.
+   */
   const declaration = getImportDeclarationForDefinition({ definition, },);
   if (declaration === NO_IMPORT_DECLARATION)
     return NO_VARIABLE;

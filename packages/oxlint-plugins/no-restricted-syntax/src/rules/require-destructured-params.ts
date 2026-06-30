@@ -53,6 +53,16 @@ export const requireDestructuredParams: CreateOnceRule = simpleBanRule({
      * Minimum parameter count that triggers the rule.
      */
     const minParams = 2;
-    return (node.type === 'FunctionDeclaration') && (node.params.length >= minParams);
+    if (node.type !== 'FunctionDeclaration')
+      return false;
+    /**
+     * Function declaration parameters.
+     */
+    const { params, } = node;
+    /**
+     * Function declaration parameter count.
+     */
+    const paramCount = params.length;
+    return paramCount >= minParams;
   },
 },);
