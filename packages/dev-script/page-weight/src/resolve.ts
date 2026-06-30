@@ -37,8 +37,8 @@ export const UNRESOLVABLE_REFERENCE: unique symbol = Symbol('page-weight referen
  * @param ref - raw reference string (URL or path) from HTML or CSS
  *
  * @returns absolute filesystem path under `root`, or
- *   {@link UNRESOLVABLE_REFERENCE} when the reference is external, escapes the
- *   root, or is malformed
+ *   {@link UNRESOLVABLE_REFERENCE} when the reference is external (per
+ *   {@link startsWithUriScheme}), escapes the root, or is malformed
  *
  * @example
  * ```ts

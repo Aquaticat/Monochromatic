@@ -141,6 +141,8 @@ function attr(
  * exact pick depends on viewport and DPR; the first candidate is a
  * reasonable proxy for the "canonical" reference.
  *
+ * The pick is read out with {@link firstNonWhitespaceToken}.
+ *
  * @param srcset - raw srcset value, e.g. `"a.jpg 1x, b.jpg 2x"`
  *
  * @returns first URL, or {@link NO_ASSET_URL} if the value is empty
@@ -228,7 +230,8 @@ export function firstNonWhitespaceToken(line: string,): string {
  *
  * The candidate is an optional `string`: producers that found no URL convert
  * their {@link NO_ASSET_URL} sentinel to `undefined` at this seam rather than
- * threading a foreign sentinel into this function's narrowing.
+ * threading a foreign sentinel into this function's narrowing. External
+ * schemes are detected via {@link startsWithUriScheme}.
  *
  * @param raw - candidate URL, or `undefined` when the source element had none
  *

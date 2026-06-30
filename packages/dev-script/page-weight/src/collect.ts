@@ -89,7 +89,8 @@ async function readCssOrAbsent(absolutePath: string,): Promise<string | typeof C
 
 /**
  * Walks a CSS file's `url()` references into resolved absolute paths,
- * recursing through `@import` chains.
+ * recursing through `@import` chains. Skips files that read as
+ * {@link CSS_UNREADABLE} instead of aborting the walk.
  *
  * @param startPath - absolute path of the initial CSS file
  *
@@ -99,8 +100,9 @@ async function readCssOrAbsent(absolutePath: string,): Promise<string | typeof C
  *   caller, so an asset reachable from both the HTML and the CSS graph is
  *   reported once
  *
- * @returns assets discovered through the CSS graph plus references that could
- *   not be resolved, for the caller to merge into its own accumulators
+ * @returns assets discovered through the CSS graph plus references that
+ *   resolved to {@link UNRESOLVABLE_REFERENCE}, for the caller to merge
+ *   into its own accumulators
  */
 async function walkCss(
   {
@@ -191,12 +193,14 @@ async function walkCss(
  * Algorithm:
  *
  * 1. Add the HTML's own wire size.
- * 2. Walk HTML for referenced assets (link, script, img, picture, ...).
- * 3. For each CSS reference, walk its `url()` graph to pick up fonts,
- *    background images, and chained `@import`s.
+ * 2. Walk HTML for referenced assets (link, script, img, picture, ...) via
+ *    {@link extractHtmlRefs}.
+ * 3. For each CSS reference, walk its `url()` graph via {@link walkCss} to
+ *    pick up fonts, background images, and chained `@import`s.
  * 4. For each `<style>` block, apply the same CSS `url()` scan using the
  *    HTML's own path as the resolution base.
- * 5. Sum the unique wire sizes.
+ * 5. Sum the unique wire sizes via {@link wireSize}, recording
+ *    {@link WIRE_SIZE_UNAVAILABLE} assets into `missing` instead.
  *
  * @param htmlPath - absolute path to the HTML file
  *

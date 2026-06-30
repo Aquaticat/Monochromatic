@@ -44,7 +44,7 @@ type ValueToken =
 
 /**
  * Reads the structured `value` payload from a URL / String / Function /
- * AtKeyword token.
+ * AtKeyword token at the {@link TOKEN_DATA_INDEX} tuple slot.
  *
  * @param token - tokenizer output tuple
  *
@@ -68,7 +68,8 @@ const NON_LOCAL_REF: unique symbol = Symbol('page-weight/non-local-ref',);
  * weight.
  *
  * External forms filtered:
- * - absolute URLs with scheme (`http:`, `https:`, `ftp:`, `data:`, ...)
+ * - absolute URLs with scheme (`http:`, `https:`, `ftp:`, `data:`, ...),
+ *   detected via {@link startsWithUriScheme}
  * - protocol-relative (`//cdn.example.com/...`)
  * - fragment-only (`#id`)
  * - empty string

@@ -65,7 +65,8 @@ type Scaled = {
 };
 
 /**
- * Formats a byte count as a human-readable string using binary prefixes.
+ * Formats a byte count as a human-readable string using binary prefixes,
+ * dividing by {@link BYTES_PER_KIB} repeatedly until the value fits a unit.
  *
  * Keeps output readable in a small terminal; precision is capped at 1 decimal
  * place to avoid noise when byte counts differ trivially between runs.
@@ -151,7 +152,7 @@ if (found.files
 }
 
 /**
- * Weighed-page results, computed concurrently.
+ * Weighed-page results, computed via {@link weighPage} concurrently.
  */
 const weights: PageWeight[] = await Promise.all(
   found.files
@@ -182,7 +183,8 @@ const totals = weights.map(function pageTotal(entry: PageWeight,): number {
   return entry.totalBytes;
 },);
 /**
- * Summary statistics for the page-weight distribution.
+ * Summary statistics for the page-weight distribution, computed via
+ * {@link summarize}.
  */
 const stats = summarize(totals,);
 
