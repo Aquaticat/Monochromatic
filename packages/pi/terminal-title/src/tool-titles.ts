@@ -18,6 +18,7 @@ import {
   quotedFormat,
   shortCommand,
 } from './formatter-utils.ts';
+import type { ToolTitleEntry as FormatterToolTitleEntry, } from './formatter-utils.ts';
 
 /**
  * Tool title entries for all pi built-in tools. Each entry specifies how to
@@ -28,7 +29,7 @@ import {
  * `titleForTool()` rather than registered here; their `toolName` is dynamic
  * and their inputs are untyped `Record<string, unknown>`.
  */
-const TOOL_TITLES: Record<string, ToolTitleEntry> = {
+const TOOL_TITLES: Record<string, FormatterToolTitleEntry> = {
   bash: {
     extract: field('command',),
     format(v,) {
