@@ -138,7 +138,7 @@ type ExtensionContextOptions = {
 /**
  * Builds fake Pi API and captures extension registrations.
  *
- * @returns fake Pi API harness.
+ * @returns fake {@link FakePiApiHarness}.
  *
  * @example
  * ```typescript
@@ -318,7 +318,7 @@ function fakePiApi(): FakePiApiHarness {
 /**
  * Creates minimal extension context for spawn-pi handler tests.
  *
- * @param options - fake context values.
+ * @param options - fake {@link ExtensionContextOptions}.
  *
  * @returns fake extension context.
  *

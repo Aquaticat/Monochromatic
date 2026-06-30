@@ -91,7 +91,7 @@ const args = runSync(
  *
  * @param env - environment variables inherited by terminal-exec.
  *
- * @param invocation - terminal-exec command and arguments to spawn.
+ * @param invocation - {@link TerminalInvocation} command and arguments to spawn.
  *
  * @example
  * ```typescript
@@ -133,7 +133,7 @@ function launchDetachedTerminal(
  *
  * @param prompt - initial prompt for spawned Pi.
  *
- * @returns normalized spawn-pi argument object.
+ * @returns normalized {@link SpawnPiArgs}.
  *
  * @example
  * ```typescript

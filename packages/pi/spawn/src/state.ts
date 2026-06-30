@@ -44,9 +44,9 @@ const NOTHING_TO_REPORT: unique symbol = Symbol('spawn-pi/nothing-to-report',);
  *
  * @param pid - process id to map.
  *
- * @param mapping - Pi session identity to write.
+ * @param mapping - Pi session {@link PidMapping} identity to write.
  *
- * @param env - environment values controlling destination directory.
+ * @param env - {@link Environment} values controlling destination directory.
  *
  * @example
  * ```typescript
@@ -88,9 +88,9 @@ function writePidMapping(
 /**
  * Writes initial spawn state before terminal process is launched.
  *
- * @param state - initial state to persist.
+ * @param state - initial {@link SpawnState} to persist.
  *
- * @param env - environment values controlling destination directory.
+ * @param env - {@link Environment} values controlling destination directory.
  *
  * @example
  * ```typescript
@@ -128,7 +128,7 @@ function writeInitialSpawnState(
  *
  * @param sessionFile - child Pi session file path.
  *
- * @param env - environment values controlling source directory.
+ * @param env - {@link Environment} values controlling source directory.
  *
  * @example
  * ```typescript
@@ -199,7 +199,7 @@ function claimSpawn(
  *
  * @param lastMessage - assistant text to forward to parent.
  *
- * @param env - environment values controlling source directory.
+ * @param env - {@link Environment} values controlling source directory.
  *
  * @example
  * ```typescript
@@ -268,7 +268,7 @@ function completeSpawn(
 /**
  * Formats completed child state into parent-visible context.
  *
- * @param state - completed spawn state.
+ * @param state - completed {@link SpawnState}.
  *
  * @returns model-visible result text for parent Pi session.
  *
@@ -300,9 +300,9 @@ function formatSpawnResult(state: SpawnState,): string {
 /**
  * Reads spawn state directory, handling missing directories as empty state.
  *
- * @param env - environment values controlling source directory.
+ * @param env - {@link Environment} values controlling source directory.
  *
- * @returns directory entries or `NOTHING_TO_REPORT` when directory is absent.
+ * @returns directory entries, or {@link NOTHING_TO_REPORT} when directory is absent.
  *
  * @example
  * ```typescript
@@ -360,9 +360,9 @@ function spawnIdFromJsonFilename(filename: string,): string {
  *
  * @param consume - whether matching JSON files should be renamed to reported markers.
  *
- * @param env - environment values controlling source directory.
+ * @param env - {@link Environment} values controlling source directory.
  *
- * @returns formatted result text or `NOTHING_TO_REPORT`.
+ * @returns formatted result text, or {@link NOTHING_TO_REPORT}.
  *
  * @example
  * ```typescript

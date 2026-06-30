@@ -79,7 +79,7 @@ function tempDir(
  *
  * @param name - environment variable name.
  *
- * @param value - replacement value, or `CLEAR_ENV` to delete.
+ * @param value - replacement value, or {@link CLEAR_ENV} to delete.
  *
  * @returns disposable environment override.
  *

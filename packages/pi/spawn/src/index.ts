@@ -68,7 +68,7 @@ const monitorTimers = new WeakMap<ExtensionAPI, ReturnType<typeof setInterval>>(
  *
  * Registers session identity, child completion reporting, and parent result delivery.
  *
- * @param pi - Pi extension API.
+ * @param pi - {@link ExtensionAPI}.
  *
  * @example
  * ```json
@@ -119,9 +119,11 @@ export default function spawnPi(pi: ExtensionAPI,): void {
 //region Session registration
 
 /**
- * Registers current Pi process as spawn-pi parent candidate and claims child spawn when applicable.
+ * Registers current Pi process as spawn-pi parent candidate via {@link writePidMapping}, claims a
+ * child spawn via {@link claimSpawn} when applicable, and runs {@link autoSetupCli} for first-launch
+ * CLI setup.
  *
- * @param ctx - current Pi extension context.
+ * @param ctx - current {@link ExtensionContext}.
  *
  * @param extensionPath - extension module path to propagate to child Pi process.
  *
@@ -200,11 +202,12 @@ function registerSession(
 //region Child reporting
 
 /**
- * Reports first completed child Pi agent loop into spawn state.
+ * Reports first completed child Pi agent loop into spawn state via {@link completeSpawn}, extracting
+ * the final assistant message with {@link extractLastAssistantText}.
  *
  * @param event - Pi agent-end event containing generated messages.
  *
- * @param ctx - current child Pi extension context.
+ * @param ctx - current child {@link ExtensionContext}.
  *
  * @example
  * ```typescript
@@ -262,11 +265,12 @@ type UnrefableTimer = ReturnType<typeof setInterval> & {
 };
 
 /**
- * Starts or replaces completed-child monitor for a Pi session.
+ * Starts or replaces completed-child monitor for a Pi session, calling {@link deliverCompletedChildren}
+ * immediately and on each subsequent poll.
  *
- * @param pi - Pi extension API used for message injection.
+ * @param pi - {@link ExtensionAPI} used for message injection.
  *
- * @param ctx - Pi extension context for current session.
+ * @param ctx - {@link ExtensionContext} for current session.
  *
  * @example
  * ```typescript
@@ -312,7 +316,7 @@ function startCompletedChildMonitor(
 /**
  * Stops completed-child monitor for a Pi API instance.
  *
- * @param pi - Pi extension API whose monitor should stop.
+ * @param pi - {@link ExtensionAPI} whose monitor should stop.
  *
  * @example
  * ```typescript
@@ -338,11 +342,12 @@ function stopCompletedChildMonitor(
 }
 
 /**
- * Consumes completed child results and injects them through Pi's custom-message API.
+ * Consumes completed child results via {@link checkCompletedChildren} and injects them through Pi's
+ * custom-message API.
  *
- * @param pi - Pi extension API used for `sendMessage`.
+ * @param pi - {@link ExtensionAPI} used for `sendMessage`.
  *
- * @param ctx - current parent Pi extension context.
+ * @param ctx - current parent {@link ExtensionContext}.
  *
  * @returns whether a completed child result was delivered.
  *

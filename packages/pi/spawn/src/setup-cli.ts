@@ -196,7 +196,7 @@ function cliIsOnPath(env: Readonly<NodeJS.ProcessEnv> = process.env,): boolean {
  *
  * @param env - environment values used for `HOME` and `PATH`.
  *
- * @returns warning text, or `NO_CLI_SETUP_WARNING` when setup is complete.
+ * @returns warning text, or {@link NO_CLI_SETUP_WARNING} when setup is complete.
  *
  * @example
  * ```typescript

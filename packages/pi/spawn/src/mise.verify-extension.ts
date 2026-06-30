@@ -81,7 +81,8 @@ type SpawnPiExtensionModule = {
 //region Verification
 
 /**
- * Verifies built extension and CLI shape.
+ * Verifies built extension and CLI shape via {@link verifyBuiltExtension}, {@link verifyBuiltCli},
+ * and {@link verifySourceCli}.
  *
  * @returns verification result text.
  *

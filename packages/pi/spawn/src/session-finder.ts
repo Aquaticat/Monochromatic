@@ -39,7 +39,7 @@ const SESSION_NOT_FOUND: unique symbol = Symbol('spawn-pi/session-not-found',);
  *
  * @param pid - process identifier to inspect.
  *
- * @returns parent PID or `SESSION_NOT_FOUND` when unavailable.
+ * @returns parent PID, or {@link SESSION_NOT_FOUND} when unavailable.
  *
  * @example
  * ```typescript
@@ -93,9 +93,9 @@ function readParentPid(pid: number,): number | typeof SESSION_NOT_FOUND {
  *
  * @param pid - process identifier to map.
  *
- * @param env - environment values controlling mapping directory.
+ * @param env - {@link Environment} values controlling mapping directory.
  *
- * @returns mapping or `SESSION_NOT_FOUND` when absent.
+ * @returns {@link PidMapping}, or {@link SESSION_NOT_FOUND} when absent.
  *
  * @example
  * ```typescript
@@ -144,9 +144,9 @@ function readPidMapping(
  *
  * @param pid - process identifier where search starts.
  *
- * @param env - environment values controlling mapping directory.
+ * @param env - {@link Environment} values controlling mapping directory.
  *
- * @returns nearest mapping or `SESSION_NOT_FOUND`.
+ * @returns nearest {@link PidMapping}, or {@link SESSION_NOT_FOUND}.
  *
  * @example
  * ```typescript
@@ -188,9 +188,9 @@ function walkProcessTreeFrom(
 /**
  * Reads PID mapping directory entries.
  *
- * @param env - environment values controlling mapping directory.
+ * @param env - {@link Environment} values controlling mapping directory.
  *
- * @returns filenames or `SESSION_NOT_FOUND` when directory is absent.
+ * @returns filenames, or {@link SESSION_NOT_FOUND} when directory is absent.
  *
  * @example
  * ```typescript
@@ -209,9 +209,9 @@ function readByPidDir(env: Environment = process.env,): readonly string[] | type
 /**
  * Finds newest mapping as fallback for sandboxed process trees.
  *
- * @param env - environment values controlling mapping directory.
+ * @param env - {@link Environment} values controlling mapping directory.
  *
- * @returns newest mapping or `SESSION_NOT_FOUND`.
+ * @returns newest {@link PidMapping}, or {@link SESSION_NOT_FOUND}.
  *
  * @example
  * ```typescript
@@ -292,9 +292,9 @@ function findByMostRecent(env: Environment = process.env,): PidMapping | typeof 
 /**
  * Finds parent Pi session by process ancestry, then newest mapping fallback.
  *
- * @param env - environment values controlling mapping directory.
+ * @param env - {@link Environment} values controlling mapping directory.
  *
- * @returns parent mapping or `SESSION_NOT_FOUND`.
+ * @returns parent {@link PidMapping}, or {@link SESSION_NOT_FOUND}.
  *
  * @example
  * ```typescript

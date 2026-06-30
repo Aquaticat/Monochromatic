@@ -87,7 +87,7 @@ function isAssistantMessage(value: unknown,): value is AssistantMessageLike {
 /**
  * Extracts text from assistant message content.
  *
- * @param content - assistant message content.
+ * @param content - {@link AssistantMessageLike} content.
  *
  * @returns joined text blocks, or content itself for legacy string content.
  *
@@ -111,7 +111,8 @@ function assistantContentText(content: AssistantMessageLike['content'],): string
 }
 
 /**
- * Extracts last assistant text from Pi agent-end messages.
+ * Extracts last assistant text from Pi agent-end messages, using {@link isAssistantMessage} to
+ * filter candidates.
  *
  * @param messages - messages emitted by agent loop.
  *
