@@ -27,6 +27,13 @@ import { visitRemainingNode, } from './unbash-command-info-work-remaining.ts';
 /**
  * Visit one AST node.
  *
+ * Dispatches by node type: {@link commandToInfo} and {@link commandWordItems}
+ * for `Command`, {@link nodeWorkItems} for `Pipeline`/`AndOr` children,
+ * {@link statementWorkItems} for `If`/`For`/`Select`/`While` bodies,
+ * {@link wordWorkItems} and {@link wordsWorkItems} for `For`/`Select` words,
+ * {@link redirectWorkItems} for inherited redirects, and
+ * {@link visitRemainingNode} for every other node type.
+ *
  * @param node - AST node to visit
  *
  * @param redirects - redirects inherited from wrapping statement nodes

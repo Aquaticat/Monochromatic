@@ -22,6 +22,10 @@ import {
 /**
  * Build script work from command, process, or arithmetic command expansion.
  *
+ * Resolves the nested script with {@link scriptFromExpansion}, builds work
+ * with {@link statementWorkItems}, and checks diagnostics with
+ * {@link scriptHasErrors}.
+ *
  * @param expansion - expansion containing nested shell source
  *
  * @returns statement work and nested parse diagnostics
@@ -52,6 +56,8 @@ function visitExpansion(
 
 /**
  * Resolve nested script from an expansion node.
+ *
+ * Falls back to {@link failedNestedScript} when `unbash.parse` throws.
  *
  * @param expansion - expansion containing nested shell source
  *

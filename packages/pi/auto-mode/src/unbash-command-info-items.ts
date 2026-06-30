@@ -43,6 +43,8 @@ function nodeWorkItem(
 /**
  * Build node work items in source order.
  *
+ * Maps each node through {@link nodeWorkItem}.
+ *
  * @param nodes - nodes to enqueue
  *
  * @returns work items in source order
@@ -62,6 +64,8 @@ function nodeWorkItems(
 
 /**
  * Build statement work items in source order.
+ *
+ * Maps each statement through {@link nodeWorkItem}.
  *
  * @param statements - statements to enqueue
  *
@@ -103,6 +107,8 @@ function wordWorkItems(
 
 /**
  * Build word work items in source order.
+ *
+ * Flattens each word through {@link wordWorkItems}.
  *
  * @param words - words to enqueue
  *
@@ -147,6 +153,8 @@ function redirectWorkItems(
 /**
  * Build work items for words attached to redirects.
  *
+ * Builds target and body words with {@link wordWorkItems}.
+ *
  * @param redirects - redirects whose target and body words should be scanned
  *
  * @returns word work items in source order
@@ -169,6 +177,10 @@ function redirectWordItems(
 
 /**
  * Build work items for words attached to a command.
+ *
+ * Combines {@link assignmentWordItems} for the prefix, {@link wordWorkItems}
+ * for the command name, {@link wordsWorkItems} for the suffix, and
+ * {@link redirectWordItems} for redirects.
  *
  * @param command - command whose words should be scanned
  *
@@ -204,6 +216,9 @@ function commandWordItems(
 /**
  * Build assignment value word items.
  *
+ * Builds array values with {@link wordsWorkItems} and scalar values with
+ * {@link wordWorkItems}.
+ *
  * @param assignments - assignment prefixes to scan
  *
  * @returns word work items in source order
@@ -226,6 +241,9 @@ function assignmentWordItems(
 
 /**
  * Build words and body commands from a case statement.
+ *
+ * Builds pattern words with {@link wordsWorkItems} and body work with
+ * {@link nodeWorkItem}.
  *
  * @param node - case node to scan
  *

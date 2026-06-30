@@ -14,6 +14,8 @@ import type { WorkItem, } from './unbash-command-info-types.ts';
 /**
  * Build nested word items from a parameter expansion.
  *
+ * Builds operand, slice, and replacement words with {@link wordWorkItems}.
+ *
  * @param part - parameter expansion part
  *
  * @returns word work items in source order

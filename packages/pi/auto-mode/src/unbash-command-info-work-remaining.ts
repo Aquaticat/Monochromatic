@@ -25,6 +25,11 @@ import {
 /**
  * Visit less-common node variants after primary command forms.
  *
+ * Dispatches `Function`/`Subshell`/`BraceGroup`/`CompoundList`/`Case` bodies
+ * through {@link statementWorkItems}, {@link wordWorkItems}, and
+ * {@link caseItemWorkItems}, surfaces redirects with {@link redirectWorkItems},
+ * and falls through to {@link visitRemainingAfterCase} for every other node type.
+ *
  * @param node - AST node to visit
  *
  * @param redirects - redirects inherited from wrapping statement nodes
@@ -101,6 +106,10 @@ function visitRemainingNode(
 
 /**
  * Visit remaining node variants after case statements.
+ *
+ * Dispatches `Coproc`/`ArithmeticFor` bodies through {@link wordWorkItems} and
+ * {@link statementWorkItems}, surfaces redirects with {@link redirectWorkItems},
+ * and falls through to {@link visitRedirectsItem} for every other node type.
  *
  * @param node - AST node to visit
  *
@@ -197,6 +206,9 @@ function visitRemainingAfterCase(
 
 /**
  * Visit redirects attached to compound syntax.
+ *
+ * Builds the synthetic command with {@link redirectOnlyCommand} and
+ * follow-up word work with {@link redirectWordItems}.
  *
  * @param redirects - redirects to surface as path signals
  *

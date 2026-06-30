@@ -46,6 +46,8 @@ function visitWord(
 /**
  * Build child work from word parts.
  *
+ * Delegates each part to {@link visitPart}.
+ *
  * @param parts - parts to inspect
  *
  * @returns child work and nested parse diagnostics
@@ -78,6 +80,9 @@ function visitParts(
 
 /**
  * Build child work from one word part.
+ *
+ * Routes parameter expansions to {@link parameterWordItems} and
+ * command/process expansions to {@link visitExpansion}.
  *
  * @param part - word part to inspect
  *
@@ -122,6 +127,8 @@ function visitPart(
 
 /**
  * Build child work from an arithmetic expression.
+ *
+ * Routes command expansions to {@link visitExpansion}.
  *
  * @param expression - expression to inspect
  *
@@ -194,6 +201,8 @@ function visitArithmetic(
 
 /**
  * Build child work from a Bash test expression.
+ *
+ * Builds operand work with {@link wordWorkItems}.
  *
  * @param expression - expression to inspect
  *

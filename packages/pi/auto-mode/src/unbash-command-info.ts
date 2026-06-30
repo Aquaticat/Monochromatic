@@ -24,6 +24,13 @@ import type { CommandInfo, } from './types.ts';
 /**
  * Convert a parsed `unbash` script to auto-mode command info.
  *
+ * Seeds an iterative work stack with {@link statementWorkItems} and
+ * {@link scriptHasErrors}, then drains it by dispatching each item kind to
+ * {@link visitNode} for AST nodes, {@link visitWord} for words,
+ * {@link visitParts} for word parts, {@link visitArithmetic} for arithmetic
+ * expressions, {@link visitTest} for test expressions, or
+ * {@link visitRedirectsItem} for redirect-only items.
+ *
  * @param script - parsed script from `unbash.parse`
  *
  * @param paramRefs - parameter references pre-scanned from raw command text

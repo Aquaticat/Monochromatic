@@ -19,6 +19,9 @@ import type {
 /**
  * Convert one simple command node to guardrail command info.
  *
+ * Converts the command prefix with {@link assignmentToEnvAssignment}, the
+ * suffix with {@link wordToArg}, and the redirects with {@link redirectTargets}.
+ *
  * @param command - simple command node
  *
  * @param inheritedRedirects - redirects from wrapping statements
@@ -67,6 +70,8 @@ function commandToInfo(
 /**
  * Emit a synthetic command for redirects attached to compound syntax.
  *
+ * Computes redirect targets with {@link redirectTargets}.
+ *
  * @param redirects - redirects to surface as path signals
  *
  * @param paramRefs - parameter references pre-scanned from source
@@ -99,6 +104,8 @@ function redirectOnlyCommand(
 /**
  * Extract redirect targets for path-sensitive operators.
  *
+ * Keeps only operators listed in {@link FILE_REDIRECT_OPERATORS}.
+ *
  * @param redirects - redirects to inspect
  *
  * @returns target strings for file-like redirects
@@ -125,6 +132,8 @@ function redirectTargets(
 
 /**
  * Convert one assignment prefix to zero or one environment assignment.
+ *
+ * Renders the value with {@link assignmentValue}.
  *
  * @param assignment - assignment prefix from `unbash`
  *
