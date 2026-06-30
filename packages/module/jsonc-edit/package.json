@@ -24,6 +24,8 @@
     "@monochromatic-dev/module-test": "workspace:*",
     "@types/node": "catalog:",
     "fast-check": "catalog:",
+    "jsonc-eslint-parser": "catalog:",
+    "jsonc-parser": "catalog:",
     "type-fest": "catalog:",
     "typescript": "catalog:"
   },

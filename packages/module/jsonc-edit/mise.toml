@@ -35,6 +35,10 @@ extends = "test:unit"
 description = "Build the neutral bundle, then run unit tests against the built dist"
 run = ["mise run build", "mise run test:unit"]
 
+[tasks.bench]
+description = "Parse benchmark: jsonc-edit vs jsonc-eslint-parser and microsoft jsonc-parser"
+run = "node src/bench/parse.bench.ts"
+
 [tasks.fuzz]
 description = "Run *.property.unit.test.ts as a longer fast-check campaign under node"
 usage = '''

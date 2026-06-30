@@ -169,6 +169,12 @@ catalogs:
     ignore:
       specifier: '>=7.0.5'
       version: 7.0.5
+    jsonc-eslint-parser:
+      specifier: '>=2.4.0'
+      version: 3.1.0
+    jsonc-parser:
+      specifier: '>=3.3.1'
+      version: 3.3.1
     jspdf:
       specifier: '>=2.5.2'
       version: 4.2.1
@@ -1724,6 +1730,12 @@ importers:
       fast-check:
         specifier: 'catalog:'
         version: 4.8.0
+      jsonc-eslint-parser:
+        specifier: 'catalog:'
+        version: 3.1.0
+      jsonc-parser:
+        specifier: 'catalog:'
+        version: 3.3.1
       type-fest:
         specifier: 'catalog:'
         version: 5.7.0
@@ -5101,6 +5113,13 @@ packages:
     engines: {node: '>=6'}
     hasBin: true
 
+  jsonc-eslint-parser@3.1.0:
+    resolution: {integrity: sha512-75EA7EWZExL/j+MDKQrRbdzcRI2HOkRlmUw8fZJc1ioqFEOvBsq7Rt+A6yCxOt9w/TYNpkt52gC6nm/g5tFIng==, tarball: https://registry.npmjs.org/jsonc-eslint-parser/-/jsonc-eslint-parser-3.1.0.tgz}
+    engines: {node: ^20.19.0 || ^22.13.0 || >=24}
+
+  jsonc-parser@3.3.1:
+    resolution: {integrity: sha512-HUgH65KyejrUFPvHFPbqOY0rsFip3Bo5wb4ngvdi1EpCYWUQDC5V+Y7mZws+DLkr4M//zQJoanu1SP+87Dv1oQ==, tarball: https://registry.npmjs.org/jsonc-parser/-/jsonc-parser-3.3.1.tgz}
+
   jspdf@4.2.1:
     resolution: {integrity: sha512-YyAXyvnmjTbR4bHQRLzex3CuINCDlQnBqoSYyjJwTP2x9jDLuKDzy7aKUl0hgx3uhcl7xzg32agn5vlie6HIlQ==, tarball: https://registry.npmjs.org/jspdf/-/jspdf-4.2.1.tgz}
 
@@ -8332,6 +8351,14 @@ snapshots:
   json-schema-traverse@1.0.0: {}
 
   json5@2.2.3: {}
+
+  jsonc-eslint-parser@3.1.0:
+    dependencies:
+      acorn: 8.17.0
+      eslint-visitor-keys: 5.0.1
+      semver: 7.8.5
+
+  jsonc-parser@3.3.1: {}
 
   jspdf@4.2.1:
     dependencies:

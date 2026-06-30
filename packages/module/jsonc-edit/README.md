@@ -47,6 +47,21 @@ import {
 } from '@monochromatic-dev/module-jsonc-edit';
 ```
 
+## Performance
+
+The `mise run //packages/module/jsonc-edit:bench` task compares parsing against
+microsoft `jsonc-parser` and `jsonc-eslint-parser`.
+On a representative run (300 entries, 3000 iterations):
+
+- Clean input, where jsonc-edit takes the native `JSON.parse` fast-path: jsonc-edit is
+  roughly four times faster than microsoft `jsonc-parser` and roughly twenty times faster
+  than `jsonc-eslint-parser`.
+- Commented input, where jsonc-edit uses the structured parser: jsonc-edit is competitive
+  with microsoft `jsonc-parser` and several times faster than `jsonc-eslint-parser`, while
+  also retaining comments as queryable data the other two do not model.
+
+Numbers are machine-dependent; run the task to reproduce them locally.
+
 ## Comment model
 
 A parsed JSONC value is a discriminated union covering string, number, boolean, null, array,
@@ -54,7 +69,6 @@ record, and a `plainJson` fast-path leaf.
 Every node may carry a `comment` of type `inline`, `block`, or `mixed`.
 Record keys are themselves comment-bearing, so `{ /* a */ "k": /* b */ "v" }` attaches
 `a` to the key and `b` to the value.
-Duplicate keys are preserved by the structured parser (any document with comments or
-trailing commas).
-A fully clean JSON document takes the native `JSON.parse` fast-path, which follows JSON
-last-wins semantics for duplicate keys.
+Duplicate keys are malformed input: the behavior is undefined and not a supported
+contract. Correctly handling malformed JSON or JSONC is not a design goal, so the
+structured parser and the `JSON.parse` fast-path may treat duplicate keys differently.
