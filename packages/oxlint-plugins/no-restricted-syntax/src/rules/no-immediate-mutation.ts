@@ -20,7 +20,10 @@ import {
 //region Mutation classification
 
 /**
- * Reports diagnostic for matching immediate method mutation.
+ * Reports diagnostic for matching immediate method mutation. Bails when the
+ * arguments reference the target via {@link referencesIdentifier}, then
+ * reads the method name via {@link staticMemberName} (against the
+ * {@link NO_STATIC_MEMBER_NAME} sentinel).
  *
  * @param context - Oxlint rule context.
  *
@@ -94,7 +97,9 @@ function reportMethodMutation(
 }
 
 /**
- * Reports diagnostic for matching `Object.assign(target, ...)` mutation.
+ * Reports diagnostic for matching `Object.assign(target, ...)` mutation:
+ * confirms the member via {@link staticMemberName} and bails when the
+ * source arguments reference the target via {@link referencesIdentifier}.
  *
  * @param context - Oxlint rule context.
  *
@@ -178,7 +183,9 @@ function reportObjectAssignMutation(
 }
 
 /**
- * Reports diagnostic for matching object property assignment mutation.
+ * Reports diagnostic for matching object property assignment mutation,
+ * bailing when the property or right-hand side reference the target via
+ * {@link referencesIdentifier}.
  *
  * @param context - Oxlint rule context.
  *
@@ -244,7 +251,13 @@ function reportPropertyAssignmentMutation(
 }
 
 /**
- * Checks one expression statement for immediate mutation.
+ * Checks one expression statement for immediate mutation: locates the
+ * previous statement via {@link previousSiblingStatement} (against
+ * {@link NO_PREVIOUS_STATEMENT}), classifies it via {@link previousInitInfo}
+ * (against {@link NO_INIT_INFO}), unwraps the current expression via
+ * {@link unwrapExpression}, and delegates to {@link reportMethodMutation},
+ * {@link reportObjectAssignMutation}, or
+ * {@link reportPropertyAssignmentMutation}.
  *
  * @param context - Oxlint rule context.
  *
@@ -308,7 +321,9 @@ function checkExpressionStatement(
 //endregion Mutation classification
 
 /**
- * Bans immediate mutation after initialization, with Set/Map clone exceptions.
+ * Bans immediate mutation after initialization, with Set/Map clone
+ * exceptions. Each expression statement is checked via
+ * {@link checkExpressionStatement}.
  *
  * This mirrors `unicorn/no-immediate-mutation` for arrays, objects, Set/Map
  * constructors backed by array literals, and `Object.assign`. Unlike upstream
