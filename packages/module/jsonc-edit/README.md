@@ -13,8 +13,9 @@ See `docs/decisions/jsonc-edit-parser-foundation.md` for why no off-the-shelf pa
 
 ## Status
 
-Under construction.
-See `docs/handover/jsonc-edit.md` for live progress.
+Implemented: parser, canonical serializer, immutable edit API, and comment-as-data API,
+with unit, property, conformance, and benchmark suites and a coverage gate.
+See `docs/handover/jsonc-edit.md` for the build history.
 
 ## Why JSONC, and why canonical
 
@@ -28,12 +29,12 @@ See `docs/handover/jsonc-edit.md` for live progress.
   This is not byte-identical splice;
   whitespace between tokens is normalized.
 
-## Planned API
+## API
 
 ```ts
 import {
   parseJsoncEdit,
-  jsoncGet,
+  jsoncStringify,
   jsoncGetValue,
   jsoncHas,
   jsoncKeys,
@@ -43,9 +44,16 @@ import {
   jsoncSetComment,
   jsoncGetKeyComment,
   jsoncSetKeyComment,
-  jsoncStringify,
+  COMMENT_ABSENT,
 } from '@monochromatic-dev/module-jsonc-edit';
+
+const state = parseJsoncEdit({ source: '{ "host": "localhost" } // cfg' as StringJsonc, },);
+const next = jsoncSetComment({ state, path: ['host',], comment: { type: 'inline', text: ' default', }, },);
+const text = jsoncStringify({ state: next, },);
 ```
+
+The lower-level `parseJsonc` (returning a `JsoncValue`) and `emitJsoncValue` are also
+exported for callers that do not need the edit state.
 
 ## Performance
 

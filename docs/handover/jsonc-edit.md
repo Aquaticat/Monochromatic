@@ -66,8 +66,30 @@ mise run //packages/module/jsonc-edit:test:conformance
 
 ## Status
 
+Complete. The package builds, type-checks, and lints clean (zero errors, zero
+warnings); 21 test suites pass (unit, property/fuzz, conformance); the coverage gate
+reports all 17 runtime source files reachable; the benchmark and es cleanup are done.
+Everything is committed on `feat/jsonc-edit`.
+
+Two follow-ups, neither blocking:
+
+- Rebase `feat/jsonc-edit` onto current `main` to pick up the logger OPFS fix (the
+  harmless `logger internal error: OPFS sink verification failed` seen when running test
+  scripts under bare node comes from `module-logger`, fixed on main; it does not affect
+  jsonc-edit behavior or test results).
+- `docs/troubleshooting/c-like-comments.md` and `docs/troubleshooting/toml.md` reference
+  the old `packages/module/es` JSONC parser; their behavior notes still apply (the new
+  parser shares the first-`*/`-wins block-comment rule), but the path references could be
+  repointed to `packages/module/jsonc-edit`.
+
 Progress (newest first):
 
+- 2026-06-30 (complete):
+  Lint-remediated the parser to the functional rules, then built the canonical
+  serializer, the immutable edit API, the comment-as-data API, the unit/property/
+  conformance test suites, the coverage-baseline gate, and the parse benchmark; removed
+  the JSONC code from the paused `module-es`. All verified end to end against the built
+  bundle.
 - 2026-06-30 (later):
   Package scaffolded and building. Value model (`comment.ts`, `brand.ts`,
   `value.ts`) done, type-checks and lints clean. Parser core written:
