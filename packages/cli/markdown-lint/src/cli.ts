@@ -69,7 +69,7 @@ const KNOWN_FLAGS: ReadonlySet<string> = new Set([
  *
  * @returns validated reporter name
  *
- * @throws CliUsageError when the value is not a known reporter
+ * @throws {@link CliUsageError} when the value is not a known reporter
  */
 function parseReporter(value: string,): ReporterName {
   if ((value === 'pretty') || (value === 'json')) {
@@ -86,7 +86,7 @@ function parseReporter(value: string,): ReporterName {
  *
  * @returns chosen reporter
  *
- * @throws CliUsageError when a `--format=` value is not a known reporter
+ * @throws {@link CliUsageError} when a `--format=` value is not a known reporter
  */
 function deriveReporter(flags: readonly string[],): ReporterName {
   if (flags.includes('--json',)) {
@@ -134,7 +134,7 @@ type ParsedArgs = {
  *
  * @returns parsed options
  *
- * @throws CliUsageError on an unknown option
+ * @throws {@link CliUsageError} on an unknown option
  */
 function parseArgs(argv: readonly string[],): ParsedArgs {
   /**

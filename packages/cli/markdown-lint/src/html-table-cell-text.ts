@@ -147,7 +147,9 @@ function escapeHtmlText(text: string,): string {
 }
 
 /**
- * Convert Markdown table cell source to safe HTML table cell text.
+ * Convert Markdown table cell source to safe HTML table cell text. Normalizes
+ * escapes with {@link normalizeMarkdownEscapes}, then escapes the result with
+ * {@link escapeHtmlText}.
  *
  * @param markdownCellText - source cell text because autofix persists it inside raw HTML
  *

@@ -79,7 +79,7 @@ function json(files: readonly FileReport[],): string {
 }
 
 /**
- * Reporters keyed by name.
+ * Reporters keyed by name: {@link pretty} for `pretty`, {@link json} for `json`.
  */
 const REPORTERS: Readonly<Record<ReporterName, (files: readonly FileReport[],) => string>> = {
   pretty,
