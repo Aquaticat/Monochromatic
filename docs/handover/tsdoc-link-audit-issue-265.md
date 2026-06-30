@@ -269,7 +269,7 @@ with scoped pathspecs (`fix(<package>): restore TSDoc inline links (issue #265)`
 | f05 | done-postcss, i18n-compose, fy, backup-path | acfac2ca064b22aa2 | done, 68/68 findings, 34 files, commits fc4aecc76/0accc0700 |
 | f06 | aquati.cat, markdown-lint, islands-black, async-iter | a8650684bc0cf2bdb | done, 81/81 findings, 18 files, commits 9d25283be/4fc7f8033/4dd06f75a |
 | f07 | stylistic, model-selection, watch-restart, zip-writer, stop-reminders, terminal-title | a236bb586d250c34d | done, 70 link insertions, 27 files, commits 63e75558f/8bef4e8c2/f16be6b94 |
-| f08a | auto-mode | | queued |
+| f08a | auto-mode | a91bc92778e72e1b1 | done, ~250 link insertions, 38 files, commits 3f9800c5e/794064be5/457404352/a5e720415 |
 | f08b | tsdoc, bash-output-filter | a4a6b817e212274ea | done, 43 findings, 23 files, commits 3cab138f8/a87959e62 |
 | f09 | done, task-util, mcp/stdio | | queued |
 | f10 | morph-compact, advisor, module/test, image-diff, test-support | | queued |
