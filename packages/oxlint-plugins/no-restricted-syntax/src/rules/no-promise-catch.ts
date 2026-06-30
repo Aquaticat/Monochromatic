@@ -1,9 +1,6 @@
-import type {
-  Context,
-  CreateOnceRule,
-  ESTree,
-  VisitorWithHooks,
-} from '@oxlint/plugins';
+import type { CreateOnceRule, } from '@oxlint/plugins';
+
+import { methodCallBanRule, } from './_method-call-ban-rule.ts';
 
 /**
  * Bans `.catch()` method calls on promises.
@@ -29,40 +26,9 @@ import type {
  * }
  * ```
  */
-export const noPromiseCatch: CreateOnceRule = {
-  meta: {
-    type: 'suggestion',
-    docs: {
-      description:
-        'Disallow .catch() method calls. Use try/catch with async/await instead.',
-      recommended: true,
-    },
-    messages: {
-      forbidden: '.catch() is banned. Use try/catch with async/await instead.',
-    },
-  },
-  createOnce(context: Context,): VisitorWithHooks {
-    return {
-      CallExpression(node: ESTree.CallExpression,): void {
-        /**
-         * Call target; only `x.catch()` member calls qualify for the rule.
-         */
-        const { callee, } = node;
-        if ((callee.type
-          !== 'MemberExpression') || callee
-          .computed)
-          return;
-        if ((callee.property
-          .type
-          !== 'Identifier') || (callee.property
-            .name
-            !== 'catch'))
-          return;
-        context.report({
-          node,
-          messageId: 'forbidden',
-        },);
-      },
-    };
-  },
-};
+export const noPromiseCatch: CreateOnceRule = methodCallBanRule({
+  methodNames: ['catch',],
+  description:
+    'Disallow .catch() method calls. Use try/catch with async/await instead.',
+  message: '.catch() is banned. Use try/catch with async/await instead.',
+},);

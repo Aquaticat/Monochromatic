@@ -1,9 +1,6 @@
-import type {
-  Context,
-  CreateOnceRule,
-  ESTree,
-  VisitorWithHooks,
-} from '@oxlint/plugins';
+import type { CreateOnceRule, } from '@oxlint/plugins';
+
+import { methodCallBanRule, } from './_method-call-ban-rule.ts';
 
 /**
  * Bans `.finally()` method calls on promises.
@@ -28,43 +25,9 @@ import type {
  * await fetchData(conn);
  * ```
  */
-export const noPromiseFinally: CreateOnceRule = {
-  meta: {
-    type: 'suggestion',
-    docs: {
-      description:
-        'Disallow .finally() method calls. Use using/await using for cleanup instead.',
-      recommended: true,
-    },
-    messages: {
-      forbidden: '.finally() is banned. Use using/await using for cleanup instead.',
-    },
-  },
-  createOnce(context: Context,): VisitorWithHooks {
-    return {
-      CallExpression(node: ESTree.CallExpression,): void {
-        /**
-         * Call target; only `x.finally()` member calls qualify for the rule.
-         */
-        const { callee, } = node;
-        if ((callee.type
-          !== 'MemberExpression') || callee
-          .computed)
-          return;
-        if ((callee.property
-          .type
-          !== 'Identifier')
-          || (callee.property
-            .name
-            !== 'finally'))
-        {
-          return;
-        }
-        context.report({
-          node,
-          messageId: 'forbidden',
-        },);
-      },
-    };
-  },
-};
+export const noPromiseFinally: CreateOnceRule = methodCallBanRule({
+  methodNames: ['finally',],
+  description:
+    'Disallow .finally() method calls. Use using/await using for cleanup instead.',
+  message: '.finally() is banned. Use using/await using for cleanup instead.',
+},);
