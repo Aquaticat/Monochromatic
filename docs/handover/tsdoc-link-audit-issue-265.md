@@ -262,7 +262,7 @@ with scoped pathspecs (`fix(<package>): restore TSDoc inline links (issue #265)`
 | --- | --- | --- | --- |
 | f01a | file-enforcer (data, io, package, watch) | | queued |
 | f01b | file-enforcer (pipeline, jetbrains, root) | | queued |
-| f02 | mvm, mutation-test, async-time, claude-spawn | | queued |
+| f02 | mvm, mutation-test, async-time, claude-spawn | a55c638b0ae14975e | done, 42/42 findings, 27 files, commits 3236c3186/25f0d78cb/0323683d1 |
 | f03 | toml-edit, linkup, throws | | queued |
 | f04a | oxlint-plugins/no-restricted-syntax | | queued |
 | f04b | git, numeric-format, correction-reminder | | queued |
