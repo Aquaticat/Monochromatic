@@ -37,14 +37,15 @@ const GLOBAL_CONFIG_FLAGS: ReadonlySet<string> = new Set([
 ],);
 
 /**
- * Enforces that, when the effective working directory (after applying
- * pre-subcommand `-C <path>` chaining) lives inside a git repository, it is
- * the root of that repository (where `.git` sits). When `.git` is not found
- * up the tree from the effective cwd, the rule passes the command through to
- * real git, which will surface its own error if the subcommand needs a repo.
+ * Enforces that, when the effective working directory (computed by
+ * {@link parseGlobalOptions} after applying pre-subcommand `-C <path>`
+ * chaining) lives inside a git repository, it is the root of that repository
+ * (where `.git` sits). When `.git` is not found up the tree from the
+ * effective cwd, the rule passes the command through to real git, which will
+ * surface its own error if the subcommand needs a repo.
  *
- * Exempt subcommands: init, clone, version, help.
- * Also exempts `config` with `--global`, `--system`, or `--list`.
+ * Exempt subcommands: {@link EXEMPT_SUBCOMMANDS}.
+ * Also exempts `config` with any {@link GLOBAL_CONFIG_FLAGS}.
  *
  * @param args - Raw git arguments (subcommand + flags).
  *

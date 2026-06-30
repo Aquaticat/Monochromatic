@@ -23,9 +23,10 @@ const l = tagged({ tag: 'cli-git', },);
  * `git -c key=val push`) are preserved and the rule still fires.
  *
  * Atomic push ensures that either all refs are updated on the remote or
- * none are, preventing partial push failures. The post-subcommand region is
- * parsed by an optique-based parser so the wrapper detects existing
- * `--atomic`/`--no-atomic` choices uniformly across argv shapes.
+ * none are, preventing partial push failures. The subcommand is located with
+ * {@link parseGlobalOptions} and the post-subcommand region is parsed by
+ * {@link parsePushRegion}'s optique-based parser so the wrapper detects
+ * existing `--atomic`/`--no-atomic` choices uniformly across argv shapes.
  *
  * @param args - Raw git arguments (global options + subcommand + flags).
  *

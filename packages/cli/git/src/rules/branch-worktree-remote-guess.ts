@@ -45,6 +45,8 @@ type GitQueryOptions = {
  * @param args - Read-only git argv appended after global options.
  *
  * @returns `true` when query exits zero.
+ *
+ * @throws When the query fails for a reason nano-spawn does not model as a {@link SubprocessError}.
  */
 async function gitQuerySucceeds({
   gitPath,
@@ -78,7 +80,9 @@ async function gitQuerySucceeds({
  *
  * @param args - Read-only git argv appended after global options.
  *
- * @returns Captured stdout when query exits zero, otherwise sentinel.
+ * @returns Captured stdout when query exits zero, otherwise {@link GIT_QUERY_FAILED}.
+ *
+ * @throws When the query fails for a reason nano-spawn does not model as a {@link SubprocessError}.
  */
 async function gitQueryStdout({
   gitPath,
@@ -111,7 +115,7 @@ async function gitQueryStdout({
  *
  * @param remoteRef - Remote-tracking ref short name from git for-each-ref.
  *
- * @returns Branch-name portion after remote name, or sentinel for malformed refs.
+ * @returns Branch-name portion after remote name, or {@link MALFORMED_REMOTE_REF} for malformed refs.
  */
 function remoteLocalName(remoteRef: string,): string | typeof MALFORMED_REMOTE_REF {
   /**
@@ -126,7 +130,12 @@ function remoteLocalName(remoteRef: string,): string | typeof MALFORMED_REMOTE_R
 }
 
 /**
- * Reports whether switch/checkout would implicitly create local branch from one remote.
+ * Reports whether switch/checkout would implicitly create local branch from
+ * one remote. Checks for an existing local branch with
+ * {@link gitQuerySucceeds}, lists matching remote-tracking refs with
+ * {@link gitQueryStdout} (treating a failed query as {@link GIT_QUERY_FAILED}),
+ * and extracts each ref's branch name with {@link remoteLocalName}, excluding
+ * the {@link REMOTE_HEAD_LOCAL_NAME} symbolic ref.
  *
  * @param gitPath - Absolute path to real git binary.
  *

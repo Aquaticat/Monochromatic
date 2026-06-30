@@ -38,7 +38,7 @@ export type CheckSequencerInProgressOptions = {
 
 /**
  * Signature of the sequencer-state checker consumed by the commit-only rule;
- * tests substitute fakes through `makeCommitOnly`.
+ * tests substitute fakes through {@link makeCommitOnly}.
  */
 export type CheckSequencerInProgress = (
   options: CheckSequencerInProgressOptions,
@@ -89,15 +89,15 @@ async function pathExists(path: string,): Promise<boolean> {
 
 /**
  * Asks real git whether a merge, cherry-pick, or revert is awaiting its
- * concluding commit, by resolving the absolute git-dir paths of
- * `MERGE_HEAD`/`CHERRY_PICK_HEAD`/`REVERT_HEAD` and probing each for
- * existence. Spawns the resolved real git binary so the check does not
- * re-enter the wrapper.
+ * concluding commit, by resolving the absolute git-dir paths of the
+ * {@link SEQUENCER_HEAD_FILES} and probing each with {@link pathExists}.
+ * Spawns the real git binary resolved by {@link resolveGit} so the check does
+ * not re-enter the wrapper.
  *
  * @param preSubcommandArgs - Pre-subcommand global options forwarded to git.
  *
  * @returns `'in-progress'` when any sequencer head file exists, `'none'`
- *   otherwise or when git cannot answer.
+ *   otherwise or when {@link SubprocessError} reports git cannot answer.
  *
  * @example
  * ```ts

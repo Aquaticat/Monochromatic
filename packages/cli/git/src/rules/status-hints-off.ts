@@ -37,7 +37,8 @@ const QUIET_INJECTION: readonly string[] = [
  *
  * Operates on raw args before any rule has run, so the wrapper's own injected
  * `-c advice.statusHints=false` (post-rule) does not register as a user
- * override.
+ * override. Locates the subcommand with {@link parseGlobalOptions} and
+ * inspects the pre-subcommand region with {@link parseStatusPreRegion}.
  *
  * @param args - Raw git arguments (pre-rule pipeline).
  *
@@ -70,14 +71,16 @@ export function hasExplicitStatusHintsOverride(args: readonly string[],): boolea
 }
 
 /**
- * Injects `-c advice.statusHints=false` before `git status` so git suppresses
- * its stock hints, which suggest patterns the wrapper rejects. The injection
- * slots into the pre-subcommand region, so any user-supplied global options
- * are preserved.
+ * Injects the {@link QUIET_INJECTION} tokens before `git status` so git
+ * suppresses its stock hints, which suggest patterns the wrapper rejects.
+ * The subcommand is located with {@link parseGlobalOptions}, and the
+ * injection slots into the pre-subcommand region, so any user-supplied
+ * global options are preserved.
  *
- * Skipped when the user has already set `advice.statusHints=<anything>` via
- * `-c` in the pre-subcommand region, so an explicit
- * `git -c advice.statusHints=true status` continues to print git's hints.
+ * Skipped when {@link hasExplicitStatusHintsOverride} reports the user has
+ * already set `advice.statusHints=<anything>` via `-c` in the pre-subcommand
+ * region, so an explicit `git -c advice.statusHints=true status` continues to
+ * print git's hints.
  *
  * @param args - Raw git arguments (global options + subcommand + flags).
  *

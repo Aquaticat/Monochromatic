@@ -20,7 +20,8 @@ type BranchCreationMessageOptions = {
 };
 
 /**
- * Builds human-facing rejection message for branch creation in current worktree.
+ * Builds human-facing rejection message for branch creation in current
+ * worktree, naming {@link BRANCH_WORKTREE_ESCAPE_HATCH} as the bypass.
  *
  * @param subcommand - Git subcommand being rejected.
  *

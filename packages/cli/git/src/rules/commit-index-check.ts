@@ -36,7 +36,7 @@ export type CheckIndexDiffersFromHeadOptions = {
 
 /**
  * Signature of the index-vs-HEAD checker consumed by the commit-only rule;
- * tests substitute fakes through `makeCommitOnly`.
+ * tests substitute fakes through {@link makeCommitOnly}.
  */
 export type CheckIndexDiffersFromHead = (
   options: CheckIndexDiffersFromHeadOptions,
@@ -46,13 +46,15 @@ export type CheckIndexDiffersFromHead = (
  * Asks real git whether staged content differs from HEAD via
  * `git diff-index --quiet --cached HEAD --`, which exits 0 on a matching
  * index, 1 when staged changes exist, and other codes when the comparison
- * itself fails (for example before the first commit). Spawns the resolved
- * real git binary so the check does not re-enter the wrapper.
+ * itself fails (for example before the first commit). Spawns the real git
+ * binary resolved by {@link resolveGit} so the check does not re-enter the
+ * wrapper.
  *
  * @param preSubcommandArgs - Pre-subcommand global options forwarded to git.
  *
  * @returns `'differs'` when staged changes exist, `'matches'` when index
- *   equals HEAD, `'unknown'` when git cannot answer.
+ *   equals HEAD, `'unknown'` when {@link SubprocessError} reports a code other
+ *   than `1` and git cannot answer.
  *
  * @example
  * ```ts

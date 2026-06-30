@@ -162,7 +162,9 @@ export function makeCommitOnly({
   checkSequencerInProgress,
 }: CommitOnlyDependencies,): CommitOnlyRule {
   /**
-   * Applies commit-only enforcement to one git argv.
+   * Applies commit-only enforcement to one git argv. Locates the subcommand
+   * with {@link parseGlobalOptions} and parses the post-subcommand region
+   * with {@link parseCommitRegion} before deciding.
    *
    * @param args - Raw git arguments (global options + subcommand + flags).
    *

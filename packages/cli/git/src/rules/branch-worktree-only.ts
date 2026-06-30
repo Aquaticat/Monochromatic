@@ -63,7 +63,13 @@ function isGuardedSubcommand(subcommand: string,): subcommand is BranchCreationS
  *
  * Inspection, deletion, rename, upstream edits, detached checkouts, path
  * checkouts, and `git worktree add -b` pass through. The wrapper-only escape
- * hatch is stripped before forwarding when a one-off bypass is needed.
+ * hatch is stripped by {@link stripBranchCreationEscapeHatch} before
+ * forwarding when a one-off bypass is needed.
+ *
+ * Subcommand location and creation facts come from {@link parseGlobalOptions}
+ * and {@link parseBranchCreationRegion}; rejections are rendered by
+ * {@link branchCreationMessage}; the remote-tracking guess is resolved via
+ * {@link resolveGit} and confirmed by {@link implicitRemoteGuessCreatesBranch}.
  *
  * @param args - Git argv to inspect after wrapper invocation.
  *

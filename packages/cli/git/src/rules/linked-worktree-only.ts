@@ -114,8 +114,11 @@ type ComputeRegionOptions = {
 };
 
 /**
- * Selects the appropriate optique-based parser for the subcommand and turns
- * its result into the common {@link GuardedRegion} shape used by the rule.
+ * Selects the appropriate optique-based parser for the subcommand
+ * ({@link parseStashRegion}, {@link parseCleanRegion} with
+ * {@link cleanChangesWorktree}, or {@link parseResetRegion} with
+ * {@link resetChangesWorktree}) and turns its result into the common
+ * {@link GuardedRegion} shape used by the rule.
  *
  * @param subcommand - Guarded git subcommand.
  *
@@ -181,11 +184,16 @@ function computeRegion({
  * wrapper-only escape hatch can be bypassed by abbreviations or by hiding
  * the escape hatch in a value position.
  *
- * Worktree classification is delegated to real git's `rev-parse`, replaying
- * the caller's pre-subcommand region and inherited environment so
- * `--git-dir`, `--work-tree`, `GIT_DIR`, and `GIT_WORK_TREE` cannot make the
- * wrapper validate one worktree while the destructive command operates on
- * another.
+ * Worktree classification is delegated to {@link classifyEffectiveTarget},
+ * which replays the caller's pre-subcommand region and inherited environment
+ * against real git's `rev-parse` so `--git-dir`, `--work-tree`, `GIT_DIR`,
+ * and `GIT_WORK_TREE` cannot make the wrapper validate one worktree while the
+ * destructive command operates on another.
+ *
+ * Subcommand location comes from {@link parseGlobalOptions} and per-command
+ * facts from {@link computeRegion}; the escape hatch is stripped by
+ * {@link stripEscapeHatch}, and rejections are rendered by
+ * {@link outsideWorktreeMessage} and {@link mainWorktreeMessage}.
  *
  * @param args - Git argv to inspect after wrapper invocation.
  *

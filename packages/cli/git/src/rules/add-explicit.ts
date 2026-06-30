@@ -32,10 +32,10 @@ const ESCAPE_HATCH = ADD_ESCAPE_HATCH;
  * bulk operations and is stripped before forwarding to real git.
  *
  * Pre-subcommand global options (`git -C /repo add .`, `git -c key=val add -A`)
- * are walked by the shared parser so the rule still fires for those forms.
- * The post-subcommand region is parsed by an optique-based parser so option
- * arity is respected and the escape-hatch token cannot be confused with the
- * value of `--pathspec-from-file`.
+ * are walked by {@link parseGlobalOptions} so the rule still fires for those
+ * forms. The post-subcommand region is parsed by {@link parseAddRegion}'s
+ * optique-based parser so option arity is respected and the escape-hatch
+ * token cannot be confused with the value of `--pathspec-from-file`.
  *
  * @param args - Raw git arguments (global options + subcommand + flags).
  *
