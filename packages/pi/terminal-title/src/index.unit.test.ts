@@ -174,6 +174,31 @@ await describe({
       },
     },),
 
+    it({
+      name: 'reuses start args on tool_execution_end for bash',
+      fn: async () => {
+        const { api, registrations, } = createMockApi();
+        terminalTitle(api,);
+        const { ctx, titles, } = createMockContext();
+
+        const startHandler = getHandler({ registrations, event: 'tool_execution_start', },);
+        const endHandler = getHandler({ registrations, event: 'tool_execution_end', },);
+        startHandler(
+          { toolCallId: 'call-1', toolName: 'bash', args: { command: 'ls -l', }, },
+          ctx,
+        );
+        endHandler(
+          { toolCallId: 'call-1', toolName: 'bash', result: {}, isError: false, },
+          ctx,
+        );
+
+        expect(titles,).toStrictEqual([
+          'π ls -l',
+          'π ls -l',
+        ],);
+      },
+    },),
+
     //endregion tool_execution_end handler
 
     //region session_start handler

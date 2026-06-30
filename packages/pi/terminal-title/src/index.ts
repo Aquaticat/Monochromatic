@@ -28,6 +28,11 @@ import type {
 import { titleForEvent, } from './title-builder.ts';
 
 /**
+ * Immutable empty tool-argument record used when pi omits event arguments.
+ */
+const EMPTY_TOOL_ARGS: Readonly<Record<string, unknown>> = Object.freeze({},);
+
+/**
  * Minimal context shape needed by all event handlers (just `ui.setTitle()`).
  */
 type TitleContext = {
@@ -35,6 +40,64 @@ type TitleContext = {
     readonly setTitle: (title: string,) => void;
   };
 };
+
+/**
+ * Minimal tool execution start event shape used by this extension.
+ */
+type ToolExecutionStartEvent = {
+  readonly toolCallId?: string;
+  readonly toolName: string;
+  readonly args?: unknown;
+};
+
+/**
+ * Minimal tool execution end event shape used by this extension.
+ */
+type ToolExecutionEndEvent = {
+  readonly toolCallId?: string;
+  readonly toolName: string;
+  readonly args?: unknown;
+};
+
+//region Tool argument helpers
+
+/**
+ * Checks whether unknown pi event args are a string-keyed object.
+ *
+ * @param value - because pi event args arrive from extension events without specific types
+ *
+ * @returns whether value can be read as tool arguments
+ *
+ * @example
+ * ```ts
+ * isToolArgs({ command: 'ls -l' });
+ * ```
+ */
+function isToolArgs(value: unknown,): value is Readonly<Record<string, unknown>> {
+  return value !== null
+    && (typeof value) === 'object'
+    && !Array.isArray(value,);
+}
+
+/**
+ * Converts unknown pi event args into a read-only argument record.
+ *
+ * @param args - because pi may omit args on completion events
+ *
+ * @returns tool arguments, or an empty record when absent or non-object
+ *
+ * @example
+ * ```ts
+ * toolArgsFromUnknown({ command: 'ls -l' });
+ * ```
+ */
+function toolArgsFromUnknown(args: unknown,): Readonly<Record<string, unknown>> {
+  if (isToolArgs(args,))
+    return args;
+  return EMPTY_TOOL_ARGS;
+}
+
+//endregion Tool argument helpers
 
 //region Extension entry point
 
@@ -58,22 +121,29 @@ type TitleContext = {
  * ```
  */
 export default function terminalTitle(pi: ExtensionAPI,): void {
+  /**
+   * Tool arguments captured at start time. Pi completion events expose result
+   * metadata but not original args, so terminal titles need this per-call cache
+   * to show details such as `ls -l` after completion.
+   */
+  const toolArgsByCallId = new Map<string, Readonly<Record<string, unknown>>>();
+
   pi.on(
     'tool_execution_start',
     function handleToolExecutionStart(
-      event: Readonly<{
-        toolName: string;
-        args?: unknown;
-      }>,
+      event: Readonly<ToolExecutionStartEvent>,
       ctx: TitleContext,
     ) {
-      /* oxlint-disable typescript/no-unsafe-type-assertion -- pi event args are typed as `any` */
       /**
-       * Event arguments coerced to a string-keyed record so the title builder can sample fields by name.
+       * Event arguments normalized to a string-keyed record so the title builder can sample fields by name.
        */
-      const args = (event.args
-        ?? {}) as Record<string, unknown>;
-      /* oxlint-enable typescript/no-unsafe-type-assertion */
+      const args = toolArgsFromUnknown(event.args,);
+      if (event.toolCallId !== undefined) {
+        toolArgsByCallId.set(
+          event.toolCallId,
+          args,
+        );
+      }
       ctx.ui
         .setTitle(
         titleForEvent({
@@ -89,17 +159,31 @@ export default function terminalTitle(pi: ExtensionAPI,): void {
   pi.on(
     'tool_execution_end',
     function handleToolExecutionEnd(
-      event: Readonly<{
-        toolName: string;
-      }>,
+      event: Readonly<ToolExecutionEndEvent>,
       ctx: TitleContext,
     ) {
+      /**
+       * Original args recovered from the start event because pi's end event omits them.
+       */
+      const cachedArgs = event.toolCallId === undefined
+        ? undefined
+        : toolArgsByCallId.get(event.toolCallId,);
+      /**
+       * Completion args when present, otherwise cached start args, otherwise empty fallback.
+       */
+      const args = event.args === undefined
+        ? cachedArgs
+          ?? EMPTY_TOOL_ARGS
+        : toolArgsFromUnknown(event.args,);
+      if (event.toolCallId !== undefined)
+        toolArgsByCallId.delete(event.toolCallId,);
       ctx.ui
         .setTitle(
         titleForEvent({
           eventType: 'tool_execution_end',
           data: {
             toolName: event.toolName,
+            args,
           },
         },),
       );
