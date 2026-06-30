@@ -10,16 +10,50 @@
  * @packageDocumentation
  */
 
-//region Parsing
+//region Parse and serialize
 export { parseJsonc, } from './parse-jsonc.ts';
-export { jsoncStringify, } from './stringify.ts';
+export { emitJsoncValue, } from './stringify.ts';
+export {
+  jsoncStringify,
+  parseJsoncEdit,
+} from './edit-state.ts';
+export type { JsoncEditState, } from './edit-state.ts';
+//endregion Parse and serialize
+
+//region Read API
+export {
+  jsoncGetValue,
+  jsoncHas,
+  jsoncKeys,
+} from './edit-navigate.ts';
+export type { JsoncPath, } from './edit-navigate.ts';
+//endregion Read API
+
+//region Edit API
+export {
+  jsoncDelete,
+  jsoncSet,
+} from './edit-set.ts';
+//endregion Edit API
+
+//region Comment-as-data API
+export {
+  COMMENT_ABSENT,
+  jsoncGetComment,
+  jsoncGetKeyComment,
+  jsoncSetComment,
+  jsoncSetKeyComment,
+} from './edit-comment.ts';
 export { mergeComments, } from './merge-comments.ts';
+//endregion Comment-as-data API
+
+//region Errors
 export {
   JsoncParseError,
   JsoncPathNotFoundError,
   JsoncTypeError,
 } from './errors.ts';
-//endregion Parsing
+//endregion Errors
 
 //region Types: the parsed value model surfaced to callers
 export type { JsoncComment, } from './comment.ts';

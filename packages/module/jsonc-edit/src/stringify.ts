@@ -286,11 +286,11 @@ function emitArray({
  *
  * @example
  * ```ts
- * jsoncStringify({ value: parseJsonc({ source: '{"a":1}' as StringJsonc }) });
+ * emitJsoncValue({ value: parseJsonc({ source: '{"a":1}' as StringJsonc }) });
  * // => '{\n  "a": 1,\n}'
  * ```
  */
-export function jsoncStringify({
+export function emitJsoncValue({
   value,
 }: {
   readonly value: JsoncValue;
