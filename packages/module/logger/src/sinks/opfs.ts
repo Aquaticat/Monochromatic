@@ -90,7 +90,9 @@ export function createOpfsSink(): Sink {
       return available;
     }
     catch (error: unknown) {
-      if ('window' in globalThis)
+      if (((typeof navigator) !== 'undefined')
+        && (navigator.storage !== undefined)
+        && ((typeof navigator.storage.getDirectory) === 'function'))
         reportLoggerInternalError({
           context: 'OPFS sink verification failed',
           error,
