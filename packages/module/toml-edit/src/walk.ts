@@ -1,9 +1,9 @@
 /**
- * AST walker helpers for `resolveByPath`.
+ * AST walker helpers for {@link resolveByPath}.
  *
  * Pure functions split out of `resolve.ts` to keep each file under the
  * 300-LOC cap. The walker descends array and table containers, dispatching
- * on `container.type`, and reports a `ResolveResult` back to the resolver.
+ * on `container.type`, and reports a {@link ResolveResult} back to the resolver.
  *
  * AST-mutation invariant: this module never modifies AST internals.
  *
@@ -30,7 +30,7 @@ const KEYVALUE_NOT_FOUND = Symbol('toml-edit/keyvalue-not-found',);
 /**
  * Dispatch to the array or table walker based on `container.type`.
  *
- * @returns Computed result (`ResolveResult`).
+ * @returns Computed result ({@link ResolveResult}).
  *
  * @example
  * ```ts
@@ -66,7 +66,7 @@ export function walk(
 /**
  * Walk into a `TOMLArray`, indexing the first segment as a number.
  *
- * @returns Computed result (`ResolveResult`).
+ * @returns Computed result ({@link ResolveResult}).
  */
 function walkArray(
   {
@@ -127,7 +127,9 @@ function walkArray(
 /**
  * Walk a table container: first try key-values, then descend into matching child tables.
  *
- * @returns Computed result (`ResolveResult`).
+ * @returns Computed result ({@link ResolveResult}).
+ *
+ * @throws {@link TomlImmutableNodeError} when `container` is not a table container.
  */
 function walkTable(
   {
@@ -314,7 +316,9 @@ function walkTable(
 /**
  * Find a key-value whose full key list is a prefix of `segments`.
  *
- * @returns Matched node and key-chain length, or `KEYVALUE_NOT_FOUND`.
+ * @returns Matched node and key-chain length, or {@link KEYVALUE_NOT_FOUND}.
+ *
+ * @throws {@link TomlImmutableNodeError} when `container` is not a table container.
  */
 function findKeyValueByPrefix(
   {

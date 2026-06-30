@@ -32,7 +32,7 @@ export type TomlPath = readonly (string | number)[];
  *
  * `'canonical'`: every byte is produced by walking the AST. Supports a
  * synthesized fresh AST (no source) and produces output that matches the
- * configured `CanonicalOptions`.
+ * configured {@link CanonicalOptions}.
  */
 export type TomlEditMode = 'splice' | 'canonical';
 
@@ -81,11 +81,11 @@ export type CanonicalOptions = {
 };
 
 /**
- * Caller-supplied subset of `CanonicalOptions`.
+ * Caller-supplied subset of {@link CanonicalOptions}.
  *
  * Every field is individually optional so a caller overrides only the
  * formatting knobs it cares about; the rest fall back to
- * `DEFAULT_CANONICAL_OPTIONS` at merge time. Spelled out as a per-field
+ * {@link DEFAULT_CANONICAL_OPTIONS} at merge time. Spelled out as a per-field
  * optional type rather than `Partial<CanonicalOptions>` because the
  * `no-optional-escape` rule bans the `Partial` mapped-type encoding of
  * optionality; under `exactOptionalPropertyTypes` `field?: T` already means
@@ -100,7 +100,7 @@ export type CanonicalOptionsOverride = {
 };
 
 /**
- * Options for `parseTomlEdit`.
+ * Options for {@link parseTomlEdit}.
  */
 export type TomlEditOptions = {
   readonly source: string;
@@ -110,7 +110,7 @@ export type TomlEditOptions = {
 };
 
 /**
- * Options for `emptyTomlEdit`.
+ * Options for {@link emptyTomlEdit}.
  */
 export type TomlEmptyOptions = {
   readonly canonical?: CanonicalOptionsOverride;
@@ -123,13 +123,13 @@ export type TomlEmptyOptions = {
  * bytes (`node.value.range`), preserving leading whitespace, `=`, and the
  * trailing inline comment. When keyed on a non-keyvalue node
  * (`TOMLArray`, `TOMLInlineTable`, etc.), replaces the node's entire
- * `range`. The fallthrough in `splice.ts:valueRangeOf` handles the
+ * `range`. The fallthrough in {@link valueRangeOf} handles the
  * difference at emit time.
  *
  * `replace-keyvalue`: replaces the entire key-value line.
  *
  * `jsValue` carries the original JS input so that effective reads
- * (`tomlGetValue` on the same edit or a branched edit) reflect the pending
+ * ({@link tomlGetValue} on the same edit or a branched edit) reflect the pending
  * value without parsing the emitted `newText`.
  */
 export type Edit =
@@ -145,7 +145,7 @@ export type Edit =
   };
 
 /**
- * Where a pending `Insertion` should land at emit time.
+ * Where a pending {@link Insertion} should land at emit time.
  */
 export type AnchorKind =
   | 'eof'
@@ -171,7 +171,7 @@ export type AnchorKind =
  * A pending insertion of fresh TOML text at a resolved position.
  *
  * `path` and `jsValue` are populated when the insertion came from
- * `tomlSet` so that effective reads see the new value before reparse.
+ * {@link tomlSet} so that effective reads see the new value before reparse.
  */
 export type Insertion = {
   readonly anchor: AnchorKind;
@@ -183,7 +183,7 @@ export type Insertion = {
 /**
  * Immutable edit state.
  *
- * Returned by `parseTomlEdit`, `emptyTomlEdit`, and every mutating function.
+ * Returned by {@link parseTomlEdit}, {@link emptyTomlEdit}, and every mutating function.
  * The `program` AST and the `source` string are shared by reference;
  * `edits`, `insertions`, `deletions`, and the outer object are immutable.
  */
@@ -214,7 +214,7 @@ export type TomlWrappedInput = {
 };
 
 /**
- * Accepted runtime shape for `tomlSet`.
+ * Accepted runtime shape for {@link tomlSet}.
  *
  * Runtime validation in `./values.ts` produces a `TOMLContentNode`-equivalent
  * payload; the static type stays `unknown` to avoid restricting the recursive
@@ -225,7 +225,7 @@ export type TomlValueInput = unknown;
 /**
  * Default canonical-mode options.
  *
- * Mode is `'splice'` for `parseTomlEdit`; `emptyTomlEdit` forces
+ * Mode is `'splice'` for {@link parseTomlEdit}; {@link emptyTomlEdit} forces
  * `'canonical'` since there is no source to splice.
  */
 export const DEFAULT_CANONICAL_OPTIONS: CanonicalOptions = Object.freeze({

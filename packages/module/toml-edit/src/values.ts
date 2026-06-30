@@ -44,7 +44,7 @@ type ExistingNode = {
  *
  * @returns Computed string.
  *
- * @throws TomlTypeError for `null`, `undefined`, symbols, functions, or
+ * @throws {@link TomlTypeError} for `null`, `undefined`, symbols, functions, or
  *         circular structures.
  *
  * @example
@@ -81,6 +81,10 @@ export function jsValueToTomlText(
  * Encode an arbitrary JS value as TOML text, recursively.
  *
  * @returns Computed string.
+ *
+ * @throws {@link TomlTypeError} for `null`, `undefined`, or any other value
+ *         that is not a wrapped input, string, boolean, bigint, number,
+ *         `Date`, array, or plain object.
  */
 function encodeValue(
   {

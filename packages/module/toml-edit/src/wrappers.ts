@@ -1,5 +1,5 @@
 /**
- * Factory functions producing tagged inputs for `tomlSet`.
+ * Factory functions producing tagged inputs for {@link tomlSet}.
  *
  * Tagged objects are how a caller disambiguates JS-to-TOML conversions
  * where JS values are ambiguous (e.g. a JS `Date` cannot represent
@@ -11,12 +11,12 @@
 import type { TomlWrappedInput, } from './types.ts';
 
 /**
- * Wrap an integer for `tomlSet`. Forces integer emission even when the
+ * Wrap an integer for {@link tomlSet}. Forces integer emission even when the
  * inferred kind from a bare JS `number` would be float.
  *
  * @param value - Integer to emit; accepts `number` and `bigint`.
  *
- * @returns Tagged wrapper that `tomlSet` recognises as TOML integer.
+ * @returns Tagged wrapper that {@link tomlSet} recognises as TOML integer.
  *
  * @example
  * ```ts
@@ -31,12 +31,12 @@ export function tomlInteger(value: number | bigint,): TomlWrappedInput {
 }
 
 /**
- * Wrap a float for `tomlSet`. Forces float emission even when the value is
+ * Wrap a float for {@link tomlSet}. Forces float emission even when the value is
  * an integer in JS.
  *
  * @param value - Number to emit as a TOML float.
  *
- * @returns Tagged wrapper that `tomlSet` recognises as TOML float.
+ * @returns Tagged wrapper that {@link tomlSet} recognises as TOML float.
  *
  * @example
  * ```ts
@@ -55,7 +55,7 @@ export function tomlFloat(value: number,): TomlWrappedInput {
  *
  * @param value - ISO-style local-date string (no time component).
  *
- * @returns Tagged wrapper that `tomlSet` recognises as TOML local-date.
+ * @returns Tagged wrapper that {@link tomlSet} recognises as TOML local-date.
  *
  * @example
  * ```ts
@@ -74,7 +74,7 @@ export function tomlLocalDate(value: string,): TomlWrappedInput {
  *
  * @param value - ISO-style local-date-time string (no offset).
  *
- * @returns Tagged wrapper that `tomlSet` recognises as TOML local-date-time.
+ * @returns Tagged wrapper that {@link tomlSet} recognises as TOML local-date-time.
  *
  * @example
  * ```ts
@@ -93,7 +93,7 @@ export function tomlLocalDateTime(value: string,): TomlWrappedInput {
  *
  * @param value - ISO-style local-time string (no date component).
  *
- * @returns Tagged wrapper that `tomlSet` recognises as TOML local-time.
+ * @returns Tagged wrapper that {@link tomlSet} recognises as TOML local-time.
  *
  * @example
  * ```ts

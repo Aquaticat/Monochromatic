@@ -2,7 +2,7 @@
  * Leaf encoders and type guards for JS-to-TOML coercion.
  *
  * Split out of `values.ts` to keep each file under the 300-LOC cap. None of
- * these helpers recurse back into `encodeValue`; they are pure leaves.
+ * these helpers recurse back into {@link encodeValue}; they are pure leaves.
  *
  * @module
  */
@@ -14,7 +14,7 @@ import {
 import type { TomlWrappedInput, } from './types.ts';
 
 /**
- * Encode a tagged wrapper input (`tomlInteger`, `tomlFloat`, date kinds).
+ * Encode a tagged wrapper input ({@link tomlInteger}, {@link tomlFloat}, date kinds).
  *
  * @returns Computed string.
  *
