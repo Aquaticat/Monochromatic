@@ -74,9 +74,11 @@ type ToolExecutionEndEvent = {
  * ```
  */
 function isToolArgs(value: unknown,): value is Readonly<Record<string, unknown>> {
-  return value !== null
-    && (typeof value) === 'object'
-    && !Array.isArray(value,);
+  if (value === null)
+    return false;
+  if ((typeof value) !== 'object')
+    return false;
+  return !Array.isArray(value,);
 }
 
 /**

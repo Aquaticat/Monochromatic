@@ -17,7 +17,6 @@ import {
   pathFormat,
   quotedFormat,
   shortCommand,
-  type ToolTitleEntry,
 } from './formatter-utils.ts';
 
 /**
@@ -110,4 +109,4 @@ const TOOL_TITLES: Record<string, ToolTitleEntry> = {
 
 export { TOOL_TITLES, };
 
-export type { ToolTitleEntry, };
+export type { ToolTitleEntry, } from './formatter-utils.ts';
