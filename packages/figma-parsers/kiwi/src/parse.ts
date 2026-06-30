@@ -41,7 +41,7 @@ const IMAGE_ENTRY_PREFIX = 'images/';
  *
  * @param filePathOrBuffer - Path to file or raw ZIP content.
  *
- * @returns Fully parsed Figma file with decoded schema and document.
+ * @returns Fully parsed {@link FigmaFile} with decoded schema and document.
  *
  * @example
  * ```ts

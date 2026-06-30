@@ -43,7 +43,7 @@ const MESSAGE_KIND_BYTE = 2;
  *
  * @param typeCode - Type code.
  *
- * @param schema - Parsed schema.
+ * @param schema - Parsed {@link KiwiSchema}.
  *
  * @returns Human-readable type name.
  *
@@ -85,7 +85,7 @@ export function resolveTypeName(
  *
  * @param data - Raw decompressed schema bytes.
  *
- * @returns Parsed schema with definitions and lookup maps.
+ * @returns Parsed {@link KiwiSchema} with definitions and lookup maps.
  *
  * @example
  * ```ts
@@ -144,9 +144,9 @@ export function parseKiwiSchema(data: Uint8Array,): KiwiSchema {
 /**
  * Returns whether definition is an enum.
  *
- * @param definition - Candidate definition.
+ * @param definition - Candidate {@link KiwiDefinition}.
  *
- * @returns Whether definition is a Kiwi enum.
+ * @returns Whether definition is a {@link KiwiEnum}.
  *
  * @example
  * ```ts
@@ -161,9 +161,9 @@ function isKiwiEnum(definition: KiwiDefinition,): definition is KiwiEnum {
 /**
  * Returns whether definition is a struct or message.
  *
- * @param definition - Candidate definition.
+ * @param definition - Candidate {@link KiwiDefinition}.
  *
- * @returns Whether definition is a Kiwi struct/message.
+ * @returns Whether definition is a {@link KiwiStruct} (struct or message).
  *
  * @example
  * ```ts
@@ -178,11 +178,11 @@ function isKiwiStruct(definition: KiwiDefinition,): definition is KiwiStruct {
 /**
  * Parses all schema definitions.
  *
- * @param reader - Reader.
+ * @param reader - {@link BinaryReader}.
  *
  * @param definitionCount - Definition count.
  *
- * @returns Parsed definitions.
+ * @returns Parsed {@link KiwiDefinition} entries.
  *
  * @example
  * ```ts
@@ -212,9 +212,9 @@ function parseDefinitions(
 /**
  * Parses one schema definition.
  *
- * @param reader - Reader positioned at a definition.
+ * @param reader - {@link BinaryReader} positioned at a definition.
  *
- * @returns Parsed definition.
+ * @returns Parsed {@link KiwiDefinition}.
  *
  * @example
  * ```ts
@@ -259,9 +259,9 @@ function parseDefinition({ reader, }: { readonly reader: BinaryReader; },): Kiwi
  *
  * @param fieldCount - Field count.
  *
- * @param reader - Reader.
+ * @param reader - {@link BinaryReader}.
  *
- * @returns Parsed enum definition.
+ * @returns Parsed {@link KiwiEnum} definition.
  *
  * @example
  * ```ts
@@ -296,9 +296,9 @@ function parseEnumDefinition(
 /**
  * Parses one enum field.
  *
- * @param reader - Reader positioned at an enum field.
+ * @param reader - {@link BinaryReader} positioned at an enum field.
  *
- * @returns Parsed enum field.
+ * @returns Parsed {@link KiwiEnumField}.
  *
  * @example
  * ```ts
@@ -328,9 +328,9 @@ function parseEnumField({ reader, }: { readonly reader: BinaryReader; },): KiwiE
  *
  * @param fieldCount - Field count.
  *
- * @param reader - Reader.
+ * @param reader - {@link BinaryReader}.
  *
- * @returns Parsed struct/message definition.
+ * @returns Parsed {@link KiwiStruct} (struct or message) definition.
  *
  * @example
  * ```ts
@@ -367,9 +367,9 @@ function parseStructDefinition(
 /**
  * Parses one struct/message field.
  *
- * @param reader - Reader positioned at a field.
+ * @param reader - {@link BinaryReader} positioned at a field.
  *
- * @returns Parsed struct field.
+ * @returns Parsed {@link KiwiStructField}.
  *
  * @example
  * ```ts

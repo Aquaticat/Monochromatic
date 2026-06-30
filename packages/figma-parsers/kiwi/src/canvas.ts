@@ -125,7 +125,7 @@ export type CanvasFigSections = {
  *
  * @param data - Raw canvas.fig bytes.
  *
- * @returns File type and reserved bytes.
+ * @returns {@link CanvasHeader} file type and reserved bytes.
  *
  * @example
  * ```ts
@@ -166,7 +166,7 @@ export function parseCanvasHeader(data: Uint8Array,): CanvasHeader {
  *
  * @param canvasData - Raw canvas.fig bytes.
  *
- * @returns Parsed file type, schema bytes, and document bytes.
+ * @returns parsed {@link CanvasFigSections} (file type, schema bytes, and document bytes).
  *
  * @example
  * ```ts
@@ -256,7 +256,7 @@ function findMagicLength({ data, }: { readonly data: Uint8Array; },): number {
  *
  * @param magic - Magic string.
  *
- * @returns Figma file type.
+ * @returns {@link FigmaFileType}.
  *
  * @example
  * ```ts

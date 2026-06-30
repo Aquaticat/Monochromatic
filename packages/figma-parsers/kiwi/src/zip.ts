@@ -232,7 +232,7 @@ function findEocdOffset(
  *
  * @param centralDirectoryEntries - Entry count.
  *
- * @returns Entry pairs for map construction.
+ * @returns {@link ZipEntryPair} entries for map construction.
  *
  * @example
  * ```ts
@@ -281,7 +281,7 @@ function parseCentralDirectory(
  *
  * @param offset - Central entry offset.
  *
- * @returns Parsed entry and next offset.
+ * @returns {@link ParsedZipEntry} with next offset.
  *
  * @example
  * ```ts
@@ -388,9 +388,9 @@ function parseCentralEntry(
 /**
  * Resolves parsed ZIP entry metadata into output pair.
  *
- * @param parsed - Parsed ZIP entry metadata.
+ * @param parsed - {@link ParsedZipEntry} metadata.
  *
- * @returns Entry pair with decompressed content.
+ * @returns {@link ZipEntryPair} with decompressed content.
  *
  * @example
  * ```ts

@@ -69,15 +69,15 @@ const PRIMITIVE_UINT64 = 7;
 /**
  * Decodes a single value from a binary reader given its type code.
  *
- * @param reader - Reader.
+ * @param reader - {@link BinaryReader}.
  *
- * @param schema - Parsed schema.
+ * @param schema - Parsed {@link KiwiSchema}.
  *
  * @param typeCode - Type code.
  *
  * @param depth - Recursion depth.
  *
- * @returns Decoded JavaScript value or absence sentinel.
+ * @returns Decoded JavaScript value, or {@link KIWI_VALUE_ABSENT} when absent.
  *
  * @example
  * ```ts
@@ -148,11 +148,11 @@ export function decodeValue(
 /**
  * Decodes a Kiwi primitive value.
  *
- * @param reader - Reader.
+ * @param reader - {@link BinaryReader}.
  *
  * @param primitiveIndex - Primitive index.
  *
- * @returns Decoded primitive value or absence sentinel.
+ * @returns Decoded primitive value, or {@link KIWI_VALUE_ABSENT} when absent.
  *
  * @example
  * ```ts
@@ -187,11 +187,11 @@ function decodePrimitive(
 /**
  * Decodes a Kiwi struct from a binary reader.
  *
- * @param reader - Reader.
+ * @param reader - {@link BinaryReader}.
  *
- * @param schema - Parsed schema.
+ * @param schema - Parsed {@link KiwiSchema}.
  *
- * @param def - Struct definition.
+ * @param def - {@link KiwiStruct} definition.
  *
  * @param depth - Recursion depth.
  *
@@ -244,11 +244,11 @@ export function decodeStruct(
 /**
  * Decodes a Kiwi message from a binary reader.
  *
- * @param reader - Reader.
+ * @param reader - {@link BinaryReader}.
  *
- * @param schema - Parsed schema.
+ * @param schema - Parsed {@link KiwiSchema}.
  *
- * @param def - Message definition.
+ * @param def - Message {@link KiwiStruct} definition.
  *
  * @param depth - Recursion depth.
  *
@@ -328,11 +328,11 @@ export function decodeMessage(
 /**
  * Decodes field value, including repeated fields.
  *
- * @param reader - Reader.
+ * @param reader - {@link BinaryReader}.
  *
- * @param schema - Parsed schema.
+ * @param schema - Parsed {@link KiwiSchema}.
  *
- * @param field - Field metadata.
+ * @param field - {@link KiwiStructField} metadata.
  *
  * @param depth - Recursion depth.
  *
@@ -387,9 +387,9 @@ function decodeFieldValue(
  *
  * @param documentData - Document bytes.
  *
- * @param schema - Parsed schema.
+ * @param schema - Parsed {@link KiwiSchema}.
  *
- * @returns Decoded document object or absence sentinel.
+ * @returns Decoded document object, or {@link FIGMA_DOCUMENT_ABSENT} when absent.
  *
  * @example
  * ```ts
@@ -432,7 +432,7 @@ export function decodeDocument(
 /**
  * Creates empty schema for examples.
  *
- * @returns Empty schema.
+ * @returns Empty {@link KiwiSchema}.
  *
  * @example
  * ```ts

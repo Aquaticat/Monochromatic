@@ -209,7 +209,8 @@ export type FigmaMeta = {
 };
 
 /**
- * Fully decoded Figma file with all components.
+ * Fully decoded Figma file with all components: {@link FigmaFileType}, {@link FigmaMeta}, and
+ * {@link KiwiSchema}, alongside decoded document, image, and thumbnail bytes.
  *
  * @example
  * ```ts

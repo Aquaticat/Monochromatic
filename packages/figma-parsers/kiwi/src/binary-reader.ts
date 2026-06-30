@@ -108,7 +108,7 @@ function byteAt(
  *
  * @param pos - Optional starting cursor.
  *
- * @returns Binary reader object.
+ * @returns {@link BinaryReader} object.
  *
  * @example
  * ```ts
@@ -270,7 +270,7 @@ function findNullTerminator(
 /**
  * Reads unsigned LEB128 varint from reader.
  *
- * @param reader - Reader to advance.
+ * @param reader - {@link BinaryReader} to advance.
  *
  * @returns Unsigned integer value.
  *
@@ -296,7 +296,7 @@ function readVarUint({ reader, }: { readonly reader: BinaryReader; },): number {
 /**
  * Reads Kiwi varfloat from reader.
  *
- * @param reader - Reader to advance.
+ * @param reader - {@link BinaryReader} to advance.
  *
  * @returns Decoded float32 value.
  *

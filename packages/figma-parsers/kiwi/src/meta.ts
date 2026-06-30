@@ -25,7 +25,7 @@ type JsonRecord = Readonly<Record<string, unknown>>;
  *
  * @param jsonBytes - Raw bytes of meta.json.
  *
- * @returns Parsed metadata with defaults for absent fields.
+ * @returns Parsed {@link FigmaMeta} with defaults for absent fields.
  *
  * @example
  * ```ts
