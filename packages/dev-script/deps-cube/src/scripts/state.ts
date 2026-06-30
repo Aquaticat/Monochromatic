@@ -257,13 +257,13 @@ function computeFullRanges(
  * constants via `structuredClone` so the controller's mutate-in-place
  * wire handlers (`session.state.toggles[key] = next`, etc.) cannot
  * corrupt the shared defaults. Without this, the first user toggle
- * would silently rewrite `DEFAULT_TOGGLES`, and subsequent
+ * would silently rewrite {@link DEFAULT_TOGGLES}, and subsequent
  * `defaultState()` calls (e.g. from the reset button) would return the
  * already-corrupted constants.
  *
  * @param probes - Full probe array.
  *
- * @returns Default `AppState` for first render.
+ * @returns Default {@link AppState} for first render.
  *
  * @example
  * ```ts
@@ -291,7 +291,7 @@ export function defaultState(
 //region Encoding
 
 /**
- * Serialises an `AppState` to a URL-safe string.
+ * Serialises an {@link AppState} to a URL-safe string.
  *
  * Returns the encoded payload only; callers prepend `state=` to use it
  * inside a hash. Use {@link writeStateToHash} for the full `#state=…`
@@ -336,13 +336,13 @@ export const STATE_INVALID: unique symbol = Symbol('deps-cube encoded state cann
  *
  * @param value - Parsed JSON value, untrusted.
  *
- * @returns Value typed as `AppState`, or {@link STATE_INVALID} when malformed.
+ * @returns Value typed as {@link AppState}, or {@link STATE_INVALID} when malformed.
  */
 function validateAppState(value: unknown,): AppState | typeof STATE_INVALID {
   if (((typeof value) !== 'object') || (value === null))
     return STATE_INVALID;
   /**
-   * Top-level `AppState` fields that must all be present for the shape check to pass.
+   * Top-level {@link AppState} fields that must all be present for the shape check to pass.
    */
   const required: readonly (keyof AppState)[] = [
     'viewState',
@@ -365,11 +365,11 @@ function validateAppState(value: unknown,): AppState | typeof STATE_INVALID {
 }
 
 /**
- * Decodes a URL-safe encoded string back into an `AppState`.
+ * Decodes a URL-safe encoded string back into an {@link AppState}.
  *
  * Returns {@link STATE_INVALID} for any failure (URI malformed, JSON parse
- * error, missing required fields) so the caller can fall back to the default
- * state without crashing.
+ * error, missing required fields, each logged via {@link caughtErrorMessage})
+ * so the caller can fall back to the default state without crashing.
  *
  * @param encoded - The URL-safe encoded string (no leading `state=`).
  *

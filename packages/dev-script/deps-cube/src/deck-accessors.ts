@@ -1,7 +1,7 @@
 /**
  * Per-probe accessor functions used by deck.gl layer factories.
  *
- * Pure, side-effect-free: given a probe + the current `AppState` +
+ * Pure, side-effect-free: given a probe + the current {@link AppState} +
  * the scene bounds + a visibility flag, return the displayed value
  * for one visual property (position, color, radius, shape).
  *

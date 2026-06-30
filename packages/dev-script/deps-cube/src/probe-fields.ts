@@ -76,7 +76,7 @@ const HTTP_TIMEOUT_MS = HTTP_TIMEOUT_SECONDS * MS_PER_SECOND;
  */
 async function fetchJson<T,>(url: string,): Promise<T> {
   /**
-   * HTTP response from `fetch`; aborted if it doesn't complete within `HTTP_TIMEOUT_MS`.
+   * HTTP response from `fetch`; aborted if it doesn't complete within {@link HTTP_TIMEOUT_MS}.
    */
   const response = await fetch(
     url,
@@ -146,7 +146,7 @@ export async function probePackageManifest(
   },
 ): Promise<NpmPackage> {
   /**
-   * Cached manifest, valid for {@link TTL_MS}; `CACHE_MISS` on cache miss.
+   * Cached manifest, valid for {@link TTL_MS}; {@link CACHE_MISS} on cache miss.
    */
   const cached = await cache.read<NpmPackage>({
     name: npmName,
@@ -180,7 +180,8 @@ export async function probePackageManifest(
 }
 
 /**
- * Fetches last-week downloads. Returns `0` on error or for niche packages.
+ * Fetches last-week downloads. Returns `0` on error (logged via
+ * {@link caughtErrorMessage}) or for niche packages.
  *
  * @param npmName - Real npm package name.
  *
@@ -266,7 +267,8 @@ export const LANGUAGES_UNKNOWN: unique symbol = Symbol('deps-cube repository lan
  *
  * @param cache - File cache handle.
  *
- * @returns Linguist byte-count record, or {@link LANGUAGES_UNKNOWN} when API errors due to private repo, 404, or rate limit.
+ * @returns Linguist byte-count record, or {@link LANGUAGES_UNKNOWN} (logged via
+ * {@link caughtErrorMessage}) when API errors due to private repo, 404, or rate limit.
  *
  * @example
  * ```ts
@@ -346,7 +348,8 @@ export const LAST_COMMIT_UNKNOWN: unique symbol = Symbol('deps-cube last commit 
  *
  * @param cache - File cache handle.
  *
- * @returns ISO timestamp string, or {@link LAST_COMMIT_UNKNOWN} when API errors out.
+ * @returns ISO timestamp string, or {@link LAST_COMMIT_UNKNOWN} (logged via
+ * {@link caughtErrorMessage}) when API errors out.
  *
  * @example
  * ```ts

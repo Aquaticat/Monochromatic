@@ -45,7 +45,7 @@ const SQRT_3_INV = 1 / Math
  */
 const SPHERE_NLAT = 16;
 /**
- * Longitude divisions for the sphere mesh; matches `SPHERE_NLAT`.
+ * Longitude divisions for the sphere mesh; matches {@link SPHERE_NLAT}.
  */
 const SPHERE_NLONG = 16;
 /**
@@ -246,7 +246,7 @@ function buildOctahedronGeometry(): Geometry {
       vCz,
     ] = vertexAt(c,);
     /**
-     * Face-centroid sum component × `SQRT_3_INV` = octahedral unit normal.
+     * Face-centroid sum component × {@link SQRT_3_INV} = octahedral unit normal.
      */
     const nx = (vAx + vBx
       + vCx) * SQRT_3_INV;

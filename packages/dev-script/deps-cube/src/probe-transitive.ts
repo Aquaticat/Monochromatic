@@ -58,7 +58,8 @@ const MANIFEST_FETCH_FAILED: unique symbol = Symbol('deps-cube manifest fetch fa
 
 /**
  * Wraps {@link probePackageManifest} so registry-fetch failures during the
- * transitive walk return {@link MANIFEST_FETCH_FAILED} instead of throwing.
+ * transitive walk return {@link MANIFEST_FETCH_FAILED} instead of throwing,
+ * logging the failure via {@link caughtErrorMessage}.
  *
  * @param npmName - npm package name.
  *

@@ -195,8 +195,8 @@ function filePath(
 
 /**
  * Loads and parses a cache file, returning an empty record on any I/O or
- * parse error so callers can treat missing-and-corrupt as equivalent
- * cache-miss conditions.
+ * parse error (reported via {@link caughtErrorMessage}) so callers can treat
+ * missing-and-corrupt as equivalent cache-miss conditions.
  *
  * @param path - Absolute path to the JSON file.
  *

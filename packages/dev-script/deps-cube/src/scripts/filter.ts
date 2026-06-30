@@ -8,7 +8,7 @@
  * to 5%).
  *
  * No imports from `node:*`: this module is bundled into the output HTML
- * and must run in the browser. Only the `PackageProbe` type is imported,
+ * and must run in the browser. Only the {@link PackageProbe} type is imported,
  * and types are erased by the bundler.
  *
  * @example
@@ -415,7 +415,7 @@ function passesRanges(
 ): boolean {
   /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- Object.keys() returns `string[]`; ChannelKey is the known set of keys. */
   /**
-   * Channel ids from the dim mapping, retyped so `passOne` sees `ChannelKey`.
+   * Channel ids from the dim mapping, retyped so `passOne` sees {@link ChannelKey}.
    */
   const channels = Object.keys(dimMapping,) as readonly ChannelKey[];
   /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
@@ -449,8 +449,9 @@ function passesRanges(
  *
  * Empty string matches everything. A pattern starting with `/` and ending
  * in `/` is treated as a case-insensitive regex; otherwise plain
- * substring match (case-insensitive). Invalid regex falls back to
- * "no match" so an in-progress pattern doesn't crash the page.
+ * substring match (case-insensitive). Invalid regex (logged via
+ * {@link caughtErrorMessage}) falls back to "no match" so an in-progress
+ * pattern doesn't crash the page.
  *
  * @param probe - Probe being tested.
  *

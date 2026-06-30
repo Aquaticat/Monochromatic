@@ -128,7 +128,7 @@ export function wireDimDropdowns(
          */
         const raw = select.value;
         /**
-         * Narrowed `DataDimKey` matching `raw`; `undefined` rejects stale values.
+         * Narrowed {@link DataDimKey} matching `raw`; `undefined` rejects stale values.
          */
         const nextDim = DIM_KEYS.find(function match(candidate,) {
           return candidate === raw;

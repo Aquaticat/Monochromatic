@@ -122,7 +122,8 @@ export function decodeAlias(
 }
 
 /**
- * Flattens a `Record<key, value>` catalog block into resolved entries.
+ * Flattens a `Record<key, value>` catalog block into resolved entries,
+ * resolving each value via {@link decodeAlias}.
  *
  * @param block - Parsed catalog block (default or named).
  *
@@ -167,7 +168,8 @@ function entriesFromBlock(
 
 /**
  * Locates and parses `pnpm-workspace.yaml`, returning every catalog entry
- * from the default `catalog:` block plus any `catalogs.<name>:` blocks.
+ * from the default `catalog:` block plus any `catalogs.<name>:` blocks,
+ * flattening each via {@link entriesFromBlock}.
  *
  * @param startDir - Directory to start the upward search from. Defaults to `process.cwd()`.
  *

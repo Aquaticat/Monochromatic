@@ -294,7 +294,7 @@ function onCanvasClick(info: PickingInfo,): void {
 //region Bootstrap
 
 /**
- * Builds the initial `Session` from the embedded probes + URL hash.
+ * Builds the initial {@link Session} from the embedded probes + URL hash.
  *
  * `onViewStateChange` is wired via `deck.setProps` after the session
  * is created so the closure can capture the post-declaration binding
@@ -308,7 +308,7 @@ function createSession(
   { probes, }: { readonly probes: readonly PackageProbe[]; },
 ): Session {
   /**
-   * Initial `AppState`; uses any bookmarked URL hash, otherwise falls back to the data-driven defaults.
+   * Initial {@link AppState}; uses any bookmarked URL hash, otherwise falls back to the data-driven defaults.
    */
   const initial = readStateFromHash({
     hash: globalThis.location

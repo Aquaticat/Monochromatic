@@ -358,7 +358,7 @@ function renderRangeRow(
    */
   const maxAttr = fullMax.toString();
   /**
-   * String form of `RANGE_STEP` for the slider's `step` HTML attribute.
+   * String form of {@link RANGE_STEP} for the slider's `step` HTML attribute.
    */
   const stepAttr = RANGE_STEP.toString();
   return `<div class="range-row control-row" data-channel="${channel}">

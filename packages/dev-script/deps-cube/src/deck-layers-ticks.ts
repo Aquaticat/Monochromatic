@@ -2,8 +2,9 @@
  * Tick-mark PathLayer factory.
  *
  * Split out from {@link ./deck-layers.ts} so each file stays under the
- * 300-line cap. Imports the shared axis-geometry helper and `PathDatum`
- * accessor from `deck-layers.ts`.
+ * 300-line cap. Imports the shared axis-geometry helper
+ * ({@link computeAxisGeometry}) and {@link PathDatum} accessor from
+ * `deck-layers.ts`.
  *
  * @example
  * ```ts
@@ -44,7 +45,8 @@ const TICK_LENGTH_FRACTION = 0.02;
 
 /**
  * Builds the tick-marks PathLayer: short perpendicular segments at
- * evenly spaced intervals along each axis.
+ * evenly spaced intervals along each axis, derived from
+ * {@link computeAxisGeometry}.
  *
  * @param bounds - Scene bounds.
  *

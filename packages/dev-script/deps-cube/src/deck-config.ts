@@ -209,7 +209,7 @@ export function computeSceneBounds(
  *
  * @param probes - Full probe array.
  *
- * @param state - Current `AppState`.
+ * @param state - Current {@link AppState}.
  *
  * @param visibleIndices - Probes that pass every filter; others fade to 5% alpha.
  *

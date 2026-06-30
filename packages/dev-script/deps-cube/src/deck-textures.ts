@@ -287,8 +287,9 @@ function paintRotated180(
 }
 
 /**
- * Returns the largest font size in `[MIN_FONT_SIZE_PX, FONT_SIZE_PX]`
- * that fits `text` inside `slotWidthPx * SPHERE_SLOT_FILL_FRACTION`.
+ * Returns the largest font size between {@link MIN_FONT_SIZE_PX} and
+ * {@link FONT_SIZE_PX} that fits `text` inside the slot width times
+ * {@link SPHERE_SLOT_FILL_FRACTION}.
  *
  * Uses `ctx.measureText` at `FONT_SIZE_PX` and rescales proportionally
  * ; text width is linear in font size for a given typeface, so one
@@ -341,7 +342,7 @@ function pickFontSize(
 /**
  * Builds (or retrieves from cache) the canvas texture for one probe.
  *
- * Sphere variant: repeats the name `SPHERE_REPETITIONS` times along
+ * Sphere variant: repeats the name {@link SPHERE_REPETITIONS} times along
  * the equator so the label is visible from any longitude.
  *
  * Octahedron variant: paints the name once inside the face triangle
