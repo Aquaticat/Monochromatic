@@ -23,7 +23,7 @@ import type { RegisteredTool, } from './server-types.ts';
  *
  * @param request - Request containing tool `name` and `arguments` in `params`.
  *
- * @returns Tool result wrapped in a JSON-RPC response, or an error if the tool is unknown.
+ * @returns Tool result wrapped in a JSON-RPC response via {@link respondSuccess}, or an error via {@link respondError} if the tool is unknown.
  *
  * @example
  * ```ts

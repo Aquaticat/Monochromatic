@@ -58,8 +58,9 @@ function processStdoutWriter(): StdoutWriter {
 
 /**
  * Connects an MCP server handle to stdin/stdout using newline-delimited JSON-RPC.
- * Reads lines from stdin, parses and validates each as a JSON-RPC message,
- * dispatches to the server, and writes responses as newline-terminated JSON to stdout.
+ * Reads lines from stdin via {@link readLines}, parses and validates each as a JSON-RPC
+ * message via {@link isJsonRpcMessage}, dispatches to the server, and writes responses
+ * as newline-terminated JSON to stdout via {@link writeMessage}.
  *
  * Runs until stdin closes (the client terminates the subprocess).
  *

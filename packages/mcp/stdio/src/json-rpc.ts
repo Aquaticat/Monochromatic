@@ -142,12 +142,12 @@ export const JSON_RPC_PARSE_ERROR = -32_700;
 //region Message validation: type guard for untrusted JSON parsed from stdin
 
 /**
- * Validates that a parsed JSON value has the minimum shape of a JSON-RPC 2.0 message.
+ * Validates that a parsed JSON value has the minimum shape of a {@link JsonRpcInbound} message.
  * Checks for `jsonrpc: '2.0'` and a string `method` field.
  *
  * @param value - Untrusted parsed JSON from stdin.
  *
- * @returns `true` if value conforms to the minimum JSON-RPC inbound message shape.
+ * @returns `true` if value conforms to the minimum {@link JsonRpcInbound} shape.
  *
  * @example
  * ```ts

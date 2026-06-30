@@ -132,7 +132,7 @@ export function createMcpServer(
    * Routes a JSON-RPC request to the matching method handler.
    * Only the `tools/call` branch is async (awaits the tool handler);
    * all other branches return synchronously but the signature must be
-   * async to unify with `handleToolCall`.
+   * async to unify with {@link handleToolCall}.
    *
    * @param request - Inbound request with an `id` that must be echoed in the response.
    *
@@ -186,11 +186,11 @@ export function createMcpServer(
 
   /**
    * Dispatches a parsed JSON-RPC message to the appropriate handler.
-   * Returns a response for requests, or `undefined` for notifications.
+   * Returns a response for requests, or delegates to {@link handleNotification} for notifications.
    *
    * @param message - Parsed inbound JSON-RPC request or notification.
    *
-   * @returns JSON-RPC response for requests; the `NO_RESPONSE` sentinel for notifications.
+   * @returns JSON-RPC response for requests; the {@link NO_RESPONSE} sentinel for notifications.
    */
   function handleMessage(message: JsonRpcInbound,): Promise<DispatchResult> {
     if (!('id' in message)) {

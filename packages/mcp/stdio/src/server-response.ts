@@ -86,7 +86,7 @@ export function respondError(
  *
  * @param notification - Inbound notification (consumed but not acted upon).
  *
- * @returns `NO_RESPONSE` sentinel since notifications produce no reply to send.
+ * @returns {@link NO_RESPONSE} sentinel since notifications produce no reply to send.
  *
  * @example
  * ```ts
