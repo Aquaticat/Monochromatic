@@ -23,7 +23,8 @@ const REQUIRE_DESTRUCTURED_PARAMS_MESSAGE = [
 
 /**
  * Requires function declarations with 2 or more parameters to use
- * a single destructured object parameter (named params pattern).
+ * a single destructured object parameter (named params pattern). Built via
+ * {@link simpleBanRule}.
  *
  * Only fires on `function` declarations, which are always user-controlled.
  * Function expressions passed as callbacks are exempt because their

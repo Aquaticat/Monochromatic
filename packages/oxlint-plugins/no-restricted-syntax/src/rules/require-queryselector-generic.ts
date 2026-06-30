@@ -29,8 +29,10 @@ const SELECTOR_METHODS = new Set([
 ],);
 
 /**
- * Bans `querySelector()`, `querySelectorAll()`, and `closest()` calls
- * without an explicit generic type parameter.
+ * Bans {@link SELECTOR_METHODS} calls (`querySelector()`,
+ * `querySelectorAll()`, and `closest()`, matched via
+ * {@link getStaticCallMemberName}) without an explicit generic type
+ * parameter.
  *
  * Without a generic, these methods return `Element | null` or
  * `NodeListOf<Element>`, requiring a cast or non-null assertion to access
