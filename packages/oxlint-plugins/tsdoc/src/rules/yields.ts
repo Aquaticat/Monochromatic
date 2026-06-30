@@ -1,96 +1,19 @@
 import type {
   Context,
   CreateOnceRule,
-  Span,
   VisitorWithHooks,
 } from '@oxlint/plugins';
 import type { ReadonlyDeep, } from 'type-fest';
 
-import type { ReadonlyRecord, } from '../ast-access.ts';
 import {
   isGeneratorFunction,
-  NO_TSDOC,
-  parseTsdocForNode,
-  shouldIgnoreFile,
   type TsdocParseResult,
 } from '../tsdoc-utils.ts';
 
-import { commentReportLoc, } from './tsdoc-visitors.ts';
-
-//region Shared
-
-/**
- * Parameters for the local {@link createFunctionTsdocVisitor}.
- */
-type CreateFunctionTsdocVisitorParams = {
-  /**
-   * Oxlint rule context.
-   */
-  readonly context: Context;
-  /**
-   * Invoked with node and parsed TSDoc.
-   */
-  readonly handler: (
-    node: Span & ReadonlyRecord,
-    result: ReadonlyDeep<TsdocParseResult>,
-  ) => void;
-};
-
-/**
- * Creates a visitor for function-like nodes with TSDoc comments.
- *
- * Local variant: skips ArrowFunctionExpression because arrow functions
- * cannot be generators, so yields-related rules never need to visit them.
- *
- * @returns visitor with hooks
- */
-function createFunctionTsdocVisitor({
-  context,
-  handler,
-}: CreateFunctionTsdocVisitorParams,): VisitorWithHooks {
-  /**
-   * Checks a function-like node for TSDoc and invokes handler.
-   *
-   * @param node - AST node to check
-   */
-  function check(node: Span,): void {
-    /**
-     * Parsed TSDoc bundle for the node; absent means no TSDoc and the handler is skipped.
-     */
-    const result = parseTsdocForNode({
-      node,
-      context,
-    },);
-    if (result === NO_TSDOC)
-      return;
-    /**
-     * Narrowed view that exposes the host AST's untyped extra properties to the handler.
-     */
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
-    const typedNode = node as Span & Record<string, unknown>;
-    handler(
-      typedNode,
-      result,
-    );
-  }
-
-  /**
-   * Visitor object built up before the unsafe cast that satisfies the host's index-signature type.
-   */
-  const visitor = {
-    before() {
-      if (shouldIgnoreFile(context.filename,))
-        return false;
-      return undefined;
-    },
-    FunctionDeclaration: check,
-    FunctionExpression: check,
-    MethodDefinition: check,
-  } as VisitorWithHooks;
-  return visitor;
-}
-
-//endregion Shared
+import {
+  commentReportLoc,
+  createFunctionTsdocVisitor,
+} from './tsdoc-visitors.ts';
 
 /**
  * Checks whether a TSDoc comment documents yielded values.
@@ -139,6 +62,7 @@ export const requireYields: CreateOnceRule = {
   createOnce(context: Context,): VisitorWithHooks {
     return createFunctionTsdocVisitor({
       context,
+      includeArrowFunctions: false,
       handler: function requireYieldsHandler(
         node,
         result,
@@ -175,6 +99,7 @@ export const requireYieldsCheck: CreateOnceRule = {
   createOnce(context: Context,): VisitorWithHooks {
     return createFunctionTsdocVisitor({
       context,
+      includeArrowFunctions: false,
       handler: function requireYieldsCheckHandler(
         node,
         result,

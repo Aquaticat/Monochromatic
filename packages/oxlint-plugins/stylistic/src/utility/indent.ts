@@ -1,19 +1,6 @@
-/**
- * Returns true when `c` is ASCII whitespace per regex `\s` semantics
- * (space, tab, newline, carriage return, form feed, vertical tab).
- *
- * @param c - candidate character
- *
- * @returns whether the character is whitespace
- */
-export function isWhitespaceChar(c: string,): boolean {
-  return (c === ' ')
-    || (c === '\t')
-    || (c === '\n')
-    || (c === '\r')
-    || (c === '\f')
-    || (c === '\v');
-}
+import { isWhitespaceChar, } from '@monochromatic-dev/config-oxlint-shared/ts';
+
+export { isWhitespaceChar, };
 
 /**
  * Returns the leading run of ASCII whitespace from `s`.

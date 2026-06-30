@@ -13,7 +13,9 @@ import type {
   VisitorWithHooks,
 } from '@oxlint/plugins';
 
+import { wordRunEnd, } from '../comment-text.ts';
 import {
+  commentLineReportLoc,
   createTsdocVisitor,
   getCommentLines,
   stripCommentLineMarker,
@@ -31,20 +33,6 @@ import {
  * ```
  */
 export const NO_LEADING_TAG: unique symbol = Symbol('tsdoc/no-leading-tag',);
-
-/**
- * Returns true when `c` is an ASCII word character (alphanumeric or `_`).
- *
- * @param c - candidate character
- *
- * @returns true when the character qualifies as `\w` in regex semantics
- */
-function isWordChar(c: string,): boolean {
-  return ((c >= '0') && (c <= '9'))
-    || ((c >= 'a') && (c <= 'z'))
-    || ((c >= 'A') && (c <= 'Z'))
-    || (c === '_');
-}
 
 /**
  * Extracts the leading `@word` token from `s`, including the `@`.
@@ -66,26 +54,12 @@ export function extractLeadingTag(s: string,): string | typeof NO_LEADING_TAG {
   if (!s.startsWith('@',))
     return NO_LEADING_TAG;
   /**
-   * Advances through the run of word characters following the `@`.
-   *
-   * @param idx - cursor into `s`
-   *
-   * @returns exclusive end of the tag-name run
-   */
-  function scan(idx: number,): number {
-    /**
-     * Cursor advanced over the word-character run; returned as the run's exclusive end.
-     */
-    let cursor = idx;
-    while ((cursor < s
-      .length) && isWordChar(s.charAt(cursor,),))
-      cursor += 1;
-    return cursor;
-  }
-  /**
    * Exclusive end of the tag-name run; cursor starts at 1 to skip the leading at-sign.
    */
-  const end = scan(1,);
+  const end = wordRunEnd({
+    text: s,
+    start: 1,
+  },);
   if (end === 1)
     return NO_LEADING_TAG;
   return s.slice(
@@ -198,12 +172,10 @@ export const tagLines: CreateOnceRule = {
               + 1;
 
             context.report({
-              loc: {
-                start: {
-                  line: tagLineNumber,
-                  column: 0,
-                },
-              },
+              loc: commentLineReportLoc({
+                comment,
+                lineOffset: index + 1,
+              },),
               messageId: 'noBlankBefore',
               data: { tag, },
               fix(fixer: Fixer,) {

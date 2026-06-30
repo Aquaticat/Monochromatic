@@ -13,6 +13,11 @@ import type {
 } from '@oxlint/plugins';
 
 import {
+  whitespaceRunEnd,
+  wordRunEnd,
+} from '../comment-text.ts';
+import {
+  commentLineReportLoc,
   createTsdocVisitor,
   getCommentLines,
   stripCommentLineMarker,
@@ -30,37 +35,6 @@ import {
  * ```
  */
 export const UNTAGGED_LINE: unique symbol = Symbol('tsdoc parser found line without tag',);
-
-/**
- * Returns true when `c` is an ASCII word character (alphanumeric or `_`).
- *
- * @param c - candidate character
- *
- * @returns true when the character qualifies as `\w` in regex semantics
- */
-function isWordChar(c: string,): boolean {
-  return ((c >= '0') && (c <= '9'))
-    || ((c >= 'a') && (c <= 'z'))
-    || ((c >= 'A') && (c <= 'Z'))
-    || (c === '_');
-}
-
-/**
- * Returns true when `c` is ASCII horizontal or vertical whitespace
- * (`\s` regex semantics).
- *
- * @param c - candidate character
- *
- * @returns true when the character is whitespace
- */
-function isWhitespaceChar(c: string,): boolean {
-  return (c === ' ')
-    || (c === '\t')
-    || (c === '\n')
-    || (c === '\r')
-    || (c === '\f')
-    || (c === '\v');
-}
 
 /**
  * Parsed shape of a tagged TSDoc line; {@link UNTAGGED_LINE} when the line is not
@@ -97,49 +71,21 @@ export function parseTaggedLine(s: string,): TaggedLine | typeof UNTAGGED_LINE {
   if (!s.startsWith('@',))
     return UNTAGGED_LINE;
   /**
-   * Advances through the run of word characters following the `@`.
-   *
-   * @param idx - cursor into `s`
-   *
-   * @returns exclusive end of the tag-name run
-   */
-  function scanTag(idx: number,): number {
-    /**
-     * Cursor advanced over the word-character run; returned as the run's exclusive end.
-     */
-    let cursor = idx;
-    while ((cursor < s
-      .length) && isWordChar(s.charAt(cursor,),))
-      cursor += 1;
-    return cursor;
-  }
-  /**
    * Exclusive end of the tag-name run; cursor starts at 1 to skip the leading at-sign.
    */
-  const tagEnd = scanTag(1,);
+  const tagEnd = wordRunEnd({
+    text: s,
+    start: 1,
+  },);
   if (tagEnd === 1)
     return UNTAGGED_LINE;
   /**
-   * Advances through the run of whitespace characters following the tag.
-   *
-   * @param idx - cursor into `s`
-   *
-   * @returns first non-whitespace position
-   */
-  function scanWhitespace(idx: number,): number {
-    /**
-     * Cursor advanced over the whitespace run; returned as first non-whitespace position.
-     */
-    let cursor = idx;
-    while ((cursor < s
-      .length) && isWhitespaceChar(s.charAt(cursor,),))
-      cursor += 1;
-    return cursor;
-  }
-  /**
    * First index past the inter-token whitespace; rest starts here.
    */
-  const restStart = scanWhitespace(tagEnd,);
+  const restStart = whitespaceRunEnd({
+    text: s,
+    start: tagEnd,
+  },);
   if (restStart === tagEnd)
     return UNTAGGED_LINE;
   /**
@@ -231,15 +177,10 @@ export const emptyTags: CreateOnceRule = {
               .length
               > 0)) {
             context.report({
-              loc: {
-                start: {
-                  line: comment.loc
-                    .start
-                    .line
-                    + index,
-                  column: 0,
-                },
-              },
+              loc: commentLineReportLoc({
+                comment,
+                lineOffset: index,
+              },),
               messageId: 'nonEmpty',
               data: { tag, },
             },);

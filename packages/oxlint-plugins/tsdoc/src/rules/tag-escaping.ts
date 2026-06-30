@@ -13,6 +13,7 @@ import type {
 } from '@oxlint/plugins';
 
 import {
+  commentLineReportLoc,
   createTsdocVisitor,
   getCommentLines,
   stripCommentLineMarker,
@@ -110,15 +111,10 @@ export const escapeInlineTags: CreateOnceRule = {
             // Look for `*/` not preceded by backslash inside content
             if (hasUnescapedCommentClose(trimmed,)) {
               context.report({
-                loc: {
-                  start: {
-                    line: comment.loc
-                      .start
-                      .line
-                      + index,
-                    column: 0,
-                  },
-                },
+                loc: commentLineReportLoc({
+                  comment,
+                  lineOffset: index,
+                },),
                 messageId: 'unescaped',
               },);
             }

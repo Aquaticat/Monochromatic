@@ -8,8 +8,17 @@
  * @module
  */
 
+import {
+  isWhitespaceChar,
+  isWordChar,
+} from '@monochromatic-dev/config-oxlint-shared/ts';
 import type { Comment, } from '@oxlint/plugins';
 import type { ReadonlyDeep, } from 'type-fest';
+
+export {
+  isWhitespaceChar,
+  isWordChar,
+};
 
 /**
  * Triple-backtick delimiter that opens or closes a fenced code block.
@@ -43,48 +52,6 @@ export type NormalizedLine = {
    */
   readonly inFence: boolean;
 };
-
-/**
- * Checks whether `c` is an ASCII word character (alphanumeric or `_`).
- *
- * @param c - candidate character
- *
- * @returns whether character qualifies as `\w` in regex semantics
- *
- * @example
- * ```ts
- * isWordChar('a'); // true
- * isWordChar('-'); // false
- * ```
- */
-function isWordChar(c: string,): boolean {
-  return ((c >= '0') && (c <= '9'))
-    || ((c >= 'a') && (c <= 'z'))
-    || ((c >= 'A') && (c <= 'Z'))
-    || (c === '_');
-}
-
-/**
- * Checks whether `c` is ASCII whitespace per regex `\s` semantics.
- *
- * @param c - candidate character
- *
- * @returns whether character is whitespace
- *
- * @example
- * ```ts
- * isWhitespaceChar(' '); // true
- * isWhitespaceChar('x'); // false
- * ```
- */
-export function isWhitespaceChar(c: string,): boolean {
-  return (c === ' ')
-    || (c === '\t')
-    || (c === '\n')
-    || (c === '\r')
-    || (c === '\f')
-    || (c === '\v');
-}
 
 /**
  * Checks whether `line` is a fenced-code-block delimiter (allows leading
@@ -286,6 +253,41 @@ export function tokenEnd({
   for (let cursor = start; cursor < text
     .length; cursor += 1) {
     if (isWhitespaceChar(text.charAt(cursor,),))
+      return cursor;
+  }
+  return text.length;
+}
+
+/**
+ * Returns the exclusive end index of the whitespace run starting at `start`.
+ *
+ * @param text - string scanned for whitespace
+ *
+ * @param start - index where the whitespace run is expected to begin
+ *
+ * @returns first index at or after `start` that is not whitespace
+ *
+ * @example
+ * ```ts
+ * whitespaceRunEnd({ text: '@param name', start: 6 }); // 7
+ * ```
+ */
+export function whitespaceRunEnd({
+  text,
+  start,
+}: {
+  /**
+   * String scanned for whitespace.
+   */
+  readonly text: string;
+  /**
+   * Index where the whitespace run is expected to begin.
+   */
+  readonly start: number;
+},): number {
+  for (let cursor = start; cursor < text
+    .length; cursor += 1) {
+    if (!isWhitespaceChar(text.charAt(cursor,),))
       return cursor;
   }
   return text.length;

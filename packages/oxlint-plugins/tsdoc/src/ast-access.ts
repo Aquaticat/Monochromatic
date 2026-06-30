@@ -10,27 +10,15 @@
  * @module
  */
 
-/**
- * Readonly view of an untyped AST node's property bag.
- */
-export type ReadonlyRecord = Readonly<Record<string, unknown>>;
+import {
+  isRecord,
+  type ReadonlyRecord,
+} from '@monochromatic-dev/config-oxlint-shared/ts';
 
-/**
- * Narrows an unknown value to a readonly AST record.
- *
- * @param value - candidate read from an untyped AST property
- *
- * @returns whether value is a non-null object usable as a property bag
- *
- * @example
- * ```ts
- * if (isRecord(node.value)) { node.value.type; }
- * ```
- */
-export function isRecord(value: unknown,): value is ReadonlyRecord {
-  return ((typeof value)
-    === 'object') && (value !== null);
-}
+export {
+  isRecord,
+  type ReadonlyRecord,
+};
 
 /**
  * Narrows an unknown value to a readonly array of AST records.
@@ -109,4 +97,62 @@ export function extractRawParams(node: ReadonlyRecord,): readonly ReadonlyRecord
   if (isRecordArray(params,))
     return params;
   return [];
+}
+
+/**
+ * Removes binding-pattern wrapper nodes whose child carries the real binding.
+ *
+ * Handles default values, rest wrappers, and TypeScript parameter properties.
+ * Unknown or malformed wrappers stop the walk and return the current node.
+ *
+ * @param pattern - binding pattern candidate
+ *
+ * @returns innermost binding-pattern record reached by supported wrappers
+ *
+ * @example
+ * ```ts
+ * const binding = unwrapBindingPattern(parameterNode);
+ * ```
+ */
+export function unwrapBindingPattern(pattern: ReadonlyRecord,): ReadonlyRecord {
+  /**
+   * Mutable cursor object avoids function-root `let` while walking wrapper nodes iteratively.
+   */
+  const cursor = { current: pattern, };
+  while (true) {
+    if (cursor.current.type
+      === 'AssignmentPattern') {
+      /**
+       * Binding side of `name = default`.
+       */
+      const { left, } = cursor.current;
+      if (!isRecord(left,))
+        return cursor.current;
+      cursor.current = left;
+      continue;
+    }
+    if (cursor.current.type
+      === 'RestElement') {
+      /**
+       * Inner binding pattern of `...rest`.
+       */
+      const { argument, } = cursor.current;
+      if (!isRecord(argument,))
+        return cursor.current;
+      cursor.current = argument;
+      continue;
+    }
+    if (cursor.current.type
+      === 'TSParameterProperty') {
+      /**
+       * Inner parameter of a TS constructor property parameter.
+       */
+      const { parameter, } = cursor.current;
+      if (!isRecord(parameter,))
+        return cursor.current;
+      cursor.current = parameter;
+      continue;
+    }
+    return cursor.current;
+  }
 }

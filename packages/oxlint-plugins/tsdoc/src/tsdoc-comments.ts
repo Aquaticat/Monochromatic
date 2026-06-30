@@ -45,7 +45,7 @@ export const NO_TSDOC: unique symbol = Symbol('node has no TSDoc comment',);
  *
  * @returns true for `/** ... *\/` style comments
  */
-function isTsdocBlock(comment: ReadonlyDeep<Comment>,): boolean {
+export function isTsdocBlock(comment: ReadonlyDeep<Comment>,): boolean {
   return (comment.type === 'Block')
     && comment.value
     .startsWith('*',);

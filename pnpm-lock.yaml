@@ -2082,6 +2082,9 @@ importers:
 
   packages/oxlint-plugins/no-restricted-syntax:
     dependencies:
+      '@monochromatic-dev/config-oxlint-shared':
+        specifier: workspace:*
+        version: link:../shared
       '@oxlint/plugins':
         specifier: 'catalog:'
         version: 1.71.0
@@ -2105,8 +2108,26 @@ importers:
         specifier: 'catalog:'
         version: 2.1.0
 
+  packages/oxlint-plugins/shared:
+    devDependencies:
+      '@monochromatic-dev/config-tsdown':
+        specifier: workspace:*
+        version: link:../../config/tsdown
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.0.1
+
   packages/oxlint-plugins/stylistic:
     dependencies:
+      '@monochromatic-dev/config-oxlint-shared':
+        specifier: workspace:*
+        version: link:../shared
       '@monochromatic-dev/module-or-throw':
         specifier: workspace:*
         version: link:../../module/or-throw
@@ -2151,6 +2172,9 @@ importers:
 
   packages/oxlint-plugins/tsdoc:
     dependencies:
+      '@monochromatic-dev/config-oxlint-shared':
+        specifier: workspace:*
+        version: link:../shared
       '@oxlint/plugins':
         specifier: 'catalog:'
         version: 1.71.0
