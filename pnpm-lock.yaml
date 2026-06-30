@@ -1700,6 +1700,37 @@ importers:
         specifier: 'catalog:'
         version: 7.0.1-rc
 
+  packages/module/jsonc-edit:
+    dependencies:
+      '@monochromatic-dev/module-logger':
+        specifier: workspace:*
+        version: link:../logger
+      '@monochromatic-dev/module-or-throw':
+        specifier: workspace:*
+        version: link:../or-throw
+    devDependencies:
+      '@monochromatic-dev/config-tsdown':
+        specifier: workspace:*
+        version: link:../../config/tsdown
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../test
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.0.1
+      fast-check:
+        specifier: 'catalog:'
+        version: 4.8.0
+      type-fest:
+        specifier: 'catalog:'
+        version: 5.7.0
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.1-rc
+
   packages/module/kv-store:
     dependencies:
       '@monochromatic-dev/module-logger':
