@@ -20,7 +20,7 @@ import { readConfig, } from './config.ts';
 const l = tagged({ tag: 'vmsync', },);
 
 /**
- * Prints the status of a named VM to stdout.
+ * Prints the status of a named VM's {@link VmsyncConfig} to stdout.
  * Shows name, disk size, boot settings, last hypervisor, sync state, and checksums.
  *
  * @param name - VM name

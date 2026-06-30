@@ -49,7 +49,7 @@ const l = tagged({ tag: 'vmsync', },);
  * 1. Reads the overlay's block map to find changed regions
  * 2. Connects both overlay (read-only) and vhdx (read-write) via NBD
  * 3. Copies only changed blocks from overlay to vhdx
- * 4. Commits the overlay into the qcow2 base
+ * 4. Commits the overlay into the qcow2 base via {@link commitOverlay}
  * 5. Removes the overlay file
  * 6. Updates checksums in the config
  *
@@ -170,7 +170,8 @@ export async function syncFromKvm(name: string,): Promise<void> {
 }
 
 /**
- * Patches the vhdx image with changed blocks from the qcow2 overlay via NBD.
+ * Patches the vhdx image with changed blocks from the qcow2 overlay via NBD, using
+ * {@link patchBlocks} for the block-level copy.
  *
  * @param overlayPath - Path to the qcow2 overlay
  *

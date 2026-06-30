@@ -30,7 +30,7 @@ const l = tagged({ tag: 'vmsync', },);
  *
  * @param imagePath - Absolute path to the disk image
  *
- * @returns Parsed JSON output from `qemu-img info`
+ * @returns Parsed {@link QemuImgInfo} from `qemu-img info`
  *
  * @throws Error when the image is unreadable or format is unsupported
  *
@@ -189,7 +189,7 @@ export async function createOverlay(
  *
  * @param imagePath - Path to a qcow2 overlay (must have a backing file for meaningful depth info)
  *
- * @returns Array of region descriptors
+ * @returns array of {@link QemuMapRegion} descriptors
  *
  * @example
  * ```ts
