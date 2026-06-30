@@ -371,7 +371,8 @@ function jsonModuleDefault({
 }
 
 /**
- * Imports generated Browserslist target JSON.
+ * Imports generated Browserslist target JSON, reading the default export
+ * out via {@link jsonModuleDefault}.
  *
  * @param fileUrl - Generated JSON file URL to import.
  *
@@ -665,7 +666,9 @@ function lowerTarget({
 }
 
 /**
- * Converts one Browserslist target string to Rolldown target pieces.
+ * Converts one Browserslist target string to Rolldown target pieces by
+ * splitting it with {@link splitBrowserslistTarget} and mapping the browser
+ * identifier through {@link rolldownBrowserName}.
  *
  * @param target - Browserslist target string to convert.
  *
@@ -803,7 +806,9 @@ function assertRuntimeTargets({
 }
 
 /**
- * Converts Browserslist output to unique Rolldown-compatible targets.
+ * Converts Browserslist output to unique Rolldown-compatible targets,
+ * collapsing each browser family to its lowest version via
+ * {@link lowestTargetsByBrowser}.
  *
  * @param targets - Raw target strings returned by Browserslist.
  *
@@ -876,7 +881,9 @@ function browserslistResolver(imported: BrowserslistImport,): BrowserslistResolv
 //region Public API: target resolution
 
 /**
- * Resolves tsdown target strings from generated JSON, falling back to Browserslist.
+ * Resolves tsdown target strings from generated JSON, falling back to
+ * Browserslist, normalizing either source via
+ * {@link normalizeBrowserslistTargets}.
  *
  * @param generatedFileUrl - Generated JSON file URL.
  *
