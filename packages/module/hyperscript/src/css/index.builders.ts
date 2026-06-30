@@ -21,7 +21,7 @@ export type {
 /**
  * Serializes a declarations record into a CSS declaration string.
  *
- * Accepts any declarations object: `StrictCssDeclarations`, at-rule descriptor
+ * Accepts any declarations object: {@link StrictCssDeclarations}, at-rule descriptor
  * interfaces, or plain `Record<string, string>`. Skips `undefined` values since
  * csstype interfaces mark all properties as optional.
  *
@@ -60,7 +60,7 @@ function serializeDecls(decls: object,): string {
  *
  * Statement at-rules like `@layer tokens;` have no block. Note that empty
  * `decls: {}` or empty `raw: ''` still count as block content (producing
- * `@layer{}` rather than `@layer;`); see `AtRuleOptions` JSDoc for details.
+ * `@layer{}` rather than `@layer;`); see {@link AtRuleOptions} for details.
  *
  * @param options - at-rule options to inspect
  *
@@ -163,7 +163,7 @@ function renderBody(
 
 /* oxlint-disable typescript/prefer-readonly-parameter-types -- RuleOptions.decls is StrictCssDeclarations, which intentionally accepts `CssValue | string`, the `(string & {})` escape hatch, and a `Record<`--${string}`, ...>` custom-property index signature, all treated as mutable by this rule; deep-readonly would discard the branded strict-value typing */
 /**
- * Builds a CSS style rule string.
+ * Builds a CSS style rule string. Renders the block body via {@link renderBody}.
  *
  * @param options - selector plus optional declarations, raw CSS, and child rules
  *
@@ -193,7 +193,8 @@ export function buildRule(
  * Builds a CSS at-rule string.
  *
  * Produces either a block at-rule (`@media (...) { ... }`) or a statement
- * at-rule (`@layer tokens;`) depending on whether block content is present.
+ * at-rule (`@layer tokens;`) depending on whether {@link hasBlock} reports
+ * block content; the block body itself renders via {@link renderBody}.
  *
  * @param options - at-rule configuration with keyword, params, and optional block content
  *

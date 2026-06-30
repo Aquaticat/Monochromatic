@@ -2,7 +2,7 @@
  * CSS value constructor functions that produce branded {@link CssValue} strings.
  *
  * Each constructor returns a `CssValue`: a branded string that the strict
- * `CssDeclarations` type accepts in any property value position.
+ * {@link CssDeclarations} type accepts in any property value position.
  */
 
 // oxlint-disable typescript/no-unsafe-type-assertion -- all constructors cast template literal strings to branded CssValue type

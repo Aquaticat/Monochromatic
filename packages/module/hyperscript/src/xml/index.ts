@@ -122,6 +122,7 @@ type XmlOptions = {
  *
  * Elements with no content (no `text`, `raw`, or `children`) produce
  * self-closing tags (`<tag />`). Otherwise produces `<tag>...</tag>`.
+ * Attribute values and text content pass through {@link escapeXml}.
  *
  * @param tag - XML element name
  *

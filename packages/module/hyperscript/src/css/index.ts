@@ -15,7 +15,7 @@
  * - At-rule names (`media`, `layer`, `keyframes`, ...), with disallowed at-rules excluded
  * - At-rule descriptors per type (`@font-face`, `@property`, `@counter-style`, ...)
  *
- * Branded value constructors (`cssRem`, `cssVar`, `cssOklch`, etc.) replace raw
+ * Branded value constructors ({@link cssRem}, {@link cssVar}, {@link cssOklch}, etc.) replace raw
  * string values, preventing invalid units, disallowed color functions, and named
  * colors at the type level, eliminating the need for stylelint runtime checks.
  *
@@ -110,7 +110,8 @@ export {
 /**
  * Creates a CSS string from declarative options.
  *
- * Accepts either a style rule (`rule` key) or an at-rule (`at` key).
+ * Accepts either a style rule (`rule` key, built via {@link buildRule}) or an
+ * at-rule (`at` key, built via {@link buildAtRule}).
  * Returns a minified CSS string with no trailing newlines.
  *
  * @param options - style rule or at-rule configuration

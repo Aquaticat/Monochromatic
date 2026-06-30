@@ -4,7 +4,7 @@
  * Replaces raw CSS value strings with type-safe constructors that prevent
  * invalid units, disallowed color functions, and named colors at the type level.
  * Every constructor returns `CssValue`: a branded string that the strict
- * `CssDeclarations` type accepts in any property value position.
+ * {@link CssDeclarations} type accepts in any property value position.
  *
  * Constructors are prefixed with `css` to distinguish them from other functions.
  */

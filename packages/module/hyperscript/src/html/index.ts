@@ -184,7 +184,9 @@ function camelToKebab(property: string,): string {
 }
 
 /**
- * Builds an HTML element string from declarative options.
+ * Builds an HTML element string from declarative options. Text, attribute
+ * values, and serialized styles all pass through {@link escapeHtml}; `style`
+ * property names convert via {@link camelToKebab}.
  *
  * @param tag - HTML tag name
  *

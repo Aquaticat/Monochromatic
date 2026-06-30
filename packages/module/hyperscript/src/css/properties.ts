@@ -75,7 +75,7 @@ type IdentifierProperties =
 /**
  * Strict CSS declarations with disallowed properties omitted and values type-checked.
  *
- * - Property names: csstype's `PropertiesHyphen` minus {@link DisallowedProperties}
+ * - Property names: csstype's {@link PropertiesHyphen} minus {@link DisallowedProperties}
  * - Property values: csstype keyword literals (minus named colors) plus `CssValue` branded type
  * - Identifier properties: accept `(string & {})` for user-defined names (e.g. animation names)
  * - Custom properties: `--*` accepted with `CssValue` or plain `string` values
@@ -104,7 +104,7 @@ export type StrictCssDeclarations = {
 //region Strict at-rule names
 
 /**
- * Strips the `@` prefix from csstype's `AtRules` union.
+ * Strips the `@` prefix from csstype's {@link AtRules} union.
  *
  * Transforms `"@media" | "@layer" | ...` into `"media" | "layer" | ...`
  * to match the h-css `at` field convention (prefix added during string building).
