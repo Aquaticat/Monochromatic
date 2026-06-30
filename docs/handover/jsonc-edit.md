@@ -101,6 +101,14 @@ Progress (newest first):
   mutation runtime image: the baked `npm.package_manager = "pnpm"` made a fresh container
   try to install pnpm with pnpm; the Containerfile now forces `MISE_NPM_PACKAGE_MANAGER=npm`
   for that install step. Runtime package and all three sidecars verified green.
+  Taught the mutation harness (`selectTestsForSource`) to also include sibling sidecar
+  `*.unit.test.ts` files as mutant killers; they resolve to the mutated `/work` source through
+  the workspace `/ts` relative symlink, so the fuzz and conformance suites participate. That
+  lifted the whole-package score from 59.60% (295 killed / 191 survived, unit tests only)
+  to 68.69% (340 killed / 146 survived / 9 timeout / 588 compile-error). Remaining survivors
+  cluster in the edit and comment write API (`edit-set` 63%, `edit-comment` 52%) and the
+  close/trivia parse paths (`parse-close` 7%), which the property and conformance suites do not
+  exercise; hardening those unit tests is the natural follow-up.
 - 2026-06-30 (complete):
   Lint-remediated the parser to the functional rules, then built the canonical
   serializer, the immutable edit API, the comment-as-data API, the unit/property/

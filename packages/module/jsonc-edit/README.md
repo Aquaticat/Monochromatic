@@ -41,6 +41,14 @@ mise run //packages/module/jsonc-edit:test:mutation -- --full-suite
 (`parse`, `stringify`, `edit`, `comment`), not per source file, so every source file must run
 against the whole unit suite rather than a filename-stem-matched subset.
 
+The harness also includes the sidecar packages' `*.unit.test.ts` files as mutant killers (it
+discovers sibling `jsonc-edit.<concern>` packages automatically), so the property and conformance
+suites participate even though they live outside the runtime package. On a representative run that
+lifts the score from roughly 60% (co-located unit tests alone) to roughly 69%; the type system
+also rejects more than half of all mutants outright as compile errors. Remaining survivors cluster
+in the edit and comment write API and the close/trivia parse paths, which the property and
+conformance suites do not exercise.
+
 ## Why JSONC, and why canonical
 
 - Comments survive read, edit, and write, and are addressable as data by path.
