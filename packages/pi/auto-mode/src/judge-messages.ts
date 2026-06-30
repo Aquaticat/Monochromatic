@@ -123,6 +123,9 @@ function buildUserContent(
 /**
  * Build the system prompt for the direct JSON retry.
  *
+ * Removes {@link TOOL_CALL_TRANSPORT_INSTRUCTION} from the original prompt
+ * before appending the retry-specific JSON instructions.
+ *
  * @param systemPrompt - original judge system prompt containing the safety rubric
  *
  * @returns retry prompt that preserves the rubric and switches transport to JSON text

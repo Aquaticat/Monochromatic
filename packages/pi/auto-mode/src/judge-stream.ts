@@ -130,9 +130,10 @@ class JudgeJsonNoTextError extends Error {
 }
 
 /**
- * Collect verdict arguments from the first tool-call stream, retrying with
- * direct JSON when the judge emits no tool call, then retrying an empty direct
- * JSON response once more.
+ * Collect verdict arguments from the first tool-call stream via
+ * {@link collectJudgeStream}, retrying with direct JSON via
+ * {@link collectJsonVerdict} when the judge emits no tool call, then retrying
+ * once more after a {@link JudgeJsonNoTextError}.
  *
  * @param toolCallStream - first stream created with `render_verdict` tools
  *
@@ -249,13 +250,14 @@ async function collectJudgeStream(
 }
 
 /**
- * Collect direct JSON retry output and parse it into verdict arguments.
+ * Collect direct JSON retry output via {@link collectJudgeStream} and parse
+ * it into verdict arguments with {@link extractJsonVerdict}.
  *
  * @param stream - retry stream created without tools
  *
  * @returns parsed JSON verdict arguments
  *
- * @throws when the retry emits neither a `render_verdict` tool call nor text
+ * @throws {@link JudgeJsonNoTextError} when the retry emits neither a `render_verdict` tool call nor text
  *
  * @example
  * ```typescript
@@ -286,9 +288,10 @@ async function collectJsonVerdict(
  * Uses the pi-ai event protocol: `toolcall_end` carries the complete
  * `ToolCall` with parsed `name` and `arguments`.
  *
- * Falls back to parsing text content if no tool call was emitted. This
- * compatibility path is kept for direct helper usage; `callJudge` retries
- * direct JSON instead.
+ * Uses {@link collectJudgeStream} to read the stream, falling back to
+ * {@link extractJsonVerdict} for parsing text content if no tool call was
+ * emitted. This compatibility path is kept for direct helper usage;
+ * `callJudge` retries direct JSON instead.
  *
  * @param stream - model event stream
  *

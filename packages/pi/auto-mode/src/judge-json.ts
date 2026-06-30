@@ -14,8 +14,9 @@ const JUDGE_TEXT_ERROR_LIMIT = 200;
 /**
  * Extract a JSON verdict from free-text model output.
  *
- * Tries `JSON.parse(text)` first, then falls back to scanning for the
- * first balanced `{...}` block. Balanced scanning ignores braces inside
+ * Tries `JSON.parse(text)` first, then falls back to
+ * {@link findBalancedJsonObject} scanning for the first balanced `{...}`
+ * block. Balanced scanning ignores braces inside
  * string literals so a `"reason"` field containing `{` does not skew the
  * boundaries.
  *

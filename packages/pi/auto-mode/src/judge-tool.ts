@@ -36,7 +36,7 @@ const VerdictEnum = StringEnum(VERDICT_VALUES,);
  * Uses forced `tool_choice` to guarantee a machine-readable
  * verdict instead of free-text JSON parsing.
  *
- * Shape matches `Tool` from pi-ai: `name`, `description`, `parameters`.
+ * Shape matches {@link Tool} from pi-ai: `name`, `description`, `parameters`.
  */
 const VERDICT_TOOL: Tool = {
   name: 'render_verdict',

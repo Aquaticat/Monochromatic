@@ -157,7 +157,8 @@ type JudgeStreamCallOptions = DirectJudgeStreamOptions & {
 
 /* oxlint-disable typescript/prefer-readonly-parameter-types -- pi-ai model, context, and stream option types are library-owned mutable API shapes; this adapter only reads them before handing them back to pi-ai */
 /**
- * Stream through pi-ai's direct non-compat API implementation for the model API.
+ * Stream through pi-ai's direct non-compat API implementation for the model API,
+ * looked up from {@link JUDGE_API_STREAMS}.
  *
  * @param model - selected judge model
  *
@@ -200,7 +201,8 @@ function defaultJudgeStreamSimple(
 
 /* oxlint-disable typescript/prefer-readonly-parameter-types -- pi-ai model, context, and stream option types are library-owned mutable API shapes; this adapter only reads them before handing them back to pi-ai */
 /**
- * Route judge streaming through a supplied test seam or the direct pi-ai API map.
+ * Route judge streaming through a supplied test seam or {@link defaultJudgeStreamSimple}'s
+ * direct pi-ai API map.
  *
  * @param streamSimpleFn - optional caller-supplied stream implementation
  *
@@ -254,6 +256,17 @@ function streamJudgeSimple(
  *
  * Uses forced `tool_choice` for the first attempt. If the response omits
  * `render_verdict`, retries once with no tools and asks for direct JSON.
+ *
+ * Delegates to:
+ * - {@link buildUserContent} to assemble the user message
+ * - {@link toolChoiceForApi} to select the forced tool choice for the first attempt
+ * - {@link streamJudgeSimple} for both the initial and retry streams
+ * - {@link disposableTimeout} to bound the call with the timeout budget
+ * - {@link buildStreamOptions} to build stream options for each attempt
+ * - {@link buildJsonRetrySystemPrompt} and {@link buildJsonRetryUserContent} to build the retry prompt
+ * - {@link collectJudgeVerdictArgs} to collect verdict arguments from either path
+ * - {@link parseVerdict} to convert the raw arguments into a verdict
+ * - {@link VERDICT_TOOL} as the forced tool definition
  *
  * @param model - selected judge model
  *
