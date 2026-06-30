@@ -183,12 +183,10 @@ function getHandler(
     handlers,
     event,
   }: Readonly<{
-    handlers: readonly HandlerFn[] | undefined;
+    handlers: readonly HandlerFn[];
     event: string;
   }>,
 ): HandlerFn {
-  if (handlers === undefined)
-    throw new Error(`missing event registration: ${event}`,);
   /**
    * First registered handler. This extension registers one handler per event.
    */
@@ -264,17 +262,33 @@ async function verifyBuiltExtension(): Promise<string> {
     titles,
   } = createTitleContext();
   /**
+   * Registered built start handlers.
+   */
+  const startHandlers = harness
+    .registrations
+    .get(TOOL_START_EVENT,);
+  if (startHandlers === undefined)
+    throw new Error(`missing event registration: ${TOOL_START_EVENT}`,);
+  /**
    * Built start handler registered through Pi API.
    */
   const startHandler = getHandler({
-    handlers: harness.registrations.get(TOOL_START_EVENT,),
+    handlers: startHandlers,
     event: TOOL_START_EVENT,
   },);
+  /**
+   * Registered built end handlers.
+   */
+  const endHandlers = harness
+    .registrations
+    .get(TOOL_END_EVENT,);
+  if (endHandlers === undefined)
+    throw new Error(`missing event registration: ${TOOL_END_EVENT}`,);
   /**
    * Built end handler registered through Pi API.
    */
   const endHandler = getHandler({
-    handlers: harness.registrations.get(TOOL_END_EVENT,),
+    handlers: endHandlers,
     event: TOOL_END_EVENT,
   },);
 
