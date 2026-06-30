@@ -12,6 +12,7 @@
 
 //region Parsing
 export { parseJsonc, } from './parse-jsonc.ts';
+export { jsoncStringify, } from './stringify.ts';
 export { mergeComments, } from './merge-comments.ts';
 export {
   JsoncParseError,

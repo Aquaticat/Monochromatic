@@ -54,4 +54,7 @@ record, and a `plainJson` fast-path leaf.
 Every node may carry a `comment` of type `inline`, `block`, or `mixed`.
 Record keys are themselves comment-bearing, so `{ /* a */ "k": /* b */ "v" }` attaches
 `a` to the key and `b` to the value.
-Duplicate keys are preserved losslessly.
+Duplicate keys are preserved by the structured parser (any document with comments or
+trailing commas).
+A fully clean JSON document takes the native `JSON.parse` fast-path, which follows JSON
+last-wins semantics for duplicate keys.
