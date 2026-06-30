@@ -60,8 +60,8 @@ export type ExecuteOptions = {
  * Executes a command, capturing its output. Shows output only on failure.
  *
  * On success, stdout/stderr are discarded. On failure, captured output is
- * written to the parent's stdout/stderr before the error is propagated
- * (or swallowed when `allowFailure` is true).
+ * written to the parent's stdout/stderr by {@link dumpAndHandleError} before
+ * the error is propagated (or swallowed when `allowFailure` is true).
  *
  * @param command - Executable to run
  *

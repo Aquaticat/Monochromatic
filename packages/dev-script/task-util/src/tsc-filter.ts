@@ -129,8 +129,9 @@ function endOfDigitRun({
  * Tests whether a line is a tsc diagnostic line.
  *
  * Mirrors `/\(\d+,\d+\): error TS\d+:/` with a linear `indexOf` walk:
- * locate `): error TS`, then require digit runs flanking the surrounding
- * `(<digits>,<digits>)` prefix and a trailing `<digits>:`.
+ * locate `): error TS`, then require digit runs (via {@link endOfDigitRun}
+ * for the trailing run) flanking the surrounding `(<digits>,<digits>)`
+ * prefix and a trailing `<digits>:`.
  *
  * @param line - single line of tsc output
  *
@@ -283,9 +284,10 @@ export function isI18nGeneratedDiagnostic(line: string,): boolean {
 /**
  * Tests whether a diagnostic line should be suppressed.
  *
- * Suppresses diagnostics from `node_modules` (JSR `.ts` source leaking
- * through `skipLibCheck`) and auto-generated typesafe-i18n files
- * (which violate `--isolatedDeclarations` and cannot be manually fixed).
+ * Suppresses diagnostics from `node_modules` (per {@link isNodeModulesDiagnostic};
+ * JSR `.ts` source leaking through `skipLibCheck`) and auto-generated typesafe-i18n
+ * files (per {@link isI18nGeneratedDiagnostic}; these violate `--isolatedDeclarations`
+ * and cannot be manually fixed).
  *
  * @param line - single diagnostic line of tsc output
  *
@@ -340,9 +342,10 @@ export function isContinuationLine(line: string,): boolean {
  *
  * Suppressed sources: `node_modules` (JSR `.ts` leaking through `skipLibCheck`)
  * and auto-generated typesafe-i18n files (`i18n-types.ts`, `i18n-util.ts`, etc.).
- *
- * Removes both the diagnostic line itself and any continuation lines
- * that follow it (indented lines providing additional type error context).
+ * Classifies each line with {@link isDiagnosticLine} and {@link isSuppressedDiagnostic},
+ * and removes both the diagnostic line itself and any {@link isContinuationLine}
+ * continuation lines that follow it (indented lines providing additional type
+ * error context).
  *
  * @param output - raw tsc stdout or stderr content
  *
@@ -427,6 +430,10 @@ export function filterTscOutput(output: string,): {
 
 /**
  * Runs the `task-tsc` command-line wrapper.
+ *
+ * Clears stale incremental caches via {@link removeStaleBuildInfo}, runs `tsc`,
+ * and on failure filters the captured output through {@link filterTscOutput}
+ * before deciding the exit code.
  *
  * @example
  * ```ts

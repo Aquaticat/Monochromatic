@@ -194,8 +194,8 @@ function ansiEscapeLength({
  * Strips ANSI escape codes from a string for reliable text matching.
  *
  * Invalid ESC bytes (e.g. non-CSI escapes) are preserved so the caller
- * can still see them; only `\x1B[<digits>(;<digits>)*m` sequences are
- * stripped.
+ * can still see them; only sequences matched by {@link ansiEscapeLength}
+ * (`\x1B[<digits>(;<digits>)*m`) are stripped.
  *
  * @param text - string potentially containing ANSI escape sequences
  *
@@ -387,7 +387,9 @@ function allNonWhitespaceBetween({
  * `!` punctuation char.
  *
  * Mirrors `/[x!]\s+\S+\(([\w-]+)\)\s*:/` (anchored at the punctuation):
- * whitespace, plugin name, `(`, rule name, `)`, optional whitespace, `:`.
+ * whitespace (via {@link skipWhitespace}), plugin name (validated by
+ * {@link allNonWhitespaceBetween}), `(`, rule name (via {@link skipRuleNameChars}),
+ * `)`, optional whitespace, `:`.
  *
  * @param text - input string (typically ANSI-stripped)
  *
@@ -476,7 +478,8 @@ function matchHeaderAt({
 /**
  * Extracts the rule name from an oxlint diagnostic header line.
  *
- * Handles ANSI color codes by stripping them before matching.
+ * Handles ANSI color codes by stripping them before matching each
+ * candidate position with {@link matchHeaderAt}.
  *
  * @param line - single line of oxlint output, possibly with ANSI codes
  *
@@ -578,9 +581,10 @@ function formatHelpLine(guidance: string,): string {
 /**
  * Augments oxlint text output with configured diagnostic guidance.
  *
- * Scans diagnostic headers, resolves configured guidance, appends it to an
- * existing `help:` line when present, and otherwise injects a `help:` line
- * before the diagnostic boundary.
+ * Scans diagnostic headers with {@link extractRuleName}, resolves configured
+ * guidance via {@link resolveDiagnosticGuidance}, appends it to an existing
+ * `help:` line when present, and otherwise injects a `help:` line before the
+ * diagnostic boundary.
  *
  * Preserves all original output including ANSI codes and formatting.
  *

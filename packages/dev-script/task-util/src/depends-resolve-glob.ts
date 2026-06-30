@@ -45,7 +45,8 @@ export function firstGlobMetaIndex(s: string,): number {
 }
 
 /**
- * Splits a glob pattern into a base directory and a relative glob suffix.
+ * Splits a glob pattern into a base directory and a relative glob suffix,
+ * using {@link firstGlobMetaIndex} to locate the first wildcard.
  *
  * Everything before the first wildcard segment becomes the `cwd`;
  * the remainder becomes the pattern passed to the matcher.

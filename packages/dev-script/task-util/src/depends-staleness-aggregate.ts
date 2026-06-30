@@ -186,7 +186,7 @@ export type AggregateTimestampsOptions = {
 /**
  * Aggregates timestamps using the given strategy.
  *
- * Dispatches to a builtin function or runs a custom shell command.
+ * Dispatches to a {@link builtinStrategies} function or runs a custom shell command via {@link runStrategyCommand}.
  *
  * @param timestamps - Resolved timestamps to aggregate
  *

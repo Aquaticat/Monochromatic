@@ -113,7 +113,8 @@ function computeMedian(values: readonly number[],): number {
 }
 
 /**
- * Maps strategy names to their aggregation functions.
+ * Maps strategy names to their aggregation functions, including {@link computeMean}
+ * and {@link computeMedian} for the `mean`/`median` strategies.
  *
  * Empty arrays return `-Infinity` ("no information available") regardless
  * of strategy. This means empty sources = "nothing to trigger on" (fresh)

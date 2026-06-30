@@ -122,8 +122,8 @@ export const NOT_DIAGNOSTIC_HEADER: unique symbol = Symbol('line lacks oxlint di
  * Classifies an oxlint diagnostic header line.
  *
  * Header lines open with `!` (warning) or `x` (error) after optional
- * whitespace, followed by `plugin(rule):`. Non-header lines return
- * {@link NOT_DIAGNOSTIC_HEADER}.
+ * whitespace, followed by `plugin(rule):`, parsed via {@link extractRuleName}.
+ * Non-header lines return {@link NOT_DIAGNOSTIC_HEADER}.
  *
  * @param line - single line of oxlint output, possibly ANSI-colored
  *
@@ -192,6 +192,9 @@ function blockEndIndex({
 
 /**
  * Tests whether a diagnostic block matches any suppression.
+ *
+ * Block text is compared after {@link stripAnsi} so snippet and path
+ * substrings match the visible source rather than raw escape codes.
  *
  * @param block - block lines (header through its last context line)
  *
@@ -296,7 +299,8 @@ function pluralize({
  *
  * Regenerates the line from the post-suppression totals rather than parsing
  * the original numbers, so the displayed summary always matches what passed
- * the filter. Clamps at zero defensively.
+ * the filter. Identifies the line to rewrite with {@link isSummaryLine} and
+ * formats each count with {@link pluralize}. Clamps at zero defensively.
  *
  * @param lines - kept output lines (blocks already filtered)
  *
@@ -373,11 +377,13 @@ export type OxlintFilterResult = {
 /**
  * Filters oxlint output, dropping diagnostic blocks that match a suppression.
  *
- * Segments the output into blank-line-delimited blocks, drops each block (and
- * its trailing blank separator) that matches {@link OXLINT_SUPPRESSIONS}, and
- * recomputes the `Found N warnings and M errors.` summary. A diagnostic block
- * must match a suppression on rule and snippet (and optional path) to be
- * dropped, so real violations are preserved.
+ * Segments the output into blank-line-delimited blocks using
+ * {@link classifyHeader} and {@link blockEndIndex}, drops each block (and
+ * its trailing blank separator) that {@link blockIsSuppressed} matches
+ * against {@link OXLINT_SUPPRESSIONS}, and recomputes the
+ * `Found N warnings and M errors.` summary via {@link rewriteSummary}. A
+ * diagnostic block must match a suppression on rule and snippet (and
+ * optional path) to be dropped, so real violations are preserved.
  *
  * @param output - raw oxlint stdout
  *

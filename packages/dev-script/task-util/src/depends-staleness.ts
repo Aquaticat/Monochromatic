@@ -61,9 +61,9 @@ function formatTimestamp(t: number,): string {
  * Checks whether sources are stale relative to outputs.
  *
  * Both sources and outputs accept file globs and `sh:` shell commands.
- * All items resolve to timestamps (including `Infinity` and `-Infinity`).
+ * All items resolve to timestamps via {@link resolveItems} (including `Infinity` and `-Infinity`).
  *
- * Timestamps are aggregated per-side using the given strategies,
+ * Timestamps are aggregated per-side using the given strategies via {@link aggregateTimestamps},
  * then compared: `sourceTime > outputTime` → stale.
  *
  * When no sources are provided (or all source globs match nothing),

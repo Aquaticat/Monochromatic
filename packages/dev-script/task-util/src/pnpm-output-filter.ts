@@ -113,7 +113,8 @@ export function isAllowedCycleWarning(line: string,): boolean {
 }
 
 /**
- * Filters pnpm output, removing only known-benign cycle warnings.
+ * Filters pnpm output, removing only known-benign cycle warnings per
+ * {@link isAllowedCycleWarning}.
  *
  * @param output - raw pnpm stdout or stderr content
  *

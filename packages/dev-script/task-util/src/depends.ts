@@ -169,7 +169,7 @@ type ValidateTimeStrategyOptions = {
 /**
  * Validates and defaults a time strategy option.
  *
- * Accepts builtin strategy names or `sh:` prefixed shell commands.
+ * Accepts builtin strategy names from {@link BUILTIN_STRATEGIES} or `sh:` prefixed shell commands.
  *
  * @param value - Raw value from optique (possibly nullish when option is omitted)
  *

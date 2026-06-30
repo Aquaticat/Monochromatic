@@ -61,7 +61,7 @@ type ResolveGlobOptions = {
 };
 
 /**
- * Resolves a file glob to an array of file mtimes.
+ * Resolves a file glob to an array of file mtimes via {@link resolveGlobFiles}.
  *
  * When the glob matches no files, returns an empty array.
  * Empty arrays contribute no timestamps to the strategy aggregation,
@@ -163,7 +163,7 @@ type ResolveShellCommandOptions = {
  *
  * @returns Resolved timestamp in milliseconds (possibly `Infinity` or `-Infinity`)
  *
- * @throws When command exits with non-zero code or stdout is not a parseable timestamp
+ * @throws When command exits with non-zero code or {@link parseTimestamp} cannot parse stdout (see {@link UNPARSEABLE_TIMESTAMP})
  *
  * @example
  * ```ts
@@ -263,8 +263,8 @@ export type ResolveItemsOptions = {
 /**
  * Resolves an array of source or output items to timestamps.
  *
- * Each item is either a file glob (resolved to file mtimes) or a `sh:` prefixed
- * shell command (resolved to a single timestamp from stdout).
+ * Each item is either a file glob (resolved via {@link resolveGlob} to file mtimes) or a `sh:` prefixed
+ * shell command (resolved via {@link resolveShellCommand} to a single timestamp from stdout).
  *
  * @param items - Array of glob patterns and/or `sh:` commands
  *

@@ -52,7 +52,8 @@ type WriteFilteredOptions = {
 
 /* oxlint-disable typescript/prefer-readonly-parameter-types -- `stream` is `NodeJS.WriteStream`, an external type whose `.write()` mutates stream state by design; forwarding filtered output to the stream is this function's purpose, so deep-readonly cannot apply */
 /**
- * Filters output and writes to the given stream if non-empty after filtering.
+ * Filters output via {@link filterPnpmOutput} and writes to the given stream
+ * if non-empty after filtering.
  *
  * @param raw - Raw pnpm output
  *

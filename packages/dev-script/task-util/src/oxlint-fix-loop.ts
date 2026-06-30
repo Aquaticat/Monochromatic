@@ -144,8 +144,8 @@ const TIMING_PREFIX = 'Finished in ';
  * blank-line-separated diagnostic blocks (oxlint never puts a blank line inside
  * a block; a shown blank source line keeps its ` N | ` prefix), and the blocks
  * are sorted. The result changes only when the set of diagnostics changes, which
- * is exactly the fixpoint signal. ANSI is stripped defensively even though piped
- * oxlint emits none.
+ * is exactly the fixpoint signal. ANSI is stripped defensively via {@link stripAnsi}
+ * even though piped oxlint emits none.
  *
  * @param stdout - raw captured stdout from one `oxlint` run
  *
@@ -250,11 +250,11 @@ export type FixUntilStableOptions = {
  * Each pass applies fixes ({@link FixUntilStableOptions.runFix}) and then
  * re-lints the result without fixing ({@link FixUntilStableOptions.runLint}) to
  * read the true file state. The loop stops as soon as that oracle lint reports
- * zero diagnostics (nothing left for any fix to change), or its normalized
- * output matches the previous pass's oracle (a fixpoint with unfixable
- * diagnostics remaining), or it matches a non-adjacent earlier pass (two fixes
- * oscillating a file back and forth, which would never settle), or an execution
- * failure occurs, or the cap is hit.
+ * zero diagnostics per {@link hasDiagnostics} (nothing left for any fix to change),
+ * or its {@link normalizeForConvergence}-normalized output matches the previous
+ * pass's oracle (a fixpoint with unfixable diagnostics remaining), or it matches
+ * a non-adjacent earlier pass (two fixes oscillating a file back and forth, which
+ * would never settle), or an execution failure occurs, or the cap is hit.
  * The returned (final) oracle result is what flows through the wrapper's
  * suppression and augmentation stages; the `--fix` passes exist only to apply
  * fixes.

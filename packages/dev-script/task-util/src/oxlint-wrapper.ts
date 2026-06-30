@@ -191,9 +191,9 @@ async function runOxlint(args: readonly string[],): Promise<OxlintRunResult> {
  *
  * Mirrors the original single-pass behavior: a clean run passes augmented
  * output through; a diagnostics run drops known false-positive blocks via
- * {@link filterOxlintOutput}, augments the survivors, and forces success only
- * when the failure was caused solely by suppressed diagnostics
- * ({@link shouldForceSuccess}); an execution failure reports and exits 1.
+ * {@link filterOxlintOutput}, augments the survivors via {@link augmentOxlintOutput},
+ * and forces success only when the failure was caused solely by suppressed
+ * diagnostics ({@link shouldForceSuccess}); an execution failure reports and exits 1.
  *
  * @param result - final run result from the loop or a single pass
  */
