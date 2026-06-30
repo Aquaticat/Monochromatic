@@ -1,5 +1,5 @@
 /**
- * `tomlSet` path-create branches: when `resolveByPath` returns
+ * {@link tomlSet} path-create branches: when {@link resolveByPath} returns
  * `kind: 'missing'`, dispatch to the appropriate insertion strategy.
  *
  * Cases keyed on `resolved.deepest.type`:
@@ -49,7 +49,10 @@ import {
 /**
  * Dispatch the path-create branches.
  *
- * @returns A fresh `TomlEditState` reflecting the change.
+ * @returns A fresh {@link TomlEditState} reflecting the change.
+ *
+ * @throws {@link TomlImmutableNodeError} when `remaining` contains a numeric
+ *         segment, or when `deepest` is a shape path-create cannot insert into.
  *
  * @example
  * ```ts
@@ -135,14 +138,15 @@ export function doPathCreate(
 }
 
 /**
- * Case A: emit `dotted = value` at top-level.
+ * Case A: emit `dotted = value` at top-level, after checking
+ * {@link assertNoSiblingTableCollision}.
  *
  * Anchor at `before-node` of the first sibling `TOMLTable` if any exists
  * in the top-level body; else `eof`. This avoids the TOML grammar trap
  * where a key-value after a `[section]` header is parsed as belonging
  * to that section.
  *
- * @returns A fresh `TomlEditState` reflecting the change.
+ * @returns A fresh {@link TomlEditState} reflecting the change.
  */
 function doTopLevelDottedKeyInsert(
   {
@@ -239,7 +243,7 @@ function doTopLevelDottedKeyInsert(
  * the new dotted-key implicit-table path is caught before we record
  * the insertion.
  *
- * @returns A fresh `TomlEditState` reflecting the change.
+ * @returns A fresh {@link TomlEditState} reflecting the change.
  */
 function doTableDottedKeyInsert(
   {
@@ -311,7 +315,7 @@ function doTableDottedKeyInsert(
  * table to be the direct value of a `TOMLKeyValue`; nested inline tables
  * inside an array are rejected.
  *
- * @returns A fresh `TomlEditState` reflecting the change.
+ * @returns A fresh {@link TomlEditState} reflecting the change.
  */
 function doInlineTableExtend(
   {

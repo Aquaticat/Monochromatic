@@ -1,5 +1,5 @@
 /**
- * Resolve a `TomlPath` against the AST.
+ * Resolve a {@link TomlPath} against the AST.
  *
  * Pure function: reads `edit.program` only; never inspects deltas. Higher
  * layers (`effective-value.ts`) apply pending edits on top of the result.
@@ -22,7 +22,7 @@ import { walk, } from './walk.ts';
  * The kind of node a path resolved to.
  */
 /**
- * Discriminated union of `resolveByPath` outcomes.
+ * Discriminated union of {@link resolveByPath} outcomes.
  */
 export type ResolveResult =
   | {
@@ -52,13 +52,14 @@ export type ResolveResult =
   };
 
 /**
- * Find the node at `path` within `edit.program`.
+ * Find the node at `path` within `edit.program`, delegating the descent
+ * to {@link walk}.
  *
  * @param edit - The state to search.
  *
  * @param path - The TOML path to resolve.
  *
- * @returns A `ResolveResult` describing what was found, or `missing` with
+ * @returns A {@link ResolveResult} describing what was found, or `missing` with
  *          the deepest existing ancestor and how many path segments were
  *          consumed before the miss.
  *

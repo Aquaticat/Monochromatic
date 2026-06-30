@@ -1,5 +1,5 @@
 /**
- * Shared `TomlEditState` builders used by `tomlSet` and `path-create`.
+ * Shared {@link TomlEditState} builders used by {@link tomlSet} and `path-create`.
  *
  * These helpers preserve the immutability invariant: every mutating
  * function returns a fresh state while sharing the AST and source by
@@ -19,7 +19,7 @@ import type {
 /**
  * Return a fresh state with an additional `edits` entry on `node`.
  *
- * @returns A fresh `TomlEditState` reflecting the change.
+ * @returns A fresh {@link TomlEditState} reflecting the change.
  *
  * @example
  * ```ts
@@ -59,7 +59,7 @@ export function withEditOn(
 /**
  * Return a fresh state with an additional pending `insertion`.
  *
- * @returns A fresh `TomlEditState` reflecting the change.
+ * @returns A fresh {@link TomlEditState} reflecting the change.
  *
  * @example
  * ```ts

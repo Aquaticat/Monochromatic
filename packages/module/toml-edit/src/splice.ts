@@ -1,5 +1,5 @@
 /**
- * `spliceEmit`: produce output by combining the original source with pending
+ * {@link spliceEmit}: produce output by combining the original source with pending
  * deltas via a sorted-events linear scan.
  *
  * Cornerstone invariant: with zero edits, insertions, or deletions the
@@ -178,7 +178,7 @@ export function spliceEmit({ edit, }: { readonly edit: TomlEditState; },): strin
 }
 
 /**
- * Build the `replace` event for a single pending `Edit`.
+ * Build the `replace` event for a single pending {@link Edit}.
  *
  * @returns Computed result.
  */
@@ -234,7 +234,7 @@ function valueRangeOf({ node, }: { readonly node: AST.TOMLNode; },): readonly [
 }
 
 /**
- * Build the `delete` event by delegating to `computeDeletionRange`.
+ * Build the `delete` event by delegating to {@link computeDeletionRange}.
  *
  * @returns Computed result.
  */
@@ -333,7 +333,7 @@ function computeDeletionRange(
 }
 
 /**
- * Resolve an `AnchorKind` to a byte offset in the source.
+ * Resolve an {@link AnchorKind} to a byte offset in the source.
  *
  * @returns Computed number.
  */
@@ -433,6 +433,6 @@ function resolveInsideTable(
 
 /**
  * Reserved for future delta plumbing; currently unused but kept for the type
- * signature shape that `tomlSet` and friends will populate.
+ * signature shape that {@link tomlSet} and friends will populate.
  */
 export type ResolvedInsertion = Insertion;

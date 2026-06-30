@@ -1,6 +1,6 @@
 /**
- * `tomlDelete`: remove a key or table at `path`. Returns a fresh
- * `TomlEditState`.
+ * {@link tomlDelete}: remove a key or table at `path`. Returns a fresh
+ * {@link TomlEditState}.
  *
  * For most paths the deletion is processed by
  * `splice.ts:computeDeletionRange`, which also absorbs the same-line
@@ -51,9 +51,9 @@ import type {
  *   outermost array via canonical re-emission with the targeted element
  *   omitted at the deepest level. Works at arbitrary nesting depth.
  *
- * @returns A fresh `TomlEditState` reflecting the change.
+ * @returns A fresh {@link TomlEditState} reflecting the change.
  *
- * @throws TomlImmutableNodeError when the AST is internally inconsistent
+ * @throws {@link TomlImmutableNodeError} when the AST is internally inconsistent
  *         (e.g. a target element has no parent chain that terminates at a
  *         `TOMLKeyValue`). Not reachable from well-formed parser output.
  *
@@ -113,7 +113,7 @@ export function tomlDelete(
 /**
  * Return a fresh state with `node` added to `deletions`.
  *
- * @returns A fresh `TomlEditState` reflecting the change.
+ * @returns A fresh {@link TomlEditState} reflecting the change.
  */
 function withDeletion(
   {
@@ -136,7 +136,7 @@ function withDeletion(
 /**
  * Return a fresh state with all `nodes` added to `deletions` in one allocation.
  *
- * @returns A fresh `TomlEditState` reflecting the change.
+ * @returns A fresh {@link TomlEditState} reflecting the change.
  */
 function withDeletions(
   {
@@ -167,10 +167,11 @@ function withDeletions(
  * target element omitted at the deepest level.
  *
  * The Edit's `jsValue` is the post-delete JS structure rooted at the
- * outermost array, so `tomlGetValue({ path: containingKeyPath, })` on
- * the same or any branched state returns the new shape.
+ * outermost array, so calling {@link tomlGetValue} with
+ * `{ path: containingKeyPath, }` on the same or any branched state returns
+ * the new shape.
  *
- * @returns A fresh `TomlEditState` reflecting the change.
+ * @returns A fresh {@link TomlEditState} reflecting the change.
  */
 function deleteArrayElement(
   {
@@ -270,7 +271,7 @@ function deleteArrayElement(
  * @returns The enclosing `TOMLKeyValue`, the outermost `TOMLArray`
  *          directly under it, and the full outer-to-inner skip path.
  *
- * @throws TomlImmutableNodeError when the chain terminates without a
+ * @throws {@link TomlImmutableNodeError} when the chain terminates without a
  *         `TOMLKeyValue` (malformed AST).
  */
 function walkUpToKeyValue(
@@ -339,6 +340,9 @@ function walkUpToKeyValue(
  *
  * @returns A fresh `unknown[]` mirroring `arr` with the targeted element
  *          gone at the deepest level.
+ *
+ * @throws {@link TomlImmutableNodeError} when `path` is empty, or a
+ *         non-final segment lands on a non-array element.
  */
 function removeJsAtPath(
   {
