@@ -20,7 +20,8 @@ import {
 //region Execution tools: run commands inside VMs
 
 /**
- * MCP tool: execute a command inside a named running VM.
+ * MCP tool: execute a command inside a named running VM, resolved via
+ * {@link backendFromArgs}.
  */
 export const execTool: ToolEntry = defineTool({
   name: 'exec_in_vm',
@@ -80,7 +81,8 @@ export const execTool: ToolEntry = defineTool({
 },);
 
 /**
- * MCP tool: create an ephemeral VM, run a command, then destroy it.
+ * MCP tool: create an ephemeral VM, run a command, then destroy it, on the
+ * backend resolved via {@link backendFromArgs}.
  */
 export const runTool: ToolEntry = defineTool({
   name: 'run_in_vm',

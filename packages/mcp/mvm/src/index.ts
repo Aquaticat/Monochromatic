@@ -30,7 +30,8 @@ export {};
 //region Server setup: create and serve the MCP server
 
 /**
- * MCP server instance exposing mvm operations as tools.
+ * MCP server instance exposing mvm operations as tools, built via
+ * {@link createMcpServer}.
  */
 const server = createMcpServer({
   config: {

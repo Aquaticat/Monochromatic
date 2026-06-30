@@ -33,7 +33,8 @@ export const BACKEND_PROPERTY: {
 };
 
 /**
- * Resolves the backend from a tool's `backend` argument.
+ * Resolves the backend from a tool's `backend` argument via
+ * {@link resolveBackendKind} and {@link selectBackend}.
  *
  * @param args - raw tool arguments; the optional `backend` string is read
  *

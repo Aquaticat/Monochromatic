@@ -19,7 +19,8 @@ import {
 //region Transfer tools: move files between host and guest VMs
 
 /**
- * MCP tool: push a file from the host into a running VM.
+ * MCP tool: push a file from the host into a running VM, on the backend
+ * resolved via {@link backendFromArgs}.
  */
 export const pushTool: ToolEntry = defineTool({
   name: 'push_to_vm',
@@ -85,7 +86,8 @@ export const pushTool: ToolEntry = defineTool({
 },);
 
 /**
- * MCP tool: pull a file from a running VM to the host.
+ * MCP tool: pull a file from a running VM to the host, on the backend
+ * resolved via {@link backendFromArgs}.
  */
 export const pullTool: ToolEntry = defineTool({
   name: 'pull_from_vm',

@@ -19,7 +19,8 @@ import {
 //region Lifecycle tools: VM listing and template updates
 
 /**
- * MCP tool: list all managed VMs and their state.
+ * MCP tool: list all managed VMs and their state, on the backend resolved
+ * via {@link backendFromArgs}.
  */
 export const listTool: ToolEntry = defineTool({
   name: 'list_vms',
@@ -64,7 +65,8 @@ export const listTool: ToolEntry = defineTool({
 },);
 
 /**
- * MCP tool: refresh provider-managed images or templates.
+ * MCP tool: refresh provider-managed images or templates, on the backend
+ * resolved via {@link backendFromArgs}.
  */
 export const updateTool: ToolEntry = defineTool({
   name: 'update_templates',

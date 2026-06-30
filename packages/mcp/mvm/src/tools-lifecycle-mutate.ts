@@ -19,7 +19,8 @@ import {
 //region Mutation tools: VM creation and destruction
 
 /**
- * MCP tool: create a new VM, optionally cloned from an existing one.
+ * MCP tool: create a new VM, optionally cloned from an existing one, on the
+ * backend resolved via {@link backendFromArgs}.
  */
 export const createTool: ToolEntry = defineTool({
   name: 'create_vm',
@@ -111,7 +112,8 @@ export const createTool: ToolEntry = defineTool({
 },);
 
 /**
- * MCP tool: destroy VMs by name or all at once.
+ * MCP tool: destroy VMs by name or all at once, on the backend resolved via
+ * {@link backendFromArgs}.
  */
 export const destroyTool: ToolEntry = defineTool({
   name: 'destroy_vm',
