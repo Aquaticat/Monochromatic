@@ -49,10 +49,11 @@ function verifySessionStorage(): Promise<boolean> {
     return Promise.resolve(readBack === testValue,);
   }
   catch (error: unknown) {
-    reportLoggerInternalError({
-      context: 'sessionStorage sink verification failed',
-      error,
-    },);
+    if ('window' in globalThis)
+      reportLoggerInternalError({
+        context: 'sessionStorage sink verification failed',
+        error,
+      },);
     return Promise.resolve(false,);
   }
 }

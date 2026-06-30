@@ -90,10 +90,11 @@ export function createOpfsSink(): Sink {
       return available;
     }
     catch (error: unknown) {
-      reportLoggerInternalError({
-        context: 'OPFS sink verification failed',
-        error,
-      },);
+      if ('window' in globalThis)
+        reportLoggerInternalError({
+          context: 'OPFS sink verification failed',
+          error,
+        },);
       return false;
     }
   }
