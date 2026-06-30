@@ -106,25 +106,24 @@ endif
 ### `append` util
 
 **Status**:
- Medium Priority
-
-Terminal append util that appends a new line to a specified file.
+ Done;
+ shipped as `task-append` in `packages/dev-script/task-util/src/append.ts`,
+ with bin entry,
+ README section,
+ and unit tests covering create/append/multiline/permission-error cases.
 
 ```bash
-append "my new line" --to myfile.md
-append "my new line1" --to myfile.md
-append "my new line1\nMy new line2" --to myfile.md
-append "my new line1" "my new line2" --to myfile.md
+task-append "my new line" --to myfile.md
+task-append "my new line1" --to myfile.md
+task-append "my new line1\nMy new line2" --to myfile.md
+task-append "my new line1" "my new line2" --to myfile.md
 ```
 
-#### Enhanced Implementation
+#### Remaining gaps
 
-- [ ] Add support for atomic file operations
-- [ ] Implement file locking for concurrent access
-- [ ] Add backup creation before modification
-- [ ] Create undo/rollback functionality
-- [ ] Add content validation and formatting
-- [ ] Implement batch append operations
+- [ ] Create the target file when absent instead of throwing
+- [ ] Optional `--no-newline` flag
+- [ ] Optional `--prefix`/`--suffix` flags
 
 ### Write my own mise MCP server
 
