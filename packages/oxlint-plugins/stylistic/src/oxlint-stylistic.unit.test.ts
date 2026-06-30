@@ -795,7 +795,7 @@ await describe({
               'semi.ts',
             );
             /** Temp fixture copy isolated from parallel autofix tests. */
-            using semiCopy = createTempFixtureFile({
+            await using semiCopy = await createTempFixtureFile({
               fileName: 'semi.ts',
               sourcePath: semiSrc,
               tempPrefix: 'oxlint-stylistic-autofix-',
@@ -839,7 +839,7 @@ await describe({
               'fixable.ts',
             );
             /** Temp fixture copy isolated from parallel autofix tests. */
-            using fixableCopy = createTempFixtureFile({
+            await using fixableCopy = await createTempFixtureFile({
               fileName: 'fixable.ts',
               sourcePath: fixableSrc,
               tempPrefix: 'oxlint-stylistic-autofix-',
@@ -868,7 +868,7 @@ await describe({
               'comma-dangle.ts',
             );
             /** Temp fixture copy isolated from parallel autofix tests. */
-            using commaCopy = createTempFixtureFile({
+            await using commaCopy = await createTempFixtureFile({
               fileName: 'comma-dangle.ts',
               sourcePath: commaSrc,
               tempPrefix: 'oxlint-stylistic-autofix-',
@@ -919,7 +919,7 @@ await describe({
               'fixable-trailing-comma.ts',
             );
             /** Temp fixture copy isolated from parallel autofix tests. */
-            using trailingCopy = createTempFixtureFile({
+            await using trailingCopy = await createTempFixtureFile({
               fileName: 'fixable-trailing-comma.ts',
               sourcePath: trailingSrc,
               tempPrefix: 'oxlint-stylistic-autofix-',
@@ -961,7 +961,7 @@ await describe({
               'block-body-newline.ts',
             );
             /** Temp fixture copy isolated from parallel autofix tests. */
-            using blockCopy = createTempFixtureFile({
+            await using blockCopy = await createTempFixtureFile({
               fileName: 'block-body-newline.ts',
               sourcePath: blockSrc,
               tempPrefix: 'oxlint-stylistic-autofix-',
@@ -1006,7 +1006,7 @@ await describe({
               'chain-per-line.ts',
             );
             /** Temp fixture copy isolated from parallel autofix tests. */
-            using chainCopy = createTempFixtureFile({
+            await using chainCopy = await createTempFixtureFile({
               fileName: 'chain-per-line.ts',
               sourcePath: chainSrc,
               tempPrefix: 'oxlint-stylistic-autofix-',
@@ -1066,7 +1066,7 @@ await describe({
               'chain-comment.ts',
             );
             /** Temp fixture copy isolated from parallel autofix tests. */
-            using commentCopy = createTempFixtureFile({
+            await using commentCopy = await createTempFixtureFile({
               fileName: 'chain-comment.ts',
               sourcePath: commentSrc,
               tempPrefix: 'oxlint-stylistic-autofix-',
@@ -1102,7 +1102,7 @@ await describe({
               'chain-comment-in-args.ts',
             );
             /** Temp fixture copy isolated from parallel autofix tests. */
-            using argsCopy = createTempFixtureFile({
+            await using argsCopy = await createTempFixtureFile({
               fileName: 'chain-comment-in-args.ts',
               sourcePath: argsSrc,
               tempPrefix: 'oxlint-stylistic-autofix-',
@@ -1146,7 +1146,7 @@ await describe({
               'chain-and-mixed-operators.ts',
             );
             /** Temp fixture copy isolated from parallel autofix tests. */
-            using combinedCopy = createTempFixtureFile({
+            await using combinedCopy = await createTempFixtureFile({
               fileName: 'chain-and-mixed-operators.ts',
               sourcePath: combinedSrc,
               tempPrefix: 'oxlint-stylistic-autofix-',
@@ -1206,7 +1206,7 @@ await describe({
               'fixable.ts',
             );
             /** Temp fixture copy isolated from parallel autofix tests. */
-            using fixableCopy = createTempFixtureFile({
+            await using fixableCopy = await createTempFixtureFile({
               fileName: 'fixable.ts',
               sourcePath: fixableSrc,
               tempPrefix: 'oxlint-stylistic-autofix-',
@@ -1245,7 +1245,7 @@ await describe({
               'invocation-depth-comment.ts',
             );
             /** Temp fixture copy isolated from parallel autofix tests. */
-            using commentCopy = createTempFixtureFile({
+            await using commentCopy = await createTempFixtureFile({
               fileName: 'invocation-depth-comment.ts',
               sourcePath: commentSrc,
               tempPrefix: 'oxlint-stylistic-autofix-',
@@ -1281,7 +1281,7 @@ await describe({
               'invocation-depth-convergence.ts',
             );
             /** Temp fixture copy isolated from parallel autofix tests. */
-            using convergeCopy = createTempFixtureFile({
+            await using convergeCopy = await createTempFixtureFile({
               fileName: 'invocation-depth-convergence.ts',
               sourcePath: convergeSrc,
               tempPrefix: 'oxlint-stylistic-autofix-',

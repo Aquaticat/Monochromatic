@@ -217,7 +217,7 @@ await describe({
               'invalid',
               'single-line-tsdoc-fixable.ts',
             );
-            using fixableCopy = createTempFixtureFile({
+            await using fixableCopy = await createTempFixtureFile({
               fileName: 'single-line-tsdoc-fixable.ts',
               sourcePath: fixableSrc,
               tempPrefix: 'oxlint-tsdoc-autofix-',
