@@ -17,8 +17,8 @@ import {
   pathFormat,
   quotedFormat,
   shortCommand,
+  type ToolTitleEntry as FormatterToolTitleEntry,
 } from './formatter-utils.ts';
-import type { ToolTitleEntry as FormatterToolTitleEntry, } from './formatter-utils.ts';
 
 /**
  * Tool title entries for all pi built-in tools. Each entry specifies how to
