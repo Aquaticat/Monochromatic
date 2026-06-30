@@ -239,7 +239,75 @@ packages/module/i18n-compose/src/locales/zh/render-sentence.ts:64 | downgraded-l
 
 ## Batch 06 (aquati.cat, markdown-lint, islands-black, async-iter)
 
-(pending)
+TOTAL FINDINGS: 81 (70 distinct doc locations; 7 recur at additional
+un-listed lines within the same block, contributing 11 more instances).
+No findings in `islands-black` or `async-iter`.
+
+Systematic pattern: `markdown-lint` is mostly very well-disciplined,
+following a strict "Parameters for {@link X}" / "Result of {@link X}"
+convention almost everywhere, so its few violations (cli.ts's three
+`@throws CliUsageError` mentions) stand out as the one file that
+predates or escaped the convention. `aquati.cat` is much less
+consistent: files repeatedly name a sentinel/branded-type/sibling
+function by exact identifier in backticks (`CORES_UNDETECTED`,
+`CSS_ABSENT`, `NO_CACHE`, `CACHE_MISS`, `ABSENT`, `NO_LANGUAGE`,
+`SafeHtml`, `PhysicalCores`/`WorkerCount`) without ever wrapping them in
+`{@link}`, heaviest in `jsx-to-html.ts`, `content.ts`, and
+`git-dates.ts`. Smaller pattern: genuinely missing references on terse
+one-line docs over `Record`/object-map constants, or tight 1:1 delegate
+wrappers whose docs describe the effect but never name the function
+doing the work.
+
+```
+packages/cli/markdown-lint/src/cli.ts:72 | downgraded-link | current: "@throws CliUsageError when the value is not a known reporter" | target: CliUsageError (packages/cli/markdown-lint/src/cli.ts:38)
+packages/cli/markdown-lint/src/cli.ts:89 | downgraded-link | current: "@throws CliUsageError when a --format= value is not a known reporter" | target: CliUsageError (packages/cli/markdown-lint/src/cli.ts:38)
+packages/cli/markdown-lint/src/cli.ts:137 | downgraded-link | current: "@throws CliUsageError on an unknown option" | target: CliUsageError (packages/cli/markdown-lint/src/cli.ts:38)
+packages/cli/markdown-lint/src/html-table-cell-text.ts:150 | missing-reference | current: not mentioned | target: escapeHtmlText, normalizeMarkdownEscapes (packages/cli/markdown-lint/src/html-table-cell-text.ts:136,51)
+packages/cli/markdown-lint/src/reporters.ts:81 | missing-reference | current: not mentioned | target: pretty, json (packages/cli/markdown-lint/src/reporters.ts:37,61)
+packages/ssg/aquati.cat/src/build/compress-lib.ts:48 | downgraded-link | current: "Sentinel returned by `physicalCoreCount` when..." | target: physicalCoreCount (packages/ssg/aquati.cat/src/build/compress-lib.ts:193)
+packages/ssg/aquati.cat/src/build/compress-lib.ts:129 | downgraded-link | current: "Brands a caller-validated integer as a `PhysicalCores` count." | target: PhysicalCores (packages/ssg/aquati.cat/src/build/compress-lib.ts:30)
+packages/ssg/aquati.cat/src/build/compress-lib.ts:151 | downgraded-link | current: "Brands a caller-validated integer as a `WorkerCount`." | target: WorkerCount (packages/ssg/aquati.cat/src/build/compress-lib.ts:37)
+packages/ssg/aquati.cat/src/build/compress-lib.ts:182 | downgraded-link | current: "Returns the CORES_UNDETECTED sentinel off Linux..." (also lines 186, 291) | target: CORES_UNDETECTED (packages/ssg/aquati.cat/src/build/compress-lib.ts:54)
+packages/ssg/aquati.cat/src/build/compress-lib.ts:248 | downgraded-link | current: "Both paths are capped by `availableParallelism()`" (also lines 249, 251) | target: availableParallelism (node:os, external)
+packages/ssg/aquati.cat/src/build/compress.ts:88 | downgraded-link | current: "exactly one `Tally` for a message event" | target: Tally (packages/ssg/aquati.cat/src/build/compress-lib.ts:42)
+packages/ssg/aquati.cat/src/build/postprocess.ts:91 | downgraded-link | current: "Sentinel returned by `fingerprintCss` when no styles.css exists" | target: fingerprintCss (packages/ssg/aquati.cat/src/build/postprocess.ts:184)
+packages/ssg/aquati.cat/src/build/postprocess.ts:134 | downgraded-link | current: "Hashed basename produced by `insertHash`." (also line 260) | target: insertHash (packages/ssg/aquati.cat/src/build/fingerprint-naming.ts:47)
+packages/ssg/aquati.cat/src/build/postprocess.ts:177 | downgraded-link | current: "or CSS_ABSENT when the file is absent" | target: CSS_ABSENT (packages/ssg/aquati.cat/src/build/postprocess.ts:95), plus identical mentions at lines 205, 207, 230, 525
+packages/ssg/aquati.cat/src/build/postprocess.ts:505 | downgraded-link | current: "awaited in a Promise.all with `runPagefind`" | target: runPagefind (packages/ssg/aquati.cat/src/build/postprocess.ts:421)
+packages/ssg/aquati.cat/src/build/subset-fonts.ts:119 | downgraded-link | current: "via the `icon(name)` helper (src/lib/icons/icon.ts)" | target: icon (packages/ssg/aquati.cat/src/lib/icons/icon.ts)
+packages/ssg/aquati.cat/src/build/subset-fonts.ts:146 | downgraded-link | current: "every code point found in every source file under SOURCE_GLOB" | target: SOURCE_GLOB (packages/ssg/aquati.cat/src/build/subset-fonts.ts:95)
+packages/ssg/aquati.cat/src/build/subset-fonts.ts:286 | missing-reference | current: not mentioned | target: collectBodyCharset, collectIconCodepoints (packages/ssg/aquati.cat/src/build/subset-fonts.ts:167,221)
+packages/ssg/aquati.cat/src/client/index.ts:244 | missing-reference | current: not mentioned | target: HIGHLIGHT_GROUPS (packages/ssg/aquati.cat/src/client/highlight-groups.ts:14)
+packages/ssg/aquati.cat/src/client/search.ts:22 | downgraded-link | current: "Pagefind search result metadata returned by result.data()" | target: PagefindResult.data (packages/ssg/aquati.cat/src/client/search.ts:42)
+packages/ssg/aquati.cat/src/client/search.ts:35 | downgraded-link | current: "Single result entry from pagefind.search()" | target: PagefindApi.search (packages/ssg/aquati.cat/src/client/search.ts:60)
+packages/ssg/aquati.cat/src/client/search.ts:155 | downgraded-link | current: "Uses Pagefind's debouncedSearch to coalesce rapid keystrokes" | target: PagefindApi.debouncedSearch (packages/ssg/aquati.cat/src/client/search.ts:61)
+packages/ssg/aquati.cat/src/client/search.ts:202 | downgraded-link | current: "over-large result sets get truncated to MAX_RESULTS" | target: MAX_RESULTS (packages/ssg/aquati.cat/src/client/search.ts:76)
+packages/ssg/aquati.cat/src/client/shuffle-children.ts:5 | downgraded-link | current: "The ShuffleChildren component sets display: flex on..." | target: ShuffleChildren (packages/ssg/aquati.cat/src/components/shuffle-children.ts:56)
+packages/ssg/aquati.cat/src/images/convert.ts:111 | missing-reference | current: not mentioned | target: fileExists, convertToAvif (packages/ssg/aquati.cat/src/images/convert.ts:53,94)
+packages/ssg/aquati.cat/src/lib/cache.ts:87 | downgraded-link | current: "Sentinel returned by readCache when no manifest file exists" | target: readCache (packages/ssg/aquati.cat/src/lib/cache.ts:125)
+packages/ssg/aquati.cat/src/lib/cache.ts:94 | downgraded-link | current: "Sentinel returned by getCachedEntry when the manifest has no matching..." | target: getCachedEntry (packages/ssg/aquati.cat/src/lib/cache.ts:206)
+packages/ssg/aquati.cat/src/lib/cache.ts:112 | downgraded-link | current: "Returns NO_CACHE when the cache file does not exist." (also line 118) | target: NO_CACHE (packages/ssg/aquati.cat/src/lib/cache.ts:91)
+packages/ssg/aquati.cat/src/lib/cache.ts:199 | downgraded-link | current: "@returns cached entry if the content hash matches, otherwise CACHE_MISS" | target: CACHE_MISS (packages/ssg/aquati.cat/src/lib/cache.ts:98)
+packages/ssg/aquati.cat/src/lib/content.ts:139 | downgraded-link | current: "YAML body... fed to parseYaml" | target: parseYaml (aliased import of `parse` from yaml, packages/ssg/aquati.cat/src/lib/content.ts:22)
+packages/ssg/aquati.cat/src/lib/content.ts:212 | downgraded-link | current: "The coerceDateSchema accepts both native Date objects..." | target: coerceDateSchema (packages/ssg/aquati.cat/src/lib/content.ts:195)
+packages/ssg/aquati.cat/src/lib/content.ts:258 | downgraded-link | current: "Returned by loadContent... fully-resolved Post objects built by attachDates" | target: loadContent, Post, attachDates (packages/ssg/aquati.cat/src/lib/content.ts:349,299,458)
+packages/ssg/aquati.cat/src/lib/content.ts:394 | downgraded-link | current: "before narrowing to the Locales type" | target: Locales (packages/ssg/aquati.cat/src/i18n/i18n-types.ts)
+packages/ssg/aquati.cat/src/lib/content.ts:439 | downgraded-link | current: "by calling getPostDates for files missing from the cache" | target: getPostDates (packages/ssg/aquati.cat/src/lib/git-dates.ts:453)
+packages/ssg/aquati.cat/src/lib/date-divergence.ts:21 | downgraded-link | current: "Logger subset needed for divergence diagnostics." | target: Logger (packages/ssg/aquati.cat/src/lib/types.ts:4)
+packages/ssg/aquati.cat/src/lib/frontmatter-dates.ts:99 | missing-reference | current: not mentioned (says "a sentinel" generically) | target: NO_AUTHORED_DATE (packages/ssg/aquati.cat/src/lib/frontmatter-dates.ts:11)
+packages/ssg/aquati.cat/src/lib/git-dates.ts:144 | downgraded-link | current: "When shallow, getPostDates falls back to the GitHub REST API" | target: getPostDates (packages/ssg/aquati.cat/src/lib/git-dates.ts:453)
+packages/ssg/aquati.cat/src/lib/git-dates.ts:433 | downgraded-link | current: "@param isShallow - pre-computed shallow-clone flag (from detectShallow)" | target: detectShallow (packages/ssg/aquati.cat/src/lib/git-dates.ts:154)
+packages/ssg/aquati.cat/src/lib/git-dates.ts:471 | downgraded-link | current: "...ABSENT when the file has no git history" | target: ABSENT (packages/ssg/aquati.cat/src/lib/git-dates.ts:33), plus identical mentions at lines 498, 561
+packages/ssg/aquati.cat/src/lib/jsx-to-html.ts:5 | downgraded-link | current: "needs a JSX runtime (jsx, jsxs, Fragment)" | target: jsx, jsxs, Fragment (packages/ssg/aquati.cat/src/lib/jsx-to-html.ts:249,268,175)
+packages/ssg/aquati.cat/src/lib/jsx-to-html.ts:15 | downgraded-link | current: "Each jsx call directly returns a SafeHtml wrapper" (also lines 18,20,53,57,82,168,198) | target: SafeHtml (packages/ssg/aquati.cat/src/lib/jsx-to-html.ts:36)
+packages/ssg/aquati.cat/src/lib/jsx-to-html.ts:23 | downgraded-link | current: "Reuses escapeHtml and VOID_ELEMENTS from..." | target: escapeHtml, VOID_ELEMENTS (@monochromatic-dev/module-hyperscript, external)
+packages/ssg/aquati.cat/src/lib/jsx-to-html.ts:136 | downgraded-link | current: "PROP_TO_ATTR rewrites JSX-isms like className to class" | target: PROP_TO_ATTR (packages/ssg/aquati.cat/src/lib/jsx-to-html.ts:47)
+packages/ssg/aquati.cat/src/lib/markdown.ts:58 | downgraded-link | current: "Default-exported MDX component returned by evaluate is the JSX entry point" | target: evaluate (@mdx-js/mdx, packages/ssg/aquati.cat/src/lib/markdown.ts:14)
+packages/ssg/aquati.cat/src/lib/markdown.ts:93 | downgraded-link | current: "produces the SafeHtml payload consumed by callers" | target: SafeHtml (packages/ssg/aquati.cat/src/lib/jsx-to-html.ts:36)
+packages/ssg/aquati.cat/src/lib/rehype-highlight.ts:159 | missing-reference | current: not mentioned | target: ssgHighlighter (packages/ssg/aquati.cat/src/client/tags.ts:35), HIGHLIGHT_GROUPS (packages/ssg/aquati.cat/src/client/highlight-groups.ts:14)
+packages/ssg/aquati.cat/src/lib/rehype-highlight.ts:251 | downgraded-link | current: "Language detected from the code class list, or NO_LANGUAGE to skip" | target: NO_LANGUAGE (packages/ssg/aquati.cat/src/lib/rehype-highlight.ts:99)
+packages/ssg/aquati.cat/src/lib/rehype-highlight.ts:288 | missing-reference | current: not mentioned | target: visitNode (packages/ssg/aquati.cat/src/lib/rehype-highlight.ts:231)
+```
 
 ## Batch 07 (stylistic, model-selection, watch-restart, zip-writer, stop-reminders, terminal-title)
 
