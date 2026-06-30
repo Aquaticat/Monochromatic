@@ -128,7 +128,8 @@ export function unwrapExpression(
  *
  * @param member - Member expression being inspected.
  *
- * @returns Identifier property name, or sentinel when member is computed/private.
+ * @returns Identifier property name, or {@link NO_STATIC_MEMBER_NAME} when
+ * member is computed/private.
  *
  * @example
  * ```ts
@@ -176,7 +177,9 @@ function isIdentifierNamed(
 }
 
 /**
- * Conservatively checks whether AST-ish value references an identifier name.
+ * Conservatively checks whether AST-ish value references an identifier
+ * name, matching nodes via {@link isIdentifierNamed} and recursing into
+ * object/array children.
  *
  * @param value - AST node, array, or primitive value to inspect.
  *
@@ -230,7 +233,8 @@ export function referencesIdentifier(
 //region Initializer classification
 
 /**
- * Returns whether constructor argument would need a spread array to absorb mutation.
+ * Returns whether constructor argument would need a spread array to absorb
+ * mutation, after unwrapping it via {@link unwrapExpression}.
  *
  * @param expression - NewExpression for Set, WeakSet, Map, or WeakMap.
  *
@@ -266,11 +270,16 @@ function collectionNeedsSpreadTemp(
 }
 
 /**
- * Classifies expression initializer for immediate-mutation rule.
+ * Classifies expression initializer for immediate-mutation rule by
+ * unwrapping it via {@link unwrapExpression}, checking for a shadowing
+ * binding via {@link findVariable} against the {@link NO_VARIABLE}
+ * sentinel, and sizing Set/Map constructor arguments via
+ * {@link collectionNeedsSpreadTemp}.
  *
  * @param expression - Runtime expression assigned to previous statement's target.
  *
- * @returns Initializer category, or sentinel when expression is outside rule scope.
+ * @returns Initializer category, or the {@link NO_INITIALIZER_KIND} sentinel
+ * when expression is outside rule scope.
  *
  * @example
  * ```ts
@@ -332,7 +341,9 @@ function initializerKind(
  *
  * @param declaration - Previous variable declaration statement.
  *
- * @returns Init info for last declarator, matching upstream rule behavior.
+ * @returns Init info for last declarator, classified via
+ * {@link initializerKind}, or {@link NO_INIT_INFO} when the declarator is
+ * unsupported, matching upstream rule behavior.
  *
  * @example
  * ```ts
@@ -378,11 +389,14 @@ function initInfoFromDeclaration(
 }
 
 /**
- * Classifies an assignment expression as previous immediate-mutation initializer.
+ * Classifies an assignment expression as previous immediate-mutation
+ * initializer, unwrapping the right-hand side via {@link unwrapExpression}
+ * and classifying it via {@link initializerKind}.
  *
  * @param assignment - Previous assignment expression statement.
  *
- * @returns Init info when assignment is `name = <initializer>`.
+ * @returns Init info when assignment is `name = <initializer>`, otherwise
+ * {@link NO_INIT_INFO}.
  *
  * @example
  * ```ts
@@ -430,7 +444,11 @@ function initInfoFromAssignment(
 }
 
 /**
- * Classifies previous statement as initializer immediately before a mutation.
+ * Classifies previous statement as initializer immediately before a
+ * mutation, delegating to {@link initInfoFromDeclaration} for variable
+ * declarations and, after unwrapping the expression via
+ * {@link unwrapExpression}, to {@link initInfoFromAssignment} for
+ * assignment expressions.
  *
  * @param statement - Statement immediately before current expression statement.
  *
@@ -478,7 +496,8 @@ export function previousInitInfo(
  *
  * @param parent - Parent node of current expression statement.
  *
- * @returns Statement-bearing list, or sentinel when parent cannot be inspected.
+ * @returns Statement-bearing list, or {@link NO_STATEMENT_LIST} when parent
+ * cannot be inspected.
  *
  * @example
  * ```ts
@@ -500,11 +519,13 @@ function siblingStatements(
 }
 
 /**
- * Returns statement immediately before current expression statement.
+ * Returns statement immediately before current expression statement, looked
+ * up via {@link siblingStatements}.
  *
  * @param node - Expression statement being linted.
  *
- * @returns Previous sibling statement, or sentinel when none exists.
+ * @returns Previous sibling statement, or {@link NO_PREVIOUS_STATEMENT} when
+ * none exists.
  *
  * @example
  * ```ts
