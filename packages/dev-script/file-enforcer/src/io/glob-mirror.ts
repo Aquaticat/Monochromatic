@@ -75,7 +75,8 @@ function captureOneSegment(
 }
 
 /**
- * Captures wildcard segment values from source path.
+ * Captures wildcard segment values from source path, delegating each
+ * wildcard to {@link captureOneSegment}.
  *
  * @param sourcePattern - Glob pattern used to match source.
  *
@@ -150,7 +151,7 @@ function captureSegments(
 }
 
 /**
- * Extracts wildcard segments from a source path using the source glob pattern,
+ * Extracts wildcard segments from a source path using {@link captureSegments},
  * then substitutes them into the destination glob pattern.
  *
  * Each `*` in the source pattern captures one path segment value; those captured

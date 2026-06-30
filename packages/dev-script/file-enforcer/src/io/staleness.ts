@@ -33,7 +33,9 @@ export {
 } from './staleness-manifest.ts';
 
 /**
- * Checks whether a cached manifest entry is fresh and registers its tracked paths.
+ * Checks whether a cached manifest entry, loaded via {@link loadManifest}, is
+ * fresh per {@link stampsAreFresh} and registers its tracked paths with
+ * {@link registerFreshPaths}.
  *
  * @param manifestPath - Resolved manifest path.
  *
@@ -88,11 +90,13 @@ export async function freshStalenessEntryExists(
 }
 
 /**
- * Builds source metadata for a manifest entry.
+ * Builds source metadata for a manifest entry: stats {@link configDependencyPaths}
+ * plus `trackedReads` via {@link readFileStamps}.
  *
  * @param trackedReads - Source file reads captured while the builder ran.
  *
- * @returns Source metadata, or sentinel when a source disappeared.
+ * @returns Source metadata, or the {@link ABSENT_FILE_STAMPS} sentinel when a
+ * source disappeared.
  *
  * @example
  * ```ts
@@ -109,7 +113,11 @@ async function sourceStampsForReads(
 }
 
 /**
- * Records a fresh manifest entry after a builder computes and reconciles output.
+ * Records a fresh manifest entry after a builder computes and reconciles output:
+ * gathers source stamps via {@link sourceStampsForReads}, destination stamps via
+ * {@link destinationStamps}, and glob stamps via {@link normalizeGlobStamps},
+ * hashes them with {@link hashSourceSet}, then merges the entry into the
+ * manifest loaded by {@link loadManifest} and persists it with {@link writeManifest}.
  *
  * @param manifestPath - Resolved manifest path.
  *

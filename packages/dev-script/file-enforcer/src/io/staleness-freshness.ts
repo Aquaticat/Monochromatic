@@ -17,7 +17,9 @@ import {
 } from './staleness-types.ts';
 
 /**
- * Decides whether recorded source, glob, and destination stamps still match disk.
+ * Decides whether recorded source, glob, and destination stamps still match disk:
+ * checks source files via {@link readFileStamps} and {@link fileStampListsMatch},
+ * destinations via {@link destinationStampListsMatch}, and globs via {@link globStampsMatch}.
  * Shared by the single-entry and whole-manifest freshness checks so the
  * definition of "fresh" lives in one place.
  *
@@ -68,7 +70,9 @@ export async function stampsAreFresh(
 
 /**
  * Restores source and destination paths of a fresh skip into the global tracker
- * so watch mode keeps observing them even though the builder was skipped.
+ * via {@link addWatchedPaths} and {@link trackDest} so watch mode keeps observing
+ * them even though the builder was skipped, recording each destination's
+ * timestamp with {@link setWriteTimestamp}.
  *
  * @param sourceFiles - Fresh source stamps.
  *

@@ -61,7 +61,7 @@ const manifestCache: Map<string, StalenessManifest> = new Map<string, StalenessM
 const dirtyManifestPaths: Set<string> = new Set<string>();
 
 /**
- * Writes one cached manifest to disk.
+ * Writes one cached manifest to disk via {@link writeMergedManifest}.
  *
  * @param manifestPath - Absolute manifest path to flush.
  *
@@ -92,7 +92,7 @@ async function flushManifestPath(manifestPath: string,): Promise<void> {
 }
 
 /**
- * Flushes all dirty manifests before a normal process exit.
+ * Flushes all dirty manifests via {@link flushManifestPath} before a normal process exit.
  *
  * @example
  * ```ts
@@ -169,7 +169,7 @@ export async function resolveManifestPath(
     return resolve(manifestPath,);
 
   /**
-   * Workspace root discovered by walking up until `node_modules` exists.
+   * Workspace root discovered by {@link findNodeModulesRoot} walking up until `node_modules` exists.
    */
   const nodeModulesRoot = await findNodeModulesRoot(process.cwd(),);
   return join(
@@ -184,7 +184,7 @@ export async function resolveManifestPath(
 /**
  * Builds a manifest key for a single-destination overwrite.
  *
- * @param dest - Destination path passed to `overwrite()`.
+ * @param dest - Destination path passed to {@link overwrite}.
  *
  * @returns Stable manifest entry key.
  *
@@ -200,7 +200,7 @@ export function stalenessKeyForDest(dest: string,): string {
 /**
  * Builds a manifest key for a glob-mirror overwrite.
  *
- * @param destGlob - Destination glob passed to `overwriteEach()`.
+ * @param destGlob - Destination glob passed to {@link overwriteEach}.
  *
  * @returns Stable manifest entry key.
  *
@@ -214,7 +214,8 @@ export function stalenessKeyForDestGlob(destGlob: string,): string {
 }
 
 /**
- * Loads a manifest, reusing the per-process cache after the first read.
+ * Loads a manifest via {@link readManifestFromDisk}, reusing the per-process
+ * cache after the first read.
  *
  * @param manifestPath - Absolute manifest path.
  *

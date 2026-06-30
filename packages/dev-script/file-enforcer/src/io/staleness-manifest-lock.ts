@@ -119,13 +119,15 @@ function lockReleaseHandle(lockPath: string,): AsyncDisposable {
 //region Lock acquisition
 
 /**
- * Acquires manifest directory lock and returns async disposable release handle.
+ * Acquires manifest directory lock, retrying contended locks via
+ * {@link recoverStaleManifestLock}, and returns a {@link lockReleaseHandle}
+ * async disposable release handle.
  *
  * @param manifestPath - Absolute manifest path whose lock should be held.
  *
  * @returns Async disposable lock release handle.
  *
- * @throws When lock cannot be acquired before timeout.
+ * @throws {@link StalenessManifestPersistenceError} When lock cannot be acquired before timeout.
  *
  * @example
  * ```ts

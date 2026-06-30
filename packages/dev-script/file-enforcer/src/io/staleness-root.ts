@@ -47,7 +47,8 @@ async function hasNodeModulesDirectory(directory: string,): Promise<boolean> {
 }
 
 /**
- * Walks ancestors until it finds a directory that owns `node_modules`.
+ * Walks ancestors via {@link findNodeModulesRootFromDirectory} until it finds
+ * a directory that owns `node_modules`.
  *
  * @param startDirectory - Directory where the upward walk starts.
  *
@@ -66,7 +67,8 @@ export async function findNodeModulesRoot(startDirectory: string,): Promise<stri
 }
 
 /**
- * Walks parent directories until a dependency root or filesystem root is reached.
+ * Walks parent directories, checking each with {@link hasNodeModulesDirectory},
+ * until a dependency root or filesystem root is reached.
  *
  * @param directory - Directory currently being inspected.
  *

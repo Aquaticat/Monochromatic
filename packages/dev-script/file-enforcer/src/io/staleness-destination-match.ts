@@ -11,13 +11,16 @@ import {
 } from './staleness-types.ts';
 
 /**
- * Returns whether current destination metadata and content hashes match recorded stamps.
+ * Returns whether current destination metadata and content hashes match recorded stamps:
+ * compares filesystem metadata via {@link readFileStamps} and {@link fileStampListsMatch},
+ * then content via {@link hashContent}.
  *
  * @param recordedStamps - Destination stamps persisted in manifest.
  *
  * @returns Whether every destination is unchanged.
  *
- * @throws When destination content cannot be read for reasons other than absence.
+ * @throws When destination content cannot be read for reasons other than absence
+ * (distinguished from absence via {@link caughtErrorHasCode}).
  *
  * @example
  * ```ts

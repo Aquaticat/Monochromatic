@@ -49,7 +49,10 @@ function entryBelongsToActiveConfig(
 }
 
 /**
- * Checks whether every persisted manifest entry for current config is fresh.
+ * Checks whether every persisted manifest entry for current config is fresh:
+ * loads the manifest via {@link resolveManifestPath} and {@link loadManifest},
+ * then verifies freshness with {@link stampsAreFresh} before re-registering
+ * watched paths through {@link registerFreshPaths}.
  * This is a diagnostic/helper API; config import must still run so TypeScript
  * config code can discover untracked and newly-added effects.
  *

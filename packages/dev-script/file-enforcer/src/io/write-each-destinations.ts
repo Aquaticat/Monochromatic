@@ -14,7 +14,7 @@ export type GlobDestination = StalenessDestination & {
 };
 
 /**
- * Maps glob results to concrete destination paths.
+ * Maps glob results to concrete destination paths using {@link mirrorGlobPath}.
  *
  * @param destGlob - Destination glob pattern.
  *
@@ -84,11 +84,12 @@ function assertUniqueDestinations(destinations: readonly GlobDestination[],): vo
 }
 
 /**
- * Reconciles concrete glob destinations.
+ * Reconciles concrete glob destinations after rejecting duplicates with
+ * {@link assertUniqueDestinations}.
  *
  * @param destinations - Concrete destinations with content.
  *
- * @param writeIfChanged - Reconciliation function from `write.ts`.
+ * @param writeIfChanged - {@link WriteIfChanged} reconciliation function.
  *
  * @param manifestPath - Resolved staleness manifest path.
  *

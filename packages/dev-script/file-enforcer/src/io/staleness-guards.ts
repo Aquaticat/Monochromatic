@@ -125,7 +125,9 @@ function isEntryKind(value: unknown,): value is StalenessEntryKind {
 }
 
 /**
- * Returns true when a value is a persisted staleness entry.
+ * Returns true when a value is a persisted staleness entry, validating its
+ * kind with {@link isEntryKind} and its per-field stamp shapes with
+ * {@link isFileStamp}, {@link isGlobStamp}, and {@link isDestinationStamp}.
  *
  * @param value - Unknown value from JSON parsing.
  *

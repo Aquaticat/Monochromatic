@@ -17,7 +17,8 @@ import { generated, } from './packages.generated.ts';
 import { overrides, } from './packages.overrides.ts';
 
 /**
- * Complete package index combining generated Repology data with hand-maintained overrides.
+ * Complete package index combining generated Repology data with hand-maintained overrides,
+ * produced by {@link mergeOverrides}.
  */
 export const packages = mergeOverrides({
   generated,

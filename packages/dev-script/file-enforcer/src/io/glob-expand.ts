@@ -7,7 +7,7 @@ import { splitGlob, } from './glob-split.ts';
 /**
  * Reads files matched by a relative glob under a static directory.
  *
- * @param relativeGlob - Glob suffix passed to tiny-readdir-glob.
+ * @param relativeGlob - Glob suffix passed to {@link readdirGlob}.
  *
  * @param cwd - Static directory where matching starts.
  *
@@ -49,10 +49,11 @@ async function readGlobFiles(
 }
 
 /**
- * Expands a glob pattern against the filesystem and returns matched file paths.
+ * Expands a glob pattern against the filesystem via {@link readGlobFiles} and
+ * returns matched file paths.
  * Returned paths preserve prefix format of input pattern: relative patterns
  * produce relative paths, absolute patterns produce absolute paths.
- * Uses `tiny-readdir-glob` for matching, which includes dot files.
+ * Uses {@link readdirGlob} for matching, which includes dot files.
  *
  * @param pattern - Glob pattern such as `./packages/*​/src/*.ts`.
  *
@@ -97,7 +98,8 @@ export async function expandGlob(pattern: string,): Promise<readonly string[]> {
 }
 
 /**
- * Returns static directory that should be watched for a glob pattern.
+ * Returns static directory that should be watched for a glob pattern,
+ * derived via {@link splitGlob}.
  *
  * @param pattern - Glob pattern tracked during config execution.
  *

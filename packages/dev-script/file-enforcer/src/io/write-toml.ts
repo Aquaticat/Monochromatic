@@ -15,13 +15,13 @@ import {
  * Updates a single key in an existing TOML file, preserving comments and
  * unmutated whitespace byte-identically (splice mode).
  *
- * Reads the destination via the shared read cache, applies one `tomlSet`, then
+ * Reads the destination via the shared read cache, applies one {@link tomlSet}, then
  * routes the resulting text through {@link overwrite} so content-skip, cache
  * update, and write-time tracking are inherited.
  *
  * Throws when the destination does not exist; create-from-empty is a different
  * operation. To create an empty TOML and write keys into it, compose
- * `emptyTomlEdit + tomlSet + tomlStringify + overwrite` from
+ * {@link emptyTomlEdit} + {@link tomlSet} + {@link tomlStringify} + {@link overwrite} from
  * `\@monochromatic-dev/module-toml-edit` directly.
  *
  * @param dest - Path to the existing TOML file
@@ -32,7 +32,7 @@ import {
  *
  * @throws Error when dest does not exist
  *
- * @throws Error from `parseTomlEdit` when the existing file is not valid TOML
+ * @throws Error from {@link parseTomlEdit} when the existing file is not valid TOML
  *
  * @example
  * ```ts

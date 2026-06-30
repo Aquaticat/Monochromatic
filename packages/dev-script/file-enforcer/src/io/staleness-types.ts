@@ -94,7 +94,7 @@ export type DestinationStamp = FileStamp & {
  */
 export type GlobStamp = {
   /**
-   * Glob pattern passed to `cat()`.
+   * Glob pattern passed to {@link cat}.
    */
   readonly pattern: string;
 

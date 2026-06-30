@@ -10,7 +10,7 @@ import { resolve, } from 'node:path';
 export const readCache: Map<string, string> = new Map<string, string>();
 
 /**
- * Removes specific paths from the read cache so the next `readCached()`
+ * Removes specific paths from the read cache so the next {@link readCached}
  * call re-reads them from disk. Called by watch mode with the path that
  * triggered the filesystem event; all other cached entries stay valid.
  *

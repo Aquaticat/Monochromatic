@@ -14,7 +14,7 @@ import {
 } from './staleness.ts';
 
 /**
- * Lazy content builder accepted by `overwrite()` for staleness-cache skips.
+ * Lazy content builder accepted by {@link overwrite} for staleness-cache skips.
  */
 export type ContentBuilder = () => string | Promise<string>;
 

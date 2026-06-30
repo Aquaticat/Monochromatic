@@ -70,7 +70,7 @@ function hasGlobChars(path: string,): boolean {
 }
 
 /**
- * Reads files by glob pattern, keeping them separate for `overwriteEach()`.
+ * Reads files by glob pattern, keeping them separate for {@link overwriteEach}.
  * @param glob - Glob pattern to match source files
  * @returns Array of matched files with their paths, contents, and source glob
  *

@@ -104,7 +104,9 @@ export async function writeTempFileDurably(
 }
 
 /**
- * Fsyncs directory containing renamed destination to persist directory entry.
+ * Fsyncs directory containing renamed destination to persist directory entry,
+ * degrading to best effort when {@link directoryFsyncUnsupported} says the
+ * platform or filesystem cannot fsync directories.
  *
  * @param directoryPath - Directory path to fsync.
  *
@@ -137,13 +139,14 @@ export async function fsyncDirectory(directoryPath: string,): Promise<void> {
 //region Atomic destination replacement
 
 /**
- * Writes file content through same-directory temp file and atomic rename.
+ * Writes file content through same-directory temp file (via {@link writeTempFileDurably}
+ * by default) and atomic rename, fsyncing the directory afterward with {@link fsyncDirectory}.
  *
  * @param filePath - Destination file path to replace.
  *
  * @param content - Destination content to persist.
  *
- * @param tempFileWriter - Optional writer seam for fault-injection tests.
+ * @param tempFileWriter - Optional {@link AtomicTempFileWriter} seam for fault-injection tests.
  *
  * @returns Destination mtime in whole milliseconds after rename.
  *

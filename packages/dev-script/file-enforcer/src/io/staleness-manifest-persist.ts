@@ -35,7 +35,8 @@ const TEMP_FILE_SUFFIX = '.tmp';
 //region Atomic write and inter-process merge
 
 /**
- * Writes and fsyncs manifest temp file before rename.
+ * Writes and fsyncs manifest temp file before rename, serializing with
+ * {@link serializeManifest} and durably writing via {@link writeTempFileDurably}.
  *
  * @param tempPath - Same-directory temp path.
  *
@@ -62,7 +63,8 @@ async function writeManifestTempFile(
 }
 
 /**
- * Writes manifest through same-directory temp file and atomic rename.
+ * Writes manifest through same-directory temp file via {@link writeManifestTempFile}
+ * and atomic rename, fsyncing the directory afterward with {@link fsyncDirectory}.
  *
  * @param manifestPath - Absolute manifest path.
  *
@@ -117,7 +119,10 @@ async function writeManifestAtomically(
 }
 
 /**
- * Merges cached entries with latest disk state under lock, then writes atomically.
+ * Merges cached entries with latest disk state under a lock from
+ * {@link acquireManifestLock}, reading the existing manifest via
+ * {@link readManifestFromDisk}, then writes atomically with
+ * {@link writeManifestAtomically}.
  *
  * @param manifestPath - Absolute manifest path.
  *

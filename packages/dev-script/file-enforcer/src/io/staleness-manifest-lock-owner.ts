@@ -120,7 +120,8 @@ function isManifestLockOwner(value: unknown,): value is ManifestLockOwner {
 }
 
 /**
- * Writes owner metadata into newly acquired lock directory.
+ * Writes owner metadata into newly acquired lock directory, at the path
+ * returned by {@link lockOwnerPath}.
  *
  * @param lockPath - Lock directory path.
  *
@@ -148,13 +149,16 @@ export async function writeLockOwner(lockPath: string,): Promise<void> {
 }
 
 /**
- * Reads owner metadata from lock directory when present and valid.
+ * Reads owner metadata from the {@link lockOwnerPath} file when present and
+ * valid per {@link isManifestLockOwner}.
  *
  * @param lockPath - Lock directory path.
  *
- * @returns Owner metadata, or absence sentinel when absent.
+ * @returns Owner metadata, or the {@link ABSENT_MANIFEST_LOCK_OWNER} sentinel when absent.
  *
- * @throws When owner metadata exists but cannot be parsed or validated.
+ * @throws {@link StalenessManifestPersistenceError} When owner metadata exists
+ * but cannot be parsed (message derived via {@link caughtErrorMessage}) or
+ * validated; absence is distinguished via {@link caughtErrorHasCode}.
  *
  * @example
  * ```ts
@@ -199,7 +203,8 @@ async function readLockOwner(lockPath: string,): Promise<ManifestLockOwnerRead> 
 //region Process liveness helpers
 
 /**
- * Returns whether process id appears to identify a live process.
+ * Returns whether process id appears to identify a live process, treating
+ * an `ESRCH` error (checked via {@link caughtErrorHasCode}) as dead.
  *
  * @param pid - Process id from lock owner metadata.
  *
@@ -235,7 +240,9 @@ function processAppearsAlive(pid: number,): boolean {
 }
 
 /**
- * Returns liveness state for lock owner metadata.
+ * Returns liveness state for lock owner metadata read via {@link readLockOwner}
+ * (`'absent'` when the {@link ABSENT_MANIFEST_LOCK_OWNER} sentinel comes back),
+ * checking the recorded pid with {@link processAppearsAlive}.
  *
  * @param lockPath - Lock directory path.
  *

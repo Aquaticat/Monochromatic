@@ -29,7 +29,8 @@ export function normalizePaths(paths: readonly string[],): readonly string[] {
 }
 
 /**
- * Normalizes tracked glob stamps for persistence.
+ * Normalizes tracked glob stamps for persistence, sorting matched paths via
+ * {@link normalizePaths}.
  *
  * @param globs - Captured glob expansions.
  *
@@ -63,9 +64,9 @@ export function normalizeGlobStamps(globs: readonly TrackedGlob[],): readonly Gl
  *
  * @param path - File path to inspect.
  *
- * @returns File metadata, or sentinel when path is absent.
+ * @returns File metadata, or the {@link ABSENT_FILE_STAMPS} sentinel when path is absent.
  *
- * @throws When stat fails for reasons other than file absence.
+ * @throws When stat fails for reasons other than file absence (checked via {@link caughtErrorHasCode}).
  *
  * @example
  * ```ts
@@ -96,7 +97,8 @@ async function readFileStamp(path: string,): Promise<FileStamp | typeof ABSENT_F
 }
 
 /**
- * Type guard for filtering absent file stamps.
+ * Type guard for filtering out the {@link ABSENT_FILE_STAMPS} sentinel from
+ * file stamp results.
  *
  * @param value - Maybe-present file stamp.
  *
@@ -112,7 +114,9 @@ function isPresentFileStamp(value: FileStamp | typeof ABSENT_FILE_STAMPS,): valu
 }
 
 /**
- * Reads metadata for every path, returning a sentinel if any path is missing.
+ * Reads metadata for every path via {@link readFileStamp} after normalizing
+ * with {@link normalizePaths}, returning the {@link ABSENT_FILE_STAMPS}
+ * sentinel if any path is missing (detected with {@link isPresentFileStamp}).
  *
  * @param paths - Paths to stat.
  *
@@ -190,7 +194,8 @@ function fileStampMatches(
 }
 
 /**
- * Compares current metadata against a persisted metadata list.
+ * Compares current metadata against a persisted metadata list using
+ * {@link fileStampMatches} pairwise.
  *
  * @param currentStamps - Current filesystem metadata.
  *
@@ -234,7 +239,8 @@ export function fileStampListsMatch(
 }
 
 /**
- * Compares current glob expansions against persisted path sets.
+ * Compares current glob expansions, computed via {@link expandGlob} and
+ * normalized with {@link normalizePaths}, against persisted path sets.
  *
  * @param sourceGlobs - Persisted glob expansions.
  *

@@ -23,7 +23,7 @@ export function hashContent(content: string,): string {
 }
 
 /**
- * Hashes source metadata into a compact manifest field.
+ * Hashes source metadata into a compact manifest field via {@link hashContent}.
  *
  * @param sourceFiles - Source metadata to hash.
  *

@@ -35,7 +35,9 @@ function currentTrackedGlobs(): readonly TrackedGlob[] {
 }
 
 /**
- * Records staleness metadata for an eager write call.
+ * Records staleness metadata for an eager write call by delegating to
+ * {@link rememberFreshStalenessEntry} with a key from {@link stalenessKeyForDest}
+ * and globs from {@link currentTrackedGlobs}.
  *
  * @param dest - Destination file path.
  *
@@ -73,7 +75,9 @@ export async function rememberEagerWrite(
 }
 
 /**
- * Records staleness metadata for an eager glob mirror rule.
+ * Records staleness metadata for an eager glob mirror rule by delegating to
+ * {@link rememberFreshStalenessEntry} with a key from {@link stalenessKeyForDestGlob}
+ * and globs from {@link currentTrackedGlobs}.
  *
  * @param destGlob - Destination glob pattern.
  *

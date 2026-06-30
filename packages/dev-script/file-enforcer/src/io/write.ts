@@ -224,8 +224,10 @@ export async function overwrite(
  * Writes content to dest only if the file does not already exist.
  * Uses {@link readExisting} to check for the file rather than a separate
  * `exists()` call, avoiding a TOCTOU race gap.
- * Uses no-clobber final-path creation after the absence check so a path that
- * appears before create time is preserved instead of replaced.
+ * Uses no-clobber final-path creation via {@link writeFileIfAbsentAtomically}
+ * (returning the {@link FILE_ALREADY_EXISTS} sentinel when another writer wins)
+ * after the absence check so a path that appears before create time is
+ * preserved instead of replaced.
  *
  * @param dest - Destination file path
  *

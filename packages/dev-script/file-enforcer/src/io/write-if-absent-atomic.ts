@@ -59,19 +59,20 @@ function destinationAlreadyExists(error: unknown,): boolean {
 //region Atomic create-if-absent destination writes
 
 /**
- * Writes file content through same-directory temp file and creates destination
- * only if no directory entry exists at final path.
+ * Writes file content through same-directory temp file (via {@link writeTempFileDurably}
+ * by default) and creates destination only if no directory entry exists at final path,
+ * fsyncing the directory afterward with {@link fsyncDirectory}.
  *
  * The temp file is fsynced before a hard link creates the destination name.
- * Hard-link creation fails with `EEXIST` when another process or a dangling
- * symlink already owns the final path, preserving that entry instead of
- * replacing it.
+ * Hard-link creation fails with `EEXIST`, detected via {@link destinationAlreadyExists},
+ * when another process or a dangling symlink already owns the final path,
+ * preserving that entry instead of replacing it.
  *
  * @param filePath - Destination file path to create.
  *
  * @param content - Destination content to persist.
  *
- * @param tempFileWriter - Optional writer seam for fault-injection tests.
+ * @param tempFileWriter - Optional {@link AtomicTempFileWriter} seam for fault-injection tests.
  *
  * @returns Destination mtime in whole milliseconds, or {@link FILE_ALREADY_EXISTS}.
  *

@@ -32,7 +32,8 @@ type LockDirectoryAge = number | typeof ABSENT_LOCK_DIRECTORY_AGE;
  *
  * @param lockPath - Lock directory path.
  *
- * @returns Lock directory age, or absence sentinel when directory disappeared.
+ * @returns Lock directory age, or the {@link ABSENT_LOCK_DIRECTORY_AGE} sentinel
+ * when directory disappeared.
  *
  * @throws When lock metadata cannot be read for a reason other than absence.
  *
@@ -61,7 +62,9 @@ async function lockDirectoryAgeMs(lockPath: string,): Promise<LockDirectoryAge> 
 }
 
 /**
- * Returns whether existing lock directory is safe to reclaim.
+ * Returns whether existing lock directory is safe to reclaim: trusts
+ * {@link lockOwnerState} when it reports a definite verdict, otherwise
+ * falls back to {@link lockDirectoryAgeMs}.
  *
  * @param lockPath - Lock directory path.
  *
@@ -93,7 +96,8 @@ async function lockDirectoryIsRecoverable(lockPath: string,): Promise<boolean> {
 }
 
 /**
- * Removes stale lock directory when it is safe to reclaim.
+ * Removes stale lock directory when {@link lockDirectoryIsRecoverable} says
+ * it is safe to reclaim.
  *
  * @param lockPath - Lock directory path.
  *

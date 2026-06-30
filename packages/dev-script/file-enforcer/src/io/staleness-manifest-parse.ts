@@ -67,13 +67,15 @@ export function serializeManifest(manifest: PersistableStalenessManifest,): stri
 }
 
 /**
- * Reads manifest from disk, returning empty only when file is absent.
+ * Reads manifest from disk via {@link readManifestContent}, parses it with
+ * {@link parseManifestJson}, and validates the shape with {@link isStalenessManifest}.
+ * Returns empty only when file is absent.
  *
  * @param manifestPath - Absolute manifest path.
  *
  * @returns Parsed manifest.
  *
- * @throws When manifest exists but is unreadable or invalid.
+ * @throws {@link StalenessManifestPersistenceError} When manifest exists but is unreadable or invalid.
  *
  * @example
  * ```ts
