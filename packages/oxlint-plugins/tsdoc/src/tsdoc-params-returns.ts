@@ -16,7 +16,9 @@ import {
 } from './ast-access.ts';
 
 /**
- * Checks whether a function-like node has a non-void return type or return statements.
+ * Checks whether a function-like node (unwrapped via
+ * {@link unwrapMethodDefinition}) has a non-void return type or return
+ * statements.
  *
  * @param node - AST node to inspect
  *
@@ -117,7 +119,8 @@ export function functionReturnsValue(node: Span & ReadonlyRecord,): boolean {
 }
 
 /**
- * Checks whether a function-like node is a generator (has `generator: true`).
+ * Checks whether a function-like node (unwrapped via
+ * {@link unwrapMethodDefinition}) is a generator (has `generator: true`).
  *
  * @param node - AST node to inspect
  *

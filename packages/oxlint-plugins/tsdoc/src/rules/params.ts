@@ -25,9 +25,11 @@ import {
  * Validates that `\@param` tag names match the function's actual parameter names.
  *
  * Reports mismatches, incorrect order, and `\@param` tags for nonexistent parameters.
- * Allows `\@param` tags that match property names from destructured parameters
- * (ObjectPattern/ArrayPattern), since documenting destructured properties by
- * name is a common TSDoc convention.
+ * Compares parameter names from {@link extractParamNames} against documented
+ * tag names from {@link extractDocParamNames}. Allows `\@param` tags that match
+ * property names from destructured parameters (ObjectPattern/ArrayPattern, via
+ * {@link extractDestructuredParamNames}), since documenting destructured
+ * properties by name is a common TSDoc convention.
  *
  * @example
  * ```ts
@@ -126,7 +128,8 @@ export const checkParamNames: CreateOnceRule = {
 };
 
 /**
- * Requires `\@param` tags for all function parameters.
+ * Requires `\@param` tags for all function parameters, comparing
+ * {@link extractParamNames} against {@link extractDocParamNames}.
  *
  * @example
  * ```ts

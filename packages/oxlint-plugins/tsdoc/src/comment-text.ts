@@ -164,9 +164,9 @@ export function stripInlineCodeSpans(s: string,): string {
 }
 
 /**
- * Strips inline code spans and backslash-escaped at signs from a line so
- * tag scanning does not produce false positives on package names or
- * escaped tag references.
+ * Strips inline code spans (via {@link stripInlineCodeSpans}) and
+ * backslash-escaped at signs from a line so tag scanning does not produce
+ * false positives on package names or escaped tag references.
  *
  * @param line - raw TSDoc comment line
  *
@@ -306,8 +306,8 @@ export const NO_TAG: unique symbol = Symbol('tsdoc line has no leading tag',);
  * Returns the leading block/inline tag of a normalized line, including the
  * `@`, or {@link NO_TAG} when the line does not begin with an `@word`.
  *
- * Strips inline code and escapes first so a tag wrapped in backticks does not
- * register as the line's leading tag.
+ * Strips inline code and escapes first (via {@link stripInlineCodeAndEscapes})
+ * so a tag wrapped in backticks does not register as the line's leading tag.
  *
  * @param normalizedText - line text after marker stripping
  *

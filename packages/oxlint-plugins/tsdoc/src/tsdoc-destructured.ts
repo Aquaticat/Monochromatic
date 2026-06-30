@@ -21,11 +21,12 @@ import {
  *
  * For `function foo({ a, b }: Options)`, returns `['a', 'b']`.
  * For `function foo(x: number, { a }: Options)`, returns `['a']`.
- * Named parameters (Identifier) are excluded since `extractParamNames`
+ * Named parameters (Identifier) are excluded since {@link extractParamNames}
  * already handles those.
  *
- * Supports nested unwrapping through AssignmentPattern (default values),
- * RestElement (rest patterns), and TSParameterProperty (constructor params).
+ * Supports nested unwrapping (via {@link unwrapBindingPattern}) through
+ * AssignmentPattern (default values), RestElement (rest patterns), and
+ * TSParameterProperty (constructor params).
  *
  * @param node - AST node representing a function-like declaration
  *

@@ -71,7 +71,8 @@ export function extractLeadingTag(s: string,): string | typeof NO_LEADING_TAG {
 /**
  * Enforces consistent spacing between TSDoc tags.
  *
- * Requires a blank comment line before block tags (configurable).
+ * Requires a blank comment line before block tags identified via
+ * {@link extractLeadingTag} (configurable).
  */
 export const tagLines: CreateOnceRule = {
   meta: {

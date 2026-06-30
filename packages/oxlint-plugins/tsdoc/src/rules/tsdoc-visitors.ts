@@ -73,7 +73,8 @@ type CreateDocumentableVisitorParams = {
 };
 
 /**
- * Checks whether current file is excluded from TSDoc validation.
+ * Checks whether current file is excluded from TSDoc validation, delegating
+ * to {@link shouldIgnoreFile}.
  *
  * @param params - rule context carrying current filename
  *
@@ -167,7 +168,8 @@ export function commentLineReportLoc(
 }
 
 /**
- * Creates a visitor over every documentable node type.
+ * Creates a visitor over every documentable node type, skipping ignored
+ * files via {@link shouldSkipIgnoredFile}.
  *
  * @param params - rule context and per-node callback
  *
@@ -230,8 +232,9 @@ export type CreateTsdocVisitorParams = {
 };
 
 /**
- * Creates a visitor that iterates over all documentable node types and calls
- * the provided handler when a TSDoc comment is found.
+ * Creates a visitor (built on {@link createDocumentableVisitor}) that
+ * iterates over all documentable node types and calls the provided handler
+ * when {@link findTsdocComment} finds a TSDoc comment.
  *
  * @param params - rule context and comment handler
  *
@@ -295,7 +298,8 @@ export type CreateParsedTsdocVisitorParams = {
 };
 
 /**
- * Creates a visitor over every documentable node and supplies parsed TSDoc.
+ * Creates a visitor (built on {@link createDocumentableVisitor}) over every
+ * documentable node and supplies parsed TSDoc via {@link parseTsdocForNode}.
  *
  * @param params - rule context and parsed-comment handler
  *
@@ -363,7 +367,8 @@ export type CreateFunctionTsdocVisitorParams = {
 };
 
 /**
- * Creates a visitor for function-like nodes that have TSDoc comments.
+ * Creates a visitor for function-like nodes that have TSDoc comments, parsed
+ * via {@link parseTsdocForNode}.
  *
  * Covers FunctionDeclaration, FunctionExpression, ArrowFunctionExpression,
  * and MethodDefinition by default. Callers whose rule cannot apply to arrow

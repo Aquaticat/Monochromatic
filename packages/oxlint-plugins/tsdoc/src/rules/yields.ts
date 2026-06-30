@@ -32,7 +32,8 @@ function hasYieldsTag(result: ReadonlyDeep<TsdocParseResult>,): boolean {
 }
 
 /**
- * Requires yield documentation for generator functions.
+ * Requires yield documentation (per {@link hasYieldsTag}) for generator
+ * functions (per {@link isGeneratorFunction}).
  *
  * @example
  * ```ts
@@ -81,9 +82,11 @@ export const requireYields: CreateOnceRule = {
 };
 
 /**
- * Validates yield tag consistency with generator functions.
+ * Validates yield tag consistency with generator functions, per
+ * {@link isGeneratorFunction}.
  *
- * Reports yield documentation on non-generator functions.
+ * Reports yield documentation (per {@link hasYieldsTag}) on non-generator
+ * functions.
  */
 export const requireYieldsCheck: CreateOnceRule = {
   meta: {

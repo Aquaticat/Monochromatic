@@ -76,10 +76,12 @@ const VALID_TSDOC_TAGS: ReadonlySet<string> = new Set([
 /**
  * Validates that all tags in a TSDoc comment are recognized TSDoc standard tags.
  *
- * Reports JSDoc-only tags and any other unrecognized tags.
+ * Reports JSDoc-only tags (per {@link JSDOC_TO_TSDOC_MAP}) and any other
+ * unrecognized tags.
  *
- * Skips tag scanning inside fenced code blocks and backtick-wrapped inline
- * code to avoid false positives on package names or escaped tag references.
+ * Skips tag scanning inside fenced code blocks (via {@link isFenceLine}) and
+ * backtick-wrapped inline code (via {@link stripInlineCodeAndEscapes}) to
+ * avoid false positives on package names or escaped tag references.
  */
 export const checkTagNames: CreateOnceRule = {
   meta: {

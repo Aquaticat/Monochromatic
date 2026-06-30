@@ -63,7 +63,8 @@ export function hasUnescapedCommentClose(s: string,): boolean {
 }
 
 /**
- * Enforces that `*\/` inside TSDoc content is escaped as `*\\/`.
+ * Enforces that `*\/` inside TSDoc content is escaped as `*\\/`, detected via
+ * {@link hasUnescapedCommentClose}.
  *
  * An unescaped `*\/` would prematurely close the comment block.
  */

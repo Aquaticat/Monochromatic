@@ -23,7 +23,8 @@ export const IGNORED_EXTENSIONS: readonly string[] = [
 ];
 
 /**
- * Checks whether given file should be skipped by TSDoc rules.
+ * Checks whether given file should be skipped by TSDoc rules, based on
+ * {@link IGNORED_EXTENSIONS}.
  *
  * @param filename - absolute path of file being linted
  *

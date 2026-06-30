@@ -18,6 +18,9 @@ import { shouldSkipIgnoredFile, } from './tsdoc-visitors.ts';
  * For-loop bindings (`for (const x of arr)`, `for (let loopIndex = 0; ...)`)
  * are excluded because they have no natural site for TSDoc.
  *
+ * Each visitor reports through {@link reportMissing}, and
+ * {@link shouldSkipIgnoredFile} skips files excluded from this rule.
+ *
  * @example
  * ```ts
  * // Bad; missing TSDoc on local

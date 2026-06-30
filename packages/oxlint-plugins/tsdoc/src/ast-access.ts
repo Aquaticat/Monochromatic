@@ -74,7 +74,8 @@ export function unwrapMethodDefinition(node: ReadonlyRecord,): ReadonlyRecord {
 }
 
 /**
- * Extracts the raw `params` array from a function-like AST node.
+ * Extracts the raw `params` array from a function-like AST node, unwrapped
+ * via {@link unwrapMethodDefinition}.
  *
  * @param node - function-like AST node
  *

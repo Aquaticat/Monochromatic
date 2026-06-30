@@ -54,7 +54,7 @@ const LINK_TAG_EMPTY: TsdocMessage = {
  *
  * @param stripped - normalized line with inline code and escapes removed
  *
- * @returns zero or one missing-hyphen message
+ * @returns zero or one {@link PARAM_MISSING_HYPHEN} message
  */
 function missingHyphenMessages(stripped: string,): readonly TsdocMessage[] {
   /**
@@ -88,9 +88,10 @@ function missingHyphenMessages(stripped: string,): readonly TsdocMessage[] {
 }
 
 /**
- * Reports inline-tag brace problems on a line: an unclosed `{@...` or an empty
- * `{@tag}` with no target. Scoped to `{@...}` inline tags so JSDoc-style curly
- * type annotations stay the domain of `no-types`.
+ * Reports inline-tag brace problems on a line: an unclosed `{@...`
+ * ({@link INLINE_TAG_MISSING_RIGHT_BRACE}) or an empty `{@tag}` with no
+ * target ({@link LINK_TAG_EMPTY}). Scoped to `{@...}` inline tags so
+ * JSDoc-style curly type annotations stay the domain of `no-types`.
  *
  * @param stripped - normalized line with inline code and escapes removed
  *
@@ -146,7 +147,8 @@ function inlineTagMessages(stripped: string,): readonly TsdocMessage[] {
 }
 
 /**
- * Scans a TSDoc comment for best-effort structural problems.
+ * Scans a TSDoc comment for best-effort structural problems, combining
+ * {@link missingHyphenMessages} and {@link inlineTagMessages} per line.
  *
  * @param comment - block comment AST node to scan
  *

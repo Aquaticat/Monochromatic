@@ -21,7 +21,9 @@ import type {
 } from './tsdoc-doc-model.ts';
 
 /**
- * Extracts parameter names from a function-like AST node.
+ * Extracts parameter names from a function-like AST node, reading parameters
+ * via {@link extractRawParams} and resolving each binding name with
+ * {@link extractBindingName}.
  *
  * Handles FunctionDeclaration, FunctionExpression, ArrowFunctionExpression,
  * MethodDefinition, and TSMethodSignature nodes.
@@ -46,7 +48,8 @@ export function extractParamNames(
 }
 
 /**
- * Recursively extracts binding names from a parameter pattern.
+ * Recursively extracts binding names from a parameter pattern, unwrapped via
+ * {@link unwrapBindingPattern}.
  *
  * @param pattern - AST binding pattern node
  *

@@ -101,9 +101,10 @@ export type TsdocLookupParams = {
  * returns nothing because the comment is attached to a parent
  * ExportNamedDeclaration scope boundary.
  *
- * The fallback only applies to declaration-level node types, not to
- * FunctionExpression or ArrowFunctionExpression, because their TSDoc
- * is owned by the enclosing VariableDeclaration or MethodDefinition.
+ * The fallback only applies to declaration-level node types listed in
+ * {@link FALLBACK_ELIGIBLE_TYPES}, not to FunctionExpression or
+ * ArrowFunctionExpression, because their TSDoc is owned by the enclosing
+ * VariableDeclaration or MethodDefinition.
  *
  * @returns block comment starting with `*`, or {@link NO_TSDOC} when none precedes the node
  *
@@ -189,7 +190,8 @@ export function findTsdocComment({
 }
 
 /**
- * Extracts and parses the TSDoc comment for a given AST node.
+ * Extracts and parses the TSDoc comment for a given AST node, scanning it
+ * with {@link splitDocComment} and {@link collectStructuralMessages}.
  *
  * @returns parsed result, or {@link NO_TSDOC} when no TSDoc comment precedes the node
  *

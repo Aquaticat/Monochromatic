@@ -96,7 +96,8 @@ export function containsBoundedAccessTag({
 /**
  * Validates access modifier tags in TSDoc comments.
  *
- * Reports conflicting access modifiers (e.g., public and internal together).
+ * Reports conflicting access modifiers (e.g., public and internal together),
+ * detected via {@link containsBoundedAccessTag}.
  */
 export const checkAccess: CreateOnceRule = {
   meta: {

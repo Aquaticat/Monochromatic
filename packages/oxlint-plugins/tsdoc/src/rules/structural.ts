@@ -120,7 +120,9 @@ function tsdocContentLines(comment: ReadonlyDeep<Comment>,): readonly string[] {
 }
 
 /**
- * Renders a single-line TSDoc block as canonical multiline text.
+ * Renders a single-line TSDoc block as canonical multiline text, combining
+ * indentation from {@link linePrefixBeforeOffset} with body lines from
+ * {@link tsdocContentLines}.
  *
  * @param params - rule context and comment to rewrite
  *
@@ -265,8 +267,9 @@ export const checkAlignment: CreateOnceRule = {
 /**
  * Enforces that TSDoc comments use multiline block style.
  *
- * Single-line `/** comment *\/` is reported and auto-fixed to canonical
- * multiline format.
+ * Single-line `/** comment *\/`, detected via {@link isTsdocBlock}, is
+ * reported and auto-fixed to canonical multiline format using
+ * {@link multilineTsdocReplacement}.
  */
 export const multilineBlocks: CreateOnceRule = {
   meta: {

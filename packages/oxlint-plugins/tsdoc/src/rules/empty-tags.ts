@@ -109,7 +109,8 @@ export function parseTaggedLine(s: string,): TaggedLine | typeof UNTAGGED_LINE {
  *
  * Modifier tags like `\@public`, `\@readonly`, `\@override`, `\@sealed`,
  * `\@virtual`, `\@alpha`, `\@beta`, `\@internal`, `\@experimental`,
- * `\@eventProperty`, and `\@packageDocumentation` must not have content.
+ * `\@eventProperty`, and `\@packageDocumentation` must not have content,
+ * parsed via {@link parseTaggedLine}.
  */
 export const emptyTags: CreateOnceRule = {
   meta: {

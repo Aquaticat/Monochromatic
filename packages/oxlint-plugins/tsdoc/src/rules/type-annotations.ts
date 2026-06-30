@@ -62,7 +62,8 @@ function isInlineTagOpener(params: {
 /**
  * Collects every JSDoc-style `{Type}` body that follows a `@word` and at
  * least one whitespace char in `s`. Matches the legacy `/@\w+\s+\{([^}]+)\}/g`
- * shape except for TSDoc inline tags such as `{@link Target}`.
+ * shape except for TSDoc inline tags such as `{@link Target}`, detected via
+ * {@link isInlineTagOpener}.
  *
  * Strictly linear: each `@` candidate is found by `indexOf`, surrounding
  * checks are constant-time, and the cursor advances past every consumed
@@ -156,7 +157,8 @@ export function findTypeAnnotations(s: string,): readonly string[] {
 }
 
 /**
- * Disallows type annotations in TSDoc tags.
+ * Disallows type annotations in TSDoc tags, detected via
+ * {@link findTypeAnnotations}.
  *
  * In TypeScript projects, types are expressed via type annotations, not JSDoc-style
  * `{Type}` syntax. Reports param/returns with `{Type}` syntax.

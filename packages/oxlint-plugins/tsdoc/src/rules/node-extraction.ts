@@ -97,7 +97,8 @@ function readNamedChild({
 }
 
 /**
- * Extracts a human-readable name from an AST node for diagnostic messages.
+ * Extracts a human-readable name from an AST node for diagnostic messages,
+ * reading nested identifiers via {@link readNamedChild}.
  *
  * @param node - AST node to extract name from
  *
@@ -182,7 +183,8 @@ export function extractNodeName(node: Span,): string {
 }
 
 /**
- * Resolves a human-readable kind label for an AST node type.
+ * Resolves a human-readable kind label for an AST node type, looked up in
+ * {@link NODE_KIND_LABELS}.
  *
  * @param node - AST node to get kind for
  *
@@ -222,7 +224,9 @@ export type ReportMissingParams = {
 };
 
 /**
- * Reports a diagnostic when node lacks a TSDoc comment.
+ * Reports a diagnostic when {@link findTsdocComment} returns {@link NO_TSDOC}
+ * for node, filling the message via {@link extractNodeKind} and
+ * {@link extractNodeName}.
  *
  * @example
  * ```ts

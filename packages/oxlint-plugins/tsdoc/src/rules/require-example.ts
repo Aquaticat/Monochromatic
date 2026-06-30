@@ -99,7 +99,8 @@ function isExempt(result: ReadonlyDeep<TsdocParseResult>,): boolean {
  * Requires `\@example` tags on exported functions.
  *
  * Targets both directly exported functions (`export function foo()`)
- * and functions exported via specifier lists (`export { foo }`).
+ * and functions exported via specifier lists (`export { foo }`), identified
+ * via {@link extractNodeName} and parsed via {@link parseTsdocForNode}.
  * Class methods, non-exported functions, type aliases, and constants
  * are not checked.
  *

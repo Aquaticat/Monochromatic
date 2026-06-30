@@ -268,7 +268,9 @@ function collectPresence(normalizedLines: readonly NormalizedLine[],): {
 }
 
 /**
- * Scans a TSDoc comment into the minimal parsed model the rules consume.
+ * Scans a TSDoc comment into the minimal parsed model the rules consume,
+ * combining block segments from {@link buildSegments} with tag-presence
+ * flags from {@link collectPresence}.
  *
  * @param comment - block comment AST node to scan
  *

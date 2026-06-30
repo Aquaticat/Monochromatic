@@ -20,7 +20,8 @@ import {
 /**
  * Requires returns tag for functions that return a value.
  *
- * Skips void/never return types, constructors, and setters.
+ * Skips void/never return types, constructors, and setters, per
+ * {@link functionReturnsValue}.
  *
  * @example
  * ```ts
@@ -74,7 +75,7 @@ export const requireReturns: CreateOnceRule = {
  *
  * Reports returns tag on void functions, and missing returns tag on
  * functions with non-void return types (when returns tag is present
- * but the function doesn't return a value).
+ * but the function doesn't return a value, per {@link functionReturnsValue}).
  */
 export const requireReturnsCheck: CreateOnceRule = {
   meta: {
