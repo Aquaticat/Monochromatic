@@ -2,12 +2,12 @@
  * Deterministic coverage driver: exercises every exported function and its error
  * paths with fixed inputs, so the V8 coverage it produces is reproducible. Run
  * under `NODE_V8_COVERAGE` by the `fuzz:coverage` task, then summarized by
- * `report.ts`.
+ * `coverage-report.ts`.
  *
  * @module
  */
 
-import type { StringJsonc, } from '../brand.ts';
+import type { StringJsonc, } from '@monochromatic-dev/module-jsonc-edit/ts/brand.ts';
 import {
   emitJsoncValue,
   jsoncDelete,
@@ -23,7 +23,7 @@ import {
   mergeComments,
   parseJsonc,
   parseJsoncEdit,
-} from '../index.ts';
+} from '@monochromatic-dev/module-jsonc-edit/ts';
 
 //region Helpers
 

@@ -12,14 +12,13 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import type { JsonValue, } from 'type-fest';
-
-import type { StringJsonc, } from '../brand.ts';
+import type { StringJsonc, } from '@monochromatic-dev/module-jsonc-edit/ts/brand.ts';
 import {
   jsoncGetValue,
   parseJsonc,
   parseJsoncEdit,
-} from '../index.ts';
+} from '@monochromatic-dev/module-jsonc-edit/ts';
+import type { JsonValue, } from 'type-fest';
 
 const asJsonc = (source: string,): StringJsonc => source as StringJsonc;
 

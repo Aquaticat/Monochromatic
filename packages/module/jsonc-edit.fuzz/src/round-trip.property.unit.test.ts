@@ -10,6 +10,12 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
+import type { StringJsonc, } from '@monochromatic-dev/module-jsonc-edit/ts/brand.ts';
+import {
+  jsoncGetValue,
+  jsoncStringify,
+  parseJsoncEdit,
+} from '@monochromatic-dev/module-jsonc-edit/ts';
 import {
   array,
   assert,
@@ -20,13 +26,7 @@ import {
   string,
 } from 'fast-check';
 
-import type { StringJsonc, } from '../brand.ts';
-import { fuzzRuns, } from '../fuzz-budget.ts';
-import {
-  jsoncGetValue,
-  jsoncStringify,
-  parseJsoncEdit,
-} from '../index.ts';
+import { fuzzRuns, } from './fuzz-budget.ts';
 
 const container = oneof(
   dictionary(string(), jsonValue(),),
