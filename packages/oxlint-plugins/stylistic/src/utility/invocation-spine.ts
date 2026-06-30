@@ -125,15 +125,15 @@ function isTransparentWrapper(type: string,): boolean {
 }
 
 /**
- * Returns the inner expression a transparent wrapper holds, or `STOP`.
+ * Returns the inner expression a transparent wrapper holds, or {@link STOP}.
  *
  * `.expression` for the chain/TypeScript wrappers, `.argument` for the
  * await/unary/yield/spread wrappers; a bare `yield` with no argument yields
- * `STOP`, which stops the spine.
+ * {@link STOP}, which stops the spine.
  *
  * @param node - transparent-wrapper node
  *
- * @returns inner expression, or `STOP` when the wrapper has no operand
+ * @returns inner expression, or {@link STOP} when the wrapper has no operand
  */
 function transparentInner(node: SpineNode,): SpineNode | typeof STOP {
   if (WRAPPER_EXPRESSION_TYPES.has(node.type,))
@@ -148,18 +148,18 @@ function transparentInner(node: SpineNode,): SpineNode | typeof STOP {
  *
  * Iterative because wrapper nesting (`await void !x`) tracks source length, not
  * structural depth, and the repo bans recursion over linear input. A non-wrapper
- * node returns itself; a wrapper with no operand returns `STOP`.
+ * node returns itself; a wrapper with no operand returns {@link STOP}.
  *
  * @param node - node to descend from
  *
- * @returns innermost wrapped node, or `STOP` when a wrapper has no operand
+ * @returns innermost wrapped node, or {@link STOP} when a wrapper has no operand
  */
 function descendWrappers(node: SpineNode,): SpineNode | typeof STOP {
   for (let cursor: SpineNode = node;;) {
     if (!isTransparentWrapper(cursor.type,))
       return cursor;
     /**
-     * Inner expression of the current wrapper; `STOP` ends the descent.
+     * Inner expression of the current wrapper; {@link STOP} ends the descent.
      */
     const inner = transparentInner(cursor,);
     if (inner === STOP)
@@ -169,7 +169,7 @@ function descendWrappers(node: SpineNode,): SpineNode | typeof STOP {
 }
 
 /**
- * Returns the raw single operand of a counted invocation, or `STOP`.
+ * Returns the raw single operand of a counted invocation, or {@link STOP}.
  *
  * A `CallExpression`/`NewExpression` continues its spine only when it has
  * exactly one argument; an `ImportExpression` only when its `options` is absent,
@@ -179,7 +179,7 @@ function descendWrappers(node: SpineNode,): SpineNode | typeof STOP {
  *
  * @param node - counted invocation node
  *
- * @returns raw single operand, or `STOP` when the spine does not continue
+ * @returns raw single operand, or {@link STOP} when the spine does not continue
  */
 function operandOf(node: SpineNode,): SpineNode | typeof STOP {
   if ((node.type
@@ -243,20 +243,20 @@ export function operandOrThrow(node: SpineNode,): SpineNode {
 }
 
 /**
- * Returns the next counted invocation down a node's operand spine, or `STOP`.
+ * Returns the next counted invocation down a node's operand spine, or {@link STOP}.
  *
  * Descends the raw operand through transparent wrappers; the spine continues
  * only when the descended node is itself a counted invocation. A container,
- * literal, or other leaf returns `STOP`, so the spine stops there while the
+ * literal, or other leaf returns {@link STOP}, so the spine stops there while the
  * rule's normal visitor still checks invocations inside it independently.
  *
  * @param node - counted invocation to step down from
  *
- * @returns next counted invocation on the spine, or `STOP`
+ * @returns next counted invocation on the spine, or {@link STOP}
  */
 function nextSpineNode(node: SpineNode,): SpineNode | typeof STOP {
   /**
-   * Raw single operand; `STOP` when arity or import options break the spine.
+   * Raw single operand; {@link STOP} when arity or import options break the spine.
    */
   const operand = operandOf(node,);
   if (operand === STOP)

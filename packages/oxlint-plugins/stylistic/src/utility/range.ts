@@ -3,7 +3,7 @@ import type { Span, } from '@oxlint/plugins';
 /**
  * Extracts the `[start, end]` byte range tuple from an oxlint AST node.
  *
- * The installed oxlint plugin API exposes `range` on `Span`, so callers can
+ * The installed oxlint plugin API exposes `range` on {@link Span}, so callers can
  * share one helper without reasserting the property in each rule.
  *
  * @param node - AST node carrying a `.range` property

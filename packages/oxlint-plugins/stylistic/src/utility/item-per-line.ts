@@ -73,7 +73,8 @@ export type ItemPerLineConfig = {
  *
  * Designed as the single implementation behind every per-line rule
  * in this plugin. Each rule's visitor extracts the relevant container
- * and items, then delegates here.
+ * and items, then delegates here, which checks via {@link needsPerLineFix}
+ * and builds the autofix via {@link buildPerLineFix}.
  *
  * @param context - lint context for reporting and source access
  *

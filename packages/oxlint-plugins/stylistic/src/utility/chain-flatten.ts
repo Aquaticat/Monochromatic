@@ -172,7 +172,7 @@ type ChainWalkParams = {
  *
  * @param node - chain node whose receiver link is wanted
  *
- * @returns receiver to descend into, or `LEAF` when the node is the leaf
+ * @returns receiver to descend into, or {@link LEAF} when the node is the leaf
  */
 function descentChild(node: ChainNode,): ChainNode | typeof LEAF {
   if (isTransparentWrapper(node.type,))
@@ -223,9 +223,10 @@ function trailingStep({
 /**
  * Flattens a member/call chain into segments in source order, leaf first.
  *
- * Descends the receiver spine with a cursor, stopping at the leaf or at a
- * grouping-parenthesised receiver (treated as an opaque leaf), and collects each
- * node that contributes a trailing step. The leaf supplies the head `ATTACHED`
+ * Descends the receiver spine with a cursor via {@link descentChild}, stopping
+ * at the leaf or at a grouping-parenthesised receiver flagged by {@link parenIsolated}
+ * (treated as an opaque leaf), and collects each node that contributes a trailing
+ * step via {@link trailingStep}. The leaf supplies the head {@link ATTACHED}
  * segment; the collected nodes supply their trailing steps in source order
  * (innermost receiver first), so member-name steps are the only break points
  * this produces. The walk is iterative: a member or call chain is a left-nested
@@ -253,7 +254,7 @@ export function chainSegments({
     ;
   ) {
     /**
-     * Receiver to descend into; `LEAF` when the cursor is the chain leaf.
+     * Receiver to descend into; {@link LEAF} when the cursor is the chain leaf.
      */
     const child = descentChild(cursor,);
     if (child === LEAF) {
@@ -328,8 +329,8 @@ type OperatorChainParts = {
  *
  * @returns operands and operator offsets, neither in any guaranteed order
  *
- * @throws when an operator node lacks an operand, which is unreachable for a
- *   binary or logical expression
+ * @throws via {@link nonNullishOrThrow} when an operator node lacks an operand,
+ *   which is unreachable for a binary or logical expression
  */
 function collectOperatorChain({
   context,
@@ -396,12 +397,14 @@ function collectOperatorChain({
 /**
  * Returns the break offsets for an operator chain root, in ascending source order.
  *
+ * Gathers operands and operator offsets via {@link collectOperatorChain}.
  * Decoupled axes: each operand is flattened on its own member axis and breaks
- * only on its own member-step count, while operators break on their own count.
- * Neither axis inflates the other, so a single operator with a member operand
- * (`a.b === c`) stays on one line. When any operand's member chain breaks, every
- * operator also breaks onto its own line; otherwise the source-first operator
- * stays on the head line and the rest break (two or more operators).
+ * only on its own member-step count via {@link selectBreakOffsets}, while
+ * operators break on their own count. Neither axis inflates the other, so a
+ * single operator with a member operand (`a.b === c`) stays on one line. When
+ * any operand's member chain breaks, every operator also breaks onto its own
+ * line; otherwise the source-first operator stays on the head line and the
+ * rest break (two or more operators).
  *
  * @returns operator and member break offsets merged in ascending order
  */
@@ -469,8 +472,9 @@ function operatorChainBreakOffsets({
  * Returns the break offsets for any chain root, in ascending source order.
  *
  * Dispatches on the root kind: operator roots flatten across their operands on
- * decoupled axes; member and call roots flatten down their receiver spine. Each
- * branch returns offsets already in source order (member spines ascend by
+ * decoupled axes via {@link operatorChainBreakOffsets}; member and call roots
+ * flatten down their receiver spine via {@link chainSegments}. Each branch
+ * returns offsets already in source order (member spines ascend by
  * construction; operator chains sort their merged axes), ready for the renderer.
  *
  * @returns break offsets in ascending source order, empty when the chain fits on

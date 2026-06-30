@@ -14,7 +14,7 @@ type ExportSpecifierListNode = Span & {
   /**
    * Inline export declaration: a node for `export const` and similar syntax,
    * `null` for re-exports (`export { a, b }`). Typed `unknown` rather than
-   * `Span` because oxlint sets the runtime value to `null` for re-exports;
+   * {@link Span} because oxlint sets the runtime value to `null` for re-exports;
    * the field is only tested for presence, never read as a `Span`, so the
    * nullish runtime value never flows into a typed slot (no `Span | null`
    * union, which `no-nullish-union` bans).

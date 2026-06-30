@@ -31,8 +31,8 @@ const MAX_INVOCATIONS_PER_LINE = 2;
  * line. A line carrying three or more heads fails; the highest invocation on
  * that line is reported, and the fix splits its single operand onto its own
  * line. The rule is threshold-only: an already-split layout passes when every
- * line stays within the limit. Multi-argument calls belong to `argument-per-line`
- * and callee chains to `chain-per-line`, so this rule descends only the single
+ * line stays within the limit. Multi-argument calls belong to {@link argumentPerLine}
+ * and callee chains to {@link chainPerLine}, so this rule descends only the single
  * operand and leaves those axes alone; the fix may overlap theirs and converges
  * over repeated `oxlint --fix` passes.
  *
@@ -66,9 +66,10 @@ export const invocationDepthPerLine: CreateOnceRule = {
   },
   createOnce(context: Context,): VisitorWithHooks {
     /**
-     * Visitor entry for every counted invocation. Bails unless the node is a
-     * spine root, then reports each source line whose spine carries more than two
-     * invocation heads.
+     * Visitor entry for every counted invocation. Bails unless {@link isSpineRoot}
+     * says the node is a spine root, collects the spine via {@link collectSpine},
+     * then reports each source line whose spine carries more than two invocation
+     * heads, building each fix with {@link buildSplitFix}.
      *
      * @param node - candidate `CallExpression`, `NewExpression`, or `ImportExpression`
      */

@@ -30,7 +30,7 @@ type FunctionParamListNode = Span & {
  *
  * In ESTree (used by oxlint JS plugins), `node.params` is a plain array
  * of parameter nodes without a wrapper container. This rule locates the
- * surrounding parentheses, then delegates to `checkItemsPerLine` with those
+ * surrounding parentheses, then delegates to {@link checkItemsPerLine} with those
  * explicit delimiter offsets.
  *
  * The autofix replaces only the source range `[openParen, closeParen + 1]`,

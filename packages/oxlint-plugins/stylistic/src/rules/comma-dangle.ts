@@ -48,6 +48,9 @@ export const commaDangle: CreateOnceRule = {
     /**
      * Checks array element lists and array-pattern element lists.
      *
+     * Delegates to {@link checkTrailingComma}, locating the last element via
+     * {@link lastFieldNode}.
+     *
      * @param node - array-like container node
      */
     function checkElements(node: Node,): void {
@@ -64,6 +67,9 @@ export const commaDangle: CreateOnceRule = {
 
     /**
      * Checks object property lists and object-pattern property lists.
+     *
+     * Delegates to {@link checkTrailingComma}, locating the last property via
+     * {@link lastFieldNode}.
      *
      * @param node - object-like container node
      */
@@ -82,6 +88,9 @@ export const commaDangle: CreateOnceRule = {
     /**
      * Checks call or constructor arguments.
      *
+     * Delegates to {@link checkTrailingComma}, locating the last argument via
+     * {@link lastFieldNode}.
+     *
      * @param node - call-like node
      */
     function checkArguments(node: Node,): void {
@@ -99,6 +108,9 @@ export const commaDangle: CreateOnceRule = {
     /**
      * Checks function-like parameter lists.
      *
+     * Delegates to {@link checkTrailingComma}, locating the last parameter via
+     * {@link lastFieldNode}.
+     *
      * @param node - function-like node
      */
     function checkParams(node: Node,): void {
@@ -114,6 +126,9 @@ export const commaDangle: CreateOnceRule = {
 
     /**
      * Checks import specifiers and import attributes.
+     *
+     * Delegates to {@link checkTrailingComma}, locating the last specifier via
+     * {@link lastNamedImportSpecifier} and the last attribute via {@link lastFieldNode}.
      *
      * @param node - import declaration node
      */
@@ -135,6 +150,9 @@ export const commaDangle: CreateOnceRule = {
 
     /**
      * Checks export specifiers and import attributes.
+     *
+     * Delegates to {@link checkTrailingComma}, locating the last specifier and
+     * the last attribute via {@link lastFieldNode}.
      *
      * @param node - export named declaration node
      */
@@ -160,6 +178,9 @@ export const commaDangle: CreateOnceRule = {
     /**
      * Checks export-all import attributes.
      *
+     * Delegates to {@link checkTrailingComma}, locating the last attribute via
+     * {@link lastFieldNode}.
+     *
      * @param node - export all declaration node
      */
     function checkExportAllDeclaration(node: Node,): void {
@@ -176,6 +197,9 @@ export const commaDangle: CreateOnceRule = {
     /**
      * Checks dynamic import arguments.
      *
+     * Delegates to {@link checkTrailingComma}, locating the last argument via
+     * {@link lastImportExpressionItem}.
+     *
      * @param node - dynamic import expression node
      */
     function checkImportExpression(node: Node,): void {
@@ -190,6 +214,9 @@ export const commaDangle: CreateOnceRule = {
     /**
      * Checks enum body members.
      *
+     * Delegates to {@link checkTrailingComma}, locating the last member via
+     * {@link lastEnumMember}.
+     *
      * @param node - enum declaration node
      */
     function checkEnumDeclaration(node: Node,): void {
@@ -202,6 +229,9 @@ export const commaDangle: CreateOnceRule = {
 
     /**
      * Checks type parameter declarations.
+     *
+     * Delegates to {@link checkTrailingComma}, locating the last parameter via
+     * {@link lastFieldNode}.
      *
      * @param node - type parameter declaration node
      */
@@ -218,6 +248,9 @@ export const commaDangle: CreateOnceRule = {
 
     /**
      * Checks tuple element types.
+     *
+     * Delegates to {@link checkTrailingComma}, locating the last element type via
+     * {@link lastFieldNode}.
      *
      * @param node - tuple type node
      */

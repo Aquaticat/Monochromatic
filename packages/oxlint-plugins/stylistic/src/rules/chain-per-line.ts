@@ -32,7 +32,7 @@ const sourceTextCache = new WeakMap<SourceCode, string>();
  * member, call, binary, and logical node, so recomputing `getText()` per
  * invocation is wasteful. Keying the cache on `SourceCode` identity refreshes
  * it exactly when oxlint moves to the next file. The parameter is the rule
- * `Context` rather than its `sourceCode` directly because oxlint's `SourceCode`
+ * {@link Context} rather than its `sourceCode` directly because oxlint's `SourceCode`
  * is an anonymous type the readonly-params allow-list cannot name-match.
  *
  * @param context - rule context whose `sourceCode` describes the current file

@@ -59,9 +59,9 @@ export type ChainNode = Span & {
 /**
  * Parameters for {@link parenIsolated}.
  *
- * Threads the rule `Context` rather than its `sourceCode` directly: oxlint's
+ * Threads the rule {@link Context} rather than its `sourceCode` directly: oxlint's
  * `SourceCode` is an anonymous `Readonly<typeof ...>` the readonly-params
- * allow-list cannot name-match, whereas `Context` is allow-listed by name. The
+ * allow-list cannot name-match, whereas {@link Context} is allow-listed by name. The
  * token accessors live on `context.sourceCode`.
  */
 export type ParenIsolatedParams = {

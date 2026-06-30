@@ -52,7 +52,7 @@ export const argumentPerLine: CreateOnceRule = {
   createOnce(context: Context,): VisitorWithHooks {
     /**
      * Extracts arguments from a call expression and delegates
-     * to the shared per-line checker.
+     * to the shared per-line checker, {@link checkItemsPerLine}.
      *
      * @param node - call expression AST node
      */
