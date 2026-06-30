@@ -182,7 +182,7 @@ them from the package-to-batch mapping below plus
 | 06 | aquati.cat, markdown-lint, islands-black, async-iter | a2790fd594c501e06 | done, 81 findings |
 | 07 | stylistic, model-selection, watch-restart, zip-writer, stop-reminders, terminal-title | a344cc088ad287c9e | done, 82 findings |
 | 08 | auto-mode, tsdoc, bash-output-filter | a5d335e4e5b8860af | done, 281 findings |
-| 09 | done, task-util, mcp/stdio | a102680557ea5e8a9 | running |
+| 09 | done, task-util, mcp/stdio | a102680557ea5e8a9 | done, 150 findings |
 | 10 | morph-compact, advisor, module/test, image-diff, test-support | a45d6464be450676a | running |
 | 11 | doodle-widget, claude-code-plugins/source, catalog-tighten | a43019c52544dcb94 | running |
 | 12 | deps-cube, git-clone-size, current-time-context, oxlint-plugins/shared | a67f97dc2d73bf0d2 | done, 50 findings |

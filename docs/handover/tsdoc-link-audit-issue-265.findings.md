@@ -676,7 +676,64 @@ packages/claude-code-plugins/bash-output-filter/tsdown.node.config.ts:4 | missin
 
 ## Batch 09 (done, task-util, mcp/stdio)
 
-(pending)
+TOTAL FINDINGS: 150.
+
+Systematic pattern: orchestrator-style functions (page handlers in
+`server/pages/*.ts`, API route handlers in `server/api/*.ts`, the
+task-depends/task-oxlint/task-tsc pipeline stages in
+`dev-script/task-util`, and the MCP dispatch chain) describe what they
+do in prose but almost never name the sibling/imported function they
+delegate to, even when that call is the single line of substance in the
+body -- looks like a doc-writing convention, not file-specific neglect.
+A sharper pattern directly matches the issue's premise:
+`@throws`/summary lines describe a sentinel or custom-error class in
+plain prose instead of linking it (`server-api-routes.ts` `HTTPError`,
+`lib/db/tasks.ts` `createTask`'s `@throws`, `mcp/stdio` `NO_RESPONSE`),
+and several comments still carry the literal identifier in backticks
+(`requireParam`, `DEFAULT_PORT`, `createTaskCard`, `renderPage`) as if a
+link were stripped to plain code-span. By contrast,
+`oxlint-suppress.ts`, `oxlint-fix-loop.ts`, and `mcp/stdio/server-types.ts`
+already consistently use `{@link}`, so the gap is uneven, not universal.
+CSS-mixin composition calls and internal SQL/validation-Set constants
+were deliberately excluded as low-signal volume.
+
+```
+packages/webapp-productivity/done/src/client/components/task-detail-pills.ts:23 | missing-reference | current: not mentioned | target: formatRunningTrackedTime (packages/webapp-productivity/done/src/client/lib/task-card.ts)
+packages/webapp-productivity/done/src/client/components/task-detail.ts:60,154,187 | missing-reference | current: not mentioned | target: createAutofillController, buildPillElements (siblings), buildTaskDetailTree/TASK_DETAIL_STYLES (task-detail-render.ts, task-detail-styles.ts)
+packages/webapp-productivity/done/src/client/components/task-detail-types.ts:88 | downgraded-link | current: "passed to `TaskDetail.configure()`" | target: TaskDetail.configure (task-detail.ts)
+packages/webapp-productivity/done/src/client/components/toast-message.ts:96 | downgraded-link | current: "schedules auto-removal after `DISMISS_MS`" | target: DISMISS_MS (same file)
+packages/webapp-productivity/done/src/client/inbox-builders.ts:51, inbox-suggested.ts:27 | missing-reference | current: not mentioned | target: createTaskCard (lib/task-card.ts), buildTaskList (inbox-builders.ts)
+packages/webapp-productivity/done/src/client/in-progress.ts:49, inbox.ts:67, search.ts:69 | missing-reference | current: "via the API" / "complete-task API call", api not named | target: api (client/lib/api.ts)
+packages/webapp-productivity/done/src/client/lib/api.ts:46 | missing-reference | current: not mentioned | target: showToast (components/toast-message.ts)
+packages/webapp-productivity/done/src/lib/db.ts:44,46 | downgraded-link/missing-reference | current: backtick DEFAULT_DATABASE_PATH; getArgumentValue/ARGUMENT_ABSENT not named | target: DEFAULT_DATABASE_PATH (same file), getArgumentValue/ARGUMENT_ABSENT (lib/args.ts)
+packages/webapp-productivity/done/src/lib/ai/client.ts:146 | missing-reference | current: not mentioned | target: isRateLimited, recordRequest (same file)
+packages/webapp-productivity/done/src/client/lib/task-card-helpers.ts:90, task-card.ts:25,88,223 | downgraded-link/missing-reference | current: backtick createTaskCard mention; formatTrackedTime/buildChipTexts not named | target: formatTrackedTime, buildChipTexts (task-card-helpers.ts), createTaskCard (self)
+packages/webapp-productivity/done/src/lib/types.ts:114,129 | downgraded-link | current: "Payload accepted by `createTask()`"; "accepted by `updateTask()`" | target: createTask, updateTask (lib/db/tasks.ts)
+packages/webapp-productivity/done/src/lib/db/tasks-helpers.ts:109,200,212 | downgraded-link/missing-reference | current: backtick completeTask/TaskRow/Task mentions; parseStringArray not named | target: completeTask (tasks-timer.ts), TaskRow (same file), Task (lib/types.ts), parseStringArray (same file)
+packages/webapp-productivity/done/src/lib/db/tasks-queries.ts:38,56,79,106,131,181 | missing-reference, 6 instances | current: not mentioned | target: mapTask, getTaskRowById (tasks-helpers.ts) -- same omission repeated across listInboxUnblockedTasks/listBlockedInboxTasks/listInProgressTasks/listTasksForBlockerPicker/searchTasks
+packages/webapp-productivity/done/src/lib/db/tasks-timer.ts:35,62,117 | missing-reference | current: not mentioned | target: getTaskById, nowIso (tasks-queries.ts/tasks-helpers.ts), stopTaskTimer (same file)
+packages/webapp-productivity/done/src/lib/db/tasks.ts:43,50,111 | missing-reference | current: "@throws When the read-back fails" unnamed; nowIso/normalizeStringArray/getTaskById not named | target: getTaskById, TASK_NOT_FOUND (tasks-queries.ts, lib/types.ts), nowIso/normalizeStringArray (tasks-helpers.ts)
+packages/webapp-productivity/done/src/client/lib/page-data.ts:3 | downgraded-link | current: "embed... that `renderPage()` embed" | target: renderPage (server/pages/layout.ts)
+packages/webapp-productivity/done/src/server-api-routes.ts:37,89,106,120,134,148 | downgraded-link | current: "@throws HTTPError 400 when parameter is missing"; "thrown as 400 by `requireParam`" x5 | target: HTTPError (external/h3), requireParam (same file)
+packages/webapp-productivity/done/src/server.ts:111,115 | downgraded-link/missing-reference | current: backtick DEFAULT_PORT; getArgumentValue/ARGUMENT_ABSENT not named | target: DEFAULT_PORT (same file), lib/args.ts
+packages/webapp-productivity/done/src/server/api/ai-autofill.ts:210 | missing-reference | current: not mentioned | target: listAllTags/listAllLocations (lib/db/tasks-queries.ts), buildAutofillMessages (lib/ai/prompts.ts), chatCompletion (lib/ai/client.ts), parseAutofillResponse (same file)
+packages/webapp-productivity/done/src/server/api/tasks-parse-update.ts:48,51,64 | downgraded-link/missing-reference | current: backtick TaskUpdateInput/updateTask mentions; parse helpers not named | target: TaskUpdateInput (lib/types.ts), updateTask (lib/db/tasks.ts), parseStringArray/parseEnumValue/parseStatus/isRecord (tasks-parse.ts)
+packages/webapp-productivity/done/src/server/api/tasks.ts:76,79,180,189,239 | downgraded-link/missing-reference | current: backtick isRecord/parseTaskUpdateInput mentions; createTask/updateTask/deleteTask not named | target: isRecord, parseTaskUpdateInput (tasks-parse{,-update}.ts), createTask/updateTask/deleteTask (lib/db/tasks.ts)
+packages/webapp-productivity/done/src/server/api/timer.ts:62,89,116 | missing-reference | current: not mentioned | target: startTaskTimer/stopTaskTimer/completeTask (lib/db/tasks.ts)
+packages/webapp-productivity/done/src/server/pages/in-progress.ts:20, inbox.ts:24, search.ts:29, settings.ts:19, task-details.ts:30 | missing-reference | current: not mentioned | target: listInProgressTasks/listInboxUnblockedTasks/listBlockedInboxTasks/searchTasks/listAllTags/getTaskById/listTasksForBlockerPicker (lib/db/tasks-queries.ts), renderPage/serializePageData (layout.ts)
+packages/webapp-productivity/done/src/server/pages/layout.ts:35,74 | downgraded-link/missing-reference | current: backtick renderPage mention; serializePageData not named | target: renderPage, serializePageData (same file)
+packages/dev-script/task-util/src/depends-exec.ts:84, depends-resolve-glob.ts:63, depends-resolve.ts:83,166,282, depends-staleness-aggregate.ts:204, depends-staleness.ts:99, depends-strategy.ts:131, depends.ts:189 | missing-reference, ~9 instances | current: not mentioned | target: dumpAndHandleError/firstGlobMetaIndex (same files), resolveGlobFiles (depends-resolve-glob.ts), UNPARSEABLE_TIMESTAMP/parseTimestamp (depends-parse.ts), resolveShellCommand/resolveGlob (same file), builtinStrategies/runStrategyCommand (depends-strategy.ts), resolveItems/aggregateTimestamps, computeMean/computeMedian, BUILTIN_STRATEGIES
+packages/dev-script/task-util/src/oxlint-augment.ts:210,404,494,603 | missing-reference, 4 instances | current: not mentioned | target: ansiEscapeLength, skipWhitespace/skipRuleNameChars/allNonWhitespaceBetween, matchHeaderAt, resolveDiagnosticGuidance/extractRuleName (oxlint-guidance.ts, same file)
+packages/dev-script/task-util/src/oxlint-fix-loop.ts:160,287 | missing-reference | current: not mentioned | target: stripAnsi (oxlint-augment.ts), hasDiagnostics/normalizeForConvergence (same file)
+packages/dev-script/task-util/src/oxlint-suppress.ts:140,210,315,394 | missing-reference, 4 instances | current: not mentioned | target: extractRuleName/stripAnsi (oxlint-augment.ts), isSummaryLine/pluralize/rewriteSummary/classifyHeader/blockEndIndex/blockIsSuppressed (same file)
+packages/dev-script/task-util/src/oxlint-wrapper.ts:200, pnpm-filter.ts:66, pnpm-output-filter.ts:128 | missing-reference | current: "augments the survivors" unnamed; not mentioned | target: augmentOxlintOutput (oxlint-augment.ts), filterPnpmOutput (pnpm-output-filter.ts), isAllowedCycleWarning (same file)
+packages/dev-script/task-util/src/tsc-filter.ts:147,304,363,436 | missing-reference, 4 instances | current: not mentioned | target: endOfDigitRun, isNodeModulesDiagnostic/isI18nGeneratedDiagnostic, isDiagnosticLine/isSuppressedDiagnostic/isContinuationLine, removeStaleBuildInfo/filterTscOutput (same file)
+packages/mcp/stdio/src/json-rpc.ts:160 | missing-reference | current: not mentioned | target: JsonRpcInbound (same file)
+packages/mcp/stdio/src/server-response.ts:89 | downgraded-link | current: "@returns NO_RESPONSE sentinel since notifications produce no reply" | target: NO_RESPONSE (server-types.ts)
+packages/mcp/stdio/src/server-tool-call.ts:36 | missing-reference | current: not mentioned | target: respondError, respondSuccess (server-response.ts)
+packages/mcp/stdio/src/server.ts:135,193,195 | downgraded-link/missing-reference | current: backtick handleToolCall/NO_RESPONSE mentions; handleNotification not named | target: handleToolCall (server-tool-call.ts), NO_RESPONSE (server-types.ts), handleNotification (server-response.ts)
+packages/mcp/stdio/src/transport.ts:80 | missing-reference | current: not mentioned | target: writeMessage (same file), readLines (line-reader.ts), isJsonRpcMessage (json-rpc.ts)
+```
 
 ## Batch 10 (morph-compact, advisor, module/test, image-diff, test-support)
 
