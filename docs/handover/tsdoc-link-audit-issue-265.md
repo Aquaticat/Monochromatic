@@ -275,10 +275,10 @@ with scoped pathspecs (`fix(<package>): restore TSDoc inline links (issue #265)`
 | f10 | morph-compact, advisor, module/test, image-diff, test-support | a96731bd848cdd929 | done, 32 link restorations, 13 files, commits 6c529d5bb/42a3249d7/3f4d20813 |
 | f11 | doodle-widget, claude-code-plugins/source, catalog-tighten | a166231c9b11bdb32 | done, ~111 findings, 34 files, commits ddf0bed84/99e10dc0f/4a6986694 |
 | f12 | deps-cube, git-clone-size, current-time-context, oxlint-plugins/shared | abf93d7976d062f11 | done, 50/50 findings, 21 files, commits 6a74c6c6f/a76fcd3d7/9d654e5ff |
-| f13 | page-weight, logger, hall-monitor, android-exempt-unused, build-tool/css, pipe, matrix, tofu, aquaticat, import-attributes, config/tsdown, rgffplay, prompt-time | | queued |
+| f13 | page-weight, logger, hall-monitor, android-exempt-unused, build-tool/css, pipe, matrix, tofu, aquaticat, import-attributes, config/tsdown, rgffplay, prompt-time | (this session) | done, 163 link fixes, 55 files, prompt-time skipped (0 findings), commits ce6b6fb43/4978ab563/0b4469b25/5e4223aff/b2d3ce0c2/42da3382c/bb72a859b/4316c7318/0713505a3/84a48a18c/19559bef0/770303157 |
 | f14 | terminal-exec, hyperscript, rss, config/oxlint, kv-store, fs-path, hook-types, or-throw, session-start-housekeeping | a627dd408e4a90bd9 | done, 143 link insertions, 58 files, commits 91f356590/169cd3a1c/b69c645b2/8c6e09408/f358330bd/19c173c6c |
 | f15 | vmsync, spawn, figma kiwi, figma penpot, pi/statusline, llm-types | | queued |
-| f16 | terminal-title, vm-builder, catalog-tighten.matrix, forbidden-strings, dom, statusline, thinking-defaults, mcp/mvm, syllable-break-demo, const, memoize, token-count, observable, runtime-error/bun, function-arity, current-time-context, guardrail, root config | | queued |
+| f16 | terminal-title, vm-builder, catalog-tighten.matrix, forbidden-strings, dom, statusline, thinking-defaults, mcp/mvm, syllable-break-demo, const, memoize, token-count, observable, runtime-error/bun, function-arity, current-time-context, guardrail, root config | acf57a22e47dd423d | done, 126 link insertions, 40 files, 14 commits (24f097656..5970775f4) |
 
 Rule: never have more than 8 fix-batches running at once. Launch the
 next queued batch as soon as a running one completes.
