@@ -109,8 +109,9 @@ function expandApplyInNodes(nodes: readonly ChildNode[],): ChildNode[] {
 }
 
 /**
- * Runs a single expansion pass over every registered mixin.
- * Returns whether any mixin body changed during this pass.
+ * Runs a single expansion pass over every registered mixin via
+ * {@link expandApplyInNodes}. Returns whether any mixin body changed during
+ * this pass.
  *
  * @returns True when at least one mixin was replaced with an expanded body
  */

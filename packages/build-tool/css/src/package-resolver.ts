@@ -196,8 +196,12 @@ export function resolveExports({
 
 /**
  * Resolves a package specifier to an absolute file path.
- * Tries `exports` field first, then falls back to `style`/`main` fields,
- * then to the direct file path within the package.
+ * Tries `exports` field first (skipping past {@link NO_EXPORT_MATCH}), then
+ * falls back to `style`/`main` fields, then to the direct file path within
+ * the package. Throws when {@link findPackageDir} reports
+ * {@link PACKAGE_NOT_FOUND} or every fallback is exhausted; a
+ * {@link PACKAGE_JSON_ABSENT} manifest just skips the `exports`/`style`/`main`
+ * lookups and falls through to the direct file path.
  *
  * @param specifier - Full package specifier (e.g. `\@scope/pkg/index.css`)
  *

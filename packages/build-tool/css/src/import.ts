@@ -35,7 +35,8 @@ import {
 //region Import Resolution
 
 /**
- * Resolves a CSS \@import specifier to an absolute file path.
+ * Resolves a CSS \@import specifier to an absolute file path, falling back to
+ * {@link resolvePackage} for package specifiers.
  *
  * @param specifier - Bare import specifier (quotes/url() already stripped)
  *
@@ -120,9 +121,10 @@ function resolveSpecifier({
 //region PostCSS Plugin
 
 /**
- * PostCSS plugin that inlines \@import rules by resolving and parsing imported files.
- * Replaces each \@import with the parsed AST of the imported file, then recursively
- * processes nested \@import rules in the inlined content.
+ * PostCSS plugin that inlines \@import rules by resolving and parsing imported files
+ * via {@link inlineImports}. Replaces each \@import with the parsed AST of the
+ * imported file, then recursively processes nested \@import rules in the
+ * inlined content.
  *
  * Tracks already-imported files to prevent circular imports and duplicate inlining.
  */
@@ -153,7 +155,8 @@ export const postcssInlineImport: Plugin = {
 
 /* oxlint-disable typescript/prefer-readonly-parameter-types -- `imported` is a mutable visited-set accumulator shared by reference across recursive calls for whole-tree dedup; the function mutates it via `.add`, so deep-readonly cannot apply. */
 /**
- * Recursively inlines \@import rules in a PostCSS root.
+ * Recursively inlines \@import rules in a PostCSS root: each specifier is
+ * resolved via {@link resolveSpecifier} and read with {@link readCssFileSync}.
  *
  * @param root - PostCSS root node to process
  *

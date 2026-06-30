@@ -51,8 +51,9 @@ export {
  *
  * This is the high-level string-to-string API for consumers that already
  * have CSS text in memory (e.g. web component Shadow DOM styles). It
- * encapsulates the full postcss parse → collect → expand → serialize
- * pipeline so callers never touch postcss directly.
+ * encapsulates the full postcss parse → {@link collectMixins} →
+ * {@link expandApplyRules} → serialize pipeline so callers never touch
+ * postcss directly.
  *
  * @param cssText - CSS string containing \@apply references to expand
  *
@@ -101,9 +102,11 @@ export function applyMixins({
 /**
  * Builds CSS by inlining \@import rules and processing \@mixin/\@apply.
  *
- * Pipeline: read input → inline \@import (custom PostCSS plugin) →
- * collect mixin definitions → expand nested mixin bodies →
- * inline \@apply rules → write output.
+ * Pipeline: read input → inline \@import (custom PostCSS plugin
+ * {@link postcssInlineImport}) → collect mixin definitions
+ * ({@link collectMixins}) → expand nested mixin bodies
+ * ({@link expandMixinBodies}) → inline \@apply rules
+ * ({@link expandApplyRules}) → write output.
  *
  * Uses only PostCSS (pure JS): no native binary dependencies.
  *
