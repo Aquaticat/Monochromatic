@@ -26,8 +26,13 @@ import type { SymbolDescriptionVerdict, } from './types.ts';
 
 /**
  * Classifies a static Symbol description, returning the first matching failure
- * branch in the calibrated order, or a pass. Ported from the persisted
- * benchmark classifier, not the threshold baseline.
+ * branch in the calibrated order, or a pass. Tokenizes via
+ * {@link splitDescriptionWords} and {@link lowerWords}, reads namespace shape
+ * via {@link namespaceParts}, and checks structural markers and repetition
+ * via {@link hasSpecificityMarker}, {@link repeatsSamePhraseAcrossBecause},
+ * {@link repeatedMeaningfulWord}, {@link allAlphabeticWordsUppercase},
+ * {@link isBareCamelIdentifier}, and {@link endsVerbLike}. Ported from the
+ * persisted benchmark classifier, not the threshold baseline.
  *
  * @param description - raw static Symbol description text
  *

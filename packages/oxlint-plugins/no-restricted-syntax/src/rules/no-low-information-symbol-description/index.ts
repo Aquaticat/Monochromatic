@@ -84,8 +84,10 @@ export const noLowInformationSymbolDescription: CreateOnceRule = {
   },
   createOnce(context: Context,): VisitorWithHooks {
     /**
-     * Reports a Symbol or Symbol.for call whose static description fails the
-     * classifier. Calls without a static string description are skipped.
+     * Reports a Symbol or Symbol.for call, detected via {@link isSymbolCall}
+     * and {@link isSymbolForCall}, whose static description (read via
+     * {@link staticDescription}) fails {@link classifySymbolDescription}.
+     * Calls without a static string description are skipped.
      *
      * @param node - call expression visited by oxlint
      */

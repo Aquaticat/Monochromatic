@@ -70,8 +70,9 @@ export function allAlphabeticWordsUppercase(
 }
 
 /**
- * Reduces words to meaningful ones for repetition checks: drops words of length
- * 2 or less and words repeated from the namespace prefix.
+ * Reduces words to meaningful ones for repetition checks: drops words at or
+ * under {@link MAX_INSIGNIFICANT_WORD_LENGTH} and, after lowercasing via
+ * {@link lowerWords}, words repeated from the namespace prefix.
  *
  * @param words - tokenized words of description
  *
@@ -108,7 +109,8 @@ function meaningfulWords(
 }
 
 /**
- * Detects a repeated meaningful word; repetition adds no debugging information.
+ * Detects a repeated meaningful word, after reducing via
+ * {@link meaningfulWords}; repetition adds no debugging information.
  *
  * @param words - tokenized words of description
  *
@@ -142,8 +144,10 @@ export function repeatedMeaningfulWord(
 
 /**
  * Detects the narrow `because` failure: the same meaningful phrase appears on
- * both sides, as in `file absent because file absent`. Presence of `because`
- * alone never exempts a description.
+ * both sides, as in `file absent because file absent`. Locates the
+ * {@link BECAUSE_CONNECTIVE} after lowercasing via {@link lowerWords}, then
+ * compares each side after reducing via {@link meaningfulWords}. Presence of
+ * `because` alone never exempts a description.
  *
  * @param words - tokenized words of description
  *

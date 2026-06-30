@@ -30,7 +30,8 @@ export function isSymbolCall({ node, }: { readonly node: ESTree.CallExpression; 
 }
 
 /**
- * Checks whether a call is `Symbol.for(...)` via a static member access.
+ * Checks whether a call is `Symbol.for(...)` via a static member access,
+ * read with {@link getStaticMemberName}.
  *
  * @param node - call expression to inspect
  *

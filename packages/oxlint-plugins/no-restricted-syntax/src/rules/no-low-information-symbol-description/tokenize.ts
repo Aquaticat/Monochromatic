@@ -29,8 +29,9 @@ export function charKind({ char, }: { readonly char: string; },): CharKind {
 }
 
 /**
- * Classifies the character at an index, treating out-of-range positions as
- * separators so boundary lookahead and lookbehind never read undefined.
+ * Classifies the character at an index via {@link charKind}, treating
+ * out-of-range positions as separators so boundary lookahead and lookbehind
+ * never read undefined.
  *
  * @param text - full description text
  *
@@ -59,8 +60,9 @@ function charKindAt(
 }
 
 /**
- * Detects a word boundary at an index: a lower-or-digit to upper transition, or
- * an acronym run ending where an uppercase letter is followed by lowercase.
+ * Detects a word boundary at an index, sampling neighbours via
+ * {@link charKindAt}: a lower-or-digit to upper transition, or an acronym
+ * run ending where an uppercase letter is followed by lowercase.
  *
  * @param text - full description text
  *
@@ -122,9 +124,10 @@ function isWordBoundary(
 //region Tokenization
 
 /**
- * Splits a description into words by separators, lower-or-digit to upper
- * boundaries, and acronym-run boundaries. Casing is preserved for structural
- * checks; callers lowercase separately for comparisons.
+ * Splits a description into words by separators (via {@link charKindAt}),
+ * lower-or-digit to upper boundaries, and acronym-run boundaries (via
+ * {@link isWordBoundary}). Casing is preserved for structural checks;
+ * callers lowercase separately for comparisons.
  *
  * @param description - raw static Symbol description text
  *
@@ -202,9 +205,11 @@ export function lowerWords(
 //region Namespace
 
 /**
- * Analyses namespace structure. A `/` or `:` makes a namespace only when the
- * prefix before it has no spaces, so `penpot:skip` is namespaced while
- * `File absent: eaten by cat` stays prose.
+ * Analyses namespace structure, trying each of {@link NAMESPACE_DELIMITERS}
+ * in order and tokenizing prefix and tail via {@link splitDescriptionWords}.
+ * A `/` or `:` makes a namespace only when the prefix before it has no
+ * spaces, so `penpot:skip` is namespaced while `File absent: eaten by cat`
+ * stays prose.
  *
  * @param description - raw static Symbol description text
  *

@@ -29,7 +29,8 @@ export function hasUppercase({ description, }: { readonly description: string; }
 }
 
 /**
- * Detects any ASCII digit via membership tests rather than scanning characters.
+ * Detects any ASCII digit via membership tests against {@link DIGIT_CHARACTERS}
+ * rather than scanning characters.
  *
  * @param description - raw static Symbol description text
  *
@@ -47,7 +48,8 @@ export function hasDigit({ description, }: { readonly description: string; },): 
 }
 
 /**
- * Detects a vowel in a word via membership tests against the lowercased word.
+ * Detects a vowel in a word via membership tests against
+ * {@link VOWEL_CHARACTERS} and the lowercased word.
  *
  * @param word - single word to inspect
  *
@@ -70,7 +72,8 @@ function wordHasVowel({ word, }: { readonly word: string; },): boolean {
 }
 
 /**
- * Detects a consonant-dense technical token: a long word with no vowel.
+ * Detects a consonant-dense technical token: a long word with no vowel,
+ * tested via {@link wordHasVowel}.
  *
  * @param words - words in original casing
  *
@@ -88,8 +91,10 @@ function hasLongNoVowelWord({ words, }: { readonly words: readonly string[]; },)
 }
 
 /**
- * Detects a structural specificity marker: uppercase, digit, dot, underscore, or
- * a long vowel-free token. Structural only, never a semantic vocabulary list.
+ * Detects a structural specificity marker: uppercase (via {@link hasUppercase}),
+ * digit (via {@link hasDigit}), {@link SPECIFICITY_MARKER_DOT},
+ * {@link SPECIFICITY_MARKER_UNDERSCORE}, or a long vowel-free token (via
+ * {@link hasLongNoVowelWord}). Structural only, never a semantic vocabulary list.
  *
  * @param description - raw static Symbol description text
  *
@@ -127,10 +132,12 @@ export function hasSpecificityMarker(
 //region Shape predicates
 
 /**
- * Detects a bare camelCase or PascalCase identifier: no separator, an uppercase
- * letter, and enough words, as in `runWithContext`. Reads like a code symbol,
- * not a debugging phrase. Separator absence is read from the tokenizer: with no
- * separators, concatenating the words reproduces the description exactly.
+ * Detects a bare camelCase or PascalCase identifier: no separator, an
+ * uppercase letter (via {@link hasUppercase}), and at least
+ * {@link MIN_WORD_COUNT} words, as in `runWithContext`. Reads like a code
+ * symbol, not a debugging phrase. Separator absence is read from the
+ * tokenizer: with no separators, concatenating the words reproduces the
+ * description exactly.
  *
  * @param description - raw static Symbol description text
  *
@@ -161,8 +168,9 @@ export function isBareCamelIdentifier(
 }
 
 /**
- * Tests whether a word ends like a verb (past tense or continuous), letting a
- * short phrase read as an event rather than a label.
+ * Tests whether a word ends like a verb ({@link PAST_TENSE_SUFFIX} or
+ * {@link CONTINUOUS_SUFFIX}), letting a short phrase read as an event rather
+ * than a label.
  *
  * @param word - third word of a short phrase
  *
