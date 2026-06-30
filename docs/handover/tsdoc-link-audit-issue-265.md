@@ -273,7 +273,7 @@ with scoped pathspecs (`fix(<package>): restore TSDoc inline links (issue #265)`
 | f08b | tsdoc, bash-output-filter | a4a6b817e212274ea | done, 43 findings, 23 files, commits 3cab138f8/a87959e62 |
 | f09 | done, task-util, mcp/stdio | | queued |
 | f10 | morph-compact, advisor, module/test, image-diff, test-support | a96731bd848cdd929 | done, 32 link restorations, 13 files, commits 6c529d5bb/42a3249d7/3f4d20813 |
-| f11 | doodle-widget, claude-code-plugins/source, catalog-tighten | | queued |
+| f11 | doodle-widget, claude-code-plugins/source, catalog-tighten | a166231c9b11bdb32 | done, ~111 findings, 34 files, commits ddf0bed84/99e10dc0f/4a6986694 |
 | f12 | deps-cube, git-clone-size, current-time-context, oxlint-plugins/shared | abf93d7976d062f11 | done, 50/50 findings, 21 files, commits 6a74c6c6f/a76fcd3d7/9d654e5ff |
 | f13 | page-weight, logger, hall-monitor, android-exempt-unused, build-tool/css, pipe, matrix, tofu, aquaticat, import-attributes, config/tsdown, rgffplay, prompt-time | | queued |
 | f14 | terminal-exec, hyperscript, rss, config/oxlint, kv-store, fs-path, hook-types, or-throw, session-start-housekeeping | | queued |
