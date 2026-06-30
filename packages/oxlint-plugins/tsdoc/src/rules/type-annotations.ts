@@ -13,43 +13,56 @@ import type {
 } from '@oxlint/plugins';
 
 import {
+  whitespaceRunEnd,
+  wordRunEnd,
+} from '../comment-text.ts';
+import {
+  commentLineReportLoc,
   createTsdocVisitor,
   stripCommentLineMarker,
 } from './tsdoc-visitors.ts';
 
 /**
- * Returns true when `c` is an ASCII word character (alphanumeric or `_`).
- *
- * @param c - candidate character
- *
- * @returns true when the character qualifies as `\w` in regex semantics
+ * Character that follows `{` for TSDoc inline tags such as `{@link Target}`.
  */
-function isWordChar(c: string,): boolean {
-  return ((c >= '0') && (c <= '9'))
-    || ((c >= 'a') && (c <= 'z'))
-    || ((c >= 'A') && (c <= 'Z'))
-    || (c === '_');
-}
+const INLINE_TAG_MARKER = '@';
 
 /**
- * Returns true when `c` is ASCII horizontal or vertical whitespace.
+ * Checks whether a brace opens a TSDoc inline tag rather than a JSDoc type.
  *
- * @param c - candidate character
+ * @param params - source text and opening-brace index
  *
- * @returns true when the character is whitespace
+ * @returns true when the brace is immediately followed by an inline tag marker
+ *
+ * @example
+ * ```ts
+ * isInlineTagOpener({ text: '{@link Target}', braceIndex: 0 }); // true
+ * ```
  */
-function isWhitespaceChar(c: string,): boolean {
-  return (c === ' ')
-    || (c === '\t')
-    || (c === '\n')
-    || (c === '\r')
-    || (c === '\f')
-    || (c === '\v');
+function isInlineTagOpener(params: {
+  /**
+   * Source text containing the candidate brace.
+   */
+  readonly text: string;
+  /**
+   * Index of the candidate opening brace.
+   */
+  readonly braceIndex: number;
+},): boolean {
+  /**
+   * Source text and brace index used to test the character after `{`.
+   */
+  const {
+    text,
+    braceIndex,
+  } = params;
+  return text.charAt(braceIndex + 1,) === INLINE_TAG_MARKER;
 }
 
 /**
  * Collects every JSDoc-style `{Type}` body that follows a `@word` and at
- * least one whitespace char in `s`. Mirrors `/@\w+\s+\{([^}]+)\}/g`.
+ * least one whitespace char in `s`. Matches the legacy `/@\w+\s+\{([^}]+)\}/g`
+ * shape except for TSDoc inline tags such as `{@link Target}`.
  *
  * Strictly linear: each `@` candidate is found by `indexOf`, surrounding
  * checks are constant-time, and the cursor advances past every consumed
@@ -66,40 +79,6 @@ function isWhitespaceChar(c: string,): boolean {
  * ```
  */
 export function findTypeAnnotations(s: string,): readonly string[] {
-  /**
-   * Walks the run of word characters following the `@`.
-   *
-   * @param idx - cursor into `s`
-   *
-   * @returns exclusive end of the tag-name run
-   */
-  function scanTag(idx: number,): number {
-    /**
-     * Cursor advanced over the word-character run; returned as the run's exclusive end.
-     */
-    let cursor = idx;
-    while ((cursor < s
-      .length) && isWordChar(s.charAt(cursor,),))
-      cursor += 1;
-    return cursor;
-  }
-  /**
-   * Walks the run of whitespace characters following the tag.
-   *
-   * @param idx - cursor into `s`
-   *
-   * @returns first non-whitespace position
-   */
-  function scanWs(idx: number,): number {
-    /**
-     * Cursor advanced over the whitespace run; returned as first non-whitespace position.
-     */
-    let cursor = idx;
-    while ((cursor < s
-      .length) && isWhitespaceChar(s.charAt(cursor,),))
-      cursor += 1;
-    return cursor;
-  }
   /**
    * Captured type bodies in source order; each omits the surrounding braces.
    */
@@ -122,7 +101,10 @@ export function findTypeAnnotations(s: string,): readonly string[] {
     /**
      * Exclusive end of the tag-name run; cursor starts at `atIdx + 1` to skip the at-sign.
      */
-    const tagEnd = scanTag(atIdx + 1,);
+    const tagEnd = wordRunEnd({
+      text: s,
+      start: atIdx + 1,
+    },);
     if (tagEnd === (atIdx + 1)) {
       from = atIdx + 1;
       continue;
@@ -130,7 +112,10 @@ export function findTypeAnnotations(s: string,): readonly string[] {
     /**
      * First index past the inter-token whitespace; `{` must live here for a match.
      */
-    const afterWs = scanWs(tagEnd,);
+    const afterWs = whitespaceRunEnd({
+      text: s,
+      start: tagEnd,
+    },);
     if ((afterWs === tagEnd) || (s.charAt(afterWs,)
       !== '{')) {
       from = tagEnd;
@@ -145,6 +130,13 @@ export function findTypeAnnotations(s: string,): readonly string[] {
     );
     if (closeIdx === (-1))
       break;
+    if (isInlineTagOpener({
+      text: s,
+      braceIndex: afterWs,
+    },)) {
+      from = closeIdx + 1;
+      continue;
+    }
     /**
      * Captured body between `{` and `}` exclusive; must be non-empty per `[^}]+`.
      */
@@ -205,15 +197,10 @@ export const noTypes: CreateOnceRule = {
             .trimStart();
           for (const body of findTypeAnnotations(trimmed,)) {
             context.report({
-              loc: {
-                start: {
-                  line: comment.loc
-                    .start
-                    .line
-                    + index,
-                  column: 0,
-                },
-              },
+              loc: commentLineReportLoc({
+                comment,
+                lineOffset: index,
+              },),
               messageId: 'noType',
               data: { type: body, },
             },);

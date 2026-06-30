@@ -5,6 +5,11 @@ import type {
   VisitorWithHooks,
 } from '@oxlint/plugins';
 
+import {
+  getStaticCallMemberName,
+  NO_STATIC_MEMBER_NAME,
+} from './ast-shared.ts';
+
 /**
  * Method names that require an explicit generic type parameter.
  *
@@ -62,22 +67,11 @@ export const requireQueryselectorGeneric: CreateOnceRule = {
     return {
       CallExpression(node: ESTree.CallExpression,): void {
         /**
-         * Call target; only member expressions on a selector method qualify for the rule.
-         */
-        const { callee, } = node;
-        if ((callee.type
-          !== 'MemberExpression') || callee
-          .computed)
-          return;
-        if (callee.property
-          .type
-          !== 'Identifier')
-          return;
-        /**
          * Member-access identifier name; matched against {@link SELECTOR_METHODS}.
          */
-        const methodName = callee.property
-          .name;
+        const methodName = getStaticCallMemberName({ call: node, },);
+        if (methodName === NO_STATIC_MEMBER_NAME)
+          return;
         if (!SELECTOR_METHODS.has(methodName,))
           return;
         if ((node.typeArguments

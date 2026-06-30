@@ -1,9 +1,9 @@
 import type {
-  Context,
   CreateOnceRule,
   ESTree,
-  VisitorWithHooks,
 } from '@oxlint/plugins';
+
+import { simpleBanRule, } from './_simple-ban-rule.ts';
 
 /**
  * Requires `catch` clauses to bind caught values.
@@ -30,31 +30,17 @@ import type {
  * }
  * ```
  */
-export const catchBinding: CreateOnceRule = {
-  meta: {
-    type: 'problem',
-    docs: {
-      description:
-        'Disallow catch clauses without bindings. Use a named catch binding so the thrown value stays available.',
-      recommended: true,
-    },
-    messages: {
-      forbidden: [
-        'catch without a binding is banned. Use `catch (error) {}` or another ',
-        'named binding so the thrown value stays available.',
-      ].join('',),
-    },
+export const catchBinding: CreateOnceRule = simpleBanRule({
+  type: 'problem',
+  nodeType: 'CatchClause',
+  description:
+    'Disallow catch clauses without bindings. Use a named catch binding so the thrown value stays available.',
+  messageId: 'forbidden',
+  message: [
+    'catch without a binding is banned. Use `catch (error) {}` or another ',
+    'named binding so the thrown value stays available.',
+  ].join('',),
+  shouldReport(node: ESTree.Node,): boolean {
+    return (node.type === 'CatchClause') && (node.param === null);
   },
-  createOnce(context: Context,): VisitorWithHooks {
-    return {
-      CatchClause(node: ESTree.CatchClause,): void {
-        if (node.param !== null)
-          return;
-        context.report({
-          node,
-          messageId: 'forbidden',
-        },);
-      },
-    };
-  },
-};
+},);

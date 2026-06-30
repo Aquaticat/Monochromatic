@@ -13,6 +13,7 @@ import {
   isRecord,
   isRecordArray,
   type ReadonlyRecord,
+  unwrapBindingPattern,
 } from './ast-access.ts';
 
 /**
@@ -52,47 +53,21 @@ export function extractDestructuredParamNames(
    * @param pattern - AST binding pattern node
    */
   function collect(pattern: ReadonlyRecord,): void {
-    if (pattern.type
+    /**
+     * Pattern after shared unwrapping of defaults, rest elements, and TS parameter properties.
+     */
+    const unwrapped = unwrapBindingPattern(pattern,);
+    if (unwrapped.type
       === 'Identifier') {
       // Named params are handled by extractParamNames, skip here
       return;
     }
-    if (pattern.type
-      === 'AssignmentPattern') {
-      /**
-       * Binding side of `name = default`; recurse on it to collect the actual names.
-       */
-      const { left, } = pattern;
-      if (isRecord(left,))
-        collect(left,);
-      return;
-    }
-    if (pattern.type
-      === 'RestElement') {
-      /**
-       * Inner binding pattern of `...rest`; recurse on it to extract its names.
-       */
-      const { argument, } = pattern;
-      if (isRecord(argument,))
-        collect(argument,);
-      return;
-    }
-    if (pattern.type
-      === 'TSParameterProperty') {
-      /**
-       * Inner parameter of a TS constructor `public/private` param; recurse on it.
-       */
-      const { parameter, } = pattern;
-      if (isRecord(parameter,))
-        collect(parameter,);
-      return;
-    }
-    if (pattern.type
+    if (unwrapped.type
       === 'ObjectPattern') {
       /**
        * Property list of the `{ a, b }` pattern; iterated to collect named keys.
        */
-      const { properties, } = pattern;
+      const { properties, } = unwrapped;
       if (!isRecordArray(properties,))
         return;
       for (const prop of properties) {
@@ -122,13 +97,13 @@ export function extractDestructuredParamNames(
       }
       return;
     }
-    if (pattern.type
+    if (unwrapped.type
       === 'ArrayPattern') {
       // Array destructuring `[a, , c]`: hole slots (non-records) contribute no name
       /**
        * Slot list of `[a, , c]`; non-record hole slots contribute no name.
        */
-      const { elements, } = pattern;
+      const { elements, } = unwrapped;
       if (!isRecordArray(elements,))
         return;
       for (const element of elements) {

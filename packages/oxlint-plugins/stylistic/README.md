@@ -350,13 +350,22 @@ keeping those rule files minimal.
 - `index.ts`:
    plugin entry point;
    assembles all rules into the oxlint plugin object
-- `rules/block-body-newline.ts`:
-   brace-delimited body boundary detection and autofix
-- `rules/comma-dangle.ts`:
-   trailing comma detection and autofix for supported comma-delimited lists
 - `rules/`:
-   one file per remaining rule,
+   one file per rule,
    each exporting a `CreateOnceRule`
+- `utility/item-per-line.ts`:
+   shared detection and reporting logic for per-line rules
+- `utility/item-per-line-fix.ts`:
+   shared autofix logic (indentation detection,
+   content rebuild)
+- `utility/per-line-boundary.ts`:
+   explicit container boundary offsets for item-per-line rules
+- `utility/needs-fix.ts`:
+   line-sharing detection between items and container delimiters
+- `utility/source-filler.ts`:
+   shared whitespace,
+   semicolon,
+   and comma filler checks between syntax nodes
 - `utility/comma-dangle.ts`:
    shared trailing comma token lookup and reporting helpers
 - `utility/block-body-newline.ts`:
@@ -364,35 +373,29 @@ keeping those rule files minimal.
    content detection,
    line lookup,
   and nested dense-body indentation helpers
-- `utility/item-per-line.ts`:
-   shared detection and reporting logic
-- `utility/item-per-line-fix.ts`:
-   shared autofix logic (indentation detection,
-   content rebuild)
-- `utility/needs-fix.ts`:
-   line-sharing detection between items and container delimiters
-- `utility/delimiter.ts`:
-   opening/closing delimiter scanning
 - `utility/range.ts`:
    `rangeOf` and `at` helpers for untyped AST node access
+- `utility/line-at.ts` and `utility/indent.ts`:
+   source-line lookup and indentation helpers
 - `utility/has-parens.ts`:
    source-level paren detection for `no-mixed-operators`
-- `utility/chain.ts`:
-   token-based grouping-paren detection,
+- `utility/chain.ts`,
+  `utility/chain-flatten.ts`,
+  and `utility/chain-render.ts`:
    chain-root detection,
-   and region/comment helpers for `chain-per-line`
-- `utility/chain-flatten.ts`:
-   computes a chain root's break offsets on decoupled operator and member axes for `chain-per-line`,
-   walking each spine iteratively
-- `utility/chain-render.ts`:
-   break-point selection and canonical multi-line rendering for `chain-per-line`
+   iterative break-offset calculation,
+   and canonical rendering for `chain-per-line`
+- `utility/invocation-spine.ts` and `utility/invocation-depth-fix.ts`:
+   invocation-spine traversal and autofix rendering for `invocation-depth-per-line`
 
 ## Tests
 
-Fixture-based tests covering all rules plus autofix verification:
+Fixture-based tests cover all rules plus autofix verification,
+and focused utility tests cover chain and indentation helpers:
 
 ```bash
 mise run buildAndTest -- packages/oxlint-plugins/stylistic/src/oxlint-stylistic.unit.test.ts
+mise run //packages/oxlint-plugins/stylistic:test:unit
 ```
 
 Test fixtures live in `packages/test-fixture/oxlint-stylistic/src/` with `valid/` and `invalid/` directories.

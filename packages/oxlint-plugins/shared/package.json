@@ -1,13 +1,10 @@
 {
-  "name": "@monochromatic-dev/config-oxlint-test-support",
+  "name": "@monochromatic-dev/config-oxlint-shared",
   "version": "0.0.1",
-  "private": true,
+  "private": false,
   "type": "module",
-  "description": "Dev-only shared test harness helpers for Monochromatic oxlint plugin fixtures.",
-  "dependencies": {
-    "@monochromatic-dev/module-fs-path": "workspace:*",
-    "nano-spawn": "catalog:"
-  },
+  "description": "Shared runtime primitives for Monochromatic oxlint plugin packages.",
+  "dependencies": {},
   "devDependencies": {
     "@monochromatic-dev/config-tsdown": "workspace:*",
     "@monochromatic-dev/config-typescript": "workspace:*",
@@ -26,10 +23,19 @@
     "./ts": "./src/index.ts",
     "./ts/*": "./src/*"
   },
+  "author": {
+    "name": "Aquaticat",
+    "email": "an@aquati.cat",
+    "url": "https://aquati.cat"
+  },
+  "license": "LGPL-3.0-or-later",
   "repository": {
     "type": "git",
     "url": "https://github.com/Aquaticat/Monochromatic.git",
-    "directory": "packages/oxlint-plugins/test-support"
+    "directory": "packages/oxlint-plugins/shared"
   },
-  "license": "LGPL-3.0-or-later"
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
 }

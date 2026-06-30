@@ -1,9 +1,9 @@
 import type {
-  Context,
   CreateOnceRule,
   ESTree,
-  VisitorWithHooks,
 } from '@oxlint/plugins';
+
+import { simpleBanRule, } from './_simple-ban-rule.ts';
 
 //region Constants
 
@@ -129,29 +129,17 @@ function isNullishMember(member: ESTree.TSType,): boolean {
  * type Result = string | typeof KEY_NOT_FOUND;
  * ```
  */
-export const noNullishUnion: CreateOnceRule = {
-  meta: {
-    type: 'suggestion',
-    docs: {
-      description:
-        'Disallow union types containing `null` or `undefined` (`T | null`, `T | undefined`). Ranked fixes: optional object property/field `foo?: T`; local `if` guard and early return; boundary `nonNullishOrThrow`; a domain-specific `unique symbol` sentinel for this exact absence condition or distinct non-empty domain value; or a justified scoped disable for genuine external API mirrors.',
-      recommended: true,
-    },
-    messages: {
-      forbidden: NO_NULLISH_UNION_MESSAGE,
-    },
+export const noNullishUnion: CreateOnceRule = simpleBanRule({
+  type: 'suggestion',
+  nodeType: 'TSUnionType',
+  description:
+    'Disallow union types containing `null` or `undefined` (`T | null`, `T | undefined`). Ranked fixes: optional object property/field `foo?: T`; local `if` guard and early return; boundary `nonNullishOrThrow`; a domain-specific `unique symbol` sentinel for this exact absence condition or distinct non-empty domain value; or a justified scoped disable for genuine external API mirrors.',
+  messageId: 'forbidden',
+  message: NO_NULLISH_UNION_MESSAGE,
+  shouldReport(node: ESTree.Node,): boolean {
+    if (node.type !== 'TSUnionType')
+      return false;
+    return node.types
+      .some(isNullishMember,);
   },
-  createOnce(context: Context,): VisitorWithHooks {
-    return {
-      TSUnionType(node: ESTree.TSUnionType,): void {
-        if (node.types
-          .some(isNullishMember,)) {
-          context.report({
-            node,
-            messageId: 'forbidden',
-          },);
-        }
-      },
-    };
-  },
-};
+},);

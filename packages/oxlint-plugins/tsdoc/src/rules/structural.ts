@@ -14,11 +14,13 @@ import type {
 } from '@oxlint/plugins';
 import type { ReadonlyDeep, } from 'type-fest';
 
-import { shouldIgnoreFile, } from '../tsdoc-utils.ts';
+import { isTsdocBlock, } from '../tsdoc-comments.ts';
 import {
+  commentLineReportLoc,
   commentReportLoc,
   createTsdocVisitor,
   getCommentLines,
+  shouldSkipIgnoredFile,
   stripCommentLineMarker,
 } from './tsdoc-visitors.ts';
 
@@ -51,25 +53,6 @@ type MultilineTsdocReplacementParams = {
    */
   readonly comment: ReadonlyDeep<Comment>;
 };
-
-/**
- * Checks whether comment is a TSDoc block comment.
- *
- * @param comment - AST comment node to classify
- *
- * @returns true for `/** ... *\/` block comments
- *
- * @example
- * ```ts
- * if (isTsdocBlockComment(comment))
- *   return;
- * ```
- */
-function isTsdocBlockComment(comment: ReadonlyDeep<Comment>,): boolean {
-  return (comment.type === 'Block')
-    && comment.value
-    .startsWith('*',);
-}
 
 /**
  * Extracts whitespace before offset on its source line.
@@ -261,16 +244,11 @@ export const checkAlignment: CreateOnceRule = {
             .length;
           if (actualIndent !== expectedIndent) {
             context.report({
-              loc: {
-                start: {
-                  line: comment.loc
-                    .start
-                    .line
-                    + index
-                    + 1,
-                  column: actualIndent,
-                },
-              },
+              loc: commentLineReportLoc({
+                comment,
+                lineOffset: index + 1,
+                column: actualIndent,
+              },),
               messageId: 'misaligned',
               data: {
                 expected: String(expectedIndent,),
@@ -305,7 +283,7 @@ export const multilineBlocks: CreateOnceRule = {
   createOnce(context: Context,): VisitorWithHooks {
     return {
       before() {
-        if (shouldIgnoreFile(context.filename,))
+        if (shouldSkipIgnoredFile({ context, }))
           return false;
         return undefined;
       },
@@ -313,7 +291,7 @@ export const multilineBlocks: CreateOnceRule = {
         context.sourceCode
           .getAllComments()
           .filter(function keepTsdocBlock(comment,): boolean {
-            return isTsdocBlockComment(comment,);
+            return isTsdocBlock(comment,);
           },)
           .forEach(function checkComment(comment,): void {
             /**

@@ -10,15 +10,13 @@
 import type {
   Context,
   CreateOnceRule,
-  Span,
   VisitorWithHooks,
 } from '@oxlint/plugins';
 
 import {
-  NO_TSDOC,
-  parseTsdocForNode,
-  shouldIgnoreFile,
-} from '../tsdoc-utils.ts';
+  commentReportLoc,
+  createParsedTsdocVisitor,
+} from './tsdoc-visitors.ts';
 
 /**
  * Reports structural TSDoc problems from the in-house comment scanner.
@@ -38,55 +36,22 @@ export const validTypes: CreateOnceRule = {
     },
   },
   createOnce(context: Context,): VisitorWithHooks {
-    /**
-     * Checks node for TSDoc parse errors.
-     *
-     * @param node - AST node to check
-     */
-    function check(node: Span,): void {
-      /**
-       * Parsed TSDoc result; only the `messages` field is consumed to surface structural problems.
-       */
-      const result = parseTsdocForNode({
-        node,
-        context,
-      },);
-      if (result === NO_TSDOC)
-        return;
-      result.messages
-        .forEach(function reportMessage(message,): void {
-        context.report({
-          node: result.comment,
-          messageId: 'parseError',
-          data: { message: `${message.messageId}: ${message.unformattedText}`, },
+    return createParsedTsdocVisitor({
+      context,
+      handler: function validTypesHandler(
+        _node,
+        result,
+      ): void {
+        result.messages
+          .forEach(function reportMessage(message,): void {
+          context.report({
+            loc: commentReportLoc(result.comment,),
+            messageId: 'parseError',
+            data: { message: `${message.messageId}: ${message.unformattedText}`, },
+          },);
         },);
-      },);
-    }
-
-    return {
-      before() {
-        if (shouldIgnoreFile(context.filename,))
-          return false;
-        return undefined;
       },
-      FunctionDeclaration: check,
-      FunctionExpression: check,
-      ArrowFunctionExpression: check,
-      ClassDeclaration: check,
-      MethodDefinition: check,
-      TSInterfaceDeclaration: check,
-      TSTypeAliasDeclaration: check,
-      TSEnumDeclaration: check,
-      VariableDeclaration: check,
-      PropertyDefinition: check,
-      TSEnumMember: check,
-      Property(node,): void {
-        if ((node.kind
-          === 'get') || (node.kind
-            === 'set'))
-          check(node,);
-      },
-    } as VisitorWithHooks;
+    },);
   },
 };
 

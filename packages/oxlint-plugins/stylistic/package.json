@@ -9,6 +9,7 @@
     "monochromatic"
   ],
   "dependencies": {
+    "@monochromatic-dev/config-oxlint-shared": "workspace:*",
     "@monochromatic-dev/module-or-throw": "workspace:*",
     "@oxlint/plugins": "catalog:"
   },

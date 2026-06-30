@@ -13,6 +13,7 @@ import type {
 } from '@oxlint/plugins';
 
 import {
+  commentLineReportLoc,
   createTsdocVisitor,
   getCommentLines,
 } from './tsdoc-visitors.ts';
@@ -62,16 +63,10 @@ export const noMultiAsterisks: CreateOnceRule = {
             if ((trimmed.startsWith('**',))
               && (!trimmed.startsWith('*/',))) {
               context.report({
-                loc: {
-                  start: {
-                    line: comment.loc
-                      .start
-                      .line
-                      + index
-                      + 1,
-                    column: 0,
-                  },
-                },
+                loc: commentLineReportLoc({
+                  comment,
+                  lineOffset: index + 1,
+                },),
                 messageId: 'extra',
               },);
             }

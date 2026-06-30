@@ -10,27 +10,15 @@
  * @module
  */
 
-/**
- * Readonly view of an untyped AST node's property bag.
- */
-export type ReadonlyRecord = Readonly<Record<string, unknown>>;
+import {
+  isRecord as sharedIsRecord,
+  type ReadonlyRecord,
+} from '@monochromatic-dev/config-oxlint-shared/ts';
 
-/**
- * Narrows an unknown value to a readonly AST record.
- *
- * @param value - candidate read from an untyped AST property
- *
- * @returns whether value is a non-null object usable as a property bag
- *
- * @example
- * ```ts
- * if (isRecord(node.value)) { node.value.type; }
- * ```
- */
-export function isRecord(value: unknown,): value is ReadonlyRecord {
-  return ((typeof value)
-    === 'object') && (value !== null);
-}
+export {
+  isRecord,
+  type ReadonlyRecord,
+} from '@monochromatic-dev/config-oxlint-shared/ts';
 
 /**
  * Narrows an unknown value to a readonly array of AST records.
@@ -79,7 +67,7 @@ export function unwrapMethodDefinition(node: ReadonlyRecord,): ReadonlyRecord {
      * Inner FunctionExpression of the method; carries the return-type and params info.
      */
     const { value, } = node;
-    if (isRecord(value,))
+    if (sharedIsRecord(value,))
       return value;
   }
   return node;
@@ -109,4 +97,66 @@ export function extractRawParams(node: ReadonlyRecord,): readonly ReadonlyRecord
   if (isRecordArray(params,))
     return params;
   return [];
+}
+
+/**
+ * Removes binding-pattern wrapper nodes whose child carries the real binding.
+ *
+ * Handles default values, rest wrappers, and TypeScript parameter properties.
+ * Unknown or malformed wrappers stop the walk and return the current node.
+ *
+ * @param pattern - binding pattern candidate
+ *
+ * @returns innermost binding-pattern record reached by supported wrappers
+ *
+ * @example
+ * ```ts
+ * const binding = unwrapBindingPattern(parameterNode);
+ * ```
+ */
+export function unwrapBindingPattern(pattern: ReadonlyRecord,): ReadonlyRecord {
+  /**
+   * Mutable cursor object avoids function-root `let` while walking wrapper nodes iteratively.
+   */
+  const cursor = { current: pattern, };
+  while (true) {
+    /**
+     * Current wrapper candidate for this loop iteration.
+     */
+    const { current, } = cursor;
+    if (current.type
+      === 'AssignmentPattern') {
+      /**
+       * Binding side of `name = default`.
+       */
+      const { left, } = current;
+      if (!sharedIsRecord(left,))
+        return current;
+      cursor.current = left;
+      continue;
+    }
+    if (current.type
+      === 'RestElement') {
+      /**
+       * Inner binding pattern of `...rest`.
+       */
+      const { argument, } = current;
+      if (!sharedIsRecord(argument,))
+        return current;
+      cursor.current = argument;
+      continue;
+    }
+    if (current.type
+      === 'TSParameterProperty') {
+      /**
+       * Inner parameter of a TS constructor property parameter.
+       */
+      const { parameter, } = current;
+      if (!sharedIsRecord(parameter,))
+        return current;
+      cursor.current = parameter;
+      continue;
+    }
+    return current;
+  }
 }

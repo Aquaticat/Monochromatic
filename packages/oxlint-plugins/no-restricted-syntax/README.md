@@ -1,7 +1,5 @@
 # @monochromatic-dev/config-oxlint-no-restricted-syntax
 
-Ready to publish.
-
 Oxlint JS plugin implementing `no-restricted-syntax` rules
 that oxlint does not support natively.
 
@@ -13,6 +11,8 @@ This plugin provides individual rules for each banned syntax pattern instead.
 
 - **no-arrow-function**:
    bans arrow functions in favor of named function declarations/expressions
+- **no-class**:
+   bans class declarations and expressions in favor of composition-oriented objects and functions
 - **no-enum**:
    bans `enum` declarations in favor of union types with `as const`
 - **no-for-in**:
@@ -21,6 +21,8 @@ This plugin provides individual rules for each banned syntax pattern instead.
    bans `let` at function-body root unless the helper-shape exception applies
 - **no-hasownproperty**:
    bans `.hasOwnProperty()` in favor of `Object.hasOwn()`
+- **no-immediate-mutation**:
+   bans immediate clone-then-mutate patterns when immutable construction is clearer
 - **no-low-information-symbol-description**:
    requires static `Symbol('...')` descriptions to carry enough debugging information;
    rejects generic identifiers,
@@ -37,8 +39,6 @@ This plugin provides individual rules for each banned syntax pattern instead.
    bans `.finally()` chaining in favor of `using`/`await using`
 - **no-regex**:
    requires regex usage to be justified through a scoped `oxlint-disable` comment
-- **no-regexp-exec**:
-   bans `RegExp.prototype.exec()` in favor of `str.match()`/`str.matchAll()`
 - **no-rest-params**:
    bans rest parameters (`...args`) in favor of explicit array parameters
 - **no-switch**:
@@ -72,6 +72,8 @@ This plugin provides individual rules for each banned syntax pattern instead.
 - **no-variable-function-expression**:
    bans `const x = function() {}`,
    use a function declaration instead
+- **prefer-describe-function-ref-name**:
+   requires `describe({ name: fn.name })` when a test suite name mirrors an in-scope function binding
 - **prefer-error-is-error**:
    bans legacy Error detection (`instanceof Error`,
    `Object.prototype.toString` tags,
@@ -375,3 +377,18 @@ The package default export resolves to the prebuilt,
 first).
  TypeScript source is available at the `/ts` subpath (`/ts/*` for individual files)
 for development.
+
+## Tests
+
+Fixture-based tests cover syntax rules,
+ban-disable rules,
+autofixes,
+and symbol-description calibration data:
+
+```bash
+mise run buildAndTest -- packages/oxlint-plugins/no-restricted-syntax/src/oxlint-no-restricted-syntax.unit.test.ts
+```
+
+Test fixtures live in `packages/test-fixture/oxlint-no-restricted-syntax/src/`.
+Symbol-description pass/fail/borderline rows live in
+`packages/test-fixture/oxlint-no-restricted-syntax/data/`.

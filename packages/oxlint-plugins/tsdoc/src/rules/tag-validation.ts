@@ -10,26 +10,11 @@ import type {
   VisitorWithHooks,
 } from '@oxlint/plugins';
 
+import { isWhitespaceChar, } from '../comment-text.ts';
 import {
   commentReportLoc,
   createTsdocVisitor,
 } from './tsdoc-visitors.ts';
-
-/**
- * Returns true when `c` is ASCII whitespace per regex `\s` semantics.
- *
- * @param c - candidate character
- *
- * @returns whether the character is whitespace
- */
-function isWhitespaceChar(c: string,): boolean {
-  return (c === ' ')
-    || (c === '\t')
-    || (c === '\n')
-    || (c === '\r')
-    || (c === '\f')
-    || (c === '\v');
-}
 
 /**
  * Returns true when `tag` appears in `text` preceded by start-of-string

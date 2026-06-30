@@ -12,8 +12,8 @@ import type { ReadonlyDeep, } from 'type-fest';
 
 import {
   extractRawParams,
-  isRecord,
   type ReadonlyRecord,
+  unwrapBindingPattern,
 } from './ast-access.ts';
 import type {
   ParsedDocComment,
@@ -53,41 +53,21 @@ export function extractParamNames(
  * @returns array of extracted name strings
  */
 function extractBindingName(pattern: ReadonlyRecord,): readonly string[] {
-  if (pattern.type
+  /**
+   * Pattern after shared unwrapping of defaults, rest elements, and TS parameter properties.
+   */
+  const unwrapped = unwrapBindingPattern(pattern,);
+  if (unwrapped.type
     === 'Identifier') {
     /**
      * Identifier text of the parameter binding; `this` is skipped because it is not a real param.
      */
-    const { name, } = pattern;
+    const { name, } = unwrapped;
     // Skip `this` parameter in TypeScript
     if ((typeof name)
       !== 'string')
       return [];
     return name === 'this' ? [] : [name,];
-  }
-  if (pattern.type
-    === 'AssignmentPattern') {
-    /**
-     * Binding side of `name = default`; recurse to collect the actual name.
-     */
-    const { left, } = pattern;
-    return isRecord(left,) ? extractBindingName(left,) : [];
-  }
-  if (pattern.type
-    === 'RestElement') {
-    /**
-     * Inner binding of `...rest`; recurse to collect its name.
-     */
-    const { argument, } = pattern;
-    return isRecord(argument,) ? extractBindingName(argument,) : [];
-  }
-  if (pattern.type
-    === 'TSParameterProperty') {
-    /**
-     * Inner parameter of a TS constructor `public/private` param; recurse on it.
-     */
-    const { parameter, } = pattern;
-    return isRecord(parameter,) ? extractBindingName(parameter,) : [];
   }
   // ObjectPattern, ArrayPattern, and other types don't map to individual @param names
   return [];

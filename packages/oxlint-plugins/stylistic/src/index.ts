@@ -29,9 +29,9 @@ import { typePropertyPerLine, } from './rules/type-property-per-line.ts';
  *
  * The per-line rules fire when 2 or more items share a source line and
  * auto-fix by placing every item on its own line with consistent
- * indentation. They work alongside dprint's `preferHanging: "always"`
- * setting, which formats multi-line items correctly but does not
- * force them to be multi-line.
+ * indentation. They are this repository's TypeScript layout authority
+ * because dprint's TypeScript formatter is disabled; dprint still formats
+ * non-TypeScript files.
  *
  * Statement-boundary rules enforce explicit semicolons and one statement
  * or declarator per line. Body-boundary rules enforce readable newlines

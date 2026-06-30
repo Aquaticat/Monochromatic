@@ -37,6 +37,24 @@ await describe({
       },
     },),
     it({
+      name: 'ignores an inline tag at the start of block content',
+      fn: async () => {
+        expect(
+          findTypeAnnotations(
+            '@throws {@link JsoncParseError} on malformed input',
+          ),
+        ).toEqual([],);
+      },
+    },),
+    it({
+      name: 'keeps scanning after an inline tag block opener',
+      fn: async () => {
+        expect(
+          findTypeAnnotations('@throws {@link JsoncParseError} @returns {number}',),
+        ).toEqual(['number',],);
+      },
+    },),
+    it({
       name: 'skips an empty type body and keeps scanning',
       fn: async () => {
         expect(findTypeAnnotations('@param {} x',),).toEqual([],);

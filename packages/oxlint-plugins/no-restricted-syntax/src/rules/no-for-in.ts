@@ -1,9 +1,6 @@
-import type {
-  Context,
-  CreateOnceRule,
-  ESTree,
-  VisitorWithHooks,
-} from '@oxlint/plugins';
+import type { CreateOnceRule, } from '@oxlint/plugins';
+
+import { simpleBanRule, } from './_simple-ban-rule.ts';
 
 /**
  * Bans `for...in` loops in favor of `Object.entries` and functional methods.
@@ -25,27 +22,12 @@ import type {
  * });
  * ```
  */
-export const noForIn: CreateOnceRule = {
-  meta: {
-    type: 'suggestion',
-    docs: {
-      description:
-        'Disallow for...in loops. Use Object.entries/keys/values with functional methods instead.',
-      recommended: true,
-    },
-    messages: {
-      forbidden:
-        'for...in loops are banned. Use Object.entries/keys/values with functional methods instead.',
-    },
-  },
-  createOnce(context: Context,): VisitorWithHooks {
-    return {
-      ForInStatement(node: ESTree.ForInStatement,): void {
-        context.report({
-          node,
-          messageId: 'forbidden',
-        },);
-      },
-    };
-  },
-};
+export const noForIn: CreateOnceRule = simpleBanRule({
+  type: 'suggestion',
+  nodeType: 'ForInStatement',
+  description:
+    'Disallow for...in loops. Use Object.entries/keys/values with functional methods instead.',
+  messageId: 'forbidden',
+  message:
+    'for...in loops are banned. Use Object.entries/keys/values with functional methods instead.',
+},);

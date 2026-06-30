@@ -34,6 +34,26 @@ function log(message: string,): void {
 }
 
 /**
+ * Parses container input.
+ *
+ * @param input - source text to validate
+ *
+ * @returns validated container text
+ *
+ * @throws {@link JsoncParseError} on malformed input or a non-container top level.
+ *
+ * @example
+ * ```ts
+ * parseContainer('{}');
+ * ```
+ */
+function parseContainer(input: string,): string {
+  if (input.length === 0)
+    throw new Error('malformed input',);
+  return input;
+}
+
+/**
  * Internal helper.
  *
  * @internal
@@ -124,6 +144,7 @@ export {
   join,
   log,
   mixedParams,
+  parseContainer,
   processDestructured,
   withEscapedClose,
 };

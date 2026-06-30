@@ -1,8 +1,8 @@
 /**
  * Shared TSDoc visitor factories for oxlint rule implementations.
  *
- * Provides reusable visitor constructors so each rule file
- * does not duplicate the node-type enumeration boilerplate.
+ * Provides reusable visitor constructors so each rule file does not duplicate
+ * node-type enumeration, ignored-file preambles, or comment location arithmetic.
  *
  * @module
  */
@@ -29,6 +29,68 @@ export {
   getCommentLines,
   stripCommentLineMarker,
 } from '../comment-text.ts';
+
+/**
+ * Parameters for {@link shouldSkipIgnoredFile}.
+ */
+export type IgnoredFileBeforeHookParams = {
+  /**
+   * Oxlint rule context carrying filename.
+   */
+  readonly context: Context;
+};
+
+/**
+ * Parameters for {@link commentLineReportLoc}.
+ */
+export type CommentLineReportLocParams = {
+  /**
+   * TSDoc comment whose start line anchors the diagnostic.
+   */
+  readonly comment: ReadonlyDeep<Comment>;
+  /**
+   * Zero-based line offset from the comment start line.
+   */
+  readonly lineOffset: number;
+  /**
+   * Report column, defaulting to the start of the line.
+   */
+  readonly column?: number;
+};
+
+/**
+ * Parameters for documentable-node visitor construction.
+ */
+type CreateDocumentableVisitorParams = {
+  /**
+   * Oxlint rule context.
+   */
+  readonly context: Context;
+  /**
+   * Invoked for each documentable node type.
+   */
+  readonly check: (node: Span) => void;
+};
+
+/**
+ * Checks whether current file is excluded from TSDoc validation.
+ *
+ * @param params - rule context carrying current filename
+ *
+ * @returns whether visitor should skip current file
+ *
+ * @example
+ * ```ts
+ * if (shouldSkipIgnoredFile({ context })) return false;
+ * ```
+ */
+export function shouldSkipIgnoredFile(params: IgnoredFileBeforeHookParams,): boolean {
+  /**
+   * Rule context carrying current filename.
+   */
+  const { context, } = params;
+  return shouldIgnoreFile(context.filename,);
+}
 
 /**
  * Builds a fresh report location from a comment's span.
@@ -71,66 +133,62 @@ export function commentReportLoc(comment: ReadonlyDeep<Comment>,): {
 }
 
 /**
- * Parameters for {@link createTsdocVisitor}.
- */
-export type CreateTsdocVisitorParams = {
-  /**
-   * Oxlint rule context.
-   */
-  readonly context: Context;
-  /**
-   * Invoked for each (node, comment) pair.
-   */
-  readonly handler: (
-    node: Span,
-    comment: ReadonlyDeep<Comment>,
-  ) => void;
-};
-
-/**
- * Creates a visitor that iterates over all documentable node types
- * and calls the provided handler when a TSDoc comment is found.
+ * Builds a report location anchored to one line inside a comment.
  *
- * @returns visitor with hooks
+ * @param params - comment, relative line offset, and optional column
+ *
+ * @returns location object with a copied mutable start position
  *
  * @example
  * ```ts
- * return createTsdocVisitor({
- *   context,
- *   handler: function handleDoc(node, comment) {
- *     // process TSDoc comment
- *   },
- * });
+ * context.report({ loc: commentLineReportLoc({ comment, lineOffset: index }) });
  * ```
  */
-export function createTsdocVisitor({
-  context,
-  handler,
-}: CreateTsdocVisitorParams,): VisitorWithHooks {
+export function commentLineReportLoc(
+  params: CommentLineReportLocParams,
+): { start: LineColumn; } {
   /**
-   * Checks node and fires handler when TSDoc exists.
-   *
-   * @param node - AST node to check
+   * Comment location inputs for the copied report location.
    */
-  function check(node: Span,): void {
-    /**
-     * Located TSDoc comment for the node; only when present does the handler fire.
-     */
-    const comment = findTsdocComment({
-      node,
-      context,
-    },);
-    if (comment !== NO_TSDOC) {
-      handler(
-        node,
-        comment,
-      );
-    }
-  }
+  const {
+    comment,
+    lineOffset,
+    column = 0,
+  } = params;
+  return {
+    start: {
+      line: comment.loc
+        .start
+        .line
+        + lineOffset,
+      column,
+    },
+  };
+}
 
+/**
+ * Creates a visitor over every documentable node type.
+ *
+ * @param params - rule context and per-node callback
+ *
+ * @returns visitor with ignored-file preamble and node handlers
+ *
+ * @example
+ * ```ts
+ * createDocumentableVisitor({ context, check });
+ * ```
+ */
+function createDocumentableVisitor(params: CreateDocumentableVisitorParams,): VisitorWithHooks {
+  /**
+   * Rule context and callback used by every documentable-node visitor.
+   */
+  const {
+    context,
+    check,
+  } = params;
   return {
     before() {
-      if (shouldIgnoreFile(context.filename,))
+      if (shouldSkipIgnoredFile({ context, }))
         return false;
       return undefined;
     },
@@ -155,6 +213,135 @@ export function createTsdocVisitor({
 }
 
 /**
+ * Parameters for {@link createTsdocVisitor}.
+ */
+export type CreateTsdocVisitorParams = {
+  /**
+   * Oxlint rule context.
+   */
+  readonly context: Context;
+  /**
+   * Invoked for each (node, comment) pair.
+   */
+  readonly handler: (
+    node: Span,
+    comment: ReadonlyDeep<Comment>,
+  ) => void;
+};
+
+/**
+ * Creates a visitor that iterates over all documentable node types and calls
+ * the provided handler when a TSDoc comment is found.
+ *
+ * @param params - rule context and comment handler
+ *
+ * @returns visitor with hooks
+ *
+ * @example
+ * ```ts
+ * return createTsdocVisitor({ context, handler });
+ * ```
+ */
+export function createTsdocVisitor(params: CreateTsdocVisitorParams,): VisitorWithHooks {
+  /**
+   * Rule context and handler for located TSDoc comments.
+   */
+  const {
+    context,
+    handler,
+  } = params;
+  /**
+   * Checks node and fires handler when TSDoc exists.
+   *
+   * @param node - AST node to check
+   */
+  function check(node: Span,): void {
+    /**
+     * Located TSDoc comment for the node; only when present does the handler fire.
+     */
+    const comment = findTsdocComment({
+      node,
+      context,
+    },);
+    if (comment !== NO_TSDOC) {
+      handler(
+        node,
+        comment,
+      );
+    }
+  }
+
+  return createDocumentableVisitor({
+    context,
+    check,
+  },);
+}
+
+/**
+ * Parameters for {@link createParsedTsdocVisitor}.
+ */
+export type CreateParsedTsdocVisitorParams = {
+  /**
+   * Oxlint rule context.
+   */
+  readonly context: Context;
+  /**
+   * Invoked with node and parsed TSDoc for each documentable node.
+   */
+  readonly handler: (
+    node: Span,
+    result: ReadonlyDeep<TsdocParseResult>,
+  ) => void;
+};
+
+/**
+ * Creates a visitor over every documentable node and supplies parsed TSDoc.
+ *
+ * @param params - rule context and parsed-comment handler
+ *
+ * @returns visitor with hooks
+ *
+ * @example
+ * ```ts
+ * return createParsedTsdocVisitor({ context, handler });
+ * ```
+ */
+export function createParsedTsdocVisitor(params: CreateParsedTsdocVisitorParams,): VisitorWithHooks {
+  /**
+   * Rule context and handler for parsed TSDoc comments.
+   */
+  const {
+    context,
+    handler,
+  } = params;
+  /**
+   * Checks node and fires handler when parsed TSDoc exists.
+   *
+   * @param node - AST node to check
+   */
+  function check(node: Span,): void {
+    /**
+     * Parsed TSDoc bundle for the node; absent means no TSDoc and the handler is skipped.
+     */
+    const result = parseTsdocForNode({
+      node,
+      context,
+    },);
+    if (result === NO_TSDOC)
+      return;
+    handler(
+      node,
+      result,
+    );
+  }
+
+  return createDocumentableVisitor({
+    context,
+    check,
+  },);
+}
+
+/**
  * Parameters for {@link createFunctionTsdocVisitor}.
  */
 export type CreateFunctionTsdocVisitorParams = {
@@ -162,6 +349,10 @@ export type CreateFunctionTsdocVisitorParams = {
    * Oxlint rule context.
    */
   readonly context: Context;
+  /**
+   * Whether arrow functions should be visited.
+   */
+  readonly includeArrowFunctions?: boolean;
   /**
    * Invoked with node and parsed TSDoc for each function-like node.
    */
@@ -175,24 +366,29 @@ export type CreateFunctionTsdocVisitorParams = {
  * Creates a visitor for function-like nodes that have TSDoc comments.
  *
  * Covers FunctionDeclaration, FunctionExpression, ArrowFunctionExpression,
- * and MethodDefinition. Parses the TSDoc comment before invoking the handler.
+ * and MethodDefinition by default. Callers whose rule cannot apply to arrow
+ * functions can pass `includeArrowFunctions: false`.
+ *
+ * @param params - rule context, arrow-function toggle, and parsed-comment handler
  *
  * @returns visitor with hooks
  *
  * @example
  * ```ts
- * return createFunctionTsdocVisitor({
- *   context,
- *   handler: function handleFn(node, result) {
- *     // check function TSDoc
- *   },
- * });
+ * return createFunctionTsdocVisitor({ context, handler });
  * ```
  */
-export function createFunctionTsdocVisitor({
-  context,
-  handler,
-}: CreateFunctionTsdocVisitorParams,): VisitorWithHooks {
+export function createFunctionTsdocVisitor(
+  params: CreateFunctionTsdocVisitorParams,
+): VisitorWithHooks {
+  /**
+   * Rule context, arrow toggle, and handler for parsed function TSDoc comments.
+   */
+  const {
+    context,
+    includeArrowFunctions = true,
+    handler,
+  } = params;
   /**
    * Checks a function-like node for TSDoc and invokes handler.
    *
@@ -220,17 +416,19 @@ export function createFunctionTsdocVisitor({
   }
 
   /**
-   * Visitor object built up before the unsafe cast that satisfies the host's index-signature type.
+   * Visitor object built before the unsafe cast that satisfies the host's index-signature type.
    */
   const visitor = {
     before() {
-      if (shouldIgnoreFile(context.filename,))
+      if (shouldSkipIgnoredFile({ context, }))
         return false;
       return undefined;
     },
     FunctionDeclaration: check,
     FunctionExpression: check,
-    ArrowFunctionExpression: check,
+    ...includeArrowFunctions
+      ? { ArrowFunctionExpression: check, }
+      : {},
     MethodDefinition: check,
   } as VisitorWithHooks;
   return visitor;

@@ -9,6 +9,7 @@ import {
   buildPerLineFix,
 } from './item-per-line-fix.ts';
 import { needsPerLineFix, } from './needs-fix.ts';
+import type { PerLineBoundaryOffsets, } from './per-line-boundary.ts';
 
 /**
  * Configuration for the shared per-line enforcement logic.
@@ -48,6 +49,10 @@ export type ItemPerLineConfig = {
    * by scanning from item positions.
    */
   readonly bracketPair: BracketPair;
+  /**
+   * Explicit delimiter offsets when the container span is wider than the list.
+   */
+  readonly boundary?: PerLineBoundaryOffsets;
   /**
    * Minimum number of items required to trigger the rule.
    *
@@ -98,6 +103,7 @@ export function checkItemsPerLine({
   items,
   messageId,
   bracketPair,
+  boundary,
   minItems = 2,
   delimiter = ',',
 }: ItemPerLineConfig,): void {
@@ -111,24 +117,46 @@ export function checkItemsPerLine({
   const sourceText = context.sourceCode
     .getText();
 
-  if (!needsPerLineFix({
-    sourceText,
-    container,
-    items,
-  },)) {
+  /**
+   * Whether any adjacent items or delimiters share a line.
+   */
+  const needsFix = boundary === undefined
+    ? needsPerLineFix({
+      sourceText,
+      container,
+      items,
+    },)
+    : needsPerLineFix({
+      sourceText,
+      container,
+      boundary,
+      items,
+    },);
+
+  if (!needsFix)
     return;
-  }
 
   context.report({
     node: container,
     messageId,
     fix(fixer: Fixer,) {
+      if (boundary === undefined) {
+        return buildPerLineFix({
+          fixer,
+          context,
+          items,
+          sourceText,
+          bracketPair,
+          delimiter,
+        },);
+      }
       return buildPerLineFix({
         fixer,
         context,
         items,
         sourceText,
         bracketPair,
+        boundary,
         delimiter,
       },);
     },

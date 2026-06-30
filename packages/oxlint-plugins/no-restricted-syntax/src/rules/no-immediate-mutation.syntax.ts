@@ -1,3 +1,4 @@
+import { isRecord, } from '@monochromatic-dev/config-oxlint-shared/ts';
 import type {
   Context,
   ESTree,
@@ -88,20 +89,6 @@ type StaticMemberNameResult = string | typeof NO_STATIC_MEMBER_NAME;
  */
 type PreviousStatementResult = ESTree.Node | typeof NO_PREVIOUS_STATEMENT;
 
-/**
- * Record-like AST node candidate with optional Identifier fields.
- */
-type MaybeIdentifierRecord = Readonly<Record<string, unknown>> & {
-  /**
-   * ESTree node type field when value is an AST node.
-   */
-  readonly type?: unknown;
-  /**
-   * Identifier name field when value is an Identifier node.
-   */
-  readonly name?: unknown;
-};
-
 //endregion Sentinels and types
 
 //region Generic AST helpers
@@ -163,22 +150,6 @@ export function staticMemberName(
 }
 
 /**
- * Returns true when value is a record-like object safe to inspect structurally.
- *
- * @param value - Unknown value reached while walking AST fields.
- *
- * @returns Whether value has object fields.
- *
- * @example
- * ```ts
- * isRecord(value);
- * ```
- */
-function isRecord(value: unknown,): value is MaybeIdentifierRecord {
-  return ((typeof value) === 'object') && (value !== null);
-}
-
-/**
  * Returns true when value structurally looks like requested ESTree identifier.
  *
  * @param value - Record-like AST node candidate.
@@ -197,7 +168,7 @@ function isIdentifierNamed(
     value,
     name,
   }: {
-    readonly value: MaybeIdentifierRecord;
+    readonly value: Readonly<Record<string, unknown>>;
     readonly name: string;
   },
 ): boolean {

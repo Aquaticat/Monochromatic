@@ -18,7 +18,10 @@ import {
   stripInlineCodeAndEscapes,
 } from '../comment-text.ts';
 import { JSDOC_TO_TSDOC_MAP, } from './jsdoc-map.ts';
-import { createTsdocVisitor, } from './tsdoc-visitors.ts';
+import {
+  commentLineReportLoc,
+  createTsdocVisitor,
+} from './tsdoc-visitors.ts';
 
 export {
   collectTags,
@@ -143,15 +146,10 @@ export const checkTagNames: CreateOnceRule = {
             const suggestion = JSDOC_TO_TSDOC_MAP.get(tag,);
             if (suggestion !== undefined) {
               context.report({
-                loc: {
-                  start: {
-                    line: comment.loc
-                      .start
-                      .line
-                      + index,
-                    column: 0,
-                  },
-                },
+                loc: commentLineReportLoc({
+                  comment,
+                  lineOffset: index,
+                },),
                 messageId: 'jsdocOnly',
                 data: {
                   tag,
@@ -161,15 +159,10 @@ export const checkTagNames: CreateOnceRule = {
             }
             else if (!VALID_TSDOC_TAGS.has(tag,)) {
               context.report({
-                loc: {
-                  start: {
-                    line: comment.loc
-                      .start
-                      .line
-                      + index,
-                    column: 0,
-                  },
-                },
+                loc: commentLineReportLoc({
+                  comment,
+                  lineOffset: index,
+                },),
                 messageId: 'unknown',
                 data: { tag, },
               },);

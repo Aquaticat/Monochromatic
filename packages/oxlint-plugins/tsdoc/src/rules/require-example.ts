@@ -28,12 +28,14 @@ import {
   findTsdocComment,
   NO_TSDOC,
   parseTsdocForNode,
-  shouldIgnoreFile,
   type TsdocParseResult,
 } from '../tsdoc-utils.ts';
 
 import { extractNodeName, } from './node-extraction.ts';
-import { commentReportLoc, } from './tsdoc-visitors.ts';
+import {
+  commentReportLoc,
+  shouldSkipIgnoredFile,
+} from './tsdoc-visitors.ts';
 
 /**
  * Checks whether a node is directly exported via inline `export` keyword.
@@ -304,7 +306,7 @@ export const requireExample: CreateOnceRule = {
 
     return {
       before() {
-        if (shouldIgnoreFile(context.filename,))
+        if (shouldSkipIgnoredFile({ context, }))
           return false;
         // createOnce persists this visitor across all files in the lint run.
         // Without clearing, function names from file A leak into file B's

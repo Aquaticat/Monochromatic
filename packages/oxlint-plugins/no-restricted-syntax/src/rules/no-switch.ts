@@ -1,9 +1,6 @@
-import type {
-  Context,
-  CreateOnceRule,
-  ESTree,
-  VisitorWithHooks,
-} from '@oxlint/plugins';
+import type { CreateOnceRule, } from '@oxlint/plugins';
+
+import { simpleBanRule, } from './_simple-ban-rule.ts';
 
 /**
  * Bans `switch` statements in favor of if/else chains or `Record` lookups.
@@ -31,27 +28,10 @@ import type {
  * return VALUES[kind] ?? 0;
  * ```
  */
-export const noSwitch: CreateOnceRule = {
-  meta: {
-    type: 'suggestion',
-    docs: {
-      description:
-        'Disallow switch statements. Use if/else chains or Record lookups instead.',
-      recommended: true,
-    },
-    messages: {
-      forbidden:
-        'Switch statements are banned. Use if/else chains or Record lookups instead.',
-    },
-  },
-  createOnce(context: Context,): VisitorWithHooks {
-    return {
-      SwitchStatement(node: ESTree.SwitchStatement,): void {
-        context.report({
-          node,
-          messageId: 'forbidden',
-        },);
-      },
-    };
-  },
-};
+export const noSwitch: CreateOnceRule = simpleBanRule({
+  type: 'suggestion',
+  nodeType: 'SwitchStatement',
+  description: 'Disallow switch statements. Use if/else chains or Record lookups instead.',
+  messageId: 'forbidden',
+  message: 'Switch statements are banned. Use if/else chains or Record lookups instead.',
+},);

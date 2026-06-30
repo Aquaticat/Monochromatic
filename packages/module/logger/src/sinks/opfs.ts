@@ -90,10 +90,16 @@ export function createOpfsSink(): Sink {
       return available;
     }
     catch (error: unknown) {
-      reportLoggerInternalError({
-        context: 'OPFS sink verification failed',
-        error,
-      },);
+      /**
+       * OPFS storage object, present only when the current platform exposes the backend this sink verifies.
+       */
+      const opfsStorage = globalThis.navigator
+        ?.storage;
+      if ((opfsStorage !== undefined) && ('getDirectory' in opfsStorage))
+        reportLoggerInternalError({
+          context: 'OPFS sink verification failed',
+          error,
+        },);
       return false;
     }
   }

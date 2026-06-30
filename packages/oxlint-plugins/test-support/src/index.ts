@@ -1,8 +1,8 @@
 import {
-  copyFileSync,
-  mkdtempSync,
-  rmSync,
-} from 'node:fs';
+  copyFile,
+  mkdtemp,
+  rm,
+} from 'node:fs/promises';
 import { tmpdir, } from 'node:os';
 import {
   isAbsolute,
@@ -10,6 +10,7 @@ import {
   resolve,
 } from 'node:path';
 
+import { findMiseMonorepoRoot, } from '@monochromatic-dev/module-fs-path/ts';
 import spawn from 'nano-spawn';
 
 /**
@@ -30,12 +31,9 @@ import spawn from 'nano-spawn';
  * OXLINT_PLUGIN_TEST_ROOT;
  * ```
  */
-export const OXLINT_PLUGIN_TEST_ROOT: string = resolve(
-  import.meta.dirname,
-  '..',
-  '..',
-  '..',
-);
+export const OXLINT_PLUGIN_TEST_ROOT: string = await findMiseMonorepoRoot({
+  cwd: import.meta.dirname,
+},);
 
 /**
  * Single diagnostic from oxlint JSON output after plugin filtering.
@@ -90,7 +88,7 @@ export type TempFixtureFile = {
   /**
    * Removes temp directory that contains fixture copy.
    */
-  readonly [Symbol.dispose]: () => void;
+  readonly [Symbol.asyncDispose]: () => Promise<void>;
 };
 
 /**
@@ -179,9 +177,11 @@ export type CreateTempFixtureFileParams = {
  * fixturePackageRoot({ fixturePackageName: 'oxlint-tsdoc' });
  * ```
  */
-export function fixturePackageRoot({
-  fixturePackageName,
-}: FixturePackageRootParams,): string {
+export function fixturePackageRoot(params: FixturePackageRootParams,): string {
+  /**
+   * Fixture package name to resolve under `packages/test-fixture`.
+   */
+  const { fixturePackageName, } = params;
   return resolve(
     OXLINT_PLUGIN_TEST_ROOT,
     'packages',
@@ -221,10 +221,14 @@ export function fixtureSourceRoot(params: FixturePackageRootParams,): string {
  * fixtureConfigPath({ fixturePackageName: 'oxlint-tsdoc', fileName: '.oxlintrc.fixture.json' });
  * ```
  */
-export function fixtureConfigPath({
-  fixturePackageName,
-  fileName,
-}: FixtureConfigPathParams,): string {
+export function fixtureConfigPath(params: FixtureConfigPathParams,): string {
+  /**
+   * Fixture package name and config filename to resolve.
+   */
+  const {
+    fixturePackageName,
+    fileName,
+  } = params;
   return resolve(
     fixturePackageRoot({ fixturePackageName, },),
     fileName,
@@ -243,14 +247,18 @@ export function fixtureConfigPath({
  * resolveFixtureTarget({ fixtureSourceRoot: FIXTURES, fixturePath: 'invalid/file.ts' });
  * ```
  */
-export function resolveFixtureTarget({
-  fixtureSourceRoot,
-  fixturePath,
-}: ResolveFixtureTargetParams,): string {
+export function resolveFixtureTarget(params: ResolveFixtureTargetParams,): string {
+  /**
+   * Fixture source root and target path to resolve.
+   */
+  const {
+    fixtureSourceRoot: sourceRoot,
+    fixturePath,
+  } = params;
   return isAbsolute(fixturePath,)
     ? fixturePath
     : resolve(
-      fixtureSourceRoot,
+      sourceRoot,
       fixturePath,
     );
 }
@@ -270,13 +278,28 @@ export function resolveFixtureTarget({
  * ```
  */
 function stdoutFromSpawnError({ error, }: { readonly error: unknown; },): string {
-  if (((typeof error) !== 'object') || (error === null))
-    throw error;
-  if (!('stdout' in error))
-    throw error;
+  if (((typeof error) !== 'object') || (error === null)) {
+    throw new Error(
+      'oxlint spawn failure did not expose stdout.',
+      { cause: error, },
+    );
+  }
+  if (!('stdout' in error)) {
+    throw new Error(
+      'oxlint spawn failure did not expose stdout.',
+      { cause: error, },
+    );
+  }
+  /**
+   * Captured process stdout attached by nano-spawn.
+   */
   const { stdout, } = error;
-  if ((typeof stdout) !== 'string')
-    throw error;
+  if ((typeof stdout) !== 'string') {
+    throw new Error(
+      'oxlint spawn failure stdout was not a string.',
+      { cause: error, },
+    );
+  }
   return stdout;
 }
 
@@ -293,8 +316,12 @@ function stdoutFromSpawnError({ error, }: { readonly error: unknown; },): string
  * ```
  */
 function parseOxlintOutput(stdout: string,): OxlintOutput {
-  // oxlint-disable-next-line typescript/no-unsafe-assignment -- JSON.parse returns unknown JSON; OxlintOutput validates the consumed shape for tests.
+  /* oxlint-disable typescript/no-unsafe-assignment -- JSON.parse returns unknown JSON; OxlintOutput validates the consumed shape for tests. */
+  /**
+   * Parsed oxlint output trusted by fixture tests.
+   */
   const output: OxlintOutput = JSON.parse(stdout,);
+  /* oxlint-enable typescript/no-unsafe-assignment */
   return output;
 }
 
@@ -310,17 +337,28 @@ function parseOxlintOutput(stdout: string,): OxlintOutput {
  * await runOxlintFixture({ codePrefix: 'tsdoc(', configFlag: '--config', fixtureConfig, target });
  * ```
  */
-export async function runOxlintFixture({
-  codePrefix,
-  configFlag,
-  fixtureConfig,
-  target,
-}: RunOxlintFixtureParams,): Promise<readonly OxlintRuleDiagnostic[]> {
+export async function runOxlintFixture(
+  params: RunOxlintFixtureParams,
+): Promise<readonly OxlintRuleDiagnostic[]> {
+  /**
+   * Oxlint invocation details for this fixture run.
+   */
+  const {
+    codePrefix,
+    configFlag,
+    fixtureConfig,
+    target,
+  } = params;
   /**
    * Captures stdout from oxlint whether diagnostics make the process exit non-zero or not.
+   *
+   * @returns captured oxlint stdout
    */
   async function captureStdout(): Promise<string> {
     try {
+      /**
+       * Successful oxlint process output.
+       */
       const { stdout, } = await spawn(
         'oxlint',
         [
@@ -339,15 +377,29 @@ export async function runOxlintFixture({
     }
   }
 
+  /**
+   * Parsed oxlint JSON output for the fixture run.
+   */
   const output = parseOxlintOutput(await captureStdout(),);
-  return output.diagnostics.filter(
-    function keepPluginDiagnostic(
-      diagnostic,
-    ): diagnostic is OxlintRuleDiagnostic {
-      return ((typeof diagnostic.code) === 'string')
-        && diagnostic.code.startsWith(codePrefix,);
-    },
-  );
+  /**
+   * Diagnostics emitted by oxlint before plugin filtering.
+   */
+  const { diagnostics, } = output;
+  /**
+   * Diagnostics belonging to the requested plugin only.
+   */
+  const pluginDiagnostics = diagnostics
+    .filter(
+      function keepPluginDiagnostic(
+        diagnostic,
+      ): diagnostic is OxlintRuleDiagnostic {
+        if ((typeof diagnostic.code) !== 'string')
+          return false;
+        return diagnostic.code
+          .startsWith(codePrefix,);
+      },
+    );
+  return pluginDiagnostics;
 }
 
 /**
@@ -362,15 +414,21 @@ export async function runOxlintFixture({
  * using fixture = createTempFixtureFile({ fileName: 'case.ts', sourcePath, tempPrefix: 'oxlint-case-' });
  * ```
  */
-export function createTempFixtureFile({
-  fileName,
-  sourcePath,
-  tempPrefix,
-}: CreateTempFixtureFileParams,): TempFixtureFile {
+export async function createTempFixtureFile(
+  params: CreateTempFixtureFileParams,
+): Promise<TempFixtureFile> {
+  /**
+   * Temp fixture source, basename, and directory prefix.
+   */
+  const {
+    fileName,
+    sourcePath,
+    tempPrefix,
+  } = params;
   /**
    * Unique temp directory owning this fixture copy.
    */
-  const dirPath = mkdtempSync(join(
+  const dirPath = await mkdtemp(join(
     tmpdir(),
     tempPrefix,
   ),);
@@ -381,12 +439,15 @@ export function createTempFixtureFile({
     dirPath,
     fileName,
   );
-  copyFileSync(sourcePath, filePath,);
+  await copyFile(
+    sourcePath,
+    filePath,
+  );
 
   return {
     filePath,
-    [Symbol.dispose]: function cleanup(): void {
-      rmSync(
+    [Symbol.asyncDispose]: async function cleanup(): Promise<void> {
+      await rm(
         dirPath,
         {
           recursive: true,

@@ -378,7 +378,7 @@ export const preferDescribeFunctionRefName: CreateOnceRule = {
     messages: {
       forbidden: "`describe` name `'{{name}}'` matches the in-scope binding `{{name}}`. "
         + 'Replace with `{{name}}.name` so renames stay in sync. '
-        + 'See .claude/skills/testing-practices/SKILL.md for the convention. '
+        + 'See .agents/skills/testing-practices/SKILL.md for the convention. '
         + 'If the function under test IS the local binding (harness self-test), '
         + 'add `oxlint-disable-next-line no-restricted-syntax/prefer-describe-function-ref-name` '
         + 'with a justification.',
