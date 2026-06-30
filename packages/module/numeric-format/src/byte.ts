@@ -22,9 +22,9 @@ import {
 /**
  * Format a byte count as a human-readable IEC binary string.
  *
- * - GiB scale: one decimal, e.g. `1.5 GiB`
- * - MiB scale: one decimal, e.g. `123.4 MiB`
- * - KiB scale: whole KiB, e.g. `512 KiB`, `1 KiB`
+ * - GiB scale (at or above {@link BYTES_PER_GIB}): one decimal, e.g. `1.5 GiB`
+ * - MiB scale (at or above {@link BYTES_PER_MIB}): one decimal, e.g. `123.4 MiB`
+ * - KiB scale (at or above {@link BYTES_PER_KIB}): whole KiB, e.g. `512 KiB`, `1 KiB`
  * - sub-KiB: raw bytes, e.g. `422 B`, `0 B`
  *
  * @param bytes - raw byte count

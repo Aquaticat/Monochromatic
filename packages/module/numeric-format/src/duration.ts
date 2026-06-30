@@ -42,9 +42,9 @@ const DECIMAL_BELOW_MS = 10;
 /**
  * Format an elapsed duration in milliseconds for human-readable logs.
  *
- * - below 10ms: one decimal, e.g. `0.3ms`, `9.9ms`
- * - 10ms to 999ms: whole ms, e.g. `51ms`, `999ms`
- * - 1000ms and above: one decimal in seconds, e.g. `1.2s`
+ * - below {@link DECIMAL_BELOW_MS}: one decimal, e.g. `0.3ms`, `9.9ms`
+ * - {@link DECIMAL_BELOW_MS} to 999ms: whole ms, e.g. `51ms`, `999ms`
+ * - {@link MS_PER_SECOND} and above: one decimal in seconds, e.g. `1.2s`
  *
  * @param durationMs - elapsed time in milliseconds, typically from a
  *   `performance.now()` delta
@@ -92,7 +92,7 @@ const SECONDS_PER_MONTH = SECONDS_PER_DAY * DAYS_PER_MONTH;
 /**
  * Seconds in one year, derived from {@link SECONDS_PER_DAY} and
  * {@link DAYS_PER_YEAR}. Approximation: 365 days (matches the convention
- * documented on `DAYS_PER_YEAR` itself).
+ * documented on {@link DAYS_PER_YEAR} itself).
  */
 const SECONDS_PER_YEAR = SECONDS_PER_DAY * DAYS_PER_YEAR;
 
@@ -108,7 +108,8 @@ const SECONDS_PER_YEAR = SECONDS_PER_DAY * DAYS_PER_YEAR;
  *
  * Magnitude ladder (each row pairs the largest non-zero unit with the
  * next smaller unit; weeks/days/hours/minutes/seconds are exact, months
- * approximate at 30 days, years approximate at 365 days):
+ * approximate at {@link DAYS_PER_MONTH} days, years approximate at
+ * {@link DAYS_PER_YEAR} days):
  *
  * - all zero       → `0s`
  * - seconds only   → `Xs`
@@ -151,11 +152,12 @@ export function formatTrackedDuration(seconds: number,): string {
   );
 
   /**
-   * Top of the ladder; carved off first so subsequent units operate on a descending residual.
+   * Top of the ladder, in units of {@link SECONDS_PER_YEAR}; carved off
+   * first so subsequent units operate on a descending residual.
    */
   const years = Math.floor(total / SECONDS_PER_YEAR,);
   /**
-   * Residual after years; fed to months.
+   * Residual after dividing out {@link SECONDS_PER_YEAR}; fed to months.
    */
   const remAfterY = total % SECONDS_PER_YEAR;
   /**
@@ -163,39 +165,39 @@ export function formatTrackedDuration(seconds: number,): string {
    */
   const months = Math.floor(remAfterY / SECONDS_PER_MONTH,);
   /**
-   * Residual after months; fed to weeks.
+   * Residual after dividing out {@link SECONDS_PER_MONTH}; fed to weeks.
    */
   const remAfterMo = remAfterY % SECONDS_PER_MONTH;
   /**
-   * Carved off the post-months residual.
+   * Carved off the post-months residual, in units of {@link SECONDS_PER_WEEK}.
    */
   const weeks = Math.floor(remAfterMo / SECONDS_PER_WEEK,);
   /**
-   * Residual after weeks; fed to days.
+   * Residual after dividing out {@link SECONDS_PER_WEEK}; fed to days.
    */
   const remAfterW = remAfterMo % SECONDS_PER_WEEK;
   /**
-   * Carved off the post-weeks residual.
+   * Carved off the post-weeks residual, in units of {@link SECONDS_PER_DAY}.
    */
   const days = Math.floor(remAfterW / SECONDS_PER_DAY,);
   /**
-   * Residual after days; fed to hours.
+   * Residual after dividing out {@link SECONDS_PER_DAY}; fed to hours.
    */
   const remAfterD = remAfterW % SECONDS_PER_DAY;
   /**
-   * Carved off the post-days residual.
+   * Carved off the post-days residual, in units of {@link SECONDS_PER_HOUR}.
    */
   const hours = Math.floor(remAfterD / SECONDS_PER_HOUR,);
   /**
-   * Residual after hours; fed to minutes.
+   * Residual after dividing out {@link SECONDS_PER_HOUR}; fed to minutes.
    */
   const remAfterH = remAfterD % SECONDS_PER_HOUR;
   /**
-   * Carved off the post-hours residual.
+   * Carved off the post-hours residual, in units of {@link SECONDS_PER_MINUTE}.
    */
   const minutes = Math.floor(remAfterH / SECONDS_PER_MINUTE,);
   /**
-   * Tail of the ladder; whatever does not fit in the units above.
+   * Tail of the ladder; whatever does not fit in {@link SECONDS_PER_MINUTE} above.
    */
   const remSeconds = remAfterH % SECONDS_PER_MINUTE;
 
@@ -244,7 +246,9 @@ export function formatTrackedDuration(seconds: number,): string {
     return '0s';
 
   /**
-   * Top unit; primary cell of the rendered string.
+   * Top unit; primary cell of the rendered string. Extracted with
+   * {@link nonNullishOrThrow}, which is unreachable here because
+   * `biggestIdx` was just bounds-checked above.
    */
   const [bigValue, bigSuffix,] = nonNullishOrThrow(UNITS[biggestIdx],);
 
@@ -253,7 +257,9 @@ export function formatTrackedDuration(seconds: number,): string {
     return `${bigValue}${bigSuffix}`;
 
   /**
-   * Partner unit; immediately adjacent per the strict-adjacency rule (no skipping).
+   * Partner unit; immediately adjacent per the strict-adjacency rule (no
+   * skipping). Extracted with {@link nonNullishOrThrow}, which is
+   * unreachable here because the prior return covers the last-index case.
    */
   const [smallValue, smallSuffix,] = nonNullishOrThrow(UNITS[biggestIdx + 1],);
   return `${bigValue}${bigSuffix}${smallValue}${smallSuffix}`;
