@@ -6,7 +6,7 @@
  *
  * @returns whether the character is whitespace
  */
-function isWhitespaceChar(c: string,): boolean {
+export function isWhitespaceChar(c: string,): boolean {
   return (c === ' ')
     || (c === '\t')
     || (c === '\n')
