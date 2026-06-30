@@ -276,7 +276,7 @@ with scoped pathspecs (`fix(<package>): restore TSDoc inline links (issue #265)`
 | f11 | doodle-widget, claude-code-plugins/source, catalog-tighten | a166231c9b11bdb32 | done, ~111 findings, 34 files, commits ddf0bed84/99e10dc0f/4a6986694 |
 | f12 | deps-cube, git-clone-size, current-time-context, oxlint-plugins/shared | abf93d7976d062f11 | done, 50/50 findings, 21 files, commits 6a74c6c6f/a76fcd3d7/9d654e5ff |
 | f13 | page-weight, logger, hall-monitor, android-exempt-unused, build-tool/css, pipe, matrix, tofu, aquaticat, import-attributes, config/tsdown, rgffplay, prompt-time | | queued |
-| f14 | terminal-exec, hyperscript, rss, config/oxlint, kv-store, fs-path, hook-types, or-throw, session-start-housekeeping | | queued |
+| f14 | terminal-exec, hyperscript, rss, config/oxlint, kv-store, fs-path, hook-types, or-throw, session-start-housekeeping | a627dd408e4a90bd9 | done, 143 link insertions, 58 files, commits 91f356590/169cd3a1c/b69c645b2/8c6e09408/f358330bd/19c173c6c |
 | f15 | vmsync, spawn, figma kiwi, figma penpot, pi/statusline, llm-types | | queued |
 | f16 | terminal-title, vm-builder, catalog-tighten.matrix, forbidden-strings, dom, statusline, thinking-defaults, mcp/mvm, syllable-break-demo, const, memoize, token-count, observable, runtime-error/bun, function-arity, current-time-context, guardrail, root config | | queued |
 
