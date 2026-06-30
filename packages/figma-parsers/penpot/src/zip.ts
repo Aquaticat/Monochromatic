@@ -85,9 +85,9 @@ function addJson(
 /**
  * Write every shape for one page (root frame first) into the archive.
  *
- * @param zip - archive writer
+ * @param zip - {@link ZipWriter} archive writer
  *
- * @param doc - converted Penpot document
+ * @param doc - converted {@link PenpotDocument}
  *
  * @param pageId - page whose shapes are written
  *
@@ -139,7 +139,7 @@ function addPageShapes(
  *
  * Produces a binfile-v3 archive importable into Penpot.
  *
- * @param doc - converted Penpot document
+ * @param doc - converted {@link PenpotDocument}
  *
  * @returns ZIP archive bytes
  *

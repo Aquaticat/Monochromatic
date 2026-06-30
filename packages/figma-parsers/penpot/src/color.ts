@@ -46,7 +46,7 @@ function channelByte(value: unknown,): number {
 /**
  * Convert a Figma color struct `{ r, g, b }` (0-1 floats) to a hex string.
  *
- * @param color - Figma color record with numeric `r`/`g`/`b` channels
+ * @param color - Figma color {@link FigmaRecord} with numeric `r`/`g`/`b` channels
  *
  * @returns uppercase `"#RRGGBB"` string
  *
@@ -92,7 +92,7 @@ export function figmaColorToHex(color: FigmaRecord,): string {
  *
  * Penpot separates color and opacity: `fillColor` is hex, `fillOpacity` is 0-1.
  *
- * @param color - Figma color record with `r`/`g`/`b` and optional `a`
+ * @param color - Figma color {@link FigmaRecord} with `r`/`g`/`b` and optional `a`
  *
  * @returns Penpot fill with hex color and 0-1 opacity
  *

@@ -40,7 +40,7 @@ export { serializePenpotZip, } from './zip.ts';
  * Converts the node tree to Penpot's JSON model and writes a `.penpot` ZIP,
  * optionally persisting it to disk.
  *
- * @param figmaFile - decoded Figma file from `parseFigmaFile`
+ * @param figmaFile - decoded Figma file from {@link parseFigmaFile}
  *
  * @param outputPath - path to write the `.penpot` file; omitted returns only the buffer
  *

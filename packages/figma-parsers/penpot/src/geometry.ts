@@ -39,7 +39,7 @@ export type ParentRef = {
  *
  * @param height - rect height
  *
- * @returns selrect and clockwise corner points
+ * @returns {@link PenpotSelRect} and clockwise corner {@link PenpotPoints}
  *
  * @example
  * ```ts
@@ -110,7 +110,7 @@ export function computeSelRect(
  *
  * @param transform - Figma matrix record, or any non-record (identity)
  *
- * @returns Penpot transform matrix
+ * @returns {@link PenpotTransform} matrix
  *
  * @example
  * ```ts
@@ -156,7 +156,7 @@ export function figmaTransformToPenpot(transform: unknown,): PenpotTransform {
  *
  * @param parentIndex - Figma parentIndex record, or any non-record
  *
- * @returns parsed parent reference, or `SKIP` when absent or malformed
+ * @returns parsed parent reference, or {@link SKIP} when absent or malformed
  *
  * @example
  * ```ts

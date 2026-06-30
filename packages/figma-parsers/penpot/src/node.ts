@@ -70,7 +70,7 @@ function resolveParentUuid(
   }>,
 ): Uuid {
   /**
-   * Parsed Figma parent reference; `SKIP` keeps the recursion's parent.
+   * Parsed Figma parent reference; {@link SKIP} keeps the recursion's parent.
    */
   const parent = parseParentIndex(nc.parentIndex,);
   if (parent === SKIP)
@@ -89,7 +89,7 @@ function resolveParentUuid(
 /**
  * Stamp uniform border radius onto a shape when the node has a positive corner radius.
  *
- * @param shape - shape being assembled (mutated in place)
+ * @param shape - {@link PenpotShape} being assembled (mutated in place)
  *
  * @param nc - Figma NodeChange record
  *
@@ -122,7 +122,7 @@ function applyCornerRadius(
 /**
  * Apply type-specific fields (container shapes, radius, path content, text) to a shape.
  *
- * @param shape - shape being assembled (mutated in place)
+ * @param shape - {@link PenpotShape} being assembled (mutated in place)
  *
  * @param penpotType - resolved Penpot shape type
  *
@@ -214,9 +214,9 @@ function applyTypeSpecific(
  *
  * @param pageId - page the shape belongs to
  *
- * @param ctx - shared lookup tables threaded through the recursion
+ * @param ctx - shared {@link ConvertContext} lookup tables threaded through the recursion
  *
- * @returns the shape's Penpot UUID, or `SKIP` when the node has no equivalent
+ * @returns the shape's Penpot UUID, or {@link SKIP} when the node has no equivalent
  *
  * @example
  * ```ts
@@ -247,7 +247,7 @@ export function convertNode(
     return SKIP;
 
   /**
-   * Penpot shape type, or `SKIP` for Figma node types with no equivalent.
+   * Penpot shape type, or {@link SKIP} for Figma node types with no equivalent.
    */
   const penpotType = FIGMA_NODE_TYPE_MAP[asString(nc.type,)];
   if ((penpotType === undefined) || (penpotType === SKIP))
@@ -321,7 +321,7 @@ export function convertNode(
     .get(nodeKey,)
     ?? []) {
     /**
-     * Converted child UUID; `SKIP` children are dropped.
+     * Converted child UUID; {@link SKIP} children are dropped.
      */
     const childUuid = convertNode({
       nodeKey: childKey,

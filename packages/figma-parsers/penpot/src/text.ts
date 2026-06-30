@@ -49,7 +49,7 @@ function textFills(nc: FigmaRecord,): PenpotFill[] {
   const fills: PenpotFill[] = [];
   for (const paint of recordArray(nc.fillPaints,)) {
     /**
-     * Solid fill candidate; `SKIP` means the paint type is unsupported.
+     * Solid fill candidate; {@link SKIP} means the paint type is unsupported.
      */
     const fill = figmaPaintToFill(paint,);
     if (fill !== SKIP)

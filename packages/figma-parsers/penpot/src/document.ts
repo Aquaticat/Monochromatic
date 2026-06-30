@@ -82,9 +82,9 @@ function guidKey(
 /**
  * Read a node's GUID components, or `SKIP` when the node carries no GUID.
  *
- * @param nc - Figma NodeChange record
+ * @param nc - Figma NodeChange {@link FigmaRecord}
  *
- * @returns session/local id pair, or `SKIP`
+ * @returns session/local id pair, or {@link SKIP}
  *
  * @example
  * ```ts
@@ -119,9 +119,9 @@ function nodeGuid(
 /**
  * Index every node: assign stable UUIDs and build GUID and parent-to-children maps.
  *
- * @param nodeChanges - raw Figma NodeChange records
+ * @param nodeChanges - raw Figma NodeChange {@link FigmaRecord} entries
  *
- * @returns conversion context with populated lookup tables
+ * @returns {@link ConvertContext} with populated lookup tables
  *
  * @example
  * ```ts
@@ -188,7 +188,7 @@ function indexNodes(nodeChanges: readonly FigmaRecord[],): ConvertContext {
 /**
  * Test whether a `.fig`/`.jam` canvas is Figma's hidden internal-only canvas.
  *
- * @param nc - Figma canvas NodeChange record
+ * @param nc - Figma canvas NodeChange {@link FigmaRecord}
  *
  * @returns whether the canvas should be excluded from pages
  *
@@ -218,7 +218,7 @@ function isInternalCanvas(nc: FigmaRecord,): boolean {
  * Deck files map slides to pages; `.fig`/`.jam` map canvases (minus the hidden
  * internal canvas).
  *
- * @param nodeChanges - raw Figma NodeChange records
+ * @param nodeChanges - raw Figma NodeChange {@link FigmaRecord} entries
  *
  * @param isDeck - whether the source is a `.deck` file
  *
@@ -277,7 +277,7 @@ function selectPageSources(
  *
  * @param ctx - conversion context whose `shapes` map is written
  *
- * @returns the page metadata
+ * @returns the {@link PenpotPage} metadata
  *
  * @example
  * ```ts
@@ -329,7 +329,7 @@ function buildPage(
     .get(source.key,)
     ?? []) {
     /**
-     * Converted child UUID; `SKIP` children are dropped.
+     * Converted child UUID; {@link SKIP} children are dropped.
      */
     const childUuid = convertNode({
       nodeKey: childKey,
@@ -357,7 +357,7 @@ function buildPage(
 /**
  * Convert a parsed Figma file to a Penpot document.
  *
- * @param figmaFile - fully decoded Figma file from `parseFigmaFile`
+ * @param figmaFile - fully decoded Figma file from {@link parseFigmaFile}
  *
  * @param options - conversion options
  *

@@ -70,7 +70,7 @@ if (inputPath === undefined) {
 }
 
 /**
- * Fully decoded Figma file model that the conversion pipeline consumes.
+ * Fully decoded {@link FigmaFile} model that the conversion pipeline consumes.
  */
 const figmaFile = await parseFigmaFile(inputPath,);
 /**

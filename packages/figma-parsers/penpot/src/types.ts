@@ -99,7 +99,9 @@ export type PenpotPoints = [
 
 /* oxlint-disable no-restricted-syntax/no-nullish-union -- Penpot binfile-v3 stores explicit JSON null for x/y/width/height on shapes without computed geometry, and always for flipX/flipY; the importer treats a null value differently from an absent key, so these cannot collapse to optional `?:` properties */
 /**
- * A Penpot shape object (core data model).
+ * A Penpot shape object (core data model), composed of a {@link PenpotShapeType} discriminant,
+ * {@link PenpotSelRect}, {@link PenpotPoints}, {@link PenpotTransform}, and lists of
+ * {@link PenpotFill} and {@link PenpotStroke} entries.
  */
 export type PenpotShape = {
   id: Uuid;

@@ -23,7 +23,7 @@ import type {
  *
  * @param now - ISO timestamp for created/modified
  *
- * @returns Penpot file metadata
+ * @returns {@link PenpotFile} metadata
  *
  * @example
  * ```ts
@@ -68,7 +68,7 @@ export function makeFile(
  *
  * @param generatedBy - generator string
  *
- * @returns Penpot manifest
+ * @returns {@link PenpotManifest}
  *
  * @example
  * ```ts

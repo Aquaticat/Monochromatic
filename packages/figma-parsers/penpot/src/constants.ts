@@ -35,7 +35,7 @@ export const DEFAULT_FEATURES: readonly string[] = [
 ];
 
 /**
- * Penpot binfile schema version stamped onto every produced `PenpotFile`.
+ * Penpot binfile schema version stamped onto every produced {@link PenpotFile}.
  */
 export const PENPOT_FILE_VERSION = 67;
 
@@ -65,7 +65,7 @@ export const PAGE_BACKGROUND_FIG = '#F5F5F5';
 export const PAGE_BACKGROUND_DECK = '#FFFFFF';
 
 /**
- * Lookup mapping each Figma `NodeType` to its Penpot shape equivalent, or the `SKIP` sentinel when the node has no Penpot counterpart and should be dropped.
+ * Lookup mapping each Figma `NodeType` to its Penpot shape equivalent, or the {@link SKIP} sentinel when the node has no Penpot counterpart and should be dropped.
  */
 export const FIGMA_NODE_TYPE_MAP: Record<string, PenpotShapeType | typeof SKIP> = {
   // Structural nodes (no direct Penpot shape)

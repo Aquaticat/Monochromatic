@@ -201,7 +201,7 @@ export function collectFills(nc: FigmaRecord,): PenpotFill[] {
   const fills: PenpotFill[] = [];
   for (const paint of recordArray(nc.fillPaints,)) {
     /**
-     * Solid fill candidate; `SKIP` means an unsupported paint type.
+     * Solid fill candidate; {@link SKIP} means an unsupported paint type.
      */
     const fill = figmaPaintToFill(paint,);
     if (fill !== SKIP)
@@ -243,7 +243,7 @@ export function collectStrokes(nc: FigmaRecord,): PenpotStroke[] {
   const strokes: PenpotStroke[] = [];
   for (const paint of recordArray(nc.strokePaints,)) {
     /**
-     * Solid stroke candidate; `SKIP` means an unsupported paint type.
+     * Solid stroke candidate; {@link SKIP} means an unsupported paint type.
      */
     const stroke = figmaPaintToStroke({
       paint,
@@ -261,7 +261,7 @@ export function collectStrokes(nc: FigmaRecord,): PenpotStroke[] {
  *
  * @param geometry - Figma fill/stroke geometry value of unknown type
  *
- * @returns path string, or `SKIP` when no path is present
+ * @returns path string, or {@link SKIP} when no path is present
  *
  * @example
  * ```ts
@@ -288,7 +288,7 @@ export function geometryPath(geometry: unknown,): string | typeof SKIP {
  *
  * @param pageId - page the root frame belongs to
  *
- * @returns root-frame shape with a degenerate non-zero extent
+ * @returns root-frame {@link PenpotShape} with a degenerate non-zero extent
  *
  * @example
  * ```ts

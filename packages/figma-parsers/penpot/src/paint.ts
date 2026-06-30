@@ -1,7 +1,7 @@
 /**
  * Figma paint to Penpot fill/stroke conversion.
  *
- * Only solid paints convert today; gradient and image paints return the `SKIP`
+ * Only solid paints convert today; gradient and image paints return the {@link SKIP}
  * sentinel so callers drop them.
  *
  * @module figma-to-penpot-paint
@@ -62,7 +62,7 @@ function isSolidPaint(paintType: string,): boolean {
  *
  * @param paint - Figma paint record
  *
- * @returns Penpot fill, or `SKIP` for unsupported (non-solid, color-less) paints
+ * @returns Penpot fill, or {@link SKIP} for unsupported (non-solid, color-less) paints
  *
  * @example
  * ```ts
@@ -99,7 +99,7 @@ export function figmaPaintToFill(
  *
  * @param strokeAlign - Figma alignment enum (`INSIDE`/`OUTSIDE`/`CENTER`)
  *
- * @returns Penpot stroke, or `SKIP` for unsupported paints
+ * @returns Penpot stroke, or {@link SKIP} for unsupported paints
  *
  * @example
  * ```ts
