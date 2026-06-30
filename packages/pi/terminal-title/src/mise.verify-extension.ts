@@ -51,12 +51,17 @@ const EXPECTED_TITLE = 'π ls -l';
 type HandlerFn = (
   event: unknown,
   ctx: TitleContext,
-) => unknown | Promise<unknown>;
+) => unknown;
 
 /**
  * Map of extension event names to registered handlers.
  */
 type RegistrationMap = Map<string, HandlerFn[]>;
+
+/**
+ * Read-only view of extension event registrations.
+ */
+type ReadonlyRegistrationMap = ReadonlyMap<string, readonly HandlerFn[]>;
 
 /**
  * Minimal context shape needed to capture title writes.
@@ -183,7 +188,7 @@ function getHandler(
     registrations,
     event,
   }: Readonly<{
-    registrations: RegistrationMap;
+    registrations: ReadonlyRegistrationMap;
     event: string;
   }>,
 ): HandlerFn {
@@ -196,7 +201,9 @@ function getHandler(
   /**
    * First registered handler. This extension registers one handler per event.
    */
-  const handler = handlers[0];
+  const [
+    handler,
+  ] = handlers;
   if (handler === undefined)
     throw new Error(`missing handler for event: ${event}`,);
   return handler;
@@ -261,7 +268,10 @@ async function verifyBuiltExtension(): Promise<string> {
   /**
    * Capturing context passed to built extension handlers.
    */
-  const { ctx, titles, } = createTitleContext();
+  const {
+    ctx,
+    titles,
+  } = createTitleContext();
   /**
    * Built start handler registered through Pi API.
    */
