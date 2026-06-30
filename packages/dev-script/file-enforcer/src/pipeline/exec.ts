@@ -118,14 +118,15 @@ async function execDirect(
 //region Platform-aware execution
 
 /**
- * Evaluates all predicates concurrently, then executes the command
- * from the first entry (by declaration order) whose predicate succeeded.
+ * Evaluates all predicates concurrently via {@link evaluatePredicate}, then
+ * executes the command via {@link execCommand} from the first entry (by
+ * declaration order) whose predicate succeeded.
  *
  * @param platformCommands - Ordered `[predicate, command]` tuples
  *
  * @returns Stdout from the matched command
  *
- * @throws When no predicate matches
+ * @throws {@link PlatformMatchError} when no predicate matches
  */
 async function execPlatformAware(
   platformCommands: PlatformCommands,

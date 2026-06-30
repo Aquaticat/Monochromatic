@@ -6,7 +6,7 @@ import { resolve, } from 'node:path';
  */
 export type TrackedGlob = {
   /**
-   * Glob pattern passed to `cat()`.
+   * Glob pattern passed to {@link cat}.
    */
   readonly pattern: string;
 
@@ -80,7 +80,7 @@ export function recordReadInActiveCapture(absolutePath: string,): void {
 /**
  * Records a glob expansion in the active source capture.
  *
- * @param pattern - Glob pattern passed to `cat()`.
+ * @param pattern - Glob pattern passed to {@link cat}.
  *
  * @param paths - Paths matched by the glob.
  *
@@ -145,7 +145,7 @@ function capturedGlobs(globs: ReadonlyMap<string, readonly string[]>,): readonly
 /**
  * Captures reads and glob expansions performed by an async builder callback.
  *
- * @param fn - Callback whose calls to `cat()` and `addWatchedPaths()` should be captured.
+ * @param fn - Callback whose calls to {@link cat} and {@link addWatchedPaths} should be captured.
  *
  * @returns Callback result plus captured sources.
  *

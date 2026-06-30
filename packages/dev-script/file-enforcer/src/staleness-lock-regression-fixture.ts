@@ -137,11 +137,11 @@ export async function writeLockOwnerFixture(
  *
  * @param configPath - Config file path to create.
  *
- * @param manifestPath - Manifest path passed to overwrite.
+ * @param manifestPath - Manifest path passed to {@link overwrite}.
  *
- * @param outputPath - Destination file path passed to overwrite.
+ * @param outputPath - Destination file path passed to {@link overwrite}.
  *
- * @param content - Content written by overwrite.
+ * @param content - Content written by {@link overwrite}.
  *
  * @example
  * ```ts

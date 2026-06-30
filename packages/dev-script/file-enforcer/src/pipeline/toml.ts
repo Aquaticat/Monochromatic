@@ -10,8 +10,8 @@ import type { Path, } from '../types.ts';
 /**
  * Extracts a value from TOML content at a structured path.
  *
- * Parses with `parseTomlEdit` in splice mode and resolves the value via
- * `tomlGetValue`. Array segments index array-of-tables; string segments index
+ * Parses with {@link parseTomlEdit} in splice mode and resolves the value via
+ * {@link tomlGetValue}. Array segments index array-of-tables; string segments index
  * keys including those containing literal dots.
  *
  * Return type is `string` for the common path; missing paths surface as
@@ -67,8 +67,8 @@ export function getTomlProperty(
  * arrays of objects become array-of-tables blocks.
  *
  * Each call parses and stringifies. When applying multiple edits to the same
- * source, prefer calling `parseTomlEdit` once, chaining `tomlSet`, and calling
- * `tomlStringify` at the end (all three are exported by
+ * source, prefer calling {@link parseTomlEdit} once, chaining {@link tomlSet},
+ * and calling {@link tomlStringify} at the end (all three are exported by
  * `\@monochromatic-dev/module-toml-edit`).
  *
  * @param content - Source TOML text to edit
@@ -79,11 +79,11 @@ export function getTomlProperty(
  *
  * @returns Updated TOML text
  *
- * @throws Error from `parseTomlEdit` when content is not valid TOML
+ * @throws Error from {@link parseTomlEdit} when content is not valid TOML
  *
- * @throws TomlTypeError when value type mismatches the target node kind
+ * @throws {@link TomlTypeError} when value type mismatches the target node kind
  *
- * @throws TomlImmutableNodeError when path-create would violate TOML structure (e.g. through a scalar)
+ * @throws {@link TomlImmutableNodeError} when path-create would violate TOML structure (e.g. through a scalar)
  *
  * @example
  * ```ts

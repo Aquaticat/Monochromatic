@@ -54,7 +54,8 @@ function isDecimalDigits({ value, }: { readonly value: string; },): boolean {
 }
 
 /**
- * Parses a numeric version tuple from a product directory name.
+ * Parses a numeric version tuple from a product directory name, checking each
+ * dot-separated segment with {@link isDecimalDigits}.
  *
  * @param productName - Directory name under the JetBrains config root.
  *
@@ -151,7 +152,8 @@ export function compareVersionParts(
 }
 
 /**
- * Chooses the newer of an accumulator and a candidate options directory.
+ * Chooses the newer of an accumulator and a candidate options directory,
+ * ranking via {@link compareVersionParts}.
  *
  * @param current - Current accumulator, or the no-directory sentinel.
  *
@@ -191,7 +193,8 @@ function keepLatestOptions(
 //region Discovery: track product directories and pick the latest version
 
 /**
- * Converts one product directory path into an options candidate.
+ * Converts one product directory path into an options candidate, parsing its
+ * version via {@link parseVersionParts}.
  *
  * @param productDirectory - Candidate JetBrains product directory.
  *
@@ -232,14 +235,16 @@ function optionsCandidate(
 }
 
 /**
- * Lists product directories under the JetBrains config root and records them as a
- * glob dependency so file-enforcer staleness tracking reruns when installs change.
+ * Lists product directories under the JetBrains config root and records them
+ * via {@link trackGlob} as a glob dependency so file-enforcer staleness
+ * tracking reruns when installs change.
  *
  * @param jetBrainsConfigDirectory - JetBrains config root directory.
  *
  * @returns Product directory paths found directly under the config root.
  *
- * @throws When the JetBrains config root exists but cannot be listed.
+ * @throws When the JetBrains config root exists but cannot be listed; absence
+ * itself is detected via {@link caughtErrorHasCode} and treated as no products.
  *
  * @example
  * ```ts
@@ -299,10 +304,12 @@ async function trackedProductDirectories(
 }
 
 /**
- * Finds the latest JetBrains product options directory matching the given prefixes.
- * Whether the chosen options directory actually contains the desired files is left
- * to the caller, so a newer install without those files yields a clear miss rather
- * than mutating an older install.
+ * Finds the latest JetBrains product options directory matching the given prefixes,
+ * by listing candidates via {@link trackedProductDirectories}, filtering them to
+ * matching products via {@link optionsCandidate}, and reducing with
+ * {@link keepLatestOptions}. Whether the chosen options directory actually contains
+ * the desired files is left to the caller, so a newer install without those files
+ * yields a clear miss rather than mutating an older install.
  *
  * @param productPrefixes - Product name prefixes (for example `IntelliJIdea`, `IdeaIC`).
  *

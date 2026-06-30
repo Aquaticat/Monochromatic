@@ -58,11 +58,15 @@ async function readTrackedExisting(
 //region Public task: non-blocking editor-local LSP4IJ sync
 
 /**
- * Syncs LSP4IJ language-server settings in the latest JetBrains product config.
- * Missing JetBrains config, settings files, or base server are intentionally
- * non-blocking because not every developer uses this editor integration.
- * Corrupt config discovery, unreadable settings, XML update failures, and
- * write failures propagate so broken local state does not look like absence.
+ * Syncs LSP4IJ language-server settings in the latest JetBrains product config,
+ * located via {@link latestJetbrainsOptionsDirectory}. Missing JetBrains
+ * config, settings files, or base server (matched via
+ * {@link findBaseServerEntry}) are intentionally non-blocking because not
+ * every developer uses this editor integration. Corrupt config discovery,
+ * unreadable settings, XML update failures (from
+ * {@link updatedLanguageSettingsXml} and {@link updatedUserDefinedXml}), and
+ * write failures (from {@link overwrite}) propagate so broken local state
+ * does not look like absence.
  *
  * @param settings - Declarative LSP4IJ server settings policy.
  *

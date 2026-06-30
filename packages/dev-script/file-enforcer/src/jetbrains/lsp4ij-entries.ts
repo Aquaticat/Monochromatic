@@ -17,11 +17,11 @@ const OPTION_INDENT = '              ';
 /**
  * Builds an XML option line copied from a source entry block, when present.
  *
- * @param block - Source entry block to copy from.
+ * @param block - Source entry block to copy from, read via {@link getXmlOptionValue}.
  *
  * @param optionName - Option to copy.
  *
- * @returns XML option line, or {@link ABSENT_XML_VALUE} when the source lacks the option.
+ * @returns XML option line formatted via {@link xmlOptionLine}, or {@link ABSENT_XML_VALUE} when the source lacks the option.
  *
  * @example
  * ```ts
@@ -55,9 +55,9 @@ function copiedOptionLine(
 /**
  * Builds file-pattern mapping lines binding file names to a language id.
  *
- * @param fileNames - File names mapped to the language id.
+ * @param fileNames - File names mapped to the language id, each escaped via {@link escapeXmlAttribute}.
  *
- * @param languageId - LSP4IJ language id the files map to.
+ * @param languageId - LSP4IJ language id the files map to, escaped via {@link escapeXmlAttribute}.
  *
  * @returns XML mapping block lines.
  *
@@ -99,9 +99,9 @@ function mappingLines(
 /**
  * Builds a language-server settings entry holding embedded config and schema JSON.
  *
- * @param serverId - LSP4IJ server id used as the entry key.
+ * @param serverId - LSP4IJ server id used as the entry key, escaped via {@link escapeXmlAttribute}.
  *
- * @param configContent - Flat language-server settings JSON text.
+ * @param configContent - Flat language-server settings JSON text, formatted via {@link xmlOptionLine}.
  *
  * @param schemaContent - LSP4IJ settings schema JSON text.
  *
@@ -155,8 +155,9 @@ export function buildLanguageSettingsEntry(
 
 /**
  * Builds a user-defined language-server entry derived from a source server.
- * Listed options are copied from the source block; the entry then declares its
- * own id, name, and file-name mappings.
+ * Listed options are copied from the source block via {@link copiedOptionLine};
+ * the entry then declares its own id, name, and file-name mappings (via
+ * {@link mappingLines}).
  *
  * @param copyOptions - Option names copied from the source block, in output order.
  *
@@ -164,11 +165,13 @@ export function buildLanguageSettingsEntry(
  *
  * @param languageId - LSP4IJ language id the files map to.
  *
- * @param serverId - New server id used as the entry key and serverId option.
+ * @param serverId - New server id used as the entry key and serverId option,
+ * escaped via {@link escapeXmlAttribute} and formatted via {@link xmlOptionLine}.
  *
- * @param serverName - New server display name.
+ * @param serverName - New server display name, formatted via {@link xmlOptionLine}.
  *
- * @param sourceBlock - Existing server entry block to copy command and installer options from.
+ * @param sourceBlock - Existing server entry block to copy command and installer
+ * options from; entries resolving to {@link ABSENT_XML_VALUE} are dropped.
  *
  * @returns XML entry block.
  *

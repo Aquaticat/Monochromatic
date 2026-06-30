@@ -43,14 +43,14 @@ const _globs: Map<string, readonly string[]> = new Map<string, readonly string[]
 
 /**
  * Absolute paths of files read during config execution.
- * Populated by `cat()` as a side effect so watch mode knows what to monitor.
+ * Populated by {@link cat} as a side effect so watch mode knows what to monitor.
  * Read-only; use {@link trackRead} or {@link addWatchedPaths} to add entries.
  */
 export const reads: ReadonlySet<string> = _reads;
 
 /**
  * Absolute paths of all managed destination files.
- * Populated by `overwrite()` / `overwriteEach()` even when content
+ * Populated by {@link overwrite} / {@link overwriteEach} even when content
  * is unchanged and the actual write is skipped.
  * Read-only; use {@link trackDest} to add entries.
  */
@@ -59,7 +59,7 @@ export const writes: ReadonlySet<string> = _writes;
 /**
  * Timestamps (ms since epoch) of actual file writes, keyed by absolute path.
  * Only populated when content was different and a real write occurred.
- * Used by `classifyEvent` to distinguish our write echoes from external edits
+ * Used by {@link classifyEvent} to distinguish our write echoes from external edits
  * by comparing against the file's mtime.
  * Read-only; use {@link trackWriteTime} or {@link setWriteTimestamp} to add entries.
  */
@@ -78,7 +78,7 @@ export const globs: ReadonlyMap<string, readonly string[]> = _globs;
 /**
  * Clears tracking state between watch-mode re-runs so stale paths
  * from a previous execution don't linger.
- * Preserves `writeTimestamps` because echo detection needs to survive across re-runs.
+ * Preserves {@link writeTimestamps} because echo detection needs to survive across re-runs.
  *
  * @example
  * ```ts
@@ -191,7 +191,7 @@ export function setWriteTimestamp(
 /**
  * Records a glob expansion in the active source capture.
  *
- * @param pattern - Glob pattern passed to `cat()`.
+ * @param pattern - Glob pattern passed to {@link cat}.
  *
  * @param paths - Paths matched by the glob.
  *
@@ -227,8 +227,8 @@ export function trackGlob(
 
 /**
  * Escape hatch for manually registering additional paths that watch mode
- * should monitor. Useful for dependencies that `cat()` cannot track
- * automatically; for example, files consumed by `exec()` or external
+ * should monitor. Useful for dependencies that {@link cat} cannot track
+ * automatically; for example, files consumed by {@link exec} or external
  * tools whose inputs are opaque to the enforcer.
  *
  * @param paths - Array of file paths (resolved to absolute) to add to the read set

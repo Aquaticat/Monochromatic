@@ -90,7 +90,7 @@ function setOwnJsonValue(
  *
  * @returns Parsed JSON object.
  *
- * @throws Error when content does not parse to a non-array object.
+ * @throws Error when content does not parse to a non-array object, per {@link isJsonObject}.
  *
  * @example
  * ```ts
@@ -136,7 +136,8 @@ export function formatJsonObject({ value, }: { readonly value: Readonly<JsonObje
 }
 
 /**
- * Copies an object without one key, preserving the order of remaining keys.
+ * Copies an object without one key, preserving the order of remaining keys
+ * by assigning each via {@link setOwnJsonValue}.
  *
  * @param object - Source object.
  *
@@ -177,13 +178,13 @@ export function omitJsonKey(
 /**
  * Merges scalar overrides and array unions into a flat JSON object.
  * Existing keys keep their position; new keys append in argument order, so
- * stable inputs produce byte-stable `formatJsonObject` output. `set` is applied
+ * stable inputs produce byte-stable {@link formatJsonObject} output. `set` is applied
  * before `arrayUnion`; array unions keep existing string members then append new
  * ones, deduplicated.
  *
  * @param base - Source object copied before edits.
  *
- * @param set - Scalar or structured values to assign by key.
+ * @param set - Scalar or structured values to assign by key, each via {@link setOwnJsonValue}.
  *
  * @param arrayUnion - String arrays unioned into the existing array at each key.
  *
@@ -256,7 +257,7 @@ export function mergeFlatJson(
  *
  * @param base - Source object copied before edits.
  *
- * @param defaults - Values applied only for keys missing from base.
+ * @param defaults - Values applied only for keys missing from base, each via {@link setOwnJsonValue}.
  *
  * @returns Merged copy of base.
  *

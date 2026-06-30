@@ -3,7 +3,7 @@ import spawn from 'nano-spawn';
 //region Types
 
 /**
- * Direct command with arguments, executed as `spawn(cmd, args)`.
+ * Direct command with arguments, executed as {@link spawn}`(cmd, args)`.
  * Exit code 0 = match, non-zero = no match.
  * No shell involved; fully cross-platform.
  *

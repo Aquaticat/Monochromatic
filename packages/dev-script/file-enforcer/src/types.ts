@@ -5,7 +5,7 @@
  * index into array elements. Mixed forms compose for nested array-of-tables
  * access such as `['fruits', 0, 'name',]`.
  *
- * Coincides structurally with `TomlPath` from `\@monochromatic-dev/module-toml-edit`
+ * Coincides structurally with {@link TomlPath} from `\@monochromatic-dev/module-toml-edit`
  * so values flow without conversion. Defined locally so callers do not have to
  * import a TOML-named type for JSON helpers.
  *

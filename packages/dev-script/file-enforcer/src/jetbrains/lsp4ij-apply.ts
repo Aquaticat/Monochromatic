@@ -354,7 +354,8 @@ export function updatedLanguageSettingsXml(
 }
 
 /**
- * Builds updated user-defined server XML with each scoped server entry.
+ * Builds updated user-defined server XML with each scoped server entry, via
+ * {@link replaceOrInsertXmlEntry} and {@link buildUserDefinedEntry}.
  *
  * @param userDefinedXml - Current user-defined language-server XML.
  *

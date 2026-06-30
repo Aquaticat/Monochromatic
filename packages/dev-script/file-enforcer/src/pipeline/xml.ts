@@ -62,7 +62,7 @@ function elementHead(
 }
 
 /**
- * Reads an element's tag name from source.
+ * Reads an element's tag name from source, locating the tag via {@link elementHead}.
  *
  * @param element - XML element syntax node.
  *
@@ -105,7 +105,7 @@ function tagNameOf(
  *
  * @param raw - Attribute value source text including any quote characters.
  *
- * @returns Quote-free, entity-decoded attribute value.
+ * @returns Quote-free attribute value, entity-decoded via {@link unescapeXmlAttribute}.
  *
  * @example
  * ```ts
@@ -128,7 +128,8 @@ function decodeAttributeValue({ raw, }: { readonly raw: string; },): string {
 }
 
 /**
- * Reads one attribute value from an element by name, ignoring attribute order.
+ * Reads one attribute value from an element by name, ignoring attribute order,
+ * locating the tag via {@link elementHead}.
  *
  * @param element - XML element syntax node.
  *
@@ -136,7 +137,7 @@ function decodeAttributeValue({ raw, }: { readonly raw: string; },): string {
  *
  * @param name - Attribute name to read.
  *
- * @returns Decoded attribute value, or {@link ABSENT_XML_VALUE} when absent.
+ * @returns Attribute value decoded via {@link decodeAttributeValue}, or {@link ABSENT_XML_VALUE} when absent.
  *
  * @example
  * ```ts
@@ -187,7 +188,8 @@ function elementAttribute(
 }
 
 /**
- * Collects every element with a given tag name, in document order.
+ * Collects every element with a given tag name, in document order, matching
+ * names via {@link tagNameOf}.
  *
  * @param tree - Parsed syntax tree.
  *
@@ -265,7 +267,8 @@ function indentStart({
 //region XML entry editing: locate entries, options, and insertion points
 
 /**
- * Lists JetBrains persistent-state map entries that carry a key attribute.
+ * Lists JetBrains persistent-state map entries that carry a key attribute,
+ * found via {@link elementsByTag} and read via {@link elementAttribute}.
  *
  * @param xml - XML document text.
  *
@@ -312,7 +315,7 @@ export function listXmlEntries({ xml, }: { readonly xml: string; },): readonly X
 }
 
 /**
- * Finds one XML map entry by key.
+ * Finds one XML map entry by key, searching entries from {@link listXmlEntries}.
  *
  * @param xml - XML document text.
  *
@@ -345,7 +348,8 @@ export function findXmlEntryByKey(
 }
 
 /**
- * Reads an option element's value by name from an entry block, ignoring order.
+ * Reads an option element's value by name from an entry block, ignoring order,
+ * found via {@link elementsByTag} and read via {@link elementAttribute}.
  *
  * @param block - XML block containing option elements.
  *
@@ -395,10 +399,12 @@ export function getXmlOptionValue(
 }
 
 /**
- * Replaces an XML map entry if present, otherwise inserts before the last map close.
- * Locating splice points by parsed structure (not literal indentation) keeps edits
- * stable across IntelliJ reformatting; replacement drops the existing line
- * indentation so repeated runs do not accrete leading whitespace.
+ * Replaces an XML map entry (located via {@link findXmlEntryByKey}) if present,
+ * otherwise inserts before the last map element's (found via {@link elementsByTag})
+ * close tag. Locating splice points by parsed structure (not literal indentation,
+ * trimmed via {@link indentStart}) keeps edits stable across IntelliJ reformatting;
+ * replacement drops the existing line indentation so repeated runs do not accrete
+ * leading whitespace.
  *
  * @param xml - XML document text.
  *

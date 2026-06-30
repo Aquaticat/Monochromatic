@@ -21,9 +21,9 @@ export function dedup(content: string,): string {
 /**
  * Extracts a nested property from JSON content using a structured path.
  *
- * Backed by `dot-prop`, called with array segments (no dot-string translation),
- * which means keys containing literal dots resolve correctly: `['a.b',]` selects
- * key `"a.b"`, not nested `a` then `b`.
+ * Backed by {@link dotPropGet} (`dot-prop`'s `getProperty`), called with array
+ * segments (no dot-string translation), which means keys containing literal
+ * dots resolve correctly: `['a.b',]` selects key `"a.b"`, not nested `a` then `b`.
  *
  * Return type is `string` for the common path; on missing path the underlying
  * `JSON.stringify(undefined)` returns `undefined`, so callers can still rely on

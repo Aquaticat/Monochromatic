@@ -75,7 +75,8 @@ function decodeXmlCodePoint({
 }
 
 /**
- * Decodes one XML entity body.
+ * Decodes one XML entity body, delegating numeric entities to
+ * {@link decodeXmlCodePoint}.
  *
  * @param entity - Entity body between ampersand and semicolon.
  *
@@ -104,7 +105,8 @@ function decodeXmlEntity({ entity, }: { readonly entity: string; },): string {
 }
 
 /**
- * Decodes XML attribute text used by JetBrains persistent-state files.
+ * Decodes XML attribute text used by JetBrains persistent-state files, via
+ * {@link decodeXmlEntity} for each entity found.
  *
  * @param value - XML attribute value without surrounding quote characters.
  *
@@ -197,7 +199,7 @@ export function escapeXmlAttribute({ value, }: { readonly value: string; },): st
  *
  * @param name - Option name.
  *
- * @param value - Raw option value.
+ * @param value - Raw option value, escaped via {@link escapeXmlAttribute}.
  *
  * @returns XML option line.
  *

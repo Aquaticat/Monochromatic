@@ -69,7 +69,8 @@ export type FuzzRunPlan = {
 const BOUNDED_BUDGET = 0;
 
 /**
- * Parses the campaign budget from the environment.
+ * Parses the campaign budget from the {@link FUZZ_BUDGET_ENV_NAME} environment
+ * variable.
  *
  * @returns Positive millisecond budget, or {@link BOUNDED_BUDGET} for
  *   bounded mode.
@@ -95,11 +96,12 @@ function campaignBudgetMs(): number {
 }
 
 /**
- * Resolves the run plan from the environment. Call once per file and reuse
- * across that file's properties.
+ * Resolves the run plan from the environment via {@link campaignBudgetMs}.
+ * Call once per file and reuse across that file's properties.
  *
  * @returns Bounded plan when the campaign budget is unset, otherwise a
- *   time-budgeted campaign plan.
+ *   time-budgeted campaign plan with {@link CAMPAIGN_TIMEOUT_MARGIN_MS} added
+ *   to the harness timeout.
  *
  * @example
  * ```ts
