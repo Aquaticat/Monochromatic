@@ -23,7 +23,7 @@ const NULLISH_KEYWORD_TYPES: ReadonlySet<string> = new Set([
  * Ranked decision-tree diagnostic for nullish-union reports.
  *
  * The sentinel branch must satisfy the sibling
- * `no-low-information-symbol-description` rule, so examples use specific
+ * {@link noLowInformationSymbolDescription} rule, so examples use specific
  * multi-word Symbol descriptions rather than vague labels like `not-found`.
  */
 const NO_NULLISH_UNION_MESSAGE: string = [
@@ -90,7 +90,7 @@ function isNullishMember(member: ESTree.TSType,): boolean {
  * - Value whose presence is establishable here: guard with `if` and return
  *   early so the typed slot receives only `T`.
  * - Absence that should fail loud at this boundary: throw via
- *   `nonNullishOrThrow` from `@monochromatic-dev/module-or-throw`.
+ *   {@link nonNullishOrThrow} from `@monochromatic-dev/module-or-throw`.
  * - Absence that must travel onward as a real value: mint a domain-specific
  *   `unique symbol` sentinel for this exact absence condition, or carry a
  *   distinct non-empty domain value when the domain has one. Consumers narrow
@@ -101,10 +101,10 @@ function isNullishMember(member: ESTree.TSType,): boolean {
  *   unavoidable.
  *
  * This rule only matches `TSUndefinedKeyword` and `TSNullKeyword` inside
- * `TSUnionType`; the sibling `no-optional-escape` rule owns `| void`, tuple
- * encodings, `Partial<T>`, and other type-level fake-optionality escapes. A
- * standalone `type X = undefined` or `type X = null` is not a union and is not
- * flagged.
+ * `TSUnionType`; the sibling {@link noOptionalEscape} rule owns `| void`,
+ * tuple encodings, `Partial<T>`, and other type-level fake-optionality
+ * escapes. A standalone `type X = undefined` or `type X = null` is not a
+ * union and is not flagged.
  *
  * @example
  * ```ts

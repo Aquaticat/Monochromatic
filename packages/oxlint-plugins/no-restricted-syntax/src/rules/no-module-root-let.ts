@@ -18,7 +18,7 @@ import type {
  *
  * No allowlist heuristics: modules are not called and do not return.
  * The remediation paths are a concrete data structure (`Map`, `WeakMap`,
- * `Set`, `WeakSet` for mutable containers), the `memoize()` helper from
+ * `Set`, `WeakSet` for mutable containers), the {@link memoize} helper from
  * `@monochromatic-dev/module-memoize` for cached computations, or wrapping
  * initialization in an IIFE assigned to const.
  *

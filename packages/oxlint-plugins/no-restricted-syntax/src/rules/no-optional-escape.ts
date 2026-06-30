@@ -10,8 +10,9 @@ import type {
 /**
  * Sentinel returned by every classifier below when a node matches no banned
  * fake-optional form. A unique `Symbol` keeps the "no match" signal out of a
- * `string | undefined` union (which `no-nullish-union` bans) and dogfoods the
- * real-sentinel pattern this rule prescribes as the fix for fake optionality.
+ * `string | undefined` union (which {@link noNullishUnion} bans) and
+ * dogfoods the real-sentinel pattern this rule prescribes as the fix for
+ * fake optionality.
  */
 const NO_MATCH = Symbol('node matches no banned fake-optional form',);
 
@@ -171,7 +172,7 @@ function falsyLiteralMessageId(member: ESTree.TSLiteralType,): string | typeof N
  * Handles the keyword widening forms (`void`, `never`, `unknown`, `any`) and
  * the empty-object form (`{}`) directly; delegates falsy literals to
  * {@link falsyLiteralMessageId}, gated on `hasNonLiteral`. `undefined` and
- * `null` are intentionally not matched here: `no-nullish-union` owns them.
+ * `null` are intentionally not matched here: {@link noNullishUnion} owns them.
  *
  * @param member - union member to classify
  *
@@ -328,7 +329,7 @@ function typeReferenceMessageId(node: ESTree.TSTypeReference,): string | typeof 
 /**
  * Bans every statically-detectable type-level encoding of "optional / absent /
  * empty-as-absent" except the two nullish keywords (`undefined`, `null`), which
- * `no-restricted-syntax/no-nullish-union` already owns.
+ * {@link noNullishUnion} already owns.
  *
  * `tsconfig` sets `exactOptionalPropertyTypes: true`. Agents repeatedly invent
  * new encodings to dodge that setting: once `| undefined` and `| null` were
@@ -350,10 +351,11 @@ function typeReferenceMessageId(node: ESTree.TSTypeReference,): string | typeof 
  *   `Partial`). The `Required` form `{ [K in keyof T]-?: ... }` is not flagged.
  *
  * Allowed (not flagged): a bare `(): void` return (only `void` inside a union
- * is banned); `T | null` / `T | undefined` (owned by `no-nullish-union`); a
- * fixed non-empty tuple (`[number, string]`); a leading-element variadic tuple
- * (`[T, ...U[]]`); a real `Symbol` sentinel via `typeof MY_SYMBOL`; a non-empty
- * literal member (`T | 42`, `T | "pending"`); a real `Record<K, V>` / `Pick`.
+ * is banned); `T | null` / `T | undefined` (owned by {@link noNullishUnion});
+ * a fixed non-empty tuple (`[number, string]`); a leading-element variadic
+ * tuple (`[T, ...U[]]`); a real `Symbol` sentinel via `typeof MY_SYMBOL`; a
+ * non-empty literal member (`T | 42`, `T | "pending"`); a real
+ * `Record<K, V>` / `Pick`.
  *
  * Statically undetectable (documented blind spots, addressed by review): a
  * field honestly typed `string` but defaulted to `""` at runtime; a `T[]` whose
