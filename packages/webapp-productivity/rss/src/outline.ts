@@ -29,7 +29,7 @@ const l = tagged({
  * OPML outline with a required, validated `xmlUrl` property.
  * Represents a feed subscription entry ready for fetching.
  *
- * @see `Opml` for the base outline type
+ * @see {@link Opml} for the base outline type
  */
 export type InnerOutlineWUrl = Opml.Outline<string> & { xmlUrl: string; };
 
@@ -37,7 +37,8 @@ export type InnerOutlineWUrl = Opml.Outline<string> & { xmlUrl: string; };
 
 /**
  * Extracts validated inner outlines with xmlUrl from raw OPML source URLs.
- * Orchestrates the full pipeline: fetch texts, parse XML, extract outlines, validate URLs.
+ * Orchestrates the full pipeline: fetch texts via {@link getOPMLTexts}, parse
+ * XML through {@link parseSafe}, extract outlines, validate URLs.
  *
  * @param opmls - Validated OPML source URLs
  *

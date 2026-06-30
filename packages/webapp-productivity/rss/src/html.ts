@@ -41,7 +41,9 @@ const LIMIT = 100;
 export const INDEX_HTML_END = '</body></html>';
 
 /**
- * Builds the HTML body from items, filtering out entries present in the ignore list.
+ * Builds the HTML body from items, filtering out entries present in the ignore
+ * list ({@link getIgnoreContent} read through {@link parseIgnoredLinks}), then
+ * renders the surviving items via {@link itemToFeed}.
  *
  * @param options - Feed items with publication dates to render
  *

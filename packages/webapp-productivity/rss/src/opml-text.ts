@@ -35,6 +35,8 @@ const l = tagged({
 /**
  * Fetches OPML file contents from all configured source URLs.
  * Handles HTTP(S) and file:// protocols, discarding unreachable sources with warnings.
+ * Relative `file://` paths resolve against {@link DOT_ENV_PATH}, throwing when
+ * it is {@link DOT_ENV_ABSENT}.
  *
  * @param opmls - Validated OPML source URLs
  *

@@ -42,7 +42,9 @@ const l = tagged({
 //region Memoized pipeline: Pull-based feed processing with content-derived cache invalidation
 
 /**
- * Memoized pipeline: OPML URLs -\> outlines -\> feeds -\> sorted items.
+ * Memoized pipeline: OPML URLs ({@link getOpmls}) -\> outlines
+ * ({@link getOutlinesFromOpmls}) -\> feeds ({@link getSortedFeeds}) -\>
+ * sorted items ({@link getSortedItems}).
  * Cache invalidates when the time bucket advances (controlled by RSS_FETCH_INTERVAL_MS).
  */
 const memoizedGetSortedItems = await memoizeAsync({
@@ -82,8 +84,10 @@ const memoizedGetSortedItems = await memoizeAsync({
 },);
 
 /**
- * Memoized HTML renderer: sorted items -\> filtered + rendered HTML body.
- * Invalidates when either the fetch time bucket or ignore file content changes.
+ * Memoized HTML renderer: sorted items -\> filtered + rendered HTML body via
+ * {@link getIndexHtmlBody}.
+ * Invalidates when either the fetch time bucket ({@link getFetchSalt}) or
+ * ignore file content changes.
  */
 const memoizedGetHtmlBody = await memoizeAsync({
   fn: async function renderPipeline(): Promise<string> {
@@ -119,9 +123,9 @@ const memoizedGetHtmlBody = await memoizeAsync({
 },);
 
 /**
- * Computes the render salt and calls the memoized HTML body renderer.
- * Salt combines the fetch time bucket with ignore file content,
- * so changes to either invalidate the render cache.
+ * Computes the render salt and calls {@link memoizedGetHtmlBody}.
+ * Salt combines the fetch time bucket with {@link getIgnoreContent}'s
+ * ignore file content, so changes to either invalidate the render cache.
  *
  * @returns Rendered HTML body string
  */

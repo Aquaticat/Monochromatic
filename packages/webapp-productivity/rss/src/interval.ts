@@ -40,7 +40,7 @@ const DEFAULT_FETCH_INTERVAL_MS = MINUTES_PER_INTERVAL
  * Controls the time bucket size for the fetch memoize salt.
  * Override with the `RSS_FETCH_INTERVAL_MS` environment variable.
  *
- * @see `getFetchSalt` for how this controls cache invalidation
+ * @see {@link getFetchSalt} for how this controls cache invalidation
  */
 export const FETCH_INTERVAL_MS: number = v.parse(
   v.pipe(
@@ -57,8 +57,9 @@ l.debug(`fetch interval: ${String(FETCH_INTERVAL_MS,)}ms`,);
 
 /**
  * Computes a time-bucketed salt for fetch memoization.
- * Returns the same value within each interval window,
- * causing fetch results to be reused until the window advances.
+ * Returns the same value within each interval window of length
+ * {@link FETCH_INTERVAL_MS}, causing fetch results to be reused until
+ * the window advances.
  *
  * @returns String representation of the current time bucket
  *

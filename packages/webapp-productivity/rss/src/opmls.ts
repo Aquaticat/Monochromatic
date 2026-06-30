@@ -83,11 +83,12 @@ export const OPMLS_SCHEMA: v.GenericSchema<string[], string[]> = v.array(
 );
 
 /**
- * Reads and validates OPML source URLs from the `OPMLS` environment variable.
+ * Reads and validates OPML source URLs from the `OPMLS` environment variable
+ * against {@link OPMLS_SCHEMA}.
  *
  * @returns Validated array of OPML source URLs
  *
- * @throws `v.ValiError` if any URL fails schema validation
+ * @throws {@link ValiError} if any URL fails schema validation
  *
  * @example
  * ```ts

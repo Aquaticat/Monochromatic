@@ -16,9 +16,9 @@ l.debug(`asset module loading`,);
 /**
  * CSS source for the RSS reader interface.
  * Read from `src/client.css` at startup; inlined into served HTML.
- * Also used by `itemToFeed` in html.ts for iframe content styling.
+ * Also used by {@link itemToFeed} in html.ts for iframe content styling.
  *
- * @see `indexHtmlStart` for where it is inlined into the page
+ * @see {@link indexHtmlStart} for where it is inlined into the page
  */
 export const css: string = await readFile(
   new URL(
@@ -32,7 +32,7 @@ export const css: string = await readFile(
  * Bundled client-side JavaScript for the RSS reader interface.
  * Pre-built by tsdown via `mise run build:js:client` and read from disk at startup.
  *
- * @see `indexHtmlStart` for where it is inlined into the page
+ * @see {@link indexHtmlStart} for where it is inlined into the page
  */
 export const js: string = await readFile(
   './dist/client/client.js',
@@ -43,9 +43,9 @@ export const js: string = await readFile(
  * Opening HTML fragment (doctype through body start) with inlined CSS and JS.
  * Served as the beginning of every page response.
  *
- * @see `css` for the inlined stylesheet
+ * @see {@link css} for the inlined stylesheet
  *
- * @see `js` for the inlined client bundle
+ * @see {@link js} for the inlined client bundle
  */
 export const indexHtmlStart: string = `<!DOCTYPE html>
     <html lang=en>

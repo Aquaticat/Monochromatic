@@ -46,6 +46,7 @@ function resolveThreshold(
 /**
  * Attaches an IntersectionObserver to an element, dispatching custom events
  * for scroll lifecycle transitions (enter, leave, half-visible, fully visible, scrolled out).
+ * Threshold configuration is resolved via {@link resolveThreshold}.
  *
  * @param scrollOptions - Element to observe and optional IntersectionObserver configuration
  *
@@ -147,7 +148,7 @@ function addScrollEvents(scrollOptions: {
 /**
  * All feed elements on the page, bound to scroll-based ignore behavior.
  *
- * @see `addScrollEvents` for the scroll lifecycle that triggers ignore calls
+ * @see {@link addScrollEvents} for the scroll lifecycle that triggers ignore calls
  */
 const elements: NodeListOf<HTMLElement> = document.querySelectorAll<HTMLElement>(
   '.feed',

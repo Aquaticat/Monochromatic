@@ -33,7 +33,8 @@ const l = tagged({
 //region HTTP handlers: Serve rendered HTML and persist ignored items
 
 /**
- * Serves the full rendered HTML page with inlined assets and feed body.
+ * Serves the full rendered HTML page with inlined assets and feed body,
+ * wrapping the body between {@link indexHtmlStart} and {@link INDEX_HTML_END}.
  *
  * @param options - Contains the async function that returns the rendered HTML body
  *
@@ -73,7 +74,7 @@ export async function serveIndex(options: {
 }
 
 /**
- * Records an ignored feed item to the JSONL ignore file.
+ * Records an ignored feed item to the JSONL ignore file under {@link IGNORE_PATH}.
  * Creates the ignore directory and file if they do not exist.
  *
  * @param request - Incoming request with JSON body containing a `link` property

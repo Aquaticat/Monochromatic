@@ -37,6 +37,8 @@ const l = tagged({
 
 /**
  * Extracts, normalizes, dates, and sorts all items from sorted feeds.
+ * Items come from {@link extractItems} and pass through {@link getNormalizedItem}
+ * before dates are parsed and sorted.
  *
  * @param feeds - Date-sorted feeds with outline metadata
  *

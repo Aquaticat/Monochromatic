@@ -46,6 +46,8 @@ export type FeedWOutline = DeepReadonly<{
 /**
  * Fetches, parses, and date-sorts feeds from OPML outlines.
  * Handles both RSS and Atom formats, discarding feeds that fail to fetch or parse.
+ * Delegates fetching and parsing to {@link fetchAndParseFeeds}, then sorts by
+ * the date {@link extractDate} reads from each feed.
  *
  * @param outlines - Outlines with validated xmlUrl properties
  *
@@ -87,7 +89,9 @@ export async function getSortedFeeds(
 }
 
 /**
- * Fetches and parses feeds from outlines, discarding failures.
+ * Fetches and parses feeds from outlines, discarding failures. Parses each
+ * feed text with {@link parseAtomFeed} or {@link parseRssFeed} depending on
+ * the outline's type.
  *
  * @param outlines - Outlines with xmlUrl properties
  *
@@ -184,7 +188,9 @@ const coerceDateSchema = v.pipe(
 );
 
 /**
- * Extracts the publication date from a feed, falling back to epoch.
+ * Extracts the publication date from a feed, falling back to epoch. The raw
+ * value runs through {@link coerceDateSchema} to normalize string, number,
+ * or `Date` inputs.
  *
  * @param feedWOutline - Feed with outline metadata
  *

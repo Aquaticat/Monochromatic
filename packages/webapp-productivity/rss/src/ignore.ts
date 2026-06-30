@@ -85,6 +85,7 @@ function readIgnoreFile(dirent: DeepReadonly<Dirent>,): Promise<string> {
 /**
  * Reads the raw text content of all ignore JSONL files.
  * Used both for content-derived memoize salt and for link filtering.
+ * Lists entries via {@link readIgnoreDir} and reads each one with {@link readIgnoreFile}.
  *
  * @returns Concatenated raw text from all ignore files, or empty string if directory is missing
  *
