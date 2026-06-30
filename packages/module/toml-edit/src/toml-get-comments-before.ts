@@ -1,5 +1,5 @@
 /**
- * `tomlGetCommentsBefore`: attached comment block immediately before a path.
+ * {@link tomlGetCommentsBefore}: attached comment block immediately before a path.
  *
  * @module
  */
@@ -18,12 +18,13 @@ import type {
 
 /**
  * The contiguous block of `Block` comments immediately preceding the node
- * at `path`, with no blank line between any pair. A comment separated from
- * the node by a blank line is NOT attached.
+ * at `path`, found via {@link attachedCommentsFor}, with no blank line
+ * between any pair. A comment separated from the node by a blank line is
+ * NOT attached.
  *
  * @returns Computed result (`readonly TomlComment[]`).
  *
- * @throws TomlPathNotFoundError when `path` does not exist or was deleted.
+ * @throws {@link TomlPathNotFoundError} when `path` does not exist or was deleted.
  *
  * @example
  * ```toml

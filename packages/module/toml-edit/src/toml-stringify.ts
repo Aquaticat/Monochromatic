@@ -1,5 +1,5 @@
 /**
- * `tomlStringify`: emit the TOML text for the current state.
+ * {@link tomlStringify}: emit the TOML text for the current state.
  *
  * @module
  */
@@ -9,7 +9,8 @@ import { spliceEmit, } from './splice.ts';
 import type { TomlEditState, } from './types.ts';
 
 /**
- * Emit the current state as TOML text.
+ * Emit the current state as TOML text, dispatching to {@link spliceEmit} or
+ * {@link canonicalEmit} per `edit.mode`.
  *
  * In splice mode, returns the source verbatim for unmutated regions plus
  * canonical re-emission of mutated nodes; with zero deltas the result is

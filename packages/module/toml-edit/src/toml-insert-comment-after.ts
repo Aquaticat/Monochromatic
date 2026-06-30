@@ -1,5 +1,5 @@
 /**
- * `tomlInsertCommentAfter`: add a same-line trailing inline comment.
+ * {@link tomlInsertCommentAfter}: add a same-line trailing inline comment.
  *
  * @module
  */
@@ -18,13 +18,13 @@ import type {
 /**
  * Append a same-line inline `# <comment>` after the value at `path`.
  *
- * The comment is stored as a pending `Insertion` and emitted at
- * `tomlStringify` time. It is placed right after the node's end on the
+ * The comment is stored as a pending {@link Insertion} and emitted at
+ * {@link tomlStringify} time. It is placed right after the node's end on the
  * same source line, before the newline.
  *
- * @returns A fresh `TomlEditState` reflecting the change.
+ * @returns A fresh {@link TomlEditState} reflecting the change.
  *
- * @throws TomlPathNotFoundError when `path` does not exist.
+ * @throws {@link TomlPathNotFoundError} when `path` does not exist.
  *
  * @example
  * ```ts

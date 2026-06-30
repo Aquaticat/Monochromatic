@@ -1,5 +1,5 @@
 /**
- * `tomlGetValue`: read the effective JS value at a path.
+ * {@link tomlGetValue}: read the effective JS value at a path.
  *
  * @module
  */
@@ -14,9 +14,9 @@ import type {
 
 /**
  * The effective JS value at `path`, or `undefined` if the path does not
- * exist (or was deleted by a pending `tomlDelete`).
+ * exist (or was deleted by a pending {@link tomlDelete}).
  *
- * Routes through `effectiveAt` so a `tomlSet` on the same state (or a
+ * Routes through {@link effectiveAt} so a {@link tomlSet} on the same state (or a
  * branched state) is reflected immediately.
  *
  * For tables and inline tables, returns the table's nested object.

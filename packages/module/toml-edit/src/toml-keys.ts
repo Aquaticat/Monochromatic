@@ -1,5 +1,5 @@
 /**
- * `tomlKeys`: list the keys at a path (or at the root).
+ * {@link tomlKeys}: list the keys at a path (or at the root).
  *
  * @module
  */
@@ -16,7 +16,8 @@ import type {
 } from './types.ts';
 
 /**
- * Return the immediate children of the resolved container at `path`.
+ * Return the immediate children of the resolved container at `path`,
+ * resolved via {@link effectiveAt}.
  *
  * For tables and inline tables, returns key strings. For arrays and
  * array-of-tables, returns numeric indices. For a missing path, returns
@@ -129,6 +130,8 @@ export function tomlKeys(
  * First key of each direct child entry in a table container (deduped).
  *
  * @returns Computed result (`readonly string[]`).
+ *
+ * @throws {@link TomlImmutableNodeError} when `container` is not a table container.
  */
 function tableChildKeys(
   {

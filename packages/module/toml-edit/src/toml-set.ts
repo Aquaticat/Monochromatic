@@ -1,12 +1,12 @@
 /**
- * `tomlSet`: write a value at a path, returning a fresh state with the
+ * {@link tomlSet}: write a value at a path, returning a fresh state with the
  * pending edit recorded.
  *
  * AST-mutation invariant: this module never modifies AST internals.
  * All changes are recorded as entries in `edits` (for existing nodes) or
  * `insertions` (for path-create) and resolved positionally at emit time.
  *
- * Path-create dispatch (when `resolveByPath` returns `kind: 'missing'`)
+ * Path-create dispatch (when {@link resolveByPath} returns `kind: 'missing'`)
  * lives in `./path-create.ts`; the table-replace and the in-place
  * primitive replacement paths live here.
  *
@@ -37,7 +37,7 @@ import {
 } from './values.ts';
 
 /**
- * Set the value at `path`. Returns a fresh `TomlEditState`.
+ * Set the value at `path`. Returns a fresh {@link TomlEditState}.
  *
  * Behaviour by what `path` resolves to:
  *
@@ -47,27 +47,27 @@ import {
  * - Existing `[foo]` table or top-level: the body's key-values are
  *   cleared and the JS object's entries are inserted in `Object.entries`
  *   order. Sub-tables (`[foo.sub]`) are preserved. The JS value must be
- *   a plain object; arrays, scalars, and `Date` throw `TomlTypeError`.
+ *   a plain object; arrays, scalars, and `Date` throw {@link TomlTypeError}.
  * - Existing array-of-tables collection (multiple `[[foo]]` blocks):
  *   replaces with one `[[foo]]` block per element of the supplied JS
  *   array. The JS value must be an array of plain objects (use `[]` to
  *   clear all instances). Numeric, string, or object values throw
- *   `TomlTypeError`.
+ *   {@link TomlTypeError}.
  * - Existing sibling-tables collection (the path matches multiple
  *   `[a.b]` / `[a.c]` standard tables under an implicit parent):
  *   rejected; not the same shape as a true array-of-tables. Set per
  *   sub-table instead.
  * - Missing path: a fresh entry is created. Dotted-key insertions check
  *   for sibling-table or inline-table collisions and throw
- *   `TomlImmutableNodeError` when the result would not re-parse.
+ *   {@link TomlImmutableNodeError} when the result would not re-parse.
  *
- * @returns A fresh `TomlEditState` reflecting the change.
+ * @returns A fresh {@link TomlEditState} reflecting the change.
  *
- * @throws TomlTypeError for `null`, `undefined`, a non-object value when
+ * @throws {@link TomlTypeError} for `null`, `undefined`, a non-object value when
  *         replacing a table body, or a non-array value (or array with a
  *         non-plain-object element) when replacing an array-of-tables.
  *
- * @throws TomlImmutableNodeError for sibling-tables wholesale
+ * @throws {@link TomlImmutableNodeError} for sibling-tables wholesale
  *         replacement, numeric segments inside the missing tail of the
  *         path, path-create through a scalar or `TOMLArray`, or any
  *         sibling-table / inline-table key collision.
@@ -183,7 +183,9 @@ export function tomlSet(
  * Replace the key-values inside an existing `TOMLTable` or
  * `TOMLTopLevelTable` with the entries of the given JS object.
  *
- * @returns A fresh `TomlEditState` reflecting the change.
+ * @returns A fresh {@link TomlEditState} reflecting the change.
+ *
+ * @throws {@link TomlTypeError} when `value` is not a plain object.
  */
 function doTableReplace(
   {
@@ -223,7 +225,7 @@ function doTableReplace(
   const anchor: AnchorKind = anchorForTableReplace({ container, },);
 
   /**
-   * One `Insertion` per replacement entry so the splice engine can emit them in order.
+   * One {@link Insertion} per replacement entry so the splice engine can emit them in order.
    */
   const newInsertions: Insertion[] = Object
     .entries(value,)
@@ -270,7 +272,7 @@ function doTableReplace(
  *   if any (so the new entries land between the old top-level KVs and
  *   the first table header). Else `eof`.
  *
- * @returns Computed result (`AnchorKind`).
+ * @returns Computed result ({@link AnchorKind}).
  */
 function anchorForTableReplace(
   {

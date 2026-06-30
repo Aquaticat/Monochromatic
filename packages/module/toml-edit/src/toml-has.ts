@@ -1,5 +1,5 @@
 /**
- * `tomlHas`: presence check for a path.
+ * {@link tomlHas}: presence check for a path.
  *
  * @module
  */
@@ -13,7 +13,7 @@ import type {
 /**
  * True when `path` resolves to an existing key, value, table, or
  * array-of-tables in the effective state (parse-time AST plus pending
- * deltas).
+ * deltas), per {@link effectiveAt}.
  *
  * @returns Resulting boolean.
  *

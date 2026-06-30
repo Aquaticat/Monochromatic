@@ -1,5 +1,5 @@
 /**
- * `tomlSet` array-of-tables replacement branch.
+ * {@link tomlSet} array-of-tables replacement branch.
  *
  * Split out of `toml-set.ts` to keep each file under the 300-LOC cap.
  *
@@ -62,12 +62,12 @@ export function describeNonObject(
  * `[a.b]` / `[a.c]` standard tables under an implicit parent, which is a
  * different shape and is still rejected.
  *
- * @returns A fresh `TomlEditState` reflecting the change.
+ * @returns A fresh {@link TomlEditState} reflecting the change.
  *
- * @throws TomlImmutableNodeError when `nodes` are sibling standard tables
+ * @throws {@link TomlImmutableNodeError} when `nodes` are sibling standard tables
  *         rather than a true AOT.
  *
- * @throws TomlTypeError when `value` is not an array, or an element of the
+ * @throws {@link TomlTypeError} when `value` is not an array, or an element of the
  *         array is not a plain object.
  *
  * @example

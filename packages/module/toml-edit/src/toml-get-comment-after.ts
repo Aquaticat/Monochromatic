@@ -1,5 +1,5 @@
 /**
- * `tomlGetCommentAfter`: trailing inline comment on the same source line.
+ * {@link tomlGetCommentAfter}: trailing inline comment on the same source line.
  *
  * @module
  */
@@ -17,7 +17,8 @@ import type {
 } from './types.ts';
 
 /**
- * The same-line trailing inline comment for the node at `path`.
+ * The same-line trailing inline comment for the node at `path`, found via
+ * {@link trailingInlineCommentFor}.
  *
  * A comment is "trailing" when its `range[0]` is strictly after the node's
  * end and on the same source line (no newline between).
@@ -25,7 +26,7 @@ import type {
  * @returns Object whose `comment` field is the trailing comment, or is
  *          absent when the node has no same-line trailing comment.
  *
- * @throws TomlPathNotFoundError when `path` does not exist or was deleted.
+ * @throws {@link TomlPathNotFoundError} when `path` does not exist or was deleted.
  *
  * @example
  * ```toml

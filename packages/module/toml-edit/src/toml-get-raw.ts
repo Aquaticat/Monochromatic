@@ -1,5 +1,5 @@
 /**
- * `tomlGetRaw`: read the original source slice at a path. Splice mode only.
+ * {@link tomlGetRaw}: read the original source slice at a path. Splice mode only.
  *
  * @module
  */
@@ -22,19 +22,19 @@ import type {
  * `path`. For round-trip-sensitive consumers that want to diff values
  * without canonical reformatting.
  *
- * Routes through `resolveByPath` directly and does NOT consult pending
- * deltas: a `tomlSet` on a path does not change what `tomlGetRaw` returns
+ * Routes through {@link resolveByPath} directly and does NOT consult pending
+ * deltas: a {@link tomlSet} on a path does not change what `tomlGetRaw` returns
  * for that path. The slice always reflects the parse-time bytes from
  * `edit.source`.
  *
  * @returns Computed string.
  *
- * @throws TomlSpliceUnavailableError when the state is in canonical mode
+ * @throws {@link TomlSpliceUnavailableError} when the state is in canonical mode
  *         (no source bytes to slice from).
  *
- * @throws TomlPathNotFoundError when the path was not present in the
- *         parse-time source. Paths newly created by `tomlSet` are not
- *         resolvable here until you `tomlStringify` and reparse.
+ * @throws {@link TomlPathNotFoundError} when the path was not present in the
+ *         parse-time source. Paths newly created by {@link tomlSet} are not
+ *         resolvable here until you {@link tomlStringify} and reparse.
  *
  * @example
  * ```ts

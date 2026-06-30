@@ -1,5 +1,5 @@
 /**
- * `tomlGetComments`: return every comment on the file.
+ * {@link tomlGetComments}: return every comment on the file.
  *
  * @module
  */
@@ -13,7 +13,7 @@ import type {
  * Every `Block`-typed comment in the parse-time source, in source order.
  *
  * The list is unaffected by pending deltas; new comments inserted via
- * `tomlInsertCommentBefore` / `tomlInsertCommentAfter` are not reflected
+ * {@link tomlInsertCommentBefore} / {@link tomlInsertCommentAfter} are not reflected
  * here until the source is re-parsed.
  *
  * @returns Computed result (`readonly TomlComment[]`).

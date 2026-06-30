@@ -1,5 +1,5 @@
 /**
- * `tomlGetNode`: read the parse-time AST node at a path.
+ * {@link tomlGetNode}: read the parse-time AST node at a path.
  *
  * @module
  */
@@ -17,19 +17,19 @@ import type {
 /**
  * Return the parse-time AST `TOMLContentNode` (or wrapped value) at `path`.
  *
- * Power-user escape hatch. This routes through `resolveByPath` directly and
- * does NOT consult pending deltas: a `tomlSet` on a path does not change
+ * Power-user escape hatch. This routes through {@link resolveByPath} directly and
+ * does NOT consult pending deltas: a {@link tomlSet} on a path does not change
  * what `tomlGetNode` returns for that path (the AST is immutable, so the
  * node's `range` and content remain accurate for `edit.source`). Use
- * `tomlGetValue` when you need a value that reflects pending edits.
+ * {@link tomlGetValue} when you need a value that reflects pending edits.
  *
- * For paths created by `tomlSet` that did not exist at parse time, there
- * is no AST node; `TomlPathNotFoundError` is thrown. `tomlStringify` and
+ * For paths created by {@link tomlSet} that did not exist at parse time, there
+ * is no AST node; {@link TomlPathNotFoundError} is thrown. {@link tomlStringify} and
  * reparse to materialise an AST node for such paths.
  *
  * @returns Computed result (`AST.TOMLContentNode | AST.TOMLTable | AST.TOMLTopLevelTable | readonly AST.TOMLTable[]`).
  *
- * @throws TomlPathNotFoundError when `path` was not present in the parse-time
+ * @throws {@link TomlPathNotFoundError} when `path` was not present in the parse-time
  *         source.
  *
  * @example

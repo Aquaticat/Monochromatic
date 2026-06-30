@@ -1,5 +1,5 @@
 /**
- * `tomlInsertCommentBefore`: add a comment block immediately before a path.
+ * {@link tomlInsertCommentBefore}: add a comment block immediately before a path.
  *
  * @module
  */
@@ -18,13 +18,13 @@ import type {
 /**
  * Insert one or more `#`-prefixed lines just before the node at `path`.
  *
- * The new comment lines are stored as a pending `Insertion` and emitted at
- * `tomlStringify` time. They do not show up in `tomlGetComments` until the
+ * The new comment lines are stored as a pending {@link Insertion} and emitted at
+ * {@link tomlStringify} time. They do not show up in {@link tomlGetComments} until the
  * output is reparsed.
  *
- * @returns A fresh `TomlEditState` reflecting the change.
+ * @returns A fresh {@link TomlEditState} reflecting the change.
  *
- * @throws TomlPathNotFoundError when `path` does not exist.
+ * @throws {@link TomlPathNotFoundError} when `path` does not exist.
  *
  * @example
  * ```ts

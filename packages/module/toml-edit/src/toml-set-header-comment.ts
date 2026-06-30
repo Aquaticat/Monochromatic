@@ -1,5 +1,5 @@
 /**
- * `tomlSetHeaderComment`: set or clear the file's header comment block.
+ * {@link tomlSetHeaderComment}: set or clear the file's header comment block.
  *
  * @module
  */
@@ -15,9 +15,9 @@ import type { TomlEditState, } from './types.ts';
  *
  * Splice-mode emission does not currently re-flow existing source
  * comments; setting a header comment in splice mode affects only
- * canonical re-emission via `tomlStringify` when the state is canonical.
+ * canonical re-emission via {@link tomlStringify} when the state is canonical.
  *
- * @returns A fresh `TomlEditState` reflecting the change.
+ * @returns A fresh {@link TomlEditState} reflecting the change.
  *
  * @example
  * ```ts
