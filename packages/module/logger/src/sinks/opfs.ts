@@ -91,12 +91,11 @@ export function createOpfsSink(): Sink {
     }
     catch (error: unknown) {
       /**
-       * OPFS directory getter, present only when the current platform exposes the OPFS backend this sink verifies.
+       * OPFS storage object, present only when the current platform exposes the backend this sink verifies.
        */
-      const getOpfsDirectory = globalThis.navigator
-        ?.storage
-        ?.getDirectory;
-      if ((typeof getOpfsDirectory) === 'function')
+      const opfsStorage = globalThis.navigator
+        ?.storage;
+      if ((opfsStorage !== undefined) && ('getDirectory' in opfsStorage))
         reportLoggerInternalError({
           context: 'OPFS sink verification failed',
           error,
