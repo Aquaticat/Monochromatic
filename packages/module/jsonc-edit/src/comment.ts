@@ -17,10 +17,10 @@ export type JsoncComment = {
    * `inline` for a `//` line comment, `block` for a `/* *\/` comment, `mixed`
    * when stacked comments of differing kinds were merged into one.
    */
-  type: 'inline' | 'block' | 'mixed';
+  readonly type: 'inline' | 'block' | 'mixed';
   /**
    * Comment body with delimiters removed and surrounding whitespace preserved,
    * so `//region` and leading-space conventions are not lost.
    */
-  text: string;
+  readonly text: string;
 };

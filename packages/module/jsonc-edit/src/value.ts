@@ -1,4 +1,7 @@
-import type { JsonValue, } from 'type-fest';
+import type {
+  JsonValue,
+  ReadonlyDeep,
+} from 'type-fest';
 import type { JsoncComment, } from './comment.ts';
 
 /**
@@ -14,10 +17,10 @@ import type { JsoncComment, } from './comment.ts';
  * ```
  */
 export type JsoncString = {
-  kind: 'string';
-  value: string;
-  raw?: string;
-  comment?: JsoncComment;
+  readonly kind: 'string';
+  readonly value: string;
+  readonly raw?: string;
+  readonly comment?: JsoncComment;
 };
 
 /**
@@ -33,10 +36,10 @@ export type JsoncString = {
  * ```
  */
 export type JsoncNumber = {
-  kind: 'number';
-  value: number;
-  raw?: string;
-  comment?: JsoncComment;
+  readonly kind: 'number';
+  readonly value: number;
+  readonly raw?: string;
+  readonly comment?: JsoncComment;
 };
 
 /**
@@ -49,9 +52,9 @@ export type JsoncNumber = {
  * ```
  */
 export type JsoncBoolean = {
-  kind: 'boolean';
-  value: boolean;
-  comment?: JsoncComment;
+  readonly kind: 'boolean';
+  readonly value: boolean;
+  readonly comment?: JsoncComment;
 };
 
 /**
@@ -63,8 +66,8 @@ export type JsoncBoolean = {
  * ```
  */
 export type JsoncNull = {
-  kind: 'null';
-  comment?: JsoncComment;
+  readonly kind: 'null';
+  readonly comment?: JsoncComment;
 };
 
 /**
@@ -77,9 +80,9 @@ export type JsoncNull = {
  * ```
  */
 export type JsoncArray = {
-  kind: 'array';
-  elements: readonly JsoncValue[];
-  comment?: JsoncComment;
+  readonly kind: 'array';
+  readonly elements: readonly JsoncValue[];
+  readonly comment?: JsoncComment;
 };
 
 /**
@@ -93,9 +96,9 @@ export type JsoncArray = {
  * ```
  */
 export type JsoncKey = {
-  value: string;
-  raw?: string;
-  comment?: JsoncComment;
+  readonly value: string;
+  readonly raw?: string;
+  readonly comment?: JsoncComment;
 };
 
 /**
@@ -111,8 +114,8 @@ export type JsoncKey = {
  * ```
  */
 export type JsoncRecordEntry = {
-  key: JsoncKey;
-  value: JsoncValue;
+  readonly key: JsoncKey;
+  readonly value: JsoncValue;
 };
 
 /**
@@ -125,9 +128,9 @@ export type JsoncRecordEntry = {
  * ```
  */
 export type JsoncRecord = {
-  kind: 'record';
-  entries: readonly JsoncRecordEntry[];
-  comment?: JsoncComment;
+  readonly kind: 'record';
+  readonly entries: readonly JsoncRecordEntry[];
+  readonly comment?: JsoncComment;
 };
 
 /**
@@ -142,9 +145,9 @@ export type JsoncRecord = {
  * ```
  */
 export type JsoncPlainJson = {
-  kind: 'plainJson';
-  json: JsonValue;
-  comment?: JsoncComment;
+  readonly kind: 'plainJson';
+  readonly json: ReadonlyDeep<JsonValue>;
+  readonly comment?: JsoncComment;
 };
 
 /**

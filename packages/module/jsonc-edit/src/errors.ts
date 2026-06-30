@@ -28,8 +28,8 @@ export class JsoncParseError extends Error {
     message,
     offset,
   }: {
-    message: string;
-    offset: number;
+    readonly message: string;
+    readonly offset: number;
   },) {
     super(`${message} (at offset ${String(offset,)})`,);
     this.name = 'JsoncParseError';
@@ -58,7 +58,7 @@ export class JsoncPathNotFoundError extends Error {
   constructor({
     path,
   }: {
-    path: readonly (string | number)[];
+    readonly path: readonly (string | number)[];
   },) {
     super(`no JSONC node at path ${JSON.stringify(path,)}`,);
     this.name = 'JsoncPathNotFoundError';
@@ -82,7 +82,7 @@ export class JsoncTypeError extends Error {
   constructor({
     message,
   }: {
-    message: string;
+    readonly message: string;
   },) {
     super(message,);
     this.name = 'JsoncTypeError';

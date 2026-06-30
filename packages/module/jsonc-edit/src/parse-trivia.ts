@@ -1,6 +1,5 @@
-import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import type { JsoncComment, } from './comment.ts';
-import { mergeComments, } from './merge-comments.ts';
+import { mergeAllComments, } from './merge-comments.ts';
 import {
   isJsonWhitespace,
   scanBlockComment,
@@ -10,48 +9,51 @@ import {
 //region Leading trivia
 
 /**
- * Result of skipping leading trivia: the merged leading comment (if any) and the
- * offset of the next significant character.
+ * Result of skipping leading trivia: the comments crossed (in order, possibly
+ * empty) and the offset of the next significant character.
  */
 export type TriviaScan = {
-  comment: JsoncComment | undefined;
-  end: number;
+  readonly comments: readonly JsoncComment[];
+  readonly end: number;
 };
 
 /**
- * Skips whitespace and comments before a token, merging every comment it crosses
- * into a single leading comment. This is how a comment that precedes a key or
- * value becomes attached to it.
+ * Skips whitespace and comments before a token, collecting every comment it
+ * crosses. The collected comments later attach to the following key or value.
  *
  * @param source - Full JSONC source.
  *
  * @param index - Offset to start skipping from.
  *
- * @returns Merged leading comment and the next significant offset.
+ * @returns Collected leading comments and the next significant offset.
  *
  * @example
  * ```ts
  * skipTrivia({ source: ' // a\n{', index: 0 });
- * // => { comment: { type: 'inline', text: ' a' }, end: 6 }
+ * // => { comments: [{ type: 'inline', text: ' a' }], end: 6 }
  * ```
  */
 export function skipTrivia({
   source,
   index,
 }: {
-  source: string;
-  index: number;
+  readonly source: string;
+  readonly index: number;
 },): TriviaScan {
-  // Cursor walk over whitespace and comments, accumulating comments.
-  let comment: JsoncComment | undefined;
-  let cursor = index;
-  while (cursor < source.length) {
+  /**
+   * Comments crossed so far, pushed in source order.
+   */
+  const comments: JsoncComment[] = [];
+  for (let cursor = index; cursor < source.length; ) {
     /**
      * Character under the cursor.
      */
     const char = source[cursor];
     if (char === undefined)
-      break;
+      return {
+        comments,
+        end: cursor,
+      };
     if (isJsonWhitespace(char,)) {
       cursor += 1;
       continue;
@@ -64,12 +66,9 @@ export function skipTrivia({
         source,
         index: cursor,
       },);
-      comment = mergeComments({
-        first: comment,
-        second: {
-          type: 'inline',
-          text: scan.text,
-        },
+      comments.push({
+        type: 'inline',
+        text: scan.text,
       },);
       cursor = scan.end;
       continue;
@@ -82,21 +81,21 @@ export function skipTrivia({
         source,
         index: cursor,
       },);
-      comment = mergeComments({
-        first: comment,
-        second: {
-          type: 'block',
-          text: scan.text,
-        },
+      comments.push({
+        type: 'block',
+        text: scan.text,
       },);
       cursor = scan.end;
       continue;
     }
-    break;
+    return {
+      comments,
+      end: cursor,
+    };
   }
   return {
-    comment,
-    end: cursor,
+    comments,
+    end: source.length,
   };
 }
 
@@ -115,59 +114,66 @@ const INLINE_WHITESPACE = new Set([
 ],);
 
 /**
- * Result of capturing trailing trivia after a value: any same-line comment,
+ * Result of capturing trailing trivia after a value: any same-line comments,
  * whether a separating comma was consumed, and the next offset.
  */
 export type TrailingScan = {
-  comment: JsoncComment | undefined;
-  commaSeen: boolean;
-  end: number;
+  readonly comments: readonly JsoncComment[];
+  readonly commaSeen: boolean;
+  readonly end: number;
 };
 
 /**
  * Captures what follows a value on the same line: at most one separating comma
- * and any same-line comment, in either order, stopping at a newline, a closing
- * bracket, or the next value. A comment captured here is the value's trailing
- * comment.
+ * and any same-line comments, in either order, stopping at a newline, a closing
+ * bracket, or the next value. Comments captured here are the value's trailing
+ * comments.
  *
  * @param source - Full JSONC source.
  *
  * @param index - Offset just past the parsed value.
  *
- * @returns Trailing comment, whether a comma was seen, and the next offset.
+ * @returns Trailing comments, whether a comma was seen, and the next offset.
  *
  * @example
  * ```ts
  * captureTrailing({ source: ', // note\n', index: 0 });
- * // => { comment: { type: 'inline', text: ' note' }, commaSeen: true, end: 9 }
+ * // => { comments: [{ type: 'inline', text: ' note' }], commaSeen: true, end: 9 }
  * ```
  */
 export function captureTrailing({
   source,
   index,
 }: {
-  source: string;
-  index: number;
+  readonly source: string;
+  readonly index: number;
 },): TrailingScan {
-  // Cursor walk across the rest of the line, taking one comma and any comment.
-  let comment: JsoncComment | undefined;
-  let commaSeen = false;
-  let cursor = index;
-  while (cursor < source.length) {
+  /**
+   * Same-line comments captured so far.
+   */
+  const comments: JsoncComment[] = [];
+  /**
+   * Mutable flag tracking whether the single separating comma was consumed; a
+   * `const` object field avoids a function-root `let`.
+   */
+  const flags = { commaSeen: false, };
+  for (let cursor = index; cursor < source.length; ) {
     /**
      * Character under the cursor.
      */
     const char = source[cursor];
-    if (char === undefined)
-      break;
-    if (char === '\n')
-      break;
+    if ((char === undefined) || (char === '\n'))
+      return {
+        comments,
+        commaSeen: flags.commaSeen,
+        end: cursor,
+      };
     if (INLINE_WHITESPACE.has(char,)) {
       cursor += 1;
       continue;
     }
-    if ((char === ',') && !commaSeen) {
-      commaSeen = true;
+    if ((char === ',') && (!flags.commaSeen)) {
+      flags.commaSeen = true;
       cursor += 1;
       continue;
     }
@@ -179,12 +185,9 @@ export function captureTrailing({
         source,
         index: cursor,
       },);
-      comment = mergeComments({
-        first: comment,
-        second: {
-          type: 'inline',
-          text: scan.text,
-        },
+      comments.push({
+        type: 'inline',
+        text: scan.text,
       },);
       cursor = scan.end;
       continue;
@@ -197,22 +200,23 @@ export function captureTrailing({
         source,
         index: cursor,
       },);
-      comment = mergeComments({
-        first: comment,
-        second: {
-          type: 'block',
-          text: scan.text,
-        },
+      comments.push({
+        type: 'block',
+        text: scan.text,
       },);
       cursor = scan.end;
       continue;
     }
-    break;
+    return {
+      comments,
+      commaSeen: flags.commaSeen,
+      end: cursor,
+    };
   }
   return {
-    comment,
-    commaSeen,
-    end: cursor,
+    comments,
+    commaSeen: flags.commaSeen,
+    end: source.length,
   };
 }
 
@@ -221,70 +225,90 @@ export function captureTrailing({
 //region Comment attachment
 
 /**
- * Returns a copy of a comment-bearing node with `comment` merged before its
- * existing comment, or the node unchanged when there is nothing to merge.
+ * Returns a copy of a comment-bearing node with `comments` merged ahead of its
+ * existing comment, or the node unchanged when there are no comments.
  *
  * @param node - Node or key carrying an optional comment.
  *
- * @param comment - Comment to place ahead of the node's current comment.
+ * @param comments - Comments to place ahead of the node's current comment.
  *
- * @returns Node with the leading comment merged in.
+ * @returns Node with the leading comments merged in.
  *
  * @example
  * ```ts
- * prependComment({ node: { kind: 'null' }, comment: { type: 'inline', text: 'x' } });
+ * prependComments({ node: { kind: 'null' }, comments: [{ type: 'inline', text: 'x' }] });
  * // => { kind: 'null', comment: { type: 'inline', text: 'x' } }
  * ```
  */
-export function prependComment<const N extends { comment?: JsoncComment | undefined; },>({
+export function prependComments<const N extends { comment?: JsoncComment; },>({
   node,
-  comment,
+  comments,
 }: {
-  node: N;
-  comment: JsoncComment | undefined;
+  readonly node: N;
+  readonly comments: readonly JsoncComment[];
 },): N {
-  if (comment === undefined)
+  if (comments.length === 0)
     return node;
+  /**
+   * Node's current comment, if it already has one.
+   */
+  const existing = node.comment;
+  /**
+   * Leading comments followed by the node's existing comment.
+   */
+  const all = (existing === undefined)
+    ? [...comments,]
+    : [
+      ...comments,
+      existing,
+    ];
   return {
     ...node,
-    comment: nonNullishOrThrow(mergeComments({
-      first: comment,
-      second: node.comment,
-    },),),
+    comment: mergeAllComments(all,),
   };
 }
 
 /**
- * Returns a copy of a comment-bearing node with `comment` merged after its
- * existing comment, or the node unchanged when there is nothing to merge.
+ * Returns a copy of a comment-bearing node with `comments` merged after its
+ * existing comment, or the node unchanged when there are no comments.
  *
  * @param node - Node or key carrying an optional comment.
  *
- * @param comment - Comment to place after the node's current comment.
+ * @param comments - Comments to place after the node's current comment.
  *
- * @returns Node with the trailing comment merged in.
+ * @returns Node with the trailing comments merged in.
  *
  * @example
  * ```ts
- * appendComment({ node: { kind: 'null' }, comment: { type: 'inline', text: 'x' } });
+ * appendComments({ node: { kind: 'null' }, comments: [{ type: 'inline', text: 'x' }] });
  * // => { kind: 'null', comment: { type: 'inline', text: 'x' } }
  * ```
  */
-export function appendComment<const N extends { comment?: JsoncComment | undefined; },>({
+export function appendComments<const N extends { comment?: JsoncComment; },>({
   node,
-  comment,
+  comments,
 }: {
-  node: N;
-  comment: JsoncComment | undefined;
+  readonly node: N;
+  readonly comments: readonly JsoncComment[];
 },): N {
-  if (comment === undefined)
+  if (comments.length === 0)
     return node;
+  /**
+   * Node's current comment, if it already has one.
+   */
+  const existing = node.comment;
+  /**
+   * Node's existing comment followed by the trailing comments.
+   */
+  const all = (existing === undefined)
+    ? [...comments,]
+    : [
+      existing,
+      ...comments,
+    ];
   return {
     ...node,
-    comment: nonNullishOrThrow(mergeComments({
-      first: node.comment,
-      second: comment,
-    },),),
+    comment: mergeAllComments(all,),
   };
 }
 

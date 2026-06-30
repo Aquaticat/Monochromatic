@@ -13,9 +13,7 @@
  * ```
  */
 export type StringJsonc = string & {
-  readonly __brand: {
-    jsonc: true;
-  };
+  readonly __brand: 'jsonc-document';
 };
 
 /**
@@ -31,7 +29,5 @@ export type StringJsonc = string & {
  * ```
  */
 export type FragmentStringJsonc = string & {
-  readonly __brand: {
-    jsonc: 'fragment';
-  };
+  readonly __brand: 'jsonc-fragment';
 };

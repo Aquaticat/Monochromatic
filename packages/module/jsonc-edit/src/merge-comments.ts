@@ -1,19 +1,16 @@
 import type { JsoncComment, } from './comment.ts';
 
 /**
- * Merges two optional comments into one, the way stacked comments against a
- * single node collapse during parsing.
+ * Merges two comments into one, the way stacked comments against a single node
+ * collapse during parsing. Bodies join with a newline and stay untrimmed so
+ * `//region` and indentation survive; the type is the shared type, or `mixed`
+ * when the two differ.
  *
- * Returns `undefined` when both inputs are absent, the present one when only one
- * is, and a combined comment when both exist. Combined bodies join with a single
- * newline and are left untrimmed so `//region` and indentation conventions
- * survive. The combined type is the shared type, or `mixed` when the two differ.
+ * @param first - Earlier comment.
  *
- * @param first - Earlier comment, or `undefined`.
+ * @param second - Later comment.
  *
- * @param second - Later comment, or `undefined`.
- *
- * @returns Merged comment, the single present comment, or `undefined`.
+ * @returns Combined comment.
  *
  * @example
  * ```ts
@@ -28,14 +25,9 @@ export function mergeComments({
   first,
   second,
 }: {
-  first?: JsoncComment | undefined;
-  second?: JsoncComment | undefined;
-},): JsoncComment | undefined {
-  if (first === undefined)
-    return second;
-  if (second === undefined)
-    return first;
-
+  readonly first: JsoncComment;
+  readonly second: JsoncComment;
+},): JsoncComment {
   /**
    * Joined body keeping a newline between the two original comment bodies.
    */
@@ -50,4 +42,36 @@ export function mergeComments({
     type,
     text,
   };
+}
+
+/**
+ * Reduces a non-empty list of comments into a single merged comment, in order.
+ * The reduce callback is a named function expression whose positional shape is
+ * supplied by `Array.reduce`.
+ *
+ * @param comments - Comments to merge; must contain at least one.
+ *
+ * @returns Single merged comment.
+ *
+ * @example
+ * ```ts
+ * mergeAllComments([
+ *   { type: 'inline', text: 'a' },
+ *   { type: 'inline', text: 'b' },
+ * ]);
+ * // => { type: 'inline', text: 'a\nb' }
+ * ```
+ */
+export function mergeAllComments(comments: readonly JsoncComment[],): JsoncComment {
+  return comments.reduce(
+    function mergeStep(
+      accumulated: JsoncComment,
+      next: JsoncComment,
+    ): JsoncComment {
+      return mergeComments({
+        first: accumulated,
+        second: next,
+      },);
+    },
+  );
 }

@@ -37,16 +37,56 @@ export function isJsonWhitespace(char: string,): boolean {
  * slice, and the offset just past the token.
  */
 export type ScalarScan<T,> = {
-  value: T;
-  raw: string;
-  end: number;
+  readonly value: T;
+  readonly raw: string;
+  readonly end: number;
 };
 
 /**
- * Scans a double-quoted string starting at `index` (which must point at the
- * opening quote), respecting backslash escapes. The decoded value is recovered
- * with `JSON.parse` over the raw slice so the JSON grammar, not a hand-rolled
- * escape table, defines the decoding.
+ * Finds the offset just past a double-quoted string's closing quote, honoring
+ * backslash escapes. The loop's own increment skips one character; an escape
+ * skips one more, so `\"` and `\\` do not end the string early.
+ *
+ * @param source - Full JSONC source.
+ *
+ * @param openQuote - Offset of the opening quote.
+ *
+ * @returns Offset just past the closing quote.
+ *
+ * @throws JsoncParseError when the string is never closed.
+ *
+ * @example
+ * ```ts
+ * findStringEnd({ source: '"a\\n"', openQuote: 0 }); // => 5
+ * ```
+ */
+function findStringEnd({
+  source,
+  openQuote,
+}: {
+  readonly source: string;
+  readonly openQuote: number;
+},): number {
+  for (let cursor = openQuote + 1; cursor < source.length; cursor += 1) {
+    /**
+     * Character under the cursor.
+     */
+    const char = source[cursor];
+    if (char === '"')
+      return cursor + 1;
+    if (char === '\\')
+      cursor += 1;
+  }
+  throw new JsoncParseError({
+    message: 'unterminated string',
+    offset: openQuote,
+  },);
+}
+
+/**
+ * Scans a double-quoted string starting at the opening quote. The decoded value
+ * is recovered with `JSON.parse` over the raw slice so the JSON grammar, not a
+ * hand-rolled escape table, defines the decoding.
  *
  * @param source - Full JSONC source.
  *
@@ -54,54 +94,46 @@ export type ScalarScan<T,> = {
  *
  * @returns Decoded string, raw quoted slice, and end offset.
  *
- * @throws {@link JsoncParseError} when the string is never closed.
+ * @throws JsoncParseError when the string is never closed.
  *
  * @example
  * ```ts
- * scanString({ source: '"a\\n"', index: 0 });
- * // => { value: 'a\n', raw: '"a\\n"', end: 5 }
+ * scanString({ source: '"a"', index: 0 });
+ * // => { value: 'a', raw: '"a"', end: 3 }
  * ```
  */
 export function scanString({
   source,
   index,
 }: {
-  source: string;
-  index: number;
+  readonly source: string;
+  readonly index: number;
 },): ScalarScan<string> {
-  // Cursor walk: advance past escapes, stop at the unescaped closing quote.
-  let cursor = index + 1;
-  while (cursor < source.length) {
-    /**
-     * Character under the cursor on this step.
-     */
-    const char = source[cursor];
-    if (char === '\\') {
-      cursor += 2;
-      continue;
-    }
-    if (char === '"') {
-      /**
-       * Offset just past the closing quote.
-       */
-      const end = cursor + 1;
-      /**
-       * Original quoted slice, including both quotes.
-       */
-      const raw = source.slice(index, end,);
-      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- raw is a complete JSON string literal, so JSON.parse yields a string
-      return {
-        value: JSON.parse(raw,) as string,
-        raw,
-        end,
-      };
-    }
-    cursor += 1;
-  }
-  throw new JsoncParseError({
-    message: 'unterminated string',
-    offset: index,
+  /**
+   * Offset just past the closing quote.
+   */
+  const end = findStringEnd({
+    source,
+    openQuote: index,
   },);
+  /**
+   * Original quoted slice, including both quotes.
+   */
+  const raw = source.slice(
+    index,
+    end,
+  );
+  /* oxlint-disable typescript/no-unsafe-type-assertion -- a complete JSON string literal parses to a string */
+  /**
+   * Decoded string value, recovered through the JSON grammar.
+   */
+  const value = JSON.parse(raw,) as string;
+  /* oxlint-enable typescript/no-unsafe-type-assertion */
+  return {
+    value,
+    raw,
+    end,
+  };
 }
 
 /**
@@ -126,9 +158,75 @@ const NUMBER_CHARS = new Set([
 ],);
 
 /**
- * Scans a JSON number starting at `index`. Consumes the maximal run of
- * number characters, then validates and decodes it with `JSON.parse`, which
- * rejects malformed runs such as `1.2.3` or a leading-zero integer.
+ * Finds the offset just past the run of number characters starting at `start`.
+ *
+ * @param source - Full JSONC source.
+ *
+ * @param start - Offset of the number's first character.
+ *
+ * @returns Offset just past the number run.
+ *
+ * @example
+ * ```ts
+ * findNumberEnd({ source: '12,', start: 0 }); // => 2
+ * ```
+ */
+function findNumberEnd({
+  source,
+  start,
+}: {
+  readonly source: string;
+  readonly start: number;
+},): number {
+  for (let cursor = start; cursor < source.length; cursor += 1) {
+    /**
+     * Character under the cursor.
+     */
+    const char = source[cursor];
+    if ((char === undefined) || (!NUMBER_CHARS.has(char,)))
+      return cursor;
+  }
+  return source.length;
+}
+
+/**
+ * Decodes a number slice with `JSON.parse`, which rejects malformed runs such as
+ * `1.2.3` or a leading-zero integer.
+ *
+ * @param raw - Raw number slice.
+ *
+ * @param offset - Offset of the slice, for error reporting.
+ *
+ * @returns Decoded number.
+ *
+ * @throws JsoncParseError when the slice is not a valid JSON number.
+ *
+ * @example
+ * ```ts
+ * decodeNumber({ raw: '1.5', offset: 0 }); // => 1.5
+ * ```
+ */
+function decodeNumber({
+  raw,
+  offset,
+}: {
+  readonly raw: string;
+  readonly offset: number;
+},): number {
+  try {
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- a valid JSON number slice parses to a number
+    return JSON.parse(raw,) as number;
+  }
+  catch (error: unknown) {
+    throw new JsoncParseError({
+      message: `invalid number ${JSON.stringify(raw,)}: ${String(error,)}`,
+      offset,
+    },);
+  }
+}
+
+/**
+ * Scans a JSON number starting at `index`, then validates and decodes it.
  *
  * @param source - Full JSONC source.
  *
@@ -136,7 +234,7 @@ const NUMBER_CHARS = new Set([
  *
  * @returns Decoded number, raw slice, and end offset.
  *
- * @throws {@link JsoncParseError} when the run is not a valid JSON number.
+ * @throws JsoncParseError when the run is not a valid JSON number.
  *
  * @example
  * ```ts
@@ -148,43 +246,34 @@ export function scanNumber({
   source,
   index,
 }: {
-  source: string;
-  index: number;
+  readonly source: string;
+  readonly index: number;
 },): ScalarScan<number> {
-  // Cursor walk: consume the run of number characters.
-  let cursor = index;
-  while (cursor < source.length) {
-    /**
-     * Character under the cursor.
-     */
-    const char = source[cursor];
-    if ((char === undefined) || !NUMBER_CHARS.has(char,))
-      break;
-    cursor += 1;
-  }
-
   /**
-   * Raw slice spanning the consumed number run.
+   * Offset just past the number run.
    */
-  const raw = source.slice(index, cursor,);
+  const end = findNumberEnd({
+    source,
+    start: index,
+  },);
   /**
-   * Decoded number; `JSON.parse` throws on a malformed run.
+   * Raw slice spanning the number run.
    */
-  let value: number;
-  try {
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- a valid JSON number slice parses to a number
-    value = JSON.parse(raw,) as number;
-  }
-  catch {
-    throw new JsoncParseError({
-      message: `invalid number ${JSON.stringify(raw,)}`,
-      offset: index,
-    },);
-  }
+  const raw = source.slice(
+    index,
+    end,
+  );
+  /**
+   * Decoded numeric value.
+   */
+  const value = decodeNumber({
+    raw,
+    offset: index,
+  },);
   return {
     value,
     raw,
-    end: cursor,
+    end,
   };
 }
 
@@ -209,11 +298,14 @@ export function matchKeyword({
   index,
   keyword,
 }: {
-  source: string;
-  index: number;
-  keyword: string;
+  readonly source: string;
+  readonly index: number;
+  readonly keyword: string;
 },): boolean {
-  return source.startsWith(keyword, index,);
+  return source.startsWith(
+    keyword,
+    index,
+  );
 }
 
 //endregion Scalars
@@ -225,14 +317,13 @@ export function matchKeyword({
  * the offset just past it.
  */
 export type CommentScan = {
-  text: string;
-  end: number;
+  readonly text: string;
+  readonly end: number;
 };
 
 /**
- * Scans a `//` line comment starting at `index` (which must point at the first
- * slash). The body runs to the next newline or end of input; the newline itself
- * is not consumed.
+ * Scans a `//` line comment starting at the first slash. The body runs to the
+ * next newline or end of input; the newline itself is not consumed.
  *
  * @param source - Full JSONC source.
  *
@@ -250,13 +341,16 @@ export function scanLineComment({
   source,
   index,
 }: {
-  source: string;
-  index: number;
+  readonly source: string;
+  readonly index: number;
 },): CommentScan {
   /**
    * Offset of the terminating newline, or -1 when the comment runs to EOF.
    */
-  const newline = source.indexOf('\n', index,);
+  const newline = source.indexOf(
+    '\n',
+    index,
+  );
   /**
    * Offset just past the comment body.
    */
@@ -264,15 +358,17 @@ export function scanLineComment({
     ? source.length
     : newline;
   return {
-    text: source.slice(index + 2, end,),
+    text: source.slice(
+      index + 2,
+      end,
+    ),
     end,
   };
 }
 
 /**
- * Scans a `/* *\/` block comment starting at `index` (which must point at the
- * slash). The body runs to the first `*\/`; C-family block comments do not
- * nest, so the first close wins.
+ * Scans a `/* *\/` block comment starting at the slash. The body runs to the
+ * first `*\/`; C-family block comments do not nest, so the first close wins.
  *
  * @param source - Full JSONC source.
  *
@@ -280,7 +376,7 @@ export function scanLineComment({
  *
  * @returns Comment body and end offset.
  *
- * @throws {@link JsoncParseError} when the block is never closed.
+ * @throws JsoncParseError when the block is never closed.
  *
  * @example
  * ```ts
@@ -292,20 +388,26 @@ export function scanBlockComment({
   source,
   index,
 }: {
-  source: string;
-  index: number;
+  readonly source: string;
+  readonly index: number;
 },): CommentScan {
   /**
    * Offset of the closing delimiter, searched from just past the opener.
    */
-  const close = source.indexOf('*/', index + 2,);
+  const close = source.indexOf(
+    '*/',
+    index + 2,
+  );
   if (close === (-1))
     throw new JsoncParseError({
       message: 'unterminated block comment',
       offset: index,
     },);
   return {
-    text: source.slice(index + 2, close,),
+    text: source.slice(
+      index + 2,
+      close,
+    ),
     end: close + 2,
   };
 }

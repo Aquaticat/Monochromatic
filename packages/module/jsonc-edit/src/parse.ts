@@ -1,16 +1,20 @@
 import type { JsoncComment, } from './comment.ts';
 import { JsoncParseError, } from './errors.ts';
 import {
-  appendComment,
+  closeArray,
+  closeRecord,
+} from './parse-close.ts';
+import {
+  parseScalar,
+  type ValueScan,
+} from './parse-scalar.ts';
+import {
+  appendComments,
   captureTrailing,
-  prependComment,
+  prependComments,
   skipTrivia,
 } from './parse-trivia.ts';
-import {
-  matchKeyword,
-  scanNumber,
-  scanString,
-} from './scan.ts';
+import { scanString, } from './scan.ts';
 import type {
   JsoncKey,
   JsoncValue,
@@ -25,58 +29,14 @@ import type {
  */
 const MAX_DEPTH = 512;
 
-/**
- * `true` literal keyword.
- */
-const KEYWORD_TRUE = 'true';
-
-/**
- * `false` literal keyword.
- */
-const KEYWORD_FALSE = 'false';
-
-/**
- * `null` literal keyword.
- */
-const KEYWORD_NULL = 'null';
-
-/**
- * Digits that may begin a number (a leading `-` is handled separately).
- */
-const DIGITS = new Set([
-  '0',
-  '1',
-  '2',
-  '3',
-  '4',
-  '5',
-  '6',
-  '7',
-  '8',
-  '9',
-],);
-
 //endregion Constants
-
-//region Value scan result
-
-/**
- * A parsed node paired with the offset just past it.
- */
-export type ValueScan = {
-  node: JsoncValue;
-  end: number;
-};
-
-//endregion Value scan result
 
 //region Parser
 
 /**
- * Parses one JSONC value starting at `index`, recursing into containers. The
- * leading and trailing comments around the value are attached by the caller
- * (containers) or by {@link parseDocument}; this function attaches only comments
- * found strictly inside the value.
+ * Parses one JSONC value starting at `index`, recursing into containers and
+ * delegating scalars. Comments strictly inside the value are attached here; the
+ * leading and trailing comments around it are attached by the caller.
  *
  * @param source - Full JSONC source.
  *
@@ -86,7 +46,7 @@ export type ValueScan = {
  *
  * @returns Parsed node and end offset.
  *
- * @throws {@link JsoncParseError} on malformed input or excessive nesting.
+ * @throws JsoncParseError on malformed input or excessive nesting.
  *
  * @example
  * ```ts
@@ -99,9 +59,9 @@ export function parseValue({
   index,
   depth,
 }: {
-  source: string;
-  index: number;
-  depth: number;
+  readonly source: string;
+  readonly index: number;
+  readonly depth: number;
 },): ValueScan {
   if (depth > MAX_DEPTH)
     throw new JsoncParseError({
@@ -110,7 +70,7 @@ export function parseValue({
     },);
 
   /**
-   * First character of the value, selecting which production to parse.
+   * First character of the value, selecting container versus scalar parsing.
    */
   const char = source[index];
   if (char === '{')
@@ -125,84 +85,15 @@ export function parseValue({
       index,
       depth,
     },);
-  if (char === '"') {
-    /**
-     * Scanned string token.
-     */
-    const scan = scanString({
-      source,
-      index,
-    },);
-    return {
-      node: {
-        kind: 'string',
-        value: scan.value,
-        raw: scan.raw,
-      },
-      end: scan.end,
-    };
-  }
-  if (matchKeyword({
+  return parseScalar({
     source,
     index,
-    keyword: KEYWORD_TRUE,
-  },))
-    return {
-      node: {
-        kind: 'boolean',
-        value: true,
-      },
-      end: index + KEYWORD_TRUE.length,
-    };
-  if (matchKeyword({
-    source,
-    index,
-    keyword: KEYWORD_FALSE,
-  },))
-    return {
-      node: {
-        kind: 'boolean',
-        value: false,
-      },
-      end: index + KEYWORD_FALSE.length,
-    };
-  if (matchKeyword({
-    source,
-    index,
-    keyword: KEYWORD_NULL,
-  },))
-    return {
-      node: { kind: 'null', },
-      end: index + KEYWORD_NULL.length,
-    };
-  if ((char === '-') || ((char !== undefined) && DIGITS.has(char,))) {
-    /**
-     * Scanned number token.
-     */
-    const scan = scanNumber({
-      source,
-      index,
-    },);
-    return {
-      node: {
-        kind: 'number',
-        value: scan.value,
-        raw: scan.raw,
-      },
-      end: scan.end,
-    };
-  }
-  throw new JsoncParseError({
-    message: `unexpected character ${JSON.stringify(char ?? '<eof>',)}`,
-    offset: index,
   },);
 }
 
 /**
  * Parses an array body starting at the `[`. Elements carry their leading and
- * trailing comments; a comment sitting before the closing `]` attaches to the
- * last element, or to the array itself when the array is empty. A trailing comma
- * before the close is tolerated.
+ * trailing comments; a trailing comma before the close is tolerated.
  *
  * @param source - Full JSONC source.
  *
@@ -212,7 +103,7 @@ export function parseValue({
  *
  * @returns Parsed array node and end offset.
  *
- * @throws {@link JsoncParseError} when the array is malformed or unterminated.
+ * @throws JsoncParseError when the array is malformed or unterminated.
  *
  * @example
  * ```ts
@@ -225,21 +116,17 @@ function parseArray({
   index,
   depth,
 }: {
-  source: string;
-  index: number;
-  depth: number;
+  readonly source: string;
+  readonly index: number;
+  readonly depth: number;
 },): ValueScan {
   /**
    * Accumulated element nodes, built in place during the scan.
    */
   const elements: JsoncValue[] = [];
-  /**
-   * Cursor advanced past the opening bracket.
-   */
-  let cursor = index + 1;
-  for (;;) {
+  for (let cursor = index + 1; ;) {
     /**
-     * Leading comment and next significant offset.
+     * Leading comments and next significant offset.
      */
     const lead = skipTrivia({
       source,
@@ -251,16 +138,14 @@ function parseArray({
         message: 'unterminated array',
         offset: index,
       },);
-    if (source[cursor] === ']') {
-      cursor += 1;
+    if (source[cursor] === ']')
       return {
         node: closeArray({
           elements,
-          dangling: lead.comment,
+          dangling: lead.comments,
         },),
-        end: cursor,
+        end: cursor + 1,
       };
-    }
     /**
      * Element value scanned at the cursor.
      */
@@ -271,7 +156,7 @@ function parseArray({
     },);
     cursor = valueScan.end;
     /**
-     * Trailing same-line comment and comma after the element.
+     * Trailing same-line comments and comma after the element.
      */
     const trailing = captureTrailing({
       source,
@@ -279,12 +164,12 @@ function parseArray({
     },);
     cursor = trailing.end;
     elements.push(
-      appendComment({
-        node: prependComment({
+      appendComments({
+        node: prependComments({
           node: valueScan.node,
-          comment: lead.comment,
+          comments: lead.comments,
         },),
-        comment: trailing.comment,
+        comments: trailing.comments,
       },),
     );
     if (!trailing.commaSeen) {
@@ -305,64 +190,10 @@ function parseArray({
 }
 
 /**
- * Attaches a comment found before an array's closing bracket: to the last
- * element when present, otherwise to the empty array node.
- *
- * @param elements - Parsed elements (mutated in place when a dangling comment
- * attaches to the last one).
- *
- * @param dangling - Comment found before the close, if any.
- *
- * @returns Array node.
- *
- * @example
- * ```ts
- * closeArray({ elements: [], dangling: { type: 'block', text: ' x ' } });
- * // => { kind: 'array', elements: [], comment: { type: 'block', text: ' x ' } }
- * ```
- */
-function closeArray({
-  elements,
-  dangling,
-}: {
-  elements: JsoncValue[];
-  dangling: JsoncComment | undefined;
-},): JsoncValue {
-  if ((dangling !== undefined) && (elements.length > 0)) {
-    /**
-     * Last element, receiving the comment found before the close.
-     */
-    const last = elements[elements.length - 1];
-    if (last !== undefined)
-      elements[elements.length - 1] = appendComment({
-        node: last,
-        comment: dangling,
-      },);
-  }
-  /**
-   * Comment owned by the array node itself (only when it has no elements).
-   */
-  const ownComment = (elements.length === 0)
-    ? dangling
-    : undefined;
-  /**
-   * Array node before any own-comment attachment.
-   */
-  const arrayNode: JsoncValue = {
-    kind: 'array',
-    elements,
-  };
-  return appendComment({
-    node: arrayNode,
-    comment: ownComment,
-  },);
-}
-
-/**
  * Parses an object body starting at the `{`. Each key carries the comment that
- * precedes it (and any comment between key and colon); each value carries the
- * comment between colon and value plus its trailing comment. Duplicate keys are
- * preserved as separate entries. A trailing comma before the close is tolerated.
+ * precedes it; each value carries the comment between colon and value plus its
+ * trailing comment. Duplicate keys are preserved as separate entries, and a
+ * trailing comma before the close is tolerated.
  *
  * @param source - Full JSONC source.
  *
@@ -372,7 +203,7 @@ function closeArray({
  *
  * @returns Parsed record node and end offset.
  *
- * @throws {@link JsoncParseError} when the object is malformed or unterminated.
+ * @throws JsoncParseError when the object is malformed or unterminated.
  *
  * @example
  * ```ts
@@ -385,21 +216,20 @@ function parseRecord({
   index,
   depth,
 }: {
-  source: string;
-  index: number;
-  depth: number;
+  readonly source: string;
+  readonly index: number;
+  readonly depth: number;
 },): ValueScan {
   /**
    * Accumulated key-to-value entries.
    */
-  const entries: { key: JsoncKey; value: JsoncValue; }[] = [];
-  /**
-   * Cursor advanced past the opening brace.
-   */
-  let cursor = index + 1;
-  for (;;) {
+  const entries: {
+    key: JsoncKey;
+    value: JsoncValue
+  }[] = [];
+  for (let cursor = index + 1; ;) {
     /**
-     * Leading comment before the key, and next significant offset.
+     * Leading comments before the key, and next significant offset.
      */
     const lead = skipTrivia({
       source,
@@ -411,29 +241,27 @@ function parseRecord({
         message: 'unterminated object',
         offset: index,
       },);
-    if (source[cursor] === '}') {
-      cursor += 1;
+    if (source[cursor] === '}')
       return {
         node: closeRecord({
           entries,
-          dangling: lead.comment,
+          dangling: lead.comments,
         },),
-        end: cursor,
+        end: cursor + 1,
       };
-    }
     if (source[cursor] !== '"')
       throw new JsoncParseError({
         message: 'expected string key or } in object',
         offset: cursor,
       },);
     /**
-     * Parsed key with its leading comment, advancing the cursor past the value.
+     * Parsed entry, with cursor advanced past its value and trailing comma.
      */
     const entry = parseEntry({
       source,
       index: cursor,
       depth,
-      leadComment: lead.comment,
+      leadComments: lead.comments,
     },);
     cursor = entry.end;
     entries.push({
@@ -468,33 +296,33 @@ function parseRecord({
  *
  * @param depth - Current nesting depth.
  *
- * @param leadComment - Comment that preceded the key.
+ * @param leadComments - Comments that preceded the key.
  *
  * @returns Key, value, whether a comma followed, and the end offset.
  *
- * @throws {@link JsoncParseError} when the colon is missing.
+ * @throws JsoncParseError when the colon is missing.
  *
  * @example
  * ```ts
- * parseEntry({ source: '"a": 1', index: 0, depth: 0, leadComment: undefined });
- * // => { key: { value: 'a', ... }, value: { kind: 'number', value: 1, ... }, commaSeen: false, end: 6 }
+ * parseEntry({ source: '"a": 1', index: 0, depth: 0, leadComments: [] });
+ * // => { key: {...}, value: {...}, commaSeen: false, end: 6 }
  * ```
  */
 function parseEntry({
   source,
   index,
   depth,
-  leadComment,
+  leadComments,
 }: {
-  source: string;
-  index: number;
-  depth: number;
-  leadComment: JsoncComment | undefined;
+  readonly source: string;
+  readonly index: number;
+  readonly depth: number;
+  readonly leadComments: readonly JsoncComment[];
 },): {
-  key: JsoncKey;
-  value: JsoncValue;
-  commaSeen: boolean;
-  end: number;
+  readonly key: JsoncKey;
+  readonly value: JsoncValue;
+  readonly commaSeen: boolean;
+  readonly end: number;
 } {
   /**
    * Scanned key string token.
@@ -504,7 +332,7 @@ function parseEntry({
     index,
   },);
   /**
-   * Comment sitting between the key and its colon.
+   * Comments sitting between the key and its colon.
    */
   const beforeColon = skipTrivia({
     source,
@@ -516,7 +344,7 @@ function parseEntry({
       offset: beforeColon.end,
     },);
   /**
-   * Comment sitting between the colon and the value.
+   * Comments sitting between the colon and the value.
    */
   const beforeValue = skipTrivia({
     source,
@@ -531,7 +359,7 @@ function parseEntry({
     depth: depth + 1,
   },);
   /**
-   * Trailing same-line comment and comma after the value.
+   * Trailing same-line comments and comma after the value.
    */
   const trailing = captureTrailing({
     source,
@@ -545,80 +373,23 @@ function parseEntry({
     raw: keyScan.raw,
   };
   return {
-    key: appendComment({
-      node: prependComment({
+    key: appendComments({
+      node: prependComments({
         node: baseKey,
-        comment: leadComment,
+        comments: leadComments,
       },),
-      comment: beforeColon.comment,
+      comments: beforeColon.comments,
     },),
-    value: appendComment({
-      node: prependComment({
+    value: appendComments({
+      node: prependComments({
         node: valueScan.node,
-        comment: beforeValue.comment,
+        comments: beforeValue.comments,
       },),
-      comment: trailing.comment,
+      comments: trailing.comments,
     },),
     commaSeen: trailing.commaSeen,
     end: trailing.end,
   };
-}
-
-/**
- * Attaches a comment found before an object's closing brace: to the last entry's
- * value when present, otherwise to the empty record node.
- *
- * @param entries - Parsed entries (mutated in place when a dangling comment
- * attaches to the last value).
- *
- * @param dangling - Comment found before the close, if any.
- *
- * @returns Record node.
- *
- * @example
- * ```ts
- * closeRecord({ entries: [], dangling: undefined });
- * // => { kind: 'record', entries: [] }
- * ```
- */
-function closeRecord({
-  entries,
-  dangling,
-}: {
-  entries: { key: JsoncKey; value: JsoncValue; }[];
-  dangling: JsoncComment | undefined;
-},): JsoncValue {
-  if ((dangling !== undefined) && (entries.length > 0)) {
-    /**
-     * Last entry, whose value receives the dangling comment.
-     */
-    const last = entries[entries.length - 1];
-    if (last !== undefined)
-      entries[entries.length - 1] = {
-        key: last.key,
-        value: appendComment({
-          node: last.value,
-          comment: dangling,
-        },),
-      };
-  }
-  /**
-   * Comment owned by the record node itself (only when it has no entries).
-   */
-  const ownComment = (entries.length === 0)
-    ? dangling
-    : undefined;
-  /**
-   * Record node before any own-comment attachment.
-   */
-  const recordNode: JsoncValue = {
-    kind: 'record',
-    entries,
-  };
-  return appendComment({
-    node: recordNode,
-    comment: ownComment,
-  },);
 }
 
 //endregion Parser
