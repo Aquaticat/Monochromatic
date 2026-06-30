@@ -58,7 +58,8 @@ function bracketFirst(word: string,): string {
 /**
  * Builds a ripgrep glob pattern from name words.
  *
- * Joins bracketed words with `*` wildcards and wraps in leading/trailing `*`.
+ * Joins words bracketed via {@link bracketFirst} with `*` wildcards and
+ * wraps in leading/trailing `*`.
  *
  * @param words - Name words from CLI arguments.
  *
@@ -272,18 +273,18 @@ if (args.length
 rl.info(`query: "${args.join(' ',)}"`,);
 
 /**
- * Ripgrep glob pattern built from the query words.
+ * Ripgrep glob pattern built from the query words via {@link buildGlob}.
  */
 const glob = buildGlob(args,);
 rl.info(`glob: "${glob}"`,);
 
 /**
- * Resolved absolute path to the music directory.
+ * Resolved absolute path to the music directory, via {@link resolveMusicDir}.
  */
 const musicDir = await resolveMusicDir();
 
 /**
- * Matched music file paths from ripgrep.
+ * Matched music file paths from ripgrep, via {@link findFiles}.
  */
 const files = await findFiles({
   glob,
