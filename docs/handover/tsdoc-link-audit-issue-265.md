@@ -264,7 +264,7 @@ with scoped pathspecs (`fix(<package>): restore TSDoc inline links (issue #265)`
 | f01b | file-enforcer (pipeline, jetbrains, root) | a026a84a78b0975f2 | done, 17 files, commit a24250b7b |
 | f02 | mvm, mutation-test, async-time, claude-spawn | a55c638b0ae14975e | done, 42/42 findings, 27 files, commits 3236c3186/25f0d78cb/0323683d1 |
 | f03 | toml-edit, linkup, throws | af107f680f7e6b614 | done, 153/153 findings, 38 files, commits 6311f254c/981112c38/0aecb7671/f57d6277b/69d616e81 |
-| f04a | oxlint-plugins/no-restricted-syntax | | queued |
+| f04a | oxlint-plugins/no-restricted-syntax | a6d8aa4c72be9a16f | done, ~166 link insertions, 64 files, 12 commits (c45a94b5c..6121b5cb4) |
 | f04b | git, numeric-format, correction-reminder | a8287a03d6364d612 | done, 26 files, commits d39c01303/0d64b82dd/568a6f59d/5055ca8af |
 | f05 | done-postcss, i18n-compose, fy, backup-path | acfac2ca064b22aa2 | done, 68/68 findings, 34 files, commits fc4aecc76/0accc0700 |
 | f06 | aquati.cat, markdown-lint, islands-black, async-iter | a8650684bc0cf2bdb | done, 81/81 findings, 18 files, commits 9d25283be/4fc7f8033/4dd06f75a |
