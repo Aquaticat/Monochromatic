@@ -773,7 +773,46 @@ packages/pi/morph-compact/src/types.ts:54 | downgraded-link | current: "`Session
 
 ## Batch 11 (doodle-widget, claude-code-plugins/source, catalog-tighten)
 
-(pending)
+TOTAL FINDINGS: 111.
+
+Systematic pattern: this batch splits into two documentation cultures.
+Files built around regex-free character-scanning primitives and pure
+transforms are excellent, almost everything already `{@link}`s. By
+contrast, every hook-handler file in `claude-code-plugins` repeats two
+unlinked boilerplate idioms: (1) "Parses raw stdin as a `XInput`." on
+every `*Parser` function, and (2) an `Output`-type alias doc naming the
+aliased hook-types type only in backticks; `@param event`/`@param
+output` tags almost never name the type either. The same downgrade
+shows up wherever a module defines its own sentinel `unique symbol`
+(`SESSION_NOT_FOUND`, `NOTHING_TO_REPORT`, `NO_WARNING`): the sentinel's
+own doc correctly uses `{@link}`, but nearly every consumer function's
+`@returns` falls back to a backtick mention, often inconsistently within
+one file. In `doodle-widget`, the dominant pattern is param-type
+erasure: every `setupXHandlers(deps: XDeps)`-shaped function documents
+`@param deps` as generic prose without linking the `XDeps` type one line
+away, repeated across six files.
+
+```
+packages/webapp-productivity/doodle-widget/src/build.ts:49,73,91,96 | downgraded-link/missing-reference | current: backtick setSvgBackground; renderStyles/resolveSourceUrl/renderPage not named | target: setSvgBackground (client/background.ts), renderStyles (styles.ts), resolveSourceUrl (source-url.ts), renderPage (page.ts)
+packages/webapp-productivity/doodle-widget/src/client/eraser-strokes.ts:27, eraser-text.ts:55 | missing-reference | current: not mentioned | target: distToSegmentSq/segToSegDistSq/segmentIntersectsRect (client/geometry.ts)
+packages/webapp-productivity/doodle-widget/src/client/export-pdf.ts:84,86,87,90 | missing-reference | current: not mentioned | target: snapshotAllPages (pages.ts), renderPageCanvas (export-pdf-page.ts), textEntriesToExport (export-text-config.ts), ExportDeps (export.ts)
+packages/webapp-productivity/doodle-widget/src/client/export-png.ts:19,20,22 | missing-reference | current: not mentioned | target: renderBaseCanvas/triggerDownload/ExportDeps (export.ts)
+packages/webapp-productivity/doodle-widget/src/client/export.ts:118,233,234 | missing-reference | current: not mentioned | target: measureSvgOverlay (svg-overlay-measure.ts), renderStrokes (stroke-renderer.ts), renderSvgOverlayToContext (same file)
+packages/webapp-productivity/doodle-widget/src/client/main-setup.ts:57, pointer-handlers-zoom.ts:54, pointer-handlers.ts:46, toolbar-handlers.ts:145, undo-handlers.ts:63 | missing-reference | current: param-type erasure, "shared state and element references" instead of naming the Deps type | target: WidgetDeps/PointerHandlerDeps/ToolbarHandlerDeps/UndoHandlerDeps (same files)
+packages/webapp-productivity/doodle-widget/src/client/pages.ts:129,155,157,231 | missing-reference | current: not mentioned | target: finalizeActiveInput (text.ts), saveCurrentPage (same file), endStroke (drawing.ts)
+packages/webapp-productivity/doodle-widget/src/client/toolbar-handlers.ts:46,47,53,241 | missing-reference | current: not mentioned | target: exportAsPdf/exportAsPng/exportAsSvg/ExportDeps/setSvgBackground (export*.ts, background.ts)
+packages/webapp-productivity/doodle-widget/src/client/undo-handlers.ts:65,66,121 | downgraded-link/missing-reference | current: backtick pushSnapshot/updateUndoButtons; Snapshot type not named | target: pushSnapshot, updateUndoButtons (same file), Snapshot (undo-history.ts)
+packages/webapp-productivity/doodle-widget/src/page-toolbar.ts:14, source-url.ts:128,129 | missing-reference | current: not mentioned | target: renderPageToggle (page-toolbar-toggle.ts), resolveRepoUrl/resolveDirectory (same file)
+packages/claude-code-plugins/source/src/handlers/bash-output-filter/filter.ts:56,142 | downgraded-link/missing-reference | current: backtick flushRepeated; readStdin/filterOutput not named | target: flushRepeated (filter-transforms.ts), readStdin/filterOutput (same file)
+packages/claude-code-plugins/source/src/handlers/bash-output-filter/index.ts:14,31,34,35,59,74,111,134 | downgraded-link/missing-reference, 8 instances | current: backtick BashToolInput/PreToolUseOutput/PreToolUseInput/isBashToolInput; PreToolUseInput/BashOutputFilterOutput not named | target: hook-types package, same file
+packages/claude-code-plugins/source/src/handlers/claude-spawn/*.ts (hook-session-start, index, inject, session-finder) | downgraded-link/missing-reference, ~20 instances | current: backtick NO_WARNING/handleSessionStart/HookInput/NOTHING_TO_REPORT/PidMapping/SESSION_NOT_FOUND (7x in session-finder.ts alone); checkCompletedChildren/HookInput/ClaudeSpawnOutput/autoSetupCli not named | target: same-file sentinels, hook-types package, paths.ts
+packages/claude-code-plugins/source/src/handlers/correction-reminder.ts:176,190,221,245, guardrail.ts:173,174,196,273,296, prompt-time.ts:9,24,52,75, session-start-housekeeping.ts:186,202,228,250, stop-reminders/index.ts:18,19,20,34,36,38,44,123,146 | downgraded-link/missing-reference, ~25 instances | current: the "Parses raw stdin as `XInput`" / Output-type-alias boilerplate pattern repeated across every handler | target: UserPromptSubmitInput/Output, PreToolUseInput/Output, SessionStartInput, StopInput/Output (hook-types package), same-file Output aliases, stripNonProseRegions/findUncertainty/findTrailingQuestion (stop-reminders/uncertainty*.ts)
+packages/claude-code-plugins/source/src/handlers/stop-reminders/uncertainty-citations.ts:237 | downgraded-link | current: "`containsWordBoundedPhrase`" | target: containsWordBoundedPhrase (lib/text-scan.ts)
+packages/claude-code-plugins/source/src/handlers/terminal-title/index.ts:32,83,172,178,179,182,203,226, tool-titles*.ts:21,22,23,27 | downgraded-link/missing-reference, ~14 instances | current: backtick TOOL_TITLES/titleForTool/terminalTitleWriter/MAX_TITLE_LENGTH/HookInput mentions; titleForEvent/setTerminalTitle/HookInput/TerminalTitleOutput not named | target: same-file and sibling tool-titles*.ts definitions, hook-types package
+packages/claude-code-plugins/source/src/runtime/handler-runtime.ts:56 | downgraded-link | current: "`runHookPlugin`" | target: runHookPlugin (same file, self-reference)
+packages/dev-script/catalog-tighten/src/index.ts:74, version-read.ts:25 | downgraded-link | current: backtick readInstalledVersion mentions | target: readInstalledVersion (version-resolve.ts)
+packages/dev-script/catalog-tighten/src/yaml-rewrite.ts:107 | missing-reference | current: not mentioned | target: TightenedRange (same file)
+```
 
 ## Batch 12 (deps-cube, git-clone-size, current-time-context, oxlint-plugins/shared)
 
