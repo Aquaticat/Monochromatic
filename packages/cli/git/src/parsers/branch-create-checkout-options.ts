@@ -75,7 +75,9 @@ const CHECKOUT_VALUE_LONG_OPTIONS: ReadonlySet<string> = new Set([
 //region git-checkout option predicates
 
 /**
- * Reports whether git-checkout option explicitly creates a branch.
+ * Reports whether git-checkout option explicitly creates a branch. Checks
+ * each short form with {@link hasShortOption} and the long forms with
+ * {@link matchesLongOption}.
  *
  * @param arg - Argv token to inspect.
  *
@@ -109,6 +111,8 @@ export function isCheckoutCreateOption(arg: string,): boolean {
 
 /**
  * Reports whether git-checkout option prevents remote branch guessing.
+ * Checks each short form with {@link hasShortOption} and the long forms with
+ * {@link matchesLongOption}.
  *
  * @param arg - Argv token to inspect.
  *
@@ -137,7 +141,9 @@ export function isCheckoutNonGuessOption(arg: string,): boolean {
 }
 
 /**
- * Reports whether git-checkout option consumes next argv token.
+ * Reports whether git-checkout option consumes next argv token. Checks the
+ * separated short forms with {@link isExactShortOption} and the separated
+ * long forms with {@link matchesLongOption}.
  *
  * @param arg - Argv token to inspect.
  *

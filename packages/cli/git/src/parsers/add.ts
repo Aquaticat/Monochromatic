@@ -89,7 +89,7 @@ export type AddRegion = {
 };
 
 /**
- * Splits `args` at the pathspec separator and returns only the option region.
+ * Splits `args` at the {@link PATHSPEC_SEPARATOR} and returns only the option region.
  *
  * @param args - Post-subcommand argv tokens.
  *
@@ -117,7 +117,7 @@ function optionRegion(args: readonly string[],): readonly string[] {
 }
 
 /**
- * Splits `args` at the pathspec separator and returns only pathspecs after it.
+ * Splits `args` at the {@link PATHSPEC_SEPARATOR} and returns only pathspecs after it.
  *
  * @param args - Post-subcommand argv tokens.
  *
@@ -257,9 +257,10 @@ function scanBulkTokens({
 
 /**
  * Parses the post-`add` argv region into a structured fact set used by the
- * add-explicit rule. Detects the wrapper-only escape hatch via optique
- * (option-arity-aware) and collects literal bulk-staging tokens via a small
- * value-aware walker.
+ * add-explicit rule. Splits the region with {@link optionRegion} and
+ * {@link pathspecRegion}, detects the wrapper-only escape hatch via optique
+ * (option-arity-aware), and collects literal bulk-staging tokens via
+ * {@link scanBulkTokens}, a small value-aware walker.
  *
  * @param postSubcommandArgs - Arguments strictly after `add` subcommand.
  *

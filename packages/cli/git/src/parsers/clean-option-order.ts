@@ -117,6 +117,7 @@ type ApplyLongCleanOptionOptions = {
 
 /**
  * Applies one exact long clean mode option to the accumulated ordered state.
+ * Tests each alias set with {@link isLongOptionAlias}.
  *
  * @param arg - Raw argv token to apply.
  *
@@ -318,6 +319,10 @@ type ScanCleanOptionTokensOptions = {
 /**
  * Scans clean option tokens in argv order and applies Git's last-option-wins
  * semantics for dry-run/no-dry-run and interactive/no-interactive flags.
+ * Skips `--exclude` values detected by {@link hasInlineLongOptionValue} and
+ * {@link isLongOptionAlias}, applies long options through
+ * {@link applyLongCleanOption}, and applies short-option clusters through
+ * {@link scanShortCleanOptionCluster}.
  *
  * @param region - Option-region argv tokens, excluding pathspecs after `--`.
  *
@@ -409,7 +414,8 @@ function scanCleanOptionTokens({
 }
 
 /**
- * Scans clean options in argv order and returns final dry-run/interactive state.
+ * Scans clean options in argv order and returns final dry-run/interactive
+ * state, via {@link scanCleanOptionTokens}.
  *
  * @param region - Option-region argv tokens, excluding pathspecs after `--`.
  *

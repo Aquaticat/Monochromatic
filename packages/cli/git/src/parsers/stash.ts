@@ -64,7 +64,7 @@ export type StashRegion = {
 };
 
 /**
- * Splits `args` at the pathspec separator and returns only the option region.
+ * Splits `args` at the {@link PATHSPEC_SEPARATOR} and returns only the option region.
  *
  * @param args - Post-subcommand argv tokens.
  *
@@ -93,9 +93,10 @@ function optionRegion(args: readonly string[],): readonly string[] {
 
 /**
  * Parses the post-`stash` argv region into a structured fact set used by the
- * linked-worktree rule. The arity-aware optique scan closes the escape-hatch
- * confusion shape where the token appears as the value of `-m <message>`,
- * `--message <message>`, or `--pathspec-from-file <file>`.
+ * linked-worktree rule. Splits the region with {@link optionRegion}; the
+ * arity-aware optique scan closes the escape-hatch confusion shape where the
+ * token appears as the value of `-m <message>`, `--message <message>`, or
+ * `--pathspec-from-file <file>`.
  *
  * @param postSubcommandArgs - Arguments strictly after `stash` subcommand.
  *

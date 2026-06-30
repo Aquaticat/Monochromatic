@@ -83,6 +83,15 @@ function createScan(): BranchCreationScan {
 
 /**
  * Parses guarded subcommand argv for explicit and implicit branch creation.
+ * Recognises the {@link BRANCH_WORKTREE_ESCAPE_HATCH} flag and stops scanning
+ * options at {@link PATHSPEC_SEPARATOR}; per subcommand, delegates to the
+ * branch-mode predicates ({@link isBranchCopyModeOption},
+ * {@link isBranchListModeOption}, {@link isBranchNonCreateModeOption}), the
+ * checkout-mode predicates ({@link isCheckoutCreateOption},
+ * {@link isCheckoutNonGuessOption}), or the switch-mode predicates
+ * ({@link isSwitchCreateOption}, {@link isSwitchNonGuessOption}); skips
+ * value-consuming tokens via {@link consumesNextValue} and collects the rest
+ * with {@link isPositionalToken}.
  *
  * @param subcommand - Guarded git subcommand.
  *

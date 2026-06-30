@@ -63,7 +63,9 @@ const SWITCH_VALUE_LONG_OPTIONS: ReadonlySet<string> = new Set([
 //region git-switch option predicates
 
 /**
- * Reports whether git-switch option explicitly creates a branch.
+ * Reports whether git-switch option explicitly creates a branch. Checks each
+ * short form with {@link hasShortOption} and the long forms with
+ * {@link matchesLongOption}.
  *
  * @param arg - Argv token to inspect.
  *
@@ -96,7 +98,9 @@ export function isSwitchCreateOption(arg: string,): boolean {
 }
 
 /**
- * Reports whether git-switch option prevents remote branch guessing.
+ * Reports whether git-switch option prevents remote branch guessing. Checks
+ * the short form with {@link hasShortOption} and the long forms with
+ * {@link matchesLongOption}.
  *
  * @param arg - Argv token to inspect.
  *
@@ -121,7 +125,9 @@ export function isSwitchNonGuessOption(arg: string,): boolean {
 }
 
 /**
- * Reports whether git-switch option consumes next argv token.
+ * Reports whether git-switch option consumes next argv token. Checks the
+ * separated short forms with {@link isExactShortOption} and the separated
+ * long forms with {@link matchesLongOption}.
  *
  * @param arg - Argv token to inspect.
  *

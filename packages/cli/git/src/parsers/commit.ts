@@ -41,9 +41,10 @@ export const COMMIT_ESCAPE_HATCH = '--no-enforce-only';
  * Optique parser for the post-`commit` argv region.
  *
  * Declares the flags and value-taking options the commit-only rule needs to
- * decide whether to inject `-o`. Pathspec presence is detected by the
- * arity-aware scanner above because Optique passthrough cannot know whether
- * unknown no-value flags such as `-q` consume the following token.
+ * decide whether to inject `-o`. Pathspec presence is detected separately by
+ * {@link hasCommitPathspec}'s arity-aware scanner because Optique passthrough
+ * cannot know whether unknown no-value flags such as `-q` consume the
+ * following token.
  */
 const commitRegionParser = object({
   allFlags: multiple(flag(
@@ -197,11 +198,12 @@ export type CommitRegion = {
 
 /**
  * Parses the post-`commit` argv region into a structured fact set used by
- * the commit-only rule. Inline short-cluster values are normalised before
- * optique parsing so `-mhello` and `-mhello file.ts` are interpreted the
- * same way real git would. Pathspec presence is detected by a scanner over
- * the same normalised argv because pass-through unknown options may otherwise
- * consume no-value flag pathspecs.
+ * the commit-only rule. Inline short-cluster values are normalised by
+ * {@link normaliseCommitArgs} before optique parsing so `-mhello` and
+ * `-mhello file.ts` are interpreted the same way real git would. Pathspec
+ * presence is detected by {@link hasCommitPathspec} over the same normalised
+ * argv because pass-through unknown options may otherwise consume no-value
+ * flag pathspecs.
  *
  * @param postSubcommandArgs - Arguments strictly after `commit` subcommand.
  *

@@ -66,7 +66,8 @@ function findValueOptionIndex(token: string,): number {
 
 /**
  * Splits short-option clusters that carry the value inline so the canonical
- * `-m value` shape reaches optique. Tokens like `-mhello` become
+ * `-m value` shape reaches optique. Locates the split point with
+ * {@link findValueOptionIndex}. Tokens like `-mhello` become
  * `['-m', 'hello']`; tokens like `-amhello` become `['-a', '-m', 'hello']`
  * because git treats the trailing `m` as a value-taking short option.
  *
@@ -147,8 +148,9 @@ function normaliseInlineShort(token: string,): readonly string[] {
 
 /**
  * Walks the post-`commit` argv and rewrites every inline short-cluster that
- * carries a value into the canonical separated form. Tokens past the
- * pathspec separator are preserved verbatim.
+ * carries a value into the canonical separated form via
+ * {@link normaliseInlineShort}. Tokens past the {@link PATHSPEC_SEPARATOR}
+ * are preserved verbatim.
  *
  * @param args - Post-subcommand argv tokens.
  *
@@ -225,8 +227,9 @@ function isOptionLikeToken(arg: string,): boolean {
 /**
  * Recursively scans the option region for the first token Git would treat as
  * a positional pathspec. Known separated-value options skip their value slot;
- * every other option-like token is no-value for scanner purposes so no-value
- * flags such as `-q` and `--dry-run` cannot swallow the following pathspec.
+ * every other token classified by {@link isOptionLikeToken} as option-like is
+ * no-value for scanner purposes so no-value flags such as `-q` and
+ * `--dry-run` cannot swallow the following pathspec.
  *
  * @param args - Normalised argv tokens before any pathspec separator.
  *
@@ -271,8 +274,9 @@ function scanOptionRegionForPathspec({
 
 /**
  * Detects whether normalised commit argv supplies at least one pathspec.
- * Tokens after `--` are pathspecs by definition; tokens before `--` are
- * scanned with commit option arity so no-value flags do not consume paths.
+ * Tokens after {@link PATHSPEC_SEPARATOR} are pathspecs by definition; tokens
+ * before it are scanned by {@link scanOptionRegionForPathspec} with commit
+ * option arity so no-value flags do not consume paths.
  *
  * @param normalised - Normalised post-`commit` argv tokens.
  *

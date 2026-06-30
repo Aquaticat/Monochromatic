@@ -39,11 +39,12 @@ type StripEscapeHatchOptions = {
  * Removes flag-position escape-hatch tokens from the post-subcommand region.
  * Tokens that sit in the value position of a separated-value option are
  * preserved so the resulting argv is forwarded with values intact. Pathspec
- * tokens past `--` are preserved verbatim.
+ * tokens past {@link PATHSPEC_SEPARATOR} are preserved verbatim.
  *
  * Optique handles the detection upstream by parsing each guarded subcommand's
  * post-region with arity-aware option declarations; this helper only does the
- * destructive token removal that the parsed result cannot express directly.
+ * destructive token removal, via {@link filterFlagEscapeHatch}, that the
+ * parsed result cannot express directly.
  *
  * @param args - Complete git argv.
  *

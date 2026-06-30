@@ -8,7 +8,10 @@ import {
 //region Escape-hatch stripping
 
 /**
- * Removes branch-worktree escape hatch from one guarded invocation.
+ * Removes the {@link BRANCH_WORKTREE_ESCAPE_HATCH} flag from one guarded
+ * invocation. Skips the value position of options that
+ * {@link consumesNextValue} reports, and stops rewriting at
+ * {@link PATHSPEC_SEPARATOR}, where every later token becomes a pathspec.
  *
  * @param args - Complete git argv.
  *

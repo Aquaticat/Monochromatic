@@ -20,7 +20,9 @@ type ConsumesNextValueOptions = {
 };
 
 /**
- * Reports whether option consumes the next argv token as a value.
+ * Reports whether option consumes the next argv token as a value, dispatching
+ * to {@link branchConsumesNextValue}, {@link checkoutConsumesNextValue}, or
+ * {@link switchConsumesNextValue} by subcommand.
  *
  * @param subcommand - Guarded subcommand whose option vocabulary applies.
  *

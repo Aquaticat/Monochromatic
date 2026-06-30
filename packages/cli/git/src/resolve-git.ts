@@ -90,8 +90,9 @@ async function isShimForSelf(candidatePath: string,): Promise<boolean> {
 }
 
 /**
- * Locates the real git binary by scanning PATH entries,
- * skipping any that resolve back into this package's directory tree.
+ * Locates the real git binary by scanning PATH entries, skipping any that
+ * resolve back into this package's directory tree as detected by
+ * {@link isShimForSelf}.
  *
  * Sequential scanning is intentional: we need the first PATH match
  * and can stop immediately, so parallelizing would waste work.

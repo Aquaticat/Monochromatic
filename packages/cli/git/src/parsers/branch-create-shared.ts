@@ -64,6 +64,7 @@ function longOptionName(arg: string,): string | typeof NOT_LONG_OPTION {
 /**
  * Reports whether token names one of the caller's canonical long options,
  * accepting only unique abbreviations within current subcommand vocabulary.
+ * Strips any glued `=<value>` suffix via {@link longOptionName} before matching.
  *
  * @param arg - Argv token to inspect.
  *

@@ -143,8 +143,9 @@ type ReadGitWorktreeMetadataOptions = {
  *
  * @param effectiveCwd - Cwd from which the query runs.
  *
- * @returns Stdout text on success, or {@link OUTSIDE_WORKTREE} when git exited
- *   non-zero (cwd outside any worktree under the supplied repo selection).
+ * @returns Stdout text on success, or {@link OUTSIDE_WORKTREE} when
+ *   {@link isExecFileExitError} recognises git exiting non-zero (cwd outside
+ *   any worktree under the supplied repo selection).
  *
  * @example
  * ```ts
@@ -197,14 +198,15 @@ async function readGitWorktreeMetadata({
 /**
  * Classifies where a guarded git invocation would land by replaying the
  * caller's repo-selection layer (pre-subcommand global options + process env)
- * against real git's `rev-parse`. This closes the bypass shape where
+ * against real git's `rev-parse`, resolved via {@link resolveGit} and queried
+ * through {@link readGitWorktreeMetadata}. This closes the bypass shape where
  * `--git-dir`, `--work-tree`, `GIT_DIR`, or `GIT_WORK_TREE` made the wrapper
  * validate one worktree while the destructive command operated on another.
  *
  * A repository whose resolved git-dir lies under a baked-in tool-cache
- * directory classifies as `allowlisted`, so the rule lets it through: those
- * caches belong to tools (e.g. uv) that run destructive git against their own
- * disposable clones.
+ * directory classifies as `allowlisted` via {@link isAllowedWorktreeDir}, so
+ * the rule lets it through: those caches belong to tools (e.g. uv) that run
+ * destructive git against their own disposable clones.
  *
  * @param preSubcommandArgs - Pre-subcommand region of the wrapper invocation.
  *

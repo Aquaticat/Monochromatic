@@ -70,9 +70,9 @@ function applyChdir({
 
 /**
  * Recursive walk over args, applying every pre-subcommand `-C <path>` to the
- * effective cwd and stopping at the first non-option arg (the subcommand).
- * Post-subcommand `-C` is not interpreted (e.g. `git commit -C HEAD~` keeps
- * its own meaning).
+ * effective cwd via {@link applyChdir} and stopping at the first non-option
+ * arg (the subcommand). Post-subcommand `-C` is not interpreted (e.g.
+ * `git commit -C HEAD~` keeps its own meaning).
  *
  * @param args - Raw git arguments.
  *

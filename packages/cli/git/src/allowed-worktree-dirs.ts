@@ -88,12 +88,13 @@ export function resolveUvCacheDir({
 
 /**
  * Directories whose repositories are exempt from linked-worktree enforcement.
- * These are third-party tool caches (currently uv's git cache) where the tool
- * owns disposable clones and runs destructive git itself; cli-git's worktree
- * safeguards exist to discipline the human's repositories, not a tool's
- * internal plumbing. Baked into the binary because the set is a property of the
- * machine's tooling, not of any repository. Add sibling tool caches here as
- * one-line entries when a new tool needs the same exemption.
+ * These are third-party tool caches (currently uv's git cache, resolved by
+ * {@link resolveUvCacheDir}) where the tool owns disposable clones and runs
+ * destructive git itself; cli-git's worktree safeguards exist to discipline
+ * the human's repositories, not a tool's internal plumbing. Baked into the
+ * binary because the set is a property of the machine's tooling, not of any
+ * repository. Add sibling tool caches here as one-line entries when a new
+ * tool needs the same exemption.
  */
 export const DEFAULT_ALLOWED_WORKTREE_DIRS: readonly string[] = [
   resolveUvCacheDir(),
@@ -221,10 +222,11 @@ async function safeRealpath(path: string,): Promise<string | typeof REALPATH_ABS
 
 /**
  * Tests whether the repository's git-dir lies under any allowed directory.
- * Allowed entries are realpath-resolved (so a symlinked path component, such as
- * `/home` resolving to `/var/home`, does not defeat the match) before a
- * segment-aware containment check; `candidatePath` is expected already resolved
- * by the caller.
+ * Allowed entries are realpath-resolved through {@link safeRealpath} (so a
+ * symlinked path component, such as `/home` resolving to `/var/home`, does
+ * not defeat the match) before an {@link isPathUnder} segment-aware
+ * containment check; `candidatePath` is expected already resolved by the
+ * caller.
  *
  * @param candidatePath - Realpath-resolved git-dir of the targeted repository.
  *

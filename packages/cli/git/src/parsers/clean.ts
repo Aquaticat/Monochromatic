@@ -99,8 +99,9 @@ export type CleanRegion = {
 };
 
 /**
- * Splits `args` at the pathspec separator and returns only the option region.
- * Tokens past `--` are pathspecs and never carry wrapper-relevant options.
+ * Splits `args` at the {@link PATHSPEC_SEPARATOR} and returns only the option
+ * region. Tokens past `--` are pathspecs and never carry wrapper-relevant
+ * options.
  *
  * @param args - Post-subcommand argv tokens.
  *
@@ -129,10 +130,12 @@ function optionRegion(args: readonly string[],): readonly string[] {
 
 /**
  * Parses the post-`clean` argv region into a structured fact set used by the
- * linked-worktree rule. The parser walks the option region with arity
- * awareness, so the wrapper-only escape hatch cannot be confused with the
- * value of `-e <pattern>` and unambiguous long-option abbreviations are
- * recognised exactly as git would interpret them.
+ * linked-worktree rule. Splits the region with {@link optionRegion}, then the
+ * parser walks it with arity awareness, so the wrapper-only escape hatch
+ * cannot be confused with the value of `-e <pattern>` and unambiguous
+ * long-option abbreviations are recognised exactly as git would interpret
+ * them; {@link scanCleanOptionOrder} resolves Git's last-option-wins ordering
+ * for dry-run and interactive state.
  *
  * Parse failures leave `parseFailed: true` so the linked-worktree rule can
  * default to a conservative enforcement decision.

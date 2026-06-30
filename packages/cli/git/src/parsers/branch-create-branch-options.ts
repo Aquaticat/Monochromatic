@@ -107,7 +107,8 @@ const BRANCH_VALUE_LONG_OPTIONS: ReadonlySet<string> = new Set([
 //region git-branch option predicates
 
 /**
- * Reports whether git-branch option is a list or inspection mode.
+ * Reports whether git-branch option is a list or inspection mode. Checks each
+ * short form with {@link hasShortOption} and the long forms with {@link matchesLongOption}.
  *
  * @param arg - Argv token to inspect.
  *
@@ -148,7 +149,9 @@ export function isBranchListModeOption(arg: string,): boolean {
 }
 
 /**
- * Reports whether git-branch option mutates existing refs without branch creation.
+ * Reports whether git-branch option mutates existing refs without branch
+ * creation. Checks each short form with {@link hasShortOption} and the long
+ * forms with {@link matchesLongOption}.
  *
  * @param arg - Argv token to inspect.
  *
@@ -190,6 +193,8 @@ export function isBranchNonCreateModeOption(arg: string,): boolean {
 
 /**
  * Reports whether git-branch option copies existing branch to new branch.
+ * Checks each short form with {@link hasShortOption} and the long form with
+ * {@link matchesLongOption}.
  *
  * @param arg - Argv token to inspect.
  *
@@ -218,7 +223,9 @@ export function isBranchCopyModeOption(arg: string,): boolean {
 }
 
 /**
- * Reports whether git-branch option consumes next argv token.
+ * Reports whether git-branch option consumes next argv token. Checks the
+ * separated short form with {@link isExactShortOption} and the separated
+ * long forms with {@link matchesLongOption}.
  *
  * @param arg - Argv token to inspect.
  *

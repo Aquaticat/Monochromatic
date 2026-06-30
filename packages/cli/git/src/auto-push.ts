@@ -158,6 +158,8 @@ export type AutoPushResult = {
  *
  * @returns `true` when query exits zero.
  *
+ * @throws When the probe fails for a reason nano-spawn does not model as a {@link SubprocessError}.
+ *
  * @example
  * ```ts
  * await gitQuerySucceeds({
@@ -194,18 +196,20 @@ async function gitQuerySucceeds({
 }
 
 /**
- * Pushes the just-created commit to its upstream, then surfaces a filtered view
- * of the push: only GitHub `remote:` lines on success, the full output on
- * failure. Always invoked with the real git binary, so it does not re-enter the
- * cli-git wrapper, yet the push still fires git's native pre-push hook.
+ * Pushes the just-created commit to its upstream, then surfaces a
+ * {@link filterPushOutput filtered view} of the push: only GitHub `remote:`
+ * lines on success, the full output on failure. Always invoked with the real
+ * git binary, so it does not re-enter the cli-git wrapper, yet the push still
+ * fires git's native pre-push hook.
  *
  * A branch with a configured upstream is pushed plainly, following that
  * upstream wherever it lives; `--set-upstream origin HEAD` is used only when
  * no upstream exists yet, so a branch tracking another remote never has its
  * tracking configuration silently re-pointed to origin. Auto-push is skipped
- * silently when there is nowhere to back up to (no upstream and no `origin`),
- * and skipped with a printed note when HEAD is detached (mid-rebase,
- * mid-cherry-pick, or a detached checkout), where pushing `HEAD` cannot work.
+ * silently when {@link gitQuerySucceeds} finds nowhere to back up to (no
+ * upstream and no `origin`), and skipped with a printed note when HEAD is
+ * detached (mid-rebase, mid-cherry-pick, or a detached checkout), where
+ * pushing `HEAD` cannot work.
  * The commit has already happened by the time this runs, and git ignores
  * a post-commit hook's exit status, so a failed backup push is surfaced in the
  * output but never changes the commit command's exit code; the caller leaves
