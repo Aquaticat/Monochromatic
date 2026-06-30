@@ -3,7 +3,8 @@ import type { CreateOnceRule, } from '@oxlint/plugins';
 import { banDisableRule, } from './_ban-disable-factory.ts';
 
 /**
- * Bans inline suppression of `typescript/no-misused-promises`.
+ * Bans inline suppression of `typescript/no-misused-promises`, built via
+ * {@link banDisableRule}.
  *
  * For DOM event handlers, make the outer listener synchronous and wrap
  * async logic in a `void` IIFE with error handling.

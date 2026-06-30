@@ -13,8 +13,9 @@ const DISABLE_DIRECTIVE_PREFIX = 'oxlint-disable';
  * Checks whether a comment contains an oxlint disable directive.
  *
  * `oxlint-disable` and `oxlint-disable-next-line` both start with the
- * same directive prefix. A string includes check is sufficient because the
- * follow-up rule-id check still gates reports to real target suppressions.
+ * same {@link DISABLE_DIRECTIVE_PREFIX}. A string includes check is
+ * sufficient because the follow-up rule-id check still gates reports to
+ * real target suppressions.
  *
  * @param value - comment text without comment delimiters
  *
@@ -40,7 +41,8 @@ function hasOxlintDisableDirective({ value, }: { readonly value: string; },): bo
  *
  * @param message - error message shown when the banned suppression is found
  *
- * @returns oxlint `CreateOnceRule` that scans all comments for the banned suppression
+ * @returns oxlint `CreateOnceRule` that scans all comments for the banned
+ * suppression via {@link hasOxlintDisableDirective}
  *
  * @example
  * ```ts

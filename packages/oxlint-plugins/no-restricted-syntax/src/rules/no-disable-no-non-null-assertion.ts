@@ -5,7 +5,8 @@ import { banDisableRule, } from './_ban-disable-factory.ts';
 /**
  * Bans inline suppression of `no-non-null-assertion`
  * (including `typescript/no-non-null-assertion` and
- * `typescript-eslint/no-non-null-assertion` variants).
+ * `typescript-eslint/no-non-null-assertion` variants), built via
+ * {@link banDisableRule}.
  *
  * Use `nonNullishOrThrow()` from `\@monochromatic-dev/module-or-throw`
  * or an explicit null check instead of the `!` postfix operator.

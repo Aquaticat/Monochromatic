@@ -3,7 +3,7 @@ import type { CreateOnceRule, } from '@oxlint/plugins';
 import { banDisableRule, } from './_ban-disable-factory.ts';
 
 /**
- * Bans inline suppression of `tsdoc/require-tsdoc`.
+ * Bans inline suppression of `tsdoc/require-tsdoc`, built via {@link banDisableRule}.
  *
  * TSDoc is required on all declarations. Disabling the rule hides
  * missing documentation and should be replaced with proper TSDoc.

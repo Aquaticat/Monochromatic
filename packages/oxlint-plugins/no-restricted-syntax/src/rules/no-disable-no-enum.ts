@@ -3,7 +3,8 @@ import type { CreateOnceRule, } from '@oxlint/plugins';
 import { banDisableRule, } from './_ban-disable-factory.ts';
 
 /**
- * Bans inline suppression of `no-restricted-syntax/no-enum`.
+ * Bans inline suppression of `no-restricted-syntax/no-enum`, built via
+ * {@link banDisableRule}.
  * Use union types with `as const` instead of TypeScript enums.
  */
 export const noDisableNoEnum: CreateOnceRule = banDisableRule({

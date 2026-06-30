@@ -3,7 +3,8 @@ import type { CreateOnceRule, } from '@oxlint/plugins';
 import { banDisableRule, } from './_ban-disable-factory.ts';
 
 /**
- * Bans inline suppression of `typescript-eslint/prefer-regexp-exec`.
+ * Bans inline suppression of `typescript-eslint/prefer-regexp-exec`, built
+ * via {@link banDisableRule}.
  * `RegExp#exec()` is the preferred method for regex matching.
  *
  * @example

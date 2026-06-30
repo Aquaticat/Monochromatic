@@ -3,7 +3,8 @@ import type { CreateOnceRule, } from '@oxlint/plugins';
 import { banDisableRule, } from './_ban-disable-factory.ts';
 
 /**
- * Bans inline suppression of `no-restricted-syntax/no-try-finally`.
+ * Bans inline suppression of `no-restricted-syntax/no-try-finally`, built via
+ * {@link banDisableRule}.
  * Use `using` / `await using` with `Symbol.dispose` / `Symbol.asyncDispose` instead.
  */
 export const noDisableNoTryFinally: CreateOnceRule = banDisableRule({
