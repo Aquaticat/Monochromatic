@@ -1,6 +1,17 @@
 # Handover: TSDoc inline-link audit (issue #265)
 
-## Status (2026-06-30, in progress)
+## Status (2026-06-30, audit complete, posted)
+
+All 16 batches finished. 2467 `downgraded-link`/`missing-reference`
+findings recorded across the active codebase, plus the separately
+tracked 53-instance `@throws` Error-class list (Category 1, fully
+subsumed by the batch totals). The compiled audit was posted as
+[a comment on issue #265](https://github.com/Aquaticat/Monochromatic/issues/265#issuecomment-4848121912).
+
+This handover doc and the sibling `tsdoc-link-audit-issue-265.findings.md`
+are kept (not deleted per `DL4`) because only the audit has landed, not
+the fix: the findings data is the working dataset for whoever picks up
+restoring the links. Delete both once that fix work lands.
 
 Issue: [#265](https://github.com/Aquaticat/Monochromatic/issues/265),
 "Restore TSDoc inline links removed from comments".
