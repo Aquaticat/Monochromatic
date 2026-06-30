@@ -42,13 +42,15 @@ export function unwrapParentheses(
 }
 
 /**
- * Extracts named identifier from an expression.
+ * Extracts named identifier from an expression, after unwrapping it via
+ * {@link unwrapParentheses}.
  *
  * @param expression - Expression to inspect.
  *
  * @param name - Expected identifier name.
  *
- * @returns Identifier node, or sentinel when expression is not the named identifier.
+ * @returns Identifier node, or {@link NOT_ERROR_DETECTION} when expression
+ * is not the named identifier.
  *
  * @example
  * ```ts
@@ -76,11 +78,14 @@ export function getIdentifierNamed(
 }
 
 /**
- * Extracts a static property name from a member expression.
+ * Extracts a static property name from a member expression via the shared
+ * {@link getSharedStaticMemberName} helper, mapping its
+ * {@link NO_STATIC_MEMBER_NAME} sentinel to this rule's own.
  *
  * @param member - Member expression to inspect.
  *
- * @returns Property name, or sentinel when property is private or dynamic.
+ * @returns Property name, or {@link NOT_ERROR_DETECTION} when property is
+ * private or dynamic.
  *
  * @example
  * ```ts
@@ -100,7 +105,8 @@ export function getStaticMemberName(
 }
 
 /**
- * Returns whether member expression reads a named property.
+ * Returns whether member expression reads a named property, via
+ * {@link getStaticMemberName}.
  *
  * @param member - Member expression to inspect.
  *
@@ -132,7 +138,8 @@ export function isStaticMemberNamed(
 //region Scope and import helpers
 
 /**
- * Checks whether an identifier resolves to a global binding rather than a local declaration.
+ * Checks whether an identifier resolves to a global binding rather than a
+ * local declaration, resolved via {@link findVariable}.
  *
  * @param context - Oxlint rule context.
  *
@@ -170,13 +177,15 @@ export function isUnshadowedGlobalIdentifier(
 }
 
 /**
- * Returns the first import definition for an identifier expression.
+ * Returns the first import definition for an identifier expression, after
+ * resolving its scope variable via {@link findVariable}.
  *
  * @param context - Oxlint rule context.
  *
  * @param identifier - Identifier to resolve.
  *
- * @returns Import definition, or sentinel when identifier does not resolve to an import.
+ * @returns Import definition, or {@link NOT_ERROR_DETECTION} when identifier
+ * does not resolve to an import.
  *
  * @example
  * ```ts
@@ -214,11 +223,14 @@ export function getImportDefinition(
 }
 
 /**
- * Returns import declaration source for an import definition.
+ * Returns import declaration source for an import definition, resolved via
+ * {@link getImportDeclarationForDefinition} and translating its
+ * {@link NO_IMPORT_DECLARATION} sentinel to {@link NOT_ERROR_DETECTION}.
  *
  * @param definition - Import definition to inspect.
  *
- * @returns Import declaration source, or sentinel when metadata is unexpected.
+ * @returns Import declaration source, or {@link NOT_ERROR_DETECTION} when
+ * metadata is unexpected.
  *
  * @example
  * ```ts
@@ -289,13 +301,15 @@ export function isNamedImport(
 //region Fix helpers
 
 /**
- * Returns text for a single non-spread call argument.
+ * Returns text for a single non-spread call argument, located via
+ * {@link getSingleNonSpreadArgument}.
  *
  * @param context - Oxlint rule context.
  *
  * @param call - Call expression to inspect.
  *
- * @returns Argument source text, or sentinel when call shape is unsupported.
+ * @returns Argument source text, or {@link NOT_ERROR_DETECTION} when call
+ * shape is unsupported (including {@link NO_SINGLE_ARGUMENT}).
  *
  * @example
  * ```ts
@@ -322,7 +336,8 @@ export function getSingleArgumentText(
 }
 
 /**
- * Builds canonical replacement source for a detected Error value expression.
+ * Builds canonical replacement source for a detected Error value expression,
+ * using the {@link ERROR_IS_ERROR_CALLEE} callee.
  *
  * @param argumentText - Source text for value being tested.
  *

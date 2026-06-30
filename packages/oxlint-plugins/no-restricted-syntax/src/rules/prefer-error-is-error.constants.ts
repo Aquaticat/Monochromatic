@@ -136,7 +136,8 @@ export const NOT_ERROR_DETECTION: unique symbol = Symbol(
 );
 
 /**
- * Text for a detected Error value expression, or a sentinel when no match exists.
+ * Text for a detected Error value expression, or {@link NOT_ERROR_DETECTION}
+ * when no match exists.
  */
 export type ErrorDetectionArgumentText = string | typeof NOT_ERROR_DETECTION;
 
@@ -160,7 +161,7 @@ export type ErrorDetectionReplacement = {
 };
 
 /**
- * Replacement metadata, or a sentinel when no match exists.
+ * Replacement metadata, or {@link NOT_ERROR_DETECTION} when no match exists.
  */
 export type ErrorDetectionReplacementResult =
   | ErrorDetectionReplacement

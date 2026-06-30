@@ -29,7 +29,8 @@ import {
  *
  * @param source - Import source text.
  *
- * @returns Whether source is `util` or `node:util`.
+ * @returns Whether source is {@link NODE_UTIL_SOURCE} or
+ * {@link NODE_PROTOCOL_UTIL_SOURCE}.
  *
  * @example
  * ```ts
@@ -47,7 +48,8 @@ function isNodeUtilSource(
  *
  * @param source - Import source text.
  *
- * @returns Whether source is `util/types` or `node:util/types`.
+ * @returns Whether source is {@link NODE_UTIL_TYPES_SOURCE} or
+ * {@link NODE_PROTOCOL_UTIL_TYPES_SOURCE}.
  *
  * @example
  * ```ts
@@ -66,7 +68,9 @@ function isNodeUtilTypesSource(
 //region Node util import classification
 
 /**
- * Checks whether identifier resolves to Node util module object.
+ * Checks whether identifier resolves to Node util module object: resolves
+ * the binding via {@link getImportDefinition}, reads its source via
+ * {@link getImportSource}, and tests it via {@link isNodeUtilSource}.
  *
  * @param context - Oxlint rule context.
  *
@@ -112,7 +116,11 @@ function isNodeUtilImportIdentifier(
 }
 
 /**
- * Checks whether identifier resolves to Node util/types module object.
+ * Checks whether identifier resolves to Node util/types module object:
+ * resolves the binding via {@link getImportDefinition} and its source via
+ * {@link getImportSource}, then matches either {@link isNodeUtilTypesSource}
+ * directly or {@link isNodeUtilSource} plus a named
+ * {@link TYPES_PROPERTY_NAME} import (via {@link isNamedImport}).
  *
  * @param context - Oxlint rule context.
  *
@@ -164,7 +172,11 @@ function isNodeUtilTypesImportIdentifier(
 }
 
 /**
- * Checks whether expression is a Node util/types object.
+ * Checks whether expression is a Node util/types object, after unwrapping
+ * via {@link unwrapParentheses}: a bare identifier via
+ * {@link isNodeUtilTypesImportIdentifier}, or a {@link TYPES_PROPERTY_NAME}
+ * member (via {@link isStaticMemberNamed}) on a util import (via
+ * {@link isNodeUtilImportIdentifier}).
  *
  * @param context - Oxlint rule context.
  *
@@ -215,7 +227,11 @@ function isNodeUtilTypesExpression(
 }
 
 /**
- * Checks whether direct callee is `isNativeError` imported from util/types.
+ * Checks whether direct callee is `isNativeError` imported from util/types:
+ * resolves the binding via {@link getImportDefinition} and its source via
+ * {@link getImportSource}, then confirms it via
+ * {@link isNodeUtilTypesSource} and a named
+ * {@link IS_NATIVE_ERROR_PROPERTY_NAME} import (via {@link isNamedImport}).
  *
  * @param context - Oxlint rule context.
  *
@@ -263,13 +279,18 @@ function isDirectIsNativeErrorImport(
 //region isNativeError call detection
 
 /**
- * Extracts Error detector argument text from Node `isNativeError()` calls.
+ * Extracts Error detector argument text from Node `isNativeError()` calls:
+ * reads the argument via {@link getSingleArgumentText} and confirms the
+ * callee via {@link isDirectIsNativeErrorImport} (direct import) or
+ * {@link isStaticMemberNamed} plus {@link isNodeUtilTypesExpression}
+ * (member call).
  *
  * @param context - Oxlint rule context.
  *
  * @param call - Call expression to inspect.
  *
- * @returns Tested value text, or sentinel when call expression does not match.
+ * @returns Tested value text, or {@link NOT_ERROR_DETECTION} when call
+ * expression does not match.
  *
  * @example
  * ```ts

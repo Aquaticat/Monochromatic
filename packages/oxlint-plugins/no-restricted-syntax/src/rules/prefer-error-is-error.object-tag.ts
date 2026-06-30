@@ -27,13 +27,19 @@ import {
 //region Object.prototype.toString call detection
 
 /**
- * Extracts argument text from `Object.prototype.toString.call(value)`.
+ * Extracts argument text from `Object.prototype.toString.call(value)`:
+ * confirms each member with {@link isStaticMemberNamed} against
+ * {@link CALL_PROPERTY_NAME}, {@link TO_STRING_PROPERTY_NAME}, and
+ * {@link PROTOTYPE_PROPERTY_NAME}, confirms the receiver via
+ * {@link isGlobalObjectConstructor}, and reads the argument via
+ * {@link getSingleArgumentText}.
  *
  * @param context - Oxlint rule context.
  *
  * @param call - Call expression to inspect.
  *
- * @returns Tested value text, or sentinel when call expression does not match.
+ * @returns Tested value text, or {@link NOT_ERROR_DETECTION} when call
+ * expression does not match.
  *
  * @example
  * ```ts
@@ -105,7 +111,9 @@ function getObjectPrototypeToStringArgumentText(
 //region Whole tag comparison detection
 
 /**
- * Extracts Error detector argument from whole Object tag comparison sides.
+ * Extracts Error detector argument from whole Object tag comparison sides:
+ * matches the {@link ERROR_OBJECT_TAG} literal on either side and delegates
+ * the other side to {@link getObjectPrototypeToStringArgumentText}.
  *
  * @param context - Oxlint rule context.
  *
@@ -113,7 +121,8 @@ function getObjectPrototypeToStringArgumentText(
  *
  * @param unwrappedRight - Right side without redundant parentheses.
  *
- * @returns Tested value text, or sentinel when sides do not form a whole-tag check.
+ * @returns Tested value text, or {@link NOT_ERROR_DETECTION} when sides do
+ * not form a whole-tag check.
  *
  * @example
  * ```ts
@@ -155,11 +164,12 @@ function getWholeObjectTagComparisonArgumentText(
 //region Suffix tag call detection
 
 /**
- * Checks whether a call uses Error Object tag suffix argument.
+ * Checks whether a call uses Error Object tag suffix argument, after
+ * unwrapping it via {@link unwrapParentheses}.
  *
  * @param call - Candidate endsWith call expression.
  *
- * @returns Whether call uses `' Error]'`.
+ * @returns Whether call uses {@link ERROR_OBJECT_TAG_SUFFIX}.
  *
  * @example
  * ```ts
@@ -190,13 +200,18 @@ function hasErrorObjectTagSuffixArgument(
 }
 
 /**
- * Extracts argument text from `Object.prototype.toString.call(value).endsWith(' Error]')`.
+ * Extracts argument text from `Object.prototype.toString.call(value).endsWith(' Error]')`:
+ * confirms the member via {@link isStaticMemberNamed} against
+ * {@link ENDS_WITH_PROPERTY_NAME}, the suffix via
+ * {@link hasErrorObjectTagSuffixArgument}, and the source call via
+ * {@link getObjectPrototypeToStringArgumentText}.
  *
  * @param context - Oxlint rule context.
  *
  * @param call - Candidate suffix-check call expression.
  *
- * @returns Tested value text, or sentinel when call expression does not match.
+ * @returns Tested value text, or {@link NOT_ERROR_DETECTION} when call
+ * expression does not match.
  *
  * @example
  * ```ts
@@ -243,11 +258,13 @@ export function getObjectTagEndsWithArgumentText(
 //region Parsed tag comparison detection
 
 /**
- * Extracts a static numeric value from a numeric expression.
+ * Extracts a static numeric value from a numeric expression, after
+ * unwrapping it via {@link unwrapParentheses}.
  *
  * @param expression - Expression to inspect.
  *
- * @returns Static numeric value, or sentinel when not a supported static number.
+ * @returns Static numeric value, or {@link NOT_ERROR_DETECTION} when not a
+ * supported static number.
  *
  * @example
  * ```ts
@@ -279,11 +296,13 @@ function getStaticNumber(
 }
 
 /**
- * Checks whether a call uses slice arguments that extract `[object Type]`'s Type.
+ * Checks whether a call uses slice arguments that extract `[object Type]`'s
+ * Type, read via {@link getStaticNumber}.
  *
  * @param call - Candidate slice call expression.
  *
- * @returns Whether call uses `slice(8, -1)`.
+ * @returns Whether call uses `slice` with {@link OBJECT_TAG_TYPE_PREFIX_LENGTH}
+ * and {@link OBJECT_TAG_TYPE_END_OFFSET} as arguments.
  *
  * @example
  * ```ts
@@ -310,13 +329,18 @@ function hasObjectTagSliceArguments(
 }
 
 /**
- * Extracts argument text from `Object.prototype.toString.call(value).slice(8, -1)`.
+ * Extracts argument text from `Object.prototype.toString.call(value).slice(8, -1)`:
+ * confirms the member via {@link isStaticMemberNamed} against
+ * {@link SLICE_PROPERTY_NAME}, the arguments via
+ * {@link hasObjectTagSliceArguments}, and the source call via
+ * {@link getObjectPrototypeToStringArgumentText}.
  *
  * @param context - Oxlint rule context.
  *
  * @param call - Candidate parsed-tag call expression.
  *
- * @returns Tested value text, or sentinel when call expression does not match.
+ * @returns Tested value text, or {@link NOT_ERROR_DETECTION} when call
+ * expression does not match.
  *
  * @example
  * ```ts
@@ -359,7 +383,9 @@ function getParsedObjectTagArgumentText(
 }
 
 /**
- * Extracts Error detector argument from parsed Object tag comparison sides.
+ * Extracts Error detector argument from parsed Object tag comparison sides:
+ * matches the {@link ERROR_OBJECT_TAG_TYPE_NAME} literal on either side and
+ * delegates the other side to {@link getParsedObjectTagArgumentText}.
  *
  * @param context - Oxlint rule context.
  *
@@ -367,7 +393,8 @@ function getParsedObjectTagArgumentText(
  *
  * @param unwrappedRight - Right side without redundant parentheses.
  *
- * @returns Tested value text, or sentinel when sides do not form a parsed-tag check.
+ * @returns Tested value text, or {@link NOT_ERROR_DETECTION} when sides do
+ * not form a parsed-tag check.
  *
  * @example
  * ```ts
@@ -411,7 +438,10 @@ function getParsedObjectTagComparisonArgumentText(
 //region Public Object tag comparison detection
 
 /**
- * Extracts Error detector argument text from an Object tag equality check.
+ * Extracts Error detector argument text from an Object tag equality check:
+ * unwraps both sides via {@link unwrapParentheses}, then tries
+ * {@link getWholeObjectTagComparisonArgumentText} before falling back to
+ * {@link getParsedObjectTagComparisonArgumentText}.
  *
  * @param context - Oxlint rule context.
  *
@@ -419,7 +449,8 @@ function getParsedObjectTagComparisonArgumentText(
  *
  * @param right - Right side of equality comparison.
  *
- * @returns Tested value text, or sentinel when sides do not form an Error tag check.
+ * @returns Tested value text, or {@link NOT_ERROR_DETECTION} when sides do
+ * not form an Error tag check.
  *
  * @example
  * ```ts

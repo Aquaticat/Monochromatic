@@ -18,7 +18,11 @@ import {
 //region Global constructor detection
 
 /**
- * Checks whether expression is global `Error` or `globalThis.Error`.
+ * Checks whether expression is global `Error` or `globalThis.Error`: matches
+ * the {@link ERROR_CONSTRUCTOR_NAME} and {@link GLOBAL_THIS_NAME} identifiers
+ * via {@link getIdentifierNamed} and {@link getStaticMemberName} (after
+ * unwrapping via {@link unwrapParentheses}), and confirms each via
+ * {@link isUnshadowedGlobalIdentifier}.
  *
  * @param context - Oxlint rule context.
  *
@@ -82,7 +86,9 @@ export function isGlobalErrorConstructor(
 }
 
 /**
- * Checks whether expression is the global `Object` constructor.
+ * Checks whether expression is the global `Object` constructor: matches
+ * {@link OBJECT_CONSTRUCTOR_NAME} via {@link getIdentifierNamed} and
+ * confirms it via {@link isUnshadowedGlobalIdentifier}.
  *
  * @param context - Oxlint rule context.
  *

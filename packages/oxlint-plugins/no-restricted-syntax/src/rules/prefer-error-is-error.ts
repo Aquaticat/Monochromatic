@@ -19,7 +19,8 @@ import { buildErrorIsErrorCall, } from './prefer-error-is-error.syntax.ts';
 //region Reporting
 
 /**
- * Reports a replaceable alternative Error detector.
+ * Reports a replaceable alternative Error detector, building the
+ * replacement text via {@link buildErrorIsErrorCall}.
  *
  * @param context - Oxlint rule context.
  *
@@ -103,7 +104,11 @@ function reportReplacement(
  * `instanceof Error` fails across realms, `Object.prototype.toString` checks are
  * verbose and stringly typed, constructor comparisons reject Error subclasses,
  * and Node's `util.types.isNativeError()` is deprecated in favor of
- * `Error.isError()`.
+ * `Error.isError()`. Detects each idiom via {@link getInstanceofErrorArgumentText},
+ * {@link getEqualityDetectorReplacement} (negation read via
+ * {@link isNegatedEqualityOperator}), {@link getIsNativeErrorArgumentText},
+ * and {@link getObjectTagEndsWithArgumentText}, then reports and fixes every
+ * match via {@link reportReplacement}.
  *
  * @example
  * ```ts

@@ -19,13 +19,15 @@ import {
 //region instanceof Error detection
 
 /**
- * Extracts Error detector argument text from `value instanceof Error`.
+ * Extracts Error detector argument text from `value instanceof Error`,
+ * confirming the right side via {@link isGlobalErrorConstructor}.
  *
  * @param context - Oxlint rule context.
  *
  * @param binary - Binary expression to inspect.
  *
- * @returns Tested value text, or sentinel when binary expression does not match.
+ * @returns Tested value text, or {@link NOT_ERROR_DETECTION} when binary
+ * expression does not match.
  *
  * @example
  * ```ts
@@ -57,7 +59,10 @@ export function getInstanceofErrorArgumentText(
 //region constructor-property detection
 
 /**
- * Extracts tested value text from `value.constructor === Error`.
+ * Extracts tested value text from `value.constructor === Error`: unwraps
+ * both sides via {@link unwrapParentheses}, matches the
+ * {@link CONSTRUCTOR_PROPERTY_NAME} member via {@link isStaticMemberNamed},
+ * and confirms the other side via {@link isGlobalErrorConstructor}.
  *
  * @param context - Oxlint rule context.
  *
@@ -65,7 +70,8 @@ export function getInstanceofErrorArgumentText(
  *
  * @param right - Right side of equality comparison.
  *
- * @returns Tested value text, or sentinel when sides do not form constructor check.
+ * @returns Tested value text, or {@link NOT_ERROR_DETECTION} when sides do
+ * not form constructor check.
  *
  * @example
  * ```ts
@@ -160,13 +166,17 @@ export function isNegatedEqualityOperator(
 }
 
 /**
- * Extracts Error detector replacement metadata from legacy equality checks.
+ * Extracts Error detector replacement metadata from legacy equality checks,
+ * confirmed via {@link isEqualityOperator} and tried in order against
+ * {@link getObjectTagComparisonArgumentText} and
+ * {@link getConstructorComparisonArgumentText}.
  *
  * @param context - Oxlint rule context.
  *
  * @param binary - Binary expression to inspect.
  *
- * @returns Replacement metadata, or sentinel when binary expression does not match.
+ * @returns Replacement metadata, or {@link NOT_ERROR_DETECTION} when binary
+ * expression does not match.
  *
  * @example
  * ```ts
