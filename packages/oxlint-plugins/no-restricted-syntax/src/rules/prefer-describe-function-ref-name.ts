@@ -30,8 +30,8 @@ const sourceTextByPath = new Map<string, string>();
  * be read.
  *
  * Oxlint rule visitors are synchronous, so relative-import classification
- * cannot await filesystem I/O. Cache each path so one lint pass reads every
- * inspected import at most once.
+ * cannot await filesystem I/O. Cache each path in {@link sourceTextByPath}
+ * so one lint pass reads every inspected import at most once.
  *
  * @param sourcePath - Resolved absolute path of imported source.
  *
@@ -76,8 +76,9 @@ function readSourceTextOrEmpty(sourcePath: string,): string {
 }
 
 /**
- * Reads an imported source file and reports whether `<name>` is declared
- * as a function, class, or some other shape there.
+ * Reads an imported source file, via {@link readSourceTextOrEmpty}, and
+ * reports whether `<name>` is declared as a function, class, or some other
+ * shape there.
  *
  * Resolves only relative paths; bails on workspace and external imports
  * because the resolver would need to walk the package graph. Bails on
@@ -175,13 +176,14 @@ function classifyExportedName(
  * - `const`/`let`/`var` declarations: only when the initializer is itself a
  *   function or class expression. `const X = new Map()` and `const X = 5`
  *   produce `undefined` from `.name` and must be left as string literals.
- * - Imports from a relative path: synchronously read the source file and
- *   look for `export function`/`export class`/`export const` for `name`.
- *   Treat `export const` (any init) as not callable. Re-exports from
- *   another file (`export { name } from '...'`) and read failures fall
- *   through to the {@link ALL_CAPS_SNAKE} name-shape heuristic.
- * - Imports from a workspace or external package: ALL_CAPS_SNAKE -\> not
- *   callable; otherwise assumed callable.
+ * - Imports from a relative path: synchronously read the source file and,
+ *   via {@link classifyExportedName}, look for `export function`/
+ *   `export class`/`export const` for `name`. Treat `export const` (any
+ *   init) as not callable. Re-exports from another file
+ *   (`export { name } from '...'`) and read failures fall through to the
+ *   {@link ALL_CAPS_SNAKE} name-shape heuristic.
+ * - Imports from a workspace or external package: {@link ALL_CAPS_SNAKE}
+ *   -\> not callable; otherwise assumed callable.
  * - Other definition kinds (parameter, catch clause, implicit global):
  *   not the rule's target.
  *
@@ -319,18 +321,19 @@ function isCallableBinding(
  * `Function.prototype.name` updates automatically when the underlying
  * declaration is renamed, while a string literal silently drifts.
  *
- * Fires only when the matched binding is callable (function declaration,
- * class declaration, import not in ALL_CAPS_SNAKE shape, or `const`
- * initialized with a function/class expression). Bindings that have no
- * meaningful `.name` are left alone:
+ * Fires only when the matched binding is callable, tested via
+ * {@link isCallableBinding} (function declaration, class declaration,
+ * import not in {@link ALL_CAPS_SNAKE} shape, or `const` initialized with a
+ * function/class expression). Bindings that have no meaningful `.name` are
+ * left alone:
  *
  * - `const X = new Map()` -- instance `.name` is `undefined`.
  * - `const X = { ... }` -- instance `.name` is `undefined`.
  * - `const X = 5` -- numbers have no `.name`.
- * - `import { THIRTY } from '...'` -- when `THIRTY` is ALL_CAPS_SNAKE the
- *   import is assumed to be a constant value, not a function. (Camel-case
- *   imports of non-callable values remain a residual false positive --
- *   the rule cannot resolve imports at lint time without I/O.)
+ * - `import { THIRTY } from '...'` -- when `THIRTY` is {@link ALL_CAPS_SNAKE}
+ *   the import is assumed to be a constant value, not a function.
+ *   (Camel-case imports of non-callable values remain a residual false
+ *   positive -- the rule cannot resolve imports at lint time without I/O.)
  *
  * Empty-string names (`name: ''`) are exempted: the harness uses them
  * for invisible top-level suites where the filename already identifies
@@ -388,7 +391,7 @@ export const preferDescribeFunctionRefName: CreateOnceRule = {
     /**
      * Inspects a `describe(...)` call expression and reports when its
      * `name` property is a string literal that matches an in-scope
-     * binding.
+     * binding classified callable by {@link isCallableBinding}.
      *
      * @param node - The `CallExpression` AST node.
      */
