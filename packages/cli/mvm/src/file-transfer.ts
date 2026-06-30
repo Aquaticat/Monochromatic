@@ -45,8 +45,8 @@ const l = tagged({ tag: 'mvm', },);
  * Pushes a file from the host filesystem into a running VM via virtiofs.
  *
  * Copies the file into the VM's shared directory on the host.
- * The guest can access it at `{GUEST_MOUNT_POINT}/{filename}` (Linux)
- * or `{WINDOWS_GUEST_MOUNT_POINT}\{filename}` (Windows).
+ * The guest can access it at {@link GUEST_MOUNT_POINT}`/{filename}` (Linux)
+ * or {@link WINDOWS_GUEST_MOUNT_POINT}`\{filename}` (Windows).
  *
  * When `guestPath` specifies a path under the guest mount point,
  * the file is placed at the matching relative path in the shared directory.
@@ -87,7 +87,7 @@ export async function pushFile(
 ): Promise<string> {
   validateName(name,);
   /**
-   * Tagged logger so push entries are scoped to `pushFile` in the output.
+   * Tagged logger so push entries are scoped to {@link pushFile} in the output.
    */
   const rl = tagged({
     tag: pushFile.name,
@@ -188,7 +188,7 @@ export async function pullFile(
 ): Promise<Buffer> {
   validateName(name,);
   /**
-   * Tagged logger so pull entries are scoped to `pullFile` in the output.
+   * Tagged logger so pull entries are scoped to {@link pullFile} in the output.
    */
   const rl = tagged({
     tag: pullFile.name,

@@ -122,7 +122,7 @@ export async function clone(
   }
   catch (error) {
     /**
-     * Listing of `VMS_DIR` so the error message can surface known VM names to the user.
+     * Listing of {@link VMS_DIR} so the error message can surface known VM names to the user.
      */
     const entries = await readdir(VMS_DIR,);
     throw new Error(
@@ -174,7 +174,7 @@ export async function clone(
   );
 
   /**
-   * Generated NoCloud seed ISO with a new instance-id so cloud-init reruns on the clone; NO_SEED_ISO for Windows.
+   * Generated NoCloud seed ISO with a new instance-id so cloud-init reruns on the clone; {@link NO_SEED_ISO} for Windows.
    */
   const seedIso = await createSeedIso({
     guest,

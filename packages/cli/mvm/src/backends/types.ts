@@ -32,7 +32,7 @@ export type BackendKind = 'hetzner' | 'libvirt';
 /**
  * Record of the VM operations a provider implements.
  * Every member mirrors the signature of the corresponding standalone function
- * in this package; `create` additionally accepts cloud-only `serverType` and
+ * in this package; {@link create} additionally accepts cloud-only `serverType` and
  * `location` hints that the libvirt backend ignores.
  *
  * @example

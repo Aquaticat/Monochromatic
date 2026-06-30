@@ -134,7 +134,7 @@ export async function ensureLinuxTemplate(spec: LinuxImageSpec,): Promise<string
   },);
 
   /**
-   * NoCloud seed ISO carrying cloud-init user-data that installs `qemu-guest-agent`; NO_SEED_ISO for Windows.
+   * NoCloud seed ISO carrying cloud-init user-data that installs `qemu-guest-agent`; {@link NO_SEED_ISO} for Windows.
    */
   const seedIso = await createSeedIso({
     guest: spec,

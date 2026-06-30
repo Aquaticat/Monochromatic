@@ -27,7 +27,7 @@ import { update, } from '../../update.ts';
 
 /**
  * Local libvirt/KVM backend assembled from the package's standalone functions.
- * The cloud-only `serverType`/`location` hints on `create` are ignored here.
+ * The cloud-only `serverType`/`location` hints on {@link create} are ignored here.
  *
  * @example
  * ```ts

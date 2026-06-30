@@ -12,7 +12,8 @@ import {
 /**
  * Generates the windowsPE settings pass for Autounattend.xml.
  * Configures locale, MBR disk partitioning, WIM image selection by index,
- * and PnP driver paths for VirtIO storage and network during WinPE.
+ * and PnP driver paths via {@link pnpDriverPaths} for VirtIO storage and
+ * network during WinPE.
  *
  * @param imageIndex - WIM image index for OS edition selection
  *

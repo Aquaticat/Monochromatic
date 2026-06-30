@@ -111,7 +111,8 @@ runcmd:
 //region Init system dispatch
 
 /**
- * Dispatches to the correct template runcmd generator for the given init system.
+ * Dispatches to the correct template runcmd generator, {@link templateRuncmdOpenrc}
+ * or {@link templateRuncmdSystemd}, for the given init system.
  *
  * @param initSystem - Target init system
  *
@@ -129,7 +130,8 @@ export function templateRuncmd(initSystem: InitSystem,): string {
 }
 
 /**
- * Dispatches to the correct autologin generator for the given init system.
+ * Dispatches to the correct autologin generator, {@link vmAutologinOpenrc} or
+ * {@link vmAutologinSystemd}, for the given init system.
  *
  * @param initSystem - Target init system
  *

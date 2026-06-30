@@ -171,7 +171,7 @@ async function parseApiError(
  *
  * @returns parsed JSON response, or `undefined` for empty (204) responses
  *
- * @throws HetznerApiError when the response status is not ok
+ * @throws {@link HetznerApiError} when the response status is not ok
  *
  * @example
  * ```ts

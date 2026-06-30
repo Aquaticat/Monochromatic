@@ -74,7 +74,7 @@ export async function waitForGuestAgent({
     l,
   },);
   /**
-   * Prefixed libvirt domain name; what `virsh` expects on the wire.
+   * Prefixed libvirt domain name; what {@link virsh} expects on the wire.
    */
   const fullName = `${VM_PREFIX}${name}`;
   /**
@@ -151,7 +151,7 @@ export async function shutdownVm({ name, }: { readonly name: string; },): Promis
     l,
   },);
   /**
-   * Prefixed libvirt domain name; what `virsh` expects on the wire.
+   * Prefixed libvirt domain name; what {@link virsh} expects on the wire.
    */
   const fullName = `${VM_PREFIX}${name}`;
   /**

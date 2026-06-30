@@ -224,7 +224,7 @@ export async function list(): Promise<readonly VmInfo[]> {
 
   for (const line of lines) {
     /**
-     * Parsed row fields, or NOT_A_DATA_ROW for header/separator/non-data rows.
+     * Parsed row fields, or {@link NOT_A_DATA_ROW} for header/separator/non-data rows.
      */
     const row = parseVirshRow(line,);
     if (row !== NOT_A_DATA_ROW) {

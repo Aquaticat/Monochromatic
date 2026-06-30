@@ -128,7 +128,7 @@ export async function create({
     l,
   },);
   /**
-   * Per-VM scratch directory under `VMS_DIR`; holds disk, seed ISO, and shared dir.
+   * Per-VM scratch directory under {@link VMS_DIR}; holds disk, seed ISO, and shared dir.
    */
   const vmDir = join(
     VMS_DIR,
@@ -203,7 +203,7 @@ export async function create({
   );
 
   /**
-   * NoCloud seed ISO carrying the user-data and meta-data files for first-boot cloud-init; NO_SEED_ISO for Windows.
+   * NoCloud seed ISO carrying the user-data and meta-data files for first-boot cloud-init; {@link NO_SEED_ISO} for Windows.
    */
   const seedIso = await createSeedIso({
     guest,

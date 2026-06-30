@@ -24,12 +24,12 @@ const l = tagged({ tag: 'mvm', },);
  * installation of Windows Server from an evaluation ISO on KVM with VirtIO.
  *
  * The answer file configures:
- * - VirtIO storage and network driver loading during WinPE
+ * - VirtIO storage and network driver loading during WinPE, via {@link windowsPeSection}
  * - MBR disk partitioning (system reserved + OS partition) for BIOS boot
  * - Unattended OS image selection by WIM index
  * - Locale and timezone settings
  * - Administrator account with auto-logon
- * - QEMU guest agent installation via FirstLogonCommands
+ * - QEMU guest agent installation via FirstLogonCommands, running {@link virtioInstallCommand}
  * - OOBE bypass for fully automated setup
  *
  * @param hostname - VM hostname for the specialize pass
@@ -127,7 +127,8 @@ ${windowsPeSection({ imageIndex, },)}
 //region Autounattend ISO generation
 
 /**
- * Creates an ISO9660 image containing the Autounattend.xml answer file.
+ * Creates an ISO9660 image, via {@link createIso}, containing the
+ * Autounattend.xml answer file rendered by {@link generateAutounattend}.
  * Windows PE automatically searches removable media (including CDROMs)
  * for the answer file during setup. The ISO is attached as a secondary
  * CDROM during Windows template creation.

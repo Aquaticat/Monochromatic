@@ -84,7 +84,7 @@ async function downloadIfMissing({
   );
 
   /**
-   * HTTP response for the source URL; consumed by `writeWithProgress` to stream the body to disk.
+   * HTTP response for the source URL; consumed by {@link writeWithProgress} to stream the body to disk.
    */
   const response = await fetch(url,);
   if (!response.ok) {

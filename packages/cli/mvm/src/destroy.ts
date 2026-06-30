@@ -97,7 +97,7 @@ async function destroyOne(
 export async function destroy({ name, }: { readonly name: string; },): Promise<void> {
   validateName(name,);
   /**
-   * Tagged logger so destroy entries are scoped to `destroy` in the output.
+   * Tagged logger so destroy entries are scoped to {@link destroy} in the output.
    */
   const rl = tagged({
     tag: destroy.name,
@@ -121,7 +121,7 @@ export async function destroy({ name, }: { readonly name: string; },): Promise<v
  */
 export async function destroyAll(): Promise<void> {
   /**
-   * Tagged logger so bulk-destroy entries are scoped to `destroyAll` in the output.
+   * Tagged logger so bulk-destroy entries are scoped to {@link destroyAll} in the output.
    */
   const rl = tagged({
     tag: destroyAll.name,

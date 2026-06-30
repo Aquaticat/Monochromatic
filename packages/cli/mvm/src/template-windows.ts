@@ -230,7 +230,7 @@ const GUEST_EXEC_POLL_MS = 500;
 
 /**
  * Runs a PowerShell command inside the template VM via guest agent and waits for completion.
- * Uses virsh directly because the `exec()` module reads VM metadata which doesn't
+ * Uses virsh directly because {@link exec} reads VM metadata which doesn't
  * exist yet during template creation.
  *
  * @param command - PowerShell command string
@@ -339,7 +339,7 @@ async function guestFilePush({
   readonly hostPath: string;
 },): Promise<void> {
   /**
-   * Prefixed libvirt domain name; matches what `defineVm` registered.
+   * Prefixed libvirt domain name; matches what {@link defineVm} registered.
    */
   const fullName = `${VM_PREFIX}${TEMPLATE_VM_NAME}`;
   /**

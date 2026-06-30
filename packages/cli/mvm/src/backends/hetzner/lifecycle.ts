@@ -141,7 +141,7 @@ function ipv4OrThrow(server: HetznerServer,): string {
  *
  * @returns the created server and its boot action
  *
- * @throws Error when every location is out of stock (other errors propagate)
+ * @throws Error when every location is out of stock ({@link HetznerApiError} instances with other codes propagate)
  *
  * @example
  * ```ts
@@ -447,7 +447,7 @@ export async function hetznerClone(
   const src = await getMvmServerByName({ name: source, },);
   rl.info(`snapshotting ${source} to clone into ${destination}`,);
   /**
-   * Snapshot action and image; the image is reaped inside provisionFromSnapshot.
+   * Snapshot action and image; the image is reaped inside {@link provisionFromSnapshot}.
    */
   const snapshot = await createImage({
     description: `mvm clone ${source} -> ${destination}`,

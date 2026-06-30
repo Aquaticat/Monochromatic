@@ -40,13 +40,15 @@ export type CdromSpec = {
 
 /**
  * Generates a libvirt domain XML definition for a KVM virtual machine.
- * Supports both Linux and Windows guests with OS-specific optimizations.
+ * Supports both Linux and Windows guests with OS-specific optimizations,
+ * assembled from {@link commonDevices} plus the builders below.
  *
  * For Linux guests: configures virtio disk and NIC, serial console,
  * and an optional cloud-init seed CDROM.
  *
- * For Windows guests: adds Hyper-V enlightenments, localtime clock,
- * and optional IDE CDROMs for installation media (Windows ISO, autounattend,
+ * For Windows guests: adds Hyper-V enlightenments via {@link hypervFeatures},
+ * a localtime clock via {@link clockElement}, and optional IDE CDROMs via
+ * {@link ideCdromDevices} for installation media (Windows ISO, autounattend,
  * virtio-win ISO).
  *
  *   OS family, boot device, and additional CDROMs

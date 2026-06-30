@@ -173,7 +173,7 @@ export async function readVmMeta(vmDir: string,): Promise<VmMeta> {
   // Try meta.json first
   try {
     /**
-     * Raw `meta.json` contents read from disk; parsed as `VmMeta` below.
+     * Raw `meta.json` contents read from disk; parsed as {@link VmMeta} below.
      */
     const content = await readFile(
       join(
@@ -229,7 +229,7 @@ export async function readVmMeta(vmDir: string,): Promise<VmMeta> {
    */
   const resolved = await resolveImage(image,);
   /**
-   * Guest config used to fill the synthetic `VmMeta`; defaults for custom images.
+   * Guest config used to fill the synthetic {@link VmMeta}; defaults for custom images.
    */
   const guest = resolved.kind
     === 'registry'

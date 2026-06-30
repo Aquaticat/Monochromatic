@@ -100,7 +100,8 @@ async function pollProgress({
 }
 
 /**
- * Streams a fetch response body to disk while printing download progress to stderr.
+ * Streams a fetch response body to disk while printing download progress to stderr
+ * via {@link pollProgress}.
  * Uses AbortController to coordinate between the progress poller and the stream pipeline.
  *
  * @param destPath - Destination file path to write to

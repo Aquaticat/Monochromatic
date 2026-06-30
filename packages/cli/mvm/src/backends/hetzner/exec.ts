@@ -3,7 +3,7 @@
  *
  * Each operation resolves the target server label-scoped (so it can never act
  * on an unrelated `mvm-<name>` server) to obtain its public IPv4, then connects
- * over SSH/SCP. `hetznerRun` reuses the shared {@link ephemeralRun} helper with
+ * over SSH/SCP. {@link hetznerRun} reuses the shared {@link ephemeralRun} helper with
  * the Hetzner operations rather than the libvirt-bound exported `run`.
  *
  * @module

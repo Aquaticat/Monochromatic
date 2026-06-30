@@ -29,7 +29,7 @@ import { string, } from '@optique/core/valueparser';
 import type { MvmArgs, } from './index-parsers.ts';
 
 /**
- * Subcommand parser producing MvmArgs.
+ * Subcommand parser producing {@link MvmArgs}.
  * Uses `any` for TState because Parser is invariant in TState
  * and the deeply-nested state types are opaque implementation details.
  */

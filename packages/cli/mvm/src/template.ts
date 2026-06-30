@@ -27,11 +27,12 @@ export {
  * if not already cached. Dispatches to the appropriate template baking
  * pipeline based on the OS family:
  *
- * - **Linux**: creates a temporary VM from the cloud image, installs
- *   qemu-guest-agent via cloud-init, and captures the result
- * - **Windows**: boots from the evaluation ISO with an Autounattend.xml
- *   answer file, performs a full unattended installation, and captures
+ * - **Linux**: via {@link ensureLinuxTemplate}, creates a temporary VM from
+ *   the cloud image, installs qemu-guest-agent via cloud-init, and captures
  *   the result
+ * - **Windows**: via {@link ensureWindowsTemplate}, boots from the evaluation
+ *   ISO with an Autounattend.xml answer file, performs a full unattended
+ *   installation, and captures the result
  *
  * Each image gets its own template (e.g. `template-ubuntu.qcow2`,
  * `template-windows.qcow2`) so multiple distros coexist in the cache.

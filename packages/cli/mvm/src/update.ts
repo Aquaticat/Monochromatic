@@ -22,9 +22,9 @@ const l = tagged({ tag: 'mvm', },);
 
 /**
  * Updates all template images unconditionally by deleting cached base images
- * and templates, then re-downloading and re-building every registered image.
- * Builds templates for all images in the registry, even those that were
- * never previously used.
+ * and templates, then re-downloading and re-building every registered image
+ * via {@link ensureTemplate}. Builds templates for all images in the
+ * registry, even those that were never previously used.
  *
  * For Linux images, re-downloads cloud images and re-bakes templates with
  * qemu-guest-agent. For Windows images, re-downloads the evaluation ISO

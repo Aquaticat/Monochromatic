@@ -41,7 +41,7 @@ import type {
  *
  * @returns created server and the boot action to poll
  *
- * @throws HetznerApiError with code `resource_unavailable` when out of stock
+ * @throws {@link HetznerApiError} with code `resource_unavailable` when out of stock
  *
  * @example
  * ```ts

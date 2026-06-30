@@ -1,10 +1,12 @@
 /**
  * Library API for the mvm ephemeral VM manager.
  *
- * VM lifecycle (create, clone, destroy, list, update), command execution
- * (exec, run), file transfer (pushFile, pullFile), image registry, and
- * per-VM metadata, plus the backend registry (`selectBackend`,
- * `resolveBackendKind`, `BACKENDS`) selecting the libvirt or Hetzner backend.
+ * VM lifecycle ({@link create}, {@link clone}, {@link destroy},
+ * {@link destroyAll}, {@link list}, {@link update}), command execution
+ * ({@link exec}, {@link run}), file transfer ({@link pushFile}, {@link pullFile}),
+ * image registry, and per-VM metadata, plus the backend registry
+ * ({@link selectBackend}, {@link resolveBackendKind}, {@link BACKENDS})
+ * selecting the libvirt or Hetzner backend.
  * The `mvm` executable lives in `./cli.ts`.
  *
  * @module
