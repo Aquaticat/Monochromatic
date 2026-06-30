@@ -34,7 +34,7 @@ type SentenceDeps<S extends string, V extends string, N extends string,> = {
  * Renders a predicate's optional object slot, returning empty string when absent.
  *
  * Reads `predicate.object` itself so the absent case never crosses the call
- * boundary as `undefined`; `joinTokens` drops the empty-string result.
+ * boundary as `undefined`; {@link joinTokens} drops the empty-string result.
  *
  * @param predicate - verb phrase whose object slot is rendered
  *
@@ -61,7 +61,7 @@ function renderOptionalObject<S extends string, V extends string, N extends stri
  * Renders a predicate's optional complement, returning empty string when absent.
  *
  * Reads `predicate.complement` itself so the absent case never crosses the
- * call boundary as `undefined`; `joinTokens` drops the empty-string result.
+ * call boundary as `undefined`; {@link joinTokens} drops the empty-string result.
  *
  * @param predicate - verb phrase whose complement slot is rendered
  *

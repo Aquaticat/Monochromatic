@@ -56,7 +56,7 @@ export type EnglishVerbEntry = {
 };
 
 /**
- * Input passed to `defineEnglishLocale`.
+ * Input passed to {@link defineEnglishLocale}.
  *
  * Vocabulary categories must be exhaustively keyed to the consumer's
  * unions; missing entries fail at compile time via `satisfies`.

@@ -38,7 +38,7 @@ export type CatalanVerbEntry = {
 };
 
 /**
- * Input shape accepted by `defineCatalanLocale`.
+ * Input shape accepted by {@link defineCatalanLocale}.
  */
 export type DefineCatalanLocaleInput<
   Label extends string,

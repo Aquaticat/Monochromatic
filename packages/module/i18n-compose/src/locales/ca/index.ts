@@ -22,7 +22,7 @@ import type { DefineCatalanLocaleInput, } from './types.ts';
  *
  * @param input - labels, subjects, nouns, verbs keyed by the consumer's unions
  *
- * @returns spec ready to plug into `createI18n`
+ * @returns spec ready to plug into {@link createI18n}
  *
  * @example
  * ```ts

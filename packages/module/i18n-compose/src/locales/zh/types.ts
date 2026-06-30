@@ -36,7 +36,7 @@ export type ChineseVerbEntry = {
 };
 
 /**
- * Input shape accepted by `defineChineseLocale`.
+ * Input shape accepted by {@link defineChineseLocale}.
  */
 export type DefineChineseLocaleInput<
   Label extends string,

@@ -9,7 +9,7 @@
  *
  * `1` is the speaker, `2` is the addressee, `3` is anyone else.
  * Locales pick the surface form (English `I/you/she`, Catalan `jo/tu/ella`, Chinese `我/你/她`)
- * from a `SubjectEntry` keyed by the consumer's subject identifier;
+ * from a {@link SubjectEntry} keyed by the consumer's subject identifier;
  * the numeric person is what verb agreement reads in locales that require it.
  */
 export type Person = 1 | 2 | 3;

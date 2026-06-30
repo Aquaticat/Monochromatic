@@ -1,5 +1,5 @@
 /**
- * `createI18n` builds the explicit-locale render surface and registry
+ * {@link createI18n} builds the explicit-locale render surface and registry
  * helpers from a set of locale specs.
  *
  * The factory infers the locale union from a `const` list, validates that
@@ -166,7 +166,7 @@ export type I18n<
    */
   readonly locales: readonly Locale[];
   /**
-   * Locale used by `assertLocale` when an invalid value is rejected.
+   * Locale used by {@link assertLocale} when an invalid value is rejected.
    */
   readonly defaultLocale: Locale;
   /**
@@ -233,7 +233,7 @@ export type I18n<
  *
  * @returns I18n instance with explicit-locale render methods and registry helpers
  *
- * @throws Error from `assertLocale` when the supplied value is not in `locales`
+ * @throws Error from {@link assertLocale} when the supplied value is not in `locales`
  *
  * @example
  * ```ts
@@ -268,7 +268,7 @@ export function createI18n<
   type Locale = Locales[number];
 
   /**
-   * Locale lookup set for `isLocale`; `Set.has` outperforms `Array.includes` for repeated checks.
+   * Locale lookup set for {@link isLocale}; `Set.has` outperforms `Array.includes` for repeated checks.
    */
   const localeSet = new Set<string>(config.locales,);
 
@@ -307,7 +307,7 @@ export function createI18n<
    *
    * @param value - input string to validate
    *
-   * @returns same value, narrowed to `Locale`
+   * @returns same value, narrowed to {@link Locale}
    *
    * @throws Error when `value` is not a registered locale
    */

@@ -1,6 +1,6 @@
 /**
  * `defineCustomLocale` is an escape hatch for locales not covered by
- * `defineEnglishLocale`, `defineChineseLocale`, or `defineCatalanLocale`.
+ * {@link defineEnglishLocale}, {@link defineChineseLocale}, or {@link defineCatalanLocale}.
  *
  * Consumers writing a custom builder accept full responsibility for the
  * locale's grammar strategy; the library only enforces that the resulting

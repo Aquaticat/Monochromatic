@@ -1,8 +1,8 @@
 /**
- * `LocaleSpec` is the uniform output produced by every locale builder.
+ * {@link LocaleSpec} is the uniform output produced by every locale builder.
  *
  * Builders accept locale-specific vocabulary entry shapes (e.g.
- * `EnglishVerbEntry`) and emit this single shape so `createI18n` can
+ * {@link EnglishVerbEntry}) and emit this single shape so {@link createI18n} can
  * dispatch render calls without knowing which builder produced the spec.
  *
  * @module
@@ -18,12 +18,12 @@ import type {
 /**
  * Function property type with method-level bivariance preserved deliberately.
  *
- * Locale specs are stored under a loose `AnyLocaleSpec` constraint inside
- * `createI18n`, and concrete specs with literal vocabulary keys must remain
+ * Locale specs are stored under a loose {@link AnyLocaleSpec} constraint inside
+ * {@link createI18n}, and concrete specs with literal vocabulary keys must remain
  * assignable to that upper bound while still exposing property signatures.
  * TypeScript only models that safe legacy method variance through method
  * signatures, so the helper isolates the method-signature exception in one
- * reusable type instead of repeating methods on the public `LocaleSpec` shape.
+ * reusable type instead of repeating methods on the public {@link LocaleSpec} shape.
  */
 type BivariantRenderer<Parameter, Output,> = {
   /**
