@@ -24,7 +24,8 @@ const l = tagged({ tag: 'path/empty', },);
 /* oxlint-disable eslint/require-await -- delegates to emptyFile/emptyDir which are async */
 /**
  * Empties a path, choosing file or directory behavior based on
- * whether the path has a file extension.
+ * whether the path has a file extension, dispatching to {@link emptyFile}
+ * or {@link emptyDir}.
  * Query parameters in paths (e.g. `?raw`) are stripped before inspection.
  *
  * @param path - Filesystem path to empty

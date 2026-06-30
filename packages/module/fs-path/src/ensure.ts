@@ -25,7 +25,8 @@ const l = tagged({ tag: 'path/ensure', },);
 /* oxlint-disable eslint/require-await -- delegates to ensureFile/ensureDir which are async */
 /**
  * Ensures a path exists as either a file or directory, based on whether
- * the path has a file extension.
+ * the path has a file extension, dispatching to {@link ensureFile} or
+ * {@link ensureDir}.
  *
  * @param path - Filesystem path to ensure
  *
@@ -119,7 +120,7 @@ export async function ensureDir(path: string,): Promise<string> {
 
 /**
  * Ensures a file exists and is readable/writable.
- * Creates the file (and parent directories) when missing.
+ * Creates the file (and parent directories, via {@link ensureDir}) when missing.
  *
  * @param path - File path to ensure
  *

@@ -118,7 +118,7 @@ async function matchesMiseMonorepoRoot({
   fs,
 }: RootMatcherArgs,): Promise<boolean> {
   /**
-   * Candidate `mise.toml` content; the `ABSENT` sentinel when the file is missing.
+   * Candidate `mise.toml` content; the {@link ABSENT} sentinel when the file is missing.
    */
   const content = await fs.readTextFile(`${dir}/mise.toml`,);
   return (content !== ABSENT) && content

@@ -14,7 +14,7 @@
  * Runtime: Node/Bun only. Uses `node:fs/promises` directly with no
  * browser fallback; current call sites pass `import.meta.dirname`,
  * which is itself Node-only. A cross-runtime backend (matching
- * `findMiseMonorepoRoot`'s OPFS support) can be added when a browser
+ * {@link findMiseMonorepoRoot}'s OPFS support) can be added when a browser
  * consumer needs it.
  *
  * @module

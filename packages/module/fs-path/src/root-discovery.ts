@@ -257,7 +257,7 @@ async function resolveOpfsRootFilesystem(): Promise<RootFilesystem> {
       path: string,
     ): Promise<string | typeof ABSENT> {
       /**
-       * `AsyncIOResult` from `happy-opfs`; errors map to absent files.
+       * {@link AsyncIOResult} from `happy-opfs`; errors map to absent files.
        */
       const result = await readTextFile(path,);
       if (result.isOk())
@@ -267,7 +267,7 @@ async function resolveOpfsRootFilesystem(): Promise<RootFilesystem> {
 
     exists: async function opfsPathExists(path: string,): Promise<boolean> {
       /**
-       * `AsyncIOResult` from `happy-opfs`; errors map to absent marker paths.
+       * {@link AsyncIOResult} from `happy-opfs`; errors map to absent marker paths.
        */
       const result = await opfsExists(path,);
       if (result.isOk())
