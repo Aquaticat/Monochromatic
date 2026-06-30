@@ -22,7 +22,7 @@ import {
 export const NO_MANIFEST_VERSION: unique symbol = Symbol('catalog-tighten/no-manifest-version',);
 
 /**
- * Sentinel returned by `readInstalledVersion` when no installed version is
+ * Sentinel returned by {@link readInstalledVersion} when no installed version is
  * found through any layout. A `unique symbol`; callers narrow with
  * `=== NO_INSTALLED_VERSION`.
  */

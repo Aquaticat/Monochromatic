@@ -71,7 +71,7 @@ type TightenResult = {
  *
  * `version` is an optional field (bucket 1): the probe omits it when the name
  * did not resolve, so callers narrow with `version !== undefined` rather than a
- * sentinel. The `readInstalledVersion` return-sentinel is converted to this
+ * sentinel. The {@link readInstalledVersion} return-sentinel is converted to this
  * optional shape at the `.map` seam below.
  */
 type ProbedCandidate = {

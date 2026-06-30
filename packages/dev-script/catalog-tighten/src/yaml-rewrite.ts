@@ -104,7 +104,7 @@ function lineKey(line: string,): string | typeof NO_KEY {
  *
  * @param content - raw `pnpm-workspace.yaml` text
  *
- * @param results - tightened entries to write back
+ * @param results - {@link TightenedRange} entries to write back
  *
  * @returns rewritten file text
  *
