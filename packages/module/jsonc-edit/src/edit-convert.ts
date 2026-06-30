@@ -97,7 +97,6 @@ export function toJsValue({
   if (node.kind === 'null')
     return null;
   if (node.kind === 'plainJson')
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- a ReadonlyDeep JSON value is structurally a JSON value; the edit API only reads it
     return node.json as JsonValue;
   if (node.kind === 'array')
     return node.elements
