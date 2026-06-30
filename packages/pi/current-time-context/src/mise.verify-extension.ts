@@ -49,7 +49,11 @@ type CurrentTimeContextExtensionModule = {
 //region Verification
 
 /**
- * Verifies built extension registers and emits hidden time context.
+ * Verifies built extension registers and emits hidden time context: builds a
+ * {@link fakePiApi} harness, drives the captured handler (found via
+ * {@link getBeforeAgentStartHandler}) with a {@link createBeforeAgentStartEvent}
+ * event and {@link createExtensionContext}, then checks the resulting message
+ * content with {@link isTimeContextContent}.
  *
  * @returns verification result text
  *

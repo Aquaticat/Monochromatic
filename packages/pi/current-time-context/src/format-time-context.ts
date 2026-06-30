@@ -14,7 +14,8 @@ import {
  * Formats a {@link Date} as hidden current-time context using local wall-clock time.
  *
  * This wrapper keeps the pi package API local while delegating to the shared
- * formatter used by the Claude Code prompt-time hook.
+ * formatter ({@link sharedFormatTimeContext}) used by the Claude Code
+ * prompt-time hook.
  *
  * @param now - timestamp to format through local 24-hour clock fields
  *
