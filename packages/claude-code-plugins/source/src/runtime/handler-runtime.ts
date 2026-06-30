@@ -53,7 +53,7 @@ type Writer<TOutput,> = (output: TOutput,) => WriterOutput;
  * and writes the writer's serialized result to stdout.
  *
  * Each generated per-plugin entry script consists of importing the handler,
- * parser, and writer for that plugin and calling `runHookPlugin` once at the
+ * parser, and writer for that plugin and calling {@link runHookPlugin} once at the
  * top level.
  *
  * @example

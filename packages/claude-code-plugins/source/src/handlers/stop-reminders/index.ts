@@ -15,9 +15,9 @@ import {
 /**
  * Output returned by the stop-reminders handler.
  *
- * Either a typed `StopOutput` carrying a block decision and concatenated
- * reasons, or the empty pass-through `{}`. Every `StopOutput` field is
- * optional, so `{}` is itself a valid `StopOutput`; no separate empty type
+ * Either a typed {@link StopOutput} carrying a block decision and concatenated
+ * reasons, or the empty pass-through `{}`. Every {@link StopOutput} field is
+ * optional, so `{}` is itself a valid {@link StopOutput}; no separate empty type
  * is needed.
  */
 type StopRemindersOutput = StopOutput;
@@ -31,17 +31,20 @@ type StopRemindersOutput = StopOutput;
  *
  * 1. **Loop guard**: when `stop_hook_active` is `true`, returns `{}` to allow
  *    the stop unconditionally; re-blocking would create an endless cycle.
- * 2. **Prose extraction**: strips code blocks, inline code, blockquotes, and
- *    quoted strings from `last_assistant_message` before scanning.
- * 3. **Uncertainty scan**: matches against hedging phrases (probably, maybe,
- *    I think, etc.); a hit contributes a reminder to gather evidence.
- * 4. **Trailing-question scan**: looks for sentences ending in `?` in the
- *    last 500 characters; rhetorical/conditional prefixes are excluded.
+ * 2. **Prose extraction**: {@link stripNonProseRegions} strips code blocks,
+ *    inline code, blockquotes, and quoted strings from `last_assistant_message`
+ *    before scanning.
+ * 3. **Uncertainty scan**: {@link findUncertainty} matches against hedging
+ *    phrases (probably, maybe, I think, etc.); a hit contributes a reminder
+ *    to gather evidence.
+ * 4. **Trailing-question scan**: {@link findTrailingQuestion} looks for
+ *    sentences ending in `?` in the last 500 characters; rhetorical/conditional
+ *    prefixes are excluded.
  * 5. **Result**: if any reasons accumulated, returns
  *    `\{ decision: 'block', reason: [reasons joined by space] \}`;
  *    otherwise `\{\}`.
  *
- * @param event - parsed Stop event from Claude Code
+ * @param event - parsed {@link StopInput} event from Claude Code
  *
  * @returns blocking output when reminders apply, otherwise `{}`
  *
@@ -120,7 +123,7 @@ function stopRemindersHandler(event: ReadonlyDeep<StopInput>,): StopRemindersOut
 }
 
 /**
- * Parses raw stdin as a `StopInput`.
+ * Parses raw stdin as a {@link StopInput}.
  *
  * Input is trusted; it comes from Claude Code's hook dispatch system.
  *
@@ -143,7 +146,7 @@ function stopRemindersParser(raw: string,): StopInput {
  *
  * No trailing newline; matches Claude Code's wire convention.
  *
- * @param output - handler result to serialize
+ * @param output - {@link StopRemindersOutput} handler result to serialize
  *
  * @returns JSON string for stdout
  *

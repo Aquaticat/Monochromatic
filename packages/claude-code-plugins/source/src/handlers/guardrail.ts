@@ -170,8 +170,8 @@ function invokesBunTest(command: string,): boolean {
  * Output returned by the guardrail handler.
  *
  * Either a typed deny response or the empty pass-through `{}`.
- * Every `PreToolUseOutput` field is optional, so `{}` (written when no action
- * is taken) is itself a valid `PreToolUseOutput`; no separate empty type is needed.
+ * Every {@link PreToolUseOutput} field is optional, so `{}` (written when no action
+ * is taken) is itself a valid {@link PreToolUseOutput}; no separate empty type is needed.
  */
 type GuardrailOutput = PreToolUseOutput;
 
@@ -193,7 +193,7 @@ type GuardrailOutput = PreToolUseOutput;
  *
  * Non-matching tool calls return `{}`.
  *
- * @param event - parsed PreToolUse event from Claude Code
+ * @param event - parsed {@link PreToolUseInput} event from Claude Code
  *
  * @returns deny response with reason, or `{}` to allow the tool call
  *
@@ -270,7 +270,7 @@ function guardrailHandler(event: ReadonlyDeep<PreToolUseInput>,): GuardrailOutpu
 }
 
 /**
- * Parses raw stdin as a `PreToolUseInput`.
+ * Parses raw stdin as a {@link PreToolUseInput}.
  *
  * Input is trusted; it comes from Claude Code's hook dispatch system.
  *
@@ -293,7 +293,7 @@ function guardrailParser(raw: string,): PreToolUseInput {
  *
  * No trailing newline; matches Claude Code's wire convention.
  *
- * @param output - handler result to serialize
+ * @param output - {@link GuardrailOutput} handler result to serialize
  *
  * @returns JSON string for stdout
  *

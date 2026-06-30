@@ -53,7 +53,7 @@ function filterOutput(input: string,): string {
  *
  * @param lines - raw lines from the input, before transformations
  *
- * @returns processed lines with duplicates collapsed via `flushRepeated`
+ * @returns processed lines with duplicates collapsed via {@link flushRepeated}
  *
  * @example
  * ```ts
@@ -139,10 +139,11 @@ async function readStdin(): Promise<string | typeof STDIN_UNAVAILABLE> {
 }
 
 /**
- * Entry-point for the filter script. Reads stdin to EOF, applies the filter
- * pipeline, and writes the result to stdout. On transform failure, writes the
- * already-read stdin content unchanged; losing output is worse than failing to
- * filter.
+ * Entry-point for the filter script. Reads stdin to EOF via
+ * {@link readStdin}, applies the filter pipeline via
+ * {@link filterOutput}, and writes the result to stdout. On transform
+ * failure, writes the already-read stdin content unchanged; losing
+ * output is worse than failing to filter.
  *
  * @example
  * ```ts

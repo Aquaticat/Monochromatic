@@ -174,7 +174,7 @@ const CORRECTION_REMINDER_TEXT = [
   .join('\n',);
 
 /**
- * Output of the correction-reminder handler.
+ * Output of the correction-reminder handler, a {@link UserPromptSubmitOutput}.
  *
  * Always uses `additionalContext`: the handler never blocks the prompt.
  */
@@ -187,7 +187,7 @@ type CorrectionReminderOutput = UserPromptSubmitOutput;
  * reminder when one is found. Returns an empty additionalContext when no
  * correction is detected so the rest of the pipeline runs unchanged.
  *
- * @param event - parsed UserPromptSubmit event from Claude Code
+ * @param event - parsed {@link UserPromptSubmitInput} event from Claude Code
  *
  * @returns UserPromptSubmit response with `additionalContext` populated when
  *   a correction phrase fires, empty string otherwise
@@ -218,7 +218,7 @@ function correctionReminderHandler(
 }
 
 /**
- * Parses raw stdin as a `UserPromptSubmitInput`.
+ * Parses raw stdin as a {@link UserPromptSubmitInput}.
  *
  * Input is trusted; it comes from Claude Code's hook dispatch system.
  *
@@ -242,7 +242,7 @@ function correctionReminderParser(raw: string,): UserPromptSubmitInput {
  *
  * No trailing newline; matches Claude Code's wire convention.
  *
- * @param output - handler result to serialize
+ * @param output - {@link CorrectionReminderOutput} handler result to serialize
  *
  * @returns JSON-encoded payload for Claude Code's hook reader
  *

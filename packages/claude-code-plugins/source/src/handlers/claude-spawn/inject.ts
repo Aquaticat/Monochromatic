@@ -64,7 +64,7 @@ const NOTHING_TO_REPORT: unique symbol = Symbol('claude-spawn/nothing-to-report'
 /**
  * Lists the filenames in the spawns coordination directory.
  *
- * @returns directory entries, or `NOTHING_TO_REPORT` when the directory is
+ * @returns directory entries, or {@link NOTHING_TO_REPORT} when the directory is
  *   missing or unreadable (there is then nothing to deliver)
  *
  * @example
@@ -199,7 +199,7 @@ async function readCompletedChild(
  *   from reliable delivery hooks (UserPromptSubmit, Stop), `false` from
  *   best-effort hooks (PreToolUse, PostToolUse, etc.).
  *
- * @returns combined context string, or `NOTHING_TO_REPORT` if nothing to report
+ * @returns combined context string, or {@link NOTHING_TO_REPORT} if nothing to report
  *
  * @example
  * ```ts
@@ -216,7 +216,7 @@ async function checkCompletedChildren(
   },
 ): Promise<string | typeof NOTHING_TO_REPORT> {
   /**
-   * Filenames in `SPAWNS_DIR`, or `NOTHING_TO_REPORT` when the directory is missing or unreadable.
+   * Filenames in `SPAWNS_DIR`, or {@link NOTHING_TO_REPORT} when the directory is missing or unreadable.
    */
   const entries = await readSpawnsDir();
 

@@ -24,7 +24,7 @@ function absentFieldFormatter(): never {
 
 /**
  * Title entries for plan mode, worktree, task, and cron tools. Merged into the
- * main `TOOL_TITLES` registry by `tool-titles.ts`.
+ * main {@link TOOL_TITLES} registry by `tool-titles.ts`.
  */
 const EXTENDED_TOOL_TITLES: Record<string, ToolTitleEntry> = {
   EnterPlanMode: {

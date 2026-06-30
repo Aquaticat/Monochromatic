@@ -25,7 +25,7 @@ import {
  * no readable parent PID, or no `.by-pid/` directory.
  *
  * A unique symbol rather than `null`: every finder narrows on identity
- * (`=== SESSION_NOT_FOUND`), so the resolved `PidMapping` never shares a
+ * (`=== SESSION_NOT_FOUND`), so the resolved {@link PidMapping} never shares a
  * nullish union with "not found".
  */
 const SESSION_NOT_FOUND: unique symbol = Symbol('claude-spawn/session-not-found',);
@@ -35,7 +35,7 @@ const SESSION_NOT_FOUND: unique symbol = Symbol('claude-spawn/session-not-found'
  *
  * @param pid - process id whose parent to look up
  *
- * @returns parent PID, or `SESSION_NOT_FOUND` if `/proc` is unreadable or the entry is missing
+ * @returns parent PID, or {@link SESSION_NOT_FOUND} if `/proc` is unreadable or the entry is missing
  *
  * @example
  * ```ts
@@ -78,7 +78,7 @@ async function readParentPid(pid: number,): Promise<number | typeof SESSION_NOT_
  *
  * @param pid - process id to query
  *
- * @returns mapping when the file exists and parses, `SESSION_NOT_FOUND` otherwise
+ * @returns mapping when the file exists and parses, {@link SESSION_NOT_FOUND} otherwise
  *
  * @example
  * ```ts
@@ -111,12 +111,12 @@ async function readPidMapping(pid: number,): Promise<PidMapping | typeof SESSION
 
 /**
  * Walks up the process tree starting from a given PID, returning the first
- * matching mapping or `SESSION_NOT_FOUND` once the walk reaches PID 1 or
+ * matching mapping or {@link SESSION_NOT_FOUND} once the walk reaches PID 1 or
  * `/proc` becomes unreadable.
  *
  * @param pid - PID to start the walk from
  *
- * @returns first matching mapping, or `SESSION_NOT_FOUND`
+ * @returns first matching mapping, or {@link SESSION_NOT_FOUND}
  *
  * @example
  * ```ts
@@ -133,7 +133,7 @@ async function walkProcessTreeFrom(pid: number,): Promise<PidMapping | typeof SE
   if (direct !== SESSION_NOT_FOUND)
     return direct;
   /**
-   * Parent PID continuing the walk; `SESSION_NOT_FOUND` ends when `/proc` is unreadable.
+   * Parent PID continuing the walk; {@link SESSION_NOT_FOUND} ends when `/proc` is unreadable.
    */
   const parentPid = await readParentPid(pid,);
   if (parentPid === SESSION_NOT_FOUND)
@@ -151,7 +151,7 @@ async function walkProcessTreeFrom(pid: number,): Promise<PidMapping | typeof SE
  * The SessionStart hook writes `.by-pid/[claudePid]`, so we walk up until we
  * find a matching PID file.
  *
- * @returns session identity of calling Claude instance, or `SESSION_NOT_FOUND` if not found
+ * @returns session identity of calling Claude instance, or {@link SESSION_NOT_FOUND} if not found
  *
  * @example
  * ```ts
@@ -166,7 +166,7 @@ function findByProcessTree(): Promise<PidMapping | typeof SESSION_NOT_FOUND> {
 /**
  * Lists the filenames in the `.by-pid/` coordination directory.
  *
- * @returns directory entries, or `SESSION_NOT_FOUND` when the directory is
+ * @returns directory entries, or {@link SESSION_NOT_FOUND} when the directory is
  *   missing or unreadable
  *
  * @example
@@ -242,7 +242,7 @@ async function readNewestCandidate(filename: string,): Promise<NewestMapping> {
  * Bash tool sandbox (separate PID namespace, so host PIDs from `.by-pid/`
  * don't appear in `/proc`).
  *
- * @returns session identity from most recent PID file, or `SESSION_NOT_FOUND` if none exist
+ * @returns session identity from most recent PID file, or {@link SESSION_NOT_FOUND} if none exist
  *
  * @example
  * ```ts
@@ -252,7 +252,7 @@ async function readNewestCandidate(filename: string,): Promise<NewestMapping> {
  */
 async function findByMostRecent(): Promise<PidMapping | typeof SESSION_NOT_FOUND> {
   /**
-   * Filenames in `.by-pid/`, or `SESSION_NOT_FOUND` when the directory cannot be read.
+   * Filenames in `.by-pid/`, or {@link SESSION_NOT_FOUND} when the directory cannot be read.
    */
   const entries = await readByPidDir();
 
@@ -296,7 +296,7 @@ async function findByMostRecent(): Promise<PidMapping | typeof SESSION_NOT_FOUND
  * falls back to the most recently modified `.by-pid/` file (works inside
  * sandbox where PIDs don't match the host namespace).
  *
- * @returns session identity, or `SESSION_NOT_FOUND` if no coordination files exist
+ * @returns session identity, or {@link SESSION_NOT_FOUND} if no coordination files exist
  *
  * @example
  * ```ts

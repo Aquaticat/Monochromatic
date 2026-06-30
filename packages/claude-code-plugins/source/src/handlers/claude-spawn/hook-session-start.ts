@@ -42,7 +42,8 @@ const NO_WARNING: unique symbol = Symbol('claude-spawn/cli-setup-ok',);
  * Handles the SessionStart hook event.
  *
  * Writes PID-to-session mapping, claims spawn ownership for genuine child
- * sessions, and auto-symlinks the `spawn-claude` CLI into `~/.local/bin/`.
+ * sessions, and auto-symlinks the `spawn-claude` CLI into `~/.local/bin/`
+ * via {@link autoSetupCli}.
  *
  * @param sessionId - Claude Code session identifier from hook event
  *
@@ -152,7 +153,7 @@ async function handleSessionStart({
   }
 
   /**
-   * Warning text from CLI auto-setup, or `NO_WARNING` when setup succeeded or was unnecessary.
+   * Warning text from CLI auto-setup, or {@link NO_WARNING} when setup succeeded or was unnecessary.
    */
   const cliWarning = await autoSetupCli(hookDir,);
   if (cliWarning !== NO_WARNING)
@@ -219,7 +220,7 @@ async function cliIsOnPath(): Promise<boolean> {
  *
  * @param hookDir - directory of the compiled hook entry point, used to derive plugin root
  *
- * @returns warning text to print to stdout, or `NO_WARNING` when setup either succeeded or was unnecessary
+ * @returns warning text to print to stdout, or {@link NO_WARNING} when setup either succeeded or was unnecessary
  *
  * @example
  * ```ts

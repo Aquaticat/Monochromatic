@@ -18,7 +18,7 @@ import {
 
 /**
  * Title entries for search, web, notebook, LSP, skill, and discovery tools.
- * Merged into the main `TOOL_TITLES` registry by `tool-titles.ts`.
+ * Merged into the main {@link TOOL_TITLES} registry by `tool-titles.ts`.
  */
 const SEARCH_TOOL_TITLES: Record<string, ToolTitleEntry> = {
   WebSearch: {

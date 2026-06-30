@@ -11,7 +11,7 @@ import {
 } from './validation.ts';
 
 /**
- * Type guard that narrows a generic tool input to `BashToolInput`.
+ * Type guard that narrows a generic tool input to {@link BashToolInput}.
  *
  * @param input - tool input to check
  *
@@ -28,11 +28,11 @@ function isBashToolInput(input: Readonly<Record<string, unknown>>,): input is Ba
 }
 
 /**
- * Output returned by the bash-output-filter handler. Either a `PreToolUseOutput`
+ * Output returned by the bash-output-filter handler. Either a {@link PreToolUseOutput}
  * carrying a rewritten `updatedInput.command` that pipes the original command
  * through the filter script, or the pass-through `{}` (when the command is
- * non-Bash, malformed, disallowed, or skipped). Every `PreToolUseOutput` field
- * is optional, so `{}` is itself a valid `PreToolUseOutput`.
+ * non-Bash, malformed, disallowed, or skipped). Every {@link PreToolUseOutput} field
+ * is optional, so `{}` is itself a valid {@link PreToolUseOutput}.
  */
 type BashOutputFilterOutput = PreToolUseOutput;
 
@@ -56,7 +56,7 @@ type BashOutputFilterOutput = PreToolUseOutput;
  *    original command's exit code while keeping the filter's exit code (always 0)
  *    out of the way.
  *
- * @param event - parsed PreToolUse event from Claude Code
+ * @param event - parsed {@link PreToolUseInput} event from Claude Code
  *
  * @returns rewritten output when the command should be filtered, otherwise `{}`
  *
@@ -71,7 +71,7 @@ function bashOutputFilterHandler(event: ReadonlyDeep<PreToolUseInput>,): BashOut
     return {};
 
   /**
-   * Narrowed Bash tool input; refined from `event.tool_input` by `isBashToolInput`.
+   * Narrowed Bash tool input; refined from `event.tool_input` by {@link isBashToolInput}.
    */
   const bashInput = event.tool_input;
 
@@ -108,7 +108,7 @@ function bashOutputFilterHandler(event: ReadonlyDeep<PreToolUseInput>,): BashOut
 }
 
 /**
- * Parses raw stdin as a `PreToolUseInput`.
+ * Parses raw stdin as a {@link PreToolUseInput}.
  *
  * Input is trusted; it comes from Claude Code's hook dispatch system.
  *
@@ -131,7 +131,7 @@ function bashOutputFilterParser(raw: string,): PreToolUseInput {
  *
  * No trailing newline; matches Claude Code's wire convention.
  *
- * @param output - handler result to serialize
+ * @param output - {@link BashOutputFilterOutput} handler result to serialize
  *
  * @returns JSON string for stdout
  *

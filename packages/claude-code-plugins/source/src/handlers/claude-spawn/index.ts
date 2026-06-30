@@ -35,7 +35,7 @@ import {
 /**
  * Captured at module load. After tsdown bundles the source package into the
  * per-plugin entry, this resolves to `${pluginRoot}/dist/final/node/`, which
- * `handleSessionStart` walks up three levels to recover the plugin root.
+ * {@link handleSessionStart} walks up three levels to recover the plugin root.
  */
 const HOOK_DIR = import.meta.dirname;
 
@@ -132,10 +132,11 @@ async function updateChildOnStop(
  * file update has been performed.
  *
  * - On parent sessions with completed children and no in-flight stop hook,
- *   returns a `block` decision carrying the formatted child-result text.
+ *   checks {@link checkCompletedChildren} and returns a `block` decision
+ *   carrying the formatted child-result text.
  * - Otherwise returns an empty pass-through.
  *
- * @param event - parsed Stop hook event payload
+ * @param event - parsed Stop {@link HookInput} event payload
  *
  * @returns block decision with child results, or empty pass-through
  */
@@ -144,7 +145,7 @@ async function stopResponse(
 ): Promise<ClaudeSpawnOutput> {
   if (!event.stop_hook_active) {
     /**
-     * Formatted child-result text consumed atomically; `NOTHING_TO_REPORT` when nothing pending.
+     * Formatted child-result text consumed atomically; {@link NOTHING_TO_REPORT} when nothing pending.
      */
     const context = await checkCompletedChildren({
       parentSessionId: event.session_id,
@@ -172,15 +173,16 @@ async function stopResponse(
 
 /**
  * Builds the additionalContext-bearing response for non-Stop, non-Session*
- * delivery hooks (PreToolUse, PostToolUse, PostToolUseFailure, etc.).
+ * delivery hooks (PreToolUse, PostToolUse, PostToolUseFailure, etc.), using
+ * {@link checkCompletedChildren} to look up pending results.
  *
- * @param event - any hook event other than SessionStart, Stop, SessionEnd
+ * @param event - any {@link HookInput} event other than SessionStart, Stop, SessionEnd
  *
  * @returns hook response carrying child-result text, or empty pass-through
  */
 async function additionalContextResponse(event: ReadonlyDeep<HookInput>,): Promise<ClaudeSpawnOutput> {
   /**
-   * Formatted child-result text consumed atomically; `NOTHING_TO_REPORT` when no completion is pending.
+   * Formatted child-result text consumed atomically; {@link NOTHING_TO_REPORT} when no completion is pending.
    */
   const context = await checkCompletedChildren({
     parentSessionId: event.session_id,
@@ -213,9 +215,9 @@ async function additionalContextResponse(event: ReadonlyDeep<HookInput>,): Promi
  * consume), SessionEnd (no-op), or a default consuming additionalContext
  * delivery.
  *
- * @param event - parsed hook event from Claude Code
+ * @param event - parsed {@link HookInput} event from Claude Code
  *
- * @returns hook response for stdout
+ * @returns {@link ClaudeSpawnOutput} hook response for stdout
  *
  * @example
  * ```ts
@@ -263,7 +265,7 @@ async function claudeSpawnHandler(event: ReadonlyDeep<HookInput>,): Promise<Clau
 }
 
 /**
- * Parses raw stdin as a `HookInput` (any union member; narrowed at dispatch).
+ * Parses raw stdin as a {@link HookInput} (any union member; narrowed at dispatch).
  *
  * @param raw - JSON payload from Claude Code stdin
  *
@@ -284,7 +286,7 @@ function claudeSpawnParser(raw: string,): HookInput {
  * verbatim; JSON variants are stringified without trailing newline,
  * matching the legacy wire format.
  *
- * @param output - discriminated handler result
+ * @param output - discriminated {@link ClaudeSpawnOutput} handler result
  *
  * @returns text payload to write to stdout
  *

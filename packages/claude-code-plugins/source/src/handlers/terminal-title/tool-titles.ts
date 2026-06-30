@@ -19,8 +19,8 @@ import { SEARCH_TOOL_TITLES, } from './tool-titles-search.ts';
 
 /**
  * Core tool title entries for file, search, and agent tools. Combined with
- * `EXTENDED_TOOL_TITLES` and `SEARCH_TOOL_TITLES` to form the full
- * `TOOL_TITLES` registry.
+ * {@link EXTENDED_TOOL_TITLES} and {@link SEARCH_TOOL_TITLES} to form the full
+ * {@link TOOL_TITLES} registry.
  */
 const CORE_TOOL_TITLES: Record<string, ToolTitleEntry> = {
   Bash: {

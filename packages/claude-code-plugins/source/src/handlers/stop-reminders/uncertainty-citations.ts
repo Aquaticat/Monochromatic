@@ -234,7 +234,7 @@ function hasLineNumberSuffix(line: string,): boolean {
 /**
  * Whether `line` mentions `AGENTS.md` as a word-bounded token. Mirrors
  * the original regex `/\bAGENTS\.md\b/`. The check is case-insensitive
- * because `containsWordBoundedPhrase` lower-cases both sides; the legacy
+ * because {@link containsWordBoundedPhrase} lower-cases both sides; the legacy
  * regex was case-sensitive, but accepting `agents.md` / `Agents.md` is
  * a stricter version of the citation allowlist (more lines allowed, no
  * false negatives lost).

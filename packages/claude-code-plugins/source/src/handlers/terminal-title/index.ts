@@ -29,8 +29,8 @@ const TITLE_PREFIX = '✳';
 
 /**
  * Builds a human-readable title string from a tool-use event by looking up the
- * tool in `TOOL_TITLES` and applying the matching formatter with the appropriate
- * tense.
+ * tool in {@link TOOL_TITLES} and applying the matching formatter with the
+ * appropriate tense.
  *
  * @param event - PreToolUse or PostToolUse hook event payload
  *
@@ -80,7 +80,7 @@ function shortPath(filePath: string,): string {
 
 /**
  * Builds a human-readable title string from any hook event. Tool events delegate
- * to `titleForTool`; other events produce static or field-based titles.
+ * to {@link titleForTool}; other events produce static or field-based titles.
  *
  * @param hookEvent - parsed hook event payload
  *
@@ -169,17 +169,17 @@ async function setTerminalTitle(title: string,): Promise<void> {
 
 /**
  * Output is `void`: the terminal-title handler writes its OSC sequence to
- * `/dev/tty` and emits no stdout. The runtime invokes `terminalTitleWriter`
+ * `/dev/tty` and emits no stdout. The runtime invokes {@link terminalTitleWriter}
  * which returns an empty string.
  */
 type TerminalTitleOutput = void;
 
 /**
- * Builds the title from any hook event, truncates it to `MAX_TITLE_LENGTH`,
- * and writes the OSC 0 escape sequence to `/dev/tty`. Side-effecting; returns
- * nothing.
+ * Builds the title from any hook event via {@link titleForEvent}, truncates
+ * it to {@link MAX_TITLE_LENGTH}, and writes the OSC 0 escape sequence via
+ * {@link setTerminalTitle} to `/dev/tty`. Side-effecting; returns nothing.
  *
- * @param event - parsed hook event from Claude Code
+ * @param event - parsed {@link HookInput} event from Claude Code
  *
  * @returns nothing; title is set as a side effect via `/dev/tty`
  *
@@ -200,7 +200,7 @@ async function terminalTitleHandler(event: ReadonlyDeep<HookInput>,): Promise<Te
 }
 
 /**
- * Parses raw stdin as a `HookInput` (any of the union members; narrowed at
+ * Parses raw stdin as a {@link HookInput} (any of the union members; narrowed at
  * dispatch time inside the handler).
  *
  * Input is trusted; it comes from Claude Code's hook dispatch system.
@@ -223,7 +223,7 @@ function terminalTitleParser(raw: string,): HookInput {
  * Returns {@link NO_STDOUT}; the legacy hook produced no stdout, and the
  * runtime shell treats the sentinel as intentional silence.
  *
- * @param _output - ignored handler result (title is set as a side effect)
+ * @param _output - ignored {@link TerminalTitleOutput} handler result (title is set as a side effect)
  *
  * @returns sentinel instructing the runtime to emit no stdout bytes
  *

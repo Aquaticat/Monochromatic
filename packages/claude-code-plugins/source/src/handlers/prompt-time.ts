@@ -7,7 +7,7 @@ import type { ReadonlyDeep, } from 'type-fest';
 import { formatTimeContext, } from '@monochromatic-dev/module-current-time-context/ts';
 
 /**
- * Output of the prompt-time handler.
+ * Output of the prompt-time handler, a {@link UserPromptSubmitOutput}.
  *
  * Always populates `hookSpecificOutput.additionalContext`: the handler never
  * blocks the prompt or chooses an empty response.
@@ -21,7 +21,7 @@ type PromptTimeOutput = UserPromptSubmitOutput;
  * Reads the wall clock at handler-call time; non-deterministic by design.
  * The pure {@link formatTimeContext} helper is what unit tests target.
  *
- * @param _event - parsed UserPromptSubmit event from Claude Code (unused; the
+ * @param _event - parsed {@link UserPromptSubmitInput} event from Claude Code (unused; the
  *   handler does not inspect the prompt text)
  *
  * @returns response carrying `<time>HH:MM</time>` as `additionalContext`
@@ -49,7 +49,7 @@ function promptTimeHandler(_event: ReadonlyDeep<UserPromptSubmitInput>,): Prompt
 }
 
 /**
- * Parses raw stdin as a `UserPromptSubmitInput`.
+ * Parses raw stdin as a {@link UserPromptSubmitInput}.
  *
  * Input is trusted; it comes from Claude Code's hook dispatch system.
  *
@@ -72,7 +72,7 @@ function promptTimeParser(raw: string,): UserPromptSubmitInput {
  *
  * No trailing newline; matches Claude Code's wire convention.
  *
- * @param output - handler result to serialize
+ * @param output - {@link PromptTimeOutput} handler result to serialize
  *
  * @returns JSON string for stdout
  *
