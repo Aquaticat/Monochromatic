@@ -45,7 +45,9 @@ type ThinkingDefaultsExtensionModule = {
 //region Verification
 
 /**
- * Verifies that the built extension exports and registers correctly.
+ * Verifies that the built extension exports and registers correctly,
+ * checking the import with {@link isThinkingDefaultsExtensionModule} and
+ * registering through {@link fakePiApi}.
  *
  * @returns verification result text
  *
@@ -97,7 +99,7 @@ async function verifyBuiltExtension(): Promise<string> {
  *
  * @param value - imported module namespace
  *
- * @returns whether module exports an extension factory
+ * @returns whether module matches {@link ThinkingDefaultsExtensionModule}, exporting an extension factory
  *
  * @example
  * ```typescript

@@ -58,7 +58,8 @@ type ApplyThinkingDefaultOptions = {
 //region Application
 
 /**
- * Applies the policy-selected thinking level for a model.
+ * Applies the policy-selected thinking level for a model, as chosen by
+ * {@link getThinkingDefaultForModel}.
  *
  * Missing models are ignored because pi can emit startup events before a model
  * is available. Matching current and target levels are also ignored to avoid

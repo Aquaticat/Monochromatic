@@ -150,7 +150,8 @@ function isJsonRecord(value: unknown,): value is JsonRecord {
 //region Settings mutation
 
 /**
- * Returns the global pi settings path.
+ * Returns the global pi settings path, joining {@link getAgentDir} with
+ * the settings file name.
  *
  * @returns absolute path to global pi settings
  *
@@ -174,9 +175,9 @@ export function getGlobalSettingsPath(): string {
  * level, then rewrites the scalar default back to the non-GPT fallback so the
  * next startup still begins from `high` unless a GPT model is selected.
  *
- * @param defaultLevel - scalar default to persist
+ * @param defaultLevel - scalar default to persist; defaults to {@link PERSISTED_DEFAULT_THINKING_LEVEL}
  *
- * @param settingsPath - settings file path
+ * @param settingsPath - settings file path; defaults to {@link getGlobalSettingsPath}
  *
  * @param readSettingsFile - file reader dependency for tests
  *

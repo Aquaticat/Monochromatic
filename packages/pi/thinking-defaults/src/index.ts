@@ -32,11 +32,12 @@ type RegisterThinkingDefaultsOptions = {
 //region Extension entry point
 
 /**
- * Registers thinking-defaults event handlers.
+ * Registers thinking-defaults event handlers, applying levels through
+ * {@link applyThinkingDefault}.
  *
  * @param pi - pi extension API
  *
- * @param restoreDefaultThinkingLevel - settings restorer dependency
+ * @param restoreDefaultThinkingLevel - settings restorer dependency; defaults to {@link restoreGlobalDefaultThinkingLevel}
  *
  * @example
  * ```typescript
@@ -127,6 +128,8 @@ export function registerThinkingDefaults(
  * startup defaults, `/model`, and Ctrl+P cycling all receive the same policy.
  * Manual thinking-level changes remain untouched until the next session start
  * or model selection.
+ *
+ * Delegates registration to {@link registerThinkingDefaults}.
  *
  * @param pi - pi extension API
  *

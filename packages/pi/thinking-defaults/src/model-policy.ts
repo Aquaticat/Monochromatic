@@ -44,9 +44,9 @@ type ModelWithId = {
 /**
  * Detects whether a model id is GPT-shaped.
  *
- * A model is GPT-shaped when the final slash-delimited segment starts with
- * `gpt-` after lowercasing. Other provider separators are intentionally not
- * special-cased.
+ * A model is GPT-shaped when the final slash-delimited segment, taken via
+ * {@link getModelIdLeaf}, starts with `gpt-` after lowercasing. Other
+ * provider separators are intentionally not special-cased.
  *
  * @param modelId - model id to inspect
  *
@@ -73,7 +73,8 @@ export function isGptModelId(
 }
 
 /**
- * Returns the desired thinking default for a model.
+ * Returns the desired thinking default for a model, delegating the GPT check
+ * to {@link isGptModelId}.
  *
  * GPT-shaped ids get `xhigh`; every other id gets `high`.
  *
