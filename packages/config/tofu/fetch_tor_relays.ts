@@ -172,7 +172,8 @@ function isOnionooResponse(value: unknown,): value is OnionooResponse {
  *
  * @param address - Onionoo OR address text.
  *
- * @returns CIDR string for port-443 endpoint, or sentinel for other ports.
+ * @returns CIDR string for port-443 endpoint, or {@link NO_ORPORT_443_CIDR}
+ *   for other ports.
  *
  * @example
  * ```ts

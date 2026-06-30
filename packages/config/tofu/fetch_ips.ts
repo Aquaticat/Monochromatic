@@ -135,7 +135,8 @@ function isIpinfoLiteRecord(value: unknown,): value is IpinfoLiteRecord {
  *
  * @param targetAsn - Normalised ASN to keep.
  *
- * @returns Matching network CIDR, or sentinel for non-matching or malformed lines.
+ * @returns Matching network CIDR, or {@link NO_MATCHING_NETWORK} for
+ *   non-matching or malformed lines.
  *
  * @example
  * ```ts

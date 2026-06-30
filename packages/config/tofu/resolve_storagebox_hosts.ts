@@ -148,7 +148,8 @@ async function resolveAddressFamily({
 }
 
 /**
- * Resolves one Storage Box hostname into `/32` and `/128` CIDRs.
+ * Resolves one Storage Box hostname into `/32` and `/128` CIDRs, after
+ * validating it with {@link assertStorageboxHostname}.
  *
  * @param hostname - Concrete Storage Box hostname.
  *
