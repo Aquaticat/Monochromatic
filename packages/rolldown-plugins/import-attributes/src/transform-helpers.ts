@@ -80,7 +80,8 @@ export function skipWithClauseWhitespace({
 
 /**
  * Finds the start of the `with`/`assert` clause after a source literal
- * by scanning whitespace then checking for the keyword.
+ * by scanning whitespace with {@link skipWithClauseWhitespace} then checking
+ * for the keyword.
  *
  * @param code - full source code
  *
@@ -147,7 +148,9 @@ function findWithClauseEnd({
 //endregion Clause scanning
 
 /**
- * Collects replacements for a static import/export declaration with attributes.
+ * Collects replacements for a static import/export declaration with
+ * attributes, locating the clause to elide via {@link findWithClauseStart}
+ * and {@link findWithClauseEnd}.
  *
  * @param source - source literal AST node
  *

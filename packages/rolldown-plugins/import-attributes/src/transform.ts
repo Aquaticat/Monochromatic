@@ -37,8 +37,10 @@ export const NO_TRANSFORM: unique symbol = Symbol('import-attributes/no-transfor
 
 /**
  * Rewrites import/export statements that use `with { type: '...' }` attributes.
- * Parses the source with oxc, walks the AST to find import attributes,
- * and applies precise span-based replacements.
+ * Parses the source with oxc, walks the AST to find import attributes via
+ * {@link extractTypeFromAttributes}/{@link extractTypeFromOptions}, and
+ * applies precise span-based replacements collected by
+ * {@link collectStaticReplacements}.
  *
  * @param code - source code to transform
  *

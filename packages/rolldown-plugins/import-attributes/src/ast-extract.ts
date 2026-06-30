@@ -83,7 +83,8 @@ export function getStringLiteralValue(node: ESTree.Expression,): string | typeof
  * Extracts the attribute type value from a static import/export declaration's
  * `attributes` array.
  *
- * Looks for an attribute with key `type` whose value is a supported handler type.
+ * Looks for an attribute with key `type` whose value is a supported handler
+ * type registered in {@link HANDLERS}.
  *
  * @param attributes - import attribute nodes from the AST
  *
@@ -121,7 +122,8 @@ export function extractTypeFromAttributes(
 /**
  * Extracts the attribute type from a dynamic import's options expression.
  *
- * Handles the `{ with: { type: '...' } }` pattern used in dynamic `import()`.
+ * Handles the `{ with: { type: '...' } }` pattern used in dynamic `import()`,
+ * accepting only types registered in {@link HANDLERS}.
  *
  * @param options - options expression from `ImportExpression.options`
  *

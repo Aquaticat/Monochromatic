@@ -30,7 +30,9 @@ import {
  * associated with a given specifier.
  *
  * This is used for dynamic imports where rolldown's Rust scanner discovers
- * dependencies before the `transform` hook can rewrite them.
+ * dependencies before the `transform` hook can rewrite them. The matched
+ * declaration's attribute type is read with {@link extractTypeFromAttributes}
+ * (static forms) or {@link extractTypeFromOptions} (dynamic `import()`).
  *
  * @param specifier - import specifier to look for (e.g. `./sample.sql`)
  *

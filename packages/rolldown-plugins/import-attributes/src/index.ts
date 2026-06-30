@@ -101,12 +101,14 @@ function importAttributesPlugin(): Plugin {
     },
 
     /**
-     * Resolves specifiers tagged with `?__importattr=<type>` (from transform rewriting)
-     * or specifiers discovered by rolldown's scanner before transform ran
-     * (for dynamic imports where the scanner processes the original AST).
+     * Resolves specifiers tagged with `?__importattr=<type>` (from transform rewriting,
+     * detected past {@link NO_QUERY_ATTR}) or specifiers discovered by rolldown's
+     * scanner before transform ran (for dynamic imports where the scanner
+     * processes the original AST).
      *
-     * For untagged specifiers, scans the importer's source to check whether
-     * the import had a `with { type: '...' }` clause.
+     * For untagged specifiers, scans the importer's source via
+     * {@link scanImporterForAttribute} to check whether the import had a
+     * `with { type: '...' }` clause.
      */
     async resolveId(
       source,
@@ -230,8 +232,9 @@ function importAttributesPlugin(): Plugin {
     },
 
     /**
-     * Loads modules tagged with `?__importattr=<type>` by reading the file
-     * and passing its content through the registered handler.
+     * Loads modules tagged with `?__importattr=<type>` (skipping past
+     * {@link NO_QUERY_ATTR}) by reading the file and passing its content
+     * through the registered {@link HANDLERS} handler.
      */
     async load(id,) {
       /**
