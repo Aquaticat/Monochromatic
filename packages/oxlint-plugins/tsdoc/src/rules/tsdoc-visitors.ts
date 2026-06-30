@@ -31,12 +31,7 @@ export {
 } from '../comment-text.ts';
 
 /**
- * Function that skips an ignored file before a visitor starts.
- */
-export type IgnoredFileBeforeHook = () => false | undefined;
-
-/**
- * Parameters for {@link ignoredFileBeforeHook}.
+ * Parameters for {@link shouldSkipIgnoredFile}.
  */
 export type IgnoredFileBeforeHookParams = {
   /**
@@ -78,25 +73,23 @@ type CreateDocumentableVisitorParams = {
 };
 
 /**
- * Returns a `before` hook that skips files excluded from TSDoc validation.
+ * Checks whether current file is excluded from TSDoc validation.
  *
  * @param params - rule context carrying current filename
  *
- * @returns visitor before hook
+ * @returns whether visitor should skip current file
  *
  * @example
  * ```ts
- * return { before: ignoredFileBeforeHook({ context }) };
+ * if (shouldSkipIgnoredFile({ context })) return false;
  * ```
  */
-export function ignoredFileBeforeHook({
-  context,
-}: IgnoredFileBeforeHookParams,): IgnoredFileBeforeHook {
-  return function beforeIgnoredFile(): false | undefined {
-    if (shouldIgnoreFile(context.filename,))
-      return false;
-    return undefined;
-  };
+export function shouldSkipIgnoredFile(params: IgnoredFileBeforeHookParams,): boolean {
+  /**
+   * Rule context carrying current filename.
+   */
+  const { context, } = params;
+  return shouldIgnoreFile(context.filename,);
 }
 
 /**
@@ -151,11 +144,17 @@ export function commentReportLoc(comment: ReadonlyDeep<Comment>,): {
  * context.report({ loc: commentLineReportLoc({ comment, lineOffset: index }) });
  * ```
  */
-export function commentLineReportLoc({
-  comment,
-  lineOffset,
-  column = 0,
-}: CommentLineReportLocParams,): { start: LineColumn; } {
+export function commentLineReportLoc(
+  params: CommentLineReportLocParams,
+): { start: LineColumn; } {
+  /**
+   * Comment location inputs for the copied report location.
+   */
+  const {
+    comment,
+    lineOffset,
+    column = 0,
+  } = params;
   return {
     start: {
       line: comment.loc
@@ -179,12 +178,20 @@ export function commentLineReportLoc({
  * createDocumentableVisitor({ context, check });
  * ```
  */
-function createDocumentableVisitor({
-  context,
-  check,
-}: CreateDocumentableVisitorParams,): VisitorWithHooks {
+function createDocumentableVisitor(params: CreateDocumentableVisitorParams,): VisitorWithHooks {
+  /**
+   * Rule context and callback used by every documentable-node visitor.
+   */
+  const {
+    context,
+    check,
+  } = params;
   return {
-    before: ignoredFileBeforeHook({ context, },),
+    before() {
+      if (shouldSkipIgnoredFile({ context, }))
+        return false;
+      return undefined;
+    },
     FunctionDeclaration: check,
     FunctionExpression: check,
     ArrowFunctionExpression: check,
@@ -235,10 +242,14 @@ export type CreateTsdocVisitorParams = {
  * return createTsdocVisitor({ context, handler });
  * ```
  */
-export function createTsdocVisitor({
-  context,
-  handler,
-}: CreateTsdocVisitorParams,): VisitorWithHooks {
+export function createTsdocVisitor(params: CreateTsdocVisitorParams,): VisitorWithHooks {
+  /**
+   * Rule context and handler for located TSDoc comments.
+   */
+  const {
+    context,
+    handler,
+  } = params;
   /**
    * Checks node and fires handler when TSDoc exists.
    *
@@ -295,10 +306,14 @@ export type CreateParsedTsdocVisitorParams = {
  * return createParsedTsdocVisitor({ context, handler });
  * ```
  */
-export function createParsedTsdocVisitor({
-  context,
-  handler,
-}: CreateParsedTsdocVisitorParams,): VisitorWithHooks {
+export function createParsedTsdocVisitor(params: CreateParsedTsdocVisitorParams,): VisitorWithHooks {
+  /**
+   * Rule context and handler for parsed TSDoc comments.
+   */
+  const {
+    context,
+    handler,
+  } = params;
   /**
    * Checks node and fires handler when parsed TSDoc exists.
    *
@@ -363,11 +378,17 @@ export type CreateFunctionTsdocVisitorParams = {
  * return createFunctionTsdocVisitor({ context, handler });
  * ```
  */
-export function createFunctionTsdocVisitor({
-  context,
-  includeArrowFunctions = true,
-  handler,
-}: CreateFunctionTsdocVisitorParams,): VisitorWithHooks {
+export function createFunctionTsdocVisitor(
+  params: CreateFunctionTsdocVisitorParams,
+): VisitorWithHooks {
+  /**
+   * Rule context, arrow toggle, and handler for parsed function TSDoc comments.
+   */
+  const {
+    context,
+    includeArrowFunctions = true,
+    handler,
+  } = params;
   /**
    * Checks a function-like node for TSDoc and invokes handler.
    *
@@ -398,7 +419,11 @@ export function createFunctionTsdocVisitor({
    * Visitor object built before the unsafe cast that satisfies the host's index-signature type.
    */
   const visitor = {
-    before: ignoredFileBeforeHook({ context, },),
+    before() {
+      if (shouldSkipIgnoredFile({ context, }))
+        return false;
+      return undefined;
+    },
     FunctionDeclaration: check,
     FunctionExpression: check,
     ...includeArrowFunctions

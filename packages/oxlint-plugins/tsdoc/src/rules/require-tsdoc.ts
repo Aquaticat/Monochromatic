@@ -5,7 +5,7 @@ import type {
 } from '@oxlint/plugins';
 
 import { reportMissing, } from './node-extraction.ts';
-import { ignoredFileBeforeHook, } from './tsdoc-visitors.ts';
+import { shouldSkipIgnoredFile, } from './tsdoc-visitors.ts';
 
 /**
  * Requires TSDoc comments on every documentable declaration, including
@@ -62,7 +62,11 @@ export const requireTsdoc: CreateOnceRule = {
     };
 
     return {
-      before: ignoredFileBeforeHook({ context, },),
+      before() {
+        if (shouldSkipIgnoredFile({ context, }))
+          return false;
+        return undefined;
+      },
       FunctionDeclaration(node,): void {
         reportMissing({
           node,

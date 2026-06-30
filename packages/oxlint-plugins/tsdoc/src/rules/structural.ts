@@ -20,7 +20,7 @@ import {
   commentReportLoc,
   createTsdocVisitor,
   getCommentLines,
-  ignoredFileBeforeHook,
+  shouldSkipIgnoredFile,
   stripCommentLineMarker,
 } from './tsdoc-visitors.ts';
 
@@ -282,7 +282,11 @@ export const multilineBlocks: CreateOnceRule = {
   },
   createOnce(context: Context,): VisitorWithHooks {
     return {
-      before: ignoredFileBeforeHook({ context, },),
+      before() {
+        if (shouldSkipIgnoredFile({ context, }))
+          return false;
+        return undefined;
+      },
       Program(): void {
         context.sourceCode
           .getAllComments()

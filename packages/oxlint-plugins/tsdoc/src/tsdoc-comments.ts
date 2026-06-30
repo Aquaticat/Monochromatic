@@ -14,10 +14,10 @@ import type {
 import type { ReadonlyDeep, } from 'type-fest';
 
 import { splitDocComment, } from './tsdoc-blocks.ts';
-import type { TsdocParseResult, } from './tsdoc-doc-model.ts';
+import type { TsdocParseResult as ParsedTsdocResult, } from './tsdoc-doc-model.ts';
 import { collectStructuralMessages, } from './tsdoc-structural-messages.ts';
 
-export type { TsdocParseResult, };
+export type { TsdocParseResult, } from './tsdoc-doc-model.ts';
 
 /**
  * Absence marker meaning "node has no TSDoc comment"; never a real comment
@@ -44,6 +44,11 @@ export const NO_TSDOC: unique symbol = Symbol('node has no TSDoc comment',);
  * @param comment - AST comment node
  *
  * @returns true for `/** ... *\/` style comments
+ *
+ * @example
+ * ```ts
+ * isTsdocBlock(commentNode);
+ * ```
  */
 export function isTsdocBlock(comment: ReadonlyDeep<Comment>,): boolean {
   return (comment.type === 'Block')
@@ -200,7 +205,7 @@ export function findTsdocComment({
 export function parseTsdocForNode({
   node,
   context,
-}: TsdocLookupParams,): TsdocParseResult | typeof NO_TSDOC {
+}: TsdocLookupParams,): ParsedTsdocResult | typeof NO_TSDOC {
   /**
    * Located TSDoc comment for the node; absent means nothing to parse.
    */

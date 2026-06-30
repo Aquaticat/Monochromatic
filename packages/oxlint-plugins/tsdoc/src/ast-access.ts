@@ -11,14 +11,14 @@
  */
 
 import {
-  isRecord,
+  isRecord as sharedIsRecord,
   type ReadonlyRecord,
 } from '@monochromatic-dev/config-oxlint-shared/ts';
 
 export {
   isRecord,
   type ReadonlyRecord,
-};
+} from '@monochromatic-dev/config-oxlint-shared/ts';
 
 /**
  * Narrows an unknown value to a readonly array of AST records.
@@ -67,7 +67,7 @@ export function unwrapMethodDefinition(node: ReadonlyRecord,): ReadonlyRecord {
      * Inner FunctionExpression of the method; carries the return-type and params info.
      */
     const { value, } = node;
-    if (isRecord(value,))
+    if (sharedIsRecord(value,))
       return value;
   }
   return node;
@@ -120,39 +120,43 @@ export function unwrapBindingPattern(pattern: ReadonlyRecord,): ReadonlyRecord {
    */
   const cursor = { current: pattern, };
   while (true) {
-    if (cursor.current.type
+    /**
+     * Current wrapper candidate for this loop iteration.
+     */
+    const { current, } = cursor;
+    if (current.type
       === 'AssignmentPattern') {
       /**
        * Binding side of `name = default`.
        */
-      const { left, } = cursor.current;
-      if (!isRecord(left,))
-        return cursor.current;
+      const { left, } = current;
+      if (!sharedIsRecord(left,))
+        return current;
       cursor.current = left;
       continue;
     }
-    if (cursor.current.type
+    if (current.type
       === 'RestElement') {
       /**
        * Inner binding pattern of `...rest`.
        */
-      const { argument, } = cursor.current;
-      if (!isRecord(argument,))
-        return cursor.current;
+      const { argument, } = current;
+      if (!sharedIsRecord(argument,))
+        return current;
       cursor.current = argument;
       continue;
     }
-    if (cursor.current.type
+    if (current.type
       === 'TSParameterProperty') {
       /**
        * Inner parameter of a TS constructor property parameter.
        */
-      const { parameter, } = cursor.current;
-      if (!isRecord(parameter,))
-        return cursor.current;
+      const { parameter, } = current;
+      if (!sharedIsRecord(parameter,))
+        return current;
       cursor.current = parameter;
       continue;
     }
-    return cursor.current;
+    return current;
   }
 }
