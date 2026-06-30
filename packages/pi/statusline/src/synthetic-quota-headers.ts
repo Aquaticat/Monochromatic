@@ -47,7 +47,7 @@ const SYNTHETIC_WEEKLY_PACE_SCALE = SECONDS_PER_DAY / SECONDS_PER_WEEK;
  *
  * @param headers - lowercase provider response headers
  *
- * @returns quota object, or invalid sentinel when missing or invalid
+ * @returns {@link UnknownRecord}, or invalid sentinel when missing or invalid
  *
  * @example
  * ```ts
@@ -85,7 +85,7 @@ function parseSyntheticQuotasHeader(
  *
  * @param nowMs - wall-clock sample time in epoch milliseconds
  *
- * @returns parsed weekly snapshot or invalid sentinel
+ * @returns parsed weekly {@link RateLimitSnapshot} or invalid sentinel
  *
  * @example
  * ```ts
@@ -333,7 +333,7 @@ function parseSyntheticToolsSnapshot({
  *
  * @param nowMs - wall-clock sample time in epoch milliseconds
  *
- * @returns parsed Synthetic usage snapshots
+ * @returns parsed Synthetic {@link RateLimitSnapshot} entries
  *
  * @example
  * ```ts

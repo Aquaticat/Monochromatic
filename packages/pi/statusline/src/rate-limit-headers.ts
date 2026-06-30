@@ -22,7 +22,7 @@ import type { RateLimitSnapshot, } from './rate-limit-types.ts';
  *
  * @param nowMs - wall-clock sample time in epoch milliseconds
  *
- * @returns parsed snapshots for complete and valid projectable usage windows
+ * @returns parsed {@link RateLimitSnapshot} entries for complete and valid projectable usage windows
  *
  * @example
  * ```ts

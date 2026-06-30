@@ -81,7 +81,7 @@ const ANTHROPIC_RATE_LIMIT_HEADER_FAMILIES: readonly RateLimitHeaderFamily[] = [
 /**
  * Parses one Anthropic header family into a usage snapshot.
  *
- * @param family - Anthropic header family metadata
+ * @param family - {@link RateLimitHeaderFamily} metadata
  *
  * @param headers - lowercase provider response headers
  *
@@ -164,7 +164,7 @@ function parseAnthropicRateLimitSnapshot({
  *
  * @param nowMs - wall-clock sample time in epoch milliseconds
  *
- * @returns parsed snapshots for complete and valid header groups
+ * @returns parsed {@link RateLimitSnapshot} entries for complete and valid header groups
  *
  * @example
  * ```ts

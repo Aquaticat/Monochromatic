@@ -88,7 +88,7 @@ function formatRelativeTime({
  * regeneration, such as Synthetic weekly credits, set `paceScale` to normalize
  * elapsed pace before projection.
  *
- * @param snapshot - current limiter sample
+ * @param snapshot - current {@link RateLimitSnapshot}
  *
  * @param nowMs - current timestamp in epoch milliseconds
  *
@@ -229,7 +229,7 @@ function isNonEmptySegment(segment: string,): boolean {
  *
  * @param style - theme style hooks
  *
- * @returns status text for projected-overflow warnings
+ * @returns {@link UsageWarningStatus} for projected-overflow warnings
  *
  * @example
  * ```ts

@@ -94,7 +94,7 @@ type FakeExtensionContextHarness = {
 /**
  * Builds fake Pi API capturing event registrations used by this extension.
  *
- * @returns fake API harness
+ * @returns {@link FakePiApiHarness}
  *
  * @example
  * ```ts
@@ -258,7 +258,7 @@ function createSessionStartEvent(): SessionStartEvent {
  *
  * @param hasUI - whether context should report UI availability
  *
- * @returns fake context harness
+ * @returns {@link FakeExtensionContextHarness}
  *
  * @example
  * ```ts

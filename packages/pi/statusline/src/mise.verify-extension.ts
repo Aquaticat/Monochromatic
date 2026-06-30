@@ -138,7 +138,7 @@ function verificationHeaders(): Record<string, string> {
 //region Verification
 
 /**
- * Verifies built extension registers and renders usage warning status.
+ * Verifies built {@link StatuslineExtensionModule} registers and renders usage warning status.
  *
  * @returns verification result text
  *

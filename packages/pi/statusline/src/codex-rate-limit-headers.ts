@@ -331,7 +331,7 @@ function codexLimitName({
  *
  * @param kind - primary or secondary Codex window
  *
- * @returns parsed Codex window, or invalid sentinel when incomplete
+ * @returns parsed {@link CodexWindow}, or invalid sentinel when incomplete
  *
  * @example
  * ```ts
@@ -385,7 +385,7 @@ function parseCodexWindow({
 /**
  * Converts one parsed Codex window into generic snapshot shape.
  *
- * @param window - parsed Codex window
+ * @param window - parsed {@link CodexWindow}
  *
  * @param prefix - Codex header prefix
  *
@@ -395,7 +395,7 @@ function parseCodexWindow({
  *
  * @param nowMs - wall-clock sample time in epoch milliseconds
  *
- * @returns generic usage snapshot
+ * @returns generic {@link RateLimitSnapshot}
  *
  * @example
  * ```ts

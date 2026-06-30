@@ -73,7 +73,7 @@ function normalizeHeaders(
  *
  * @param headerName - lowercase header name to parse
  *
- * @returns numeric value, or invalid sentinel when missing or invalid
+ * @returns numeric value, or {@link INVALID_VALUE} when missing or invalid
  *
  * @example
  * ```ts
@@ -113,7 +113,7 @@ function parseNumberHeader({
  *
  * @param headerName - lowercase header name to parse
  *
- * @returns trimmed string value, or invalid sentinel when missing or empty
+ * @returns trimmed string value, or {@link INVALID_VALUE} when missing or empty
  *
  * @example
  * ```ts
@@ -153,7 +153,7 @@ function parseStringHeader({
  *
  * @param headerName - lowercase reset header name to parse
  *
- * @returns epoch milliseconds, or invalid sentinel when missing or invalid
+ * @returns epoch milliseconds, or {@link INVALID_VALUE} when missing or invalid
  *
  * @example
  * ```ts
@@ -193,7 +193,7 @@ function parseResetHeader({
  *
  * @param headerName - lowercase reset header name to parse
  *
- * @returns epoch milliseconds, or invalid sentinel when missing or invalid
+ * @returns epoch milliseconds, or {@link INVALID_VALUE} when missing or invalid
  *
  * @example
  * ```ts
@@ -279,7 +279,7 @@ function isUnknownRecord(value: unknown,): value is UnknownRecord {
  *
  * @param key - property key to read
  *
- * @returns nested object, or invalid sentinel when missing or not an object
+ * @returns nested object, or {@link INVALID_VALUE} when missing or not an object
  *
  * @example
  * ```ts
@@ -310,7 +310,7 @@ function readRecordProperty({
  *
  * @param key - property key to read
  *
- * @returns finite number, or invalid sentinel when missing or invalid
+ * @returns finite number, or {@link INVALID_VALUE} when missing or invalid
  *
  * @example
  * ```ts
@@ -341,7 +341,7 @@ function readNumberProperty({
  *
  * @param key - property key to read
  *
- * @returns non-empty string, or invalid sentinel when missing or invalid
+ * @returns non-empty string, or {@link INVALID_VALUE} when missing or invalid
  *
  * @example
  * ```ts
@@ -381,7 +381,7 @@ function readStringProperty({
  *
  * @param key - property key to read
  *
- * @returns epoch milliseconds, or invalid sentinel when missing or invalid
+ * @returns epoch milliseconds, or {@link INVALID_VALUE} when missing or invalid
  *
  * @example
  * ```ts
@@ -450,7 +450,7 @@ function usedPercentFromLimit({
 }
 
 /**
- * Creates a generic usage snapshot from provider-specific values.
+ * Creates a generic {@link RateLimitSnapshot} from provider-specific values.
  *
  * @param key - stable snapshot key
  *
@@ -466,7 +466,7 @@ function usedPercentFromLimit({
  *
  * @param usedPercent - used capacity percentage
  *
- * @returns generic usage snapshot
+ * @returns generic {@link RateLimitSnapshot}, or {@link INVALID_RATE_LIMIT_SNAPSHOT} when a field is invalid
  *
  * @example
  * ```ts

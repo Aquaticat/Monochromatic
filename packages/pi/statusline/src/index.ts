@@ -42,7 +42,7 @@ const STATUS_KEY = 'pi-statusline.usage';
 /**
  * Builds theme-backed style hooks for warning segments.
  *
- * @param ctx - Pi extension context with UI theme access
+ * @param ctx - {@link ExtensionContext} with UI theme access
  *
  * @returns style hooks using current Pi theme colors
  *
@@ -70,7 +70,7 @@ function styleFromContext(ctx: ExtensionContext,): UsageWarningStyle {
 /**
  * Applies or clears footer status when UI is available.
  *
- * @param ctx - Pi extension context
+ * @param ctx - {@link ExtensionContext}
  *
  * @param statusText - rendered status text, empty when clearing
  *
@@ -111,7 +111,7 @@ function setUsageStatus({
 /**
  * Clears footer status.
  *
- * @param ctx - Pi extension context
+ * @param ctx - {@link ExtensionContext}
  *
  * @param log - tagged logger for lifecycle notes
  *
@@ -144,7 +144,7 @@ function clearStatus({
  * Subscribes to provider responses, samples supported provider usage headers, and
  * renders only the projected-overflow warning portion ported from the Claude Code statusline.
  *
- * @param pi - Pi extension API
+ * @param pi - {@link ExtensionAPI}
  *
  * @example
  * ```typescript
