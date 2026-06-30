@@ -59,11 +59,6 @@ type HandlerFn = (
 type RegistrationMap = Map<string, HandlerFn[]>;
 
 /**
- * Read-only view of extension event registrations.
- */
-type ReadonlyRegistrationMap = ReadonlyMap<string, readonly HandlerFn[]>;
-
-/**
  * Minimal context shape needed to capture title writes.
  */
 type TitleContext = {
@@ -170,7 +165,7 @@ function createTitleContext(): Readonly<{
 /**
  * Retrieves first handler registered for an event.
  *
- * @param registrations - because built extension registers handlers through fake API
+ * @param handlers - because built extension registers handlers through fake API
  *
  * @param event - because verification needs specific tool lifecycle hooks
  *
@@ -180,22 +175,18 @@ function createTitleContext(): Readonly<{
  *
  * @example
  * ```ts
- * getHandler({ registrations, event: TOOL_START_EVENT });
+ * getHandler({ handlers: [], event: TOOL_START_EVENT });
  * ```
  */
 function getHandler(
   {
-    registrations,
+    handlers,
     event,
   }: Readonly<{
-    registrations: ReadonlyRegistrationMap;
+    handlers: readonly HandlerFn[] | undefined;
     event: string;
   }>,
 ): HandlerFn {
-  /**
-   * Registered handlers for requested event.
-   */
-  const handlers = registrations.get(event,);
   if (handlers === undefined)
     throw new Error(`missing event registration: ${event}`,);
   /**
@@ -276,14 +267,14 @@ async function verifyBuiltExtension(): Promise<string> {
    * Built start handler registered through Pi API.
    */
   const startHandler = getHandler({
-    registrations: harness.registrations,
+    handlers: harness.registrations.get(TOOL_START_EVENT,),
     event: TOOL_START_EVENT,
   },);
   /**
    * Built end handler registered through Pi API.
    */
   const endHandler = getHandler({
-    registrations: harness.registrations,
+    handlers: harness.registrations.get(TOOL_END_EVENT,),
     event: TOOL_END_EVENT,
   },);
 
