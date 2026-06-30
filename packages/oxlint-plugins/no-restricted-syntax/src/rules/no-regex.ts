@@ -28,7 +28,7 @@ const REGEX_ACCEPTING_STRING_METHODS = [
  * Sentinel returned by {@link getStaticMethodName} when a member expression's
  * property is computed dynamically and carries no static string name. A named
  * sentinel keeps the "no static name" signal out of a `string | undefined`
- * union, which `no-restricted-syntax/no-nullish-union` bans.
+ * union, which {@link noNullishUnion} bans.
  */
 const NO_STATIC_METHOD_NAME = Symbol('member property computed without a static name',);
 
@@ -123,7 +123,8 @@ function getStaticMethodName(
 }
 
 /**
- * Checks whether a method name accepts regex as its first argument.
+ * Checks whether a method name accepts regex as its first argument, by
+ * membership in {@link REGEX_ACCEPTING_STRING_METHODS}.
  *
  * @param methodName - statically-known method name
  *
@@ -145,7 +146,8 @@ function isRegexAcceptingStringMethod(
 }
 
 /**
- * Checks whether an expression is inline regex syntax.
+ * Checks whether an expression is inline regex syntax, via
+ * {@link isRegExpLiteral} or {@link isRegExpConstructorExpression}.
  *
  * @param node - expression node to inspect
  *
@@ -163,7 +165,9 @@ function isInlineRegexExpression(node: ESTree.Node,): boolean {
 
 /**
  * Checks whether a call expression is a string-style method call with an
- * inline regex first argument.
+ * inline regex first argument: the method name is read via
+ * {@link getStaticMethodName}, tested via {@link isRegexAcceptingStringMethod},
+ * and the first argument tested via {@link isInlineRegexExpression}.
  *
  * Type information is unavailable in oxlint JS plugins, so this rule treats
  * any `.match(...)`, `.replace(...)`, `.search(...)`, or `.split(...)` shape
@@ -201,7 +205,8 @@ function isStringMethodRegexCall({ node, }: { readonly node: ESTree.CallExpressi
 }
 
 /**
- * Returns method name for a previously classified string regex call.
+ * Returns method name, read via {@link getStaticMethodName}, for a
+ * previously classified string regex call.
  *
  * @param node - call expression already accepted by {@link isStringMethodRegexCall}
  *
@@ -228,7 +233,8 @@ function stringRegexMethodName({ node, }: { readonly node: ESTree.CallExpression
 
 /**
  * Checks whether a regex expression is already covered by a more specific
- * parent diagnostic.
+ * parent diagnostic, via {@link isStringMethodRegexCall} or
+ * {@link isRegExpConstructorExpression}.
  *
  * @param node - regex literal or constructor node
  *
