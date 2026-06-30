@@ -52,8 +52,8 @@ const l = tagged({ tag: 'vmsync', },);
 
 /**
  * Validates that a disk image contains an EFI System Partition.
- * Uses `qemu-nbd` to expose the image as a block device, then inspects
- * the partition table via `fdisk`.
+ * Uses `qemu-nbd` (via {@link connectDisposable}) to expose the image as a block device, then
+ * inspects the partition table via `fdisk`.
  *
  * vmsync only supports UEFI images (Gen2 for Hyper-V, OVMF for KVM).
  * Images without an ESP are rejected at import time.
@@ -202,8 +202,8 @@ export function nameFromPath(imagePath: string,): string {
 /**
  * Imports a disk image into vmsync management.
  *
- * 1. Detects the image format via `qemu-img info`
- * 2. Validates the image contains an EFI System Partition
+ * 1. Detects the image format via {@link imageInfo}
+ * 2. Validates the image contains an EFI System Partition via {@link validateUefi}
  * 3. Converts to qcow2 and vhdx in a new VM directory
  * 4. Computes checksums and writes the initial config
  *
@@ -311,7 +311,7 @@ export async function importImage(
   ],);
 
   /**
-   * Initial VM configuration.
+   * Initial {@link VmsyncConfig}.
    */
   const config: VmsyncConfig = {
     name: vmName,
@@ -342,8 +342,8 @@ export async function importImage(
 }
 
 /**
- * Converts the source image to qcow2 and vhdx, choosing the optimal conversion path
- * based on the source format.
+ * Converts the source image to qcow2 and vhdx via {@link convert}, choosing the optimal
+ * conversion path based on the source format.
  *
  * @param absPath - Absolute path to the source image
  *
@@ -353,7 +353,7 @@ export async function importImage(
  *
  * @param vhdxPath - Target path for vhdx output
  *
- * @param rl - Logger for status output
+ * @param rl - {@link Logger} for status output
  */
 async function convertSourceImage(
   {

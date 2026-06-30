@@ -59,7 +59,7 @@ export type SyncState = {
    */
   synced: boolean;
   /**
-   * SHA-256 checksums recorded after the last sync.
+   * SHA-256 {@link DiskChecksums} recorded after the last sync.
    */
   checksums: DiskChecksums;
 };
@@ -85,11 +85,11 @@ export type VmsyncConfig = {
    */
   readonly diskSizeBytes: number;
   /**
-   * Boot settings.
+   * {@link BootConfig} settings.
    */
   readonly boot: BootConfig;
   /**
-   * Sync state managed by the CLI.
+   * {@link SyncState} managed by the CLI.
    */
   state: SyncState;
 };

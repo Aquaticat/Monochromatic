@@ -128,10 +128,10 @@ async function findOvmf(): Promise<string> {
 /**
  * Boots a VM via QEMU/KVM with a qcow2 overlay for change tracking.
  *
- * 1. Creates a fresh overlay backed by the qcow2 base
+ * 1. Creates a fresh overlay via {@link createOverlay}, backed by the qcow2 base
  * 2. Launches QEMU with UEFI, virtio devices, and NAT networking
  * 3. Blocks until the QEMU process exits (user shuts down the VM)
- * 4. Triggers incremental sync from overlay to vhdx
+ * 4. Triggers incremental sync via {@link syncFromKvm}, from overlay to vhdx
  *
  * @param name - VM name
  *
@@ -252,7 +252,7 @@ async function bootKvm(name: string,): Promise<void> {
  * 2. Configures Gen2, disables Secure Boot, sets NAT via Default Switch
  * 3. Starts the VM and waits for it to stop
  * 4. Removes the VM definition (preserving the vhdx)
- * 5. Triggers sync from vhdx to qcow2
+ * 5. Triggers sync via {@link syncFromHyperv}, from vhdx to qcow2
  *
  * @param name - VM name
  *
@@ -491,7 +491,7 @@ export function parseMemoryToBytes(memory: string,): number {
 //region Public boot entry point
 
 /**
- * Boots a VM using the auto-detected hypervisor for the current platform.
+ * Boots a VM using the hypervisor {@link detectHypervisor} resolves for the current platform.
  * Linux uses KVM/QEMU, Windows uses Hyper-V.
  *
  * After the VM shuts down, changes are automatically synced to the other format.

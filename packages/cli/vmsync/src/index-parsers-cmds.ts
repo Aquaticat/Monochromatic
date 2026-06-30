@@ -70,7 +70,7 @@ const cpusValue = integer({
 //region Subcommand parsers
 
 /**
- * Parser for `import <path> [--name NAME]`.
+ * Parser for `import <path> [--name NAME]`, producing an `import` {@link VmsyncArgs}.
  */
 export const importCmd: SubcommandParser = command(
   'import',
@@ -112,7 +112,7 @@ export const importCmd: SubcommandParser = command(
 );
 
 /**
- * Parser for `boot <name>`.
+ * Parser for `boot <name>`, producing a `boot` {@link VmsyncArgs}.
  */
 export const bootCmd: SubcommandParser = command(
   'boot',
@@ -133,7 +133,7 @@ export const bootCmd: SubcommandParser = command(
 );
 
 /**
- * Parser for `sync <name>`.
+ * Parser for `sync <name>`, producing a `sync` {@link VmsyncArgs}.
  */
 export const syncCmd: SubcommandParser = command(
   'sync',
@@ -154,7 +154,7 @@ export const syncCmd: SubcommandParser = command(
 );
 
 /**
- * Parser for `status <name>`.
+ * Parser for `status <name>`, producing a `status` {@link VmsyncArgs}.
  */
 export const statusCmd: SubcommandParser = command(
   'status',
@@ -175,7 +175,7 @@ export const statusCmd: SubcommandParser = command(
 );
 
 /**
- * Parser for `list`.
+ * Parser for `list`, producing a `list` {@link VmsyncArgs}.
  */
 export const listCmd: SubcommandParser = command(
   'list',
@@ -193,7 +193,7 @@ export const listCmd: SubcommandParser = command(
 );
 
 /**
- * Parser for `config <name> [--memory MEMORY] [--cpus CPUS]`.
+ * Parser for `config <name> [--memory MEMORY] [--cpus CPUS]`, producing a `config` {@link VmsyncArgs}.
  */
 export const configCmd: SubcommandParser = command(
   'config',

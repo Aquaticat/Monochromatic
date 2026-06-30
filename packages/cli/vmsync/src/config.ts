@@ -275,7 +275,7 @@ export function stripJsoncComments(text: string,): string {
  *
  * @param name - VM name
  *
- * @returns Parsed configuration
+ * @returns Parsed {@link VmsyncConfig}
  *
  * @throws Error when the config file does not exist or contains invalid JSON
  *
@@ -315,7 +315,7 @@ export async function readConfig(name: string,): Promise<VmsyncConfig> {
  *
  * @param name - VM name
  *
- * @param config - Configuration to persist
+ * @param config - {@link VmsyncConfig} to persist
  *
  * @example
  * ```ts
@@ -371,7 +371,7 @@ export async function writeConfig(
 /**
  * Detects the available hypervisor on the current platform.
  *
- * @returns `'kvm'` on Linux, `'hyperv'` on Windows
+ * @returns {@link Hypervisor}: `'kvm'` on Linux, `'hyperv'` on Windows
  *
  * @throws Error when running on an unsupported platform
  *

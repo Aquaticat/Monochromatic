@@ -21,7 +21,7 @@ import {
 const l = tagged({ tag: 'vmsync', },);
 
 /**
- * Updates the boot configuration for a named VM.
+ * Updates the boot settings on a named VM's {@link VmsyncConfig}.
  *
  * @param name - VM name
  *

@@ -53,7 +53,8 @@ export type VmsyncArgs =
 
 /* oxlint-disable typescript-eslint/no-explicit-any -- Parser is invariant in TState; opaque nested state types can't use unknown */
 /**
- * Combined top-level parser across all subcommands.
+ * Combined top-level parser across all subcommands: {@link importCmd}, {@link bootCmd},
+ * {@link syncCmd}, {@link statusCmd}, {@link listCmd}, and {@link configCmd}.
  *
  * @example
  * ```ts

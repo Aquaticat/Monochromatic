@@ -130,7 +130,7 @@ export async function findFreeNbdDevice(): Promise<string> {
  *
  * @param sysfsSize - Path to the sysfs size file
  *
- * @param rl - Logger for debug output
+ * @param rl - {@link Logger} for debug output
  *
  * @returns True when the device is free
  */
@@ -200,7 +200,7 @@ export type NbdConnection = {
  *
  * @param format - Image format (e.g. 'qcow2', 'vhdx')
  *
- * @returns Disposable connection handle
+ * @returns disposable {@link NbdConnection} handle
  *
  * @throws Error when connection fails (e.g. device busy, permission denied)
  *
@@ -284,7 +284,7 @@ export async function connectDisposable(
  *
  * @param targetDevice - NBD device exposing the target image (read-write)
  *
- * @param changedRegions - Regions from `qemu-img map` with `depth === 0`
+ * @param changedRegions - {@link QemuMapRegion} entries from `qemu-img map` with `depth === 0`
  *
  * @throws Error when a dd transfer fails
  *
@@ -360,9 +360,9 @@ export async function patchBlocks(
  *
  * @param targetDevice - Target NBD device
  *
- * @param region - Region descriptor from the block map
+ * @param region - {@link QemuMapRegion} descriptor from the block map
  *
- * @param rl - Logger for debug output
+ * @param rl - {@link Logger} for debug output
  *
  * @throws Error when the region is not sector-aligned or dd fails
  */

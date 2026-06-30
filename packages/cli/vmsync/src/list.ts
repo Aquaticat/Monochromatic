@@ -33,7 +33,7 @@ const l = tagged({ tag: 'vmsync', },);
 /**
  * Reads the data directory, returning an empty array if it does not exist.
  *
- * @param rl - Logger for status output
+ * @param rl - {@link Logger} for status output
  *
  * @returns Directory entries, or empty array on missing directory
  */
@@ -118,7 +118,7 @@ export async function listVms(): Promise<readonly string[]> {
 }
 
 /**
- * Prints a summary table of all managed VMs.
+ * Prints a summary table of all managed VMs, sourced via {@link listVms}.
  *
  * @example
  * ```ts
