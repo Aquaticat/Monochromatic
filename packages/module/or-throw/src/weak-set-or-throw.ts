@@ -14,6 +14,8 @@ import type { ExtractOrUnknown, } from './extract-or-unknown.ts';
  * realm. `WeakSet` has no enumerable size or iteration, so this helper is
  * useful mainly for type-narrowing branches that want to distinguish weak
  * containers from regular ones.
+ * The return type uses {@link ExtractOrUnknown} so `unknown` inputs narrow to
+ * `WeakSet<object>` instead of collapsing to `never`.
  *
  * @param value - Value to assert as a `WeakSet`
  *

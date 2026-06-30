@@ -11,9 +11,9 @@ import type { Falsy, } from './falsy.ts';
  * Asserts that a value is falsy, returning it with truthy variants removed from the type.
  *
  * The runtime check is `value` (truthy in a boolean context), which inverts the truthy
- * check used by `truthyOrThrow`. The static return type narrows unions cleanly
- * (`string | undefined` becomes `undefined`) and recovers `Falsy` from an `unknown`
- * input (via `ExtractOrUnknown`, avoiding plain `Extract<unknown, Falsy>` = `never`).
+ * check used by {@link truthyOrThrow}. The static return type narrows unions cleanly
+ * (`string | undefined` becomes `undefined`) and recovers {@link Falsy} from an `unknown`
+ * input (via {@link ExtractOrUnknown}, avoiding plain `Extract<unknown, Falsy>` = `never`).
  * `NaN` cannot be extracted from `number` because TypeScript has no `NaN` literal type.
  *
  * Use this when an invariant requires an absent or zero-shaped value: e.g. asserting

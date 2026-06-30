@@ -12,10 +12,10 @@ import type { ExtractOrUnknown, } from './extract-or-unknown.ts';
  *
  * "Numeric" matches the `module-es` type vocabulary (`t numeric/`): the
  * union of `number` and `bigint`. Use this when arithmetic is valid on
- * either kind; reach for `numberOrThrow` or `bigintOrThrow` when the kind
+ * either kind; reach for {@link numberOrThrow} or {@link bigintOrThrow} when the kind
  * specifically matters.
  *
- * The return type uses `ExtractOrUnknown` so `unknown` inputs narrow to
+ * The return type uses {@link ExtractOrUnknown} so `unknown` inputs narrow to
  * `number | bigint` instead of collapsing to `never`.
  *
  * @param value - Value to assert as numeric (number or bigint)

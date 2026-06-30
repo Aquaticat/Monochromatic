@@ -14,7 +14,7 @@ import type { ExtractOrUnknown, } from './extract-or-unknown.ts';
  * representable as bigint are still rejected: this helper checks the type,
  * not numeric equivalence.
  *
- * The return type uses `ExtractOrUnknown` so `unknown` inputs narrow to
+ * The return type uses {@link ExtractOrUnknown} so `unknown` inputs narrow to
  * `bigint` instead of collapsing to `never`.
  *
  * @param value - Value to assert as a primitive bigint

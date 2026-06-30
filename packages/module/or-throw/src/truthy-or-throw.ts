@@ -11,7 +11,8 @@ import type { Falsy, } from './falsy.ts';
  *
  * The runtime check is `!value`, which catches every falsy value JavaScript recognizes:
  * `false`, `0`, `0n`, `''`, `null`, `undefined`, and `NaN`. The static return type is
- * `Exclude<T, Falsy>`; this narrows unions cleanly (`string | undefined` becomes `string`)
+ * `Exclude<T, Falsy>` (see {@link Falsy} for the excluded union); this narrows unions
+ * cleanly (`string | undefined` becomes `string`)
  * but cannot exclude `NaN` from a wide `number` (TypeScript has no `NaN` literal type),
  * so `truthyOrThrow<number>(NaN,)` throws at runtime while still typing as `number`.
  *

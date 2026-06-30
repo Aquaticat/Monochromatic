@@ -8,14 +8,14 @@
  * debuggable failure.
  *
  * Categories:
- * - Boolean shape: `nonNullishOrThrow`, `truthyOrThrow`, `falsyOrThrow`
- * - Container size: `emptyOrThrow`, `nonemptyOrThrow`
- * - Iterable protocols: `iterableOrThrow`, `asyncIterableOrThrow`, `maybeAsyncIterableOrThrow`
- * - Container instances: `arrayOrThrow`, `setOrThrow`, `mapOrThrow`, `weakSetOrThrow`, `weakMapOrThrow`
- * - Standard built-ins: `promiseOrThrow`, `dateOrThrow`, `regExpOrThrow`, `errorOrThrow`
- * - typeof primitives: `stringOrThrow`, `numberOrThrow`, `bigintOrThrow`, `booleanOrThrow`, `symbolOrThrow`, `functionOrThrow`, `objectOrThrow`
- * - Numeric union: `numericOrThrow`
- * - Custom predicates: `satisfiesOrThrow`, `satisfiesOrThrowAsync`
+ * - Boolean shape: {@link nonNullishOrThrow}, {@link truthyOrThrow}, {@link falsyOrThrow}
+ * - Container size: {@link emptyOrThrow}, {@link nonemptyOrThrow}
+ * - Iterable protocols: {@link iterableOrThrow}, {@link asyncIterableOrThrow}, {@link maybeAsyncIterableOrThrow}
+ * - Container instances: {@link arrayOrThrow}, {@link setOrThrow}, {@link mapOrThrow}, {@link weakSetOrThrow}, {@link weakMapOrThrow}
+ * - Standard built-ins: {@link promiseOrThrow}, {@link dateOrThrow}, {@link regExpOrThrow}, {@link errorOrThrow}
+ * - typeof primitives: {@link stringOrThrow}, {@link numberOrThrow}, {@link bigintOrThrow}, {@link booleanOrThrow}, {@link symbolOrThrow}, {@link functionOrThrow}, {@link objectOrThrow}
+ * - Numeric union: {@link numericOrThrow}
+ * - Custom predicates: {@link satisfiesOrThrow}, {@link satisfiesOrThrowAsync}
  *
  * @example
  * ```ts

@@ -19,7 +19,7 @@ import type { ExtractOrUnknown, } from './extract-or-unknown.ts';
  * `readonly never[]` to match any callable regardless of parameter types, the
  * standard "any-function" trick that avoids the banned `Function` type.
  *
- * The return type uses `ExtractOrUnknown` so `unknown` inputs narrow to the
+ * The return type uses {@link ExtractOrUnknown} so `unknown` inputs narrow to the
  * function type instead of collapsing to `never`.
  *
  * @param value - Value to assert as callable

@@ -14,7 +14,7 @@ import type { ExtractOrUnknown, } from './extract-or-unknown.ts';
  * `typeof === 'object'`) are intentionally rejected; production code should
  * not be constructing boxed primitives, and accepting them would mask bugs.
  *
- * The return type uses `ExtractOrUnknown` so `unknown` inputs (e.g. parsed
+ * The return type uses {@link ExtractOrUnknown} so `unknown` inputs (e.g. parsed
  * JSON, fetched API payloads, generic property access) narrow to `string`
  * instead of collapsing to `never`.
  *

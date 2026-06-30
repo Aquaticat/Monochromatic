@@ -13,6 +13,8 @@ import type { ExtractOrUnknown, } from './extract-or-unknown.ts';
  * Uses `instanceof RegExp`. Regex-shaped strings ("^abc$") and objects with a
  * `.test()` method are intentionally rejected; callers that want to accept
  * either should normalize first (`new RegExp(maybe)`).
+ * The return type uses {@link ExtractOrUnknown} so `unknown` inputs narrow to
+ * `RegExp` instead of collapsing to `never`.
  *
  * @param value - Value to assert as a `RegExp`
  *

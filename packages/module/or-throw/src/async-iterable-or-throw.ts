@@ -11,7 +11,7 @@
  * The runtime check accepts non-null objects with a `Symbol.asyncIterator`
  * method. Primitives (including strings), `null`, and `undefined` throw.
  * Sync-iterable values that do not also implement `Symbol.asyncIterator`
- * throw; use `maybeAsyncIterableOrThrow` to accept either.
+ * throw; use {@link maybeAsyncIterableOrThrow} to accept either.
  *
  * The return type is `T & AsyncIterable<unknown>`. For `T = unknown`, the
  * intersection collapses to `AsyncIterable<unknown>`. For a `T` that already

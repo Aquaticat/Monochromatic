@@ -13,7 +13,7 @@ import type { ExtractOrUnknown, } from './extract-or-unknown.ts';
  * The runtime check is `Array.isArray`, which is the only correct array
  * predicate in JavaScript: it works across realms (iframe, worker) and
  * across proxy wrappers, where `instanceof Array` fails. The return type
- * uses `ExtractOrUnknown` so `unknown` inputs (e.g. `JSON.parse` results)
+ * uses {@link ExtractOrUnknown} so `unknown` inputs (e.g. `JSON.parse` results)
  * narrow to `readonly unknown[]` instead of collapsing to `never`.
  *
  * @param value - Value to assert as an array

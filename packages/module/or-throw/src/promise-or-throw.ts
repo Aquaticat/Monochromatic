@@ -15,6 +15,8 @@ import type { ExtractOrUnknown, } from './extract-or-unknown.ts';
  * but not native `Promise` instances) are intentionally rejected; callers
  * that want to accept thenables should write a duck-type check instead.
  * Cross-realm `Promise` values (an iframe's `Promise`) will fail this check.
+ * The return type uses {@link ExtractOrUnknown} so `unknown` inputs narrow to
+ * `Promise<unknown>` instead of collapsing to `never`.
  *
  * @param value - Value to assert as a `Promise`
  *

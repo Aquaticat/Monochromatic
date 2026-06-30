@@ -13,9 +13,9 @@ import type { ExtractOrUnknown, } from './extract-or-unknown.ts';
  * Uses `typeof === 'object' && value !== null`. The `!== null` check is
  * mandatory: `typeof null === 'object'` is a long-standing JavaScript quirk.
  * Functions are not considered objects here (`typeof === 'function'`); use
- * `functionOrThrow` for those.
+ * {@link functionOrThrow} for those.
  *
- * The return type uses `ExtractOrUnknown` so `unknown` inputs narrow to
+ * The return type uses {@link ExtractOrUnknown} so `unknown` inputs narrow to
  * TypeScript's `object` type instead of collapsing to `never`.
  *
  * @param value - Value to assert as a non-null object

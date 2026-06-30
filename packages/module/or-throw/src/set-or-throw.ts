@@ -13,6 +13,8 @@ import type { ExtractOrUnknown, } from './extract-or-unknown.ts';
  * Uses `instanceof Set`, which is the correct predicate inside a single realm.
  * Cross-realm `Set` values (an iframe's `Set`) will fail this check;
  * callers that need cross-realm support should write their own check.
+ * The return type uses {@link ExtractOrUnknown} so `unknown` inputs narrow to
+ * `Set<unknown>` instead of collapsing to `never`.
  *
  * @param value - Value to assert as a `Set`
  *

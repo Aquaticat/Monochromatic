@@ -13,7 +13,7 @@ import type { ExtractOrUnknown, } from './extract-or-unknown.ts';
  * Uses `typeof === 'symbol'`. Both registered (`Symbol.for('key')`) and
  * unregistered (`Symbol('desc')`) symbols pass.
  *
- * The return type uses `ExtractOrUnknown` so `unknown` inputs narrow to
+ * The return type uses {@link ExtractOrUnknown} so `unknown` inputs narrow to
  * `symbol` instead of collapsing to `never`.
  *
  * @param value - Value to assert as a symbol

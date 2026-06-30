@@ -1,5 +1,5 @@
 /**
- * Shared `Falsy` type alias used by `truthyOrThrow` and `falsyOrThrow`
+ * Shared `Falsy` type alias used by {@link truthyOrThrow} and {@link falsyOrThrow}
  * to express the values that coerce to `false` in a boolean context.
  *
  * @module

@@ -14,6 +14,8 @@ import type { ExtractOrUnknown, } from './extract-or-unknown.ts';
  * `getTime() === NaN`) still pass: this helper checks the type, not the
  * validity. Callers that need a valid date should chain a separate check
  * (e.g. `Number.isNaN(date.getTime())`).
+ * The return type uses {@link ExtractOrUnknown} so `unknown` inputs narrow to
+ * `Date` instead of collapsing to `never`.
  *
  * @param value - Value to assert as a `Date`
  *

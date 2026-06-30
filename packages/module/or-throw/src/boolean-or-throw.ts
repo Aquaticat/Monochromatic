@@ -15,7 +15,7 @@ import type { ExtractOrUnknown, } from './extract-or-unknown.ts';
  * type check, not a coercion. Boxed-boolean wrappers (`new Boolean(false)`,
  * `typeof === 'object'`) are intentionally rejected.
  *
- * The return type uses `ExtractOrUnknown` so `unknown` inputs narrow to
+ * The return type uses {@link ExtractOrUnknown} so `unknown` inputs narrow to
  * `boolean` instead of collapsing to `never`.
  *
  * @param value - Value to assert as a primitive boolean

@@ -10,7 +10,7 @@ import { getSize, } from './size.ts';
  * Asserts that a recognized container is nonempty (size greater than zero),
  * returning the same value.
  *
- * Recognized container shapes (see `getSize` in `size.ts`): strings, arrays,
+ * Recognized container shapes (see {@link getSize} in `size.ts`): strings, arrays,
  * `Set`, `Map`, plain objects. Values without a recognized size shape throw,
  * as do values whose size is zero.
  *
