@@ -78,7 +78,8 @@ function isWhitespaceChar(c: string,): boolean {
 
 /**
  * Returns the largest index strictly less than `end` whose char is
- * non-whitespace; `-1` when only whitespace precedes `end`.
+ * non-whitespace per {@link isWhitespaceChar}; `-1` when only whitespace
+ * precedes `end`.
  *
  * @param s - source string
  *
@@ -130,9 +131,10 @@ const NO_CLAUSE: unique symbol = Symbol('module-dom trailing export clause absen
  * extracts the named-export list.
  *
  * Mirrors the shape of `/export\s*\{\s*([^}]+)\s*\}\s*;?\s*$/`: walks
- * back from end-of-string, skips trailing whitespace and an optional
- * `;`, requires `}`, finds the matching `{`, then verifies `export`
- * sits at a word boundary immediately before the `{`.
+ * back from end-of-string via {@link lastNonWhitespaceIndex}, skips
+ * trailing whitespace and an optional `;`, requires `}`, finds the
+ * matching `{`, then verifies `export` sits at a word boundary
+ * (checked with {@link isWordChar}) immediately before the `{`.
  *
  * @param source - bundle source text
  *
@@ -216,8 +218,9 @@ function parseTrailingExportClause(source: string,): {
 }
 
 /**
- * Reads the built bundle, rewrites its trailing `export ` ... ` `
- * statement into a `globalThis.moduleDom = ` ... ` ` assignment, and
+ * Reads the built bundle, locates the trailing `export ` ... ` ` clause via
+ * {@link parseTrailingExportClause} (throwing below on {@link NO_CLAUSE}),
+ * rewrites it into a `globalThis.moduleDom = ` ... ` ` assignment, and
  * returns the resulting module source ready for inline injection.
  *
  * @returns Module-script source that, when injected, exposes all named
@@ -300,9 +303,10 @@ type HarnessPage = Readonly<{
 }>;
 
 /**
- * Loads the harness page, injects the bundled helpers as an inline
- * script, and waits until `globalThis.moduleDom` is set so subsequent
- * `page.evaluate` calls can reference it directly.
+ * Loads the {@link HARNESS_URL} page, injects the bundled helpers built by
+ * {@link bundleAsGlobalAssignment} as an inline script, and waits until
+ * `globalThis.moduleDom` is set so subsequent `page.evaluate` calls can
+ * reference it directly.
  *
  * @param page - Playwright Page to set up
  *

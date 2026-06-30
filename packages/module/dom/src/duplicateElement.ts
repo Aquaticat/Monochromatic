@@ -1,5 +1,6 @@
 /**
- * Replaces an element's parent's content with clones of that element.
+ * Replaces an element's parent's content with clones of that element, each
+ * produced via {@link deepCloneNode}.
  * Any other sibling elements will be removed.
  *
  * @param templateElement - Reference to element
@@ -85,7 +86,8 @@ export function deepCloneNode<const T extends Node,>(element: T,): T {
 }
 
 /**
- * Replaces a target parent element's content with clones of a template element.
+ * Replaces a target parent element's content with clones of a template
+ * element, each produced via {@link deepCloneNode}.
  *
  * @param templateElement - Element to clone
  *
