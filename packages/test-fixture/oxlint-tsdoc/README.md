@@ -2,17 +2,21 @@
 
 Test fixture for validating the `@monochromatic-dev/config-oxlint-tsdoc` rule set.
 
-Contains two directories:
+The fixture has valid and invalid TypeScript source trees.
 
 - `src/valid/`:
-   correctly documented TypeScript (complete TSDoc,
+   correctly documented TypeScript covering complete TSDoc,
    documented declarations,
-  ignored file extensions) that should produce zero violations
+   documented locals,
+   `@example` coverage,
+   and ignored file extensions
 - `src/invalid/`:
-   intentionally broken TSDoc (missing documentation,
-   param issues,
-  returns issues,
+   intentionally broken TSDoc covering missing documentation,
+   missing local documentation,
+   missing `@example` tags,
+   parameter issues,
+   return issues,
    structural problems,
    tag validation failures,
-   yields issues)
-  that should each trigger specific rule violations
+   yields issues,
+   and single-line TSDoc autofix cases

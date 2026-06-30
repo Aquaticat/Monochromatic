@@ -1,9 +1,7 @@
 # @monochromatic-dev/config-oxlint
 
-Ready to publish.
-
 Shared oxlint configuration for Monochromatic repositories,
-exported as a typed `OxlintConfig` object from `oxlint.config.ts`.
+exported as a typed `OxlintConfig` object and consumed by the root `oxlint.config.ts`.
 
 ## Usage
 
@@ -87,14 +85,17 @@ The `--type-aware` flag is passed via the CLI in the mise task template
    jsPlugin for one-item-per-line,
    semicolon,
    and expression-structure formatting
+- **@monochromatic-dev/config-oxlint-shared**:
+   shipped runtime helpers imported by plugin rules
+- **@monochromatic-dev/config-oxlint-test-support**:
+   private fixture-test helpers for plugin unit tests
 
-These are JS plugins (`jsPlugins`),
- not config packages.
- They implement rule
-logic;
- this package configures rule severity and options.
- All three are declared
-as dependencies of this package:
- the development entry resolves their `/ts` source
-via `import.meta.resolve()`,
- and the build bundles that source into the sidecars.
+The first three packages are JS plugins (`jsPlugins`),
+not config packages.
+They implement rule logic;
+this package configures rule severity and options.
+Those three plugin packages are declared as dependencies of this package:
+the development entry resolves their `/ts` source via `import.meta.resolve()`,
+and the build bundles that source into the sidecars.
+The shared package is a runtime dependency of plugin packages;
+the test-support package is dev-only.

@@ -23,7 +23,10 @@ export default defineConfig({
 },);
 ```
 
-All rules are enabled by default at `"warn"` severity with `recommended: true`.
+Each rule advertises `recommended: true`.
+Configure severity in the consuming oxlint config.
+The shared `@monochromatic-dev/config-oxlint` package enables the TSDoc rules it uses
+and keeps the yield rules off because `@yields` is not part of TSDoc.
 
 The package default export resolves to the prebuilt,
  self-contained
@@ -36,7 +39,9 @@ development.
 ### Presence
 
 - **require-tsdoc**:
-   requires TSDoc comments on module-level documentable declarations
+   requires TSDoc comments on documentable declarations at module,
+  function,
+   and block scope
   (functions,
    classes,
    interfaces,
@@ -47,7 +52,10 @@ development.
    enum members,
    getters,
    setters);
-  skips VariableDeclaration nodes inside function bodies
+  skips for-loop binding declarations
+- **require-example**:
+   requires exported functions to include an `@example` tag unless `@inheritDoc` or `@internal`
+  makes the example requirement inappropriate
 
 ### Structural formatting
 
@@ -107,6 +115,9 @@ development.
 
 ### Yield documentation
 
+These rules are available in the plugin for compatibility testing,
+but the shared config keeps them off because `@yields` is not part of TSDoc.
+
 - **require-yields**:
    requires `@yields` tag for generator functions
 - **require-yields-check**:
@@ -130,44 +141,61 @@ Files matching these extensions are skipped by all rules:
 - `index.ts`:
    plugin entry point;
    assembles all rules into the oxlint plugin object
-- `tsdoc-utils.ts`:
-   barrel for comment lookup,
-   file filtering,
-   parameter extraction utilities
+- `ast-access.ts`:
+   untyped AST guards,
+   record helpers,
+   and parameter binding unwrap logic
 - `comment-text.ts`:
    leaf text-scanning primitives (line normalization,
    tag/code scanning)
+- `tsdoc-comments.ts`:
+   comment lookup,
+   TSDoc block parsing,
+   and parse-result assembly
 - `tsdoc-blocks.ts`:
    in-house scanner producing the parsed `@param`/`@returns` model
+- `tsdoc-params.ts`,
+  `tsdoc-destructured.ts`,
+  and `tsdoc-params-returns.ts`:
+   function signature,
+   destructured parameter,
+   return,
+   and generator helpers
 - `tsdoc-structural-messages.ts`:
    best-effort structural diagnostics for `valid-types`
 - `tsdoc-doc-model.ts`:
    parsed doc-model and message types
-- `rules/require-tsdoc.ts`:
-   require-tsdoc rule with scope-depth tracking
-- `rules/structural.ts`:
-   structural formatting rules (alignment,
-   multiline,
-   asterisks,
-   tag spacing,
-   escaping)
-- `rules/tag-validation.ts`:
-   tag name validation,
-   access checks,
-   parse error reporting,
-   type annotation detection
-- `rules/params.ts`:
-   parameter documentation rules
-- `rules/returns.ts`:
-   return documentation rules
-- `rules/yields.ts`:
-   yield documentation rules
+- `tsdoc-utils.ts`:
+   compatibility barrel for rules that need shared TSDoc helpers
+- `rules/tsdoc-visitors.ts`:
+   shared visitor factories,
+   ignored-file handling,
+   and report-location helpers
+- `rules/require-tsdoc.ts` and `rules/require-example.ts`:
+   presence rules for declarations and exported function examples
+- `rules/params.ts`,
+  `rules/returns.ts`,
+  and `rules/yields.ts`:
+   function documentation rules
+- `rules/structural.ts` and `rules/tag-validation.ts`:
+   aggregate entry points for structural and tag-validation rules
+- `rules/asterisk-validation.ts`,
+  `rules/structural-tags.ts`,
+  `rules/empty-tags.ts`,
+  `rules/tag-escaping.ts`,
+  `rules/tag-names.ts`,
+  `rules/tag-types.ts`,
+  `rules/type-annotations.ts`,
+  and `rules/jsdoc-map.ts`:
+   focused helpers behind the aggregate structural and tag-validation rules
 
 ## Tests
 
-23 fixture-based tests covering all rules:
+Fixture-based integration tests cover all plugin rules,
+and focused unit tests cover the scanner and text helpers:
 
 ```bash
+mise run buildAndTest -- packages/oxlint-plugins/tsdoc/src/oxlint-tsdoc.unit.test.ts
 mise run //packages/oxlint-plugins/tsdoc:test:unit
 ```
 

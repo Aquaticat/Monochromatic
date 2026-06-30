@@ -2,29 +2,26 @@
 
 Test fixture for validating the `@monochromatic-dev/config-oxlint-stylistic` rule set.
 
-Contains two directories:
+The fixture has valid and invalid TypeScript source trees.
 
 - `src/valid/`:
-   correctly formatted TypeScript (already-per-line layouts,
-   empty
-  constructs,
+   correctly formatted TypeScript covering already-per-line layouts,
+   empty constructs,
    single-item collections,
    semicolon-terminated statements,
-   and
-  conforming operator grouping) that should produce zero violations
+   block-body layouts,
+   trailing commas,
+   chain layouts,
+   invocation-depth layouts,
+   and conforming operator grouping
 - `src/invalid/`:
-   intentionally broken formatting with one file per rule
-  (per-line layouts for arguments,
-   array elements,
-   destructures,
-   exports,
-   imports,
-  object properties,
-   params,
-   tuples,
-   type properties;
-   max-statements-per-line;
-  semi;
-   no-mixed-operators;
-   fixable trailing-comma and autofix cases) that should
-  each trigger specific rule violations
+   intentionally broken formatting with focused files for per-line rules,
+   block-body-newline,
+   one-var-declaration-per-line,
+   max-statements-per-line,
+   semi,
+   comma-dangle,
+   no-mixed-operators,
+   chain-per-line,
+   invocation-depth-per-line,
+   and autofix convergence cases
