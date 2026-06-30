@@ -77,9 +77,9 @@ function lineIntersection({
 
 /**
  * Offset every edge of a closed polygon by a signed distance along its outward normal,
- * then intersect consecutive offset edges to produce the new vertex ring.
- * Positive offset expands a clockwise (SVG Y-down) polygon outward;
- * negative offset shrinks it inward.
+ * then intersect consecutive offset edges via {@link lineIntersection} to
+ * produce the new vertex ring. Positive offset expands a clockwise (SVG
+ * Y-down) polygon outward; negative offset shrinks it inward.
  *
  * @param vertices - ordered polygon vertices (clockwise in SVG coordinate space)
  *

@@ -20,8 +20,9 @@ import {
 //region Path construction
 
 /**
- * Computes the X bounding box of all paths in a cell, in local cell coordinates.
- * For stroked paths, the bounds are expanded by half the stroke width.
+ * Computes the X bounding box of all paths in a cell, in local cell
+ * coordinates, using points resolved via {@link resolveAbsolutePoints}. For
+ * stroked paths, the bounds are expanded by half the stroke width.
  *
  * @param paths - cell paths with their stroke widths
  *

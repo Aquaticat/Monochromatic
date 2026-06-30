@@ -14,6 +14,8 @@ import type { SVGPathCommand, } from './parse-svg.ts';
 
 /**
  * Adds a stroked polygon to an opentype Path as an expanded filled outline.
+ * Resolves the centreline with {@link resolveAbsolutePoints}, then offsets
+ * it outward and inward with {@link offsetPolygon} to trace both contours.
  *
  * @param otPath - opentype path to append to
  *

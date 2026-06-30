@@ -101,7 +101,9 @@ function attr({
 /**
  * Parse the master glyph strip SVG and return one {@link Cell} per glyph position.
  * Cells are delimited by `<rect>` elements; all `<path>` elements between two
- * consecutive rects belong to the preceding cell.
+ * consecutive rects belong to the preceding cell. Missing attributes read
+ * back as {@link ATTRIBUTE_ABSENT} and fall back to defaults or skip the
+ * path entirely.
  *
  * @param svgContent - full SVG file content
  *
