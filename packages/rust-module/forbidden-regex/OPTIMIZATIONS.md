@@ -268,7 +268,7 @@ vertical SIMD gather across lines LOSES on both arches,
 kernel (`vpermb`/`vqtbl4q`) WINS for a single full-scan DFA up to 64 states,
  at every match
 rate,
- now the default for a seedless table pattern over a large batch.
+ now the default for a table-backed pattern with no required literal over a large batch.
  One-byte:
  x86 1.45 to
 2.19x,
@@ -330,12 +330,12 @@ any rule ever has to stay on counting rather than the DFA.
 `is_match_batch` on `Regex`/`RegexSet` ships.
  Several batch layouts were raced against the
 per-line loop on the real corpus,
- single seedless full-scan DFA,
+ single table-backed pattern with no required literal,
  both arches:
 
 - Sheng in-register transition:
    THE winner,
-   and the default for a seedless table pattern
+   and the default for a table-backed pattern with no required literal
   over a large batch.
    Each input byte's transition column is one 64-byte permute,
    so the

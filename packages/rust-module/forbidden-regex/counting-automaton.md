@@ -97,7 +97,7 @@ deliberately not pursued".
 default.
  On top of it every across-lines layout was raced against the per-line loop on the
 real corpus,
- single seedless full-scan DFA,
+ single table-backed pattern with no required literal,
  on x86 (AVX-512) and arm64/m1 (NEON):
 
 - Vertical SIMD across lines (one line per lane,
@@ -172,7 +172,7 @@ stable.
 - Sheng in-register transition (`src/dfa/sheng.rs`):
    THE winner,
    and the default for a
-  seedless table pattern of at most 64 states over a batch of at least 512 lines (the floor
+  table-backed pattern with no required literal and at most 64 states over a batch of at least 512 lines (the floor
   amortizes a one-time 16 KiB permute-table build).
    Each input byte's transition column is
   one 64-byte permute,
@@ -717,10 +717,10 @@ check).
 - Build+serialize <= 60s.
    Bench is hard-bounded (10s/engine,
    bounded parity sample).
-- The forbidden-strings pre-commit hook is TEMPORARILY DISABLED repo-wide;
-   AKIA-style
-  fixtures in the corpus are deliberate,
+- AKIA-style fixtures in the corpus are deliberate test inputs,
    not real secrets.
+  If a hook flags them,
+   handle them under the repository's current forbidden-strings fixture policy.
 
 ## What this crate is
 
@@ -728,11 +728,11 @@ A restricted regular-expression engine for the `forbidden-strings` secret
 scanner.
  It must support intersection (`&`) and complement (`~(...)`),
  which
-forces a derivative-based core (NFA/backtracking cannot do those).
+plain NFA/backtracking engines do not handle as first-class operations.
  It matches one
-line as raw bytes and answers a boolean,
- and a whole ruleset is combined into one
-`RegexSet`.
+line as raw bytes and answers a boolean.
+ A whole ruleset compiles into one `RegexSet`
+that combines a set-level literal gate with per-rule exact engines.
 
 ## Locked design decisions (from the requirements interview)
 

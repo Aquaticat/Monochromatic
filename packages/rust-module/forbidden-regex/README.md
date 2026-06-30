@@ -135,7 +135,7 @@ use forbidden_regex::{compile, Regex};
 let re: Regex = compile("AKIA[A-Z2-7]{16}").unwrap();
 assert!(re.is_match(b"key=AKIA0123456789ABCDEF7"));
 
-// A whole ruleset as one DFA.
+// A whole ruleset through the gated matcher.
 use forbidden_regex::RegexSet;
 
 let set = RegexSet::new(&["AKIA[A-Z2-7]{16}", "ghp_[A-Za-z0-9]{36}"]).unwrap();
@@ -190,4 +190,4 @@ patterns and is fastest when the caller already feeds length-sorted lines.
   code-line budget and required rustdoc.
 - `mise run //packages/rust-module/forbidden-regex:lint:clippy` runs clippy.
 - `mise run //packages/rust-module/forbidden-regex:bench` measures throughput
-  against `regex` and `resharp`.
+  against `regex`.
