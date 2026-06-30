@@ -136,7 +136,7 @@ function parseFrontmatter(raw: string,): {
             === '\r')
       ) {
         /**
-         * YAML body between the opening and closing fences fed to parseYaml.
+         * YAML body between the opening and closing fences fed to {@link parseYaml}.
          */
         const yamlBlock = str.slice(
           searchFrom,
@@ -209,7 +209,7 @@ const coerceDateSchema = v.pipe(
  * (rendering, RSS, sort keys).
  *
  * Combines the author-written file schema with `published`/`updated`
- * dates resolved by `./git-dates.ts`. The `coerceDateSchema` accepts
+ * dates resolved by `./git-dates.ts`. {@link coerceDateSchema} accepts
  * both native `Date` objects (from freshly derived dates) and ISO
  * strings (from JSON-deserialized cache entries).
  */
@@ -255,8 +255,8 @@ export type PostFrontmatter = {
  * Post loaded from disk with author-written frontmatter validated,
  * but `published`/`updated` not yet resolved.
  *
- * Returned by `loadContent`. Downstream consumers receive fully-resolved
- * `Post` objects built by `attachDates` after git dates are derived.
+ * Returned by {@link loadContent}. Downstream consumers receive fully-resolved
+ * {@link Post} objects built by {@link attachDates} after git dates are derived.
  */
 export type LoadedPost = {
   /**
@@ -391,7 +391,7 @@ export async function loadContent(contentDir: string,): Promise<LoadedPost[]> {
         filePath,
       },);
       /**
-       * Locale segment of the file path before narrowing to the `Locales` type.
+       * Locale segment of the file path before narrowing to the {@link Locales} type.
        */
       const rawLang = basename(dirname(filePath,),);
       if (!isLocale(rawLang,)) {
@@ -437,7 +437,7 @@ export type ResolvedDates = {
  *
  * The caller (typically `build.ts`) is responsible for producing the
  * `datesByFilePath` map; either from cache (when HEAD is unchanged)
- * or by calling `getPostDates` for files missing from the cache.
+ * or by calling {@link getPostDates} for files missing from the cache.
  *
  * Posts are returned sorted by `updated` descending, matching the previous
  * behavior of the combined loader.

@@ -84,14 +84,14 @@ const buildManifestSchema = v.object({
 //region Sentinels
 
 /**
- * Sentinel returned by `readCache` when no manifest file exists on disk.
+ * Sentinel returned by {@link readCache} when no manifest file exists on disk.
  * A genuine `Symbol` rather than `null`/`undefined`, which the
  * `no-nullish-union` rule rejects as non-sentinels.
  */
 export const NO_CACHE: unique symbol = Symbol('build manifest file missing',);
 
 /**
- * Sentinel returned by `getCachedEntry` when the manifest has no matching,
+ * Sentinel returned by {@link getCachedEntry} when the manifest has no matching,
  * content-hash-current entry for a file. A genuine `Symbol` rather than
  * `null`/`undefined`.
  */
@@ -109,13 +109,13 @@ const CACHE_PATH = '.cache/build-manifest.json';
 /**
  * Reads the build manifest from disk.
  *
- * Returns `NO_CACHE` when the cache file does not exist.
+ * Returns {@link NO_CACHE} when the cache file does not exist.
  * Logs and discards corrupted or invalid manifests rather than
  * crashing the build, since a missing cache just triggers a full rebuild.
  *
  * @param l - logger for cache read errors
  *
- * @returns parsed and validated manifest, or `NO_CACHE` on any failure
+ * @returns parsed and validated manifest, or {@link NO_CACHE} on any failure
  *
  * @example
  * ```ts
@@ -196,7 +196,7 @@ export async function writeCache(manifest: BuildManifest,): Promise<void> {
  *
  * @param contentHash - SHA-256 of the current file contents
  *
- * @returns cached entry if the content hash matches, otherwise `CACHE_MISS`
+ * @returns cached entry if the content hash matches, otherwise {@link CACHE_MISS}
  *
  * @example
  * ```ts

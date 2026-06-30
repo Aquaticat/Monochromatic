@@ -2,7 +2,7 @@
  * Client-side fallback that reorders the direct children of every
  * `<shuffle-children>` element in browsers that do not yet support CSS `random()`.
  *
- * The `<ShuffleChildren>` component sets `display: flex` on `<shuffle-children>`
+ * The {@link ShuffleChildren} component sets `display: flex` on `<shuffle-children>`
  * and `order: random(1, 1000, by 1)` on each direct child to shuffle visually.
  * Browsers that do not support CSS `random()` drop the `order` declaration and
  * every child falls back to the default `order: 0`, leaving them in source order,

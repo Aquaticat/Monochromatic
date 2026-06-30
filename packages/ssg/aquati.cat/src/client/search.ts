@@ -20,7 +20,7 @@ import { escapeHtml, } from '@monochromatic-dev/module-hyperscript/ts';
 //region Types
 
 /**
- * Pagefind search result metadata returned by `result.data()`.
+ * Pagefind search result metadata returned by {@link PagefindResult.data}.
  *
  * Only the fields used by the search UI are declared here.
  */
@@ -33,7 +33,7 @@ type PagefindResultData = {
 };
 
 /**
- * Single result entry from `pagefind.search()`.
+ * Single result entry from {@link PagefindApi.search}.
  *
  * Each result lazily loads its full data via the `data()` method.
  */
@@ -153,7 +153,7 @@ const loadPagefind: () => Promise<PagefindApi | null> = (function initLoader() {
 /**
  * Performs a search and renders results into the dropdown.
  *
- * Uses Pagefind's `debouncedSearch` to coalesce rapid keystrokes.
+ * Uses {@link PagefindApi.debouncedSearch} to coalesce rapid keystrokes.
  * When the query is empty, hides the results dropdown.
  *
  * @param query - search query string from the input
@@ -199,7 +199,7 @@ async function executeSearch(query: string,): Promise<void> {
   }
 
   /**
-   * Capped slice of best matches; over-large result sets get truncated to MAX_RESULTS.
+   * Capped slice of best matches; over-large result sets get truncated to {@link MAX_RESULTS}.
    */
   const topResults = response.results
     .slice(

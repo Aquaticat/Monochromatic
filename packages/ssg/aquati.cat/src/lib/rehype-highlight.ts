@@ -154,8 +154,9 @@ function getLanguage(codeElement: Element,): string | typeof NO_LANGUAGE {
 //region Highlight computation
 
 /**
- * Computes highlight offset pairs for a code block and sets
- * `data-hl-<group>` attributes on the code element.
+ * Computes highlight offset pairs for a code block with {@link ssgHighlighter}
+ * and sets a `data-hl-<group>` attribute on the code element for every group
+ * in {@link HIGHLIGHT_GROUPS} that matched.
  *
  * @param codeElement - hast `<code>` element to annotate
  *
@@ -248,7 +249,7 @@ function visitNode(node: Root | Element,): void {
             === 'code')
       ) {
         /**
-         * Language detected from the `<code>` class list, or `NO_LANGUAGE` to skip.
+         * Language detected from the `<code>` class list, or {@link NO_LANGUAGE} to skip.
          */
         const lang = getLanguage(firstChild,);
         if (lang !== NO_LANGUAGE) {
@@ -287,8 +288,9 @@ function visitNode(node: Root | Element,): void {
 /**
  * Rehype plugin that pre-computes Lezer syntax highlight ranges.
  *
- * Adds `data-hl-<group>` attributes to `<code>` elements inside `<pre>` blocks,
- * encoding token offset ranges as semicolon-separated `from-to` pairs.
+ * Walks the tree with {@link visitNode}, adding `data-hl-<group>` attributes
+ * to `<code>` elements inside `<pre>` blocks, encoding token offset ranges as
+ * semicolon-separated `from-to` pairs.
  *
  * @returns hast tree transformer
  *

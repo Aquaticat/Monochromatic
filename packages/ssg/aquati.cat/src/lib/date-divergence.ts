@@ -18,7 +18,7 @@ import type { Logger, } from './types.ts';
 const ISO_DATE_LENGTH = 10;
 
 /**
- * Logger subset needed for divergence diagnostics.
+ * {@link Logger} subset needed for divergence diagnostics.
  */
 type WarningLogger = Pick<Logger, 'warn'>;
 

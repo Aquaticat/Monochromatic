@@ -109,8 +109,8 @@ export async function convertToAvif(
 }
 
 /**
- * Checks if an AVIF counterpart exists for a raster image and converts
- * it when missing.
+ * Checks via {@link fileExists} if an AVIF counterpart exists for a raster
+ * image, and converts it with {@link convertToAvif} when missing.
  *
  * @param filePath - source raster image path
  *

@@ -2,7 +2,7 @@
  * Minimal JSX-to-HTML runtime for static MDX rendering.
  *
  * **Why not Preact / React?**
- * `@mdx-js/mdx` `evaluate` needs a JSX runtime (`jsx`, `jsxs`, `Fragment`)
+ * `@mdx-js/mdx` `evaluate` needs a JSX runtime ({@link jsx}, {@link jsxs}, {@link Fragment})
  * and then the result must be serialized to an HTML string.
  * Preact + `preact-render-to-string` can do this, but for static MDX-to-HTML
  * (no hydration, no hooks, no state, no client interactivity) they are
@@ -12,15 +12,15 @@
  * never execute in this context.
  *
  * **How it works.**
- * Each `jsx` call directly returns a `SafeHtml` wrapper (`{ html: string }`)
+ * Each `jsx` call directly returns a {@link SafeHtml} wrapper (`{ html: string }`)
  * instead of a virtual DOM node. The wrapper solves the escaping problem:
  * raw text children (plain strings from MDX content) are HTML-escaped,
- * while results from nested `jsx` calls (which are `SafeHtml` objects)
+ * while results from nested `jsx` calls (which are {@link SafeHtml} objects)
  * pass through unescaped. Function components (including MDX content
- * components) are called with their props and return `SafeHtml` directly.
+ * components) are called with their props and return {@link SafeHtml} directly.
  * No separate render pass needed.
  *
- * Reuses `escapeHtml` and `VOID_ELEMENTS` from `@monochromatic-dev/module-hyperscript`
+ * Reuses {@link escapeHtml} and {@link VOID_ELEMENTS} from `@monochromatic-dev/module-hyperscript`
  * to avoid duplicating HTML generation internals.
  */
 import {
@@ -54,7 +54,7 @@ const PROP_TO_ATTR: Record<string, string> = {
  *
  * @param value - child value to test
  *
- * @returns `true` if value is a `SafeHtml` wrapper
+ * @returns `true` if value is a {@link SafeHtml} wrapper
  */
 function isSafeHtml(value: unknown,): value is SafeHtml {
   return (value !== null)
@@ -79,7 +79,7 @@ function isDangerousHtml(value: unknown,): value is { readonly __html: string; }
 /**
  * Recursively renders a child value to an HTML string.
  *
- * - `SafeHtml` objects pass through (already rendered by a `jsx` call)
+ * - {@link SafeHtml} objects pass through (already rendered by a `jsx` call)
  * - Strings are HTML-escaped (raw text content from MDX)
  * - Numbers are stringified without escaping
  * - Arrays are recursively joined
@@ -133,7 +133,7 @@ function renderAttrs(props: Readonly<Record<string, unknown>>,): string {
       || (value === false))
       continue;
     /**
-     * Resolved HTML attribute name; PROP_TO_ATTR rewrites JSX-isms like `className` to `class`.
+     * Resolved HTML attribute name; {@link PROP_TO_ATTR} rewrites JSX-isms like `className` to `class`.
      */
     const name = PROP_TO_ATTR[key]
       ?? key;
@@ -165,7 +165,7 @@ function renderAttrs(props: Readonly<Record<string, unknown>>,): string {
  *
  * @param props - props containing children
  *
- * @returns rendered children as `SafeHtml`
+ * @returns rendered children as {@link SafeHtml}
  *
  * @example
  * ```ts
@@ -195,7 +195,7 @@ type JsxFactory = (
  *
  * @param props - JSX props including `children`
  *
- * @returns rendered HTML wrapped in `SafeHtml`
+ * @returns rendered HTML wrapped in {@link SafeHtml}
  *
  * @example
  * ```ts

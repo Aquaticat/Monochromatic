@@ -243,9 +243,9 @@ function createRangesFromPairs({
 /**
  * Registers pre-computed syntax highlights for all code blocks on the page.
  *
- * Finds `<pre><code>` elements with `data-hl-*` attributes, maps the encoded
- * offset pairs to DOM Range objects, and registers them with the CSS Custom
- * Highlight API.
+ * Finds `<pre><code>` elements with `data-hl-*` attributes for every group in
+ * {@link HIGHLIGHT_GROUPS}, maps the encoded offset pairs to DOM Range
+ * objects, and registers them with the CSS Custom Highlight API.
  *
  * Ranges from all code blocks are merged into shared per-group highlights
  * so a single `::highlight(hl-keyword)` rule styles all keywords site-wide.

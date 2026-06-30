@@ -96,7 +96,7 @@ function parseAuthoredDateValue(
  *
  * @param filePath - MDX file path included in validation errors
  *
- * @returns parsed date, or a sentinel when the key is absent
+ * @returns parsed date, or {@link NO_AUTHORED_DATE} when the key is absent
  *
  * @throws when a present date field is not parseable as a JavaScript Date
  *

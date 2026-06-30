@@ -141,7 +141,7 @@ export async function getHeadSha(): Promise<string> {
  * Checks whether the current repository is a shallow clone.
  *
  * Shallow clones lack the oldest commits that `git log --reverse --follow`
- * needs to derive the publication date. When shallow, `getPostDates` falls
+ * needs to derive the publication date. When shallow, {@link getPostDates} falls
  * back to the GitHub REST API through `gh` for the "published" lookup.
  *
  * @returns `true` when the repository is shallow, `false` otherwise
@@ -430,7 +430,7 @@ type PostDates = {
  *
  * @param filePath - absolute or cwd-relative path to the MDX file
  *
- * @param isShallow - pre-computed shallow-clone flag (from `detectShallow`)
+ * @param isShallow - pre-computed shallow-clone flag (from {@link detectShallow})
  *
  * @param githubSlug - pre-resolved `owner/repo` ({@link ABSENT} when origin is not GitHub); required when shallow
  *
@@ -468,7 +468,7 @@ export async function getPostDates(
    */
   const localHistory = await gitLogDates({ filePath, },);
   /**
-   * Author date of the most recent commit; `ABSENT` when the file has no git history.
+   * Author date of the most recent commit; {@link ABSENT} when the file has no git history.
    */
   const latestIso = localHistory[0]
     ?? ABSENT;
@@ -495,7 +495,7 @@ export async function getPostDates(
        */
       const repoRelPath = await getRepoRelativePath(filePath,);
       /**
-       * ISO date returned by the gh-api fallback; `ABSENT` when the API has no commits for the path.
+       * ISO date returned by the gh-api fallback; {@link ABSENT} when the API has no commits for the path.
        */
       const ghIso = await ghApiFirstCommitDate({
         slug: githubSlug,
@@ -558,7 +558,7 @@ export type GitDatesContext = {
    */
   readonly isShallow: boolean;
   /**
-   * GitHub `owner/repo` slug when origin is on github.com; `ABSENT` when origin is not GitHub.
+   * GitHub `owner/repo` slug when origin is on github.com; {@link ABSENT} when origin is not GitHub.
    */
   readonly githubSlug: string | typeof ABSENT;
 };
