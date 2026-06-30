@@ -1,6 +1,6 @@
 /* oxlint-disable no-restricted-syntax/no-nullish-union -- mirrors @optique/core `optional(option(...))` output: optique yields each optional value as `T | undefined` with the key always present (not absent), so `ParsedArgs` must declare `T | undefined` to stay structurally assignable from `runSync(parser)`. The nullish unions are dictated by the external parser, not modelling our own optionality. */
 /**
- * Shape produced by `parseArgs`.
+ * Shape produced by {@link parseArgs}.
  *
  * Spelled explicitly (not inferred via `InferValue<typeof parser>`)
  * because `--isolatedDeclarations` does not survive optique's deeply-

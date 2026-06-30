@@ -40,7 +40,7 @@ const defaultLogger = tagged({ tag: 'watch-restart', },);
 
 /* oxlint-disable no-restricted-syntax/no-class -- per-instance watcher state: one Watcher (owning one chokidar FSWatcher and its pre-populate set) lives per `startWatchRestart()` call, state is `#private`-encapsulated, and the class is an exported library primitive consumers instantiate via `new`; module-level state cannot model multiple concurrent watch sessions. */
 /**
- * chokidar 5 adapter that owns one `FSWatcher`, pre-populates a {@link HashCache}
+ * chokidar 5 adapter that owns one {@link FSWatcher}, pre-populates a {@link HashCache}
  * during the initial walk (events before `ready`), and forwards live events
  * (events after `ready`) to {@link WatcherOptions.onEvent} as normalised
  * {@link WatchEvent}s.

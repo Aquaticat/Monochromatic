@@ -18,14 +18,14 @@ import type {
  * - `add` / `change`: hashes the file. Same hash as the stored value → skip
  *   (`false`). Different hash or no stored hash → store the new hash and
  *   fire (`true`).
- * - File exceeds `hashCache.maxHashSize` (`hashFile` returns `null`):
- *   returns `true` (fire-without-comparing) so a multi-GB file does not
- *   block the dev loop on a slow read.
+ * - File exceeds `hashCache.maxHashSize` ({@link HashCache.hashFile} returns
+ *   `null`): returns `true` (fire-without-comparing) so a multi-GB file does
+ *   not block the dev loop on a slow read.
  * - Read error (e.g. ENOENT when the file vanishes between event dispatch
  *   and read): logs a warning and returns `true`; a transient race must
  *   not silently drop a real change.
  *
- * The cache is owned by `startWatchRestart` and lives on {@link WatchCtx};
+ * The cache is owned by {@link startWatchRestart} and lives on {@link WatchCtx};
  * keeping it off the filter's closure means a single shared cache flows
  * from the watcher's pre-populate phase straight through to the live
  * compare phase without a second copy.

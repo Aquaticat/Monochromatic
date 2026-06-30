@@ -10,8 +10,8 @@
  *
  * Importing this module is side-effect-free; the program body only
  * runs when this file is executed as the entrypoint (gated by
- * `import.meta.main`), so unit tests can import `parseArgs` /
- * `argsToOptions` without launching a real watch loop.
+ * `import.meta.main`), so unit tests can import {@link parseArgs} /
+ * {@link argsToOptions} without launching a real watch loop.
  *
  * @example
  * ```bash

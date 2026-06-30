@@ -82,7 +82,7 @@ export type ExitListener = (
  * names the terminating signal (`null` when it exited normally). Both
  * nullish slots come straight from node's `ChildProcess` 'exit' values; the
  * single declaration keeps that external-boundary union in one place so
- * `waitForExit` / `tagExited` reuse it instead of re-spelling it.
+ * {@link waitForExit} / {@link tagExited} reuse it instead of re-spelling it.
  */
 export type ExitResult = {
   /**
@@ -263,7 +263,7 @@ export type ChildOptions = {
    */
   readonly spawn?: SpawnFn;
   /**
-   * Parent logger; the child composes a `Child` tag on top.
+   * Parent logger; the child composes a {@link Child} tag on top.
    */
   readonly logger?: Logger;
 };
@@ -359,7 +359,7 @@ const ESC_CODE_POINT: number = 0x1B;
 
 /**
  * ESC character built from {@link ESC_CODE_POINT}. Hoisted as a named
- * constant so the `defaultWriteClear` body stays free of raw escape-sequence
+ * constant so the {@link defaultWriteClear} body stays free of raw escape-sequence
  * literals.
  */
 const ESC: string = String.fromCodePoint(ESC_CODE_POINT,);
@@ -503,7 +503,7 @@ export class Child {
   readonly #writeClear: WriteClearFn;
   /**
    * Spawn factory; defaults to the detached-aware wrapper produced by
-   * a local `makeDefaultSpawn` factory.
+   * a local {@link makeDefaultSpawn} factory.
    */
   readonly #spawn: SpawnFn;
   /**

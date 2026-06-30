@@ -49,7 +49,7 @@ const DEFAULT_STABILITY_THRESHOLD_MS = 50;
 const DEFAULT_POLL_INTERVAL_MS = 10;
 
 /**
- * Default `awaitWriteFinish` block applied by `Watcher` when the caller
+ * Default `awaitWriteFinish` block applied by {@link Watcher} when the caller
  * passes none. Kept here next to {@link AwaitWriteFinishOptions} so the
  * watcher module stays under its line cap.
  */
@@ -59,7 +59,7 @@ export const DEFAULT_AWAIT_WRITE_FINISH: AwaitWriteFinishOptions = {
 };
 
 /**
- * Construction options for `Watcher`.
+ * Construction options for {@link Watcher}.
  */
 export type WatcherOptions = {
   /**
@@ -69,7 +69,7 @@ export type WatcherOptions = {
   /**
    * Shared content-hash cache; pre-populated during the initial walk.
    * Typed `Readonly<HashCache>` so the options object is deeply readonly
-   * (the cache's mutating methods stay callable); keeps the `Watcher`
+   * (the cache's mutating methods stay callable); keeps the {@link Watcher}
    * constructor within `typescript/prefer-readonly-parameter-types`.
    */
   readonly hashCache: Readonly<HashCache>;
@@ -113,7 +113,7 @@ export type WatcherOptions = {
    */
   readonly onEvent: (event: WatchEvent,) => Promise<void>;
   /**
-   * Parent logger; the watcher composes a `Watcher` tag on top.
+   * Parent logger; the watcher composes a {@link Watcher} tag on top.
    */
   readonly logger?: Logger;
 };

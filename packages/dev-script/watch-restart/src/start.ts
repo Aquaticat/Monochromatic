@@ -66,7 +66,7 @@ const NO_TIMER: unique symbol = Symbol('watch restart debounce timer is not arme
  */
 export type StartWatchRestartOptions = {
   /**
-   * Watch roots; at least one is expected by `Watcher`.
+   * Watch roots; at least one is expected by {@link Watcher}.
    */
   readonly paths: readonly string[];
   /**
@@ -176,7 +176,7 @@ export type StartWatchRestartOptions = {
    */
   readonly filter?: WatchFilter;
   /**
-   * Parent logger; the orchestrator composes a `startWatchRestart` tag on top.
+   * Parent logger; the orchestrator composes a {@link startWatchRestart} tag on top.
    */
   readonly logger?: Logger;
   /**
@@ -421,7 +421,8 @@ export async function startWatchRestart(
   },);
 
   /**
-   * Shared content-hash cache; pre-populated by the Watcher, read by `contentHashFilter`.
+   * Shared content-hash cache; pre-populated by the {@link Watcher}, read by
+   * {@link contentHashFilter}.
    */
   const hashCache = new HashCache({
     maxHashSize: options.maxHashSize
@@ -480,7 +481,7 @@ export async function startWatchRestart(
   /**
    * Const-bound mutable container for the debounce timer handle.
    * Avoids the function-root `let` ban while keeping the timer addressable
-   * from `scheduleRestart` and `stop`.
+   * from {@link scheduleRestart} and `stop`.
    */
   const state: {
     timer: ReturnType<typeof setTimeout> | typeof NO_TIMER;

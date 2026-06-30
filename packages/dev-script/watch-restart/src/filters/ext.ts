@@ -39,7 +39,7 @@ function normalizeExt(ext: string,): string {
  * against `event.ext` (which arrives in the filesystem's original case).
  *
  * Empty `extensions` is a vacuous pass-all (returns `true` for every
- * event); this lets the CLI flag-to-filter compiler skip an `extFilter`
+ * event); this lets the CLI flag-to-filter compiler skip an {@link extFilter}
  * call entirely when `--ext` is unset, without a second branch.
  *
  * @param extensions - allowed extensions; leading dot optional, case insensitive
