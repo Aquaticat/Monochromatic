@@ -122,7 +122,7 @@ export async function describeViaGemini({
   },);
 
   /**
-   * Gemini credential; absence triggers an early `ABSENT` return so the OpenRouter fallback can run.
+   * Gemini credential; absence triggers an early {@link ABSENT} return so the OpenRouter fallback can run.
    */
   const apiKey = resolveGeminiDescribeKey();
   if (apiKey === ABSENT)

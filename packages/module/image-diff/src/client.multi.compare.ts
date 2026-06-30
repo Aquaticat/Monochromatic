@@ -110,7 +110,7 @@ export async function compareAll({
   if (descriptionSettlement === undefined)
     throw new Error('unreachable: allResults is non-empty',);
   /**
-   * Textual diff description when the description call succeeded; `ABSENT` on rejection.
+   * Textual diff description when the description call succeeded; {@link ABSENT} on rejection.
    */
   const description = descriptionSettlement.status
     === 'fulfilled'

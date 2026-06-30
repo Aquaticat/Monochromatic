@@ -231,6 +231,8 @@ export async function compareEmbeddings({
  *
  * @returns similarity score, distance, both embedding vectors, and description
  *
+ * @throws when the description call resolves to {@link ABSENT} (no OpenRouter API key configured)
+ *
  * @example
  * ```ts
  * const result = await compare({

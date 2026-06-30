@@ -149,7 +149,7 @@ export async function describeImageDifference({
 
   // Fall back to OpenRouter when no Gemini API key is available
   /**
-   * OpenRouter credential; absence triggers an early `ABSENT` return so callers can skip the description step.
+   * OpenRouter credential; absence triggers an early {@link ABSENT} return so callers can skip the description step.
    */
   const apiKey = resolveOpenRouterApiKey();
   if (apiKey === ABSENT)

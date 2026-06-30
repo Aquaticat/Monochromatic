@@ -66,7 +66,7 @@ export async function embedAll(
   rl.debug(`embedding image across all ${String(ALL_PROVIDERS.length,)} providers`,);
 
   /**
-   * Per-provider embedding entries collected from concurrent calls; one entry per `ALL_PROVIDERS` member.
+   * Per-provider embedding entries collected from concurrent calls; one entry per {@link ALL_PROVIDERS} member.
    */
   const results = await Promise.all(
     ALL_PROVIDERS.map(async function embedWithProvider(provider,) {
@@ -118,7 +118,7 @@ export async function embedBatchAll(
   );
 
   /**
-   * Per-provider batch entries collected from concurrent calls; one entry per `ALL_PROVIDERS` member.
+   * Per-provider batch entries collected from concurrent calls; one entry per {@link ALL_PROVIDERS} member.
    */
   const results = await Promise.all(
     ALL_PROVIDERS.map(async function embedBatchWithProvider(provider,) {
