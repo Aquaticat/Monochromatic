@@ -1,186 +1,178 @@
 # DRY audit: oxlint plugins
 
-Generated 2026-06-30 from a focused sweep of the three oxlint plugin packages
-under `packages/oxlint-plugins/`:
+Generated 2026-06-30 from a focused sweep of three code-checking tools in this project.
+This version is written to be readable without a programming background. Every finding has a
+plain-language explanation first, then the precise technical detail underneath for whoever does the
+work.
 
-- `no-restricted-syntax` (`@monochromatic-dev/config-oxlint-no-restricted-syntax`)
-- `stylistic` (`@monochromatic-dev/config-oxlint-stylistic`)
-- `tsdoc` (`@monochromatic-dev/config-oxlint-tsdoc`)
+## Read this first: what this document is about
 
-This is a deep dive scoped to these three packages, complementing the repo-wide
-[`dry.md`](dry.md). It covers source only (`src/**`, excluding `dist/`, `node_modules/`).
-Every finding below was checked against the cited line ranges; counts come from `rg`,
-not estimation. Findings are ordered by severity. Each is tagged with the package or
-packages it touches, the would-be factory parameters (what actually differs between
-copies), and an honest estimate of lines saved.
+### What the code in question actually does
 
-## Scope and method
+This project builds, among other things, three small tools that automatically check the team's own
+program code, a bit like the spelling and grammar checker in a word processor. As someone types
+code, these tools underline problems and, in some cases, fix them automatically.
 
-Four independent investigations ran in parallel, one per package plus one for
-cross-package duplication, then key claims were re-verified directly against source:
+- `no-restricted-syntax` bans risky ways of writing code (the equivalent of "do not start a
+  sentence with a number").
+- `stylistic` enforces layout and formatting (the equivalent of "put one item on each line so it is
+  easy to read").
+- `tsdoc` checks the little explanatory notes that programmers attach to their code (the equivalent
+  of "every chapter must have a title and a summary").
 
-- Whether each apparent family of files truly shares logic or only shares shape.
-- Whether a shared helper already exists and is bypassed, versus genuinely missing.
-- Whether factoring would improve or harm clarity (coincidental similarity is called out
-  separately under "Justified similarity").
+A single check is called a **rule**. A bundle of related rules, shipped together, is called a
+**plugin** or a **package**. These three plugins together contain roughly sixty rules.
 
-The deliverable is this audit. No refactors were applied.
+### What "DRY" means and why duplication is a problem
 
-## Already factored (do not redo)
+DRY stands for "don't repeat yourself." Picture the same phone number written on twenty sticky notes
+around the house. The day that number changes, you have to find and correct all twenty. Miss one,
+and sooner or later someone dials the wrong number. The tidy alternative is to write the number once
+in a single address book that everyone checks.
 
-These are correctly DRY today. Listed so a future session does not propose redundant work.
+Program code has the same trap. When the same small piece of logic is copied into many files instead
+of written once and shared, the project carries hidden risk. The danger has a name: **drift**. Drift
+is what happens when copies that started out identical slowly stop matching, because someone updated
+one copy and forgot the others. The code keeps working until the day a forgotten copy quietly does
+the wrong thing.
 
-- `banDisableRule` (`packages/oxlint-plugins/no-restricted-syntax/src/rules/_ban-disable-factory.ts`)
-  is used by all `no-disable-*.ts` rules. Every consumer is pure config
-  (`ruleId`, `description`, `message`); there are no hand-rolled outliers.
-- `methodCallBanRule` (`packages/oxlint-plugins/no-restricted-syntax/src/rules/_method-call-ban-rule.ts`)
-  backs `no-promise-catch.ts`, `no-promise-finally.ts`, `no-hasownproperty.ts`.
-- The symbol-sentinel no-match convention (`NO_STATIC_SOURCE`, `NOT_ERROR_DETECTION`, and peers,
-  guarded by `typeof x === 'symbol'`) recurs widely but is a mandated policy, not extractable
-  duplication.
-- `no-sync.syntax.ts` is the shared AST hub for the `no-sync.*` family and is cross-imported by
-  `prefer-error-is-error.syntax.ts` and `no-immediate-mutation.syntax.ts` for `findVariable`.
-  The `no-sync.*` and `no-low-information-symbol-description/*` file splits are single algorithms
-  divided for the max-lines budget, not duplication.
-- In tsdoc, `createTsdocVisitor` / `createFunctionTsdocVisitor` (`rules/tsdoc-visitors.ts`),
-  `findTsdocComment` / `parseTsdocForNode` (`tsdoc-comments.ts`), `splitDocComment`
-  (`tsdoc-blocks.ts`), the `tsdoc-doc-model.ts` flags, and `ast-access.ts` narrowers absorb most
-  of the comment-discovery and parse boilerplate. Rules consume precomputed flags rather than
-  re-scanning.
-- Build and tool config is already DRY: `tsdown.node.config.ts` is the identical one-line
-  re-export of `@monochromatic-dev/config-tsdown/.node.ts` in all three; `tsconfig.json` and
-  `mise.toml` inherit shared bases. The per-package `package.json` differences are intrinsic.
+This document finds those copies in the three plugins and, for each one, says where it is, why it is
+worth fixing, and what fixing it would look like.
+
+### A few words you will see repeatedly
+
+- **Helper** (also "function"): a small, named piece of logic that other code can call on, the way
+  you might call a phone number from your address book instead of memorizing it.
+- **Factory**: a helper whose job is to build other things from a short description, so nobody has to
+  write each one by hand. Think of a cookie cutter: hand it the shape, it stamps out the cookie. The
+  team already uses this idea in a couple of places, which is part of why the gaps below stand out.
+- **Test file**: code that checks the checkers, to make sure each rule actually works. Test files run
+  only on the team's own machines. They are never sent to the people who install the tools.
+- **Shipped** (also "published", "runtime"): code that becomes part of the finished product that
+  other people install and run. The opposite is **dev-only**: code used only by the team while
+  building, which never gets shipped.
+- **Severity**: how much a finding is worth. **High** means the biggest payoff or the biggest risk.
+  **Low** means a nice-to-have tidy-up. **Medium** sits in between.
+
+### How this was checked
+
+Four reviews ran in parallel, one for each plugin plus one comparing all three against each other.
+Then the most important claims were re-checked by hand against the actual code. Every file-and-line
+reference below was confirmed to exist; the counts come from searching the code, not from guessing.
+Nothing in the code was changed. This document is the only deliverable.
+
+## What is already done well
+
+Listed so that nobody spends effort redoing work that is already finished.
+
+- The team already built two cookie cutters (factories) in `no-restricted-syntax`, and they are used
+  everywhere they should be, with no stragglers writing the logic out by hand. One stamps out the
+  "do not let people switch off this rule" checks; the other stamps out the "ban calling this
+  method" checks.
+- The `tsdoc` plugin already has a shared core that reads a code comment once and hands the pieces to
+  every rule, so the rules do not each re-read the comment from scratch. This is the single biggest
+  piece of duplication the team has already avoided.
+- The build and configuration files for the three plugins already share common bases instead of being
+  copied. Their remaining differences are genuine (different names, different needs), not copy-paste.
+
+The findings below are the duplication that remains after all of that good work.
 
 ## High severity
 
-### H1. Test-harness scaffolding reimplemented in all three test files
+### H1. The three plugins each rebuilt the same testing rig
 
-Packages: all three.
-
-Files:
-
-- `packages/oxlint-plugins/no-restricted-syntax/src/oxlint-no-restricted-syntax.unit.test.ts:22-198`
-- `packages/oxlint-plugins/stylistic/src/oxlint-stylistic.unit.test.ts:28-209`
-- `packages/oxlint-plugins/tsdoc/src/oxlint-tsdoc.unit.test.ts:26-198`
-
-Each test file independently redefines the same oxlint runner. Verified duplicates:
-
-- `OxlintDiagnostic` / `OxlintOutput` types, identical modulo blank lines (stylistic only differs
-  by making `code` optional).
-- `TempFixtureFile` / `TempFixtureFileOptions` types, byte-identical between stylistic and tsdoc.
-- `createTempFixtureFile`, identical between stylistic and tsdoc except the `mkdtemp` prefix string.
-- The capture-stdout-from-thrown-error body, including this verbatim line in all three:
+Plain terms: every plugin needs a small rig in its test files that launches the checker, feeds it a
+sample, and reads back the result. All three plugins wrote this rig separately, and the three copies
+are almost word for word the same. One line is identical right down to the punctuation:
 
 ```ts
-// all three *.unit.test.ts files (no-restricted:109, stylistic:155, tsdoc:150)
+// the same line appears in all three test files
+// no-restricted-syntax/src/oxlint-no-restricted-syntax.unit.test.ts:109
+// stylistic/src/oxlint-stylistic.unit.test.ts:155
+// tsdoc/src/oxlint-tsdoc.unit.test.ts:150
 return (error as { stdout: string; }).stdout;
 ```
 
-What differs (would-be parameters): the plugin-code prefix filter
-(`'no-restricted-syntax('` / `'stylistic('` / `'tsdoc('`), the `mkdtemp` prefix, the oxlint config
-flag (`-c` versus `--config`), and `ROOT` resolution.
-
-Latent inconsistency worth fixing while consolidating: `ROOT` has already drifted.
-tsdoc resolves it via `findMiseMonorepoRoot` while the other two hardcode a relative climb:
+Why it matters: this is the clearest example of drift already happening. The piece of the rig that
+works out where the project folder lives has already fallen out of step. The `tsdoc` copy does it one
+way; the other two do it a different way:
 
 ```ts
+// tsdoc figures out the project root by asking a helper
 // tsdoc/src/oxlint-tsdoc.unit.test.ts:64
 const ROOT = await findMiseMonorepoRoot({ cwd: import.meta.dirname, },);
 
-// no-restricted-syntax/src/...unit.test.ts:45 and stylistic/src/...unit.test.ts:74
+// the other two count folder levels by hand instead
+// no-restricted-syntax/...unit.test.ts:45 and stylistic/...unit.test.ts:74
 const ROOT = resolve(import.meta.dirname, '..', '..', /* ... */);
 ```
 
-`uniqueRules` has likewise drifted (`map().toSorted()` versus `flatMap().sort()`).
+A second helper that lists the rules has drifted the same way. When pieces that should be identical
+are not, it is a sign the copies are already diverging.
 
-Suggestion: a dev-only test kit (for example `@monochromatic-dev/oxlint-plugin-test-kit`),
-exporting the diagnostic types, `createTempFixtureFile({ prefix })`,
-`runOxlint({ pluginPrefix, configPath, target })`, `uniqueRules`, and one `ROOT` resolver.
-It must stay a `devDependency` only so it never enters the three plugins' published runtime graph.
-This is the cleanest win and has no independent-publishing tension.
+Where: the three `*.unit.test.ts` files named above, roughly the first two hundred lines of each.
 
-Estimated savings: on the order of 250 lines net, plus elimination of the `ROOT` and
-`uniqueRules` drift.
+The fix, in plain terms: pull the shared rig out into one small toolbox that all three test files
+borrow from, so there is one copy to maintain instead of three. Because this rig is only used while
+testing, the toolbox is **dev-only**: it stays on the team's machines and is never shipped to people
+who install the tools. (This is the "dev-only test kit" mentioned in the earlier version, now spelled
+out.)
 
-### H2. `param-fix.ts` is a near-verbatim fork of `needs-fix.ts` plus `item-per-line-fix.ts`
+Technical detail: the duplicated pieces are the `OxlintDiagnostic` and `OxlintOutput` types, the
+`TempFixtureFile` types (byte-identical between stylistic and tsdoc), `createTempFixtureFile`
+(identical apart from a prefix string), and the capture-stdout-from-thrown-error body. The would-be
+parameters are the plugin-code prefix, the temp-folder prefix, the config flag spelling (`-c` versus
+`--config`), and the `ROOT` resolver. Estimated reduction: on the order of two hundred fifty lines,
+plus the end of the `ROOT` and rule-list drift.
 
-Package: stylistic.
+### H2 and H3. One stylistic plugin built the same machine twice, then a rule rebuilt it a third time
 
-Files:
+Plain terms: this plugin has a general-purpose engine for the job "take a list of things crammed onto
+one line and spread them out, one per line." There is a perfectly good shared engine for this. But
+the part that handles a function's parameters was written as a separate, nearly identical engine in
+its own file, and then the rule that uses it was hand-wired a third time instead of simply plugging
+into the shared engine like every other rule does.
 
-- `packages/oxlint-plugins/stylistic/src/utility/param-fix.ts:46-118` (`paramsNeedFix`)
-  versus `utility/needs-fix.ts:38-114` (`needsPerLineFix`)
-- `packages/oxlint-plugins/stylistic/src/utility/param-fix.ts:160-244` (`buildParamFix`)
-  versus `utility/item-per-line-fix.ts:107-256` (`buildPerLineFix`)
+Why it matters: this is the largest single block of copied logic in the three plugins. The file that
+forks the engine is about two hundred forty lines long, and roughly three quarters of it is a restated
+version of logic that already exists elsewhere. Three copies of the same delicate spacing logic means
+three places to fix when anything about that logic changes, and three chances to miss one.
 
-`paramsNeedFix` and `needsPerLineFix` are the same three-part check (first item shares the
-opening-delimiter line; last item shares the closing-delimiter line; adjacent items share a line).
-The adjacent-pair loop is byte-identical except the variable name:
+Where:
 
-```ts
-// needs-fix.ts:85 and param-fix.ts:89 (only `items` vs `params` differs)
-for (let loopIndex = 1; loopIndex < items.length; loopIndex++) {
-  const prevRange = rangeOf(at({ arr: items, index: loopIndex - 1, },),);
-  const currRange = rangeOf(at({ arr: items, index: loopIndex, },),);
-  if (lineAt({ sourceText, offset: prevRange[1], },)
-    === lineAt({ sourceText, offset: currRange[0], },)) return true;
-}
-```
+- `packages/oxlint-plugins/stylistic/src/utility/param-fix.ts` (the forked engine), versus
+  `utility/needs-fix.ts` and `utility/item-per-line-fix.ts` (the original engine).
+- `packages/oxlint-plugins/stylistic/src/rules/param-per-line.ts:101-176` (the rule that hand-wires
+  it), versus `utility/item-per-line.ts:95-136` (the shared wiring every other rule uses).
 
-`buildParamFix` and `buildPerLineFix` are the same fixer pipeline (compute base indent;
-`childIndent = baseIndent + '  '`; map items to trimmed text; detect trailing delimiter; render
-one per line; `replaceTextRange`).
+The fix, in plain terms: teach the original engine to also accept the one extra detail the parameter
+case needs, then delete the forked copy and let the rule plug into the shared engine like its
+siblings. The two go together; they are really one change. Estimated reduction: roughly two hundred
+seventy lines across the two.
 
-What differs (would-be parameters): boundary source (container `Span` versus explicit
-`openParen` / `closeParen` offsets), the bracket pair (`(` / `)` hardcoded in the param copy),
-the delimiter, whether each item's trailing delimiter is stripped, and the indent helper. The only
-true blocker today is that `needsPerLineFix` reads `rangeOf(container)`; the fix builder already
-locates brackets by scanning from item positions, so it does not actually depend on the container
-span.
+Technical detail: `paramsNeedFix`/`buildParamFix` restate `needsPerLineFix`/`buildPerLineFix`; the
+adjacent-pair line-share loop is byte-identical apart from a variable name. The only true blocker is
+that the needs-check reads the container span, whereas the fix builder already locates brackets by
+scanning, so the boundary just needs to be acceptable as either a span or an explicit
+open/close offset pair.
 
-Suggestion: let `needsPerLineFix` and `buildPerLineFix` accept the boundary as either a container
-`Span` or an explicit `[openOffset, closeOffset]`, plus an `open`/`close` char pair and a
-`stripItemDelimiter` flag. `param-fix.ts` then collapses to a thin adapter or disappears.
+### H4. The documentation plugin re-wrote a text scanner it already owns
 
-Estimated savings: 150 to 180 lines (param-fix is 244 lines, roughly 180 of them re-expressed).
+Plain terms: the `tsdoc` plugin needs to walk along a line of text and pick out a word, then skip the
+blanks after it. It already has well-made, shared tools for exactly this. Yet three of its rules each
+wrote their own private copy of that same walk-along-the-text logic instead of borrowing the shared
+one.
 
-### H3. `paramPerLine` re-hand-rolls the scaffolding `checkItemsPerLine` exists to remove
+Why it matters: text-scanning logic is fiddly and easy to get subtly wrong. Keeping one trusted copy,
+rather than four, means a fix or a correction lands in one place and protects every rule at once.
 
-Package: stylistic.
-
-Files:
-
-- `packages/oxlint-plugins/stylistic/src/rules/param-per-line.ts:101-176`
-- versus `utility/item-per-line.ts:95-136` (`checkItemsPerLine`)
-
-Every other per-line rule is roughly eight lines of delegation. `paramPerLine` instead inlines the
-open/close scan, the needs-check, and the report-plus-fix wiring. That scan duplicates the one
-inside `buildPerLineFix`, and the report wrapper duplicates `checkItemsPerLine`. The rule's own
-docstring justifies the divergence on the grounds that `checkItemsPerLine` "expects a container
-node with delimiters", but its fix path scans rather than using the container span, so the
-justification only holds for the needs-check boundary, which H2 already lifts.
-
-What differs (would-be parameters): the function-like visitor keys, a bracket pair of `(` / `)`,
-and the `params` field. Resolve H2 and `paramPerLine` becomes a normal delegating rule.
-
-Estimated savings: roughly 120 of its 178 lines. Treat H2 and H3 as one refactor.
-
-### H4. `@word`-run scanning reimplemented across tsdoc rules
-
-Package: tsdoc.
-
-`comment-text.ts` already exposes the canonical linear scanners `wordRunEnd` (`:237-256`),
-`tokenEnd` (`:273-292`), `leadingTag` (`:320-340`), and `collectTags` (`:359-393`). Three rule
-files re-implement the same word-run and whitespace-run cursors as private inner functions:
-
-- `packages/oxlint-plugins/tsdoc/src/rules/structural-tags.ts:65-95` (`extractLeadingTag` plus inner `scan`)
-- `packages/oxlint-plugins/tsdoc/src/rules/empty-tags.ts:96-159` (`parseTaggedLine` plus `scanTag` / `scanWhitespace`)
-- `packages/oxlint-plugins/tsdoc/src/rules/type-annotations.ts:68-164` (`findTypeAnnotations` plus `scanTag` / `scanWs`)
-
-The inner word-run cursor is identical across all three and to `wordRunEnd`:
+Where: the shared tools live in `packages/oxlint-plugins/tsdoc/src/comment-text.ts`. The private
+re-implementations are in `rules/structural-tags.ts:65-95`, `rules/empty-tags.ts:96-159`, and
+`rules/type-annotations.ts:68-164`. The inner word-scanning loop is the same in all three:
 
 ```ts
-// empty-tags.ts:106, mirrored by structural-tags.ts:75 (scan) and type-annotations.ts:76 (scanTag)
+// the same scan-a-word loop, copied into three rule files
+// empty-tags.ts:106 (and mirrored in structural-tags.ts:75 and type-annotations.ts:76)
 function scanTag(idx: number,): number {
   let cursor = idx;
   while ((cursor < s.length) && isWordChar(s.charAt(cursor,),)) cursor += 1;
@@ -188,100 +180,97 @@ function scanTag(idx: number,): number {
 }
 ```
 
-What differs: only the outer capture intent (leading tag only; `@tag <rest>` split; `@tag {Type}`
-extraction). The scanning primitives underneath are the same.
+The fix, in plain terms: have those three rules borrow the existing shared scanners and delete their
+private copies, keeping only the small part that is genuinely unique to each rule. Estimated
+reduction: roughly forty lines, plus simpler tests.
 
-Suggestion: import `wordRunEnd` / `tokenEnd` (and reuse `leadingTag` where line-start suffices)
-from `comment-text.ts`, deleting the inner `scan*` helpers. The outer functions stay as thin
-wrappers.
-
-Estimated savings: roughly 40 lines, plus collapse of the corresponding per-rule scan tests onto
-the shared `comment-text` test surface.
+Technical detail: `comment-text.ts` already exports `wordRunEnd`, `tokenEnd`, `leadingTag`, and
+`collectTags`. Only the outer capture intent differs (leading tag; tag-plus-rest split;
+tag-plus-type extraction). The inner cursors are duplicates of `wordRunEnd` and its whitespace
+sibling.
 
 ## Medium severity
 
-### M1. Leaf char predicates `isWhitespaceChar` and `isWordChar` copied verbatim
+### M1. The tiniest possible helper, "is this character a blank space?", is copied five times
 
-Packages: tsdoc and stylistic (the same family spans both, so this is cross-cutting).
+Plain terms: deep down, several rules need to answer a yes-or-no question about a single character:
+"is this a space, tab, or line break?" That answer is a six-line helper. It has been copied into five
+different files, including across two of the plugins, even though one copy is already shared and ready
+to borrow. A near-twin helper, "is this character part of a word?", is copied four times in the
+documentation plugin.
 
-`isWhitespaceChar` (identical seven-line body) appears in five places, one already exported:
+Why it matters: these are the smallest building blocks in the whole system. When even the smallest
+block is copied rather than shared, it is a sign that the habit of borrowing has not fully taken hold,
+and the same will keep happening with the next small block.
 
-- `packages/oxlint-plugins/tsdoc/src/comment-text.ts:80` (exported)
-- `packages/oxlint-plugins/tsdoc/src/rules/empty-tags.ts:56`
-- `packages/oxlint-plugins/tsdoc/src/rules/type-annotations.ts:41`
-- `packages/oxlint-plugins/tsdoc/src/rules/tag-validation.ts:25`
-- `packages/oxlint-plugins/stylistic/src/utility/indent.ts:9` (private; cross-package copy)
-
-`isWordChar` (identical six-line body) appears in four tsdoc files: `comment-text.ts:60`,
-`rules/empty-tags.ts:41`, `rules/structural-tags.ts:42`, `rules/type-annotations.ts:27`.
+Where: `isWhitespaceChar` appears in `tsdoc/src/comment-text.ts:80` (already shared and exported),
+and is copied in `tsdoc/src/rules/empty-tags.ts:56`, `tsdoc/src/rules/type-annotations.ts:41`,
+`tsdoc/src/rules/tag-validation.ts:25`, and across in `stylistic/src/utility/indent.ts:9`. The body
+is identical everywhere:
 
 ```ts
-// byte-identical across comment-text.ts:80, tag-validation.ts:25, indent.ts:9, and others
+// the same six-line answer, copied into five files
 function isWhitespaceChar(c: string,): boolean {
   return (c === ' ') || (c === '\t') || (c === '\n')
     || (c === '\r') || (c === '\f') || (c === '\v');
 }
 ```
 
-What differs: nothing.
+The fix, in plain terms: keep one copy in a shared place and have the others borrow it. Within the
+documentation plugin that shared place already exists. For the copy that lives in the other plugin,
+the natural home is a small shared toolbox the plugins both draw from. Because these helpers run as
+part of the finished checkers, that toolbox is **shipped** alongside the tools, not dev-only. (This
+is the "published runtime kit for the leaf primitives" from the earlier version; "leaf primitives"
+just means these smallest, bottom-of-the-pile helpers.) Estimated reduction: roughly forty-five
+lines.
 
-Suggestion: within tsdoc, export `isWordChar` from `comment-text.ts` (it already exports
-`isWhitespaceChar`) and import both in the rule files. For the cross-package copy, these are pure
-leaf primitives with no AST coupling, so a shared kit (see "Recommended homes") can host both;
-`stylistic/src/utility/indent.ts` then imports rather than redeclaring. Note
-`no-restricted-syntax/src/rules/arrow-function-params.ts:50` has a differently shaped predicate
-over a fixed array; that one is genuinely different and stays.
+### M2. Two rule families keep their own copies of the same code-reading helpers
 
-Estimated savings: roughly 28 lines for the `isWhitespaceChar` copies, plus 18 for `isWordChar`.
+Plain terms: two groups of rules each need to read the same kinds of detail out of a piece of code,
+for example "what is the name being called here?" or "where was this thing imported from?" Each group
+wrote its own version of these helpers. The versions are the same logic with a different label on the
+"I found nothing" answer.
 
-### M2. AST helpers duplicated between `no-sync.syntax.ts` and `prefer-error-is-error.syntax.ts`
+Why it matters: these helpers have to stay in step with how the underlying code is structured. Right
+now that knowledge lives in two places, so a future change has to be made twice, correctly, or the two
+families quietly disagree. The two files already share other helpers, so merging these would be
+low-effort.
 
-Package: no-restricted-syntax.
-
-Three helper pairs share logic and can silently drift. The two files already cross-import, so
-unification is low friction.
-
-- `rules/no-sync.syntax.ts:51-83` (`getStaticPropertyName` / `getMemberName`)
-  versus `rules/prefer-error-is-error.syntax.ts:82-103` (`getStaticMemberName`)
-- `rules/no-sync.syntax.ts:97-113` (`getSingleStringArgument`)
-  versus `rules/prefer-error-is-error.syntax.ts:315-338` (`getSingleArgumentText`)
-- `rules/no-sync.syntax.ts:207-225` (`getImportDeclaration`)
-  versus `rules/prefer-error-is-error.syntax.ts:231-249` (`getImportSource`)
-
-The single-argument extractors share the identical three-guard prologue:
+Where: `no-restricted-syntax/src/rules/no-sync.syntax.ts` and
+`no-restricted-syntax/src/rules/prefer-error-is-error.syntax.ts`. The clearest example is the
+"pull out the single argument" helper, whose opening checks are identical:
 
 ```ts
-// no-sync.syntax.ts:100 and prefer-error-is-error.syntax.ts:324 (sentinel + final step differ)
-if (call.arguments.length !== 1) return /* sentinel */;
+// the same three opening checks in both files
+// no-sync.syntax.ts:100 and prefer-error-is-error.syntax.ts:324
+if (call.arguments.length !== 1) return /* nothing-found marker */;
 const [argument,] = call.arguments;
-if (argument === undefined) return /* sentinel */;
-if (argument.type === 'SpreadElement') return /* sentinel */;
-// no-sync: return getStaticString({ expression: argument, },);
-// prefer-error-is-error: return context.sourceCode.getText(argument,);
+if (argument === undefined) return /* nothing-found marker */;
+if (argument.type === 'SpreadElement') return /* nothing-found marker */;
+// then each file does its own final step
 ```
 
-What differs (would-be parameters): only the no-match sentinel and the final extraction step
-(static-string value versus raw source text; whole declaration versus `.source.value`).
+The fix, in plain terms: write the shared core once, returning a plain "found it" or "found nothing",
+and let each family put its own label on the "nothing" case. Estimated reduction: roughly fifty lines,
+and the end of a real risk that the two copies drift apart.
 
-Suggestion: have the generic core return `string | undefined` and let each family wrap it to remap
-to its own sentinel. Place the shared helpers in `no-sync.syntax.ts` (already the de-facto hub) or,
-if that ownership feels wrong, a neutral `rules/_ast-syntax.ts`.
+### M3. A family of simple "ban this" rules is missing its cookie cutter
 
-Estimated savings: 45 to 55 lines, and removal of the drift hazard on member-name and
-import-resolution logic that must track the oxlint AST.
+Plain terms: several rules do the simplest possible job: "if you see this exact kind of code, flag
+it." Three of them (ban old-style enumerations, ban one looping style, ban switch statements) are
+written out longhand, and each one is the same shell with a single word changed. The team already
+built cookie cutters for two other rule families; this family never got one.
 
-### M3. Single-syntax ban rules repeat the `meta` plus `createOnce` plus `report` shell
+Why it matters: on its own each file is short, so the line savings are modest. The real value is
+uniformity and having one place to update if the way a rule reports a problem ever changes. It also
+matches a pattern the team has clearly already endorsed elsewhere.
 
-Package: no-restricted-syntax.
-
-The unconditional core trio is structurally identical, differing only in the visitor key:
-
-- `rules/no-enum.ts:24-45` (`TSEnumDeclaration`)
-- `rules/no-for-in.ts:28-51` (`ForInStatement`)
-- `rules/no-switch.ts:34-57` (`SwitchStatement`)
+Where: `no-restricted-syntax/src/rules/no-enum.ts:24-45`, `no-for-in.ts:28-51`, and
+`no-switch.ts:34-57`. The shells are the same apart from the kind of code each watches for:
 
 ```ts
-// no-switch.ts:47, mirrored by no-enum.ts:35 and no-for-in.ts:41
+// the same shell; only the watched-for kind of code changes
+// no-switch.ts:47 (mirrored in no-enum.ts:35 and no-for-in.ts:41)
 createOnce(context: Context,): VisitorWithHooks {
   return {
     SwitchStatement(node: ESTree.SwitchStatement,): void {
@@ -291,285 +280,191 @@ createOnce(context: Context,): VisitorWithHooks {
 },
 ```
 
-Four guarded variants add one predicate before reporting: `no-try-finally.ts:45-56`
-(`node.finalizer !== null`), `catch-binding.ts:48-58` (`node.param === null`),
-`no-nullish-union.ts:144-155`, `require-destructured-params.ts:56-72`.
+A handful of close cousins add one extra yes-or-no check before flagging (`no-try-finally.ts`,
+`catch-binding.ts`, `no-nullish-union.ts`, `require-destructured-params.ts`); a cookie cutter with an
+optional "only flag when this is true" setting would cover them too.
 
-What differs (would-be parameters): the visitor key / node type, `meta.type`, `description`,
-`message`, and an optional `shouldReport` predicate.
+The fix, in plain terms: build one more cookie cutter for this family, matching the two that already
+exist, and let each rule become a short description instead of a longhand shell. Estimated reduction:
+roughly seventy to ninety lines of shell.
 
-Suggestion: extract `rules/_single-syntax-ban-factory.ts` exporting
-`singleSyntaxBanRule({ nodeType, type, description, message, shouldReport? })`, mirroring the
-existing `banDisableRule` / `methodCallBanRule` factories. The multi-visitor rules
-(`no-rest-params`, `no-variable-function-expression`) have divergent per-node bodies and should
-stay out.
+### M4. Every rule restates the same outer wrapper
 
-Estimated savings: modest per file (these are already small), 70 to 90 lines of shell across the
-trio plus the four guarded variants. The real payoff is uniformity and a single place to update if
-the `context.report` shape changes.
+Plain terms: each of the roughly sixty rules opens with the same boilerplate frame before getting to
+its actual content. There is no shared frame, so the frame is retyped about sixty times.
 
-### M4. Rule-definition shell repeated across roughly 62 rule sites
+Why it matters: this is real repetition, but it is shallow. The savings are spread thinly and are
+mostly about convenience and consistency rather than removing risky logic. Lower priority than M3,
+which removes whole chunks of content for its subset of rules.
 
-Packages: all three.
+Where: all three plugins; counts are roughly twenty-four rules in `no-restricted-syntax`, seventeen
+in `stylistic`, twenty-one in `tsdoc`. The repeated part is the wrapper and its standard signature;
+the actual content of each rule genuinely differs.
 
-Every rule is hand-written as the same `CreateOnceRule` shape:
-`meta: { type, docs: { description, recommended: true }, messages: {...} }` then
-`createOnce(context: Context,): VisitorWithHooks`. Counts: no-restricted 24, stylistic 17,
-tsdoc 21.
+The fix, in plain terms: offer one shared wrapper that rules can pass their content into. Worth doing
+only if it reads more clearly, since the wrapper itself is not where the risk lives. Estimated
+reduction: spread thin, on the order of a couple hundred lines but mostly cosmetic.
 
-What differs (would-be parameters): `meta.type`, `docs.description`, the `messages` map, optional
-`schema` / `defaultOptions`, and the visitor object. The parameterizable scaffold is the
-`CreateOnceRule` wrapper, the `meta` nesting, and the `createOnce` signature. The two existing
-factories prove the pattern; a general `defineRule({ meta, messages, createOnce })` would
-generalize it.
+### M5. Several documentation rules build the same "where to point the underline" detail by hand
 
-Honest caveat: per-rule `meta` and visitor genuinely vary, so the net is mostly ergonomic
-(one import, fewer type annotations) rather than large line removal. Lower priority than M3, which
-removes whole visitor bodies for its subset.
+Plain terms: when a documentation rule flags a problem, it has to say which line to underline. Around
+seven rules each compute this the same way, inline, instead of using a shared helper. A couple of
+them compute it with a small off-by-one twist, which is exactly the kind of detail that goes wrong
+when it is spread across many copies.
 
-Estimated savings: roughly 150 to 250 structural lines, spread thin.
+Why it matters: getting the underline one line off is a classic small bug. Centralizing the
+arithmetic removes that whole category of mistake.
 
-### M5. Per-line report-location shape repeated across tsdoc rules
+Where: `tsdoc/src/rules/tag-names.ts:146-172`, `empty-tags.ts:234-242`, `tag-escaping.ts:113-120`,
+`type-annotations.ts:208-215`, `asterisk-validation.ts:65-73`, `structural.ts:264-273`, and
+`structural-tags.ts:194-206`. A shared helper already exists for the whole-comment case
+(`rules/tsdoc-visitors.ts:49-71`); this is its missing per-line sibling.
 
-Package: tsdoc.
+The fix, in plain terms: add the per-line sibling helper and route these rules through it. Estimated
+reduction: roughly fifty lines, plus the removal of the off-by-one risk.
 
-Rules that walk physical comment lines all build the same `loc` inline:
+### M6. One documentation rule copied a shared visitor instead of borrowing it
 
-```ts
-// e.g. tag-names.ts:146, empty-tags.ts:234, tag-escaping.ts:113, type-annotations.ts:208
-loc: { start: { line: comment.loc.start.line + index, column: 0, }, },
-```
+Plain terms: there is a shared piece that walks over every function in the code and hands it to a
+rule. The "check the yields documentation" rule made its own near-identical copy, for one genuine
+reason: it wants to skip a kind of function that can never apply to it.
 
-Occurrences at `rules/tag-names.ts:146-172`, `rules/empty-tags.ts:234-242`,
-`rules/tag-escaping.ts:113-120`, `rules/type-annotations.ts:208-215`,
-`rules/asterisk-validation.ts:65-73`, `rules/structural.ts:264-273`,
-`rules/structural-tags.ts:194-206`.
+Where: the shared piece is `tsdoc/src/rules/tsdoc-visitors.ts:192-237`; the copy is
+`tsdoc/src/rules/yields.ts:25-91`.
 
-What differs (would-be parameters): the line offset (`index` versus `index + 1`, because some rules
-slice the opener before iterating) and `column` (`0` versus the actual indent).
+The fix, in plain terms: give the shared piece a simple on/off setting for that one difference, then
+delete the copy. Keep the skip as a setting, because it is a real correctness nicety. Estimated
+reduction: roughly fifty-five lines.
 
-Suggestion: a sibling to the existing `commentReportLoc` (`rules/tsdoc-visitors.ts:49-71`), for
-example `lineReportLoc({ comment, lineOffset, column })`. Centralizing the `+ index` arithmetic
-also reduces the off-by-one footgun, which is a live risk since rules disagree on whether they
-sliced the opener first.
+### M7. One rule re-lists every kind of code it should look at
 
-Estimated savings: roughly 50 lines.
+Plain terms: there is a shared list of "every kind of code item that can carry documentation." One
+rule re-typed that entire list by hand, because it needed a slightly different finishing step than the
+shared list provides.
 
-### M6. `createFunctionTsdocVisitor` duplicated in `yields.ts`
+Where: the hand-written list is `tsdoc/src/rules/tag-types.ts:66-89`; the shared one is
+`rules/tsdoc-visitors.ts:131-154`.
 
-Package: tsdoc.
+The fix, in plain terms: add a shared variant that covers the same list but does the finishing step
+this rule needs, so the list is maintained in one place. Estimated reduction: roughly twenty lines,
+and the list stops being kept in two places.
 
-- Shared: `packages/oxlint-plugins/tsdoc/src/rules/tsdoc-visitors.ts:192-237`
-- Local copy: `packages/oxlint-plugins/tsdoc/src/rules/yields.ts:25-91`
+### M8. The formatting plugin copies a small "is this only filler?" test and a small reporting loop
 
-The `yields.ts` copy is near-identical (same `check`, same unsafe cast, same `before` hook). Its
-own comment states the only intended difference: it omits `ArrowFunctionExpression` because arrows
-cannot be generators.
+Plain terms: two rules in the formatting plugin each carry their own copy of a small test for "is
+this stretch of text nothing but blank space and a separator?" and their own copy of a small loop
+that inserts a line break between two items. The copies differ only in trivia: a comma versus a
+semicolon, and the exact wording reported.
 
-What differs (would-be parameter): the registered node-type list.
+Where: `stylistic/src/utility/indent.ts:9-16`, `rules/one-var-declaration-per-line.ts:35-51` and
+`:143-210`, and `rules/max-statements-per-line.ts:76-92` and `:225-289`.
 
-Suggestion: give the shared `createFunctionTsdocVisitor` an optional `includeArrow` (or `nodeTypes`)
-parameter defaulting to current behavior, and delete the local copy. Keep the arrow exclusion as a
-parameter; it is a real correctness nicety.
+The fix, in plain terms: share the small test and the small reporting loop, letting each rule pass in
+its own separator and wording. Estimated reduction: roughly forty-five to fifty-five lines.
 
-Estimated savings: roughly 55 lines.
+### M9. A two-line "is this a documentation comment?" test exists twice
 
-### M7. `validTypes` re-declares the full documentable-node visitor map
+Plain terms: the exact same two-line yes-or-no test sits in two files under two different names.
 
-Package: tsdoc.
+Where: `tsdoc/src/tsdoc-comments.ts:48-52` and `tsdoc/src/rules/structural.ts:68-72`.
 
-`rules/tag-types.ts:66-89` hand-writes the entire node enumeration (`FunctionDeclaration` through
-`TSEnumMember`, plus the `Property` get/set guard) that `createTsdocVisitor`
-(`rules/tsdoc-visitors.ts:131-154`) already provides verbatim. The only reason it cannot reuse the
-existing factory is that `validTypes` needs `parseTsdocForNode` (to read `result.messages`) whereas
-`createTsdocVisitor` hands back the raw comment.
-
-Suggestion: add `createTsdocParseVisitor` in `tsdoc-visitors.ts`, the all-node analogue of the
-function-only `createFunctionTsdocVisitor`, covering the same node set but invoking
-`parseTsdocForNode`. `validTypes` then becomes a handler over `result.messages`.
-
-Estimated savings: roughly 20 lines, and the node map stops being maintained in two places.
-
-### M8. Whitespace-plus-delimiter predicate triplicated, and the separator-insert report loop duplicated
-
-Package: stylistic.
-
-The six-branch ASCII-whitespace test is written three times (the two rule copies add one extra
-allowed char each):
-
-- `utility/indent.ts:9-16` (`isWhitespaceChar`, private)
-- `rules/one-var-declaration-per-line.ts:35-51` (`isOnlyWhitespaceOrComma`)
-- `rules/max-statements-per-line.ts:76-92` (`isOnlyWhitespaceOrSemicolon`)
-
-Separately, both statement-level rules duplicate the "insert separator between same-line nodes,
-suppress fix on comment" report loop (`one-var-declaration-per-line.ts:143-210` and
-`max-statements-per-line.ts:225-289`), differing only in the separator string, the `data` payload,
-the messageId, and the pair-selection gate.
-
-The adjacent-pair line-share loop (`lineAt(prev.end) === lineAt(curr.start)`) now appears in four
-places once H2 is counted: `needs-fix.ts:85`, `param-fix.ts:89`,
-`one-var-declaration-per-line.ts:143`, `max-statements-per-line.ts:225`.
-
-Suggestion: export `isWhitespaceChar` from `indent.ts` and add `isOnlyFiller(s, extra)`; add
-`reportSeparatorBetween({ context, prev, curr, separator, messageId, data?, canFix })` for the
-report-plus-conditional-fix block. The bucketing and gating stay per rule.
-
-Estimated savings: roughly 45 to 55 lines.
-
-### M9. `isTsdocBlock` predicate duplicated
-
-Package: tsdoc.
-
-- `tsdoc-comments.ts:48-52` (`isTsdocBlock`)
-- `rules/structural.ts:68-72` (`isTsdocBlockComment`)
-
-Byte-identical body (`comment.type === 'Block' && comment.value.startsWith('*')`). Differ by name
-only.
-
-Suggestion: export one (push it down to `comment-text.ts` as a leaf predicate alongside
-`isFenceLine`) and import in `structural.ts`. Roughly 10 lines.
+The fix, in plain terms: keep one and have the other borrow it. Estimated reduction: roughly ten
+lines.
 
 ## Low severity
 
-### L1. Record-narrowing guard reimplemented per package
+These are real but small; treat them as opportunistic tidy-ups.
 
-Packages: all three.
+### L1. A one-line "is this a record?" test is rebuilt in all three plugins
 
-The one-line `typeof === 'object' && !== null` predicate appears under three names with three
-target types:
+Plain terms: the same one-line test appears under three names in the three plugins. Sharing one
+general version would cover all three. Roughly six to ten lines. Location:
+`tsdoc/src/ast-access.ts:30`, `stylistic/src/utility/comma-dangle.ts:166`, and
+`no-restricted-syntax/src/rules/no-immediate-mutation.syntax.ts:177`.
 
-- `tsdoc/src/ast-access.ts:30` (`isRecord`, plus `isRecordArray:51`)
-- `stylistic/src/utility/comma-dangle.ts:166` (`isFieldRecord`)
-- `no-restricted-syntax/src/rules/no-immediate-mutation.syntax.ts:177` (`isRecord`)
+### L2. Two documentation helpers share the same "unwrap the layers" walk
 
-Differs only by the `value is T` target. A shared generic
-`isRecord(value): value is Readonly<Record<string, unknown>>` (the `ast-access.ts` version is the
-most general) would cover all three, with use-site narrowing where needed. Related: the
-untyped-AST-access approaches have diverged (tsdoc casts `node as Span & Record<string, unknown>`;
-the other two use the record guard); unifying behind one `ast-access` helper is conceptual cleanup,
-not copy-paste removal. Roughly 6 to 10 lines.
+Plain terms: two helpers both peel back the same three kinds of wrapping around a value. Their final
+step is deliberately opposite, so only the peeling part should be shared. Roughly twenty lines.
+Location: `tsdoc/src/tsdoc-params.ts:55-94` and `tsdoc/src/tsdoc-destructured.ts:54-140`.
 
-### L2. Recursive binding-pattern unwrap duplicated
+### L3. A "what method is being called here?" guard is repeated
 
-Package: tsdoc.
-
-- `tsdoc-params.ts:55-94` (`extractBindingName`)
-- `tsdoc-destructured.ts:54-140` (inner `collect`)
-
-Both recurse through the same three wrapper node types (`AssignmentPattern`, `RestElement`,
-`TSParameterProperty`) with identical unwrap logic. The terminal handling is intentionally opposite
-(one keeps `Identifier` names and ignores patterns; the other skips identifiers and descends into
-patterns), so only the three wrapper arms are shared.
-
-Suggestion: extract `unwrapBindingChild(pattern)` in `ast-access.ts` returning the inner record for
-the three wrapper cases; both walkers call it and keep their distinct terminal logic. Partial
-dedupe, roughly 20 lines; the two outer functions stay separate.
-
-### L3. Member-call guard repeated in no-restricted-syntax
-
-Package: no-restricted-syntax.
-
-The "callee is an un-computed `MemberExpression` with an `Identifier` property" guard, plus method
-name extraction, recurs in `_method-call-ban-rule.ts:58-72`, `no-trim-left-right.ts:46-58`,
+Plain terms: a short guard that recognizes a method call, then reads its name, is copied across a few
+rules. Only the guard-plus-name part is shareable; each rule does something different afterward.
+Roughly twelve lines. Best done alongside M2, since it lands in the same shared file. Location:
+`no-restricted-syntax/src/rules/_method-call-ban-rule.ts:58-72`, `no-trim-left-right.ts:46-58`,
 `require-queryselector-generic.ts:67-80`, and
-`no-low-information-symbol-description/ast.ts:47-49`. Only the guard plus name extraction is
-shareable; each rule's follow-up differs, so they cannot all call `methodCallBanRule` (which only
-reports). Extract `getCalledStaticMethodName({ node }): string | symbol` into the M2 shared syntax
-module and consume it. Low priority; do it opportunistically alongside M2. Roughly 12 lines.
+`no-low-information-symbol-description/ast.ts:47-49`.
 
-### L4. Dead `findDelimiter` utility overlaps inline bracket scans
+### L4. A finished helper was built to remove a duplication, then never used
 
-Package: stylistic.
+Plain terms: someone wrote a helper (`findDelimiter`) precisely to avoid a copied bracket-finding
+step, but nothing ever calls it, while the copied step still lives by hand in two other places. So
+the cure exists, unused, next to the disease. Either connect the helper to those two places or delete
+it. Roughly sixty-four lines. Location: `stylistic/src/utility/delimiter.ts:45-64`.
 
-`utility/delimiter.ts:45-64` exports `findDelimiter`, which is imported by nothing (`rg` finds only
-its own definition). It does exactly the open/close bracket scan that `buildPerLineFix`
-(`item-per-line-fix.ts:134-150`) and `paramPerLine` (`param-per-line.ts:125-135`) inline by hand.
-So a utility built to remove this duplication exists but is unused while the duplication persists.
-Either wire it into the scan sites or delete it (64 lines). `delimiter.ts:14` and
-`comma-dangle.ts:26-31` also keep separate `CLOSE_DELIMITERS` sets.
+### L5. The formatting plugin's "one per line" rules share a thin, repeated skeleton
 
-### L5. Thin per-line rule shell repeated across the per-line family
+Plain terms: most of the "one item per line" rules are nearly the same short skeleton with only the
+target swapped. The hard work is already shared; only this thin outer skeleton repeats. A cookie
+cutter could collapse it, but because each rule already reads clearly, this is a judgment call
+between brevity and clarity, not a fix for a risk. Around two hundred lines of volume, low risk.
+Location: the `*-per-line.ts` family in `stylistic/src/rules/`.
 
-Package: stylistic.
+### L6. One rule has nine almost-identical inner checks
 
-Roughly seven to nine per-line rules (`array-element-per-line.ts`, `object-property-per-line.ts`,
-`destructure-per-line.ts`, `tuple-per-line.ts`, `argument-per-line.ts`, plus the
-`import` / `export` / `type-property` variants) each declare a
-`type XListNode = Span & { readonly <field>?: readonly Span[] }`, narrow the node, undefined-guard
-the field, and call `checkItemsPerLine`. The hard logic is already delegated; only the selector
-differs. A `makePerLineRule({ visitorKeys, field | selectItems, messageId, bracketPair, delimiter?,
-meta })` would collapse the simple cases and let the three filtering variants pass a `selectItems`
-callback. This is volume (200-plus lines) but low risk and partly a clarity-versus-concision call,
-since the per-line logic is already DRY and each rule reads clearly.
+Plain terms: inside a single file, about nine little checks differ only by which field they look at.
+A small lookup table would collapse them. Cosmetic, and contained to one file. Location:
+`stylistic/src/rules/comma-dangle.ts:53-233`.
 
-### L6. `comma-dangle` per-field check wrappers
+### L7. A small "skip this file?" preamble and a repeated cast appear across documentation rules
 
-Package: stylistic.
+Plain terms: several documentation rules repeat a three-line "should I skip this file?" preamble, and
+separately repeat the same technical cast about seven times. Each could be a one-line shared helper.
+Low value: the real win is consolidating the technical casts in one place, not the line count.
+Location: across the standalone-visitor rules in `tsdoc/src/rules/` and `tsdoc/src/ast-access.ts`.
 
-`rules/comma-dangle.ts:53-233` has roughly nine `checkElements` / `checkProperties` / and peers that
-are identical apart from the `fieldName` passed to `lastFieldNode`. A
-`Record<visitorKey, fieldName>` table feeding one generic handler would collapse them. Intra-file
-and the underlying utility is already well-factored; cosmetic.
+## Things that look like duplication but should be left alone
 
-### L7. `before` ignore-file hook and untyped-node cast, repeated in tsdoc
+Recorded so nobody re-raises them as problems.
 
-Package: tsdoc.
+- The three plugins each have a short startup file that lists their own rules. The list is different
+  for each plugin, so the resemblance is only the one-line wrapper around it. Not worth changing.
+- The same short list of imported names appears at the top of many rule files. The programming
+  language has no way to share an import line, so this cannot be removed.
+- The formatting plugin's position-and-spacing math is genuinely its own; the other two plugins do
+  not do that kind of math. Only the tiny blank-space helper (M1) crosses over.
+- A couple of helpers in different files look like twins but do genuinely different work. Merging
+  them would be wrong.
+- The per-plugin build and configuration files differ for real reasons or already share a common
+  base.
 
-The three-line `before() { if (shouldIgnoreFile(context.filename)) return false; return undefined; }`
-recurs in the standalone-visitor rules (`tag-types.ts`, `structural.ts`, `require-tsdoc.ts`,
-`require-example.ts`, `yields.ts`); a `makeIgnoreFileBefore(context)` helper collapses each to one
-line. Separately, `node as Span & Record<string, unknown>` with its `no-unsafe-type-assertion`
-suppression recurs about seven times; an `asUntypedNode(node)` helper in `ast-access.ts` would
-centralize the single suppression. Both are low value (the win is consolidating suppressions, not
-lines), and `require-example` legitimately needs extra `before` work.
+## Where shared code should live, and in what order to tackle this
 
-## Justified similarity (no action)
+There is no shared toolbox for these plugins today. The one related package sits downstream of all
+three (it bundles them together for use), so it cannot hold shared code without creating a loop. Two
+new small toolboxes fit cleanly, and they differ in one important way:
 
-These look parallel but factoring would hurt; recorded so they are not re-raised.
+- A **dev-only** toolbox, used only while testing and never shipped to people who install the tools.
+  This is the natural home for the shared testing rig in H1.
+- A **shipped** toolbox, installed alongside the finished checkers because the checkers use it while
+  they run. This is the natural home for the tiny shared helpers in M1 (and, if wanted, the shared
+  wrapper from M4 and the small tests in L1 and L7). There is already precedent for the plugins
+  depending on a shared package this way.
 
-- The three `index.ts` files share only the `eslintCompatPlugin({ meta, rules })` wrapper; each
-  assembles an entirely different rule map. The import lists and rule maps are intrinsic.
-- The identical four-symbol `import type { Context, CreateOnceRule, ESTree, VisitorWithHooks }`
-  block recurs widely, but TypeScript cannot share an import statement. A barrel re-export would be
-  ergonomic only, not structural.
-- stylistic's `range.ts`, `line-at.ts`, and `indent.ts` byte/line/indent math is genuinely
-  package-local; tsdoc computes positions from the AST `comment.range` / `loc` and no-restricted
-  does no range math. Only the `isWhitespaceChar` leaf (M1) crosses over.
-- `getAllComments()` scanning appears in `_ban-disable-factory.ts`, `tsdoc-comments.ts`, and
-  `structural.ts`, but each scans for a different thing; only the external API entry point is
-  shared.
-- `chain-per-line` and `invocation-depth-per-line` operate on a different AST axis and legitimately
-  cannot use `item-per-line`; their resemblance to the per-line family is coincidental.
-- `prefer-error-is-error.globals.ts` `isGlobalErrorConstructor` versus `isGlobalObjectConstructor`
-  look parallel but the Error variant does extra `globalThis.Error` member-walking. Different
-  intent.
-- Per-package `package.json`, `mise.toml`, `tsconfig.json`, and `tsdown.node.config.ts` differences
-  are intrinsic or already inherit shared bases.
+Suggested order, by payoff:
 
-## Recommended homes and priority
+1. H1, the shared testing rig. Highest value, cleanly separable, and it never ships, so there is no
+   risk to the finished product.
+2. H2 with H3 together, the forked formatting engine. One change, and it removes the most code.
+3. H4 and M1, the documentation plugin's copied text scanners and the tiny blank-space helper. The
+   trusted originals already exist.
+4. M2 and M3, the drift-prone code-reading helpers and the missing cookie cutter for simple bans.
+5. M5 through M9, modest shared helpers that also remove small bug risks like the off-by-one
+   underline.
+6. L1 through L7, opportunistic tidy-ups. L4 is the easiest of all: it is simply unused code to
+   connect or delete.
 
-No shared oxlint-utility package exists today. The only related package,
-`@monochromatic-dev/config-oxlint` (`packages/config/oxlint`), aggregates and is downstream of all
-three plugins, so it cannot host shared helpers without an import cycle. Two new homes fit the
-publish constraints:
-
-- A dev-only test kit (`devDependency` only, never in the published runtime graph): the oxlint
-  runner harness, fixture-temp helpers, diagnostic types, `uniqueRules`, and one `ROOT` resolver.
-  Covers H1.
-- A published runtime kit (`workspace:*` dependency of all three; precedent exists, stylistic
-  already depends on `@monochromatic-dev/module-or-throw`): the char-class primitives (M1),
-  generic `isRecord` plus unified untyped-AST access (L1, L7), and optionally `defineRule` with an
-  `@oxlint/plugins` type barrel (M4).
-
-Suggested order by value:
-
-1. H1 (test harness), highest value and no publishing tension.
-2. H2 with H3 (one stylistic refactor removing the most code).
-3. H4 and M1 (tsdoc scan primitives and char predicates; the canonical versions already live in
-   `comment-text.ts`).
-4. M2 (drift-dangerous AST helpers) and M3 (single-syntax ban factory).
-5. M5, M6, M7, M8, M9 (modest tsdoc and stylistic factories that also cut off-by-one and node-list
-   drift).
-6. L1 through L7 (opportunistic; L4 is simply dead code to delete or wire up).
-
-M4 and L5 are volume-heavy but mostly ergonomic; weigh the clarity cost before doing them.
+M4 and L5 are large in volume but mostly about neatness rather than risk; weigh the clarity cost
+before taking them on.
