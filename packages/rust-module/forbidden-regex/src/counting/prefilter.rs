@@ -2,8 +2,8 @@
 //!
 //! What: [`seeds_from_node`] derives literal seeds such that every match of a node
 //! contains one as a substring, and [`Prefilter`] turns seeds into SIMD searchers.
-//! Why:     This file is the Rust module that groups the prefilter implementation, so a reader
-//!          can enter the package through one named area.
+//! Why:     This file is the Rust module that groups the prefilter implementation, so the
+//!          compiler gives those items one namespace and sibling modules can import that name.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts

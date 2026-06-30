@@ -3,8 +3,8 @@
 //!           methods return `Vec<bool>` values (owned growable arrays of booleans, not
 //!           borrowed `&[bool]` slices or fixed `[bool; N]` arrays), and the hidden hooks
 //!           let the benchmark force scalar, interleaved, tight, and Sheng layouts.
-//! Why:     This file is the Rust module that groups the batch implementation, so a reader can
-//!          enter the package through one named area.
+//! Why:     This file is the Rust module that groups the batch implementation, so the
+//!          compiler gives those items one namespace and sibling modules can import that name.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts

@@ -1,6 +1,6 @@
 //! What:    Recursive-descent grammar with single-atom operands for `&` and `|`.
-//! Why:     This file is the Rust module that groups the grammar implementation, so a reader can
-//!          enter the package through one named area.
+//! Why:     This file is the Rust module that groups the grammar implementation, so the
+//!          compiler gives those items one namespace and sibling modules can import that name.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts

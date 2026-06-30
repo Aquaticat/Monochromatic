@@ -1,6 +1,6 @@
 //! What:    Regular-expression abstract syntax: the node algebra and its smart constructors.
-//! Why:     This file is the Rust module that groups the ast implementation, so a reader can
-//!          enter the package through one named area.
+//! Why:     This file is the Rust module that groups the ast implementation, so the
+//!          compiler gives those items one namespace and sibling modules can import that name.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts

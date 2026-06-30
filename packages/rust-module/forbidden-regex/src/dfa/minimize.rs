@@ -1,6 +1,6 @@
 //! What:    DFA state minimization by Moore partition refinement.
-//! Why:     This file is the Rust module that groups the minimize implementation, so a reader
-//!          can enter the package through one named area.
+//! Why:     This file is the Rust module that groups the minimize implementation, so the
+//!          compiler gives those items one namespace and sibling modules can import that name.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts

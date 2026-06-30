@@ -1,6 +1,6 @@
 //! What:    Byte-class equivalence: collapse the 256 bytes into transition-equivalent groups.
-//! Why:     This file is the Rust module that groups the classes implementation, so a reader can
-//!          enter the package through one named area.
+//! Why:     This file is the Rust module that groups the classes implementation, so the
+//!          compiler gives those items one namespace and sibling modules can import that name.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts

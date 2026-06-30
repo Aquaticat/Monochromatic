@@ -1,6 +1,6 @@
 //! What:    Pattern parsing: text to a normalized node, plus the empty-match guard.
-//! Why:     This file is the Rust module that groups the parse implementation, so a reader can
-//!          enter the package through one named area.
+//! Why:     This file is the Rust module that groups the parse implementation, so the
+//!          compiler gives those items one namespace and sibling modules can import that name.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts

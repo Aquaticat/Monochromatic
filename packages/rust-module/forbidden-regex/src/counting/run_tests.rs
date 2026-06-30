@@ -1,8 +1,8 @@
 //! What:    Tests for the counting-set simulation: differential vs the eager DFA, and a
 //!          serialized-size proof that bounded repetition no longer blows up. Exempt from the
 //!          max-lines and rustdoc budgets as a `*_tests.rs` file.
-//! Why:     This file is the Rust module that groups the run_tests implementation, so a reader
-//!          can enter the package through one named area.
+//! Why:     This file is the Rust module that groups the run_tests implementation, so the
+//!          compiler gives those items one namespace and sibling modules can import that name.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts

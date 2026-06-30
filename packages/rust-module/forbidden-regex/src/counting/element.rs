@@ -1,6 +1,6 @@
 //! What:    The element leaf type and its decode-time validation.
-//! Why:     This file is the Rust module that groups the element implementation, so a reader can
-//!          enter the package through one named area.
+//! Why:     This file is the Rust module that groups the element implementation, so the
+//!          compiler gives those items one namespace and sibling modules can import that name.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
