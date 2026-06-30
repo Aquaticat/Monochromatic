@@ -39,6 +39,10 @@ run = ["mise run build", "mise run test:unit"]
 description = "Parse benchmark: jsonc-edit vs jsonc-eslint-parser and microsoft jsonc-parser"
 run = "node src/bench/parse.bench.ts"
 
+[tasks."test:conformance"]
+description = "Run the curated JSONC conformance corpus (VS Code JSONC semantics)"
+run = "node src/conformance/jsonc.conformance.unit.test.ts"
+
 [tasks.fuzz]
 description = "Run *.property.unit.test.ts as a longer fast-check campaign under node"
 usage = '''
