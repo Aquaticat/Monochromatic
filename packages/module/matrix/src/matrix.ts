@@ -226,7 +226,7 @@ function shortFileName(filePath: string,): string {
 
 /**
  * Executes a single combination using the appropriate backend.
- * Routes to container or host backend based on the OS protocol.
+ * Routes to {@link runContainer} or {@link runHost} based on the OS protocol.
  *
  * @param combination - Fully resolved combination to execute
  *
@@ -276,9 +276,9 @@ const DEFAULT_CONCURRENCY = 4;
  * Runs test files across a cartesian product of environments.
  *
  * Generates all combinations of `files x os x user x runtime`,
- * filters out excluded entries, and executes each combination
- * via the appropriate backend. Results are reported through
- * `describe`/`it` from `\@monochromatic-dev/module-test`.
+ * filters out excluded entries, and executes each combination via
+ * {@link executeCombination}. Results are reported through
+ * {@link describe}/{@link it} from `\@monochromatic-dev/module-test`.
  *
  * @param files - Files to execute inside each environment (defaults to auto-discovery)
  *

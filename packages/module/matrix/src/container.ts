@@ -92,10 +92,11 @@ export function parseOs(os: string,): ParsedOs {
  * Builds the shell command to run inside a container for one combination.
  *
  * The command sequence:
- * 1.  Install prerequisites (curl, unzip, optionally sudo)
- * 2.  Create non-root user if needed
- * 3.  Install the JS runtime
- * 4.  Execute each test file
+ * 1.  Install prerequisites (curl, unzip, optionally sudo) via
+ *     {@link prerequisiteCommand}
+ * 2.  Create non-root user if needed via {@link userCreationCommand}
+ * 3.  Install the JS runtime via {@link runtimeInstallCommand}
+ * 4.  Execute each test file via {@link runtimeExecCommand}
  *
  * For non-root users, writes a script to `/tmp/run-test.sh` and
  * executes it via `sudo -u testuser -i` to avoid nested quoting issues.
@@ -226,7 +227,7 @@ function resolveImage(distro: string,): string {
  * Runs a single combination in a podman container.
  *
  * Mounts the monorepo root at `/workspace:Z` (SELinux relabel)
- * and executes the built command via `sh -c`.
+ * and executes the command built by {@link buildContainerCommand} via `sh -c`.
  *
  * @param combination - Fully resolved combination to execute
  *

@@ -59,7 +59,7 @@ function runtimeArgs({
 /**
  * Runs a single combination directly on the host.
  *
- * Spawns the runtime binary with the test file path.
+ * Spawns the runtime binary with the arguments built by {@link runtimeArgs}.
  * The runtime must be pre-installed and available on PATH.
  * The `user` axis is included in the combination for labeling
  * but does not affect execution; the process runs as the current user.
