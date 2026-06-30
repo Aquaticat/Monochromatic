@@ -23,8 +23,37 @@ import {
 } from './tsdoc-visitors.ts';
 
 /**
+ * Character that follows `{` for TSDoc inline tags such as `{@link Target}`.
+ */
+const INLINE_TAG_MARKER = '@';
+
+/**
+ * Checks whether a brace opens a TSDoc inline tag rather than a JSDoc type.
+ *
+ * @param params - source text and opening-brace index
+ *
+ * @returns true when the brace is immediately followed by an inline tag marker
+ *
+ * @example
+ * ```ts
+ * isInlineTagOpener({ text: '{@link Target}', braceIndex: 0 }); // true
+ * ```
+ */
+function isInlineTagOpener(params: {
+  /** Source text containing the candidate brace. */
+  readonly text: string;
+  /** Index of the candidate opening brace. */
+  readonly braceIndex: number;
+},): boolean {
+  /** Source text containing the candidate brace. */
+  const { text, braceIndex, } = params;
+  return text.charAt(braceIndex + 1,) === INLINE_TAG_MARKER;
+}
+
+/**
  * Collects every JSDoc-style `{Type}` body that follows a `@word` and at
- * least one whitespace char in `s`. Mirrors `/@\w+\s+\{([^}]+)\}/g`.
+ * least one whitespace char in `s`. Matches the legacy `/@\w+\s+\{([^}]+)\}/g`
+ * shape except for TSDoc inline tags such as `{@link Target}`.
  *
  * Strictly linear: each `@` candidate is found by `indexOf`, surrounding
  * checks are constant-time, and the cursor advances past every consumed
@@ -92,6 +121,13 @@ export function findTypeAnnotations(s: string,): readonly string[] {
     );
     if (closeIdx === (-1))
       break;
+    if (isInlineTagOpener({
+      text: s,
+      braceIndex: afterWs,
+    },)) {
+      from = closeIdx + 1;
+      continue;
+    }
     /**
      * Captured body between `{` and `}` exclusive; must be non-empty per `[^}]+`.
      */
