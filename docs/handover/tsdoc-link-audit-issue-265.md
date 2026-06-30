@@ -271,7 +271,7 @@ with scoped pathspecs (`fix(<package>): restore TSDoc inline links (issue #265)`
 | f07 | stylistic, model-selection, watch-restart, zip-writer, stop-reminders, terminal-title | a236bb586d250c34d | done, 70 link insertions, 27 files, commits 63e75558f/8bef4e8c2/f16be6b94 |
 | f08a | auto-mode | a91bc92778e72e1b1 | done, ~250 link insertions, 38 files, commits 3f9800c5e/794064be5/457404352/a5e720415 |
 | f08b | tsdoc, bash-output-filter | a4a6b817e212274ea | done, 43 findings, 23 files, commits 3cab138f8/a87959e62 |
-| f09 | done, task-util, mcp/stdio | | queued |
+| f09 | done, task-util, mcp/stdio | a73bd08ceb0208742 | done, 35/35 findings (97 locations), 51 files, commits bff4cff90/6bae8a2de/c116a5756 |
 | f10 | morph-compact, advisor, module/test, image-diff, test-support | a96731bd848cdd929 | done, 32 link restorations, 13 files, commits 6c529d5bb/42a3249d7/3f4d20813 |
 | f11 | doodle-widget, claude-code-plugins/source, catalog-tighten | a166231c9b11bdb32 | done, ~111 findings, 34 files, commits ddf0bed84/99e10dc0f/4a6986694 |
 | f12 | deps-cube, git-clone-size, current-time-context, oxlint-plugins/shared | abf93d7976d062f11 | done, 50/50 findings, 21 files, commits 6a74c6c6f/a76fcd3d7/9d654e5ff |
