@@ -20,9 +20,9 @@ type SinkEntry = {
 
 /**
  * Awaits one sink write so `flush()` can observe its settling. A rejected
- * write is swallowed here (the sink owns its own write-error handling) and
- * does not disable the sink: one transient failure must not retire a backend
- * for the rest of the run.
+ * write is swallowed here via {@link reportLoggerInternalError} (the sink
+ * owns its own write-error handling) and does not disable the sink: one
+ * transient failure must not retire a backend for the rest of the run.
  *
  * @param writePromise - Promise returned by the sink write call.
  */
@@ -188,7 +188,7 @@ export function createLogger(
        */
       const entry = getSinkEntry({ entryIndex, },);
       /**
-       * Monitored sink write; resolves even when the underlying write rejects, because `trackWrite` swallows rejection.
+       * Monitored sink write; resolves even when the underlying write rejects, because {@link trackWrite} swallows rejection.
        */
       const trackedWrite = trackWrite({
         writePromise: entry.sink
@@ -361,10 +361,11 @@ export function createLogger(
   }
 
   /**
-   * Drains startup verification, in-flight sink writes, and every available
-   * sink's own `flush` hook. Resolves once all tracked writes and hooks have
-   * settled. A rejecting `flush` hook marks that sink unavailable and does not
-   * fail the aggregate.
+   * Drains startup verification, in-flight sink writes (via
+   * {@link drainPendingWrites}), and every available sink's own `flush`
+   * hook. Resolves once all tracked writes and hooks have settled. A
+   * rejecting `flush` hook marks that sink unavailable and does not fail
+   * the aggregate.
    */
   async function flushAll(): Promise<void> {
     await initPromise;

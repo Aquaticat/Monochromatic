@@ -8,7 +8,8 @@ import type { Logger, } from './types.ts';
  *
  * @param tag - Prefix string inserted before each message
  *
- * @param l - Base logger to wrap; defaults to the module-level singleton
+ * @param l - Base logger to wrap; defaults to the module-level {@link logger}
+ *   singleton
  *
  * @returns Logger whose methods prepend `[tag] ` to every message
  *

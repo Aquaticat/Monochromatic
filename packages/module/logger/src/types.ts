@@ -14,8 +14,8 @@ export type LogRecord = {
 
 /**
  * Optional drain hook for sinks that buffer records internally.
- * Called via logger-level `flush()` to force buffered work through
- * before a process exit, critical error boundary, or assertion.
+ * Called via logger-level {@link Logger.flush} to force buffered work
+ * through before a process exit, critical error boundary, or assertion.
  *
  * Always async: sinks whose drain is synchronous return an
  * already-resolved promise so callers `await` uniformly. A `void` arm is
@@ -53,7 +53,7 @@ export type Verify = () => Promise<boolean>;
  * returns an already-resolved promise, so the logger observes a uniform
  * `Promise<void>`. A rejected write is handled per sink and does not
  * disable the backend; only a failed `verify` drops a sink. A `void` arm
- * is not used, for the reason stated on `SinkFlush`.
+ * is not used, for the reason stated on {@link SinkFlush}.
  */
 export type Sink = {
   readonly flush?: SinkFlush;
@@ -64,8 +64,8 @@ export type Sink = {
 /**
  * Logger interface with 6 log levels plus `flush` for startup and sink drains.
  * `flush()` resolves once startup verification has completed, tracked sink
- * writes have settled, and every available sink's own `flush` hook has
- * settled. Safe to call even when no sink buffers.
+ * writes have settled, and every available sink's own {@link SinkFlush} hook
+ * has settled. Safe to call even when no sink buffers.
  */
 export type Logger = {
   readonly debug: (message: string,) => void;

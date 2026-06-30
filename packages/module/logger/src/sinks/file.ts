@@ -139,8 +139,10 @@ export function createFileSink(): Sink {
 
   /**
    * Actual verification work, invoked exactly once via the memoized
-   * `verifyPromise`. Resolves the log path and caches `appendFile`. The logger
-   * owns the resulting availability, so no flag is kept here.
+   * `verifyPromise`. Resolves the log path and caches `appendFile`, marking
+   * the sink unavailable when the upward search yields
+   * {@link NO_NODE_MODULES_FOUND}. The logger owns the resulting
+   * availability, so no flag is kept here.
    *
    * @returns Whether file system logging is available.
    */
@@ -241,8 +243,8 @@ export function createFileSink(): Sink {
   }
 
   /**
-   * Verifies file system availability, memoizing concurrent calls so a second
-   * caller never starts a duplicate probe.
+   * Verifies file system availability via {@link runVerify}, memoizing
+   * concurrent calls so a second caller never starts a duplicate probe.
    *
    * @returns Whether file system logging is available.
    */

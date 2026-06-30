@@ -29,7 +29,8 @@ export function caughtErrorMessage(error: unknown,): string {
 }
 
 /**
- * Reports a logger-internal caught value without going back through logger sinks.
+ * Reports a logger-internal caught value without going back through logger
+ * sinks, formatting it via {@link caughtErrorMessage}.
  *
  * @param context - Human-readable operation that caught the value.
  *

@@ -293,8 +293,8 @@ function emitRun(
 
 /**
  * A contiguous slice of buffered records that share one level. Built by
- * `groupRuns` and consumed by `flushBuffer` to emit one `console.*` call
- * per slice.
+ * {@link groupRuns} and consumed by {@link flushBuffer} to emit one
+ * `console.*` call per slice.
  */
 type Run = {
   level: Level;
@@ -428,9 +428,10 @@ export function createConsoleSink(): Sink {
   };
 
   /**
-   * Reads the memoized verbose flag, evaluating on first call. Lazy rather
-   * than at construction so tests (and hosts) can mutate `process.env.DEBUG`
-   * between construction and first log without a stale cache.
+   * Reads the memoized verbose flag, evaluating via {@link detectVerbose} on
+   * first call. Lazy rather than at construction so tests (and hosts) can
+   * mutate `process.env.DEBUG` between construction and first log without a
+   * stale cache.
    *
    * @returns Whether verbose logging is enabled for this process.
    */
@@ -450,9 +451,10 @@ export function createConsoleSink(): Sink {
   }
 
   /**
-   * Drains the buffer, collapsing contiguous same-level runs into single
-   * console calls. A sequence `[debug, debug, warn, debug]` becomes three
-   * calls: `process.stderr.write` (two lines joined), `console.warn`, then
+   * Drains the buffer, collapsing contiguous same-level runs (via
+   * {@link groupRuns}) into single console calls emitted by {@link emitRun}.
+   * A sequence `[debug, debug, warn, debug]` becomes three calls:
+   * `process.stderr.write` (two lines joined), `console.warn`, then
    * `process.stderr.write` under process runtimes. Typical instrumented
    * functions use a single level throughout, so most flushes collapse to one
    * call.
@@ -482,9 +484,9 @@ export function createConsoleSink(): Sink {
 
   /**
    * Enqueues a record for microtask-batched emission. Silently discards
-   * `debug`/`trace` unless verbose mode is active (via `DEBUG=true` env var,
-   * `--verbose` argv, or browser environment), and drops `warn` when
-   * `WARN=false`.
+   * `debug`/`trace` unless {@link getVerbose} reports verbose mode is active
+   * (via `DEBUG=true` env var, `--verbose` argv, or browser environment), and
+   * drops `warn` when {@link isWarnSuppressed}.
    *
    * @param record - Log record to write.
    */
@@ -508,9 +510,9 @@ export function createConsoleSink(): Sink {
   }
 
   /**
-   * Forces any buffered records through to the console immediately. Returns an
-   * already-resolved promise so call sites await uniformly with async sinks.
-   * Safe to call when the buffer is empty.
+   * Forces any buffered records through to the console immediately via
+   * {@link flushBuffer}. Returns an already-resolved promise so call sites
+   * await uniformly with async sinks. Safe to call when the buffer is empty.
    */
   function flush(): Promise<void> {
     flushBuffer();

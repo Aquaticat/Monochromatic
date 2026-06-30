@@ -10,10 +10,11 @@ import type {
 
 /**
  * Default sink backends to attempt, in priority order. Each runtime keeps
- * only the sinks whose `verify` confirms its backend: console everywhere,
- * OPFS and sessionStorage in browsers, the file sink under Node. The noop
- * sink is intentionally absent so a process with no working backend surfaces
- * the "No logging backends available" error instead of silently discarding.
+ * only the sinks whose `verify` confirms its backend: {@link createConsoleSink}
+ * everywhere, {@link createOpfsSink} and {@link createSessionStorageSink} in
+ * browsers, {@link createFileSink} under Node. The noop sink is intentionally
+ * absent so a process with no working backend surfaces the "No logging
+ * backends available" error instead of silently discarding.
  */
 const defaultSinks: readonly Sink[] = [
   createConsoleSink(),
@@ -33,8 +34,8 @@ const {
 
 /**
  * Eager readiness promise. Consumers do not need to await this before logging;
- * `flush()` awaits it internally, and startup records replay to async sinks as
- * they become available.
+ * {@link Logger.flush} awaits it internally, and startup records replay to
+ * async sinks as they become available.
  */
 export const initPromise: Promise<void> = defaultInitPromise;
 
