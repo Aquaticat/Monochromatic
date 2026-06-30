@@ -60,8 +60,8 @@ type ToolResult = {
 
 /**
  * Writes the fixture workspace for `scenario` into {@link WORK_DIR}: the
- * workspace file with the scenario's settings, the root manifest, and both
- * consumer packages depending on the catalog entry.
+ * workspace file built by {@link buildWorkspaceYaml}, the root manifest, and
+ * both consumer packages written via {@link consumerPackageJson}.
  *
  * @param scenario - scenario whose settings shape the workspace file
  *
@@ -176,9 +176,10 @@ async function enablePnpm(): Promise<void> {
 //region Run and assert
 
 /**
- * Runs catalog-tighten `--dry-run` against the fixture, prepending the pnpm
- * shim directory to PATH. Captures a non-zero exit as `ok: false` rather than
- * throwing, so the caller can assert the error scenarios.
+ * Runs catalog-tighten `--dry-run` from {@link TOOL_ENTRY} against the
+ * fixture, prepending the pnpm shim directory to PATH. Captures a non-zero
+ * exit as `ok: false` rather than throwing, so the caller can assert the
+ * error scenarios.
  *
  * @returns whether the tool exited zero, and its stdout
  *
@@ -236,8 +237,9 @@ async function runTool(): Promise<ToolResult> {
 }
 
 /**
- * Asserts the tool result matches the scenario's expectation, throwing a
- * labelled error on mismatch.
+ * Asserts the tool result matches the scenario's expectation, checking the
+ * output against {@link EXPECTED_TIGHTENED} and the {@link FIXTURE_PACKAGE}
+ * MISS line, throwing a labelled error on mismatch.
  *
  * @param scenario - scenario under test
  *

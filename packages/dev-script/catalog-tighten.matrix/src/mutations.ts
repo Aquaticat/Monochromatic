@@ -56,9 +56,10 @@ async function removePath(path: string,): Promise<void> {
 }
 
 /**
- * Seeds a higher-version stale orphan into the virtual store, with no symlink
- * pointing at it, reproducing the post-downgrade leftover from
- * `docs/troubleshooting/pnpm-modules-cache.md`. The resolver must ignore it.
+ * Seeds {@link FIXTURE_PACKAGE} at the higher {@link FIXTURE_ORPHAN} version
+ * into the virtual store, with no symlink pointing at it, reproducing the
+ * post-downgrade leftover from `docs/troubleshooting/pnpm-modules-cache.md`.
+ * The resolver must ignore it.
  *
  * @example
  * ```ts
@@ -100,7 +101,8 @@ async function seedStaleOrphan(): Promise<void> {
 }
 
 /**
- * Removes every `node_modules` in the fixture: the root and both consumers.
+ * Removes every `node_modules` in the fixture: the root and both
+ * {@link CONSUMER_DIRS}.
  *
  * @example
  * ```ts
@@ -123,7 +125,8 @@ async function removeAllModules(): Promise<void> {
 
 /**
  * Applies the scenario's post-install mutation before the tool runs. An if/else
- * chain maps each mutation to its action (rule PP9: no switch).
+ * chain maps each mutation to its action (rule PP9: no switch), delegating to
+ * {@link seedStaleOrphan} and {@link removeAllModules} for the multi-step cases.
  *
  * @param scenario - scenario whose mutation to apply
  *

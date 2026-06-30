@@ -133,8 +133,8 @@ export type Scenario = {
 };
 
 /**
- * Every scenario the matrix runs: the node-linker and layout-settings coverage,
- * plus the missing-X robustness cases.
+ * Every {@link Scenario} the matrix runs: the node-linker and layout-settings
+ * coverage, plus the missing-X robustness cases.
  */
 export const SCENARIOS: readonly Scenario[] = [
   {
@@ -292,9 +292,10 @@ export const SCENARIOS: readonly Scenario[] = [
 
 /**
  * Builds the `pnpm-workspace.yaml` for one scenario: the `packages/*\/*` glob
- * matching catalog-tighten's workspace discovery, the catalog floor, the
- * scenario's linker, hoist, and extra settings, and an override pinning the
- * active version. The `hoist:` line is omitted under pnp, where it does not apply.
+ * matching catalog-tighten's workspace discovery, the catalog floor for
+ * {@link FIXTURE_PACKAGE}, the scenario's linker, hoist, and extra settings,
+ * and an override pinning the active version. The `hoist:` line is omitted
+ * under pnp, where it does not apply.
  *
  * Under the pnp linker, pnpm keeps per-importer `node_modules` symlinks unless
  * `symlink: false` is set (pnpm's recommended pnp config), which removes them and
@@ -353,7 +354,7 @@ export const FIXTURE_ROOT_PACKAGE_JSON: string = `${JSON.stringify(
 )}\n`;
 
 /**
- * Builds a consumer `package.json` depending on the catalog entry.
+ * Builds a consumer `package.json` depending on the {@link FIXTURE_PACKAGE} catalog entry.
  *
  * @param name - consumer package name
  *
