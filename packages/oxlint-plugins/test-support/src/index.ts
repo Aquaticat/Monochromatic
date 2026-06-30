@@ -30,7 +30,7 @@ import spawn from 'nano-spawn';
  * OXLINT_PLUGIN_TEST_ROOT;
  * ```
  */
-export const OXLINT_PLUGIN_TEST_ROOT = resolve(
+export const OXLINT_PLUGIN_TEST_ROOT: string = resolve(
   import.meta.dirname,
   '..',
   '..',
