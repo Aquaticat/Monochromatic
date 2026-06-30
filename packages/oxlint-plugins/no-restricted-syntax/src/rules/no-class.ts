@@ -50,9 +50,9 @@ function isFirstOption(value: unknown,): value is FirstOption {
 
 /**
  * Extracts the configured suffix list from rule options, falling back to
- * `DEFAULT_SUFFIXES` when no option object is provided or the shape is
- * unrecognised. Non-string entries in a user-supplied `suffixes` array are
- * filtered out.
+ * {@link DEFAULT_SUFFIXES} when no option object is provided or the shape,
+ * narrowed via {@link isFirstOption}, is unrecognised. Non-string entries in
+ * a user-supplied `suffixes` array are filtered out.
  *
  * @param options - rule options array; first element optionally carries `suffixes`
  *
@@ -99,7 +99,9 @@ function readSuffixes(
  * suffix), plus transitive `*Error` and `*Element` chains across files.
  *
  * Override via rule options when a different convention applies:
- * `["error", { "suffixes": ["Error", "Element", "EventTarget"] }]`.
+ * `["error", { "suffixes": ["Error", "Element", "EventTarget"] }]`; options
+ * are resolved once per file via {@link readSuffixes} and tested per class
+ * via {@link matchesSuffix}.
  *
  * `Symbol.dispose` and `Symbol.asyncDispose` are not an excuse: place them
  * as keys in the returned object literal instead of declaring `implements Disposable` on a class.
@@ -196,9 +198,10 @@ export const noClass: CreateOnceRule = {
 
     /**
      * Reports a class node unless its direct superclass identifier or its
-     * own name matches one of the configured suffixes. Classes with no
-     * `extends` clause are always reported. Ambient `declare class`
-     * declarations are skipped because they emit no runtime.
+     * own name matches one of the configured suffixes via
+     * {@link matchesSuffix}. Classes with no `extends` clause are always
+     * reported. Ambient `declare class` declarations are skipped because
+     * they emit no runtime.
      *
      * @param node - class declaration or class expression to check
      */
