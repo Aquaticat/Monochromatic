@@ -31,7 +31,7 @@ export type Observable<T,> = {
  *
  * @param onChange - Synchronous callback invoked after each value change with new then previous value
  *
- * @returns Observable container whose `setValue` triggers onChange synchronously
+ * @returns {@link Observable} container whose `setValue` triggers onChange synchronously
  *
  * @throws Whatever `onChange` throws; `setValue` does not catch, so the error reaches the caller
  *

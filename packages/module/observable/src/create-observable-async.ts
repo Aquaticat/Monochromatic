@@ -47,7 +47,7 @@ export type MaybePromise<T,> = T | Promise<T>;
  *
  * @param onChange - Callback invoked after each value change with new then previous value; may be async
  *
- * @returns Observable container whose `setValue` awaits onChange before resolving
+ * @returns {@link ObservableAsync} container whose `setValue` awaits onChange before resolving
  *
  * @example
  * ```ts
