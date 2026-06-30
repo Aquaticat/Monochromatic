@@ -93,7 +93,7 @@ export async function assertExistingWatchDirectory(
 
 /**
  * Converts chokidar's emitted path into the filename shape expected by
- * classifyEvent and existing watchDirectory callers.
+ * {@link classifyEvent} and existing {@link watchDirectory} callers.
  *
  * @param dir - Watched directory root.
  *

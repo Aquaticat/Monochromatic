@@ -12,7 +12,8 @@ export const DEFAULT_CHECK = '--version';
 //region p() builder
 
 /**
- * Builds a {@link PackageEntry} from a shorthand string or detailed spec.
+ * Builds a {@link PackageEntry} from a shorthand string via {@link buildFromShorthand}
+ * or a detailed spec via {@link buildFromSpec}.
  *
  * **String form**: binary name, effname, and all per-manager package names are the same value.
  * Availability is unrestricted (`available` omitted).
@@ -44,7 +45,8 @@ export function p(shorthandOrSpec: string | PackageSpec,): PackageEntry {
 //region Internal builders
 
 /**
- * Creates a {@link PackageEntry} where all names are identical.
+ * Creates a {@link PackageEntry} where all names are identical and `check`
+ * falls back to {@link DEFAULT_CHECK}.
  *
  * @param name - Shared value for `bin`, `effname`, and all managers
  *
@@ -60,8 +62,9 @@ function buildFromShorthand(name: string,): PackageEntry {
 }
 
 /**
- * Creates a {@link PackageEntry} from a structured spec,
- * parsing the `yes` array into availability set and per-manager overrides.
+ * Creates a {@link PackageEntry} from a structured spec, defaulting `check` to
+ * {@link DEFAULT_CHECK} and parsing the `yes` array into availability set and
+ * per-manager overrides via {@link parseYes}.
  *
  * @param spec - Full package specification
  *

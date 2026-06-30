@@ -49,8 +49,9 @@ function fillTemplate(
 export const NO_PACKAGE_MANAGER: unique symbol = Symbol('file-enforcer/package: host has no supported system installer available for automatic setup',);
 
 /**
- * Probes every registered manager concurrently and returns the highest-priority
- * available one, the first by {@link MANAGERS} insertion order.
+ * Probes every registered manager concurrently via {@link evaluatePredicate}
+ * and returns the highest-priority available one, the first by {@link MANAGERS}
+ * insertion order.
  *
  * @returns Detected manager name, or {@link NO_PACKAGE_MANAGER} if none found.
  *
@@ -93,9 +94,10 @@ async function detectAvailableManager(): Promise<PackageManager | typeof NO_PACK
 const managerDetection = lazyOnceAsync({ compute: detectAvailableManager, },);
 
 /**
- * Detects the highest-priority available package manager on the current system.
- * All candidates are probed concurrently; the winner is the first by {@link MANAGERS} insertion order.
- * Result is cached for the lifetime of the process.
+ * Detects the highest-priority available package manager on the current system
+ * via {@link detectAvailableManager}; the winner is the first by {@link MANAGERS}
+ * insertion order. Result is cached for the lifetime of the process by
+ * {@link lazyOnceAsync}.
  *
  * @returns Detected manager name, or {@link NO_PACKAGE_MANAGER} if none found
  *
@@ -127,7 +129,8 @@ export function resetManagerCache(): void {
 //region Binary existence check
 
 /**
- * Checks whether a binary is available on PATH by running it with a check flag.
+ * Checks whether a binary is available on PATH by running it with a check flag
+ * via {@link evaluatePredicate}.
  * Most CLI tools exit 0 for `--version`; outliers may need `-V`, `--help`,
  * or a subcommand like `version`. If the binary does not exist,
  * the spawn fails with ENOENT.
@@ -186,9 +189,9 @@ function detectRoot(): boolean {
 const rootDetection = lazyOnce({ compute: detectRoot, },);
 
 /**
- * Detects whether the current process is running as root (UID 0).
+ * Detects whether the current process is running as root (UID 0) via {@link detectRoot}.
  * Returns `false` on platforms where `process.getuid` is unavailable (Windows).
- * Result is cached for the lifetime of the process.
+ * Result is cached for the lifetime of the process by {@link lazyOnce}.
  *
  * @returns `true` if running as root
  *
@@ -221,7 +224,9 @@ export function resetRootCache(): void {
 //region Package availability check
 
 /**
- * Checks whether a package exists in the detected manager's repository.
+ * Checks whether a package exists in the detected manager's repository:
+ * builds the search command with {@link fillTemplate} and runs it via
+ * {@link evaluatePredicate}.
  * Does not require root; search commands run unprivileged.
  *
  * @param manager - Package manager to query
@@ -266,8 +271,10 @@ export async function canProvide(
 //region Install command
 
 /**
- * Builds and executes the install command for a package on the detected manager.
- * Prepends `sudo` when the manager needs root and the process is not already root.
+ * Builds the install command with {@link fillTemplate} and executes it via
+ * {@link exec} for a package on the detected manager.
+ * Prepends `sudo` when the manager needs root and {@link isRoot} reports the
+ * process is not already root.
  *
  * @param manager - Package manager to use
  *

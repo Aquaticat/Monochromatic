@@ -166,7 +166,8 @@ function reportWatchRerunError(
  * Debounced filesystem event batches may arrive while an earlier config rerun is
  * still importing, resetting trackers, or rebuilding watchers. This queue keeps
  * those batches in FIFO order so reruns never overlap and later events are not
- * discarded while the active rerun is in progress.
+ * discarded while the active rerun is in progress; queued batches drain via
+ * {@link drainWatchRerunQueue}.
  *
  * @param run - Handler invoked once for each queued rerun batch.
  *
@@ -212,7 +213,8 @@ export function createWatchRerunQueue(
   const runningState = new Map<'running', true>();
 
   /**
-   * Drains queued reruns serially until no queued batches remain.
+   * Drains queued reruns serially until no queued batches remain, reporting
+   * handler failures via {@link reportWatchRerunError}.
    *
    * @example
    * ```ts

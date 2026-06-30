@@ -28,7 +28,9 @@ export const DEBOUNCE_MS = 100;
 
 /**
  * Starts a chokidar watcher for a single directory, classifying events and
- * calling the appropriate callback.
+ * calling the appropriate callback. Verifies the directory exists via
+ * {@link assertExistingWatchDirectory} and tracks teardown state with
+ * {@link createWatchDirectoryLifecycle}.
  *
  * Runs until the abort signal fires. Abort teardown is silently caught since
  * it is expected during watcher re-setup. Other watcher failures are logged
@@ -121,7 +123,8 @@ export async function watchDirectory(
   }
 
   /**
-   * Chokidar ready listener that releases callers waiting for initial scan completion.
+   * Chokidar ready listener that releases callers waiting for initial scan completion,
+   * closing this watcher via {@link closeForFailure} when the `onReady` callback throws.
    *
    * @example
    * ```ts
@@ -157,7 +160,9 @@ export async function watchDirectory(
   }
 
   /**
-   * Classifies one chokidar path event and forwards actionable events.
+   * Classifies one chokidar path event via {@link classifyEvent}, after
+   * converting it to a filename with {@link filenameForChokidarPath}, and
+   * forwards actionable events.
    *
    * @param path - Path emitted by chokidar.
    *

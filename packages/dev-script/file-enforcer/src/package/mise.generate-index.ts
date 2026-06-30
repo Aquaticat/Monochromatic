@@ -210,7 +210,8 @@ async function runContainer(args: readonly string[],): Promise<string> {
 //region Mise registry
 
 /**
- * Loads the mise tool registry and returns a set of tool names.
+ * Loads the mise tool registry and returns a set of tool names, read from
+ * each line via {@link firstWhitespaceToken}.
  * Includes tools from all backends (aqua, cargo, npm, github, etc.)
  * since any tool in the registry can be installed via mise instead
  * of a system package manager.
@@ -302,7 +303,8 @@ type RepologyProject = {
 
 /**
  * Generates the TypeScript source for `packages.generated.ts`
- * from filtered Repology project data.
+ * from filtered Repology project data, building one entry per project
+ * with {@link buildPCall}.
  *
  * @param projects - Filtered project entries
  *
@@ -348,7 +350,8 @@ function generateTypeScript(projects: readonly RepologyProject[],): string {
 }
 
 /**
- * Builds a `p()` call string for a single project.
+ * Builds a `p()` call string for a single project, escaping string literals
+ * with {@link escapeString}.
  * Uses string shorthand when the package name matches effname in all available repos.
  * Otherwise uses the object form with `yes` array.
  *

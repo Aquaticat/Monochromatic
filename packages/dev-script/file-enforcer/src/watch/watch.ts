@@ -26,6 +26,10 @@ import { watchDirectoryWithRestarts, } from './watch-supervisor.ts';
 /**
  * Watches source files and managed destinations, re-executing the config
  * on source changes and reverting + notifying on external destination edits.
+ * Builds its watch-mode state with {@link createWatchModeLifecycle}, serializes
+ * reruns through {@link createWatchRerunQueue}, derives watched directories with
+ * {@link watchDirs}, supervises each one via {@link watchDirectoryWithRestarts},
+ * and reports protected-path edits with {@link notifyWriteProtection}.
  *
  * This function never returns under normal operation (it loops forever watching).
  *

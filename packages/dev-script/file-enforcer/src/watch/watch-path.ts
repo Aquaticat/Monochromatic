@@ -46,7 +46,8 @@ async function pathIsDirectory(path: string,): Promise<boolean> {
 }
 
 /**
- * Returns nearest existing directory at or above a target directory.
+ * Returns nearest existing directory at or above a target directory, walked
+ * via {@link nearestExistingDirectoryFromCandidate}.
  *
  * @param directoryPath - Directory path requested by watch tracking.
  *
@@ -62,7 +63,8 @@ export async function nearestExistingDirectory(directoryPath: string,): Promise<
 }
 
 /**
- * Walks parent directories until one exists.
+ * Walks parent directories, checking each with {@link pathIsDirectory}, until
+ * one exists.
  *
  * @param candidate - Directory path currently being inspected.
  *
@@ -127,7 +129,9 @@ function pathIsSameOrAncestor(
 }
 
 /**
- * Returns whether event path creates or updates a static directory needed by a tracked glob.
+ * Returns whether event path creates or updates a static directory needed by
+ * a tracked glob: compares each glob's root from {@link globWatchDirectory}
+ * against the event path with {@link pathIsSameOrAncestor}.
  *
  * @param absolutePath - Absolute event path.
  *

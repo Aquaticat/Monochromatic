@@ -202,7 +202,7 @@ async function waitBeforeWatcherRestart(
  *
  * @param configPath - Absolute config path used for event classification.
  *
- * @param onEvent - Watch event callback forwarded to `watchDirectory`.
+ * @param onEvent - Watch event callback forwarded to {@link watchDirectory}.
  *
  * @param onReady - Callback fired after chokidar reports its initial scan is ready.
  *
@@ -214,7 +214,7 @@ async function waitBeforeWatcherRestart(
  *
  * @param restartDelayMs - Delay between restart attempts.
  *
- * @throws When watcher failures exceed the restart limit.
+ * @throws {@link watcherRestartLimitError} When watcher failures exceed the restart limit.
  *
  * @example
  * ```ts

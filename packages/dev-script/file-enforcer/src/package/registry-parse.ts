@@ -37,6 +37,7 @@ function isWhitespace(c: string,): boolean {
  * an empty token.
  *
  * Used to read the tool name from each line of `mise registry` output.
+ * Whitespace is classified character by character with {@link isWhitespace}.
  *
  * Single left-to-right pass: leading whitespace is skipped, the first
  * whitespace after the run ends it, and the run is joined once. The token

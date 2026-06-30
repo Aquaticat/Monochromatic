@@ -125,22 +125,22 @@ function resolvePackageName(
  * for system-level packages that mise does not cover.
  *
  * Lookup order:
- * 1. Check if the binary exists on PATH; return immediately if so
+ * 1. Check if the binary exists on PATH via {@link binaryExists}; return immediately if so
  * 2. Look up the binary in the registered package index
- * 3. Detect the system's package manager
+ * 3. Detect the system's package manager via {@link detectManager}
  * 4. Resolve the per-manager package name
- * 5. Install the package
+ * 5. Install the package via {@link installPackage}
  * 6. Verify the binary now exists on PATH
  *
  * @param binary - Name of the binary to ensure (e.g. `'rg'`, `'curl'`)
  *
- * @throws When no package manager is detected
+ * @throws {@link NoManagerError} When no package manager is detected
  *
- * @throws When the binary is not in the index and cannot be inferred
+ * @throws {@link PackageNotFoundError} When the binary is not in the index and cannot be inferred
  *
  * @throws When the install command fails
  *
- * @throws When the binary is still not on PATH after installation
+ * @throws {@link VerificationError} When the binary is still not on PATH after installation
  *
  * @example
  * ```ts

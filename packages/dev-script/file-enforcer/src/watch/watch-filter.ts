@@ -27,7 +27,9 @@ export type EventKind = 'source' | 'protected' | 'ignore';
 /**
  * Derives the unique set of parent directories that need chokidar watchers,
  * covering every tracked read path, every tracked write path (for protection),
- * and the config file itself.
+ * and the config file itself. Each tracked glob's static root, found via
+ * {@link globWatchDirectory}, is reduced to its nearest existing ancestor
+ * with {@link nearestExistingDirectory}.
  *
  * @param configPath - Absolute path to the config file
  *
@@ -64,7 +66,8 @@ export async function watchDirs(configPath: string,): Promise<Set<string>> {
 }
 
 /**
- * Returns whether a path currently matches one of the tracked glob patterns.
+ * Returns whether a path currently matches one of the tracked glob patterns,
+ * expanded fresh via {@link expandGlob}.
  *
  * @param absolutePath - Absolute path from filesystem event.
  *
@@ -103,6 +106,9 @@ async function matchesTrackedGlob(absolutePath: string,): Promise<boolean> {
  *
  * For write paths, uses `stat()` to compare the file's mtime against our
  * recorded write timestamp. If mtime \> our timestamp, the edit is external.
+ * Read paths are matched against tracked glob static directories with
+ * {@link trackedGlobStaticDirectoryAffected} and against live glob expansions
+ * with {@link matchesTrackedGlob}.
  *
  * @param filename - Filename from the watch event (relative to watched dir)
  *
@@ -187,7 +193,8 @@ export async function classifyEvent(
 }
 
 /**
- * Backwards-compatible wrapper that returns true for any actionable event.
+ * Backwards-compatible wrapper around {@link classifyEvent} that returns true
+ * for any actionable event.
  *
  * @param filename - Filename from the watch event (relative to watched dir)
  *

@@ -6,7 +6,8 @@ import type { PackageEntry, } from './types.ts';
 /**
  * Merges hand-maintained override entries into auto-generated package entries.
  * For each generated entry, looks up its effname in the overrides array
- * and applies `bin` and `check` if present.
+ * and applies `bin` and `check` if present (an override `check` equal to
+ * {@link DEFAULT_CHECK} is treated as unset).
  * Generated entries without a matching override pass through unchanged.
  *
  * @param generated - Auto-generated entries from Repology (effname + manager overrides)

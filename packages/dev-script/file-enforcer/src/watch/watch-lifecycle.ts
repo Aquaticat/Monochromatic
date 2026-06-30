@@ -47,7 +47,10 @@ export type WatchModeLifecycle = Readonly<{
 //region Lifecycle factory
 
 /**
- * Creates state holder for watcher teardown, debounce cleanup, and fail-closed rejection.
+ * Creates state holder for watcher teardown, debounce cleanup, and fail-closed
+ * rejection: `fail` tears down active state through
+ * {@link WatchModeLifecycle.closeAllWatchers} and
+ * {@link WatchModeLifecycle.clearDebounceTimer} before rejecting.
  *
  * @returns Watch-mode lifecycle helpers.
  *

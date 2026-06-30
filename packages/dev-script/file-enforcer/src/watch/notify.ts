@@ -23,7 +23,8 @@ type NotificationTool = 'notify-send' | 'osascript' | 'pwsh' | 'powershell';
 const NO_NOTIFICATION_TOOL = Symbol('file-enforcer/watch: detection found no desktop notification tool',);
 
 /**
- * Detects the first available desktop notification tool.
+ * Detects the first available desktop notification tool by probing each
+ * candidate with {@link evaluatePredicate}.
  *
  * @returns Detected tool name, or {@link NO_NOTIFICATION_TOOL} if none found.
  *
@@ -68,7 +69,8 @@ const notificationToolDetection = lazyOnceAsync({ compute: detectAvailableNotifi
 //endregion Notification tool detection
 
 /**
- * Sends a write-protection warning to both terminal and desktop notification.
+ * Sends a write-protection warning to both terminal and desktop notification
+ * (the latter via {@link sendDesktopNotification}).
  * Called when an external process modifies a file that file-enforcer manages.
  *
  * @param filePath - Absolute path of the externally modified managed file
@@ -87,7 +89,8 @@ export async function notifyWriteProtection(filePath: string,): Promise<void> {
 }
 
 /**
- * Sends a desktop notification using the detected notification tool.
+ * Sends a desktop notification using the tool detected by
+ * {@link detectAvailableNotificationTool}, invoked through {@link exec}.
  * Fails silently when no tool is available; the terminal warning
  * is always printed regardless.
  *
