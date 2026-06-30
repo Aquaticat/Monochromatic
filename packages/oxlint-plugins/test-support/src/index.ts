@@ -35,6 +35,7 @@ export const OXLINT_PLUGIN_TEST_ROOT: string = resolve(
   '..',
   '..',
   '..',
+  '..',
 );
 
 /**
