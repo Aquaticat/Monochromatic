@@ -108,10 +108,13 @@ function deepenFromSignals(
 }
 
 /**
- * Rebuilds the estimator set from the current signals. A local exact value or
- * host proxy contributes directly; with a shallow tip known, the deepen, churn,
- * and prior estimators are added. Always returns at least one estimator so the
- * fusion never sees an empty set.
+ * Rebuilds the estimator set from the current signals. A local exact value
+ * ({@link localExactEstimate}) or host proxy ({@link hostProxyEstimate})
+ * contributes directly; with a shallow tip known, the deepen
+ * ({@link deepenEstimate}), churn ({@link churnEstimate}), and prior
+ * ({@link priorEstimate}) estimators are added. Always returns at least one
+ * estimator so the fusion never sees an empty set, falling back to
+ * {@link priorAbsentEstimate} when no signal has landed.
  *
  * @param signals - current accumulated signals
  *

@@ -27,7 +27,7 @@ import { CloneSizeError, } from './errors.ts';
  *
  * @returns exact byte length of the produced pack
  *
- * @throws CloneSizeError when either git process exits non-zero
+ * @throws {@link CloneSizeError} when either git process exits non-zero
  *
  * @example
  * ```ts

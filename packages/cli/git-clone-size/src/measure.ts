@@ -5,7 +5,7 @@
  * measure" conflates the two and lets a failed probe masquerade as a real
  * value. Functions that size object stores or packs return {@link Measured} and
  * signal failure with {@link UNMEASURED}, the same pattern the probe layer uses
- * with `NO_DEEPEN`, `NO_TREE0`, and `NO_CHURN`.
+ * with {@link NO_DEEPEN}, {@link NO_TREE0}, and {@link NO_CHURN}.
  *
  * @module
  */

@@ -242,7 +242,7 @@ function fuseConfidence(
  *
  * @returns fused point, interval, confidence, and basis labels
  *
- * @throws CloneSizeError when called with no estimators
+ * @throws {@link CloneSizeError} when called with no estimators
  *
  * @example
  * ```ts
