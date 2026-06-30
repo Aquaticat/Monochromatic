@@ -40,7 +40,9 @@ type Verdict = {
 };
 
 /**
- * List third-party (user-installed) application ids on the device.
+ * List third-party (user-installed) application ids on the device, by
+ * running `pm list packages -3` via {@link runAdb} and parsing the output
+ * with {@link parsePackageList}.
  *
  * @param serial - Device to query.
  *
@@ -69,7 +71,8 @@ export async function listThirdPartyPackages({ serial, }: { readonly serial: str
 }
 
 /**
- * Set one app's {@link ./constants.ts AUTO_REVOKE_OP} appops mode.
+ * Set one app's {@link ./constants.ts AUTO_REVOKE_OP} appops mode by
+ * invoking `cmd appops set` via {@link runAdb}.
  *
  * @param serial - Device to mutate.
  *
@@ -106,8 +109,10 @@ export async function setAutoRevoke({
 }
 
 /**
- * Read whether one app is exempt by parsing `cmd appops get` for the op. Used
- * only by the fallback path when bulk `query-op` is unavailable.
+ * Read whether one app is exempt by running `cmd appops get` via
+ * {@link runAdb} and parsing the output for the op. Used only by the
+ * fallback path when bulk `query-op` is unavailable; a failing invocation
+ * surfaces as an {@link AdbCommandError}, treated here as not exempted.
  *
  * @param serial - Device to query.
  *
@@ -155,8 +160,9 @@ async function isExemptedViaGet({
 }
 
 /**
- * Determine the exempt set by querying each app individually, in bounded
- * concurrent batches. Fallback for devices whose appops lacks `query-op`.
+ * Determine the exempt set by querying each app individually via
+ * {@link isExemptedViaGet}, in bounded concurrent batches. Fallback for
+ * devices whose appops lacks `query-op`.
  *
  * @param serial - Device to query.
  *
@@ -226,10 +232,11 @@ async function getExemptedViaGet({
 /**
  * List which of `packages` are currently exempt from auto-revoke.
  *
- * Primary path is a single bulk `query-op`; if that errors (older Android
- * without the subcommand), it falls back to per-app `get`. Either way the
- * result is intersected with `packages` so only in-scope third-party apps
- * remain.
+ * Primary path is a single bulk `query-op` via {@link runAdb}; if that
+ * raises an {@link AdbCommandError} (older Android without the subcommand),
+ * it falls back to per-app `get` via {@link getExemptedViaGet}. Either way
+ * the result is intersected with `packages` so only in-scope third-party
+ * apps remain.
  *
  * @param serial - Device to query.
  *

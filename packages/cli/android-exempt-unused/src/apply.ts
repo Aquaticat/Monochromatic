@@ -41,9 +41,10 @@ type Operation = {
 };
 
 /**
- * Apply every change in `changes` sequentially. adb serializes over a single
- * transport, so concurrency buys nothing and a steady order makes progress
- * legible. A failed app is recorded and the run continues.
+ * Apply every change in `changes` sequentially via {@link setAutoRevoke}.
+ * adb serializes over a single transport, so concurrency buys nothing and a
+ * steady order makes progress legible. A failed app raising an
+ * {@link AdbError} is recorded and the run continues.
  *
  * @param serial - Device to mutate.
  *

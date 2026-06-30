@@ -18,7 +18,9 @@ import {
 const l = tagged({ tag: 'devices', },);
 
 /**
- * List every device adb currently sees, with its connection state.
+ * List every device adb currently sees, with its connection state, by
+ * running `adb devices` via {@link runAdb} and parsing the output with
+ * {@link parseDevices}.
  *
  * Callers filter to {@link ./constants.ts CONNECTED_STATE} before use; this
  * returns the raw set so an `unauthorized` device can be surfaced to the user.

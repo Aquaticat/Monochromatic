@@ -53,9 +53,9 @@ function causeIsEnoent({ cause, }: { readonly cause: unknown; },): boolean {
  *
  * @returns Captured stdout from the invocation.
  *
- * @throws AdbNotFoundError when the `adb` binary is missing (`ENOENT`).
+ * @throws {@link AdbNotFoundError} when the `adb` binary is missing (`ENOENT`).
  *
- * @throws AdbCommandError when adb exits non-zero or fails otherwise.
+ * @throws {@link AdbCommandError} when adb exits non-zero or fails otherwise.
  *
  * @example
  * ```ts

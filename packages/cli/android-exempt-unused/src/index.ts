@@ -95,9 +95,9 @@ function summarize({ changes, }: { readonly changes: Changes; },): string {
  * Run the interactive flow end to end. Throws on adb failure or cancellation;
  * the top-level handler renders both.
  *
- * @throws NoDevicesError when no authorized device is connected.
+ * @throws {@link NoDevicesError} when no authorized device is connected.
  *
- * @throws PromptCancelledError when the user cancels any prompt.
+ * @throws {@link PromptCancelledError} when the user cancels any prompt.
  */
 async function runCli(): Promise<void> {
   /**
@@ -248,7 +248,8 @@ async function runCli(): Promise<void> {
  *
  * @param error - Value caught from runCli.
  *
- * @throws Re-throws any error that is not a PromptCancelledError or AdbError.
+ * @throws Re-throws any error that is not a {@link PromptCancelledError} or
+ *   {@link AdbError}.
  */
 function handleTopLevelError({ error, }: { readonly error: unknown; },): void {
   if (error instanceof PromptCancelledError) {

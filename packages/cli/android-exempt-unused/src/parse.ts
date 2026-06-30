@@ -127,14 +127,15 @@ export function parseDevices({ stdout, }: { readonly stdout: string; },): readon
  * Parse `pm list packages -3` output into application ids.
  *
  * Keeps only `package:`-prefixed lines, strips the prefix, and validates each
- * id. An invalid id signals output this parser does not understand, so it
- * throws rather than silently dropping entries.
+ * id with {@link isValidPackageName}. An invalid id signals output this
+ * parser does not understand, so it throws rather than silently dropping
+ * entries.
  *
  * @param stdout - Captured stdout from `adb shell pm list packages -3`.
  *
  * @returns Validated application ids, in listed order.
  *
- * @throws AdbCommandError when a stripped name fails validation.
+ * @throws {@link AdbCommandError} when a stripped name fails validation.
  *
  * @example
  * ```ts
@@ -180,10 +181,11 @@ export function parsePackageList({ stdout, }: { readonly stdout: string; },): re
  * Parse `cmd appops query-op AUTO_REVOKE_PERMISSIONS_IF_UNUSED ignore` output
  * into the application ids currently exempted.
  *
- * Tolerant by design: keeps only lines that are themselves a valid application
- * id, so headers, uid lines, and `No operations.` chatter are ignored. The
- * exact output format must be confirmed on a real device; the per-app `get`
- * fallback covers Android versions where this query is unavailable.
+ * Tolerant by design: keeps only lines that {@link isValidPackageName} reports
+ * as a valid application id, so headers, uid lines, and `No operations.`
+ * chatter are ignored. The exact output format must be confirmed on a real
+ * device; the per-app `get` fallback covers Android versions where this
+ * query is unavailable.
  *
  * @param stdout - Captured stdout from the `query-op` invocation.
  *

@@ -33,7 +33,7 @@ type AppOption = {
  *
  * @returns Chosen serial.
  *
- * @throws PromptCancelledError when the user cancels the select.
+ * @throws {@link PromptCancelledError} when the user cancels the select.
  *
  * @example
  * ```ts
@@ -77,7 +77,7 @@ export async function pickDevice({ serials, }: { readonly serials: readonly stri
  *
  * @returns Application ids the user left checked (may be empty).
  *
- * @throws PromptCancelledError when the user cancels.
+ * @throws {@link PromptCancelledError} when the user cancels.
  *
  * @example
  * ```ts
@@ -135,7 +135,7 @@ export async function pickApps({
  *
  * @returns `true` to apply, `false` to abort without changes.
  *
- * @throws PromptCancelledError when the user cancels.
+ * @throws {@link PromptCancelledError} when the user cancels.
  *
  * @example
  * ```ts
