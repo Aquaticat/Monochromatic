@@ -180,7 +180,8 @@ function escapeResharpOnlyMeta({ pattern, }: { pattern: string; },): string {
 }
 
 /**
- * Convert a betterleaks-style PCRE regex to resharp-compatible form.
+ * Convert a betterleaks-style PCRE regex to resharp-compatible form, finishing
+ * with {@link escapeResharpOnlyMeta} for the resharp-only meta characters.
  */
 function pcreToResharp({ pattern, }: { pattern: string; },): string {
   /**
@@ -212,7 +213,8 @@ function pcreToResharp({ pattern, }: { pattern: string; },): string {
 }
 
 /**
- * Parse the betterleaks TOML and yield the subset of fields we care about.
+ * Parse the betterleaks TOML and yield the subset of fields we care about,
+ * one {@link RawRule} per parsed entry.
  */
 function parseRules({ toml, }: { toml: string; },): readonly RawRule[] {
   /**
@@ -464,7 +466,8 @@ const DROPPED_BY_ID: ReadonlyMap<string, string> = new Map([
 ],);
 
 /**
- * Render one rule as a forbidden-strings entry (comments + regex line).
+ * Render one rule as a forbidden-strings entry (comments + regex line),
+ * applying any {@link RELAXATIONS} entry before converting via {@link pcreToResharp}.
  */
 function renderRule({ rule, }: { rule: RawRule; },): string {
   /**
@@ -608,7 +611,8 @@ const FOOTER = `# === resharp set-algebra demonstrations (engine-specific) ===
 `;
 
 /**
- * Entry point.
+ * Entry point. Reads the upstream TOML, extracts rules via {@link parseRules},
+ * and writes each kept rule through {@link renderRule}.
  */
 async function main(): Promise<void> {
   /**
