@@ -59,7 +59,8 @@ function hasSupportedShellGlobSyntax(
 }
 
 /**
- * Return existing parent directory before first glob metacharacter.
+ * Return existing parent directory before first glob metacharacter, found via
+ * {@link firstSupportedGlobIndex}.
  *
  * @param resolved - absolute shell path token with supported glob syntax
  *
@@ -128,7 +129,8 @@ function firstSupportedGlobIndex(
 //region Secret path checks
 
 /**
- * Check raw and resolved path text for secret-looking markers.
+ * Check raw and resolved path text against {@link SECRET_PATH_PATTERN} for
+ * secret-looking markers.
  *
  * Glob metacharacters are stripped for a second pass so `.env*` still matches
  * the existing secret path pattern.
@@ -183,6 +185,9 @@ function pathTextHasSecretMarker(
 
 /**
  * Check whether canonical path is inside trusted directory.
+ *
+ * Canonicalises the trusted root with {@link realpathOrUnavailable} before
+ * comparing containment with {@link isUnder}.
  *
  * @param canonicalPath - canonical path to test
  *

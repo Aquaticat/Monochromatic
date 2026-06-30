@@ -41,6 +41,9 @@ type RealpathResult = string | typeof REALPATH_UNAVAILABLE;
 /**
  * Check whether path is existing non-secret file under trusted agent temp root.
  *
+ * Requires {@link isExistingPathUnderTrustedAgentTemp} containment, then
+ * requires {@link pathSignals} to find no other location signal.
+ *
  * @param filePath - shell path token
  *
  * @param ctx - path resolution context
@@ -82,6 +85,9 @@ async function isExistingNonSecretTrustedAgentTempPath(
 
 /**
  * Check whether path resolves inside trusted agent temp root.
+ *
+ * Resolves the token with {@link resolvePath}, canonicalises both sides with
+ * {@link realpathOrUnavailable}, and compares containment with {@link isUnder}.
  *
  * @param filePath - shell path token
  *
@@ -145,6 +151,9 @@ async function isExistingPathUnderTrustedAgentTemp(
 /**
  * Check whether command path is project dotenv credential extraction source.
  *
+ * Requires a `grep` command with an argument matching {@link SECRET_VAR_PATTERN},
+ * then requires {@link isExistingProjectDotenvPath} for the path token.
+ *
  * @param command - parsed command segment containing path token
  *
  * @param filePath - shell path token
@@ -195,6 +204,9 @@ async function isProjectDotenvCredentialExtractionPath(
 
 /**
  * Check whether path is existing project-local dotenv file.
+ *
+ * Resolves the token with {@link resolvePath}, checks cwd containment with
+ * {@link isUnder}, and checks the basename with {@link isDotenvBasename}.
  *
  * @param filePath - shell path token
  *

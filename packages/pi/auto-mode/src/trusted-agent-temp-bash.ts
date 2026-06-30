@@ -54,6 +54,10 @@ const TRUSTED_AGENT_TEMP_SCRIPT_RUNNERS = new Set([
 /**
  * Check whether bash path signal is allowed by trusted agent temp policy.
  *
+ * Delegates to {@link isNonSecretTrustedAgentTempBashPath} for the helper-path
+ * check and, when allowed, to {@link isProjectDotenvCredentialExtractionPath}
+ * for the dotenv credential handoff check.
+ *
  * @param filePath - path token being scored by bash signal scan
  *
  * @param ctx - path resolution context
@@ -113,6 +117,9 @@ async function isTrustedAgentTempBashPathAllowed(
 /**
  * Check whether command hands secret-looking env var to trusted temp helper.
  *
+ * Filters commands with {@link commandContainsSecretAssignment} and tests the
+ * survivors with {@link commandInvokesTrustedAgentTempHelper}.
+ *
  * @param analysis - parsed bash analysis for complete tool command
  *
  * @param ctx - path resolution context
@@ -171,6 +178,10 @@ async function hasTrustedAgentTempCredentialHandoff(
 /**
  * Check whether command text contains secret-looking assignment name.
  *
+ * Extracts candidate words with {@link commandWords}, names with
+ * {@link extractShellAssignmentNames}, and tests each against
+ * {@link SECRET_VAR_PATTERN}.
+ *
  * @param command - parsed command segment
  *
  * @returns whether any assignment name resembles credential variable
@@ -226,6 +237,9 @@ function commandWords(
 
 /**
  * Check whether command executes a helper from trusted agent temp root.
+ *
+ * Tests the command name and, for {@link TRUSTED_AGENT_TEMP_SCRIPT_RUNNERS}
+ * commands, their arguments with {@link isExistingPathUnderTrustedAgentTemp}.
  *
  * @param command - parsed command segment
  *

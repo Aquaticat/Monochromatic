@@ -57,7 +57,8 @@ async function isTrustedReadAllowlistDir(
 }
 
 /**
- * Return agent temp root when current filesystem state is trusted.
+ * Return {@link AGENT_TEMP_READ_DIR} when {@link isTrustedReadAllowlistDir}
+ * finds current filesystem state trusted.
  *
  * @returns singleton allowlist when `/tmp/agent` is private, otherwise empty list
  *
@@ -73,7 +74,8 @@ async function agentTempAllowlistedDirs(): Promise<readonly string[]> {
 }
 
 /**
- * Return agent temp root for structured read-tool bypass compatibility.
+ * Return agent temp root for structured read-tool bypass compatibility; a
+ * passthrough to {@link agentTempAllowlistedDirs}.
  *
  * @returns singleton allowlist when `/tmp/agent` is private, otherwise empty list
  *

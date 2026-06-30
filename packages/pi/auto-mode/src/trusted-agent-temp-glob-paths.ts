@@ -25,9 +25,11 @@ import type { SignalContext, } from './types.ts';
 /**
  * Check whether path is safe as trusted temp helper input.
  *
- * Existing files use canonical target checks. Shell glob paths are allowed only
- * when their literal parent already canonicalises under a trusted temp root and
- * their text does not contain secret-looking path markers.
+ * Existing files use canonical target checks via
+ * {@link isExistingNonSecretTrustedAgentTempPath}. Shell glob paths fall
+ * through to {@link isNonSecretTrustedAgentTempGlobPath}, which allows them
+ * only when their literal parent already canonicalises under a trusted temp
+ * root and their text does not contain secret-looking path markers.
  *
  * @param filePath - shell path token
  *
@@ -73,6 +75,12 @@ async function isNonSecretTrustedAgentTempBashPath(
 
 /**
  * Check whether missing glob path stays under trusted temp and is non-secret.
+ *
+ * Requires {@link hasSupportedShellGlobSyntax}, resolves the token with
+ * {@link resolvePath}, rejects secret-looking text via
+ * {@link pathTextHasSecretMarker}, canonicalises the existing literal parent
+ * with {@link realpathOrUnavailable} and {@link globParentDirectory}, then
+ * checks containment with {@link trustedDirContainsCanonicalPath}.
  *
  * @param filePath - shell path token that may contain glob syntax
  *

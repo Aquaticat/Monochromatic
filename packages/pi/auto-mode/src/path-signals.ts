@@ -47,6 +47,13 @@ type RealpathResult = string | typeof REALPATH_UNAVAILABLE;
  * home directory on some Linux systems. The `!isUnder(resolved, cwd)`
  * check already catches paths outside the project directory.
  *
+ * Delegates to {@link resolvePath} and {@link tryRealpath} to canonicalise
+ * the target, {@link isAllowlistedPath} to honor per-call allowlists,
+ * {@link isUnder} for cwd containment, {@link isHomeDotfile} for home
+ * dotfile detection, and {@link hasSecretPathSignal} for secret-looking
+ * names; {@link realpathOrLexical} canonicalises cwd and home for the
+ * comparison.
+ *
  * @returns `true` if the path should be flagged
  *
  * @example
@@ -149,6 +156,9 @@ async function pathSignals(
 /**
  * Check whether canonical target is under any canonical allowlisted directory.
  *
+ * Canonicalises each allowlisted root with {@link tryRealpath} before
+ * comparing containment with {@link isUnder}.
+ *
  * @param canonicalResolved - canonical target path, when target exists
  *
  * @param cwd - working directory used for resolving relative allowlist entries
@@ -203,7 +213,8 @@ async function isAllowlistedPath(
 }
 
 /**
- * Check raw, lexical, and canonical path spellings for secret-looking names.
+ * Check raw, lexical, and canonical path spellings against
+ * {@link SECRET_PATH_PATTERN} for secret-looking names.
  *
  * @param filePath - original path string supplied to tool call
  *
@@ -272,7 +283,8 @@ async function tryRealpath(
 }
 
 /**
- * Resolve filesystem path to canonical target, falling back to original spelling.
+ * Resolve filesystem path to canonical target via {@link tryRealpath},
+ * falling back to original spelling.
  *
  * @param path - filesystem path that may include symlinks
  *
@@ -360,7 +372,8 @@ function isUnder(
 }
 
 /**
- * Check if a resolved path is a dotfile or dotdir in the home directory.
+ * Check if a resolved path is a dotfile or dotdir in the home directory,
+ * using {@link isUnder} for the home-containment check.
  *
  * @returns `true` if the path is a dotfile/dotdir in home
  *
