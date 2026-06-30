@@ -21,9 +21,9 @@ import type {
  *
  * @returns final pipeline output
  *
- * @throws PipeStepGapError when step keys are not contiguous
+ * @throws {@link PipeStepGapError} when step keys are not contiguous
  *
- * @throws PipeStepOverflowError when `fn10` is present
+ * @throws {@link PipeStepOverflowError} when `fn10` is present
  *
  * @throws whatever pipeline step throws; the throw propagates unchanged
  *
@@ -201,9 +201,9 @@ export function runPipe(args: RunArgs,): unknown {
  *
  * @returns promise resolving to final pipeline output
  *
- * @throws PipeStepGapError when step keys are not contiguous
+ * @throws {@link PipeStepGapError} when step keys are not contiguous
  *
- * @throws PipeStepOverflowError when `fn10` is present
+ * @throws {@link PipeStepOverflowError} when `fn10` is present
  *
  * @throws whatever pipeline step throws or rejects with; the failure propagates unchanged
  *

@@ -130,13 +130,15 @@ export function piped<
   } & NoStepsAfter9,
 ): TStep9;
 /**
- * Runs a synchronous value through one or more left-to-right pipeline steps.
+ * Runs a synchronous value through one or more left-to-right pipeline steps,
+ * delegating to {@link runPipe}.
  *
  * @param args - input value, contiguous step functions, and optional logger
  *
  * @returns final pipeline output
  *
- * @throws PipeStepGapError or PipeStepOverflowError when runtime step keys are invalid
+ * @throws {@link PipeStepGapError} or {@link PipeStepOverflowError} when
+ * runtime step keys are invalid
  *
  * @throws whatever pipeline step throws; the throw propagates unchanged
  *

@@ -121,13 +121,15 @@ export function pipeAsync<
   } & NoStepsAfter9,
 ): (value: TInput | Promise<TInput>,) => Promise<Awaited<TStep9>>;
 /**
- * Creates a reusable asynchronous left-to-right pipeline function.
+ * Creates a reusable asynchronous left-to-right pipeline function, delegating
+ * each call to {@link runPipeAsync}.
  *
  * @param args - contiguous step functions and optional logger
  *
  * @returns function that applies captured steps to each possibly promised input value
  *
- * @throws PipeStepGapError or PipeStepOverflowError when runtime step keys are invalid
+ * @throws {@link PipeStepGapError} or {@link PipeStepOverflowError} when
+ * runtime step keys are invalid
  *
  * @throws whatever pipeline step throws or rejects with; the failure propagates unchanged
  *

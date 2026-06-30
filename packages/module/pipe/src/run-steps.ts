@@ -23,7 +23,7 @@ const NO_STEP_GAP = -1;
  * @param steps - Ordered step slots from `fn1` through `fn9`, inspected with array methods only so
  * no `noUncheckedIndexedAccess` guard is needed per element.
  *
- * @throws PipeStepGapError when step keys are not contiguous.
+ * @throws {@link PipeStepGapError} when step keys are not contiguous.
  *
  * @example
  * ```ts
@@ -58,7 +58,7 @@ export function assertContiguousSteps(steps: readonly unknown[],): void {
  * @param overflowStep - Possible unsupported `fn10` step; presence alone (not its value) signals
  * overflow because the overloads cap arity at nine.
  *
- * @throws PipeStepOverflowError when `fn10` is present.
+ * @throws {@link PipeStepOverflowError} when `fn10` is present.
  *
  * @example
  * ```ts

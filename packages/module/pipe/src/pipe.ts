@@ -121,13 +121,15 @@ export function pipe<
   } & NoStepsAfter9,
 ): (value: TInput,) => TStep9;
 /**
- * Creates a reusable synchronous left-to-right pipeline function.
+ * Creates a reusable synchronous left-to-right pipeline function, delegating
+ * each call to {@link runPipe}.
  *
  * @param args - contiguous step functions and optional logger
  *
  * @returns function that applies captured steps to each input value
  *
- * @throws PipeStepGapError or PipeStepOverflowError when runtime step keys are invalid
+ * @throws {@link PipeStepGapError} or {@link PipeStepOverflowError} when
+ * runtime step keys are invalid
  *
  * @throws whatever pipeline step throws; the throw propagates unchanged
  *

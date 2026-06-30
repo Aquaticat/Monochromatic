@@ -130,13 +130,15 @@ export function pipedAsync<
   } & NoStepsAfter9,
 ): Promise<Awaited<TStep9>>;
 /**
- * Runs a possibly promised value through asynchronous left-to-right pipeline steps.
+ * Runs a possibly promised value through asynchronous left-to-right pipeline
+ * steps, delegating to {@link runPipeAsync}.
  *
  * @param args - possibly promised input value, contiguous step functions, and optional logger
  *
  * @returns promise resolving to final pipeline output
  *
- * @throws PipeStepGapError or PipeStepOverflowError when runtime step keys are invalid
+ * @throws {@link PipeStepGapError} or {@link PipeStepOverflowError} when
+ * runtime step keys are invalid
  *
  * @throws whatever pipeline step throws or rejects with; the failure propagates unchanged
  *
