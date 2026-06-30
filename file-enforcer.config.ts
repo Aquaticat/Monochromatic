@@ -111,7 +111,8 @@ class ForbiddenRootContextFileError extends Error {
 }
 
 /**
- * Returns whether an unknown filesystem error carries the expected Node error code.
+ * Returns whether an unknown filesystem error carries the expected Node error code,
+ * narrowing through {@link NodeErrorCodeCarrier}.
  *
  * @param error - unknown error from a filesystem operation.
  *
@@ -139,7 +140,9 @@ function errorHasCode(
 }
 
 /**
- * Registers root CONTEXT.md with watch mode and rejects it before generated writes.
+ * Registers root CONTEXT.md with watch mode and rejects it before generated writes,
+ * using {@link errorHasCode} to tell an absent path from a real stat failure and
+ * throwing {@link ForbiddenRootContextFileError} when the file is present.
  *
  * @example
  * ```ts
@@ -179,7 +182,7 @@ type BrowserslistResolver = typeof browserslist;
 /**
  * Imports Browserslist at runtime so generators use the installed package data.
  *
- * @returns Browserslist resolver from dynamic package import.
+ * @returns {@link BrowserslistResolver} from dynamic package import.
  *
  * @example
  * ```ts
@@ -316,7 +319,8 @@ ${await cat([
 
 /**
  * Generates resolved Browserslist targets for build tools that cannot resolve
- * `.browserslistrc` directly.
+ * `.browserslistrc` directly, loading the resolver via {@link importBrowserslist}
+ * and picking query lines with {@link selectBrowserslistQueries}.
  *
  * @example
  * ```ts
@@ -403,7 +407,8 @@ function harperLintersDisabled(rules: readonly string[],): Record<string, false>
 
 /**
  * Syncs this repo's Harper LSP4IJ writing-style policy into the latest IntelliJ
- * IDEA config: disables prose rules globally, excludes the caveman-style agent
+ * IDEA config via {@link manageLsp4ijServerSettings}: disables prose rules
+ * globally with {@link harperLintersDisabled}, excludes the caveman-style agent
  * docs from the main server, and registers a second Harper server scoped to
  * AGENTS.md and CLAUDE.md with extra rules disabled.
  *
