@@ -1,15 +1,5 @@
-import {
-  copyFileSync,
-  mkdtempSync,
-  readFileSync,
-  rmSync,
-} from 'node:fs';
-import { tmpdir, } from 'node:os';
-import {
-  isAbsolute,
-  join,
-  resolve,
-} from 'node:path';
+import { readFileSync, } from 'node:fs';
+import { resolve, } from 'node:path';
 
 import type { Context, } from '@oxlint/plugins';
 import {
@@ -19,44 +9,20 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import spawn from 'nano-spawn';
 
+import {
+  createTempFixtureFile,
+  fixtureConfigPath,
+  fixturePackageRoot,
+  fixtureSourceRoot,
+  type OxlintRuleDiagnostic as OxlintDiagnostic,
+  OXLINT_PLUGIN_TEST_ROOT as ROOT,
+  resolveFixtureTarget,
+  runOxlintFixture,
+  uniqueRuleCodes as uniqueRules,
+} from '../../test-support/oxlint-test-kit.ts';
+
 import type { ChainNode, } from './utility/chain.ts';
 import { chainBreakOffsets, } from './utility/chain-flatten.ts';
-
-//region Types
-
-/** Single diagnostic from oxlint JSON output. */
-type OxlintDiagnostic = {
-  /** Human-readable error message. */
-  readonly message: string;
-  /** Rule identifier in `plugin(rule-name)` format. Absent for runner-level errors. */
-  readonly code?: string;
-  /** `"error"` or `"warning"`. */
-  readonly severity: string;
-  /** Source file path relative to cwd. */
-  readonly filename: string;
-};
-
-/** Top-level oxlint `--format json` output. */
-type OxlintOutput = {
-  /** All reported diagnostics. */
-  readonly diagnostics: readonly OxlintDiagnostic[];
-};
-
-/** Disposable temp copy of a fixture file. */
-type TempFixtureFile = {
-  /** Absolute path to copied fixture file. */
-  readonly filePath: string;
-  /** Removes temp directory that contains fixture copy. */
-  [Symbol.dispose](): void;
-};
-
-/** Options for creating a disposable fixture copy. */
-type TempFixtureFileOptions = {
-  /** Basename for copied temp file. */
-  readonly fileName: string;
-  /** Source fixture path to copy into temp directory. */
-  readonly sourcePath: string;
-};
 
 /** Minimal token stub the chain walk reads: a value to classify and a start offset. */
 type TokenStub = {
@@ -70,49 +36,36 @@ type TokenStub = {
 
 //region Helpers
 
-/** Workspace root. */
-const ROOT = resolve(
-  import.meta.dirname,
-  '..',
-  '..',
-  '..',
-  '..',
-);
-
 /** Fixture package root. */
-const FIXTURE_PKG = resolve(
-  ROOT,
-  'packages',
-  'test-fixture',
-  'oxlint-stylistic',
-);
+const FIXTURE_PKG = fixturePackageRoot({
+  fixturePackageName: 'oxlint-stylistic',
+},);
 
 /** Fixture source root. */
-const FIXTURES = resolve(
-  FIXTURE_PKG,
-  'src',
-);
+const FIXTURES = fixtureSourceRoot({
+  fixturePackageName: 'oxlint-stylistic',
+},);
 
 /**
  * Fixture-specific oxlint config with all stylistic rules enabled and no
  * ignorePatterns that would skip test-fixture or invalid paths.
  */
-const FIXTURE_CONFIG = resolve(
-  FIXTURE_PKG,
-  '.oxlintrc.fixture.json',
-);
+const FIXTURE_CONFIG = fixtureConfigPath({
+  fixturePackageName: 'oxlint-stylistic',
+  fileName: '.oxlintrc.fixture.json',
+},);
 
 /** Fixture config that intentionally passes eslint.style-style semi options. */
-const SEMI_CONFIGURED_FIXTURE_CONFIG = resolve(
-  FIXTURE_PKG,
-  '.oxlintrc.semi-configured.fixture.json',
-);
+const SEMI_CONFIGURED_FIXTURE_CONFIG = fixtureConfigPath({
+  fixturePackageName: 'oxlint-stylistic',
+  fileName: '.oxlintrc.semi-configured.fixture.json',
+},);
 
 /** Fixture config that intentionally passes eslint.style-style comma-dangle options. */
-const COMMA_DANGLE_CONFIGURED_FIXTURE_CONFIG = resolve(
-  FIXTURE_PKG,
-  '.oxlintrc.comma-dangle-configured.fixture.json',
-);
+const COMMA_DANGLE_CONFIGURED_FIXTURE_CONFIG = fixtureConfigPath({
+  fixturePackageName: 'oxlint-stylistic',
+  fileName: '.oxlintrc.comma-dangle-configured.fixture.json',
+},);
 
 /** Maximum autofix passes needed for overlapping stylistic fixes to converge. */
 const MAX_AUTOFIX_PASSES = 8;
@@ -128,85 +81,19 @@ const MAX_AUTOFIX_PASSES = 8;
  */
 async function lint(fixturePath: string,): Promise<readonly OxlintDiagnostic[]> {
   /** Resolved lint target; temp fixtures already arrive as absolute paths. */
-  const target = isAbsolute(fixturePath,)
-    ? fixturePath
-    : resolve(
-      FIXTURES,
-      fixturePath,
-    );
+  const target = resolveFixtureTarget({
+    fixtureSourceRoot: FIXTURES,
+    fixturePath,
+  },);
 
-  // oxlint exits non-zero when violations are found: capture stdout from the error
-  async function captureStdout(): Promise<string> {
-    try {
-      const { stdout, } = await spawn(
-        'oxlint',
-        [
-          '--format',
-          'json',
-          '--config',
-          FIXTURE_CONFIG,
-          target,
-        ],
-        { cwd: ROOT, },
-      );
-      return stdout;
-    }
-    catch (error: unknown) {
-      return (error as { stdout: string; }).stdout;
-    }
-  }
-  const stdout = await captureStdout();
-
-  // oxlint-disable-next-line typescript/no-unsafe-assignment -- JSON.parse returns any
-  const output: OxlintOutput = JSON.parse(stdout,);
-
-  return output.diagnostics.filter(function isStylisticRule(diagnostic,): boolean {
-    // Defensive: some runner-level error diagnostics omit `code` entirely.
-    return ((typeof diagnostic.code) === 'string')
-      && diagnostic.code.startsWith('stylistic(',);
+  return runOxlintFixture({
+    codePrefix: 'stylistic(',
+    configFlag: '--config',
+    fixtureConfig: FIXTURE_CONFIG,
+    target,
   },);
 }
 
-/**
- * Creates a temp fixture copy with disposal-backed directory cleanup.
- *
- * @param options - fixture source and temp basename
- *
- * @returns copied temp fixture file handle
- */
-function createTempFixtureFile(
-  {
-    fileName,
-    sourcePath,
-  }: TempFixtureFileOptions,
-): TempFixtureFile {
-  /** Unique temp directory owning this fixture copy. */
-  const dirPath = mkdtempSync(
-    join(
-      tmpdir(),
-      'oxlint-stylistic-autofix-',
-    ),
-  );
-  /** Absolute path to temp fixture copy. */
-  const filePath = resolve(
-    dirPath,
-    fileName,
-  );
-  copyFileSync(sourcePath, filePath,);
-
-  return {
-    filePath,
-    [Symbol.dispose]: function cleanup(): void {
-      rmSync(
-        dirPath,
-        {
-          recursive: true,
-          force: true,
-        },
-      );
-    },
-  };
-}
 
 /**
  * Runs oxlint --fix on a fixture until content stops changing.
@@ -416,15 +303,6 @@ function buildOperatorChain(operators: number,): ChainNode {
  *
  * @returns sorted array of unique `stylistic(rule-name)` codes
  */
-function uniqueRules(diagnostics: readonly OxlintDiagnostic[],): readonly string[] {
-  const codes = diagnostics.flatMap(function getCode(d,): string[] {
-    return d.code === undefined ? [] : [d.code,];
-  },);
-  const deduped: string[] = [...new Set<string>(codes,),];
-  deduped.sort();
-  return deduped;
-}
-
 //endregion Helpers
 
 await describe({
@@ -920,6 +798,7 @@ await describe({
             using semiCopy = createTempFixtureFile({
               fileName: 'semi.ts',
               sourcePath: semiSrc,
+              tempPrefix: 'oxlint-stylistic-autofix-',
             },);
 
             try {
@@ -963,6 +842,7 @@ await describe({
             using fixableCopy = createTempFixtureFile({
               fileName: 'fixable.ts',
               sourcePath: fixableSrc,
+              tempPrefix: 'oxlint-stylistic-autofix-',
             },);
 
             await fixUntilStable(fixableCopy.filePath,);
@@ -991,6 +871,7 @@ await describe({
             using commaCopy = createTempFixtureFile({
               fileName: 'comma-dangle.ts',
               sourcePath: commaSrc,
+              tempPrefix: 'oxlint-stylistic-autofix-',
             },);
 
             await fixUntilStable(commaCopy.filePath,);
@@ -1041,6 +922,7 @@ await describe({
             using trailingCopy = createTempFixtureFile({
               fileName: 'fixable-trailing-comma.ts',
               sourcePath: trailingSrc,
+              tempPrefix: 'oxlint-stylistic-autofix-',
             },);
 
             try {
@@ -1082,6 +964,7 @@ await describe({
             using blockCopy = createTempFixtureFile({
               fileName: 'block-body-newline.ts',
               sourcePath: blockSrc,
+              tempPrefix: 'oxlint-stylistic-autofix-',
             },);
 
             await fixUntilStable(blockCopy.filePath,);
@@ -1126,6 +1009,7 @@ await describe({
             using chainCopy = createTempFixtureFile({
               fileName: 'chain-per-line.ts',
               sourcePath: chainSrc,
+              tempPrefix: 'oxlint-stylistic-autofix-',
             },);
 
             await fixUntilStable(chainCopy.filePath,);
@@ -1185,6 +1069,7 @@ await describe({
             using commentCopy = createTempFixtureFile({
               fileName: 'chain-comment.ts',
               sourcePath: commentSrc,
+              tempPrefix: 'oxlint-stylistic-autofix-',
             },);
             /** Original content; the suppressed fix must leave it byte-for-byte. */
             const before = readFileSync(commentCopy.filePath, 'utf8',);
@@ -1220,6 +1105,7 @@ await describe({
             using argsCopy = createTempFixtureFile({
               fileName: 'chain-comment-in-args.ts',
               sourcePath: argsSrc,
+              tempPrefix: 'oxlint-stylistic-autofix-',
             },);
             /** Original content; unlike the head-comment case, the fix must rewrite it. */
             const before = readFileSync(argsCopy.filePath, 'utf8',);
@@ -1263,6 +1149,7 @@ await describe({
             using combinedCopy = createTempFixtureFile({
               fileName: 'chain-and-mixed-operators.ts',
               sourcePath: combinedSrc,
+              tempPrefix: 'oxlint-stylistic-autofix-',
             },);
 
             // oxlint applies at most one fix per overlapping byte region per pass, so
@@ -1322,6 +1209,7 @@ await describe({
             using fixableCopy = createTempFixtureFile({
               fileName: 'fixable.ts',
               sourcePath: fixableSrc,
+              tempPrefix: 'oxlint-stylistic-autofix-',
             },);
 
             await fixUntilStable(fixableCopy.filePath,);
@@ -1360,6 +1248,7 @@ await describe({
             using commentCopy = createTempFixtureFile({
               fileName: 'invocation-depth-comment.ts',
               sourcePath: commentSrc,
+              tempPrefix: 'oxlint-stylistic-autofix-',
             },);
 
             await fixUntilStable(commentCopy.filePath,);
@@ -1395,6 +1284,7 @@ await describe({
             using convergeCopy = createTempFixtureFile({
               fileName: 'invocation-depth-convergence.ts',
               sourcePath: convergeSrc,
+              tempPrefix: 'oxlint-stylistic-autofix-',
             },);
 
             // oxlint applies at most one fix per overlapping byte region per pass,

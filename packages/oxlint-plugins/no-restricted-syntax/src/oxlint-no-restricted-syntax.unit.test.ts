@@ -17,52 +17,28 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import spawn from 'nano-spawn';
 
-//region Types
-
-/** Single diagnostic from oxlint JSON output. */
-type OxlintDiagnostic = {
-  /** Human-readable error message. */
-  readonly message: string;
-  /** Rule identifier in `plugin(rule-name)` format. */
-  readonly code: string;
-  /** `"error"` or `"warning"`. */
-  readonly severity: string;
-  /** Source file path relative to cwd. */
-  readonly filename: string;
-};
-
-/** Top-level oxlint `--format json` output. */
-type OxlintOutput = {
-  /** All reported diagnostics. */
-  readonly diagnostics: readonly OxlintDiagnostic[];
-};
-
-//endregion Types
+import {
+  fixtureConfigPath,
+  fixturePackageRoot,
+  fixtureSourceRoot,
+  type OxlintRuleDiagnostic as OxlintDiagnostic,
+  OXLINT_PLUGIN_TEST_ROOT as ROOT,
+  resolveFixtureTarget,
+  runOxlintFixture,
+  uniqueRuleCodes as uniqueRules,
+} from '../../test-support/oxlint-test-kit.ts';
 
 //region Helpers
 
-/** Workspace root. */
-const ROOT = resolve(
-  import.meta.dirname,
-  '..',
-  '..',
-  '..',
-  '..',
-);
-
 /** Fixture package root. */
-const FIXTURE_PKG = resolve(
-  ROOT,
-  'packages',
-  'test-fixture',
-  'oxlint-no-restricted-syntax',
-);
+const FIXTURE_PKG = fixturePackageRoot({
+  fixturePackageName: 'oxlint-no-restricted-syntax',
+},);
 
 /** Fixture source root. */
-const FIXTURES = resolve(
-  FIXTURE_PKG,
-  'src',
-);
+const FIXTURES = fixtureSourceRoot({
+  fixturePackageName: 'oxlint-no-restricted-syntax',
+},);
 
 /** Calibration data root holding the labeled `.txt` description files. */
 const DATA = resolve(
@@ -74,10 +50,10 @@ const DATA = resolve(
  * Fixture-specific oxlint config with all no-restricted-syntax rules enabled
  * and no ignorePatterns that would skip test-fixture or invalid paths.
  */
-const FIXTURE_CONFIG = resolve(
-  FIXTURE_PKG,
-  '.oxlintrc.fixture.json',
-);
+const FIXTURE_CONFIG = fixtureConfigPath({
+  fixturePackageName: 'oxlint-no-restricted-syntax',
+  fileName: '.oxlintrc.fixture.json',
+},);
 
 /**
  * Runs oxlint with the fixture config against a fixture path and returns
@@ -89,36 +65,12 @@ const FIXTURE_CONFIG = resolve(
  * ```
  */
 async function runOxlint(target: string,): Promise<readonly OxlintDiagnostic[]> {
-  // oxlint exits non-zero when violations are found: capture stdout from the error
-  async function captureStdout(): Promise<string> {
-    try {
-      const { stdout, } = await spawn(
-        'oxlint',
-        [
-          '--format',
-          'json',
-          '-c',
-          FIXTURE_CONFIG,
-          target,
-        ],
-        { cwd: ROOT, },
-      );
-      return stdout;
-    }
-    catch (error: unknown) {
-      return (error as { stdout: string; }).stdout;
-    }
-  }
-  const stdout = await captureStdout();
-
-  // oxlint-disable-next-line typescript/no-unsafe-assignment -- JSON.parse returns any
-  const output: OxlintOutput = JSON.parse(stdout,);
-
-  return output.diagnostics.filter(
-    function isNoRestrictedSyntax(diagnostic,): boolean {
-      return diagnostic.code.startsWith('no-restricted-syntax(',);
-    },
-  );
+  return runOxlintFixture({
+    codePrefix: 'no-restricted-syntax(',
+    configFlag: '-c',
+    fixtureConfig: FIXTURE_CONFIG,
+    target,
+  },);
 }
 
 /**
@@ -130,31 +82,10 @@ async function runOxlint(target: string,): Promise<readonly OxlintDiagnostic[]> 
  * ```
  */
 async function lint(fixturePath: string,): Promise<readonly OxlintDiagnostic[]> {
-  return runOxlint(resolve(
-    FIXTURES,
+  return runOxlint(resolveFixtureTarget({
+    fixtureSourceRoot: FIXTURES,
     fixturePath,
-  ),);
-}
-
-/**
- * Extracts unique rule codes from a set of diagnostics.
- *
- * @example
- * ```ts
- * uniqueRules(diags); // → ['no-restricted-syntax(no-switch)']
- * ```
- */
-function uniqueRules(
-  diagnostics: readonly OxlintDiagnostic[],
-): readonly string[] {
-  return [
-    ...new Set(diagnostics.map(
-      function pickCode(d,): string {
-        return d.code;
-      },
-    ),),
-  ]
-    .toSorted();
+  },),);
 }
 
 /** Bare rule name for the low-information Symbol description rule. */

@@ -1,123 +1,43 @@
-import {
-  copyFileSync,
-  mkdtempSync,
-  readFileSync,
-  rmSync,
-} from 'node:fs';
-import { tmpdir, } from 'node:os';
-import {
-  isAbsolute,
-  join,
-  resolve,
-} from 'node:path';
+import { readFileSync, } from 'node:fs';
+import { resolve, } from 'node:path';
 
 import spawn from 'nano-spawn';
 
-import { findMiseMonorepoRoot, } from '@monochromatic-dev/module-fs-path/ts';
 import {
   describe,
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-//region Types
-
-/** Single diagnostic from oxlint JSON output. */
-type OxlintDiagnostic = {
-  /** Human-readable error message. */
-  readonly message: string;
-  /** Rule identifier in `plugin(rule-name)` format. */
-  readonly code: string;
-  /** `"error"` or `"warning"`. */
-  readonly severity: string;
-  /** Source file path relative to cwd. */
-  readonly filename: string;
-};
-
-/** Top-level oxlint `--format json` output. */
-type OxlintOutput = {
-  /** All reported diagnostics. */
-  readonly diagnostics: readonly OxlintDiagnostic[];
-};
-
-/** Disposable temp copy of a fixture file. */
-type TempFixtureFile = {
-  /** Absolute path to copied fixture file. */
-  readonly filePath: string;
-  /** Removes temp directory that contains fixture copy. */
-  [Symbol.dispose](): void;
-};
-
-/** Options for creating a disposable fixture copy. */
-type TempFixtureFileOptions = {
-  /** Basename for copied temp file. */
-  readonly fileName: string;
-  /** Source fixture path to copy into temp directory. */
-  readonly sourcePath: string;
-};
-
-//endregion Types
+import {
+  createTempFixtureFile,
+  fixtureConfigPath,
+  fixtureSourceRoot,
+  type OxlintRuleDiagnostic as OxlintDiagnostic,
+  OXLINT_PLUGIN_TEST_ROOT as ROOT,
+  resolveFixtureTarget,
+  runOxlintFixture,
+  uniqueRuleCodes as uniqueRules,
+} from '../../test-support/oxlint-test-kit.ts';
 
 //region Helpers
 
-/** Workspace root. */
-const ROOT = await findMiseMonorepoRoot({ cwd: import.meta.dirname, },);
-
-/** Fixture package root. */
-const FIXTURE_PKG = resolve(ROOT, 'packages', 'test-fixture', 'oxlint-tsdoc',);
-
 /** Fixture source root. */
-const FIXTURES = resolve(FIXTURE_PKG, 'src',);
+const FIXTURES = fixtureSourceRoot({
+  fixturePackageName: 'oxlint-tsdoc',
+},);
 
 /**
  * Fixture-specific oxlint config with all tsdoc rules enabled and no ignorePatterns
  * that would skip test-fixture or invalid paths.
  */
-const FIXTURE_CONFIG = resolve(FIXTURE_PKG, '.oxlintrc.fixture.json',);
+const FIXTURE_CONFIG = fixtureConfigPath({
+  fixturePackageName: 'oxlint-tsdoc',
+  fileName: '.oxlintrc.fixture.json',
+},);
 
 /** Diagnostic message emitted by tsdoc/multiline-blocks. */
 const MULTILINE_BLOCKS_MESSAGE = 'TSDoc comments must use multiline format.';
-
-/**
- * Creates a temp fixture copy with disposal-backed directory cleanup.
- *
- * @param options - fixture source and temp basename
- *
- * @returns copied temp fixture file handle
- */
-function createTempFixtureFile(
-  {
-    fileName,
-    sourcePath,
-  }: TempFixtureFileOptions,
-): TempFixtureFile {
-  /** Unique temp directory owning this fixture copy. */
-  const dirPath = mkdtempSync(
-    join(
-      tmpdir(),
-      'oxlint-tsdoc-autofix-',
-    ),
-  );
-  /** Absolute path to temp fixture copy. */
-  const filePath = resolve(
-    dirPath,
-    fileName,
-  );
-  copyFileSync(sourcePath, filePath,);
-
-  return {
-    filePath,
-    [Symbol.dispose]: function cleanup(): void {
-      rmSync(
-        dirPath,
-        {
-          recursive: true,
-          force: true,
-        },
-      );
-    },
-  };
-}
 
 /**
  * Runs oxlint with the project config against a fixture path and returns parsed diagnostics.
@@ -128,36 +48,16 @@ function createTempFixtureFile(
  */
 async function lint(fixturePath: string,): Promise<readonly OxlintDiagnostic[]> {
   /** Resolved lint target; temp fixtures already arrive as absolute paths. */
-  const target = isAbsolute(fixturePath,)
-    ? fixturePath
-    : resolve(FIXTURES, fixturePath,);
+  const target = resolveFixtureTarget({
+    fixtureSourceRoot: FIXTURES,
+    fixturePath,
+  },);
 
-  // oxlint exits non-zero when violations are found: capture stdout from the error
-  async function captureStdout(): Promise<string> {
-    try {
-      const { stdout, } = await spawn('oxlint', [
-        '--format',
-        'json',
-        '--config',
-        FIXTURE_CONFIG,
-        target,
-      ], {
-        cwd: ROOT,
-      },);
-      return stdout;
-    }
-    catch (error: unknown) {
-      return (error as { stdout: string; }).stdout;
-    }
-  }
-  const stdout = await captureStdout();
-
-  // oxlint-disable-next-line typescript/no-unsafe-assignment -- JSON.parse returns any
-  const output: OxlintOutput = JSON.parse(stdout,);
-
-  // Filter to only tsdoc plugin diagnostics so built-in rules don't interfere
-  return output.diagnostics.filter(function isTsdocRule(diagnostic,): boolean {
-    return diagnostic.code.startsWith('tsdoc(',);
+  return runOxlintFixture({
+    codePrefix: 'tsdoc(',
+    configFlag: '--config',
+    fixtureConfig: FIXTURE_CONFIG,
+    target,
   },);
 }
 
@@ -191,15 +91,6 @@ async function runOxlintFix(filePath: string,): Promise<void> {
  *
  * @returns sorted array of unique `tsdoc(rule-name)` codes
  */
-function uniqueRules(diagnostics: readonly OxlintDiagnostic[],): readonly string[] {
-  const codes = diagnostics.map(function getCode(d,): string {
-    return d.code;
-  },);
-  const deduped: string[] = [...new Set<string>(codes,),];
-  deduped.sort();
-  return deduped;
-}
-
 //endregion Helpers
 
 await describe({
@@ -329,6 +220,7 @@ await describe({
             using fixableCopy = createTempFixtureFile({
               fileName: 'single-line-tsdoc-fixable.ts',
               sourcePath: fixableSrc,
+              tempPrefix: 'oxlint-tsdoc-autofix-',
             },);
 
             await runOxlintFix(fixableCopy.filePath,);
