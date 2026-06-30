@@ -957,7 +957,65 @@ packages/module/or-throw/src/index.ts:11-18 | downgraded-link, 25 occurrences ac
 
 ## Batch 15 (vmsync, spawn, figma kiwi, figma penpot, pi/statusline, llm-types)
 
-(pending)
+TOTAL FINDINGS: 225. `{@link}` is used correctly in exactly one package
+(`module/llm-types`), and even there it's missing in three spots where a
+sibling type is named only inside a backtick code span. Every other
+package in this batch (vmsync, pi/spawn, figma-parsers/kiwi,
+figma-parsers/penpot, pi/statusline) contains zero `{@link}` usages at
+all (confirmed by grep).
+
+Two sub-patterns dominate: (1) a clean, easily-fixed downgraded-link
+pattern where sentinel symbols are already named correctly via backtick
+in `@returns`/`@param` prose but never upgraded to `{@link}`
+(`SESSION_NOT_FOUND`, `NOTHING_TO_REPORT`, `NO_CLI_SETUP_WARNING`,
+`CLEAR_ENV` in pi/spawn; `SKIP` and `parseFigmaFile` in
+figma-parsers/penpot); and (2) a much larger missing-reference pattern
+where every `@param`/`@returns` line describes a custom domain type only
+in generic English ("Reader.", "Parsed schema.", "Struct definition.")
+and never names the actual identifier even though it appears right in
+the function signature -- the large majority of findings, consistent
+file-to-file, suggesting a "describe, don't name" house style rather
+than scattered oversights.
+
+```
+packages/cli/vmsync/src/boot.ts:131,134,255,495 | missing-reference | current: not mentioned (delegate calls described in prose without naming) | target: createOverlay/syncFromKvm/syncFromHyperv (qemu-img.ts, sync.ts), detectHypervisor (config.ts)
+packages/cli/vmsync/src/config-cmd.ts:24, config.ts:278,318,374 | missing-reference | current: not mentioned | target: VmsyncConfig, Hypervisor (types.ts)
+packages/cli/vmsync/src/import.ts:55,204,206,313,345,356 | missing-reference | current: not mentioned | target: connectDisposable (nbd.ts), imageInfo/convert (qemu-img.ts), validateUefi (same file), VmsyncConfig (types.ts), Logger (module-logger)
+packages/cli/vmsync/src/index-parsers-cmds.ts:75,117,138,159,180,198 | missing-reference, 6 instances | current: not mentioned | target: VmsyncArgs (index-parsers.ts) -- each of 6 cmd builders omits it
+packages/cli/vmsync/src/index-parsers.ts:63 | missing-reference | current: not mentioned | target: importCmd/bootCmd/syncCmd/statusCmd/listCmd/configCmd (index-parsers-cmds.ts)
+packages/cli/vmsync/src/list.ts:36,54, nbd.ts:131,192,279,357,359 | missing-reference | current: not mentioned | target: Logger, listVms (same file), NbdConnection/QemuMapRegion (types.ts)
+packages/cli/vmsync/src/qemu-img.ts:33,186, status.ts:22, sync.ts:46,173 | missing-reference | current: not mentioned | target: QemuImgInfo/QemuMapRegion (types.ts), VmsyncConfig (types.ts), patchBlocks (nbd.ts), commitOverlay (qemu-img.ts)
+packages/cli/vmsync/src/types.ts:58,90,93 | missing-reference | current: not mentioned | target: DiskChecksums/BootConfig/SyncState (same file)
+packages/pi/spawn/src/cli-core.ts:75,79,116,152,154,197,201 | missing-reference, ~7 instances | current: not mentioned | target: PidMapping/SpawnState (paths.ts), SpawnPiArgs/TerminalInvocation (same file)
+packages/pi/spawn/src/cli.ts:94,136 | missing-reference | current: not mentioned | target: TerminalInvocation/SpawnPiArgs (cli-core.ts)
+packages/pi/spawn/src/index.ts:78,122,203,265,340 + 8 more | missing-reference, ~13 instances | current: not mentioned | target: ExtensionAPI/ExtensionContext (external pi-coding-agent), writePidMapping/claimSpawn/completeSpawn/checkCompletedChildren (state.ts), autoSetupCli (setup-cli.ts), extractLastAssistantText (message-extract.ts), deliverCompletedChildren (same file)
+packages/pi/spawn/src/message-extract.ts:90,125, mise.verify-extension.ts:84 | missing-reference | current: not mentioned | target: AssistantMessageLike/isAssistantMessage (same file), verifyBuiltExtension/verifyBuiltCli/verifySourceCli (same file)
+packages/pi/spawn/src/paths.ts:92,115,134,153,174,203 | missing-reference, 6 instances | current: not mentioned | target: Environment (same file)
+packages/pi/spawn/src/pi-test-harness.ts:148,330 | missing-reference | current: not mentioned | target: FakePiApiHarness, ExtensionContextOptions (same file)
+packages/pi/spawn/src/session-finder.ts:42,98,105,149,193,214,297,304 + 5 more | downgraded-link/missing-reference, ~13 instances | current: backtick SESSION_NOT_FOUND x6; PidMapping/Environment not named | target: SESSION_NOT_FOUND (same file), PidMapping (paths.ts), Environment (same file)
+packages/pi/spawn/src/setup-cli.ts:199, state.ts:305,365 + ~8 more, test-support.ts:82 | downgraded-link/missing-reference, ~11 instances | current: backtick NO_CLI_SETUP_WARNING/NOTHING_TO_REPORT/CLEAR_ENV; Environment/PidMapping/SpawnState not named | target: same-file sentinels and types
+packages/figma-parsers/kiwi/src/binary-reader.ts:111,273,299, canvas.ts:124,165,259 | missing-reference | current: not mentioned | target: BinaryReader (same file), CanvasHeader/CanvasFigSections (same file), FigmaFileType (types.ts)
+packages/figma-parsers/kiwi/src/decode.ts:96,213,392 + ~10 more | missing-reference, ~13 instances | current: not mentioned | target: KiwiSchema/BinaryReader/KiwiStruct/KiwiStructField/FIGMA_DOCUMENT_ABSENT (types.ts, binary-reader.ts)
+packages/figma-parsers/kiwi/src/meta.ts:28, parse.ts:44 | missing-reference | current: not mentioned | target: FigmaMeta, FigmaFile (types.ts)
+packages/figma-parsers/kiwi/src/schema.ts:61,198 + ~13 more | missing-reference, ~15 instances | current: not mentioned | target: KiwiSchema/KiwiDefinition/KiwiEnum/KiwiStruct/KiwiStructField/KiwiEnumField/BinaryReader (types.ts, binary-reader.ts)
+packages/figma-parsers/kiwi/src/types.ts:219 | missing-reference | current: not mentioned | target: KiwiSchema/FigmaMeta/FigmaFileType (same file, FigmaFile's own doc names none of its 3 composed types)
+packages/figma-parsers/kiwi/src/zip.ts:391,235,424 | missing-reference, 3 instances | current: not mentioned | target: ParsedZipEntry/ZipEntryPair (same file)
+packages/figma-parsers/penpot/scripts/convert.ts:73, src/color.ts:49,95 | missing-reference | current: not mentioned | target: FigmaFile (figma-kiwi), FigmaRecord (read.ts)
+packages/figma-parsers/penpot/src/constants.ts:38,68 | downgraded-link | current: backtick PenpotFile/SKIP mentions | target: PenpotFile (types.ts), SKIP (read.ts)
+packages/figma-parsers/penpot/src/document.ts:87,124,280,332,360,70,95,200,221 | downgraded-link/missing-reference, ~9 instances | current: backtick SKIP x3, parseFigmaFile; ConvertContext/PenpotPage/FigmaRecord not named | target: SKIP/parseFigmaFile (read.ts, figma-kiwi), ConvertContext (node.ts), PenpotPage (types.ts), FigmaRecord (read.ts)
+packages/figma-parsers/penpot/src/geometry.ts:62,113,159 | missing-reference/downgraded-link | current: PenpotSelRect/PenpotPoints/PenpotTransform not named; backtick SKIP | target: types.ts, SKIP (read.ts)
+packages/figma-parsers/penpot/src/index.ts:43, manifest.ts:26,71 | downgraded-link/missing-reference | current: backtick parseFigmaFile; PenpotFile/PenpotManifest not named | target: figma-kiwi, types.ts
+packages/figma-parsers/penpot/src/node.ts:54,73,219,226,250,324 | downgraded-link/missing-reference, 6 instances | current: ConvertContext not named; backtick SKIP x4; PenpotShape not named | target: same file, SKIP (read.ts), PenpotShape (types.ts)
+packages/figma-parsers/penpot/src/paint.ts:4,65,102, shape.ts:204,246,264,298, text.ts:52 | downgraded-link/missing-reference, ~8 instances | current: backtick SKIP repeated; PenpotShape not named | target: SKIP (read.ts), PenpotShape (types.ts)
+packages/figma-parsers/penpot/src/types.ts:103 | missing-reference | current: not mentioned (PenpotShape's own doc names none of its 6 nested types) | target: PenpotShapeType/PenpotSelRect/PenpotPoints/PenpotTransform/PenpotFill/PenpotStroke (same file)
+packages/figma-parsers/penpot/src/zip.ts:90,142 | missing-reference | current: not mentioned | target: ZipWriter (module-zip-writer), PenpotDocument (types.ts)
+packages/pi/statusline/src/anthropic-rate-limit-headers.ts:84,161, codex-rate-limit-headers.ts:341,385 | missing-reference | current: not mentioned | target: RateLimitHeaderFamily/RateLimitSnapshot/CodexWindow (rate-limit-types.ts, same file)
+packages/pi/statusline/src/index.ts:54,74,114,147 | missing-reference, 4 instances | current: not mentioned | target: ExtensionContext/ExtensionAPI (external pi-coding-agent)
+packages/pi/statusline/src/mise.verify-extension.ts:140, pi-test-harness.ts:94,255 | missing-reference | current: not mentioned | target: StatuslineExtensionModule, FakePiApiHarness, FakeExtensionContextHarness (same file)
+packages/pi/statusline/src/rate-limit-headers.ts:13, rate-limit-parse-helpers.ts:69,476 + ~8 more | missing-reference, ~11 instances | current: "invalid sentinel" paraphrased, never the literal name | target: RateLimitSnapshot (rate-limit-types.ts), INVALID_VALUE/INVALID_RATE_LIMIT_SNAPSHOT (same file)
+packages/pi/statusline/src/synthetic-quota-headers.ts:46,81,343, usage-warning.ts:102,239 | missing-reference | current: not mentioned | target: UnknownRecord (rate-limit-parse-helpers.ts), RateLimitSnapshot/UsageWarningStatus (rate-limit-types.ts)
+packages/module/llm-types/src/completion.ts:8,43, index.ts:11, usage.ts:7 | downgraded-link/missing-reference | current: backtick CompletionUsage/ChatCompletionResponse mentions; ChatRole not named | target: CompletionUsage (usage.ts), ChatCompletionResponse (completion.ts), ChatRole (role.ts)
+```
 
 ## Batch 16 (terminal-title, vm-builder, catalog-tighten.matrix, forbidden-strings, dom, claude-code-plugins/statusline, thinking-defaults, mcp/mvm, syllable-break-demo, const, memoize, token-count, observable, runtime-error/bun, function-arity, module/current-time-context, guardrail, root config files)
 
