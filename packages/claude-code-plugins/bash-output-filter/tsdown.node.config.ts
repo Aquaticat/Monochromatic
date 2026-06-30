@@ -2,7 +2,7 @@ import { perEntryNodeConfig, } from '@monochromatic-dev/config-tsdown/.node.ts';
 import type { UserConfig, } from 'tsdown';
 
 /**
- * Build config for bash-output-filter.
+ * Build config for bash-output-filter, built via {@link perEntryNodeConfig}.
  *
  * The hook entry (`index.ts`) and the standalone filter script (`filter.ts`,
  * which the rewritten Bash command pipes output through as a subprocess) share
