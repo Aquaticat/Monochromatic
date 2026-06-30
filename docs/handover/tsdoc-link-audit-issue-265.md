@@ -176,7 +176,7 @@ them from the package-to-batch mapping below plus
 | --- | --- | --- | --- |
 | 01 | file-enforcer | a1c00c2bf9c3b21d1 | done, 294 findings |
 | 02 | mvm, mutation-test, async-time, claude-spawn | a95c3884bfa6c3316 | done, 44 findings |
-| 03 | toml-edit, linkup, throws | a37e6ff13e12bbda0 | running |
+| 03 | toml-edit, linkup, throws | a37e6ff13e12bbda0 | done, 153 findings |
 | 04 | no-restricted-syntax, git, numeric-format, correction-reminder | a2e4ea7abc709c2d0 | running |
 | 05 | done-postcss, i18n-compose, fy, backup-path | a125f0fc146d11e83 | done, 68 findings |
 | 06 | aquati.cat, markdown-lint, islands-black, async-iter | a2790fd594c501e06 | done, 81 findings |
@@ -188,7 +188,7 @@ them from the package-to-batch mapping below plus
 | 12 | deps-cube, git-clone-size, current-time-context, oxlint-plugins/shared | a67f97dc2d73bf0d2 | running |
 | 13 | page-weight, logger, hall-monitor, android-exempt-unused, build-tool/css, pipe, matrix, tofu, aquaticat (typeface), import-attributes, config/tsdown, rgffplay, prompt-time | a7c1304125f5a7feb | running |
 | 14 | terminal-exec, hyperscript, rss, config/oxlint, kv-store, fs-path, hook-types, or-throw, session-start-housekeeping | a310a6a4a89c3ec6f | running |
-| 15 | vmsync, spawn, figma kiwi, figma penpot, pi/statusline, llm-types | not yet launched | pending |
+| 15 | vmsync, spawn, figma kiwi, figma penpot, pi/statusline, llm-types | a7c2305b8b17293df | running |
 | 16 | terminal-title, vm-builder, catalog-tighten.matrix, forbidden-strings, dom, claude-code-plugins/statusline, thinking-defaults, mcp/mvm, syllable-break-demo, const, memoize, token-count, observable, runtime-error/bun, function-arity, pi/current-time-context, guardrail, root config files | not yet launched | pending |
 
 Rule: never have more than 8 batches running at once. Launch the next

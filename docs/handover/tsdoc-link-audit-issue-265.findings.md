@@ -141,7 +141,67 @@ packages/module/async-time/src/index.ts:5 | downgraded-link | current: "`withTim
 
 ## Batch 03 (toml-edit, linkup, throws)
 
-(pending)
+TOTAL FINDINGS: 153. `pi/linkup` (11 files) and `module/throws` produced
+almost no findings (one in `throws/index.ts`): linkup has no custom error
+classes (every throw is bare `Error`) and its terse one-liner style never
+had prose to downgrade in the first place.
+
+Systematic pattern: in `module/toml-edit/src`, every `@module` doc
+restates the file's own primary export name in backticks instead of
+`{@link}` (`` `tomlSet` ``, `` `tomlDelete` ``, `` `tomlGetRaw` ``), and
+every `@throws` tag for the package's five custom error classes
+(`TomlEditError`, `TomlPathNotFoundError`, `TomlSpliceUnavailableError`,
+`TomlTypeError`, `TomlImmutableNodeError`) names the class as plain text
+rather than `{@link}` -- essentially universal across the package's ~30
+`@throws` tags, and the exact downgrade the issue describes. A rarer but
+real pattern: private helpers (`tableChildKeys`, `encodeValue`,
+`walkTable`, `findKeyValueByPrefix`, `emitInlineTable`, `doTableReplace`)
+throw a custom error with no `@throws` tag at all. A handful of files
+(`fuzz-budget.ts`, `fuzz/equality.ts`, `fuzz/escape.ts`, `toml-get.ts`)
+already use `{@link}` correctly, proving the team knows the syntax and
+this is regression/oversight, not a stylistic choice.
+
+```
+packages/module/toml-edit/src/canonical.ts:2,10,11,37,60 | downgraded-link | current: backtick mentions of canonicalEmit/emptyTomlEdit/tomlSet | target: canonicalEmit, emptyTomlEdit (packages/module/toml-edit/src/empty-toml-edit.ts), tomlSet (packages/module/toml-edit/src/toml-set.ts)
+packages/module/toml-edit/src/collision.ts:16,30,144,200 | downgraded-link/missing-reference | current: "Both checks run in `tomlSet`..."; assertNoSiblingTableCollision/assertNoInlineTableCollision throw TomlImmutableNodeError with no @throws | target: tomlSet (toml-set.ts), TomlImmutableNodeError (errors.ts), formatPath (path.ts)
+packages/module/toml-edit/src/conformance/decode-to-tagged.ts:25,30,42,272 | downgraded-link/missing-reference | current: backtick TaggedTree mentions; contentToTagged delegates to leafToTagged unnamed | target: TaggedTree (conformance/tagged-types.ts), leafToTagged (conformance/decode-leaf.ts)
+packages/module/toml-edit/src/conformance/decode.ts:93 | missing-reference | current: not mentioned | target: parseTomlEdit (parse-toml-edit.ts), documentToTagged (conformance/decode-to-tagged.ts)
+packages/module/toml-edit/src/conformance/encode-from-tagged.ts:2,5,103,161,165 | downgraded-link | current: backtick `tomlSet` mentions throughout | target: tomlSet (toml-set.ts)
+packages/module/toml-edit/src/conformance/encode.ts:6,7,42,49 | downgraded-link/missing-reference | current: backtick tomlSet/emptyTomlEdit; buildToml doc names neither taggedToInput nor tomlStringify; @throws TomlTypeError plain text | target: tomlSet, emptyTomlEdit, taggedToInput (conformance/encode-from-tagged.ts), tomlStringify (toml-stringify.ts), TomlTypeError (errors.ts)
+packages/module/toml-edit/src/conformance/tagged-types.ts:96 | downgraded-link | current: "threads the right grammar into `parseTomlEdit`" | target: parseTomlEdit (parse-toml-edit.ts)
+packages/module/toml-edit/src/effective-helpers.ts:45,55,59 | downgraded-link | current: backtick asStringPath/PATH_HAS_NUMERIC sentinel mentions | target: asStringPath, PATH_HAS_NUMERIC (same file)
+packages/module/toml-edit/src/effective-value.ts:11,41,42,57,73,142,160,162,255,257,269,319,368 | downgraded-link | current: backtick resolveByPath/tomlDelete/tomlSet/EffectiveResult/ResolveResult/NO_PROJECTION/SUBTREE_ABSENT mentions throughout | target: resolveByPath (resolve.ts), tomlDelete (toml-delete.ts), tomlSet (toml-set.ts), EffectiveResult/NO_PROJECTION/SUBTREE_ABSENT (same file), ResolveResult (resolve.ts)
+packages/module/toml-edit/src/emit-value.ts:116,118,172,174,182,271,320,353 | downgraded-link/missing-reference | current: backtick tomlDelete/emitArray mentions; @throws TomlImmutableNodeError plain text; emitInlineTable/emitInlineTableWithExtra throw it with no @throws | target: tomlDelete (toml-delete.ts), emitArray/emitArrayWithoutIndex (same file), TomlImmutableNodeError (errors.ts)
+packages/module/toml-edit/src/empty-toml-edit.ts:2,13,14,18,20,22 | downgraded-link/missing-reference | current: module doc backtick `emptyTomlEdit`; body's only call to parseTomlEdit unnamed; TomlEditState/CanonicalOptions backticked | target: emptyTomlEdit (self), parseTomlEdit (parse-toml-edit.ts), TomlEditState/CanonicalOptions (types.ts)
+packages/module/toml-edit/src/errors.ts:72 | downgraded-link | current: "a function that requires splice mode (e.g. `tomlGetRaw`)" | target: tomlGetRaw (toml-get-raw.ts)
+packages/module/toml-edit/src/fuzz/coverage-harness.ts:9,72,75,98,102 | downgraded-link | current: backtick TomlEditError mentions, including two @throws tags | target: TomlEditError (errors.ts)
+packages/module/toml-edit/src/parse-toml-edit.ts:2,36,42,56,69,96,135,147,150,157,159 | downgraded-link/missing-reference | current: module doc + @throws TomlEditError plain text repeatedly; normalizeNewlines' doc never names assertNoBareCarriageReturn | target: parseTomlEdit (self), TomlEditError (errors.ts), assertNoBareCarriageReturn (self), TomlEditState/CanonicalOptions (types.ts), tomlStringify (toml-stringify.ts)
+packages/module/toml-edit/src/path-create.ts:2,49,52,137,145,242,314 | downgraded-link/missing-reference | current: backtick tomlSet/resolveByPath; doPathCreate throws TomlImmutableNodeError twice with no @throws; doTopLevelDottedKeyInsert never names assertNoSiblingTableCollision | target: tomlSet (toml-set.ts), resolveByPath (resolve.ts), TomlImmutableNodeError (errors.ts), assertNoSiblingTableCollision (collision.ts), TomlEditState (types.ts)
+packages/module/toml-edit/src/resolve.ts:2,25,54,61 | downgraded-link/missing-reference | current: backtick TomlPath/resolveByPath; resolveByPath's only real delegate (walk) never named | target: TomlPath (types.ts), resolveByPath/ResolveResult (self), walk (walk.ts)
+packages/module/toml-edit/src/splice.ts:2,181,237,336,436 | downgraded-link | current: backtick spliceEmit/Edit/computeDeletionRange/AnchorKind/tomlSet mentions | target: spliceEmit, Edit, computeDeletionRange, AnchorKind (self), tomlSet (toml-set.ts)
+packages/module/toml-edit/src/state.ts:2,22,62 | downgraded-link | current: backtick TomlEditState/tomlSet mentions | target: TomlEditState (types.ts), tomlSet (toml-set.ts)
+packages/module/toml-edit/src/toml-delete.ts:2,3,54,56,116,139,170,173,273,336 | downgraded-link/missing-reference | current: module doc + @throws TomlImmutableNodeError plain text (twice); removeJsAtPath throws it with no @throws | target: tomlDelete (self), TomlEditState (types.ts), TomlImmutableNodeError (errors.ts), tomlGetValue (toml-get-value.ts)
+packages/module/toml-edit/src/toml-get-comment-after.ts:2,19,28 | downgraded-link/missing-reference | current: module doc; sole delegate trailingInlineCommentFor never named; @throws TomlPathNotFoundError plain text | target: tomlGetCommentAfter (self), trailingInlineCommentFor (comments.ts), TomlPathNotFoundError (errors.ts)
+packages/module/toml-edit/src/toml-get-comments-before.ts:2,19,26 | downgraded-link/missing-reference | current: same pattern, sole delegate attachedCommentsFor never named | target: tomlGetCommentsBefore (self), attachedCommentsFor (comments.ts), TomlPathNotFoundError (errors.ts)
+packages/module/toml-edit/src/toml-get-comments.ts:2,16 | downgraded-link | current: backtick tomlInsertCommentBefore/After mentions | target: tomlInsertCommentBefore, tomlInsertCommentAfter (siblings)
+packages/module/toml-edit/src/toml-get-node.ts:2,20,21,24,26,27,32 | downgraded-link | current: backtick resolveByPath/tomlSet/tomlGetValue/TomlPathNotFoundError/tomlStringify mentions, plus @throws plain text | target: resolveByPath (resolve.ts), tomlSet (toml-set.ts), tomlGetValue (toml-get-value.ts), TomlPathNotFoundError (errors.ts), tomlStringify (toml-stringify.ts)
+packages/module/toml-edit/src/toml-get-raw.ts:2,25,26,32,35,36,37 | downgraded-link | current: backtick resolveByPath/tomlSet/tomlStringify mentions, @throws TomlSpliceUnavailableError/TomlPathNotFoundError plain text | target: resolveByPath, tomlSet, TomlSpliceUnavailableError, TomlPathNotFoundError, tomlStringify
+packages/module/toml-edit/src/toml-get-value.ts:2,17,19 | downgraded-link | current: backtick tomlDelete/effectiveAt/tomlSet mentions | target: tomlDelete (toml-delete.ts), effectiveAt (effective-value.ts), tomlSet (toml-set.ts)
+packages/module/toml-edit/src/toml-has.ts:2,13 | downgraded-link/missing-reference | current: module doc; tomlHas' only call to effectiveAt never named | target: tomlHas (self), effectiveAt (effective-value.ts)
+packages/module/toml-edit/src/toml-insert-comment-after.ts:2,21,22,25,27 | downgraded-link | current: backtick Insertion/tomlStringify/TomlEditState mentions, @throws TomlPathNotFoundError plain text | target: Insertion/TomlEditState (types.ts), tomlStringify (toml-stringify.ts), TomlPathNotFoundError (errors.ts)
+packages/module/toml-edit/src/toml-insert-comment-before.ts:2,21,22,25,27 | downgraded-link | current: same pattern, plus backtick tomlGetComments mention | target: same as above, plus tomlGetComments (toml-get-comments.ts)
+packages/module/toml-edit/src/toml-keys.ts:2,18,128 | downgraded-link/missing-reference | current: module doc; core dependency effectiveAt never named; tableChildKeys throws TomlImmutableNodeError with no @throws | target: tomlKeys (self), effectiveAt (effective-value.ts), TomlImmutableNodeError (errors.ts)
+packages/module/toml-edit/src/toml-set-aot.ts:2,65,67,70 | downgraded-link | current: backtick tomlSet mention, @throws TomlImmutableNodeError/TomlTypeError plain text | target: tomlSet (toml-set.ts), TomlEditState (types.ts), TomlImmutableNodeError, TomlTypeError (errors.ts)
+packages/module/toml-edit/src/toml-set-header-comment.ts:2,18,20 | downgraded-link | current: module doc + backtick tomlStringify/TomlEditState mentions | target: tomlSetHeaderComment (self), tomlStringify (toml-stringify.ts), TomlEditState (types.ts)
+packages/module/toml-edit/src/toml-set.ts:2,9,40,50,55,62,64,66,70,182,186,226,273 | downgraded-link/missing-reference | current: module doc + @throws TomlTypeError/TomlImmutableNodeError plain text repeatedly; doTableReplace throws TomlTypeError with no @throws | target: tomlSet (self), resolveByPath (resolve.ts), TomlEditState/Insertion/AnchorKind (types.ts), TomlTypeError, TomlImmutableNodeError (errors.ts)
+packages/module/toml-edit/src/toml-stringify.ts:2,11 | downgraded-link/missing-reference | current: module doc; tomlStringify never names either function it dispatches to | target: tomlStringify (self), spliceEmit (splice.ts), canonicalEmit (canonical.ts)
+packages/module/toml-edit/src/types.ts:35,84,88,103,113,126,132,148,174,186,217,228 | downgraded-link | current: backtick CanonicalOptions/DEFAULT_CANONICAL_OPTIONS/parseTomlEdit/emptyTomlEdit/valueRangeOf/tomlGetValue/Insertion/tomlSet mentions throughout | target: various siblings, see column above
+packages/module/toml-edit/src/value-encoders.ts:5,17 | downgraded-link | current: backtick encodeValue/tomlInteger/tomlFloat mentions | target: encodeValue (values.ts), tomlInteger/tomlFloat (wrappers.ts)
+packages/module/toml-edit/src/values.ts:47,80 | downgraded-link/missing-reference | current: @throws TomlTypeError plain text; private encodeValue throws it twice with no @throws | target: TomlTypeError (errors.ts)
+packages/module/toml-edit/src/walk.ts:2,6,33,69,127,130,314,317 | downgraded-link/missing-reference | current: backtick resolveByPath/ResolveResult mentions; walkTable and findKeyValueByPrefix throw TomlImmutableNodeError with no @throws | target: resolveByPath, ResolveResult (resolve.ts), TomlImmutableNodeError (errors.ts), KEYVALUE_NOT_FOUND (self)
+packages/module/toml-edit/src/wrappers.ts:2,14,19,34,39,58,77,96 | downgraded-link | current: 8 occurrences of "Tagged wrapper that `tomlSet` recognises..." | target: tomlSet (toml-set.ts)
+packages/module/throws/src/index.ts:4 | downgraded-link | current: "Use `throws(error,)` when JavaScript syntax requires" | target: throws (packages/module/throws/src/throws.ts)
+```
 
 ## Batch 04 (no-restricted-syntax, git, numeric-format, correction-reminder)
 
