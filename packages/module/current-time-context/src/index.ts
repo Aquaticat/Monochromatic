@@ -47,7 +47,8 @@ function padTwoDigits(value: number,): string {
 }
 
 /**
- * Formats a {@link Date} as hidden current-time context using local wall-clock time.
+ * Formats a {@link Date} as hidden current-time context using local wall-clock time,
+ * zero-padding each field with {@link padTwoDigits}.
  *
  * The output intentionally carries only hour and minute. It omits seconds,
  * date, and timezone so agents receive coarse local time without unrelated
