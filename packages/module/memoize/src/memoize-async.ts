@@ -17,8 +17,9 @@ import {
  * per-call salt-based cache keys, and in-flight Promise deduplication.
  *
  * Salt is provided per-call via {@link MemoizedCallOptions}, enabling dynamic
- * cache invalidation without recreating the memoized function. The Store is the single
- * source of truth for cached values; an in-flight `Map` deduplicates concurrent calls with
+ * cache invalidation without recreating the memoized function. The Store, defaulted
+ * via {@link createStore} when the caller supplies none, is the single source of
+ * truth for cached values; an in-flight `Map` deduplicates concurrent calls with
  * the same key onto a single computation. LRU eviction is handled by the Store when an
  * eviction policy is configured.
  *
@@ -161,7 +162,8 @@ export async function memoizeAsync<
   }
 
   /**
-   * Dispatch a cache lookup plus compute for the given key, sharing any existing in-flight promise.
+   * Dispatch a cache lookup plus compute for the given key via {@link resolveValue},
+   * sharing any existing in-flight promise.
    *
    * @param cacheKey - full cache key
    *
@@ -198,7 +200,8 @@ export async function memoizeAsync<
   }
 
   /**
-   * Memoized async wrapper. Salt is provided per-call to enable dynamic cache invalidation.
+   * Memoized async wrapper, combining {@link buildCacheKey} with {@link dispatch}.
+   * Salt is provided per-call to enable dynamic cache invalidation.
    *
    * @param args - original function arguments spread into keyFn and fn
    *

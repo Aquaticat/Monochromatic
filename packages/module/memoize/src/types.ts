@@ -171,7 +171,8 @@ export type MemoizedAsyncFunction<
 };
 
 /**
- * Named-parameter options for sync memoization, bundling the function to memoize with its configuration.
+ * Named-parameter options for sync memoization, extending {@link MemoizeOptions}
+ * by bundling the function to memoize with its configuration.
  *
  * @typeParam TArgs - tuple of function argument types
  *
@@ -199,7 +200,8 @@ export type MemoizeNamedOptions<
 };
 
 /**
- * Named-parameter options for async memoization, bundling the function to memoize with its configuration.
+ * Named-parameter options for async memoization, extending {@link MemoizeAsyncOptions}
+ * by bundling the function to memoize with its configuration.
  *
  * @typeParam TArgs - tuple of function argument types
  *

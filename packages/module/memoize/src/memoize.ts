@@ -17,7 +17,8 @@ import {
  * LRU eviction, and per-call salt-based cache keys.
  *
  * Salt is provided per-call via {@link MemoizedCallOptions}, enabling dynamic
- * cache invalidation without recreating the memoized function.
+ * cache invalidation without recreating the memoized function. The store
+ * defaults via {@link createSyncStore} when the caller supplies none.
  *
  * The `keyFn` option is required to compute cache keys from arguments; this
  * prevents accidental memoization of variadic functions without explicit key derivation.
@@ -97,8 +98,9 @@ export function memoize<
     },);
 
   /**
-   * Memoized wrapper that checks the store before calling the original function.
-   * Salt is provided per-call to enable dynamic cache invalidation.
+   * Memoized wrapper that checks the store before calling the original function,
+   * keyed via {@link buildCacheKey}. Salt is provided per-call to enable dynamic
+   * cache invalidation.
    *
    * @param args - original function arguments spread into keyFn and fn
    *
