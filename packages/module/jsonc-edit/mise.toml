@@ -43,6 +43,30 @@ run = "node src/bench/parse.bench.ts"
 description = "Run the curated JSONC conformance corpus (VS Code JSONC semantics)"
 run = "node src/conformance/jsonc.conformance.unit.test.ts"
 
+[tasks."fuzz:coverage"]
+description = "Deterministic V8 covered-function reachability gate over src; --write refreezes the baseline"
+usage = '''
+flag "--write" help="Refreeze the committed baseline instead of checking against it"
+'''
+shell = "node -e"
+run = """
+const { execFileSync } = await import('node:child_process')
+const { mkdtempSync, rmSync } = await import('node:fs')
+const { tmpdir } = await import('node:os')
+const { join } = await import('node:path')
+const root = process.cwd()
+const mode = (process.env.usage_write === 'true') ? 'write' : 'check'
+// The driver imports package source directly, so no build step is needed; it
+// measures src reachability, not the bundle.
+const dir = mkdtempSync(join(tmpdir(), 'jsonc-edit-cov-'))
+try {
+  execFileSync('node', [`${root}/src/fuzz/coverage-driver.ts`], { stdio: 'inherit', env: { ...process.env, NODE_V8_COVERAGE: dir } })
+  execFileSync('node', [`${root}/src/fuzz/coverage-report.ts`, mode, dir, `${root}/coverage-baseline.json`], { stdio: 'inherit' })
+} finally {
+  rmSync(dir, { recursive: true, force: true })
+}
+"""
+
 [tasks.fuzz]
 description = "Run *.property.unit.test.ts as a longer fast-check campaign under node"
 usage = '''
