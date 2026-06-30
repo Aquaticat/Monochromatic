@@ -22,7 +22,7 @@ const CHIP_NOT_FOUND: unique symbol = Symbol('chip-not-found',);
 
 /**
  * `<task-card>`: displays a task as a clickable card with checkbox, title, and metadata chips.
- * Created programmatically via `createTaskCard()`, not placed in server HTML.
+ * Created programmatically via {@link createTaskCard}, not placed in server HTML.
  */
 class TaskCard extends HTMLElement {
   /**
@@ -83,7 +83,8 @@ class TaskCard extends HTMLElement {
   }
 
   /**
-   * Renders the card content (checkbox, title, chips) into the shadow root.
+   * Renders the card content (checkbox, title, chips built via
+   * {@link buildChipTexts}) into the shadow root.
    */
   #render(): void {
     /**
@@ -210,7 +211,8 @@ export function createTaskCard({
 
 /**
  * Formats tracked time including elapsed seconds from a running timer.
- * If no timer is active, returns the static `trackedTime` formatted.
+ * If no timer is active, returns the static `trackedTime` formatted via
+ * {@link formatTrackedTime}.
  *
  * @param task - Task with optional running timer
  *

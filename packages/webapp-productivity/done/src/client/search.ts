@@ -62,7 +62,7 @@ function handleSearch(event: CustomEvent<{ query: string; }>,): void {
 }
 
 /**
- * Completes a task via the API, then reloads to drop it from the results.
+ * Completes a task via {@link api}, then reloads to drop it from the results.
  *
  * @param taskId - ID of task to complete
  */

@@ -108,9 +108,10 @@ async function getStaticMetadata(id: string,): Promise<StaticMeta> {
 
 /**
  * Resolves the HTTP listen port from CLI arguments, environment, or default.
- * Priority: `--port=N` \> `PORT` env var \> `DEFAULT_PORT`.
+ * Priority: `--port=N` \> `PORT` env var \> {@link DEFAULT_PORT}.
  *
- * @returns Resolved port number
+ * @returns Resolved port number; reads the flag via {@link getArgumentValue},
+ * falling back through the priority chain when it returns {@link ARGUMENT_ABSENT}
  */
 function resolvePort(): number {
   /**

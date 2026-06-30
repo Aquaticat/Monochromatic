@@ -8,7 +8,8 @@ import {
 } from './inbox-builders.ts';
 
 /**
- * Creates the suggested-tasks section with location/focus controls and task list.
+ * Creates the suggested-tasks section with location/focus controls and a
+ * {@link buildTaskList} task list.
  *
  * @param pageData - Deserialized inbox page data
  *

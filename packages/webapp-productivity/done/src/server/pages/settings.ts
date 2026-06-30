@@ -7,7 +7,8 @@
 import { renderPage, } from './layout.ts';
 
 /**
- * Renders the settings page with placeholder configuration options.
+ * Renders the settings page with placeholder configuration options via
+ * {@link renderPage}.
  *
  * @returns HTML response for the settings page
  *

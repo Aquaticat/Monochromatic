@@ -1,7 +1,7 @@
 /* oxlint-disable typescript/no-unnecessary-type-parameters -- TData is a return-only parameter on purpose: it centralizes the single JSON-hydration cast at this trusted server->client boundary. Inlining to `unknown` would push an unchecked `as` assertion (and its own suppression) to every one of the five call sites. */
 /**
  * Reads server-provided page data from the `\<script id="page-data" type="application/json"\>`
- * element that `renderPage()` (or the inline HTML shells) embed in every page.
+ * element that {@link renderPage} (or the inline HTML shells) embed in every page.
  *
  * This is the bridge between server-side data and client-side rendering:
  * the server serializes query results as JSON into the HTML, and the client

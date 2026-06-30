@@ -106,7 +106,7 @@ export type BlockerSummary = {
 };
 
 /**
- * Outcome of a `completeTask()` call; carries blockers when completion is refused.
+ * Outcome of a {@link completeTask} call; carries blockers when completion is refused.
  */
 export type CompleteTaskResult = {
   /**
@@ -197,8 +197,9 @@ export function normalizeStringArray(values?: readonly string[],): string[] {
 }
 
 /**
- * Converts a raw SQLite `TaskRow` to the application-level `Task` shape.
- * Parses JSON-encoded array columns and renames snake_case to camelCase.
+ * Converts a raw SQLite {@link TaskRow} to the application-level {@link Task} shape.
+ * Parses JSON-encoded array columns via {@link parseStringArray} and renames
+ * snake_case to camelCase.
  *
  * @param row - Raw database row
  *

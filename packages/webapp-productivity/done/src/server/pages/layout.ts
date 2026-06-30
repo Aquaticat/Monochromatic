@@ -32,7 +32,7 @@ type LayoutOptions = {
 /**
  * Escapes `\<` to prevent `\</script\>` injection inside the JSON blob.
  * Used by page handlers that render their own HTML shell (search, task-details)
- * in addition to the shared `renderPage()` layout.
+ * in addition to the shared {@link renderPage} layout.
  *
  * @param data - Arbitrary data to serialize as JSON
  *
@@ -60,7 +60,8 @@ const MENU_OPEN_SCRIPT = `document.addEventListener('menu-open', function() {
     });`;
 
 /**
- * Renders a full HTML page with the standard layout shell.
+ * Renders a full HTML page with the standard layout shell, serializing
+ * `options.pageData` via {@link serializePageData}.
  *
  * @param options - Page title, heading, script path, and serialized data
  *

@@ -10,7 +10,8 @@ import {
 } from './task-detail-types.ts';
 
 /**
- * Builds pill elements from current metadata state and autofill status.
+ * Builds pill elements from current metadata state and autofill status,
+ * formatting the tracked-time pill via {@link formatRunningTrackedTime}.
  *
  * @returns Array of pill span elements
  *

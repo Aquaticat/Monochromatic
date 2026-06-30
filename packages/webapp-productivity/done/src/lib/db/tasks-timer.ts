@@ -22,6 +22,8 @@ import {
 
 /**
  * Starts the timer on a task, transitioning its status to `in_progress`.
+ * Stamps the start time with {@link nowIso} and reads the updated row back
+ * via {@link getTaskById}.
  *
  * @param id - Task UUID
  *
@@ -48,7 +50,8 @@ export async function startTaskTimer(id: string,): Promise<Task | typeof TASK_NO
 
 /**
  * Stops the running timer, accumulates elapsed seconds into `trackedTime`,
- * and transitions the task back to `inbox` status.
+ * and transitions the task back to `inbox` status. Reads the pre-update
+ * snapshot via {@link getTaskById} and stamps the update with {@link nowIso}.
  *
  * @param id - Task UUID
  *
@@ -102,8 +105,9 @@ export async function stopTaskTimer(id: string,): Promise<Task | typeof TASK_NOT
 }
 
 /**
- * Attempts to complete a task: stops any running timer, then deletes it.
- * Refuses completion when the task has unresolved blockers.
+ * Attempts to complete a task: reads it via {@link getTaskById}, stops any
+ * running timer via {@link stopTaskTimer}, then deletes it. Refuses completion
+ * when the task has unresolved blockers.
  *
  * @param id - Task UUID
  *

@@ -38,7 +38,8 @@ export type InboxPageData = {
 };
 
 /**
- * Builds a task list with optional blocked-child nesting.
+ * Builds a task list with optional blocked-child nesting, rendering each
+ * task with {@link createTaskCard}.
  *
  * @returns UL element containing task cards with nested blocker children
  *

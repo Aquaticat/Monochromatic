@@ -16,7 +16,9 @@ import { TASK_NOT_FOUND, } from '../../lib/types.ts';
 import { serializePageData, } from './layout.ts';
 
 /**
- * Renders the task detail page for a single task with its blocker summaries.
+ * Renders the task detail page for a single task (via {@link getTaskById})
+ * with its blocker summaries (candidates from {@link listTasksForBlockerPicker}),
+ * serialized for the client via {@link serializePageData}.
  *
  * @param taskId - Task UUID from the route parameter
  *

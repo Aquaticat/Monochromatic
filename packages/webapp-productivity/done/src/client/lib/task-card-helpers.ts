@@ -76,8 +76,9 @@ export function formatTrackedTime(seconds: number,): string {
 }
 
 /**
- * Collects all metadata chip labels for a task (tags, tracked time, location, etc.).
- * Each entry becomes a `<span class="chip">` in the card's shadow DOM.
+ * Collects all metadata chip labels for a task (tags, tracked time formatted
+ * via {@link formatTrackedTime}, location, etc.). Each entry becomes a
+ * `<span class="chip">` in the card's shadow DOM.
  *
  * @param task - Task to build chip labels for
  *

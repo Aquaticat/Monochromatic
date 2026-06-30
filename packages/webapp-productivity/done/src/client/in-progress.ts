@@ -42,7 +42,7 @@ function handleOpen(taskId: string,): void {
 }
 
 /**
- * Stops a task's timer via the API, then reloads to reflect the change.
+ * Stops a task's timer via {@link api}, then reloads to reflect the change.
  *
  * @param taskId - ID of task whose timer to stop
  */

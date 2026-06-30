@@ -63,6 +63,7 @@ function jsonResponse({
 
 /**
  * POST /api/tasks; creates a new task from the request body.
+ * Validates the body with {@link isRecord} and inserts via {@link createTask}.
  *
  * @param req - Incoming request with JSON body
  *
@@ -76,7 +77,7 @@ function jsonResponse({
 export async function handleCreateTask(req: Request,): Promise<Response> {
   try {
     /**
-     * Loosely-typed body validated by `isRecord` before field-by-field access.
+     * Loosely-typed body validated by {@link isRecord} before field-by-field access.
      */
     const body: unknown = await req.json();
     if (!isRecord(body,)) {
@@ -165,6 +166,8 @@ export async function handleCreateTask(req: Request,): Promise<Response> {
 
 /**
  * PUT /api/tasks/:id; applies a partial update to an existing task.
+ * Validates the body with {@link parseTaskUpdateInput} and applies it via
+ * {@link updateTask}.
  *
  * @param req - Incoming request with JSON body
  *
@@ -186,7 +189,7 @@ export async function handleUpdateTask({
 },): Promise<Response> {
   try {
     /**
-     * Loosely-typed body validated by `parseTaskUpdateInput` below.
+     * Loosely-typed body validated by {@link parseTaskUpdateInput} below.
      */
     const body: unknown = await req.json();
     /**
@@ -225,7 +228,7 @@ export async function handleUpdateTask({
 }
 
 /**
- * DELETE /api/tasks/:id; permanently removes a task.
+ * DELETE /api/tasks/:id; permanently removes a task via {@link deleteTask}.
  *
  * @param id - Task UUID from the route parameter
  *

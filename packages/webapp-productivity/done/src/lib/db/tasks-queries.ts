@@ -24,7 +24,8 @@ import {
 } from './tasks-sql.ts';
 
 /**
- * Retrieves a single task by UUID, mapped to the application type.
+ * Retrieves a single task by UUID via {@link getTaskRowById}, mapped to the
+ * application type via {@link mapTask}.
  *
  * @param id - Task UUID
  *
@@ -44,7 +45,7 @@ export async function getTaskById(id: string,): Promise<Task | typeof TASK_NOT_F
 }
 
 /**
- * Lists inbox tasks that have no blockers, newest first.
+ * Lists inbox tasks that have no blockers, newest first, mapped via {@link mapTask}.
  *
  * @returns Unblocked inbox tasks sorted by creation date
  *
@@ -67,7 +68,8 @@ export async function listInboxUnblockedTasks(): Promise<Task[]> {
 }
 
 /**
- * Lists inbox tasks that are blocked, paired with each blocker ID for nesting.
+ * Lists inbox tasks that are blocked, paired with each blocker ID for nesting,
+ * mapped via {@link mapTask}.
  *
  * @returns Blocked task links with blocker IDs
  *
@@ -94,7 +96,8 @@ export async function listBlockedInboxTasks(): Promise<BlockedTaskLink[]> {
 }
 
 /**
- * Lists tasks with active timers (`status = 'in_progress'`), most recently updated first.
+ * Lists tasks with active timers (`status = 'in_progress'`), most recently
+ * updated first, mapped via {@link mapTask}.
  *
  * @returns In-progress tasks sorted by update date
  *
@@ -117,7 +120,8 @@ export async function listInProgressTasks(): Promise<Task[]> {
 }
 
 /**
- * Lists non-done tasks excluding the given task, for the blocker picker UI.
+ * Lists non-done tasks excluding the given task, for the blocker picker UI,
+ * mapped via {@link mapTask}.
  *
  * @param taskId - Task to exclude (the task being edited)
  *
@@ -166,8 +170,8 @@ export async function listAllTags(): Promise<string[]> {
 }
 
 /**
- * Full-text searches tasks by title, description, and tags.
- * Falls back to LIKE matching when the FTS query syntax is invalid.
+ * Full-text searches tasks by title, description, and tags, mapping rows via
+ * {@link mapTask}. Falls back to LIKE matching when the FTS query syntax is invalid.
  *
  * @param searchQuery - User-entered search string
  *

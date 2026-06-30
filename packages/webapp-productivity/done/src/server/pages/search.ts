@@ -15,7 +15,9 @@ import {
 import { serializePageData, } from './layout.ts';
 
 /**
- * Renders the search page with FTS results when a query is present.
+ * Renders the search page with FTS results from {@link searchTasks} when a
+ * query is present, plus quick-pick tags from {@link listAllTags}, serialized
+ * for the client via {@link serializePageData}.
  *
  * @param url - Request URL (the `q` search param contains the query)
  *

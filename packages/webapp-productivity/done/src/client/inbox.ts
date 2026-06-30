@@ -60,7 +60,7 @@ function openTask(taskId: string,): void {
 }
 
 /**
- * Sends a complete-task API call and reloads the page on success.
+ * Sends a complete-task API call via {@link api} and reloads the page on success.
  *
  * @param taskId - ID of task to complete
  */

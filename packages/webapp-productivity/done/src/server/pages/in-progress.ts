@@ -8,7 +8,8 @@ import { listInProgressTasks, } from '../../lib/db/tasks-queries.ts';
 import { renderPage, } from './layout.ts';
 
 /**
- * Renders the in-progress page listing tasks with active timers.
+ * Renders the in-progress page listing tasks with active timers, queried via
+ * {@link listInProgressTasks} and rendered through {@link renderPage}.
  *
  * @returns HTML response for the in-progress page
  *

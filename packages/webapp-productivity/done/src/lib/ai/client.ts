@@ -131,8 +131,9 @@ export type ChatCompletionResult =
 /**
  * Sends a chat completion request to the configured endpoint.
  *
- * Returns an error result rather than throwing so callers can degrade
- * gracefully (e.g. skip autofill when the AI is unavailable).
+ * Rejects when {@link isRateLimited}, and otherwise calls {@link recordRequest}
+ * to track the attempt. Returns an error result rather than throwing so callers
+ * can degrade gracefully (e.g. skip autofill when the AI is unavailable).
  *
  * @param options - Messages, temperature, and format controls
  *

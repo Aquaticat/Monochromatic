@@ -55,7 +55,7 @@ class TaskDetail extends HTMLElement {
   readonly #autofill: AutofillController;
 
   /**
-   * Initializes the shadow root and autofill controller.
+   * Initializes the shadow root and the {@link createAutofillController} autofill controller.
    */
   constructor() {
     super();
@@ -149,7 +149,8 @@ class TaskDetail extends HTMLElement {
   }
 
   /**
-   * Rebuilds pill elements in the `.pills` container from current metadata state.
+   * Rebuilds pill elements via {@link buildPillElements} in the `.pills`
+   * container from current metadata state.
    */
   #updatePillsDisplay(): void {
     /**
@@ -182,7 +183,8 @@ class TaskDetail extends HTMLElement {
   }
 
   /**
-   * Builds the complete Shadow DOM and wires up event listeners.
+   * Builds the complete Shadow DOM via {@link buildTaskDetailTree} and
+   * {@link TASK_DETAIL_STYLES}, and wires up event listeners.
    */
   #render(): void {
     /**

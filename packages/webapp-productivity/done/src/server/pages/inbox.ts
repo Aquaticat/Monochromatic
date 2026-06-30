@@ -12,7 +12,8 @@ import {
 import { renderPage, } from './layout.ts';
 
 /**
- * Renders the inbox page with unblocked and blocked task lists.
+ * Renders the inbox page with unblocked ({@link listInboxUnblockedTasks}) and
+ * blocked ({@link listBlockedInboxTasks}) task lists via {@link renderPage}.
  *
  * @returns HTML response for the inbox page
  *

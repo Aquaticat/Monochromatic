@@ -93,7 +93,7 @@ class ToastMessage extends HTMLElement {
   }
 
   /**
-   * Renders content and schedules auto-removal after `DISMISS_MS`.
+   * Renders content and schedules auto-removal after {@link DISMISS_MS}.
    */
   connectedCallback(): void {
     this.#render();

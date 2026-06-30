@@ -45,10 +45,12 @@ function parseStatus(value: unknown,): TaskStatus | typeof INVALID {
 }
 
 /**
- * Validates and extracts a `TaskUpdateInput` from an untrusted request body.
+ * Validates and extracts a {@link TaskUpdateInput} from an untrusted request
+ * body, using {@link isRecord}, {@link parseStringArray}, {@link parseEnumValue},
+ * and {@link parseStatus} for field-level validation.
  *
  * A field explicitly set to `null` is treated as "not provided" and skipped
- * (the merge in `updateTask` then keeps the existing value); a non-string,
+ * (the merge in {@link updateTask} then keeps the existing value); a non-string,
  * non-null value for a string/enum field aborts the whole parse.
  *
  * @param value - Raw parsed JSON body

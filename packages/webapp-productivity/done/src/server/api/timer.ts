@@ -48,7 +48,7 @@ function jsonResponse({
 }
 
 /**
- * POST /api/tasks/:id/start; starts the task timer.
+ * POST /api/tasks/:id/start; starts the task timer via {@link startTaskTimer}.
  *
  * @param id - Task UUID from the route parameter
  *
@@ -75,7 +75,8 @@ export async function handleStartTimer(id: string,): Promise<Response> {
 }
 
 /**
- * POST /api/tasks/:id/stop; stops the running timer and accumulates tracked time.
+ * POST /api/tasks/:id/stop; stops the running timer and accumulates tracked
+ * time via {@link stopTaskTimer}.
  *
  * @param id - Task UUID from the route parameter
  *
@@ -102,7 +103,8 @@ export async function handleStopTimer(id: string,): Promise<Response> {
 }
 
 /**
- * POST /api/tasks/:id/complete; completes the task if all blockers are resolved.
+ * POST /api/tasks/:id/complete; completes the task via {@link completeTask}
+ * if all blockers are resolved.
  *
  * @param id - Task UUID from the route parameter
  *

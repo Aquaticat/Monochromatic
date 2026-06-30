@@ -34,13 +34,14 @@ export {
 } from './tasks-timer.ts';
 
 /**
- * Inserts a new task with a generated UUID and current timestamp.
+ * Inserts a new task with a generated UUID and a {@link nowIso} timestamp,
+ * normalizing array fields with {@link normalizeStringArray}.
  *
  * @param input - Task creation payload (only `title` is required)
  *
  * @returns Freshly created task read back from the database
  *
- * @throws When the read-back fails (should never happen)
+ * @throws When {@link getTaskById} returns {@link TASK_NOT_FOUND} for the read-back (should never happen)
  *
  * @example
  * ```ts
@@ -95,7 +96,8 @@ export async function createTask(input: TaskCreateInput,): Promise<Task> {
 }
 
 /**
- * Applies a partial update to an existing task.
+ * Applies a partial update to an existing task, normalizing array fields via
+ * {@link normalizeStringArray} and stamping a fresh {@link nowIso} timestamp.
  *
  * @param id - Task UUID
  *

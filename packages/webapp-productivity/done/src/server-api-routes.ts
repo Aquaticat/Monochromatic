@@ -34,7 +34,7 @@ import { HTTP_BAD_REQUEST, } from '@monochromatic-dev/module-const/ts';
  *
  * @returns Parameter value
  *
- * @throws HTTPError 400 when parameter is missing
+ * @throws {@link HTTPError} 400 when parameter is missing
  *
  * @example
  * ```ts
@@ -86,7 +86,7 @@ export function registerApiRoutes(app: H3,): void {
     '/api/tasks/:id',
     defineHandler(function handleUpdateTaskRoute(event,) {
       /**
-       * Required route slug; thrown as 400 by `requireParam` when absent.
+       * Required route slug; thrown as 400 by {@link requireParam} when absent.
        */
       const id = requireParam({
         event,
@@ -103,7 +103,7 @@ export function registerApiRoutes(app: H3,): void {
     '/api/tasks/:id',
     defineHandler(function handleDeleteTaskRoute(event,) {
       /**
-       * Required route slug; thrown as 400 by `requireParam` when absent.
+       * Required route slug; thrown as 400 by {@link requireParam} when absent.
        */
       const id = requireParam({
         event,
@@ -117,7 +117,7 @@ export function registerApiRoutes(app: H3,): void {
     '/api/tasks/:id/start',
     defineHandler(function handleStartTimerRoute(event,) {
       /**
-       * Required route slug; thrown as 400 by `requireParam` when absent.
+       * Required route slug; thrown as 400 by {@link requireParam} when absent.
        */
       const id = requireParam({
         event,
@@ -131,7 +131,7 @@ export function registerApiRoutes(app: H3,): void {
     '/api/tasks/:id/stop',
     defineHandler(function handleStopTimerRoute(event,) {
       /**
-       * Required route slug; thrown as 400 by `requireParam` when absent.
+       * Required route slug; thrown as 400 by {@link requireParam} when absent.
        */
       const id = requireParam({
         event,
@@ -145,7 +145,7 @@ export function registerApiRoutes(app: H3,): void {
     '/api/tasks/:id/complete',
     defineHandler(function handleCompleteTaskRoute(event,) {
       /**
-       * Required route slug; thrown as 400 by `requireParam` when absent.
+       * Required route slug; thrown as 400 by {@link requireParam} when absent.
        */
       const id = requireParam({
         event,

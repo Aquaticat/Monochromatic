@@ -29,7 +29,8 @@ export type ApiRequestOptions = {
 };
 
 /**
- * Sends a fetch request to a JSON API endpoint with standard headers and error handling.
+ * Sends a fetch request to a JSON API endpoint with standard headers and
+ * error handling (shows a toast via {@link showToast} on failure).
  *
  * @param path - API endpoint path
  *

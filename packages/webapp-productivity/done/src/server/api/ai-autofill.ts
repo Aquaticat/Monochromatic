@@ -197,6 +197,10 @@ async function listAllLocations(): Promise<string[]> {
 
 /**
  * POST /api/ai/autofill; infers task metadata from a title using AI.
+ * Gathers existing tags via {@link listAllTags} and locations via
+ * {@link listAllLocations}, composes the prompt with {@link buildAutofillMessages},
+ * sends it through {@link chatCompletion}, and validates the result with
+ * {@link parseAutofillResponse}.
  *
  * @param req - Incoming request with JSON body containing `title`
  *
