@@ -1,5 +1,7 @@
 import type { ESTree, } from '@oxlint/plugins';
 
+import { getStaticMemberName, } from '../ast-shared.ts';
+
 /**
  * Genuine sentinel for {@link staticDescription} when no static string
  * description is present (absent, dynamic, or non-string). A unique `Symbol`,
@@ -52,13 +54,9 @@ export function isSymbolForCall({ node, }: { readonly node: ESTree.CallExpressio
    * Object of the member access, expected to be the `Symbol` identifier.
    */
   const { object, } = callee;
-  /**
-   * Property of the member access, expected to be the `for` identifier.
-   */
-  const { property, } = callee;
   if ((object.type !== 'Identifier') || (object.name !== 'Symbol'))
     return false;
-  return (property.type === 'Identifier') && (property.name === 'for');
+  return getStaticMemberName({ member: callee, },) === 'for';
 }
 
 /**

@@ -5,6 +5,11 @@ import type {
   VisitorWithHooks,
 } from '@oxlint/plugins';
 
+import {
+  getStaticCallMemberName,
+  NO_STATIC_MEMBER_NAME,
+} from './ast-shared.ts';
+
 /**
  * Creates an oxlint rule that bans calling any of a set of method names
  * as `x.methodName()`, regardless of receiver type.
@@ -53,23 +58,13 @@ export function methodCallBanRule({
       return {
         CallExpression(node: ESTree.CallExpression,): void {
           /**
-           * Call target; only `x.methodName()` member calls qualify for the rule.
+           * Static member name for `x.methodName()` calls.
            */
-          const { callee, } = node;
-          if ((callee.type
-            !== 'MemberExpression') || callee
-            .computed)
+          const methodName = getStaticCallMemberName({ call: node, },);
+          if (methodName === NO_STATIC_MEMBER_NAME)
             return;
-          if ((callee.property
-            .type
-            !== 'Identifier')
-            || (!methodNames
-              .includes(callee
-                .property
-                .name,)))
-          {
+          if (!methodNames.includes(methodName,))
             return;
-          }
           context.report({
             node,
             messageId: 'forbidden',

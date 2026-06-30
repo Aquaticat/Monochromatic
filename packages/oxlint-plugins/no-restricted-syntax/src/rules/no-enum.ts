@@ -1,9 +1,6 @@
-import type {
-  Context,
-  CreateOnceRule,
-  ESTree,
-  VisitorWithHooks,
-} from '@oxlint/plugins';
+import type { CreateOnceRule, } from '@oxlint/plugins';
+
+import { simpleBanRule, } from './_simple-ban-rule.ts';
 
 /**
  * Bans `enum` declarations in favor of union types and `as const` literals.
@@ -21,25 +18,10 @@ import type {
  * type Status = 'Active' | 'Inactive';
  * ```
  */
-export const noEnum: CreateOnceRule = {
-  meta: {
-    type: 'suggestion',
-    docs: {
-      description: 'Disallow enum declarations. Use union types with as const instead.',
-      recommended: true,
-    },
-    messages: {
-      forbidden: 'enum declarations are banned. Use union types with as const instead.',
-    },
-  },
-  createOnce(context: Context,): VisitorWithHooks {
-    return {
-      TSEnumDeclaration(node: ESTree.TSEnumDeclaration,): void {
-        context.report({
-          node,
-          messageId: 'forbidden',
-        },);
-      },
-    };
-  },
-};
+export const noEnum: CreateOnceRule = simpleBanRule({
+  type: 'suggestion',
+  nodeType: 'TSEnumDeclaration',
+  description: 'Disallow enum declarations. Use union types with as const instead.',
+  messageId: 'forbidden',
+  message: 'enum declarations are banned. Use union types with as const instead.',
+},);

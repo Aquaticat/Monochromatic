@@ -1,9 +1,9 @@
 import type {
-  Context,
   CreateOnceRule,
   ESTree,
-  VisitorWithHooks,
 } from '@oxlint/plugins';
+
+import { simpleBanRule, } from './_simple-ban-rule.ts';
 
 /**
  * Bans `try...finally` blocks in favor of `using`/`await using` for cleanup.
@@ -29,30 +29,15 @@ import type {
  * await process(handle);
  * ```
  */
-export const noTryFinally: CreateOnceRule = {
-  meta: {
-    type: 'suggestion',
-    docs: {
-      description:
-        'Disallow try...finally blocks. Use using/await using for cleanup instead.',
-      recommended: true,
-    },
-    messages: {
-      forbidden:
-        'try...finally is banned. Use using/await using with Symbol.dispose for cleanup instead.',
-    },
+export const noTryFinally: CreateOnceRule = simpleBanRule({
+  type: 'suggestion',
+  nodeType: 'TryStatement',
+  description:
+    'Disallow try...finally blocks. Use using/await using for cleanup instead.',
+  messageId: 'forbidden',
+  message:
+    'try...finally is banned. Use using/await using with Symbol.dispose for cleanup instead.',
+  shouldReport(node: ESTree.Node,): boolean {
+    return (node.type === 'TryStatement') && (node.finalizer !== null);
   },
-  createOnce(context: Context,): VisitorWithHooks {
-    return {
-      TryStatement(node: ESTree.TryStatement,): void {
-        if (node.finalizer
-          !== null) {
-          context.report({
-            node,
-            messageId: 'forbidden',
-          },);
-        }
-      },
-    };
-  },
-};
+},);

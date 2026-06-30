@@ -5,6 +5,11 @@ import type {
   VisitorWithHooks,
 } from '@oxlint/plugins';
 
+import {
+  getStaticCallMemberName,
+  NO_STATIC_MEMBER_NAME,
+} from './ast-shared.ts';
+
 /**
  * Bans `.trimLeft()` and `.trimRight()` in favor of `.trimStart()` and `.trimEnd()`.
  *
@@ -41,21 +46,11 @@ export const noTrimLeftRight: CreateOnceRule = {
     return {
       CallExpression(node: ESTree.CallExpression,): void {
         /**
-         * Call target; only `x.trimLeft()` / `x.trimRight()` member calls trigger the rule.
+         * Static member-access name, matched against the deprecated trim aliases.
          */
-        const { callee, } = node;
-        if ((callee.type
-          !== 'MemberExpression') || callee
-          .computed)
+        const name = getStaticCallMemberName({ call: node, },);
+        if (name === NO_STATIC_MEMBER_NAME)
           return;
-        if (callee.property
-          .type
-          !== 'Identifier')
-          return;
-        /**
-         * Member-access identifier name; matched against the deprecated trim aliases.
-         */
-        const { name, } = callee.property;
         if (name === 'trimLeft') {
           context.report({
             node,

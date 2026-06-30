@@ -1,3 +1,5 @@
+import { isWhitespaceChar, } from '@monochromatic-dev/config-oxlint-shared/ts';
+
 /**
  * Minimal node shape required by {@link extractParamsText}.
  *
@@ -21,39 +23,6 @@ type ArrowParamsNode = {
 const ASYNC_KEYWORD = 'async';
 
 /**
- * Whitespace characters consumed after an async arrow-function prefix.
- */
-const ASYNC_PREFIX_WHITESPACE = [
-  ' ',
-  '\t',
-  '\n',
-  '\r',
-  '\f',
-  '\v',
-] as const;
-
-/**
- * Checks whether a character is JavaScript whitespace for the async prefix scanner.
- *
- * The source text starts at an AST node boundary, so the scanner only needs
- * to consume the whitespace between `async` and the parameter/generic start.
- *
- * @param char - single character to inspect
- *
- * @returns whether character is whitespace
- *
- * @example
- * ```ts
- * isWhitespaceCharacter({ char: ' ' }); // true
- * ```
- */
-function isWhitespaceCharacter({ char, }: { readonly char: string; },): boolean {
-  return ASYNC_PREFIX_WHITESPACE.some(function isMatchingWhitespace(candidate,): boolean {
-    return candidate === char;
-  },);
-}
-
-/**
  * Finds the index after a leading async keyword and its following whitespace.
  *
  * @param fullText - source text of an async arrow function
@@ -72,12 +41,10 @@ function indexAfterAsyncPrefix({ fullText, }: { readonly fullText: string; },): 
    * Cursor after the async keyword, advanced across following whitespace.
    */
   let index = ASYNC_KEYWORD.length;
-  if (!isWhitespaceCharacter({ char: fullText[index]
-    ?? '', },))
+  if (!isWhitespaceChar(fullText.charAt(index,),))
     return 0;
-  while (isWhitespaceCharacter({ char: fullText[index]
-    ?? '', },))
-    index++;
+  while (isWhitespaceChar(fullText.charAt(index,),))
+    index += 1;
   return index;
 }
 

@@ -9,6 +9,14 @@ import {
   NOT_ERROR_DETECTION,
   type ErrorDetectionArgumentText,
 } from './prefer-error-is-error.constants.ts';
+import {
+  getImportDeclarationForDefinition,
+  getSingleNonSpreadArgument,
+  getStaticMemberName as getSharedStaticMemberName,
+  NO_IMPORT_DECLARATION,
+  NO_SINGLE_ARGUMENT,
+  NO_STATIC_MEMBER_NAME,
+} from './ast-shared.ts';
 import { findVariable, } from './no-sync.syntax.ts';
 
 //region Expression helpers
@@ -82,24 +90,10 @@ export function getIdentifierNamed(
 export function getStaticMemberName(
   { member, }: { readonly member: ESTree.MemberExpression; },
 ): string | typeof NOT_ERROR_DETECTION {
-  if (member.property
-    .type
-    === 'PrivateIdentifier')
+  const memberName = getSharedStaticMemberName({ member, },);
+  if (memberName === NO_STATIC_MEMBER_NAME)
     return NOT_ERROR_DETECTION;
-  if (member.property
-    .type
-    === 'Identifier')
-    return member.property
-      .name;
-  if (member.property
-    .type
-    !== 'Literal')
-    return NOT_ERROR_DETECTION;
-  if ((typeof member.property
-    .value) !== 'string')
-    return NOT_ERROR_DETECTION;
-  return member.property
-    .value;
+  return memberName;
 }
 
 /**
@@ -234,15 +228,8 @@ export function getImportSource(
   /**
    * Import declaration owning the binding definition.
    */
-  const declaration = definition.node
-    .type
-    === 'ImportDeclaration'
-    ? definition.node
-    : definition.node
-      .parent;
-  if (declaration === null)
-    return NOT_ERROR_DETECTION;
-  if (declaration.type !== 'ImportDeclaration')
+  const declaration = getImportDeclarationForDefinition({ definition, },);
+  if (declaration === NO_IMPORT_DECLARATION)
     return NOT_ERROR_DETECTION;
   return declaration.source
     .value;
@@ -321,17 +308,8 @@ export function getSingleArgumentText(
     readonly call: ESTree.CallExpression;
   },
 ): ErrorDetectionArgumentText {
-  if (call.arguments
-    .length
-    !== 1)
-    return NOT_ERROR_DETECTION;
-  /**
-   * Sole argument supplied to the candidate detector.
-   */
-  const [argument,] = call.arguments;
-  if (argument === undefined)
-    return NOT_ERROR_DETECTION;
-  if (argument.type === 'SpreadElement')
+  const argument = getSingleNonSpreadArgument({ call, },);
+  if (argument === NO_SINGLE_ARGUMENT)
     return NOT_ERROR_DETECTION;
   return context.sourceCode
     .getText(argument,);

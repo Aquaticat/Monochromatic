@@ -1,9 +1,9 @@
 import type {
-  Context,
   CreateOnceRule,
   ESTree,
-  VisitorWithHooks,
 } from '@oxlint/plugins';
+
+import { simpleBanRule, } from './_simple-ban-rule.ts';
 
 /**
  * Friendly diagnostic for declarations that should use named parameters.
@@ -41,34 +41,18 @@ const REQUIRE_DESTRUCTURED_PARAMS_MESSAGE = [
  * function greet(name: string): void { }
  * ```
  */
-export const requireDestructuredParams: CreateOnceRule = {
-  meta: {
-    type: 'suggestion',
-    docs: {
-      description:
-        'Require function declarations with 2+ params to use a single destructured object parameter.',
-      recommended: true,
-    },
-    messages: {
-      required: REQUIRE_DESTRUCTURED_PARAMS_MESSAGE,
-    },
+export const requireDestructuredParams: CreateOnceRule = simpleBanRule({
+  type: 'suggestion',
+  nodeType: 'FunctionDeclaration',
+  description:
+    'Require function declarations with 2+ params to use a single destructured object parameter.',
+  messageId: 'required',
+  message: REQUIRE_DESTRUCTURED_PARAMS_MESSAGE,
+  shouldReport(node: ESTree.Node,): boolean {
+    /**
+     * Minimum parameter count that triggers the rule.
+     */
+    const minParams = 2;
+    return (node.type === 'FunctionDeclaration') && (node.params.length >= minParams);
   },
-  createOnce(context: Context,): VisitorWithHooks {
-    return {
-      FunctionDeclaration(node: ESTree.Function,): void {
-        /**
-         * Minimum parameter count that triggers the rule.
-         */
-        const minParams = 2;
-        if (node.params
-          .length
-          < minParams)
-          return;
-        context.report({
-          node,
-          messageId: 'required',
-        },);
-      },
-    };
-  },
-};
+},);

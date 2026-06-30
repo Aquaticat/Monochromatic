@@ -6,6 +6,12 @@ import type {
 } from '@oxlint/plugins';
 
 import {
+  getImportDeclarationForDefinition,
+  getSingleNonSpreadArgument,
+  NO_IMPORT_DECLARATION,
+  NO_SINGLE_ARGUMENT,
+} from './ast-shared.ts';
+import {
   NO_STATIC_SOURCE,
   NO_VARIABLE,
   type StaticSource,
@@ -97,17 +103,8 @@ export function getMemberName(
 export function getSingleStringArgument(
   { call, }: { readonly call: ESTree.CallExpression; },
 ): StaticSource {
-  if (call.arguments
-    .length
-    !== 1)
-    return NO_STATIC_SOURCE;
-  /**
-   * Sole call argument.
-   */
-  const [argument,] = call.arguments;
-  if (argument === undefined)
-    return NO_STATIC_SOURCE;
-  if (argument.type === 'SpreadElement')
+  const argument = getSingleNonSpreadArgument({ call, },);
+  if (argument === NO_SINGLE_ARGUMENT)
     return NO_STATIC_SOURCE;
   return getStaticString({ expression: argument, },);
 }
@@ -207,19 +204,8 @@ export function findVariable(
 export function getImportDeclaration(
   { definition, }: { readonly definition: Definition; },
 ): ESTree.ImportDeclaration | typeof NO_VARIABLE {
-  /**
-   * Definition node itself for whole-declaration imports,
-   * or parent for individual specifiers.
-   */
-  const declaration = definition.node
-    .type
-    === 'ImportDeclaration'
-    ? definition.node
-    : definition.node
-      .parent;
-  if (declaration === null)
-    return NO_VARIABLE;
-  if (declaration.type !== 'ImportDeclaration')
+  const declaration = getImportDeclarationForDefinition({ definition, },);
+  if (declaration === NO_IMPORT_DECLARATION)
     return NO_VARIABLE;
   return declaration;
 }
