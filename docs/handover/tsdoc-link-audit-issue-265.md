@@ -1,17 +1,22 @@
 # Handover: TSDoc inline-link audit (issue #265)
 
-## Status (2026-06-30, audit complete, posted)
+## Status (2026-06-30, fix phase in progress)
 
-All 16 batches finished. 2467 `downgraded-link`/`missing-reference`
-findings recorded across the active codebase, plus the separately
-tracked 53-instance `@throws` Error-class list (Category 1, fully
-subsumed by the batch totals). The compiled audit was posted as
+Audit phase complete: all 16 batches finished, 2467
+`downgraded-link`/`missing-reference` findings recorded across the
+active codebase, plus the separately tracked 53-instance `@throws`
+Error-class list (Category 1, fully subsumed by the batch totals). The
+compiled audit was posted as
 [a comment on issue #265](https://github.com/Aquaticat/Monochromatic/issues/265#issuecomment-4848121912).
 
+Fix phase started same day: applying every recorded finding directly to
+source, per the "Fix phase" section below.
+
 This handover doc and the sibling `tsdoc-link-audit-issue-265.findings.md`
-are kept (not deleted per `DL4`) because only the audit has landed, not
-the fix: the findings data is the working dataset for whoever picks up
-restoring the links. Delete both once that fix work lands.
+are kept (not deleted per `DL4`) because the fix hasn't fully landed yet:
+the findings data is the working checklist for the fix-phase batch
+agents. Delete both once the fix phase status table below shows every
+batch done and committed.
 
 Issue: [#265](https://github.com/Aquaticat/Monochromatic/issues/265),
 "Restore TSDoc inline links removed from comments".
@@ -205,17 +210,87 @@ them from the package-to-batch mapping below plus
 Rule: never have more than 8 batches running at once. Launch the next
 queued batch as soon as a running one completes.
 
-## Next steps
+## Audit next steps (done)
 
 1. As each batch agent finishes, record its findings (file + total
    count) in this doc, then launch the next queued batch (respecting
-   the 8-cap).
+   the 8-cap). Done.
 2. Once all 16 batches are done, compile: Category 1 (full list) +
    Category 2 (aggregated counts per package/category, with full or
    representative listings depending on volume) into a single audit.
+   Done.
 3. Post the audit as a **comment** on issue #265 (not an edit to the
    original triage-generated body). No outward-facing "let me know if"
-   offers (`XCM`), no AI-attribution footer (`ATR`).
-4. Mark all tasks in the task list completed; this handover doc can then
-   be deleted per `DL4` once the issue comment is posted (git history is
-   the backstop).
+   offers (`XCM`), no AI-attribution footer (`ATR`). Done.
+
+## Fix phase
+
+Goal: apply every recorded `downgraded-link`/`missing-reference` finding
+directly to source (and the Category 1 `@throws` list, fully subsumed by
+Category 2), wrapping the named dependency in `{@link Name}` per this
+codebase's established convention (bare identifier, `{@link Name}` or
+`{@link Name.member}`; never file-path- or package-qualified, confirmed
+by grepping existing correct usages across the repo, including ones
+naming external-package symbols).
+
+Re-uses the same 16-batch partition as the audit, with the four largest
+single-or-dominant-package batches split in half purely to keep each
+fix-agent's edit volume manageable (no audit-finding renumbering, same
+underlying packages): batch01 -> f01a/f01b (file-enforcer), batch04 ->
+f04a (no-restricted-syntax alone) / f04b (git, numeric-format,
+correction-reminder), batch08 -> f08a (auto-mode alone) / f08b (tsdoc,
+bash-output-filter). 19 fix-batches total. Split file lists are at
+`<scratchpad>/f01a.txt`, `f01b.txt`, `f04a.txt`, `f04b.txt`, `f08a.txt`,
+`f08b.txt` (session-ephemeral; regenerate from the package-to-batch
+mapping above plus the subdirectory splits noted here if lost: f01a =
+file-enforcer `data/` + `src/io,package,watch`; f01b = the rest of
+file-enforcer; f04a = `oxlint-plugins/no-restricted-syntax` only; f04b =
+`cli/git` + `module/numeric-format` + `claude-code-plugins/correction-reminder`;
+f08a = `pi/auto-mode` only; f08b = `oxlint-plugins/tsdoc` +
+`claude-code-plugins/bash-output-filter`).
+
+Each fix-batch agent: reads its findings.md batch section as a checklist
+(expanding any condensed/grouped entries by inspecting every file/pattern
+they refer to, since large batches were summarized during the audit, not
+exhaustively line-listed), applies `{@link}` fixes directly, runs
+`lint:oxlint` + `lint:types` per touched package, and commits per package
+with scoped pathspecs (`fix(<package>): restore TSDoc inline links (issue #265)`).
+
+### Fix-batch status table
+
+| Batch | Packages (short) | Agent ID | Status |
+| --- | --- | --- | --- |
+| f01a | file-enforcer (data, io, package, watch) | | queued |
+| f01b | file-enforcer (pipeline, jetbrains, root) | | queued |
+| f02 | mvm, mutation-test, async-time, claude-spawn | | queued |
+| f03 | toml-edit, linkup, throws | | queued |
+| f04a | oxlint-plugins/no-restricted-syntax | | queued |
+| f04b | git, numeric-format, correction-reminder | | queued |
+| f05 | done-postcss, i18n-compose, fy, backup-path | | queued |
+| f06 | aquati.cat, markdown-lint, islands-black, async-iter | | queued |
+| f07 | stylistic, model-selection, watch-restart, zip-writer, stop-reminders, terminal-title | | queued |
+| f08a | auto-mode | | queued |
+| f08b | tsdoc, bash-output-filter | | queued |
+| f09 | done, task-util, mcp/stdio | | queued |
+| f10 | morph-compact, advisor, module/test, image-diff, test-support | | queued |
+| f11 | doodle-widget, claude-code-plugins/source, catalog-tighten | | queued |
+| f12 | deps-cube, git-clone-size, current-time-context, oxlint-plugins/shared | | queued |
+| f13 | page-weight, logger, hall-monitor, android-exempt-unused, build-tool/css, pipe, matrix, tofu, aquaticat, import-attributes, config/tsdown, rgffplay, prompt-time | | queued |
+| f14 | terminal-exec, hyperscript, rss, config/oxlint, kv-store, fs-path, hook-types, or-throw, session-start-housekeeping | | queued |
+| f15 | vmsync, spawn, figma kiwi, figma penpot, pi/statusline, llm-types | | queued |
+| f16 | terminal-title, vm-builder, catalog-tighten.matrix, forbidden-strings, dom, statusline, thinking-defaults, mcp/mvm, syllable-break-demo, const, memoize, token-count, observable, runtime-error/bun, function-arity, current-time-context, guardrail, root config | | queued |
+
+Rule: never have more than 8 fix-batches running at once. Launch the
+next queued batch as soon as a running one completes.
+
+## Fix phase next steps
+
+1. As each fix-batch agent finishes, record its result (files edited,
+   findings resolved, skipped count) in the table above, then launch the
+   next queued batch (respecting the 8-cap).
+2. Once all 19 fix-batches are done and committed, run a final
+   repo-formatting spot check (`lint:dprint`) over the touched files.
+3. Post a wrap-up comment on issue #265 noting the fix landed (commit
+   range, total findings resolved), then close issue #265 per `SK1`.
+4. Delete both this handover doc and the findings doc per `DL4` (git
+   history is the backstop).
