@@ -148,7 +148,9 @@ export type ValidatedEntry = {
 };
 
 /**
- * Validates a parsed desktop entry as a usable terminal emulator.
+ * Validates a parsed desktop entry as a usable terminal emulator. The Exec
+ * line is tokenized with {@link tokenizeExec}; {@link INVALID_EXEC} or an
+ * empty result disqualifies the entry.
  *
  * @param entry - Parsed desktop entry.
  *

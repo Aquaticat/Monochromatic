@@ -67,7 +67,8 @@ export type ResolvedTerminal = ValidatedEntry & {
 
 /* oxlint-disable require-await -- resolveTerminal delegates to async resolveXdgTerminal; async needed for uniform Promise return */
 /**
- * Resolves the preferred terminal emulator for the current platform.
+ * Resolves the preferred terminal emulator for the current platform,
+ * dispatching to {@link resolveXdgTerminal} or {@link resolveWindowsTerminal}.
  *
  * @returns Resolved terminal entry, or {@link NO_TERMINAL} if no valid terminal is found.
  *
@@ -92,7 +93,10 @@ export async function resolveTerminal(): Promise<ResolvedTerminal | typeof NO_TE
 
 /**
  * Resolves the terminal emulator using the XDG Desktop Entry Specification.
- * Used on Linux, FreeBSD, and other Unix-like systems.
+ * Used on Linux, FreeBSD, and other Unix-like systems. Merges
+ * {@link parseConfigFiles} preferences with a {@link scanEntries} fallback
+ * scan, computing the explicit candidate order via {@link resolveExplicitIds}
+ * and validating each candidate through {@link tryEntry}.
  *
  * @returns Resolved terminal entry, or {@link NO_TERMINAL} if no valid terminal is found.
  */

@@ -34,7 +34,9 @@ const l = tagged({
 },);
 
 /**
- * Resolves the preferred terminal emulator and launches it as a detached process.
+ * Resolves the preferred terminal emulator via {@link resolveTerminal} and
+ * launches it as a detached process, building the final argv through
+ * {@link buildCommand}.
  *
  * @param dir - directory to open the terminal in
  *
@@ -42,7 +44,7 @@ const l = tagged({
  *
  * @param title - optional window title
  *
- * @throws when no terminal emulator is found or the process fails to spawn
+ * @throws when {@link resolveTerminal} returns {@link NO_TERMINAL} or the process fails to spawn
  *
  * @example
  * ```ts

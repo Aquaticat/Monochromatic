@@ -14,10 +14,11 @@ import {
 /**
  * Returns a copy of `entry` with the field(s) the parsed key sets updated.
  * Unrecognized keys yield `entry` unchanged. Returning a fully-shaped
- * `DesktopEntry` (rather than a `Partial` to merge) keeps the slot exactly
+ * {@link DesktopEntry} (rather than a `Partial` to merge) keeps the slot exactly
  * entry-shaped, avoiding the `Partial` that would reopen
  * exactOptionalPropertyTypes holes; the immutable update keeps the param
- * deeply readonly.
+ * deeply readonly. Escape-bearing keys (TryExec and the X-TerminalArg* family)
+ * run their value through {@link expandEscapes} before storing it.
  *
  * @param entry - Current parse accumulator; never mutated.
  *

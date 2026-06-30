@@ -55,7 +55,8 @@ export type ConfigResult = {
  * Reads and parses all xdg-terminals.list config files.
  * Lines starting with `#` or empty lines are ignored.
  * Lines starting with `-` exclude an entry ID from fallback.
- * Lines starting with `/` are directives (e.g. `/execarg_default:id:arg`).
+ * Lines starting with `/` are directives (e.g. `/execarg_default:id:arg`),
+ * handed to {@link parseDirective} for parsing.
  * All other lines are explicit entry ID preferences.
  *
  * @param paths - Config file paths in descending priority order.

@@ -135,7 +135,8 @@ async function findDesktopFiles({ dir, }: { readonly dir: string; },): Promise<r
 /**
  * Scans all application directories for `.desktop` files and builds a registry.
  * Directories are provided in ascending priority order; later directories
- * override earlier ones for duplicate entry IDs.
+ * override earlier ones for duplicate entry IDs. Each directory's files come
+ * from {@link findDesktopFiles}.
  *
  * @param dirs - Application directory paths in ascending priority order.
  *

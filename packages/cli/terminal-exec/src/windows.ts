@@ -86,7 +86,7 @@ async function which(name: string,): Promise<string | typeof EXECUTABLE_NOT_ON_P
 /**
  * Resolves the terminal emulator on Windows.
  *
- * Resolution order:
+ * Resolution order, each checked with the local {@link which}:
  * 1. Windows Terminal (`wt.exe`): default on Windows 11+, widely installed on Windows 10
  * 2. `cmd.exe`: always available
  *

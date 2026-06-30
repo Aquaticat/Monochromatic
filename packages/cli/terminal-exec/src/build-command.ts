@@ -113,7 +113,8 @@ function keepToken(token: string,): boolean {
  *
  * Strips single-instance flags from the Exec tokens because they cause IPC
  * activation to a running instance, which does not reliably forward config
- * overrides like `--working-directory`.
+ * overrides like `--working-directory`. Each applicable option block hands
+ * its key and value to {@link appendArg} to apply the trailing-`=` convention.
  *
  * @param terminal - Resolved terminal entry with Exec tokens and argument keys.
  *
