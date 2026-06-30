@@ -21,7 +21,7 @@ import type {
   SignalContext,
 } from './types.ts';
 
-/** Check if a command name is a mutating command.
+/** Check if a command name is in {@link MUTATING_COMMANDS}.
  *
  * @param name - the command name
  *
@@ -43,7 +43,8 @@ function isMutatingCommand(
 /**
  * Check if any of the given flags are present in the argument list.
  *
- * Handles `--` end-of-options separator correctly.
+ * Handles `--` end-of-options separator correctly. Long flag names are
+ * resolved through {@link LONG_FLAGS} before comparison.
  *
  * @returns `true` if any of the flags are found
  *
@@ -125,7 +126,8 @@ function hasRootTarget(
   );
 }
 
-/** Check if a command has inline code.
+/** Check if a command has inline code, using flags registered in
+ * {@link INTERPRETER_INLINE_FLAGS}.
  *
  * @returns `true` if the command has inline code
  *
@@ -159,7 +161,7 @@ function hasInlineCode(
   );
 }
 
-/** Check if the analysis contains any network commands.
+/** Check if the analysis contains any command listed in {@link NETWORK_COMMANDS}.
  *
  * @param analysis - parsed bash command analysis
  *
@@ -185,7 +187,7 @@ function hasNetworkCommand(
   );
 }
 
-/** Check if the analysis contains secret variable references.
+/** Check if the analysis contains references matching {@link SECRET_VAR_PATTERN}.
  *
  * @param analysis - parsed bash command analysis
  *
@@ -211,7 +213,7 @@ function hasSecretParamRefs(
   );
 }
 
-/** Check if the analysis contains sensitive source files.
+/** Check if the analysis contains sensitive source files via {@link pathSignals}.
  *
  * @returns `true` if any sensitive source is found
  *

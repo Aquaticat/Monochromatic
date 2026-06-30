@@ -55,7 +55,9 @@ const l = tagged({
 },);
 
 /**
- * Build model-facing block decision for a judge deny verdict.
+ * Build model-facing block {@link GuardDecision} for a judge deny verdict.
+ *
+ * Formats the reason with {@link formatModelBlockReason}.
  *
  * @param verdict - preserves judge rationale and guidance for agent self-correction
  *
@@ -87,12 +89,15 @@ function decisionForDenyVerdict(
 /**
  * Evaluate a flagged action through the judge pipeline.
  *
- * Reuses a latest same-session approval for the exact action when present.
- * Otherwise resolves a judge model, calls the judge, and processes
- * the verdict. On approve, allows and reports an `approved`
- * flow verdict. On deny, blocks with reason plus guidance and reports a
- * `denied` flow verdict. On ask, prompts the user (no flow
- * verdict; the prompt path records its own session entry).
+ * Reuses a latest same-session approval found by {@link getReusableApproval}
+ * for the exact action when present. Otherwise resolves a judge model with
+ * {@link resolveJudgeModel}, builds judge context with {@link buildContext}
+ * and {@link getTrustDirectives}, calls the judge with {@link callJudge}, and
+ * processes the verdict. On approve, allows and reports an `approved`
+ * flow verdict. On deny, blocks via {@link decisionForDenyVerdict} and
+ * reports a `denied` flow verdict. On ask, prompts the user with
+ * {@link askUser} (no flow verdict; the prompt path records its own session
+ * entry).
  *
  * @returns block-or-allow decision plus the flow verdict to record, if any
  *
@@ -328,7 +333,8 @@ async function evaluate(
 }
 
 /**
- * Resolve a judge model from the budget model options.
+ * Resolve a judge model from the budget model options, built with
+ * {@link toBudgetModelOptions} and resolved with {@link findBudgetModel}.
  *
  * @param ctx - extension context
  *

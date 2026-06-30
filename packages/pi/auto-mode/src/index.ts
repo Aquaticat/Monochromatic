@@ -95,7 +95,16 @@ type SkillPromptEvent = {
  * Auto-mode pi extension.
  *
  * Subscribes to agent lifecycle events to implement the
- * flagger-judge-user pipeline.
+ * flagger-judge-user pipeline:
+ * - {@link loadMergedConfig} and {@link buildSystemPrompt} resolve config and the judge system prompt
+ * - {@link registerGuardCommand} and {@link registerProposeTrust} register the `/guard` command and `propose_trust` tool
+ * - {@link findLatestBypassEnabled} and {@link updateBypassStatus} restore and surface bypass state
+ * - {@link appendBypassToggleEntry} and {@link announceBypassToggle} record and announce bypass toggles
+ * - {@link describeAction} and {@link appendBypassAllowEntry} log bypassed tool calls
+ * - {@link agentTempAllowlistedDirs} and {@link linkedWorktreeReadAllowlistedDirs} build read allowlists
+ * - {@link shouldFlag} and {@link isRelevantTool} decide whether a tool call needs evaluation
+ * - {@link buildApprovalFingerprint} and {@link evaluate} run the judge pipeline
+ * - {@link updateWidget} renders flow verdicts
  *
  * @param pi - the pi extension API
  *

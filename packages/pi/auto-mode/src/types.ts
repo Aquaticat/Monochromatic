@@ -133,7 +133,7 @@ function isTrustEntry(
 }
 
 /**
- * Type-guard for verdict session entries.
+ * Type-guard for verdict session entries, validated with {@link isVerdictData}.
  *
  * @param entry - a session branch entry
  *
@@ -169,6 +169,10 @@ function isVerdictEntry(
 
 /**
  * Check whether unknown custom-entry payload has verdict-data shape.
+ *
+ * Validates the record with {@link isRecord}, the verdict discriminant with
+ * {@link isVerdictValue}, and the optional fields with
+ * {@link isUndefinedOrString} and {@link isUndefinedOrReusableVerdictSource}.
  *
  * @param data - custom entry payload read from session history
  *
@@ -355,7 +359,7 @@ type CommandInfo = {
 /**
  * Result of analyzing a bash command string.
  *
- * Produced by `analyzeBashCommand` in command-parser.ts.
+ * Produced by {@link analyzeBashCommand} in command-parser.ts.
  */
 type BashAnalysis = {
   /**
@@ -403,8 +407,8 @@ type ModelOverride = BudgetModelOverride;
  * Configured judge-model selection.
  *
  * Carries either a pinned override or a strategy plus its tuning
- * parameters. The same shape is used by `MergedConfig.judgeModel`,
- * `BudgetModelOptions`, and the YAML/JSON config schema.
+ * parameters. The same shape is used by {@link MergedConfig}'s `judgeModel`,
+ * {@link BudgetModelOptions}, and the YAML/JSON config schema.
  */
 type JudgeModelConfig = {
   readonly modelOverride?: ModelOverride;
@@ -416,7 +420,7 @@ type JudgeModelConfig = {
 };
 
 /**
- * Budget-model find options (shape used by `findBudgetModel`).
+ * Budget-model find options (shape used by {@link findBudgetModel}).
  */
 type BudgetModelOptions = JudgeModelConfig;
 
@@ -451,8 +455,9 @@ type BatchEntry = {
  *
  * A discriminated union on `block` rather than an optional/absent result, so
  * "allow" is a distinct, meaningful value rather than a missing one. Both
- * `evaluate` and `askUser` resolve to this shape; the entry-point handler maps
- * it onto the host SDK's `ToolCallEventResult` (block) or no result (allow).
+ * {@link evaluate} and {@link askUser} resolve to this shape; the entry-point
+ * handler maps it onto the host SDK's {@link ToolCallEventResult} (block) or
+ * no result (allow).
  */
 type GuardDecision =
   | {

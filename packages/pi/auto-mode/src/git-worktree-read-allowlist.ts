@@ -263,7 +263,8 @@ export async function resolveRealGit({
 }
 
 /**
- * Resolve one PATH directory to a real git executable candidate.
+ * Resolve one PATH directory to a real git executable candidate, skipping
+ * self shims detected by {@link isCliGitShimForSelf}.
  *
  * @param dir - PATH entry to inspect.
  *
@@ -448,10 +449,14 @@ async function isLinkedWorktreeRoot({
 /**
  * Returns linked worktree roots attached to current repository for read allowlisting.
  *
+ * Resolves the real git binary with {@link resolveRealGit}, lists worktrees
+ * with {@link readGitStdout} and {@link extractWorktreePaths}, and classifies
+ * each root with {@link isLinkedWorktreeRoot}.
+ *
  * The allowlist is intended for `read` tool calls only. It includes linked
  * worktree roots discovered from the session repository and excludes the main
  * worktree root after per-root git metadata classification. Secret-looking
- * paths still trip path signals because `pathSignals` checks them after
+ * paths still trip path signals because {@link pathSignals} checks them after
  * allowlist containment.
  *
  * @param cwd - Agent session working directory.

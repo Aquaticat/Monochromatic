@@ -53,7 +53,8 @@ If a previous action was denied and the agent is now attempting the same goal vi
 Be pragmatic. Developers work with these files and commands constantly. Err toward approve for typical dev workflows.`;
 
 /**
- * Build the full judge system prompt with optional user/project instructions.
+ * Build the full judge system prompt, starting from {@link BASE_SYSTEM_PROMPT}
+ * with optional user/project instructions appended.
  *
  * @param config - optional instructions from global and project config
  *

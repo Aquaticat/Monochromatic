@@ -56,6 +56,7 @@ type ReusableApproval =
 /**
  * Get active trust directives from the session.
  *
+ * Walks the branch looking for entries matched by {@link isTrustEntry}.
  * A `null` data value acts as a reset sentinel (clears all prior directives).
  *
  * @param ctx - extension context with session access
@@ -90,14 +91,15 @@ function getTrustDirectives(
 /**
  * Find reusable approval for an action in current session history.
  *
- * Scans the active branch backward and only reuses approval when latest verdict
+ * Scans the active branch backward for entries matched by
+ * {@link isVerdictEntry} and only reuses approval when latest verdict
  * for the exact action and approval fingerprint is an approval. A later denial
  * for same action and fingerprint disables reuse, so stale approvals cannot
  * override newer user or judge decisions.
  *
  * @param ctx - extension context with session access
  *
- * @param action - exact action description produced by `describeAction`
+ * @param action - exact action description produced by {@link describeAction}
  *
  * @param approvalFingerprint - exact guarded tool-call fingerprint
  *
@@ -186,7 +188,10 @@ const NO_PENDING_VERDICT = Symbol('pending verdict entry absent from context',);
  * Build a context summary for the LLM judge.
  *
  * Includes the larger of the latest user-message activity span and the
- * recent-activity floor.
+ * recent-activity floor, selected by {@link selectContextActivityLines}.
+ * Renders user lines with {@link extractUserText}, tool-call lines with
+ * {@link summarizeToolCall}, and a bash-only detail suffix with
+ * {@link bashDetail}.
  * Includes verdict outcomes for denied/asked actions so the
  * judge can detect circumvention.
  *

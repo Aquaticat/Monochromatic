@@ -79,7 +79,11 @@ export type MergedConfig = {
 /**
  * Should this tool call be sent to the judge?
  *
- * Returns `true` if any signal fires. No reason is propagated.
+ * Returns `true` if any signal fires. No reason is propagated. Bash calls go
+ * through {@link analyzeBashCommand} and {@link bashSignals}; other tool
+ * calls are checked with {@link getFilePath} and {@link pathSignals} for
+ * location, then {@link extractToolText}, {@link contentSignals}, and
+ * {@link textSignals} for body text.
  *
  * @returns `true` if the action should be flagged for judge review
  *
@@ -189,6 +193,17 @@ async function shouldFlag(
 
 /**
  * Check bash command analysis for dangerous patterns.
+ *
+ * Checks {@link hasTrustedAgentTempCredentialHandoff} for dotenv-to-helper
+ * handoffs, then per command: {@link PRIVILEGE_COMMANDS},
+ * {@link isMutatingCommand} and {@link hasFlag}, {@link hasRootTarget},
+ * {@link ENV_DUMP_COMMANDS}, {@link INTERPRETER_COMMANDS} and
+ * {@link hasInlineCode}. Path-shaped words found with {@link looksLikePath}
+ * are tested with {@link pathSignals} and excused by
+ * {@link isTrustedAgentTempBashPathAllowed}. Finally checks
+ * {@link hasNetworkCommand} combined with {@link hasSecretParamRefs} or
+ * {@link hasSensitiveSource}, and user-configured matchers with
+ * {@link matchUserCommands}.
  *
  * @returns `true` if any bash signal fires
  *

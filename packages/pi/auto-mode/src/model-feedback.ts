@@ -17,9 +17,12 @@ const MISSING_GUARDRAIL_REASON = 'No guardrail reason was provided.';
 /**
  * Build a blocked-tool reason visible to the main model.
  *
+ * Falls back to {@link MISSING_GUARDRAIL_REASON} when the rationale is empty.
+ *
  * @param guardrailReason - preserves rationale needed for agent self-correction
  *
- * @param guidance - preserves safer next step when judge provided one
+ * @param guidance - preserves safer next step when judge provided one;
+ *   defaults to {@link DEFAULT_DENY_GUIDANCE}
  *
  * @returns model-facing text so blocked tool results contain rationale and next step
  *

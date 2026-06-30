@@ -44,10 +44,11 @@ const l = tagged({
  * Prompt the user to approve or deny an action.
  *
  * If no interactive UI is available, denies by default (fail-closed).
- * Verdict-ask callers opt into reflecting the explanation when the user denies;
- * fallback prompts keep the generic block guidance.
+ * Verdict-ask callers opt into reflecting the explanation via
+ * {@link formatModelBlockReason} when the user denies; fallback prompts keep
+ * the generic {@link DEFAULT_DENY_GUIDANCE} block guidance.
  *
- * @returns block decision with guidance, or an allow decision
+ * @returns block {@link GuardDecision} with guidance, or an allow decision
  *
  * @example
  * ```typescript

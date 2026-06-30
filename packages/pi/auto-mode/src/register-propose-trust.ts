@@ -87,6 +87,11 @@ const trustReasonParameterSchema = Type.Optional(
 /**
  * Register the `propose_trust` tool on the extension API.
  *
+ * Auto-accepts rules already active via {@link isActiveTrustRule}, otherwise
+ * prompts with {@link buildTrustRulePrompt} and records acceptance through the
+ * {@link TRUST_ENTRY_TYPE} session entry, returning {@link trustRuleAcceptedResult}
+ * or {@link trustRuleRejectedResult}.
+ *
  * Split out of the entry point so `index.ts` stays within the per-file line
  * budget; the tool closes only over `pi`, so it needs no turn-level state.
  *
@@ -188,8 +193,9 @@ function registerProposeTrust(
 /**
  * Check whether proposed trust rule is already active in session history.
  *
- * Exact matching keeps auto-approval idempotent: reset entries and spelling
- * changes still require user interaction.
+ * Exact matching against {@link getTrustDirectives} keeps auto-approval
+ * idempotent: reset entries and spelling changes still require user
+ * interaction.
  *
  * @param ctx - extension context carrying session branch
  *

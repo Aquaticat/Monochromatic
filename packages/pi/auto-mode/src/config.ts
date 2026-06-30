@@ -51,6 +51,8 @@ const l = tagged({
 /**
  * Load and merge global + project config into a runtime config.
  *
+ * Loads each half with {@link loadGlobalConfig} and {@link loadProjectConfig},
+ * then compiles the merged pattern strings with {@link compilePatterns}.
  * Project config is additive: commands and patterns are concatenated.
  *
  * @param cwd - the current working directory

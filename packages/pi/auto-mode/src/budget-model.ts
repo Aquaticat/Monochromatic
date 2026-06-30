@@ -80,7 +80,7 @@ function isModelApi(
  *
  * @param value - value to inspect
  *
- * @throws NoBudgetModelError when value is not a pi model
+ * @throws {@link NoBudgetModelError} when value is not a pi model
  *
  * @returns nothing when value has the required shape
  */
@@ -99,7 +99,7 @@ function assertModelApi(
  *
  * @param value - value to inspect
  *
- * @throws NoBudgetModelError when value is not a pi model list
+ * @throws {@link NoBudgetModelError} when value is not a pi model list
  *
  * @returns nothing when value has the required shape
  */
@@ -123,15 +123,19 @@ function assertModelApiList(
 /**
  * Find the fastest available model for the judge.
  *
- * If `options.modelOverride` is set, selection is skipped. Otherwise shared
- * strategy selection walks candidate models fastest-first and returns the
- * first candidate the registry can authenticate.
+ * If `options.modelOverride` is set, resolves it through
+ * {@link resolveBudgetModelOverride}, backed by {@link findBudgetOverrideModel}
+ * and {@link resolveBudgetAuth}. Otherwise validates the active model and
+ * registry with {@link assertModelApi} and {@link assertModelApiList}, then
+ * {@link selectBudgetModel} walks candidate models fastest-first, using
+ * {@link hasConfiguredBudgetAuth} and {@link resolveBudgetAuth}, and returns
+ * the first candidate the registry can authenticate.
  *
  * @param ctx - pi extension context
  *
  * @param options - optional budget-model configuration
  *
- * @throws NoBudgetModelError if no suitable model is found
+ * @throws {@link NoBudgetModelError} if no suitable model is found
  *
  * @returns budget model with auth credentials
  *

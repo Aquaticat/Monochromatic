@@ -15,9 +15,9 @@
  * Default judge-model selection used when no global config is set
  * and when `findBudgetModel` is called with no options.
  *
- * Single source of truth: referenced by `loadMergedConfig` (for the
- * config-file fallback), by `GLOBAL_DEFAULTS` (for the global
- * defaults), and by `findBudgetModel` (for the no-options call).
+ * Single source of truth: referenced by {@link loadMergedConfig} (for the
+ * config-file fallback), by {@link GLOBAL_DEFAULTS} (for the global
+ * defaults), and by {@link findBudgetModel} (for the no-options call).
  */
 export const JUDGE_MODEL_DEFAULTS = {
   strategy: 'same-provider',

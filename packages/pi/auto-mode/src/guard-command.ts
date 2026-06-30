@@ -16,6 +16,9 @@ import { TRUST_ENTRY_TYPE, } from './types.ts';
 /**
  * Register `/guard` trust-directive command.
  *
+ * Lists active directives with {@link getTrustDirectives} and records resets
+ * and additions through the {@link TRUST_ENTRY_TYPE} session entry.
+ *
  * @param pi - extension API used to register commands and persist entries
  *
  * @example

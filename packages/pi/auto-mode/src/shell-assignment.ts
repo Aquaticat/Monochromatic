@@ -27,7 +27,8 @@ type ShellAssignmentParseResult = EnvAssignment | typeof NO_SHELL_ASSIGNMENT;
 //region Public API
 
 /**
- * Parse shell assignment word when whole token is `NAME=value`.
+ * Parse shell assignment word when whole token is `NAME=value`, validated
+ * with {@link isShellIdentifier}.
  *
  * @param word - shell token to inspect
  *
@@ -71,7 +72,9 @@ function parseShellAssignmentWord(
  * Trusted-helper detection scans rendered command words and assignment words,
  * including fragments that may contain multiple shell statements. This helper
  * recovers assignment names from that text without treating source text as
- * regular expressions.
+ * regular expressions, using {@link isShellIdentifierStartChar} and
+ * {@link isShellIdentifierChar} to scan and {@link findShellIdentifierEnd} to
+ * bound each candidate.
  *
  * @param word - shell token or token fragment to scan
  *
@@ -131,7 +134,9 @@ function extractShellAssignmentNames(
 //region Character helpers
 
 /**
- * Check whether string is valid shell identifier.
+ * Check whether string is valid shell identifier, testing the first
+ * character with {@link isShellIdentifierStartChar} and the rest with
+ * {@link isShellIdentifierChar}.
  *
  * @param value - identifier candidate
  *
@@ -160,7 +165,8 @@ function isShellIdentifier(
 }
 
 /**
- * Find first index after shell identifier characters.
+ * Find first index after shell identifier characters, tested with
+ * {@link isShellIdentifierChar}.
  *
  * @param word - token text being scanned
  *

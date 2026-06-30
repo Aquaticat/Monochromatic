@@ -19,7 +19,8 @@ import type { MergedConfig, } from './signals.ts';
 /**
  * Check if text content contains secret material.
  *
- * Detects private key headers and known token/key formats.
+ * Detects {@link PRIVATE_KEY_PATTERN} headers and known
+ * {@link SECRET_FORMAT_PATTERNS} token/key formats.
  *
  * @param text - the text content to check
  *
@@ -46,7 +47,7 @@ function contentSignals(
 }
 
 /**
- * Check raw text against built-in and user-configured patterns.
+ * Check raw text against {@link BUILTIN_TEXT_PATTERNS} and user-configured patterns.
  *
  * @returns `true` if any pattern matches
  *

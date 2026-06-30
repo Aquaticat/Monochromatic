@@ -26,8 +26,9 @@ import type {
 /**
  * Parse a bash command and extract structured signals.
  *
- * On parse failure, returns `parsed: false` with partial
- * results from the pre-scan step.
+ * Parses the script with {@link tryParseScript} and converts the AST with
+ * {@link collectCommandInfoFromScript}. On parse failure, returns
+ * `parsed: false` with partial results from the pre-scan step.
  *
  * @param cmd - the raw bash command string
  *

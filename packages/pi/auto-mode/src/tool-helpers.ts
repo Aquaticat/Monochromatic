@@ -186,6 +186,9 @@ function buildApprovalFingerprintIdentity(
 /**
  * Build a stable fingerprint for same-session approval reuse.
  *
+ * Normalizes the call identity with {@link buildApprovalFingerprintIdentity}
+ * and serializes it with {@link stableSerialize} before hashing.
+ *
  * The fingerprint includes the tool name and current working directory. Read
  * calls include only the read path, ignoring `offset` and `limit`, so repeated
  * reads of one file at different ranges reuse approval. Other tools include
