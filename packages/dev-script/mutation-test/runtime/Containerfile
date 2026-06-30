@@ -16,7 +16,13 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 WORKDIR /baked
 COPY . /baked
 
-RUN mise trust /baked/mise.toml \
+# The baked mise.toml sets npm.package_manager = "pnpm", so once trusted, mise
+# would install npm:pnpm by running `pnpm add --global pnpm` -- but pnpm does not
+# exist yet in a fresh container, so that bootstrap fails with ENOENT. Force npm
+# (bundled with node) as the package manager for this install step only; pnpm is
+# used directly for the frozen-lockfile install once it exists.
+RUN export MISE_NPM_PACKAGE_MANAGER=npm \
+  && mise trust /baked/mise.toml \
   && mise install --yes node npm:pnpm \
   && ln --symbolic --force "$(mise exec node -- which node)" /usr/local/bin/node \
   && ln --symbolic --force "$(mise exec node -- which npm)" /usr/local/bin/npm \

@@ -91,3 +91,62 @@ await describe({
     },),
   ],
 },);
+
+/**
+ * Creates a package with sibling sidecars for sidecar-selection tests.
+ *
+ * Builds a dot-delimited fuzz sidecar (one unit test), a bench sidecar (no unit
+ * test), and a hyphen-delimited sibling (a unit test that must not be matched).
+ *
+ * @returns Package root and the expected package-root-relative sidecar test path.
+ *
+ * @example
+ * ```ts
+ * await fixturePackageWithSidecar();
+ * ```
+ */
+async function fixturePackageWithSidecar(): Promise<{
+  readonly packageRoot: string;
+  readonly sidecarTest: string;
+}> {
+  const parent = await mkdtemp(join(tmpdir(), 'mutation-test-sidecar-',),);
+  const packageRoot = join(parent, 'jsonc-edit',);
+  await Promise.all([
+    mkdir(join(packageRoot, 'src',), { recursive: true, },),
+    mkdir(join(parent, 'jsonc-edit.fuzz', 'src',), { recursive: true, },),
+    mkdir(join(parent, 'jsonc-edit.bench', 'src',), { recursive: true, },),
+    mkdir(join(parent, 'jsonc-edit-extra', 'src',), { recursive: true, },),
+  ],);
+  await Promise.all([
+    writeFile(join(packageRoot, 'src', 'parse.unit.test.ts',), 'export {};\n',),
+    writeFile(join(parent, 'jsonc-edit.fuzz', 'src', 'round-trip.property.unit.test.ts',), 'export {};\n',),
+    writeFile(join(parent, 'jsonc-edit.bench', 'src', 'parse.bench.ts',), 'export {};\n',),
+    writeFile(join(parent, 'jsonc-edit-extra', 'src', 'extra.unit.test.ts',), 'export {};\n',),
+  ],);
+  return {
+    packageRoot,
+    sidecarTest: '../jsonc-edit.fuzz/src/round-trip.property.unit.test.ts',
+  };
+}
+
+await describe({
+  name: selectTestsForSource.name,
+  children: [
+    it({
+      name: 'includes dot-delimited sidecar unit tests, excluding bench-only and hyphen siblings',
+      fn: async () => {
+        const { packageRoot, sidecarTest, } = await fixturePackageWithSidecar();
+        const selected = await selectTestsForSource({
+          packageRoot,
+          sourceFile: 'src/parse.ts',
+          fullSuite: true,
+        },);
+
+        expect(selected,).toEqual([
+          sidecarTest,
+          'src/parse.unit.test.ts',
+        ],);
+      },
+    },),
+  ],
+},);

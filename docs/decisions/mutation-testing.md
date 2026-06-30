@@ -5,6 +5,11 @@
 Accepted.
 First consumer:
  `packages/dev-script/file-enforcer`.
+Second consumer:
+ `packages/module/jsonc-edit` (parser, serializer, immutable edit API, comment-as-data API).
+ Its unit tests are organized by API surface, not per source file, so it runs with
+ `--full-suite`; its non-runtime tooling lives in sidecar packages so a whole-package run
+ stays scoped to real runtime files.
 Reusable package:
  `packages/dev-script/mutation-test`.
 
@@ -82,6 +87,13 @@ The default test selection runs related sibling tests,
 integration tests.
  `--full-suite` runs every unit test for every source file when
 stricter coverage is worth the runtime.
+Selection also includes sibling sidecar packages (directories named
+`<package>.<concern>`) so tooling moved out of a runtime package for source purity
+still kills mutants:
+ their `*.unit.test.ts` files import the package under test through its
+workspace `/ts` subpath,
+ which the container resolves through a direct relative symlink to the
+mutated work-tree source.
 
 ## Rejected alternatives
 

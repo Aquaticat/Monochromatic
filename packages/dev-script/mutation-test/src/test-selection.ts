@@ -8,7 +8,11 @@
  */
 
 import { readdir, } from 'node:fs/promises';
-import { join, } from 'node:path';
+import {
+  basename,
+  dirname,
+  join,
+} from 'node:path';
 
 import {
   basenameWithoutTs,
@@ -23,6 +27,12 @@ import type { TestSelectionOptions, } from './types.ts';
  * Package root relative directory containing source and tests.
  */
 const SRC_DIR = 'src';
+
+/**
+ * Delimiter separating a package name from its sidecar concern. A sidecar of
+ * `jsonc-edit` is the sibling directory `jsonc-edit.fuzz`.
+ */
+const SIDECAR_DELIMITER = '.';
 
 /**
  * Unit test suffix consumed by this monorepo's module-test harness.
@@ -113,6 +123,112 @@ async function listUnitTests(packageRoot: string,): Promise<readonly string[]> {
 }
 
 /**
+ * Lists package-root-relative unit tests from sibling sidecar packages.
+ *
+ * A sidecar is a sibling directory named `<package><SIDECAR_DELIMITER><concern>`
+ * (for example `jsonc-edit.fuzz`, `jsonc-edit.conformance`), holding non-runtime
+ * tooling kept out of the runtime package so a whole-package run only mutates real
+ * runtime files. Its `*.unit.test.ts` files import the package under test through
+ * its workspace `/ts` subpath, which the container resolves through a direct
+ * relative symlink to the mutated `/work` source, so they kill mutants too. Returned
+ * paths are relative to the package root, so they resolve from the Stryker cwd
+ * (for example `../jsonc-edit.fuzz/src/round-trip.property.unit.test.ts`). Packages
+ * with no sidecars yield an empty list, leaving single-package selection unchanged.
+ *
+ * @param packageRoot - Absolute target package root.
+ *
+ * @returns Sorted package-root-relative sidecar unit test files.
+ *
+ * @example
+ * ```ts
+ * await listSidecarTests('/repo/packages/module/jsonc-edit');
+ * // ['../jsonc-edit.conformance/src/jsonc.conformance.unit.test.ts', ...]
+ * ```
+ */
+async function listSidecarTests(packageRoot: string,): Promise<readonly string[]> {
+  /**
+   * Directory holding the package under test and its sidecars.
+   */
+  const parent = dirname(packageRoot,);
+  /**
+   * Sidecar directory-name prefix derived from the package basename.
+   */
+  const prefix = `${basename(packageRoot,)}${SIDECAR_DELIMITER}`;
+  /**
+   * Sibling entries beside the package under test.
+   */
+  const siblings = await readdir(
+    parent,
+    { withFileTypes: true, },
+  );
+  /**
+   * Per-sidecar package-root-relative unit test lists.
+   */
+  const sidecarTestLists = await Promise.all(siblings
+    .filter(function isSidecar(entry,): boolean {
+      return entry.isDirectory()
+        && entry.name
+        .startsWith(prefix,);
+    },)
+    .map(async function sidecarTests(entry,): Promise<readonly string[]> {
+      /**
+       * Source directory of one sidecar package.
+       */
+      const sidecarSrc = join(
+        parent,
+        entry.name,
+        SRC_DIR,
+      );
+      /**
+       * Absolute files under the sidecar source tree, or none when it has none.
+       */
+      const files = await walkSidecarSource(sidecarSrc,);
+      return files
+        .filter(function isUnitTest(file,): boolean {
+          return file.endsWith(UNIT_TEST_SUFFIX,);
+        },)
+        .map(function toPackageRootRelative(file,): string {
+          return relativePosix({
+            from: packageRoot,
+            to: file,
+          },);
+        },);
+    },),);
+
+  return sortStrings(sidecarTestLists.flat(),);
+}
+
+/**
+ * Walks a sidecar source directory, returning no files when it is absent.
+ *
+ * @param sidecarSrc - Absolute sidecar source directory.
+ *
+ * @returns Absolute descendant files, or empty when the directory is missing.
+ *
+ * @throws Error when the directory exists but cannot be read.
+ *
+ * @example
+ * ```ts
+ * await walkSidecarSource('/repo/packages/module/jsonc-edit.fuzz/src');
+ * ```
+ */
+async function walkSidecarSource(sidecarSrc: string,): Promise<readonly string[]> {
+  try {
+    return await walkFiles(sidecarSrc,);
+  }
+  catch (error: unknown) {
+    if (Error.isError(error,)
+      && ('code' in error)
+      && (error.code === 'ENOENT'))
+      return [];
+    throw new Error(
+      `failed to walk sidecar source ${sidecarSrc}`,
+      { cause: error, },
+    );
+  }
+}
+
+/**
  * Returns whether a test stem and source stem look directly related.
  *
  * @param options - Source and test stems without `.ts` suffixes.
@@ -192,9 +308,17 @@ export async function selectTestsForSource(options: TestSelectionOptions,): Prom
    * Package-relative unit tests available to mutation runs.
    */
   const tests = await listUnitTests(options.packageRoot,);
+  /**
+   * Sibling sidecar unit tests, included regardless of mode because they
+   * exercise the whole package against the mutated source.
+   */
+  const sidecarTests = await listSidecarTests(options.packageRoot,);
 
   if (options.fullSuite)
-    return tests;
+    return sortStrings([
+      ...tests,
+      ...sidecarTests,
+    ],);
 
   /**
    * Directory containing current source file.
@@ -233,5 +357,8 @@ export async function selectTestsForSource(options: TestSelectionOptions,): Prom
     },);
   },);
 
-  return sortStrings(selected,);
+  return sortStrings([
+    ...selected,
+    ...sidecarTests,
+  ],);
 }

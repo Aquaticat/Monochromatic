@@ -7,11 +7,10 @@
  * @module
  */
 
+import type { StringJsonc, } from '@monochromatic-dev/module-jsonc-edit/ts/brand.ts';
+import { parseJsonc, } from '@monochromatic-dev/module-jsonc-edit/ts';
 import { parseForESLint, } from 'jsonc-eslint-parser';
 import { parseTree, } from 'jsonc-parser';
-
-import type { StringJsonc, } from '../brand.ts';
-import { parseJsonc, } from '../index.ts';
 
 //region Constants
 

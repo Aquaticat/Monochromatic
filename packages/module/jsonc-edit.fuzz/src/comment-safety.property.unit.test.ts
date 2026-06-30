@@ -11,19 +11,19 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
+import type { StringJsonc, } from '@monochromatic-dev/module-jsonc-edit/ts/brand.ts';
+import {
+  jsoncSetComment,
+  jsoncStringify,
+  parseJsoncEdit,
+} from '@monochromatic-dev/module-jsonc-edit/ts';
 import {
   assert,
   property,
   string,
 } from 'fast-check';
 
-import type { StringJsonc, } from '../brand.ts';
-import { fuzzRuns, } from '../fuzz-budget.ts';
-import {
-  jsoncSetComment,
-  jsoncStringify,
-  parseJsoncEdit,
-} from '../index.ts';
+import { fuzzRuns, } from './fuzz-budget.ts';
 
 await describe({
   name: 'comment safety property',

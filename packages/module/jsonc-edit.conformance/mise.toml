@@ -1,0 +1,18 @@
+[tasks.lint]
+extends = "lint"
+
+[tasks."lint:oxlint"]
+extends = "lint:oxlint"
+
+[tasks."format:oxlint"]
+extends = "format:oxlint"
+
+[tasks."lint:types"]
+extends = "lint:types"
+
+[tasks."test:unit"]
+extends = "test:unit"
+
+[tasks."test:conformance"]
+description = "Run the curated JSONC conformance corpus (VS Code JSONC semantics)"
+run = "node src/jsonc.conformance.unit.test.ts"

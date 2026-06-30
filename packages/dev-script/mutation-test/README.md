@@ -60,6 +60,22 @@ locations.
 - `--skip-image-build`:
    use the computed runtime image tag without building it.
 
+## Sidecar test inclusion
+
+Test selection also includes sibling sidecar packages automatically.
+A sidecar is a directory named `<package>.<concern>` beside the package under test
+(for example `jsonc-edit.fuzz`, `jsonc-edit.conformance`),
+holding non-runtime tooling kept out of the runtime package so a whole-package run only mutates
+real runtime files.
+Its `*.unit.test.ts` files are added to every source file's killer set,
+expressed relative to the package root (for example
+`../jsonc-edit.fuzz/src/round-trip.property.unit.test.ts`).
+They import the package under test through its workspace `/ts` subpath,
+which the container resolves through a direct relative symlink to the mutated `/work` source,
+so they kill mutants too.
+Packages with no such siblings are unaffected,
+so single-package selection is unchanged.
+
 ## Runtime image
 
 `src/runtime-image.ts` tags local images by `pnpm-lock.yaml` hash and host

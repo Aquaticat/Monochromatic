@@ -55,35 +55,60 @@ Summary:
 
 ```bash
 # from /var/home/user/worktrees/jsonc-edit
-mise i                                            # install pinned toolchain (done once)
+mise i                                                    # install pinned toolchain (done once)
 mise run //packages/module/jsonc-edit:build
 mise run //packages/module/jsonc-edit:lint:oxlint
 mise run //packages/module/jsonc-edit:lint:types
-mise run //packages/module/jsonc-edit:test:unit
-mise run //packages/module/jsonc-edit:fuzz
-mise run //packages/module/jsonc-edit:test:conformance
+mise run //packages/module/jsonc-edit:test:unit          # co-located unit tests
+mise run //packages/module/jsonc-edit:test:mutation -- --full-suite
+
+# Non-runtime tooling lives in per-concern sidecar packages:
+mise run //packages/module/jsonc-edit.fuzz:test:unit      # property tests (default budget)
+mise run //packages/module/jsonc-edit.fuzz:fuzz           # longer fast-check campaign
+mise run //packages/module/jsonc-edit.fuzz:fuzz:coverage  # V8 reachability gate
+mise run //packages/module/jsonc-edit.bench:bench         # parse benchmark
+mise run //packages/module/jsonc-edit.conformance:test:conformance
 ```
 
 ## Status
 
-Complete. The package builds, type-checks, and lints clean (zero errors, zero
-warnings); 21 test suites pass (unit, property/fuzz, conformance); the coverage gate
-reports all 17 runtime source files reachable; the benchmark and es cleanup are done.
-Everything is committed on `feat/jsonc-edit`.
+Complete and merged to `main`. The runtime package builds, type-checks, and lints clean
+(zero errors, zero warnings); its co-located unit tests pass; the fuzz, bench, and
+conformance sidecars pass; the coverage gate reports all 17 runtime source files reachable.
+Both original follow-ups are done (logger OPFS fix picked up via merge; the troubleshooting
+docs repointed to `packages/module/jsonc-edit`).
 
-Two follow-ups, neither blocking:
+The non-runtime tooling now lives in per-concern sidecar packages so the runtime package's
+`src/` is pure production code, which scopes a whole-package mutation run to real runtime
+files:
 
-- Rebase `feat/jsonc-edit` onto current `main` to pick up the logger OPFS fix (the
-  harmless `logger internal error: OPFS sink verification failed` seen when running test
-  scripts under bare node comes from `module-logger`, fixed on main; it does not affect
-  jsonc-edit behavior or test results).
-- `docs/troubleshooting/c-like-comments.md` and `docs/troubleshooting/toml.md` reference
-  the old `packages/module/es` JSONC parser; their behavior notes still apply (the new
-  parser shares the first-`*/`-wins block-comment rule), but the path references could be
-  repointed to `packages/module/jsonc-edit`.
+- `module-jsonc-edit.fuzz`: fast-check property tests, run budget, V8 coverage-reachability gate.
+- `module-jsonc-edit.bench`: parse benchmark.
+- `module-jsonc-edit.conformance`: curated JSONC conformance corpus.
+
+Mutation testing is wired via `//packages/module/jsonc-edit:test:mutation` (container-isolated
+Stryker, mirroring file-enforcer). `--full-suite` is required because the unit tests are
+organized by API surface (`parse`, `stringify`, `edit`, `comment`), not per source file, so the
+harness's filename-stem test selection would otherwise pick no tests for files like `scan.ts`.
 
 Progress (newest first):
 
+- 2026-06-30 (sidecars + mutation testing):
+  Extracted the non-runtime tooling into three per-concern sidecar packages
+  (`jsonc-edit.fuzz`, `jsonc-edit.bench`, `jsonc-edit.conformance`) so the runtime
+  package src is pure production code; wired container-isolated Stryker mutation testing
+  (`test:mutation`, `--full-suite`). Fixed a pre-existing bootstrap failure in the shared
+  mutation runtime image: the baked `npm.package_manager = "pnpm"` made a fresh container
+  try to install pnpm with pnpm; the Containerfile now forces `MISE_NPM_PACKAGE_MANAGER=npm`
+  for that install step. Runtime package and all three sidecars verified green.
+  Taught the mutation harness (`selectTestsForSource`) to also include sibling sidecar
+  `*.unit.test.ts` files as mutant killers; they resolve to the mutated `/work` source through
+  the workspace `/ts` relative symlink, so the fuzz and conformance suites participate. That
+  lifted the whole-package score from 59.60% (295 killed / 191 survived, unit tests only)
+  to 68.69% (340 killed / 146 survived / 9 timeout / 588 compile-error). Remaining survivors
+  cluster in the edit and comment write API (`edit-set` 63%, `edit-comment` 52%) and the
+  close/trivia parse paths (`parse-close` 7%), which the property and conformance suites do not
+  exercise; hardening those unit tests is the natural follow-up.
 - 2026-06-30 (complete):
   Lint-remediated the parser to the functional rules, then built the canonical
   serializer, the immutable edit API, the comment-as-data API, the unit/property/
