@@ -50,7 +50,7 @@ const state: { buffer: CaptureBuffer; } = { buffer: [], };
 
 /**
  * Appends a capture set to the rolling buffer, evicting the oldest entry
- * if the buffer is at capacity.
+ * if the buffer is at capacity, then runs {@link prune} to drop expired sets.
  *
  * @param set - capture set to store
  *
@@ -73,7 +73,8 @@ export function store(set: CaptureSet,): void {
 }
 
 /**
- * Returns a shallow copy of all non-expired capture sets in the buffer.
+ * Runs {@link prune} then returns a shallow copy of all non-expired capture
+ * sets in the buffer.
  *
  * @returns array of recent capture sets, oldest first
  *

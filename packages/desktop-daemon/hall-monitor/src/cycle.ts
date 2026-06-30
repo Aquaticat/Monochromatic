@@ -69,11 +69,16 @@ function isUnproductive(d: Decision,): boolean {
 
 /**
  * Executes one capture-analyze-notify cycle.
- * Captures a screenshot and webcam frame, feeds them to the local vision LLM,
- * records the verdict, and sends a desktop notification when 5 consecutive
+ * Captures a screenshot ({@link captureScreenshot}) and webcam frame
+ * ({@link captureWebcam}), buffers the pair via {@link store} and reads the
+ * recent window back with {@link getRecent}, feeds them to the local vision
+ * LLM by bracketing {@link analyze} with {@link startLlama} and
+ * {@link stopLlama}, records the verdict via {@link parseVerdict}, and sends
+ * a desktop notification ({@link sendNotification}) when 5 consecutive
  * cycles are unproductive.
  *
- * Skips the cycle when the screen is locked or the webcam cover is down.
+ * Skips the cycle when {@link isScreenLocked} reports the screen is locked
+ * or {@link isBlackFrame} reports the webcam cover is down.
  *
  * @example
  * ```ts

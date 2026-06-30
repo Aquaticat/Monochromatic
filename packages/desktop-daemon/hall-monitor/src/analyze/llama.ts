@@ -56,8 +56,8 @@ const state: { server?: ChildProcess; } = {};
 
 /**
  * Starts llama-server inside a distrobox container with AMD GPU overrides.
- * No-ops if the server is already running. Blocks until the health endpoint
- * reports ready or the timeout expires.
+ * No-ops if the server is already running. Blocks via {@link waitForHealth}
+ * until the health endpoint reports ready or the timeout expires.
  *
  * @throws when llama-server fails to become healthy within {@link HEALTH_TIMEOUT_MS}
  *

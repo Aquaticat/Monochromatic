@@ -249,7 +249,8 @@ async function findSocketOwnerPid(): Promise<number> {
 }
 
 /**
- * Kills the existing hall-monitor instance and acquires the lock.
+ * Kills the existing hall-monitor instance, found via
+ * {@link findSocketOwnerPid}, and acquires the lock via {@link acquireLock}.
  * Sends SIGTERM first, escalates to SIGKILL if the process does not exit
  * within the retry span.
  *

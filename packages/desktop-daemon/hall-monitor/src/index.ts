@@ -46,7 +46,8 @@ const state: { running: boolean; } = { running: true, };
 
 /**
  * Gracefully shuts down the daemon by stopping the main loop,
- * closing the lock socket, and force-killing any llama-server processes.
+ * closing the lock socket via {@link closeLock}, and force-killing any
+ * llama-server processes via {@link forceCleanup}.
  */
 async function shutdown(): Promise<void> {
   log.debug('[hall-monitor] Shutting down...',);
@@ -74,7 +75,9 @@ process.on(
 
 /**
  * Main daemon entry point.
- * Acquires the lock, runs the first cycle, then loops at the configured interval.
+ * Acquires the lock (falling back to {@link killExisting} when
+ * `--kill-existing` is set and {@link acquireLock} fails), runs the first
+ * {@link cycle}, then loops at the configured interval.
  */
 // Async IIFE required because `bun build --compile` does not support top-level await.
 async function main(): Promise<void> {

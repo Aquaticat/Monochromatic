@@ -146,7 +146,8 @@ function findVerdictToken(upper: string,): 'PRODUCTIVE' | 'UNPRODUCTIVE' | typeo
 
 /**
  * Extracts a PRODUCTIVE or UNPRODUCTIVE verdict from the LLM response text.
- * Looks for the canonical `VERDICT: ...` line first, falls back to keyword matching.
+ * Looks for the canonical `VERDICT: ...` line first via {@link findVerdictToken},
+ * falls back to keyword matching.
  *
  * @param result - raw LLM response text
  *
@@ -175,9 +176,10 @@ export function parseVerdict(result: string,): 'PRODUCTIVE' | 'UNPRODUCTIVE' {
 }
 
 /**
- * Sends buffered capture sets to the local vision LLM for productivity analysis.
- * Constructs a multimodal prompt with timestamped screenshot/webcam pairs and
- * returns the raw LLM response text containing the verdict.
+ * Sends buffered capture sets to the local vision LLM at {@link API_URL} for
+ * productivity analysis. Constructs a multimodal prompt with timestamped
+ * screenshot/webcam pairs and returns the raw LLM response text containing
+ * the verdict.
  *
  * @param sets - recent capture sets to analyze
  *
