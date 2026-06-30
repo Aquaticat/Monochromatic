@@ -127,7 +127,8 @@ const DISPLAY_NAME_RE =
   /^(?<family>[A-Za-z]+)(?: (?<version>\d+\.\d+))?(?: \((?<context>\S+) context\))?$/;
 
 /**
- * Parse "Opus 4.6 (1M context)" and strip parts that match current defaults.
+ * Parse "Opus 4.6 (1M context)" via {@link DISPLAY_NAME_RE} and strip parts
+ * that match the current {@link MODEL_DEFAULTS}.
  *
  * @example formatModelDisplay("Opus 4.6 (1M context)") // "Opus"
  *
@@ -613,7 +614,8 @@ const GERUND_PATTERN = /\b[a-z]+-?[a-z]*ing\b/g;
 const TAIL_BYTES = 8_192;
 
 /**
- * Find the last meaningful gerund in a string.
+ * Find the last meaningful gerund in a string, filtering out entries in
+ * {@link NOISE_GERUNDS}.
  *
  * @param text - Any text to scan (raw transcript, prose, JSON; gerunds survive regardless).
  *
@@ -660,8 +662,8 @@ function findGerundInText(text: string,): string | undefined {
 /**
  * Extract a context-aware activity word from the transcript.
  * Reads the last {@link TAIL_BYTES} of the transcript as a raw string
- * and finds the last gerund in it. No JSON parsing needed:
- * gerunds in assistant prose survive the JSONL wrapping.
+ * and finds the last gerund in it via {@link findGerundInText}. No JSON
+ * parsing needed: gerunds in assistant prose survive the JSONL wrapping.
  * Falls back to "".
  *
  * @param transcriptPath - Path to the session transcript JSONL.
