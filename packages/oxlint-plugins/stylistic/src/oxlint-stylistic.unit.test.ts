@@ -19,7 +19,7 @@ import {
   resolveFixtureTarget,
   runOxlintFixture,
   uniqueRuleCodes as uniqueRules,
-} from '../../test-support/oxlint-test-kit.ts';
+} from '@monochromatic-dev/config-oxlint-test-support/ts';
 
 import type { ChainNode, } from './utility/chain.ts';
 import { chainBreakOffsets, } from './utility/chain-flatten.ts';
