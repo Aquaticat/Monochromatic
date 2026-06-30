@@ -69,7 +69,7 @@ export class TomlPathNotFoundError extends TomlEditError {
 }
 
 /**
- * Thrown when a function that requires splice mode (e.g. `tomlGetRaw`) is
+ * Thrown when a function that requires splice mode (e.g. {@link tomlGetRaw}) is
  * called on a canonical-mode state.
  */
 export class TomlSpliceUnavailableError extends TomlEditError {

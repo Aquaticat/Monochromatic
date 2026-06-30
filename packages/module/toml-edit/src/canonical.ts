@@ -1,5 +1,5 @@
 /**
- * `canonicalEmit`: rebuild TOML text from the AST + deltas.
+ * {@link canonicalEmit}: rebuild TOML text from the AST + deltas.
  *
  * For `splice` mode, this is unused except for re-emitting individual mutated
  * nodes via `emit-value.ts`. For `canonical` mode, the full walk produces
@@ -7,8 +7,8 @@
  *
  * When `program.body[0].body` is empty and no insertions are pending, the
  * canonical emitter produces just the header comment (if any) plus the
- * accumulated insertions (which is how `emptyTomlEdit` plus a chain of
- * `tomlSet`s builds a fresh file).
+ * accumulated insertions (which is how {@link emptyTomlEdit} plus a chain of
+ * {@link tomlSet}s builds a fresh file).
  *
  * AST-mutation invariant: this module never modifies AST internals.
  *
@@ -34,7 +34,7 @@ import { encodeKey, } from './values.ts';
  * differs from splice-mode in how path-create insertions are placed (see
  * `splice.ts`).
  *
- * When the source is empty (from `emptyTomlEdit`), the splice path produces
+ * When the source is empty (from {@link emptyTomlEdit}), the splice path produces
  * just the concatenation of insertions, which is what we want for build-
  * from-scratch flows.
  *
@@ -57,7 +57,7 @@ export function canonicalEmit({ edit, }: { readonly edit: TomlEditState; },): st
 }
 
 /**
- * Render canonical text for an `emptyTomlEdit`-derived state.
+ * Render canonical text for an {@link emptyTomlEdit}-derived state.
  *
  * @returns Computed string.
  */

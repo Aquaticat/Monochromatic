@@ -91,7 +91,8 @@ function decodeUtf8(
 }
 
 /**
- * Parse `source` and project it to a tagged tree.
+ * Parse `source` via {@link parseTomlEdit} and project the result to a
+ * tagged tree via {@link documentToTagged}.
  *
  * @param source - Decoded TOML source.
  *

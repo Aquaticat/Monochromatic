@@ -6,7 +6,7 @@
  * Keeping the counter out of every signature lets the operation functions take
  * deeply readonly parameters; one sweep runs per process, so a shared counter
  * has no re-entrancy concern. Operations the API rejects by design throw a
- * `TomlEditError`, which is caught and counted; any other throw is a real defect
+ * {@link TomlEditError}, which is caught and counted; any other throw is a real defect
  * and propagates so it surfaces rather than being swallowed.
  *
  * @module
@@ -69,10 +69,10 @@ function recordRejected(): void {
 }
 
 /**
- * Run `thunk`, counting a by-design `TomlEditError` rejection and re-throwing any
+ * Run `thunk`, counting a by-design {@link TomlEditError} rejection and re-throwing any
  * other error so an unexpected failure class still surfaces.
  *
- * @throws Error for any non-`TomlEditError` thrown by `thunk`.
+ * @throws Error for any non-{@link TomlEditError} thrown by `thunk`.
  *
  * @example
  * ```ts
@@ -95,11 +95,11 @@ export function attempt({ thunk, }: { readonly thunk: () => void; },): void {
 
 /**
  * Run `thunk`, returning its value on success or `fallback` on a by-design
- * `TomlEditError`, counting either outcome. Any other throw propagates.
+ * {@link TomlEditError}, counting either outcome. Any other throw propagates.
  *
  * @returns The thunk result, or `fallback` when the operation was rejected.
  *
- * @throws Error for any non-`TomlEditError` thrown by `thunk`.
+ * @throws Error for any non-{@link TomlEditError} thrown by `thunk`.
  *
  * @example
  * ```ts

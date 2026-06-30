@@ -8,7 +8,7 @@
  * 1. Exact-path pending insertion match.
  * 2. Longest-prefix-first walk: at each prefix, look for a pending
  *    insertion at that path, or a pending edit on the AST node
- *    `resolveByPath` returns. Most-specific covers least-specific.
+ *    {@link resolveByPath} returns. Most-specific covers least-specific.
  * 3. Sub-tree synthesis: collect every pending insertion whose path
  *    strictly extends the query path and merge their JS values into a
  *    fresh object.
@@ -38,8 +38,8 @@ import { isPlainObject, } from './values.ts';
  * Resolution result reflecting pending deltas.
  *
  * `'deleted'` is returned when the path was deleted by a pending
- * `tomlDelete`. `'pending-value'` is returned when the path was set by a
- * pending `tomlSet` (or computed via cross-path projection); `value` is
+ * {@link tomlDelete}. `'pending-value'` is returned when the path was set by a
+ * pending {@link tomlSet} (or computed via cross-path projection); `value` is
  * the effective JS value.
  */
 export type EffectiveResult =
@@ -54,7 +54,7 @@ export type EffectiveResult =
  * Sentinel for "no covering pending state at any prefix".
  *
  * A unique `Symbol` rather than `null`: `no-nullish-union` bans a nullish
- * "absent" arm, and an `EffectiveResult` is always a tagged object so the
+ * "absent" arm, and an {@link EffectiveResult} is always a tagged object so the
  * symbol never collides with a real result.
  */
 const NO_PROJECTION = Symbol('toml-edit/no-covering-pending-state',);
@@ -70,7 +70,7 @@ const SUBTREE_ABSENT = Symbol('toml-edit/no-pending-insertion-subtree',);
 /**
  * Resolve a path against the AST plus pending deltas.
  *
- * @returns Computed result (`EffectiveResult`).
+ * @returns Computed result ({@link EffectiveResult}).
  *
  * @example
  * ```ts
@@ -139,7 +139,7 @@ export function effectiveAt(
  * program's top-level table as a non-null `deepest` sentinel; consumers
  * only read `kind` from the missing arm.
  *
- * @returns Computed result (`ResolveResult`).
+ * @returns Computed result ({@link ResolveResult}).
  */
 function missingFor(
   { edit, }: { readonly edit: TomlEditState; },
@@ -157,9 +157,9 @@ function missingFor(
  * covers the prefix; navigate the JS value space for the remaining
  * segments.
  *
- * Returns `NO_PROJECTION` when no covering pending state exists.
+ * Returns {@link NO_PROJECTION} when no covering pending state exists.
  *
- * @returns Result, or `NO_PROJECTION` when no match.
+ * @returns Result, or {@link NO_PROJECTION} when no match.
  */
 function projectPendingAtPrefix(
   {
@@ -252,9 +252,9 @@ function projectPendingAtPrefix(
  * strictly extend `path`. Used when a caller queries an intermediate
  * level above a deep path-create.
  *
- * Returns `SUBTREE_ABSENT` when no pending insertion contributes.
+ * Returns {@link SUBTREE_ABSENT} when no pending insertion contributes.
  *
- * @returns Result, or `SUBTREE_ABSENT` when no match.
+ * @returns Result, or {@link SUBTREE_ABSENT} when no match.
  */
 function synthesiseSubtree(
   {
@@ -266,7 +266,7 @@ function synthesiseSubtree(
   },
 ): Record<string, unknown> | typeof SUBTREE_ABSENT {
   /**
-   * Lazy accumulator so an empty pending set returns `SUBTREE_ABSENT` instead of `{}`.
+   * Lazy accumulator so an empty pending set returns {@link SUBTREE_ABSENT} instead of `{}`.
    */
   let acc: Record<string, unknown> | typeof SUBTREE_ABSENT = SUBTREE_ABSENT;
   for (const ins of edit.insertions) {
@@ -316,7 +316,7 @@ function synthesiseSubtree(
  * Returns `pending-value` on success or `missing` when navigation hits
  * `undefined` / a non-traversable shape.
  *
- * @returns Computed result (`EffectiveResult`).
+ * @returns Computed result ({@link EffectiveResult}).
  */
 function navigateJsValue(
   {
@@ -365,7 +365,7 @@ function navigateJsValue(
 /**
  * AST-only resolution (no cross-path projection); used as fallback.
  *
- * @returns Computed result (`EffectiveResult`).
+ * @returns Computed result ({@link EffectiveResult}).
  */
 function resolveAst(
   {

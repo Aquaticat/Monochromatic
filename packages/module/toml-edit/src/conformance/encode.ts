@@ -3,8 +3,8 @@
  *
  * Satisfies the upstream runner's encoder contract: a representable tagged JSON
  * object prints TOML and exits zero; an unrepresentable one exits non-zero. The
- * top-level object's entries are applied through `tomlSet` over a fresh
- * `emptyTomlEdit`, so the built package's emission path is what the runner
+ * top-level object's entries are applied through {@link tomlSet} over a fresh
+ * {@link emptyTomlEdit}, so the built package's emission path is what the runner
  * reparses and compares.
  *
  * @module
@@ -40,13 +40,14 @@ function isJsonTable(value: unknown,): value is Record<string, unknown> {
 }
 
 /**
- * Build TOML text from a tagged top-level table.
+ * Build TOML text from a tagged top-level table, converting each entry via
+ * {@link taggedToInput} and serializing the result via {@link tomlStringify}.
  *
  * @param root - Tagged top-level object.
  *
  * @returns Serialized TOML for the rebuilt document.
  *
- * @throws TomlTypeError when an entry is not representable as TOML, which the
+ * @throws {@link TomlTypeError} when an entry is not representable as TOML, which the
  *         caller turns into a non-zero exit.
  *
  * @example

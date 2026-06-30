@@ -22,12 +22,12 @@ import type {
 //region Builder model
 
 /**
- * Mutable table built during the walk; assignable to the readonly `TaggedTree`.
+ * Mutable table built during the walk; assignable to the readonly {@link TaggedTree}.
  */
 type BuildTable = { [key: string]: BuildNode; };
 
 /**
- * Mutable tree node mirroring `TaggedTree` while the structure is assembled.
+ * Mutable tree node mirroring {@link TaggedTree} while the structure is assembled.
  */
 type BuildNode = TaggedValue | BuildNode[] | BuildTable;
 
@@ -39,7 +39,7 @@ type BuildContainer = BuildTable | BuildNode[];
 /**
  * Test whether a tree node is a tagged scalar leaf rather than a container.
  *
- * Typed over the deeply-readonly `TaggedTree` so the mutable builder union stays
+ * Typed over the deeply-readonly {@link TaggedTree} so the mutable builder union stays
  * out of a parameter position; a leaf carries a string `type`, while a table's
  * `type` entry (if any) holds a nested node, making the check decisive.
  *
@@ -270,7 +270,8 @@ function createBuilder(): DocumentBuilder {
 //region Content and document walk
 
 /**
- * Convert a content node (scalar, array, or inline table) to a tagged tree.
+ * Convert a content node (scalar, array, or inline table) to a tagged tree,
+ * delegating scalar leaves to {@link leafToTagged}.
  *
  * @param node - Parsed content node, typed as the broad `TOMLNode` alias so the
  *               mutable parser union stays out of a narrower parameter position.

@@ -1,8 +1,8 @@
 /**
- * Convert a toml-test tagged tree into a `tomlSet` value input.
+ * Convert a toml-test tagged tree into a {@link tomlSet} value input.
  *
  * The encoder adapter receives the same tagged JSON dialect the decoder emits
- * and must rebuild a JS value that `tomlSet` serializes back to TOML. Integers
+ * and must rebuild a JS value that {@link tomlSet} serializes back to TOML. Integers
  * become `bigint` wrappers so 64-bit values survive, offset datetimes become a
  * JS `Date` (emitted as an RFC 3339 instant), and the three local datetime
  * kinds become tagged wrappers since a `Date` cannot distinguish them.
@@ -100,7 +100,7 @@ function floatFromTag(value: string,): number {
 }
 
 /**
- * Convert one tagged scalar into its `tomlSet` value input.
+ * Convert one tagged scalar into its {@link tomlSet} value input.
  *
  * @param type - Tagged scalar type name.
  *
@@ -158,11 +158,11 @@ function scalarToInput(
 }
 
 /**
- * Convert a tagged tree (scalar, array, or table) into a `tomlSet` value input.
+ * Convert a tagged tree (scalar, array, or table) into a {@link tomlSet} value input.
  *
  * @param tree - Parsed tagged JSON node.
  *
- * @returns Value input understood by `tomlSet`.
+ * @returns Value input understood by {@link tomlSet}.
  *
  * @throws Error when a node is neither a tagged scalar, an array, nor a table.
  *

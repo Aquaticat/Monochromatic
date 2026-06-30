@@ -93,6 +93,6 @@ export const KIND_TO_TAG: Readonly<Record<TomlValueKind, TaggedType>> = Object.f
  * TOML versions the conformance adapters accept on the command line.
  *
  * Matches the runner's `-toml` selector so a single argument threads the right
- * grammar into `parseTomlEdit`.
+ * grammar into {@link parseTomlEdit}.
  */
 export type ConformanceVersion = '1.0' | '1.1';

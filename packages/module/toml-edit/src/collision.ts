@@ -13,7 +13,7 @@
  *   prefixed by, an existing inline-table entry. E.g., adding `a.b = 1`
  *   to `foo = { a = 1 }`.
  *
- * Both checks run in `tomlSet` before recording the insertion.
+ * Both checks run in {@link tomlSet} before recording the insertion.
  *
  * @module
  */
@@ -48,6 +48,8 @@ import type { TomlPath, } from './types.ts';
  *   path: ['a','b','c',],
  * },);
  * ```
+ *
+ * @throws {@link TomlImmutableNodeError} when a sibling table collision is found.
  */
 export function assertNoSiblingTableCollision(
   {
@@ -158,6 +160,8 @@ export function assertNoSiblingTableCollision(
  *   path: ['foo','a','b',],
  * },);
  * ```
+ *
+ * @throws {@link TomlImmutableNodeError} when an inline-table collision is found.
  */
 export function assertNoInlineTableCollision(
   {
@@ -198,7 +202,7 @@ export function assertNoInlineTableCollision(
 }
 
 /**
- * Compose a uniform collision message.
+ * Compose a uniform collision message, rendering `path` via {@link formatPath}.
  *
  * @returns Computed string.
  */

@@ -113,9 +113,9 @@ function emitArray(
 /**
  * Emit a `TOMLArray` with the element at `skipIndex` omitted.
  *
- * Used by `tomlDelete` on an array element: re-emits the parent array
+ * Used by {@link tomlDelete} on an array element: re-emits the parent array
  * via canonical formatting, applying the same inline-vs-multiline
- * thresholds as `emitArray`.
+ * thresholds as {@link emitArray}.
  *
  * @returns Computed string.
  *
@@ -169,9 +169,9 @@ export function emitArrayWithoutIndex(
  * non-final index selects which element of the current `TOMLArray` to
  * recurse into (that element must itself be a `TOMLArray`); the final
  * index names the element to omit at the deepest level. A single-element
- * `skipPath` reduces to `emitArrayWithoutIndex`.
+ * `skipPath` reduces to {@link emitArrayWithoutIndex}.
  *
- * Used by `tomlDelete` on a nested-array element: when the immediate
+ * Used by {@link tomlDelete} on a nested-array element: when the immediate
  * parent of the target is a `TOMLArray` whose own parent is another
  * `TOMLArray`, the deletion walks up the parent chain to the enclosing
  * key-value's outer array and re-emits the whole tree with the target
@@ -179,7 +179,7 @@ export function emitArrayWithoutIndex(
  *
  * @returns Computed string.
  *
- * @throws TomlImmutableNodeError if a non-final `skipPath` index lands on
+ * @throws {@link TomlImmutableNodeError} if a non-final `skipPath` index lands on
  *         a non-array element (caller-side AST inconsistency).
  *
  * @example
@@ -268,7 +268,7 @@ export function emitArrayWithSkipPath(
 }
 
 /**
- * Shared array-text assembly used by `emitArray` and `emitArrayWithoutIndex`.
+ * Shared array-text assembly used by {@link emitArray} and {@link emitArrayWithoutIndex}.
  *
  * @returns Computed string.
  */
@@ -321,6 +321,8 @@ function assembleArrayParts(
  * Emit a `TOMLInlineTable` as `{ k = v, ... }`.
  *
  * @returns Computed string.
+ *
+ * @throws {@link TomlImmutableNodeError} when `node` is not a `TOMLInlineTable`.
  */
 function emitInlineTable(
   {
@@ -358,6 +360,8 @@ function emitInlineTable(
  * entry does not collide with existing inline-table keys.
  *
  * @returns Computed string.
+ *
+ * @throws {@link TomlImmutableNodeError} when `node` is not a `TOMLInlineTable`.
  *
  * @example
  * ```ts

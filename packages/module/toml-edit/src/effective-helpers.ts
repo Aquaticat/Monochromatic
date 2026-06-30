@@ -42,7 +42,7 @@ export function pathEquals(
 }
 
 /**
- * Sentinel returned by `asStringPath` when a path segment is numeric.
+ * Sentinel returned by {@link asStringPath} when a path segment is numeric.
  *
  * A unique `Symbol` rather than `null`: the `no-nullish-union` rule bans a
  * nullish "absent" arm, and an empty array would be ambiguous with a valid
@@ -52,11 +52,11 @@ export const PATH_HAS_NUMERIC: unique symbol = Symbol('toml-edit/path-has-numeri
 
 /**
  * Project `segs` to a `string[]` when every segment is a string; else the
- * `PATH_HAS_NUMERIC` sentinel. Used in sub-tree synthesis to skip
+ * {@link PATH_HAS_NUMERIC} sentinel. Used in sub-tree synthesis to skip
  * insertions whose path goes through an array (a sub-tree can't be
  * reconstructed via key navigation alone).
  *
- * @returns String segments, or `PATH_HAS_NUMERIC` when any segment is numeric.
+ * @returns String segments, or {@link PATH_HAS_NUMERIC} when any segment is numeric.
  *
  * @example
  * ```ts

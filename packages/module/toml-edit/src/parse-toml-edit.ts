@@ -1,5 +1,5 @@
 /**
- * `parseTomlEdit`: parse a source string into an immutable edit state.
+ * {@link parseTomlEdit}: parse a source string into an immutable edit state.
  *
  * @module
  */
@@ -33,13 +33,13 @@ const LINE_FEED = 0x0A;
  *
  * TOML permits `CR` only as part of a `CRLF` newline; a lone `CR` (anywhere,
  * including inside a multiline string) is invalid, but `toml-eslint-parser`
- * accepts it. This pre-parse scan closes that gap so `parseTomlEdit` rejects the
+ * accepts it. This pre-parse scan closes that gap so {@link parseTomlEdit} rejects the
  * input the way the spec requires. A trailing `CR` is rejected too, since
  * `codePointAt` past the end yields `undefined`, which is not `LF`.
  *
  * @param source - Raw TOML source.
  *
- * @throws TomlEditError when a bare carriage return is present.
+ * @throws {@link TomlEditError} when a bare carriage return is present.
  *
  * @example
  * ```ts
@@ -56,7 +56,8 @@ function assertNoBareCarriageReturn({ source, }: { readonly source: string; },):
 /**
  * Normalize newlines to LF, warning when a CRLF document is converted.
  *
- * A bare carriage return is rejected first. Any surviving CR is therefore part
+ * A bare carriage return is rejected first, via {@link assertNoBareCarriageReturn}.
+ * Any surviving CR is therefore part
  * of a CRLF, which is converted to LF so the splice, comment-range, and emit
  * paths only ever reason about single-byte LF newlines. The returned source,
  * not the caller's original, is what the edit state holds, so a CRLF input
@@ -66,7 +67,7 @@ function assertNoBareCarriageReturn({ source, }: { readonly source: string; },):
  *
  * @returns Source with every CRLF converted to LF.
  *
- * @throws TomlEditError when a bare carriage return is present.
+ * @throws {@link TomlEditError} when a bare carriage return is present.
  *
  * @example
  * ```ts
@@ -93,7 +94,7 @@ function normalizeNewlines({ source, }: { readonly source: string; },): string {
 }
 
 /**
- * Parse `source` and wrap `ParseError` in a `TomlEditError`.
+ * Parse `source` and wrap `ParseError` in a {@link TomlEditError}.
  *
  * @returns Computed result (`AST.TOMLProgram`).
  */
@@ -132,7 +133,7 @@ function safeParse(
 }
 
 /**
- * Parse a TOML source string and produce a fresh `TomlEditState`.
+ * Parse a TOML source string and produce a fresh {@link TomlEditState}.
  *
  * The returned state holds the newline-normalized source and the parse-time
  * AST. CRLF input is converted to LF (with a warning) before parsing, so the
@@ -144,19 +145,19 @@ function safeParse(
  * @param source - TOML text to parse; CRLF is normalized to LF, a bare CR rejected
  *
  * @param mode - `'splice'` (default) preserves unmutated regions byte-for-byte
- *               at `tomlStringify`; `'canonical'` rebuilds text from the AST
+ *               at {@link tomlStringify}; `'canonical'` rebuilds text from the AST
  *               on every emit.
  *
- * @param canonical - Partial override of `CanonicalOptions`; defaults apply
+ * @param canonical - Partial override of {@link CanonicalOptions}; defaults apply
  *                    for omitted fields. Used for canonical emission and for
  *                    canonical re-emission of mutated nodes in splice mode.
  *
  * @param tomlVersion - Forwarded to `toml-eslint-parser`. Defaults to the
  *                      parser's default (currently `'1.0'`).
  *
- * @returns Fresh `TomlEditState` with empty deltas.
+ * @returns Fresh {@link TomlEditState} with empty deltas.
  *
- * @throws TomlEditError when the parser rejects the input. The original
+ * @throws {@link TomlEditError} when the parser rejects the input. The original
  *         `ParseError` is exposed via `cause`.
  *
  * @example

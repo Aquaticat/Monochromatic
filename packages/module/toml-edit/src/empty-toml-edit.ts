@@ -1,5 +1,5 @@
 /**
- * `emptyTomlEdit`: construct a fresh edit state with no source.
+ * {@link emptyTomlEdit}: construct a fresh edit state with no source.
  *
  * @module
  */
@@ -11,15 +11,15 @@ import type {
 } from './types.ts';
 
 /**
- * Build a fresh `TomlEditState` over an empty source.
+ * Build a fresh {@link TomlEditState} over an empty source, via {@link parseTomlEdit}.
  *
  * Mode is forced to `'canonical'` because there are no bytes to splice.
  * Use this when generating a TOML file from scratch via setters and
  * `tomlStringify`.
  *
- * @param canonical - Partial override of `CanonicalOptions`.
+ * @param canonical - Partial override of {@link CanonicalOptions}.
  *
- * @returns Fresh canonical-mode `TomlEditState`.
+ * @returns Fresh canonical-mode {@link TomlEditState}.
  *
  * @example
  * ```ts
