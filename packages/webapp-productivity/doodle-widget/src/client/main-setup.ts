@@ -54,7 +54,7 @@ export type WidgetDeps = {
 /**
  * Initializes page state, handler wiring, and observers.
  *
- * @param deps - all DOM elements and state accessors
+ * @param deps - all DOM elements and state accessors, see {@link WidgetDeps}
  *
  * @example
  * ```ts

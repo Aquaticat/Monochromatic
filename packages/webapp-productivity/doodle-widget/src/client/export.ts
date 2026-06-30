@@ -115,9 +115,9 @@ export function getRenderedSize(
 /**
  * Renders the SVG overlay element onto a 2D canvas context.
  *
- * Reads the live SVG element from the overlay div, clones it with
- * explicit dimensions, serializes to a data URL, and draws it at
- * the correct position relative to the container.
+ * Measures the live SVG element via {@link measureSvgOverlay}, clones
+ * it with explicit dimensions, serializes to a data URL, and draws it
+ * at the correct position relative to the container.
  *
  * When `imageScale` is provided, the SVG clone is rasterized at
  * `width * imageScale` by `height * imageScale` pixels so that
@@ -231,7 +231,8 @@ export async function renderSvgOverlayToContext(
 
 /**
  * Renders the base composite canvas with white background, drawn
- * strokes, and SVG overlay composited via multiply blending.
+ * strokes painted by {@link renderStrokes}, and SVG overlay composited
+ * via multiply blending using {@link renderSvgOverlayToContext}.
  *
  * Output is always at fixed letter dimensions (816 x 1056).
  * The SVG overlay is measured from the live DOM then scaled from

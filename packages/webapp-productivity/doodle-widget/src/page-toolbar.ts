@@ -11,8 +11,8 @@ import {
 } from './page-toolbar-toggle.ts';
 
 /**
- * Renders the toolbar with tool selection, page navigation, upload,
- * and clear controls.
+ * Renders the toolbar with tool selection, page navigation (via
+ * {@link renderPageToggle}), upload, and clear controls.
  *
  * @param pageCount - number of pages for the page toggle group
  *

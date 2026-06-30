@@ -27,10 +27,11 @@ const MIN_SEGMENT_POINTS = 2;
 /**
  * Erases stroke segments near the eraser path.
  *
- * Tests each stroke point **and each stroke segment** against the
- * line segment from `previousPoint` to `point` (the eraser's travel
- * path between frames). When `previousPoint` is omitted (first
- * event of a gesture), tests against the single point only.
+ * Tests each stroke point (via {@link distToSegmentSq}) **and each
+ * stroke segment** (via {@link segToSegDistSq}) against the line
+ * segment from `previousPoint` to `point` (the eraser's travel path
+ * between frames). When `previousPoint` is omitted (first event of a
+ * gesture), tests against the single point only.
  *
  * The segment-to-segment check catches cases where the eraser crosses
  * a stroke line between two widely-spaced points without being close

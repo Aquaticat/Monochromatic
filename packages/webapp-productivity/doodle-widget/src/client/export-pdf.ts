@@ -83,11 +83,12 @@ function hexToRgb(hex: string,): {
 /**
  * Exports all pages as a multi-page PDF file.
  *
- * Each page is rendered with strokes beneath SVG linework.
- * Text annotations are overlaid as real PDF text so they remain
- * selectable and searchable in the output.
+ * Pages are gathered with {@link snapshotAllPages}, each rendered with
+ * strokes beneath SVG linework via {@link renderPageCanvas}. Text
+ * annotations filtered by {@link textEntriesToExport} are overlaid as
+ * real PDF text so they remain selectable and searchable in the output.
  *
- * @param deps - shared export dependencies
+ * @param deps - shared {@link ExportDeps} export dependencies
  *
  * @example
  * ```ts

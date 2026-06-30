@@ -60,10 +60,10 @@ export type UndoHandlerDeps = {
  * Sets up undo/redo button handlers, keyboard shortcuts, and returns
  * functions for other modules to push snapshots and update button state.
  *
- * @param deps - DOM elements and shared state accessors
+ * @param deps - DOM elements and shared state accessors, see {@link UndoHandlerDeps}
  *
- * @returns `pushSnapshot` to call after state-changing actions,
- *   `updateUndoButtons` to refresh button disabled state
+ * @returns {@link pushSnapshot} to call after state-changing actions,
+ *   {@link updateUndoButtons} to refresh button disabled state
  *
  * @example
  * ```ts
@@ -118,7 +118,7 @@ export function setupUndoHandlers(deps: UndoHandlerDeps,): {
   /**
    * Restores a snapshot from the undo history.
    *
-   * @param snapshot - state to restore
+   * @param snapshot - {@link Snapshot} state to restore
    */
   function restoreSnapshot(snapshot: Snapshot,): void {
     setStrokes([...snapshot.strokes,],);

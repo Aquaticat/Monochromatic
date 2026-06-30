@@ -56,8 +56,9 @@ function pointInInputRect(
  * Erases text items touched by the eraser path.
  *
  * Tests the current and previous eraser positions against each text
- * input's bounding rect, and checks whether the eraser travel segment
- * crosses any edge of the rect to catch fast sweeps.
+ * input's bounding rect, and uses {@link segmentIntersectsRect} to
+ * check whether the eraser travel segment crosses any edge of the
+ * rect to catch fast sweeps.
  *
  * @param point - current eraser position in normalized [0..1] space
  *

@@ -125,8 +125,10 @@ async function resolveDirectory(packageDir: string,): Promise<string> {
 /**
  * Resolves the full source code URL for this package.
  *
- * Combines the git remote (or fallback) with the package.json
- * directory (or fallback) into a `/tree/main/{directory}` GitHub URL.
+ * Combines the git remote resolved by {@link resolveRepoUrl} (or
+ * fallback) with the package.json directory resolved by
+ * {@link resolveDirectory} (or fallback) into a `/tree/main/{directory}`
+ * GitHub URL.
  *
  * @param packageDir - absolute path to the package root directory
  *

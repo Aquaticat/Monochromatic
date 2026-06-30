@@ -46,7 +46,7 @@ console.error('[doodle-widget] building...',);
 /**
  * SVG backgrounds passed through unmodified; the bundled SVGs already
  * have transparent backgrounds (`fill:none`). White fill removal only
- * applies to user-uploaded SVGs at runtime via `setSvgBackground`,
+ * applies to user-uploaded SVGs at runtime via {@link setSvgBackground},
  * which uses size-based detection to target actual backgrounds.
  */
 const svgBackgrounds = [
@@ -71,7 +71,7 @@ const svgBackgrounds = [
 ];
 
 /**
- * Minified CSS stylesheet
+ * Minified CSS stylesheet, rendered by {@link renderStyles}
  */
 const css = renderStyles();
 
@@ -89,12 +89,12 @@ const js = await readFile(
 );
 
 /**
- * Source code URL resolved from git remote and package.json
+ * Source code URL resolved from git remote and package.json by {@link resolveSourceUrl}
  */
 const sourceUrl = await resolveSourceUrl(PACKAGE_DIR,);
 
 /**
- * Complete self-contained HTML document
+ * Complete self-contained HTML document, assembled by {@link renderPage}
  */
 const html = renderPage({
   css,

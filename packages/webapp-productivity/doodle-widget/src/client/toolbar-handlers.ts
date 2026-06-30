@@ -43,14 +43,15 @@ function isExportFormat(value: string,): value is ExportFormat {
 /**
  * Runs the exporter matching the format.
  *
- * PDF and PNG rasterize the canvas asynchronously, so they are
- * awaited; SVG serializes vector markup synchronously, so it is
- * invoked directly. A uniform `Promise<void>`-returning interface
- * keeps the dispatch free of a `void | Promise<void>` union.
+ * {@link exportAsPdf} and {@link exportAsPng} rasterize the canvas
+ * asynchronously, so they are awaited; {@link exportAsSvg} serializes
+ * vector markup synchronously, so it is invoked directly. A uniform
+ * `Promise<void>`-returning interface keeps the dispatch free of a
+ * `void | Promise<void>` union.
  *
  * @param format - validated export format
  *
- * @param deps - shared export dependencies
+ * @param deps - shared {@link ExportDeps} export dependencies
  */
 async function runExport({
   format,
@@ -142,7 +143,7 @@ type ToolbarHandlerDeps = {
 /**
  * Attaches event listeners for all toolbar controls.
  *
- * @param deps - toolbar elements and shared state accessors
+ * @param deps - toolbar elements and shared state accessors, see {@link ToolbarHandlerDeps}
  *
  * @example
  * ```ts
@@ -238,7 +239,8 @@ export function setupToolbarHandlers(deps: ToolbarHandlerDeps,): void {
   /**
    * Processes a user-selected SVG background file.
    *
-   * Reads the file as text and renders it in the SVG overlay layer.
+   * Reads the file as text and renders it in the SVG overlay layer
+   * via {@link setSvgBackground}.
    *
    * @param file - uploaded SVG file
    */

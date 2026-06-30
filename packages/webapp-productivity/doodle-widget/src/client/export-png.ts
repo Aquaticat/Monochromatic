@@ -16,10 +16,11 @@ import {
 /**
  * Exports the doodle as a PNG file.
  *
- * Composites background, strokes, and text onto a single canvas,
- * then triggers a PNG download.
+ * Composites background, strokes, and text onto a single canvas via
+ * {@link renderBaseCanvas}, then triggers a PNG download with
+ * {@link triggerDownload}.
  *
- * @param deps - shared export dependencies
+ * @param deps - shared {@link ExportDeps} export dependencies
  *
  * @example
  * ```ts

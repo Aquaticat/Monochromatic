@@ -126,7 +126,8 @@ export function getCurrentPageIndex(): number {
  * Persists the current page's live state (strokes, text, SVG) into
  * the pages array.
  *
- * Finalizes any active text input and copies stroke data before saving.
+ * Finalizes any active text input via {@link finalizeActiveInput} and
+ * copies stroke data before saving.
  *
  * @param overlay - SVG overlay element for reading current background
  *
@@ -152,10 +153,12 @@ function saveCurrentPage({
 }
 
 /**
- * Switches to a different page, saving current state and restoring target.
+ * Switches to a different page, saving current state via
+ * {@link saveCurrentPage} and restoring target.
  *
- * Finalizes any in-progress stroke or text input before saving.
- * No-op if the target index matches the current page or is out of range.
+ * Finalizes any in-progress stroke via {@link endStroke} or text input
+ * before saving. No-op if the target index matches the current page
+ * or is out of range.
  *
  * @param index - target page index (zero-based)
  *
@@ -228,7 +231,8 @@ export function switchToPage({
 }
 
 /**
- * Snapshots all page states, saving the current page's live state first.
+ * Snapshots all page states, saving the current page's live state
+ * first via {@link saveCurrentPage}.
  *
  * The current page's strokes, text entries, and SVG background are read
  * from their respective live sources (drawing module, text layer DOM,

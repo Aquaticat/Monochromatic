@@ -43,7 +43,7 @@ type PrevErasePoint =
  * Attaches pointerdown, pointermove, pointerup, and pointercancel
  * handlers to the canvas for draw, erase, and text tools.
  *
- * @param deps - shared state and element references
+ * @param deps - shared state and element references, see {@link PointerHandlerDeps}
  *
  * @example
  * ```ts

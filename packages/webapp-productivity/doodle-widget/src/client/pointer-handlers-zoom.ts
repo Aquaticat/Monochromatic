@@ -51,7 +51,7 @@ type DownEvent =
 /**
  * Attaches zoom-specific pointer and keyboard handlers to the canvas.
  *
- * @param deps - shared state and element references
+ * @param deps - shared state and element references, see {@link PointerHandlerDeps}
  *
  * @example
  * ```ts
