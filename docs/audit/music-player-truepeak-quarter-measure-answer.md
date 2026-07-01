@@ -124,6 +124,19 @@ Across the 723 tracks that declare a peak, the true crest exceeds the declaratio
 median 1.92 dB (worst 4.62). The letter's reading was right: the marks name the safe but
 cannot bound the loud.
 
+### Per-track margins, reallocation, position priors: measured and exhausted
+
+Three further non-opaque levers were measured (`analysis/levers.mjs`). A per-track margin
+formula from observable heard statistics has nothing to stand on: Spearman correlation of
+the zoom's residual under-read against heard spread (max minus p90 or p99 of heard bins),
+heard level, and log duration is -0.062, -0.146, 0.011, -0.031; the spread even points the
+wrong way, because flat heard profiles are hot masters hiding needles. Global budget
+reallocation with a provable-safety early stop (stop probing tracks whose heard max plus
+the corpus's worst-known needle prominence stays under the ceiling) harvests 22 of 3903
+long tracks, 613 s, +0.0007 coverage: measures unchanged. Position-weighting pass one away
+from track openings (crests skew late) is slightly worse than uniform, because the climb
+already recovers late structure.
+
 ## What this method does not do
 
 The needles stay needles. No heard feature locates them, the bones do not betray them,
@@ -131,6 +144,20 @@ their albums do not vouch for them. Zoom narrows the tail they live in (worst mi
 1.84 dB) and cheapens the insurance on everyone else, shrinking the guard's work from 43
 tracks to 26. Zero clamps ever would still cost a margin near 2 dB on every track; the
 letter already declined that price, and this answer declines it too.
+
+These are songs, not arbitrary audio, and the repetition of songs is exactly what the
+method already spends: choruses recur, so the ordinary track offers about twenty
+near-crest instants and the climb ends within 0.01 dB of perfect on half the library.
+The residual tail is the part of each song that breaks its own pattern. Measured on the
+26 tracks still clamped at margin 0.5: for 9 the crest is strictly one-off (zoom already
+reads within 0.1 dB of the loudest instant two or more seconds away from the crest, so no
+hearing-bounded method improves them without decoding the event itself); the other 17
+keep a louder echo somewhere that zoom missed by 0.2 to 0.8 dB, and a perfect
+echo-finder would dissolve about 14 clamps. But those echoes are needles too (the tail's
+median is one crest plus one echo within 1 dB, whole-track), so collecting them reliably
+is the same lottery one level down. That bounds what any structure-exploiting,
+non-opaque method can still win here: about half the residual clamps, nothing on the
+worst quiet, and nothing on the average that the margin dial does not already price.
 
 Practical notes:
 
