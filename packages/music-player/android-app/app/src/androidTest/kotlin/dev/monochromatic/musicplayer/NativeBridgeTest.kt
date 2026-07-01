@@ -269,26 +269,17 @@ class NativeBridgeTest {
         // expect(NativeBridge.nativeFingerprint(path, size, mtimeNanos)).toEqual(first);
         // ```
         assertEquals(first, NativeBridge.nativeFingerprint(path, size, mtimeNanos))
-        // What:     `assertEquals(16, first.length)`. EXPECTED `16` (an `Int`), ACTUAL the key's
-        //           character count.
-        // Why:      The key is a zero-padded 64-bit hash: exactly 16 lowercase-hex digits.
+        // What:     `assertTrue("fingerprint was zero", first != 0L)`. The key is now a raw `u64`
+        //           returned as a `Long` (not a hex string), so there is no length or substring to
+        //           check; a real hash is non-zero, and `0L` is only the native read-failure sentinel.
+        // Why:      Opacity is inherent in a 64-bit hash (it carries no path text); a non-zero value
+        //           confirms the native fingerprint computed.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // expect(first.length).toEqual(16);
+        // expect(first).not.toEqual(0n);
         // ```
-        assertEquals(16, first.length)
-        // What:     `assertTrue("...", !first.contains("a.flac"))`. `assertTrue(message, condition)`
-        //           fails unless `condition` is true. `!first.contains("a.flac")` is true when the key
-        //           does NOT contain the path's basename (`!` is boolean NOT; `.contains` is substring
-        //           search).
-        // Why:      Opacity: the hash must not leak the path text.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // expect(first.includes("a.flac")).toBe(false);
-        // ```
-        assertTrue("fingerprint leaked the path basename: $first", !first.contains("a.flac"))
+        assertTrue("fingerprint was zero", first != 0L)
         // What:     `assertTrue("...", first != NativeBridge.nativeFingerprint(path, 6L, mtimeNanos))`.
         //           Fails unless the keys DIFFER. The second call keeps path and mtime but uses a
         //           different size (`6L` vs `5L`). `!=` is structural inequality on `String`.
@@ -704,351 +695,72 @@ class NativeBridgeTest {
         assertTrue("flat DC peak $flat should be ~0.5", flat in 0.5f - 1e-3f..0.5f + 1e-3f)
     }
 
-    // What:     `@Test` annotation marking the next method as a test case.
-    // Why:      Registers `measureTruePeakOnDevice`.
+    // What:     `@Test` marks the true-peak decision service on-device check.
+    // Why:      Registers `truePeakServiceOpensAndResolvesOnDevice` with the runner.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // it("measureTruePeakOnDevice", () => { /* body */ });
+    // it("truePeakServiceOpensAndResolvesOnDevice", () => { /* body */ });
     // ```
     @Test
-    // What:     `fun measureTruePeakOnDevice() { ... }`. Domain note: measures a
-    //           real library track's TRUE PEAK natively (4x-oversampled), the
-    //           loudness-normalization input the Rust flavor needs (its peak cache
-    //           starts empty, and the Media3 true-peak decoder is MediaCodec-bound).
-    //           It reads the first MediaStore tracks via `content://` file
-    //           descriptors, logs the peak and the gain the core would derive
-    //           (`min(0.8912509 / peak, 1)`, the -1 dBTP ceiling), and asserts a
-    //           sane positive peak. Skips when no library is indexed; silent
-    //           (decode-only).
-    // Why:      Proves the Rust true-peak measurement works on real device files.
+    // What:     `fun truePeakServiceOpensAndResolvesOnDevice() { ... }`. Creates the native
+    //           true-peak decision service (opening a Turso `decisions.db` in the app cache dir),
+    //           resolves the gain for one real library track through it (decode + cache), resolves
+    //           the SAME fingerprint again to prove the cache round-trips, then releases the service.
+    // Why:      Proves the shared Turso-backed decision service builds AND runs on the real arm64
+    //           device: the db opens in app-private storage, a decode-and-cache yields a sane
+    //           attenuate-only gain, and a second resolve returns the cached gain. Skips when no
+    //           library is indexed.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // function measureTruePeakOnDevice(): void { /* body */ }
+    // function truePeakServiceOpensAndResolvesOnDevice(): void { /* body */ }
     // ```
-    fun measureTruePeakOnDevice() {
-        // What:     `val context = ...targetContext` — the app `Context` under
-        //           test (same as earlier).
-        // Why:      Needed to reach the content resolver that queries MediaStore.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // const context = getInstrumentation().targetContext;
-        // ```
+    fun truePeakServiceOpensAndResolvesOnDevice() {
+        /** The app context under test, for the content resolver and cache dir. */
         val context = InstrumentationRegistry.getInstrumentation().targetContext
-        // What:     `val resolver = context.contentResolver` reads the `Context`'s
-        //           `ContentResolver`, the object you use to query/open content
-        //           providers like MediaStore.
-        // Why:      We query it for audio rows and open `content://` fds through it.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // const resolver = context.contentResolver;
-        // ```
+        /** The content resolver used to query MediaStore and open track descriptors. */
         val resolver = context.contentResolver
-        // What:     `val collection = MediaStore.Audio.Media.getContentUri(`
-        //           `MediaStore.VOLUME_EXTERNAL)`. Builds the `content://` URI for
-        //           the audio table on the external storage volume.
-        // Why:      This URI is the table we query for music rows.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // const collection = MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL);
-        // ```
-        val collection = MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL)
-        // What:     `val uris = mutableListOf<Uri>()`. `mutableListOf<Uri>()`
-        //           constructs an empty, GROWABLE list whose elements are `Uri`.
-        //           The `<Uri>` is an explicit generic type argument. Sibling:
-        //           `listOf<Uri>()` would be READ-ONLY (no `.add`); we need the
-        //           mutable one to append inside the loop.
-        // Why:      We collect up to 8 track URIs to measure.
-        // Gotcha:   Kotlin distinguishes read-only `List` from `MutableList`;
-        //           picking `mutableListOf` is what makes `.add(...)` legal.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // const uris: Uri[] = [];
-        // ```
-        val uris = mutableListOf<Uri>()
-        // What:     `resolver.query(collection, arrayOf(MediaStore.Audio.Media._ID),`
-        //           `"${MediaStore.Audio.Media.IS_MUSIC} != 0", null, null)?.use {`
-        //           `cursor -> ... }`. Several concepts on one line:
-        //           - `query(...)` runs a SQL-like query and returns a nullable
-        //             `Cursor?` (a forward iterator over result rows), or null on
-        //             failure.
-        //           - `arrayOf(...)` builds the projection: the array of columns to
-        //             select (here just the `_ID` column).
-        //           - `"${...IS_MUSIC} != 0"` is the WHERE clause; `${...}` splices
-        //             the actual column-name constant into the SQL string. The two
-        //             trailing `null`s are selection-args and sort-order (none).
-        //           - `?.` is the SAFE-CALL operator: call `.use { }` only if the
-        //             cursor is non-null, otherwise the whole expression is null.
-        //           - `.use { cursor -> ... }` runs the trailing lambda with the
-        //             cursor bound to `cursor`, then AUTO-CLOSES the cursor when the
-        //             lambda exits (even on exception). `{ cursor -> ... }` is a
-        //             lambda whose single parameter is named `cursor`.
-        // Why:      Open a cursor over music rows, do the work, and guarantee the
-        //           cursor is closed afterward without a manual finally.
-        // Gotcha:   `.use { }` is Kotlin's deterministic resource cleanup (like
-        //           `using`/`with`); it ALWAYS closes the resource. TS has no
-        //           built-in equivalent beyond a manual `try/finally`.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // const cursor = resolver.query(collection, [MediaStore.Audio.Media._ID], `${IS_MUSIC} != 0`, null, null);
-        // if (cursor) { try { /* lambda body */ } finally { cursor.close(); } }
-        // ```
-        resolver.query(collection, arrayOf(MediaStore.Audio.Media._ID), "${MediaStore.Audio.Media.IS_MUSIC} != 0", null, null)?.use { cursor ->
-            // What:     `val idColumn = cursor.getColumnIndexOrThrow(`
-            //           `MediaStore.Audio.Media._ID)`. Looks up the integer column
-            //           index for the `_ID` column in this cursor; the `OrThrow`
-            //           variant throws if the column is missing rather than
-            //           returning -1.
-            // Why:      We read each row's id by index; we need that index first.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // const idColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID);
-            // ```
-            val idColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID)
-            // What:     `while (cursor.moveToNext() && uris.size < 8) { ... }`.
-            //           `cursor.moveToNext()` advances to the next row and returns
-            //           a `Boolean` (false when exhausted). `uris.size` is the list
-            //           length. The loop runs while there's a next row AND we have
-            //           fewer than 8 URIs.
-            // Why:      Walk rows, capping the sample at 8 tracks.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // while (cursor.moveToNext() && uris.length < 8) { /* body */ }
-            // ```
-            while (cursor.moveToNext() && uris.size < 8) {
-                // What:     `uris.add(ContentUris.withAppendedId(collection,`
-                //           `cursor.getLong(idColumn)))`. Two nested calls:
-                //           - `cursor.getLong(idColumn)` reads the current row's id
-                //             column as a `Long` (64-bit signed integer). Sibling
-                //             `getInt` returns 32-bit `Int`; MediaStore ids can
-                //             exceed 32 bits, so `Long` is the safe choice and is
-                //             what `withAppendedId` wants.
-                //           - `ContentUris.withAppendedId(collection, id)` returns a
-                //             new `Uri` pointing at that one row.
-                //           - `uris.add(...)` appends that `Uri` to our list.
-                // Why:      Build a per-track URI we can later open as a file
-                //           descriptor and decode.
-                // Gotcha:   `getLong` (64-bit) not `getInt` (32-bit) on purpose;
-                //           both are plain TS `number`, but the width matters
-                //           native-side.
-                //
-                // In TS you'd write (pseudocode):
-                // ```ts
-                // uris.push(ContentUris.withAppendedId(collection, cursor.getLong(idColumn)));
-                // ```
-                uris.add(ContentUris.withAppendedId(collection, cursor.getLong(idColumn)))
+        /** A throwaway decision database in the app cache dir (never the real decisions.db). */
+        val dbFile = File(context.cacheDir, "test-decisions-${System.nanoTime()}.db")
+        dbFile.delete()
+        /** The opened native service handle; 0 means Turso failed to open on device. */
+        val service = NativeBridge.nativeTruePeakServiceCreate(dbFile.absolutePath)
+        assertTrue("true-peak service failed to open Turso on device", service != 0L)
+        try {
+            /** The audio table on the external volume. */
+            val collection = MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL)
+            /** The first indexed library track URI, or null when the library is empty. */
+            val trackUri: Uri? = resolver.query(
+                collection,
+                arrayOf(MediaStore.Audio.Media._ID),
+                null,
+                null,
+                "${MediaStore.Audio.Media._ID} ASC",
+            )?.use { cursor ->
+                if (cursor.moveToFirst()) ContentUris.withAppendedId(collection, cursor.getLong(0)) else null
             }
-        }
-        // What:     `assumeTrue("no indexed MediaStore audio (grant`
-        //           `READ_MEDIA_AUDIO)", uris.isNotEmpty())`. `uris.isNotEmpty()`
-        //           returns a `Boolean`. `assumeTrue` SKIPS the test (does not
-        //           fail) when the list is empty.
-        // Why:      Without an indexed library there's nothing to measure, so skip.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // if (uris.length === 0) return; // assumeTrue => skip
-        // ```
-        assumeTrue("no indexed MediaStore audio (grant READ_MEDIA_AUDIO)", uris.isNotEmpty())
-        // What:     `val ceiling = 0.8912509f`. The trailing `f` makes this a
-        //           `Float` literal (32-bit float). Sibling: without `f` it would
-        //           be a `Double` (64-bit). Domain: `0.8912509` is the linear
-        //           amplitude of the -1 dBTP loudness ceiling (10^(-1/20)).
-        // Why:      `Float` matches the 32-bit PCM sample/peak type the native
-        //           true-peak path returns, avoiding a precision mismatch.
-        // Gotcha:   The `f` suffix is significant: `0.8912509` (Double) vs
-        //           `0.8912509f` (Float) are different types in Kotlin, even
-        //           though both are `number` in TS.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // const ceiling = 0.8912509; // -1 dBTP ceiling
-        // ```
-        val ceiling = 0.8912509f
-        // What:     `var maxPeak = 0.0f`. `var` (NOT `val`) declares a MUTABLE
-        //           local, reassignable later. `0.0f` is a `Float` zero.
-        // Why:      Running maximum of every measured peak, updated in the loop.
-        // Gotcha:   `var` = TS `let` (reassignable); `val` = TS `const`. Picking
-        //           `var` here is deliberate because we mutate it.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // let maxPeak = 0;
-        // ```
-        var maxPeak = 0.0f
-        // What:     `var totalMs = 0.0`. Mutable `Double` (64-bit float, no `f`
-        //           suffix) accumulator starting at zero. Sibling `Float` would
-        //           lose precision summing many elapsed-time readings.
-        // Why:      Sums per-track elapsed milliseconds for a total at the end.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // let totalMs = 0;
-        // ```
-        var totalMs = 0.0
-        // What:     `for (uri in uris) { ... }`. Value iteration over the `uris`
-        //           list, binding each `Uri` to the immutable loop variable `uri`.
-        // Why:      Measure the true peak of each collected track in turn.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // for (const uri of uris) { /* body */ }
-        // ```
-        for (uri in uris) {
-            // What:     `val start = System.nanoTime()` reads a monotonic
-            //           nanosecond timestamp as a `Long`. Not wall-clock time; only
-            //           valid for measuring elapsed intervals.
-            // Why:      Marks the start so we can compute decode elapsed time.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // const start = process.hrtime.bigint(); // monotonic nanoseconds
-            // ```
-            val start = System.nanoTime()
-            // What:     `val peak: Float = resolver.openFileDescriptor(uri, "r")`
-            //           `?.use { pfd -> NativeBridge.nativeMeasureTruePeak(pfd.fd) }`
-            //           `?: -100.0f`. Several concepts:
-            //           - `: Float` is an EXPLICIT type annotation on the local.
-            //           - `openFileDescriptor(uri, "r")` opens the content URI for
-            //             reading and returns a nullable `ParcelFileDescriptor?`.
-            //           - `?.use { pfd -> ... }` safe-calls `.use`: only if the pfd
-            //             is non-null, run the lambda (param `pfd`) and AUTO-CLOSE
-            //             the pfd afterward. `pfd.fd` is the raw integer fd we pass
-            //             to the native true-peak measurer, which returns a `Float`.
-            //           - `?:` is the ELVIS operator: if the left side is null
-            //             (open failed), use the right side `-100.0f` instead.
-            // Why:      Measure the track's true peak over a borrowed fd, falling
-            //           back to a clearly-bad sentinel (-100) if the open failed.
-            // Gotcha:   `?:` is Kotlin's null-coalescing (TS `??`), NOT a ternary;
-            //           there is no condition, only "left, or else right if null".
-            //           The fd is BORROWED: the native side dups it before this
-            //           `.use` closes the original (the fd-ownership protocol).
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // const pfd = resolver.openFileDescriptor(uri, "r");
-            // let peak: number;
-            // if (pfd) { try { peak = nativeMeasureTruePeak(pfd.fd); } finally { pfd.close(); } }
-            // else { peak = -100; }
-            // ```
-            val peak: Float = resolver.openFileDescriptor(uri, "r")?.use { pfd ->
-                NativeBridge.nativeMeasureTruePeak(pfd.fd)
+            if (trackUri == null) {
+                Log.i("NativeBench", "no indexed library tracks on device; skipping service resolve check")
+                return
+            }
+            /** A stable per-track cache key for this test (any unique Long works). */
+            val fingerprint = trackUri.toString().hashCode().toLong()
+            /** First resolve: a cache miss decodes, caches, and returns the gain. */
+            val firstGain = resolver.openFileDescriptor(trackUri, "r")?.use { pfd ->
+                NativeBridge.nativeResolveGain(service, pfd.fd, fingerprint)
             } ?: -100.0f
-            // What:     `val elapsedMs = (System.nanoTime() - start) / 1_000_000.0`.
-            //           `System.nanoTime() - start` is the elapsed nanoseconds as a
-            //           `Long`. The `_` in `1_000_000.0` is a DIGIT SEPARATOR (one
-            //           million), purely cosmetic. Dividing a `Long` by a `Double`
-            //           promotes the result to `Double` milliseconds.
-            // Why:      Convert the elapsed nanoseconds to milliseconds for logging.
-            // Gotcha:   The `_` separators (`1_000_000.0`) are ignored by the
-            //           compiler; they don't change the value, just readability.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // const elapsedMs = Number(process.hrtime.bigint() - start) / 1_000_000;
-            // ```
-            val elapsedMs = (System.nanoTime() - start) / 1_000_000.0
-            // What:     `totalMs += elapsedMs`. Plain compound assignment adding
-            //           this track's elapsed ms into the running total.
-            // Why:      Accumulate total measurement time across all tracks.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // totalMs += elapsedMs;
-            // ```
-            totalMs += elapsedMs
-            // What:     `val gain: Float = if (peak > 0.0f) minOf(ceiling / peak,`
-            //           `1.0f) else 1.0f`. Concepts:
-            //           - `if (...) a else b` is an EXPRESSION in Kotlin (it yields
-            //             a value), not just a statement.
-            //           - `minOf(ceiling / peak, 1.0f)` returns the smaller of the
-            //             two `Float`s: the gain that scales this peak down to the
-            //             ceiling, clamped to at most `1.0` so we never boost.
-            //           - When `peak <= 0` (a bad/sentinel reading) the gain is
-            //             `1.0f` (no change).
-            //           - `: Float` is an explicit type annotation on `gain`.
-            // Why:      Compute the exact normalization gain the core would apply,
-            //           purely for logging here so a human can sanity-check it.
-            // Gotcha:   Kotlin's `if/else` returns a value (used like a ternary
-            //           here); `minOf` is the two-arg `Math.min`.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // const gain = peak > 0 ? Math.min(ceiling / peak, 1) : 1;
-            // ```
-            val gain: Float = if (peak > 0.0f) minOf(ceiling / peak, 1.0f) else 1.0f
-            // What:     `Log.i("NativeBench", "rust-measure`
-            //           `(${uri.lastPathSegment}) -> peak=$peak gain=$gain`
-            //           `elapsedMs=${"%.1f".format(elapsedMs)}")`. Info-level
-            //           logcat line. `${uri.lastPathSegment}` interpolates the last
-            //           path segment of the URI (the id). `${"%.1f".format(`
-            //           `elapsedMs)}` formats `elapsedMs` to one decimal place by
-            //           calling `.format(...)` on the format-string `"%.1f"`.
-            // Why:      Log this track's peak, derived gain, and timing for a human.
-            // Gotcha:   `"%.1f".format(x)` is Kotlin's printf-style formatting
-            //           (method ON the string), equivalent to `x.toFixed(1)`.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // console.info("NativeBench", `rust-measure (${uri.lastPathSegment}) -> peak=${peak} gain=${gain} elapsedMs=${elapsedMs.toFixed(1)}`);
-            // ```
-            Log.i("NativeBench", "rust-measure (${uri.lastPathSegment}) -> peak=$peak gain=$gain elapsedMs=${"%.1f".format(elapsedMs)}")
-            // What:     `assertTrue("true-peak measure failed for $uri`
-            //           `(peak=$peak)", peak > 0.0f && peak < 8.0f)`. Fails unless
-            //           the peak is positive AND below 8.0 (a sane linear range).
-            //           `&&` is short-circuit boolean AND. `0.0f`/`8.0f` are
-            //           `Float` literals.
-            // Why:      A valid true peak is positive and not absurdly large; both
-            //           bounds catch a broken measurement or sentinel value.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // expect(peak > 0 && peak < 8).toBe(true); // else: "true-peak measure failed for ${uri}"
-            // ```
-            assertTrue("true-peak measure failed for $uri (peak=$peak)", peak > 0.0f && peak < 8.0f)
-            // What:     `maxPeak = maxOf(maxPeak, peak)`. `maxOf(a, b)` returns the
-            //           larger of two `Float`s. Reassigns the mutable `maxPeak`.
-            // Why:      Track the loudest peak seen across the sampled tracks.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // maxPeak = Math.max(maxPeak, peak);
-            // ```
-            maxPeak = maxOf(maxPeak, peak)
+            Log.i("NativeBench", "service resolve (${trackUri.lastPathSegment}) -> gain=$firstGain")
+            assertTrue("resolved gain out of (0, 1]: $firstGain", firstGain > 0.0f && firstGain <= 1.0001f)
+            /** Second resolve, same fingerprint: a cache hit must return the stored gain. */
+            val cachedGain = resolver.openFileDescriptor(trackUri, "r")?.use { pfd ->
+                NativeBridge.nativeResolveGain(service, pfd.fd, fingerprint)
+            } ?: -100.0f
+            assertEquals("cache round-trip changed the gain", firstGain, cachedGain, 0.0f)
+        } finally {
+            NativeBridge.nativeTruePeakServiceRelease(service)
+            dbFile.delete()
         }
-        // What:     `Log.i("NativeBench", "rust-measure TOTAL ${uris.size} tracks`
-        //           `= ${"%.1f".format(totalMs)} ms (native symphonia/opus decode`
-        //           `+ true-peak)")`. Info-level summary line. `${uris.size}` is
-        //           the count; `${"%.1f".format(totalMs)}` formats the total ms to
-        //           one decimal.
-        // Why:      Logs the aggregate measurement time across all sampled tracks.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // console.info("NativeBench", `rust-measure TOTAL ${uris.length} tracks = ${totalMs.toFixed(1)} ms (native symphonia/opus decode + true-peak)`);
-        // ```
-        Log.i("NativeBench", "rust-measure TOTAL ${uris.size} tracks = ${"%.1f".format(totalMs)} ms (native symphonia/opus decode + true-peak)")
-        // A real library has at least one reasonably loud track; a uniformly tiny max
-        // across the sample would mean a systematic scaling bug, not genuinely quiet music.
-        // What:     `assertTrue("all sampled tracks improbably quiet`
-        //           `(maxPeak=$maxPeak) - possible scaling bug", maxPeak > 0.1f)`.
-        //           Fails unless the loudest measured peak exceeds `0.1f`.
-        // Why:      If even the loudest track is near-silent, the measurement is
-        //           systematically wrong (a scaling bug), not real quiet music.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // expect(maxPeak > 0.1).toBe(true); // else: "all sampled tracks improbably quiet"
-        // ```
-        assertTrue("all sampled tracks improbably quiet (maxPeak=$maxPeak) - possible scaling bug", maxPeak > 0.1f)
     }
 
     // What:     `@Test` annotation marking the next method as a test case.

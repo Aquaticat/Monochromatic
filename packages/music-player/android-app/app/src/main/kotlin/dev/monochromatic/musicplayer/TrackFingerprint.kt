@@ -184,12 +184,13 @@ object TrackFingerprint {
      */
     private const val UNKNOWN_MODIFIED_MS: Long = 0L
 
-    // What:     `suspend fun of(context: Context, uri: Uri): String? = withContext(Dispatchers.IO) { ... }`
+    // What:     `suspend fun of(context: Context, uri: Uri): Long? = withContext(Dispatchers.IO) { ... }`
     //           declares a function `of` with two named params (`context`, `uri`).
     //           `suspend` marks it a COROUTINE function that may pause/resume (so it
     //           can await background work) and must be called from another
-    //           coroutine. `: String?` is the return type, a NULLABLE `String` (the
-    //           trailing `?` means "a `String` OR null"). The `= <expr>` form is an
+    //           coroutine. `: Long?` is the return type, a NULLABLE `Long` (the
+    //           trailing `?` means "a `Long` OR null"): the raw `u64` fingerprint the
+    //           native cache keys on, bit-cast to `Long`. The `= <expr>` form is an
     //           expression body: the function returns the value of the single
     //           `withContext(Dispatchers.IO) { ... }` expression, which runs the
     //           trailing lambda on the IO pool and returns its value.
@@ -198,11 +199,12 @@ object TrackFingerprint {
     //           (so the caller skips caching and plays at unity gain). `suspend`
     //           lets it do the provider I/O without blocking the UI thread.
     // Gotcha:   A `suspend` function looks synchronous but can only be called from a
-    //           coroutine. `String?` forces the caller to handle the null case.
+    //           coroutine. `Long?` forces the caller to handle the null case; the `Long`
+    //           is an opaque key, not a number to interpret.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // async function of(context: Context, uri: Uri): Promise<string | null> {
+    // async function of(context: Context, uri: Uri): Promise<bigint | null> {
     //   return await runOnWorker(() => { // runs on the IO pool
     //     // ...body below...
     //   });
@@ -212,7 +214,7 @@ object TrackFingerprint {
      * Defines of behavior for this music-player component; the TypeScript-oriented notes above explain its call
      * shape and effects.
      */
-    suspend fun of(context: Context, uri: Uri): String? = withContext(Dispatchers.IO) {
+    suspend fun of(context: Context, uri: Uri): Long? = withContext(Dispatchers.IO) {
         // What:     `val size: Long = querySize(context, uri) ?: return@withContext null`
         //           declares a read-only `Long` local `size`. The right side uses the
         //           ELVIS operator `?:`: "use the left value if it is non-null,

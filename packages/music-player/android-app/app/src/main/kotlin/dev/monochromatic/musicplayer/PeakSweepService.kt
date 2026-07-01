@@ -86,7 +86,8 @@ class PeakSweepService : Service() {
             process = { track ->
                 measureAndCache(applicationContext, track.uri.toUri(), foregroundSweepDispatcher)
             },
-            onFlush = { PeakCacheStore.flush(applicationContext) },
+            // The native decision cache commits each write itself, so there is nothing to flush.
+            onFlush = { },
             onProgress = { done, total -> postProgress(done, total) },
         )
         Log.i(TAG, "PeakSweepService indexed ${tally.processed} of ${tally.total} tracks")

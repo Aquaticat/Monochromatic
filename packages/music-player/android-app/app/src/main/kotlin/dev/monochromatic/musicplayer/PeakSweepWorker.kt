@@ -282,7 +282,9 @@ class PeakSweepWorker(
             notifyEvery = Int.MAX_VALUE,
             maxTracks = limit,
             process = { track -> measureAndCache(applicationContext, track.uri.toUri()) },
-            onFlush = { PeakCacheStore.flush(applicationContext) },
+            // The native decision cache commits each write itself (Turso autocommit), so there is
+            // nothing for Kotlin to flush; the hook stays a no-op.
+            onFlush = { },
             onProgress = { _, _ -> },
         )
         // What:     `Log.i( WORKER_TAG, "... ${tally.processed}/${tally.total} ..." )`

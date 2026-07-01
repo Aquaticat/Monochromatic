@@ -252,32 +252,17 @@ suspend fun measureAndCache(
      * Defines key value for this music-player component; the TypeScript-oriented notes above explain its source
      * and use.
      */
-    val key: String = TrackFingerprint.of(context, uri) ?: return SweepOutcome.UNFINGERPRINTABLE
-    // What:     `if (PeakCacheStore.get(context, key) != null) {` checks the
-    //           on-disk peak cache. `PeakCacheStore.get` returns a nullable
-    //           `Float?` (the cached peak, or `null` on a miss); `!= null` is a
-    //           plain not-null test. The `{` opens the cache-hit branch.
-    // Why:      If the peak is already cached we must not decode again; the
-    //           whole point of the cache is to make a re-sweep of a known
-    //           library cheap.
+    val fingerprint: Long = TrackFingerprint.of(context, uri) ?: return SweepOutcome.UNFINGERPRINTABLE
+    // What:     There is no Kotlin-side cache check anymore. The native `nativeWarmTrack` checks the
+    //           shared decision cache itself and SKIPS a track that already carries an exact decision
+    //           (returning its gain without decoding), so a re-sweep of a warm library stays cheap
+    //           without Kotlin owning a cache.
+    // Why:      The cache moved into Rust; a `PeakCacheStore.get` skip-check would duplicate it.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // if ((await PeakCacheStore.get(context, key)) != null) {
+    // // native side skips already-exact tracks; no Kotlin cache check
     // ```
-    if (PeakCacheStore.get(context, key) != null) {
-        // What:     `return SweepOutcome.CACHED` exits the function with the
-        //           "already cached" outcome. `SweepOutcome.CACHED` selects one
-        //           member of the enum declared above.
-        // Why:      Tell the caller nothing was decoded; it will not flush for
-        //           this track.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // return "CACHED";
-        // ```
-        return SweepOutcome.CACHED
-    }
     // What:     `val peak: Float = try {` begins assigning the measured peak.
     //           Two concepts:
     //           - `: Float` is the explicit type. `Float` is a 32-bit IEEE-754
@@ -302,28 +287,21 @@ suspend fun measureAndCache(
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // let peak: number; // TS number is 64-bit; Kotlin Float is 32-bit
     // try {
     // ```
-    /**
-     * Defines peak value for this music-player component; the TypeScript-oriented notes above explain its source
-     * and use.
-     */
-    val peak: Float = try {
-        // What:     `measureTrackPeak(context, uri)` calls the native decode seam
-        //           that actually reads the audio and computes its true peak,
-        //           returning a `Float`. It has no trailing assignment or
-        //           `return`, so as the last expression of the `try` block it
-        //           IS the value the `try` expression produces (an
-        //           implicit-return tail expression), which becomes `peak`.
-        // Why:      This is the expensive work we only reach on a cache miss:
-        //           decode the track and get its peak.
+    try {
+        // What:     `warmTrack(context, uri, fingerprint, dispatcher)` runs the native warming
+        //           resolve: it full-scans the track to an EXACT decision and caches it (skipping
+        //           already-exact tracks), returning the gain. The returned gain is DISCARDED here
+        //           (the sweep only warms the cache), so this is a statement, not a bound value.
+        // Why:      This is the expensive work we only reach when the track is not already exact:
+        //           decode the track and cache its exact decision natively.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        //   peak = await measureTrackPeak(context, uri);
+        //   await warmTrack(context, uri, fingerprint, dispatcher);
         // ```
-        measureTrackPeak(context, uri, dispatcher)
+        warmTrack(context, uri, fingerprint, dispatcher)
     } catch (cancellation: CancellationException) {
         // What:     `throw cancellation` re-throws the caught cancellation
         //           exception unchanged. `cancellation` is the value bound by
@@ -378,27 +356,12 @@ suspend fun measureAndCache(
         // ```
         return SweepOutcome.FAILED
     }
-    // What:     `PeakCacheStore.put(context, key, peak)` stores the freshly
-    //           measured peak in the cache under our fingerprint key. It
-    //           returns `Unit` (Kotlin's "no meaningful value", the equivalent
-    //           of TS `void`), so we call it for its side effect and ignore the
-    //           result.
-    // Why:      Memoize the measurement so future sweeps and playbacks hit the
-    //           cache instead of re-decoding. Note this only updates the
-    //           in-memory cache and its persistence policy; flushing to disk is
-    //           explicitly the CALLER's responsibility (the worker batches many
-    //           of these), which is why this function does not flush here.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // await PeakCacheStore.put(context, key, peak);
-    // ```
-    PeakCacheStore.put(context, key, peak)
-    // What:     `return SweepOutcome.MEASURED` exits with the "decoded a fresh
-    //           peak" outcome. `SweepOutcome.MEASURED` selects that enum member.
-    // Why:      Tell the caller this track produced a new measurement (pending
-    //           its flush), so it can increment its batch counter and decide
-    //           when to persist.
+    // What:     `return SweepOutcome.MEASURED` exits with the "warmed" outcome. The native side
+    //           already cached the decision (no Kotlin `PeakCacheStore.put` and no flush), so there
+    //           is nothing to persist here.
+    // Why:      Tell the caller this track was warmed. Note the outcome no longer distinguishes a
+    //           freshly-decoded track from one the native side skipped as already-exact; that
+    //           distinction now lives in Rust and is not surfaced to Kotlin.
     //
     // In TS you'd write (pseudocode):
     // ```ts
