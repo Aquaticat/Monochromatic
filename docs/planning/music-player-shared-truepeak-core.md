@@ -1518,14 +1518,18 @@ because the service API depends on Turso being viable on Android:
    its
   run produced the feasible no-classifier finding above.
   The finer-bin shared-meter `collect` regeneration and exact-window verification remain.
-- Stage three:
+- Stage three (shared surface done):
    full shared service.
-   Policy (the fixed-margin model above),
-   Turso schema,
-   cache
-  semantics,
-   fake-source integration tests,
-   warming.
+   The policy resolver (`resolve_decision`),
+   the Turso decision cache keyed by the identity tuple with exact-over-probe precedence
+  (`DecisionCache`,
+   behind an optional `service` feature so the meter-only apps stay dependency-free),
+   the cache-aware `cached_or_resolve`,
+   and their fake-source and throwaway-database integration tests are all in the crate.
+   The warming loop's concurrency,
+   priority,
+   and lifecycle stay platform glue over these primitives,
+   as this plan assigns them.
 - Stage four:
    desktop migration.
 - Stage five:
