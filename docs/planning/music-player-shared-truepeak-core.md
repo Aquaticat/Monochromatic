@@ -1530,12 +1530,26 @@ because the service API depends on Turso being viable on Android:
    priority,
    and lifecycle stay platform glue over these primitives,
    as this plan assigns them.
-- Stage four:
+- Stage four (done):
    desktop migration.
-- Stage five:
+   The desktop peak-cache actor owns a shared `DecisionCache` (not a hand-rolled `peaks` table),
+   the sync handle carries `u64` fingerprints and `Decision`s, a `DesktopSource` adapts the
+   decoder to `TruePeakSource`, and `resolve_current`/`resolve_full` drive the foreground and
+   warming paths onto a fresh `decisions.db`. 78 tests, clippy and lint green.
+- Stage five (done):
    Android migration.
-- Stage six:
+   The windowed policy and the `1.26` factor are gone; a native `TruePeakService` handle
+   (dedicated Tokio thread plus `DecisionCache`) is reached over JNI
+   (`nativeTruePeakServiceCreate`/`Release`, `nativeResolveGain`, `nativeWarmTrack`), the Kotlin
+   JSON peak cache and gain math are deleted, and a `TruePeakGain` singleton owns the one shared
+   handle. The `.so` cross-compiles for both ABIs with Turso linked; on-device on the Pixel 6 the
+   `NativeBridgeTest` (9 tests, including a full service-open + resolve + cache round-trip) and
+   `PeakSweepWorkerTest` (2 tests, the warming sweep) pass.
+- Stage six (done):
    cleanup.
+   Both apps' old measurement policies and the Kotlin peak cache are deleted; the shared crate
+   gained `resolve_full_scan` (warming-upgrade primitive) and `DecisionCache::exact_fingerprints`
+   (warming skip-snapshot).
 - Stage seven:
    decoder-sharing follow-up.
 

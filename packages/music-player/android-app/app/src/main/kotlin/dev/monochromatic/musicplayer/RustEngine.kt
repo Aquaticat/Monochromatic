@@ -145,17 +145,6 @@ import android.util.Log
 // ```
 import androidx.core.content.ContextCompat
 
-// What:     `import dev.monochromatic.musicplayer.core.normalizationGain` brings in the SHARED core
-//           function `normalizationGain(peak)` from the `main` core package: maps a measured peak to
-//           an attenuate-only gain in `0.0..1.0`.
-// Why:      `resolveNormalizationGain` converts a cached/measured peak into the gain it applies.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { normalizationGain } from "../core/normalization";
-// ```
-import dev.monochromatic.musicplayer.core.normalizationGain
-
 // What:     `import java.io.File` brings in the JDK `File` type (a path on the local filesystem).
 // Why:      `openDescriptor` wraps a bare absolute path in a `File` to open it directly.
 //
@@ -164,16 +153,6 @@ import dev.monochromatic.musicplayer.core.normalizationGain
 // // Mentally just a filesystem path string.
 // ```
 import java.io.File
-
-// What:     `import kotlinx.coroutines.CancellationException` brings in the exception coroutines
-//           throw on cancellation (rethrow it, do not swallow it).
-// Why:      `resolveNormalizationGain` rethrows it so a cancelled resolution unwinds cleanly.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// // Mentally the AbortError from a cancelled async op.
-// ```
-import kotlinx.coroutines.CancellationException
 
 // What:     `import kotlinx.coroutines.CoroutineScope` brings in `CoroutineScope`, the owner of a
 //           set of coroutines that can all be cancelled together.
@@ -915,11 +894,12 @@ class RustEngine(context: Context) : AudioEngine {
 
     // What:     `private suspend fun resolveNormalizationGain(uri: String): Float { ... }` declares a
     //           PRIVATE SUSPEND function returning a `Float`.
-    // Why:      Resolve the track's true-peak normalization gain: a `PeakCacheStore` hit returns
-    //           immediately; a miss measures the track now (a full native decode via
-    //           `measureTruePeakBlocking`), caches the peak, and returns the gain. A track that cannot be
-    //           fingerprinted or whose decode fails plays at unity (the callback's clamp still guards
-    //           against clipping). Cancellation of a superseded load propagates.
+    // Why:      Resolve the track's true-peak normalization gain through the native decision service:
+    //           `nativeResolveGain` returns a cached decision's gain on a hit, or decodes, caches, and
+    //           returns on a miss. The cache and the gain math live in Rust now, so Kotlin computes
+    //           nothing. A track that cannot be fingerprinted or whose fd cannot be opened plays at
+    //           unity (the callback's clamp still guards against clipping); `nativeResolveGain` itself
+    //           never fails (it falls back to the ceiling gain).
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -931,38 +911,48 @@ class RustEngine(context: Context) : AudioEngine {
      */
     private suspend fun resolveNormalizationGain(uri: String): Float {
         // What:     `val parsed: Uri = Uri.parse(uri)` parses text into Android's URI object.
-        // Why:      Fingerprinting and native measurement both need the structured form.
-        /** Parsed track URI used by cache and measurement helpers. */
+        // Why:      Fingerprinting needs the structured form.
+        /** Parsed track URI used by the fingerprint helper. */
         val parsed: Uri = Uri.parse(uri)
-        // What:     `val key: String? = TrackFingerprint.of(...)` asks for a cache key.
-        // Why:      A missing key means no safe cache entry, so the expression returns unity gain.
-        /** Optional stable cache key for this track. */
-        val key: String? = TrackFingerprint.of(appContext, parsed)
-        return if (key == null) {
-            UNITY_GAIN
-        } else {
-            /** Cached true peak, if this track was measured before. */
-            val cachedPeak: Float? = PeakCacheStore.get(appContext, key)
-            if (cachedPeak != null) {
-                normalizationGain(cachedPeak)
-            } else {
-                /** Fresh true peak, or null when decode/open failed. */
-                val peak: Float? = try {
-                    measureTruePeakBlocking(appContext, parsed)
-                } catch (cancellation: CancellationException) {
-                    throw cancellation
-                } catch (expectedFailure: Exception) {
-                    Log.w(LOG_TAG, "true-peak measure failed for $uri; using unity gain", expectedFailure)
-                    null
-                }
-                if (peak == null) {
-                    UNITY_GAIN
-                } else {
-                    PeakCacheStore.put(appContext, key, peak)
-                    PeakCacheStore.flush(appContext)
-                    normalizationGain(peak)
-                }
-            }
+        // What:     `val fingerprint: Long? = TrackFingerprint.of(...)` asks for the u64 cache key.
+        // Why:      A missing key means the file cannot be stat'd, so return unity gain.
+        /** Optional stable u64 cache key for this track. */
+        val fingerprint: Long? = TrackFingerprint.of(appContext, parsed)
+        if (fingerprint == null) {
+            // What:     `return UNITY_GAIN` when there is no fingerprint.
+            // Why:      Without a key the native cache cannot memoize; play unattenuated.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // if (fingerprint == null) return UNITY_GAIN;
+            // ```
+            return UNITY_GAIN
+        }
+        // What:     `val descriptor = openDescriptor(uri) ?: return UNITY_GAIN` opens a read-only
+        //           fd for the track, returning unity gain if it cannot be opened.
+        // Why:      The native resolver decodes through this fd on a cache miss.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const descriptor = openDescriptor(uri); if (!descriptor) return UNITY_GAIN;
+        // ```
+        /** Read-only descriptor for the track, or null when the provider cannot open it. */
+        val descriptor = openDescriptor(uri) ?: return UNITY_GAIN
+        // What:     `descriptor.use { pfd -> NativeBridge.nativeResolveGain(TruePeakGain.handle(appContext),
+        //           pfd.fd, fingerprint) }` resolves the gain natively and closes the fd after.
+        //           `nativeResolveGain` returns the gain directly (a cache hit reuses the stored
+        //           decision; a miss decodes, caches, and returns), never negative: it falls back
+        //           to the safe ceiling gain on any error. The gain math and the cache now live in
+        //           Rust, so Kotlin computes nothing here. `TruePeakGain` owns the one process-wide
+        //           service handle, shared with the background sweep.
+        // Why:      One native call replaces the old Kotlin cache get/put/flush + gain math.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // return descriptor.use((pfd) => nativeResolveGain(TruePeakGain.handle(appContext), pfd.fd, fingerprint));
+        // ```
+        return descriptor.use { pfd ->
+            NativeBridge.nativeResolveGain(TruePeakGain.handle(appContext), pfd.fd, fingerprint)
         }
     }
 

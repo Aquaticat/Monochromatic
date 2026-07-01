@@ -165,22 +165,66 @@ object NativeBridge {
      */
     external fun nativeOutputLatencyProbe(): Double
 
-    // What:     `external fun nativeMeasureTruePeak(fd: Int): Float` is a JNI native function taking
-    //           a file descriptor `fd` (`Int`) and returning a `Float` (32-bit) true peak. Sibling
-    //           `Double` is declined because the sample/peak domain is 32-bit float, matching the
-    //           desktop's `f32`.
-    // Why:      Decode the track at `fd` natively and return its true peak; a negative return is an
-    //           error code (the Kotlin caller checks `peak < 0`).
+    // What:     `external fun nativeTruePeakServiceCreate(dbPath: String): Long` opens the native
+    //           true-peak decision service backed by the shared `DecisionCache` at `dbPath`, returning
+    //           an opaque handle (`Long`), or `0` on failure.
+    // Why:      The service owns the Turso-backed cache and the shared policy; Kotlin creates one at
+    //           startup with its app-private `decisions.db` path and passes the handle to the
+    //           resolve/warm calls below.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // declare function nativeMeasureTruePeak(fd: number): number; // <0 means error
+    // declare function nativeTruePeakServiceCreate(dbPath: string): bigint; // 0 = failure
     // ```
     /**
-     * Defines native measure true peak behavior for this music-player component; the TypeScript-oriented notes
-     * above explain its call shape and effects.
+     * Opens the native true-peak decision service at the given database path and returns its handle.
      */
-    external fun nativeMeasureTruePeak(fd: Int): Float
+    external fun nativeTruePeakServiceCreate(dbPath: String): Long
+
+    // What:     `external fun nativeTruePeakServiceRelease(handle: Long)` closes the service, stopping
+    //           its cache thread. No-op for the `0` handle.
+    // Why:      Release the one service on shutdown so the actor thread and connection are reclaimed.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // declare function nativeTruePeakServiceRelease(handle: bigint): void;
+    // ```
+    /**
+     * Releases the native true-peak decision service handle, stopping its cache thread.
+     */
+    external fun nativeTruePeakServiceRelease(handle: Long)
+
+    // What:     `external fun nativeResolveGain(handle: Long, fd: Int, fingerprint: Long): Float`
+    //           resolves the FOREGROUND normalization gain for the current track: a cache hit returns
+    //           its stored gain, a miss decodes the `fd` (probe-or-full per the shared policy), caches
+    //           the decision, and returns its gain. NEVER negative: any error falls back to the safe
+    //           -1 dBTP ceiling gain.
+    // Why:      The gain math and the cache now live natively, so Kotlin no longer computes gain or
+    //           stores peaks; it just applies whatever gain this returns.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // declare function nativeResolveGain(handle: bigint, fd: number, fingerprint: bigint): number;
+    // ```
+    /**
+     * Resolves the foreground normalization gain for a track, caching the decision natively.
+     */
+    external fun nativeResolveGain(handle: Long, fd: Int, fingerprint: Long): Float
+
+    // What:     `external fun nativeWarmTrack(handle: Long, fd: Int, fingerprint: Long): Float` is the
+    //           BACKGROUND warming call: it full-scans a track to an EXACT decision and caches it,
+    //           skipping tracks already cached exactly. Returns the gain (unused for playback).
+    // Why:      Warming upgrades probe estimates to exact cached gains over idle time; the native
+    //           cache's exact-over-probe precedence keeps the exact decision.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // declare function nativeWarmTrack(handle: bigint, fd: number, fingerprint: bigint): number;
+    // ```
+    /**
+     * Warms a track: full-scans to an exact decision and caches it, skipping already-exact tracks.
+     */
+    external fun nativeWarmTrack(handle: Long, fd: Int, fingerprint: Long): Float
 
     // What:     `external fun nativeTruePeakSynthetic(samples: FloatArray, channels: Int): Float` is a
     //           TEST-ONLY JNI native function (no Kotlin body). It takes an in-memory `FloatArray` of
@@ -205,28 +249,29 @@ object NativeBridge {
      */
     external fun nativeTruePeakSynthetic(samples: FloatArray, channels: Int): Float
 
-    // What:     `external fun nativeFingerprint(path: String, size: Long, mtimeNanos: Long): String`
+    // What:     `external fun nativeFingerprint(path: String, size: Long, mtimeNanos: Long): Long`
     //           is a JNI native function (no Kotlin body). It takes the track `path` text, its `size`
     //           in bytes, and its modified-time `mtimeNanos` in nanoseconds (both `Long`, 64-bit
     //           signed; sibling `Int` is 32-bit, too narrow for nanosecond timestamps), and returns
-    //           the opaque hex cache-key `String`.
+    //           the raw `u64` cache key as a `Long` (bit-cast), which `nativeResolveGain`/
+    //           `nativeWarmTrack` take.
     // Why:      gxhash (the cache fingerprint hash) has no JVM port, so the fingerprint that was
     //           hand-written FNV-1a in pure Kotlin now lives in the native crate (src/fingerprint.rs)
     //           and is reached here. The native side builds the SAME (path + size + mtime) byte
-    //           material and seed as the desktop crate, so identical inputs hash identically.
+    //           material and seed as the desktop crate, and the shared `DecisionCache` keys on the
+    //           `u64` directly, so no hex-string round-trip is needed.
     // Gotcha:   `size`/`mtimeNanos` are passed as signed `Long` but treated as unsigned native-side
-    //           (sizes/timestamps are never negative); the old core function took `ULong`, so callers
-    //           pass the plain `Long` here instead of converting.
+    //           (sizes/timestamps are never negative); the returned `Long` is an opaque key, not a
+    //           number to interpret.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // declare function nativeFingerprint(path: string, size: bigint, mtimeNanos: bigint): string;
+    // declare function nativeFingerprint(path: string, size: bigint, mtimeNanos: bigint): bigint;
     // ```
     /**
-     * Defines native fingerprint behavior for this music-player component; the TypeScript-oriented notes above
-     * explain its call shape and effects.
+     * Computes the opaque native cache-key fingerprint for a track, returned as a Long.
      */
-    external fun nativeFingerprint(path: String, size: Long, mtimeNanos: Long): String
+    external fun nativeFingerprint(path: String, size: Long, mtimeNanos: Long): Long
 
     // What:     `external fun nativeEngineCreate(): Long` is a JNI native function returning a `Long`
     //           (64-bit signed integer). The `Long` is an OPAQUE HANDLE: a native pointer/address

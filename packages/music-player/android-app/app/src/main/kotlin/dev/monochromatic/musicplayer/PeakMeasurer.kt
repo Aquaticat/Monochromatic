@@ -236,115 +236,67 @@ internal val foregroundSweepDispatcher: CoroutineDispatcher =
 // }
 // ```
 /**
- * Routes the blocking native true-peak measure onto [dispatcher] (default [sweepDecodeDispatcher],
- * the single low-priority thread the background upkeep worker uses). The foreground initial sweep
- * passes [foregroundSweepDispatcher] for parallel default-priority decode. Returns the measured
- * true peak (linear), 0.0 for a zero-channel stream.
+ * Routes the blocking native warming call onto [dispatcher] (default [sweepDecodeDispatcher], the
+ * single low-priority thread the background upkeep worker uses). The foreground initial sweep passes
+ * [foregroundSweepDispatcher] for parallel default-priority decode. Returns the resolved gain (the
+ * native side full-scans to an exact decision and caches it, skipping already-exact tracks).
  */
-suspend fun measureTrackPeak(
+suspend fun warmTrack(
     context: Context,
     uri: Uri,
+    fingerprint: Long,
     dispatcher: CoroutineDispatcher = sweepDecodeDispatcher,
 ): Float =
-    withContext(dispatcher) { measureTruePeakBlocking(context, uri) }
+    withContext(dispatcher) { warmTrackBlocking(context, uri, fingerprint) }
 
-// What:     `internal fun measureTruePeakBlocking(context: Context, uri: Uri): Float { ... }`
-//           declares a function with `internal` VISIBILITY: visible everywhere in THIS module
-//           (this Gradle compilation), but not to other modules. It is a plain (NON-suspend),
-//           BLOCKING function (it runs synchronously on whatever thread calls it). Block body.
-// Why:      Open `uri` read-only and run the native true-peak measure on the CALLING thread,
-//           returning the true peak. The background sweep calls this on its low-priority
-//           dispatcher; the foreground engine calls it on a default background thread, so the
-//           dispatcher choice lives with each caller. THROWS `FileNotFoundException` when the
-//           provider cannot open the URI; `IllegalStateException` when the native measure returns
-//           an error code.
-// Gotcha:   `internal` is MODULE-scoped visibility, between `private` (file) and `public`
-//           (everywhere); TS has no direct equivalent.
+// What:     `internal fun warmTrackBlocking(context: Context, uri: Uri, fingerprint: Long): Float`
+//           declares a function with `internal` VISIBILITY (visible within this module). It is a
+//           plain (NON-suspend), BLOCKING function that runs synchronously on the calling thread.
+// Why:      Open `uri` read-only and run the native WARMING resolve on the CALLING thread: the
+//           native service full-scans the track to an EXACT decision and caches it (skipping tracks
+//           already cached exactly), returning its gain. The gain math and the cache live in Rust;
+//           Kotlin no longer stores peaks. THROWS `FileNotFoundException` when the provider cannot
+//           open the URI. `nativeWarmTrack` never returns a negative code (it falls back to the safe
+//           ceiling gain), so there is no error-code check here.
+// Gotcha:   `internal` is MODULE-scoped visibility, between `private` (file) and `public`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// // module-internal, synchronous:
-// function measureTruePeakBlocking(context: Context, uri: Uri): number { ... }
+// function warmTrackBlocking(context: Context, uri: Uri, fingerprint: bigint): number { ... }
 // ```
 /**
- * Defines measure true peak blocking behavior for this music-player component; the TypeScript-oriented notes
- * above explain its call shape and effects.
+ * Warms one track natively (full-scan exact + cache) and returns its gain.
  */
-internal fun measureTruePeakBlocking(context: Context, uri: Uri): Float {
+internal fun warmTrackBlocking(context: Context, uri: Uri, fingerprint: Long): Float {
     // What:     `val descriptor: ParcelFileDescriptor = context.contentResolver.openFileDescriptor(uri, "r") ?: throw
-    //           FileNotFoundException("could not open $uri for true-peak measure")`
-    //           declares a read-only `ParcelFileDescriptor`. `openFileDescriptor(uri, "r")` opens
-    //           the URI in READ mode (`"r"`) and returns a nullable `ParcelFileDescriptor?`; `?:`
-    //           is the ELVIS operator that THROWS a `FileNotFoundException` when it is `null`.
+    //           FileNotFoundException("could not open $uri for true-peak warm")`
+    //           opens the URI read-only (`"r"`), throwing via the ELVIS operator when the provider
+    //           returns `null`.
     // Why:      Get an open, readable descriptor for the track; a `null` means the provider could
-    //           not open it, which is a hard error.
-    // Gotcha:   `"r"` is the open-mode string (read-only); `?: throw ...` both null-checks and
-    //           throws in one line.
+    //           not open it, a hard error.
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // const d = context.contentResolver.openFileDescriptor(uri, "r");
-    // if (d === null) throw new FileNotFoundException(`could not open ${uri} for true-peak measure`);
-    // const descriptor: ParcelFileDescriptor = d;
+    // if (d === null) throw new FileNotFoundException(`could not open ${uri} for true-peak warm`);
     // ```
     /**
      * Defines descriptor value for this music-player component; the TypeScript-oriented notes above explain its
      * source and use.
      */
     val descriptor: ParcelFileDescriptor = context.contentResolver.openFileDescriptor(uri, "r")
-        ?: throw FileNotFoundException("could not open $uri for true-peak measure")
-    // What:     `val peak: Float = descriptor.use { NativeBridge.nativeMeasureTruePeak(it.fd) }`
-    //           declares a read-only `Float` `peak`. `descriptor.use { ... }` is the RESOURCE
-    //           SCOPE function: it runs the trailing lambda and then GUARANTEES `descriptor.close()`
-    //           runs afterward (success or exception), like try-with-resources. `it` is the
-    //           implicit lambda parameter (the descriptor); `it.fd` reads its raw integer file
-    //           descriptor, which is passed to the native measure. The lambda's value (the native
-    //           result) becomes `peak`.
-    // Why:      Pass the BORROWED fd to the native side INSIDE `use {}`, so the native code dups it
-    //           synchronously while the descriptor is still open, then the descriptor is closed
-    //           exactly once (the dup-ownership protocol that avoids an fdsan double-close).
-    // Gotcha:   `use {}` CLOSES the descriptor when the block ends; do not keep using `it`/the fd
-    //           afterward. The native side must finish (dup) before the block returns.
+        ?: throw FileNotFoundException("could not open $uri for true-peak warm")
+    // What:     `return descriptor.use { NativeBridge.nativeWarmTrack(TruePeakGain.handle(context),
+    //           it.fd, fingerprint) }` warms the track natively and closes the fd after. `use {}`
+    //           runs the lambda then GUARANTEES `descriptor.close()` (the dup-ownership protocol
+    //           that avoids an fdsan double-close); `it.fd` is the borrowed raw fd.
+    //           `TruePeakGain.handle(context)` is the one process-wide service handle (shared with
+    //           the foreground). The returned gain is unused by the sweep but returned for logging.
+    // Why:      One native call full-scans, caches an exact decision, and skips already-exact tracks.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // let peak: number;
-    // {
-    //   using d = descriptor; // auto-closes at block end
-    //   peak = NativeBridge.nativeMeasureTruePeak(d.fd);
-    // }
+    // return descriptor.use((d) => NativeBridge.nativeWarmTrack(TruePeakGain.handle(context), d.fd, fingerprint));
     // ```
-    /**
-     * Defines peak value for this music-player component; the TypeScript-oriented notes above explain its source
-     * and use.
-     */
-    val peak: Float = descriptor.use { NativeBridge.nativeMeasureTruePeak(it.fd) }
-    // What:     `if (peak < 0.0f) { ... }` checks for a negative native result. `0.0f` is a `Float`
-    //           literal (the `f` suffix; a negative `peak` is the native error-code convention).
-    // Why:      The native measure returns a negative value to signal failure; surface it.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // if (peak < 0.0) { ... }
-    // ```
-    if (peak < 0.0f) {
-        // What:     `throw IllegalStateException("native true-peak measure failed (code $peak) for $uri")`
-        //           constructs (no `new`) and throws an `IllegalStateException` naming the error
-        //           code and URI (string-template interpolation).
-        // Why:      A native failure must propagate as an error, not be mistaken for a real peak.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // throw new IllegalStateException(`native true-peak measure failed (code ${peak}) for ${uri}`);
-        // ```
-        throw IllegalStateException("native true-peak measure failed (code $peak) for $uri")
-    }
-    // What:     `return peak` returns the measured (non-negative) true peak.
-    // Why:      Hand the peak back to the caller.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // return peak;
-    // ```
-    return peak
+    return descriptor.use { NativeBridge.nativeWarmTrack(TruePeakGain.handle(context), it.fd, fingerprint) }
 }

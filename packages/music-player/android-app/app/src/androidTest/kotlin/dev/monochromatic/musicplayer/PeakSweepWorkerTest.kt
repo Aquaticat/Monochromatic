@@ -145,25 +145,6 @@ import androidx.work.workDataOf
 // // that synchronously waits. In real TS you'd make the test `async` and use `await`.
 // ```
 import kotlinx.coroutines.runBlocking
-// What:     `import org.junit.Assert.assertEquals` imports the `assertEquals` assertion (fails the
-//           test unless two values are equal). This imports a STATIC method directly by name.
-// Why:      Used to assert the second sweep pass returns exactly `SweepOutcome.CACHED`.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { assertEquals } from "org/junit/Assert";
-// ```
-import org.junit.Assert.assertEquals
-// What:     `import org.junit.Assert.assertNotNull` imports the `assertNotNull` assertion (fails the
-//           test if the given value is `null`).
-// Why:      Used to assert a fingerprint key and a cached peak both exist (are non-null) after the
-//           first pass.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { assertNotNull } from "org/junit/Assert";
-// ```
-import org.junit.Assert.assertNotNull
 // What:     `import org.junit.Assert.assertTrue` imports the `assertTrue` assertion (fails the test
 //           unless the given boolean is `true`); it also accepts a message shown on failure.
 // Why:      Used several times to check outcomes and value ranges.
@@ -359,124 +340,26 @@ class PeakSweepWorkerTest {
             first == SweepOutcome.MEASURED || first == SweepOutcome.CACHED,
         )
 
-        // What:     `val key: String? = runBlocking { TrackFingerprint.of(context, uri) }` declares a
-        //           read-only local `key` whose type is `String?`. The trailing `?` makes it a
-        //           NULLABLE type: `key` may hold a `String` OR `null`. `runBlocking { ... }` waits
-        //           on the async `TrackFingerprint.of(context, uri)`, which returns `String?` (null
-        //           when the track can't be fingerprinted, e.g. the provider didn't report a size).
-        //           Sibling type: the NON-nullable `String` (no trailing `?`), which can never be null.
-        // Why:      The cache is keyed by a fingerprint; the test re-derives that key so it can look
-        //           the cached peak up directly and confirm the sweep stored it.
-        // Gotcha:   In Kotlin nullability is part of the TYPE. `String` can NEVER be null; only
-        //           `String?` can. The compiler forces you to handle the null case (see `key!!` below).
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // const key: string | null = await TrackFingerprint.of(context, uri);
-        // ```
-        val key: String? = runBlocking { TrackFingerprint.of(context, uri) }
-        // What:     `assertNotNull("a library track must be fingerprintable", key)` fails the test if
-        //           `key` is `null`, printing the message otherwise.
-        // Why:      A real library track that we just selected must produce a fingerprint; if it does
-        //           not, the cache key path is broken and the rest of the test is meaningless.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // assertNotNull("a library track must be fingerprintable", key);
-        // ```
-        assertNotNull("a library track must be fingerprintable", key)
-        // What:     `val cachedPeak: Float? = runBlocking { PeakCacheStore.get(context, key!!) }`.
-        //           `cachedPeak` is a read-only local of nullable type `Float?` (a 32-bit IEEE-754
-        //           floating-point number, OR null). `runBlocking { ... }` waits on the async
-        //           `PeakCacheStore.get(context, key!!)`, which returns `Float?` (null on a cache
-        //           miss). `key!!` is Kotlin's NOT-NULL ASSERTION operator: it takes the nullable
-        //           `key: String?` and yields a non-null `String`, THROWING a
-        //           `NullPointerException` at runtime if `key` is actually null.
-        //           `Float` is 32-bit; its sibling is `Double` (64-bit), which is what a plain JS
-        //           `number` actually is. The audio peak is stored as 32-bit `Float` to match the
-        //           sample precision and keep the cache compact.
-        // Why:      `get` expects a non-null `String` key, but `key` is typed `String?`; we just
-        //           asserted it is non-null above, so `!!` converts the type for the call. The result
-        //           is the peak the sweep should have stored.
-        // Gotcha:   `key!!` is not free: if `key` were null this line would crash. It is safe here
-        //           ONLY because `assertNotNull(..., key)` ran first. Also note `Float` ≠ JS `number`
-        //           precision (JS `number` is a `Double`).
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // // `key!` asserts non-null to the type checker; Kotlin's `!!` would also throw if null.
-        // const cachedPeak: number | null = await PeakCacheStore.get(context, key!);
-        // ```
-        val cachedPeak: Float? = runBlocking { PeakCacheStore.get(context, key!!) }
-        // What:     `assertNotNull("the peak must be cached after the first pass", cachedPeak)` fails
-        //           the test if `cachedPeak` is `null`.
-        // Why:      After a MEASURED (or already-CACHED) first pass, the peak MUST be present in the
-        //           cache; a null here means the sweep did not persist what it measured.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // assertNotNull("the peak must be cached after the first pass", cachedPeak);
-        // ```
-        assertNotNull("the peak must be cached after the first pass", cachedPeak)
-        // What:     `assertTrue(message, condition)` with a string-template `message` and a compound
-        //           `condition`. Breaking the condition down:
-        //           - `cachedPeak!!` not-null-asserts the nullable `Float?` into a non-null `Float`
-        //             (would throw if null; safe because of the `assertNotNull` directly above).
-        //           - `.isFinite()` is a `Float` method returning `true` unless the value is NaN or
-        //             +/- infinity.
-        //           - `cachedPeak >= 0.0f` compares the peak to the float literal `0.0f`. The `f`
-        //             suffix makes it a 32-bit `Float` literal (not a 64-bit `Double`); without `f`,
-        //             `0.0` would be a `Double` and Kotlin would not let you compare it to a `Float`
-        //             without conversion.
-        //           - `cachedPeak < SANE_PEAK_UPPER_BOUND` compares against the named constant
-        //             declared in the companion object below (4.0f).
-        //           The `$cachedPeak` in the message interpolates the runtime value.
-        // Why:      A real measured true-peak must be a finite, non-negative level below a physically
-        //           plausible ceiling; this catches a garbage measurement (NaN/infinite/absurd).
-        //           ```
-        //           In TS there is no `Float` vs `Double`; `0.0f` is just `0`. `.isFinite()` ≈
-        //           `Number.isFinite(...)`.
-        // Gotcha:   The `f` suffix matters in Kotlin: `0.0f` is `Float`, `0.0` is `Double`; mixing
-        //           them is a type error. TS has only one number type, so this distinction vanishes.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // assertTrue(
-        //   `cached peak ${cachedPeak} should be a sane, finite level`,
-        //   Number.isFinite(cachedPeak!) && cachedPeak! >= 0 && cachedPeak! < SANE_PEAK_UPPER_BOUND,
-        // );
-        // ```
-        assertTrue(
-            "cached peak $cachedPeak should be a sane, finite level",
-            cachedPeak!!.isFinite() && cachedPeak >= 0.0f && cachedPeak < SANE_PEAK_UPPER_BOUND,
-        )
-
-        // What:     `val second: SweepOutcome = runBlocking { measureAndCache(context, uri) }` runs
-        //           the same async sweep helper on the SAME `uri` a second time and stores its
-        //           outcome in the read-only local `second` (enum `SweepOutcome`). `runBlocking`
-        //           waits for the async result.
-        // Why:      Now that the peak is cached, a second pass must NOT decode again; capturing the
-        //           outcome lets us assert it short-circuited to a cache hit.
+        // What:     `val second = runBlocking { measureAndCache(context, uri) }` runs the sweep on the
+        //           SAME track again.
+        // Why:      The decision cache now lives in Rust: Kotlin can no longer look a peak up (there is
+        //           no Kotlin cache), so this test only proves the sweep still succeeds on a re-run.
+        //           The native side skips an already-exact track internally, surfaced to Kotlin as
+        //           `MEASURED`; the cache round-trip itself is covered by the shared crate's
+        //           `DecisionCache` tests.
         //
         // In TS you'd write (pseudocode):
         // ```ts
         // const second: SweepOutcome = await measureAndCache(context, uri);
         // ```
         val second: SweepOutcome = runBlocking { measureAndCache(context, uri) }
-        // What:     `assertEquals("the second pass must be a pure cache hit", SweepOutcome.CACHED, second)`
-        //           fails the test unless `second` equals `SweepOutcome.CACHED`. JUnit's
-        //           `assertEquals` takes (message, expected, actual) in that order:
-        //           `SweepOutcome.CACHED` is the expected, `second` is the actual.
-        // Why:      The whole point of the cache is that the second measurement of an already-known
-        //           track does zero decoding and reports CACHED; this asserts that contract.
-        // Gotcha:   Argument order is (expected, actual). It is easy to flip these; the message and
-        //           the constant make the intent explicit.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // assertEquals("the second pass must be a pure cache hit", "CACHED", second);
-        // ```
-        assertEquals("the second pass must be a pure cache hit", SweepOutcome.CACHED, second)
+        // What:     `assertTrue(..., second == MEASURED || second == CACHED)`. A re-run must still
+        //           report a successful outcome.
+        // Why:      Prove a warm re-sweep does not fail; the native cache handles the skip.
+        assertTrue(
+            "second pass should still succeed, was $second",
+            second == SweepOutcome.MEASURED || second == SweepOutcome.CACHED,
+        )
     }
 
     // What:     `@Test` marks the next method as a runnable test case.
@@ -566,43 +449,5 @@ class PeakSweepWorkerTest {
         // );
         // ```
         assertTrue("a normal sweep run must report success, was $result", result is ListenableWorker.Result.Success)
-    }
-
-    // What:     `private companion object { ... }` declares a COMPANION OBJECT for this class. A
-    //           companion object is a single, lazily-created singleton tied to the class itself; its
-    //           members are accessed on the CLASS (like `static` members in Java/TS), e.g.
-    //           `PeakSweepWorkerTest`-level constants. `private` keeps it visible only inside this
-    //           class. A Kotlin class may have at most ONE companion object.
-    // Why:      It is the idiomatic place to hang class-level (static) constants the test methods
-    //           share, here the sanity ceiling for a measured peak.
-    // Gotcha:   Members here are accessed WITHOUT an instance (`PeakSweepWorkerTest.SANE_...` from
-    //           outside, or just `SANE_...` from inside the class), unlike normal instance members.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // // (these become `static` members of the class)
-    // private static readonly SANE_PEAK_UPPER_BOUND: number = 4.0;
-    // ```
-    private companion object {
-        // What:     `private const val SANE_PEAK_UPPER_BOUND: Float = 4.0f` declares a compile-time
-        //           CONSTANT named `SANE_PEAK_UPPER_BOUND` of type `Float` (32-bit float) with value
-        //           `4.0f`. `const val` means the value is known at compile time and inlined at use
-        //           sites (stronger than a plain `val`, which is merely read-only at runtime). The
-        //           `f` suffix makes `4.0f` a 32-bit `Float` literal (not a 64-bit `Double` `4.0`).
-        //           `Float` (32-bit) vs sibling `Double` (64-bit, == JS `number`): the cached peaks
-        //           are `Float`, so the ceiling is a `Float` to compare without conversion.
-        //           Domain meaning (from the old KDoc): true peaks above this are physically
-        //           implausible. A few dB of inter-sample overshoot above 1.0 is normal, so 4.0 is a
-        //           comfortable ceiling, anything beyond it signals a broken measurement.
-        // Why:      Gives the range assertion a single named ceiling instead of a magic number, and
-        //           documents WHY 4.0 (overshoot is expected; absurd values are not).
-        // Gotcha:   `const val` here is NOT a JS `const` local; it is a class-level (static),
-        //           compile-time-inlined constant. And `4.0f` is 32-bit, narrower than JS `number`.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // private static readonly SANE_PEAK_UPPER_BOUND: number = 4.0;
-        // ```
-        private const val SANE_PEAK_UPPER_BOUND: Float = 4.0f
     }
 }
