@@ -216,12 +216,21 @@ export component AppWindow inherits Window {
 
     // Inputs from Rust (the engine pushes these via Update messages).
     in property <string> track-name: "";
-    in property <float> position: 0;
+    // Two-way (`in-out`) because the seek Slider two-way binds its `value` to this
+    // property. Slint breaks a ONE-WAY binding the first time the user interacts with
+    // the slider (a drag/click/key runs an imperative `set-value`, and "if a property's
+    // value is later changed using an imperative assignment, the original binding is
+    // broken"), which froze the seek bar while audio kept playing. A two-way `<=>` alias
+    // survives user input, so engine `Update::Position` writes keep moving the thumb.
+    in-out property <float> position: 0;
     in property <float> duration: 0;
     in property <string> position-text: "0:00";
     in property <string> duration-text: "0:00";
     in property <bool> playing: false;
-    in property <float> volume: 1.0;
+    // Two-way (`in-out`) for the same reason as `position`: the volume Slider two-way
+    // binds its `value` here, so a one-way binding would break on the first user drag and
+    // stop reflecting engine/restored volume changes.
+    in-out property <float> volume: 1.0;
     // Shuffle mode as an int the radio group compares against: 0 = off,
     // 1 = within page, 2 = all. Off/within-page confine playback to the current
     // page; all spans the whole queue (the scope logic lives in Rust).
@@ -273,7 +282,7 @@ export component AppWindow inherits Window {
                 horizontal-stretch: 1;
                 minimum: 0;
                 maximum: root.duration > 0 ? root.duration : 1.0;
-                value: root.position;
+                value <=> root.position;
                 changed(value) => {
                     root.seek(value);
                 }
@@ -293,7 +302,7 @@ export component AppWindow inherits Window {
                 horizontal-stretch: 1;
                 minimum: 0;
                 maximum: 1.0;
-                value: root.volume;
+                value <=> root.volume;
                 changed(value) => {
                     root.set-volume(value);
                 }
