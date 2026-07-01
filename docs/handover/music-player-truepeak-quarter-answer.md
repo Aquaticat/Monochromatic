@@ -85,8 +85,20 @@ Bucket round results (committed 77fcc0ef0, branch):
   worst quiet 0.50 -> 1.04). Gain-verified pooling (close-bin fraction > 0.95,
   crest spread <= 0.16 dB) is safe but frees only ~2000 s: zero metric
   movement. Lesson recorded: match on gain-sensitivity, never correlation.
-- In flight: FLAC frame-size bones agent (lossless bits may track level well
-  enough to guide low-coverage flac probes). Compose + wire + re-docs after.
+- FLAC bones CONFIRMED (analysis/flac-bones.mjs, commits 4a3db5dd2+3b4c782d4):
+  lossless frame sizes track signal level, unlike perceptual codecs. 1272 of
+  1287 loud long FLACs parsed by CRC-verified frame walk (~60 s for ~50 GB;
+  seektables too coarse at ~10 s). Key parser finding: FLAC frames last
+  ~0.093-0.096 s, so bytes must be spread overlap-proportionally into 0.1 s
+  slots (start-binning aliases into a 2x sawtooth; Pearson 0.47 -> 0.81).
+  Crest byte-rank percentile: pad ±1 median 8.3% (lossy was 36.6%). Bones
+  top-40 ±1 + even 5% at ~8.8% coverage: under-read p90 0.23 / p99 0.56 /
+  max 2.67 (vs even-24%: 0.20 / 0.46 / 1.01), 1 clamp in 1272. FLAC keeps its
+  accuracy at about a third of the decode cost. Profiles regenerate to
+  out/flac-profiles.jsonl (not committed).
+- Next: compose final policy (flac = bones+even+zoom hybrid at low coverage,
+  freed seconds to bare bucket), verify budget, wire the decided table into
+  the bench, refresh the answer doc.
 
 ## Prior status: complete (first close)
 
