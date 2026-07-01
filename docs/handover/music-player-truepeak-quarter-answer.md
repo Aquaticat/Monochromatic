@@ -106,7 +106,12 @@ Bucket round results (committed 77fcc0ef0, branch):
   28 clamps / 0.293 / 0.40. Progression: shipped 43/0.528/0.80 -> uniform zoom
   26/0.371/0.50 -> buckets 19/0.349/0.50 -> buckets+bones 17/0.367/0.50 (or
   16 / 19 / 28 depending on dial).
-- Remaining: refresh the answer doc with the bucket round and final tables.
+- Answer doc finalized (main, commit 81ab5f2eb): two-layer method (frontier
+  zoom probe + bucket-first allocation with FLAC bones), full dial table,
+  split bones verdict, every declined road with numbers, reproduction
+  commands. Session closed; possible follow-ups unchanged (production
+  resolver support for adaptive two-phase probing; exact-decoded-window
+  verification; regenerating side files if the library changes).
 
 ## Prior status: complete (first close)
 
