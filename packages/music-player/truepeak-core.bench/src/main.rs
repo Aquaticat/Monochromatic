@@ -13,6 +13,8 @@ mod evaluate;
 mod classify;
 /// The feasible no-classifier model: minimize the fixed margin by probe density.
 mod feasible;
+/// The decided proportional-coverage policy and the margin/clamp tradeoff.
+mod proportional;
 /// The corrected-target parameter search and ranking.
 mod search;
 
@@ -21,14 +23,18 @@ use std::env;
 /// Imports the borrowed path type for the corpus location.
 use std::path::Path;
 
-/// Imports the corpus loader and the safe-provenance loader.
-use crate::corpus::{load_safe_paths, load_tracks};
+/// Imports the corpus loader, the track record, and the safe-provenance loader.
+use crate::corpus::{Track, load_safe_paths, load_tracks};
 /// Imports the classifier search, the feature diagnostic, and the per-track dump.
 use crate::classify::{diagnose, fit_full_scan_rule, write_long_features};
 /// Imports the feasible no-classifier density search and the provenance margin.
 use crate::feasible::{best_feasible, provenance_margin};
 /// Imports the candidate policy type for the provenance report.
 use crate::evaluate::Candidate;
+/// Imports the decided proportional-coverage policy evaluation.
+use crate::proportional::{evaluate_proportional, margin_clamp_table, under_read_quantile};
+/// Imports the safe-provenance path set default.
+use std::collections::HashSet;
 /// Imports the sweep and the objective ranking.
 use crate::search::{rank, sweep};
 
@@ -48,6 +54,59 @@ fn frange(start: f64, end: f64, step: f64) -> Vec<f64> {
     (0..=steps).map(|index| start + index as f64 * step).collect()
 }
 
+/// Evaluate the decided proportional policy on the corpus and print its budget, the
+/// under-read distribution, and the margin/clamp tradeoff.
+///
+/// What: reads the decided parameters from `truepeak_core::default_policy`, optionally loads
+/// provenance from a metadata argument, and reports. Why: this is the committed, reproducible
+/// evaluation of the shipped policy, replacing the throwaway analysis scripts.
+fn report_proportional(
+    tracks: &[Track],
+    full_secs: f64,
+    target_secs: f64,
+    args: &[String],
+) -> Result<(), Box<dyn std::error::Error>> {
+    let policy = truepeak_core::default_policy();
+    // The optional metadata argument (a non-flag after the corpus path) enables the safe split.
+    let safe: HashSet<String> = match args.iter().skip(2).find(|arg| !arg.starts_with("--")) {
+        Some(meta) => load_safe_paths(Path::new(meta))?,
+        None => HashSet::new(),
+    };
+    let (decoded, under_reads) = evaluate_proportional(
+        tracks,
+        policy.short_scan_max_secs,
+        policy.coverage_fraction,
+        policy.probe_window_secs,
+        policy.ceiling_dbtp,
+        &safe,
+    );
+    println!(
+        "\ndecided proportional policy: short_scan<={}s coverage={} window={}s margin={}dB",
+        policy.short_scan_max_secs, policy.coverage_fraction, policy.probe_window_secs, policy.probe_margin_db
+    );
+    println!(
+        "decoded={:.0}s ({:.1}% of corpus) target={:.0}s {}",
+        decoded,
+        100.0 * decoded / full_secs,
+        target_secs,
+        if decoded <= target_secs { "IN BUDGET" } else { "OVER" }
+    );
+    print!("loud long tracks={} safe-provenance={} | under-read percentiles dB:", under_reads.len(), safe.len());
+    for fraction in [0.5, 0.9, 0.95, 0.99, 0.995, 1.0] {
+        print!(" p{:.1}={:.2}", fraction * 100.0, under_read_quantile(&under_reads, fraction));
+    }
+    println!();
+    println!("margin/clamp tradeoff (clamped = cold-start tracks the realtime clamp catches, warming later corrects):");
+    for row in margin_clamp_table(&under_reads, &[0.5, 0.8, 1.0, 1.2, 1.5], policy.max_too_loud_db) {
+        let percent = 100.0 * row.clamped as f64 / row.total.max(1) as f64;
+        println!(
+            "  margin={:.1}dB worst_quiet={:+.1}dB -> {} clamped ({percent:.2}%, {} safe) of {}",
+            row.margin_db, row.worst_quiet_db, row.clamped, row.clamped_safe, row.total
+        );
+    }
+    Ok(())
+}
+
 /// Entry point: load the corpus, compute the target, search, and print the report.
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args: Vec<String> = env::args().collect();
@@ -62,6 +121,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("corpus: {} tracks", tracks.len());
     println!("full decodable seconds: {full_secs}");
     println!("corrected target (/{TARGET_DIVISOR}): {target_secs}");
+
+    // The decided policy: `--proportional [metadata.jsonl]` evaluates it on the corpus and
+    // prints the under-read distribution and the margin/clamp tradeoff, then returns.
+    if args.iter().any(|arg| arg == "--proportional") {
+        return report_proportional(&tracks, full_secs, target_secs, &args);
+    }
+
     println!("window counts swept: {WINDOW_COUNTS:?}");
 
     // Sweep thresholds (converted to window seconds) and probe margins, per window count.

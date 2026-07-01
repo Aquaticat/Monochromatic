@@ -30,8 +30,17 @@ pub struct Track {
     pub decoded_frames: u64,
     /// Full-track true peak as a linear amplitude.
     pub full_peak: f32,
-    /// Per-second true peaks: bin `i` is the meter's peak over second `i`.
+    /// Seconds covered by each bin; the fine collector emits a tenth, the older corpus a
+    /// whole second, so this defaults to one for corpora that predate the field.
+    #[serde(default = "one_second")]
+    pub bin_seconds: f64,
+    /// Per-bin true peaks: bin `i` is the meter's peak over bin `i` of `bin_seconds`.
     pub bin_peaks: Vec<f32>,
+}
+
+/// The default bin resolution for corpora that predate the `bin_seconds` field.
+fn one_second() -> f64 {
+    1.0
 }
 
 /// Read a JSONL corpus file into one `Track` per non-empty line.
