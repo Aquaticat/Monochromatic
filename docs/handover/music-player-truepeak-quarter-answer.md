@@ -78,9 +78,15 @@ Bucket round results (committed 77fcc0ef0, branch):
   alias), wider zoom expansion radii, heard-clipping density (Spearman 0.037),
   declared-peak floors (rgPeak all-opus with 4.6 dB understatement band;
   iTunNORM n=55 with a 5 dB outlier).
+- Duplicate-master pooling: measured and declined (analysis/duplicates.mjs,
+  commit bd92acb15). Duplicate mass is 1.20% of library seconds (53 groups,
+  107 tracks). Correlation-matched pooling is HARMFUL: correlation is
+  scale-invariant so it pools different masters of the same song (+3 clamps,
+  worst quiet 0.50 -> 1.04). Gain-verified pooling (close-bin fraction > 0.95,
+  crest spread <= 0.16 dB) is safe but frees only ~2000 s: zero metric
+  movement. Lesson recorded: match on gain-sensitivity, never correlation.
 - In flight: FLAC frame-size bones agent (lossless bits may track level well
-  enough to guide low-coverage flac probes); duplicate-master pooling agent
-  (same-master copies could share probes). Compose + wire + re-docs after.
+  enough to guide low-coverage flac probes). Compose + wire + re-docs after.
 
 ## Prior status: complete (first close)
 
