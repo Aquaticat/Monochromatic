@@ -4,6 +4,10 @@
     "slint-music-player": {
       "type": "http",
       "url": "http://127.0.0.1:9315/mcp"
+    },
+    "slint-terminal": {
+      "type": "http",
+      "url": "http://127.0.0.1:9316/mcp"
     }
   }
 }

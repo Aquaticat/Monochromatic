@@ -153,6 +153,56 @@ run = """
 runCargo(['nextest', 'run', '--release'])
 """
 
+[tasks.mcp]
+description = "Build --features slint/mcp (debug), stage libs, and run HEADLESS with the embedded Slint MCP server on SLINT_MCP_PORT (default 9316) so an agent can drive/inspect the terminal UI"
+# Same embedded-MCP path as packages/music-player/desktop-app:mcp (see its comment
+# and docs/runbook Slint testing). `mcp` is command-line only (never in Cargo.toml
+# [features]); SLINT_EMIT_DEBUG_INFO=1 makes element ids survive; SLINT_BACKEND=headless
+# renders offscreen. install_backend() early-returns when SLINT_MCP_PORT is set, so
+# Slint creates the backend itself and starts the MCP server. State is isolated under
+# target/mcp-xdg. Port 9316 keeps it distinct from the music player's 9315.
+shell = "node -e"
+run = """
+{{vars.cargo_dispatch}}
+const { mkdirSync, copyFileSync } = await import('node:fs')
+const { join } = await import('node:path')
+process.env.SLINT_EMIT_DEBUG_INFO = '1'
+process.env.SLINT_MCP_PORT = process.env.SLINT_MCP_PORT ?? '9316'
+process.env.SLINT_BACKEND = process.env.SLINT_BACKEND ?? 'headless'
+const xdgRoot = join(process.cwd(), 'target', 'mcp-xdg')
+for (const sub of ['config', 'cache', 'data']) { mkdirSync(join(xdgRoot, sub), { recursive: true }) }
+process.env.XDG_CONFIG_HOME = join(xdgRoot, 'config')
+process.env.XDG_CACHE_HOME = join(xdgRoot, 'cache')
+process.env.XDG_DATA_HOME = join(xdgRoot, 'data')
+runCargo(['build', '--features', 'slint/mcp'])
+// Stage libghostty-vt beside the binary INLINE (not via a nested `mise run`, which
+// re-loads this repo's sops-encrypted config and fails without the decrypt key).
+// Mirrors stage:runtime-libs:debug. globSync comes from cargo_dispatch above.
+const libDirs = globSync('target/debug/build/libghostty-vt-sys-*/out/ghostty-install/lib').sort()
+if (libDirs.length === 0) { throw new Error('missing debug libghostty-vt build output') }
+const sourceLibDir = libDirs[libDirs.length - 1]
+const stagedLibDir = 'target/lib/monochromatic-terminal'
+mkdirSync(stagedLibDir, { recursive: true })
+for (const name of ['libghostty-vt.so', 'libghostty-vt.so.0', 'libghostty-vt.so.0.1.0']) { copyFileSync(join(sourceLibDir, name), join(stagedLibDir, name)) }
+console.error(`monochromatic-terminal MCP server: http://127.0.0.1:${process.env.SLINT_MCP_PORT}/mcp (backend=${process.env.SLINT_BACKEND || 'default'})`)
+execFileSync('./target/debug/monochromatic-terminal', [], { stdio: 'inherit' })
+"""
+
+[tasks."lint:slint"]
+description = "Type-check ui/app.slint with slint-viewer --check (compiles the markup, opens no window, exits non-zero on error)"
+run = "slint-viewer --check ui/app.slint"
+
+[tasks.screenshot]
+description = "Render ui/app.slint to target/app.slint.png HEADLESS (slint-viewer --screenshot, default property values, no window) for a quick static-layout snapshot"
+shell = "node -e"
+run = """
+const { execFileSync } = await import('node:child_process')
+const { mkdirSync } = await import('node:fs')
+mkdirSync('target', { recursive: true })
+execFileSync('slint-viewer', ['--screenshot', 'target/app.slint.png', 'ui/app.slint'], { stdio: 'inherit', env: { ...process.env, SLINT_BACKEND: 'software' } })
+console.error('rendered ui/app.slint -> target/app.slint.png')
+"""
+
 [tasks."build:container"]
 description = "Release build forced inside the container, then stage runtime libraries (asserts the container path)"
 shell = "node -e"
