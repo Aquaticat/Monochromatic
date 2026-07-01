@@ -45,7 +45,8 @@
   },
   "files": [
     "dist/final",
-    "src"
+    "src",
+    "LICENSES"
   ],
   "author": {
     "name": "Aquaticat",

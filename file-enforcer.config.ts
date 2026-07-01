@@ -7,6 +7,7 @@ import { join, } from 'node:path';
 import {
   addWatchedPaths,
   cat,
+  getTomlProperty,
   manageLsp4ijServerSettings,
   overwrite,
   overwriteEach,
@@ -58,6 +59,59 @@ const BROWSERSLIST_CONFIG_ENVIRONMENT = 'production';
  * ```
  */
 const EMPTY_BROWSERSLIST_STATS: browserslist.Stats = {};
+
+/**
+ * Source license texts keyed by SPDX license identifier, copied verbatim into
+ * package-local `LICENSES/` directories so package artifacts carry the texts
+ * without maintaining hand-edited duplicates.
+ *
+ * @example
+ * ```ts
+ * console.log(PACKAGE_LICENSE_TEXT_SOURCES['LGPL-3.0-or-later']);
+ * ```
+ */
+const PACKAGE_LICENSE_TEXT_SOURCES = {
+  'CC-BY-SA-4.0': './LICENSES/CC-BY-SA-4.0.txt',
+  'GPL-3.0-or-later': './LICENSES/GPL-3.0-or-later.txt',
+  'LGPL-3.0-or-later': './LICENSES/LGPL-3.0-or-later.txt',
+} as const;
+
+/**
+ * License identifiers whose canonical texts file-enforcer knows how to copy.
+ *
+ * @example
+ * ```ts
+ * const id: PackageLicenseTextId = 'GPL-3.0-or-later';
+ * ```
+ */
+type PackageLicenseTextId = keyof typeof PACKAGE_LICENSE_TEXT_SOURCES;
+
+/**
+ * Package manifest globs whose license expressions drive package-local license texts.
+ *
+ * @example
+ * ```ts
+ * console.log(PACKAGE_LICENSE_MANIFEST_GLOBS.length);
+ * ```
+ */
+const PACKAGE_LICENSE_MANIFEST_GLOBS = [
+  './packages/*/*/package.json',
+  './packages/*/*/Cargo.toml',
+] as const;
+
+/**
+ * License text identifiers needed when a package uses LGPLv3.
+ * LGPLv3 incorporates GPLv3 by reference, so package artifacts need both texts.
+ *
+ * @example
+ * ```ts
+ * console.log(LGPL_3_OR_LATER_TEXT_IDS);
+ * ```
+ */
+const LGPL_3_OR_LATER_TEXT_IDS = [
+  'GPL-3.0-or-later',
+  'LGPL-3.0-or-later',
+] as const satisfies readonly PackageLicenseTextId[];
 
 /**
  * Node filesystem error code for an absent path.
@@ -137,6 +191,237 @@ function errorHasCode(
   return (error instanceof Error)
     && ('code' in error)
     && ((error as NodeErrorCodeCarrier).code === code);
+}
+
+/**
+ * Converts an SPDX license expression to license texts that must accompany the
+ * package artifact. The mapping is intentionally conservative: LGPLv3 yields
+ * both LGPLv3 and GPLv3 because LGPLv3 is an additional-permissions layer over GPLv3.
+ *
+ * @param expression - SPDX license expression from a package manifest.
+ *
+ * @returns Known license text identifiers required by expression.
+ *
+ * @example
+ * ```ts
+ * licenseTextIdsForExpression({ expression: 'LGPL-3.0-or-later AND CC-BY-SA-4.0' });
+ * ```
+ */
+function licenseTextIdsForExpression(
+  { expression, }: { readonly expression: string; },
+): readonly PackageLicenseTextId[] {
+  /**
+   * Ordered de-duplicated text identifiers produced from the expression.
+   */
+  const textIds = new Set<PackageLicenseTextId>();
+
+  if (expression.includes('LGPL-3.0-or-later',))
+    for (const textId of LGPL_3_OR_LATER_TEXT_IDS)
+      textIds.add(textId,);
+  else if (expression.includes('GPL-3.0-or-later',))
+    textIds.add('GPL-3.0-or-later',);
+
+  if (expression.includes('CC-BY-SA-4.0',))
+    textIds.add('CC-BY-SA-4.0',);
+
+  return [...textIds,];
+}
+
+/**
+ * Reads license expression from a package.json manifest.
+ *
+ * @param manifestPath - package.json path.
+ *
+ * @returns SPDX expression when manifest carries a string `license` field.
+ *
+ * @example
+ * ```ts
+ * await packageJsonLicenseExpression({ manifestPath: './packages/module/test/package.json' });
+ * ```
+ */
+async function packageJsonLicenseExpression(
+  { manifestPath, }: { readonly manifestPath: string; },
+): Promise<string | undefined> {
+  /**
+   * Parsed package.json object; only the license field matters here.
+   */
+  const packageJson = JSON.parse(await cat([manifestPath,],),) as {
+    readonly license?: unknown;
+  };
+
+  return (typeof packageJson.license === 'string')
+    ? packageJson.license
+    : undefined;
+}
+
+/**
+ * Reads license expression from a Cargo manifest.
+ *
+ * @param manifestPath - Cargo.toml path.
+ *
+ * @returns SPDX expression when manifest carries a string package.license field.
+ *
+ * @example
+ * ```ts
+ * await cargoTomlLicenseExpression({ manifestPath: './packages/cli/forbidden-strings/Cargo.toml' });
+ * ```
+ */
+async function cargoTomlLicenseExpression(
+  { manifestPath, }: { readonly manifestPath: string; },
+): Promise<string | undefined> {
+  /**
+   * License value from Cargo's package metadata. Workspace-inherited or missing
+   * values are ignored unless they resolve to a direct string in this manifest.
+   */
+  const license = getTomlProperty({
+    path: ['package', 'license',],
+    content: await cat([manifestPath,],),
+  },) as string | undefined;
+
+  return (typeof license === 'string')
+    ? license
+    : undefined;
+}
+
+/**
+ * Returns package directory path for a manifest under `packages/*/*`.
+ *
+ * @param manifestPath - package.json or Cargo.toml path.
+ *
+ * @returns Package root path containing manifest.
+ *
+ * @example
+ * ```ts
+ * packageDirFromManifest({ manifestPath: './packages/cli/forbidden-strings/Cargo.toml' });
+ * ```
+ */
+function packageDirFromManifest(
+  { manifestPath, }: { readonly manifestPath: string; },
+): string {
+  return manifestPath.slice(
+    0,
+    manifestPath.lastIndexOf('/',),
+  );
+}
+
+/**
+ * Adds one license expression to the per-package accumulator.
+ *
+ * @param packageLicenseExpressions - Accumulator keyed by package directory.
+ *
+ * @param packageDir - Package directory receiving expression.
+ *
+ * @param expression - SPDX expression from manifest.
+ *
+ * @example
+ * ```ts
+ * addPackageLicenseExpression({ packageLicenseExpressions: new Map(), packageDir: './packages/x/y', expression: 'LGPL-3.0-or-later' });
+ * ```
+ */
+function addPackageLicenseExpression(
+  {
+    packageLicenseExpressions,
+    packageDir,
+    expression,
+  }: {
+    readonly packageLicenseExpressions: Map<string, Set<string>>;
+    readonly packageDir: string;
+    readonly expression: string;
+  },
+): void {
+  /**
+   * Existing expression set for this package, created lazily.
+   */
+  const expressions = packageLicenseExpressions.get(packageDir,) ?? new Set<string>();
+  expressions.add(expression,);
+  packageLicenseExpressions.set(
+    packageDir,
+    expressions,
+  );
+}
+
+/**
+ * Reads every `packages/*/*` manifest and records package-local license text needs.
+ *
+ * @returns Map from package directory to known license text identifiers.
+ *
+ * @example
+ * ```ts
+ * await collectPackageLicenseTextIds();
+ * ```
+ */
+async function collectPackageLicenseTextIds(): Promise<Map<string, Set<PackageLicenseTextId>>> {
+  /**
+   * SPDX expressions grouped by package directory before mapping to text files.
+   */
+  const packageLicenseExpressions = new Map<string, Set<string>>();
+
+  for (const manifestGlob of PACKAGE_LICENSE_MANIFEST_GLOBS) {
+    for await (const manifestPath of glob(manifestGlob,)) {
+      /**
+       * SPDX expression read by the parser matching the manifest type.
+       */
+      const expression = manifestPath.endsWith('/package.json',)
+        ? await packageJsonLicenseExpression({ manifestPath, },)
+        : await cargoTomlLicenseExpression({ manifestPath, },);
+
+      if (expression === undefined)
+        continue;
+
+      addPackageLicenseExpression({
+        packageLicenseExpressions,
+        packageDir: packageDirFromManifest({ manifestPath, },),
+        expression,
+      },);
+    }
+  }
+
+  return new Map(Array.from(
+    packageLicenseExpressions,
+    function toPackageTextIds([packageDir, expressions,]): readonly [string, Set<PackageLicenseTextId>] {
+      /**
+       * Known license text identifiers required by all expressions in this package.
+       */
+      const textIds = new Set<PackageLicenseTextId>();
+      for (const expression of expressions)
+        for (const textId of licenseTextIdsForExpression({ expression, },))
+          textIds.add(textId,);
+
+      return [packageDir, textIds,];
+    },
+  ),);
+}
+
+/**
+ * Generates package-local license texts under `packages/*/*/LICENSES/` from
+ * canonical root `LICENSES/` sources, based on each package manifest's license
+ * expression.
+ *
+ * @example
+ * ```ts
+ * await generatePackageLicenseTexts();
+ * ```
+ */
+async function generatePackageLicenseTexts(): Promise<void> {
+  /**
+   * Required license text identifiers keyed by package directory.
+   */
+  const packageLicenseTextIds = await collectPackageLicenseTextIds();
+
+  await Promise.all(Array.from(
+    packageLicenseTextIds,
+    function toWrites([packageDir, textIds,]): readonly Promise<void>[] {
+      return Array.from(
+        textIds,
+        async function writeLicenseText(textId,): Promise<void> {
+          await overwrite({
+            dest: `${packageDir}/LICENSES/${textId}.txt`,
+            content: await cat([PACKAGE_LICENSE_TEXT_SOURCES[textId],],),
+          },);
+        },
+      );
+    },
+  ).flat(),);
 }
 
 /**
@@ -508,16 +793,7 @@ ${await cat(['./AGENTS.md',],)}`,
 
   generateForbiddenStringsRules(),
 
-  // The GPL/LGPL texts must stay verbatim, so these generated copies intentionally omit a file header.
-  overwrite({
-    dest: './packages/cli/forbidden-strings/GPL-3.0-or-later.txt',
-    content: await cat(['./LICENSES/GPL-3.0-or-later.txt',],),
-  },),
-
-  overwrite({
-    dest: './packages/cli/forbidden-strings/LGPL-3.0-or-later.txt',
-    content: await cat(['./LICENSES/LGPL-3.0-or-later.txt',],),
-  },),
+  generatePackageLicenseTexts(),
 
   generateResolvedBrowserslistTargets(),
 

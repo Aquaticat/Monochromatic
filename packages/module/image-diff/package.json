@@ -18,7 +18,8 @@
     "./ts/*": "./src/*"
   },
   "files": [
-    "dist/final"
+    "dist/final",
+    "LICENSES"
   ],
   "dependencies": {
     "@monochromatic-dev/module-llm-types": "workspace:*",

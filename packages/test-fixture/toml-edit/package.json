@@ -10,6 +10,7 @@
     "./invalid/*": "./src/invalid/*"
   },
   "files": [
-    "src/"
+    "src/",
+    "LICENSES"
   ]
 }

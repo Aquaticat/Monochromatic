@@ -9,7 +9,8 @@
     "META-INF/",
     "scheme/",
     "theme/",
-    "islands-black.jar"
+    "islands-black.jar",
+    "LICENSES"
   ],
   "dependencies": {
     "@monochromatic-dev/module-zip-writer": "workspace:*"

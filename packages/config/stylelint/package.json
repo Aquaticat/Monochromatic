@@ -23,7 +23,8 @@
   "files": [
     "index.mjs",
     "example.stylelint.mjs",
-    "pnp.example.stylelint.mjs"
+    "pnp.example.stylelint.mjs",
+    "LICENSES"
   ],
   "author": {
     "name": "Aquaticat",

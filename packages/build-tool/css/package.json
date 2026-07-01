@@ -20,7 +20,8 @@
   "typings": "dist/final/node/index.d.mts",
   "files": [
     "src",
-    "dist/final"
+    "dist/final",
+    "LICENSES"
   ],
   "devDependencies": {
     "@monochromatic-dev/config-tsdown": "workspace:*",

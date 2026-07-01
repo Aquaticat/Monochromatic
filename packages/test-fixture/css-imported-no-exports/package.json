@@ -7,6 +7,7 @@
   "type": "module",
   "main": "src/index.css",
   "files": [
-    "src/"
+    "src/",
+    "LICENSES"
   ]
 }

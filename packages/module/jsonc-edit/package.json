@@ -28,7 +28,8 @@
   },
   "files": [
     "dist/final",
-    "src"
+    "src",
+    "LICENSES"
   ],
   "repository": {
     "type": "git",

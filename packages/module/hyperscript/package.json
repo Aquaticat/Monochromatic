@@ -14,7 +14,8 @@
   },
   "files": [
     "dist/final",
-    "src"
+    "src",
+    "LICENSES"
   ],
   "devDependencies": {
     "@monochromatic-dev/config-tsdown": "workspace:*",
@@ -24,8 +25,7 @@
     "csstype": "catalog:",
     "typescript": "catalog:"
   },
-  "dependencies": {
-  },
+  "dependencies": {},
   "version": "0.0.1",
   "repository": {
     "type": "git",

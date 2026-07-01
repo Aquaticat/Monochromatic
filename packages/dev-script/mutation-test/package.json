@@ -17,7 +17,8 @@
   "files": [
     "dist/final",
     "runtime",
-    "src"
+    "src",
+    "LICENSES"
   ],
   "devDependencies": {
     "@monochromatic-dev/config-tsdown": "workspace:*",

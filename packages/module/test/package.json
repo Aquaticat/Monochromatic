@@ -16,7 +16,8 @@
   },
   "files": [
     "dist/final",
-    "src"
+    "src",
+    "LICENSES"
   ],
   "dependencies": {
     "@monochromatic-dev/module-async-time": "workspace:*",

@@ -21,14 +21,14 @@
   "files": [
     "index.cjs",
     "index.d.cts",
-    "lib"
+    "lib",
+    "LICENSES"
   ],
   "devDependencies": {
     "@monochromatic-dev/config-typescript": "workspace:*",
     "typescript": "catalog:"
   },
-  "dependencies": {
-  },
+  "dependencies": {},
   "version": "0.0.0",
   "repository": {
     "type": "git",

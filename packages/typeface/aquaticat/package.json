@@ -7,7 +7,8 @@
   "type": "module",
   "files": [
     "src/",
-    "dist/"
+    "dist/",
+    "LICENSES"
   ],
   "exports": {
     "./aquaticat.css": "./src/aquaticat.css",

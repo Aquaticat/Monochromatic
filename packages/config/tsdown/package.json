@@ -20,7 +20,8 @@
   "type": "module",
   "files": [
     "src",
-    "dist/final"
+    "dist/final",
+    "LICENSES"
   ],
   "author": {
     "name": "Aquaticat",

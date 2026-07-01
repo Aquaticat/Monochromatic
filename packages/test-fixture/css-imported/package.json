@@ -12,6 +12,7 @@
     "./mixin.css": "./src/mixin.css"
   },
   "files": [
-    "src/"
+    "src/",
+    "LICENSES"
   ]
 }

@@ -23,6 +23,7 @@
   },
   "files": [
     "dist/final",
-    "src"
+    "src",
+    "LICENSES"
   ]
 }

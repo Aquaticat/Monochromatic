@@ -15,7 +15,8 @@
   },
   "files": [
     "src",
-    "coverage-baseline.json"
+    "coverage-baseline.json",
+    "LICENSES"
   ],
   "repository": {
     "type": "git",

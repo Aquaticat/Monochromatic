@@ -14,7 +14,8 @@
     "typescript": "catalog:"
   },
   "files": [
-    "src"
+    "src",
+    "LICENSES"
   ],
   "repository": {
     "type": "git",

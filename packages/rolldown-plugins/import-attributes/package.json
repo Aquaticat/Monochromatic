@@ -12,7 +12,8 @@
   "main": "dist/final/node/index.mjs",
   "typings": "dist/final/node/index.d.mts",
   "files": [
-    "dist/final"
+    "dist/final",
+    "LICENSES"
   ],
   "dependencies": {
     "rolldown": "catalog:"

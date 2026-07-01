@@ -12,7 +12,8 @@
   "type": "module",
   "files": [
     "index.json",
-    "example.dprint.json"
+    "example.dprint.json",
+    "LICENSES"
   ],
   "author": {
     "name": "Aquaticat",

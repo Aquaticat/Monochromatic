@@ -13,7 +13,8 @@
     "dom.example.tsconfig.json",
     "tsconfig.astro.json",
     "astro.example.tsconfig.json",
-    "pnp.example.tsconfig.json"
+    "pnp.example.tsconfig.json",
+    "LICENSES"
   ],
   "keywords": [
     "config",
