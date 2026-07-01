@@ -553,23 +553,13 @@ empty result on narrowest query is not "no precedent.
 "
 
 RPB:
- User states a resource is present (device connected,
- service up,
- access granted) and your probe disagrees (empty `adb devices`,
- connection refused,
- 404):
- one failed probe is not proof of absence.
-Connect/authorize-gated resources report empty until reconnected,
- authorized,
- or the server is (re)started.
+ One failed probe of a resource user says is present (empty `adb devices`,
+ connection refused) isn't proof of absence.
 Re-probe,
- and ask the user to reconnect/re-authorize/restart it,
- before concluding it is unreachable or moving on.
-Failure shape:
- empty `adb devices` once -> "the sandbox can't reach your device,
-" when the device was merely unplugged or unauthorized and one reconnect made it appear.
+ ask user to reconnect/re-authorize/restart,
+ before concluding unreachable or moving on.
 Cue:
- about to write "can't reach X" / "X isn't available" right after a single failed probe of something the user said is there.
+ writing "can't reach X" after one failed probe of something user said is there.
 
 RBK:
  Bridges genuinely fail + user must execute:
@@ -1443,29 +1433,14 @@ VB6:
 "It compiled" / "It installed" alone not verification.
 
 URF:
- Verification depending on a resource the user just made available (connected device,
- running service,
- live login,
- temporary access,
- physical hardware) runs FIRST,
- before unrelated work AND before other parts of the same task:
- the resource can vanish (unplugged,
- timed out,
- revoked) while you work on something else.
-A long task list,
- a multi-item plan,
- or a scope expansion ("do all of X too") does NOT license deferring it:
- finish the resource-gated verification end-to-end before starting the next unit of work,
- even when that next unit is nominally in scope.
-The "these are all part of the same task" rationalization is the trap;
- the resource's availability window,
- not the task list order,
- decides what runs next.
-Never report that check done or verified until you have actually exercised the resource.
+ Verification needing a resource the user provided runs FIRST,
+ before unrelated work AND other parts of same task.
+Scope expansion or long task-list never licenses deferring;
+ finish before next unit.
+Not done until resource exercised.
 Cue:
- user says "X is connected" / "I started X" / "you have access to X" and the task includes verifying against X;
- do that verification now,
- not after finishing every other crate/file/step.
+ "X connected"/"you have access to X",
+ task verifies against X.
 
 ### Verify on a throwaway, not against real state
 

@@ -769,3 +769,24 @@ third-party scripts.
  origin-verified,
  credential-free) is what keeps it from eroding the
 `troubleshooting-doc` no-modify rule.
+
+#### Verify at the user boundary: why the resource-gated check runs first (URF)
+
+A verification that depends on a resource the user just made available (a connected device, a running service, a live login, temporary access, physical hardware) is time-limited in a way ordinary work is not: the resource can vanish (unplugged, timed out, revoked) while you do something else, and then the check is no longer possible.
+So it runs before unrelated work and before other parts of the same task.
+
+The trap is the "these are all part of the same task" rationalization: a scope expansion ("do all of X too") or a long multi-item task list feels like a license to keep working through the list and leave the resource-gated check for the end.
+It is not.
+The resource's availability window, not the task-list order, decides what runs next; finish the resource-gated verification end to end before starting the next unit, even when that next unit is nominally in scope.
+And "done" means the resource was actually exercised, not that the code that would use it was written.
+
+Failure that produced this rule: given "my Android device is connected" plus a scope expansion to instrument every Rust crate with tracing, the on-device logcat verification was deferred behind the desktop, linter, terminal, forbidden-strings, and forbidden-regex crates and left for the final verification pass.
+By then the user, assuming the check was already done, had disconnected the phone.
+
+#### Before claiming inability: why one failed probe is not proof of absence (RPB)
+
+Connect-gated and authorize-gated resources report empty until they are reconnected, authorized, or the server is restarted: an empty `adb devices`, a refused connection, or a 404 is consistent with both "absent" and "present but not yet established."
+When the user has stated the resource is there, the probe disagreeing with them is weak evidence, not a verdict.
+Re-probe, and ask the user to reconnect, re-authorize, or restart it, before concluding it is unreachable or moving on.
+
+Failure that produced this rule: an empty `adb devices`, run once, was read as "the sandbox can't reach your device," when the device was merely unplugged or unauthorized at that moment; a single reconnect by the user made it appear immediately, and the on-device verification then succeeded.
