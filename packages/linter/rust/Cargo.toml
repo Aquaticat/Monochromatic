@@ -49,6 +49,12 @@ ignore = "0.4"
 # max-lines code-line count depends on.
 ra_ap_syntax = "=0.0.335"
 
+# The logging facade and its subscriber. tracing routes the linter's own diagnostics
+# (file-read failures) as structured events to stderr via tracing-subscriber, keeping the
+# lint findings printed to stdout clean and machine-parseable. env-filter reads RUST_LOG.
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
 [profile.release]
 lto = true
 codegen-units = 1

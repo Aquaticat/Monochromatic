@@ -64,6 +64,15 @@ use std::process::ExitCode;
 // async function main(): Promise<number> { /* ... */ }
 // ```
 fn main() -> ExitCode {
+    // Install the stderr tracing subscriber (RUST_LOG, default info) so the linter's own
+    // diagnostics never mix with the lint findings printed to stdout.
+    tracing_subscriber::fmt()
+        .with_env_filter(
+            tracing_subscriber::EnvFilter::try_from_default_env()
+                .unwrap_or_else(|_| tracing_subscriber::EnvFilter::new("info")),
+        )
+        .with_writer(std::io::stderr)
+        .init();
     // What:     `let cli = Cli::parse();` calls the clap-generated parser. `::` is
     //           Rust's namespace operator. `parse()` reads real process argv; on
     //           `--help`, `--version`, or invalid arguments, clap prints the right

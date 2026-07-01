@@ -376,7 +376,7 @@ fn lint_file(path: &str, config: &Config, rules: &[Box<dyn Rule>], out: &mut Vec
     let source = match fs::read_to_string(path) {
         Ok(text) => text,
         Err(error) => {
-            eprintln!("rust-linter: cannot read {path}: {error}");
+            tracing::warn!(path, cause = %error, "cannot read file");
             return;
         }
     };
