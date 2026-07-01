@@ -203,6 +203,28 @@ console.error(`music-player MCP server: http://127.0.0.1:${process.env.SLINT_MCP
 execFileSync(bin, extras, { stdio: 'inherit' })
 """
 
+[tasks."lint:slint"]
+description = "Type-check ui/app.slint with slint-viewer --check (compiles the markup, opens no window, exits non-zero on error)"
+# slint-viewer is the same 1.17 compiler family as slint-build, and
+# SLINT_ENABLE_EXPERIMENTAL_FEATURES (from [env]) enables the FlexboxLayout builtin
+# the UI uses, so this catches .slint markup errors fast without a full Rust build.
+run = "slint-viewer --check ui/app.slint"
+
+[tasks.screenshot]
+description = "Render ui/app.slint to target/app.slint.png HEADLESS (slint-viewer --screenshot: default property values, no Rust backend, no window) for a quick static-layout snapshot"
+# --screenshot installs slint-viewer's own offscreen platform; SLINT_BACKEND=software
+# pins the software renderer for a deterministic frame. This renders the MARKUP with
+# default property values only (no engine/model data); drive the running app via the
+# `mcp` task's take_screenshot for real-data snapshots.
+shell = "node -e"
+run = """
+const { execFileSync } = await import('node:child_process')
+const { mkdirSync } = await import('node:fs')
+mkdirSync('target', { recursive: true })
+execFileSync('slint-viewer', ['--screenshot', 'target/app.slint.png', 'ui/app.slint'], { stdio: 'inherit', env: { ...process.env, SLINT_BACKEND: 'software' } })
+console.error('rendered ui/app.slint -> target/app.slint.png')
+"""
+
 [tasks."build:container"]
 description = "Release build forced inside the container (asserts the container path)"
 shell = "node -e"
