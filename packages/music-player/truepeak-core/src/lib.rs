@@ -42,6 +42,14 @@ mod decision;
 /// The resolver that drives a source through the policy to a gain decision.
 mod resolve;
 
+/// The persistent decision cache, backed by Turso, behind the `service` feature.
+#[cfg(feature = "service")]
+mod cache;
+
+/// The cache-aware resolve composing the cache and resolver, behind the `service` feature.
+#[cfg(feature = "service")]
+mod service;
+
 /// Re-exports the meter type and its whole-buffer convenience function.
 pub use crate::meter::{TruePeakMeter, true_peak_interleaved};
 
@@ -63,5 +71,13 @@ pub use crate::policy::{CacheIdentity, Policy, default_policy};
 /// Re-exports the gain decision and its kind.
 pub use crate::decision::{Decision, DecisionKind};
 
-/// Re-exports the policy resolver.
-pub use crate::resolve::resolve_decision;
+/// Re-exports the policy resolver and the always-exact full-scan resolver (warming upgrade).
+pub use crate::resolve::{resolve_decision, resolve_full_scan};
+
+/// Re-exports the decision cache and its error, behind the `service` feature.
+#[cfg(feature = "service")]
+pub use crate::cache::{CacheError, DecisionCache};
+
+/// Re-exports the cache-aware resolve, behind the `service` feature.
+#[cfg(feature = "service")]
+pub use crate::service::cached_or_resolve;

@@ -56,11 +56,24 @@ ndk = { version = "0.9", features = ["audio"] }
 # Same major version as the desktop crate, whose engine this one ports.
 ringbuf = "0.4"
 
-# Shared true-peak core (src/truepeak.rs): the Catmull-Rom meter and the whole-buffer
-# meter helper now come from this in-repo crate instead of an Android-local copy, so the
-# desktop and Android measure identically. A path dependency (not a version) because it is
-# an unpublished in-repo crate; it carries its own empty [workspace] table, so this path
-# dep does not pull this Gradle-island crate into a shared cargo workspace. It has zero
-# third-party dependencies and no C, so it cross-compiles for the Android ABIs with nothing
-# extra to clear.
-truepeak-core = { path = "../../truepeak-core" }
+# Shared true-peak core: the Catmull-Rom meter and whole-buffer helper (src/truepeak.rs),
+# plus, behind the `service` feature, the persistent decision cache (`DecisionCache`), the
+# policy resolvers (`resolve_decision`, `resolve_full_scan`), and the decision types that
+# src/service.rs (the native true-peak service handle) drives. A path dependency (not a
+# version) because it is an unpublished in-repo crate; it carries its own empty [workspace]
+# table, so this path dep does not pull this Gradle-island crate into a shared cargo
+# workspace. The `service` feature pulls Turso (the pure-Rust SQLite rewrite: no C, so it
+# cross-compiles for the Android ABIs; the Stage-0 spike proved arm64-v8a + x86_64 builds
+# and an in-process round-trip to an app-private path) and Tokio transitively; the cache
+# schema, its exact-over-probe precedence, and the gain math all live in the shared crate,
+# so Kotlin no longer owns a JSON peak cache or the gain calculation.
+truepeak-core = { path = "../../truepeak-core", features = ["service"] }
+
+# Async runtime for the native true-peak service (src/service.rs): a dedicated thread runs a
+# current-thread Tokio runtime that drives the shared `DecisionCache`'s Turso futures, and the
+# JNI threads reach it through an `mpsc` request channel + `oneshot` replies. Same feature set
+# as the desktop crate's cache actor: `rt` (build the current-thread runtime), `sync` (the
+# channels), `macros` (`select!` to bias reads ahead of a warming write backlog). NOT
+# `rt-multi-thread`: one actor thread is enough. Tokio is pure Rust, so it cross-compiles for
+# the Android ABIs with nothing extra to clear.
+tokio = { version = "1", features = ["rt", "sync", "macros"] }

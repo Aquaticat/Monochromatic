@@ -156,3 +156,19 @@ Order of execution, most-verifiable first:
   committed `--proportional` evaluation reproduces the numbers. The policy-unification remaining
   item is therefore "build the proportional probe plus fixed margin into the Stage-three service
   and replace both apps' current policies with it", not "build a classifier".
+- 2026-07-01, 16:10: Stage-three shared service surface landed in `truepeak-core`.
+  `resolve_decision(policy, source)` drives a `TruePeakSource` through the proportional policy
+  to a `Decision` (short and unknown-length tracks full-scan; long tracks probe at proportional
+  coverage with the fixed margin). `DecisionCache` (open/get/put) persists one decision per
+  `(fingerprint + policy_id + meter_id + decoder_stack_id + schema_version)`, never downgrading
+  an exact row to a probe. `cached_or_resolve` composes them, opening the source only on a miss.
+  The cache and compose are behind an optional `service` feature, so the apps keep their
+  dependency-free meter usage and the Android crate is not forced to compile Turso before it
+  adopts the cache; enabling the feature is part of each app's service adoption (desktop already
+  carries `turso`/`tokio`; Android's cross-compile was proven by the Stage-zero spike). The
+  crate's own tasks now run `--all-features`; 43 tests, clippy and lint green. What remains for
+  the platforms: enable the `service` feature, supply each app's `decoder_stack_id` and an
+  app-private database path, feed decoded chunks through a `TruePeakSource` adapter, call
+  `cached_or_resolve` on the current track and in the warming loop, and delete each app's old
+  measurement policy (desktop full-scan, Android windowed) and the Kotlin peak-cache once the
+  Android service handle is wired.

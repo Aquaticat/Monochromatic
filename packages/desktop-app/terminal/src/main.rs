@@ -107,6 +107,19 @@ const OUTPUT_POLL_INTERVAL_MS: u64 = 16;
 ///           installs the explicit Slint platform backend.
 /// Why:      The Wayland app id must be stamped before the window is created.
 fn install_backend() -> Result<(), slint::PlatformError> {
+    // What:     `if std::env::var_os("SLINT_MCP_PORT").is_some() { return Ok(()); }`
+    //           bail out WITHOUT installing an explicit platform.
+    // Why:      Slint 1.17's embedded MCP server (the `slint/mcp` feature activated by
+    //           SLINT_MCP_PORT, used by the `mcp` mise task for agent-driven UI
+    //           testing) only starts when Slint creates the backend itself through its
+    //           selector. Calling `set_platform` here would bypass that and leave the
+    //           server unbound (and ignore SLINT_BACKEND=headless). Skipping lets Slint
+    //           pick the backend, honoring SLINT_BACKEND; only the app-id hook is
+    //           dropped, and only for that test-only run. Production runs (port unset)
+    //           are unaffected.
+    if std::env::var_os("SLINT_MCP_PORT").is_some() {
+        return Ok(());
+    }
     // What:     `let mut builder = Backend::builder().with_window_attributes_hook(...)`
     //           creates a mutable backend builder with the app-id hook installed.
     // Why:      The hook runs at native window creation time.

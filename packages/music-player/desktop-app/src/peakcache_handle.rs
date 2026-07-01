@@ -6,14 +6,23 @@
 //! `oneshot` reply (a single indexed lookup, at human-paced track-load frequency);
 //! writes are non-blocking sends. No `Mutex`: the actor owns the only mutable state.
 
-/// What:     `use std::collections::HashSet;`. A set of owned `String` keys.
-/// Why:      `known_fingerprints` returns the actor's key snapshot.
+/// What:     `use std::collections::HashSet;`. A set of `u64` fingerprints.
+/// Why:      `known_fingerprints` returns the actor's exact-decision fingerprint snapshot.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type HashSet = Set<string>;
+/// type HashSet = Set<bigint>;
 /// ```
 use std::collections::HashSet;
+
+/// What:     `use truepeak_core::Decision;`. The gain decision the cache stores and returns.
+/// Why:      `get` returns an `Option<Decision>` and `upsert` takes one.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { Decision } from "truepeak-core";
+/// ```
+use truepeak_core::Decision;
 
 /// What:     `#[cfg(test)] use std::path::PathBuf;`. Owned filesystem path buffer,
 ///           imported only in test builds.
@@ -178,16 +187,16 @@ impl CacheHandle {
         CacheHandle { read_tx, write_tx }
     }
 
-    /// What:     `pub(crate) fn get(&self, fingerprint: &str) -> Option<f32>`. Block
-    ///           briefly for one cached peak, or `None` on miss/closed actor.
-    /// Why:      `peak_swap` reads the current track's cached gain at load time.
+    /// What:     `pub(crate) fn get(&self, fingerprint: u64) -> Option<Decision>`. Block
+    ///           briefly for one cached decision, or `None` on miss/closed actor.
+    /// Why:      `peak_swap` reads the current track's cached gain decision at load time.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// get(fingerprint: string): number | null { ... }
+    /// get(fingerprint: bigint): Decision | null { ... }
     /// ```
-    pub(crate) fn get(&self, fingerprint: &str) -> Option<f32> {
-        // What:     Make the reply pair; send `Get` with an owned key.
+    pub(crate) fn get(&self, fingerprint: u64) -> Option<Decision> {
+        // What:     Make the reply pair; send `Get` with the key.
         // Why:      The actor answers on `reply_tx`.
         //
         // In TS you'd write (pseudocode):
@@ -205,7 +214,7 @@ impl CacheHandle {
         if self
             .read_tx
             .send(Read::Get {
-                fingerprint: fingerprint.to_string(),
+                fingerprint,
                 reply: reply_tx,
             })
             .is_err()
@@ -222,35 +231,36 @@ impl CacheHandle {
         reply_rx.blocking_recv().ok().flatten()
     }
 
-    /// What:     `pub(crate) fn upsert(&self, fingerprint: String, peak: f32)`.
-    ///           Fire-and-forget a measured peak to the actor.
-    /// Why:      Sweep workers and the current-track worker store results without
-    ///           blocking on persistence.
+    /// What:     `pub(crate) fn upsert(&self, fingerprint: u64, decision: Decision)`.
+    ///           Fire-and-forget a resolved decision to the actor.
+    /// Why:      Sweep workers and the current-track worker store results without blocking on
+    ///           persistence.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// upsert(fingerprint: string, peak: number): void { ... }
+    /// upsert(fingerprint: bigint, decision: Decision): void { ... }
     /// ```
-    pub(crate) fn upsert(&self, fingerprint: String, peak: f32) {
+    pub(crate) fn upsert(&self, fingerprint: u64, decision: Decision) {
         // What:     Send the write; ignore a closed actor.
         // Why:      A dropped cache thread just means nothing is persisted.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // writeTx.send({ fingerprint, peak });
+        // writeTx.send({ fingerprint, decision });
         // ```
-        let _ = self.write_tx.send(Upsert { fingerprint, peak });
+        let _ = self.write_tx.send(Upsert { fingerprint, decision });
     }
 
-    /// What:     `pub(crate) fn known_fingerprints(&self) -> HashSet<String>`. Block
-    ///           briefly for a snapshot of every known fingerprint.
-    /// Why:      The sweep seeds its skip-check from one cheap snapshot per run.
+    /// What:     `pub(crate) fn known_fingerprints(&self) -> HashSet<u64>`. Block briefly for a
+    ///           snapshot of every fingerprint whose decision is already exact.
+    /// Why:      The sweep seeds its skip-check from one cheap snapshot per run and re-scans
+    ///           only tracks with no decision or a mere probe estimate.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// knownFingerprints(): Set<string> { ... }
+    /// knownFingerprints(): Set<bigint> { ... }
     /// ```
-    pub(crate) fn known_fingerprints(&self) -> HashSet<String> {
+    pub(crate) fn known_fingerprints(&self) -> HashSet<u64> {
         // What:     Make the reply pair; send `Known`.
         // Why:      The actor replies with a clone of its in-memory key set.
         //

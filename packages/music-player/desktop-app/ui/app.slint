@@ -278,7 +278,10 @@ export component AppWindow inherits Window {
                 text: root.position-text;
                 vertical-alignment: center;
             }
-            Slider {
+            // `seek-slider :=` gives this element a stable id so the embedded MCP
+            // server (`find_elements_by_id "AppWindow::seek-slider"`) and the
+            // ElementHandle regression test can target the seek bar specifically.
+            seek-slider := Slider {
                 horizontal-stretch: 1;
                 minimum: 0;
                 maximum: root.duration > 0 ? root.duration : 1.0;
@@ -298,7 +301,10 @@ export component AppWindow inherits Window {
                 text: "Volume";
                 vertical-alignment: center;
             }
-            Slider {
+            // `volume-slider :=` gives this element a stable id for the same reason as
+            // the seek slider: MCP `find_elements_by_id "AppWindow::volume-slider"`
+            // and the ElementHandle regression test target it directly.
+            volume-slider := Slider {
                 horizontal-stretch: 1;
                 minimum: 0;
                 maximum: 1.0;

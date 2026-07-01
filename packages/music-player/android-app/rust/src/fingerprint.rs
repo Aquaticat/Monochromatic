@@ -8,10 +8,11 @@
 //!
 //! Testing: this crate is Android-only (its `ndk`/`ndk-sys` dependency refuses to
 //! compile off-Android), so there is no host `cargo test` to exercise `compute`
-//! directly. The fingerprint contract (determinism, 16-char opacity,
+//! directly. The fingerprint contract (determinism, non-zero opacity,
 //! change-sensitivity to path/size/mtime) is verified ON DEVICE by
-//! `NativeBridgeTest.fingerprintIsDeterministicOpaqueAndChangeSensitiveOnDevice`,
-//! and the identical hashing algorithm is unit-tested host-side on the desktop twin.
+//! `NativeBridgeTest`, and the identical hashing algorithm is unit-tested host-side on
+//! the desktop twin. The value is now the raw `u64` (returned as a Kotlin `Long`), which
+//! the shared `DecisionCache` keys on directly, rather than the former hex string.
 
 /// What:     `use jni::JNIEnv;` imports the per-call interface pointer the JVM hands
 ///           every native method (the gateway used to read the Java string and build
@@ -37,18 +38,16 @@ use jni::JNIEnv;
 /// ```
 use jni::objects::{JClass, JString};
 
-/// What:     `use jni::sys::{jlong, jstring};`. `jlong` is the JNI 64-bit signed
-///           integer (maps to Kotlin `Long`; sibling `jint` is 32-bit). `jstring` is
-///           the RAW pointer type a native method returns to hand a string back to
-///           the JVM (sibling: the safe `JString` used for arguments).
-/// Why:      `size`/`mtime_nanos` arrive as `jlong`, and the function returns a
-///           `jstring`.
+/// What:     `use jni::sys::jlong;`. The JNI 64-bit signed integer (maps to Kotlin `Long`;
+///           sibling `jint` is 32-bit).
+/// Why:      `size`/`mtime_nanos` arrive as `jlong`, and the function now RETURNS a `jlong`
+///           (the raw `u64` fingerprint bit-cast), not a Java string.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type jlong = bigint; type jstring = HostStringHandle;
+/// type jlong = bigint;
 /// ```
-use jni::sys::{jlong, jstring};
+use jni::sys::jlong;
 
 /// What:     `use gxhash::gxhash64;` imports ONE free function from the external
 ///           `gxhash` crate: `gxhash64(input: &[u8], seed: i64) -> u64`, a fast
@@ -80,18 +79,19 @@ use gxhash::gxhash64;
 /// ```
 const FINGERPRINT_SEED: i64 = 0;
 
-/// What:     `fn compute(path: &str, size: u64, mtime_nanos: u128) -> String`. The
-///           pure fingerprint: borrow the path text (`&str`, a borrowed view; sibling
-///           owned `String`), the file size, and the modified-time in nanoseconds, and
-///           return the owned hex `String` cache key.
-/// Why:      Keeping the hashing here (separate from the JNI glue) mirrors the
-///           desktop's `fingerprint` and keeps the byte layout in one readable place.
+/// What:     `fn compute(path: &str, size: u64, mtime_nanos: u128) -> u64`. The pure
+///           fingerprint: borrow the path text (`&str`, a borrowed view; sibling owned
+///           `String`), the file size, and the modified-time in nanoseconds, and return the
+///           raw `u64` cache key (the shared `DecisionCache` keys on a `u64`, not a hex
+///           string).
+/// Why:      Keeping the hashing here (separate from the JNI glue) mirrors the desktop's
+///           `fingerprint` and keeps the byte layout in one readable place.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function compute(path: string, size: bigint, mtimeNanos: bigint): string { ... }
+/// function compute(path: string, size: bigint, mtimeNanos: bigint): bigint { ... }
 /// ```
-fn compute(path: &str, size: u64, mtime_nanos: u128) -> String {
+fn compute(path: &str, size: u64, mtime_nanos: u128) -> u64 {
     // What:     `let mut material: Vec<u8> = Vec::new();`. A growable byte buffer
     //           (`Vec<u8>`; sibling fixed `[u8; N]` or borrowed `&[u8]`). `mut`
     //           because we append to it.
@@ -134,20 +134,18 @@ fn compute(path: &str, size: u64, mtime_nanos: u128) -> String {
     // material.push(...u128le(mtimeNanos));
     // ```
     material.extend_from_slice(&mtime_nanos.to_le_bytes());
-    // What:     `format!("{:016x}", gxhash64(&material, FINGERPRINT_SEED))`.
-    //           `gxhash64(&material, FINGERPRINT_SEED)` hashes the borrowed buffer
-    //           (`&material`, read-only loan) with the fixed seed, returning a `u64`;
-    //           `format!("{:016x}", ...)` renders it as a zero-padded 16-digit
-    //           lowercase hex string. No trailing `;`, so this tail expression is the
-    //           return value.
-    // Why:      The opaque, fixed-width cache key; not reversible to the path in
-    //           practice, preserving the privacy guarantee.
+    // What:     `gxhash64(&material, FINGERPRINT_SEED)` hashes the borrowed buffer
+    //           (`&material`, read-only loan) with the fixed seed, returning the `u64` cache
+    //           key. No trailing `;`, so this tail expression is the return value.
+    // Why:      The opaque cache key; not reversible to the path in practice, preserving the
+    //           privacy guarantee. The shared cache keys on the `u64` directly, so no hex
+    //           rendering is needed.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // return gxhash64(material, FINGERPRINT_SEED).toString(16).padStart(16, "0");
+    // return gxhash64(material, FINGERPRINT_SEED);
     // ```
-    format!("{:016x}", gxhash64(&material, FINGERPRINT_SEED))
+    gxhash64(&material, FINGERPRINT_SEED)
 }
 
 // What:     `#[no_mangle]` keeps the symbol name unmangled so the JVM's
@@ -164,81 +162,66 @@ fn compute(path: &str, size: u64, mtime_nanos: u128) -> String {
 ///           + method (`nativeFingerprint`), underscore-joined. Params: `env` (the JNI
 ///           gateway), `_class` (the calling class, unused), `path: JString<'local>`
 ///           (the borrowed Java string), `size`/`mtime_nanos` (`jlong`, i.e. Kotlin
-///           `Long`). `-> jstring` returns a raw Java-string pointer.
+///           `Long`). `-> jlong` returns the raw `u64` fingerprint bit-cast to `i64`.
 /// Why:      Kotlin's `NativeBridge.nativeFingerprint(path, size, mtimeNanos)` calls
-///           this; it returns the hex cache key.
+///           this; it returns the cache key that `nativeResolveGain`/`nativeWarmTrack`
+///           take. Returning the `u64` as a `Long` avoids a hex-string round-trip.
 /// Gotcha:   `extern "system"` means a panic must NEVER cross this boundary; the body
-///           only does infallible work plus two `match`es that return a null `jstring`
-///           on the (practically unreachable) JNI string-conversion failure.
+///           only does infallible work plus one `match` that returns `0` on the
+///           (practically unreachable) JNI string-read failure. A `0` key is a benign
+///           collision risk only when the read fails, which never happens for a real
+///           Kotlin string.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// export function nativeFingerprint(env, _class, path: JString, size: bigint, mtimeNanos: bigint): jstring { ... }
+/// export function nativeFingerprint(env, _class, path: JString, size: bigint, mtimeNanos: bigint): jlong { ... }
 /// ```
 pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeFingerprint<'local>(
-    env: JNIEnv<'local>,
+    mut env: JNIEnv<'local>,
     _class: JClass<'local>,
     path: JString<'local>,
     size: jlong,
     mtime_nanos: jlong,
-) -> jstring {
-    // What:     `let mut env = env;`. Rebind (shadow) the parameter as a mutable local
-    //           because `get_string`/`new_string` take `&mut self`.
-    // Why:      The `jni` API mutates the env to read and create strings.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // // (no-op in TS; env is already reassignable)
-    // ```
-    let mut env = env;
-    // What:     `let path_str: String = match env.get_string(&path) { Ok(value) => value.into(), Err(_) => return std::ptr::null_mut() };`.
+) -> jlong {
+    // What:     `let path_str: String = match env.get_string(&path) { Ok(value) => value.into(), Err(_) => return 0 };`.
     //           `env.get_string(&path)` borrows the `JString` (`&path`) and returns a
     //           `Result`; `Ok(value) => value.into()` converts the JVM-string wrapper
-    //           into an owned `String`; `Err(_) => return std::ptr::null_mut()` bails
-    //           with a null `jstring`. `std::ptr::null_mut()` is the raw null pointer.
-    // Why:      Turn the opaque Java string into an owned Rust `String` to hash; a
-    //           valid Kotlin `String` never fails here, so the null path is unreachable
-    //           in practice but keeps the boundary panic-free.
+    //           into an owned `String`; `Err(_) => return 0` bails with the `0` sentinel.
+    // Why:      Turn the opaque Java string into an owned Rust `String` to hash; a valid
+    //           Kotlin `String` never fails here, so the sentinel path is unreachable in
+    //           practice but keeps the boundary panic-free.
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // let pathStr: string;
-    // try { pathStr = env.getString(path); } catch { return null; }
+    // try { pathStr = env.getString(path); } catch { return 0n; }
     // ```
     let path_str: String = match env.get_string(&path) {
         Ok(value) => value.into(),
-        Err(_) => return std::ptr::null_mut(),
+        Err(_) => return 0,
     };
-    // What:     `let hex = compute(&path_str, size as u64, mtime_nanos as u64 as u128);`.
+    // What:     `let fingerprint = compute(&path_str, size as u64, mtime_nanos as u64 as u128);`.
     //           `&path_str` lends the string read-only. `size as u64` reinterprets the
-    //           `jlong` (i64) as unsigned (sizes are never negative). `mtime_nanos as
-    //           u64 as u128` reinterprets the i64 as u64 then widens to u128, matching
-    //           desktop's 16-byte mtime field.
+    //           `jlong` (i64) as unsigned (sizes are never negative). `mtime_nanos as u64 as
+    //           u128` reinterprets the i64 as u64 then widens to u128, matching desktop's
+    //           16-byte mtime field.
     // Why:      Build the cache key from the three inputs in the desktop's exact layout.
     // Gotcha:   `as` casts here are bit-reinterpretations, not range checks; valid
-    //           sizes/timestamps are non-negative so the unsigned view is the intended
-    //           value.
+    //           sizes/timestamps are non-negative so the unsigned view is the intended value.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // const hex = compute(pathStr, BigInt.asUintN(64, size), BigInt.asUintN(64, mtimeNanos));
+    // const fingerprint = compute(pathStr, BigInt.asUintN(64, size), BigInt.asUintN(64, mtimeNanos));
     // ```
-    let hex = compute(&path_str, size as u64, mtime_nanos as u64 as u128);
-    // What:     `match env.new_string(hex) { Ok(java_string) => java_string.into_raw(), Err(_) => std::ptr::null_mut() }`.
-    //           `env.new_string(hex)` allocates a Java `String` from the owned Rust
-    //           string (consuming `hex`), returning a `Result`. `Ok(java_string) =>
-    //           java_string.into_raw()` converts the safe `JString` into the raw
-    //           `jstring` pointer the JVM expects (transferring ownership to the JVM);
-    //           `Err(_) => std::ptr::null_mut()` returns null on the (unreachable)
-    //           allocation failure. No `;`, so this is the tail/return value.
-    // Why:      Hand the hex cache key back to Kotlin as a Java string.
+    let fingerprint = compute(&path_str, size as u64, mtime_nanos as u64 as u128);
+    // What:     `fingerprint as jlong`. Bit-cast the `u64` to the `i64`/`jlong` the JVM
+    //           carries (bijective; the native cache reverses it). No `;`, so this is the
+    //           tail/return value.
+    // Why:      Hand the cache key back to Kotlin as a `Long`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // try { return env.newString(hex); } catch { return null; }
+    // return BigInt.asIntN(64, fingerprint);
     // ```
-    match env.new_string(hex) {
-        Ok(java_string) => java_string.into_raw(),
-        Err(_) => std::ptr::null_mut(),
-    }
+    fingerprint as jlong
 }

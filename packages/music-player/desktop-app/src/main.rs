@@ -38,6 +38,23 @@ mod ui_progress;
 /// ```
 mod ui_page;
 
+/// What:     `#[cfg(test)] #[path = "ui_binding_tests.rs"] mod ui_binding_tests;` loads
+///           the headless UI regression tests, compiled ONLY under `cargo test` /
+///           `cargo nextest run`. `#[path]` names the sibling file explicitly because
+///           the module name differs from the default `ui_binding_tests/mod.rs` lookup.
+/// Why:      They instantiate `AppWindow` (in scope here from `include_modules!`) and
+///           drive its Sliders via `i-slint-backend-testing`, so they belong beside
+///           `main.rs` in the binary crate, not in the reusable library crate.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // test-only import, tree-shaken from production builds
+/// import "./ui_binding_tests.test";
+/// ```
+#[cfg(test)]
+#[path = "ui_binding_tests.rs"]
+mod ui_binding_tests;
+
 /// What:     `use std::path::PathBuf;`. The OWNED filesystem path type: a heap-
 ///           allocated, growable path buffer. Sibling: `&Path`, a BORROWED view
 ///           that does not own its bytes (the `String` vs `&str` distinction, but
@@ -1114,12 +1131,24 @@ fn main() -> Result<(), slint::PlatformError> {
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // {
+    // if (process.env.SLINT_MCP_PORT === undefined) {
     //   const backend = winitBackend({ windowAttributesHook: setWindowAppId });
     //   slint.setPlatform(backend);
     // }
     // ```
-    {
+    //
+    // What:     Gate the whole explicit-backend block on `SLINT_MCP_PORT` being UNSET
+    //           (`std::env::var_os(...).is_none()`).
+    // Why:      Slint 1.17's embedded MCP server (the `slint/mcp` feature activated by
+    //           SLINT_MCP_PORT, used by the `mcp` mise task for agent-driven UI
+    //           testing) only starts when SLINT ITSELF creates the backend through its
+    //           selector (`with_global_context` -> `init_testing_backends` ->
+    //           `mcp_server::init`). Calling `set_platform` here would bypass that path,
+    //           so the server would never bind AND `SLINT_BACKEND=headless` would be
+    //           ignored (a real window would open). When the port is set we therefore
+    //           let Slint pick the backend, honoring SLINT_BACKEND; the Wayland app-id
+    //           hook is the only thing dropped, and only for that test-only run.
+    if std::env::var_os("SLINT_MCP_PORT").is_none() {
         // What:     `let mut builder = Backend::builder().with_window_attributes_hook(launcher::set_window_app_id);`.
         //           `Backend::builder()` starts a backend builder; `.with_window_attributes_hook(fn)`
         //           registers the app-id hook (passed by name). `mut` marks the

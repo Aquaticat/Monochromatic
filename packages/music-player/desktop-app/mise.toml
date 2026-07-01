@@ -74,7 +74,12 @@ const containerCargo = (cargoArgs) => {
   let imageExists = true
   try { execFileSync('podman', ['image', 'exists', 'localhost/monochromatic/music-player'], { stdio: 'ignore' }) } catch { imageExists = false }
   if (!imageExists) { execFileSync('podman', ['build', '-t', 'localhost/monochromatic/music-player', '-f', 'Containerfile', '.'], { stdio: 'inherit' }) }
-  execFileSync('podman', ['run', '--rm', '--security-opt', 'label=disable', '-v', `${process.cwd()}:/work`, '-v', 'music-player-cargo:/cargo', '-w', '/work', 'localhost/monochromatic/music-player', 'cargo', ...cargoArgs], { stdio: 'inherit' })
+  // Forward SLINT_EMIT_DEBUG_INFO into the container ONLY when the caller set it
+  // (the test + mcp tasks do). podman does not inherit host env, and the
+  // ElementHandle / MCP introspection APIs refuse to run without this debug info.
+  // Production build tasks never set it, so their container binaries stay lean.
+  const debugInfoEnv = process.env.SLINT_EMIT_DEBUG_INFO ? ['-e', 'SLINT_EMIT_DEBUG_INFO=1'] : []
+  execFileSync('podman', ['run', '--rm', '--security-opt', 'label=disable', ...debugInfoEnv, '-v', `${process.cwd()}:/work`, '-v', 'music-player-cargo:/cargo', '-w', '/work', 'localhost/monochromatic/music-player', 'cargo', ...cargoArgs], { stdio: 'inherit' })
 }
 const runCargo = (cargoArgs) => {
   if (process.platform !== 'linux') { execFileSync('cargo', cargoArgs, { stdio: 'inherit' }) }
@@ -142,10 +147,82 @@ description = "cargo nextest run (macOS/Windows native, else Linux host if dev l
 # The native (non-Linux) branch needs cargo-nextest on PATH (`cargo install
 # cargo-nextest`, or `brew install cargo-nextest` on macOS); the tests are pure
 # logic with no audio backend, so they run identically on macOS and Windows.
+# SLINT_EMIT_DEBUG_INFO=1 makes slint-build embed element ids + source locations in
+# the generated UI so src/ui_binding_tests.rs's ElementHandle locators work; the
+# testing crate refuses to run without it. It is set here (not in [env]) so the
+# size-optimized production build/run binaries stay free of the extra metadata.
 shell = "node -e"
 run = """
 {{vars.cargo_dispatch}}
+process.env.SLINT_EMIT_DEBUG_INFO = '1'
 runCargo(['nextest', 'run'])
+"""
+
+[tasks.mcp]
+description = "Build --features slint/mcp (debug) and run HEADLESS with the embedded Slint MCP server on SLINT_MCP_PORT (default 9315) so an agent can drive/inspect the UI. Pass file/folder paths after --."
+usage = '''
+arg "[args]" var=#true help="File or folder paths to enqueue (loaded PAUSED)"
+'''
+# The embedded MCP server (Slint 1.17 `slint/mcp` feature, activated by
+# SLINT_MCP_PORT) exposes get_element_tree / find_elements_by_id / take_screenshot
+# / click_element / set_element_value etc. over MCP Streamable HTTP on
+# 127.0.0.1:<port>/mcp. The repo-root .mcp.json points Claude at that URL, so a
+# session runs THIS task first, then drives the running app through the MCP tools.
+# - `mcp` is passed on the command line, NEVER added to Cargo.toml [features], so
+#   the size-optimized production binary never carries the introspection server.
+# - SLINT_EMIT_DEBUG_INFO=1 is required so element ids + source locations survive
+#   into the compiled UI for find_elements_by_id / the element tree.
+# - SLINT_BACKEND=headless renders real frames off-screen (software renderer, which
+#   this crate already enables) so take_screenshot works with no window on your
+#   desktop; override to empty (SLINT_BACKEND= ) to run on the live session, or run
+#   nested under niri for a GPU render off your main workspace.
+# The app loads PAUSED (no --start-playing), so nothing plays until an MCP client
+# clicks the transport; drive volume down first if a test must exercise playback.
+shell = "node -e"
+run = """
+{{vars.cargo_dispatch}}
+{{vars.parse_usage_args}}
+const { mkdirSync } = await import('node:fs')
+const { join } = await import('node:path')
+process.env.SLINT_EMIT_DEBUG_INFO = '1'
+process.env.SLINT_MCP_PORT = process.env.SLINT_MCP_PORT ?? '9315'
+process.env.SLINT_BACKEND = process.env.SLINT_BACKEND ?? 'headless'
+// Isolate this test instance's state under a gitignored throwaway (target/mcp-xdg)
+// so it never grabs the real ~/.config/musicplayer cache lock held by an installed
+// music-player, and never mutates the user's real session/cache (throwaway-fixture
+// rule). directories/ProjectDirs honors these XDG vars.
+const xdgRoot = join(process.cwd(), 'target', 'mcp-xdg')
+for (const sub of ['config', 'cache', 'data']) { mkdirSync(join(xdgRoot, sub), { recursive: true }) }
+process.env.XDG_CONFIG_HOME = join(xdgRoot, 'config')
+process.env.XDG_CACHE_HOME = join(xdgRoot, 'cache')
+process.env.XDG_DATA_HOME = join(xdgRoot, 'data')
+runCargo(['build', '--features', 'slint/mcp'])
+const extras = parseUsageArgs(process.env.usage_args ?? '')
+const bin = process.platform === 'win32' ? './target/debug/music-player.exe' : './target/debug/music-player'
+console.error(`music-player MCP server: http://127.0.0.1:${process.env.SLINT_MCP_PORT}/mcp (backend=${process.env.SLINT_BACKEND || 'default'})`)
+execFileSync(bin, extras, { stdio: 'inherit' })
+"""
+
+[tasks."lint:slint"]
+description = "Type-check ui/app.slint with slint-viewer --check (compiles the markup, opens no window, exits non-zero on error)"
+# slint-viewer is the same 1.17 compiler family as slint-build, and
+# SLINT_ENABLE_EXPERIMENTAL_FEATURES (from [env]) enables the FlexboxLayout builtin
+# the UI uses, so this catches .slint markup errors fast without a full Rust build.
+run = "slint-viewer --check ui/app.slint"
+
+[tasks.screenshot]
+description = "Render ui/app.slint to target/app.slint.png HEADLESS (slint-viewer --screenshot: default property values, no Rust backend, no window) for a quick static-layout snapshot"
+# --screenshot installs slint-viewer's own offscreen platform; SLINT_BACKEND=software
+# pins the software renderer for a deterministic frame. This renders the MARKUP with
+# default property values only (no engine/model data); drive the running app via the
+# `mcp` task's take_screenshot for real-data snapshots.
+shell = "node -e"
+run = """
+const { execFileSync } = await import('node:child_process')
+const { mkdirSync } = await import('node:fs')
+mkdirSync('target', { recursive: true })
+execFileSync('slint-viewer', ['--screenshot', 'target/app.slint.png', 'ui/app.slint'], { stdio: 'inherit', env: { ...process.env, SLINT_BACKEND: 'software' } })
+console.error('rendered ui/app.slint -> target/app.slint.png')
 """
 
 [tasks."build:container"]
@@ -166,9 +243,12 @@ containerCargo(['clippy', '--release', '--', '-D', 'warnings'])
 
 [tasks."test:container"]
 description = "cargo nextest run forced inside the container"
+# SLINT_EMIT_DEBUG_INFO=1 as in the host `test` task: the ElementHandle UI tests
+# need element ids in the generated UI. containerCargo forwards it via `-e`.
 shell = "node -e"
 run = """
 {{vars.cargo_dispatch}}
+process.env.SLINT_EMIT_DEBUG_INFO = '1'
 containerCargo(['nextest', 'run', '--release'])
 """
 
@@ -182,6 +262,9 @@ run = """
 execFileSync('mise', ['run', 'image'], { stdio: 'inherit' })
 containerCargo(['build', '--release'])
 containerCargo(['clippy', '--release', '--', '-D', 'warnings'])
+// Only the test step needs the introspection debug info; set it right before so
+// the asserted build + clippy steps above still exercise the lean production path.
+process.env.SLINT_EMIT_DEBUG_INFO = '1'
 containerCargo(['nextest', 'run', '--release'])
 """
 

@@ -3682,6 +3682,7 @@ dependencies = [
  "cpal",
  "directories",
  "gxhash",
+ "i-slint-backend-testing",
  "i-slint-backend-winit",
  "icu_provider",
  "libc",
@@ -3697,7 +3698,6 @@ dependencies = [
  "symphonia",
  "tokio",
  "truepeak-core",
- "turso",
  "windows",
  "winresource",
  "zbus",
@@ -6619,6 +6619,10 @@ dependencies = [
 [[package]]
 name = "truepeak-core"
 version = "0.1.0"
+dependencies = [
+ "tokio",
+ "turso",
+]
 
 [[package]]
 name = "ttf-parser"
