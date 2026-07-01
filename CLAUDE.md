@@ -1458,10 +1458,19 @@ URF:
  live login,
  temporary access,
  physical hardware) runs FIRST,
- before unrelated work:
+ before unrelated work AND before other parts of the same task:
  the resource can vanish (unplugged,
  timed out,
  revoked) while you work on something else.
+A long task list,
+ a multi-item plan,
+ or a scope expansion ("do all of X too") does NOT license deferring it:
+ finish the resource-gated verification end-to-end before starting the next unit of work,
+ even when that next unit is nominally in scope.
+The "these are all part of the same task" rationalization is the trap;
+ the resource's availability window,
+ not the task list order,
+ decides what runs next.
 Never report that check done or verified until you have actually exercised the resource.
 Cue:
  user says "X is connected" / "I started X" / "you have access to X" and the task includes verifying against X;
