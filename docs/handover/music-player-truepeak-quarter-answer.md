@@ -109,9 +109,34 @@ Bucket round results (committed 77fcc0ef0, branch):
 - Answer doc finalized (main, commit 81ab5f2eb): two-layer method (frontier
   zoom probe + bucket-first allocation with FLAC bones), full dial table,
   split bones verdict, every declined road with numbers, reproduction
-  commands. Session closed; possible follow-ups unchanged (production
-  resolver support for adaptive two-phase probing; exact-decoded-window
-  verification; regenerating side files if the library changes).
+  commands.
+
+## Phase two: redo the policy engine with the final policy, merge to main
+
+User asked (17:15) to rebuild truepeak-core around the decided policy and
+merge the branch to main. Main had diverged (25 commits): stage three landed
+cached_or_resolve + Turso DecisionCache behind the `service` feature
+(src/service.rs, src/cache.rs), resolve_full_scan, and desktop + Android are
+now on the shared decision service, calling
+resolve_decision(&default_policy(), &mut source) in
+desktop-app/src/truepeak.rs and android-app/rust/src/truepeak.rs, with
+cache identity from default_policy().cache_identity(decoder_stack_id()).
+
+- Merged main into truepeak-quarter-answer cleanly; bench --buckets still
+  reproduces 17 clamps / 0.367 / 0.50 on the merged branch.
+- Engine redesign plan: zoom lives INSIDE resolve_decision (TruePeakSource is
+  already seekable + pull-based, so adaptivity is engine-internal); Policy
+  grows per-bucket coverage/margin (lossless/store/youtube/bare + a
+  lossless-with-bones coverage), pass-1 coverage, bones top-slot count;
+  policy_id() must hash all new fields (auto re-keys caches; SCHEMA_VERSION
+  in policy.rs); resolve_decision gains provenance input (+ optional FLAC
+  bones hot-window starts); FLAC frame-walk ported to a core module so
+  platforms can compute bones from raw file bytes (reference implementation:
+  bench analysis/flac-bones.mjs, overlap-proportional slot spreading,
+  CRC-8-verified frame walk). Consumers pass provenance from their decoders
+  (lossless flag at minimum; store/purl default false degrades safely into
+  the bare bucket). Bench legacy modes (--proportional etc.) get local
+  constants for the old shipped policy so the ledger stays reproducible.
 
 ## Prior status: complete (first close)
 
