@@ -3696,6 +3696,7 @@ dependencies = [
  "slint-build",
  "symphonia",
  "tokio",
+ "truepeak-core",
  "turso",
  "windows",
  "winresource",
@@ -6614,6 +6615,10 @@ dependencies = [
  "num-integer",
  "strength_reduce",
 ]
+
+[[package]]
+name = "truepeak-core"
+version = "0.1.0"
 
 [[package]]
 name = "ttf-parser"

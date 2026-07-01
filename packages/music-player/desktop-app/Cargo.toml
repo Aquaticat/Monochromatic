@@ -105,6 +105,13 @@ symphonia = { version = "0.6", features = ["all"] }
 # queued writes). NOT `rt-multi-thread`: one actor thread is enough and the spike
 # confirmed a current-thread runtime drives Turso's local futures.
 tokio = { version = "1", features = ["rt", "sync", "macros"] }
+# Shared true-peak core (src/truepeak.rs): the Catmull-Rom meter and the
+# attenuate-only normalization gain now come from this in-repo crate instead of a
+# private copy, so desktop and Android can measure and normalize identically. A path
+# dependency (not a version) because it is an unpublished in-repo crate; it carries its
+# own empty [workspace] table, so this path dep does not pull it into a shared cargo
+# workspace. It has zero third-party dependencies, so it adds nothing to the build graph.
+truepeak-core = { path = "../truepeak-core" }
 # Persistent true-peak cache store (src/peakcache.rs), replacing the prior
 # hand-rolled peaks.json + Arc<Mutex<PeakCache>> + batch-flush. Turso is the
 # pure-Rust SQLite rewrite (no C SQLite, no cc toolchain), so it cross-compiles
