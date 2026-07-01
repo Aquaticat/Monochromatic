@@ -1,6 +1,7 @@
 //! Integration tests for the policy resolver, driven by a fake decoded source.
 
 use super::*;
+use crate::bucketpolicy::{BucketProbe, BucketTable};
 use crate::source::AudioSpec;
 use crate::{normalization_gain, probe_estimated_peak, true_peak_interleaved, window_frame_starts};
 
@@ -43,13 +44,24 @@ impl TruePeakSource for FakeSource {
     }
 }
 
-// A policy with small parameters so a tiny buffer exercises each branch.
+// A policy with small parameters so a tiny buffer exercises each branch: every bucket
+// shares the same coverage and margin, and the even pass spends the whole budget so the
+// probe visits the same evenly-placed bins the old tests reasoned about.
 fn test_policy(short_scan_max_secs: f64, coverage_fraction: f64, probe_window_secs: f64, probe_margin_db: f64) -> Policy {
+    let uniform = BucketProbe { coverage_fraction, probe_margin_db };
     Policy {
         short_scan_max_secs,
-        coverage_fraction,
         probe_window_secs,
-        probe_margin_db,
+        pass1_coverage_fraction: coverage_fraction,
+        bones_even_coverage_fraction: coverage_fraction,
+        bones_top_slots: 4,
+        buckets: BucketTable {
+            lossless: uniform,
+            lossless_bones: uniform,
+            store: uniform,
+            youtube: uniform,
+            bare: uniform,
+        },
         ceiling_dbtp: -1.0,
         max_too_loud_db: 0.5,
         max_too_quiet_db: -2.0,
@@ -159,4 +171,41 @@ fn full_scan_of_short_track_tags_short() {
     let decision = resolve_full_scan(&test_policy(100.0, 0.2, 0.3, 0.8), &mut source).unwrap();
     assert_eq!(decision.kind, DecisionKind::ShortFullScan);
     assert!(source.seeks.is_empty());
+}
+
+// Provenance picks the bucket: a lossless track probes at its bucket's smaller coverage,
+// so it measures fewer bins than the bare default for the same audio.
+#[test]
+fn provenance_picks_bucket_coverage() {
+    let mut policy = test_policy(0.5, 1.0, 0.5, 0.8);
+    policy.buckets.lossless = BucketProbe { coverage_fraction: 0.5, probe_margin_db: 0.8 };
+    let samples = vec![0.9_f32; 20]; // 4 bins of 5 frames at rate 10
+
+    let mut bare = FakeSource::new(samples.clone(), 1, 10, 2.0);
+    resolve_decision(&policy, &mut bare).unwrap();
+    assert_eq!(bare.seeks.len(), 4); // bare coverage 1.0 measures every bin
+
+    let mut lossless = FakeSource::new(samples, 1, 10, 2.0);
+    let provenance = TrackProvenance { lossless: true, ..TrackProvenance::unknown() };
+    resolve_decision_for(&policy, &mut lossless, provenance, None).unwrap();
+    assert_eq!(lossless.seeks.len(), 2); // lossless coverage 0.5 measures half
+}
+
+// Bones seeds send the lossless probe straight to the flagged bin.
+#[test]
+fn bones_seeds_guide_the_lossless_probe() {
+    let mut policy = test_policy(0.5, 1.0, 0.5, 0.8);
+    policy.buckets.lossless_bones = BucketProbe { coverage_fraction: 0.5, probe_margin_db: 0.8 };
+    policy.bones_even_coverage_fraction = 0.25;
+    let mut samples = vec![0.1_f32; 20];
+    samples[15..20].fill(1.4); // the loud bin is the last of the four
+
+    let mut source = FakeSource::new(samples, 1, 10, 2.0);
+    let provenance = TrackProvenance { lossless: true, ..TrackProvenance::unknown() };
+    let hot = [3usize];
+    let decision = resolve_decision_for(&policy, &mut source, provenance, Some(&hot)).unwrap();
+    // The seed measures the flagged bin (frame 15) within the two-bin budget.
+    assert!(source.seeks.contains(&15), "seeds must visit the flagged bin: {:?}", source.seeks);
+    assert!(source.seeks.len() <= 2);
+    assert!(decision.measured_peak >= 1.4);
 }

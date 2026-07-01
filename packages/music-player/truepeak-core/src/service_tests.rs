@@ -34,15 +34,11 @@ impl TruePeakSource for Fake {
 }
 
 fn test_policy() -> Policy {
-    Policy {
-        short_scan_max_secs: 100.0,
-        coverage_fraction: 0.2,
-        probe_window_secs: 0.3,
-        probe_margin_db: 0.8,
-        ceiling_dbtp: -1.0,
-        max_too_loud_db: 0.5,
-        max_too_quiet_db: -2.0,
-    }
+    // These tests only exercise short-track full scans, so the shipped default's bucket
+    // table serves unchanged; only the short cutoff is widened.
+    let mut policy = crate::policy::default_policy();
+    policy.short_scan_max_secs = 100.0;
+    policy
 }
 
 // The first resolve opens the source and stores; the second is a cache hit and never opens.

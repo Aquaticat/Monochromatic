@@ -9,6 +9,16 @@
 //! not needlessly churn unrelated rows. The `policy_id` is DERIVED from the policy
 //! parameters, so changing a constant cannot silently reuse a stale cache row.
 
+/// What:     `use crate::bucketpolicy::{BucketProbe, BucketTable};`. The per-provenance
+///           probe dial and the table of them.
+/// Why:      The policy carries the allocation layer, and its id must hash every dial.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { BucketProbe, BucketTable } from "./bucketpolicy";
+/// ```
+use crate::bucketpolicy::{BucketProbe, BucketTable};
+
 /// What:     `const FNV_OFFSET: u64 = 0xcbf2_9ce4_8422_2325;`. The 64-bit FNV-1a offset
 ///           basis (its standard starting value). `u64` (siblings `u32`/`u128`) is the
 ///           width of this hash variant. The `_` digit separators are ignored.
@@ -65,41 +75,102 @@ const METER_DESCRIPTION: &str =
 /// ```
 const SHORT_SCAN_MAX_SECS: f64 = 90.0;
 
-/// What:     `const COVERAGE_FRACTION: f64 = 0.2;`. The fraction of a long track the probe
-///           decodes, spread evenly, so coverage is uniform rather than a fixed prefix.
-///           `f64` (sibling `f32`) for precision. `0.2` (one fifth) is the largest fraction
-///           that keeps total decode under the quarter-library budget.
-/// Why:      Uniform proportional coverage bounds the worst gap-miss far better than a
-///           fixed-length probe, which under-covers long tracks.
+/// What:     `const PROBE_WINDOW_SECS: f64 = 0.1;`. The length of one probe bin, the
+///           zoom's measurement unit. `f64` (sibling `f32`) for precision.
+/// Why:      Tenth-second bins maximize distinct regions per decoded second and match
+///           the corpus evidence the policy was fitted on.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// const COVERAGE_FRACTION = 0.2;
+/// const PROBE_WINDOW_SECS = 0.1;
 /// ```
-const COVERAGE_FRACTION: f64 = 0.2;
+const PROBE_WINDOW_SECS: f64 = 0.1;
 
-/// What:     `const PROBE_WINDOW_SECS: f64 = 0.3;`. The length of each evenly-placed probe
-///           window. `f64` (sibling `f32`) for precision.
-/// Why:      Short windows spread the coverage across many distinct regions, shrinking the
-///           gaps that hide inter-window peaks.
+/// What:     `const PASS1_COVERAGE_FRACTION: f64 = 0.1;`. The even pass's share of a long
+///           track's bins before the climb spends the rest. `f64` (sibling `f32`).
+/// Why:      A tenth was the measured sweet spot: denser even passes starve the climb,
+///           sparser ones miss whole loud passages.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// const PROBE_WINDOW_SECS = 0.3;
+/// const PASS1_COVERAGE_FRACTION = 0.1;
 /// ```
-const PROBE_WINDOW_SECS: f64 = 0.3;
+const PASS1_COVERAGE_FRACTION: f64 = 0.1;
 
-/// What:     `const PROBE_MARGIN_DB: f64 = 0.8;`. The fixed margin added to a probe's
-///           sampled peak. `f64` (sibling `f32`) for precision.
-/// Why:      The decided margin: it keeps about ninety-nine percent of tracks within
-///           `-0.8 dB` too-quiet, letting the realtime clamp catch the rare too-loud
-///           transient that background warming later corrects to an exact cached gain.
+/// What:     `const BONES_EVEN_COVERAGE_FRACTION: f64 = 0.05;`. The even pass used when
+///           bones seeds already cover the hot slots. `f64` (sibling `f32`).
+/// Why:      Bones point the climb at the loud passages, so the safety even pass can be
+///           half as dense inside the lossless-bones bucket's smaller budget.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// const PROBE_MARGIN_DB = 0.8;
+/// const BONES_EVEN_COVERAGE_FRACTION = 0.05;
 /// ```
-const PROBE_MARGIN_DB: f64 = 0.8;
+const BONES_EVEN_COVERAGE_FRACTION: f64 = 0.05;
+
+/// What:     `const BONES_TOP_SLOTS: usize = 40;`. How many byte-rate hot slots seed the
+///           lossless probe. `usize` (sibling `u32`) to index slot vectors directly.
+/// Why:      Forty seeds with neighbors cost about one percent coverage and start the
+///           climb on the right hills; more seeds measured no better on the corpus.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const BONES_TOP_SLOTS = 40;
+/// ```
+const BONES_TOP_SLOTS: usize = 40;
+
+/// What:     `const LOSSLESS_PROBE: BucketProbe = ...;`. The lossless bucket without
+///           bones: a tenth coverage with a 0.45 dB margin.
+/// Why:      Lossless tails are thin; a tenth of the bins already reads them tightly.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const LOSSLESS_PROBE = { coverageFraction: 0.10, probeMarginDb: 0.45 };
+/// ```
+const LOSSLESS_PROBE: BucketProbe = BucketProbe { coverage_fraction: 0.10, probe_margin_db: 0.45 };
+
+/// What:     `const LOSSLESS_BONES_PROBE: BucketProbe = ...;`. The lossless bucket with
+///           frame-size bones seeds: seven hundredths coverage at the same margin.
+/// Why:      Bones locate the loud passages, so the same accuracy costs a third less.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const LOSSLESS_BONES_PROBE = { coverageFraction: 0.07, probeMarginDb: 0.45 };
+/// ```
+const LOSSLESS_BONES_PROBE: BucketProbe =
+    BucketProbe { coverage_fraction: 0.07, probe_margin_db: 0.45 };
+
+/// What:     `const STORE_PROBE: BucketProbe = ...;`. Store-tagged lossy tracks: high
+///           coverage with a 0.30 dB margin.
+/// Why:      Mastered releases probe cleanly, so the deep probe buys a small margin and
+///           the loudest playback of any bucket.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const STORE_PROBE = { coverageFraction: 0.32, probeMarginDb: 0.30 };
+/// ```
+const STORE_PROBE: BucketProbe = BucketProbe { coverage_fraction: 0.32, probe_margin_db: 0.30 };
+
+/// What:     `const YOUTUBE_PROBE: BucketProbe = ...;`. Youtube-provenance lossy tracks:
+///           light coverage with the standard 0.50 dB margin.
+/// Why:      Loudness-normalized sources hide few surprises; light coverage suffices.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const YOUTUBE_PROBE = { coverageFraction: 0.14, probeMarginDb: 0.50 };
+/// ```
+const YOUTUBE_PROBE: BucketProbe = BucketProbe { coverage_fraction: 0.14, probe_margin_db: 0.50 };
+
+/// What:     `const BARE_PROBE: BucketProbe = ...;`. Untagged lossy tracks: the deepest
+///           coverage with the 0.50 dB margin.
+/// Why:      Every measured clamp-tail track is untagged lossy; the coverage freed from
+///           the other buckets is spent exactly here.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const BARE_PROBE = { coverageFraction: 0.34, probeMarginDb: 0.50 };
+/// ```
+const BARE_PROBE: BucketProbe = BucketProbe { coverage_fraction: 0.34, probe_margin_db: 0.50 };
 
 /// What:     `const CEILING_DBTP: f64 = -1.0;`. The normalization ceiling in dBTP.
 ///           `-1.0` is inside the always-allowed `-2..=2` range. `f64` (sibling `f32`)
@@ -253,34 +324,51 @@ pub struct Policy {
     /// shortScanMaxSecs: number;
     /// ```
     pub short_scan_max_secs: f64,
-    /// What:     `pub coverage_fraction: f64`. Fraction of a long track the probe decodes,
-    ///           spread evenly. `f64` (sibling `f32`) for precision.
-    /// Why:      Uniform proportional coverage bounds the worst gap-miss; the per-track
-    ///           window count is this fraction times duration over `probe_window_secs`.
-    ///
-    /// In TS you'd write (pseudocode):
-    /// ```ts
-    /// coverageFraction: number;
-    /// ```
-    pub coverage_fraction: f64,
-    /// What:     `pub probe_window_secs: f64`. Length of each evenly-placed probe window.
-    ///           `f64` (sibling `f32`) for precision.
-    /// Why:      Short windows spread coverage across many regions, shrinking the gaps.
+    /// What:     `pub probe_window_secs: f64`. Length of one probe bin, the zoom's
+    ///           measurement unit. `f64` (sibling `f32`) for precision.
+    /// Why:      The bin grid every probe phase (bones, even pass, climb) measures on.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
     /// probeWindowSecs: number;
     /// ```
     pub probe_window_secs: f64,
-    /// What:     `pub probe_margin_db: f64`. Fixed margin added to a probe's sampled peak.
-    /// Why:      Sets the worst-case too-quiet error and the count of clamped cold-start
-    ///           tracks the realtime clamp must catch.
+    /// What:     `pub pass1_coverage_fraction: f64`. The even pass's share of a long
+    ///           track's bins before the climb spends the rest. `f64` (sibling `f32`).
+    /// Why:      Balances discovering distinct regions against climb depth.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// probeMarginDb: number;
+    /// pass1CoverageFraction: number;
     /// ```
-    pub probe_margin_db: f64,
+    pub pass1_coverage_fraction: f64,
+    /// What:     `pub bones_even_coverage_fraction: f64`. The even pass used when bones
+    ///           seeds already cover the hot slots. `f64` (sibling `f32`).
+    /// Why:      Bones-seeded probes need only a light safety net under the seeds.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// bonesEvenCoverageFraction: number;
+    /// ```
+    pub bones_even_coverage_fraction: f64,
+    /// What:     `pub bones_top_slots: usize`. How many byte-rate hot slots seed a
+    ///           lossless probe. `usize` (sibling `u32`) to index slot vectors.
+    /// Why:      The bones budget; hashed into `policy_id` like every dial.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// bonesTopSlots: number;
+    /// ```
+    pub bones_top_slots: usize,
+    /// What:     `pub buckets: BucketTable`. The per-provenance coverage/margin table.
+    /// Why:      The allocation layer: lossless coverage is nearly free to cut, and the
+    ///           untagged lossy bucket receives what the cut frees.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// buckets: BucketTable;
+    /// ```
+    pub buckets: BucketTable,
     /// What:     `pub ceiling_dbtp: f64`. The normalization ceiling in dBTP.
     /// Why:      Part of the gain math; a change must re-key the cache.
     ///
@@ -336,11 +424,22 @@ impl Policy {
         // ```ts
         // const words = [f64ToBits(shortScanMaxSecs), f64ToBits(coverageFraction), ...];
         // ```
-        let words: [u64; 7] = [
+        let words: [u64; 18] = [
             self.short_scan_max_secs.to_bits(),
-            self.coverage_fraction.to_bits(),
             self.probe_window_secs.to_bits(),
-            self.probe_margin_db.to_bits(),
+            self.pass1_coverage_fraction.to_bits(),
+            self.bones_even_coverage_fraction.to_bits(),
+            self.bones_top_slots as u64,
+            self.buckets.lossless.coverage_fraction.to_bits(),
+            self.buckets.lossless.probe_margin_db.to_bits(),
+            self.buckets.lossless_bones.coverage_fraction.to_bits(),
+            self.buckets.lossless_bones.probe_margin_db.to_bits(),
+            self.buckets.store.coverage_fraction.to_bits(),
+            self.buckets.store.probe_margin_db.to_bits(),
+            self.buckets.youtube.coverage_fraction.to_bits(),
+            self.buckets.youtube.probe_margin_db.to_bits(),
+            self.buckets.bare.coverage_fraction.to_bits(),
+            self.buckets.bare.probe_margin_db.to_bits(),
             self.ceiling_dbtp.to_bits(),
             self.max_too_loud_db.to_bits(),
             self.max_too_quiet_db.to_bits(),
@@ -450,9 +549,17 @@ pub fn default_policy() -> Policy {
     // ```
     Policy {
         short_scan_max_secs: SHORT_SCAN_MAX_SECS,
-        coverage_fraction: COVERAGE_FRACTION,
         probe_window_secs: PROBE_WINDOW_SECS,
-        probe_margin_db: PROBE_MARGIN_DB,
+        pass1_coverage_fraction: PASS1_COVERAGE_FRACTION,
+        bones_even_coverage_fraction: BONES_EVEN_COVERAGE_FRACTION,
+        bones_top_slots: BONES_TOP_SLOTS,
+        buckets: BucketTable {
+            lossless: LOSSLESS_PROBE,
+            lossless_bones: LOSSLESS_BONES_PROBE,
+            store: STORE_PROBE,
+            youtube: YOUTUBE_PROBE,
+            bare: BARE_PROBE,
+        },
         ceiling_dbtp: CEILING_DBTP,
         max_too_loud_db: MAX_TOO_LOUD_DB,
         max_too_quiet_db: MAX_TOO_QUIET_DB,
