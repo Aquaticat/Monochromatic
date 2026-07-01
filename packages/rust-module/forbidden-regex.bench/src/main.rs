@@ -45,8 +45,17 @@ const PARITY_SAMPLE: usize = 5_000;
 /// What: the whole benchmark, end to end. Why: a single command that proves the
 /// throughput claim or refutes it on the realistic ruleset.
 fn main() {
+    // Send the [phase]/[diag]/[oracle]/WARNING diagnostics to stderr via tracing (RUST_LOG,
+    // default info); the throughput report stays on stdout via println!.
+    tracing_subscriber::fmt()
+        .with_env_filter(
+            tracing_subscriber::EnvFilter::try_from_default_env()
+                .unwrap_or_else(|_| tracing_subscriber::EnvFilter::new("info")),
+        )
+        .with_writer(std::io::stderr)
+        .init();
     let pairs = load_rules();
-    eprintln!("[phase] loaded {} rules", pairs.len());
+    tracing::info!(rules = pairs.len(), "loaded rules");
 
     // Keep only rules `regex` accepts, so its RegexSet build cannot fail wholesale.
     let regex_filter = Instant::now();
@@ -54,10 +63,10 @@ fn main() {
         .iter()
         .filter(|(_, bare)| regex::bytes::Regex::new(bare).is_ok())
         .collect();
-    eprintln!(
-        "[phase] regex-filter kept {} rules in {:.2}s",
-        usable.len(),
-        regex_filter.elapsed().as_secs_f64()
+    tracing::info!(
+        kept = usable.len(),
+        secs = regex_filter.elapsed().as_secs_f64(),
+        "regex-filter kept rules"
     );
 
     // Build ours once, leniently: rules this dialect cannot express are dropped.
@@ -73,10 +82,10 @@ fn main() {
     );
     let fset =
         forbidden_regex::RegexSet::from_bytes(&serialized).expect("forbidden-regex reloads");
-    eprintln!(
-        "[diag] seedless rules: {} collapsed into {} union DFA(s)",
-        fset.seedless_count(),
-        fset.seedless_group_count()
+    tracing::debug!(
+        seedless = fset.seedless_count(),
+        groups = fset.seedless_group_count(),
+        "seedless rules collapsed into union DFAs"
     );
 
     // Diagnostic: probe the "all-rules combined automaton" idea -- can a single DFA over
@@ -85,15 +94,15 @@ fn main() {
     let ours_kept: Vec<&str> = kept.iter().map(|&i| ours_all[i]).collect();
     let combined_start = Instant::now();
     match forbidden_regex::try_combined_dfa(&ours_kept) {
-        Ok(states) => eprintln!(
-            "[diag] all-rules combined DFA: {} states in {:.2}s",
+        Ok(states) => tracing::debug!(
             states,
-            combined_start.elapsed().as_secs_f64()
+            secs = combined_start.elapsed().as_secs_f64(),
+            "all-rules combined DFA built"
         ),
-        Err(error) => eprintln!(
-            "[diag] all-rules combined DFA: NOT BUILDABLE ({}) after {:.2}s",
-            error,
-            combined_start.elapsed().as_secs_f64()
+        Err(error) => tracing::debug!(
+            cause = %error,
+            secs = combined_start.elapsed().as_secs_f64(),
+            "all-rules combined DFA not buildable"
         ),
     }
 
@@ -120,32 +129,32 @@ fn main() {
     let rhits = sample.iter().filter(|line| rset.is_match(line.as_slice())).count();
     println!("parity ({} lines): forbidden-regex={fhits}, regex={rhits}", sample.len());
     if fhits != rhits {
-        eprintln!("WARNING: engines disagree on the sample; comparison is not apples to apples");
+        tracing::warn!("engines disagree on the sample; comparison is not apples to apples");
     }
 
     // Oracle: the fold must not MISS any literal-free rule's match. The counting union
     // over the original seedless rules is the independent reference (proven equal to the
     // old DFA groups); every line it flags must still be flagged by the folded is_match.
-    eprintln!(
-        "[diag] fold: {} seedless DFA groups, {} line-start rules, oracle union {} positions",
-        fset.seedless_group_count(),
-        fset.line_start_count(),
-        fset.seedless_union_size()
+    tracing::debug!(
+        groups = fset.seedless_group_count(),
+        line_start = fset.line_start_count(),
+        oracle_positions = fset.seedless_union_size(),
+        "fold structure"
     );
     let missed = corpus
         .iter()
         .filter(|l| fset.csa_only_is_match(l) && !fset.is_match(l))
         .count();
     if missed == 0 {
-        eprintln!("[oracle] fold misses no literal-free match across all {lines} lines");
+        tracing::info!(lines, "fold misses no literal-free match");
     } else {
-        eprintln!("WARNING: fold MISSES {missed}/{lines} literal-free matches (false negatives)");
+        tracing::warn!(missed, lines, "fold misses literal-free matches (false negatives)");
     }
 
     let prefilter_hits = corpus.iter().filter(|l| fset.prefilter_only_is_match(l)).count();
-    eprintln!("[diag] prefilter flags {prefilter_hits}/{lines} lines (each triggers the per-rule fallback)");
+    tracing::debug!(prefilter_hits, lines, "prefilter flags lines (each triggers the per-rule fallback)");
     let seeded = fset.len() - fset.seedless_count();
-    eprintln!("[diag] anchored {}/{seeded} seeded rules (rest fall back to counting)", fset.anchored_count());
+    tracing::debug!(anchored = fset.anchored_count(), seeded, "anchored seeded rules (rest fall back to counting)");
 
     let avg_len = bytes as f64 / lines as f64;
     let threads = std::thread::available_parallelism().map_or(1, |n| n.get());
@@ -218,7 +227,9 @@ where
                 })
             })
             .collect();
-        workers.into_iter().map(|w| w.join().unwrap()).sum()
+        // expect, not unwrap: the repo's clippy.toml bans Result::unwrap; a worker join only
+        // fails if that benchmark thread panicked, which is a bug we want to surface.
+        workers.into_iter().map(|w| w.join().expect("benchmark worker thread panicked")).sum()
     });
     total as f64 / start.elapsed().as_secs_f64()
 }

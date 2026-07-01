@@ -30,6 +30,12 @@ regex = "1"
 # `.git/info/exclude`, skips `.git`/`.jj`).
 ignore = "0.4"
 
+# The logging facade and its subscriber. The bench's [phase]/[diag]/[oracle] progress and
+# the parity WARNINGs become tracing events on stderr (RUST_LOG, default info); the
+# throughput report itself stays on stdout via println!.
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
 # Build both engines under one standard release profile so neither is advantaged:
 # whole-graph LTO, one codegen unit, full optimization. Overflow checks stay off
 # here (the deployed scanner turns them on; this measures the algorithm).
