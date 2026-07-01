@@ -47,32 +47,43 @@ joining on the track path.
 ## Run
 
 ```sh
-# tracks.jsonl is produced by the corpus collector (see the plan); not committed.
+# The corpus is produced by the collector (truepeak-core-collect); it is not committed.
+# The classifier-era sweep (historical exploration):
 mise run //packages/music-player/truepeak-core.bench:run -- /path/to/tracks.jsonl
+# The decided policy on the fine corpus, with optional provenance metadata:
+mise run //packages/music-player/truepeak-core.bench:run -- /path/to/tracks-fine.jsonl /path/to/metadata.jsonl --proportional
 ```
 
 The target is computed from the corpus as `total decodable seconds / 4`,
  the corrected
 quarter-library benchmark target.
 
-## Findings so far
+## Findings
 
-The sweep confirms two results that update the plan:
+The full exploration and its evidence live in the plan's Stage-two section.
+ The decided policy
+is proportional coverage plus a fixed margin,
+ with no classifier:
 
-- More,
-   shorter windows at a fixed decode budget cover more distinct regions and shrink
-  the gaps that cause under-read,
-   so a higher window count reaches a lower probe margin
-  (and a better worst-case too-quiet error) than the prior fourteen-window policy at the
-  same budget.
-- Amplitude alone does not separate the violators:
-   they are hot masters whose loudest
-  sampled window overlaps the non-violators.
-   Provenance metadata does separate large safe
-  classes,
-   so the classifier must read audio metadata,
-   not just probe amplitudes (see the
-  plan's classifier-search section).
+- A fixed-length probe under-covers long tracks,
+ so coverage FRACTION,
+ not window granularity,
+  is the lever.
+ A handful of tracks hide a sub-tenth-second transient no sparse probe catches,
+  so guaranteeing exact fit costs about a decibel of margin on every track.
+- The under-read distribution is extremely skewed (median near `0.14 dB`),
+ so the shipped
+  policy probes a fifth of each long track and applies a fixed `0.8 dB` margin:
+ about
+  ninety-nine percent of tracks stay within `-0.8 dB`,
+ and the rest clamp on cold start until
+  warming corrects them.
+ `--proportional` reproduces these numbers on the fine corpus.
+- Provenance metadata (lossless or yt-dlp) never mislabels a hard track as safe,
+ so it lowers
+  the average error;
+ amplitude and probe-window statistics do not separate the hard tracks,
+  because their peaks live in unsampled gaps.
 
 ## Tasks
 
