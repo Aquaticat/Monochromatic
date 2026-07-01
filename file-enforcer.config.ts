@@ -1,6 +1,7 @@
 import {
   glob,
   lstat,
+  unlink,
 } from 'node:fs/promises';
 import { join, } from 'node:path';
 
@@ -305,6 +306,30 @@ function packageDirFromManifest(
 }
 
 /**
+ * Removes file path when present, ignoring absent-path races.
+ *
+ * @param filePath - generated file path that may need deletion.
+ *
+ * @example
+ * ```ts
+ * await unlinkIfExists({ filePath: './packages/example/name/LICENSES/GPL-3.0-or-later.txt' });
+ * ```
+ */
+async function unlinkIfExists(
+  { filePath, }: { readonly filePath: string; },
+): Promise<void> {
+  try {
+    await unlink(filePath,);
+  }
+  catch (error) {
+    if (errorHasCode({ error, code: ABSENT_PATH_ERROR_CODE, },))
+      return;
+
+    throw error;
+  }
+}
+
+/**
  * Adds one license expression to the per-package accumulator.
  *
  * @param packageLicenseExpressions - Accumulator keyed by package directory.
@@ -408,10 +433,23 @@ async function generatePackageLicenseTexts(): Promise<void> {
    */
   const packageLicenseTextIds = await collectPackageLicenseTextIds();
 
+  /**
+   * Every generated license text identifier this config owns.
+   */
+  const knownLicenseTextIds = Object.keys(PACKAGE_LICENSE_TEXT_SOURCES,) as readonly PackageLicenseTextId[];
+
   await Promise.all(Array.from(
     packageLicenseTextIds,
-    function toWrites([packageDir, textIds,]): readonly Promise<void>[] {
-      return Array.from(
+    async function syncPackageLicenseTexts([packageDir, textIds,]): Promise<void> {
+      await Promise.all(knownLicenseTextIds
+        .filter(function isStaleTextId(textId,): boolean {
+          return !textIds.has(textId,);
+        },)
+        .map(async function removeStaleLicenseText(textId,): Promise<void> {
+          await unlinkIfExists({ filePath: `${packageDir}/LICENSES/${textId}.txt`, },);
+        },),);
+
+      await Promise.all(Array.from(
         textIds,
         async function writeLicenseText(textId,): Promise<void> {
           await overwrite({
@@ -419,9 +457,9 @@ async function generatePackageLicenseTexts(): Promise<void> {
             content: await cat([PACKAGE_LICENSE_TEXT_SOURCES[textId],],),
           },);
         },
-      );
+      ),);
     },
-  ).flat(),);
+  ),);
 }
 
 /**
