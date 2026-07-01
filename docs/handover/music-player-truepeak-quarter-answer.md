@@ -86,3 +86,12 @@ clamp count) while decoding no more than a quarter of the library's seconds
 - Gotcha for the answer: better sampling with an unchanged margin makes average
   quiet WORSE (probe closer to truth means the fixed margin over-attenuates
   more); sampling gains must be taken by lowering the margin.
+- Album prior measured (analysis/album-prior.mjs, commit 9ee84f77b): 244 groups
+  with >= 3 loud long members cover 95.7% of loud long tracks; within-group
+  spread median 0.92 dB below group max; probe picks the true loudest member
+  66.8% of the time (mispicks mild, median 0.12 dB). But the cap policy costs
+  ~36k s (all remaining headroom) for avg quiet 0.528 -> 0.362 at best, never
+  improves worst quiet (0.8), and at allowance 0 nets +5 clamps. Zoom spends the
+  same headroom strictly better (avg 0.285, worst 0.40, clamps equal). Under
+  zoom's tight probes + small margin the cap almost never binds. Verdict:
+  measured and declined; document in the answer.
