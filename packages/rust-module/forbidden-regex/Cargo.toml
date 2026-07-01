@@ -36,6 +36,12 @@ serde = { version = "1", features = ["derive"] }
 # not need; the plain `bincode::serialize`/`deserialize` serde path is enough.
 bincode = "1"
 
+# The logging facade. forbidden-regex is a pure compute library, so it emits only at its
+# public `compile` boundary (debug) and on parse/build failures (warn); with no subscriber
+# installed the macros collapse to a cheap max-level check, so the scanning hot path (the
+# counting simulation, the DFA walks) pays nothing.
+tracing = "0.1"
+
 # `memchr` provides the SIMD substring search (`memmem::Finder`) behind the
 # per-pattern required-literal prefilter. Most scanned lines contain no secret, so
 # rejecting them on a cheap literal scan before the counting simulation is the

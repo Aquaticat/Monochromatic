@@ -229,10 +229,15 @@ impl Regex {
 /// }
 /// ```
 pub fn compile(pattern: &str) -> Result<Regex, CompileError> {
-    let node = parse(pattern)?;
-    Ok(Regex {
-        engine: build_engine(node)?,
-    })
+    // Log the compile at debug; the pattern is small and this is the public boundary.
+    tracing::debug!(pattern, "compile regex");
+    // Parse, then build; `inspect_err` records the typed CompileError cause at each stage
+    // before `?` propagates it (a rejected pattern is worth a warning).
+    let node = parse(pattern)
+        .inspect_err(|error| tracing::warn!(pattern, cause = %error, "regex parse failed"))?;
+    let engine =
+        build_engine(node).inspect_err(|error| tracing::warn!(pattern, cause = %error, "regex build failed"))?;
+    Ok(Regex { engine })
 }
 
 /// What:     `pub struct RegexSet { ... }` declares an exported Rust record type.
