@@ -172,3 +172,41 @@ Order of execution, most-verifiable first:
   `cached_or_resolve` on the current track and in the warming loop, and delete each app's old
   measurement policy (desktop full-scan, Android windowed) and the Kotlin peak-cache once the
   Android service handle is wired.
+- 2026-07-01, 17:35: Both platform integrations landed; the true-peak slice is done. First,
+  two small shared-crate additions the platforms needed: `resolve_full_scan` (an always-exact
+  resolver, the warming-upgrade primitive the probe policy lacked) and
+  `DecisionCache::exact_fingerprints` (the bulk skip-snapshot a warming sweep uses to re-scan
+  only tracks with no decision or a mere probe). 46 crate tests, clippy and lint green.
+  Desktop (commit `refactor(music-player): migrate desktop true-peak onto shared decision
+  service`): the peak-cache actor now owns a `DecisionCache` instead of a hand-rolled `peaks`
+  table (all SQL, schema, and exact-over-probe precedence live in the shared crate); the sync
+  `CacheHandle` carries `u64` fingerprints and `Decision`s; a `DesktopSource` adapts
+  `decode::Source` to the shared `TruePeakSource` (seconds seek to frame seek); `resolve_current`
+  (probe-or-full) drives the foreground current-track path and `resolve_full` (always exact)
+  drives the background warming sweep, which now upgrades probe estimates to exact over idle time.
+  The db is `decisions.db` (fresh schema, legacy `peaks.db` orphaned; no legacy rows imported).
+  78 desktop tests, clippy and `lint:rust` green on this host. Android (commits `refactor(...):
+  migrate Android native true-peak onto shared decision service` and `refactor(...): move Android
+  peak cache and gain math into native decision service`): the windowed policy (four windows, the
+  `1.26` safety factor) is gone; a new native `TruePeakService` handle (`rust/src/service.rs`)
+  owns a dedicated thread running a Tokio runtime plus `DecisionCache`, reached over mpsc/oneshot
+  channels so the Turso connection never crosses threads and the handle is `Send + Sync`, while
+  the blocking decode runs on the JNI thread. New JNI: `nativeTruePeakServiceCreate`/`Release`,
+  `nativeResolveGain` (foreground, cache-aware probe-or-full), `nativeWarmTrack` (background exact
+  upgrade, skip-if-exact); `nativeMeasureTruePeak` removed; `nativeFingerprint` now returns the
+  raw `u64` as a `Long`. On the Kotlin side the JSON peak cache (`PeakCacheStore`, `core/PeakCache`)
+  and the gain math are gone: a `TruePeakGain` singleton owns the one process-wide service handle
+  (one Turso connection at `filesDir/decisions.db`, shared by playback and the sweep);
+  `RustEngine.resolveNormalizationGain` calls `nativeResolveGain`; the sweep calls `nativeWarmTrack`.
+  The native `.so` cross-compiles for `arm64-v8a` and `x86_64` with Turso + Tokio linked;
+  `lint:rust` and the KDoc detekt run are green; the debug and androidTest APKs assemble. On-device
+  on the connected Pixel 6: `NativeBridgeTest` OK (9 tests, including a new
+  `truePeakServiceOpensAndResolvesOnDevice` that opens the Turso `decisions.db` in app storage,
+  resolves a real track's gain, and asserts the cache round-trips) and `PeakSweepWorkerTest` OK
+  (2 tests, the real warming sweep through `nativeWarmTrack`). Follow-ups (non-blocking): Kotlin
+  `normalizationGain` is now unused in production (kept only by `NormalizationTest`) and could be
+  removed with its test; `SweepOutcome.CACHED` is now vestigial (the native side owns the skip);
+  the desktop `ReturnCount` detekt rule was disabled repo-wide by maintainer decision; the shared
+  `resolve_full` upgrade covers every long track, which goes beyond the audit's "idle hours
+  full-scan the forty-three clipped songs" (a realtime-clamp feedback loop that only re-measures
+  clipped tracks remains a possible refinement).
