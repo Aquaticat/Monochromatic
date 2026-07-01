@@ -3,188 +3,173 @@
 This answers `docs/audit/music-player-truepeak-quarter-measure.md`: a true-peak probe policy
 that beats the shipped proportional policy on all three of the letter's measures at once,
 under the same law (decode at most a quarter of the library's seconds), reproduced from the
-same corpus by a committed bench mode. Every road the letter asked about was tested; the
-refusals are reported with numbers.
+same corpus by committed bench modes. Every road the letter asked about was tested, plus the
+rounds of levers raised afterwards; refusals are reported with numbers.
 
-## The method: frontier zoom
+## The method, in two layers
 
-Keep the ninety-second rule: short tracks are decoded whole and known exactly.
+Layer one, the probe: **frontier zoom**. Keep the ninety-second rule (short tracks decoded
+whole, known exactly). For each longer track, spend its budget in two motions: an even pass
+of single 0.1 s windows, then the climb: repeatedly decode the 0.1 s windows on either side
+of the loudest window heard so far, until the track's share is spent. Half of all loud long
+tracks end within 0.01 dB of their true crest.
 
-For each longer track, spend its share of the budget in two motions:
+Layer two, the allocation: **bucket-first coverage and margin**. Buckets come from embedded
+tags only (codec, store identifiers, iTunNORM, youtube provenance; never path text, per the
+plan's classifier rules). Their measured tails diverge so hard that uniform coverage is
+wasteful:
 
-1.  An even pass: single 0.1 s windows spread evenly across the track, one tenth of its
-    length in total.
-2.  The climb: repeatedly take the loudest window decoded so far and decode the 0.1 s
-    windows on either side of it; newly decoded windows join the candidate heap. Repeat,
-    always expanding beside the loudest decoded window, until the track's budget is spent.
+- flac (lossless, 311k long-track seconds): coverage 7%, margin 0.45 dB, probe seeded by
+  frame-size bones (below).
+- store-tagged lossy (ISRC/UPC/iTunNORM, 22k seconds): coverage 32%, margin 0.30 dB.
+- youtube-provenance lossy (37k seconds): coverage 14%, margin 0.50 dB.
+- bare untagged lossy (534k seconds, the risk bucket): coverage 34%, margin 0.50 dB.
 
-Spend the whole allowance: the shipped policy decodes 193094 s and leaves a seventh of the
-lawful 229215 s unused; frontier zoom decodes 228970 s (24.97%), raising each long track's
-coverage from one fifth to just under a quarter. The fixed margin stays as the final dial;
-readings below.
-
-## Why it works
-
-The even probe's under-read is not set by where the crest hides but by how many 0.1 s bins
-anywhere in the track come near the crest's level. Measured on every loud long track: the
-median track has about twenty bins within 0.5 dB of its crest scattered through its loud
-passages, so a one-fifth even probe almost surely strikes one (median miss 0.14 dB).
-
-The 43 clamp-tail tracks have exactly one or two such bins. That is the whole anatomy of the
-problem: they are needles. A needle's neighbors betray nothing; even the bins adjacent to
-the crest sit 1.6 to 2 dB below it, no louder than the track's ordinary chorus. This is why
-no probe-feature classifier can exist: the trace in the heard is not faint, it is absent
-(see `analysis/anatomy.mjs` on the branch).
-
-The opening is the rest of the tail. Most of the upper tail is near-misses: probes that
-landed on the shoulder of the loud passage without striking its top. Shoulders are slopes,
-and slopes can be climbed. The expansion walks up every heard hill and reads its top
-exactly; half of all loud long tracks end within 0.01 dB of perfect. Climbing cannot find
-needles and does not pretend to; instead it collapses the ordinary misses so far that a
-small margin covers as many tracks as the large one did.
+The freed lossless seconds are what buy the risk bucket its extra coverage. Everything is
+fitted to this corpus exactly, per the plan's agreed fit-the-current-corpus decision; the
+mechanism is content-generic, the numbers are not.
 
 ## Measured result
 
-Same corpus, same meter, same law. Under-read percentiles in dB, shipped policy then zoom:
+Same corpus, same meter, same law. The three measures, as policy generations:
 
-- median: 0.14 becomes 0.01
-- p90: 0.63 becomes 0.36
-- p99: 1.33 becomes 0.91
-- worst: 2.25 becomes 1.84
+- shipped even probe, margin 0.8: 43 clamps, average needless-quiet 0.528 dB, worst 0.80 dB
+  (decodes 193094 s of the 229215 s allowed).
+- uniform frontier zoom, margin 0.5: 26 clamps, 0.371 dB, 0.50 dB (228970 s).
+- bucket table, no bones: 19 clamps, 0.349 dB, 0.50 dB (227901 s).
+- bucket table with FLAC bones (the decided dial): **17 clamps, 0.367 dB, 0.50 dB**
+  (227748 s, 24.84% of the corpus).
 
-At margin 0.5 dB, all three ledger measures improve at once:
+Alternative dials, all in budget, all beating the shipped policy on every measure:
 
-- worst too-quiet: 0.50 dB (shipped: 0.80)
-- average needless-quiet across all 4114 tracks: 0.371 dB (shipped: 0.528)
-- cold-start clamps: 26 (shipped: 43)
+- clamp-min: 16 clamps at 0.383 dB average (flac margin up to 0.50).
+- average-min at worst 0.50: 22 clamps at 0.303 dB (flac at 8%, margin 0.30).
+- all margins at or under 0.40: 28 clamps, 0.293 dB average, worst quiet 0.40 dB
+  (versus the uniform zoom's 43 / 0.285 / 0.40 at that worst-quiet dial).
 
-## Margin dial readings
+Ranking among the dials: the decided 17-clamp table first (fewest clamps at an average
+still below the uniform zoom's, and every measure beats the ledger), then the all-0.40
+table (if the worst quiet is what the ear notices, 0.40 everywhere at 28 clamps is the
+better trade), then the 22-clamp average-min (buys 0.06 dB average for 5 clamps), last the
+16-clamp point (one clamp for 0.016 dB average is a poor exchange).
 
-- Margin 0.3: worst quiet 0.30, average 0.203, clamps 62.
-- Margin 0.4: worst quiet 0.40, average 0.285, clamps 43 (the shipped count, at roughly half
-  the quiet cost).
-- Margin 0.5: worst quiet 0.50, average 0.371, clamps 26 (beats all three measures at once).
-- Margin 0.8: worst quiet 0.80, average 0.640, clamps 7.
+## Why this works
 
-Ranking: 0.5 first (answers the letter in its own terms; the 26 clamps stay a cold-start,
-first-play-only artifact that background warming cures), then 0.4 (equal clamp count at half
-the audible cost, the better trade if average loudness matters most day to day), then 0.8
-(only if clamps weigh far beyond the letter's stated bounds), last 0.3 (62 cold clamps buy
-an average gain hardly distinguishable from 0.4).
+The even probe's under-read is set by how many 0.1 s bins anywhere in a track come near its
+crest. The median track has about twenty such bins scattered through its loud passages; a
+sparse probe strikes one almost surely, and the climb walks up the shoulder it lands on.
+The 43 clamp-tail tracks of the shipped policy have one or two such bins: needles. A
+needle's neighbors sit 1.6 to 2 dB below it, no louder than the track's ordinary chorus,
+which is why no probe-feature classifier can exist (`analysis/anatomy.mjs`).
 
-Provenance refinement: lossless tracks never clamp under zoom at margin 0.5, so a split
-margin (safe provenance 0.3, rest 0.5) lowers the average to 0.315 at the cost of one
-lossless track clamping (27 total). Ranks between 0.5 and 0.4 if the extra rule is
-acceptable.
+Buckets work for the same reason in reverse: lossless and store-mastered tracks have thin
+tails (flac p99 under-read 0.65 dB at 10% coverage), so their coverage is nearly free to
+cut, and the bare-lossy bucket's tail thins measurably with every extra point of coverage
+(clamps at margin 0.5: 200 at 10%, 23 at 24%, 14 at 32%).
 
-## Roads tested and declined, with numbers
+## The encoding bones: lies for lossy, truth for lossless
 
-### Encoding bones: broken open, and found to lie
+The letter's most tempting road splits cleanly in two.
 
-The letter's most tempting road. The container framing of every lossy loud long track
-(2441 files) was parsed without decoding any audio: Opus packet sizes via the TOC byte, m4a
-sample tables (stsz/stts), mp3 frame walks. Timelines align with the decoded bins to within
-0.15 s worst case.
+For perceptual codecs it is refuted. Packet-size profiles of all 2441 lossy loud long
+tracks (Opus TOC walk, m4a sample tables, mp3 frame walk; no decoding) place the crest's
+slot at the median at the 60th percentile of its own track's byte-rate, worse than chance.
+Codecs spend bits on spectral busyness, not peak height; every composed policy that
+diverted budget toward byte-heavy slots matched or lost to zoom alone
+(`analysis/correlate.mjs`).
 
-The byte-rate profile does not locate crests. The crest's slot ranks at the median at the
-60th percentile of its own track's byte-rate, worse than chance; padding the window makes it
-mediocre at best (36th percentile at ±1 slot). Codecs spend bits on spectral busyness
-(cymbals, reverb, dense mixes), not on instantaneous peak height; hot masters are near-flat
-in loudness so byte-rate follows texture; and a sub-0.1 s crest is not an expensive event to
-encode. Every composed policy that diverted budget toward byte-heavy slots matched or lost
-to zoom alone (see `analysis/correlate.mjs`, `analysis/bones-extract.mjs`).
+For FLAC it is confirmed. Lossless bits track residual entropy, which tracks signal level:
+a CRC-verified frame walk over 1272 loud long FLACs (about 60 s of wall clock for 50 GB,
+reading only headers) puts the crest's slot at the median at the 8.3rd byte-rank percentile
+(pad ±1). One parser subtlety matters: FLAC frames last about 0.095 s, so frame bytes must
+be spread overlap-proportionally into 0.1 s slots; binning by start time aliases into a
+sawtooth and halves the correlation (`analysis/flac-bones.mjs`). A bones-seeded probe at
+roughly 9% coverage nearly matches an even probe at 24% (p90 under-read 0.23 vs 0.20 dB),
+which is what lets the flac bucket run at 7% coverage in the decided table.
 
-### Album kinship: real, but a poor buyer of seconds
+## The roads measured and declined
 
-Measured via parent-directory grouping (`analysis/album-prior.mjs`): 95.7% of loud long
-tracks live in groups of three or more; the median member sits 0.92 dB below its group max;
-probing identifies the group's true loudest member 66.8% of the time, and mispicks miss by a
-median 0.12 dB. The kinship is real.
+### Album kinship
 
-But capping fellows by a fully-scanned album master spends essentially all spare budget
-(~36000 s) to bring the average quiet only to 0.362 at best, never improves the worst quiet,
-and with no allowance creates five net new clamps. The same seconds spent climbing buy an
-average of 0.285 and halve the worst quiet. With tight probes and a small margin the album
-cap almost never binds; it is a cure for loose probes, and zoom removes the disease.
+Real (95.7% of loud long tracks live in groups of three or more; the median member sits
+0.92 dB below its group max; probing picks the true loudest member 66.8% of the time) but a
+poor buyer of seconds: capping fellows by a fully-scanned album master spends all spare
+budget for average 0.362 dB at best, never touches the worst case, and at allowance zero
+creates five net new clamps. The same seconds spent on coverage do strictly better
+(`analysis/album-prior.mjs`).
 
-### No full hearings at all: measured, and a near-wash that tilts against
+### Duplicate-master pooling
 
-The natural next question: is hearing any song in full ever optimal, or should the
-ninety-second rule go and every track be probed? Measured: dropping the rule (cutoff 0 s)
-frees about three quarters of the 12153 short-track seconds and raises probed coverage from
-0.2398 to 0.2499. At margin 0.5 that buys exactly one clamp (25 instead of 26) and costs
-0.014 dB of average quiet (0.385 instead of 0.371), because roughly two hundred short tracks
-trade exact, zero-error gains for margin-bearing estimates. A 30 s cutoff lands in the same
-place (25 clamps, 0.384). Both variants still beat the shipped policy on all three measures,
-so this is a genuine dial rather than an error; the rule stays because the letter prices
-quiet error as the only true cost, and because exact short-track crests are cached once and
-never need the background warming pass that probed tracks still owe.
+Only 1.20% of the library's seconds are duplicated (53 groups, 107 tracks). The naive
+version is actively harmful: profile correlation is scale-invariant, so it pools different
+masters of the same song (+3 clamps, worst quiet doubles). The gain-verified version
+(close-bin fraction over 0.95; crest spread at most 0.16 dB) is safe and useless: it frees
+about 2000 s and removes zero clamps. If ever revisited, match on gain sensitivity, never
+correlation (`analysis/duplicates.mjs`).
 
-Across the 723 tracks that declare a peak, the true crest exceeds the declaration by a
-median 1.92 dB (worst 4.62). The letter's reading was right: the marks name the safe but
-cannot bound the loud.
+### Declared peaks
 
-### Per-track margins, reallocation, position priors: measured and exhausted
+All 723 ReplayGain carriers are opus, and the true crest exceeds the declaration by a
+4.6 dB-wide band (median 1.92), useless as a bound and always below what the zoom probe
+already found. iTunNORM peaks are tighter (median gap 0.42 dB) but number 55 with a 5.08 dB
+outlier. The marks name the safe; they cannot bound the loud.
 
-Three further non-opaque levers were measured (`analysis/levers.mjs`). A per-track margin
-formula from observable heard statistics has nothing to stand on: Spearman correlation of
-the zoom's residual under-read against heard spread (max minus p90 or p99 of heard bins),
-heard level, and log duration is -0.062, -0.146, 0.011, -0.031; the spread even points the
-wrong way, because flat heard profiles are hot masters hiding needles. Global budget
-reallocation with a provable-safety early stop (stop probing tracks whose heard max plus
-the corpus's worst-known needle prominence stays under the ceiling) harvests 22 of 3903
-long tracks, 613 s, +0.0007 coverage: measures unchanged. Position-weighting pass one away
-from track openings (crests skew late) is slightly worse than uniform, because the climb
-already recovers late structure.
+### Per-track margins, reallocation, position priors, placement variants
 
-## What this method does not do
+Measured dead (`analysis/levers.mjs`, `analysis/variants.mjs`): heard-statistic margin
+formulas (Spearman of residual under-read vs heard spread, level, duration: -0.06 to
+-0.15, and the spread points the wrong way, since flat heard profiles are hot masters
+hiding needles); provable-safety early stops (22 of 3903 long tracks qualify, 613 s);
+position-weighted pass one (crests skew late, but the climb already recovers late
+structure); golden-ratio jittered pass one (the grid does not alias); wider zoom expansion
+radii (worse than ±1); heard-clipping density (Spearman 0.037).
 
-The needles stay needles. No heard feature locates them, the bones do not betray them,
-their albums do not vouch for them. Zoom narrows the tail they live in (worst miss 2.25 to
-1.84 dB) and cheapens the insurance on everyone else, shrinking the guard's work from 43
-tracks to 26. Zero clamps ever would still cost a margin near 2 dB on every track; the
-letter already declined that price, and this answer declines it too.
+### No full hearings at all
 
-These are songs, not arbitrary audio, and the repetition of songs is exactly what the
-method already spends: choruses recur, so the ordinary track offers about twenty
-near-crest instants and the climb ends within 0.01 dB of perfect on half the library.
-The residual tail is the part of each song that breaks its own pattern. Measured on the
-26 tracks still clamped at margin 0.5: for 9 the crest is strictly one-off (zoom already
-reads within 0.1 dB of the loudest instant two or more seconds away from the crest, so no
-hearing-bounded method improves them without decoding the event itself); the other 17
-keep a louder echo somewhere that zoom missed by 0.2 to 0.8 dB, and a perfect
-echo-finder would dissolve about 14 clamps. But those echoes are needles too (the tail's
-median is one crest plus one echo within 1 dB, whole-track), so collecting them reliably
-is the same lottery one level down. That bounds what any structure-exploiting,
-non-opaque method can still win here: about half the residual clamps, nothing on the
-worst quiet, and nothing on the average that the margin dial does not already price.
+Dropping the ninety-second rule frees three quarters of 12153 short-track seconds and buys
+exactly one clamp at margin 0.5, while costing 0.014 dB of average quiet, because two
+hundred short tracks trade exactness for margin-bearing estimates. Both variants beat the
+shipped policy; the rule stays because quiet error is the letter's priced cost and exact
+short-track gains never need the background warming pass probed tracks still owe.
+
+## What no method here can do
+
+The needles stay needles. Of the tracks the decided table still clamps, the crests are
+events that break their own song's structure: measured on the uniform zoom's 26 residual
+clamps, 9 crests are strictly one-off (the probe already reads within 0.1 dB of the loudest
+instant two or more seconds away), and the other 17 keep an echo that is itself a needle
+(the tail's median is one crest plus one echo within 1 dB, whole-track). A perfect
+echo-finder would dissolve about 14 clamps and nothing else. No free channel locates
+needles: not heard neighbors, not heard distribution shape, not lossy byte profiles, not
+provenance, not albums, not declared tags. Exactness on every track under the quarter law
+is not a missing cleverness; it is absent information. The honest frontier is the
+miss-distribution, the margin dial, the realtime clamp on a cold first play, and background
+warming converging every track to exact.
 
 Practical notes:
 
-- The climb is adaptive: pass two depends on pass one, so the decoder seeks more than the
-  even probe does. The law counts decoded seconds and the method obeys it with room to
-  spare, but seeking costs wall-clock time; expansions cluster into contiguous runs beside
-  peaks, which an implementation can decode as runs.
-- With a smaller margin the rare clamped instant clips slightly harder: worst first-play
-  overshoot above the ceiling rises from 1.19 to 1.33 dB. Still a brief cold-start artifact
-  on one instant, corrected once warming scans the track exactly.
-- Numbers are fitted to this corpus exactly, per the agreed fit-the-current-corpus decision
-  in `docs/planning/music-player-shared-truepeak-core.md`. The mechanism (miss distribution
-  governed by near-crest bin multiplicity; hill-climbing recovers shoulder misses) is
-  content-generic; the margin remains the guard against drift.
+- The climb is adaptive (pass two depends on pass one), so the decoder seeks more than an
+  even probe; expansions cluster into contiguous runs an implementation can decode as runs.
+  The law counts decoded seconds; the machine additionally pays seek time.
+- The bucket table and the bones threshold are fitted to this corpus, per the plan's
+  fit-the-corpus decision. The margin remains the guard against drift, and the realtime
+  clamp remains the safety net (worst first-play overshoot 1.14 dB above the ceiling under
+  the decided table, brief and cold-start-only).
+- Bucket assignment reads embedded tags only; the tag sweep and FLAC profiles are
+  regenerable side files, not path heuristics.
 
 ## Reproduction
 
 Everything reproduces from the recorded corpus without re-decoding the library. On the
-branch `truepeak-quarter-answer`:
+branch `truepeak-quarter-answer`, in `packages/music-player/truepeak-core.bench`:
 
-- `truepeak-core.bench` run with `--zoom` (corpus and metadata arguments as for
-  `--proportional`) prints the zoom miss distribution and every dial reading quoted here;
-  commit `0bda0177f`.
-- `analysis/final.mjs`: the definitive offline comparison (the Rust mode matches it
-  exactly). `analysis/baseline.mjs`: ledger parity check. `analysis/anatomy.mjs`: needle
-  anatomy. `analysis/adaptive.mjs`: zoom variants. `analysis/correlate.mjs` plus
-  `analysis/bones-parsers.mjs`, `analysis/bones-extract.mjs`, `analysis/bones-validate.mjs`:
-  the encoding-bones road. `analysis/album-prior.mjs`: the album road.
-- The byte profiles (`out/byte-profiles.jsonl`) are regenerated by
-  `node analysis/bones-extract.mjs`; large outputs stay untracked.
+- Decided composite: regenerate side files with `node analysis/tags-sweep.mjs` and
+  `node analysis/flac-bones.mjs extract`, then run the bench with the corpus,
+  `out/tags-full.jsonl`, `out/flac-profiles.jsonl`, and `--buckets`
+  (17 clamps / 0.367 / 0.50; commit c60ee60f8).
+- Uniform zoom layer: `--zoom` with the corpus and metadata (commit 0bda0177f).
+- The searches and dead ends: `analysis/compose-final.mjs` (the table search),
+  `analysis/buckets.mjs`, `analysis/final.mjs`, `analysis/adaptive.mjs`,
+  `analysis/anatomy.mjs`, `analysis/correlate.mjs` with `analysis/bones-*.mjs`,
+  `analysis/flac-bones.mjs`, `analysis/album-prior.mjs`, `analysis/duplicates.mjs`,
+  `analysis/levers.mjs`, `analysis/variants.mjs`, `analysis/tags-sweep.mjs`.
