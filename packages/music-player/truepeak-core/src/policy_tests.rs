@@ -2,17 +2,17 @@
 
 use super::*;
 
-// The shipped default carries the provisional starting constants.
+// The shipped default carries the decided proportional-coverage constants.
 #[test]
-fn default_policy_has_starting_constants() {
+fn default_policy_has_decided_constants() {
     let policy = default_policy();
-    assert_eq!(policy.window_count, 14);
-    assert!((policy.window_seconds - 4.007147310962698).abs() < 1e-12);
-    assert!((policy.probe_margin_db - 0.683).abs() < 1e-12);
+    assert_eq!(policy.short_scan_max_secs, 90.0);
+    assert!((policy.coverage_fraction - 0.2).abs() < 1e-12);
+    assert!((policy.probe_window_secs - 0.3).abs() < 1e-12);
+    assert!((policy.probe_margin_db - 0.8).abs() < 1e-12);
     assert_eq!(policy.ceiling_dbtp, -1.0);
     assert_eq!(policy.max_too_loud_db, 0.5);
     assert_eq!(policy.max_too_quiet_db, -2.0);
-    assert_eq!(policy.classifier_id, 0);
 }
 
 // The policy id is stable for an unchanged policy.
@@ -27,13 +27,17 @@ fn policy_id_changes_with_every_parameter() {
     let base = default_policy();
     let base_id = base.policy_id();
 
-    let mut count = base;
-    count.window_count += 1;
-    assert_ne!(count.policy_id(), base_id);
+    let mut short_scan = base;
+    short_scan.short_scan_max_secs += 1.0;
+    assert_ne!(short_scan.policy_id(), base_id);
 
-    let mut seconds = base;
-    seconds.window_seconds += 0.0001;
-    assert_ne!(seconds.policy_id(), base_id);
+    let mut coverage = base;
+    coverage.coverage_fraction += 0.01;
+    assert_ne!(coverage.policy_id(), base_id);
+
+    let mut window = base;
+    window.probe_window_secs += 0.05;
+    assert_ne!(window.policy_id(), base_id);
 
     let mut margin = base;
     margin.probe_margin_db += 0.01;
@@ -50,10 +54,6 @@ fn policy_id_changes_with_every_parameter() {
     let mut quiet = base;
     quiet.max_too_quiet_db = -1.5;
     assert_ne!(quiet.policy_id(), base_id);
-
-    let mut classifier = base;
-    classifier.classifier_id = 42;
-    assert_ne!(classifier.policy_id(), base_id);
 }
 
 // The meter id is stable and non-trivial.

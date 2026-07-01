@@ -110,7 +110,6 @@ converter.
 A cached decision is reusable only when the full identity matches:
  `policy_id` (the
 constants,
- classifier,
  gain math,
  and cache interpretation),
  `meter_id` (the meter
@@ -127,10 +126,19 @@ layout).
  so changing a constant cannot silently
 reuse a stale cache row.
 
-The constants in `default_policy` are provisional starting values from the corrected
-target.
- Stage two replaces them with the values found by the corpus parameter search,
-which re-keys the cache automatically.
+`default_policy` holds the decided policy from the Stage-two corpus search:
+ a full scan
+for short tracks,
+ a proportional probe (a fifth of each longer track,
+ in short evenly
+placed windows),
+ and a fixed `0.8 dB` margin.
+ The margin is the decision point,
+ trading
+worst-case too-quiet against the count of cold-start tracks the realtime clamp catches;
+ see
+the plan's fine-bin findings.
+ Changing any constant re-keys the cache automatically.
 
 ## Tasks
 

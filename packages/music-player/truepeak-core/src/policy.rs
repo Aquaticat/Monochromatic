@@ -1,7 +1,7 @@
 //! The versioned policy and the identity tuple that keys cache rows.
 //!
 //! The app ships ONE active policy. A cached decision is reusable only when the full
-//! identity matches: the `policy_id` (constants, classifier, gain math, cache
+//! identity matches: the `policy_id` (constants, gain math, cache
 //! interpretation), the `meter_id` (Catmull-Rom behavior including the chunk-seam and
 //! end-of-track rules), the `decoder_stack_id` (the platform's Symphonia and libopus
 //! behavior, supplied by the platform), and the `schema_version` (row layout). Keeping
@@ -54,38 +54,52 @@ pub const SCHEMA_VERSION: u32 = 1;
 const METER_DESCRIPTION: &str =
     "catmull-rom q/h/tq; 4-sample window; per-channel cursor across chunk seams; interpolate only at 4 real samples; no synthetic end padding; v1";
 
-/// What:     `const STARTING_WINDOW_COUNT: usize = 14;`. The provisional window count
-///           from the corrected-target starting point. `usize` (sibling `u32`) because
-///           it counts windows and feeds `window_frame_starts`.
-/// Why:      A starting value until the Stage-two corpus search fixes the final count.
+/// What:     `const SHORT_SCAN_MAX_SECS: f64 = 90.0;`. Tracks at or below this length are
+///           scanned in full for an exact peak; longer tracks are probed. `f64` (sibling
+///           `f32`) to compare against the source duration.
+/// Why:      Short tracks are cheap to scan exactly, so they never carry probe error.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// const STARTING_WINDOW_COUNT = 14;
+/// const SHORT_SCAN_MAX_SECS = 90;
 /// ```
-const STARTING_WINDOW_COUNT: usize = 14;
+const SHORT_SCAN_MAX_SECS: f64 = 90.0;
 
-/// What:     `const STARTING_WINDOW_SECONDS: f64 = 4.007147310962698;`. The provisional
-///           per-window seconds from the corrected-target starting point. `f64`
-///           (sibling `f32`) for precision.
-/// Why:      A starting value until the Stage-two search retunes it against exceptions.
+/// What:     `const COVERAGE_FRACTION: f64 = 0.2;`. The fraction of a long track the probe
+///           decodes, spread evenly, so coverage is uniform rather than a fixed prefix.
+///           `f64` (sibling `f32`) for precision. `0.2` (one fifth) is the largest fraction
+///           that keeps total decode under the quarter-library budget.
+/// Why:      Uniform proportional coverage bounds the worst gap-miss far better than a
+///           fixed-length probe, which under-covers long tracks.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// const STARTING_WINDOW_SECONDS = 4.007147310962698;
+/// const COVERAGE_FRACTION = 0.2;
 /// ```
-const STARTING_WINDOW_SECONDS: f64 = 4.007147310962698;
+const COVERAGE_FRACTION: f64 = 0.2;
 
-/// What:     `const STARTING_PROBE_MARGIN_DB: f64 = 0.683;`. The provisional probe
-///           safety margin in dB, carried from the prior lower-target run. `f64`
-///           (sibling `f32`) for precision.
-/// Why:      A starting value until the Stage-two search fixes the final margin.
+/// What:     `const PROBE_WINDOW_SECS: f64 = 0.3;`. The length of each evenly-placed probe
+///           window. `f64` (sibling `f32`) for precision.
+/// Why:      Short windows spread the coverage across many distinct regions, shrinking the
+///           gaps that hide inter-window peaks.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// const STARTING_PROBE_MARGIN_DB = 0.683;
+/// const PROBE_WINDOW_SECS = 0.3;
 /// ```
-const STARTING_PROBE_MARGIN_DB: f64 = 0.683;
+const PROBE_WINDOW_SECS: f64 = 0.3;
+
+/// What:     `const PROBE_MARGIN_DB: f64 = 0.8;`. The fixed margin added to a probe's
+///           sampled peak. `f64` (sibling `f32`) for precision.
+/// Why:      The decided margin: it keeps about ninety-nine percent of tracks within
+///           `-0.8 dB` too-quiet, letting the realtime clamp catch the rare too-loud
+///           transient that background warming later corrects to an exact cached gain.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const PROBE_MARGIN_DB = 0.8;
+/// ```
+const PROBE_MARGIN_DB: f64 = 0.8;
 
 /// What:     `const CEILING_DBTP: f64 = -1.0;`. The normalization ceiling in dBTP.
 ///           `-1.0` is inside the always-allowed `-2..=2` range. `f64` (sibling `f32`)
@@ -119,18 +133,6 @@ const MAX_TOO_LOUD_DB: f64 = 1.0 / 2.0;
 /// const MAX_TOO_QUIET_DB = -2;
 /// ```
 const MAX_TOO_QUIET_DB: f64 = -2.0;
-
-/// What:     `const NO_CLASSIFIER: u64 = 0;`. The classifier-artifact id meaning "no
-///           classifier wired yet". `0` is inside the exempt range. `u64` to match the
-///           `classifier_id` field.
-/// Why:      Stage one ships the meter and gain math with no classifier; Stage three
-///           sets a real artifact hash, which re-keys the cache.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// const NO_CLASSIFIER = 0;
-/// ```
-const NO_CLASSIFIER: u64 = 0;
 
 /// What:     `fn mix(hash: u64, word: u64) -> u64`. Fold one 64-bit word into a running
 ///           FNV-1a hash, one little-endian byte at a time.
@@ -237,29 +239,42 @@ pub fn meter_id() -> u64 {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type Policy = { windowCount; windowSeconds; probeMarginDb; ceilingDbtp; maxTooLoudDb; maxTooQuietDb; classifierId };
+/// type Policy = { shortScanMaxSecs; coverageFraction; probeWindowSecs; probeMarginDb; ceilingDbtp; maxTooLoudDb; maxTooQuietDb };
 /// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Policy {
-    /// What:     `pub window_count: usize`. Number of probe windows on a long track.
-    /// Why:      Drives window placement and the short/long threshold.
+    /// What:     `pub short_scan_max_secs: f64`. Tracks at or below this length are scanned
+    ///           in full; longer tracks are probed. `f64` (sibling `f32`) for the duration
+    ///           compare.
+    /// Why:      Short tracks are cheap to scan exactly, so they carry no probe error.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// windowCount: number;
+    /// shortScanMaxSecs: number;
     /// ```
-    pub window_count: usize,
-    /// What:     `pub window_seconds: f64`. Seconds of audio per probe window. `f64`
-    ///           (sibling `f32`) for precision.
-    /// Why:      With `window_count`, sets the threshold and per-window frame count.
+    pub short_scan_max_secs: f64,
+    /// What:     `pub coverage_fraction: f64`. Fraction of a long track the probe decodes,
+    ///           spread evenly. `f64` (sibling `f32`) for precision.
+    /// Why:      Uniform proportional coverage bounds the worst gap-miss; the per-track
+    ///           window count is this fraction times duration over `probe_window_secs`.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// windowSeconds: number;
+    /// coverageFraction: number;
     /// ```
-    pub window_seconds: f64,
-    /// What:     `pub probe_margin_db: f64`. Safety margin added to a sampled peak.
-    /// Why:      Compensates for inter-window peaks a probe cannot see.
+    pub coverage_fraction: f64,
+    /// What:     `pub probe_window_secs: f64`. Length of each evenly-placed probe window.
+    ///           `f64` (sibling `f32`) for precision.
+    /// Why:      Short windows spread coverage across many regions, shrinking the gaps.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// probeWindowSecs: number;
+    /// ```
+    pub probe_window_secs: f64,
+    /// What:     `pub probe_margin_db: f64`. Fixed margin added to a probe's sampled peak.
+    /// Why:      Sets the worst-case too-quiet error and the count of clamped cold-start
+    ///           tracks the realtime clamp must catch.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -290,15 +305,6 @@ pub struct Policy {
     /// maxTooQuietDb: number;
     /// ```
     pub max_too_quiet_db: f64,
-    /// What:     `pub classifier_id: u64`. Hash of the wired classifier artifact, or
-    ///           `0` when none is wired yet. `u64` to match the hash width.
-    /// Why:      A classifier change must re-key the cache, so its id feeds `policy_id`.
-    ///
-    /// In TS you'd write (pseudocode):
-    /// ```ts
-    /// classifierId: bigint;
-    /// ```
-    pub classifier_id: u64,
 }
 
 /// What:     `impl Policy { ... }`. The policy's behavior: derive its `policy_id` and
@@ -323,22 +329,21 @@ impl Policy {
     pub fn policy_id(&self) -> u64 {
         // What:     `let words: [u64; 7] = [ ... ];`. A fixed array of the parameters
         //           as 64-bit words. `.to_bits()` reinterprets an `f64` as the `u64`
-        //           with the same bit pattern, so floats hash exactly; `as u64` widens
-        //           the `usize` count.
+        //           with the same bit pattern, so floats hash exactly.
         // Why:      A canonical, order-fixed encoding of all parameters to hash.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // const words = [BigInt(windowCount), f64ToBits(windowSeconds), ...];
+        // const words = [f64ToBits(shortScanMaxSecs), f64ToBits(coverageFraction), ...];
         // ```
         let words: [u64; 7] = [
-            self.window_count as u64,
-            self.window_seconds.to_bits(),
+            self.short_scan_max_secs.to_bits(),
+            self.coverage_fraction.to_bits(),
+            self.probe_window_secs.to_bits(),
             self.probe_margin_db.to_bits(),
             self.ceiling_dbtp.to_bits(),
             self.max_too_loud_db.to_bits(),
             self.max_too_quiet_db.to_bits(),
-            self.classifier_id,
         ];
         // What:     `hash_words(&words)`. `&words` lends the array as a slice. Tail.
         // Why:      Fold all parameters into one id.
@@ -392,7 +397,7 @@ impl Policy {
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct CacheIdentity {
     /// What:     `pub policy_id: u64`. Hash of the policy parameters.
-    /// Why:      Constants, classifier, gain math, and cache interpretation.
+    /// Why:      Constants, gain math, and cache interpretation.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -441,16 +446,16 @@ pub fn default_policy() -> Policy {
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // return { windowCount: STARTING_WINDOW_COUNT, ... };
+    // return { shortScanMaxSecs: SHORT_SCAN_MAX_SECS, ... };
     // ```
     Policy {
-        window_count: STARTING_WINDOW_COUNT,
-        window_seconds: STARTING_WINDOW_SECONDS,
-        probe_margin_db: STARTING_PROBE_MARGIN_DB,
+        short_scan_max_secs: SHORT_SCAN_MAX_SECS,
+        coverage_fraction: COVERAGE_FRACTION,
+        probe_window_secs: PROBE_WINDOW_SECS,
+        probe_margin_db: PROBE_MARGIN_DB,
         ceiling_dbtp: CEILING_DBTP,
         max_too_loud_db: MAX_TOO_LOUD_DB,
         max_too_quiet_db: MAX_TOO_QUIET_DB,
-        classifier_id: NO_CLASSIFIER,
     }
 }
 
