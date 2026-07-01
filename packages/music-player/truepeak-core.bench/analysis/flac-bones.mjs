@@ -9,7 +9,8 @@
 // 3. measures the decisive number: the crest bin's byte-rank percentile,
 // 4. if the rank is strong, simulates a bones-guided low-coverage probe.
 //
-// Usage: node analysis/flac-bones.mjs [extract|analyze|all]   (default: all)
+// Usage: node analysis/flac-bones.mjs [extract|analyze|simulate|all]  (default: all;
+// simulate forces the probe simulation even when the rank gate fails)
 import { once } from 'node:events';
 import { createReadStream, createWriteStream } from 'node:fs';
 import { readFile } from 'node:fs/promises';
@@ -56,10 +57,10 @@ function addBytes({ slots, slot, byteCount }) {
   slots[slot] = (slots[slot] ?? 0) + byteCount;
 }
 
-/** Replace sparse holes with zeros and extend to cover the full timeline duration. */
+/** Replace sparse holes with zeros, extend to the full duration, round to bytes. */
 function finalizeSlots({ slots, durationSecs }) {
   const length = Math.max(slots.length, Math.ceil(durationSecs / SLOT_SECS - 1e-9));
-  return Array.from({ length }, (_, index) => slots[index] ?? 0);
+  return Array.from({ length }, (_, index) => Math.round(slots[index] ?? 0));
 }
 
 /** Spread an interval's bytes across 0.1 s slots proportionally to time overlap. */
@@ -235,8 +236,7 @@ function walkFrames({ buf, firstFrameOffset, streamInfo, streamEnd }) {
   const rate = streamInfo.sampleRate;
   const startSampleOf = (header) =>
     header.blockingStrategy === 1 ? header.codedNumber : header.codedNumber * nominalBlockSize;
-  const slots = [];
-  let frameCount = 0;
+  const frames = [];
   let previous = { offset: firstFrameOffset, header: first };
   let searchFrom = firstFrameOffset + MIN_FRAME_BYTES;
   while (searchFrom < streamEnd) {
@@ -254,25 +254,50 @@ function walkFrames({ buf, firstFrameOffset, streamInfo, streamEnd }) {
       searchFrom = candidate + 1;
       continue;
     }
-    const startSample = startSampleOf(previous.header);
-    addBytes({
-      slots,
-      slot: Math.floor((startSample * 10) / rate),
+    frames.push({
+      startSample: startSampleOf(previous.header),
+      blockSize: previous.header.blockSize,
       byteCount: candidate - previous.offset,
     });
-    frameCount += 1;
     previous = { offset: candidate, header };
     searchFrom = candidate + MIN_FRAME_BYTES;
   }
   const lastStart = startSampleOf(previous.header);
-  addBytes({
-    slots,
-    slot: Math.floor((lastStart * 10) / rate),
+  frames.push({
+    startSample: lastStart,
+    blockSize: previous.header.blockSize,
     byteCount: streamEnd - previous.offset,
   });
-  frameCount += 1;
   const durationSecs = (lastStart + previous.header.blockSize) / rate;
-  return { slots, durationSecs, frameCount };
+  return { frames, durationSecs };
+}
+
+/**
+ * Bin walked frames into 0.1 s slots. FLAC frames last 0.093-0.096 s, nearly one
+ * whole slot, so binning a frame's bytes at its start time ("start") aliases:
+ * slots alternately hold one or two frame starts, a 2x sawtooth unrelated to the
+ * audio. Spreading each frame's bytes over the slots it overlaps ("spread")
+ * removes that artifact; "start" is kept for comparison with the lossy profiles.
+ */
+function binFrames({ frames, rate, binning }) {
+  const slots = [];
+  for (const frame of frames) {
+    if (binning === 'start') {
+      addBytes({
+        slots,
+        slot: Math.floor((frame.startSample * 10) / rate),
+        byteCount: frame.byteCount,
+      });
+    } else {
+      spreadBytes({
+        slots,
+        startSecs: frame.startSample / rate,
+        endSecs: (frame.startSample + frame.blockSize) / rate,
+        byteCount: frame.byteCount,
+      });
+    }
+  }
+  return slots;
 }
 
 /**
@@ -315,9 +340,10 @@ function seekGranularitySecs({ seekPoints, sampleRate }) {
 /**
  * Parse one FLAC file's framing into 0.1 s byte slots without decoding. Prefers
  * the SEEKTABLE when its points are finer than ~2 s (recording granularitySecs);
- * otherwise walks and CRC-confirms every frame header.
+ * otherwise walks and CRC-confirms every frame header. binning: 'spread'
+ * (default, overlap-proportional) or 'start' (start-time bin, see binFrames).
  */
-export function parseFlac(buf) {
+export function parseFlac(buf, { binning = 'spread' } = {}) {
   const { streamInfo, seekPoints, firstFrameOffset } = parseMetadata(buf);
   // A trailing ID3v1 tag (nonstandard but common) is not audio payload.
   const hasTrailingTag = buf.length >= 128
@@ -338,13 +364,14 @@ export function parseFlac(buf) {
       granularitySecs: granularity,
     };
   }
-  const { slots, durationSecs, frameCount } = walkFrames({
-    buf,
-    firstFrameOffset,
-    streamInfo,
-    streamEnd,
-  });
-  return { bytes: finalizeSlots({ slots, durationSecs }), durationSecs, method: 'frames', frameCount };
+  const { frames, durationSecs } = walkFrames({ buf, firstFrameOffset, streamInfo, streamEnd });
+  const slots = binFrames({ frames, rate: streamInfo.sampleRate, binning });
+  return {
+    bytes: finalizeSlots({ slots, durationSecs }),
+    durationSecs,
+    method: 'frames',
+    frameCount: frames.length,
+  };
 }
 //endregion
 
@@ -587,9 +614,17 @@ async function analyzeStage() {
   // 4. Bones-guided probe simulation, only when the rank signal is strong
   //    (crest slot in roughly the top 10% of byte-rate for most tracks).
   if (padOneMedian > 0.1) {
-    console.log(`rank too weak (pad +-1 median ${(padOneMedian * 100).toFixed(1)}% > 10%); skipping probe simulation`);
+    console.log(
+      `rank too weak (pad +-1 median ${(padOneMedian * 100).toFixed(1)}% > 10%);`
+      + ' skipping probe simulation (force with the simulate stage)',
+    );
     return;
   }
+  simulationReport({ profiled, profiles });
+}
+
+/** Bones-guided low-coverage probe vs the even 24% reference, across variants. */
+function simulationReport({ profiled, profiles }) {
   console.log('\nbones-guided probe vs even 24% (under-read dB across profiled tracks):');
   const evenRows = profiled.map((track) => ({
     ur: db(track.full) - db(sampledMaxEven(track, 0.24, 0.3)),
@@ -609,6 +644,15 @@ async function analyzeStage() {
     reportUnderReads({ label: `bones top=${topCount} +-1 + even 5%`, rows });
   }
 }
+
+/** Force the probe simulation regardless of the analyze stage's rank gate. */
+async function simulateStage() {
+  const targets = await loadTargets();
+  const profiles = await loadProfiles();
+  const profiled = targets.filter((track) => profiles.has(track.path));
+  console.log(`\ntargets: ${targets.length}, profiled: ${profiled.length} (forced simulation)`);
+  simulationReport({ profiled, profiles });
+}
 //endregion
 
 //region Stage dispatch
@@ -617,10 +661,11 @@ const isMain = process.argv[1] !== undefined
   && import.meta.url === pathToFileURL(process.argv[1]).href;
 if (isMain) {
   const stage = process.argv[2] ?? 'all';
-  if (stage !== 'extract' && stage !== 'analyze' && stage !== 'all') {
-    throw new Error(`unknown stage "${stage}" (use extract, analyze, or all)`);
+  if (stage !== 'extract' && stage !== 'analyze' && stage !== 'simulate' && stage !== 'all') {
+    throw new Error(`unknown stage "${stage}" (use extract, analyze, simulate, or all)`);
   }
   if (stage === 'extract' || stage === 'all') await extractStage();
   if (stage === 'analyze' || stage === 'all') await analyzeStage();
+  if (stage === 'simulate') await simulateStage();
 }
 //endregion
