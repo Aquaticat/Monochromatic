@@ -212,7 +212,11 @@ fn kind_from_int(value: i64) -> Result<DecisionKind, CacheError> {
         0 => Ok(DecisionKind::ShortFullScan),
         1 => Ok(DecisionKind::ProbeEstimate),
         2 => Ok(DecisionKind::FullScanExact),
-        other => Err(CacheError { message: format!("unknown decision kind {other}") }),
+        other => {
+            // An unknown kind is row corruption or a future schema; fail loudly.
+            tracing::error!(value = other, "unknown decision kind in cache row");
+            Err(CacheError { message: format!("unknown decision kind {other}") })
+        }
     }
 }
 
@@ -239,6 +243,7 @@ fn real_at(row: &turso::Row, index: usize) -> Result<f64, CacheError> {
         .as_real()
         .copied()
         .ok_or_else(|| CacheError { message: format!("column {index} is not a real") })
+        .inspect_err(|error| tracing::error!(index, cause = %error.message, "cache real column corrupt"))
 }
 
 /// What:     `pub struct DecisionCache { conn: Connection }`. An open connection to the
@@ -304,6 +309,8 @@ impl DecisionCache {
         // await conn.execute(CREATE_TABLE, []);
         // ```
         conn.execute(CREATE_TABLE, ()).await?;
+        // The cache is open and the table ensured; record the file it is backing.
+        tracing::debug!(path, "decision cache opened");
         // What:     `Ok(DecisionCache { conn })`. The ready handle. Tail -> return.
         // Why:      Hand the cache back.
         //
@@ -362,6 +369,8 @@ impl DecisionCache {
         // ```
         match rows.next().await? {
             Some(row) => {
+                // A stored row for this exact key: a cache hit.
+                tracing::debug!(fingerprint, "cache get hit");
                 // What:     `let kind = kind_from_int(row.get_value(0)?.as_integer()...);`.
                 //           Decode the kind column; `.as_integer()` yields `Option<&i64>`.
                 // Why:      The stored tag drives whether the row is exact or improvable.
@@ -373,7 +382,8 @@ impl DecisionCache {
                 let kind_value = *row
                     .get_value(0)?
                     .as_integer()
-                    .ok_or_else(|| CacheError { message: "column 0 is not an integer".to_string() })?;
+                    .ok_or_else(|| CacheError { message: "column 0 is not an integer".to_string() })
+                    .inspect_err(|error| tracing::error!(cause = %error.message, "cache kind column corrupt"))?;
                 // What:     `Ok(Some(Decision { ... }))`. Build the decision from the columns;
                 //           `real_at` reads each REAL, `as f32` narrows the gain and peak.
                 //           Tail of this arm.
@@ -390,7 +400,11 @@ impl DecisionCache {
                     duration_secs: real_at(&row, 3)?,
                 }))
             }
-            None => Ok(None),
+            None => {
+                // No row for this key: a cache miss.
+                tracing::debug!(fingerprint, "cache get miss");
+                Ok(None)
+            }
         }
     }
 
@@ -419,7 +433,8 @@ impl DecisionCache {
         // ```ts
         // await conn.execute(UPSERT_DECISION, [fingerprint, ...identity, kindToInt(decision.kind), decision.gain, decision.measuredPeak, decision.durationSecs]);
         // ```
-        self.conn
+        let affected = self
+            .conn
             .execute(
                 UPSERT_DECISION,
                 (
@@ -435,6 +450,8 @@ impl DecisionCache {
                 ),
             )
             .await?;
+        // The upsert ran; `affected == 0` means the precedence WHERE refused a probe downgrade.
+        tracing::debug!(fingerprint, affected, applied = affected > 0, "cache put");
         // What:     `Ok(())`. Nothing to return on success. Tail -> return.
         // Why:      The write succeeded.
         //
@@ -509,7 +526,8 @@ impl DecisionCache {
             let stored = *row
                 .get_value(0)?
                 .as_integer()
-                .ok_or_else(|| CacheError { message: "column 0 is not an integer".to_string() })?;
+                .ok_or_else(|| CacheError { message: "column 0 is not an integer".to_string() })
+                .inspect_err(|error| tracing::error!(cause = %error.message, "cache fingerprint column corrupt"))?;
             // What:     `set.insert(stored as u64);`. Reverse the write-side `u64 as i64`
             //           bit-cast; the round-trip is bijective.
             // Why:      Return the fingerprints in the same `u64` domain callers hash.

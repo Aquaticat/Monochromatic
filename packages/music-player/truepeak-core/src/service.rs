@@ -117,29 +117,38 @@ where
     // const hit = await cache.get(fingerprint, identity); if (hit) return hit;
     // ```
     if let Some(hit) = cache.get(fingerprint, identity).await? {
+        // Cache hit: return the stored decision without opening the source.
+        tracing::debug!(fingerprint, "cache hit");
         return Ok(hit);
     }
-    // What:     `let mut source = open().map_err(|error| CacheError { message:
-    //           error.to_string() })?;`. Open the source lazily; a `TruePeakError` from the
-    //           opener is folded into a `CacheError` so the return type stays single.
-    // Why:      We only decode on a miss.
+    // Cache miss: open, resolve, and store below.
+    tracing::debug!(fingerprint, "cache miss");
+    // What:     `let mut source = open().inspect_err(|error| warn!(...)).map_err(|error|
+    //           CacheError { message: error.to_string() })?;`. Open the source lazily;
+    //           `inspect_err` logs the typed `TruePeakError` before `map_err` folds it into a
+    //           `CacheError`, which flattens the variant to a string.
+    // Why:      We only decode on a miss, and the fold would otherwise discard the cause.
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // const source = open();
     // ```
-    let mut source = open().map_err(|error| CacheError { message: error.to_string() })?;
+    let mut source = open()
+        .inspect_err(|error| tracing::warn!(cause = %error, "open failed on cache miss"))
+        .map_err(|error| CacheError { message: error.to_string() })?;
     // What:     `let decision = resolve_decision_for(policy, source.as_mut(), provenance,
-    //           bones_hot_bins).map_err(...)?;`. Drive the source through the policy under
-    //           the track's bucket; `.as_mut()` lends the boxed source as
-    //           `&mut dyn TruePeakSource`. A resolve error is folded into a `CacheError`.
-    // Why:      Produce the fresh decision to store and return.
+    //           bones_hot_bins).inspect_err(|error| warn!(...)).map_err(...)?;`. Drive the
+    //           source through the policy under the track's bucket; `.as_mut()` lends the
+    //           boxed source as `&mut dyn TruePeakSource`. `inspect_err` logs the typed error
+    //           before `map_err` folds it into a `CacheError`.
+    // Why:      Produce the fresh decision to store and return, without discarding the cause.
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // const decision = resolveDecision(policy, source);
     // ```
     let decision = resolve_decision_for(policy, source.as_mut(), provenance, bones_hot_bins)
+        .inspect_err(|error| tracing::warn!(cause = %error, "resolve failed on cache miss"))
         .map_err(|error| CacheError { message: error.to_string() })?;
     // What:     `cache.put(fingerprint, identity, &decision).await?;`. Persist it; precedence
     //           in the cache keeps an exact row from being downgraded.
@@ -150,6 +159,8 @@ where
     // await cache.put(fingerprint, identity, decision);
     // ```
     cache.put(fingerprint, identity, &decision).await?;
+    // The fresh decision is stored; log what was resolved (its whole Debug form).
+    tracing::debug!(decision = ?decision, "resolved and stored");
     // What:     `Ok(decision)`. The fresh decision. Tail -> return.
     // Why:      Hand it to the caller that asked to resolve it.
     //

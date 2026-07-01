@@ -48,13 +48,21 @@ fn sniff_flac(bytes: &[u8]) -> bool {
 /// `resolve_decision_for` needs beyond the decoded source.
 pub fn probe_inputs_from_bytes(bytes: &[u8], policy: &Policy) -> (TrackProvenance, Option<Vec<usize>>) {
     if !sniff_flac(bytes) {
+        // Not FLAC: the uninformed provenance. Debug, not warn, since lossy files are normal.
+        tracing::debug!(bytes = bytes.len(), "not a flac container; using the bare bucket");
         return (TrackProvenance::unknown(), None);
     }
     let provenance = TrackProvenance { lossless: true, ..TrackProvenance::unknown() };
-    // A failed walk keeps the lossless bucket without bones (its plain, deeper dial).
-    let bones = flac_bones_profile(bytes)
-        .ok()
-        .map(|profile| bones_hot_bins(&profile, policy.bones_top_slots));
+    // A failed walk keeps the lossless bucket without bones (its plain, deeper dial); the
+    // cause is logged here rather than swallowed by the old `.ok()`.
+    let bones = match flac_bones_profile(bytes) {
+        Ok(profile) => Some(bones_hot_bins(&profile, policy.bones_top_slots)),
+        Err(error) => {
+            // A FLAC file we could not walk is worth a warning: a corrupt file or a walker gap.
+            tracing::warn!(cause = %error.message, "flac bones walk failed; using the plain lossless dial");
+            None
+        }
+    };
     (provenance, bones)
 }
 
@@ -65,10 +73,18 @@ pub fn probe_inputs_from_bytes(bytes: &[u8], policy: &Policy) -> (TrackProvenanc
 ///
 /// @example desktop: `let (provenance, bones) = probe_inputs_from_file(path, &policy);`
 pub fn probe_inputs_from_file(path: &Path, policy: &Policy) -> (TrackProvenance, Option<Vec<usize>>) {
-    // The degradation contract: any read failure lands in the bare bucket.
+    // The degradation contract: any read failure lands in the bare bucket, cause logged.
     match fs::read(path) {
         Ok(bytes) => probe_inputs_from_bytes(&bytes, policy),
-        Err(_) => (TrackProvenance::unknown(), None),
+        Err(error) => {
+            // Unreadable file: record why before degrading to the uninformed provenance.
+            tracing::warn!(
+                path = %path.display(),
+                cause = %error,
+                "could not read file for probe inputs; using the bare bucket"
+            );
+            (TrackProvenance::unknown(), None)
+        }
     }
 }
 

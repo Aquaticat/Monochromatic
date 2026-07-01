@@ -343,6 +343,19 @@ pub fn resolve_decision_for(
     provenance: TrackProvenance,
     bones_hot_bins: Option<&[usize]>,
 ) -> Result<Decision, TruePeakError> {
+    // What:     `let span = tracing::debug_span!("resolve_decision_for"); let _guard =
+    //           span.enter();`. Open a function-scoped span; `enter()` returns a guard that
+    //           tags every event below with this function name and drops on every return
+    //           path, closing the span. The module path is the outer tag.
+    // Why:      Mirrors the TS tagged logger's per-function tag without a proc-macro; the
+    //           span also correlates one track's events when warming resolves interleave.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const rl = tagged({ tag: "resolveDecisionFor", l });
+    // ```
+    let span = tracing::debug_span!("resolve_decision_for");
+    let _guard = span.enter();
     // What:     `let spec = source.spec();` then `let channels = spec.channels as usize;`.
     //           Rate, channels, and duration of the stream.
     // Why:      They pick the branch and size the probe bins.
@@ -362,6 +375,8 @@ pub fn resolve_decision_for(
     // if (channels === 0) return silenceDecision(spec);
     // ```
     if channels == 0 {
+        // Degenerate stream: record the silence branch before returning.
+        tracing::debug!("zero channels; silence decision");
         return Ok(silence_decision(spec));
     }
     // What:     `if !spec.duration_known() || spec.duration_secs <= policy.short_scan_max_secs`.
@@ -374,6 +389,13 @@ pub fn resolve_decision_for(
     // if (!durationKnown(spec) || spec.durationSecs <= policy.shortScanMaxSecs) return exactDecision(policy, source, spec, channels);
     // ```
     if !spec.duration_known() || spec.duration_secs <= policy.short_scan_max_secs {
+        // The full-scan branch: log the deciding length values.
+        tracing::debug!(
+            duration_known = spec.duration_known(),
+            duration_secs = spec.duration_secs,
+            short_scan_max_secs = policy.short_scan_max_secs,
+            "full-scan branch"
+        );
         return exact_decision(policy, source, spec, channels);
     }
     // What:     `let bucket = provenance.select(&policy.buckets, bones_hot_bins.is_some());`.
@@ -406,6 +428,14 @@ pub fn resolve_decision_for(
         },
         bones_hot_bins,
     };
+    // The probe branch: log the bucket coverage and whether bones seeded the plan.
+    tracing::debug!(
+        lossless = provenance.lossless,
+        bones = bones_hot_bins.is_some(),
+        coverage_fraction = plan.coverage_fraction,
+        margin_db = bucket.probe_margin_db,
+        "probe branch"
+    );
     // What:     `let sampled_max = zoom_probe(source, channels, &plan)?;`. The frontier
     //           zoom's loudest measured window; `?` propagates decode and seek errors.
     // Why:      The climb collapses the shoulder misses an even probe leaves behind.
@@ -426,6 +456,8 @@ pub fn resolve_decision_for(
     // const estimated = probeEstimatedPeak(sampledMax, bucket.probeMarginDb);
     // ```
     let estimated = probe_estimated_peak(f64::from(sampled_max), bucket.probe_margin_db) as f32;
+    // The probe outcome: the loudest sampled window, the margin-inflated estimate.
+    tracing::debug!(sampled_max, estimated, "probe estimate");
     // What:     `Ok(Decision { ... })`. Build the probe decision; `normalization_gain` on
     //           the inflated peak. Tail -> return.
     // Why:      Hand back the probe estimate and its sampled evidence.

@@ -40,6 +40,15 @@ path = "src/lib.rs"
 service = ["dep:turso", "dep:tokio"]
 
 [dependencies]
+# The logging facade. Non-optional (unlike the cache crates below) so the pure meter,
+# resolver, and bones surface log in every build, including the meter-only bench: repo
+# policy is that everything is logged and logging is permanent infrastructure. The crate
+# is a tiny pure-Rust facade already resolved transitively in every consumer's lock, and
+# its macros compile to a cheap max-level check when no subscriber is installed, so it
+# adds no runtime cost to the meter-only apps. Binaries install the sink; this library
+# only emits, so the module path is the tag (mirroring the TS tagged loggers).
+tracing = "0.1"
+
 # Drives the Turso async API for the decision cache (behind the `service` feature). The
 # feature set mirrors the desktop cache: `rt` for a runtime, `sync` for the channels a
 # handle blocks on, `macros` for `select!`. Optional so the default build stays dep-free.

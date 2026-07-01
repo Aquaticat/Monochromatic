@@ -77,9 +77,13 @@ fn measure_bin(
     frontier: &mut Frontier,
     index: usize,
 ) -> Result<(), TruePeakError> {
-    // Seek to the bin start and measure one window.
-    source.seek_to_frame(index as u64 * plan.bin_frames)?;
-    let window_peak = measure_window(source, channels, plan.bin_frames)?;
+    // Seek to the bin start and measure one window; a failure names the bin at debug before
+    // it propagates (the service fold warns on the typed error).
+    source
+        .seek_to_frame(index as u64 * plan.bin_frames)
+        .inspect_err(|error| tracing::debug!(bin = index, cause = %error, "probe seek failed"))?;
+    let window_peak = measure_window(source, channels, plan.bin_frames)
+        .inspect_err(|error| tracing::debug!(bin = index, cause = %error, "probe measure failed"))?;
     frontier.measured[index] = true;
     frontier.used += 1;
     if window_peak > frontier.peak {
@@ -98,9 +102,15 @@ pub(crate) fn zoom_probe(
     channels: usize,
     plan: &ZoomPlan,
 ) -> Result<f32, TruePeakError> {
+    // A function-scoped span tags every event below with this function name; the guard
+    // drops on every return path. Mirrors the TS per-function tagged logger.
+    let span = tracing::debug_span!("zoom_probe");
+    let _guard = span.enter();
     // The bin grid: the last bin may be short; measure_window stops at EOF anyway.
     let bin_count = (plan.total_frames.div_ceil(plan.bin_frames.max(1)).max(1)) as usize;
     let budget = (((plan.coverage_fraction * bin_count as f64).floor() as usize).max(1)).min(bin_count);
+    // The plan the three phases spend: total bins and the measurement budget.
+    tracing::debug!(bin_count, budget, bones = plan.bones_hot_bins.is_some(), "zoom plan");
     let mut frontier = Frontier {
         measured: vec![false; bin_count],
         heap: BinaryHeap::new(),
@@ -148,6 +158,8 @@ pub(crate) fn zoom_probe(
             measure_bin(source, channels, plan, &mut frontier, index + 1)?;
         }
     }
+    // The zoom is done: how many bins were measured and the loudest window found.
+    tracing::debug!(used = frontier.used, peak = frontier.peak, "zoom done");
     Ok(frontier.peak)
 }
 
