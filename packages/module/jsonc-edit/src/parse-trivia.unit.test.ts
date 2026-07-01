@@ -70,12 +70,12 @@ await describe({
           },
         },),
         it({
-          name: 'skips inline whitespace, including a tab, before the comma',
+          name: 'skips inline whitespace, including tab and carriage return, before the comma',
           fn: async () => {
-            expect(captureTrailing({ source: ' \t,x', index: 0, },),).toEqual({
+            expect(captureTrailing({ source: ' \t\r,x', index: 0, },),).toEqual({
               comments: [],
               commaSeen: true,
-              end: 3,
+              end: 4,
             },);
           },
         },),
