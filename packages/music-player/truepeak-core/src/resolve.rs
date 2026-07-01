@@ -52,14 +52,16 @@ use crate::meter::TruePeakMeter;
 /// ```
 use crate::policy::Policy;
 
-/// What:     `use crate::source::TruePeakSource;`. The decoded-audio contract.
-/// Why:      The resolver reads spec, chunks, and seeks through it.
+/// What:     `use crate::source::{AudioSpec, TruePeakSource};`. The stream descriptor and
+///           the decoded-audio contract.
+/// Why:      The resolver reads spec, chunks, and seeks through it; the exact-decision
+///           helper takes an `AudioSpec` by value (it is `Copy`).
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { TruePeakSource } from "./source";
+/// import { AudioSpec, TruePeakSource } from "./source";
 /// ```
-use crate::source::TruePeakSource;
+use crate::source::{AudioSpec, TruePeakSource};
 
 /// What:     `use crate::window::window_frame_starts;`. Even window placement in frames.
 /// Why:      The probe seeks to each returned start.
@@ -227,6 +229,143 @@ fn measure_window(
     Ok(meter.peak())
 }
 
+/// What:     `fn silence_decision(spec: AudioSpec) -> Decision`. The decision for a
+///           malformed zero-channel stream: unity gain, exact, zero peak. `AudioSpec` is
+///           taken by value because it is `Copy`.
+/// Why:      Both entry points (`resolve_decision` and `resolve_full_scan`) treat a
+///           zero-channel stream as silence identically; one helper keeps them in step.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function silenceDecision(spec: AudioSpec): Decision {
+///   return { gain: 1, kind: "fullScanExact", measuredPeak: 0, durationSecs: spec.durationSecs };
+/// }
+/// ```
+fn silence_decision(spec: AudioSpec) -> Decision {
+    // What:     `Decision { gain: 1.0, kind: FullScanExact, measured_peak: 0.0, duration_secs:
+    //           spec.duration_secs }`. Unity gain over silence, tagged exact. Tail -> return.
+    // Why:      Never amplify a degenerate stream, and never probe it.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // return { gain: 1, kind: "fullScanExact", measuredPeak: 0, durationSecs: spec.durationSecs };
+    // ```
+    Decision {
+        gain: 1.0,
+        kind: DecisionKind::FullScanExact,
+        measured_peak: 0.0,
+        duration_secs: spec.duration_secs,
+    }
+}
+
+/// What:     `fn exact_decision(policy: &Policy, source: &mut dyn TruePeakSource, spec:
+///           AudioSpec, channels: usize) -> Result<Decision, TruePeakError>`. Scan the whole
+///           track and build the exact decision, tagging `ShortFullScan` for a known-short
+///           track and `FullScanExact` otherwise. `channels` is passed in so the caller's
+///           zero-channel guard is not repeated here.
+/// Why:      The short branch of `resolve_decision` and the always-exact `resolve_full_scan`
+///           build the identical exact decision; sharing it keeps the gain and the kind rule
+///           in one place.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function exactDecision(policy, source, spec, channels): Decision { ... }
+/// ```
+fn exact_decision(
+    policy: &Policy,
+    source: &mut dyn TruePeakSource,
+    spec: AudioSpec,
+    channels: usize,
+) -> Result<Decision, TruePeakError> {
+    // What:     `let (peak, frames) = full_scan(source, channels)?;`. Exact peak and decoded
+    //           frame count; `?` propagates a decode error.
+    // Why:      The gain is exact, and the frames give the decoded duration.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const [peak, frames] = fullScan(source, channels);
+    // ```
+    let (peak, frames) = full_scan(source, channels)?;
+    // What:     `let short = spec.duration_known() && spec.duration_secs <=
+    //           policy.short_scan_max_secs;`. Whether this counts as a short track.
+    // Why:      Tags the decision kind; an unknown-length or long full scan is `FullScanExact`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const short = durationKnown(spec) && spec.durationSecs <= policy.shortScanMaxSecs;
+    // ```
+    let short = spec.duration_known() && spec.duration_secs <= policy.short_scan_max_secs;
+    // What:     `Ok(Decision { ... })`. Build the exact decision; `normalization_gain` turns
+    //           the peak into an attenuate-only gain. Tail -> return.
+    // Why:      Hand back the exact gain and its evidence.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // return { gain: normalizationGain(peak), kind: short ? "shortFullScan" : "fullScanExact", measuredPeak: peak, durationSecs: frames / spec.rate };
+    // ```
+    Ok(Decision {
+        gain: normalization_gain(peak),
+        kind: if short { DecisionKind::ShortFullScan } else { DecisionKind::FullScanExact },
+        measured_peak: peak,
+        duration_secs: frames as f64 / f64::from(spec.rate),
+    })
+}
+
+/// What:     `pub fn resolve_full_scan(policy: &Policy, source: &mut dyn TruePeakSource) ->
+///           Result<Decision, TruePeakError>`. Always scan the whole track for an exact gain,
+///           regardless of length, tagging `ShortFullScan` or `FullScanExact` by duration.
+/// Why:      The warming upgrade path: a long track that `resolve_decision` would probe is
+///           heard in full here, so the cache's exact-over-probe precedence can replace a
+///           probe estimate with the exact gain over idle time. Desktop warming uses this;
+///           the probe estimate never returns once an exact row lands.
+/// Gotcha:   This performs a BLOCKING full decode of the whole track; call it on a worker,
+///           never on a latency-sensitive path.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function resolveFullScan(policy: Policy, source: TruePeakSource): Decision { ... }
+/// ```
+pub fn resolve_full_scan(
+    policy: &Policy,
+    source: &mut dyn TruePeakSource,
+) -> Result<Decision, TruePeakError> {
+    // What:     `let spec = source.spec();`. Rate, channels, and duration of the stream.
+    // Why:      Channels size the meter; duration tags the kind.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const spec = source.spec();
+    // ```
+    let spec = source.spec();
+    // What:     `let channels = spec.channels as usize;`. Interleave width for the meter.
+    // Why:      The meter and the frame math need it.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const channels = spec.channels;
+    // ```
+    let channels = spec.channels as usize;
+    // What:     `if channels == 0 { return Ok(silence_decision(spec)); }`. Degenerate stream.
+    // Why:      Avoid a divide-by-zero and never amplify silence.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // if (channels === 0) return silenceDecision(spec);
+    // ```
+    if channels == 0 {
+        return Ok(silence_decision(spec));
+    }
+    // What:     `exact_decision(policy, source, spec, channels)`. The full exact scan.
+    //           Tail -> return.
+    // Why:      Always exact here, unlike `resolve_decision`'s long-track probe.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // return exactDecision(policy, source, spec, channels);
+    // ```
+    exact_decision(policy, source, spec, channels)
+}
+
 /// What:     `pub fn resolve_decision(policy: &Policy, source: &mut dyn TruePeakSource) ->
 ///           Result<Decision, TruePeakError>`. Turn a track into a gain decision under the
 ///           policy. `&Policy` borrows the parameters; `&mut dyn TruePeakSource` drives the
@@ -263,15 +402,10 @@ pub fn resolve_decision(
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // if (channels === 0) return { gain: 1, kind: "fullScanExact", measuredPeak: 0, durationSecs: spec.durationSecs };
+    // if (channels === 0) return silenceDecision(spec);
     // ```
     if channels == 0 {
-        return Ok(Decision {
-            gain: 1.0,
-            kind: DecisionKind::FullScanExact,
-            measured_peak: 0.0,
-            duration_secs: spec.duration_secs,
-        });
+        return Ok(silence_decision(spec));
     }
 
     // What:     `if !spec.duration_known() || spec.duration_secs <= policy.short_scan_max_secs`.
@@ -284,38 +418,16 @@ pub fn resolve_decision(
     // if (!durationKnown(spec) || spec.durationSecs <= policy.shortScanMaxSecs) { ... }
     // ```
     if !spec.duration_known() || spec.duration_secs <= policy.short_scan_max_secs {
-        // What:     `let (peak, frames) = full_scan(source, channels)?;`. Exact peak and
-        //           decoded frame count; `?` propagates a decode error.
-        // Why:      The gain is exact, and the frames give the true duration.
+        // What:     `return exact_decision(policy, source, spec, channels);`. The shared exact
+        //           scan, tagging short vs unknown-length; `?`-free because it is the tail.
+        // Why:      Short and unknown tracks are measured exactly, identically to
+        //           `resolve_full_scan`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // const [peak, frames] = fullScan(source, channels);
+        // return exactDecision(policy, source, spec, channels);
         // ```
-        let (peak, frames) = full_scan(source, channels)?;
-        // What:     `let short = spec.duration_known() && spec.duration_secs <=
-        //           policy.short_scan_max_secs;`. Whether this counts as a short track.
-        // Why:      Tags the decision kind; an unknown-length full scan is `FullScanExact`.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // const short = durationKnown(spec) && spec.durationSecs <= policy.shortScanMaxSecs;
-        // ```
-        let short = spec.duration_known() && spec.duration_secs <= policy.short_scan_max_secs;
-        // What:     `Ok(Decision { ... })`. Build the exact decision. `normalization_gain`
-        //           turns the peak into an attenuate-only gain. Tail -> return.
-        // Why:      Hand back the exact gain and its evidence.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // return { gain: normalizationGain(peak), kind: short ? "shortFullScan" : "fullScanExact", measuredPeak: peak, durationSecs: frames / spec.rate };
-        // ```
-        return Ok(Decision {
-            gain: normalization_gain(peak),
-            kind: if short { DecisionKind::ShortFullScan } else { DecisionKind::FullScanExact },
-            measured_peak: peak,
-            duration_secs: frames as f64 / f64::from(spec.rate),
-        });
+        return exact_decision(policy, source, spec, channels);
     }
 
     // What:     `let window_frames = ((policy.probe_window_secs * f64::from(spec.rate))

@@ -71,8 +71,8 @@ pub use crate::policy::{CacheIdentity, Policy, default_policy};
 /// Re-exports the gain decision and its kind.
 pub use crate::decision::{Decision, DecisionKind};
 
-/// Re-exports the policy resolver.
-pub use crate::resolve::resolve_decision;
+/// Re-exports the policy resolver and the always-exact full-scan resolver (warming upgrade).
+pub use crate::resolve::{resolve_decision, resolve_full_scan};
 
 /// Re-exports the decision cache and its error, behind the `service` feature.
 #[cfg(feature = "service")]

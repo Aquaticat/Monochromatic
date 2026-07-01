@@ -128,3 +128,35 @@ fn zero_channels_is_unity() {
     assert_eq!(decision.gain, 1.0);
     assert_eq!(decision.kind, DecisionKind::FullScanExact);
 }
+
+// The warming upgrade: a long track that `resolve_decision` would PROBE is instead scanned
+// in full, exactly, with no seeks, and tagged `FullScanExact`.
+#[test]
+fn full_scan_upgrades_a_long_track_exactly() {
+    let mut samples = vec![0.5_f32; 20];
+    samples[10..15].fill(1.5); // a loud region a sparse probe could miss
+    let source_samples = samples.clone();
+    let mut source = FakeSource::new(samples, 1, 10, 2.0); // long under short_scan_max = 0.5
+    let policy = test_policy(0.5, 1.0, 0.5, 0.8);
+
+    // The probe path would tag this a probe estimate; the full-scan path never does.
+    let probe = resolve_decision(&policy, &mut FakeSource::new(source_samples.clone(), 1, 10, 2.0)).unwrap();
+    assert_eq!(probe.kind, DecisionKind::ProbeEstimate);
+
+    let decision = resolve_full_scan(&policy, &mut source).unwrap();
+    assert_eq!(decision.kind, DecisionKind::FullScanExact);
+    assert!(source.seeks.is_empty()); // a full scan never seeks
+    let expected_peak = true_peak_interleaved(&source_samples, 1);
+    assert!((decision.measured_peak - expected_peak).abs() < 1e-6);
+    assert_eq!(decision.gain, normalization_gain(expected_peak));
+}
+
+// A short track full-scanned still reports `ShortFullScan`, matching `resolve_decision`.
+#[test]
+fn full_scan_of_short_track_tags_short() {
+    let samples = vec![0.0_f32, 0.9, 0.9, 0.0];
+    let mut source = FakeSource::new(samples, 1, 4, 1.0);
+    let decision = resolve_full_scan(&test_policy(100.0, 0.2, 0.3, 0.8), &mut source).unwrap();
+    assert_eq!(decision.kind, DecisionKind::ShortFullScan);
+    assert!(source.seeks.is_empty());
+}
