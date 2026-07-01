@@ -562,6 +562,25 @@ State what you searched + what comparable evidence you found;
 empty result on narrowest query is not "no precedent.
 "
 
+RPB:
+ User states a resource is present (device connected,
+ service up,
+ access granted) and your probe disagrees (empty `adb devices`,
+ connection refused,
+ 404):
+ one failed probe is not proof of absence.
+Connect/authorize-gated resources report empty until reconnected,
+ authorized,
+ or the server is (re)started.
+Re-probe,
+ and ask the user to reconnect/re-authorize/restart it,
+ before concluding it is unreachable or moving on.
+Failure shape:
+ empty `adb devices` once -> "the sandbox can't reach your device,
+" when the device was merely unplugged or unauthorized and one reconnect made it appear.
+Cue:
+ about to write "can't reach X" / "X isn't available" right after a single failed probe of something the user said is there.
+
 RBK:
  Bridges genuinely fail + user must execute:
  invoke `runbook` skill when writing any manual-action document (it encodes required sections + formatting rules).
@@ -1432,6 +1451,22 @@ VB5:
 VB6:
  Verification must cross integration boundary between artifact + consumer.
 "It compiled" / "It installed" alone not verification.
+
+URF:
+ Verification depending on a resource the user just made available (connected device,
+ running service,
+ live login,
+ temporary access,
+ physical hardware) runs FIRST,
+ before unrelated work:
+ the resource can vanish (unplugged,
+ timed out,
+ revoked) while you work on something else.
+Never report that check done or verified until you have actually exercised the resource.
+Cue:
+ user says "X is connected" / "I started X" / "you have access to X" and the task includes verifying against X;
+ do that verification now,
+ not after finishing every other crate/file/step.
 
 ### Verify on a throwaway, not against real state
 
