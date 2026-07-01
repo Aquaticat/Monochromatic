@@ -31,6 +31,11 @@ libghostty-vt = { version = "0.1.1", default-features = false }
 # and resize operations without hand-written forkpty or ioctl setup.
 portable-pty = "0.9.0"
 slint = { version = "1.17.0", features = ["backend-winit", "renderer-femtovg", "renderer-software"] }
+# The logging facade and its subscriber. tracing routes this prototype's callback-error
+# diagnostics as structured events; tracing-subscriber installs the stderr sink (RUST_LOG,
+# default info) so failures are visible when launched from a terminal.
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
 [build-dependencies]
 # Must match the `slint` release family above.

@@ -381,15 +381,23 @@ fn write_terminal_key(
 ///           logs fallible callback work to stderr.
 /// Why:      Slint callbacks cannot return errors to the event loop.
 fn log_callback_error(context: &str, error: Box<dyn std::error::Error>) {
-    // What:     `eprintln!(...)` writes a user-visible diagnostic to stderr.
+    // What:     `tracing::error!(...)` emits a structured error event to the subscriber.
     // Why:      Prototype failures should be visible when launched from a terminal.
-    eprintln!("monochromatic-terminal: {context}: {error}");
+    tracing::error!(context, error = %error, "callback error");
 }
 
 /// What:     `fn main() -> Result<(), Box<dyn std::error::Error>>` is the binary
 ///           entry point. Returning `Result` lets failures become process errors.
 /// Why:      No manual `process.exit` style path is needed.
 fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // Install the stderr tracing subscriber (RUST_LOG, default info) before backend setup.
+    tracing_subscriber::fmt()
+        .with_env_filter(
+            tracing_subscriber::EnvFilter::try_from_default_env()
+                .unwrap_or_else(|_| tracing_subscriber::EnvFilter::new("info")),
+        )
+        .with_writer(std::io::stderr)
+        .init();
     install_backend()?;
     let app = AppWindow::new()?;
     // What:     `app.get_effective_cell_width()` reads the cell width measured by
