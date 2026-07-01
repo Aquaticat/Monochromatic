@@ -145,3 +145,14 @@ Order of execution, most-verifiable first:
   meter runs correctly on the real arm64 target. Both apps now consume `truepeak-core`; the
   meter-and-gain duplication is gone. Remaining stages (policy unification behind the shared
   classifier, the Turso service, deleting the Kotlin re-implementations) are unchanged above.
+- 2026-07-01, 15:45: Stage-two policy decided, which supersedes the "shared adaptive
+  classifier" framing in the remaining items above. The corpus evidence (see the plan's
+  Stage-two section) shows no probe-feature or metadata classifier can route the hard tracks,
+  because their peaks hide in unsampled gaps, so the shared policy is classifier-free: full-scan
+  short tracks, probe a fifth of each long track in short evenly-placed windows, and apply a
+  fixed `0.8 dB` margin. About ninety-nine percent of tracks land within `-0.8 dB` too-quiet;
+  the rest clamp on cold start until warming full-scans them. `truepeak-core`'s `default_policy`
+  now carries these constants (the old `window_count` parameters are gone), and the bench's
+  committed `--proportional` evaluation reproduces the numbers. The policy-unification remaining
+  item is therefore "build the proportional probe plus fixed margin into the Stage-three service
+  and replace both apps' current policies with it", not "build a classifier".
