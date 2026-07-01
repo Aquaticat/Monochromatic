@@ -246,3 +246,13 @@ pub mod relpath;
 /// export * as launcher from "./launcher";
 /// ```
 pub mod launcher;
+
+/// What:     `pub mod logging;`. The tracing subscriber setup (`src/logging.rs`): a stderr
+///           sink with an env-filter the binary installs once at startup.
+/// Why:      Gives every `tracing` event from this crate and `truepeak-core` a sink.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as logging from "./logging";
+/// ```
+pub mod logging;

@@ -157,7 +157,7 @@ impl Controller {
         // try { this.currentSession().save(); } catch (e) { console.error(e); }
         // ```
         if let Err(e) = self.current_session().save() {
-            eprintln!("music-player: session save failed: {e}");
+            tracing::warn!(error = %e, "session save failed");
         }
     }
 
@@ -418,15 +418,16 @@ impl Controller {
                 // catch (e) { ... }
                 // ```
                 Err(e) => {
-                    // What:     `eprintln!("music-player: cannot open {}: {e}", path.display());`.
-                    //           Log the failure; `path.display()` formats the path for output.
+                    // What:     `tracing::warn!(path = %path.display(), error = %e, "cannot open
+                    //           file");`. Log the failure as a structured event; `%` formats the
+                    //           path and error via Display. The module path is the tag.
                     // Why:      Surface the bad file.
                     //
                     // In TS you'd write (pseudocode):
                     // ```ts
-                    // console.error(`cannot open ${path}: ${e}`);
+                    // logger.warn(`cannot open ${path}: ${e}`);
                     // ```
-                    eprintln!("music-player: cannot open {}: {e}", path.display());
+                    tracing::warn!(path = %path.display(), error = %e, "cannot open file");
                     // What:     `attempts += 1;`. Count this failed open.
                     // Why:      Track progress toward the retry cap.
                     //
@@ -540,7 +541,7 @@ impl Controller {
                 // console.error(e); this.producer = null;
                 // ```
                 Err(e) => {
-                    eprintln!("music-player: audio reconfigure failed: {e}");
+                    tracing::warn!(error = %e, "audio reconfigure failed");
                     self.producer = None;
                 }
             }
@@ -707,7 +708,7 @@ impl Controller {
             // try { source.seek(secs); } catch (e) { console.error(e); return; }
             // ```
             if let Err(e) = source.seek(secs) {
-                eprintln!("music-player: seek failed: {e}");
+                tracing::warn!(error = %e, "seek failed");
                 return;
             }
         } else {
@@ -754,7 +755,7 @@ impl Controller {
                 // ```ts
                 // console.error(e);
                 // ```
-                Err(e) => eprintln!("music-player: seek reconfigure failed: {e}"),
+                Err(e) => tracing::warn!(error = %e, "seek reconfigure failed"),
             }
         }
 
@@ -931,7 +932,7 @@ impl Controller {
             // catch (e) { console.error(e); this.onTrackEnd(); return true; }
             // ```
             Err(e) => {
-                eprintln!("music-player: decode error: {e}");
+                tracing::warn!(error = %e, "decode error; treating as end of track");
                 self.on_track_end();
                 return true;
             }

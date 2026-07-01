@@ -1102,6 +1102,16 @@ fn music_dir() -> Option<PathBuf> {
 /// async function main(): Promise<void> { ... } // throws on platform failure
 /// ```
 fn main() -> Result<(), slint::PlatformError> {
+    // What:     `music_player::logging::init();`. Install the stderr tracing subscriber
+    //           before anything else, so startup events have a sink. Idempotent.
+    // Why:      Every `tracing` event from this crate and `truepeak-core` needs a sink;
+    //           `RUST_LOG` tunes the level (default `info`).
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // logging.init();
+    // ```
+    music_player::logging::init();
     // What:     `let cli = Cli::parse();`. Read and validate the command-line
     //           arguments FIRST, before any backend, window, or GPU setup.
     //           `Cli::parse()` (from the `clap::Parser` trait) reads the real process

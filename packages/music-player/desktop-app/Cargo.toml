@@ -43,6 +43,14 @@ directories = "5"
 # default (non-hybrid) build compiles on STABLE Rust; the `hybrid`/AVX2 feature is
 # nightly-only and left OFF. See docs/troubleshooting/gxhash-aes-target-feature.md.
 gxhash = "3"
+# The logging facade and its subscriber (src/logging.rs). tracing mirrors the shared
+# truepeak-core logging; tracing-subscriber installs the stderr sink with an env-filter
+# (RUST_LOG, default `info`). Both already resolve transitively (turso -> tracing), so this
+# only promotes them to direct deps. We deliberately do NOT bridge the `log` facade (no
+# tracing-log init): ICU's `log`-routed CJK-segmentation warnings must stay silent, exactly
+# as today with no subscriber (see the icu_provider note below).
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 # Same Slint release family as above: the winit backend is constructed
 # explicitly (not via the default backend selector) so a window-attributes hook
 # can set the Wayland app_id, which KDE needs to attach taskbar progress to the

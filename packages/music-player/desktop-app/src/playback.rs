@@ -381,16 +381,16 @@ fn collect_dir_files(root: &Path) -> Vec<PathBuf> {
             // entries = e;
             // ```
             Ok(e) => e,
-            // What:     `Err(e) => { eprintln!(...); continue; }`. `eprintln!` writes a
-            //           line to stderr; `continue` skips to the next work-list item.
+            // What:     `Err(e) => { tracing::warn!(...); continue; }`. Log a structured
+            //           event; `continue` skips to the next work-list item.
             // Why:      One bad folder should not abort the whole walk.
             //
             // In TS you'd write (pseudocode):
             // ```ts
-            // catch (e) { console.error(e); continue; }
+            // catch (e) { logger.warn(e); continue; }
             // ```
             Err(e) => {
-                eprintln!("music-player: cannot read dir {}: {e}", dir.display());
+                tracing::warn!(dir = %dir.display(), error = %e, "cannot read dir");
                 continue;
             }
         };

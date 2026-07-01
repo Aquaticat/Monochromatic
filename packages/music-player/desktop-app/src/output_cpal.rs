@@ -507,20 +507,20 @@ impl Output {
                         *s = 0.0;
                     }
                 },
-                // What:     `move |err| { eprintln!("music-player: cpal stream error: {err}"); }`.
+                // What:     `move |err| { tracing::error!(error = %err, "cpal stream error"); }`.
                 //           The error callback. `move` owns nothing it needs to keep;
-                //           `|err|` binds the `cpal::StreamError`. `eprintln!` writes a line
-                //           to stderr (`{err}` interpolates the error's Display).
+                //           `|err|` binds the `cpal::StreamError`. `%err` logs the error's
+                //           Display as a structured event.
                 // Why:      Surface device-loss / overrun errors without crashing playback.
                 //           Fires only on rare stream errors, never in the hot path, so the
-                //           stderr write is acceptable here.
+                //           log write is acceptable here.
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
-                // (err) => { console.error(`cpal stream error: ${err}`); }
+                // (err) => { logger.error(`cpal stream error: ${err}`); }
                 // ```
                 move |err| {
-                    eprintln!("music-player: cpal stream error: {err}");
+                    tracing::error!(error = %err, "cpal stream error");
                 },
                 // What:     `None`. The optional stream timeout; `None` means "no timeout"
                 //           (sibling `Some(Duration::from_millis(n))`).

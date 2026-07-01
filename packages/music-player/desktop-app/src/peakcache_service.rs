@@ -194,6 +194,7 @@ pub(super) fn spawn(path: Option<PathBuf>) -> (UnboundedSender<Read>, UnboundedS
         let runtime = tokio::runtime::Builder::new_current_thread()
             .enable_all()
             .build()
+            .inspect_err(|error| tracing::error!(error = %error, "could not build cache runtime"))
             .expect("music-player: build cache runtime");
         runtime.block_on(run(path, read_rx, write_rx));
     });
@@ -240,6 +241,8 @@ async fn run(
     // const identity = cacheIdentity();
     // ```
     let identity = super::cache_identity();
+    // The actor is ready; log whether it opened a cache or is running degraded.
+    tracing::info!(degraded = cache.is_none(), "peak cache actor started");
     // What:     The serve loop. `biased;` polls the read arm first every iteration; a
     //           refutable `Some(..)` pattern disables a closed channel's arm, and
     //           `else => break` fires once BOTH are closed (all senders dropped).
@@ -258,6 +261,8 @@ async fn run(
             else => break,
         }
     }
+    // Both channels closed (all handles dropped); the actor shuts down cleanly.
+    tracing::info!("peak cache actor stopped");
 }
 
 /// What:     `async fn open_cache(path: Option<PathBuf>) -> Option<DecisionCache>`. Open the
@@ -271,14 +276,18 @@ async fn run(
 /// async function openCache(path) { ... }
 /// ```
 async fn open_cache(path: Option<PathBuf>) -> Option<DecisionCache> {
-    // What:     `let path = path?;`. Bail to degraded when there is no path (no config dir).
-    // Why:      Same behavior as before: run with no persistence.
+    // What:     `let Some(path) = path else { ...; return None; };`. Bail to degraded when
+    //           there is no path (no config dir), logging the reason.
+    // Why:      Run with no persistence when the platform gave us no path.
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // if (!path) return null;
     // ```
-    let path = path?;
+    let Some(path) = path else {
+        tracing::debug!("no cache path; running degraded (no persistence)");
+        return None;
+    };
     // What:     Ensure the parent directory exists; ignore the error (the open below surfaces
     //           a real problem).
     // Why:      First launch has no config dir yet.
@@ -288,16 +297,21 @@ async fn open_cache(path: Option<PathBuf>) -> Option<DecisionCache> {
     // mkdirSync(dirname(path), { recursive: true });
     // ```
     if let Some(parent) = path.parent() {
-        let _ = std::fs::create_dir_all(parent);
+        let _ = std::fs::create_dir_all(parent)
+            .inspect_err(|error| tracing::debug!(error = %error, "could not create cache parent dir; open may still succeed"));
     }
-    // What:     `let path_str = path.to_str()?;`. The path as UTF-8; degrade on non-UTF-8.
+    // What:     `let Some(path_str) = path.to_str() else { ...; return None; };`. The path as
+    //           UTF-8; degrade on non-UTF-8, logging the path.
     // Why:      `DecisionCache::open` takes a `&str`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // const pathStr = String(path);
     // ```
-    let path_str = path.to_str()?;
+    let Some(path_str) = path.to_str() else {
+        tracing::warn!(path = %path.display(), "cache path is not UTF-8; running degraded");
+        return None;
+    };
     // What:     `match DecisionCache::open(path_str).await { ... }`. Open (creating the
     //           schema); log and degrade on error.
     // Why:      A bad cache file must not crash the player.
@@ -309,7 +323,7 @@ async fn open_cache(path: Option<PathBuf>) -> Option<DecisionCache> {
     match DecisionCache::open(path_str).await {
         Ok(cache) => Some(cache),
         Err(error) => {
-            eprintln!("music-player: cache open failed: {error}");
+            tracing::warn!(error = %error, "cache open failed; running degraded");
             None
         }
     }
@@ -371,7 +385,7 @@ async fn get(cache: Option<&DecisionCache>, identity: CacheIdentity, fingerprint
     match cache.get(fingerprint, identity).await {
         Ok(decision) => decision,
         Err(error) => {
-            eprintln!("music-player: cache get failed: {error}");
+            tracing::warn!(error = %error, "cache get failed; treating as miss");
             None
         }
     }
@@ -409,7 +423,7 @@ async fn known(cache: Option<&DecisionCache>, identity: CacheIdentity) -> HashSe
     match cache.exact_fingerprints(identity).await {
         Ok(set) => set,
         Err(error) => {
-            eprintln!("music-player: cache scan failed: {error}");
+            tracing::warn!(error = %error, "cache scan failed; empty skip-check");
             HashSet::new()
         }
     }
@@ -444,6 +458,6 @@ async fn put(cache: Option<&DecisionCache>, identity: CacheIdentity, request: Up
     // try { await cache.put(request.fingerprint, identity, request.decision); } catch (e) { warn(e); }
     // ```
     if let Err(error) = cache.put(request.fingerprint, identity, &request.decision).await {
-        eprintln!("music-player: cache put failed: {error}");
+        tracing::warn!(error = %error, "cache put failed; write dropped");
     }
 }

@@ -194,14 +194,14 @@ impl SourceWatcher {
             // this.watched = root;
             // ```
             Ok(()) => self.watched = Some(root.to_path_buf()),
-            // What:     `Err(e) => eprintln!(...)`. Log and leave `watched` as `None`.
+            // What:     `Err(e) => tracing::warn!(...)`. Log and leave `watched` as `None`.
             // Why:      Live updates silently degrade if the OS watch cannot start.
             //
             // In TS you'd write (pseudocode):
             // ```ts
-            // console.error("music-player: watch failed for", root, e);
+            // logger.warn("watch failed for", root, e);
             // ```
-            Err(e) => eprintln!("music-player: watch failed for {}: {e}", root.display()),
+            Err(e) => tracing::warn!(root = %root.display(), error = %e, "watch failed"),
         }
     }
 }

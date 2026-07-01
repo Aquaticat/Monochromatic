@@ -149,7 +149,7 @@ fn lower_current_thread_to_idle() {
     // if (result !== 0) console.error("music-player: could not lower sweep thread");
     // ```
     if result != 0 {
-        eprintln!("music-player: could not lower sweep thread to SCHED_IDLE");
+        tracing::warn!("could not lower sweep thread to SCHED_IDLE; running at normal priority");
     }
 }
 
@@ -191,7 +191,7 @@ fn lower_current_thread_to_idle() {
     // if (result !== 0) console.error("music-player: could not lower sweep thread");
     // ```
     if result != 0 {
-        eprintln!("music-player: could not lower sweep thread to background QoS");
+        tracing::warn!("could not lower sweep thread to background QoS; running at normal priority");
     }
 }
 
@@ -249,7 +249,7 @@ fn lower_current_thread_to_idle() {
     // if (!ok) console.error("music-player: could not lower sweep thread");
     // ```
     if result.is_err() {
-        eprintln!("music-player: could not lower sweep thread to idle priority");
+        tracing::warn!("could not lower sweep thread to idle priority; running at normal priority");
     }
 }
 
@@ -312,6 +312,8 @@ fn run_sweep(tracks: Vec<PathBuf>, cache: CacheHandle) {
     // const workers = workerCount(tracks.length);
     // ```
     let workers = worker_count(tracks.len());
+    // The sweep is fanning out; log its size and worker count.
+    tracing::info!(tracks = tracks.len(), workers, "warming sweep started");
     // What:     `let handles: Vec<_> = (0..workers).map(|_| { ... }).collect();`. Spawn the
     //           workers, each with its own clones of the shared handles.
     // Why:      Run decodes in parallel across every core.
@@ -352,8 +354,13 @@ fn run_sweep(tracks: Vec<PathBuf>, cache: CacheHandle) {
     // for (const handle of handles) await handle;
     // ```
     for handle in handles {
-        let _ = handle.join();
+        // Ignore a worker panic (one bad thread must not poison the sweep), but log it.
+        if handle.join().is_err() {
+            tracing::error!("a warming worker panicked");
+        }
     }
+    // Every worker joined; the sweep is complete.
+    tracing::info!("warming sweep finished");
 }
 
 /// What:     `fn worker_count(track_count: usize) -> usize`. The number of decode workers to
@@ -463,6 +470,7 @@ fn run_worker(
         // const key = fingerprint(path); if (!key) continue;
         // ```
         let Some(key) = peakcache::fingerprint(path) else {
+            tracing::debug!(path = %path.display(), "skip: no fingerprint");
             continue;
         };
         // What:     `if known.contains(&key) { continue; }`. Skip tracks that ALREADY carry an
@@ -475,18 +483,24 @@ fn run_worker(
         // if (known.has(key)) continue;
         // ```
         if known.contains(&key) {
+            tracing::debug!(key, "skip: already exact");
             continue;
         }
-        // What:     `let Ok(decision) = resolve_full(path) else { continue };`. Full-scan to an
-        //           exact decision; skip files that fail to decode.
+        // What:     `let decision = match resolve_full(path) { Ok(d) => d, Err(error) => { ...;
+        //           continue; } };`. Full-scan to an exact decision; log and skip files that
+        //           fail to decode (the cause was previously discarded by the `let Ok ... else`).
         // Why:      One bad file must not stop the worker; warming produces exact decisions.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // let decision; try { decision = resolveFull(path); } catch { continue; }
+        // let decision; try { decision = resolveFull(path); } catch (error) { logger.debug(error); continue; }
         // ```
-        let Ok(decision) = resolve_full(path) else {
-            continue;
+        let decision = match resolve_full(path) {
+            Ok(decision) => decision,
+            Err(error) => {
+                tracing::debug!(path = %path.display(), cause = %error, "skip: decode failed");
+                continue;
+            }
         };
         // What:     `cache.upsert(key, decision);`. Fire-and-forget the exact decision to the
         //           cache actor, which commits it durably (upgrading any prior probe estimate).
@@ -497,6 +511,8 @@ fn run_worker(
         // cache.upsert(key, decision);
         // ```
         cache.upsert(key, decision);
+        // The exact decision is queued to the cache actor.
+        tracing::debug!(key, "measured; upsert queued");
     }
 }
 

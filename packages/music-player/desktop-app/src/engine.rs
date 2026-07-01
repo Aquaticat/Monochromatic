@@ -510,17 +510,17 @@ fn run(
         // output = o;
         // ```
         Ok(o) => Some(o),
-        // What:     `Err(e) => { eprintln!(...); None }`. `eprintln!` writes to stderr;
-        //           `{e}` uses `PlayerError`'s Display. The block's tail `None` becomes the
-        //           match value (silent mode).
+        // What:     `Err(e) => { tracing::warn!(...); None }`. Log a structured event; `%e`
+        //           uses `PlayerError`'s Display. The block's tail `None` becomes the match
+        //           value (silent mode).
         // Why:      Degrade gracefully to silent mode.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // console.error("music-player: audio init failed:", e); output = null;
+        // logger.warn("audio init failed:", e); output = null;
         // ```
         Err(e) => {
-            eprintln!("music-player: audio init failed: {e}");
+            tracing::warn!(error = %e, "audio init failed; degrading to silent mode");
             None
         }
     };
