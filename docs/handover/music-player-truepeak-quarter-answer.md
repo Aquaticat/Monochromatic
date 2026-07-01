@@ -52,16 +52,25 @@ clamp count) while decoding no more than a quarter of the library's seconds
    truepeak-core.bench on the branch.
 7. Write the answer doc under `docs/audit/`, same register as the letter.
 
-## Status
+## Status: complete
 
-- Baseline reproduced offline with exact parity (analysis/corpus.mjs +
-  baseline.mjs on the branch); anatomy + adaptive experiments done and committed
-  (anatomy.mjs, adaptive.mjs).
-- Two subagents running: (a) no-decode byte-rate profile extractor
-  (opus TOC / m4a stsz / mp3 frames) for the encoding-bones road;
-  (b) album-prior evaluation.
-- Next: bones correlation + guided-probe simulation, then compose the final
-  policy, wire a bench mode, write the answer doc.
+- The answer is committed: `docs/audit/music-player-truepeak-quarter-measure-answer.md`
+  (main, commit d33f2bc58).
+- The committed evaluation lives on branch `truepeak-quarter-answer` (pushed):
+  `truepeak-core.bench --zoom` (src/zoom.rs, commit 0bda0177f) reproduces every
+  quoted number; analysis/*.mjs hold each road's evidence (baseline parity,
+  anatomy, adaptive zoom, bones extraction + correlation, album prior, final
+  comparison). Byte profiles regenerate via `node analysis/bones-extract.mjs`.
+- Result: frontier zoom (even 0.1-coverage pass, then loudest-neighbor
+  expansion to the full quarter budget, 228970 of 229215 s) at margin 0.5 beats
+  the ledger on all three measures at once: 26 clamps vs 43, avg quiet
+  0.371 dB vs 0.528, worst quiet 0.50 dB vs 0.80. Margin dial and a
+  provenance-split option (avg 0.315, 27 clamps) are recorded in the answer.
+- Not done (possible follow-ups): shipping the zoom policy in truepeak-core's
+  resolver (the bench mode is evaluation-only; production needs two-phase
+  adaptive window placement), and verifying zoom against exact decoded windows
+  rather than the 0.1 s bins (same caveat the plan records for the shipped
+  policy).
 
 ## Findings so far
 
@@ -95,3 +104,13 @@ clamp count) while decoding no more than a quarter of the library's seconds
   same headroom strictly better (avg 0.285, worst 0.40, clamps equal). Under
   zoom's tight probes + small margin the cap almost never binds. Verdict:
   measured and declined; document in the answer.
+- Encoding bones refuted (analysis/bones-*.mjs, correlate.mjs): all 2441 lossy
+  loud long files parsed without decoding (opus TOC, m4a stsz/stts, mp3 frames;
+  timelines within 0.15 s). The crest slot ranks at the 60th byte-rank
+  percentile of its own track (median), worse than chance; bits follow spectral
+  busyness, not peak height. Composed bones+zoom never beats zoom alone.
+- Declared peaks verified useless: rgPeak understates the true crest by median
+  1.92 dB (max 4.62) across the 723 tagged tracks.
+- No-full-hearings variant measured (user suggestion): cutoff 0 s buys one
+  clamp (25 vs 26 at margin 0.5) but worsens avg quiet 0.371 -> 0.385 and
+  forfeits exact cached short-track crests; recorded in the answer, rule kept.
