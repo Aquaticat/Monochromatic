@@ -54,9 +54,35 @@ clamp count) while decoding no more than a quarter of the library's seconds
 
 ## Status
 
-- Oriented; corpus schema and baseline understood. Tasks created. Worktree created.
-- Next: advisor consult, then baseline reproduction (task 1).
+- Baseline reproduced offline with exact parity (analysis/corpus.mjs +
+  baseline.mjs on the branch); anatomy + adaptive experiments done and committed
+  (anatomy.mjs, adaptive.mjs).
+- Two subagents running: (a) no-decode byte-rate profile extractor
+  (opus TOC / m4a stsz / mp3 frames) for the encoding-bones road;
+  (b) album-prior evaluation.
+- Next: bones correlation + guided-probe simulation, then compose the final
+  policy, wire a bench mode, write the answer doc.
 
 ## Findings so far
 
-(none yet)
+- Baseline measures to beat (margin 0.8): worst quiet 0.80 dB, average
+  needless-quiet across all 4114 tracks 0.528 dB, 43 cold-start clamps.
+  Shipped policy decodes 193094 s; the quarter budget is 229215 s, so
+  36121 s go unspent.
+- Sanity: max(bin_peaks) equals full_peak exactly for every track, so bin-level
+  simulation is faithful.
+- Tail anatomy: the 43 clamped tracks are isolated needles. Median tail track
+  has exactly 1 bin (0.1 s) within 0.5 dB of its crest across the whole track
+  (ordinary tracks: median 20); even bins adjacent to the crest sit 1.6-2 dB
+  below it. Under-read is governed by how many near-crest bins exist, so no
+  local shoulder betrays the needles; zoom alone cannot catch them.
+  All 43 are lossy (41 opus, 2 m4a), none FLAC.
+- Frontier zoom (pass-1 even single 0.1 s bins at 10% coverage, then repeatedly
+  decode undecoded neighbors of the loudest decoded bin, up to 24% total
+  coverage = full budget): under-read p50 0.01 / p90 0.35 / p99 0.91 / max 1.84.
+  With margin 0.5 it beats the ledger on all three measures at once:
+  26 clamps vs 43, avg quiet 0.372 vs 0.528, worst quiet 0.50 vs 0.80.
+  With margin 0.4: 43 clamps (equal), avg 0.286, worst 0.40.
+- Gotcha for the answer: better sampling with an unchanged margin makes average
+  quiet WORSE (probe closer to truth means the fixed margin over-attenuates
+  more); sampling gains must be taken by lowering the margin.
