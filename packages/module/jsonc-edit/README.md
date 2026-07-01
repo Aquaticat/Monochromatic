@@ -43,11 +43,15 @@ against the whole unit suite rather than a filename-stem-matched subset.
 
 The harness also includes the sidecar packages' `*.unit.test.ts` files as mutant killers (it
 discovers sibling `jsonc-edit.<concern>` packages automatically), so the property and conformance
-suites participate even though they live outside the runtime package. On a representative run that
-lifts the score from roughly 60% (co-located unit tests alone) to roughly 69%; the type system
-also rejects more than half of all mutants outright as compile errors. Remaining survivors cluster
-in the edit and comment write API and the close/trivia parse paths, which the property and
-conformance suites do not exercise.
+suites participate even though they live outside the runtime package.
+
+The branch-level unit suite drives the whole-package score to 95.76% (474 killed, 12 survived,
+9 timeout, 588 compile-error). Every remaining survivor is a verified equivalent mutant (no test
+can distinguish it, for example a loop bound guarded by an `undefined` check or a log-only string)
+and every timeout is an infinite-loop mutant that Stryker's default scoring counts as killed. So
+every non-equivalent mutant is killed. The equivalents and timeouts are enumerated with their
+proofs in `docs/handover/jsonc-edit.md`, and a survivor-triage pitfall (per-operand mutants that
+look like a harness bug) is written up in `docs/troubleshooting/stryker-survivor-triage.md`.
 
 ## Why JSONC, and why canonical
 

@@ -93,6 +93,49 @@ harness's filename-stem test selection would otherwise pick no tests for files l
 
 Progress (newest first):
 
+- 2026-06-30 (mutation hardening to the equivalent-mutant floor):
+  Drove the whole-package score from 68.69% to 95.76% (474 killed / 12 survived / 9 timeout
+  / 588 compile-error) by adding branch-level unit tests for every reachable path: direct
+  tests for the internal `scan`, `parse-trivia`, `parse-close`, emit, and `parse-scalar`
+  helpers, error-name assertions, and deeper `edit`, `comment`, `parse`, and `stringify`
+  coverage (array-element set versus append, out-of-range and missing-segment errors,
+  duplicate-key last-wins, numeric-segment-into-record and string-segment-into-array kind
+  errors, dangling-comment folding, depth-guard limits, exact canonical layout, lone
+  slash/star inputs that are not comments). Every remaining survivor was verified to be a
+  genuine equivalent mutant or an infinite-loop mutant the harness detects by timeout.
+  Counting the 9 timeouts as detected (Stryker's default) and excluding the 12 equivalents,
+  every non-equivalent mutant is killed.
+
+  A diagnostic detour is written up in `docs/troubleshooting/stryker-survivor-triage.md`:
+  Stryker emits one `ConditionalExpression` mutant per `&&`/`||` operand plus the whole
+  test, told apart only by column, so a survivor read by line alone and reproduced as the
+  whole-condition variant looked like a harness bug but was a per-operand equivalent. The
+  harness itself was verified correct.
+
+  Equivalent mutants (Survived, no test can distinguish them):
+  - `edit-navigate.ts:57` `(typeof segment === 'string') -> true`: a record reached with a
+    numeric segment gives `findLast` no match, so the result is `NODE_ABSENT` either way
+    (record keys are strings, and `string === number` is always false).
+  - `parse-close.ts:33` and `:120` `(dangling.length === 0) -> false`: folding an empty
+    dangling list is a no-op, since `appendComments` returns the node unchanged for it.
+  - `parse-jsonc.ts:16` and `:50` (logger tag and trace strings to `""`): log-only, no parse
+    output depends on them.
+  - `parse-jsonc.ts:76` `(parsed === FASTPATH_MISS) -> false`: `FASTPATH_MISS` is a symbol
+    already excluded by the following `typeof parsed !== 'object'` arm.
+  - `parse-trivia.ts:47` and `:160`, `scan.ts:70` and `:181`
+    `cursor < source.length -> cursor <= source.length`: the loop returns on an `undefined`
+    character, so the extra boundary iteration produces the same result.
+  - `parse-trivia.ts:165` `char === '\n' -> false` and `'\n' -> ""`: the newline branch
+    returns the same `{ comments, commaSeen, end }` the generic fall-through already returns.
+
+  Timeout-detected mutants (infinite loops; Stryker's default scores these as killed):
+  - `parse.ts:127` and `:230`, `parse-trivia.ts:47` and `:160` (loop body to `{}`): removing
+    the cursor advance makes the scan loop never terminate.
+  - `scan.ts:78` `cursor += 1 -> cursor -= 1`: the string-escape skip runs backward.
+  - `scan.ts:351` (line-comment newline literal to `""`): `indexOf('')` returns the start
+    offset, so the comment scanner never advances.
+  - `scan.ts:401` cluster: breaking the unterminated-block-comment close check makes
+    `scanBlockComment` return a non-advancing end, so the caller loops forever.
 - 2026-06-30 (sidecars + mutation testing):
   Extracted the non-runtime tooling into three per-concern sidecar packages
   (`jsonc-edit.fuzz`, `jsonc-edit.bench`, `jsonc-edit.conformance`) so the runtime
