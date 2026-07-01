@@ -1,0 +1,9 @@
+{
+  "//": "COMMITTED FILE (JSON has no comments; this key is a warning, ignored by the loader). Only put LOCAL, LOOPBACK, NO-AUTH MCP servers here, e.g. the Slint embedded MCP endpoints below, which are reachable only after `mise run //packages/<app>:mcp` launches the app on 127.0.0.1. NEVER add MCP servers carrying tokens/secrets/remote URLs to this tracked file; keep those in a separate local config. Each entry shows 'unavailable' until its app is running.",
+  "mcpServers": {
+    "slint-music-player": {
+      "type": "http",
+      "url": "http://127.0.0.1:9315/mcp"
+    }
+  }
+}

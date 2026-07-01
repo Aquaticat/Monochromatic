@@ -1,6 +1,10 @@
 # Local config, secrets, and machine-specific files
 .kopiaignore
-.mcp.json
+# .mcp.json is intentionally TRACKED (not ignored): it only holds the local Slint
+# embedded-MCP endpoints (127.0.0.1 loopback, no auth, no tokens), wired to the
+# `mise run mcp` tasks for agent-driven UI testing. Its own "//" comment warns
+# against adding secret-bearing MCP servers there; those belong in a separate,
+# genuinely local file. See docs/runbook (Slint testing).
 /betterleaks.toml
 /forbidden-strings.local.txt
 .env

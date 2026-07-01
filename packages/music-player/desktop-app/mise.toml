@@ -158,6 +158,51 @@ process.env.SLINT_EMIT_DEBUG_INFO = '1'
 runCargo(['nextest', 'run'])
 """
 
+[tasks.mcp]
+description = "Build --features slint/mcp (debug) and run HEADLESS with the embedded Slint MCP server on SLINT_MCP_PORT (default 9315) so an agent can drive/inspect the UI. Pass file/folder paths after --."
+usage = '''
+arg "[args]" var=#true help="File or folder paths to enqueue (loaded PAUSED)"
+'''
+# The embedded MCP server (Slint 1.17 `slint/mcp` feature, activated by
+# SLINT_MCP_PORT) exposes get_element_tree / find_elements_by_id / take_screenshot
+# / click_element / set_element_value etc. over MCP Streamable HTTP on
+# 127.0.0.1:<port>/mcp. The repo-root .mcp.json points Claude at that URL, so a
+# session runs THIS task first, then drives the running app through the MCP tools.
+# - `mcp` is passed on the command line, NEVER added to Cargo.toml [features], so
+#   the size-optimized production binary never carries the introspection server.
+# - SLINT_EMIT_DEBUG_INFO=1 is required so element ids + source locations survive
+#   into the compiled UI for find_elements_by_id / the element tree.
+# - SLINT_BACKEND=headless renders real frames off-screen (software renderer, which
+#   this crate already enables) so take_screenshot works with no window on your
+#   desktop; override to empty (SLINT_BACKEND= ) to run on the live session, or run
+#   nested under niri for a GPU render off your main workspace.
+# The app loads PAUSED (no --start-playing), so nothing plays until an MCP client
+# clicks the transport; drive volume down first if a test must exercise playback.
+shell = "node -e"
+run = """
+{{vars.cargo_dispatch}}
+{{vars.parse_usage_args}}
+const { mkdirSync } = await import('node:fs')
+const { join } = await import('node:path')
+process.env.SLINT_EMIT_DEBUG_INFO = '1'
+process.env.SLINT_MCP_PORT = process.env.SLINT_MCP_PORT ?? '9315'
+process.env.SLINT_BACKEND = process.env.SLINT_BACKEND ?? 'headless'
+// Isolate this test instance's state under a gitignored throwaway (target/mcp-xdg)
+// so it never grabs the real ~/.config/musicplayer cache lock held by an installed
+// music-player, and never mutates the user's real session/cache (throwaway-fixture
+// rule). directories/ProjectDirs honors these XDG vars.
+const xdgRoot = join(process.cwd(), 'target', 'mcp-xdg')
+for (const sub of ['config', 'cache', 'data']) { mkdirSync(join(xdgRoot, sub), { recursive: true }) }
+process.env.XDG_CONFIG_HOME = join(xdgRoot, 'config')
+process.env.XDG_CACHE_HOME = join(xdgRoot, 'cache')
+process.env.XDG_DATA_HOME = join(xdgRoot, 'data')
+runCargo(['build', '--features', 'slint/mcp'])
+const extras = parseUsageArgs(process.env.usage_args ?? '')
+const bin = process.platform === 'win32' ? './target/debug/music-player.exe' : './target/debug/music-player'
+console.error(`music-player MCP server: http://127.0.0.1:${process.env.SLINT_MCP_PORT}/mcp (backend=${process.env.SLINT_BACKEND || 'default'})`)
+execFileSync(bin, extras, { stdio: 'inherit' })
+"""
+
 [tasks."build:container"]
 description = "Release build forced inside the container (asserts the container path)"
 shell = "node -e"
