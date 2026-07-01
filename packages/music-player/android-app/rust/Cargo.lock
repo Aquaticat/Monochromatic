@@ -188,6 +188,7 @@ dependencies = [
  "opus",
  "ringbuf",
  "symphonia",
+ "truepeak-core",
 ]
 
 [[package]]
@@ -689,6 +690,10 @@ dependencies = [
  "num-integer",
  "strength_reduce",
 ]
+
+[[package]]
+name = "truepeak-core"
+version = "0.1.0"
 
 [[package]]
 name = "unicode-ident"

@@ -55,3 +55,12 @@ ndk = { version = "0.9", features = ["audio"] }
 # data callback (consumer), so the realtime callback never decodes or allocates.
 # Same major version as the desktop crate, whose engine this one ports.
 ringbuf = "0.4"
+
+# Shared true-peak core (src/truepeak.rs): the Catmull-Rom meter and the whole-buffer
+# meter helper now come from this in-repo crate instead of an Android-local copy, so the
+# desktop and Android measure identically. A path dependency (not a version) because it is
+# an unpublished in-repo crate; it carries its own empty [workspace] table, so this path
+# dep does not pull this Gradle-island crate into a shared cargo workspace. It has zero
+# third-party dependencies and no C, so it cross-compiles for the Android ABIs with nothing
+# extra to clear.
+truepeak-core = { path = "../../truepeak-core" }
