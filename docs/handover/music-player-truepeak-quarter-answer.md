@@ -124,6 +124,22 @@ cache identity from default_policy().cache_identity(decoder_stack_id()).
 
 - Merged main into truepeak-quarter-answer cleanly; bench --buckets still
   reproduces 17 clamps / 0.367 / 0.50 on the merged branch.
+- Second main merge landed cleanly (Android native decision service finished
+  on main; Kotlin peak cache and gain math moved into it).
+- Bench updated to the new engine: --proportional replays the stage-two ledger
+  from local legacy constants; --buckets/--zoom read every dial from the
+  SHIPPED default_policy (single source of truth) and reproduce
+  17 clamps / 0.367 / 0.50 in budget (decoded 228014 s; profile-less FLACs now
+  correctly take the lossless 10% dial instead of the bones 7%).
+- API-boundary refactor (library concerns into the library): new
+  truepeak-core inputs.rs (probe_inputs_from_file/_from_bytes: FLAC sniff ->
+  lossless provenance + bones hot bins; documented degradation to the bare
+  bucket), policy.rs stack_id(description) for decoder-stack ids,
+  cached_or_resolve now provenance-aware (provenance + bones params).
+  62/62 core tests pass.
+- Missing-logger gap filed as issue #266 (everything must be logged; user
+  handles implementations later); inputs.rs degradation and bones failures
+  named as priority sites.
 - ENGINE REDESIGN LANDED on the branch (commit 685f5ce96): truepeak-core now
   ships the bucket-zoom policy. New modules: probe.rs (frontier zoom driving
   the seekable source), bucketpolicy.rs (BucketProbe/BucketTable/
