@@ -26,7 +26,11 @@ That likely explains missing Android model, Android facets, or run-target behavi
 It is no longer proven as the sole explanation for an empty Device Manager inventory:
 source inspection shows Device Manager's local emulator provider should read AVDs through the SDK-backed
 `AvdManagerConnection`, and a scratch probe using IDEA's own Android plugin jars can list the real AVD as valid.
-A secondary hypothesis is stale custom Android plugin interference or runtime UI/provider state inside the running IDE.
+The stale custom Android plugin is now unlikely to be loaded.
+`lsof` on the live IDEA process shows Android plugin jars mapped from the current Linux plugin under
+`/var/home/user/.local/share/JetBrains/IntelliJIdea2026.2/android`,
+and no mapped files under `/var/home/user/.config/JetBrains/IntelliJIdea2026.2/plugins/android`.
+Runtime UI/provider state inside the running IDE remains a plausible next target.
 Do not use IDEA's Android plugin auto-update as a workaround:
 the user already checked the plugin is current,
 and auto-update can select a Mac or Windows Android plugin build that does not load here.
@@ -124,6 +128,22 @@ compatible only with 262.8117.*
 /var/home/user/.local/share/JetBrains/IntelliJIdea2026.2/android
 version: 262.8377.35-linux-x86_64
 ```
+
+The live IDEA process maps Android plugin jars from the current Linux plugin path:
+
+```text
+/var/home/user/.local/share/JetBrains/IntelliJIdea2026.2/android/lib/android.jar
+/var/home/user/.local/share/JetBrains/IntelliJIdea2026.2/android/lib/ffmpeg-linux-x64-6.0-1.5.9.jar
+/var/home/user/.local/share/JetBrains/IntelliJIdea2026.2/android/lib/javacpp-linux-x64-1.5.9.jar
+```
+
+`lsof -p <idea-pid>` showed no mapped files under:
+
+```text
+/var/home/user/.config/JetBrains/IntelliJIdea2026.2/plugins/android
+```
+
+That makes the stale wrong-OS plugin directory unlikely to be the currently loaded Android plugin.
 
 The opened Monochromatic project currently has no Android facet in the checked `.idea` module files:
 
@@ -340,8 +360,11 @@ If data wipe or recreation is needed, use a disposable AVD or ask first.
     - Create a disposable worktree or fixture with an IDEA-supported Android model,
       then open that disposable project in IDEA and check whether the affected surface repopulates.
 
-5.  Investigate whether the stale custom Android plugin directory is loaded or ignored.
-    If evidence shows it is loaded, move it aside only with a safe backup path and document the exact change.
+5.  Treat stale custom Android plugin interference as unlikely unless new evidence appears.
+    The live process maps the current Linux plugin jars from `.local/share`,
+    and no files from the stale `.config/.../plugins/android` directory.
+    If future evidence shows that stale directory is loaded after restart,
+    move it aside only with a safe backup path and document the exact change.
 
 6.  Check IDEA settings for Android SDK Platform installation.
     Also check whether the Android SDK Updater pane reports a missing platform.
