@@ -284,7 +284,7 @@ async function cargoTomlLicenseExpression(
 }
 
 /**
- * Returns package directory path for a manifest under `packages/*/*`.
+ * Returns package directory path for a two-level package manifest.
  *
  * @param manifestPath - package.json or Cargo.toml path.
  *
@@ -341,7 +341,7 @@ function addPackageLicenseExpression(
 }
 
 /**
- * Reads every `packages/*/*` manifest and records package-local license text needs.
+ * Reads every two-level package manifest and records package-local license text needs.
  *
  * @returns Map from package directory to known license text identifiers.
  *
@@ -393,7 +393,7 @@ async function collectPackageLicenseTextIds(): Promise<Map<string, Set<PackageLi
 }
 
 /**
- * Generates package-local license texts under `packages/*/*/LICENSES/` from
+ * Generates package-local license texts under each package's `LICENSES/` directory from
  * canonical root `LICENSES/` sources, based on each package manifest's license
  * expression.
  *
