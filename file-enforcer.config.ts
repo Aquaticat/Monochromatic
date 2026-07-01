@@ -508,6 +508,17 @@ ${await cat(['./AGENTS.md',],)}`,
 
   generateForbiddenStringsRules(),
 
+  // The GPL/LGPL texts must stay verbatim, so these generated copies intentionally omit a file header.
+  overwrite({
+    dest: './packages/cli/forbidden-strings/GPL-3.0-or-later.txt',
+    content: await cat(['./LICENSES/GPL-3.0-or-later.txt',],),
+  },),
+
+  overwrite({
+    dest: './packages/cli/forbidden-strings/LGPL-3.0-or-later.txt',
+    content: await cat(['./LICENSES/LGPL-3.0-or-later.txt',],),
+  },),
+
   generateResolvedBrowserslistTargets(),
 
   manageHarperLsp4ij(),

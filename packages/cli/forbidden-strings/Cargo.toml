@@ -9,6 +9,8 @@ include = [
   "Cargo.toml",
   "Cargo.lock",
   "README.md",
+  "GPL-3.0-or-later.txt",
+  "LGPL-3.0-or-later.txt",
 ]
 keywords = ["security", "secrets", "scanner", "deny-list", "ci"]
 license = "LGPL-3.0-or-later"
