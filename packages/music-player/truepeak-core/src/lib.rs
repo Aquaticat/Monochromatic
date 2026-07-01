@@ -46,6 +46,10 @@ mod resolve;
 #[cfg(feature = "service")]
 mod cache;
 
+/// The cache-aware resolve composing the cache and resolver, behind the `service` feature.
+#[cfg(feature = "service")]
+mod service;
+
 /// Re-exports the meter type and its whole-buffer convenience function.
 pub use crate::meter::{TruePeakMeter, true_peak_interleaved};
 
@@ -73,3 +77,7 @@ pub use crate::resolve::resolve_decision;
 /// Re-exports the decision cache and its error, behind the `service` feature.
 #[cfg(feature = "service")]
 pub use crate::cache::{CacheError, DecisionCache};
+
+/// Re-exports the cache-aware resolve, behind the `service` feature.
+#[cfg(feature = "service")]
+pub use crate::service::cached_or_resolve;
