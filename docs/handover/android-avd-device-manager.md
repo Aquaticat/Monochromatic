@@ -31,13 +31,32 @@ The stale custom Android plugin is now unlikely to be loaded.
 `/var/home/user/.local/share/JetBrains/IntelliJIdea2026.2/android`,
 and no mapped files under `/var/home/user/.config/JetBrains/IntelliJIdea2026.2/plugins/android`.
 A stronger root-cause candidate is now the stale global IntelliJ Android SDK entry:
-`jdk.table.xml` points IDEA at Android API 36 under `/var/home/user/Android/Sdk/platforms/android-36`,
+`jdk.table.xml` pointed IDEA at Android API 36 under `/var/home/user/Android/Sdk/platforms/android-36`,
 but this SDK currently has only Android 37.0 and Android CANARY platforms installed.
 For IntelliJ IDEA, `AndroidSdksImpl.tryToChooseAndroidSdk()` does not use the saved Android Studio SDK path first;
 it falls back to Android SDK entries from `ProjectJdkTable`.
 If the only Android SDK entry points at a missing platform,
 `AvdManagerConnection.getDefaultAvdManagerConnection()` can end up with no SDK handler even though
 `android.sdk.path.xml` and ADB use the real SDK path.
+
+The user closed IDEA and chose to update the SDK entry rather than install Android API 36.
+The global IntelliJ SDK table was updated to Android API 37.0,
+with a backup saved beside it:
+
+```text
+/var/home/user/.config/JetBrains/IntelliJIdea2026.2/options/jdk.table.xml.before-android-37-update-20260701
+```
+
+Verification after editing:
+
+```text
+xml-ok
+Android API 37.0 Platform
+additional sdk="android-37.0"
+all referenced android-37.0 files exist
+no android-36 references remain in jdk.table.xml
+```
+
 Do not use IDEA's Android plugin auto-update as a workaround:
 the user already checked the plugin is current,
 and auto-update can select a Mac or Windows Android plugin build that does not load here.
@@ -103,7 +122,7 @@ IDEA logs show ADB initialized from:
 
 `/home/user` and `/var/home/user` resolve to the same home on this machine.
 
-However, IntelliJ's global SDK table is stale:
+IntelliJ's global SDK table was stale before the manual update:
 
 ```xml
 <name value="Android API 36.0, extension level 17 Platform" />
@@ -112,7 +131,7 @@ However, IntelliJ's global SDK table is stale:
 <additional sdk="android-36" />
 ```
 
-The real SDK no longer has that platform directory:
+The real SDK no longer had that platform directory:
 
 ```text
 missing /var/home/user/Android/Sdk/platforms/android-36
@@ -120,8 +139,10 @@ missing /var/home/user/Android/Sdk/sources/android-36
 exists /var/home/user/Android/Sdk/platforms/android-37.0
 ```
 
-`/var/home/user/Android/Sdk/cmdline-tools/latest/bin/sdkmanager --list` shows `platforms;android-36`
-is available to reinstall.
+`/var/home/user/Android/Sdk/cmdline-tools/latest/bin/sdkmanager --list` showed `platforms;android-36`
+was available to reinstall,
+but the user chose to update IntelliJ's SDK entry instead.
+The entry now points at installed Android 37.0 paths.
 
 IDEA logs show the emulator previously launched from IDEA on 2026-06-14,
 2026-06-25, and 2026-06-28.
@@ -395,11 +416,8 @@ If data wipe or recreation is needed, use a disposable AVD or ask first.
     If future evidence shows that stale directory is loaded after restart,
     move it aside only with a safe backup path and document the exact change.
 
-6.  Recover the stale Android SDK platform entry with user-approved state change.
-    Best candidate: install `platforms;android-36` into `/var/home/user/Android/Sdk`,
-    because it exactly matches `jdk.table.xml` and should let IntelliJ's `AndroidSdksImpl` recover the SDK root
-    without editing global IDE config while IDEA is running.
-    Alternative: close IDEA and update the global Android SDK table to Android 37.0 through IDE settings or config.
+6.  Reopen IDEA and check whether Device Manager now lists `Pixel_9_Pro_Fold`.
+    Also watch `idea.log` for new `AndroidSdksImpl`, `AvdManagerConnection`, or SDK platform warnings.
 
 7.  If AGP mismatch remains the explanation for the affected surface,
     prepare a JetBrains issue bundle or local workaround note:
