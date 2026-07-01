@@ -149,7 +149,22 @@ cache identity from default_policy().cache_identity(decoder_stack_id()).
   android native verified via `mise run build:native` cargo-ndk cross-build
   (the crate cannot host-compile by design: ndk-sys + gxhash target features);
   clippy + rust-linter clean on all four crates.
-- Next: merge truepeak-quarter-answer into main, re-verify on main.
+- MERGED TO MAIN (merge commit abc7b7cc8) and re-verified on main: core 62/62
+  (mise run test), bench --buckets reproduces 17 clamps / 0.367 / 0.50 in
+  budget (side files copied into main's gitignored out/; regenerable via
+  analysis/tags-sweep.mjs and analysis/flac-bones.mjs extract), desktop 78/78
+  (mise run test). Android native verified via cargo-ndk cross-build on the
+  branch immediately before the merge with identical content.
+
+## Phase two status: complete
+
+The engine ships the bucket-zoom policy (probe.rs, bucketpolicy.rs, bones.rs,
+inputs.rs), consumers are on the simplified boundary, and everything is on
+main. Remaining follow-ups: logging (issue #266), platform tag readers for
+store/youtube provenance (desktop and android currently get lossless + bones
+via probe_inputs_from_file and land everything else in bare), android
+file-bytes plumbing for bones over JNI fds, and the plan's standing
+exact-decoded-window verification of the bin-level corpus numbers.
 - ENGINE REDESIGN LANDED on the branch (commit 685f5ce96): truepeak-core now
   ships the bucket-zoom policy. New modules: probe.rs (frontier zoom driving
   the seekable source), bucketpolicy.rs (BucketProbe/BucketTable/
