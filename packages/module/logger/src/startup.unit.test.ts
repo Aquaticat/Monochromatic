@@ -217,7 +217,7 @@ await describe({
 
         const result = await runProbe({
           cwd: project.path,
-          env: { DEBUG: 'true', },
+          env: { MONOCHROMATIC_VERBOSE: 'true', },
           scriptPath: project.scriptPath,
         },);
         expect(result.exitCode,)

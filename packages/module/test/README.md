@@ -116,7 +116,7 @@ tag chain is in the line's prefix,
 verbosity.
  Per-test `PASS` lines are at `debug` (hidden by default;
  surface with
-`DEBUG=true`).
+`MONOCHROMATIC_VERBOSE=true`).
  On failure the suite emits a `FAIL (<duration>)` line at `error`.
  Empty-name
 suites downgrade the success line to `debug`.
@@ -268,7 +268,7 @@ test name. Empty-name suites contribute no tag segment.
 - **`debug`**: per-test `[chain...] PASS (<duration>)` for each passing test (full
   hierarchy in the tag chain), per-suite `[chain...] start (concurrency: N)`
   traces, and the rollup for empty-name (invisible) suites. Hidden by default;
-  enable with `DEBUG=true` or `--verbose`.
+  enable with `MONOCHROMATIC_VERBOSE=true` or `--verbose`.
 
 The duration renders adaptively: below 10ms shows one decimal place (`0.3ms`,
 `9.9ms`), 10ms to 999ms shows whole milliseconds (`51ms`, `999ms`), and 1000ms
@@ -304,7 +304,7 @@ a successful run prints (default verbosity):
 The empty-name root suite's enumeration goes to `debug`,
  so it stays silent.
  With
-`DEBUG=true`,
+`MONOCHROMATIC_VERBOSE=true`,
  per-test detail surfaces too:
 
 ```text

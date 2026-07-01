@@ -631,8 +631,8 @@ Deliverables under `src/fuzz/`,
    and runtime-environment
   matrices (console present or absent,
    `queueMicrotask` present or absent,
-  `DEBUG`,
-   `WARN`,
+  `MONOCHROMATIC_VERBOSE`,
+   `MONOCHROMATIC_WARN`,
    `--verbose`,
    browser-like or node).
 - `arb-sink-config.ts`:
@@ -740,10 +740,10 @@ Each concrete sink gets properties over its own logic,
 - console (`src/sinks/console.ts`):
    contiguous same-level runs collapse to one
   `console.*` call and level transitions split (the `groupRuns` invariant);
-  verbose gating drops debug and trace unless `DEBUG`,
+  verbose gating drops debug and trace unless `MONOCHROMATIC_VERBOSE`,
    `--verbose`,
    or browser;
-  `WARN=false` drops warn;
+  `MONOCHROMATIC_WARN=false` drops warn;
    each level routes to its mapped method;
    a missing or
   non-callable `console.*` never throws;
@@ -882,7 +882,7 @@ Deliverables:
   the exact `LogRecord`;
    the level-to-`console.*` mapping;
    the verbose and
-  `WARN=false` gating truth table.
+  `MONOCHROMATIC_WARN=false` gating truth table.
 - A committed adversarial-message corpus under `src/fuzz/` (the families from
   phase 2) so the boundary cases are fixed regression seeds,
    the logger analog of
@@ -1243,7 +1243,7 @@ Seams needing direct properties or named coverage blocks:
    pending-write tracking)
 - `src/sinks/console.ts` (`groupRuns`,
    verbose detection,
-   WARN gating,
+   MONOCHROMATIC_WARN gating,
    batching)
 - `src/sinks/file.ts` (`findNodeModulesUp`,
    verify round-trip,

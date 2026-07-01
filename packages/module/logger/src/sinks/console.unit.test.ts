@@ -86,7 +86,7 @@ await describe({
     it({
       name: 'single write defers until next microtask',
       fn: async ({ sinon, },) => {
-        process.env.DEBUG = 'true';
+        process.env.MONOCHROMATIC_VERBOSE = 'true';
         const sink = createConsoleSink();
         const spy = sinon.spy(
           console,
@@ -107,11 +107,11 @@ await describe({
     },),
 
     it({
-      // Regression: WARN=false drops warn records so machine-protocol consumers
+      // Regression: MONOCHROMATIC_WARN=false drops warn records so machine-protocol consumers
       // (such as the toml-edit conformance codec) keep their output clean.
-      name: 'WARN=false suppresses warn records',
+      name: 'MONOCHROMATIC_WARN=false suppresses warn records',
       fn: async ({ sinon, },) => {
-        process.env.WARN = 'false';
+        process.env.MONOCHROMATIC_WARN = 'false';
         const sink = createConsoleSink();
         const spy = sinon.spy(
           console,
@@ -128,17 +128,17 @@ await describe({
           .toBe(0,);
         Reflect.deleteProperty(
           process.env,
-          'WARN',
+          'MONOCHROMATIC_WARN',
         );
       },
     },),
 
     it({
-      name: 'warn records emit when WARN is unset',
+      name: 'warn records emit when MONOCHROMATIC_WARN is unset',
       fn: async ({ sinon, },) => {
         Reflect.deleteProperty(
           process.env,
-          'WARN',
+          'MONOCHROMATIC_WARN',
         );
         const sink = createConsoleSink();
         const spy = sinon.spy(
@@ -160,7 +160,7 @@ await describe({
     it({
       name: 'contiguous same-level runs collapse to one console call',
       fn: async ({ sinon, },) => {
-        process.env.DEBUG = 'true';
+        process.env.MONOCHROMATIC_VERBOSE = 'true';
         const sink = createConsoleSink();
         const spy = sinon.spy(
           console,
@@ -192,7 +192,7 @@ await describe({
     it({
       name: 'debug writes to process stderr when process stderr is available',
       fn: async ({ sinon, },) => {
-        process.env.DEBUG = 'true';
+        process.env.MONOCHROMATIC_VERBOSE = 'true';
         const sink = createConsoleSink();
         const stderrSpy = sinon.stub(
           process.stderr,
@@ -222,7 +222,7 @@ await describe({
     it({
       name: 'level transitions split into separate console calls',
       fn: async ({ sinon, },) => {
-        process.env.DEBUG = 'true';
+        process.env.MONOCHROMATIC_VERBOSE = 'true';
         const sink = createConsoleSink();
         const stderrSpy = sinon.stub(
           process.stderr,
@@ -273,7 +273,7 @@ await describe({
     it({
       name: 'formats each record as [level] [iso] message',
       fn: async ({ sinon, },) => {
-        process.env.DEBUG = 'true';
+        process.env.MONOCHROMATIC_VERBOSE = 'true';
         const sink = createConsoleSink();
         const spy = sinon.spy(
           console,
@@ -295,7 +295,7 @@ await describe({
     it({
       name: 'each level routes to its mapped output channel',
       fn: async ({ sinon, },) => {
-        process.env.DEBUG = 'true';
+        process.env.MONOCHROMATIC_VERBOSE = 'true';
         const sink = createConsoleSink();
         // Stub (not spy) console.trace: Node's Console.prototype.trace
         // internally calls this.error(stack), so a spied trace would delegate
@@ -386,9 +386,9 @@ await describe({
     it({
       name: 'silent gating drops debug when verbose is off',
       fn: async ({ sinon, },) => {
-        delete process.env.DEBUG;
+        delete process.env.MONOCHROMATIC_VERBOSE;
         // A fresh sink recomputes verbose on its first write, so clearing
-        // DEBUG here yields verbose=false (process.argv has no --verbose in a
+        // MONOCHROMATIC_VERBOSE here yields verbose=false (process.argv has no --verbose in a
         // normal test run, and 'window' is not in globalThis under Node).
         const sink = createConsoleSink();
         const stderrSpy = sinon.stub(
@@ -418,10 +418,10 @@ await describe({
     },),
 
     it({
-      name: '--verbose in process.argv enables debug output without DEBUG',
+      name: '--verbose in process.argv enables debug output without MONOCHROMATIC_VERBOSE',
       fn: async ({ sinon, },) => {
-        delete process.env.DEBUG;
-        // A fresh sink recomputes verbose on its first write; with DEBUG unset
+        delete process.env.MONOCHROMATIC_VERBOSE;
+        // A fresh sink recomputes verbose on its first write; with MONOCHROMATIC_VERBOSE unset
         // and no browser `window`, the --verbose argv flag is the sole trigger.
         using _restoreArgv = withVerboseArgv();
         const sink = createConsoleSink();
@@ -444,7 +444,7 @@ await describe({
     it({
       name: 'cross-microtask writes produce separate console calls',
       fn: async ({ sinon, },) => {
-        process.env.DEBUG = 'true';
+        process.env.MONOCHROMATIC_VERBOSE = 'true';
         const sink = createConsoleSink();
         const spy = sinon.spy(
           console,
@@ -470,7 +470,7 @@ await describe({
     it({
       name: 'flush() drains synchronously before the await resolves',
       fn: async ({ sinon, },) => {
-        process.env.DEBUG = 'true';
+        process.env.MONOCHROMATIC_VERBOSE = 'true';
         const sink = createConsoleSink();
         const spy = sinon.spy(
           console,

@@ -71,7 +71,7 @@ l.info(`status ${code} for ${url}`,);
 ```
 
 The console sink silences `debug` and `trace` by default in non-browser environments.
-Set `DEBUG=true` or pass `--verbose` to enable them.
+Set `MONOCHROMATIC_VERBOSE=true` or pass `--verbose` to enable them.
 In browsers,
  verbose mode is enabled automatically because DevTools
 already provides its own log-level filtering.

@@ -30,7 +30,7 @@ const SILENT_LEVELS: ReadonlySet<string> = new Set([
 /**
  * Detects verbose mode from environment variables, process arguments,
  * and runtime environment.
- * Checks `process.env.DEBUG`, `process.argv` for `--verbose`,
+ * Checks `process.env.MONOCHROMATIC_VERBOSE`, `process.argv` for `--verbose`,
  * and whether the runtime is a browser.
  * Browser environments enable verbose by default because DevTools
  * already provides its own log-level filtering, making logger-side
@@ -41,7 +41,7 @@ const SILENT_LEVELS: ReadonlySet<string> = new Set([
  *
  * @example
  * ```ts
- * // With DEBUG=true in environment
+ * // With MONOCHROMATIC_VERBOSE=true in environment
  * detectVerbose(); // true
  * ```
  *
@@ -54,13 +54,13 @@ const SILENT_LEVELS: ReadonlySet<string> = new Set([
 function detectVerbose(): boolean {
   try {
     if (((typeof process) !== 'undefined') && (process.env
-      .DEBUG
+      .MONOCHROMATIC_VERBOSE
       === 'true'))
       return true;
   }
   catch (error: unknown) {
     reportLoggerInternalError({
-      context: 'DEBUG environment probe failed during verbose detection',
+      context: 'MONOCHROMATIC_VERBOSE environment probe failed during verbose detection',
       error,
     },);
   }
@@ -100,9 +100,10 @@ function detectVerbose(): boolean {
 }
 
 /**
- * Detects explicit warn suppression via the `WARN` environment variable.
+ * Detects explicit warn suppression via the `MONOCHROMATIC_WARN` environment
+ * variable.
  *
- * Setting `WARN=false` drops `warn`-level records, for machine-protocol
+ * Setting `MONOCHROMATIC_WARN=false` drops `warn`-level records, for machine-protocol
  * consumers (such as a stdin/stdout codec) whose output streams must stay clean
  * on success. Only the exact string `'false'` suppresses; any other value, or an
  * absent variable, leaves `warn` enabled. Read on each call (not memoized) so a
@@ -112,19 +113,19 @@ function detectVerbose(): boolean {
  *
  * @example
  * ```ts
- * // With WARN=false in environment
+ * // With MONOCHROMATIC_WARN=false in environment
  * isWarnSuppressed(); // true
  * ```
  */
 function isWarnSuppressed(): boolean {
   try {
     return ((typeof process) !== 'undefined') && (process.env
-      .WARN
+      .MONOCHROMATIC_WARN
       === 'false');
   }
   catch (error: unknown) {
     reportLoggerInternalError({
-      context: 'WARN environment probe failed during warn suppression detection',
+      context: 'MONOCHROMATIC_WARN environment probe failed during warn suppression detection',
       error,
     },);
     return false;
@@ -415,7 +416,7 @@ export function createConsoleSink(): Sink {
    * next microtask flush; `scheduled` guards against redundant
    * `queueMicrotask` calls within one sync frame; `verboseCache` memoizes
    * verbose detection (the sentinel means not yet computed) so a host can
-   * mutate `process.env.DEBUG` before the first log and still be seen.
+   * mutate `process.env.MONOCHROMATIC_VERBOSE` before the first log and still be seen.
    */
   const state: {
     buffer: LogRecord[];
@@ -430,7 +431,7 @@ export function createConsoleSink(): Sink {
   /**
    * Reads the memoized verbose flag, evaluating via {@link detectVerbose} on
    * first call. Lazy rather than at construction so tests (and hosts) can
-   * mutate `process.env.DEBUG` between construction and first log without a
+   * mutate `process.env.MONOCHROMATIC_VERBOSE` between construction and first log without a
    * stale cache.
    *
    * @returns Whether verbose logging is enabled for this process.
@@ -485,7 +486,7 @@ export function createConsoleSink(): Sink {
   /**
    * Enqueues a record for microtask-batched emission. Silently discards
    * `debug`/`trace` unless {@link getVerbose} reports verbose mode is active
-   * (via `DEBUG=true` env var, `--verbose` argv, or browser environment), and
+   * (via `MONOCHROMATIC_VERBOSE=true` env var, `--verbose` argv, or browser environment), and
    * drops `warn` when {@link isWarnSuppressed}.
    *
    * @param record - Log record to write.
