@@ -16,8 +16,10 @@ Suggested skills for the next session:
 ## Current status
 
 The AVD files are present and the real Android SDK can list them.
-IntelliJ IDEA's project-level Device Manager still does not show them.
-Editing `.idea/deviceManager.xml` did not help.
+The user confirmed IntelliJ IDEA's Device Manager now shows `Pixel_9_Pro_Fold`
+after the global IntelliJ Android SDK entry was updated from missing Android API 36 paths
+to installed Android 37.0 paths.
+Editing `.idea/deviceManager.xml` did not help and was not part of the final fix.
 
 AGP incompatibility is a verified Android sync failure,
 because `packages/music-player/android-app` uses AGP 9.2.1 and the current IDEA Android plugin reports latest
@@ -56,6 +58,10 @@ additional sdk="android-37.0"
 all referenced android-37.0 files exist
 no android-36 references remain in jdk.table.xml
 ```
+
+The user reopened IDEA and confirmed the AVD appeared.
+Durable troubleshooting doc:
+`docs/troubleshooting/intellij-idea-device-manager-avd-sdk-entry.md`.
 
 Do not use IDEA's Android plugin auto-update as a workaround:
 the user already checked the plugin is current,
@@ -237,9 +243,9 @@ Opened the Android package root as a separate IDEA project after user approval:
 `idea.log` then showed a new `Project(name=android-app, ...)`,
 project root `/var/home/user/Monochromatic/packages/music-player/android-app`,
 ADB status retrieval from the Android plugin, and Gradle project sync updates for that path.
-User checked Device Manager in the new `android-app` IDEA window.
-Result: it still does not show the AVD.
-This weakens the hypothesis that root monorepo project recognition alone is the cause.
+User checked Device Manager in the new `android-app` IDEA window before the SDK table fix.
+Result then: it still did not show the AVD.
+This weakened the hypothesis that root monorepo project recognition alone was the cause.
 
 Immediately after that check, `idea.log` showed a stronger cause:
 
@@ -416,10 +422,10 @@ If data wipe or recreation is needed, use a disposable AVD or ask first.
     If future evidence shows that stale directory is loaded after restart,
     move it aside only with a safe backup path and document the exact change.
 
-6.  Reopen IDEA and check whether Device Manager now lists `Pixel_9_Pro_Fold`.
-    Also watch `idea.log` for new `AndroidSdksImpl`, `AvdManagerConnection`, or SDK platform warnings.
+6.  No further Device Manager inventory recovery is needed unless the AVD disappears again.
+    The confirmed fix was updating the global IntelliJ Android SDK table entry to installed Android 37.0 paths.
 
-7.  If AGP mismatch remains the explanation for the affected surface,
+7.  If Android project model features are still needed in this IDEA build,
     prepare a JetBrains issue bundle or local workaround note:
 
     - IDEA build number
