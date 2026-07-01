@@ -1,22 +1,29 @@
+# The apps depend on this crate WITHOUT the `service` feature (meter and gain only), so the
+# default build stays dependency-free. The crate's own tasks build and test the WHOLE crate,
+# `--all-features`, so the Turso-backed decision cache is covered here.
 [tasks.build]
-description = "Build the truepeak-core library in release mode"
-run = "cargo build --release"
+description = "Build the truepeak-core library in release mode (all features)"
+run = "cargo build --release --all-features"
 
 [tasks."build:debug"]
-description = "Build the truepeak-core library in debug mode"
-run = "cargo build"
+description = "Build the truepeak-core library in debug mode (all features)"
+run = "cargo build --all-features"
+
+[tasks."build:default"]
+description = "Build the meter-only default surface, matching what the apps pull"
+run = "cargo build --release"
 
 [tasks.lint]
-description = "cargo check (no codegen)"
-run = "cargo check"
+description = "cargo check (no codegen, all features)"
+run = "cargo check --all-features"
 
 [tasks."lint:clippy"]
-description = "Run clippy with warnings denied"
-run = "cargo clippy --release -- -D warnings"
+description = "Run clippy with warnings denied (all features)"
+run = "cargo clippy --release --all-features -- -D warnings"
 
 [tasks."format:clippy"]
 description = "Apply clippy's machine-applicable suggestions in place"
-run = "cargo clippy --fix --allow-dirty --allow-staged"
+run = "cargo clippy --fix --allow-dirty --allow-staged --all-features"
 
 [tasks."lint:rust"]
 description = "Run monochromatic-rust-linter (max-lines + require-rustdoc) over this package's .rs"
@@ -25,9 +32,9 @@ description = "Run monochromatic-rust-linter (max-lines + require-rustdoc) over 
 run = "cargo run --quiet --manifest-path ../../linter/rust/Cargo.toml -- ."
 
 [tasks.test]
-description = "cargo nextest run"
-run = "cargo nextest run --release"
+description = "cargo nextest run (all features)"
+run = "cargo nextest run --release --all-features"
 
 [tasks."test:debug"]
-description = "cargo nextest run in debug mode for fast TDD iteration"
-run = "cargo nextest run"
+description = "cargo nextest run in debug mode for fast TDD iteration (all features)"
+run = "cargo nextest run --all-features"

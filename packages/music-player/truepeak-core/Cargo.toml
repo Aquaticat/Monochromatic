@@ -30,9 +30,22 @@ disallowed_methods = "deny"
 name = "truepeak_core"
 path = "src/lib.rs"
 
+# The pure surface (meter, gain, window math, policy identity, source contract, and the
+# resolver) has NO dependencies, so a consumer that only wants the meter cross-compiles for
+# the Android ABIs with nothing extra to clear. The persistent decision cache is behind the
+# optional `service` feature so it does not force `turso`/`tokio` onto the meter-only apps;
+# each platform enables it when it adopts the shared cache (desktop already carries these
+# crates, and the Android cross-compile of `turso` was proven by the Stage-zero spike).
+[features]
+service = ["dep:turso", "dep:tokio"]
+
 [dependencies]
-# Intentionally none. The meter, gain math, window math, and policy-identity hash
-# are all pure `core`/`std` float and integer arithmetic with a hand-rolled FNV-1a;
-# keeping the dependency set empty means this crate cross-compiles for the Android
-# native ABIs with nothing extra to clear (Turso, JNI, and the decoders are pulled in
-# by the platform crates, not here).
+# Drives the Turso async API for the decision cache (behind the `service` feature). The
+# feature set mirrors the desktop cache: `rt` for a runtime, `sync` for the channels a
+# handle blocks on, `macros` for `select!`. Optional so the default build stays dep-free.
+tokio = { version = "1", features = ["rt", "sync", "macros"], optional = true }
+
+# The pure-Rust SQLite rewrite that stores decision rows (behind the `service` feature).
+# Pinned to the same major 0.6 the desktop cache uses, `default-features = false` to drop
+# the full-text and mimalloc defaults. Optional so it is absent from the meter-only build.
+turso = { version = "0.6", default-features = false, optional = true }
