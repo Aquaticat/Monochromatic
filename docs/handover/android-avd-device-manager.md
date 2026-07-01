@@ -19,11 +19,17 @@ The AVD files are present and the real Android SDK can list them.
 IntelliJ IDEA's project-level Device Manager still does not show them.
 Editing `.idea/deviceManager.xml` did not help.
 
-Most likely active hypothesis: IntelliJ IDEA imports the Android package but cannot build its Android model,
+AGP incompatibility is a verified Android sync failure,
 because `packages/music-player/android-app` uses AGP 9.2.1 and the current IDEA Android plugin reports latest
 supported AGP 9.0.0.
-A secondary hypothesis is stale custom Android plugin interference,
-but the AGP compatibility error is now the strongest local evidence.
+That likely explains missing Android model, Android facets, or run-target behavior tied to this project.
+It is no longer proven as the sole explanation for an empty Device Manager inventory:
+source inspection shows Device Manager's local emulator provider should read AVDs through the SDK-backed
+`AvdManagerConnection`, and a scratch probe using IDEA's own Android plugin jars can list the real AVD as valid.
+A secondary hypothesis is stale custom Android plugin interference or runtime UI/provider state inside the running IDE.
+Do not use IDEA's Android plugin auto-update as a workaround:
+the user already checked the plugin is current,
+and auto-update can select a Mac or Windows Android plugin build that does not load here.
 
 ## Verified local facts
 
@@ -63,6 +69,13 @@ The real SDK's cmdline-tools 21 has Pixel 9 device profiles.
 The mise cmdline-tools 13 install has fewer device profiles and lacks Pixel 9 profiles.
 This matches the public `avdmanager` forward-compatibility failure described in
 <https://github.com/beeware/briefcase/issues/1688>.
+
+The real SDK has the AVD's required platform and image installed:
+
+```text
+platforms;android-37.0
+system-images;android-37.0;google_apis_playstore_ps16k;x86_64
+```
 
 IDEA saved SDK path is correct:
 
@@ -176,13 +189,71 @@ plugins {
 }
 ```
 
-Current leading hypothesis: IntelliJ IDEA 2026.2 EAP `IU-262.8377.35` imports `android-app`,
+AGP mismatch remains a real problem:
+IntelliJ IDEA 2026.2 EAP `IU-262.8377.35` imports `android-app`,
 but Android model import fails because its bundled Android plugin only supports AGP through 9.0.0.
 With no successful Android Gradle model,
-Device Manager remains unable to surface the AVD even in the package project.
+project features that depend on the Android model should be expected to fail.
+
+However, source and SDK probes now weaken AGP mismatch as the sole Device Manager inventory cause.
+`DeviceManager2ToolWindowFactory` constructs `DeviceManagerPanel` unconditionally.
+`DeviceManagerPanel` gets `DeviceProvisionerService` from the project.
+`DeviceProvisionerService` creates provisioners from extension point
+`com.android.tools.idea.deviceProvisioner`.
+`LocalEmulatorProvisionerFactory` is always enabled and calls:
+
+```kotlin
+AvdManagerConnection.getDefaultAvdManagerConnection().getAvds(true)
+```
+
+`AvdManagerConnection` chooses an SDK via `AndroidSdks.getInstance().tryToChooseSdkHandler()`.
+For IntelliJ IDEA, `AndroidSdksImpl` falls back to existing Android SDK entries in `jdk.table.xml`.
+This install has an Android SDK entry rooted at `/var/home/user/Android/Sdk`.
+
+A scratch Java probe compiled against IDEA's Android plugin jars and Toolbox app jars used:
+
+```text
+AndroidSdkHandler(/var/home/user/Android/Sdk, ~/.android)
+DeviceManager.createInstance(handler, logger)
+AvdManager.createInstance(handler, ~/.android/avd, deviceManager, logger)
+manager.reloadAvds()
+```
+
+It returned:
+
+```text
+all=1
+valid=1
+AVD name=Pixel_9_Pro_Fold
+status=OK
+target=android-37.0
+image=system-images/android-37.0/google_apis_playstore_ps16k/x86_64/
+device=Google pixel_9_pro_fold
+version=API 37.0
+abi=x86_64
+```
+
+The probe emitted only this compatibility warning:
+
+```text
+This version only understands SDK XML versions up to 3 but an SDK XML file of version 4 was encountered.
+```
+
+That warning did not prevent the bundled sdklib from listing the AVD.
+The next investigation should therefore distinguish two surfaces:
+
+- the Device Manager tool window inventory, which source suggests should list the AVD independently of Gradle sync;
+- Android run target selection or Android project features, which the AGP 9.2.1 compatibility failure can break.
 
 GUI automation was probed with `wmctrl` and `xdotool`, but no IDEA window was visible through X11
 on this Wayland session.
+
+Do not update the Android plugin during this investigation.
+The user checked that the Android plugin is already the latest available version.
+The user also reported that IDEA's plugin auto-update path can select a Mac or Windows Android plugin build,
+which does not load on this Linux install.
+One attempted `idea update org.jetbrains.android` command made no change,
+because IDEA refused to run it while an IDEA instance was already active.
 
 Source check of the Android plugin showed why this was unlikely to fix AVD inventory:
 
@@ -254,21 +325,29 @@ If data wipe or recreation is needed, use a disposable AVD or ask first.
     Search workspace model caches and `.idea` files for Android module entities,
     Android Gradle paths, or facet entries.
 
-3.  Decide how to test the AGP mismatch without changing the main worktree.
+3.  Clarify the user-visible surface.
+    If the empty list is the Device Manager tool window,
+    focus on runtime provider/UI state in IDEA.
+    If the empty list is the run target selector,
+    the AGP 9.2.1 sync failure remains a strong explanation.
+
+4.  If still testing AGP mismatch,
+    do it without changing the main worktree.
     Candidate probes:
 
-    - Open the same package in Android Studio or a newer IDEA Android plugin build that supports AGP 9.2.1.
-    - Create a disposable worktree and temporarily change only AGP from 9.2.1 to 9.0.0,
-      then open that disposable package in IDEA and check whether Device Manager repopulates.
+    - Open the same package in Android Studio Quail 1 or newer,
+      because Android Studio's published compatibility table supports AGP 9.2.
+    - Create a disposable worktree or fixture with an IDEA-supported Android model,
+      then open that disposable project in IDEA and check whether the affected surface repopulates.
 
-4.  Investigate whether the stale custom Android plugin directory is loaded or ignored.
+5.  Investigate whether the stale custom Android plugin directory is loaded or ignored.
     If evidence shows it is loaded, move it aside only with a safe backup path and document the exact change.
 
-5.  Check IDEA settings for Android SDK Platform installation.
+6.  Check IDEA settings for Android SDK Platform installation.
     Also check whether the Android SDK Updater pane reports a missing platform.
     JetBrains support ties IDEA-308876 to installing or updating Android SDK Platform.
 
-6.  If AGP mismatch remains the explanation,
+7.  If AGP mismatch remains the explanation for the affected surface,
     prepare a JetBrains issue bundle or local workaround note:
 
     - IDEA build number
