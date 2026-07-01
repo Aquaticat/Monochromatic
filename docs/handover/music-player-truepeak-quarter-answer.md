@@ -140,6 +140,16 @@ cache identity from default_policy().cache_identity(decoder_stack_id()).
 - Missing-logger gap filed as issue #266 (everything must be logged; user
   handles implementations later); inputs.rs degradation and bones failures
   named as priority sites.
+- Consumers updated + boundary refactor committed (71dda2060): desktop
+  resolve_current feeds probe_inputs_from_file into resolve_decision_for;
+  desktop + android decoder_stack_id use shared stack_id (android keeps gxhash
+  only for fingerprints). Verified: core 62/62; desktop 78/78 via `mise run
+  test` (raw `cargo nextest` fails the two ElementHandle UI tests because
+  SLINT_EMIT_DEBUG_INFO=1 is set by the task at build time, not a regression);
+  android native verified via `mise run build:native` cargo-ndk cross-build
+  (the crate cannot host-compile by design: ndk-sys + gxhash target features);
+  clippy + rust-linter clean on all four crates.
+- Next: merge truepeak-quarter-answer into main, re-verify on main.
 - ENGINE REDESIGN LANDED on the branch (commit 685f5ce96): truepeak-core now
   ships the bucket-zoom policy. New modules: probe.rs (frontier zoom driving
   the seekable source), bucketpolicy.rs (BucketProbe/BucketTable/
