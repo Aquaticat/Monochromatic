@@ -19,9 +19,11 @@ The AVD files are present and the real Android SDK can list them.
 IntelliJ IDEA's project-level Device Manager still does not show them.
 Editing `.idea/deviceManager.xml` did not help.
 
-Most likely active hypothesis: IntelliJ IDEA no longer recognizes this opened checkout as an Android project,
-or its Android plugin state is gated on an Android facet or imported Android Gradle module.
-A secondary hypothesis is EAP Android plugin state or stale custom plugin interference.
+Most likely active hypothesis: IntelliJ IDEA imports the Android package but cannot build its Android model,
+because `packages/music-player/android-app` uses AGP 9.2.1 and the current IDEA Android plugin reports latest
+supported AGP 9.0.0.
+A secondary hypothesis is stale custom Android plugin interference,
+but the AGP compatibility error is now the strongest local evidence.
 
 ## Verified local facts
 
@@ -144,6 +146,44 @@ Relevant public leads:
 Reset `.idea/deviceManager.xml` to the repository baseline.
 Result: no visible improvement.
 
+Opened the Android package root as a separate IDEA project after user approval:
+
+```sh
+/var/home/user/.local/share/JetBrains/Toolbox/scripts/idea \
+  /var/home/user/Monochromatic/packages/music-player/android-app
+```
+
+`idea.log` then showed a new `Project(name=android-app, ...)`,
+project root `/var/home/user/Monochromatic/packages/music-player/android-app`,
+ADB status retrieval from the Android plugin, and Gradle project sync updates for that path.
+User checked Device Manager in the new `android-app` IDEA window.
+Result: it still does not show the AVD.
+This weakens the hypothesis that root monorepo project recognition alone is the cause.
+
+Immediately after that check, `idea.log` showed a stronger cause:
+
+```text
+The project is using an incompatible version (AGP 9.2.1) of the Android Gradle plugin.
+Latest supported version is AGP 9.0.0
+```
+
+The package declares AGP 9.2.1 here:
+
+```kotlin
+// packages/music-player/android-app/build.gradle.kts
+plugins {
+    id("com.android.application") version "9.2.1" apply false
+}
+```
+
+Current leading hypothesis: IntelliJ IDEA 2026.2 EAP `IU-262.8377.35` imports `android-app`,
+but Android model import fails because its bundled Android plugin only supports AGP through 9.0.0.
+With no successful Android Gradle model,
+Device Manager remains unable to surface the AVD even in the package project.
+
+GUI automation was probed with `wmctrl` and `xdotool`, but no IDEA window was visible through X11
+on this Wayland session.
+
 Source check of the Android plugin showed why this was unlikely to fix AVD inventory:
 
 ```sh
@@ -214,13 +254,12 @@ If data wipe or recreation is needed, use a disposable AVD or ask first.
     Search workspace model caches and `.idea` files for Android module entities,
     Android Gradle paths, or facet entries.
 
-3.  Test opening the Android package root directly in IDEA:
+3.  Decide how to test the AGP mismatch without changing the main worktree.
+    Candidate probes:
 
-    ```sh
-    /var/home/user/Monochromatic/packages/music-player/android-app
-    ```
-
-    If Device Manager works there, the root checkout is missing Android project recognition.
+    - Open the same package in Android Studio or a newer IDEA Android plugin build that supports AGP 9.2.1.
+    - Create a disposable worktree and temporarily change only AGP from 9.2.1 to 9.0.0,
+      then open that disposable package in IDEA and check whether Device Manager repopulates.
 
 4.  Investigate whether the stale custom Android plugin directory is loaded or ignored.
     If evidence shows it is loaded, move it aside only with a safe backup path and document the exact change.
@@ -229,8 +268,8 @@ If data wipe or recreation is needed, use a disposable AVD or ask first.
     Also check whether the Android SDK Updater pane reports a missing platform.
     JetBrains support ties IDEA-308876 to installing or updating Android SDK Platform.
 
-6.  If the failure reproduces after opening the Android package directly with the correct SDK and plugin,
-    prepare a JetBrains issue bundle:
+6.  If AGP mismatch remains the explanation,
+    prepare a JetBrains issue bundle or local workaround note:
 
     - IDEA build number
     - Android plugin versions and paths
