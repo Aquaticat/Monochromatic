@@ -1,8 +1,10 @@
 # Shared true-peak core for the music player: the Catmull-Rom meter, the
 # attenuate-only gain math, the decoded-audio source trait, window-placement math,
-# and the versioned policy identity that keys the cache. Desktop and Android both
-# depend on this crate by path so a track is normalized under one shared policy on
-# either flavor. See README.md and ../../../docs/planning/music-player-shared-truepeak-core.md.
+# and the versioned policy identity that keys the cache. Desktop and Android are being
+# migrated onto this crate one at a time (neither depends on it yet) so a track will be
+# normalized under one shared policy on either flavor. See README.md, the integration
+# handover ../../../docs/handover/music-player-truepeak-core-integration.md, and the plan
+# ../../../docs/planning/music-player-shared-truepeak-core.md.
 [package]
 name = "truepeak-core"
 version = "0.1.0"

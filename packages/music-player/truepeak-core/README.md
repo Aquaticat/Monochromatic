@@ -8,10 +8,33 @@ The two flavors used to carry separate copies of true-peak measurement,
 cache shape,
  so a track normalized on one flavor was not guaranteed to be normalized
 under the same policy on the other.
- This crate is the single owner of that behavior.
-Desktop and Android depend on it by path and call the same shared logic,
- so a track is
-measured and normalized identically on either platform.
+ This crate is the single owner of that behavior:
+ the meter,
+ the gain math,
+ the window-placement math,
+ and the versioned policy identity
+live here once,
+ so both apps can share one measured-and-normalized result.
+
+The platform apps are being migrated onto this crate one at a time,
+ not in a single cut,
+so the crate can be the source of truth before every caller has moved.
+ Until a given app
+is wired in,
+ it still carries its own copy.
+ Current consumers:
+
+- Desktop (`desktop-app`):
+   not yet migrated;
+   still carries its own `src/truepeak.rs`.
+- Android (`android-app/rust`):
+   not yet migrated;
+   still carries its own `src/truepeak.rs`.
+
+The integration work,
+ its staging,
+ and its current status live in
+[the integration handover](../../../docs/handover/music-player-truepeak-core-integration.md).
 
 This is Stage one of the migration described in
 [the shared true-peak plan](../../../docs/planning/music-player-shared-truepeak-core.md):
