@@ -36,6 +36,12 @@ mod window;
 /// The versioned policy and the identity tuple that keys cache rows.
 mod policy;
 
+/// The gain decision types the resolver produces.
+mod decision;
+
+/// The resolver that drives a source through the policy to a gain decision.
+mod resolve;
+
 /// Re-exports the meter type and its whole-buffer convenience function.
 pub use crate::meter::{TruePeakMeter, true_peak_interleaved};
 
@@ -53,3 +59,9 @@ pub use crate::window::{WindowPlacement, window_frame_starts};
 
 /// Re-exports the policy type, its identity tuple, and the shipped default policy.
 pub use crate::policy::{CacheIdentity, Policy, default_policy};
+
+/// Re-exports the gain decision and its kind.
+pub use crate::decision::{Decision, DecisionKind};
+
+/// Re-exports the policy resolver.
+pub use crate::resolve::resolve_decision;

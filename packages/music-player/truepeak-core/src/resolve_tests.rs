@@ -1,0 +1,130 @@
+//! Integration tests for the policy resolver, driven by a fake decoded source.
+
+use super::*;
+use crate::source::AudioSpec;
+use crate::{normalization_gain, probe_estimated_peak, true_peak_interleaved, window_frame_starts};
+
+// A fake decoded source over an in-memory buffer, recording the frames it was seeked to.
+struct FakeSource {
+    samples: Vec<f32>,
+    channels: u16,
+    rate: u32,
+    duration_secs: f64,
+    cursor: usize,
+    chunk: usize,
+    seeks: Vec<u64>,
+}
+
+impl FakeSource {
+    fn new(samples: Vec<f32>, channels: u16, rate: u32, duration_secs: f64) -> FakeSource {
+        FakeSource { samples, channels, rate, duration_secs, cursor: 0, chunk: 4, seeks: Vec::new() }
+    }
+}
+
+impl TruePeakSource for FakeSource {
+    fn spec(&self) -> AudioSpec {
+        AudioSpec { rate: self.rate, channels: self.channels, duration_secs: self.duration_secs }
+    }
+
+    fn next_chunk(&mut self) -> Result<Vec<f32>, TruePeakError> {
+        if self.cursor >= self.samples.len() {
+            return Ok(Vec::new());
+        }
+        let end = (self.cursor + self.chunk).min(self.samples.len());
+        let block = self.samples[self.cursor..end].to_vec();
+        self.cursor = end;
+        Ok(block)
+    }
+
+    fn seek_to_frame(&mut self, frame: u64) -> Result<(), TruePeakError> {
+        self.seeks.push(frame);
+        self.cursor = frame as usize * self.channels as usize;
+        Ok(())
+    }
+}
+
+// A policy with small parameters so a tiny buffer exercises each branch.
+fn test_policy(short_scan_max_secs: f64, coverage_fraction: f64, probe_window_secs: f64, probe_margin_db: f64) -> Policy {
+    Policy {
+        short_scan_max_secs,
+        coverage_fraction,
+        probe_window_secs,
+        probe_margin_db,
+        ceiling_dbtp: -1.0,
+        max_too_loud_db: 0.5,
+        max_too_quiet_db: -2.0,
+    }
+}
+
+// A short track is scanned in full and its gain is exact.
+#[test]
+fn short_track_full_scans_exactly() {
+    let samples = vec![0.0_f32, 0.9, 0.9, 0.0];
+    let mut source = FakeSource::new(samples.clone(), 1, 4, 1.0);
+    let decision = resolve_decision(&test_policy(100.0, 0.2, 0.3, 0.8), &mut source).unwrap();
+
+    let expected_peak = true_peak_interleaved(&samples, 1);
+    assert_eq!(decision.kind, DecisionKind::ShortFullScan);
+    assert!((decision.measured_peak - expected_peak).abs() < 1e-6);
+    assert_eq!(decision.gain, normalization_gain(expected_peak));
+    assert!(source.seeks.is_empty()); // a full scan never seeks
+}
+
+// A long track is probed: the resolver seeks to the placed windows and applies the margin.
+#[test]
+fn long_track_probes_with_margin() {
+    let samples = vec![0.9_f32; 20]; // constant, so every window peak is 0.9
+    let mut source = FakeSource::new(samples, 1, 10, 2.0);
+    let policy = test_policy(0.5, 1.0, 0.5, 1.0);
+    let decision = resolve_decision(&policy, &mut source).unwrap();
+
+    assert_eq!(decision.kind, DecisionKind::ProbeEstimate);
+    // total_frames=20, count=round(2.0/0.5)=4, window_frames=round(0.5*10)=5.
+    assert_eq!(source.seeks, window_frame_starts(20, 4, 5));
+    assert!((decision.measured_peak - 0.9).abs() < 1e-6);
+    // The gain is the margin-inflated sampled peak, computed exactly as the resolver does.
+    let expected = normalization_gain(probe_estimated_peak(f64::from(decision.measured_peak), 1.0) as f32);
+    assert_eq!(decision.gain, expected);
+    // The margin makes the probe gain quieter than the exact gain for the same sampled peak.
+    assert!(decision.gain < normalization_gain(0.9));
+}
+
+// Seeking actually finds a loud region that sits between the quiet parts.
+#[test]
+fn probe_seek_finds_a_mid_track_loud_window() {
+    let mut samples = vec![0.5_f32; 20];
+    samples[10..15].fill(1.5); // a loud window at frames 10..15
+    let mut source = FakeSource::new(samples, 1, 10, 2.0);
+    let decision = resolve_decision(&test_policy(0.5, 1.0, 0.5, 0.8), &mut source).unwrap();
+
+    // A window starts at frame 10 and covers the loud region, so the sampled peak sees it.
+    assert!(decision.measured_peak >= 1.5, "sampled peak {} should catch the loud window", decision.measured_peak);
+}
+
+// Silence yields unity gain, never a NaN.
+#[test]
+fn silence_yields_unity_gain() {
+    let mut source = FakeSource::new(vec![0.0_f32; 16], 2, 8, 1.0);
+    let decision = resolve_decision(&test_policy(100.0, 0.2, 0.3, 0.8), &mut source).unwrap();
+    assert_eq!(decision.gain, 1.0);
+    assert_eq!(decision.kind, DecisionKind::ShortFullScan);
+}
+
+// An unknown-duration track is full-scanned exactly, not probed.
+#[test]
+fn unknown_duration_full_scans() {
+    let samples = vec![0.0_f32, 0.9, 0.9, 0.0, 0.5, 0.5];
+    let mut source = FakeSource::new(samples, 1, 10, 0.0); // duration 0 = unknown
+    let decision = resolve_decision(&test_policy(0.1, 1.0, 0.5, 0.8), &mut source).unwrap();
+    assert_eq!(decision.kind, DecisionKind::FullScanExact);
+    assert!(source.seeks.is_empty());
+}
+
+// A zero-channel stream is treated as silence.
+#[test]
+fn zero_channels_is_unity() {
+    let mut source = FakeSource::new(vec![0.5_f32; 8], 0, 48000, 5.0);
+    let decision = resolve_decision(&test_policy(100.0, 0.2, 0.3, 0.8), &mut source).unwrap();
+    assert_eq!(decision.gain, 1.0);
+    assert_eq!(decision.kind, DecisionKind::FullScanExact);
+}
