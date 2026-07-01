@@ -25,8 +25,12 @@ is wired in,
  Current consumers:
 
 - Desktop (`desktop-app`):
-   not yet migrated;
-   still carries its own `src/truepeak.rs`.
+   migrated.
+   Depends on this crate by path;
+   its true-peak metering and normalization gain come from here,
+   and its former in-tree copies are gone.
+   It keeps only its own decode-loop opener,
+   which feeds decoded chunks into the shared meter.
 - Android (`android-app/rust`):
    not yet migrated;
    still carries its own `src/truepeak.rs`.

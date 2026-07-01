@@ -116,3 +116,13 @@ Order of execution, most-verifiable first:
   `truepeak-core/README.md` and `truepeak-core/Cargo.toml`. Wrote this handover. Confirmed
   the NDK is present (`ndk/29.0.13846066` under the mise android-sdk), so the Android native
   cross-compile is viable on this host. Next: desktop migration.
+- 2026-07-01, 15:30: Desktop migration landed (commit `refactor(music-player): migrate
+  desktop true-peak onto shared truepeak-core`). Added the `truepeak-core` path dependency,
+  routed `desktop-app/src/truepeak.rs` through `truepeak_core::TruePeakMeter` and re-exported
+  `truepeak_core::normalization_gain`, deleted the duplicated meter and gain, and slimmed
+  `truepeak_tests.rs` to the fixture decode test (gain and spline tests now live in the
+  shared crate). Net about 346 lines of duplication removed. Verified: `cargo check`, 76
+  nextest tests (including `truepeak::tests::measure_true_peak_of_fixture_is_sane`), clippy,
+  and `lint:rust` all green. Marked desktop as migrated in the crate README. Next: read the
+  Android `truepeak.rs` to decide whether its meter swap is a clean refactor or a behavior
+  change before touching it.
