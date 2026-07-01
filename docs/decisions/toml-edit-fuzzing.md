@@ -129,7 +129,7 @@ source in the state,
  and emission paths only ever
 reason about single-byte `LF` newlines.
  The conversion is announced with a
-`warn`-level log (suppressible via `WARN=false`,
+`warn`-level log (suppressible via `MONOCHROMATIC_WARN=false`,
  a mechanism added to
 `@monochromatic-dev/module-logger` for machine-protocol consumers whose output
 streams must stay clean).
@@ -186,7 +186,7 @@ consumer boundary:
    mise verifies the release
   attestation and SLSA provenance,
    and the task logs the resolved version) and
-  runs both adapters for TOML 1.0 and 1.1 under `WARN=false`.
+  runs both adapters for TOML 1.0 and 1.1 under `MONOCHROMATIC_WARN=false`.
    Both versions pass
   every valid,
    encoder,

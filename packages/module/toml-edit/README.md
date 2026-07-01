@@ -37,7 +37,7 @@ const text = tomlStringify({ edit, },);
 ## Newlines
 
 `parseTomlEdit` normalizes `CRLF` line endings to `LF` before parsing and warns
-that it did (suppressible with `WARN=false`),
+that it did (suppressible with `MONOCHROMATIC_WARN=false`),
  so editing,
  splicing,
  and emission

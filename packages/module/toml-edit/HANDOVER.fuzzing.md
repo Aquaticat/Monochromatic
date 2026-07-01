@@ -69,7 +69,7 @@ path-create duplicate key,
  Phase 6
 also changed the newline policy:
  `CRLF` normalizes to `LF` on parse with a
-warning (suppressible via `WARN=false`,
+warning (suppressible via `MONOCHROMATIC_WARN=false`,
  a mechanism added to
 `@monochromatic-dev/module-logger`),
  and a bare `CR` is rejected.
@@ -291,7 +291,7 @@ Phase 6 (commits da1d3f7c,
   `github:` backend (attestation and SLSA provenance verified on install,
   version logged),
    runs decoder and encoder for TOML 1.0 and 1.1 under
-  `WARN=false`,
+  `MONOCHROMATIC_WARN=false`,
    and fails on any non-zero runner exit.
    Both versions pass every
   valid,
