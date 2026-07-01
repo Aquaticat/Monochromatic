@@ -219,24 +219,23 @@ pub(crate) fn fingerprint(path: &Path) -> Option<u64> {
 const DECODER_STACK_DESCRIPTION: &str = "desktop:symphonia-0.6+opus-rev-5598766+f32le";
 
 /// What:     `fn decoder_stack_id() -> u64`. Hash the decoder-stack description into a stable
-///           id with the same `gxhash64` and seed the fingerprint uses. Module-private.
-/// Why:      The platform half of the cache identity; the shared crate owns the policy and
-///           meter ids, the platform owns this one.
+///           id with the shared crate's `stack_id`. Module-private.
+/// Why:      The platform owns its description; the shared crate owns the derivation, the
+///           same FNV every other identity id uses.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function decoderStackId(): bigint { return gxhash64(utf8(DECODER_STACK_DESCRIPTION), FINGERPRINT_SEED); }
+/// function decoderStackId(): bigint { return stackId(DECODER_STACK_DESCRIPTION); }
 /// ```
 fn decoder_stack_id() -> u64 {
-    // What:     `gxhash64(DECODER_STACK_DESCRIPTION.as_bytes(), FINGERPRINT_SEED)`. Hash the
-    //           description bytes with the fixed seed. Tail -> return.
+    // What:     `truepeak_core::stack_id(DECODER_STACK_DESCRIPTION)`. Tail -> return.
     // Why:      Deterministic id that changes only when the description does.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // return gxhash64(utf8(DECODER_STACK_DESCRIPTION), FINGERPRINT_SEED);
+    // return stackId(DECODER_STACK_DESCRIPTION);
     // ```
-    gxhash64(DECODER_STACK_DESCRIPTION.as_bytes(), FINGERPRINT_SEED)
+    truepeak_core::stack_id(DECODER_STACK_DESCRIPTION)
 }
 
 /// What:     `pub(crate) fn cache_identity() -> CacheIdentity`. The full four-part identity a

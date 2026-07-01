@@ -1,6 +1,7 @@
 //! Integration test for the cache-aware resolve, against a throwaway in-memory database.
 
 use super::*;
+use crate::bucketpolicy::TrackProvenance;
 use crate::decision::DecisionKind;
 use crate::policy::Policy;
 use crate::source::AudioSpec;
@@ -34,15 +35,11 @@ impl TruePeakSource for Fake {
 }
 
 fn test_policy() -> Policy {
-    Policy {
-        short_scan_max_secs: 100.0,
-        coverage_fraction: 0.2,
-        probe_window_secs: 0.3,
-        probe_margin_db: 0.8,
-        ceiling_dbtp: -1.0,
-        max_too_loud_db: 0.5,
-        max_too_quiet_db: -2.0,
-    }
+    // These tests only exercise short-track full scans, so the shipped default's bucket
+    // table serves unchanged; only the short cutoff is widened.
+    let mut policy = crate::policy::default_policy();
+    policy.short_scan_max_secs = 100.0;
+    policy
 }
 
 // The first resolve opens the source and stores; the second is a cache hit and never opens.
@@ -52,7 +49,7 @@ async fn resolves_on_miss_then_serves_from_cache() {
     let policy = test_policy();
     let opens = Cell::new(0u32);
 
-    let first = cached_or_resolve(&cache, &policy, 7, 100, || {
+    let first = cached_or_resolve(&cache, &policy, 7, 100, TrackProvenance::unknown(), None, || {
         opens.set(opens.get() + 1);
         Ok(Box::new(Fake { samples: vec![0.0, 0.9, 0.9, 0.0], cursor: 0 }) as Box<dyn TruePeakSource>)
     })
@@ -61,7 +58,7 @@ async fn resolves_on_miss_then_serves_from_cache() {
     assert_eq!(first.kind, DecisionKind::ShortFullScan);
     assert_eq!(opens.get(), 1); // opened on the miss
 
-    let second = cached_or_resolve(&cache, &policy, 7, 100, || {
+    let second = cached_or_resolve(&cache, &policy, 7, 100, TrackProvenance::unknown(), None, || {
         opens.set(opens.get() + 1);
         Ok(Box::new(Fake { samples: vec![0.0, 0.9, 0.9, 0.0], cursor: 0 }) as Box<dyn TruePeakSource>)
     })

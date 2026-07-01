@@ -45,8 +45,8 @@ use crate::decode;
 /// import { AudioSpec, Decision, TruePeakError, TruePeakSource, defaultPolicy, resolveDecision, resolveFullScan } from "truepeak-core";
 /// ```
 use truepeak_core::{
-    AudioSpec, Decision, TruePeakError, TruePeakSource, default_policy, resolve_decision,
-    resolve_full_scan,
+    AudioSpec, Decision, TruePeakError, TruePeakSource, default_policy, probe_inputs_from_file,
+    resolve_decision_for, resolve_full_scan,
 };
 
 /// What:     `pub use truepeak_core::normalization_gain;`. Re-export the shared attenuate-only
@@ -234,6 +234,19 @@ fn open_adapter(path: &Path) -> Result<DesktopSource, TruePeakError> {
 /// function resolveCurrent(path: string): Decision { return resolveDecision(defaultPolicy(), openAdapter(path)); }
 /// ```
 pub(crate) fn resolve_current(path: &Path) -> Result<Decision, TruePeakError> {
+    // What:     `let policy = default_policy();` then `let (provenance, bones) =
+    //           probe_inputs_from_file(path, &policy);`. The shipped policy and the
+    //           file-derived bucket inputs (FLAC sniff -> lossless + bones seeds; any
+    //           failure degrades to the bare bucket by the library's contract).
+    // Why:      The bucket table only pays off when the resolver knows the provenance;
+    //           the library owns that file-format knowledge.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const policy = defaultPolicy(); const [provenance, bones] = probeInputsFromFile(path, policy);
+    // ```
+    let policy = default_policy();
+    let (provenance, bones) = probe_inputs_from_file(path, &policy);
     // What:     `let mut source = open_adapter(path)?;`. Open and wrap the decoder.
     // Why:      The resolver needs a `&mut dyn TruePeakSource`.
     //
@@ -242,15 +255,15 @@ pub(crate) fn resolve_current(path: &Path) -> Result<Decision, TruePeakError> {
     // const source = openAdapter(path);
     // ```
     let mut source = open_adapter(path)?;
-    // What:     `resolve_decision(&default_policy(), &mut source)`. Drive the source through
-    //           the probe-or-full policy. Tail -> return.
-    // Why:      The one shared foreground measurement.
+    // What:     `resolve_decision_for(&policy, &mut source, provenance, bones.as_deref())`.
+    //           Drive the source through the bucket-zoom policy. Tail -> return.
+    // Why:      The one shared foreground measurement, under the track's bucket.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // return resolveDecision(defaultPolicy(), source);
+    // return resolveDecisionFor(policy, source, provenance, bones);
     // ```
-    resolve_decision(&default_policy(), &mut source)
+    resolve_decision_for(&policy, &mut source, provenance, bones.as_deref())
 }
 
 /// What:     `pub(crate) fn resolve_full(path: &Path) -> Result<Decision, TruePeakError>`.

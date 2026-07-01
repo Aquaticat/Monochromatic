@@ -36,6 +36,18 @@ mod window;
 /// The versioned policy and the identity tuple that keys cache rows.
 mod policy;
 
+/// The per-provenance probe buckets and the track provenance signals.
+mod bucketpolicy;
+
+/// The frontier-zoom probe measuring bins beside the loudest heard so far.
+mod probe;
+
+/// FLAC frame-size profiling without decoding: the lossless bones channel.
+mod bones;
+
+/// Probe inputs (provenance and bones) derived from the file itself.
+mod inputs;
+
 /// The gain decision types the resolver produces.
 mod decision;
 
@@ -65,14 +77,25 @@ pub use crate::gain::{CEILING, normalization_gain, peak_dbtp, probe_estimated_pe
 /// Re-exports the window-placement helpers.
 pub use crate::window::{WindowPlacement, window_frame_starts};
 
-/// Re-exports the policy type, its identity tuple, and the shipped default policy.
-pub use crate::policy::{CacheIdentity, Policy, default_policy};
+/// Re-exports the policy type, its identity tuple, the shipped default policy, and the
+/// decoder-stack id derivation.
+pub use crate::policy::{CacheIdentity, Policy, default_policy, stack_id};
+
+/// Re-exports the file-derived probe inputs (provenance and bones in one call).
+pub use crate::inputs::{probe_inputs_from_bytes, probe_inputs_from_file};
+
+/// Re-exports the per-provenance probe dials and the provenance signals.
+pub use crate::bucketpolicy::{BucketProbe, BucketTable, TrackProvenance};
+
+/// Re-exports the lossless bones profiling helpers and their error.
+pub use crate::bones::{BonesError, bones_hot_bins, flac_bones_profile};
 
 /// Re-exports the gain decision and its kind.
 pub use crate::decision::{Decision, DecisionKind};
 
-/// Re-exports the policy resolver and the always-exact full-scan resolver (warming upgrade).
-pub use crate::resolve::{resolve_decision, resolve_full_scan};
+/// Re-exports the policy resolver, its provenance-aware form, and the always-exact
+/// full-scan resolver (warming upgrade).
+pub use crate::resolve::{resolve_decision, resolve_decision_for, resolve_full_scan};
 
 /// Re-exports the decision cache and its error, behind the `service` feature.
 #[cfg(feature = "service")]

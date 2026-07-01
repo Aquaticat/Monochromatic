@@ -1,10 +1,11 @@
 //! Resolve a track to a gain decision by driving a decoded source through the policy.
 //!
 //! This is the shared measurement the platforms call. A short track (or one of unknown
-//! length) is scanned in full for an exact peak. A long track is probed at proportional
-//! coverage: a per-track number of short windows placed evenly, each measured with its own
-//! meter so a seek seam cannot fabricate a spike, and the loudest sampled window is inflated
-//! by the fixed margin. The gain math and window placement are the shared crate's own.
+//! length) is scanned in full for an exact peak. A long track is probed by the frontier
+//! zoom under its provenance bucket's coverage: an even pass of tenth-second bins, then
+//! repeated measurement beside the loudest bin heard so far (each bin has its own meter
+//! so a seek seam cannot fabricate a spike), optionally seeded by lossless frame-size
+//! bones; the loudest sampled bin is inflated by the bucket's margin.
 
 /// What:     `use crate::decision::{Decision, DecisionKind};`. The answer type and its tag.
 /// Why:      This module builds and returns a `Decision`.
@@ -63,14 +64,25 @@ use crate::policy::Policy;
 /// ```
 use crate::source::{AudioSpec, TruePeakSource};
 
-/// What:     `use crate::window::window_frame_starts;`. Even window placement in frames.
-/// Why:      The probe seeks to each returned start.
+/// What:     `use crate::bucketpolicy::TrackProvenance;`. The zero-cost provenance
+///           signals that pick a long track's bucket.
+/// Why:      `resolve_decision_for` selects coverage and margin from them.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { windowFrameStarts } from "./window";
+/// import { TrackProvenance } from "./bucketpolicy";
 /// ```
-use crate::window::window_frame_starts;
+use crate::bucketpolicy::TrackProvenance;
+
+/// What:     `use crate::probe::{ZoomPlan, zoom_probe};`. The frontier-zoom probe and
+///           its per-track plan.
+/// Why:      Long tracks are probed by the zoom, not by static even placement.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { ZoomPlan, zoomProbe } from "./probe";
+/// ```
+use crate::probe::{ZoomPlan, zoom_probe};
 
 /// What:     `fn full_scan(source: &mut dyn TruePeakSource, channels: usize) -> Result<(f32,
 ///           u64), TruePeakError>`. Scan the whole source, returning the true peak and the
@@ -147,86 +159,6 @@ fn full_scan(source: &mut dyn TruePeakSource, channels: usize) -> Result<(f32, u
     // return [meter.peak(), Math.floor(samples / channels)];
     // ```
     Ok((meter.peak(), samples / channels as u64))
-}
-
-/// What:     `fn measure_window(source: &mut dyn TruePeakSource, channels: usize,
-///           window_frames: u64) -> Result<f32, TruePeakError>`. Read up to `window_frames`
-///           frames from the source's current position and return their true peak, using a
-///           fresh meter.
-/// Why:      Each probe window is measured on its own so a seek seam between unrelated
-///           regions cannot fabricate an inter-sample spike.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// function measureWindow(source, channels, windowFrames): number { ... }
-/// ```
-fn measure_window(
-    source: &mut dyn TruePeakSource,
-    channels: usize,
-    window_frames: u64,
-) -> Result<f32, TruePeakError> {
-    // What:     `let mut meter = TruePeakMeter::new(channels);`. A window-local meter.
-    // Why:      No continuity with other windows.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // const meter = new TruePeakMeter(channels);
-    // ```
-    let mut meter = TruePeakMeter::new(channels);
-    // What:     `let mut fed: u64 = 0;`. Frames fed so far this window.
-    // Why:      Stop once the window length is reached.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // let fed = 0;
-    // ```
-    let mut fed: u64 = 0;
-    // What:     `while fed < window_frames { ... }`. Read until the window is full or EOF.
-    // Why:      A window near the end may be short; that is fine.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // while (fed < windowFrames) { ... }
-    // ```
-    while fed < window_frames {
-        // What:     `let chunk = source.next_chunk()?;`. Next block; `?` propagates.
-        // Why:      Feed the window meter.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // const chunk = source.nextChunk();
-        // ```
-        let chunk = source.next_chunk()?;
-        // What:     `if chunk.is_empty() { break; }`. EOF ends the window early.
-        // Why:      The final window can be short.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // if (chunk.length === 0) break;
-        // ```
-        if chunk.is_empty() {
-            break;
-        }
-        // What:     `fed += chunk.len() as u64 / channels as u64;` then `meter.feed(&chunk);`.
-        //           Count frames and feed. Integer division drops a partial frame from the
-        //           count, which only ends the window a few samples early.
-        // Why:      Advance toward the window length and update the peak.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // fed += Math.floor(chunk.length / channels); meter.feed(chunk);
-        // ```
-        fed += chunk.len() as u64 / channels as u64;
-        meter.feed(&chunk);
-    }
-    // What:     `Ok(meter.peak())`. The window's true peak. Tail -> return.
-    // Why:      The probe takes the max across windows.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // return meter.peak();
-    // ```
-    Ok(meter.peak())
 }
 
 /// What:     `fn silence_decision(spec: AudioSpec) -> Decision`. The decision for a
@@ -380,24 +312,49 @@ pub fn resolve_decision(
     policy: &Policy,
     source: &mut dyn TruePeakSource,
 ) -> Result<Decision, TruePeakError> {
-    // What:     `let spec = source.spec();`. Rate, channels, and duration of the stream.
-    // Why:      They pick the branch and size the windows.
+    // What:     `resolve_decision_for(policy, source, TrackProvenance::unknown(), None)`.
+    //           Delegate with the uninformed provenance and no bones. Tail -> return.
+    // Why:      Uninformed callers land in the bare bucket, which has the deepest
+    //           coverage, so they never under-probe; platforms that know provenance call
+    //           `resolve_decision_for` directly.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // const spec = source.spec();
+    // return resolveDecisionFor(policy, source, TrackProvenance.unknown(), null);
+    // ```
+    resolve_decision_for(policy, source, TrackProvenance::unknown(), None)
+}
+
+/// What:     `pub fn resolve_decision_for(policy: &Policy, source: &mut dyn
+///           TruePeakSource, provenance: TrackProvenance, bones_hot_bins:
+///           Option<&[usize]>) -> Result<Decision, TruePeakError>`. Turn a track into a
+///           gain decision under the policy, with the track's provenance picking its
+///           bucket and optional bones seeds guiding the probe.
+/// Why:      The bucket table is the allocation layer of the shipped policy; provenance
+///           and bones are zero-cost inputs the platform reads from tags and framing.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function resolveDecisionFor(policy, source, provenance, bonesHotBins): Decision { ... }
+/// ```
+pub fn resolve_decision_for(
+    policy: &Policy,
+    source: &mut dyn TruePeakSource,
+    provenance: TrackProvenance,
+    bones_hot_bins: Option<&[usize]>,
+) -> Result<Decision, TruePeakError> {
+    // What:     `let spec = source.spec();` then `let channels = spec.channels as usize;`.
+    //           Rate, channels, and duration of the stream.
+    // Why:      They pick the branch and size the probe bins.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const spec = source.spec(); const channels = spec.channels;
     // ```
     let spec = source.spec();
-    // What:     `let channels = spec.channels as usize;`. Interleave width for the meter.
-    // Why:      The meter and window frame math need it.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // const channels = spec.channels;
-    // ```
     let channels = spec.channels as usize;
-    // What:     `if channels == 0 { return Ok(...); }`. A malformed zero-channel stream is
-    //           treated as silence: unity gain, exact.
+    // What:     `if channels == 0 { return Ok(silence_decision(spec)); }`. A malformed
+    //           zero-channel stream is treated as silence: unity gain, exact.
     // Why:      Avoid a divide-by-zero and never amplify silence.
     //
     // In TS you'd write (pseudocode):
@@ -407,122 +364,68 @@ pub fn resolve_decision(
     if channels == 0 {
         return Ok(silence_decision(spec));
     }
-
     // What:     `if !spec.duration_known() || spec.duration_secs <= policy.short_scan_max_secs`.
     //           Full-scan when the length is unknown or short.
     // Why:      Short and unknown tracks are cheap to measure exactly, so they carry no
-    //           probe error.
+    //           probe error and need no bucket.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // if (!durationKnown(spec) || spec.durationSecs <= policy.shortScanMaxSecs) { ... }
+    // if (!durationKnown(spec) || spec.durationSecs <= policy.shortScanMaxSecs) return exactDecision(policy, source, spec, channels);
     // ```
     if !spec.duration_known() || spec.duration_secs <= policy.short_scan_max_secs {
-        // What:     `return exact_decision(policy, source, spec, channels);`. The shared exact
-        //           scan, tagging short vs unknown-length; `?`-free because it is the tail.
-        // Why:      Short and unknown tracks are measured exactly, identically to
-        //           `resolve_full_scan`.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // return exactDecision(policy, source, spec, channels);
-        // ```
         return exact_decision(policy, source, spec, channels);
     }
-
-    // What:     `let window_frames = ((policy.probe_window_secs * f64::from(spec.rate))
-    //           .round() as u64).max(1);`. Frames per probe window. `.max(1)` keeps a tiny
-    //           window from being zero-length.
-    // Why:      Both placement and window measurement need it.
+    // What:     `let bucket = provenance.select(&policy.buckets, bones_hot_bins.is_some());`.
+    //           The bucket's coverage and margin for this track.
+    // Why:      Lossless probes cheaply (cheaper still with bones); untagged lossy gets
+    //           the deepest coverage.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // const windowFrames = Math.max(1, Math.round(policy.probeWindowSecs * spec.rate));
+    // const bucket = provenance.select(policy.buckets, bonesHotBins !== null);
     // ```
-    let window_frames = ((policy.probe_window_secs * f64::from(spec.rate)).round() as u64).max(1);
-    // What:     `let total_frames = (spec.duration_secs * f64::from(spec.rate)).round() as
-    //           u64;`. The track length in frames.
-    // Why:      Window placement spreads starts across it.
+    let bucket = provenance.select(&policy.buckets, bones_hot_bins.is_some());
+    // What:     `let plan = ZoomPlan { ... };`. The bin grid and coverage for the probe:
+    //           tenth-second bins over the whole track, the bucket's total coverage, and
+    //           the bones-aware even pass share.
+    // Why:      One value carries everything the zoom needs.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // const totalFrames = Math.round(spec.durationSecs * spec.rate);
+    // const plan = { binFrames, totalFrames, coverage: bucket.coverageFraction, evenCoverage, bonesHotBins };
     // ```
-    let total_frames = (spec.duration_secs * f64::from(spec.rate)).round() as u64;
-    // What:     `let count = ((policy.coverage_fraction * spec.duration_secs) /
-    //           policy.probe_window_secs).round().max(1.0) as usize;`. Windows scale with
-    //           duration so coverage is a fixed fraction, not a fixed span.
-    // Why:      Proportional coverage bounds the worst gap-miss across track lengths.
+    let plan = ZoomPlan {
+        bin_frames: ((policy.probe_window_secs * f64::from(spec.rate)).round() as u64).max(1),
+        total_frames: (spec.duration_secs * f64::from(spec.rate)).round() as u64,
+        coverage_fraction: bucket.coverage_fraction,
+        even_coverage_fraction: if bones_hot_bins.is_some() {
+            policy.bones_even_coverage_fraction
+        } else {
+            policy.pass1_coverage_fraction.min(bucket.coverage_fraction)
+        },
+        bones_hot_bins,
+    };
+    // What:     `let sampled_max = zoom_probe(source, channels, &plan)?;`. The frontier
+    //           zoom's loudest measured window; `?` propagates decode and seek errors.
+    // Why:      The climb collapses the shoulder misses an even probe leaves behind.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // const count = Math.max(1, Math.round((policy.coverageFraction * spec.durationSecs) / policy.probeWindowSecs));
+    // const sampledMax = zoomProbe(source, channels, plan);
     // ```
-    let count = ((policy.coverage_fraction * spec.duration_secs) / policy.probe_window_secs)
-        .round()
-        .max(1.0) as usize;
-    // What:     `let starts = window_frame_starts(total_frames, count, window_frames);`. The
-    //           evenly-spaced start frame of each window.
-    // Why:      The probe seeks to each in turn.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // const starts = windowFrameStarts(totalFrames, count, windowFrames);
-    // ```
-    let starts = window_frame_starts(total_frames, count, window_frames);
-    // What:     `let mut sampled_max = 0.0_f32;`. Loudest window peak seen.
-    // Why:      The probe gain is decided from the loudest window.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // let sampledMax = 0;
-    // ```
-    let mut sampled_max = 0.0_f32;
-    // What:     `for start in starts { ... }`. Seek to each window and measure it.
-    // Why:      Accumulate the loudest sampled peak.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // for (const start of starts) { ... }
-    // ```
-    for start in starts {
-        // What:     `source.seek_to_frame(start)?;`. Land exactly at the window start; `?`
-        //           propagates a seek error.
-        // Why:      The window must begin where placement says.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // source.seekToFrame(start);
-        // ```
-        source.seek_to_frame(start)?;
-        // What:     `let peak = measure_window(source, channels, window_frames)?;`. This
-        //           window's true peak with its own meter.
-        // Why:      A window-local measurement, seam-safe.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // const peak = measureWindow(source, channels, windowFrames);
-        // ```
-        let peak = measure_window(source, channels, window_frames)?;
-        // What:     `sampled_max = sampled_max.max(peak);`. Keep the loudest.
-        // Why:      The probe estimate is built from the loudest window.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // sampledMax = Math.max(sampledMax, peak);
-        // ```
-        sampled_max = sampled_max.max(peak);
-    }
+    let sampled_max = zoom_probe(source, channels, &plan)?;
     // What:     `let estimated = probe_estimated_peak(f64::from(sampled_max),
-    //           policy.probe_margin_db) as f32;`. Inflate the sampled peak by the margin,
-    //           then narrow back to `f32` for the gain.
-    // Why:      The margin covers the crest the sparse windows may have missed.
+    //           bucket.probe_margin_db) as f32;`. Inflate by the bucket's margin, then
+    //           narrow back to `f32` for the gain.
+    // Why:      The margin covers the crest the probe may still have missed; each bucket
+    //           carries its own measured dial.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // const estimated = probeEstimatedPeak(sampledMax, policy.probeMarginDb);
+    // const estimated = probeEstimatedPeak(sampledMax, bucket.probeMarginDb);
     // ```
-    let estimated = probe_estimated_peak(f64::from(sampled_max), policy.probe_margin_db) as f32;
+    let estimated = probe_estimated_peak(f64::from(sampled_max), bucket.probe_margin_db) as f32;
     // What:     `Ok(Decision { ... })`. Build the probe decision; `normalization_gain` on
     //           the inflated peak. Tail -> return.
     // Why:      Hand back the probe estimate and its sampled evidence.

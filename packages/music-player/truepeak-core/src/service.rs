@@ -42,14 +42,24 @@ use crate::error::TruePeakError;
 /// ```
 use crate::policy::Policy;
 
-/// What:     `use crate::resolve::resolve_decision;`. The blocking measurement.
-/// Why:      Called on a cache miss to produce the decision.
+/// What:     `use crate::bucketpolicy::TrackProvenance;`. The provenance signals that pick
+///           a long track's bucket.
+/// Why:      The caller supplies them; the resolve on a miss is steered by them.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { resolveDecision } from "./resolve";
+/// import { TrackProvenance } from "./bucketpolicy";
 /// ```
-use crate::resolve::resolve_decision;
+use crate::bucketpolicy::TrackProvenance;
+
+/// What:     `use crate::resolve::resolve_decision_for;`. The blocking measurement.
+/// Why:      Called on a cache miss to produce the decision under the track's bucket.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { resolveDecisionFor } from "./resolve";
+/// ```
+use crate::resolve::resolve_decision_for;
 
 /// What:     `use crate::source::TruePeakSource;`. The decoded-audio contract.
 /// Why:      The opener returns a boxed one on a miss.
@@ -82,6 +92,8 @@ pub async fn cached_or_resolve<Open>(
     policy: &Policy,
     fingerprint: u64,
     decoder_stack_id: u64,
+    provenance: TrackProvenance,
+    bones_hot_bins: Option<&[usize]>,
     open: Open,
 ) -> Result<Decision, CacheError>
 where
@@ -117,8 +129,9 @@ where
     // const source = open();
     // ```
     let mut source = open().map_err(|error| CacheError { message: error.to_string() })?;
-    // What:     `let decision = resolve_decision(policy, source.as_mut()).map_err(...)?;`.
-    //           Drive the source through the policy; `.as_mut()` lends the boxed source as
+    // What:     `let decision = resolve_decision_for(policy, source.as_mut(), provenance,
+    //           bones_hot_bins).map_err(...)?;`. Drive the source through the policy under
+    //           the track's bucket; `.as_mut()` lends the boxed source as
     //           `&mut dyn TruePeakSource`. A resolve error is folded into a `CacheError`.
     // Why:      Produce the fresh decision to store and return.
     //
@@ -126,7 +139,7 @@ where
     // ```ts
     // const decision = resolveDecision(policy, source);
     // ```
-    let decision = resolve_decision(policy, source.as_mut())
+    let decision = resolve_decision_for(policy, source.as_mut(), provenance, bones_hot_bins)
         .map_err(|error| CacheError { message: error.to_string() })?;
     // What:     `cache.put(fingerprint, identity, &decision).await?;`. Persist it; precedence
     //           in the cache keeps an exact row from being downgraded.
