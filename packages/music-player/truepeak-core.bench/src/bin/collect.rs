@@ -187,6 +187,14 @@ fn is_audio(path: &Path) -> bool {
 
 /// Entry point: walk the root, decode in parallel, and write the JSONL corpus.
 fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // Send tracing events (including truepeak-core's) to stderr; the JSONL report is stdout.
+    tracing_subscriber::fmt()
+        .with_env_filter(
+            tracing_subscriber::EnvFilter::try_from_default_env()
+                .unwrap_or_else(|_| tracing_subscriber::EnvFilter::new("info")),
+        )
+        .with_writer(std::io::stderr)
+        .init();
     let args: Vec<String> = env::args().collect();
     let root = PathBuf::from(args.get(1).ok_or("usage: collect <root> <out.jsonl> [bin_seconds] [workers]")?);
     let out_path = PathBuf::from(args.get(2).ok_or("usage: collect <root> <out.jsonl> [bin_seconds] [workers]")?);
@@ -227,7 +235,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 measured += 1;
             }
             Err(error) => {
-                eprintln!("decode failed {error}");
+                tracing::warn!(cause = %error, "decode failed");
                 failed += 1;
             }
         }

@@ -40,6 +40,12 @@ truepeak-core = { path = "../truepeak-core" }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 
+# Surface truepeak-core's tracing events during corpus runs on stderr; the report itself
+# stays on stdout via println!. tracing now arrives through truepeak-core (default-on), and
+# adding it directly lets these bins call the macros and install a stderr subscriber.
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
 # Whole-program optimization for the corpus sweep over thousands of tracks.
 [profile.release]
 lto = true

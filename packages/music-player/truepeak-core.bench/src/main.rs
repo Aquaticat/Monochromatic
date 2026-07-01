@@ -203,6 +203,14 @@ fn report_zoom(
 
 /// Entry point: load the corpus, compute the target, search, and print the report.
 fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // Send tracing events (including truepeak-core's) to stderr; the report is stdout.
+    tracing_subscriber::fmt()
+        .with_env_filter(
+            tracing_subscriber::EnvFilter::try_from_default_env()
+                .unwrap_or_else(|_| tracing_subscriber::EnvFilter::new("info")),
+        )
+        .with_writer(std::io::stderr)
+        .init();
     let args: Vec<String> = env::args().collect();
     let corpus_path = args
         .get(1)
