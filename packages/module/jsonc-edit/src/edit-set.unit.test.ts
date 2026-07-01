@@ -180,10 +180,27 @@ await describe({
           },
         },),
         it({
-          name: 'descends into a nested array element to delete it',
+          name: 'descends into a nested array element to delete it, leaving siblings intact',
           fn: async () => {
             const next = jsoncDelete({ state: matrix(), path: ['m', 0, 0,], },);
             expect(jsoncGetValue({ state: next, path: ['m', 0,], },),).toEqual([2,],);
+            expect(jsoncGetValue({ state: next, path: ['m', 1,], },),).toEqual([3, 4,],);
+          },
+        },),
+        it({
+          name: 'throws on a numeric segment into a record',
+          fn: async () => {
+            expect(() => {
+              jsoncDelete({ state: base(), path: [0,], },);
+            },).toThrow('cannot index',);
+          },
+        },),
+        it({
+          name: 'throws on a boundary intermediate array index equal to the length',
+          fn: async () => {
+            expect(() => {
+              jsoncDelete({ state: matrix(), path: ['m', 2, 0,], },);
+            },).toThrow('no JSONC node at path',);
           },
         },),
         it({

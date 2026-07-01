@@ -86,6 +86,34 @@ await describe({
             },).toThrow('cannot index',);
           },
         },),
+        it({
+          name: 'throws on a numeric segment into a record',
+          fn: async () => {
+            expect(() => {
+              jsoncSetComment({ state: twoKeys(), path: [0,], comment: block, },);
+            },).toThrow('cannot index',);
+          },
+        },),
+        it({
+          name: 'throws on a string segment into an array',
+          fn: async () => {
+            const state = parseJsoncEdit({ source: asJsonc('{ "list": [1, 2] } // c',), },);
+            expect(() => {
+              jsoncSetComment({ state, path: ['list', 'x',], comment: block, },);
+            },).toThrow('cannot index',);
+          },
+        },),
+        it({
+          name: 'throws on an out-of-range, boundary, or negative array index',
+          fn: async () => {
+            const state = parseJsoncEdit({ source: asJsonc('{ "list": [1, 2] } // c',), },);
+            for (const index of [5, 2, -1,]) {
+              expect(() => {
+                jsoncSetComment({ state, path: ['list', index,], comment: block, },);
+              },).toThrow('no JSONC node at path',);
+            }
+          },
+        },),
       ],
     },),
     describe({

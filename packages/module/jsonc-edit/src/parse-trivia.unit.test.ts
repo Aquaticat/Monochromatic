@@ -169,5 +169,38 @@ await describe({
         },),
       ],
     },),
+    describe({
+      name: 'lone slashes and stars are not comments',
+      children: [
+        it({
+          name: 'skipTrivia stops at a slash or star that opens no comment',
+          fn: async () => {
+            expect(skipTrivia({ source: '/y', index: 0, },),).toEqual({ comments: [], end: 0, },);
+            expect(skipTrivia({ source: 'y/', index: 0, },),).toEqual({ comments: [], end: 0, },);
+            expect(skipTrivia({ source: 'y*', index: 0, },),).toEqual({ comments: [], end: 0, },);
+          },
+        },),
+        it({
+          name: 'captureTrailing stops at a slash or star that opens no comment',
+          fn: async () => {
+            expect(captureTrailing({ source: '/y', index: 0, },),).toEqual({
+              comments: [],
+              commaSeen: false,
+              end: 0,
+            },);
+            expect(captureTrailing({ source: 'y/', index: 0, },),).toEqual({
+              comments: [],
+              commaSeen: false,
+              end: 0,
+            },);
+            expect(captureTrailing({ source: 'y*', index: 0, },),).toEqual({
+              comments: [],
+              commaSeen: false,
+              end: 0,
+            },);
+          },
+        },),
+      ],
+    },),
   ],
 },);
