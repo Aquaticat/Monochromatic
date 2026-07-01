@@ -124,6 +124,18 @@ cache identity from default_policy().cache_identity(decoder_stack_id()).
 
 - Merged main into truepeak-quarter-answer cleanly; bench --buckets still
   reproduces 17 clamps / 0.367 / 0.50 on the merged branch.
+- ENGINE REDESIGN LANDED on the branch (commit 685f5ce96): truepeak-core now
+  ships the bucket-zoom policy. New modules: probe.rs (frontier zoom driving
+  the seekable source), bucketpolicy.rs (BucketProbe/BucketTable/
+  TrackProvenance; unknown provenance lands in bare, the deepest coverage, so
+  uninformed callers never under-probe), bones.rs (FLAC CRC-8-verified frame
+  walk, overlap-proportional slot spreading, flac_bones_profile +
+  bones_hot_bins). resolve_decision keeps its exact signature (delegates);
+  resolve_decision_for(policy, source, provenance, bones_hot_bins) is the
+  informed entry. policy_id hashes all 18 dials (caches re-key). 57/57 tests,
+  clippy + rust-linter clean. Android untouched (their work is ongoing;
+  source-compatible by construction). Desktop untouched so far (compiles
+  against unchanged signatures; provenance wiring is a follow-up).
 - Engine redesign plan: zoom lives INSIDE resolve_decision (TruePeakSource is
   already seekable + pull-based, so adaptivity is engine-internal); Policy
   grows per-bucket coverage/margin (lossless/store/youtube/bare + a
