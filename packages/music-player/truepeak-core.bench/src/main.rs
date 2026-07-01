@@ -17,6 +17,8 @@ mod feasible;
 mod proportional;
 /// The corrected-target parameter search and ranking.
 mod search;
+/// The bucket-first composite with the FLAC bones-guided probe.
+mod buckets;
 /// The quarter-measure answer's probe: even pass one plus frontier zoom.
 mod zoom;
 
@@ -41,6 +43,8 @@ use std::collections::HashSet;
 use crate::search::{rank, sweep};
 /// Imports the frontier-zoom evaluation and its measures.
 use crate::zoom::{evaluate_zoom, measure_zoom, zoom_under_read_quantile};
+/// Imports the bucket-composite report.
+use crate::buckets::report_buckets;
 
 /// The plan's quarter-library divisor for the benchmark target.
 const TARGET_DIVISOR: f64 = 4.0;
@@ -214,6 +218,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // probe at the full budget and prints the letter's three measures per margin.
     if args.iter().any(|arg| arg == "--zoom") {
         return report_zoom(&tracks, full_secs, target_secs, &args);
+    }
+
+    // The bucket-first composite: `--buckets <tags-full.jsonl> [flac-profiles.jsonl]`
+    // evaluates the decided per-provenance coverage/margin table with FLAC bones.
+    if args.iter().any(|arg| arg == "--buckets") {
+        return report_buckets(&tracks, full_secs, target_secs, &args);
     }
 
     println!("window counts swept: {WINDOW_COUNTS:?}");
