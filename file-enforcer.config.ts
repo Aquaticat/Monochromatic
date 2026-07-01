@@ -554,9 +554,13 @@ async function generateMiseToml(): Promise<void> {
    * Dynamic [env] block appended after the static mise.no-env.toml content; wires PATH to every workspace bin dir.
    */
   const envSection = `[env]
-# .env file is optional - mise silently ignores missing files
-# https://github.com/jdx/mise/blob/main/src/config/env_directive/file.rs#L155-L163
-_.file = [{ path = ".env", redact = true }, { path = ".env.local", redact = true }]
+# Secrets live in the age-encrypted .env.local.json (sops backend), gitignored
+# via the *.local.* pattern and decrypted at runtime by mise's built-in rops
+# using the identity at ~/.config/mise/age.txt. Encrypted-only: no plaintext env
+# slot survives, so a secret can never re-enter an unencrypted, backed-up file.
+# Optional file - mise silently ignores it when missing.
+# https://mise.jdx.dev/environments/secrets/sops.html
+_.file = [{ path = ".env.local.json", redact = true }]
 _.path = [
 ${
     [

@@ -68,6 +68,14 @@ caddy = "latest"
 # Required by `mise watch`
 watchexec = "latest"
 
+# Secrets tooling. sops encrypts and edits the age-encrypted .env.local.json;
+# age provides age-keygen for the decryption identity at ~/.config/mise/age.txt.
+# mise decrypts at runtime via its built-in rops, so these binaries are needed
+# only when encrypting or editing secrets, not for normal task runs.
+# https://mise.jdx.dev/environments/secrets/sops.html
+sops = "latest"
+age = "latest"
+
 # For reliable timeout
 # Rust toolchain, managed repo-wide here (no per-package override).
 # Pinned to nightly because cargo-fuzz (coverage-guided fuzzing under
@@ -1034,6 +1042,18 @@ description = "Watch source files and re-sync on changes"
 run = "node packages/dev-script/file-enforcer/src/cli.ts --watch"
 
 #endregion File Enforcer
+
+#region Secrets -- edit the age-encrypted .env.local.json (sops/age backend)
+
+[tasks."secrets:edit"]
+description = "Edit the age-encrypted secrets file (.env.local.json) via sops"
+# sops re-encrypts to the recipients recorded in the file's own metadata, so no
+# .sops.yaml is required. mise decrypts at runtime with its built-in rops, but
+# the sops CLI must be pointed at the identity explicitly.
+env = { SOPS_AGE_KEY_FILE = "{{env.HOME}}/.config/mise/age.txt" }
+run = "sops edit .env.local.json"
+
+#endregion Secrets
 
 #region Catalog Tighten -- tighten >= ranges in pnpm-workspace.yaml catalog to match installed versions
 
