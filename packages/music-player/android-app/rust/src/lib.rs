@@ -95,15 +95,29 @@ mod opus;
 /// import * as output from "./output";
 /// ```
 mod output;
-/// What:     `mod truepeak;` declares the `truepeak` child module (`truepeak.rs`),
-///           the oversampled true-peak loudness measurement.
-/// Why:      `truepeak::measure_true_peak(...)` below lives here.
+/// What:     `mod truepeak;` declares the `truepeak` child module (`truepeak.rs`), the
+///           shared-source adapter and the `resolve_current`/`resolve_full` resolvers plus
+///           the re-exported `true_peak_interleaved` helper.
+/// Why:      `service.rs` drives `truepeak::resolve_current`/`resolve_full`, and the synthetic
+///           JNI entry below calls `truepeak::true_peak_interleaved(...)`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// import * as truepeak from "./truepeak";
 /// ```
 mod truepeak;
+/// What:     `mod service;` declares the native true-peak service submodule (the sibling file
+///           `service.rs`). It holds the `TruePeakService` cache-actor handle and the JNI
+///           entry points (`nativeTruePeakServiceCreate`/`Release`, `nativeResolveGain`,
+///           `nativeWarmTrack`) Kotlin calls to resolve and cache normalization gains.
+/// Why:      Keep the Turso-backed service and its JNI glue out of this file (max-lines) while
+///           its `#[no_mangle]` exports still land in the cdylib.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import * as service from "./service";
+/// ```
+mod service;
 /// What:     `mod bench;` declares the decode-benchmark submodule (the sibling file
 ///           `bench.rs`). `mod NAME;` pulls that file in as a private child module.
 /// Why:      `benchmark_decode` was split out of this file to keep it under the
@@ -577,95 +591,6 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeDec
     // return benchmarkDecode(source);
     // ```
     bench::benchmark_decode(source)
-}
-
-// What:     `#[no_mangle]`: keep the symbol name for JVM lookup.
-// Why:      Same as the other JNI entry points.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// // no annotation needed
-// ```
-#[no_mangle]
-/// What:     JNI entry declaration. Third parameter `fd: jint`. Returns `jfloat` (a
-///           32-bit float) this time, because a true-peak figure fits in `f32` and
-///           that matches the Kotlin side; siblings `jdouble`/`f64` would be wider than
-///           needed.
-/// Why:      Kotlin calls this to measure a track's true peak (4x Catmull-Rom
-///           oversampled, the loudness-normalization input the Kotlin core turns into
-///           a gain) from a borrowed `content://` fd that `open_borrowed_fd` dups
-///           synchronously. Returns the peak, or a negative sentinel: -1 bad fd,
-///           -2 dup/open failed, -3 decode error.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// export function nativeMeasureTruePeak(_env: JNIEnv, _class: JClass, fd: number): number { ... }
-/// ```
-pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeMeasureTruePeak<'local>(
-    _env: JNIEnv<'local>,
-    _class: JClass<'local>,
-    fd: jint,
-) -> jfloat {
-    // What:     `if fd < 0 { return -1.0; }`. Reject a negative fd before using it,
-    //           returning the "-1 bad fd" sentinel.
-    // Why:      Same panic-avoidance reason as the fd benchmark: a negative fd would
-    //           panic `borrow_raw` and abort across the JNI boundary.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // if (fd < 0) return -1.0;
-    // ```
-    if fd < 0 {
-        return -1.0;
-    }
-    // What:     `let source = match decode::open_borrowed_fd(fd as RawFd) { ... };`.
-    //           Same as the fd benchmark: `fd as RawFd` casts the JVM int to the fd
-    //           alias, `open_borrowed_fd` dups and opens, and we `match` the `Result`.
-    // Why:      Open a decoder over the duplicated fd so we can scan it for the peak.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // let source: Source;
-    // try { source = decode.openBorrowedFd(fd); } catch { return -2.0; }
-    // ```
-    let source = match decode::open_borrowed_fd(fd as RawFd) {
-        // What:     `Ok(source) => source`. Success arm: destructure and yield the
-        //           opened decoder.
-        // Why:      Open succeeded; keep the decoder.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // // success: source = the opened decoder
-        // ```
-        Ok(source) => source,
-        // What:     `Err(_) => return -2.0`. Failure variant, error discarded; return
-        //           the "-2 dup/open failed" sentinel.
-        // Why:      Could not dup/open the fd; report the failure code.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // catch { return -2.0; }
-        // ```
-        Err(_) => return -2.0,
-    };
-    // What:     `truepeak::measure_true_peak(source).unwrap_or(-3.0)` runs the true-peak
-    //           scan (which returns `Result<f32, PlayerError>`) over the decoder, passing
-    //           `source` by VALUE (moving ownership in). `.unwrap_or(fallback)` yields the
-    //           inner `f32` on `Ok` and the eager fallback `-3.0` (the "-3 decode error"
-    //           sentinel) on `Err`, discarding the error. This call is the function's tail
-    //           expression, so its value is returned.
-    // Why:      Produce the peak figure, or the decode-error sentinel, for Kotlin.
-    // Gotcha:   `.unwrap_or` collapses what was a two-arm `match` (`Ok(peak) => peak` /
-    //           `Err(_) => -3.0`) into one value-yielding call. The earlier
-    //           `decode::open_borrowed_fd` site above stays a `match` because its failure
-    //           arm `return -2.0` is CONTROL FLOW, which `unwrap_or` (it only yields a
-    //           value) cannot express.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // try { return truepeak.measureTruePeak(source); } catch { return -3.0; }
-    // ```
-    truepeak::measure_true_peak(source).unwrap_or(-3.0)
 }
 
 // What:     `#[no_mangle]`: keep the symbol name unmangled so the JVM finds it.
