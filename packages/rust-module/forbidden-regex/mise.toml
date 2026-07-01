@@ -24,6 +24,10 @@ description = "Run monochromatic-rust-linter (max-lines + require-rustdoc) over 
 # package. .gitignore-aware walking skips target/.
 run = "cargo run --quiet --manifest-path ../../linter/rust/Cargo.toml -- ."
 
+[tasks.package]
+description = "Build the crates.io package tarball"
+run = "cargo package"
+
 [tasks.test]
 description = "cargo nextest run"
 run = "cargo nextest run --release"

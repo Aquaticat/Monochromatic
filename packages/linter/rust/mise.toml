@@ -22,6 +22,10 @@ run = "cargo nextest run --release"
 description = "Dogfood: run monochromatic-rust-linter (max-lines + require-rustdoc) over its own src"
 run = "cargo run --release -- src"
 
+[tasks.package]
+description = "Build the crates.io package tarball"
+run = "cargo package"
+
 [tasks.run]
 description = "Run the linter (pass paths and flags like --max after --)"
 usage = '''
