@@ -52,7 +52,37 @@ clamp count) while decoding no more than a quarter of the library's seconds
    truepeak-core.bench on the branch.
 7. Write the answer doc under `docs/audit/`, same register as the letter.
 
-## Status: complete
+## Status: reopened for the bucket round (user pushback), then re-close
+
+The user pushed past the first close twice: (a) "no full hearings" variant
+(measured: buys one clamp, costs 0.014 dB average, rule kept); (b) "these are
+songs" (measured: structure ceiling bounds any echo-finder to ~14 of the
+residual 26 clamps; 9 crests are strictly one-off); (c) "bucket the metadata
+first" (WORKS, see below); (d) "find more levers yourself" (lever matrix run).
+
+Bucket round results (committed 77fcc0ef0, branch):
+
+- tags-sweep.mjs: ffprobe inventory of the whole library (no decode).
+  Buckets from embedded tags only (production-legal, no path text):
+  flac / store (store IDs or iTunNORM) / purl (youtube provenance tag) /
+  bare (untagged lossy). Long-track seconds: bare 534k, flac 311k, purl 37k,
+  store 22k.
+- Per-bucket zoom tails diverge hard: flac p99 under-read 0.65 dB at 10%
+  coverage; bare 1.83 at 10%, 1.00 at 24%, 0.92 at 28%.
+- Composite winner (verified by independent re-eval): flac=(c 0.10, m 0.45),
+  purl=(0.18, 0.40), store=(0.32, 0.30), bare=(0.32, 0.50): 19 clamps
+  (4 flac, 14 bare, 1 purl) / avg 0.349 / worst 0.50, decoded 227901 s.
+  Beats uniform zoom (26 / 0.371 / 0.50). All-margins-0.4 variant: 29 clamps /
+  0.283 avg / 0.40 worst (vs uniform m=0.4: 43 / 0.285 / 0.40).
+- Levers measured dead this round: jittered/golden-ratio pass-1 (grid does not
+  alias), wider zoom expansion radii, heard-clipping density (Spearman 0.037),
+  declared-peak floors (rgPeak all-opus with 4.6 dB understatement band;
+  iTunNORM n=55 with a 5 dB outlier).
+- In flight: FLAC frame-size bones agent (lossless bits may track level well
+  enough to guide low-coverage flac probes); duplicate-master pooling agent
+  (same-master copies could share probes). Compose + wire + re-docs after.
+
+## Prior status: complete (first close)
 
 - The answer is committed: `docs/audit/music-player-truepeak-quarter-measure-answer.md`
   (main, commit d33f2bc58).
