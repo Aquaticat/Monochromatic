@@ -25,6 +25,16 @@ use crate::decision::{Decision, DecisionKind};
 /// ```
 use crate::policy::CacheIdentity;
 
+/// What:     `use std::collections::HashSet;`. A set of owned `u64` fingerprints.
+/// Why:      `exact_fingerprints` returns every fingerprint whose decision is exact, for a
+///           warming sweep's bulk skip-check.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type HashSet = Set<bigint>;
+/// ```
+use std::collections::HashSet;
+
 /// What:     `use std::fmt;`. The formatting module, for the error `Display`.
 /// Why:      `CacheError` renders a human message for logs.
 ///
@@ -88,6 +98,19 @@ const UPSERT_DECISION: &str = "INSERT INTO decisions (fingerprint, policy_id, me
     DO UPDATE SET kind = excluded.kind, gain = excluded.gain, \
     measured_peak = excluded.measured_peak, duration_secs = excluded.duration_secs \
     WHERE NOT (decisions.kind IN (0, 2) AND excluded.kind = 1)";
+
+/// What:     `const SELECT_EXACT: &str = "...";`. Read every fingerprint whose stored decision
+///           is exact (kind 0 short or 2 full), for the identity tuple. `&str` literal.
+/// Why:      A warming sweep skips tracks that already carry an exact gain, and re-scans only
+///           those with no row or a mere probe estimate (kind 1).
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const SELECT_EXACT = "SELECT fingerprint FROM decisions WHERE ... AND kind IN (0, 2)";
+/// ```
+const SELECT_EXACT: &str = "SELECT fingerprint FROM decisions \
+    WHERE policy_id = ?1 AND meter_id = ?2 AND decoder_stack_id = ?3 AND schema_version = ?4 \
+    AND kind IN (0, 2)";
 
 /// What:     `pub struct CacheError { pub message: String }`. A turso-free error wrapping a
 ///           message. `String` (sibling `&str`) owns the text past the turso error's life.
@@ -420,6 +443,91 @@ impl DecisionCache {
         // return;
         // ```
         Ok(())
+    }
+
+    /// What:     `pub async fn exact_fingerprints(&self, identity: CacheIdentity) ->
+    ///           Result<HashSet<u64>, CacheError>`. Collect every fingerprint whose stored
+    ///           decision is exact (short or full scan) for this identity. `&self` borrows the
+    ///           cache read-only.
+    /// Why:      A warming sweep seeds its skip-check from this set, so it re-scans only tracks
+    ///           with no decision or a mere probe estimate, upgrading them to exact over time.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// async exactFingerprints(identity): Promise<Set<bigint>> { ... }
+    /// ```
+    pub async fn exact_fingerprints(
+        &self,
+        identity: CacheIdentity,
+    ) -> Result<HashSet<u64>, CacheError> {
+        // What:     `let mut rows = self.conn.query(SELECT_EXACT, params).await?;`. Run the
+        //           scan; the four params bind the identity columns. `?` propagates a turso
+        //           error.
+        // Why:      Fetch every exact row's fingerprint for this identity.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const rows = await conn.query(SELECT_EXACT, [policyId, meterId, decoderStackId, schemaVersion]);
+        // ```
+        let mut rows = self
+            .conn
+            .query(
+                SELECT_EXACT,
+                (
+                    identity.policy_id as i64,
+                    identity.meter_id as i64,
+                    identity.decoder_stack_id as i64,
+                    i64::from(identity.schema_version),
+                ),
+            )
+            .await?;
+        // What:     `let mut set = HashSet::new();`. The accumulator.
+        // Why:      Collect the fingerprints as they stream in.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const set = new Set();
+        // ```
+        let mut set = HashSet::new();
+        // What:     `while let Some(row) = rows.next().await? { ... }`. Drain every row; `?`
+        //           propagates a turso error mid-stream rather than truncating silently.
+        // Why:      Read the whole result, not a prefix.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // for await (const row of rows) set.add(BigInt.asUintN(64, row.getValue(0)));
+        // ```
+        while let Some(row) = rows.next().await? {
+            // What:     `let stored = *row.get_value(0)?.as_integer().ok_or_else(...)?;`. Read
+            //           column 0 as the stored `i64`, failing on a non-integer cell.
+            // Why:      Fingerprints are stored as `i64` bit-casts of the original `u64`.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // const stored = row.getValue(0).asInteger();
+            // ```
+            let stored = *row
+                .get_value(0)?
+                .as_integer()
+                .ok_or_else(|| CacheError { message: "column 0 is not an integer".to_string() })?;
+            // What:     `set.insert(stored as u64);`. Reverse the write-side `u64 as i64`
+            //           bit-cast; the round-trip is bijective.
+            // Why:      Return the fingerprints in the same `u64` domain callers hash.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // set.add(BigInt.asUintN(64, stored));
+            // ```
+            set.insert(stored as u64);
+        }
+        // What:     `Ok(set)`. The exact-fingerprint snapshot. Tail -> return.
+        // Why:      Hand the sweep an owned set it reads without locking.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // return set;
+        // ```
+        Ok(set)
     }
 }
 

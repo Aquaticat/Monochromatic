@@ -61,3 +61,18 @@ async fn probe_is_upgraded_by_an_exact() {
     assert_eq!(hit.kind, DecisionKind::FullScanExact);
     assert_eq!(hit.gain, 0.5);
 }
+
+// The exact-fingerprint snapshot lists only exact rows for this identity, not probes.
+#[tokio::test]
+async fn exact_fingerprints_lists_only_exact_rows() {
+    let cache = DecisionCache::open(":memory:").await.unwrap();
+    cache.put(1, identity(), &exact(0.5)).await.unwrap(); // exact -> listed
+    cache.put(2, identity(), &probe(0.8)).await.unwrap(); // probe -> not listed
+    let short = Decision { kind: DecisionKind::ShortFullScan, ..exact(0.6) };
+    cache.put(3, identity(), &short).await.unwrap(); // short full scan -> listed
+    let other = CacheIdentity { policy_id: 999, ..identity() };
+    cache.put(4, other, &exact(0.4)).await.unwrap(); // different identity -> not listed
+
+    let listed = cache.exact_fingerprints(identity()).await.unwrap();
+    assert_eq!(listed, HashSet::from([1_u64, 3]));
+}
