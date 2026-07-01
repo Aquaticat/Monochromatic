@@ -93,5 +93,28 @@ await describe({
         },),
       ],
     },),
+    describe({
+      name: 'exact canonical layout',
+      children: [
+        it({
+          name: 'emits a record with indented, comma-terminated, newline-joined entries',
+          fn: async () => {
+            expect(roundTrip('{ "a": 1, "b": 2 } // doc',),).toBe('// doc\n{\n  "a": 1,\n  "b": 2,\n}',);
+          },
+        },),
+        it({
+          name: 'emits array elements with their trailing comments, one per line',
+          fn: async () => {
+            expect(roundTrip('[\n  1, // one\n  2 // two\n]',),).toBe('[\n  1, // one\n  2, // two\n]',);
+          },
+        },),
+        it({
+          name: 'emits a merged stacked key comment as indented leading line comments',
+          fn: async () => {
+            expect(roundTrip('{\n  // l1\n  // l2\n  "x": 1\n}',),).toBe('{\n  // l1\n  // l2\n  "x": 1,\n}',);
+          },
+        },),
+      ],
+    },),
   ],
 },);
