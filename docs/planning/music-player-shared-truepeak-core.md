@@ -268,6 +268,16 @@ The classifier acceptance goal is exact fit on the current corpus:
 
 The corpus is considered large and varied enough for this product's current acceptance target.
 
+Amended 2026-07-01, after the Stage-two evidence (see the fine-bin findings below):
+strict exact fit is disproportionately expensive at the quarter budget, because a handful of
+tracks hide a sub-tenth-second transient that no sparse probe catches, and covering them forces
+about a decibel of extra too-quiet margin on every track.
+The accepted goal is therefore exact fit for about ninety-nine percent of tracks under a fixed
+`0.8 dB` margin, with the realtime clamp catching the rare too-loud transient and background
+warming full-scanning those tracks to an exact cached gain over time.
+There is no probe-feature or metadata classifier that routes the hard tracks, so the policy is
+classifier-free: a proportional probe plus the fixed margin.
+
 ### Do not use an opaque model
 
 The classifier may be whatever works best short of an opaque model.
@@ -976,14 +986,23 @@ to make the average gain louder than that margin,
  and
 background warming converging the cache to exact over time.
 
+Stage-two decisions (2026-07-01):
+
+- The proportional-coverage probe and the margin-versus-clamp tradeoff are wired into the bench
+  as the committed `--proportional` evaluation, which reads the shipped
+  `truepeak_core::default_policy` and reproduces the numbers above on the fine corpus.
+- The shipped margin is `0.8 dB`, decided with the requester: about ninety-nine percent of
+  tracks stay within `-0.8 dB` too-quiet, and about one percent (forty-three tracks, none of
+  them safe-provenance) clamp on cold start until background warming full-scans them to exact.
+- The shipped policy now lives in `truepeak-core`'s `default_policy`: a ninety-second full-scan
+  cutoff for short tracks, one-fifth proportional coverage in tenth-of-a-second windows for long
+  tracks, and the `0.8 dB` margin. The old classifier-era window-count parameters are gone.
+
 Remaining Stage-two work:
 
-- Wire the proportional-coverage probe and the margin-versus-clamp tradeoff into the bench as a
-  committed search (the fine-bin findings above were measured in throwaway analysis scripts).
-- Pick the shipped margin with the user,
-   given the clamp-count tradeoff above.
-- Verify the chosen density and margin against exact decoded windows,
-   not only the bins.
+- Verify the chosen coverage and margin against exact decoded windows, not only the bins.
+- Layer the album prior (scan a few members per album, infer the rest) to lower the average
+  error further; the worst case and the clamp count are already handled by the margin above.
 
 ## Bench sidecar
 
