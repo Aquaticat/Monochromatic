@@ -38,6 +38,23 @@ mod ui_progress;
 /// ```
 mod ui_page;
 
+/// What:     `#[cfg(test)] #[path = "ui_binding_tests.rs"] mod ui_binding_tests;` loads
+///           the headless UI regression tests, compiled ONLY under `cargo test` /
+///           `cargo nextest run`. `#[path]` names the sibling file explicitly because
+///           the module name differs from the default `ui_binding_tests/mod.rs` lookup.
+/// Why:      They instantiate `AppWindow` (in scope here from `include_modules!`) and
+///           drive its Sliders via `i-slint-backend-testing`, so they belong beside
+///           `main.rs` in the binary crate, not in the reusable library crate.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // test-only import, tree-shaken from production builds
+/// import "./ui_binding_tests.test";
+/// ```
+#[cfg(test)]
+#[path = "ui_binding_tests.rs"]
+mod ui_binding_tests;
+
 /// What:     `use std::path::PathBuf;`. The OWNED filesystem path type: a heap-
 ///           allocated, growable path buffer. Sibling: `&Path`, a BORROWED view
 ///           that does not own its bytes (the `String` vs `&str` distinction, but

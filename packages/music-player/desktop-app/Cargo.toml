@@ -189,6 +189,18 @@ libc = "0.2"
 [target.'cfg(windows)'.dependencies]
 windows = { version = "0.62", features = ["Win32_Foundation", "Win32_System_Com", "Win32_System_Threading", "Win32_UI_Shell"] }
 
+# Headless UI regression tests (src/ui_binding_tests.rs). ElementHandle locates the
+# seek/volume Sliders in the compiled AppWindow, fires the widget's imperative
+# accessibility SetValue action, then asserts the thumb still tracks engine-pushed
+# `position`/`volume` writes: the executable proof that the `value <=> ...` two-way
+# bindings survive user input (a one-way binding is destroyed by the first
+# imperative write, freezing the seek bar). The default testing backend simulates a
+# windowing system with a mock renderer, so these run with no X/Wayland/display.
+# This crate is "preliminary" and does NOT follow semver, so it MUST be pinned with
+# `=` to the exact slint release family (1.17.0) it is versioned against.
+[dev-dependencies]
+i-slint-backend-testing = "=1.17.0"
+
 [build-dependencies]
 # Must match the `slint` release family above because the compiler and runtime
 # are versioned together.

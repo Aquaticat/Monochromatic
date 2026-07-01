@@ -74,7 +74,12 @@ const containerCargo = (cargoArgs) => {
   let imageExists = true
   try { execFileSync('podman', ['image', 'exists', 'localhost/monochromatic/music-player'], { stdio: 'ignore' }) } catch { imageExists = false }
   if (!imageExists) { execFileSync('podman', ['build', '-t', 'localhost/monochromatic/music-player', '-f', 'Containerfile', '.'], { stdio: 'inherit' }) }
-  execFileSync('podman', ['run', '--rm', '--security-opt', 'label=disable', '-v', `${process.cwd()}:/work`, '-v', 'music-player-cargo:/cargo', '-w', '/work', 'localhost/monochromatic/music-player', 'cargo', ...cargoArgs], { stdio: 'inherit' })
+  // Forward SLINT_EMIT_DEBUG_INFO into the container ONLY when the caller set it
+  // (the test + mcp tasks do). podman does not inherit host env, and the
+  // ElementHandle / MCP introspection APIs refuse to run without this debug info.
+  // Production build tasks never set it, so their container binaries stay lean.
+  const debugInfoEnv = process.env.SLINT_EMIT_DEBUG_INFO ? ['-e', 'SLINT_EMIT_DEBUG_INFO=1'] : []
+  execFileSync('podman', ['run', '--rm', '--security-opt', 'label=disable', ...debugInfoEnv, '-v', `${process.cwd()}:/work`, '-v', 'music-player-cargo:/cargo', '-w', '/work', 'localhost/monochromatic/music-player', 'cargo', ...cargoArgs], { stdio: 'inherit' })
 }
 const runCargo = (cargoArgs) => {
   if (process.platform !== 'linux') { execFileSync('cargo', cargoArgs, { stdio: 'inherit' }) }
@@ -142,9 +147,14 @@ description = "cargo nextest run (macOS/Windows native, else Linux host if dev l
 # The native (non-Linux) branch needs cargo-nextest on PATH (`cargo install
 # cargo-nextest`, or `brew install cargo-nextest` on macOS); the tests are pure
 # logic with no audio backend, so they run identically on macOS and Windows.
+# SLINT_EMIT_DEBUG_INFO=1 makes slint-build embed element ids + source locations in
+# the generated UI so src/ui_binding_tests.rs's ElementHandle locators work; the
+# testing crate refuses to run without it. It is set here (not in [env]) so the
+# size-optimized production build/run binaries stay free of the extra metadata.
 shell = "node -e"
 run = """
 {{vars.cargo_dispatch}}
+process.env.SLINT_EMIT_DEBUG_INFO = '1'
 runCargo(['nextest', 'run'])
 """
 
@@ -166,9 +176,12 @@ containerCargo(['clippy', '--release', '--', '-D', 'warnings'])
 
 [tasks."test:container"]
 description = "cargo nextest run forced inside the container"
+# SLINT_EMIT_DEBUG_INFO=1 as in the host `test` task: the ElementHandle UI tests
+# need element ids in the generated UI. containerCargo forwards it via `-e`.
 shell = "node -e"
 run = """
 {{vars.cargo_dispatch}}
+process.env.SLINT_EMIT_DEBUG_INFO = '1'
 containerCargo(['nextest', 'run', '--release'])
 """
 
@@ -182,6 +195,9 @@ run = """
 execFileSync('mise', ['run', 'image'], { stdio: 'inherit' })
 containerCargo(['build', '--release'])
 containerCargo(['clippy', '--release', '--', '-D', 'warnings'])
+// Only the test step needs the introspection debug info; set it right before so
+// the asserted build + clippy steps above still exercise the lean production path.
+process.env.SLINT_EMIT_DEBUG_INFO = '1'
 containerCargo(['nextest', 'run', '--release'])
 """
 
