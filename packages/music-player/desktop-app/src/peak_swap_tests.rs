@@ -7,6 +7,10 @@
 // Why:      Tests exercise crate-visible and private helpers.
 use super::*;
 
+// What:     `use truepeak_core::{Decision, DecisionKind};`. The cached value and its tag.
+// Why:      The cache-hit test seeds a `Decision` and reads its gain back.
+use truepeak_core::{Decision, DecisionKind};
+
 // What:     `use std::path::{Path, PathBuf};`. Borrowed and owned path types.
 // Why:      Tests borrow fixture paths and create owned temp cache paths.
 use std::path::{Path, PathBuf};
@@ -59,10 +63,10 @@ fn test_cache(path: &Path) -> CacheHandle {
     CacheHandle::open_at(path.to_path_buf())
 }
 
-// What:     `fn wait_cached(cache: &CacheHandle, key: &str)`. Poll until the key is cached,
+// What:     `fn wait_cached(cache: &CacheHandle, key: u64)`. Poll until the key is cached,
 //           up to ~2s, then return whether it landed.
 // Why:      Writes are fire-and-forget, so a test must wait before reading the value back.
-fn wait_cached(cache: &CacheHandle, key: &str) -> bool {
+fn wait_cached(cache: &CacheHandle, key: u64) -> bool {
     // What:     up to 100 polls, 20ms apart.
     // Why:      Bounded wait for the async write to land.
     for _ in 0..100 {
@@ -100,19 +104,29 @@ fn cached_track_gain_returns_measured_gain() {
     //           fixture's opaque cache key and unwrap it.
     // Why:      Seed a known cache hit without decoding the fixture.
     let key = peakcache::fingerprint(fixture()).unwrap();
-    // What:     `cache.upsert(key.clone(), 2.0);` then wait for it to land. A peak of 2.0
-    //           normalizes to half the ceiling fallback.
+    // What:     `let seeded = Decision { gain: fallback_track_gain() / 2.0, ... };`. A stored
+    //           decision whose gain is half the ceiling fallback (the gain a peak of 2.0
+    //           would produce).
+    // Why:      The shared cache stores decisions with a precomputed gain, so seed a decision,
+    //           not a raw peak.
+    let seeded = Decision {
+        gain: fallback_track_gain() / 2.0,
+        kind: DecisionKind::FullScanExact,
+        measured_peak: 2.0,
+        duration_secs: 200.0,
+    };
+    // What:     `cache.upsert(key, seeded);` then wait for it to land.
     // Why:      Seed a known cache hit; the write is async, so wait before reading it back.
-    cache.upsert(key.clone(), 2.0);
-    assert!(wait_cached(&cache, &key), "seeded peak did not land");
+    cache.upsert(key, seeded);
+    assert!(wait_cached(&cache, key), "seeded decision did not land");
 
-    // What:     `let gain = cached_track_gain(fixture(), &cache).unwrap();`. Resolve the
-    //           cached peak into a playback gain.
+    // What:     `let gain = cached_track_gain(fixture(), &cache).unwrap();`. Read the cached
+    //           decision's gain through the cache-hit fast path.
     // Why:      Exercise the cache-hit fast path.
     let gain = cached_track_gain(fixture(), &cache).unwrap();
-    // What:     `assert!(approx_eq(gain, fallback_track_gain() / 2.0));`. Compare to
-    //           expected half-ceiling gain.
-    // Why:      Confirms peak values are converted through `normalization_gain`.
+    // What:     `assert!(approx_eq(gain, fallback_track_gain() / 2.0));`. The returned gain is
+    //           the seeded decision's gain.
+    // Why:      Confirms the cache-hit path returns the stored decision's gain unchanged.
     assert!(approx_eq(gain, fallback_track_gain() / 2.0));
 
     // What:     `let _ = std::fs::remove_file(&cache_path);`. Best-effort cleanup.
@@ -170,9 +184,9 @@ fn async_current_track_measurement_populates_cache_and_returns_gain() {
     //           fixture cache key.
     // Why:      Confirm the worker warmed the cache.
     let key = peakcache::fingerprint(fixture()).unwrap();
-    // What:     `assert!(wait_cached(&cache, &key));`. Wait for and check the cache entry.
+    // What:     `assert!(wait_cached(&cache, key));`. Wait for and check the cache entry.
     // Why:      Current-track measurement must warm the shared cache (write is async).
-    assert!(wait_cached(&cache, &key), "worker did not warm the cache");
+    assert!(wait_cached(&cache, key), "worker did not warm the cache");
 
     // What:     `let _ = std::fs::remove_file(&cache_path);`. Best-effort cleanup.
     // Why:      Leave no temp cache file behind.

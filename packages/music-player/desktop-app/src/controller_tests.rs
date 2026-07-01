@@ -273,7 +273,7 @@ fn background_sweep_skips_current_track() {
         // What:     `if controller.peaks.get(&other_key).is_some() { ... }`. Check whether the
         //           non-current track was cached.
         // Why:      Detect sweep completion without sleeping a fixed long time.
-        if controller.peaks.get(&other_key).is_some() {
+        if controller.peaks.get(other_key).is_some() {
             other_found = true;
             break;
         }
@@ -287,7 +287,7 @@ fn background_sweep_skips_current_track() {
     // What:     `assert!(controller.peaks.get(&current_key).is_none());`. Check current track
     //           remains absent from the cache.
     // Why:      Dedicated current-track measurement, not background sweep, owns that path.
-    assert!(controller.peaks.get(&current_key).is_none());
+    assert!(controller.peaks.get(current_key).is_none());
 
     // What:     `let _ = std::fs::remove_file(&cache_path);`. Best-effort cleanup.
     // Why:      Leave no temp cache file behind.

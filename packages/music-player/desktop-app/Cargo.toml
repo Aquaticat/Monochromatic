@@ -105,27 +105,20 @@ symphonia = { version = "0.6", features = ["all"] }
 # queued writes). NOT `rt-multi-thread`: one actor thread is enough and the spike
 # confirmed a current-thread runtime drives Turso's local futures.
 tokio = { version = "1", features = ["rt", "sync", "macros"] }
-# Shared true-peak core (src/truepeak.rs): the Catmull-Rom meter and the
-# attenuate-only normalization gain now come from this in-repo crate instead of a
-# private copy, so desktop and Android can measure and normalize identically. A path
+# Shared true-peak core: the Catmull-Rom meter and attenuate-only normalization gain
+# (src/truepeak.rs), plus, behind the `service` feature, the whole persistent decision
+# cache (`DecisionCache`) and the policy resolvers (`resolve_decision`, `resolve_full_scan`)
+# that src/peakcache_service.rs and src/peak_swap.rs / src/measure.rs now drive. A path
 # dependency (not a version) because it is an unpublished in-repo crate; it carries its
 # own empty [workspace] table, so this path dep does not pull it into a shared cargo
-# workspace. It has zero third-party dependencies, so it adds nothing to the build graph.
-truepeak-core = { path = "../truepeak-core" }
-# Persistent true-peak cache store (src/peakcache.rs), replacing the prior
-# hand-rolled peaks.json + Arc<Mutex<PeakCache>> + batch-flush. Turso is the
-# pure-Rust SQLite rewrite (no C SQLite, no cc toolchain), so it cross-compiles
-# as cleanly as symphonia; the Step-0 spike confirmed a Linux build+run, a clean
-# `x86_64-pc-windows-gnu` check, and that committed rows survive a hard process
-# kill (50/50 after SIGABRT). `default-features = false` drops the `fts`
-# (tantivy full-text engine) and `mimalloc` defaults the cache never uses; the
-# crate still unconditionally pulls a cloud-sync engine + prost, which we do not
-# call. Pinned to major 0.6 (BETA, accepted): a 0.x minor bump MAY change the
-# on-disk format, which only costs a one-time re-measure because the cache
-# self-heals on a miss (same regenerable contract gxhash relies on above). The
-# privacy guarantee is unchanged: only `fingerprint -> peak` rows hit disk, never
-# a path.
-turso = { version = "0.6", default-features = false }
+# workspace. The `service` feature is what pulls Turso (the pure-Rust SQLite rewrite: no
+# C SQLite, no cc toolchain, cross-compiles as cleanly as symphonia; the Step-0 spike
+# confirmed a Linux build+run, a clean `x86_64-pc-windows-gnu` check, and that committed
+# rows survive a hard process kill) and Tokio transitively, so the desktop no longer names
+# either directly; the cache's on-disk decision schema and its exact-over-probe precedence
+# live in the shared crate. The privacy guarantee is unchanged: only `fingerprint (u64) ->
+# decision` rows hit disk, never a path.
+truepeak-core = { path = "../truepeak-core", features = ["service"] }
 
 # Linux-only native backends. PipeWire (audio) and zbus (KDE taskbar progress)
 # have no macOS equivalent, so cargo compiles them only when target_os = linux;

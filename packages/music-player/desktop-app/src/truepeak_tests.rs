@@ -12,32 +12,49 @@
 // former desktop copies of those tests were removed rather than duplicated.
 
 // What:     `use super::*;`. Bring the parent module's items into the test scope, including
-//           its `pub(crate)` `measure_true_peak` and its imported `Path`.
-// Why:      The test calls `measure_true_peak(Path::new(...))`.
+//           its `pub(crate)` `resolve_full` and its imported `Path`.
+// Why:      The test calls `resolve_full(Path::new(...))`.
 use super::*;
 
-// What:     `#[test]` measuring a committed fixture end-to-end.
-// Why:      Prove the desktop decode loop plus the shared meter produce a sane true peak on
-//           real audio (this is the desktop-specific coverage the shared crate cannot give,
-//           because it does not own the desktop decoder).
+// What:     `use truepeak_core::DecisionKind;`. The decision-kind tag.
+// Why:      A short fixture full-scans, so the returned kind must be `ShortFullScan`.
+use truepeak_core::DecisionKind;
+
+// What:     `#[test]` resolving a committed fixture end-to-end.
+// Why:      Prove the desktop decode loop plus the shared resolver produce a sane exact
+//           decision on real audio (this is the desktop-specific coverage the shared crate
+//           cannot give, because it does not own the desktop decoder).
 #[test]
-fn measure_true_peak_of_fixture_is_sane() {
-    // What:     `let peak = measure_true_peak(Path::new("fixtures/tone.flac")).unwrap();`.
-    //           Measure the committed 440 Hz tone. `Path::new(...)` borrows a path from the
-    //           string literal; `.unwrap()` extracts the `Ok` value and fails the test on a
-    //           decode error (`Err`).
-    // Why:      A real decode through the desktop path into the shared meter.
+fn resolve_full_of_fixture_is_sane() {
+    // What:     `let decision = resolve_full(Path::new("fixtures/tone.flac")).unwrap();`.
+    //           Full-scan the committed 440 Hz tone. `Path::new(...)` borrows a path from the
+    //           string literal; `.unwrap()` extracts the `Ok` value and fails the test on an
+    //           error.
+    // Why:      A real decode through the desktop adapter into the shared full-scan resolver.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // const peak = measureTruePeak("fixtures/tone.flac"); // throws on decode error
+    // const decision = resolveFull("fixtures/tone.flac"); // throws on decode error
     // ```
-    let peak = measure_true_peak(Path::new("fixtures/tone.flac")).unwrap();
-    // What:     `assert!(peak > 0.05 && peak < 0.2, ...)`. The committed tone sits at about
-    //           -21 dBFS (verified with `ffmpeg volumedetect`: max_volume -21.1 dB, about
-    //           0.088 linear); the measured true peak is just above the raw sample peak,
-    //           exactly the inter-sample overshoot we look for.
+    let decision = resolve_full(Path::new("fixtures/tone.flac")).unwrap();
+    // What:     `assert_eq!(decision.kind, DecisionKind::ShortFullScan);`. The tiny fixture is
+    //           short, so the exact scan tags it short.
+    // Why:      Confirm the desktop adapter reports a real duration the policy reads as short.
+    assert_eq!(decision.kind, DecisionKind::ShortFullScan);
+    // What:     `assert!(decision.measured_peak > 0.05 && decision.measured_peak < 0.2, ...)`.
+    //           The committed tone sits at about -21 dBFS (verified with `ffmpeg
+    //           volumedetect`: max_volume -21.1 dB, about 0.088 linear); the measured true
+    //           peak is just above the raw sample peak, exactly the inter-sample overshoot we
+    //           look for.
     // Why:      Confirm the scan decodes end-to-end and reports the real level (not silence,
     //           not an absurd value).
-    assert!(peak > 0.05 && peak < 0.2, "measured peak was {peak}");
+    assert!(
+        decision.measured_peak > 0.05 && decision.measured_peak < 0.2,
+        "measured peak was {}",
+        decision.measured_peak
+    );
+    // What:     `assert_eq!(decision.gain, 1.0);`. The tone is far below the ceiling, so the
+    //           attenuate-only gain is unity.
+    // Why:      A quiet track must pass through unchanged.
+    assert_eq!(decision.gain, 1.0);
 }

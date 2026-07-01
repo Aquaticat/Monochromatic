@@ -11,6 +11,9 @@
 // What:     `use super::*;`. Bring the module's items into the test scope.
 // Why:      Tests use `spawn_queue_measurement`, `CacheHandle`, `thread`, and helpers.
 use super::*;
+// What:     `use truepeak_core::Decision;`. The cached value the sweep stores.
+// Why:      The poll collects a `Decision` and asserts on its measured peak.
+use truepeak_core::Decision;
 // What:     `use std::time::{Duration, SystemTime, UNIX_EPOCH};`. `Duration` for the poll
 //           sleep (measure.rs no longer imports it), clock + epoch for unique names.
 // Why:      Wait for the async sweep, and build a collision-free throwaway cache path.
@@ -57,18 +60,19 @@ fn spawn_queue_measurement_populates_cache() {
     // What:     `let key = peakcache::fingerprint(&fixture).unwrap();`. The cache key.
     // Why:      Poll for it.
     let key = peakcache::fingerprint(&fixture).unwrap();
-    // What:     `let mut found: Option<f32> = None;`. The peak once the sweep stores it.
+    // What:     `let mut found: Option<Decision> = None;`. The decision once the sweep stores
+    //           it.
     // Why:      Collected by polling.
-    let mut found: Option<f32> = None;
+    let mut found: Option<Decision> = None;
     // What:     `for _ in 0..100 { ... }`. Poll up to 100 times (~5s) for the entry.
     //           `_` ignores the loop counter.
     // Why:      The sweep runs on another thread; wait for it without hanging forever.
     for _ in 0..100 {
-        // What:     `if let Some(peak) = cache.lock().unwrap().get(&key) { found = Some(peak); break; }`.
+        // What:     `if let Some(decision) = cache.get(key) { found = Some(decision); break; }`.
         //           Check the shared cache; stop once present.
         // Why:      Detect completion.
-        if let Some(peak) = cache.get(&key) {
-            found = Some(peak);
+        if let Some(decision) = cache.get(key) {
+            found = Some(decision);
             break;
         }
         // What:     `thread::sleep(Duration::from_millis(50));`. Wait before re-checking.
@@ -76,13 +80,22 @@ fn spawn_queue_measurement_populates_cache() {
         thread::sleep(Duration::from_millis(50));
     }
 
-    // What:     `let peak = found.expect("background sweep did not populate the cache");`.
+    // What:     `let decision = found.expect("background sweep did not populate the cache");`.
     //           Unwrap the polled value or fail with a message.
     // Why:      The sweep must have measured the fixture.
-    let peak = found.expect("background sweep did not populate the cache");
-    // What:     `assert!(peak > 0.05 && peak < 0.2, ...)`. The fixture's real level.
+    let decision = found.expect("background sweep did not populate the cache");
+    // What:     `assert!(decision.measured_peak > 0.05 && decision.measured_peak < 0.2, ...)`.
+    //           The fixture's real level; warming full-scans, so it is the exact true peak.
     // Why:      Confirm a sane measured value, not garbage.
-    assert!(peak > 0.05 && peak < 0.2, "peak was {peak}");
+    assert!(
+        decision.measured_peak > 0.05 && decision.measured_peak < 0.2,
+        "peak was {}",
+        decision.measured_peak
+    );
+    // What:     `assert_eq!(decision.kind, DecisionKind::ShortFullScan);`. The fixture is
+    //           short, so warming's exact scan tags it short.
+    // Why:      Confirm the warming path resolves an exact short decision.
+    assert_eq!(decision.kind, truepeak_core::DecisionKind::ShortFullScan);
 
     // What:     clean up the temp cache file.
     // Why:      No droppings.
@@ -122,7 +135,7 @@ fn parallel_sweep_measures_every_track() {
         let key = peakcache::fingerprint(track).unwrap();
         let mut found = false;
         for _ in 0..200 {
-            if cache.get(&key).is_some() {
+            if cache.get(key).is_some() {
                 found = true;
                 break;
             }

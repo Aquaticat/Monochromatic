@@ -1,22 +1,23 @@
 //! The peak-cache service actor: the ONE async surface in the app.
 //!
-//! A dedicated `std::thread` owns a current-thread tokio runtime and the single
-//! Turso connection to `peaks.db`. It drains two request channels (reads and
-//! writes) in a `biased` `select!` that favors reads, so a controller lookup
-//! never queues behind a cold sweep's thousands of upserts. Everything else in
-//! the player stays synchronous and reaches this actor through the blocking
-//! `CacheHandle` (see `peakcache_handle.rs`); the realtime audio callback and the
-//! engine park/unpark loop never touch async. If the database cannot be opened
-//! the actor runs DEGRADED (reads answer `None`, the key set stays empty, writes
-//! drop) so callers never hang, mirroring the old in-memory-only fallback.
+//! A dedicated `std::thread` owns a current-thread tokio runtime and the shared
+//! `truepeak_core::DecisionCache` (a Turso-backed `decisions.db`). It drains two
+//! request channels (reads and writes) in a `biased` `select!` that favors reads, so a
+//! controller lookup never queues behind a cold sweep's thousands of upserts. Everything
+//! else in the player stays synchronous and reaches this actor through the blocking
+//! `CacheHandle` (see `peakcache_handle.rs`); the realtime audio callback and the engine
+//! park/unpark loop never touch async. The cache's decision schema, its exact-over-probe
+//! precedence, and every SQL statement live in the shared crate now; this actor is only the
+//! sync-to-async bridge that owns the connection on one thread. If the database cannot be
+//! opened the actor runs DEGRADED (reads answer `None`, the exact set stays empty, writes
+//! drop) so callers never hang.
 
-/// What:     `use std::collections::HashSet;`. A set of owned `String` keys.
-/// Why:      The actor keeps every known fingerprint in memory so the sweep's
-///           bulk skip-check is a cheap clone, not a per-rescan table scan.
+/// What:     `use std::collections::HashSet;`. A set of owned `u64` fingerprints.
+/// Why:      The `Known` reply is the exact-decision fingerprint snapshot the sweep skips on.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type HashSet = Set<string>;
+/// type HashSet = Set<bigint>;
 /// ```
 use std::collections::HashSet;
 
@@ -39,9 +40,9 @@ use std::path::PathBuf;
 use std::thread;
 
 /// What:     `use tokio::sync::mpsc::{self, UnboundedReceiver, UnboundedSender};`.
-///           Many-producer, single-consumer unbounded channels. `send` is
-///           synchronous (non-blocking), so sync callers can enqueue without an
-///           `await`; the actor `recv().await`s.
+///           Many-producer, single-consumer unbounded channels. `send` is synchronous
+///           (non-blocking), so sync callers can enqueue without an `await`; the actor
+///           `recv().await`s.
 /// Why:      Carry read and write requests from sync callers to the async actor.
 ///
 /// In TS you'd write (pseudocode):
@@ -51,8 +52,8 @@ use std::thread;
 use tokio::sync::mpsc::{self, UnboundedReceiver, UnboundedSender};
 
 /// What:     `use tokio::sync::oneshot;`. A single-value reply channel.
-/// Why:      A read request carries a `oneshot::Sender` the actor answers on; the
-///           caller blocks on the matching receiver.
+/// Why:      A read request carries a `oneshot::Sender` the actor answers on; the caller
+///           blocks on the matching receiver.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -60,110 +61,111 @@ use tokio::sync::mpsc::{self, UnboundedReceiver, UnboundedSender};
 /// ```
 use tokio::sync::oneshot;
 
-/// What:     `use turso::{Builder, Connection, Database};`. The Turso embedded
-///           database: `Builder` opens a local file, `Database` is the open handle,
-///           `Connection` runs SQL.
-/// Why:      The actor opens and queries the on-disk peak store.
+/// What:     `use truepeak_core::{CacheIdentity, Decision, DecisionCache};`. The shared cache
+///           identity tuple, the cached value, and the Turso-backed store.
+/// Why:      The actor opens a `DecisionCache`, keys every operation on the desktop's
+///           `CacheIdentity`, and reads/writes `Decision`s.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { Builder } from "turso";
+/// import { CacheIdentity, Decision, DecisionCache } from "truepeak-core";
 /// ```
-use turso::{Builder, Connection, Database};
+use truepeak_core::{CacheIdentity, Decision, DecisionCache};
 
-/// What:     `pub(super) enum Read { Get { .. }, Known { .. } }`. The two read
-///           requests the actor answers: one point lookup, one full key-set
-///           snapshot. Each carries a `oneshot` reply sender. `pub(super)` so the
-///           sibling handle module can build them.
-/// Why:      Reads share one channel kept separate from writes, so `select!` can
-///           bias them ahead of a write backlog.
+/// What:     `pub(super) enum Read { Get { .. }, Known { .. } }`. The two read requests the
+///           actor answers: one point lookup, one exact-decision fingerprint snapshot. Each
+///           carries a `oneshot` reply sender. `pub(super)` so the sibling handle module can
+///           build them.
+/// Why:      Reads share one channel kept separate from writes, so `select!` can bias them
+///           ahead of a write backlog.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// type Read =
-///   | { kind: "get"; fingerprint: string; reply: Resolve<number | null> }
-///   | { kind: "known"; reply: Resolve<Set<string>> };
+///   | { kind: "get"; fingerprint: bigint; reply: Resolve<Decision | null> }
+///   | { kind: "known"; reply: Resolve<Set<bigint>> };
 /// ```
 pub(super) enum Read {
-    /// What:     `Get { fingerprint: String, reply: oneshot::Sender<Option<f32>> }`.
-    ///           Look up one peak by its fingerprint.
-    /// Why:      `peak_swap` reads the current track's cached gain.
+    /// What:     `Get { fingerprint: u64, reply: oneshot::Sender<Option<Decision>> }`. Look
+    ///           up one decision by its fingerprint.
+    /// Why:      `peak_swap` reads the current track's cached decision.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
     /// { kind: "get", fingerprint, reply }
     /// ```
     Get {
-        /// What:     `fingerprint: String`. The owned cache key to look up.
-        /// Why:      The actor binds it into the `SELECT`.
+        /// What:     `fingerprint: u64`. The cache key to look up.
+        /// Why:      The actor binds it into the shared `get`.
         ///
         /// In TS you'd write (pseudocode):
         /// ```ts
-        /// fingerprint: string;
+        /// fingerprint: bigint;
         /// ```
-        fingerprint: String,
-        /// What:     `reply: oneshot::Sender<Option<f32>>`. Where the measured peak
+        fingerprint: u64,
+        /// What:     `reply: oneshot::Sender<Option<Decision>>`. Where the cached decision
         ///           (or `None` on a miss) is sent.
         /// Why:      The blocking caller awaits exactly one answer.
         ///
         /// In TS you'd write (pseudocode):
         /// ```ts
-        /// reply: Resolve<number | null>;
+        /// reply: Resolve<Decision | null>;
         /// ```
-        reply: oneshot::Sender<Option<f32>>,
+        reply: oneshot::Sender<Option<Decision>>,
     },
-    /// What:     `Known { reply: oneshot::Sender<HashSet<String>> }`. Ask for a
-    ///           snapshot of every known fingerprint.
-    /// Why:      The sweep seeds its skip-check from the actor's in-memory set.
+    /// What:     `Known { reply: oneshot::Sender<HashSet<u64>> }`. Ask for a snapshot of every
+    ///           fingerprint whose decision is already exact.
+    /// Why:      The sweep seeds its skip-check from this set and re-scans only the rest.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
     /// { kind: "known", reply }
     /// ```
     Known {
-        /// What:     `reply: oneshot::Sender<HashSet<String>>`. Where the cloned key
-        ///           set is sent.
-        /// Why:      Hand the caller an owned snapshot it can read without locking.
+        /// What:     `reply: oneshot::Sender<HashSet<u64>>`. Where the exact-fingerprint set
+        ///           is sent.
+        /// Why:      Hand the caller an owned snapshot it reads without locking.
         ///
         /// In TS you'd write (pseudocode):
         /// ```ts
-        /// reply: Resolve<Set<string>>;
+        /// reply: Resolve<Set<bigint>>;
         /// ```
-        reply: oneshot::Sender<HashSet<String>>,
+        reply: oneshot::Sender<HashSet<u64>>,
     },
 }
 
-/// What:     `pub(super) struct Upsert { fingerprint: String, peak: f32 }`. One
-///           fire-and-forget write request: store or replace a measured peak.
-/// Why:      Writes are a separate channel with no reply, so the sweep's workers
-///           never block on persistence.
+/// What:     `pub(super) struct Upsert { fingerprint: u64, decision: Decision }`. One
+///           fire-and-forget write request: store or upgrade a resolved decision.
+/// Why:      Writes are a separate channel with no reply, so a worker never blocks on
+///           persistence; the shared cache's precedence keeps an exact row from being
+///           downgraded to a probe.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type Upsert = { fingerprint: string; peak: number };
+/// type Upsert = { fingerprint: bigint; decision: Decision };
 /// ```
 pub(super) struct Upsert {
-    /// What:     `fingerprint: String`. The owned cache key.
-    /// Why:      Primary key of the row.
+    /// What:     `fingerprint: u64`. The cache key.
+    /// Why:      Part of the row's primary key.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// fingerprint: string;
+    /// fingerprint: bigint;
     /// ```
-    pub(super) fingerprint: String,
-    /// What:     `peak: f32`. The measured true peak.
-    /// Why:      The cached value, stored as SQLite `REAL`.
+    pub(super) fingerprint: u64,
+    /// What:     `decision: Decision`. The gain decision to store.
+    /// Why:      The cached value; `Decision` is `Copy`, so it moves cheaply over the channel.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// peak: number;
+    /// decision: Decision;
     /// ```
-    pub(super) peak: f32,
+    pub(super) decision: Decision,
 }
 
 /// What:     `pub(super) fn spawn(path: Option<PathBuf>) -> (UnboundedSender<Read>, UnboundedSender<Upsert>)`.
-///           Start the actor thread for the database at `path` (`None` => degraded,
-///           no persistence) and hand back the read and write senders.
+///           Start the actor thread for the database at `path` (`None` => degraded, no
+///           persistence) and hand back the read and write senders.
 /// Why:      The handle's constructors call this once and wrap the two senders.
 ///
 /// In TS you'd write (pseudocode):
@@ -180,9 +182,8 @@ pub(super) fn spawn(path: Option<PathBuf>) -> (UnboundedSender<Read>, UnboundedS
     // ```
     let (read_tx, read_rx) = mpsc::unbounded_channel::<Read>();
     let (write_tx, write_rx) = mpsc::unbounded_channel::<Upsert>();
-    // What:     Spawn the detached actor thread: build a current-thread runtime
-    //           (the Step-0 spike confirmed it drives Turso's local futures) and
-    //           block on `run`.
+    // What:     Spawn the detached actor thread: build a current-thread runtime (the Step-0
+    //           spike confirmed it drives Turso's local futures) and block on `run`.
     // Why:      Keep all async off every other thread; the engine stays synchronous.
     //
     // In TS you'd write (pseudocode):
@@ -197,8 +198,8 @@ pub(super) fn spawn(path: Option<PathBuf>) -> (UnboundedSender<Read>, UnboundedS
         runtime.block_on(run(path, read_rx, write_rx));
     });
     // What:     Return both senders. Tail -> return.
-    // Why:      The handle clones and holds them; dropping all of them closes the
-    //           channels and the actor exits cleanly.
+    // Why:      The handle clones and holds them; dropping all of them closes the channels
+    //           and the actor exits cleanly.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -207,10 +208,10 @@ pub(super) fn spawn(path: Option<PathBuf>) -> (UnboundedSender<Read>, UnboundedS
     (read_tx, write_tx)
 }
 
-/// What:     `async fn run(path, mut read_rx, mut write_rx)`. The actor body: open
-///           the database, seed the key set, then serve requests until both
-///           channels close.
-/// Why:      One place owns the connection, the key set, and the read-biased loop.
+/// What:     `async fn run(path, mut read_rx, mut write_rx)`. The actor body: open the
+///           decision cache, compute the desktop identity once, then serve requests until
+///           both channels close.
+/// Why:      One place owns the cache, the identity, and the read-biased loop.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -221,36 +222,29 @@ async fn run(
     mut read_rx: UnboundedReceiver<Read>,
     mut write_rx: UnboundedReceiver<Upsert>,
 ) {
-    // What:     Open the database; keep the `Database` handle alive alongside the
-    //           `Connection` for the actor's whole life. `None` => degraded.
-    // Why:      Dropping the `Database` would close the connection; binding `_db`
-    //           holds it open.
+    // What:     `let cache = open_cache(path).await;`. The open cache, or `None` when
+    //           degraded (no path or open failure).
+    // Why:      A degraded actor still answers every request (misses and drops).
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // const opened = await open(path);
+    // const cache = await openCache(path);
     // ```
-    let opened = open(path).await;
-    let (_db, conn): (Option<Database>, Option<Connection>) = match opened {
-        Some((db, conn)) => (Some(db), Some(conn)),
-        None => (None, None),
-    };
-    // What:     Seed the in-memory key set from the table, or empty when degraded.
-    // Why:      `Known` answers from this set; it grows as upserts land.
+    let cache = open_cache(path).await;
+    // What:     `let identity = super::cache_identity();`. The desktop's four-part cache key
+    //           (policy, meter, decoder, schema), fixed for the run.
+    // Why:      Every get/put/scan keys on it, so a policy or decoder change starts fresh.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // let known = conn ? await seedKnown(conn) : new Set();
+    // const identity = cacheIdentity();
     // ```
-    let mut known: HashSet<String> = match conn.as_ref() {
-        Some(conn) => seed_known(conn).await,
-        None => HashSet::new(),
-    };
-    // What:     The serve loop. `biased;` polls the read arm first every iteration;
-    //           a refutable `Some(..)` pattern disables a closed channel's arm, and
+    let identity = super::cache_identity();
+    // What:     The serve loop. `biased;` polls the read arm first every iteration; a
+    //           refutable `Some(..)` pattern disables a closed channel's arm, and
     //           `else => break` fires once BOTH are closed (all senders dropped).
-    // Why:      Reads win over a write backlog; the actor shuts down cleanly when
-    //           the last handle is gone.
+    // Why:      Reads win over a write backlog; the actor shuts down cleanly when the last
+    //           handle is gone.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -259,64 +253,34 @@ async fn run(
     loop {
         tokio::select! {
             biased;
-            Some(request) = read_rx.recv() => serve_read(conn.as_ref(), &known, request).await,
-            Some(request) = write_rx.recv() => {
-                upsert(conn.as_ref(), &request.fingerprint, request.peak).await;
-                known.insert(request.fingerprint);
-            }
+            Some(request) = read_rx.recv() => serve_read(cache.as_ref(), identity, request).await,
+            Some(request) = write_rx.recv() => put(cache.as_ref(), identity, request).await,
             else => break,
         }
     }
 }
 
-/// What:     `async fn serve_read(conn: Option<&Connection>, known: &HashSet<String>, request: Read)`.
-///           Answer one read request on its `oneshot`.
-/// Why:      Keep the loop body small and the two read cases in one place.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// async function serveRead(conn, known, request) { ... }
-/// ```
-async fn serve_read(conn: Option<&Connection>, known: &HashSet<String>, request: Read) {
-    // What:     Branch on the request; each arm sends exactly one reply. `let _ =`
-    //           ignores a send error (the caller may have stopped waiting).
-    // Why:      A dropped receiver is normal (the caller moved on); never panic.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // if (request.kind === "get") reply(await get(conn, fp)); else reply(clone(known));
-    // ```
-    match request {
-        Read::Get { fingerprint, reply } => {
-            let _ = reply.send(get(conn, &fingerprint).await);
-        }
-        Read::Known { reply } => {
-            let _ = reply.send(known.clone());
-        }
-    }
-}
-
-/// What:     `async fn open(path: Option<PathBuf>) -> Option<(Database, Connection)>`.
-///           Open `peaks.db` (creating parent dirs and the schema), or `None` on
+/// What:     `async fn open_cache(path: Option<PathBuf>) -> Option<DecisionCache>`. Open the
+///           shared decision cache at `path`, creating parent dirs, or `None` on
 ///           absence/failure.
-/// Why:      Centralize the open-and-ensure-schema dance; any failure degrades to
-///           an in-memory-only run rather than aborting the actor.
+/// Why:      Centralize the open-or-degrade dance; any failure degrades to a no-op cache
+///           rather than aborting the actor.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// async function open(path) { ... }
+/// async function openCache(path) { ... }
 /// ```
-async fn open(path: Option<PathBuf>) -> Option<(Database, Connection)> {
-    // What:     Bail to degraded when there is no path (no config dir).
-    // Why:      Same behavior as the old cache: run in memory, persist nothing.
+async fn open_cache(path: Option<PathBuf>) -> Option<DecisionCache> {
+    // What:     `let path = path?;`. Bail to degraded when there is no path (no config dir).
+    // Why:      Same behavior as before: run with no persistence.
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // if (!path) return null;
     // ```
     let path = path?;
-    // What:     Ensure the parent directory exists; ignore the error (the open
-    //           below will surface a real problem).
+    // What:     Ensure the parent directory exists; ignore the error (the open below surfaces
+    //           a real problem).
     // Why:      First launch has no config dir yet.
     //
     // In TS you'd write (pseudocode):
@@ -326,194 +290,160 @@ async fn open(path: Option<PathBuf>) -> Option<(Database, Connection)> {
     if let Some(parent) = path.parent() {
         let _ = std::fs::create_dir_all(parent);
     }
-    // What:     Open the local database; log and degrade on error.
+    // What:     `let path_str = path.to_str()?;`. The path as UTF-8; degrade on non-UTF-8.
+    // Why:      `DecisionCache::open` takes a `&str`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const pathStr = String(path);
+    // ```
+    let path_str = path.to_str()?;
+    // What:     `match DecisionCache::open(path_str).await { ... }`. Open (creating the
+    //           schema); log and degrade on error.
     // Why:      A bad cache file must not crash the player.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // let db; try { db = await Builder.newLocal(path).build(); } catch { return null; }
+    // try { return await DecisionCache.open(pathStr); } catch (e) { warn(e); return null; }
     // ```
-    let db = match Builder::new_local(path.to_str()?).build().await {
-        Ok(db) => db,
-        Err(e) => {
-            eprintln!("music-player: cache open failed: {e}");
-            return None;
+    match DecisionCache::open(path_str).await {
+        Ok(cache) => Some(cache),
+        Err(error) => {
+            eprintln!("music-player: cache open failed: {error}");
+            None
         }
-    };
-    // What:     Open a connection on the database; log and degrade on error.
-    // Why:      Without a connection there is nothing to query.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // const conn = db.connect();
-    // ```
-    let conn = match db.connect() {
-        Ok(conn) => conn,
-        Err(e) => {
-            eprintln!("music-player: cache connect failed: {e}");
-            return None;
-        }
-    };
-    // What:     Ensure the one table exists. `()` is the empty parameter list.
-    // Why:      First launch starts from an empty schema.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // await conn.execute("CREATE TABLE IF NOT EXISTS peaks (...)", []);
-    // ```
-    if let Err(e) = conn
-        .execute(
-            "CREATE TABLE IF NOT EXISTS peaks (fingerprint TEXT PRIMARY KEY, peak REAL)",
-            (),
-        )
-        .await
-    {
-        eprintln!("music-player: cache schema failed: {e}");
-        return None;
     }
-    // What:     Hand back both handles. Tail -> return.
-    // Why:      `run` keeps the `Database` alive next to the `Connection`.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // return [db, conn];
-    // ```
-    Some((db, conn))
 }
 
-/// What:     `async fn seed_known(conn: &Connection) -> HashSet<String>`. Read every
-///           fingerprint already in the table into a set.
-/// Why:      The set seeds the sweep's skip-check; once seeded, upserts keep it
-///           current without re-scanning.
+/// What:     `async fn serve_read(cache: Option<&DecisionCache>, identity: CacheIdentity,
+///           request: Read)`. Answer one read request on its `oneshot`.
+/// Why:      Keep the loop body small and the two read cases in one place.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// async function seedKnown(conn) { ... }
+/// async function serveRead(cache, identity, request) { ... }
 /// ```
-async fn seed_known(conn: &Connection) -> HashSet<String> {
-    // What:     Start an empty set.
-    // Why:      Accumulate the keys into it.
+async fn serve_read(cache: Option<&DecisionCache>, identity: CacheIdentity, request: Read) {
+    // What:     Branch on the request; each arm sends exactly one reply. `let _ =` ignores a
+    //           send error (the caller may have stopped waiting).
+    // Why:      A dropped receiver is normal (the caller moved on); never panic.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // const set = new Set();
+    // if (request.kind === "get") reply(await get(cache, identity, fp)); else reply(await known(cache, identity));
     // ```
-    let mut set = HashSet::new();
-    // What:     Query all fingerprints; degrade to the empty set on error.
-    // Why:      A scan failure just means an empty skip-check (everything re-measures).
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // let rows; try { rows = await conn.query("SELECT fingerprint FROM peaks", []); } catch { return set; }
-    // ```
-    let mut rows = match conn.query("SELECT fingerprint FROM peaks", ()).await {
-        Ok(rows) => rows,
-        Err(_) => return set,
-    };
-    // What:     Drain the rows, inserting each text fingerprint. `while let Ok(Some(..))`
-    //           stops at the end (`Ok(None)`) or any error.
-    // Why:      Build the full key snapshot.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // for await (const row of rows) set.add(row.get(0));
-    // ```
-    while let Ok(Some(row)) = rows.next().await {
-        if let Ok(value) = row.get_value(0)
-            && let Some(text) = value.as_text()
-        {
-            set.insert(text.clone());
+    match request {
+        Read::Get { fingerprint, reply } => {
+            let _ = reply.send(get(cache, identity, fingerprint).await);
+        }
+        Read::Known { reply } => {
+            let _ = reply.send(known(cache, identity).await);
         }
     }
-    // What:     Return the seeded set. Tail -> return.
-    // Why:      Hand the snapshot to the loop.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // return set;
-    // ```
-    set
 }
 
-/// What:     `async fn get(conn: Option<&Connection>, fingerprint: &str) -> Option<f32>`.
-///           Point-read a peak by fingerprint, or `None` on miss/degraded/error.
-/// Why:      Serves `Read::Get`; the value width narrows `f64` (SQLite `REAL`) to the
-///           `f32` the PCM path uses.
+/// What:     `async fn get(cache: Option<&DecisionCache>, identity: CacheIdentity, fingerprint:
+///           u64) -> Option<Decision>`. Point-read a decision, or `None` on
+///           miss/degraded/error.
+/// Why:      Serves `Read::Get`; a read failure is a cache miss, never a crash.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// async function get(conn, fingerprint) { ... }
+/// async function get(cache, identity, fingerprint) { ... }
 /// ```
-async fn get(conn: Option<&Connection>, fingerprint: &str) -> Option<f32> {
-    // What:     Degraded run has no connection.
+async fn get(cache: Option<&DecisionCache>, identity: CacheIdentity, fingerprint: u64) -> Option<Decision> {
+    // What:     `let cache = cache?;`. Degraded run has no cache.
     // Why:      Answer a miss without touching a database.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // if (!conn) return null;
+    // if (!cache) return null;
     // ```
-    let conn = conn?;
-    // What:     Run the indexed point lookup; `?`/`.ok()?` collapse any error or
-    //           empty result into `None`.
-    // Why:      A read failure is a cache miss, never a crash.
+    let cache = cache?;
+    // What:     `match cache.get(fingerprint, identity).await { ... }`. Run the shared point
+    //           lookup; an error collapses to a miss with a log line.
+    // Why:      A read failure must degrade to a miss, never propagate as a crash.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // const row = (await conn.query("SELECT peak ... = ?", [fp])).next(); if (!row) return null;
+    // try { return await cache.get(fingerprint, identity); } catch (e) { warn(e); return null; }
     // ```
-    let mut rows = conn
-        .query("SELECT peak FROM peaks WHERE fingerprint = ?1", (fingerprint,))
-        .await
-        .ok()?;
-    let row = rows.next().await.ok()??;
-    // What:     Read column 0 as a real and narrow to `f32`.
-    // Why:      Hand back the gain input the controller expects.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // return Number(row.get(0));
-    // ```
-    let value = row.get_value(0).ok()?;
-    value.as_real().copied().map(|real| real as f32)
+    match cache.get(fingerprint, identity).await {
+        Ok(decision) => decision,
+        Err(error) => {
+            eprintln!("music-player: cache get failed: {error}");
+            None
+        }
+    }
 }
 
-/// What:     `async fn upsert(conn: Option<&Connection>, fingerprint: &str, peak: f32)`.
-///           Store or replace one measured peak; no-op when degraded.
-/// Why:      Serves `Upsert`; `ON CONFLICT DO UPDATE` makes a repeated measurement
-///           idempotent. The peak widens `f32 -> f64` for the `REAL` column.
+/// What:     `async fn known(cache: Option<&DecisionCache>, identity: CacheIdentity) ->
+///           HashSet<u64>`. Snapshot every exact-decision fingerprint, or the empty set on
+///           degraded/error.
+/// Why:      Serves `Read::Known`; an empty snapshot just means the sweep re-measures.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// async function upsert(conn, fingerprint, peak) { ... }
+/// async function known(cache, identity) { ... }
 /// ```
-async fn upsert(conn: Option<&Connection>, fingerprint: &str, peak: f32) {
-    // What:     Degraded run drops the write.
+async fn known(cache: Option<&DecisionCache>, identity: CacheIdentity) -> HashSet<u64> {
+    // What:     `let Some(cache) = cache else { return HashSet::new(); };`. Degraded run has
+    //           nothing cached.
+    // Why:      Skip-check finds nothing; everything re-measures.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // if (!cache) return new Set();
+    // ```
+    let Some(cache) = cache else {
+        return HashSet::new();
+    };
+    // What:     `match cache.exact_fingerprints(identity).await { ... }`. Scan the exact rows;
+    //           degrade to the empty set on error.
+    // Why:      A scan failure just means an empty skip-check.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // try { return await cache.exactFingerprints(identity); } catch (e) { warn(e); return new Set(); }
+    // ```
+    match cache.exact_fingerprints(identity).await {
+        Ok(set) => set,
+        Err(error) => {
+            eprintln!("music-player: cache scan failed: {error}");
+            HashSet::new()
+        }
+    }
+}
+
+/// What:     `async fn put(cache: Option<&DecisionCache>, identity: CacheIdentity, request:
+///           Upsert)`. Store or upgrade one decision; no-op when degraded.
+/// Why:      Serves `Upsert`; the shared cache's `WHERE` keeps an exact decision from being
+///           downgraded, and one bad write must not stall the sweep.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// async function put(cache, identity, request) { ... }
+/// ```
+async fn put(cache: Option<&DecisionCache>, identity: CacheIdentity, request: Upsert) {
+    // What:     `let Some(cache) = cache else { return; };`. Degraded run drops the write.
     // Why:      Nothing to persist to.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // if (!conn) return;
+    // if (!cache) return;
     // ```
-    let Some(conn) = conn else {
+    let Some(cache) = cache else {
         return;
     };
-    // What:     Autocommit upsert; log and continue on error. Per-statement commit
-    //           is durable (the Step-0 spike survived a hard kill), and the write
-    //           rate is low (one row per whole-file decode), so no batching.
-    // Why:      One bad write must not stall the sweep.
+    // What:     `if let Err(error) = cache.put(...).await { ... }`. Upsert the decision; log
+    //           and continue on error.
+    // Why:      One bad write must not stall the sweep; persistence is best-effort.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // try { await conn.execute("INSERT ... ON CONFLICT DO UPDATE ...", [fp, peak]); } catch (e) { warn(e); }
+    // try { await cache.put(request.fingerprint, identity, request.decision); } catch (e) { warn(e); }
     // ```
-    if let Err(e) = conn
-        .execute(
-            "INSERT INTO peaks (fingerprint, peak) VALUES (?1, ?2) \
-             ON CONFLICT(fingerprint) DO UPDATE SET peak = excluded.peak",
-            (fingerprint, peak as f64),
-        )
-        .await
-    {
-        eprintln!("music-player: cache upsert failed: {e}");
+    if let Err(error) = cache.put(request.fingerprint, identity, &request.decision).await {
+        eprintln!("music-player: cache put failed: {error}");
     }
 }

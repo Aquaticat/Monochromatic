@@ -3698,7 +3698,6 @@ dependencies = [
  "symphonia",
  "tokio",
  "truepeak-core",
- "turso",
  "windows",
  "winresource",
  "zbus",
@@ -6620,6 +6619,10 @@ dependencies = [
 [[package]]
 name = "truepeak-core"
 version = "0.1.0"
+dependencies = [
+ "tokio",
+ "turso",
+]
 
 [[package]]
 name = "ttf-parser"

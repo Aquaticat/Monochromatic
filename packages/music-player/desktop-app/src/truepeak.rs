@@ -1,17 +1,19 @@
-//! Desktop true-peak measurement: a thin opener that feeds the shared meter.
+//! Desktop true-peak resolution: a thin adapter that drives the shared policy resolver.
 //!
-//! "True peak" (a.k.a. inter-sample peak) is the highest level the analog waveform
-//! reaches AFTER a DAC reconstructs it between the stored samples; it can sit above the
-//! largest stored sample. The measurement (the Catmull-Rom oversampling meter) and the
-//! attenuate-only normalization gain used to live here in a private desktop copy; they now
-//! live once in the shared `truepeak-core` crate. This module keeps only the
-//! desktop-specific decode loop that feeds decoded chunks into that shared meter, plus a
-//! re-export of the shared gain so existing call sites keep working. See
+//! "True peak" (a.k.a. inter-sample peak) is the highest level the analog waveform reaches
+//! AFTER a DAC reconstructs it between the stored samples; it can sit above the largest
+//! stored sample. The measurement policy (full-scan short tracks, probe long ones), the
+//! Catmull-Rom meter, the attenuate-only gain, the window placement, and the decision cache
+//! now all live once in the shared `truepeak-core` crate. This module keeps only the
+//! desktop-specific glue: a [`TruePeakSource`] adapter over the desktop `decode::Source`, and
+//! two openers that hand that adapter to the shared resolvers. Foreground playback resolves a
+//! probe-or-full decision quickly ([`resolve_current`]); background warming upgrades to an
+//! exact full scan ([`resolve_full`]). See
 //! ../../../docs/handover/music-player-truepeak-core-integration.md.
 
 /// What:     `use std::path::Path;`. Borrowed filesystem-path type (sibling: the owned
 ///           `PathBuf`, like `&str` vs `String`).
-/// Why:      `measure_true_peak` only reads the path, so it borrows it.
+/// Why:      The openers only read the path, so they borrow it.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -19,10 +21,10 @@
 /// ```
 use std::path::Path;
 
-/// What:     `use crate::decode;`. The decode module, for `decode::open`. The `Source`
-///           trait is NOT imported: its `spec`/`next_chunk` methods are callable on the
+/// What:     `use crate::decode;`. The decode module, for `decode::open`. The `Source` trait
+///           is NOT imported: its `spec`/`next_chunk`/`seek` methods are callable on the
 ///           `Box<dyn Source>` value through the trait object itself, with no import.
-/// Why:      Measurement decodes the whole file through the same path playback uses.
+/// Why:      Measurement decodes through the same path playback uses.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -30,38 +32,27 @@ use std::path::Path;
 /// ```
 use crate::decode;
 
-/// What:     `use crate::error::PlayerError;`. The single error type all fallible
-///           functions in this crate return.
-/// Why:      `measure_true_peak` propagates decode errors with `?`.
+/// What:     `use truepeak_core::{AudioSpec, Decision, TruePeakError, TruePeakSource,
+///           default_policy, resolve_decision, resolve_full_scan};`. The shared source
+///           contract and its descriptor, the decision type, the crate error, the shipped
+///           policy, and the two resolvers.
+/// Why:      The adapter implements `TruePeakSource` (returning an `AudioSpec`, mapping decode
+///           errors into `TruePeakError`); the openers call the resolvers under
+///           `default_policy` and return a `Decision`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { PlayerError } from "./error";
+/// import { AudioSpec, Decision, TruePeakError, TruePeakSource, defaultPolicy, resolveDecision, resolveFullScan } from "truepeak-core";
 /// ```
-use crate::error::PlayerError;
+use truepeak_core::{
+    AudioSpec, Decision, TruePeakError, TruePeakSource, default_policy, resolve_decision,
+    resolve_full_scan,
+};
 
-/// What:     `use truepeak_core::TruePeakMeter;`. The shared streaming meter type, pulled
-///           from the sibling in-repo crate `truepeak-core` (kebab-case on disk, but Rust
-///           crate paths use the underscore identifier form `truepeak_core`). This is a
-///           cross-crate import, not a `crate::`/`super::` in-crate one.
-/// Why:      The desktop no longer defines its own meter; it feeds decoded chunks into the
-///           one shared meter so its measured peaks match Android's exactly.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// import { TruePeakMeter } from "truepeak-core";
-/// ```
-use truepeak_core::TruePeakMeter;
-
-/// What:     `pub use truepeak_core::normalization_gain;`. Re-export the shared crate's
-///           attenuate-only gain function under this module's path. `pub use` both imports
-///           the item AND re-exports it, so existing callers writing
-///           `crate::truepeak::normalization_gain` keep resolving unchanged.
-/// Why:      The gain math is now owned by `truepeak-core`; re-exporting from here keeps
-///           the desktop call sites (`src/peak_swap.rs`) pointed at the one shared
-///           implementation without editing each of them, and keeps the desktop's former
-///           `normalization_gain(peak)` behaviour byte-for-byte (same `CEILING`, same
-///           attenuate-only clamp).
+/// What:     `pub use truepeak_core::normalization_gain;`. Re-export the shared attenuate-only
+///           gain function under this module's path.
+/// Why:      `peak_swap` computes the cold-start fallback gain (`normalization_gain(1.0)`, the
+///           -1 dBTP ceiling) from here, so the one shared implementation stays authoritative.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -69,126 +60,235 @@ use truepeak_core::TruePeakMeter;
 /// ```
 pub use truepeak_core::normalization_gain;
 
-/// What:     `pub(crate) fn measure_true_peak(path: &Path) -> Result<f32, PlayerError>`.
-///           Decode the whole file once and return its estimated true peak (linear,
-///           typically near 1.0 for full-scale material). The return `Result<f32, E>` is
-///           success-or-error. `pub(crate)` so the cache and background worker can call it,
-///           but it is not crate-public API.
-/// Why:      The desktop-specific opener: it owns the decode loop (which uses the desktop
-///           `decode` module) and hands each decoded chunk to the SHARED meter, keeping
-///           the platform-agnostic measurement in `truepeak-core`.
+/// What:     `struct DesktopSource { inner: Box<dyn decode::Source> }`. A newtype wrapping the
+///           desktop decoder so it satisfies the shared [`TruePeakSource`] contract. `Box<dyn
+///           decode::Source>` is an owned, heap-allocated trait object (the concrete decoder,
+///           Symphonia or Opus, erased).
+/// Why:      The shared resolver drives any `TruePeakSource`; this adapts the desktop decoder
+///           to it, bridging the seconds-based `seek` to the frame-based `seek_to_frame` and
+///           mapping the desktop `PlayerError` to the crate's `TruePeakError`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function measureTruePeak(path: string): number { /* throws on decode error */ }
+/// class DesktopSource implements TruePeakSource { constructor(private inner: Source) {} }
 /// ```
-pub(crate) fn measure_true_peak(path: &Path) -> Result<f32, PlayerError> {
-    // What:     `let mut source = decode::open(path)?;`. Open a decoder for the file. `?`
-    //           PROPAGATES a decode error (returns it from this function). `mut` because
-    //           decoding advances the source.
-    // Why:      We need our own decoder, separate from the one playback uses.
-    // Gotcha:   `?` is early return on `Err`, not optional chaining.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // const source = decode.open(path); // throws on failure
-    // ```
-    let mut source = decode::open(path)?;
-    // What:     `let channels = source.spec().channels as usize;`. Read the channel count
-    //           and `as usize` widens it for the meter's interleave width. `usize`
-    //           (siblings `u16`/`u32`) is what `TruePeakMeter::new` expects.
-    // Why:      The shared meter must know how many interleaved channels each frame has.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // const channels = source.spec().channels;
-    // ```
-    let channels = source.spec().channels as usize;
-    // What:     `if channels == 0 { return Ok(0.0); }`. Guard against a malformed
-    //           zero-channel stream. `Ok(0.0)` wraps a peak of 0 (treated as silence) as
-    //           the success variant of `Result`, and returns early.
-    // Why:      Avoid the divide-by-zero in the meter's channel routing; a 0 peak maps to
-    //           unity gain in `normalization_gain`.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // if (channels === 0) return 0;
-    // ```
-    if channels == 0 {
-        return Ok(0.0);
-    }
-    // What:     `let mut meter = TruePeakMeter::new(channels);`. Construct the SHARED
-    //           streaming scanner sized for this many channels. `mut` because `feed`
-    //           mutates its running state.
-    // Why:      Accumulates the true peak across all chunks, using the one shared meter.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // const meter = new TruePeakMeter(channels);
-    // ```
-    let mut meter = TruePeakMeter::new(channels);
-    // What:     `loop { ... }`. An UNCONDITIONAL loop (Rust's `while (true)`); exited with
-    //           `break` below.
-    // Why:      Scan the entire track until end-of-stream.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // while (true) { ... }
-    // ```
-    loop {
-        // What:     `let chunk = source.next_chunk()?;`. Next block of interleaved samples;
-        //           `?` propagates a decode error.
-        // Why:      Feed it to the meter.
+struct DesktopSource {
+    /// What:     `inner: Box<dyn decode::Source>`. The owned desktop decoder.
+    /// Why:      The adapter forwards every trait method to it.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// private inner: Source;
+    /// ```
+    inner: Box<dyn decode::Source>,
+}
+
+/// What:     `impl TruePeakSource for DesktopSource { ... }`. Implement the shared contract by
+///           forwarding to the wrapped decoder.
+/// Why:      Let the shared resolvers measure desktop audio without knowing the decoder.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // DesktopSource satisfies TruePeakSource
+/// ```
+impl TruePeakSource for DesktopSource {
+    /// What:     `fn spec(&self) -> AudioSpec`. Map the desktop `decode::AudioSpec` to the
+    ///           shared `AudioSpec` (identical fields, different crate).
+    /// Why:      The resolver reads rate, channels, and duration through this.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// spec() { const s = this.inner.spec(); return { rate: s.rate, channels: s.channels, durationSecs: s.durationSecs }; }
+    /// ```
+    fn spec(&self) -> AudioSpec {
+        // What:     `let spec = self.inner.spec();`. The desktop descriptor (a COPY).
+        // Why:      Read its three fields into the shared shape.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // const chunk = source.nextChunk();
+        // const spec = this.inner.spec();
         // ```
-        let chunk = source.next_chunk()?;
-        // What:     `if chunk.is_empty() { break; }`. An empty chunk signals EOF; `break`
-        //           exits the `loop`.
-        // Why:      Stop at the end of the track.
+        let spec = self.inner.spec();
+        // What:     `AudioSpec { rate, channels, duration_secs }`. The shared descriptor.
+        //           Tail -> return.
+        // Why:      Same values, in the crate's type.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // if (chunk.length === 0) break;
+        // return { rate: spec.rate, channels: spec.channels, durationSecs: spec.durationSecs };
         // ```
-        if chunk.is_empty() {
-            break;
+        AudioSpec {
+            rate: spec.rate,
+            channels: spec.channels,
+            duration_secs: spec.duration_secs,
         }
-        // What:     `meter.feed(&chunk);`. Push this block through the shared scanner.
-        //           `&chunk` lends the slice read-only (we are not giving the meter
-        //           ownership of the decoded buffer).
-        // Why:      Update the running peak; the meter keeps its channel cursor across
-        //           feeds, so chunk boundaries never move the result.
+    }
+
+    /// What:     `fn next_chunk(&mut self) -> Result<Vec<f32>, TruePeakError>`. Forward the
+    ///           next decoded block, mapping a decode error to `TruePeakError::Decode`.
+    /// Why:      The meter feeds these blocks; the error type must be the crate's.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// nextChunk() { try { return this.inner.nextChunk(); } catch (e) { throw decodeError(e); } }
+    /// ```
+    fn next_chunk(&mut self) -> Result<Vec<f32>, TruePeakError> {
+        // What:     `self.inner.next_chunk().map_err(|error| TruePeakError::Decode { ... })`.
+        //           Forward; `.map_err` rewraps a `PlayerError` as a crate decode error.
+        //           Tail -> return.
+        // Why:      Keep the decoder's message while crossing the crate boundary.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // meter.feed(chunk);
+        // return mapErr(this.inner.nextChunk(), (e) => ({ kind: "decode", message: String(e) }));
         // ```
-        meter.feed(&chunk);
+        self.inner
+            .next_chunk()
+            .map_err(|error| TruePeakError::Decode { message: error.to_string() })
     }
-    // What:     `Ok(meter.peak())`. `meter.peak()` reads the accumulated true peak (a
-    //           method on the shared meter, since the field is private to `truepeak-core`).
-    //           `Ok(...)` wraps it as the success result; tail expression -> return.
-    // Why:      Hand the measured true peak back to the caller.
+
+    /// What:     `fn seek_to_frame(&mut self, frame: u64) -> Result<(), TruePeakError>`. Seek
+    ///           the desktop decoder to the interleaved frame by converting it to seconds
+    ///           (`frame / rate`), mapping a seek error to `TruePeakError::Seek`.
+    /// Why:      The probe places windows by frame; the desktop decoder seeks by seconds.
+    /// Gotcha:   The seconds-granular seek lands at the nearest packet boundary, not the exact
+    ///           frame, so probe windows are placed approximately. That is acceptable for the
+    ///           runtime: the probe takes the loudest of several spread windows, and a few
+    ///           milliseconds of drift does not change which window is loudest. The bench
+    ///           sidecar (which needs exact placement) uses its own frame-exact source.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// seekToFrame(frame) { try { this.inner.seek(frame / this.inner.spec().rate); } catch (e) { throw seekError(e); } }
+    /// ```
+    fn seek_to_frame(&mut self, frame: u64) -> Result<(), TruePeakError> {
+        // What:     `let rate = self.inner.spec().rate;`. Samples per second per channel.
+        // Why:      Convert the frame index to a time offset.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const rate = this.inner.spec().rate;
+        // ```
+        let rate = self.inner.spec().rate;
+        // What:     `let seconds = frame as f64 / f64::from(rate);`. Frame index over rate.
+        // Why:      The desktop `seek` takes seconds.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const seconds = frame / rate;
+        // ```
+        let seconds = frame as f64 / f64::from(rate);
+        // What:     `self.inner.seek(seconds).map_err(|error| TruePeakError::Seek { ... })`.
+        //           Seek; rewrap a `PlayerError` as a crate seek error. Tail -> return.
+        // Why:      Keep the decoder's message while crossing the crate boundary.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // return mapErr(this.inner.seek(seconds), (e) => ({ kind: "seek", message: String(e) }));
+        // ```
+        self.inner
+            .seek(seconds)
+            .map_err(|error| TruePeakError::Seek { message: error.to_string() })
+    }
+}
+
+/// What:     `fn open_adapter(path: &Path) -> Result<DesktopSource, TruePeakError>`. Open the
+///           desktop decoder for `path` and wrap it in the shared-source adapter, mapping an
+///           open failure to `TruePeakError::Decode`. Module-private.
+/// Why:      Both openers start the same way; one helper keeps the open-and-wrap in one place.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function openAdapter(path) { return new DesktopSource(decode.open(path)); }
+/// ```
+fn open_adapter(path: &Path) -> Result<DesktopSource, TruePeakError> {
+    // What:     `let inner = decode::open(path).map_err(|error| TruePeakError::Decode { ... })?;`.
+    //           Open the decoder; `?` propagates a rewrapped open error.
+    // Why:      The adapter needs an open decoder to drive.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // return meter.peak;
+    // const inner = decode.open(path);
     // ```
-    Ok(meter.peak())
+    let inner =
+        decode::open(path).map_err(|error| TruePeakError::Decode { message: error.to_string() })?;
+    // What:     `Ok(DesktopSource { inner })`. Wrap it. Tail -> return.
+    // Why:      Hand back the adapter the resolver drives.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // return new DesktopSource(inner);
+    // ```
+    Ok(DesktopSource { inner })
+}
+
+/// What:     `pub(crate) fn resolve_current(path: &Path) -> Result<Decision, TruePeakError>`.
+///           Resolve the foreground gain decision under the shipped policy: full-scan a short
+///           track, probe a long one. `pub(crate)` so `peak_swap` calls it.
+/// Why:      The current-track path wants a usable gain quickly; the probe yields one for a
+///           long track without decoding the whole file.
+/// Gotcha:   This BLOCKS on decode; call it on a worker thread, never on the audio callback.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function resolveCurrent(path: string): Decision { return resolveDecision(defaultPolicy(), openAdapter(path)); }
+/// ```
+pub(crate) fn resolve_current(path: &Path) -> Result<Decision, TruePeakError> {
+    // What:     `let mut source = open_adapter(path)?;`. Open and wrap the decoder.
+    // Why:      The resolver needs a `&mut dyn TruePeakSource`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const source = openAdapter(path);
+    // ```
+    let mut source = open_adapter(path)?;
+    // What:     `resolve_decision(&default_policy(), &mut source)`. Drive the source through
+    //           the probe-or-full policy. Tail -> return.
+    // Why:      The one shared foreground measurement.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // return resolveDecision(defaultPolicy(), source);
+    // ```
+    resolve_decision(&default_policy(), &mut source)
+}
+
+/// What:     `pub(crate) fn resolve_full(path: &Path) -> Result<Decision, TruePeakError>`.
+///           Resolve an EXACT gain decision by full-scanning the whole track, regardless of
+///           length. `pub(crate)` so `measure` (background warming) calls it.
+/// Why:      Warming upgrades a probe estimate to an exact cached gain over idle time; the
+///           cache's exact-over-probe precedence then keeps the exact decision.
+/// Gotcha:   This BLOCKS on a full decode; warming runs it at idle scheduling priority.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function resolveFull(path: string): Decision { return resolveFullScan(defaultPolicy(), openAdapter(path)); }
+/// ```
+pub(crate) fn resolve_full(path: &Path) -> Result<Decision, TruePeakError> {
+    // What:     `let mut source = open_adapter(path)?;`. Open and wrap the decoder.
+    // Why:      The resolver needs a `&mut dyn TruePeakSource`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const source = openAdapter(path);
+    // ```
+    let mut source = open_adapter(path)?;
+    // What:     `resolve_full_scan(&default_policy(), &mut source)`. Always exact. Tail ->
+    //           return.
+    // Why:      The shared warming-upgrade measurement.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // return resolveFullScan(defaultPolicy(), source);
+    // ```
+    resolve_full_scan(&default_policy(), &mut source)
 }
 
 /// What:     `#[cfg(test)] #[path = "truepeak_tests.rs"] mod tests;` declares a test-only
 ///           submodule whose code lives in the sibling file `truepeak_tests.rs`.
-///           `#[cfg(test)]` gates it to test builds only; `#[path = "..."]` aims the module
-///           at a flat sibling file instead of the default `truepeak/tests.rs` lookup. The
-///           file stays the `tests` CHILD of truepeak, so its `use super::*` reaches the
-///           module items unchanged.
-/// Why:      Keep `truepeak.rs` to production code; the test lives beside it without
-///           inflating this file or its max-lines budget (sibling `*_tests.rs` files are
-///           exempt from the linter).
+/// Why:      Keep `truepeak.rs` to production code; the test lives beside it without inflating
+///           this file or its max-lines budget (sibling `*_tests.rs` files are exempt from the
+///           linter).
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

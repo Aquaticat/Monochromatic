@@ -63,16 +63,17 @@ use std::time::Duration;
 /// ```
 use crate::peakcache::{self, CacheHandle};
 
-/// What:     `use crate::truepeak::{measure_true_peak, normalization_gain};`. The
-///           whole-track true-peak scanner and its peak-to-gain conversion.
-/// Why:      Cache misses need to decode a track and turn its measured peak into
-///           the constant playback gain.
+/// What:     `use crate::truepeak::{normalization_gain, resolve_current};`. The shared
+///           foreground resolver (probe-or-full) and the peak-to-gain conversion used only
+///           for the cold-start fallback.
+/// Why:      Cache misses resolve the current track's decision; `normalization_gain` builds
+///           the -1 dBTP fallback while measurement runs.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { measureTruePeak, normalizationGain } from "./truepeak";
+/// import { normalizationGain, resolveCurrent } from "./truepeak";
 /// ```
-use crate::truepeak::{measure_true_peak, normalization_gain};
+use crate::truepeak::{normalization_gain, resolve_current};
 
 /// What:     `const PEAK_SWAP_WAIT_SECS: u64 = 1;`. One second, stored as the
 ///           unsigned integer width `Duration::from_secs` expects. Siblings would
@@ -441,7 +442,7 @@ pub(crate) fn fallback_track_gain() -> f32 {
 /// function cachedTrackGain(path: string, cache: CacheHandle): number | null { ... }
 /// ```
 pub(crate) fn cached_track_gain(path: &Path, cache: &CacheHandle) -> Option<f32> {
-    // What:     `let key = peakcache::fingerprint(path)?;`. Compute the opaque cache
+    // What:     `let key = peakcache::fingerprint(path)?;`. Compute the opaque `u64` cache
     //           key; `?` returns `None` if the file cannot be stat'd.
     // Why:      No key means there can be no cache hit.
     //
@@ -450,24 +451,25 @@ pub(crate) fn cached_track_gain(path: &Path, cache: &CacheHandle) -> Option<f32>
     // const key = fingerprint(path); if (!key) return null;
     // ```
     let key = peakcache::fingerprint(path)?;
-    // What:     `let peak = cache.get(&key)?;`. Ask the cache actor for the peak and use
-    //           `?` to return `None` on a miss. `&key` lends the owned key string.
-    // Why:      Convert only real cache hits.
+    // What:     `let decision = cache.get(key)?;`. Ask the cache actor for the decision and
+    //           use `?` to return `None` on a miss. `key` is a `Copy` `u64`.
+    // Why:      Use only real cache hits.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // const peak = cache.get(key); if (peak == null) return null;
+    // const decision = cache.get(key); if (decision == null) return null;
     // ```
-    let peak = cache.get(&key)?;
-    // What:     `Some(normalization_gain(peak))`. Convert the peak and wrap it in
-    //           `Some`. Tail expression returns the cache-hit gain.
-    // Why:      Callers need gain, not raw true peak.
+    let decision = cache.get(key)?;
+    // What:     `Some(decision.gain)`. The cached decision already carries the gain (the
+    //           shared resolver computed it), so no re-conversion is needed. Tail expression
+    //           returns the cache-hit gain.
+    // Why:      Callers need gain; the shared cache stores decisions, not raw peaks.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // return normalizationGain(peak);
+    // return decision.gain;
     // ```
-    Some(normalization_gain(peak))
+    Some(decision.gain)
 }
 
 /// What:     `pub(crate) fn prepare_track_gain(...) -> TrackGainResolution`. Prepare
@@ -555,7 +557,7 @@ pub(crate) fn prepare_track_gain(
 fn spawn_current_track_measurement(
     path: PathBuf,
     cache: CacheHandle,
-    fingerprint: Option<String>,
+    fingerprint: Option<u64>,
     generation: u64,
     worker: thread::Thread,
 ) -> PendingPeakMeasurement {
@@ -622,30 +624,30 @@ fn spawn_current_track_measurement(
     PendingPeakMeasurement::from_receiver(receiver)
 }
 
-/// What:     `fn measure_and_store_gain(...) -> Option<f32>`. Decode the whole file,
-///           cache the peak if a fingerprint exists, and return the normalized gain.
+/// What:     `fn measure_and_store_gain(...) -> Option<f32>`. Resolve the current track's
+///           decision (probe-or-full), cache it if a fingerprint exists, and return its gain.
 /// Why:      Shared worker body for the current-track async path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function measureAndStoreGain(path: string, cache: CacheHandle, fingerprint: string | null): number | null { ... }
+/// function measureAndStoreGain(path: string, cache: CacheHandle, fingerprint: bigint | null): number | null { ... }
 /// ```
 fn measure_and_store_gain(
     path: &Path,
     cache: &CacheHandle,
-    fingerprint: Option<String>,
+    fingerprint: Option<u64>,
 ) -> Option<f32> {
-    // What:     `let peak = measure_true_peak(path).ok()?;`. Decode the file and
-    //           convert `Result` to `Option`; `?` returns `None` on decode failure.
-    // Why:      Failed measurement should not replace the fallback gain.
+    // What:     `let decision = resolve_current(path).ok()?;`. Resolve the foreground
+    //           decision and convert `Result` to `Option`; `?` returns `None` on failure.
+    // Why:      A failed measurement should not replace the fallback gain.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // let peak; try { peak = measureTruePeak(path); } catch { return null; }
+    // let decision; try { decision = resolveCurrent(path); } catch { return null; }
     // ```
-    let peak = measure_true_peak(path).ok()?;
-    // What:     `if let Some(key) = fingerprint { ... }`. Cache only when a
-    //           fingerprint was available; this consumes the optional owned string.
+    let decision = resolve_current(path).ok()?;
+    // What:     `if let Some(key) = fingerprint { ... }`. Cache only when a fingerprint was
+    //           available; this consumes the optional `u64`.
     // Why:      Unstatable files can still produce a gain for this play, but cannot be
     //           memoized safely.
     //
@@ -654,26 +656,27 @@ fn measure_and_store_gain(
     // if (fingerprint) { ... }
     // ```
     if let Some(key) = fingerprint {
-        // What:     `cache.upsert(key, peak);`. Fire-and-forget the measured peak to the
-        //           cache actor, which commits it durably.
+        // What:     `cache.upsert(key, decision);`. Fire-and-forget the decision to the cache
+        //           actor, which commits it durably (a probe estimate here; warming may later
+        //           upgrade it to exact).
         // Why:      Warm the cache even if this result later becomes stale for playback; the
         //           current-track worker must not block on persistence.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // cache.upsert(key, peak);
+        // cache.upsert(key, decision);
         // ```
-        cache.upsert(key, peak);
+        cache.upsert(key, decision);
     }
-    // What:     `Some(normalization_gain(peak))`. Convert the raw peak to gain and
-    //           wrap it. Tail expression returns the worker's result.
-    // Why:      The controller applies gains, not raw peak values.
+    // What:     `Some(decision.gain)`. The decision already carries the gain. Tail expression
+    //           returns the worker's result.
+    // Why:      The controller applies gains; the shared resolver already computed it.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // return normalizationGain(peak);
+    // return decision.gain;
     // ```
-    Some(normalization_gain(peak))
+    Some(decision.gain)
 }
 
 /// What:     `#[cfg(test)] #[path = "peak_swap_tests.rs"] mod tests;` declares a

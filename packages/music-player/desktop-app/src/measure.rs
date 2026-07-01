@@ -13,8 +13,8 @@
 //! current track is handled by `peak_swap`, because playback may wait briefly for
 //! that one visible result.
 
-/// What:     `use std::collections::HashSet;`. A set of owned fingerprint strings.
-/// Why:      The skip-check reads one snapshot of every already-cached fingerprint.
+/// What:     `use std::collections::HashSet;`. A set of `u64` fingerprints.
+/// Why:      The skip-check reads one snapshot of every already-exact fingerprint.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -70,14 +70,15 @@ use std::thread;
 /// ```
 use crate::peakcache::{self, CacheHandle};
 
-/// What:     `use crate::truepeak::measure_true_peak;`. The whole-file true-peak scanner.
-/// Why:      Workers decode uncached tracks and cache their raw peaks.
+/// What:     `use crate::truepeak::resolve_full;`. The always-exact full-scan resolver.
+/// Why:      Warming workers upgrade uncached-or-probe tracks to an EXACT decision, which the
+///           cache's exact-over-probe precedence then keeps.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { measureTruePeak } from "./truepeak";
+/// import { resolveFull } from "./truepeak";
 /// ```
-use crate::truepeak::measure_true_peak;
+use crate::truepeak::resolve_full;
 
 /// What:     `pub(crate) fn spawn_queue_measurement(tracks: Vec<PathBuf>, cache: CacheHandle)`.
 ///           Start a detached coordinator that measures every uncached track in `tracks`
@@ -276,9 +277,10 @@ fn lower_current_thread_to_idle() {}
 /// ```
 fn run_sweep(tracks: Vec<PathBuf>, cache: CacheHandle) {
     // What:     `let known = Arc::new(cache.known_fingerprints());`. One snapshot of every
-    //           already-cached fingerprint, shared read-only with all workers.
+    //           already-EXACT fingerprint, shared read-only with all workers.
     // Why:      The skip-check reads this instead of querying the cache per track; within a
-    //           sweep each track is unique, so a single snapshot is enough.
+    //           sweep each track is unique, so a single snapshot is enough. Probe-only tracks
+    //           are absent, so warming re-scans and upgrades them to exact.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -397,8 +399,8 @@ fn worker_count(track_count: usize) -> usize {
     cores.min(track_count)
 }
 
-/// What:     `fn run_worker(tracks: Arc<[PathBuf]>, cursor: Arc<AtomicUsize>, cache: CacheHandle, known: Arc<HashSet<String>>)`.
-///           One worker: drop to idle priority, then claim and measure tracks until the
+/// What:     `fn run_worker(tracks: Arc<[PathBuf]>, cursor: Arc<AtomicUsize>, cache: CacheHandle, known: Arc<HashSet<u64>>)`.
+///           One worker: drop to idle priority, then claim and full-scan tracks until the
 ///           cursor passes the end. Module-private.
 /// Why:      The per-thread decode loop, shared by every spawned worker.
 ///
@@ -410,7 +412,7 @@ fn run_worker(
     tracks: Arc<[PathBuf]>,
     cursor: Arc<AtomicUsize>,
     cache: CacheHandle,
-    known: Arc<HashSet<String>>,
+    known: Arc<HashSet<u64>>,
 ) {
     // What:     `lower_current_thread_to_idle();`. Drop this worker to idle scheduling
     //           priority before any decoding (no-op off Linux/macOS/Windows).
@@ -463,9 +465,10 @@ fn run_worker(
         let Some(key) = peakcache::fingerprint(path) else {
             continue;
         };
-        // What:     `if known.contains(&key) { continue; }`. Skip tracks already cached when
-        //           the sweep started (the warm-restart fast path).
-        // Why:      Avoid redundant decoding; warm directories sweep through quickly.
+        // What:     `if known.contains(&key) { continue; }`. Skip tracks that ALREADY carry an
+        //           exact decision when the sweep started (the warm-restart fast path); a probe
+        //           estimate or no row is NOT in `known`, so it gets re-scanned and upgraded.
+        // Why:      Avoid redundant exact scans; still upgrade probe estimates to exact.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -474,26 +477,26 @@ fn run_worker(
         if known.contains(&key) {
             continue;
         }
-        // What:     `let Ok(peak) = measure_true_peak(path) else { continue };`. Measure; skip
-        //           files that fail to decode.
-        // Why:      One bad file must not stop the worker.
+        // What:     `let Ok(decision) = resolve_full(path) else { continue };`. Full-scan to an
+        //           exact decision; skip files that fail to decode.
+        // Why:      One bad file must not stop the worker; warming produces exact decisions.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // let peak; try { peak = measureTruePeak(path); } catch { continue; }
+        // let decision; try { decision = resolveFull(path); } catch { continue; }
         // ```
-        let Ok(peak) = measure_true_peak(path) else {
+        let Ok(decision) = resolve_full(path) else {
             continue;
         };
-        // What:     `cache.upsert(key, peak);`. Fire-and-forget the measurement to the cache
-        //           actor, which commits it durably.
-        // Why:      Memoize the peak without blocking this worker on persistence.
+        // What:     `cache.upsert(key, decision);`. Fire-and-forget the exact decision to the
+        //           cache actor, which commits it durably (upgrading any prior probe estimate).
+        // Why:      Memoize the exact gain without blocking this worker on persistence.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // cache.upsert(key, peak);
+        // cache.upsert(key, decision);
         // ```
-        cache.upsert(key, peak);
+        cache.upsert(key, decision);
     }
 }
 

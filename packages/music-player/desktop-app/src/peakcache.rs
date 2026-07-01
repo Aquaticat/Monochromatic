@@ -51,6 +51,18 @@ use gxhash::gxhash64;
 /// ```
 use crate::identity;
 
+/// What:     `use truepeak_core::{CacheIdentity, default_policy};`. The four-part cache
+///           identity type and the one shipped policy, from the shared crate.
+/// Why:      `cache_identity` pairs the shared policy's `policy_id`/`meter_id`/`schema`
+///           with the desktop's `decoder_stack_id`, so a cache row is reused only when the
+///           whole measurement environment matches.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { CacheIdentity, defaultPolicy } from "truepeak-core";
+/// ```
+use truepeak_core::{CacheIdentity, default_policy};
+
 /// What:     `#[path = "peakcache_service.rs"] mod service;`. The async cache actor,
 ///           loaded from a flat sibling file.
 /// Why:      Keep the Turso connection, runtime, and serve-loop out of this root.
@@ -95,22 +107,24 @@ pub(crate) use handle::CacheHandle;
 /// ```
 const FINGERPRINT_SEED: i64 = 0;
 
-/// What:     `pub(crate) fn fingerprint(path: &Path) -> Option<String>`. Build the
-///           opaque cache key for a file from its path, size, and modified-time.
-///           Returns `None` if the file cannot be stat'd. `pub(crate)` for the
-///           controller and background worker.
-/// Why:      Identify a track without storing anything identifying; size+mtime make
-///           the key change when the file is replaced or edited in place.
+/// What:     `pub(crate) fn fingerprint(path: &Path) -> Option<u64>`. Build the opaque
+///           cache key for a file from its path, size, and modified-time. Returns `None`
+///           if the file cannot be stat'd. `pub(crate)` for the controller and background
+///           worker. The value is the raw `gxhash64` output, since the shared
+///           `DecisionCache` keys on a `u64` (stored as a bijective `i64` bit-cast), not a
+///           hex string.
+/// Why:      Identify a track without storing anything identifying; size+mtime make the key
+///           change when the file is replaced or edited in place.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function fingerprint(path: string): string | null {
+/// function fingerprint(path: string): bigint | null {
 ///   let meta; try { meta = statSync(path); } catch { return null; }
 ///   const material = encode(path) + u64le(meta.size) + u128le(meta.mtimeNanos);
-///   return gxhash64(material, FINGERPRINT_SEED).toString(16).padStart(16, "0");
+///   return gxhash64(material, FINGERPRINT_SEED);
 /// }
 /// ```
-pub(crate) fn fingerprint(path: &Path) -> Option<String> {
+pub(crate) fn fingerprint(path: &Path) -> Option<u64> {
     // What:     `let meta = std::fs::metadata(path).ok()?;`. Read filesystem metadata;
     //           `?` returns `None` on error.
     // Why:      Need the size and modified time; bail to "no fingerprint" if absent.
@@ -179,44 +193,103 @@ pub(crate) fn fingerprint(path: &Path) -> Option<String> {
     // material.push(...u128le(mtimeNanos));
     // ```
     material.extend_from_slice(&mtime_nanos.to_le_bytes());
-    // What:     `Some(format!("{:016x}", gxhash64(&material, FINGERPRINT_SEED)))`.
-    //           Hash the bytes with the fixed seed and render the `u64` as a
-    //           zero-padded 16-digit lowercase hex string. Tail -> return.
+    // What:     `Some(gxhash64(&material, FINGERPRINT_SEED))`. Hash the bytes with the
+    //           fixed seed; the raw `u64` is the cache key. Tail -> return.
     // Why:      The opaque key stored on disk; a 64-bit non-cryptographic hash is not
-    //           reversible to the path in practice, preserving the privacy guarantee.
+    //           reversible to the path in practice, preserving the privacy guarantee. The
+    //           shared cache keys on the `u64` directly, so no hex rendering is needed.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // return gxhash64(material, FINGERPRINT_SEED).toString(16).padStart(16, "0");
+    // return gxhash64(material, FINGERPRINT_SEED);
     // ```
-    Some(format!("{:016x}", gxhash64(&material, FINGERPRINT_SEED)))
+    Some(gxhash64(&material, FINGERPRINT_SEED))
 }
 
-/// What:     `fn db_path() -> Option<PathBuf>`. The on-disk location of the peak
+/// What:     `const DECODER_STACK_DESCRIPTION: &str = "...";`. A stable text description of
+///           the desktop decode stack that produces the PCM the meter reads.
+/// Why:      Its hash is the `decoder_stack_id`; editing this string when the decoder stack
+///           changes (a Symphonia or libopus bump, an f32 conversion change) re-keys the
+///           cache, so decisions measured under a different decoder are never reused.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const DECODER_STACK_DESCRIPTION = "desktop:symphonia-0.6+opus-rev-5598766+f32le";
+/// ```
+const DECODER_STACK_DESCRIPTION: &str = "desktop:symphonia-0.6+opus-rev-5598766+f32le";
+
+/// What:     `fn decoder_stack_id() -> u64`. Hash the decoder-stack description into a stable
+///           id with the same `gxhash64` and seed the fingerprint uses. Module-private.
+/// Why:      The platform half of the cache identity; the shared crate owns the policy and
+///           meter ids, the platform owns this one.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function decoderStackId(): bigint { return gxhash64(utf8(DECODER_STACK_DESCRIPTION), FINGERPRINT_SEED); }
+/// ```
+fn decoder_stack_id() -> u64 {
+    // What:     `gxhash64(DECODER_STACK_DESCRIPTION.as_bytes(), FINGERPRINT_SEED)`. Hash the
+    //           description bytes with the fixed seed. Tail -> return.
+    // Why:      Deterministic id that changes only when the description does.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // return gxhash64(utf8(DECODER_STACK_DESCRIPTION), FINGERPRINT_SEED);
+    // ```
+    gxhash64(DECODER_STACK_DESCRIPTION.as_bytes(), FINGERPRINT_SEED)
+}
+
+/// What:     `pub(crate) fn cache_identity() -> CacheIdentity`. The full four-part identity a
+///           desktop cache row must match: the shipped policy's id and meter id, the desktop
+///           decoder id, and the schema version. `pub(crate)` for the cache actor.
+/// Why:      The actor keys every `get`/`put`/`exact_fingerprints` on this identity, so a
+///           policy, meter, decoder, or schema change transparently starts a fresh cache.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function cacheIdentity(): CacheIdentity { return defaultPolicy().cacheIdentity(decoderStackId()); }
+/// ```
+pub(crate) fn cache_identity() -> CacheIdentity {
+    // What:     `default_policy().cache_identity(decoder_stack_id())`. Assemble the identity
+    //           from the shared policy and the desktop decoder id. Tail -> return.
+    // Why:      One place builds the desktop's cache identity.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // return defaultPolicy().cacheIdentity(decoderStackId());
+    // ```
+    default_policy().cache_identity(decoder_stack_id())
+}
+
+/// What:     `fn db_path() -> Option<PathBuf>`. The on-disk location of the decision
 ///           database, or `None` if no config directory is available. Module-private.
-/// Why:      One place decides where the cache lives (the same `identity::config_dir`
-///           the session file uses, so they never drift apart).
+/// Why:      One place decides where the cache lives (the same `identity::config_dir` the
+///           session file uses, so they never drift apart).
+/// Gotcha:   The filename is `decisions.db`, NOT the legacy `peaks.db`: the shared cache
+///           uses a different schema (a `decisions` table keyed by the identity tuple), and
+///           the plan says not to import legacy raw-peak rows, so a fresh file starts the
+///           new policy from an empty cache and leaves any old `peaks.db` orphaned.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// function dbPath(): string | null {
 ///   const dir = configDir();
-///   return dir ? join(dir, "peaks.db") : null;
+///   return dir ? join(dir, "decisions.db") : null;
 /// }
 /// ```
 fn db_path() -> Option<PathBuf> {
-    // What:     `identity::config_dir().map(|dir| dir.join("peaks.db"))`. Append the
+    // What:     `identity::config_dir().map(|dir| dir.join("decisions.db"))`. Append the
     //           database filename to the shared config directory when present. Tail
     //           -> return.
-    // Why:      Same directory the session uses, so the containerized run's config
-    //           volume persists it and it never pollutes the source tree.
+    // Why:      Same directory the session uses, so the containerized run's config volume
+    //           persists it and it never pollutes the source tree.
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // const dir = configDir();
-    // return dir ? join(dir, "peaks.db") : null;
+    // return dir ? join(dir, "decisions.db") : null;
     // ```
-    identity::config_dir().map(|dir| dir.join("peaks.db"))
+    identity::config_dir().map(|dir| dir.join("decisions.db"))
 }
 
 /// What:     `#[cfg(test)] #[path = "peakcache_tests.rs"] mod tests;` declares a
