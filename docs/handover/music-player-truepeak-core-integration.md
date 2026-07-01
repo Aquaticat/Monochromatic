@@ -204,9 +204,13 @@ Order of execution, most-verifiable first:
   `truePeakServiceOpensAndResolvesOnDevice` that opens the Turso `decisions.db` in app storage,
   resolves a real track's gain, and asserts the cache round-trips) and `PeakSweepWorkerTest` OK
   (2 tests, the real warming sweep through `nativeWarmTrack`). Follow-ups (non-blocking): Kotlin
-  `normalizationGain` is now unused in production (kept only by `NormalizationTest`) and could be
-  removed with its test; `SweepOutcome.CACHED` is now vestigial (the native side owns the skip);
-  the desktop `ReturnCount` detekt rule was disabled repo-wide by maintainer decision; the shared
+  `normalizationGain` is now unused in production (verified: zero callers in `main/kotlin`, only
+  `NormalizationTest` calls it) and could be removed with its test; the sweep's `measureAndCache`
+  no longer returns `SweepOutcome.CACHED` (the native side owns the skip), so the coordinator's
+  `cached` tally is now always zero, though the enum member is still counted in
+  `PeakSweepCoordinator`, carried in `SweepTally`, and exercised by `PeakSweepCoordinatorTest`, so
+  removing it is a coordinator-and-tally change, not a one-line deletion; the `ReturnCount` detekt
+  rule was disabled repo-wide by maintainer decision; the shared
   `resolve_full` upgrade covers every long track, which goes beyond the audit's "idle hours
   full-scan the forty-three clipped songs" (a realtime-clamp feedback loop that only re-measures
   clipped tracks remains a possible refinement).
