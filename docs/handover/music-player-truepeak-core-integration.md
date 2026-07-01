@@ -102,7 +102,9 @@ Order of execution, most-verifiable first:
 
 ## Remaining after this work
 
-- Android APK assembly and on-device true-peak and playback verification (needs a device).
+- On-device Android playback verification (real audio through AAudio with the shared meter,
+  plus lockscreen and background controls). The synthetic on-device true-peak check already
+  passed on a Pixel 6; a full audible playback pass is the remaining device check.
 - The shared Turso service (plan stage three) and moving both apps' persistence onto it.
 - Deleting the Kotlin re-implementations of the pure logic (queue, pagination, session,
   and so on) once the wider `music-player-core` exists; that is the `PROPOSAL.shared-core.md`
@@ -126,3 +128,20 @@ Order of execution, most-verifiable first:
   and `lint:rust` all green. Marked desktop as migrated in the crate README. Next: read the
   Android `truepeak.rs` to decide whether its meter swap is a clean refactor or a behavior
   change before touching it.
+- 2026-07-01, 15:35: Android native migration landed (commit `refactor(music-player):
+  migrate Android native true-peak onto shared truepeak-core`). Confirmed the Android meter
+  matched the desktop's old per-chunk meter, so the swap is a refactor on whole-frame chunks.
+  Added the `truepeak-core` path dependency (`../../truepeak-core`), routed
+  `android-app/rust/src/truepeak.rs` through `truepeak_core::TruePeakMeter`, re-exported
+  `truepeak_core::true_peak_interleaved`, deleted the duplicated meter, and kept Android's own
+  full-scan and windowed policy (the `1.26` safety factor stays until the shared classifier
+  lands). Net about 436 lines of duplication removed. Verified: cross-compiles and links for
+  arm64-v8a and x86_64 via `build:native`, and `lint:rust` passes.
+- 2026-07-01, 15:40: On-device verification on the connected Pixel 6 (arm64-v8a). Ran the
+  `NativeBridgeTest` class non-destructively (`test:instrumented:device`, which installs with
+  `-r` and keeps the SAF grant and warm cache): OK, 9 tests, including
+  `nativeTruePeakInterpolatesInterSamplePeaks`, which feeds synthetic PCM through
+  `nativeTruePeakSynthetic` into the shared `true_peak_interleaved`. This proves the shared
+  meter runs correctly on the real arm64 target. Both apps now consume `truepeak-core`; the
+  meter-and-gain duplication is gone. Remaining stages (policy unification behind the shared
+  classifier, the Turso service, deleting the Kotlin re-implementations) are unchanged above.

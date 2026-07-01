@@ -16,12 +16,15 @@ under the same policy on the other.
 live here once,
  so both apps can share one measured-and-normalized result.
 
-The platform apps are being migrated onto this crate one at a time,
+The platform apps are being migrated onto this crate stage by stage,
  not in a single cut,
-so the crate can be the source of truth before every caller has moved.
- Until a given app
-is wired in,
- it still carries its own copy.
+so the crate can be the source of truth before every caller has fully moved.
+ Both apps now
+share its meter and gain math;
+ the higher-level policy,
+ the Turso persistence,
+ and the
+adaptive classifier are the stages that follow.
  Current consumers:
 
 - Desktop (`desktop-app`):
@@ -32,8 +35,12 @@ is wired in,
    It keeps only its own decode-loop opener,
    which feeds decoded chunks into the shared meter.
 - Android (`android-app/rust`):
-   not yet migrated;
-   still carries its own `src/truepeak.rs`.
+   migrated (meter and whole-buffer helper).
+   Its `TruePeakMeter` and `true_peak_interleaved` come from this crate;
+   the duplicated copies are gone.
+   Android keeps its own measurement policy (a full scan for short tracks,
+   a windowed estimate with a safety factor for long ones) until the shared adaptive
+   classifier lands and replaces both apps' policies.
 
 The integration work,
  its staging,
