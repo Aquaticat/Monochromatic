@@ -27,6 +27,10 @@ The philosophy is organized into focused documents:
    testing,
    bundler,
    and AI SDK selections
+- **[Secrets management](secrets.md)**:
+   Why local secrets use mise-native sops/age over fnox,
+   why the encrypted store is gitignored rather than committed,
+   and the tool-behavior traps found by testing
 - **[Browser support](browser-support.md)**:
    Future considerations for browser feature adoption
 - **[CSS](css.md)**:
