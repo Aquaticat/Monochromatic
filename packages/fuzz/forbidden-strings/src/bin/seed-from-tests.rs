@@ -88,6 +88,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     }
 
+    // eprintln, not tracing: seed-from-tests is a one-shot developer corpus-seeder run by
+    // hand; these are its user-facing progress lines, not application logging. The library
+    // under fuzz (forbidden-strings) is what carries tracing.
     eprintln!("extracted {} unique literals from {} files", seen.len(), TEST_FILES.len());
 
     let mut written = 0usize;
@@ -112,6 +115,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     }
 
+    // eprintln, not tracing: dev-tool progress output (see the note above the first line).
     eprintln!("wrote {} new seed files across {} targets", written, TARGETS.len());
     Ok(())
 }
@@ -127,6 +131,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 fn verify_local_file_ignored() -> Result<(), Box<dyn std::error::Error>> {
     let local = Path::new(FORBIDDEN_LOCAL);
     if !local.exists() {
+        // eprintln, not tracing: dev-tool status output for the person running the seeder.
         eprintln!(
             "{} doesn't exist; assuming clean environment",
             local.display()
@@ -149,6 +154,7 @@ fn verify_local_file_ignored() -> Result<(), Box<dyn std::error::Error>> {
         )
         .into());
     }
+    // eprintln, not tracing: dev-tool status output for the person running the seeder.
     eprintln!("verified {} is git-ignored", local.display());
     Ok(())
 }

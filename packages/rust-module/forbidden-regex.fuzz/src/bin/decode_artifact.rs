@@ -11,6 +11,9 @@ fn main() {
     let bytes = std::fs::read(&path).expect("read artifact");
     // libfuzzer-sys feeds the whole input via arbitrary_take_rest; match that here.
     let unstructured = Unstructured::new(&bytes);
+    // println (not tracing): decode_artifact is a one-shot reproducer decoder; its stdout
+    // output IS its purpose (read a crash artifact back as a pattern for diagnosis). The
+    // library under fuzz (forbidden-regex) carries tracing.
     match PatternAndContent::arbitrary_take_rest(unstructured) {
         Ok(parsed) => {
             println!("uses_algebra: {}", parsed.pattern.uses_algebra);
