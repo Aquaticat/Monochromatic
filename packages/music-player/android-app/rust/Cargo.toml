@@ -77,3 +77,13 @@ truepeak-core = { path = "../../truepeak-core", features = ["service"] }
 # `rt-multi-thread`: one actor thread is enough. Tokio is pure Rust, so it cross-compiles for
 # the Android ABIs with nothing extra to clear.
 tokio = { version = "1", features = ["rt", "sync", "macros"] }
+
+# The logging facade, its subscriber, and the Android logcat layer (src/logging.rs). Android
+# stderr never reaches logcat, so tracing events (this crate's and truepeak-core's, now
+# default-on) are routed to logcat via paranoid-android's tracing-subscriber layer, installed
+# once behind a OnceLock. env-filter reads RUST_LOG (default info). paranoid-android reaches
+# logcat through ndk-sys 0.5, which does NOT request `-llog`, so build.rs links liblog; the
+# `api-30` feature is left OFF to keep min SDK 26.
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+paranoid-android = "0.2.2"

@@ -128,6 +128,18 @@ mod service;
 /// import * as bench from "./bench";
 /// ```
 mod bench;
+/// What:     `mod logging;` declares the logcat subscriber submodule (the sibling file
+///           `logging.rs`). It installs the `tracing` -> Android logcat sink once, guarded by a
+///           `OnceLock`, so every `tracing` event from this crate and `truepeak-core` reaches
+///           logcat (stderr does not on Android).
+/// Why:      Keep the subscriber setup out of this file; the JNI create entries call
+///           `logging::init()` once at startup.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import * as logging from "./logging";
+/// ```
+mod logging;
 
 /// What:     `use std::os::fd::RawFd;` imports the Unix raw-file-descriptor type.
 ///           A file descriptor is a small integer the OS uses to name an open
@@ -780,6 +792,8 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEng
     //   return 0;
     // }
     // ```
+    // Install the logcat subscriber once (idempotent) before any native work logs.
+    logging::init();
     match engine::Engine::new() {
         // What:     `Ok(engine_value) => Box::into_raw(Box::new(engine_value)) as jlong`.
         //           `Box::new(engine_value)` MOVES the engine onto the heap and returns
@@ -801,16 +815,23 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEng
         // ```ts
         // return boxIntoRaw(engineValue); // leak on purpose; Kotlin frees later
         // ```
-        Ok(engine_value) => Box::into_raw(Box::new(engine_value)) as jlong,
+        Ok(engine_value) => {
+            let handle = Box::into_raw(Box::new(engine_value)) as jlong;
+            tracing::info!(handle, "engine created");
+            handle
+        }
         // What:     `Err(_) => 0`. Failure variant, error discarded; yield the handle
         //           value `0`, which the contract treats as "no engine".
         // Why:      The worker thread could not spawn; tell Kotlin construction failed.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // catch { return 0; }
+        // catch (error) { logger.error(error); return 0; }
         // ```
-        Err(_) => 0,
+        Err(error) => {
+            tracing::error!(cause = %error, "could not create engine (worker spawn failed)");
+            0
+        }
     }
 }
 
@@ -917,9 +938,12 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEng
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // catch { return -2; }
+        // catch (error) { logger.warn(error); return -2; }
         // ```
-        Err(_) => -2,
+        Err(error) => {
+            tracing::warn!(cause = %error, "engine load failed");
+            -2
+        }
     }
 }
 

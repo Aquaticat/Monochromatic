@@ -250,6 +250,7 @@ impl TruePeakService {
             let runtime = tokio::runtime::Builder::new_current_thread()
                 .enable_all()
                 .build()
+                .inspect_err(|error| tracing::error!(error = %error, "could not build cache runtime"))
                 .expect("music-player: build cache runtime");
             runtime.block_on(run(db_path, read_rx, write_rx));
         });
@@ -346,6 +347,8 @@ async fn run(db_path: String, mut read_rx: UnboundedReceiver<Read>, mut write_rx
     // const identity = defaultPolicy().cacheIdentity(decoderStackId());
     // ```
     let identity = default_policy().cache_identity(decoder_stack_id());
+    // The actor is ready; log whether it opened a cache or is running degraded.
+    tracing::info!(degraded = cache.is_none(), "truepeak service actor started");
     // What:     The read-biased serve loop; `else => break` fires once both channels close.
     // Why:      Reads win over a write backlog; clean shutdown when the handle drops.
     //
@@ -365,6 +368,8 @@ async fn run(db_path: String, mut read_rx: UnboundedReceiver<Read>, mut write_rx
             else => break,
         }
     }
+    // Both channels closed (the handle was released); the actor shuts down cleanly.
+    tracing::info!("truepeak service actor stopped");
 }
 
 /// What:     `async fn open_cache(db_path: &str) -> Option<DecisionCache>`. Open the shared
@@ -387,7 +392,7 @@ async fn open_cache(db_path: &str) -> Option<DecisionCache> {
     match DecisionCache::open(db_path).await {
         Ok(cache) => Some(cache),
         Err(error) => {
-            eprintln!("music-player: cache open failed: {error}");
+            tracing::warn!(error = %error, "cache open failed; running degraded");
             None
         }
     }
@@ -448,7 +453,7 @@ async fn put(cache: Option<&DecisionCache>, identity: CacheIdentity, request: Wr
     // try { await cache.put(request.fingerprint, identity, request.decision); } catch (e) { warn(e); }
     // ```
     if let Err(error) = cache.put(request.fingerprint, identity, &request.decision).await {
-        eprintln!("music-player: cache put failed: {error}");
+        tracing::warn!(error = %error, "cache put failed; write dropped");
     }
 }
 
@@ -525,6 +530,7 @@ fn resolve_and_cache(service: &TruePeakService, fd: jint, fingerprint: u64, full
     // if (fd < 0) return CEILING;
     // ```
     if fd < 0 {
+        tracing::debug!(fd, "negative fd; using ceiling gain");
         return CEILING;
     }
     // What:     `let source = match decode::open_borrowed_fd(fd as RawFd) { ... };`. Open the
@@ -537,7 +543,10 @@ fn resolve_and_cache(service: &TruePeakService, fd: jint, fingerprint: u64, full
     // ```
     let source = match decode::open_borrowed_fd(fd as RawFd) {
         Ok(source) => source,
-        Err(_) => return CEILING,
+        Err(error) => {
+            tracing::warn!(fd, cause = %error, "could not open fd for decode; using ceiling gain");
+            return CEILING;
+        }
     };
     // What:     `let decision = match resolve { ... };`. Drive the source through the shared
     //           resolver: `resolve_full` (always exact) for warming, else `resolve_current`
@@ -555,7 +564,10 @@ fn resolve_and_cache(service: &TruePeakService, fd: jint, fingerprint: u64, full
     };
     let decision = match resolved {
         Ok(decision) => decision,
-        Err(_) => return CEILING,
+        Err(error) => {
+            tracing::warn!(fingerprint, cause = %error, "resolve failed; using ceiling gain");
+            return CEILING;
+        }
     };
     // What:     `service.put(fingerprint, decision);`. Persist it (fire-and-forget).
     // Why:      Later plays and sweeps hit the cache.
@@ -592,8 +604,10 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeTru
     _class: JClass<'local>,
     db_path: JString<'local>,
 ) -> jlong {
+    // Install the logcat subscriber once (idempotent) before any native work logs.
+    crate::logging::init();
     // What:     `let path: String = match env.get_string(&db_path) { ... };`. Read the Java
-    //           string; return `0` on the (unreachable) read failure.
+    //           string; log and return `0` on the (unreachable) read failure.
     // Why:      The actor needs an owned path string.
     //
     // In TS you'd write (pseudocode):
@@ -602,7 +616,10 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeTru
     // ```
     let path: String = match env.get_string(&db_path) {
         Ok(value) => value.into(),
-        Err(_) => return 0,
+        Err(error) => {
+            tracing::warn!(cause = %error, "could not read db path string; no service created");
+            return 0;
+        }
     };
     // What:     `Box::into_raw(Box::new(TruePeakService::open(path))) as jlong`. Open the
     //           service, box it onto the heap, and leak the pointer as the handle. Tail ->
@@ -613,7 +630,10 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeTru
     // ```ts
     // return boxIntoRaw(TruePeakService.open(path));
     // ```
-    Box::into_raw(Box::new(TruePeakService::open(path))) as jlong
+    let handle = Box::into_raw(Box::new(TruePeakService::open(path))) as jlong;
+    // The service is live; log the handle Kotlin will hold.
+    tracing::info!(handle, "truepeak service created");
+    handle
 }
 
 /// What:     `#[no_mangle] pub extern "system" fn Java_..._nativeTruePeakServiceRelease(...)`.
@@ -641,6 +661,8 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeTru
     if handle == 0 {
         return;
     }
+    // The handle is being released; log it before the actor thread stops.
+    tracing::info!(handle, "releasing truepeak service");
     // What:     `unsafe { drop(Box::from_raw(handle as *mut TruePeakService)); }`. Rebuild the
     //           box and drop it, closing the senders so the actor loop breaks.
     // Why:      Reclaim the leaked heap allocation and stop the thread.
@@ -680,6 +702,7 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeRes
     // const service = serviceRef(handle); if (!service) return CEILING;
     // ```
     let Some(service) = service_ref(handle) else {
+        tracing::warn!("resolve gain: null service handle; using ceiling gain");
         return CEILING;
     };
     // What:     `resolve_and_cache(service, fd, fingerprint as u64, false)`. Foreground resolve.
@@ -719,6 +742,7 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeWar
     // const service = serviceRef(handle); if (!service) return CEILING;
     // ```
     let Some(service) = service_ref(handle) else {
+        tracing::warn!("warm track: null service handle; using ceiling gain");
         return CEILING;
     };
     // What:     `resolve_and_cache(service, fd, fingerprint as u64, true)`. Warming resolve
