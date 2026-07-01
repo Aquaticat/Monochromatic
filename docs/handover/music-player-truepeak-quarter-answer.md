@@ -96,9 +96,17 @@ Bucket round results (committed 77fcc0ef0, branch):
   max 2.67 (vs even-24%: 0.20 / 0.46 / 1.01), 1 clamp in 1272. FLAC keeps its
   accuracy at about a third of the decode cost. Profiles regenerate to
   out/flac-profiles.jsonl (not committed).
-- Next: compose final policy (flac = bones+even+zoom hybrid at low coverage,
-  freed seconds to bare bucket), verify budget, wire the decided table into
-  the bench, refresh the answer doc.
+- FINAL COMPOSITE WIRED (compose-final.mjs + src/buckets.rs, commit c60ee60f8;
+  clippy + rust-linter clean). `truepeak-core-bench <corpus> <tags-full.jsonl>
+  <flac-profiles.jsonl> --buckets` reproduces: decided table flac=(7%
+  bones-guided, m 0.45), store=(32%, 0.3), purl=(14%, 0.5), bare=(34%, 0.5):
+  17 clamps (flac 3, purl 1, bare 13) / avg 0.367 / worst 0.50 / worst_over
+  1.14, decoded 227748 s (24.84%). Frontier alternatives recorded in
+  compose-final.mjs output: 16 clamps at avg 0.383; all-margins-0.4 dial gives
+  28 clamps / 0.293 / 0.40. Progression: shipped 43/0.528/0.80 -> uniform zoom
+  26/0.371/0.50 -> buckets 19/0.349/0.50 -> buckets+bones 17/0.367/0.50 (or
+  16 / 19 / 28 depending on dial).
+- Remaining: refresh the answer doc with the bucket round and final tables.
 
 ## Prior status: complete (first close)
 
