@@ -56,11 +56,12 @@ pub fn init() {
     LOGGING.get_or_init(|| {
         // The level filter from RUST_LOG, or `info` when unset or malformed.
         let filter = EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("info"));
-        // Compose the env-filter with the logcat layer under a fixed tag; ignore an error
-        // when a global subscriber is already set (the OnceLock already prevents our own reruns).
+        // Compose the env-filter with the logcat layer under a fixed tag; `with_ansi(false)`
+        // drops the color escapes that would otherwise clutter logcat. Ignore an error when a
+        // global subscriber is already set (the OnceLock already prevents our own reruns).
         let _ = tracing_subscriber::registry()
             .with(filter)
-            .with(paranoid_android::layer("MusicPlayer"))
+            .with(paranoid_android::layer("MusicPlayer").with_ansi(false))
             .try_init();
     });
 }
