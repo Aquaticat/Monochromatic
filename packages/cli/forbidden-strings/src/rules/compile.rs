@@ -376,10 +376,7 @@ pub fn compile_rule_src(src: &str) -> Result<CompiledRegex, String> {
     // if (reason) throw new Error(`(regex): ${reason}`);
     // ```
     if let Some(reason) = nested_grouped_quantifier(src) {
-        eprintln!(
-            "forbidden-strings: pre-validator nested_grouped_quantifier rejected rule {:?}",
-            src
-        );
+        tracing::warn!(rule = ?src, "pre-validator nested_grouped_quantifier rejected rule");
         return Err(format!("(regex): {}", reason));
     }
     // What:     `if requires_resharp(src) { ... } else { ... }` runs
@@ -422,10 +419,7 @@ pub fn compile_rule_src(src: &str) -> Result<CompiledRegex, String> {
         // if (reason) throw new Error(`(resharp): ${reason}`);
         // ```
         if let Some(reason) = nesting_depth(src) {
-            eprintln!(
-                "forbidden-strings: pre-validator nesting_depth rejected rule {:?}",
-                src
-            );
+            tracing::warn!(rule = ?src, "pre-validator nesting_depth rejected rule");
             return Err(format!("(resharp): {}", reason));
         }
         // What:     `if let Some(reason) = lookaround_in_complement(src)`
@@ -447,10 +441,7 @@ pub fn compile_rule_src(src: &str) -> Result<CompiledRegex, String> {
         // if (reason) throw new Error(`(resharp): ${reason}`);
         // ```
         if let Some(reason) = lookaround_in_complement(src) {
-            eprintln!(
-                "forbidden-strings: pre-validator lookaround_in_complement rejected rule {:?}",
-                src
-            );
+            tracing::warn!(rule = ?src, "pre-validator lookaround_in_complement rejected rule");
             return Err(format!("(resharp): {}", reason));
         }
         // What:     Two additional pre-validators for resharp panic /
@@ -486,17 +477,11 @@ pub fn compile_rule_src(src: &str) -> Result<CompiledRegex, String> {
         // }
         // ```
         if let Some(reason) = intersection_with_lookbehind(src) {
-            eprintln!(
-                "forbidden-strings: pre-validator intersection_with_lookbehind rejected rule {:?}",
-                src
-            );
+            tracing::warn!(rule = ?src, "pre-validator intersection_with_lookbehind rejected rule");
             return Err(format!("(resharp): {}", reason));
         }
         if let Some(reason) = intersection_with_word_end_alternation(src) {
-            eprintln!(
-                "forbidden-strings: pre-validator intersection_with_word_end_alternation rejected rule {:?}",
-                src
-            );
+            tracing::warn!(rule = ?src, "pre-validator intersection_with_word_end_alternation rejected rule");
             return Err(format!("(resharp): {}", reason));
         }
         // What:     `lookaround_in_alternation_with_sibling` catches
@@ -526,10 +511,7 @@ pub fn compile_rule_src(src: &str) -> Result<CompiledRegex, String> {
         // if (reason) throw new Error(`(resharp): ${reason}`);
         // ```
         if let Some(reason) = lookaround_in_alternation_with_sibling(src) {
-            eprintln!(
-                "forbidden-strings: pre-validator lookaround_in_alternation_with_sibling rejected rule {:?}",
-                src
-            );
+            tracing::warn!(rule = ?src, "pre-validator lookaround_in_alternation_with_sibling rejected rule");
             return Err(format!("(resharp): {}", reason));
         }
         // What:     `complement_intersection_quantified_group` catches
@@ -554,10 +536,7 @@ pub fn compile_rule_src(src: &str) -> Result<CompiledRegex, String> {
         // if (reason) throw new Error(`(resharp): ${reason}`);
         // ```
         if let Some(reason) = complement_intersection_quantified_group(src) {
-            eprintln!(
-                "forbidden-strings: pre-validator complement_intersection_quantified_group rejected rule {:?}",
-                src
-            );
+            tracing::warn!(rule = ?src, "pre-validator complement_intersection_quantified_group rejected rule");
             return Err(format!("(resharp): {}", reason));
         }
         // What:     `nested_lookahead_in_quantified_group` catches the
@@ -584,10 +563,7 @@ pub fn compile_rule_src(src: &str) -> Result<CompiledRegex, String> {
         // if (reason) throw new Error(`(resharp): ${reason}`);
         // ```
         if let Some(reason) = nested_lookahead_in_quantified_group(src) {
-            eprintln!(
-                "forbidden-strings: pre-validator nested_lookahead_in_quantified_group rejected rule {:?}",
-                src
-            );
+            tracing::warn!(rule = ?src, "pre-validator nested_lookahead_in_quantified_group rejected rule");
             return Err(format!("(resharp): {}", reason));
         }
         // What:     `quantified_lookahead_with_sibling_content` catches a
@@ -619,10 +595,7 @@ pub fn compile_rule_src(src: &str) -> Result<CompiledRegex, String> {
         // if (reason) throw new Error(`(resharp): ${reason}`);
         // ```
         if let Some(reason) = quantified_lookahead_with_sibling_content(src) {
-            eprintln!(
-                "forbidden-strings: pre-validator quantified_lookahead_with_sibling_content rejected rule {:?}",
-                src
-            );
+            tracing::warn!(rule = ?src, "pre-validator quantified_lookahead_with_sibling_content rejected rule");
             return Err(format!("(resharp): {}", reason));
         }
         // What:     `nested_quantifier_after_wildcard` catches the
@@ -646,10 +619,7 @@ pub fn compile_rule_src(src: &str) -> Result<CompiledRegex, String> {
         // if (reason) throw new Error(`(resharp): ${reason}`);
         // ```
         if let Some(reason) = nested_quantifier_after_wildcard(src) {
-            eprintln!(
-                "forbidden-strings: pre-validator nested_quantifier_after_wildcard rejected rule {:?}",
-                src
-            );
+            tracing::warn!(rule = ?src, "pre-validator nested_quantifier_after_wildcard rejected rule");
             return Err(format!("(resharp): {}", reason));
         }
         // What:     `nested_chain_in_lookaround_body` catches the
@@ -673,10 +643,7 @@ pub fn compile_rule_src(src: &str) -> Result<CompiledRegex, String> {
         // if (reason) throw new Error(`(resharp): ${reason}`);
         // ```
         if let Some(reason) = nested_chain_in_lookaround_body(src) {
-            eprintln!(
-                "forbidden-strings: pre-validator nested_chain_in_lookaround_body rejected rule {:?}",
-                src
-            );
+            tracing::warn!(rule = ?src, "pre-validator nested_chain_in_lookaround_body rejected rule");
             return Err(format!("(resharp): {}", reason));
         }
         // What:     `nested_complement` catches rule shapes containing
@@ -703,10 +670,7 @@ pub fn compile_rule_src(src: &str) -> Result<CompiledRegex, String> {
         // if (reason) throw new Error(`(resharp): ${reason}`);
         // ```
         if let Some(reason) = nested_complement(src) {
-            eprintln!(
-                "forbidden-strings: pre-validator nested_complement rejected rule {:?}",
-                src
-            );
+            tracing::warn!(rule = ?src, "pre-validator nested_complement rejected rule");
             return Err(format!("(resharp): {}", reason));
         }
         // What:     `Regex::new(src).map(CompiledRegex::Resharp).map_err(...)`.

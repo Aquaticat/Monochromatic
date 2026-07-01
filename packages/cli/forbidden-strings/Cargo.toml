@@ -43,6 +43,12 @@ fuzzing = []
 
 [dependencies]
 aho-corasick = "1"
+# The logging facade and its subscriber. tracing routes the compiler's rule-rejection
+# warnings and the CLI's top-level errors as structured events to stderr via
+# tracing-subscriber (RUST_LOG, default info); the scan findings stay on stdout, and the
+# env-gated FORBIDDEN_STRINGS_DEBUG_* developer report dumps stay as direct stderr output.
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 # `clap` owns argv parsing, generated help/version output, and validation for the
 # `forbidden-strings` binary. The derive feature lets `src/cli.rs` declare the
 # command shape as a typed struct instead of maintaining a handwritten argv loop.

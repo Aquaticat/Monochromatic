@@ -66,6 +66,8 @@ pub fn build_residual_shards(
             .collect();
         if timing {
             let dt = t.elapsed().as_secs_f64() * 1000.0;
+            // eprintln, not tracing: an env-gated (FORBIDDEN_STRINGS_DEBUG_TIMING) timing report
+            // line, kept as a cohesive indented direct-stderr dump.
             eprintln!(
                 "  build_residual_shards: {} positions (< {} threshold) -> {} singles in {:.1}ms",
                 positions.len(), GREEDY_COMBINE_THRESHOLD, shards.len(), dt,
@@ -81,6 +83,8 @@ pub fn build_residual_shards(
             .filter(|s| matches!(s, ResidualShard::Combined { .. }))
             .count();
         let n_single = shards.len() - n_combined;
+        // eprintln, not tracing: the same env-gated (FORBIDDEN_STRINGS_DEBUG_TIMING) timing
+        // report, kept as a cohesive indented direct-stderr dump.
         eprintln!(
             "  greedy_combine: {} positions -> {} shards ({} combined, {} single) in {:.1}ms",
             positions.len(), shards.len(), n_combined, n_single, dt,

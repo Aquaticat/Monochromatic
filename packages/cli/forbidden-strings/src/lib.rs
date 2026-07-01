@@ -600,6 +600,9 @@ pub fn run_cli_from_env() -> Result<i32, String> {
     let ruleset = match ruleset_result {
         Ok(r) => r,
         Err(e) => {
+            // eprintln, not tracing: the user-facing CLI error contract is "forbidden-strings:
+            // <msg>" on stderr, asserted by integration tests; a tracing target/level prefix
+            // would break it.
             eprintln!("forbidden-strings: {}", e);
             return Ok(2);
         }
@@ -615,6 +618,9 @@ pub fn run_cli_from_env() -> Result<i32, String> {
         }).sum();
         let single_shard_count = ruleset.residual_shards.iter().filter(|s| matches!(s, crate::rules::ResidualShard::Single { .. })).count();
         let combined_shard_count = ruleset.residual_shards.len() - single_shard_count;
+        // eprintln, not tracing: an opt-in developer bucket report gated by
+        // FORBIDDEN_STRINGS_DEBUG_BUCKETS; kept as one cohesive direct-stderr dump rather than
+        // fragmented tracing events double-gated by RUST_LOG.
         eprintln!(
             "forbidden-strings buckets: ac_cs_lit={} ac_cs_regex_prefix={} ac_ci_regex_prefix={} residual={} (in {} single + {} combined shards) regex_rules_total={}",
             ac_cs_lit, ac_cs_pat, ac_ci_pat, residual_count, single_shard_count, combined_shard_count, ruleset.regex_rules.len(),
@@ -627,6 +633,7 @@ pub fn run_cli_from_env() -> Result<i32, String> {
                 };
                 for pos in positions {
                     let r = &ruleset.regex_rules[pos];
+                    // eprintln, not tracing: part of the same env-gated developer bucket report.
                     eprintln!("residual rule line={}", r.idx);
                 }
             }
@@ -654,6 +661,8 @@ pub fn run_cli_from_env() -> Result<i32, String> {
         match listed {
             Ok(f) => files = f,
             Err(e) => {
+                // eprintln, not tracing: same user-facing "forbidden-strings: <msg>" CLI error
+                // contract on stderr asserted by integration tests.
                 eprintln!("forbidden-strings: {}", e);
                 return Ok(2);
             }

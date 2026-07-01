@@ -223,6 +223,8 @@ pub fn load_ruleset(path: &str) -> Result<RuleSet, String> {
         .map_err(|e| format!("read rules {}: {}", path, e))?;
     if timing {
         let dt = std::time::Instant::now().duration_since(t_start).as_secs_f64() * 1000.0;
+        // eprintln, not tracing: an opt-in per-phase timing report gated by
+        // FORBIDDEN_STRINGS_DEBUG_TIMING, kept as a cohesive direct-stderr dump.
         eprintln!("load_ruleset phase 0 read_rules_file: {:.1}ms", dt);
     }
     load_ruleset_from_source(&content, path)
@@ -276,6 +278,8 @@ pub fn load_ruleset_from_source(content: &str, _label: &str) -> Result<RuleSet, 
         if !timing { return; }
         let now = std::time::Instant::now();
         let dt = now.duration_since(t_phase).as_secs_f64() * 1000.0;
+        // eprintln, not tracing: the env-gated (FORBIDDEN_STRINGS_DEBUG_TIMING) per-phase timing
+        // report, kept as a cohesive direct-stderr dump rather than fragmented tracing events.
         eprintln!("load_ruleset phase {}: {:.1}ms", label, dt);
         t_phase = now;
     };

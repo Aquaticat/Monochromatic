@@ -320,7 +320,7 @@ pub fn list_files(root: &str) -> Result<Vec<String>, String> {
             // files.push(s);
             // ```
             if let Some(s) = e.path().to_str() {
-                // What:     `files.lock().unwrap().push(s.to_string())`
+                // What:     `files.lock().expect(...).push(s.to_string())`
                 //           acquires the mutex (blocking briefly if
                 //           contended), unwraps the LockResult into
                 //           a `MutexGuard`, then pushes a clone of
@@ -328,17 +328,20 @@ pub fn list_files(root: &str) -> Result<Vec<String>, String> {
                 //           end of statement, releasing the lock.
                 // Why:      Serialize the per-thread push into the
                 //           shared `Vec`.
-                // Gotcha:   `unwrap()` on `lock()` panics if a prior
+                // Gotcha:   `expect()` on `lock()` panics if a prior
                 //           holder panicked while holding the lock
                 //           (poisoned mutex). Acceptable here: a
-                //           panic in the walker is a bug and we
-                //           want it to surface.
+                //           panic in the walker is a bug and we want
+                //           it to surface. `expect` (not `unwrap`) is
+                //           required because the repo's clippy.toml
+                //           bans `Result::unwrap`, so an intentional
+                //           panic must carry a reason.
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
                 // files.push(s);
                 // ```
-                files.lock().unwrap().push(s.to_string());
+                files.lock().expect("walk-results mutex poisoned by a panicking walker thread").push(s.to_string());
             }
             WalkState::Continue
         })

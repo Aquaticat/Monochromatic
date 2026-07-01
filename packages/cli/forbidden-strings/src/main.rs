@@ -69,9 +69,21 @@ fn main() -> ExitCode {
     // try { process.exit(code); }
     // catch (e) { console.error(`forbidden-strings: ${e}`); process.exit(2); }
     // ```
+    // Install the stderr tracing subscriber (RUST_LOG, default info); scan findings stay on stdout.
+    tracing_subscriber::fmt()
+        .with_env_filter(
+            tracing_subscriber::EnvFilter::try_from_default_env()
+                .unwrap_or_else(|_| tracing_subscriber::EnvFilter::new("info")),
+        )
+        .with_writer(std::io::stderr)
+        .init();
     match run_cli_from_env() {
         Ok(code) => ExitCode::from(code as u8),
         Err(e) => {
+            // eprintln, not tracing: this is the user-facing CLI error contract
+            // ("forbidden-strings: <msg>" on stderr) that integration tests assert; a tracing
+            // event's target and level prefix would break that contract. The tracing subscriber
+            // installed above carries the compiler's rule-rejection warnings instead.
             eprintln!("forbidden-strings: {}", e);
             ExitCode::from(2)
         }
