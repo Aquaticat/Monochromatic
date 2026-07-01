@@ -23,8 +23,8 @@ use std::path::Path;
 
 /// Imports serde's derive so side-file rows parse straight from each JSON line.
 use serde::Deserialize;
-/// Imports the shared dB conversion.
-use truepeak_core::peak_dbtp;
+/// Imports the shared dB conversion, the policy, and the engine's bucket types.
+use truepeak_core::{BucketProbe, Policy, TrackProvenance, peak_dbtp};
 
 /// One row of the embedded-tag sweep (analysis/tags-sweep.mjs output).
 #[derive(Deserialize)]
@@ -67,35 +67,20 @@ pub enum Bucket {
     Bare,
 }
 
-/// One bucket's decided policy: coverage of each long track and the fixed margin.
-#[derive(Clone, Copy, Debug)]
-pub struct BucketPolicy {
-    /// Fraction of the track's bins the probe decodes.
-    pub coverage: f64,
-    /// Fixed margin added to the probe in dB.
-    pub margin_db: f64,
-}
-
-/// The decided composite (the answer's recommended dial).
+/// The probe dial the SHIPPED policy assigns this bucket.
 ///
-/// What: FLAC probes at 7% coverage bones-guided with margin 0.45; purl at 14% margin
-/// 0.5; store at 32% margin 0.3; bare at 34% margin 0.5. Why: the measured frontier
-/// point that beats the uniform zoom on all three measures at once.
-pub fn decided_assignment() -> HashMap<Bucket, BucketPolicy> {
-    HashMap::from([
-        (Bucket::Flac, BucketPolicy { coverage: 0.07, margin_db: 0.45 }),
-        (Bucket::Purl, BucketPolicy { coverage: 0.14, margin_db: 0.5 }),
-        (Bucket::Store, BucketPolicy { coverage: 0.32, margin_db: 0.3 }),
-        (Bucket::Bare, BucketPolicy { coverage: 0.34, margin_db: 0.5 }),
-    ])
+/// What: maps the bench bucket to the engine's provenance selection, so the bench
+/// evaluates exactly the table `truepeak_core::default_policy` ships. Why: one source
+/// of truth; the bench validates the engine's dials instead of carrying its own copy.
+fn bucket_probe(policy: &Policy, bucket: Bucket, bones_present: bool) -> BucketProbe {
+    let provenance = match bucket {
+        Bucket::Flac => TrackProvenance { lossless: true, ..TrackProvenance::unknown() },
+        Bucket::Store => TrackProvenance { store_tagged: true, ..TrackProvenance::unknown() },
+        Bucket::Purl => TrackProvenance { youtube_tagged: true, ..TrackProvenance::unknown() },
+        Bucket::Bare => TrackProvenance::unknown(),
+    };
+    provenance.select(&policy.buckets, bones_present)
 }
-
-/// The even coverage of the FLAC hybrid's sparse pass.
-const FLAC_EVEN_COVERAGE: f64 = 0.05;
-/// How many top byte-rate slots seed the FLAC hybrid probe.
-const FLAC_BONES_TOP: usize = 40;
-/// The lossy buckets' even pass-one coverage (matches the zoom answer).
-const LOSSY_PASS1_COVERAGE: f64 = 0.1;
 
 /// Read the tag sweep into a per-path bucket map; tracks missing from the sweep fall
 /// back to their file extension.
@@ -138,9 +123,9 @@ fn bucket_from_extension(path: &str) -> Bucket {
 
 /// Read the FLAC frame-size profiles into a per-path top-slot list.
 ///
-/// What: keeps only each profile's `FLAC_BONES_TOP` largest byte slots. Why: the probe
-/// needs the slot indices, not the raw profile.
-pub fn load_bones(path: &Path) -> Result<HashMap<String, Vec<usize>>, Box<dyn std::error::Error>> {
+/// What: keeps only each profile's `top` largest byte slots (the policy's
+/// `bones_top_slots`). Why: the probe needs the slot indices, not the raw profile.
+pub fn load_bones(path: &Path, top: usize) -> Result<HashMap<String, Vec<usize>>, Box<dyn std::error::Error>> {
     // Stream rows, sort slot indices by byte count, keep the top few.
     let file = File::open(path)?;
     let reader = BufReader::new(file);
@@ -153,7 +138,7 @@ pub fn load_bones(path: &Path) -> Result<HashMap<String, Vec<usize>>, Box<dyn st
         let row: ProfileRow = serde_json::from_str(&line)?;
         let mut order: Vec<usize> = (0..row.bytes.len()).collect();
         order.sort_by(|&a, &b| row.bytes[b].cmp(&row.bytes[a]));
-        order.truncate(FLAC_BONES_TOP);
+        order.truncate(top);
         map.insert(row.path, order);
     }
     Ok(map)
@@ -265,24 +250,19 @@ pub fn report_buckets(
         .first()
         .ok_or("usage: truepeak-core-bench <corpus> <tags-full.jsonl> [flac-profiles.jsonl] --buckets")?;
     let buckets = load_buckets(Path::new(tags_path))?;
+    let policy = truepeak_core::default_policy();
     let bones = match side.get(1) {
-        Some(profiles_path) => load_bones(Path::new(profiles_path))?,
+        Some(profiles_path) => load_bones(Path::new(profiles_path), policy.bones_top_slots)?,
         None => HashMap::new(),
     };
-    let policy = truepeak_core::default_policy();
-    let assignment = decided_assignment();
-    let (decoded, rows) = evaluate_buckets(tracks, policy.short_scan_max_secs, &assignment, &buckets, &bones);
-    println!("\nbucket composite (flac bones-guided; coverage/margin per provenance bucket):");
-    for (bucket, bucket_policy) in [
-        (Bucket::Flac, assignment[&Bucket::Flac]),
-        (Bucket::Store, assignment[&Bucket::Store]),
-        (Bucket::Purl, assignment[&Bucket::Purl]),
-        (Bucket::Bare, assignment[&Bucket::Bare]),
-    ] {
+    let (decoded, rows) = evaluate_buckets(tracks, &policy, &buckets, &bones);
+    println!("\nbucket composite (the SHIPPED default_policy table; flac bones-guided):");
+    for bucket in [Bucket::Flac, Bucket::Store, Bucket::Purl, Bucket::Bare] {
+        let probe = bucket_probe(&policy, bucket, bucket == Bucket::Flac && !bones.is_empty());
         let members = rows.iter().filter(|row| row.bucket == bucket).count();
         println!(
             "  {bucket:?}: coverage={} margin={}dB long_tracks={members}",
-            bucket_policy.coverage, bucket_policy.margin_db
+            probe.coverage_fraction, probe.probe_margin_db
         );
     }
     println!(
@@ -321,46 +301,46 @@ pub fn report_buckets(
     Ok(())
 }
 
-/// Evaluate the decided composite over the corpus.
+/// Evaluate the shipped composite over the corpus.
 ///
-/// What: short tracks full-scan; each long track probes under its bucket's coverage
-/// (FLAC hybrid when a profile exists) and carries its bucket's margin. Why: one row
-/// per track is everything the report needs.
+/// What: short tracks full-scan; each long track probes under the SHIPPED policy's
+/// bucket coverage (FLAC hybrid when a profile exists) and carries its bucket's
+/// margin. Why: one row per track is everything the report needs, and every dial comes
+/// from `truepeak_core::default_policy`.
 pub fn evaluate_buckets(
     tracks: &[Track],
-    short_scan_max_secs: f64,
-    assignment: &HashMap<Bucket, BucketPolicy>,
+    policy: &Policy,
     buckets: &HashMap<String, Bucket>,
     bones: &HashMap<String, Vec<usize>>,
 ) -> (f64, Vec<BucketRow>) {
     // Fold each track into the decoded total and its measured row.
     let mut decoded: f64 = tracks
         .iter()
-        .filter(|track| track.duration_secs <= short_scan_max_secs)
+        .filter(|track| track.duration_secs <= policy.short_scan_max_secs)
         .map(|track| track.duration_secs)
         .sum();
     let mut rows = Vec::new();
     for track in tracks {
-        if track.duration_secs <= short_scan_max_secs {
+        if track.duration_secs <= policy.short_scan_max_secs {
             continue;
         }
         let bucket = buckets
             .get(&track.path)
             .copied()
             .unwrap_or_else(|| bucket_from_extension(&track.path));
-        let policy = assignment[&bucket];
         let track_bones = if bucket == Bucket::Flac { bones.get(&track.path) } else { None };
+        let probe = bucket_probe(policy, bucket, track_bones.is_some());
         let even = if track_bones.is_some() {
-            FLAC_EVEN_COVERAGE
+            policy.bones_even_coverage_fraction
         } else {
-            LOSSY_PASS1_COVERAGE.min(policy.coverage)
+            policy.pass1_coverage_fraction.min(probe.coverage_fraction)
         };
-        let (peak, used_secs) = hybrid_probe(track, policy.coverage, even, track_bones);
+        let (peak, used_secs) = hybrid_probe(track, probe.coverage_fraction, even, track_bones);
         decoded += used_secs;
         rows.push(BucketRow {
             full_db: db(f64::from(track.full_peak)),
             probe_db: db(peak),
-            margin_db: policy.margin_db,
+            margin_db: probe.probe_margin_db,
             bucket,
         });
     }

@@ -302,6 +302,27 @@ pub fn meter_id() -> u64 {
     hash_bytes(METER_DESCRIPTION.as_bytes())
 }
 
+/// What:     `pub fn stack_id(description: &str) -> u64`. The id of a platform's decoder
+///           stack, the hash of its behavior description.
+/// Why:      Both platforms key their cache identity on a description string exactly the
+///           way `meter_id` does; owning the derivation here removes each platform's
+///           private hash plumbing and keeps every identity id on one hash.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function stackId(description: string): bigint { return hashBytes(utf8(description)); }
+/// ```
+pub fn stack_id(description: &str) -> u64 {
+    // What:     `hash_bytes(description.as_bytes())`. Tail -> return.
+    // Why:      The same dependency-free FNV the other identity ids use.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // return hashBytes(utf8(description));
+    // ```
+    hash_bytes(description.as_bytes())
+}
+
 /// What:     `#[derive(Clone, Copy, Debug, PartialEq)] pub struct Policy { ... }`. The
 ///           shipped policy's tunable parameters. The derives give value copy, debug
 ///           printing, and equality. All fields are `Copy`, so the whole struct is.

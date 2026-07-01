@@ -1,6 +1,7 @@
 //! Integration test for the cache-aware resolve, against a throwaway in-memory database.
 
 use super::*;
+use crate::bucketpolicy::TrackProvenance;
 use crate::decision::DecisionKind;
 use crate::policy::Policy;
 use crate::source::AudioSpec;
@@ -48,7 +49,7 @@ async fn resolves_on_miss_then_serves_from_cache() {
     let policy = test_policy();
     let opens = Cell::new(0u32);
 
-    let first = cached_or_resolve(&cache, &policy, 7, 100, || {
+    let first = cached_or_resolve(&cache, &policy, 7, 100, TrackProvenance::unknown(), None, || {
         opens.set(opens.get() + 1);
         Ok(Box::new(Fake { samples: vec![0.0, 0.9, 0.9, 0.0], cursor: 0 }) as Box<dyn TruePeakSource>)
     })
@@ -57,7 +58,7 @@ async fn resolves_on_miss_then_serves_from_cache() {
     assert_eq!(first.kind, DecisionKind::ShortFullScan);
     assert_eq!(opens.get(), 1); // opened on the miss
 
-    let second = cached_or_resolve(&cache, &policy, 7, 100, || {
+    let second = cached_or_resolve(&cache, &policy, 7, 100, TrackProvenance::unknown(), None, || {
         opens.set(opens.get() + 1);
         Ok(Box::new(Fake { samples: vec![0.0, 0.9, 0.9, 0.0], cursor: 0 }) as Box<dyn TruePeakSource>)
     })

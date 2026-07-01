@@ -77,27 +77,18 @@ use tokio::sync::mpsc::{self, UnboundedReceiver, UnboundedSender};
 /// ```
 use tokio::sync::oneshot;
 
-/// What:     `use gxhash::gxhash64;`. The same non-cryptographic hash the fingerprint uses.
-/// Why:      Hash the decoder-stack description into the platform half of the cache identity.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// import { gxhash64 } from "gxhash";
-/// ```
-use gxhash::gxhash64;
-
 /// What:     `use truepeak_core::{CEILING, CacheIdentity, Decision, DecisionCache, DecisionKind,
-///           default_policy};`. The ceiling gain, the identity tuple, the cached value and its
-///           tag, the Turso cache, and the shipped policy.
+///           default_policy, stack_id};`. The ceiling gain, the identity tuple, the cached value
+///           and its tag, the Turso cache, the shipped policy, and the shared stack-id hash.
 /// Why:      The actor opens a cache and keys on the identity; the JNI falls back to the ceiling
 ///           gain and skips already-exact tracks during warming.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { CEILING, CacheIdentity, Decision, DecisionCache, DecisionKind, defaultPolicy } from "truepeak-core";
+/// import { CEILING, CacheIdentity, Decision, DecisionCache, DecisionKind, defaultPolicy, stackId } from "truepeak-core";
 /// ```
 use truepeak_core::{
-    CEILING, CacheIdentity, Decision, DecisionCache, DecisionKind, default_policy,
+    CEILING, CacheIdentity, Decision, DecisionCache, DecisionKind, default_policy, stack_id,
 };
 
 /// What:     `use crate::{decode, truepeak};`. The Android decoder opener and the shared-source
@@ -121,25 +112,24 @@ use crate::{decode, truepeak};
 /// ```
 const DECODER_STACK_DESCRIPTION: &str = "android:symphonia-0.6+opus-rev-5598766+f32le";
 
-/// What:     `fn decoder_stack_id() -> u64`. Hash the decoder-stack description with the same
-///           `gxhash64` and seed the fingerprint uses.
-/// Why:      The platform half of the cache identity; the shared crate owns the policy and
-///           meter ids.
+/// What:     `fn decoder_stack_id() -> u64`. Hash the decoder-stack description with the
+///           shared crate's `stack_id`.
+/// Why:      The platform owns its description; the shared crate owns the derivation, the
+///           same FNV every other identity id uses.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function decoderStackId(): bigint { return gxhash64(utf8(DECODER_STACK_DESCRIPTION), 0); }
+/// function decoderStackId(): bigint { return stackId(DECODER_STACK_DESCRIPTION); }
 /// ```
 fn decoder_stack_id() -> u64 {
-    // What:     `gxhash64(DECODER_STACK_DESCRIPTION.as_bytes(), 0)`. Hash the bytes with seed 0
-    //           (the same seed the fingerprint uses). Tail -> return.
+    // What:     `stack_id(DECODER_STACK_DESCRIPTION)`. Tail -> return.
     // Why:      Deterministic id that changes only when the description does.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // return gxhash64(utf8(DECODER_STACK_DESCRIPTION), 0);
+    // return stackId(DECODER_STACK_DESCRIPTION);
     // ```
-    gxhash64(DECODER_STACK_DESCRIPTION.as_bytes(), 0)
+    stack_id(DECODER_STACK_DESCRIPTION)
 }
 
 /// What:     `struct Read { fingerprint: u64, reply: oneshot::Sender<Option<Decision>> }`. One

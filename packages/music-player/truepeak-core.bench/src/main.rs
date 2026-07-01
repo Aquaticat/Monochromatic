@@ -62,12 +62,20 @@ fn frange(start: f64, end: f64, step: f64) -> Vec<f64> {
     (0..=steps).map(|index| start + index as f64 * step).collect()
 }
 
-/// Evaluate the decided proportional policy on the corpus and print its budget, the
-/// under-read distribution, and the margin/clamp tradeoff.
+/// The stage-two shipped policy's coverage, kept locally so the ledger stays
+/// reproducible now that the engine ships the bucket-zoom policy instead.
+const LEGACY_COVERAGE_FRACTION: f64 = 0.2;
+/// The stage-two shipped policy's probe window length in seconds.
+const LEGACY_PROBE_WINDOW_SECS: f64 = 0.3;
+/// The stage-two shipped policy's fixed margin in dB.
+const LEGACY_PROBE_MARGIN_DB: f64 = 0.8;
+
+/// Evaluate the superseded stage-two proportional policy on the corpus and print its
+/// budget, the under-read distribution, and the margin/clamp tradeoff.
 ///
-/// What: reads the decided parameters from `truepeak_core::default_policy`, optionally loads
-/// provenance from a metadata argument, and reports. Why: this is the committed, reproducible
-/// evaluation of the shipped policy, replacing the throwaway analysis scripts.
+/// What: replays the stage-two even probe from local legacy constants (the engine now
+/// ships the bucket-zoom policy), optionally loading provenance from a metadata
+/// argument. Why: the letter's ledger must stay reproducible for comparison.
 fn report_proportional(
     tracks: &[Track],
     full_secs: f64,
@@ -83,14 +91,14 @@ fn report_proportional(
     let (decoded, under_reads) = evaluate_proportional(
         tracks,
         policy.short_scan_max_secs,
-        policy.coverage_fraction,
-        policy.probe_window_secs,
+        LEGACY_COVERAGE_FRACTION,
+        LEGACY_PROBE_WINDOW_SECS,
         policy.ceiling_dbtp,
         &safe,
     );
     println!(
-        "\ndecided proportional policy: short_scan<={}s coverage={} window={}s margin={}dB",
-        policy.short_scan_max_secs, policy.coverage_fraction, policy.probe_window_secs, policy.probe_margin_db
+        "\nlegacy stage-two proportional policy: short_scan<={}s coverage={} window={}s margin={}dB",
+        policy.short_scan_max_secs, LEGACY_COVERAGE_FRACTION, LEGACY_PROBE_WINDOW_SECS, LEGACY_PROBE_MARGIN_DB
     );
     println!(
         "decoded={:.0}s ({:.1}% of corpus) target={:.0}s {}",

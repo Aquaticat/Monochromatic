@@ -45,6 +45,9 @@ mod probe;
 /// FLAC frame-size profiling without decoding: the lossless bones channel.
 mod bones;
 
+/// Probe inputs (provenance and bones) derived from the file itself.
+mod inputs;
+
 /// The gain decision types the resolver produces.
 mod decision;
 
@@ -74,8 +77,12 @@ pub use crate::gain::{CEILING, normalization_gain, peak_dbtp, probe_estimated_pe
 /// Re-exports the window-placement helpers.
 pub use crate::window::{WindowPlacement, window_frame_starts};
 
-/// Re-exports the policy type, its identity tuple, and the shipped default policy.
-pub use crate::policy::{CacheIdentity, Policy, default_policy};
+/// Re-exports the policy type, its identity tuple, the shipped default policy, and the
+/// decoder-stack id derivation.
+pub use crate::policy::{CacheIdentity, Policy, default_policy, stack_id};
+
+/// Re-exports the file-derived probe inputs (provenance and bones in one call).
+pub use crate::inputs::{probe_inputs_from_bytes, probe_inputs_from_file};
 
 /// Re-exports the per-provenance probe dials and the provenance signals.
 pub use crate::bucketpolicy::{BucketProbe, BucketTable, TrackProvenance};
