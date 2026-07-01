@@ -9,9 +9,13 @@ complexity:
     active: false
 
 style:
-  # The repo uses early returns for guard clauses; count body exits, not guards.
+  # The repo uses early returns for guard clauses (and elvis-returns like `x ?: return`)
+  # that detekt's excludeGuardClauses detector does not reliably recognize, so a
+  # per-function return limit fights the readable guard-clause style rather than helping.
+  # Disabled repo-wide by maintainer decision; function size is bounded by the dedicated
+  # per-language linters, not by return count.
   ReturnCount:
-    excludeGuardClauses: true
+    active: false
 
 require-kdoc:
   active: true
