@@ -187,6 +187,16 @@ export component AppWindow inherits Window {
     preferred-width: 480px;
     preferred-height: 600px;
 
+    // Global type scale. Every font in the window is a rem multiple of this base:
+    // the hand-drawn Text (Typography.body-rem * 1rem) and the native widgets
+    // (Button / CheckBox / Slider), whose only font-size lever is rem. Pinning it
+    // here scales all of them uniformly. 12px is 10% below the ~13.3px desktop base
+    // this was tuned against (a 10pt UI font, 10 * 96 / 72), applying the requested
+    // 10% reduction. It must be absolute: a relative `0.9rem` here is a binding loop,
+    // because rem resolves against this very property. Pinning also means the size no
+    // longer tracks the OS UI-font preference (HiDPI display scaling still applies).
+    default-font-size: 12px;
+
     // Pure black under dark mode (OLED-friendly, maximum contrast) instead of the
     // style's near-black Palette.background; light mode keeps the adaptive default.
     background: Palette.color-scheme == ColorScheme.dark ? #000000 : Palette.background;
