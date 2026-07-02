@@ -9,7 +9,7 @@
  * @module
  */
 
-import { readFileSync, } from 'node:fs';
+import { readFile, } from 'node:fs/promises';
 
 import {
   type ESTree,
@@ -45,11 +45,15 @@ import {
  * @example
  * ```ts
  * const cache = new Map<string, string>();
- * scanImporterForAttribute('./sample.sql', '/project/src/main.ts', cache);
+ * const attrType = await scanImporterForAttribute({
+ *   specifier: './sample.sql',
+ *   importerPath: '/project/src/main.ts',
+ *   importerSourceCache: cache,
+ * },);
  * // 'text' if main.ts contains: import x from './sample.sql' with { type: 'text' }
  * ```
  */
-export function scanImporterForAttribute({
+export async function scanImporterForAttribute({
   specifier,
   importerPath,
   importerSourceCache,
@@ -57,14 +61,14 @@ export function scanImporterForAttribute({
   readonly specifier: string;
   readonly importerPath: string;
   importerSourceCache: Map<string, string>;
-},): string | typeof NO_ATTR_TYPE {
+},): Promise<string | typeof NO_ATTR_TYPE> {
   /**
    * Importer source text; lazily read from disk on cache miss and stored back.
    */
   let source = importerSourceCache.get(importerPath,);
   if (source === undefined) {
     try {
-      source = readFileSync(
+      source = await readFile(
         importerPath,
         'utf8',
       );
@@ -73,7 +77,14 @@ export function scanImporterForAttribute({
         source,
       );
     }
-    catch {
+    catch (error: unknown) {
+      // Best-effort scan: an unreadable or virtual importer (e.g. a plugin-generated
+      // module whose id is not a real filesystem path) has no source to scan, so
+      // report no attribute rather than failing the build; surface the cause for diagnosis.
+      console.warn(
+        `import-attributes: could not read importer ${importerPath} while scanning for import attributes; treating as no attribute type.`,
+        error,
+      );
       return NO_ATTR_TYPE;
     }
   }

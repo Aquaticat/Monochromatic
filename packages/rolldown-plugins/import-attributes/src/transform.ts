@@ -33,7 +33,7 @@ import {
  * `transform` hook converts it to `null` (Rolldown's "no change" signal) at
  * the boundary.
  */
-export const NO_TRANSFORM: unique symbol = Symbol('import-attributes/no-transform',);
+export const NO_TRANSFORM: unique symbol = Symbol('import-attributes/source-has-no-attribute-clause-to-rewrite',);
 
 /**
  * Rewrites import/export statements that use `with { type: '...' }` attributes.

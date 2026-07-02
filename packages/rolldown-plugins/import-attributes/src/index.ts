@@ -182,7 +182,7 @@ function importAttributesPlugin(): Plugin {
         /**
          * Attribute type discovered by scanning the importer's AST for this specifier.
          */
-        const attrType = scanImporterForAttribute({
+        const attrType = await scanImporterForAttribute({
           specifier: source,
           importerPath: cleanImporter,
           importerSourceCache,
