@@ -286,7 +286,16 @@ function autoGrow({ input, }: Readonly<{ input: HTMLTextAreaElement; }>,): void 
   const { style, } = input;
 
   style.minBlockSize = '';
-  style.minBlockSize = `${input.scrollHeight}px`;
+
+  /**
+   * Block-axis border total: `min-block-size` spans borders under
+   * `border-box` sizing while `scrollHeight` does not, so growing to
+   * bare `scrollHeight` leaves a border-height sliver of internal
+   * scroll.
+   */
+  const borderCompensation = input.offsetHeight - input.clientHeight;
+
+  style.minBlockSize = `${input.scrollHeight + borderCompensation}px`;
 }
 
 /**
