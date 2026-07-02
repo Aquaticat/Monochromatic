@@ -46,8 +46,61 @@ await describe({
           },
         );
 
-        expect(html,).toContain('id="wc-input"',);
-        expect(html,).toContain('id="frequency-body"',);
+        expect(html,).toContain('class="wc-input"',);
+        expect(html,).toContain('class="frequency-body"',);
+      },
+    },),
+    it({
+      name: 'nests the textarea inside its label for an implicit association',
+      fn: async function nestsTextareaInLabel(): Promise<void> {
+        /**
+         * Complete document rendered from empty CSS/JS strings.
+         */
+        const html = renderPage(
+          {
+            css: '',
+            js: '',
+          },
+        );
+        /**
+         * Index of the opening `<label>` tag.
+         */
+        const labelIndex = html.indexOf('<label class="input-label">',);
+        /**
+         * Index of the nested textarea, which must fall inside the label
+         * (no `for`/`id` pair exists to associate them otherwise).
+         */
+        const textareaIndex = html.indexOf('<textarea class="wc-input"',);
+        /**
+         * Index of the label's closing tag.
+         */
+        const labelCloseIndex = html.indexOf(
+          '</label>',
+          labelIndex,
+        );
+
+        expect(labelIndex,).toBeGreaterThan(-1,);
+        expect(textareaIndex,).toBeGreaterThan(labelIndex,);
+        expect(labelCloseIndex,).toBeGreaterThan(textareaIndex,);
+      },
+    },),
+    it({
+      name: 'never emits an id or an inline style attribute',
+      fn: async function omitsIdsAndInlineStyles(): Promise<void> {
+        /**
+         * Complete document rendered from empty CSS/JS strings.
+         */
+        const html = renderPage(
+          {
+            css: '',
+            js: '',
+          },
+        );
+
+        expect(html,).not
+          .toContain(' id="',);
+        expect(html,).not
+          .toContain(' style="',);
       },
     },),
     it({
@@ -65,40 +118,8 @@ await describe({
 
         expect(html,).toContain('role="table"',);
         expect(html,).toContain('role="rowgroup"',);
-        expect(html,).toContain('role="columnheader"',);
         expect(html,).not
           .toContain('<table',);
-      },
-    },),
-    it({
-      name: 'orders frequency column headers as Count, %, Word',
-      fn: async function ordersColumnHeaders(): Promise<void> {
-        /**
-         * Complete document rendered from empty CSS/JS strings.
-         */
-        const html = renderPage(
-          {
-            css: '',
-            js: '',
-          },
-        );
-
-        /**
-         * Index of the Count header inside the document.
-         */
-        const countIndex = html.indexOf('>Count</span>',);
-        /**
-         * Index of the % header inside the document.
-         */
-        const pctIndex = html.indexOf('>%</span>',);
-        /**
-         * Index of the Word header inside the document.
-         */
-        const wordIndex = html.indexOf('>Word</span>',);
-
-        expect(countIndex,).toBeGreaterThan(0,);
-        expect(pctIndex,).toBeGreaterThan(countIndex,);
-        expect(wordIndex,).toBeGreaterThan(pctIndex,);
       },
     },),
     it({

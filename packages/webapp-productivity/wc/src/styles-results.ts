@@ -49,15 +49,16 @@ const WEIGHT_VALUE = 650;
 const WEIGHT_HEADING = 600;
 
 /**
- * Small-text size in rem shared by tile labels, tile sub-stats, and the
- * frequency header row.
+ * Tile label and tile sub-stat text size in rem, floored at the browser's
+ * default 1rem so no on-page text renders smaller than the user's base
+ * font size.
  */
-const SMALL_TEXT_REM = THREE_QUARTERS;
+const LABEL_TEXT_REM = 1;
 
 /**
  * Tile headline-number size in rem.
  */
-const VALUE_SIZE_REM = 1 + THREE_QUARTERS;
+const VALUE_SIZE_REM = 2;
 
 /**
  * Estimated frequency-row block size in rem for
@@ -67,10 +68,12 @@ const VALUE_SIZE_REM = 1 + THREE_QUARTERS;
 const ROW_INTRINSIC_REM = 2 + QUARTER;
 
 /**
- * Tile preferred flex-basis in rem, sized so two to three tiles fit per
- * row in the results column.
+ * Tile minimum inline size in rem, a floor so a short-content tile (e.g.
+ * bytes, with no sub-stat) doesn't shrink to an unreadably narrow card;
+ * tiles otherwise size to their own content instead of stretching to
+ * match row siblings.
  */
-const TILE_BASIS_REM = ((2 * 2) * 2)
+const TILE_MIN_REM = ((2 * 2) * 2)
   + HALF;
 
 /**
@@ -101,7 +104,7 @@ export function renderResultsStyles(): string {
       {
         rule: '.results-panel h2',
         decls: {
-          'font-size': cssRem(1 - EIGHTH,),
+          'font-size': cssRem(1 + EIGHTH,),
           'font-weight': cssNum(WEIGHT_HEADING,),
           color: cssVar('color-muted',),
           'margin-block-end': cssRem(THREE_QUARTERS,),
@@ -129,11 +132,17 @@ export function renderResultsStyles(): string {
 
     $(
       {
+        // No `flex-grow`: tiles are not forced to equal widths within a
+        // row. Each sizes to its own content (`flex-basis: auto`) above
+        // `min-inline-size`, so a tile with a longer "longest N unit"
+        // phrase gets the extra width it needs instead of wrapping at
+        // the same point as its narrower row siblings.
         rule: '.tile',
         decls: {
-          'flex-grow': cssNum(1,),
+          'flex-grow': cssNum(0,),
           'flex-shrink': cssNum(1,),
-          'flex-basis': cssRem(TILE_BASIS_REM,),
+          'flex-basis': 'auto',
+          'min-inline-size': cssRem(TILE_MIN_REM,),
           display: 'flex',
           'flex-direction': 'column',
           gap: cssRem(QUARTER,),
@@ -148,7 +157,7 @@ export function renderResultsStyles(): string {
     $(
       {
         rule: '.tile-label',
-        decls: { 'font-size': cssRem(SMALL_TEXT_REM,), },
+        decls: { 'font-size': cssRem(LABEL_TEXT_REM,), },
       },
     ),
 
@@ -167,7 +176,17 @@ export function renderResultsStyles(): string {
     $(
       {
         rule: '.tile-sub',
-        decls: { 'font-size': cssRem(SMALL_TEXT_REM,), },
+        decls: { 'font-size': cssRem(LABEL_TEXT_REM,), },
+      },
+    ),
+
+    $(
+      {
+        // Keeps the value and its unit on one line: the wrap between
+        // "longest" and this span stays the only breakable space, so a
+        // narrow tile never splits e.g. "23" from "chars".
+        rule: '.tile-sub-amount',
+        decls: { 'white-space': 'nowrap', },
       },
     ),
 
@@ -195,18 +214,7 @@ export function renderResultsStyles(): string {
 
     $(
       {
-        rule: '.frequency-head',
-        decls: {
-          'font-size': cssRem(SMALL_TEXT_REM,),
-          color: cssVar('color-muted',),
-          'border-block-end-color': cssVar('color-border-strong',),
-        },
-      },
-    ),
-
-    $(
-      {
-        rule: '#frequency-body .frequency-row',
+        rule: '.frequency-body .frequency-row',
         decls: {
           'content-visibility': 'auto',
           'contain-intrinsic-block-size': cssCompounded(
@@ -257,18 +265,21 @@ export function renderResultsStyles(): string {
 
     $(
       {
+        // A native `<progress value max>` replaces the old two-span,
+        // custom-property-driven bar: `value`/`max` are ordinary content
+        // attributes (not `style`, not `id`), so the fill ratio needs no
+        // per-row inline style, and screen readers get progressbar
+        // semantics for free (kept out of the accessibility tree below
+        // via `aria-hidden`, since the count/percentage cells already
+        // carry the real data). No `appearance` reset and no vendor
+        // pseudo-element rules: each browser's native progress chrome
+        // renders as-is inside `.freq-bar-track`'s fixed block-size.
         rule: '.freq-bar',
         decls: {
           display: 'block',
+          'inline-size': cssPercent(FULL_PERCENT,),
           'block-size': cssPercent(FULL_PERCENT,),
-          'inline-size': cssVar('bar',),
-          'min-inline-size': cssRem(QUARTER,),
-          'background-color': cssVar('color-bar',),
-          'border-width': cssRem(HAIRLINE,),
-          'border-style': 'solid',
-          'border-color': cssVar('color-bar-border',),
-          'border-start-end-radius': cssRem(QUARTER,),
-          'border-end-end-radius': cssRem(QUARTER,),
+          'background-color': 'transparent',
         },
       },
     ),

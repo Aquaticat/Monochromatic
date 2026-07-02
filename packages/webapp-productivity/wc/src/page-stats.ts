@@ -1,10 +1,16 @@
 /**
  * Stats section markup for the wc text-stats tool: six paired stat tiles.
  *
- * Lines, words, sentences, and paragraphs each pair a headline count with
- * a "longest" sub-stat; bytes and chars stand alone. The pairing halves
+ * Chars, lines, words, sentences, and paragraphs each pair a headline
+ * count with a "longest" sub-stat; bytes stands alone. The pairing halves
  * the tile count and demotes the maxima to secondary lines instead of
- * giving them equal billing with the counts.
+ * giving them equal billing with the counts. Every headline and sub-stat
+ * carries a `title` attribute spelling out exactly how it's counted.
+ *
+ * No element carries an `id`: the client script matches {@link STAT_TILES}
+ * to rendered tiles positionally (`.tile-value` and `.tile-sub-value`
+ * always render in {@link STAT_TILES} order, one-to-one with headline
+ * counts and, for the subset with a {@link StatTile.sub}, sub-stats).
  */
 import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
@@ -15,10 +21,6 @@ import type { TextStats, } from './stats/index.ts';
  */
 export type StatSub = Readonly<{
   /**
-   * DOM id the client script writes this sub-stat's value to.
-   */
-  id: string;
-  /**
    * {@link TextStats} field this sub-stat displays.
    */
   key: keyof TextStats;
@@ -28,11 +30,15 @@ export type StatSub = Readonly<{
    * sentences).
    */
   unit: string;
+  /**
+   * `title` attribute spelling out exactly how this sub-stat is counted.
+   */
+  title: string;
 }>;
 
 /**
- * One stat tile: a display label, the DOM id and {@link TextStats} field
- * of its headline count, and optionally a "longest" sub-stat.
+ * One stat tile: a display label, the {@link TextStats} field of its
+ * headline count, and optionally a "longest" sub-stat.
  */
 export type StatTile = Readonly<{
   /**
@@ -40,13 +46,13 @@ export type StatTile = Readonly<{
    */
   label: string;
   /**
-   * DOM id the client script writes the headline count to.
-   */
-  id: string;
-  /**
    * {@link TextStats} field the headline count displays.
    */
   key: keyof TextStats;
+  /**
+   * `title` attribute spelling out exactly how the headline count is counted.
+   */
+  title: string;
   /**
    * Optional "longest" sub-stat rendered under the headline count.
    */
@@ -55,114 +61,74 @@ export type StatTile = Readonly<{
 
 /**
  * Every stat tile, in display order. Exported so the client script can
- * reuse the same id/{@link TextStats} field mapping instead of
- * duplicating it.
+ * reuse the same {@link TextStats} field mapping instead of duplicating
+ * it, matching rendered tiles to fields positionally.
  */
 export const STAT_TILES: readonly StatTile[] = [
   {
-    label: 'Words',
-    id: 'stat-words',
-    key: 'words',
-    sub: {
-      id: 'stat-max-word-length',
-      key: 'maxWordLength',
-      unit: 'chars',
-    },
+    label: 'Bytes',
+    key: 'bytes',
+    title: 'UTF-8 encoded byte length of the input.',
   },
   {
     label: 'Chars',
-    id: 'stat-chars',
     key: 'chars',
+    title: 'Grapheme cluster count of the input.',
+    sub: {
+      key: 'maxCharLength',
+      unit: 'bytes',
+      title: 'UTF-8 encoded byte length of the widest grapheme cluster.',
+    },
   },
   {
-    label: 'Bytes',
-    id: 'stat-bytes',
-    key: 'bytes',
+    label: 'Words',
+    key: 'words',
+    title: 'Word count, using Unicode word segmentation.',
+    sub: {
+      key: 'maxWordLength',
+      unit: 'chars',
+      title: 'Grapheme cluster length of the longest word.',
+    },
   },
   {
     label: 'Lines',
-    id: 'stat-lines',
     key: 'lines',
+    title: 'Line count, excluding blank lines.',
     sub: {
-      id: 'stat-max-line-length',
       key: 'maxLineLength',
       unit: 'chars',
+      title: 'Grapheme cluster length of the longest non-blank line.',
     },
   },
   {
     label: 'Sentences',
-    id: 'stat-sentences',
     key: 'sentences',
+    title: 'Sentence count, using Unicode sentence segmentation.',
     sub: {
-      id: 'stat-max-sentence-length',
       key: 'maxSentenceLength',
       unit: 'words',
+      title: 'Word count of the longest sentence.',
     },
   },
   {
     label: 'Paragraphs',
-    id: 'stat-paragraphs',
     key: 'paragraphs',
+    title: 'Paragraph count, where paragraphs are separated by one or more blank lines.',
     sub: {
-      id: 'stat-max-paragraph-length',
       key: 'maxParagraphLength',
       unit: 'sentences',
+      title: 'Sentence count of the longest paragraph.',
     },
   },
 ];
 
 /**
- * Pairing of a DOM id with the {@link TextStats} field written to it,
- * flattened from {@link STAT_TILES} (headline counts and sub-stats
- * alike) so the client script can iterate one list.
- */
-export type StatField = Readonly<{
-  /**
-   * DOM id the client script writes this stat's value to.
-   */
-  id: string;
-  /**
-   * {@link TextStats} field this element displays.
-   */
-  key: keyof TextStats;
-}>;
-
-/**
- * Every id/field pairing the client script writes, flattened from
- * {@link STAT_TILES}.
- */
-export const STAT_FIELDS: readonly StatField[] = STAT_TILES.flatMap(
-  function flattenTile(tile,): readonly StatField[] {
-    /**
-     * Optional sub-stat destructured once so member access stays flat.
-     */
-    const { sub, } = tile;
-
-    /**
-     * Headline count pairing present on every tile.
-     */
-    const headline: StatField = {
-      id: tile.id,
-      key: tile.key,
-    };
-
-    return sub === undefined
-      ? [headline,]
-      : [
-        headline,
-        {
-          id: sub.id,
-          key: sub.key,
-        },
-      ];
-  },
-);
-
-/**
  * Renders one {@link STAT_TILES} entry as a `<div class="tile">` wrapping
  * a `<dt>` label and one or two `<dd>`s (headline count, optional
  * "longest" sub-stat), each value starting at `0` until the client
- * script computes real stats.
+ * script computes real stats. Both the headline and the sub-stat carry a
+ * `title` attribute spelling out exactly how that metric is counted.
+ * Neither carries an `id`; the client script locates them positionally.
  *
  * @param tile - tile definition to render
  *
@@ -189,7 +155,7 @@ function renderTile(tile: StatTile,): string {
       {
         tag: 'dd',
         class: 'tile-value',
-        attrs: { id: tile.id, },
+        attrs: { title: tile.title, },
         text: '0',
       },
     ),
@@ -201,16 +167,32 @@ function renderTile(tile: StatTile,): string {
         {
           tag: 'dd',
           class: 'tile-sub',
+          attrs: { title: sub.title, },
           children: [
             'longest ',
             h(
               {
+                // Wraps the number and its unit so the only breakable
+                // space is the one before this span (between "longest"
+                // and the amount); without it, "longest 23" and "chars"
+                // land on separate lines whenever a tile is too narrow
+                // for the full phrase, since a plain text-node space
+                // between the value and the unit is just as breakable
+                // as the one before it.
                 tag: 'span',
-                attrs: { id: sub.id, },
-                text: '0',
+                class: 'tile-sub-amount',
+                children: [
+                  h(
+                    {
+                      tag: 'span',
+                      class: 'tile-sub-value',
+                      text: '0',
+                    },
+                  ),
+                  ` ${sub.unit}`,
+                ],
               },
             ),
-            ` ${sub.unit}`,
           ],
         },
       ),

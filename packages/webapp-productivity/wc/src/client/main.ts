@@ -8,7 +8,7 @@
  */
 import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
-import { STAT_FIELDS, } from '../page.ts';
+import { STAT_TILES, } from '../page.ts';
 import {
   analyzeText,
   computeFrequency,
@@ -71,24 +71,57 @@ const measureCanvas = document.createElement('canvas',);
 const measureContext = measureCanvas.getContext('2d',);
 
 /**
- * Writes every {@link STAT_FIELDS} pairing from stats into its DOM
- * element, formatted with {@link countFormat}.
+ * Writes every {@link STAT_TILES} entry's field into its DOM element,
+ * formatted with {@link countFormat}. No tile carries an `id`, so
+ * headline and sub-stat elements are matched to {@link STAT_TILES}
+ * positionally: `.tile-value` elements render in tile order (one per
+ * tile), and `.tile-sub-value` elements render in tile order too, but
+ * only for the subset of tiles carrying a {@link StatTile.sub}.
  *
  * @param stats - aggregate statistics to render
  */
 function renderStats(stats: TextStats,): void {
-  for (const {
-    id,
-    key,
-  } of STAT_FIELDS) {
-    /**
-     * Stat display element for the current pairing, or `null` when
-     * absent.
-     */
-    const element = document.querySelector<HTMLElement>(`#${id}`,);
+  /**
+   * Headline value elements, in {@link STAT_TILES} order.
+   */
+  const valueElements = document.querySelectorAll<HTMLElement>('.tile-value',);
 
-    if (element !== null) {
-      element.textContent = countFormat.format(stats[key],);
+  for (const [index, tile,] of STAT_TILES.entries()) {
+    /**
+     * Headline element for the current tile, or `undefined` when absent.
+     */
+    const element = valueElements[index];
+
+    if (element !== undefined) {
+      element.textContent = countFormat.format(stats[tile.key],);
+    }
+  }
+
+  /**
+   * Tiles carrying a "longest" sub-stat, in the same relative order as
+   * their rendered `.tile-sub-value` elements.
+   */
+  const subTiles = STAT_TILES.filter(function hasSub(tile,): boolean {
+    return tile.sub !== undefined;
+  },);
+  /**
+   * Sub-stat value elements, in {@link subTiles} order.
+   */
+  const subValueElements = document.querySelectorAll<HTMLElement>('.tile-sub-value',);
+
+  for (const [index, tile,] of subTiles.entries()) {
+    /**
+     * Sub-stat destructured once so the definedness check and the field
+     * read both narrow off the same value.
+     */
+    const { sub, } = tile;
+    /**
+     * Sub-stat element for the current tile, or `undefined` when absent.
+     */
+    const element = subValueElements[index];
+
+    if ((element !== undefined) && (sub !== undefined)) {
+      element.textContent = countFormat.format(stats[sub.key],);
     }
   }
 }
@@ -121,21 +154,11 @@ function renderFrequencyRow(
     maxCount: number;
   }>,
 ): string {
-  /**
-   * Bar inline size as a percentage of the fixed-width track, relative
-   * to the most frequent word.
-   */
-  const barPercent = ((entry.count / maxCount) * 100)
-    .toFixed(1,);
-
   return h(
     {
       tag: 'div',
       class: 'frequency-row',
-      attrs: {
-        role: 'row',
-        style: `--bar:${barPercent}%`,
-      },
+      attrs: { role: 'row', },
       children: [
         h(
           {
@@ -185,11 +208,19 @@ function renderFrequencyRow(
             class: 'freq-bar-track',
             attrs: { role: 'cell', },
             children: [
+              // `value`/`max` are ordinary content attributes, so the
+              // fill ratio needs no per-row `style` or `id`; decorative
+              // (see `aria-hidden`), since `.freq-count`/`.freq-pct`
+              // already carry the real data to assistive tech.
               h(
                 {
-                  tag: 'span',
+                  tag: 'progress',
                   class: 'freq-bar',
-                  attrs: { 'aria-hidden': 'true', },
+                  attrs: {
+                    value: String(entry.count,),
+                    max: String(maxCount,),
+                    'aria-hidden': 'true',
+                  },
                 },
               ),
             ],
@@ -326,7 +357,12 @@ function measureWordColumnRem(
  * Replaces the Frequency body rowgroup with rows for entries, via
  * {@link renderFrequencyRow}, or {@link renderEmptyFrequencyRow} when
  * entries is empty, and pins the shared `--word-col` custom property
- * to the measured widest word so every row's bar track is equal.
+ * to the measured widest word so every row's bar track is equal. This
+ * is the one deliberate inline-style holdout in the module: the
+ * measured width is a continuous, per-render value with no static-HTML
+ * attribute that could carry it, unlike the bar fill (an ordinary
+ * `value`/`max` pair on a native `<progress>`, see
+ * {@link renderFrequencyRow}).
  *
  * @param entries - frequency rows to render, sorted by count descending
  */
@@ -334,7 +370,7 @@ function renderFrequency(entries: readonly FrequencyEntry[],): void {
   /**
    * Frequency body rowgroup element, or `null` when absent.
    */
-  const body = document.querySelector<HTMLElement>('#frequency-body',);
+  const body = document.querySelector<HTMLElement>('.frequency-body',);
 
   if (body === null) {
     return;
@@ -446,7 +482,10 @@ function updateResults(text: string,): void {
  * the flex layout can reclaim space after deletions, then raises it to
  * the content's scroll height. The flex stretch keeps the
  * viewport-filling floor, so short content never shrinks the box below
- * the visible page remainder.
+ * the visible page remainder. The grown height is a continuous,
+ * per-render pixel value with no static-HTML attribute to carry it, so
+ * (like {@link renderFrequency}'s word-column width) it deliberately
+ * keeps using `style` rather than a class.
  *
  * @param input - textarea to grow
  */
@@ -489,18 +528,19 @@ function syncFromInput(
 /**
  * Input textarea the user types or pastes text into.
  */
-const textarea = document.querySelector<HTMLTextAreaElement>('#wc-input',);
+const textarea = document.querySelector<HTMLTextAreaElement>('.wc-input',);
 
 if (textarea !== null) {
+  // `.scripted` (styled in `styles-layout.ts`) hides the textarea's own
+  // scrollbar now that growth tracks content; added here (not present
+  // in the static markup) so content stays reachable via the native
+  // scrollbar if scripting is unavailable.
   /**
-   * Style declaration destructured once so member access stays flat.
+   * Class list destructured once so member access stays flat.
    */
-  const { style, } = textarea;
+  const { classList, } = textarea;
 
-  // Growth tracks content, so the inner scrollbar never has anything
-  // to scroll; hiding it here (not in CSS) keeps content reachable if
-  // scripting is unavailable.
-  style.overflowY = 'hidden';
+  classList.add('scripted',);
   syncFromInput({ input: textarea, },);
 
   window.addEventListener(

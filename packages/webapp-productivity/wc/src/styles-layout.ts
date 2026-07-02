@@ -147,6 +147,7 @@ export function renderLayoutStyles(): string {
           color: cssVar('color-fg',),
           'background-color': cssVar('color-bg',),
           'line-height': cssNum(1 + HALF,),
+          'font-size': cssRem(1,),
         },
       },
     ),
@@ -169,7 +170,7 @@ export function renderLayoutStyles(): string {
       {
         rule: 'h1',
         decls: {
-          'font-size': cssRem(1 + HALF,),
+          'font-size': cssRem(1 + THREE_QUARTERS,),
           'font-weight': cssNum(WEIGHT_TITLE,),
           'line-height': cssNum(1 + QUARTER,),
         },
@@ -205,7 +206,6 @@ export function renderLayoutStyles(): string {
         decls: {
           display: 'flex',
           'flex-direction': 'column',
-          gap: cssRem(HALF,),
           'min-inline-size': cssMin(
             [
               cssCh(INPUT_MIN_CH,),
@@ -219,9 +219,28 @@ export function renderLayoutStyles(): string {
 
     $(
       {
-        rule: '.input-panel label',
+        // `.input-label` wraps the textarea (implicit label/control
+        // association, no `id`/`for` pair needed), so it takes over the
+        // flex-column layout `.input-panel` used to run directly between
+        // its label and textarea children. It sets no font-size of its
+        // own so the nested `.wc-input`'s `inherit` reaches all the way
+        // to `body`, not to a label-specific size; the caption's own
+        // size/weight live on `.input-label-text` instead.
+        rule: '.input-label',
         decls: {
-          'font-size': cssRem(1 - EIGHTH,),
+          display: 'flex',
+          'flex-direction': 'column',
+          gap: cssRem(HALF,),
+          'flex-grow': cssNum(1,),
+        },
+      },
+    ),
+
+    $(
+      {
+        rule: '.input-label-text',
+        decls: {
+          'font-size': cssRem(1 + EIGHTH,),
           'font-weight': cssNum(WEIGHT_LABEL,),
         },
       },
@@ -229,7 +248,7 @@ export function renderLayoutStyles(): string {
 
     $(
       {
-        rule: '#wc-input',
+        rule: '.wc-input',
         decls: {
           'inline-size': cssPercent(FULL_PERCENT,),
           'flex-grow': cssNum(1,),
@@ -252,20 +271,33 @@ export function renderLayoutStyles(): string {
 
     $(
       {
-        rule: '#wc-input::placeholder',
+        rule: '.wc-input::placeholder',
         decls: { color: cssVar('color-placeholder',), },
       },
     ),
 
     $(
       {
-        rule: '#wc-input:focus-visible',
+        rule: '.wc-input:focus-visible',
         decls: {
           'outline-width': cssRem(EIGHTH,),
           'outline-style': 'solid',
           'outline-color': cssVar('color-fg-strong',),
           'outline-offset': cssRem(EIGHTH,),
         },
+      },
+    ),
+
+    $(
+      {
+        // Growth tracks content once the client script runs (see
+        // `client/main.ts`), so the inner scrollbar never has anything
+        // to scroll; the script adds this class rather than reaching
+        // for an inline style, and only once it has taken over sizing,
+        // so content stays reachable via the native scrollbar if
+        // scripting is unavailable.
+        rule: '.wc-input.scripted',
+        decls: { 'overflow-y': 'hidden', },
       },
     ),
 

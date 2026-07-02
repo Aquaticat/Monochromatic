@@ -20,9 +20,12 @@ path = "src/main.rs"
 [dependencies]
 # Same Slint release family as packages/music-player/desktop-app so both desktop
 # prototypes share Flickable smooth wheel and touch scrolling. The explicit winit
-# backend lets the app stamp its Wayland app id before the window is created.
-# Keep slint-build below on the same release family because the markup compiler
-# and runtime are versioned together.
+# backend lets the app stamp its Wayland app id before the window is created. The
+# slint-build build-dependency in this file must stay in this same release family
+# because the markup compiler and runtime are versioned together.
+# "1.17.0" here is Cargo's default caret requirement (">=1.17.0, <2.0.0"), not an
+# exact pin: unlike pnpm, where a bare version string pins the exact release,
+# Cargo already lets `cargo update` move to any newer 1.x release past 1.17.0.
 i-slint-backend-winit = "1.17.0"
 # Safe Rust binding for Ghostty's terminal core. Default features are disabled
 # because this prototype renders text cells only and does not need Kitty images.
@@ -30,6 +33,8 @@ libghostty-vt = { version = "0.1.1", default-features = false }
 # WezTerm's PTY abstraction. It gives this app safe shell spawn, read, write,
 # and resize operations without hand-written forkpty or ioctl setup.
 portable-pty = "0.9.0"
+# "1.17.0" here is Cargo's default caret requirement (">=1.17.0, <2.0.0"), not an
+# exact pin, the same as i-slint-backend-winit and slint-build in this file.
 slint = { version = "1.17.0", features = ["backend-winit", "renderer-femtovg", "renderer-software"] }
 # The logging facade and its subscriber. tracing routes this prototype's callback-error
 # diagnostics as structured events; tracing-subscriber installs the stderr sink (RUST_LOG,
@@ -38,5 +43,8 @@ tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
 [build-dependencies]
-# Must match the `slint` release family above.
+# Must match the `slint` release family used for this crate's slint and
+# i-slint-backend-winit dependencies because the compiler and runtime are
+# versioned together. "1.17.0" here is Cargo's default caret requirement
+# (">=1.17.0, <2.0.0"), not an exact pin.
 slint-build = "1.17.0"

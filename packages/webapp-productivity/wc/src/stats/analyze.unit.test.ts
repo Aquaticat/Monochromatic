@@ -24,6 +24,7 @@ await describe({
           .toEqual({
             bytes: 0,
             chars: 0,
+            maxCharLength: 0,
             lines: 0,
             maxLineLength: 0,
             words: 0,
@@ -44,6 +45,7 @@ await describe({
           .toEqual({
             bytes: 14,
             chars: 14,
+            maxCharLength: 1,
             lines: 2,
             maxLineLength: 9,
             words: 3,
@@ -65,6 +67,31 @@ await describe({
 
         expect(stats.paragraphs,).toBe(2,);
         expect(stats.maxParagraphLength,).toBe(3,);
+      },
+    },),
+    it({
+      name: 'reports maxCharLength as the byte length of the widest grapheme cluster',
+      fn: async function reportsMaxCharLength(): Promise<void> {
+        /**
+         * The ZWJ family emoji encodes as 18 UTF-8 bytes, wider than every
+         * other grapheme in the sample (the accented "é" is 2 bytes).
+         */
+        const stats = analyzeText('a café 👨‍👩‍👧',);
+
+        expect(stats.maxCharLength,).toBe(18,);
+      },
+    },),
+    it({
+      name: 'excludes blank lines from the line count and treats them as separators only',
+      fn: async function excludesBlankLines(): Promise<void> {
+        /**
+         * Three non-blank lines split across two paragraphs by one blank
+         * line; the blank line must not itself be counted as a line.
+         */
+        const stats = analyzeText('one\ntwo\n\nthree',);
+
+        expect(stats.lines,).toBe(3,);
+        expect(stats.paragraphs,).toBe(2,);
       },
     },),
   ],

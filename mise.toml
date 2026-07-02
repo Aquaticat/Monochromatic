@@ -1109,6 +1109,7 @@ execFileSync('pnpm', ['install'], { stdio: 'inherit' })
 _.file = [{ path = ".env.local.json", redact = true }]
 _.path = [
   "node_modules/.bin",
+  "packages/webapp-productivity/wc/node_modules/.bin",
   "packages/webapp-productivity/done-postcss/node_modules/.bin",
   "packages/typeface/aquaticat/node_modules/.bin",
   "packages/ssg/aquati.cat/node_modules/.bin",
@@ -1149,3 +1150,12 @@ _.path = [
 # is the monorepo root. mise [env] is directory-activated, so it only reaches the
 # LSP process when mise launches it.
 SLINT_ENABLE_EXPERIMENTAL_FEATURES = "1"
+
+# Emits Slint element debug info (ids, source positions) into compiled UIs at
+# build time. Required for the ElementHandle/MCP introspection APIs
+# (find_elements_by_id, get_element_tree) the desktop-app test harnesses rely
+# on; without it those calls panic at runtime (see
+# docs/handover/slint-app-testing.md, docs/troubleshooting/slint-embedded-mcp-server.md).
+# Setting it at the repo root covers every cargo/slint invocation mise
+# launches, not just the packages that previously set it per-task.
+SLINT_EMIT_DEBUG_INFO = "1"

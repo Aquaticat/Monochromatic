@@ -211,6 +211,29 @@ export function splitLines(text: string,): string[] {
 }
 
 /**
+ * Reports whether a line is blank (empty or whitespace-only), the
+ * predicate {@link splitParagraphs} and {@link analyzeText} share to
+ * detect paragraph breaks and to exclude blank lines from the line count.
+ *
+ * @param line - line to test
+ *
+ * @returns true when line has no non-whitespace content
+ *
+ * @example
+ * ```ts
+ * isBlankLine('   '); // true
+ * ```
+ */
+export function isBlankLine(line: string,): boolean {
+  /**
+   * Line with surrounding whitespace removed.
+   */
+  const trimmed = line.trim();
+
+  return trimmed.length === 0;
+}
+
+/**
  * Splits text into paragraphs, where paragraphs are separated by one or
  * more blank (whitespace-only) lines.
  *
@@ -234,9 +257,7 @@ export function splitParagraphs(text: string,): string[] {
   let current: string[] = [];
 
   for (const line of splitLines(text,)) {
-    if (line.trim()
-      .length
-      === 0) {
+    if (isBlankLine(line,)) {
       if (current.length > 0) {
         paragraphs.push(current.join('\n',),);
         current = [];

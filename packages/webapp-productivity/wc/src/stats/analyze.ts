@@ -6,6 +6,8 @@ import {
   computeMaxLength,
   countBytes,
   countGraphemes,
+  isBlankLine,
+  splitGraphemes,
   splitLines,
   splitParagraphs,
   splitSentences,
@@ -50,17 +52,28 @@ function countSentencesInParagraph(paragraph: string,): number {
  * @example
  * ```ts
  * analyzeText('Hi there.\nBye.');
- * // { bytes: 14, chars: 14, lines: 2, maxLineLength: 9, words: 3,
- * //   maxWordLength: 5, sentences: 2, maxSentenceLength: 2, paragraphs: 1,
- * //   maxParagraphLength: 2 }
+ * // { bytes: 14, chars: 14, maxCharLength: 1, lines: 2, maxLineLength: 9,
+ * //   words: 3, maxWordLength: 5, sentences: 2, maxSentenceLength: 2,
+ * //   paragraphs: 1, maxParagraphLength: 2 }
  * ```
  */
 export function analyzeText(text: string,): TextStats {
   /**
-   * Lines, via {@link splitLines}, reused for both the line count and
-   * {@link TextStats.maxLineLength}.
+   * Grapheme clusters, via {@link splitGraphemes}, reused for both the
+   * char count and {@link TextStats.maxCharLength}.
    */
-  const lines = splitLines(text,);
+  const graphemes = splitGraphemes(text,);
+  /**
+   * Non-blank lines, via {@link splitLines} filtered through
+   * {@link isBlankLine}, reused for both the line count and
+   * {@link TextStats.maxLineLength}. Blank lines still separate
+   * paragraphs (see {@link splitParagraphs}); they just don't count as
+   * lines here.
+   */
+  const lines = splitLines(text,)
+    .filter(function isCountable(line,): boolean {
+      return !isBlankLine(line,);
+    },);
   /**
    * Word-like segments, via {@link splitWords}, reused for both the word
    * count and {@link TextStats.maxWordLength}.
@@ -79,7 +92,11 @@ export function analyzeText(text: string,): TextStats {
 
   return {
     bytes: countBytes(text,),
-    chars: countGraphemes(text,),
+    chars: graphemes.length,
+    maxCharLength: computeMaxLength({
+      items: graphemes,
+      lengthOf: countBytes,
+    },),
     lines: lines.length,
     maxLineLength: computeMaxLength({
       items: lines,

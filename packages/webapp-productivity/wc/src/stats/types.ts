@@ -11,6 +11,10 @@ export type TextStats = {
    */
   readonly chars: number;
   /**
+   * UTF-8 encoded byte length of the widest grapheme cluster.
+   */
+  readonly maxCharLength: number;
+  /**
    * Line count, using editor-style counting: a single trailing newline
    * does not add a phantom empty line.
    */

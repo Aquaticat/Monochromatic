@@ -14,6 +14,7 @@ import {
   computeMaxLength,
   countBytes,
   countGraphemes,
+  isBlankLine,
   splitGraphemes,
   splitLines,
   splitParagraphs,
@@ -151,6 +152,30 @@ await describe({
       name: 'still counts a blank line that exists before end-of-text',
       fn: async function countsBlankLineBeforeEnd(): Promise<void> {
         expect(splitLines('a\n\n',),).toEqual(['a', '',],);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: isBlankLine.name,
+  children: [
+    it({
+      name: 'reports true for an empty string',
+      fn: async function reportsTrueForEmpty(): Promise<void> {
+        expect(isBlankLine('',),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'reports true for whitespace-only content',
+      fn: async function reportsTrueForWhitespace(): Promise<void> {
+        expect(isBlankLine('   \t',),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'reports false when the line has non-whitespace content',
+      fn: async function reportsFalseForContent(): Promise<void> {
+        expect(isBlankLine(' a ',),).toBe(false,);
       },
     },),
   ],

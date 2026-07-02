@@ -13,17 +13,16 @@ import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import { renderStatsSection, } from './page-stats.ts';
 
 export {
-  STAT_FIELDS,
   STAT_TILES,
-  type StatField,
   type StatSub,
   type StatTile,
 } from './page-stats.ts';
 
 /**
- * Renders the input panel: a label and a textarea the client script reads
- * text from. The textarea flexes to fill the remaining viewport height
- * and auto-grows with content via the client script.
+ * Renders the input panel: a label wrapping the textarea the client
+ * script reads text from, an implicit label/control association that
+ * needs no `id`/`for` pair. The textarea flexes to fill the remaining
+ * viewport height and auto-grows with content via the client script.
  *
  * @returns HTML string for the input panel
  */
@@ -36,66 +35,23 @@ function renderInputPanel(): string {
         h(
           {
             tag: 'label',
-            attrs: { for: 'wc-input', },
-            text: 'Text to analyze',
-          },
-        ),
-        h(
-          {
-            tag: 'textarea',
-            attrs: {
-              id: 'wc-input',
-              placeholder: 'Paste or type text here…',
-            },
-          },
-        ),
-      ],
-    },
-  );
-}
-
-/**
- * Renders the Frequency column-header row. The trailing bar column is
- * decorative, so its header stays empty.
- *
- * @returns HTML string for the header row
- */
-function renderFrequencyHead(): string {
-  return h(
-    {
-      tag: 'div',
-      class: 'frequency-row frequency-head',
-      attrs: { role: 'row', },
-      children: [
-        h(
-          {
-            tag: 'span',
-            class: 'freq-count',
-            attrs: { role: 'columnheader', },
-            text: 'Count',
-          },
-        ),
-        h(
-          {
-            tag: 'span',
-            class: 'freq-pct',
-            attrs: { role: 'columnheader', },
-            text: '%',
-          },
-        ),
-        h(
-          {
-            tag: 'span',
-            class: 'freq-word',
-            attrs: { role: 'columnheader', },
-            text: 'Word',
-          },
-        ),
-        h(
-          {
-            tag: 'span',
-            class: 'freq-bar-track',
-            attrs: { role: 'columnheader', },
+            class: 'input-label',
+            children: [
+              h(
+                {
+                  tag: 'span',
+                  class: 'input-label-text',
+                  text: 'Text to analyze',
+                },
+              ),
+              h(
+                {
+                  tag: 'textarea',
+                  class: 'wc-input',
+                  attrs: { placeholder: 'Paste or type text here…', },
+                },
+              ),
+            ],
           },
         ),
       ],
@@ -135,17 +91,8 @@ function renderFrequencySection(): string {
               h(
                 {
                   tag: 'div',
+                  class: 'frequency-body',
                   attrs: { role: 'rowgroup', },
-                  children: [renderFrequencyHead(),],
-                },
-              ),
-              h(
-                {
-                  tag: 'div',
-                  attrs: {
-                    id: 'frequency-body',
-                    role: 'rowgroup',
-                  },
                 },
               ),
             ],
