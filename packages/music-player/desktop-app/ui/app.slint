@@ -75,7 +75,10 @@ component RadioButton inherits Rectangle {
         // stroke that, when selected, becomes an accent "donut", a 6px accent ring
         // around a centre painted the window's background. Fluent's internal colours
         // are not on the public Palette, so they map onto it here:
-        // control-strong-stroke -> border, control-alt-secondary -> control-background,
+        // control-strong-stroke -> foreground.with-alpha(0.6) (60% ink, matching
+        // Fluent's #FFFFFF99 / #00000099; plain Palette.border is only ~8% alpha in
+        // dark mode, which on the pure-black window background reads at ~1.1:1 and
+        // fails contrast), then control-alt-secondary -> control-background and
         // state-secondary -> the window background. Keeps the radio consistent with
         // the native CheckBox beside it.
         VerticalLayout {
@@ -85,7 +88,7 @@ component RadioButton inherits Rectangle {
                 height: self.width;
                 border-radius: self.width / 2;
                 border-width: 1px;
-                border-color: ta.has-hover ? Palette.accent-background : Palette.border;
+                border-color: ta.has-hover ? Palette.accent-background : Palette.foreground.with-alpha(0.6);
                 background: root.selected ? transparent : Palette.control-background;
                 animate border-color, background { duration: 150ms; }
                 Rectangle {
