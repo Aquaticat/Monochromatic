@@ -16,11 +16,11 @@ import { restoreGlobalDefaultThinkingLevel, } from './global-settings.ts';
 /** In-memory settings file harness. */
 type SettingsFileHarness = {
   /** Reads stored settings JSON. */
-  readSettingsFile: (path: string,) => string;
+  readSettingsFile: (path: string,) => Promise<string>;
   /** Writes stored settings JSON. */
   writeSettingsFile: (
     options: { readonly path: string; readonly content: string; },
-  ) => void;
+  ) => Promise<void>;
   /** Returns last stored settings JSON. */
   getContent: () => string;
   /** Returns write count. */
@@ -56,16 +56,16 @@ function createSettingsFileHarness(
   ],);
 
   return {
-    readSettingsFile: function readSettingsFile(path: string,): string {
+    readSettingsFile: async function readSettingsFile(path: string,): Promise<string> {
       void path;
       return contentSlot.get('value',) ?? '';
     },
-    writeSettingsFile: function writeSettingsFile(
+    writeSettingsFile: async function writeSettingsFile(
       {
         path,
         content,
       }: { readonly path: string; readonly content: string; },
-    ): void {
+    ): Promise<void> {
       void path;
       contentSlot.set('value', content,);
       writeCountSlot.set(
@@ -94,7 +94,7 @@ await describe({
           initialContent: JSON.stringify({ defaultThinkingLevel: 'xhigh', },),
         },);
 
-        const changed = restoreGlobalDefaultThinkingLevel({
+        const changed = await restoreGlobalDefaultThinkingLevel({
           settingsPath: '/settings.json',
           readSettingsFile: harness.readSettingsFile,
           writeSettingsFile: harness.writeSettingsFile,
@@ -115,7 +115,7 @@ await describe({
         const initialContent = JSON.stringify({ defaultThinkingLevel: 'high', },);
         const harness = createSettingsFileHarness({ initialContent, },);
 
-        const changed = restoreGlobalDefaultThinkingLevel({
+        const changed = await restoreGlobalDefaultThinkingLevel({
           settingsPath: '/settings.json',
           readSettingsFile: harness.readSettingsFile,
           writeSettingsFile: harness.writeSettingsFile,
@@ -131,9 +131,9 @@ await describe({
       fn: async function testNonObjectSettings() {
         const harness = createSettingsFileHarness({ initialContent: '[]', },);
         /** Error caught from invalid settings restoration. */
-        const caught = (function catchRestoreError(): unknown {
+        const caught = await (async function catchRestoreError(): Promise<unknown> {
           try {
-            restoreGlobalDefaultThinkingLevel({
+            await restoreGlobalDefaultThinkingLevel({
               settingsPath: '/settings.json',
               readSettingsFile: harness.readSettingsFile,
               writeSettingsFile: harness.writeSettingsFile,

@@ -24,7 +24,7 @@ type RegisterThinkingDefaultsOptions = {
   /**
    * Restores persisted scalar thinking default after active-level changes.
    */
-  readonly restoreDefaultThinkingLevel?: () => boolean;
+  readonly restoreDefaultThinkingLevel?: () => Promise<boolean>;
 };
 
 //endregion Types
@@ -80,7 +80,7 @@ export function registerThinkingDefaults(
 
   pi.on(
     'session_start',
-    function onSessionStart(
+    async function onSessionStart(
       _event,
       ctx,
     ) {
@@ -100,12 +100,12 @@ export function registerThinkingDefaults(
       },);
       if (result.target
         !== undefined)
-        restoreDefaultThinkingLevel();
+        await restoreDefaultThinkingLevel();
     },
   );
   pi.on(
     'model_select',
-    function onModelSelect(event,) {
+    async function onModelSelect(event,) {
       /**
        * Thinking application result for the newly selected model.
        */
@@ -116,7 +116,7 @@ export function registerThinkingDefaults(
       },);
       if (result.target
         !== undefined)
-        restoreDefaultThinkingLevel();
+        await restoreDefaultThinkingLevel();
     },
   );
 }

@@ -6,9 +6,9 @@
 
 import { getAgentDir, } from '@earendil-works/pi-coding-agent';
 import {
-  readFileSync,
-  writeFileSync,
-} from 'node:fs';
+  readFile,
+  writeFile,
+} from 'node:fs/promises';
 import { join, } from 'node:path';
 import type { ThinkingDefaultLevel, } from './model-policy.ts';
 
@@ -62,11 +62,11 @@ type RestoreGlobalDefaultOptions = {
   /**
    * Reads a settings file as UTF-8 text.
    */
-  readonly readSettingsFile?: (path: string,) => string;
+  readonly readSettingsFile?: (path: string,) => Promise<string>;
   /**
    * Writes UTF-8 settings text.
    */
-  readonly writeSettingsFile?: (options: WriteSettingsFileOptions,) => void;
+  readonly writeSettingsFile?: (options: WriteSettingsFileOptions,) => Promise<void>;
 };
 
 //endregion Types
@@ -85,8 +85,8 @@ type RestoreGlobalDefaultOptions = {
  * defaultReadSettingsFile('/home/user/.pi/agent/settings.json');
  * ```
  */
-function defaultReadSettingsFile(path: string,): string {
-  return readFileSync(
+async function defaultReadSettingsFile(path: string,): Promise<string> {
+  return await readFile(
     path,
     'utf8',
   );
@@ -104,13 +104,13 @@ function defaultReadSettingsFile(path: string,): string {
  * defaultWriteSettingsFile({ path: '/settings.json', content: '{}\n' });
  * ```
  */
-function defaultWriteSettingsFile(
+async function defaultWriteSettingsFile(
   {
     path,
     content,
   }: WriteSettingsFileOptions,
-): void {
-  writeFileSync(
+): Promise<void> {
+  await writeFile(
     path,
     content,
     'utf8',
@@ -192,18 +192,18 @@ export function getGlobalSettingsPath(): string {
  * restoreGlobalDefaultThinkingLevel();
  * ```
  */
-export function restoreGlobalDefaultThinkingLevel(
+export async function restoreGlobalDefaultThinkingLevel(
   {
     defaultLevel = PERSISTED_DEFAULT_THINKING_LEVEL,
     settingsPath = getGlobalSettingsPath(),
     readSettingsFile = defaultReadSettingsFile,
     writeSettingsFile = defaultWriteSettingsFile,
   }: RestoreGlobalDefaultOptions = {},
-): boolean {
+): Promise<boolean> {
   /**
    * Raw JSON settings text.
    */
-  const rawSettings = readSettingsFile(settingsPath,);
+  const rawSettings = await readSettingsFile(settingsPath,);
   /**
    * Parsed settings value before object validation.
    */
@@ -226,7 +226,7 @@ export function restoreGlobalDefaultThinkingLevel(
       2,
     )
   }\n`;
-  writeSettingsFile({
+  await writeSettingsFile({
     path: settingsPath,
     content: nextSettings,
   },);

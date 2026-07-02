@@ -6,6 +6,8 @@
 
 import { getModelIdLeaf, } from '@monochromatic-dev/pi-shared-model-selection/ts';
 
+export { getModelIdLeaf, } from '@monochromatic-dev/pi-shared-model-selection/ts';
+
 //region Thinking default constants
 
 /**
@@ -102,7 +104,6 @@ export function getThinkingDefaultForModel(
 //endregion Model id helpers
 
 export {
-  getModelIdLeaf,
   GPT_THINKING_DEFAULT,
   NON_GPT_THINKING_DEFAULT,
 };

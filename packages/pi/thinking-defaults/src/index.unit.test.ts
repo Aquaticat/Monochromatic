@@ -196,14 +196,14 @@ await describe({
         const restoreCalls: string[] = [];
         registerThinkingDefaults({
           pi: api,
-          restoreDefaultThinkingLevel: function restoreDefaultThinkingLevel(): boolean {
+          restoreDefaultThinkingLevel: async function restoreDefaultThinkingLevel(): Promise<boolean> {
             restoreCalls.push('restore',);
             return true;
           },
         },);
         const handler = getHandler({ registrations, event: 'session_start', },);
 
-        handler(
+        await handler(
           { type: 'session_start', reason: 'startup', } satisfies SessionStartEvent,
           createContext({ model: { id: 'gpt-5.5', }, },),
         );
@@ -222,14 +222,14 @@ await describe({
         const restoreCalls: string[] = [];
         registerThinkingDefaults({
           pi: api,
-          restoreDefaultThinkingLevel: function restoreDefaultThinkingLevel(): boolean {
+          restoreDefaultThinkingLevel: async function restoreDefaultThinkingLevel(): Promise<boolean> {
             restoreCalls.push('restore',);
             return true;
           },
         },);
         const handler = getHandler({ registrations, event: 'session_start', },);
 
-        handler(
+        await handler(
           { type: 'session_start', reason: 'startup', } satisfies SessionStartEvent,
           createContext({},),
         );
@@ -248,14 +248,14 @@ await describe({
         const restoreCalls: string[] = [];
         registerThinkingDefaults({
           pi: api,
-          restoreDefaultThinkingLevel: function restoreDefaultThinkingLevel(): boolean {
+          restoreDefaultThinkingLevel: async function restoreDefaultThinkingLevel(): Promise<boolean> {
             restoreCalls.push('restore',);
             return true;
           },
         },);
         const handler = getHandler({ registrations, event: 'model_select', },);
 
-        handler(
+        await handler(
           {
             type: 'model_select',
             model: { id: 'synthetic/hf:moonshotai/Kimi-K2.6', },
