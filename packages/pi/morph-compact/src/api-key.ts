@@ -102,8 +102,11 @@ async function readKeyFromMcpConfig(): Promise<string | typeof NO_MORPH_KEY> {
     }
     return NO_MORPH_KEY;
   }
-  catch {
-    // File doesn't exist, unreadable, or invalid JSON: not an error
+  catch (error: unknown) {
+    // File doesn't exist, unreadable, or invalid JSON: not an error, so the
+    // absence of a Morph key is reported. The bound `error` stays inspectable
+    // but is intentionally not surfaced: this low-level module has no reachable
+    // logger or pi UI channel.
     return NO_MORPH_KEY;
   }
 }

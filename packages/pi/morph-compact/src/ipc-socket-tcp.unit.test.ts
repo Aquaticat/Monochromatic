@@ -99,8 +99,9 @@ await describe({
             try {
               await readFromTcpSocket(server.address,);
             }
-            catch {
+            catch (error: unknown) {
               secondReadErrored = true;
+              expect(error,).toBeDefined();
             }
             expect(secondReadErrored,).toBe(true,);
           },
@@ -128,8 +129,9 @@ await describe({
             try {
               await readFromTcpSocket('127.0.0.1:1',);
             }
-            catch {
+            catch (error: unknown) {
               caught = true;
+              expect(error,).toBeDefined();
             }
             expect(caught,).toBe(true,);
           },

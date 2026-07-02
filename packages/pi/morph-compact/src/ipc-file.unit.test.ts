@@ -16,15 +16,15 @@ import {
   type WriteCompactFileResult,
 } from './ipc-file.ts';
 
-/** Wrap a writeCompactFile result so `using` calls cleanup automatically. */
+/** Wrap a writeCompactFile result so `await using` calls cleanup automatically. */
 function usingCompactFile(
   result: WriteCompactFileResult,
-): Disposable & {
+): AsyncDisposable & {
   filePath: string;
 } {
   return {
     filePath: result.filePath,
-    [Symbol.dispose]: result.cleanup,
+    [Symbol.asyncDispose]: result.cleanup,
   };
 }
 
@@ -38,21 +38,21 @@ await describe({
           name: 'writes text to a temp file under /tmp',
           fn: async () => {
             const text = 'compressed context content';
-            using file = usingCompactFile(writeCompactFile(text,),);
+            await using file = usingCompactFile(await writeCompactFile(text,),);
 
             expect(file.filePath,).toContain('morph-compact-',);
             expect(existsSync(file.filePath,),).toBe(true,);
 
-            const content = readCompactFile(file.filePath,);
+            const content = await readCompactFile(file.filePath,);
             expect(content,).toBe(text,);
           },
         },),
         it({
           name: 'handles empty string',
           fn: async () => {
-            using file = usingCompactFile(writeCompactFile('',),);
+            await using file = usingCompactFile(await writeCompactFile('',),);
 
-            const content = readCompactFile(file.filePath,);
+            const content = await readCompactFile(file.filePath,);
             expect(content,).toBe('',);
           },
         },),
@@ -60,9 +60,9 @@ await describe({
           name: 'handles large text (100KB+)',
           fn: async () => {
             const text = 'x'.repeat(150_000,);
-            using file = usingCompactFile(writeCompactFile(text,),);
+            await using file = usingCompactFile(await writeCompactFile(text,),);
 
-            const content = readCompactFile(file.filePath,);
+            const content = await readCompactFile(file.filePath,);
             expect(content,).toBe(text,);
             expect(content.length,).toBe(150_000,);
           },
@@ -71,9 +71,9 @@ await describe({
           name: 'handles text with special characters',
           fn: async () => {
             const text = 'hello\nworld\t"quotes" \'single\' $var `backtick` \\slash\\';
-            using file = usingCompactFile(writeCompactFile(text,),);
+            await using file = usingCompactFile(await writeCompactFile(text,),);
 
-            const content = readCompactFile(file.filePath,);
+            const content = await readCompactFile(file.filePath,);
             expect(content,).toBe(text,);
           },
         },),
@@ -81,22 +81,22 @@ await describe({
           name: 'handles binary-safe Unicode content',
           fn: async () => {
             const text = 'unicode: \u0000\u0001\u0002 emoji: 🎉🚀 cjk: 中文日本語';
-            using file = usingCompactFile(writeCompactFile(text,),);
+            await using file = usingCompactFile(await writeCompactFile(text,),);
 
-            const content = readCompactFile(file.filePath,);
+            const content = await readCompactFile(file.filePath,);
             expect(content,).toBe(text,);
           },
         },),
         it({
           name: 'creates unique paths for each call',
           fn: async () => {
-            const first = writeCompactFile('first',);
-            const second = writeCompactFile('second',);
+            const first = await writeCompactFile('first',);
+            const second = await writeCompactFile('second',);
 
             expect(first.filePath,).not.toBe(second.filePath,);
 
-            first.cleanup();
-            second.cleanup();
+            await first.cleanup();
+            await second.cleanup();
           },
         },),
       ],
@@ -108,9 +108,9 @@ await describe({
           name: 'reads content written by writeCompactFile',
           fn: async () => {
             const text = 'round-trip test data';
-            using file = usingCompactFile(writeCompactFile(text,),);
+            await using file = usingCompactFile(await writeCompactFile(text,),);
 
-            const content = readCompactFile(file.filePath,);
+            const content = await readCompactFile(file.filePath,);
             expect(content,).toBe(text,);
           },
         },),
@@ -122,12 +122,12 @@ await describe({
         it({
           name: 'removes the temp directory after cleanup',
           fn: async () => {
-            const { filePath, cleanup, } = writeCompactFile('data',);
+            const { filePath, cleanup, } = await writeCompactFile('data',);
             const dir = filePath.split('/',).slice(0, -1,).join('/',);
 
             expect(existsSync(filePath,),).toBe(true,);
 
-            cleanup();
+            await cleanup();
 
             expect(existsSync(filePath,),).toBe(false,);
             expect(existsSync(dir,),).toBe(false,);
@@ -136,11 +136,11 @@ await describe({
         it({
           name: 'is safe to call multiple times',
           fn: async () => {
-            const { cleanup, } = writeCompactFile('data',);
+            const { cleanup, } = await writeCompactFile('data',);
 
-            cleanup();
+            await cleanup();
             // Second call should not throw
-            cleanup();
+            await cleanup();
           },
         },),
       ],

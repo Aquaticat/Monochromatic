@@ -9,11 +9,11 @@
  */
 
 import {
-  mkdtempSync,
-  readFileSync,
-  rmSync,
-  writeFileSync,
-} from 'node:fs';
+  mkdtemp,
+  readFile,
+  rm,
+  writeFile,
+} from 'node:fs/promises';
 import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
@@ -30,7 +30,7 @@ export type WriteCompactFileResult = {
   /**
    * Deletes the temp directory containing the file.
    */
-  cleanup: () => void;
+  cleanup: () => Promise<void>;
 };
 
 //endregion
@@ -57,13 +57,13 @@ export type WriteCompactFileResult = {
  * // cleanup is called after the session reads the file
  * ```
  */
-export function writeCompactFile(
+export async function writeCompactFile(
   text: string,
-): WriteCompactFileResult {
+): Promise<WriteCompactFileResult> {
   /**
    * Unique temp directory whose removal yields a single cleanup target.
    */
-  const dir = mkdtempSync(
+  const dir = await mkdtemp(
     join(
       tmpdir(),
       'morph-compact-',
@@ -76,7 +76,7 @@ export function writeCompactFile(
     dir,
     'data.txt',
   );
-  writeFileSync(
+  await writeFile(
     filePath,
     text,
     'utf8',
@@ -84,8 +84,8 @@ export function writeCompactFile(
 
   return {
     filePath,
-    cleanup: function cleanup(): void {
-      rmSync(
+    cleanup: async function cleanup(): Promise<void> {
+      await rm(
         dir,
         {
           recursive: true,
@@ -107,14 +107,14 @@ export function writeCompactFile(
  *
  * @example
  * ```typescript
- * const text = readCompactFile(filePath);
+ * const text = await readCompactFile(filePath);
  * // text contains the Morph-compressed conversation context
  * ```
  */
-export function readCompactFile(
+export async function readCompactFile(
   filePath: string,
-): string {
-  return readFileSync(
+): Promise<string> {
+  return await readFile(
     filePath,
     'utf8',
   );

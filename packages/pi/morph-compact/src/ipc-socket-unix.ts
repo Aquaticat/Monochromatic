@@ -9,7 +9,7 @@
  */
 
 import { randomUUID, } from 'node:crypto';
-import { unlinkSync, } from 'node:fs';
+import { unlink, } from 'node:fs/promises';
 import {
   createConnection,
   createServer,
@@ -102,6 +102,12 @@ export function createOneShotSocketServer(
 
   /**
    * Close the server and unlink the socket file.
+   *
+   * Stays synchronous so it satisfies its `queueMicrotask`, `setTimeout`,
+   * `EventEmitter.on`, and disposable-cleanup call sites (all void-return
+   * slots). The socket-file removal is async (`unlink`), so it runs as a
+   * detached, self-contained task via the `void (async () => {})()` idiom
+   * the workspace uses for async work in synchronous callback positions.
    */
   function close(): void {
     if (handles.idleTimer
@@ -115,12 +121,16 @@ export function createOneShotSocketServer(
         .close();
       delete handles.server;
     }
-    try {
-      unlinkSync(socketPath,);
-    }
-    catch {
-      // Socket file may already be removed or never created
-    }
+    void (async function unlinkSocketFile(): Promise<void> {
+      try {
+        await unlink(socketPath,);
+      }
+      catch (error: unknown) {
+        // Socket file may already be removed or never created; the bound
+        // `error` stays inspectable but is intentionally not surfaced: this
+        // low-level module has no reachable logger or pi UI channel.
+      }
+    })();
   }
 
   handles.server = createServer(

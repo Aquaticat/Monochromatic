@@ -143,10 +143,10 @@ await describe({
             /**
              * Temp file created through the same helper used by production code.
              */
-            const compactFile = writeCompactFile(text,);
-            using file = {
+            const compactFile = await writeCompactFile(text,);
+            await using file = {
               filePath: compactFile.filePath,
-              [Symbol.dispose]: compactFile.cleanup,
+              [Symbol.asyncDispose]: compactFile.cleanup,
             };
             /**
              * Target function whose calls are captured by the visible-message spy.

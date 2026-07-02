@@ -101,8 +101,9 @@ await describe({
             try {
               await readFromUnixSocket(server.socketPath,);
             }
-            catch {
+            catch (error: unknown) {
               secondReadErrored = true;
+              expect(error,).toBeDefined();
             }
             expect(secondReadErrored,).toBe(true,);
           },
@@ -130,8 +131,9 @@ await describe({
             try {
               await readFromUnixSocket('/tmp/nonexistent-morph-compact-test.sock',);
             }
-            catch {
+            catch (error: unknown) {
               caught = true;
+              expect(error,).toBeDefined();
             }
             expect(caught,).toBe(true,);
           },

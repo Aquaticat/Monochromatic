@@ -11,9 +11,9 @@
 import type { ExtensionAPI, } from '@earendil-works/pi-coding-agent';
 import { launchTerminal, } from '@monochromatic-dev/cli-terminal-exec/ts';
 import {
-  rmSync,
-  unlinkSync,
-} from 'node:fs';
+  rm,
+  unlink,
+} from 'node:fs/promises';
 import { dirname, } from 'node:path';
 import {
   readCompactFile,
@@ -90,7 +90,7 @@ export async function launchWithLargeContext({
     /**
      * Path returned by the file tier; surfaced as a CLI flag to the child.
      */
-    const { filePath, } = writeCompactFile(compressedText,);
+    const { filePath, } = await writeCompactFile(compressedText,);
     await launchTerminal({
       dir: cwd,
       command: [
@@ -102,8 +102,10 @@ export async function launchWithLargeContext({
     // File cleanup happens in session_start handler after reading
     return;
   }
-  catch {
-    // Fall through to socket tier
+  catch (error: unknown) {
+    // File tier failed (e.g. read-only /tmp); fall through to socket tier.
+    // The bound `error` stays inspectable but is intentionally not surfaced:
+    // this low-level module has no reachable logger or pi UI channel.
   }
 
   // Tier 3: Unix domain socket
@@ -123,8 +125,10 @@ export async function launchWithLargeContext({
     // Socket cleanup happens in session_start handler or via idle timeout
     return;
   }
-  catch {
-    // Fall through to TCP tier
+  catch (error: unknown) {
+    // Socket tier failed; fall through to TCP tier. The bound `error` stays
+    // inspectable but is intentionally not surfaced: this low-level module
+    // has no reachable logger or pi UI channel.
   }
 
   // Tier 4: TCP localhost (zero filesystem dependency)
@@ -219,14 +223,14 @@ async function injectCompactContext(
     /**
      * Decoded compact payload read off disk for injection.
      */
-    const text = readCompactFile(filePath,);
+    const text = await readCompactFile(filePath,);
     deliverCompactContext({
       api,
       text,
     },);
     // Clean up the temp directory after reading
     try {
-      rmSync(
+      await rm(
         dirname(filePath,),
         {
           recursive: true,
@@ -234,8 +238,10 @@ async function injectCompactContext(
         },
       );
     }
-    catch {
-      // Best-effort cleanup (temp files in /tmp are ephemeral)
+    catch (error: unknown) {
+      // Best-effort cleanup (temp files in /tmp are ephemeral); the bound
+      // `error` stays inspectable but is intentionally not surfaced: this
+      // low-level module has no reachable logger or pi UI channel.
     }
     return;
   }
@@ -256,10 +262,12 @@ async function injectCompactContext(
     },);
     // Unlink the socket file after reading
     try {
-      unlinkSync(socketPath,);
+      await unlink(socketPath,);
     }
-    catch {
-      // Socket may already be removed by server cleanup
+    catch (error: unknown) {
+      // Socket may already be removed by server cleanup; the bound `error`
+      // stays inspectable but is intentionally not surfaced: this low-level
+      // module has no reachable logger or pi UI channel.
     }
     return;
   }
