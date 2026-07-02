@@ -50,6 +50,14 @@ const WORD_COLUMN_HEADER = 'Word';
 const WORD_COLUMN_SLACK_REM = 1 / (2 * 2);
 
 /**
+ * Ceiling in rem on the word column, so one pathological token (a
+ * chemical name, a URL, a DNA string) cannot crush the bar tracks.
+ * Longer words truncate visually with an ellipsis while the full word
+ * rides in the cell's `title` and `aria-label`.
+ */
+const WORD_COLUMN_MAX_REM = ((2 * 2) * 2) + (2 + 2);
+
+/**
  * Detached canvas backing the word-width measuring context.
  */
 const measureCanvas = document.createElement('canvas',);
@@ -160,7 +168,14 @@ function renderFrequencyRow(
           {
             tag: 'span',
             class: 'freq-word',
-            attrs: { role: 'cell', },
+            // Displayed text can truncate with an ellipsis once the
+            // word column hits its cap; title (hover) and aria-label
+            // (assistive tech) always carry the whole word.
+            attrs: {
+              role: 'cell',
+              title: entry.word,
+              'aria-label': entry.word,
+            },
             text: entry.word,
           },
         ),
@@ -234,7 +249,8 @@ function renderEmptyFrequencyRow(): string {
  *
  * @param context - measuring canvas context, narrowed by caller
  *
- * @returns widest width in rem plus {@link WORD_COLUMN_SLACK_REM}
+ * @returns widest width in rem plus {@link WORD_COLUMN_SLACK_REM},
+ * capped at {@link WORD_COLUMN_MAX_REM}
  */
 function measureWordColumnRem(
   {
@@ -300,7 +316,10 @@ function measureWordColumnRem(
     unitStart,
   ),);
 
-  return (widestPx / rootPx) + WORD_COLUMN_SLACK_REM;
+  return Math.min(
+    (widestPx / rootPx) + WORD_COLUMN_SLACK_REM,
+    WORD_COLUMN_MAX_REM,
+  );
 }
 
 /**

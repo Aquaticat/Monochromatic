@@ -8,11 +8,15 @@
  * Number columns align purely through Inter's tabular numerals plus
  * figure-space padding done by the client script; no column widths are
  * managed in CSS. The word cell is pinned to `--word-col`, the widest
- * word's measured width (set by the client script on `.frequency`), and
- * the bar track flex-grows into all remaining width; with the number
- * cells equal through figure-space padding and the word cell fixed, the
+ * word's measured width (set by the client script on `.frequency`,
+ * capped so one pathological token cannot crush the bars), and the bar
+ * track flex-grows into all remaining width; with the number cells
+ * equal through figure-space padding and the word cell fixed, the
  * grown track is identical in every row, so the bars fill the free
- * width while their lengths stay comparable. Each bar carries a
+ * width while their lengths stay comparable. Words wider than their
+ * cell truncate with an ellipsis on a single line (full word in
+ * `title` and `aria-label`), keeping every row at the intrinsic block
+ * size containment promises. Each bar carries a
  * full-contrast border (near-black on light, near-white on dark) so
  * even a minimum-count bar stays visible.
  */
@@ -230,7 +234,9 @@ export function renderResultsStyles(): string {
           'flex-shrink': cssNum(1,),
           'flex-basis': cssVar('word-col',),
           'min-inline-size': cssNum(0,),
-          'overflow-wrap': 'anywhere',
+          'white-space': 'nowrap',
+          overflow: 'hidden',
+          'text-overflow': 'ellipsis',
         },
       },
     ),

@@ -40,7 +40,10 @@ requests after the page loads.
   columns align purely through tabular numerals, with no column-width
   CSS. The word column is pinned to the widest word's measured width
   (canvas `measureText` in one pass, no per-row layout reads, re-run
-  when font loading settles), and the bar track flex-grows into all
+  when font loading settles), capped at 12rem so one pathological token
+  (a chemical name, a URL) cannot crush the bars; words wider than the
+  cell truncate with an ellipsis while the full word rides in the
+  cell's `title` and `aria-label`. The bar track flex-grows into all
   remaining width; with every other column equal across rows, the grown
   tracks are identical, so the bars fill the free width while their
   lengths stay comparable. Bars carry a full-contrast border (near-black
