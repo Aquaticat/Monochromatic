@@ -18,16 +18,17 @@
  * `title` and `aria-label`), keeping every row at the intrinsic block
  * size containment promises. Bars keep the five-stop grayscale
  * palette: the fill is the strong foreground stop and the track is
- * transparent. Neither engine gets that from `accent-color` alone
- * (Chromium ignores near-white accents; Firefox keeps its default
- * blue progress fill regardless), so the fill stop is pinned on both
- * engines' fill pseudo-elements, `::-webkit-progress-value` and
- * `::-moz-progress-bar`, and the track is cleared by the element's
- * transparent background (Firefox) plus `::-webkit-progress-bar`
- * (Chromium). All pseudos apply without an `appearance` reset,
- * verified in headless Chromium and containerized Firefox;
- * `accent-color` stays as the standards path for engines that honor
- * it.
+ * transparent. The transparent track requires an author background,
+ * and any author background or border on `<progress>` switches both
+ * engines from the natively themed widget (which honors
+ * `accent-color`) to a fallback rendering that ignores it (Chromium
+ * paints green-on-gray, Firefox a UA blue plus a blue-tinted
+ * border), so the fill stop is pinned on both engines' fill
+ * pseudo-elements, `::-webkit-progress-value` and
+ * `::-moz-progress-bar`, which style exactly that fallback, and
+ * Firefox's tinted fallback border is removed. Catalogued in
+ * docs/troubleshooting/progress-element-fill-styling.md; verified in
+ * containerized Firefox and Chromium by ./page.browser.test.ts.
  */
 import {
   cssCompounded,
@@ -280,22 +281,23 @@ export function renderResultsStyles(): string {
         // per-row inline style, and screen readers get progressbar
         // semantics for free (kept out of the accessibility tree, since
         // the count/percentage cells already carry the real data).
-        // Palette discipline: the transparent background clears
-        // Firefox's track, and the vendor fill pseudos below pin the
-        // fill stop in both engines; `accent-color` alone moves
-        // neither (Chromium ignores near-white accents, Firefox keeps
-        // its default blue progress fill regardless) and stays only as
-        // the standards path. No `appearance` reset: every pseudo
-        // applies without one (verified in headless Chromium and
-        // containerized Firefox).
+        // Palette discipline: the transparent background clears the
+        // track, and, as author styling, it also drops both engines
+        // into their unthemed fallback rendering, where `accent-color`
+        // is inert and only the vendor fill pseudos below recolor the
+        // fill. `accent-color` is kept for engines that honor it on
+        // author-styled progress (neither tested engine does today);
+        // no `appearance` reset is needed because the author
+        // background already disables native theming. See
+        // docs/troubleshooting/progress-element-fill-styling.md.
         rule: '.freq-bar',
         decls: {
           display: 'block',
           'inline-size': cssPercent(FULL_PERCENT,),
           'block-size': cssPercent(FULL_PERCENT,),
           'background-color': 'transparent',
-          // Firefox otherwise keeps its native progress border, a
-          // slightly blue-tinted gray (rgb(143 143 157) measured in
+          // Firefox's fallback rendering otherwise keeps a border in
+          // a slightly blue-tinted gray (rgb(143 143 157) measured in
           // the playwright container) that violates the grayscale
           // palette.
           'border-style': 'none',
@@ -306,9 +308,8 @@ export function renderResultsStyles(): string {
 
     $(
       {
-        // Chromium's track: the native painting ignores the element's
-        // transparent background, but this pseudo applies without an
-        // `appearance` reset and clears it.
+        // Chromium's fallback track: gray (rgb(128 128 128)) once the
+        // element carries an author background; this pseudo clears it.
         rule: '.freq-bar::-webkit-progress-bar',
         decls: { 'background-color': 'transparent', },
       },
@@ -316,9 +317,9 @@ export function renderResultsStyles(): string {
 
     $(
       {
-        // Chromium's fill: it ignores near-white `accent-color` values
-        // (falls back to the default green), so the fill stop is set
-        // directly on the value pseudo instead.
+        // Chromium's fallback fill: green (rgb(0 128 0)) once the
+        // element carries an author background; this pseudo pins the
+        // fill stop.
         rule: '.freq-bar::-webkit-progress-value',
         decls: { 'background-color': cssVar('color-fg-strong',), },
       },
@@ -326,9 +327,9 @@ export function renderResultsStyles(): string {
 
     $(
       {
-        // Firefox's fill: `accent-color` leaves its progress fill at
-        // the default blue, so the fill stop is set on the moz fill
-        // pseudo directly (verified in the playwright container).
+        // Firefox's fallback fill: a UA blue (rgb(0 105 184)) once the
+        // element carries an author background; this pseudo pins the
+        // fill stop.
         rule: '.freq-bar::-moz-progress-bar',
         decls: { 'background-color': cssVar('color-fg-strong',), },
       },

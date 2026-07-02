@@ -48,15 +48,18 @@ requests after the page loads.
   tracks are identical, so the bars fill the free width while their
   lengths stay comparable. Bars are native `<progress>` elements kept
   on the grayscale palette: the fill is the strong foreground stop and
-  the track is transparent. Neither engine gets that from
-  `accent-color` alone (Chromium ignores near-white accents; Firefox
-  keeps its default blue fill regardless), so the fill is pinned on
-  `::-webkit-progress-value` and `::-moz-progress-bar`, the track is
-  cleared by a transparent background (Firefox) plus
-  `::-webkit-progress-bar` (Chromium), and Firefox's slightly
-  blue-tinted native border is removed; all of it pixel-verified in
-  both engines by `src/page.browser.test.ts` in the playwright
-  container. The header row is visually hidden by
+  the track is transparent. The transparent track is author styling,
+  and any author background or border on `<progress>` switches both
+  engines from the natively themed widget (which honors
+  `accent-color`) to a fallback rendering that ignores it (Chromium:
+  green fill on a gray track; Firefox: a UA-blue fill plus a
+  blue-tinted border), so the fill is pinned on
+  `::-webkit-progress-value` and `::-moz-progress-bar`, which style
+  exactly that fallback, and the tinted Firefox border is removed
+  (details in `docs/troubleshooting/progress-element-fill-styling.md`);
+  all of it pixel-verified in both engines by
+  `src/page.browser.test.ts` in the playwright container. The header
+  row is visually hidden by
   design (the columns are self-explanatory to sighted users) but stays
   in the accessibility tree for screen-reader column context, using the
   [inclusively-hidden] pattern; the decorative bar cell is

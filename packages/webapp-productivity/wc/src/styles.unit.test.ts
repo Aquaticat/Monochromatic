@@ -84,20 +84,23 @@ await describe({
          */
         const css = renderStyles({ fontWoff2Base64: FONT_FIXTURE_BASE64, },);
 
-        // Standards path plus Firefox's transparent track on the
-        // element's own background.
+        // The transparent track is author styling, which drops both
+        // engines into their unthemed fallback rendering where
+        // accent-color is inert (kept anyway for engines that honor
+        // it there); the vendor pseudos below style that fallback.
+        // See docs/troubleshooting/progress-element-fill-styling.md.
         expect(css,).toContain('accent-color:var(--color-fg-strong)',);
         expect(css,).toContain('background-color:transparent',);
-        // Chromium path: it ignores near-white accents and paints an
-        // opaque native track, so both webkit pseudos are pinned.
+        // Chromium's fallback is a green fill on a gray track, so
+        // both webkit pseudos are pinned.
         expect(css,).toContain(
           '.freq-bar::-webkit-progress-bar{background-color:transparent}',
         );
         expect(css,).toContain(
           '.freq-bar::-webkit-progress-value{background-color:var(--color-fg-strong)}',
         );
-        // Firefox path: accent-color leaves its progress fill at the
-        // default blue, so the moz fill pseudo is pinned too.
+        // Firefox's fallback is a UA-blue fill, so the moz fill
+        // pseudo is pinned too.
         expect(css,).toContain(
           '.freq-bar::-moz-progress-bar{background-color:var(--color-fg-strong)}',
         );

@@ -113,8 +113,8 @@ const STOP_WHITE = cssOklch(
  *
  * Semantic roles: `bg` page background; `surface` tile fill one stop off
  * `bg`; `fg` body text; `fg-strong` headline numbers, focus rings, and
- * the frequency-bar fill (via `accent-color` and the webkit value
- * pseudo in `./styles-results.ts`); `muted` and `placeholder` secondary
+ * the frequency-bar fill (via the vendor fill pseudos in
+ * `./styles-results.ts`); `muted` and `placeholder` secondary
  * text, sharing `fg`'s stop because the mid stop cannot reach AAA
  * small-text contrast on any allowed background (secondary text
  * differentiates by size and weight instead of color); `border-subtle`
