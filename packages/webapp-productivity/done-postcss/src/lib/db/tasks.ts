@@ -67,7 +67,7 @@ export async function createTask(input: TaskCreateInput,): Promise<Task> {
    */
   const timestamp = nowIso();
 
-  await db.prepare(SQL_INSERT_TASK,)
+  await (await db.prepare(SQL_INSERT_TASK,))
     .run(
     id,
     input.title
@@ -147,7 +147,7 @@ export async function updateTask(
     updatedAt: nowIso(),
   };
 
-  await db.prepare(SQL_UPDATE_TASK,)
+  await (await db.prepare(SQL_UPDATE_TASK,))
     .run(
     updated.title,
     updated.description
@@ -186,7 +186,7 @@ export async function deleteTask(id: string,): Promise<boolean> {
   /**
    * Run result whose `.changes` distinguishes a successful delete from a no-op.
    */
-  const result = await db.prepare(SQL_DELETE_TASK,)
+  const result = await (await db.prepare(SQL_DELETE_TASK,))
     .run(id,);
   return result.changes
     > 0;

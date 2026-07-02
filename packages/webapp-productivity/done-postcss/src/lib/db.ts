@@ -13,7 +13,7 @@ import {
   connect,
   type Database,
 } from '@tursodatabase/database';
-import { mkdirSync, } from 'node:fs';
+import { mkdir, } from 'node:fs/promises';
 import { dirname, } from 'node:path';
 import {
   ARGUMENT_ABSENT,
@@ -71,15 +71,15 @@ function resolveDatabasePath(): string {
  *
  * @param databasePath - Resolved filesystem path
  */
-function ensureDatabaseDirectoryExists(databasePath: string,): void {
+async function ensureDatabaseDirectoryExists(databasePath: string,): Promise<void> {
   if (databasePath === ':memory:')
     return;
 
   /**
-   * Parent directory of the database file; ensured via `mkdirSync({ recursive: true })`.
+   * Parent directory of the database file; ensured via `mkdir({ recursive: true })`.
    */
   const directoryPath = dirname(databasePath,);
-  mkdirSync(
+  await mkdir(
     directoryPath,
     { recursive: true, },
   );
@@ -89,7 +89,7 @@ function ensureDatabaseDirectoryExists(databasePath: string,): void {
  * Resolved filesystem path for the SQLite database file.
  */
 const databasePath = resolveDatabasePath();
-ensureDatabaseDirectoryExists(databasePath,);
+await ensureDatabaseDirectoryExists(databasePath,);
 
 /**
  * Open Turso database connection used by all data-access modules.

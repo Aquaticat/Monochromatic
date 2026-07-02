@@ -17,7 +17,7 @@ export { formatRunningTrackedTime, } from './format-tracked-time.ts';
 /**
  * Sentinel returned by {@link TaskCard.getChipElement} when no chip matches the prefix.
  */
-const CHIP_NOT_FOUND: unique symbol = Symbol('chip-not-found',);
+const CHIP_NOT_FOUND: unique symbol = Symbol('metadata chip element absent for prefix',);
 
 /**
  * `\<task-card\>` -- displays a task as a clickable card with checkbox, title, and metadata chips.

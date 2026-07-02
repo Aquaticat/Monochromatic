@@ -63,7 +63,7 @@ export type TaskSource = 'local' | 'github' | 'linear' | 'calendar' | 'codebase'
  * A unique `Symbol` keeps "not found" out of a `Task | null` union (banned by
  * `no-nullish-union`); callers narrow with `=== TASK_NOT_FOUND`.
  */
-export const TASK_NOT_FOUND: unique symbol = Symbol('task-not-found',);
+export const TASK_NOT_FOUND: unique symbol = Symbol('task row missing from database lookup',);
 
 /**
  * Canonical task shape shared between server (DB layer) and client (page data JSON).

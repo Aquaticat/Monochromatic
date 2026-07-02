@@ -20,7 +20,7 @@ type SettingRow = {
  * A unique `Symbol` keeps "missing" out of a nullish union (banned by
  * `no-nullish-union`); callers narrow with `=== SETTING_ABSENT`.
  */
-export const SETTING_ABSENT: unique symbol = Symbol('setting-absent',);
+export const SETTING_ABSENT: unique symbol = Symbol('settings table row absent for lookup key',);
 
 /**
  * Retrieves a single setting by key.
@@ -38,7 +38,7 @@ export async function getSetting(key: string,): Promise<string | typeof SETTING_
   /**
    * Single-row result from the lookup; nullish when the key is missing.
    */
-  const row: unknown = await db.prepare('SELECT value FROM settings WHERE key = ?',)
+  const row: unknown = await (await db.prepare('SELECT value FROM settings WHERE key = ?',))
     .get(key,);
   if ((row === undefined) || (row === null))
     return SETTING_ABSENT;
@@ -67,10 +67,10 @@ export async function setSetting(
     readonly value: string;
   },
 ): Promise<void> {
-  await db
+  await (await db
     .prepare(
       'INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value',
-    )
+    ))
     .run(
       key,
       value,
@@ -93,7 +93,7 @@ export async function deleteSetting(key: string,): Promise<boolean> {
   /**
    * Run result whose `.changes` distinguishes a successful delete from a no-op.
    */
-  const result = await db.prepare('DELETE FROM settings WHERE key = ?',)
+  const result = await (await db.prepare('DELETE FROM settings WHERE key = ?',))
     .run(key,);
   return result.changes
     > 0;
@@ -114,9 +114,9 @@ export async function getAllSettings(): Promise<Record<string, string>> {
   /**
    * All settings rows in alphabetical key order, converted to a plain object below.
    */
-  const rows = await db
-    .prepare('SELECT key, value FROM settings ORDER BY key ASC',)
-    .all() as SettingRow[];
+  const rows = (await (await db
+    .prepare('SELECT key, value FROM settings ORDER BY key ASC',))
+    .all()) as SettingRow[];
   /* oxlint-enable typescript/no-unsafe-type-assertion */
   return Object.fromEntries(rows.map(function toEntry(row,) {
     return [

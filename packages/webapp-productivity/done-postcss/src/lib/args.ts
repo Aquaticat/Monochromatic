@@ -11,7 +11,7 @@
  * A unique `Symbol` keeps "absent" out of a nullish union (banned by
  * `no-nullish-union`); callers narrow with `=== ARGUMENT_ABSENT`.
  */
-export const ARGUMENT_ABSENT: unique symbol = Symbol('argument-absent',);
+export const ARGUMENT_ABSENT: unique symbol = Symbol('named command line flag absent from argv',);
 
 /**
  * Extracts the value of a `--name=value` CLI argument from `process.argv`.

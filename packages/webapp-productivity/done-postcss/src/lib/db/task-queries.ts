@@ -40,7 +40,7 @@ export async function getTaskRowById(id: string,): Promise<TaskRow | typeof TASK
   /**
    * Single-row lookup result; nullish when the ID does not exist.
    */
-  const taskRow: unknown = await db.prepare(SQL_SELECT_TASK_BY_ID,)
+  const taskRow: unknown = await (await db.prepare(SQL_SELECT_TASK_BY_ID,))
     .get(id,);
   if ((taskRow === undefined) || (taskRow === null))
     return TASK_NOT_FOUND;
@@ -83,8 +83,8 @@ export async function listInboxUnblockedTasks(): Promise<Task[]> {
   /**
    * Raw row list for the unblocked-inbox query; mapped element-wise below.
    */
-  const rows = await db.prepare(SQL_SELECT_INBOX_UNBLOCKED,)
-    .all() as TaskRow[];
+  const rows = (await (await db.prepare(SQL_SELECT_INBOX_UNBLOCKED,))
+    .all()) as TaskRow[];
   /* oxlint-enable typescript/no-unsafe-type-assertion */
   return rows.map(function toTask(row,) {
     return mapTask(row,);
@@ -106,9 +106,9 @@ export async function listBlockedInboxTasks(): Promise<BlockedTaskLink[]> {
   /**
    * Raw row list paired with the join column; rebuilt into blocker links below.
    */
-  const rows = await db
-    .prepare(SQL_SELECT_BLOCKED_INBOX,)
-    .all() as (TaskRow & { blocker_id: string; })[];
+  const rows = (await (await db
+    .prepare(SQL_SELECT_BLOCKED_INBOX,))
+    .all()) as (TaskRow & { blocker_id: string; })[];
   /* oxlint-enable typescript/no-unsafe-type-assertion */
   return rows.map(function toBlockedLink(row,) {
     return {
@@ -133,8 +133,8 @@ export async function listInProgressTasks(): Promise<Task[]> {
   /**
    * Raw row list of tasks with active timers; mapped element-wise below.
    */
-  const rows = await db.prepare(SQL_SELECT_IN_PROGRESS,)
-    .all() as TaskRow[];
+  const rows = (await (await db.prepare(SQL_SELECT_IN_PROGRESS,))
+    .all()) as TaskRow[];
   /* oxlint-enable typescript/no-unsafe-type-assertion */
   return rows.map(function toTask(row,) {
     return mapTask(row,);
@@ -158,8 +158,8 @@ export async function listTasksForBlockerPicker(taskId: string,): Promise<Task[]
   /**
    * Raw candidate rows excluding the current task; mapped element-wise below.
    */
-  const rows = await db.prepare(SQL_SELECT_FOR_BLOCKER_PICKER,)
-    .all(taskId,) as TaskRow[];
+  const rows = (await (await db.prepare(SQL_SELECT_FOR_BLOCKER_PICKER,))
+    .all(taskId,)) as TaskRow[];
   /* oxlint-enable typescript/no-unsafe-type-assertion */
   return rows.map(function toTask(row,) {
     return mapTask(row,);
@@ -181,8 +181,8 @@ export async function listAllTags(): Promise<string[]> {
   /**
    * Single-column tag rows; flattened to a string array below.
    */
-  const rows = await db.prepare(SQL_SELECT_ALL_TAGS,)
-    .all() as { tag: string; }[];
+  const rows = (await (await db.prepare(SQL_SELECT_ALL_TAGS,))
+    .all()) as { tag: string; }[];
   /* oxlint-enable typescript/no-unsafe-type-assertion */
   return rows.map(function extractTag(row,) {
     return row.tag;
@@ -216,10 +216,10 @@ export async function searchTasks(searchQuery: string,): Promise<SearchTask[]> {
     /**
      * FTS-matched rows joined with the blocked flag; mapped to {@link SearchTask} below.
      */
-    const rows = await db.prepare(SQL_SEARCH_FTS,)
+    const rows = (await (await db.prepare(SQL_SEARCH_FTS,))
       .all(
       normalizedSearchQuery,
-    ) as (TaskRow & { is_blocked: number; })[];
+    )) as (TaskRow & { is_blocked: number; })[];
     /* oxlint-enable typescript/no-unsafe-type-assertion */
     return rows.map(function toSearchTask(row,) {
       return {
@@ -229,17 +229,21 @@ export async function searchTasks(searchQuery: string,): Promise<SearchTask[]> {
       };
     },);
   }
-  catch {
+  catch (error) {
+    console.error(
+      'Full-text task search failed, using LIKE fallback:',
+      error,
+    );
     /* oxlint-disable typescript/no-unsafe-type-assertion -- database LIKE query */
     /**
      * Fallback LIKE-match rows used when FTS rejects the query syntax.
      */
-    const rows = await db
-      .prepare(SQL_SEARCH_LIKE,)
+    const rows = (await (await db
+      .prepare(SQL_SEARCH_LIKE,))
       .all(
         `%${normalizedSearchQuery}%`,
         `%${normalizedSearchQuery}%`,
-      ) as (TaskRow & { is_blocked: number; })[];
+      )) as (TaskRow & { is_blocked: number; })[];
     /* oxlint-enable typescript/no-unsafe-type-assertion */
     return rows.map(function toSearchTask(row,) {
       return {

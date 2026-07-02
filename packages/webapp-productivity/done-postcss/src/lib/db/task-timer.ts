@@ -69,7 +69,7 @@ export async function startTaskTimer(id: string,): Promise<Task | typeof TASK_NO
    * Single ISO timestamp reused for both `timer_started_at` and `updated_at` to keep them aligned.
    */
   const timestamp = nowIso();
-  await db.prepare(SQL_START_TIMER,)
+  await (await db.prepare(SQL_START_TIMER,))
     .run(
     timestamp,
     timestamp,
@@ -116,7 +116,7 @@ export async function stopTaskTimer(id: string,): Promise<Task | typeof TASK_NOT
    * ISO timestamp for the `updated_at` column on the stop write.
    */
   const timestamp = nowIso();
-  await db.prepare(SQL_STOP_TIMER,)
+  await (await db.prepare(SQL_STOP_TIMER,))
     .run(
     currentTask.trackedTime
       + elapsedSeconds,
@@ -156,8 +156,8 @@ export async function completeTask(id: string,): Promise<CompleteTaskResult> {
   /**
    * Raw blocker rows; emptiness implies completion is allowed.
    */
-  const blockingRows = await db.prepare(SQL_SELECT_BLOCKERS,)
-    .all(id,) as {
+  const blockingRows = (await (await db.prepare(SQL_SELECT_BLOCKERS,))
+    .all(id,)) as {
     blocker_id: string;
     blocker_title: string;
   }[];
@@ -183,7 +183,7 @@ export async function completeTask(id: string,): Promise<CompleteTaskResult> {
   if (currentTask.timerStartedAt
     !== undefined)
     await stopTaskTimer(id,);
-  await db.prepare(SQL_DELETE_TASK,)
+  await (await db.prepare(SQL_DELETE_TASK,))
     .run(id,);
   return {
     completed: true,

@@ -11,7 +11,7 @@ import type {
   ChatMessage,
 } from '@monochromatic-dev/module-llm-types/ts';
 
-export type { ChatMessage, };
+export type { ChatMessage, } from '@monochromatic-dev/module-llm-types/ts';
 
 //region Configuration
 
@@ -200,8 +200,11 @@ export async function chatCompletion(
       try {
         errorText = await response.text();
       }
-      catch {
-        // Ignore text parsing failure
+      catch (error) {
+        console.error(
+          'Reading AI error response body failed:',
+          error,
+        );
       }
       return {
         ok: false,

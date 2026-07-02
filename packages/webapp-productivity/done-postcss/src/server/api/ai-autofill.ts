@@ -163,7 +163,11 @@ function parseAutofillResponse(raw: string,): AutofillResult {
       ...complexityField,
     };
   }
-  catch {
+  catch (error) {
+    console.error(
+      'AI autofill response JSON parse failed:',
+      error,
+    );
     return empty;
   }
 }
@@ -182,11 +186,11 @@ async function listAllLocations(): Promise<string[]> {
   /**
    * Distinct location strings extracted from `tasks.locations` JSON arrays.
    */
-  const rows = await db
+  const rows = (await (await db
     .prepare(
       'SELECT DISTINCT loc.value AS loc FROM tasks, json_each(tasks.locations) AS loc ORDER BY loc.value ASC',
-    )
-    .all() as { loc: string; }[];
+    ))
+    .all()) as { loc: string; }[];
   /* oxlint-enable typescript/no-unsafe-type-assertion */
   return rows.map(function extractLoc(row,) {
     return row.loc;

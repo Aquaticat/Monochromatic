@@ -8,7 +8,7 @@ import { HTTP_NO_CONTENT, } from '@monochromatic-dev/module-const/ts';
 
 import { showToast, } from '../components/toast-message.ts';
 
-export { showToast, };
+export { showToast, } from '../components/toast-message.ts';
 
 /**
  * Subset of fetch request configuration accepted by {@link api}.
@@ -96,7 +96,11 @@ export async function api<TResponse = unknown,>(
     try {
       error = await response.json();
     }
-    catch {
+    catch (parseError) {
+      console.error(
+        'Parsing error response body failed:',
+        parseError,
+      );
       error = { error: 'Request failed', };
     }
     /**

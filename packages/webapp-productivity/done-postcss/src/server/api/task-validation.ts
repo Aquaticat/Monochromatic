@@ -27,7 +27,7 @@ export function isRecord(value: unknown,): value is Record<string, unknown> {
  * A unique `Symbol` keeps "invalid / not the expected shape" out of a nullish
  * union (banned by `no-nullish-union`); callers narrow with `=== INVALID`.
  */
-export const INVALID: unique symbol = Symbol('invalid-input',);
+export const INVALID: unique symbol = Symbol('untrusted request input failed shape validation',);
 
 /**
  * Extracts a trimmed, non-empty string array from untrusted input.

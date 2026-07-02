@@ -46,7 +46,11 @@ export function parseStringArray(value: string,): string[] {
       return (typeof entry) === 'string';
     },);
   }
-  catch {
+  catch (error) {
+    console.error(
+      'String array column JSON parse failed:',
+      error,
+    );
     return [];
   }
 }

@@ -65,7 +65,11 @@ async function getMetadata(id: string,): Promise<StaticMeta> {
       mtime: stats.mtimeMs,
     };
   }
-  catch {
+  catch (error) {
+    console.error(
+      'Static asset stat lookup failed:',
+      error,
+    );
     return undefined;
   }
 }

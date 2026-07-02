@@ -15,7 +15,7 @@ import type {
  * `no-nullish-union`) while remaining a distinct, comparable value the mutable
  * editor state can be reset to; consumers narrow with `=== METADATA_UNSET`.
  */
-export const METADATA_UNSET: unique symbol = Symbol('metadata-unset',);
+export const METADATA_UNSET: unique symbol = Symbol('editor metadata field has no selected value',);
 
 /**
  * Blocker task summary displayed as a pill in the task detail view.
