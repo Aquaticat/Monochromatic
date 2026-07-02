@@ -1050,6 +1050,9 @@ description = "Edit the age-encrypted secrets file (.env.local.json) via sops"
 # sops re-encrypts to the recipients recorded in the file's own metadata, so no
 # .sops.yaml is required. mise decrypts at runtime with its built-in rops, but
 # the sops CLI must be pointed at the identity explicitly.
+# This command opens an interactive editor. Invoke it with:
+#   mise run --raw secrets:edit
+# The --raw flag gives sops and the editor direct stdin/stdout/stderr passthrough.
 env = { SOPS_AGE_KEY_FILE = "{{env.HOME}}/.config/mise/age.txt" }
 run = "sops edit .env.local.json"
 
