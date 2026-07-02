@@ -90,7 +90,7 @@ locals {
 
 data "external" "asn_data" {
   for_each = local.all_asns
-  program  = ["bun", "run", "${path.module}/fetch_ips.ts"]
+  program  = ["bun", "run", "${path.module}/src/fetch_ips.ts"]
 
   query = {
     asn = each.value
@@ -98,13 +98,13 @@ data "external" "asn_data" {
 }
 
 data "external" "tor_relays" {
-  program = ["bun", "run", "${path.module}/fetch_tor_relays.ts"]
+  program = ["bun", "run", "${path.module}/src/fetch_tor_relays.ts"]
   query   = {}
 }
 
 data "external" "storagebox_ips" {
   count   = length(var.storagebox_hostnames) == 0 ? 0 : 1
-  program = ["bun", "run", "${path.module}/resolve_storagebox_hosts.ts"]
+  program = ["bun", "run", "${path.module}/src/resolve_storagebox_hosts.ts"]
 
   query = {
     hostnames = join(",", var.storagebox_hostnames)
@@ -287,7 +287,7 @@ locals {
 }
 
 data "external" "resolved_hosts" {
-  program = ["bun", "run", "${path.module}/resolve_hosts.ts"]
+  program = ["bun", "run", "${path.module}/src/resolve_hosts.ts"]
 
   query = {
     hostnames = join(",", local.resolvable_hostnames)

@@ -11,10 +11,10 @@ description = "Smoke-test Storage Box hostname resolver without network access"
 shell = "node -e"
 run = """
 const { execFileSync } = await import('node:child_process')
-const result = JSON.parse(execFileSync('node', ['resolve_storagebox_hosts.ts'], { input: '{"hostnames":""}', encoding: 'utf8' }))
+const result = JSON.parse(execFileSync('node', ['src/resolve_storagebox_hosts.ts'], { input: '{"hostnames":""}', encoding: 'utf8' }))
 if (result.ips !== '') { throw new Error(`expected empty ips, got ${result.ips}`) }
 let wildcardFailed = false
-try { execFileSync('node', ['resolve_storagebox_hosts.ts'], { input: '{"hostnames":"*.your-storagebox.de"}', encoding: 'utf8' }) } catch { wildcardFailed = true }
+try { execFileSync('node', ['src/resolve_storagebox_hosts.ts'], { input: '{"hostnames":"*.your-storagebox.de"}', encoding: 'utf8' }) } catch { wildcardFailed = true }
 if (!wildcardFailed) { throw new Error('expected wildcard hostname resolution to fail') }
 """
 
@@ -25,7 +25,7 @@ shell = "node -e"
 run = """
 const { execFileSync } = await import('node:child_process')
 const host = process.env.usage_host
-const result = JSON.parse(execFileSync('node', ['resolve_storagebox_hosts.ts'], { input: JSON.stringify({ hostnames: host }), encoding: 'utf8' }))
+const result = JSON.parse(execFileSync('node', ['src/resolve_storagebox_hosts.ts'], { input: JSON.stringify({ hostnames: host }), encoding: 'utf8' }))
 if (result.ips === '') { throw new Error(`expected resolved ips for ${host}`) }
 """
 
@@ -34,10 +34,10 @@ description = "Smoke-test service hostname resolver without network access"
 shell = "node -e"
 run = """
 const { execFileSync } = await import('node:child_process')
-const result = JSON.parse(execFileSync('node', ['resolve_hosts.ts'], { input: '{"hostnames":""}', encoding: 'utf8' }))
+const result = JSON.parse(execFileSync('node', ['src/resolve_hosts.ts'], { input: '{"hostnames":""}', encoding: 'utf8' }))
 if (Object.keys(result).length !== 0) { throw new Error(`expected empty map, got ${JSON.stringify(result)}`) }
 let wildcardFailed = false
-try { execFileSync('node', ['resolve_hosts.ts'], { input: '{"hostnames":"*.example.com"}', encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] }) } catch { wildcardFailed = true }
+try { execFileSync('node', ['src/resolve_hosts.ts'], { input: '{"hostnames":"*.example.com"}', encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] }) } catch { wildcardFailed = true }
 if (!wildcardFailed) { throw new Error('expected wildcard hostname resolution to fail') }
 """
 
@@ -48,7 +48,7 @@ shell = "node -e"
 run = """
 const { execFileSync } = await import('node:child_process')
 const host = process.env.usage_host
-const result = JSON.parse(execFileSync('node', ['resolve_hosts.ts'], { input: JSON.stringify({ hostnames: host }), encoding: 'utf8' }))
+const result = JSON.parse(execFileSync('node', ['src/resolve_hosts.ts'], { input: JSON.stringify({ hostnames: host }), encoding: 'utf8' }))
 if (!result[host]) { throw new Error(`expected resolved ips for ${host}`) }
 """
 
@@ -58,16 +58,16 @@ shell = "node -e"
 run = """
 const { execFileSync } = await import('node:child_process')
 const { existsSync, readFileSync } = await import('node:fs')
-if (existsSync('cache_AS41231.json')) {
-  const asn = JSON.parse(execFileSync('node', ['fetch_ips.ts'], { input: '{"asn":"AS41231"}', encoding: 'utf8' }))
+if (existsSync('src/cache_AS41231.json')) {
+  const asn = JSON.parse(execFileSync('node', ['src/fetch_ips.ts'], { input: '{"asn":"AS41231"}', encoding: 'utf8' }))
   if (asn.ips === '') { throw new Error('expected cached AS41231 ips') }
 }
-if (existsSync('cache_tor_relays.json')) {
-  const tor = JSON.parse(execFileSync('node', ['fetch_tor_relays.ts'], { input: '{}', encoding: 'utf8' }))
+if (existsSync('src/cache_tor_relays.json')) {
+  const tor = JSON.parse(execFileSync('node', ['src/fetch_tor_relays.ts'], { input: '{}', encoding: 'utf8' }))
   if (tor.ips === '') { throw new Error('expected cached Tor relay ips') }
 }
-if (existsSync('cache_resolved_hosts.json')) {
-  const hosts = JSON.parse(readFileSync('cache_resolved_hosts.json', 'utf8'))
+if (existsSync('src/cache_resolved_hosts.json')) {
+  const hosts = JSON.parse(readFileSync('src/cache_resolved_hosts.json', 'utf8'))
   if (Object.keys(hosts).length === 0) { throw new Error('expected cached resolved hosts') }
 }
 """
