@@ -6,7 +6,7 @@
  * @module
  */
 
-import { statSync, } from 'node:fs';
+import { stat, } from 'node:fs/promises';
 import { resolve, } from 'node:path';
 
 import spawn from 'nano-spawn';
@@ -63,7 +63,7 @@ export async function convertToWoff2({
     /**
      * File stats for the generated WOFF2 file.
      */
-    const { size, } = statSync(woff2Path,);
+    const { size, } = await stat(woff2Path,);
     console.log(`Wrote ${woff2Path} (${size} bytes)`,);
   }
   catch (error: unknown) {

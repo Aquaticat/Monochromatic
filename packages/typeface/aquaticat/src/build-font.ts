@@ -6,10 +6,10 @@
  */
 
 import {
-  mkdirSync,
-  readFileSync,
-  writeFileSync,
-} from 'node:fs';
+  mkdir,
+  readFile,
+  writeFile,
+} from 'node:fs/promises';
 import {
   dirname,
   resolve,
@@ -67,7 +67,7 @@ console.log(
 /**
  * Raw SVG file content.
  */
-const svgContent = readFileSync(
+const svgContent = await readFile(
   svgPath,
   'utf8',
 );
@@ -194,7 +194,7 @@ const font = new opentype.Font({
   ],
 },);
 
-mkdirSync(
+await mkdir(
   distDir,
   { recursive: true, },
 );
@@ -210,7 +210,7 @@ const otfPath = resolve(
  * Raw OTF binary data.
  */
 const buffer = font.toArrayBuffer();
-writeFileSync(
+await writeFile(
   otfPath,
   Buffer.from(buffer,),
 );

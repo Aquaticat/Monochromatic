@@ -45,7 +45,7 @@ export type Cell = {
  * value, so no falsy default can stand in for "not found"; callers narrow
  * identity with `=== ATTRIBUTE_ABSENT`.
  */
-const ATTRIBUTE_ABSENT: unique symbol = Symbol('aquaticat/attribute-absent',);
+const ATTRIBUTE_ABSENT: unique symbol = Symbol('aquaticat/svg-attribute-not-present-in-element',);
 
 /**
  * Extracts an XML attribute value by name from a raw attribute string.
@@ -124,16 +124,24 @@ export function parseSvg(svgContent: string,): Cell[] {
   /**
    * Matches a self-closing `<rect ... />` or `<path ... />` tag and captures its tag name and attributes.
    */
-  const elementRegex = /<(rect|path)\s+([^>]*?)\/>/gu;
+  const elementRegex = /<(?<tag>rect|path)\s+(?<attrs>[^>]*?)\/>/gu;
   /* oxlint-enable no-restricted-syntax/no-regex */
 
   for (let match = elementRegex.exec(svgContent,); match !== null;
     match = elementRegex.exec(svgContent,))
   {
     /**
-     * Captured `tag` and `attrs` from the current match; index 0 is the whole match.
+     * Named capture groups from the current match: `tag` is the element name and `attrs` the raw attribute string.
      */
-    const [, tag, attrs,] = match;
+    const { groups, } = match;
+    /**
+     * Element name (`rect` or `path`) captured from the matched tag.
+     */
+    const tag = groups?.tag;
+    /**
+     * Raw attribute substring captured between the tag name and the self-closing `/>`.
+     */
+    const attrs = groups?.attrs;
     if (attrs === undefined)
       continue;
 
@@ -147,9 +155,9 @@ export function parseSvg(svgContent: string,): Cell[] {
       },);
       /* oxlint-disable no-restricted-syntax/no-regex -- canonical SVG `translate(N)` shape parser; the input is one attribute value bounded by the SVG element tokenizer above. No nested quantifiers; `\d+(?:\.\d+)?` is linear in the number's digit count. */
       /**
-       * Matches the `translate(N)` transform shape; capture group 1 is the numeric X offset.
+       * Matches the `translate(N)` transform shape; the `x` group captures the numeric X offset.
        */
-      const translateRegex = /translate\((\d+(?:\.\d+)?)\)/u;
+      const translateRegex = /translate\((?<x>\d+(?:\.\d+)?)\)/u;
       /* oxlint-enable no-restricted-syntax/no-regex */
       /**
        * Captured numeric argument of the `translate(...)` transform; null when the attribute is absent or does not match.
@@ -158,12 +166,16 @@ export function parseSvg(svgContent: string,): Cell[] {
         ? null
         : translateRegex.exec(transform,);
       /**
+       * Named capture groups of the translate match; `x` holds the numeric offset, undefined when there was no match.
+       */
+      const translateGroups = translateMatch?.groups;
+      /**
        * Parsed X offset of this cell rect; falls back to 0 when no translate is present.
        */
-      const xOffset = translateMatch !== null
-        ? Number(translateMatch[1]
-          ?? '0',)
-        : 0;
+      const xOffset = translateGroups === undefined
+        ? 0
+        : Number(translateGroups.x
+          ?? '0',);
       cells.push({
         xOffset,
         paths: [],
@@ -277,7 +289,7 @@ export function parseSvgPathD(d: string,): SVGPathCommand[] {
   /**
    * Matches either a command letter (M/L/H/V/Z) or a signed decimal number.
    */
-  const tokenRegex = /([MLHVZ])|(-?\d+(?:\.\d+)?)/gu;
+  const tokenRegex = /(?<command>[MLHVZ])|(?<number>-?\d+(?:\.\d+)?)/gu;
   /* oxlint-enable no-restricted-syntax/no-regex */
 
   /**
@@ -291,9 +303,13 @@ export function parseSvgPathD(d: string,): SVGPathCommand[] {
 
   for (let tok = tokenRegex.exec(d,); tok !== null; tok = tokenRegex.exec(d,)) {
     /**
-     * Captured command letter (group 1) from the current token, undefined when the token is a number.
+     * Named capture groups from the current token: `command` for a letter, `number` for a value.
      */
-    const [, commandLetter,] = tok;
+    const { groups, } = tok;
+    /**
+     * Captured command letter (`command` group) from the current token, undefined when the token is a number.
+     */
+    const commandLetter = groups?.command;
     if (commandLetter !== undefined) {
       currentCmd = commandLetter;
       if (currentCmd === 'Z')
@@ -302,9 +318,9 @@ export function parseSvgPathD(d: string,): SVGPathCommand[] {
     }
 
     /**
-     * Numeric value of the current number token (group 2 of `tokenRegex`).
+     * Numeric value of the current number token (`number` group of `tokenRegex`).
      */
-    const num = Number(tok[2],);
+    const num = Number(groups?.number,);
 
     if ((currentCmd === 'M') || (currentCmd === 'L')) {
       /**
@@ -313,10 +329,14 @@ export function parseSvgPathD(d: string,): SVGPathCommand[] {
       const yTok = tokenRegex.exec(d,);
       if (yTok === null)
         break;
+      /**
+       * Named capture groups of the paired Y token; `number` holds the coordinate value.
+       */
+      const { groups: yGroups, } = yTok;
       commands.push({
         type: currentCmd,
         x: num,
-        y: Number(yTok[2],),
+        y: Number(yGroups?.number,),
       },);
     }
     else if (currentCmd === 'H') {
