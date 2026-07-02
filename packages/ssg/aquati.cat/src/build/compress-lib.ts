@@ -448,6 +448,7 @@ export function compressBucket(
        * Companion output path for this source.
        */
       const zstPath = `${file}.zst`;
+      // oxlint-disable-next-line no-restricted-syntax/no-sync -- structurally sync: co-located in the zstd worker-thread compression loop; see docs/decisions/zstd-cli-to-node-zlib.md
       rmSync(
         zstPath,
         { force: true, },
@@ -464,6 +465,7 @@ export function compressBucket(
           skipped: acc.skipped + 1,
           savedBytes: acc.savedBytes,
         };
+      /* oxlint-disable no-restricted-syntax/no-sync -- structurally sync: zstd worker-thread compression loop, async zstdCompress ~6x slower; see docs/decisions/zstd-cli-to-node-zlib.md */
       /**
        * Source bytes read once for compression and the size comparison.
        */
@@ -475,12 +477,14 @@ export function compressBucket(
         source,
         ZSTD_OPTIONS,
       );
+      /* oxlint-enable no-restricted-syntax/no-sync */
       if (compressed.length >= source.length)
         return {
           written: acc.written,
           skipped: acc.skipped + 1,
           savedBytes: acc.savedBytes,
         };
+      // oxlint-disable-next-line no-restricted-syntax/no-sync -- structurally sync: co-located in the zstd worker-thread compression loop; see docs/decisions/zstd-cli-to-node-zlib.md
       writeFileSync(
         zstPath,
         compressed,
