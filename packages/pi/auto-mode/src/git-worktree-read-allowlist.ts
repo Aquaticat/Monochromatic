@@ -292,7 +292,15 @@ async function resolveGitCandidate(dir: string,): Promise<GitCandidateResult> {
       constants.X_OK,
     );
   }
-  catch {
+  catch (error) {
+    /**
+     * Sub-logger tagged with this function name so the handled access failure stays traceable.
+     */
+    const innerL = tagged({
+      tag: resolveGitCandidate.name,
+      l: moduleLogger,
+    },);
+    innerL.debug(`git not executable at ${candidatePath}: ${String(error,)}`,);
     return GIT_CANDIDATE_UNAVAILABLE;
   }
 

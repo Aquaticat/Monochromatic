@@ -4,7 +4,26 @@
  * @module
  */
 
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type { Verdict, } from './types.ts';
+
+/**
+ * Logger root for auto-mode after removing the package log shim.
+ *
+ * @example
+ * ```ts
+ * const rl = tagged({ tag: someFunction.name, l: parentLogger, },);
+ * ```
+ */
+const parentLogger = tagged({ tag: 'auto-mode', },);
+
+/**
+ * Tagged logger for the judge-json module.
+ */
+const moduleLogger = tagged({
+  tag: 'judge-json',
+  l: parentLogger,
+},);
 
 /**
  * Maximum characters of judge text to include in error messages.
@@ -39,8 +58,15 @@ function extractJsonVerdict(
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- JSON.parse returns unknown.
     return JSON.parse(text,) as Record<string, string>;
   }
-  catch {
-    /* Fall through to balanced-brace scan. */
+  catch (error) {
+    /**
+     * Sub-logger tagged with this function name for the handled parse failure before the balanced-brace fallback.
+     */
+    const innerL = tagged({
+      tag: extractJsonVerdict.name,
+      l: moduleLogger,
+    },);
+    innerL.debug(`direct JSON parse failed; scanning for balanced brace block: ${String(error,)}`,);
   }
 
   /**

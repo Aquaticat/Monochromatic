@@ -12,6 +12,7 @@ import {
   type ParseError as UnbashParseError,
   type Script as UnbashScript,
 } from 'unbash';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
   extractParamRefs,
   looksLikePath,
@@ -20,6 +21,28 @@ import { collectCommandInfoFromScript, } from './unbash-command-info.ts';
 import type {
   BashAnalysis,
 } from './types.ts';
+
+//region Logging
+
+/**
+ * Logger root for auto-mode after removing the package log shim.
+ *
+ * @example
+ * ```ts
+ * const rl = tagged({ tag: someFunction.name, l: parentLogger, },);
+ * ```
+ */
+const parentLogger = tagged({ tag: 'auto-mode', },);
+
+/**
+ * Tagged logger for the command-parser module.
+ */
+const moduleLogger = tagged({
+  tag: 'command-parser',
+  l: parentLogger,
+},);
+
+//endregion Logging
 
 //region Public API
 
@@ -192,7 +215,15 @@ function tryParseScript(
       script,
     };
   }
-  catch {
+  catch (error) {
+    /**
+     * Sub-logger tagged with this function name so the handled parse failure stays traceable.
+     */
+    const innerL = tagged({
+      tag: tryParseScript.name,
+      l: moduleLogger,
+    },);
+    innerL.debug(`unbash parse threw for command: ${String(error,)}`,);
     return { ok: false, };
   }
 }

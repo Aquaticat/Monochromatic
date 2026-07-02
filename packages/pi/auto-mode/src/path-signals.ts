@@ -16,8 +16,31 @@
 
 import { realpath, } from 'node:fs/promises';
 import * as nodePath from 'node:path';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { SECRET_PATH_PATTERN, } from './constants.ts';
 import type { SignalContext, } from './types.ts';
+
+//region Logging
+
+/**
+ * Logger root for auto-mode after removing the package log shim.
+ *
+ * @example
+ * ```ts
+ * const rl = tagged({ tag: someFunction.name, l: parentLogger, },);
+ * ```
+ */
+const parentLogger = tagged({ tag: 'auto-mode', },);
+
+/**
+ * Tagged logger for the path-signals module.
+ */
+const moduleLogger = tagged({
+  tag: 'path-signals',
+  l: parentLogger,
+},);
+
+//endregion Logging
 
 /**
  * Sentinel for paths whose canonical filesystem target cannot be resolved.
@@ -277,7 +300,15 @@ async function tryRealpath(
   try {
     return await realpath(path,);
   }
-  catch {
+  catch (error) {
+    /**
+     * Sub-logger tagged with this function name so the handled realpath failure stays traceable.
+     */
+    const innerL = tagged({
+      tag: tryRealpath.name,
+      l: moduleLogger,
+    },);
+    innerL.debug(`realpath failed for ${path}: ${String(error,)}`,);
     return REALPATH_UNAVAILABLE;
   }
 }

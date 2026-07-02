@@ -11,6 +11,7 @@ import {
   type ProcessSubstitutionPart as UnbashProcessSubstitutionPart,
   type Script as UnbashScript,
 } from 'unbash';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { statementWorkItems, } from './unbash-command-info-items.ts';
 import {
   EMPTY_VISIT_RESULT,
@@ -18,6 +19,28 @@ import {
   type ParsedUnbashScript,
   type VisitResult,
 } from './unbash-command-info-types.ts';
+
+//region Logging
+
+/**
+ * Logger root for auto-mode after removing the package log shim.
+ *
+ * @example
+ * ```ts
+ * const rl = tagged({ tag: someFunction.name, l: parentLogger, },);
+ * ```
+ */
+const parentLogger = tagged({ tag: 'auto-mode', },);
+
+/**
+ * Tagged logger for the unbash-command-info-nested module.
+ */
+const moduleLogger = tagged({
+  tag: 'unbash-command-info-nested',
+  l: parentLogger,
+},);
+
+//endregion Logging
 
 /**
  * Build script work from command, process, or arithmetic command expansion.
@@ -81,7 +104,15 @@ function scriptFromExpansion(
   try {
     return parse(expansion.inner,) as ParsedUnbashScript;
   }
-  catch {
+  catch (error) {
+    /**
+     * Sub-logger tagged with this function name so the handled nested-parse failure stays traceable.
+     */
+    const innerL = tagged({
+      tag: scriptFromExpansion.name,
+      l: moduleLogger,
+    },);
+    innerL.debug(`unbash parse threw for nested expansion: ${String(error,)}`,);
     return failedNestedScript();
   }
 }

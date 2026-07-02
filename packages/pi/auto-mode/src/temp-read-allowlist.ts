@@ -11,7 +11,27 @@
 
 import { stat, } from 'node:fs/promises';
 
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
 import { AGENT_TEMP_READ_DIR, } from './constants.ts';
+
+/**
+ * Logger root for auto-mode after removing the package log shim.
+ *
+ * @example
+ * ```ts
+ * const rl = tagged({ tag: someFunction.name, l: parentLogger, },);
+ * ```
+ */
+const parentLogger = tagged({ tag: 'auto-mode', },);
+
+/**
+ * Tagged logger for the temp-read-allowlist module.
+ */
+const moduleLogger = tagged({
+  tag: 'temp-read-allowlist',
+  l: parentLogger,
+},);
 
 /**
  * Permission bits that grant any access to group or other users.
@@ -51,7 +71,15 @@ async function isTrustedReadAllowlistDir(
       return false;
     return (stats.mode & GROUP_OR_OTHER_PERMISSION_BITS) === 0;
   }
-  catch {
+  catch (error) {
+    /**
+     * Sub-logger tagged with this function name so the handled stat failure stays traceable.
+     */
+    const innerL = tagged({
+      tag: isTrustedReadAllowlistDir.name,
+      l: moduleLogger,
+    },);
+    innerL.debug(`stat failed for ${dir}: ${String(error,)}`,);
     return false;
   }
 }
