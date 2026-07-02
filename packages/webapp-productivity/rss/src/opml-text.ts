@@ -60,7 +60,7 @@ export async function getOPMLTexts(
   /**
    * Unique sentinel returned for fetch/read failures so the filter step can drop them.
    */
-  const DISCARD = Symbol('discard',);
+  const DISCARD = Symbol('opml fetch or read failed',);
   /**
    * Successfully fetched OPML texts left after dropping DISCARD entries.
    */

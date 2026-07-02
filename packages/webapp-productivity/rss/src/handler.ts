@@ -1,5 +1,5 @@
-import { existsSync, } from 'node:fs';
 import {
+  access,
   appendFile,
   mkdir,
   stat,
@@ -110,8 +110,11 @@ export async function ignore(request: Request,): Promise<Response> {
     IGNORE_PATH,
     'api.jsonl',
   );
-  if (!existsSync(filePath,)) {
-    innerL.debug('creating api.jsonl',);
+  try {
+    await access(filePath,);
+  }
+  catch (error) {
+    innerL.debug(`creating api.jsonl: ${JSON.stringify(error,)}`,);
     await mkdir(
       IGNORE_PATH,
       { recursive: true, },

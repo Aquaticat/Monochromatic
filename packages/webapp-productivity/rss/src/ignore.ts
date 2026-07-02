@@ -32,7 +32,7 @@ const l = tagged({
  * Sentinel returned when the ignore directory does not exist.
  * Distinct non-nullish value so {@link readIgnoreDir} never widens to a banned `T | undefined`.
  */
-const IGNORE_DIR_ABSENT = Symbol('ignore-dir-absent',);
+const IGNORE_DIR_ABSENT = Symbol('ignore directory missing on disk',);
 
 /**
  * Reads the ignore directory entries, returning {@link IGNORE_DIR_ABSENT} when it is missing.
@@ -52,7 +52,15 @@ async function readIgnoreDir(): Promise<Dirent[] | typeof IGNORE_DIR_ABSENT> {
       { withFileTypes: true, },
     );
   }
-  catch {
+  catch (error) {
+    /**
+     * Inner logger tagged with this function name for traceable log lines.
+     */
+    const innerL = tagged({
+      tag: readIgnoreDir.name,
+      l,
+    },);
+    innerL.debug(`ignore directory not readable: ${JSON.stringify(error,)}`,);
     return IGNORE_DIR_ABSENT;
   }
 }

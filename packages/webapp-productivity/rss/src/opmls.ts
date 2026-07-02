@@ -24,7 +24,7 @@ const l = tagged({
  * Sentinel marking that no `.env` file was discovered in the directory hierarchy.
  * Distinct non-nullish value so {@link DOT_ENV_PATH} never widens to a banned `T | undefined`.
  */
-export const DOT_ENV_ABSENT: unique symbol = Symbol('dot-env-absent',);
+export const DOT_ENV_ABSENT: unique symbol = Symbol('dot env file missing on disk',);
 
 /**
  * Path to the .env file if found in the project directory hierarchy, else {@link DOT_ENV_ABSENT}.

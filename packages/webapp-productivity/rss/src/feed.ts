@@ -110,7 +110,7 @@ async function fetchAndParseFeeds(
   /**
    * Unique sentinel returned for fetch/text failures so the filter step can drop them.
    */
-  const DISCARD = Symbol('discard',);
+  const DISCARD = Symbol('feed fetch or parse failed',);
   /**
    * Fetched OPML text paired with its source outline for later parsing.
    */
