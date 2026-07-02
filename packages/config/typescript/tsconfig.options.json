@@ -3,7 +3,6 @@
     "${configDir}/src/**/*.ts",
     "${configDir}/src/**/*.astro",
     "${configDir}/src/**/*.mdx",
-    "${configDir}/src/**/*.json",
     "${configDir}/*.config.ts",
     "${configDir}/.astro/types.d.ts"
   ],
