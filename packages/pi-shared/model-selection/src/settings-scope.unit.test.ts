@@ -18,7 +18,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import { loadSettingsScopePatterns, } from './scope.ts';
-import { captureError, } from './test-fixtures.ts';
+import { captureAsyncError, } from './test-fixtures.ts';
 
 //region Fixtures
 
@@ -40,7 +40,7 @@ await describe({
           tmpdir(),
           'pi-shared-settings-test-',
         ),);
-        expect(loadSettingsScopePatterns({
+        expect(await loadSettingsScopePatterns({
           cwd: join(
             root,
             'repo',
@@ -105,7 +105,7 @@ await describe({
             PROJECT_PATTERN,
           ], },),
         );
-        expect(loadSettingsScopePatterns({ cwd, home, },).patterns,).toEqual([
+        expect((await loadSettingsScopePatterns({ cwd, home, },)).patterns,).toEqual([
           PROJECT_PATTERN,
         ],);
       },
@@ -136,7 +136,7 @@ await describe({
           ),
           JSON.stringify({ enabledModels: [1,], },),
         );
-        const error = captureError(function loadInvalidSettings() {
+        const error = await captureAsyncError(function loadInvalidSettings() {
           return loadSettingsScopePatterns({
             cwd,
             home: join(

@@ -42,7 +42,7 @@ export type ModelRegistryLookup<TModel extends ModelIdentity = ModelIdentity,> =
   /**
    * Return every registry model.
    */
-  getAll(): readonly TModel[];
+  getAll: () => readonly TModel[];
 };
 
 /**

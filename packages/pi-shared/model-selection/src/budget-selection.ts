@@ -5,7 +5,6 @@
  */
 
 import {
-  budgetModelSlug,
   NoBudgetModelError,
   toBudgetModelCandidate,
 } from './budget-report.ts';
@@ -415,6 +414,6 @@ function groupModelsByProvider<TModel extends ModelPricing,>(
   return byProvider;
 }
 
-export { budgetModelSlug, };
+export { budgetModelSlug, } from './budget-report.ts';
 
 //endregion Helpers

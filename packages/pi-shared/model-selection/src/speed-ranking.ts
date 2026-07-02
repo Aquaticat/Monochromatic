@@ -111,6 +111,6 @@ export function findFastestInMajorVersions<TModel extends ModelPricing,>(
   },);
 }
 
-export { scoreModelSpeed, };
+export { scoreModelSpeed, } from './speed-signals.ts';
 
 //endregion Public API

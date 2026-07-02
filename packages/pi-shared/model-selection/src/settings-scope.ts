@@ -4,7 +4,7 @@
  * @module
  */
 
-import { readFileSync, } from 'node:fs';
+import { readFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 import * as v from 'valibot';
 
@@ -82,12 +82,12 @@ export const PiSettingsFileSchema: v.GenericSchema<PiSettingsFile> = v.object({
  *
  * @example
  * ```typescript
- * loadSettingsScopePatterns({ cwd: process.cwd() });
+ * await loadSettingsScopePatterns({ cwd: process.cwd() });
  * ```
  */
-export function loadSettingsScopePatterns(
+export async function loadSettingsScopePatterns(
   options: LoadSettingsScopeOptions,
-): SettingsScopePatterns {
+): Promise<SettingsScopePatterns> {
   /**
    * Paths checked for pi settings.
    */
@@ -98,21 +98,20 @@ export function loadSettingsScopePatterns(
   const errorPrefix = options.errorPrefix
     ?? 'model selection';
   /**
-   * Global settings subset.
+   * Global and project settings subsets read concurrently.
    */
-  const global = loadSettingsFile({
-    path: paths.globalPath,
-    label: 'global',
-    errorPrefix,
-  },);
-  /**
-   * Project settings subset.
-   */
-  const project = loadSettingsFile({
-    path: paths.projectPath,
-    label: 'project',
-    errorPrefix,
-  },);
+  const [global, project,] = await Promise.all([
+    loadSettingsFile({
+      path: paths.globalPath,
+      label: 'global',
+      errorPrefix,
+    },),
+    loadSettingsFile({
+      path: paths.projectPath,
+      label: 'project',
+      errorPrefix,
+    },),
+  ],);
 
   if ((project !== NO_SETTINGS_FILE) && (project.enabledModels
     !== undefined)) {
@@ -195,7 +194,7 @@ export function getSettingsPaths(
  *
  * @returns parsed settings subset, or {@link NO_SETTINGS_FILE} when absent
  */
-function loadSettingsFile(
+async function loadSettingsFile(
   {
     path,
     label,
@@ -205,11 +204,11 @@ function loadSettingsFile(
     readonly label: string;
     readonly errorPrefix: string;
   },
-): PiSettingsFile | typeof NO_SETTINGS_FILE {
+): Promise<PiSettingsFile | typeof NO_SETTINGS_FILE> {
   /**
    * Raw parsed JSON object, or `undefined` when absent.
    */
-  const raw = readJsonFile({
+  const raw = await readJsonFile({
     path,
     label,
     errorPrefix,
@@ -242,7 +241,7 @@ function loadSettingsFile(
  *
  * @returns parsed JSON data, or `undefined` when absent
  */
-function readJsonFile(
+async function readJsonFile(
   {
     path,
     label,
@@ -252,9 +251,9 @@ function readJsonFile(
     readonly label: string;
     readonly errorPrefix: string;
   },
-): unknown {
+): Promise<unknown> {
   try {
-    return JSON.parse(readFileSync(
+    return JSON.parse(await readFile(
       path,
       'utf8',
     ),);

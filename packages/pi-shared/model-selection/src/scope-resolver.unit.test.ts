@@ -61,7 +61,7 @@ await describe({
     it({
       name: 'prefers live scope over argv',
       fn: async function testLiveScopePrecedence() {
-        const scope = resolveEffectiveScope({
+        const scope = await resolveEffectiveScope({
           ctx: {
             ...baseContext,
             getScopedModels() {
@@ -87,7 +87,7 @@ await describe({
     it({
       name: 'uses argv scope before settings',
       fn: async function testArgvScope() {
-        const scope = resolveEffectiveScope({
+        const scope = await resolveEffectiveScope({
           ctx: baseContext,
           argv: [
             'pi',
@@ -125,7 +125,7 @@ await describe({
           ),
           JSON.stringify({ enabledModels: ['expensive/*',], },),
         );
-        const scope = resolveEffectiveScope({
+        const scope = await resolveEffectiveScope({
           ctx: {
             ...baseContext,
             cwd,
@@ -147,7 +147,7 @@ await describe({
           tmpdir(),
           'pi-shared-scope-test-',
         ),);
-        const scope = resolveEffectiveScope({
+        const scope = await resolveEffectiveScope({
           ctx: {
             ...baseContext,
             cwd: join(

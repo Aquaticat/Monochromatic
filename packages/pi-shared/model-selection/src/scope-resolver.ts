@@ -34,7 +34,7 @@ export type ModelScopeRegistry<TModel extends ReadonlyModel = ReadonlyModel,> = 
   /**
    * Return models with configured auth.
    */
-  getAvailable(): readonly TModel[];
+  getAvailable: () => readonly TModel[];
 };
 
 /**
@@ -118,17 +118,17 @@ type RawLiveScopeItem<TModel extends ReadonlyModel = ReadonlyModel,> = TModel | 
  *
  * @example
  * ```typescript
- * const scope = resolveEffectiveScope({ ctx });
+ * const scope = await resolveEffectiveScope({ ctx });
  * ```
  */
-export function resolveEffectiveScope<TModel extends ReadonlyModel,>(
+export async function resolveEffectiveScope<TModel extends ReadonlyModel,>(
   {
     ctx,
     argv,
     home,
     errorPrefix,
   }: ResolveEffectiveScopeOptions<TModel>,
-): EffectiveModelScope<TModel> {
+): Promise<EffectiveModelScope<TModel>> {
   /**
    * Live model scope exposed by current or future pi APIs.
    */
@@ -164,7 +164,7 @@ export function resolveEffectiveScope<TModel extends ReadonlyModel,>(
   /**
    * Patterns from merged pi settings.
    */
-  const settingsScope = loadSettingsScopePatterns({
+  const settingsScope = await loadSettingsScopePatterns({
     cwd: ctx.cwd,
     ...(home === undefined ? {} : { home, }),
     ...(errorPrefix === undefined ? {} : { errorPrefix, }),

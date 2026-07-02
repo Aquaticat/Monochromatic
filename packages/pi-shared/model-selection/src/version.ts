@@ -333,16 +333,14 @@ function firstDigitRun(
     }
     if (digits.length
       > 0)
-      return Number.parseInt(
+      return Math.trunc(Number(
         digits.join('',),
-        10,
-      );
+      ),);
   }
   return digits.length
-    > 0 ? Number.parseInt(
+    > 0 ? Math.trunc(Number(
       digits.join('',),
-      10,
-    ) : NO_MAJOR_VERSION;
+    ),) : NO_MAJOR_VERSION;
 }
 
 /**
