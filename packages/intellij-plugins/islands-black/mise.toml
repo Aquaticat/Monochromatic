@@ -1,6 +1,6 @@
 [tasks.build]
 description = "Build islands-black.jar for installing the plugin from disk."
-run = "node mise.build.ts"
+run = "node src/build.ts"
 
 [tasks.lint]
 extends = "lint"
