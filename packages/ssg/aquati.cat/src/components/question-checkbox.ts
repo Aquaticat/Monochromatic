@@ -32,6 +32,8 @@ import {
   hCss as $,
 } from '@monochromatic-dev/module-hyperscript/ts';
 
+import fnv1a from '@sindresorhus/fnv1a';
+
 import {
   jsx,
   type SafeHtml,
@@ -83,58 +85,14 @@ type QuestionProps = {
 //region ID derivation
 
 /**
- * FNV-1a 32-bit hash offset basis.
- */
-const FNV_OFFSET_32 = 0x81_1C_9D_C5;
-
-/**
- * FNV-1a 32-bit hash prime.
- */
-const FNV_PRIME_32 = 0x01_00_01_93;
-
-/**
  * Hex digit count for a 32-bit hash (padded representation).
  */
 const HEX_DIGITS_32 = 8;
 
 /**
- * Hex radix for Number.prototype.toString.
+ * Hex radix for BigInt.prototype.toString.
  */
 const HEX_RADIX = 16;
-
-/**
- * Computes an FNV-1a 32-bit hash of a string, returned as 8 lowercase hex digits.
- *
- * @param input - string to hash
- *
- * @returns zero-padded 8-digit hex string
- *
- * @example
- * ```ts
- * fnv1a32('hello'); // '4f9f2cab'
- * ```
- */
-function fnv1a32(input: string,): string {
-  /**
-   * Running hash accumulator; intermediate state must be mutable per the FNV-1a algorithm.
-   */
-  // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- FNV-1a algorithm requires in-place XOR/multiply across the loop
-  let hash = FNV_OFFSET_32;
-  for (let loopIndex = 0; loopIndex < input
-    .length; loopIndex++) {
-    hash ^= input.codePointAt(loopIndex,)
-      ?? 0;
-    hash = Math.imul(
-      hash,
-      FNV_PRIME_32,
-    );
-  }
-  return (Math.trunc(hash,)).toString(HEX_RADIX,)
-    .padStart(
-    HEX_DIGITS_32,
-    '0',
-  );
-}
 
 /**
  * Extracts HTML string from a `SafeHtml` wrapper, or returns the string as-is.
@@ -170,7 +128,15 @@ function deriveQuestionId(props: QuestionProps,): string {
       === true ? '1' : '0'
     );
   }
-  return fnv1a32(parts.join('\u0000',),);
+  return fnv1a(
+    parts.join('\u0000',),
+    { size: 32, },
+  )
+    .toString(HEX_RADIX,)
+    .padStart(
+      HEX_DIGITS_32,
+      '0',
+    );
 }
 
 //endregion ID derivation
