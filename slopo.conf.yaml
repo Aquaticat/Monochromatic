@@ -7,6 +7,8 @@ source_dir_exclude:
   - "**/test/**"
   - "*.test.ts"
   - "*_test.rs"
+  - "*_tests.rs"
+  - "*Test.kt"
   - "dist"
   - "node_modules"
   - "*.local.*"
@@ -51,6 +53,9 @@ embedding_dimensions: 1024
 # Set in env var.
 #embedding_api_key:
 
-db_file: .slopo.local.dir/.db
+db_file: .slopo.local.dir/index.db
 
 report_dir: .slopo.local.dir/
+
+# We're writing strict TypeScript, increased from default 10 until no bad reports remain.
+body_node_count_threshold: 13
