@@ -4,6 +4,61 @@ Generates a single self-contained HTML file that computes text statistics
 and word frequency live in the browser, with no server and no network
 requests after the page loads.
 
+## Design
+
+- **Palette**: strictly five opaque grayscale stops, `oklch(L 0 0)` for L
+  in 0, 0.1, 0.5, 0.9, 1. No other lightness values, no alpha; subtlety
+  comes from adjacent stops (0.9 surfaces on a 1 background in light mode,
+  0 surfaces on a 0.1 background in dark mode). A unit test scans the
+  palette fragments and rejects any other `oklch()` value.
+- **Type**: everything renders in Inter (variable, weights 100 to 900),
+  auto-subsetted (see the fonts section) and inlined as a woff2 data URI.
+  Frequency numbers use tabular numerals; tile headline numbers keep
+  Inter's default proportional figures.
+- **Layout**: flexbox only; CSS grid is not allowed in this package. At
+  wide viewports the input sits beside a sticky results column; below
+  64rem they stack. The input box prefers 100% of its column, clamped
+  between `min(60ch, 100%)` and `90ch`.
+- **Stats**: six tiles. Lines, words, sentences, and paragraphs pair
+  their headline count with a "longest" sub-stat (max line/word length in
+  chars, max sentence length in words, max paragraph length in
+  sentences); bytes and chars stand alone.
+- **Frequency rows**: flex rows with ARIA table roles instead of a native
+  `<table>`, because `content-visibility: auto` (used to keep unbounded
+  row counts cheap) is ignored on internal table boxes like `tr`. Counts
+  and percentages come first, padded with figure spaces (U+2007) so the
+  columns align purely through tabular numerals, with no column-width
+  CSS. Each row ends in a fixed-width bar track (equal tracks keep bar
+  lengths comparable); bars carry a mid-stop border so even the smallest
+  bar stays visible.
+
+### Known limitations
+
+- Hard linebreaks render at the same height as soft-wrapped lines. Giving
+  true linebreaks taller spacing requires per-line styling, which a
+  native `<textarea>` cannot do (that needs a contenteditable editor);
+  keeping the textarea was the chosen trade.
+- The textarea's growth is scripted (an `input` listener raises
+  `min-block-size` to the scroll height) because `field-sizing: content`
+  is missing from the Firefox ESR baseline. Without JavaScript the box
+  stays at its viewport-filling flex size and scrolls internally.
+- User text in scripts outside the embedded subset (the charset is page
+  chrome plus printable ASCII) falls back to `system-ui`; only page
+  chrome is guaranteed to render in Inter.
+
+## Fonts
+
+The full upstream Inter variable woff2 lives in `fonts-source/`
+(committed, never shipped). `mise run format:fonts` runs
+`src/subset-fonts.ts`, which collects the charset from every `src/**/*.ts`
+file plus a printable-ASCII floor and an explicit figure space (U+2007),
+subsets via `hb-subset-wasm` (decode `wawoff2`, re-encode
+`woff2-encode-wasm`), and writes `public/inter.woff2`. That subset is
+committed, and `src/build.ts` inlines it into the final HTML as a base64
+data URI. Re-run `format:fonts` after adding non-ASCII page text (the
+scan picks up literal characters, not escape sequences). Inter is
+licensed under the SIL OFL 1.1 (`LICENSES/OFL-1.1.txt`).
+
 ## What is computed
 
 Paste or type text into the box; a debounced (150ms) recompute updates two
@@ -44,12 +99,13 @@ placeholder row instead of an empty table.
 
 ## How it works
 
-The build script reads pre-bundled client JS from `dist/client/main.js`,
-then inlines HTML (via `h-html`), CSS (via `h-css`), and JS into a single
+The build script reads pre-bundled client JS from `dist/client/main.js`
+and the subsetted font from `public/inter.woff2`, then inlines HTML (via
+`h-html`), CSS (via `h-css`), JS, and the font into a single
 `dist/final/index.html` file. `src/stats/` holds the pure, framework-free
 tokenization and analysis logic (unit tested independently of the DOM);
 `src/client/main.ts` wires a debounced `input` listener on the textarea to
-that logic and writes results into the page.
+that logic, writes results into the page, and auto-grows the textarea.
 
 Colors are CSS custom properties with light defaults, overridden inside a
 `prefers-color-scheme: dark` media query, so the page follows the OS theme
