@@ -135,6 +135,27 @@ export function renderLayoutStyles(): string {
 
     $(
       {
+        // Inclusively-hidden pattern, verbatim from
+        // https://www.scottohara.me/blog/2017/04/14/inclusively-hidden.html:
+        // removes content from the visual rendering while keeping it in
+        // the accessibility tree (the Frequency header row uses it).
+        // The declarations go through `raw` because the strict `decls`
+        // typing disallows the deprecated `clip` and the physical
+        // `height`/`width` the published pattern spells out, and the
+        // pattern is kept exactly as attributed.
+        rule: '.visually-hidden:not(:focus):not(:active)',
+        raw: 'clip:rect(0 0 0 0);'
+          + 'clip-path:inset(50%);'
+          + 'height:1px;'
+          + 'overflow:hidden;'
+          + 'position:absolute;'
+          + 'white-space:nowrap;'
+          + 'width:1px',
+      },
+    ),
+
+    $(
+      {
         rule: 'body',
         decls: {
           'font-family': cssCommaList(
@@ -180,6 +201,19 @@ export function renderLayoutStyles(): string {
     $(
       {
         rule: '.description',
+        decls: {
+          color: cssVar('color-muted',),
+          'max-inline-size': cssCh(INPUT_MIN_CH,),
+          'margin-block-start': cssRem(QUARTER,),
+        },
+      },
+    ),
+
+    $(
+      {
+        // Rendered only when scripting is off (inside `<noscript>`),
+        // explaining why every count stays at 0.
+        rule: '.noscript-note',
         decls: {
           color: cssVar('color-muted',),
           'max-inline-size': cssCh(INPUT_MIN_CH,),

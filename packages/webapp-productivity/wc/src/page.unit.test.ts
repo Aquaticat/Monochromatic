@@ -10,7 +10,31 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { renderPage, } from './page.ts';
+import {
+  FREQUENCY_COLUMN_LABELS,
+  renderPage,
+} from './page.ts';
+
+/**
+ * Fixture base64 payload standing in for the favicon PNG bytes.
+ */
+const FAVICON_FIXTURE_BASE64 = 'iVBORw0KGgo=';
+
+/**
+ * Renders the page from fixture CSS/JS/favicon inputs, the shared
+ * arrangement for every markup assertion below.
+ *
+ * @returns complete document rendered from fixtures
+ */
+function renderFixturePage(): string {
+  return renderPage(
+    {
+      css: '',
+      js: '',
+      faviconPngBase64: FAVICON_FIXTURE_BASE64,
+    },
+  );
+}
 
 await describe({
   name: renderPage.name,
@@ -25,6 +49,7 @@ await describe({
           {
             css: 'body{color:red}',
             js: 'console.log(1)',
+            faviconPngBase64: FAVICON_FIXTURE_BASE64,
           },
         );
 
@@ -34,17 +59,87 @@ await describe({
       },
     },),
     it({
+      name: 'declares the spec-conformant utf-8 charset and a meta description',
+      fn: async function declaresCharsetAndDescription(): Promise<void> {
+        /**
+         * Complete document rendered from fixture inputs.
+         */
+        const html = renderFixturePage();
+
+        expect(html,).toContain('<meta charset="utf-8">',);
+        expect(html,).toContain('<meta name="description" content="',);
+      },
+    },),
+    it({
+      name: 'inlines the favicon as a PNG data URI link',
+      fn: async function inlinesFaviconDataUri(): Promise<void> {
+        /**
+         * Complete document rendered from fixture inputs.
+         */
+        const html = renderFixturePage();
+
+        expect(html,).toContain(
+          `<link rel="icon" type="image/png" href="data:image/png;base64,${FAVICON_FIXTURE_BASE64}">`,
+        );
+      },
+    },),
+    it({
+      name: 'explains the zeroed counts inside a noscript block',
+      fn: async function explainsNoscript(): Promise<void> {
+        /**
+         * Complete document rendered from fixture inputs.
+         */
+        const html = renderFixturePage();
+
+        /**
+         * Index of the opening noscript tag.
+         */
+        const noscriptIndex = html.indexOf('<noscript>',);
+
+        /**
+         * Index of the explanatory note, which must fall inside the
+         * noscript block.
+         */
+        const noteIndex = html.indexOf('class="noscript-note"',);
+
+        /**
+         * Index of the closing noscript tag.
+         */
+        const noscriptCloseIndex = html.indexOf(
+          '</noscript>',
+          noscriptIndex,
+        );
+
+        expect(noscriptIndex,).toBeGreaterThan(-1,);
+        expect(noteIndex,).toBeGreaterThan(noscriptIndex,);
+        expect(noscriptCloseIndex,).toBeGreaterThan(noteIndex,);
+      },
+    },),
+    it({
+      name: 'renders a visually hidden frequency header row naming every exposed column',
+      fn: async function rendersHiddenHeaderRow(): Promise<void> {
+        /**
+         * Complete document rendered from fixture inputs.
+         */
+        const html = renderFixturePage();
+
+        expect(html,).toContain(
+          '<div class="frequency-header visually-hidden" role="row">',
+        );
+        for (const label of FREQUENCY_COLUMN_LABELS) {
+          expect(html,).toContain(
+            `<span role="columnheader">${label}</span>`,
+          );
+        }
+      },
+    },),
+    it({
       name: 'includes the input textarea and the frequency body rowgroup',
       fn: async function includesInputAndFrequencyBody(): Promise<void> {
         /**
-         * Complete document rendered from empty CSS/JS strings.
+         * Complete document rendered from fixture inputs.
          */
-        const html = renderPage(
-          {
-            css: '',
-            js: '',
-          },
-        );
+        const html = renderFixturePage();
 
         expect(html,).toContain('class="wc-input"',);
         expect(html,).toContain('class="frequency-body"',);
@@ -54,14 +149,9 @@ await describe({
       name: 'nests the textarea inside its label for an implicit association',
       fn: async function nestsTextareaInLabel(): Promise<void> {
         /**
-         * Complete document rendered from empty CSS/JS strings.
+         * Complete document rendered from fixture inputs.
          */
-        const html = renderPage(
-          {
-            css: '',
-            js: '',
-          },
-        );
+        const html = renderFixturePage();
         /**
          * Index of the opening `<label>` tag.
          */
@@ -88,14 +178,9 @@ await describe({
       name: 'never emits an id or an inline style attribute',
       fn: async function omitsIdsAndInlineStyles(): Promise<void> {
         /**
-         * Complete document rendered from empty CSS/JS strings.
+         * Complete document rendered from fixture inputs.
          */
-        const html = renderPage(
-          {
-            css: '',
-            js: '',
-          },
-        );
+        const html = renderFixturePage();
 
         expect(html,).not
           .toContain(' id="',);
@@ -107,14 +192,9 @@ await describe({
       name: 'marks the frequency section up as an ARIA table, not a native table',
       fn: async function usesAriaTableRoles(): Promise<void> {
         /**
-         * Complete document rendered from empty CSS/JS strings.
+         * Complete document rendered from fixture inputs.
          */
-        const html = renderPage(
-          {
-            css: '',
-            js: '',
-          },
-        );
+        const html = renderFixturePage();
 
         expect(html,).toContain('role="table"',);
         expect(html,).toContain('role="rowgroup"',);
@@ -126,14 +206,9 @@ await describe({
       name: 'wraps content in a viewport-filling page scaffold with a masthead',
       fn: async function wrapsInPageScaffold(): Promise<void> {
         /**
-         * Complete document rendered from empty CSS/JS strings.
+         * Complete document rendered from fixture inputs.
          */
-        const html = renderPage(
-          {
-            css: '',
-            js: '',
-          },
-        );
+        const html = renderFixturePage();
 
         expect(html,).toContain('class="page"',);
         expect(html,).toContain('class="masthead"',);

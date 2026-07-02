@@ -14,6 +14,7 @@ import {
 } from 'node:fs/promises';
 import { join, } from 'node:path';
 
+import { renderFaviconPngBase64, } from './favicon.ts';
 import { renderPage, } from './page.ts';
 import { renderStyles, } from './styles.ts';
 
@@ -77,6 +78,7 @@ const html = renderPage(
   {
     css,
     js,
+    faviconPngBase64: await renderFaviconPngBase64(),
   },
 );
 

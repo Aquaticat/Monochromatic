@@ -18,7 +18,7 @@ requests after the page loads.
   0.9/1 stops (15:1 and up), and secondary text (headings, description,
   placeholder) shares the body-text stop, differentiated by size and
   weight instead of color. The mid stop is reserved for non-text borders
-  (textarea, frequency header rule), which meet the 3:1 non-text minimum.
+  (textarea), which meet the 3:1 non-text minimum.
   A unit test computes the ratios for every rendered ink-on-paper pairing
   in both themes and rejects regressions.
 - **Type**: everything renders in Inter (variable, weights 100 to 900),
@@ -29,10 +29,10 @@ requests after the page loads.
   wide viewports the input sits beside a sticky results column; below
   64rem they stack. The input box prefers 100% of its column, clamped
   between `min(60ch, 100%)` and `90ch`.
-- **Stats**: six tiles. Lines, words, sentences, and paragraphs pair
-  their headline count with a "longest" sub-stat (max line/word length in
-  chars, max sentence length in words, max paragraph length in
-  sentences); bytes and chars stand alone.
+- **Stats**: six tiles. Chars, lines, words, sentences, and paragraphs
+  pair their headline count with a "longest" sub-stat (widest grapheme
+  cluster in bytes, max line/word length in chars, max sentence length
+  in words, max paragraph length in sentences); bytes stands alone.
 - **Frequency rows**: flex rows with ARIA table roles instead of a native
   `<table>`, because `content-visibility: auto` (used to keep unbounded
   row counts cheap) is ignored on internal table boxes like `tr`. Counts
@@ -46,8 +46,19 @@ requests after the page loads.
   cell's `title` and `aria-label`. The bar track flex-grows into all
   remaining width; with every other column equal across rows, the grown
   tracks are identical, so the bars fill the free width while their
-  lengths stay comparable. Bars carry a full-contrast border (near-black
-  on light, near-white on dark) so even the smallest bar stays visible.
+  lengths stay comparable. Bars are native `<progress>` elements kept
+  on the grayscale palette: the fill is the strong foreground stop and
+  the track is transparent, via `accent-color` plus a transparent
+  background in Firefox and via the `::-webkit-progress-*`
+  pseudo-elements in Chromium (which ignores near-white accents and
+  paints an opaque native track). The header row is visually hidden by
+  design (the columns are self-explanatory to sighted users) but stays
+  in the accessibility tree for screen-reader column context, using the
+  [inclusively-hidden] pattern; the decorative bar cell is
+  `aria-hidden`, so assistive tech sees exactly the count, percent, and
+  word columns the hidden header names.
+
+[inclusively-hidden]: https://www.scottohara.me/blog/2017/04/14/inclusively-hidden.html
 
 ### Known limitations
 
@@ -55,6 +66,19 @@ requests after the page loads.
   true linebreaks taller spacing requires per-line styling, which a
   native `<textarea>` cannot do (that needs a contenteditable editor);
   keeping the textarea was the chosen trade.
+- "Longest" sub-stats always pluralize their unit: a one-byte widest
+  grapheme reads "longest 1 bytes". Singular/plural switching is a
+  known gap.
+- All analysis runs synchronously on the main thread. Measured in
+  headless Chromium: a 400KB (60,000-word) paste recomputes in roughly
+  800ms after the 150ms debounce, and a recompute producing 20,000
+  frequency rows takes roughly 1.2s. Fine for paste-and-read use;
+  live-editing very large documents would need a worker or incremental
+  recomputation, a known gap.
+- The counting-methodology explanations ride in `title` attributes, so
+  they only surface on hover: unreachable on touch screens and not
+  announced by default by screen readers. The methodology is documented
+  here instead; an on-page affordance is a known gap.
 - The textarea's growth is scripted (an `input` listener raises
   `min-block-size` to the scroll height) because `field-sizing: content`
   is missing from the Firefox ESR baseline. Without JavaScript the box
@@ -88,6 +112,8 @@ sections.
   `granularity: 'grapheme'`), so combining accents and multi-codepoint
   emoji count as one character each, matching what a person would count by
   eye.
+- **Widest char**: UTF-8 encoded byte length of the widest grapheme
+  cluster (a family emoji is one char but many bytes).
 - **Lines**: editor-style line count. A single trailing newline does not
   add a phantom empty line (`'a\n'` is 1 line), but a blank line that
   exists before end-of-text still counts (`'a\n\n'` is 2 lines).
@@ -118,8 +144,13 @@ placeholder row instead of an empty table.
 
 The build script reads pre-bundled client JS from `dist/client/main.js`
 and the subsetted font from `public/inter.woff2`, then inlines HTML (via
-`h-html`), CSS (via `h-css`), JS, and the font into a single
-`dist/final/index.html` file. `src/stats/` holds the pure, framework-free
+`h-html`), CSS (via `h-css`), JS, the font, and the favicon into a single
+`dist/final/index.html` file. The favicon is a `w<` wordmark rasterized
+from first principles at build time (`src/favicon.ts`: no font, no
+canvas; every stick shares one length and width, the w's turns close at
+30 degrees and the chevron at 60, near-white ink on the near-black
+palette stop) and encoded by a minimal PNG writer (`src/favicon-png.ts`)
+into a data URI. `src/stats/` holds the pure, framework-free
 tokenization and analysis logic (unit tested independently of the DOM);
 `src/client/main.ts` wires a debounced `input` listener on the textarea to
 that logic, writes results into the page, and auto-grows the textarea. It

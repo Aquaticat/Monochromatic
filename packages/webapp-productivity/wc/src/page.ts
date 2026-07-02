@@ -19,6 +19,13 @@ export {
 } from './page-stats.ts';
 
 /**
+ * One-line tool description, shared by the masthead paragraph and the
+ * `meta name="description"` head tag so the two never drift apart.
+ */
+const PAGE_DESCRIPTION =
+  'Byte, character, line, word, sentence, and paragraph statistics, plus word frequency, computed live in the browser as you type.';
+
+/**
  * Renders the input panel: a label wrapping the textarea the client
  * script reads text from, an implicit label/control association that
  * needs no `id`/`for` pair. The textarea flexes to fill the remaining
@@ -60,10 +67,52 @@ function renderInputPanel(): string {
 }
 
 /**
+ * Column labels of the Frequency table's visually hidden header row, in
+ * cell order. The decorative bar column has no header: its cell is
+ * `aria-hidden` (see `./client/main.ts`), so assistive tech sees
+ * exactly these columns.
+ */
+export const FREQUENCY_COLUMN_LABELS: readonly string[] = [
+  'Count',
+  'Percent',
+  'Word',
+];
+
+/**
+ * Renders the Frequency table's header row: visually hidden by design
+ * (the numbers and words are self-explanatory to sighted users), but
+ * kept in the accessibility tree so screen readers get column context,
+ * via the inclusively-hidden pattern (`.visually-hidden` in
+ * `./styles-layout.ts`).
+ *
+ * @returns HTML string for the header row
+ */
+function renderFrequencyHeaderRow(): string {
+  return h(
+    {
+      tag: 'div',
+      class: 'frequency-header visually-hidden',
+      attrs: { role: 'row', },
+      children: FREQUENCY_COLUMN_LABELS
+        .map(function renderColumnHeader(label,): string {
+          return h(
+            {
+              tag: 'span',
+              attrs: { role: 'columnheader', },
+              text: label,
+            },
+          );
+        },),
+    },
+  );
+}
+
+/**
  * Renders the Frequency section: a heading and an ARIA table (flex rows,
  * not a native `<table>`, so per-row `content-visibility: auto` takes
- * effect) whose body rowgroup the client script fills with
- * word-frequency rows.
+ * effect) holding a visually hidden header row
+ * ({@link renderFrequencyHeaderRow}) and the body rowgroup the client
+ * script fills with word-frequency rows.
  *
  * @returns HTML string for the Frequency section
  */
@@ -88,6 +137,7 @@ function renderFrequencySection(): string {
               'aria-label': 'Word frequency',
             },
             children: [
+              renderFrequencyHeaderRow(),
               h(
                 {
                   tag: 'div',
@@ -124,8 +174,24 @@ function renderMasthead(): string {
           {
             tag: 'p',
             attrs: { class: 'description', },
-            text:
-              'Byte, character, line, word, sentence, and paragraph statistics, plus word frequency, computed live in the browser as you type.',
+            text: PAGE_DESCRIPTION,
+          },
+        ),
+        h(
+          {
+            // Every count on the page is computed by the inlined
+            // script; without it the zeros would sit unexplained.
+            tag: 'noscript',
+            children: [
+              h(
+                {
+                  tag: 'p',
+                  attrs: { class: 'noscript-note', },
+                  text:
+                    'JavaScript is off, so every count stays at 0. The text box still accepts and scrolls text; enable scripting to compute stats.',
+                },
+              ),
+            ],
           },
         ),
       ],
@@ -143,20 +209,29 @@ function renderMasthead(): string {
  *
  * @param js - client-side JavaScript string
  *
+ * @param faviconPngBase64 - base64-encoded PNG favicon bytes, inlined
+ * as a data URI so the single-file output needs no companion icon file
+ *
  * @returns complete HTML document string
  *
  * @example
  * ```ts
- * const html = renderPage({ css: 'body {}', js: 'console.log("ok")' });
+ * const html = renderPage({
+ *   css: 'body {}',
+ *   js: 'console.log("ok")',
+ *   faviconPngBase64: 'iVBORw0KGgo…',
+ * });
  * ```
  */
 export function renderPage(
   {
     css,
     js,
+    faviconPngBase64,
   }: Readonly<{
     css: string;
     js: string;
+    faviconPngBase64: string;
   }>,
 ): string {
   return `<!DOCTYPE html>\n${
@@ -172,7 +247,8 @@ export function renderPage(
                 h(
                   {
                     tag: 'meta',
-                    attrs: { charset: 'utf8', },
+                    // oxlint-disable-next-line unicorn/text-encoding-identifier-case -- Destination grammar wins: the HTML spec requires the literal `utf-8` for meta charset; `utf8` is only a legacy encoding label.
+                    attrs: { charset: 'utf-8', },
                   },
                 ),
                 h(
@@ -186,8 +262,27 @@ export function renderPage(
                 ),
                 h(
                   {
+                    tag: 'meta',
+                    attrs: {
+                      name: 'description',
+                      content: PAGE_DESCRIPTION,
+                    },
+                  },
+                ),
+                h(
+                  {
                     tag: 'title',
                     text: 'wc: text stats',
+                  },
+                ),
+                h(
+                  {
+                    tag: 'link',
+                    attrs: {
+                      rel: 'icon',
+                      type: 'image/png',
+                      href: `data:image/png;base64,${faviconPngBase64}`,
+                    },
                   },
                 ),
                 h(

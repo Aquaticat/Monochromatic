@@ -28,8 +28,6 @@ const TOKEN_NAMES = [
   '--color-muted:',
   '--color-border-subtle:',
   '--color-border-strong:',
-  '--color-bar:',
-  '--color-bar-border:',
   '--color-placeholder:',
 ];
 
@@ -250,9 +248,10 @@ function contrastRatio(
 
 /**
  * Ink-on-paper pairings the page actually renders, every one of which
- * must reach AAA small-text contrast. Bar borders are graphics, not
- * text, but the decree asks for strong bar borders, so they are held
- * to the same floor against both the page background and the bar fill.
+ * must reach AAA small-text contrast. The frequency-bar fill is
+ * `--color-fg-strong` on the page background (the track is
+ * transparent), so its pairing is already covered by the
+ * fg-strong-on-bg entry.
  */
 const CONTRAST_PAIRS = [
   {
@@ -278,14 +277,6 @@ const CONTRAST_PAIRS = [
   {
     ink: '--color-placeholder:',
     paper: '--color-bg:',
-  },
-  {
-    ink: '--color-bar-border:',
-    paper: '--color-bg:',
-  },
-  {
-    ink: '--color-bar-border:',
-    paper: '--color-bar:',
   },
 ];
 

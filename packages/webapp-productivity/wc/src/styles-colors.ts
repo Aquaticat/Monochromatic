@@ -60,8 +60,8 @@ const STOP_BLACK = cssOklch(
 );
 
 /**
- * Near-black stop: every light-mode text role (body, muted, placeholder)
- * plus light-mode bar borders; dark-mode background.
+ * Near-black stop: every light-mode text role (body, muted, placeholder);
+ * dark-mode background.
  */
 const STOP_NEAR_BLACK = cssOklch(
   {
@@ -72,9 +72,9 @@ const STOP_NEAR_BLACK = cssOklch(
 );
 
 /**
- * Mid-gray stop: non-text borders only (textarea, frequency header
- * rule). As text it peaks at 6:1 on white, under the AAA small-text
- * floor of 7:1, so no text role may use it.
+ * Mid-gray stop: non-text borders only (textarea). As text it peaks at
+ * 6:1 on white, under the AAA small-text floor of 7:1, so no text role
+ * may use it.
  */
 const STOP_MID = cssOklch(
   {
@@ -85,8 +85,7 @@ const STOP_MID = cssOklch(
 );
 
 /**
- * Near-white stop: light-mode surface and bar fill; every dark-mode text
- * role plus dark-mode bar borders.
+ * Near-white stop: light-mode surface; every dark-mode text role.
  */
 const STOP_NEAR_WHITE = cssOklch(
   {
@@ -113,14 +112,14 @@ const STOP_WHITE = cssOklch(
  * follow the OS theme.
  *
  * Semantic roles: `bg` page background; `surface` tile fill one stop off
- * `bg`; `fg` body text; `fg-strong` headline numbers and focus rings;
- * `muted` and `placeholder` secondary text, sharing `fg`'s stop because
- * the mid stop cannot reach AAA small-text contrast on any allowed
- * background (secondary text differentiates by size and weight instead
- * of color); `border-subtle` hairlines one stop off `bg`;
- * `border-strong` mid-stop non-text borders (textarea, frequency header
- * rule); `bar` frequency-bar fill; `bar-border` full-contrast bar
- * outline.
+ * `bg`; `fg` body text; `fg-strong` headline numbers, focus rings, and
+ * the frequency-bar fill (via `accent-color` and the webkit value
+ * pseudo in `./styles-results.ts`); `muted` and `placeholder` secondary
+ * text, sharing `fg`'s stop because the mid stop cannot reach AAA
+ * small-text contrast on any allowed background (secondary text
+ * differentiates by size and weight instead of color); `border-subtle`
+ * hairlines one stop off `bg`; `border-strong` mid-stop non-text
+ * borders (textarea).
  *
  * @returns CSS rule string for the `:root` custom-property declarations
  *
@@ -147,8 +146,6 @@ export function renderRootColors(): string {
         '--color-muted': STOP_NEAR_BLACK,
         '--color-border-subtle': STOP_NEAR_WHITE,
         '--color-border-strong': STOP_MID,
-        '--color-bar': STOP_NEAR_WHITE,
-        '--color-bar-border': STOP_NEAR_BLACK,
         '--color-placeholder': STOP_NEAR_BLACK,
       },
     },
@@ -184,8 +181,6 @@ export function renderDarkColors(): string {
               '--color-muted': STOP_NEAR_WHITE,
               '--color-border-subtle': STOP_BLACK,
               '--color-border-strong': STOP_MID,
-              '--color-bar': STOP_BLACK,
-              '--color-bar-border': STOP_NEAR_WHITE,
               '--color-placeholder': STOP_NEAR_WHITE,
             },
           },

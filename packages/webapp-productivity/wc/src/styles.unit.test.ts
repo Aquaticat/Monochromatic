@@ -76,5 +76,40 @@ await describe({
         expect(css,).toContain('font-variant-numeric:tabular-nums',);
       },
     },),
+    it({
+      name: 'keeps the frequency bars grayscale with a transparent track in both engines',
+      fn: async function keepsBarsGrayscale(): Promise<void> {
+        /**
+         * Complete stylesheet string.
+         */
+        const css = renderStyles({ fontWoff2Base64: FONT_FIXTURE_BASE64, },);
+
+        // Firefox path: accent-colored fill on the element's own
+        // transparent background.
+        expect(css,).toContain('accent-color:var(--color-fg-strong)',);
+        expect(css,).toContain('background-color:transparent',);
+        // Chromium path: it ignores near-white accents and paints an
+        // opaque native track, so both webkit pseudos are pinned.
+        expect(css,).toContain(
+          '.freq-bar::-webkit-progress-bar{background-color:transparent}',
+        );
+        expect(css,).toContain(
+          '.freq-bar::-webkit-progress-value{background-color:var(--color-fg-strong)}',
+        );
+      },
+    },),
+    it({
+      name: 'ships the inclusively-hidden utility for the frequency header row',
+      fn: async function shipsVisuallyHidden(): Promise<void> {
+        /**
+         * Complete stylesheet string.
+         */
+        const css = renderStyles({ fontWoff2Base64: FONT_FIXTURE_BASE64, },);
+
+        expect(css,).toContain('.visually-hidden:not(:focus):not(:active){',);
+        expect(css,).toContain('clip-path:inset(50%)',);
+        expect(css,).toContain('position:absolute',);
+      },
+    },),
   ],
 },);

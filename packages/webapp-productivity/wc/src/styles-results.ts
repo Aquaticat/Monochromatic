@@ -16,9 +16,13 @@
  * width while their lengths stay comparable. Words wider than their
  * cell truncate with an ellipsis on a single line (full word in
  * `title` and `aria-label`), keeping every row at the intrinsic block
- * size containment promises. Each bar carries a
- * full-contrast border (near-black on light, near-white on dark) so
- * even a minimum-count bar stays visible.
+ * size containment promises. Bars keep the five-stop grayscale
+ * palette: the fill is the strong foreground stop and the track is
+ * transparent, via `accent-color` plus a transparent background where
+ * engines honor them (Firefox) and via the `::-webkit-progress-*`
+ * pseudo-elements where they don't (Chromium ignores near-white
+ * accents and paints an opaque native track; both pseudos apply there
+ * without an `appearance` reset, verified in headless Chromium).
  */
 import {
   cssCompounded,
@@ -269,18 +273,44 @@ export function renderResultsStyles(): string {
         // custom-property-driven bar: `value`/`max` are ordinary content
         // attributes (not `style`, not `id`), so the fill ratio needs no
         // per-row inline style, and screen readers get progressbar
-        // semantics for free (kept out of the accessibility tree below
-        // via `aria-hidden`, since the count/percentage cells already
-        // carry the real data). No `appearance` reset and no vendor
-        // pseudo-element rules: each browser's native progress chrome
-        // renders as-is inside `.freq-bar-track`'s fixed block-size.
+        // semantics for free (kept out of the accessibility tree, since
+        // the count/percentage cells already carry the real data).
+        // Palette discipline: `accent-color` paints the fill with the
+        // strong foreground stop and the transparent background clears
+        // the track in engines that honor both on native progress
+        // chrome (Firefox); Chromium ignores near-white accents and
+        // paints an opaque native track, so the `::-webkit-progress-*`
+        // rules below cover it. No `appearance` reset: the webkit
+        // pseudos apply without one (verified in headless Chromium),
+        // and resetting would strip Firefox's native rendering.
         rule: '.freq-bar',
         decls: {
           display: 'block',
           'inline-size': cssPercent(FULL_PERCENT,),
           'block-size': cssPercent(FULL_PERCENT,),
           'background-color': 'transparent',
+          'accent-color': cssVar('color-fg-strong',),
         },
+      },
+    ),
+
+    $(
+      {
+        // Chromium's track: the native painting ignores the element's
+        // transparent background, but this pseudo applies without an
+        // `appearance` reset and clears it.
+        rule: '.freq-bar::-webkit-progress-bar',
+        decls: { 'background-color': 'transparent', },
+      },
+    ),
+
+    $(
+      {
+        // Chromium's fill: it ignores near-white `accent-color` values
+        // (falls back to the default green), so the fill stop is set
+        // directly on the value pseudo instead.
+        rule: '.freq-bar::-webkit-progress-value',
+        decls: { 'background-color': cssVar('color-fg-strong',), },
       },
     ),
 

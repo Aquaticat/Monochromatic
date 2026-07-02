@@ -37,8 +37,10 @@ const FIGURE_SPACE = ' ';
 const countFormat = new Intl.NumberFormat('en-US',);
 
 /**
- * Header label of the Frequency word column, included in word-column
- * measurement so the column never renders narrower than its heading.
+ * Header label of the Frequency word column (the header row is
+ * visually hidden, screen-reader-only; see `FREQUENCY_COLUMN_LABELS`
+ * in `../page.ts`). Kept in the word-column measurement as a stable
+ * floor so the column never collapses below a label's width.
  */
 const WORD_COLUMN_HEADER = 'Word';
 
@@ -204,14 +206,17 @@ function renderFrequencyRow(
         ),
         h(
           {
+            // Decorative: the whole bar cell is hidden from assistive
+            // tech (no `role="cell"`), since `.freq-count`/`.freq-pct`
+            // already carry the real data; screen readers thus see
+            // exactly the columns the visually hidden header row
+            // (`FREQUENCY_COLUMN_LABELS` in `../page.ts`) names.
             tag: 'span',
             class: 'freq-bar-track',
-            attrs: { role: 'cell', },
+            attrs: { 'aria-hidden': 'true', },
             children: [
               // `value`/`max` are ordinary content attributes, so the
-              // fill ratio needs no per-row `style` or `id`; decorative
-              // (see `aria-hidden`), since `.freq-count`/`.freq-pct`
-              // already carry the real data to assistive tech.
+              // fill ratio needs no per-row `style` or `id`.
               h(
                 {
                   tag: 'progress',
@@ -219,7 +224,6 @@ function renderFrequencyRow(
                   attrs: {
                     value: String(entry.count,),
                     max: String(maxCount,),
-                    'aria-hidden': 'true',
                   },
                 },
               ),
@@ -232,10 +236,11 @@ function renderFrequencyRow(
 }
 
 /**
- * Column count of the Frequency table, for the placeholder row's
- * `aria-colspan`.
+ * Column count of the Frequency table as assistive tech sees it
+ * (count, percent, word; the decorative bar cell is `aria-hidden`),
+ * for the placeholder row's `aria-colspan`.
  */
-const FREQUENCY_COLUMN_COUNT = 4;
+const FREQUENCY_COLUMN_COUNT = 3;
 
 /**
  * Renders the Frequency placeholder row for when no word occurs more
