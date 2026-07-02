@@ -199,13 +199,16 @@ widget size within that scale.
 
 - `rem` inside a `global` (`out property <length> x: 1rem;`). Rejected at `check_expressions.rs:26`; a global has
   no window, so `rem` is unresolvable.
-- Setting `font-size` (or `font-weight`) on `Button`/`Slider`. The property does not exist on the widget
-  ("Unknown property font-size in Button"); the widget's label size is bound internally to the style.
+- Setting `font-size` (or `font-weight`) on `Button`/`Slider`. The property does not exist on these widgets
+  ("Unknown property font-size in Button"); their label size is bound internally to the style. This is not
+  uniform across std-widgets: text-forward widgets such as `CheckBox`, `Switch`, and `LineEdit` do expose a
+  settable `font-size` (`widgets/fluent/checkbox.slint:10`), so the gap only bites where a widget omits it, and
+  `Button`/`Slider` are the ones that omit it here.
 - Setting only `Window.default-font-size` to unify the two. It rescales both sources by the same factor, so the
   fixed 7.7% gap between `1.0rem` and `1.0766rem` survives.
 - Switching to another built-in style (`cosmic`, `material`, `cupertino`). Each defines its own body size in
-  `rem`, and none exposes a per-widget `font-size`, so the same class of gap persists at different numbers. This
-  changes the look and the `Palette`, it does not add a font-size lever.
+  `rem`, and none adds a `font-size` to `Button`/`Slider`, so the same class of gap persists at different
+  numbers. This changes the look and the `Palette`, it does not add a font-size lever for those widgets.
 
 ## Upstream filing decision
 
@@ -213,8 +216,9 @@ widget size within that scale.
 cover this), so the filing check runs normally. It stops at constraint 1.
 
 1. Is it really upstream's fault? No. This is intended design, not a defect. Fluent (and every built-in style)
-   sizes widgets in `rem` on purpose so an app rescales them through `Window.default-font-size`; the absence of a
-   per-widget `font-size` is a deliberate API boundary; and the `rem`-in-`global` rejection is a correct guard,
+   sizes widgets in `rem` on purpose so an app rescales them through `Window.default-font-size`; whether a widget
+   also exposes its own `font-size` is a per-widget API choice (`CheckBox` does, `Button`/`Slider` do not); and
+   the `rem`-in-`global` rejection is a correct guard,
    because the value is genuinely unknowable in a windowless `global` (`check_expressions.rs:26`). There is no bug
    behavior to report, only a design that surprised us until traced.
 2. Can upstream fix it? Not applicable, there is nothing to fix; a "let me set a widget's font-size" request would
