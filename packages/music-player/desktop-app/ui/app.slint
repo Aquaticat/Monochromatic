@@ -29,6 +29,22 @@
 
 import { Button, Slider, HorizontalBox, VerticalBox, Palette } from "std-widgets.slint";
 
+// One shared text size for every hand-drawn Text in this file, kept equal to the
+// Fluent std-widgets' body text so custom Text never sits a notch below the Button
+// and Slider labels. The std-widgets expose no font-size property, so matching them
+// means matching their size expression: FluentFontSettings.body.font-size is
+// 14 * 0.0769rem (i-slint-compiler/widgets/fluent/styling.slint). rem tracks the
+// window default-font-size, so this still scales with the OS/user font setting.
+//
+// The multiple is stored unitless (14 * 0.0769) and each use site writes
+// `Typography.body-rem * 1rem`, because rem cannot be resolved inside a `global`
+// (the window default-font-size is unknown there; slint-viewer --check rejects a
+// rem-typed global length). The 1rem is applied at the element, where the window
+// context exists. Full rationale: docs/troubleshooting/slint-widget-font-size-rem.md.
+global Typography {
+    out property <float> body-rem: 14 * 0.0769;
+}
+
 // One row on the selected page: the display path (relative to the loaded root)
 // plus its index into the full queue. The index survives filtering, so clicking a
 // filtered row still maps back to the right track. Rust fills these from the
@@ -76,6 +92,7 @@ component RadioButton inherits Rectangle {
         }
         Text {
             text: root.text;
+            font-size: Typography.body-rem * 1rem;
             vertical-alignment: center;
             color: Palette.foreground;
         }
@@ -113,7 +130,11 @@ component CheckBox inherits Rectangle {
                 // the tick, drawn only when checked (the font has the glyph; the
                 // image ships google-noto plus the default sans). accent-foreground
                 // is the palette's matched on-accent ink, legible on the accent fill
-                // whichever way the system accent and light/dark land.
+                // whichever way the system accent and light/dark land. font-size below
+                // is a glyph fitted to the fixed 16px box, deliberately NOT
+                // Typography.body: the box is a hardcoded 16px that does not grow with
+                // the text scale, so a body-sized tick would overflow it when the OS
+                // font is large. This is an icon size, not body text.
                 Text {
                     width: parent.width;
                     height: parent.height;
@@ -127,6 +148,7 @@ component CheckBox inherits Rectangle {
         }
         Text {
             text: root.text;
+            font-size: Typography.body-rem * 1rem;
             vertical-alignment: center;
             color: Palette.foreground;
         }
@@ -276,6 +298,7 @@ export component AppWindow inherits Window {
             alignment: stretch;
             Text {
                 text: root.position-text;
+                font-size: Typography.body-rem * 1rem;
                 vertical-alignment: center;
             }
             // `seek-slider :=` gives this element a stable id so the embedded MCP
@@ -292,6 +315,7 @@ export component AppWindow inherits Window {
             }
             Text {
                 text: root.duration-text;
+                font-size: Typography.body-rem * 1rem;
                 vertical-alignment: center;
             }
         }
@@ -299,6 +323,7 @@ export component AppWindow inherits Window {
         HorizontalBox {
             Text {
                 text: "Volume";
+                font-size: Typography.body-rem * 1rem;
                 vertical-alignment: center;
             }
             // `volume-slider :=` gives this element a stable id for the same reason as
@@ -356,6 +381,7 @@ export component AppWindow inherits Window {
                 spacing: 8px;
                 Text {
                     text: "Shuffle";
+                    font-size: Typography.body-rem * 1rem;
                     vertical-alignment: center;
                     color: Palette.foreground;
                 }
@@ -537,6 +563,7 @@ export component AppWindow inherits Window {
                                     }
                                     Text {
                                         text: item.name;
+                                        font-size: Typography.body-rem * 1rem;
                                         x: 8px;
                                         width: parent.width - 16px;
                                         vertical-alignment: center;
@@ -619,6 +646,7 @@ export component AppWindow inherits Window {
                                     }
                                     Text {
                                         text: item.name;
+                                        font-size: Typography.body-rem * 1rem;
                                         x: 8px;
                                         width: parent.width - 16px;
                                         vertical-alignment: center;
