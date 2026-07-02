@@ -1,4 +1,4 @@
-# opentype.js 2.0.0 ships only a CJS/UMD `main`, so Node's ESM interop drops its named exports and oxlint's `no-named-as-default-member` then flags the required workaround
+# opentype.js 2.0.0's CJS/UMD `main` drops named exports under Node's ESM interop, and the workaround trips oxlint's `no-named-as-default-member`
 
 ## Symptom
 
