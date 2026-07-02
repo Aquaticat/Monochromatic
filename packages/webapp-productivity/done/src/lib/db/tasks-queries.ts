@@ -210,7 +210,8 @@ export async function searchTasks(searchQuery: string,): Promise<SearchTask[]> {
     },);
   }
   catch (ftsQueryError: unknown) {
-    // FTS5 rejects some user query syntax; log the cause, then fall back to LIKE.
+    // Turso FTS rejects some user query syntax, and errors when the index is
+    // absent on a build without it; log the cause, then fall back to LIKE.
     console.error(
       'searchTasks FTS query failed; falling back to LIKE matching:',
       ftsQueryError,

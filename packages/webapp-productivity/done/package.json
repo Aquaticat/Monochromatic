@@ -1,18 +1,20 @@
 {
   "license": "LGPL-3.0-or-later",
   "name": "@monochromatic-dev/webapp-productivity-done",
-  "description": "AI-powered task aggregator that surfaces what to do next based on location and focus context, backed by SQLite with FTS5. Client UI rendered via h-css and h-html.",
+  "description": "AI-powered task aggregator that surfaces what to do next based on location and focus context, backed by Turso SQLite with its native full-text index. Client UI rendered via h-css and h-html.",
   "private": true,
   "type": "module",
   "dependencies": {
     "@monochromatic-dev/module-hyperscript": "workspace:*",
     "@monochromatic-dev/module-const": "workspace:*",
     "@monochromatic-dev/module-llm-types": "workspace:*",
+    "@monochromatic-dev/module-logger": "workspace:*",
     "@tursodatabase/database": "catalog:",
     "h3": "catalog:"
   },
   "devDependencies": {
     "@monochromatic-dev/config-tsdown": "workspace:*",
+    "@monochromatic-dev/module-test": "workspace:*",
     "@types/node": "catalog:",
     "tsdown": "catalog:",
     "typescript": "catalog:"

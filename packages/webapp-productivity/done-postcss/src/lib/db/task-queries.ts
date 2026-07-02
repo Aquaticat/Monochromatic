@@ -236,7 +236,8 @@ export async function searchTasks(searchQuery: string,): Promise<SearchTask[]> {
     );
     /* oxlint-disable typescript/no-unsafe-type-assertion -- database LIKE query */
     /**
-     * Fallback LIKE-match rows used when FTS rejects the query syntax.
+     * Fallback LIKE-match rows used when Turso FTS rejects the query syntax or
+     * the index is absent on a build without it.
      */
     const rows = (await (await db
       .prepare(SQL_SEARCH_LIKE,))

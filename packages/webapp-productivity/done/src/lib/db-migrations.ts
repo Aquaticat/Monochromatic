@@ -4,6 +4,21 @@
  * Executed once at startup to ensure the schema is up to date.
  */
 import type { Database, } from '@tursodatabase/database';
+import {
+  initPromise,
+  logger,
+  tagged,
+} from '@monochromatic-dev/module-logger/ts';
+
+await initPromise;
+
+/**
+ * Tagged logger for the migration runner.
+ */
+const l = tagged({
+  tag: 'db-migrations',
+  l: logger,
+},);
 
 //region Migration SQL: separated for readability; executed once at startup
 
@@ -54,49 +69,55 @@ const MIGRATION_TABLES_AND_INDEXES = `
 `;
 
 /**
- * FTS5 virtual table and triggers that keep the index in sync with the tasks table.
+ * Native Turso full-text index over the searchable task columns.
+ *
+ * Unlike a SQLite FTS5 virtual table, Turso's `USING fts` index method attaches
+ * directly to the base table: it indexes existing rows at creation time and stays
+ * in sync on every write, so no sync triggers or backfill statement are needed.
+ * Requires the connection to be opened with `experimental: ['index_method']`.
  */
-const MIGRATION_FTS_AND_TRIGGERS = `
-  CREATE VIRTUAL TABLE IF NOT EXISTS tasks_fts USING fts5(
-    title,
-    description,
-    tags,
-    content=tasks,
-    content_rowid=rowid
-  );
-
-  CREATE TRIGGER IF NOT EXISTS tasks_fts_insert AFTER INSERT ON tasks BEGIN
-    INSERT INTO tasks_fts(rowid, title, description, tags)
-    VALUES (new.rowid, new.title, new.description, new.tags);
-  END;
-
-  CREATE TRIGGER IF NOT EXISTS tasks_fts_update AFTER UPDATE ON tasks BEGIN
-    INSERT INTO tasks_fts(tasks_fts, rowid, title, description, tags)
-    VALUES ('delete', old.rowid, old.title, old.description, old.tags);
-    INSERT INTO tasks_fts(rowid, title, description, tags)
-    VALUES (new.rowid, new.title, new.description, new.tags);
-  END;
-
-  CREATE TRIGGER IF NOT EXISTS tasks_fts_delete AFTER DELETE ON tasks BEGIN
-    INSERT INTO tasks_fts(tasks_fts, rowid, title, description, tags)
-    VALUES ('delete', old.rowid, old.title, old.description, old.tags);
-  END;
-`;
-
-/**
- * Backfills FTS index for any rows that were inserted before triggers existed.
- */
-const MIGRATION_FTS_BACKFILL = `
-  INSERT INTO tasks_fts(rowid, title, description, tags)
-  SELECT tasks.rowid, tasks.title, tasks.description, tasks.tags
-  FROM tasks
-  WHERE tasks.rowid NOT IN (SELECT rowid FROM tasks_fts);
+const MIGRATION_FTS = `
+  CREATE INDEX IF NOT EXISTS tasks_fts ON tasks USING fts (title, description, tags);
 `;
 
 //endregion Migration SQL
 
 /**
- * Executes all schema migrations (tables, indexes, FTS, triggers, backfill).
+ * Attempts to create the native full-text index, reporting whether FTS is available.
+ *
+ * Turso ships full-text search as an experimental index method; a build lacking it
+ * rejects the `USING fts` statement. Rather than crash startup, this logs the cause
+ * and reports failure so callers (and {@link runMigrations}) let search degrade to
+ * LIKE matching.
+ *
+ * @param database - Connected Turso database instance
+ *
+ * @returns `true` when index creation succeeds, `false` when FTS is unavailable
+ *
+ * @example
+ * ```ts
+ * const ftsEnabled = await tryEnableFts(database);
+ * ```
+ */
+export async function tryEnableFts(database: Database,): Promise<boolean> {
+  try {
+    await database.exec(MIGRATION_FTS,);
+    return true;
+  }
+  catch (ftsError: unknown) {
+    l.warn(
+      `native FTS index unavailable; search degrades to LIKE matching: ${String(ftsError,)}`,
+    );
+    return false;
+  }
+}
+
+/**
+ * Executes all schema migrations (tables, indexes, and the guarded FTS index).
+ *
+ * Table and index creation must succeed; FTS creation is guarded by
+ * {@link tryEnableFts} so a build without the experimental FTS index method still
+ * boots, with search falling back to LIKE matching.
  *
  * @param database - Connected Turso database instance
  *
@@ -107,6 +128,5 @@ const MIGRATION_FTS_BACKFILL = `
  */
 export async function runMigrations(database: Database,): Promise<void> {
   await database.exec(MIGRATION_TABLES_AND_INDEXES,);
-  await database.exec(MIGRATION_FTS_AND_TRIGGERS,);
-  await database.exec(MIGRATION_FTS_BACKFILL,);
+  await tryEnableFts(database,);
 }

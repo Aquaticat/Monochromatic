@@ -9,12 +9,14 @@
     "@monochromatic-dev/module-hyperscript": "workspace:*",
     "@monochromatic-dev/module-const": "workspace:*",
     "@monochromatic-dev/module-llm-types": "workspace:*",
+    "@monochromatic-dev/module-logger": "workspace:*",
     "@tursodatabase/database": "catalog:",
     "h3": "catalog:",
     "postcss": "catalog:"
   },
   "devDependencies": {
     "@monochromatic-dev/config-tsdown": "workspace:*",
+    "@monochromatic-dev/module-test": "workspace:*",
     "@monochromatic-dev/rolldown-plugin-import-attributes": "workspace:*",
     "@types/node": "catalog:",
     "tsdown": "catalog:",

@@ -5,7 +5,7 @@
  * 1. Resolves the database path from CLI args / env / default
  * 2. Ensures the directory exists
  * 3. Opens the SQLite database with WAL mode
- * 4. Runs migrations (creates tables, indexes, FTS virtual table, triggers)
+ * 4. Runs migrations (creates tables, indexes, and the native FTS index)
  *
  * The default export (`db`) is the open Database instance used by `lib/db/tasks.ts`.
  */
@@ -96,7 +96,7 @@ await ensureDatabaseDirectoryExists(databasePath,);
  */
 const db: Database = await connect(
   databasePath,
-  { experimental: ['triggers',], },
+  { experimental: ['index_method',], },
 );
 await db.exec('PRAGMA journal_mode = WAL',);
 await db.exec('PRAGMA foreign_keys = ON',);

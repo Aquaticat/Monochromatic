@@ -132,13 +132,18 @@ export const SQL_SELECT_ALL_TAGS =
 
 /**
  * SQL for full-text search across task title, description, and tags.
+ *
+ * Uses Turso's native `fts_match`/`fts_score` functions against the `tasks_fts`
+ * index method. The bound query reuses the `?1` numbered parameter across both
+ * functions. `fts_score` currently returns 0 on the pinned build, so
+ * `updated_at` is a deterministic tiebreaker; relevance ordering activates once
+ * Turso's scoring returns non-zero values.
  */
 export const SQL_SEARCH_FTS = `
   SELECT tasks.*, CASE WHEN blocked_by != '[]' THEN 1 ELSE 0 END AS is_blocked
-  FROM tasks_fts
-  JOIN tasks ON tasks.rowid = tasks_fts.rowid
-  WHERE tasks_fts MATCH ?
-  ORDER BY rank`;
+  FROM tasks
+  WHERE fts_match(title, description, tags, ?1)
+  ORDER BY fts_score(title, description, tags, ?1) DESC, tasks.updated_at DESC`;
 
 /**
  * SQL fallback search using LIKE matching on title and description.

@@ -2852,6 +2852,9 @@ importers:
       '@monochromatic-dev/module-llm-types':
         specifier: workspace:*
         version: link:../../module/llm-types
+      '@monochromatic-dev/module-logger':
+        specifier: workspace:*
+        version: link:../../module/logger
       '@tursodatabase/database':
         specifier: 'catalog:'
         version: 0.6.1
@@ -2862,6 +2865,9 @@ importers:
       '@monochromatic-dev/config-tsdown':
         specifier: workspace:*
         version: link:../../config/tsdown
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
       '@types/node':
         specifier: 'catalog:'
         version: 26.0.1
@@ -2886,6 +2892,9 @@ importers:
       '@monochromatic-dev/module-llm-types':
         specifier: workspace:*
         version: link:../../module/llm-types
+      '@monochromatic-dev/module-logger':
+        specifier: workspace:*
+        version: link:../../module/logger
       '@tursodatabase/database':
         specifier: 'catalog:'
         version: 0.6.1
@@ -2899,6 +2908,9 @@ importers:
       '@monochromatic-dev/config-tsdown':
         specifier: workspace:*
         version: link:../../config/tsdown
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
       '@monochromatic-dev/rolldown-plugin-import-attributes':
         specifier: workspace:*
         version: link:../../rolldown-plugins/import-attributes
@@ -3020,12 +3032,27 @@ importers:
       '@monochromatic-dev/config-typescript':
         specifier: workspace:*
         version: link:../../config/typescript
+      '@monochromatic-dev/module-logger':
+        specifier: workspace:*
+        version: link:../../module/logger
       '@monochromatic-dev/module-test':
         specifier: workspace:*
         version: link:../../module/test
       '@types/node':
         specifier: 'catalog:'
         version: 26.0.1
+      hb-subset-wasm:
+        specifier: 'catalog:'
+        version: 0.4.0
+      tiny-readdir-glob:
+        specifier: 'catalog:'
+        version: 2.0.0
+      wawoff2:
+        specifier: 'catalog:'
+        version: 2.0.1
+      woff2-encode-wasm:
+        specifier: 'catalog:'
+        version: 0.1.1
 
 packages:
 
