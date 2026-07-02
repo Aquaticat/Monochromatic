@@ -13,7 +13,7 @@ import {
   connect,
   type Database,
 } from '@tursodatabase/database';
-import { mkdirSync, } from 'node:fs';
+import { mkdir, } from 'node:fs/promises';
 import { dirname, } from 'node:path';
 import {
   ARGUMENT_ABSENT,
@@ -77,14 +77,14 @@ function resolveDatabasePath(): string {
  * ensureDatabaseDirectoryExists('/home/user/.local/share/done/tasks.db');
  * ```
  */
-function ensureDatabaseDirectoryExists(databasePath: string,): void {
+async function ensureDatabaseDirectoryExists(databasePath: string,): Promise<void> {
   if (databasePath === ':memory:')
     return;
   /**
    * Parent directory of the database file, created recursively below.
    */
   const directoryPath = dirname(databasePath,);
-  mkdirSync(
+  await mkdir(
     directoryPath,
     { recursive: true, },
   );
@@ -94,7 +94,7 @@ function ensureDatabaseDirectoryExists(databasePath: string,): void {
  * Resolved database file path.
  */
 const databasePath = resolveDatabasePath();
-ensureDatabaseDirectoryExists(databasePath,);
+await ensureDatabaseDirectoryExists(databasePath,);
 
 /**
  * Open SQLite database connection with WAL mode and foreign keys.

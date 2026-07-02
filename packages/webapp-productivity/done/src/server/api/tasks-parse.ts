@@ -16,7 +16,7 @@ const priorities = new Set<string>(TASK_PRIORITIES,);
  * A unique `Symbol` keeps "invalid / not the expected shape" out of a nullish
  * union (banned by `no-nullish-union`); callers narrow with `=== INVALID`.
  */
-export const INVALID: unique symbol = Symbol('invalid-input',);
+export const INVALID: unique symbol = Symbol('parsed task payload shape invalid unexpected',);
 
 /**
  * Narrows `unknown` to a plain object for property access.

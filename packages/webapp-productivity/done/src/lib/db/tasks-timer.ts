@@ -39,7 +39,7 @@ export async function startTaskTimer(id: string,): Promise<Task | typeof TASK_NO
    * Captured once so both the `started_at` and `updated_at` columns share the value.
    */
   const timestamp = nowIso();
-  await db.prepare(SQL_START_TIMER,)
+  await (await db.prepare(SQL_START_TIMER,))
     .run(
     timestamp,
     timestamp,
@@ -94,7 +94,7 @@ export async function stopTaskTimer(id: string,): Promise<Task | typeof TASK_NOT
    */
   const timestamp = nowIso();
 
-  await db.prepare(SQL_STOP_TIMER,)
+  await (await db.prepare(SQL_STOP_TIMER,))
     .run(
     updatedTrackedTime,
     timestamp,
@@ -135,9 +135,9 @@ export async function completeTask(id: string,): Promise<CompleteTaskResult> {
   /**
    * Rows of unresolved blockers; empty allows completion.
    */
-  const blockingRows = await db
-    .prepare(SQL_SELECT_BLOCKERS,)
-    .all(id,) as {
+  const blockingRows = (await (await db
+    .prepare(SQL_SELECT_BLOCKERS,))
+    .all(id,)) as {
       blocker_id: string;
       blocker_title: string;
     }[];
@@ -165,7 +165,7 @@ export async function completeTask(id: string,): Promise<CompleteTaskResult> {
     !== undefined)
     await stopTaskTimer(id,);
 
-  await db.prepare(SQL_DELETE_TASK,)
+  await (await db.prepare(SQL_DELETE_TASK,))
     .run(id,);
   return {
     completed: true,

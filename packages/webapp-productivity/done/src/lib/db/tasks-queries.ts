@@ -59,8 +59,8 @@ export async function listInboxUnblockedTasks(): Promise<Task[]> {
   /**
    * Raw rows from the inbox query, mapped through `mapTask` before returning.
    */
-  const rows = await db.prepare(SQL_SELECT_INBOX_UNBLOCKED,)
-    .all() as TaskRow[];
+  const rows = (await (await db.prepare(SQL_SELECT_INBOX_UNBLOCKED,))
+    .all()) as TaskRow[];
   /* oxlint-enable typescript/no-unsafe-type-assertion */
   return rows.map(function toTask(row,) {
     return mapTask(row,);
@@ -83,9 +83,9 @@ export async function listBlockedInboxTasks(): Promise<BlockedTaskLink[]> {
   /**
    * Raw rows including the join column used to assemble the blocked-link tuple.
    */
-  const rows = await db
-    .prepare(SQL_SELECT_BLOCKED_INBOX,)
-    .all() as (TaskRow & { blocker_id: string; })[];
+  const rows = (await (await db
+    .prepare(SQL_SELECT_BLOCKED_INBOX,))
+    .all()) as (TaskRow & { blocker_id: string; })[];
   /* oxlint-enable typescript/no-unsafe-type-assertion */
   return rows.map(function toBlockedLink(row,) {
     return {
@@ -111,8 +111,8 @@ export async function listInProgressTasks(): Promise<Task[]> {
   /**
    * Raw rows for in-progress tasks; mapped to the application type below.
    */
-  const rows = await db.prepare(SQL_SELECT_IN_PROGRESS,)
-    .all() as TaskRow[];
+  const rows = (await (await db.prepare(SQL_SELECT_IN_PROGRESS,))
+    .all()) as TaskRow[];
   /* oxlint-enable typescript/no-unsafe-type-assertion */
   return rows.map(function toTask(row,) {
     return mapTask(row,);
@@ -137,8 +137,8 @@ export async function listTasksForBlockerPicker(taskId: string,): Promise<Task[]
   /**
    * Raw candidate rows excluding the current task, mapped to application objects below.
    */
-  const rows = await db.prepare(SQL_SELECT_FOR_BLOCKER_PICKER,)
-    .all(taskId,) as TaskRow[];
+  const rows = (await (await db.prepare(SQL_SELECT_FOR_BLOCKER_PICKER,))
+    .all(taskId,)) as TaskRow[];
   /* oxlint-enable typescript/no-unsafe-type-assertion */
   return rows.map(function toTask(row,) {
     return mapTask(row,);
@@ -161,8 +161,8 @@ export async function listAllTags(): Promise<string[]> {
   /**
    * Single-column projection; the tag string is unwrapped from each row below.
    */
-  const rows = await db.prepare(SQL_SELECT_ALL_TAGS,)
-    .all() as { tag: string; }[];
+  const rows = (await (await db.prepare(SQL_SELECT_ALL_TAGS,))
+    .all()) as { tag: string; }[];
   /* oxlint-enable typescript/no-unsafe-type-assertion */
   return rows.map(function extractTag(row,) {
     return row.tag;
@@ -196,10 +196,10 @@ export async function searchTasks(searchQuery: string,): Promise<SearchTask[]> {
     /**
      * FTS rows including the blocked-flag join column for the search-card UI.
      */
-    const rows = await db.prepare(SQL_SEARCH_FTS,)
+    const rows = (await (await db.prepare(SQL_SEARCH_FTS,))
       .all(
       normalizedSearchQuery,
-    ) as (TaskRow & { is_blocked: number; })[];
+    )) as (TaskRow & { is_blocked: number; })[];
     /* oxlint-enable typescript/no-unsafe-type-assertion */
     return rows.map(function toSearchTask(row,) {
       return {
@@ -209,17 +209,22 @@ export async function searchTasks(searchQuery: string,): Promise<SearchTask[]> {
       };
     },);
   }
-  catch {
+  catch (ftsQueryError: unknown) {
+    // FTS5 rejects some user query syntax; log the cause, then fall back to LIKE.
+    console.error(
+      'searchTasks FTS query failed; falling back to LIKE matching:',
+      ftsQueryError,
+    );
     /* oxlint-disable typescript/no-unsafe-type-assertion -- database LIKE query returns TaskRow with is_blocked column */
     /**
      * Fallback LIKE rows when the FTS syntax is rejected by SQLite.
      */
-    const rows = await db
-      .prepare(SQL_SEARCH_LIKE,)
+    const rows = (await (await db
+      .prepare(SQL_SEARCH_LIKE,))
       .all(
         `%${normalizedSearchQuery}%`,
         `%${normalizedSearchQuery}%`,
-      ) as (TaskRow & {
+      )) as (TaskRow & {
         is_blocked: number;
       })[];
     /* oxlint-enable typescript/no-unsafe-type-assertion */

@@ -8,7 +8,7 @@ import { HTTP_NO_CONTENT, } from '@monochromatic-dev/module-const/ts';
 
 import { showToast, } from '../components/toast-message.ts';
 
-export { showToast, };
+export { showToast, } from '../components/toast-message.ts';
 
 /**
  * Request configuration accepted by {@link api}; a readonly subset of `RequestInit`.
@@ -86,7 +86,12 @@ export async function api<TResponse = unknown,>({
     try {
       error = await response.json();
     }
-    catch {
+    catch (errorBodyParseError: unknown) {
+      // Error response body was not valid JSON; log it and use a generic payload.
+      console.error(
+        'api could not parse error response body as JSON:',
+        errorBodyParseError,
+      );
       error = { error: 'Request failed', };
     }
     /**

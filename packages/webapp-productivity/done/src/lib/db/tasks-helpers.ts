@@ -164,7 +164,12 @@ export function parseStringArray(value: string,): string[] {
       return (typeof entry) === 'string';
     },);
   }
-  catch {
+  catch (jsonParseError: unknown) {
+    // Stored column was not valid JSON; log the cause and treat it as an empty list.
+    console.error(
+      'parseStringArray could not parse stored JSON array; using empty array:',
+      jsonParseError,
+    );
     return [];
   }
 }
@@ -267,7 +272,7 @@ export async function getTaskRowById(id: string,): Promise<TaskRow | typeof TASK
   /**
    * Raw row read from SQLite; nullish when no row matches the requested ID.
    */
-  const taskRow: unknown = await db.prepare(SQL_SELECT_TASK_BY_ID,)
+  const taskRow: unknown = await (await db.prepare(SQL_SELECT_TASK_BY_ID,))
     .get(id,);
   if ((taskRow === undefined) || (taskRow === null))
     return TASK_NOT_FOUND;

@@ -101,7 +101,12 @@ async function getStaticMetadata(id: string,): Promise<StaticMeta> {
       mtime: stats.mtimeMs,
     };
   }
-  catch {
+  catch (staticStatError: unknown) {
+    // Asset is missing or inaccessible; log the cause and report no cache metadata.
+    console.error(
+      'getStaticMetadata could not stat requested asset:',
+      staticStatError,
+    );
     return undefined;
   }
 }

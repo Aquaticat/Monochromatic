@@ -11,7 +11,7 @@ import type {
   ChatMessage,
 } from '@monochromatic-dev/module-llm-types/ts';
 
-export type { ChatMessage, };
+export type { ChatMessage, } from '@monochromatic-dev/module-llm-types/ts';
 
 //region Configuration
 
@@ -195,8 +195,12 @@ export async function chatCompletion(
       try {
         errorText = await response.text();
       }
-      catch {
-        // Ignore text parsing failure
+      catch (bodyTextError: unknown) {
+        // Response body text could not be read; log it and keep the default message.
+        console.error(
+          'chatCompletion could not read error response body text:',
+          bodyTextError,
+        );
       }
       return {
         ok: false,

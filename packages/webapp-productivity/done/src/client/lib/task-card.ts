@@ -18,7 +18,7 @@ import { TASK_CARD_STYLES, } from './task-card-styles.ts';
 /**
  * Sentinel returned by `getChipElement` when no chip matches the prefix.
  */
-const CHIP_NOT_FOUND: unique symbol = Symbol('chip-not-found',);
+const CHIP_NOT_FOUND: unique symbol = Symbol('task card chip element not found',);
 
 /**
  * `<task-card>`: displays a task as a clickable card with checkbox, title, and metadata chips.

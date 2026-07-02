@@ -18,12 +18,12 @@ import {
 /**
  * Sentinel for "no debounce timer is scheduled".
  */
-const NO_TIMER: unique symbol = Symbol('no-timer',);
+const NO_TIMER: unique symbol = Symbol('autofill debounce timer currently not scheduled',);
 
 /**
  * Sentinel for "no request is in flight".
  */
-const NO_ABORT: unique symbol = Symbol('no-abort',);
+const NO_ABORT: unique symbol = Symbol('autofill request abort controller currently absent',);
 
 /**
  * Callback interface for the autofill controller to read and update the host component.

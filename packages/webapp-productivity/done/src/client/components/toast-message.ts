@@ -67,7 +67,7 @@ const DISMISS_MS = 3_000;
 /**
  * Sentinel for "no auto-dismiss timer is scheduled".
  */
-const NO_TIMER: unique symbol = Symbol('no-timer',);
+const NO_TIMER: unique symbol = Symbol('toast auto-dismiss timer currently not scheduled',);
 
 /**
  * `\<toast-message\>`: ephemeral notification that auto-dismisses.
