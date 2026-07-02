@@ -135,9 +135,10 @@ export const SQL_SELECT_ALL_TAGS =
  *
  * Uses Turso's native `fts_match`/`fts_score` functions against the `tasks_fts`
  * index method. The bound query reuses the `?1` numbered parameter across both
- * functions. `fts_score` currently returns 0 on the pinned build, so
- * `updated_at` is a deterministic tiebreaker; relevance ordering activates once
- * Turso's scoring returns non-zero values.
+ * functions. `fts_score` is unreliable on the pinned build (often 0 or tied across
+ * multiple matches; see `docs/troubleshooting/turso-fts5-native-fts.md`), so
+ * `updated_at` is a deterministic tiebreaker; genuine relevance ordering activates
+ * once upstream scoring is fixed.
  */
 export const SQL_SEARCH_FTS = `
   SELECT tasks.*, CASE WHEN blocked_by != '[]' THEN 1 ELSE 0 END AS is_blocked
