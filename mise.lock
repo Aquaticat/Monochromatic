@@ -981,6 +981,10 @@ url = "https://github.com/opentofu/opentofu/releases/download/v1.12.3/tofu_1.12.
 checksum = "sha256:34ddbab9eb07a72ea5cf36d98d97ce1931242cb89693cbf5dce06d65ba37d8cc"
 url = "https://github.com/opentofu/opentofu/releases/download/v1.12.3/tofu_1.12.3_windows_amd64.tar.gz"
 
+[[tools."pipx:slopo"]]
+version = "0.2.0"
+backend = "pipx:slopo"
+
 [[tools.pkl]]
 version = "0.31.1"
 backend = "aqua:apple/pkl"

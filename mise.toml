@@ -212,6 +212,9 @@ java = "temurin-21"
 # (the rust tool above) to register as a cargo subcommand.
 "cargo:cargo-ndk" = "latest"
 
+# Duplicate code detection github.com/rafal-qa/slopo
+"pipx:slopo" = "latest"
+
 [settings]
 # Generate mise.lock
 lockfile = true
