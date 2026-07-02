@@ -8,8 +8,9 @@
  * Number columns align purely through Inter's tabular numerals plus
  * figure-space padding done by the client script; no column widths are
  * managed in CSS. Each row's bar sits in a fixed-width end-of-row track
- * so bar lengths stay comparable across rows, and carries a mid-stop
- * border so even a minimum-count bar stays visible.
+ * so bar lengths stay comparable across rows, and carries a
+ * full-contrast border (near-black on light, near-white on dark) so
+ * even a minimum-count bar stays visible.
  */
 import {
   cssCompounded,
@@ -252,7 +253,7 @@ export function renderResultsStyles(): string {
           'background-color': cssVar('color-bar',),
           'border-width': cssRem(HAIRLINE,),
           'border-style': 'solid',
-          'border-color': cssVar('color-border-strong',),
+          'border-color': cssVar('color-bar-border',),
           'border-start-end-radius': cssRem(QUARTER,),
           'border-end-end-radius': cssRem(QUARTER,),
         },

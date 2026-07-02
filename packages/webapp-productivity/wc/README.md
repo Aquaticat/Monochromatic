@@ -11,6 +11,16 @@ requests after the page loads.
   comes from adjacent stops (0.9 surfaces on a 1 background in light mode,
   0 surfaces on a 0.1 background in dark mode). A unit test scans the
   palette fragments and rejects any other `oklch()` value.
+- **Contrast**: every text role meets WCAG AAA small-text contrast (7:1).
+  For achromatic oklch the WCAG relative luminance is L cubed, so
+  mid-gray (0.5) text peaks at 6.0:1 on white and 3.4:1 on the dark
+  background; text therefore only ever pairs the 0/0.1 stops with the
+  0.9/1 stops (15:1 and up), and secondary text (headings, description,
+  placeholder) shares the body-text stop, differentiated by size and
+  weight instead of color. The mid stop is reserved for non-text borders
+  (textarea, frequency header rule), which meet the 3:1 non-text minimum.
+  A unit test computes the ratios for every rendered ink-on-paper pairing
+  in both themes and rejects regressions.
 - **Type**: everything renders in Inter (variable, weights 100 to 900),
   auto-subsetted (see the fonts section) and inlined as a woff2 data URI.
   Frequency numbers use tabular numerals; tile headline numbers keep
@@ -29,8 +39,8 @@ requests after the page loads.
   and percentages come first, padded with figure spaces (U+2007) so the
   columns align purely through tabular numerals, with no column-width
   CSS. Each row ends in a fixed-width bar track (equal tracks keep bar
-  lengths comparable); bars carry a mid-stop border so even the smallest
-  bar stays visible.
+  lengths comparable); bars carry a full-contrast border (near-black on
+  light, near-white on dark) so even the smallest bar stays visible.
 
 ### Known limitations
 

@@ -1,6 +1,7 @@
 /**
- * Tests for the light/dark color-scheme stylesheet fragments and the
- * strict five-stop grayscale palette.
+ * Tests for the light/dark color-scheme stylesheet fragments, the
+ * strict five-stop grayscale palette, and the AAA small-text contrast
+ * discipline (every text role at 7:1 or better in both themes).
  *
  * @module
  */
@@ -28,6 +29,7 @@ const TOKEN_NAMES = [
   '--color-border-subtle:',
   '--color-border-strong:',
   '--color-bar:',
+  '--color-bar-border:',
   '--color-placeholder:',
 ];
 
@@ -41,6 +43,250 @@ const ALLOWED_STOPS = [
   'oklch(0.5 0 0)',
   'oklch(0.9 0 0)',
   'oklch(1 0 0)',
+];
+
+/**
+ * One half, composed from the exempt literal range.
+ */
+const HALF = 1 / 2;
+
+/**
+ * Five, composed from the exempt literal range.
+ */
+const FIVE = (2 + 2) + 1;
+
+/**
+ * Ambient-flare term WCAG adds to both relative luminances in a
+ * contrast ratio (the 0.05 in `(L1 + 0.05) / (L2 + 0.05)`).
+ */
+const WCAG_FLARE = HALF / (FIVE * 2);
+
+/**
+ * WCAG AAA contrast floor for small text (the decree: every text role
+ * must reach it, regardless of size).
+ */
+const AAA_SMALL_TEXT_MIN = FIVE + 2;
+
+/**
+ * Extracts one custom property's `oklch(...)` value from css via a
+ * linear index scan (no regex).
+ *
+ * @param css - stylesheet fragment holding token
+ *
+ * @param token - custom-property name including trailing colon, e.g.
+ * `--color-fg:`
+ *
+ * @returns declared value, e.g. `oklch(0.1 0 0)`
+ *
+ * @throws Error when token or its value terminator is absent
+ */
+function tokenValue(
+  {
+    css,
+    token,
+  }: Readonly<{
+    css: string;
+    token: string;
+  }>,
+): string {
+  /**
+   * `indexOf` sentinel for "not found".
+   */
+  const NOT_FOUND = -1;
+
+  /**
+   * Index where token's declaration starts.
+   */
+  const start = css.indexOf(token,);
+
+  if (start === NOT_FOUND) {
+    throw new Error(`token ${token} not declared in fragment`,);
+  }
+
+  /**
+   * Index where token's value starts.
+   */
+  const valueStart = start + token.length;
+
+  /**
+   * Index of the declaration-terminating semicolon, when present.
+   */
+  const semicolon = css.indexOf(
+    ';',
+    valueStart,
+  );
+
+  /**
+   * Index of the rule-closing brace, for the final declaration in a
+   * minified rule (which has no trailing semicolon).
+   */
+  const brace = css.indexOf(
+    '}',
+    valueStart,
+  );
+
+  /**
+   * Terminator indexes that exist past the value start.
+   */
+  const terminators = [
+    semicolon,
+    brace,
+  ]
+    .filter(function keepFound(index,): boolean {
+      return index !== NOT_FOUND;
+    },);
+
+  if (terminators.length === 0) {
+    throw new Error(`token ${token} declaration is unterminated`,);
+  }
+
+  /**
+   * Nearest declaration terminator among semicolon and closing brace.
+   */
+  const end = Math.min(...terminators,);
+
+  return css.slice(
+    valueStart,
+    end,
+  );
+}
+
+/**
+ * Computes WCAG relative luminance of an achromatic `oklch(L 0 0)`
+ * value. For grays, OKLab lightness is the cube root of CIE luminance
+ * Y, so Y is recovered as L cubed.
+ *
+ * @param value - achromatic color, e.g. `oklch(0.9 0 0)`
+ *
+ * @returns WCAG relative luminance in 0 to 1
+ */
+function stopLuminance(value: string,): number {
+  /**
+   * Index where the lightness component starts.
+   */
+  const lStart = value.indexOf('(',) + 1;
+
+  /**
+   * Index where the lightness component ends.
+   */
+  const lEnd = value.indexOf(
+    ' ',
+    lStart,
+  );
+
+  /**
+   * OKLab lightness of value.
+   */
+  const lightness = Number(value.slice(
+    lStart,
+    lEnd,
+  ),);
+
+  return lightness * lightness * lightness;
+}
+
+/**
+ * Computes the WCAG contrast ratio between two custom properties
+ * declared in css.
+ *
+ * @param css - stylesheet fragment declaring both tokens
+ *
+ * @param ink - text-role custom-property name including trailing colon
+ *
+ * @param paper - background-role custom-property name including
+ * trailing colon
+ *
+ * @returns contrast ratio in 1 to 21
+ */
+function contrastRatio(
+  {
+    css,
+    ink,
+    paper,
+  }: Readonly<{
+    css: string;
+    ink: string;
+    paper: string;
+  }>,
+): number {
+  /**
+   * Relative luminance of the text color.
+   */
+  const inkY = stopLuminance(tokenValue(
+    {
+      css,
+      token: ink,
+    },
+  ),);
+
+  /**
+   * Relative luminance of the background color.
+   */
+  const paperY = stopLuminance(tokenValue(
+    {
+      css,
+      token: paper,
+    },
+  ),);
+
+  /**
+   * Lighter of the two luminances.
+   */
+  const lighter = Math.max(
+    inkY,
+    paperY,
+  );
+
+  /**
+   * Darker of the two luminances.
+   */
+  const darker = Math.min(
+    inkY,
+    paperY,
+  );
+
+  return (lighter + WCAG_FLARE) / (darker + WCAG_FLARE);
+}
+
+/**
+ * Ink-on-paper pairings the page actually renders, every one of which
+ * must reach AAA small-text contrast. Bar borders are graphics, not
+ * text, but the decree asks for strong bar borders, so they are held
+ * to the same floor against both the page background and the bar fill.
+ */
+const CONTRAST_PAIRS = [
+  {
+    ink: '--color-fg:',
+    paper: '--color-bg:',
+  },
+  {
+    ink: '--color-fg:',
+    paper: '--color-surface:',
+  },
+  {
+    ink: '--color-fg-strong:',
+    paper: '--color-bg:',
+  },
+  {
+    ink: '--color-fg-strong:',
+    paper: '--color-surface:',
+  },
+  {
+    ink: '--color-muted:',
+    paper: '--color-bg:',
+  },
+  {
+    ink: '--color-placeholder:',
+    paper: '--color-bg:',
+  },
+  {
+    ink: '--color-bar-border:',
+    paper: '--color-bg:',
+  },
+  {
+    ink: '--color-bar-border:',
+    paper: '--color-bar:',
+  },
 ];
 
 /**
@@ -161,6 +407,47 @@ await describe({
           },
         },),
       ],
+    },),
+    describe({
+      name: 'AAA small-text contrast discipline',
+      children: [
+        {
+          theme: 'light',
+          css: renderRootColors(),
+        },
+        {
+          theme: 'dark',
+          css: renderDarkColors(),
+        },
+      ]
+        .flatMap(function mapTheme(
+          {
+            theme,
+            css,
+          },
+        ) {
+          return CONTRAST_PAIRS.map(function mapPair(
+            {
+              ink,
+              paper,
+            },
+          ) {
+            return it({
+              name: `${ink} on ${paper} reaches 7:1 in ${theme}`,
+              fn: async function reachesAaaContrast(): Promise<void> {
+                expect(
+                  contrastRatio(
+                    {
+                      css,
+                      ink,
+                      paper,
+                    },
+                  ),
+                ).toBeGreaterThanOrEqual(AAA_SMALL_TEXT_MIN,);
+              },
+            },);
+          },);
+        },),
     },),
   ],
 },);
