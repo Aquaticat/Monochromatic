@@ -83,6 +83,7 @@ pids/
 artifacts/
 output/
 cache_*.json
+cache_*.txt
 ipinfo_lite.json
 canary-history.jsonl
 _invocation-log.jsonl

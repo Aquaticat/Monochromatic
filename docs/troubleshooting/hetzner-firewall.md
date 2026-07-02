@@ -34,7 +34,7 @@ the exposure that motivated the firewall in the first place.
 The Hetzner firewall has a 500-rule cap.
  The `tor_out_rules`
 local in `hetzner.tf` builds an allowlist from a JSON file
-written by `packages/config/tofu/fetch_tor_relays.ts`,
+written by `packages/config/tofu/src/fetch_tor_relays.ts`,
  which
 fetches Onionoo's consensus top-N (limit=500) guards filtered to
 ORPort 443.
@@ -49,16 +49,16 @@ lifts `tofu` from ~50 to ~200 effective rules,
 ### Verification
 
 ```bash
-# Refresh the cache:
-rm packages/config/tofu/cache_tor_relays.json
-tofu plan -target=local_file.tor_relays_cache
+# Refresh the cache (delete it, then re-run so the external data source refetches):
+rm packages/config/tofu/src/cache_tor_relays.txt
+tofu plan
 
-# Count effective IPs:
-jq 'length' packages/config/tofu/cache_tor_relays.json
+# Count effective IPs (the cache is a comma-separated CIDR list, not JSON):
+tr ',' '\n' < packages/config/tofu/src/cache_tor_relays.txt | grep -c .
 ```
 
 The script caches Onionoo responses for one hour at
-`packages/config/tofu/cache_tor_relays.json`;
+`packages/config/tofu/src/cache_tor_relays.txt`;
  delete to force a
 fresh fetch.
 
@@ -410,7 +410,7 @@ as IPs or CIDRs,
 expressed directly in the firewall rule.
 
 The implemented rule resolves configured concrete Storage Box hostnames
-through `packages/config/tofu/resolve_storagebox_hosts.ts`,
+through `packages/config/tofu/src/resolve_storagebox_hosts.ts`,
  combines
 them with optional explicit `storagebox_destination_ips`,
  summarizes

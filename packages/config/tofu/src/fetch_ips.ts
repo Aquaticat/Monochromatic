@@ -194,7 +194,7 @@ if (TARGET_ASN === '')
  */
 const CACHE_FILE = join(
   import.meta.dirname,
-  `cache_${TARGET_ASN}.json`,
+  `cache_${TARGET_ASN}.txt`,
 );
 
 /* oxlint-disable eslint/no-magic-numbers -- Cache TTL unit conversion is clearer as one policy duration expression than as separately named calendar ratios. */
